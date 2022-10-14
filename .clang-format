@@ -1,0 +1,16 @@
+Language: Cpp
+BasedOnStyle: Microsoft
+ColumnLimit: 100
+# explicit
+IndentWidth: 4
+Standard: Cpp11
+SpacesInParentheses: true
+AccessModifierOffset: -4
+SpaceBeforeCtorInitializerColon: false
+BreakConstructorInitializers: AfterColon
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+# implicit
+PointerAlignment: Left
+DerivePointerAlignment: false
+Cpp11BracedListStyle: false
+AllowShortFunctionsOnASingleLine: true
