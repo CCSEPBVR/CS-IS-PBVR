@@ -4,35 +4,22 @@
  *  All rights reserved.
  *  See http://www.viz.media.kyoto-u.ac.jp/kvs/copyright/ for details.
  */
-#include "FileFormat/STL/Stl.h"
+#include "FileFormatDetail.h"
 
-#include <algorithm>
-#include <cstring>
-#include <exception>
-#include <locale>
-#include <string>
+#include <stdexcept>
+#include <vector>
 
-#include "kvs/File"
 #include "kvs/PolygonObject"
 #include "kvs/Type"
 #include "kvs/ValueArray"
-
-#include <vtkCellArray.h>
 #include <vtkCellData.h>
-#include <vtkDataArray.h>
 #include <vtkNew.h>
-#include <vtkPointData.h>
-#include <vtkPoints.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataNormals.h>
-#include <vtkSTLReader.h>
-#include <vtkSTLWriter.h>
 #include <vtkSmartPointer.h>
 
-namespace
-{
-
-void ConvertToPolygonObject( kvs::PolygonObject* polygon_object, vtkSmartPointer<vtkPolyData> data )
+void cvt::detail::ConvertToPolygonObject( kvs::PolygonObject* polygon_object,
+                                          vtkSmartPointer<vtkPolyData> data )
 {
     std::vector<kvs::Real32> coords( data->GetNumberOfCells() * 3 * 3 );
 
@@ -103,107 +90,31 @@ void ConvertToPolygonObject( kvs::PolygonObject* polygon_object, vtkSmartPointer
     polygon_object->setNormals( v_normals );
     polygon_object->updateMinMaxCoords();
 }
-} // namespace
 
-bool cvt::Stl::CheckExtension( const std::string& filename )
+void cvt::detail::ConvertFromPolygonObject( vtkSmartPointer<vtkPolyData>& data,
+                                            const kvs::PolygonObject* polygon_object )
 {
-    const kvs::File file( filename );
-    auto extension = file.extension();
-
-    std::transform( extension.cbegin(), extension.cend(), extension.begin(), tolower );
-
-    return extension == "stl" || extension == "stla" || extension == "stlb" || extension == "sla" ||
-           extension == "slb";
-}
-
-bool cvt::Stl::read( const std::string& filename )
-{
-    BaseClass::setFilename( filename );
-    BaseClass::setSuccess( false );
-
-    try
-    {
-        vtkNew<vtkSTLReader> reader;
-        reader->SetFileName( filename.c_str() );
-        reader->Update();
-
-        polydata = reader->GetOutput();
-
-        bool is_success = polydata->GetNumberOfCells() > 0;
-        BaseClass::setSuccess( is_success );
-
-        return is_success;
-    }
-    catch ( std::exception& e )
-    {
-        throw e;
-    }
-    catch ( ... )
-    {
-        return false;
-    }
-}
-
-bool cvt::Stl::write( const std::string& filename )
-{
-    BaseClass::setFilename( filename );
-    BaseClass::setSuccess( false );
-
-    try
-    {
-        vtkNew<vtkSTLWriter> writer;
-        writer->SetInputData( polydata );
-        writer->SetFileName( filename.c_str() );
-
-        bool is_success = writer->Write() == 1;
-        BaseClass::setSuccess( is_success );
-
-        return is_success;
-    }
-    catch ( std::exception& e )
-    {
-        throw e;
-    }
-    catch ( ... )
-    {
-        return false;
-    }
-}
-
-void cvt::Stl::get( kvs::PolygonObject* object ) { ConvertToPolygonObject( object, polydata ); }
-
-void cvt::Stl::get( kvs::PolygonObject* object ) const
-{
-    ConvertToPolygonObject( object, polydata );
-}
-
-void cvt::Stl::set( const kvs::PolygonObject& object )
-{
-    if ( object.polygonType() != kvs::PolygonObject::Triangle )
-    {
-        throw std::runtime_error( "Input object is not triangle polygon" );
-    }
-
     vtkNew<vtkPolyData> p;
 
     vtkNew<vtkPoints> points;
     p->SetPoints( points );
     points->SetDataTypeToFloat();
-    auto coords = object.coords().data();
-    auto point_count = object.numberOfVertices();
+    auto coords = polygon_object->coords().data();
+    auto point_count = polygon_object->numberOfVertices();
     points->SetNumberOfPoints( static_cast<vtkIdType>( point_count ) );
 
-    for ( vtkIdType i = 0; i < point_count; ++i )
+    for ( vtkIdType i = 0; i < static_cast<vtkIdType>( point_count ); ++i )
     {
         points->SetPoint( i, *( coords + i * 3 ), *( coords + i * 3 + 1 ),
                           *( coords + i * 3 + 2 ) );
     }
 
-    if ( object.numberOfConnections() == 0 )
+    if ( polygon_object->numberOfConnections() == 0 )
     {
         vtkNew<vtkCellArray> cell_array;
 
-        for ( vtkIdType i = 0; i < object.numberOfVertices() / 3; ++i )
+        for ( vtkIdType i = 0; i < static_cast<vtkIdType>( polygon_object->numberOfVertices() / 3 );
+              ++i )
         {
             vtkIdType ids[3] = { i * 3, i * 3 + 1, i * 3 + 2 };
             cell_array->InsertNextCell( 3, ids );
@@ -213,9 +124,9 @@ void cvt::Stl::set( const kvs::PolygonObject& object )
     }
     else
     {
-        auto cell_count = object.connections().size() / 3;
+        auto cell_count = polygon_object->connections().size() / 3;
         throw std::runtime_error( "not implemented" );
     }
 
-    polydata = p;
+    data = p;
 }

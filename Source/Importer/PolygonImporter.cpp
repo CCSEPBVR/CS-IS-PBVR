@@ -16,7 +16,7 @@ kvs::ObjectBase* PolygonImporter::exec( const kvs::FileFormatBase* file_format )
 {
     BaseClass::setSuccess( false );
 
-    if ( cvt::Stl::CheckExtension( file_format->filename() ) )
+    if ( cvt::CheckExtension<cvt::Stl>( file_format->filename() ) )
     {
         try
         {

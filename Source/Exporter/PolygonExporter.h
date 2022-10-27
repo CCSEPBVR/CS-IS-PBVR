@@ -11,20 +11,43 @@
 #include "kvs/ObjectBase"
 #include "kvs/PolygonExporter"
 
-namespace kvs
+namespace cvt
 {
 
-template <> class PolygonExporter<cvt::Stl> : public kvs::ExporterBase, public cvt::Stl
+template <typename T>
+class PolygonExporter : public kvs::ExporterBase, public T
 {
+    using BaseClass = kvs::ExporterBase;
+
 public:
-    PolygonExporter( const kvs::PolygonObject* object ): kvs::ExporterBase(), cvt::Stl( "" )
+    PolygonExporter( const kvs::PolygonObject* object ): kvs::ExporterBase(), T( "" )
     {
         this->exec( object );
     }
 
 public:
-    cvt::Stl* exec( const kvs::ObjectBase* object );
-};
+    kvs::FileFormatBase* exec( const kvs::ObjectBase* object )
+    {
+        BaseClass::setSuccess( false );
 
-} // namespace kvs
+        if ( !object )
+        {
+            throw std::runtime_error( "Input object is NULL" );
+            return nullptr;
+        }
+
+        const kvs::PolygonObject* polygon = kvs::PolygonObject::DownCast( object );
+        if ( !polygon )
+        {
+            throw std::runtime_error( "Input object is not polygon object" );
+            return nullptr;
+        }
+
+        this->set( polygon );
+        BaseClass::setSuccess( true );
+
+        return this;
+    }
+};
+} // namespace cvt
 #endif // CVT__POLYGON_EXPORTER_H_INCLUDE

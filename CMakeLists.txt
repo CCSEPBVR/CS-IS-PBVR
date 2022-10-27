@@ -3,6 +3,10 @@ project(kvsm-converter)
 
 set(TARGET_NAME kvsm-converter)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 find_package(VTK)
 
 if(NOT VTK_FOUND)
@@ -10,15 +14,18 @@ if(NOT VTK_FOUND)
 endif()
 
 include(kvs.cmake)
-# set(KVS_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/Library/KVS/Source)
-# target_include_directories(kvsCore PRIVATE ${KVS_SOURCE})
+
+if(MSVC)
+  add_compile_options(/W3 /WX)
+else()
+  add_compile_options(-Wall)
+endif()
 
 add_executable(
   ${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/example.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/STL/Stl.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Source/Importer/PolygonImporter.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Source/Exporter/PolygonExporter.cpp)
+  ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/FileFormatDetail.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Source/Importer/PolygonImporter.cpp)
 target_include_directories(${TARGET_NAME}
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Source)
 target_link_libraries(${TARGET_NAME} PRIVATE ${VTK_LIBRARIES} kvsCore)

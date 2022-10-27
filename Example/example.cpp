@@ -43,7 +43,7 @@ int main( int argc, char** argv )
     if ( output_format == "stl" )
     {
         std::cout << "writing " << argv[4] << " ..." << std::endl;
-        kvs::PolygonExporter<cvt::Stl> exporter(
+        cvt::PolygonExporter<cvt::Stl> exporter(
             dynamic_cast<kvs::PolygonObject*>( importer.get() ) );
         exporter.write( std::string( argv[4] ) );
     }
