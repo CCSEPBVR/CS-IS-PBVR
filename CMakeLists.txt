@@ -24,8 +24,8 @@ endif()
 add_executable(
   ${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/example.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/FileFormatDetail.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Source/Importer/PolygonImporter.cpp)
+  ${CMAKE_CURRENT_SOURCE_DIR}/Example/StlExample.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Source/Convert.cpp)
 target_include_directories(${TARGET_NAME}
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Source)
 target_link_libraries(${TARGET_NAME} PRIVATE ${VTK_LIBRARIES} kvsCore)

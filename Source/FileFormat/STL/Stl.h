@@ -19,36 +19,10 @@ namespace cvt
 {
 
 /**
- * A format tag for STL.
- */
-using StlFormatTag = struct
-{
-};
-
-template <>
-struct VtkFileFormatTraits<cvt::StlFormatTag>
-{
-public:
-    using VtkDataType = vtkPolyData;
-    using KvsDataType = kvs::PolygonObject;
-    using VtkReaderType = vtkSTLReader;
-    using VtkWriterType = vtkSTLWriter;
-};
-
-/**
  * A STL file IO and converter.
  */
-using Stl = typename cvt::VtkFileFormat<cvt::StlFormatTag>;
-
-template <>
-inline bool CheckExtension<cvt::Stl>( const std::string& filename )
-{
-    const char* const FILE_EXTENSIONS[] = { "stl", "stla", "stlb", "sla", "slb" };
-
-    return cvt::detail::CheckExtensionImpl( filename, FILE_EXTENSIONS,
-                                            sizeof( FILE_EXTENSIONS ) /
-                                                sizeof( decltype( FILE_EXTENSIONS ) ) );
-}
+using Stl =
+    typename cvt::VtkFileFormat<vtkPolyData, kvs::PolygonObject, vtkSTLReader, vtkSTLWriter>;
 } // namespace cvt
 
 #endif // CVT__STL_H_INCLUDE

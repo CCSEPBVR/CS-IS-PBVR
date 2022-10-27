@@ -4,7 +4,7 @@
  *  All rights reserved.
  *  See http://www.viz.media.kyoto-u.ac.jp/kvs/copyright/ for details.
  */
-#include "FileFormatDetail.h"
+#include "Convert.h"
 
 #include <stdexcept>
 #include <vector>

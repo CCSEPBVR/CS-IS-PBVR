@@ -16,21 +16,16 @@
 #include <vtkNew.h>
 #include <vtkSmartPointer.h>
 
-#include "FileFormatDetail.h"
+#include "Convert.h"
 
 namespace cvt
 {
 
 /**
- * A type information about an file format
+ * A file IO using VTK.
  */
-template <typename FormatTag>
-struct VtkFileFormatTraits;
-
-/**
- * A file IO and converter using VTK.
- */
-template <typename FormatTag>
+template <typename VtkDataType_, typename KvsObjectType_, typename VtkReaderType,
+          typename VtkWriterType>
 class VtkFileFormat : public kvs::FileFormatBase
 {
 public:
@@ -38,7 +33,14 @@ public:
      * A base class type.
      */
     using BaseClass = kvs::FileFormatBase;
-    using Traits = cvt::VtkFileFormatTraits<FormatTag>;
+    /**
+     * An inner VTK data type.
+     */
+    using VtkDataType = VtkDataType_;
+    /**
+     * A outer KVS object type.
+     */
+    using KvsObjectType = KvsObjectType_;
 
 public:
     /**
@@ -52,13 +54,19 @@ public:
      *
      * \param filename A file name.
      */
-    VtkFileFormat( const std::string& filename ): kvs::FileFormatBase() { setFilename( filename ); }
+    VtkFileFormat( const std::string& filename ): kvs::FileFormatBase() { read( filename ); }
     /**
      * Construct an IO object.
      *
      * \param filename A file name.
      */
-    VtkFileFormat( std::string&& filename ): kvs::FileFormatBase() { setFilename( filename ); }
+    VtkFileFormat( std::string&& filename ): kvs::FileFormatBase() { read( filename ); }
+    /**
+     * Construct an IO object.
+     *
+     * \param [in] vtk_data A VTK data.
+     */
+    VtkFileFormat( VtkDataType* data ): kvs::FileFormatBase() { vtk_data = data; }
     virtual ~VtkFileFormat() {}
 
 public:
@@ -69,7 +77,7 @@ public:
 
         try
         {
-            vtkNew<typename Traits::VtkReaderType> reader;
+            vtkNew<VtkReaderType> reader;
             reader->SetFileName( filename.c_str() );
             reader->Update();
 
@@ -96,7 +104,7 @@ public:
 
         try
         {
-            vtkNew<typename Traits::VtkWriterType> writer;
+            vtkNew<VtkWriterType> writer;
             writer->SetInputData( vtk_data );
             writer->SetFileName( filename.c_str() );
 
@@ -117,44 +125,48 @@ public:
 
 public:
     /**
-     * Convert and set to a KVS object.
+     * Get a VTK data.
      *
-     * \param [out] object a KVS object.
+     * \return A VTK data.
      */
-    void get( typename Traits::KvsDataType* object ) { cvt::detail::Convert( object, vtk_data ); }
+    vtkSmartPointer<VtkDataType> get() { return vtk_data; }
     /**
-     * Convert and set to a KVS object.
+     * Get a VTK data.
      *
-     * \param [out] object a KVS object.
+     * \return A VTK data.
      */
-    void get( typename Traits::KvsDataType* object ) const
-    {
-        cvt::detail::Convert( object, vtk_data );
-    }
+    vtkSmartPointer<VtkDataType> get() const { return vtk_data; }
     /**
-     * Reserve a writing object.
+     * Set a VTK data.
      *
      * \param [in] object A writing object.
      */
-    void set( const typename Traits::KvsDataType* object )
-    {
-        cvt::detail::Convert<vtkSmartPointer<typename Traits::VtkDataType>&>( vtk_data, object );
-    }
+    void set( vtkSmartPointer<VtkDataType> data ) { vtk_data = data; }
     /**
-     * Reserve a writing object.
+     * Set a VTK data.
      *
      * \param [in] object A writing object.
      */
-    void set( const typename Traits::KvsDataType& object ) { set( object ); }
-    /**
-     * Reserve a writing object.
-     *
-     * \param [in] object A writing object.
-     */
-    void set( typename Traits::KvsDataType&& object ) { set( object ); };
+    void set( VtkDataType* object ) { vtk_data = object; };
 
 private:
-    vtkSmartPointer<typename Traits::VtkDataType> vtk_data;
+    vtkSmartPointer<VtkDataType> vtk_data;
+};
+
+/**
+ * A type traits for FileFormat.
+ */
+template <typename FileFormat>
+struct VtkFileFormatTraits
+{
+    /**
+     * An inner VTK data type.
+     */
+    using VtkDataType = typename FileFormat::VtkDataType;
+    /**
+     * A outer KVS object type.
+     */
+    using KvsObjectType = typename FileFormat::KvsObjectType;
 };
 } // namespace cvt
 
@@ -175,13 +187,6 @@ inline bool CheckExtensionImpl( const std::string& filename, const char* const f
                         [&extension]( const char* const e ) { return extension == e; } );
 }
 } // namespace detail
-/**
- * Check if a file extention is for STL.
- *
- * \param filename A file name.
- */
-template <typename T>
-bool CheckExtension( const std::string& filename );
 } // namespace cvt
 
 #endif // CVT__VTK_FILE_FORMAT_H_INCLUDE

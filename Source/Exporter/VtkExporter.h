@@ -7,20 +7,27 @@
 #ifndef CVT__POLYGON_EXPORTER_H_INCLUDE
 #define CVT__POLYGON_EXPORTER_H_INCLUDE
 
-#include "FileFormat/STL/Stl.h"
+// clang-format off
 #include "kvs/ObjectBase"
-#include "kvs/PolygonExporter"
+#include "kvs/ExporterBase"
+// clang-format on
+#include <vtkSmartPointer.h>
+
+#include "Convert.h"
+#include "FileFormat/VtkFileFormat.h"
 
 namespace cvt
 {
 
-template <typename T>
-class PolygonExporter : public kvs::ExporterBase, public T
+template <typename VtkFileFormat>
+class VtkExporter : public kvs::ExporterBase, public VtkFileFormat
 {
     using BaseClass = kvs::ExporterBase;
+    using KvsObjectType = typename cvt::VtkFileFormatTraits<VtkFileFormat>::KvsObjectType;
+    using VtkDataType = typename cvt::VtkFileFormatTraits<VtkFileFormat>::VtkDataType;
 
 public:
-    PolygonExporter( const kvs::PolygonObject* object ): kvs::ExporterBase(), T( "" )
+    VtkExporter( const KvsObjectType* object ): kvs::ExporterBase(), VtkFileFormat()
     {
         this->exec( object );
     }
@@ -36,14 +43,17 @@ public:
             return nullptr;
         }
 
-        const kvs::PolygonObject* polygon = kvs::PolygonObject::DownCast( object );
-        if ( !polygon )
+        auto kvs_object = KvsObjectType::DownCast( object );
+        if ( !kvs_object )
         {
             throw std::runtime_error( "Input object is not polygon object" );
             return nullptr;
         }
 
-        this->set( polygon );
+        vtkSmartPointer<VtkDataType> vtk_data;
+        cvt::detail::Convert( std::ref( vtk_data ), kvs_object );
+        VtkFileFormat::set( vtk_data );
+
         BaseClass::setSuccess( true );
 
         return this;

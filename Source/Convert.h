@@ -6,6 +6,8 @@
  */
 #ifndef CVT__FILE_FORMAT_DETAIL_H_INCLUDE
 #define CVT__FILE_FORMAT_DETAIL_H_INCLUDE
+#include <stdexcept>
+
 #include "kvs/PolygonObject"
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
@@ -41,22 +43,44 @@ namespace detail
 /**
  * Convert to an object from the other object.
  *
- * \param [inout] object A KVS object.
- * \param [in] data A VTK data.
+ * \param [inout] dst A destination.
+ * \param [in] src A source.
  */
 template <typename OutputType, typename InputType>
-inline void Convert( OutputType output, InputType data );
+inline void Convert( OutputType dst, InputType src );
 
 template <>
 inline void Convert<kvs::PolygonObject*, vtkSmartPointer<vtkPolyData>>(
     kvs::PolygonObject* polygon_object, vtkSmartPointer<vtkPolyData> data )
 {
+    if ( !polygon_object )
+    {
+        throw std::runtime_error( "A KVS object was a null pointer." );
+        return;
+    }
+    if ( !data )
+    {
+        throw std::runtime_error( "A VTK data was a null pointer." );
+        return;
+    }
     cvt::detail::ConvertToPolygonObject( polygon_object, data );
+
+    polygon_object->setColorType( kvs::PolygonObject::PolygonColor );
+    polygon_object->setColor( kvs::RGBColor( 255, 255, 255 ) );
+    polygon_object->setOpacity( 255 );
 }
+
 template <>
-inline void Convert<vtkSmartPointer<vtkPolyData>&, const kvs::PolygonObject*>(
-    vtkSmartPointer<vtkPolyData>& data, const kvs::PolygonObject* polygon_object )
+inline void Convert<std::reference_wrapper<vtkSmartPointer<vtkPolyData>>,
+                    const kvs::PolygonObject*>(
+    std::reference_wrapper<vtkSmartPointer<vtkPolyData>> data,
+    const kvs::PolygonObject* polygon_object )
 {
+    if ( !polygon_object )
+    {
+        throw std::runtime_error( "A KVS object was a null pointer." );
+        return;
+    }
     cvt::detail::ConvertFromPolygonObject( data, polygon_object );
 }
 } // namespace detail
