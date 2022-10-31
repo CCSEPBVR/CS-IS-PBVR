@@ -1,16 +1,9 @@
-#include "Exporter/VtkExporter.h"
-#include "FileFormat/STL/Stl.h"
-#include "Importer/VtkImporter.h"
-#include "kvs/KVSMLPolygonObject"
-#include "kvs/PolygonExporter"
-#include "kvs/Stl"
-
 #include <iostream>
-#include <memory>
 #include <string>
 
 void Stl2Stl( const char* dst, const char* src );
 void Stl2Kvsml( const char* dst, const char* src );
+void Vtm2Vtm( const char* dst, const char* src );
 
 int main( int argc, char** argv )
 {
@@ -32,6 +25,11 @@ int main( int argc, char** argv )
     else if ( input_format == "stl" && output_format == "kvsml" )
     {
         Stl2Kvsml( argv[4], argv[3] );
+    }
+    else if ( std::string( argv[1] ) == "vtm" )
+    {
+        Vtm2Vtm( argv[4], argv[3] );
+        return -1;
     }
     else
     {

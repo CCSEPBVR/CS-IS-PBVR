@@ -25,7 +25,11 @@ add_executable(
   ${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/example.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/StlExample.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Source/Convert.cpp)
+  ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtmExample.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Source/Convert.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/VTKMultiBlock/VtkMultiBlock.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/VTKMultiBlock/VtkMultiBlockIterator.cpp
+)
 target_include_directories(${TARGET_NAME}
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Source)
 target_link_libraries(${TARGET_NAME} PRIVATE ${VTK_LIBRARIES} kvsCore)
