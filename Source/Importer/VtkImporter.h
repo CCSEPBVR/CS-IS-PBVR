@@ -9,8 +9,8 @@
 
 #include "kvs/ImporterBase"
 
-#include "Convert.h"
 #include "FileFormat/VtkFileFormat.h"
+#include "VtkImport.h"
 
 namespace cvt
 {
@@ -39,7 +39,7 @@ public:
     kvs::ObjectBase* exec( const kvs::FileFormatBase* file_format )
     {
         kvs::ImporterBase::setSuccess( false );
-        cvt::detail::Convert(
+        cvt::Import(
             dynamic_cast<typename cvt::VtkFileFormatTraits<VtkFileFormat>::KvsObjectType*>( this ),
             dynamic_cast<const VtkFileFormat*>( file_format )->get() );
         kvs::ImporterBase::setSuccess( true );

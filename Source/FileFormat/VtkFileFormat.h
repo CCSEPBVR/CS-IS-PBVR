@@ -12,11 +12,8 @@
 
 #include "kvs/File"
 #include "kvs/FileFormatBase"
-#include "kvs/PolygonObject"
 #include <vtkNew.h>
 #include <vtkSmartPointer.h>
-
-#include "Convert.h"
 
 namespace cvt
 {

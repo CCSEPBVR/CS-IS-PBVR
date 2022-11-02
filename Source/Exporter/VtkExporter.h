@@ -13,8 +13,8 @@
 // clang-format on
 #include <vtkSmartPointer.h>
 
-#include "Convert.h"
 #include "FileFormat/VtkFileFormat.h"
+#include "VtkExport.h"
 
 namespace cvt
 {
@@ -51,7 +51,7 @@ public:
         }
 
         vtkSmartPointer<VtkDataType> vtk_data;
-        cvt::detail::Convert( std::ref( vtk_data ), kvs_object );
+        cvt::Export( std::ref( vtk_data ), kvs_object );
         VtkFileFormat::set( vtk_data );
 
         BaseClass::setSuccess( true );
