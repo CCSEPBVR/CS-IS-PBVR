@@ -9,7 +9,9 @@
 #include <stdexcept>
 
 #include "kvs/PolygonObject"
+#include "kvs/StructuredVolumeObject"
 #include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
 #include <vtkSmartPointer.h>
 
 namespace cvt
@@ -33,6 +35,23 @@ void ConvertToPolygonObject( kvs::PolygonObject* polygon_object,
  */
 void ConvertFromPolygonObject( vtkSmartPointer<vtkPolyData>& data,
                                const kvs::PolygonObject* polygon_object );
+/**
+ * Convert to a KVS rectilinear object from a VTK RectilinearGrid.
+ *
+ * \param [inout] rectilinear_object A KVS rectilinear object.
+ * \param [in] data A VTK RectilinearGrid.
+ */
+void ConvertToRectilinearObject( kvs::StructuredVolumeObject* rectilinear_object,
+                                 vtkSmartPointer<vtkRectilinearGrid> data );
+/**
+ * Convert from a KVS rectilinear object to a VTK RectilinearGrid.
+ *
+ * \param [inout] data A VTK RectilinearGrid.
+ * \param [in] rectilinear_object A KVS rectilinear object.
+ */
+void ConvertFromRectilinearObject( vtkSmartPointer<vtkRectilinearGrid>& data,
+                                   const kvs::StructuredVolumeObject* rectilinear_object );
+
 } // namespace detail
 } // namespace cvt
 
@@ -82,6 +101,37 @@ inline void Convert<std::reference_wrapper<vtkSmartPointer<vtkPolyData>>,
         return;
     }
     cvt::detail::ConvertFromPolygonObject( data, polygon_object );
+}
+
+template <>
+inline void Convert<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkRectilinearGrid>>(
+    kvs::StructuredVolumeObject* rectilinear_object, vtkSmartPointer<vtkRectilinearGrid> data )
+{
+    if ( !rectilinear_object )
+    {
+        throw std::runtime_error( "A KVS object was a null pointer." );
+        return;
+    }
+    if ( !data )
+    {
+        throw std::runtime_error( "A VTK data was a null pointer." );
+        return;
+    }
+    cvt::detail::ConvertToRectilinearObject( rectilinear_object, data );
+}
+
+template <>
+inline void Convert<std::reference_wrapper<vtkSmartPointer<vtkRectilinearGrid>>,
+                    const kvs::StructuredVolumeObject*>(
+    std::reference_wrapper<vtkSmartPointer<vtkRectilinearGrid>> data,
+    const kvs::StructuredVolumeObject* rectilinear_object )
+{
+    if ( !rectilinear_object )
+    {
+        throw std::runtime_error( "A KVS object was a null pointer." );
+        return;
+    }
+    cvt::detail::ConvertFromRectilinearObject( data, rectilinear_object );
 }
 } // namespace detail
 } // namespace cvt
