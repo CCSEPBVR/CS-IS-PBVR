@@ -4,6 +4,8 @@
 void Stl2Stl( const char* dst, const char* src );
 void Stl2Kvsml( const char* dst, const char* src );
 void Vtr2Vtr( const char* dst, const char* src );
+void Vts2Vts( const char* dst, const char* src );
+void Vts2Kvsml( const char* dst, const char* src );
 void Vtm2Vtm( const char* dst, const char* src );
 
 int main( int argc, char** argv )
@@ -30,6 +32,14 @@ int main( int argc, char** argv )
     else if ( input_format == "vtr" && output_format == "vtr" )
     {
         Vtr2Vtr( argv[4], argv[3] );
+    }
+    else if ( input_format == "vts" && output_format == "vts" )
+    {
+        Vts2Vts( argv[4], argv[3] );
+    }
+    else if ( input_format == "vts" && output_format == "kvsml" )
+    {
+        Vts2Kvsml( argv[4], argv[3] );
     }
     else if ( std::string( argv[1] ) == "vtm" )
     {

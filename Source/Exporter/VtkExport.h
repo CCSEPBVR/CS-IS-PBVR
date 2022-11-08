@@ -13,6 +13,9 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkSmartPointer.h>
+#include <vtkStructuredGrid.h>
+
+#include "CvtTag.h"
 
 namespace cvt
 {
@@ -33,9 +36,16 @@ void ExportPolygonObject( vtkSmartPointer<vtkPolyData>& data,
  * \param [inout] data A VTK RectilinearGrid.
  * \param [in] rectilinear_object A KVS rectilinear object.
  */
-void ExportRectilinearObject( vtkSmartPointer<vtkRectilinearGrid>& data,
-                              const kvs::StructuredVolumeObject* rectilinear_object );
-
+void ExportRectilinearGridObject( vtkSmartPointer<vtkRectilinearGrid>& data,
+                                  const kvs::StructuredVolumeObject* rectilinear_object );
+/**
+ * Export from a KVS uniform object to a VTK RectilinearGrid.
+ *
+ * \param [inout] data A VTK StructuredGrid.
+ * \param [in] uniform_object A KVS uniform object.
+ */
+void ExportUniformGridObject( vtkSmartPointer<vtkStructuredGrid>& data,
+                              const kvs::StructuredVolumeObject* uniform_object );
 } // namespace detail
 } // namespace cvt
 
@@ -58,7 +68,7 @@ namespace cvt
  * \param [inout] dst A destination.
  * \param [in] src A source.
  */
-template <typename OutputType, typename InputType>
+template <typename OutputType, typename InputType, typename Tag = void>
 inline void Export( OutputType dst, InputType src );
 
 template <>
@@ -85,7 +95,21 @@ inline void Export<std::reference_wrapper<vtkSmartPointer<vtkRectilinearGrid>>,
         throw std::runtime_error( cvt::detail::KVS_OBJECT_NULL_POINTER_MESSAGE );
         return;
     }
-    cvt::detail::ExportRectilinearObject( data, rectilinear_object );
+    cvt::detail::ExportRectilinearGridObject( data, rectilinear_object );
+}
+
+template <>
+inline void Export<std::reference_wrapper<vtkSmartPointer<vtkStructuredGrid>>,
+                   const kvs::StructuredVolumeObject*, cvt::UniformGridTag>(
+    std::reference_wrapper<vtkSmartPointer<vtkStructuredGrid>> data,
+    const kvs::StructuredVolumeObject* uniform_object )
+{
+    if ( !uniform_object )
+    {
+        throw std::runtime_error( cvt::detail::KVS_OBJECT_NULL_POINTER_MESSAGE );
+        return;
+    }
+    cvt::detail::ExportUniformGridObject( data, uniform_object );
 }
 } // namespace cvt
 

@@ -24,6 +24,7 @@ class VtkExporter : public kvs::ExporterBase, public VtkFileFormat
 {
     using BaseClass = kvs::ExporterBase;
     using KvsObjectType = typename cvt::VtkFileFormatTraits<VtkFileFormat>::KvsObjectType;
+    using KvsObjectTag = typename cvt::VtkFileFormatTraits<VtkFileFormat>::KvsObjectTag;
     using VtkDataType = typename cvt::VtkFileFormatTraits<VtkFileFormat>::VtkDataType;
 
 public:
@@ -51,7 +52,8 @@ public:
         }
 
         vtkSmartPointer<VtkDataType> vtk_data;
-        cvt::Export( std::ref( vtk_data ), kvs_object );
+        cvt::Export<std::reference_wrapper<vtkSmartPointer<VtkDataType>>, const KvsObjectType*,
+                    KvsObjectTag>( std::ref( vtk_data ), kvs_object );
         VtkFileFormat::set( vtk_data );
 
         BaseClass::setSuccess( true );

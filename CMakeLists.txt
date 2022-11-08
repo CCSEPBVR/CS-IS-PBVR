@@ -25,8 +25,9 @@ add_executable(
   ${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/example.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/StlExample.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtmExample.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtsExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/RectilinearExample.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtmExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Importer/VtkImport.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Exporter/VtkExport.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/VTKMultiBlock/VtkMultiBlock.cpp

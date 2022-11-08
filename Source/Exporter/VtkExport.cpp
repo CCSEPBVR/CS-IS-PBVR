@@ -124,8 +124,9 @@ void cvt::detail::ExportPolygonObject( vtkSmartPointer<vtkPolyData>& data,
     data = p;
 }
 
-void cvt::detail::ExportRectilinearObject( vtkSmartPointer<vtkRectilinearGrid>& data,
-                                           const kvs::StructuredVolumeObject* rectilinear_object )
+void cvt::detail::ExportRectilinearGridObject(
+    vtkSmartPointer<vtkRectilinearGrid>& data,
+    const kvs::StructuredVolumeObject* rectilinear_object )
 {
     if ( rectilinear_object->gridType() != kvs::StructuredVolumeObject::Rectilinear )
     {
@@ -173,6 +174,54 @@ void cvt::detail::ExportRectilinearObject( vtkSmartPointer<vtkRectilinearGrid>& 
         auto point_data = grid->GetPointData();
         ::SetArraysToPointSet( point_data, rectilinear_object->values(),
                                grid->GetNumberOfPoints() );
+    }
+
+    data = grid;
+}
+
+void cvt::detail::ExportUniformGridObject( vtkSmartPointer<vtkStructuredGrid>& data,
+                                           const kvs::StructuredVolumeObject* uniform_object )
+{
+    vtkNew<vtkStructuredGrid> grid;
+
+    auto resolution = uniform_object->resolution();
+    grid->SetDimensions( resolution[0], resolution[1], resolution[2] );
+
+    auto min_coords = uniform_object->minObjectCoord();
+    auto max_coords = uniform_object->maxObjectCoord();
+    vtkNew<vtkPoints> points;
+
+    points->SetDataTypeToFloat();
+    points->SetNumberOfPoints( uniform_object->numberOfNodes() );
+
+    vtkIdType i = 0;
+    kvs::Real32 d[3] = {
+        ( max_coords[0] - min_coords[0] ) / static_cast<kvs::Real32>( resolution[0] ),
+        ( max_coords[1] - min_coords[1] ) / static_cast<kvs::Real32>( resolution[1] ),
+        ( max_coords[2] - min_coords[2] ) / static_cast<kvs::Real32>( resolution[2] )
+    };
+
+    for ( unsigned int z = 0; z < resolution[2]; ++z )
+    {
+        kvs::Real32 z_coord = min_coords[2] + d[2] * z;
+        for ( unsigned int y = 0; y < resolution[1]; ++y )
+        {
+            kvs::Real32 y_coord = min_coords[1] + d[1] * y;
+            for ( unsigned int x = 0; x < resolution[0]; ++x )
+            {
+                kvs::Real32 x_coord = min_coords[0] + d[0] * x;
+
+                points->SetPoint( i++, x_coord, y_coord, z_coord );
+            }
+        }
+    }
+
+    grid->SetPoints( points );
+
+    if ( uniform_object->veclen() > 0 )
+    {
+        auto point_data = grid->GetPointData();
+        ::SetArraysToPointSet( point_data, uniform_object->values(), grid->GetNumberOfPoints() );
     }
 
     data = grid;

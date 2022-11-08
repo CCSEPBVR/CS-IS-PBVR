@@ -12,6 +12,9 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkSmartPointer.h>
+#include <vtkStructuredGrid.h>
+
+#include "CvtTag.h"
 
 namespace cvt
 {
@@ -33,6 +36,16 @@ void ImportPolygonObject( kvs::PolygonObject* polygon_object, vtkSmartPointer<vt
  */
 void ImportRectilinearObject( kvs::StructuredVolumeObject* rectilinear_object,
                               vtkSmartPointer<vtkRectilinearGrid> data );
+/**
+ * Import a KVS uniform structured volume object from a VTK StructuredGrid.
+ *
+ * This function ignores point coordinates, only refers to dimensions.
+ *
+ * \param [inout] uniform_object A KVS uniform structured volume object.
+ * \param [in] data A VTK RectilinearGrid.
+ */
+void ImportUniformStructuredVolumeObject( kvs::StructuredVolumeObject* uniform_object,
+                                          vtkSmartPointer<vtkStructuredGrid> data );
 } // namespace detail
 } // namespace cvt
 
@@ -44,7 +57,7 @@ namespace cvt
  * \param [inout] object A destination.
  * \param [in] data A source.
  */
-template <typename OutputType, typename InputType>
+template <typename OutputType, typename InputType, typename Tag = void>
 inline void Import( OutputType object, InputType data );
 
 template <>
@@ -85,6 +98,23 @@ inline void Import<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkRectilinearG
     cvt::detail::ImportRectilinearObject( rectilinear_object, data );
 }
 
+template <>
+inline void Import<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkStructuredGrid>,
+                   cvt::UniformGridTag>( kvs::StructuredVolumeObject* uniform_object,
+                                         vtkSmartPointer<vtkStructuredGrid> data )
+{
+    if ( !uniform_object )
+    {
+        throw std::runtime_error( "A KVS object was a null pointer." );
+        return;
+    }
+    if ( !data )
+    {
+        throw std::runtime_error( "A VTK data was a null pointer." );
+        return;
+    }
+    cvt::detail::ImportUniformStructuredVolumeObject( uniform_object, data );
+}
 } // namespace cvt
 
 #endif // CVT_VTK_IMPORT_H_INCLUDE

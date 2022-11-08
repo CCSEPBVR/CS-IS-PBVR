@@ -22,7 +22,7 @@ namespace cvt
  * A file IO using VTK.
  */
 template <typename VtkDataType_, typename KvsObjectType_, typename VtkReaderType,
-          typename VtkWriterType>
+          typename VtkWriterType, typename KvsObjectTag_ = void>
 class VtkFileFormat : public kvs::FileFormatBase
 {
 public:
@@ -38,6 +38,10 @@ public:
      * A outer KVS object type.
      */
     using KvsObjectType = KvsObjectType_;
+    /**
+     * A outer KVS object tag.
+     */
+    using KvsObjectTag = KvsObjectTag_;
 
 public:
     /**
@@ -164,6 +168,10 @@ struct VtkFileFormatTraits
      * A outer KVS object type.
      */
     using KvsObjectType = typename FileFormat::KvsObjectType;
+    /**
+     * A outer KVS object tag.
+     */
+    using KvsObjectTag = typename FileFormat::KvsObjectTag;
 };
 } // namespace cvt
 

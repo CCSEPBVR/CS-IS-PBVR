@@ -26,6 +26,19 @@ namespace
 {
 
 template <typename VtkPointSetPointerType>
+kvs::Vector3ui GetResolution( VtkPointSetPointerType data )
+{
+    kvs::Vector3ui resolution;
+
+    auto dimensions = data->GetDimensions();
+    resolution[0] = static_cast<unsigned int>( dimensions[0] );
+    resolution[1] = static_cast<unsigned int>( dimensions[1] );
+    resolution[2] = static_cast<unsigned int>( dimensions[2] );
+
+    return resolution;
+}
+
+template <typename VtkPointSetPointerType>
 int GetCountOfComponents( VtkPointSetPointerType data )
 {
     auto point_data = data->GetPointData();
@@ -204,13 +217,9 @@ void cvt::detail::ImportPolygonObject( kvs::PolygonObject* polygon_object,
 void cvt::detail::ImportRectilinearObject( kvs::StructuredVolumeObject* rectilinear_object,
                                            vtkSmartPointer<vtkRectilinearGrid> data )
 {
+    kvs::Vector3ui resolution = ::GetResolution( data );
 
-    kvs::Vector3ui resolution;
     auto dimensions = data->GetDimensions();
-    resolution[0] = static_cast<unsigned int>( dimensions[0] );
-    resolution[1] = static_cast<unsigned int>( dimensions[1] );
-    resolution[2] = static_cast<unsigned int>( dimensions[2] );
-
     kvs::StructuredVolumeObject::Coords xyz_coords(
         std::accumulate( dimensions, dimensions + 3, 0, std::plus<int>() ) );
     auto coords_itr = xyz_coords.begin();
@@ -250,4 +259,25 @@ void cvt::detail::ImportRectilinearObject( kvs::StructuredVolumeObject* rectilin
     }
 
     rectilinear_object->updateMinMaxValues();
+}
+
+void cvt::detail::ImportUniformStructuredVolumeObject( kvs::StructuredVolumeObject* uniform_object,
+                                                       vtkSmartPointer<vtkStructuredGrid> data )
+{
+    auto bounding_box = data->GetBounds();
+    kvs::Vector3f min_obj_coord( bounding_box[0], bounding_box[2], bounding_box[4] );
+    kvs::Vector3f max_obj_coord( bounding_box[1], bounding_box[3], bounding_box[5] );
+    uniform_object->setMinMaxObjectCoords( min_obj_coord, max_obj_coord );
+
+    uniform_object->setGridType( kvs::StructuredVolumeObject::Uniform );
+    uniform_object->setResolution( ::GetResolution( data ) );
+
+    auto component_count = ::GetCountOfComponents( data );
+    uniform_object->setVeclen( component_count );
+    if ( component_count != 0 )
+    {
+        auto values = ::GetValueArray( data, component_count );
+        uniform_object->setValues( values );
+        uniform_object->updateMinMaxValues();
+    }
 }
