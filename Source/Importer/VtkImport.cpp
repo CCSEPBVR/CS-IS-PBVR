@@ -24,6 +24,25 @@
 
 namespace
 {
+template <typename VtkPointSetPointerType>
+kvs::ValueArray<kvs::Real32> GetCoordinates( VtkPointSetPointerType data )
+{
+    std::vector<kvs::Real32> coords( data->GetNumberOfPoints() * 3 );
+
+    auto c_head = coords.data();
+    for ( vtkIdType i = 0; i < data->GetNumberOfPoints(); ++i )
+    {
+        auto p = data->GetPoint( i );
+
+        *c_head = static_cast<kvs::Real32>( p[0] );
+        *( c_head + 1 ) = static_cast<kvs::Real32>( p[1] );
+        *( c_head + 2 ) = static_cast<kvs::Real32>( p[2] );
+
+        c_head += 3;
+    }
+
+    return kvs::ValueArray<kvs::Real32>( coords );
+}
 
 template <typename VtkPointSetPointerType>
 kvs::Vector3ui GetResolution( VtkPointSetPointerType data )
@@ -279,5 +298,29 @@ void cvt::detail::ImportUniformStructuredVolumeObject( kvs::StructuredVolumeObje
         auto values = ::GetValueArray( data, component_count );
         uniform_object->setValues( values );
         uniform_object->updateMinMaxValues();
+    }
+}
+
+void cvt::detail::ImportIrregularStructuredVolumeObject(
+    kvs::StructuredVolumeObject* irregular_object, vtkSmartPointer<vtkStructuredGrid> data )
+{
+    auto bounding_box = data->GetBounds();
+    kvs::Vector3f min_obj_coord( bounding_box[0], bounding_box[2], bounding_box[4] );
+    kvs::Vector3f max_obj_coord( bounding_box[1], bounding_box[3], bounding_box[5] );
+    irregular_object->setMinMaxObjectCoords( min_obj_coord, max_obj_coord );
+
+    irregular_object->setGridType( kvs::StructuredVolumeObject::Curvilinear );
+    irregular_object->setResolution( ::GetResolution( data ) );
+
+    auto v_coords = GetCoordinates( data );
+    irregular_object->setCoords( v_coords );
+
+    auto component_count = ::GetCountOfComponents( data );
+    irregular_object->setVeclen( component_count );
+    if ( component_count != 0 )
+    {
+        auto values = ::GetValueArray( data, component_count );
+        irregular_object->setValues( values );
+        irregular_object->updateMinMaxValues();
     }
 }

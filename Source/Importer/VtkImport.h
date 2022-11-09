@@ -42,10 +42,18 @@ void ImportRectilinearObject( kvs::StructuredVolumeObject* rectilinear_object,
  * This function ignores point coordinates, only refers to dimensions.
  *
  * \param [inout] uniform_object A KVS uniform structured volume object.
- * \param [in] data A VTK RectilinearGrid.
+ * \param [in] data A VTK StructuredGrid.
  */
 void ImportUniformStructuredVolumeObject( kvs::StructuredVolumeObject* uniform_object,
                                           vtkSmartPointer<vtkStructuredGrid> data );
+/**
+ * Import a KVS irregular structured volume object from a VTK StructuredGrid.
+ *
+ * \param [inout] irregular_object A KVS irregular structured volume object.
+ * \param [in] data A VTK StructuredGrid.
+ */
+void ImportIrregularStructuredVolumeObject( kvs::StructuredVolumeObject* irregular_object,
+                                            vtkSmartPointer<vtkStructuredGrid> data );
 } // namespace detail
 } // namespace cvt
 
@@ -114,6 +122,24 @@ inline void Import<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkStructuredGr
         return;
     }
     cvt::detail::ImportUniformStructuredVolumeObject( uniform_object, data );
+}
+
+template <>
+inline void Import<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkStructuredGrid>,
+                   cvt::IrregularGridTag>( kvs::StructuredVolumeObject* irregular_object,
+                                           vtkSmartPointer<vtkStructuredGrid> data )
+{
+    if ( !irregular_object )
+    {
+        throw std::runtime_error( "A KVS object was a null pointer." );
+        return;
+    }
+    if ( !data )
+    {
+        throw std::runtime_error( "A VTK data was a null pointer." );
+        return;
+    }
+    cvt::detail::ImportIrregularStructuredVolumeObject( irregular_object, data );
 }
 } // namespace cvt
 

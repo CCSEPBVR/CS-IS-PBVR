@@ -22,6 +22,23 @@
 
 namespace
 {
+template <typename KvsObjectPointerType>
+vtkSmartPointer<vtkPoints> GetPoints( KvsObjectPointerType object, int point_count )
+{
+    vtkNew<vtkPoints> points;
+
+    points->SetDataTypeToFloat();
+    auto coords = object->coords().data();
+    points->SetNumberOfPoints( static_cast<vtkIdType>( point_count ) );
+
+    for ( vtkIdType i = 0; i < static_cast<vtkIdType>( point_count ); ++i )
+    {
+        points->SetPoint( i, *( coords + i * 3 ), *( coords + i * 3 + 1 ),
+                          *( coords + i * 3 + 2 ) );
+    }
+
+    return points;
+}
 
 template <typename T>
 void SetArraysToPointSetImpl( vtkPointData* point_data, const kvs::AnyValueArray& values,
@@ -88,19 +105,9 @@ void cvt::detail::ExportPolygonObject( vtkSmartPointer<vtkPolyData>& data,
                                        const kvs::PolygonObject* polygon_object )
 {
     vtkNew<vtkPolyData> p;
+    auto points = ::GetPoints( polygon_object, polygon_object->numberOfVertices() );
 
-    vtkNew<vtkPoints> points;
     p->SetPoints( points );
-    points->SetDataTypeToFloat();
-    auto coords = polygon_object->coords().data();
-    auto point_count = polygon_object->numberOfVertices();
-    points->SetNumberOfPoints( static_cast<vtkIdType>( point_count ) );
-
-    for ( vtkIdType i = 0; i < static_cast<vtkIdType>( point_count ); ++i )
-    {
-        points->SetPoint( i, *( coords + i * 3 ), *( coords + i * 3 + 1 ),
-                          *( coords + i * 3 + 2 ) );
-    }
 
     if ( polygon_object->numberOfConnections() == 0 )
     {
@@ -222,6 +229,26 @@ void cvt::detail::ExportUniformGridObject( vtkSmartPointer<vtkStructuredGrid>& d
     {
         auto point_data = grid->GetPointData();
         ::SetArraysToPointSet( point_data, uniform_object->values(), grid->GetNumberOfPoints() );
+    }
+
+    data = grid;
+}
+
+void cvt::detail::ExportIrregularGridObject( vtkSmartPointer<vtkStructuredGrid>& data,
+                                             const kvs::StructuredVolumeObject* irregular_object )
+{
+    vtkNew<vtkStructuredGrid> grid;
+
+    auto resolution = irregular_object->resolution();
+    grid->SetDimensions( resolution[0], resolution[1], resolution[2] );
+
+    auto points = ::GetPoints( irregular_object, irregular_object->numberOfNodes() );
+    grid->SetPoints( points );
+
+    if ( irregular_object->veclen() > 0 )
+    {
+        auto point_data = grid->GetPointData();
+        ::SetArraysToPointSet( point_data, irregular_object->values(), grid->GetNumberOfPoints() );
     }
 
     data = grid;

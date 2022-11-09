@@ -39,13 +39,21 @@ void ExportPolygonObject( vtkSmartPointer<vtkPolyData>& data,
 void ExportRectilinearGridObject( vtkSmartPointer<vtkRectilinearGrid>& data,
                                   const kvs::StructuredVolumeObject* rectilinear_object );
 /**
- * Export from a KVS uniform object to a VTK RectilinearGrid.
+ * Export from a KVS uniform object to a VTK StructuredGrid.
  *
  * \param [inout] data A VTK StructuredGrid.
  * \param [in] uniform_object A KVS uniform object.
  */
 void ExportUniformGridObject( vtkSmartPointer<vtkStructuredGrid>& data,
                               const kvs::StructuredVolumeObject* uniform_object );
+/**
+ * Export from a KVS irregular object to a VTK StructuredGrid.
+ *
+ * \param [inout] data A VTK StructuredGrid.
+ * \param [in] irregular_object A KVS irregular object.
+ */
+void ExportIrregularGridObject( vtkSmartPointer<vtkStructuredGrid>& data,
+                                const kvs::StructuredVolumeObject* irregular_object );
 } // namespace detail
 } // namespace cvt
 
@@ -110,6 +118,20 @@ inline void Export<std::reference_wrapper<vtkSmartPointer<vtkStructuredGrid>>,
         return;
     }
     cvt::detail::ExportUniformGridObject( data, uniform_object );
+}
+
+template <>
+inline void Export<std::reference_wrapper<vtkSmartPointer<vtkStructuredGrid>>,
+                   const kvs::StructuredVolumeObject*, cvt::IrregularGridTag>(
+    std::reference_wrapper<vtkSmartPointer<vtkStructuredGrid>> data,
+    const kvs::StructuredVolumeObject* irregular_object )
+{
+    if ( !irregular_object )
+    {
+        throw std::runtime_error( cvt::detail::KVS_OBJECT_NULL_POINTER_MESSAGE );
+        return;
+    }
+    cvt::detail::ExportIrregularGridObject( data, irregular_object );
 }
 } // namespace cvt
 

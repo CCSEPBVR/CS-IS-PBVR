@@ -4,8 +4,10 @@
 void Stl2Stl( const char* dst, const char* src );
 void Stl2Kvsml( const char* dst, const char* src );
 void Vtr2Vtr( const char* dst, const char* src );
-void Vts2Vts( const char* dst, const char* src );
-void Vts2Kvsml( const char* dst, const char* src );
+void UniformVts2Vts( const char* dst, const char* src );
+void UniformVts2Kvsml( const char* dst, const char* src );
+void IrregularVts2Vts( const char* dst, const char* src );
+void IrregularVts2Avs( const char* dst, const char* src );
 void Vtm2Vtm( const char* dst, const char* src );
 
 int main( int argc, char** argv )
@@ -33,13 +35,21 @@ int main( int argc, char** argv )
     {
         Vtr2Vtr( argv[4], argv[3] );
     }
-    else if ( input_format == "vts" && output_format == "vts" )
+    else if ( input_format == "uniform-vts" && output_format == "vts" )
     {
-        Vts2Vts( argv[4], argv[3] );
+        UniformVts2Vts( argv[4], argv[3] );
     }
-    else if ( input_format == "vts" && output_format == "kvsml" )
+    else if ( input_format == "uniform-vts" && output_format == "kvsml" )
     {
-        Vts2Kvsml( argv[4], argv[3] );
+        UniformVts2Kvsml( argv[4], argv[3] );
+    }
+    else if ( input_format == "irregular-vts" && output_format == "vts" )
+    {
+        IrregularVts2Vts( argv[4], argv[3] );
+    }
+    else if ( input_format == "irregular-vts" && output_format == "avs" )
+    {
+        IrregularVts2Avs( argv[4], argv[3] );
     }
     else if ( std::string( argv[1] ) == "vtm" )
     {
