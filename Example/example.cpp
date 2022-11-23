@@ -6,6 +6,7 @@ void Stl2Kvsml( const char* dst, const char* src );
 void Vtr2Vtr( const char* dst, const char* src );
 void UniformVts2Vts( const char* dst, const char* src );
 void UniformVts2Kvsml( const char* dst, const char* src );
+void UniformPvts2Vts( const char* dst, const char* src );
 void IrregularVts2Vts( const char* dst, const char* src );
 void IrregularVts2Avs( const char* dst, const char* src );
 void Vtm2Vtm( const char* dst, const char* src );
@@ -38,6 +39,10 @@ int main( int argc, char** argv )
     else if ( input_format == "uniform-vts" && output_format == "vts" )
     {
         UniformVts2Vts( argv[4], argv[3] );
+    }
+    else if ( input_format == "uniform-pvts" && output_format == "vts" )
+    {
+        UniformPvts2Vts( argv[4], argv[3] );
     }
     else if ( input_format == "uniform-vts" && output_format == "kvsml" )
     {

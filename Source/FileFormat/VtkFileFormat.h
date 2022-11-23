@@ -46,8 +46,6 @@ public:
 public:
     /**
      * Construct an empty IO object.
-     *
-     * \param filename A file name.
      */
     VtkFileFormat() noexcept: kvs::FileFormatBase() {}
     /**
