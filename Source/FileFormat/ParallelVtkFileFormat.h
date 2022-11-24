@@ -88,29 +88,19 @@ namespace cvt
  *
  * In a normal mode, this file format read whole data as same as others when the construction.
  */
-template <typename PieceFileFormatType, typename VtkDataType_, typename KvsObjectType_,
-          typename VtkReaderType, typename VtkWriterType, typename KvsObjectTag_ = void>
-class ParallelVtkFileFormat : public cvt::VtkFileFormat<VtkDataType_, KvsObjectType_, VtkReaderType,
-                                                        VtkWriterType, KvsObjectTag_>
+template <typename PieceFileFormatType, typename VtkDataType_, typename VtkReaderType,
+          typename VtkWriterType>
+class ParallelVtkFileFormat : public cvt::VtkFileFormat<VtkDataType_, VtkReaderType, VtkWriterType>
 {
 public:
     /**
      * A base class type.
      */
-    using BaseClass = cvt::VtkFileFormat<VtkDataType_, KvsObjectType_, VtkReaderType, VtkWriterType,
-                                         KvsObjectTag_>;
+    using BaseClass = cvt::VtkFileFormat<VtkDataType_, VtkReaderType, VtkWriterType>;
     /**
      * An inner VTK data type.
      */
     using VtkDataType = VtkDataType_;
-    /**
-     * A outer KVS object type.
-     */
-    using KvsObjectType = KvsObjectType_;
-    /**
-     * A outer KVS object tag.
-     */
-    using KvsObjectTag = KvsObjectTag_;
 
 public:
     /**

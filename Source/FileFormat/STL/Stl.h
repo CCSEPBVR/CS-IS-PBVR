@@ -21,8 +21,7 @@ namespace cvt
 /**
  * A STL file IO and converter.
  */
-using Stl =
-    typename cvt::VtkFileFormat<vtkPolyData, kvs::PolygonObject, vtkSTLReader, vtkSTLWriter>;
+using Stl = typename cvt::VtkFileFormat<vtkPolyData, vtkSTLReader, vtkSTLWriter>;
 } // namespace cvt
 
 #endif // CVT__STL_H_INCLUDE

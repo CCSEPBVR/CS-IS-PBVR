@@ -21,8 +21,7 @@ namespace cvt
 /**
  * A VTK XML PolyData IO.
  */
-using VtkXmlPolyData =
-    cvt::VtkFileFormat<vtkPolyData, kvs::PolygonObject, vtkXMLPolyDataReader, vtkXMLPolyDataWriter>;
+using VtkXmlPolyData = cvt::VtkFileFormat<vtkPolyData, vtkXMLPolyDataReader, vtkXMLPolyDataWriter>;
 } // namespace cvt
 
 #endif // CVT__VTK_XML_POLYDATA_H_INCLUDE

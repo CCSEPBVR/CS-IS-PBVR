@@ -11,7 +11,6 @@
 #include <vtkXMLStructuredGridReader.h>
 #include <vtkXMLStructuredGridWriter.h>
 
-#include "CvtTag.h"
 #include "FileFormat/VtkFileFormat.h"
 
 namespace cvt
@@ -21,9 +20,8 @@ namespace cvt
  * A VTK XML StructuredGrid file IO for an irregular grid.
  */
 using IrregularVtkXmlStructuredGrid =
-    typename cvt::VtkFileFormat<vtkStructuredGrid, kvs::StructuredVolumeObject,
-                                vtkXMLStructuredGridReader, vtkXMLStructuredGridWriter,
-                                cvt::IrregularGridTag>;
+    typename cvt::VtkFileFormat<vtkStructuredGrid, vtkXMLStructuredGridReader,
+                                vtkXMLStructuredGridWriter>;
 } // namespace cvt
 
 #endif // CVT__IRREGULAR_VTK_XML_STRUCTURED_GRID_H_INCLUDE

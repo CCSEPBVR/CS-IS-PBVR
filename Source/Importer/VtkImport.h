@@ -14,7 +14,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkStructuredGrid.h>
 
-#include "CvtTag.h"
+#include "CvtMode.h"
 
 namespace cvt
 {
@@ -64,13 +64,14 @@ namespace cvt
  *
  * \param [inout] object A destination.
  * \param [in] data A source.
+ * \param [in] mode An import mode.
  */
-template <typename OutputType, typename InputType, typename Tag = void>
-inline void Import( OutputType object, InputType data );
+template <typename OutputType, typename InputType>
+inline void Import( OutputType object, InputType data, int mode = 0 );
 
 template <>
 inline void Import<kvs::PolygonObject*, vtkSmartPointer<vtkPolyData>>(
-    kvs::PolygonObject* polygon_object, vtkSmartPointer<vtkPolyData> data )
+    kvs::PolygonObject* polygon_object, vtkSmartPointer<vtkPolyData> data, int ignored )
 {
     if ( !polygon_object )
     {
@@ -91,7 +92,8 @@ inline void Import<kvs::PolygonObject*, vtkSmartPointer<vtkPolyData>>(
 
 template <>
 inline void Import<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkRectilinearGrid>>(
-    kvs::StructuredVolumeObject* rectilinear_object, vtkSmartPointer<vtkRectilinearGrid> data )
+    kvs::StructuredVolumeObject* rectilinear_object, vtkSmartPointer<vtkRectilinearGrid> data,
+    int ignored )
 {
     if ( !rectilinear_object )
     {
@@ -107,11 +109,10 @@ inline void Import<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkRectilinearG
 }
 
 template <>
-inline void Import<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkStructuredGrid>,
-                   cvt::UniformGridTag>( kvs::StructuredVolumeObject* uniform_object,
-                                         vtkSmartPointer<vtkStructuredGrid> data )
+inline void Import<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkStructuredGrid>>(
+    kvs::StructuredVolumeObject* object, vtkSmartPointer<vtkStructuredGrid> data, int mode )
 {
-    if ( !uniform_object )
+    if ( !object )
     {
         throw std::runtime_error( "A KVS object was a null pointer." );
         return;
@@ -121,25 +122,15 @@ inline void Import<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkStructuredGr
         throw std::runtime_error( "A VTK data was a null pointer." );
         return;
     }
-    cvt::detail::ImportUniformStructuredVolumeObject( uniform_object, data );
-}
 
-template <>
-inline void Import<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkStructuredGrid>,
-                   cvt::IrregularGridTag>( kvs::StructuredVolumeObject* irregular_object,
-                                           vtkSmartPointer<vtkStructuredGrid> data )
-{
-    if ( !irregular_object )
+    if ( mode == cvt::UNIFORM_GRID_MODE )
     {
-        throw std::runtime_error( "A KVS object was a null pointer." );
-        return;
+        cvt::detail::ImportUniformStructuredVolumeObject( object, data );
     }
-    if ( !data )
+    else
     {
-        throw std::runtime_error( "A VTK data was a null pointer." );
-        return;
+        cvt::detail::ImportIrregularStructuredVolumeObject( object, data );
     }
-    cvt::detail::ImportIrregularStructuredVolumeObject( irregular_object, data );
 }
 } // namespace cvt
 

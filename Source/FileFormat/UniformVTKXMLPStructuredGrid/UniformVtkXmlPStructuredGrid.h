@@ -11,7 +11,6 @@
 #include <vtkXMLPStructuredGridReader.h>
 #include <vtkXMLPStructuredGridWriter.h>
 
-#include "CvtTag.h"
 #include "FileFormat/ParallelVtkFileFormat.h"
 #include "FileFormat/UniformVTKXMLStructuredGrid/UniformVtkXmlStructuredGrid.h"
 
@@ -23,8 +22,7 @@ namespace cvt
  */
 using UniformVtkXmlPStructuredGrid =
     typename cvt::ParallelVtkFileFormat<cvt::UniformVtkXmlStructuredGrid, vtkStructuredGrid,
-                                        kvs::StructuredVolumeObject, vtkXMLPStructuredGridReader,
-                                        vtkXMLPStructuredGridWriter, cvt::UniformGridTag>;
+                                        vtkXMLPStructuredGridReader, vtkXMLPStructuredGridWriter>;
 } // namespace cvt
 
 #endif // CVT__UNIFORM_VTK_XML_PSTRUCTURED_GRID_H_INCLUDE
