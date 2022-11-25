@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TimecontrolPanel</class>
+ <widget class="QDockWidget" name="TimecontrolPanel">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>404</width>
+    <height>105</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>257</width>
+    <height>105</height>
+   </size>
+  </property>
+  <property name="baseSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="features">
+   <set>QDockWidget::AllDockWidgetFeatures</set>
+  </property>
+  <property name="windowTitle">
+   <string>Time Controls</string>
+  </property>
+  <widget class="QWidget" name="dockWidgetContents">
+   <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,0,0,0">
+    <item row="0" column="2">
+     <widget class="QProgressBar" name="m_progress">
+      <property name="styleSheet">
+       <string notr="true">QProgressBar::chunk {
+     background-color: #3add36;
+     width: 1px;
+ }
+
+ QProgressBar {
+     border: 1px solid grey;
+     border-radius: 2px;
+     text-align: center;
+ }</string>
+      </property>
+      <property name="maximum">
+       <number>100</number>
+      </property>
+      <property name="value">
+       <number>0</number>
+      </property>
+      <property name="textVisible">
+       <bool>true</bool>
+      </property>
+      <property name="invertedAppearance">
+       <bool>false</bool>
+      </property>
+      <property name="format">
+       <string>%p%</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="LBL_Progress">
+      <property name="text">
+       <string>Progress:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="4" colspan="2">
+     <widget class="QPushButton" name="stop_button">
+      <property name="styleSheet">
+       <string notr="true">QPushButton:checked {
+	color: red;
+}
+QPushButton {
+	color: blue;
+}</string>
+      </property>
+      <property name="text">
+       <string>►Start</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="2">
+     <widget class="SliderControl" name="sliderControl" native="true"/>
+    </item>
+    <item row="4" column="4">
+     <widget class="QCheckBox" name="lastStepCHK">
+      <property name="text">
+       <string>Last step</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SliderControl</class>
+   <extends>QWidget</extends>
+   <header>slidercontrol.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

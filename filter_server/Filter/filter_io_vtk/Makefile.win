@@ -1,0 +1,34 @@
+include ./Depend.win
+CXX=cl
+CPPFLAGS=-c
+ARFLAGS= 
+
+LIB=filter_io_vtk.lib
+LIB_OBJ=wrapper\wrapper_vtk_reader.obj wrapper\wrapper_vtk_data.obj
+
+lib:$(LIB)
+
+.SUFFIXES: .cpp .obj
+.cpp.obj:
+	@echo -n -Compiling:
+	@$(CXX) /nologo /MD $(CPPFLAGS) -Fowrapper\ -DVTK_IN_VTK -I $(VTK_INCLUDE_PATH) $<  /EHsc
+
+$(LIB): INFO $(LIB_OBJ)
+	@echo
+	@echo -Linking $(LIB)
+	@lib /nologo /OUT:../build/$(LIB) $(LIB_OBJ)
+	@echo -------------------------------------------------
+	@echo
+
+INFO:
+	@echo 
+	@echo ------------ Making VTK IO Wrapper --------------
+	@echo 
+	@echo VTK_VERSION=$(VTK_VERSION)  
+	@echo VTK_INCLUDE_PATH=$(VTK_INCLUDE_PATH) 
+	@echo
+	
+lib_clean:
+	@echo Cleaning lib
+	@del /Q wrapper\*.obj
+	
