@@ -20,8 +20,8 @@ namespace cvt
  * A VTK RectilinearGrid file IO.
  */
 using VtkXmlRectilinearGrid =
-    typename cvt::VtkFileFormat<vtkRectilinearGrid, kvs::StructuredVolumeObject,
-                                vtkXMLRectilinearGridReader, vtkXMLRectilinearGridWriter>;
+    typename cvt::VtkFileFormat<vtkRectilinearGrid, vtkXMLRectilinearGridReader,
+                                vtkXMLRectilinearGridWriter>;
 } // namespace cvt
 
 #endif // CVT__VTK_XML_RECTILINEAR_GRID_H_INCLUDE

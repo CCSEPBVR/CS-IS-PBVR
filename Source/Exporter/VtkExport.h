@@ -15,8 +15,6 @@
 #include <vtkSmartPointer.h>
 #include <vtkStructuredGrid.h>
 
-#include "CvtTag.h"
-
 namespace cvt
 {
 namespace detail
@@ -76,7 +74,7 @@ namespace cvt
  * \param [inout] dst A destination.
  * \param [in] src A source.
  */
-template <typename OutputType, typename InputType, typename Tag = void>
+template <typename OutputType, typename InputType>
 inline void Export( OutputType dst, InputType src );
 
 template <>
@@ -108,30 +106,23 @@ inline void Export<std::reference_wrapper<vtkSmartPointer<vtkRectilinearGrid>>,
 
 template <>
 inline void Export<std::reference_wrapper<vtkSmartPointer<vtkStructuredGrid>>,
-                   const kvs::StructuredVolumeObject*, cvt::UniformGridTag>(
+                   const kvs::StructuredVolumeObject*>(
     std::reference_wrapper<vtkSmartPointer<vtkStructuredGrid>> data,
-    const kvs::StructuredVolumeObject* uniform_object )
+    const kvs::StructuredVolumeObject* object )
 {
-    if ( !uniform_object )
+    if ( !object )
     {
         throw std::runtime_error( cvt::detail::KVS_OBJECT_NULL_POINTER_MESSAGE );
         return;
     }
-    cvt::detail::ExportUniformGridObject( data, uniform_object );
-}
-
-template <>
-inline void Export<std::reference_wrapper<vtkSmartPointer<vtkStructuredGrid>>,
-                   const kvs::StructuredVolumeObject*, cvt::IrregularGridTag>(
-    std::reference_wrapper<vtkSmartPointer<vtkStructuredGrid>> data,
-    const kvs::StructuredVolumeObject* irregular_object )
-{
-    if ( !irregular_object )
+    if ( object->gridType() == kvs::StructuredVolumeObject::GridType::Uniform )
     {
-        throw std::runtime_error( cvt::detail::KVS_OBJECT_NULL_POINTER_MESSAGE );
-        return;
+        cvt::detail::ExportUniformGridObject( data, object );
     }
-    cvt::detail::ExportIrregularGridObject( data, irregular_object );
+    else
+    {
+        cvt::detail::ExportIrregularGridObject( data, object );
+    }
 }
 } // namespace cvt
 

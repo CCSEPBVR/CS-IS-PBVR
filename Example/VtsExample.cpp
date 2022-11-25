@@ -5,32 +5,31 @@
 #include "kvs/StructuredVolumeExporter"
 #include "kvs/StructuredVolumeObject"
 
-#include "CvtTag.h"
+#include "CvtMode.h"
 #include "Exporter/VtkExporter.h"
-#include "FileFormat/IrregularVTKXMLStructuredGrid/IrregularVtkXmlStructuredGrid.h"
-#include "FileFormat/UniformVTKXMLStructuredGrid/UniformVtkXmlStructuredGrid.h"
+#include "FileFormat/VTKXMLStructuredGrid/VtkXmlStructuredGrid.h"
 #include "Importer/VtkImporter.h"
 
 void UniformVts2Vts( const char* dst, const char* src )
 {
     std::cout << "reading " << src << " ..." << std::endl;
-    cvt::UniformVtkXmlStructuredGrid input_vts( src );
-    cvt::VtkImporter<cvt::UniformVtkXmlStructuredGrid> importer( &input_vts );
+    cvt::VtkXmlStructuredGrid input_vts( src );
+    cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer( &input_vts, cvt::UNIFORM_GRID_MODE );
 
     kvs::StructuredVolumeObject* object = &importer;
     std::cout << "#nodes: " << object->numberOfNodes() << std::endl;
 
     std::cout << "writing " << dst << " ..." << std::endl;
-    cvt::VtkExporter<cvt::UniformVtkXmlStructuredGrid> exporter( &importer );
-    cvt::UniformVtkXmlStructuredGrid* output_vts = &exporter;
+    cvt::VtkExporter<cvt::VtkXmlStructuredGrid> exporter( &importer );
+    cvt::VtkXmlStructuredGrid* output_vts = &exporter;
     output_vts->write( dst );
 }
 
 void UniformVts2Kvsml( const char* dst, const char* src )
 {
     std::cout << "reading " << src << " ..." << std::endl;
-    cvt::UniformVtkXmlStructuredGrid input_vts( src );
-    cvt::VtkImporter<cvt::UniformVtkXmlStructuredGrid> importer( &input_vts );
+    cvt::VtkXmlStructuredGrid input_vts( src );
+    cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer( &input_vts, cvt::UNIFORM_GRID_MODE );
 
     kvs::StructuredVolumeObject* object = &importer;
     std::cout << "#nodes: " << object->numberOfNodes() << std::endl;
@@ -44,23 +43,23 @@ void UniformVts2Kvsml( const char* dst, const char* src )
 void IrregularVts2Vts( const char* dst, const char* src )
 {
     std::cout << "reading " << src << " ..." << std::endl;
-    cvt::IrregularVtkXmlStructuredGrid input_vts( src );
-    cvt::VtkImporter<cvt::IrregularVtkXmlStructuredGrid> importer( &input_vts );
+    cvt::VtkXmlStructuredGrid input_vts( src );
+    cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer( &input_vts, cvt::CURVILINEAR_GRID_MODE );
 
     kvs::StructuredVolumeObject* object = &importer;
     std::cout << "#nodes: " << object->numberOfNodes() << std::endl;
 
     std::cout << "writing " << dst << " ..." << std::endl;
-    cvt::VtkExporter<cvt::IrregularVtkXmlStructuredGrid> exporter( &importer );
-    cvt::IrregularVtkXmlStructuredGrid* output_vts = &exporter;
+    cvt::VtkExporter<cvt::VtkXmlStructuredGrid> exporter( &importer );
+    cvt::VtkXmlStructuredGrid* output_vts = &exporter;
     output_vts->write( dst );
 }
 
 void IrregularVts2Avs( const char* dst, const char* src )
 {
     std::cout << "reading " << src << " ..." << std::endl;
-    cvt::IrregularVtkXmlStructuredGrid input_vts( src );
-    cvt::VtkImporter<cvt::IrregularVtkXmlStructuredGrid> importer( &input_vts );
+    cvt::VtkXmlStructuredGrid input_vts( src );
+    cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer( &input_vts, cvt::CURVILINEAR_GRID_MODE );
 
     kvs::StructuredVolumeObject* object = &importer;
     std::cout << "#nodes: " << object->numberOfNodes() << std::endl;
