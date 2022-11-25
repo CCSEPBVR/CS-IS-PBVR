@@ -1,0 +1,205 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8C9298DA-90E1-4225-9755-0309A8DE73FF}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>PbvrFilter</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>pbvrFilter</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>pbvrFilter</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;PBVR_SUPPORT_VTK=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_LIB;DEBUG_LEVEL=0;BLOCK_READ;_CRT_SECURE_NO_DEPRECATE;WIN32;VTK_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include;$(VTK_DIR)\include\vtk-$(VTK_VERSION)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;PBVR_SUPPORT_VTK=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_LIB;DEBUG_LEVEL=0;BLOCK_READ;_CRT_SECURE_NO_DEPRECATE;WIN32;VTK_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include;$(VTK_DIR)\include\vtk-$(VTK_VERSION)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\FilterConvert.cpp" />
+    <ClCompile Include="src\FilterConvertPlot3d.cpp" />
+    <ClCompile Include="src\FilterConvertVtk.cpp" />
+    <ClCompile Include="src\FilterDivision.cpp" />
+    <ClCompile Include="src\FilterDivisionOctree.cpp" />
+    <ClCompile Include="src\FilterSubVolume.cpp" />
+    <ClCompile Include="src\FilterWrite.cpp" />
+    <ClCompile Include="src\filter_io_avs\filter_avsfld.cpp" />
+    <ClCompile Include="src\filter_io_avs\filter_ucdbin.cpp" />
+    <ClCompile Include="src\filter_io_avs\filter_ucdinp.cpp" />
+    <ClCompile Include="src\filter_io_plot3d\filter_io_file_reader.cpp" />
+    <ClCompile Include="src\filter_io_plot3d\filter_io_plot3d.cpp" />
+    <ClCompile Include="src\filter_io_plot3d\filter_io_plot3d_config.cpp" />
+    <ClCompile Include="src\filter_io_plot3d\filter_io_plot3d_coordinateBlock.cpp" />
+    <ClCompile Include="src\filter_io_plot3d\filter_io_plot3d_dataSet.cpp" />
+    <ClCompile Include="src\filter_io_plot3d\filter_io_plot3d_dataSetF.cpp" />
+    <ClCompile Include="src\filter_io_plot3d\filter_io_plot3d_dataSetG.cpp" />
+    <ClCompile Include="src\filter_io_plot3d\filter_io_plot3d_dataSetS.cpp" />
+    <ClCompile Include="src\filter_io_plot3d\filter_io_plot3d_functionBlock.cpp" />
+    <ClCompile Include="src\filter_io_plot3d\filter_io_plot3d_solutionBlock.cpp" />
+    <ClCompile Include="src\filter_io_plot3d\filter_io_types.cpp" />
+    <ClCompile Include="src\filter_io_stl\filter_io_stl.cpp" />
+    <ClCompile Include="src\filter_io_vtk\filter_io_vtk.cpp" />
+    <ClCompile Include="src\filter_io_vtk\filter_io_vtk_structured.cpp" />
+    <ClCompile Include="src\filter_io_vtk\filter_io_vtk_unstructured.cpp" />
+    <ClCompile Include="src\filter_io_vtk\wrapper\wrapper_vtk_reader.cpp" />
+    <ClCompile Include="src\filter_io_vtk\wrapper\wrapper_vtk_data.cpp" />
+    <ClCompile Include="src\filter_log.cpp" />
+    <ClCompile Include="src\filter_tree.cpp" />
+    <ClCompile Include="src\filter_utils.cpp" />
+    <ClCompile Include="src\PbvrFilter.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\FilterConvert.h" />
+    <ClInclude Include="include\FilterConvertPlot3d.h" />
+    <ClInclude Include="include\FilterConvertVtk.h" />
+    <ClInclude Include="include\FilterDivision.h" />
+    <ClInclude Include="include\FilterDivisionOctree.h" />
+    <ClInclude Include="include\FilterSubVolume.h" />
+    <ClInclude Include="include\FilterTypedef.h" />
+    <ClInclude Include="include\FilterWrite.h" />
+    <ClInclude Include="include\filter_io_avs\FilterIoAvs.h" />
+    <ClInclude Include="include\filter_io_plot3d\FilterIoPlot3d.h" />
+    <ClInclude Include="include\filter_io_plot3d\filter_io_file_reader.h" />
+    <ClInclude Include="include\filter_io_plot3d\filter_io_plot3d_config.h" />
+    <ClInclude Include="include\filter_io_plot3d\filter_io_plot3d_coordinateBlock.h" />
+    <ClInclude Include="include\filter_io_plot3d\filter_io_plot3d_dataSet.h" />
+    <ClInclude Include="include\filter_io_plot3d\filter_io_plot3d_functionBlock.h" />
+    <ClInclude Include="include\filter_io_plot3d\filter_io_plot3d_solutionBlock.h" />
+    <ClInclude Include="include\filter_io_plot3d\filter_io_types.h" />
+    <ClInclude Include="include\filter_io_vtk\FilterIoVtk.h" />
+    <ClInclude Include="include\filter_io_vtk\wrapper\wrapper_vtk_reader.h" />
+    <ClInclude Include="include\filter_io_vtk\wrapper\wrapper_vtk_data.h" />
+    <ClInclude Include="include\filter_io_stl\FilterIoStl.h" />
+    <ClInclude Include="include\filter_log.h" />
+    <ClInclude Include="include\filter_tree.h" />
+    <ClInclude Include="include\filter_utils.h" />
+    <ClInclude Include="include\PbvrFilter.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

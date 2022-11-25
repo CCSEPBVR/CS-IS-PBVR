@@ -1,0 +1,8 @@
+CXX=g++
+CXXFLAGS=-O3 -march=native -std=c++11
+CXXFLAGS=-O3 -mcpu=apple-m1 -std=c++11
+CC=gcc
+CCFLAGS=-O3 -march=native
+CCFLAGS=-O3 -mcpu=apple-m1
+LD=g++
+LDFLAGS=-lstdc++ -static-libstdc++
