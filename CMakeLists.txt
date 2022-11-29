@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(VTK)
+find_package(GLEW)
 
 if(NOT VTK_FOUND)
   message(FATAL_ERROR "${TARGET_NAME}: Unable to find the VTK build folder.")
