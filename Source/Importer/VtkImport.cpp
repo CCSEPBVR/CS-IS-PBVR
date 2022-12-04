@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "kvs/PolygonObject"
+#include "kvs/StructuredVolumeObject"
 #include "kvs/Type"
+#include "kvs/UnstructuredVolumeObject"
 #include "kvs/ValueArray"
 #include "kvs/Vector3"
 #include <vtkCellData.h>
@@ -20,7 +22,9 @@
 #include <vtkPolyData.h>
 #include <vtkPolyDataNormals.h>
 #include <vtkSmartPointer.h>
+#include <vtkStructuredGrid.h>
 #include <vtkTypedArray.h>
+#include <vtkUnstructuredGrid.h>
 
 namespace
 {
@@ -156,6 +160,29 @@ kvs::VolumeObjectBase::Values GetValueArray( VtkPointSetPointerType data, int co
     {
         return ::GetValueArrayImpl<kvs::Real64>( data->GetPointData(), data->GetNumberOfPoints(),
                                                  0 );
+    }
+}
+
+kvs::UnstructuredVolumeObject::CellType GetKvsCellType( int type )
+{
+    switch ( type )
+    {
+    case VTK_TETRA:
+        return kvs::UnstructuredVolumeObject::Tetrahedra;
+    case VTK_QUADRATIC_TETRA:
+        return kvs::UnstructuredVolumeObject::QuadraticTetrahedra;
+    case VTK_HEXAHEDRON:
+        return kvs::UnstructuredVolumeObject::Hexahedra;
+    case VTK_QUADRATIC_HEXAHEDRON:
+        return kvs::UnstructuredVolumeObject::QuadraticHexahedra;
+    case VTK_VERTEX:
+        return kvs::UnstructuredVolumeObject::Point;
+    case VTK_PYRAMID:
+        return kvs::UnstructuredVolumeObject::Pyramid;
+    case VTK_QUADRATIC_EDGE:
+        return kvs::UnstructuredVolumeObject::Prism;
+    default:
+        return kvs::UnstructuredVolumeObject::UnknownCellType;
     }
 }
 } // namespace
@@ -323,4 +350,51 @@ void cvt::detail::ImportIrregularStructuredVolumeObject(
         irregular_object->setValues( values );
         irregular_object->updateMinMaxValues();
     }
+}
+
+void cvt::detail::ImportUnstructuredVolumeObject( kvs::UnstructuredVolumeObject* object,
+                                                  vtkSmartPointer<vtkUnstructuredGrid> data )
+{
+    object->setNumberOfNodes( data->GetNumberOfPoints() );
+    object->setNumberOfCells( data->GetNumberOfCells() );
+
+    auto first_cell = data->GetCell( 0 );
+    auto cell_type = first_cell->GetCellType();
+    object->setCellType( ::GetKvsCellType( cell_type ) );
+
+    auto coords = GetCoordinates( data );
+    object->setCoords( coords );
+
+    auto cell_point_count = first_cell->GetNumberOfPoints();
+    kvs::UnstructuredVolumeObject::Connections connections( cell_point_count *
+                                                            data->GetNumberOfCells() );
+
+    std::size_t k = 0;
+    for ( vtkIdType i = 0; i < data->GetNumberOfCells(); ++i )
+    {
+        auto cell = data->GetCell( i );
+
+        if ( cell->GetCellType() != cell_type )
+        {
+            throw std::runtime_error( "hetero cell types" );
+        }
+
+        for ( vtkIdType j = 0; j < cell->GetNumberOfPoints(); ++j )
+        {
+            connections[k++] = cell->GetPointId( j );
+        }
+    }
+    object->setConnections( connections );
+
+    auto component_count = ::GetCountOfComponents( data );
+
+    object->setVeclen( component_count );
+    if ( component_count != 0 )
+    {
+        auto values = ::GetValueArray( data, component_count );
+        object->setValues( values );
+        object->updateMinMaxValues();
+    }
+
+    object->updateMinMaxCoords();
 }

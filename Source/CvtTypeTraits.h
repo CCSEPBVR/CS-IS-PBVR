@@ -9,9 +9,11 @@
 
 #include "kvs/PolygonObject"
 #include "kvs/StructuredVolumeObject"
+#include "kvs/UnstructuredVolumeObject"
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnstructuredGrid.h>
 
 namespace cvt
 {
@@ -44,6 +46,12 @@ template <>
 struct ConvertibleTypeTraits<vtkRectilinearGrid>
 {
     using DestinationType = kvs::StructuredVolumeObject;
+};
+
+template <>
+struct ConvertibleTypeTraits<vtkUnstructuredGrid>
+{
+    using DestinationType = kvs::UnstructuredVolumeObject;
 };
 } // namespace cvt
 #endif // CVT__CVT_TYPE_TRAITS_H_INCLUDE

@@ -9,10 +9,13 @@
 
 #include "kvs/PolygonObject"
 #include "kvs/StructuredVolumeObject"
+#include "kvs/UnstructuredVolumeObject"
+
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkSmartPointer.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnstructuredGrid.h>
 
 #include "CvtMode.h"
 
@@ -54,6 +57,14 @@ void ImportUniformStructuredVolumeObject( kvs::StructuredVolumeObject* uniform_o
  */
 void ImportIrregularStructuredVolumeObject( kvs::StructuredVolumeObject* irregular_object,
                                             vtkSmartPointer<vtkStructuredGrid> data );
+/**
+ * Import a KVS unstructured volume object from a VTK UnstructuredGrid.
+ *
+ * \param [inout] object A KVS unstructured volume object.
+ * \param [in] data A VTK UnstructuredGrid.
+ */
+void ImportUnstructuredVolumeObject( kvs::UnstructuredVolumeObject* object,
+                                     vtkSmartPointer<vtkUnstructuredGrid> data );
 } // namespace detail
 } // namespace cvt
 
@@ -131,6 +142,24 @@ inline void Import<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkStructuredGr
     {
         cvt::detail::ImportIrregularStructuredVolumeObject( object, data );
     }
+}
+
+template <>
+inline void Import<kvs::UnstructuredVolumeObject*, vtkSmartPointer<vtkUnstructuredGrid>>(
+    kvs::UnstructuredVolumeObject* object, vtkSmartPointer<vtkUnstructuredGrid> data, int mode )
+{
+    if ( !object )
+    {
+        throw std::runtime_error( "A KVS object was a null pointer." );
+        return;
+    }
+    if ( !data )
+    {
+        throw std::runtime_error( "A VTK data was a null pointer." );
+        return;
+    }
+
+    cvt::detail::ImportUnstructuredVolumeObject( object, data );
 }
 } // namespace cvt
 

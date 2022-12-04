@@ -7,8 +7,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(VTK)
-find_package(GLEW)
+find_package(VTK REQUIRED)
+find_package(GLEW REQUIRED)
 
 if(NOT VTK_FOUND)
   message(FATAL_ERROR "${TARGET_NAME}: Unable to find the VTK build folder.")
@@ -27,6 +27,7 @@ add_executable(
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/example.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/StlExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtsExample.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtuExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/PvtsExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/RectilinearExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtmExample.cpp
