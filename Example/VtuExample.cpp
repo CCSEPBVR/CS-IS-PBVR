@@ -7,14 +7,14 @@
 */
 #include "kvs/UnstructuredVolumeObject"
 
-#include "Exporter/VtkExporter.h"
+#include "Exporter/PbvrInputFilePath.h"
+#include "Exporter/UnstructuredVolumeObjectExporter.h"
+#include "FileFormat/KVSML/KvsmlUnstructuredVolumeObject.h"
+#include "FileFormat/UnstructuredPfi.h"
 #include "FileFormat/VTKXMLUnstructuredGrid/VtkXmlUntructuredGrid.h"
 #include "Importer/VtkImporter.h"
 
-#include "kvs/KVSMLUnstructuredVolumeObject"
-#include "kvs/UnstructuredVolumeExporter"
-
-void Vtu2Kvsml( const char* dst, const char* src )
+void Vtu2Kvsml( const char* directory, const char* base, const char* src )
 {
     std::cout << "reading " << src << " ..." << std::endl;
     cvt::VtkXmlUnstructuredGrid input_vtu( src );
@@ -27,10 +27,28 @@ void Vtu2Kvsml( const char* dst, const char* src )
         std::cout << "#nodes: " << object->numberOfNodes() << std::endl;
         std::cout << "#cellType: " << object->cellType() << std::endl;
 
-        std::cout << "writing " << dst << " ..." << std::endl;
+        std::cout << "writing to " << directory << std::endl;
 
-        kvs::UnstructuredVolumeExporter<kvs::KVSMLUnstructuredVolumeObject> exporter( &importer );
+        cvt::UnstructuredVolumeObjectExporter exporter( &importer );
         exporter.setWritingDataTypeToExternalBinary();
-        exporter.write( dst );
+        exporter.writeForPbvr( directory, base,
+                               0, // time step
+                               1, // sub volume id
+                               1  // sub volume count
+        );
+        // or
+        // exporter.write( "<directory/<base>_00000_0000001_0000001.kvsml" );
+
+        cvt::UnstructuredPfi pfi( object->veclen(),
+                                  0, // last time step
+                                  1  // sub volume count
+        );
+        pfi.registerObject( &exporter,
+                            0, // time step
+                            1  // sub volume id
+        );
+        pfi.write( directory, base );
+        // or
+        // pfi.write( "<directory/<base>.pfi" );
     }
 }
