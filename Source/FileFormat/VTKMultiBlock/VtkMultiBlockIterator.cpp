@@ -13,7 +13,7 @@
 #include <vtkDataSet.h>
 #include <vtkPolyData.h>
 
-#include "FileFormat/VTKXMLPolyData/VtkXmlPolyData.h"
+#include "FileFormat/VTK/VtkXmlPolyData.h"
 
 std::shared_ptr<kvs::FileFormatBase> cvt::VtkMultiBlockIterator::dereference() const
 {

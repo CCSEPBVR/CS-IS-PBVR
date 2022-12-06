@@ -5,7 +5,7 @@
 #include "kvs/StructuredVolumeObject"
 
 #include "Exporter/VtkExporter.h"
-#include "FileFormat/VTKXMLRectilinearGrid/VtkXmlRectilinearGrid.h"
+#include "FileFormat/VTK/VtkXmlRectilinearGrid.h"
 #include "Importer/VtkImporter.h"
 
 void Vtr2Vtr( const char* dst, const char* src )

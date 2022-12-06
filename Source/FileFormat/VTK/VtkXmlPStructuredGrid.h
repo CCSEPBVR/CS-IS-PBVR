@@ -12,7 +12,7 @@
 #include <vtkXMLPStructuredGridWriter.h>
 
 #include "FileFormat/ParallelVtkFileFormat.h"
-#include "FileFormat/VTKXMLStructuredGrid/VtkXmlStructuredGrid.h"
+#include "FileFormat/VTK/VtkXmlStructuredGrid.h"
 
 namespace cvt
 {

@@ -7,7 +7,7 @@
 
 #include "CvtMode.h"
 #include "Exporter/VtkExporter.h"
-#include "FileFormat/VTKXMLStructuredGrid/VtkXmlStructuredGrid.h"
+#include "FileFormat/VTK/VtkXmlStructuredGrid.h"
 #include "Importer/VtkImporter.h"
 
 void UniformVts2Vts( const char* dst, const char* src )

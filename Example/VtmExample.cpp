@@ -4,8 +4,8 @@
 #include "kvs/ObjectBase"
 #include "kvs/PolygonObject"
 
+#include "FileFormat/VTK/VtkXmlPolyData.h"
 #include "FileFormat/VTKMultiBlock/VtkMultiBlock.h"
-#include "FileFormat/VTKXMLPolyData/VtkXmlPolyData.h"
 #include "Importer/VtkImporter.h"
 
 void Vtm2Vtm( const char* dst, const char* src )

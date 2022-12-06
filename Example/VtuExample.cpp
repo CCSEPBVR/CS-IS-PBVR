@@ -11,7 +11,7 @@
 #include "Exporter/UnstructuredVolumeObjectExporter.h"
 #include "FileFormat/KVSML/KvsmlUnstructuredVolumeObject.h"
 #include "FileFormat/UnstructuredPfi.h"
-#include "FileFormat/VTKXMLUnstructuredGrid/VtkXmlUntructuredGrid.h"
+#include "FileFormat/VTK/VtkXmlUntructuredGrid.h"
 #include "Importer/VtkImporter.h"
 
 void Vtu2Kvsml( const char* directory, const char* base, const char* src )
