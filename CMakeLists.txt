@@ -3,7 +3,7 @@ project(kvsm-converter)
 
 set(TARGET_NAME kvsm-converter)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -35,8 +35,8 @@ add_executable(
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Exporter/VtkExport.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/VTKMultiBlock/VtkMultiBlock.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/VTKMultiBlock/VtkMultiBlockIterator.cpp
-)
+  ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/UnstructuredPfi.cpp)
 target_include_directories(${TARGET_NAME}
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Source)
-target_link_libraries(${TARGET_NAME} PRIVATE ${VTK_LIBRARIES} kvsCore)
+target_link_libraries(${TARGET_NAME} PRIVATE ${VTK_LIBRARIES} kvsCore stdc++fs)
 vtk_module_autoinit(TARGETS ${TARGET_NAME} MODULES ${VTK_LIBRARIES})
