@@ -146,7 +146,7 @@ void cvt::UnstructuredPfi::registerObject( kvs::KVSMLUnstructuredVolumeObject* o
     max_external_coords[time_step][sub_volume] = object->maxExternalCoord();
 
     min_object_coords[time_step][sub_volume] = object->minObjectCoord();
-    max_external_coords[time_step][sub_volume] = object->maxObjectCoord();
+    max_object_coords[time_step][sub_volume] = object->maxObjectCoord();
 
     auto values = object->values().asValueArray<float>();
     ::UpdateMinMaxValues( min_values[time_step], max_values[time_step], values, number_of_component,
