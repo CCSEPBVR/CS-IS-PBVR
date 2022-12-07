@@ -28,37 +28,29 @@ std::vector<std::vector<T>> Allocate2DVector( int x, int y )
 
 int GetCellId( const std::string& cell_type_expr )
 {
-    if ( cell_type_expr == "Unknown cell type" )
+    if ( cell_type_expr == "tetrahedra" )
     {
-        return kvs::UnstructuredVolumeObject::UnknownCellType;
-    }
-    else if ( cell_type_expr == "tetrahedra" )
-    {
-        return kvs::UnstructuredVolumeObject::Tetrahedra;
+        return 4;
     }
     else if ( cell_type_expr == "quadratic tetrahedra" )
     {
-        return kvs::UnstructuredVolumeObject::QuadraticTetrahedra;
+        return 11;
     }
     else if ( cell_type_expr == "hexahedra" )
     {
-        return kvs::UnstructuredVolumeObject::Hexahedra;
+        return 7;
     }
     else if ( cell_type_expr == "quadratic hexahedra" )
     {
-        return kvs::UnstructuredVolumeObject::QuadraticHexahedra;
+        return 14;
     }
     else if ( cell_type_expr == "pyramid" )
     {
-        return kvs::UnstructuredVolumeObject::Pyramid;
+        return 5;
     }
     else if ( cell_type_expr == "prism" )
     {
-        return kvs::UnstructuredVolumeObject::Prism;
-    }
-    else if ( cell_type_expr == "point" )
-    {
-        return kvs::UnstructuredVolumeObject::Point;
+        return 6;
     }
     else
     {
@@ -146,7 +138,7 @@ void cvt::UnstructuredPfi::registerObject( kvs::KVSMLUnstructuredVolumeObject* o
     max_external_coords[time_step][sub_volume] = object->maxExternalCoord();
 
     min_object_coords[time_step][sub_volume] = object->minObjectCoord();
-    max_external_coords[time_step][sub_volume] = object->maxObjectCoord();
+    max_object_coords[time_step][sub_volume] = object->maxObjectCoord();
 
     auto values = object->values().asValueArray<float>();
     ::UpdateMinMaxValues( min_values[time_step], max_values[time_step], values, number_of_component,

@@ -179,10 +179,66 @@ kvs::UnstructuredVolumeObject::CellType GetKvsCellType( int type )
         return kvs::UnstructuredVolumeObject::Point;
     case VTK_PYRAMID:
         return kvs::UnstructuredVolumeObject::Pyramid;
-    case VTK_QUADRATIC_EDGE:
+    case VTK_WEDGE:
         return kvs::UnstructuredVolumeObject::Prism;
     default:
         return kvs::UnstructuredVolumeObject::UnknownCellType;
+    }
+}
+
+template <typename K, typename V, typename O>
+void Reorder( K& kvs, V& vtk, O& order, int n )
+{
+    for ( int i = 0; i < n; ++i )
+    {
+        *kvs = vtk->GetId( order[i] );
+        ++kvs;
+    }
+}
+
+template <typename DestinationIterator>
+void ReorderElementNodeIndices( DestinationIterator& kvs_connection, vtkIdList* vtk_cell,
+                                int vtk_cell_type )
+{
+    switch ( vtk_cell_type )
+    {
+    case VTK_TETRA: {
+        constexpr int order[] = { 0, 3, 2, 1 };
+        ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
+        break;
+    }
+    case VTK_QUADRATIC_TETRA: {
+        constexpr int order[] = { 0, 3, 2, 1, 7, 6, 4, 9, 5, 8 };
+        ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
+        break;
+    }
+    case VTK_HEXAHEDRON: {
+        constexpr int order[] = { 4, 5, 6, 7, 0, 1, 2, 3 };
+        ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
+        break;
+    }
+    case VTK_QUADRATIC_HEXAHEDRON: {
+        constexpr int order[] = { 4, 5, 6, 7, 0, 1, 2, 3, 12, 13, 14, 15, 8, 9, 10, 11 };
+        ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
+        break;
+    }
+    case VTK_VERTEX: {
+        constexpr int order[] = { 0 };
+        ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
+        break;
+    }
+    case VTK_PYRAMID: {
+        constexpr int order[] = { 4, 0, 1, 2, 3 };
+        ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
+        break;
+    }
+    case VTK_WEDGE: {
+        constexpr int order[] = { 0, 1, 2, 3, 4, 5 };
+        ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
+        break;
+    }
+    default:
+        throw std::runtime_error( "Unsupported VTK cell type" );
     }
 }
 } // namespace
@@ -369,7 +425,7 @@ void cvt::detail::ImportUnstructuredVolumeObject( kvs::UnstructuredVolumeObject*
     kvs::UnstructuredVolumeObject::Connections connections( cell_point_count *
                                                             data->GetNumberOfCells() );
 
-    std::size_t k = 0;
+    auto head = connections.begin();
     for ( vtkIdType i = 0; i < data->GetNumberOfCells(); ++i )
     {
         auto cell = data->GetCell( i );
@@ -379,10 +435,7 @@ void cvt::detail::ImportUnstructuredVolumeObject( kvs::UnstructuredVolumeObject*
             throw std::runtime_error( "hetero cell types" );
         }
 
-        for ( vtkIdType j = 0; j < cell->GetNumberOfPoints(); ++j )
-        {
-            connections[k++] = cell->GetPointId( j );
-        }
+        ::ReorderElementNodeIndices( head, cell->GetPointIds(), cell->GetCellType() );
     }
     object->setConnections( connections );
 
