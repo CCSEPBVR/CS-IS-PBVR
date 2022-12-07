@@ -83,6 +83,8 @@ kvs::FileFormatBase* cvt::UnstructuredVolumeObjectExporter::exec( const kvs::Obj
     this->setValues( volume->values() );
     this->setCoords( volume->coords() );
     this->setConnections( volume->connections() );
+    this->setMinMaxObjectCoords( object->minObjectCoord(), object->maxObjectCoord() );
+    this->setMinMaxExternalCoords( object->minExternalCoord(), object->maxExternalCoord() );
 
     if ( volume->hasMinMaxValues() )
     {
