@@ -17,7 +17,7 @@ void Vtu2Kvsml( const char* directory, const char* base, const char* src )
 
     cvt::Pfl pfl;
 
-    for ( auto vtu : input_vtu )
+    for ( auto vtu : input_vtu.eachCellTypes() )
     {
         int time_step = 0;
         int last_time_step = 0;

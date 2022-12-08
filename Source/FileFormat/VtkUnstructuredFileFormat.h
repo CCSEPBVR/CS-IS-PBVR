@@ -14,14 +14,15 @@
 
 namespace cvt
 {
-
+namespace detail
+{
 template <typename BaseClass>
 class CellTypeIterator
 {
     using VtkDataPointerType = vtkSmartPointer<typename BaseClass::VtkDataType>;
 
 private:
-    using InternalIterator = std::unordered_set<int>::iterator;
+    using InternalIterator = std::unordered_set<int>::const_iterator;
 
 public:
     CellTypeIterator( InternalIterator itr, VtkDataPointerType vtk_data ) noexcept:
@@ -74,6 +75,42 @@ private:
     VtkDataPointerType data;
     vtkSmartPointer<vtkExtractCellsByType> extractor;
 };
+
+template <typename BaseClass>
+class CellTypeContainer
+{
+public:
+    using VtkDataPointerType = vtkSmartPointer<typename BaseClass::VtkDataType>;
+
+public:
+    CellTypeContainer( const std::unordered_set<int>& types, VtkDataPointerType d ):
+        cell_types( types ), data( d )
+    {
+    }
+
+public:
+    cvt::detail::CellTypeIterator<BaseClass> begin()
+    {
+        return cvt::detail::CellTypeIterator<BaseClass>( cell_types.cbegin(), data );
+    }
+    cvt::detail::CellTypeIterator<BaseClass> begin() const
+    {
+        return cvt::detail::CellTypeIterator<BaseClass>( cell_types.begin(), data );
+    }
+    cvt::detail::CellTypeIterator<BaseClass> end()
+    {
+        return cvt::detail::CellTypeIterator<BaseClass>( cell_types.cend(), data );
+    }
+    cvt::detail::CellTypeIterator<BaseClass> end() const
+    {
+        return cvt::detail::CellTypeIterator<BaseClass>( cell_types.end(), data );
+    }
+
+private:
+    const std::unordered_set<int>& cell_types;
+    VtkDataPointerType data;
+};
+} // namespace detail
 } // namespace cvt
 
 namespace cvt
@@ -121,22 +158,49 @@ public:
      * \param [in] vtk_data A VTK data.
      */
     VtkUnstructuredFileFormat( VtkDataType* data ): BaseClass( data ) { InitializeCellTypes(); }
-    virtual ~VtkUnstructuredFileFormat() {}
 
 public:
-    cvt::CellTypeIterator<VtkUnstructuredFileFormat<VtkDataType, VtkReaderType, VtkWriterType>>
-    begin()
+    /**
+     * Get an interface to iterate by a cell type in a for loop.
+     *
+     * e.g.
+     *
+     *     SomeVtkUnstructuredFileFormat file_format;
+     *     for (SomeVtkUnstructuredFileFormat single_cell_type_file_format :
+     *          file_format.eachCellTypes()) {
+     *         // ...
+     *     }
+     *
+     * \return An interface to iterate by a cell type.
+     */
+    cvt::detail::CellTypeContainer<
+        VtkUnstructuredFileFormat<VtkDataType, VtkReaderType, VtkWriterType>>
+    eachCellTypes()
     {
-        return cvt::CellTypeIterator<
+        return cvt::detail::CellTypeContainer<
             VtkUnstructuredFileFormat<VtkDataType, VtkReaderType, VtkWriterType>>(
-            cell_types.begin(), BaseClass::get() );
+            cell_types, BaseClass::get() );
     }
-    cvt::CellTypeIterator<VtkUnstructuredFileFormat<VtkDataType, VtkReaderType, VtkWriterType>>
-    end()
+    /**
+     * Get an interface to iterate by a cell type in a for loop.
+     *
+     * e.g.
+     *
+     *     SomeVtkUnstructuredFileFormat file_format;
+     *     for (SomeVtkUnstructuredFileFormat single_cell_type_file_format :
+     *          file_format.eachCellTypes()) {
+     *         // ...
+     *     }
+     *
+     * \return An interface to iterate by a cell type.
+     */
+    cvt::detail::CellTypeContainer<
+        VtkUnstructuredFileFormat<VtkDataType, VtkReaderType, VtkWriterType>>
+    eachCellTypes() const
     {
-        return cvt::CellTypeIterator<
+        return cvt::detail::CellTypeContainer<
             VtkUnstructuredFileFormat<VtkDataType, VtkReaderType, VtkWriterType>>(
-            cell_types.end(), BaseClass::get() );
+            cell_types, BaseClass::get() );
     }
 
 private:
