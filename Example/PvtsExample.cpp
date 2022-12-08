@@ -14,14 +14,14 @@
 void UniformPvts2Vts( const char* dst, const char* src )
 {
     std::cout << "reading " << src << " ..." << std::endl;
-    cvt::VtkXmlPStructuredGrid input_pvts( src, true );
+    cvt::VtkXmlPStructuredGrid input_pvts( src );
     std::cout << "#piece: " << input_pvts.number_of_pieces() << std::endl;
 
     int count = 0;
-    for ( auto file_format : input_pvts )
+    for ( auto file_format : input_pvts.eachPieces() )
     {
         std::cout << "importing ..." << std::endl;
-        cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer( file_format.get(),
+        cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer( &file_format,
                                                               cvt::UNIFORM_GRID_MODE );
         kvs::StructuredVolumeObject* object = &importer;
         std::cout << "#nodes: " << object->numberOfNodes() << std::endl;

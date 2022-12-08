@@ -21,8 +21,8 @@ namespace cvt
  * A VTK XML Parallel StructuredGrid file IO.
  */
 using VtkXmlPStructuredGrid =
-    typename cvt::ParallelVtkFileFormat<cvt::VtkXmlStructuredGrid, vtkStructuredGrid,
-                                        vtkXMLPStructuredGridReader, vtkXMLPStructuredGridWriter>;
+    cvt::ParallelVtkFileFormat<cvt::VtkXmlStructuredGrid, vtkXMLPStructuredGridReader,
+                               vtkXMLPStructuredGridWriter>;
 } // namespace cvt
 
 #endif // CVT__VTK_XML_PSTRUCTURED_GRID_H_INCLUDE

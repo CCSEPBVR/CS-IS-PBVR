@@ -6,28 +6,15 @@
  */
 #ifndef CVT__PARALLEL_VTK_FILE_FORMAT_H_INCLUDE
 #define CVT__PARALLEL_VTK_FILE_FORMAT_H_INCLUDE
-#include <algorithm>
 #include <iterator>
-#include <memory>
 #include <string>
 
-#include "kvs/File"
-#include "kvs/FileFormatBase"
 #include <vtkNew.h>
 #include <vtkSmartPointer.h>
-
-#include "VtkFileFormat.h"
 
 namespace cvt
 {
 namespace detail
-{
-constexpr const char* const PIECE_MODE_GETTER_ERROR_MESSAGE =
-    "a whole data was not ready in a piece-reader mode";
-} // namespace detail
-} // namespace cvt
-
-namespace cvt
 {
 
 template <typename ReaderPointer, typename FileFormatType>
@@ -37,12 +24,11 @@ public:
     VtkPieceIterator( ReaderPointer r, int id = 0 ) noexcept: reader( r ), piece_id( id ) {}
 
 public:
-    std::shared_ptr<FileFormatType> operator*()
+    FileFormatType operator*()
     {
         reader->UpdatePiece( piece_id, reader->GetNumberOfPieces(), -1 );
         auto output = reader->GetOutput();
-        return std::make_shared<FileFormatType>( output );
-        // return nullptr;
+        return FileFormatType( output );
     }
     void operator++() noexcept { ++piece_id; }
     VtkPieceIterator operator++( int )
@@ -73,99 +59,15 @@ private:
     ReaderPointer reader;
     int piece_id;
 };
-} // namespace cvt
 
-namespace cvt
-{
-
-/**
- * A parallel data file IO using VTK.
- *
- * This file format has two modes: a piece-reader or normal mode.
- *
- * In a piece-reader mode, this file format read only an data information when the construction.
- * After the construction, an user can read data pieces in a for loop.
- *
- * In a normal mode, this file format read whole data as same as others when the construction.
- */
-template <typename PieceFileFormatType, typename VtkDataType_, typename VtkReaderType,
-          typename VtkWriterType>
-class ParallelVtkFileFormat : public cvt::VtkFileFormat<VtkDataType_, VtkReaderType, VtkWriterType>
+template <typename PieceFileFormatType, typename VtkReaderType>
+class VtkPieceContainer
 {
 public:
-    /**
-     * A base class type.
-     */
-    using BaseClass = cvt::VtkFileFormat<VtkDataType_, VtkReaderType, VtkWriterType>;
-    /**
-     * An inner VTK data type.
-     */
-    using VtkDataType = VtkDataType_;
-
-public:
-    /**
-     * Construct an empty IO object.
-     */
-    ParallelVtkFileFormat() noexcept:
-        kvs::FileFormatBase(), BaseClass(), m_is_piece_reader_mode( false ), m_number_of_pieces( 0 )
+    VtkPieceContainer( int number_of_pieces, vtkSmartPointer<VtkReaderType> reader ):
+        m_number_of_pieces( number_of_pieces ), reader( reader )
     {
     }
-    /**
-     * Construct an IO object.
-     *
-     * \param filename A file name.
-     * \param is_piece_reader_mode A piece reader mode flag.
-     */
-    ParallelVtkFileFormat( const std::string& filename, bool is_piece_reader_mode = false ):
-        BaseClass(), m_is_piece_reader_mode( is_piece_reader_mode )
-    {
-        if ( is_piece_reader_mode )
-        {
-            kvs::FileFormatBase::setFilename( filename );
-            reader = vtkSmartPointer<VtkReaderType>::New();
-            reader->SetFileName( filename.c_str() );
-            reader->UpdateInformation();
-            m_number_of_pieces = reader->GetNumberOfPieces();
-        }
-        else
-        {
-            BaseClass::read( filename );
-            m_number_of_pieces = 1;
-        }
-    }
-    /**
-     * Construct an IO object.
-     *
-     * \param filename A file name.
-     * \param is_piece_reader_mode A piece reader mode flag.
-     */
-    ParallelVtkFileFormat( std::string&& filename, bool is_piece_reader_mode = false ):
-        BaseClass(), m_is_piece_reader_mode( is_piece_reader_mode )
-    {
-        if ( is_piece_reader_mode )
-        {
-            kvs::FileFormatBase::setFilename( filename );
-            reader = vtkSmartPointer<VtkReaderType>::New();
-            reader->SetFileName( filename.c_str() );
-            reader->UpdateInformation();
-            m_number_of_pieces = reader->GetNumberOfPieces();
-        }
-        else
-        {
-            BaseClass::read( filename );
-            m_number_of_pieces = 1;
-        }
-    }
-    /**
-     * Construct an IO object.
-     *
-     * \param [in] vtk_data A VTK data.
-     */
-    ParallelVtkFileFormat( VtkDataType* data ):
-        kvs::FileFormatBase(), BaseClass( data ), m_is_piece_reader_mode( false )
-    {
-    }
-    virtual ~ParallelVtkFileFormat() {}
 
 public:
     /**
@@ -207,43 +109,111 @@ public:
             reader, m_number_of_pieces );
     }
 
+private:
+    int m_number_of_pieces;
+    vtkSmartPointer<VtkReaderType> reader;
+};
+} // namespace detail
+} // namespace cvt
+
+namespace cvt
+{
+
+/**
+ * A parallel data file IO using VTK.
+ *
+ * A developer could read whole VTK data from `get()`.
+ * Or a developer could read each piece VTK data from `eachPieces()`.
+ */
+template <typename PieceFileFormatType, typename VtkReaderType, typename VtkWriterType>
+class ParallelVtkFileFormat
+{
 public:
-    vtkSmartPointer<VtkDataType> get()
+    /**
+     * Construct an IO object.
+     *
+     * \param [in] filename A file name.
+     */
+    ParallelVtkFileFormat( const std::string& filename )
     {
-        if ( m_is_piece_reader_mode )
-        {
-            throw std::runtime_error( cvt::detail::PIECE_MODE_GETTER_ERROR_MESSAGE );
-        }
-        else
-        {
-            return BaseClass::get();
-        }
+        reader = vtkSmartPointer<VtkReaderType>::New();
+        reader->SetFileName( filename.c_str() );
+        reader->UpdateInformation();
+        m_number_of_pieces = reader->GetNumberOfPieces();
     }
-    vtkSmartPointer<VtkDataType> get() const
+    /**
+     * Construct an IO object.
+     *
+     * \param [in] filename A file name.
+     */
+    ParallelVtkFileFormat( std::string&& filename )
     {
-        if ( m_is_piece_reader_mode )
-        {
-            throw std::runtime_error( cvt::detail::PIECE_MODE_GETTER_ERROR_MESSAGE );
-        }
-        else
-        {
-            return BaseClass::get();
-        }
+        reader = vtkSmartPointer<VtkReaderType>::New();
+        reader->SetFileName( filename.c_str() );
+        reader->UpdateInformation();
+        m_number_of_pieces = reader->GetNumberOfPieces();
+    }
+    virtual ~ParallelVtkFileFormat() {}
+
+public:
+    /**
+     * Get an interface to iterate each pieces (sub volumes).
+     *
+     * e.g.
+     *
+     *     SomeVtkPFileFormat file_format;
+     *     for (auto piece_file_format : file_format.eachPieces()) {
+     *         // ..
+     *     }
+     *
+     * \return An interface to iterate each pieces.
+     */
+    cvt::detail::VtkPieceContainer<PieceFileFormatType, VtkReaderType> eachPieces()
+    {
+        return cvt::detail::VtkPieceContainer<PieceFileFormatType, VtkReaderType>(
+            m_number_of_pieces, reader );
+    }
+    /**
+     * Get an interface to iterate each pieces (sub volumes).
+     *
+     * e.g.
+     *
+     *     SomeVtkPFileFormat file_format;
+     *     for (auto piece_file_format : file_format.eachPieces()) {
+     *         // ..
+     *     }
+     *
+     * \return An interface to iterate each pieces.
+     */
+    cvt::detail::VtkPieceContainer<PieceFileFormatType, VtkReaderType> eachPieces() const
+    {
+        return cvt::detail::VtkPieceContainer<PieceFileFormatType, VtkReaderType>(
+            m_number_of_pieces, reader );
+    }
+    /**
+     * Generate a file format to access whole data.
+     *
+     * \return A file format to access whole data.
+     */
+    PieceFileFormatType get()
+    {
+        reader->Update();
+        auto output = reader->GetOutput();
+        return PieceFileFormatType( output );
+    }
+    /**
+     * Generate a file format to access whole data.
+     *
+     * \return A file format to access whole data.
+     */
+    PieceFileFormatType get() const
+    {
+        reader->Update();
+        auto output = reader->GetOutput();
+        return PieceFileFormatType( output );
     }
 
 public:
-    /*
-     * Get this file format is in a piece reader mode.
-     *
-     * \return true if this is in a piece mode.
-     */
-    bool is_piece_reader_mode() noexcept { return m_is_piece_reader_mode; }
-    /*
-     * Get this file format is in a piece reader mode.
-     *
-     * \return true if this is in a piece mode.
-     */
-    bool is_piece_reader_mode() const noexcept { return m_is_piece_reader_mode; }
     /**
      * Get a number of pieces.
      *
@@ -258,7 +228,6 @@ public:
     int number_of_pieces() const noexcept { return m_number_of_pieces; }
 
 private:
-    bool m_is_piece_reader_mode;
     int m_number_of_pieces;
     vtkSmartPointer<VtkReaderType> reader;
 };
