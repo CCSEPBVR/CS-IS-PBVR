@@ -29,6 +29,7 @@ add_executable(
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtsExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtuExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/PvtsExample.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Example/PvtuExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/RectilinearExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtmExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Importer/VtkImport.cpp

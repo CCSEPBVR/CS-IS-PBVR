@@ -10,6 +10,7 @@ void UniformPvts2Vts( const char* dst, const char* src );
 void IrregularVts2Vts( const char* dst, const char* src );
 void IrregularVts2Avs( const char* dst, const char* src );
 void Vtu2Kvsml( const char* directory, const char* base, const char* src );
+void Pvtu2Kvsml( const char* directory, const char* base, const char* src );
 void Vtm2Vtm( const char* dst, const char* src );
 
 int main( int argc, char** argv )
@@ -60,6 +61,10 @@ int main( int argc, char** argv )
     else if ( input_format == "vtu" && output_format == "kvsml" )
     {
         Vtu2Kvsml( argv[4], argv[5], argv[3] );
+    }
+    else if ( input_format == "pvtu" && output_format == "kvsml" )
+    {
+        Pvtu2Kvsml( argv[4], argv[5], argv[3] );
     }
     else if ( std::string( argv[1] ) == "vtm" )
     {
