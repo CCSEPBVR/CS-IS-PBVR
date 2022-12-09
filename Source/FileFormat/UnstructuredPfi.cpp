@@ -168,7 +168,7 @@ bool cvt::UnstructuredPfi::write( const char* const filename )
 
         int step_of_beginning = 0;
         std::fwrite( &step_of_beginning, sizeof( int ), 1, f );
-        int step_of_end = 0;
+        int step_of_end = last_time_step;
         std::fwrite( &step_of_end, sizeof( int ), 1, f );
 
         int number_of_sub_volumes = max_sub_volume_id;
