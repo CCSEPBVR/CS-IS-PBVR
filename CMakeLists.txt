@@ -32,11 +32,11 @@ add_executable(
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/PvtuExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/RectilinearExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtmExample.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Example/EnSightExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Importer/VtkImport.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Exporter/UnstructuredVolumeObjectExporter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Exporter/VtkExport.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/VTKMultiBlock/VtkMultiBlock.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/VTKMultiBlock/VtkMultiBlockIterator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/VtkCompositeDataSetFileFormat.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/UnstructuredPfi.cpp)
 target_include_directories(${TARGET_NAME}
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Source)
