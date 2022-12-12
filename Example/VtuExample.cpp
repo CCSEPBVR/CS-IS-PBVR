@@ -67,7 +67,7 @@ void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src )
     int sub_volume_id = 1;
     int sub_volume_count = 1;
 
-    for ( auto whole_vtu : time_series.eachTimeSteps() )
+    for ( auto whole_vtu : time_series.eachTimeStep() )
     {
         for ( auto vtu : whole_vtu.eachCellTypes() )
         {

@@ -191,7 +191,7 @@ public:
      *
      * \return An interface to iterate
      */
-    cvt::detail::NumeralSequenceFileContainer<FileFormat> eachTimeSteps()
+    cvt::detail::NumeralSequenceFileContainer<FileFormat> eachTimeStep()
     {
         return cvt::detail::NumeralSequenceFileContainer<FileFormat>( filenames );
     }
@@ -200,7 +200,7 @@ public:
      *
      * \return An interface to iterate
      */
-    cvt::detail::NumeralSequenceFileContainer<FileFormat> eachTimeSteps() const
+    cvt::detail::NumeralSequenceFileContainer<FileFormat> eachTimeStep() const
     {
         return cvt::detail::NumeralSequenceFileContainer<FileFormat>( filenames );
     }

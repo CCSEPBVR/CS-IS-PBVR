@@ -204,7 +204,16 @@ public:
      *
      * \return An interface to iterate.
      */
-    cvt::detail::VtkMultiBlockContainer<VtkDataType> eachBlocks()
+    cvt::detail::VtkMultiBlockContainer<VtkDataType> eachBlock()
+    {
+        return cvt::detail::VtkMultiBlockContainer<VtkDataType>( vtk_data );
+    }
+    /**
+     * Get an interface to iterate each block.
+     *
+     * \return An interface to iterate.
+     */
+    cvt::detail::VtkMultiBlockContainer<VtkDataType> eachBlock() const
     {
         return cvt::detail::VtkMultiBlockContainer<VtkDataType>( vtk_data );
     }

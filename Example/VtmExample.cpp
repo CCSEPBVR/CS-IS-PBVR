@@ -14,7 +14,7 @@ void Vtm2Vtm( const char* dst, const char* src )
     std::cout << "reading " << src << " ..." << std::endl;
     cvt::VtkMultiBlock input_vtm( src );
 
-    for ( auto format : input_vtm.eachBlocks() )
+    for ( auto format : input_vtm.eachBlock() )
     {
         if ( auto polydata_format = dynamic_cast<cvt::VtkXmlPolyData*>( format.get() ) )
         {

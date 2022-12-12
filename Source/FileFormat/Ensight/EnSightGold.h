@@ -158,11 +158,11 @@ public:
     }
 
 public:
-    cvt::detail::EnSightTimeStepContainer<VtkEnSightGoldReader> eachTimeSteps()
+    cvt::detail::EnSightTimeStepContainer<VtkEnSightGoldReader> eachTimeStep()
     {
         return cvt::detail::EnSightTimeStepContainer<VtkEnSightGoldReader>( reader );
     }
-    cvt::detail::EnSightTimeStepContainer<VtkEnSightGoldReader> eachTimeSteps() const
+    cvt::detail::EnSightTimeStepContainer<VtkEnSightGoldReader> eachTimeStep() const
     {
         return cvt::detail::EnSightTimeStepContainer<VtkEnSightGoldReader>( reader );
     }

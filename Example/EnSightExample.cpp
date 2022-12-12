@@ -20,7 +20,7 @@ void Case2Kvsml( const char* directory, const char* base, const char* src )
 
     std::unordered_map<int, cvt::UnstructuredPfi> pfi_map;
 
-    auto time_steps_container = input_case.eachTimeSteps();
+    auto time_steps_container = input_case.eachTimeStep();
     int last_time_step = time_steps_container.lastTimeStep();
     int time_step = 0;
     int sub_volume_count = 0;
@@ -34,7 +34,7 @@ void Case2Kvsml( const char* directory, const char* base, const char* src )
         if ( time_step == 0 )
         {
             // Count sub volumes at first
-            for ( auto format : multi_block_format.eachBlocks() )
+            for ( auto format : multi_block_format.eachBlock() )
             {
                 if ( format )
                 {
@@ -57,7 +57,7 @@ void Case2Kvsml( const char* directory, const char* base, const char* src )
         }
 
         int sub_volume_id = 1;
-        for ( auto format : multi_block_format.eachBlocks() )
+        for ( auto format : multi_block_format.eachBlock() )
         {
             if ( !format )
             {
