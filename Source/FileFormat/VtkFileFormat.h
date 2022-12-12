@@ -12,7 +12,6 @@
 
 #include "kvs/File"
 #include "kvs/FileFormatBase"
-#include <vtkCellDataToPointData.h>
 #include <vtkNew.h>
 #include <vtkSmartPointer.h>
 
@@ -70,12 +69,9 @@ public:
         {
             vtkNew<VtkReaderType> reader;
             reader->SetFileName( filename.c_str() );
+            reader->Update();
 
-            vtkNew<vtkCellDataToPointData> to_point_data;
-            to_point_data->SetInputConnection( reader->GetOutputPort() );
-            to_point_data->Update();
-
-            vtk_data = dynamic_cast<VtkDataType*>( to_point_data->GetOutput() );
+            vtk_data = dynamic_cast<VtkDataType*>( reader->GetOutput() );
 
             bool is_success = vtk_data->GetNumberOfCells() > 0;
             BaseClass::setSuccess( is_success );

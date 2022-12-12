@@ -196,10 +196,14 @@ public:
     }
     bool write( const std::string& filename ) override
     {
-        std::runtime_error( "This function has not implemented yet" );
+        std::runtime_error( "This function has not been implemented yet" );
         return false;
     };
-
+    /**
+     * Get an interface to iterate each block.
+     *
+     * \return An interface to iterate.
+     */
     cvt::detail::VtkMultiBlockContainer<VtkDataType> eachBlocks()
     {
         return cvt::detail::VtkMultiBlockContainer<VtkDataType>( vtk_data );
