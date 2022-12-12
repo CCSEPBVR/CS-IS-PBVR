@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 
+#include "kvs/LineExporter"
 #include "kvs/UnstructuredVolumeObject"
 
 #include "Exporter/UnstructuredVolumeObjectExporter.h"
@@ -114,4 +115,13 @@ void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src )
     pfl.write( directory, base );
     // or
     // pfl.write( "<directory>/<base>.pfl" );
+}
+
+void LineVtu2Kvsml( const char* dst, const char* src )
+{
+    cvt::VtkXmlUnstructuredGrid input_vtu( src );
+    cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid, kvs::LineObject> importer( &input_vtu );
+
+    kvs::LineExporter<kvs::KVSMLLineObject> exporter( &importer );
+    exporter.write( dst );
 }

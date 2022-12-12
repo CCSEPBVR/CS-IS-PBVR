@@ -7,6 +7,7 @@
 #ifndef CVT_VTK_IMPORT_H_INCLUDE
 #define CVT_VTK_IMPORT_H_INCLUDE
 
+#include "kvs/LineObject"
 #include "kvs/PolygonObject"
 #include "kvs/StructuredVolumeObject"
 #include "kvs/UnstructuredVolumeObject"
@@ -65,6 +66,13 @@ void ImportIrregularStructuredVolumeObject( kvs::StructuredVolumeObject* irregul
  */
 void ImportUnstructuredVolumeObject( kvs::UnstructuredVolumeObject* object,
                                      vtkSmartPointer<vtkUnstructuredGrid> data );
+/**
+ * Import a KVS line object from a VTK UnstructuredGrid.
+ *
+ * \param [inout] object A KVS line object.
+ * \param [in] data A VTK UnstructuredGrid.
+ */
+void ImportLineObject( kvs::LineObject* object, vtkSmartPointer<vtkUnstructuredGrid> data );
 } // namespace detail
 } // namespace cvt
 
@@ -160,6 +168,24 @@ inline void Import<kvs::UnstructuredVolumeObject*, vtkSmartPointer<vtkUnstructur
     }
 
     cvt::detail::ImportUnstructuredVolumeObject( object, data );
+}
+
+template <>
+inline void Import<kvs::LineObject*, vtkSmartPointer<vtkUnstructuredGrid>>(
+    kvs::LineObject* object, vtkSmartPointer<vtkUnstructuredGrid> data, int mode )
+{
+    if ( !object )
+    {
+        throw std::runtime_error( "A KVS object was a null pointer." );
+        return;
+    }
+    if ( !data )
+    {
+        throw std::runtime_error( "A VTK data was a null pointer." );
+        return;
+    }
+
+    cvt::detail::ImportLineObject( object, data );
 }
 } // namespace cvt
 

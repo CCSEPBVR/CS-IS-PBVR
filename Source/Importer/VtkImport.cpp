@@ -6,9 +6,11 @@
  */
 #include "VtkImport.h"
 
+#include <deque>
 #include <stdexcept>
 #include <vector>
 
+#include "kvs/LineObject"
 #include "kvs/PolygonObject"
 #include "kvs/StructuredVolumeObject"
 #include "kvs/Type"
@@ -477,6 +479,44 @@ void cvt::detail::ImportUnstructuredVolumeObject( kvs::UnstructuredVolumeObject*
         object->setValues( values );
         object->updateMinMaxValues();
     }
+
+    object->updateMinMaxCoords();
+}
+
+void cvt::detail::ImportLineObject( kvs::LineObject* object,
+                                    vtkSmartPointer<vtkUnstructuredGrid> data )
+{
+    object->setLineType( kvs::LineObject::Segment );
+
+    auto coords = GetCoordinates( data );
+    object->setCoords( coords );
+
+    std::deque<kvs::UInt32> connection_deque;
+    for ( vtkIdType i = 0; i < data->GetNumberOfCells(); ++i )
+    {
+        auto cell = data->GetCell( i );
+
+        switch ( cell->GetCellType() )
+        {
+        case VTK_LINE: {
+            connection_deque.push_back( static_cast<kvs::UInt32>( cell->GetPointId( 0 ) ) );
+            connection_deque.push_back( static_cast<kvs::UInt32>( cell->GetPointId( 1 ) ) );
+            break;
+        }
+        case VTK_POLY_LINE: {
+            auto ids = cell->GetPointIds();
+            for ( int j = 0; j < ids->GetNumberOfIds() - 1; ++j )
+            {
+                connection_deque.push_back( static_cast<kvs::UInt32>( cell->GetPointId( j ) ) );
+                connection_deque.push_back( static_cast<kvs::UInt32>( cell->GetPointId( j + 1 ) ) );
+            }
+            break;
+        }
+        }
+    }
+    kvs::ValueArray<kvs::UInt32> connections( connection_deque.size() );
+    std::copy( connection_deque.begin(), connection_deque.end(), connections.begin() );
+    object->setConnections( connections );
 
     object->updateMinMaxCoords();
 }

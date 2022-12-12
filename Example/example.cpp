@@ -11,6 +11,7 @@ void IrregularVts2Vts( const char* dst, const char* src );
 void IrregularVts2Avs( const char* dst, const char* src );
 void Vtu2Kvsml( const char* directory, const char* base, const char* src );
 void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src );
+void LineVtu2Kvsml( const char* dst, const char* src );
 void Pvtu2Kvsml( const char* directory, const char* base, const char* src );
 void Vtm2Vtm( const char* dst, const char* src );
 void Case2Kvsml( const char* directory, const char* base, const char* src );
@@ -67,6 +68,10 @@ int main( int argc, char** argv )
     else if ( input_format == "series-vtu" && output_format == "kvsml" )
     {
         SeriesVtu2Kvsml( argv[4], argv[5], argv[3] );
+    }
+    else if ( input_format == "line-vtu" && output_format == "kvsml" )
+    {
+        LineVtu2Kvsml( argv[4], argv[3] );
     }
     else if ( input_format == "pvtu" && output_format == "kvsml" )
     {
