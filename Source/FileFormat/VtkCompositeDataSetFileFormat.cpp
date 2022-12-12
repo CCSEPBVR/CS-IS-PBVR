@@ -4,7 +4,7 @@
  *  All rights reserved.
  *  See http://www.viz.media.kyoto-u.ac.jp/kvs/copyright/ for details.
  */
-#include "VtkMultiBlockIterator.h"
+#include "VtkCompositeDataSetFileFormat.h"
 
 #include <stdexcept>
 #include <string>
@@ -14,8 +14,10 @@
 #include <vtkPolyData.h>
 
 #include "FileFormat/VTK/VtkXmlPolyData.h"
+#include "FileFormat/VTK/VtkXmlRectilinearGrid.h"
+#include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
 
-std::shared_ptr<kvs::FileFormatBase> cvt::VtkMultiBlockIterator::dereference() const
+std::shared_ptr<kvs::FileFormatBase> cvt::detail::VtkMultiBlockIterator::dereference() const
 {
     vtkDataObject* o = itr->GetCurrentDataObject();
     std::string class_name = o->GetClassName();
@@ -28,9 +30,24 @@ std::shared_ptr<kvs::FileFormatBase> cvt::VtkMultiBlockIterator::dereference() c
 
         return f;
     }
+    else if ( class_name == "vtkRectilinearGrid" )
+    {
+        auto f = std::make_shared<cvt::VtkXmlRectilinearGrid>();
+
+        f->set( dynamic_cast<vtkRectilinearGrid*>( o ) );
+
+        return f;
+    }
+    else if ( class_name == "vtkUnstructuredGrid" )
+    {
+        auto f = std::make_shared<cvt::VtkXmlUnstructuredGrid>();
+
+        f->set( dynamic_cast<vtkUnstructuredGrid*>( o ) );
+
+        return f;
+    }
     else
     {
-        std::runtime_error( "Unsupported vtk data type." );
         return nullptr;
     }
 }
