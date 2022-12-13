@@ -54,6 +54,9 @@ public:
     /**
      * Construct an IO object.
      *
+     * This takes the owner of the object.
+     * So DO NOT free the object externally.
+     *
      * \param [in] vtk_data A VTK data.
      */
     VtkFileFormat( VtkDataType* data ): kvs::FileFormatBase() { vtk_data = data; }

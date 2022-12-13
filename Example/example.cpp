@@ -15,6 +15,7 @@ void LineVtu2Kvsml( const char* dst, const char* src );
 void Pvtu2Kvsml( const char* directory, const char* base, const char* src );
 void Vtm2Vtm( const char* dst, const char* src );
 void Case2Kvsml( const char* directory, const char* base, const char* src );
+void Cgns2Kvsml( const char* directory, const char* base, const char* src );
 
 int main( int argc, char** argv )
 {
@@ -85,6 +86,11 @@ int main( int argc, char** argv )
     else if ( std::string( argv[1] ) == "case" )
     {
         Case2Kvsml( argv[4], argv[5], argv[3] );
+        return -1;
+    }
+    else if ( std::string( argv[1] ) == "cgns" )
+    {
+        Cgns2Kvsml( argv[4], argv[5], argv[3] );
         return -1;
     }
     else

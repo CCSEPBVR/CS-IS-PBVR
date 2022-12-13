@@ -170,6 +170,14 @@ public:
         kvs::FileFormatBase::setFilename( filename );
         this->read( filename );
     }
+    /**
+     * Construct an IO.
+     *
+     * This takes the owner of the object.
+     * So DO NOT free the object externally.
+     *
+     * \param [in] vtk_data A VTK data.
+     */
     VtkCompositeDataSetFileFormat( VtkDataType* vtk_data ): BaseClass(), vtk_data( vtk_data ) {}
 
 public:
