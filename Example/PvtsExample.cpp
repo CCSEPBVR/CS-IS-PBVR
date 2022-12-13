@@ -18,7 +18,7 @@ void UniformPvts2Vts( const char* dst, const char* src )
     std::cout << "#piece: " << input_pvts.number_of_pieces() << std::endl;
 
     int count = 0;
-    for ( auto file_format : input_pvts.eachPieces() )
+    for ( auto file_format : input_pvts.eachPiece() )
     {
         std::cout << "importing ..." << std::endl;
         cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer( &file_format,
