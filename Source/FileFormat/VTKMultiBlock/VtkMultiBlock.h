@@ -14,6 +14,9 @@
 namespace cvt
 {
 
+/*
+ * A VTK MultiBlock IO.
+ */
 using VtkMultiBlock =
     cvt::VtkCompositeDataSetFileFormat<vtkCompositeDataSet, vtkXMLMultiBlockDataReader>;
 } // namespace cvt
