@@ -28,7 +28,7 @@ void Pvtu2Kvsml( const char* directory, const char* base, const char* src )
     // Piece reading
     for ( auto vtu : input_pvtu.eachPieces() )
     {
-        for ( auto file_format : vtu.eachCellTypes() )
+        for ( auto file_format : vtu.eachCellType() )
         {
             std::cout << "importing ..." << std::endl;
             cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &file_format );
@@ -87,7 +87,7 @@ void Pvtu2Kvsml2( const char* directory, const char* base, const char* src )
     int sub_volume_id = 1;
     cvt::Pfl pfl;
 
-    for ( auto vtu : input_vtu.eachCellTypes() )
+    for ( auto vtu : input_vtu.eachCellType() )
     {
         std::cout << "importing ..." << std::endl;
         cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &vtu );

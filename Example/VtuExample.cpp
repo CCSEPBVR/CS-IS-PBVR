@@ -19,7 +19,7 @@ void Vtu2Kvsml( const char* directory, const char* base, const char* src )
 
     cvt::Pfl pfl;
 
-    for ( auto vtu : input_vtu.eachCellTypes() )
+    for ( auto vtu : input_vtu.eachCellType() )
     {
         int time_step = 0;
         int last_time_step = 0;
@@ -70,7 +70,7 @@ void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src )
 
     for ( auto whole_vtu : time_series.eachTimeStep() )
     {
-        for ( auto vtu : whole_vtu.eachCellTypes() )
+        for ( auto vtu : whole_vtu.eachCellType() )
         {
             cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &vtu );
 
