@@ -167,7 +167,7 @@ public:
      *
      *     SomeVtkUnstructuredFileFormat file_format;
      *     for (SomeVtkUnstructuredFileFormat single_cell_type_file_format :
-     *          file_format.eachCellTypes()) {
+     *          file_format.eachCellType()) {
      *         // ...
      *     }
      *
@@ -175,7 +175,7 @@ public:
      */
     cvt::detail::CellTypeContainer<
         VtkUnstructuredFileFormat<VtkDataType, VtkReaderType, VtkWriterType>>
-    eachCellTypes()
+    eachCellType()
     {
         return cvt::detail::CellTypeContainer<
             VtkUnstructuredFileFormat<VtkDataType, VtkReaderType, VtkWriterType>>(
@@ -188,7 +188,7 @@ public:
      *
      *     SomeVtkUnstructuredFileFormat file_format;
      *     for (SomeVtkUnstructuredFileFormat single_cell_type_file_format :
-     *          file_format.eachCellTypes()) {
+     *          file_format.eachCellType()) {
      *         // ...
      *     }
      *
@@ -196,7 +196,7 @@ public:
      */
     cvt::detail::CellTypeContainer<
         VtkUnstructuredFileFormat<VtkDataType, VtkReaderType, VtkWriterType>>
-    eachCellTypes() const
+    eachCellType() const
     {
         return cvt::detail::CellTypeContainer<
             VtkUnstructuredFileFormat<VtkDataType, VtkReaderType, VtkWriterType>>(
