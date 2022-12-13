@@ -26,7 +26,7 @@ void Pvtu2Kvsml( const char* directory, const char* base, const char* src )
     std::unordered_map<int, cvt::UnstructuredPfi> pfi_map;
 
     // Piece reading
-    for ( auto vtu : input_pvtu.eachPieces() )
+    for ( auto vtu : input_pvtu.eachPiece() )
     {
         for ( auto file_format : vtu.eachCellType() )
         {

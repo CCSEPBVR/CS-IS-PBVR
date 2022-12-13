@@ -123,7 +123,7 @@ namespace cvt
  * A parallel data file IO using VTK.
  *
  * A developer could read whole VTK data from `get()`.
- * Or a developer could read each piece VTK data from `eachPieces()`.
+ * Or a developer could read each piece VTK data from `eachPiece()`.
  */
 template <typename PieceFileFormatType, typename VtkReaderType, typename VtkWriterType>
 class ParallelVtkFileFormat
@@ -162,13 +162,13 @@ public:
      * e.g.
      *
      *     SomeVtkPFileFormat file_format;
-     *     for (auto piece_file_format : file_format.eachPieces()) {
+     *     for (auto piece_file_format : file_format.eachPiece()) {
      *         // ..
      *     }
      *
      * \return An interface to iterate each pieces.
      */
-    cvt::detail::VtkPieceContainer<PieceFileFormatType, VtkReaderType> eachPieces()
+    cvt::detail::VtkPieceContainer<PieceFileFormatType, VtkReaderType> eachPiece()
     {
         return cvt::detail::VtkPieceContainer<PieceFileFormatType, VtkReaderType>(
             m_number_of_pieces, reader );
@@ -179,13 +179,13 @@ public:
      * e.g.
      *
      *     SomeVtkPFileFormat file_format;
-     *     for (auto piece_file_format : file_format.eachPieces()) {
+     *     for (auto piece_file_format : file_format.eachPiece()) {
      *         // ..
      *     }
      *
      * \return An interface to iterate each pieces.
      */
-    cvt::detail::VtkPieceContainer<PieceFileFormatType, VtkReaderType> eachPieces() const
+    cvt::detail::VtkPieceContainer<PieceFileFormatType, VtkReaderType> eachPiece() const
     {
         return cvt::detail::VtkPieceContainer<PieceFileFormatType, VtkReaderType>(
             m_number_of_pieces, reader );
