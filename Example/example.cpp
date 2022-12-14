@@ -4,11 +4,10 @@
 void Stl2Stl( const char* dst, const char* src );
 void Stl2Kvsml( const char* dst, const char* src );
 void Vtr2Vtr( const char* dst, const char* src );
-void UniformVts2Vts( const char* dst, const char* src );
-void UniformVts2Kvsml( const char* dst, const char* src );
+void Vti2Vti( const char* dst, const char* src );
+void Vti2Kvsml( const char* directory, const char* base, const char* src );
 void UniformPvts2Vts( const char* dst, const char* src );
-void IrregularVts2Vts( const char* dst, const char* src );
-void IrregularVts2Avs( const char* dst, const char* src );
+void Vts2Vts( const char* dst, const char* src );
 void Vtu2Kvsml( const char* directory, const char* base, const char* src );
 void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src );
 void LineVtu2Kvsml( const char* dst, const char* src );
@@ -42,25 +41,21 @@ int main( int argc, char** argv )
     {
         Vtr2Vtr( argv[4], argv[3] );
     }
-    else if ( input_format == "uniform-vts" && output_format == "vts" )
+    else if ( input_format == "vti" && output_format == "vti" )
     {
-        UniformVts2Vts( argv[4], argv[3] );
+        Vti2Vti( argv[4], argv[3] );
     }
     else if ( input_format == "uniform-pvts" && output_format == "vts" )
     {
         UniformPvts2Vts( argv[4], argv[3] );
     }
-    else if ( input_format == "uniform-vts" && output_format == "kvsml" )
+    else if ( input_format == "vti" && output_format == "kvsml" )
     {
-        UniformVts2Kvsml( argv[4], argv[3] );
+        Vti2Kvsml( argv[4], argv[5], argv[3] );
     }
-    else if ( input_format == "irregular-vts" && output_format == "vts" )
+    else if ( input_format == "vts" && output_format == "vts" )
     {
-        IrregularVts2Vts( argv[4], argv[3] );
-    }
-    else if ( input_format == "irregular-vts" && output_format == "avs" )
-    {
-        IrregularVts2Avs( argv[4], argv[3] );
+        Vts2Vts( argv[4], argv[3] );
     }
     else if ( input_format == "vtu" && output_format == "kvsml" )
     {

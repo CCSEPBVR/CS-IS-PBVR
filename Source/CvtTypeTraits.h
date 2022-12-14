@@ -10,6 +10,7 @@
 #include "kvs/PolygonObject"
 #include "kvs/StructuredVolumeObject"
 #include "kvs/UnstructuredVolumeObject"
+#include <vtkImageData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
@@ -38,6 +39,12 @@ struct ConvertibleTypeTraits<vtkPolyData>
 
 template <>
 struct ConvertibleTypeTraits<vtkStructuredGrid>
+{
+    using DestinationType = kvs::StructuredVolumeObject;
+};
+
+template <>
+struct ConvertibleTypeTraits<vtkImageData>
 {
     using DestinationType = kvs::StructuredVolumeObject;
 };

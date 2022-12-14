@@ -26,6 +26,7 @@ add_executable(
   ${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/example.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/StlExample.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtiExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtsExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtuExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/PvtsExample.cpp

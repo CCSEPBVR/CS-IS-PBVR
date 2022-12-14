@@ -31,12 +31,8 @@ public:
      * Construct a data importer and convert from a VTK data.
      *
      * \param [in] file_format A file format or a reader.
-     * \param [in] mode A reader mode.
      */
-    VtkImporter( VtkFileFormat* file_format, int mode = 0 ): KvsObjectType(), m_mode( mode )
-    {
-        this->exec( file_format );
-    }
+    VtkImporter( VtkFileFormat* file_format ): KvsObjectType() { this->exec( file_format ); }
     virtual ~VtkImporter() {}
 
 public:
@@ -46,14 +42,11 @@ public:
         cvt::Import<KvsObjectType*,
                     vtkSmartPointer<typename cvt::VtkFileFormatTraits<VtkFileFormat>::VtkDataType>>(
             dynamic_cast<KvsObjectType*>( this ),
-            dynamic_cast<const VtkFileFormat*>( file_format )->get(), m_mode );
+            dynamic_cast<const VtkFileFormat*>( file_format )->get() );
         kvs::ImporterBase::setSuccess( true );
 
         return this;
     }
-
-private:
-    int m_mode;
 };
 } // namespace cvt
 
