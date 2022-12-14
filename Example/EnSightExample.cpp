@@ -27,7 +27,7 @@ void Case2Kvsml( const char* directory, const char* base, const char* src )
         auto time = time_and_format.first;
         auto& multi_block_format = time_and_format.second;
 
-        std::cout << time << std::endl;
+        std::cout << "  time: " << time << std::endl;
         if ( time_step == 0 )
         {
             // Count sub volumes at first
@@ -56,9 +56,10 @@ void Case2Kvsml( const char* directory, const char* base, const char* src )
         int sub_volume_id = 1;
         for ( auto format : multi_block_format.eachBlock() )
         {
+            std::cout << "    sub volume id:" << sub_volume_id << std::endl;
             if ( !format )
             {
-                std::cout << "Unsupported VTK data type" << std::endl;
+                std::cout << "      Unsupported VTK data type" << std::endl;
             }
             else if ( auto unstructured_volume_format =
                           dynamic_cast<cvt::VtkXmlUnstructuredGrid*>( format.get() ) )
@@ -69,9 +70,7 @@ void Case2Kvsml( const char* directory, const char* base, const char* src )
                         unstructured_volume_format );
 
                     kvs::UnstructuredVolumeObject* object = &importer;
-                    std::cout << "#nodes: " << object->numberOfNodes() << std::endl;
-                    std::cout << "#cells: " << object->numberOfCells() << std::endl;
-                    std::cout << "cellType: " << object->cellType() << std::endl;
+                    object->print( std::cout, kvs::Indent( 6 ) );
 
                     auto local_base =
                         std::string( base ) + "_" + std::to_string( object->cellType() );
@@ -97,12 +96,12 @@ void Case2Kvsml( const char* directory, const char* base, const char* src )
                 }
                 catch ( std::runtime_error& e )
                 {
-                    std::cout << e.what() << std::endl;
+                    std::cout << "      " << e.what() << std::endl;
                 }
             }
             else
             {
-                std::cout << "Supported, but non-unstructured grid" << std::endl;
+                std::cout << "      Supported, but non-unstructured grid" << std::endl;
             }
 
             ++sub_volume_id;

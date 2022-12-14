@@ -28,11 +28,7 @@ public:
     }
 
 public:
-    FileFormat operator*()
-    {
-        std::cout << filenames->GetValue( head ) << std::endl;
-        return FileFormat( filenames->GetValue( head ) );
-    }
+    FileFormat operator*() { return FileFormat( filenames->GetValue( head ) ); }
     FileFormat operator*() const { return FileFormat( filenames->GetValue( head ) ); }
     void operator++() noexcept { ++head; }
     NumeralSequenceFileIterator<FileFormat> operator++( int )
