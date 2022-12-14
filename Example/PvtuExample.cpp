@@ -45,8 +45,7 @@ void Pvtu2Kvsml( const char* directory, const char* base, const char* src )
                 std::string( base ) + "_" + std::to_string( object->cellType() );
             cvt::UnstructuredVolumeObjectExporter exporter( &importer );
             exporter.setWritingDataTypeToExternalBinary();
-            exporter.writeForPbvr( directory, local_base, time_step, sub_volume_id,
-                                   sub_volume_count );
+            exporter.write( directory, local_base, time_step, sub_volume_id, sub_volume_count );
             // or
             // exporter.write( "<directory/<local_base>_00000_0000001_0000001.kvsml" );
 
@@ -95,6 +94,7 @@ void Pvtu2Kvsml2( const char* directory, const char* base, const char* src )
         kvs::UnstructuredVolumeObject* object = &importer;
         std::cout << "#nodes: " << object->numberOfNodes() << std::endl;
         std::cout << "#cells: " << object->numberOfCells() << std::endl;
+        // string for cell type
         std::cout << "cellType: " << object->cellType() << std::endl;
 
         std::cout << "writing ..." << std::endl;
@@ -102,7 +102,7 @@ void Pvtu2Kvsml2( const char* directory, const char* base, const char* src )
 
         cvt::UnstructuredVolumeObjectExporter exporter( &importer );
         exporter.setWritingDataTypeToExternalBinary();
-        exporter.writeForPbvr( directory, local_base, time_step, sub_volume_id, sub_volume_count );
+        exporter.write( directory, local_base, time_step, sub_volume_id, sub_volume_count );
         // or
         // exporter.write( "<directory/<local_base>_00000_0000001_0000001.kvsml" );
 

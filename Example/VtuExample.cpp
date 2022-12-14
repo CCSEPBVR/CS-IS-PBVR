@@ -38,7 +38,7 @@ void Vtu2Kvsml( const char* directory, const char* base, const char* src )
 
         cvt::UnstructuredVolumeObjectExporter exporter( &importer );
         exporter.setWritingDataTypeToExternalBinary();
-        exporter.writeForPbvr( directory, local_base, time_step, sub_volume_id, sub_volume_count );
+        exporter.write( directory, local_base, time_step, sub_volume_id, sub_volume_count );
         // or
         // exporter.write( "<directory>/<local_base>_00000_0000001_0000001.kvsml" );
 
@@ -84,8 +84,7 @@ void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src )
 
             cvt::UnstructuredVolumeObjectExporter exporter( &importer );
             exporter.setWritingDataTypeToExternalBinary();
-            exporter.writeForPbvr( directory, local_base, time_step, sub_volume_id,
-                                   sub_volume_count );
+            exporter.write( directory, local_base, time_step, sub_volume_id, sub_volume_count );
             // or
             // exporter.write( "<directory>/<local_base>_<time_step>_0000001_0000001.kvsml" );
 

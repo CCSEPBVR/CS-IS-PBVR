@@ -70,8 +70,7 @@ void Cgns2Kvsml( const char* directory, const char* base, const char* src )
 
                 cvt::UnstructuredVolumeObjectExporter exporter( &importer );
                 exporter.setWritingDataTypeToExternalBinary();
-                exporter.writeForPbvr( directory, local_base, time_step, sub_volume_id,
-                                       sub_volume_count );
+                exporter.write( directory, local_base, time_step, sub_volume_id, sub_volume_count );
                 // or
                 // exporter.write(
                 //    "<directory>/<local_base>_<time_step>_<sub_volume_id>_<sub_volume_count>.kvsml"
