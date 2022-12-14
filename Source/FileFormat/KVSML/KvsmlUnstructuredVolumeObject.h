@@ -55,8 +55,8 @@ public:
      * \return `true` on success, otherwise `false`.
      */
     template <typename PathLike0, typename PathLike1>
-    bool writeForPbvr( PathLike0 directory, PathLike1 base, int time_step = 0,
-                       int sub_volume_id = 1, int sub_volume_count = 1 )
+    bool write( PathLike0 directory, PathLike1 base, int time_step = 0, int sub_volume_id = 1,
+                int sub_volume_count = 1 )
     {
         try
         {
