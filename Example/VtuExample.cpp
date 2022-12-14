@@ -27,13 +27,12 @@ void Vtu2Kvsml( const char* directory, const char* base, const char* src )
         int sub_volume_count = 1;
 
         cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &vtu );
+        std::cout << "  cell type: " << importer.cellType() << std::endl;
 
         kvs::UnstructuredVolumeObject* object = &importer;
-        std::cout << "#nodes: " << object->numberOfNodes() << std::endl;
-        std::cout << "#cells: " << object->numberOfCells() << std::endl;
-        std::cout << "cellType: " << object->cellType() << std::endl;
+        object->print( std::cout, kvs::Indent( 4 ) );
 
-        std::cout << "writing to " << directory << std::endl;
+        std::cout << "  writing to " << directory << " ..." << std::endl;
         auto local_base = std::string( base ) + "_" + std::to_string( object->cellType() );
 
         cvt::UnstructuredVolumeObjectExporter exporter( &importer );
@@ -58,8 +57,6 @@ void Vtu2Kvsml( const char* directory, const char* base, const char* src )
 
 void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src )
 {
-    std::cout << "reading " << src << " ..." << std::endl;
-
     std::unordered_map<int, cvt::UnstructuredPfi> pfi_map;
 
     cvt::NumeralSequenceFiles<cvt::VtkXmlUnstructuredGrid> time_series( src );
@@ -70,23 +67,26 @@ void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src )
 
     for ( auto whole_vtu : time_series.eachTimeStep() )
     {
+        std::cout << "reading " << whole_vtu.filename() << " ..." << std::endl;
+
         for ( auto vtu : whole_vtu.eachCellType() )
         {
             cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &vtu );
+            std::cout << "  cell type: " << importer.cellType() << std::endl;
 
             kvs::UnstructuredVolumeObject* object = &importer;
-            std::cout << "#nodes: " << object->numberOfNodes() << std::endl;
-            std::cout << "#cells: " << object->numberOfCells() << std::endl;
-            std::cout << "cellType: " << object->cellType() << std::endl;
+            object->print( std::cout, kvs::Indent( 4 ) );
 
-            std::cout << "writing to " << directory << std::endl;
+            std::cout << "  writing to " << directory << " ..." << std::endl;
             auto local_base = std::string( base ) + "_" + std::to_string( object->cellType() );
 
             cvt::UnstructuredVolumeObjectExporter exporter( &importer );
             exporter.setWritingDataTypeToExternalBinary();
             exporter.write( directory, local_base, time_step, sub_volume_id, sub_volume_count );
             // or
-            // exporter.write( "<directory>/<local_base>_<time_step>_0000001_0000001.kvsml" );
+            // exporter.write(
+            //   "<directory>/<local_base>_<time_step>_<sub_volume_id>_<sub_volume_count>.kvsml"
+            // );
 
             if ( time_step == 0 )
             {
@@ -107,7 +107,7 @@ void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src )
         std::string local_base = std::string( base ) + "_" + std::to_string( e.first );
         e.second.write( directory, local_base );
         // or
-        // e.write( "<directory>/<local_base>.pfi" );
+        // e.second.write( "<directory>/<local_base>.pfi" );
 
         pfl.registerPfi( directory, local_base );
     }
