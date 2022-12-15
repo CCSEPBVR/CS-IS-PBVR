@@ -26,6 +26,7 @@ add_executable(
   ${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/example.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/StlExample.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtiExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtsExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtuExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/PvtsExample.cpp
@@ -35,6 +36,7 @@ add_executable(
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/EnSightExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/CgnsExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Importer/VtkImport.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Source/Exporter/StructuredVolumeObjectExporter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Exporter/UnstructuredVolumeObjectExporter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Exporter/VtkExport.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/VtkCompositeDataSetFileFormat.cpp

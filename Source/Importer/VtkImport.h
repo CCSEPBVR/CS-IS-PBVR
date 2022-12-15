@@ -12,13 +12,12 @@
 #include "kvs/StructuredVolumeObject"
 #include "kvs/UnstructuredVolumeObject"
 
+#include <vtkImageData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkSmartPointer.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
-
-#include "CvtMode.h"
 
 namespace cvt
 {
@@ -41,15 +40,13 @@ void ImportPolygonObject( kvs::PolygonObject* polygon_object, vtkSmartPointer<vt
 void ImportRectilinearObject( kvs::StructuredVolumeObject* rectilinear_object,
                               vtkSmartPointer<vtkRectilinearGrid> data );
 /**
- * Import a KVS uniform structured volume object from a VTK StructuredGrid.
- *
- * This function ignores point coordinates, only refers to dimensions.
+ * Import a KVS uniform structured volume object from a VTK ImageData.
  *
  * \param [inout] uniform_object A KVS uniform structured volume object.
- * \param [in] data A VTK StructuredGrid.
+ * \param [in] data A VTK ImageData.
  */
 void ImportUniformStructuredVolumeObject( kvs::StructuredVolumeObject* uniform_object,
-                                          vtkSmartPointer<vtkStructuredGrid> data );
+                                          vtkSmartPointer<vtkImageData> data );
 /**
  * Import a KVS irregular structured volume object from a VTK StructuredGrid.
  *
@@ -83,14 +80,13 @@ namespace cvt
  *
  * \param [inout] object A destination.
  * \param [in] data A source.
- * \param [in] mode An import mode.
  */
 template <typename OutputType, typename InputType>
-inline void Import( OutputType object, InputType data, int mode = 0 );
+inline void Import( OutputType object, InputType data );
 
 template <>
 inline void Import<kvs::PolygonObject*, vtkSmartPointer<vtkPolyData>>(
-    kvs::PolygonObject* polygon_object, vtkSmartPointer<vtkPolyData> data, int ignored )
+    kvs::PolygonObject* polygon_object, vtkSmartPointer<vtkPolyData> data )
 {
     if ( !polygon_object )
     {
@@ -111,8 +107,7 @@ inline void Import<kvs::PolygonObject*, vtkSmartPointer<vtkPolyData>>(
 
 template <>
 inline void Import<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkRectilinearGrid>>(
-    kvs::StructuredVolumeObject* rectilinear_object, vtkSmartPointer<vtkRectilinearGrid> data,
-    int ignored )
+    kvs::StructuredVolumeObject* rectilinear_object, vtkSmartPointer<vtkRectilinearGrid> data )
 {
     if ( !rectilinear_object )
     {
@@ -129,7 +124,7 @@ inline void Import<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkRectilinearG
 
 template <>
 inline void Import<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkStructuredGrid>>(
-    kvs::StructuredVolumeObject* object, vtkSmartPointer<vtkStructuredGrid> data, int mode )
+    kvs::StructuredVolumeObject* object, vtkSmartPointer<vtkStructuredGrid> data )
 {
     if ( !object )
     {
@@ -142,19 +137,30 @@ inline void Import<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkStructuredGr
         return;
     }
 
-    if ( mode == cvt::UNIFORM_GRID_MODE )
+    cvt::detail::ImportIrregularStructuredVolumeObject( object, data );
+}
+
+template <>
+inline void Import<kvs::StructuredVolumeObject*, vtkSmartPointer<vtkImageData>>(
+    kvs::StructuredVolumeObject* object, vtkSmartPointer<vtkImageData> data )
+{
+    if ( !object )
     {
-        cvt::detail::ImportUniformStructuredVolumeObject( object, data );
+        throw std::runtime_error( "A KVS object was a null pointer." );
+        return;
     }
-    else
+    if ( !data )
     {
-        cvt::detail::ImportIrregularStructuredVolumeObject( object, data );
+        throw std::runtime_error( "A VTK data was a null pointer." );
+        return;
     }
+
+    cvt::detail::ImportUniformStructuredVolumeObject( object, data );
 }
 
 template <>
 inline void Import<kvs::UnstructuredVolumeObject*, vtkSmartPointer<vtkUnstructuredGrid>>(
-    kvs::UnstructuredVolumeObject* object, vtkSmartPointer<vtkUnstructuredGrid> data, int mode )
+    kvs::UnstructuredVolumeObject* object, vtkSmartPointer<vtkUnstructuredGrid> data )
 {
     if ( !object )
     {
@@ -172,7 +178,7 @@ inline void Import<kvs::UnstructuredVolumeObject*, vtkSmartPointer<vtkUnstructur
 
 template <>
 inline void Import<kvs::LineObject*, vtkSmartPointer<vtkUnstructuredGrid>>(
-    kvs::LineObject* object, vtkSmartPointer<vtkUnstructuredGrid> data, int mode )
+    kvs::LineObject* object, vtkSmartPointer<vtkUnstructuredGrid> data )
 {
     if ( !object )
     {

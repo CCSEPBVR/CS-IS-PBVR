@@ -374,14 +374,14 @@ void cvt::detail::ImportRectilinearObject( kvs::StructuredVolumeObject* rectilin
 }
 
 void cvt::detail::ImportUniformStructuredVolumeObject( kvs::StructuredVolumeObject* uniform_object,
-                                                       vtkSmartPointer<vtkStructuredGrid> input )
+                                                       vtkSmartPointer<vtkImageData> input )
 {
     vtkNew<vtkCellDataToPointData> cell_data_to_point_data;
     cell_data_to_point_data->SetInputData( input );
     cell_data_to_point_data->Update();
 
-    vtkSmartPointer<vtkStructuredGrid> data =
-        dynamic_cast<vtkStructuredGrid*>( cell_data_to_point_data->GetOutput() );
+    vtkSmartPointer<vtkImageData> data =
+        dynamic_cast<vtkImageData*>( cell_data_to_point_data->GetOutput() );
 
     auto bounding_box = data->GetBounds();
     kvs::Vector3f min_obj_coord( bounding_box[0], bounding_box[2], bounding_box[4] );

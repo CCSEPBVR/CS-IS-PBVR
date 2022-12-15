@@ -5,7 +5,6 @@
 #include "kvs/StructuredVolumeExporter"
 #include "kvs/StructuredVolumeObject"
 
-#include "CvtMode.h"
 #include "Exporter/VtkExporter.h"
 #include "FileFormat/VTK/VtkXmlPStructuredGrid.h"
 #include "FileFormat/VTK/VtkXmlStructuredGrid.h"
@@ -21,8 +20,7 @@ void UniformPvts2Vts( const char* dst, const char* src )
     for ( auto file_format : input_pvts.eachPiece() )
     {
         std::cout << "importing ..." << std::endl;
-        cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer( &file_format,
-                                                              cvt::UNIFORM_GRID_MODE );
+        cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer( &file_format );
         kvs::StructuredVolumeObject* object = &importer;
         std::cout << "#nodes: " << object->numberOfNodes() << std::endl;
         std::cout << "#resolution: [" << object->resolution()[0] << ", " << object->resolution()[1]

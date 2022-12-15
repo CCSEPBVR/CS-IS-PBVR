@@ -10,6 +10,7 @@
 
 #include "kvs/PolygonObject"
 #include "kvs/StructuredVolumeObject"
+#include <vtkImageData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkSmartPointer.h>
@@ -37,12 +38,12 @@ void ExportPolygonObject( vtkSmartPointer<vtkPolyData>& data,
 void ExportRectilinearGridObject( vtkSmartPointer<vtkRectilinearGrid>& data,
                                   const kvs::StructuredVolumeObject* rectilinear_object );
 /**
- * Export from a KVS uniform object to a VTK StructuredGrid.
+ * Export from a KVS uniform object to a VTK ImageData.
  *
- * \param [inout] data A VTK StructuredGrid.
+ * \param [inout] data A VTK ImageData.
  * \param [in] uniform_object A KVS uniform object.
  */
-void ExportUniformGridObject( vtkSmartPointer<vtkStructuredGrid>& data,
+void ExportUniformGridObject( vtkSmartPointer<vtkImageData>& data,
                               const kvs::StructuredVolumeObject* uniform_object );
 /**
  * Export from a KVS irregular object to a VTK StructuredGrid.
@@ -117,11 +118,34 @@ inline void Export<std::reference_wrapper<vtkSmartPointer<vtkStructuredGrid>>,
     }
     if ( object->gridType() == kvs::StructuredVolumeObject::GridType::Uniform )
     {
-        cvt::detail::ExportUniformGridObject( data, object );
+        throw std::runtime_error( cvt::detail::KVS_OBJECT_NULL_POINTER_MESSAGE );
+        return;
     }
     else
     {
         cvt::detail::ExportIrregularGridObject( data, object );
+    }
+}
+
+template <>
+inline void Export<std::reference_wrapper<vtkSmartPointer<vtkImageData>>,
+                   const kvs::StructuredVolumeObject*>(
+    std::reference_wrapper<vtkSmartPointer<vtkImageData>> data,
+    const kvs::StructuredVolumeObject* object )
+{
+    if ( !object )
+    {
+        throw std::runtime_error( cvt::detail::KVS_OBJECT_NULL_POINTER_MESSAGE );
+        return;
+    }
+    if ( object->gridType() == kvs::StructuredVolumeObject::GridType::Uniform )
+    {
+        cvt::detail::ExportUniformGridObject( data, object );
+    }
+    else
+    {
+        throw std::runtime_error( cvt::detail::KVS_OBJECT_NULL_POINTER_MESSAGE );
+        return;
     }
 }
 } // namespace cvt

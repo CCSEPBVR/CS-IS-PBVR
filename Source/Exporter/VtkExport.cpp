@@ -186,54 +186,6 @@ void cvt::detail::ExportRectilinearGridObject(
     data = grid;
 }
 
-void cvt::detail::ExportUniformGridObject( vtkSmartPointer<vtkStructuredGrid>& data,
-                                           const kvs::StructuredVolumeObject* uniform_object )
-{
-    vtkNew<vtkStructuredGrid> grid;
-
-    auto resolution = uniform_object->resolution();
-    grid->SetDimensions( resolution[0], resolution[1], resolution[2] );
-
-    auto min_coords = uniform_object->minObjectCoord();
-    auto max_coords = uniform_object->maxObjectCoord();
-    vtkNew<vtkPoints> points;
-
-    points->SetDataTypeToFloat();
-    points->SetNumberOfPoints( uniform_object->numberOfNodes() );
-
-    vtkIdType i = 0;
-    kvs::Real32 d[3] = {
-        ( max_coords[0] - min_coords[0] ) / static_cast<kvs::Real32>( resolution[0] ),
-        ( max_coords[1] - min_coords[1] ) / static_cast<kvs::Real32>( resolution[1] ),
-        ( max_coords[2] - min_coords[2] ) / static_cast<kvs::Real32>( resolution[2] )
-    };
-
-    for ( unsigned int z = 0; z < resolution[2]; ++z )
-    {
-        kvs::Real32 z_coord = min_coords[2] + d[2] * z;
-        for ( unsigned int y = 0; y < resolution[1]; ++y )
-        {
-            kvs::Real32 y_coord = min_coords[1] + d[1] * y;
-            for ( unsigned int x = 0; x < resolution[0]; ++x )
-            {
-                kvs::Real32 x_coord = min_coords[0] + d[0] * x;
-
-                points->SetPoint( i++, x_coord, y_coord, z_coord );
-            }
-        }
-    }
-
-    grid->SetPoints( points );
-
-    if ( uniform_object->veclen() > 0 )
-    {
-        auto point_data = grid->GetPointData();
-        ::SetArraysToPointSet( point_data, uniform_object->values(), grid->GetNumberOfPoints() );
-    }
-
-    data = grid;
-}
-
 void cvt::detail::ExportIrregularGridObject( vtkSmartPointer<vtkStructuredGrid>& data,
                                              const kvs::StructuredVolumeObject* irregular_object )
 {
@@ -249,6 +201,33 @@ void cvt::detail::ExportIrregularGridObject( vtkSmartPointer<vtkStructuredGrid>&
     {
         auto point_data = grid->GetPointData();
         ::SetArraysToPointSet( point_data, irregular_object->values(), grid->GetNumberOfPoints() );
+    }
+
+    data = grid;
+}
+
+void cvt::detail::ExportUniformGridObject( vtkSmartPointer<vtkImageData>& data,
+                                           const kvs::StructuredVolumeObject* uniform_object )
+{
+    vtkNew<vtkImageData> grid;
+
+    auto resolution = uniform_object->resolution();
+    grid->SetDimensions( resolution[0], resolution[1], resolution[2] );
+
+    auto origin = uniform_object->minObjectCoord();
+    auto max_coord = uniform_object->maxObjectCoord();
+    grid->SetOrigin( static_cast<double>( origin[0] ), static_cast<double>( origin[1] ),
+                     static_cast<double>( origin[2] ) );
+    grid->SetSpacing(
+        static_cast<double>( max_coord[0] - origin[0] ) / static_cast<double>( resolution[0] - 1 ),
+        static_cast<double>( max_coord[1] - origin[1] ) / static_cast<double>( resolution[1] - 1 ),
+        static_cast<double>( max_coord[2] - origin[2] ) /
+            static_cast<double>( resolution[2] - 1 ) );
+
+    if ( uniform_object->veclen() > 0 )
+    {
+        auto point_data = grid->GetPointData();
+        ::SetArraysToPointSet( point_data, uniform_object->values(), grid->GetNumberOfPoints() );
     }
 
     data = grid;
