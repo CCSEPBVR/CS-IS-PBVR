@@ -61,7 +61,7 @@ int GetCellId( const std::string& cell_type_expr )
 }
 
 template <typename A, typename B>
-void UpdateMinMaxValues( A& mins, A& maxes, const B& array, int veclen, int number_of_nodes )
+void UpdateMinMaxValuesImpl( A& mins, A& maxes, const B& array, int veclen, int number_of_nodes )
 {
     for ( int v = 0; v < veclen; ++v )
     {
@@ -76,6 +76,64 @@ void UpdateMinMaxValues( A& mins, A& maxes, const B& array, int veclen, int numb
 
         mins[v] = std::min( min, mins[v] );
         maxes[v] = std::max( max, maxes[v] );
+    }
+}
+
+template <typename A, typename B>
+void UpdateMinMaxValues( A& mins, A& maxes, const B& array, int veclen, int number_of_nodes )
+{
+    switch ( array.typeID() )
+    {
+    case kvs::Type::TypeID::TypeReal32: {
+        auto values = array.template asValueArray<kvs::Real32>();
+        ::UpdateMinMaxValuesImpl( mins, maxes, values, veclen, number_of_nodes );
+        break;
+    }
+    case kvs::Type::TypeID::TypeInt8: {
+        auto values = array.template asValueArray<kvs::Int8>();
+        ::UpdateMinMaxValuesImpl( mins, maxes, values, veclen, number_of_nodes );
+        break;
+    }
+    case kvs::Type::TypeID::TypeInt16: {
+        auto values = array.template asValueArray<kvs::Int16>();
+        ::UpdateMinMaxValuesImpl( mins, maxes, values, veclen, number_of_nodes );
+        break;
+    }
+    case kvs::Type::TypeID::TypeInt32: {
+        auto values = array.template asValueArray<kvs::Int32>();
+        ::UpdateMinMaxValuesImpl( mins, maxes, values, veclen, number_of_nodes );
+        break;
+    }
+    case kvs::Type::TypeID::TypeInt64: {
+        auto values = array.template asValueArray<kvs::Int64>();
+        ::UpdateMinMaxValuesImpl( mins, maxes, values, veclen, number_of_nodes );
+        break;
+    }
+    case kvs::Type::TypeID::TypeUInt8: {
+        auto values = array.template asValueArray<kvs::UInt8>();
+        ::UpdateMinMaxValuesImpl( mins, maxes, values, veclen, number_of_nodes );
+        break;
+    }
+    case kvs::Type::TypeID::TypeUInt16: {
+        auto values = array.template asValueArray<kvs::UInt16>();
+        ::UpdateMinMaxValuesImpl( mins, maxes, values, veclen, number_of_nodes );
+        break;
+    }
+    case kvs::Type::TypeID::TypeUInt32: {
+        auto values = array.template asValueArray<kvs::UInt32>();
+        ::UpdateMinMaxValuesImpl( mins, maxes, values, veclen, number_of_nodes );
+        break;
+    }
+    case kvs::Type::TypeID::TypeUInt64: {
+        auto values = array.template asValueArray<kvs::UInt64>();
+        ::UpdateMinMaxValuesImpl( mins, maxes, values, veclen, number_of_nodes );
+        break;
+    }
+    case kvs::Type::TypeID::TypeReal64:
+    default: {
+        auto values = array.template asValueArray<kvs::Real64>();
+        ::UpdateMinMaxValuesImpl( mins, maxes, values, veclen, number_of_nodes );
+    }
     }
 }
 
@@ -140,9 +198,8 @@ void cvt::UnstructuredPfi::registerObject( kvs::KVSMLUnstructuredVolumeObject* o
     min_object_coords[time_step][sub_volume] = object->minObjectCoord();
     max_object_coords[time_step][sub_volume] = object->maxObjectCoord();
 
-    auto values = object->values().asValueArray<float>();
-    ::UpdateMinMaxValues( min_values[time_step], max_values[time_step], values, number_of_component,
-                          object->nnodes() );
+    ::UpdateMinMaxValues( min_values[time_step], max_values[time_step], object->values(),
+                          number_of_component, object->nnodes() );
 }
 
 void cvt::UnstructuredPfi::registerObject( kvs::KVSMLStructuredVolumeObject* object, int time_step,
@@ -164,9 +221,8 @@ void cvt::UnstructuredPfi::registerObject( kvs::KVSMLStructuredVolumeObject* obj
     min_object_coords[time_step][sub_volume] = object->minObjectCoord();
     max_object_coords[time_step][sub_volume] = object->maxObjectCoord();
 
-    auto values = object->values().asValueArray<float>();
-    ::UpdateMinMaxValues( min_values[time_step], max_values[time_step], values, number_of_component,
-                          number_of_nodes );
+    ::UpdateMinMaxValues( min_values[time_step], max_values[time_step], object->values(),
+                          number_of_component, number_of_nodes );
 }
 
 bool cvt::UnstructuredPfi::write( const char* const filename )
