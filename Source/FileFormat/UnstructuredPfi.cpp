@@ -145,6 +145,30 @@ void cvt::UnstructuredPfi::registerObject( kvs::KVSMLUnstructuredVolumeObject* o
                           object->nnodes() );
 }
 
+void cvt::UnstructuredPfi::registerObject( kvs::KVSMLStructuredVolumeObject* object, int time_step,
+                                           int sub_volume_id )
+{
+    int sub_volume = sub_volume_id - 1;
+    auto resolution = object->resolution();
+
+    auto number_of_nodes = static_cast<int>( resolution[0] * resolution[1] * resolution[2] );
+    node_counts[time_step][sub_volume] = number_of_nodes;
+    element_counts[time_step][sub_volume] =
+        static_cast<int>( ( resolution[0] - 1 ) * ( resolution[1] - 1 ) * ( resolution[2] - 1 ) );
+
+    type_of_elements = 7;
+
+    min_external_coords[time_step][sub_volume] = object->minExternalCoord();
+    max_external_coords[time_step][sub_volume] = object->maxExternalCoord();
+
+    min_object_coords[time_step][sub_volume] = object->minObjectCoord();
+    max_object_coords[time_step][sub_volume] = object->maxObjectCoord();
+
+    auto values = object->values().asValueArray<float>();
+    ::UpdateMinMaxValues( min_values[time_step], max_values[time_step], values, number_of_component,
+                          number_of_nodes );
+}
+
 bool cvt::UnstructuredPfi::write( const char* const filename )
 {
     if ( auto f = fopen( filename, "wb" ) )

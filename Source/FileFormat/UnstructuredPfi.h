@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "kvs/KVSMLStructuredVolumeObject"
 #include "kvs/KVSMLUnstructuredVolumeObject"
 #include "kvs/Vector3"
 
@@ -41,6 +42,15 @@ public:
      * \param [in] sub_volume_id A sub volume ID.
      */
     void registerObject( kvs::KVSMLUnstructuredVolumeObject* object, int time_step = 0,
+                         int sub_volume_id = 0 );
+    /**
+     * Register a file for a PFI file.
+     *
+     * \param [in] object A KVS object.
+     * \param [in] time_step A time step.
+     * \param [in] sub_volume_id A sub volume ID.
+     */
+    void registerObject( kvs::KVSMLStructuredVolumeObject* object, int time_step = 0,
                          int sub_volume_id = 0 );
     /**
      * Write to a PFI file.
