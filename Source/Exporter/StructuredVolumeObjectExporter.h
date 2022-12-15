@@ -4,28 +4,28 @@
  *  All rights reserved.
  *  See http://www.viz.media.kyoto-u.ac.jp/kvs/copyright/ for details.
  */
-#ifndef CVT__UNSTRUCTURED_VOLUME_OBJECT_EXPORTER_H_INCLUDE
-#define CVT__UNSTRUCTURED_VOLUME_OBJECT_EXPORTER_H_INCLUDE
+#ifndef CVT__STRUCTURED_VOLUME_OBJECT_EXPORTER_H_INCLUDE
+#define CVT__STRUCTURED_VOLUME_OBJECT_EXPORTER_H_INCLUDE
 // clang-format off
 #include "kvs/ObjectBase"
 // clang-format on
 #include "kvs/ExporterBase"
 #include "kvs/Module"
-#include "kvs/UnstructuredVolumeObject"
+#include "kvs/StructuredVolumeObject"
 
-#include "FileFormat/KVSML/KvsmlUnstructuredVolumeObject.h"
+#include "FileFormat/KVSML/KvsmlStructuredVolumeObject.h"
 
 namespace cvt
 {
 
-class UnstructuredVolumeObjectExporter : public kvs::ExporterBase,
-                                         public cvt::KvsmlUnstructuredVolumeObject
+class StructuredVolumeObjectExporter : public kvs::ExporterBase,
+                                       public cvt::KvsmlStructuredVolumeObject
 {
-    kvsModule( cvt::UnstructuredVolumeObjectExporter, Exporter );
+    kvsModule( cvt::StructuredVolumeObjectExporter, Exporter );
     kvsModuleBaseClass( kvs::ExporterBase );
 
 public:
-    UnstructuredVolumeObjectExporter( const kvs::UnstructuredVolumeObject* object )
+    StructuredVolumeObjectExporter( const kvs::StructuredVolumeObject* object )
     {
         this->exec( object );
     }
@@ -34,4 +34,4 @@ public:
     kvs::FileFormatBase* exec( const kvs::ObjectBase* object ) override;
 };
 } // namespace cvt
-#endif // CVT__UNSTRUCTURED_VOLUME_OBJECT_EXPORTER_H_INCLUDE
+#endif // CVT__STRUCTURED_VOLUME_OBJECT_EXPORTER_H_INCLUDE

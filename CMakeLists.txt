@@ -36,6 +36,7 @@ add_executable(
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/EnSightExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/CgnsExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Importer/VtkImport.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Source/Exporter/StructuredVolumeObjectExporter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Exporter/UnstructuredVolumeObjectExporter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Exporter/VtkExport.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/VtkCompositeDataSetFileFormat.cpp

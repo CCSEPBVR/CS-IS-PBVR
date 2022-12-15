@@ -37,6 +37,7 @@ void Vti2Kvsml( const char* directory, const char* base, const char* src )
     cvt::VtkImporter<cvt::VtkXmlImageData> importer( &input_vti );
 
     kvs::StructuredVolumeObject* object = &importer;
+    object->updateMinMaxCoords();
     object->setMinMaxExternalCoords( object->minObjectCoord(), object->maxObjectCoord() );
     object->print( std::cout, kvs::Indent( 2 ) );
 

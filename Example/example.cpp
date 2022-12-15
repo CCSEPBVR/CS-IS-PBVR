@@ -8,6 +8,7 @@ void Vti2Vti( const char* dst, const char* src );
 void Vti2Kvsml( const char* directory, const char* base, const char* src );
 void UniformPvts2Vts( const char* dst, const char* src );
 void Vts2Vts( const char* dst, const char* src );
+void Vts2Kvsml( const char* directory, const char* base, const char* src );
 void Vtu2Kvsml( const char* directory, const char* base, const char* src );
 void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src );
 void LineVtu2Kvsml( const char* dst, const char* src );
@@ -56,6 +57,10 @@ int main( int argc, char** argv )
     else if ( input_format == "vts" && output_format == "vts" )
     {
         Vts2Vts( argv[4], argv[3] );
+    }
+    else if ( input_format == "vts" && output_format == "kvsml" )
+    {
+        Vts2Kvsml( argv[4], argv[5], argv[3] );
     }
     else if ( input_format == "vtu" && output_format == "kvsml" )
     {
