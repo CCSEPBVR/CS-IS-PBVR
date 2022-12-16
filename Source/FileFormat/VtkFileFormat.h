@@ -7,6 +7,7 @@
 #ifndef CVT__VTK_FILE_FORMAT_H_INCLUDE
 #define CVT__VTK_FILE_FORMAT_H_INCLUDE
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <string>
 
@@ -38,32 +39,46 @@ public:
     /**
      * Construct an empty IO object.
      */
-    VtkFileFormat() noexcept: kvs::FileFormatBase() {}
+    VtkFileFormat() noexcept: kvs::FileFormatBase()
+    {
+        set_reader_options = []( VtkReaderType* ) {};
+    }
     /**
      * Construct an IO object.
      *
-     * \param filename A file name.
+     * \param[in] filename A file name.
      */
-    VtkFileFormat( const std::string& filename ): kvs::FileFormatBase() { read( filename ); }
+    template <typename String>
+    VtkFileFormat( String&& filename ): kvs::FileFormatBase()
+    {
+        set_reader_options = []( VtkReaderType* ) {};
+        read( filename );
+    }
     /**
      * Construct an IO object.
      *
-     * \param filename A file name.
+     * \param[in] filename A file name.
+     * \param[in] reader_option_setter A function to configure a VTK reader additionally.
      */
-    VtkFileFormat( std::string&& filename ): kvs::FileFormatBase() { read( filename ); }
+    template <typename String>
+    VtkFileFormat( String&& filename, std::function<void( VtkReaderType* )> reader_option_setter ):
+        kvs::FileFormatBase(), set_reader_options( reader_option_setter )
+    {
+        read( filename );
+    }
     /**
      * Construct an IO object.
      *
      * This takes the owner of the object.
-     * So DO NOT free the object externally.
+     * So DO NOT free the object manually.
      *
-     * \param [in] vtk_data A VTK data.
+     * \param[in] vtk_data A VTK data.
      */
     VtkFileFormat( VtkDataType* data ): kvs::FileFormatBase() { vtk_data = data; }
     virtual ~VtkFileFormat() {}
 
 public:
-    bool read( const std::string& filename )
+    bool read( const std::string& filename ) override
     {
         BaseClass::setFilename( filename );
         BaseClass::setSuccess( false );
@@ -72,6 +87,7 @@ public:
         {
             vtkNew<VtkReaderType> reader;
             reader->SetFileName( filename.c_str() );
+            set_reader_options( reader );
             reader->Update();
 
             vtk_data = dynamic_cast<VtkDataType*>( reader->GetOutput() );
@@ -90,7 +106,7 @@ public:
             return false;
         }
     }
-    bool write( const std::string& filename )
+    bool write( const std::string& filename ) override
     {
         BaseClass::setFilename( filename );
         BaseClass::setSuccess( false );
@@ -132,17 +148,18 @@ public:
     /**
      * Set a VTK data.
      *
-     * \param [in] object A writing object.
+     * \param[in] object A writing object.
      */
     void set( vtkSmartPointer<VtkDataType> data ) { vtk_data = data; }
     /**
      * Set a VTK data.
      *
-     * \param [in] object A writing object.
+     * \param[in] object A writing object.
      */
     void set( VtkDataType* object ) { vtk_data = object; };
 
 private:
+    std::function<void( VtkReaderType* )> set_reader_options;
     vtkSmartPointer<VtkDataType> vtk_data;
 };
 

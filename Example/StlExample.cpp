@@ -11,7 +11,7 @@
 void Stl2Stl( const char* dst, const char* src )
 {
     std::cout << "reading " << src << " ..." << std::endl;
-    cvt::Stl input_stl( src );
+    cvt::Stl input_stl( src, []( vtkSTLReader* stl_reader ) { stl_reader->MergingOn(); } );
     cvt::VtkImporter<cvt::Stl> importer( &input_stl );
 
     kvs::PolygonObject* polygon_object = &importer;
@@ -27,7 +27,7 @@ void Stl2Stl( const char* dst, const char* src )
 void Stl2Kvsml( const char* dst, const char* src )
 {
     std::cout << "reading " << src << " ..." << std::endl;
-    cvt::Stl input_stl( src );
+    cvt::Stl input_stl( src, []( vtkSTLReader* stl_reader ) { stl_reader->MergingOn(); } );
     cvt::VtkImporter<cvt::Stl> importer( &input_stl );
 
     kvs::PolygonObject* polygon_object = &importer;
