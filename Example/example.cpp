@@ -3,6 +3,7 @@
 
 void Stl2Stl( const char* dst, const char* src );
 void Stl2Kvsml( const char* dst, const char* src );
+void Vtp2Kvsml( const char* dst, const char* src );
 void Vtr2Vtr( const char* dst, const char* src );
 void Vti2Vti( const char* dst, const char* src );
 void Vti2Kvsml( const char* directory, const char* base, const char* src );
@@ -37,6 +38,10 @@ int main( int argc, char** argv )
     else if ( input_format == "stl" && output_format == "kvsml" )
     {
         Stl2Kvsml( argv[4], argv[3] );
+    }
+    else if ( input_format == "vtp" && output_format == "kvsml" )
+    {
+        Vtp2Kvsml( argv[4], argv[3] );
     }
     else if ( input_format == "vtr" && output_format == "vtr" )
     {

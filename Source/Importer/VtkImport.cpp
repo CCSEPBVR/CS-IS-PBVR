@@ -17,6 +17,7 @@
 #include "kvs/UnstructuredVolumeObject"
 #include "kvs/ValueArray"
 #include "kvs/Vector3"
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkFloatArray.h>
@@ -56,7 +57,8 @@ kvs::Vector3ui GetResolution( VtkPointSetPointerType data )
 {
     kvs::Vector3ui resolution;
 
-    auto dimensions = data->GetDimensions();
+    int dimensions[3];
+    data->GetDimensions( dimensions );
     resolution[0] = static_cast<unsigned int>( dimensions[0] );
     resolution[1] = static_cast<unsigned int>( dimensions[1] );
     resolution[2] = static_cast<unsigned int>( dimensions[2] );
@@ -205,6 +207,21 @@ void ReorderElementNodeIndices( DestinationIterator& kvs_connection, vtkIdList* 
 {
     switch ( vtk_cell_type )
     {
+    case VTK_TRIANGLE: {
+        constexpr int order[] = { 0, 1, 2 };
+        ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
+        break;
+    }
+    case VTK_PIXEL: {
+        constexpr int order[] = { 0, 1, 3, 2 };
+        ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
+        break;
+    }
+    case VTK_QUAD: {
+        constexpr int order[] = { 0, 1, 2, 3 };
+        ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
+        break;
+    }
     case VTK_TETRA: {
         constexpr int order[] = { 0, 3, 2, 1 };
         ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
@@ -246,28 +263,14 @@ void ReorderElementNodeIndices( DestinationIterator& kvs_connection, vtkIdList* 
 }
 } // namespace
 
+
 void cvt::detail::ImportPolygonObject( kvs::PolygonObject* polygon_object,
                                        vtkSmartPointer<vtkPolyData> data )
 {
-    std::vector<kvs::Real32> coords( data->GetNumberOfCells() * 3 * 3 );
+    auto coords = ::GetCoordinates( data );
+    polygon_object->setCoords( coords );
 
-    auto c_head = coords.data();
-    for ( vtkIdType i = 0; i < data->GetNumberOfCells(); ++i )
-    {
-        auto cell = data->GetCell( i );
-
-        for ( vtkIdType j = 0; j < cell->GetNumberOfPoints(); ++j )
-        {
-            auto p = data->GetPoint( cell->GetPointId( j ) );
-
-            *c_head = static_cast<kvs::Real32>( p[0] );
-            *( c_head + 1 ) = static_cast<kvs::Real32>( p[1] );
-            *( c_head + 2 ) = static_cast<kvs::Real32>( p[2] );
-
-            c_head += 3;
-        }
-    }
-
+    // Normals
     std::vector<kvs::Real32> normals( data->GetNumberOfCells() * 3 );
     auto stl_normals = data->GetCellData()->GetNormals();
 
@@ -288,8 +291,8 @@ void cvt::detail::ImportPolygonObject( kvs::PolygonObject* polygon_object,
 
         normals_filter->Update();
 
-        data = normals_filter->GetOutput();
-        stl_normals = data->GetCellData()->GetArray( "Normals" );
+        stl_normals = normals_filter->GetOutput()->GetCellData()->GetArray( "Normals" );
+        data->GetCellData()->AddArray( stl_normals );
 
         if ( !stl_normals )
         {
@@ -310,12 +313,44 @@ void cvt::detail::ImportPolygonObject( kvs::PolygonObject* polygon_object,
     }
 
     auto v_normals = kvs::ValueArray<kvs::Real32>( normals );
-    auto v_coords = kvs::ValueArray<kvs::Real32>( coords );
 
-    polygon_object->setPolygonType( kvs::PolygonObject::Triangle );
+    // Connectivity
+    auto cell_array = data->GetPolys();
+    std::vector<kvs::UInt32> connections( cell_array->GetNumberOfConnectivityIds() );
+
+    bool is_triangle_mesh = data->GetCell( 0 ) && data->GetCell( 0 )->GetCellType() == VTK_TRIANGLE;
+    auto head = connections.begin();
+    vtkNew<vtkIdList> cell_ids;
+    for ( vtkIdType i = 0; i < data->GetNumberOfCells(); ++i )
+    {
+        auto cell = data->GetCell( i );
+
+        if ( is_triangle_mesh )
+        {
+            if ( cell->GetCellType() == VTK_TRIANGLE )
+            {
+                data->GetCellPoints( i, cell_ids );
+                ::ReorderElementNodeIndices( head, cell_ids, VTK_TRIANGLE );
+            }
+        }
+        else
+        {
+            if ( cell->GetCellType() == VTK_QUAD || cell->GetCellType() == VTK_PIXEL )
+            {
+                data->GetCellPoints( i, cell_ids );
+                ::ReorderElementNodeIndices( head, cell_ids, cell->GetCellType() );
+            }
+        }
+    }
+    connections.resize( std::distance( connections.begin(), head ) );
+    auto v_connections = kvs::ValueArray<kvs::UInt32>( connections );
+
+    polygon_object->setPolygonType( ( is_triangle_mesh )
+                                        ? kvs::PolygonObject::PolygonType::Triangle
+                                        : kvs::PolygonObject::PolygonType::Quadrangle );
     polygon_object->setNormalType( kvs::PolygonObject::PolygonNormal );
-    polygon_object->setCoords( v_coords );
     polygon_object->setNormals( v_normals );
+    polygon_object->setConnections( v_connections );
     polygon_object->updateMinMaxCoords();
 }
 
