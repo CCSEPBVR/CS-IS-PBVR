@@ -1,5 +1,6 @@
 import os
 import vtk
+from common import make_quad_mesh
 
 
 def generate_triangle_mesh():
@@ -24,15 +25,11 @@ def generate_triangle_mesh():
 
 
 def generate_quad_mesh():
-    image_data = vtk.vtkImageData()
-    image_data.SetDimensions(3, 4, 5)
-
-    geometry_filter = vtk.vtkGeometryFilter()
-    geometry_filter.SetInputData(image_data)
+    polygon = make_quad_mesh([3, 4, 5], [0, 0, 0])
 
     writer = vtk.vtkXMLPolyDataWriter()
     writer.SetFileName(os.path.join('..', 'Polygon', 'quad.vtp'))
-    writer.SetInputConnection(geometry_filter.GetOutputPort())
+    writer.SetInputData(polygon)
     writer.Update()
 
 
