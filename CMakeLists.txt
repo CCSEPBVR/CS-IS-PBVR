@@ -28,12 +28,12 @@ add_executable(
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/StlExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtpExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtiExample.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtrExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtsExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtuExample.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtmExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/PvtsExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/PvtuExample.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Example/RectilinearExample.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtmExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/EnSightExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/CgnsExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Importer/VtkImport.cpp
