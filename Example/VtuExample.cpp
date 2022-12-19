@@ -14,7 +14,7 @@
 
 void Vtu2Kvsml( const char* directory, const char* base, const char* src )
 {
-    std::cout << "reading " << src << " ..." << std::endl;
+    std::cout << "Reading " << src << " ..." << std::endl;
     cvt::VtkXmlUnstructuredGrid input_vtu( src );
 
     cvt::Pfl pfl;
@@ -32,7 +32,7 @@ void Vtu2Kvsml( const char* directory, const char* base, const char* src )
         kvs::UnstructuredVolumeObject* object = &importer;
         object->print( std::cout, kvs::Indent( 4 ) );
 
-        std::cout << "  writing to " << directory << " ..." << std::endl;
+        std::cout << "  Writing to " << directory << " ..." << std::endl;
         auto local_base = std::string( base ) + "_" + std::to_string( object->cellType() );
 
         cvt::UnstructuredVolumeObjectExporter exporter( &importer );
@@ -67,7 +67,7 @@ void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src )
 
     for ( auto whole_vtu : time_series.eachTimeStep() )
     {
-        std::cout << "reading " << whole_vtu.filename() << " ..." << std::endl;
+        std::cout << "Reading " << whole_vtu.filename() << " ..." << std::endl;
 
         for ( auto vtu : whole_vtu.eachCellType() )
         {
@@ -77,7 +77,7 @@ void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src )
             kvs::UnstructuredVolumeObject* object = &importer;
             object->print( std::cout, kvs::Indent( 4 ) );
 
-            std::cout << "  writing to " << directory << " ..." << std::endl;
+            std::cout << "  Writing to " << directory << " ..." << std::endl;
             auto local_base = std::string( base ) + "_" + std::to_string( object->cellType() );
 
             cvt::UnstructuredVolumeObjectExporter exporter( &importer );

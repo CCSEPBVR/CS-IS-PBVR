@@ -104,6 +104,46 @@ public:
      */
     bool write( const char* filename );
 
+    template <typename Stream>
+    void print( Stream& stream, int indent_count = 0 )
+    {
+        std::string indent( indent_count, ' ' );
+        std::cout << indent << "Type of element : " << type_of_elements << std::endl;
+        std::cout << indent << "Last time step : " << last_time_step << std::endl;
+        std::cout << indent << "Max sub volume ID : " << max_sub_volume_id << std::endl;
+        std::cout << indent << "Number of components : " << number_of_component << std::endl;
+
+        for ( int time_step = 0; time_step <= last_time_step; ++time_step )
+        {
+            std::cout << indent << "Time step : " << time_step << std::endl;
+
+            for ( int s = 0; s < max_sub_volume_id; ++s )
+            {
+                std::cout << std::string( indent_count + 2, ' ' ) << "Sub volume : " << ( s + 1 )
+                          << std::endl;
+                std::cout << std::string( indent_count + 4, ' ' )
+                          << "Node count : " << node_counts[time_step][s] << std::endl;
+                std::cout << std::string( indent_count + 4, ' ' )
+                          << "Element count : " << element_counts[time_step][s] << std::endl;
+                std::cout << std::string( indent_count + 4, ' ' )
+                          << "Min. coords: " << min_object_coords[time_step][s] << std::endl;
+                std::cout << std::string( indent_count + 4, ' ' )
+                          << "Max. coords: " << max_object_coords[time_step][s] << std::endl;
+                std::cout << std::string( indent_count + 4, ' ' )
+                          << "Min. externals: " << min_external_coords[time_step][s] << std::endl;
+                std::cout << std::string( indent_count + 4, ' ' )
+                          << "Max. externals: " << max_external_coords[time_step][s] << std::endl;
+            }
+
+            for ( int i = 0; i < number_of_component; ++i )
+            {
+                std::cout << std::string( indent_count + 2, ' ' ) << "Min. Max. value (" << i
+                          << ") : " << min_values[time_step][i] << " , " << max_values[time_step][i]
+                          << std::endl;
+            }
+        }
+    }
+
 private:
     int number_of_component;
     int max_sub_volume_id;
