@@ -14,14 +14,14 @@
 
 void Vts2Vts( const char* dst, const char* src )
 {
-    std::cout << "reading " << src << " ..." << std::endl;
+    std::cout << "Reading " << src << " ..." << std::endl;
     cvt::VtkXmlStructuredGrid input_vts( src );
     cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer( &input_vts );
 
     kvs::StructuredVolumeObject* object = &importer;
     object->print( std::cout, kvs::Indent( 2 ) );
 
-    std::cout << "writing " << dst << " ..." << std::endl;
+    std::cout << "Writing " << dst << " ..." << std::endl;
     cvt::VtkExporter<cvt::VtkXmlStructuredGrid> exporter( &importer );
     cvt::VtkXmlStructuredGrid* output_vts = &exporter;
     output_vts->write( dst );
@@ -34,7 +34,7 @@ void Vts2Kvsml( const char* directory, const char* base, const char* src )
     int sub_volume_id = 1;
     int sub_volume_count = 1;
 
-    std::cout << "reading " << src << " ..." << std::endl;
+    std::cout << "Reading " << src << " ..." << std::endl;
     cvt::VtkXmlStructuredGrid input_vts( src );
     cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer( &input_vts );
 
@@ -43,7 +43,7 @@ void Vts2Kvsml( const char* directory, const char* base, const char* src )
     object->setMinMaxExternalCoords( object->minObjectCoord(), object->maxObjectCoord() );
     object->print( std::cout, kvs::Indent( 2 ) );
 
-    std::cout << "writing to " << directory << " ..." << std::endl;
+    std::cout << "Writing to " << directory << " ..." << std::endl;
     cvt::StructuredVolumeObjectExporter exporter( &importer );
     exporter.setWritingDataTypeToExternalBinary();
     exporter.write( directory, base, time_step, sub_volume_id, sub_volume_count );
