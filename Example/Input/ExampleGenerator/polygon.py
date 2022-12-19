@@ -13,12 +13,12 @@ def generate_triangle_mesh():
     triangle_filter.SetInputConnection(geometry_filter.GetOutputPort())
 
     writer = vtk.vtkXMLPolyDataWriter()
-    writer.SetFileName(os.path.join('..', 'triangle.vtp'))
+    writer.SetFileName(os.path.join('..', 'Polygon', 'triangle.vtp'))
     writer.SetInputConnection(triangle_filter.GetOutputPort())
     writer.Update()
 
     stl_writer = vtk.vtkSTLWriter()
-    stl_writer.SetFileName(os.path.join('..', 'triangle.stl'))
+    stl_writer.SetFileName(os.path.join('..', 'Polygon', 'triangle.stl'))
     stl_writer.SetInputConnection(triangle_filter.GetOutputPort())
     stl_writer.Update()
 
@@ -31,7 +31,7 @@ def generate_quad_mesh():
     geometry_filter.SetInputData(image_data)
 
     writer = vtk.vtkXMLPolyDataWriter()
-    writer.SetFileName(os.path.join('..', 'quad.vtp'))
+    writer.SetFileName(os.path.join('..', 'Polygon', 'quad.vtp'))
     writer.SetInputConnection(geometry_filter.GetOutputPort())
     writer.Update()
 
