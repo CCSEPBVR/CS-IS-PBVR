@@ -5,8 +5,6 @@ from common import (
     TETRA_BOTTOM_IDS,
     make_hexahedron_only_mesh,
     make_tetrahedron_only_mesh,
-    make_pyramid_only_mesh,
-    make_wedge_only_mesh,
     append_point_data)
 
 
@@ -92,33 +90,7 @@ def generate_tetrahedron_and_hexahedron():
         writer.Update()
 
 
-def generate_multi_block():
-    for time_step in range(10):
-        multi_block = vtk.vtkMultiBlockDataSet()
-        hex_only = make_hexahedron_only_mesh([3, 4, 5], [0, 0, 0], time_step)
-        tetra_only = make_tetrahedron_only_mesh(
-            [3, 4, 5], [2, 0, 0], time_step)
-        tetra_only = make_tetrahedron_only_mesh(
-            [3, 4, 5], [2, 0, 0], time_step)
-        pyramid_only = make_pyramid_only_mesh(
-            [3, 4, 5], [4, 0, 0], time_step)
-        wedge_only = make_wedge_only_mesh(
-            [3, 4, 5], [6, 0, 0], time_step)
-
-        multi_block.SetBlock(0, hex_only)
-        multi_block.SetBlock(1, tetra_only)
-        multi_block.SetBlock(2, pyramid_only)
-        multi_block.SetBlock(3, wedge_only)
-
-        writer = vtk.vtkXMLMultiBlockDataWriter()
-        writer.SetFileName(os.path.join('..', 'MultiBlock',
-                           f'multiblock_{time_step}.vtm'))
-        writer.SetInputData(multi_block)
-        writer.Update()
-
-
 if __name__ == '__main__':
     generate_tetrahedron_only_mesh()
     generate_hexahedron_only_mesh()
     generate_tetrahedron_and_hexahedron()
-    generate_multi_block()

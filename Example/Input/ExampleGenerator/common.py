@@ -220,3 +220,25 @@ def make_wedge_only_mesh(dimensions, origin=[0, 0, 0], time_step=0):
     append_point_data(unstructured_grid, time_step)
 
     return unstructured_grid
+
+
+def make_image_data(dimensions, origin=[0, 0, 0], time_step=0):
+    image_data = vtk.vtkImageData()
+    image_data.SetDimensions(dimensions)
+    image_data.SetOrigin(origin)
+
+    append_point_data(image_data, time_step)
+
+    return image_data
+
+
+def make_quad_mesh(dimensions, origin=[0, 0, 0]):
+    image_data = vtk.vtkImageData()
+    image_data.SetDimensions(dimensions)
+    image_data.SetOrigin(origin)
+
+    geometry_filter = vtk.vtkGeometryFilter()
+    geometry_filter.SetInputData(image_data)
+    geometry_filter.Update()
+
+    return geometry_filter.GetOutput()

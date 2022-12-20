@@ -76,20 +76,57 @@ void Pvtu2Kvsml( const char* directory, const char* base, const char* src )
 
 void SeriesPvtu2Kvsml( const char* directory, const char* base, const char* src )
 {
-
     std::cout << "Reading " << src << " ..." << std::endl;
     cvt::NumeralSequenceFiles<cvt::VtkXmlPUnstructuredGrid> time_series( src );
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
+    std::unordered_map<int, int> sub_volume_counts;
 
     std::unordered_map<int, cvt::UnstructuredPfi> pfi_map;
 
     for ( auto input_pvtu : time_series.eachTimeStep() )
     {
-        int sub_volume_count = input_pvtu.number_of_pieces();
         int sub_volume_id = 1;
 
+        // One-pass to collect information.
+        if ( time_step == 0 )
+        {
+            std::cout << "Reading 0 step objects to collect information" << std::endl;
+            std::unordered_map<int, int> veclens;
+
+            for ( auto vtu : input_pvtu.eachPiece() )
+            {
+                for ( auto file_format : vtu.eachCellType() )
+                {
+                    cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &file_format );
+                    kvs::UnstructuredVolumeObject* object = &importer;
+
+                    auto cell_type = object->cellType();
+                    sub_volume_counts[cell_type] = ( sub_volume_counts.count( cell_type ) == 0 )
+                                                       ? 1
+                                                       : ( sub_volume_counts[cell_type] + 1 );
+                    veclens[cell_type] =
+                        ( veclens.count( cell_type ) == 0 ) ? 1 : ( veclens[cell_type] + 1 );
+                }
+            }
+
+            for ( auto& e : sub_volume_counts )
+            {
+                auto cell_type = e.first;
+
+                pfi_map.emplace( static_cast<int>( cell_type ),
+                                 cvt::UnstructuredPfi( veclens[cell_type], last_time_step,
+                                                       sub_volume_counts[cell_type] ) );
+            }
+        }
+
+        // Two-pass
         // Piece reading
+        std::unordered_map<int, int> sub_volume_ids;
+        for ( auto& e : sub_volume_counts )
+        {
+            sub_volume_ids[e.first] = 1;
+        }
         for ( auto vtu : input_pvtu.eachPiece() )
         {
             for ( auto file_format : vtu.eachCellType() )
@@ -107,21 +144,15 @@ void SeriesPvtu2Kvsml( const char* directory, const char* base, const char* src 
                     std::string( base ) + "_" + std::to_string( object->cellType() );
                 cvt::UnstructuredVolumeObjectExporter exporter( &importer );
                 exporter.setWritingDataTypeToExternalBinary();
-                exporter.write( directory, local_base, time_step, sub_volume_id, sub_volume_count );
-                // or
-                // exporter.write( "<directory/<local_base>_00000_0000001_0000001.kvsml" );
+                exporter.write( directory, local_base, time_step,
+                                sub_volume_ids[object->cellType()],
+                                sub_volume_counts[object->cellType()] );
 
-                if ( time_step == 0 )
-                {
-                    pfi_map.emplace( static_cast<int>( object->cellType() ),
-                                     cvt::UnstructuredPfi( object->veclen(), last_time_step,
-                                                           sub_volume_count ) );
-                }
                 pfi_map.at( static_cast<int>( object->cellType() ) )
-                    .registerObject( &exporter, time_step, sub_volume_id );
-            }
+                    .registerObject( &exporter, time_step, sub_volume_ids[object->cellType()] );
 
-            ++sub_volume_id;
+                ++sub_volume_ids[object->cellType()];
+            }
         }
 
         ++time_step;
@@ -170,8 +201,6 @@ void SeriesPvtu2KvsmlWhole( const char* directory, const char* base, const char*
             cvt::UnstructuredVolumeObjectExporter exporter( &importer );
             exporter.setWritingDataTypeToExternalBinary();
             exporter.write( directory, local_base, time_step, sub_volume_id, sub_volume_count );
-            // or
-            // exporter.write( "<directory/<local_base>_00000_0000001_0000001.kvsml" );
 
             if ( time_step == 0 )
             {

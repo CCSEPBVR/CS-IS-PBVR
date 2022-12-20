@@ -18,7 +18,7 @@
 #include <vtkMultiBlockDataSet.h>
 #include <vtkSmartPointer.h>
 
-#include "FileFormat/VTKMultiBlock/VtkMultiBlock.h"
+#include "FileFormat/VTK/VtkXmlMultiBlock.h"
 
 namespace cvt
 {
@@ -35,13 +35,13 @@ public:
     }
 
 public:
-    std::pair<double, cvt::VtkMultiBlock> operator*()
+    std::pair<double, cvt::VtkXmlMultiBlock> operator*()
     {
         auto t = time_steps->GetTuple( current )[0];
         reader->SetTimeValue( t );
         reader->Update();
 
-        return std::make_pair( t, cvt::VtkMultiBlock( reader->GetOutput() ) );
+        return std::make_pair( t, cvt::VtkXmlMultiBlock( reader->GetOutput() ) );
     }
     EnSightTimeStepIterator<VtkEnSightGoldReader> operator++()
     {
