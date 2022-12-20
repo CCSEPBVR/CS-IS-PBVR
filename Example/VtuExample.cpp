@@ -1,7 +1,10 @@
 #include <iostream>
 #include <string>
 
+#include "kvs/KVSMLLineObject"
+#include "kvs/KVSMLPointObject"
 #include "kvs/LineExporter"
+#include "kvs/PointExporter"
 #include "kvs/UnstructuredVolumeObject"
 
 #include "Exporter/UnstructuredVolumeObjectExporter.h"
@@ -114,6 +117,24 @@ void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src )
     pfl.write( directory, base );
     // or
     // pfl.write( "<directory>/<base>.pfl" );
+}
+
+void PointVtu2Kvsml( const char* dst, const char* src )
+{
+    cvt::VtkXmlUnstructuredGrid input_vtu( src );
+    if ( input_vtu.isPointObjectConvertible() )
+    {
+        cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid, kvs::PointObject> importer( &input_vtu );
+        importer.print( std::cout );
+        importer.setSize( 0.01 );
+
+        kvs::PointExporter<kvs::KVSMLPointObject> exporter( &importer );
+        exporter.write( dst );
+    }
+    else
+    {
+        std::cerr << src << " could not export as a KVS PointObject" << std::endl;
+    }
 }
 
 void LineVtu2Kvsml( const char* dst, const char* src )

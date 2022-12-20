@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "kvs/LineObject"
+#include "kvs/PointObject"
 #include "kvs/PolygonObject"
 #include "kvs/StructuredVolumeObject"
 #include "kvs/Type"
@@ -514,6 +515,23 @@ void cvt::detail::ImportUnstructuredVolumeObject( kvs::UnstructuredVolumeObject*
         object->setValues( values );
         object->updateMinMaxValues();
     }
+
+    object->updateMinMaxCoords();
+}
+
+void cvt::detail::ImportPointObject( kvs::PointObject* object,
+                                     vtkSmartPointer<vtkUnstructuredGrid> data )
+{
+    auto coords = GetCoordinates( data );
+    object->setCoords( coords );
+
+    std::vector<kvs::Real32> normals( data->GetNumberOfPoints() * 3, 0 );
+    for ( int i = 0; i < data->GetNumberOfPoints(); ++i )
+    {
+        normals[i * 3] = 1.0;
+    }
+    auto v_normals = kvs::ValueArray<kvs::Real32>( normals );
+    object->setNormals( v_normals );
 
     object->updateMinMaxCoords();
 }
