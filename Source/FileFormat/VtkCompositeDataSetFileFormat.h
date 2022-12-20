@@ -12,8 +12,10 @@
 #include <vtkCompositeDataSet.h>
 #include <vtkDataObjectTreeIterator.h>
 #include <vtkSmartPointer.h>
+#include <vtkXMLMultiBlockDataWriter.h>
 
 #include "FileFormat/VtkFileFormat.h"
+#include "VtkFileFormat.h"
 
 namespace cvt
 {
@@ -137,76 +139,20 @@ namespace cvt
  * A base class for a composite data set IO.
  */
 template <typename VtkDataType, typename VtkDataReader>
-class VtkCompositeDataSetFileFormat : public kvs::FileFormatBase
+class VtkCompositeDataSetFileFormat
+    : public VtkFileFormat<VtkDataType, VtkDataReader, vtkXMLMultiBlockDataWriter>
 {
 public:
     /**
      * A base class type.
      */
-    typedef kvs::FileFormatBase BaseClass;
+    using BaseClass = VtkFileFormat<VtkDataType, VtkDataReader, vtkXMLMultiBlockDataWriter>;
 
 public:
-    /**
-     * Construct an IO.
-     */
-    VtkCompositeDataSetFileFormat(): kvs::FileFormatBase() {}
-    /**
-     * Construct an IO.
-     *
-     * \param [in] filename A file name.
-     */
-    VtkCompositeDataSetFileFormat( const std::string& filename ): BaseClass()
-    {
-        kvs::FileFormatBase::setFilename( filename );
-        this->read( filename );
-    }
-    /**
-     * Construct an IO.
-     *
-     * \param [in] filename A file name.
-     */
-    VtkCompositeDataSetFileFormat( std::string&& filename ): BaseClass()
-    {
-        kvs::FileFormatBase::setFilename( filename );
-        this->read( filename );
-    }
-    /**
-     * Construct an IO.
-     *
-     * This takes the owner of the object.
-     * So DO NOT free the object externally.
-     *
-     * \param [in] vtk_data A VTK data.
-     */
-    VtkCompositeDataSetFileFormat( VtkDataType* vtk_data ): BaseClass(), vtk_data( vtk_data ) {}
+    using BaseClass::BaseClass;
+    ~VtkCompositeDataSetFileFormat() {}
 
 public:
-    bool read( const std::string& filename ) override
-    {
-        try
-        {
-            vtkNew<VtkDataReader> reader;
-            reader->SetFileName( filename.c_str() );
-            reader->Update();
-
-            vtk_data = dynamic_cast<VtkDataType*>( reader->GetOutput() );
-
-            return true;
-        }
-        catch ( std::exception& e )
-        {
-            throw e;
-        }
-        catch ( ... )
-        {
-            return false;
-        }
-    }
-    bool write( const std::string& filename ) override
-    {
-        std::runtime_error( "This function has not been implemented yet" );
-        return false;
-    };
     /**
      * Get an interface to iterate each block.
      *
@@ -214,7 +160,7 @@ public:
      */
     cvt::detail::VtkMultiBlockContainer<VtkDataType> eachBlock()
     {
-        return cvt::detail::VtkMultiBlockContainer<VtkDataType>( vtk_data );
+        return cvt::detail::VtkMultiBlockContainer<VtkDataType>( BaseClass::get() );
     }
     /**
      * Get an interface to iterate each block.
@@ -223,11 +169,8 @@ public:
      */
     cvt::detail::VtkMultiBlockContainer<VtkDataType> eachBlock() const
     {
-        return cvt::detail::VtkMultiBlockContainer<VtkDataType>( vtk_data );
+        return cvt::detail::VtkMultiBlockContainer<VtkDataType>( BaseClass::get() );
     }
-
-private:
-    vtkSmartPointer<VtkDataType> vtk_data;
 };
 } // namespace cvt
 

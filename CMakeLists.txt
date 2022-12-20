@@ -32,6 +32,7 @@ add_executable(
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtsExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/AvsExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtuExample.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Example/Plot3dExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtmExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/PvtsExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/PvtuExample.cpp

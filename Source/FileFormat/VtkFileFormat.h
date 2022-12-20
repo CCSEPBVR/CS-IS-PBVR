@@ -34,6 +34,10 @@ public:
      * An inner VTK data type.
      */
     using VtkDataType = VtkDataType_;
+    /**
+     * A function to configure a VTK reader.
+     */
+    using ReaderOptionSetter = std::function<void( VtkReaderType* )>;
 
 public:
     /**
@@ -48,8 +52,7 @@ public:
      *
      * \param[in] filename A file name.
      */
-    template <typename String>
-    VtkFileFormat( String&& filename ): kvs::FileFormatBase()
+    VtkFileFormat( const std::string& filename ): kvs::FileFormatBase()
     {
         set_reader_options = []( VtkReaderType* ) {};
         read( filename );
@@ -60,11 +63,10 @@ public:
      * \param[in] filename A file name.
      * \param[in] reader_option_setter A function to configure a VTK reader additionally.
      */
-    template <typename String>
-    VtkFileFormat( String&& filename, std::function<void( VtkReaderType* )> reader_option_setter ):
+    VtkFileFormat( const std::string& filename, ReaderOptionSetter reader_option_setter ):
         kvs::FileFormatBase(), set_reader_options( reader_option_setter )
     {
-        read( filename );
+        read( std::string( filename ) );
     }
     /**
      * Construct an IO object.
@@ -159,7 +161,7 @@ public:
     void set( VtkDataType* object ) { vtk_data = object; };
 
 private:
-    std::function<void( VtkReaderType* )> set_reader_options;
+    ReaderOptionSetter set_reader_options;
     vtkSmartPointer<VtkDataType> vtk_data;
 };
 

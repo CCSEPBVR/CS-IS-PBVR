@@ -9,6 +9,8 @@ namespace fs = std::experimental::filesystem;
 void Stl2Stl( const char* dst, const char* src );
 void Stl2Kvsml( const char* dst, const char* src );
 void Vtp2Kvsml( const char* dst, const char* src );
+void Plot3d2Kvsml( const char* directory, const char* base, const char* xyz, const char* q,
+                   const char* f );
 void Vtr2Kvsml( const char* directory, const char* base, const char* src );
 void Vti2Kvsml( const char* directory, const char* base, const char* src );
 void Vts2Kvsml( const char* directory, const char* base, const char* src );
@@ -114,6 +116,18 @@ int main( int argc, char** argv )
         fs::path dst_q = output_directory;
         dst_q /= "triangle.kvsml";
         Vtp2Kvsml( dst_q.c_str(), src_q.c_str() );
+    }
+    else if ( example_name == "plot3d2kvsml" )
+    {
+        fs::path xyz = input_directory;
+        xyz /= "pbvr_sample_data";
+        xyz /= "plot3d";
+        fs::path q = xyz;
+        fs::path f = xyz;
+        xyz /= "singleGrid.xyz";
+        q /= "singleGrid.q";
+        f /= "singleGrid.f";
+        Plot3d2Kvsml( output_directory.c_str(), "singleGrid", xyz.c_str(), q.c_str(), f.c_str() );
     }
     else if ( example_name == "vtr2kvsml" )
     {
