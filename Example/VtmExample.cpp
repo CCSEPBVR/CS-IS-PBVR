@@ -4,9 +4,6 @@
 #include "kvs/PolygonObject"
 
 #include "Exporter/UnstructuredVolumeObjectExporter.h"
-#include "FileFormat/NumeralSequenceFiles.h"
-#include "FileFormat/Pfl.h"
-#include "FileFormat/UnstructuredPfi.h"
 #include "FileFormat/VTK/VtkXmlImageData.h"
 #include "FileFormat/VTK/VtkXmlMultiBlock.h"
 #include "FileFormat/VTK/VtkXmlPolyData.h"
@@ -14,6 +11,9 @@
 #include "FileFormat/VTK/VtkXmlStructuredGrid.h"
 #include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
 #include "Importer/VtkImporter.h"
+#include "PBVRFileInformation/Pfl.h"
+#include "PBVRFileInformation/UnstructuredPfi.h"
+#include "TimeSeriesFiles/NumeralSequenceFiles.h"
 
 void AccessToVtm( const char* src )
 {

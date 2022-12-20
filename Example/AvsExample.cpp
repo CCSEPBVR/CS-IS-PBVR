@@ -6,9 +6,9 @@
 
 #include "Exporter/UnstructuredVolumeObjectExporter.h"
 #include "FileFormat/AVS/AvsUcd.h"
-#include "FileFormat/Pfl.h"
-#include "FileFormat/UnstructuredPfi.h"
 #include "Importer/VtkImporter.h"
+#include "PBVRFileInformation/Pfl.h"
+#include "PBVRFileInformation/UnstructuredPfi.h"
 
 void Avs2Kvsml( const char* directory, const char* base, const char* src )
 {

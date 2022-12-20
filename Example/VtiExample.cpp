@@ -6,9 +6,9 @@
 #include "kvs/StructuredVolumeObject"
 
 #include "Exporter/VtkExporter.h"
-#include "FileFormat/UnstructuredPfi.h"
 #include "FileFormat/VTK/VtkXmlImageData.h"
 #include "Importer/VtkImporter.h"
+#include "PBVRFileInformation/UnstructuredPfi.h"
 
 void Vti2Kvsml( const char* directory, const char* base, const char* src )
 {

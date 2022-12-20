@@ -8,9 +8,9 @@
 #include "Exporter/StructuredVolumeObjectExporter.h"
 #include "Exporter/VtkExporter.h"
 #include "FileFormat/KVSML/KvsmlStructuredVolumeObject.h"
-#include "FileFormat/UnstructuredPfi.h"
 #include "FileFormat/VTK/VtkXmlStructuredGrid.h"
 #include "Importer/VtkImporter.h"
+#include "PBVRFileInformation/UnstructuredPfi.h"
 
 void Vts2Vts( const char* dst, const char* src )
 {
