@@ -12,6 +12,7 @@ void Vtp2Kvsml( const char* dst, const char* src );
 void Vtr2Kvsml( const char* directory, const char* base, const char* src );
 void Vti2Kvsml( const char* directory, const char* base, const char* src );
 void Vts2Kvsml( const char* directory, const char* base, const char* src );
+void Avs2Kvsml( const char* directory, const char* base, const char* src );
 void Vtu2Kvsml( const char* directory, const char* base, const char* src );
 void UniformPvts2Vts( const char* dst, const char* src );
 void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src );
@@ -139,6 +140,15 @@ int main( int argc, char** argv )
     else if ( example_name == "pvts2vts" )
     {
         UniformPvts2Vts( argv[4], argv[3] );
+    }
+    else if ( example_name == "avs2kvsml" )
+    {
+        fs::path src = input_directory;
+        src /= "frontstr.inp";
+        fs::path dst = output_directory;
+        dst /= "AVS";
+        mkdir( dst );
+        Avs2Kvsml( dst.c_str(), "frontstr", src.c_str() );
     }
     else if ( example_name == "vtu2kvsml" )
     {
