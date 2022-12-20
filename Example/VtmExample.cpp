@@ -8,17 +8,17 @@
 #include "FileFormat/Pfl.h"
 #include "FileFormat/UnstructuredPfi.h"
 #include "FileFormat/VTK/VtkXmlImageData.h"
+#include "FileFormat/VTK/VtkXmlMultiBlock.h"
 #include "FileFormat/VTK/VtkXmlPolyData.h"
 #include "FileFormat/VTK/VtkXmlRectilinearGrid.h"
 #include "FileFormat/VTK/VtkXmlStructuredGrid.h"
 #include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
-#include "FileFormat/VTKMultiBlock/VtkMultiBlock.h"
 #include "Importer/VtkImporter.h"
 
 void AccessToVtm( const char* src )
 {
     std::cout << "Reading " << src << " ..." << std::endl;
-    cvt::VtkMultiBlock input_vtm( src );
+    cvt::VtkXmlMultiBlock input_vtm( src );
 
     for ( auto format : input_vtm.eachBlock() )
     {
@@ -70,7 +70,7 @@ void SeriesVtm2Kvsml( const char* directory, const char* base, const char* src )
 
     std::unordered_map<int, cvt::UnstructuredPfi> pfi_map;
 
-    cvt::NumeralSequenceFiles<cvt::VtkMultiBlock> time_series( src );
+    cvt::NumeralSequenceFiles<cvt::VtkXmlMultiBlock> time_series( src );
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
     int sub_volume_id = 1;
