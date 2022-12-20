@@ -30,6 +30,7 @@ add_executable(
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtiExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtrExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtsExample.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Example/AvsExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtuExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtmExample.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Example/PvtsExample.cpp
