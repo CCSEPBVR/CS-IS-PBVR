@@ -179,7 +179,7 @@ public:
     {
         return cvt::detail::CellTypeContainer<
             VtkUnstructuredFileFormat<VtkDataType, VtkReaderType, VtkWriterType>>(
-            cell_types, BaseClass::get() );
+            m_cell_types, BaseClass::get() );
     }
     /**
      * Get an interface to iterate by a cell type in a for loop.
@@ -200,8 +200,20 @@ public:
     {
         return cvt::detail::CellTypeContainer<
             VtkUnstructuredFileFormat<VtkDataType, VtkReaderType, VtkWriterType>>(
-            cell_types, BaseClass::get() );
+            m_cell_types, BaseClass::get() );
     }
+    /**
+     * Get all cell types contained in this data.
+     *
+     * \return A VTK cell type ID list.
+     */
+    const std::unordered_set<int>& cell_types() { return m_cell_types; }
+    /**
+     * Get all cell types contained in this data.
+     *
+     * \return A VTK cell type ID list.
+     */
+    const std::unordered_set<int>& cell_types() const { return m_cell_types; }
 
 private:
     void InitializeCellTypes()
@@ -213,13 +225,13 @@ private:
             for ( vtkIdType i = 0; i < data->GetNumberOfCells(); ++i )
             {
                 auto cell = data->GetCell( i );
-                cell_types.insert( cell->GetCellType() );
+                m_cell_types.insert( cell->GetCellType() );
             }
         }
     }
 
 private:
-    std::unordered_set<int> cell_types;
+    std::unordered_set<int> m_cell_types;
 };
 } // namespace cvt
 
