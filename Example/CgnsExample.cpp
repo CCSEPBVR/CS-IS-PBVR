@@ -6,9 +6,9 @@
 
 #include "Exporter/UnstructuredVolumeObjectExporter.h"
 #include "FileFormat/CGNS/Cgns.h"
-#include "FileFormat/UnstructuredPfi.h"
 #include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
 #include "Importer/VtkImporter.h"
+#include "PBVRFileInformation/UnstructuredPfi.h"
 
 void Cgns2Kvsml( const char* directory, const char* base, const char* src )
 {

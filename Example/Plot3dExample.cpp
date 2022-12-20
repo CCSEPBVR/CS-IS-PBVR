@@ -4,10 +4,10 @@
 
 #include "Exporter/StructuredVolumeObjectExporter.h"
 #include "FileFormat/PLOT3D/Plot3d.h"
-#include "FileFormat/Pfl.h"
-#include "FileFormat/UnstructuredPfi.h"
 #include "FileFormat/VTK/VtkXmlStructuredGrid.h"
 #include "Importer/VtkImporter.h"
+#include "PBVRFileInformation/Pfl.h"
+#include "PBVRFileInformation/UnstructuredPfi.h"
 
 void Plot3d2Kvsml( const char* directory, const char* base, const char* xyz, const char* q,
                    const char* f )

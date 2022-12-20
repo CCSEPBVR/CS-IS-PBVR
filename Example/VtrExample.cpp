@@ -4,9 +4,9 @@
 #include "kvs/StructuredVolumeObject"
 
 #include "Exporter/StructuredVolumeObjectExporter.h"
-#include "FileFormat/UnstructuredPfi.h"
 #include "FileFormat/VTK/VtkXmlRectilinearGrid.h"
 #include "Importer/VtkImporter.h"
+#include "PBVRFileInformation/UnstructuredPfi.h"
 
 void Vtr2Kvsml( const char* directory, const char* base, const char* src )
 {

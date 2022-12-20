@@ -6,11 +6,11 @@
 
 #include "Exporter/UnstructuredVolumeObjectExporter.h"
 #include "FileFormat/KVSML/KvsmlUnstructuredVolumeObject.h"
-#include "FileFormat/NumeralSequenceFiles.h"
-#include "FileFormat/Pfl.h"
-#include "FileFormat/UnstructuredPfi.h"
 #include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
 #include "Importer/VtkImporter.h"
+#include "PBVRFileInformation/Pfl.h"
+#include "PBVRFileInformation/UnstructuredPfi.h"
+#include "TimeSeriesFiles/NumeralSequenceFiles.h"
 
 void Vtu2Kvsml( const char* directory, const char* base, const char* src )
 {
