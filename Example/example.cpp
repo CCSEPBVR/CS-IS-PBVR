@@ -18,7 +18,8 @@ void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src )
 void LineVtu2Kvsml( const char* dst, const char* src );
 void SeriesPvtu2Kvsml( const char* directory, const char* base, const char* src );
 void SeriesPvtu2KvsmlWhole( const char* directory, const char* base, const char* src );
-void Vtm2Vtm( const char* dst, const char* src );
+void AccessToVtm( const char* src );
+void SeriesVtm2Kvsml( const char* directory, const char* base, const char* src );
 void Case2Kvsml( const char* directory, const char* base, const char* src );
 void Cgns2Kvsml( const char* directory, const char* base, const char* src );
 
@@ -197,10 +198,22 @@ int main( int argc, char** argv )
         mkdir( dst_w );
         SeriesPvtu2KvsmlWhole( dst_w.c_str(), "example", src.c_str() );
     }
-    else if ( example_name == "vtm2kvsml" )
+    else if ( example_name == "accessvtm" )
     {
-        Vtm2Vtm( argv[3], argv[2] );
-        return -1;
+        fs::path src = input_directory;
+        src /= "MultiBlock";
+        src /= "multiblock_0.vtm";
+        AccessToVtm( src.c_str() );
+    }
+    else if ( example_name == "seriesvtm2kvsml" )
+    {
+        fs::path src = input_directory;
+        src /= "UnstructuredMultiBlock";
+        src /= "multiblock_*.vtm";
+        fs::path dst = output_directory;
+        dst /= "UnstructuredMultiBlock";
+        mkdir( dst );
+        SeriesVtm2Kvsml( dst.c_str(), "multiblock", src.c_str() );
     }
     else if ( example_name == "case2kvsml" )
     {
