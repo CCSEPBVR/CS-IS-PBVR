@@ -137,7 +137,7 @@ public:
     /**
      * Construct an IO object.
      *
-     * \param filename A file name.
+     * \param[in] filename A file name.
      */
     VtkUnstructuredFileFormat( const std::string& filename ): BaseClass( filename )
     {
@@ -146,16 +146,22 @@ public:
     /**
      * Construct an IO object.
      *
-     * \param filename A file name.
+     * \param[in] filename A file name.
+     * \param[in] reader_option_setter A function to configure a VTK reader additionally.
      */
-    VtkUnstructuredFileFormat( std::string&& filename ): BaseClass( filename )
+    VtkUnstructuredFileFormat( const std::string& filename,
+                               typename BaseClass::ReaderOptionSetter reader_option_setter ):
+        BaseClass( filename, reader_option_setter )
     {
         InitializeCellTypes();
     }
     /**
      * Construct an IO object.
      *
-     * \param [in] vtk_data A VTK data.
+     * This takes the owner of the object.
+     * So DO NOT free the object manually.
+     *
+     * \param[in] vtk_data A VTK data.
      */
     VtkUnstructuredFileFormat( VtkDataType* data ): BaseClass( data ) { InitializeCellTypes(); }
 
