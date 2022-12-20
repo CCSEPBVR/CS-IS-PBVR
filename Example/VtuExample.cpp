@@ -119,8 +119,16 @@ void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src )
 void LineVtu2Kvsml( const char* dst, const char* src )
 {
     cvt::VtkXmlUnstructuredGrid input_vtu( src );
-    cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid, kvs::LineObject> importer( &input_vtu );
+    if ( input_vtu.isLineObjectConvertible() )
+    {
+        cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid, kvs::LineObject> importer( &input_vtu );
+        importer.print( std::cout );
 
-    kvs::LineExporter<kvs::KVSMLLineObject> exporter( &importer );
-    exporter.write( dst );
+        kvs::LineExporter<kvs::KVSMLLineObject> exporter( &importer );
+        exporter.write( dst );
+    }
+    else
+    {
+        std::cerr << src << " could not export as a KVS LineObject" << std::endl;
+    }
 }
