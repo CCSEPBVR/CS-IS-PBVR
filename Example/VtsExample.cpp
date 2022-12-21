@@ -48,7 +48,7 @@ void Vts2Kvsml( const char* directory, const char* base, const char* src )
     exporter.setWritingDataTypeToExternalBinary();
     exporter.write( directory, base, time_step, sub_volume_id, sub_volume_count );
 
-    cvt::UnstructuredPfi pfi( last_time_step, sub_volume_count );
+    cvt::UnstructuredPfi pfi( exporter.veclen(), last_time_step, sub_volume_count );
     pfi.registerObject( &exporter, time_step, sub_volume_id );
     pfi.write( directory, base );
 }
