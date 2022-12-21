@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<VTKFile type="StructuredGrid" version="2.2" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+  <StructuredGrid WholeExtent="3 5 0 3 0 4">
+    <Piece Extent="3 5 0 3 0 4"                                                       >
+      <PointData>
+        <DataArray type="Float32" Name="distance" format="appended" RangeMin="3"                    RangeMax="7.0710678101"         offset="0"                   >
+        </DataArray>
+        <DataArray type="UInt8" Name="vtkGhostType" format="appended" RangeMin="0"                    RangeMax="0"                    offset="232"                 >
+        </DataArray>
+      </PointData>
+      <CellData>
+        <DataArray type="UInt8" Name="vtkGhostType" format="appended" RangeMin="0"                    RangeMax="0"                    offset="272"                 >
+        </DataArray>
+      </CellData>
+      <Points>
+        <DataArray type="Float64" Name="Points" NumberOfComponents="3" format="appended" RangeMin="3"                    RangeMax="7.0710678119"         offset="312"                 >
+          <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+            <Value index="0">
+              3
+            </Value>
+            <Value index="1">
+              7.0710678119
+            </Value>
+          </InformationKey>
+        </DataArray>
+      </Points>
+    </Piece>
+  </StructuredGrid>
+  <AppendedData encoding="base64">
+   _AQAAAACAAADwAAAAmwAAAA==eJxjYHBwYGBoAOIFDoeSvByqPzQ7aGsvdog6mOawV7rfwTV4jcO2w+1geY3pu1DUTHUOAcs9dFvmEFie71C2ZJJDvut6B6mabrB8e8BeFHOQ1YDMKDwyx6H08naHx+LTwPIPnY6i2IVsDrIakH0g+c5rF8FqP7NsdUh9dgasFmSeVdJ5sFoGhgMOs1deA6sFyRu4PXIAAJPqZO4=AQAAAACAAAA8AAAADAAAAA==eJxjYCAfAAAAPAABAQAAAACAAAAYAAAACwAAAA==eJxjYMAOAAAYAAE=AQAAAACAAACgBQAArgAAAA==eJx10rENwzAMRFGWLlVoH2v/aTKCkYIB8uhTI/AbOlNfrPqu69TrWoHvwDvnc7/nyHfgv374zwp8B9453m8FvgO37n7101w/zfVjjlw/5hTf9TP6gevHHLl+Rj+9Dv3Ax/yEXHPkY37IKfYxP/bDPuaHHPmYH+v6r/XTXD/pncyR6yfdZ/QD14857voxJ53r1ef107V+0ryaI9dPetfRD7V+0v3NketnnQeq4kR+
+  </AppendedData>
+</VTKFile>

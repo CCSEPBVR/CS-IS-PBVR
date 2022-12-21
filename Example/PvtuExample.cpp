@@ -15,8 +15,7 @@
 void Pvtu2Kvsml( const char* directory, const char* base, const char* src )
 {
     std::cout << "reading " << src << " ..." << std::endl;
-    cvt::VtkXmlPUnstructuredGrid input_pvtu2( src );
-    const cvt::VtkXmlPUnstructuredGrid& input_pvtu = input_pvtu2;
+    cvt::VtkXmlPUnstructuredGrid input_pvtu( src );
     std::cout << "#piece: " << input_pvtu.number_of_pieces() << std::endl;
 
     int last_time_step = 0;
@@ -31,16 +30,13 @@ void Pvtu2Kvsml( const char* directory, const char* base, const char* src )
     {
         for ( auto file_format : vtu.eachCellType() )
         {
-            std::cout << "importing ..." << std::endl;
+            std::cout << "Importing ..." << std::endl;
             cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &file_format );
 
             kvs::UnstructuredVolumeObject* object = &importer;
-            std::cout << "sub volume id: " << sub_volume_id << std::endl;
-            std::cout << "#nodes: " << object->numberOfNodes() << std::endl;
-            std::cout << "#cells: " << object->numberOfCells() << std::endl;
-            std::cout << "type: " << object->cellType() << std::endl;
+            object->print( std::cout, kvs::Indent( 2 ) );
 
-            std::cout << "writing (" << object->cellType() << " , " << sub_volume_id << ") ..."
+            std::cout << "Writing (" << object->cellType() << " , " << sub_volume_id << ") ..."
                       << std::endl;
             std::string local_base =
                 std::string( base ) + "_" + std::to_string( object->cellType() );
