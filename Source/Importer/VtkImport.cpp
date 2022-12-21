@@ -20,7 +20,6 @@
 #include "kvs/Vector3"
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
-#include <vtkCellDataToPointData.h>
 #include <vtkFloatArray.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
@@ -264,7 +263,6 @@ void ReorderElementNodeIndices( DestinationIterator& kvs_connection, vtkIdList* 
 }
 } // namespace
 
-
 void cvt::detail::ImportPolygonObject( kvs::PolygonObject* polygon_object,
                                        vtkSmartPointer<vtkPolyData> data )
 {
@@ -367,15 +365,8 @@ void cvt::detail::ImportPolygonObject( kvs::PolygonObject* polygon_object,
 }
 
 void cvt::detail::ImportRectilinearObject( kvs::StructuredVolumeObject* rectilinear_object,
-                                           vtkSmartPointer<vtkRectilinearGrid> input )
+                                           vtkSmartPointer<vtkRectilinearGrid> data )
 {
-    vtkNew<vtkCellDataToPointData> cell_data_to_point_data;
-    cell_data_to_point_data->SetInputData( input );
-    cell_data_to_point_data->Update();
-
-    vtkSmartPointer<vtkRectilinearGrid> data =
-        dynamic_cast<vtkRectilinearGrid*>( cell_data_to_point_data->GetOutput() );
-
     kvs::Vector3ui resolution = ::GetResolution( data );
 
     auto dimensions = data->GetDimensions();
@@ -421,15 +412,8 @@ void cvt::detail::ImportRectilinearObject( kvs::StructuredVolumeObject* rectilin
 }
 
 void cvt::detail::ImportUniformStructuredVolumeObject( kvs::StructuredVolumeObject* uniform_object,
-                                                       vtkSmartPointer<vtkImageData> input )
+                                                       vtkSmartPointer<vtkImageData> data )
 {
-    vtkNew<vtkCellDataToPointData> cell_data_to_point_data;
-    cell_data_to_point_data->SetInputData( input );
-    cell_data_to_point_data->Update();
-
-    vtkSmartPointer<vtkImageData> data =
-        dynamic_cast<vtkImageData*>( cell_data_to_point_data->GetOutput() );
-
     auto bounding_box = data->GetBounds();
     kvs::Vector3f min_obj_coord( bounding_box[0], bounding_box[2], bounding_box[4] );
     kvs::Vector3f max_obj_coord( bounding_box[1], bounding_box[3], bounding_box[5] );
@@ -449,15 +433,8 @@ void cvt::detail::ImportUniformStructuredVolumeObject( kvs::StructuredVolumeObje
 }
 
 void cvt::detail::ImportIrregularStructuredVolumeObject(
-    kvs::StructuredVolumeObject* irregular_object, vtkSmartPointer<vtkStructuredGrid> input )
+    kvs::StructuredVolumeObject* irregular_object, vtkSmartPointer<vtkStructuredGrid> data )
 {
-    vtkNew<vtkCellDataToPointData> cell_data_to_point_data;
-    cell_data_to_point_data->SetInputData( input );
-    cell_data_to_point_data->Update();
-
-    vtkSmartPointer<vtkStructuredGrid> data =
-        dynamic_cast<vtkStructuredGrid*>( cell_data_to_point_data->GetOutput() );
-
     auto bounding_box = data->GetBounds();
     kvs::Vector3f min_obj_coord( bounding_box[0], bounding_box[2], bounding_box[4] );
     kvs::Vector3f max_obj_coord( bounding_box[1], bounding_box[3], bounding_box[5] );
@@ -480,15 +457,8 @@ void cvt::detail::ImportIrregularStructuredVolumeObject(
 }
 
 void cvt::detail::ImportUnstructuredVolumeObject( kvs::UnstructuredVolumeObject* object,
-                                                  vtkSmartPointer<vtkUnstructuredGrid> input )
+                                                  vtkSmartPointer<vtkUnstructuredGrid> data )
 {
-    vtkNew<vtkCellDataToPointData> cell_data_to_point_data;
-    cell_data_to_point_data->SetInputData( input );
-    cell_data_to_point_data->Update();
-
-    vtkSmartPointer<vtkUnstructuredGrid> data =
-        dynamic_cast<vtkUnstructuredGrid*>( cell_data_to_point_data->GetOutput() );
-
     object->setNumberOfNodes( data->GetNumberOfPoints() );
     object->setNumberOfCells( data->GetNumberOfCells() );
 

@@ -10,6 +10,8 @@
 #include <string>
 
 #include <vtkNew.h>
+#include <vtkPCellDataToPointData.h>
+#include <vtkRemoveGhosts.h>
 #include <vtkSmartPointer.h>
 
 namespace cvt
@@ -27,7 +29,18 @@ public:
     FileFormatType operator*()
     {
         reader->UpdatePiece( piece_id, reader->GetNumberOfPieces(), -1 );
-        auto output = reader->GetOutput();
+
+        vtkNew<vtkRemoveGhosts> ghost_remover;
+        ghost_remover->SetInputConnection( reader->GetOutputPort() );
+
+        vtkNew<vtkPCellDataToPointData> point_data_sampler;
+        point_data_sampler->SetInputConnection( ghost_remover->GetOutputPort() );
+
+        point_data_sampler->Update();
+
+        auto output =
+            dynamic_cast<typename FileFormatType::VtkDataType*>( point_data_sampler->GetOutput() );
+
         return FileFormatType( output );
     }
     void operator++() noexcept { ++piece_id; }

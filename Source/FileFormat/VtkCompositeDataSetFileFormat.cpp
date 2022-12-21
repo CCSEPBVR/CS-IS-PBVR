@@ -12,7 +12,9 @@
 #include "kvs/FileFormatBase"
 #include <vtkDataSet.h>
 #include <vtkImageData.h>
+#include <vtkPCellDataToPointData.h>
 #include <vtkPolyData.h>
+#include <vtkRemoveGhosts.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -24,43 +26,56 @@
 
 std::shared_ptr<kvs::FileFormatBase> cvt::detail::VtkMultiBlockIterator::dereference() const
 {
-    vtkDataObject* o = itr->GetCurrentDataObject();
-    std::string class_name = o->GetClassName();
+    vtkDataObject* x = itr->GetCurrentDataObject();
+    std::string class_name = x->GetClassName();
 
     if ( class_name == "vtkImageData" )
     {
-        auto f = std::make_shared<cvt::VtkXmlImageData>();
-
-        f->set( dynamic_cast<vtkImageData*>( o ) );
+        auto f = std::make_shared<cvt::VtkXmlImageData>( dynamic_cast<vtkImageData*>( x ) );
 
         return f;
     }
     else if ( class_name == "vtkPolyData" )
     {
-        auto f = std::make_shared<cvt::VtkXmlPolyData>();
+        vtkNew<vtkRemoveGhosts> ghost_remover;
+        ghost_remover->SetInputData( x );
 
-        f->set( dynamic_cast<vtkPolyData*>( o ) );
+        vtkNew<vtkPCellDataToPointData> point_data_sampler;
+        point_data_sampler->SetInputConnection( ghost_remover->GetOutputPort() );
+
+        point_data_sampler->Update();
+
+        auto o = point_data_sampler->GetOutput();
+
+        auto f = std::make_shared<cvt::VtkXmlPolyData>( dynamic_cast<vtkPolyData*>( o ) );
 
         return f;
     }
     else if ( class_name == "vtkRectilinearGrid" )
     {
-        auto f = std::make_shared<cvt::VtkXmlRectilinearGrid>();
-
-        f->set( dynamic_cast<vtkRectilinearGrid*>( o ) );
+        auto f =
+            std::make_shared<cvt::VtkXmlRectilinearGrid>( dynamic_cast<vtkRectilinearGrid*>( x ) );
 
         return f;
     }
     else if ( class_name == "vtkStructuredGrid" )
     {
-        auto f = std::make_shared<cvt::VtkXmlStructuredGrid>();
-
-        f->set( dynamic_cast<vtkStructuredGrid*>( o ) );
+        auto f =
+            std::make_shared<cvt::VtkXmlStructuredGrid>( dynamic_cast<vtkStructuredGrid*>( x ) );
 
         return f;
     }
     else if ( class_name == "vtkUnstructuredGrid" )
     {
+        vtkNew<vtkRemoveGhosts> ghost_remover;
+        ghost_remover->SetInputData( x );
+
+        vtkNew<vtkPCellDataToPointData> point_data_sampler;
+        point_data_sampler->SetInputConnection( ghost_remover->GetOutputPort() );
+
+        point_data_sampler->Update();
+
+        auto o = point_data_sampler->GetOutput();
         auto f = std::make_shared<cvt::VtkXmlUnstructuredGrid>(
             dynamic_cast<vtkUnstructuredGrid*>( o ) );
 

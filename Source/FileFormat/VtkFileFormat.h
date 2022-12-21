@@ -13,8 +13,13 @@
 
 #include "kvs/File"
 #include "kvs/FileFormatBase"
+#include <vtkCompositeDataSet.h>
 #include <vtkNew.h>
+#include <vtkPCellDataToPointData.h>
+#include <vtkPolyData.h>
+#include <vtkRemoveGhosts.h>
 #include <vtkSmartPointer.h>
+#include <vtkUnstructuredGrid.h>
 
 namespace cvt
 {
@@ -90,9 +95,38 @@ public:
             vtkNew<VtkReaderType> reader;
             reader->SetFileName( filename.c_str() );
             set_reader_options( reader );
-            reader->Update();
 
-            vtk_data = dynamic_cast<VtkDataType*>( reader->GetOutput() );
+            if ( std::is_base_of_v<vtkCompositeDataSet, VtkDataType> )
+            {
+                reader->Update();
+
+                vtk_data = dynamic_cast<VtkDataType*>( reader->GetOutput() );
+            }
+            else
+            {
+                if ( std::is_base_of_v<vtkPolyData, VtkDataType> ||
+                     std::is_base_of_v<vtkUnstructuredGrid, VtkDataType> )
+                {
+                    vtkNew<vtkRemoveGhosts> ghost_remover;
+                    ghost_remover->SetInputConnection( reader->GetOutputPort() );
+
+                    vtkNew<vtkPCellDataToPointData> point_data_sampler;
+                    point_data_sampler->SetInputConnection( ghost_remover->GetOutputPort() );
+
+                    point_data_sampler->Update();
+
+                    vtk_data = dynamic_cast<VtkDataType*>( point_data_sampler->GetOutput() );
+                }
+                else
+                {
+                    vtkNew<vtkPCellDataToPointData> point_data_sampler;
+                    point_data_sampler->SetInputConnection( reader->GetOutputPort() );
+
+                    point_data_sampler->Update();
+
+                    vtk_data = dynamic_cast<VtkDataType*>( point_data_sampler->GetOutput() );
+                }
+            }
 
             bool is_success = vtk_data->GetNumberOfCells() > 0;
             BaseClass::setSuccess( is_success );
