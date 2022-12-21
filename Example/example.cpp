@@ -13,10 +13,11 @@ void Plot3d2Kvsml( const char* directory, const char* base, const char* xyz, con
                    const char* f );
 void Vtr2Kvsml( const char* directory, const char* base, const char* src );
 void Vti2Kvsml( const char* directory, const char* base, const char* src );
+void SeriesVti2Kvsml( const char* directory, const char* base, const char* src );
 void Vts2Kvsml( const char* directory, const char* base, const char* src );
+void UniformPvts2Vts( const char* dst, const char* src );
 void Avs2Kvsml( const char* directory, const char* base, const char* src );
 void Vtu2Kvsml( const char* directory, const char* base, const char* src );
-void UniformPvts2Vts( const char* dst, const char* src );
 void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src );
 void PointVtu2Kvsml( const char* dst, const char* src );
 void LineVtu2Kvsml( const char* dst, const char* src );
@@ -145,6 +146,13 @@ int main( int argc, char** argv )
         fs::path src = input_directory;
         src /= "mandelbrot.vti";
         Vti2Kvsml( output_directory.c_str(), "mandelbrot", src.c_str() );
+    }
+    else if ( example_name == "seriesvti2kvsml" )
+    {
+        fs::path src = input_directory;
+        src /= "Vti";
+        src /= "union_*.vti";
+        SeriesVti2Kvsml( output_directory.c_str(), "union", src.c_str() );
     }
     else if ( example_name == "vts2kvsml" )
     {
