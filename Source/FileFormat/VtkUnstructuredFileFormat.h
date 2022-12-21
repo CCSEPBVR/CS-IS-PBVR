@@ -141,7 +141,7 @@ public:
      */
     VtkUnstructuredFileFormat( const std::string& filename ): BaseClass( filename )
     {
-        InitializeCellTypes();
+        initializeCellTypes();
     }
     /**
      * Construct an IO object.
@@ -153,7 +153,7 @@ public:
                                typename BaseClass::ReaderOptionSetter reader_option_setter ):
         BaseClass( filename, reader_option_setter )
     {
-        InitializeCellTypes();
+        initializeCellTypes();
     }
     /**
      * Construct an IO object.
@@ -163,7 +163,7 @@ public:
      *
      * \param[in] vtk_data A VTK data.
      */
-    VtkUnstructuredFileFormat( VtkDataType* data ): BaseClass( data ) { InitializeCellTypes(); }
+    VtkUnstructuredFileFormat( VtkDataType* data ): BaseClass( data ) { initializeCellTypes(); }
 
 public:
     /**
@@ -213,16 +213,57 @@ public:
      *
      * \return A VTK cell type ID list.
      */
-    const std::unordered_set<int>& cell_types() { return m_cell_types; }
+    const std::unordered_set<int>& cellTypes() { return m_cell_types; }
     /**
      * Get all cell types contained in this data.
      *
      * \return A VTK cell type ID list.
      */
-    const std::unordered_set<int>& cell_types() const { return m_cell_types; }
+    const std::unordered_set<int>& cellTypes() const { return m_cell_types; }
+    /**
+     * Check if this data could convert to a KVS PointObject.
+     *
+     * \return `true` if this is convertible, otherwise `false`.
+     */
+    bool isPointObjectConvertible() const
+    {
+        constexpr int CELL_TYPE_ID[] = { VTK_VERTEX, VTK_POLY_VERTEX };
+        return isObjectConvertibleImpl( CELL_TYPE_ID, 2 );
+    }
+    /**
+     * Check if this data could convert to a KVS LineObject.
+     *
+     * \return `true` if this is convertible, otherwise `false`.
+     */
+    bool isLineObjectConvertible() const
+    {
+        constexpr int CELL_TYPE_ID[] = { VTK_LINE, VTK_POLY_LINE };
+        return isObjectConvertibleImpl( CELL_TYPE_ID, 2 );
+    }
+    /**
+     * Check if this data could convert to a KVS LineObject.
+     *
+     * \return `true` if this is convertible, otherwise `false`.
+     */
+    bool isPolygonObjectConvertible() const
+    {
+        constexpr int CELL_TYPE_ID[] = { VTK_PIXEL, VTK_QUAD };
+        return ( m_cell_types.size() == 1 && *m_cell_types.begin() == VTK_TRIANGLE ) ||
+               isObjectConvertibleImpl( CELL_TYPE_ID, 2 );
+    }
 
 private:
-    void InitializeCellTypes()
+    bool isObjectConvertibleImpl( const int* ids, int n ) const
+    {
+        bool x = true;
+        for ( auto t : m_cell_types )
+        {
+            x &= std::find( ids, ids + n, t ) != ( ids + n );
+        }
+        return x;
+    }
+
+    void initializeCellTypes()
     {
         auto data = this->get();
 

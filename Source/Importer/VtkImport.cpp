@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "kvs/LineObject"
+#include "kvs/PointObject"
 #include "kvs/PolygonObject"
 #include "kvs/StructuredVolumeObject"
 #include "kvs/Type"
@@ -284,6 +285,7 @@ void cvt::detail::ImportPolygonObject( kvs::PolygonObject* polygon_object,
         vtkNew<vtkPolyDataNormals> normals_filter;
 
         normals_filter->SetInputData( data );
+        normals_filter->AutoOrientNormalsOn();
         normals_filter->ComputeCellNormalsOn();
         normals_filter->ComputePointNormalsOff();
         normals_filter->SetOutputPointsPrecision(
@@ -352,6 +354,16 @@ void cvt::detail::ImportPolygonObject( kvs::PolygonObject* polygon_object,
     polygon_object->setNormals( v_normals );
     polygon_object->setConnections( v_connections );
     polygon_object->updateMinMaxCoords();
+}
+
+void cvt::detail::ImportPolygonObject( kvs::PolygonObject* polygon_object,
+                                       vtkSmartPointer<vtkUnstructuredGrid> data )
+{
+    auto polydata = vtkSmartPointer<vtkPolyData>::New();
+    polydata->SetPoints( data->GetPoints() );
+    polydata->SetPolys( data->GetCells() );
+
+    cvt::detail::ImportPolygonObject( polygon_object, polydata );
 }
 
 void cvt::detail::ImportRectilinearObject( kvs::StructuredVolumeObject* rectilinear_object,
@@ -514,6 +526,23 @@ void cvt::detail::ImportUnstructuredVolumeObject( kvs::UnstructuredVolumeObject*
         object->setValues( values );
         object->updateMinMaxValues();
     }
+
+    object->updateMinMaxCoords();
+}
+
+void cvt::detail::ImportPointObject( kvs::PointObject* object,
+                                     vtkSmartPointer<vtkUnstructuredGrid> data )
+{
+    auto coords = GetCoordinates( data );
+    object->setCoords( coords );
+
+    std::vector<kvs::Real32> normals( data->GetNumberOfPoints() * 3, 0 );
+    for ( int i = 0; i < data->GetNumberOfPoints(); ++i )
+    {
+        normals[i * 3] = 1.0;
+    }
+    auto v_normals = kvs::ValueArray<kvs::Real32>( normals );
+    object->setNormals( v_normals );
 
     object->updateMinMaxCoords();
 }
