@@ -20,6 +20,7 @@ void UniformPvts2Vts( const char* dst, const char* src );
 void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src );
 void PointVtu2Kvsml( const char* dst, const char* src );
 void LineVtu2Kvsml( const char* dst, const char* src );
+void TriangleVtu2Kvsml( const char* dst, const char* src );
 void SeriesPvtu2Kvsml( const char* directory, const char* base, const char* src );
 void SeriesPvtu2KvsmlWhole( const char* directory, const char* base, const char* src );
 void AccessToVtm( const char* src );
@@ -210,6 +211,7 @@ int main( int argc, char** argv )
         PointVtu2Kvsml( dst.c_str(), src.c_str() );
         // Stop by a checker member
         LineVtu2Kvsml( dst.c_str(), src.c_str() );
+        TriangleVtu2Kvsml( dst.c_str(), src.c_str() );
     }
     else if ( example_name == "line2kvsml" )
     {
@@ -220,6 +222,19 @@ int main( int argc, char** argv )
         LineVtu2Kvsml( dst.c_str(), src.c_str() );
         // Stop by a checker member
         PointVtu2Kvsml( dst.c_str(), src.c_str() );
+        TriangleVtu2Kvsml( dst.c_str(), src.c_str() );
+    }
+    else if ( example_name == "triangle2kvsml" )
+    {
+        fs::path src = input_directory;
+        src /= "Triangle";
+        src /= "triangle_only_0.vtu";
+        fs::path dst = output_directory;
+        dst /= "triangle.kvsml";
+        TriangleVtu2Kvsml( dst.c_str(), src.c_str() );
+        // Stop by a checker member
+        PointVtu2Kvsml( dst.c_str(), src.c_str() );
+        LineVtu2Kvsml( dst.c_str(), src.c_str() );
     }
     else if ( example_name == "seriespvtu2kvsml" )
     {

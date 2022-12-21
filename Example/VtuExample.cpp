@@ -5,6 +5,8 @@
 #include "kvs/KVSMLPointObject"
 #include "kvs/LineExporter"
 #include "kvs/PointExporter"
+#include "kvs/PolygonExporter"
+#include "kvs/PolygonObject"
 #include "kvs/UnstructuredVolumeObject"
 
 #include "Exporter/UnstructuredVolumeObjectExporter.h"
@@ -151,5 +153,24 @@ void LineVtu2Kvsml( const char* dst, const char* src )
     else
     {
         std::cerr << src << " could not export as a KVS LineObject" << std::endl;
+    }
+}
+
+void TriangleVtu2Kvsml( const char* dst, const char* src )
+{
+    cvt::VtkXmlUnstructuredGrid input_vtu( src );
+    if ( input_vtu.isPolygonObjectConvertible() )
+    {
+        cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid, kvs::PolygonObject> importer( &input_vtu );
+        importer.print( std::cout );
+
+        importer.setColor( kvs::RGBColor( 255, 255, 255 ) );
+
+        kvs::PolygonExporter<kvs::KVSMLPolygonObject> exporter( &importer );
+        exporter.write( dst );
+    }
+    else
+    {
+        std::cerr << src << " could not export as a KVS PolygonObject" << std::endl;
     }
 }

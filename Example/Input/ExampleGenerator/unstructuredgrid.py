@@ -57,6 +57,30 @@ def generate_vertex_only_mesh():
     writer.Update()
 
 
+def generate_triangle_only_mesh():
+    time_step = 0
+    unstructured_grid = make_tetrahedron_only_mesh(
+        [3, 4, 5], [0, 0, 0], time_step)
+
+    surface = vtk.vtkGeometryFilter()
+    surface.SetInputData(unstructured_grid)
+
+    flip = vtk.vtkReverseSense()
+    flip.SetInputConnection(surface.GetOutputPort())
+
+    converter = vtk.vtkAppendFilter()
+    converter.AddInputConnection(flip.GetOutputPort())
+    converter.Update()
+
+    vertex = converter.GetOutput()
+
+    writer = vtk.vtkXMLUnstructuredGridWriter()
+    writer.SetFileName(os.path.join('..', 'Triangle',
+                                    f'triangle_only_{time_step}.vtu'))
+    writer.SetInputData(vertex)
+    writer.Update()
+
+
 def generate_tetrahedron_and_hexahedron():
     for time_step in range(10):
         image_data = vtk.vtkImageData()
@@ -116,7 +140,10 @@ def generate_tetrahedron_and_hexahedron():
 
 
 if __name__ == '__main__':
+    generate_triangle_only_mesh()
+    """
     generate_tetrahedron_only_mesh()
     generate_hexahedron_only_mesh()
     generate_tetrahedron_and_hexahedron()
     generate_vertex_only_mesh()
+    """
