@@ -141,9 +141,7 @@ def generate_tetrahedron_and_hexahedron():
 
 if __name__ == '__main__':
     generate_triangle_only_mesh()
-    """
     generate_tetrahedron_only_mesh()
     generate_hexahedron_only_mesh()
     generate_tetrahedron_and_hexahedron()
     generate_vertex_only_mesh()
-    """

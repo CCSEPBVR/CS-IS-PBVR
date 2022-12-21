@@ -15,7 +15,7 @@ void Vtr2Kvsml( const char* directory, const char* base, const char* src );
 void Vti2Kvsml( const char* directory, const char* base, const char* src );
 void SeriesVti2Kvsml( const char* directory, const char* base, const char* src );
 void Vts2Kvsml( const char* directory, const char* base, const char* src );
-void UniformPvts2Vts( const char* dst, const char* src );
+void Pvts2Kvsml( const char* directory, const char* base, const char* src );
 void Avs2Kvsml( const char* directory, const char* base, const char* src );
 void Vtu2Kvsml( const char* directory, const char* base, const char* src );
 void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src );
@@ -161,9 +161,12 @@ int main( int argc, char** argv )
         src /= "StructuredGrid.vts";
         Vts2Kvsml( output_directory.c_str(), "StructuredGrid", src.c_str() );
     }
-    else if ( example_name == "pvts2vts" )
+    else if ( example_name == "pvts2kvsml" )
     {
-        UniformPvts2Vts( argv[4], argv[3] );
+        fs::path src = input_directory;
+        src /= "Pvts";
+        src /= "example_0.pvts";
+        Pvts2Kvsml( output_directory.c_str(), "example_0", src.c_str() );
     }
     else if ( example_name == "avs2kvsml" )
     {
