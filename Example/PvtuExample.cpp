@@ -12,7 +12,7 @@
 #include "PBVRFileInformation/UnstructuredPfi.h"
 #include "TimeSeriesFiles/NumeralSequenceFiles.h"
 
-void Pvtu2Kvsml( const char* directory, const char* base, const char* src )
+void Pvtu2Kvsml( const std::string& directory, const std::string& base, const std::string& src )
 {
     std::cout << "reading " << src << " ..." << std::endl;
     cvt::VtkXmlPUnstructuredGrid input_pvtu( src );
@@ -70,10 +70,11 @@ void Pvtu2Kvsml( const char* directory, const char* base, const char* src )
     pfl.write( directory, base );
 }
 
-void SeriesPvtu2Kvsml( const char* directory, const char* base, const char* src )
+void SeriesPvtu2Kvsml( const std::string& directory, const std::string& base,
+                       const std::string& src )
 {
     std::cout << "Reading " << src << " ..." << std::endl;
-    cvt::NumeralSequenceFiles<cvt::VtkXmlPUnstructuredGrid> time_series( src );
+    cvt::NumeralSequenceFiles<cvt::VtkXmlPUnstructuredGrid> time_series( src.c_str() );
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
     std::unordered_map<int, int> sub_volume_counts;
@@ -165,7 +166,8 @@ void SeriesPvtu2Kvsml( const char* directory, const char* base, const char* src 
     pfl.write( directory, base );
 }
 
-void SeriesPvtu2KvsmlWhole( const char* directory, const char* base, const char* src )
+void SeriesPvtu2KvsmlWhole( const std::string& directory, const std::string& base,
+                            const std::string& src )
 {
     std::cout << "Reading " << src << " ..." << std::endl;
     cvt::NumeralSequenceFiles<cvt::VtkXmlPUnstructuredGrid> time_series( src );

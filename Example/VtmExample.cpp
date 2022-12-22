@@ -15,7 +15,7 @@
 #include "PBVRFileInformation/UnstructuredPfi.h"
 #include "TimeSeriesFiles/NumeralSequenceFiles.h"
 
-void AccessToVtm( const char* src )
+void AccessToVtm( const std::string& src )
 {
     std::cout << "Reading " << src << " ..." << std::endl;
     cvt::VtkXmlMultiBlock input_vtm( src );
@@ -64,7 +64,8 @@ void AccessToVtm( const char* src )
     }
 }
 
-void SeriesVtm2Kvsml( const char* directory, const char* base, const char* src )
+void SeriesVtm2Kvsml( const std::string& directory, const std::string& base,
+                      const std::string& src )
 {
     std::cout << "Reading " << src << " ..." << std::endl;
 

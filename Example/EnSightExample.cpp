@@ -10,7 +10,7 @@
 #include "PBVRFileInformation/UnstructuredPfi.h"
 #include "TimeSeriesFiles/EnSight/EnSightGoldBinary.h"
 
-void Case2Kvsml( const char* directory, const char* base, const char* src )
+void Case2Kvsml( const std::string& directory, const std::string& base, const std::string& src )
 {
     std::cout << "reading " << src << " ..." << std::endl;
     cvt::EnSightGoldBinary input_case( src );

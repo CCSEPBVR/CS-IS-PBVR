@@ -8,7 +8,7 @@
 #include "Importer/VtkImporter.h"
 #include "PBVRFileInformation/UnstructuredPfi.h"
 
-void Vtr2Kvsml( const char* directory, const char* base, const char* src )
+void Vtr2Kvsml( const std::string& directory, const std::string& base, const std::string& src )
 {
     int last_time_step = 0;
     int time_step = 0;

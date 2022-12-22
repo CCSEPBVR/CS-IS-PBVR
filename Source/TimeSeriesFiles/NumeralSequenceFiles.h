@@ -150,12 +150,11 @@ public:
      *
      * \param [in] pattern A file name pattern with wildcard `*` like `foo_*.vtk`.
      */
-    template <typename String>
-    NumeralSequenceFiles( String&& pattern )
+    NumeralSequenceFiles( const std::string& pattern )
     {
         vtkNew<vtkGlobFileNames> glob;
         glob->RecurseOff();
-        glob->AddFileNames( pattern );
+        glob->AddFileNames( pattern.c_str() );
 
         auto f = glob->GetFileNames();
 

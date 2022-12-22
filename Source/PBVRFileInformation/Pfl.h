@@ -81,7 +81,7 @@ public:
             }
             path /= ( std::string( base ) + ".pfl" );
 
-            return write( path.c_str() );
+            return write( path.string() );
         }
         catch ( std::exception& e )
         {

@@ -5,28 +5,33 @@
 
 #include "Filesystem.h"
 
-void Stl2Stl( const char* dst, const char* src );
-void Stl2Kvsml( const char* dst, const char* src );
-void Vtp2Kvsml( const char* dst, const char* src );
-void Plot3d2Kvsml( const char* directory, const char* base, const char* xyz, const char* q,
-                   const char* f );
-void Vtr2Kvsml( const char* directory, const char* base, const char* src );
-void Vti2Kvsml( const char* directory, const char* base, const char* src );
-void SeriesVti2Kvsml( const char* directory, const char* base, const char* src );
-void Vts2Kvsml( const char* directory, const char* base, const char* src );
-void Pvts2Kvsml( const char* directory, const char* base, const char* src );
-void Avs2Kvsml( const char* directory, const char* base, const char* src );
-void Vtu2Kvsml( const char* directory, const char* base, const char* src );
-void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src );
-void PointVtu2Kvsml( const char* dst, const char* src );
-void LineVtu2Kvsml( const char* dst, const char* src );
-void TriangleVtu2Kvsml( const char* dst, const char* src );
-void SeriesPvtu2Kvsml( const char* directory, const char* base, const char* src );
-void SeriesPvtu2KvsmlWhole( const char* directory, const char* base, const char* src );
-void AccessToVtm( const char* src );
-void SeriesVtm2Kvsml( const char* directory, const char* base, const char* src );
-void Case2Kvsml( const char* directory, const char* base, const char* src );
-void Cgns2Kvsml( const char* directory, const char* base, const char* src );
+void Stl2Stl( const std::string& dst, const std::string& src );
+void Stl2Kvsml( const std::string& dst, const std::string& src );
+void Vtp2Kvsml( const std::string& dst, const std::string& src );
+void Plot3d2Kvsml( const std::string& directory, const std::string& base, const std::string& xyz,
+                   const std::string& q, const std::string& f );
+void Vtr2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
+void Vti2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
+void SeriesVti2Kvsml( const std::string& directory, const std::string& base,
+                      const std::string& src );
+void Vts2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
+void Pvts2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
+void Avs2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
+void Vtu2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
+void SeriesVtu2Kvsml( const std::string& directory, const std::string& base,
+                      const std::string& src );
+void PointVtu2Kvsml( const std::string& dst, const std::string& src );
+void LineVtu2Kvsml( const std::string& dst, const std::string& src );
+void TriangleVtu2Kvsml( const std::string& dst, const std::string& src );
+void SeriesPvtu2Kvsml( const std::string& directory, const std::string& base,
+                       const std::string& src );
+void SeriesPvtu2KvsmlWhole( const std::string& directory, const std::string& base,
+                            const std::string& src );
+void AccessToVtm( const std::string& src );
+void SeriesVtm2Kvsml( const std::string& directory, const std::string& base,
+                      const std::string& src );
+void Case2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
+void Cgns2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 
 int main( int argc, char** argv )
 {
@@ -95,7 +100,7 @@ int main( int argc, char** argv )
         src /= "gears.stl";
         fs::path dst = output_directory;
         dst /= "gears.stl";
-        Stl2Stl( dst.c_str(), src.c_str() );
+        Stl2Stl( dst.string(), src.string() );
     }
     else if ( example_name == "stl2kvsml" )
     {
@@ -104,7 +109,7 @@ int main( int argc, char** argv )
         src /= "gears.stl";
         fs::path dst = output_directory;
         dst /= "gears.kvsml";
-        Stl2Kvsml( dst.c_str(), src.c_str() );
+        Stl2Kvsml( dst.string(), src.string() );
     }
     else if ( example_name == "vtp2kvsml" )
     {
@@ -113,13 +118,13 @@ int main( int argc, char** argv )
         src_t /= "triangle.vtp";
         fs::path dst_t = output_directory;
         dst_t /= "triangle.kvsml";
-        Vtp2Kvsml( dst_t.c_str(), src_t.c_str() );
+        Vtp2Kvsml( dst_t.string(), src_t.string() );
         fs::path src_q = input_directory;
         src_q /= "Polygon";
         src_q /= "triangle.vtp";
         fs::path dst_q = output_directory;
         dst_q /= "triangle.kvsml";
-        Vtp2Kvsml( dst_q.c_str(), src_q.c_str() );
+        Vtp2Kvsml( dst_q.string(), src_q.string() );
     }
     else if ( example_name == "plot3d2kvsml" )
     {
@@ -131,7 +136,7 @@ int main( int argc, char** argv )
         xyz /= "singleGrid.xyz";
         q /= "singleGrid.q";
         f /= "singleGrid.f";
-        Plot3d2Kvsml( output_directory.c_str(), "singleGrid", xyz.c_str(), q.c_str(), f.c_str() );
+        Plot3d2Kvsml( output_directory, "singleGrid", xyz.string(), q.string(), f.string() );
     }
     else if ( example_name == "vtr2kvsml" )
     {
@@ -140,34 +145,34 @@ int main( int argc, char** argv )
         src /= "RectilinearGrid.vtr";
         fs::path dst = output_directory;
         dst /= "RectilinearGrid.kvsml";
-        Vtr2Kvsml( output_directory.c_str(), "RectilinearGrid", src.c_str() );
+        Vtr2Kvsml( output_directory, "RectilinearGrid", src.string() );
     }
     else if ( example_name == "vti2kvsml" )
     {
         fs::path src = input_directory;
         src /= "mandelbrot.vti";
-        Vti2Kvsml( output_directory.c_str(), "mandelbrot", src.c_str() );
+        Vti2Kvsml( output_directory, "mandelbrot", src.string() );
     }
     else if ( example_name == "seriesvti2kvsml" )
     {
         fs::path src = input_directory;
         src /= "Vti";
         src /= "union_*.vti";
-        SeriesVti2Kvsml( output_directory.c_str(), "union", src.c_str() );
+        SeriesVti2Kvsml( output_directory, "union", src.string() );
     }
     else if ( example_name == "vts2kvsml" )
     {
         fs::path src = input_directory;
         src /= "VTKExamples";
         src /= "StructuredGrid.vts";
-        Vts2Kvsml( output_directory.c_str(), "StructuredGrid", src.c_str() );
+        Vts2Kvsml( output_directory, "StructuredGrid", src.string() );
     }
     else if ( example_name == "pvts2kvsml" )
     {
         fs::path src = input_directory;
         src /= "Pvts";
         src /= "example_0.pvts";
-        Pvts2Kvsml( output_directory.c_str(), "example_0", src.c_str() );
+        Pvts2Kvsml( output_directory, "example_0", src.string() );
     }
     else if ( example_name == "avs2kvsml" )
     {
@@ -176,7 +181,7 @@ int main( int argc, char** argv )
         fs::path dst = output_directory;
         dst /= "AVS";
         mkdir( dst );
-        Avs2Kvsml( dst.c_str(), "frontstr", src.c_str() );
+        Avs2Kvsml( dst.string(), "frontstr", src.string() );
     }
     else if ( example_name == "vtu2kvsml" )
     {
@@ -185,7 +190,7 @@ int main( int argc, char** argv )
         fs::path dst = output_directory;
         dst /= "periodicPiece";
         mkdir( dst );
-        Vtu2Kvsml( dst.c_str(), "periodicPiece", src.c_str() );
+        Vtu2Kvsml( dst.string(), "periodicPiece", src.string() );
     }
     else if ( example_name == "seriesvtu2kvsml" )
     {
@@ -195,7 +200,7 @@ int main( int argc, char** argv )
         fs::path dst_t = output_directory;
         dst_t /= "Tetra";
         mkdir( dst_t );
-        SeriesVtu2Kvsml( dst_t.c_str(), "tetra_only", pattern_t.c_str() );
+        SeriesVtu2Kvsml( dst_t.string(), "tetra_only", pattern_t.string() );
 
         fs::path pattern_h = input_directory;
         pattern_h /= "Hex";
@@ -203,7 +208,7 @@ int main( int argc, char** argv )
         fs::path dst_h = output_directory;
         dst_h /= "Hex";
         mkdir( dst_h );
-        SeriesVtu2Kvsml( dst_h.c_str(), "hex_only", pattern_h.c_str() );
+        SeriesVtu2Kvsml( dst_h.string(), "hex_only", pattern_h.string() );
 
         fs::path pattern_th = input_directory;
         pattern_th /= "TetraAndHex";
@@ -211,7 +216,7 @@ int main( int argc, char** argv )
         fs::path dst_th = output_directory;
         dst_th /= "TetraAndHex";
         mkdir( dst_th );
-        SeriesVtu2Kvsml( dst_th.c_str(), "tetra_and_hex", pattern_th.c_str() );
+        SeriesVtu2Kvsml( dst_th.string(), "tetra_and_hex", pattern_th.string() );
     }
     else if ( example_name == "point2kvsml" )
     {
@@ -220,10 +225,10 @@ int main( int argc, char** argv )
         src /= "vertex_only_0.vtu";
         fs::path dst = output_directory;
         dst /= "vertex.kvsml";
-        PointVtu2Kvsml( dst.c_str(), src.c_str() );
+        PointVtu2Kvsml( dst.string(), src.string() );
         // Stop by a checker member
-        LineVtu2Kvsml( dst.c_str(), src.c_str() );
-        TriangleVtu2Kvsml( dst.c_str(), src.c_str() );
+        LineVtu2Kvsml( dst.string(), src.string() );
+        TriangleVtu2Kvsml( dst.string(), src.string() );
     }
     else if ( example_name == "line2kvsml" )
     {
@@ -231,10 +236,10 @@ int main( int argc, char** argv )
         src /= "helix.vtu";
         fs::path dst = output_directory;
         dst /= "helix.kvsml";
-        LineVtu2Kvsml( dst.c_str(), src.c_str() );
+        LineVtu2Kvsml( dst.string(), src.string() );
         // Stop by a checker member
-        PointVtu2Kvsml( dst.c_str(), src.c_str() );
-        TriangleVtu2Kvsml( dst.c_str(), src.c_str() );
+        PointVtu2Kvsml( dst.string(), src.string() );
+        TriangleVtu2Kvsml( dst.string(), src.string() );
     }
     else if ( example_name == "triangle2kvsml" )
     {
@@ -243,10 +248,10 @@ int main( int argc, char** argv )
         src /= "triangle_only_0.vtu";
         fs::path dst = output_directory;
         dst /= "triangle.kvsml";
-        TriangleVtu2Kvsml( dst.c_str(), src.c_str() );
+        TriangleVtu2Kvsml( dst.string(), src.string() );
         // Stop by a checker member
-        PointVtu2Kvsml( dst.c_str(), src.c_str() );
-        LineVtu2Kvsml( dst.c_str(), src.c_str() );
+        PointVtu2Kvsml( dst.string(), src.string() );
+        LineVtu2Kvsml( dst.string(), src.string() );
     }
     else if ( example_name == "seriespvtu2kvsml" )
     {
@@ -256,19 +261,19 @@ int main( int argc, char** argv )
         fs::path dst_p = output_directory;
         dst_p /= "Piece";
         mkdir( dst_p );
-        SeriesPvtu2Kvsml( dst_p.c_str(), "example", src.c_str() );
+        SeriesPvtu2Kvsml( dst_p.string(), "example", src.string() );
 
         fs::path dst_w = output_directory;
         dst_w /= "Whole";
         mkdir( dst_w );
-        SeriesPvtu2KvsmlWhole( dst_w.c_str(), "example", src.c_str() );
+        SeriesPvtu2KvsmlWhole( dst_w.string(), "example", src.string() );
     }
     else if ( example_name == "accessvtm" )
     {
         fs::path src = input_directory;
         src /= "MultiBlock";
         src /= "multiblock_0.vtm";
-        AccessToVtm( src.c_str() );
+        AccessToVtm( src.string() );
     }
     else if ( example_name == "seriesvtm2kvsml" )
     {
@@ -278,7 +283,7 @@ int main( int argc, char** argv )
         fs::path dst = output_directory;
         dst /= "UnstructuredMultiBlock";
         mkdir( dst );
-        SeriesVtm2Kvsml( dst.c_str(), "multiblock", src.c_str() );
+        SeriesVtm2Kvsml( dst.string(), "multiblock", src.string() );
     }
     else if ( example_name == "case2kvsml" )
     {

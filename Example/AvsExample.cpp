@@ -10,7 +10,7 @@
 #include "PBVRFileInformation/Pfl.h"
 #include "PBVRFileInformation/UnstructuredPfi.h"
 
-void Avs2Kvsml( const char* directory, const char* base, const char* src )
+void Avs2Kvsml( const std::string& directory, const std::string& base, const std::string& src )
 {
     std::cout << "Reading " << src << " ..." << std::endl;
     cvt::AvsUcd input_avs( src );
