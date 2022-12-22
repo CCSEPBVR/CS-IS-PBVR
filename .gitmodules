@@ -4,3 +4,6 @@
 [submodule "Example/Input/pbvr_sample_data"]
 	path = Example/Input/pbvr_sample_data
 	url = https://github.com/CCSEPBVR/pbvr_sample_data.git
+[submodule "Example/Input/VTKExamples"]
+	path = Example/Input/VTKExamples
+	url = https://github.com/lorensen/VTKExamples.git

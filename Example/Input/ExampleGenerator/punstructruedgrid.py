@@ -8,7 +8,8 @@ from common import (
     make_hexahedron_only_mesh,
     make_tetrahedron_only_mesh,
     make_pyramid_only_mesh,
-    make_wedge_only_mesh)
+    make_wedge_only_mesh,
+    append_cell_data)
 
 mpi_controller = vtk.vtkMPIController()
 mpi_controller.Initialize()
@@ -57,24 +58,35 @@ def set_non_ghost(grid):
 def generate_hexahedron_only_mesh(time_step):
     grid = make_hexahedron_only_mesh(
         [3, 4, 5], [time_step, 0, 0], time_step)
+    append_cell_data(grid, time_step)
     return set_ghost(grid, time_step + 1)
 
 
 def generate_tetrahedron_only_mesh(time_step):
     grid = make_tetrahedron_only_mesh(
         [3, 4, 5], [time_step + 1, 0, 0], time_step)
+    append_cell_data(grid, time_step)
     return set_ghost(grid, time_step + 2)
 
 
 def generate_pyramid_only_mesh(time_step):
     grid = make_pyramid_only_mesh(
         [3, 4, 5], [time_step + 2, 0, 0], time_step)
+    append_cell_data(grid, time_step)
     return set_ghost(grid, time_step + 3)
 
 
 def generate_wedge_only_mesh(time_step):
     grid = make_wedge_only_mesh(
         [3, 4, 5], [time_step + 3, 0, 0], time_step)
+    append_cell_data(grid, time_step)
+    return set_ghost(grid, time_step + 4)
+
+
+def generate_hexahedron_only_mesh2(time_step):
+    grid = make_hexahedron_only_mesh(
+        [3, 4, 5], [time_step+4, 0, 0], time_step)
+    append_cell_data(grid, time_step)
     return set_non_ghost(grid)
 
 
@@ -89,8 +101,10 @@ if __name__ == '__main__':
             writer.SetInputData(generate_tetrahedron_only_mesh(time_step))
         elif rank == 2:
             writer.SetInputData(generate_pyramid_only_mesh(time_step))
-        else:
+        elif rank == 3:
             writer.SetInputData(generate_wedge_only_mesh(time_step))
+        else:
+            writer.SetInputData(generate_hexahedron_only_mesh2(time_step))
 
         writer.SetNumberOfPieces(nranks)
         writer.SetStartPiece(rank)

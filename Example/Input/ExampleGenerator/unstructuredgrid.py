@@ -5,13 +5,17 @@ from common import (
     TETRA_BOTTOM_IDS,
     make_hexahedron_only_mesh,
     make_tetrahedron_only_mesh,
-    append_point_data)
+    append_point_data,
+    append_cell_data)
 
 
 def generate_hexahedron_only_mesh():
+    old_cell_count = 0
     for time_step in range(10):
         unstructured_grid = make_hexahedron_only_mesh(
             [3, 4, 5], [0, 0, 0], time_step)
+        append_cell_data(unstructured_grid)
+        old_cell_count = old_cell_count + unstructured_grid.GetNumberOfCells()
 
         writer = vtk.vtkXMLUnstructuredGridWriter()
         writer.SetFileName(os.path.join('..', 'Hex',
@@ -21,9 +25,12 @@ def generate_hexahedron_only_mesh():
 
 
 def generate_tetrahedron_only_mesh():
+    old_cell_count = 0
     for time_step in range(10):
         unstructured_grid = make_tetrahedron_only_mesh(
             [3, 4, 5], [0, 0, 0], time_step)
+        append_cell_data(unstructured_grid)
+        old_cell_count += unstructured_grid.GetNumberOfCells()
 
         writer = vtk.vtkXMLUnstructuredGridWriter()
         writer.SetFileName(os.path.join('..', 'Tetra',
@@ -82,6 +89,7 @@ def generate_triangle_only_mesh():
 
 
 def generate_tetrahedron_and_hexahedron():
+    old_cell_count = 0
     for time_step in range(10):
         image_data = vtk.vtkImageData()
         image_data.SetDimensions([3, 4, 5])
@@ -131,6 +139,9 @@ def generate_tetrahedron_and_hexahedron():
         unstructured_grid.SetPoints(points)
 
         append_point_data(unstructured_grid, time_step)
+        append_cell_data(unstructured_grid, old_cell_count)
+
+        old_cell_count = old_cell_count + unstructured_grid.GetNumberOfCells()
 
         writer = vtk.vtkXMLUnstructuredGridWriter()
         writer.SetFileName(os.path.join(

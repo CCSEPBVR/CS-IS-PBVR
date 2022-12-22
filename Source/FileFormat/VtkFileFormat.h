@@ -107,15 +107,14 @@ public:
                 if ( std::is_base_of_v<vtkPolyData, VtkDataType> ||
                      std::is_base_of_v<vtkUnstructuredGrid, VtkDataType> )
                 {
-                    vtkNew<vtkRemoveGhosts> ghost_remover;
-                    ghost_remover->SetInputConnection( reader->GetOutputPort() );
 
                     vtkNew<vtkPCellDataToPointData> point_data_sampler;
-                    point_data_sampler->SetInputConnection( ghost_remover->GetOutputPort() );
+                    point_data_sampler->SetInputConnection( reader->GetOutputPort() );
+                    vtkNew<vtkRemoveGhosts> ghost_remover;
+                    ghost_remover->SetInputConnection( point_data_sampler->GetOutputPort() );
+                    ghost_remover->Update();
 
-                    point_data_sampler->Update();
-
-                    vtk_data = dynamic_cast<VtkDataType*>( point_data_sampler->GetOutput() );
+                    vtk_data = dynamic_cast<VtkDataType*>( ghost_remover->GetOutput() );
                 }
                 else
                 {

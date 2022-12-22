@@ -8,7 +8,8 @@ from common import (
     make_tetrahedron_only_mesh,
     make_pyramid_only_mesh,
     make_wedge_only_mesh,
-    make_quad_mesh)
+    make_quad_mesh,
+    append_cell_data)
 
 
 def generate_multi_block():
@@ -33,17 +34,24 @@ def generate_multi_block():
 
 
 def generate_unstructured_multi_block():
+    cell_count_offset = 0
     for time_step in range(10):
         multi_block = vtk.vtkMultiBlockDataSet()
         hex_only = make_hexahedron_only_mesh([3, 4, 5], [0, 0, 0], time_step)
+        append_cell_data(hex_only, cell_count_offset)
+        cell_count_offset = cell_count_offset + hex_only.GetNumberOfCells()
         tetra_only = make_tetrahedron_only_mesh(
             [3, 4, 5], [2, 0, 0], time_step)
-        tetra_only = make_tetrahedron_only_mesh(
-            [3, 4, 5], [2, 0, 0], time_step)
+        append_cell_data(tetra_only, cell_count_offset)
+        cell_count_offset = cell_count_offset + tetra_only.GetNumberOfCells()
         pyramid_only = make_pyramid_only_mesh(
             [3, 4, 5], [4, 0, 0], time_step)
+        append_cell_data(pyramid_only, cell_count_offset)
+        cell_count_offset = cell_count_offset + pyramid_only.GetNumberOfCells()
         wedge_only = make_wedge_only_mesh(
             [3, 4, 5], [6, 0, 0], time_step)
+        append_cell_data(wedge_only, cell_count_offset)
+        cell_count_offset = cell_count_offset + wedge_only.GetNumberOfCells()
 
         multi_block.SetBlock(0, hex_only)
         multi_block.SetBlock(1, tetra_only)

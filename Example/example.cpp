@@ -97,6 +97,9 @@ int main( int argc, char** argv )
     {
         fs::path src = input_directory;
         src /= "VTKExamples";
+        src /= "src";
+        src /= "Testing";
+        src /= "Data";
         src /= "gears.stl";
         fs::path dst = output_directory;
         dst /= "gears.stl";
@@ -106,6 +109,9 @@ int main( int argc, char** argv )
     {
         fs::path src = input_directory;
         src /= "VTKExamples";
+        src /= "src";
+        src /= "Testing";
+        src /= "Data";
         src /= "gears.stl";
         fs::path dst = output_directory;
         dst /= "gears.kvsml";
@@ -142,6 +148,9 @@ int main( int argc, char** argv )
     {
         fs::path src = input_directory;
         src /= "VTKExamples";
+        src /= "src";
+        src /= "Testing";
+        src /= "Data";
         src /= "RectilinearGrid.vtr";
         fs::path dst = output_directory;
         dst /= "RectilinearGrid.kvsml";
@@ -150,8 +159,12 @@ int main( int argc, char** argv )
     else if ( example_name == "vti2kvsml" )
     {
         fs::path src = input_directory;
-        src /= "mandelbrot.vti";
-        Vti2Kvsml( output_directory, "mandelbrot", src.string() );
+        src /= "VTKExamples";
+        src /= "src";
+        src /= "Testing";
+        src /= "Data";
+        src /= "vase.vti";
+        Vti2Kvsml( output_directory, "vase", src.string() );
     }
     else if ( example_name == "seriesvti2kvsml" )
     {
@@ -164,6 +177,9 @@ int main( int argc, char** argv )
     {
         fs::path src = input_directory;
         src /= "VTKExamples";
+        src /= "src";
+        src /= "Testing";
+        src /= "Data";
         src /= "StructuredGrid.vts";
         Vts2Kvsml( output_directory, "StructuredGrid", src.string() );
     }
@@ -186,11 +202,15 @@ int main( int argc, char** argv )
     else if ( example_name == "vtu2kvsml" )
     {
         fs::path src = input_directory;
-        src /= "periodicPiece.vtu";
+        src /= "VTKExamples";
+        src /= "src";
+        src /= "Testing";
+        src /= "Data";
+        src /= "fire_ug.vtu";
         fs::path dst = output_directory;
-        dst /= "periodicPiece";
+        dst /= "fire_ug";
         mkdir( dst );
-        Vtu2Kvsml( dst.string(), "periodicPiece", src.string() );
+        Vtu2Kvsml( dst.string(), "fire_ug", src.string() );
     }
     else if ( example_name == "seriesvtu2kvsml" )
     {
