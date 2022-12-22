@@ -7,7 +7,8 @@
 #ifndef CVT__FILESYSTEM_H_INCLUDE
 #define CVT__FILESYSTEM_H_INCLUDE
 
-#pragma GCC warning "This header is for gcc < 8. This must replace with <filesystem> in the future"
+#pragma GCC warning                                                                                \
+    "This header is for gcc < 8. This must be replaced with <filesystem> in the future"
 
 #if __has_include( <filesystem>)
 #include <filesystem>
