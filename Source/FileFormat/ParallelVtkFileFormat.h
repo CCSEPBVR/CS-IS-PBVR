@@ -29,17 +29,15 @@ public:
     FileFormatType operator*()
     {
         reader->UpdatePiece( piece_id, reader->GetNumberOfPieces(), -1 );
-
-        vtkNew<vtkRemoveGhosts> ghost_remover;
-        ghost_remover->SetInputConnection( reader->GetOutputPort() );
+        auto piece = dynamic_cast<typename FileFormatType::VtkDataType*>( reader->GetOutput() );
 
         vtkNew<vtkPCellDataToPointData> point_data_sampler;
-        point_data_sampler->SetInputConnection( ghost_remover->GetOutputPort() );
-
-        point_data_sampler->Update();
-
+        point_data_sampler->SetInputData( piece );
+        vtkNew<vtkRemoveGhosts> ghost_remover;
+        ghost_remover->SetInputConnection( point_data_sampler->GetOutputPort() );
+        ghost_remover->Update();
         auto output =
-            dynamic_cast<typename FileFormatType::VtkDataType*>( point_data_sampler->GetOutput() );
+            dynamic_cast<typename FileFormatType::VtkDataType*>( ghost_remover->GetOutput() );
 
         return FileFormatType( output );
     }
@@ -210,9 +208,29 @@ public:
      */
     PieceFileFormatType get()
     {
-        reader->Update();
-        auto output = reader->GetOutput();
-        return PieceFileFormatType( output );
+        using VtkDataType = typename PieceFileFormatType::VtkDataType;
+
+        if ( std::is_base_of_v<vtkPolyData, VtkDataType> ||
+             std::is_base_of_v<vtkUnstructuredGrid, VtkDataType> )
+        {
+            vtkNew<vtkPCellDataToPointData> point_data_sampler;
+            point_data_sampler->SetInputConnection( reader->GetOutputPort() );
+            vtkNew<vtkRemoveGhosts> ghost_remover;
+            ghost_remover->SetInputConnection( point_data_sampler->GetOutputPort() );
+            ghost_remover->Update();
+
+            return PieceFileFormatType( dynamic_cast<VtkDataType*>( ghost_remover->GetOutput() ) );
+        }
+        else
+        {
+            vtkNew<vtkPCellDataToPointData> point_data_sampler;
+            point_data_sampler->SetInputConnection( reader->GetOutputPort() );
+
+            point_data_sampler->Update();
+
+            return PieceFileFormatType(
+                dynamic_cast<VtkDataType*>( point_data_sampler->GetOutput() ) );
+        }
     }
     /**
      * Generate a file format to access whole data.
@@ -221,9 +239,29 @@ public:
      */
     PieceFileFormatType get() const
     {
-        reader->Update();
-        auto output = reader->GetOutput();
-        return PieceFileFormatType( output );
+        using VtkDataType = typename PieceFileFormatType::VtkDataType;
+
+        if ( std::is_base_of_v<vtkPolyData, VtkDataType> ||
+             std::is_base_of_v<vtkUnstructuredGrid, VtkDataType> )
+        {
+            vtkNew<vtkPCellDataToPointData> point_data_sampler;
+            point_data_sampler->SetInputConnection( reader->GetOutputPort() );
+            vtkNew<vtkRemoveGhosts> ghost_remover;
+            ghost_remover->SetInputConnection( point_data_sampler->GetOutputPort() );
+            ghost_remover->Update();
+
+            return PieceFileFormatType( dynamic_cast<VtkDataType*>( ghost_remover->GetOutput() ) );
+        }
+        else
+        {
+            vtkNew<vtkPCellDataToPointData> point_data_sampler;
+            point_data_sampler->SetInputConnection( reader->GetOutputPort() );
+
+            point_data_sampler->Update();
+
+            return PieceFileFormatType(
+                dynamic_cast<VtkDataType*>( point_data_sampler->GetOutput() ) );
+        }
     }
 
 public:

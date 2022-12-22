@@ -37,17 +37,14 @@ std::shared_ptr<kvs::FileFormatBase> cvt::detail::VtkMultiBlockIterator::derefer
     }
     else if ( class_name == "vtkPolyData" )
     {
-        vtkNew<vtkRemoveGhosts> ghost_remover;
-        ghost_remover->SetInputData( x );
-
         vtkNew<vtkPCellDataToPointData> point_data_sampler;
-        point_data_sampler->SetInputConnection( ghost_remover->GetOutputPort() );
+        point_data_sampler->SetInputData( x );
+        vtkNew<vtkRemoveGhosts> ghost_remover;
+        ghost_remover->SetInputConnection( point_data_sampler->GetOutputPort() );
+        ghost_remover->Update();
 
-        point_data_sampler->Update();
-
-        auto o = point_data_sampler->GetOutput();
-
-        auto f = std::make_shared<cvt::VtkXmlPolyData>( dynamic_cast<vtkPolyData*>( o ) );
+        auto f = std::make_shared<cvt::VtkXmlPolyData>(
+            dynamic_cast<vtkPolyData*>( ghost_remover->GetOutput() ) );
 
         return f;
     }
@@ -67,17 +64,15 @@ std::shared_ptr<kvs::FileFormatBase> cvt::detail::VtkMultiBlockIterator::derefer
     }
     else if ( class_name == "vtkUnstructuredGrid" )
     {
-        vtkNew<vtkRemoveGhosts> ghost_remover;
-        ghost_remover->SetInputData( x );
 
         vtkNew<vtkPCellDataToPointData> point_data_sampler;
-        point_data_sampler->SetInputConnection( ghost_remover->GetOutputPort() );
+        point_data_sampler->SetInputData( x );
+        vtkNew<vtkRemoveGhosts> ghost_remover;
+        ghost_remover->SetInputConnection( point_data_sampler->GetOutputPort() );
+        ghost_remover->Update();
 
-        point_data_sampler->Update();
-
-        auto o = point_data_sampler->GetOutput();
         auto f = std::make_shared<cvt::VtkXmlUnstructuredGrid>(
-            dynamic_cast<vtkUnstructuredGrid*>( o ) );
+            dynamic_cast<vtkUnstructuredGrid*>( ghost_remover->GetOutput() ) );
 
         return f;
     }

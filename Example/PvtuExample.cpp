@@ -102,8 +102,7 @@ void SeriesPvtu2Kvsml( const std::string& directory, const std::string& base,
                     sub_volume_counts[cell_type] = ( sub_volume_counts.count( cell_type ) == 0 )
                                                        ? 1
                                                        : ( sub_volume_counts[cell_type] + 1 );
-                    veclens[cell_type] =
-                        ( veclens.count( cell_type ) == 0 ) ? 1 : ( veclens[cell_type] + 1 );
+                    veclens[cell_type] = object->veclen();
                 }
             }
 
