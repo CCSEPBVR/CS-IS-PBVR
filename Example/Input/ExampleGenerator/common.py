@@ -47,6 +47,18 @@ def append_point_data(unstructured_grid, offset=0):
     unstructured_grid.GetPointData().AddArray(dist)
 
 
+def append_cell_data(point_data_set, offset=0):
+    dist = vtk.vtkFloatArray()
+    dist.SetNumberOfTuples(point_data_set.GetNumberOfCells())
+    dist.SetNumberOfComponents(1)
+    dist.SetName('cell_id')
+
+    for i in range(point_data_set.GetNumberOfCells()):
+        dist.SetTuple(i, [float(i) + offset])
+
+    point_data_set.GetCellData().AddArray(dist)
+
+
 def make_hexahedron_only_mesh(dimensions, origin=[0, 0, 0], time_step=0):
     image_data = vtk.vtkImageData()
     image_data.SetDimensions(dimensions)
