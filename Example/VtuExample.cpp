@@ -88,11 +88,9 @@ void SeriesVtu2Kvsml( const std::string& directory, const std::string& base,
 
             cvt::UnstructuredVolumeObjectExporter exporter( &importer );
             exporter.setWritingDataTypeToExternalBinary();
-            exporter.write( directory, local_base, time_step, sub_volume_id, sub_volume_count );
-            // or
-            // exporter.write(
-            //   "<directory>/<local_base>_<time_step>_<sub_volume_id>_<sub_volume_count>.kvsml"
-            // );
+            exporter.write( directory, local_base, time_step, sub_volume_id, sub_volume_count,
+                            // To share coords data, set the flag
+                            true );
 
             if ( time_step == 0 )
             {
@@ -112,14 +110,10 @@ void SeriesVtu2Kvsml( const std::string& directory, const std::string& base,
     {
         std::string local_base = std::string( base ) + "_" + std::to_string( e.first );
         e.second.write( directory, local_base );
-        // or
-        // e.second.write( "<directory>/<local_base>.pfi" );
 
         pfl.registerPfi( directory, local_base );
     }
     pfl.write( directory, base );
-    // or
-    // pfl.write( "<directory>/<base>.pfl" );
 }
 
 void PointVtu2Kvsml( const std::string& dst, const std::string& src )
