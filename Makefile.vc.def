@@ -1,0 +1,167 @@
+#*****************************************************************************
+#  $Id: Makefile.vc.def 1728 2014-04-25 09:11:19Z naohisa.sakamoto@gmail.com $
+#*****************************************************************************
+
+#=============================================================================
+#  Install destination.
+#=============================================================================
+INSTALL_PREFIX = C:\kvsml-converter
+
+
+#=============================================================================
+#  Suffix rule.
+#=============================================================================
+.SUFFIXES:
+.SUFFIXES: .obj .cpp .h
+
+
+#=============================================================================
+#  Command macro.
+#=============================================================================
+MAKE   = nmake /nologo
+CPP    = cl /nologo
+MPICPP = mpicxx /nologo
+LD     = link /nologo
+AR     = lib /nologo
+QMAKE  = qmake
+
+MKDIR   = mkdir
+RM      = del /s
+RMDIR   = rmdir /q /s
+
+INSTALL     = xcopy /f /y
+INSTALL_EXE = xcopy /f /y
+
+
+#=============================================================================
+#  all command.
+#=============================================================================
+all: build
+
+
+#=============================================================================
+#  rebuild command..
+#=============================================================================
+rebuild: clean build
+
+
+#=============================================================================
+#  Makefile.
+#=============================================================================
+MAKEFILE = Makefile.vc
+
+
+#=============================================================================
+#  KVS library.
+#=============================================================================
+LIB_KVSML_CONVERTER = kvsmlconverter.lib
+
+
+#=============================================================================
+#  Solution.
+#=============================================================================
+!IFDEF DEBUG
+SOLUTION = Debug
+!ELSE
+SOLUTION = Release
+!ENDIF
+
+
+#=============================================================================
+#  Output directory.
+#=============================================================================
+OUTDIR = $(SOLUTION)
+
+
+#=============================================================================
+#  KVS_INCLUDE_PATH, KVS_LIBRARY_PATH, KVS_LINK_LIBRARY
+#=============================================================================
+KVS_INCLUDE_PATH =
+KVS_LIBRARY_PATH =
+
+KVS_LINK_LIBRARY = kvsCore.lib
+
+
+#=============================================================================
+#  VTK_INCLUDE_PATH, VTK_LIBRARY_PATH, VTK_LINK_LIBRARY
+#=============================================================================
+VTK_INCLUDE_PATH =
+VTK_LIBRARY_PATH =
+
+!IFDEF DEBUG
+VTK_LINK_LIBRARY = \
+vtksys-9.2d.lib \
+vtkCommonCore-9.2d.lib \
+vtkCommonExecutionModel-9.2d.lib \
+vtkCommonDataModel-9.2d.lib \
+vtkFiltersCore-9.2d.lib \
+vtkFiltersExtraction-9.2d.lib \
+vtkFiltersGeometry-9.2d.lib \
+vtkFiltersParallel-9.2d.lib \
+vtkIOCore-9.2d.lib \
+vtkIOGeometry-9.2d.lib \
+vtkIOCGNSReader-9.2d.lib \
+vtkIOEnSight-9.2d.lib \
+vtkIOParallel-9.2d.lib \
+vtkIOXML-9.2d.lib
+
+!ELSE
+VTK_LINK_LIBRARY = \
+vtksys-9.2.lib \
+vtkCommonCore-9.2.lib \
+vtkCommonExecutionModel-9.2.lib \
+vtkCommonDataModel-9.2.lib \
+vtkFiltersCore-9.2.lib \
+vtkFiltersExtraction-9.2.lib \
+vtkFiltersGeometry-9.2.lib \
+vtkFiltersParallel-9.2.lib \
+vtkIOCore-9.2.lib \
+vtkIOGeometry-9.2.lib \
+vtkIOCGNSReader-9.2.lib \
+vtkIOEnSight-9.2.lib \
+vtkIOParallel-9.2.lib \
+vtkIOXML-9.2.lib
+!ENDIF
+
+
+#=============================================================================
+#  Compiler option.
+#=============================================================================
+CPPFLAGS = /std:c++17 /W3 /EHsc /GR
+
+!IFDEF DEBUG
+CPPFLAGS = $(CPPFLAGS) /Od /MTd
+!ELSE
+CPPFLAGS = $(CPPFLAGS) /Ox /MT
+!ENDIF
+
+# OpenMP
+!IF "$(KVS_ENABLE_OPENMP)" == "1"
+CPPFLAGS = $(CPPFLAGS) /openmp
+!ENDIF
+
+
+#=============================================================================
+#  Definition.
+#=============================================================================
+DEFINITIONS = /DWIN32 /D_MBCS /DNOMINMAX /D_SCL_SECURE_NO_DEPRECATE /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
+
+!IFDEF DEBUG
+DEFINITIONS = $(DEFINITIONS) /D_DEBUG /DKVS_ENABLE_DEBUG
+!ELSE
+DEFINITIONS = $(DEFINITIONS) /DNDEBUG
+!ENDIF
+
+
+#=============================================================================
+#  Linker option.
+#=============================================================================
+LDFLAGS = /MANIFEST
+
+!IFDEF DEBUG
+LDFLAGS = $(LDFLAGS) /DEBUG
+!ENDIF
+
+!IFDEF NOCONSOLE
+LDFLAGS = /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup /MANIFEST
+!ENDIF

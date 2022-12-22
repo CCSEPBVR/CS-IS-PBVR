@@ -1,0 +1,83 @@
+#*****************************************************************************
+#  $Id: Makefile.vc 1728 2014-04-25 09:11:19Z naohisa.sakamoto@gmail.com $
+#*****************************************************************************
+
+#=============================================================================
+#  include
+#=============================================================================
+!INCLUDE ..\Makefile.vc.def
+
+
+#=============================================================================
+#  INCLUDE_PATH, LIBRARY_PATH, LINK_LIBRARY, INSTALL_DIR.
+#=============================================================================
+INCLUDE_PATH = /I..\Source /I$(KVS_INCLUDE_PATH) /I$(VTK_INCLUDE_PATH)
+LIBRARY_PATH = /LIBPATH:..\Source\$(OUTDIR) /LIBPATH:$(KVS_LIBRARY_PATH) /LIBPATH:$(VTK_LIBRARY_PATH)
+LINK_LIBRARY = $(LIB_KVSML_CONVERTER) $(KVS_LINK_LIBRARY) $(VTK_LINK_LIBRARY)
+INSTALL_DIR  = $(INSTALL_PREFIX)
+
+
+#=============================================================================
+#  Project name.
+#=============================================================================
+PROJECT_NAME = kvsml-converter
+
+TARGET_EXE = $(OUTDIR)\$(PROJECT_NAME).exe
+
+
+#=============================================================================
+#  Object.
+#=============================================================================
+OBJECTS = \
+$(OUTDIR)/AvsExample.obj \
+$(OUTDIR)/CgnsExample.obj \
+$(OUTDIR)/EnSightExample.obj \
+$(OUTDIR)/Plot3dExample.obj \
+$(OUTDIR)/PvtsExample.obj \
+$(OUTDIR)/PvtuExample.obj \
+$(OUTDIR)/StlExample.obj \
+$(OUTDIR)/VtiExample.obj \
+$(OUTDIR)/VtmExample.obj \
+$(OUTDIR)/VtpExample.obj \
+$(OUTDIR)/VtrExample.obj \
+$(OUTDIR)/VtsExample.obj \
+$(OUTDIR)/VtuExample.obj \
+$(OUTDIR)/example.obj
+
+
+#=============================================================================
+#  Build rule.
+#=============================================================================
+$(TARGET_EXE): $(OBJECTS)
+	$(LD) $(LDFLAGS) $(LIBRARY_PATH) /OUT:$@ $** $(LINK_LIBRARY)
+	mt -nologo -manifest $@.manifest -outputresource:$@;1
+	$(RM) $@.manifest
+
+{}.cpp{$(OUTDIR)\}.obj::
+	IF NOT EXIST $(OUTDIR) $(MKDIR) $(OUTDIR)
+	$(CPP) /c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) /Fo$(OUTDIR)\ @<<
+$<
+<<
+
+
+#=============================================================================
+#  build.
+#=============================================================================
+build: $(TARGET_EXE)
+
+.h.cpp::
+
+
+#=============================================================================
+#  clean.
+#=============================================================================
+clean:
+	IF EXIST $(OUTDIR) $(RMDIR) $(OUTDIR)
+
+
+#=============================================================================
+#  install.
+#=============================================================================
+install:
+	IF NOT EXIST $(INSTALL_DIR)\bin $(MKDIR) $(INSTALL_DIR)\bin
+	$(INSTALL_EXE) $(TARGET_EXE) $(INSTALL_DIR)\bin
