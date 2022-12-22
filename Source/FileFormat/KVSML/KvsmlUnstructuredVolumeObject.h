@@ -97,10 +97,10 @@ public:
             // Replace coords and connection file
             if ( share_0_step_coords && time_step != 0 )
             {
-                std::experimental::filesystem::path tmp = directory;
+                std::filesystem::path tmp = directory;
                 tmp /= merged_base;
                 tmp += ".tmp";
-                std::experimental::filesystem::rename( path, tmp );
+                std::filesystem::rename( path, tmp );
                 std::stringstream sss;
                 int zero_time_step = 0;
                 sss << base << "_" << std::setfill( '0' ) << std::right << std::setw( 5 )
@@ -126,17 +126,17 @@ public:
                     }
                 }
 
-                std::experimental::filesystem::remove( tmp );
+                std::filesystem::remove( tmp );
 
-                std::experimental::filesystem::path coord = directory;
+                std::filesystem::path coord = directory;
                 coord /= merged_base;
                 coord += "_coord.dat";
-                std::experimental::filesystem::remove( coord );
+                std::filesystem::remove( coord );
 
-                std::experimental::filesystem::path connect = directory;
+                std::filesystem::path connect = directory;
                 connect /= merged_base;
                 connect += "_connect.dat";
-                std::experimental::filesystem::remove( connect );
+                std::filesystem::remove( connect );
             }
 
             setSuccess( true );
