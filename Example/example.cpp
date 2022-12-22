@@ -1,10 +1,9 @@
 #include <algorithm>
 #include <cctype>
-#include <experimental/filesystem>
 #include <iostream>
 #include <string>
 
-namespace fs = std::experimental::filesystem;
+#include "Filesystem.h"
 
 void Stl2Stl( const char* dst, const char* src );
 void Stl2Kvsml( const char* dst, const char* src );
@@ -31,6 +30,8 @@ void Cgns2Kvsml( const char* directory, const char* base, const char* src );
 
 int main( int argc, char** argv )
 {
+    namespace fs = std::filesystem;
+
     if ( argc < 2 )
     {
         std::cerr << "kvsml-converter example_name [input_directory] [output_directory]"
