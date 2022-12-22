@@ -62,7 +62,9 @@ void SeriesVti2Kvsml( const std::string& directory, const std::string& base,
         std::cout << "Writing ..." << std::endl;
         cvt::StructuredVolumeObjectExporter exporter( &importer );
         exporter.setWritingDataTypeToExternalBinary();
-        exporter.write( directory, base, time_step, sub_volume_id, sub_volume_count );
+        exporter.write( directory, base, time_step, sub_volume_id, sub_volume_count,
+                        // To share coords data, set the flag
+                        false );
 
         if ( time_step == 0 )
         {
