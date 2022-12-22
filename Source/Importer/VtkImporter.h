@@ -8,6 +8,7 @@
 #define CVT_VTK_IMPORTER_H_INCLUDE
 
 #include "kvs/ImporterBase"
+#include "kvs/Message"
 
 #include "CvtTypeTraits.h"
 #include "FileFormat/VtkFileFormat.h"
@@ -39,13 +40,23 @@ public:
     kvs::ObjectBase* exec( const kvs::FileFormatBase* file_format )
     {
         kvs::ImporterBase::setSuccess( false );
-        cvt::Import<KvsObjectType*,
-                    vtkSmartPointer<typename cvt::VtkFileFormatTraits<VtkFileFormat>::VtkDataType>>(
-            dynamic_cast<KvsObjectType*>( this ),
-            dynamic_cast<const VtkFileFormat*>( file_format )->get() );
-        kvs::ImporterBase::setSuccess( true );
 
-        return this;
+        try
+        {
+            cvt::Import<
+                KvsObjectType*,
+                vtkSmartPointer<typename cvt::VtkFileFormatTraits<VtkFileFormat>::VtkDataType>>(
+                dynamic_cast<KvsObjectType*>( this ),
+                dynamic_cast<const VtkFileFormat*>( file_format )->get() );
+
+            kvs::ImporterBase::setSuccess( true );
+            return this;
+        }
+        catch ( std::exception& e )
+        {
+            kvsMessageError( e.what() );
+            return nullptr;
+        }
     }
 };
 } // namespace cvt

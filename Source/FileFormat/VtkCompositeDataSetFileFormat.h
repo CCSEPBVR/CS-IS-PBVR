@@ -49,7 +49,7 @@ public:
     }
     VtkMultiBlockIterator operator++( int )
     {
-        std::runtime_error( "prefix operator was not implemented" );
+        std::runtime_error( "Prefix operator has not implemented" );
         return *this;
     }
     bool operator==( VtkMultiBlockIterator& other ) { return itr->IsDoneWithTraversal() == 1; }

@@ -6,6 +6,8 @@
  */
 #include "UnstructuredVolumeObjectExporter.h"
 
+#include "kvs/Message"
+
 kvs::FileFormatBase* cvt::UnstructuredVolumeObjectExporter::exec( const kvs::ObjectBase* object )
 {
     BaseClass::setSuccess( true );
@@ -13,7 +15,7 @@ kvs::FileFormatBase* cvt::UnstructuredVolumeObjectExporter::exec( const kvs::Obj
     if ( !object )
     {
         BaseClass::setSuccess( false );
-        throw std::runtime_error( "Input object is NULL." );
+        kvsMessageError( "Input object is NULL." );
         return nullptr;
     }
 
@@ -22,7 +24,7 @@ kvs::FileFormatBase* cvt::UnstructuredVolumeObjectExporter::exec( const kvs::Obj
     if ( !volume )
     {
         BaseClass::setSuccess( false );
-        throw std::runtime_error( "Input object is not structured volume object." );
+        kvsMessageError( "Input object is not unstructured volume object." );
         return nullptr;
     }
 
