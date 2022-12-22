@@ -14,11 +14,19 @@ if(NOT VTK_FOUND)
   message(FATAL_ERROR "${TARGET_NAME}: Unable to find the VTK build folder.")
 endif()
 
-include(kvs.cmake)
-
 if(MSVC)
-  add_compile_options(/W3 /WX)
+  if(NOT KVS_DIR)
+    message(FATAL_ERROR "${TARGET_NAME}: Undefined KVS_DIR")
+  endif()
+
+  if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+    add_compile_options(/W3 /MTd)
+  else()
+    add_compile_options(/W3 /MT)
+  endif()
+  include_directories(${KVS_DIR}/include)
 else()
+  include(kvs.cmake)
   add_compile_options(-Wall)
 endif()
 
@@ -46,5 +54,9 @@ add_executable(
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/PBVRFileInformation/UnstructuredPfi.cpp)
 target_include_directories(${TARGET_NAME}
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Source)
-target_link_libraries(${TARGET_NAME} PRIVATE ${VTK_LIBRARIES} kvsCore stdc++fs)
+if(MSVC)
+  target_link_libraries(${TARGET_NAME} PRIVATE ${KVS_DIR}/lib/kvsCore.lib  ${VTK_LIBRARIES})
+else()
+  target_link_libraries(${TARGET_NAME} PRIVATE ${VTK_LIBRARIES} kvsCore stdc++fs)
+endif()
 vtk_module_autoinit(TARGETS ${TARGET_NAME} MODULES ${VTK_LIBRARIES})
