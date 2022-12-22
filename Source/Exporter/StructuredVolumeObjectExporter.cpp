@@ -6,10 +6,13 @@
  */
 #include "StructuredVolumeObjectExporter.h"
 
+#include "kvs/Message"
 #include "kvs/StructuredVolumeObject"
 
 kvs::FileFormatBase* cvt::StructuredVolumeObjectExporter::exec( const kvs::ObjectBase* object )
 {
+    BaseClass::setSuccess( false );
+
     if ( auto volume = dynamic_cast<const kvs::StructuredVolumeObject*>( object ) )
     {
         switch ( volume->gridType() )
@@ -28,8 +31,8 @@ kvs::FileFormatBase* cvt::StructuredVolumeObjectExporter::exec( const kvs::Objec
             break;
         default: {
             BaseClass::setSuccess( false );
-            throw std::runtime_error( "Unknown grid type." );
-            break;
+            kvsMessageError( "Not supported cell type." );
+            return nullptr;
         }
         }
         this->setVeclen( volume->veclen() );
@@ -50,10 +53,13 @@ kvs::FileFormatBase* cvt::StructuredVolumeObjectExporter::exec( const kvs::Objec
             this->setMinMaxObjectCoords( volume->minObjectCoord(), volume->maxObjectCoord() );
         }
 
+        BaseClass::setSuccess( true );
+
         return this;
     }
     else
     {
+        kvsMessageError( "Input object is not structured volume object." );
         return nullptr;
     }
 }

@@ -296,7 +296,7 @@ void cvt::detail::ImportPolygonObject( kvs::PolygonObject* polygon_object,
 
         if ( !stl_normals )
         {
-            throw std::runtime_error( "failed to read normals" );
+            throw std::runtime_error( "Failed to read normals" );
         }
     }
 

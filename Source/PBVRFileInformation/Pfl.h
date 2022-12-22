@@ -11,6 +11,8 @@
 #include <fstream>
 #include <string>
 
+#include "kvs/Message"
+
 #include "Filesystem.h"
 
 namespace cvt
@@ -72,12 +74,11 @@ public:
             path.make_preferred();
             if ( !std::filesystem::exists( path ) )
             {
-                std::filesystem::create_directories( path );
-            }
-
-            if ( !std::filesystem::exists( path ) )
-            {
-                throw std::runtime_error( "Failed to find the directory" );
+                if ( !std::filesystem::create_directories( path ) )
+                {
+                    kvsMessageError( "Failed to create the directory" );
+                    return false;
+                }
             }
             path /= ( std::string( base ) + ".pfl" );
 
@@ -85,7 +86,7 @@ public:
         }
         catch ( std::exception& e )
         {
-            throw e;
+            kvsMessageError( e.what() );
             return false;
         }
     }
