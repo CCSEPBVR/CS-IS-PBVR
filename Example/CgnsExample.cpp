@@ -10,7 +10,7 @@
 #include "Importer/VtkImporter.h"
 #include "PBVRFileInformation/UnstructuredPfi.h"
 
-void Cgns2Kvsml( const char* directory, const char* base, const char* src )
+void Cgns2Kvsml( const std::string& directory, const std::string& base, const std::string& src )
 {
     std::cout << "reading " << src << " ..." << std::endl;
     cvt::Cgns input_cgns( src );

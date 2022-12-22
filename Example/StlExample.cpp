@@ -8,7 +8,7 @@
 #include "FileFormat/STL/Stl.h"
 #include "Importer/VtkImporter.h"
 
-void Stl2Stl( const char* dst, const char* src )
+void Stl2Stl( const std::string& dst, const std::string& src )
 {
     std::cout << "Reading " << src << " ..." << std::endl;
     cvt::Stl input_stl( src, []( vtkSTLReader* stl_reader ) { stl_reader->MergingOn(); } );
@@ -23,7 +23,7 @@ void Stl2Stl( const char* dst, const char* src )
     output_stl->write( dst );
 }
 
-void Stl2Kvsml( const char* dst, const char* src )
+void Stl2Kvsml( const std::string& dst, const std::string& src )
 {
     std::cout << "Reading " << src << " ..." << std::endl;
     cvt::Stl input_stl( src, []( vtkSTLReader* stl_reader ) { stl_reader->MergingOn(); } );

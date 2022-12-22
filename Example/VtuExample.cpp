@@ -17,7 +17,7 @@
 #include "PBVRFileInformation/UnstructuredPfi.h"
 #include "TimeSeriesFiles/NumeralSequenceFiles.h"
 
-void Vtu2Kvsml( const char* directory, const char* base, const char* src )
+void Vtu2Kvsml( const std::string& directory, const std::string& base, const std::string& src )
 {
     std::cout << "Reading " << src << " ..." << std::endl;
     cvt::VtkXmlUnstructuredGrid input_vtu( src );
@@ -60,7 +60,8 @@ void Vtu2Kvsml( const char* directory, const char* base, const char* src )
     // pfl.write( "<directory/<base>.pfi" );
 }
 
-void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src )
+void SeriesVtu2Kvsml( const std::string& directory, const std::string& base,
+                      const std::string& src )
 {
     std::unordered_map<int, cvt::UnstructuredPfi> pfi_map;
 
@@ -121,7 +122,7 @@ void SeriesVtu2Kvsml( const char* directory, const char* base, const char* src )
     // pfl.write( "<directory>/<base>.pfl" );
 }
 
-void PointVtu2Kvsml( const char* dst, const char* src )
+void PointVtu2Kvsml( const std::string& dst, const std::string& src )
 {
     cvt::VtkXmlUnstructuredGrid input_vtu( src );
     if ( input_vtu.isPointObjectConvertible() )
@@ -139,7 +140,7 @@ void PointVtu2Kvsml( const char* dst, const char* src )
     }
 }
 
-void LineVtu2Kvsml( const char* dst, const char* src )
+void LineVtu2Kvsml( const std::string& dst, const std::string& src )
 {
     cvt::VtkXmlUnstructuredGrid input_vtu( src );
     if ( input_vtu.isLineObjectConvertible() )
@@ -156,7 +157,7 @@ void LineVtu2Kvsml( const char* dst, const char* src )
     }
 }
 
-void TriangleVtu2Kvsml( const char* dst, const char* src )
+void TriangleVtu2Kvsml( const std::string& dst, const std::string& src )
 {
     cvt::VtkXmlUnstructuredGrid input_vtu( src );
     if ( input_vtu.isPolygonObjectConvertible() )

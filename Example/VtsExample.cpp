@@ -12,7 +12,7 @@
 #include "Importer/VtkImporter.h"
 #include "PBVRFileInformation/UnstructuredPfi.h"
 
-void Vts2Vts( const char* dst, const char* src )
+void Vts2Vts( const std::string& dst, const std::string& src )
 {
     std::cout << "Reading " << src << " ..." << std::endl;
     cvt::VtkXmlStructuredGrid input_vts( src );
@@ -27,7 +27,7 @@ void Vts2Vts( const char* dst, const char* src )
     output_vts->write( dst );
 }
 
-void Vts2Kvsml( const char* directory, const char* base, const char* src )
+void Vts2Kvsml( const std::string& directory, const std::string& base, const std::string& src )
 {
     int last_time_step = 0;
     int time_step = 0;

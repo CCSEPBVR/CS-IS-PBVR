@@ -9,15 +9,15 @@
 #include "PBVRFileInformation/Pfl.h"
 #include "PBVRFileInformation/UnstructuredPfi.h"
 
-void Plot3d2Kvsml( const char* directory, const char* base, const char* xyz, const char* q,
-                   const char* f )
+void Plot3d2Kvsml( const std::string& directory, const std::string& base, const std::string& xyz,
+                   const std::string& q, const std::string& f )
 {
     std::cout << "Reading " << xyz << " ..." << std::endl;
 
     cvt::Plot3d input_vtm( xyz, [=]( vtkMultiBlockPLOT3DReader* reader ) {
         reader->AutoDetectFormatOn();
-        reader->SetQFileName( q );
-        reader->SetFunctionFileName( f );
+        reader->SetQFileName( q.c_str() );
+        reader->SetFunctionFileName( f.c_str() );
     } );
 
     std::unordered_map<int, cvt::UnstructuredPfi> pfi_map;

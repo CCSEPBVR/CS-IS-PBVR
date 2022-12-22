@@ -11,7 +11,7 @@
 #include "PBVRFileInformation/UnstructuredPfi.h"
 #include "TimeSeriesFiles/NumeralSequenceFiles.h"
 
-void Vti2Kvsml( const char* directory, const char* base, const char* src )
+void Vti2Kvsml( const std::string& directory, const std::string& base, const std::string& src )
 {
     int last_time_step = 0;
     int time_step = 0;
@@ -37,7 +37,8 @@ void Vti2Kvsml( const char* directory, const char* base, const char* src )
     pfi.write( directory, base );
 }
 
-void SeriesVti2Kvsml( const char* directory, const char* base, const char* src )
+void SeriesVti2Kvsml( const std::string& directory, const std::string& base,
+                      const std::string& src )
 {
     std::cout << "Reading " << src << " ..." << std::endl;
 

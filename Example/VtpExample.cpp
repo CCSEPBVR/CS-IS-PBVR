@@ -9,7 +9,7 @@
 #include "FileFormat/VTK/VtkXmlPolyData.h"
 #include "Importer/VtkImporter.h"
 
-void Vtp2Kvsml( const char* dst, const char* src )
+void Vtp2Kvsml( const std::string& dst, const std::string& src )
 {
     std::cout << "Reading " << src << " ..." << std::endl;
     cvt::VtkXmlPolyData input_vtp( src );

@@ -10,7 +10,7 @@
 #include "Importer/VtkImporter.h"
 #include "PBVRFileInformation/UnstructuredPfi.h"
 
-void Pvts2Kvsml( const char* directory, const char* base, const char* src )
+void Pvts2Kvsml( const std::string& directory, const std::string& base, const std::string& src )
 {
     std::cout << "Reading " << src << " ..." << std::endl;
     cvt::VtkXmlPStructuredGrid input_pvts( src );
