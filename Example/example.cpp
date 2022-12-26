@@ -11,6 +11,8 @@ void Vtp2Kvsml( const std::string& dst, const std::string& src );
 void Plot3d2Kvsml( const std::string& directory, const std::string& base, const std::string& xyz,
                    const std::string& q, const std::string& f );
 void Vtr2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
+void StructuredPoints2Kvsml( const std::string& directory, const std::string& base,
+                             const std::string& src );
 void Vti2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void SeriesVti2Kvsml( const std::string& directory, const std::string& base,
                       const std::string& src );
@@ -155,6 +157,16 @@ int main( int argc, char** argv )
         fs::path dst = output_directory;
         dst /= "RectilinearGrid.kvsml";
         Vtr2Kvsml( output_directory, "RectilinearGrid", src.string() );
+    }
+    else if ( example_name == "structuredpoints2kvsml" )
+    {
+        fs::path src = input_directory;
+        src /= "VTKExamples";
+        src /= "src";
+        src /= "Testing";
+        src /= "Data";
+        src /= "StructuredPoints.vtk";
+        StructuredPoints2Kvsml( output_directory, "StructuredPoints", src.string() );
     }
     else if ( example_name == "vti2kvsml" )
     {
