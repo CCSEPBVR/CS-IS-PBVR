@@ -22,6 +22,8 @@ namespace cvt
 
 /**
  * A PFI IO.
+ *
+ * Currently, only writing is supported.
  */
 class UnstructuredPfi
 {
@@ -29,9 +31,9 @@ public:
     /**
      * Construct a PFI IO.
      *
-     * \param [in] number_of_components The number of node components, or 'veclen'.
-     * \param [in] last_time_step The max time step. Zero-based indices.
-     * \param [in] max_sub_volume_id The max sub volume ID. One-based indices.
+     * \param[in] number_of_components The number of node components, or 'veclen'.
+     * \param[in] last_time_step The max time step. Zero-based indices.
+     * \param[in] max_sub_volume_id The max sub volume ID. One-based indices.
      */
     UnstructuredPfi( int number_of_components, int last_time_step = 0, int max_sub_volume_id = 1 );
 
@@ -39,18 +41,18 @@ public:
     /**
      * Register a file for a PFI file.
      *
-     * \param [in] object A KVS object.
-     * \param [in] time_step A time step.
-     * \param [in] sub_volume_id A sub volume ID.
+     * \param[in] object A KVS object.
+     * \param[in] time_step A time step.
+     * \param[in] sub_volume_id A sub volume ID.
      */
     void registerObject( kvs::KVSMLUnstructuredVolumeObject* object, int time_step = 0,
                          int sub_volume_id = 0 );
     /**
      * Register a file for a PFI file.
      *
-     * \param [in] object A KVS object.
-     * \param [in] time_step A time step.
-     * \param [in] sub_volume_id A sub volume ID.
+     * \param[in] object A KVS object.
+     * \param[in] time_step A time step.
+     * \param[in] sub_volume_id A sub volume ID.
      */
     void registerObject( kvs::KVSMLStructuredVolumeObject* object, int time_step = 0,
                          int sub_volume_id = 0 );
@@ -59,10 +61,10 @@ public:
      *
      * The function will write to
      * -    '<directory>/<base>.pfi' on POSIX or
-     * -    '<directory\<base>.pfi' on Windows.
+     * -    '<directory\\<base>.pfi' on Windows.
      *
-     * \param [in] directory A directory name.
-     * \param [in] base A file name base.
+     * \param[in] directory A directory name.
+     * \param[in] base A file name base.
      * \return `true` on success, otherwise `false`.
      */
     template <typename PathLike0, typename PathLike1>
@@ -93,18 +95,24 @@ public:
     /**
      * Write to a PFI file.
      *
-     * \param [in] filename A file name.
+     * \param[in] filename A file name.
      * \return `true` on success, otherwise `false`.
      */
     bool write( const std::string& filename ) { return this->write( filename.c_str() ); }
     /**
      * Write to a PFI file.
      *
-     * \param [in] filename A file name.
+     * \param[in] filename A file name.
      * \return `true` on success, otherwise `false`.
      */
     bool write( const char* filename );
-
+    /**
+     * Print infomation to `Stream` .
+     *
+     * \tparam Stream The type of `stream` .
+     * \param[inout] stream A stream.
+     * \param[in] indent_count An indent count.
+     */
     template <typename Stream>
     void print( Stream& stream, int indent_count = 0 )
     {

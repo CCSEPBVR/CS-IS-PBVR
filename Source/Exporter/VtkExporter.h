@@ -20,6 +20,9 @@
 namespace cvt
 {
 
+/**
+ * \private
+ */
 template <typename VtkFileFormat>
 class VtkExporter : public kvs::ExporterBase, public VtkFileFormat
 {

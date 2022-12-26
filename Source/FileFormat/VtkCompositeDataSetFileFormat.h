@@ -136,7 +136,9 @@ namespace cvt
 {
 
 /**
- * A base class for a composite data set IO.
+ * A VTK composite data set IO.
+ *
+ * This file format must not pass exporters.
  */
 template <typename VtkDataType, typename VtkDataReader>
 class VtkCompositeDataSetFileFormat
@@ -156,7 +158,17 @@ public:
     /**
      * Get an interface to iterate each block.
      *
-     * \return An interface to iterate.
+     * e.g.
+     *
+     * ```c++
+     * cvt::VtkCompositeDataSetFileFormat<MultiBlockType> multi_block;
+     *
+     * for (auto file_format : multi_block.eachBlock()) {
+     *   //..
+     * }
+     * ```
+     *
+     * \return An interface to iterate each block.
      */
     cvt::detail::VtkMultiBlockContainer<VtkDataType> eachBlock()
     {
@@ -165,7 +177,17 @@ public:
     /**
      * Get an interface to iterate each block.
      *
-     * \return An interface to iterate.
+     * e.g.
+     *
+     * ```c++
+     * cvt::VtkCompositeDataSetFileFormat<MultiBlockType> multi_block;
+     *
+     * for (auto file_format : multi_block.eachBlock()) {
+     *   //..
+     * }
+     * ```
+     *
+     * \return An interface to iterate each block.
      */
     cvt::detail::VtkMultiBlockContainer<VtkDataType> eachBlock() const
     {

@@ -47,13 +47,15 @@ public:
 public:
     /**
      * Construct an empty IO object.
+     *
+     * This member is for exporters.
      */
     VtkFileFormat() noexcept: kvs::FileFormatBase()
     {
         set_reader_options = []( VtkReaderType* ) {};
     }
     /**
-     * Construct an IO object.
+     * Construct an IO object and read a file.
      *
      * \param[in] filename A file name.
      */
@@ -63,7 +65,7 @@ public:
         read( filename );
     }
     /**
-     * Construct an IO object.
+     * Construct an IO object and read a file.
      *
      * \param[in] filename A file name.
      * \param[in] reader_option_setter A function to configure a VTK reader additionally.

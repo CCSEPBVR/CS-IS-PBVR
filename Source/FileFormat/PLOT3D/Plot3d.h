@@ -14,7 +14,7 @@
 namespace cvt
 {
 
-/*
+/**
  * A PLOT3D file reader.
  */
 using Plot3d = cvt::VtkCompositeDataSetFileFormat<vtkMultiBlockDataSet, vtkMultiBlockPLOT3DReader>;

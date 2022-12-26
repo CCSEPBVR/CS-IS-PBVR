@@ -125,7 +125,11 @@ namespace cvt
 {
 
 /**
- * A base class for a composite data set IO.
+ * An interface of an EnSight Gold file.
+ *
+ * This class is to access each time step data in an EnSight Gold file.
+ *
+ * \tparam VtkEnSightGoldReader `vtkEnSightGoldReader` or `vtkEnSightGoldBinaryReader`.
  */
 template <typename VtkEnSightGoldReader = vtkEnSightGoldReader>
 class EnSightGold
@@ -134,7 +138,7 @@ public:
     /**
      * Construct an IO.
      *
-     * \param [in] filename A file name.
+     * \param[in] filename A file name.
      */
     EnSightGold( const std::string& filename )
     {
@@ -146,7 +150,7 @@ public:
     /**
      * Construct an IO.
      *
-     * \param [in] filename A file name.
+     * \param[in] filename A file name.
      */
     EnSightGold( std::string&& filename )
     {
@@ -158,10 +162,40 @@ public:
     }
 
 public:
+    /**
+     * Get an interface to iterate each time step file format.
+     *
+     * e.g.
+     *
+     * ```c++
+     * cvt::EnSightGold ensight;
+     *
+     * for (auto file_format : ensight.eachTimeStep()) {
+     *     // ...
+     * }
+     * ```
+     *
+     * \return An interface to iterate each time step file format.
+     */
     cvt::detail::EnSightTimeStepContainer<VtkEnSightGoldReader> eachTimeStep()
     {
         return cvt::detail::EnSightTimeStepContainer<VtkEnSightGoldReader>( reader );
     }
+    /**
+     * Get an interface to iterate each time step file format.
+     *
+     * e.g.
+     *
+     * ```c++
+     * cvt::EnSightGold ensight;
+     *
+     * for (auto file_format : ensight.eachTimeStep()) {
+     *     // ...
+     * }
+     * ```
+     *
+     * \return An interface to iterate each time step file format.
+     */
     cvt::detail::EnSightTimeStepContainer<VtkEnSightGoldReader> eachTimeStep() const
     {
         return cvt::detail::EnSightTimeStepContainer<VtkEnSightGoldReader>( reader );

@@ -132,10 +132,12 @@ public:
 public:
     /**
      * Construct an empty IO object.
+     *
+     * This member is for exporters.
      */
     VtkUnstructuredFileFormat() noexcept: BaseClass() {}
     /**
-     * Construct an IO object.
+     * Construct an IO object and read a file.
      *
      * \param[in] filename A file name.
      */
@@ -144,7 +146,7 @@ public:
         initializeCellTypes();
     }
     /**
-     * Construct an IO object.
+     * Construct an IO object and read a file.
      *
      * \param[in] filename A file name.
      * \param[in] reader_option_setter A function to configure a VTK reader additionally.
@@ -171,11 +173,13 @@ public:
      *
      * e.g.
      *
-     *     SomeVtkUnstructuredFileFormat file_format;
-     *     for (SomeVtkUnstructuredFileFormat single_cell_type_file_format :
-     *          file_format.eachCellType()) {
-     *         // ...
-     *     }
+     * ```c++
+     * SomeVtkUnstructuredFileFormat file_format;
+     * for (SomeVtkUnstructuredFileFormat single_cell_type_file_format :
+     *     file_format.eachCellType()) {
+     *     // ...
+     * }
+     * ```
      *
      * \return An interface to iterate by a cell type.
      */
@@ -190,13 +194,13 @@ public:
     /**
      * Get an interface to iterate by a cell type in a for loop.
      *
-     * e.g.
-     *
-     *     SomeVtkUnstructuredFileFormat file_format;
-     *     for (SomeVtkUnstructuredFileFormat single_cell_type_file_format :
-     *          file_format.eachCellType()) {
-     *         // ...
-     *     }
+     * ```c++
+     * SomeVtkUnstructuredFileFormat file_format;
+     * for (SomeVtkUnstructuredFileFormat single_cell_type_file_format :
+     *     file_format.eachCellType()) {
+     *     // ...
+     * }
+     * ```
      *
      * \return An interface to iterate by a cell type.
      */
