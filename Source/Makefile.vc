@@ -11,8 +11,8 @@
 #=============================================================================
 #  INCLUDE_PATH, LIBRARY_PATH, LINK_LIBRARY, INSTALL_DIR.
 #=============================================================================
-INCLUDE_PATH = /I. /I$(KVS_INCLUDE_PATH) /I$(VTK_INCLUDE_PATH)
-LIBRARY_PATH = /LIBPATH:$(KVS_LIBRARY_PATH) /LIBPATH:$(VTK_INCLUDE_PATH)
+INCLUDE_PATH = /I. $(KVS_INCLUDE_OPTION) $(VTK_INCLUDE_OPTION)
+LIBRARY_PATH = $(KVS_LIBRARY_OPTION) $(VTK_LIBRARY_OPTION)
 LINK_LIBRARY = $(KVS_LINK_LIBRARY) $(VTK_LINK_LIBRARY)
 INSTALL_DIR  = $(INSTALL_PREFIX)
 
