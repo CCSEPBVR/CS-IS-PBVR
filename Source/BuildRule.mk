@@ -11,23 +11,23 @@ $(OUTDIR)/Importer/VtkImport.o \
 
 $(OUTDIR)/PBVRFileInformation/%.o: ./PBVRFileInformation/%.cpp ./PBVRFileInformation/%.h
 	$(MKDIR) $(OUTDIR)/PBVRFileInformation
-	$(MPICPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 $(OUTDIR)/Exporter/%.o: ./Exporter/%.cpp ./Exporter/%.h
 	$(MKDIR) $(OUTDIR)/Exporter
-	$(MPICPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 $(OUTDIR)/FileFormat/%.o: ./FileFormat/%.cpp ./FileFormat/%.h
 	$(MKDIR) $(OUTDIR)/FileFormat
-	$(MPICPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 $(OUTDIR)/Importer/%.o: ./Importer/%.cpp ./Importer/%.h
 	$(MKDIR) $(OUTDIR)/Importer
-	$(MPICPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 $(OUTDIR)/./%.o: ./%.cpp ./%.h
 	$(MKDIR) $(OUTDIR)
-	$(MPICPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 
 install::
