@@ -152,6 +152,7 @@ VTK_LINK_LIBRARY := \
 -lvtkIOCGNSReader-9.2 \
 -lvtkIOEnSight-9.2 \
 -lvtkIOParallel-9.2 \
+-lvtkIOLegacy-9.2 \
 -lvtkIOXML-9.2 
 
 

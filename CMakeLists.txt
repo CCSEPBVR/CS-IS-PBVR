@@ -8,13 +8,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(VTK REQUIRED)
-find_package(GLEW REQUIRED)
 
 if(NOT VTK_FOUND)
   message(FATAL_ERROR "${TARGET_NAME}: Unable to find the VTK build folder.")
 endif()
 
 if(MSVC)
+  find_package(GLEW REQUIRED)
+
   if(NOT KVS_DIR)
     message(FATAL_ERROR "${TARGET_NAME}: Undefined KVS_DIR")
   endif()
@@ -55,8 +56,10 @@ add_executable(
 target_include_directories(${TARGET_NAME}
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Source)
 if(MSVC)
-  target_link_libraries(${TARGET_NAME} PRIVATE ${KVS_DIR}/lib/kvsCore.lib  ${VTK_LIBRARIES})
+  target_link_libraries(${TARGET_NAME} PRIVATE ${KVS_DIR}/lib/kvsCore.lib
+                                               ${VTK_LIBRARIES})
 else()
-  target_link_libraries(${TARGET_NAME} PRIVATE ${VTK_LIBRARIES} kvsCore stdc++fs)
+  target_link_libraries(${TARGET_NAME} PRIVATE ${VTK_LIBRARIES} kvsCore
+                                               stdc++fs)
 endif()
 vtk_module_autoinit(TARGETS ${TARGET_NAME} MODULES ${VTK_LIBRARIES})

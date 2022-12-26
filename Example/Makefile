@@ -11,8 +11,21 @@ include ../Makefile.def
 #=============================================================================
 #  INCLUDE_PATH, LIBRARY_PATH, LINK_LIBRARY, INSTALL_DIR.
 #=============================================================================
-INCLUDE_PATH := -I../Source -I$(KVS_INCLUDE_PATH) -I$(VTK_INCLUDE_PATH)
-LIBRARY_PATH := -L../Source/$(OUTDIR) -L$(KVS_LIBRARY_PATH) -L$(VTK_LIBRARY_PATH)
+INCLUDE_PATH := -I../Source
+ifdef KVS_INCLUDE_PATH
+INCLUDE_PATH += -I$(KVS_INCLUDE_PATH)
+endif
+ifdef VTK_INCLUDE_PATH
+INCLUDE_PATH += -I$(VTK_INCLUDE_PATH)
+endif
+
+LIBRARY_PATH := -L../Source/$(OUTDIR)
+ifdef KVS_LIBRARY_PATH
+LIBRARY_PATH += -L$(KVS_LIBRARY_PATH)
+endif
+ifdef VTK_LIBRARY_PATH 
+LIBRARY_PATH += -L$(VTK_LIBRARY_PATH)
+endif
 LINK_LIBRARY := -lstdc++fs -lkvsmlconverter $(KVS_LINK_LIBRARY) $(VTK_LINK_LIBRARY)
 INSTALL_DIR  := $(INSTALL_PREFIX)
 
