@@ -135,6 +135,10 @@ namespace cvt
  *
  * A developer could read whole VTK data from `get()`.
  * Or a developer could read each piece VTK data from `eachPiece()`.
+ *
+ * \tparam PieceFileFormatType A piece VTK file format type.
+ * \tparam VtkReaderType A VTK reader type.
+ * \tparam VtkWriterType A VTK writer type.
  */
 template <typename PieceFileFormatType, typename VtkReaderType, typename VtkWriterType>
 class ParallelVtkFileFormat
@@ -143,7 +147,7 @@ public:
     /**
      * Construct an IO object.
      *
-     * \param [in] filename A file name.
+     * \param[in] filename A file name.
      */
     ParallelVtkFileFormat( const std::string& filename )
     {
@@ -155,7 +159,7 @@ public:
     /**
      * Construct an IO object.
      *
-     * \param [in] filename A file name.
+     * \param[in] filename A file name.
      */
     ParallelVtkFileFormat( std::string&& filename )
     {
@@ -172,12 +176,14 @@ public:
      *
      * e.g.
      *
-     *     SomeVtkPFileFormat file_format;
-     *     for (auto piece_file_format : file_format.eachPiece()) {
-     *         // ..
-     *     }
+     * ```c++
+     * SomeVtkPFileFormat file_format;
+     * for (auto piece_file_format : file_format.eachPiece()) {
+     *     // ..
+     * }
+     * ```
      *
-     * \return An interface to iterate each pieces.
+     * \return An interface to iterate each piece.
      */
     cvt::detail::VtkPieceContainer<PieceFileFormatType, VtkReaderType> eachPiece()
     {
@@ -189,12 +195,14 @@ public:
      *
      * e.g.
      *
-     *     SomeVtkPFileFormat file_format;
-     *     for (auto piece_file_format : file_format.eachPiece()) {
-     *         // ..
-     *     }
+     * ```c++
+     * SomeVtkPFileFormat file_format;
+     * for (auto piece_file_format : file_format.eachPiece()) {
+     *     // ..
+     * }
+     * ```
      *
-     * \return An interface to iterate each pieces.
+     * \return An interface to iterate each piece.
      */
     cvt::detail::VtkPieceContainer<PieceFileFormatType, VtkReaderType> eachPiece() const
     {

@@ -34,7 +34,7 @@ public:
     /**
      * Construct an IO.
      *
-     * \param [in] filename A file name.
+     * \param[in] filename A file name.
      */
     Cgns( const std::string& filename ): BaseClass()
     {
@@ -44,7 +44,7 @@ public:
     /**
      * Construct an IO.
      *
-     * \param [in] filename A file name.
+     * \param[in] filename A file name.
      */
     Cgns( std::string&& filename ): BaseClass()
     {
@@ -57,13 +57,14 @@ public:
      * This takes the owner of the object.
      * So DO NOT free the object externally.
      *
-     * \param [in] vtk_data A VTK data.
+     * \param[in] vtk_data A VTK data.
      */
     Cgns( vtkMultiBlockDataSet* vtk_data ): BaseClass(), vtk_data( vtk_data ) {}
 
 public:
     bool read( const std::string& filename ) override
     {
+        setSuccess( false );
         try
         {
             vtkNew<vtkCGNSReader> reader;
@@ -77,24 +78,32 @@ public:
 
             vtk_data = dynamic_cast<vtkMultiBlockDataSet*>( reader->GetOutput() );
 
+            setSuccess( true );
             return true;
         }
         catch ( std::exception& e )
         {
-            throw e;
-        }
-        catch ( ... )
-        {
+            kvsMessageError( e.what() );
             return false;
         }
     }
     bool write( const std::string& filename ) override
     {
-        std::runtime_error( "This function has not been implemented yet" );
+        setSuccess( false );
+        kvsMessageError( "This function has not been implemented yet" );
         return false;
     };
     /**
      * Get an interface to iterate each block.
+     *
+     * e.g.
+     *
+     * ```c++
+     * cvt::Cgns cgns;
+     * for (auto file_format : cgns.eachBlock()) {
+     *     // ..
+     * }
+     * ```
      *
      * \return An interface to iterate.
      */
@@ -104,6 +113,15 @@ public:
     }
     /**
      * Get an interface to iterate each block.
+     *
+     * e.g.
+     *
+     * ```c++
+     * cvt::Cgns cgns;
+     * for (auto file_format : cgns.eachBlock()) {
+     *     // ..
+     * }
+     * ```
      *
      * \return An interface to iterate.
      */

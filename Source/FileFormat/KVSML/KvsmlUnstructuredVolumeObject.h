@@ -35,7 +35,7 @@ public:
     /**
      * Construct a KVSML file IO and read an object from a file.
      *
-     * \param [in] filename A file name.
+     * \param[in] filename A file name.
      */
     KvsmlUnstructuredVolumeObject( const std::string& filename ):
         kvs::KVSMLUnstructuredVolumeObject( filename )
@@ -48,15 +48,14 @@ public:
      *
      * This function will write to
      * -   '<directory>/<base>_<time_step>_<sub_volume_id>_<sub_volume_count>.kvsml' on POSIX or
-     * -   '<directory>\<base>_<time_step>_<sub_volume_id>_<sub_volume_count>.kvsml' on Windows.
+     * -   '<directory>\\<base>_<time_step>_<sub_volume_id>_<sub_volume_count>.kvsml' on Windows.
      *
      * \param[in] directory A directory name.
      * \param[in] base A file name base.
-     * \param[in] time_step A time step.
-     * \param[in] sub_volume_id A sub volume ID.
+     * \param[in] time_step A time step. Zero-based numbering.
+     * \param[in] sub_volume_id A sub volume ID. One-based numbering.
      * \param[in] sub_volume_count A total sub volume count.
      * \param[in] share_0_step_coords Reuse the first step coords and connection file if this set
-     * `true`.
      * \return `true` on success, otherwise `false`.
      */
     template <typename PathLike0, typename PathLike1>

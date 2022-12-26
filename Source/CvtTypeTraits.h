@@ -21,6 +21,8 @@ namespace cvt
 
 /**
  * A type traits for a convertible type.
+ *
+ * \tparam SourceType A source type.
  */
 template <typename SourceType>
 struct ConvertibleTypeTraits

@@ -134,12 +134,16 @@ namespace cvt
  *
  * This class generates FileFormats from a file sequence like foo_0.vtk, foo_1.vtk, ..., foo_N.vtk.
  *
- *     std::string pattern = "foo_*.vtk";
- *     cvt::NumeralSequenceFiles<SomeFileFormat> n( pattern );
- *     int last_time_step = n.numberOfFiles() - 1;
- *     for (SomeFileFormat f : n) {
- *         // ...
- *     }
+ * ```c++
+ * std::string pattern = "foo_*.vtk";
+ * cvt::NumeralSequenceFiles<SomeFileFormat> n( pattern );
+ * int last_time_step = n.numberOfFiles() - 1;
+ * for (SomeFileFormat f : n) {
+ *     // ...
+ * }
+ * ```
+ *
+ * \tparam FileFormat A target file format type.
  */
 template <typename FileFormat>
 class NumeralSequenceFiles
@@ -148,7 +152,7 @@ public:
     /**
      * Construct a FileFormat generator.
      *
-     * \param [in] pattern A file name pattern with wildcard `*` like `foo_*.vtk`.
+     * \param[in] pattern A file name pattern with wildcard `*` like `foo_*.vtk`.
      */
     NumeralSequenceFiles( const std::string& pattern )
     {
@@ -184,7 +188,7 @@ public:
     /**
      * Get an interface to iterate time series files.
      *
-     * \return An interface to iterate
+     * \return An interface to iterate time series files.
      */
     cvt::detail::NumeralSequenceFileContainer<FileFormat> eachTimeStep()
     {
@@ -193,7 +197,7 @@ public:
     /**
      * Get an interface to iterate time series files.
      *
-     * \return An interface to iterate
+     * \return An interface to iterate time series files.
      */
     cvt::detail::NumeralSequenceFileContainer<FileFormat> eachTimeStep() const
     {

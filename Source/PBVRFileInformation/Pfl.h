@@ -20,6 +20,8 @@ namespace cvt
 
 /**
  * A PFL IO.
+ *
+ * Currently, only writing is supported.
  */
 class Pfl
 {
@@ -33,8 +35,8 @@ public:
     /**
      * Register a PFI file.
      *
-     * \param [in] directory A directory name.
-     * \param [in] base A file name base.
+     * \param[in] directory A directory name.
+     * \param[in] base A file name base.
      */
     template <typename PathLike0, typename PathLike1>
     void registerPfi( PathLike0&& directory, PathLike1&& base )
@@ -47,7 +49,7 @@ public:
     /**
      * Register a PFI file.
      *
-     * \param [in] path A PFI file path.
+     * \param[in] path A PFI file path.
      */
     template <typename PathLike>
     void registerPfi( PathLike&& path )
@@ -93,14 +95,14 @@ public:
     /**
      * Write to a PFL file.
      *
-     * \param [in] filename A file name.
+     * \param[in] filename A file name.
      * \return `true` on success, otherwise `false`.
      */
     bool write( const std::string& filename ) { return this->write( filename.c_str() ); }
     /**
      * Write to a PFL file.
      *
-     * \param [in] filename A file name.
+     * \param[in] filename A file name.
      * \return `true` on success, otherwise `false`.
      */
     bool write( const char* filename )

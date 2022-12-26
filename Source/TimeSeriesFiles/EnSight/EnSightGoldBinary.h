@@ -11,7 +11,11 @@
 
 namespace cvt
 {
-
+/*
+ * An interface of a binary EnSight Gold file.
+ *
+ * This class is to access each time step data in an EnSight Gold file.
+ */
 using EnSightGoldBinary = cvt::EnSightGold<vtkEnSightGoldBinaryReader>;
 } // namespace cvt
 

@@ -18,6 +18,9 @@
 namespace cvt
 {
 
+/**
+ * An exporter for KVS structured volume object.
+ */
 class StructuredVolumeObjectExporter : public kvs::ExporterBase,
                                        public cvt::KvsmlStructuredVolumeObject
 {
@@ -25,6 +28,11 @@ class StructuredVolumeObjectExporter : public kvs::ExporterBase,
     kvsModuleBaseClass( kvs::ExporterBase );
 
 public:
+    /**
+     * Construct an exporter.
+     *
+     * \param[in] object An KVS object.
+     */
     StructuredVolumeObjectExporter( const kvs::StructuredVolumeObject* object )
     {
         this->exec( object );
