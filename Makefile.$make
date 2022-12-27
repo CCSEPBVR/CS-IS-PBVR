@@ -44,7 +44,6 @@ clean:
 #=============================================================================
 install:
 	$(MKDIR) $(INSTALL_DIR)
-	$(INSTALL) kvs.conf     $(INSTALL_DIR)
 	$(INSTALL) Makefile.def $(INSTALL_DIR)
 	for i in $(SUBDIRS); do \
 	$(MAKE) -C $$i $(MFLAGS) $(MAKEOVERRIDES) install; done
