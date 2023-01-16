@@ -4,13 +4,79 @@
 #include "kvs/LineExporter"
 #include "kvs/UnstructuredVolumeObject"
 
+#include "Exporter/StructuredVolumeObjectExporter.h"
 #include "Exporter/UnstructuredVolumeObjectExporter.h"
 #include "FileFormat/AVS/AvsUcd.h"
 #include "Importer/VtkImporter.h"
 #include "PBVRFileInformation/Pfl.h"
 #include "PBVRFileInformation/UnstructuredPfi.h"
+#include "TimeSeriesFiles/AVS/AvsField.h"
 
-void Avs2Kvsml( const std::string& directory, const std::string& base, const std::string& src )
+#include <vtkXMLStructuredGridWriter.h>
+
+void AvsFld2Kvsml( const std::string& directory, const std::string& base, const std::string& src )
+{
+    std::cout << "Reading " << src << " ..." << std::endl;
+    cvt::AvsField input_avs( src );
+
+    int time_step = 0;
+    int sub_volume_id = 1;
+    int sub_volume_count = 1;
+
+    if ( input_avs.isIrregular() )
+    {
+        for ( auto file_format : input_avs.eachTimeStepAsIrregular() )
+        {
+            cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer( &file_format );
+            importer.updateMinMaxCoords();
+            importer.setMinMaxExternalCoords( importer.minObjectCoord(),
+                                              importer.maxObjectCoord() );
+            importer.print( std::cout, kvs::Indent( 2 ) );
+
+            cvt::StructuredVolumeObjectExporter exporter( &importer );
+            exporter.setWritingDataTypeToExternalBinary();
+            exporter.write( directory, base, time_step, sub_volume_id, sub_volume_count );
+
+            ++time_step;
+        }
+    }
+    else if ( input_avs.isUnion() )
+    {
+        for ( auto file_format : input_avs.eachTimeStepAsUnion() )
+        {
+            cvt::VtkImporter<cvt::VtkXmlImageData> importer( &file_format );
+            importer.updateMinMaxCoords();
+            importer.setMinMaxExternalCoords( importer.minObjectCoord(),
+                                              importer.maxObjectCoord() );
+            importer.print( std::cout, kvs::Indent( 2 ) );
+
+            cvt::StructuredVolumeObjectExporter exporter( &importer );
+            exporter.setWritingDataTypeToExternalBinary();
+            exporter.write( directory, base, time_step, sub_volume_id, sub_volume_count );
+
+            ++time_step;
+        }
+    }
+    else if ( input_avs.isRectilinear() )
+    {
+        for ( auto file_format : input_avs.eachTimeStepAsRectilinear() )
+        {
+            cvt::VtkImporter<cvt::VtkXmlRectilinearGrid> importer( &file_format );
+            importer.updateMinMaxCoords();
+            importer.setMinMaxExternalCoords( importer.minObjectCoord(),
+                                              importer.maxObjectCoord() );
+            importer.print( std::cout, kvs::Indent( 2 ) );
+
+            cvt::StructuredVolumeObjectExporter exporter( &importer );
+            exporter.setWritingDataTypeToExternalBinary();
+            exporter.write( directory, base, time_step, sub_volume_id, sub_volume_count );
+
+            ++time_step;
+        }
+    }
+}
+
+void AvsUcd2Kvsml( const std::string& directory, const std::string& base, const std::string& src )
 {
     std::cout << "Reading " << src << " ..." << std::endl;
     cvt::AvsUcd input_avs( src );

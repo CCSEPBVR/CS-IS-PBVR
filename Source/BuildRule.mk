@@ -7,6 +7,7 @@ $(OUTDIR)/Exporter/UnstructuredVolumeObjectExporter.o \
 $(OUTDIR)/Exporter/StructuredVolumeObjectExporter.o \
 $(OUTDIR)/FileFormat/VtkCompositeDataSetFileFormat.o \
 $(OUTDIR)/Importer/VtkImport.o \
+$(OUTDIR)/TimeSeriesFiles/AVS/AvsField.o
 
 
 $(OUTDIR)/PBVRFileInformation/%.o: ./PBVRFileInformation/%.cpp ./PBVRFileInformation/%.h
@@ -23,6 +24,11 @@ $(OUTDIR)/FileFormat/%.o: ./FileFormat/%.cpp ./FileFormat/%.h
 
 $(OUTDIR)/Importer/%.o: ./Importer/%.cpp ./Importer/%.h
 	$(MKDIR) $(OUTDIR)/Importer
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
+
+$(OUTDIR)/TimeSeriesFiles/AVS/%.o: ./TimeSeriesFiles/AVS/%.cpp ./TimeSeriesFiles/AVS/%.h
+	$(MKDIR) $(OUTDIR)/TimeSeriesFiles
+	$(MKDIR) $(OUTDIR)/TimeSeriesFiles/AVS
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 $(OUTDIR)/./%.o: ./%.cpp ./%.h
@@ -59,3 +65,5 @@ install::
 	$(INSTALL) ./TimeSeriesFiles/*.h $(INSTALL_DIR)/include/TimeSeriesFiles
 	$(MKDIR) $(INSTALL_DIR)/include/TimeSeriesFiles/EnSight
 	$(INSTALL) ./TimeSeriesFiles/EnSight/*.h $(INSTALL_DIR)/include/TimeSeriesFiles/EnSight
+	$(MKDIR) $(INSTALL_DIR)/include/TimeSeriesFiles/AVS
+	$(INSTALL) ./TimeSeriesFiles/AVS/*.h $(INSTALL_DIR)/include/TimeSeriesFiles/AVS
