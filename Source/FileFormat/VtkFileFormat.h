@@ -78,6 +78,12 @@ public:
     /**
      * Construct an IO object.
      *
+     * \param[in] vtk_data A VTK data.
+     */
+    VtkFileFormat( vtkSmartPointer<VtkDataType> data ): kvs::FileFormatBase() { vtk_data = data; }
+    /**
+     * Construct an IO object.
+     *
      * This takes the owner of the object.
      * So DO NOT free the object manually.
      *

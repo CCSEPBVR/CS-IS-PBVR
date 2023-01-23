@@ -7,6 +7,7 @@ $(OUTDIR)/Exporter/UnstructuredVolumeObjectExporter.obj \
 $(OUTDIR)/Exporter/StructuredVolumeObjectExporter.obj \
 $(OUTDIR)/FileFormat/VtkCompositeDataSetFileFormat.obj \
 $(OUTDIR)/Importer/VtkImport.obj \
+$(OUTDIR)/TimeSeriesFiles/AVS/AvsField.obj
 
 
 {.\PBVRFileInformation\}.cpp{$(OUTDIR)\PBVRFileInformation\}.obj::
@@ -30,6 +31,13 @@ $<
 {.\Importer\}.cpp{$(OUTDIR)\Importer\}.obj::
 	IF NOT EXIST $(OUTDIR)\Importer $(MKDIR) $(OUTDIR)\Importer
 	$(CPP) /c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) /Fo$(OUTDIR)\Importer\ @<<
+$<
+<<
+
+{.\TimeSeriesFiles\AVS\}.cpp{$(OUTDIR)\TimeSeriesFiles\AVS\}.obj::
+	IF NOT EXIST $(OUTDIR)\TimeSeriesFiles $(MKDIR) $(OUTDIR)\TimeSeriesFiles
+	IF NOT EXIST $(OUTDIR)\TimeSeriesFiles\AVS $(MKDIR) $(OUTDIR)\TimeSeriesFiles\AVS
+	$(CPP) /c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) /Fo$(OUTDIR)\TimeSeriesFiles\AVS\ @<<
 $<
 <<
 
@@ -63,3 +71,5 @@ install::
 	$(INSTALL) .\TimeSeriesFiles\*.h $(INSTALL_DIR)\include\TimeSeriesFiles
 	IF NOT EXIST $(INSTALL_DIR)\include\TimeSeriesFiles\EnSight $(MKDIR) $(INSTALL_DIR)\include\TimeSeriesFiles\EnSight
 	$(INSTALL) .\TimeSeriesFiles\EnSight\*.h $(INSTALL_DIR)\include\TimeSeriesFiles\EnSight
+	IF NOT EXIST $(INSTALL_DIR)\include\TimeSeriesFiles\AVS $(MKDIR) $(INSTALL_DIR)\include\TimeSeriesFiles\AVS
+	$(INSTALL) .\TimeSeriesFiles\AVS\*.h $(INSTALL_DIR)\include\TimeSeriesFiles\AVS
