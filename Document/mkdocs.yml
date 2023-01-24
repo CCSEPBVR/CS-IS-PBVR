@@ -10,6 +10,7 @@ nav:
   - tutorial/eachtimestep.md
   - tutorial/eachblock.md
   - examplelist.md
+  - license.md
 use_directory_urls: false
 markdown_extensions:
   - toc:
