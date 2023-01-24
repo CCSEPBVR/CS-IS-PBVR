@@ -219,10 +219,12 @@ kvs::UnstructuredVolumeObject::CellType GetKvsCellType( int type )
         return kvs::UnstructuredVolumeObject::QuadraticHexahedra;
     case VTK_VERTEX:
         return kvs::UnstructuredVolumeObject::Point;
-    case VTK_PYRAMID:
-        return kvs::UnstructuredVolumeObject::Pyramid;
     case VTK_WEDGE:
+    case VTK_QUADRATIC_WEDGE:
         return kvs::UnstructuredVolumeObject::Prism;
+    case VTK_PYRAMID:
+    case VTK_QUADRATIC_PYRAMID:
+        return kvs::UnstructuredVolumeObject::Pyramid;
     default:
         return kvs::UnstructuredVolumeObject::UnknownCellType;
     }
@@ -284,12 +286,14 @@ void ReorderElementNodeIndices( DestinationIterator& kvs_connection, vtkIdList* 
         ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
         break;
     }
-    case VTK_PYRAMID: {
+    case VTK_PYRAMID:
+    case VTK_QUADRATIC_PYRAMID: {
         constexpr int order[] = { 4, 0, 1, 2, 3 };
         ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
         break;
     }
-    case VTK_WEDGE: {
+    case VTK_WEDGE:
+    case VTK_QUADRATIC_WEDGE: {
         constexpr int order[] = { 0, 1, 2, 3, 4, 5 };
         ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
         break;
