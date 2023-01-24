@@ -124,38 +124,75 @@ kvs::VolumeObjectBase::Values GetValueArray( VtkPointSetPointerType data, int co
 
     if ( component_count > 0 )
     {
-        auto first_array = point_data->GetArray( 0 );
-
-        switch ( first_array->GetDataType() )
+        int array_type = 0;
+        for ( vtkIdType i = 0; i < point_data->GetNumberOfArrays(); ++i )
         {
-        case VTK_FLOAT:
-            return ::GetValueArrayImpl<kvs::Real32>( data->GetPointData(),
-                                                     data->GetNumberOfPoints(), component_count );
-        case VTK_TYPE_INT8:
-            return ::GetValueArrayImpl<kvs::Int8>( data->GetPointData(), data->GetNumberOfPoints(),
-                                                   component_count );
-        case VTK_TYPE_INT16:
-            return ::GetValueArrayImpl<kvs::Int16>( data->GetPointData(), data->GetNumberOfPoints(),
-                                                    component_count );
-        case VTK_TYPE_INT32:
-            return ::GetValueArrayImpl<kvs::Int32>( data->GetPointData(), data->GetNumberOfPoints(),
-                                                    component_count );
-        case VTK_TYPE_INT64:
-            return ::GetValueArrayImpl<kvs::Int64>( data->GetPointData(), data->GetNumberOfPoints(),
-                                                    component_count );
-        case VTK_TYPE_UINT8:
+            auto array = point_data->GetArray( i );
+
+            switch ( array->GetArrayType() )
+            {
+            case VTK_TYPE_UINT8:
+                array_type = std::max( array_type, 0 );
+                break;
+            case VTK_TYPE_UINT16:
+                array_type = std::max( array_type, 1 );
+                break;
+            case VTK_TYPE_UINT32:
+                array_type = std::max( array_type, 2 );
+                break;
+            case VTK_TYPE_UINT64:
+                array_type = std::max( array_type, 3 );
+                break;
+            case VTK_TYPE_INT8:
+                array_type = std::max( array_type, 4 );
+                break;
+            case VTK_TYPE_INT16:
+                array_type = std::max( array_type, 5 );
+                break;
+            case VTK_TYPE_INT32:
+                array_type = std::max( array_type, 6 );
+                break;
+            case VTK_TYPE_INT64:
+                array_type = std::max( array_type, 7 );
+                break;
+            case VTK_FLOAT:
+                array_type = std::max( array_type, 8 );
+                break;
+            case VTK_DOUBLE:
+            default:
+                array_type = std::numeric_limits<int>::max();
+            }
+        }
+
+        switch ( array_type )
+        {
+        case 0:
             return ::GetValueArrayImpl<kvs::UInt8>( data->GetPointData(), data->GetNumberOfPoints(),
                                                     component_count );
-        case VTK_TYPE_UINT16:
+        case 1:
             return ::GetValueArrayImpl<kvs::UInt16>( data->GetPointData(),
                                                      data->GetNumberOfPoints(), component_count );
-        case VTK_TYPE_UINT32:
+        case 2:
             return ::GetValueArrayImpl<kvs::UInt32>( data->GetPointData(),
                                                      data->GetNumberOfPoints(), component_count );
-        case VTK_TYPE_UINT64:
+        case 3:
             return ::GetValueArrayImpl<kvs::UInt64>( data->GetPointData(),
                                                      data->GetNumberOfPoints(), component_count );
-        case VTK_DOUBLE:
+        case 4:
+            return ::GetValueArrayImpl<kvs::Int8>( data->GetPointData(), data->GetNumberOfPoints(),
+                                                   component_count );
+        case 5:
+            return ::GetValueArrayImpl<kvs::Int16>( data->GetPointData(), data->GetNumberOfPoints(),
+                                                    component_count );
+        case 6:
+            return ::GetValueArrayImpl<kvs::Int32>( data->GetPointData(), data->GetNumberOfPoints(),
+                                                    component_count );
+        case 7:
+            return ::GetValueArrayImpl<kvs::Int64>( data->GetPointData(), data->GetNumberOfPoints(),
+                                                    component_count );
+        case 8:
+            return ::GetValueArrayImpl<kvs::Real32>( data->GetPointData(),
+                                                     data->GetNumberOfPoints(), component_count );
         default:
             return ::GetValueArrayImpl<kvs::Real64>( data->GetPointData(),
                                                      data->GetNumberOfPoints(), component_count );
