@@ -223,6 +223,14 @@ int main( int argc, char** argv )
         mkdir( dst );
         AvsFld2Kvsml( dst.string(), "gt5d", src.string() );
     }
+    else if ( example_name == "avsfld2kvsml2" )
+    {
+        fs::path src = input_directory;
+        src /= "tdf.fld";
+        fs::path dst = output_directory;
+        mkdir( dst );
+        AvsFld2Kvsml( dst.string(), "tdf", src.string() );
+    }
     else if ( example_name == "avsucd2kvsml" )
     {
         fs::path src = input_directory;
