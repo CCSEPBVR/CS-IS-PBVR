@@ -26,11 +26,11 @@ void Pvtu2Kvsml( const std::string& directory, const std::string& base, const st
 {
     std::cout << "reading " << src << " ..." << std::endl;
     cvt::VtkXmlPUnstructuredGrid input_pvtu( src );
-    std::cout << "#piece: " << input_pvtu.number_of_pieces() << std::endl;
+    std::cout << "#piece: " << input_pvtu.numberOfPieces() << std::endl;
 
     int last_time_step = 0;
     int time_step = 0;
-    int sub_volume_count = input_pvtu.number_of_pieces();
+    int sub_volume_count = input_pvtu.numberOfPieces();
     int sub_volume_id = 1;
 
     std::unordered_map<int, cvt::UnstructuredPfi> pfi_map;

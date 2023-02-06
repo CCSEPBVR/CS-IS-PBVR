@@ -288,13 +288,13 @@ public:
      *
      * \return A number of pieces.
      */
-    int number_of_pieces() noexcept { return m_number_of_pieces; }
+    int numberOfPieces() noexcept { return m_number_of_pieces; }
     /**
      * Get a number of pieces.
      *
      * \return A number of pieces.
      */
-    int number_of_pieces() const noexcept { return m_number_of_pieces; }
+    int numberOfPieces() const noexcept { return m_number_of_pieces; }
 
 private:
     int m_number_of_pieces;
