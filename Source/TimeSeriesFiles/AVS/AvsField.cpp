@@ -186,7 +186,14 @@ std::shared_ptr<cvt::detail::AvsFieldDataMeta> GetTimeDependentFiled( const std:
         {
         case 0:
             meta->type = block;
-            ++n;
+            if ( std::regex_match( block, std::regex( "time" ) ) )
+            {
+                n = 2;
+            }
+            else
+            {
+                ++n;
+            }
             break;
         case 1:
             if ( std::regex_match( line, std::regex( "value" ) ) )
@@ -246,6 +253,22 @@ std::shared_ptr<cvt::detail::AvsFieldDataMeta> GetTimeDependentFiled( const std:
     return meta;
 }
 
+std::shared_ptr<std::string> WriteFldDataField( std::ifstream& in )
+{
+    std::string dst_name = std::tmpnam( nullptr );
+    std::ofstream dst( dst_name, std::ios::binary );
+
+    while ( in.good() )
+    {
+        char c;
+        in.read( &c, sizeof( char ) );
+
+        dst.write( &c, 1 );
+    }
+
+    return std::make_shared<std::string>( dst_name );
+}
+
 bool ReadFirstAvsLine( std::ifstream& stream )
 {
     constexpr std::size_t LINE_LENGTH = 512;
@@ -255,7 +278,8 @@ bool ReadFirstAvsLine( std::ifstream& stream )
     return std::regex_match( line, std::regex( "# AVS.*" ) );
 }
 
-bool ReadHeader( cvt::detail::AvsFieldHeader& header, std::ifstream& stream )
+std::shared_ptr<std::string> ReadHeader( cvt::detail::AvsFieldHeader& header,
+                                         std::ifstream& stream )
 {
     constexpr std::size_t LINE_LENGTH = 512;
     char line[LINE_LENGTH];
@@ -278,17 +302,20 @@ bool ReadHeader( cvt::detail::AvsFieldHeader& header, std::ifstream& stream )
         }
         else
         {
-            return has_separator;
+            return ::WriteFldDataField( stream );
         }
     }
 
-    return has_separator;
+    return nullptr;
 }
 
-bool ReadTimeDependField( std::vector<cvt::detail::AvsFieldTimeDependentField>& tdf,
-                          std::ifstream& stream, int veclen, int nstep )
+std::shared_ptr<std::string> ReadTimeDependField(
+    std::vector<cvt::detail::AvsFieldTimeDependentField>& tdf, std::ifstream& stream, int veclen,
+    int nstep )
 {
     constexpr std::size_t LINE_LENGTH = 512;
+    std::shared_ptr<std::string> data_field = nullptr;
+
     char line[LINE_LENGTH];
 
     int time_step = 0;
@@ -312,10 +339,11 @@ bool ReadTimeDependField( std::vector<cvt::detail::AvsFieldTimeDependentField>& 
         else if ( shrunk == "DO" )
         {
             has_do_loop = true;
+            tdf[time_step] = tdf[time_step - 1];
         }
         else if ( shrunk == "ENDDO" )
         {
-            break;
+            /* ignore */
         }
         else
         {
@@ -337,6 +365,7 @@ bool ReadTimeDependField( std::vector<cvt::detail::AvsFieldTimeDependentField>& 
 
         if ( has_separator )
         {
+            data_field = ::WriteFldDataField( stream );
             break;
         }
     }
@@ -350,28 +379,35 @@ bool ReadTimeDependField( std::vector<cvt::detail::AvsFieldTimeDependentField>& 
         }
     }
 
-    return has_separator;
+    return data_field;
 }
 
 template <typename T>
-void ReadBinaryDataFile( T* dst, int count, const std::string& filename, int skip, int stride )
+void ReadBinaryDataFile( T* dst, int count, const std::string& filename,
+                         const std::deque<int>& skips, int stride )
 {
     std::ifstream stream( filename, std::ios::binary );
     T c;
 
-    for ( int i = 0; stream.good() && i < skip; ++i )
+    for ( int i = 0; i < skips.size(); ++i )
     {
-        char x;
-        stream.read( &x, sizeof( char ) );
-    }
-
-    int p = 0;
-    for ( int x = 0; p < count && stream.good(); ++x )
-    {
-        stream.read( reinterpret_cast<char*>( &c ), sizeof( T ) );
-        if ( x % stride == 0 )
+        for ( int j = 0; j < skips[i] && stream.good(); ++j )
         {
-            dst[p++] = c;
+            char x;
+            stream.read( &x, sizeof( char ) );
+        }
+
+        int p = 0;
+        for ( int j = 0; j < count * stride && stream.good(); ++j )
+        {
+            stream.read( reinterpret_cast<char*>( &c ), sizeof( T ) );
+            if ( j % stride == 0 )
+            {
+                if ( p < count )
+                {
+                    dst[p++] = c;
+                }
+            }
         }
     }
 }
@@ -395,51 +431,50 @@ double from_string<double>( const std::string& str )
 }
 
 template <typename T>
-void ReadAsciiDataFile( T* dst, int count, const std::string& filename, int skip, int offset,
-                        int stride )
+void ReadAsciiDataFile( T* dst, int count, const std::string& filename,
+                        const std::deque<int>& skips, const std::deque<int>& offsets, int stride )
 {
     std::ifstream stream( filename );
     std::string str;
 
-    for ( int i = 0; i < skip && std::getline( stream, str ); ++i )
+    for ( int i = 0; i < skips.size(); ++i )
     {
-    }
-    for ( int i = 0; i < offset && stream >> str; ++i )
-    {
-    }
-
-    int p = 0;
-    int x = stride;
-
-    for ( ; p < count && stream >> str; )
-    {
-        T v = 0;
-        try
+        for ( int j = 0; j < skips[i] && std::getline( stream, str ); ++j )
         {
-            v = ::from_string<T>( str );
         }
-        catch ( ... )
+        for ( int j = 0; j < offsets[i] && ( stream >> str ); ++j )
         {
-            std::string message =
-                "Failed to convert '" + str + "' from the ascii data. Set the component to 0.";
-            kvsMessageWarning( message.c_str() );
         }
 
-        if ( x == stride )
+        int p = 0;
+        for ( int j = 0; j < ( count * stride - offsets[i] ) && ( stream >> str ); ++j )
         {
-            dst[p++] = v;
-            x = 1;
+            T v = 0;
+            try
+            {
+                v = ::from_string<T>( str );
+            }
+            catch ( ... )
+            {
+                std::string message =
+                    "Failed to convert '" + str + "' from the ascii data. Set the component to 0.";
+                kvsMessageWarning( message.c_str() );
+            }
+            if ( j % stride == 0 )
+            {
+                if ( p < count )
+                {
+                    dst[p++] = v;
+                }
+            }
         }
-        else
-        {
-            ++x;
-        }
+        std::getline( stream, str );
     }
 }
 
 template <typename T>
 void SetIrregularPoints(
-    vtkPoints* points, int n, bool has_data_section, const cvt::detail::AvsFieldHeader& header,
+    vtkPoints* points, int n, const cvt::detail::AvsFieldHeader& header,
     const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field,
     std::filesystem::path dirname )
 {
@@ -453,66 +488,66 @@ void SetIrregularPoints(
 
     points->SetNumberOfPoints( number_of_points );
 
-    if ( has_data_section )
+    for ( int c = 0; c < header.nspace; ++c )
     {
-    }
-    else
-    {
-        for ( int c = 0; c < header.nspace; ++c )
+        cvt::detail::AvsFieldDataMeta* meta = time_dependent_field[0].coords[c].get();
+        std::deque<int> skips;
+        std::deque<int> offsets;
+        skips.push_back( meta->skip );
+        offsets.push_back( meta->offset );
+
+        for ( int i = 1; i <= n; ++i )
         {
-            cvt::detail::AvsFieldDataMeta* meta = time_dependent_field[0].coords[c].get();
-            int skip = meta->skip;
-            int offset = meta->offset;
-
-            for ( int i = 1; i <= n; ++i )
+            if ( time_dependent_field[i].coords[c] )
             {
-                if ( time_dependent_field[i].coords[c] )
-                {
-                    meta = time_dependent_field[i].coords[c].get();
-
-                    if ( meta->filetype == "binary" )
-                    {
-                        skip = ( meta->close == 0 )
-                                   ? ( skip + number_of_points * sizeof( T ) * meta->stride )
-                                   : meta->skip;
-                    }
-                    else
-                    {
-                        offset = ( meta->close == 0 ) ? ( offset + number_of_points * meta->stride )
-                                                      : meta->offset;
-                    }
-                }
+                meta = time_dependent_field[i].coords[c].get();
             }
 
-            if ( meta->file )
+            if ( meta->close == 1 )
             {
-                std::filesystem::path file_path = dirname;
+                skips.clear();
+                offsets.clear();
+            }
+
+            skips.push_back( meta->skip );
+            offsets.push_back( meta->offset );
+        }
+
+        if ( meta->file )
+        {
+            std::filesystem::path file_path;
+            if ( meta->is_relative )
+            {
+                file_path = dirname;
                 file_path /= *( meta->file );
+            }
+            else
+            {
+                file_path = *( meta->file );
+            }
 
-                if ( meta->filetype == "binary" )
-                {
-                    ::ReadBinaryDataFile( data_array[c].data(), number_of_points,
-                                          file_path.string(), skip, meta->stride );
-                }
-                else
-                {
-                    ::ReadAsciiDataFile( data_array[c].data(), number_of_points, file_path.string(),
-                                         meta->skip, offset, meta->stride );
-                }
+            if ( meta->filetype == "binary" )
+            {
+                ::ReadBinaryDataFile( data_array[c].data(), number_of_points, file_path.string(),
+                                      skips, meta->stride );
+            }
+            else
+            {
+                ::ReadAsciiDataFile( data_array[c].data(), number_of_points, file_path.string(),
+                                     skips, offsets, meta->stride );
             }
         }
+    }
 
-        for ( int i = 0; i < number_of_points; ++i )
-        {
-            points->SetPoint( i, data_array[0][i], data_array[1][i], data_array[2][i] );
-        }
+    for ( int i = 0; i < number_of_points; ++i )
+    {
+        points->SetPoint( i, data_array[0][i], data_array[1][i], data_array[2][i] );
     }
 }
 
 template <typename T>
 void SetRectilinearPoints(
-    vtkRectilinearGrid* grid, int n, bool has_data_section,
-    const cvt::detail::AvsFieldHeader& header,
+    vtkRectilinearGrid* grid, int n, const cvt::detail::AvsFieldHeader& header,
     const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field,
     std::filesystem::path dirname )
 {
@@ -524,129 +559,129 @@ void SetRectilinearPoints(
     }
     grid->SetDimensions( header.dim1, header.dim2, header.dim3 );
 
-    if ( has_data_section )
+    for ( int c = 0; c < header.nspace; ++c )
     {
-        kvsMessageError( "A native filed input was unsupported." );
-    }
-    else
-    {
-        for ( int c = 0; c < header.nspace; ++c )
+        data_array[c]->SetNumberOfTuples( dim[c] );
+        data_array[c]->SetNumberOfComponents( 1 );
+        data_array[c]->Fill( 0 );
+
+        cvt::detail::AvsFieldDataMeta* meta = time_dependent_field[0].coords[c].get();
+        std::deque<int> skips;
+        std::deque<int> offsets;
+        skips.push_back( meta->skip );
+        offsets.push_back( meta->offset );
+
+        for ( int i = 1; i <= n; ++i )
         {
-            data_array[c]->SetNumberOfTuples( dim[c] );
-            data_array[c]->SetNumberOfComponents( 1 );
-            data_array[c]->Fill( 0 );
-
-            cvt::detail::AvsFieldDataMeta* meta = time_dependent_field[0].coords[c].get();
-            int skip = meta->skip;
-            int offset = meta->offset;
-
-            for ( int i = 1; i <= n; ++i )
+            if ( time_dependent_field[i].coords[c] )
             {
-                if ( time_dependent_field[i].coords[c] )
-                {
-                    meta = time_dependent_field[i].coords[c].get();
-
-                    if ( meta->filetype == "binary" )
-                    {
-                        skip = ( meta->close == 0 ) ? ( skip + dim[c] * sizeof( T ) * meta->stride )
-                                                    : meta->skip;
-                    }
-                    else
-                    {
-                        offset = ( meta->close == 0 ) ? ( offset + dim[c] * meta->stride )
-                                                      : meta->offset;
-                    }
-                }
+                meta = time_dependent_field[i].coords[c].get();
             }
 
-            if ( meta->file )
+            if ( meta->close == 1 )
             {
-                std::filesystem::path file_path = dirname;
-                file_path /= *( meta->file );
-
-                if ( meta->filetype == "binary" )
-                {
-                    ::ReadBinaryDataFile( data_array[c]->GetPointer( 0 ), dim[c],
-                                          file_path.string(), skip, meta->stride );
-                }
-                else
-                {
-                    ::ReadAsciiDataFile( data_array[c]->GetPointer( 0 ), dim[c], file_path.string(),
-                                         meta->skip, offset, meta->stride );
-                }
+                skips.clear();
+                offsets.clear();
             }
+
+            skips.push_back( meta->skip );
+            offsets.push_back( meta->offset );
         }
 
-        grid->SetXCoordinates( data_array[0] );
-        grid->SetYCoordinates( data_array[1] );
-        grid->SetZCoordinates( data_array[2] );
+        if ( meta->file )
+        {
+            std::filesystem::path file_path;
+            if ( meta->is_relative )
+            {
+                file_path = dirname;
+                file_path /= *( meta->file );
+            }
+            else
+            {
+                file_path = *( meta->file );
+            }
+
+            if ( meta->filetype == "binary" )
+            {
+                ::ReadBinaryDataFile( data_array[c]->GetPointer( 0 ), dim[c], file_path.string(),
+                                      skips, meta->stride );
+            }
+            else
+            {
+                ::ReadAsciiDataFile( data_array[c]->GetPointer( 0 ), dim[c], file_path.string(),
+                                     skips, offsets, meta->stride );
+            }
+        }
     }
+
+    grid->SetXCoordinates( data_array[0] );
+    grid->SetYCoordinates( data_array[1] );
+    grid->SetZCoordinates( data_array[2] );
 }
 
 template <typename T>
-void SetPointData( vtkPointData* point_data, int n, bool has_data_section,
-                   const cvt::detail::AvsFieldHeader& header,
+void SetPointData( vtkPointData* point_data, int n, const cvt::detail::AvsFieldHeader& header,
                    const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field,
                    std::filesystem::path dirname )
 {
     int number_of_points = header.dim1 * header.dim2 * header.dim3;
 
-    if ( has_data_section )
+    for ( int c = 0; c < header.veclen; ++c )
     {
-        kvsMessageError( "A native filed input was unsupported." );
-    }
-    else
-    {
-        for ( int c = 0; c < header.veclen; ++c )
+        vtkNew<vtkAOSDataArrayTemplate<T>> data_array;
+        data_array->SetNumberOfTuples( number_of_points );
+        data_array->SetNumberOfComponents( 1 );
+        std::string array_name = "variable_" + std::to_string( c );
+        data_array->SetName( array_name.c_str() );
+
+        cvt::detail::AvsFieldDataMeta* meta = time_dependent_field[0].variables[c].get();
+        std::deque<int> skips;
+        std::deque<int> offsets;
+        skips.push_back( meta->skip );
+        offsets.push_back( meta->offset );
+
+        for ( int i = 1; i <= n; ++i )
         {
-            vtkNew<vtkAOSDataArrayTemplate<T>> data_array;
-            data_array->SetNumberOfTuples( number_of_points );
-            data_array->SetNumberOfComponents( 1 );
-            std::string array_name = "variable_" + std::to_string( c );
-            data_array->SetName( array_name.c_str() );
-
-            cvt::detail::AvsFieldDataMeta* meta = time_dependent_field[0].variables[c].get();
-            int skip = meta->skip;
-            int offset = meta->offset;
-
-            for ( int i = 1; i <= n; ++i )
+            if ( time_dependent_field[i].variables[c] )
             {
-                if ( time_dependent_field[i].variables[c] )
-                {
-                    meta = time_dependent_field[i].variables[c].get();
-
-                    if ( meta->filetype == "binary" )
-                    {
-                        skip = ( meta->close == 0 )
-                                   ? ( skip + number_of_points * sizeof( T ) * meta->stride )
-                                   : meta->skip;
-                    }
-                    else
-                    {
-                        offset = ( meta->close == 0 ) ? ( offset + number_of_points * meta->stride )
-                                                      : meta->offset;
-                    }
-                }
+                meta = time_dependent_field[i].variables[c].get();
             }
 
-            if ( meta->file )
+            if ( meta->close == 1 )
             {
-                std::filesystem::path file_path = dirname;
+                skips.clear();
+                offsets.clear();
+            }
+
+            skips.push_back( meta->skip );
+            offsets.push_back( meta->offset );
+        }
+
+        if ( meta->file )
+        {
+            std::filesystem::path file_path;
+            if ( meta->is_relative )
+            {
+                file_path = dirname;
                 file_path /= *( meta->file );
-
-                if ( meta->filetype == "binary" )
-                {
-                    ::ReadBinaryDataFile( data_array->GetPointer( 0 ), number_of_points,
-                                          file_path.string(), skip, meta->stride );
-                }
-                else
-                {
-                    ::ReadAsciiDataFile( data_array->GetPointer( 0 ), number_of_points,
-                                         file_path.string(), meta->skip, offset, meta->stride );
-                }
-
-                point_data->AddArray( data_array );
             }
+            else
+            {
+                file_path = *( meta->file );
+            }
+
+            if ( meta->filetype == "binary" )
+            {
+                ::ReadBinaryDataFile( data_array->GetPointer( 0 ), number_of_points,
+                                      file_path.string(), skips, meta->stride );
+            }
+            else
+            {
+                ::ReadAsciiDataFile( data_array->GetPointer( 0 ), number_of_points,
+                                     file_path.string(), skips, offsets, meta->stride );
+            }
+
+            point_data->AddArray( data_array );
         }
     }
 }
@@ -660,24 +695,71 @@ bool cvt::AvsField::read( const std::string& filename )
 
     try
     {
-        fld =
-            std::make_shared<std::ifstream>( filename, std::ios_base::in | std::ios_base::binary );
-        has_data_section = false;
-        ::ReadFirstAvsLine( *fld );
-        if ( ::ReadHeader( header, *fld ) )
+        std::ifstream fld( filename, std::ios_base::in | std::ios_base::binary );
+        ::ReadFirstAvsLine( fld );
+        if ( auto fp = ::ReadHeader( header, fld ) )
         {
             header.nstep = 1;
-            has_data_section = true;
-            data_section_head = fld->tellg();
+            time_dependent_field.resize( 1 );
+            for ( int i = 0; i < header.veclen; ++i )
+            {
+                auto c = std::make_shared<cvt::detail::AvsFieldDataMeta>();
+
+                c->type = "variable";
+                c->n = i + 1;
+                c->file = fp;
+                c->is_relative = false;
+                c->filetype = "binary";
+                c->skip = 0;
+                c->offset = i;
+                c->stride = header.veclen;
+                c->close = 0;
+
+                time_dependent_field[0].variables[i] = c;
+            }
+            for ( int i = 0; i < header.ndim; ++i )
+            {
+                auto c = std::make_shared<cvt::detail::AvsFieldDataMeta>();
+
+                c->type = "coord";
+                c->n = i + 1;
+                c->file = fp;
+                c->is_relative = false;
+                c->filetype = "binary";
+                c->skip = header.veclen * header.dim1 * header.dim2 * header.dim3;
+                c->offset = i;
+                c->stride = header.ndim;
+                c->close = 0;
+
+                time_dependent_field[0].coords[i] = c;
+            }
         }
         else
         {
             time_dependent_field.resize( header.nstep );
 
-            if ( ::ReadTimeDependField( time_dependent_field, *fld, header.veclen, header.nstep ) )
+            if ( auto fp = ::ReadTimeDependField( time_dependent_field, fld, header.veclen,
+                                                  header.nstep ) )
             {
-                has_data_section = true;
-                data_section_head = fld->tellg();
+                for ( auto& tdf : time_dependent_field )
+                {
+                    for ( auto& c : tdf.coords )
+                    {
+                        if ( c )
+                        {
+                            c->file = fp;
+                            c->is_relative = false;
+                        }
+                    }
+                    for ( auto& v : tdf.variables )
+                    {
+                        if ( v )
+                        {
+                            v->file = fp;
+                            v->is_relative = false;
+                        }
+                    }
+                }
             }
         }
 
@@ -692,8 +774,7 @@ bool cvt::AvsField::read( const std::string& filename )
 }
 
 cvt::VtkXmlStructuredGrid cvt::detail::GetVtkDataFromIrregularAvsField(
-    int n, std::filesystem::path dirname, bool has_data_section,
-    const cvt::detail::AvsFieldHeader& header,
+    int n, std::filesystem::path dirname, const cvt::detail::AvsFieldHeader& header,
     const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field )
 {
     auto grid = vtkSmartPointer<vtkStructuredGrid>::New();
@@ -707,42 +788,33 @@ cvt::VtkXmlStructuredGrid cvt::detail::GetVtkDataFromIrregularAvsField(
         if ( header.data == "float" )
         {
             points->SetDataTypeToFloat();
-            ::SetIrregularPoints<float>( points, n, has_data_section, header, time_dependent_field,
-                                         dirname );
-            ::SetPointData<float>( grid->GetPointData(), n, has_data_section, header,
-                                   time_dependent_field, dirname );
+            ::SetIrregularPoints<float>( points, n, header, time_dependent_field, dirname );
+            ::SetPointData<float>( grid->GetPointData(), n, header, time_dependent_field, dirname );
         }
         else if ( header.data == "double" )
         {
             points->SetDataTypeToDouble();
-            ::SetIrregularPoints<double>( points, n, has_data_section, header, time_dependent_field,
-                                          dirname );
-            ::SetPointData<double>( grid->GetPointData(), n, has_data_section, header,
-                                    time_dependent_field, dirname );
+            ::SetIrregularPoints<double>( points, n, header, time_dependent_field, dirname );
+            ::SetPointData<double>( grid->GetPointData(), n, header, time_dependent_field,
+                                    dirname );
         }
         else if ( header.data == "integer" )
         {
             points->SetDataTypeToInt();
-            ::SetIrregularPoints<int>( points, n, has_data_section, header, time_dependent_field,
-                                       dirname );
-            ::SetPointData<int>( grid->GetPointData(), n, has_data_section, header,
-                                 time_dependent_field, dirname );
+            ::SetIrregularPoints<int>( points, n, header, time_dependent_field, dirname );
+            ::SetPointData<int>( grid->GetPointData(), n, header, time_dependent_field, dirname );
         }
         else if ( header.data == "short" )
         {
             points->SetDataTypeToShort();
-            ::SetIrregularPoints<short>( points, n, has_data_section, header, time_dependent_field,
-                                         dirname );
-            ::SetPointData<short>( grid->GetPointData(), n, has_data_section, header,
-                                   time_dependent_field, dirname );
+            ::SetIrregularPoints<short>( points, n, header, time_dependent_field, dirname );
+            ::SetPointData<short>( grid->GetPointData(), n, header, time_dependent_field, dirname );
         }
         else if ( header.data == "byte" )
         {
             points->SetDataTypeToChar();
-            ::SetIrregularPoints<char>( points, n, has_data_section, header, time_dependent_field,
-                                        dirname );
-            ::SetPointData<char>( grid->GetPointData(), n, has_data_section, header,
-                                  time_dependent_field, dirname );
+            ::SetIrregularPoints<char>( points, n, header, time_dependent_field, dirname );
+            ::SetPointData<char>( grid->GetPointData(), n, header, time_dependent_field, dirname );
         }
 
         grid->SetPoints( points );
@@ -752,8 +824,7 @@ cvt::VtkXmlStructuredGrid cvt::detail::GetVtkDataFromIrregularAvsField(
 }
 
 cvt::VtkXmlImageData cvt::detail::GetVtkDataFromUniformAvsField(
-    int n, std::filesystem::path dirname, bool has_data_section,
-    const cvt::detail::AvsFieldHeader& header,
+    int n, std::filesystem::path dirname, const cvt::detail::AvsFieldHeader& header,
     const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field )
 {
     auto grid = vtkSmartPointer<vtkImageData>::New();
@@ -766,28 +837,24 @@ cvt::VtkXmlImageData cvt::detail::GetVtkDataFromUniformAvsField(
 
         if ( header.data == "float" )
         {
-            ::SetPointData<float>( grid->GetPointData(), n, has_data_section, header,
-                                   time_dependent_field, dirname );
+            ::SetPointData<float>( grid->GetPointData(), n, header, time_dependent_field, dirname );
         }
         else if ( header.data == "double" )
         {
-            ::SetPointData<double>( grid->GetPointData(), n, has_data_section, header,
-                                    time_dependent_field, dirname );
+            ::SetPointData<double>( grid->GetPointData(), n, header, time_dependent_field,
+                                    dirname );
         }
         else if ( header.data == "integer" )
         {
-            ::SetPointData<int>( grid->GetPointData(), n, has_data_section, header,
-                                 time_dependent_field, dirname );
+            ::SetPointData<int>( grid->GetPointData(), n, header, time_dependent_field, dirname );
         }
         else if ( header.data == "short" )
         {
-            ::SetPointData<short>( grid->GetPointData(), n, has_data_section, header,
-                                   time_dependent_field, dirname );
+            ::SetPointData<short>( grid->GetPointData(), n, header, time_dependent_field, dirname );
         }
         else if ( header.data == "byte" )
         {
-            ::SetPointData<char>( grid->GetPointData(), n, has_data_section, header,
-                                  time_dependent_field, dirname );
+            ::SetPointData<char>( grid->GetPointData(), n, header, time_dependent_field, dirname );
         }
     }
 
@@ -795,8 +862,7 @@ cvt::VtkXmlImageData cvt::detail::GetVtkDataFromUniformAvsField(
 }
 
 cvt::VtkXmlRectilinearGrid cvt::detail::GetVtkDataFromRectilinearAvsField(
-    int n, std::filesystem::path dirname, bool has_data_section,
-    const cvt::detail::AvsFieldHeader& header,
+    int n, std::filesystem::path dirname, const cvt::detail::AvsFieldHeader& header,
     const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field )
 {
     auto grid = vtkSmartPointer<vtkRectilinearGrid>::New();
@@ -809,38 +875,29 @@ cvt::VtkXmlRectilinearGrid cvt::detail::GetVtkDataFromRectilinearAvsField(
 
         if ( header.data == "float" )
         {
-            ::SetRectilinearPoints<float>( grid, n, has_data_section, header, time_dependent_field,
-                                           dirname );
-            ::SetPointData<float>( grid->GetPointData(), n, has_data_section, header,
-                                   time_dependent_field, dirname );
+            ::SetRectilinearPoints<float>( grid, n, header, time_dependent_field, dirname );
+            ::SetPointData<float>( grid->GetPointData(), n, header, time_dependent_field, dirname );
         }
         else if ( header.data == "double" )
         {
-            ::SetRectilinearPoints<double>( grid, n, has_data_section, header, time_dependent_field,
-                                            dirname );
-            ::SetPointData<double>( grid->GetPointData(), n, has_data_section, header,
-                                    time_dependent_field, dirname );
+            ::SetRectilinearPoints<double>( grid, n, header, time_dependent_field, dirname );
+            ::SetPointData<double>( grid->GetPointData(), n, header, time_dependent_field,
+                                    dirname );
         }
         else if ( header.data == "integer" )
         {
-            ::SetRectilinearPoints<int>( grid, n, has_data_section, header, time_dependent_field,
-                                         dirname );
-            ::SetPointData<int>( grid->GetPointData(), n, has_data_section, header,
-                                 time_dependent_field, dirname );
+            ::SetRectilinearPoints<int>( grid, n, header, time_dependent_field, dirname );
+            ::SetPointData<int>( grid->GetPointData(), n, header, time_dependent_field, dirname );
         }
         else if ( header.data == "short" )
         {
-            ::SetRectilinearPoints<short>( grid, n, has_data_section, header, time_dependent_field,
-                                           dirname );
-            ::SetPointData<short>( grid->GetPointData(), n, has_data_section, header,
-                                   time_dependent_field, dirname );
+            ::SetRectilinearPoints<short>( grid, n, header, time_dependent_field, dirname );
+            ::SetPointData<short>( grid->GetPointData(), n, header, time_dependent_field, dirname );
         }
         else if ( header.data == "byte" )
         {
-            ::SetRectilinearPoints<char>( grid, n, has_data_section, header, time_dependent_field,
-                                          dirname );
-            ::SetPointData<char>( grid->GetPointData(), n, has_data_section, header,
-                                  time_dependent_field, dirname );
+            ::SetRectilinearPoints<char>( grid, n, header, time_dependent_field, dirname );
+            ::SetPointData<char>( grid->GetPointData(), n, header, time_dependent_field, dirname );
         }
     }
 

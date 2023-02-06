@@ -50,8 +50,7 @@ public:
         nspace( 3 ),
         veclen( 0 ),
         data( "float" ),
-        field( "union" ),
-        has_data_section( false )
+        field( "union" )
     {
     }
 
@@ -70,7 +69,6 @@ public:
         stream << indent << "veclen: " << veclen << std::endl;
         stream << indent << "data: " << data << std::endl;
         stream << indent << "field: " << data << std::endl;
-        stream << indent << "has data section: " << std::boolalpha << has_data_section << std::endl;
     }
 
 public:
@@ -83,7 +81,6 @@ public:
     int veclen;
     std::string data;
     std::string field;
-    bool has_data_section;
 };
 
 class AvsFieldDataMeta
@@ -93,6 +90,7 @@ public:
         type( "coord" ),
         n( 1 ),
         file( nullptr ),
+        is_relative( true ),
         filetype( "binary" ),
         skip( 0 ),
         offset( 0 ),
@@ -101,11 +99,25 @@ public:
         value( nullptr )
     {
     }
+    AvsFieldDataMeta( AvsFieldDataMeta& other ):
+        type( other.type ),
+        n( other.n ),
+        file( other.file ),
+        is_relative( other.is_relative ),
+        filetype( other.filetype ),
+        skip( other.skip ),
+        offset( other.offset ),
+        stride( other.stride ),
+        close( other.close ),
+        value( other.value )
+    {
+    }
 
 public:
     std::string type;
     int n;
     std::shared_ptr<std::string> file;
+    bool is_relative;
     std::string filetype;
     int skip;
     int offset;
@@ -154,8 +166,31 @@ public:
 public:
     AvsFieldTimeDependentField& operator=( const AvsFieldTimeDependentField& other )
     {
-        coords = other.coords;
-        variables = other.variables;
+        // Deep copy
+        for ( int i = 0; i < 3; ++i )
+        {
+            if ( other.coords[i] )
+            {
+                coords[i] = std::make_shared<cvt::detail::AvsFieldDataMeta>( *other.coords[i] );
+            }
+            else
+            {
+                coords[i] = nullptr;
+            }
+        }
+        variables.resize( other.variables.size() );
+        for ( int i = 0; i < other.variables.size(); ++i )
+        {
+            if ( other.variables[i] )
+            {
+                variables[i] =
+                    std::make_shared<cvt::detail::AvsFieldDataMeta>( *other.variables[i] );
+            }
+            else
+            {
+                variables[i] = nullptr;
+            }
+        }
 
         return *this;
     }
@@ -207,51 +242,42 @@ public:
 };
 
 cvt::VtkXmlStructuredGrid GetVtkDataFromIrregularAvsField(
-    int n, std::filesystem::path dirname, bool has_data_section,
-    const cvt::detail::AvsFieldHeader& header,
+    int n, std::filesystem::path dirname, const cvt::detail::AvsFieldHeader& header,
     const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field );
 cvt::VtkXmlImageData GetVtkDataFromUniformAvsField(
-    int n, std::filesystem::path dirname, bool has_data_section,
-    const cvt::detail::AvsFieldHeader& header,
+    int n, std::filesystem::path dirname, const cvt::detail::AvsFieldHeader& header,
     const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field );
 cvt::VtkXmlRectilinearGrid GetVtkDataFromRectilinearAvsField(
-    int n, std::filesystem::path dirname, bool has_data_section,
-    const cvt::detail::AvsFieldHeader& header,
+    int n, std::filesystem::path dirname, const cvt::detail::AvsFieldHeader& header,
     const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field );
 
 template <typename T>
 T GetVtkDataFromAvsField(
-    int n, std::filesystem::path dirname, bool has_data_section,
-    const cvt::detail::AvsFieldHeader& header,
+    int n, std::filesystem::path dirname, const cvt::detail::AvsFieldHeader& header,
     const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field );
 
 template <>
 inline cvt::VtkXmlStructuredGrid GetVtkDataFromAvsField<cvt::VtkXmlStructuredGrid>(
-    int n, std::filesystem::path dirname, bool has_data_section,
-    const cvt::detail::AvsFieldHeader& header,
+    int n, std::filesystem::path dirname, const cvt::detail::AvsFieldHeader& header,
     const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field )
 {
-    return cvt::detail::GetVtkDataFromIrregularAvsField( n, dirname, has_data_section, header,
-                                                         time_dependent_field );
+    return cvt::detail::GetVtkDataFromIrregularAvsField( n, dirname, header, time_dependent_field );
 }
 
 template <>
 inline cvt::VtkXmlImageData GetVtkDataFromAvsField<cvt::VtkXmlImageData>(
-    int n, std::filesystem::path dirname, bool has_data_section,
-    const cvt::detail::AvsFieldHeader& header,
+    int n, std::filesystem::path dirname, const cvt::detail::AvsFieldHeader& header,
     const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field )
 {
-    return cvt::detail::GetVtkDataFromUniformAvsField( n, dirname, has_data_section, header,
-                                                       time_dependent_field );
+    return cvt::detail::GetVtkDataFromUniformAvsField( n, dirname, header, time_dependent_field );
 }
 
 template <>
 inline cvt::VtkXmlRectilinearGrid GetVtkDataFromAvsField<cvt::VtkXmlRectilinearGrid>(
-    int n, std::filesystem::path dirname, bool has_data_section,
-    const cvt::detail::AvsFieldHeader& header,
+    int n, std::filesystem::path dirname, const cvt::detail::AvsFieldHeader& header,
     const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field )
 {
-    return cvt::detail::GetVtkDataFromRectilinearAvsField( n, dirname, has_data_section, header,
+    return cvt::detail::GetVtkDataFromRectilinearAvsField( n, dirname, header,
                                                            time_dependent_field );
 }
 
@@ -260,11 +286,9 @@ class AvsFieldTimeSeriesIterator
 {
 public:
     AvsFieldTimeSeriesIterator(
-        std::filesystem::path dirname, bool has_data_section,
-        const cvt::detail::AvsFieldHeader& header,
+        std::filesystem::path dirname, const cvt::detail::AvsFieldHeader& header,
         const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field, int c ):
         dirname( dirname ),
-        has_data_section( has_data_section ),
         header( header ),
         time_dependent_field( time_dependent_field ),
         current( c )
@@ -274,7 +298,7 @@ public:
 public:
     T operator*() const
     {
-        return cvt::detail::GetVtkDataFromAvsField<T>( current, dirname, has_data_section, header,
+        return cvt::detail::GetVtkDataFromAvsField<T>( current, dirname, header,
                                                        time_dependent_field );
     }
     cvt::detail::AvsFieldTimeSeriesIterator<T>& operator++()
@@ -299,7 +323,6 @@ public:
 
 private:
     std::filesystem::path dirname;
-    bool has_data_section;
     const cvt::detail::AvsFieldHeader& header;
     const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field;
     int current;
@@ -310,31 +333,24 @@ class AvsFieldTimeSeriesContainer
 {
 public:
     AvsFieldTimeSeriesContainer(
-        std::filesystem::path dirname, bool has_data_section,
-        const cvt::detail::AvsFieldHeader& header,
+        std::filesystem::path dirname, const cvt::detail::AvsFieldHeader& header,
         const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field ):
-        dirname( dirname ),
-        has_data_section( has_data_section ),
-        header( header ),
-        time_dependent_field( time_dependent_field )
+        dirname( dirname ), header( header ), time_dependent_field( time_dependent_field )
     {
     }
 
 public:
     AvsFieldTimeSeriesIterator<T> begin() const
     {
-        return AvsFieldTimeSeriesIterator<T>( dirname, has_data_section, header,
-                                              time_dependent_field, 0 );
+        return AvsFieldTimeSeriesIterator<T>( dirname, header, time_dependent_field, 0 );
     }
     AvsFieldTimeSeriesIterator<T> end() const
     {
-        return AvsFieldTimeSeriesIterator<T>( dirname, has_data_section, header,
-                                              time_dependent_field, header.nstep );
+        return AvsFieldTimeSeriesIterator<T>( dirname, header, time_dependent_field, header.nstep );
     }
 
 private:
     std::filesystem::path dirname;
-    bool has_data_section;
     const cvt::detail::AvsFieldHeader& header;
     const std::vector<cvt::detail::AvsFieldTimeDependentField>& time_dependent_field;
 };
@@ -428,7 +444,7 @@ public:
     cvt::VtkXmlStructuredGrid getAsIrregular( int n ) const
     {
         return cvt::detail::GetVtkDataFromAvsField<cvt::VtkXmlStructuredGrid>(
-            n, dirname, has_data_section, header, time_dependent_field );
+            n, dirname, header, time_dependent_field );
     }
     /**
      * Get a VTK UniformGrid from an uniform grid.
@@ -437,8 +453,8 @@ public:
      */
     cvt::VtkXmlImageData getAsUniform( int n ) const
     {
-        return cvt::detail::GetVtkDataFromAvsField<cvt::VtkXmlImageData>(
-            n, dirname, has_data_section, header, time_dependent_field );
+        return cvt::detail::GetVtkDataFromAvsField<cvt::VtkXmlImageData>( n, dirname, header,
+                                                                          time_dependent_field );
     }
     /**
      * Get a VTK RectilinearGrid from an uniform grid.
@@ -474,7 +490,7 @@ public:
         const
     {
         return cvt::detail::AvsFieldTimeSeriesContainer<cvt::VtkXmlStructuredGrid>(
-            dirname, has_data_section, header, time_dependent_field );
+            dirname, header, time_dependent_field );
     }
     /**
      * Get an interface to iterate each time step file format.
@@ -494,7 +510,7 @@ public:
     cvt::detail::AvsFieldTimeSeriesContainer<cvt::VtkXmlImageData> eachTimeStepAsUnion() const
     {
         return cvt::detail::AvsFieldTimeSeriesContainer<cvt::VtkXmlImageData>(
-            dirname, has_data_section, header, time_dependent_field );
+            dirname, header, time_dependent_field );
     }
     /**
      * Get an interface to iterate each time step file format.
@@ -515,14 +531,11 @@ public:
         const
     {
         return cvt::detail::AvsFieldTimeSeriesContainer<cvt::VtkXmlRectilinearGrid>(
-            dirname, has_data_section, header, time_dependent_field );
+            dirname, header, time_dependent_field );
     }
 
 private:
     std::filesystem::path dirname;
-    std::shared_ptr<std::ifstream> fld;
-    bool has_data_section;
-    std::ifstream::pos_type data_section_head;
     cvt::detail::AvsFieldHeader header;
     std::vector<cvt::detail::AvsFieldTimeDependentField> time_dependent_field;
 };
