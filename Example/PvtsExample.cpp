@@ -24,11 +24,11 @@ void Pvts2Kvsml( const std::string& directory, const std::string& base, const st
 {
     std::cout << "Reading " << src << " ..." << std::endl;
     cvt::VtkXmlPStructuredGrid input_pvts( src );
-    std::cout << "#piece: " << input_pvts.number_of_pieces() << std::endl;
+    std::cout << "#piece: " << input_pvts.numberOfPieces() << std::endl;
 
     int last_time_step = 0;
     int time_step = 0;
-    int sub_volume_count = input_pvts.number_of_pieces();
+    int sub_volume_count = input_pvts.numberOfPieces();
     int sub_volume_id = 1;
 
     std::shared_ptr<cvt::UnstructuredPfi> pfi;

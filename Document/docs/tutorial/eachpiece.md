@@ -16,12 +16,12 @@
 
 FileFormat, Importer, KVSオブジェクトとExporterについては[基本的な使用方法](basics.md)を確認してください.
 
-分散データクラスはnumber_of_piecesメンバを持ち, 部分領域数を取得することができます.
+分散データクラスはnumberOfPiecesメンバを持ち, 部分領域数を取得することができます.
 
 ```c++
     std::cout << "reading " << src << " ..." << std::endl;
     cvt::VtkXmlPUnstructuredGrid input_pvtu( src );
-    std::cout << "#piece: " << input_pvtu.number_of_pieces() << std::endl;
+    std::cout << "#piece: " << input_pvtu.numberOfPieces() << std::endl;
 ```
 
 分散ファイルから部分領域FileFormatを生成する方法として, `eachPiece` メンバを使用します.
