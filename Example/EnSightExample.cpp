@@ -82,6 +82,12 @@ void Case2Kvsml( const std::string& directory, const std::string& base, const st
                     kvs::UnstructuredVolumeObject* object = &importer;
                     object->print( std::cout, kvs::Indent( 6 ) );
 
+                    if ( object->cellType() ==
+                         kvs::UnstructuredVolumeObject::CellType::UnknownCellType )
+                    {
+                        continue;
+                    }
+
                     auto local_base =
                         std::string( base ) + "_" + std::to_string( object->cellType() );
 
@@ -127,6 +133,7 @@ void Case2Kvsml( const std::string& directory, const std::string& base, const st
         e.second.write( directory, local_base );
         // or
         // e.second.write( "<directory>/<local_base>.pfi" );
+        e.second.print( std::cout );
 
         pfl.registerPfi( directory, local_base );
     }

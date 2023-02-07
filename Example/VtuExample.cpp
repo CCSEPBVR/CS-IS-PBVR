@@ -62,6 +62,8 @@ void Vtu2Kvsml( const std::string& directory, const std::string& base, const std
         // or
         // pfi.write( "<directory>/<local_base>.pfi" );
 
+        pfi.print( std::cout, 2 );
+
         pfl.registerPfi( directory, local_base );
     }
 
@@ -120,6 +122,7 @@ void SeriesVtu2Kvsml( const std::string& directory, const std::string& base,
     {
         std::string local_base = std::string( base ) + "_" + std::to_string( e.first );
         e.second.write( directory, local_base );
+        e.second.print( std::cout );
 
         pfl.registerPfi( directory, local_base );
     }

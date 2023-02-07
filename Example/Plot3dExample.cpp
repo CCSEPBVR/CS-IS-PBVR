@@ -105,6 +105,7 @@ void Plot3d2Kvsml( const std::string& directory, const std::string& base, const 
     {
         std::string local_base = std::string( base ) + "_" + std::to_string( e.first );
         e.second.write( directory, local_base );
+        e.second.print( std::cout );
 
         pfl.registerPfi( directory, local_base );
     }

@@ -116,6 +116,7 @@ void AvsUcd2Kvsml( const std::string& directory, const std::string& base, const 
         cvt::UnstructuredPfi pfi( object->veclen(), last_time_step, sub_volume_count );
         pfi.registerObject( &exporter, time_step, sub_volume_id );
         pfi.write( directory, local_base );
+        pfi.print( std::cout, 2 );
 
         pfl.registerPfi( directory, local_base );
     }

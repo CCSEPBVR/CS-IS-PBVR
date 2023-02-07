@@ -115,5 +115,6 @@ void Cgns2Kvsml( const std::string& directory, const std::string& base, const st
         e.second.write( directory, local_base );
         // or
         // e.second.write( "<directory>/<local_base>.pfi" );
+        e.second.print( std::cout );
     }
 }
