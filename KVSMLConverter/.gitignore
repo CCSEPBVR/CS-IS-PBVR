@@ -1,0 +1,9 @@
+# Editor
+*.swp
+__pycache__
+
+# Build
+build/
+latex/
+html/
+Release

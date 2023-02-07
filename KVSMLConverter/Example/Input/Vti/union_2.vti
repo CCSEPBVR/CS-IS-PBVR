@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<VTKFile type="ImageData" version="0.1" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+  <ImageData WholeExtent="0 2 0 3 0 4" Origin="0 0 0" Spacing="1 1 1" Direction="1 0 0 0 1 0 0 0 1">
+    <Piece Extent="0 2 0 3 0 4"                                                       >
+      <PointData>
+        <DataArray type="Float32" Name="distance" format="appended" RangeMin="2"                    RangeMax="7.3851647377"         offset="0"                   />
+      </PointData>
+      <CellData>
+      </CellData>
+    </Piece>
+  </ImageData>
+  <AppendedData encoding="base64">
+   _AQAAAACAAADwAAAAhgAAAA==eJxjYGBwACIgbgDTVU1RDvd628F8EF3VNAvIXuCQaLjUYW3CZhQ1IPrNzTwHi6Q+MB9Ew9SeUlzlsGL3dhRzkNXAzH1zcx3YXJDa6g+HUexCNgdZzbbDxx2kak47PBa/BlR/ACy2V/o8XK5sySUwH0QXHrkDVPPAQVv7sYNr8BsHANvUZlo=
+  </AppendedData>
+</VTKFile>
