@@ -74,6 +74,7 @@ void Pvtu2Kvsml( const std::string& directory, const std::string& base, const st
     {
         std::string local_base = std::string( base ) + "_" + std::to_string( e.first );
         e.second.write( directory, local_base );
+        e.second.print( std::cout );
 
         pfl.registerPfi( directory, local_base );
     }
@@ -169,6 +170,7 @@ void SeriesPvtu2Kvsml( const std::string& directory, const std::string& base,
     {
         std::string local_base = std::string( base ) + "_" + std::to_string( e.first );
         e.second.write( directory, local_base );
+        e.second.print( std::cout );
 
         pfl.registerPfi( directory, local_base );
     }
@@ -227,7 +229,6 @@ void SeriesPvtu2KvsmlWhole( const std::string& directory, const std::string& bas
     {
         std::string local_base = std::string( base ) + "_" + std::to_string( e.first );
         e.second.write( directory, local_base );
-
         e.second.print( std::cout );
 
         pfl.registerPfi( directory, local_base );
