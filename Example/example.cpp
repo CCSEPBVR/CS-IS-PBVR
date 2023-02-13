@@ -29,7 +29,6 @@ void SeriesVti2Kvsml( const std::string& directory, const std::string& base,
 void Vts2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void Pvts2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void AvsUcd2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
-void AvsFld2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void Vtu2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void SeriesVtu2Kvsml( const std::string& directory, const std::string& base,
                       const std::string& src );
@@ -212,24 +211,6 @@ int main( int argc, char** argv )
         src /= "Pvts";
         src /= "example_0.pvts";
         Pvts2Kvsml( output_directory, "example_0", src.string() );
-    }
-    else if ( example_name == "avsfld2kvsml" )
-    {
-        fs::path src = input_directory;
-        src /= "pbvr_sample_data";
-        src /= "fld";
-        src /= "gt5d.fld";
-        fs::path dst = output_directory;
-        mkdir( dst );
-        AvsFld2Kvsml( dst.string(), "gt5d", src.string() );
-    }
-    else if ( example_name == "avsfld2kvsml2" )
-    {
-        fs::path src = input_directory;
-        src /= "tdf.fld";
-        fs::path dst = output_directory;
-        mkdir( dst );
-        AvsFld2Kvsml( dst.string(), "tdf", src.string() );
     }
     else if ( example_name == "avsucd2kvsml" )
     {

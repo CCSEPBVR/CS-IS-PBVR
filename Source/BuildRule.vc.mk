@@ -49,8 +49,7 @@ $(OUTDIR)/Exporter/VtkExport.obj \
 $(OUTDIR)/Exporter/UnstructuredVolumeObjectExporter.obj \
 $(OUTDIR)/Exporter/StructuredVolumeObjectExporter.obj \
 $(OUTDIR)/FileFormat/VtkCompositeDataSetFileFormat.obj \
-$(OUTDIR)/Importer/VtkImport.obj \
-$(OUTDIR)/TimeSeriesFiles/AVS/AvsField.obj
+$(OUTDIR)/Importer/VtkImport.obj
 
 
 {.\PBVRFileInformation\}.cpp{$(OUTDIR)\PBVRFileInformation\}.obj::
