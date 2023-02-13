@@ -16,26 +16,10 @@
 #include "kvs/StructuredVolumeObject"
 
 #include "Exporter/StructuredVolumeObjectExporter.h"
-#include "Exporter/VtkExporter.h"
 #include "FileFormat/KVSML/KvsmlStructuredVolumeObject.h"
 #include "FileFormat/VTK/VtkXmlStructuredGrid.h"
 #include "Importer/VtkImporter.h"
 #include "PBVRFileInformation/UnstructuredPfi.h"
-
-void Vts2Vts( const std::string& dst, const std::string& src )
-{
-    std::cout << "Reading " << src << " ..." << std::endl;
-    cvt::VtkXmlStructuredGrid input_vts( src );
-    cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer( &input_vts );
-
-    kvs::StructuredVolumeObject* object = &importer;
-    object->print( std::cout, kvs::Indent( 2 ) );
-
-    std::cout << "Writing " << dst << " ..." << std::endl;
-    cvt::VtkExporter<cvt::VtkXmlStructuredGrid> exporter( &importer );
-    cvt::VtkXmlStructuredGrid* output_vts = &exporter;
-    output_vts->write( dst );
-}
 
 void Vts2Kvsml( const std::string& directory, const std::string& base, const std::string& src )
 {

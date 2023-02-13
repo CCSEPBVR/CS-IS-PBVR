@@ -14,7 +14,6 @@
 #include "kvs/UnstructuredVolumeObject"
 
 #include "Exporter/UnstructuredVolumeObjectExporter.h"
-#include "Exporter/VtkExporter.h"
 #include "FileFormat/VTK/VtkXmlPUnstructuredGrid.h"
 #include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
 #include "Importer/VtkImporter.h"

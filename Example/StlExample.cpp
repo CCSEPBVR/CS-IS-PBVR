@@ -14,7 +14,6 @@
 #include "kvs/PolygonExporter"
 #include "kvs/PolygonObject"
 
-#include "Exporter/VtkExporter.h"
 #include "FileFormat/STL/Stl.h"
 #include "Importer/VtkImporter.h"
 

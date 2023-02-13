@@ -15,7 +15,6 @@
 #include "kvs/PolygonExporter"
 #include "kvs/PolygonObject"
 
-#include "Exporter/VtkExporter.h"
 #include "FileFormat/VTK/VtkXmlPolyData.h"
 #include "Importer/VtkImporter.h"
 

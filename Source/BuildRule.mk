@@ -45,7 +45,6 @@
 
 OBJECTS := \
 $(OUTDIR)/PBVRFileInformation/UnstructuredPfi.o \
-$(OUTDIR)/Exporter/VtkExport.o \
 $(OUTDIR)/Exporter/UnstructuredVolumeObjectExporter.o \
 $(OUTDIR)/Exporter/StructuredVolumeObjectExporter.o \
 $(OUTDIR)/FileFormat/VtkCompositeDataSetFileFormat.o \
