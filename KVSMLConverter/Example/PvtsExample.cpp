@@ -14,7 +14,6 @@
 #include "kvs/StructuredVolumeObject"
 
 #include "Exporter/StructuredVolumeObjectExporter.h"
-#include "Exporter/VtkExporter.h"
 #include "FileFormat/VTK/VtkXmlPStructuredGrid.h"
 #include "FileFormat/VTK/VtkXmlStructuredGrid.h"
 #include "Importer/VtkImporter.h"

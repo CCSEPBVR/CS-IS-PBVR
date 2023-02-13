@@ -50,9 +50,7 @@ add_executable(
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Importer/VtkImport.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Exporter/StructuredVolumeObjectExporter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/Exporter/UnstructuredVolumeObjectExporter.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Source/Exporter/VtkExport.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/VtkCompositeDataSetFileFormat.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Source/TimeSeriesFiles/AVS/AvsField.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Source/PBVRFileInformation/UnstructuredPfi.cpp)
 target_include_directories(${TARGET_NAME}
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Source)
