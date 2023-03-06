@@ -75,13 +75,6 @@ $<
 $<
 <<
 
-{.\TimeSeriesFiles\AVS\}.cpp{$(OUTDIR)\TimeSeriesFiles\AVS\}.obj::
-	IF NOT EXIST $(OUTDIR)\TimeSeriesFiles $(MKDIR) $(OUTDIR)\TimeSeriesFiles
-	IF NOT EXIST $(OUTDIR)\TimeSeriesFiles\AVS $(MKDIR) $(OUTDIR)\TimeSeriesFiles\AVS
-	$(CPP) /c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) /Fo$(OUTDIR)\TimeSeriesFiles\AVS\ @<<
-$<
-<<
-
 
 install::
 	IF NOT EXIST $(INSTALL_DIR)\include $(MKDIR) $(INSTALL_DIR)\include
@@ -91,8 +84,6 @@ install::
 # FileFormat
 	IF NOT EXIST $(INSTALL_DIR)\include\FileFormat $(MKDIR) $(INSTALL_DIR)\include\FileFormat
 	$(INSTALL) .\FileFormat\*.h $(INSTALL_DIR)\include\FileFormat
-	IF NOT EXIST $(INSTALL_DIR)\include\FileFormat\AVS $(MKDIR) $(INSTALL_DIR)\include\FileFormat\AVS
-	$(INSTALL) .\FileFormat\AVS\*.h $(INSTALL_DIR)\include\FileFormat\AVS
 	IF NOT EXIST $(INSTALL_DIR)\include\FileFormat\CGNS $(MKDIR) $(INSTALL_DIR)\include\FileFormat\CGNS
 	$(INSTALL) .\FileFormat\CGNS\*.h $(INSTALL_DIR)\include\FileFormat\CGNS
 	IF NOT EXIST $(INSTALL_DIR)\include\FileFormat\KVSML $(MKDIR) $(INSTALL_DIR)\include\FileFormat\KVSML
@@ -112,5 +103,3 @@ install::
 	$(INSTALL) .\TimeSeriesFiles\*.h $(INSTALL_DIR)\include\TimeSeriesFiles
 	IF NOT EXIST $(INSTALL_DIR)\include\TimeSeriesFiles\EnSight $(MKDIR) $(INSTALL_DIR)\include\TimeSeriesFiles\EnSight
 	$(INSTALL) .\TimeSeriesFiles\EnSight\*.h $(INSTALL_DIR)\include\TimeSeriesFiles\EnSight
-	IF NOT EXIST $(INSTALL_DIR)\include\TimeSeriesFiles\AVS $(MKDIR) $(INSTALL_DIR)\include\TimeSeriesFiles\AVS
-	$(INSTALL) .\TimeSeriesFiles\AVS\*.h $(INSTALL_DIR)\include\TimeSeriesFiles\AVS
