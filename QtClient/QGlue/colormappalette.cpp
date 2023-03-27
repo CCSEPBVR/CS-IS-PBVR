@@ -3,7 +3,6 @@
 #include <QMouseEvent>
 #include <QDebug>
 #include <QApplication>
-#include <QDesktopWidget>
 
 //ADD BY)T.Osaki 2020.02.28
 #include <colorundoredocommand.h>
@@ -26,7 +25,8 @@ ColorMapPalette::ColorMapPalette( QWidget* parent ):
     m_resolution(256)
 {
     //    MOD BY)T.Osaki 2020.04.28
-    pixelRatio=QApplication::desktop()->devicePixelRatioF();
+//    pixelRatio=QPaintDevice::devicePixelRatioF();
+    pixelRatio=parent->screen()->devicePixelRatio();
 //    this->setCaption( "Color map palette " + kvs::String( ::InstanceCounter++ ).toStdString() );
     m_upper_edge_color = DEFAULT_BORDER_DARK;
     m_lower_edge_color = DEFAULT_BORDER;

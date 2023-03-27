@@ -1,7 +1,6 @@
 #include "screen.h"
 #include "QGlue/renderarea.h"
 
-#include <QDesktopWidget>
 
 #include "Client/KeyFrameAnimation.h"
 #include "Panels/animationcontrols.h"
@@ -31,7 +30,9 @@ RenderArea::RenderArea( QWidget* parent_surface):
 {
 
     Q_UNUSED( parent_surface);
-    pixelRatio= QApplication::desktop()->devicePixelRatioF();
+//    pixelRatio=QPaintDevice::devicePixelRatioF();
+//    pixelRatio=2;
+    pixelRatio = parent_surface->devicePixelRatio();
 
     this->m_scene->background()->setColor( kvs::RGBAColor(0,0,22,1.0f) );
     this->i_w= 620;//Qthis->width();
@@ -219,7 +220,7 @@ void RenderArea::onInitializeGL( void )
 void RenderArea::onResizeGL(int w, int h)
 {
     //    MOD BY)T.Osaki 2020.04.28
-    float scale= QApplication::desktop()->devicePixelRatioF();
+    float scale= QPaintDevice::devicePixelRatioF();
     int h_scaled = h * scale;
     int w_scaled = w  * scale;
 
@@ -619,7 +620,7 @@ void RenderArea::mousePressEvent( QMouseEvent *event)
 
     bool BTN_LEFT  = event->buttons()   & Qt::LeftButton;
     bool BTN_RIGHT = event->buttons()   & Qt::RightButton;
-    bool BTN_MID   = event->buttons()   & Qt::MidButton;
+    bool BTN_MID   = event->buttons()   & Qt::MiddleButton;
 
     int mode =-1;
 

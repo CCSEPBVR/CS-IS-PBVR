@@ -1,6 +1,5 @@
 #include "QGlue/legendbar.h"
 #include <QApplication>
-#include <QDesktopWidget>
 #define DEFAULT_MIN 0.0
 #define DEFAULT_MAX 1.0
 #define DEFAULT_MARGIN 4
@@ -36,7 +35,8 @@ LegendBar::LegendBar( kvs::ScreenBase* screen, const Command& command ) :
     minLabel.setText(QString("0"), Qt::black);
     maxLabel.setText(QString("1"), Qt::black);
     //    MOD BY)T.Osaki 2020.04.28
-    pixelRatio=QApplication::desktop()->devicePixelRatioF();
+//    pixelRatio=QApplication::desktop()->devicePixelRatioF();
+    pixelRatio=2;
 }
 /*===========================================================================*/
 /**

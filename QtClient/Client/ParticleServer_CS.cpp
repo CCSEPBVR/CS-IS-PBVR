@@ -23,7 +23,6 @@
 
 #include "v3defines.h"
 #include "timer_simple.h"
-#include "ParamExTransFunc.h"
 
 
 #ifdef KVS_COMPILER_VC
@@ -373,14 +372,19 @@ kvs::PointObject* ParticleServer::getPointObjectFromServer( const VisualizationP
         {
             if ( reply.m_color_nbins[tf] > 0 )
             {
+//                int nbins = reply.m_color_nbins[tf];
+//                size_t* new_bin = new size_t [nbins];//
+//                kvs::UInt64* p = reply.m_color_bins[tf];
+//                for( int i=0;i<nbins;i++){ new_bin[i] = (size_t)p[i];}
+
                 result->m_color_bins[tf] = kvs::visclient::FrequencyTable(
-                            0.0, 1.0, reply.m_color_nbins[tf], reply.m_color_bins[tf],
+                            0.0, 1.0, reply.m_color_nbins[tf], (size_t *)reply.m_color_bins[tf],
                             reply.m_color_bin_names[tf]);
             }
             if ( reply.m_opacity_bins_number[tf] )
             {
                 result->m_opacity_bins[tf] = kvs::visclient::FrequencyTable(
-                            0.0, 1.0, reply.m_opacity_bins_number[tf], reply.m_opacity_bins[tf],
+                            0.0, 1.0, reply.m_opacity_bins_number[tf],(size_t *) reply.m_opacity_bins[tf],
                             reply.m_opacity_bin_names[tf]);
             }
         }

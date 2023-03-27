@@ -564,6 +564,8 @@ void CellByCellMetropolisSampling::generate_particles( const pbvr::UnstructuredV
         const float p = average_density * volume_of_cell;
         size_t nparticles_in_cell = static_cast<size_t>( p );
 
+        std::cout << __FILE__ << ":" << __LINE__ <<  ":" << __func__ << std::endl;
+        std::cout << "nparticles_in_cell = " <<  nparticles_in_cell << std::endl;
         if ( p - nparticles_in_cell > Generator::GetRandomNumber() )
         {
             ++nparticles_in_cell;
@@ -1214,6 +1216,8 @@ void CellByCellMetropolisSampling::generate_particles<kvs::Real32>( const pbvr::
 
                     for ( long particle_id = 0; particle_id < nparticles_in_cell; particle_id++ )
                     {
+                    while ( 1 )
+                    {
                         //Generate N particles
                         density_trial = 0;
 
@@ -1295,6 +1299,7 @@ void CellByCellMetropolisSampling::generate_particles<kvs::Real32>( const pbvr::
                             th_vertex_normals.push_back( normal.x() );
                             th_vertex_normals.push_back( normal.y() );
                             th_vertex_normals.push_back( normal.z() );
+                            break;
                         }
                         else
                         {
@@ -1360,6 +1365,7 @@ void CellByCellMetropolisSampling::generate_particles<kvs::Real32>( const pbvr::
                             else continue;
 #endif
                         }
+                    } // while loop
                     }
                 }
                 else                      // if( m_transfunc_synthesizer )

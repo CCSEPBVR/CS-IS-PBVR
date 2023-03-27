@@ -40,7 +40,7 @@ void RenderoptionPanel::updateCmd2UI()
     this->ui->resolutionHeight->setValue(resolution_height_level);
     this->ui->resolutionWidth->setValue(resolution_width_level);
     this->ui->particleDensity->setValue(extCommand->m_parameter.m_particle_density);
-    this->ui->particleLimit->setValue(extCommand->m_parameter.m_particle_limit);
+    this->ui->particleLimit->setValue(extCommand->m_parameter.m_particle_limit / 1000);
     this->ui->dataSizeLimit->setValue(extCommand->m_parameter.particle_data_size_limit);
 }
 
@@ -59,7 +59,7 @@ void RenderoptionPanel::onParticleDensityChanged(double val)
  */
 void RenderoptionPanel::onParticleLimitChanged(int val)
 {
-    plimitlevel=val;
+    plimitlevel=val * 1000;
 }
 
 /**

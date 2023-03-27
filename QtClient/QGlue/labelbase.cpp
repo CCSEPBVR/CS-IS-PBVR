@@ -8,7 +8,6 @@
 #include <Panels/timecontrolpanel.h>
 #include <QGlue/renderarea.h>
 #include <QApplication>
-#include <QDesktopWidget>
 
 namespace QGlue
 {
@@ -17,7 +16,7 @@ Label::Label(RenderArea *screen)
 {
     this->m_screen=screen;
     //    MOD BY)T.Osaki 2020.04.28
-    pixelRatio=QApplication::desktop()->devicePixelRatioF();
+    pixelRatio=QPaintDevice::devicePixelRatioF();
     this->setText(QString("#"));
     this->updateBitmap();
 }

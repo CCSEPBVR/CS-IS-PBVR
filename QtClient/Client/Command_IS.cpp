@@ -688,14 +688,15 @@ void Command::postUpdate()
         }
     }
     //    ADD BY)T.Osaki 2020.03.16
-    if(m_server_subpixel_level != m_local_subpixel_level){
+    /*if(m_server_subpixel_level != m_local_subpixel_level){
         m_parameter.m_detailed_subpixel_level = m_server_subpixel_level;
     }else{
         m_parameter.m_detailed_subpixel_level = m_local_subpixel_level;
     }
     if(m_parameter.m_client_server_mode != 0){
         m_screen->setRenderSubPixelLevel(m_parameter.m_detailed_subpixel_level);
-    }
+    }*/
+    m_parameter.m_detailed_subpixel_level =  m_local_subpixel_level;
     //    m_screen->recreateRenderImageBuffer(m_parameter.m_detailed_subpixel_level);
 #ifdef CPUMODE
     m_screen->setRenderSubPixelLevel(m_parameter.m_detailed_subpixel_level );

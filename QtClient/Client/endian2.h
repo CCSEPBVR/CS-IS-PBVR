@@ -21,6 +21,8 @@
 #else
 #  if defined(__i386) || defined(__x86_64)
 #    define PBVR_BYTE_ORDER PBVR_LITTLE_ENDIAN
+#  elif defined(__arm64)
+#    define __PBVR_BYTE_ORDER __PBVR_LITTLE_ENDIAN
 #  elif defined(__sparc)
 #    define __PBVR_BYTE_ORDER __PBVR_BIG_ENDIAN
 #  else

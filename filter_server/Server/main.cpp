@@ -2117,6 +2117,9 @@ int main( int argc, char** argv )
 
                         param.m_sampling_step = CalculateSamplingStep( fil );
                         param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
+                        
+                        std::cout << "param.m_subpixel_level = " << param.m_subpixel_level << std::endl;
+                        std::cout << "param.m_repeat_level = " << param.m_repeat_level << std::endl;
 
                         VariableRange vr;
 

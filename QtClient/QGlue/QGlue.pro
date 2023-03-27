@@ -1,7 +1,7 @@
 TARGET   = QGlue
 TEMPLATE = lib
 CONFIG  += static
-QT      += core gui opengl  widgets
+QT += core gui opengl widgets openglwidgets
 
 #PRECOMPILED_HEADER=stable.h
 

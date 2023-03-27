@@ -9,7 +9,6 @@
 #include <QBitmap>
 #include <QBuffer>
 #include <QString>
-#include <QGLFunctions>
 // Default parameters.
 //KVS2.7.0
 //MOD BY)T.Osaki 2020.06.04

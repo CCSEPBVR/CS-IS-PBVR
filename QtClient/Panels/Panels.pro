@@ -2,7 +2,7 @@ TARGET   = Panels
 TEMPLATE = lib
 CONFIG += static
 #QT       += core gui opengl openglextensions widgets
-QT       += core gui opengl
+QT += core gui opengl widgets openglwidgets
 
 #PRECOMPILED_HEADER=stable.h
 

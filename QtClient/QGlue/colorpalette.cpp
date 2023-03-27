@@ -2,7 +2,6 @@
 #include <kvs/RGBAColor>
 #include <QMouseEvent>
 #include <QApplication>
-#include <QDesktopWidget>
 // Default parameters.
 namespace { namespace Default
 {
@@ -55,7 +54,8 @@ ColorPalette::ColorPalette(QWidget* parent):
 {
     this->setAutoFillBackground(false);
     //    MOD BY)T.Osaki 2020.04.28
-    pixelRatio=QApplication::desktop()->devicePixelRatioF();
+//    pixelRatio=QPaintDevice::devicePixelRatioF();
+    pixelRatio=pixelRatio=parent->screen()->devicePixelRatio();
 }
 
 ColorPalette::~ColorPalette( void )

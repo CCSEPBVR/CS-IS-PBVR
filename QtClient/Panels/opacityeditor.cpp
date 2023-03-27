@@ -117,7 +117,8 @@ void OpacityEditor::onControlPointChanged(int row, int column)
                 QString text= ui->controlPointTable->item(n,c)->text();
                 row_values[c]=text.toFloat(&valid_float);
                 valid_row=valid_row&valid_float;
-                ui->controlPointTable->item(n,c)->setTextColor(valid_float?Qt::black:Qt::red);
+//                ui->controlPointTable->item(n,c)->setTextColor(valid_float?Qt::black:Qt::red);
+                ui->controlPointTable->item(n,c)->setForeground(valid_float?Qt::black:Qt::red);
             }
             else{
                 valid_row=false;

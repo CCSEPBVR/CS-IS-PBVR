@@ -1,7 +1,7 @@
 TARGET   = Client
 TEMPLATE = lib
 CONFIG += static
-QT       += core gui opengl widgets
+QT += core gui opengl widgets openglwidgets opengl
 
 PRECOMPILED_HEADER=stable.h
 

@@ -136,24 +136,25 @@ void TimecontrolPanel::setServerRange(int min, int max)
         extCommand->m_parameter.m_min_time_step=ui->sliderControl->min;
 }
 #include <QMutex>
-QMutex updateMutex(QMutex::NonRecursive);
+//QMutex updateMutex(QMutex::NonRecursive);
+QMutex mutex;
 void TimecontrolPanel::requestUpdate(  kvs::visclient::VisualizationParameter* param,
                                        kvs::visclient::ReceivedMessage* result)
 {
      std::cout<<"@####TimecontrolPanel::requestUpdate starts"<<std::endl;
-    updateMutex.lock();
+    mutex.lock();
     instance->param_maxTimeStep=param->m_max_server_time_step;
     instance->param_minTimeStep=param->m_min_server_time_step;
     instance->result_maxMergedTimeStep=result->m_max_merged_time_step;
     instance->result_minMergedTimeStep=result->m_min_merged_time_step;
     QEvent* updateEvent= new QEvent((QEvent::Type)QEvent::User);
     QApplication::postEvent(instance,updateEvent);
-    updateMutex.lock();
+    mutex.lock();
 
     param->m_max_time_step=instance->maxValue();
     param->m_min_time_step=instance->minValue();
     std::cout<<"@####TimecontrolPanel::requestUpdate ends"<<std::endl;
-    updateMutex.unlock();
+    mutex.unlock();
 }
 
 void TimecontrolPanel::customEvent(QEvent * event)
@@ -172,7 +173,7 @@ void TimecontrolPanel::customEvent(QEvent * event)
 #endif
     std::cout<<"@@####TimecontrolPanel::on_updateRequest ends"<<std::endl;
 
-    updateMutex.unlock();
+    mutex.unlock();
 }
 
 void TimecontrolPanel::toggleStop(bool val){

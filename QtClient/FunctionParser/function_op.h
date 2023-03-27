@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include "function.h"
 
 
 #define METHOD_EVAL_START(p) \
@@ -356,7 +357,7 @@ private:
         METHOD_EVAL_START( p );
         if ( m_p1 == m_p2 )
         {
-            register double v = m_p1->eval( p );
+            double v = m_p1->eval( p );
             return ( v * v );
         }
         return ( m_p1->eval( p ) * m_p2->eval( p ) );
@@ -1202,7 +1203,7 @@ private:
     {
         METHOD_DEVAL_START( x, p );
         // d(tan(F))/dx = sec(F) * sec(F) * f = f / (cos(F) * cos(F))
-        register double v = std::cos( m_p->eval( p ) );
+        double v = std::cos( m_p->eval( p ) );
         return ( m_p->deval( x, p ) / ( v * v ) );
     };
 
@@ -1296,7 +1297,7 @@ private:
     {
         METHOD_DEVAL_START( x, p );
         // d(pow(F,G))/dx = T(G*f/F + g*logF)
-        register double v = m_p1->eval( p ); // = F
+        double v = m_p1->eval( p ); // = F
         return ( eval( p ) * ( m_p2->eval( p ) * m_p1->deval( x, p ) / v +
                                m_p2->deval( x, p ) * std::log( v ) ) );
     };

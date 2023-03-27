@@ -1,7 +1,6 @@
 #ifndef KVSQS2creen_H
 #define KVSQS2creen_H
 //#include <GL/glew.h>
-#include <QGLFormat>
 #include <QThread>
 #include <QOpenGLWidget>
 #include <qopenglfunctions.h>

@@ -707,11 +707,11 @@ kvs::PointObject* ParticleServer::getPointObjectFromServer( const VisualizationP
         {
             if ( reply.m_color_nbins[tf] > 0 )
             {
-                result->m_color_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, reply.m_color_nbins[tf], reply.m_color_bins[tf] );
+                result->m_color_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, reply.m_color_nbins[tf],(size_t *) reply.m_color_bins[tf] );
             }
             if ( reply.m_opacity_bins_number[tf] )
             {
-                result->m_opacity_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, reply.m_opacity_bins_number[tf], reply.m_opacity_bins[tf] );
+                result->m_opacity_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, reply.m_opacity_bins_number[tf],(size_t *) reply.m_opacity_bins[tf] );
             }
         }
 
