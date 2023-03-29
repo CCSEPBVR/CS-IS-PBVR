@@ -1,0 +1,1567 @@
+/****************************************************************************/
+/**
+ *  @file   PBVRObjectManager.cpp
+ *  @author Insight, Inc.
+ */
+/*----------------------------------------------------------------------------
+ *
+ *  Copyright (c) Visualization Laboratory, Kyoto University.
+ *  All rights reserved.
+ *  See http://www.viz.media.kyoto-u.ac.jp/kvs/copyright/ for details.
+ *
+ *  $Id: ObjectManager.cpp 1802 2014-08-07 09:22:11Z naohisa.sakamoto@gmail.com $
+ */
+/****************************************************************************/
+#include "PBVRObjectManager.h"
+#include <iostream>
+#include <kvs/Camera>
+#include <kvs/Math>
+#include <kvs/Vector2>
+#include <kvs/Vector3>
+#include <kvs/Vector4>
+
+#include "objnameutil.h"
+
+namespace kvs {
+namespace oculus {
+namespace jaea {
+
+/*===========================================================================*/
+/**
+ *  @brief  Creates a new ObjectManager class.
+ */
+/*===========================================================================*/
+PBVRObjectManager::PBVRObjectManager()
+{
+    ObjectBase::setObjectType( kvs::ObjectBase::ObjectManager );
+
+    m_object_tree.clear();
+    m_has_active_object = false;
+    m_object_map.clear();
+
+    m_current_object_id = 0;
+    this->insert_root();
+
+    const kvs::Vec3 min_obj = kvs::Vec3::Constant(  1000000.0f );
+    const kvs::Vec3 max_obj = kvs::Vec3::Constant( -1000000.0f );
+    ObjectBase::setMinMaxObjectCoords( min_obj, max_obj );
+
+    const kvs::Vec3 min_ext = kvs::Vec3::Constant( -3.0f );
+    const kvs::Vec3 max_ext = kvs::Vec3::Constant(  3.0f );
+    ObjectBase::setMinMaxExternalCoords( min_ext, max_ext );
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  Destroys the ObjectManager class.
+ */
+/*===========================================================================*/
+PBVRObjectManager::~PBVRObjectManager()
+{
+    ObjectIterator object = m_object_tree.begin();
+    ObjectIterator last = m_object_tree.end();
+    ++object; // Skip the root object (the object manager)
+    while ( object != last )
+    {
+        delete *object;
+        ++object;
+    }
+
+    m_object_tree.clear();
+    m_object_map.clear();
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Insert a pointer to the object base to the object master.
+ *  @param  object [in] pointer to the object base
+ *  @return object ID
+ */
+/*==========================================================================*/
+int PBVRObjectManager::insert( kvs::ObjectBase* object )
+{
+
+//    std::cerr << "ObjectManager::insert() start." << std::endl;
+
+
+#ifdef CHECK_INITIAL_XFORM
+    {
+        int i;
+        std::string obj_name;
+        kvs::Vec3 e[2];
+        kvs::Vec3 o[2];
+        kvs::Vec3 n;
+
+        std::cerr << "PBVRObjectManager::insert(): object=" << object->name() << std::endl;
+        std::cerr << "before insert ------------------------" << std::endl;
+        i = -1;
+        obj_name = "ObjectManager";
+        e[0] = this->minExternalCoord();
+        e[1] = this->maxExternalCoord();
+        o[0] = this->minObjectCoord();
+        o[1] = this->maxObjectCoord();
+        n = this->normalize();
+        std::cerr << "[" << (i+1) << "] " << obj_name
+                  << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                  << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                  << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                  << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                  << " n> " << n.x() << " " << n.y() << " " << n.z()
+                  << std::endl;
+
+        for (auto map_id : m_object_map) {
+            i++;
+            kvs::ObjectBase* obj = *(map_id.second);
+            obj_name = obj->name();
+            e[0] = obj->minExternalCoord();
+            e[1] = obj->maxExternalCoord();
+            o[0] = obj->minObjectCoord();
+            o[1] = obj->maxObjectCoord();
+            n = obj->normalize();
+            std::cerr << "[" << (i+1) << "] " << obj_name
+                      << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                      << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                      << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                      << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                      << " n> " << n.x() << " " << n.y() << " " << n.z()
+                      << std::endl;
+        }
+   }
+#endif // CHECK_INITIAL_XFORM
+
+//    {
+//        float tmp_m[16]; object->xform().toArray( tmp_m );
+//        kvs::Mat4 m (tmp_m);
+//        std::cerr << "PBVRObjectManager::insert(" << object->name() << ") : before push_centering_xform() : m(object)=" << std::endl;
+//        std::cerr << m << std::endl;
+//    }
+
+
+
+    this->push_centering_xform();
+    {
+
+//        {
+//            float tmp_m[16]; object->xform().toArray( tmp_m );
+//            kvs::Mat4 m (tmp_m);
+//            std::cerr << "PBVRObjectManager::insert(" << object->name() << ") : before update_normalize_parameters() : m(object)=" << std::endl;
+//            std::cerr << m << std::endl;
+//        }
+
+        // Updates the normalize parameters of the object manager and the object.
+#ifdef ENABLE_INITIAL_XFORM_FROM_PARTICLE_ONLY
+        if (object->name() == OBJ_NAME_PARTICLE)
+#endif // ENABLE_INITIAL_XFORM_FROM_PARTICLE_ONLY
+        {
+#ifdef CHECK_INITIAL_XFORM
+            std::cerr << "  ------------------------- call ObjectManager::update_normalize_parameters()" << std::endl;
+#endif // CHECK_INITIAL_XFORM
+            const kvs::Vec3 min_ext = object->minExternalCoord();
+            const kvs::Vec3 max_ext = object->maxExternalCoord();
+            this->update_normalize_parameters( min_ext, max_ext );
+        }
+//        {
+//            float tmp_m[16]; object->xform().toArray( tmp_m );
+//            kvs::Mat4 m (tmp_m);
+//            std::cerr << "PBVRObjectManager::insert(" << object->name() << ") : before object->updateNormalizeParameters() : m(object)=" << std::endl;
+//            std::cerr << m << std::endl;
+//            std::cerr << "obj->objCoord=" << object->minObjectCoord() << " .. " << object->maxObjectCoord() << std::endl;
+//            std::cerr << "obj->extCoord=" << object->minExternalCoord() << " .. " << object->maxExternalCoord() << std::endl;
+//        }
+        object->updateNormalizeParameters();
+
+//        {
+//            float tmp_m[16]; object->xform().toArray( tmp_m );
+//            kvs::Mat4 m (tmp_m);
+//            std::cerr << "PBVRObjectManager::insert(" << object->name() << ") : after object->updateNormalizeParameters() : m(object)=" << std::endl;
+//            std::cerr << m << std::endl;
+//            std::cerr << "obj->objCoord=" << object->minObjectCoord() << " .. " << object->maxObjectCoord() << std::endl;
+//            std::cerr << "obj->extCoord=" << object->minExternalCoord() << " .. " << object->maxExternalCoord() << std::endl;
+//        }
+
+        // Calculate the object ID by counting the number of this method called.
+        // Therefore, we define the object ID as static parameter in this method
+        // and count it.
+        m_current_object_id++;
+
+        // A pair of the object ID and a pointer to the object is inserted to
+        // the object map. The pointer to the object is got by inserting the
+        // object to the object master base.
+        ObjectIterator parent = m_root;
+        ObjectIterator current = m_object_tree.appendChild( parent, object );
+        m_object_map.insert( ObjectPair( m_current_object_id, current ) );
+    }
+    this->pop_centering_xform();
+
+//    {
+//        float tmp_m[16]; object->xform().toArray( tmp_m );
+//        kvs::Mat4 m (tmp_m);
+//        std::cerr << "PBVRObjectManager::insert(" << object->name() << ") : after pop_centering_xform() : m(object)=" << std::endl;
+//        std::cerr << m << std::endl;
+//    }
+
+
+#ifdef CHECK_INITIAL_XFORM
+    {
+        int i;
+        std::string obj_name;
+        kvs::Vec3 e[2];
+        kvs::Vec3 o[2];
+        kvs::Vec3 n;
+
+        std::cerr << "after insert ------------------------" << std::endl;
+        i = -1;
+        obj_name = "ObjectManager";
+        e[0] = this->minExternalCoord();
+        e[1] = this->maxExternalCoord();
+        o[0] = this->minObjectCoord();
+        o[1] = this->maxObjectCoord();
+        n = this->normalize();
+        std::cerr << "[" << (i+1) << "] " << obj_name
+                  << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                  << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                  << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                  << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                  << " n> " << n.x() << " " << n.y() << " " << n.z()
+                  << std::endl;
+
+        for (auto map_id : m_object_map) {
+            i++;
+            kvs::ObjectBase* obj = *(map_id.second);
+            obj_name = obj->name();
+            e[0] = obj->minExternalCoord();
+            e[1] = obj->maxExternalCoord();
+            o[0] = obj->minObjectCoord();
+            o[1] = obj->maxObjectCoord();
+            n = obj->normalize();
+            std::cerr << "[" << (i+1) << "] " << obj_name
+                      << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                      << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                      << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                      << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                      << " n> " << n.x() << " " << n.y() << " " << n.z()
+                      << std::endl;
+        }
+   }
+#endif // CHECK_INITIAL_XFORM
+
+
+//    std::cerr << "ObjectManager::insert() end." << std::endl;
+
+
+    return m_current_object_id;
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Append the object under the parent object specified by ID number.
+ *  @param  id [in] ID of the parent object
+ *  @param  object [in] pointer to the object
+ *  @return object ID
+ */
+/*==========================================================================*/
+int PBVRObjectManager::insert( int id, kvs::ObjectBase* object )
+{
+    // Finds the parent object by the specified ID.
+    ObjectMap::iterator map_id = m_object_map.find( id );
+    if ( map_id == m_object_map.end() ) { return -1; }
+
+#ifdef CHECK_INITIAL_XFORM
+    {
+        int i;
+        std::string obj_name;
+        kvs::Vec3 e[2];
+        kvs::Vec3 o[2];
+        kvs::Vec3 n;
+
+        std::cerr << "PBVRObjectManager::insert(): id=" << id << ", object=" << object->name() << std::endl;
+        std::cerr << "before insert ------------------------" << std::endl;
+        i = -1;
+        obj_name = "ObjectManager";
+        e[0] = this->minExternalCoord();
+        e[1] = this->maxExternalCoord();
+        o[0] = this->minObjectCoord();
+        o[1] = this->maxObjectCoord();
+        n = this->normalize();
+        std::cerr << "[" << (i+1) << "] " << obj_name
+                  << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                  << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                  << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                  << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                  << " n> " << n.x() << " " << n.y() << " " << n.z()
+                  << std::endl;
+
+        for (auto map_id : m_object_map) {
+            i++;
+            kvs::ObjectBase* obj = *(map_id.second);
+            obj_name = obj->name();
+            e[0] = obj->minExternalCoord();
+            e[1] = obj->maxExternalCoord();
+            o[0] = obj->minObjectCoord();
+            o[1] = obj->maxObjectCoord();
+            n = obj->normalize();
+            std::cerr << "[" << (i+1) << "] " << obj_name
+                      << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                      << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                      << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                      << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                      << " n> " << n.x() << " " << n.y() << " " << n.z()
+                      << std::endl;
+        }
+   }
+#endif // CHECK_INITIAL_XFORM
+
+
+    this->push_centering_xform();
+    {
+#ifdef ENABLE_INITIAL_XFORM_FROM_PARTICLE_ONLY
+        if (object->name() == OBJ_NAME_PARTICLE)
+#endif // ENABLE_INITIAL_XFORM_FROM_PARTICLE_ONLY
+        {
+#ifdef CHECK_INITIAL_XFORM
+            std::cerr << "  ------------------------- call ObjectManager::update_normalize_parameters()" << std::endl;
+#endif // CHECK_INITIAL_XFORM
+
+            // Updates the normalize parameters of the object manager and the object.
+            const kvs::Vec3 min_ext = object->minExternalCoord();
+            const kvs::Vec3 max_ext = object->maxExternalCoord();
+            this->update_normalize_parameters( min_ext, max_ext );
+#ifdef ENABLE_INITIAL_XFORM_FROM_PARTICLE_ONLY
+        }
+#endif // ENABLE_INITIAL_XFORM_FROM_PARTICLE_ONLY
+        object->updateNormalizeParameters();
+
+        // Append the object.
+        m_current_object_id++;
+
+        ObjectIterator parent = map_id->second;
+        ObjectIterator current = m_object_tree.appendChild( parent, object );
+        m_object_map.insert( ObjectPair( m_current_object_id, current ) );
+    }
+    this->pop_centering_xform();
+
+#ifdef CHECK_INITIAL_XFORM
+    {
+        int i;
+        std::string obj_name;
+        kvs::Vec3 e[2];
+        kvs::Vec3 o[2];
+        kvs::Vec3 n;
+
+        std::cerr << "after insert ------------------------" << std::endl;
+        i = -1;
+        obj_name = "ObjectManager";
+        e[0] = this->minExternalCoord();
+        e[1] = this->maxExternalCoord();
+        o[0] = this->minObjectCoord();
+        o[1] = this->maxObjectCoord();
+        n = this->normalize();
+        std::cerr << "[" << (i+1) << "] " << obj_name
+                  << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                  << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                  << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                  << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                  << " n> " << n.x() << " " << n.y() << " " << n.z()
+                  << std::endl;
+
+        for (auto map_id : m_object_map) {
+            i++;
+            kvs::ObjectBase* obj = *(map_id.second);
+            obj_name = obj->name();
+            e[0] = obj->minExternalCoord();
+            e[1] = obj->maxExternalCoord();
+            o[0] = obj->minObjectCoord();
+            o[1] = obj->maxObjectCoord();
+            n = obj->normalize();
+            std::cerr << "[" << (i+1) << "] " << obj_name
+                      << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                      << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                      << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                      << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                      << " n> " << n.x() << " " << n.y() << " " << n.z()
+                      << std::endl;
+        }
+   }
+#endif // CHECK_INITIAL_XFORM
+
+    return m_current_object_id;
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Erase the all objects.
+ *  @param  delete_flag [in] deleting the allocated memory flag
+ *
+ *  Erase the all objects, which is registrated in the object manager.
+ *  Simultaniously, the allocated memory region for the all objects is deleted.
+ */
+/*==========================================================================*/
+void PBVRObjectManager::erase( bool delete_flag )
+{
+    ObjectIterator object = m_object_tree.begin();
+    ObjectIterator last = m_object_tree.end();
+    ++object; // skip the root object (the object manager)
+
+    if ( delete_flag )
+    {
+        while ( object != last )
+        {
+            delete *object;
+            ++object;
+        }
+    }
+
+    m_object_tree.clear();
+    m_object_map.clear();
+
+    this->insert_root();
+    this->update_normalize_parameters();
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Erase the object by a specificated object ID.
+ *  @param  id [in] object ID
+ *  @param  delete_flag [in] deleting the allocated memory flag
+ */
+/*==========================================================================*/
+void PBVRObjectManager::erase( int id, bool delete_flag )
+{
+    // Search the object which is specified by given object ID in the
+    // object pointer map. If it isn't found, this method executes nothing.
+    ObjectMap::iterator map_id = m_object_map.find( id );
+    if ( map_id == m_object_map.end() ) { return; }
+
+    // Delete the object.
+    ObjectIterator object = map_id->second; // pointer to the object node
+    if ( delete_flag ) { delete *object; }
+
+    // Erase the object in the object master base.
+    m_object_tree.erase( object );
+
+    // Erase the map component, which is specified by map_id.
+    m_object_map.erase( map_id );
+
+    this->update_normalize_parameters();
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Erase the object by a specificated object name.
+ *  @param  name [in] object name
+ *  @param  delete_flag [in] deleting the allocated memory flag
+ */
+/*==========================================================================*/
+void PBVRObjectManager::erase( std::string name, bool delete_flag )
+{
+    ObjectMap::iterator map_id = m_object_map.begin();
+    ObjectMap::iterator map_end = m_object_map.end();
+    while ( map_id != map_end )
+    {
+        ObjectIterator object = map_id->second;
+        if ( (*object)->name() == name )
+        {
+            // Erase the object specified by the name.
+            if ( delete_flag ) { delete *object; }
+            m_object_tree.erase( object );
+            m_object_map.erase( map_id );
+
+            this->update_normalize_parameters();
+            break;
+        }
+        ++map_id;
+    }
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Change the object by a specificated object ID.
+ *  @param  id [in] object ID registered in the object manager
+ *  @param  object [in] pointer to the inserting object
+ *  @param  delete_flag [in] deleting the allocated memory flag
+ */
+/*==========================================================================*/
+void PBVRObjectManager::change( int id, ObjectBase* object, bool delete_flag )
+{
+
+#ifdef CHECK_INITIAL_XFORM
+    {
+        int i;
+        std::string obj_name;
+        kvs::Vec3 e[2];
+        kvs::Vec3 o[2];
+        kvs::Vec3 n;
+
+        std::cerr << "PBVRObjectManager::change(): id=" << id << ", object=" << object->name() << std::endl;
+        std::cerr << "before change ------------------------" << std::endl;
+        i = -1;
+        obj_name = "ObjectManager";
+        e[0] = this->minExternalCoord();
+        e[1] = this->maxExternalCoord();
+        o[0] = this->minObjectCoord();
+        o[1] = this->maxObjectCoord();
+        n = this->normalize();
+        std::cerr << "[" << (i+1) << "] " << obj_name
+                  << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                  << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                  << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                  << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                  << " n> " << n.x() << " " << n.y() << " " << n.z()
+                  << std::endl;
+
+        for (auto map_id : m_object_map) {
+            i++;
+            kvs::ObjectBase* obj = *(map_id.second);
+            obj_name = obj->name();
+            e[0] = obj->minExternalCoord();
+            e[1] = obj->maxExternalCoord();
+            o[0] = obj->minObjectCoord();
+            o[1] = obj->maxObjectCoord();
+            n = obj->normalize();
+            std::cerr << "[" << (i+1) << "] " << obj_name
+                      << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                      << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                      << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                      << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                      << " n> " << n.x() << " " << n.y() << " " << n.z()
+                      << std::endl;
+        }
+   }
+#endif // CHECK_INITIAL_XFORM
+
+
+    // Search the object which is specified by given object ID in the
+    // object pointer map. If it isn't found, this method executes nothing.
+    ObjectMap::iterator map_id = m_object_map.find( id );
+    if ( map_id == m_object_map.end() ) { return; }
+
+    // Save the xform of the object specified by the given ID.
+    kvs::ObjectBase* registered_object = *(map_id->second);
+    const kvs::Xform x = registered_object->xform();
+
+    // Erase the old object
+    if ( delete_flag ) { delete registered_object; }
+
+    // Change the object
+    object->updateNormalizeParameters();
+    object->setXform( x );
+    *(map_id->second) = object;
+
+#ifdef ENABLE_INITIAL_XFORM_FROM_PARTICLE_ONLY
+//    if (object->name() == OBJ_NAME_PARTICLE)
+#endif // ENABLE_INITIAL_XFORM_FROM_PARTICLE_ONLY
+    {
+        this->update_normalize_parameters();
+    }
+
+#ifdef CHECK_INITIAL_XFORM
+    {
+        int i;
+        std::string obj_name;
+        kvs::Vec3 e[2];
+        kvs::Vec3 o[2];
+        kvs::Vec3 n;
+
+        std::cerr << "after change(id) ------------------------" << std::endl;
+        i = -1;
+        obj_name = "ObjectManager";
+        e[0] = this->minExternalCoord();
+        e[1] = this->maxExternalCoord();
+        o[0] = this->minObjectCoord();
+        o[1] = this->maxObjectCoord();
+        n = this->normalize();
+        std::cerr << "[" << (i+1) << "] " << obj_name
+                  << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                  << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                  << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                  << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                  << " n> " << n.x() << " " << n.y() << " " << n.z()
+                  << std::endl;
+
+        for (auto map_id : m_object_map) {
+            i++;
+            kvs::ObjectBase* obj = *(map_id.second);
+            obj_name = obj->name();
+            e[0] = obj->minExternalCoord();
+            e[1] = obj->maxExternalCoord();
+            o[0] = obj->minObjectCoord();
+            o[1] = obj->maxObjectCoord();
+            n = obj->normalize();
+            std::cerr << "[" << (i+1) << "] " << obj_name
+                      << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                      << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                      << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                      << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                      << " n> " << n.x() << " " << n.y() << " " << n.z()
+                      << std::endl;
+        }
+   }
+#endif // CHECK_INITIAL_XFORM
+
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Change the object by a specificated object name.
+ *  @param  name [in] object name registered in the object manager
+ *  @param  object [in] pointer to the inserting object
+ *  @param  delete_flag [in] deleting the allocated memory flag
+ */
+/*==========================================================================*/
+void PBVRObjectManager::change( std::string name, kvs::ObjectBase* object, bool delete_flag )
+{
+
+
+#ifdef CHECK_INITIAL_XFORM
+    {
+        int i;
+        std::string obj_name;
+        kvs::Vec3 e[2];
+        kvs::Vec3 o[2];
+        kvs::Vec3 n;
+
+        std::cerr << "PBVRObjectManager::change(): name=" << name << ", object=" << object->name() << std::endl;
+        std::cerr << "before insert ------------------------" << std::endl;
+        i = -1;
+        obj_name = "ObjectManager";
+        e[0] = this->minExternalCoord();
+        e[1] = this->maxExternalCoord();
+        o[0] = this->minObjectCoord();
+        o[1] = this->maxObjectCoord();
+        n = this->normalize();
+        std::cerr << "[" << (i+1) << "] " << obj_name
+                  << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                  << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                  << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                  << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                  << " n> " << n.x() << " " << n.y() << " " << n.z()
+                  << std::endl;
+
+        for (auto map_id : m_object_map) {
+            i++;
+            kvs::ObjectBase* obj = *(map_id.second);
+            obj_name = obj->name();
+            e[0] = obj->minExternalCoord();
+            e[1] = obj->maxExternalCoord();
+            o[0] = obj->minObjectCoord();
+            o[1] = obj->maxObjectCoord();
+            n = obj->normalize();
+            std::cerr << "[" << (i+1) << "] " << obj_name
+                      << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                      << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                      << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                      << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                      << " n> " << n.x() << " " << n.y() << " " << n.z()
+                      << std::endl;
+        }
+   }
+#endif // CHECK_INITIAL_XFORM
+
+    ObjectMap::iterator map_id = m_object_map.begin();
+    ObjectMap::iterator map_end = m_object_map.end();
+    while ( map_id != map_end )
+    {
+        kvs::ObjectBase* registered_object = *(map_id->second);
+        if ( registered_object->name() == name )
+        {
+
+#ifdef CHECK_INITIAL_XFORM
+            std::cerr << "  object[" << name << "] found!" << std::endl;
+#endif // CHECK_INITIAL_XFORM
+
+            const kvs::Xform x = registered_object->xform();
+            if ( delete_flag ) { delete registered_object; }
+
+            object->updateNormalizeParameters();
+            object->setXform( x );
+            *(map_id->second) = object;
+
+#ifdef ENABLE_INITIAL_XFORM_FROM_PARTICLE_ONLY
+            //if (object->name() == OBJ_NAME_PARTICLE)
+#endif // ENABLE_INITIAL_XFORM_FROM_PARTICLE_ONLY
+            {
+               this->update_normalize_parameters();
+            }
+            break;
+        }
+
+        ++map_id;
+    }
+
+#ifdef CHECK_INITIAL_XFORM
+    {
+        int i;
+        std::string obj_name;
+        kvs::Vec3 e[2];
+        kvs::Vec3 o[2];
+        kvs::Vec3 n;
+
+        std::cerr << "after change(name) ------------------------" << std::endl;
+        i = -1;
+        obj_name = "ObjectManager";
+        e[0] = this->minExternalCoord();
+        e[1] = this->maxExternalCoord();
+        o[0] = this->minObjectCoord();
+        o[1] = this->maxObjectCoord();
+        n = this->normalize();
+        std::cerr << "[" << (i+1) << "] " << obj_name
+                  << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                  << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                  << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                  << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                  << " n> " << n.x() << " " << n.y() << " " << n.z()
+                  << std::endl;
+
+        for (auto map_id : m_object_map) {
+            i++;
+            kvs::ObjectBase* obj = *(map_id.second);
+            obj_name = obj->name();
+            e[0] = obj->minExternalCoord();
+            e[1] = obj->maxExternalCoord();
+            o[0] = obj->minObjectCoord();
+            o[1] = obj->maxObjectCoord();
+            n = obj->normalize();
+            std::cerr << "[" << (i+1) << "] " << obj_name
+                      << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                      << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                      << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                      << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                      << " n> " << n.x() << " " << n.y() << " " << n.z()
+                      << std::endl;
+        }
+   }
+#endif // CHECK_INITIAL_XFORM
+
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Returns the pointer to the top object.
+ *  @return pointer to the top object
+ */
+/*==========================================================================*/
+kvs::ObjectBase* PBVRObjectManager::object()
+{
+    ObjectIterator object = m_object_tree.begin();
+    ++object; // Skip the root object.
+
+    return *object;
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Returns the object by a specificated object ID.
+ *  @param  id [in] object ID
+ *  @return pointer to the object
+ */
+/*==========================================================================*/
+kvs::ObjectBase* PBVRObjectManager::object( int id )
+{
+    // Search the object which is specified by given object ID in the
+    // object pointer map. If it isn't found, this method executes nothing.
+    ObjectMap::iterator map_id = m_object_map.find( id );
+    if ( map_id == m_object_map.end() ) { return NULL; }
+
+    // Pointer to the object
+    ObjectIterator object = map_id->second;
+
+    return *object;
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Returns the object by a specificated object name.
+ *  @param  name [in] object name
+ *  @return pointer to the object
+ */
+/*==========================================================================*/
+kvs::ObjectBase* PBVRObjectManager::object( std::string name )
+{
+    ObjectMap::iterator map_id = m_object_map.begin();
+    ObjectMap::iterator map_end = m_object_map.end();
+    while ( map_id != map_end )
+    {
+        kvs::ObjectBase* object = *(map_id->second);
+        if ( object->name() == name ) { return object; }
+        ++map_id;
+    }
+
+    return NULL;
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Returns the pointer to the active object.
+ *  @return pointer to the active object
+ */
+/*==========================================================================*/
+kvs::ObjectBase* PBVRObjectManager::activeObject()
+{
+    return m_has_active_object ? *m_active_object : NULL;
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Returns the number of the stored objects in the object manager.
+ *  @return number of the stored objects
+ */
+/*==========================================================================*/
+int PBVRObjectManager::numberOfObjects() const
+{
+    return m_object_tree.size();
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Check the including object in the object master.
+ *  @return true, if some objects are included.
+ */
+/*==========================================================================*/
+bool PBVRObjectManager::hasObject() const
+{
+    return m_object_tree.size() > 1;
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Check whether the object manager has the active object.
+ *  @return true, if the object manager has the active object.
+ */
+/*==========================================================================*/
+bool PBVRObjectManager::hasActiveObject() const
+{
+    return m_has_active_object;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  Returns the object ID from the pointer to the object.
+ *  @param  object [in] pointer to the object
+ *  @return object ID
+ */
+/*===========================================================================*/
+int PBVRObjectManager::objectID( const kvs::ObjectBase *object ) const
+{
+    ObjectMap::const_iterator map_id = m_object_map.begin();
+    ObjectMap::const_iterator map_end = m_object_map.end();
+    while ( map_id != map_end )
+    {
+        const kvs::ObjectBase* registered_object = *(map_id->second);
+        if ( registered_object == object ) { return map_id->first; }
+        ++map_id;
+    }
+
+    return -1;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  Returns the parent object ID from the object iterator.
+ *  @param  it [in] object iterator
+ *  @return parent object ID
+ */
+/*===========================================================================*/
+int PBVRObjectManager::parentObjectID( const ObjectIterator it ) const
+{
+    if ( it == m_object_tree.end() ) { return -1; }
+    if ( it.node()->parent == NULL ) { return -1; }
+    return this->objectID( it.node()->parent->data );
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  Returns the parent object ID from the pointer to the object.
+ *  @param  object [in] pointer to the object
+ *  @return parent object ID
+ */
+/*===========================================================================*/
+int PBVRObjectManager::parentObjectID( const kvs::ObjectBase *object ) const
+{
+    ObjectIterator registered_object = m_object_tree.begin();
+    ObjectIterator last = m_object_tree.end();
+    while ( registered_object != last )
+    {
+        if ( *registered_object == object)
+        {
+            return this->parentObjectID( registered_object );
+        }
+
+        ++registered_object;
+    }
+
+    return -1;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  Returns the parent object ID from the object ID.
+ *  @param  id [in] object ID
+ *  @return parent object ID
+ */
+/*===========================================================================*/
+int PBVRObjectManager::parentObjectID( int id ) const
+{
+    if ( id < 0 ) { return -1; }
+
+    PBVRObjectManager* manager = const_cast<PBVRObjectManager*>( this );
+    const kvs::ObjectBase* object = manager->object( id );
+    if ( object == NULL ) { return -1; }
+
+    return this->parentObjectID( object );
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Returns the active object ID.
+ *  @return active object ID, if active object is nothing, -1 is returned.
+ */
+/*==========================================================================*/
+int PBVRObjectManager::activeObjectID() const
+{
+    if ( m_has_active_object )
+    {
+        ObjectMap::const_iterator map_id = m_object_map.begin();
+        ObjectMap::const_iterator map_end = m_object_map.end();
+        while ( map_id != map_end )
+        {
+            if ( m_active_object == map_id->second ) { return map_id->first; }
+            ++map_id;
+        }
+    }
+
+    return -1;
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Returns the xform of the object manager.
+ */
+/*==========================================================================*/
+kvs::Xform PBVRObjectManager::xform() const
+{
+    return kvs::ObjectBase::xform();
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Returns the xform of the object which is specified by the given ID.
+ *  @param  id [in] object ID
+ */
+/*==========================================================================*/
+kvs::Xform PBVRObjectManager::xform( int id ) const
+{
+    // Search the object which is specified by given object ID in the
+    // object pointer map. If it isn't found, this method retrun initial Xform.
+    ObjectMap::const_iterator map_id = m_object_map.find( id );
+    if ( map_id == m_object_map.end() )
+    {
+        kvs::Xform xform;
+        return xform;
+    }
+
+    kvs::ObjectBase* object = *(map_id->second);
+    return object->xform();
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Reset the xforms of the all objects.
+ */
+/*==========================================================================*/
+void PBVRObjectManager::resetXform()
+{
+
+#ifdef CHECK_INITIAL_XFORM
+    {
+        int i;
+        std::string obj_name;
+        kvs::Vec3 e[2];
+        kvs::Vec3 o[2];
+        kvs::Vec3 n;
+
+        std::cerr << "PBVRObjectManager::resetXform()" << std::endl;
+        std::cerr << "before reset ------------------------" << std::endl;
+        i = -1;
+        obj_name = "ObjectManager";
+        e[0] = this->minExternalCoord();
+        e[1] = this->maxExternalCoord();
+        o[0] = this->minObjectCoord();
+        o[1] = this->maxObjectCoord();
+        n = this->normalize();
+        std::cerr << "[" << (i+1) << "] " << obj_name
+                  << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                  << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                  << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                  << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                  << " n> " << n.x() << " " << n.y() << " " << n.z()
+                  << std::endl;
+
+        for (auto map_id : m_object_map) {
+            i++;
+            kvs::ObjectBase* obj = *(map_id.second);
+            obj_name = obj->name();
+            e[0] = obj->minExternalCoord();
+            e[1] = obj->maxExternalCoord();
+            o[0] = obj->minObjectCoord();
+            o[1] = obj->maxObjectCoord();
+            n = obj->normalize();
+            std::cerr << "[" << (i+1) << "] " << obj_name
+                      << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                      << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                      << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                      << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                      << " n> " << n.x() << " " << n.y() << " " << n.z()
+                      << std::endl;
+        }
+   }
+#endif // CHECK_INITIAL_XFORM
+
+
+    ObjectIterator object = m_object_tree.begin();
+    ObjectIterator last = m_object_tree.end();
+    while ( object != last )
+    {
+        const kvs::Xform C = this->get_centering_xform( *object );
+        (*object)->resetXform();
+        (*object)->setXform( (*object)->xform() * C );
+        ++object;
+    }
+
+    kvs::ObjectBase::resetXform();
+
+#ifdef CHECK_INITIAL_XFORM
+    {
+        int i;
+        std::string obj_name;
+        kvs::Vec3 e[2];
+        kvs::Vec3 o[2];
+        kvs::Vec3 n;
+
+        std::cerr << "after reset ------------------------" << std::endl;
+        i = -1;
+        obj_name = "ObjectManager";
+        e[0] = this->minExternalCoord();
+        e[1] = this->maxExternalCoord();
+        o[0] = this->minObjectCoord();
+        o[1] = this->maxObjectCoord();
+        n = this->normalize();
+        std::cerr << "[" << (i+1) << "] " << obj_name
+                  << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                  << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                  << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                  << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                  << " n> " << n.x() << " " << n.y() << " " << n.z()
+                  << std::endl;
+
+        for (auto map_id : m_object_map) {
+            i++;
+            kvs::ObjectBase* obj = *(map_id.second);
+            obj_name = obj->name();
+            e[0] = obj->minExternalCoord();
+            e[1] = obj->maxExternalCoord();
+            o[0] = obj->minObjectCoord();
+            o[1] = obj->maxObjectCoord();
+            n = obj->normalize();
+            std::cerr << "[" << (i+1) << "] " << obj_name
+                      << " e> " << e[0].x() << " " << e[0].y() << " " << e[0].z()
+                      << " - "  << e[1].x() << " " << e[1].y() << " " << e[1].z()
+                      << " o> " << o[0].x() << " " << o[0].y() << " " << o[0].z()
+                      << " - "  << o[1].x() << " " << o[1].y() << " " << o[1].z()
+                      << " n> " << n.x() << " " << n.y() << " " << n.z()
+                      << std::endl;
+        }
+   }
+#endif // CHECK_INITIAL_XFORM
+
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Reset the xform of the object which is specified by given ID.
+ *  @param  id [in] object ID
+ */
+/*==========================================================================*/
+void PBVRObjectManager::resetXform( int id )
+{
+    ObjectMap::iterator map_id = m_object_map.find( id );
+    if( map_id == m_object_map.end() ) { return; }
+
+    ObjectIterator object = map_id->second;
+    ObjectIterator child_object = m_object_tree.begin( object );
+    ObjectIterator last = m_object_tree.end( object );
+
+    const kvs::Xform c = this->get_centering_xform( *object );
+    const kvs::Xform x = this->xform() * ( (*object)->xform() * c ).inverse();
+    (*object)->setXform( this->xform() );
+
+    while ( child_object != last )
+    {
+        const kvs::Xform c0 = this->get_centering_xform( *child_object );
+        (*child_object)->setXform( x * (*child_object)->xform() * c0 );
+        ++child_object;
+    }
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Release the xform of the active object.
+ */
+/*==========================================================================*/
+void PBVRObjectManager::resetActiveObjectXform()
+{
+    if ( m_has_active_object )
+    {
+        const kvs::Xform C = this->get_centering_xform( *m_active_object );
+        (*m_active_object)->resetXform();
+        (*m_active_object)->setXform( (*m_active_object)->xform() * C );
+        (*m_active_object)->multiplyXform( this->xform() );
+    }
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Sets the active object ID.
+ *  @param  id [in] object ID
+ *  @return true, if the object specified by the given ID is found.
+ */
+/*==========================================================================*/
+bool PBVRObjectManager::setActiveObject( int id )
+{
+    ObjectMap::iterator map_id = m_object_map.find( id );
+    if ( map_id == m_object_map.end() ) { return false; }
+
+    m_active_object = map_id->second;
+    m_has_active_object = true;
+
+    return true;
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Erase the active object.
+ */
+/*==========================================================================*/
+void PBVRObjectManager::eraseActiveObject()
+{
+    if ( m_has_active_object )
+    {
+        delete *m_active_object;
+        *m_active_object = NULL;
+        m_object_tree.erase( m_active_object );
+    }
+
+    this->update_normalize_parameters();
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Release the active object.
+ */
+/*==========================================================================*/
+void PBVRObjectManager::releaseActiveObject()
+{
+    m_has_active_object = false;
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Rotate the all objects.
+ *  @param  rotation [in] current rotation matrix.
+ */
+/*==========================================================================*/
+void PBVRObjectManager::rotate( const kvs::Mat3& rotation )
+{
+    kvs::ObjectBase* object = this->get_control_target();
+
+    // The center of rotation will be set to the center of gravity of
+    // the control target object.
+    const kvs::Vec3 center = this->get_rotation_center( object );
+    const kvs::Xform x =
+        kvs::Xform::Translation( center ) *
+        kvs::Xform::Rotation( rotation ) *
+        kvs::Xform::Translation( -center );
+    object->multiplyXform( x );
+
+    // Apply the xform to all of the registered objects.
+    ObjectIterator registered_object = this->get_control_first_pointer();
+    ObjectIterator last = this->get_control_last_pointer();
+    while ( registered_object != last )
+    {
+        (*registered_object)->multiplyXform( x );
+        ++registered_object;
+    }
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Translate the all objects.
+ *  @param  translation [in] current translation vector
+ */
+/*==========================================================================*/
+void PBVRObjectManager::translate( const kvs::Vec3& translation )
+{
+    kvs::ObjectBase* object = this->get_control_target();
+
+    const kvs::Xform x = kvs::Xform::Translation( translation );
+    object->multiplyXform( x );
+
+    // Apply the xform to all of the registered objects.
+    ObjectIterator registered_object = this->get_control_first_pointer();
+    ObjectIterator last = this->get_control_last_pointer();
+    while ( registered_object != last )
+    {
+        (*registered_object)->multiplyXform( x );
+        ++registered_object;
+    }
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Scaling the all objects.
+ *  @param  scaling [in] current scaling value.
+ */
+/*==========================================================================*/
+void PBVRObjectManager::scale( const kvs::Vec3& scaling )
+{
+    kvs::ObjectBase* object = this->get_control_target();
+
+    // The center of scaling will be set to the center of gravity of
+    // the control target object.
+    const kvs::Vec3 center = this->get_rotation_center( object );
+    const kvs::Xform x =
+        kvs::Xform::Translation( center ) *
+        kvs::Xform::Scaling( scaling ) *
+        kvs::Xform::Translation( -center );
+    object->multiplyXform( x );
+
+    // Apply the xform to all of the registered objects.
+    ObjectIterator registered_object = this->get_control_first_pointer();
+    ObjectIterator last = this->get_control_last_pointer();
+    while ( registered_object != last )
+    {
+        (*registered_object)->multiplyXform( x );
+        ++registered_object;
+    }
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Translating, Scaling, Rotating the all objects.
+ */
+/*==========================================================================*/
+void PBVRObjectManager::handscontroller( const kvs::Xform x)
+{
+    kvs::ObjectBase* object = this->get_control_target();
+    object->multiplyXform( x );
+
+    ObjectIterator registered_object = this->get_control_first_pointer();
+    ObjectIterator last = this->get_control_last_pointer();
+    while ( registered_object != last )
+    {
+        (*registered_object)->multiplyXform( x );
+        ++registered_object;
+    }
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Update the external coordinate.
+ */
+/*==========================================================================*/
+void PBVRObjectManager::updateExternalCoords()
+{
+    this->update_normalize_parameters();
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Insert the root of the objects.
+ */
+/*==========================================================================*/
+void PBVRObjectManager::insert_root()
+{
+    m_root = m_object_tree.insert( m_object_tree.begin(), this );
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Update the normalize parameters.
+ *  @param  min_ext [in] min. external coordinate value
+ *  @param  max_ext [in] max. external coordinate value
+ */
+/*==========================================================================*/
+void PBVRObjectManager::update_normalize_parameters(
+    const kvs::Vec3& min_ext,
+    const kvs::Vec3& max_ext )
+{
+
+//    std::cerr << "ObjectManager::update_normalize_parameters():" << std::endl;
+//    std::cerr << "min_ext= " << min_ext << std::endl;
+//    std::cerr << "max_ext= " << max_ext << std::endl;
+
+    if ( kvs::Math::Equal( 0.0f, min_ext.x() ) &&
+         kvs::Math::Equal( 0.0f, min_ext.y() ) &&
+         kvs::Math::Equal( 0.0f, min_ext.z() ) &&
+         kvs::Math::Equal( 0.0f, max_ext.x() ) &&
+         kvs::Math::Equal( 0.0f, max_ext.y() ) &&
+         kvs::Math::Equal( 0.0f, max_ext.z() ) ) { return; }
+
+
+//    std::cerr << "om.min_obj= " << ObjectBase::minObjectCoord() << std::endl;
+//    std::cerr << "om.max_obj= " << ObjectBase::maxObjectCoord() << std::endl;
+
+    const kvs::Vec3 min_obj(
+        kvs::Math::Min( ObjectBase::minObjectCoord().x(), min_ext.x() ),
+        kvs::Math::Min( ObjectBase::minObjectCoord().y(), min_ext.y() ),
+        kvs::Math::Min( ObjectBase::minObjectCoord().z(), min_ext.z() ) );
+    const kvs::Vec3 max_obj(
+        kvs::Math::Max( ObjectBase::maxObjectCoord().x(), max_ext.x() ),
+        kvs::Math::Max( ObjectBase::maxObjectCoord().y(), max_ext.y() ),
+        kvs::Math::Max( ObjectBase::maxObjectCoord().z(), max_ext.z() ) );
+    ObjectBase::setMinMaxObjectCoords( min_obj, max_obj );
+
+//    std::cerr << "->" << std::endl;
+//    std::cerr << "om.min_obj= " << ObjectBase::minObjectCoord() << std::endl;
+//    std::cerr << "om.max_obj= " << ObjectBase::maxObjectCoord() << std::endl;
+
+
+    const kvs::Vec3 diff = max_obj - min_obj;
+    const float max_diff = kvs::Math::Max( diff.x(), diff.y(), diff.z() );
+    const float normalize = 6.0f / max_diff;
+
+
+//    std::cerr << "-> diff= " << diff << ", normalize=" << normalize << std::endl;
+
+    ObjectBase::setNormalize( kvs::Vec3::Constant( normalize ) );
+    ObjectBase::setObjectCenter( ( max_obj + min_obj ) * 0.5f );
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Update normalize parameters.
+ */
+/*==========================================================================*/
+void PBVRObjectManager::update_normalize_parameters()
+{
+    kvs::Vec3 min_ext = kvs::Vec3::Constant( -3.0f );
+    kvs::Vec3 max_ext = kvs::Vec3::Constant(  3.0f );
+    ObjectBase::setMinMaxExternalCoords( min_ext, max_ext );
+
+    kvs::Vec3 min_obj = kvs::Vec3::Constant(  1000000 );
+    kvs::Vec3 max_obj = kvs::Vec3::Constant( -1000000 );
+    int counter = 0;
+    if ( m_object_tree.size() > 1 )
+    {
+        ObjectIterator object = m_object_tree.begin();
+        ObjectIterator last = m_object_tree.end();
+        ++object; // Skip the root object
+        while ( object != last )
+        {
+#ifdef ENABLE_INITIAL_XFORM_FROM_PARTICLE_ONLY
+            if ((*object)->name() == OBJ_NAME_PARTICLE)
+#endif // ENABLE_INITIAL_XFORM_FROM_PARTICLE_ONLY
+
+            {
+                min_ext = (*object)->minExternalCoord();
+                max_ext = (*object)->maxExternalCoord();
+
+                if ( kvs::Math::Equal( 0.0f, min_ext.x() ) &&
+                     kvs::Math::Equal( 0.0f, min_ext.y() ) &&
+                     kvs::Math::Equal( 0.0f, min_ext.z() ) &&
+                     kvs::Math::Equal( 0.0f, max_ext.x() ) &&
+                     kvs::Math::Equal( 0.0f, max_ext.y() ) &&
+                     kvs::Math::Equal( 0.0f, max_ext.z() ) ) { continue; }
+
+                min_obj.x() = kvs::Math::Min( min_obj.x(), min_ext.x() );
+                min_obj.y() = kvs::Math::Min( min_obj.y(), min_ext.y() );
+                min_obj.z() = kvs::Math::Min( min_obj.z(), min_ext.z() );
+                max_obj.x() = kvs::Math::Max( max_obj.x(), max_ext.x() );
+                max_obj.y() = kvs::Math::Max( max_obj.y(), max_ext.y() );
+                max_obj.z() = kvs::Math::Max( max_obj.z(), max_ext.z() );
+
+                ++counter;
+            }
+            ++object;
+        }
+    }
+
+    ObjectBase::setMinMaxObjectCoords( min_obj, max_obj );
+
+    if ( counter == 0 )
+    {
+        ObjectBase::setNormalize( kvs::Vec3::Constant( 1.0 ) );
+        ObjectBase::setObjectCenter( kvs::Vec3::Constant( 0.0 ) );
+    }
+    else
+    {
+        const kvs::Vec3 diff = max_obj - min_obj;
+        const float max_diff = kvs::Math::Max( diff.x(), diff.y(), diff.z() );
+        const float normalize = 6.0f / max_diff;
+        ObjectBase::setNormalize( kvs::Vec3::Constant( normalize ) );
+        ObjectBase::setObjectCenter( ( max_obj + min_obj ) * 0.5f );
+    }
+}
+
+/*==========================================================================*/
+/**
+ *  @breif  Returns the control target object.
+ *  @return pointer to the control target object
+ */
+/*==========================================================================*/
+kvs::ObjectBase* PBVRObjectManager::get_control_target()
+{
+    if ( m_has_active_object )
+    {
+        return *m_active_object;
+    }
+    else
+    {
+        return this;
+    }
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Returns the rotation center in the world coordinate system.
+ *  @param  object [in] pointer to the object
+ *  @return rotation center
+ */
+/*==========================================================================*/
+kvs::Vec3 PBVRObjectManager::get_rotation_center( kvs::ObjectBase* object )
+{
+    if ( m_has_active_object )
+    {
+        // In this case, a gravity of center of the object, which can be
+        // assumed as the active object, in the world coordinate system
+        // will be returned.
+        const kvs::Vec3 C = ObjectBase::objectCenter();
+        return object->xform().transform( C );
+    }
+    else
+    {
+        // In this case, a gravity of center of the object manager will
+        // be returned.
+        return this->xform().translation();
+    }
+}
+
+/*==========================================================================*/
+/**
+ *  @breif  Returns the pointer to the first object in the object manager.
+ *  @return pointer to the top object
+ */
+/*==========================================================================*/
+PBVRObjectManager::ObjectIterator PBVRObjectManager::get_control_first_pointer()
+{
+    if ( m_has_active_object )
+    {
+        return m_object_tree.begin( m_active_object );
+    }
+    else
+    {
+        ObjectIterator object = m_object_tree.begin();
+        ++object; // Skip the root object.
+        return object;
+    }
+}
+
+/*==========================================================================*/
+/**
+ *  @brief  Returns the pointer to the last object in the object manager.
+ *  @return pointer to the last object in the object manager
+ */
+/*==========================================================================*/
+PBVRObjectManager::ObjectIterator PBVRObjectManager::get_control_last_pointer()
+{
+    if ( m_has_active_object )
+    {
+        return m_object_tree.end( m_active_object );
+    }
+    else
+    {
+        return m_object_tree.end();
+    }
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  Returns the xform used for the auto-normalization and centering of the object.
+ *  @param  object [in] pointer to the object
+ *  @return xform
+ */
+/*===========================================================================*/
+kvs::Xform PBVRObjectManager::get_centering_xform( kvs::ObjectBase* object )
+{
+
+//    std::cerr << "  get_centering_xform(): " << std::endl;
+//    std::cerr << "     obj->extCenter= " << object->externalCenter() << std::endl;
+//    std::cerr << "     obj->objCenter= " << object->objectCenter() << std::endl;
+//    std::cerr << "     obj->normalize= " << object->normalize() << std::endl;
+//    std::cerr << "    this->objCenter= " << this->objectCenter() << std::endl;
+//    std::cerr << "    this->normalize= " << this->normalize() << std::endl;
+
+
+    const kvs::Xform Te = kvs::Xform::Translation( object->externalCenter() );
+    const kvs::Xform Sl = kvs::Xform::Scaling( object->normalize() );
+    const kvs::Xform Tl = kvs::Xform::Translation( -1.0f * object->objectCenter() );
+    const kvs::Xform Sg = kvs::Xform::Scaling( this->normalize() );
+    const kvs::Xform Tg = kvs::Xform::Translation( -1.0f * this->objectCenter() );
+    return Sg * Tg * Te * Sl * Tl;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  Removes the centering xform from all registered objects.
+ */
+/*===========================================================================*/
+void PBVRObjectManager::push_centering_xform()
+{
+
+//    int iobj = 0;
+
+    ObjectIterator registered_object = this->get_control_first_pointer();
+    ObjectIterator last = this->get_control_last_pointer();
+    while ( registered_object != last )
+    {
+        kvs::Xform C = this->get_centering_xform( *registered_object );
+        kvs::Xform X = (*registered_object)->xform() * C.inverse();
+        (*registered_object)->setXform( X );
+        ++registered_object;
+
+//        std::cerr << "ObjectManager::push_centering_xform(): object[" << iobj << "].C = " << std::endl;
+//        std::cerr << C.toMatrix() << std::endl;
+//        iobj++;
+
+    }
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  Applys the centering xform to all registered objects.
+ */
+/*===========================================================================*/
+void PBVRObjectManager::pop_centering_xform()
+{
+
+//    int iobj = 0;
+
+    ObjectIterator registered_object = this->get_control_first_pointer();
+    ObjectIterator last = this->get_control_last_pointer();
+    while ( registered_object != last )
+    {
+        kvs::Xform C = this->get_centering_xform( *registered_object );
+        kvs::Xform X = (*registered_object)->xform() * C;
+        (*registered_object)->setXform( X );
+        ++registered_object;
+
+//        std::cerr << "ObjectManager::pop_centering_xform(): object[" << iobj << "].C = " << std::endl;
+//        std::cerr << C.toMatrix() << std::endl;
+//        iobj++;
+
+
+    }
+}
+
+} // end of namespace jaea
+} // end of namespace oculus
+} // end of namespace kvs

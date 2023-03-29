@@ -1,0 +1,14 @@
+CXX=g++
+CXXFLAGS=-O3 -march=native 
+
+LD=g++
+LDFLAGS=-lstdc++ -static-libgcc -static-libstdc++
+
+MPICXX=mpic++
+MPICXXFLAGS=-O3 -fopenmp -march=native
+
+MPICC=mpicc
+MPICCFLAGS=-O3 -fopenmp -march=native
+
+MPILD=mpic++
+MPILDFLAGS=-lstdc++ -fopenmp -static-libgcc -static-libstdc++

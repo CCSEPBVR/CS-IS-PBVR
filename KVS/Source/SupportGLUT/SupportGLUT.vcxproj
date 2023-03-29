@@ -1,0 +1,202 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2F05F59F-261C-4548-B18B-27281EBCD6F5}</ProjectGuid>
+    <RootNamespace>KVS_SupportGLUT</RootNamespace>
+    <ProjectName>KVS_SupportGLUT</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <TargetName>kvsSupportGLUT</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>kvsSupportGLUT</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>kvsSupportGLUT</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)\KVS\Source;$(SolutionDir)\glut-3.7.6\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>KVS_SUPPORT_GLUT;NDEBUG;NOMINMAX;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)\KVS\Source</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>KVS_SUPPORT_GLUT;NDEBUG;WIN32;NOMINMAX;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)\KVS\Source;$(SolutionDir)\glut-3.7.6\include;</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>KVS_SUPPORT_GLUT;NDEBUG;WIN32;NOMINMAX;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Renderer\Axis2DMatrixRenderer.cpp" />
+    <ClCompile Include="Renderer\Axis2DRenderer.cpp" />
+    <ClCompile Include="Renderer\AxisRenderer.cpp" />
+    <ClCompile Include="Renderer\ParallelAxisRenderer.cpp" />
+    <ClCompile Include="Viewer\Application.cpp" />
+    <ClCompile Include="Viewer\Global.cpp" />
+    <ClCompile Include="Viewer\GlobalBase.cpp" />
+    <ClCompile Include="Viewer\Histogram.cpp" />
+    <ClCompile Include="Viewer\LegendBar.cpp" />
+    <ClCompile Include="Viewer\OrientationAxis.cpp" />
+    <ClCompile Include="Viewer\Screen.cpp" />
+    <ClCompile Include="Viewer\ScreenBase.cpp" />
+    <ClCompile Include="Viewer\Text.cpp" />
+    <ClCompile Include="Viewer\Timer.cpp" />
+    <ClCompile Include="Viewer\TransferFunctionEditor.cpp" />
+    <ClCompile Include="Viewer\Window.cpp" />
+    <ClCompile Include="Widget\CheckBox.cpp" />
+    <ClCompile Include="Widget\CheckBoxGroup.cpp" />
+    <ClCompile Include="Widget\ColorMapPalette.cpp" />
+    <ClCompile Include="Widget\ColorPalette.cpp" />
+    <ClCompile Include="Widget\Label.cpp" />
+    <ClCompile Include="Widget\OpacityMapPalette.cpp" />
+    <ClCompile Include="Widget\PushButton.cpp" />
+    <ClCompile Include="Widget\RadioButton.cpp" />
+    <ClCompile Include="Widget\RadioButtonGroup.cpp" />
+    <ClCompile Include="Widget\Rectangle.cpp" />
+    <ClCompile Include="Widget\Slider.cpp" />
+    <ClCompile Include="Widget\WidgetBase.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Renderer\Axis2DMatrixRenderer.h" />
+    <ClInclude Include="Renderer\Axis2DRenderer.h" />
+    <ClInclude Include="Renderer\AxisRenderer.h" />
+    <ClInclude Include="Renderer\ParallelAxisRenderer.h" />
+    <ClInclude Include="Viewer\Application.h" />
+    <ClInclude Include="Viewer\Global.h" />
+    <ClInclude Include="Viewer\GlobalBase.h" />
+    <ClInclude Include="Viewer\Histogram.h" />
+    <ClInclude Include="Viewer\KVSKey.h" />
+    <ClInclude Include="Viewer\KVSMouseButton.h" />
+    <ClInclude Include="Viewer\LegendBar.h" />
+    <ClInclude Include="Viewer\OrientationAxis.h" />
+    <ClInclude Include="Viewer\Screen.h" />
+    <ClInclude Include="Viewer\ScreenBase.h" />
+    <ClInclude Include="Viewer\Text.h" />
+    <ClInclude Include="Viewer\Timer.h" />
+    <ClInclude Include="Viewer\TransferFunctionEditor.h" />
+    <ClInclude Include="Viewer\Window.h" />
+    <ClInclude Include="Widget\CheckBox.h" />
+    <ClInclude Include="Widget\CheckBoxGroup.h" />
+    <ClInclude Include="Widget\ColorMapPalette.h" />
+    <ClInclude Include="Widget\ColorPalette.h" />
+    <ClInclude Include="Widget\Label.h" />
+    <ClInclude Include="Widget\OpacityMapPalette.h" />
+    <ClInclude Include="Widget\PushButton.h" />
+    <ClInclude Include="Widget\RadioButton.h" />
+    <ClInclude Include="Widget\RadioButtonGroup.h" />
+    <ClInclude Include="Widget\Rectangle.h" />
+    <ClInclude Include="Widget\Slider.h" />
+    <ClInclude Include="Widget\WidgetBase.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

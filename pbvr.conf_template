@@ -1,0 +1,14 @@
+PBVR_MACHINE=Makefile_machine_clang
+PBVR_MAKE_CLIENT=1
+PBVR_MAKE_SERVER=0
+PBVR_SUPPORT_KMATH=0
+PBVR_SUPPORT_VTK=0
+
+QT_INSTALL_PATH=/Users/martin/Qt/5.9.3/clang_64
+QT_INCLUDES=-I$(QT_INSTALL_PATH)/lib/QtCore.framework/Headers
+QT_INCLUDES+= -I$(QT_INSTALL_PATH)/lib/QtGui.framework/Headers
+QT_INCLUDES+= -I$(QT_INSTALL_PATH)/lib/QtOpenGL.framework/Headers
+
+QT_RPATH = -Wl,-rpath,$(QT_INSTALL_PATH)/lib
+QT_FRAMEWORKS = -F$(QT_INSTALL_PATH)/lib -framework QtCore -framework QtGui -framework QtOpenGL
+QT_FLAGS=$(QT_INCLUDES)  $(QT_RPATH) $(QT_FRAMEWORKS) 

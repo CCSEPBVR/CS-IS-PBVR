@@ -1,0 +1,30 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Resources/Rainbow.PNG</file>
+        <file>Resources/OpacityMap.PNG</file>
+        <file>Resources/FreeformColor.PNG</file>
+        <file>Resources/KVSView.PNG</file>
+        <file>Resources/XZCROP.PNG</file>
+        <file>Resources/YXCROP.PNG</file>
+        <file>Resources/YZCROP.PNG</file>
+        <file>Resources/gui_manual.html</file>
+        <file>Resources/images/colored1.png</file>
+        <file>Resources/images/colored2.png</file>
+        <file>Resources/images/colored3.png</file>
+        <file>Resources/images/colored4.png</file>
+        <file>Resources/images/croptool.png</file>
+        <file>Resources/images/filemenu.png</file>
+        <file>Resources/images/helpmenu.png</file>
+        <file>Resources/images/mainwindow.png</file>
+        <file>Resources/images/opacityed1.png</file>
+        <file>Resources/images/opacityed2.png</file>
+        <file>Resources/images/opacityed3.png</file>
+        <file>Resources/images/particleselector.png</file>
+        <file>Resources/images/transferfunctioneditor.png</file>
+        <file>Resources/images/viewclose.png</file>
+        <file>Resources/images/viewgroup.png</file>
+        <file>Resources/images/windowmenu.png</file>
+        <file>Resources/images/unlocked.png</file>
+        <file>Resources/images/locked.png</file>
+    </qresource>
+</RCC>

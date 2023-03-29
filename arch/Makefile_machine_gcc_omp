@@ -1,0 +1,6 @@
+CXX=g++
+CXXFLAGS=-O3 -fopenmp -march=native
+CC=gcc
+CCFLAGS=-O3 -fopenmp -march=native
+LD=g++
+LDFLAGS=-fopenmp -lstdc++ -static-libgcc -static-libstdc++
