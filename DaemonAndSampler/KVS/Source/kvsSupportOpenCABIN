@@ -1,0 +1,8 @@
+#include <SupportOpenCABIN/OpenCABIN.h>
+#include <SupportOpenCABIN/Viewer/Application.h>
+#include <SupportOpenCABIN/Viewer/Camera.h>
+#include <SupportOpenCABIN/Viewer/Configuration.h>
+#include <SupportOpenCABIN/Viewer/MainLoop.h>
+#include <SupportOpenCABIN/Viewer/Master.h>
+#include <SupportOpenCABIN/Viewer/Screen.h>
+#include <SupportOpenCABIN/Viewer/Trackpad.h>
