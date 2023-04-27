@@ -139,7 +139,7 @@ kvs::VolumeObjectBase::Values GetValueArray( VtkPointSetPointerType data, int co
         {
             auto array = point_data->GetArray( i );
 
-            switch ( array->GetArrayType() )
+            switch ( array->GetDataType() )
             {
             case VTK_TYPE_UINT8:
                 array_type = std::max( array_type, 0 );
@@ -224,6 +224,7 @@ kvs::UnstructuredVolumeObject::CellType GetKvsCellType( int type )
     case VTK_QUADRATIC_TETRA:
         return kvs::UnstructuredVolumeObject::QuadraticTetrahedra;
     case VTK_HEXAHEDRON:
+    case VTK_VOXEL:
         return kvs::UnstructuredVolumeObject::Hexahedra;
     case VTK_QUADRATIC_HEXAHEDRON:
         return kvs::UnstructuredVolumeObject::QuadraticHexahedra;
@@ -283,6 +284,11 @@ void ReorderElementNodeIndices( DestinationIterator& kvs_connection, vtkIdList* 
     }
     case VTK_HEXAHEDRON: {
         constexpr int order[] = { 4, 5, 6, 7, 0, 1, 2, 3 };
+        ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
+        break;
+    }
+    case VTK_VOXEL: {
+        constexpr int order[] = { 4, 5, 7, 6, 0, 1, 3, 2 };
         ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
         break;
     }

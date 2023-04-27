@@ -67,11 +67,6 @@ $(OUTDIR)/Importer/%.o: ./Importer/%.cpp ./Importer/%.h
 	$(MKDIR) $(OUTDIR)/Importer
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
-$(OUTDIR)/TimeSeriesFiles/AVS/%.o: ./TimeSeriesFiles/AVS/%.cpp ./TimeSeriesFiles/AVS/%.h
-	$(MKDIR) $(OUTDIR)/TimeSeriesFiles
-	$(MKDIR) $(OUTDIR)/TimeSeriesFiles/AVS
-	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
-
 $(OUTDIR)/./%.o: ./%.cpp ./%.h
 	$(MKDIR) $(OUTDIR)
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
@@ -85,8 +80,6 @@ install::
 # FileFormat
 	$(MKDIR) $(INSTALL_DIR)/include/FileFormat
 	$(INSTALL) ./FileFormat/*.h $(INSTALL_DIR)/include/FileFormat
-	$(MKDIR) $(INSTALL_DIR)/include/FileFormat/AVS
-	$(INSTALL) ./FileFormat/AVS/*.h $(INSTALL_DIR)/include/FileFormat/AVS
 	$(MKDIR) $(INSTALL_DIR)/include/FileFormat/CGNS
 	$(INSTALL) ./FileFormat/CGNS/*.h $(INSTALL_DIR)/include/FileFormat/CGNS
 	$(MKDIR) $(INSTALL_DIR)/include/FileFormat/KVSML
@@ -106,5 +99,3 @@ install::
 	$(INSTALL) ./TimeSeriesFiles/*.h $(INSTALL_DIR)/include/TimeSeriesFiles
 	$(MKDIR) $(INSTALL_DIR)/include/TimeSeriesFiles/EnSight
 	$(INSTALL) ./TimeSeriesFiles/EnSight/*.h $(INSTALL_DIR)/include/TimeSeriesFiles/EnSight
-	$(MKDIR) $(INSTALL_DIR)/include/TimeSeriesFiles/AVS
-	$(INSTALL) ./TimeSeriesFiles/AVS/*.h $(INSTALL_DIR)/include/TimeSeriesFiles/AVS
