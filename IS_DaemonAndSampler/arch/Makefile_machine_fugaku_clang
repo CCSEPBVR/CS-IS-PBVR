@@ -1,0 +1,24 @@
+COMMON_FLAGS := -Nclang -Ofast -fopenmp -flto -DFUGAKU_OPT=1 
+CLANG_POLLY  := -mllvm -polly -mllvm -polly-parallel
+REPORT_FLAGS := -Rpass=.* -ffj-lst=t
+GENASM_FLAGS := -S -fverbose-asm
+
+#COMMON_FLAGS +=  $(GENASM_FLAGS)
+
+CXX	  = FCCpx
+CXXFLAGS := $(COMMON_FLAGS) $(REPORT_FLAGS) #$(CLANG_POLLY)
+
+CC	  = fccpx
+CCFLAGS  := $(COMMON_FLAGS) $(REPORT_FLAGS) #$(CLANG_POLLY)
+
+LD	  = FCCpx
+LDFLAGS	  =  $(COMMON_FLAGS) $(REPORT_FLAGS) #$(CLANG_POLLY)
+
+MPICXX	    = mpiFCCpx
+MPICXXFLAGS:= $(COMMON_FLAGS) $(REPORT_FLAGS) #$(CLANG_POLLY)
+
+MPICC	    = mpifccpx
+MPICCFLAGS := $(COMMON_FLAGS) $(REPORT_FLAGS) #$(CLANG_POLLY)
+
+MPILD	    = mpiFCCpx
+MPILDFLAGS := $(COMMON_FLAGS) $(REPORT_FLAGS) #$(CLANG_POLLY)

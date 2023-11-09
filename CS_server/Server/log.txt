@@ -1,0 +1,537 @@
+ParticleTransferServer.cpp:L36
+port=60000
+Server initialize done
+Server bind done
+Server listen done
+Waiting for connection ...
+Connected from 10.148.254.3 ,dstSock=13
+Source = 12 Destination = 13
+Source = 12 Destination = 13
+ParticleTransferServer.cpp:L173
+Source = 12 Destination = 13
+recvSize=15,dstSock=13,hSize=15,errno=0
+Receive Client Message Size = 35278
+SHOW CLIENT MESSAGE
+header=JPTP /1.0
+
+messageSize=35278
+initParam=-3
+timeParam=0
+transParam=0
+transfunc.size=8
+transfunc.Name,ColorVar,OpacityVar,ColorVarMin,ColorVarMax
+C1,_F1_VAR_C,,0,255
+C2,_F2_VAR_C,,0,255
+C3,_F3_VAR_C,,0,255
+C4,_F4_VAR_C,,0,255
+O1,,_F1_VAR_O,0,1
+O2,,_F2_VAR_O,0,1
+O3,,_F3_VAR_O,0,1
+O4,,_F4_VAR_O,0,1
+voleqn.size=8
+voleqn.Name,Equation
+_F1_VAR_C,q1
+_F2_VAR_C,q1
+_F3_VAR_C,q1
+_F4_VAR_C,q1
+_F1_VAR_O,q1
+_F2_VAR_O,q1
+_F3_VAR_O,q1
+_F4_VAR_O,q1
+color_tf_synthesis=C1
+opacity_tf_synthesis=O1
+m_x_synthesis = 
+m_y_synthesis = 
+m_z_synthesis = 
+opacity_func
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name112,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+color_func
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name96,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+opacity_var.size=4
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+color_var.size=4
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+
+Recieve message initParam = -3
+ time step = 1 subvolume division = 4
+Send Server Message Size = 286
+Send Server Particle Size = 0
+flag_send_bins =0
+send_result=286
+Source = 12 Destination = 13
+Source = 12 Destination = 13
+ParticleTransferServer.cpp:L173
+Source = 12 Destination = 13
+recvSize=15,dstSock=13,hSize=15,errno=2
+Receive Client Message Size = 19
+SHOW CLIENT MESSAGE
+header=JPTP /1.0
+
+messageSize=19
+initParam=-1
+timeParam=0
+transParam=0
+transfunc.size=8
+transfunc.Name,ColorVar,OpacityVar,ColorVarMin,ColorVarMax
+C1,_F1_VAR_C,,0,255
+C2,_F2_VAR_C,,0,255
+C3,_F3_VAR_C,,0,255
+C4,_F4_VAR_C,,0,255
+O1,,_F1_VAR_O,0,1
+O2,,_F2_VAR_O,0,1
+O3,,_F3_VAR_O,0,1
+O4,,_F4_VAR_O,0,1
+voleqn.size=8
+voleqn.Name,Equation
+_F1_VAR_C,q1
+_F2_VAR_C,q1
+_F3_VAR_C,q1
+_F4_VAR_C,q1
+_F1_VAR_O,q1
+_F2_VAR_O,q1
+_F3_VAR_O,q1
+_F4_VAR_O,q1
+color_tf_synthesis=C1
+opacity_tf_synthesis=O1
+m_x_synthesis = 
+m_y_synthesis = 
+m_z_synthesis = 
+opacity_func
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name112,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+color_func
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name96,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+opacity_var.size=4
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+color_var.size=4
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+
+Recieve message initParam = -1
+Send Server Message Size = 286
+Send Server Particle Size = 0
+flag_send_bins =0
+send_result=286
+Waiting for connection ...
+Connected from 10.148.254.3 ,dstSock=13
+Source = 12 Destination = 13
+Source = 12 Destination = 13
+ParticleTransferServer.cpp:L173
+Source = 12 Destination = 13
+recvSize=15,dstSock=13,hSize=15,errno=2
+Receive Client Message Size = 35452
+SHOW CLIENT MESSAGE
+header=JPTP /1.0
+
+messageSize=35452
+initParam=1
+timeParam=2
+transParam=2
+transfunc.size=8
+transfunc.Name,ColorVar,OpacityVar,ColorVarMin,ColorVarMax
+C1,_F1_VAR_C,,0,255
+C2,_F2_VAR_C,,0,255
+C3,_F3_VAR_C,,0,255
+C4,_F4_VAR_C,,0,255
+O1,,_F1_VAR_O,0,1
+O2,,_F2_VAR_O,0,1
+O3,,_F3_VAR_O,0,1
+O4,,_F4_VAR_O,0,1
+voleqn.size=8
+voleqn.Name,Equation
+_F1_VAR_C,q1
+_F2_VAR_C,q1
+_F3_VAR_C,q1
+_F4_VAR_C,q1
+_F1_VAR_O,q1
+_F2_VAR_O,q1
+_F3_VAR_O,q1
+_F4_VAR_O,q1
+color_tf_synthesis=C1
+opacity_tf_synthesis=O1
+m_x_synthesis = 
+m_y_synthesis = 
+m_z_synthesis = 
+opacity_func
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name112,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+color_func
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name96,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+opacity_var.size=4
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+color_var.size=4
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+
+Recieve message initParam = 1
+initParam = 1
+sampling method = u
+subpixel level = 2
+repeat level = 1
+timeParam = 2
+step = 0
+transParam = 2
+Rank 1: Recv Client Message
+Rank 2: Recv Client Message
+Rank 3: Recv Client Message
+Rank 4: Recv Client Message
+Send Server Message Size = 286
+Send Server Particle Size = 0
+flag_send_bins =0
+send_result=286
+Object type:  unstructured volume object
+Cell type:  hexahedra
+Number of nodes:  524288
+Number of cells:  504063
+Min. value:  0
+Max. value:  255
+min:0 0 0, max:63 63 127
+min:0 0 0, max:63 63 127
+
+CPU - o_max[0]= 255
+c_max[0]= 255
+o_max[1]= 255
+c_max[1]= 255
+o_max[2]= 255
+c_max[2]= 255
+o_max[3]= 255
+c_max[3]= 255
+o_max[4]= 1
+c_max[4]= 1
+o_max[5]= 1
+c_max[5]= 1
+o_max[6]= 1
+c_max[6]= 1
+o_max[7]= 1
+c_max[7]= 1
+generate_particles, l: 989
+generate_particles, l: 1013
+generate_particles, l: 1027
+generate_particles, l: 1119
+Object type:  unstructured volume object
+Cell type:  hexahedra
+Number of nodes:  524288
+Number of cells:  504063
+Min. value:  0
+Max. value:  255
+min:0 0 0, max:63 63 127
+min:0 0 0, max:63 63 127
+
+Object type:  unstructured volume object
+Cell type:  hexahedra
+Number of nodes:  524288
+Number of cells:  504063
+Min. value:  0
+Max. value:  255
+min:0 0 0, max:63 63 127
+min:0 0 0, max:63 63 127
+
+CPU - o_max[0]= 255
+c_max[0]= 255
+o_max[1]= 255
+c_max[1]= 255
+o_max[2]= 255
+CPU - o_max[0]= 255
+c_max[0]= 255
+c_max[2]= 255
+o_max[3]= 255
+c_max[3]= 255
+o_max[4]= 1
+c_max[4]= 1
+o_max[1]= 255
+c_max[1]= 255
+o_max[2]= 255
+c_max[2]= 255
+o_max[5]= 1
+c_max[5]= 1
+o_max[6]= 1
+c_max[6]= 1
+o_max[3]= 255
+c_max[3]= 255
+o_max[4]= 1
+c_max[4]= 1
+o_max[7]= 1
+c_max[7]= 1
+o_max[5]= 1
+c_max[5]= 1
+o_max[6]= 1
+c_max[6]= 1
+o_max[7]= 1
+c_max[7]= 1
+generate_particles, l: 989
+generate_particles, l: 989
+generate_particles, l: 1013
+generate_particles, l: 1013
+generate_particles, l: 1027
+generate_particles, l: 1027
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+Object type:  unstructured volume object
+Cell type:  hexahedra
+Number of nodes:  524288
+Number of cells:  504063
+Min. value:  0
+Max. value:  255
+min:0 0 0, max:63 63 127
+min:0 0 0, max:63 63 127
+
+generate_particles, l: 1119
+CPU - ******* max_nparticles=3
+o_max[0]= 255
+c_max[0]= 255
+o_max[1]= 255
+c_max[1]= 255
+o_max[2]= 255
+c_max[2]= 255
+o_max[3]= 255
+c_max[3]= 255
+o_max[4]= 1
+c_max[4]= 1
+o_max[5]= 1
+c_max[5]= 1
+o_max[6]= 1
+c_max[6]= 1
+o_max[7]= 1
+c_max[7]= 1
+generate_particles, l: 989
+generate_particles, l: 1119
+generate_particles, l: 1013
+generate_particles, l: 1027
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1119
+generate_particles, l: 1458
+generate_particles, l: 1492
+generate_particles, l: 1458
+generate_particles, l: 1492
+generate_particles, l: 1458
+generate_particles, l: 1492
+generate_particles, l: 1458
+generate_particles, l: 1492
+generate_particles, l: 1525
+ 
+  CPU:generate_particles: 1297.914062 ms
+ 10767 perticles generated
+Send Server Message Size = 286
+Send Server Particle Size = 10767
+flag_send_bins =0
+send_result=290995
+generate_particles, l: 1525
+ 
+  CPU:generate_particles: 1290.780029 ms
+ 9350 perticles generated
+Send Server Message Size = 286
+Send Server Particle Size = 9350
+flag_send_bins =0
+send_result=252736
+generate_particles, l: 1525
+ 
+  CPU:generate_particles: 1377.498047 ms
+ 10694 perticles generated
+Send Server Message Size = 286
+Send Server Particle Size = 10694
+flag_send_bins =0
+send_result=289024
+generate_particles, l: 1525
+ 
+  CPU:generate_particles: 1394.278076 ms
+ 12476 perticles generated
+Send Server Message Size = 286
+Send Server Particle Size = 12476
+flag_send_bins =0
+send_result=337138
+Send Server Message Size = 34592
+Send Server Particle Size = 12476
+flag_send_bins =1
+transfunc.size() =0
+transfunc.size().type =m
+voleqn.size() =0
+voleqn.size().type =m
+send_result=371444
+Source = 12 Destination = 13
+Source = 12 Destination = 13
+ParticleTransferServer.cpp:L173
+Source = 12 Destination = 13
+recvSize=0,dstSock=13,hSize=15,errno=25
+SHOW CLIENT MESSAGE
+header=JPTP /1.0
+
+messageSize=0
+initParam=1
+timeParam=2
+transParam=2
+transfunc.size=8
+transfunc.Name,ColorVar,OpacityVar,ColorVarMin,ColorVarMax
+C1,_F1_VAR_C,,0,255
+C2,_F2_VAR_C,,0,255
+C3,_F3_VAR_C,,0,255
+C4,_F4_VAR_C,,0,255
+O1,,_F1_VAR_O,0,1
+O2,,_F2_VAR_O,0,1
+O3,,_F3_VAR_O,0,1
+O4,,_F4_VAR_O,0,1
+voleqn.size=8
+voleqn.Name,Equation
+_F1_VAR_C,q1
+_F2_VAR_C,q1
+_F3_VAR_C,q1
+_F4_VAR_C,q1
+_F1_VAR_O,q1
+_F2_VAR_O,q1
+_F3_VAR_O,q1
+_F4_VAR_O,q1
+color_tf_synthesis=C1
+opacity_tf_synthesis=O1
+m_x_synthesis = 
+m_y_synthesis = 
+m_z_synthesis = 
+opacity_func
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name112,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+color_func
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name96,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+opacity_var.size=4
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+color_var.size=4
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+exp_token1,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+var_name4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+value_array0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+
+Server terminated

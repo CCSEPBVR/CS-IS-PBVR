@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ColorEditor</class>
+ <widget class="QDialog" name="ColorEditor">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>334</width>
+    <height>553</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Color Map Editor</string>
+  </property>
+  <property name="modal">
+   <bool>false</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="autoFillBackground">
+      <bool>true</bool>
+     </property>
+     <property name="text">
+      <string>ColorMap:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGlue::ColorMapPalette" name="qglColormap">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>80</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>200</height>
+      </size>
+     </property>
+     <property name="baseSize">
+      <size>
+       <width>0</width>
+       <height>80</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolBox" name="toolBox">
+     <widget class="QWidget" name="page_0">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>310</width>
+        <height>239</height>
+       </rect>
+      </property>
+      <attribute name="label">
+       <string>Predefined ColorMaps</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLabel" name="lbl_DefaultColor">
+         <property name="text">
+          <string>Default Colors:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="colormap_selection">
+         <property name="alternatingRowColors">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="page_1">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>310</width>
+        <height>268</height>
+       </rect>
+      </property>
+      <attribute name="label">
+       <string>Freeform Curve Edit</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_6" stretch="1,0">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetDefaultConstraint</enum>
+         </property>
+         <item>
+          <widget class="QWidget" name="qscren2" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>200</height>
+            </size>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_7">
+            <item>
+             <widget class="QLabel" name="label_2">
+              <property name="autoFillBackground">
+               <bool>true</bool>
+              </property>
+              <property name="text">
+               <string>Color Palette:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGlue::ColorPalette" name="qglColorPalette">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>200</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <property name="sizeConstraint">
+            <enum>QLayout::SetFixedSize</enum>
+           </property>
+           <item>
+            <widget class="QPushButton" name="pushButton_3">
+             <property name="text">
+              <string>Reset</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_4">
+             <property name="text">
+              <string>Undo</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_5">
+             <property name="text">
+              <string>Redo</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="page_2">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>310</width>
+        <height>239</height>
+       </rect>
+      </property>
+      <attribute name="label">
+       <string>Expression Edit</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Color Expression</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="rLabel">
+            <property name="text">
+             <string>R</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="expression_r">
+            <property name="text">
+             <string>1.0</string>
+            </property>
+            <property name="maxLength">
+             <number>32767</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="gLabel">
+            <property name="text">
+             <string>G</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="expression_g">
+            <property name="text">
+             <string>1.4*sin(3.14*x)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="bLabel">
+            <property name="text">
+             <string>B</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="expression_b">
+            <property name="text">
+             <string>-3*x+1.5</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="page_3">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>310</width>
+        <height>239</height>
+       </rect>
+      </property>
+      <attribute name="label">
+       <string>Control Points Edit</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0">
+       <item>
+        <widget class="QTableWidget" name="controlPointTable">
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAsNeeded</enum>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustIgnored</enum>
+         </property>
+         <attribute name="horizontalHeaderDefaultSectionSize">
+          <number>65</number>
+         </attribute>
+         <attribute name="horizontalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderDefaultSectionSize">
+          <number>24</number>
+         </attribute>
+         <attribute name="verticalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+         <row>
+          <property name="text">
+           <string>1</string>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>2</string>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>3</string>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>4</string>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>5</string>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>6</string>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>7</string>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>8</string>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <italic>false</italic>
+            <bold>true</bold>
+           </font>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>9</string>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+         </row>
+         <row>
+          <property name="text">
+           <string>10</string>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+         </row>
+         <column>
+          <property name="text">
+           <string>Point</string>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+            <underline>true</underline>
+           </font>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Red</string>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+            <underline>true</underline>
+           </font>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Green</string>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+            <underline>true</underline>
+           </font>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Blue</string>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+            <underline>true</underline>
+           </font>
+          </property>
+         </column>
+         <item row="0" column="0">
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </item>
+         <item row="0" column="1">
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </item>
+         <item row="0" column="2">
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </item>
+         <item row="0" column="3">
+          <property name="text">
+           <string>0.4</string>
+          </property>
+         </item>
+         <item row="1" column="0">
+          <property name="text">
+           <string>0.5</string>
+          </property>
+         </item>
+         <item row="1" column="1">
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </item>
+         <item row="1" column="2">
+          <property name="text">
+           <string>0.4</string>
+          </property>
+         </item>
+         <item row="1" column="3">
+          <property name="text">
+           <string>0.3</string>
+          </property>
+         </item>
+         <item row="2" column="0">
+          <property name="text">
+           <string>0.75</string>
+          </property>
+         </item>
+         <item row="2" column="1">
+          <property name="text">
+           <string>0.4</string>
+          </property>
+         </item>
+         <item row="2" column="2">
+          <property name="text">
+           <string>0.6</string>
+          </property>
+         </item>
+         <item row="2" column="3">
+          <property name="text">
+           <string>0.2</string>
+          </property>
+         </item>
+         <item row="3" column="0">
+          <property name="text">
+           <string>1.0</string>
+          </property>
+         </item>
+         <item row="3" column="1">
+          <property name="text">
+           <string>0.4</string>
+          </property>
+         </item>
+         <item row="3" column="2">
+          <property name="text">
+           <string>0.9</string>
+          </property>
+         </item>
+         <item row="3" column="3">
+          <property name="text">
+           <string>0.1</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QGlue::ColorMapPalette</class>
+   <extends>QOpenGLWidget</extends>
+   <header>QGlue/colormappalette.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QGlue::ColorPalette</class>
+   <extends>QOpenGLWidget</extends>
+   <header>QGlue/colorpalette.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

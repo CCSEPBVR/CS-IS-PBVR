@@ -1,0 +1,262 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AggregateTypeSubvolume.cpp" />
+    <ClCompile Include="CellByCellMetropolisSampling.cpp" />
+    <ClCompile Include="CellByCellRejectionSampling.cpp" />
+    <ClCompile Include="CellByCellUniformSampling.cpp" />
+    <ClCompile Include="CropRegion.cpp" />
+    <ClCompile Include="DataArrayTag.cpp" />
+    <ClCompile Include="ExtendedTransferFunction.cpp" />
+    <ClCompile Include="FilterInformation.cpp" />
+    <ClCompile Include="FrequencyTable.cpp" />
+    <ClCompile Include="GeometryObjectBase.cpp" />
+    <ClCompile Include="GlobalCore.cpp" />
+    <ClCompile Include="HexahedralCell.cpp" />
+    <ClCompile Include="IDManager.cpp" />
+    <ClCompile Include="JobCollector.cpp" />
+    <ClCompile Include="JobDispatcher.cpp" />
+    <ClCompile Include="KVSMLObjectPointWriter.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="MapperBase.cpp" />
+    <ClCompile Include="ObjectBase.cpp" />
+    <ClCompile Include="ObjectManager.cpp" />
+    <ClCompile Include="ParameterFile.cpp" />
+    <ClCompile Include="PointObject.cpp" />
+    <ClCompile Include="PointObjectGenerator.cpp" />
+    <ClCompile Include="PrismaticCell.cpp" />
+    <ClCompile Include="PyramidalCell.cpp" />
+    <ClCompile Include="QuadraticHexahedralCell.cpp" />
+    <ClCompile Include="QuadraticSquareCell.cpp" />
+    <ClCompile Include="QuadraticTetrahedralCell.cpp" />
+    <ClCompile Include="QuadraticTriangleCell.cpp" />
+    <ClCompile Include="RangeEstimater.cpp" />
+    <ClCompile Include="SPLITTypeSubvolume.cpp" />
+    <ClCompile Include="SquareCell.cpp" />
+    <ClCompile Include="StepAggregateTypeSubvolume.cpp" />
+    <ClCompile Include="StructuredVolumeObject.cpp" />
+    <ClCompile Include="TetrahedralCell.cpp" />
+    <ClCompile Include="TransferFunction.cpp" />
+    <ClCompile Include="TransferFunctionSynthesizer.cpp" />
+    <ClCompile Include="TransferFunctionSynthesizerCreator.cpp" />
+    <ClCompile Include="TriangleCell.cpp" />
+    <ClCompile Include="UnstructuredVolumeImporter.cpp" />
+    <ClCompile Include="UnstructuredVolumeObject.cpp" />
+    <ClCompile Include="VolumeObjectBase.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AggregateTypeSubvolume.h" />
+    <ClInclude Include="Argument.h" />
+    <ClInclude Include="CellBase.h" />
+    <ClInclude Include="CellByCellMetropolisSampling.h" />
+    <ClInclude Include="CellByCellParticleGenerator.h" />
+    <ClInclude Include="CellByCellRejectionSampling.h" />
+    <ClInclude Include="CellByCellUniformSampling.h" />
+    <ClInclude Include="ClassName.h" />
+    <ClInclude Include="common.h" />
+    <ClInclude Include="Compiler.h" />
+    <ClInclude Include="CropRegion.h" />
+    <ClInclude Include="DataArray.h" />
+    <ClInclude Include="DataArrayTag.h" />
+    <ClInclude Include="endian2.h" />
+    <ClInclude Include="ExtendedTransferFunction.h" />
+    <ClInclude Include="FilterInformation.h" />
+    <ClInclude Include="FrequencyTable.h" />
+    <ClInclude Include="GeometryObjectBase.h" />
+    <ClInclude Include="GlobalCore.h" />
+    <ClInclude Include="HexahedralCell.h" />
+    <ClInclude Include="IDManager.h" />
+    <ClInclude Include="ImporterBase.h" />
+    <ClInclude Include="JobCollector.h" />
+    <ClInclude Include="JobDispatcher.h" />
+    <ClInclude Include="KVSMLObjectPointWriter.h" />
+    <ClInclude Include="Macro.h" />
+    <ClInclude Include="MapperBase.h" />
+    <ClInclude Include="ObjectBase.h" />
+    <ClInclude Include="ObjectManager.h" />
+    <ClInclude Include="ParameterFile.h" />
+    <ClInclude Include="Platform.h" />
+    <ClInclude Include="PointObject.h" />
+    <ClInclude Include="PointObjectGenerator.h" />
+    <ClInclude Include="PrismaticCell.h" />
+    <ClInclude Include="PyramidalCell.h" />
+    <ClInclude Include="QuadraticHexahedralCell.h" />
+    <ClInclude Include="QuadraticSquareCell.h" />
+    <ClInclude Include="QuadraticTetrahedralCell.h" />
+    <ClInclude Include="QuadraticTriangleCell.h" />
+    <ClInclude Include="RangeEstimater.h" />
+    <ClInclude Include="SPLITTypeSubvolume.h" />
+    <ClInclude Include="SquareCell.h" />
+    <ClInclude Include="StepAggregateTypeSubvolume.h" />
+    <ClInclude Include="StructuredVolumeObject.h" />
+    <ClInclude Include="TagTable.h" />
+    <ClInclude Include="TetrahedralCell.h" />
+    <ClInclude Include="timer_simple.h" />
+    <ClInclude Include="TransferFunction.h" />
+    <ClInclude Include="TransferFunctionSynthesizer.h" />
+    <ClInclude Include="TransferFunctionSynthesizerCreator.h" />
+    <ClInclude Include="TriangleCell.h" />
+    <ClInclude Include="Types.h" />
+    <ClInclude Include="UnstructuredVolumeImporter.h" />
+    <ClInclude Include="UnstructuredVolumeObject.h" />
+    <ClInclude Include="VolumeObjectBase.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{F8CE5E7E-DA70-41BC-B21A-B33A033E48B1}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Server</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>pbvr_server</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>pbvr_server</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>CPU_VER;JPV_CLIENT;CPU_SAMPLING_TIME;WIN32;NDEBUG;STRICT;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)\KVS\Source;$(SolutionDir)\Common;$(SolutionDir)\FunctionParser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kvsCore.lib;pbvrCommon.lib;pbvrFunc.lib;ws2_32.lib;glu32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>CPU_VER;JPV_CLIENT;CPU_SAMPLING_TIME;WIN32;NDEBUG;STRICT;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_DEPRECATE;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)\KVS\Source;$(SolutionDir)\Common;$(SolutionDir)\FunctionParser</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <DisableSpecificWarnings>4244;4101;4267;4819;</DisableSpecificWarnings>
+      <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>kvsCore.lib;pbvrCommon.lib;pbvrFunc.lib;ws2_32.lib;glu32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,808 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7F987E38-7A23-4DF3-93F5-635E730FE149}</ProjectGuid>
+    <RootNamespace>KVS_Core</RootNamespace>
+    <ProjectName>KVS_Core</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetExt>.lib</TargetExt>
+    <TargetName>kvsCore</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>kvsCore</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;NOMINMAX</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)\KVS\Source</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>KVS_SUPPORT_GLUT;NDEBUG;WIN32;NOMINMAX;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)\KVS\Source</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>KVS_SUPPORT_GLUT;NDEBUG;WIN32;NOMINMAX;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <DisableSpecificWarnings>4244;4101;4267;4819;</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="FileFormat\AVSField\AVSField.cpp" />
+    <ClCompile Include="FileFormat\AVSUCD\AVSUcd.cpp" />
+    <ClCompile Include="FileFormat\BMP\Bmp.cpp" />
+    <ClCompile Include="FileFormat\BMP\FileHeader.cpp" />
+    <ClCompile Include="FileFormat\BMP\InfoHeader.cpp" />
+    <ClCompile Include="FileFormat\CSV\Csv.cpp" />
+    <ClCompile Include="FileFormat\DICOM\Attribute.cpp" />
+    <ClCompile Include="FileFormat\DICOM\Dicom.cpp" />
+    <ClCompile Include="FileFormat\DICOM\DicomList.cpp" />
+    <ClCompile Include="FileFormat\DICOM\Element.cpp" />
+    <ClCompile Include="FileFormat\DICOM\Item.cpp" />
+    <ClCompile Include="FileFormat\DICOM\Tag.cpp" />
+    <ClCompile Include="FileFormat\DICOM\Value.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)Value2.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)Value2.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="FileFormat\DICOM\VR.cpp" />
+    <ClCompile Include="FileFormat\DICOM\Window.cpp" />
+    <ClCompile Include="FileFormat\FileFormatBase.cpp" />
+    <ClCompile Include="FileFormat\FrontFlow\BoundaryData.cpp" />
+    <ClCompile Include="FileFormat\FrontFlow\Data.cpp" />
+    <ClCompile Include="FileFormat\FrontFlow\DataSet.cpp" />
+    <ClCompile Include="FileFormat\FrontFlow\File.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)File2.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)File2.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="FileFormat\FrontFlow\FlowData.cpp" />
+    <ClCompile Include="FileFormat\FrontFlow\GFData.cpp" />
+    <ClCompile Include="FileFormat\FrontFlow\MeshData.cpp" />
+    <ClCompile Include="FileFormat\FrontSTR\FrontSTR.cpp" />
+    <ClCompile Include="FileFormat\FrontSTR\MeshData.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)MeshData2.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)MeshData2.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="FileFormat\FrontSTR\ResultData.cpp" />
+    <ClCompile Include="FileFormat\GrADS\DataDescriptorFile.cpp" />
+    <ClCompile Include="FileFormat\GrADS\DSet.cpp" />
+    <ClCompile Include="FileFormat\GrADS\GrADS.cpp" />
+    <ClCompile Include="FileFormat\GrADS\GriddedBinaryDataFile.cpp" />
+    <ClCompile Include="FileFormat\GrADS\Options.cpp" />
+    <ClCompile Include="FileFormat\GrADS\TDef.cpp" />
+    <ClCompile Include="FileFormat\GrADS\Title.cpp" />
+    <ClCompile Include="FileFormat\GrADS\Undef.cpp" />
+    <ClCompile Include="FileFormat\GrADS\Vars.cpp" />
+    <ClCompile Include="FileFormat\GrADS\XYZDef.cpp" />
+    <ClCompile Include="FileFormat\KVSML\CellTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\ColorMapTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\ColorTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\ColumnTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\ConnectionTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\CoordTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\DataArrayTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\DataReader.cpp" />
+    <ClCompile Include="FileFormat\KVSML\DataValueTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\DataWriter.cpp" />
+    <ClCompile Include="FileFormat\KVSML\ImageObjectTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\KVSMLObjectImage.cpp" />
+    <ClCompile Include="FileFormat\KVSML\KVSMLObjectLine.cpp" />
+    <ClCompile Include="FileFormat\KVSML\KVSMLObjectPoint.cpp" />
+    <ClCompile Include="FileFormat\KVSML\KVSMLObjectPolygon.cpp" />
+    <ClCompile Include="FileFormat\KVSML\KVSMLObjectStructuredVolume.cpp" />
+    <ClCompile Include="FileFormat\KVSML\KVSMLObjectTable.cpp" />
+    <ClCompile Include="FileFormat\KVSML\KVSMLObjectUnstructuredVolume.cpp" />
+    <ClCompile Include="FileFormat\KVSML\KVSMLTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\KVSMLTransferFunction.cpp" />
+    <ClCompile Include="FileFormat\KVSML\LineObjectTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\LineTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\NodeTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\NormalTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\ObjectTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\OpacityMapTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\OpacityTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\PixelTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\PointObjectTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\PolygonObjectTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\PolygonTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\SizeTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\StructuredVolumeObjectTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\TableObjectTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\TagBase.cpp" />
+    <ClCompile Include="FileFormat\KVSML\TransferFunctionTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\UnstructuredVolumeObjectTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\ValueTag.cpp" />
+    <ClCompile Include="FileFormat\KVSML\VertexTag.cpp" />
+    <ClCompile Include="FileFormat\PLY\Ply.cpp" />
+    <ClCompile Include="FileFormat\PLY\PlyFile.cpp" />
+    <ClCompile Include="FileFormat\PNM\Header.cpp" />
+    <ClCompile Include="FileFormat\PNM\Pbm.cpp" />
+    <ClCompile Include="FileFormat\PNM\Pgm.cpp" />
+    <ClCompile Include="FileFormat\PNM\Ppm.cpp" />
+    <ClCompile Include="FileFormat\STL\Stl.cpp" />
+    <ClCompile Include="FileFormat\TIFF\Entry.cpp" />
+    <ClCompile Include="FileFormat\TIFF\Header.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)Header2.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)Header2.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="FileFormat\TIFF\ImageFileDirectory.cpp" />
+    <ClCompile Include="FileFormat\TIFF\Tag.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)Tag2.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)Tag2.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="FileFormat\TIFF\TagDictionary.cpp" />
+    <ClCompile Include="FileFormat\TIFF\Tiff.cpp" />
+    <ClCompile Include="FileFormat\XML\TinyXML.cpp" />
+    <ClCompile Include="FileFormat\XML\XMLComment.cpp" />
+    <ClCompile Include="FileFormat\XML\XMLDeclaration.cpp" />
+    <ClCompile Include="FileFormat\XML\XMLDocument.cpp" />
+    <ClCompile Include="FileFormat\XML\XMLElement.cpp" />
+    <ClCompile Include="FileFormat\XML\XMLNode.cpp" />
+    <ClCompile Include="Image\BitImage.cpp" />
+    <ClCompile Include="Image\ColorImage.cpp" />
+    <ClCompile Include="Image\GrayImage.cpp" />
+    <ClCompile Include="Image\HSVColor.cpp" />
+    <ClCompile Include="Image\ImageBase.cpp" />
+    <ClCompile Include="Image\RGBAColor.cpp" />
+    <ClCompile Include="Image\RGBColor.cpp" />
+    <ClCompile Include="Matrix\FrustumMatrix44.cpp" />
+    <ClCompile Include="Matrix\LookAtMatrix44.cpp" />
+    <ClCompile Include="Matrix\Matrix.cpp" />
+    <ClCompile Include="Matrix\Matrix22.cpp" />
+    <ClCompile Include="Matrix\Matrix33.cpp" />
+    <ClCompile Include="Matrix\Matrix44.cpp" />
+    <ClCompile Include="Matrix\OrthogonalMatrix44.cpp" />
+    <ClCompile Include="Matrix\PerspectiveMatrix44.cpp" />
+    <ClCompile Include="Matrix\RotationMatrix33.cpp" />
+    <ClCompile Include="Matrix\ScalingMatrix33.cpp" />
+    <ClCompile Include="Matrix\Vector.cpp" />
+    <ClCompile Include="Matrix\Vector2.cpp" />
+    <ClCompile Include="Matrix\Vector3.cpp" />
+    <ClCompile Include="Matrix\Vector4.cpp" />
+    <ClCompile Include="Matrix\ViewingMatrix44.cpp" />
+    <ClCompile Include="Network\Acceptor.cpp" />
+    <ClCompile Include="Network\Connector.cpp" />
+    <ClCompile Include="Network\HttpConnector.cpp" />
+    <ClCompile Include="Network\HttpRequestHeader.cpp" />
+    <ClCompile Include="Network\IPAddress.cpp" />
+    <ClCompile Include="Network\MessageBlock.cpp" />
+    <ClCompile Include="Network\Socket.cpp" />
+    <ClCompile Include="Network\SocketAddress.cpp" />
+    <ClCompile Include="Network\SocketSelector.cpp" />
+    <ClCompile Include="Network\SocketTimer.cpp" />
+    <ClCompile Include="Network\TCPBarrier.cpp" />
+    <ClCompile Include="Network\TCPBarrierServer.cpp" />
+    <ClCompile Include="Network\TCPServer.cpp" />
+    <ClCompile Include="Network\TCPSocket.cpp" />
+    <ClCompile Include="Network\Url.cpp" />
+    <ClCompile Include="Numeric\EigenDecomposer.cpp" />
+    <ClCompile Include="Numeric\GaussEliminationSolver.cpp" />
+    <ClCompile Include="Numeric\LUDecomposer.cpp" />
+    <ClCompile Include="Numeric\LUSolver.cpp" />
+    <ClCompile Include="Numeric\MersenneTwister.cpp" />
+    <ClCompile Include="Numeric\QRDecomposer.cpp" />
+    <ClCompile Include="Numeric\QRSolver.cpp" />
+    <ClCompile Include="Numeric\Quaternion.cpp" />
+    <ClCompile Include="Numeric\ResponseSurface.cpp" />
+    <ClCompile Include="Numeric\SVDecomposer.cpp" />
+    <ClCompile Include="Numeric\SVSolver.cpp" />
+    <ClCompile Include="Numeric\Xorshift128.cpp" />
+    <ClCompile Include="Thread\Condition.cpp" />
+    <ClCompile Include="Thread\Mutex.cpp" />
+    <ClCompile Include="Thread\MutexLocker.cpp" />
+    <ClCompile Include="Thread\ReadLocker.cpp" />
+    <ClCompile Include="Thread\ReadWriteLock.cpp" />
+    <ClCompile Include="Thread\Semaphore.cpp" />
+    <ClCompile Include="Thread\Thread.cpp" />
+    <ClCompile Include="Thread\WriteLocker.cpp" />
+    <ClCompile Include="Utility\AnyValue.cpp" />
+    <ClCompile Include="Utility\AnyValueArray.cpp" />
+    <ClCompile Include="Utility\BitArray.cpp" />
+    <ClCompile Include="Utility\CommandLine.cpp" />
+    <ClCompile Include="Utility\Date.cpp" />
+    <ClCompile Include="Utility\Directory.cpp" />
+    <ClCompile Include="Utility\FastTokenizer.cpp" />
+    <ClCompile Include="Utility\File.cpp" />
+    <ClCompile Include="Utility\MemoryTracer.cpp" />
+    <ClCompile Include="Utility\Message.cpp" />
+    <ClCompile Include="Utility\ReferenceCounter.cpp" />
+    <ClCompile Include="Utility\String.cpp" />
+    <ClCompile Include="Utility\SystemInformation.cpp" />
+    <ClCompile Include="Utility\Time.cpp" />
+    <ClCompile Include="Utility\Tokenizer.cpp" />
+    <ClCompile Include="Utility\Value.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Utility\ValueArray.cpp" />
+    <ClCompile Include="Visualization\Data\HydrogenVolumeData.cpp" />
+    <ClCompile Include="Visualization\Data\TornadoVolumeData.cpp" />
+    <ClCompile Include="Visualization\Event\EventBase.cpp" />
+    <ClCompile Include="Visualization\Event\EventHandler.cpp" />
+    <ClCompile Include="Visualization\Event\EventListener.cpp" />
+    <ClCompile Include="Visualization\Event\IdleEventListener.cpp" />
+    <ClCompile Include="Visualization\Event\InitializeEventListener.cpp" />
+    <ClCompile Include="Visualization\Event\KeyEvent.cpp" />
+    <ClCompile Include="Visualization\Event\KeyPressEventListener.cpp" />
+    <ClCompile Include="Visualization\Event\MouseDoubleClickEventListener.cpp" />
+    <ClCompile Include="Visualization\Event\MouseEvent.cpp" />
+    <ClCompile Include="Visualization\Event\MouseMoveEventListener.cpp" />
+    <ClCompile Include="Visualization\Event\MousePressEventListener.cpp" />
+    <ClCompile Include="Visualization\Event\MouseReleaseEventListener.cpp" />
+    <ClCompile Include="Visualization\Event\PaintEventListener.cpp" />
+    <ClCompile Include="Visualization\Event\ResizeEvent.cpp" />
+    <ClCompile Include="Visualization\Event\ResizeEventListener.cpp" />
+    <ClCompile Include="Visualization\Event\TimeEvent.cpp" />
+    <ClCompile Include="Visualization\Event\TimerEventListener.cpp" />
+    <ClCompile Include="Visualization\Event\WheelEvent.cpp" />
+    <ClCompile Include="Visualization\Event\WheelEventListener.cpp" />
+    <ClCompile Include="Visualization\Exporter\LineExporter.cpp" />
+    <ClCompile Include="Visualization\Exporter\PointExporter.cpp" />
+    <ClCompile Include="Visualization\Exporter\PolygonExporter.cpp" />
+    <ClCompile Include="Visualization\Exporter\StructuredVolumeExporter.cpp" />
+    <ClCompile Include="Visualization\Exporter\UnstructuredVolumeExporter.cpp" />
+    <ClCompile Include="Visualization\Filter\Bounds.cpp" />
+    <ClCompile Include="Visualization\Filter\FilterBase.cpp" />
+    <ClCompile Include="Visualization\Filter\LineIntegralConvolution.cpp" />
+    <ClCompile Include="Visualization\Filter\StructuredVectorToScalar.cpp" />
+    <ClCompile Include="Visualization\Filter\TetrahedraToTetrahedra.cpp" />
+    <ClCompile Include="Visualization\Filter\TrilinearInterpolator.cpp" />
+    <ClCompile Include="Visualization\Filter\Tubeline.cpp" />
+    <ClCompile Include="Visualization\Filter\UnstructuredVectorToScalar.cpp" />
+    <ClCompile Include="Visualization\Importer\ImageImporter.cpp" />
+    <ClCompile Include="Visualization\Importer\ImporterBase.cpp" />
+    <ClCompile Include="Visualization\Importer\LineImporter.cpp" />
+    <ClCompile Include="Visualization\Importer\PointImporter.cpp" />
+    <ClCompile Include="Visualization\Importer\PolygonImporter.cpp" />
+    <ClCompile Include="Visualization\Importer\StructuredVolumeImporter.cpp" />
+    <ClCompile Include="Visualization\Importer\TableImporter.cpp" />
+    <ClCompile Include="Visualization\Importer\UnstructuredVolumeImporter.cpp" />
+    <ClCompile Include="Visualization\Mapper\ArrowGlyph.cpp" />
+    <ClCompile Include="Visualization\Mapper\CellAdjacencyGraph.cpp" />
+    <ClCompile Include="Visualization\Mapper\CellByCellLayeredSampling.cpp" />
+    <ClCompile Include="Visualization\Mapper\CellByCellMetropolisSampling.cpp" />
+    <ClCompile Include="Visualization\Mapper\CellByCellRejectionSampling.cpp" />
+    <ClCompile Include="Visualization\Mapper\CellByCellUniformSampling.cpp" />
+    <ClCompile Include="Visualization\Mapper\ColorMap.cpp" />
+    <ClCompile Include="Visualization\Mapper\DiamondGlyph.cpp" />
+    <ClCompile Include="Visualization\Mapper\ExternalFaces.cpp" />
+    <ClCompile Include="Visualization\Mapper\ExtractEdges.cpp" />
+    <ClCompile Include="Visualization\Mapper\ExtractVertices.cpp" />
+    <ClCompile Include="Visualization\Mapper\FrequencyTable.cpp" />
+    <ClCompile Include="Visualization\Mapper\GlyphBase.cpp" />
+    <ClCompile Include="Visualization\Mapper\HexahedralCell.cpp" />
+    <ClCompile Include="Visualization\Mapper\HitAndMissSampling.cpp" />
+    <ClCompile Include="Visualization\Mapper\Isosurface.cpp" />
+    <ClCompile Include="Visualization\Mapper\MapperBase.cpp" />
+    <ClCompile Include="Visualization\Mapper\MarchingCubes.cpp" />
+    <ClCompile Include="Visualization\Mapper\MarchingCubesTable.cpp" />
+    <ClCompile Include="Visualization\Mapper\MarchingHexahedra.cpp" />
+    <ClCompile Include="Visualization\Mapper\MarchingHexahedraTable.cpp" />
+    <ClCompile Include="Visualization\Mapper\MarchingPyramid.cpp" />
+    <ClCompile Include="Visualization\Mapper\MarchingPyramidTable.cpp" />
+    <ClCompile Include="Visualization\Mapper\MarchingTetrahedra.cpp" />
+    <ClCompile Include="Visualization\Mapper\MarchingTetrahedraTable.cpp" />
+    <ClCompile Include="Visualization\Mapper\MetropolisSampling.cpp" />
+    <ClCompile Include="Visualization\Mapper\OpacityMap.cpp" />
+    <ClCompile Include="Visualization\Mapper\OrthoSlice.cpp" />
+    <ClCompile Include="Visualization\Mapper\PyramidalCell.cpp" />
+    <ClCompile Include="Visualization\Mapper\QuadraticHexahedralCell.cpp" />
+    <ClCompile Include="Visualization\Mapper\QuadraticTetrahedralCell.cpp" />
+    <ClCompile Include="Visualization\Mapper\RGBFormulae.cpp" />
+    <ClCompile Include="Visualization\Mapper\SlicePlane.cpp" />
+    <ClCompile Include="Visualization\Mapper\SphereGlyph.cpp" />
+    <ClCompile Include="Visualization\Mapper\Streamline.cpp" />
+    <ClCompile Include="Visualization\Mapper\StreamlineBase.cpp" />
+    <ClCompile Include="Visualization\Mapper\TetrahedralCell.cpp" />
+    <ClCompile Include="Visualization\Mapper\TransferFunction.cpp" />
+    <ClCompile Include="Visualization\Object\AxisObject.cpp" />
+    <ClCompile Include="Visualization\Object\GeometryObjectBase.cpp" />
+    <ClCompile Include="Visualization\Object\GlyphObject.cpp" />
+    <ClCompile Include="Visualization\Object\ImageObject.cpp" />
+    <ClCompile Include="Visualization\Object\LineObject.cpp" />
+    <ClCompile Include="Visualization\Object\ObjectBase.cpp" />
+    <ClCompile Include="Visualization\Object\PointObject.cpp" />
+    <ClCompile Include="Visualization\Object\PolygonObject.cpp" />
+    <ClCompile Include="Visualization\Object\StructuredVolumeObject.cpp" />
+    <ClCompile Include="Visualization\Object\TableObject.cpp" />
+    <ClCompile Include="Visualization\Object\UnstructuredVolumeObject.cpp" />
+    <ClCompile Include="Visualization\Object\VolumeObjectBase.cpp" />
+    <ClCompile Include="Visualization\Pipeline\ObjectImporter.cpp" />
+    <ClCompile Include="Visualization\Pipeline\PipelineModule.cpp" />
+    <ClCompile Include="Visualization\Pipeline\VisualizationPipeline.cpp" />
+    <ClCompile Include="Visualization\Renderer\GlyphRenderer.cpp" />
+    <ClCompile Include="Visualization\Renderer\ImageRenderer.cpp" />
+    <ClCompile Include="Visualization\Renderer\LineRenderer.cpp" />
+    <ClCompile Include="Visualization\Renderer\ParallelCoordinatesRenderer.cpp" />
+    <ClCompile Include="Visualization\Renderer\ParticleBuffer.cpp" />
+    <ClCompile Include="Visualization\Renderer\ParticleBufferAccumulator.cpp" />
+    <ClCompile Include="Visualization\Renderer\ParticleBufferCompositor.cpp" />
+    <ClCompile Include="Visualization\Renderer\ParticleVolumeRenderer.cpp" />
+    <ClCompile Include="Visualization\Renderer\PointRenderer.cpp" />
+    <ClCompile Include="Visualization\Renderer\PolygonRenderer.cpp" />
+    <ClCompile Include="Visualization\Renderer\Ray.cpp" />
+    <ClCompile Include="Visualization\Renderer\RayCastingRenderer.cpp" />
+    <ClCompile Include="Visualization\Renderer\RendererBase.cpp" />
+    <ClCompile Include="Visualization\Renderer\ScatterPlotMatrixRenderer.cpp" />
+    <ClCompile Include="Visualization\Renderer\ScatterPlotRenderer.cpp" />
+    <ClCompile Include="Visualization\Renderer\Shader.cpp" />
+    <ClCompile Include="Visualization\Renderer\VolumeRayIntersector.cpp" />
+    <ClCompile Include="Visualization\Renderer\VolumeRendererBase.cpp" />
+    <ClCompile Include="Visualization\Viewer\ApplicationBase.cpp" />
+    <ClCompile Include="Visualization\Viewer\Background.cpp" />
+    <ClCompile Include="Visualization\Viewer\Camera.cpp" />
+    <ClCompile Include="Visualization\Viewer\DisplayFormat.cpp" />
+    <ClCompile Include="Visualization\Viewer\DisplayList.cpp" />
+    <ClCompile Include="Visualization\Viewer\FrameBuffer.cpp" />
+    <ClCompile Include="Visualization\Viewer\GlobalCore.cpp" />
+    <ClCompile Include="Visualization\Viewer\IDManager.cpp" />
+    <ClCompile Include="Visualization\Viewer\Light.cpp" />
+    <ClCompile Include="Visualization\Viewer\Material.cpp" />
+    <ClCompile Include="Visualization\Viewer\Mouse.cpp" />
+    <ClCompile Include="Visualization\Viewer\ObjectManager.cpp" />
+    <ClCompile Include="Visualization\Viewer\RendererManager.cpp" />
+    <ClCompile Include="Visualization\Viewer\ScreenBase.cpp" />
+    <ClCompile Include="Visualization\Viewer\ScreenCore.cpp" />
+    <ClCompile Include="Visualization\Viewer\Texture1D.cpp" />
+    <ClCompile Include="Visualization\Viewer\Texture2D.cpp" />
+    <ClCompile Include="Visualization\Viewer\TextureBase.cpp" />
+    <ClCompile Include="Visualization\Viewer\Trackball.cpp" />
+    <ClCompile Include="Visualization\Viewer\WindowBase.cpp" />
+    <ClCompile Include="Visualization\Viewer\Xform.cpp" />
+    <ClCompile Include="Visualization\Viewer\XformControl.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="FileFormat\AVSField\AVSField.h" />
+    <ClInclude Include="FileFormat\AVSUCD\AVSUcd.h" />
+    <ClInclude Include="FileFormat\BMP\Bmp.h" />
+    <ClInclude Include="FileFormat\BMP\FileHeader.h" />
+    <ClInclude Include="FileFormat\BMP\HeaderBase.h" />
+    <ClInclude Include="FileFormat\BMP\InfoHeader.h" />
+    <ClInclude Include="FileFormat\CSV\Csv.h" />
+    <ClInclude Include="FileFormat\DICOM\Attribute.h" />
+    <ClInclude Include="FileFormat\DICOM\DataType.h" />
+    <ClInclude Include="FileFormat\DICOM\Dicom.h" />
+    <ClInclude Include="FileFormat\DICOM\DicomList.h" />
+    <ClInclude Include="FileFormat\DICOM\Element.h" />
+    <ClInclude Include="FileFormat\DICOM\ElementType.h" />
+    <ClInclude Include="FileFormat\DICOM\Item.h" />
+    <ClInclude Include="FileFormat\DICOM\StreamReader.h" />
+    <ClInclude Include="FileFormat\DICOM\Tag.h" />
+    <ClInclude Include="FileFormat\DICOM\TagDictionary.h" />
+    <ClInclude Include="FileFormat\DICOM\TagTable.h" />
+    <ClInclude Include="FileFormat\DICOM\Value.h" />
+    <ClInclude Include="FileFormat\DICOM\VR.h" />
+    <ClInclude Include="FileFormat\DICOM\VRDictionary.h" />
+    <ClInclude Include="FileFormat\DICOM\VRTable.h" />
+    <ClInclude Include="FileFormat\DICOM\VRType.h" />
+    <ClInclude Include="FileFormat\DICOM\Window.h" />
+    <ClInclude Include="FileFormat\FileFormatBase.h" />
+    <ClInclude Include="FileFormat\FrontFlow\BoundaryData.h" />
+    <ClInclude Include="FileFormat\FrontFlow\Data.h" />
+    <ClInclude Include="FileFormat\FrontFlow\DataSet.h" />
+    <ClInclude Include="FileFormat\FrontFlow\File.h" />
+    <ClInclude Include="FileFormat\FrontFlow\FlowData.h" />
+    <ClInclude Include="FileFormat\FrontFlow\FrontFlow.h" />
+    <ClInclude Include="FileFormat\FrontFlow\GFData.h" />
+    <ClInclude Include="FileFormat\FrontFlow\MeshData.h" />
+    <ClInclude Include="FileFormat\FrontSTR\FrontSTR.h" />
+    <ClInclude Include="FileFormat\FrontSTR\MeshData.h" />
+    <ClInclude Include="FileFormat\FrontSTR\ResultData.h" />
+    <ClInclude Include="FileFormat\GrADS\DataDescriptorFile.h" />
+    <ClInclude Include="FileFormat\GrADS\DSet.h" />
+    <ClInclude Include="FileFormat\GrADS\GrADS.h" />
+    <ClInclude Include="FileFormat\GrADS\GriddedBinaryDataFile.h" />
+    <ClInclude Include="FileFormat\GrADS\Options.h" />
+    <ClInclude Include="FileFormat\GrADS\TDef.h" />
+    <ClInclude Include="FileFormat\GrADS\Title.h" />
+    <ClInclude Include="FileFormat\GrADS\Undef.h" />
+    <ClInclude Include="FileFormat\GrADS\Vars.h" />
+    <ClInclude Include="FileFormat\GrADS\XDef.h" />
+    <ClInclude Include="FileFormat\GrADS\XYZDef.h" />
+    <ClInclude Include="FileFormat\GrADS\YDef.h" />
+    <ClInclude Include="FileFormat\GrADS\ZDef.h" />
+    <ClInclude Include="FileFormat\KVSML\CellTag.h" />
+    <ClInclude Include="FileFormat\KVSML\ColorMapTag.h" />
+    <ClInclude Include="FileFormat\KVSML\ColorTag.h" />
+    <ClInclude Include="FileFormat\KVSML\ColumnTag.h" />
+    <ClInclude Include="FileFormat\KVSML\ConnectionTag.h" />
+    <ClInclude Include="FileFormat\KVSML\CoordTag.h" />
+    <ClInclude Include="FileFormat\KVSML\DataArray.h" />
+    <ClInclude Include="FileFormat\KVSML\DataArrayTag.h" />
+    <ClInclude Include="FileFormat\KVSML\DataReader.h" />
+    <ClInclude Include="FileFormat\KVSML\DataValueTag.h" />
+    <ClInclude Include="FileFormat\KVSML\DataWriter.h" />
+    <ClInclude Include="FileFormat\KVSML\ImageObjectTag.h" />
+    <ClInclude Include="FileFormat\KVSML\KVSMLObjectImage.h" />
+    <ClInclude Include="FileFormat\KVSML\KVSMLObjectLine.h" />
+    <ClInclude Include="FileFormat\KVSML\KVSMLObjectPoint.h" />
+    <ClInclude Include="FileFormat\KVSML\KVSMLObjectPolygon.h" />
+    <ClInclude Include="FileFormat\KVSML\KVSMLObjectStructuredVolume.h" />
+    <ClInclude Include="FileFormat\KVSML\KVSMLObjectTable.h" />
+    <ClInclude Include="FileFormat\KVSML\KVSMLObjectUnstructuredVolume.h" />
+    <ClInclude Include="FileFormat\KVSML\KVSMLTag.h" />
+    <ClInclude Include="FileFormat\KVSML\KVSMLTransferFunction.h" />
+    <ClInclude Include="FileFormat\KVSML\LineObjectTag.h" />
+    <ClInclude Include="FileFormat\KVSML\LineTag.h" />
+    <ClInclude Include="FileFormat\KVSML\NodeTag.h" />
+    <ClInclude Include="FileFormat\KVSML\NormalTag.h" />
+    <ClInclude Include="FileFormat\KVSML\ObjectTag.h" />
+    <ClInclude Include="FileFormat\KVSML\OpacityMapTag.h" />
+    <ClInclude Include="FileFormat\KVSML\OpacityTag.h" />
+    <ClInclude Include="FileFormat\KVSML\PixelTag.h" />
+    <ClInclude Include="FileFormat\KVSML\PointObjectTag.h" />
+    <ClInclude Include="FileFormat\KVSML\PolygonObjectTag.h" />
+    <ClInclude Include="FileFormat\KVSML\PolygonTag.h" />
+    <ClInclude Include="FileFormat\KVSML\SizeTag.h" />
+    <ClInclude Include="FileFormat\KVSML\StructuredVolumeObjectTag.h" />
+    <ClInclude Include="FileFormat\KVSML\TableObjectTag.h" />
+    <ClInclude Include="FileFormat\KVSML\TagBase.h" />
+    <ClInclude Include="FileFormat\KVSML\TransferFunctionTag.h" />
+    <ClInclude Include="FileFormat\KVSML\UnstructuredVolumeObjectTag.h" />
+    <ClInclude Include="FileFormat\KVSML\ValueTag.h" />
+    <ClInclude Include="FileFormat\KVSML\VertexTag.h" />
+    <ClInclude Include="FileFormat\PLY\Ply.h" />
+    <ClInclude Include="FileFormat\PLY\PlyFile.h" />
+    <ClInclude Include="FileFormat\PNM\Header.h" />
+    <ClInclude Include="FileFormat\PNM\Pbm.h" />
+    <ClInclude Include="FileFormat\PNM\Pgm.h" />
+    <ClInclude Include="FileFormat\PNM\Ppm.h" />
+    <ClInclude Include="FileFormat\STL\Stl.h" />
+    <ClInclude Include="FileFormat\TIFF\Entry.h" />
+    <ClInclude Include="FileFormat\TIFF\Header.h" />
+    <ClInclude Include="FileFormat\TIFF\ImageFileDirectory.h" />
+    <ClInclude Include="FileFormat\TIFF\Tag.h" />
+    <ClInclude Include="FileFormat\TIFF\TagDictionary.h" />
+    <ClInclude Include="FileFormat\TIFF\TagTable.h" />
+    <ClInclude Include="FileFormat\TIFF\Tiff.h" />
+    <ClInclude Include="FileFormat\TIFF\ValueType.h" />
+    <ClInclude Include="FileFormat\XML\TinyXML.h" />
+    <ClInclude Include="FileFormat\XML\XMLComment.h" />
+    <ClInclude Include="FileFormat\XML\XMLDeclaration.h" />
+    <ClInclude Include="FileFormat\XML\XMLDocument.h" />
+    <ClInclude Include="FileFormat\XML\XMLElement.h" />
+    <ClInclude Include="FileFormat\XML\XMLNode.h" />
+    <ClInclude Include="Image\BitImage.h" />
+    <ClInclude Include="Image\ColorImage.h" />
+    <ClInclude Include="Image\GrayImage.h" />
+    <ClInclude Include="Image\HSVColor.h" />
+    <ClInclude Include="Image\ImageBase.h" />
+    <ClInclude Include="Image\RGBAColor.h" />
+    <ClInclude Include="Image\RGBColor.h" />
+    <ClInclude Include="Matrix\FrustumMatrix44.h" />
+    <ClInclude Include="Matrix\LookAtMatrix44.h" />
+    <ClInclude Include="Matrix\Matrix.h" />
+    <ClInclude Include="Matrix\Matrix22.h" />
+    <ClInclude Include="Matrix\Matrix33.h" />
+    <ClInclude Include="Matrix\Matrix44.h" />
+    <ClInclude Include="Matrix\OrthogonalMatrix44.h" />
+    <ClInclude Include="Matrix\PerspectiveMatrix44.h" />
+    <ClInclude Include="Matrix\RotationMatrix33.h" />
+    <ClInclude Include="Matrix\ScalingMatrix33.h" />
+    <ClInclude Include="Matrix\Vector.h" />
+    <ClInclude Include="Matrix\Vector2.h" />
+    <ClInclude Include="Matrix\Vector3.h" />
+    <ClInclude Include="Matrix\Vector4.h" />
+    <ClInclude Include="Matrix\ViewingMatrix44.h" />
+    <ClInclude Include="Network\Acceptor.h" />
+    <ClInclude Include="Network\Connector.h" />
+    <ClInclude Include="Network\HttpConnector.h" />
+    <ClInclude Include="Network\HttpRequestHeader.h" />
+    <ClInclude Include="Network\IPAddress.h" />
+    <ClInclude Include="Network\MessageBlock.h" />
+    <ClInclude Include="Network\Socket.h" />
+    <ClInclude Include="Network\SocketAddress.h" />
+    <ClInclude Include="Network\SocketSelector.h" />
+    <ClInclude Include="Network\SocketStandard.h" />
+    <ClInclude Include="Network\SocketTimer.h" />
+    <ClInclude Include="Network\TCPBarrier.h" />
+    <ClInclude Include="Network\TCPBarrierServer.h" />
+    <ClInclude Include="Network\TCPServer.h" />
+    <ClInclude Include="Network\TCPSocket.h" />
+    <ClInclude Include="Network\Url.h" />
+    <ClInclude Include="Numeric\BoxMuller.h" />
+    <ClInclude Include="Numeric\EigenDecomposer.h" />
+    <ClInclude Include="Numeric\GaussEliminationSolver.h" />
+    <ClInclude Include="Numeric\LUDecomposer.h" />
+    <ClInclude Include="Numeric\LUSolver.h" />
+    <ClInclude Include="Numeric\MersenneTwister.h" />
+    <ClInclude Include="Numeric\QRDecomposer.h" />
+    <ClInclude Include="Numeric\QRSolver.h" />
+    <ClInclude Include="Numeric\Quaternion.h" />
+    <ClInclude Include="Numeric\ResponseSurface.h" />
+    <ClInclude Include="Numeric\SVDecomposer.h" />
+    <ClInclude Include="Numeric\SVSolver.h" />
+    <ClInclude Include="Numeric\Xorshift128.h" />
+    <ClInclude Include="Thread\Condition.h" />
+    <ClInclude Include="Thread\Mutex.h" />
+    <ClInclude Include="Thread\MutexLocker.h" />
+    <ClInclude Include="Thread\ReadLocker.h" />
+    <ClInclude Include="Thread\ReadWriteLock.h" />
+    <ClInclude Include="Thread\Semaphore.h" />
+    <ClInclude Include="Thread\Thread.h" />
+    <ClInclude Include="Thread\WriteLocker.h" />
+    <ClInclude Include="Utility\AnyValue.h" />
+    <ClInclude Include="Utility\AnyValueArray.h" />
+    <ClInclude Include="Utility\Assert.h" />
+    <ClInclude Include="Utility\Binary.h" />
+    <ClInclude Include="Utility\BitArray.h" />
+    <ClInclude Include="Utility\Breakpoint.h" />
+    <ClInclude Include="Utility\ClassName.h" />
+    <ClInclude Include="Utility\CommandLine.h" />
+    <ClInclude Include="Utility\Compiler.h" />
+    <ClInclude Include="Utility\Date.h" />
+    <ClInclude Include="Utility\DebugNew.h" />
+    <ClInclude Include="Utility\Directory.h" />
+    <ClInclude Include="Utility\Endian.h" />
+    <ClInclude Include="Utility\FastTokenizer.h" />
+    <ClInclude Include="Utility\File.h" />
+    <ClInclude Include="Utility\FileList.h" />
+    <ClInclude Include="Utility\IgnoreUnusedVariable.h" />
+    <ClInclude Include="Utility\Macro.h" />
+    <ClInclude Include="Utility\Math.h" />
+    <ClInclude Include="Utility\MemoryDebugger.h" />
+    <ClInclude Include="Utility\MemoryTracer.h" />
+    <ClInclude Include="Utility\Message.h" />
+    <ClInclude Include="Utility\Platform.h" />
+    <ClInclude Include="Utility\ReferenceCounter.h" />
+    <ClInclude Include="Utility\String.h" />
+    <ClInclude Include="Utility\StringList.h" />
+    <ClInclude Include="Utility\SystemInformation.h" />
+    <ClInclude Include="Utility\Time.h" />
+    <ClInclude Include="Utility\Timer.h" />
+    <ClInclude Include="Utility\Tokenizer.h" />
+    <ClInclude Include="Utility\Tree.h" />
+    <ClInclude Include="Utility\Type.h" />
+    <ClInclude Include="Utility\Value.h" />
+    <ClInclude Include="Utility\ValueArray.h" />
+    <ClInclude Include="Utility\Version.h" />
+    <ClInclude Include="Visualization\Data\HydrogenVolumeData.h" />
+    <ClInclude Include="Visualization\Data\TornadoVolumeData.h" />
+    <ClInclude Include="Visualization\Event\EventBase.h" />
+    <ClInclude Include="Visualization\Event\EventHandler.h" />
+    <ClInclude Include="Visualization\Event\EventListener.h" />
+    <ClInclude Include="Visualization\Event\IdleEventListener.h" />
+    <ClInclude Include="Visualization\Event\InitializeEventListener.h" />
+    <ClInclude Include="Visualization\Event\KeyEvent.h" />
+    <ClInclude Include="Visualization\Event\KeyPressEventListener.h" />
+    <ClInclude Include="Visualization\Event\MouseDoubleClickEventListener.h" />
+    <ClInclude Include="Visualization\Event\MouseEvent.h" />
+    <ClInclude Include="Visualization\Event\MouseMoveEventListener.h" />
+    <ClInclude Include="Visualization\Event\MousePressEventListener.h" />
+    <ClInclude Include="Visualization\Event\MouseReleaseEventListener.h" />
+    <ClInclude Include="Visualization\Event\PaintEventListener.h" />
+    <ClInclude Include="Visualization\Event\ResizeEvent.h" />
+    <ClInclude Include="Visualization\Event\ResizeEventListener.h" />
+    <ClInclude Include="Visualization\Event\TimeEvent.h" />
+    <ClInclude Include="Visualization\Event\TimerEventListener.h" />
+    <ClInclude Include="Visualization\Event\WheelEvent.h" />
+    <ClInclude Include="Visualization\Event\WheelEventListener.h" />
+    <ClInclude Include="Visualization\Exporter\ExporterBase.h" />
+    <ClInclude Include="Visualization\Exporter\LineExporter.h" />
+    <ClInclude Include="Visualization\Exporter\PointExporter.h" />
+    <ClInclude Include="Visualization\Exporter\PolygonExporter.h" />
+    <ClInclude Include="Visualization\Exporter\StructuredVolumeExporter.h" />
+    <ClInclude Include="Visualization\Exporter\UnstructuredVolumeExporter.h" />
+    <ClInclude Include="Visualization\Filter\Bounds.h" />
+    <ClInclude Include="Visualization\Filter\FilterBase.h" />
+    <ClInclude Include="Visualization\Filter\LineIntegralConvolution.h" />
+    <ClInclude Include="Visualization\Filter\StructuredVectorToScalar.h" />
+    <ClInclude Include="Visualization\Filter\TetrahedraToTetrahedra.h" />
+    <ClInclude Include="Visualization\Filter\TrilinearInterpolator.h" />
+    <ClInclude Include="Visualization\Filter\Tubeline.h" />
+    <ClInclude Include="Visualization\Filter\UnstructuredVectorToScalar.h" />
+    <ClInclude Include="Visualization\Importer\ImageImporter.h" />
+    <ClInclude Include="Visualization\Importer\ImporterBase.h" />
+    <ClInclude Include="Visualization\Importer\LineImporter.h" />
+    <ClInclude Include="Visualization\Importer\PointImporter.h" />
+    <ClInclude Include="Visualization\Importer\PolygonImporter.h" />
+    <ClInclude Include="Visualization\Importer\StructuredVolumeImporter.h" />
+    <ClInclude Include="Visualization\Importer\TableImporter.h" />
+    <ClInclude Include="Visualization\Importer\UnstructuredVolumeImporter.h" />
+    <ClInclude Include="Visualization\Mapper\ArrowGlyph.h" />
+    <ClInclude Include="Visualization\Mapper\CellAdjacencyGraph.h" />
+    <ClInclude Include="Visualization\Mapper\CellBase.h" />
+    <ClInclude Include="Visualization\Mapper\CellByCellLayeredSampling.h" />
+    <ClInclude Include="Visualization\Mapper\CellByCellMetropolisSampling.h" />
+    <ClInclude Include="Visualization\Mapper\CellByCellParticleGenerator.h" />
+    <ClInclude Include="Visualization\Mapper\CellByCellRejectionSampling.h" />
+    <ClInclude Include="Visualization\Mapper\CellByCellUniformSampling.h" />
+    <ClInclude Include="Visualization\Mapper\ColorMap.h" />
+    <ClInclude Include="Visualization\Mapper\DiamondGlyph.h" />
+    <ClInclude Include="Visualization\Mapper\ExternalFaces.h" />
+    <ClInclude Include="Visualization\Mapper\ExtractEdges.h" />
+    <ClInclude Include="Visualization\Mapper\ExtractVertices.h" />
+    <ClInclude Include="Visualization\Mapper\FrequencyTable.h" />
+    <ClInclude Include="Visualization\Mapper\GlyphBase.h" />
+    <ClInclude Include="Visualization\Mapper\HexahedralCell.h" />
+    <ClInclude Include="Visualization\Mapper\HitAndMissSampling.h" />
+    <ClInclude Include="Visualization\Mapper\Isosurface.h" />
+    <ClInclude Include="Visualization\Mapper\MapperBase.h" />
+    <ClInclude Include="Visualization\Mapper\MarchingCubes.h" />
+    <ClInclude Include="Visualization\Mapper\MarchingCubesTable.h" />
+    <ClInclude Include="Visualization\Mapper\MarchingHexahedra.h" />
+    <ClInclude Include="Visualization\Mapper\MarchingHexahedraTable.h" />
+    <ClInclude Include="Visualization\Mapper\MarchingPyramid.h" />
+    <ClInclude Include="Visualization\Mapper\MarchingPyramidTable.h" />
+    <ClInclude Include="Visualization\Mapper\MarchingTetrahedra.h" />
+    <ClInclude Include="Visualization\Mapper\MarchingTetrahedraTable.h" />
+    <ClInclude Include="Visualization\Mapper\MetropolisSampling.h" />
+    <ClInclude Include="Visualization\Mapper\OpacityMap.h" />
+    <ClInclude Include="Visualization\Mapper\OrthoSlice.h" />
+    <ClInclude Include="Visualization\Mapper\PyramidalCell.h" />
+    <ClInclude Include="Visualization\Mapper\QuadraticHexahedralCell.h" />
+    <ClInclude Include="Visualization\Mapper\QuadraticTetrahedralCell.h" />
+    <ClInclude Include="Visualization\Mapper\RGBFormulae.h" />
+    <ClInclude Include="Visualization\Mapper\SlicePlane.h" />
+    <ClInclude Include="Visualization\Mapper\SphereGlyph.h" />
+    <ClInclude Include="Visualization\Mapper\Streamline.h" />
+    <ClInclude Include="Visualization\Mapper\StreamlineBase.h" />
+    <ClInclude Include="Visualization\Mapper\TetrahedralCell.h" />
+    <ClInclude Include="Visualization\Mapper\TransferFunction.h" />
+    <ClInclude Include="Visualization\Module.h" />
+    <ClInclude Include="Visualization\Object\AxisObject.h" />
+    <ClInclude Include="Visualization\Object\GeometryObjectBase.h" />
+    <ClInclude Include="Visualization\Object\GlyphObject.h" />
+    <ClInclude Include="Visualization\Object\ImageObject.h" />
+    <ClInclude Include="Visualization\Object\LineObject.h" />
+    <ClInclude Include="Visualization\Object\ObjectBase.h" />
+    <ClInclude Include="Visualization\Object\PointObject.h" />
+    <ClInclude Include="Visualization\Object\PolygonObject.h" />
+    <ClInclude Include="Visualization\Object\StructuredVolumeObject.h" />
+    <ClInclude Include="Visualization\Object\TableObject.h" />
+    <ClInclude Include="Visualization\Object\UnstructuredVolumeObject.h" />
+    <ClInclude Include="Visualization\Object\VolumeObjectBase.h" />
+    <ClInclude Include="Visualization\Pipeline\ObjectImporter.h" />
+    <ClInclude Include="Visualization\Pipeline\PipelineModule.h" />
+    <ClInclude Include="Visualization\Pipeline\VisualizationPipeline.h" />
+    <ClInclude Include="Visualization\Renderer\GlyphRenderer.h" />
+    <ClInclude Include="Visualization\Renderer\ImageRenderer.h" />
+    <ClInclude Include="Visualization\Renderer\LineRenderer.h" />
+    <ClInclude Include="Visualization\Renderer\LineRenderingFunction.h" />
+    <ClInclude Include="Visualization\Renderer\ParallelCoordinatesRenderer.h" />
+    <ClInclude Include="Visualization\Renderer\ParticleBuffer.h" />
+    <ClInclude Include="Visualization\Renderer\ParticleBufferAccumulator.h" />
+    <ClInclude Include="Visualization\Renderer\ParticleBufferCompositor.h" />
+    <ClInclude Include="Visualization\Renderer\ParticleVolumeRenderer.h" />
+    <ClInclude Include="Visualization\Renderer\PointRenderer.h" />
+    <ClInclude Include="Visualization\Renderer\PointRenderingFunction.h" />
+    <ClInclude Include="Visualization\Renderer\PolygonRenderer.h" />
+    <ClInclude Include="Visualization\Renderer\PolygonRenderingFunction.h" />
+    <ClInclude Include="Visualization\Renderer\Ray.h" />
+    <ClInclude Include="Visualization\Renderer\RayCastingRenderer.h" />
+    <ClInclude Include="Visualization\Renderer\RendererBase.h" />
+    <ClInclude Include="Visualization\Renderer\ScatterPlotMatrixRenderer.h" />
+    <ClInclude Include="Visualization\Renderer\ScatterPlotRenderer.h" />
+    <ClInclude Include="Visualization\Renderer\Shader.h" />
+    <ClInclude Include="Visualization\Renderer\VolumeRayIntersector.h" />
+    <ClInclude Include="Visualization\Renderer\VolumeRendererBase.h" />
+    <ClInclude Include="Visualization\Viewer\ApplicationBase.h" />
+    <ClInclude Include="Visualization\Viewer\Background.h" />
+    <ClInclude Include="Visualization\Viewer\Camera.h" />
+    <ClInclude Include="Visualization\Viewer\DisplayFormat.h" />
+    <ClInclude Include="Visualization\Viewer\DisplayList.h" />
+    <ClInclude Include="Visualization\Viewer\FrameBuffer.h" />
+    <ClInclude Include="Visualization\Viewer\GlobalCore.h" />
+    <ClInclude Include="Visualization\Viewer\IDManager.h" />
+    <ClInclude Include="Visualization\Viewer\Key.h" />
+    <ClInclude Include="Visualization\Viewer\Light.h" />
+    <ClInclude Include="Visualization\Viewer\Material.h" />
+    <ClInclude Include="Visualization\Viewer\Mouse.h" />
+    <ClInclude Include="Visualization\Viewer\MouseButton.h" />
+    <ClInclude Include="Visualization\Viewer\ObjectManager.h" />
+    <ClInclude Include="Visualization\Viewer\OpenGL.h" />
+    <ClInclude Include="Visualization\Viewer\RendererManager.h" />
+    <ClInclude Include="Visualization\Viewer\ScreenBase.h" />
+    <ClInclude Include="Visualization\Viewer\ScreenCore.h" />
+    <ClInclude Include="Visualization\Viewer\Texture1D.h" />
+    <ClInclude Include="Visualization\Viewer\Texture2D.h" />
+    <ClInclude Include="Visualization\Viewer\TextureBase.h" />
+    <ClInclude Include="Visualization\Viewer\Trackball.h" />
+    <ClInclude Include="Visualization\Viewer\WindowBase.h" />
+    <ClInclude Include="Visualization\Viewer\Xform.h" />
+    <ClInclude Include="Visualization\Viewer\XformControl.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
