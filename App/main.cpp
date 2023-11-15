@@ -18,6 +18,10 @@
 #include "ExpressionTokenizer.h"
 #include "ExpressionConverter.h"
 #include <kvs/Camera>
+#include <kvs/PointObject>
+#include <kvs/qt/Application>
+#include <kvs/qt/Screen>
+#include <kvs/ParticleBasedRenderer>
 
 /*===========================================================================*/
 /**
@@ -99,7 +103,7 @@ void connect1()
     client.termClient();
 }
 
-void connect2()
+kvs::PointObject*  connect2()
 {
     std::cout << "********" << std::endl;
     std::cout << "********" << std::endl;
@@ -382,17 +386,53 @@ void connect2()
     if ( client.recvMessage( &reply ) == 1 ){}
     //    if ( client.recvMessage( &reply ) == 1 ){}
 
+    size_t allParticle = 0;
+    kvs::PointObject* object = new kvs::PointObject();
+
+    int nmemb = reply.m_number_particle * 3;
+    if ( nmemb != 0 )
+    {
+        kvs::ValueArray<kvs::Real32> positions ( reply.m_positions, nmemb );
+        kvs::ValueArray<kvs::Real32> normals ( reply.m_normals, nmemb );
+        kvs::ValueArray<kvs::UInt8>  colors ( reply.m_colors, nmemb );
+
+        kvs::PointObject obj;
+        obj.setCoords( positions );
+        obj.setNormals( normals );
+        obj.setColors( colors );
+
+        object->add(obj);
+        obj.clear();
+        std::cout<<" getPointObjectFromServer 331"<<std::endl;
+        allParticle = allParticle + reply.m_number_particle;
+        delete[] reply.m_colors;
+        delete[] reply.m_normals;
+        delete[] reply.m_positions;
+    }
+    kvs::PointObject* pointObject = object;
+
     message.m_initialize_parameter = -1;
     message.m_message_size = message.byteSize();
     client.sendMessage( message );
     client.recvMessage( &reply );
     client.termClient();
 
+    return pointObject;
+
 }
 
 int main(int argc, char *argv[])
 {
     connect1();
-    connect2();
-    std::cout << "END" << std::endl;
+
+//    connect2();
+    kvs::qt::Application app( argc, argv );
+    kvs::qt::Screen screen( &app );
+    screen.create();
+
+    kvs::glsl::ParticleBasedRenderer* renderer = new kvs::glsl::ParticleBasedRenderer();
+    renderer->setRepetitionLevel( 4 );
+    screen.registerObject( connect2(), renderer );
+
+    return app.run();
 }
