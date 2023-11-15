@@ -37,6 +37,7 @@ LIBS += -L../Common -lCommon
 #  Header.
 #=============================================================================
 HEADERS += \
+    pbvrgui.h
 
 
 
@@ -45,6 +46,7 @@ HEADERS += \
 #=============================================================================
 SOURCES += \
 main.cpp\
+    pbvrgui.cpp
 
 
 
@@ -60,3 +62,6 @@ RESOURCES += \
 #=============================================================================
 PRE_TARGETDEPS += ../Common/libCommon.a
 PRE_TARGETDEPS += ../FunctionParser/libpbvrFunc.a
+
+FORMS += \
+    pbvrgui.ui
