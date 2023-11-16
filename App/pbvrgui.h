@@ -7,6 +7,7 @@
 #include <kvs/OrientationAxis>
 #include <QMainWindow>
 
+#include "Panels/VolumeTransform.h"
 namespace Ui {
 class PBVRGUI;
 }
@@ -26,6 +27,8 @@ private:
     kvs::StochasticRenderingCompositor* compositor;
     kvs::ColorMapBar* m_color_map_bar;
     kvs::OrientationAxis* m_orientation_axis;
+
+    VolumeTransform volumeTransform;
 };
 
 #endif // PBVRGUI_H

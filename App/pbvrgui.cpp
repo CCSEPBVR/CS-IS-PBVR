@@ -8,17 +8,24 @@
 #include <kvs/StochasticPolygonRenderer>
 
 //デバック用(将来的にデバッグ用マクロ定義ファイルに移行する。
-//#define STOCHASTIC_RENDERING_WITH_HYDROGEN
+#define STOCHASTIC_RENDERING_WITH_HYDROGEN
 
 PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::PBVRGUI)
+    ui(new Ui::PBVRGUI),
+    volumeTransform( this )
 {
     ui->setupUi(this);
     setWindowTitle( "QTPBVR vX.X.X" );
 
     m_screen = new kvs::qt::Screen( &app );
     initialize();
+
+    volumeTransform.close();
+    volumeTransform.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    addDockWidget(Qt::LeftDockWidgetArea, &volumeTransform);
+    volumeTransform.show();
+    volumeTransform.setScreen( m_screen );
 }
 
 PBVRGUI::~PBVRGUI()
