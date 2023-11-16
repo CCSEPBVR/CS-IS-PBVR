@@ -7,11 +7,16 @@
 #include <kvs/ExternalFaces>
 #include <kvs/StochasticPolygonRenderer>
 
+//デバック用(将来的にデバッグ用マクロ定義ファイルに移行する。
+//#define STOCHASTIC_RENDERING_WITH_HYDROGEN
+
 PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::PBVRGUI)
 {
     ui->setupUi(this);
+    setWindowTitle( "QTPBVR vX.X.X" );
+
     m_screen = new kvs::qt::Screen( &app );
     initialize();
 }
@@ -23,11 +28,14 @@ PBVRGUI::~PBVRGUI()
 
 void PBVRGUI::initialize()
 {
+    const size_t repetitions = 4;
+    const float step = 0.5f;
+
+
+#ifdef STOCHASTIC_RENDERING_WITH_HYDROGEN
     kvs::Vector3ui resolution(32, 32, 32);
     kvs::StructuredVolumeObject* volume = new kvs::HydrogenVolumeData(resolution);
 
-    const size_t repetitions = 4;
-    const float step = 0.5f;
     const kvs::TransferFunction tfunc(256);
     kvs::PointObject* object = new kvs::CellByCellMetropolisSampling(volume, repetitions, step, tfunc);
 
@@ -44,15 +52,25 @@ void PBVRGUI::initialize()
     // kvs::qt::Screen にオブジェクトを登録
     m_screen->registerObject(object, renderer);
     m_screen->registerObject(polygonObject, polygonRenderer);
-
+#endif
     m_screen->setFixedSize( 620, 620 );
     m_screen->setGeometry( 0, 0, 620, 620 );
 
     // ストキャスティック レンダリング コンポジタのセットアップ
-    kvs::StochasticRenderingCompositor* compositor = new kvs::StochasticRenderingCompositor(m_screen->scene());
+    compositor = new kvs::StochasticRenderingCompositor(m_screen->scene());
     compositor->setRepetitionLevel(repetitions);
     m_screen->setEvent(compositor);
 
     // QGridLayout に kvs::qt::Screen を追加
     ui->screenArea->addWidget(m_screen, 0, 0, 1, 1);
+
+    m_color_map_bar = new kvs::ColorMapBar( m_screen );
+    m_color_map_bar->setWidth( 200 );
+    m_color_map_bar->setHeight( 60 );
+    m_color_map_bar->show();
+
+    m_orientation_axis = new kvs::OrientationAxis( m_screen, m_screen->scene() );
+    m_orientation_axis->setBoxTypeToSolid();
+    m_orientation_axis->anchorToBottomRight();
+    m_orientation_axis->show();
 }
