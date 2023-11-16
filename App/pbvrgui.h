@@ -3,6 +3,8 @@
 
 #include <kvs/qt/Screen>
 #include <kvs/StochasticRenderingCompositor>
+#include <kvs/ColorMapBar>
+#include <kvs/OrientationAxis>
 #include <QMainWindow>
 
 namespace Ui {
@@ -21,6 +23,9 @@ public:
 private:
     Ui::PBVRGUI *ui;
     kvs::qt::Screen* m_screen;
+    kvs::StochasticRenderingCompositor* compositor;
+    kvs::ColorMapBar* m_color_map_bar;
+    kvs::OrientationAxis* m_orientation_axis;
 };
 
 #endif // PBVRGUI_H
