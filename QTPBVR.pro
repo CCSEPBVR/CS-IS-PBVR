@@ -10,6 +10,7 @@ TEMPLATE = subdirs
 #=============================================================================
 SUBDIRS += Common
 SUBDIRS += FunctionParser
+SUBDIRS += ModWidget
 SUBDIRS += Panels
 SUBDIRS += App
 
@@ -18,4 +19,4 @@ SUBDIRS += App
 #=============================================================================
 #  Depends.
 #=============================================================================
-App.depends = Common FunctionParser Panels
+App.depends = Common FunctionParser ModWidget Panels
