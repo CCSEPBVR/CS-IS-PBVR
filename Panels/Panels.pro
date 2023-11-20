@@ -29,6 +29,7 @@ TARGET = Panels
 #  Header.
 #=============================================================================
 HEADERS += \
+    Preference.h \
     VolumeTransform.h
 
 
@@ -37,6 +38,7 @@ HEADERS += \
 #  Source.
 #=============================================================================
 SOURCES += \
+    Preference.cpp \
     VolumeTransform.cpp
 
 
@@ -45,6 +47,7 @@ SOURCES += \
 #  Forms.
 #=============================================================================
 FORMS += \
+    Preference.ui \
     VolumeTransform.ui
 
 
