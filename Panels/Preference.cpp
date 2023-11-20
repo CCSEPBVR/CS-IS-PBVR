@@ -225,7 +225,6 @@ void Preference::applyOrientationAxisSettings()
         default:
             break;
         }
-        std::cout << "TEST" << std::endl;
         m_orientation_axis->show();
     }
     else
