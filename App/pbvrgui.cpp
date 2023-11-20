@@ -13,7 +13,8 @@
 PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::PBVRGUI),
-    volumeTransform( this )
+    m_preference( this ),
+    m_volumeTransform( this )
 {
     ui->setupUi(this);
     setWindowTitle( "QTPBVR vX.X.X" );
@@ -21,11 +22,19 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_screen = new kvs::qt::Screen( &app );
     initialize();
 
-    volumeTransform.close();
-    volumeTransform.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    addDockWidget(Qt::LeftDockWidgetArea, &volumeTransform);
-    volumeTransform.show();
-    volumeTransform.setScreen( m_screen );
+    connect( ui->actionPreference, &QAction::triggered, this, &PBVRGUI::onPreference );
+    connect( ui->actionVolumeTransform, &QAction::triggered, this, &PBVRGUI::onVolumeTransform );
+
+    m_preference.setScreen( m_screen );
+    m_preference.setColorMapBar( m_color_map_bar );
+    m_preference.setOrientationAxis( m_orientation_axis );
+    m_preference.initialize();
+
+    m_volumeTransform.close();
+    m_volumeTransform.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    addDockWidget(Qt::LeftDockWidgetArea, &m_volumeTransform);
+    m_volumeTransform.show();
+    m_volumeTransform.setScreen( m_screen );
 }
 
 PBVRGUI::~PBVRGUI()
@@ -68,16 +77,9 @@ void PBVRGUI::initialize()
     compositor->setRepetitionLevel(repetitions);
     m_screen->setEvent(compositor);
 
+    m_color_map_bar = new kvs::ColorMapBar( m_screen );
+    m_orientation_axis = new kvs::OrientationAxis( m_screen, m_screen->scene() );
+
     // QGridLayout に kvs::qt::Screen を追加
     ui->screenArea->addWidget(m_screen, 0, 0, 1, 1);
-
-    m_color_map_bar = new kvs::ColorMapBar( m_screen );
-    m_color_map_bar->setWidth( 200 );
-    m_color_map_bar->setHeight( 60 );
-    m_color_map_bar->show();
-
-    m_orientation_axis = new kvs::OrientationAxis( m_screen, m_screen->scene() );
-    m_orientation_axis->setBoxTypeToSolid();
-    m_orientation_axis->anchorToBottomRight();
-    m_orientation_axis->show();
 }

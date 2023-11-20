@@ -7,7 +7,9 @@
 #include <kvs/OrientationAxis>
 #include <QMainWindow>
 
+#include "Panels/Preference.h"
 #include "Panels/VolumeTransform.h"
+
 namespace Ui {
 class PBVRGUI;
 }
@@ -28,7 +30,12 @@ private:
     kvs::ColorMapBar* m_color_map_bar;
     kvs::OrientationAxis* m_orientation_axis;
 
-    VolumeTransform volumeTransform;
+    Preference m_preference;
+    VolumeTransform m_volumeTransform;
+
+private:
+    void onPreference()      { m_preference.show(); }
+    void onVolumeTransform() { m_volumeTransform.show(); }
 };
 
 #endif // PBVRGUI_H
