@@ -3,7 +3,7 @@ include(../SETTINGS.pri)
 #  Configuration valiable.
 #=============================================================================
 #CONFIG += release warn_off opengl
-CONFIG += static
+CONFIG += static warn_off
 QT += core
 
 greaterThan( QT_MAJOR_VERSION, 5 ) {
