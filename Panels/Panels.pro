@@ -29,7 +29,10 @@ TARGET = Panels
 #  Header.
 #=============================================================================
 HEADERS += \
+    AnimationControls.h \
+    FilterInfomation.h \
     Preference.h \
+    RenderOptions.h \
     VolumeTransform.h
 
 
@@ -38,7 +41,10 @@ HEADERS += \
 #  Source.
 #=============================================================================
 SOURCES += \
+    AnimationControls.cpp \
+    FilterInfomation.cpp \
     Preference.cpp \
+    RenderOptions.cpp \
     VolumeTransform.cpp
 
 
@@ -47,7 +53,10 @@ SOURCES += \
 #  Forms.
 #=============================================================================
 FORMS += \
+    AnimationControls.ui \
+    FilterInfomation.ui \
     Preference.ui \
+    RenderOptions.ui \
     VolumeTransform.ui
 
 
