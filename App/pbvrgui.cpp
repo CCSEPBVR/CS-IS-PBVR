@@ -71,8 +71,6 @@ void PBVRGUI::initialize()
     m_screen->registerObject(object, renderer);
     m_screen->registerObject(polygonObject, polygonRenderer);
 #endif
-    m_screen->setFixedSize( 620, 620 );
-    m_screen->setGeometry( 0, 0, 620, 620 );
 
     // ストキャスティック レンダリング コンポジタのセットアップ
     compositor = new kvs::StochasticRenderingCompositor(m_screen->scene());
@@ -83,5 +81,5 @@ void PBVRGUI::initialize()
     m_orientation_axis = new kvs::OrientationAxis( m_screen, m_screen->scene() );
 
     // QGridLayout に kvs::qt::Screen を追加
-    ui->screenArea->addWidget(m_screen, 0, 0, 1, 1);
+    ui->screenArea->addWidget(m_screen, 0, 0, 1, 1);//コンストラクタの最後にすると表示に差異が生じる、要相談
 }
