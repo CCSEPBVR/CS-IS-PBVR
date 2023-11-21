@@ -1,13 +1,13 @@
 #ifndef CONNECT_H
 #define CONNECT_H
 
-#include <QWidget>
+#include <QDialog>
 
 namespace Ui {
 class Connect;
 }
 
-class Connect : public QWidget
+class Connect : public QDialog
 {
     Q_OBJECT
 
