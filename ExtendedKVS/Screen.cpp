@@ -1,6 +1,6 @@
-#include "QtScreen.h"
+#include "Screen.h"
 
-QtScreen::QtScreen( kvs::qt::Application* application, QWidget* parent ):
+kvs::qt::jaea::Screen::Screen( kvs::qt::Application* application, QWidget* parent ):
     kvs::qt::Screen( application, parent )
 {
 }
@@ -11,7 +11,7 @@ QtScreen::QtScreen( kvs::qt::Application* application, QWidget* parent ):
  *  @param  event [in] pointer to the key event information
  */
 /*===========================================================================*/
-void QtScreen::keyPressEvent( kvs::KeyEvent* event )
+void kvs::qt::jaea::Screen::keyPressEvent( kvs::KeyEvent* event )
 {
     if( !this->scene() ) { return; }
 

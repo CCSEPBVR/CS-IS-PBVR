@@ -1,7 +1,7 @@
 #ifndef PBVRGUI_H
 #define PBVRGUI_H
 
-#include "ExtendedKVS/QtScreen.h"
+#include "ExtendedKVS/Screen.h"
 #include <kvs/StochasticRenderingCompositor>
 #include <kvs/ColorMapBar>
 #include <kvs/OrientationAxis>
@@ -26,7 +26,7 @@ public:
 
 private:
     Ui::PBVRGUI *ui;
-    QtScreen* m_screen;
+    kvs::qt::jaea::Screen* m_screen;
     kvs::StochasticRenderingCompositor* compositor;
     kvs::ColorMapBar* m_color_map_bar;
     kvs::OrientationAxis* m_orientation_axis;
