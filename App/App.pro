@@ -32,6 +32,7 @@ TARGET = QTPBVR
 LIBS += -L../FunctionParser -lpbvrFunc
 LIBS += -L../Common -lCommon
 LIBS += -L../Widgets -lWidgets
+LIBS += -L../ExtendedKVS -lExtendedKVS
 LIBS += -L../ExtendedQT -lExtendedQT
 
 
@@ -71,6 +72,8 @@ RESOURCES += \
 #=============================================================================
 #  Pre Targetdeps
 #=============================================================================
-PRE_TARGETDEPS += ../Common/libCommon.a
 PRE_TARGETDEPS += ../FunctionParser/libpbvrFunc.a
+PRE_TARGETDEPS += ../Common/libCommon.a
 PRE_TARGETDEPS += ../Widgets/libWidgets.a
+PRE_TARGETDEPS += ../ExtendedKVS/libExtendedKVS.a
+PRE_TARGETDEPS += ../ExtendedQT/libExtendedQT.a
