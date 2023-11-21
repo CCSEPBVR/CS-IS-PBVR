@@ -32,7 +32,7 @@ TARGET = QTPBVR
 LIBS += -L../FunctionParser -lpbvrFunc
 LIBS += -L../Common -lCommon
 LIBS += -L../Panels -lPanels
-LIBS += -L../ModWidget -lModWidget
+LIBS += -L../ExtendedQT -lExtendedQT
 
 
 

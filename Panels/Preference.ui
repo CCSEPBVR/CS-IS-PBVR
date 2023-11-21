@@ -183,7 +183,7 @@
   <customwidget>
    <class>ClickableLabel</class>
    <extends>QLabel</extends>
-   <header>ModWidget/ClickableLabel.h</header>
+   <header>ExtendedQT/ClickableLabel.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
