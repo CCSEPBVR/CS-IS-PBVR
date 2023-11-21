@@ -7,8 +7,8 @@
 #include <kvs/OrientationAxis>
 #include <QMainWindow>
 
-#include "Panels/Preference.h"
-#include "Panels/VolumeTransform.h"
+#include "Widgets/Preference.h"
+#include "Widgets/VolumeTransform.h"
 
 namespace Ui {
 class PBVRGUI;

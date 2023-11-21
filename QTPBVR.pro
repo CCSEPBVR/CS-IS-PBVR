@@ -11,7 +11,7 @@ TEMPLATE = subdirs
 SUBDIRS += Common
 SUBDIRS += FunctionParser
 SUBDIRS += ExtendedQT
-SUBDIRS += Panels
+SUBDIRS += Widgets
 SUBDIRS += App
 
 
@@ -19,4 +19,4 @@ SUBDIRS += App
 #=============================================================================
 #  Depends.
 #=============================================================================
-App.depends = Common FunctionParser ExtendedQT Panels
+App.depends = Common FunctionParser ExtendedQT Widgets
