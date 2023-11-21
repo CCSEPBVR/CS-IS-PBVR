@@ -33,7 +33,8 @@ HEADERS += \
     FilterInfomation.h \
     Preference.h \
     RenderOptions.h \
-    VolumeTransform.h
+    VolumeTransform.h \
+    Connect.h
 
 
 
@@ -45,7 +46,8 @@ SOURCES += \
     FilterInfomation.cpp \
     Preference.cpp \
     RenderOptions.cpp \
-    VolumeTransform.cpp
+    VolumeTransform.cpp \
+    Connect.cpp
 
 
 
@@ -57,7 +59,8 @@ FORMS += \
     FilterInfomation.ui \
     Preference.ui \
     RenderOptions.ui \
-    VolumeTransform.ui
+    VolumeTransform.ui \
+    Connect.ui
 
 
 

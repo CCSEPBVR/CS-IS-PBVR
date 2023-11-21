@@ -14,39 +14,58 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="3" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
-     <item>
-      <widget class="QPushButton" name="pushButton_2">
-       <property name="text">
-        <string>Cancel</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButton">
-       <property name="text">
-        <string>Connect</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+   <item row="1" column="0" colspan="2">
+    <widget class="QGroupBox" name="samplingGBox">
+     <property name="title">
+      <string>Sampling Type</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="0" column="0">
+       <widget class="QRadioButton" name="uniformRBtn">
+        <property name="text">
+         <string>Uniform</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QRadioButton" name="metropolisRBtn">
+        <property name="text">
+         <string>Metropolis</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QRadioButton" name="rejectionRBtn">
+        <property name="text">
+         <string>Rejection</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QPushButton" name="connectPBtn">
+     <property name="text">
+      <string>Connect</string>
+     </property>
+    </widget>
    </item>
    <item row="0" column="0" colspan="2">
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="modeGBox">
      <property name="title">
       <string>Mode</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="0">
-       <widget class="QRadioButton" name="radioButton">
+       <widget class="QRadioButton" name="clientServerRBtn">
         <property name="text">
          <string>Client Server</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QRadioButton" name="radioButton_2">
+       <widget class="QRadioButton" name="inSituRBtn">
         <property name="text">
          <string>In-Situ</string>
         </property>
@@ -56,47 +75,47 @@
     </widget>
    </item>
    <item row="2" column="0" colspan="2">
-    <widget class="QGroupBox" name="groupBox_2">
+    <widget class="QGroupBox" name="settingsGBox">
      <property name="title">
       <string>Settings</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
-      <item row="1" column="0">
-       <widget class="QLabel" name="label">
+      <item row="1" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="portLbl">
         <property name="text">
          <string>Port :</string>
         </property>
        </widget>
       </item>
       <item row="3" column="2">
-       <widget class="QPushButton" name="pushButton_4">
+       <widget class="QPushButton" name="transferFunctionFilePathBrowsePBtn">
         <property name="text">
          <string>...</string>
         </property>
        </widget>
       </item>
       <item row="2" column="2">
-       <widget class="QPushButton" name="pushButton_3">
+       <widget class="QPushButton" name="volumeDataFilePathBrowsePBtn">
         <property name="text">
          <string>...</string>
         </property>
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="lineEdit_2"/>
+       <widget class="QLineEdit" name="transferFunctionFilePathLEdit"/>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="lineEdit"/>
+       <widget class="QLineEdit" name="volumeDataFilePathLEdit"/>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_3">
+      <item row="3" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="transferFunctionFilePathLbl">
         <property name="text">
          <string>TransferFunction File Path:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1" colspan="2">
-       <widget class="QSpinBox" name="spinBox">
+       <widget class="QSpinBox" name="portSBox">
         <property name="minimum">
          <number>49152</number>
         </property>
@@ -108,8 +127,8 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_2">
+      <item row="2" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="volumeDataFilePathLbl">
         <property name="text">
          <string>Volume Data File Path :</string>
         </property>
@@ -118,34 +137,11 @@
      </layout>
     </widget>
    </item>
-   <item row="1" column="0" colspan="2">
-    <widget class="QGroupBox" name="groupBox_4">
-     <property name="title">
-      <string>Sampling Type</string>
+   <item row="3" column="0">
+    <widget class="QPushButton" name="cancelPBtn">
+     <property name="text">
+      <string>Cancel</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_4">
-      <item row="0" column="0">
-       <widget class="QRadioButton" name="radioButton_3">
-        <property name="text">
-         <string>Uniform</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QRadioButton" name="radioButton_4">
-        <property name="text">
-         <string>Metropolis</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QRadioButton" name="radioButton_5">
-        <property name="text">
-         <string>Rejection</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
     </widget>
    </item>
   </layout>
