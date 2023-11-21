@@ -20,7 +20,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     ui->setupUi(this);
     setWindowTitle( "QTPBVR vX.X.X" );
 
-    m_screen = new kvs::qt::Screen( &app );
+    m_screen = new QtScreen( &app );
     initialize();
 
     connect( ui->actionPreference, &QAction::triggered, this, &PBVRGUI::onPreference );
