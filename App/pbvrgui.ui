@@ -38,7 +38,7 @@
    </widget>
    <widget class="QMenu" name="menuPanels">
     <property name="title">
-     <string>Panels</string>
+     <string>Widgets</string>
     </property>
     <addaction name="actionVolumeTransform"/>
    </widget>
