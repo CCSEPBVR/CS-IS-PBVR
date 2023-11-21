@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>213</width>
+    <width>217</width>
     <height>199</height>
    </rect>
   </property>
@@ -16,46 +16,46 @@
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <widget class="QGroupBox" name="groupBox">
+     <widget class="QGroupBox" name="particleGBox">
       <property name="title">
        <string>Particles</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="0" alignment="Qt::AlignRight">
-        <widget class="QLabel" name="label">
+        <widget class="QLabel" name="densityLbl">
          <property name="text">
-          <string>Density:</string>
+          <string>Density :</string>
          </property>
         </widget>
        </item>
        <item row="2" column="0" alignment="Qt::AlignRight">
-        <widget class="QLabel" name="label_3">
+        <widget class="QLabel" name="dataSizeLimitLbl">
          <property name="text">
-          <string>Data-Size Limit:</string>
+          <string>Data-Size Limit :</string>
          </property>
         </widget>
        </item>
        <item row="1" column="0" alignment="Qt::AlignRight">
-        <widget class="QLabel" name="label_2">
+        <widget class="QLabel" name="limitLbl">
          <property name="text">
-          <string>Limit:</string>
+          <string>Limit :</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QSpinBox" name="spinBox"/>
+        <widget class="QSpinBox" name="limitSBox"/>
        </item>
        <item row="2" column="1">
-        <widget class="QSpinBox" name="spinBox_2"/>
+        <widget class="QSpinBox" name="dataSizeLimitSBox"/>
        </item>
        <item row="0" column="1">
-        <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+        <widget class="QDoubleSpinBox" name="densityDSBox"/>
        </item>
       </layout>
      </widget>
     </item>
     <item row="1" column="0">
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="applyPBtn">
       <property name="text">
        <string>Apply</string>
       </property>

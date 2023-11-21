@@ -16,130 +16,130 @@
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QGridLayout" name="gridLayout">
     <item row="8" column="0" alignment="Qt::AlignRight">
-     <widget class="QLabel" name="label_7">
+     <widget class="QLabel" name="fileTypeLbl">
       <property name="text">
-       <string>File Type:</string>
+       <string>File Type :</string>
       </property>
      </widget>
     </item>
     <item row="6" column="1">
-     <widget class="QLineEdit" name="lineEdit_5"/>
+     <widget class="QLineEdit" name="allNodesLEdit"/>
     </item>
     <item row="2" column="1">
-     <widget class="QLineEdit" name="lineEdit"/>
+     <widget class="QLineEdit" name="vectorNumberLEdit"/>
     </item>
     <item row="7" column="0" alignment="Qt::AlignRight">
-     <widget class="QLabel" name="label_6">
+     <widget class="QLabel" name="stepNumberLbl">
       <property name="text">
-       <string>Step Number:</string>
+       <string>Step Number :</string>
       </property>
      </widget>
     </item>
     <item row="5" column="0" alignment="Qt::AlignRight">
-     <widget class="QLabel" name="label_4">
+     <widget class="QLabel" name="elementTypeLbl">
       <property name="text">
-       <string>Element Type:</string>
+       <string>Element Type :</string>
       </property>
      </widget>
     </item>
     <item row="3" column="1">
-     <widget class="QLineEdit" name="lineEdit_2"/>
+     <widget class="QLineEdit" name="allElementsLEdit"/>
     </item>
     <item row="4" column="1">
-     <widget class="QLineEdit" name="lineEdit_3"/>
+     <widget class="QLineEdit" name="subVolumeLEdit"/>
     </item>
     <item row="3" column="0" alignment="Qt::AlignRight">
-     <widget class="QLabel" name="label_2">
+     <widget class="QLabel" name="allElementsLbl">
       <property name="text">
-       <string>All Elements:</string>
+       <string>All Elements :</string>
       </property>
      </widget>
     </item>
     <item row="2" column="0" alignment="Qt::AlignRight">
-     <widget class="QLabel" name="label">
+     <widget class="QLabel" name="vectorNumberLbl">
       <property name="text">
-       <string>Vector Number:</string>
+       <string>Vector Number :</string>
       </property>
      </widget>
     </item>
     <item row="8" column="1">
-     <widget class="QLineEdit" name="lineEdit_7"/>
+     <widget class="QLineEdit" name="fileTypeLEdit"/>
     </item>
     <item row="7" column="1">
-     <widget class="QLineEdit" name="lineEdit_6"/>
+     <widget class="QLineEdit" name="stepNumberLEdit"/>
     </item>
     <item row="6" column="0" alignment="Qt::AlignRight">
-     <widget class="QLabel" name="label_5">
+     <widget class="QLabel" name="allNodesLbl">
       <property name="text">
-       <string>All Nodes:</string>
+       <string>All Nodes :</string>
       </property>
      </widget>
     </item>
     <item row="5" column="1">
-     <widget class="QLineEdit" name="lineEdit_4"/>
+     <widget class="QLineEdit" name="elementTypeLEdit"/>
     </item>
     <item row="9" column="0" colspan="2">
-     <widget class="QGroupBox" name="groupBox_2">
+     <widget class="QGroupBox" name="threeDExtentGBox">
       <property name="title">
        <string>3D Extent</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="2" column="1">
-        <widget class="QLineEdit" name="lineEdit_10"/>
+        <widget class="QLineEdit" name="zMinLEdit"/>
        </item>
        <item row="0" column="0">
-        <widget class="QLabel" name="label_8">
+        <widget class="QLabel" name="xLbl">
          <property name="text">
           <string>X</string>
          </property>
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="label_9">
+        <widget class="QLabel" name="yLbl">
          <property name="text">
           <string>Y</string>
          </property>
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLineEdit" name="lineEdit_8"/>
+        <widget class="QLineEdit" name="xMinLEdit"/>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="label_10">
+        <widget class="QLabel" name="zLbl">
          <property name="text">
           <string>Z</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QLineEdit" name="lineEdit_9"/>
+        <widget class="QLineEdit" name="yMinLEdit"/>
        </item>
        <item row="0" column="2">
-        <widget class="QLineEdit" name="lineEdit_11"/>
+        <widget class="QLineEdit" name="xMaxLEdit"/>
        </item>
        <item row="1" column="2">
-        <widget class="QLineEdit" name="lineEdit_12"/>
+        <widget class="QLineEdit" name="yMaxLEdit"/>
        </item>
        <item row="2" column="2">
-        <widget class="QLineEdit" name="lineEdit_13"/>
+        <widget class="QLineEdit" name="zMaxLEdit"/>
        </item>
       </layout>
      </widget>
     </item>
     <item row="4" column="0" alignment="Qt::AlignRight">
-     <widget class="QLabel" name="label_3">
+     <widget class="QLabel" name="subVolumeLbl">
       <property name="text">
-       <string>Sub Volume:</string>
+       <string>Sub Volume :</string>
       </property>
      </widget>
     </item>
     <item row="1" column="1">
-     <widget class="QLineEdit" name="lineEdit_14"/>
+     <widget class="QLineEdit" name="filterParameterFileLEdit"/>
     </item>
     <item row="1" column="0" alignment="Qt::AlignRight">
-     <widget class="QLabel" name="label_11">
+     <widget class="QLabel" name="filterParameterFileLbl">
       <property name="text">
-       <string>Filter Parameter File:</string>
+       <string>Filter Parameter File :</string>
       </property>
      </widget>
     </item>

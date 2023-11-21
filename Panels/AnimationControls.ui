@@ -16,94 +16,94 @@
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <widget class="QGroupBox" name="groupBox">
+     <widget class="QGroupBox" name="imageCaptureGBox">
       <property name="title">
        <string>Image Capture</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
        <item row="1" column="0" alignment="Qt::AlignRight">
-        <widget class="QLabel" name="label_2">
+        <widget class="QLabel" name="imageFileLbl">
          <property name="text">
-          <string>Image File:</string>
+          <string>Image File :</string>
          </property>
         </widget>
        </item>
        <item row="0" column="0" alignment="Qt::AlignRight">
-        <widget class="QLabel" name="label">
+        <widget class="QLabel" name="captureLbl">
          <property name="text">
-          <string>Capture:</string>
+          <string>Capture :</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QLineEdit" name="lineEdit"/>
+        <widget class="QLineEdit" name="imageFileLEdit"/>
        </item>
        <item row="2" column="1">
-        <widget class="QLabel" name="label_5">
+        <widget class="QLabel" name="imageFileAnnotationLbl">
          <property name="text">
           <string>(Base name)</string>
          </property>
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QComboBox" name="comboBox"/>
+        <widget class="QComboBox" name="captureCBox"/>
        </item>
       </layout>
      </widget>
     </item>
     <item row="1" column="0">
-     <widget class="QGroupBox" name="groupBox_2">
+     <widget class="QGroupBox" name="keyFrameAnimationGBox">
       <property name="title">
        <string>Key Frame Animation</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="1">
-        <widget class="QLineEdit" name="lineEdit_2">
+        <widget class="QLineEdit" name="fileLEdit">
          <property name="text">
           <string>./xform.dat</string>
          </property>
         </widget>
        </item>
        <item row="2" column="0" alignment="Qt::AlignRight">
-        <widget class="QLabel" name="label_4">
+        <widget class="QLabel" name="interpolationLbl">
          <property name="text">
-          <string>Interpolation:</string>
+          <string>Interpolation :</string>
          </property>
         </widget>
        </item>
        <item row="3" column="0" alignment="Qt::AlignRight">
-        <widget class="QLabel" name="label_6">
+        <widget class="QLabel" name="totalKeyFramesLbl">
          <property name="text">
-          <string>Total Key Frames:</string>
+          <string>Total Key Frames :</string>
          </property>
         </widget>
        </item>
        <item row="0" column="0" alignment="Qt::AlignRight">
-        <widget class="QLabel" name="label_3">
+        <widget class="QLabel" name="fileLbl">
          <property name="text">
-          <string>File:</string>
+          <string>File :</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QSpinBox" name="spinBox"/>
+        <widget class="QSpinBox" name="interpolationSBox"/>
        </item>
        <item row="4" column="0">
-        <widget class="QLabel" name="label_7">
+        <widget class="QLabel" name="totalAnimationFramesLbl">
          <property name="text">
-          <string>Total Animation Frames:</string>
+          <string>Total Animation Frames :</string>
          </property>
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QLabel" name="label_8">
+        <widget class="QLabel" name="totalKeyFramesValueLbl">
          <property name="text">
           <string>0</string>
          </property>
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="QLabel" name="label_9">
+        <widget class="QLabel" name="totalAnimationFramesValueLbl">
          <property name="text">
           <string>0</string>
          </property>
