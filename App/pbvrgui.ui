@@ -35,12 +35,13 @@
      <string>QTPBVR</string>
     </property>
     <addaction name="actionPreference"/>
-    <addaction name="actionConnect_to_server"/>
    </widget>
    <widget class="QMenu" name="menuPanels">
     <property name="title">
-     <string>Widgets</string>
+     <string>Tools</string>
     </property>
+    <addaction name="actionConnectToServer"/>
+    <addaction name="separator"/>
     <addaction name="actionVolumeTransform"/>
    </widget>
    <addaction name="menuQTPBVR"/>
@@ -56,7 +57,7 @@
     <string>VolumeTransform</string>
    </property>
   </action>
-  <action name="actionConnect_to_server">
+  <action name="actionConnectToServer">
    <property name="text">
     <string>Connect to server</string>
    </property>

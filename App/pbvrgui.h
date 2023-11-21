@@ -9,6 +9,7 @@
 
 #include "Widgets/Preference.h"
 #include "Widgets/VolumeTransform.h"
+#include "Widgets/Connect.h"
 
 namespace Ui {
 class PBVRGUI;
@@ -32,10 +33,12 @@ private:
 
     Preference m_preference;
     VolumeTransform m_volumeTransform;
+    Connect m_connect;
 
 private:
     void onPreference()      { m_preference.show(); }
     void onVolumeTransform() { m_volumeTransform.show(); }
+    void onConnect() { m_connect.show(); }
 };
 
 #endif // PBVRGUI_H

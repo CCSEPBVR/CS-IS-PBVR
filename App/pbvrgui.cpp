@@ -14,7 +14,8 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::PBVRGUI),
     m_preference( this ),
-    m_volumeTransform( this )
+    m_volumeTransform( this ),
+    m_connect( this )
 {
     ui->setupUi(this);
     setWindowTitle( "QTPBVR vX.X.X" );
@@ -24,6 +25,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
 
     connect( ui->actionPreference, &QAction::triggered, this, &PBVRGUI::onPreference );
     connect( ui->actionVolumeTransform, &QAction::triggered, this, &PBVRGUI::onVolumeTransform );
+    connect( ui->actionConnectToServer, &QAction::triggered, this, &PBVRGUI::onConnect );
 
     m_preference.setScreen( m_screen );
     m_preference.setColorMapBar( m_color_map_bar );
