@@ -161,6 +161,7 @@ void Preference::applySettings( bool isInit )
     applyScreenSettings();
     applyColorMapBarSettings();
     applyOrientationAxisSettings();
+
     if( !isInit )
     {
         saveSettings();
@@ -178,7 +179,6 @@ void Preference::applyScreenSettings()
 
 
         m_screen->setFixedSize( ui->widthSBox->value(), ui->heightSBox->value() );
-        m_screen->setGeometry( 0, 0, ui->widthSBox->value(), ui->heightSBox->value() );
 }
 
 void Preference::applyColorMapBarSettings()
