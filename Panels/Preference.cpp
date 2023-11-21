@@ -10,21 +10,21 @@ Preference::Preference(QWidget *parent) :
     m_settings( "config.ini", QSettings::IniFormat )
 {
     ui->setupUi(this);
-    ui->orientationTypeCB->addItem( "Horizontal", Horizontal );
-    ui->orientationTypeCB->addItem( "Vertical", Vertical );
+    ui->orientationTypeCBox->addItem( "Horizontal", Horizontal );
+    ui->orientationTypeCBox->addItem( "Vertical", Vertical );
 
-    ui->axisTypeCB->addItem( "CorneredAxis", CorneredAxis );
-    ui->axisTypeCB->addItem( "CenteredAxis", CenteredAxis );
-    ui->axisTypeCB->addItem( "NoneAxis", NoneAxis );
+    ui->axisTypeCBox->addItem( "CorneredAxis", CorneredAxis );
+    ui->axisTypeCBox->addItem( "CenteredAxis", CenteredAxis );
+    ui->axisTypeCBox->addItem( "NoneAxis", NoneAxis );
 
-    ui->boxTypeCB->addItem( "WiredBox", WiredBox );
-    ui->boxTypeCB->addItem( "SolidBox", SolidBox );
-    ui->boxTypeCB->addItem( "NoneBox", NoneBox );
+    ui->boxTypeCBox->addItem( "WiredBox", WiredBox );
+    ui->boxTypeCBox->addItem( "SolidBox", SolidBox );
+    ui->boxTypeCBox->addItem( "NoneBox", NoneBox );
 
     connect( ui->selectedColorLbl, &ClickableLabel::doubleClicked, this, &Preference::onSelectedColorDoubleClicked );
-    connect( ui->applyBtn,  &QPushButton::clicked, this, &Preference::onApplyButtonClicked  );
-    connect( ui->cancelBtn, &QPushButton::clicked, this, &Preference::onCancelButtonClicked );
-    connect( ui->okBtn,     &QPushButton::clicked, this, &Preference::onOKButtonClicked     );
+    connect( ui->applyPBtn,  &QPushButton::clicked, this, &Preference::onApplyButtonClicked  );
+    connect( ui->cancelPBtn, &QPushButton::clicked, this, &Preference::onCancelButtonClicked );
+    connect( ui->okPBtn,     &QPushButton::clicked, this, &Preference::onOKButtonClicked     );
 }
 
 Preference::~Preference()
@@ -78,19 +78,19 @@ void Preference::loadColorMapBarSettings()
     bool isShowing = m_settings.value("isShowing").toBool();
     if( isShowing )
     {
-        ui->colorMapBarGB->setChecked( true );
+        ui->colorMapBarGBox->setChecked( true );
         if(m_settings.value("Orientation").toString() == "Horizontal")
         {
-            ui->orientationTypeCB->setCurrentIndex( Horizontal );
+            ui->orientationTypeCBox->setCurrentIndex( Horizontal );
         }
         else if(m_settings.value("Orientation").toString() == "Vertical")
         {
-            ui->orientationTypeCB->setCurrentIndex( Vertical );
+            ui->orientationTypeCBox->setCurrentIndex( Vertical );
         }
     }
     else
     {
-        ui->colorMapBarGB->setChecked( false );
+        ui->colorMapBarGBox->setChecked( false );
     }
     m_settings.endGroup();
 }
@@ -101,36 +101,36 @@ void Preference::loadOrientationAxisSettings()
     bool isShowing = m_settings.value("isShowing").toBool();
     if( isShowing )
     {
-        ui->orientationGB->setChecked( true );
+        ui->orientationGBox->setChecked( true );
         if(m_settings.value("AxisType").toString() == "CorneredAxis")
         {
-            ui->axisTypeCB->setCurrentIndex( CorneredAxis );
+            ui->axisTypeCBox->setCurrentIndex( CorneredAxis );
         }
         else if(m_settings.value("AxisType").toString() == "CenteredAxis")
         {
-            ui->axisTypeCB->setCurrentIndex( CenteredAxis );
+            ui->axisTypeCBox->setCurrentIndex( CenteredAxis );
         }
         else if(m_settings.value("AxisType").toString() == "NoneAxis")
         {
-            ui->axisTypeCB->setCurrentIndex( NoneAxis );
+            ui->axisTypeCBox->setCurrentIndex( NoneAxis );
         }
 
         if(m_settings.value("BoxType").toString() == "WiredBox")
         {
-            ui->boxTypeCB->setCurrentIndex( WiredBox );
+            ui->boxTypeCBox->setCurrentIndex( WiredBox );
         }
         else if(m_settings.value("BoxType").toString() == "SolidBox")
         {
-            ui->boxTypeCB->setCurrentIndex( SolidBox );
+            ui->boxTypeCBox->setCurrentIndex( SolidBox );
         }
         else if(m_settings.value("BoxType").toString() == "NoneBox")
         {
-            ui->boxTypeCB->setCurrentIndex( NoneAxis );
+            ui->boxTypeCBox->setCurrentIndex( NoneAxis );
         }
     }
     else
     {
-        ui->orientationGB->setChecked( false );
+        ui->orientationGBox->setChecked( false );
     }
     m_settings.endGroup();
 }
@@ -139,9 +139,9 @@ void Preference::setDefaultSettings()
 {
     QColor color( 82, 87, 110 );
     setSelectedColor( color );
-    ui->orientationTypeCB->setCurrentIndex( Horizontal );
-    ui->axisTypeCB->setCurrentIndex( CorneredAxis );
-    ui->boxTypeCB->setCurrentIndex( SolidBox );
+    ui->orientationTypeCBox->setCurrentIndex( Horizontal );
+    ui->axisTypeCBox->setCurrentIndex( CorneredAxis );
+    ui->boxTypeCBox->setCurrentIndex( SolidBox );
 }
 
 void Preference::applySettings( bool isInit )
@@ -167,9 +167,9 @@ void Preference::applyScreenSettings()
 
 void Preference::applyColorMapBarSettings()
 {
-    if(ui->colorMapBarGB->isChecked())
+    if(ui->colorMapBarGBox->isChecked())
     {
-        OrientationType selectedOrientationType = static_cast<OrientationType>( ui->orientationTypeCB->currentIndex());
+        OrientationType selectedOrientationType = static_cast<OrientationType>( ui->orientationTypeCBox->currentIndex());
         switch ( selectedOrientationType )
         {
         case Horizontal:
@@ -194,10 +194,10 @@ void Preference::applyColorMapBarSettings()
 
 void Preference::applyOrientationAxisSettings()
 {
-    if(ui->orientationGB->isChecked())
-    {        
-        AxisType selectedAxisType = static_cast<AxisType>( ui->axisTypeCB->currentIndex());;
-        BoxType selectedBoxType   = static_cast<BoxType>( ui->boxTypeCB->currentIndex());
+    if(ui->orientationGBox->isChecked())
+    {
+        AxisType selectedAxisType = static_cast<AxisType>( ui->axisTypeCBox->currentIndex());;
+        BoxType selectedBoxType   = static_cast<BoxType>( ui->boxTypeCBox->currentIndex());
         switch ( selectedAxisType )
         {
         case CorneredAxis:
@@ -254,14 +254,14 @@ void Preference::saveSettings()
         m_settings.endGroup();
 
         m_settings.beginGroup( "ColorMapBar" );
-        m_settings.setValue( "isShowing", ui->colorMapBarGB->isChecked() );
-        m_settings.setValue( "Orientation", ui->orientationTypeCB->currentText() );
+        m_settings.setValue( "isShowing", ui->colorMapBarGBox->isChecked() );
+        m_settings.setValue( "Orientation", ui->orientationTypeCBox->currentText() );
         m_settings.endGroup();
 
         m_settings.beginGroup( "OrientationAxis" );
-        m_settings.setValue( "isShowing", ui->orientationGB->isChecked() );
-        m_settings.setValue( "AxisType", ui->axisTypeCB->currentText() );
-        m_settings.setValue( "BoxType", ui->boxTypeCB->currentText() );
+        m_settings.setValue( "isShowing", ui->orientationGBox->isChecked() );
+        m_settings.setValue( "AxisType", ui->axisTypeCBox->currentText() );
+        m_settings.setValue( "BoxType", ui->boxTypeCBox->currentText() );
         m_settings.endGroup();
 
         m_settings.sync();
