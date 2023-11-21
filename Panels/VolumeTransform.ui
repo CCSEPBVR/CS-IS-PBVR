@@ -16,7 +16,7 @@
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QGridLayout" name="gridLayout">
     <item row="2" column="0">
-     <widget class="QGroupBox" name="rotationGB">
+     <widget class="QGroupBox" name="rotationGBox">
       <property name="title">
        <string>Rotation</string>
       </property>
@@ -43,7 +43,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QDoubleSpinBox" name="rotationXAxisSB">
+        <widget class="QDoubleSpinBox" name="rotationXAxisDSBox">
          <property name="minimum">
           <double>-360.000000000000000</double>
          </property>
@@ -53,7 +53,7 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QDoubleSpinBox" name="rotationYAxisSB">
+        <widget class="QDoubleSpinBox" name="rotationYAxisDSBox">
          <property name="minimum">
           <double>-360.000000000000000</double>
          </property>
@@ -63,7 +63,7 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QDoubleSpinBox" name="rotationZAxisSB">
+        <widget class="QDoubleSpinBox" name="rotationZAxisDSBox">
          <property name="minimum">
           <double>-360.000000000000000</double>
          </property>
@@ -76,7 +76,7 @@
      </widget>
     </item>
     <item row="0" column="0">
-     <widget class="QGroupBox" name="translationGB">
+     <widget class="QGroupBox" name="translationGBox">
       <property name="title">
        <string>Translation</string>
       </property>
@@ -103,7 +103,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QDoubleSpinBox" name="translationXAxisSB">
+        <widget class="QDoubleSpinBox" name="translationXAxisDSBox">
          <property name="minimum">
           <double>-5000.000000000000000</double>
          </property>
@@ -113,7 +113,7 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QDoubleSpinBox" name="translationYAxisSB">
+        <widget class="QDoubleSpinBox" name="translationYAxisDSBox">
          <property name="minimum">
           <double>-5000.000000000000000</double>
          </property>
@@ -123,7 +123,7 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QDoubleSpinBox" name="translationZAxisSB">
+        <widget class="QDoubleSpinBox" name="translationZAxisDSBox">
          <property name="minimum">
           <double>-5000.000000000000000</double>
          </property>
@@ -136,7 +136,7 @@
      </widget>
     </item>
     <item row="1" column="0">
-     <widget class="QGroupBox" name="scalingBG">
+     <widget class="QGroupBox" name="scalingGBox">
       <property name="title">
        <string>Scaling</string>
       </property>
@@ -149,7 +149,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QDoubleSpinBox" name="scaleSB">
+        <widget class="QDoubleSpinBox" name="scaleDSBox">
          <property name="minimum">
           <double>1.000000000000000</double>
          </property>
@@ -162,7 +162,7 @@
      </widget>
     </item>
     <item row="3" column="0">
-     <widget class="QPushButton" name="applyBtn">
+     <widget class="QPushButton" name="applyPBtn">
       <property name="text">
        <string>Apply</string>
       </property>
