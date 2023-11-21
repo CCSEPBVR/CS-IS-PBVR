@@ -64,6 +64,7 @@ private:
     void loadScreenSettings();
     void loadColorMapBarSettings();
     void loadOrientationAxisSettings();
+    void loadResolutionSettings();
     void setDefaultSettings();
     void applySettings( bool isInit );
     void applyScreenSettings();

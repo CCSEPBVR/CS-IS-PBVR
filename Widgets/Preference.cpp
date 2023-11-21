@@ -37,6 +37,7 @@ void Preference::closeEvent(QCloseEvent *event)
     loadScreenSettings();
     loadColorMapBarSettings();
     loadOrientationAxisSettings();
+    loadResolutionSettings();
 
     event->accept();
 }
@@ -48,6 +49,7 @@ void Preference::initialize()
         loadScreenSettings();
         loadColorMapBarSettings();
         loadOrientationAxisSettings();
+        loadResolutionSettings();
     }
     else
     {
@@ -135,6 +137,14 @@ void Preference::loadOrientationAxisSettings()
     m_settings.endGroup();
 }
 
+void Preference::loadResolutionSettings()
+{
+    m_settings.beginGroup( "Resolution" );
+    ui->heightSBox->setValue(m_settings.value("height").toInt());
+    ui->widthSBox->setValue(m_settings.value("width").toInt());
+    m_settings.endGroup();
+}
+
 void Preference::setDefaultSettings()
 {
     QColor color( 82, 87, 110 );
@@ -142,6 +152,8 @@ void Preference::setDefaultSettings()
     ui->orientationTypeCBox->setCurrentIndex( Horizontal );
     ui->axisTypeCBox->setCurrentIndex( CorneredAxis );
     ui->boxTypeCBox->setCurrentIndex( SolidBox );
+    ui->widthSBox->setValue( 620 );
+    ui->heightSBox->setValue( 620 );
 }
 
 void Preference::applySettings( bool isInit )
@@ -163,6 +175,10 @@ void Preference::applyScreenSettings()
         ui->selectedColorCLbl->palette().color(QPalette::Window).green(),
         ui->selectedColorCLbl->palette().color(QPalette::Window).blue())
                                   );
+
+
+        m_screen->setFixedSize( ui->widthSBox->value(), ui->heightSBox->value() );
+        m_screen->setGeometry( 0, 0, ui->widthSBox->value(), ui->heightSBox->value() );
 }
 
 void Preference::applyColorMapBarSettings()
@@ -247,24 +263,29 @@ void Preference::setSelectedColor(const QColor& color)
 
 void Preference::saveSettings()
 {
-        m_settings.beginGroup( "Screen" );
+    m_settings.beginGroup( "Screen" );
     m_settings.setValue( "BackGroundColor_R", ui->selectedColorCLbl->palette().color(QPalette::Window).red());
-        m_settings.setValue( "BackGroundColor_G", ui->selectedColorCLbl->palette().color(QPalette::Window).green());
+    m_settings.setValue( "BackGroundColor_G", ui->selectedColorCLbl->palette().color(QPalette::Window).green());
     m_settings.setValue( "BackGroundColor_B", ui->selectedColorCLbl->palette().color(QPalette::Window).blue());
-        m_settings.endGroup();
+    m_settings.endGroup();
 
-        m_settings.beginGroup( "ColorMapBar" );
-        m_settings.setValue( "isShowing", ui->colorMapBarGBox->isChecked() );
-        m_settings.setValue( "Orientation", ui->orientationTypeCBox->currentText() );
-        m_settings.endGroup();
+    m_settings.beginGroup( "ColorMapBar" );
+    m_settings.setValue( "isShowing", ui->colorMapBarGBox->isChecked() );
+    m_settings.setValue( "Orientation", ui->orientationTypeCBox->currentText() );
+    m_settings.endGroup();
 
-        m_settings.beginGroup( "OrientationAxis" );
-        m_settings.setValue( "isShowing", ui->orientationGBox->isChecked() );
-        m_settings.setValue( "AxisType", ui->axisTypeCBox->currentText() );
-        m_settings.setValue( "BoxType", ui->boxTypeCBox->currentText() );
-        m_settings.endGroup();
+    m_settings.beginGroup( "OrientationAxis" );
+    m_settings.setValue( "isShowing", ui->orientationGBox->isChecked() );
+    m_settings.setValue( "AxisType", ui->axisTypeCBox->currentText() );
+    m_settings.setValue( "BoxType", ui->boxTypeCBox->currentText() );
+    m_settings.endGroup();
 
-        m_settings.sync();
+    m_settings.beginGroup( "Resolution" );
+    m_settings.setValue( "width", ui->widthSBox->value() );
+    m_settings.setValue( "height", ui->heightSBox->value() );
+    m_settings.endGroup();
+
+    m_settings.sync();
 }
 
 void Preference::onSelectedColorDoubleClicked()
