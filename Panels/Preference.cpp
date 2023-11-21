@@ -21,7 +21,7 @@ Preference::Preference(QWidget *parent) :
     ui->boxTypeCBox->addItem( "SolidBox", SolidBox );
     ui->boxTypeCBox->addItem( "NoneBox", NoneBox );
 
-    connect( ui->selectedColorLbl, &ClickableLabel::doubleClicked, this, &Preference::onSelectedColorDoubleClicked );
+    connect( ui->selectedColorCLbl, &ClickableLabel::doubleClicked, this, &Preference::onSelectedColorDoubleClicked );
     connect( ui->applyPBtn,  &QPushButton::clicked, this, &Preference::onApplyButtonClicked  );
     connect( ui->cancelPBtn, &QPushButton::clicked, this, &Preference::onCancelButtonClicked );
     connect( ui->okPBtn,     &QPushButton::clicked, this, &Preference::onOKButtonClicked     );
@@ -159,9 +159,9 @@ void Preference::applySettings( bool isInit )
 void Preference::applyScreenSettings()
 {
     m_screen->setBackgroundColor( kvs::RGBColor(
-                                      ui->selectedColorLbl->palette().color(QPalette::Window).red(),
-                                      ui->selectedColorLbl->palette().color(QPalette::Window).green(),
-                                      ui->selectedColorLbl->palette().color(QPalette::Window).blue())
+        ui->selectedColorCLbl->palette().color(QPalette::Window).red(),
+        ui->selectedColorCLbl->palette().color(QPalette::Window).green(),
+        ui->selectedColorCLbl->palette().color(QPalette::Window).blue())
                                   );
 }
 
@@ -237,20 +237,20 @@ void Preference::setSelectedColor(const QColor& color)
 {
     if( color.isValid() )
     {
-        QPalette palette = ui->selectedColorLbl->palette();
+        QPalette palette = ui->selectedColorCLbl->palette();
         palette.setColor(QPalette::Window, color);
-        ui->selectedColorLbl->setAutoFillBackground(true);
-        ui->selectedColorLbl->setPalette(palette);
-        ui->selectedColorLbl->update();
+        ui->selectedColorCLbl->setAutoFillBackground(true);
+        ui->selectedColorCLbl->setPalette(palette);
+        ui->selectedColorCLbl->update();
     }
 }
 
 void Preference::saveSettings()
 {
         m_settings.beginGroup( "Screen" );
-        m_settings.setValue( "BackGroundColor_R", ui->selectedColorLbl->palette().color(QPalette::Window).red());
-        m_settings.setValue( "BackGroundColor_G", ui->selectedColorLbl->palette().color(QPalette::Window).green());
-        m_settings.setValue( "BackGroundColor_B", ui->selectedColorLbl->palette().color(QPalette::Window).blue());
+    m_settings.setValue( "BackGroundColor_R", ui->selectedColorCLbl->palette().color(QPalette::Window).red());
+        m_settings.setValue( "BackGroundColor_G", ui->selectedColorCLbl->palette().color(QPalette::Window).green());
+    m_settings.setValue( "BackGroundColor_B", ui->selectedColorCLbl->palette().color(QPalette::Window).blue());
         m_settings.endGroup();
 
         m_settings.beginGroup( "ColorMapBar" );

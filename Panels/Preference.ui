@@ -43,7 +43,7 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
-      <item row="1" column="0">
+      <item row="1" column="0" alignment="Qt::AlignRight">
        <widget class="QLabel" name="orientationLbl">
         <property name="maximumSize">
          <size>
@@ -62,7 +62,7 @@
       <item row="0" column="1">
        <widget class="QLineEdit" name="captionLEdit"/>
       </item>
-      <item row="0" column="0">
+      <item row="0" column="0" alignment="Qt::AlignRight">
        <widget class="QLabel" name="captionLbl">
         <property name="maximumSize">
          <size>
@@ -75,7 +75,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="2" column="0" alignment="Qt::AlignRight">
        <widget class="QLabel" name="divisionLbl">
         <property name="text">
          <string>Division :</string>
@@ -97,7 +97,7 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="1" column="0">
+      <item row="1" column="0" alignment="Qt::AlignRight">
        <widget class="QLabel" name="boxTypeLbl">
         <property name="maximumSize">
          <size>
@@ -110,7 +110,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
+      <item row="0" column="0" alignment="Qt::AlignRight">
        <widget class="QLabel" name="axisTypeLbl">
         <property name="maximumSize">
          <size>
@@ -148,7 +148,7 @@
       <string>BackGroundColor</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="0" column="0">
+      <item row="0" column="0" alignment="Qt::AlignRight">
        <widget class="QLabel" name="backGroundColorLbl">
         <property name="maximumSize">
          <size>
@@ -162,7 +162,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="ClickableLabel" name="selectedColorLbl">
+       <widget class="ClickableLabel" name="selectedColorCLbl">
         <property name="frameShape">
          <enum>QFrame::Box</enum>
         </property>
