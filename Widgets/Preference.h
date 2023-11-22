@@ -7,6 +7,7 @@
 #include <kvs/qt/Screen>
 #include <kvs/ColorMapBar>
 #include <kvs/OrientationAxis>
+#include <kvs/StochasticRendererBase>
 
 namespace Ui {
 class Preference;
@@ -51,6 +52,8 @@ public:
     void setScreen( kvs::qt::Screen* screen ) { m_screen = screen; }
     void setColorMapBar( kvs::ColorMapBar* colorMapBar ) { m_color_map_bar = colorMapBar; }
     void setOrientationAxis( kvs::OrientationAxis* orientationAxis ) { m_orientation_axis = orientationAxis; }
+    void applyShadingSettings();
+    void doneInitialize() { m_initialized = true; }
 
 private:
     Ui::Preference *ui;
@@ -58,6 +61,7 @@ private:
     kvs::ColorMapBar* m_color_map_bar;
     kvs::OrientationAxis* m_orientation_axis;
     QSettings m_settings;
+    bool m_initialized = false;
 
 private:
     bool checkConfigFileExists() { return QFile::exists( "config.ini" ); }
@@ -65,11 +69,13 @@ private:
     void loadColorMapBarSettings();
     void loadOrientationAxisSettings();
     void loadResolutionSettings();
+    void loadShadingSettings();
     void setDefaultSettings();
     void applySettings( bool isInit );
     void applyScreenSettings();
     void applyColorMapBarSettings();
     void applyOrientationAxisSettings();
+
     void setSelectedColor(const QColor& color);
     void saveSettings();
 

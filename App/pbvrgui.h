@@ -22,6 +22,7 @@ class PBVRGUI : public QMainWindow
 public:
     explicit PBVRGUI(kvs::qt::Application& app, QWidget *parent = nullptr);
     void initialize();
+    Preference& preference() { return this->m_preference; };
     ~PBVRGUI();
 
 private:
