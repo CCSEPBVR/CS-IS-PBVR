@@ -335,7 +335,17 @@ void Preference::applyShadingSettings()
         {
             for(int i = 1; i < m_screen->scene()->numberOfObjects(); i++ )
             {
-                m_screen->scene()->renderer( i )->disableShading();
+                if (strcmp("kvs::glsl::ParticleBasedRenderer", m_screen->scene()->renderer(i)->moduleName()) == 0)
+                {
+                    kvs::glsl::ParticleBasedRenderer* particleBasedRenderer = new  kvs::glsl::ParticleBasedRenderer();
+                    m_screen->scene()->replaceRenderer( i, particleBasedRenderer );
+                }
+                else if(strcmp("kvs::StochasticPolygonRenderer", m_screen->scene()->renderer(i)->moduleName()) == 0)
+                {
+                    kvs::StochasticPolygonRenderer* stochasticPolygonRenderer = new kvs::StochasticPolygonRenderer();
+                    m_screen->scene()->replaceRenderer( i, stochasticPolygonRenderer );
+                }
+
             }
         }
     }
