@@ -4,6 +4,9 @@
 #include <QColorDialog>
 #include <QMessageBox>
 #include <QPalette>
+
+#include <kvs/ParticleBasedRenderer>
+#include <kvs/StochasticPolygonRenderer>
 Preference::Preference(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Preference),
@@ -38,6 +41,7 @@ void Preference::closeEvent(QCloseEvent *event)
     loadColorMapBarSettings();
     loadOrientationAxisSettings();
     loadResolutionSettings();
+    loadShadingSettings();
 
     event->accept();
 }
@@ -50,6 +54,7 @@ void Preference::initialize()
         loadColorMapBarSettings();
         loadOrientationAxisSettings();
         loadResolutionSettings();
+        loadShadingSettings();
     }
     else
     {
@@ -145,6 +150,31 @@ void Preference::loadResolutionSettings()
     m_settings.endGroup();
 }
 
+void Preference::loadShadingSettings()
+{
+    m_settings.beginGroup( "Shading" );
+
+    ui->shadingGBox->setChecked( m_settings.value( "isEnable" ).toBool() );
+    if( m_settings.value( "ShadingType" ).toString() == "Lambert" )
+    {
+        ui->lambertRBtn->setChecked( true );
+    }
+    else if( m_settings.value( "ShadingType" ).toString() == "Phong" )
+    {
+        ui->phongRBtn->setChecked( true );
+    }
+    else if( m_settings.value( "ShadingType" ).toString() == "Blinn" )
+    {
+        ui->BlinnRBtn->setChecked( true );
+    }
+    ui->kaDSBox->setValue( m_settings.value( "ka" ).toDouble() );
+    ui->kdDSBox->setValue( m_settings.value( "kd" ).toDouble() );
+    ui->ksDSBox->setValue( m_settings.value( "ks" ).toDouble() );
+    ui->sDSBox->setValue( m_settings.value( "s" ).toDouble() );
+
+    m_settings.endGroup();
+}
+
 void Preference::setDefaultSettings()
 {
     QColor color( 82, 87, 110 );
@@ -154,6 +184,8 @@ void Preference::setDefaultSettings()
     ui->boxTypeCBox->setCurrentIndex( SolidBox );
     ui->widthSBox->setValue( 620 );
     ui->heightSBox->setValue( 620 );
+    ui->shadingGBox->setChecked( false );
+    ui->phongRBtn->setChecked( true );
 }
 
 void Preference::applySettings( bool isInit )
@@ -161,6 +193,7 @@ void Preference::applySettings( bool isInit )
     applyScreenSettings();
     applyColorMapBarSettings();
     applyOrientationAxisSettings();
+    applyShadingSettings();
 
     if( !isInit )
     {
@@ -249,6 +282,75 @@ void Preference::applyOrientationAxisSettings()
     }
 }
 
+void Preference::applyShadingSettings()
+{
+    if( m_initialized == true )
+    {
+        if( ui->shadingGBox->isChecked() )
+        {
+            for(int i = 1; i < m_screen->scene()->numberOfObjects(); i++ )
+            {
+                if( m_screen->scene()->hasObject(i) )
+                {
+                    if (strcmp("kvs::glsl::ParticleBasedRenderer", m_screen->scene()->renderer(i)->moduleName()) == 0)
+                    {
+                        kvs::glsl::ParticleBasedRenderer* particleBasedRenderer = new  kvs::glsl::ParticleBasedRenderer();
+                        if( ui->lambertRBtn->isChecked() )
+                        {
+                            particleBasedRenderer->setShader( kvs::Shader::Lambert( ui->kaDSBox->value(), ui->kdDSBox->value() ) );
+                        }
+                        else if( ui->phongRBtn->isChecked() )
+                        {
+                            particleBasedRenderer->setShader( kvs::Shader::Phong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
+
+                        }
+                        else if( ui->BlinnRBtn->isChecked() )
+                        {
+                            particleBasedRenderer->setShader( kvs::Shader::BlinnPhong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
+                        }
+                        m_screen->scene()->replaceRenderer( i, particleBasedRenderer );
+                    }
+                    else if(strcmp("kvs::StochasticPolygonRenderer", m_screen->scene()->renderer(i)->moduleName()) == 0)
+                    {
+                        kvs::StochasticPolygonRenderer* stochasticPolygonRenderer = new kvs::StochasticPolygonRenderer();
+                        if( ui->lambertRBtn->isChecked() )
+                        {
+                            stochasticPolygonRenderer->setShader( kvs::Shader::Lambert( ui->kaDSBox->value(), ui->kdDSBox->value() ) );
+                        }
+                        else if( ui->phongRBtn->isChecked() )
+                        {
+                            stochasticPolygonRenderer->setShader( kvs::Shader::Phong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
+
+                        }
+                        else if( ui->BlinnRBtn->isChecked() )
+                        {
+                            stochasticPolygonRenderer->setShader( kvs::Shader::BlinnPhong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
+                        }
+                        m_screen->scene()->replaceRenderer( i, stochasticPolygonRenderer );
+                    }
+                }
+            }
+        }
+        else
+        {
+            for(int i = 1; i < m_screen->scene()->numberOfObjects(); i++ )
+            {
+                if (strcmp("kvs::glsl::ParticleBasedRenderer", m_screen->scene()->renderer(i)->moduleName()) == 0)
+                {
+                    kvs::glsl::ParticleBasedRenderer* particleBasedRenderer = new  kvs::glsl::ParticleBasedRenderer();
+                    m_screen->scene()->replaceRenderer( i, particleBasedRenderer );
+                }
+                else if(strcmp("kvs::StochasticPolygonRenderer", m_screen->scene()->renderer(i)->moduleName()) == 0)
+                {
+                    kvs::StochasticPolygonRenderer* stochasticPolygonRenderer = new kvs::StochasticPolygonRenderer();
+                    m_screen->scene()->replaceRenderer( i, stochasticPolygonRenderer );
+                }
+
+            }
+        }
+    }
+}
+
 void Preference::setSelectedColor(const QColor& color)
 {
     if( color.isValid() )
@@ -283,6 +385,26 @@ void Preference::saveSettings()
     m_settings.beginGroup( "Resolution" );
     m_settings.setValue( "width", ui->widthSBox->value() );
     m_settings.setValue( "height", ui->heightSBox->value() );
+    m_settings.endGroup();
+
+    m_settings.beginGroup( "Shading" );
+    m_settings.setValue( "isEnable", ui->shadingGBox->isChecked() );
+    if( ui->lambertRBtn->isChecked() )
+    {
+        m_settings.setValue( "ShadingType", "Lambert" );
+    }
+    else if( ui->phongRBtn->isChecked() )
+    {
+        m_settings.setValue( "ShadingType", "Phong" );
+    }
+    else if( ui->BlinnRBtn->isChecked() )
+    {
+        m_settings.setValue( "ShadingType", "Blinn" );
+    }
+    m_settings.setValue( "ka", ui->kaDSBox->value() );
+    m_settings.setValue( "kd", ui->kdDSBox->value() );
+    m_settings.setValue( "ks", ui->ksDSBox->value() );
+    m_settings.setValue( "s", ui->sDSBox->value() );
     m_settings.endGroup();
 
     m_settings.sync();
