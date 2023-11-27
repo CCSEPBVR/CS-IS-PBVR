@@ -17,6 +17,15 @@ void kvs::qt::jaea::Screen::keyPressEvent( kvs::KeyEvent* event )
 
     switch( event->key() )
     {
+    case kvs::Key::c:
+        this->setControlTarget( kvs::qt::jaea::Screen::ControlTarget::TargetCamera );
+        break;
+    case kvs::Key::l:
+        this->setControlTarget( kvs::qt::jaea::Screen::ControlTarget::TargetLight );
+        break;
+    case kvs::Key::o:
+        this->setControlTarget( kvs::qt::jaea::Screen::ControlTarget::TargetObject );
+        break;
     case kvs::Key::Home:
         this->scene()->reset();
         this->update();
