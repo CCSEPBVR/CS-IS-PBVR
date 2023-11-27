@@ -14,6 +14,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::PBVRGUI),
     m_preference( this ),
+    m_merge( this ),
     m_volumeTransform( this ),
     m_connect( this )
 {
@@ -24,6 +25,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     initialize();
 
     connect( ui->actionPreference, &QAction::triggered, this, &PBVRGUI::onPreference );
+    connect( ui->actionMerge, &QAction::triggered, this, &PBVRGUI::onMerge );
     connect( ui->actionVolumeTransform, &QAction::triggered, this, &PBVRGUI::onVolumeTransform );
     connect( ui->actionConnectToServer, &QAction::triggered, this, &PBVRGUI::onConnect );
 
@@ -31,6 +33,10 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_preference.setColorMapBar( m_color_map_bar );
     m_preference.setOrientationAxis( m_orientation_axis );
     m_preference.initialize();
+
+    m_merge.close();
+    m_merge.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    addDockWidget(Qt::RightDockWidgetArea, &m_merge);
 
     m_volumeTransform.close();
     m_volumeTransform.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);

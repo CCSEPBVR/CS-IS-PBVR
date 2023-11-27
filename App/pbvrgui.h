@@ -8,6 +8,7 @@
 #include <QMainWindow>
 
 #include "Widgets/Preference.h"
+#include "Widgets/Merge.h"
 #include "Widgets/VolumeTransform.h"
 #include "Widgets/Connect.h"
 
@@ -32,14 +33,16 @@ private:
     kvs::ColorMapBar* m_color_map_bar;
     kvs::OrientationAxis* m_orientation_axis;
 
-    Preference m_preference;
+    Preference      m_preference;
+    Merge           m_merge;
     VolumeTransform m_volumeTransform;
-    Connect m_connect;
+    Connect         m_connect;
 
 private:
     void onPreference()      { m_preference.show(); }
+    void onMerge()           { m_merge.show(); }
     void onVolumeTransform() { m_volumeTransform.show(); }
-    void onConnect() { m_connect.show(); }
+    void onConnect()         { m_connect.show(); }
 };
 
 #endif // PBVRGUI_H

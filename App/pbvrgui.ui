@@ -42,6 +42,7 @@
     </property>
     <addaction name="actionConnectToServer"/>
     <addaction name="separator"/>
+    <addaction name="actionMerge"/>
     <addaction name="actionVolumeTransform"/>
    </widget>
    <addaction name="menuQTPBVR"/>
@@ -60,6 +61,11 @@
   <action name="actionConnectToServer">
    <property name="text">
     <string>Connect to server</string>
+   </property>
+  </action>
+  <action name="actionMerge">
+   <property name="text">
+    <string>Merge</string>
    </property>
   </action>
  </widget>

@@ -31,6 +31,7 @@ TARGET = Widgets
 HEADERS += \
     AnimationControls.h \
     FilterInfomation.h \
+    Merge.h \
     Preference.h \
     RenderOptions.h \
     VolumeTransform.h \
@@ -44,6 +45,7 @@ HEADERS += \
 SOURCES += \
     AnimationControls.cpp \
     FilterInfomation.cpp \
+    Merge.cpp \
     Preference.cpp \
     RenderOptions.cpp \
     VolumeTransform.cpp \
@@ -57,6 +59,7 @@ SOURCES += \
 FORMS += \
     AnimationControls.ui \
     FilterInfomation.ui \
+    Merge.ui \
     Preference.ui \
     RenderOptions.ui \
     VolumeTransform.ui \
