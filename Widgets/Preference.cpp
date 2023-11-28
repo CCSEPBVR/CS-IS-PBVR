@@ -338,11 +338,13 @@ void Preference::applyShadingSettings()
                 if (strcmp("kvs::glsl::ParticleBasedRenderer", m_screen->scene()->renderer(i)->moduleName()) == 0)
                 {
                     kvs::glsl::ParticleBasedRenderer* particleBasedRenderer = new  kvs::glsl::ParticleBasedRenderer();
+                    particleBasedRenderer->setShader( kvs::Shader::Lambert( 1, 0 ) );
                     m_screen->scene()->replaceRenderer( i, particleBasedRenderer );
                 }
                 else if(strcmp("kvs::StochasticPolygonRenderer", m_screen->scene()->renderer(i)->moduleName()) == 0)
                 {
                     kvs::StochasticPolygonRenderer* stochasticPolygonRenderer = new kvs::StochasticPolygonRenderer();
+                    stochasticPolygonRenderer->setShader( kvs::Shader::Lambert( 1, 0 ) );
                     m_screen->scene()->replaceRenderer( i, stochasticPolygonRenderer );
                 }
 
