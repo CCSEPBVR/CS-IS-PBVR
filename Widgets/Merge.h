@@ -3,6 +3,7 @@
 
 #include <QDir>
 #include <QDockWidget>
+#include <QTableWidgetItem>
 #include <kvs/RGBColor>
 namespace Ui {
 class Merge;
@@ -28,7 +29,7 @@ public:
     void setFileName( QString file_name )       { m_file_name       = file_name;       }
     void setFileSuffix( QString file_suffix )       { m_file_suffix       = file_suffix;       }
     void setFileFormat( FileType file_format )   { m_file_format     = file_format;     }
-    void setRGBColor( kvs::RGBColor rgb_color ) { m_rgb_color       = rgb_color;       }
+    void setRGBColor( QColor rgb_color ) { m_rgb_color       = rgb_color;       }
     void setOpacity( double opacity )           { m_opacity         = opacity;         }
 
     QFileInfo getFileInfo()     { return m_file_info;       }
@@ -40,21 +41,21 @@ public:
     QString getFileName()       { return m_file_name;       }
     QString getFileSuffix()       { return m_file_suffix;       }
     FileType getFileFormat()     { return m_file_format;     }
-    kvs::RGBColor getRGBColor() { return m_rgb_color;       }
+    QColor getRGBColor() { return m_rgb_color;       }
     double getOpacity()         { return m_opacity;         }
 
 private:
     QFileInfo m_file_info;
     int m_min_time_step;
     int m_max_time_step;
-    Qt::CheckState m_is_visible;
-    Qt::CheckState m_is_keep_initial;
-    Qt::CheckState m_is_keep_final;
+    Qt::CheckState m_is_visible; //c
+    Qt::CheckState m_is_keep_initial; //c
+    Qt::CheckState m_is_keep_final; //c
     QString m_file_name;
     QString m_file_suffix;
     FileType m_file_format;
-    kvs::RGBColor m_rgb_color;
-    double m_opacity;
+    QColor m_rgb_color; //c
+    double m_opacity; //c
 };
 
 class Merge : public QDockWidget
@@ -79,9 +80,12 @@ private:
     QVector<FilesManager*> m_files_manager;
     QStringList item_name;
 
+    void updateFilesManagerFromTable();
     void onBrowserButtonClicked();
     void onAddButtonClicked();
+    void onApplyButtonClicked();
     void registerFile( FilesManager* filesManager );
+    void removeSelectedRows();
     void checkMinMaxTimeStep( QFileInfo* fileInfo, QDir* directory, FilesManager* filesManager );
     void checkFileFormat( QFileInfo* fileInfo, FilesManager* filesManager );
     void tableItemClicked(int row, int column);

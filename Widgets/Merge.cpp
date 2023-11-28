@@ -6,6 +6,7 @@
 #include <QFileInfo>
 #include <QXmlStreamReader>
 #include <QColorDialog>
+#include <QCheckBox>
 
 Merge::Merge(QWidget *parent) :
     QDockWidget(parent),
@@ -15,6 +16,7 @@ Merge::Merge(QWidget *parent) :
     connect( ui->filesTWidget, &QTableWidget::cellDoubleClicked, this, &Merge::tableItemClicked);
     connect(ui->importFilesBrowsePBtn, &QPushButton::clicked, this, &Merge::onBrowserButtonClicked);
     connect(ui->importFilesAddPBtn, &QPushButton::clicked, this, &Merge::onAddButtonClicked);
+    connect( ui->applyBtn, &QPushButton::clicked, this, &Merge::onApplyButtonClicked );
 }
 
 Merge::~Merge()
@@ -47,8 +49,9 @@ void Merge::onAddButtonClicked()
     if(fileManager->getFileFormat() != FilesManager::Unknown )
     {
         registerFile( fileManager );
-        //        m_files_manager.append( fileManager );
+        m_files_manager.append( fileManager );
     }
+    //HERE
     delete fileManager;
 }
 
@@ -59,16 +62,17 @@ void Merge::registerFile( FilesManager* filesManager )
     ui->filesTWidget->setVerticalHeaderLabels( item_name );
 
     //フォーマットに関係なく共通のウィジェット。
-    QTableWidgetItem *displayCheckBox = new QTableWidgetItem();
-    displayCheckBox->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled ) ;
+    //    QTableWidgetItem *displayCheckBox = new QTableWidgetItem();
+    QCheckBox *displayCheckBox = new QCheckBox();
+//    displayCheckBox->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled ) ;
     displayCheckBox->setCheckState ( filesManager->getVisible() ) ;
 
-    QTableWidgetItem *keepInitialCheckBox = new QTableWidgetItem();
-    keepInitialCheckBox->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled ) ;
+    QCheckBox *keepInitialCheckBox = new QCheckBox();
+//    keepInitialCheckBox->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled ) ;
     keepInitialCheckBox->setCheckState ( filesManager->getKeepInitial() ) ;
 
-    QTableWidgetItem *keepFinalCheckBox = new QTableWidgetItem();
-    keepFinalCheckBox->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled ) ;
+    QCheckBox *keepFinalCheckBox = new QCheckBox();
+//    keepFinalCheckBox->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled ) ;
     keepFinalCheckBox->setCheckState ( filesManager->getKeepFinal()  ) ;
 
     QTableWidgetItem* format = new QTableWidgetItem;
@@ -95,20 +99,24 @@ void Merge::registerFile( FilesManager* filesManager )
         QTableWidgetItem* empCell2 = new QTableWidgetItem;
         empCell1->setFlags( empCell1->flags() & ~Qt::ItemIsEditable );
         empCell2->setFlags( empCell2->flags() & ~Qt::ItemIsEditable );
-
         ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 4, empCell1 );
         ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 5, empCell2 );
     }
 
-    QTableWidgetItem *deleteCheckBox = new QTableWidgetItem();
-    deleteCheckBox->setFlags ( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled ) ;
+//    QTableWidgetItem *deleteCheckBox = new QTableWidgetItem();
+    QCheckBox *deleteCheckBox = new QCheckBox;
+//    deleteCheckBox->setFlags ( Qt::ItemIsUserCheckable | Qt::ItemIsEnabled ) ;
     deleteCheckBox->setCheckState ( Qt::Unchecked ) ;
 
-    ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 0, displayCheckBox );
-    ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 1, keepInitialCheckBox );
-    ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 2, keepFinalCheckBox );
+    //    ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 0, displayCheckBox );
+    //    ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 1, keepInitialCheckBox );
+    //    ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 2, keepFinalCheckBox );
+    ui->filesTWidget->setCellWidget(ui->filesTWidget->rowCount() - 1, 0, displayCheckBox);
+    ui->filesTWidget->setCellWidget(ui->filesTWidget->rowCount() - 1, 1, keepInitialCheckBox);
+    ui->filesTWidget->setCellWidget(ui->filesTWidget->rowCount() - 1, 2, keepFinalCheckBox);
     ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 3, format );
-    ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 6, deleteCheckBox );
+    //    ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 6, deleteCheckBox );
+    ui->filesTWidget->setCellWidget( ui->filesTWidget->rowCount() - 1, 6, deleteCheckBox );
 
 }
 
@@ -187,7 +195,7 @@ void Merge::checkFileFormat( QFileInfo* fileInfo, FilesManager* filesManager )
                     qDebug() << "KVSML(PolygonObject)です。";
                     filesManager->setFileFormat( FilesManager::NonTexturedPolygon );
                     filesManager->setFileSuffix( "KVSML(PolygonObject)" );
-                    filesManager->setRGBColor( kvs::RGBColor( 128, 128, 128 ));
+                    filesManager->setRGBColor( QColor(128, 128, 128));
                     filesManager->setOpacity( 0.5 );
                     break; // ファイルをクローズしてループを終了
                 }
@@ -204,7 +212,7 @@ void Merge::checkFileFormat( QFileInfo* fileInfo, FilesManager* filesManager )
         qDebug() << "stlファイルです。";
         filesManager->setFileFormat( FilesManager::NonTexturedPolygon );
         filesManager->setFileSuffix( "stl" );
-        filesManager->setRGBColor( kvs::RGBColor( 128, 128 , 128 ));
+        filesManager->setRGBColor( QColor(128, 128, 128));
         filesManager->setOpacity( 0.5 );
     }else if( fileSuffix == "3ds")
     {
@@ -246,3 +254,95 @@ void Merge::tableItemClicked(int row, int column)
         }
     }
 }
+
+void Merge::removeSelectedRows()
+{
+    // List to store indices of rows to be deleted
+    QList<int> rowsToDelete;
+
+    for (int row = 0; row < ui->filesTWidget->rowCount(); ++row)
+    {
+        // Delete CheckBox
+        QCheckBox* deleteCheckBox = qobject_cast<QCheckBox*>(ui->filesTWidget->cellWidget(row, 6));
+
+        if (deleteCheckBox && deleteCheckBox->checkState() == Qt::Checked)
+        {
+            // If the Delete CheckBox is checked, mark the row for deletion
+            rowsToDelete << row;
+        }
+    }
+
+    // Output the values before removal
+    qInfo() << "Rows before removal: " << ui->filesTWidget->rowCount();
+    for (int row = 0; row < ui->filesTWidget->rowCount(); ++row)
+    {
+        qInfo() << "Row " << row << ": " << ui->filesTWidget->verticalHeaderItem(row)->text();
+    }
+
+    // Remove the marked rows in reverse order to avoid index issues
+    for (int i = rowsToDelete.size() - 1; i >= 0; --i)
+    {
+        int rowToRemove = rowsToDelete[i];
+
+        // Remove the entry from m_files_manager
+        if (rowToRemove >= 0 && rowToRemove < m_files_manager.size())
+        {
+            // delete m_files_manager[rowToRemove]; // Uncomment if memory needs to be freed
+            m_files_manager.removeAt(rowToRemove);
+        }
+
+        // Remove the row from item_name
+        item_name.removeAt(rowToRemove);
+
+        ui->filesTWidget->removeRow(rowToRemove);
+    }
+
+    // Output the values after removal
+    qInfo() << "Rows after removal: " << ui->filesTWidget->rowCount();
+    for (int row = 0; row < ui->filesTWidget->rowCount(); ++row)
+    {
+        qInfo() << "Row " << row << ": " << ui->filesTWidget->verticalHeaderItem(row)->text();
+    }
+}
+
+void Merge::updateFilesManagerFromTable()
+{
+    for (int row = 0; row < ui->filesTWidget->rowCount(); row++)
+    {
+//        // 各セルの値をfileManagerに設定
+//        QCheckBox *checkBox = qobject_cast<QCheckBox*>(sender());
+//        QPoint checkBoxPos = checkBox->pos();
+//        QModelIndex index = ui->filesTWidget->indexAt(checkBoxPos);
+        // チェックボックスのセルを取得
+        QWidget* widget = ui->filesTWidget->cellWidget(row, 0);
+        QCheckBox* checkBox = qobject_cast<QCheckBox*>(widget);
+        if (checkBox)
+        {
+            m_files_manager[row]->setVisible(checkBox->checkState());
+        }
+//        m_files_manager[row]->setKeepInitial(static_cast<Qt::CheckState>(ui->filesTWidget->item(row, 1)->checkState()));
+//        m_files_manager[row]->setKeepFinal(static_cast<Qt::CheckState>(ui->filesTWidget->item(row, 2)->checkState()));
+//        m_files_manager[row]->setFileName(ui->filesTWidget->item(row, 3)->text());
+//        m_files_manager[row]->setFileSuffix(ui->filesTWidget->item(row, 4)->text());
+//        m_files_manager[row]->setFileFormat(static_cast<FilesManager::FileType>(ui->filesTWidget->item(row, 5)->data(Qt::UserRole).toInt()));
+//        m_files_manager[row]->setRGBColor(ui->filesTWidget->item(row, 6)->data(Qt::UserRole).value<QColor>());
+//        m_files_manager[row]->setOpacity(ui->filesTWidget->item(row, 10)->data(Qt::UserRole).toDouble());
+
+    }
+}
+
+void Merge::onApplyButtonClicked()
+{
+    removeSelectedRows();
+    updateFilesManagerFromTable();
+    for(int i = 0; i < m_files_manager.size(); i++)
+    {
+        qInfo() << m_files_manager[i]->getMinTimeStep();
+        qInfo() << m_files_manager[i]->getMaxTimeStep();
+        qInfo() << m_files_manager[i]->getVisible();
+        qInfo() << m_files_manager[i]->getKeepInitial();
+        qInfo() << m_files_manager[i]->getKeepFinal();
+    }
+}
+
+
