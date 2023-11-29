@@ -238,12 +238,12 @@ void Merge::checkFileFormat(QFileInfo *fileInfo,  FilesManager *filesManager)
 
 void Merge::onApplyButtonClicked()
 {
-    removeFiles();
-    updateData();
-    printFilesManagerContents();
+    removeChecker();
+    updateFiles();
+    showFilesManager();
 }
 
-void Merge::removeFiles()
+void Merge::removeChecker()
 {
     // 削除する行のインデックスを保存するリスト
     QList<int> rowsToRemove;
@@ -272,10 +272,10 @@ void Merge::removeFiles()
     }
 
     // 削除後にデータの更新を行う関数を呼び出す
-    updateData();
+    updateFiles();
 }
 
-void Merge::updateData()
+void Merge::updateFiles()
 {
     // m_files_manager に保持されている各 FilesManager の情報を表示
     for (int row = 0; row < ui->filesTWidget->rowCount(); ++row)
@@ -317,7 +317,7 @@ void Merge::updateData()
     }
 }
 
-void Merge::printFilesManagerContents()
+void Merge::showFilesManager()
 {
     for (int i = 0; i < m_files_manager.size(); ++i)
     {

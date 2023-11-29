@@ -81,9 +81,9 @@ private:
     void onAddButtonClicked();
     void onApplyButtonClicked();
     void onFilesTWidgetCellDoubleClicked(int row, int column);
-    void removeFiles();
-    void updateData();
-    void printFilesManagerContents();
+    void removeChecker();
+    void updateFiles();
+    void showFilesManager();
     void registerFile( FilesManager* filesManager );
     void checkMinMaxTimeStep(QFileInfo *fileInfo, QDir *directory,FilesManager *filesManager);
     void checkFileFormat(QFileInfo *fileInfo, FilesManager *filesManager);
