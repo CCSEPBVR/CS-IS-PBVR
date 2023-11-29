@@ -33,6 +33,7 @@ public:
     void setFileFormat( FileType file_format )   { m_file_format     = file_format;     }
     void setRGBColor( QColor rgb_color ) { m_rgb_color       = rgb_color;       }
     void setOpacity( double opacity )           { m_opacity         = opacity;         }
+    void setObjectName( QString object_name ) { m_object_name = object_name; }
     void setObjectId( int object_id ) { m_object_id = object_id; }
     void setRendererId( int renderer_id ) { m_object_id = renderer_id; }
     void setObjectRendererIdPair(const std::pair<int, int> &pair) { m_object_renderer_id_pair = pair; }
@@ -49,6 +50,7 @@ public:
     FileType getFileFormat()     { return m_file_format;     }
     QColor getRGBColor() { return m_rgb_color;       }
     double getOpacity()         { return m_opacity;         }
+    QString getObjectName() { return m_object_name; }
     int getObjectId() { return m_object_id; }
     int getRendererId() { return m_renderer_id; }
     std::pair<int, int> getObjectRendererIdPair() const { return m_object_renderer_id_pair; }
@@ -67,6 +69,7 @@ private:
     FileType m_file_format;
     QColor m_rgb_color;
     double m_opacity;
+    QString m_object_name;
     int m_object_id = -1;
     int m_renderer_id = -1;
 //    QPair<int, int> m_object_renderer_id_pair;

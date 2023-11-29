@@ -10,6 +10,7 @@
 #include <QCheckBox>
 
 #include <kvs/ObjectManager>
+#include <kvs/RendererManager>
 #include <kvs/PointImporter>
 #include <kvs/PointObject>
 #include <kvs/ParticleBasedRenderer>
@@ -250,8 +251,8 @@ void Merge::onApplyButtonClicked()
 {
     removeChecker();
     updateFiles();
-//    showFilesManager();
     mergeObjects();
+    showFilesManager();
 }
 
 void Merge::removeChecker()
@@ -345,6 +346,7 @@ void Merge::showFilesManager()
         qInfo() << "Keep Final: " << filesManager->getKeepFinal();
         qInfo() << "File Suffix: " << filesManager->getFileSuffix();
         qInfo() << "File Format: " << filesManager->getFileFormat();
+        qInfo() << "ObjectID:"     << filesManager->getObjectId();
 
         // RGB Color と Opacity は NonTexturedPolygon の場合にのみ出力
         if (filesManager->getFileFormat() == FilesManager::NonTexturedPolygon)
@@ -375,6 +377,7 @@ void Merge::mergeObjects()
 {
     for ( FilesManager* filesManager : m_files_manager )
     {
+        qInfo() << m_screen->scene()->hasObject( filesManager->getObjectId() );
         if(m_screen->scene()->hasObject( filesManager->getObjectId() ) == false && filesManager->getVisible() == true ) //該当の行のObjectIdが存在し、表示のチェックボックスにチェックがついている時にオブジェクトを登録
         {
             if( filesManager->getFileFormat() == FilesManager::PointObject )
@@ -384,23 +387,23 @@ void Merge::mergeObjects()
                 kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
 
                 filesManager->setObjectId( m_screen->registerObject( point_object, particle_based_renderer ).first );
-//                filesManager->setObjectRendererIdPair(m_screen->registerObject( point_object, particle_based_renderer ));
             }
 
             if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon )
             {
                 kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( filesManager->getFileInfo().filePath().toStdString() );
                 polygon_object->setXform( m_screen->scene()->objectManager()->xform() );
-//                polygon_object->setColor(  );
+                polygon_object->setColor( kvs::RGBColor( filesManager->getRGBColor().red() , filesManager->getRGBColor().green() , filesManager->getRGBColor().blue() ) );
                 polygon_object->setOpacity( filesManager->getOpacity() * 255 );
                 kvs::StochasticPolygonRenderer* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer();
                 filesManager->setObjectId( m_screen->registerObject( polygon_object, stochastic_polygon_renderer ).first );
-//                filesManager->setObjectRendererIdPair(m_screen->registerObject( polygon_object, stochastic_polygon_renderer ));
             }
         }
         else if(filesManager->getVisible() == false) //表示のチェックボックスにチェックがついていない時にオブジェクトを削除(現在登録しているIDを破棄、登録後に再更新する。
         {
             m_screen->scene()->removeObject( filesManager->getObjectId() );
+            m_screen->scene()->objectManager()->erase( filesManager->getObjectId() );
+            filesManager->setObjectId( -1 );
         }
 
         qInfo() << filesManager->getFileInfo().filePath();
