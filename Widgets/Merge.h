@@ -80,6 +80,7 @@ private:
     void onBrowserButtonClicked();
     void onAddButtonClicked();
     void onApplyButtonClicked();
+    void onFilesTWidgetCellDoubleClicked(int row, int column);
     void removeFiles();
     void updateData();
     void printFilesManagerContents();

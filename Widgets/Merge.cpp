@@ -14,6 +14,7 @@ Merge::Merge(QWidget *parent) :
     ui(new Ui::Merge)
 {
     ui->setupUi(this);
+    connect(ui->filesTWidget, &QTableWidget::cellDoubleClicked, this, &Merge::onFilesTWidgetCellDoubleClicked);
     connect(ui->importFilesBrowsePBtn, &QPushButton::clicked, this, &Merge::onBrowserButtonClicked);
     connect(ui->importFilesAddPBtn, &QPushButton::clicked, this, &Merge::onAddButtonClicked);
     connect(ui->applyBtn, &QPushButton::clicked, this, &Merge::onApplyButtonClicked);
@@ -341,5 +342,19 @@ void Merge::printFilesManagerContents()
         }
 
         qInfo() << "=============================";
+    }
+}
+
+void Merge::onFilesTWidgetCellDoubleClicked(int row, int column)
+{
+    if (column == 4) // Colorのセルをダブルクリックしているか。
+    {
+        FilesManager* filesManager = m_files_manager.value(row, nullptr);
+
+        if (filesManager != nullptr && filesManager->getFileFormat() == FilesManager::NonTexturedPolygon)
+        {
+            QTableWidgetItem* formatItem = ui->filesTWidget->item( row, 4 );
+            formatItem->setBackground(QColorDialog::getColor(Qt::gray));
+        }
     }
 }
