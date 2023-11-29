@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QDockWidget>
 #include <QTableWidgetItem>
+#include <kvs/qt/Screen>
 #include <kvs/RGBColor>
 
 class FilesManager
@@ -32,11 +33,14 @@ public:
     void setFileFormat( FileType file_format )   { m_file_format     = file_format;     }
     void setRGBColor( QColor rgb_color ) { m_rgb_color       = rgb_color;       }
     void setOpacity( double opacity )           { m_opacity         = opacity;         }
+    void setObjectId( int object_id ) { m_object_id = object_id; }
+    void setRendererId( int renderer_id ) { m_object_id = renderer_id; }
+    void setObjectRendererIdPair(const std::pair<int, int> &pair) { m_object_renderer_id_pair = pair; }
 
     QFileInfo getFileInfo()     { return m_file_info;       }
     QString getFileName() const {return m_file_name; }
-    int getMinTimeStep() const { return m_min_time_step; }
-    int getMaxTimeStep() const { return m_max_time_step; }
+    int getMinTimeStep() const  { return m_min_time_step; }
+    int getMaxTimeStep() const  { return m_max_time_step; }
 
     Qt::CheckState getVisible()           { return m_is_visible;      }
     Qt::CheckState getKeepInitial()       { return m_is_keep_initial; }
@@ -45,12 +49,16 @@ public:
     FileType getFileFormat()     { return m_file_format;     }
     QColor getRGBColor() { return m_rgb_color;       }
     double getOpacity()         { return m_opacity;         }
+    int getObjectId() { return m_object_id; }
+    int getRendererId() { return m_renderer_id; }
+    std::pair<int, int> getObjectRendererIdPair() const { return m_object_renderer_id_pair; }
+
 
 private:
     QFileInfo m_file_info; //この値はui->filesTWidgetでは使いません。
-    QString m_file_name; //この値はui->filesTWidgetでは使いません。
-    int m_min_time_step; //この値はui->filesTWidgetでは使いません。
-    int m_max_time_step; //この値はui->filesTWidgetでは使いません。
+    QString m_file_name;   //この値はui->filesTWidgetでは使いません。
+    int m_min_time_step;   //この値はui->filesTWidgetでは使いません。
+    int m_max_time_step;   //この値はui->filesTWidgetでは使いません。
 
     Qt::CheckState m_is_visible;
     Qt::CheckState m_is_keep_initial;
@@ -59,6 +67,10 @@ private:
     FileType m_file_format;
     QColor m_rgb_color;
     double m_opacity;
+    int m_object_id = -1;
+    int m_renderer_id = -1;
+//    QPair<int, int> m_object_renderer_id_pair;
+    std::pair<int, int> m_object_renderer_id_pair;
 };
 
 namespace Ui {
@@ -72,11 +84,13 @@ class Merge : public QDockWidget
 public:
     explicit Merge(QWidget *parent = nullptr);
     ~Merge();
+    void setScreen( kvs::qt::Screen* screen ){ m_screen = screen; }
 
 private:
     Ui::Merge *ui;
     QStringList headerLabels;
     QVector<FilesManager*> m_files_manager;
+    kvs::qt::Screen* m_screen;
     void onBrowserButtonClicked();
     void onAddButtonClicked();
     void onApplyButtonClicked();
@@ -85,6 +99,7 @@ private:
     void updateFiles();
     void showFilesManager();
     void registerFile( FilesManager* filesManager );
+    void mergeObjects();
     void checkMinMaxTimeStep(QFileInfo *fileInfo, QDir *directory,FilesManager *filesManager);
     void checkFileFormat(QFileInfo *fileInfo, FilesManager *filesManager);
 };

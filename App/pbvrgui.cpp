@@ -34,6 +34,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_preference.setOrientationAxis( m_orientation_axis );
     m_preference.initialize();
 
+    m_merge.setScreen( m_screen );
     m_merge.close();
     m_merge.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     addDockWidget(Qt::RightDockWidgetArea, &m_merge);
@@ -53,30 +54,6 @@ PBVRGUI::~PBVRGUI()
 void PBVRGUI::initialize()
 {
     const size_t repetitions = 4;
-    const float step = 0.5f;
-
-
-#ifdef STOCHASTIC_RENDERING_WITH_HYDROGEN
-    kvs::Vector3ui resolution(32, 32, 32);
-    kvs::StructuredVolumeObject* volume = new kvs::HydrogenVolumeData(resolution);
-
-    const kvs::TransferFunction tfunc(256);
-    kvs::PointObject* object = new kvs::CellByCellMetropolisSampling(volume, repetitions, step, tfunc);
-
-    kvs::glsl::ParticleBasedRenderer* renderer = new kvs::glsl::ParticleBasedRenderer();
-    renderer->setRepetitionLevel(repetitions);
-    renderer->enableLODControl();
-
-    kvs::PolygonObject* polygonObject = new kvs::ExternalFaces(volume);
-    polygonObject->setColor(kvs::RGBColor::White());
-    polygonObject->setOpacity(32);
-    kvs::StochasticPolygonRenderer* polygonRenderer = new kvs::StochasticPolygonRenderer();
-    delete volume;
-
-    // kvs::qt::Screen にオブジェクトを登録
-    m_screen->registerObject(object, renderer);
-    m_screen->registerObject(polygonObject, polygonRenderer);
-#endif
 
     // ストキャスティック レンダリング コンポジタのセットアップ
     compositor = new kvs::StochasticRenderingCompositor(m_screen->scene());

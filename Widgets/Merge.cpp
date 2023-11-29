@@ -9,6 +9,15 @@
 #include <QColorDialog>
 #include <QCheckBox>
 
+#include <kvs/ObjectManager>
+#include <kvs/PointImporter>
+#include <kvs/PointObject>
+#include <kvs/ParticleBasedRenderer>
+
+#include <kvs/PolygonImporter>
+#include <kvs/PolygonObject>
+#include <kvs/StochasticPolygonRenderer>
+
 Merge::Merge(QWidget *parent) :
     QDockWidget(parent),
     ui(new Ui::Merge)
@@ -142,6 +151,7 @@ void Merge::checkMinMaxTimeStep(QFileInfo *fileInfo, QDir *directory, FilesManag
         //        qInfo() << maxValue;
 
         // 新しい FilesManager に最小最大値をセット
+        filesManager->setFileInfo( *fileInfo );
         filesManager->setFileName( fileInfo->baseName().left(fileInfo->baseName().indexOf('_')) );
         filesManager->setMinTimeStep(minValue);
         filesManager->setMaxTimeStep(maxValue);
@@ -240,7 +250,8 @@ void Merge::onApplyButtonClicked()
 {
     removeChecker();
     updateFiles();
-    showFilesManager();
+//    showFilesManager();
+    mergeObjects();
 }
 
 void Merge::removeChecker()
@@ -265,6 +276,7 @@ void Merge::removeChecker()
         int rowToRemove = rowsToRemove[i];
         // 対応する FilesManager オブジェクトを削除
         FilesManager* filesManager = m_files_manager.takeAt(rowToRemove);
+        m_screen->scene()->removeObject( filesManager->getObjectId() );
         delete filesManager;
 
         // 行を削除
@@ -357,4 +369,41 @@ void Merge::onFilesTWidgetCellDoubleClicked(int row, int column)
             formatItem->setBackground(QColorDialog::getColor(Qt::gray));
         }
     }
+}
+
+void Merge::mergeObjects()
+{
+    for ( FilesManager* filesManager : m_files_manager )
+    {
+        if(m_screen->scene()->hasObject( filesManager->getObjectId() ) == false && filesManager->getVisible() == true ) //該当の行のObjectIdが存在し、表示のチェックボックスにチェックがついている時にオブジェクトを登録
+        {
+            if( filesManager->getFileFormat() == FilesManager::PointObject )
+            {
+                kvs::PointObject* point_object = new kvs::PointImporter( filesManager->getFileInfo().filePath().toStdString() );
+                point_object->setXform( m_screen->scene()->objectManager()->xform() );
+                kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
+
+                filesManager->setObjectId( m_screen->registerObject( point_object, particle_based_renderer ).first );
+//                filesManager->setObjectRendererIdPair(m_screen->registerObject( point_object, particle_based_renderer ));
+            }
+
+            if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon )
+            {
+                kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( filesManager->getFileInfo().filePath().toStdString() );
+                polygon_object->setXform( m_screen->scene()->objectManager()->xform() );
+//                polygon_object->setColor(  );
+                polygon_object->setOpacity( filesManager->getOpacity() * 255 );
+                kvs::StochasticPolygonRenderer* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer();
+                filesManager->setObjectId( m_screen->registerObject( polygon_object, stochastic_polygon_renderer ).first );
+//                filesManager->setObjectRendererIdPair(m_screen->registerObject( polygon_object, stochastic_polygon_renderer ));
+            }
+        }
+        else if(filesManager->getVisible() == false) //表示のチェックボックスにチェックがついていない時にオブジェクトを削除(現在登録しているIDを破棄、登録後に再更新する。
+        {
+            m_screen->scene()->removeObject( filesManager->getObjectId() );
+        }
+
+        qInfo() << filesManager->getFileInfo().filePath();
+    }
+    m_screen->update();
 }
