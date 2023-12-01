@@ -1,0 +1,138 @@
+
+export device=cascadelake
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/ISPBVR/reg_test2/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct
+#export  PARTICLE_DIR=~/pbvr/ISPBVR/reg_test2/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/ISPBVR/reg_test10/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_pyramid
+#export  PARTICLE_DIR=~/pbvr/ISPBVR/reg_test10/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_pyramid/particle_out
+
+export TF_NAME=default
+export VIS_PARAM_DIR=~/pbvr/UNPBVR/ISPBVR/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct
+export  PARTICLE_DIR=~/pbvr/UNPBVR/ISPBVR/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/UNPBVR/ISPBVR/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_tetra
+#export  PARTICLE_DIR=~/pbvr/UNPBVR/ISPBVR/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_tetra/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/UNPBVR/ISPBVR/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_prism
+#export  PARTICLE_DIR=~/pbvr/UNPBVR/ISPBVR/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_prism/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/UNPBVR/ISPBVR/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_pyramid
+#export  PARTICLE_DIR=~/pbvr/UNPBVR/ISPBVR/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_pyramid/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/UNPBVR/ISPBVR/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_quadhexa
+#export  PARTICLE_DIR=~/pbvr/UNPBVR/ISPBVR/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_quadhexa/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/UNPBVR/ISPBVR/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_quadtetra
+#export  PARTICLE_DIR=~/pbvr/UNPBVR/ISPBVR/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_quadtetra/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/ISPBVR/ISPBVR_v21/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct
+#export  PARTICLE_DIR=~/pbvr/ISPBVR/ISPBVR_v21/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/ISPBVR/ISPBVR_v21/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_tetra
+#export  PARTICLE_DIR=~/pbvr/ISPBVR/ISPBVR_v21/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_tetra/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/ISPBVR/reg_test0606/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct
+#export  PARTICLE_DIR=~/pbvr/ISPBVR/reg_test0606/CS-IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/ISPBVR/reg_test10/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct
+#export  PARTICLE_DIR=~/pbvr/ISPBVR/reg_test10/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/ISPBVR/reg_test2/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct
+#export  PARTICLE_DIR=~/pbvr/ISPBVR/reg_test2/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/ISPBVR/reg_test2/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_prism
+#export  PARTICLE_DIR=~/pbvr/ISPBVR/reg_test2/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_prism/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/ISPBVR/ISPBVR_v2_0328/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_prism
+#export  PARTICLE_DIR=~/pbvr/ISPBVR/ISPBVR_v2_0328/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_prism/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/ISPBVR/ISPBVR_v2_0328/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_quadtetra
+#export  PARTICLE_DIR=~/pbvr/ISPBVR/ISPBVR_v2_0328/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_quadtetra/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/ISPBVR/ISPBVR_v2_celltype/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_quadtetra
+#export PARTICLE_DIR=~/pbvr/ISPBVR/ISPBVR_v2_celltype/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_quadtetra/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/ISPBVR/ISPBVR_v2_celltype/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_quadhexa
+#export PARTICLE_DIR=~/pbvr/ISPBVR/ISPBVR_v2_celltype/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_quadhexa/particle_out
+
+#export TF_NAME=default
+#export VIS_PARAM_DIR=~/pbvr/ISPBVR/ISPBVR_v2_celltype/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_pyramid
+#export PARTICLE_DIR=~/pbvr/ISPBVR/ISPBVR_v2_celltype/DEV_IS-PBVR/DaemonAndSampler/Example/C/Hydrogen_unstruct_pyramid/particle_out
+
+source /etc/profile.d/modules.sh
+source ~/.bash_profile 
+module purge &&  module load mpt/2.23-ga cuda/11.0
+       
+export OMP_NUM_THREADS=12
+alias qsubint='qsub -I -q sg4d -l select=1:ncpus=4:mpiprocs=1:ompthreads=12:ngpus=1 -l walltime=01:00:00 -P interactive -N interactive'
+alias qsubhg='qsub -I -q sg4di -P job -l select=4:ncpus=48:mpiprocs=4:ompthreads=12:ngpus=1 -l walltime=1:00:00'
+#alias qsubhg='qsub -I -q sg8d -P job -l select=8:ncpus=48:mpiprocs=4:ompthreads=12:ngpus=1 -l walltime=1:00:00'
+#alias qsubhg='qsub -I -q sg4di -P job -l select=4:ncpus=48:mpiprocs=4:ompthreads=12:ngpus=1 -l walltime=1:00:00'
+alias qsubhg2='qsub -I -q sg4di -P job -l select=4:ncpus=48:mpiprocs=2:ompthreads=6:ngpus=1 -l walltime=1:00:00'
+
+#alias make='make -j'
+alias tailf='tail -F ../log/logfile_0.txt'
+alias py='python3'
+alias jupyterlab='python3 -m jupyterlab --port=11111  --ip=0.0.0.0 --allow-root --no-browser'
+
+alias mlc='export DEVICE=cascadelake; module purge; module load intel; module load mpt' 
+
+alias mlb='module load cuda| module load hdf5'
+alias mlc='module load cuda'
+alias mlg='module load gcc'
+alias mlh='module load hdf5'
+alias mlm='module load mpt/2.23-ga'
+alias mlp='module purge &&  module load mpt/2.23-ga cuda/11.0;'
+##alias mlp2='module purge; module load gcc/7.4.0 mpt/2.23-ga cuda/11.0; export MPI_USE_CUDA=1'
+alias mlp2='module purge; module load gnu/7.4.0 mpt/2.23-ga cuda/11.0; export MPI_USE_CUDA=1'
+alias mlpv='module purge; module load cuda/11.4 gnu/cur intel/cur  mpt/2.23-ga'
+alias mlpv_old='module purge; module load intel/19.0.5 cuda/10.1 mpt/2.23-ga'
+alias mlpvrpbvr='module purge; module load intel/19.0.5 cuda/10.1 mpt/2.23-ga; export MPI_USE_CUDA=1'
+#alias ofoam='module purge;module load gnu/9.5.0 openmpi/4.1.4 paraview/5.8.1 vtk/7.1.1'
+alias ofoamv2206='module purge; module load gnu/cur openmpi/cur paraview/5.8.1 vtk/7.1.1'
+alias ofoam='module purge; module load intel/cur mpt/cur paraview/5.8.1 vtk/7.1.1'
+#alias ofoam='module purge; module load intel/cur openmpi/cur paraview/5.8.1 vtk/7.1.1'
+#alias ofoam='module purge;module load intel/cur openmpi/4.1.4 paraview/5.8.1 vtk/7.1.1'
+#alias v2206='source /home/app/OpenFOAM/OpenFOAM-v2206/etc/bashrc'
+#alias v2006='source /home/app/OpenFOAM/OpenFOAM-v2006/etc/bashrc'
+#alias v2206='. /home/app/OpenFOAM/OpenFOAM-v2206/etc/bashrc'
+alias v2206='. /home/g6/a214026/pbvr/OpenFOAM-v2206/etc/bashrc'
+alias v2006='. /home/app/OpenFOAM/OpenFOAM-v2006/etc/bashrc'
+
+
+alias exppv='export MPICC_CC=icc; export MPICXX_CXX=icpc'
+
+alias cdd='cd /data/g6/a214026'
+alias cdh='cd /home/g6/a214026'
+
+##alias qs_cav='cd /home/g6/a214026/Cavity/citylbm/run && python3 sub.py cavity.json'
+alias qs_cav='python3 sub.py cavity.json'
+alias qs_mcr='python3 sub.py macro.json'
+alias qs_fac='python3 sub.py fac.json'
+alias qs_okl='python3 sub.py okl.json'
+alias qs='python3 sub.py'
+
+alias para511='module use --append /home/g4/a190094/share/install/ParaView-5.11.0-osmesa-MPI-Linux-Python3.9-x86_64/modulefiles'
+alias mlpara='module load paraview/5.11.0'
+alias exepara='mpiexec -n 4 pvserver --mpi'
+
+#source ~/spack/share/spack/setup-env.sh
+#source ~/spack/share/spack/spack-completion.bash
+#      spack load universal-ctags 

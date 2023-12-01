@@ -1,0 +1,6 @@
+CXX=icpc
+CXXFLAGS= -O3 -no-prec-div -static -xHost
+CC=icc
+CCFLAGS= -O3 -no-prec-div -static -xHost
+LD=icpc
+LDFLAGS= -O3 -no-prec-div -static -xHost
