@@ -250,7 +250,7 @@ void Merge::checkFileFormat(QFileInfo *fileInfo,  FilesManager *filesManager)
 
 void Merge::onApplyButtonClicked()
 {
-    removeChecker();
+//    removeChecker();
     updateFiles();
     mergeObjects();
 //    showFilesManager();
@@ -345,8 +345,7 @@ void Merge::showFilesManager()
         qInfo() << "Keep Initial: " << filesManager->getKeepInitial();
         qInfo() << "Keep Final: " << filesManager->getKeepFinal();
         qInfo() << "File Suffix: " << filesManager->getFileSuffix();
-        qInfo() << "File Format: " << filesManager->getFileFormat();
-        qInfo() << "uuid: " << filesManager->getUUId();
+        qInfo() << "File Format: " << filesManager->getFileFormat();        
 
         // RGB Color と Opacity は NonTexturedPolygon の場合にのみ出力
         if (filesManager->getFileFormat() == FilesManager::NonTexturedPolygon)
@@ -375,75 +374,118 @@ void Merge::onFilesTWidgetCellDoubleClicked(int row, int column)
 
 void Merge::mergeObjects()
 {
-//    qInfo() << "=====";
     for (int i = 0; i < m_files_manager.size(); i++)
     {
         FilesManager* filesManager = m_files_manager[i];
-        if( filesManager->getVisible() == Qt::PartiallyChecked && filesManager->getShow() == true)
+        //チェックがついていてobjectが存在しない場合は登録
+        if(filesManager->getVisible() == Qt::PartiallyChecked && filesManager->getIds().first == 0 && filesManager->getIds().second == 0)
         {
-            qInfo() << "もういるから何もせんよ";
-        }
-        else
-        {
-            if( filesManager->getVisible() == Qt::PartiallyChecked )
+            if (filesManager->getFileFormat() == FilesManager::PointObject)
             {
-                qInfo() << "非表示だったから表示するよ";
-                filesManager->setUUId( QUuid::createUuid().toString( ));
-                filesManager->setShow( true );
-                if( filesManager->getFileFormat() == FilesManager::PointObject )
-                {
-                    kvs::PointObject* point_object = new kvs::PointImporter( filesManager->getFileInfo().filePath().toStdString() );
-                    point_object->setXform( m_screen->scene()->objectManager()->xform() );
-                    kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
-                    m_screen->registerObject( point_object, particle_based_renderer );
-                }
+                kvs::PointObject* point_object = new kvs::PointImporter(filesManager->getFileInfo().filePath().toStdString());
+                point_object->setXform(m_screen->scene()->objectManager()->xform());
+                kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
+                filesManager->setIds( m_screen->registerObject(point_object, particle_based_renderer) );
+//                qInfo() << m_screen->scene()->IDManager()->size();
+            }
 
-                if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon )
-                {
-                    kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( filesManager->getFileInfo().filePath().toStdString() );
-                    polygon_object->setName(filesManager->getUUId().toStdString());
-                    polygon_object->setXform( m_screen->scene()->objectManager()->xform() );
-                    polygon_object->setColor( kvs::RGBColor( filesManager->getRGBColor().red() , filesManager->getRGBColor().green() , filesManager->getRGBColor().blue() ) );
-                    polygon_object->setOpacity( filesManager->getOpacity() * 255 );
-                    kvs::StochasticPolygonRenderer* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer();
-                    m_screen->registerObject( polygon_object, stochastic_polygon_renderer );
-                }
-            }
-            else if( filesManager->getVisible() == Qt::Unchecked )
+            if (filesManager->getFileFormat() == FilesManager::NonTexturedPolygon)
             {
-                if( filesManager->getVisible() == Qt::Unchecked && filesManager->getShow() == false )
-                {
-                    qInfo() << "もう非表示だから何もしないよ";
-                }
-                else
-                {
-                    qInfo() << "チェック外れたから消すよ";
-                    filesManager->setShow( false );
-                    m_screen->scene()->removeObject( filesManager->getUUId().toStdString() );
-                    filesManager->setUUId("");
-                }
+                kvs::PolygonObject* polygon_object = new kvs::PolygonImporter(filesManager->getFileInfo().filePath().toStdString());
+                polygon_object->setXform(m_screen->scene()->objectManager()->xform());
+                polygon_object->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
+                polygon_object->setOpacity(filesManager->getOpacity() * 255);
+                kvs::StochasticPolygonRenderer* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer();
+                filesManager->setIds( m_screen->registerObject(polygon_object, stochastic_polygon_renderer) );
+                qInfo() << filesManager->getIds();
+
             }
+        }
+
+        if( filesManager->getVisible() == Qt::Unchecked )
+        {
+//            m_screen->scene()->removeObject(filesManager->getIds().first);
+//            m_screen->scene()->objectManager()->erase(filesManager->getIds().first);
+//            m_screen->scene()->rendererManager()->erase(filesManager->getIds().second);
+            m_screen->scene()->IDManager()->erase(filesManager->getIds().first,filesManager->getIds().second);
+            filesManager->setIds(std::pair<int,int>(0,0));
         }
     }
+    qInfo() << "IDs:" << m_screen->scene()->IDManager()->size();
 
-    //オブジェクトが存在しない場合。
-//    for(int i = 5; i < 9; i++)
-//    {
-//        kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( "/Users/t0603/Work/PBVR/SampleData/stl/spx_00002.stl" );
-//        polygon_object->setName( std::to_string(i) );
-//        polygon_object->setXform( m_screen->scene()->objectManager()->xform() );
-//        polygon_object->setColor( kvs::RGBColor( QRandomGenerator::global()->bounded(256),QRandomGenerator::global()->bounded(256),QRandomGenerator::global()->bounded(256)) );
-//        polygon_object->setOpacity( 128 );
-//        kvs::StochasticPolygonRenderer* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer();
-//        m_screen->scene()->registerObject( polygon_object, stochastic_polygon_renderer );
-//    }
 
-    qInfo() << "n of objectID:" << m_screen->scene()->objectManager()->numberOfObjects();
-    qInfo() << "n of rendererID:" << m_screen->scene()->rendererManager()->numberOfRenderers();
-    qInfo() << "n of ID" << m_screen->scene()->IDManager()->size();
-    qInfo() << "====";
+
+
+
+
+//    kvs::PolygonObject* polygon_object1 = new kvs::PolygonImporter( "/Users/t0603/Work/PBVR/SampleData/stl/spx_00002.stl" );
+//    polygon_object1->setName("p1");
+//    polygon_object1->setXform( m_screen->scene()->objectManager()->xform() );
+//    polygon_object1->setColor( kvs::RGBColor( 255 , 0 , 0 ) );
+//    polygon_object1->setOpacity( 128 );
+//    kvs::StochasticPolygonRenderer* stochastic_polygon_renderer1 = new kvs::StochasticPolygonRenderer();
+//    qInfo() << m_screen->registerObject( polygon_object1, stochastic_polygon_renderer1 );
+//    qInfo() << m_screen->scene()->IDManager()->size();
+
+//    kvs::PolygonObject* polygon_object2 = new kvs::PolygonImporter( "/Users/t0603/Work/PBVR/SampleData/stl/spx_00002.stl" );
+//    polygon_object2->setName("p2");
+//    polygon_object2->setXform( m_screen->scene()->objectManager()->xform() );
+//    polygon_object2->setColor( kvs::RGBColor( 0 , 255 , 0 ) );
+//    polygon_object2->setOpacity( 128 );
+//    kvs::StochasticPolygonRenderer* stochastic_polygon_renderer2 = new kvs::StochasticPolygonRenderer();
+//    qInfo() << m_screen->registerObject( polygon_object2, stochastic_polygon_renderer2 );
+//    qInfo() << m_screen->scene()->IDManager()->size();
+
+//    kvs::PolygonObject* polygon_object3 = new kvs::PolygonImporter( "/Users/t0603/Work/PBVR/SampleData/stl/spx_00002.stl" );
+//    polygon_object3->setName("p3");
+//    polygon_object3->setXform( m_screen->scene()->objectManager()->xform() );
+//    polygon_object3->setColor( kvs::RGBColor( 0 , 0 , 255 ) );
+//    polygon_object3->setOpacity( 128 );
+//    kvs::StochasticPolygonRenderer* stochastic_polygon_renderer3 = new kvs::StochasticPolygonRenderer();
+//    qInfo() << m_screen->registerObject( polygon_object3, stochastic_polygon_renderer3 );
+//    qInfo() << m_screen->scene()->IDManager()->size();
+
+//    m_screen->scene()->removeObject("p1");
+//    m_screen->scene()->removeObject("p2");
+//    m_screen->scene()->removeObject("p3");
+
+//    kvs::PolygonObject* polygon_object4 = new kvs::PolygonImporter( "/Users/t0603/Work/PBVR/SampleData/stl/spx_00002.stl" );
+////    polygon_object4->setName("p1");
+//    polygon_object4->setName("p4");
+//    polygon_object4->setXform( m_screen->scene()->objectManager()->xform() );
+//    polygon_object4->setColor( kvs::RGBColor( 255 , 0 , 0 ) );
+//    polygon_object4->setOpacity( 128 );
+//    kvs::StochasticPolygonRenderer* stochastic_polygon_renderer4 = new kvs::StochasticPolygonRenderer();
+//    qInfo() << m_screen->registerObject( polygon_object4, stochastic_polygon_renderer4 );
+//    qInfo() << m_screen->scene()->IDManager()->size();
+
+//    kvs::PolygonObject* polygon_object5 = new kvs::PolygonImporter( "/Users/t0603/Work/PBVR/SampleData/stl/spx_00002.stl" );
+////    polygon_object5->setName("p2");
+//    polygon_object5->setName("p5");
+//    polygon_object5->setXform( m_screen->scene()->objectManager()->xform() );
+//    polygon_object5->setColor( kvs::RGBColor( 0 , 255 , 0 ) );
+//    polygon_object5->setOpacity( 128 );
+//    kvs::StochasticPolygonRenderer* stochastic_polygon_renderer5 = new kvs::StochasticPolygonRenderer();
+//    qInfo() << m_screen->registerObject( polygon_object5, stochastic_polygon_renderer5 );
+//    qInfo() << m_screen->scene()->IDManager()->size();
+
+//    kvs::PolygonObject* polygon_object6 = new kvs::PolygonImporter( "/Users/t0603/Work/PBVR/SampleData/stl/spx_00002.stl" );
+////    polygon_object1->setName("p3");
+//    polygon_object6->setName("p6");
+//    polygon_object6->setXform( m_screen->scene()->objectManager()->xform() );
+//    polygon_object6->setColor( kvs::RGBColor( 0 , 0 , 255 ) );
+//    polygon_object6->setOpacity( 128 );
+//    kvs::StochasticPolygonRenderer* stochastic_polygon_renderer6 = new kvs::StochasticPolygonRenderer();
+//    qInfo() << m_screen->registerObject( polygon_object6, stochastic_polygon_renderer6 );
+//    qInfo() << m_screen->scene()->IDManager()->size();
+
+////    m_screen->scene()->removeObject("p1");
+////    m_screen->scene()->removeObject("p2");
+////    m_screen->scene()->removeObject("p3");
+//    m_screen->scene()->removeObject("p4");
+//    m_screen->scene()->removeObject("p5");
+//    m_screen->scene()->removeObject("p6");
 
 
     m_screen->redraw();
-
 }

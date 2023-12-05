@@ -34,8 +34,7 @@ public:
     void setFileFormat( FileType file_format )   { m_file_format     = file_format;     }
     void setRGBColor( QColor rgb_color ) { m_rgb_color       = rgb_color;       }
     void setOpacity( double opacity )           { m_opacity         = opacity;         }
-    void setUUId(QString uuid) { m_uuid = uuid; }
-    void setShow(bool show ){ m_show = show; }
+    void setIds( std::pair<int, int> ids ) { m_ids = ids; }
 
     QFileInfo getFileInfo()     { return m_file_info;       }
     QString getFileName() const {return m_file_name; }
@@ -49,8 +48,7 @@ public:
     FileType getFileFormat()     { return m_file_format;     }
     QColor getRGBColor() { return m_rgb_color;       }
     double getOpacity()         { return m_opacity;         }
-    QString getUUId() { return m_uuid; }
-    bool getShow() { return m_show; }
+    std::pair<int,int> getIds() { return m_ids; }
 
 private:
     QFileInfo m_file_info; //この値はui->filesTWidgetでは使いません。
@@ -65,8 +63,7 @@ private:
     FileType m_file_format;
     QColor m_rgb_color;
     double m_opacity;
-    QString m_uuid;
-    bool m_show = false;
+    std::pair<int, int> m_ids = std::pair<int,int>(0,0);
 };
 
 namespace Ui {
