@@ -15,6 +15,7 @@
 #include <kvs/PointObject>
 #include <kvs/ParticleBasedRenderer>
 
+#include <kvs/IDManager>
 #include <kvs/PolygonImporter>
 #include <kvs/PolygonObject>
 #include <kvs/StochasticPolygonRenderer>
@@ -252,7 +253,7 @@ void Merge::onApplyButtonClicked()
     removeChecker();
     updateFiles();
     mergeObjects();
-    showFilesManager();
+//    showFilesManager();
 }
 
 void Merge::removeChecker()
@@ -277,7 +278,6 @@ void Merge::removeChecker()
         int rowToRemove = rowsToRemove[i];
         // 対応する FilesManager オブジェクトを削除
         FilesManager* filesManager = m_files_manager.takeAt(rowToRemove);
-        m_screen->scene()->removeObject( filesManager->getObjectId() );
         delete filesManager;
 
         // 行を削除
@@ -346,7 +346,7 @@ void Merge::showFilesManager()
         qInfo() << "Keep Final: " << filesManager->getKeepFinal();
         qInfo() << "File Suffix: " << filesManager->getFileSuffix();
         qInfo() << "File Format: " << filesManager->getFileFormat();
-        qInfo() << "ObjectID:"     << filesManager->getObjectId();
+        qInfo() << "uuid: " << filesManager->getUUId();
 
         // RGB Color と Opacity は NonTexturedPolygon の場合にのみ出力
         if (filesManager->getFileFormat() == FilesManager::NonTexturedPolygon)
@@ -375,38 +375,75 @@ void Merge::onFilesTWidgetCellDoubleClicked(int row, int column)
 
 void Merge::mergeObjects()
 {
-    for ( FilesManager* filesManager : m_files_manager )
+//    qInfo() << "=====";
+    for (int i = 0; i < m_files_manager.size(); i++)
     {
-        qInfo() << m_screen->scene()->hasObject( filesManager->getObjectId() );
-        if(m_screen->scene()->hasObject( filesManager->getObjectId() ) == false && filesManager->getVisible() == true ) //該当の行のObjectIdが存在し、表示のチェックボックスにチェックがついている時にオブジェクトを登録
+        FilesManager* filesManager = m_files_manager[i];
+        if( filesManager->getVisible() == Qt::PartiallyChecked && filesManager->getShow() == true)
         {
-            if( filesManager->getFileFormat() == FilesManager::PointObject )
+            qInfo() << "もういるから何もせんよ";
+        }
+        else
+        {
+            if( filesManager->getVisible() == Qt::PartiallyChecked )
             {
-                kvs::PointObject* point_object = new kvs::PointImporter( filesManager->getFileInfo().filePath().toStdString() );
-                point_object->setXform( m_screen->scene()->objectManager()->xform() );
-                kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
+                qInfo() << "非表示だったから表示するよ";
+                filesManager->setUUId( QUuid::createUuid().toString( ));
+                filesManager->setShow( true );
+                if( filesManager->getFileFormat() == FilesManager::PointObject )
+                {
+                    kvs::PointObject* point_object = new kvs::PointImporter( filesManager->getFileInfo().filePath().toStdString() );
+                    point_object->setXform( m_screen->scene()->objectManager()->xform() );
+                    kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
+                    m_screen->registerObject( point_object, particle_based_renderer );
+                }
 
-                filesManager->setObjectId( m_screen->registerObject( point_object, particle_based_renderer ).first );
+                if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon )
+                {
+                    kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( filesManager->getFileInfo().filePath().toStdString() );
+                    polygon_object->setName(filesManager->getUUId().toStdString());
+                    polygon_object->setXform( m_screen->scene()->objectManager()->xform() );
+                    polygon_object->setColor( kvs::RGBColor( filesManager->getRGBColor().red() , filesManager->getRGBColor().green() , filesManager->getRGBColor().blue() ) );
+                    polygon_object->setOpacity( filesManager->getOpacity() * 255 );
+                    kvs::StochasticPolygonRenderer* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer();
+                    m_screen->registerObject( polygon_object, stochastic_polygon_renderer );
+                }
             }
-
-            if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon )
+            else if( filesManager->getVisible() == Qt::Unchecked )
             {
-                kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( filesManager->getFileInfo().filePath().toStdString() );
-                polygon_object->setXform( m_screen->scene()->objectManager()->xform() );
-                polygon_object->setColor( kvs::RGBColor( filesManager->getRGBColor().red() , filesManager->getRGBColor().green() , filesManager->getRGBColor().blue() ) );
-                polygon_object->setOpacity( filesManager->getOpacity() * 255 );
-                kvs::StochasticPolygonRenderer* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer();
-                filesManager->setObjectId( m_screen->registerObject( polygon_object, stochastic_polygon_renderer ).first );
+                if( filesManager->getVisible() == Qt::Unchecked && filesManager->getShow() == false )
+                {
+                    qInfo() << "もう非表示だから何もしないよ";
+                }
+                else
+                {
+                    qInfo() << "チェック外れたから消すよ";
+                    filesManager->setShow( false );
+                    m_screen->scene()->removeObject( filesManager->getUUId().toStdString() );
+                    filesManager->setUUId("");
+                }
             }
         }
-        else if(filesManager->getVisible() == false) //表示のチェックボックスにチェックがついていない時にオブジェクトを削除(現在登録しているIDを破棄、登録後に再更新する。
-        {
-            m_screen->scene()->removeObject( filesManager->getObjectId() );
-            m_screen->scene()->objectManager()->erase( filesManager->getObjectId() );
-            filesManager->setObjectId( -1 );
-        }
-
-        qInfo() << filesManager->getFileInfo().filePath();
     }
-    m_screen->update();
+
+    //オブジェクトが存在しない場合。
+//    for(int i = 5; i < 9; i++)
+//    {
+//        kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( "/Users/t0603/Work/PBVR/SampleData/stl/spx_00002.stl" );
+//        polygon_object->setName( std::to_string(i) );
+//        polygon_object->setXform( m_screen->scene()->objectManager()->xform() );
+//        polygon_object->setColor( kvs::RGBColor( QRandomGenerator::global()->bounded(256),QRandomGenerator::global()->bounded(256),QRandomGenerator::global()->bounded(256)) );
+//        polygon_object->setOpacity( 128 );
+//        kvs::StochasticPolygonRenderer* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer();
+//        m_screen->scene()->registerObject( polygon_object, stochastic_polygon_renderer );
+//    }
+
+    qInfo() << "n of objectID:" << m_screen->scene()->objectManager()->numberOfObjects();
+    qInfo() << "n of rendererID:" << m_screen->scene()->rendererManager()->numberOfRenderers();
+    qInfo() << "n of ID" << m_screen->scene()->IDManager()->size();
+    qInfo() << "====";
+
+
+    m_screen->redraw();
+
 }

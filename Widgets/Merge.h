@@ -7,6 +7,7 @@
 #include <QTableWidgetItem>
 #include <kvs/qt/Screen>
 #include <kvs/RGBColor>
+#include <ExtendedKVS/Screen.h>
 
 class FilesManager
 {
@@ -33,10 +34,8 @@ public:
     void setFileFormat( FileType file_format )   { m_file_format     = file_format;     }
     void setRGBColor( QColor rgb_color ) { m_rgb_color       = rgb_color;       }
     void setOpacity( double opacity )           { m_opacity         = opacity;         }
-    void setObjectName( QString object_name ) { m_object_name = object_name; }
-    void setObjectId( int object_id ) { m_object_id = object_id; }
-    void setRendererId( int renderer_id ) { m_object_id = renderer_id; }
-    void setObjectRendererIdPair(const std::pair<int, int> &pair) { m_object_renderer_id_pair = pair; }
+    void setUUId(QString uuid) { m_uuid = uuid; }
+    void setShow(bool show ){ m_show = show; }
 
     QFileInfo getFileInfo()     { return m_file_info;       }
     QString getFileName() const {return m_file_name; }
@@ -50,11 +49,8 @@ public:
     FileType getFileFormat()     { return m_file_format;     }
     QColor getRGBColor() { return m_rgb_color;       }
     double getOpacity()         { return m_opacity;         }
-    QString getObjectName() { return m_object_name; }
-    int getObjectId() { return m_object_id; }
-    int getRendererId() { return m_renderer_id; }
-    std::pair<int, int> getObjectRendererIdPair() const { return m_object_renderer_id_pair; }
-
+    QString getUUId() { return m_uuid; }
+    bool getShow() { return m_show; }
 
 private:
     QFileInfo m_file_info; //この値はui->filesTWidgetでは使いません。
@@ -69,11 +65,8 @@ private:
     FileType m_file_format;
     QColor m_rgb_color;
     double m_opacity;
-    QString m_object_name;
-    int m_object_id = -1;
-    int m_renderer_id = -1;
-//    QPair<int, int> m_object_renderer_id_pair;
-    std::pair<int, int> m_object_renderer_id_pair;
+    QString m_uuid;
+    bool m_show = false;
 };
 
 namespace Ui {
@@ -87,13 +80,13 @@ class Merge : public QDockWidget
 public:
     explicit Merge(QWidget *parent = nullptr);
     ~Merge();
-    void setScreen( kvs::qt::Screen* screen ){ m_screen = screen; }
+    void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; }
 
 private:
     Ui::Merge *ui;
     QStringList headerLabels;
     QVector<FilesManager*> m_files_manager;
-    kvs::qt::Screen* m_screen;
+    kvs::qt::jaea::Screen* m_screen;
     void onBrowserButtonClicked();
     void onAddButtonClicked();
     void onApplyButtonClicked();
