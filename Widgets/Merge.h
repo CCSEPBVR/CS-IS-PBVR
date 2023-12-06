@@ -8,6 +8,7 @@
 #include <kvs/qt/Screen>
 #include <kvs/RGBColor>
 #include <ExtendedKVS/Screen.h>
+#include <Widgets/TimeControl.h>
 
 class FilesManager
 {
@@ -78,12 +79,16 @@ public:
     explicit Merge(QWidget *parent = nullptr);
     ~Merge();
     void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; }
+    void setTimeControl( TimeControl* time_control ){ m_time_control = time_control; }
 
 private:
     Ui::Merge *ui;
     QStringList headerLabels;
     QVector<FilesManager*> m_files_manager;
     kvs::qt::jaea::Screen* m_screen;
+    TimeControl* m_time_control;
+    int currentTimeStep = -1;
+
     void onBrowserButtonClicked();
     void onAddButtonClicked();
     void onApplyButtonClicked();
@@ -95,6 +100,8 @@ private:
     void mergeObjects();
     void checkMinMaxTimeStep(QFileInfo *fileInfo, QDir *directory,FilesManager *filesManager);
     void checkFileFormat(QFileInfo *fileInfo, FilesManager *filesManager);
+    void calculateMinMaxTimeStep();
+    QString updateTimeStepInFileName(QString fileName,int futureTime);
 };
 
 #endif // MERGE_H

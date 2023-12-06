@@ -116,6 +116,7 @@ void Merge::onAddButtonClicked()
 
     // 新しい FilesManager を m_files_manager に追加
     m_files_manager.append(newFilesManager);
+    calculateMinMaxTimeStep();
 }
 
 void Merge::checkMinMaxTimeStep(QFileInfo *fileInfo, QDir *directory, FilesManager *filesManager)
@@ -251,7 +252,6 @@ void Merge::checkFileFormat(QFileInfo *fileInfo,  FilesManager *filesManager)
 void Merge::onApplyButtonClicked()
 {
     removeChecker();
-    updateFiles();
     mergeObjects();
 //    showFilesManager();
 }
@@ -293,6 +293,7 @@ void Merge::removeChecker()
 
     // 削除後にデータの更新を行う関数を呼び出す
     updateFiles();
+    calculateMinMaxTimeStep();
 }
 
 void Merge::updateFiles()
@@ -389,20 +390,46 @@ void Merge::mergeObjects()
         {
             if (filesManager->getFileFormat() == FilesManager::PointObject)
             {
-                kvs::PointObject* point_object = new kvs::PointImporter(filesManager->getFileInfo().filePath().toStdString());
+//                kvs::PointObject* point_object = new kvs::PointImporter(filesManager->getFileInfo().filePath().toStdString());
+                kvs::PointObject* point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep()).toStdString());
                 point_object->setXform(m_screen->scene()->objectManager()->xform());
                 kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
-                filesManager->setIds( m_screen->registerObject(point_object, particle_based_renderer) );
+                filesManager->setIds( m_screen->registerObject(point_object, particle_based_renderer) );                
             }
 
             if (filesManager->getFileFormat() == FilesManager::NonTexturedPolygon)
             {
-                kvs::PolygonObject* polygon_object = new kvs::PolygonImporter(filesManager->getFileInfo().filePath().toStdString());
+//                kvs::PolygonObject* polygon_object = new kvs::PolygonImporter(filesManager->getFileInfo().filePath().toStdString());
+                kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep()).toStdString());
                 polygon_object->setXform(m_screen->scene()->objectManager()->xform());
                 polygon_object->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
                 polygon_object->setOpacity(filesManager->getOpacity() * 255);
                 kvs::StochasticPolygonRenderer* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer();
                 filesManager->setIds( m_screen->registerObject(polygon_object, stochastic_polygon_renderer) );
+            }
+        }
+
+        //indexの行にチェックボックスがついていて、かつオブジェクトが登録されている場合
+        if(filesManager->getVisible() == Qt::PartiallyChecked && filesManager->getIds().first != 0 && filesManager->getIds().second != 0)
+        {
+            if( currentTimeStep != m_time_control->getFutureTimeStep() )
+            {
+                if (filesManager->getFileFormat() == FilesManager::PointObject)
+                {
+                    //                kvs::PointObject* point_object = new kvs::PointImporter(filesManager->getFileInfo().filePath().toStdString());
+//                    kvs::PointObject* point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep()).toStdString());
+
+                }
+
+                if (filesManager->getFileFormat() == FilesManager::NonTexturedPolygon)
+                {
+                    //                kvs::PolygonObject*/ polygon_object = new kvs::PolygonImporter(filesManager->getFileInfo().filePath().toStdString());
+                    kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep()).toStdString());
+                    polygon_object->setXform(m_screen->scene()->objectManager()->xform());
+                    polygon_object->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
+                    polygon_object->setOpacity(filesManager->getOpacity() * 255);
+                    m_screen->scene()->replaceObject(filesManager->getIds().first,polygon_object);
+                }
             }
         }
 
@@ -412,7 +439,48 @@ void Merge::mergeObjects()
             m_screen->scene()->IDManager()->erase(filesManager->getIds().first,filesManager->getIds().second);
             filesManager->setIds(std::pair<int,int>(0,0));
         }
+        qInfo() << filesManager->getFileInfo().filePath();
     }
-
+    currentTimeStep = m_time_control->getFutureTimeStep();
     m_screen->redraw();
+}
+
+QString Merge::updateTimeStepInFileName(QString fileName, int futureTime) {
+    // 正規表現パターン: 5桁の数字
+    QRegularExpression regex(R"(\d{5})");
+    QRegularExpressionMatch match = regex.match(fileName);
+
+    if (match.hasMatch()) {
+        // futureTimeの値を考慮して新しい5桁の数字を生成
+        int newNumber = futureTime;
+
+        // 新しい5桁の数字をQStringに変換し、0埋めして格納
+        QString extractedNumber = QString::number(newNumber).rightJustified(5, '0');
+
+        // 5桁の数字を含む前後の文字列を抜き取り
+        int startPos = match.capturedStart();
+        int endPos = match.capturedEnd();
+
+        return fileName.left(startPos) + extractedNumber + fileName.mid(endPos);
+    }
+    else
+    {
+        return fileName;
+    }
+}
+
+void Merge::calculateMinMaxTimeStep()
+{
+    int overallMinTimeStep = INT_MAX;
+    int overallMaxTimeStep = INT_MIN;
+
+    for (const FilesManager* filesManager : m_files_manager)
+    {
+        int minTimeStep = filesManager->getMinTimeStep();
+        int maxTimeStep = filesManager->getMaxTimeStep();
+
+        overallMinTimeStep = std::min(overallMinTimeStep, minTimeStep);
+        overallMaxTimeStep = std::max(overallMaxTimeStep, maxTimeStep);
+    }
+    m_time_control->updateTimeStepMinMax( overallMinTimeStep, overallMaxTimeStep );
 }
