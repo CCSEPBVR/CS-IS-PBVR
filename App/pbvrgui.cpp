@@ -6,6 +6,9 @@
 #include <kvs/ParticleBasedRenderer>
 #include <kvs/ExternalFaces>
 #include <kvs/StochasticPolygonRenderer>
+#include <kvs/Label>
+#include <kvs/FontMetrics>
+#include <QWidgetAction>
 
 //デバック用(将来的にデバッグ用マクロ定義ファイルに移行する。
 #define STOCHASTIC_RENDERING_WITH_HYDROGEN
@@ -44,6 +47,12 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     addDockWidget(Qt::LeftDockWidgetArea, &m_volumeTransform);
     m_volumeTransform.show();
     m_volumeTransform.setScreen( m_screen );
+
+
+    QWidgetAction *widgetAction = new QWidgetAction( this );
+    widgetAction->setDefaultWidget( &m_timeControl );
+    ui->timeControlTBar->addAction( widgetAction );
+
 }
 
 PBVRGUI::~PBVRGUI()
