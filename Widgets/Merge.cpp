@@ -442,6 +442,7 @@ void Merge::mergeObjects()
         qInfo() << filesManager->getFileInfo().filePath();
     }
     currentTimeStep = m_time_control->getFutureTimeStep();
+    m_time_control->setCurrentTimeStep( currentTimeStep );
     m_screen->redraw();
 }
 
@@ -473,14 +474,20 @@ void Merge::calculateMinMaxTimeStep()
 {
     int overallMinTimeStep = INT_MAX;
     int overallMaxTimeStep = INT_MIN;
+    bool isSingleObject = true;
 
-    for (const FilesManager* filesManager : m_files_manager)
+    for (int i = 0; i < m_files_manager.size(); i++)
     {
+        FilesManager* filesManager = m_files_manager[i];
         int minTimeStep = filesManager->getMinTimeStep();
         int maxTimeStep = filesManager->getMaxTimeStep();
 
         overallMinTimeStep = std::min(overallMinTimeStep, minTimeStep);
         overallMaxTimeStep = std::max(overallMaxTimeStep, maxTimeStep);
+        if(i >= 1)
+        {
+            isSingleObject = false;
+        }
     }
-    m_time_control->updateTimeStepMinMax( overallMinTimeStep, overallMaxTimeStep );
+    m_time_control->updateTimeStepMinMax( overallMinTimeStep, overallMaxTimeStep, isSingleObject );
 }

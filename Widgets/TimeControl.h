@@ -23,12 +23,13 @@ private:
     int m_limit_max_time_step = INT_MIN;
     bool m_is_loop;
 
-    void setCurrentTimeStep(int current);
     void setFutureTimeStep(int future);
     void setLimitMinTimeStep(int min);
     void setLimitMaxTimeStep(int max);
 
     void onFutureTimeStepChanged();
+    void onLimitMinTimeStepChanged();
+    void onLimitMaxTimeStepChanged();
     void onApplyButton();
     void toggleLoop();
 
@@ -37,7 +38,8 @@ public:
     int getFutureTimeStep() { return m_future_time_step; }
     int getLimitMinTimeStep() { return m_limit_min_time_step; }
     int getLimitMaxTimeStep() { return m_limit_max_time_step; }
-    void updateTimeStepMinMax(int min,int max);
+    void updateTimeStepMinMax(int min,int max, bool isSingleObject);
+    void setCurrentTimeStep(int current);
 };
 
 #endif // TIMECONTROL_H
