@@ -429,9 +429,7 @@ void Merge::mergeObjects()
                 }
             }
         }
-
-        //indexの行にチェックボックスがついていて、かつオブジェクトが登録されている場合
-        if(filesManager->getVisible() == Qt::PartiallyChecked && filesManager->getIds().first != 0 && filesManager->getIds().second != 0)
+        else if(filesManager->getVisible() == Qt::PartiallyChecked && filesManager->getIds().first != 0 && filesManager->getIds().second != 0) //indexの行にチェックボックスがついていて、かつオブジェクトが登録されている場合
         {
             if( currentTimeStep != m_time_control->getFutureTimeStep() )
             {
@@ -444,12 +442,38 @@ void Merge::mergeObjects()
 
                 if (filesManager->getFileFormat() == FilesManager::NonTexturedPolygon)
                 {
-                    //                kvs::PolygonObject*/ polygon_object = new kvs::PolygonImporter(filesManager->getFileInfo().filePath().toStdString());
-                    kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep()).toStdString());
-                    polygon_object->setXform(m_screen->scene()->objectManager()->xform());
-                    polygon_object->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
-                    polygon_object->setOpacity(filesManager->getOpacity() * 255);
-                    m_screen->scene()->replaceObject(filesManager->getIds().first,polygon_object);
+                    if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() )
+                    {
+                        qInfo() << __LINE__;
+                        kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep()).toStdString());
+                        polygon_object->setXform(m_screen->scene()->objectManager()->xform());
+                        polygon_object->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
+                        polygon_object->setOpacity(filesManager->getOpacity() * 255);
+                        m_screen->scene()->replaceObject(filesManager->getIds().first,polygon_object);
+                    }
+                    else if( m_time_control->getFutureTimeStep() <= filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
+                    {
+                        qInfo() << __LINE__;
+                        kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString());
+                        polygon_object->setXform(m_screen->scene()->objectManager()->xform());
+                        polygon_object->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
+                        polygon_object->setOpacity(filesManager->getOpacity() * 255);
+                        m_screen->scene()->replaceObject(filesManager->getIds().first,polygon_object);
+                    }
+                    else if( m_time_control->getFutureTimeStep() >= filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
+                    {
+                        qInfo() << __LINE__;
+                        kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMaxTimeStep()).toStdString());
+                        polygon_object->setXform(m_screen->scene()->objectManager()->xform());
+                        polygon_object->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
+                        polygon_object->setOpacity(filesManager->getOpacity() * 255);
+                        m_screen->scene()->replaceObject(filesManager->getIds().first,polygon_object);
+                    }
+                    else
+                    {
+                        m_screen->scene()->IDManager()->erase(filesManager->getIds().first,filesManager->getIds().second);
+                        filesManager->setIds(std::pair<int,int>(0,0));
+                    }
                 }
             }
         }
