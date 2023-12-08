@@ -36,6 +36,7 @@ public:
     void setRGBColor( QColor rgb_color ) { m_rgb_color       = rgb_color;       }
     void setOpacity( double opacity )           { m_opacity         = opacity;         }
     void setIds( std::pair<int, int> ids ) { m_ids = ids; }
+    void setIsModified( bool is_modified ) { m_is_modified = is_modified; }
 
     QFileInfo getFileInfo()     { return m_file_info;       }
     QString getFileName() const {return m_file_name; }
@@ -50,6 +51,7 @@ public:
     QColor getRGBColor() { return m_rgb_color;       }
     double getOpacity()         { return m_opacity;         }
     std::pair<int,int> getIds() { return m_ids; }
+    bool getIsModified() { return m_is_modified; }
 
 private:
     QFileInfo m_file_info; //この値はui->filesTWidgetでは使いません。
@@ -65,6 +67,7 @@ private:
     QColor m_rgb_color;
     double m_opacity;
     std::pair<int, int> m_ids = std::pair<int,int>(0,0);
+    bool m_is_modified;
 };
 
 namespace Ui {

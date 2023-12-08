@@ -303,6 +303,7 @@ void Merge::updateFiles()
     {
         // 対応する FilesManager オブジェクトを取得
         FilesManager* filesManager = m_files_manager[row];
+        filesManager->setIsModified( false );
 
         // Is Visible、Keep Initial、Keep Final は CheckBox から取得
         QCheckBox* isVisibleCheckBox = dynamic_cast<QCheckBox*>(ui->filesTWidget->cellWidget(row, 0));
@@ -314,10 +315,26 @@ void Merge::updateFiles()
             Qt::CheckState isVisible = static_cast<Qt::CheckState>(isVisibleCheckBox->isChecked());
             Qt::CheckState isKeepInitial = static_cast<Qt::CheckState>(isKeepInitialCheckBox->isChecked());
             Qt::CheckState isKeepFinal = static_cast<Qt::CheckState>(isKeepFinalCheckBox->isChecked());
+            if( filesManager->getVisible() != isVisible )
+            {
+                qInfo() << "変更検知";
+                filesManager->setVisible(isVisible);
+                filesManager->setIsModified( true );
+            }
 
-            filesManager->setVisible(isVisible);
-            filesManager->setKeepInitial(isKeepInitial);
-            filesManager->setKeepFinal(isKeepFinal);
+            if( filesManager->getKeepInitial() != isKeepInitial )
+            {
+                qInfo() << "変更検知";
+                filesManager->setKeepInitial(isKeepInitial);
+                filesManager->setIsModified( true );
+            }
+
+            if( filesManager->getKeepFinal() != isKeepFinal )
+            {
+                qInfo() << "変更検知";
+                filesManager->setKeepFinal(isKeepFinal);
+                filesManager->setIsModified( true );
+            }
         }
 
         // RGB Color と Opacity は NonTexturedPolygon の場合にのみ更新
@@ -331,8 +348,18 @@ void Merge::updateFiles()
                 QColor rgbColor = colorItem->background().color();
                 double opacity = opacitySpinBox->value();
 
-                filesManager->setRGBColor(rgbColor);
-                filesManager->setOpacity(opacity);
+                if( filesManager->getRGBColor() != rgbColor)
+                {
+                    qInfo() << "変更検知";
+                    filesManager->setRGBColor(rgbColor);
+                    filesManager->setIsModified( true );
+                }
+                if( filesManager->getOpacity() != opacity)
+                {
+                    qInfo() << "変更検知";
+                    filesManager->setOpacity(opacity);
+                    filesManager->setIsModified( true );
+                }
             }
         }
     }
@@ -392,24 +419,24 @@ void Merge::mergeObjects()
             {
                 if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() )
                 {
-                kvs::PointObject* point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep()).toStdString());
-                point_object->setXform(m_screen->scene()->objectManager()->xform());
-                kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
-                filesManager->setIds( m_screen->registerObject(point_object, particle_based_renderer) );
+                    kvs::PointObject* point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep()).toStdString());
+                    point_object->setXform(m_screen->scene()->objectManager()->xform());
+                    kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
+                    filesManager->setIds( m_screen->registerObject(point_object, particle_based_renderer) );
                 }
                 else if( m_time_control->getFutureTimeStep() <= filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                 {
-                kvs::PointObject* point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString());
-                point_object->setXform(m_screen->scene()->objectManager()->xform());
-                kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
-                filesManager->setIds( m_screen->registerObject(point_object, particle_based_renderer) );
+                    kvs::PointObject* point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString());
+                    point_object->setXform(m_screen->scene()->objectManager()->xform());
+                    kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
+                    filesManager->setIds( m_screen->registerObject(point_object, particle_based_renderer) );
                 }
                 else if( m_time_control->getFutureTimeStep() >= filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
                 {
-                kvs::PointObject* point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString());
-                point_object->setXform(m_screen->scene()->objectManager()->xform());
-                kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
-                filesManager->setIds( m_screen->registerObject(point_object, particle_based_renderer) );
+                    kvs::PointObject* point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString());
+                    point_object->setXform(m_screen->scene()->objectManager()->xform());
+                    kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
+                    filesManager->setIds( m_screen->registerObject(point_object, particle_based_renderer) );
                 }
             }
 
@@ -444,7 +471,7 @@ void Merge::mergeObjects()
                 }
             }
         }
-        else if(filesManager->getVisible() == Qt::PartiallyChecked && filesManager->getIds().first != 0 && filesManager->getIds().second != 0) //indexの行にチェックボックスがついていて、かつオブジェクトが登録されている場合
+        else if((filesManager->getVisible() == Qt::PartiallyChecked && filesManager->getIds().first != 0 && filesManager->getIds().second != 0) || filesManager->getIsModified()) //indexの行にチェックボックスがついていて、かつオブジェクトが登録されている場合
         {
             if (filesManager->getFileFormat() == FilesManager::PointObject)
             {
