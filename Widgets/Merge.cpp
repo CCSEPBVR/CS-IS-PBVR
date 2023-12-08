@@ -415,52 +415,110 @@ void Merge::mergeObjects()
         //Visibleにチェックがついていて、オブジェクトが登録されていない場合
         if(filesManager->getVisible() == Qt::PartiallyChecked )
         {
-            //PointObjectの場合
-            if (filesManager->getFileFormat() == FilesManager::PointObject)
+            //PolygonObjectの場合
+            if (filesManager->getFileFormat() == FilesManager::NonTexturedPolygon)
             {
-                kvs::PointObject* point_object = nullptr;
+                kvs::PolygonObject* polygon_object = nullptr;
+                //次のタイムステップが登録予定のオブジェクトのタイムステップの範囲内に収まっていて何も登録されていない場合
+                if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() && filesManager->getIds().first == 0 && filesManager->getIds().second == 0 )
+                {
+                    qInfo() << "IMPORT:" << __LINE__;
+                    //次のタイムステップの値と合うファイルをインポート
+                    polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
+                }
 
-                //futureTimeStepが登録予定のオブジェクトのタイムステップの範囲内に収まっている場合
-                if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() )
+                //次のタイムステップが登録予定のオブジェクトの最小タイムステップ以下でKeepInitialにチェックがついていて何も登録されていない場合
+                else if( m_time_control->getFutureTimeStep() <= filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked && filesManager->getIds().first == 0 && filesManager->getIds().second == 0 )
                 {
-                    //futureTimeStepの値と合うファイルをインポート
-                    point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep()).toStdString());
-                }
-                //futureTimeStepが登録予定のオブジェクトの最小タイムステップ以下でKeepInitialにチェックがついている場合
-                else if( m_time_control->getFutureTimeStep() <= filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
-                {
+                    qInfo() << "IMPORT:" << __LINE__;
                     //登録予定のオブジェクトの最小タイムステップのファイルをインポートする。
-                    point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString() );
+                    polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString() );
                 }
-                //futureTimeStepが登録予定のオブジェクトの最大タイムステップ以上でKeepFinalにチェックがついている場合
-                else if( m_time_control->getFutureTimeStep() >= filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
+
+
+                //次のタイムステップが登録予定のオブジェクトの最大タイムステップ以上でKeepFinalにチェックがついていて何も登録されていない場合
+                else if( m_time_control->getFutureTimeStep() >= filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked && filesManager->getIds().first == 0 && filesManager->getIds().second == 0)
                 {
-                    point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMaxTimeStep()).toStdString() );
+                    qInfo() << "IMPORT:" << __LINE__;
+                    //登録予定のオブジェクトの最大タイムステップのファイルをインポートする。
+                    polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMaxTimeStep()).toStdString() );
                 }
+                //////
+                //次のタイムステップが登録予定のオブジェクトのタイムステップの範囲内に収まっていて既に登録されている場合
+                else if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() && filesManager->getIds().first != 0 && filesManager->getIds().second != 0 )
+                {
+                    //次のタイムステップと現在のタイムステップが一致しない場合はインポート
+                    if( m_time_control->getFutureTimeStep() != currentTimeStep )
+                    {
+                            qInfo() << "IMPORT:" << __LINE__;
+                            //次のタイムステップの値と合うファイルをインポート
+                            polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
+                    }
+                }
+
+                //次のタイムステップが登録予定のオブジェクトの最小タイムステップ以下でKeepInitialにチェックがついていて既に登録されている場合
+                else if( m_time_control->getFutureTimeStep() <= filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked && filesManager->getIds().first != 0 && filesManager->getIds().second != 0 )
+                {
+                    //次のタイムステップがファイルの最小タイムステップより大きい場合はインポート
+                    if( m_time_control->getFutureTimeStep() > filesManager->getMinTimeStep() )
+                    {
+                        qInfo() << "IMPORT:" << __LINE__;
+                        //登録予定のオブジェクトの最小タイムステップのファイルをインポートする。
+                        polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString() );
+                    }
+                }
+
+                //次のタイムステップが登録予定のオブジェクトの最大タイムステップ以上でKeepFinalにチェックがついていて既に登録されている場合
+                else if( m_time_control->getFutureTimeStep() >= filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked && filesManager->getIds().first != 0 && filesManager->getIds().second != 0)
+                {
+                    //次のタイムステップがファイルの最大タイムステップより小さい場合はインポート
+                    if( m_time_control->getFutureTimeStep() < filesManager->getMaxTimeStep() )
+                    {
+                        qInfo() << "IMPORT:" << __LINE__;
+                        //登録予定のオブジェクトの最大タイムステップのファイルをインポートする。
+                        polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMaxTimeStep()).toStdString() );
+                    }
+                }
+
+                //条件に当てはまらない場合
                 else
                 {
-                    m_screen->scene()->IDManager()->erase(filesManager->getIds().first,filesManager->getIds().second);
-                    filesManager->setIds(std::pair<int,int>(0,0));
+                    //オブジェクトが登録されていない場合は何もしない。
+                    if( filesManager->getIds().first == 0 && filesManager->getIds().second == 0 )
+                    {
+
+                    }
+                    //オブジェクトが登録されている場合は削除する。
+                    else
+                    {
+                        m_screen->scene()->IDManager()->erase(filesManager->getIds().first,filesManager->getIds().second);
+                        filesManager->setIds(std::pair<int,int>(0,0));
+                    }
                 }
 
-                if( point_object != nullptr )
+                if( polygon_object != nullptr )
                 {
-                    point_object->setXform( m_screen->scene()->objectManager()->xform() );
+                    polygon_object->setXform( m_screen->scene()->objectManager()->xform() );
+                    polygon_object->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
+                    polygon_object->setOpacity(filesManager->getOpacity() * 255);
                     //オブジェクトが登録されていない場合
                     if( filesManager->getIds().first == 0 && filesManager->getIds().second == 0 )
                     {
-                        kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
-                        filesManager->setIds( m_screen->registerObject(point_object, particle_based_renderer) );
+                        kvs::StochasticPolygonRenderer* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer();
+                        filesManager->setIds( m_screen->registerObject(polygon_object, stochastic_polygon_renderer) );
                     }
                     //オブジェクトが登録されている場合
                     else
                     {
-                        m_screen->scene()->replaceObject(filesManager->getIds().first,point_object);
+                        m_screen->scene()->replaceObject(filesManager->getIds().first,polygon_object);
                     }
                 }
-
             }
         }
+
+
+
+
         //Visibleにチェックがついていない場合。
         else
         {
