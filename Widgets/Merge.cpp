@@ -431,8 +431,8 @@ void Merge::mergeObjects()
         }
         else if(filesManager->getVisible() == Qt::PartiallyChecked && filesManager->getIds().first != 0 && filesManager->getIds().second != 0) //indexの行にチェックボックスがついていて、かつオブジェクトが登録されている場合
         {
-            if( currentTimeStep != m_time_control->getFutureTimeStep() )
-            {
+//            if( currentTimeStep != m_time_control->getFutureTimeStep() )
+//            {
                 if (filesManager->getFileFormat() == FilesManager::PointObject)
                 {
                     //                kvs::PointObject* point_object = new kvs::PointImporter(filesManager->getFileInfo().filePath().toStdString());
@@ -471,10 +471,11 @@ void Merge::mergeObjects()
                     }
                     else
                     {
+                        qInfo() << __LINE__;
                         m_screen->scene()->IDManager()->erase(filesManager->getIds().first,filesManager->getIds().second);
                         filesManager->setIds(std::pair<int,int>(0,0));
                     }
-                }
+//                }
             }
         }
 
