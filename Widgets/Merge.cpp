@@ -390,16 +390,31 @@ void Merge::mergeObjects()
         {
             if (filesManager->getFileFormat() == FilesManager::PointObject)
             {
-                //                kvs::PointObject* point_object = new kvs::PointImporter(filesManager->getFileInfo().filePath().toStdString());
+                if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() )
+                {
                 kvs::PointObject* point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep()).toStdString());
                 point_object->setXform(m_screen->scene()->objectManager()->xform());
                 kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
-                filesManager->setIds( m_screen->registerObject(point_object, particle_based_renderer) );                
+                filesManager->setIds( m_screen->registerObject(point_object, particle_based_renderer) );
+                }
+                else if( m_time_control->getFutureTimeStep() <= filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
+                {
+                kvs::PointObject* point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString());
+                point_object->setXform(m_screen->scene()->objectManager()->xform());
+                kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
+                filesManager->setIds( m_screen->registerObject(point_object, particle_based_renderer) );
+                }
+                else if( m_time_control->getFutureTimeStep() >= filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
+                {
+                kvs::PointObject* point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString());
+                point_object->setXform(m_screen->scene()->objectManager()->xform());
+                kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer();
+                filesManager->setIds( m_screen->registerObject(point_object, particle_based_renderer) );
+                }
             }
 
             if (filesManager->getFileFormat() == FilesManager::NonTexturedPolygon)
             {
-                //                kvs::PolygonObject* polygon_object = new kvs::PolygonImporter(filesManager->getFileInfo().filePath().toStdString());
                 if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() )
                 {
                     kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep()).toStdString());
@@ -431,51 +446,64 @@ void Merge::mergeObjects()
         }
         else if(filesManager->getVisible() == Qt::PartiallyChecked && filesManager->getIds().first != 0 && filesManager->getIds().second != 0) //indexの行にチェックボックスがついていて、かつオブジェクトが登録されている場合
         {
-//            if( currentTimeStep != m_time_control->getFutureTimeStep() )
-//            {
-                if (filesManager->getFileFormat() == FilesManager::PointObject)
+            if (filesManager->getFileFormat() == FilesManager::PointObject)
+            {
+                if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() )
                 {
-                    //                kvs::PointObject* point_object = new kvs::PointImporter(filesManager->getFileInfo().filePath().toStdString());
-                    //                    kvs::PointObject* point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep()).toStdString());
-
+                    kvs::PointObject* point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep()).toStdString());
+                    point_object->setXform(m_screen->scene()->objectManager()->xform());
+                    m_screen->scene()->replaceObject(filesManager->getIds().first,point_object);
                 }
-
-                if (filesManager->getFileFormat() == FilesManager::NonTexturedPolygon)
+                else if( m_time_control->getFutureTimeStep() <= filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                 {
-                    if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() )
-                    {
-                        qInfo() << __LINE__;
-                        kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep()).toStdString());
-                        polygon_object->setXform(m_screen->scene()->objectManager()->xform());
-                        polygon_object->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
-                        polygon_object->setOpacity(filesManager->getOpacity() * 255);
-                        m_screen->scene()->replaceObject(filesManager->getIds().first,polygon_object);
-                    }
-                    else if( m_time_control->getFutureTimeStep() <= filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
-                    {
-                        qInfo() << __LINE__;
-                        kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString());
-                        polygon_object->setXform(m_screen->scene()->objectManager()->xform());
-                        polygon_object->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
-                        polygon_object->setOpacity(filesManager->getOpacity() * 255);
-                        m_screen->scene()->replaceObject(filesManager->getIds().first,polygon_object);
-                    }
-                    else if( m_time_control->getFutureTimeStep() >= filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
-                    {
-                        qInfo() << __LINE__;
-                        kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMaxTimeStep()).toStdString());
-                        polygon_object->setXform(m_screen->scene()->objectManager()->xform());
-                        polygon_object->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
-                        polygon_object->setOpacity(filesManager->getOpacity() * 255);
-                        m_screen->scene()->replaceObject(filesManager->getIds().first,polygon_object);
-                    }
-                    else
-                    {
-                        qInfo() << __LINE__;
-                        m_screen->scene()->IDManager()->erase(filesManager->getIds().first,filesManager->getIds().second);
-                        filesManager->setIds(std::pair<int,int>(0,0));
-                    }
-//                }
+                    kvs::PointObject* point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString());
+                    point_object->setXform(m_screen->scene()->objectManager()->xform());
+                    m_screen->scene()->replaceObject(filesManager->getIds().first,point_object);
+                }
+                else if( m_time_control->getFutureTimeStep() >= filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
+                {
+                    kvs::PointObject* point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMaxTimeStep()).toStdString());
+                    point_object->setXform(m_screen->scene()->objectManager()->xform());
+                    m_screen->scene()->replaceObject(filesManager->getIds().first,point_object);
+                }
+                else
+                {
+                    m_screen->scene()->IDManager()->erase(filesManager->getIds().first,filesManager->getIds().second);
+                    filesManager->setIds(std::pair<int,int>(0,0));
+                }
+            }
+
+            if (filesManager->getFileFormat() == FilesManager::NonTexturedPolygon)
+            {
+                if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() )
+                {
+                    kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep()).toStdString());
+                    polygon_object->setXform(m_screen->scene()->objectManager()->xform());
+                    polygon_object->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
+                    polygon_object->setOpacity(filesManager->getOpacity() * 255);
+                    m_screen->scene()->replaceObject(filesManager->getIds().first,polygon_object);
+                }
+                else if( m_time_control->getFutureTimeStep() <= filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
+                {
+                    kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString());
+                    polygon_object->setXform(m_screen->scene()->objectManager()->xform());
+                    polygon_object->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
+                    polygon_object->setOpacity(filesManager->getOpacity() * 255);
+                    m_screen->scene()->replaceObject(filesManager->getIds().first,polygon_object);
+                }
+                else if( m_time_control->getFutureTimeStep() >= filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
+                {
+                    kvs::PolygonObject* polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMaxTimeStep()).toStdString());
+                    polygon_object->setXform(m_screen->scene()->objectManager()->xform());
+                    polygon_object->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
+                    polygon_object->setOpacity(filesManager->getOpacity() * 255);
+                    m_screen->scene()->replaceObject(filesManager->getIds().first,polygon_object);
+                }
+                else
+                {
+                    m_screen->scene()->IDManager()->erase(filesManager->getIds().first,filesManager->getIds().second);
+                    filesManager->setIds(std::pair<int,int>(0,0));
+                }
             }
         }
 
@@ -485,8 +513,8 @@ void Merge::mergeObjects()
             m_screen->scene()->IDManager()->erase(filesManager->getIds().first,filesManager->getIds().second);
             filesManager->setIds(std::pair<int,int>(0,0));
         }
-        qInfo() << filesManager->getFileInfo().filePath();
     }
+
     currentTimeStep = m_time_control->getFutureTimeStep();
     m_time_control->setCurrentTimeStep( currentTimeStep );
     m_screen->redraw();
