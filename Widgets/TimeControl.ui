@@ -88,14 +88,14 @@
    <item row="0" column="3" alignment="Qt::AlignLeft">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>TimeStep :</string>
+      <string>Next Time Step :</string>
      </property>
     </widget>
    </item>
    <item row="0" column="0" alignment="Qt::AlignLeft">
     <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>CurrentTimeStep :</string>
+      <string>Current Time Step :</string>
      </property>
     </widget>
    </item>
