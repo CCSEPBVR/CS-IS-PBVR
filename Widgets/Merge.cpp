@@ -472,7 +472,7 @@ void Merge::mergeObjects()
                         qInfo() << "NOTHING:" << __LINE__;
                     }
                 }
-                else if( filesManager->getKeepInitial() == Qt::PartiallyChecked )
+                else if( m_time_control->getFutureTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                 {
                     qInfo() << "NOTHING:" << __LINE__;
                 }
