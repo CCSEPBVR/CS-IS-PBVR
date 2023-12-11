@@ -451,39 +451,43 @@ void Merge::mergeObjects()
                 //次のタイムステップが登録予定のオブジェクトのタイムステップの範囲内である場合
                 if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() )
                 {
-                    //次のタイムステップがファイルの範囲内であり、現在表示されているタイムステップとことなる場合は表示
-                    //KeepInitialの影響で既に表示されている場合は何もしない。
+                    //次のタイムステップの値と現在表示されているタイムステップの値が異なる場合
                     if( m_time_control->getFutureTimeStep() != currentTimeStep )
                     {
+                        //KeepInitialにチェックがついていて、次のタイムステップと登録予定のファイルの最小タイムステップが一致する場合
                         if(filesManager->getKeepInitial() == Qt::PartiallyChecked && m_time_control->getFutureTimeStep() == filesManager->getMinTimeStep() )
                         {
                             qInfo() << "NOTHING:" << __LINE__;
                         }
+                        //KeepFinalにチェックがついていて、次のタイムステップと登録予定のファイルの最大タイムステップが一致する場合
                         else if( filesManager->getKeepFinal() == Qt::PartiallyChecked && m_time_control->getFutureTimeStep() == filesManager->getMaxTimeStep() )
                         {
                             qInfo() << "NOTHING:" << __LINE__;
                         }
+                        //当てはまらない場合
                         else
                         {
                             qInfo() << "IMPORT"  << __LINE__;
                             polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
                         }
                     }
+                    //当てはまらない場合
                     else
                     {
                         qInfo() << "NOTHING:" << __LINE__;
                     }
                 }
-
+                //次のタイムステップが登録予定のオブジェクトの最小タイムステップ以下でKeepInitialにチェックがついている場合
                 else if( m_time_control->getFutureTimeStep() <= filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                 {
                     qInfo() << "NOTHING:" << __LINE__;
                 }
+                //次のタイムステップが登録予定のオブジェクトの最大タイムステップ以上でKeepFinalにチェックがついている場合
                 else if( m_time_control->getFutureTimeStep() >= filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
                 {
                     qInfo() << "NOTHING:" << __LINE__;
                 }
-
+                //当てはまらない場合
                 else
                 {
                     m_screen->scene()->IDManager()->erase(filesManager->getIds().first,filesManager->getIds().second);
