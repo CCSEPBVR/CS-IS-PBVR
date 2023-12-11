@@ -460,7 +460,7 @@ void Merge::mergeObjects()
                             if( m_time_control->getFutureTimeStep() == filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                             {
 //                                qInfo() << "NOTHING:" << __LINE__;///////////
-                                if(currentTimeStep > m_time_control->getFutureTimeStep())
+                                if(currentTimeStep > m_time_control->getFutureTimeStep() && currentTimeStep < filesManager->getMaxTimeStep())
                                 {
                                     qInfo() << "IMPORT:" << __LINE__;
                                     polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
