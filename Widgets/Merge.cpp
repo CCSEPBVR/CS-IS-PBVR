@@ -467,11 +467,11 @@ void Merge::mergeObjects()
                     {
                         if(m_time_control->getFutureTimeStep() <= filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked && filesManager->getKeepFinal() == Qt::Unchecked && m_time_control->getFutureTimeStep() == filesManager->getMinTimeStep() )
                         {
-
+                            qInfo() << "NOTHING:" << __LINE__;
                         }
                         else if(m_time_control->getFutureTimeStep() >= filesManager->getMaxTimeStep() && filesManager->getKeepInitial() == Qt::Unchecked && filesManager->getKeepFinal() == Qt::PartiallyChecked && m_time_control->getFutureTimeStep() == filesManager->getMaxTimeStep())
                         {
-
+                            qInfo() << "NOTHING:" << __LINE__;
                         }
                         else if(filesManager->getKeepInitial() == Qt::PartiallyChecked && filesManager->getKeepFinal() == Qt::PartiallyChecked)
                         {
@@ -489,7 +489,7 @@ void Merge::mergeObjects()
                             }
                             else
                             {
-                                qInfo() << "TEST" << __LINE__;
+                                qInfo() << "NOTHING:" << __LINE__;
                             }
                         }
                         else
@@ -501,15 +501,15 @@ void Merge::mergeObjects()
                 }
                 else if( m_time_control->getFutureTimeStep() <= filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked && filesManager->getKeepFinal() == Qt::Unchecked )
                 {
-
+                    qInfo() << "NOTHING:" << __LINE__;
                 }
                 else if( m_time_control->getFutureTimeStep() >= filesManager->getMaxTimeStep() && filesManager->getKeepInitial() == Qt::Unchecked && filesManager->getKeepFinal() == Qt::PartiallyChecked )
                 {
-
+                    qInfo() << "NOTHING:" << __LINE__;
                 }
                 else if( filesManager->getKeepInitial() == Qt::PartiallyChecked && filesManager->getKeepFinal() == Qt::PartiallyChecked)
                 {
-                    qInfo() << "TEST" << __LINE__;
+                    qInfo() << "NOTHING:" << __LINE__;
 //                    if(m_time_control->getFutureTimeStep() < filesManager->getMinTimeStep())
 //                    {
 //                        qInfo() << "IMPORT:" << __LINE__;
