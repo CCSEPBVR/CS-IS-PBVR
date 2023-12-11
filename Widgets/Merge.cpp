@@ -427,11 +427,17 @@ void Merge::mergeObjects()
                 }
 
                 //次のタイムステップが登録予定のオブジェクトの最小タイムステップ以下でKeepInitialにのみチェックがついている場合
-                else if( filesManager->getKeepInitial() == Qt::PartiallyChecked )
+                else if( m_time_control->getFutureTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                 {
                     qInfo() << "IMPORT:" << __LINE__;
                     //登録予定のオブジェクトの最小タイムステップのファイルをインポートする。
                     polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString() );
+                }
+                else if( m_time_control->getFutureTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
+                {
+                    qInfo() << "IMPORT:" << __LINE__;
+                    //登録予定のオブジェクトの最大タイムステップのファイルをインポートする。
+                    polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMaxTimeStep()).toStdString() );
                 }
             }
 
@@ -445,12 +451,29 @@ void Merge::mergeObjects()
                         {
                             qInfo() << "NOTHING:" << __LINE__;
                         }
+                        else if( m_time_control->getFutureTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked)
+                        {
+                            qInfo() << "NOTHING:" << __LINE__;
+                        }
                         else
                         {
                             if( m_time_control->getFutureTimeStep() == filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                             {
 //                                qInfo() << "NOTHING:" << __LINE__;///////////
                                 if(currentTimeStep == m_time_control->getFutureTimeStep() + 1)
+                                {
+                                    qInfo() << "IMPORT:" << __LINE__;
+                                    polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
+                                }
+                                else
+                                {
+                                    qInfo() << "NOTHING:" << __LINE__;
+                                }
+                            }
+                            else if( m_time_control->getFutureTimeStep() == filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
+                            {
+                                //                                qInfo() << "NOTHING:" << __LINE__;///////////
+                                if(currentTimeStep == m_time_control->getFutureTimeStep() - 1)
                                 {
                                     qInfo() << "IMPORT:" << __LINE__;
                                     polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
@@ -473,6 +496,10 @@ void Merge::mergeObjects()
                     }
                 }
                 else if( m_time_control->getFutureTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
+                {
+                    qInfo() << "NOTHING:" << __LINE__;
+                }
+                else if( m_time_control->getFutureTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
                 {
                     qInfo() << "NOTHING:" << __LINE__;
                 }
