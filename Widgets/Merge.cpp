@@ -516,8 +516,8 @@ void Merge::mergeObjects()
                             //次のタイムステップがファイルの最小タイムステップと一致してKeepInitialにチェックがついている場合
                             if( m_time_control->getFutureTimeStep() == filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                             {
-                                //現在表示しているタイムステップが次のタイムステップよりも大きく、現在表示しているタイムステップがファイルの最大タイムステップよりも小さい場合
-                                if(currentTimeStep > m_time_control->getFutureTimeStep() && currentTimeStep <= filesManager->getMaxTimeStep())
+                                //現在表示しているタイムステップが次のタイムステップよりも大きく、単一ステップのデータではない場合
+                                if(currentTimeStep > m_time_control->getFutureTimeStep() && filesManager->getMinTimeStep() != filesManager->getMaxTimeStep() )
                                 {
                                     qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
                                     polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
@@ -531,8 +531,8 @@ void Merge::mergeObjects()
                             //次のタイムステップがファイルの最大タイムステップと一致して、KeepFinalにチェックがついている場合
                             else if( m_time_control->getFutureTimeStep() == filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
                             {
-                                //現在表示しているタイムステップが次のタイムステップよりも小さい場合
-                                if(currentTimeStep < m_time_control->getFutureTimeStep())
+                                //現在表示しているタイムステップが次のタイムステップよりも小さく、単一ステップのデータではない場合
+                                if(currentTimeStep < m_time_control->getFutureTimeStep() && filesManager->getMinTimeStep() != filesManager->getMaxTimeStep() )
                                 {
                                     qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
                                     polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
@@ -560,8 +560,8 @@ void Merge::mergeObjects()
                 //次のタイムステップがファイルの最小タイムステップよりも小さく、KeepInitialにチェックがついている場合
                 else if( m_time_control->getFutureTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                 {
-                    //現在表示されているタイムステップがファイルの最小タイムステップよりも大きい場合
-                    if(currentTimeStep > filesManager->getMinTimeStep())
+                    //現在表示されているタイムステップがファイルの最小タイムステップよりも大きく、単一ステップのデータではない場合
+                    if(currentTimeStep > filesManager->getMinTimeStep() && filesManager->getMinTimeStep() != filesManager->getMaxTimeStep())
                     {
                         qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
                         polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString() );
@@ -574,8 +574,8 @@ void Merge::mergeObjects()
                 //次のタイムステップがファイルの最大タイムステップよりも大きく、KeepFinalにチェックがついている場合
                 else if( m_time_control->getFutureTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
                 {
-                    //現在表示されているタイムステップがファイルの最大タイムステップよりも小さい場合
-                    if(currentTimeStep < filesManager->getMaxTimeStep())
+                    //現在表示されているタイムステップがファイルの最大タイムステップよりも小さく、単一ステップのデータではない場合
+                    if(currentTimeStep < filesManager->getMaxTimeStep() && filesManager->getMinTimeStep() != filesManager->getMaxTimeStep())
                     {
                         qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
                         polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMaxTimeStep()).toStdString() );
