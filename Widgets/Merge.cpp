@@ -407,6 +407,53 @@ void Merge::onFilesTWidgetCellDoubleClicked(int row, int column)
     }
 }
 
+
+QString Merge::updateTimeStepInFileName(QString fileName, int futureTime) {
+    // 正規表現パターン: 5桁の数字
+    QRegularExpression regex(R"(\d{5})");
+    QRegularExpressionMatch match = regex.match(fileName);
+
+    if (match.hasMatch()) {
+        // futureTimeの値を考慮して新しい5桁の数字を生成
+        int newNumber = futureTime;
+
+        // 新しい5桁の数字をQStringに変換し、0埋めして格納
+        QString extractedNumber = QString::number(newNumber).rightJustified(5, '0');
+
+        // 5桁の数字を含む前後の文字列を抜き取り
+        int startPos = match.capturedStart();
+        int endPos = match.capturedEnd();
+
+        return fileName.left(startPos) + extractedNumber + fileName.mid(endPos);
+    }
+    else
+    {
+        return fileName;
+    }
+}
+
+void Merge::calculateMinMaxTimeStep()
+{
+    int overallMinTimeStep = INT_MAX;
+    int overallMaxTimeStep = INT_MIN;
+    bool isSingleObject = true;
+
+    for (int i = 0; i < m_files_manager.size(); i++)
+    {
+        FilesManager* filesManager = m_files_manager[i];
+        int minTimeStep = filesManager->getMinTimeStep();
+        int maxTimeStep = filesManager->getMaxTimeStep();
+
+        overallMinTimeStep = std::min(overallMinTimeStep, minTimeStep);
+        overallMaxTimeStep = std::max(overallMaxTimeStep, maxTimeStep);
+        if(i >= 1)
+        {
+            isSingleObject = false;
+        }
+    }
+    m_time_control->updateTimeStepMinMax( overallMinTimeStep, overallMaxTimeStep, isSingleObject );
+}
+
 void Merge::mergeObjects()
 {
     for (int i = 0; i < m_files_manager.size(); i++)
@@ -567,48 +614,3 @@ void Merge::mergeObjects()
     m_screen->redraw();
 }
 
-QString Merge::updateTimeStepInFileName(QString fileName, int futureTime) {
-    // 正規表現パターン: 5桁の数字
-    QRegularExpression regex(R"(\d{5})");
-    QRegularExpressionMatch match = regex.match(fileName);
-
-    if (match.hasMatch()) {
-        // futureTimeの値を考慮して新しい5桁の数字を生成
-        int newNumber = futureTime;
-
-        // 新しい5桁の数字をQStringに変換し、0埋めして格納
-        QString extractedNumber = QString::number(newNumber).rightJustified(5, '0');
-
-        // 5桁の数字を含む前後の文字列を抜き取り
-        int startPos = match.capturedStart();
-        int endPos = match.capturedEnd();
-
-        return fileName.left(startPos) + extractedNumber + fileName.mid(endPos);
-    }
-    else
-    {
-        return fileName;
-    }
-}
-
-void Merge::calculateMinMaxTimeStep()
-{
-    int overallMinTimeStep = INT_MAX;
-    int overallMaxTimeStep = INT_MIN;
-    bool isSingleObject = true;
-
-    for (int i = 0; i < m_files_manager.size(); i++)
-    {
-        FilesManager* filesManager = m_files_manager[i];
-        int minTimeStep = filesManager->getMinTimeStep();
-        int maxTimeStep = filesManager->getMaxTimeStep();
-
-        overallMinTimeStep = std::min(overallMinTimeStep, minTimeStep);
-        overallMaxTimeStep = std::max(overallMaxTimeStep, maxTimeStep);
-        if(i >= 1)
-        {
-            isSingleObject = false;
-        }
-    }
-    m_time_control->updateTimeStepMinMax( overallMinTimeStep, overallMaxTimeStep, isSingleObject );
-}
