@@ -459,132 +459,153 @@ void Merge::mergeObjects()
     for (int i = 0; i < m_files_manager.size(); i++)
     {
         FilesManager* filesManager = m_files_manager[i];
-        //Visibleにチェックがついていて、オブジェクトが登録されていない場合
+        //Visibleにチェックがついている場合
         if(filesManager->getVisible() == Qt::PartiallyChecked )
         {
             //PolygonObjectの場合
             kvs::PolygonObject* polygon_object = nullptr;
+            //Sceneにオブジェクトが登録されていない場合
             if( filesManager->getIds().first == 0 && filesManager->getIds().second == 0)
             {
+                //次のタイムステップがファイルの最小最大タイムステップの範囲内である場合
                 if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() )
                 {
-                    qInfo() << "IMPORT" << __LINE__;
-                    //次のタイムステップの値と合うファイルをインポートする。
+                    //次のタイムステップの値と一致するファイルをインポートする
+                    qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
                     polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
                 }
 
-                //次のタイムステップが登録予定のオブジェクトの最小タイムステップ以下でKeepInitialにのみチェックがついている場合
+                //次のタイムステップが登録予定のファイルの最小タイムステップより小さくKeepInitialにチェックがついている場合
                 else if( m_time_control->getFutureTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                 {
-                    qInfo() << "IMPORT:" << __LINE__;
-                    //登録予定のオブジェクトの最小タイムステップのファイルをインポートする。
+                    //最小タイムステップのファイルをインポートする
+                    qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
                     polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString() );
                 }
+                //次のタイムステップが登録予定のファイルの最大タイムステップよりも大きくKeepFinalにチェックがついている場合
                 else if( m_time_control->getFutureTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
                 {
-                    qInfo() << "IMPORT:" << __LINE__;
-                    //登録予定のオブジェクトの最大タイムステップのファイルをインポートする。
+                    //最大タイムステップのファイルをインポートする
+                    qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
                     polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMaxTimeStep()).toStdString() );
                 }
             }
 
+            //Sceneにオブジェクトが登録されている場合
             if( filesManager->getIds().first != 0 && filesManager->getIds().second != 0)
             {
+                //次のタイムステップがファイルの最小最大タイムステップの範囲内である場合
                 if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() )
                 {
+                    //次のタイムステップと現在表示されているタイムステップが異なる場合
                     if( m_time_control->getFutureTimeStep() != currentTimeStep )
                     {
+                        //次のタイムステップがファイルの最小ステップよりも小さくKeepInitialにチェックがついている場合
                         if(m_time_control->getFutureTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                         {
-                            qInfo() << "NOTHING:" << __LINE__;
+                            qInfo() << "Does nothing.[" << __LINE__ << "]";
                         }
+                        //次のタイムステップがファイルの最大タイムステップよりも大きくKeepFinalにチェックがついている場合
                         else if( m_time_control->getFutureTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked)
                         {
-                            qInfo() << "NOTHING:" << __LINE__;
+                            qInfo() << "Does nothing.[" << __LINE__ << "]";
                         }
+                        //当てはまらない場合
                         else
                         {
+                            //次のタイムステップがファイルの最小タイムステップと一致してKeepInitialにチェックがついている場合
                             if( m_time_control->getFutureTimeStep() == filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                             {
-//                                qInfo() << "NOTHING:" << __LINE__;///////////
-                                if(currentTimeStep > m_time_control->getFutureTimeStep() && currentTimeStep < filesManager->getMaxTimeStep())
+                                //現在表示しているタイムステップが次のタイムステップよりも大きく、現在表示しているタイムステップがファイルの最大タイムステップよりも小さい場合
+                                if(currentTimeStep > m_time_control->getFutureTimeStep() && currentTimeStep <= filesManager->getMaxTimeStep())
                                 {
-                                    qInfo() << "IMPORT:" << __LINE__;
+                                    qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
                                     polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
                                 }
+                                //当てはまらない場合
                                 else
                                 {
-                                    qInfo() << "NOTHING:" << __LINE__;
+                                    qInfo() << "Does nothing.[" << __LINE__ << "]";
                                 }
                             }
+                            //次のタイムステップがファイルの最大タイムステップと一致して、KeepFinalにチェックがついている場合
                             else if( m_time_control->getFutureTimeStep() == filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
                             {
-                                //                                qInfo() << "NOTHING:" << __LINE__;///////////
-                                if(currentTimeStep < m_time_control->getFutureTimeStep())
+                                //現在表示しているタイムステップが次のタイムステップよりも小さい場合
+                                if(currentTimeStep < m_time_control->getFutureTimeStep() && currentTimeStep >= filesManager->getMinTimeStep())
                                 {
-                                    qInfo() << "IMPORT:" << __LINE__;
+                                    qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
                                     polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
                                 }
+                                //当てはまらない場合
                                 else
                                 {
-                                    qInfo() << "NOTHING:" << __LINE__;
+                                    qInfo() << "Does nothing.[" << __LINE__ << "]";
                                 }
                             }
+                            //当てはまらない場合
                             else
                             {
-                                qInfo() << "IMPORT:" << __LINE__;
+                                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
                                 polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
                             }
                         }
                     }
+                    //当てはまらない場合
                     else
                     {
-                        qInfo() << "NOTHING:" << __LINE__;
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
                     }
                 }
+                //次のタイムステップがファイルの最小タイムステップよりも小さく、KeepInitialにチェックがついている場合
                 else if( m_time_control->getFutureTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                 {
+                    //現在表示されているタイムステップがファイルの最小タイムステップよりも大きい場合
                     if(currentTimeStep > filesManager->getMinTimeStep())
                     {
-                        qInfo() << "IMPORT:" << __LINE__;
+                        qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
                         polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString() );
                     }
                     else
                     {
-                        qInfo() << "NOTHING:" << __LINE__;
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
                     }
                 }
+                //次のタイムステップがファイルの最大タイムステップよりも大きく、KeepFinalにチェックがついている場合
                 else if( m_time_control->getFutureTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
                 {
+                    //現在表示されているタイムステップがファイルの最大タイムステップよりも小さい場合
                     if(currentTimeStep < filesManager->getMaxTimeStep())
                     {
-                        qInfo() << "IMPORT:" << __LINE__;
+                        qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
                         polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMaxTimeStep()).toStdString() );
                     }
                     else
                     {
-                        qInfo() << "NOTHING:" << __LINE__;
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
                     }
                 }
                 else
                 {
+                    qInfo() << "Delete the object.[" << __LINE__ << "]";
                     m_screen->scene()->IDManager()->erase(filesManager->getIds().first,filesManager->getIds().second);
                     filesManager->setIds(std::pair<int,int>(0,0));
                 }
             }
 
+            //polygon_objectがnullptrではない場合
             if( polygon_object != nullptr )
             {
                 polygon_object->setXform( m_screen->scene()->objectManager()->xform() );
                 polygon_object->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
                 polygon_object->setOpacity(filesManager->getOpacity() * 255);
-                //オブジェクトが登録されていない場合
+                //Sceneにオブジェクトが登録されていない場合
                 if( filesManager->getIds().first == 0 && filesManager->getIds().second == 0 )
                 {
                     kvs::StochasticPolygonRenderer* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer();
                     filesManager->setIds( m_screen->registerObject(polygon_object, stochastic_polygon_renderer) );
                 }
-                //オブジェクトが登録されている場合
+                //Sceneにオブジェクトが登録されている場合
                 else
                 {
                     m_screen->scene()->replaceObject(filesManager->getIds().first,polygon_object);
@@ -592,7 +613,7 @@ void Merge::mergeObjects()
             }
         }
 
-        //Visibleにチェックがついていない場合。
+        //Visibleにチェックがついていない場合
         else
         {
             //オブジェクトが登録されていない場合
