@@ -104,7 +104,7 @@ private:
     void checkMinMaxTimeStep(QFileInfo *fileInfo, QDir *directory,FilesManager *filesManager);
     void checkFileFormat(QFileInfo *fileInfo, FilesManager *filesManager);
     void calculateMinMaxTimeStep();
-    QString updateTimeStepInFileName(QString fileName,int futureTime);
+    QString updateTimeStepInFileName(QString fileName,int nextTimeStep);
 };
 
 #endif // MERGE_H

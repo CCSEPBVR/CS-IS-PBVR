@@ -7,7 +7,7 @@ TimeControl::TimeControl(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->timeStepSBox->setWrapping( true );
-    connect(ui->timeStepSBox, &QSpinBox::valueChanged, this, &TimeControl::onFutureTimeStepChanged);
+    connect(ui->timeStepSBox, &QSpinBox::valueChanged, this, &TimeControl::onNextTimeStepChanged);
     connect(ui->limitMinTimeStepSBox, &QSpinBox::valueChanged, this, &TimeControl::onLimitMinTimeStepChanged);
     connect(ui->limitMaxTimeStepSBox, &QSpinBox::valueChanged, this, &TimeControl::onLimitMaxTimeStepChanged);
 }
@@ -17,9 +17,9 @@ TimeControl::~TimeControl()
     delete ui;
 }
 
-void TimeControl::onFutureTimeStepChanged()
+void TimeControl::onNextTimeStepChanged()
 {
-    m_future_time_step = ui->timeStepSBox->value();
+    m_next_time_step = ui->timeStepSBox->value();
 }
 
 void TimeControl::updateTimeStepMinMax(int min, int max, bool isSingleOBject) {

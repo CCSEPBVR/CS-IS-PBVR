@@ -408,14 +408,14 @@ void Merge::onFilesTWidgetCellDoubleClicked(int row, int column)
 }
 
 
-QString Merge::updateTimeStepInFileName(QString fileName, int futureTime) {
+QString Merge::updateTimeStepInFileName(QString fileName, int nextTimeStep) {
     // 正規表現パターン: 5桁の数字
     QRegularExpression regex(R"(\d{5})");
     QRegularExpressionMatch match = regex.match(fileName);
 
     if (match.hasMatch()) {
         // futureTimeの値を考慮して新しい5桁の数字を生成
-        int newNumber = futureTime;
+        int newNumber = nextTimeStep;
 
         // 新しい5桁の数字をQStringに変換し、0埋めして格納
         QString extractedNumber = QString::number(newNumber).rightJustified(5, '0');
@@ -470,22 +470,22 @@ void Merge::mergeObjects()
                 if( filesManager->getIds().first == 0 && filesManager->getIds().second == 0)
                 {
                     //次のタイムステップがファイルの最小最大タイムステップの範囲内である場合
-                    if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() )
+                    if( m_time_control->getNextTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getNextTimeStep() <= filesManager->getMaxTimeStep() )
                     {
                         //次のタイムステップの値と一致するファイルをインポートする
                         qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                        point_object = new kvs::PointImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
+                        point_object = new kvs::PointImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getNextTimeStep() ).toStdString() );
                     }
 
                     //次のタイムステップが登録予定のファイルの最小タイムステップより小さくKeepInitialにチェックがついている場合
-                    else if( m_time_control->getFutureTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
+                    else if( m_time_control->getNextTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                     {
                         //最小タイムステップのファイルをインポートする
                         qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
                         point_object = new kvs::PointImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString() );
                     }
                     //次のタイムステップが登録予定のファイルの最大タイムステップよりも大きくKeepFinalにチェックがついている場合
-                    else if( m_time_control->getFutureTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
+                    else if( m_time_control->getNextTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
                     {
                         //最大タイムステップのファイルをインポートする
                         qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
@@ -497,18 +497,18 @@ void Merge::mergeObjects()
                 if( filesManager->getIds().first != 0 && filesManager->getIds().second != 0)
                 {
                     //次のタイムステップがファイルの最小最大タイムステップの範囲内である場合
-                    if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() )
+                    if( m_time_control->getNextTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getNextTimeStep() <= filesManager->getMaxTimeStep() )
                     {
                         //次のタイムステップと現在表示されているタイムステップが異なる場合
-                        if( m_time_control->getFutureTimeStep() != currentTimeStep )
+                        if( m_time_control->getNextTimeStep() != currentTimeStep )
                         {
                             //次のタイムステップがファイルの最小ステップよりも小さくKeepInitialにチェックがついている場合
-                            if(m_time_control->getFutureTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
+                            if(m_time_control->getNextTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                             {
                                 qInfo() << "Does nothing.[" << __LINE__ << "]";
                             }
                             //次のタイムステップがファイルの最大タイムステップよりも大きくKeepFinalにチェックがついている場合
-                            else if( m_time_control->getFutureTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked)
+                            else if( m_time_control->getNextTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked)
                             {
                                 qInfo() << "Does nothing.[" << __LINE__ << "]";
                             }
@@ -516,13 +516,13 @@ void Merge::mergeObjects()
                             else
                             {
                                 //次のタイムステップがファイルの最小タイムステップと一致してKeepInitialにチェックがついている場合
-                                if( m_time_control->getFutureTimeStep() == filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
+                                if( m_time_control->getNextTimeStep() == filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                                 {
                                     //現在表示しているタイムステップが次のタイムステップよりも大きく、単一ステップのデータではない場合
-                                    if(currentTimeStep > m_time_control->getFutureTimeStep() && filesManager->getMinTimeStep() != filesManager->getMaxTimeStep() )
+                                    if(currentTimeStep > m_time_control->getNextTimeStep() && filesManager->getMinTimeStep() != filesManager->getMaxTimeStep() )
                                     {
                                         qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                                        point_object = new kvs::PointImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
+                                        point_object = new kvs::PointImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getNextTimeStep() ).toStdString() );
                                     }
                                     //当てはまらない場合
                                     else
@@ -531,13 +531,13 @@ void Merge::mergeObjects()
                                     }
                                 }
                                 //次のタイムステップがファイルの最大タイムステップと一致して、KeepFinalにチェックがついている場合
-                                else if( m_time_control->getFutureTimeStep() == filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
+                                else if( m_time_control->getNextTimeStep() == filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
                                 {
                                     //現在表示しているタイムステップが次のタイムステップよりも小さく、単一ステップのデータではない場合
-                                    if(currentTimeStep < m_time_control->getFutureTimeStep() && filesManager->getMinTimeStep() != filesManager->getMaxTimeStep() )
+                                    if(currentTimeStep < m_time_control->getNextTimeStep() && filesManager->getMinTimeStep() != filesManager->getMaxTimeStep() )
                                     {
                                         qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                                        point_object = new kvs::PointImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
+                                        point_object = new kvs::PointImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getNextTimeStep() ).toStdString() );
                                     }
                                     //当てはまらない場合
                                     else
@@ -549,7 +549,7 @@ void Merge::mergeObjects()
                                 else
                                 {
                                     qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                                    point_object = new kvs::PointImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
+                                    point_object = new kvs::PointImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getNextTimeStep() ).toStdString() );
                                 }
                             }
                         }
@@ -560,7 +560,7 @@ void Merge::mergeObjects()
                         }
                     }
                     //次のタイムステップがファイルの最小タイムステップよりも小さく、KeepInitialにチェックがついている場合
-                    else if( m_time_control->getFutureTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
+                    else if( m_time_control->getNextTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                     {
                         //現在表示されているタイムステップがファイルの最小タイムステップよりも大きく、単一ステップのデータではない場合
                         if(currentTimeStep > filesManager->getMinTimeStep() && filesManager->getMinTimeStep() != filesManager->getMaxTimeStep())
@@ -574,7 +574,7 @@ void Merge::mergeObjects()
                         }
                     }
                     //次のタイムステップがファイルの最大タイムステップよりも大きく、KeepFinalにチェックがついている場合
-                    else if( m_time_control->getFutureTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
+                    else if( m_time_control->getNextTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
                     {
                         //現在表示されているタイムステップがファイルの最大タイムステップよりも小さく、単一ステップのデータではない場合
                         if(currentTimeStep < filesManager->getMaxTimeStep() && filesManager->getMinTimeStep() != filesManager->getMaxTimeStep())
@@ -621,22 +621,22 @@ void Merge::mergeObjects()
                 if( filesManager->getIds().first == 0 && filesManager->getIds().second == 0)
                 {
                     //次のタイムステップがファイルの最小最大タイムステップの範囲内である場合
-                    if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() )
+                    if( m_time_control->getNextTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getNextTimeStep() <= filesManager->getMaxTimeStep() )
                     {
                         //次のタイムステップの値と一致するファイルをインポートする
                         qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                        polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
+                        polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getNextTimeStep() ).toStdString() );
                     }
 
                     //次のタイムステップが登録予定のファイルの最小タイムステップより小さくKeepInitialにチェックがついている場合
-                    else if( m_time_control->getFutureTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
+                    else if( m_time_control->getNextTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                     {
                         //最小タイムステップのファイルをインポートする
                         qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
                         polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName(filesManager->getFileInfo().filePath(), filesManager->getMinTimeStep()).toStdString() );
                     }
                     //次のタイムステップが登録予定のファイルの最大タイムステップよりも大きくKeepFinalにチェックがついている場合
-                    else if( m_time_control->getFutureTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
+                    else if( m_time_control->getNextTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
                     {
                         //最大タイムステップのファイルをインポートする
                         qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
@@ -648,18 +648,18 @@ void Merge::mergeObjects()
                 if( filesManager->getIds().first != 0 && filesManager->getIds().second != 0)
                 {
                     //次のタイムステップがファイルの最小最大タイムステップの範囲内である場合
-                    if( m_time_control->getFutureTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getFutureTimeStep() <= filesManager->getMaxTimeStep() )
+                    if( m_time_control->getNextTimeStep() >= filesManager->getMinTimeStep() && m_time_control->getNextTimeStep() <= filesManager->getMaxTimeStep() )
                     {
                         //次のタイムステップと現在表示されているタイムステップが異なる場合
-                        if( m_time_control->getFutureTimeStep() != currentTimeStep )
+                        if( m_time_control->getNextTimeStep() != currentTimeStep )
                         {
                             //次のタイムステップがファイルの最小ステップよりも小さくKeepInitialにチェックがついている場合
-                            if(m_time_control->getFutureTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
+                            if(m_time_control->getNextTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                             {
                                 qInfo() << "Does nothing.[" << __LINE__ << "]";
                             }
                             //次のタイムステップがファイルの最大タイムステップよりも大きくKeepFinalにチェックがついている場合
-                            else if( m_time_control->getFutureTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked)
+                            else if( m_time_control->getNextTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked)
                             {
                                 qInfo() << "Does nothing.[" << __LINE__ << "]";
                             }
@@ -667,13 +667,13 @@ void Merge::mergeObjects()
                             else
                             {
                                 //次のタイムステップがファイルの最小タイムステップと一致してKeepInitialにチェックがついている場合
-                                if( m_time_control->getFutureTimeStep() == filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
+                                if( m_time_control->getNextTimeStep() == filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                                 {
                                     //現在表示しているタイムステップが次のタイムステップよりも大きく、単一ステップのデータではない場合
-                                    if(currentTimeStep > m_time_control->getFutureTimeStep() && filesManager->getMinTimeStep() != filesManager->getMaxTimeStep() )
+                                    if(currentTimeStep > m_time_control->getNextTimeStep() && filesManager->getMinTimeStep() != filesManager->getMaxTimeStep() )
                                     {
                                         qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                                        polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
+                                        polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getNextTimeStep() ).toStdString() );
                                     }
                                     //当てはまらない場合
                                     else
@@ -682,13 +682,13 @@ void Merge::mergeObjects()
                                     }
                                 }
                                 //次のタイムステップがファイルの最大タイムステップと一致して、KeepFinalにチェックがついている場合
-                                else if( m_time_control->getFutureTimeStep() == filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
+                                else if( m_time_control->getNextTimeStep() == filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
                                 {
                                     //現在表示しているタイムステップが次のタイムステップよりも小さく、単一ステップのデータではない場合
-                                    if(currentTimeStep < m_time_control->getFutureTimeStep() && filesManager->getMinTimeStep() != filesManager->getMaxTimeStep() )
+                                    if(currentTimeStep < m_time_control->getNextTimeStep() && filesManager->getMinTimeStep() != filesManager->getMaxTimeStep() )
                                     {
                                         qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                                        polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
+                                        polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getNextTimeStep() ).toStdString() );
                                     }
                                     //当てはまらない場合
                                     else
@@ -700,7 +700,7 @@ void Merge::mergeObjects()
                                 else
                                 {
                                     qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                                    polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
+                                    polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getNextTimeStep() ).toStdString() );
                                 }
                             }
                         }
@@ -711,7 +711,7 @@ void Merge::mergeObjects()
                         }
                     }
                     //次のタイムステップがファイルの最小タイムステップよりも小さく、KeepInitialにチェックがついている場合
-                    else if( m_time_control->getFutureTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
+                    else if( m_time_control->getNextTimeStep() < filesManager->getMinTimeStep() && filesManager->getKeepInitial() == Qt::PartiallyChecked )
                     {
                         //現在表示されているタイムステップがファイルの最小タイムステップよりも大きく、単一ステップのデータではない場合
                         if(currentTimeStep > filesManager->getMinTimeStep() && filesManager->getMinTimeStep() != filesManager->getMaxTimeStep())
@@ -725,7 +725,7 @@ void Merge::mergeObjects()
                         }
                     }
                     //次のタイムステップがファイルの最大タイムステップよりも大きく、KeepFinalにチェックがついている場合
-                    else if( m_time_control->getFutureTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
+                    else if( m_time_control->getNextTimeStep() > filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
                     {
                         //現在表示されているタイムステップがファイルの最大タイムステップよりも小さく、単一ステップのデータではない場合
                         if(currentTimeStep < filesManager->getMaxTimeStep() && filesManager->getMinTimeStep() != filesManager->getMaxTimeStep())
@@ -784,7 +784,7 @@ void Merge::mergeObjects()
         }
     }
 
-    currentTimeStep = m_time_control->getFutureTimeStep();
+    currentTimeStep = m_time_control->getNextTimeStep();
     m_time_control->setCurrentTimeStep( currentTimeStep );
     m_screen->redraw();
 }
