@@ -105,6 +105,11 @@ private:
     void checkFileFormat(QFileInfo *fileInfo, FilesManager *filesManager);
     void calculateMinMaxTimeStep();
     QString updateTimeStepInFileName(QString fileName,int nextTimeStep);
+
+    template <typename Importer, typename ObjectType>
+    ObjectType* importObject(FilesManager* filesManager);
+    void updateObject(FilesManager* filesManager, kvs::ObjectBase* object);
+    void removeObject(FilesManager* filesManager);
 };
 
 #endif // MERGE_H
