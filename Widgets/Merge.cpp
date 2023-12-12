@@ -617,9 +617,7 @@ ObjectType* Merge::importObject(FilesManager* filesManager)
         //当てはまらない場合
         else
         {
-//            qInfo() << "Delete the object.[" << __LINE__ << "]";
-//            m_screen->scene()->IDManager()->erase(filesManager->getIds().first,filesManager->getIds().second);
-//            filesManager->setIds(std::pair<int,int>(0,0));
+            qInfo() << "Delete the object.[" << __LINE__ << "]";
             removeObject( filesManager );
         }
     }
