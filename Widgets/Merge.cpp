@@ -532,7 +532,7 @@ void Merge::mergeObjects()
                             else if( m_time_control->getFutureTimeStep() == filesManager->getMaxTimeStep() && filesManager->getKeepFinal() == Qt::PartiallyChecked )
                             {
                                 //現在表示しているタイムステップが次のタイムステップよりも小さい場合
-                                if(currentTimeStep < m_time_control->getFutureTimeStep() && currentTimeStep >= filesManager->getMinTimeStep())
+                                if(currentTimeStep < m_time_control->getFutureTimeStep())
                                 {
                                     qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
                                     polygon_object = new kvs::PolygonImporter( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), m_time_control->getFutureTimeStep() ).toStdString() );
