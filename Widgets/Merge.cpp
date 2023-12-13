@@ -442,30 +442,22 @@ void Merge::mergeObjects()
     //FilesManagerに登録されているitem分ループ
     for( FilesManager* filesManager : m_files_manager )
     {
-        //Vosibleにチェックボックスがついている場合
-        if( filesManager->getVisible() == Qt::PartiallyChecked )
+        kvs::ObjectBase* object = nullptr;
+        //PointObjectの場合
+        if( filesManager->getFileFormat() == FilesManager::PointObject )
         {
-            kvs::ObjectBase* object = nullptr;
-            //PointObjectの場合
-            if( filesManager->getFileFormat() == FilesManager::PointObject )
-            {
-                object = import<kvs::PointImporter, kvs::PointObject>(filesManager, selectPattern( filesManager ) );
-            }
-            //PolygonObjectの場合
-            else if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon )
-            {
-                object = import<kvs::PolygonImporter, kvs::PolygonObject>(filesManager, selectPattern( filesManager));
-            }
-
-            //オブジェクトがnullptrではない場合
-            if( object != nullptr )
-            {
-                updateObject( filesManager, object );
-            }
+            object = selectPattern<kvs::PointImporter, kvs::PointObject>( filesManager );
         }
-        else
+        //PolygonObjectの場合
+        else if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon )
         {
-            removeObject( filesManager );
+            object = selectPattern<kvs::PolygonImporter, kvs::PolygonObject>( filesManager );
+        }
+
+        //オブジェクトがnullptrではない場合
+        if( object != nullptr )
+        {
+            updateObject( filesManager, object );
         }
     }
 
@@ -474,139 +466,131 @@ void Merge::mergeObjects()
     m_screen->redraw();
 }
 
-// ┌──────────────────────────────────────────────────────────┐
-// │ If KeepInitial is partially checked:                     │
-// │    ┌──────────────────────────────────────────────────┐  │
-// │    │ If KeepFinal is partially checked:               │  │
-// │    │    Return Merge::A                               │  │
-// │    └──────────────────────────────────────────────────┘  │
-// │    ┌──────────────────────────────────────────────────┐  │
-// │    │ If KeepFinal is not partially checked:           │  │
-// │    │    Return Merge::B                               │  │
-// │    └──────────────────────────────────────────────────┘  │
-// └──────────────────────────────────────────────────────────┘
-// │ If KeepInitial is not partially checked:                 │
-// │    ┌──────────────────────────────────────────────────┐  │
-// │    │ If KeepFinal is partially checked:               │  │
-// │    │    Return Merge::C                               │  │
-// │    └──────────────────────────────────────────────────┘  │
-// │    ┌──────────────────────────────────────────────────┐  │
-// │    │ If KeepFinal is not partially checked:           │  │
-// │    │    Return Merge::D                               │  │
-// │    └──────────────────────────────────────────────────┘  │
-// └──────────────────────────────────────────────────────────┘
-Merge::pattern Merge::selectPattern(FilesManager* filesManager)
+template <typename Importer, typename ObjectType>
+ObjectType* Merge::selectPattern(FilesManager* filesManager)
 {
-    //KeepInitialにチェックがついている場合
-    if( filesManager->getKeepInitial() == Qt::PartiallyChecked )
+    //Visibleにチェックボックスがついている場合
+    if( filesManager->getVisible() == Qt::PartiallyChecked )
     {
-        //KeepFinalにチェックがついている場合
-        if( filesManager->getKeepFinal() == Qt::PartiallyChecked )
+        //keep initialにチェックがついている場合
+        if( filesManager->getKeepInitial() == Qt::PartiallyChecked )
         {
-            return Merge::BothChecked;
+            //Keep finalにチェックがついている場合
+            if( filesManager->getKeepFinal() == Qt::PartiallyChecked )
+            {
+                return timeStepCheckAndImport<Importer, ObjectType>( filesManager, BothChecked );
+            }
+            //Keep finalにチェックがついていない場合
+            else
+            {
+                return timeStepCheckAndImport<Importer, ObjectType>( filesManager, KeepInitialChecked );
+            }
         }
-        //KeepFinalにチェックがついていない場合
-        else
+
+        //keep initialにチェックがついていない場合
+        if( filesManager->getKeepInitial() == Qt::Unchecked )
         {
-            return Merge::KeepInitialChecked;
+            //Keep finalにチェックがついている場合
+            if( filesManager->getKeepFinal() == Qt::PartiallyChecked )
+            {
+                return timeStepCheckAndImport<Importer, ObjectType>( filesManager, KeepFinalChecked );
+            }
+            //Keep finalにチェックがついていない場合
+            else
+            {
+                return timeStepCheckAndImport<Importer, ObjectType>( filesManager, NoneChecked );
+            }
         }
     }
-    //KeepInitialにチェックがついていない場合
     else
     {
-        //KeepFinalにチェックがついている場合
-        if( filesManager->getKeepFinal() == Qt::PartiallyChecked )
-        {
-            return Merge::KeepFinalChecked;
-        }
-        //KeepFinalにチェックがついていない場合
-        else
-        {
-            return Merge::NoneChecked;
-        }
+        qInfo() << "Delete the object.[" << __LINE__ << "]";
+        removeObject( filesManager );
     }
+    return nullptr;
 }
-
 template <typename Importer, typename ObjectType>
-ObjectType* Merge::import(FilesManager* filesManager, pattern pattern)
+ObjectType* Merge::timeStepCheckAndImport( FilesManager* filesManager, pattern pattern )
 {
     ObjectType* importedObject = nullptr;
-    int minTimeStep  = filesManager->getMinTimeStep();
-    int maxTimeStep  = filesManager->getMaxTimeStep();
-    int nextTimeStep = m_time_control->getNextTimeStep();
-    QString filePath = filesManager->getFileInfo().filePath();
-    bool already_registerd = (filesManager->getIds().first == 0 && filesManager->getIds().second == 0) ? false : true;;
+    const int minTimeStep  = filesManager->getMinTimeStep();
+    const int maxTimeStep  = filesManager->getMaxTimeStep();
+    const int nextTimeStep = m_time_control->getNextTimeStep();
+    const QString filePath = filesManager->getFileInfo().filePath();
+    const bool already_registerd = (filesManager->getIds().first == 0 && filesManager->getIds().second == 0) ? false : true;;
 
-    //オブジェクトが登録されていない場合
     if( already_registerd == false )
     {
-        //次のタイムステップがファイルの最小最大タイムステップの範囲内である場合
-        if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
+        if( pattern == KeepInitialChecked )
         {
-            if( pattern == Merge::KeepInitialChecked )
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
             {
                 qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
+                importedObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
             }
-            else if( pattern == Merge::KeepFinalChecked )
-            {
-                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-            }
-            else if( pattern == Merge::BothChecked )
-            {
-                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-            }
-            else if( pattern == Merge::NoneChecked )
-            {
-                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-            }
-        }
-        //次のタイムステップがファイルの最小タイムステップよりも小さい場合
-        else if( nextTimeStep < minTimeStep)
-        {
-            if( pattern == Merge::KeepInitialChecked )
+            else if( nextTimeStep < minTimeStep )
             {
                 qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
-                importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), minTimeStep ).toStdString() );
+                importedObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() );
             }
-            else if( pattern == Merge::KeepFinalChecked )
-            {
-                qInfo() << "Does nothing.[" << __LINE__ << "]";
-                importedObject = nullptr;
-            }
-            else if( pattern == Merge::BothChecked )
-            {
-                qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
-                importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), minTimeStep ).toStdString() );
-            }
-            else if( pattern == Merge::NoneChecked )
-            {
-                qInfo() << "Does nothing.[" << __LINE__ << "]";
-                importedObject = nullptr;
-            }
-        }
-        //次のタイムステップがファイルの最大タイムステップよりも大きい場合
-        else if( nextTimeStep > maxTimeStep )
-        {
-            if( pattern == Merge::KeepInitialChecked )
+            else if( nextTimeStep > maxTimeStep )
             {
                 qInfo() << "Does nothing.[" << __LINE__ << "]";
                 importedObject = importedObject = nullptr;
             }
-            else if( pattern == Merge::KeepFinalChecked )
+        }
+
+        if( pattern == KeepFinalChecked )
+        {
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
+            {
+                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                importedObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
+            }
+            else if( nextTimeStep < minTimeStep )
+            {
+                qInfo() << "Does nothing.[" << __LINE__ << "]";
+                importedObject = nullptr;
+            }
+            else if( nextTimeStep > maxTimeStep )
             {
                 qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
-                importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), maxTimeStep ).toStdString() );
+                importedObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() );
             }
-            else if( pattern == Merge::BothChecked )
+        }
+
+        if( pattern == BothChecked )
+        {
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
+            {
+                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                importedObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
+            }
+            else if( nextTimeStep < minTimeStep )
+            {
+                qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
+                importedObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() );
+            }
+            else if( nextTimeStep > maxTimeStep )
             {
                 qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
-                importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), maxTimeStep ).toStdString() );
+                importedObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() );
             }
-            else if( pattern == Merge::NoneChecked )
+        }
+
+        if( pattern == NoneChecked )
+        {
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
+            {
+                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                importedObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
+            }
+            else if( nextTimeStep < minTimeStep )
+            {
+                qInfo() << "Does nothing.[" << __LINE__ << "]";
+                importedObject = nullptr;
+            }
+            else if( nextTimeStep > maxTimeStep )
             {
                 qInfo() << "Does nothing.[" << __LINE__ << "]";
                 importedObject = nullptr;
@@ -614,68 +598,26 @@ ObjectType* Merge::import(FilesManager* filesManager, pattern pattern)
         }
     }
 
-    //既に登録されている場合
     if( already_registerd == true )
     {
-        if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
+        if( pattern == KeepInitialChecked )
         {
-            //次のタイムステップと現在表示されているタイムステップが異なる場合
-            if( nextTimeStep != currentTimeStep )
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
             {
-                //次のタイムステップがファイルの最小タイムステップよりも小さくKeepInitialにチェックがついている場合
-                if (nextTimeStep < minTimeStep)
+                if( nextTimeStep != currentTimeStep )
                 {
-                    if( pattern == Merge::KeepInitialChecked )
+                    if( nextTimeStep < minTimeStep )
                     {
                         qInfo() << "Does nothing.[" << __LINE__ << "]";
                         importedObject = importedObject = nullptr;
                     }
-                    else if( pattern == Merge::KeepFinalChecked )
-                    {
-                        //この条件に入ることはないかもしれません。
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importedObject = importedObject = nullptr;
-                    }
-                    else if( pattern == Merge::BothChecked )
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importedObject = importedObject = nullptr;
-                    }
-                    else if( pattern == Merge::NoneChecked )
+                    else if( nextTimeStep > maxTimeStep )
                     {
                         //この条件に入ることはないかもしれません。
                         qInfo() << "Does nothing.[" << __LINE__ << "]";
                         importedObject = importedObject = nullptr;
                     }
-                }
-                else if( nextTimeStep > maxTimeStep )
-                {
-                    if( pattern == Merge::KeepInitialChecked )
-                    {
-                        //この条件に入ることはないかもしれません。
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importedObject = importedObject = nullptr;
-                    }
-                    else if( pattern == Merge::KeepFinalChecked )
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importedObject = importedObject = nullptr;
-                    }
-                    else if( pattern == Merge::BothChecked )
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importedObject = importedObject = nullptr;
-                    }
-                    else if( pattern == Merge::NoneChecked )
-                    {
-                        //この条件に入ることはないかもしれません。
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importedObject = importedObject = nullptr;
-                    }
-                }
-                else if( nextTimeStep == minTimeStep )
-                {
-                    if( pattern == Merge::KeepInitialChecked )
+                    else if( nextTimeStep == minTimeStep )
                     {
                         if(currentTimeStep > nextTimeStep && minTimeStep != maxTimeStep )
                         {
@@ -688,72 +630,12 @@ ObjectType* Merge::import(FilesManager* filesManager, pattern pattern)
                             qInfo() << "Does nothing.[" << __LINE__ << "]";
                         }
                     }
-                    else if( pattern == Merge::KeepFinalChecked )
-                    {
-                        if(currentTimeStep > nextTimeStep && minTimeStep != maxTimeStep )
-                        {
-                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                            importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-                        }
-                        //当てはまらない場合
-                        else
-                        {
-                            qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        }
-                    }
-                    else if( pattern == Merge::BothChecked )
-                    {
-                        if(currentTimeStep > nextTimeStep && minTimeStep != maxTimeStep )
-                        {
-                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                            importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-                        }
-                        //当てはまらない場合
-                        else
-                        {
-                            qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        }
-                    }
-                    else if( pattern == Merge::NoneChecked )
+                    else if( nextTimeStep == maxTimeStep )
                     {
                         qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
                         importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
                     }
-                }
-                else if( nextTimeStep == maxTimeStep )
-                {
-                    if( pattern == Merge::KeepInitialChecked )
-                    {
-                        qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                        importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-                    }
-                    else if( pattern == Merge::KeepFinalChecked )
-                    {
-                        if(currentTimeStep < nextTimeStep && minTimeStep != maxTimeStep )
-                        {
-                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                            importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-                        }
-                        //当てはまらない場合
-                        else
-                        {
-                            qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        }
-                    }
-                    else if( pattern == Merge::BothChecked )
-                    {
-                        if(currentTimeStep < nextTimeStep && minTimeStep != maxTimeStep )
-                        {
-                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                            importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-                        }
-                        //当てはまらない場合
-                        else
-                        {
-                            qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        }
-                    }
-                    else if( pattern == Merge::NoneChecked )
+                    else
                     {
                         qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
                         importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
@@ -761,18 +643,166 @@ ObjectType* Merge::import(FilesManager* filesManager, pattern pattern)
                 }
                 else
                 {
-                    qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                    importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
+                    qInfo() << "Does nothing.[" << __LINE__ << "]";
+                }
+            }
+            else if( nextTimeStep < minTimeStep )
+            {
+                //現在表示されているタイムステップがファイルの最小タイムステップよりも大きく、単一ステップのデータではない場合
+                if( currentTimeStep > minTimeStep && minTimeStep != maxTimeStep )
+                {
+                    qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
+                    importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), minTimeStep ).toStdString() );
+                }
+                else
+                {
+                    qInfo() << "Does nothing.[" << __LINE__ << "]";
+                }
+            }
+            else if( nextTimeStep > maxTimeStep )
+            {
+                qInfo() << "Delete the object.[" << __LINE__ << "]";
+                removeObject( filesManager );
+            }
+            else
+            {
+                qInfo() << "Delete the object.[" << __LINE__ << "]";
+                removeObject( filesManager );
+            }
+        }
+
+        if( pattern == KeepFinalChecked )
+        {
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
+            {
+                if( nextTimeStep != currentTimeStep )
+                {
+                    if( nextTimeStep < minTimeStep )
+                    {
+                        //この条件に入ることはないかもしれません。
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        importedObject = importedObject = nullptr;
+                    }
+                    else if( nextTimeStep > maxTimeStep )
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        importedObject = importedObject = nullptr;
+                    }
+                    else if( nextTimeStep == minTimeStep )
+                    {
+                        if(currentTimeStep > nextTimeStep && minTimeStep != maxTimeStep )
+                        {
+                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                            importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
+                        }
+                        //当てはまらない場合
+                        else
+                        {
+                            qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        }
+                    }
+                    else if( nextTimeStep == maxTimeStep )
+                    {
+                        if(currentTimeStep < nextTimeStep && minTimeStep != maxTimeStep )
+                        {
+                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                            importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
+                        }
+                        //当てはまらない場合
+                        else
+                        {
+                            qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        }
+                    }
+                    else
+                    {
+                        qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                        importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
+                    }
+                }
+                else
+                {
+                    qInfo() << "Does nothing.[" << __LINE__ << "]";
+                }
+            }
+            else if( nextTimeStep < minTimeStep )
+            {
+                qInfo() << "Delete the object.[" << __LINE__ << "]";
+                removeObject( filesManager );
+            }
+            else if( nextTimeStep > maxTimeStep )
+            {
+                if( currentTimeStep < maxTimeStep && minTimeStep != maxTimeStep )
+                {
+                    qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
+                    importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), maxTimeStep ).toStdString() );
+                }
+                else
+                {
+                    qInfo() << "Does nothing.[" << __LINE__ << "]";
                 }
             }
             else
             {
-                qInfo() << "Does nothing.[" << __LINE__ << "]";
+                qInfo() << "Delete the object.[" << __LINE__ << "]";
+                removeObject( filesManager );
             }
         }
-        else if( nextTimeStep < minTimeStep )
+
+        if( pattern == BothChecked )
         {
-            if( pattern == Merge::KeepInitialChecked )
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
+            {
+                if( nextTimeStep != currentTimeStep )
+                {
+                    if (nextTimeStep < minTimeStep)
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        importedObject = importedObject = nullptr;
+                    }
+                    else if( nextTimeStep > maxTimeStep )
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        importedObject = importedObject = nullptr;
+                    }
+                    else if( nextTimeStep == minTimeStep )
+                    {
+                        if(currentTimeStep > nextTimeStep && minTimeStep != maxTimeStep )
+                        {
+                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                            importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
+                        }
+                        //当てはまらない場合
+                        else
+                        {
+                            qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        }
+                    }
+                    else if( nextTimeStep == maxTimeStep )
+                    {
+                        if(currentTimeStep < nextTimeStep && minTimeStep != maxTimeStep )
+                        {
+                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                            importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
+                        }
+                        //当てはまらない場合
+                        else
+                        {
+                            qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        }
+                    }
+                    else
+                    {
+                        qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                        importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
+                    }
+                }
+                else
+                {
+                    qInfo() << "Does nothing.[" << __LINE__ << "]";
+                }
+            }
+            else if( nextTimeStep < minTimeStep )
             {
                 //現在表示されているタイムステップがファイルの最小タイムステップよりも大きく、単一ステップのデータではない場合
                 if( currentTimeStep > minTimeStep && minTimeStep != maxTimeStep )
@@ -785,50 +815,7 @@ ObjectType* Merge::import(FilesManager* filesManager, pattern pattern)
                     qInfo() << "Does nothing.[" << __LINE__ << "]";
                 }
             }
-            else if( pattern == Merge::KeepFinalChecked )
-            {
-                qInfo() << "Delete the object.[" << __LINE__ << "]";
-                removeObject( filesManager );
-            }
-            else if( pattern == Merge::BothChecked )
-            {
-                //現在表示されているタイムステップがファイルの最小タイムステップよりも大きく、単一ステップのデータではない場合
-                if( currentTimeStep > minTimeStep && minTimeStep != maxTimeStep )
-                {
-                    qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
-                    importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), minTimeStep ).toStdString() );
-                }
-                else
-                {
-                    qInfo() << "Does nothing.[" << __LINE__ << "]";
-                }
-            }
-            else if( pattern == Merge::NoneChecked )
-            {
-                qInfo() << "Delete the object.[" << __LINE__ << "]";
-                removeObject( filesManager );
-            }
-        }
-        else if( nextTimeStep > maxTimeStep )
-        {
-            if( pattern == Merge::KeepInitialChecked )
-            {
-                qInfo() << "Delete the object.[" << __LINE__ << "]";
-                removeObject( filesManager );
-            }
-            else if( pattern == Merge::KeepFinalChecked )
-            {
-                if( currentTimeStep < maxTimeStep && minTimeStep != maxTimeStep )
-                {
-                    qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
-                    importedObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), maxTimeStep ).toStdString() );
-                }
-                else
-                {
-                    qInfo() << "Does nothing.[" << __LINE__ << "]";
-                }
-            }
-            else if( pattern == Merge::BothChecked )
+            else if( nextTimeStep > maxTimeStep )
             {
                 //現在表示されているタイムステップがファイルの最小タイムステップよりも大きく、単一ステップのデータではない場合
                 if( currentTimeStep < maxTimeStep && minTimeStep != maxTimeStep )
@@ -841,20 +828,35 @@ ObjectType* Merge::import(FilesManager* filesManager, pattern pattern)
                     qInfo() << "Does nothing.[" << __LINE__ << "]";
                 }
             }
-            else if( pattern == Merge::NoneChecked )
+            else
             {
                 qInfo() << "Delete the object.[" << __LINE__ << "]";
                 removeObject( filesManager );
             }
         }
-        else
+
+        if( pattern == NoneChecked )
         {
-            qInfo() << "Delete the object.[" << __LINE__ << "]";
-            removeObject( filesManager );
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
+            {
+                if( nextTimeStep != currentTimeStep )
+                {
+                    qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                    importedObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
+                }
+                else
+                {
+                    qInfo() << "Does nothing.[" << __LINE__ << "]";
+                }
+            }
+            else
+            {
+                qInfo() << "Delete the object.[" << __LINE__ << "]";
+                removeObject( filesManager );
+            }
         }
+
     }
-
-
     return importedObject;
 }
 

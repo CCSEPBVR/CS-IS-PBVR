@@ -114,9 +114,11 @@ private:
     void calculateMinMaxTimeStep();
     QString updateTimeStepInFileName(QString fileName,int nextTimeStep);
 
-    pattern selectPattern(FilesManager* filesManager);
     template <typename Importer, typename ObjectType>
-    ObjectType* import(FilesManager* filesManager, pattern patten);
+    ObjectType* selectPattern(FilesManager* filesManager);
+    template <typename Importer, typename ObjectType>
+    ObjectType* timeStepCheckAndImport(FilesManager* filesManager, pattern pattern);
+
     void updateObject(FilesManager* filesManager, kvs::ObjectBase* object);
     void removeObject(FilesManager* filesManager);
 };
