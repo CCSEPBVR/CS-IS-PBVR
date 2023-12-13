@@ -34,6 +34,7 @@ HEADERS += \
     Merge.h \
     Preference.h \
     RenderOptions.h \
+    TimeControl.h \
     VolumeTransform.h \
     Connect.h
 
@@ -48,6 +49,7 @@ SOURCES += \
     Merge.cpp \
     Preference.cpp \
     RenderOptions.cpp \
+    TimeControl.cpp \
     VolumeTransform.cpp \
     Connect.cpp
 
@@ -62,6 +64,7 @@ FORMS += \
     Merge.ui \
     Preference.ui \
     RenderOptions.ui \
+    TimeControl.ui \
     VolumeTransform.ui \
     Connect.ui
 

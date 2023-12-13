@@ -84,6 +84,9 @@
          <property name="enabled">
           <bool>false</bool>
          </property>
+         <property name="text">
+          <string>/Users/t0603/3d/clock/clock_00000.stl</string>
+         </property>
         </widget>
        </item>
        <item row="0" column="2">

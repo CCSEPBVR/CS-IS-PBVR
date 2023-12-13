@@ -11,6 +11,7 @@
 #include "Widgets/Merge.h"
 #include "Widgets/VolumeTransform.h"
 #include "Widgets/Connect.h"
+#include "Widgets/TimeControl.h"
 
 namespace Ui {
 class PBVRGUI;
@@ -37,6 +38,7 @@ private:
     Merge           m_merge;
     VolumeTransform m_volumeTransform;
     Connect         m_connect;
+    TimeControl     m_timeControl;
 
 private:
     void onPreference()      { m_preference.show(); }
