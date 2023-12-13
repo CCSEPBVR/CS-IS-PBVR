@@ -77,6 +77,14 @@ class Merge;
 class Merge : public QDockWidget
 {
     Q_OBJECT
+public:
+    enum pattern
+    {
+        KeepInitialChecked = 0,
+        KeepFinalChecked   = 1,
+        BothChecked        = 2,
+        NoneChecked        = 3,
+    };
 
 public:
     explicit Merge(QWidget *parent = nullptr);
@@ -106,8 +114,9 @@ private:
     void calculateMinMaxTimeStep();
     QString updateTimeStepInFileName(QString fileName,int nextTimeStep);
 
+    pattern selectPattern(FilesManager* filesManager);
     template <typename Importer, typename ObjectType>
-    ObjectType* importObject(FilesManager* filesManager);
+    ObjectType* import(FilesManager* filesManager, pattern patten);
     void updateObject(FilesManager* filesManager, kvs::ObjectBase* object);
     void removeObject(FilesManager* filesManager);
 };
