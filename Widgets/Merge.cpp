@@ -643,7 +643,15 @@ ObjectType* Merge::timeStepCheckAndImport( FilesManager* filesManager, pattern p
                 }
                 else
                 {
-                    qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
+                    {
+                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
+                        importedObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
+                    }
+                    else
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    }
                 }
             }
             else if( nextTimeStep < minTimeStep )
@@ -656,7 +664,15 @@ ObjectType* Merge::timeStepCheckAndImport( FilesManager* filesManager, pattern p
                 }
                 else
                 {
-                    qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
+                    {
+                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
+                        importedObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() );
+                    }
+                    else
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    }
                 }
             }
             else if( nextTimeStep > maxTimeStep )
@@ -722,7 +738,15 @@ ObjectType* Merge::timeStepCheckAndImport( FilesManager* filesManager, pattern p
                 }
                 else
                 {
-                    qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
+                    {
+                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
+                        importedObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
+                    }
+                    else
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    }
                 }
             }
             else if( nextTimeStep < minTimeStep )
@@ -739,7 +763,15 @@ ObjectType* Merge::timeStepCheckAndImport( FilesManager* filesManager, pattern p
                 }
                 else
                 {
-                    qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
+                    {
+                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
+                        importedObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() );
+                    }
+                    else
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    }
                 }
             }
             else
@@ -799,7 +831,15 @@ ObjectType* Merge::timeStepCheckAndImport( FilesManager* filesManager, pattern p
                 }
                 else
                 {
-                    qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
+                    {
+                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
+                        importedObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
+                    }
+                    else
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    }
                 }
             }
             else if( nextTimeStep < minTimeStep )
@@ -812,7 +852,15 @@ ObjectType* Merge::timeStepCheckAndImport( FilesManager* filesManager, pattern p
                 }
                 else
                 {
-                    qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
+                    {
+                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
+                        importedObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() );
+                    }
+                    else
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    }
                 }
             }
             else if( nextTimeStep > maxTimeStep )
@@ -825,7 +873,15 @@ ObjectType* Merge::timeStepCheckAndImport( FilesManager* filesManager, pattern p
                 }
                 else
                 {
-                    qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
+                    {
+                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
+                        importedObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() );
+                    }
+                    else
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    }
                 }
             }
             else
@@ -846,7 +902,15 @@ ObjectType* Merge::timeStepCheckAndImport( FilesManager* filesManager, pattern p
                 }
                 else
                 {
-                    qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
+                    {
+                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
+                        importedObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
+                    }
+                    else
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    }
                 }
             }
             else
