@@ -5,7 +5,6 @@
 #include <QDir>
 #include <QDockWidget>
 #include <QTableWidgetItem>
-#include <kvs/qt/Screen>
 #include <kvs/RGBColor>
 #include <ExtendedKVS/Screen.h>
 #include <Widgets/TimeControl.h>

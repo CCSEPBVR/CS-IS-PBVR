@@ -77,6 +77,6 @@ void PBVRGUI::initialize()
     m_fps_label = new kvs::Label( m_screen );
     m_time_step_label = new kvs::Label( m_screen );
 
-    // QGridLayout に kvs::qt::Screen を追加
+    // QGridLayout に kvs::qt::jaea::Screen を追加
     ui->screenArea->addWidget(m_screen, 0, 0, 1, 1);//コンストラクタの最後にすると表示に差異が生じる、要相談
 }

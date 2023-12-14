@@ -3,7 +3,7 @@
 
 #include <QDockWidget>
 
-#include <kvs/qt/Screen>
+#include "ExtendedKVS/Screen.h"
 #include <kvs/RotationMatrix33>
 
 namespace Ui {
@@ -19,11 +19,11 @@ public:
     ~VolumeTransform();
 
 public:
-    void setScreen( kvs::qt::Screen* screen ) { m_screen = screen; }
+    void setScreen( kvs::qt::jaea::Screen* screen ) { m_screen = screen; }
 
 private:
     Ui::VolumeTransform *ui;
-    kvs::qt::Screen* m_screen;
+    kvs::qt::jaea::Screen* m_screen;
 
 private slots:
     void onApplyButtonClicked();

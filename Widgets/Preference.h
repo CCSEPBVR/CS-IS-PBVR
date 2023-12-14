@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <QSettings>
 
-#include <kvs/qt/Screen>
+#include "ExtendedKVS/Screen.h"
 #include <kvs/StochasticRenderingCompositor>
 #include <kvs/ColorMapBar>
 #include <kvs/OrientationAxis>
@@ -52,7 +52,7 @@ protected:
 public:
     void initialize();
 
-    void setScreen( kvs::qt::Screen* screen )                            { m_screen = screen;                    }
+    void setScreen( kvs::qt::jaea::Screen* screen )                            { m_screen = screen;                    }
     void setCompositor( kvs::StochasticRenderingCompositor* compositor ) { m_compositor = compositor;            }
     void setColorMapBar( kvs::ColorMapBar* colorMapBar )                 { m_color_map_bar = colorMapBar;        }
     void setOrientationAxis( kvs::OrientationAxis* orientationAxis )     { m_orientation_axis = orientationAxis; }
@@ -64,7 +64,7 @@ public:
 
 private:
     Ui::Preference *ui;
-    kvs::qt::Screen* m_screen;
+    kvs::qt::jaea::Screen* m_screen;
     kvs::StochasticRenderingCompositor* m_compositor;
     kvs::ColorMapBar* m_color_map_bar;
     kvs::OrientationAxis* m_orientation_axis;
