@@ -58,8 +58,10 @@ public:
     void setOrientationAxis( kvs::OrientationAxis* orientationAxis )     { m_orientation_axis = orientationAxis; }
     void setFPSLabel( kvs::Label* fps_label )                            { m_fps_label = fps_label;              }
     void setTimeStepLabel( kvs::Label* time_step_label )                 { m_time_step_label = time_step_label;  }
+    void setCurrentTimeStep( int currentTimeStep ) { m_time_step_label->setText("Time step: " + std::to_string(currentTimeStep));}
 
     void doneInitialize()                                                { m_initialized = true;                 }
+    void loadShadingSettings();
     void applyShadingSettings();
 
 private:
@@ -81,7 +83,6 @@ private:
     void loadBackGroundColorSettings();
     void loadResolutionSettings();
     void loadLabelsSettings();
-    void loadShadingSettings();
 
     void setDefaultSettings();
 

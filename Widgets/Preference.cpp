@@ -477,7 +477,7 @@ void Preference::applyLabelsSettings()
     else
     {
         m_time_step_label->hide();
-    }
+    }    
 }
 
 void Preference::applyShadingSettings()

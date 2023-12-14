@@ -463,6 +463,9 @@ void Merge::mergeObjects()
 
     currentTimeStep = m_time_control->getNextTimeStep();
     m_time_control->setCurrentTimeStep( currentTimeStep );
+    m_preference->setCurrentTimeStep( currentTimeStep );
+    m_preference->loadShadingSettings();
+    m_preference->applyShadingSettings();
     m_screen->redraw();
 }
 
