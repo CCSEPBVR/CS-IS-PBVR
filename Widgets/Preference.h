@@ -58,14 +58,16 @@ protected:
 
 public:
     void initialize();
-    void setScreen( kvs::qt::Screen* screen ) { m_screen = screen; }
-    void setCompositor( kvs::StochasticRenderingCompositor* compositor ) { m_compositor = compositor; }
-    void setColorMapBar( kvs::ColorMapBar* colorMapBar ) { m_color_map_bar = colorMapBar; }
-    void setOrientationAxis( kvs::OrientationAxis* orientationAxis ) { m_orientation_axis = orientationAxis; }
-    void setFPSLabel( kvs::Label* fps_label ) { m_fps_label = fps_label; }
-    void setTimeStepLabel( kvs::Label* time_step_label ) { m_time_step_label = time_step_label; }
+
+    void setScreen( kvs::qt::Screen* screen )                            { m_screen = screen;                    }
+    void setCompositor( kvs::StochasticRenderingCompositor* compositor ) { m_compositor = compositor;            }
+    void setColorMapBar( kvs::ColorMapBar* colorMapBar )                 { m_color_map_bar = colorMapBar;        }
+    void setOrientationAxis( kvs::OrientationAxis* orientationAxis )     { m_orientation_axis = orientationAxis; }
+    void setFPSLabel( kvs::Label* fps_label )                            { m_fps_label = fps_label;              }
+    void setTimeStepLabel( kvs::Label* time_step_label )                 { m_time_step_label = time_step_label;  }
+
+    void doneInitialize()                                                { m_initialized = true;                 }
     void applyShadingSettings();
-    void doneInitialize() { m_initialized = true; }
 
 private:
     Ui::Preference *ui;
@@ -80,26 +82,33 @@ private:
 
 private:
     bool checkConfigFileExists() { return QFile::exists( "config.ini" ); }
-    void loadScreenSettings();
+
     void loadColorMapBarSettings();
     void loadOrientationAxisSettings();
+    void loadBackGroundColorSettings();
     void loadResolutionSettings();
     void loadLabelsSettings();
     void loadShadingSettings();
+
     void setDefaultSettings();
+
     void applySettings( bool isInit );
-    void applyScreenSettings();
-    void applyLabelsSettings();
+
     void applyColorMapBarSettings();
     void applyOrientationAxisSettings();
+    void applyBackGroundColor();
+    void applyResolution();
+    void applyLabelsSettings();
 
-    void setBackGroundSelectedColor(const QColor& color);
-    void setLabelsSelectedColor(const QColor& color);
+    void setBackGroundColor( const QColor& color );
+    void setLabelsColor( const QColor& color );
+
     void saveSettings();
 
 private slots:
-    void onBackGroundSelectedColorDoubleClicked();
-    void onLabelsSelectedColorDoubleClicked();
+    void onBackGroundColorDoubleClicked();
+    void onLabelsColorDoubleClicked();
+
     void onApplyButtonClicked();
     void onCancelButtonClicked();
     void onOKButtonClicked();
