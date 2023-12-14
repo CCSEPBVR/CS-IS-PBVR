@@ -30,8 +30,8 @@ Preference::Preference(QWidget *parent) :
     ui->showTimeStepCBox->addItem( "Show", QVariant( true ) );
     ui->showTimeStepCBox->addItem( "Hide", QVariant( false ) );
 
-    connect( ui->selectedBackGroundColorCLbl, &ClickableLabel::doubleClicked, this, &Preference::onBackGroundColorDoubleClicked );
-    connect( ui->selectedLabelsColorCLbl, &ClickableLabel::doubleClicked, this, &Preference::onLabelsColorDoubleClicked );
+    connect( ui->backGroundColorCLbl, &ClickableLabel::doubleClicked, this, &Preference::onBackGroundColorDoubleClicked );
+    connect( ui->fontColorCLbl, &ClickableLabel::doubleClicked, this, &Preference::onLabelsColorDoubleClicked );
     connect( ui->applyPBtn,  &QPushButton::clicked, this, &Preference::onApplyButtonClicked  );
     connect( ui->cancelPBtn, &QPushButton::clicked, this, &Preference::onCancelButtonClicked );
     connect( ui->okPBtn,     &QPushButton::clicked, this, &Preference::onOKButtonClicked     );
@@ -52,6 +52,7 @@ void Preference::initialize()
         loadBackGroundColorSettings();
         loadResolutionSettings();
         loadLabelsSettings();
+        loadFontSettings();
         loadShadingSettings();
     }
     //存在しない場合はデフォルトの値を設定し保存する。
@@ -161,9 +162,6 @@ void Preference::loadLabelsSettings()
     m_settings.beginGroup( "Labels" );
     const bool fpsIsShowing = m_settings.value( "fpsIsShowing" ).toBool();
     const bool timeStepIsShowing = m_settings.value( "timeStepIsShowing" ).toBool();
-    qInfo() << fpsIsShowing;
-    qInfo() << timeStepIsShowing;
-    QColor color( m_settings.value( "R" ).toInt(),m_settings.value( "G" ).toInt(),m_settings.value( "B" ).toInt() );
 
     if( fpsIsShowing )
     {
@@ -183,7 +181,14 @@ void Preference::loadLabelsSettings()
         ui->showTimeStepCBox->setCurrentText( "Hide" );
     }
 
-    setLabelsColor( color );
+    m_settings.endGroup();
+}
+
+void Preference::loadFontSettings()
+{
+    m_settings.beginGroup( "Font" );
+    QColor color( m_settings.value( "R" ).toInt(),m_settings.value( "G" ).toInt(),m_settings.value( "B" ).toInt() );
+    setFontColor( color );
     m_settings.endGroup();
 }
 
@@ -230,25 +235,25 @@ void Preference::setBackGroundColor( const QColor& color )
 {
     if( color.isValid() )
     {
-        QPalette palette = ui->selectedBackGroundColorCLbl->palette();
+        QPalette palette = ui->backGroundColorCLbl->palette();
         palette.setColor( QPalette::Window, color );
 
-        ui->selectedBackGroundColorCLbl->setAutoFillBackground(true);
-        ui->selectedBackGroundColorCLbl->setPalette(palette);
-        ui->selectedBackGroundColorCLbl->update();
+        ui->backGroundColorCLbl->setAutoFillBackground(true);
+        ui->backGroundColorCLbl->setPalette(palette);
+        ui->backGroundColorCLbl->update();
     }
 }
 
-void Preference::setLabelsColor( const QColor& color )
+void Preference::setFontColor( const QColor& color )
 {
     if( color.isValid() )
     {
-        QPalette palette = ui->selectedLabelsColorCLbl->palette();
+        QPalette palette = ui->fontColorCLbl->palette();
         palette.setColor( QPalette::Window, color );
 
-        ui->selectedLabelsColorCLbl->setAutoFillBackground(true);
-        ui->selectedLabelsColorCLbl->setPalette(palette);
-        ui->selectedLabelsColorCLbl->update();
+        ui->fontColorCLbl->setAutoFillBackground(true);
+        ui->fontColorCLbl->setPalette(palette);
+        ui->fontColorCLbl->update();
     }
 }
 
@@ -267,8 +272,8 @@ void Preference::setDefaultSettings()
     //Labels
     ui->showFPSCBox->setCurrentText( "Hide" );
     ui->showTimeStepCBox->setCurrentText( "Hide" );
-
-    setLabelsColor( QColor( 0, 0, 0 ) );
+    //Font
+    setFontColor( QColor( 0, 0, 0 ) );
     //Shading
     ui->shadingGBox->setChecked( false );
     ui->phongRBtn->setChecked( true );
@@ -276,36 +281,71 @@ void Preference::setDefaultSettings()
 
 void Preference::saveSettings()
 {
+    saveColorMapBarSettings();
+    saveOrientationAxisSettings();
+    saveBackGroundColorSettings();
+    saveResolutionSettings();
+    saveLabelsSettings();
+    saveFontSettings();
+    saveShadingSettings();
+
+    m_settings.sync();
+}
+
+void Preference::saveColorMapBarSettings()
+{
     m_settings.beginGroup( "ColorMapBar" );
     m_settings.setValue( "isShowing", ui->colorMapBarGBox->isChecked() );
     m_settings.setValue( "Orientation", ui->orientationTypeCBox->currentText() );
     m_settings.endGroup();
+}
 
+void Preference::saveOrientationAxisSettings()
+{
     m_settings.beginGroup( "OrientationAxis" );
     m_settings.setValue( "isShowing", ui->orientationGBox->isChecked() );
     m_settings.setValue( "AxisType", ui->axisTypeCBox->currentText() );
     m_settings.setValue( "BoxType", ui->boxTypeCBox->currentText() );
     m_settings.endGroup();
 
-    m_settings.beginGroup( "BackGroundColor" );
-    m_settings.setValue( "R", ui->selectedBackGroundColorCLbl->palette().color(QPalette::Window).red());
-    m_settings.setValue( "G", ui->selectedBackGroundColorCLbl->palette().color(QPalette::Window).green());
-    m_settings.setValue( "B", ui->selectedBackGroundColorCLbl->palette().color(QPalette::Window).blue());
-    m_settings.endGroup();
+}
 
+void Preference::saveBackGroundColorSettings()
+{
+    m_settings.beginGroup( "BackGroundColor" );
+    m_settings.setValue( "R", ui->backGroundColorCLbl->palette().color(QPalette::Window).red());
+    m_settings.setValue( "G", ui->backGroundColorCLbl->palette().color(QPalette::Window).green());
+    m_settings.setValue( "B", ui->backGroundColorCLbl->palette().color(QPalette::Window).blue());
+    m_settings.endGroup();
+}
+
+void Preference::saveResolutionSettings()
+{
     m_settings.beginGroup( "Resolution" );
     m_settings.setValue( "width", ui->widthSBox->value() );
     m_settings.setValue( "height", ui->heightSBox->value() );
     m_settings.endGroup();
+}
 
+void Preference::saveLabelsSettings()
+{
     m_settings.beginGroup( "Labels" );
     m_settings.setValue( "fpsIsShowing", ui->showFPSCBox->currentData().toBool() );
     m_settings.setValue( "timeStepIsShowing", ui->showTimeStepCBox->currentData().toBool() );
-    m_settings.setValue( "R", ui->selectedLabelsColorCLbl->palette().color(QPalette::Window).red() );
-    m_settings.setValue( "G", ui->selectedLabelsColorCLbl->palette().color(QPalette::Window).green() );
-    m_settings.setValue( "B", ui->selectedLabelsColorCLbl->palette().color(QPalette::Window).blue() );
     m_settings.endGroup();
+}
 
+void Preference::saveFontSettings()
+{
+    m_settings.beginGroup( "Font" );
+    m_settings.setValue( "R", ui->fontColorCLbl->palette().color(QPalette::Window).red() );
+    m_settings.setValue( "G", ui->fontColorCLbl->palette().color(QPalette::Window).green() );
+    m_settings.setValue( "B", ui->fontColorCLbl->palette().color(QPalette::Window).blue() );
+    m_settings.endGroup();
+}
+
+void Preference::saveShadingSettings()
+{
     m_settings.beginGroup( "Shading" );
     m_settings.setValue( "isEnable", ui->shadingGBox->isChecked() );
     if( ui->lambertRBtn->isChecked() )
@@ -325,8 +365,6 @@ void Preference::saveSettings()
     m_settings.setValue( "ks", ui->ksDSBox->value() );
     m_settings.setValue( "s", ui->sDSBox->value() );
     m_settings.endGroup();
-
-    m_settings.sync();
 }
 
 void Preference::applySettings( bool isInit )
@@ -336,6 +374,7 @@ void Preference::applySettings( bool isInit )
     applyBackGroundColor();
     applyResolution();
     applyLabelsSettings();
+    applyFontSettings();
     applyShadingSettings();
 
     if( !isInit )
@@ -423,9 +462,9 @@ void Preference::applyOrientationAxisSettings()
 void Preference::applyBackGroundColor()
 {
     const kvs::RGBColor backGroundColor(
-        ui->selectedBackGroundColorCLbl->palette().color(QPalette::Window).red(),
-        ui->selectedBackGroundColorCLbl->palette().color(QPalette::Window).green(),
-        ui->selectedBackGroundColorCLbl->palette().color(QPalette::Window).blue());
+        ui->backGroundColorCLbl->palette().color(QPalette::Window).red(),
+        ui->backGroundColorCLbl->palette().color(QPalette::Window).green(),
+        ui->backGroundColorCLbl->palette().color(QPalette::Window).blue());
 
     m_screen->setBackgroundColor( kvs::RGBColor( backGroundColor ) );
 }
@@ -443,18 +482,9 @@ void Preference::applyLabelsSettings()
     const bool fpsIsShowing = ui->showFPSCBox->currentData().toBool();
     const bool timeStepIsShowing = ui->showTimeStepCBox->currentData().toBool();
 
-    const kvs::RGBColor labelsColor(
-        ui->selectedLabelsColorCLbl->palette().color(QPalette::Window).red(),
-        ui->selectedLabelsColorCLbl->palette().color(QPalette::Window).green(),
-        ui->selectedLabelsColorCLbl->palette().color(QPalette::Window).blue());
-
-    kvs::Font font;
-    font.setColor( labelsColor );
-
     if( fpsIsShowing )
     {
-        m_fps_label->setPosition( 20, 580 );
-        m_fps_label->setFont( font );
+        m_fps_label->setPosition( 20, 580 );        
         m_fps_label->screenUpdated( [&]()
                                    {
                                        const auto fps = kvs::String::From( m_compositor->timer().fps(), 4 );
@@ -469,8 +499,7 @@ void Preference::applyLabelsSettings()
 
     if( timeStepIsShowing )
     {
-        m_time_step_label->setPosition( 100, 580 );
-        m_time_step_label->setFont( font );
+        m_time_step_label->setPosition( 100, 580 );        
         m_time_step_label->setText("Time step: ");
         m_time_step_label->show();
     }
@@ -478,6 +507,20 @@ void Preference::applyLabelsSettings()
     {
         m_time_step_label->hide();
     }    
+}
+
+void Preference::applyFontSettings()
+{
+    const kvs::RGBColor labelsColor(
+        ui->fontColorCLbl->palette().color(QPalette::Window).red(),
+        ui->fontColorCLbl->palette().color(QPalette::Window).green(),
+        ui->fontColorCLbl->palette().color(QPalette::Window).blue());
+
+    kvs::Font font;
+    font.setColor( labelsColor );
+    m_color_map_bar->setFont( font );
+    m_fps_label->setFont( font );
+    m_time_step_label->setFont( font );
 }
 
 void Preference::applyShadingSettings()
@@ -566,6 +609,7 @@ void Preference::closeEvent( QCloseEvent* event )
     loadBackGroundColorSettings();
     loadResolutionSettings();
     loadLabelsSettings();
+    loadFontSettings();
     loadShadingSettings();
 
     event->accept();
@@ -575,12 +619,16 @@ void Preference::onBackGroundColorDoubleClicked()
 {
     QColor color = QColorDialog::getColor(Qt::white, this, tr("Select Color"));
     setBackGroundColor( color );
+
+    raise();
 }
 
 void Preference::onLabelsColorDoubleClicked()
 {
     QColor color = QColorDialog::getColor(Qt::white, this, tr("Select Color"));
-    setLabelsColor( color );
+    setFontColor( color );
+
+    raise();
 }
 
 void Preference::onApplyButtonClicked()

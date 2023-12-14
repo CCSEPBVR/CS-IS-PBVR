@@ -83,21 +83,29 @@ private:
     void loadBackGroundColorSettings();
     void loadResolutionSettings();
     void loadLabelsSettings();
+    void loadFontSettings();
 
     void setDefaultSettings();
 
-    void applySettings( bool isInit );
+    void saveSettings();
+    void saveColorMapBarSettings();
+    void saveOrientationAxisSettings();
+    void saveBackGroundColorSettings();
+    void saveResolutionSettings();
+    void saveLabelsSettings();
+    void saveFontSettings();
+    void saveShadingSettings();
 
+    void applySettings( bool isInit );
     void applyColorMapBarSettings();
     void applyOrientationAxisSettings();
     void applyBackGroundColor();
     void applyResolution();
     void applyLabelsSettings();
+    void applyFontSettings();
 
     void setBackGroundColor( const QColor& color );
-    void setLabelsColor( const QColor& color );
-
-    void saveSettings();
+    void setFontColor( const QColor& color );
 
 private slots:
     void onBackGroundColorDoubleClicked();
