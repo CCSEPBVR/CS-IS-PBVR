@@ -7,13 +7,23 @@
     <x>0</x>
     <y>0</y>
     <width>267</width>
-    <height>683</height>
+    <height>824</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Preference</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="8" column="2">
+    <widget class="QPushButton" name="okPBtn">
+     <property name="text">
+      <string>OK</string>
+     </property>
+     <property name="default">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
    <item row="2" column="0" colspan="3">
     <widget class="QGroupBox" name="backGroundColorGBox">
      <property name="title">
@@ -34,7 +44,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="ClickableLabel" name="selectedColorCLbl">
+       <widget class="ClickableLabel" name="selectedBackGroundColorCLbl">
         <property name="frameShape">
          <enum>QFrame::Box</enum>
         </property>
@@ -47,26 +57,6 @@
        </widget>
       </item>
      </layout>
-    </widget>
-   </item>
-   <item row="6" column="2">
-    <widget class="QPushButton" name="okPBtn">
-     <property name="text">
-      <string>OK</string>
-     </property>
-     <property name="default">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QPushButton" name="applyPBtn">
-     <property name="text">
-      <string>Apply</string>
-     </property>
-     <property name="autoDefault">
-      <bool>false</bool>
-     </property>
     </widget>
    </item>
    <item row="1" column="0" colspan="3">
@@ -204,7 +194,56 @@
      </layout>
     </widget>
    </item>
-   <item row="6" column="1">
+   <item row="5" column="0" colspan="3">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Labels</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_7">
+      <item row="1" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="showTimeStepLbl">
+        <property name="text">
+         <string>Show TimeStep :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="showFPSLbl">
+        <property name="text">
+         <string>Show FPS :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="labelsColorLbl">
+        <property name="text">
+         <string>Color :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="ClickableLabel" name="selectedLabelsColorCLbl">
+        <property name="frameShape">
+         <enum>QFrame::Box</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="showFPSCBox"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="showTimeStepCBox"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="8" column="1">
     <widget class="QPushButton" name="cancelPBtn">
      <property name="text">
       <string>Cancel</string>
@@ -214,7 +253,17 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="0" colspan="3">
+   <item row="8" column="0">
+    <widget class="QPushButton" name="applyPBtn">
+     <property name="text">
+      <string>Apply</string>
+     </property>
+     <property name="autoDefault">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0" colspan="3">
     <widget class="QGroupBox" name="shadingGBox">
      <property name="title">
       <string>Shading</string>

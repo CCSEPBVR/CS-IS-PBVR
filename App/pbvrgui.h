@@ -5,6 +5,7 @@
 #include <kvs/StochasticRenderingCompositor>
 #include <kvs/ColorMapBar>
 #include <kvs/OrientationAxis>
+#include <kvs/Label>
 #include <QMainWindow>
 
 #include "Widgets/Preference.h"
@@ -30,9 +31,11 @@ public:
 private:
     Ui::PBVRGUI *ui;
     kvs::qt::jaea::Screen* m_screen;
-    kvs::StochasticRenderingCompositor* compositor;
+    kvs::StochasticRenderingCompositor* m_compositor;
     kvs::ColorMapBar* m_color_map_bar;
     kvs::OrientationAxis* m_orientation_axis;
+    kvs::Label* m_fps_label;
+    kvs::Label* m_time_step_label;
 
     Preference      m_preference;
     Merge           m_merge;

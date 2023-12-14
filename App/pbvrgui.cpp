@@ -34,8 +34,11 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     connect( ui->actionConnectToServer, &QAction::triggered, this, &PBVRGUI::onConnect );
 
     m_preference.setScreen( m_screen );
+    m_preference.setCompositor( m_compositor );
     m_preference.setColorMapBar( m_color_map_bar );
     m_preference.setOrientationAxis( m_orientation_axis );
+    m_preference.setFPSLabel( m_fps_label );
+    m_preference.setTimeStepLabel( m_time_step_label );
     m_preference.initialize();
 
     QWidgetAction *widgetAction = new QWidgetAction( this );
@@ -65,12 +68,14 @@ void PBVRGUI::initialize()
     const size_t repetitions = 4;
 
     // ストキャスティック レンダリング コンポジタのセットアップ
-    compositor = new kvs::StochasticRenderingCompositor(m_screen->scene());
-    compositor->setRepetitionLevel(repetitions);
-    m_screen->setEvent(compositor);
+    m_compositor = new kvs::StochasticRenderingCompositor(m_screen->scene());
+    m_compositor->setRepetitionLevel(repetitions);
+    m_screen->setEvent(m_compositor);
 
     m_color_map_bar = new kvs::ColorMapBar( m_screen );
     m_orientation_axis = new kvs::OrientationAxis( m_screen, m_screen->scene() );
+    m_fps_label = new kvs::Label( m_screen );
+    m_time_step_label = new kvs::Label( m_screen );
 
     // QGridLayout に kvs::qt::Screen を追加
     ui->screenArea->addWidget(m_screen, 0, 0, 1, 1);//コンストラクタの最後にすると表示に差異が生じる、要相談
