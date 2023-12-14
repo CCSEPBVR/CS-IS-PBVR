@@ -42,8 +42,6 @@ Preference::~Preference()
     delete ui;
 }
 
-
-
 void Preference::initialize()
 {
     //config.iniが存在する場合は設定の読み込みを行う。
@@ -188,6 +186,7 @@ void Preference::loadLabelsSettings()
     setLabelsColor( color );
     m_settings.endGroup();
 }
+
 void Preference::loadShadingSettings()
 {
     m_settings.beginGroup( "Shading" );
