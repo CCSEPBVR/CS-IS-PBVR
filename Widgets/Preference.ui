@@ -302,13 +302,6 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="sLbl">
-        <property name="text">
-         <string>s :</string>
-        </property>
-       </widget>
-      </item>
       <item row="4" column="1" colspan="2">
        <widget class="QDoubleSpinBox" name="ksDSBox">
         <property name="singleStep">
@@ -329,21 +322,21 @@
       <item row="2" column="0" alignment="Qt::AlignRight">
        <widget class="QLabel" name="kaLbl">
         <property name="text">
-         <string>ka :</string>
+         <string>Ambient :</string>
         </property>
        </widget>
       </item>
       <item row="4" column="0" alignment="Qt::AlignRight">
        <widget class="QLabel" name="ksLbl">
         <property name="text">
-         <string>ks :</string>
+         <string>Specular :</string>
         </property>
        </widget>
       </item>
       <item row="3" column="0" alignment="Qt::AlignRight">
        <widget class="QLabel" name="kdLbl">
         <property name="text">
-         <string>kd :</string>
+         <string>Diffuse :</string>
         </property>
        </widget>
       </item>
@@ -368,6 +361,13 @@
        <widget class="Line" name="line">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="sLbl">
+        <property name="text">
+         <string>Shininess :</string>
         </property>
        </widget>
       </item>
