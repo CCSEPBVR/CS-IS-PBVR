@@ -24,11 +24,11 @@ Preference::Preference(QWidget *parent) :
     ui->boxTypeCBox->addItem( "SolidBox", SolidBox );
     ui->boxTypeCBox->addItem( "NoneBox", NoneBox );
 
-    ui->showFPSCBox->addItem( "Show", Show );
-    ui->showFPSCBox->addItem( "Hide", Hide );
+    ui->showFPSCBox->addItem( "Show", QVariant( true ) );
+    ui->showFPSCBox->addItem( "Hide", QVariant( false ) );
 
-    ui->showTimeStepCBox->addItem( "Show", Show );
-    ui->showTimeStepCBox->addItem( "Hide", Hide );
+    ui->showTimeStepCBox->addItem( "Show", QVariant( true ) );
+    ui->showTimeStepCBox->addItem( "Hide", QVariant( false ) );
 
     connect( ui->selectedBackGroundColorCLbl, &ClickableLabel::doubleClicked, this, &Preference::onBackGroundColorDoubleClicked );
     connect( ui->selectedLabelsColorCLbl, &ClickableLabel::doubleClicked, this, &Preference::onLabelsColorDoubleClicked );
@@ -41,6 +41,8 @@ Preference::~Preference()
 {
     delete ui;
 }
+
+
 
 void Preference::initialize()
 {
@@ -150,8 +152,9 @@ void Preference::loadResolutionSettings()
     m_settings.beginGroup( "Resolution" );
     const int width = m_settings.value( "width" ).toInt();
     const int height = m_settings.value( "height" ).toInt();
-    ui->heightSBox->setValue( width );
-    ui->widthSBox->setValue( height );
+    ui->widthSBox->setValue( width );
+    ui->heightSBox->setValue( height );
+
     m_settings.endGroup();
 }
 
@@ -160,24 +163,26 @@ void Preference::loadLabelsSettings()
     m_settings.beginGroup( "Labels" );
     const bool fpsIsShowing = m_settings.value( "fpsIsShowing" ).toBool();
     const bool timeStepIsShowing = m_settings.value( "timeStepIsShowing" ).toBool();
+    qInfo() << fpsIsShowing;
+    qInfo() << timeStepIsShowing;
     QColor color( m_settings.value( "R" ).toInt(),m_settings.value( "G" ).toInt(),m_settings.value( "B" ).toInt() );
 
     if( fpsIsShowing )
     {
-        ui->showFPSCBox->setCurrentIndex( Show );
+        ui->showFPSCBox->setCurrentText( "Show" );
     }
     else
     {
-        ui->showFPSCBox->setCurrentIndex( Hide );
+        ui->showFPSCBox->setCurrentText( "Hide" );
     }
 
     if( timeStepIsShowing )
     {
-        ui->showTimeStepCBox->setCurrentIndex( Show );
+        ui->showTimeStepCBox->setCurrentText( "Show" );
     }
     else
     {
-        ui->showTimeStepCBox->setCurrentIndex( Hide );
+        ui->showTimeStepCBox->setCurrentText( "Hide" );
     }
 
     setLabelsColor( color );
@@ -219,6 +224,7 @@ void Preference::loadShadingSettings()
     ui->kdDSBox->setValue( kd );
     ui->ksDSBox->setValue( ks );
     ui->sDSBox->setValue( s );
+    m_settings.endGroup();
 }
 
 void Preference::setBackGroundColor( const QColor& color )
@@ -260,8 +266,9 @@ void Preference::setDefaultSettings()
     ui->widthSBox->setValue( 620 );
     ui->heightSBox->setValue( 620 );
     //Labels
-    ui->showFPSCBox->setCurrentIndex( Hide );
-    ui->showTimeStepCBox->setCurrentIndex( Hide );
+    ui->showFPSCBox->setCurrentText( "Hide" );
+    ui->showTimeStepCBox->setCurrentText( "Hide" );
+
     setLabelsColor( QColor( 0, 0, 0 ) );
     //Shading
     ui->shadingGBox->setChecked( false );
@@ -293,8 +300,8 @@ void Preference::saveSettings()
     m_settings.endGroup();
 
     m_settings.beginGroup( "Labels" );
-    m_settings.setValue( "fpsIsShowing", ui->showFPSCBox->currentText() );
-    m_settings.setValue( "timeStepIsShowing", ui->showTimeStepCBox->currentText() );
+    m_settings.setValue( "fpsIsShowing", ui->showFPSCBox->currentData().toBool() );
+    m_settings.setValue( "timeStepIsShowing", ui->showTimeStepCBox->currentData().toBool() );
     m_settings.setValue( "R", ui->selectedLabelsColorCLbl->palette().color(QPalette::Window).red() );
     m_settings.setValue( "G", ui->selectedLabelsColorCLbl->palette().color(QPalette::Window).green() );
     m_settings.setValue( "B", ui->selectedLabelsColorCLbl->palette().color(QPalette::Window).blue() );
@@ -434,8 +441,8 @@ void Preference::applyResolution()
 
 void Preference::applyLabelsSettings()
 {
-    const bool fpsIsShowing = static_cast<LabelsVisible>(ui->showFPSCBox->currentIndex());
-    const bool timeStepIsShowing = static_cast<LabelsVisible>(ui->showTimeStepCBox->currentIndex());
+    const bool fpsIsShowing = ui->showFPSCBox->currentData().toBool();
+    const bool timeStepIsShowing = ui->showTimeStepCBox->currentData().toBool();
 
     const kvs::RGBColor labelsColor(
         ui->selectedLabelsColorCLbl->palette().color(QPalette::Window).red(),

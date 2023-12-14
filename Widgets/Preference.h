@@ -42,13 +42,6 @@ public:
         NoneBox
     };
 
-    //for Labels
-    enum LabelsVisible
-    {
-        Show,
-        Hide
-    };
-
 public:
     explicit Preference( QWidget *parent = nullptr );
     ~Preference();
