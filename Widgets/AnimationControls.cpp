@@ -9,6 +9,8 @@ AnimationControls::AnimationControls(QWidget *parent) :
     ui->setupUi(this);
     m_interpolation_counter = 0;
     m_xform_index = 0;
+    m_animationTimer = new QTimer(this);
+
 }
 
 AnimationControls::~AnimationControls()
@@ -81,9 +83,10 @@ void AnimationControls::playKeyFrame()
 
             // アニメーション速度を調整するための遅延を追加（オプション）
             QCoreApplication::processEvents();
-            QThread::msleep(10);  // 適宜遅延を調整
+            m_animationTimer->start(10);
         }
     }
+    m_animationTimer->stop();
 }
 
 void AnimationControls::loadKeyFrameFile()
