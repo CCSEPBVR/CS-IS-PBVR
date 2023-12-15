@@ -17,9 +17,9 @@ class Screen : public kvs::qt::Screen
 public:
     Screen( kvs::qt::Application* application = 0, QWidget* parent = 0 );
 
-    virtual void mouseReleaseEvent( kvs::MouseEvent* event ){ Q_UNUSED( event ); }
-    virtual void wheelEvent( kvs::WheelEvent* event ){ Q_UNUSED( event ); }
-    virtual void keyPressEvent( kvs::KeyEvent* event );
+    virtual void mouseReleaseEvent( kvs::MouseEvent* event )  override { Q_UNUSED( event ); }
+    virtual void wheelEvent( kvs::WheelEvent* event ) override { Q_UNUSED( event ); }
+    virtual void keyPressEvent( kvs::KeyEvent* event ) override { Q_UNUSED( event ); };
 };
 
 } // end of namespace jaea
