@@ -221,7 +221,7 @@ int jpv::ParticleTransferClient::recvMessage( ParticleTransferServerMessage* mes
     size_t host_particle_limit; //HOST_PARTICLE_LIMIT
 
     // tantantan
-    //MOVED TO 236)T.Osaki 2020.03.05
+    //MOVED TO 236)T0603 2020.03.05
     //fprintf( stdout, "message->m_time_step : %d\n",  message->m_time_step );
 //    fprintf( stdout, "transferType : %c\n", transferType );
 
@@ -276,7 +276,7 @@ int jpv::ParticleTransferClient::recvMessage( ParticleTransferServerMessage* mes
     delete[] buf;
 
     message->unpack_message( ss.str().c_str() );
-    //MOVED FROM 181)T.Osaki 2020.03.05
+    //MOVED FROM 181)T0603 2020.03.05
     fprintf( stdout, "message->m_time_step : %d\n",  message->m_time_step );
     std::cout << "Receive Particle Size = " << message->m_number_particle << std::endl;
 //  }

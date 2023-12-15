@@ -111,7 +111,7 @@ kvs::Xform AnimationControls::InterpolateXform( const int interp_step, const int
     kvs::Vector3f scaling_1( end.scaling() );
 
     //KVS2.7.0
-    //MOD BY)T.Osaki 2020.06.04
+    //MOD BY)T0603 2020.06.04
     //kvs::Quaternion<float> q_0 = RtoQ( rotation_0 );
     //kvs::Quaternion<float> q_1 = RtoQ( rotation_1 );
     //kvs::Quaternion<float> q =
@@ -195,7 +195,7 @@ kvs::Quaternion AnimationControls::RtoQ( const kvs::Matrix33f& R )
     q3 /= r;
 
     //KVS2.7.0
-    //MOD BY)T.Osaki 2020.06.04
+    //MOD BY)T0603 2020.06.04
     //return kvs::Quaternion<float>( q1, q2, q3, q0 );
     return kvs::Quaternion( q1, q2, q3, q0 );
 }

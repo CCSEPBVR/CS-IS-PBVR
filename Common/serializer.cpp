@@ -75,7 +75,7 @@ size_t Serializer::pack<kvs::Camera>( char* buf, const kvs::Camera& object )
     for ( int i = 0; i < 9; ++i )
     {
         //KVS2.7.0
-        //MOD BY)T.Osaki 2020.05.28
+        //MOD BY)T0603 2020.05.28
         //r[i] = object.rotation()[i / 3][i % 3];
         r[i] = object.xform().rotation()[i / 3][i % 3];
     }
@@ -83,7 +83,7 @@ size_t Serializer::pack<kvs::Camera>( char* buf, const kvs::Camera& object )
     for ( int i = 0; i < 3; ++i )
     {
         //KVS2.7.0
-        //MOD BY)T.Osaki 2020.05.28
+        //MOD BY)T0603 2020.05.28
         //t[i] = object.translation()[i];
         t[i] = object.xform().translation()[i];
     }
@@ -91,7 +91,7 @@ size_t Serializer::pack<kvs::Camera>( char* buf, const kvs::Camera& object )
     for ( int i = 0; i < 3; ++i )
     {
         //KVS2.7.0
-        //MOD BY)T.Osaki 2020.05.28
+        //MOD BY)T0603 2020.05.28
         //s[i] = object.scaling()[i];
         s[i] = object.xform().scaling()[i];
     }
@@ -136,7 +136,7 @@ size_t Serializer::unpack<kvs::Camera>( const char* buf, kvs::Camera* object )
     kvs::Vector3f translation( t );
     kvs::Vector3f scaling( s );
     //KVS2.7.0
-    //MOD BY)T.Osaki 2020.05.28
+    //MOD BY)T0603 2020.05.28
     //object->set( translation, scaling, rotation );
     object->setXform( kvs::Xform( translation, scaling, rotation ) );
     kvs::Camera::ProjectionType pType;
