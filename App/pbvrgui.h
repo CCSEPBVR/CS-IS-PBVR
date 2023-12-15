@@ -50,7 +50,7 @@ private:
     void onMerge()           { m_merge.show(); }
     void onVolumeTransform() { m_volumeTransform.show(); }
     void onConnect()         { m_connect.show(); }
-    void keyPressEvent( kvs::KeyEvent* event );
+    void keyPressEvent( QKeyEvent *event );
 };
 
 #endif // PBVRGUI_H

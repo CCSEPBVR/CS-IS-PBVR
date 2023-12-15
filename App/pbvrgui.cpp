@@ -59,6 +59,13 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_volumeTransform.show();
     m_volumeTransform.setScreen( m_screen );
 
+    m_animation_controls.close();
+    m_animation_controls.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    addDockWidget(Qt::RightDockWidgetArea, &m_animation_controls);
+    m_animation_controls.show();
+    m_animation_controls.setScreen( m_screen );
+
+    setFocusPolicy(Qt::StrongFocus);
 }
 
 PBVRGUI::~PBVRGUI()
@@ -82,4 +89,61 @@ void PBVRGUI::initialize()
 
     // QGridLayout に kvs::qt::jaea::Screen を追加
     ui->screenArea->addWidget(m_screen, 0, 0, 1, 1);//コンストラクタの最後にすると表示に差異が生じる、要相談
+}
+
+void PBVRGUI::keyPressEvent(QKeyEvent *event)
+{
+    if( !m_screen->scene() ) { return; }
+
+    //シフトキーが押されている場合(大文字)
+    if( event->modifiers() == Qt::ShiftModifier )
+    {
+        switch( event->key() )
+        {
+            //for AnimationControls
+        case Qt::Key_D:
+            m_animation_controls.clearKeyFrame();
+            break;
+        case Qt::Key_M:
+            m_animation_controls.playKeyFrame();
+            break;
+        case Qt::Key_L:
+            m_animation_controls.loadKeyFrameFile();
+            break;
+        case Qt::Key_S:
+            m_animation_controls.saveKeyFrameFile();
+            break;
+
+        default:
+            break;
+        }
+    }
+    //シフトキーが押されていない場合(小文字)
+    else
+    {
+        switch( event->key() )
+        {
+        case Qt::Key_L:
+            m_screen->setControlTarget( kvs::qt::jaea::Screen::ControlTarget::TargetLight );
+            break;
+        case Qt::Key_O:
+            m_screen->setControlTarget( kvs::qt::jaea::Screen::ControlTarget::TargetObject );
+            break;
+        case Qt::Key_Home:
+            m_screen->scene()->reset();
+            m_screen->update();
+            break;
+
+            //for AnimationControls
+        case Qt::Key_X:
+            m_animation_controls.addKeyFrameAdd( m_screen->scene()->objectManager()->xform() );
+            break;
+        case Qt::Key_D:
+            m_animation_controls.removeLasrKeyFrame();
+            break;
+
+        default:
+            break;
+        }
+    }
 }
