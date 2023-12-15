@@ -20,7 +20,8 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_preference( this ),
     m_merge( this ),
     m_volumeTransform( this ),
-    m_connect( this )
+    m_connect( this ),
+    m_animation_controls( this )
 {
     ui->setupUi(this);
     setWindowTitle( "QTPBVR vX.X.X" );
@@ -57,6 +58,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     addDockWidget(Qt::LeftDockWidgetArea, &m_volumeTransform);
     m_volumeTransform.show();
     m_volumeTransform.setScreen( m_screen );
+
 }
 
 PBVRGUI::~PBVRGUI()

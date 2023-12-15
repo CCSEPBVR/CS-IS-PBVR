@@ -13,6 +13,7 @@
 #include "Widgets/VolumeTransform.h"
 #include "Widgets/Connect.h"
 #include "Widgets/TimeControl.h"
+#include "Widgets/AnimationControls.h"
 
 namespace Ui {
 class PBVRGUI;
@@ -42,12 +43,14 @@ private:
     VolumeTransform m_volumeTransform;
     Connect         m_connect;
     TimeControl     m_timeControl;
+    AnimationControls m_animation_controls;
 
 private:
     void onPreference()      { m_preference.show(); }
     void onMerge()           { m_merge.show(); }
     void onVolumeTransform() { m_volumeTransform.show(); }
     void onConnect()         { m_connect.show(); }
+    void keyPressEvent( kvs::KeyEvent* event );
 };
 
 #endif // PBVRGUI_H
