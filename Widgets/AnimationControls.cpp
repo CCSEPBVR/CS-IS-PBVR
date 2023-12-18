@@ -1,6 +1,7 @@
 #include "AnimationControls.h"
 #include "ui_AnimationControls.h"
 #include <kvs/ObjectManager>
+#include <QFileDialog>
 
 AnimationControls::AnimationControls(QWidget *parent) :
     QDockWidget(parent),
@@ -12,6 +13,11 @@ AnimationControls::AnimationControls(QWidget *parent) :
     m_animationTimer = new QTimer(this);
     m_animation_paused = false;
 
+    ui->captureCBox->addItem( "On", QVariant( true ) );
+    ui->captureCBox->addItem( "Off", QVariant( false ) );
+    ui->captureCBox->setCurrentIndex( 1 );
+
+    connect( ui->interpolationSBox, &QSpinBox::valueChanged, this, &AnimationControls::onInterpolationValueChanged);
 }
 
 AnimationControls::~AnimationControls()
@@ -19,42 +25,37 @@ AnimationControls::~AnimationControls()
     delete ui;
 }
 
-void AnimationControls::InitializeKeyFrame()
-{
-
-}
-
 void AnimationControls::addKeyFrameAdd( kvs::Xform xform )
 {
-//    qInfo() << __func__;
     m_xforms.push_back( xform );
-//    qInfo() << m_xforms.size();
+
     ui->totalKeyFramesValueLbl->setText( QString::number( m_xforms.size() ) );
     if( m_xforms.size() < 2 == false)
     {
-        ui->totalAnimationFramesValueLbl->setText( QString::number( (m_xforms.size() -1) * ui->interpolationSBox->value() ));
+        ui->totalAnimationFramesValueLbl->setText( QString::number( ( m_xforms.size() - 1 ) * ( ui->interpolationSBox->value() + 1 ) ) );
     }
 }
 
 void AnimationControls::removeLasrKeyFrame()
 {
-    qInfo() << __func__;
-    if( m_xforms.size() > 1 )
+    if( m_xforms.size() >= 1 )
     {
         m_xforms.pop_back();
     }
-    qInfo() << m_xforms.size();
+
     ui->totalKeyFramesValueLbl->setText( QString::number( m_xforms.size() ) );
     if( m_xforms.size() < 2 == false)
     {
-        ui->totalAnimationFramesValueLbl->setText( QString::number( (m_xforms.size() -1) * ui->interpolationSBox->value() ));
+        ui->totalAnimationFramesValueLbl->setText( QString::number( ( m_xforms.size() - 1 ) * ( ui->interpolationSBox->value() + 1 ) ) );
     }
-
+    else
+    {
+        ui->totalAnimationFramesValueLbl->setText("0");
+    }
 }
 
 void AnimationControls::clearKeyFrame()
 {
-    qInfo() << __func__;
     m_xforms.clear();
     ui->totalKeyFramesValueLbl->setText( QString::number( m_xforms.size() ) );
 
@@ -63,9 +64,6 @@ void AnimationControls::clearKeyFrame()
 
 void AnimationControls::playKeyFrame()
 {
-    // 関数の開始をログに出力
-    qInfo() << __func__;
-
     // キーフレームの数を取得
     const int num_frames = m_xforms.size();
 
@@ -89,6 +87,8 @@ void AnimationControls::playKeyFrame()
         }
     }
 
+    int loop_counter = 0;
+
     // 各キーフレーム間で補間を行う
     for (int i = 0; i < num_frames - 1; i++)
     {
@@ -106,17 +106,22 @@ void AnimationControls::playKeyFrame()
 
             // 画面を更新
             m_screen->update();
+            if( ui->captureCBox->currentData().toBool() == true )
+            {
+                screenShot( loop_counter );
+            }
+            loop_counter++;
 
             // アニメーション速度を調整するための遅延を追加（オプション）
             QCoreApplication::processEvents();
-            m_animationTimer->start(10);
+            m_animationTimer->start(1000);
 
             // アニメーションが一時停止されている場合はここでループを抜ける
             if (m_animation_paused)
             {
                 return;
             }
-            qInfo() << step;
+
         }
     }
 
@@ -124,15 +129,100 @@ void AnimationControls::playKeyFrame()
     m_animationTimer->stop();
 }
 
+
 void AnimationControls::loadKeyFrameFile()
 {
-    qInfo() << __func__;
+    clearKeyFrame();
+
+    QString file_name = QFileDialog::getOpenFileName(this, "Load Keyframes", QDir::currentPath(), "Binary Files (*.bin)");
+    if (file_name.isEmpty())
+        return;
+
+    QFile file(file_name);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        qWarning() << "Could not open file for reading.";
+        return;
+    }
+
+    QDataStream in(&file);
+    while (!in.atEnd())
+    {
+        float translation_x, translation_y, translation_z;
+        float scaling_x, scaling_y, scaling_z;
+        float rotation_0, rotation_1, rotation_2,
+            rotation_3, rotation_4, rotation_5,
+            rotation_6, rotation_7, rotation_8;
+
+        in >> translation_x >> translation_y >> translation_z
+            >> scaling_x >> scaling_y >> scaling_z
+            >> rotation_0 >> rotation_1 >> rotation_2
+            >> rotation_3 >> rotation_4 >> rotation_5
+            >> rotation_6 >> rotation_7 >> rotation_8;
+
+        kvs::Xform xform(
+            kvs::Vec3(translation_x, translation_y, translation_z),
+            kvs::Vec3(scaling_x, scaling_y, scaling_z),
+            kvs::Mat3(
+                rotation_0, rotation_1, rotation_2,
+                rotation_3, rotation_4, rotation_5,
+                rotation_6, rotation_7, rotation_8));
+
+        addKeyFrameAdd(xform);
+    }
+
+    file.close();
 }
+
 
 void AnimationControls::saveKeyFrameFile()
 {
-    qInfo() << __func__;
+    QString file_name = QFileDialog::getSaveFileName(this, "Save Keyframes", QDir::currentPath(), "Binary Files (*.bin)");
+    if (file_name.isEmpty())
+        return;
+
+    QFile file(file_name);
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        qWarning() << "Could not open file for writing.";
+        return;
+    }
+
+    QDataStream out(&file);
+    for (const kvs::Xform& xform : m_xforms)
+    {
+        out << xform.translation().x()
+            << xform.translation().y()
+            << xform.translation().z()
+            << xform.scaling().x()
+            << xform.scaling().y()
+            << xform.scaling().z()
+            << xform.rotation()[0].x()
+            << xform.rotation()[0].y()
+            << xform.rotation()[0].z()
+            << xform.rotation()[1].x()
+            << xform.rotation()[1].y()
+            << xform.rotation()[1].z()
+            << xform.rotation()[2].x()
+            << xform.rotation()[2].y()
+            << xform.rotation()[2].z();
+    }
+
+    file.close();
 }
+
+void AnimationControls::screenShot(int loop_counter)
+{
+    QString frame_number = QString::asprintf("%06d", loop_counter + 1);
+    QString file_name = ui->imageFileLEdit->text();
+
+    QImage image = m_screen->grabFramebuffer();
+
+    // ファイル名を作成して保存
+    QString full_file_name = file_name + "_" + frame_number + ".bmp";
+    image.save(full_file_name);
+}
+
 
 kvs::Xform AnimationControls::InterpolateXform( const int interp_step, const int num_frame, const kvs::Xform& start, const kvs::Xform& end )
 {
@@ -246,4 +336,12 @@ float AnimationControls::Sign( const float x )
 float AnimationControls::Norm( const float a, const float b, const float c, const float d )
 {
     return sqrt( a * a + b * b + c * c + d * d );
+}
+
+void AnimationControls::onInterpolationValueChanged()
+{
+    if( m_xforms.size() < 2 == false)
+    {
+        ui->totalAnimationFramesValueLbl->setText( QString::number( ( m_xforms.size() - 1 ) * ( ui->interpolationSBox->value() + 1 ) ) );
+    }
 }

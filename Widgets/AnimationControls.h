@@ -18,14 +18,14 @@ public:
     explicit AnimationControls(QWidget *parent = nullptr);
     ~AnimationControls();
 
-    void setScreen( kvs::qt::jaea::Screen* screen ) { m_screen = screen; }
-    void InitializeKeyFrame();
+    void setScreen( kvs::qt::jaea::Screen* screen ) { m_screen = screen; }    
     void addKeyFrameAdd( kvs::Xform xform ); //x
     void removeLasrKeyFrame();               //d
     void clearKeyFrame();                    //D
     void playKeyFrame();                     //M
     void loadKeyFrameFile();                 //L
     void saveKeyFrameFile();                 //S
+    void screenShot( int loop_counter );
 
 private:
     Ui::AnimationControls *ui;
@@ -41,6 +41,8 @@ private:
     kvs::Quaternion RtoQ( const kvs::Matrix33f& R );
     float Sign( const float x );
     float Norm( const float a, const float b, const float c, const float d );
+
+    void onInterpolationValueChanged();
 };
 
 #endif // ANIMATIONCONTROLS_H
