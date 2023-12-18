@@ -30,6 +30,7 @@ public:
 private:
     Ui::AnimationControls *ui;
     QTimer* m_animationTimer;
+    bool m_animation_paused;
     kvs::qt::jaea::Screen* m_screen;
     QVector<kvs::Xform> m_xforms;
     int m_xform_index = 0;

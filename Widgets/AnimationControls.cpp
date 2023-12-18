@@ -10,6 +10,7 @@ AnimationControls::AnimationControls(QWidget *parent) :
     m_interpolation_counter = 0;
     m_xform_index = 0;
     m_animationTimer = new QTimer(this);
+    m_animation_paused = false;
 
 }
 
@@ -25,9 +26,14 @@ void AnimationControls::InitializeKeyFrame()
 
 void AnimationControls::addKeyFrameAdd( kvs::Xform xform )
 {
-    qInfo() << __func__;
+//    qInfo() << __func__;
     m_xforms.push_back( xform );
-    qInfo() << m_xforms.size();
+//    qInfo() << m_xforms.size();
+    ui->totalKeyFramesValueLbl->setText( QString::number( m_xforms.size() ) );
+    if( m_xforms.size() < 2 == false)
+    {
+        ui->totalAnimationFramesValueLbl->setText( QString::number( (m_xforms.size() -1) * ui->interpolationSBox->value() ));
+    }
 }
 
 void AnimationControls::removeLasrKeyFrame()
@@ -38,12 +44,21 @@ void AnimationControls::removeLasrKeyFrame()
         m_xforms.pop_back();
     }
     qInfo() << m_xforms.size();
+    ui->totalKeyFramesValueLbl->setText( QString::number( m_xforms.size() ) );
+    if( m_xforms.size() < 2 == false)
+    {
+        ui->totalAnimationFramesValueLbl->setText( QString::number( (m_xforms.size() -1) * ui->interpolationSBox->value() ));
+    }
+
 }
 
 void AnimationControls::clearKeyFrame()
 {
     qInfo() << __func__;
     m_xforms.clear();
+    ui->totalKeyFramesValueLbl->setText( QString::number( m_xforms.size() ) );
+
+    ui->totalAnimationFramesValueLbl->setText("0");
 }
 
 void AnimationControls::playKeyFrame()
@@ -61,6 +76,17 @@ void AnimationControls::playKeyFrame()
     if (num_frames < 2) {
         qWarning() << "Insufficient keyframes for animation.";
         return;
+    }
+
+    // アニメーションが既に再生中であれば一時停止フラグをトグルし、タイマーを停止する
+    if (m_animationTimer->isActive())
+    {
+        m_animation_paused = !m_animation_paused;
+        if (m_animation_paused)
+        {
+            m_animationTimer->stop();
+            return;
+        }
     }
 
     // 各キーフレーム間で補間を行う
@@ -84,8 +110,17 @@ void AnimationControls::playKeyFrame()
             // アニメーション速度を調整するための遅延を追加（オプション）
             QCoreApplication::processEvents();
             m_animationTimer->start(10);
+
+            // アニメーションが一時停止されている場合はここでループを抜ける
+            if (m_animation_paused)
+            {
+                return;
+            }
+            qInfo() << step;
         }
     }
+
+    // アニメーションが終了した場合はタイマーを停止
     m_animationTimer->stop();
 }
 
