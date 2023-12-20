@@ -79,7 +79,7 @@ void Connect::connect1()
     int init = client.initClient();
     strncpy( message.m_header, "JPTP /1.0\r\n", 11 );
     message.m_initialize_parameter = -3;
-//    message.m_input_directory = "/Users/t0603/Work/PBVR/SampleData/ucd/out/spx.pfi";
+    //    message.m_input_directory = "/Users/t0603/Work/PBVR/SampleData/ucd/out/spx.pfi";
     message.m_input_directory = ui->volumeDataFilePathLEdit->text().toStdString();
     message.m_message_size = message.byteSize();
     client.sendMessage( message );
@@ -112,7 +112,7 @@ kvs::PointObject* Connect::connect2()
     if( ui->metropolisRBtn->isChecked() == true ) { message.m_sampling_method = 'm'; }
     if( ui->rejectionRBtn->isChecked() == true ) { message.m_sampling_method = 'r'; }
     message.m_subpixel_level = 2;
-    message.m_repeat_level = 4;
+    message.m_repeat_level = 16;
     message.m_shuffle_method = 'r';
     message.m_time_parameter = 2;
     message.m_trans_Parameter = 2;
@@ -121,6 +121,7 @@ kvs::PointObject* Connect::connect2()
     message.m_particle_density = 1;
     message.particle_data_size_limit = 20;
     message.m_camera = m_camera;//足りないかも
+    message.m_step = 2;
     message.m_message_size = message.byteSize();
     message.m_sampling_step = 1.0f;
     message.m_x_synthesis = "";
@@ -130,10 +131,13 @@ kvs::PointObject* Connect::connect2()
 
     //paramExTransFunc.applyToClientMessage( &message ); //↓
 
-    float min = -0.0791849;
-    float max = 0.074513;
-//    float min = 0.2;
-//    float max = 1;
+    //gt5d
+//    float min = -0.0791849;
+//    float max = 0.074513;
+
+    //spx
+        float min = 0.2;
+        float max = 1;
 
     message.m_transfer_function.clear();
     message.m_volume_equation.clear();
@@ -407,12 +411,31 @@ kvs::PointObject* Connect::connect2()
     }
     kvs::PointObject* pointObject = object;
 
+    kvs::Vector3f serverSideMinObjectCoords;
+    kvs::Vector3f serverSideMaxObjectCoords;
+    serverSideMinObjectCoords[0] = reply.m_min_object_coord[0];
+    serverSideMinObjectCoords[1] = reply.m_min_object_coord[1];
+    serverSideMinObjectCoords[2] = reply.m_min_object_coord[2];
+    serverSideMaxObjectCoords[0] = reply.m_max_object_coord[0];
+    serverSideMaxObjectCoords[1] = reply.m_max_object_coord[1];
+    serverSideMaxObjectCoords[2] = reply.m_max_object_coord[2];
+    pointObject->setMinMaxObjectCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );
+    pointObject->setMinMaxExternalCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );
+
+    std::cout << serverSideMinObjectCoords[0] << std::endl;
+    std::cout << serverSideMinObjectCoords[1] << std::endl;
+    std::cout << serverSideMinObjectCoords[2] << std::endl;
+    std::cout << serverSideMaxObjectCoords[0] << std::endl;
+    std::cout << serverSideMaxObjectCoords[1] << std::endl;
+    std::cout << serverSideMaxObjectCoords[2] << std::endl;
+
     message.m_initialize_parameter = -1;
     message.m_message_size = message.byteSize();
     client.sendMessage( message );
     client.recvMessage( &reply );
     client.termClient();
-    pointObject->updateMinMaxCoords();
+//    pointObject->updateMinMaxCoords();
+
 
     return pointObject;
 
@@ -423,6 +446,20 @@ void Connect::onConnectButtonClicked()
     connect1();
 
     kvs::glsl::ParticleBasedRenderer* renderer = new kvs::glsl::ParticleBasedRenderer();
-    renderer->setRepetitionLevel( 2 );
-    m_screen->registerObject( connect2(), renderer );
+    renderer->setRepetitionLevel( 16 );
+    renderer->enableShuffle();
+    kvs::PointObject* object = connect2();
+
+    //gt5d server side min max coords
+//    kvs::Vector3f min(-179.542,-109.5,0);
+//    kvs::Vector3f max(388.83,109.5,388.83);
+
+    //spx server side min max coords
+//    kvs::Vector3f min(4.06067,0,-8.67);
+//    kvs::Vector3f max(10,6.94658,0.725);
+
+//    object->setMinMaxObjectCoords(min,max);
+//    object->setMinMaxExternalCoords(min,max);
+
+    m_screen->registerObject( object, renderer );
 }
