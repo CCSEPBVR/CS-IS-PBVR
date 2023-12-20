@@ -10,7 +10,6 @@
 #include <kvs/FontMetrics>
 #include <QWidgetAction>
 #include <kvs/PolygonImporter>
-
 //デバック用(将来的にデバッグ用マクロ定義ファイルに移行する。
 #define STOCHASTIC_RENDERING_WITH_HYDROGEN
 
@@ -65,6 +64,9 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_animation_controls.show();
     m_animation_controls.setScreen( m_screen );
 
+    m_connect.setScreen( m_screen );
+    m_connect.setCamera( m_screen->scene()->camera() );
+
     setFocusPolicy(Qt::StrongFocus);
 }
 
@@ -79,7 +81,7 @@ void PBVRGUI::initialize()
 
     // ストキャスティック レンダリング コンポジタのセットアップ
     m_compositor = new kvs::StochasticRenderingCompositor(m_screen->scene());
-    m_compositor->setRepetitionLevel(repetitions);
+    m_compositor->setRepetitionLevel( repetitions );
     m_screen->setEvent(m_compositor);
 
     m_color_map_bar = new kvs::ColorMapBar( m_screen );
@@ -113,7 +115,6 @@ void PBVRGUI::keyPressEvent(QKeyEvent *event)
         case Qt::Key_S:
             m_animation_controls.saveKeyFrameFile();
             break;
-
         default:
             break;
         }
