@@ -13,9 +13,9 @@ FilterInfomation::~FilterInfomation()
     delete ui;
 }
 
-void FilterInfomation::updateFilterInfomation( jpv::ParticleTransferServerMessage reply )
+void FilterInfomation::updateFilterInfomation( QString volumeDataFilePath, jpv::ParticleTransferServerMessage reply )
 {
-//    ui->filterParameterFileLEdit->setText();
+    ui->filterParameterFileLEdit->setText( volumeDataFilePath );
 
     ui->vectorNumberLEdit->setText( QString::number( reply.m_number_ingredients ) );
     ui->allElementsLEdit->setText( QString::number( reply.m_number_elements ));

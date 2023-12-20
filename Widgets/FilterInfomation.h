@@ -15,7 +15,7 @@ class FilterInfomation : public QDockWidget
 public:
     explicit FilterInfomation(QWidget *parent = nullptr);
     ~FilterInfomation();
-    void updateFilterInfomation( jpv::ParticleTransferServerMessage reply );
+    void updateFilterInfomation( QString volumeDataFilePath, jpv::ParticleTransferServerMessage reply );
 
 private:
     Ui::FilterInfomation *ui;

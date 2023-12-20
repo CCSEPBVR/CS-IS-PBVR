@@ -86,7 +86,7 @@ void Connect::connect1()
     client.sendMessage( message );
     client.recvMessage( &reply );
 
-    m_filter_infomation->updateFilterInfomation( reply );
+    m_filter_infomation->updateFilterInfomation( ui->volumeDataFilePathLEdit->text(), reply );
 
     strncpy( message.m_header, "JPTP /1.0\r\n", 11 );
     message.m_initialize_parameter = -1;
