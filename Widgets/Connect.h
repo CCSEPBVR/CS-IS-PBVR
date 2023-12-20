@@ -8,11 +8,13 @@
 #include "ExpressionTokenizer.h"
 #include "ExpressionConverter.h"
 
-#include "Widgets/Merge.h"
 #include "Widgets/FilterInfomation.h"
 
 #include <kvs/PointObject>
 #include "ExtendedKVS/Screen.h"
+
+class Merge;
+
 namespace Ui {
 class Connect;
 }

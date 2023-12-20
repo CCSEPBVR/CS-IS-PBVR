@@ -5,6 +5,8 @@
 #include <kvs/PointObject>
 #include <kvs/ParticleBasedRenderer>
 
+#include "Widgets/Merge.h"
+
 Connect::Connect(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Connect)
@@ -91,8 +93,9 @@ void Connect::connect1()
     message.m_message_size = message.byteSize();
     client.sendMessage( message );
     client.recvMessage( &reply );
-
     client.termClient();
+
+    m_merge->serverObject( ui->volumeDataFilePathLEdit->text(), reply.m_start_step, reply.m_end_step );
 }
 
 kvs::PointObject* Connect::connect2()
@@ -446,22 +449,4 @@ kvs::PointObject* Connect::connect2()
 void Connect::onConnectButtonClicked()
 {
     connect1();
-
-    kvs::glsl::ParticleBasedRenderer* renderer = new kvs::glsl::ParticleBasedRenderer();
-    renderer->setRepetitionLevel( 16 );
-    renderer->enableShuffle();
-    kvs::PointObject* object = connect2();
-
-    //gt5d server side min max coords
-//    kvs::Vector3f min(-179.542,-109.5,0);
-//    kvs::Vector3f max(388.83,109.5,388.83);
-
-    //spx server side min max coords
-//    kvs::Vector3f min(4.06067,0,-8.67);
-//    kvs::Vector3f max(10,6.94658,0.725);
-
-//    object->setMinMaxObjectCoords(min,max);
-//    object->setMinMaxExternalCoords(min,max);
-
-    m_screen->registerObject( object, renderer );
 }
