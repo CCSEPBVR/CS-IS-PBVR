@@ -14,6 +14,7 @@
 #include "Widgets/Connect.h"
 #include "Widgets/TimeControl.h"
 #include "Widgets/AnimationControls.h"
+#include "Widgets/FilterInfomation.h"
 
 namespace Ui {
 class PBVRGUI;
@@ -44,12 +45,16 @@ private:
     Connect         m_connect;
     TimeControl     m_timeControl;
     AnimationControls m_animation_controls;
+    FilterInfomation m_filter_infomation;
 
 private:
     void onPreference()      { m_preference.show(); }
     void onMerge()           { m_merge.show(); }
     void onVolumeTransform() { m_volumeTransform.show(); }
     void onConnect()         { m_connect.show(); }
+    void onAnimationControl() { m_animation_controls.show(); }
+    void onFilterInfomation() { m_filter_infomation.show(); }
+
     void keyPressEvent( QKeyEvent *event );
 };
 

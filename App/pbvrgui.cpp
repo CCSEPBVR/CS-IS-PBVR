@@ -32,6 +32,8 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     connect( ui->actionMerge, &QAction::triggered, this, &PBVRGUI::onMerge );
     connect( ui->actionVolumeTransform, &QAction::triggered, this, &PBVRGUI::onVolumeTransform );
     connect( ui->actionConnectToServer, &QAction::triggered, this, &PBVRGUI::onConnect );
+    connect( ui->actionAnimationControls, &QAction::triggered, this, &PBVRGUI::onAnimationControl );
+    connect( ui->actionFilterInfomation, &QAction::triggered, this, &PBVRGUI::onFilterInfomation );
 
     m_preference.setScreen( m_screen );
     m_preference.setCompositor( m_compositor );
@@ -64,8 +66,14 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_animation_controls.show();
     m_animation_controls.setScreen( m_screen );
 
+    m_filter_infomation.close();
+    m_filter_infomation.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    addDockWidget(Qt::RightDockWidgetArea, &m_filter_infomation);
+    m_filter_infomation.show();
+
     m_connect.setScreen( m_screen );
     m_connect.setCamera( m_screen->scene()->camera() );
+    m_connect.setFilterInfomation( &m_filter_infomation );
 
     setFocusPolicy(Qt::StrongFocus);
 }

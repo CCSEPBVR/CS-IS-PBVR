@@ -44,6 +44,8 @@
     <addaction name="separator"/>
     <addaction name="actionMerge"/>
     <addaction name="actionVolumeTransform"/>
+    <addaction name="actionFilterInfomation"/>
+    <addaction name="actionAnimationControls"/>
    </widget>
    <addaction name="menuQTPBVR"/>
    <addaction name="menuPanels"/>
@@ -77,6 +79,16 @@
   <action name="actionMerge">
    <property name="text">
     <string>Merge</string>
+   </property>
+  </action>
+  <action name="actionFilterInfomation">
+   <property name="text">
+    <string>FilterInfomation</string>
+   </property>
+  </action>
+  <action name="actionAnimationControls">
+   <property name="text">
+    <string>AnimationControls</string>
    </property>
   </action>
  </widget>
