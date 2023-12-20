@@ -553,6 +553,7 @@ void Preference::applyShadingSettings()
                         {
                             particleBasedRenderer->setShader( kvs::Shader::BlinnPhong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
                         }
+                        particleBasedRenderer->enableShuffle();
                         m_screen->scene()->replaceRenderer( i, particleBasedRenderer );
                     }
                     //PolygonObjectの場合
@@ -588,6 +589,7 @@ void Preference::applyShadingSettings()
                 {
                     kvs::glsl::ParticleBasedRenderer* particleBasedRenderer = new  kvs::glsl::ParticleBasedRenderer();
                     particleBasedRenderer->setShader( kvs::Shader::Lambert( 1, 0 ) );
+                    particleBasedRenderer->enableShuffle();
                     m_screen->scene()->replaceRenderer( i, particleBasedRenderer );
                 }
                 //PolygonObjectの場合
