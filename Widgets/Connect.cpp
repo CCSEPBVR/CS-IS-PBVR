@@ -79,17 +79,19 @@ void Connect::connect1()
     int init = client.initClient();
     strncpy( message.m_header, "JPTP /1.0\r\n", 11 );
     message.m_initialize_parameter = -3;
-    //    message.m_input_directory = "/Users/t0603/Work/PBVR/SampleData/ucd/out/spx.pfi";
     message.m_input_directory = ui->volumeDataFilePathLEdit->text().toStdString();
     message.m_message_size = message.byteSize();
     client.sendMessage( message );
     client.recvMessage( &reply );
+
+    m_filter_infomation->updateFilterInfomation( reply );
 
     strncpy( message.m_header, "JPTP /1.0\r\n", 11 );
     message.m_initialize_parameter = -1;
     message.m_message_size = message.byteSize();
     client.sendMessage( message );
     client.recvMessage( &reply );
+
     client.termClient();
 }
 
@@ -132,12 +134,12 @@ kvs::PointObject* Connect::connect2()
     //paramExTransFunc.applyToClientMessage( &message ); //↓
 
     //gt5d
-//    float min = -0.0791849;
-//    float max = 0.074513;
+    float min = -0.0791849;
+    float max = 0.074513;
 
     //spx
-        float min = 0.2;
-        float max = 1;
+//        float min = 0.2;
+//        float max = 1;
 
     message.m_transfer_function.clear();
     message.m_volume_equation.clear();

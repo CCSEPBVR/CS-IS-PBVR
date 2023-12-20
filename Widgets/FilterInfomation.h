@@ -2,6 +2,7 @@
 #define FILTERINFOMATION_H
 
 #include <QDockWidget>
+#include "ParticleTransferProtocol.h"
 
 namespace Ui {
 class FilterInfomation;
@@ -14,6 +15,7 @@ class FilterInfomation : public QDockWidget
 public:
     explicit FilterInfomation(QWidget *parent = nullptr);
     ~FilterInfomation();
+    void updateFilterInfomation( jpv::ParticleTransferServerMessage reply );
 
 private:
     Ui::FilterInfomation *ui;

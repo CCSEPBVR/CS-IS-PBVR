@@ -23,10 +23,18 @@
      </widget>
     </item>
     <item row="6" column="1">
-     <widget class="QLineEdit" name="allNodesLEdit"/>
+     <widget class="QLineEdit" name="allNodesLEdit">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
     </item>
     <item row="2" column="1">
-     <widget class="QLineEdit" name="vectorNumberLEdit"/>
+     <widget class="QLineEdit" name="vectorNumberLEdit">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
     </item>
     <item row="7" column="0" alignment="Qt::AlignRight">
      <widget class="QLabel" name="stepNumberLbl">
@@ -43,10 +51,18 @@
      </widget>
     </item>
     <item row="3" column="1">
-     <widget class="QLineEdit" name="allElementsLEdit"/>
+     <widget class="QLineEdit" name="allElementsLEdit">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
     </item>
     <item row="4" column="1">
-     <widget class="QLineEdit" name="subVolumeLEdit"/>
+     <widget class="QLineEdit" name="subVolumeLEdit">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
     </item>
     <item row="3" column="0" alignment="Qt::AlignRight">
      <widget class="QLabel" name="allElementsLbl">
@@ -63,10 +79,18 @@
      </widget>
     </item>
     <item row="8" column="1">
-     <widget class="QLineEdit" name="fileTypeLEdit"/>
+     <widget class="QLineEdit" name="fileTypeLEdit">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
     </item>
     <item row="7" column="1">
-     <widget class="QLineEdit" name="stepNumberLEdit"/>
+     <widget class="QLineEdit" name="stepNumberLEdit">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
     </item>
     <item row="6" column="0" alignment="Qt::AlignRight">
      <widget class="QLabel" name="allNodesLbl">
@@ -76,7 +100,11 @@
      </widget>
     </item>
     <item row="5" column="1">
-     <widget class="QLineEdit" name="elementTypeLEdit"/>
+     <widget class="QLineEdit" name="elementTypeLEdit">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
     </item>
     <item row="9" column="0" colspan="2">
      <widget class="QGroupBox" name="threeDExtentGBox">
@@ -85,7 +113,11 @@
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="2" column="1">
-        <widget class="QLineEdit" name="zMinLEdit"/>
+        <widget class="QLineEdit" name="zMinLEdit">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="0" column="0">
         <widget class="QLabel" name="xLbl">
@@ -102,7 +134,11 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLineEdit" name="xMinLEdit"/>
+        <widget class="QLineEdit" name="xMinLEdit">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="zLbl">
@@ -112,16 +148,32 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QLineEdit" name="yMinLEdit"/>
+        <widget class="QLineEdit" name="yMinLEdit">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="0" column="2">
-        <widget class="QLineEdit" name="xMaxLEdit"/>
+        <widget class="QLineEdit" name="xMaxLEdit">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="1" column="2">
-        <widget class="QLineEdit" name="yMaxLEdit"/>
+        <widget class="QLineEdit" name="yMaxLEdit">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="2" column="2">
-        <widget class="QLineEdit" name="zMaxLEdit"/>
+        <widget class="QLineEdit" name="zMaxLEdit">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -134,7 +186,11 @@
      </widget>
     </item>
     <item row="1" column="1">
-     <widget class="QLineEdit" name="filterParameterFileLEdit"/>
+     <widget class="QLineEdit" name="filterParameterFileLEdit">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
     </item>
     <item row="1" column="0" alignment="Qt::AlignRight">
      <widget class="QLabel" name="filterParameterFileLbl">
