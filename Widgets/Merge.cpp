@@ -37,60 +37,13 @@ Merge::~Merge()
     delete ui;
 }
 
-void Merge::registerFile( FilesManager* filesManager )
-{
-    headerLabels << filesManager->getFileName();
-    ui->filesTWidget->setRowCount( ui->filesTWidget->rowCount() + 1);
-    ui->filesTWidget->setVerticalHeaderLabels( headerLabels );
-
-
-    QCheckBox *displayCheckBox = new QCheckBox();
-    displayCheckBox->setCheckState ( filesManager->getVisible() ) ;
-
-    QCheckBox *keepInitialCheckBox = new QCheckBox();
-    keepInitialCheckBox->setCheckState ( filesManager->getKeepInitial() ) ;
-
-    QCheckBox *keepFinalCheckBox = new QCheckBox();
-    keepFinalCheckBox->setCheckState ( filesManager->getKeepFinal()  ) ;
-
-    QTableWidgetItem* format = new QTableWidgetItem;
-    format->setFlags( format->flags() & ~Qt::ItemIsEditable );
-    format->setText( filesManager->getFileSuffix() );
-
-    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon )
-    {
-        QTableWidgetItem *colorValue = new QTableWidgetItem;
-        colorValue->setFlags( format->flags() & ~Qt::ItemIsEditable );
-        colorValue->setBackground( filesManager->getRGBColor() );
-
-        QDoubleSpinBox *opacityValue = new QDoubleSpinBox();
-        opacityValue->setRange( 0.0, 1.0 );
-        opacityValue->setSingleStep( 0.01 );
-        opacityValue->setValue( filesManager->getOpacity() );
-
-        ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 4, colorValue);
-        ui->filesTWidget->setCellWidget( ui->filesTWidget->rowCount() - 1, 5, opacityValue);
-    }
-    else
-    {
-        QTableWidgetItem* empCell1 = new QTableWidgetItem;
-        QTableWidgetItem* empCell2 = new QTableWidgetItem;
-        empCell1->setFlags( empCell1->flags() & ~Qt::ItemIsEditable );
-        empCell2->setFlags( empCell2->flags() & ~Qt::ItemIsEditable );
-        ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 4, empCell1 );
-        ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 5, empCell2 );
-    }
-
-    QCheckBox *deleteCheckBox = new QCheckBox;
-    deleteCheckBox->setCheckState ( Qt::Unchecked ) ;
-
-    ui->filesTWidget->setCellWidget(ui->filesTWidget->rowCount() - 1, 0, displayCheckBox);
-    ui->filesTWidget->setCellWidget(ui->filesTWidget->rowCount() - 1, 1, keepInitialCheckBox);
-    ui->filesTWidget->setCellWidget(ui->filesTWidget->rowCount() - 1, 2, keepFinalCheckBox);
-    ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 3, format );
-    ui->filesTWidget->setCellWidget( ui->filesTWidget->rowCount() - 1, 6, deleteCheckBox );
-}
-
+/*===========================================================================*/
+/**
+ *  @brief ファイルを選択してそのパスをUIに表示するメソッド
+ * このメソッドは、QFileDialogを使用してユーザーにファイルの選択を促し、
+ * 選択されたファイルのパスをUIのテキストエディットに表示します。
+ */
+/*===========================================================================*/
 void Merge::onBrowserButtonClicked()
 {
     QFileDialog fileDialog(this);
@@ -104,6 +57,15 @@ void Merge::onBrowserButtonClicked()
     }
 }
 
+/*===========================================================================*/
+/**
+ * @brief ファイルを追加するメソッド
+ * このメソッドは、指定されたファイルパスからファイル情報を取得し、新しい FilesManager インスタンスを作成します。
+ * その後、ファイルのタイムステップ範囲を確認し、ファイルのフォーマットをチェックします。
+ * 最後に、新しい FilesManager を登録し、m_files_manager メンバ変数に追加します。
+ * また、全体のタイムステップ範囲を再計算します。
+ */
+/*===========================================================================*/
 void Merge::onAddButtonClicked()
 {
     QFileInfo fileInfo(ui->importFilesPathLEdit->text());
@@ -119,6 +81,17 @@ void Merge::onAddButtonClicked()
     calculateMinMaxTimeStep();
 }
 
+/*===========================================================================*/
+/**
+ * @brief ファイルディレクトリ内のファイル名から最小および最大の数値タイムステップを検出し、FilesManagerに設定するメソッド
+ * このメソッドは、指定されたファイルディレクトリ内のファイル名を解析し、
+ * ファイル名が特定のパターンに一致する場合に、その数値部分を抽出して最小および最大の
+ * タイムステップ値を計算します。そして、新しい FilesManager インスタンスにこれらの値を設定します。
+ * @param fileInfo 解析対象のファイル情報へのポインタ
+ * @param directory 解析対象のディレクトリへのポインタ
+ * @param filesManager タイムステップ情報を設定する FilesManager インスタンスへのポインタ
+ */
+/*===========================================================================*/
 void Merge::checkMinMaxTimeStep(QFileInfo *fileInfo, QDir *directory, FilesManager *filesManager)
 {
     QRegularExpression regex(fileInfo->baseName().left(fileInfo->baseName().indexOf('_')) + "_([0-9]+)\\.*");
@@ -165,6 +138,17 @@ void Merge::checkMinMaxTimeStep(QFileInfo *fileInfo, QDir *directory, FilesManag
     }
 }
 
+/*===========================================================================*/
+/**
+ * @brief ファイルの形式を検査し、FilesManagerに関連する情報を設定するメソッド
+ * このメソッドは、指定されたファイルの形式を検査し、各フォーマットに応じて FilesManager インスタンスに
+ * 関連する情報を設定します。サポートされるフォーマットは、KVSML、STL、3DS、FBX、LASです。
+ * KVSML フォーマットの場合、PointObject および PolygonObject を識別し、それぞれに応じた設定を行います。
+ * STL、3DS、FBX、LAS フォーマットの場合も対応する情報を設定します。
+ * @param fileInfo ファイル情報へのポインタ
+ * @param filesManager ファイルフォーマット関連情報を設定する FilesManager インスタンスへのポインタ
+ */
+/*===========================================================================*/
 void Merge::checkFileFormat(QFileInfo *fileInfo,  FilesManager *filesManager)
 {
     QFile file(fileInfo->filePath());
@@ -296,6 +280,69 @@ void Merge::removeChecker()
     calculateMinMaxTimeStep();
 }
 
+/*===========================================================================*/
+/**
+ * @brief FilesManager を登録し、UI上のファイルテーブルに関連する情報を追加するメソッド
+ * このメソッドは、FilesManager インスタンスを受け取り、その情報を使用して UI 上のファイルテーブルに
+ * 関連する行とセルを追加します。具体的には、ファイル名、可視性、KeepInitialの保持、KeepFinalの保持、ファイルフォーマットなど
+ * の情報をセットします。また、テクスチャのないポリゴンの場合は、RGBカラーと透明度の情報もセットされます。
+ * @param filesManager FilesManager インスタンスへのポインタ
+ */
+/*===========================================================================*/
+void Merge::registerFile( FilesManager* filesManager )
+{
+    headerLabels << filesManager->getFileName();
+    ui->filesTWidget->setRowCount( ui->filesTWidget->rowCount() + 1);
+    ui->filesTWidget->setVerticalHeaderLabels( headerLabels );
+
+
+    QCheckBox *displayCheckBox = new QCheckBox();
+    displayCheckBox->setCheckState ( filesManager->getVisible() ) ;
+
+    QCheckBox *keepInitialCheckBox = new QCheckBox();
+    keepInitialCheckBox->setCheckState ( filesManager->getKeepInitial() ) ;
+
+    QCheckBox *keepFinalCheckBox = new QCheckBox();
+    keepFinalCheckBox->setCheckState ( filesManager->getKeepFinal()  ) ;
+
+    QTableWidgetItem* format = new QTableWidgetItem;
+    format->setFlags( format->flags() & ~Qt::ItemIsEditable );
+    format->setText( filesManager->getFileSuffix() );
+
+    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon )
+    {
+        QTableWidgetItem *colorValue = new QTableWidgetItem;
+        colorValue->setFlags( format->flags() & ~Qt::ItemIsEditable );
+        colorValue->setBackground( filesManager->getRGBColor() );
+
+        QDoubleSpinBox *opacityValue = new QDoubleSpinBox();
+        opacityValue->setRange( 0.0, 1.0 );
+        opacityValue->setSingleStep( 0.01 );
+        opacityValue->setValue( filesManager->getOpacity() );
+
+        ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 4, colorValue);
+        ui->filesTWidget->setCellWidget( ui->filesTWidget->rowCount() - 1, 5, opacityValue);
+    }
+    else
+    {
+        QTableWidgetItem* empCell1 = new QTableWidgetItem;
+        QTableWidgetItem* empCell2 = new QTableWidgetItem;
+        empCell1->setFlags( empCell1->flags() & ~Qt::ItemIsEditable );
+        empCell2->setFlags( empCell2->flags() & ~Qt::ItemIsEditable );
+        ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 4, empCell1 );
+        ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 5, empCell2 );
+    }
+
+    QCheckBox *deleteCheckBox = new QCheckBox;
+    deleteCheckBox->setCheckState ( Qt::Unchecked ) ;
+
+    ui->filesTWidget->setCellWidget(ui->filesTWidget->rowCount() - 1, 0, displayCheckBox);
+    ui->filesTWidget->setCellWidget(ui->filesTWidget->rowCount() - 1, 1, keepInitialCheckBox);
+    ui->filesTWidget->setCellWidget(ui->filesTWidget->rowCount() - 1, 2, keepFinalCheckBox);
+    ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 3, format );
+    ui->filesTWidget->setCellWidget( ui->filesTWidget->rowCount() - 1, 6, deleteCheckBox );
+}
+
 void Merge::updateFiles()
 {
     // m_files_manager に保持されている各 FilesManager の情報を表示
@@ -348,77 +395,20 @@ void Merge::updateFiles()
     }
 }
 
-void Merge::showFilesManager()
-{
-    for (int i = 0; i < m_files_manager.size(); ++i)
-    {
-        FilesManager* filesManager = m_files_manager[i];
-
-        qInfo() << "=== FilesManager Contents ===";
-        qInfo() << "Index: " << i;
-        qInfo() << "    File Name: " << filesManager->getFileName();
-        qInfo() << "Min Time Step: " << filesManager->getMinTimeStep();
-        qInfo() << "Max Time Step: " << filesManager->getMaxTimeStep();
-        qInfo() << "Is Visible: " << filesManager->getVisible();
-        qInfo() << "Keep Initial: " << filesManager->getKeepInitial();
-        qInfo() << "Keep Final: " << filesManager->getKeepFinal();
-        qInfo() << "File Suffix: " << filesManager->getFileSuffix();
-        qInfo() << "File Format: " << filesManager->getFileFormat();
-
-        // RGB Color と Opacity は NonTexturedPolygon の場合にのみ出力
-        if (filesManager->getFileFormat() == FilesManager::NonTexturedPolygon)
-        {
-            qInfo() << "RGB Color: " << filesManager->getRGBColor();
-            qInfo() << "Opacity: " << filesManager->getOpacity();
-        }
-
-        qInfo() << "=============================";
-    }
-}
-
-void Merge::onFilesTWidgetCellDoubleClicked(int row, int column)
-{
-    if (column == 4) // Colorのセルをダブルクリックしているか。
-    {
-        FilesManager* filesManager = m_files_manager.value(row, nullptr);
-
-        if (filesManager != nullptr && filesManager->getFileFormat() == FilesManager::NonTexturedPolygon)
-        {
-            QTableWidgetItem* formatItem = ui->filesTWidget->item( row, 4 );
-            formatItem->setBackground(QColorDialog::getColor(Qt::gray));
-        }
-    }
-}
-
-
-QString Merge::updateTimeStepInFileName(QString fileName, int nextTimeStep) {
-    // 正規表現パターン: 5桁の数字
-    QRegularExpression regex(R"(\d{5})");
-    QRegularExpressionMatch match = regex.match(fileName);
-
-    if (match.hasMatch()) {
-        // futureTimeの値を考慮して新しい5桁の数字を生成
-        int newNumber = nextTimeStep;
-
-        // 新しい5桁の数字をQStringに変換し、0埋めして格納
-        QString extractedNumber = QString::number(newNumber).rightJustified(5, '0');
-
-        // 5桁の数字を含む前後の文字列を抜き取り
-        int startPos = match.capturedStart();
-        int endPos = match.capturedEnd();
-
-        return fileName.left(startPos) + extractedNumber + fileName.mid(endPos);
-    }
-    else
-    {
-        return fileName;
-    }
-}
-
+/*===========================================================================*/
+/**
+ * @brief 全体の FilesManager インスタンスにおける最小および最大のタイムステップを計算し、
+ *        TimeControl インスタンスを更新するメソッド
+ *
+ * このメソッドは、各 FilesManager インスタンスに設定された最小および最大のタイムステップを走査し、
+ * 全体の最小および最大のタイムステップを計算します。また、単一オブジェクトかどうかを判断し、
+ * TimeControl インスタンスを更新します。
+ */
+/*===========================================================================*/
 void Merge::calculateMinMaxTimeStep()
 {
-    int overallMinTimeStep = INT_MAX;
-    int overallMaxTimeStep = INT_MIN;
+    int overAllMinTimeStep = INT_MAX;
+    int overAllMaxTimeStep = INT_MIN;
     bool isSingleObject = true;
 
     for (int i = 0; i < m_files_manager.size(); i++)
@@ -427,14 +417,14 @@ void Merge::calculateMinMaxTimeStep()
         int minTimeStep = filesManager->getMinTimeStep();
         int maxTimeStep = filesManager->getMaxTimeStep();
 
-        overallMinTimeStep = std::min(overallMinTimeStep, minTimeStep);
-        overallMaxTimeStep = std::max(overallMaxTimeStep, maxTimeStep);
+        overAllMinTimeStep = std::min(overAllMinTimeStep, minTimeStep);
+        overAllMaxTimeStep = std::max(overAllMaxTimeStep, maxTimeStep);
         if(i >= 1)
         {
             isSingleObject = false;
         }
     }
-    m_time_control->updateTimeStepMinMax( overallMinTimeStep, overallMaxTimeStep, isSingleObject );
+    m_time_control->updateTimeStepMinMax( overAllMinTimeStep, overAllMaxTimeStep, isSingleObject );
 }
 
 void Merge::mergeObjects()
@@ -512,6 +502,7 @@ ObjectType* Merge::selectPattern(FilesManager* filesManager)
     }
     return nullptr;
 }
+
 template <typename Importer, typename ObjectType>
 ObjectType* Merge::timeStepCheckAndImport( FilesManager* filesManager, pattern pattern )
 {
@@ -927,6 +918,40 @@ ObjectType* Merge::timeStepCheckAndImport( FilesManager* filesManager, pattern p
     return importedObject;
 }
 
+QString Merge::updateTimeStepInFileName(QString fileName, int nextTimeStep) {
+    // 正規表現パターン: 5桁の数字
+    QRegularExpression regex(R"(\d{5})");
+    QRegularExpressionMatch match = regex.match(fileName);
+
+    if (match.hasMatch()) {
+        // futureTimeの値を考慮して新しい5桁の数字を生成
+        int newNumber = nextTimeStep;
+
+        // 新しい5桁の数字をQStringに変換し、0埋めして格納
+        QString extractedNumber = QString::number(newNumber).rightJustified(5, '0');
+
+        // 5桁の数字を含む前後の文字列を抜き取り
+        int startPos = match.capturedStart();
+        int endPos = match.capturedEnd();
+
+        return fileName.left(startPos) + extractedNumber + fileName.mid(endPos);
+    }
+    else
+    {
+        return fileName;
+    }
+}
+
+void Merge::removeObject( FilesManager* filesManager )
+{
+    //Sceneにオブジェクトが登録されている場合
+    if( filesManager->getIds().first != 0 && filesManager->getIds().second != 0 )
+    {
+        m_screen->scene()->IDManager()->erase(filesManager->getIds().first, filesManager->getIds().second);
+        filesManager->setIds(std::pair<int, int>(0, 0));
+    }
+}
+
 void Merge::updateObject( FilesManager* filesManager, kvs::ObjectBase* object )
 {
     object->setXform( m_screen->scene()->objectManager()->xform() );
@@ -961,13 +986,16 @@ void Merge::updateObject( FilesManager* filesManager, kvs::ObjectBase* object )
     }
 }
 
-void Merge::removeObject( FilesManager* filesManager )
+void Merge::onFilesTWidgetCellDoubleClicked(int row, int column)
 {
-    //Sceneにオブジェクトが登録されている場合
-    if( filesManager->getIds().first != 0 && filesManager->getIds().second != 0 )
+    if (column == 4) // Colorのセルをダブルクリックしているか。
     {
-        m_screen->scene()->IDManager()->erase(filesManager->getIds().first, filesManager->getIds().second);
-        filesManager->setIds(std::pair<int, int>(0, 0));
+        FilesManager* filesManager = m_files_manager.value(row, nullptr);
+        if (filesManager != nullptr && filesManager->getFileFormat() == FilesManager::NonTexturedPolygon)
+        {
+            QTableWidgetItem* formatItem = ui->filesTWidget->item( row, 4 );
+            formatItem->setBackground(QColorDialog::getColor(Qt::gray));
+        }
     }
 }
 
@@ -984,4 +1012,41 @@ void Merge::serverObject( QString volumeDataFilePath, int min, int max )
     registerFile( newFilesManager );
     m_files_manager.append(newFilesManager);
     calculateMinMaxTimeStep();
+}
+
+/*===========================================================================*/
+/**
+ * @brief FilesManager インスタンスの内容をコンソールに表示するメソッド
+ * このメソッドは、各 FilesManager インスタンスの詳細な情報をコンソールに出力します。
+ * インデックス、ファイル名、タイムステップの範囲、可視性、初期状態の保持、最終状態の保持、
+ * ファイルサフィックス、ファイルフォーマットなどが表示されます。非テクスチャポリゴンの場合、
+ * RGBカラーと透明度も表示されます。
+ */
+/*===========================================================================*/
+void Merge::showFilesManager()
+{
+    for (int i = 0; i < m_files_manager.size(); ++i)
+    {
+        FilesManager* filesManager = m_files_manager[i];
+
+        qInfo() << "=== FilesManager Contents ===";
+        qInfo() << "Index: " << i;
+        qInfo() << "    File Name: " << filesManager->getFileName();
+        qInfo() << "Min Time Step: " << filesManager->getMinTimeStep();
+        qInfo() << "Max Time Step: " << filesManager->getMaxTimeStep();
+        qInfo() << "Is Visible: " << filesManager->getVisible();
+        qInfo() << "Keep Initial: " << filesManager->getKeepInitial();
+        qInfo() << "Keep Final: " << filesManager->getKeepFinal();
+        qInfo() << "File Suffix: " << filesManager->getFileSuffix();
+        qInfo() << "File Format: " << filesManager->getFileFormat();
+
+        // RGB Color と Opacity は NonTexturedPolygon の場合にのみ出力
+        if (filesManager->getFileFormat() == FilesManager::NonTexturedPolygon)
+        {
+            qInfo() << "RGB Color: " << filesManager->getRGBColor();
+            qInfo() << "Opacity: " << filesManager->getOpacity();
+        }
+
+        qInfo() << "=============================";
+    }
 }
