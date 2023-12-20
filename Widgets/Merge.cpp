@@ -970,3 +970,18 @@ void Merge::removeObject( FilesManager* filesManager )
         filesManager->setIds(std::pair<int, int>(0, 0));
     }
 }
+
+void Merge::serverObject( QString volumeDataFilePath, int min, int max )
+{
+    QFileInfo fileInfo( volumeDataFilePath );
+    FilesManager *newFilesManager = new FilesManager;
+    newFilesManager->setFileInfo( fileInfo );
+    newFilesManager->setFileName( "Server" );
+    newFilesManager->setMinTimeStep(min);
+    newFilesManager->setMaxTimeStep(max);
+    newFilesManager->setFileFormat( FilesManager::ServerPointObject );
+    newFilesManager->setFileSuffix( "Server(PointObject)" );
+    registerFile( newFilesManager );
+    m_files_manager.append(newFilesManager);
+    calculateMinMaxTimeStep();
+}

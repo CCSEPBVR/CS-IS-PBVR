@@ -9,6 +9,7 @@
 #include <ExtendedKVS/Screen.h>
 #include <Widgets/TimeControl.h>
 #include "Widgets/Preference.h"
+#include "Widgets/Connect.h"
 
 class FilesManager
 {
@@ -92,6 +93,8 @@ public:
     void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; }
     void setTimeControl( TimeControl* time_control ){ m_time_control = time_control; }
     void setPreference( Preference* preference ){ m_preference = preference; }
+    void setConnect( Connect* connect){ m_connect = connect; }
+    void serverObject( QString volumeDataFilePath, int min, int max );
 
 private:
     Ui::Merge *ui;
@@ -100,6 +103,7 @@ private:
     kvs::qt::jaea::Screen* m_screen;
     TimeControl* m_time_control;
     Preference* m_preference;
+    Connect* m_connect;
     int currentTimeStep = -1;
 
     void onBrowserButtonClicked();
