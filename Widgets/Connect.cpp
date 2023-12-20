@@ -134,12 +134,12 @@ kvs::PointObject* Connect::connect2()
     //paramExTransFunc.applyToClientMessage( &message ); //↓
 
     //gt5d
-    float min = -0.0791849;
-    float max = 0.074513;
+//    float min = -0.0791849;
+//    float max = 0.074513;
 
     //spx
-//        float min = 0.2;
-//        float max = 1;
+        float min = 0.2;
+        float max = 1;
 
     message.m_transfer_function.clear();
     message.m_volume_equation.clear();

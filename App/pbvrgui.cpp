@@ -73,6 +73,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
 
     m_connect.setScreen( m_screen );
     m_connect.setCamera( m_screen->scene()->camera() );
+    m_connect.setMerge( &m_merge );
     m_connect.setFilterInfomation( &m_filter_infomation );
 
     setFocusPolicy(Qt::StrongFocus);
