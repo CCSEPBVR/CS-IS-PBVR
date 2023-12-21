@@ -16,6 +16,7 @@
 #include "Widgets/AnimationControls.h"
 #include "Widgets/DataProperties.h"
 #include "Widgets/DataSummary.h"
+#include "Widgets/RenderOptions.h"
 
 namespace Ui {
 class PBVRGUI;
@@ -48,6 +49,7 @@ private:
     AnimationControls m_animation_controls;
     DataProperties m_data_properties;
     DataSummary m_data_summary;
+    RenderOptions m_render_options;
 
 private:
     void onPreference()      { m_preference.show(); }
@@ -56,6 +58,7 @@ private:
     void onConnect()         { m_connect.show(); }
     void onAnimationControl() { m_animation_controls.show(); }
     void onFilterInfomation() { m_data_properties.show(); }
+    void onRenderOptions() { m_render_options.show(); }
 
     void keyPressEvent( QKeyEvent *event );
 };

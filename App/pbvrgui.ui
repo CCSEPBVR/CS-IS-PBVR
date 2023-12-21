@@ -46,6 +46,7 @@
     <addaction name="actionVolumeTransform"/>
     <addaction name="actionFilterInfomation"/>
     <addaction name="actionAnimationControls"/>
+    <addaction name="actionRenderOptions"/>
    </widget>
    <addaction name="menuQTPBVR"/>
    <addaction name="menuPanels"/>
@@ -100,6 +101,11 @@
   <action name="actionAnimationControls">
    <property name="text">
     <string>AnimationControls</string>
+   </property>
+  </action>
+  <action name="actionRenderOptions">
+   <property name="text">
+    <string>RenderOptions</string>
    </property>
   </action>
  </widget>
