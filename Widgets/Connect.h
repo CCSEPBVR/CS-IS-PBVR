@@ -30,6 +30,7 @@ public:
     void setCamera( kvs::Camera* camera ){ m_camera = camera; }
     void setMerge( Merge* merge ){  m_merge = merge; }
     void setFilterInfomation( FilterInfomation* filter_infomation ){ m_filter_infomation = filter_infomation; }
+    kvs::PointObject* connect2();
 
 private:
     Ui::Connect *ui;
@@ -40,7 +41,7 @@ private:
 
     jpv::ParticleTransferClientMessage::EquationToken convertToken( std::string );
     void connect1();
-    kvs::PointObject* connect2();
+
 
     void onConnectButtonClicked();
 };
