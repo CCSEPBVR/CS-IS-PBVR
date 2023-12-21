@@ -130,6 +130,7 @@ private:
     void updateObject( FilesManager* filesManager, kvs::ObjectBase* object );
     void onFilesTWidgetCellDoubleClicked( int row, int column );
     void showFilesManager();
+    void totalParticlesAndPolygons();
 };
 
 #endif // MERGE_H

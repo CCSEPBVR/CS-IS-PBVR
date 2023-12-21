@@ -461,6 +461,8 @@ void Merge::mergeObjects()
     m_preference->loadShadingSettings();
     m_preference->applyShadingSettings();
     m_screen->redraw();
+
+    totalParticlesAndPolygons();
 }
 
 //FOR LOCAL FILE
@@ -1496,6 +1498,26 @@ void Merge::showFilesManager()
         }
 
         qInfo() << "=============================";
+    }
+}
+
+void Merge::totalParticlesAndPolygons()
+{
+    for( FilesManager* filesManager : m_files_manager )
+    {
+        const bool already_registerd = (filesManager->getIds().first == 0 && filesManager->getIds().second == 0) ? false : true;;
+
+        if( already_registerd )
+        {
+            if( filesManager->getFileFormat() == FilesManager::PointObject || filesManager->getFileFormat() == FilesManager::ServerPointObject )
+            {
+                //qInfo() << dynamic_cast<kvs::PointObject*>( m_screen->scene()->object( filesManager->getIds().first ))->numberOfVertices();
+            }
+            else if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon )
+            {
+                //qInfo() << dynamic_cast<kvs::PolygonObject*>( m_screen->scene()->object( filesManager->getIds().first ))->numberOfNormals();
+            }
+        }
     }
 }
 
