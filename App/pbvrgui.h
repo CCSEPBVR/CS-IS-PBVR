@@ -15,6 +15,7 @@
 #include "Widgets/TimeControl.h"
 #include "Widgets/AnimationControls.h"
 #include "Widgets/DataProperties.h"
+#include "Widgets/DataSummary.h"
 
 namespace Ui {
 class PBVRGUI;
@@ -45,7 +46,8 @@ private:
     Connect         m_connect;
     TimeControl     m_timeControl;
     AnimationControls m_animation_controls;
-    DataProperties m_filter_infomation;
+    DataProperties m_data_properties;
+    DataSummary m_data_summary;
 
 private:
     void onPreference()      { m_preference.show(); }
@@ -53,7 +55,7 @@ private:
     void onVolumeTransform() { m_volumeTransform.show(); }
     void onConnect()         { m_connect.show(); }
     void onAnimationControl() { m_animation_controls.show(); }
-    void onFilterInfomation() { m_filter_infomation.show(); }
+    void onFilterInfomation() { m_data_properties.show(); }
 
     void keyPressEvent( QKeyEvent *event );
 };

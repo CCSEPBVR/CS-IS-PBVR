@@ -31,6 +31,7 @@ TARGET = Widgets
 HEADERS += \
     AnimationControls.h \
     DataProperties.h \
+    DataSummary.h \
     Merge.h \
     Preference.h \
     RenderOptions.h \
@@ -46,6 +47,7 @@ HEADERS += \
 SOURCES += \
     AnimationControls.cpp \
     DataProperties.cpp \
+    DataSummary.cpp \
     Merge.cpp \
     Preference.cpp \
     RenderOptions.cpp \
@@ -61,6 +63,7 @@ SOURCES += \
 FORMS += \
     AnimationControls.ui \
     DataProperties.ui \
+    DataSummary.ui \
     Merge.ui \
     Preference.ui \
     RenderOptions.ui \

@@ -10,6 +10,7 @@
 #include <Widgets/TimeControl.h>
 #include "Widgets/Preference.h"
 #include "Widgets/Connect.h"
+#include "Widgets/DataSummary.h"
 
 class FilesManager
 {
@@ -94,6 +95,7 @@ public:
     void setTimeControl( TimeControl* time_control ){ m_time_control = time_control; }
     void setPreference( Preference* preference ){ m_preference = preference; }
     void setConnect( Connect* connect ){ m_connect = connect; }
+    void setDataSummary( DataSummary* data_summary ){ m_data_summary = data_summary; }
     void serverObject( QString volumeDataFilePath, int min, int max );
 
 private:
@@ -104,6 +106,7 @@ private:
     TimeControl* m_time_control;
     Preference* m_preference;
     Connect* m_connect;
+    DataSummary* m_data_summary;
     int currentTimeStep = -1;
 
     void onBrowserButtonClicked();
@@ -130,7 +133,7 @@ private:
     void updateObject( FilesManager* filesManager, kvs::ObjectBase* object );
     void onFilesTWidgetCellDoubleClicked( int row, int column );
     void showFilesManager();
-    void totalParticlesAndPolygons();
+    void totalParticles();
 };
 
 #endif // MERGE_H

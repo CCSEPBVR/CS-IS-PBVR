@@ -43,14 +43,19 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_preference.setTimeStepLabel( m_time_step_label );
     m_preference.initialize();
 
-    QWidgetAction *widgetAction = new QWidgetAction( this );
-    widgetAction->setDefaultWidget( &m_timeControl );
-    ui->timeControlTBar->addAction( widgetAction );
+    QWidgetAction *timeControlWidgetAction = new QWidgetAction( this );
+    timeControlWidgetAction->setDefaultWidget( &m_timeControl );
+    ui->timeControlTBar->addAction( timeControlWidgetAction );
+
+    QWidgetAction *dataSummaryWidgetAction = new QWidgetAction( this );
+    dataSummaryWidgetAction->setDefaultWidget( &m_data_summary );
+    ui->dataSummaryTBar->addAction( dataSummaryWidgetAction );
 
     m_merge.setScreen( m_screen );
     m_merge.setTimeControl( &m_timeControl );
     m_merge.setPreference( &m_preference );
     m_merge.setConnect( &m_connect );
+    m_merge.setDataSummary( &m_data_summary );
     m_merge.close();
     m_merge.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     addDockWidget(Qt::RightDockWidgetArea, &m_merge);
@@ -67,15 +72,15 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_animation_controls.show();
     m_animation_controls.setScreen( m_screen );
 
-    m_filter_infomation.close();
-    m_filter_infomation.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    addDockWidget(Qt::RightDockWidgetArea, &m_filter_infomation);
-    m_filter_infomation.show();
+    m_data_properties.close();
+    m_data_properties.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    addDockWidget(Qt::RightDockWidgetArea, &m_data_properties);
+    m_data_properties.show();
 
     m_connect.setScreen( m_screen );
     m_connect.setCamera( m_screen->scene()->camera() );
     m_connect.setMerge( &m_merge );
-    m_connect.setFilterInfomation( &m_filter_infomation );
+    m_connect.setFilterInfomation( &m_data_properties );
 
     setFocusPolicy(Qt::StrongFocus);
 }

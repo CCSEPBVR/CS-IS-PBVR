@@ -462,7 +462,7 @@ void Merge::mergeObjects()
     m_preference->applyShadingSettings();
     m_screen->redraw();
 
-    totalParticlesAndPolygons();
+    totalParticles();
 }
 
 //FOR LOCAL FILE
@@ -1501,8 +1501,9 @@ void Merge::showFilesManager()
     }
 }
 
-void Merge::totalParticlesAndPolygons()
+void Merge::totalParticles()
 {
+    int totalParticles = 0;
     for( FilesManager* filesManager : m_files_manager )
     {
         const bool already_registerd = (filesManager->getIds().first == 0 && filesManager->getIds().second == 0) ? false : true;;
@@ -1511,14 +1512,11 @@ void Merge::totalParticlesAndPolygons()
         {
             if( filesManager->getFileFormat() == FilesManager::PointObject || filesManager->getFileFormat() == FilesManager::ServerPointObject )
             {
-                //qInfo() << dynamic_cast<kvs::PointObject*>( m_screen->scene()->object( filesManager->getIds().first ))->numberOfVertices();
-            }
-            else if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon )
-            {
-                //qInfo() << dynamic_cast<kvs::PolygonObject*>( m_screen->scene()->object( filesManager->getIds().first ))->numberOfNormals();
+                totalParticles += dynamic_cast<kvs::PointObject*>( m_screen->scene()->object( filesManager->getIds().first ))->numberOfVertices();
             }
         }
     }
+    m_data_summary->setTotalParticles( totalParticles );
 }
 
 void Merge::serverObject( QString volumeDataFilePath, int min, int max )
