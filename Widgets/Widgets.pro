@@ -30,6 +30,7 @@ TARGET = Widgets
 #=============================================================================
 HEADERS += \
     AnimationControls.h \
+    Coordinates.h \
     DataProperties.h \
     DataSummary.h \
     Merge.h \
@@ -46,6 +47,7 @@ HEADERS += \
 #=============================================================================
 SOURCES += \
     AnimationControls.cpp \
+    Coordinates.cpp \
     DataProperties.cpp \
     DataSummary.cpp \
     Merge.cpp \
@@ -62,6 +64,7 @@ SOURCES += \
 #=============================================================================
 FORMS += \
     AnimationControls.ui \
+    Coordinates.ui \
     DataProperties.ui \
     DataSummary.ui \
     Merge.ui \
