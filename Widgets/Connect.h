@@ -30,6 +30,7 @@ public:
     void setCamera( kvs::Camera* camera ){ m_camera = camera; }
     void setMerge( Merge* merge ){  m_merge = merge; }
     void setFilterInfomation( DataProperties* filter_infomation ){ m_filter_infomation = filter_infomation; }
+    jpv::ParticleTransferClientMessage* getClientMessage(){ return &m_client_message; }
     kvs::PointObject* connect2( int timeStep );
 
 private:
@@ -39,9 +40,10 @@ private:
     Merge* m_merge;
     DataProperties* m_filter_infomation;
 
+    jpv::ParticleTransferClientMessage m_client_message;
+
     jpv::ParticleTransferClientMessage::EquationToken convertToken( std::string );
     void connect1();
-
 
     void onConnectButtonClicked();
 };
