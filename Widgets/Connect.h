@@ -8,7 +8,7 @@
 #include "ExpressionTokenizer.h"
 #include "ExpressionConverter.h"
 
-#include "Widgets/FilterInfomation.h"
+#include "Widgets/DataProperties.h"
 
 #include <kvs/PointObject>
 #include "ExtendedKVS/Screen.h"
@@ -29,7 +29,7 @@ public:
     void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; }
     void setCamera( kvs::Camera* camera ){ m_camera = camera; }
     void setMerge( Merge* merge ){  m_merge = merge; }
-    void setFilterInfomation( FilterInfomation* filter_infomation ){ m_filter_infomation = filter_infomation; }
+    void setFilterInfomation( DataProperties* filter_infomation ){ m_filter_infomation = filter_infomation; }
     kvs::PointObject* connect2( int timeStep );
 
 private:
@@ -37,7 +37,7 @@ private:
     kvs::qt::jaea::Screen* m_screen;
     kvs::Camera* m_camera;
     Merge* m_merge;
-    FilterInfomation* m_filter_infomation;
+    DataProperties* m_filter_infomation;
 
     jpv::ParticleTransferClientMessage::EquationToken convertToken( std::string );
     void connect1();

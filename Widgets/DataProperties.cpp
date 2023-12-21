@@ -1,19 +1,19 @@
-#include "FilterInfomation.h"
-#include "ui_FilterInfomation.h"
+#include "DataProperties.h"
+#include "ui_DataProperties.h"
 
-FilterInfomation::FilterInfomation(QWidget *parent) :
+DataProperties::DataProperties(QWidget *parent) :
     QDockWidget(parent),
-    ui(new Ui::FilterInfomation)
+    ui(new Ui::DataProperties)
 {
     ui->setupUi(this);
 }
 
-FilterInfomation::~FilterInfomation()
+DataProperties::~DataProperties()
 {
     delete ui;
 }
 
-void FilterInfomation::updateFilterInfomation( QString volumeDataFilePath, jpv::ParticleTransferServerMessage reply )
+void DataProperties::updateFilterInfomation( QString volumeDataFilePath, jpv::ParticleTransferServerMessage reply )
 {
     ui->filterParameterFileLEdit->setText( volumeDataFilePath );
 

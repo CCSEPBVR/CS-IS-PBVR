@@ -30,7 +30,7 @@ TARGET = Widgets
 #=============================================================================
 HEADERS += \
     AnimationControls.h \
-    FilterInfomation.h \
+    DataProperties.h \
     Merge.h \
     Preference.h \
     RenderOptions.h \
@@ -45,7 +45,7 @@ HEADERS += \
 #=============================================================================
 SOURCES += \
     AnimationControls.cpp \
-    FilterInfomation.cpp \
+    DataProperties.cpp \
     Merge.cpp \
     Preference.cpp \
     RenderOptions.cpp \
@@ -60,7 +60,7 @@ SOURCES += \
 #=============================================================================
 FORMS += \
     AnimationControls.ui \
-    FilterInfomation.ui \
+    DataProperties.ui \
     Merge.ui \
     Preference.ui \
     RenderOptions.ui \

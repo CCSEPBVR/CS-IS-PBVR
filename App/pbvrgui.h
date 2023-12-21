@@ -14,7 +14,7 @@
 #include "Widgets/Connect.h"
 #include "Widgets/TimeControl.h"
 #include "Widgets/AnimationControls.h"
-#include "Widgets/FilterInfomation.h"
+#include "Widgets/DataProperties.h"
 
 namespace Ui {
 class PBVRGUI;
@@ -45,7 +45,7 @@ private:
     Connect         m_connect;
     TimeControl     m_timeControl;
     AnimationControls m_animation_controls;
-    FilterInfomation m_filter_infomation;
+    DataProperties m_filter_infomation;
 
 private:
     void onPreference()      { m_preference.show(); }
