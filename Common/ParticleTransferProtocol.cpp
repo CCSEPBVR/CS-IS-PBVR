@@ -62,7 +62,7 @@ int32_t jpv::ParticleTransferClientMessage::byteSize() const
         s += sizeof( m_crop_region[0] ) * 6;
         s += sizeof( m_particle_limit );
         s += sizeof( m_particle_density );
-        s += sizeof( particle_data_size_limit );
+        s += sizeof( m_particle_data_size_limit );
         s += sizeof( int64_t );
         s += sizeof( char ) * ( m_input_directory.size() + 1 );
 //        // add:start by @hira at 2016/12/01
@@ -213,7 +213,7 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         }
         index += jpv::Serializer::write( buf + index, m_particle_limit );
         index += jpv::Serializer::write( buf + index, m_particle_density );
-        index += jpv::Serializer::write( buf + index, particle_data_size_limit );
+        index += jpv::Serializer::write( buf + index, m_particle_data_size_limit );
         index += jpv::Serializer::write( buf + index, m_input_directory.size() );
         index += jpv::Serializer::writeArray( buf + index, m_input_directory.c_str(), m_input_directory.size() + 1 );
 //        // add:start by @hira at 2016/12/01
@@ -378,7 +378,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         }
         index += jpv::Serializer::read( buf + index, &m_particle_limit );
         index += jpv::Serializer::read( buf + index, &m_particle_density );
-        index += jpv::Serializer::read( buf + index, &particle_data_size_limit );
+        index += jpv::Serializer::read( buf + index, &m_particle_data_size_limit );
         index += jpv::Serializer::read( buf + index, &tmp_char_size );
         tmp_char = new char[tmp_char_size + 1];
         index += jpv::Serializer::readArray( buf + index, tmp_char, tmp_char_size + 1 );

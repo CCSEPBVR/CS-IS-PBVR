@@ -81,7 +81,7 @@ public:
     int32_t m_particle_limit;
     float m_particle_density;
 // #ifdef COMM_MODE_IS
-     float particle_data_size_limit;
+    float m_particle_data_size_limit;
 // #endif
     std::string m_input_directory;
     std::string m_filter_parameter_filename;         // add by @hira at 2016/12/01
