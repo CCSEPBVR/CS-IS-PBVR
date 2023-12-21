@@ -25,9 +25,9 @@ public:
     };
 
     void setFileInfo( QFileInfo fileInfo ) { m_file_info = fileInfo; }
-    void setFileName(QString file_name) { m_file_name = file_name; }
-    void setMinTimeStep(int min_time_step) { m_min_time_step = min_time_step; }
-    void setMaxTimeStep(int max_time_step) { m_max_time_step = max_time_step; }
+    void setFileName( QString file_name ) { m_file_name = file_name; }
+    void setMinTimeStep( int min_time_step ) { m_min_time_step = min_time_step; }
+    void setMaxTimeStep( int max_time_step ) { m_max_time_step = max_time_step; }
 
     void setVisible( Qt::CheckState is_visible ) { m_is_visible = is_visible; }
     void setKeepInitial( Qt::CheckState is_keep_initial ) { m_is_keep_initial = is_keep_initial; }
@@ -93,7 +93,7 @@ public:
     void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; }
     void setTimeControl( TimeControl* time_control ){ m_time_control = time_control; }
     void setPreference( Preference* preference ){ m_preference = preference; }
-    void setConnect( Connect* connect){ m_connect = connect; }
+    void setConnect( Connect* connect ){ m_connect = connect; }
     void serverObject( QString volumeDataFilePath, int min, int max );
 
 private:
@@ -125,10 +125,10 @@ private:
     kvs::PointObject* selectPattern( FilesManager* filesManager );
     kvs::PointObject* timeStepCheckAndImport( FilesManager* filesManager, pattern pattern );
 
-    QString updateTimeStepInFileName(QString fileName,int nextTimeStep);
+    QString updateTimeStepInFileName( QString fileName,int nextTimeStep );
     void removeObject( FilesManager* filesManager );
     void updateObject( FilesManager* filesManager, kvs::ObjectBase* object );
-    void onFilesTWidgetCellDoubleClicked(int row, int column);        
+    void onFilesTWidgetCellDoubleClicked( int row, int column );
     void showFilesManager();
 };
 
