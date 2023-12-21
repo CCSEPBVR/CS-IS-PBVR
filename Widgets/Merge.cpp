@@ -1462,24 +1462,6 @@ void Merge::onFilesTWidgetCellDoubleClicked(int row, int column)
     }
 }
 
-void Merge::serverObject( QString volumeDataFilePath, int min, int max )
-{
-    QFileInfo fileInfo( volumeDataFilePath );
-    FilesManager *newFilesManager = new FilesManager;
-    newFilesManager->setFileInfo( fileInfo );
-    newFilesManager->setFileName( "Server" );
-    newFilesManager->setMinTimeStep(min);
-    newFilesManager->setMaxTimeStep(max);
-    newFilesManager->setFileFormat( FilesManager::ServerPointObject );
-    newFilesManager->setFileSuffix( "Server(PointObject)" );
-    newFilesManager->setVisible( Qt::CheckState::Checked );
-    newFilesManager->setKeepInitial( Qt::CheckState::Unchecked );
-    newFilesManager->setKeepFinal( Qt::CheckState::Unchecked );
-    registerFile( newFilesManager );
-    m_files_manager.append(newFilesManager);
-    calculateMinMaxTimeStep();
-}
-
 /*===========================================================================*/
 /**
  * @brief FilesManager インスタンスの内容をコンソールに表示するメソッド
@@ -1515,4 +1497,22 @@ void Merge::showFilesManager()
 
         qInfo() << "=============================";
     }
+}
+
+void Merge::serverObject( QString volumeDataFilePath, int min, int max )
+{
+    QFileInfo fileInfo( volumeDataFilePath );
+    FilesManager *newFilesManager = new FilesManager;
+    newFilesManager->setFileInfo( fileInfo );
+    newFilesManager->setFileName( "Server" );
+    newFilesManager->setMinTimeStep(min);
+    newFilesManager->setMaxTimeStep(max);
+    newFilesManager->setFileFormat( FilesManager::ServerPointObject );
+    newFilesManager->setFileSuffix( "Server(PointObject)" );
+    newFilesManager->setVisible( Qt::CheckState::Checked );
+    newFilesManager->setKeepInitial( Qt::CheckState::Unchecked );
+    newFilesManager->setKeepFinal( Qt::CheckState::Unchecked );
+    registerFile( newFilesManager );
+    m_files_manager.append(newFilesManager);
+    calculateMinMaxTimeStep();
 }

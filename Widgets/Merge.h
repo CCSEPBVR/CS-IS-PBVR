@@ -108,17 +108,14 @@ private:
 
     void onBrowserButtonClicked();
     void onAddButtonClicked();
-    void onApplyButtonClicked();
-    void onFilesTWidgetCellDoubleClicked(int row, int column);
-    void removeChecker();
-    void updateFiles();
-    void showFilesManager();
-    void registerFile( FilesManager* filesManager );
-    void mergeObjects();
     void checkMinMaxTimeStep(QFileInfo *fileInfo, QDir *directory,FilesManager *filesManager);
     void checkFileFormat(QFileInfo *fileInfo, FilesManager *filesManager);
+    void onApplyButtonClicked();
+    void removeChecker();
+    void registerFile( FilesManager* filesManager );
+    void updateFiles();
     void calculateMinMaxTimeStep();
-    QString updateTimeStepInFileName(QString fileName,int nextTimeStep);
+    void mergeObjects();
 
     template <typename Importer, typename ObjectType>
     ObjectType* selectPattern(FilesManager* filesManager);
@@ -128,8 +125,11 @@ private:
     kvs::PointObject* selectPattern(FilesManager* filesManager);
     kvs::PointObject* timeStepCheckAndImport(FilesManager* filesManager, pattern pattern);
 
-    void updateObject(FilesManager* filesManager, kvs::ObjectBase* object);
+    QString updateTimeStepInFileName(QString fileName,int nextTimeStep);
     void removeObject(FilesManager* filesManager);
+    void updateObject(FilesManager* filesManager, kvs::ObjectBase* object);
+    void onFilesTWidgetCellDoubleClicked(int row, int column);        
+    void showFilesManager();
 };
 
 #endif // MERGE_H
