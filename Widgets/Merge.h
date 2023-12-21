@@ -125,6 +125,9 @@ private:
     template <typename Importer, typename ObjectType>
     ObjectType* timeStepCheckAndImport(FilesManager* filesManager, pattern pattern);
 
+    kvs::PointObject* selectPattern(FilesManager* filesManager);
+    kvs::PointObject* timeStepCheckAndImport(FilesManager* filesManager, pattern pattern);
+
     void updateObject(FilesManager* filesManager, kvs::ObjectBase* object);
     void removeObject(FilesManager* filesManager);
 };

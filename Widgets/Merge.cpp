@@ -443,6 +443,10 @@ void Merge::mergeObjects()
         {
             object = selectPattern<kvs::PolygonImporter, kvs::PolygonObject>( filesManager );
         }
+        else if( filesManager->getFileFormat() == FilesManager::ServerPointObject )
+        {
+            object = selectPattern( filesManager );
+        }
 
         //オブジェクトがnullptrではない場合
         if( object != nullptr )
@@ -459,6 +463,7 @@ void Merge::mergeObjects()
     m_screen->redraw();
 }
 
+//FOR LOCAL FILE
 template <typename Importer, typename ObjectType>
 ObjectType* Merge::selectPattern(FilesManager* filesManager)
 {
@@ -900,6 +905,464 @@ ObjectType* Merge::timeStepCheckAndImport( FilesManager* filesManager, pattern p
                     {
                         qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
                         importedObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
+                    }
+                    else
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    }
+                }
+            }
+            else
+            {
+                qInfo() << "Delete the object.[" << __LINE__ << "]";
+                removeObject( filesManager );
+            }
+        }
+
+    }
+    return importedObject;
+}
+
+//FOR SERVER POINT OBJECT
+kvs::PointObject* Merge::selectPattern(FilesManager* filesManager)
+{
+    //Visibleにチェックボックスがついている場合
+    if( filesManager->getVisible() == Qt::PartiallyChecked )
+    {
+        //keep initialにチェックがついている場合
+        if( filesManager->getKeepInitial() == Qt::PartiallyChecked )
+        {
+            //Keep finalにチェックがついている場合
+            if( filesManager->getKeepFinal() == Qt::PartiallyChecked )
+            {
+                return timeStepCheckAndImport( filesManager, BothChecked );
+            }
+            //Keep finalにチェックがついていない場合
+            else
+            {
+                return timeStepCheckAndImport( filesManager, KeepInitialChecked );
+            }
+        }
+
+        //keep initialにチェックがついていない場合
+        if( filesManager->getKeepInitial() == Qt::Unchecked )
+        {
+            //Keep finalにチェックがついている場合
+            if( filesManager->getKeepFinal() == Qt::PartiallyChecked )
+            {
+                return timeStepCheckAndImport( filesManager, KeepFinalChecked );
+            }
+            //Keep finalにチェックがついていない場合
+            else
+            {
+                return timeStepCheckAndImport( filesManager, NoneChecked );
+            }
+        }
+    }
+    else
+    {
+        qInfo() << "Delete the object.[" << __LINE__ << "]";
+        removeObject( filesManager );
+    }
+    return nullptr;
+}
+
+kvs::PointObject* Merge::timeStepCheckAndImport( FilesManager* filesManager, pattern pattern )
+{
+    kvs::PointObject* importedObject = nullptr;
+    const int minTimeStep  = filesManager->getMinTimeStep();
+    const int maxTimeStep  = filesManager->getMaxTimeStep();
+    const int nextTimeStep = m_time_control->getNextTimeStep();
+    const QString filePath = filesManager->getFileInfo().filePath();
+    const bool already_registerd = (filesManager->getIds().first == 0 && filesManager->getIds().second == 0) ? false : true;;
+
+    if( already_registerd == false )
+    {
+        if( pattern == KeepInitialChecked )
+        {
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
+            {
+                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                importedObject = m_connect->connect2( nextTimeStep );
+            }
+            else if( nextTimeStep < minTimeStep )
+            {
+                qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
+                importedObject = m_connect->connect2( minTimeStep );
+            }
+            else if( nextTimeStep > maxTimeStep )
+            {
+                qInfo() << "Does nothing.[" << __LINE__ << "]";
+                importedObject = importedObject = nullptr;
+            }
+        }
+
+        if( pattern == KeepFinalChecked )
+        {
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
+            {
+                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                importedObject = m_connect->connect2( nextTimeStep );
+            }
+            else if( nextTimeStep < minTimeStep )
+            {
+                qInfo() << "Does nothing.[" << __LINE__ << "]";
+                importedObject = nullptr;
+            }
+            else if( nextTimeStep > maxTimeStep )
+            {
+                qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
+                importedObject = m_connect->connect2( maxTimeStep );
+            }
+        }
+
+        if( pattern == BothChecked )
+        {
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
+            {
+                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                importedObject = m_connect->connect2( nextTimeStep );
+            }
+            else if( nextTimeStep < minTimeStep )
+            {
+                qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
+                importedObject = m_connect->connect2( minTimeStep );
+            }
+            else if( nextTimeStep > maxTimeStep )
+            {
+                qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
+                importedObject = m_connect->connect2( maxTimeStep );
+            }
+        }
+
+        if( pattern == NoneChecked )
+        {
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
+            {
+                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                importedObject = m_connect->connect2( nextTimeStep );
+            }
+            else if( nextTimeStep < minTimeStep )
+            {
+                qInfo() << "Does nothing.[" << __LINE__ << "]";
+                importedObject = nullptr;
+            }
+            else if( nextTimeStep > maxTimeStep )
+            {
+                qInfo() << "Does nothing.[" << __LINE__ << "]";
+                importedObject = nullptr;
+            }
+        }
+    }
+
+    if( already_registerd == true )
+    {
+        if( pattern == KeepInitialChecked )
+        {
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
+            {
+                if( nextTimeStep != currentTimeStep )
+                {
+                    if( nextTimeStep < minTimeStep )
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        importedObject = importedObject = nullptr;
+                    }
+                    else if( nextTimeStep > maxTimeStep )
+                    {
+                        //この条件に入ることはないかもしれません。
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        importedObject = importedObject = nullptr;
+                    }
+                    else if( nextTimeStep == minTimeStep )
+                    {
+                        if(currentTimeStep > nextTimeStep && minTimeStep != maxTimeStep )
+                        {
+                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                            importedObject = m_connect->connect2( nextTimeStep );
+                        }
+                        //当てはまらない場合
+                        else
+                        {
+                            qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        }
+                    }
+                    else if( nextTimeStep == maxTimeStep )
+                    {
+                        qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                        importedObject = m_connect->connect2( nextTimeStep );
+                    }
+                    else
+                    {
+                        qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                        importedObject = m_connect->connect2( nextTimeStep );
+                    }
+                }
+                else
+                {
+                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
+                    {
+                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
+                        importedObject = m_connect->connect2( nextTimeStep );
+                    }
+                    else
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    }
+                }
+            }
+            else if( nextTimeStep < minTimeStep )
+            {
+                //現在表示されているタイムステップがファイルの最小タイムステップよりも大きく、単一ステップのデータではない場合
+                if( currentTimeStep > minTimeStep && minTimeStep != maxTimeStep )
+                {
+                    qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
+                    importedObject = m_connect->connect2( minTimeStep );
+                }
+                else
+                {
+                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
+                    {
+                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
+                        importedObject = m_connect->connect2( minTimeStep );
+                    }
+                    else
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    }
+                }
+            }
+            else if( nextTimeStep > maxTimeStep )
+            {
+                qInfo() << "Delete the object.[" << __LINE__ << "]";
+                removeObject( filesManager );
+            }
+            else
+            {
+                qInfo() << "Delete the object.[" << __LINE__ << "]";
+                removeObject( filesManager );
+            }
+        }
+
+        if( pattern == KeepFinalChecked )
+        {
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
+            {
+                if( nextTimeStep != currentTimeStep )
+                {
+                    if( nextTimeStep < minTimeStep )
+                    {
+                        //この条件に入ることはないかもしれません。
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        importedObject = importedObject = nullptr;
+                    }
+                    else if( nextTimeStep > maxTimeStep )
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        importedObject = importedObject = nullptr;
+                    }
+                    else if( nextTimeStep == minTimeStep )
+                    {
+                        if(currentTimeStep > nextTimeStep && minTimeStep != maxTimeStep )
+                        {
+                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                            importedObject = m_connect->connect2( nextTimeStep );
+                        }
+                        //当てはまらない場合
+                        else
+                        {
+                            qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        }
+                    }
+                    else if( nextTimeStep == maxTimeStep )
+                    {
+                        if(currentTimeStep < nextTimeStep && minTimeStep != maxTimeStep )
+                        {
+                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                            importedObject = m_connect->connect2( nextTimeStep );
+                        }
+                        //当てはまらない場合
+                        else
+                        {
+                            qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        }
+                    }
+                    else
+                    {
+                        qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                        importedObject = m_connect->connect2( nextTimeStep );
+                    }
+                }
+                else
+                {
+                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
+                    {
+                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
+                        importedObject = m_connect->connect2( nextTimeStep );
+                    }
+                    else
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    }
+                }
+            }
+            else if( nextTimeStep < minTimeStep )
+            {
+                qInfo() << "Delete the object.[" << __LINE__ << "]";
+                removeObject( filesManager );
+            }
+            else if( nextTimeStep > maxTimeStep )
+            {
+                if( currentTimeStep < maxTimeStep && minTimeStep != maxTimeStep )
+                {
+                    qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
+                    importedObject = m_connect->connect2( maxTimeStep );
+                }
+                else
+                {
+                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
+                    {
+                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
+                        importedObject = m_connect->connect2( maxTimeStep );
+                    }
+                    else
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    }
+                }
+            }
+            else
+            {
+                qInfo() << "Delete the object.[" << __LINE__ << "]";
+                removeObject( filesManager );
+            }
+        }
+
+        if( pattern == BothChecked )
+        {
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
+            {
+                if( nextTimeStep != currentTimeStep )
+                {
+                    if (nextTimeStep < minTimeStep)
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        importedObject = importedObject = nullptr;
+                    }
+                    else if( nextTimeStep > maxTimeStep )
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        importedObject = importedObject = nullptr;
+                    }
+                    else if( nextTimeStep == minTimeStep )
+                    {
+                        if(currentTimeStep > nextTimeStep && minTimeStep != maxTimeStep )
+                        {
+                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                            importedObject = m_connect->connect2( nextTimeStep );
+                        }
+                        //当てはまらない場合
+                        else
+                        {
+                            qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        }
+                    }
+                    else if( nextTimeStep == maxTimeStep )
+                    {
+                        if(currentTimeStep < nextTimeStep && minTimeStep != maxTimeStep )
+                        {
+                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                            importedObject = m_connect->connect2( nextTimeStep );
+                        }
+                        //当てはまらない場合
+                        else
+                        {
+                            qInfo() << "Does nothing.[" << __LINE__ << "]";
+                        }
+                    }
+                    else
+                    {
+                        qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                        importedObject = m_connect->connect2( nextTimeStep );
+                    }
+                }
+                else
+                {
+                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
+                    {
+                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
+                        importedObject = m_connect->connect2( nextTimeStep );
+                    }
+                    else
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    }
+                }
+            }
+            else if( nextTimeStep < minTimeStep )
+            {
+                //現在表示されているタイムステップがファイルの最小タイムステップよりも大きく、単一ステップのデータではない場合
+                if( currentTimeStep > minTimeStep && minTimeStep != maxTimeStep )
+                {
+                    qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
+                    importedObject = m_connect->connect2( minTimeStep );
+                }
+                else
+                {
+                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
+                    {
+                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
+                        importedObject = m_connect->connect2( minTimeStep );
+                    }
+                    else
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    }
+                }
+            }
+            else if( nextTimeStep > maxTimeStep )
+            {
+                //現在表示されているタイムステップがファイルの最小タイムステップよりも大きく、単一ステップのデータではない場合
+                if( currentTimeStep < maxTimeStep && minTimeStep != maxTimeStep )
+                {
+                    qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
+                    importedObject = m_connect->connect2( maxTimeStep );
+                }
+                else
+                {
+                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
+                    {
+                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
+                        importedObject = m_connect->connect2( maxTimeStep );
+                    }
+                    else
+                    {
+                        qInfo() << "Does nothing.[" << __LINE__ << "]";
+                    }
+                }
+            }
+            else
+            {
+                qInfo() << "Delete the object.[" << __LINE__ << "]";
+                removeObject( filesManager );
+            }
+        }
+
+        if( pattern == NoneChecked )
+        {
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
+            {
+                if( nextTimeStep != currentTimeStep )
+                {
+                    qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
+                    importedObject = m_connect->connect2( nextTimeStep );
+                }
+                else
+                {
+                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
+                    {
+                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
+                        importedObject = m_connect->connect2( nextTimeStep );
                     }
                     else
                     {

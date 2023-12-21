@@ -98,7 +98,7 @@ void Connect::connect1()
     m_merge->serverObject( ui->volumeDataFilePathLEdit->text(), reply.m_start_step, reply.m_end_step );
 }
 
-kvs::PointObject* Connect::connect2()
+kvs::PointObject* Connect::connect2( int timeStep )
 {
     std::cout << "********" << std::endl;
     std::cout << "********" << std::endl;
@@ -126,7 +126,7 @@ kvs::PointObject* Connect::connect2()
     message.m_particle_density = 1;
     message.particle_data_size_limit = 20;
     message.m_camera = m_camera;//足りないかも
-    message.m_step = 2;
+    message.m_step = timeStep;
     message.m_message_size = message.byteSize();
     message.m_sampling_step = 1.0f;
     message.m_x_synthesis = "";
@@ -137,12 +137,12 @@ kvs::PointObject* Connect::connect2()
     //paramExTransFunc.applyToClientMessage( &message ); //↓
 
     //gt5d
-//    float min = -0.0791849;
-//    float max = 0.074513;
+    float min = -0.0791849;
+    float max = 0.074513;
 
     //spx
-        float min = 0.2;
-        float max = 1;
+//        float min = 0.2;
+//        float max = 1;
 
     message.m_transfer_function.clear();
     message.m_volume_equation.clear();

@@ -50,6 +50,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_merge.setScreen( m_screen );
     m_merge.setTimeControl( &m_timeControl );
     m_merge.setPreference( &m_preference );
+    m_merge.setConnect( &m_connect );
     m_merge.close();
     m_merge.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     addDockWidget(Qt::RightDockWidgetArea, &m_merge);
