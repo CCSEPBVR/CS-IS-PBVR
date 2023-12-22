@@ -39,7 +39,14 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QSpinBox" name="nextRepetitionLevelSBox"/>
+        <widget class="QSpinBox" name="nextRepetitionLevelSBox">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>512</number>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

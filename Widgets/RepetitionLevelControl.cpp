@@ -1,6 +1,7 @@
 #include "RepetitionLevelControl.h"
 #include "ui_RepetitionLevelControl.h"
 
+#include <kvs/ParticleBasedRenderer>
 RepetitionLevelControl::RepetitionLevelControl(QWidget *parent) :
     QDockWidget(parent),
     ui(new Ui::RepetitionLevelControl)
@@ -17,6 +18,21 @@ RepetitionLevelControl::~RepetitionLevelControl()
 
 void RepetitionLevelControl::onApplyButtonClicked()
 {
-//    qInfo() << m_compositor->repetitionLevel();
-//    m_compositor->setRepetitionLevel( 6 );
+
+
+    for(int i = 1; i < m_screen->scene()->numberOfObjects(); i++ )
+    {
+        if( m_screen->scene()->hasObject(i) )
+        {
+            if( strcmp( "kvs::glsl::ParticleBasedRenderer", m_screen->scene()->renderer(i)->moduleName()) == 0 )
+            {
+                kvs::glsl::ParticleBasedRenderer* particleBasedRenderer = new  kvs::glsl::ParticleBasedRenderer();
+                particleBasedRenderer->enableShuffle();
+                particleBasedRenderer->setRepetitionLevel( ui->nextRepetitionLevelSBox->value() );
+                m_screen->scene()->replaceRenderer( i, particleBasedRenderer );
+            }
+        }
+    }
+        m_compositor->setRepetitionLevel( ui->nextRepetitionLevelSBox->value() );
+        m_compositor->screen()->redraw();
 }
