@@ -91,8 +91,8 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     addDockWidget(Qt::RightDockWidgetArea, &m_render_options);
 
     m_repetition_level_control.close();
-    m_preference.setScreen( m_screen );
-    m_preference.setCompositor( m_compositor );
+    m_repetition_level_control.setScreen( m_screen );
+    m_repetition_level_control.setCompositor( m_compositor );
     m_repetition_level_control.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     addDockWidget(Qt::LeftDockWidgetArea, &m_repetition_level_control);
     m_repetition_level_control.setScreen( m_screen );
