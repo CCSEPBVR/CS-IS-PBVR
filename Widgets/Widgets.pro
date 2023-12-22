@@ -36,6 +36,7 @@ HEADERS += \
     Merge.h \
     Preference.h \
     RenderOptions.h \
+    RepetitionLevelControl.h \
     TimeControl.h \
     VolumeTransform.h \
     Connect.h
@@ -53,6 +54,7 @@ SOURCES += \
     Merge.cpp \
     Preference.cpp \
     RenderOptions.cpp \
+    RepetitionLevelControl.cpp \
     TimeControl.cpp \
     VolumeTransform.cpp \
     Connect.cpp
@@ -70,6 +72,7 @@ FORMS += \
     Merge.ui \
     Preference.ui \
     RenderOptions.ui \
+    RepetitionLevelControl.ui \
     TimeControl.ui \
     VolumeTransform.ui \
     Connect.ui

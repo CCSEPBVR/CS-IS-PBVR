@@ -17,6 +17,7 @@
 #include "Widgets/DataProperties.h"
 #include "Widgets/DataSummary.h"
 #include "Widgets/RenderOptions.h"
+#include "Widgets/RepetitionLevelControl.h"
 
 namespace Ui {
 class PBVRGUI;
@@ -50,6 +51,7 @@ private:
     DataProperties m_data_properties;
     DataSummary m_data_summary;
     RenderOptions m_render_options;
+    RepetitionLevelControl m_repetition_level_control;
 
 private:
     void onPreference()      { m_preference.show(); }
@@ -59,6 +61,7 @@ private:
     void onAnimationControl() { m_animation_controls.show(); }
     void onFilterInfomation() { m_data_properties.show(); }
     void onRenderOptions() { m_render_options.show(); }
+    void onRepetitionLevelControl() { m_repetition_level_control.show(); }
 
     void keyPressEvent( QKeyEvent *event );
 };

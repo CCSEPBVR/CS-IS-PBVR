@@ -47,6 +47,7 @@
     <addaction name="actionFilterInfomation"/>
     <addaction name="actionAnimationControls"/>
     <addaction name="actionRenderOptions"/>
+    <addaction name="actionRepetitionLevelControl"/>
    </widget>
    <addaction name="menuQTPBVR"/>
    <addaction name="menuPanels"/>
@@ -106,6 +107,11 @@
   <action name="actionRenderOptions">
    <property name="text">
     <string>RenderOptions</string>
+   </property>
+  </action>
+  <action name="actionRepetitionLevelControl">
+   <property name="text">
+    <string>RepetitionLevelControl</string>
    </property>
   </action>
  </widget>
