@@ -18,6 +18,7 @@
 #include "Widgets/DataSummary.h"
 #include "Widgets/RenderOptions.h"
 #include "Widgets/RepetitionLevelControl.h"
+#include "Widgets/TransferFunctionEditor.h"
 
 namespace Ui {
 class PBVRGUI;
@@ -52,6 +53,7 @@ private:
     DataSummary m_data_summary;
     RenderOptions m_render_options;
     RepetitionLevelControl m_repetition_level_control;
+    TransferFunctionEditor m_transfer_function_editor;
 
 private:
     void onPreference()      { m_preference.show(); }

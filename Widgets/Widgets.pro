@@ -38,6 +38,7 @@ HEADERS += \
     RenderOptions.h \
     RepetitionLevelControl.h \
     TimeControl.h \
+    TransferFunctionEditor.h \
     VolumeTransform.h \
     Connect.h
 
@@ -56,6 +57,7 @@ SOURCES += \
     RenderOptions.cpp \
     RepetitionLevelControl.cpp \
     TimeControl.cpp \
+    TransferFunctionEditor.cpp \
     VolumeTransform.cpp \
     Connect.cpp
 
@@ -74,6 +76,7 @@ FORMS += \
     RenderOptions.ui \
     RepetitionLevelControl.ui \
     TimeControl.ui \
+    TransferFunctionEditor.ui \
     VolumeTransform.ui \
     Connect.ui
 
