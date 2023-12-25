@@ -11,7 +11,7 @@
 #include <QWidgetAction>
 #include <kvs/PolygonImporter>
 #include <kvs/WidgetBase>
-#include "ExtendedKVS/OrientationAxis.h"
+
 //デバック用(将来的にデバッグ用マクロ定義ファイルに移行する。
 #define STOCHASTIC_RENDERING_WITH_HYDROGEN
 
@@ -125,9 +125,6 @@ void PBVRGUI::initialize()
 
     // QGridLayout に kvs::qt::jaea::Screen を追加
     ui->screenArea->addWidget(m_screen, 0, 0, 1, 1);//コンストラクタの最後にすると表示に差異が生じる、要相談
-
-    kvs::qt::OrientationAxis* oa = new kvs::qt::OrientationAxis( m_screen, m_screen->scene() );
-    oa->show();
 }
 
 void PBVRGUI::keyPressEvent(QKeyEvent *event)

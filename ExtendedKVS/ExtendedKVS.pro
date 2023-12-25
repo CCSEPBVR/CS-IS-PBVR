@@ -26,9 +26,7 @@ TARGET = ExtendedKVS
 #  Header.
 #=============================================================================
 HEADERS += \
-    OrientationAxis.h \
-    Screen.h \
-    WidgetBase.h
+    Screen.h
 
 
 
@@ -36,9 +34,7 @@ HEADERS += \
 #  Source.
 #=============================================================================
 SOURCES += \
-    OrientationAxis.cpp \
-    Screen.cpp \
-    WidgetBase.cpp
+    Screen.cpp
 
 
 
