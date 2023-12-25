@@ -126,31 +126,38 @@
       <string>Color Map</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="0" column="1">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
-      </item>
-      <item row="1" column="2">
-       <widget class="QLineEdit" name="lineEdit_2"/>
-      </item>
-      <item row="2" column="0" colspan="3">
-       <layout class="QGridLayout" name="colorMapBarGLayout"/>
-      </item>
-      <item row="4" column="2" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>:Max</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_3"/>
-      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
          <string>User Defined Range Min:Max</string>
         </property>
        </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_3"/>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Min:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="3">
+       <layout class="QGridLayout" name="colorMapHistogramGLayout"/>
+      </item>
+      <item row="1" column="2">
+       <widget class="QLineEdit" name="lineEdit_2"/>
+      </item>
+      <item row="5" column="2" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>:Max</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label">
@@ -159,16 +166,16 @@
         </property>
        </widget>
       </item>
+      <item row="3" column="0" colspan="3">
+       <layout class="QGridLayout" name="colorMapBarGLayout"/>
+      </item>
       <item row="1" column="1">
        <widget class="QLineEdit" name="lineEdit"/>
       </item>
-      <item row="3" column="0" colspan="3">
-       <layout class="QGridLayout" name="colorMapHistogramGLayout"/>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_5">
+      <item row="2" column="0" colspan="3">
+       <widget class="QPushButton" name="pushButton_7">
         <property name="text">
-         <string>Min:</string>
+         <string>Edit Color Map</string>
         </property>
        </widget>
       </item>
@@ -181,30 +188,31 @@
       <string>Opacity Map</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_5">
+      <item row="4" column="0" colspan="3">
+       <layout class="QGridLayout" name="opacityMapHistogramGLayout"/>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Min:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_4"/>
+      </item>
+      <item row="3" column="0" colspan="3">
+       <layout class="QGridLayout" name="opacityMapBarGLayout"/>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="spinBox_2"/>
+      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
          <string>User Defined Range Min:Max</string>
         </property>
        </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
-      </item>
-      <item row="0" column="2">
-       <widget class="QSpinBox" name="spinBox"/>
-      </item>
-      <item row="0" column="1">
-       <widget class="QSpinBox" name="spinBox_2"/>
-      </item>
-      <item row="2" column="0" colspan="3">
-       <layout class="QGridLayout" name="opacityMapBarGLayout"/>
-      </item>
-      <item row="3" column="0" colspan="3">
-       <layout class="QGridLayout" name="opacityMapHistogramGLayout"/>
-      </item>
-      <item row="1" column="2">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_4"/>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_4">
@@ -213,17 +221,23 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_7">
-        <property name="text">
-         <string>Min:</string>
-        </property>
-       </widget>
+      <item row="1" column="1">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
       </item>
-      <item row="4" column="2" alignment="Qt::AlignRight">
+      <item row="5" column="2" alignment="Qt::AlignRight">
        <widget class="QLabel" name="label_8">
         <property name="text">
          <string>:Max</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QSpinBox" name="spinBox"/>
+      </item>
+      <item row="2" column="0" colspan="3">
+       <widget class="QPushButton" name="pushButton_8">
+        <property name="text">
+         <string>Edit Opacity Map</string>
         </property>
        </widget>
       </item>
