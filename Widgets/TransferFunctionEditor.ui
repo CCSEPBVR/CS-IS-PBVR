@@ -184,7 +184,7 @@
        <widget class="QLineEdit" name="lineEdit_2"/>
       </item>
       <item row="4" column="0" colspan="3">
-       <widget class="QOpenGLWidget" name="openGLWidget_3">
+       <widget class="TFEHistogramBar" name="openGLWidget_3">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -260,7 +260,7 @@
        <widget class="QDoubleSpinBox" name="doubleSpinBox_4"/>
       </item>
       <item row="4" column="0" colspan="3">
-       <widget class="QOpenGLWidget" name="openGLWidget_4">
+       <widget class="TFEHistogramBar" name="openGLWidget_4">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -335,6 +335,11 @@
    <class>TFEOpacityMapBar</class>
    <extends>QOpenGLWidget</extends>
    <header>Widgets/TFEOpacityMapBar.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TFEHistogramBar</class>
+   <extends>QOpenGLWidget</extends>
+   <header>Widgets/TFEHistogramBar.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -38,6 +38,7 @@ HEADERS += \
     RenderOptions.h \
     RepetitionLevelControl.h \
     TFEColorMapBar.h \
+    TFEHistogramBar.h \
     TFEOpacityMapBar.h \
     TimeControl.h \
     TransferFunctionEditor.h \
@@ -59,6 +60,7 @@ SOURCES += \
     RenderOptions.cpp \
     RepetitionLevelControl.cpp \
     TFEColorMapBar.cpp \
+    TFEHistogramBar.cpp \
     TFEOpacityMapBar.cpp \
     TimeControl.cpp \
     TransferFunctionEditor.cpp \
