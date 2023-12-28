@@ -38,6 +38,7 @@ HEADERS += \
     RenderOptions.h \
     RepetitionLevelControl.h \
     TFEColorMapBar.h \
+    TFEColorMapPalette.h \
     TFEHistogramBar.h \
     TFEOpacityMapBar.h \
     TimeControl.h \
@@ -60,6 +61,7 @@ SOURCES += \
     RenderOptions.cpp \
     RepetitionLevelControl.cpp \
     TFEColorMapBar.cpp \
+    TFEColorMapPalette.cpp \
     TFEHistogramBar.cpp \
     TFEOpacityMapBar.cpp \
     TimeControl.cpp \
