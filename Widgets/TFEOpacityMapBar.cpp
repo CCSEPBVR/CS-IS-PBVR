@@ -23,11 +23,11 @@ void TFEOpacityMapBar::paintGL()
     this->create_checkerboard();
 
     //    FROM OLD QTPBVR qglue_base begin_draw
-//        GLint vp[4]; glGetIntegerv( GL_VIEWPORT, vp );
+    //    GLint vp[4]; glGetIntegerv( GL_VIEWPORT, vp );
     //    glPushAttrib( GL_ALL_ATTRIB_BITS );
     //    glMatrixMode( GL_MODELVIEW );  glPushMatrix(); glLoadIdentity();
     //    glMatrixMode( GL_PROJECTION ); glPushMatrix(); glLoadIdentity();
-//        glOrtho( left, right, top, bottom, -1, 1 ); // The origin is upper-left.
+    //    glOrtho( left, right, top, bottom, -1, 1 ); // The origin is upper-left.
     //    glDisable( GL_DEPTH_TEST );
     GLint vp[4];
     kvs::OpenGL::GetIntegerv( GL_VIEWPORT, vp );
