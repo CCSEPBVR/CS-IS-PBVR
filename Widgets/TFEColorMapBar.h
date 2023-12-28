@@ -21,7 +21,12 @@ protected:
 private:
     kvs::ColorMap m_color_map; ///< color map
     kvs::Texture2D m_texture; ///< texture data
+    QRect m_palette; ///< palette
     bool m_texture_downloaded; ///< check flag for texture
+
+private:
+    void create_texture();
+    void draw_color_bar();
 };
 
 #endif // TFECOLORMAPBAR_H

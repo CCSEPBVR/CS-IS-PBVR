@@ -15,7 +15,7 @@ TFEColorMapPalette::~TFEColorMapPalette()
 void TFEColorMapPalette::initializeGL()
 {
     initializeOpenGLFunctions();
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clear color to white
+    kvs::OpenGL::SetClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void TFEColorMapPalette::paintGL()
@@ -33,7 +33,6 @@ void TFEColorMapPalette::paintGL()
     //    glMatrixMode( GL_PROJECTION ); glPushMatrix(); glLoadIdentity();
     //    glOrtho( left, right, top, bottom, -1, 1 ); // The origin is upper-left.
     //    glDisable( GL_DEPTH_TEST );
-
     GLint vp[4];
     kvs::OpenGL::GetIntegerv( GL_VIEWPORT, vp );
     const GLint left   = vp[0];
@@ -60,7 +59,6 @@ void TFEColorMapPalette::paintGL()
     //    glMatrixMode( GL_MODELVIEW );
     //    glPopMatrix();
     //    glPopAttrib();
-
     kvs::OpenGL::PopMatrix();
     kvs::OpenGL::SetMatrixMode( GL_MODELVIEW );
     kvs::OpenGL::PopMatrix();
@@ -69,7 +67,6 @@ void TFEColorMapPalette::paintGL()
 
 void TFEColorMapPalette::resizeGL(int w, int h)
 {
-    //    glViewport(0, 0, w, h);
     int h_scaled = h * this->devicePixelRatio();
     int w_scaled = w * this->devicePixelRatio();
 
