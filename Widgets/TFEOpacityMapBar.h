@@ -22,6 +22,12 @@ private:
     kvs::OpacityMap m_opacity_map; ///< color map
     kvs::Texture2D m_texture; ///< texture data
     kvs::Texture2D m_checker_board; ///< checker board texture
+    QRect m_palette; ///< palette
+
+private:
+    void create_texture();
+    void create_checkerboard();
+    void draw_opacity_bar();
 };
 
 #endif // TFEOPACITYMAPBAR_H
