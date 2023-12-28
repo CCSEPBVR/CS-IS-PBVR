@@ -41,6 +41,7 @@ HEADERS += \
     TFEColorMapPalette.h \
     TFEHistogramBar.h \
     TFEOpacityMapBar.h \
+    TFEOpacityMapPalette.h \
     TimeControl.h \
     TransferFunctionEditor.h \
     VolumeTransform.h \
@@ -64,6 +65,7 @@ SOURCES += \
     TFEColorMapPalette.cpp \
     TFEHistogramBar.cpp \
     TFEOpacityMapBar.cpp \
+    TFEOpacityMapPalette.cpp \
     TimeControl.cpp \
     TransferFunctionEditor.cpp \
     VolumeTransform.cpp \
