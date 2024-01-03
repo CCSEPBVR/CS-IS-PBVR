@@ -237,7 +237,7 @@
        </widget>
       </item>
       <item row="3" column="0" colspan="3">
-       <widget class="TFEOpacityMapBar" name="openGLWidget_2">
+       <widget class="TFEOpacityMapPalette" name="openGLWidget_2">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -332,14 +332,14 @@
    <header>Widgets/TFEColorMapBar.h</header>
   </customwidget>
   <customwidget>
-   <class>TFEOpacityMapBar</class>
-   <extends>QOpenGLWidget</extends>
-   <header>Widgets/TFEOpacityMapBar.h</header>
-  </customwidget>
-  <customwidget>
    <class>TFEHistogramBar</class>
    <extends>QOpenGLWidget</extends>
    <header>Widgets/TFEHistogramBar.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TFEOpacityMapPalette</class>
+   <extends>QOpenGLWidget</extends>
+   <header>Widgets/TFEOpacityMapPalette.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
