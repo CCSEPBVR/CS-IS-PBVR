@@ -18,7 +18,7 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
     ui->tableWidget->verticalHeader()->setVisible(false);
-    ui->tableWidget->verticalHeader()->setDefaultSectionSize(40);
+    ui->tableWidget->verticalHeader()->setDefaultSectionSize(60);
 
 //    QFile file("/Users/t0603/Work/json/test.json");
         QFile file("/Users/t0603/Work/json/test2.json");
@@ -173,11 +173,17 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
 
             TFEColorMapBar* colorMapBar = new TFEColorMapBar();
             colorMapBar->setColorMap( color_map );
+            colorMapBar->setFixedWidth( 200 );
+            colorMapBar->setMaximumHeight( 25 );
+
             QLabel* label = new QLabel( name );
+            label->setWordWrap( true );
+            label->setMinimumWidth( 10 );
+            label->setMargin( 0 );
 
             QHBoxLayout* layout = new QHBoxLayout();
-            layout->addWidget(colorMapBar);
-            layout->addWidget(label);
+            layout->addWidget( colorMapBar );
+            layout->addWidget( label );
 
             QWidget* containerWidget = new QWidget();
             containerWidget->setLayout(layout);
