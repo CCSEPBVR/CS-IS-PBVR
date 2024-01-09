@@ -21,7 +21,7 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
     ui->tableWidget->verticalHeader()->setDefaultSectionSize(40);
 
 //    QFile file("/Users/t0603/Work/json/test.json");
-    QFile file("/Users/t0603/Work/json/test2.json");
+        QFile file("/Users/t0603/Work/json/test2.json");
     if ( !file.open(QIODevice::ReadOnly | QIODevice::Text) )
     {
         qDebug() << "Failed to open the file.";
@@ -37,7 +37,8 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
     QJsonArray rootArray = jsonDoc.array();
 
     int count = 0;
-    for (const QJsonValue &value : rootArray) {
+    for (const QJsonValue &value : rootArray)
+    {
         {
             kvs::ColorMap color_map;
 
@@ -52,6 +53,9 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
             QString colorSpace = jsonObject.value("ColorSpace").toString();
             QString name = jsonObject.value("Name").toString();
             QJsonArray rgbPointsArray = jsonObject.value("RGBPoints").toArray();
+
+            float min_value = rgbPointsArray.at(0).toDouble();
+            float max_value = rgbPointsArray.at(rgbPointsArray.size() - 4).toDouble();
 
             if( colorSpace == "Diverging" )
             {
@@ -69,7 +73,7 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
                 }
                 else
                 {
-                    color_map = kvs::ColorMap( 256, 0, 1 );
+                    color_map = kvs::ColorMap( 256, min_value, max_value );
                     for (int i = 0; i < rgbPointsArray.size(); i += 4)
                     {
                         float value = rgbPointsArray.at(i).toDouble();
@@ -81,10 +85,8 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
                     color_map.create();
                 }
             }
-            else
+            else if( colorSpace == "Lab" )
             {
-                float min_value = rgbPointsArray.at(0).toDouble();
-                float max_value = rgbPointsArray.at(rgbPointsArray.size() - 4).toDouble();
                 color_map = kvs::ColorMap( 256, min_value, max_value );
                 for (int i = 0; i < rgbPointsArray.size(); i += 4)
                 {
@@ -93,6 +95,78 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
                     int g = rgbPointsArray.at(i + 2).toDouble() * 255;
                     int b = rgbPointsArray.at(i + 3).toDouble() * 255;
                     color_map.addPoint( value, kvs::RGBColor( r, g, b ) );
+                }
+                color_map.create();
+            }
+            else if( colorSpace == "RGB" )
+            {
+                color_map = kvs::ColorMap( 256, min_value, max_value );
+                for (int i = 0; i < rgbPointsArray.size(); i += 4)
+                {
+                    float value = rgbPointsArray.at(i).toDouble();
+                    int r = rgbPointsArray.at(i + 1).toDouble() * 255;
+                    int g = rgbPointsArray.at(i + 2).toDouble() * 255;
+                    int b = rgbPointsArray.at(i + 3).toDouble() * 255;
+                    color_map.addPoint( value, kvs::RGBColor( r, g, b ) );
+                }
+                color_map.create();
+            }
+            else if( colorSpace == "CIELAB" )
+            {
+                color_map = kvs::ColorMap( 256, min_value, max_value );
+                for (int i = 0; i < rgbPointsArray.size(); i += 4)
+                {
+                    float value = rgbPointsArray.at(i).toDouble();
+                    int r = rgbPointsArray.at(i + 1).toDouble() * 255;
+                    int g = rgbPointsArray.at(i + 2).toDouble() * 255;
+                    int b = rgbPointsArray.at(i + 3).toDouble() * 255;
+                    color_map.addPoint( value, kvs::RGBColor( r, g, b ) );
+                }
+                color_map.create();
+            }
+            else if( colorSpace == "HSV" )
+            {
+                color_map = kvs::ColorMap( 256, min_value, max_value );
+                if( name == "Blue to Red Rainbow" )
+                {
+                    color_map.addPoint(0/4.0, kvs::RGBColor( 0, 0, 255 ));
+                    color_map.addPoint(1/4.0, kvs::RGBColor( 0, 255, 255 ));
+                    color_map.addPoint(2/4.0, kvs::RGBColor( 0, 255, 0 ));
+                    color_map.addPoint(3/4.0, kvs::RGBColor( 255, 255, 0 ));
+                    color_map.addPoint(4/4.0, kvs::RGBColor( 255, 0, 0 ));
+                }
+                else
+                {
+                    for (int i = 0; i < rgbPointsArray.size(); i += 4)
+                    {
+                        float value = rgbPointsArray.at(i).toDouble();
+                        int r = rgbPointsArray.at(i + 1).toDouble() * 255;
+                        int g = rgbPointsArray.at(i + 2).toDouble() * 255;
+                        int b = rgbPointsArray.at(i + 3).toDouble() * 255;
+                        color_map.addPoint( value, kvs::RGBColor( r, g, b ) );
+                    }
+                }
+                color_map.create();
+            }
+            else if( colorSpace == "Step" )
+            {
+                color_map = kvs::ColorMap( 256, min_value, max_value );
+                for ( int i = 0; i < rgbPointsArray.size(); i += 4 )
+                {
+                    float value1 = rgbPointsArray.at(i).toDouble();
+                    int r = rgbPointsArray.at(i + 1).toDouble() * 255;
+                    int g = rgbPointsArray.at(i + 2).toDouble() * 255;
+                    int b = rgbPointsArray.at(i + 3).toDouble() * 255;
+                    if( i < 8 )
+                    {
+                        color_map.addPoint( value1, kvs::RGBColor( r, g, b ) );
+                    }
+                    else
+                    {
+                        float value2 = rgbPointsArray.at(i - 4).toDouble();
+                        color_map.addPoint( value2, kvs::RGBColor( r, g, b ) );
+                        color_map.addPoint( value1, kvs::RGBColor( r, g, b ) );
+                    }
                 }
                 color_map.create();
             }

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>924</width>
+    <width>1000</width>
     <height>330</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>924</width>
+    <width>1000</width>
     <height>330</height>
    </size>
   </property>
@@ -50,13 +50,13 @@
     <widget class="QTableWidget" name="tableWidget">
      <property name="minimumSize">
       <size>
-       <width>900</width>
+       <width>1000</width>
        <height>180</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>900</width>
+       <width>1000</width>
        <height>180</height>
       </size>
      </property>
