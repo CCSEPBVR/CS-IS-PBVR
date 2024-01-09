@@ -171,7 +171,6 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
                 color_map.create();
             }
 
-
             TFEColorMapBar* colorMapBar = new TFEColorMapBar();
             colorMapBar->setColorMap( color_map );
             QLabel* label = new QLabel( name );
