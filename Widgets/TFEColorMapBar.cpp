@@ -12,6 +12,22 @@ TFEColorMapBar::~TFEColorMapBar()
 {
 }
 
+void TFEColorMapBar::setColorMap( const kvs::ColorMap& colormap )
+{
+    // Deep copy.
+    kvs::ColorMap::Table colormap_table( colormap.table().data(), colormap.table().size() );
+    m_color_map = kvs::ColorMap( colormap_table );
+
+//    if ( colormap.hasRange() )
+//    {
+//        m_min_value = colormap.minValue();
+//        m_max_value = colormap.maxValue();
+//    }
+
+    // Download the texture data onto GPU.
+    m_texture_downloaded = false;
+}
+
 void TFEColorMapBar::initializeGL()
 {
     initializeOpenGLFunctions();

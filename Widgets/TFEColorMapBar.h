@@ -12,6 +12,7 @@ class TFEColorMapBar : public QOpenGLWidget, protected QOpenGLFunctions
 public:
     TFEColorMapBar( QWidget *parent = nullptr );
     ~TFEColorMapBar();
+    void setColorMap( const kvs::ColorMap& colormap );
 
 protected:
     void initializeGL() override;
