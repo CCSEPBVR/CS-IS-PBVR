@@ -15,16 +15,27 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
     ui(new Ui::ColorMapEditor)
 {
     ui->setupUi(this);
-    ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->colorMapBarTWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->colorMapBarTWidget->verticalHeader()->setDefaultSectionSize(60);
 
-    ui->tableWidget->verticalHeader()->setVisible(false);
-    ui->tableWidget->verticalHeader()->setDefaultSectionSize(60);
+    ui->controlPointsTWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-//    QFile file("/Users/t0603/Work/json/test.json");
-        QFile file("/Users/t0603/Work/json/test2.json");
+    readJsonFile();
+
+    connect( ui->colorMapBarTabWidget, &QTabWidget::currentChanged, this, &ColorMapEditor::onCurrentTabChanged );
+}
+
+ColorMapEditor::~ColorMapEditor()
+{
+    delete ui;
+}
+
+void ColorMapEditor::readJsonFile()
+{
+    QFile file("/Users/t0603/Work/json/test2.json"); //将来的にリソースディレクトリ内のjsonを読み込むように修正すること。
     if ( !file.open(QIODevice::ReadOnly | QIODevice::Text) )
     {
-        qDebug() << "Failed to open the file.";
+        qDebug() << "Failed to open preset.json.";
     }
 
     QByteArray jsonData = file.readAll();
@@ -42,10 +53,10 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
         {
             kvs::ColorMap color_map;
 
-            int row_position = ui->tableWidget->rowCount();
+            int row_position = ui->colorMapBarTWidget->rowCount();
             if( count % 2 == 0)
             {
-                ui->tableWidget->insertRow( row_position );
+                ui->colorMapBarTWidget->insertRow( row_position );
                 count = 0;
             }
             // Convert value to object
@@ -187,13 +198,27 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
 
             QWidget* containerWidget = new QWidget();
             containerWidget->setLayout(layout);
-            ui->tableWidget->setCellWidget(ui->tableWidget->rowCount() - 1, count, containerWidget);
+            ui->colorMapBarTWidget->setCellWidget(ui->colorMapBarTWidget->rowCount() - 1, count, containerWidget);
             count++;
         }
     }
 }
 
-ColorMapEditor::~ColorMapEditor()
+void ColorMapEditor::onCurrentTabChanged( int index )
 {
-    delete ui;
+    qInfo() << index;
+    //presets 0
+    //free 1
+    //exp 2
+    //point 3
+    if( index == 0 || index == 3)
+    {
+        resize( width(), 500 );
+    }
+    else if( index == 2 )
+    {
+        resize( width(), 300 );
+    }
+
+
 }

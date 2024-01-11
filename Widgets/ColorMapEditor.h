@@ -17,6 +17,10 @@ public:
 
 private:
     Ui::ColorMapEditor *ui;
+    void readJsonFile();//Load Presets ColorMapBar
+
+private slots:
+    void onCurrentTabChanged( int index );
 };
 
 #endif // COLORMAPEDITOR_H
