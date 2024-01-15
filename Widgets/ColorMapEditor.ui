@@ -29,7 +29,7 @@
    <item row="2" column="0">
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Preview ColorMapBar</string>
+      <string>ColorMapBar</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="0" column="0">
