@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+#include <kvs/RGBColor>
+
 namespace Ui {
 class ColorMapEditor;
 }
@@ -17,9 +19,10 @@ public:
 
 private:
     Ui::ColorMapEditor *ui;
-    void readJsonFile();//Load Presets ColorMapBar
+    void readJsonFile();//Load Presets ColorMapBar    
 
 private slots:
+    void onTabBarClicked( int index );
     void onCurrentTabChanged( int index );
 };
 

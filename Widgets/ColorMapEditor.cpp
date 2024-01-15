@@ -7,6 +7,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QColor>
+#include <QColorDialog>
 
 #include <kvs/DivergingColorMap>
 
@@ -19,10 +21,13 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
     ui->colorMapBarTWidget->verticalHeader()->setDefaultSectionSize(60);
 
     ui->controlPointsTWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-
     readJsonFile();
 
-    connect( ui->colorMapBarTabWidget, &QTabWidget::currentChanged, this, &ColorMapEditor::onCurrentTabChanged );
+    ui->colorMapBarTabWidget->setCurrentIndex( 0 );
+    resize( width(), 500 );
+
+    connect( ui->colorMapBarTabWidget, &QTabWidget::tabBarClicked, this, &ColorMapEditor::onTabBarClicked );
+    connect( ui->colorMapBarTabWidget, &QTabWidget::currentChanged, this, &ColorMapEditor::onCurrentTabChanged );  
 }
 
 ColorMapEditor::~ColorMapEditor()
@@ -204,21 +209,33 @@ void ColorMapEditor::readJsonFile()
     }
 }
 
-void ColorMapEditor::onCurrentTabChanged( int index )
+//Presets        0
+//Freeform curve 1
+//Expression     2
+//Control Point  3
+void ColorMapEditor::onTabBarClicked( int index )
 {
-    qInfo() << index;
-    //presets 0
-    //free 1
-    //exp 2
-    //point 3
+    if( index == 1 )
+    {
+        ui->colorMapBarTabWidget->setCurrentIndex( index );
+        QColor color = QColorDialog::getColor( Qt::white, this, tr("Select Color") );
+
+        raise();
+    }
+}
+
+void ColorMapEditor::onCurrentTabChanged( int index )
+{    
     if( index == 0 || index == 3)
     {
         resize( width(), 500 );
     }
+    else if( index == 1 )
+    {
+        resize( width(), minimumHeight() );
+    }
     else if( index == 2 )
     {
-        resize( width(), 300 );
+        resize( width(), minimumHeight() );
     }
-
-
 }

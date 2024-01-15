@@ -54,7 +54,7 @@
    <item row="3" column="0">
     <widget class="QTabWidget" name="colorMapBarTabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="presetsTab">
       <attribute name="title">
@@ -111,6 +111,7 @@
       <attribute name="title">
        <string>Freeform Curve</string>
       </attribute>
+      <layout class="QGridLayout" name="gridLayout_6"/>
      </widget>
      <widget class="QWidget" name="expressionTab">
       <attribute name="title">
