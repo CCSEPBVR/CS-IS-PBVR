@@ -574,7 +574,8 @@ const kvs::Real32 PrismaticCell<T>::volume() const
 template <typename T>
 inline void PrismaticCell<T>::setLocalGravityPoint() const
 {
-    this->setLocalPoint( kvs::Vector3f( 1 / 3, 1 / 3, 0.5 ) );
+    float t = 0.333333;
+    this->setLocalPoint( kvs::Vector3f( t, t, 0.5 ) );
 }
 
 } // end of namespace kvs

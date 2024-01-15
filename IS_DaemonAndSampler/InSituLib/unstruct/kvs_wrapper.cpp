@@ -928,9 +928,12 @@ void generate_particles( int time_step,
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
                 cell_index[cell_BLK] = (kvs::UInt32)(cell_base + cell_BLK);
-                local_center_array[cell_BLK] = kvs::Vector3f ( 0.5, 0.5, 0.5 );
+                //local_center_array[cell_BLK] = kvs::Vector3f ( 0.5, 0.5, 0.5 );
+                local_center_array[cell_BLK] = interp[thid][0]->localGravityPoint();
             }
 
+            //if(cell_base == 0 ) std::cout <<" local_center_array[0] =  "<< local_center_array[0] <<std::endl;
+            //if(cell_base == 0 ) std::cout <<" o_max[0] =  "<< o_max[0] <<", o_min[0] = " << o_min[0]  << std::endl;
             //補間器にセルを一括でバインド
             for(int i = 0; i < nvariables; i++)
             {
@@ -1003,6 +1006,7 @@ void generate_particles( int time_step,
                 }
             }
 
+            //std::cout <<" th_O_max[0] =  "<< th_O_max[0] <<", th_O_min[0] = " << th_O_min[0]  << std::endl;
 
             th_tfs[thid]->CalculateOpacityArrayAverage( interp[thid],
                                                  remain,
@@ -1014,10 +1018,13 @@ void generate_particles( int time_step,
             int nparticles_num = 0;
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
-                    const float density = Generator::CalculateDensity( cell_opacity_array[cell_BLK],
+                    float density = Generator::CalculateDensity( cell_opacity_array[cell_BLK],
                                                                        sampling_volume_inverse,
                                                                        max_opacity, max_density );
-//                    const float density = cell_opacity_array[cell_BLK] < 0.00001 ? 0.0 : max_density;
+#ifdef REJECTION
+                    density             = cell_opacity_array[cell_BLK] < 0.0039 ? 0.0 : density; //  less than 1/256
+#endif
+//                    const float density = cell_opacity_array[cell_BLK] < 0.003 ? 0.0 : max_density; //  less than 1/256
                     interp[thid][0]->bindCell( cell_index[cell_BLK] );
                     nparticles_array[cell_BLK] 
                         = calculate_number_of_particles( density, interp[thid][0]->volume(), &MT );
@@ -1038,41 +1045,56 @@ void generate_particles( int time_step,
                     int remain_BLK = ( nparticles_array[cell_BLK] - i > SIMD_BLK_SIZE )
                                                         ? SIMD_BLK_SIZE: nparticles_array[cell_BLK] - i;
                     //一括でセルをバインドするための配列と、座標の取得
+#ifdef REJECTION
+                    int nparticles_count = 0;
+#endif
                     for( int j = 0; j < remain_BLK; j++ ) 
                     {
                         cell_index[j] = cell_base + cell_BLK;
                         kvs::UInt32 cell_id = cell_base + cell_BLK;
-                    while(1)
-                    {
-                        local_coord_array[j] = interp[thid][0] -> randomSampling_MT( &MT );
-
-                        //補間器にセルを一括でバインド
-                        for( int k = 0; k < nvariables; k++ )
+                        while(1)
                         {
-                            interp[thid][k]->bindCell( cell_index[j] );
-                        }
-                    
-                        interp[thid][0]->setLocalPoint( local_coord_array[j] );
-                        global_coord_array[j] = interp[thid][0]->transformLocalToGlobal( local_coord_array[j] );
-                        cell_opacity_array[j] = th_tfs[thid]->CalculateOpacity( interp[thid],
-                                local_coord_array[j],
-                                global_coord_array[j],
-                                th_tf[thid]);
-                        
-                        density_array[j] = Generator::CalculateDensity( cell_opacity_array[j],
-                                 sampling_volume_inverse,
-                                 max_opacity, max_density );
-                        if(density_array[j] > 0)
-                        {
-//                            std::cout << "break!!!!!" <<std::endl; 
-                            break;
-                        }
+                            local_coord_array[j] = interp[thid][0] -> randomSampling_MT( &MT );
 
+                            //補間器にセルを一括でバインド
+                            for( int k = 0; k < nvariables; k++ )
+                            {
+                                interp[thid][k]->bindCell( cell_index[j] );
+                            }
+
+                            interp[thid][0]->setLocalPoint( local_coord_array[j] );
+                            global_coord_array[j] = interp[thid][0]->transformLocalToGlobal( local_coord_array[j] );
+                            cell_opacity_array[j] = th_tfs[thid]->CalculateOpacity( interp[thid],
+                                    local_coord_array[j],
+                                    global_coord_array[j],
+                                    th_tf[thid]);
+
+                            density_array[j] = Generator::CalculateDensity( cell_opacity_array[j],
+                                    sampling_volume_inverse,
+                                    max_opacity, max_density );
+
+#ifdef REJECTION
+                          if( density_array[j] > max_density * (float)MT.rand() )
+                          {
+                              cell_index[ nparticles_count ] = cell_index[j];
+                              local_coord_array[ nparticles_count ] = local_coord_array[j];
+                              global_coord_array[ nparticles_count ] = global_coord_array[j];
+                              nparticles_count +=1;
+                              break;
+                          }
+#else
+                          if(density_array[j] > 0)
+                          {
+//                          std::cout << "break!!!!!" <<std::endl; 
+                              break;
+                          }
+#endif                          
+                        }  //while loop 
                     }
-                    }
-                         
-//                    //densityの条件に適合するnparticlesの個数の取得
-//                    //そのときのcell_index, local_coordを再配置
+                    //densityの条件に適合するnparticlesの個数の取得
+                    //そのときのcell_index, local_coordを再配置
+#ifdef REJECTION 
+#else
                     int nparticles_count = 0;
                     for( int j = 0; j < remain_BLK; j++ )
                     {
@@ -1089,6 +1111,7 @@ void generate_particles( int time_step,
                             }
                         } //while loop
                     }
+#endif
 
 // ------------------------------------------------
 

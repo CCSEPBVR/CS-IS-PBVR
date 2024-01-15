@@ -1,0 +1,4 @@
+*.o
+*.a
+particle_out
+timer.out.*

@@ -158,6 +158,8 @@ public:
     virtual const kvs::Vector3f gradient() const;
     
     virtual const kvs::Real32 localGravityPointValue() const;
+    
+    virtual const kvs::Vector3f localGravityPoint() const;
 
 public:
 
@@ -722,7 +724,7 @@ inline const kvs::Vector3f CellBase<T>::gradient() const
 
 /*===========================================================================*/
 /**
- *  @brief  Returns the glavity point.
+ *  @brief  Returns the glavity point value.
  */
 /*===========================================================================*/
 template <typename T>
@@ -731,6 +733,19 @@ inline const kvs::Real32 CellBase<T>::localGravityPointValue() const
     this->setLocalGravityPoint();
     return this->scalar();
 }
+
+/*===========================================================================*/
+/**
+ *  @brief  Returns the glavity point coord.
+ */
+/*===========================================================================*/
+template <typename T>
+inline const kvs::Vector3f CellBase<T>::localGravityPoint() const
+{
+    this->setLocalGravityPoint();
+    return m_local_point;
+}
+
 
 template <typename T>
 inline const kvs::Vector3f* CellBase<T>::vertices() const
