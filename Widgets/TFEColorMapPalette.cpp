@@ -91,7 +91,6 @@ void TFEColorMapPalette::mousePressEvent( QMouseEvent *event )
     const int index = static_cast<int>( ( x - x0 ) * resolution / ( x1 - x0 ) + 0.5f );
 
     // Update the color data.
-    m_drawing_color = kvs::RGBColor( 255, 0, 0 );
     const kvs::RGBColor drawing_color = m_drawing_color;
     kvs::UInt8* data = const_cast<kvs::UInt8*>( m_color_map.table().data() );
     kvs::UInt8* pdata = data;
@@ -134,7 +133,6 @@ void TFEColorMapPalette::mouseMoveEvent( QMouseEvent *event )
     const int new_index = static_cast<int>( ( new_x - x0 ) * resolution / ( x1 - x0 ) + 0.5f );
     const float diff_index = static_cast<float>( new_index - old_index );
 
-    m_drawing_color = kvs::RGBColor( 255, 0, 0 );
     const kvs::RGBColor drawing_color = m_drawing_color;
     const int begin_index = kvs::Math::Min( old_index, new_index );
     const int end_index = kvs::Math::Max( old_index, new_index );

@@ -14,6 +14,8 @@ public:
     TFEColorMapPalette( QWidget *parent = nullptr );
     ~TFEColorMapPalette();
 
+    void setDrawingColor( const kvs::RGBColor& color ) { m_drawing_color = color; }
+
 protected:
     void initializeGL() override;
     void paintGL() override;
