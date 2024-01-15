@@ -22,8 +22,8 @@ private:
     void readJsonFile();//Load Presets ColorMapBar    
 
 private slots:
-    void onTabBarClicked( int index );
     void onCurrentTabChanged( int index );
+    void onDrawingColorDoubleClicked();
 };
 
 #endif // COLORMAPEDITOR_H

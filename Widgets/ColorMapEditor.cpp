@@ -26,8 +26,14 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
     ui->colorMapBarTabWidget->setCurrentIndex( 0 );
     resize( width(), 500 );
 
-    connect( ui->colorMapBarTabWidget, &QTabWidget::tabBarClicked, this, &ColorMapEditor::onTabBarClicked );
-    connect( ui->colorMapBarTabWidget, &QTabWidget::currentChanged, this, &ColorMapEditor::onCurrentTabChanged );  
+    ui->openGLWidget->setDrawingColor( kvs::RGBColor::Black() );
+    QPalette palette = ui->label_4->palette();
+    palette.setColor( QPalette::Window, Qt::black );
+    ui->label_4->setAutoFillBackground( true );
+    ui->label_4->setPalette( palette );
+
+    connect( ui->colorMapBarTabWidget, &QTabWidget::currentChanged, this, &ColorMapEditor::onCurrentTabChanged );
+    connect( ui->label_4, &ClickableLabel::doubleClicked, this, &ColorMapEditor::onDrawingColorDoubleClicked );
 }
 
 ColorMapEditor::~ColorMapEditor()
@@ -213,16 +219,17 @@ void ColorMapEditor::readJsonFile()
 //Freeform curve 1
 //Expression     2
 //Control Point  3
-void ColorMapEditor::onTabBarClicked( int index )
-{
-    if( index == 1 )
-    {
-        ui->colorMapBarTabWidget->setCurrentIndex( index );
-        QColor color = QColorDialog::getColor( Qt::white, this, tr("Select Color") );
-
-        raise();
-    }
-}
+//void ColorMapEditor::onTabBarClicked( int index )
+//{
+//    if( index == 1 )
+//    {
+//        ui->colorMapBarTabWidget->setCurrentIndex( index );
+//        QColor color = QColorDialog::getColor( Qt::white, this, tr("Select Color") );
+//        qInfo() << color.red();
+//        ui->openGLWidget->setDrawingColor( kvs::RGBColor( color.red(), color.green(), color.blue() ) );
+//        raise();
+//    }
+//}
 
 void ColorMapEditor::onCurrentTabChanged( int index )
 {    
@@ -238,4 +245,17 @@ void ColorMapEditor::onCurrentTabChanged( int index )
     {
         resize( width(), minimumHeight() );
     }
+}
+
+void ColorMapEditor::onDrawingColorDoubleClicked()
+{
+    QColor color = QColorDialog::getColor(Qt::white, this, tr("Select Color"));
+
+    QPalette palette = ui->label_4->palette();
+    palette.setColor( QPalette::Window, color );
+
+    ui->label_4->setPalette( palette );
+
+    ui->openGLWidget->setDrawingColor( kvs::RGBColor( color.red(), color.green(), color.blue() ) );
+    raise();
 }
