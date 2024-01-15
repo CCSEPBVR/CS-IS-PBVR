@@ -219,18 +219,6 @@ void ColorMapEditor::readJsonFile()
 //Freeform curve 1
 //Expression     2
 //Control Point  3
-//void ColorMapEditor::onTabBarClicked( int index )
-//{
-//    if( index == 1 )
-//    {
-//        ui->colorMapBarTabWidget->setCurrentIndex( index );
-//        QColor color = QColorDialog::getColor( Qt::white, this, tr("Select Color") );
-//        qInfo() << color.red();
-//        ui->openGLWidget->setDrawingColor( kvs::RGBColor( color.red(), color.green(), color.blue() ) );
-//        raise();
-//    }
-//}
-
 void ColorMapEditor::onCurrentTabChanged( int index )
 {    
     if( index == 0 || index == 3)
