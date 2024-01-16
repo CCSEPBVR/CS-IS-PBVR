@@ -25,6 +25,7 @@ private slots:
     void onCurrentTabChanged( int index );
     void onDrawingColorDoubleClicked();
     void onColorMapBarTableWidgetCellDoubleClicked( int row, int column );
+    void onExpressionChanged();
 };
 
 #endif // COLORMAPEDITOR_H

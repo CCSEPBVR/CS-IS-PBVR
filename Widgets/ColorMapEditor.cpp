@@ -11,6 +11,7 @@
 #include <QColorDialog>
 
 #include <kvs/DivergingColorMap>
+#include "FunctionParser/function_parser.h"
 
 ColorMapEditor::ColorMapEditor(QWidget *parent) :
     QDialog(parent),
@@ -35,6 +36,10 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
     connect( ui->colorMapBarTabWidget, &QTabWidget::currentChanged, this, &ColorMapEditor::onCurrentTabChanged );
     connect( ui->drawingColorCLbl, &ClickableLabel::doubleClicked, this, &ColorMapEditor::onDrawingColorDoubleClicked );
     connect( ui->colorMapBarTWidget, &QTableWidget::cellDoubleClicked, this, &ColorMapEditor::onColorMapBarTableWidgetCellDoubleClicked );
+
+    connect( ui->redLEdit, &QLineEdit::textChanged, this, &ColorMapEditor::onExpressionChanged );
+    connect( ui->greenLEdit, &QLineEdit::textChanged, this, &ColorMapEditor::onExpressionChanged );
+    connect( ui->blueLEdit, &QLineEdit::textChanged, this, &ColorMapEditor::onExpressionChanged );
 }
 
 ColorMapEditor::~ColorMapEditor()
@@ -234,6 +239,7 @@ void ColorMapEditor::onCurrentTabChanged( int index )
     else if( index == 2 )
     {
         resize( width(), minimumHeight() );
+        onExpressionChanged();
     }
 }
 
@@ -257,3 +263,99 @@ void ColorMapEditor::onColorMapBarTableWidgetCellDoubleClicked( int row, int col
     ui->colorMapPalette->setColorMap( colorMapBar2->getColor() );
     ui->colorMapPalette->update();
 }
+
+//IMPORT FROM OLD PBVR(colormappalette.cpp setColorMapEquation)
+void ColorMapEditor::onExpressionChanged()
+{
+    std::string rfe = ui->redLEdit->text().toStdString();
+    std::string gfe = ui->greenLEdit->text().toStdString();
+    std::string bfe = ui->blueLEdit->text().toStdString();
+
+    const float min_value = 0.0;
+    const float max_value = 1.0;
+
+    FuncParser::Variables vars;
+    FuncParser::Variable var_x;
+    FuncParser::Function rf, gf, bf;
+
+    char charx1[2] = "x";
+    var_x.tag(charx1);
+    vars.push_back(var_x);
+
+    FuncParser::FunctionParser rf_parse(rfe, (int)rfe.size() + 1);
+    FuncParser::FunctionParser gf_parse(gfe, (int)gfe.size() + 1);
+    FuncParser::FunctionParser bf_parse(bfe, (int)bfe.size() + 1);
+    FuncParser::FunctionParser::Error err_r = rf_parse.express(rf, vars);
+    FuncParser::FunctionParser::Error err_g = gf_parse.express(gf, vars);
+    FuncParser::FunctionParser::Error err_b = bf_parse.express(bf, vars);
+
+    if (err_r != FuncParser::FunctionParser::ERR_NONE)
+    {
+        ui->redLEdit->setStyleSheet("background-color: red;");
+    }
+    else
+    {
+        ui->redLEdit->setStyleSheet("");
+    }
+
+    if (err_g != FuncParser::FunctionParser::ERR_NONE)
+    {        
+        ui->greenLEdit->setStyleSheet("background-color: red;");
+    }
+    else
+    {
+        ui->greenLEdit->setStyleSheet("");
+    }
+
+    if (err_b != FuncParser::FunctionParser::ERR_NONE)
+    {        
+        ui->blueLEdit->setStyleSheet("background-color: red;");
+    }
+    else
+    {
+        ui->blueLEdit->setStyleSheet("");
+    }
+
+    //RGBの式にエラーがなければカラーマップを生成
+    if (err_r == FuncParser::FunctionParser::ERR_NONE &&
+        err_g == FuncParser::FunctionParser::ERR_NONE &&
+        err_b == FuncParser::FunctionParser::ERR_NONE)
+    {        
+        kvs::ColorMap cmap( 256, min_value, max_value);
+
+        const float stride = (max_value - min_value) / ( 256 - 1 );
+        float x = min_value;
+        for (size_t i = 0; i < 256; ++i, x += stride)
+        {
+            // int r,g,b;
+            float r, g, b; // kawamura
+
+            var_x = x;
+            r = rf.eval();
+            g = gf.eval();
+            b = bf.eval();
+
+            /*
+            r = ( r > 255 )? 255: ( r < 0 )? 0: r;
+            g = ( g > 255 )? 255: ( g < 0 )? 0: g;
+            b = ( b > 255 )? 255: ( b < 0 )? 0: b;
+            */
+            // kawamura
+            r = (r > 1.0) ? 1.0 : (r < 0) ? 0 : r;
+            g = (g > 1.0) ? 1.0 : (g < 0) ? 0 : g;
+            b = (b > 1.0) ? 1.0 : (b < 0) ? 0 : b;
+
+            r *= 255;
+            g *= 255;
+            b *= 255;
+
+            kvs::RGBColor color((int)r, (int)g, (int)b);
+            cmap.addPoint(x, color);
+        }
+        cmap.create();
+
+        ui->colorMapPalette->setColorMap( cmap );
+        ui->colorMapPalette->update();
+    }
+}
+
