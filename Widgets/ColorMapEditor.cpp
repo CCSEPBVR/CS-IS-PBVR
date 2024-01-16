@@ -34,6 +34,7 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
 
     connect( ui->colorMapBarTabWidget, &QTabWidget::currentChanged, this, &ColorMapEditor::onCurrentTabChanged );
     connect( ui->label_4, &ClickableLabel::doubleClicked, this, &ColorMapEditor::onDrawingColorDoubleClicked );
+    connect( ui->colorMapBarTWidget, &QTableWidget::cellDoubleClicked, this, &ColorMapEditor::onColorMapBarTableWidgetCellDoubleClicked );
 }
 
 ColorMapEditor::~ColorMapEditor()
@@ -211,6 +212,7 @@ void ColorMapEditor::readJsonFile()
             containerWidget->setLayout(layout);
             ui->colorMapBarTWidget->setCellWidget(ui->colorMapBarTWidget->rowCount() - 1, count, containerWidget);
             count++;
+
         }
     }
 }
@@ -246,4 +248,12 @@ void ColorMapEditor::onDrawingColorDoubleClicked()
 
     ui->openGLWidget->setDrawingColor( kvs::RGBColor( color.red(), color.green(), color.blue() ) );
     raise();
+}
+
+void ColorMapEditor::onColorMapBarTableWidgetCellDoubleClicked( int row, int column )
+{
+    QWidget* cellWidget = ui->colorMapBarTWidget->cellWidget( row, column );
+    TFEColorMapBar* colorMapBar2 = qobject_cast<TFEColorMapBar*>(cellWidget->layout()->itemAt(0)->widget());
+    ui->openGLWidget->setColorMap( colorMapBar2->getColor() );
+    ui->openGLWidget->update();
 }
