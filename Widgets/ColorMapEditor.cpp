@@ -44,7 +44,7 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
     connect( ui->numberOfControlPointsSBox, &QSpinBox::valueChanged, this, &ColorMapEditor::onNumberOfControlPointsChabged );
     ui->controlPointsTWidget->setRowCount( ui->numberOfControlPointsSBox->value() );
 
-    connect( ui->controlPointsTWidget, &QTableWidget::cellChanged, this, &ColorMapEditor::onControlPointChaged );
+    connect( ui->controlPointsTWidget, &QTableWidget::cellChanged, this, &ColorMapEditor::onControlPointChanged );
 }
 
 ColorMapEditor::~ColorMapEditor()
@@ -367,10 +367,10 @@ void ColorMapEditor::onExpressionChanged()
 void ColorMapEditor::onNumberOfControlPointsChabged( int value )
 {
     ui->controlPointsTWidget->setRowCount( value );
-    onControlPointChaged();
+    onControlPointChanged();
 }
 
-void ColorMapEditor::onControlPointChaged()
+void ColorMapEditor::onControlPointChanged()
 {
     const float max_value = 1.0;
     const float min_value = 0.0;

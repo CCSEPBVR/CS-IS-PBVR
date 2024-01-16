@@ -27,7 +27,7 @@ private slots:
     void onColorMapBarTableWidgetCellDoubleClicked( int row, int column );
     void onExpressionChanged();
     void onNumberOfControlPointsChabged( int value );
-    void onControlPointChaged();
+    void onControlPointChanged();
 };
 
 #endif // COLORMAPEDITOR_H
