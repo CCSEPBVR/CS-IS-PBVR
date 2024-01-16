@@ -19,7 +19,7 @@ public:
 
 private:
     Ui::ColorMapEditor *ui;
-    void readJsonFile();//Load Presets ColorMapBar    
+    void readJsonFile();//Load Presets ColorMapBar
 
 private slots:
     void onCurrentTabChanged( int index );
