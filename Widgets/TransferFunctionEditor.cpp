@@ -9,12 +9,18 @@ TransferFunctionEditor::TransferFunctionEditor(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::TransferFunctionEditor)
 {
-    ui->setupUi(this);   
+    ui->setupUi(this);
+    connect( ui->pushButton_7, &QPushButton::clicked, this, &TransferFunctionEditor::onColorMapEditorButtonClicked );
 }
 
 TransferFunctionEditor::~TransferFunctionEditor()
 {
     delete ui;
+}
+
+void TransferFunctionEditor::onColorMapEditorButtonClicked()
+{
+    m_color_map_editor.show();
 }
 
 
