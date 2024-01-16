@@ -26,14 +26,14 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
     ui->colorMapBarTabWidget->setCurrentIndex( 0 );
     resize( width(), 500 );
 
-    ui->openGLWidget->setDrawingColor( kvs::RGBColor::Black() );
-    QPalette palette = ui->label_4->palette();
+    ui->colorMapPalette->setDrawingColor( kvs::RGBColor::Black() );
+    QPalette palette = ui->drawingColorCLbl->palette();
     palette.setColor( QPalette::Window, Qt::black );
-    ui->label_4->setAutoFillBackground( true );
-    ui->label_4->setPalette( palette );
+    ui->drawingColorCLbl->setAutoFillBackground( true );
+    ui->drawingColorCLbl->setPalette( palette );
 
     connect( ui->colorMapBarTabWidget, &QTabWidget::currentChanged, this, &ColorMapEditor::onCurrentTabChanged );
-    connect( ui->label_4, &ClickableLabel::doubleClicked, this, &ColorMapEditor::onDrawingColorDoubleClicked );
+    connect( ui->drawingColorCLbl, &ClickableLabel::doubleClicked, this, &ColorMapEditor::onDrawingColorDoubleClicked );
     connect( ui->colorMapBarTWidget, &QTableWidget::cellDoubleClicked, this, &ColorMapEditor::onColorMapBarTableWidgetCellDoubleClicked );
 }
 
@@ -241,12 +241,12 @@ void ColorMapEditor::onDrawingColorDoubleClicked()
 {
     QColor color = QColorDialog::getColor(Qt::white, this, tr("Select Color"));
 
-    QPalette palette = ui->label_4->palette();
+    QPalette palette = ui->drawingColorCLbl->palette();
     palette.setColor( QPalette::Window, color );
 
-    ui->label_4->setPalette( palette );
+    ui->drawingColorCLbl->setPalette( palette );
 
-    ui->openGLWidget->setDrawingColor( kvs::RGBColor( color.red(), color.green(), color.blue() ) );
+    ui->colorMapPalette->setDrawingColor( kvs::RGBColor( color.red(), color.green(), color.blue() ) );
     raise();
 }
 
@@ -254,6 +254,6 @@ void ColorMapEditor::onColorMapBarTableWidgetCellDoubleClicked( int row, int col
 {
     QWidget* cellWidget = ui->colorMapBarTWidget->cellWidget( row, column );
     TFEColorMapBar* colorMapBar2 = qobject_cast<TFEColorMapBar*>(cellWidget->layout()->itemAt(0)->widget());
-    ui->openGLWidget->setColorMap( colorMapBar2->getColor() );
-    ui->openGLWidget->update();
+    ui->colorMapPalette->setColorMap( colorMapBar2->getColor() );
+    ui->colorMapPalette->update();
 }
