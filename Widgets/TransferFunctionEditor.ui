@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Transfer Function Editor</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
@@ -202,9 +202,6 @@
       <string>Opacity Map</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_5">
-      <item row="0" column="1">
-       <widget class="QSpinBox" name="spinBox_2"/>
-      </item>
       <item row="2" column="0" colspan="3">
        <widget class="QPushButton" name="pushButton_8">
         <property name="text">
@@ -218,9 +215,6 @@
          <string>Synth. Func. Range Min:Max</string>
         </property>
        </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QSpinBox" name="spinBox"/>
       </item>
       <item row="5" column="0">
        <widget class="QLabel" name="label_7">
@@ -253,12 +247,6 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
-      </item>
-      <item row="1" column="2">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_4"/>
-      </item>
       <item row="4" column="0" colspan="3">
        <widget class="TFEHistogramBar" name="openGLWidget_4">
         <property name="minimumSize">
@@ -268,6 +256,18 @@
          </size>
         </property>
        </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="lineEdit_7"/>
+      </item>
+      <item row="1" column="2">
+       <widget class="QLineEdit" name="lineEdit_8"/>
+      </item>
+      <item row="0" column="1">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
+      </item>
+      <item row="0" column="2">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_4"/>
       </item>
      </layout>
     </widget>

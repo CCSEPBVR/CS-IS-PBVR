@@ -64,6 +64,7 @@ private:
     void onFilterInfomation() { m_data_properties.show(); }
     void onRenderOptions() { m_render_options.show(); }
     void onRepetitionLevelControl() { m_repetition_level_control.show(); }
+    void onTransferFunctionEditor() { m_transfer_function_editor.show(); }
 
     void keyPressEvent( QKeyEvent *event );
 };

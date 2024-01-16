@@ -39,6 +39,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     connect( ui->actionFilterInfomation, &QAction::triggered, this, &PBVRGUI::onFilterInfomation );
     connect( ui->actionRenderOptions, &QAction::triggered, this, &PBVRGUI::onRenderOptions );
     connect( ui->actionRepetitionLevelControl, &QAction::triggered, this, &PBVRGUI::onRepetitionLevelControl );
+    connect( ui->actionTransferFunctionEditor, &QAction::triggered, this, &PBVRGUI::onTransferFunctionEditor );
 
     m_preference.setScreen( m_screen );
     m_preference.setCompositor( m_compositor );
@@ -98,8 +99,6 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_repetition_level_control.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     addDockWidget(Qt::LeftDockWidgetArea, &m_repetition_level_control);
     m_repetition_level_control.setScreen( m_screen );
-
-    m_transfer_function_editor.show();
 
     setFocusPolicy(Qt::StrongFocus);
 }

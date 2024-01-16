@@ -42,6 +42,7 @@
     </property>
     <addaction name="actionConnectToServer"/>
     <addaction name="separator"/>
+    <addaction name="actionTransferFunctionEditor"/>
     <addaction name="actionMerge"/>
     <addaction name="actionVolumeTransform"/>
     <addaction name="actionFilterInfomation"/>
@@ -112,6 +113,11 @@
   <action name="actionRepetitionLevelControl">
    <property name="text">
     <string>RepetitionLevelControl</string>
+   </property>
+  </action>
+  <action name="actionTransferFunctionEditor">
+   <property name="text">
+    <string>TransferFunctionEditor</string>
    </property>
   </action>
  </widget>
