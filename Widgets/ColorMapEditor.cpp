@@ -45,6 +45,9 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
     ui->controlPointsTWidget->setRowCount( ui->numberOfControlPointsSBox->value() );
 
     connect( ui->controlPointsTWidget, &QTableWidget::cellChanged, this, &ColorMapEditor::onControlPointChanged );
+
+    connect( ui->cancelPBtn, &QPushButton::clicked, this, &ColorMapEditor::onCancelButtonClicked );
+    connect( ui->applyPBtn, &QPushButton::clicked, this, &ColorMapEditor::onApplyButtonClicked );
 }
 
 ColorMapEditor::~ColorMapEditor()
@@ -412,4 +415,14 @@ void ColorMapEditor::onControlPointChanged()
     cmap.create();
     ui->colorMapPalette->setColorMap( cmap );
     ui->colorMapPalette->update();
+}
+
+void ColorMapEditor::onCancelButtonClicked()
+{
+    close();
+}
+
+void ColorMapEditor::onApplyButtonClicked()
+{
+
 }
