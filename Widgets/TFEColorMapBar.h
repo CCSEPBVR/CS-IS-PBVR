@@ -9,9 +9,11 @@
 
 class TFEColorMapBar : public QOpenGLWidget, protected QOpenGLFunctions
 {
+    Q_OBJECT
 public:
     TFEColorMapBar( QWidget *parent = nullptr );
     ~TFEColorMapBar();
+    kvs::ColorMap getColor(){ return m_color_map; }
     void setColorMap( const kvs::ColorMap& colormap );
 
 protected:
