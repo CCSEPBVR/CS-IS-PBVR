@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>344</height>
+    <height>366</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -54,7 +54,7 @@
    <item row="2" column="0">
     <widget class="QTabWidget" name="colorMapBarTabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="presetsTab">
       <attribute name="title">
@@ -261,7 +261,14 @@
        <string>Control Points</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_4">
-       <item row="0" column="0" colspan="2">
+       <item row="0" column="1" alignment="Qt::AlignRight">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Number of Control Points(Min:2, Max:256) :</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="3">
         <widget class="QTableWidget" name="controlPointsTWidget">
          <column>
           <property name="text">
@@ -283,6 +290,25 @@
            <string>Blue</string>
           </property>
          </column>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QSpinBox" name="numberOfControlPointsSBox">
+         <property name="maximumSize">
+          <size>
+           <width>65</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="minimum">
+          <number>2</number>
+         </property>
+         <property name="maximum">
+          <number>256</number>
+         </property>
+         <property name="value">
+          <number>10</number>
+         </property>
         </widget>
        </item>
       </layout>

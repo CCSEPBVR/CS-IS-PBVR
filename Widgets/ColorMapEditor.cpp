@@ -40,6 +40,11 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
     connect( ui->redLEdit, &QLineEdit::textChanged, this, &ColorMapEditor::onExpressionChanged );
     connect( ui->greenLEdit, &QLineEdit::textChanged, this, &ColorMapEditor::onExpressionChanged );
     connect( ui->blueLEdit, &QLineEdit::textChanged, this, &ColorMapEditor::onExpressionChanged );
+
+    connect( ui->numberOfControlPointsSBox, &QSpinBox::valueChanged, this, &ColorMapEditor::onNumberOfControlPointsChabged );
+    ui->controlPointsTWidget->setRowCount( ui->numberOfControlPointsSBox->value() );
+
+    connect( ui->controlPointsTWidget, &QTableWidget::cellChanged, this, &ColorMapEditor::onControlPointChaged );
 }
 
 ColorMapEditor::~ColorMapEditor()
@@ -359,3 +364,52 @@ void ColorMapEditor::onExpressionChanged()
     }
 }
 
+void ColorMapEditor::onNumberOfControlPointsChabged( int value )
+{
+    ui->controlPointsTWidget->setRowCount( value );
+    onControlPointChaged();
+}
+
+void ColorMapEditor::onControlPointChaged()
+{
+    const float max_value = 1.0;
+    const float min_value = 0.0;
+
+    kvs::ColorMap cmap( 256, min_value, max_value );
+
+    bool valid_float;
+    bool valid_row;
+
+    for ( int n = 0; n < ui->controlPointsTWidget->rowCount(); n++ )
+    {
+        valid_row=true;
+        float row_values[4]={0.0,0.0,0.0,0.0};
+        for (int c=0; c < 4; c++)
+        {
+            if ( ui->controlPointsTWidget->item(n,c) )
+            {
+                QString text= ui->controlPointsTWidget->item(n,c)->text();
+                row_values[c]=text.toFloat(&valid_float);
+                valid_row=valid_row&valid_float;
+                ui->controlPointsTWidget->item(n,c)->setForeground(valid_float?Qt::white:Qt::red);
+            }
+            else
+            {
+                valid_row=false;
+            }
+        }
+
+        if (valid_row)
+        {
+            float x = row_values[0];
+            int   r = row_values[1] *255.0;
+            int   g = row_values[2] *255.0;
+            int   b = row_values[3] *255.0;
+            kvs::RGBColor color(r,g,b);
+            cmap.addPoint( x, color );
+        }
+    }
+    cmap.create();
+    ui->colorMapPalette->setColorMap( cmap );
+    ui->colorMapPalette->update();
+}
