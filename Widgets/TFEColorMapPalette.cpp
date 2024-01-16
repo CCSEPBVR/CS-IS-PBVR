@@ -18,6 +18,14 @@ void TFEColorMapPalette::initializeGL()
     kvs::OpenGL::SetClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
+void TFEColorMapPalette::setColorMap( const kvs::ColorMap& color_map )
+{
+    // Deep copy.
+    kvs::ColorMap::Table color_map_table( color_map.table().data(), color_map.table().size() );
+    m_color_map = kvs::ColorMap( color_map_table );
+    m_update = true;
+}
+
 void TFEColorMapPalette::paintGL()
 {
     if ( !m_texture.isValid() || m_update )
