@@ -270,6 +270,7 @@ void ColorMapEditor::onDrawingColorDoubleClicked()
 
 void ColorMapEditor::onColorMapBarTableWidgetCellDoubleClicked( int row, int column )
 {
+    //警告:nullptrの処理を追記すること。
     QWidget* cellWidget = ui->colorMapBarTWidget->cellWidget( row, column );
     TFEColorMapBar* colorMapBar2 = qobject_cast<TFEColorMapBar*>(cellWidget->layout()->itemAt(0)->widget());
     ui->colorMapPalette->setColorMap( colorMapBar2->getColor() );
@@ -419,14 +420,4 @@ void ColorMapEditor::onControlPointChanged()
     cmap.create();
     ui->colorMapPalette->setColorMap( cmap );
     ui->colorMapPalette->update();
-}
-
-void ColorMapEditor::onCancelButtonClicked()
-{
-    close();
-}
-
-void ColorMapEditor::onApplyButtonClicked()
-{
-
 }

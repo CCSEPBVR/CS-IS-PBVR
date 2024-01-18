@@ -30,8 +30,6 @@ private slots:
     void onExpressionChanged();
     void onNumberOfControlPointsChabged( int value );
     void onControlPointChanged();
-    void onCancelButtonClicked();
-    void onApplyButtonClicked();
 };
 
 #endif // COLORMAPEDITOR_H
