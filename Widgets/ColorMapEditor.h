@@ -4,6 +4,7 @@
 #include <QDialog>
 
 #include <kvs/RGBColor>
+#include <kvs/ColorMap>
 
 namespace Ui {
 class ColorMapEditor;
@@ -16,6 +17,7 @@ class ColorMapEditor : public QDialog
 public:
     explicit ColorMapEditor(QWidget *parent = nullptr);
     ~ColorMapEditor();
+    kvs::ColorMap getColorMap();
 
 private:
     Ui::ColorMapEditor *ui;

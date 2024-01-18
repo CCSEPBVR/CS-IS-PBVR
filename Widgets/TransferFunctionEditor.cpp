@@ -20,7 +20,10 @@ TransferFunctionEditor::~TransferFunctionEditor()
 
 void TransferFunctionEditor::onColorMapEditorButtonClicked()
 {
-    m_color_map_editor.show();
+    if( m_color_map_editor.exec() == QDialog::Accepted )
+    {
+        ui->openGLWidget->setColorMap(m_color_map_editor.getColorMap());
+    }
 }
 
 

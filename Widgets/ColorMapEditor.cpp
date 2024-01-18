@@ -16,7 +16,7 @@
 ColorMapEditor::ColorMapEditor(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ColorMapEditor)
-{
+{    
     ui->setupUi(this);
     ui->colorMapBarTWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->colorMapBarTWidget->verticalHeader()->setDefaultSectionSize(60);
@@ -46,13 +46,17 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
 
     connect( ui->controlPointsTWidget, &QTableWidget::cellChanged, this, &ColorMapEditor::onControlPointChanged );
 
-    connect( ui->cancelPBtn, &QPushButton::clicked, this, &ColorMapEditor::onCancelButtonClicked );
-    connect( ui->applyPBtn, &QPushButton::clicked, this, &ColorMapEditor::onApplyButtonClicked );
+    connect( ui->applyPBtn, &QPushButton::clicked, this, &ColorMapEditor::accept );
 }
 
 ColorMapEditor::~ColorMapEditor()
 {
     delete ui;
+}
+
+kvs::ColorMap ColorMapEditor::getColorMap()
+{
+    return ui->colorMapPalette->getColor();
 }
 
 void ColorMapEditor::readJsonFile()
