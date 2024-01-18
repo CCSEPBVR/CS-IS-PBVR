@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include "Widgets/ColorMapEditor.h"
+#include "Widgets/OpacityMapEditor.h"
 
 namespace Ui {
 class TransferFunctionEditor;
@@ -19,9 +20,11 @@ public:
 private:
     Ui::TransferFunctionEditor *ui;
     ColorMapEditor m_color_map_editor;
+    OpacityMapEditor m_opacity_map_editor;
 
 private slots:
     void onColorMapEditorButtonClicked();
+    void onOpacityMapEditorButtonClicked();
 };
 
 #endif // TRANSFERFUNCTIONEDITOR_H

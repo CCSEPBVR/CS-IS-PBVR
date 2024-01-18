@@ -134,14 +134,14 @@
        </widget>
       </item>
       <item row="2" column="0" colspan="3">
-       <widget class="QPushButton" name="pushButton_7">
+       <widget class="QPushButton" name="editColorMapPBtn">
         <property name="text">
          <string>Edit Color Map</string>
         </property>
        </widget>
       </item>
       <item row="3" column="0" colspan="3">
-       <widget class="TFEColorMapBar" name="openGLWidget">
+       <widget class="TFEColorMapBar" name="colorMapBar">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -184,7 +184,7 @@
        <widget class="QLineEdit" name="lineEdit_2"/>
       </item>
       <item row="4" column="0" colspan="3">
-       <widget class="TFEHistogramBar" name="openGLWidget_3">
+       <widget class="TFEHistogramBar" name="colorHistgromBar">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -203,7 +203,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_5">
       <item row="2" column="0" colspan="3">
-       <widget class="QPushButton" name="pushButton_8">
+       <widget class="QPushButton" name="editOpacityMapPBtn">
         <property name="text">
          <string>Edit Opacity Map</string>
         </property>
@@ -231,7 +231,7 @@
        </widget>
       </item>
       <item row="3" column="0" colspan="3">
-       <widget class="TFEOpacityMapPalette" name="openGLWidget_2">
+       <widget class="TFEOpacityMapPalette" name="opacityMapPalette">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -248,7 +248,7 @@
        </widget>
       </item>
       <item row="4" column="0" colspan="3">
-       <widget class="TFEHistogramBar" name="openGLWidget_4">
+       <widget class="TFEHistogramBar" name="opacityHistogramBar">
         <property name="minimumSize">
          <size>
           <width>0</width>
