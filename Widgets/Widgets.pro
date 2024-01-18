@@ -35,6 +35,7 @@ HEADERS += \
     DataProperties.h \
     DataSummary.h \
     Merge.h \
+    OpacityMapEditor.h \
     Preference.h \
     RenderOptions.h \
     RepetitionLevelControl.h \
@@ -60,6 +61,7 @@ SOURCES += \
     DataProperties.cpp \
     DataSummary.cpp \
     Merge.cpp \
+    OpacityMapEditor.cpp \
     Preference.cpp \
     RenderOptions.cpp \
     RepetitionLevelControl.cpp \
@@ -85,6 +87,7 @@ FORMS += \
     DataProperties.ui \
     DataSummary.ui \
     Merge.ui \
+    OpacityMapEditor.ui \
     Preference.ui \
     RenderOptions.ui \
     RepetitionLevelControl.ui \
