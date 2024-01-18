@@ -16,6 +16,7 @@ public:
 
     void setColorMap( const kvs::ColorMap& colormap );
     void setDrawingColor( const kvs::RGBColor& color ) { m_drawing_color = color; }
+    kvs::ColorMap getColor() { return m_color_map; }
 
 protected:
     void initializeGL() override;
