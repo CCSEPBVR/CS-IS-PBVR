@@ -17,6 +17,14 @@ void TFEOpacityMapPalette::initializeGL()
     kvs::OpenGL::SetClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
+void TFEOpacityMapPalette::setOpacityMap( const kvs::OpacityMap& opacity_map )
+{
+    // Deep copy.
+    kvs::OpacityMap::Table opacity_map_table( opacity_map.table().data(), opacity_map.table().size() );
+    m_opacity_map = kvs::OpacityMap( opacity_map_table );
+    m_update = true;
+}
+
 void TFEOpacityMapPalette::paintGL()
 {
     if ( !m_texture.isValid() || m_update )

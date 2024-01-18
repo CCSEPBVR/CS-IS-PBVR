@@ -14,6 +14,9 @@ public:
     TFEOpacityMapPalette( QWidget *parent = nullptr );
     ~TFEOpacityMapPalette();
 
+    void setOpacityMap( const kvs::OpacityMap& opacity_map );
+    kvs::OpacityMap getOpacity() { return m_opacity_map; }
+
 protected:
     void initializeGL() override;
     void paintGL() override;
