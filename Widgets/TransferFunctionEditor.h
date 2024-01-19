@@ -43,6 +43,9 @@ private slots:
 
     void onColorMapEditorButtonClicked();
     void onOpacityMapEditorButtonClicked();
+
+    void onTransferFunctionRangeColorChanged();
+    void onTransferFunctionRangeOpacityChanged();
 };
 
 #endif // TRANSFERFUNCTIONEDITOR_H

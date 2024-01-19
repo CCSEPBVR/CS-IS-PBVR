@@ -25,6 +25,12 @@ TransferFunctionEditor::TransferFunctionEditor(QWidget *parent) :
     connect( ui->editColorMapPBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onColorMapEditorButtonClicked );
     connect( ui->editOpacityMapPBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onOpacityMapEditorButtonClicked );
 
+    connect( ui->transfer_function_min_color, &QDoubleSpinBox::valueChanged, this, &TransferFunctionEditor::onTransferFunctionRangeColorChanged );
+    connect( ui->transfer_function_max_color, &QDoubleSpinBox::valueChanged, this, &TransferFunctionEditor::onTransferFunctionRangeColorChanged );
+
+    connect( ui->transfer_function_min_opacity, &QDoubleSpinBox::valueChanged, this, &TransferFunctionEditor::onTransferFunctionRangeOpacityChanged );
+    connect( ui->transfer_function_max_opacity, &QDoubleSpinBox::valueChanged, this, &TransferFunctionEditor::onTransferFunctionRangeOpacityChanged );
+
     populateColorFunctionLists( m_extended_transfer_function_message.m_transfer_function_number );
     populateOpacityFunctionLists( m_extended_transfer_function_message.m_transfer_function_number );
 }
@@ -179,4 +185,14 @@ void TransferFunctionEditor::onOpacityMapEditorButtonClicked()
     {
         ui->opacityMapPalette->setOpacityMap( m_opacity_map_editor.getOpacityMap() );
     }
+}
+
+void TransferFunctionEditor::onTransferFunctionRangeColorChanged()
+{
+    m_extended_transfer_function_message.setColorTransferRange( ui->colorFunctionCBox->currentText().toStdString(), ui->transfer_function_min_color->value(), ui->transfer_function_max_color->value() );
+}
+
+void TransferFunctionEditor::onTransferFunctionRangeOpacityChanged()
+{
+    m_extended_transfer_function_message.setOpacityTransferRange( ui->opacityFunctionCBox->currentText().toStdString(), ui->transfer_function_min_opacity->value(), ui->transfer_function_max_opacity->value() );
 }
