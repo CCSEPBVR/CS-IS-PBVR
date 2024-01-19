@@ -27,12 +27,20 @@ private:
     ExtendedTransferFunctionMessage m_extended_transfer_function_message_initial;
 
     void populateColorFunctionLists(int n);
+    void populateOpacityFunctionLists(int n);
 
 private slots:
     void onNumberOfTransferFunctionValueChanged( int value );
+
     void onColorFunctionChanged( int index );
+    void onOpacityFunctionChanged( int index );
+
     void onColorFunctionSynthEdited( const QString &arg1 );
+    void onOpacityFunctionSynthEdited( const QString &arg1 );
+
     void onTransferFunctionVarColorEdited( const QString &arg1 );
+    void onTransferFunctionVarOpacityEdited( const QString &arg1 );
+
     void onColorMapEditorButtonClicked();
     void onOpacityMapEditorButtonClicked();
 };

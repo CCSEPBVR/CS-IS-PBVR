@@ -87,7 +87,7 @@
        <widget class="QLineEdit" name="opacity_function_synth"/>
       </item>
       <item row="1" column="3">
-       <widget class="QLineEdit" name="lineEdit_6"/>
+       <widget class="QLineEdit" name="transfer_function_var_opacity"/>
       </item>
       <item row="1" column="4">
        <widget class="QLabel" name="label_16">
@@ -264,10 +264,10 @@
        <widget class="QLineEdit" name="lineEdit_8"/>
       </item>
       <item row="0" column="1">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
+       <widget class="QDoubleSpinBox" name="transfer_function_min_opacity"/>
       </item>
       <item row="0" column="2">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_4"/>
+       <widget class="QDoubleSpinBox" name="transfer_function_max_opacity"/>
       </item>
      </layout>
     </widget>
