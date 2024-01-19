@@ -34,6 +34,8 @@ HEADERS += \
     Coordinates.h \
     DataProperties.h \
     DataSummary.h \
+    ExtendedTransferFunctionMessage.h \
+    FrequencyTable.h \
     Merge.h \
     OpacityMapEditor.h \
     Preference.h \
@@ -60,6 +62,7 @@ SOURCES += \
     Coordinates.cpp \
     DataProperties.cpp \
     DataSummary.cpp \
+    ExtendedTransferFunctionMessage.cpp \
     Merge.cpp \
     OpacityMapEditor.cpp \
     Preference.cpp \

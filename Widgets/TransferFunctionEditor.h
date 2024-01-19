@@ -5,6 +5,7 @@
 #include "Widgets/ColorMapEditor.h"
 #include "Widgets/OpacityMapEditor.h"
 
+#include "ExtendedTransferFunctionMessage.h"
 namespace Ui {
 class TransferFunctionEditor;
 }
@@ -22,7 +23,16 @@ private:
     ColorMapEditor m_color_map_editor;
     OpacityMapEditor m_opacity_map_editor;
 
+    ExtendedTransferFunctionMessage m_extended_transfer_function_message;
+    ExtendedTransferFunctionMessage m_extended_transfer_function_message_initial;
+
+    void populateColorFunctionLists(int n);
+
 private slots:
+    void onNumberOfTransferFunctionValueChanged( int value );
+    void onColorFunctionChanged( int index );
+    void onColorFunctionSynthEdited( const QString &arg1 );
+    void onTransferFunctionVarColorEdited( const QString &arg1 );
     void onColorMapEditorButtonClicked();
     void onOpacityMapEditorButtonClicked();
 };
