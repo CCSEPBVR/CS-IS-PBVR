@@ -171,7 +171,11 @@
        <widget class="QDoubleSpinBox" name="transfer_function_max_color"/>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="lineEdit"/>
+       <widget class="QLineEdit" name="range_min_color">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
       </item>
       <item row="5" column="2" alignment="Qt::AlignRight">
        <widget class="QLabel" name="label_6">
@@ -181,7 +185,11 @@
        </widget>
       </item>
       <item row="1" column="2">
-       <widget class="QLineEdit" name="lineEdit_2"/>
+       <widget class="QLineEdit" name="range_max_color">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
       </item>
       <item row="4" column="0" colspan="3">
        <widget class="TFEHistogramBar" name="colorHistgromBar">
@@ -258,10 +266,18 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="lineEdit_7"/>
+       <widget class="QLineEdit" name="range_min_opacity">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
       </item>
       <item row="1" column="2">
-       <widget class="QLineEdit" name="lineEdit_8"/>
+       <widget class="QLineEdit" name="range_max_opacity">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
       </item>
       <item row="0" column="1">
        <widget class="QDoubleSpinBox" name="transfer_function_min_opacity"/>
