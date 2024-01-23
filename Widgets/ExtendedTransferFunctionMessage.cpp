@@ -108,148 +108,148 @@ bool ExtendedTransferFunctionMessage::operator==( const ExtendedTransferFunction
 }
 
 //add by shimomura 2023/1/26
-//jpv::ParticleTransferClientMessage::EquationToken ExtendedTransferFunctionMessage::convertToken( std::string expression ) const
-//{
-//    FuncParser::ExpressionTokenizer tokenizer;
-//    FuncParser::ExpressionConverter exprconv;
+jpv::ParticleTransferClientMessage::EquationToken ExtendedTransferFunctionMessage::convertToken( std::string expression ) const
+{
+    FuncParser::ExpressionTokenizer tokenizer;
+    FuncParser::ExpressionConverter exprconv;
 
-//    jpv::ParticleTransferClientMessage::EquationToken eq_token;
+    jpv::ParticleTransferClientMessage::EquationToken eq_token;
 
-//    tokenizer.tokenizeString( expression );
-//    exprconv.convertExpToken( tokenizer.m_exp_token );
-//    int size = exprconv.token_array.size();
-//    if( size > 128 ){ printf("Equation length too long\n");}
+    tokenizer.tokenizeString( expression );
+    exprconv.convertExpToken( tokenizer.m_exp_token );
+    int size = exprconv.token_array.size();
+    if( size > 128 ){ printf("Equation length too long\n");}
 
-//    for( int i = 0; i < 128; i++ )
-//    {
-//        if( i < size )
-//        {
-//            eq_token.exp_token[i]   = exprconv.token_array[i];
-//            eq_token.var_name[i]    = exprconv.var_array[i];
-//            eq_token.value_array[i] = exprconv.value_array[i];
-//        }
-//        else
-//        {
-//            eq_token.exp_token[i]   = 0;
-//            eq_token.var_name[i]    = 0;
-//            eq_token.value_array[i] = 0;
-//        }
-//    }
+    for( int i = 0; i < 128; i++ )
+    {
+        if( i < size )
+        {
+            eq_token.exp_token[i]   = exprconv.token_array[i];
+            eq_token.var_name[i]    = exprconv.var_array[i];
+            eq_token.value_array[i] = exprconv.value_array[i];
+        }
+        else
+        {
+            eq_token.exp_token[i]   = 0;
+            eq_token.var_name[i]    = 0;
+            eq_token.value_array[i] = 0;
+        }
+    }
 
-//    return eq_token;
-//}
+    return eq_token;
+}
 
 
-//void ExtendedTransferFunctionMessage::applyToClientMessage( jpv::ParticleTransferClientMessage* message ) const
-//{
-//    message->m_transfer_function.clear();
-//    message->m_volume_equation.clear();
-//    message->opacity_var.clear();
-//    message->color_var.clear();
+void ExtendedTransferFunctionMessage::applyToClientMessage( jpv::ParticleTransferClientMessage* message ) const
+{
+    message->m_transfer_function.clear();
+    message->m_volume_equation.clear();
+    message->opacity_var.clear();
+    message->color_var.clear();
 
-//    // 1次伝達関数
-//    message->m_color_transfer_function_synthesis = this->m_color_transfer_function_synthesis;
-//    message->m_opacity_transfer_function_synthesis = this->m_opacity_transfer_function_synthesis;
+    // 1次伝達関数
+    message->m_color_transfer_function_synthesis = this->m_color_transfer_function_synthesis;
+    message->m_opacity_transfer_function_synthesis = this->m_opacity_transfer_function_synthesis;
 
-//    // 色関数リスト
-//    for ( size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
-//    {
-//        NamedTransferFunctionParameter etf;
-//        jpv::ParticleTransferClientMessage::VolumeEquation veq;
+    // 色関数リスト
+    for ( size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
+    {
+        NamedTransferFunctionParameter etf;
+        jpv::ParticleTransferClientMessage::VolumeEquation veq;
 
-//        const NamedTransferFunctionParameter& tf = this->m_color_transfer_function[i];
-//        etf = tf;
-//        int func_num = etf.getNameNumber();
-//        std::stringstream ss;
-//        ss << "_F" << func_num;
-//        etf.m_color_variable   = ss.str() + "_VAR_C";
-//        veq.m_name     = etf.m_color_variable;
-//        veq.m_equation = this->m_color_transfer_function[i].m_color_variable;
-//        message->m_transfer_function.push_back( etf );
-//        message->m_volume_equation.push_back( veq );
-//        message->show();
-//    }
+        const NamedTransferFunctionParameter& tf = this->m_color_transfer_function[i];
+        etf = tf;
+        int func_num = etf.getNameNumber();
+        std::stringstream ss;
+        ss << "_F" << func_num;
+        etf.m_color_variable   = ss.str() + "_VAR_C";
+        veq.m_name     = etf.m_color_variable;
+        veq.m_equation = this->m_color_transfer_function[i].m_color_variable;
+        message->m_transfer_function.push_back( etf );
+        message->m_volume_equation.push_back( veq );
+        message->show();
+    }
 
-//    // 不透明度関数リスト
-//    for ( size_t i = 0; i < this->m_opacity_transfer_function.size(); i++ )
-//    {
-//        NamedTransferFunctionParameter etf;
-//        jpv::ParticleTransferClientMessage::VolumeEquation veq;
+    // 不透明度関数リスト
+    for ( size_t i = 0; i < this->m_opacity_transfer_function.size(); i++ )
+    {
+        NamedTransferFunctionParameter etf;
+        jpv::ParticleTransferClientMessage::VolumeEquation veq;
 
-//        const NamedTransferFunctionParameter& tf = this->m_opacity_transfer_function[i];
-//        etf = tf;
-//        int func_num = etf.getNameNumber();
-//        std::stringstream ss;
-//        ss << "_F" << func_num;
-//        etf.m_opacity_variable   = ss.str() + "_VAR_O";
-//        veq.m_name     = etf.m_opacity_variable;
-//        veq.m_equation = this->m_opacity_transfer_function[i].m_opacity_variable;
-//        message->m_transfer_function.push_back( etf );
-//        message->m_volume_equation.push_back( veq );
-//    }
+        const NamedTransferFunctionParameter& tf = this->m_opacity_transfer_function[i];
+        etf = tf;
+        int func_num = etf.getNameNumber();
+        std::stringstream ss;
+        ss << "_F" << func_num;
+        etf.m_opacity_variable   = ss.str() + "_VAR_O";
+        veq.m_name     = etf.m_opacity_variable;
+        veq.m_equation = this->m_opacity_transfer_function[i].m_opacity_variable;
+        message->m_transfer_function.push_back( etf );
+        message->m_volume_equation.push_back( veq );
+    }
 
-//    //      //2023 shimomura   stab data
-//    //       jpv::ParticleTransferClientMessage::EquationToken opa_func = {
-//    //            {VARIABLE, END}, // A1+A2 -> A1 A2 +
-//    //            {A1},// A1, A2
-//    //            {} //nothing
-//    //        };
+    //      //2023 shimomura   stab data
+    //       jpv::ParticleTransferClientMessage::EquationToken opa_func = {
+    //            {VARIABLE, END}, // A1+A2 -> A1 A2 +
+    //            {A1},// A1, A2
+    //            {} //nothing
+    //        };
 
-//    //        message->opacity_func = opa_func;
+    //        message->opacity_func = opa_func;
 
-//    //        jpv::ParticleTransferClientMessage::EquationToken col_func = {
-//    //            {VARIABLE, END},// C1
-//    //            {C1},// C1
-//    //            {}//nothing
-//    //        };
+    //        jpv::ParticleTransferClientMessage::EquationToken col_func = {
+    //            {VARIABLE, END},// C1
+    //            {C1},// C1
+    //            {}//nothing
+    //        };
 
-//    //        message->color_func = col_func;
+    //        message->color_func = col_func;
 
-//    //        jpv::ParticleTransferClientMessage::EquationToken opa_var_1 = {
-//    //    //        {VARIABLE, VARIABLE, PLUS, END}, //q1+q1 -> q1 q1 +
-//    //    //        {Q1,Q1},
-//    //            {VARIABLE, END}, //q1+q1 -> q1 q1 +
-//    //            {Q1},
-//    //            {}
-//    //        };
+    //        jpv::ParticleTransferClientMessage::EquationToken opa_var_1 = {
+    //    //        {VARIABLE, VARIABLE, PLUS, END}, //q1+q1 -> q1 q1 +
+    //    //        {Q1,Q1},
+    //            {VARIABLE, END}, //q1+q1 -> q1 q1 +
+    //            {Q1},
+    //            {}
+    //        };
 
-//    //        jpv::ParticleTransferClientMessage::EquationToken col_var_1 = {
-//    //    //        {VARIABLE,VARIABLE, PLUS, END}, //q1+q1 -> q1 q1 +
-//    //    //        {Q1, Q1},
-//    //            {VARIABLE, END}, //q1+q1 -> q1 q1 +
-//    //            {Q1},
-//    //            {}
-//    //        };
+    //        jpv::ParticleTransferClientMessage::EquationToken col_var_1 = {
+    //    //        {VARIABLE,VARIABLE, PLUS, END}, //q1+q1 -> q1 q1 +
+    //    //        {Q1, Q1},
+    //            {VARIABLE, END}, //q1+q1 -> q1 q1 +
+    //            {Q1},
+    //            {}
+    //        };
 
-//    //        std::vector<jpv::ParticleTransferClientMessage::EquationToken> opa_var;//ex) q1+q2
-//    //        std::vector<jpv::ParticleTransferClientMessage::EquationToken> col_var;//ex) q3*q4
-//    //        opa_var.push_back( opa_var_1 );
-//    //        col_var.push_back( col_var_1 );
+    //        std::vector<jpv::ParticleTransferClientMessage::EquationToken> opa_var;//ex) q1+q2
+    //        std::vector<jpv::ParticleTransferClientMessage::EquationToken> col_var;//ex) q3*q4
+    //        opa_var.push_back( opa_var_1 );
+    //        col_var.push_back( col_var_1 );
 
-//    //        message->color_var = opa_var;
-//    //        message->opacity_var = col_var;
+    //        message->color_var = opa_var;
+    //        message->opacity_var = col_var;
 
-//    std::string colorSynthBuf = this->m_color_transfer_function_synthesis;
-//    std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
-//    message->color_func = this->convertToken( colorSynthBuf );
-//    std::string opacitySynthBuf = this->m_opacity_transfer_function_synthesis;
-//    std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
-//    message->opacity_func = this->convertToken( opacitySynthBuf );
+    std::string colorSynthBuf = this->m_color_transfer_function_synthesis;
+    std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
+    message->color_func = this->convertToken( colorSynthBuf );
+    std::string opacitySynthBuf = this->m_opacity_transfer_function_synthesis;
+    std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
+    message->opacity_func = this->convertToken( opacitySynthBuf );
 
-//    for ( size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
-//    {
-//        message->color_var.push_back( this->convertToken( this->m_color_transfer_function[i].m_color_variable ) );
-//        message->opacity_var.push_back( this->convertToken( this->m_opacity_transfer_function[i].m_opacity_variable ) );
-//    }
+    for ( size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
+    {
+        message->color_var.push_back( this->convertToken( this->m_color_transfer_function[i].m_color_variable ) );
+        message->opacity_var.push_back( this->convertToken( this->m_opacity_transfer_function[i].m_opacity_variable ) );
+    }
 
-//    //2023 shimomura
-//    std::cout <<" message->m_x_synthesis ="  << message->m_x_synthesis << std::endl;
-//    if( !message->m_x_synthesis.empty() ) message->x_synthesis_token = this->convertToken( message->m_x_synthesis );
-//    if( !message->m_y_synthesis.empty() ) message->y_synthesis_token = this->convertToken( message->m_y_synthesis );
-//    if( !message->m_z_synthesis.empty() ) message->z_synthesis_token = this->convertToken( message->m_z_synthesis );
+    //2023 shimomura
+    std::cout <<" message->m_x_synthesis ="  << message->m_x_synthesis << std::endl;
+    if( !message->m_x_synthesis.empty() ) message->x_synthesis_token = this->convertToken( message->m_x_synthesis );
+    if( !message->m_y_synthesis.empty() ) message->y_synthesis_token = this->convertToken( message->m_y_synthesis );
+    if( !message->m_z_synthesis.empty() ) message->z_synthesis_token = this->convertToken( message->m_z_synthesis );
 
-//    return;
-//}
+    return;
+}
 
 
 

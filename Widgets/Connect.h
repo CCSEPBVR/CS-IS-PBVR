@@ -7,7 +7,7 @@
 #include "ParticleTransferProtocol.h"
 #include "ExpressionTokenizer.h"
 #include "ExpressionConverter.h"
-
+#include "Widgets/ExtendedTransferFunctionMessage.h"
 #include "Widgets/DataProperties.h"
 
 #include <kvs/PointObject>
@@ -39,6 +39,7 @@ private:
     kvs::Camera* m_camera;
     Merge* m_merge;
     DataProperties* m_filter_infomation;
+    ExtendedTransferFunctionMessage m_extended_transfer_function_message;
 
     jpv::ParticleTransferClientMessage m_client_message;
 

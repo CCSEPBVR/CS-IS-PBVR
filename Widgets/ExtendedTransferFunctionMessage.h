@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "Types.h"
+#include "Common/ParticleTransferProtocol.h"
 #include "Common/ExtendedTransferFunctionParameter.h"
 #include "FunctionParser/ExpressionTokenizer.h"
 #include "FunctionParser/ExpressionConverter.h"
@@ -49,7 +50,7 @@ public:
     // END FROM INSITU
 
     //add by shimomura 2023/1/26
-//    jpv::ParticleTransferClientMessage::EquationToken convertToken( std::string expression ) const;
+    jpv::ParticleTransferClientMessage::EquationToken convertToken( std::string expression ) const;
 public:
     ExtendedTransferFunctionMessage();
     virtual ~ExtendedTransferFunctionMessage();
@@ -59,7 +60,7 @@ public:
 
 public:
     bool operator==( const ExtendedTransferFunctionMessage& s ) const;
-//    void applyToClientMessage( jpv::ParticleTransferClientMessage* message ) const;
+    void applyToClientMessage( jpv::ParticleTransferClientMessage* message ) const;
     void setColorTransferFunction(const std::string &name, const std::string &variable);
     void setOpacityTransferFunction(const std::string &name, const std::string &variable);
     NamedTransferFunctionParameter* getColorTransferFunction(const std::string &name);
