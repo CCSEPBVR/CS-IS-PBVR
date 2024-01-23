@@ -129,7 +129,7 @@ void OpacityMapEditor::onControlPointChanged()
                 QString text= ui->controlPointsTWidget->item(n,c)->text();
                 row_values[c]=text.toFloat(&valid_float);
                 valid_row=valid_row&valid_float;
-                ui->controlPointsTWidget->item(n,c)->setForeground(valid_float?Qt::black:Qt::red);
+                ui->controlPointsTWidget->item(n,c)->setForeground(valid_float?Qt::white:Qt::red);
             }
             else
             {
