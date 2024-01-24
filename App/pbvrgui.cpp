@@ -100,6 +100,8 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     addDockWidget(Qt::LeftDockWidgetArea, &m_repetition_level_control);
     m_repetition_level_control.setScreen( m_screen );
 
+    m_transfer_function_editor.setClientMessage( m_connect.getClientMessage() );
+
     setFocusPolicy(Qt::StrongFocus);
 }
 
