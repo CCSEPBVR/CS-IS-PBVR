@@ -153,22 +153,36 @@
       <item row="1" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Synth. Func. Range Min:Max</string>
+         <string>Server side Range Min:Max : </string>
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
+      <item row="0" column="0" alignment="Qt::AlignRight">
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>User Defined Range Min:Max</string>
+         <string>Range Min:Max : </string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QDoubleSpinBox" name="transfer_function_min_color"/>
+       <widget class="QDoubleSpinBox" name="transfer_function_min_color">
+        <property name="minimum">
+         <double>-999999999999999983359180223191721714560372275017470536367007614460468417501012554531477876945938741751237388344363105067534507348164573733465510370326085632.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>999999999999999983359180223191721714560372275017470536367007614460468417501012554531477876945938741751237388344363105067534507348164573733465510370326085632.000000000000000</double>
+        </property>
+       </widget>
       </item>
       <item row="0" column="2">
-       <widget class="QDoubleSpinBox" name="transfer_function_max_color"/>
+       <widget class="QDoubleSpinBox" name="transfer_function_max_color">
+        <property name="minimum">
+         <double>-999999999999999983359180223191721714560372275017470536367007614460468417501012554531477876945938741751237388344363105067534507348164573733465510370326085632.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>999999999999999983359180223191721714560372275017470536367007614460468417501012554531477876945938741751237388344363105067534507348164573733465510370326085632.000000000000000</double>
+        </property>
+       </widget>
       </item>
       <item row="1" column="1">
        <widget class="QLineEdit" name="range_min_color">
@@ -217,10 +231,10 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="1" column="0" alignment="Qt::AlignRight">
        <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>Synth. Func. Range Min:Max</string>
+         <string>Server side Range Min:Max : </string>
         </property>
        </widget>
       </item>
@@ -231,10 +245,10 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
+      <item row="0" column="0" alignment="Qt::AlignRight">
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>User Defined Range Min:Max</string>
+         <string>Range Min:Max : </string>
         </property>
        </widget>
       </item>
@@ -280,10 +294,24 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QDoubleSpinBox" name="transfer_function_min_opacity"/>
+       <widget class="QDoubleSpinBox" name="transfer_function_min_opacity">
+        <property name="minimum">
+         <double>-999999999999999983359180223191721714560372275017470536367007614460468417501012554531477876945938741751237388344363105067534507348164573733465510370326085632.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>999999999999999983359180223191721714560372275017470536367007614460468417501012554531477876945938741751237388344363105067534507348164573733465510370326085632.000000000000000</double>
+        </property>
+       </widget>
       </item>
       <item row="0" column="2">
-       <widget class="QDoubleSpinBox" name="transfer_function_max_opacity"/>
+       <widget class="QDoubleSpinBox" name="transfer_function_max_opacity">
+        <property name="minimum">
+         <double>-999999999999999983359180223191721714560372275017470536367007614460468417501012554531477876945938741751237388344363105067534507348164573733465510370326085632.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>999999999999999983359180223191721714560372275017470536367007614460468417501012554531477876945938741751237388344363105067534507348164573733465510370326085632.000000000000000</double>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -324,7 +352,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_4">
+      <widget class="QPushButton" name="applyPBtn">
        <property name="text">
         <string>Apply</string>
        </property>
