@@ -146,9 +146,17 @@ void TransferFunctionEditor::onColorFunctionChanged( int index )
         ui->colorMapBar->setColorMap( color_map );
         ui->colorMapBar->update();
         //        const kvs::visclient::FrequencyTable* freq_table = extCommand->m_result.findColorFrequencyTable(trans_color->m_name);
+        ui->transfer_function_var_color->blockSignals(true);
+        ui->transfer_function_min_color->blockSignals(true);
+        ui->transfer_function_max_color->blockSignals(true);
+
         ui->transfer_function_var_color->setText(  transfer_function_color->m_color_variable.c_str() );
         ui->transfer_function_min_color->setValue( transfer_function_color->m_color_variable_min );
         ui->transfer_function_max_color->setValue( transfer_function_color->m_color_variable_max );
+
+        ui->transfer_function_var_color->blockSignals(false);
+        ui->transfer_function_min_color->blockSignals(false);
+        ui->transfer_function_max_color->blockSignals(false);
     }
 }
 
@@ -161,9 +169,17 @@ void TransferFunctionEditor::onOpacityFunctionChanged( int index )
         ui->opacityMapPalette->setOpacityMap( opacity_map );
         ui->opacityMapPalette->update();
         //        const kvs::visclient::FrequencyTable* freq_table = extCommand->m_result.findColorFrequencyTable(trans_color->m_name);
+        ui->transfer_function_var_opacity->blockSignals(true);
+        ui->transfer_function_min_opacity->blockSignals(true);
+        ui->transfer_function_max_opacity->blockSignals(true);
+
         ui->transfer_function_var_opacity->setText(  transfer_function_opacity->m_opacity_variable.c_str() );
         ui->transfer_function_min_opacity->setValue( transfer_function_opacity->m_opacity_variable_min );
         ui->transfer_function_max_opacity->setValue( transfer_function_opacity->m_opacity_variable_max );
+
+        ui->transfer_function_var_opacity->blockSignals(false);
+        ui->transfer_function_min_opacity->blockSignals(false);
+        ui->transfer_function_max_opacity->blockSignals(false);
     }
 }
 
