@@ -17,9 +17,11 @@ class TransferFunctionEditor : public QDialog
 public:
     explicit TransferFunctionEditor(QWidget *parent = nullptr);
     ~TransferFunctionEditor();
+    void setClientMessage( jpv::ParticleTransferClientMessage* client_message ){ m_client_message = client_message; }
 
 private:
     Ui::TransferFunctionEditor *ui;
+    jpv::ParticleTransferClientMessage* m_client_message;
     ColorMapEditor m_color_map_editor;
     OpacityMapEditor m_opacity_map_editor;
 
@@ -30,6 +32,8 @@ private:
     void populateOpacityFunctionLists(int n);
 
 private slots:
+    jpv::ParticleTransferClientMessage::EquationToken convertToken( std::string );
+
     void onNumberOfTransferFunctionValueChanged( int value );
 
     void onColorFunctionChanged( int index );
@@ -46,6 +50,8 @@ private slots:
 
     void onTransferFunctionRangeColorChanged();
     void onTransferFunctionRangeOpacityChanged();
+
+    void onApplyButtonClicked();
 };
 
 #endif // TRANSFERFUNCTIONEDITOR_H
