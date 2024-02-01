@@ -9,6 +9,7 @@
 #include "ExpressionConverter.h"
 #include "Widgets/ExtendedTransferFunctionMessage.h"
 #include "Widgets/DataProperties.h"
+#include "Widgets/TransferFunctionEditor.h"
 
 #include <kvs/PointObject>
 #include "ExtendedKVS/Screen.h"
@@ -30,6 +31,7 @@ public:
     void setCamera( kvs::Camera* camera ){ m_camera = camera; }
     void setMerge( Merge* merge ){  m_merge = merge; }
     void setFilterInfomation( DataProperties* filter_infomation ){ m_filter_infomation = filter_infomation; }
+    void setTransferFunctionEditor( TransferFunctionEditor* transfer_function_editor ){ m_transfer_function_editor = transfer_function_editor; }
     jpv::ParticleTransferClientMessage* getClientMessage(){ return &m_client_message; }
     kvs::PointObject* connect2( int timeStep );
 
@@ -39,6 +41,7 @@ private:
     kvs::Camera* m_camera;
     Merge* m_merge;
     DataProperties* m_filter_infomation;
+    TransferFunctionEditor* m_transfer_function_editor;
     ExtendedTransferFunctionMessage m_extended_transfer_function_message;
 
     jpv::ParticleTransferClientMessage m_client_message;

@@ -97,6 +97,8 @@ void Connect::connect1()
     client.termClient();
 
     m_merge->serverObject( ui->volumeDataFilePathLEdit->text(), reply.m_start_step, reply.m_end_step );
+    m_transfer_function_editor->setVariableRange( reply.m_variable_range );
+    m_transfer_function_editor->updateRangeView();
     qInfo() << reply.m_variable_range.min( "t1_var_c" );
     qInfo() << reply.m_min_value;
 }
@@ -180,6 +182,7 @@ kvs::PointObject* Connect::connect2( int timeStep )
         delete[] reply.m_normals;
         delete[] reply.m_positions;
     }
+
     kvs::PointObject* pointObject = object;
 
     kvs::Vector3f serverSideMinObjectCoords;
@@ -206,10 +209,7 @@ kvs::PointObject* Connect::connect2( int timeStep )
     client.recvMessage( &reply );
     client.termClient();
 //    pointObject->updateMinMaxCoords();
-
-
     return pointObject;
-
 }
 
 void Connect::onConnectButtonClicked()
