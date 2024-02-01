@@ -87,6 +87,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_connect.setCamera( m_screen->scene()->camera() );
     m_connect.setMerge( &m_merge );
     m_connect.setFilterInfomation( &m_data_properties );
+    m_connect.setTransferFunctionEditor( &m_transfer_function_editor );
 
     m_render_options.close();
     m_render_options.setClientMessage( m_connect.getClientMessage() );
