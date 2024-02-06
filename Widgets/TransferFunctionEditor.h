@@ -18,6 +18,9 @@ public:
     explicit TransferFunctionEditor(QWidget *parent = nullptr);
     ~TransferFunctionEditor();
     void setClientMessage( jpv::ParticleTransferClientMessage* client_message ){ m_client_message = client_message; }
+    void applyVariableRange( const VariableRange& range );
+    void updateRangeEdit();
+    void updateRangeView( const VariableRange& range );
 
 private:
     Ui::TransferFunctionEditor *ui;

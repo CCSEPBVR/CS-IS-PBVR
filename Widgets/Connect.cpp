@@ -97,10 +97,9 @@ void Connect::connect1()
     client.termClient();
 
     m_merge->serverObject( ui->volumeDataFilePathLEdit->text(), reply.m_start_step, reply.m_end_step );
-    m_transfer_function_editor->setVariableRange( reply.m_variable_range );
-    m_transfer_function_editor->updateRangeView();
-    qInfo() << reply.m_variable_range.min( "t1_var_c" );
-    qInfo() << reply.m_min_value;
+    m_transfer_function_editor->applyVariableRange( reply.m_variable_range );
+//    qInfo() << reply.m_variable_range.min( "t1_var_c" );
+//    qInfo() << reply.m_min_value;
 }
 
 kvs::PointObject* Connect::connect2( int timeStep )
@@ -208,6 +207,15 @@ kvs::PointObject* Connect::connect2( int timeStep )
     client.sendMessage( m_client_message );
     client.recvMessage( &reply );
     client.termClient();
+
+    //ここでサーバのレンジが手に入る。
+    std::cout << reply.m_variable_range.min( "t1_var_c" ) << std::endl;
+    std::cout << reply.m_variable_range.max( "t1_var_c" ) << std::endl;
+    std::cout << reply.m_variable_range.min( "t1_var_o" ) << std::endl;
+    std::cout << reply.m_variable_range.max( "t1_var_o" ) << std::endl;
+    m_transfer_function_editor->applyVariableRange( reply.m_variable_range );
+    m_transfer_function_editor->updateRangeView( reply.m_variable_range );
+
 //    pointObject->updateMinMaxCoords();
     return pointObject;
 }

@@ -42,6 +42,108 @@ TransferFunctionEditor::~TransferFunctionEditor()
     delete ui;
 }
 
+void TransferFunctionEditor::applyVariableRange( const VariableRange& range )
+{
+    bool isRangeInitialized = false;
+    for( size_t i = 0; i < m_extended_transfer_function_message.m_color_transfer_function.size(); i++ )
+    {
+        if( !m_extended_transfer_function_message.m_color_transfer_function[i].m_range_initialized )
+        {
+            std::stringstream ss;
+            ss << "t" << (i + 1);
+            const std::string tag_c = ss.str() + "_var_c";
+            m_extended_transfer_function_message.m_color_transfer_function[i].m_color_variable_min   = range.min( tag_c );
+            m_extended_transfer_function_message.m_color_transfer_function[i].m_color_variable_max   = range.max( tag_c );
+            m_extended_transfer_function_message.m_color_transfer_function[i].m_range_initialized = true;
+            isRangeInitialized = true;
+        }
+    }
+
+    for( size_t i = 0; i < m_extended_transfer_function_message.m_opacity_transfer_function.size(); i++ )
+    {
+        if( !m_extended_transfer_function_message.m_opacity_transfer_function[i].m_range_initialized )
+        {
+            std::stringstream ss;
+            ss << "t" << (i + 1);
+            const std::string tag_c = ss.str() + "_var_o";
+            m_extended_transfer_function_message.m_opacity_transfer_function[i].m_opacity_variable_min   = range.min( tag_c );
+            m_extended_transfer_function_message.m_opacity_transfer_function[i].m_opacity_variable_max   = range.max( tag_c );
+            m_extended_transfer_function_message.m_opacity_transfer_function[i].m_range_initialized = true;
+            isRangeInitialized = true;
+        }
+    }
+
+    if( isRangeInitialized )
+    {
+        updateRangeEdit();
+    }
+}
+
+void TransferFunctionEditor::updateRangeEdit()
+{
+    onColorFunctionChanged( ui->colorFunctionCBox->currentIndex() );
+    onOpacityFunctionChanged( ui->opacityFunctionCBox->currentIndex() );
+}
+
+void TransferFunctionEditor::updateRangeView( const VariableRange& range )
+{
+    int n_select_color = ui->colorFunctionCBox->currentIndex() + 1;
+    int n_select_opacity = ui->opacityFunctionCBox->currentIndex() + 1;
+    char color_function_name[8] = {0x00};
+    char opacity_function_name[8] = {0x00};
+    sprintf(color_function_name, "C%d", n_select_color);
+    sprintf(opacity_function_name, "O%d", n_select_opacity);
+    char tag_c[16] = {0x00};
+    char tag_o[16] = {0x00};
+    // Temporary string just to prevent crash in Windows debug mode
+    std::string tmp_cmf=ui->colorFunctionCBox->currentText().toStdString();
+    std::string tmp_omf=ui->opacityFunctionCBox->currentText().toStdString();
+
+    //2023/07/20 changed by shimomura
+    sprintf(tag_c, "t%d_var_c", n_select_color);
+    sprintf(tag_o, "t%d_var_o", n_select_opacity);
+
+    const NamedTransferFunctionParameter *trans_color = this->m_extended_transfer_function_message.getColorTransferFunction(n_select_color);
+    const NamedTransferFunctionParameter *trans_opacity = this->m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity);
+
+//    if (trans_color != NULL) {
+//        kvs::ColorMap color_map = trans_color->colorMap();
+//        m_color_map_palette->setColorMap( color_map );
+
+//        std::vector<size_t> table( 1024, 0);
+//        m_color_histogram->setTable( kvs::visclient::FrequencyTable( 0.0, 1.0, table.size(), table.data() ) );
+//        const kvs::visclient::FrequencyTable* freq_table = extCommand->m_result.findColorFrequencyTable(std::string(color_function_name));
+//        if ( freq_table != NULL ) {
+//            m_color_histogram->setTable( *freq_table );
+//            m_color_histogram->setRange(ui->transfer_function_min_color->value(),ui->transfer_function_max_color->value() );
+//            ui->color_hist_min->setNum(requested_color_min);
+//            ui->color_hist_max->setNum(requested_color_max);
+
+//        }
+
+//    }
+
+//    if (trans_opacity != NULL) {
+//        kvs::OpacityMap opacity_map = trans_opacity->opacityMap();
+//        m_opacity_map_palette->setOpacityMap( opacity_map );
+
+//        std::vector<size_t> table( 1024, 0);
+//        m_opacity_histogram->setTable( kvs::visclient::FrequencyTable( 0.0, 1.0, table.size(), table.data() ) );
+//        const kvs::visclient::FrequencyTable* freq_table = extCommand->m_result.findOpacityFrequencyTable(std::string(opacity_function_name));
+//        if ( freq_table != NULL ) {
+//            m_opacity_histogram->setTable( *freq_table );
+//            // MODIFIED BY)T.Osaki 2019.12.20
+//            m_opacity_histogram->setRange(ui->transfer_function_min_opacity->value(), ui->transfer_function_max_opacity->value());
+//            ui->opacity_hist_min->setNum(requested_opacity_min );
+//            ui->opacity_hist_max->setNum(requested_opacity_max );
+//        }
+//    }
+    ui->range_min_color->setText( QString::number( range.min( tag_c ) ) );
+    ui->range_max_color->setText( QString::number( range.max( tag_c ) ) );
+    ui->range_min_opacity->setText( QString::number( range.min( tag_o ) ) );
+    ui->range_max_opacity->setText( QString::number( range.max( tag_o ) ) );
+}
+
 jpv::ParticleTransferClientMessage::EquationToken TransferFunctionEditor::convertToken( std::string expression )
 {
     FuncParser::ExpressionTokenizer tokenizer;
