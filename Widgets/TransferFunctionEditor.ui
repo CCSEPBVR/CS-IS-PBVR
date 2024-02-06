@@ -166,6 +166,9 @@
       </item>
       <item row="0" column="1">
        <widget class="QDoubleSpinBox" name="transfer_function_min_color">
+        <property name="decimals">
+         <number>7</number>
+        </property>
         <property name="minimum">
          <double>-9999999999999.000000000000000</double>
         </property>
@@ -176,6 +179,9 @@
       </item>
       <item row="0" column="2">
        <widget class="QDoubleSpinBox" name="transfer_function_max_color">
+        <property name="decimals">
+         <number>7</number>
+        </property>
         <property name="minimum">
          <double>-9999999999999.000000000000000</double>
         </property>
@@ -295,6 +301,9 @@
       </item>
       <item row="0" column="1">
        <widget class="QDoubleSpinBox" name="transfer_function_min_opacity">
+        <property name="decimals">
+         <number>7</number>
+        </property>
         <property name="minimum">
          <double>-9999999999999.000000000000000</double>
         </property>
@@ -305,6 +314,9 @@
       </item>
       <item row="0" column="2">
        <widget class="QDoubleSpinBox" name="transfer_function_max_opacity">
+        <property name="decimals">
+         <number>7</number>
+        </property>
         <property name="minimum">
          <double>-9999999999999.000000000000000</double>
         </property>
