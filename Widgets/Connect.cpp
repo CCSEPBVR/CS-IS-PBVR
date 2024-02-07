@@ -214,7 +214,8 @@ kvs::PointObject* Connect::connect2( int timeStep )
     std::cout << reply.m_variable_range.min( "t1_var_o" ) << std::endl;
     std::cout << reply.m_variable_range.max( "t1_var_o" ) << std::endl;
     m_transfer_function_editor->applyVariableRange( reply.m_variable_range );
-    m_transfer_function_editor->updateRangeView( reply.m_variable_range );
+//    m_transfer_function_editor->updateRangeView( reply.m_variable_range );
+    m_transfer_function_editor->updateRangeView( reply );
 
 //    pointObject->updateMinMaxCoords();
     return pointObject;

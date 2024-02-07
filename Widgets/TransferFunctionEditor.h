@@ -20,7 +20,8 @@ public:
     void setClientMessage( jpv::ParticleTransferClientMessage* client_message ){ m_client_message = client_message; }
     void applyVariableRange( const VariableRange& range );
     void updateRangeEdit();
-    void updateRangeView( const VariableRange& range );
+//    void updateRangeView( const VariableRange& range );
+    void updateRangeView( const jpv::ParticleTransferServerMessage& reply );
 
 private:
     Ui::TransferFunctionEditor *ui;
