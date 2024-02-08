@@ -212,7 +212,7 @@
        </widget>
       </item>
       <item row="4" column="0" colspan="3">
-       <widget class="TFEHistogramBar" name="colorHistgromBar">
+       <widget class="TFEHistogramBar" name="colorHistogramBar">
         <property name="minimumSize">
          <size>
           <width>0</width>

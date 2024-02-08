@@ -110,10 +110,10 @@ void TransferFunctionEditor::updateRangeView( const jpv::ParticleTransferServerM
     if( trans_color != nullptr )
     {
         std::vector<size_t> color_table( 1024, 0 );
-        ui->colorHistgromBar->setTable( kvs::visclient::FrequencyTable( 0.0, 1.0, color_table.size(), color_table.data() ) );
+        ui->colorHistogramBar->setTable( kvs::visclient::FrequencyTable( 0.0, 1.0, color_table.size(), color_table.data() ) );
         kvs::visclient::FrequencyTable color_freq_table = kvs::visclient::FrequencyTable(  0.0,  1.0, reply.m_color_nbins[ui->colorFunctionCBox->currentIndex()], (size_t *)reply.m_color_bins[ui->colorFunctionCBox->currentIndex()], color_function_name );
-        ui->colorHistgromBar->setTable( color_freq_table );
-        ui->colorHistgromBar->setRange( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_min, m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_max);
+        ui->colorHistogramBar->setTable( color_freq_table );
+        ui->colorHistogramBar->setRange( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_min, m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_max);
     }
 
     if( trans_opacity != nullptr )
@@ -129,8 +129,8 @@ void TransferFunctionEditor::updateRangeView( const jpv::ParticleTransferServerM
     ui->range_max_color->setText( QString::number( reply.m_variable_range.max( tag_c ) ) );
     ui->range_min_opacity->setText( QString::number( reply.m_variable_range.min( tag_o ) ) );
     ui->range_max_opacity->setText( QString::number( reply.m_variable_range.max( tag_o ) ) );
-
-    ui->colorHistgromBar->update();
+    
+    ui->colorHistogramBar->update();
     ui->opacityHistogramBar->update();
 }
 
