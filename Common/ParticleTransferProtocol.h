@@ -176,7 +176,7 @@ public:
     std::string color_tf_synthesis;
     std::string opacity_tf_synthesis;
     kvs::UInt64* m_color_nbins;
-    kvs::UInt64* m_opacity_bins_number;
+    kvs::UInt64* m_opacity_nbins;
     std::vector<kvs::UInt64*> m_color_bins;
     std::vector<kvs::UInt64*> m_opacity_bins;
     std::vector<std::string> m_color_bin_names;			// add by @hira at 2016/12/01

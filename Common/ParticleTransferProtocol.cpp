@@ -685,8 +685,8 @@ int32_t jpv::ParticleTransferServerMessage::byteSize() const
     {
         s += sizeof( m_color_nbins[i] );
         s += sizeof( m_color_bins[i] ) * m_color_nbins[i];
-        s += sizeof( m_opacity_bins_number[i] );
-        s += sizeof( m_opacity_bins[i] ) * m_opacity_bins_number[i];
+        s += sizeof( m_opacity_nbins[i] );
+        s += sizeof( m_opacity_bins[i] ) * m_opacity_nbins[i];
     }
 
     s += jpv::Serializer::byteSize( transfunc.size() );
@@ -794,8 +794,8 @@ size_t jpv::ParticleTransferServerMessage::pack( char* buf ) const
         {
             index += jpv::Serializer::write( buf + index, m_color_nbins[i] );
             index += jpv::Serializer::writeArray<kvs::UInt64>( buf + index, m_color_bins[i], m_color_nbins[i] );
-            index += jpv::Serializer::write( buf + index, m_opacity_bins_number[i] );
-            index += jpv::Serializer::writeArray<kvs::UInt64>( buf + index, m_opacity_bins[i], m_opacity_bins_number[i] );
+            index += jpv::Serializer::write( buf + index, m_opacity_nbins[i] );
+            index += jpv::Serializer::writeArray<kvs::UInt64>( buf + index, m_opacity_bins[i], m_opacity_nbins[i] );
 
 //            // add by @hira at 2016/12/01
 //            index += jpv::Serializer::write( buf + index, m_color_bin_names[i] );
@@ -893,7 +893,7 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
     {
         index += jpv::Serializer::read( buf + index, &m_transfer_function_count );
         m_color_nbins = new kvs::UInt64[ m_transfer_function_count ];
-        m_opacity_bins_number = new kvs::UInt64[ m_transfer_function_count ];
+        m_opacity_nbins = new kvs::UInt64[ m_transfer_function_count ];
 
         m_color_bins.resize( m_transfer_function_count );
         m_opacity_bins.resize( m_transfer_function_count );
@@ -904,9 +904,9 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
             index += jpv::Serializer::read( buf + index, &m_color_nbins[i] );
             m_color_bins[i] =  new kvs::UInt64[ m_color_nbins[i] ];
             index += jpv::Serializer::readArray<kvs::UInt64>( buf + index, m_color_bins[i], m_color_nbins[i] );
-            index += jpv::Serializer::read( buf + index, &m_opacity_bins_number[i] );
-            m_opacity_bins[i] =  new kvs::UInt64[ m_opacity_bins_number[i] ];
-            index += jpv::Serializer::readArray<kvs::UInt64>( buf + index, m_opacity_bins[i], m_opacity_bins_number[i] );
+            index += jpv::Serializer::read( buf + index, &m_opacity_nbins[i] );
+            m_opacity_bins[i] =  new kvs::UInt64[ m_opacity_nbins[i] ];
+            index += jpv::Serializer::readArray<kvs::UInt64>( buf + index, m_opacity_bins[i], m_opacity_nbins[i] );
 
             // add by @hira at 2016/12/01
 //            index += jpv::Serializer::read( buf + index, &m_color_bin_names[i] );
@@ -1058,7 +1058,7 @@ void jpv::ParticleTransferServerMessage::initializeTransferFunction(
     this->m_transfer_function_count = transfer_function_count;
 
     this->m_color_nbins = new kvs::UInt64[transfer_function_count];
-    this->m_opacity_bins_number = new kvs::UInt64[transfer_function_count];
+    this->m_opacity_nbins = new kvs::UInt64[transfer_function_count];
 
     this->m_color_bins.resize( transfer_function_count );
     this->m_opacity_bins.resize( transfer_function_count );
@@ -1068,14 +1068,14 @@ void jpv::ParticleTransferServerMessage::initializeTransferFunction(
     for ( int tf = 0; tf < this->m_transfer_function_count; tf++ )
     {
         this->m_color_nbins[tf] = nbins;
-        this->m_opacity_bins_number[tf] = nbins;
+        this->m_opacity_nbins[tf] = nbins;
         this->m_color_bins[tf] =  new kvs::UInt64[ this->m_color_nbins[tf] ];
-        this->m_opacity_bins[tf] =  new kvs::UInt64[ this->m_opacity_bins_number[tf] ];
+        this->m_opacity_bins[tf] =  new kvs::UInt64[ this->m_opacity_nbins[tf] ];
         for ( kvs::UInt64 res = 0; res < this->m_color_nbins[tf]; res++ )
         {
             this->m_color_bins[tf][res] = 0;
         }
-        for ( kvs::UInt64 res = 0; res < this->m_opacity_bins_number[tf]; res++ )
+        for ( kvs::UInt64 res = 0; res < this->m_opacity_nbins[tf]; res++ )
         {
             this->m_opacity_bins[tf][res] = 0;
         }
