@@ -113,7 +113,9 @@ void TransferFunctionEditor::updateRangeView( const jpv::ParticleTransferServerM
         ui->colorHistogramBar->setTable( kvs::visclient::FrequencyTable( 0.0, 1.0, color_table.size(), color_table.data() ) );
         kvs::visclient::FrequencyTable color_freq_table = kvs::visclient::FrequencyTable(  0.0,  1.0, reply.m_color_nbins[ui->colorFunctionCBox->currentIndex()], (size_t *)reply.m_color_bins[ui->colorFunctionCBox->currentIndex()], color_function_name );
         ui->colorHistogramBar->setTable( color_freq_table );
-        ui->colorHistogramBar->setRange( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_min, m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_max);
+        ui->colorHistogramBar->setRange( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_min, m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_max );
+        ui->colorMinRangeLbl->setNum( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_min );
+        ui->colorMaxRangeLbl->setNum( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_max );
     }
 
     if( trans_opacity != nullptr )
@@ -123,6 +125,8 @@ void TransferFunctionEditor::updateRangeView( const jpv::ParticleTransferServerM
         kvs::visclient::FrequencyTable opacity_freq_table = kvs::visclient::FrequencyTable( 0.0, 1.0, reply.m_opacity_nbins[ui->opacityFunctionCBox->currentIndex()], (size_t *)reply.m_opacity_bins[ui->opacityFunctionCBox->currentIndex()], opacity_function_name );
         ui->opacityHistogramBar->setTable( opacity_freq_table );
         ui->opacityHistogramBar->setRange( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_min, m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_max );
+        ui->opacityMinRangeLbl->setNum( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_min );
+        ui->opacityMaxRangeLbl->setNum( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_max );
     }
 
     ui->range_min_color->setText( QString::number( reply.m_variable_range.min( tag_c ) ) );

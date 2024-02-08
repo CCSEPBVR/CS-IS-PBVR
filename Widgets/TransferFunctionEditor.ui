@@ -127,7 +127,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
       <item row="5" column="0">
-       <widget class="QLabel" name="label_5">
+       <widget class="QLabel" name="colorMinRangeLbl">
         <property name="text">
          <string>Min:</string>
         </property>
@@ -198,7 +198,7 @@
        </widget>
       </item>
       <item row="5" column="2" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="label_6">
+       <widget class="QLabel" name="colorMaxRangeLbl">
         <property name="text">
          <string>:Max</string>
         </property>
@@ -245,7 +245,7 @@
        </widget>
       </item>
       <item row="5" column="0">
-       <widget class="QLabel" name="label_7">
+       <widget class="QLabel" name="opacityMinRangeLbl">
         <property name="text">
          <string>Min:</string>
         </property>
@@ -269,7 +269,7 @@
        </widget>
       </item>
       <item row="5" column="2" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="label_8">
+       <widget class="QLabel" name="opacityMaxRangeLbl">
         <property name="text">
          <string>:Max</string>
         </property>
