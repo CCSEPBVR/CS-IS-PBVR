@@ -29,6 +29,8 @@ private:
 
 public:
     void create( const kvs::VolumeObjectBase* volume );
+    void setTable( const kvs::FrequencyTable& table ) { m_table = table; }
+    void setRange( const kvs::Real64 min_range, const kvs::Real64 max_range ){ m_table.setRange( min_range, max_range ); this->update_texture(); }
 
 private:
     void draw_palette();

@@ -188,11 +188,13 @@ void TFEHistogramBar::create_texture()
     const size_t width = m_table.numberOfBins();
     const size_t height = width;
 
+    QOpenGLWidget::makeCurrent();
     m_texture.release();
     m_texture.setPixelFormat( nchannels, sizeof( kvs::UInt8 ) );
     m_texture.setMinFilter( GL_LINEAR );
     m_texture.setMagFilter( GL_LINEAR );
     m_texture.create( width, height, this->get_histogram_image().data() );
+    QOpenGLWidget::doneCurrent();
 }
 
 void TFEHistogramBar::update_texture()
