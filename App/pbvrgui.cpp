@@ -23,7 +23,9 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_volumeTransform( this ),
     m_connect( this ),
     m_animation_controls( this ),
-    m_render_options( this )
+    m_render_options( this ),
+    m_repetition_level_control( this ),
+    m_transfer_function_editor( this )
 {
     ui->setupUi(this);
     setWindowTitle( "QTPBVR vX.X.X" );
