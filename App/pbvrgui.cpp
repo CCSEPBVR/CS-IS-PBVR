@@ -102,6 +102,8 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_repetition_level_control.setScreen( m_screen );
 
     m_transfer_function_editor.setClientMessage( m_connect.getClientMessage() );
+    m_transfer_function_editor.setServerMessage( m_connect.getServerMessage() );
+    m_transfer_function_editor.setReceivedMessage( m_connect.getReceivedMessage() );
 
     setFocusPolicy(Qt::StrongFocus);
 }

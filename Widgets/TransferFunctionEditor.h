@@ -6,6 +6,7 @@
 #include "Widgets/OpacityMapEditor.h"
 
 #include "ExtendedTransferFunctionMessage.h"
+#include "ReceivedMessage.h"
 namespace Ui {
 class TransferFunctionEditor;
 }
@@ -18,14 +19,19 @@ public:
     explicit TransferFunctionEditor(QWidget *parent = nullptr);
     ~TransferFunctionEditor();
     void setClientMessage( jpv::ParticleTransferClientMessage* client_message ){ m_client_message = client_message; }
+    void setServerMessage( jpv::ParticleTransferServerMessage* server_message ){ m_server_message = server_message; }
+    void setReceivedMessage( kvs::visclient::ReceivedMessage* received_message ){ m_received_message = received_message; }
     void applyVariableRange( const VariableRange& range );
     void updateRangeEdit();
 //    void updateRangeView( const VariableRange& range );
-    void updateRangeView( const jpv::ParticleTransferServerMessage& reply );
+//    void updateRangeView( const jpv::ParticleTransferServerMessage& reply );
+    void updateRangeView();
 
 private:
     Ui::TransferFunctionEditor *ui;
     jpv::ParticleTransferClientMessage* m_client_message;
+    jpv::ParticleTransferServerMessage* m_server_message;
+    kvs::visclient::ReceivedMessage* m_received_message;
     ColorMapEditor m_color_map_editor;
     OpacityMapEditor m_opacity_map_editor;
 

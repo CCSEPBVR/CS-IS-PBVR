@@ -30,7 +30,7 @@ public:
         initialize(min, max, nbins, bins);
 
     }
-    //Osaki QTISPBVR update(2020/11/16) OpenGL版のISでは使用しているためifdefを無効にしました。
+    //T0603 QTISPBVR update(2020/11/16) OpenGL版のISでは使用しているためifdefを無効にしました。
     //#ifdef COMM_MODE_CS
     FrequencyTable( const float min, const float max,
                    const int nbins, const size_t* bins,
@@ -48,7 +48,7 @@ public:
         m_max_range = max;
         m_nbins = nbins;
         //KVS2.7.0
-        //MOD BY)T.Osaki 2020.05.28
+        //MOD BY)T0603 2020.05.28
         //m_bin.deepCopy( bins, nbins );
         m_bin.assign( bins, nbins );
 
@@ -74,7 +74,7 @@ public:
         }
         std::cout << std::endl;
     }
-    //Osaki QTISPBVR update(2020/11/16) OpenGL版のISでは使用しているためifdefを無効にしました。
+    //T0603 QTISPBVR update(2020/11/16) OpenGL版のISでは使用しているためifdefを無効にしました。
     //#ifdef COMM_MODE_CS
 public:
     std::string m_function_name;

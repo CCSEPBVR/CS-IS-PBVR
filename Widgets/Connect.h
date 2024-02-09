@@ -13,6 +13,7 @@
 
 #include <kvs/PointObject>
 #include "ExtendedKVS/Screen.h"
+#include "ReceivedMessage.h"
 
 class Merge;
 
@@ -33,6 +34,8 @@ public:
     void setFilterInfomation( DataProperties* filter_infomation ){ m_filter_infomation = filter_infomation; }
     void setTransferFunctionEditor( TransferFunctionEditor* transfer_function_editor ){ m_transfer_function_editor = transfer_function_editor; }
     jpv::ParticleTransferClientMessage* getClientMessage(){ return &m_client_message; }
+    jpv::ParticleTransferServerMessage* getServerMessage(){ return &m_server_message; }
+    kvs::visclient::ReceivedMessage* getReceivedMessage(){ return &m_received_message; }
     kvs::PointObject* connect2( int timeStep );
 
 private:
@@ -45,6 +48,8 @@ private:
     ExtendedTransferFunctionMessage m_extended_transfer_function_message;
 
     jpv::ParticleTransferClientMessage m_client_message;
+    jpv::ParticleTransferServerMessage m_server_message;
+    kvs::visclient::ReceivedMessage m_received_message;
 
     jpv::ParticleTransferClientMessage::EquationToken convertToken( std::string );
     void connect1();

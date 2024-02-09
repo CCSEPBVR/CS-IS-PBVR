@@ -39,6 +39,7 @@ HEADERS += \
     Merge.h \
     OpacityMapEditor.h \
     Preference.h \
+    ReceivedMessage.h \
     RenderOptions.h \
     RepetitionLevelControl.h \
     TFEColorMapBar.h \

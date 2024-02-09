@@ -111,8 +111,8 @@ kvs::PointObject* Connect::connect2( int timeStep )
 
     jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
 //    jpv::ParticleTransferClientMessage m_client_message;
-    jpv::ParticleTransferServerMessage reply;
-    reply.camera = m_camera;
+//    jpv::ParticleTransferServerMessage reply;
+    m_server_message.camera = m_camera;
     client.initClient();
     strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
     m_client_message.m_initialize_parameter = 1;
@@ -153,20 +153,20 @@ kvs::PointObject* Connect::connect2( int timeStep )
     m_client_message.m_message_size = m_client_message.byteSize();
     std::cout << "SEND" << std::endl;
     client.sendMessage( m_client_message );
-    client.recvMessage( &reply );
+    client.recvMessage( &m_server_message );
 
-    if ( client.recvMessage( &reply ) == 1 ){}
+    if ( client.recvMessage( &m_server_message ) == 1 ){}
     //    if ( client.recvMessage( &reply ) == 1 ){}
 
     size_t allParticle = 0;
     kvs::PointObject* object = new kvs::PointObject();
 
-    int nmemb = reply.m_number_particle * 3;
+    int nmemb = m_server_message.m_number_particle * 3;
     if ( nmemb != 0 )
     {
-        kvs::ValueArray<kvs::Real32> positions ( reply.m_positions, nmemb );
-        kvs::ValueArray<kvs::Real32> normals ( reply.m_normals, nmemb );
-        kvs::ValueArray<kvs::UInt8>  colors ( reply.m_colors, nmemb );
+        kvs::ValueArray<kvs::Real32> positions ( m_server_message.m_positions, nmemb );
+        kvs::ValueArray<kvs::Real32> normals ( m_server_message.m_normals, nmemb );
+        kvs::ValueArray<kvs::UInt8>  colors ( m_server_message.m_colors, nmemb );
 
         kvs::PointObject obj;
         obj.setCoords( positions );
@@ -176,22 +176,22 @@ kvs::PointObject* Connect::connect2( int timeStep )
         object->add(obj);
         obj.clear();
         std::cout<<" getPointObjectFromServer 331"<<std::endl;
-        allParticle = allParticle + reply.m_number_particle;
-        delete[] reply.m_colors;
-        delete[] reply.m_normals;
-        delete[] reply.m_positions;
+        allParticle = allParticle + m_server_message.m_number_particle;
+        delete[] m_server_message.m_colors;
+        delete[] m_server_message.m_normals;
+        delete[] m_server_message.m_positions;
     }
 
     kvs::PointObject* pointObject = object;
 
     kvs::Vector3f serverSideMinObjectCoords;
     kvs::Vector3f serverSideMaxObjectCoords;
-    serverSideMinObjectCoords[0] = reply.m_min_object_coord[0];
-    serverSideMinObjectCoords[1] = reply.m_min_object_coord[1];
-    serverSideMinObjectCoords[2] = reply.m_min_object_coord[2];
-    serverSideMaxObjectCoords[0] = reply.m_max_object_coord[0];
-    serverSideMaxObjectCoords[1] = reply.m_max_object_coord[1];
-    serverSideMaxObjectCoords[2] = reply.m_max_object_coord[2];
+    serverSideMinObjectCoords[0] = m_server_message.m_min_object_coord[0];
+    serverSideMinObjectCoords[1] = m_server_message.m_min_object_coord[1];
+    serverSideMinObjectCoords[2] = m_server_message.m_min_object_coord[2];
+    serverSideMaxObjectCoords[0] = m_server_message.m_max_object_coord[0];
+    serverSideMaxObjectCoords[1] = m_server_message.m_max_object_coord[1];
+    serverSideMaxObjectCoords[2] = m_server_message.m_max_object_coord[2];
     pointObject->setMinMaxObjectCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );
     pointObject->setMinMaxExternalCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );
 
@@ -205,17 +205,39 @@ kvs::PointObject* Connect::connect2( int timeStep )
     m_client_message.m_initialize_parameter = -1;
     m_client_message.m_message_size = m_client_message.byteSize();
     client.sendMessage( m_client_message );
-    client.recvMessage( &reply );
+    client.recvMessage( &m_server_message );
     client.termClient();
 
     //ここでサーバのレンジが手に入る。
-    std::cout << reply.m_variable_range.min( "t1_var_c" ) << std::endl;
-    std::cout << reply.m_variable_range.max( "t1_var_c" ) << std::endl;
-    std::cout << reply.m_variable_range.min( "t1_var_o" ) << std::endl;
-    std::cout << reply.m_variable_range.max( "t1_var_o" ) << std::endl;
-    m_transfer_function_editor->applyVariableRange( reply.m_variable_range );
+    std::cout << m_server_message.m_variable_range.min( "t1_var_c" ) << std::endl;
+    std::cout << m_server_message.m_variable_range.max( "t1_var_c" ) << std::endl;
+    std::cout << m_server_message.m_variable_range.min( "t1_var_o" ) << std::endl;
+    std::cout << m_server_message.m_variable_range.max( "t1_var_o" ) << std::endl;
+
+    //ヒストグラム更新用
+    m_received_message.m_var_range.merge( m_server_message.m_variable_range );
+    m_received_message.m_color_bins.resize( m_server_message.m_transfer_function_count );
+    m_received_message.m_opacity_bins.resize( m_server_message.m_transfer_function_count );
+    for ( int tf = 0; tf < m_server_message.m_transfer_function_count; tf++ )
+    {
+        char color_function_name[8] = {0x00};
+        char opacity_function_name[8] = {0x00};
+        sprintf(color_function_name, "C%d", tf+1);
+        sprintf(opacity_function_name, "O%d", tf+1);
+        if ( m_server_message.m_color_nbins[tf] > 0 )
+        {
+            m_received_message.m_color_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_color_nbins[tf], (size_t *)m_server_message.m_color_bins[tf], std::string(color_function_name) );
+        }
+        if ( m_server_message.m_opacity_nbins[tf] )
+        {
+            m_received_message.m_opacity_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_opacity_nbins[tf],(size_t *) m_server_message.m_opacity_bins[tf], std::string(opacity_function_name) );
+        }
+    }
+
+    m_transfer_function_editor->applyVariableRange( m_server_message.m_variable_range );
 //    m_transfer_function_editor->updateRangeView( reply.m_variable_range );
-    m_transfer_function_editor->updateRangeView( reply );
+//    m_transfer_function_editor->updateRangeView( reply );
+    m_transfer_function_editor->updateRangeView();
 
 //    pointObject->updateMinMaxCoords();
     return pointObject;
