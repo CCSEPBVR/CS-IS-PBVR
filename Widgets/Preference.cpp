@@ -10,7 +10,14 @@
 Preference::Preference(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Preference),
-    m_settings( "config.ini", QSettings::IniFormat )
+    m_screen( nullptr ),
+    m_compositor( nullptr ),
+    m_color_map_bar( nullptr ),
+    m_orientation_axis( nullptr ),
+    m_fps_label( nullptr ),
+    m_time_step_label( nullptr ),
+    m_settings( "config.ini", QSettings::IniFormat ),
+    m_initialized( false )
 {
     ui->setupUi(this);
     ui->orientationTypeCBox->addItem( "Horizontal", Horizontal );

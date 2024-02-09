@@ -12,7 +12,14 @@
 TransferFunctionEditor::TransferFunctionEditor(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::TransferFunctionEditor),
-    m_is_import_transfer_function_parameter( false )
+    m_is_import_transfer_function_parameter( false ),
+    m_client_message( nullptr ),
+    m_server_message( nullptr ),
+//    m_received_message( nullptr ),
+    m_color_map_editor( this ),
+    m_opacity_map_editor( this ),
+    m_extended_transfer_function_message(),
+    m_extended_transfer_function_message_initial()
 {
     ui->setupUi(this);
     connect( ui->numberOfTransferFunctionSBox, &QSpinBox::valueChanged, this, &TransferFunctionEditor::onNumberOfTransferFunctionValueChanged );

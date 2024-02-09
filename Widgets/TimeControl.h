@@ -18,9 +18,9 @@ public:
 private:
     Ui::TimeControl *ui;
     int m_current_time_step;
-    int m_next_time_step = 0;
-    int m_limit_min_time_step = INT_MAX;
-    int m_limit_max_time_step = INT_MIN;
+    int m_next_time_step;
+    int m_limit_min_time_step;
+    int m_limit_max_time_step;
     bool m_is_loop;
 
     void setNextTimeStep(int nextTimeStep);

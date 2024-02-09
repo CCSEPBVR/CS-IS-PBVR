@@ -4,7 +4,9 @@
 #include <kvs/ParticleBasedRenderer>
 RepetitionLevelControl::RepetitionLevelControl(QWidget *parent) :
     QDockWidget(parent),
-    ui(new Ui::RepetitionLevelControl)
+    ui(new Ui::RepetitionLevelControl),
+    m_screen( nullptr ),
+    m_compositor( nullptr )
 {
     ui->setupUi(this);
     connect( ui->applyPBtn, &QPushButton::clicked, this, &RepetitionLevelControl::onApplyButtonClicked );

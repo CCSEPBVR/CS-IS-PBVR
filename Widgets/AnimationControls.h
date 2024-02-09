@@ -34,7 +34,7 @@ private:
     kvs::qt::jaea::Screen* m_screen;
     QVector<kvs::Xform> m_xforms;
     int m_xform_index = 0;
-    int m_ninterpolation;
+    int m_ninterpolation;//消す
     int m_interpolation_counter = 0;
 
     kvs::Xform InterpolateXform( const int interp_step, const int num_frame, const kvs::Xform& start, const kvs::Xform& end );

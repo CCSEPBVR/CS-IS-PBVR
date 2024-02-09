@@ -73,7 +73,7 @@ private:
     kvs::Label* m_fps_label;
     kvs::Label* m_time_step_label;
     QSettings m_settings;
-    bool m_initialized = false;
+    bool m_initialized;
 
 private:
     bool checkConfigFileExists() { return QFile::exists( "config.ini" ); }

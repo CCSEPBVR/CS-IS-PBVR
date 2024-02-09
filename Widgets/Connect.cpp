@@ -9,7 +9,16 @@
 
 Connect::Connect(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::Connect)
+    ui(new Ui::Connect),
+    m_screen( nullptr ),
+    m_camera( nullptr ),
+    m_merge( nullptr ),
+    m_filter_infomation( nullptr ),
+    m_transfer_function_editor( nullptr ),
+    m_extended_transfer_function_message(),
+    m_client_message(),
+    m_server_message(),
+    m_received_message()
 {
     ui->setupUi(this);
     ui->uniformRBtn->setChecked( true );

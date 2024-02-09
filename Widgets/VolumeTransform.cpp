@@ -5,7 +5,8 @@
 
 VolumeTransform::VolumeTransform(QWidget *parent) :
     QDockWidget(parent),
-    ui(new Ui::VolumeTransform)
+    ui(new Ui::VolumeTransform),
+    m_screen( nullptr )
 {
     ui->setupUi(this);
     

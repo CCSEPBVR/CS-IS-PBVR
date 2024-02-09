@@ -3,7 +3,13 @@
 
 TimeControl::TimeControl(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::TimeControl)
+    ui(new Ui::TimeControl),
+    m_current_time_step( 0 ),
+    m_next_time_step( 0 ),
+    m_limit_min_time_step( INT_MAX ),
+    m_limit_max_time_step( INT_MIN ),
+    m_is_loop( false )
+
 {
     ui->setupUi(this);
     ui->timeStepSBox->setWrapping( true );

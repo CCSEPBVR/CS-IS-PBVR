@@ -5,13 +5,16 @@
 
 AnimationControls::AnimationControls(QWidget *parent) :
     QDockWidget(parent),
-    ui(new Ui::AnimationControls)
+    ui(new Ui::AnimationControls),
+    m_animationTimer( new QTimer( this ) ),
+    m_animation_paused( false ),
+    m_screen( nullptr ),
+    m_xforms(),
+    m_xform_index( 0 ),
+    m_ninterpolation( 0 ),
+    m_interpolation_counter( 0 )
 {
-    ui->setupUi(this);
-    m_interpolation_counter = 0;
-    m_xform_index = 0;
-    m_animationTimer = new QTimer(this);
-    m_animation_paused = false;
+    ui->setupUi(this);        
 
     ui->captureCBox->addItem( "On", QVariant( true ) );
     ui->captureCBox->addItem( "Off", QVariant( false ) );

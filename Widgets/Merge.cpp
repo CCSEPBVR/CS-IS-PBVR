@@ -22,7 +22,15 @@
 
 Merge::Merge(QWidget *parent) :
     QDockWidget(parent),
-    ui(new Ui::Merge)
+    ui(new Ui::Merge),
+//    headerLabels( nullptr ),
+    m_files_manager(),
+    m_screen( nullptr ),
+    m_time_control( nullptr ),
+    m_preference( nullptr ),
+    m_connect( nullptr ),
+    m_data_summary( nullptr ),
+    currentTimeStep( -1 )
 {
     ui->setupUi(this);
     connect(ui->filesTWidget, &QTableWidget::cellDoubleClicked, this, &Merge::onFilesTWidgetCellDoubleClicked);

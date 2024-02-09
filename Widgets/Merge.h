@@ -107,7 +107,7 @@ private:
     Preference* m_preference;
     Connect* m_connect;
     DataSummary* m_data_summary;
-    int currentTimeStep = -1;
+    int currentTimeStep;
 
     void onBrowserButtonClicked();
     void onAddButtonClicked();

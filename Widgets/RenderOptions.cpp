@@ -3,7 +3,8 @@
 
 RenderOptions::RenderOptions(QWidget *parent) :
     QDockWidget(parent),
-    ui(new Ui::RenderOptions)
+    ui(new Ui::RenderOptions),
+    m_client_message( nullptr )
 {
     ui->setupUi(this);
     connect( ui->applyPBtn, &QPushButton::clicked, this, &RenderOptions::onApplyButtonClicked );
