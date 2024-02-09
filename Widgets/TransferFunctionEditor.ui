@@ -357,7 +357,7 @@
    <item row="3" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QPushButton" name="pushButton_3">
+      <widget class="QPushButton" name="resetPBtn">
        <property name="text">
         <string>Reset</string>
        </property>
@@ -371,14 +371,14 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_5">
+      <widget class="QPushButton" name="importPBtn">
        <property name="text">
         <string>Import</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_6">
+      <widget class="QPushButton" name="exportPBtn">
        <property name="text">
         <string>Export</string>
        </property>

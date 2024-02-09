@@ -26,9 +26,12 @@ public:
 //    void updateRangeView( const VariableRange& range );
 //    void updateRangeView( const jpv::ParticleTransferServerMessage& reply );
     void updateRangeView();
+    void importFile( const std::string& fileName );
+    void exportFile( const std::string& fileName, const bool addition);
 
 private:
     Ui::TransferFunctionEditor *ui;
+    bool m_is_import_transfer_function_parameter;
     jpv::ParticleTransferClientMessage* m_client_message;
     jpv::ParticleTransferServerMessage* m_server_message;
     kvs::visclient::ReceivedMessage* m_received_message;
@@ -62,6 +65,8 @@ private slots:
     void onTransferFunctionRangeOpacityChanged();
 
     void onApplyButtonClicked();
+    void onImportButtonClicked();
+    void onExportButtonClicked();
 };
 
 #endif // TRANSFERFUNCTIONEDITOR_H

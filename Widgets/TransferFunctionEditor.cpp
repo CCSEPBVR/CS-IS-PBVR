@@ -5,10 +5,14 @@
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include "Widgets/FrequencyTable.h"
+#include <QFileDialog>
+#include "ParameterFile.h"
+#include <fstream>
 
 TransferFunctionEditor::TransferFunctionEditor(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::TransferFunctionEditor)
+    ui(new Ui::TransferFunctionEditor),
+    m_is_import_transfer_function_parameter( false )
 {
     ui->setupUi(this);
     connect( ui->numberOfTransferFunctionSBox, &QSpinBox::valueChanged, this, &TransferFunctionEditor::onNumberOfTransferFunctionValueChanged );
@@ -32,6 +36,8 @@ TransferFunctionEditor::TransferFunctionEditor(QWidget *parent) :
     connect( ui->transfer_function_max_opacity, &QDoubleSpinBox::valueChanged, this, &TransferFunctionEditor::onTransferFunctionRangeOpacityChanged );
 
     connect( ui->applyPBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onApplyButtonClicked );
+    connect( ui->importPBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onImportButtonClicked );
+    connect( ui->exportPBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onExportButtonClicked );
 
     populateColorFunctionLists( m_extended_transfer_function_message.m_transfer_function_number );
     populateOpacityFunctionLists( m_extended_transfer_function_message.m_transfer_function_number );
@@ -44,38 +50,41 @@ TransferFunctionEditor::~TransferFunctionEditor()
 
 void TransferFunctionEditor::applyVariableRange( const VariableRange& range )
 {
-    bool isRangeInitialized = false;
-    for( size_t i = 0; i < m_extended_transfer_function_message.m_color_transfer_function.size(); i++ )
+    if( m_is_import_transfer_function_parameter == false )
     {
-        if( !m_extended_transfer_function_message.m_color_transfer_function[i].m_range_initialized )
+        bool isRangeInitialized = false;
+        for( size_t i = 0; i < m_extended_transfer_function_message.m_color_transfer_function.size(); i++ )
         {
-            std::stringstream ss;
-            ss << "t" << (i + 1);
-            const std::string tag_c = ss.str() + "_var_c";
-            m_extended_transfer_function_message.m_color_transfer_function[i].m_color_variable_min   = range.min( tag_c );
-            m_extended_transfer_function_message.m_color_transfer_function[i].m_color_variable_max   = range.max( tag_c );
-            m_extended_transfer_function_message.m_color_transfer_function[i].m_range_initialized = true;
-            isRangeInitialized = true;
+            if( !m_extended_transfer_function_message.m_color_transfer_function[i].m_range_initialized )
+            {
+                std::stringstream ss;
+                ss << "t" << (i + 1);
+                const std::string tag_c = ss.str() + "_var_c";
+                m_extended_transfer_function_message.m_color_transfer_function[i].m_color_variable_min   = range.min( tag_c );
+                m_extended_transfer_function_message.m_color_transfer_function[i].m_color_variable_max   = range.max( tag_c );
+                m_extended_transfer_function_message.m_color_transfer_function[i].m_range_initialized = true;
+                isRangeInitialized = true;
+            }
         }
-    }
 
-    for( size_t i = 0; i < m_extended_transfer_function_message.m_opacity_transfer_function.size(); i++ )
-    {
-        if( !m_extended_transfer_function_message.m_opacity_transfer_function[i].m_range_initialized )
+        for( size_t i = 0; i < m_extended_transfer_function_message.m_opacity_transfer_function.size(); i++ )
         {
-            std::stringstream ss;
-            ss << "t" << (i + 1);
-            const std::string tag_c = ss.str() + "_var_o";
-            m_extended_transfer_function_message.m_opacity_transfer_function[i].m_opacity_variable_min   = range.min( tag_c );
-            m_extended_transfer_function_message.m_opacity_transfer_function[i].m_opacity_variable_max   = range.max( tag_c );
-            m_extended_transfer_function_message.m_opacity_transfer_function[i].m_range_initialized = true;
-            isRangeInitialized = true;
+            if( !m_extended_transfer_function_message.m_opacity_transfer_function[i].m_range_initialized )
+            {
+                std::stringstream ss;
+                ss << "t" << (i + 1);
+                const std::string tag_c = ss.str() + "_var_o";
+                m_extended_transfer_function_message.m_opacity_transfer_function[i].m_opacity_variable_min   = range.min( tag_c );
+                m_extended_transfer_function_message.m_opacity_transfer_function[i].m_opacity_variable_max   = range.max( tag_c );
+                m_extended_transfer_function_message.m_opacity_transfer_function[i].m_range_initialized = true;
+                isRangeInitialized = true;
+            }
         }
-    }
 
-    if( isRangeInitialized )
-    {
-        updateRangeEdit();
+        if( isRangeInitialized )
+        {
+            updateRangeEdit();
+        }
     }
 }
 
@@ -495,4 +504,220 @@ void TransferFunctionEditor::onApplyButtonClicked()
     if( !m_client_message->m_x_synthesis.empty() ) m_client_message->x_synthesis_token = this->convertToken( m_client_message->m_x_synthesis );
     if( !m_client_message->m_y_synthesis.empty() ) m_client_message->y_synthesis_token = this->convertToken( m_client_message->m_y_synthesis );
     if( !m_client_message->m_z_synthesis.empty() ) m_client_message->z_synthesis_token = this->convertToken( m_client_message->m_z_synthesis );    
+}
+
+void TransferFunctionEditor::onImportButtonClicked()
+{
+    QString fileName = QFileDialog::getOpenFileName( this, tr("Import Transfer Function File"), ".", tr("Transfer Function Files (*.tfe *.TFE *.tf *.TF )") );
+    this->importFile(fileName.toStdString());
+}
+
+void TransferFunctionEditor::importFile( const std::string& fname )
+{
+    ParameterFile param;
+    bool stat;
+
+    stat = param.loadIN( fname );
+
+    if ( !stat ) return;
+    ExtendedTransferFunctionMessage importdoc;
+
+    const size_t resolution = param.getInt( "tf_resolution" );
+    importdoc.m_extend_transfer_function_resolution =  resolution;
+
+    std::cout<<"TF_RESOLUTION;"<<resolution<<std::endl;
+    if (!param.hasParam("TF_SYNTH_C") || !param.hasParam("TF_SYNTH_O"))
+    {
+//        std::cerr << "[Error] This import file is old format. file=" << fname << std::endl;
+//        QMessageBox::warning(this, QString("Obsolete File Format"), QString("The selected file is using an old unsupported format"));
+        return;
+    }
+
+    importdoc.m_transfer_function_number = param.getInt( "TF_NUMBER" );
+    importdoc.m_color_transfer_function_synthesis = param.getString( "TF_SYNTH_C" );
+    importdoc.m_opacity_transfer_function_synthesis = param.getString( "TF_SYNTH_O" );
+
+    importdoc.m_color_transfer_function.clear();
+    for ( size_t n = 0; n < importdoc.m_transfer_function_number; n++ )
+    {
+        std::stringstream ss;
+        ss << "TF_NAME" << n + 1 << "_";
+        const std::string tag_base = ss.str();
+        std::string name = tag_base + "C";
+
+        NamedTransferFunctionParameter trans;
+        trans.setResolution( resolution );
+        if (!param.hasParam(name))
+        {
+            char c_name[8] = {0x00};
+            sprintf(c_name, "C%zd", n + 1);
+            trans.m_name = std::string(c_name);
+            trans.m_color_variable      = "q1";
+        }
+        else
+        {
+            trans.m_name = param.getString( tag_base + "C" );
+            trans.m_color_variable      = param.getString( tag_base + "VAR_C" );
+            trans.m_color_variable_min   = param.getFloat( tag_base + "MIN_C" );
+            trans.m_color_variable_max   = param.getFloat( tag_base + "MAX_C" );
+
+            std::string s_color = param.getString( tag_base + "TABLE_C" );
+            std::replace( s_color.begin(), s_color.end(), ',', ' ' );
+            std::stringstream ss_color( s_color );
+            kvs::ColorMap::Table color_table( resolution * 3 );
+            for ( size_t i = 0; i < resolution; i++ )
+            {
+                for ( size_t c = 0; c < 3; c++ )
+                {
+                    int color_e;
+                    ss_color >> color_e;
+                    color_table.at( i * 3 + c ) = color_e;
+                }
+            }
+            kvs::ColorMap color_map( color_table );
+            trans.setColorMap(color_map);
+        }
+        if (importdoc.getColorTransferFunction(trans.m_name) == NULL)
+        {
+            importdoc.m_color_transfer_function.push_back(trans);
+        }
+    }
+
+    importdoc.m_opacity_transfer_function.clear();
+    for ( size_t n = 0; n < importdoc.m_transfer_function_number; n++ )
+    {
+        std::stringstream ss;
+        ss << "TF_NAME" << n + 1 << "_";
+        const std::string tag_base = ss.str();
+        std::string name = tag_base + "O";
+
+        NamedTransferFunctionParameter trans;
+        trans.setResolution( resolution );
+        if (!param.hasParam(name)) {
+            char o_name[8] = {0x00};
+            sprintf(o_name, "O%zd", n + 1);
+            trans.m_name = std::string(o_name);
+            trans.m_opacity_variable      = "q1";
+        }
+        else {
+            trans.m_name = param.getString( tag_base + "O" );
+            trans.m_opacity_variable    = param.getString( tag_base + "VAR_O" );
+            trans.m_opacity_variable_min = param.getFloat( tag_base + "MIN_O" );
+            trans.m_opacity_variable_max = param.getFloat( tag_base + "MAX_O" );
+
+            std::string s_opacity = param.getString( tag_base + "TABLE_O" );
+            std::replace( s_opacity.begin(), s_opacity.end(), ',', ' ' );
+            std::stringstream ss_opacity( s_opacity );
+            kvs::OpacityMap::Table opacity_table( resolution );
+            for ( size_t i = 0; i < resolution; i++ )
+            {
+                float opacity;
+                ss_opacity >> opacity;
+                opacity_table.at( i ) = opacity;
+            }
+            kvs::OpacityMap opacity_map( opacity_table );
+            trans.setOpacityMap(opacity_map);
+        }
+
+        if (importdoc.getOpacityTransferFunction(trans.m_name) == NULL) {
+            importdoc.m_opacity_transfer_function.push_back(trans);
+        }
+    }
+
+//    this->m_doc=importdoc;
+    m_extended_transfer_function_message = importdoc;
+//    this->m_doc_initial=importdoc;
+
+    //DEL BY)T0603 2020.05.25
+    //ui->resolution->setValue(resolution);
+    ui->numberOfTransferFunctionSBox->setValue( importdoc.m_transfer_function_number );
+    ui->color_function_synth->setText(QString::fromStdString(importdoc.m_color_transfer_function_synthesis) );
+    ui->opacity_function_synth->setText(QString::fromStdString(importdoc.m_opacity_transfer_function_synthesis));
+    onColorFunctionChanged( ui->colorFunctionCBox->currentIndex() );
+    onOpacityFunctionChanged( ui->opacityFunctionCBox->currentIndex() );
+
+    m_is_import_transfer_function_parameter = true;
+    onApplyButtonClicked();
+}
+
+void TransferFunctionEditor::onExportButtonClicked()
+{
+    QString fileName = QFileDialog::getSaveFileName( this, tr("Export Current Settings to Parameter File"), ".", tr("Transfer Function Files (*.tfe *.TFE *.tf *.TF )") );
+    if( fileName.right(4) != ".tfe" && fileName.right(4) != ".TFE" && fileName.right(3) != ".tf" && fileName.right(3) != ".TF")
+    {
+        fileName += ".tfe";
+    }
+    this->exportFile(fileName.toStdString(), false);
+}
+
+void TransferFunctionEditor::exportFile( const std::string& fname, const bool append)
+{
+    std::ofstream ofs;
+    if ( append )
+    {
+        ofs.open( fname.c_str(), std::ofstream::app );
+    }
+    else
+    {
+        ofs.open( fname.c_str(), std::ofstream::out );
+    }
+    if ( ofs.fail() )
+    {
+        std::cerr << "Error: open file " << fname << std::endl;
+        return;
+    }
+
+    ofs << "TF_RESOLUTION=" << m_extended_transfer_function_message.m_extend_transfer_function_resolution << std::endl;
+    ofs << "TF_NUMBER=" << m_extended_transfer_function_message.m_transfer_function_number << std::endl;
+    ofs << "TF_SYNTH_C=" << m_extended_transfer_function_message.m_color_transfer_function_synthesis << std::endl;
+    ofs << "TF_SYNTH_O=" << m_extended_transfer_function_message.m_opacity_transfer_function_synthesis << std::endl;
+
+    for ( size_t n = 0; n < m_extended_transfer_function_message.m_color_transfer_function.size(); n++ )
+    {
+        std::stringstream ss;
+        int name_number =0;
+        name_number = m_extended_transfer_function_message.m_color_transfer_function[n].getNameNumber();
+        ss << "TF_NAME" << name_number << "_";
+
+        const std::string tag_base = ss.str();
+        ofs << tag_base << "C=" << m_extended_transfer_function_message.m_color_transfer_function[n].m_name << std::endl;
+        ofs << tag_base << "VAR_C=" << m_extended_transfer_function_message.m_color_transfer_function[n].m_color_variable << std::endl;
+        ofs << tag_base << "MIN_C=" << m_extended_transfer_function_message.m_color_transfer_function[n].m_color_variable_min << std::endl;
+        ofs << tag_base << "MAX_C=" << m_extended_transfer_function_message.m_color_transfer_function[n].m_color_variable_max << std::endl;
+        kvs::ColorMap::Table color_table = m_extended_transfer_function_message.m_color_transfer_function[n].colorMap().table();
+
+        ofs << tag_base << "TABLE_C=";
+        for ( size_t i = 0; i < color_table.size(); i++ )
+        {
+            ofs << static_cast<int>( color_table.at( i ) ) << ",";
+        }
+        ofs << std::endl;
+    }
+
+    for ( size_t n = 0; n < m_extended_transfer_function_message.m_opacity_transfer_function.size(); n++ )
+    {
+        std::stringstream ss;
+        int name_number =0;
+        name_number = m_extended_transfer_function_message.m_opacity_transfer_function[n].getNameNumber();
+
+        ss << "TF_NAME" << name_number << "_";
+
+        const std::string tag_base = ss.str();
+        ofs << tag_base << "O=" << m_extended_transfer_function_message.m_opacity_transfer_function[n].m_name << std::endl;
+        ofs << tag_base << "VAR_O=" << m_extended_transfer_function_message.m_opacity_transfer_function[n].m_opacity_variable << std::endl;
+        ofs << tag_base << "MIN_O=" << m_extended_transfer_function_message.m_opacity_transfer_function[n].m_opacity_variable_min << std::endl;
+        ofs << tag_base << "MAX_O=" << m_extended_transfer_function_message.m_opacity_transfer_function[n].m_opacity_variable_max << std::endl;
+
+        kvs::OpacityMap::Table opacity_table = m_extended_transfer_function_message.m_opacity_transfer_function[n].opacityMap().table();
+        ofs << tag_base << "TABLE_O=";
+        for ( size_t i = 0; i < opacity_table.size(); i++ )
+        {
+            ofs << opacity_table.at( i ) << ",";
+        }
+        ofs << std::endl;
+    }
+    ofs.close();
+
+    std::cerr << "TransferFunction parameters are exported to " << fname << std::endl;
+
 }

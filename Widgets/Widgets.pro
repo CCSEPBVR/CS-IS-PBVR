@@ -38,6 +38,7 @@ HEADERS += \
     FrequencyTable.h \
     Merge.h \
     OpacityMapEditor.h \
+    ParameterFile.h \
     Preference.h \
     ReceivedMessage.h \
     RenderOptions.h \
@@ -66,6 +67,7 @@ SOURCES += \
     ExtendedTransferFunctionMessage.cpp \
     Merge.cpp \
     OpacityMapEditor.cpp \
+    ParameterFile.cpp \
     Preference.cpp \
     RenderOptions.cpp \
     RepetitionLevelControl.cpp \
