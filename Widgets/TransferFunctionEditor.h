@@ -31,10 +31,13 @@ public:
 
 private:
     Ui::TransferFunctionEditor *ui;
-    bool m_is_import_transfer_function_parameter;
+
     jpv::ParticleTransferClientMessage* m_client_message;
     jpv::ParticleTransferServerMessage* m_server_message;
     kvs::visclient::ReceivedMessage* m_received_message;
+
+    bool m_is_import_transfer_function_parameter;
+
     ColorMapEditor m_color_map_editor;
     OpacityMapEditor m_opacity_map_editor;
 
