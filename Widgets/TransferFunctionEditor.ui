@@ -238,16 +238,16 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="importPBtn">
+      <widget class="QPushButton" name="exportPBtn">
        <property name="text">
-        <string>Import</string>
+        <string>Export</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="exportPBtn">
+      <widget class="QPushButton" name="importPBtn">
        <property name="text">
-        <string>Export</string>
+        <string>Import</string>
        </property>
       </widget>
      </item>

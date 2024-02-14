@@ -35,7 +35,6 @@ TransferFunctionEditor::TransferFunctionEditor(QWidget *parent) :
     connect( ui->color_function_synth, &QLineEdit::textEdited, this, &TransferFunctionEditor::onColorFunctionSynthEdited );
     connect( ui->opacity_function_synth, &QLineEdit::textEdited, this, &TransferFunctionEditor::onOpacityFunctionSynthEdited );
 
-
     connect( ui->transfer_function_var_color, &QLineEdit::textEdited, this, &TransferFunctionEditor::onTransferFunctionVarColorEdited );
     connect( ui->transfer_function_var_opacity, &QLineEdit::textEdited, this, &TransferFunctionEditor::onTransferFunctionVarOpacityEdited );
 
@@ -414,12 +413,14 @@ void TransferFunctionEditor::onColorFunctionListEditorButtonClicked()
 {
     m_color_function_list_editor.initalize( FunctionListEditor::COLOR_FUNCTION, m_extended_transfer_function_message, ui->colorFunctionCBox->currentIndex() );
     m_color_function_list_editor.exec();
+    onColorFunctionChanged( ui->colorFunctionCBox->currentIndex() );
 }
 
 void TransferFunctionEditor::onOpacityFunctionListEditorButtonClicked()
 {
     m_opacity_function_list_editor.initalize( FunctionListEditor::OPACITY_FUNCTION, m_extended_transfer_function_message, ui->opacityFunctionCBox->currentIndex() );
     m_opacity_function_list_editor.exec();
+    onOpacityFunctionChanged( ui->opacityFunctionCBox->currentIndex() );
 }
 
 void TransferFunctionEditor::onColorMapEditorButtonClicked()
