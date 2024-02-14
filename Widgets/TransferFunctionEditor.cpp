@@ -11,11 +11,13 @@
 
 TransferFunctionEditor::TransferFunctionEditor(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::TransferFunctionEditor),
-    m_is_import_transfer_function_parameter( false ),
+    ui(new Ui::TransferFunctionEditor),    
     m_client_message( nullptr ),
     m_server_message( nullptr ),
     m_received_message( nullptr ),
+    m_is_import_transfer_function_parameter( false ),
+    m_color_function_list_editor( this ),
+    m_opacity_function_list_editor( this ),
     m_color_map_editor( this ),
     m_opacity_map_editor( this ),
     m_extended_transfer_function_message(),
@@ -36,6 +38,10 @@ TransferFunctionEditor::TransferFunctionEditor(QWidget *parent) :
 
     connect( ui->transfer_function_var_color, &QLineEdit::textEdited, this, &TransferFunctionEditor::onTransferFunctionVarColorEdited );
     connect( ui->transfer_function_var_opacity, &QLineEdit::textEdited, this, &TransferFunctionEditor::onTransferFunctionVarOpacityEdited );
+
+
+    connect( ui->colorFunctionListEditorPBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onColorFunctionListEditorButtonClicked );
+    connect( ui->opacityFunctionListEditorPBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onOpacityFunctionListEditorButtonClicked );
 
     connect( ui->editColorMapPBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onColorMapEditorButtonClicked );
     connect( ui->editOpacityMapPBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onOpacityMapEditorButtonClicked );
@@ -402,6 +408,18 @@ void TransferFunctionEditor::populateOpacityFunctionLists(int n){
     }
     ui->opacityFunctionCBox->clear();
     ui->opacityFunctionCBox->addItems(itemList);
+}
+
+void TransferFunctionEditor::onColorFunctionListEditorButtonClicked()
+{
+    m_color_function_list_editor.initalize( FunctionListEditor::COLOR_FUNCTION, m_extended_transfer_function_message, ui->colorFunctionCBox->currentIndex() );
+    m_color_function_list_editor.exec();
+}
+
+void TransferFunctionEditor::onOpacityFunctionListEditorButtonClicked()
+{
+    m_opacity_function_list_editor.initalize( FunctionListEditor::OPACITY_FUNCTION, m_extended_transfer_function_message, ui->opacityFunctionCBox->currentIndex() );
+    m_opacity_function_list_editor.exec();
 }
 
 void TransferFunctionEditor::onColorMapEditorButtonClicked()

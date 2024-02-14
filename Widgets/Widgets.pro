@@ -36,6 +36,7 @@ HEADERS += \
     DataSummary.h \
     ExtendedTransferFunctionMessage.h \
     FrequencyTable.h \
+    FunctionListEditor.h \
     Merge.h \
     OpacityMapEditor.h \
     ParameterFile.h \
@@ -65,6 +66,7 @@ SOURCES += \
     DataProperties.cpp \
     DataSummary.cpp \
     ExtendedTransferFunctionMessage.cpp \
+    FunctionListEditor.cpp \
     Merge.cpp \
     OpacityMapEditor.cpp \
     ParameterFile.cpp \
@@ -92,6 +94,7 @@ FORMS += \
     Coordinates.ui \
     DataProperties.ui \
     DataSummary.ui \
+    FunctionListEditor.ui \
     Merge.ui \
     OpacityMapEditor.ui \
     Preference.ui \

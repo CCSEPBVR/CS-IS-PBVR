@@ -7,6 +7,7 @@
 
 #include "ExtendedTransferFunctionMessage.h"
 #include "ReceivedMessage.h"
+#include "FunctionListEditor.h"
 namespace Ui {
 class TransferFunctionEditor;
 }
@@ -38,6 +39,9 @@ private:
 
     bool m_is_import_transfer_function_parameter;
 
+    FunctionListEditor m_color_function_list_editor;
+    FunctionListEditor m_opacity_function_list_editor;
+
     ColorMapEditor m_color_map_editor;
     OpacityMapEditor m_opacity_map_editor;
 
@@ -60,6 +64,9 @@ private slots:
 
     void onTransferFunctionVarColorEdited( const QString &arg1 );
     void onTransferFunctionVarOpacityEdited( const QString &arg1 );
+
+    void onColorFunctionListEditorButtonClicked();
+    void onOpacityFunctionListEditorButtonClicked();
 
     void onColorMapEditorButtonClicked();
     void onOpacityMapEditorButtonClicked();
