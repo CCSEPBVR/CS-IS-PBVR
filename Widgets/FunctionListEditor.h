@@ -36,6 +36,7 @@ private:
 private slots:
     void onFunctionListRowChanged( int current_row );
     void onSetButtonClicked();
+    void onCellChanged( int row, int column );
     void onCancelButtonClicked();
     void onOkButtonClicked();
 };
