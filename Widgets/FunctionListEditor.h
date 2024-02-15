@@ -21,8 +21,8 @@ public:
 public:
     explicit FunctionListEditor(QWidget *parent = nullptr);
     ~FunctionListEditor();
-    void initalize(FUNCTION_TYPE function_type, ExtendedTransferFunctionMessage& extended_transfer_function, int i);
-    void setTransferFunctionParameterList(std::vector<NamedTransferFunctionParameter> *original_extended_transfer_function);
+    void initalize( FUNCTION_TYPE function_type, ExtendedTransferFunctionMessage& extended_transfer_function );
+    void setTransferFunctionParameterList( std::vector<NamedTransferFunctionParameter> *original_extended_transfer_function );
 
 private:
     Ui::FunctionListEditor *ui;
@@ -34,8 +34,6 @@ private:
     void save();
 
 private slots:
-    void onFunctionListRowChanged( int current_row );
-    void onSetButtonClicked();
     void onCellChanged( int row, int column );
     void onCancelButtonClicked();
     void onOkButtonClicked();

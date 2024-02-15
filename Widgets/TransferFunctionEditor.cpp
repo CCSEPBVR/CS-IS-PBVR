@@ -411,14 +411,14 @@ void TransferFunctionEditor::populateOpacityFunctionLists(int n){
 
 void TransferFunctionEditor::onColorFunctionListEditorButtonClicked()
 {
-    m_color_function_list_editor.initalize( FunctionListEditor::COLOR_FUNCTION, m_extended_transfer_function_message, ui->colorFunctionCBox->currentIndex() );
+    m_color_function_list_editor.initalize( FunctionListEditor::COLOR_FUNCTION, m_extended_transfer_function_message );
     m_color_function_list_editor.exec();
     onColorFunctionChanged( ui->colorFunctionCBox->currentIndex() );
 }
 
 void TransferFunctionEditor::onOpacityFunctionListEditorButtonClicked()
 {
-    m_opacity_function_list_editor.initalize( FunctionListEditor::OPACITY_FUNCTION, m_extended_transfer_function_message, ui->opacityFunctionCBox->currentIndex() );
+    m_opacity_function_list_editor.initalize( FunctionListEditor::OPACITY_FUNCTION, m_extended_transfer_function_message );
     m_opacity_function_list_editor.exec();
     onOpacityFunctionChanged( ui->opacityFunctionCBox->currentIndex() );
 }
