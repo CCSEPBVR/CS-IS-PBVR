@@ -480,8 +480,9 @@ void Preference::applyResolution()
 {
     const int width = ui->widthSBox->value();
     const int height = ui->heightSBox->value();
-
+    m_screen->setSize( width, height );
     m_screen->setFixedSize( width, height );
+    m_screen->scene()->resizeFunction( width, height, m_screen->screen()->devicePixelRatio() );
 }
 
 void Preference::applyLabelsSettings()

@@ -85,7 +85,7 @@ void Connect::connect1()
     jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
     jpv::ParticleTransferClientMessage message;
     jpv::ParticleTransferServerMessage reply;
-    reply.camera = m_camera;
+    reply.camera = new kvs::Camera();
 
     int init = client.initClient();
     strncpy( message.m_header, "JPTP /1.0\r\n", 11 );
@@ -121,7 +121,7 @@ kvs::PointObject* Connect::connect2( int timeStep )
     jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
 //    jpv::ParticleTransferClientMessage m_client_message;
 //    jpv::ParticleTransferServerMessage reply;
-    m_server_message.camera = m_camera;
+    m_server_message.camera = new kvs::Camera();
     client.initClient();
     strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
     m_client_message.m_initialize_parameter = 1;
@@ -137,7 +137,7 @@ kvs::PointObject* Connect::connect2( int timeStep )
     m_client_message.m_node_type = 'a';
 //    m_client_message.m_particle_limit = 10000000;
 //    m_client_message.m_particle_density = 1;
-//    m_client_message.particle_data_size_limit = 20;
+//    m_client_message.particle_data_size_limit = 20;    
     m_client_message.m_camera = m_camera;//足りないかも
     m_client_message.m_step = timeStep;
     m_client_message.m_message_size = m_client_message.byteSize();
