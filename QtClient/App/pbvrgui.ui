@@ -1,0 +1,594 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PBVRGUI</class>
+ <widget class="QMainWindow" name="PBVRGUI">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>832</width>
+    <height>677</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow::separator { 
+
+background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:1.0, fx:0.5, fy:0.5,  stop:0.0 rgba(0, 0, 0, 128), stop:0.50 rgba(128, 128, 128,32), stop:1 rgba(0, 0, 0, 32)); 
+ /*background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(0, 0, 0, 0), stop:0.25 rgba(0, 0, 0, 0), stop:0.5 rgba(128, 1280, 128, 128), stop:0.75 rgba(0, 0, 0, 0), stop:1 rgba(0, 0, 0, 0)); */
+;width:2px
+}
+</string>
+  </property>
+  <property name="documentMode">
+   <bool>false</bool>
+  </property>
+  <property name="dockNestingEnabled">
+   <bool>true</bool>
+  </property>
+  <property name="dockOptions">
+   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks|QMainWindow::VerticalTabs</set>
+  </property>
+  <widget class="QWidget" name="kvs_view_area">
+   <property name="minimumSize">
+    <size>
+     <width>100</width>
+     <height>100</height>
+    </size>
+   </property>
+   <property name="autoFillBackground">
+    <bool>true</bool>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_2" columnstretch="1">
+    <item row="0" column="0">
+     <widget class="RenderArea" name="kvs_renderarea">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+        <horstretch>1</horstretch>
+        <verstretch>1</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>400</width>
+        <height>400</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>400</width>
+        <height>400</height>
+       </size>
+      </property>
+      <property name="baseSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>832</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionImport"/>
+    <addaction name="actionExport"/>
+    <addaction name="separator"/>
+    <addaction name="actionImport_Transfer_Functions"/>
+    <addaction name="actionExport_Transfer_Functions"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>Window</string>
+    </property>
+    <widget class="QMenu" name="menuViews">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="title">
+      <string>Views</string>
+     </property>
+     <addaction name="actionAnimation_Control"/>
+     <addaction name="actionCoordinates"/>
+     <addaction name="actionFilter_Information"/>
+     <addaction name="actionLegend_Options"/>
+     <addaction name="actionSystem_Status"/>
+     <addaction name="actionRender_Options"/>
+     <addaction name="actionTime_Controls"/>
+     <addaction name="actionVolume_Transform"/>
+     <addaction name="separator"/>
+     <addaction name="actionRevert_to_Default_Layout"/>
+    </widget>
+    <addaction name="separator"/>
+    <addaction name="menuViews"/>
+    <addaction name="separator"/>
+    <addaction name="actionParticle_Panel"/>
+    <addaction name="actionTransfer_Function_Editor"/>
+    <addaction name="actionViewer_Controls"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionPBVR_Client_Manual"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout_PBVR_Client"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuWindow"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QToolBar" name="XformToolBar">
+   <property name="font">
+    <font>
+     <pointsize>20</pointsize>
+     <underline>false</underline>
+    </font>
+   </property>
+   <property name="windowTitle">
+    <string>Xform Toolbar</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>24</width>
+     <height>24</height>
+    </size>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonIconOnly</enum>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionZoomIn"/>
+   <addaction name="actionZoomOut"/>
+   <addaction name="separator"/>
+   <addaction name="actionXneg"/>
+   <addaction name="actionYneg"/>
+   <addaction name="actionYpos"/>
+   <addaction name="actionXpos"/>
+  </widget>
+  <widget class="QToolBar" name="AnimationToolBar">
+   <property name="windowTitle">
+    <string>Animation Toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionAddFrame"/>
+   <addaction name="actionRemoveFrame"/>
+   <addaction name="actionPlayFrames"/>
+   <addaction name="actionplayLog"/>
+   <addaction name="actionrecLog"/>
+   <addaction name="separator"/>
+  </widget>
+  <action name="actionConnect_To_Server">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Connect To Server</string>
+   </property>
+  </action>
+  <action name="actionDisconnect_From_Server">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Disconnect From Server</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="text">
+    <string>Export Parameters</string>
+   </property>
+  </action>
+  <action name="actionPBVR_Client_Manual">
+   <property name="text">
+    <string>PBVR Client Manual</string>
+   </property>
+  </action>
+  <action name="actionAbout_PBVR_Client">
+   <property name="text">
+    <string>About PBVR Client</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::AboutRole</enum>
+   </property>
+  </action>
+  <action name="actionImport">
+   <property name="text">
+    <string>Import Parameters</string>
+   </property>
+  </action>
+  <action name="actionTransfer_Function_Editor">
+   <property name="text">
+    <string>Transfer Function Editor</string>
+   </property>
+  </action>
+  <action name="actionImport_Transfer_Functions">
+   <property name="text">
+    <string>Import Transfer Functions</string>
+   </property>
+  </action>
+  <action name="actionExport_Transfer_Functions">
+   <property name="text">
+    <string>Export Transfer Functions</string>
+   </property>
+  </action>
+  <action name="actionFilter_Information">
+   <property name="text">
+    <string>Filter Information</string>
+   </property>
+  </action>
+  <action name="actionSystem_Status">
+   <property name="text">
+    <string>System Status</string>
+   </property>
+  </action>
+  <action name="actionRender_Options">
+   <property name="text">
+    <string>Render Options</string>
+   </property>
+  </action>
+  <action name="actionVolume_Transform">
+   <property name="text">
+    <string>Volume Transform</string>
+   </property>
+  </action>
+  <action name="actionTime_Controls">
+   <property name="text">
+    <string>Time Controls</string>
+   </property>
+  </action>
+  <action name="actionLegend_Options">
+   <property name="text">
+    <string>Legend Options</string>
+   </property>
+  </action>
+  <action name="actionViewer_Controls">
+   <property name="text">
+    <string>Viewer Controls</string>
+   </property>
+   <property name="toolTip">
+    <string>Viewer Controls</string>
+   </property>
+  </action>
+  <action name="actionParticle_Panel">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Particle Selector</string>
+   </property>
+   <property name="font">
+    <font/>
+   </property>
+  </action>
+  <action name="actionCoordinates">
+   <property name="text">
+    <string>Coordinates</string>
+   </property>
+  </action>
+  <action name="actionRevert_to_Default_Layout">
+   <property name="text">
+    <string>Revert to Default Layout</string>
+   </property>
+  </action>
+  <action name="actionAnimation_Control">
+   <property name="text">
+    <string>Animation Control</string>
+   </property>
+  </action>
+  <action name="actionZoomIn">
+   <property name="text">
+    <string>Zoom +</string>
+   </property>
+   <property name="iconText">
+    <string>Zoom +</string>
+   </property>
+   <property name="toolTip">
+    <string>Zoom In [ z ]</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>Z</string>
+   </property>
+  </action>
+  <action name="actionZoomOut">
+   <property name="text">
+    <string>Zoom -</string>
+   </property>
+   <property name="iconText">
+    <string>Zoom -</string>
+   </property>
+   <property name="toolTip">
+    <string>Zoom Out [ Shift + z ]</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>Shift+Z</string>
+   </property>
+  </action>
+  <action name="actionXpos">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/Resources/xpos.png</normaloff>:/Resources/xpos.png</iconset>
+   </property>
+   <property name="text">
+    <string>x+</string>
+   </property>
+   <property name="iconText">
+    <string>x+</string>
+   </property>
+   <property name="toolTip">
+    <string>Move model in X+ direction [ x ]</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>Right</string>
+   </property>
+   <property name="visible">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionXneg">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/Resources/xneg.png</normaloff>:/Resources/xneg.png</iconset>
+   </property>
+   <property name="text">
+    <string>x-</string>
+   </property>
+   <property name="iconText">
+    <string>x-</string>
+   </property>
+   <property name="toolTip">
+    <string>Move model in X- direction [ Shift + x ]</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>Left</string>
+   </property>
+  </action>
+  <action name="actionYpos">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/Resources/ypos.png</normaloff>:/Resources/ypos.png</iconset>
+   </property>
+   <property name="text">
+    <string>y⬇</string>
+   </property>
+   <property name="toolTip">
+    <string>Move model in Y direction [  y ]</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>Up</string>
+   </property>
+  </action>
+  <action name="actionYneg">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/Resources/yneg.png</normaloff>:/Resources/yneg.png</iconset>
+   </property>
+   <property name="text">
+    <string>y⬆</string>
+   </property>
+   <property name="toolTip">
+    <string>Move model in Y- direction [ Shift + y ]</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>Down</string>
+   </property>
+  </action>
+  <action name="actionGPU">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/Resources/gpu_icon.png</normaloff>:/Resources/gpu_icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>GPU</string>
+   </property>
+   <property name="toolTip">
+    <string>Enable GPU Rendering</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="actionCPU">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/Resources/cpu_icon.png</normaloff>:/Resources/cpu_icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>CPU</string>
+   </property>
+   <property name="toolTip">
+    <string>Enable CPU Rendering </string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="actionAddFrame">
+   <property name="text">
+    <string>Add Frame</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Animation Frame [ F ]</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>F</string>
+   </property>
+  </action>
+  <action name="actionRemoveFrame">
+   <property name="text">
+    <string>Remove Frame</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove Animation Frame [ Shift + F ] </string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F</string>
+   </property>
+  </action>
+  <action name="actionPlayFrames">
+   <property name="text">
+    <string>Play Frames</string>
+   </property>
+   <property name="toolTip">
+    <string>Play Animation [ M ]</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>15</pointsize>
+    </font>
+   </property>
+   <property name="shortcut">
+    <string>M</string>
+   </property>
+  </action>
+  <action name="actionRrep">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Rrep =</string>
+   </property>
+   <property name="toolTip">
+    <string>Increase Render Repetition Level</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="visible">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionplayLog">
+   <property name="text">
+    <string>playLog</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="actionrecLog">
+   <property name="text">
+    <string>recLog</string>
+   </property>
+   <property name="toolTip">
+    <string>recLog</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>RenderArea</class>
+   <extends>QOpenGLWidget</extends>
+   <header>QGlue/renderarea.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

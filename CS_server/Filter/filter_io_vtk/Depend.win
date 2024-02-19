@@ -1,0 +1,29 @@
+!ifndef VTK_VERSION
+VTK_VERSION=6.3
+!endif
+
+!ifndef VTK_INCLUDE_PATH
+VTK_INCLUDE_PATH=c:\VTK\include\vtk-$(VTK_VERSION)
+!endif
+
+!ifndef VTK_LIB
+VTK_LIB=c:\VTK\lib
+!endif
+
+IO_VTK_SRC= filter_io_vtk\filter_io_vtk.c \
+	    filter_io_vtk\filter_io_vtk_structured.c \
+	    filter_io_vtk\filter_io_vtk_unstructured.c \
+
+LD_VTK_LIB=	user32.lib shell32.lib kernel32.lib user32.lib gdi32.lib advapi32.lib \
+		$(VTK_LIB)\vtkCommonExecutionModel-$(VTK_VERSION).lib \
+		$(VTK_LIB)\vtkCommonDataModel-$(VTK_VERSION).lib  \
+		$(VTK_LIB)\vtkCommonMisc-$(VTK_VERSION).lib  \
+		$(VTK_LIB)\vtkCommonSystem-$(VTK_VERSION).lib  \
+		$(VTK_LIB)\vtksys-$(VTK_VERSION).lib  \
+		$(VTK_LIB)\vtkCommonTransforms-$(VTK_VERSION).lib  \
+		$(VTK_LIB)\vtkCommonMath-$(VTK_VERSION).lib  \
+		$(VTK_LIB)\vtkCommonCore-$(VTK_VERSION).lib  \
+		$(VTK_LIB)\vtkIOCore-$(VTK_VERSION).lib  \
+		$(VTK_LIB)\vtkIOLegacy-$(VTK_VERSION).lib 
+
+

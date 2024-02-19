@@ -1,0 +1,290 @@
+#ifdef KVS_ENABLE_GLEW
+#include <GL/glew.h>
+#endif
+
+//KVS2.7.0
+//ADD BY)T.Osaki 2020.06.08
+#include <QOpenGLContext>
+
+#include "transformpanel.h"
+#include "ui_transformpanel.h"
+
+#include <QGlue/typedSignalConnect.h>
+#include <QGlue/renderarea.h>
+
+#include "Client/LogManager.h"
+
+TransformParam TransformPanel::param;
+TransformPanel* TransformPanel::instance = 0;
+
+TransformPanel::TransformPanel(QWidget *parent) :
+    QDockWidget(parent),
+    ui(new Ui::TransformPanel)
+{
+    if (instance!=0){
+        qWarning("TransformPanel:: allows only one instance");
+        delete instance;
+        exit(1);
+    }
+    instance=this;
+    ui->setupUi(this);
+    connect_T(ui->xAxisTranslation,QDoubleSpinBox,valueChanged,double,
+              &TransformPanel::onTranslationXchanged);
+    connect_T(ui->yAxisTranslation,QDoubleSpinBox,valueChanged,double,
+              &TransformPanel::onTranslationYchanged);// MODIFIED BY)T.Osaki 2019.12.18
+    connect_T(ui->zAxisTranslation,QDoubleSpinBox,valueChanged,double,
+              &TransformPanel::onTranslationZchanged);
+    connect_T(ui->xAxisRotation,QDoubleSpinBox,valueChanged,double,
+              &TransformPanel::onXaxisRotationChanged);
+    connect_T(ui->yAxisRotation,QDoubleSpinBox,valueChanged,double,
+              &TransformPanel::onYaxisRotationChanged);
+    connect_T(ui->zAxisRotation,QDoubleSpinBox,valueChanged,double,
+              &TransformPanel::onZaxisRotationChanged);
+    connect_T(ui->uniformScale,QDoubleSpinBox,valueChanged,double,
+              &TransformPanel::onUniformScaleChanged);
+    connect(ui->applyButton,&QPushButton::clicked,
+            this, &TransformPanel::onApplyButtonClicked);
+
+}
+
+TransformPanel::~TransformPanel()
+{
+    delete ui;
+}
+
+/**
+ * @brief TransformPanel::setRotationAxisX
+ * @param c
+ */
+void TransformPanel::setRotationAxisX( char* c )
+{
+    param.rotationAxisX =atof(c);
+}
+/**
+ * @brief TransformPanel::setRotationAxisY
+ * @param c
+ */
+void TransformPanel::setRotationAxisY( char* c )
+{
+    param.rotationAxisY =atof(c);
+    QEvent* updateEvent= new QEvent((QEvent::Type)QEvent::User);
+    QApplication::postEvent(instance,updateEvent);
+}
+/**
+ * @brief TransformPanel::setRotationAxisZ
+ * @param c
+ */
+void TransformPanel::setRotationAxisZ( char* c )
+{
+    param.rotationAxisZ =atof(c);
+    QEvent* updateEvent= new QEvent((QEvent::Type)QEvent::User);
+    QApplication::postEvent(instance,updateEvent);
+}
+/**
+ * @brief TransformPanel::setTranslationX
+ * @param c
+ */
+void TransformPanel::setTranslationX( char* c)
+{
+    param.translateX =atof(c);
+    QEvent* updateEvent= new QEvent((QEvent::Type)QEvent::User);
+    QApplication::postEvent(instance,updateEvent);
+}
+/**
+ * @brief TransformPanel::setTranslationY
+ * @param c
+ */
+void TransformPanel::setTranslationY( char* c )
+{
+    param.translateY =atof(c);
+    QEvent* updateEvent= new QEvent((QEvent::Type)QEvent::User);
+    QApplication::postEvent(instance,updateEvent);
+}
+/**
+ * @brief TransformPanel::setTranslationZ
+ * @param c
+ */
+void TransformPanel::setTranslationZ( char* c)
+{
+    param.translateZ =atof(c);
+    QEvent* updateEvent= new QEvent((QEvent::Type)QEvent::User);
+    QApplication::postEvent(instance,updateEvent);
+}
+/**
+ * @brief TransformPanel::setScaling
+ * @param c
+ */
+void TransformPanel::setScaling( char* c )
+{
+    param.scalingLevel =atof(c);
+}
+
+/**
+ * @brief TransformPanel::onXaxisTranslationChanged
+ * @param val
+ */
+void TransformPanel::onTranslationXchanged(double val)
+{
+    param.translateX=val;
+    if( m_isRec )
+    {
+        LogManager lg;
+        lg.Write("transformpanel.cpp",__func__,"trasnlateX",std::to_string(val));
+    }
+}
+
+/**
+ * @brief TransformPanel::onYaxisTranslationChanged
+ * @param val
+ */
+void TransformPanel::onTranslationYchanged(double val)
+{
+    param.translateY=val;
+    if( m_isRec )
+    {
+        LogManager lg;
+        lg.Write("transformpanel.cpp",__func__,"trasnlateY",std::to_string(val));
+    }
+}
+/**
+ * @brief TransformPanel::onZaxisTranslationChanged
+ * @param val
+ */
+void TransformPanel::onTranslationZchanged(double val)
+{
+    param.translateZ=val;
+    param.translateZ=val;
+    if( m_isRec )
+    {
+        LogManager lg;
+        lg.Write("transformpanel.cpp",__func__,"trasnlateZ",std::to_string(val));
+    }
+}
+/**
+ * @brief TransformPanel::onXaxisRotationChanged
+ * @param val
+ */
+void TransformPanel::onXaxisRotationChanged(double val)
+{
+    // MODIFIED BY)T.Osaki 2019.12.18
+    param.rotationAxisX=val;
+    if( m_isRec )
+    {
+        LogManager lg;
+        lg.Write("transformpanel.cpp",__func__,"rotationAxisX",std::to_string(val));
+    }
+}
+/**
+ * @brief TransformPanel::onYaxisRotationChanged
+ * @param val
+ */
+void TransformPanel::onYaxisRotationChanged(double val)
+{
+    // MODIFIED BY)T.Osaki 2019.12.18
+    param.rotationAxisY=val;
+    if( m_isRec )
+    {
+        LogManager lg;
+        lg.Write("transformpanel.cpp",__func__,"rotationAxisY",std::to_string(val));
+    }
+}
+/**
+ * @brief TransformPanel::onZaxisRotationChanged
+ * @param val
+ */
+void TransformPanel::onZaxisRotationChanged(double val)
+{
+    // MODIFIED BY)T.Osaki 2019.12.18
+    param.rotationAxisZ=val;
+    if( m_isRec )
+    {
+        LogManager lg;
+        lg.Write("transformpanel.cpp",__func__,"rotationAxisZ",std::to_string(val));
+    }
+}
+/**
+ * @brief TransformPanel::onUniformScaleChanged
+ * @param val
+ */
+void TransformPanel::onUniformScaleChanged(double val)
+{
+    param.scalingLevel=val;
+    if( m_isRec )
+    {
+        LogManager lg;
+        lg.Write("transformpanel.cpp",__func__,"scalingLevel",std::to_string(val));
+    }
+}
+/**
+ * @brief TransformPanel::onApplyButtonClicked
+ */
+void TransformPanel::onApplyButtonClicked()
+{
+    extCommand->CallBackApply(0);
+    extCommand->m_screen->update();
+    if( m_isRec )
+    {
+        LogManager lg;
+        lg.Write("transformpanel.cpp",__func__,"applyButton","clicked");
+    }
+}
+
+/**
+ * @brief TransformPanel::customEvent
+ *        Process filter info update events
+ * @param event
+ */
+void TransformPanel::customEvent(QEvent * event)
+{
+    ui->xAxisRotation->setValue(param.rotationAxisX);
+    ui->yAxisRotation->setValue(param.rotationAxisY);
+    ui->zAxisRotation->setValue(param.rotationAxisZ);
+    ui->xAxisTranslation->setValue(param.translateX);
+    ui->xAxisTranslation->setValue(param.translateX);
+    ui->yAxisTranslation->setValue(param.translateY);
+    ui->zAxisTranslation->setValue(param.translateZ);
+    ui->uniformScale->setValue(param.scalingLevel);
+}
+
+void TransformPanel::logPlay(std::string funcName,std::string str[])
+{
+    if(funcName.compare("onTranslationXchanged") == 0)
+    {
+        ui->xAxisTranslation->setValue(std::stod(str[0]));
+    }
+
+    if(funcName.compare("onTranslationYchanged") == 0)
+    {
+        ui->yAxisTranslation->setValue(std::stod(str[0]));
+    }
+
+    if(funcName.compare("onTranslationZchanged") == 0)
+    {
+        ui->zAxisTranslation->setValue(std::stod(str[0]));
+    }
+
+    if(funcName.compare("onXaxisRotationChanged") == 0)
+    {
+        ui->xAxisRotation->setValue(std::stod(str[0]));
+    }
+
+    if(funcName.compare("onYaxisRotationChanged") == 0)
+    {
+        ui->yAxisRotation->setValue(std::stod(str[0]));
+    }
+
+    if(funcName.compare("onZaxisRotationChanged") == 0)
+    {
+        ui->zAxisRotation->setValue(std::stod(str[0]));
+    }
+
+    if(funcName.compare("onUniformScaleChanged") == 0)
+    {
+        ui->uniformScale->setValue(std::stod(str[0]));
+    }
+
+    if(funcName.compare("onApplyButtonClicked") == 0)
+    {
+        onApplyButtonClicked();
+    }
+}

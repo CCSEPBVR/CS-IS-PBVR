@@ -1,0 +1,124 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>newMarkdownTemplate</title>
+<style type="text/css">
+    ul {
+        padding-left: 1em;
+    }
+    li {
+        list-style-position: outside;
+    }
+</style>
+</head>
+<body>
+<h1>PBVR GUI Help</h1><p>This should be replaced with a help document in the final version. For now it is just some information that describes the current status of the work.</p>
+<style >
+li {
+    list-style-type: none ;
+}
+</style>
+<ul>
+  <li>1.1 <a href="#1.1" >KVS Viewer</a></li>
+  <li>1.2 <a href="#1.2" >Menu System</a>
+  <ul>
+    <li>1.2.1 <a href="#1.2.1" >File Menu</a></li>
+    <li>1.2.2 <a href="#1.2.2" >Window Menu</a></li>
+    <li>1.2.3 <a href="#1.2.3" >Help Menu</a></li>
+  </ul></li>
+  <li>1.3 <a href="#1.3" >Working with Views (Dock-widgets)</a>
+  <ul>
+    <li>1.3.1 <a href="#1.3.1" >Closing Views</a></li>
+    <li>1.3.2 <a href="#1.3.2" >Tear Off Views</a></li>
+    <li>1.3.3 <a href="#1.3.3" >Re-attaching Torn off View</a></li>
+    <li>1.3.4 <a href="#1.3.4" >Moving Views</a></li>
+    <li>1.3.5 <a href="#1.3.5" >Tabbed View Groups</a></li>
+    <li>1.3.6 <a href="#1.3.6" >Restoring Default Views</a></li>
+  </ul></li>
+  <li>1.4 <a href="#1.4" >Tool Dialogs</a>
+  <ul>
+    <li>1.4.1 <a href="#1.4.1" >Particle Selector Tool</a></li>
+    <li>1.4.2 <a href="#1.4.2" >Crop Tool</a></li>
+    <li>1.4.3 <a href="#1.4.3" >Transfer Function Editor</a></li>
+  </ul></li>
+</ul>
+<style >
+li {
+    list-style-type: disc ;
+}
+ul li ul li{
+    list-style-type: circle ;
+    suffix:"x";
+}
+</style><h2>1.1 KVS Viewer<a name="1.1"/></h2><p>The central widget (gray-blue area) is implemented as a kvs::qt::Screen, which derives from QGLWidget and kvs::ScreenBase.  Since there is still no visualization, I just changed the background color and added the kvs::glut::OrientationAxis object to the center of the screen to make sure it is working at least on a basic level.</p><p><img src="images/mainwindow.png" alt="Main Window " /><br> <strong>Fig1.</strong> Main Window showing three dock-widgets, and the three dock areas</p><p><a href="#143-Transfer-Function-Editor">1.4.1 Particle Selector Tool</a></p><h2>1.2 Menu System<a name="1.2"/></h2><h3>1.2.1 File Menu<a name="1.2.1"/></h3><p><img src="images/filemenu.png" alt="The File menu " /><br> <strong>Fig2.</strong> The File menu</p>
+<ul>
+  <li><em>Import Parameters</em>
+  <ul>
+    <li>Import client parameters from a parameter file</li>
+  </ul></li>
+  <li><em>Export Parameters</em>
+  <ul>
+    <li>Export current client parameters to a parameter file.</li>
+  </ul></li>
+  <li><em>Import Transfer Functions</em>
+  <ul>
+    <li>Import transfer function settings from a transfer function file</li>
+  </ul></li>
+  <li><em>Export Transfer Functions</em>
+  <ul>
+    <li>Export the current transfer function settings to file</li>
+  </ul></li>
+  <li><em>Connect/Disconnect from server</em>
+  <ul>
+    <li><strong>For development purpose only, not in final version</strong></li>
+  </ul></li>
+</ul><h3>1.2.2 Window Menu<a name="1.2.2"/></h3><p><img src="images/windowmenu.png" alt="The Window menu " /><br> <strong>Fig 3.</strong> The Window menu</p>
+<ul>
+  <li><em>Full Screen</em>
+  <ul>
+    <li>Switches between normal and full screen window</li>
+  </ul></li>
+  <li><em>Views</em>
+  <ul>
+    <li>Enables one of the views ( or DockWidgetPanels )
+    <ul>
+      <li><em>Coordinates</em></li>
+      <li><em>Filter Information</em> (default:on)</li>
+      <li><em>Legend Options</em></li>
+      <li><em>System Status</em> (default:on)</li>
+      <li><em>Render Options</em></li>
+      <li><em>Time Controls</em> (default:on)</li>
+      <li><em>Volume Transform</em></li>
+    </ul></li>
+  </ul></li>
+  <li><em>Revert to Default Layout</em>
+  <ul>
+    <li>Reverts to the default view panel layout</li>
+  </ul></li>
+  <li><em>Particle Selector</em>
+  <ul>
+    <li>Opens the Particle Selector Dialog</li>
+  </ul></li>
+  <li><em>Transfer Function Edit</em>
+  <ul>
+    <li>Opens the Transfer Function Edit Dialog</li>
+  </ul></li>
+  <li><em>Crop Tool</em>
+  <ul>
+    <li>Opens the Crop Tool Dialog</li>
+  </ul></li>
+</ul><h3>1.2.3 Help Menu<a name="1.2.3"/></h3><p><img src="images/helpmenu.png" alt="The Help menu " /><br> <strong>Fig4.</strong> The Help menu</p>
+<ul>
+  <li>PBVR Client Manual (Menu-item, should be renamed “Help”)
+  <ul>
+    <li>Displays this document</li>
+  </ul></li>
+  <li>About PBVR Client
+  <ul>
+    <li>Displays information, such as version, organization etc.</li>
+  </ul></li>
+</ul><h2>1.3 Working with Views (Dock-widgets)<a name="1.3"/></h2><p>The Client has a number of small dockable views (widgets). Three views are visible in the default layout, Time Controls,  System Status, and Filter Info. Additional views can be enabled by selecting them from the menu “windows &gt; Views”.</p><h3>1.3.1 Closing Views<a name="1.3.1"/></h3><p>Views can be closed by clicking the little x icon in the top right corner of the view.</p><p><img src="images/viewclose.png" alt="Closing Views" /><br> <strong>Fig5.</strong> Closing Views</p><h3>1.3.2 Tear Off Views<a name="1.3.2"/></h3><p>Views can be “torn off” from the main window, or transformed into normal  windows by pulling the title bar out of the main window, by double clicking the title bar, or by clicking the little “double window” icon next to the x.</p><h3>1.3.3 Re-attaching Torn off View<a name="1.3.3"/></h3><p>A torn off view in normal window mode can be re-attached as a dock  by double clicking the windows title bar. Or by pulling the title bar into a dock area (marked by blue boxes in Fig.1).</p><h3>1.3.4 Moving Views<a name="1.3.4"/></h3><p>A view can be moved from one dock area to another by dragging the title bar towards the edge of the main window. (It can sometimes be a bit tricky to get it to work).</p><p><strong>Problem:</strong> If the view refuses to dock, it is most likely because there isn’t  enough space available. If this is the case, try making the main window bigger, or the view smaller before docking.</p><h3>1.3.5 Tabbed View Groups<a name="1.3.5"/></h3><p>A tabbed View Group, is formed when a view is dropped  on top of another view.</p><p><img src="images/viewgroup.png" alt="Tabbed View Groups" /><br> <strong>Fig6.</strong> Tabbed View Groups</p><h3>1.3.6 Restoring Default Views<a name="1.3.6"/></h3><p>The view layout is automatically saved when closing the main window. The saved layout is automatically restored the next time the client starts.</p><p>To reset the view layout to the original default layout, select the <em>Revert Default Layout</em> from the sub menu <em>Windows-&gt;Views</em></p><h2>1.4 Tool Dialogs<a name="1.4"/></h2><h3>1.4.1 Particle Selector Tool<a name="1.4.1"/></h3><p>The particle selector tool, is largely unchanged from the original.</p><p><img src="images/particleselector.png" alt="The File menu " /><br> <strong>Fig4.</strong> The Help menu</p><h3>1.4.2 Crop Tool<a name="1.4.2"/></h3><p>The Crop tool now has a tool box layout, where the user can select  the type of crop they want to use and bring up the options related to that crop style.</p><p><img src="images/croptool.png" alt="The Crop Tool" /><br> <strong>Fig7.</strong> The Crop Tool</p><h3>1.4.3 Transfer Function Editor<a name="1.4.3"/></h3><p>The Transfer Function Editor with its sub dialogs. The Color and Opacity Function Editor sub dialogs are still missing. (But the plan is that they should come up by pressing the <em>|…|</em>  three dot button).</p><p><img src="images/transferfunctioneditor.png" alt="Transfer Function Editor" /><br> <strong>Fig8.</strong> The Transfer Function Editor</p><p><img src="images/colored1.png" alt="Color Editors 1" /> <img src="images/colored2.png" alt="Color Editors 2" /> <img src="images/colored3.png" alt="Color Editors 3" /> <img src="images/colored4.png" alt="Color Editors 4" /><br> <strong>Fig9.(a,b,c,d).</strong> The Color Editors</p><p><img src="images/opacityed1.png" alt="Opacity Editors 1" /> <img src="images/opacityed2.png" alt="Opacity Editors 2" /> <img src="images/opacityed3.png" alt="Opacity Editors 3" /><br> <strong>Fig10.(a,b,c,d)</strong> The Opacity Editors</p>
+</body>
+</html>
