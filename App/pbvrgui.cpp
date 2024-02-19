@@ -34,7 +34,8 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_data_summary( this ),
     m_render_options( this ),
     m_repetition_level_control( this ),
-    m_transfer_function_editor( this )
+    m_transfer_function_editor( this ),
+    m_coordinates( this )
 {
     ui->setupUi(this);
     setWindowTitle( "QTPBVR vX.X.X" );
@@ -51,6 +52,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     connect( ui->actionRenderOptions, &QAction::triggered, this, &PBVRGUI::onRenderOptions );
     connect( ui->actionRepetitionLevelControl, &QAction::triggered, this, &PBVRGUI::onRepetitionLevelControl );
     connect( ui->actionTransferFunctionEditor, &QAction::triggered, this, &PBVRGUI::onTransferFunctionEditor );
+    connect( ui->actionCoordinates, &QAction::triggered, this, &PBVRGUI::onCoordinates );
 
     m_preference.setScreen( m_screen );
     m_preference.setCompositor( m_compositor );
@@ -116,7 +118,9 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_transfer_function_editor.setServerMessage( m_connect.getServerMessage() );
     m_transfer_function_editor.setReceivedMessage( m_connect.getReceivedMessage() );
 
-    setFocusPolicy(Qt::StrongFocus);
+    m_coordinates.setClientMessage( m_connect.getClientMessage() );
+
+    setFocusPolicy(Qt::StrongFocus);    
 }
 
 PBVRGUI::~PBVRGUI()

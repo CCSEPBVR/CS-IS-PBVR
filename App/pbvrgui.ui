@@ -49,6 +49,7 @@
     <addaction name="actionAnimationControls"/>
     <addaction name="actionRenderOptions"/>
     <addaction name="actionRepetitionLevelControl"/>
+    <addaction name="actionCoordinates"/>
    </widget>
    <addaction name="menuQTPBVR"/>
    <addaction name="menuPanels"/>
@@ -118,6 +119,11 @@
   <action name="actionTransferFunctionEditor">
    <property name="text">
     <string>TransferFunctionEditor</string>
+   </property>
+  </action>
+  <action name="actionCoordinates">
+   <property name="text">
+    <string>Coordinates</string>
    </property>
   </action>
  </widget>

@@ -527,10 +527,11 @@ void TransferFunctionEditor::onApplyButtonClicked()
     }
 
     //2023 shimomura
-    std::cout <<" message->m_x_synthesis ="  << m_client_message->m_x_synthesis << std::endl;
-    if( !m_client_message->m_x_synthesis.empty() ) m_client_message->x_synthesis_token = this->convertToken( m_client_message->m_x_synthesis );
-    if( !m_client_message->m_y_synthesis.empty() ) m_client_message->y_synthesis_token = this->convertToken( m_client_message->m_y_synthesis );
-    if( !m_client_message->m_z_synthesis.empty() ) m_client_message->z_synthesis_token = this->convertToken( m_client_message->m_z_synthesis );    
+//    std::cout <<" message->m_x_synthesis ="  << m_client_message->m_x_synthesis << std::endl;
+//    m_client_message->m_x_synthesis = "X*2";
+//    if( !m_client_message->m_x_synthesis.empty() ) m_client_message->x_synthesis_token = this->convertToken( m_client_message->m_x_synthesis );
+//    if( !m_client_message->m_y_synthesis.empty() ) m_client_message->y_synthesis_token = this->convertToken( m_client_message->m_y_synthesis );
+//    if( !m_client_message->m_z_synthesis.empty() ) m_client_message->z_synthesis_token = this->convertToken( m_client_message->m_z_synthesis );
 }
 
 void TransferFunctionEditor::onImportButtonClicked()

@@ -19,6 +19,7 @@
 #include "Widgets/RenderOptions.h"
 #include "Widgets/RepetitionLevelControl.h"
 #include "Widgets/TransferFunctionEditor.h"
+#include "Widgets/Coordinates.h"
 
 namespace Ui {
 class PBVRGUI;
@@ -54,6 +55,7 @@ private:
     RenderOptions m_render_options;
     RepetitionLevelControl m_repetition_level_control;
     TransferFunctionEditor m_transfer_function_editor;
+    Coordinates m_coordinates;
 
 private:
     void onPreference()      { m_preference.show(); }
@@ -65,6 +67,7 @@ private:
     void onRenderOptions() { m_render_options.show(); }
     void onRepetitionLevelControl() { m_repetition_level_control.show(); }
     void onTransferFunctionEditor() { m_transfer_function_editor.show(); }
+    void onCoordinates() { m_coordinates.show(); }
 
     void keyPressEvent( QKeyEvent *event );
 };

@@ -23,6 +23,7 @@ Connect::Connect(QWidget *parent) :
     ui->setupUi(this);
     ui->uniformRBtn->setChecked( true );
     connect( ui->connectPBtn, &QPushButton::clicked, this, &Connect::onConnectButtonClicked );
+#include"QPushButton"
 }
 
 Connect::~Connect()
@@ -142,9 +143,9 @@ kvs::PointObject* Connect::connect2( int timeStep )
     m_client_message.m_step = timeStep;
     m_client_message.m_message_size = m_client_message.byteSize();
     m_client_message.m_sampling_step = 1.0f;
-    m_client_message.m_x_synthesis = "";
-    m_client_message.m_y_synthesis = "";
-    m_client_message.m_z_synthesis = "";
+//    m_client_message.m_x_synthesis = "";
+//    m_client_message.m_y_synthesis = "";
+//    m_client_message.m_z_synthesis = "";
     m_client_message.m_enable_crop_region = 0;
 
     //paramExTransFunc.applyToClientMessage( &message ); //↓
@@ -203,6 +204,7 @@ kvs::PointObject* Connect::connect2( int timeStep )
     serverSideMaxObjectCoords[2] = m_server_message.m_max_object_coord[2];
     pointObject->setMinMaxObjectCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );
     pointObject->setMinMaxExternalCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );
+//    pointObject->updateMinMaxCoords();
 
     std::cout << serverSideMinObjectCoords[0] << std::endl;
     std::cout << serverSideMinObjectCoords[1] << std::endl;
