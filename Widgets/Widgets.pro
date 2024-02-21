@@ -38,6 +38,7 @@ HEADERS += \
     FrequencyTable.h \
     FunctionListEditor.h \
     Merge.h \
+    MergePanel.h \
     OpacityMapEditor.h \
     ParameterFile.h \
     Preference.h \
@@ -68,6 +69,7 @@ SOURCES += \
     ExtendedTransferFunctionMessage.cpp \
     FunctionListEditor.cpp \
     Merge.cpp \
+    MergePanel.cpp \
     OpacityMapEditor.cpp \
     ParameterFile.cpp \
     Preference.cpp \
@@ -96,6 +98,7 @@ FORMS += \
     DataSummary.ui \
     FunctionListEditor.ui \
     Merge.ui \
+    MergePanel.ui \
     OpacityMapEditor.ui \
     Preference.ui \
     RenderOptions.ui \
