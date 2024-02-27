@@ -1435,7 +1435,7 @@ void Merge::updateObject( FilesManager* filesManager, kvs::ObjectBase* object )
 
         if( dynamic_cast<kvs::PointObject*>(object) != nullptr )
         {
-            renderer = new kvs::glsl::ParticleBasedRenderer();            
+            renderer = new kvs::glsl::ParticleBasedRenderer();
         }
         else if( dynamic_cast<kvs::PolygonObject*>(object) != nullptr )
         {
@@ -1443,7 +1443,7 @@ void Merge::updateObject( FilesManager* filesManager, kvs::ObjectBase* object )
             polygonObject->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
             polygonObject->setOpacity(filesManager->getOpacity() * 255);
             renderer = new kvs::StochasticPolygonRenderer();
-        }        
+        }
         filesManager->setIds(m_screen->registerObject(object, renderer));
     }
     //Sceneにオブジェクトが登録されている場合

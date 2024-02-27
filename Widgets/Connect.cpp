@@ -5,7 +5,7 @@
 #include <kvs/PointObject>
 #include <kvs/ParticleBasedRenderer>
 
-#include "Widgets/Merge.h"
+#include "Widgets/MergePanel.h"
 
 Connect::Connect(QWidget *parent) :
     QDialog(parent),

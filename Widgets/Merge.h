@@ -69,7 +69,7 @@ private:
     QColor m_rgb_color;
     double m_opacity;
     std::pair<int, int> m_ids = std::pair<int,int>(0,0);
-    bool m_is_modified;    
+    bool m_is_modified;
 };
 
 namespace Ui {

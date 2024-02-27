@@ -9,7 +9,7 @@
 #include <QMainWindow>
 
 #include "Widgets/Preference.h"
-#include "Widgets/Merge.h"
+#include "Widgets/MergePanel.h"
 #include "Widgets/VolumeTransform.h"
 #include "Widgets/Connect.h"
 #include "Widgets/TimeControl.h"
@@ -45,7 +45,7 @@ private:
     kvs::Label* m_time_step_label;
 
     Preference      m_preference;
-    Merge           m_merge;
+    MergePanel      m_merge;
     VolumeTransform m_volumeTransform;
     Connect         m_connect;
     TimeControl     m_timeControl;

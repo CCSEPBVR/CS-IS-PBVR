@@ -15,7 +15,7 @@
 #include "ExtendedKVS/Screen.h"
 #include "ReceivedMessage.h"
 
-class Merge;
+class MergePanel;
 
 namespace Ui {
 class Connect;
@@ -30,7 +30,7 @@ public:
     ~Connect();
     void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; }
     void setCamera( kvs::Camera* camera ){ m_camera = camera; }
-    void setMerge( Merge* merge ){  m_merge = merge; }
+    void setMerge( MergePanel* merge ){  m_merge = merge; }
     void setFilterInfomation( DataProperties* filter_infomation ){ m_filter_infomation = filter_infomation; }
     void setTransferFunctionEditor( TransferFunctionEditor* transfer_function_editor ){ m_transfer_function_editor = transfer_function_editor; }
     jpv::ParticleTransferClientMessage* getClientMessage(){ return &m_client_message; }
@@ -42,7 +42,7 @@ private:
     Ui::Connect *ui;
     kvs::qt::jaea::Screen* m_screen;
     kvs::Camera* m_camera;
-    Merge* m_merge;
+    MergePanel* m_merge;
     DataProperties* m_filter_infomation;
     TransferFunctionEditor* m_transfer_function_editor;
     ExtendedTransferFunctionMessage m_extended_transfer_function_message;
