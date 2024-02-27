@@ -44,8 +44,12 @@ void MergePanel::onFilesTWidgetCellDoubleClicked(int row, int column)
 {
     if (column == 4) // Colorのセルをダブルクリックしているか。
     {
-        QTableWidgetItem* formatItem = ui->filesTWidget->item( row, 4 );
-        formatItem->setBackground(QColorDialog::getColor(Qt::gray));
+        if( m_files_manager[row]->getFormat() == FilesManager::NonTexturedPolygonObjectKVSML ||
+            m_files_manager[row]->getFormat() == FilesManager::NonTexturedPolygonObjectSTL )
+        {
+            QTableWidgetItem* formatItem = ui->filesTWidget->item( row, 4 );
+            formatItem->setBackground(QColorDialog::getColor(Qt::gray));
+        }
     }
 }
 
@@ -190,16 +194,29 @@ void MergePanel::addRowToFilesTableWidget( FilesManager *newFile )
     format->setFlags( format->flags() & ~Qt::ItemIsEditable );
     format->setText( newFile->formatTypeToString( newFile->getFormat() ) );
 
-    //ONLY NON TEXTURED POLYGON
-    QTableWidgetItem *colorValue = new QTableWidgetItem;
-    colorValue->setFlags( format->flags() & ~Qt::ItemIsEditable );
-    colorValue->setBackground( newFile->getRGBColor() );
+    if( newFile->getFormat() == FilesManager::NonTexturedPolygonObjectKVSML || newFile->getFormat() == FilesManager::NonTexturedPolygonObjectSTL )
+    {
+        QTableWidgetItem *colorValue = new QTableWidgetItem;
+        colorValue->setFlags( format->flags() & ~Qt::ItemIsEditable );
+        colorValue->setBackground( newFile->getRGBColor() );
 
-    QDoubleSpinBox *opacityValue = new QDoubleSpinBox();
-    opacityValue->setRange( 0.0, 1.0 );
-    opacityValue->setSingleStep( 0.01 );
-    opacityValue->setValue( newFile->getOpacity() );
-    //ONLY NON TEXTURED POLYGON
+        QDoubleSpinBox *opacityValue = new QDoubleSpinBox();
+        opacityValue->setRange( 0.0, 1.0 );
+        opacityValue->setSingleStep( 0.01 );
+        opacityValue->setValue( newFile->getOpacity() );
+        ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 4, colorValue );
+        ui->filesTWidget->setCellWidget( ui->filesTWidget->rowCount() - 1, 5, opacityValue);
+    }
+    else
+    {
+        QTableWidgetItem* empCell1 = new QTableWidgetItem;
+        QTableWidgetItem* empCell2 = new QTableWidgetItem;
+        empCell1->setFlags( empCell1->flags() & ~Qt::ItemIsEditable );
+        empCell2->setFlags( empCell2->flags() & ~Qt::ItemIsEditable );
+        ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 4, empCell1 );
+        ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 5, empCell2 );
+
+    }
 
     QCheckBox *deleteCheckBox = new QCheckBox;
     deleteCheckBox->setCheckState( Qt::Unchecked );
@@ -208,8 +225,7 @@ void MergePanel::addRowToFilesTableWidget( FilesManager *newFile )
     ui->filesTWidget->setCellWidget( ui->filesTWidget->rowCount() - 1, 1, keepInitialCheckBox );
     ui->filesTWidget->setCellWidget( ui->filesTWidget->rowCount() - 1, 2, keepFinalCheckBox );
     ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 3, format );
-    ui->filesTWidget->setItem( ui->filesTWidget->rowCount() - 1, 4, colorValue );
-    ui->filesTWidget->setCellWidget( ui->filesTWidget->rowCount() - 1, 5, opacityValue);
+
     ui->filesTWidget->setCellWidget( ui->filesTWidget->rowCount() - 1, 6, deleteCheckBox );
 }
 
