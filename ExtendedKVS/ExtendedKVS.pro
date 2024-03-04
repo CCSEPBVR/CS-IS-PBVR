@@ -26,6 +26,7 @@ TARGET = ExtendedKVS
 #  Header.
 #=============================================================================
 HEADERS += \
+    CustomObjectManager.h \
     Screen.h
 
 
@@ -34,6 +35,7 @@ HEADERS += \
 #  Source.
 #=============================================================================
 SOURCES += \
+    CustomObjectManager.cpp \
     Screen.cpp
 
 
