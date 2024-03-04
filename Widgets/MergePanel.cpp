@@ -19,6 +19,7 @@
 #include <kvs/ParticleBasedRenderer>
 
 #include <kvs/IDManager>
+#include "ExtendedKVS/CustomObjectManager.h"
 
 MergePanel::MergePanel(QWidget *parent) :
     QDockWidget(parent),
@@ -31,6 +32,7 @@ MergePanel::MergePanel(QWidget *parent) :
     connect(ui->filesTWidget, &QTableWidget::cellDoubleClicked, this, &MergePanel::onFilesTWidgetCellDoubleClicked);
     connect(ui->importFilesBrowsePBtn, &QPushButton::clicked, this, &MergePanel::onBrowserButtonClicked );
     connect(ui->importFilesAddPBtn, &QPushButton::clicked, this, &MergePanel::onAddButtonClicked );
+    connect(ui->centeringPBtn, &QPushButton::clicked, this, &MergePanel::onCenteringButtonClicked );
     connect(ui->applyPBtn, &QPushButton::clicked, this, &MergePanel::onApplyButtonClicked );
 }
 
@@ -251,7 +253,6 @@ void MergePanel::calculateTotalMinMaxTimeStep()
 void MergePanel::onApplyButtonClicked()
 {
     removeChecked();
-    updatePolygonColorOpacity();
     mergeObjects();
 }
 
@@ -263,7 +264,9 @@ void MergePanel::removeChecked()
         QCheckBox *deleteCheckBox = qobject_cast<QCheckBox*>(widget);
         if (deleteCheckBox && deleteCheckBox->checkState() == Qt::Checked)
         {
-            removeObject( m_files_manager[row] );
+            m_screen->scene()->removeObject( m_files_manager[row]->getIds().first );
+
+            m_files_manager[row]->setIds( std::pair<int,int>(-1,-1) );
             ui->filesTWidget->removeRow(row);
             delete deleteCheckBox;
 
@@ -279,1087 +282,111 @@ void MergePanel::removeChecked()
 
 void MergePanel::mergeObjects()
 {
+    kvs::Xform before_object_manager_xform = m_screen->scene()->objectManager()->xform();
     for( int row = 0; row < m_files_manager.size(); row++ )
     {
-        kvs::ObjectBase* object = nullptr;
-        if( m_files_manager[row]->getFormat() == FilesManager::PointObjectKVSML )
+        QCheckBox *displayCheckBox = qobject_cast<QCheckBox*>( ui->filesTWidget->cellWidget( row, 0 ) );
+        if( m_files_manager[row]->getIds().first == -1 && m_files_manager[row]->getIds().second == -1 )
         {
-            object = selectPattern<kvs::PointImporter, kvs::PointObject>( m_files_manager[row], row );
+            kvs::PolygonObject* pobj = new kvs::PolygonImporter( m_files_manager[row]->getFileInfo().filePath().toStdString() );
+            pobj->setXform( before_object_manager_xform );
+            kvs::StochasticPolygonRenderer* sprnd = new kvs::StochasticPolygonRenderer();
+            m_files_manager[row]->setIds( m_screen->scene()->registerObject( pobj, sprnd ) );
+            displayCheckBox->checkState() == Qt::Checked ? pobj->setVisible(true) : pobj->setVisible(false);
         }
-        else if(   m_files_manager[row]->getFormat() == FilesManager::NonTexturedPolygonObjectKVSML ||
-                   m_files_manager[row]->getFormat() == FilesManager::NonTexturedPolygonObjectSTL )
+        else
         {
-            object = selectPattern<kvs::PolygonImporter, kvs::PolygonObject>( m_files_manager[row], row );
+            auto* object = m_screen->scene()->object( m_files_manager[row]->getIds().first );
+            displayCheckBox->checkState() == Qt::Checked ? object->setVisible(true) : object->setVisible(false);
         }
-        else if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObject )
-        {
-            object = selectPattern( m_files_manager[row], row );
-        }
-        if( object != nullptr )
-        {
-            updateObject( m_files_manager[row], object );
-        }
+        auto* object = m_screen->scene()->object( m_files_manager[row]->getIds().first );
     }
-    m_current_time_step = m_time_control->getNextTimeStep();
-    m_time_control->setCurrentTimeStep( m_current_time_step );
-    m_preference->setCurrentTimeStep( m_current_time_step );
-    m_preference->loadShadingSettings();
-    m_preference->applyShadingSettings();
-    m_screen->redraw();
-
-    totalParticles();
+    m_screen->update();
 }
 
-template <typename Importer, typename ObjectType>
-ObjectType* MergePanel::selectPattern( FilesManager* filesManager, int row )
+
+
+void MergePanel::onCenteringButtonClicked()
 {
-    QCheckBox *displayCheckBox = qobject_cast<QCheckBox*>( ui->filesTWidget->cellWidget( row, 0 ) );
-    QCheckBox *keepInitialCheckBox = qobject_cast<QCheckBox*>( ui->filesTWidget->cellWidget( row, 1 ) );
-    QCheckBox *keepFinalCheckBox = qobject_cast<QCheckBox*>( ui->filesTWidget->cellWidget( row, 2 ) );
-    if( displayCheckBox->checkState() == Qt::Checked )//Displayにチェックが付いている場合
+    CustomObjectManager* object_manager = static_cast<CustomObjectManager*>( m_screen->scene()->objectManager() );
+    kvs::Vec3 min_obj;
+    kvs::Vec3 max_obj;
+    int counter = 0;
+    for (int row = 0; row < m_files_manager.size() && counter < 2; row++)
     {
-        if( keepInitialCheckBox->checkState() == Qt::Checked)//KeepInitialにチェックがついている場合
+        if (m_files_manager[row]->getIds().first != -1 && m_files_manager[row]->getIds().second != -1)
         {
-            if( keepFinalCheckBox->checkState() == Qt::Checked )//KeepFinalにチェックがついている場合
+            auto* object = m_screen->scene()->object(m_files_manager[row]->getIds().first);
+            if (object->isVisible())
             {
-                qInfo() << "both";
-                return timeStepCheckAndImport<Importer, ObjectType>( filesManager, BothChecked );
-            }
-            else//KeepFinalにチェックがついていない場合
-            {
-                qInfo() << "only Init";
-                return timeStepCheckAndImport<Importer, ObjectType>( filesManager, KeepInitialChecked );
+                counter++;
             }
         }
-        else//KeepInitialにチェックがついていない場合
+    }
+
+    if( counter == 1 )
+    {
+        kvs::Vec3 init_object_manager_min_object( 1e+06, 1e+06, 1e+06 );
+        kvs::Vec3 init_object_manager_max_object( -1e+06, -1e+06, -1e+06 );
+        for( int row = 0; row < m_files_manager.size(); row++ )
         {
-            if( keepFinalCheckBox->checkState() == Qt::Checked )//KeepFinalにチェックがついている場合
+            if( m_files_manager[row]->getIds().first != -1 && m_files_manager[row]->getIds().second != -1 )
             {
-                qInfo() << "only Final";
-                return timeStepCheckAndImport<Importer, ObjectType>( filesManager, KeepFinalChecked );
-            }
-            else//KeepFinalにチェックがついていない場合
-            {
-                qInfo() << "None";
-                return timeStepCheckAndImport<Importer, ObjectType>( filesManager, NoneChecked );
+                auto* object = m_screen->scene()->object( m_files_manager[row]->getIds().first );
+                if( object->isVisible() )
+                {
+                    min_obj.x() = kvs::Math::Min( init_object_manager_min_object.x(), object->minExternalCoord().x() );
+                    min_obj.y() = kvs::Math::Min( init_object_manager_min_object.y(), object->minExternalCoord().y() );
+                    min_obj.z() = kvs::Math::Min( init_object_manager_min_object.z(), object->minExternalCoord().z() );
+
+                    max_obj.x() = kvs::Math::Max( init_object_manager_max_object.x(), object->maxExternalCoord().x() );
+                    max_obj.y() = kvs::Math::Max( init_object_manager_max_object.y(), object->maxExternalCoord().y() );
+                    max_obj.z() = kvs::Math::Max( init_object_manager_max_object.z(), object->maxExternalCoord().z() );
+                }
             }
         }
+        kvs::Vec3 diff = max_obj - min_obj;
+        float max_diff = kvs::Math::Max( diff.x(), diff.y(), diff.z() );
+        float normalize = 6.0f / max_diff;
+
+        object_manager->setMinMaxObjectCoords( min_obj, max_obj );
+        object_manager->setMinMaxExternalCoords( kvs::Vec3( -3, -3, -3 ), kvs::Vec3( 3, 3, 3 ) );
+        object_manager->setNormalize( kvs::Vec3( normalize, normalize, normalize) );
     }
     else
     {
-        removeObject( filesManager );
+        kvs::Vec3 init_object_manager_min_object = m_screen->scene()->objectManager()->minObjectCoord();
+        kvs::Vec3 init_object_manager_max_object = m_screen->scene()->objectManager()->maxObjectCoord();
+        for( int row = 0; row < m_files_manager.size(); row++ )
+        {
+            if( m_files_manager[row]->getIds().first != -1 && m_files_manager[row]->getIds().second != -1 )
+            {
+                auto* object = m_screen->scene()->object( m_files_manager[row]->getIds().first );
+                if( object->isVisible() )
+                {
+                    min_obj.x() = kvs::Math::Min( init_object_manager_min_object.x(), object->minExternalCoord().x() );
+                    min_obj.y() = kvs::Math::Min( init_object_manager_min_object.y(), object->minExternalCoord().y() );
+                    min_obj.z() = kvs::Math::Min( init_object_manager_min_object.z(), object->minExternalCoord().z() );
+
+                    max_obj.x() = kvs::Math::Max( init_object_manager_max_object.x(), object->maxExternalCoord().x() );
+                    max_obj.y() = kvs::Math::Max( init_object_manager_max_object.y(), object->maxExternalCoord().y() );
+                    max_obj.z() = kvs::Math::Max( init_object_manager_max_object.z(), object->maxExternalCoord().z() );
+                }
+            }
+        }
+        kvs::Vec3 diff = max_obj - min_obj;
+        float max_diff = kvs::Math::Max( diff.x(), diff.y(), diff.z() );
+        float normalize = 6.0f / max_diff;
+
+        object_manager->setMinMaxObjectCoords( min_obj, max_obj );
+        object_manager->setMinMaxExternalCoords( kvs::Vec3( -3, -3, -3 ), kvs::Vec3( 3, 3, 3 ) );
+        object_manager->setNormalize( kvs::Vec3( normalize, normalize, normalize) );
     }
-    return nullptr;
-}
-
-template <typename Importer, typename ObjectType>
-ObjectType* MergePanel::timeStepCheckAndImport( FilesManager* filesManager, CheckBoxPattern pattern )
-{
-    ObjectType* importObject = nullptr;
-    const int minTimeStep = filesManager->getMinTimeStep();
-    const int maxTimeStep = filesManager->getMaxTimeStep();
-//    const int currentTimeStep = m_time_control->getCurrentTimeStep();
-    const int nextTimeStep = m_time_control->getNextTimeStep();
-    const QString filePath = filesManager->getFileInfo().filePath();
-    const bool already_registerd = (filesManager->getIds().first == 0 && filesManager->getIds().second == 0) ? false : true;
-    const QString fileName = filesManager->getFileInfo().baseName().left( filesManager->getFileInfo().baseName().indexOf('_') );
-
-    if( already_registerd == false )
-    {
-        if( pattern == KeepInitialChecked )
-        {
-            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
-            {
-                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                importObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
-            }
-            else if( nextTimeStep < minTimeStep )
-            {
-                qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
-                importObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() );
-            }
-            else if( nextTimeStep > maxTimeStep )
-            {
-                qInfo() << "Does nothing.[" << __LINE__ << "]";
-                importObject = nullptr;
-            }
-        }
-
-        if( pattern == KeepFinalChecked )
-        {
-            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
-            {
-                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                importObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
-            }
-            else if( nextTimeStep < minTimeStep )
-            {
-                qInfo() << "Does nothing.[" << __LINE__ << "]";
-                importObject = nullptr;
-            }
-            else if( nextTimeStep > maxTimeStep )
-            {
-                qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
-                importObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() );
-            }
-        }
-
-        if( pattern == BothChecked )
-        {
-            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
-            {
-                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                importObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
-            }
-            else if( nextTimeStep < minTimeStep )
-            {
-                qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
-                importObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() );
-            }
-            else if( nextTimeStep > maxTimeStep )
-            {
-                qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
-                importObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() );
-            }
-        }
-
-        if( pattern == NoneChecked )
-        {
-            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
-            {
-                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                importObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
-            }
-            else if( nextTimeStep < minTimeStep )
-            {
-                qInfo() << "Does nothing.[" << __LINE__ << "]";
-                importObject = nullptr;
-            }
-            else if( nextTimeStep > maxTimeStep )
-            {
-                qInfo() << "Does nothing.[" << __LINE__ << "]";
-                importObject = nullptr;
-            }
-        }
-    }
-
-    if( already_registerd == true )
-    {
-        if( pattern == KeepInitialChecked )
-        {
-            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
-            {
-                if( nextTimeStep != m_current_time_step )
-                {
-                    if( nextTimeStep < minTimeStep )
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importObject = importObject = nullptr;
-                    }
-                    else if( nextTimeStep > maxTimeStep )
-                    {
-                        //この条件に入ることはないかもしれません。
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importObject = importObject = nullptr;
-                    }
-                    else if( nextTimeStep == minTimeStep )
-                    {
-                        if(m_current_time_step > nextTimeStep && minTimeStep != maxTimeStep )
-                        {
-                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                            importObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-                        }
-                        //当てはまらない場合
-                        else
-                        {
-                            qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        }
-                    }
-                    else if( nextTimeStep == maxTimeStep )
-                    {
-                        qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                        importObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-                    }
-                    else
-                    {
-                        qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                        importObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-                    }
-                }
-                else
-                {
-                    if( ( filesManager->getFormat() == FilesManager::NonTexturedPolygonObjectKVSML && filesManager->getIsModified() == true ) ||
-                        ( filesManager->getFormat() == FilesManager::NonTexturedPolygonObjectSTL && filesManager->getIsModified() == true ) )
-                    {
-                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
-                        importObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
-                    }
-                    else
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                    }
-                }
-            }
-            else if( nextTimeStep < minTimeStep )//
-            {
-                //現在表示されているタイムステップがファイルの最小タイムステップよりも大きく、単一ステップのデータではない場合
-                if( m_current_time_step > minTimeStep && minTimeStep != maxTimeStep )
-                {
-                    qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
-                    importObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), minTimeStep ).toStdString() );
-                }
-                else
-                {
-                    if( ( filesManager->getFormat() == FilesManager::NonTexturedPolygonObjectKVSML && filesManager->getIsModified() == true ) ||
-                        ( filesManager->getFormat() == FilesManager::NonTexturedPolygonObjectSTL && filesManager->getIsModified() == true ) )
-                    {
-                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
-                        importObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() );
-                    }
-                    else
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                    }
-                }
-            }
-            else if( nextTimeStep > maxTimeStep )
-            {
-                qInfo() << "Delete the object.[" << __LINE__ << "]";
-                removeObject( filesManager );
-            }
-            else
-            {
-                qInfo() << "Delete the object.[" << __LINE__ << "]";
-                removeObject( filesManager );
-            }
-        }
-
-        if( pattern == KeepFinalChecked )
-        {
-            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
-            {
-                if( nextTimeStep != m_current_time_step )
-                {
-                    if( nextTimeStep < minTimeStep )
-                    {
-                        //この条件に入ることはないかもしれません。
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importObject = importObject = nullptr;
-                    }
-                    else if( nextTimeStep > maxTimeStep )
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importObject = importObject = nullptr;
-                    }
-                    else if( nextTimeStep == minTimeStep )
-                    {
-                        if(m_current_time_step > nextTimeStep && minTimeStep != maxTimeStep )
-                        {
-                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                            importObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-                        }
-                        //当てはまらない場合
-                        else
-                        {
-                            qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        }
-                    }
-                    else if( nextTimeStep == maxTimeStep )
-                    {
-                        if(m_current_time_step < nextTimeStep && minTimeStep != maxTimeStep )
-                        {
-                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                            importObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-                        }
-                        //当てはまらない場合
-                        else
-                        {
-                            qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        }
-                    }
-                    else
-                    {
-                        qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                        importObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-                    }
-                }
-                else
-                {
-                    if( ( filesManager->getFormat() == FilesManager::NonTexturedPolygonObjectKVSML && filesManager->getIsModified() == true ) ||
-                        ( filesManager->getFormat() == FilesManager::NonTexturedPolygonObjectSTL && filesManager->getIsModified() == true ) )
-                    {
-                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
-                        importObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
-                    }
-                    else
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                    }
-                }
-            }
-            else if( nextTimeStep < minTimeStep )
-            {
-                qInfo() << "Delete the object.[" << __LINE__ << "]";
-                removeObject( filesManager );
-            }
-            else if( nextTimeStep > maxTimeStep )
-            {
-                if( m_current_time_step < maxTimeStep && minTimeStep != maxTimeStep )
-                {
-                    qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
-                    importObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), maxTimeStep ).toStdString() );
-                }
-                else
-                {
-                    if( ( filesManager->getFormat() == FilesManager::NonTexturedPolygonObjectKVSML && filesManager->getIsModified() == true ) ||
-                        ( filesManager->getFormat() == FilesManager::NonTexturedPolygonObjectSTL && filesManager->getIsModified() == true ) )
-                    {
-                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
-                        importObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() );
-                    }
-                    else
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                    }
-                }
-            }
-            else
-            {
-                qInfo() << "Delete the object.[" << __LINE__ << "]";
-                removeObject( filesManager );
-            }
-        }
-
-        if( pattern == BothChecked )
-        {
-            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
-            {
-                if( nextTimeStep != m_current_time_step )
-                {
-                    if (nextTimeStep < minTimeStep)
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importObject = importObject = nullptr;
-                    }
-                    else if( nextTimeStep > maxTimeStep )
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importObject = importObject = nullptr;
-                    }
-                    else if( nextTimeStep == minTimeStep )
-                    {
-                        if(m_current_time_step > nextTimeStep && minTimeStep != maxTimeStep )
-                        {
-                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                            importObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-                        }
-                        //当てはまらない場合
-                        else
-                        {
-                            qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        }
-                    }
-                    else if( nextTimeStep == maxTimeStep )
-                    {
-                        if(m_current_time_step < nextTimeStep && minTimeStep != maxTimeStep )
-                        {
-                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                            importObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-                        }
-                        //当てはまらない場合
-                        else
-                        {
-                            qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        }
-                    }
-                    else
-                    {
-                        qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                        importObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), nextTimeStep ).toStdString() );
-                    }
-                }
-                else
-                {
-                    if( ( filesManager->getFormat() == FilesManager::NonTexturedPolygonObjectKVSML && filesManager->getIsModified() == true ) ||
-                        ( filesManager->getFormat() == FilesManager::NonTexturedPolygonObjectSTL && filesManager->getIsModified() == true ) )
-                    {
-                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
-                        importObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
-                    }
-                    else
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                    }
-                }
-            }
-            else if( nextTimeStep < minTimeStep )
-            {
-                //現在表示されているタイムステップがファイルの最小タイムステップよりも大きく、単一ステップのデータではない場合
-                if( m_current_time_step > minTimeStep && minTimeStep != maxTimeStep )
-                {
-                    qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
-                    importObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), minTimeStep ).toStdString() );
-                }
-                else
-                {
-                    if( ( filesManager->getFormat() == FilesManager::NonTexturedPolygonObjectKVSML && filesManager->getIsModified() == true ) ||
-                        ( filesManager->getFormat() == FilesManager::NonTexturedPolygonObjectSTL && filesManager->getIsModified() == true ) )
-                    {
-                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
-                        importObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() );
-                    }
-                    else
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                    }
-                }
-            }
-            else if( nextTimeStep > maxTimeStep )
-            {
-                //現在表示されているタイムステップがファイルの最小タイムステップよりも大きく、単一ステップのデータではない場合
-                if( m_current_time_step < maxTimeStep && minTimeStep != maxTimeStep )
-                {
-                    qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
-                    importObject = new Importer( updateTimeStepInFileName( filesManager->getFileInfo().filePath(), maxTimeStep ).toStdString() );
-                }
-                else
-                {
-                    if( ( filesManager->getFormat() == FilesManager::NonTexturedPolygonObjectKVSML && filesManager->getIsModified() == true ) ||
-                        ( filesManager->getFormat() == FilesManager::NonTexturedPolygonObjectSTL && filesManager->getIsModified() == true ) )
-                    {
-                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
-                        importObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() );
-                    }
-                    else
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                    }
-                }
-            }
-            else
-            {
-                qInfo() << "Delete the object.[" << __LINE__ << "]";
-                removeObject( filesManager );
-            }
-        }
-
-        if( pattern == NoneChecked )
-        {
-            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
-            {
-                if( nextTimeStep != m_current_time_step )
-                {
-                    qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                    importObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
-                }
-                else
-                {
-                    if( ( filesManager->getFormat() == FilesManager::NonTexturedPolygonObjectKVSML && filesManager->getIsModified() == true ) ||
-                        ( filesManager->getFormat() == FilesManager::NonTexturedPolygonObjectSTL && filesManager->getIsModified() == true ) )
-                    {
-                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
-                        importObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() );
-                    }
-                    else
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                    }
-                }
-            }
-            else
-            {
-                qInfo() << "Delete the object.[" << __LINE__ << "]";
-                removeObject( filesManager );
-            }
-        }
-
-    }
-    return importObject;
-}
-
-kvs::PointObject* MergePanel::selectPattern( FilesManager* filesManager, int row )
-{
-    QCheckBox *displayCheckBox = qobject_cast<QCheckBox*>( ui->filesTWidget->cellWidget( row, 0 ) );
-    QCheckBox *keepInitialCheckBox = qobject_cast<QCheckBox*>( ui->filesTWidget->cellWidget( row, 1 ) );
-    QCheckBox *keepFinalCheckBox = qobject_cast<QCheckBox*>( ui->filesTWidget->cellWidget( row, 2 ) );
-    if( displayCheckBox->checkState() == Qt::Checked )//Displayにチェックが付いている場合
-    {
-        if( keepInitialCheckBox->checkState() == Qt::Checked)//KeepInitialにチェックがついている場合
-        {
-            if( keepFinalCheckBox->checkState() == Qt::Checked )//KeepFinalにチェックがついている場合
-            {
-                qInfo() << "both";
-                return timeStepCheckAndImport( filesManager, BothChecked );
-            }
-            else//KeepFinalにチェックがついていない場合
-            {
-                qInfo() << "only Init";
-                return timeStepCheckAndImport( filesManager, KeepInitialChecked );
-            }
-        }
-        else//KeepInitialにチェックがついていない場合
-        {
-            if( keepFinalCheckBox->checkState() == Qt::Checked )//KeepFinalにチェックがついている場合
-            {
-                qInfo() << "only Final";
-                return timeStepCheckAndImport( filesManager, KeepFinalChecked );
-            }
-            else//KeepFinalにチェックがついていない場合
-            {
-                qInfo() << "None";
-                return timeStepCheckAndImport( filesManager, NoneChecked );
-            }
-        }
-    }
-    else
-    {
-        removeObject( filesManager );
-    }
-    return nullptr;
-
-}
-
-kvs::PointObject* MergePanel::timeStepCheckAndImport( FilesManager* filesManager, CheckBoxPattern pattern )
-{
-    kvs::PointObject* importedObject = nullptr;
-    const int minTimeStep  = filesManager->getMinTimeStep();
-    const int maxTimeStep  = filesManager->getMaxTimeStep();
-    const int nextTimeStep = m_time_control->getNextTimeStep();
-    //    const int currentTimeStep = m_time_control->getCurrentTimeStep();
-    const QString filePath = filesManager->getFileInfo().filePath();
-    const bool already_registerd = (filesManager->getIds().first == 0 && filesManager->getIds().second == 0) ? false : true;;
-
-    if( already_registerd == false )
-    {
-        if( pattern == KeepInitialChecked )
-        {
-            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
-            {
-                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                importedObject = m_connect->connect2( nextTimeStep );
-            }
-            else if( nextTimeStep < minTimeStep )
-            {
-                qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
-                importedObject = m_connect->connect2( minTimeStep );
-            }
-            else if( nextTimeStep > maxTimeStep )
-            {
-                qInfo() << "Does nothing.[" << __LINE__ << "]";
-                importedObject = importedObject = nullptr;
-            }
-        }
-
-        if( pattern == KeepFinalChecked )
-        {
-            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
-            {
-                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                importedObject = m_connect->connect2( nextTimeStep );
-            }
-            else if( nextTimeStep < minTimeStep )
-            {
-                qInfo() << "Does nothing.[" << __LINE__ << "]";
-                importedObject = nullptr;
-            }
-            else if( nextTimeStep > maxTimeStep )
-            {
-                qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
-                importedObject = m_connect->connect2( maxTimeStep );
-            }
-        }
-
-        if( pattern == BothChecked )
-        {
-            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
-            {
-                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                importedObject = m_connect->connect2( nextTimeStep );
-            }
-            else if( nextTimeStep < minTimeStep )
-            {
-                qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
-                importedObject = m_connect->connect2( minTimeStep );
-            }
-            else if( nextTimeStep > maxTimeStep )
-            {
-                qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
-                importedObject = m_connect->connect2( maxTimeStep );
-            }
-        }
-
-        if( pattern == NoneChecked )
-        {
-            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
-            {
-                qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                importedObject = m_connect->connect2( nextTimeStep );
-            }
-            else if( nextTimeStep < minTimeStep )
-            {
-                qInfo() << "Does nothing.[" << __LINE__ << "]";
-                importedObject = nullptr;
-            }
-            else if( nextTimeStep > maxTimeStep )
-            {
-                qInfo() << "Does nothing.[" << __LINE__ << "]";
-                importedObject = nullptr;
-            }
-        }
-    }
-
-    if( already_registerd == true )
-    {
-        if( pattern == KeepInitialChecked )
-        {
-            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
-            {
-                if( nextTimeStep != m_current_time_step )
-                {
-                    if( nextTimeStep < minTimeStep )
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importedObject = importedObject = nullptr;
-                    }
-                    else if( nextTimeStep > maxTimeStep )
-                    {
-                        //この条件に入ることはないかもしれません。
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importedObject = importedObject = nullptr;
-                    }
-                    else if( nextTimeStep == minTimeStep )
-                    {
-                        if(m_current_time_step > nextTimeStep && minTimeStep != maxTimeStep )
-                        {
-                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                            importedObject = m_connect->connect2( nextTimeStep );
-                        }
-                        //当てはまらない場合
-                        else
-                        {
-                            qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        }
-                    }
-                    else if( nextTimeStep == maxTimeStep )
-                    {
-                        qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                        importedObject = m_connect->connect2( nextTimeStep );
-                    }
-                    else
-                    {
-                        qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                        importedObject = m_connect->connect2( nextTimeStep );
-                    }
-                }
-                else
-                {
-//                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
-//                    {
-//                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
-//                        importedObject = m_connect->connect2( nextTimeStep );
-//                    }
-//                    else
-//                    {
-//                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-//                    }
-                }
-            }
-            else if( nextTimeStep < minTimeStep )
-            {
-                //現在表示されているタイムステップがファイルの最小タイムステップよりも大きく、単一ステップのデータではない場合
-                if( m_current_time_step > minTimeStep && minTimeStep != maxTimeStep )
-                {
-                    qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
-                    importedObject = m_connect->connect2( minTimeStep );
-                }
-                else
-                {
-//                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
-//                    {
-//                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
-//                        importedObject = m_connect->connect2( minTimeStep );
-//                    }
-//                    else
-//                    {
-//                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-//                    }
-                }
-            }
-            else if( nextTimeStep > maxTimeStep )
-            {
-                qInfo() << "Delete the object.[" << __LINE__ << "]";
-                removeObject( filesManager );
-            }
-            else
-            {
-                qInfo() << "Delete the object.[" << __LINE__ << "]";
-                removeObject( filesManager );
-            }
-        }
-
-        if( pattern == KeepFinalChecked )
-        {
-            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
-            {
-                if( nextTimeStep != m_current_time_step )
-                {
-                    if( nextTimeStep < minTimeStep )
-                    {
-                        //この条件に入ることはないかもしれません。
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importedObject = importedObject = nullptr;
-                    }
-                    else if( nextTimeStep > maxTimeStep )
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importedObject = importedObject = nullptr;
-                    }
-                    else if( nextTimeStep == minTimeStep )
-                    {
-                        if(m_current_time_step > nextTimeStep && minTimeStep != maxTimeStep )
-                        {
-                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                            importedObject = m_connect->connect2( nextTimeStep );
-                        }
-                        //当てはまらない場合
-                        else
-                        {
-                            qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        }
-                    }
-                    else if( nextTimeStep == maxTimeStep )
-                    {
-                        if(m_current_time_step < nextTimeStep && minTimeStep != maxTimeStep )
-                        {
-                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                            importedObject = m_connect->connect2( nextTimeStep );
-                        }
-                        //当てはまらない場合
-                        else
-                        {
-                            qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        }
-                    }
-                    else
-                    {
-                        qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                        importedObject = m_connect->connect2( nextTimeStep );
-                    }
-                }
-                else
-                {
-//                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
-//                    {
-//                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
-//                        importedObject = m_connect->connect2( nextTimeStep );
-//                    }
-//                    else
-//                    {
-//                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-//                    }
-                }
-            }
-            else if( nextTimeStep < minTimeStep )
-            {
-                qInfo() << "Delete the object.[" << __LINE__ << "]";
-                removeObject( filesManager );
-            }
-            else if( nextTimeStep > maxTimeStep )
-            {
-                if( m_current_time_step < maxTimeStep && minTimeStep != maxTimeStep )
-                {
-                    qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
-                    importedObject = m_connect->connect2( maxTimeStep );
-                }
-                else
-                {
-//                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
-//                    {
-//                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
-//                        importedObject = m_connect->connect2( maxTimeStep );
-//                    }
-//                    else
-//                    {
-//                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-//                    }
-                }
-            }
-            else
-            {
-                qInfo() << "Delete the object.[" << __LINE__ << "]";
-                removeObject( filesManager );
-            }
-        }
-
-        if( pattern == BothChecked )
-        {
-            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
-            {
-                if( nextTimeStep != m_current_time_step )
-                {
-                    if (nextTimeStep < minTimeStep)
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importedObject = importedObject = nullptr;
-                    }
-                    else if( nextTimeStep > maxTimeStep )
-                    {
-                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        importedObject = importedObject = nullptr;
-                    }
-                    else if( nextTimeStep == minTimeStep )
-                    {
-                        if(m_current_time_step > nextTimeStep && minTimeStep != maxTimeStep )
-                        {
-                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                            importedObject = m_connect->connect2( nextTimeStep );
-                        }
-                        //当てはまらない場合
-                        else
-                        {
-                            qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        }
-                    }
-                    else if( nextTimeStep == maxTimeStep )
-                    {
-                        if(m_current_time_step < nextTimeStep && minTimeStep != maxTimeStep )
-                        {
-                            qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                            importedObject = m_connect->connect2( nextTimeStep );
-                        }
-                        //当てはまらない場合
-                        else
-                        {
-                            qInfo() << "Does nothing.[" << __LINE__ << "]";
-                        }
-                    }
-                    else
-                    {
-                        qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                        importedObject = m_connect->connect2( nextTimeStep );
-                    }
-                }
-                else
-                {
-//                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
-//                    {
-//                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
-//                        importedObject = m_connect->connect2( nextTimeStep );
-//                    }
-//                    else
-//                    {
-//                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-//                    }
-                }
-            }
-            else if( nextTimeStep < minTimeStep )
-            {
-                //現在表示されているタイムステップがファイルの最小タイムステップよりも大きく、単一ステップのデータではない場合
-                if( m_current_time_step > minTimeStep && minTimeStep != maxTimeStep )
-                {
-                    qInfo() << "Imported the file for the minimum time step.[" << __LINE__ << "]";
-                    importedObject = m_connect->connect2( minTimeStep );
-                }
-                else
-                {
-//                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
-//                    {
-//                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
-//                        importedObject = m_connect->connect2( minTimeStep );
-//                    }
-//                    else
-//                    {
-//                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-//                    }
-                }
-            }
-            else if( nextTimeStep > maxTimeStep )
-            {
-                //現在表示されているタイムステップがファイルの最小タイムステップよりも大きく、単一ステップのデータではない場合
-                if( m_current_time_step < maxTimeStep && minTimeStep != maxTimeStep )
-                {
-                    qInfo() << "Imported the file for the maximum time step.[" << __LINE__ << "]";
-                    importedObject = m_connect->connect2( maxTimeStep );
-                }
-                else
-                {
-//                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
-//                    {
-//                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
-//                        importedObject = m_connect->connect2( maxTimeStep );
-//                    }
-//                    else
-//                    {
-//                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-//                    }
-                }
-            }
-            else
-            {
-                qInfo() << "Delete the object.[" << __LINE__ << "]";
-                removeObject( filesManager );
-            }
-        }
-
-        if( pattern == NoneChecked )
-        {
-            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep )
-            {
-                if( nextTimeStep != m_current_time_step )
-                {
-                    qInfo() << "Imported the file that matches the Next Time Step value.[" << __LINE__ << "]";
-                    importedObject = m_connect->connect2( nextTimeStep );
-                }
-                else
-                {
-//                    if( filesManager->getFileFormat() == FilesManager::NonTexturedPolygon && filesManager->getIsModified() == true )
-//                    {
-//                        qInfo() << "The color or opacity value has been modified.[" << __LINE__ << "]";
-//                        importedObject = m_connect->connect2( nextTimeStep );
-//                    }
-//                    else
-//                    {
-//                        qInfo() << "Does nothing.[" << __LINE__ << "]";
-//                    }
-                }
-            }
-            else
-            {
-                qInfo() << "Delete the object.[" << __LINE__ << "]";
-                removeObject( filesManager );
-            }
-        }
-
-    }
-    return importedObject;
-}
-
-QString MergePanel::updateTimeStepInFileName(QString fileName, int nextTimeStep) {
-    // 正規表現パターン: 5桁の数字
-    QRegularExpression regex(R"(\d{5})");
-    QRegularExpressionMatch match = regex.match(fileName);
-
-    if (match.hasMatch()) {
-        // futureTimeの値を考慮して新しい5桁の数字を生成
-        int newNumber = nextTimeStep;
-
-        // 新しい5桁の数字をQStringに変換し、0埋めして格納
-        QString extractedNumber = QString::number(newNumber).rightJustified(5, '0');
-
-        // 5桁の数字を含む前後の文字列を抜き取り
-        int startPos = match.capturedStart();
-        int endPos = match.capturedEnd();
-
-        return fileName.left(startPos) + extractedNumber + fileName.mid(endPos);
-    }
-    else
-    {
-        return fileName;
-    }
-}
-
-void MergePanel::removeObject( FilesManager* filesManager )
-{
-    //Sceneにオブジェクトが登録されている場合
-    if( filesManager->getIds().first != 0 && filesManager->getIds().second != 0 )
-    {
-        m_screen->scene()->IDManager()->erase(filesManager->getIds().first, filesManager->getIds().second);
-        filesManager->setIds(std::pair<int, int>(0, 0));
-    }
-}
-
-void MergePanel::updateObject( FilesManager* filesManager, kvs::ObjectBase* object )
-{
-    object->setXform( m_screen->scene()->objectManager()->xform() );
-    //Sceneにオブジェクトが登録されていない場合
-    if( filesManager->getIds().first == 0 && filesManager->getIds().second == 0 )
-    {
-        kvs::RendererBase* renderer = nullptr;
-
-        if( dynamic_cast<kvs::PointObject*>(object) != nullptr )
-        {
-            renderer = new kvs::glsl::ParticleBasedRenderer();
-        }
-        else if( dynamic_cast<kvs::PolygonObject*>(object) != nullptr )
-        {
-            kvs::PolygonObject* polygonObject = dynamic_cast<kvs::PolygonObject*>(object);
-            polygonObject->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
-            polygonObject->setOpacity(filesManager->getOpacity() * 255);
-            renderer = new kvs::StochasticPolygonRenderer();
-        }
-        filesManager->setIds(m_screen->registerObject(object, renderer));
-    }
-    //Sceneにオブジェクトが登録されている場合
-    else
-    {
-        if( dynamic_cast<kvs::PolygonObject*>(object) != nullptr )
-        {
-            kvs::PolygonObject* polygonObject = dynamic_cast<kvs::PolygonObject*>(object);
-            polygonObject->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
-            polygonObject->setOpacity(filesManager->getOpacity() * 255);
-        }
-        m_screen->scene()->replaceObject(filesManager->getIds().first, object);
-    }
+    m_screen->scene()->reset();
+    m_screen->update();
 }
 
 void MergePanel::serverObject( QString volumeDataFilePath, int min, int max )
 {
-    FilesManager *newFile = new FilesManager;
-    newFile->setFileInfo( QFileInfo( volumeDataFilePath ) );
-    newFile->setMinTimeStep( min );
-    newFile->setMaxTimeStep( max );
-    newFile->setFormat( FilesManager::ServerPointObject );
-    addRowToFilesTableWidget( newFile );
-    m_files_manager.append( newFile );
-    calculateTotalMinMaxTimeStep();
-}
 
-void MergePanel::totalParticles()
-{
-    int totalParticles = 0;
-    for( int row = 0; row < m_files_manager.size(); row++ )
-    {
-        const bool already_registerd = ( m_files_manager[row]->getIds().first == 0 && m_files_manager[row]->getIds().second == 0 ) ? false : true;
-        if( already_registerd )
-        {
-            qInfo() << m_files_manager[row]->getFormat();
-            if( m_files_manager[row]->getFormat() == FilesManager::PointObjectKVSML || m_files_manager[row]->getFormat() == FilesManager::ServerPointObject )
-            {
-                totalParticles += dynamic_cast<kvs::PointObject*>( m_screen->scene()->object( m_files_manager[row]->getIds().first) )->numberOfVertices();
-            }
-        }
-    }
-    m_data_summary->setTotalParticles( totalParticles );
-}
-
-void MergePanel::updatePolygonColorOpacity()
-{
-    for( int row = 0; row < m_files_manager.size(); row++ )
-    {
-
-        if( m_files_manager[row]->getFormat() == FilesManager::NonTexturedPolygonObjectKVSML || m_files_manager[row]->getFormat() == FilesManager::NonTexturedPolygonObjectSTL )
-        {
-            QTableWidgetItem* colorItem = ui->filesTWidget->item(row, 4);
-            QDoubleSpinBox* opacitySpinBox = dynamic_cast<QDoubleSpinBox*>(ui->filesTWidget->cellWidget(row, 5));
-            if( colorItem != nullptr && opacitySpinBox != nullptr )
-            {
-                qInfo() << "1";
-                m_files_manager[row]->setIsModified( false );
-                QColor rgbColor = colorItem->background().color();
-                double opacity = opacitySpinBox->value();
-                if( m_files_manager[row]->getRGBColor() != rgbColor )
-                {
-                    qInfo() << "1";
-                    m_files_manager[row]->setRGBColor( rgbColor );
-                    m_files_manager[row]->setIsModified( true );
-                }
-                if( m_files_manager[row]->getOpacity() != opacity )
-                {
-                    qInfo() << "1";
-                    m_files_manager[row]->setOpacity( opacity );
-                    m_files_manager[row]->setIsModified( true );
-                }
-            }
-        }
-    }
 }

@@ -4,7 +4,8 @@
 #include <QDockWidget>
 
 #include <QFileDialog>
-#include "ExtendedKVS/Screen.h"
+//#include "ExtendedKVS/Screen.h"
+#include <kvs/qt/Screen>
 #include "Widgets/TimeControl.h"
 #include "Widgets/Preference.h"
 #include "Widgets/Connect.h"
@@ -79,7 +80,7 @@ private:
     QColor m_rgb_color;
     double m_opacity;
     bool m_is_modified;
-    std::pair<int, int> m_ids = std::pair<int,int>(0,0);
+    std::pair<int, int> m_ids = std::pair<int,int>(-1,-1);
 
 //    QColor m_rgb_color;
 //    double m_opacity;
@@ -107,7 +108,7 @@ public:
     void setTimeControl( TimeControl* time_control ){ m_time_control = time_control; }
     void setPreference( Preference* preference ){ m_preference = preference; }
     void setConnect( Connect* connect ){ m_connect = connect; }
-    void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; };
+    void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; };    
     void setDataSummary( DataSummary* data_summary ){ m_data_summary = data_summary; }
     void serverObject( QString volumeDataFilePath, int min, int max );
 
@@ -118,34 +119,21 @@ private:
     Preference* m_preference;
     Connect* m_connect;
     DataSummary* m_data_summary;
-    kvs::qt::jaea::Screen* m_screen;
+    kvs::qt::jaea::Screen* m_screen;    
     int m_current_time_step;
 
     void checkMinMaxTimeStep( FilesManager *newFile );
     void checkFileFormat(  FilesManager *newFile );
     void addRowToFilesTableWidget( FilesManager *newFile );
     void calculateTotalMinMaxTimeStep();
-    void removeChecked();//removeRowToFilesTableWidget    
+    void removeChecked();//removeRowToFilesTableWidget
     void mergeObjects();
-    void totalParticles();
-
-    //for LocalData
-    template <typename Importer, typename ObjectType>
-    ObjectType* selectPattern( FilesManager* filesManager, int row );
-    template <typename Importer, typename ObjectType>
-    ObjectType* timeStepCheckAndImport( FilesManager* filesManager, CheckBoxPattern pattern );
-    //for ServerData
-    kvs::PointObject* selectPattern( FilesManager* filesManager, int row );
-    kvs::PointObject* timeStepCheckAndImport( FilesManager* filesManager, CheckBoxPattern pattern );
-    QString updateTimeStepInFileName( QString fileName,int nextTimeStep );
-    void removeObject( FilesManager* filesManager );
-    void updateObject( FilesManager* filesManager, kvs::ObjectBase* object );
-    void updatePolygonColorOpacity();
 
 private slots:
     void onFilesTWidgetCellDoubleClicked( int row, int column );
     void onBrowserButtonClicked();
     void onAddButtonClicked();
+    void onCenteringButtonClicked();
     void onApplyButtonClicked();
 };
 
