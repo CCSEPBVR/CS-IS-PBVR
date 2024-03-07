@@ -331,9 +331,14 @@ void MergePanel::mergeObjects()
         default:
             break;
         }
-    }
+    }    
     m_time_control->setCurrentTimeStep( m_time_control->getNextTimeStep() );
+    m_preference->setCurrentTimeStep( m_time_control->getNextTimeStep() );
+    m_preference->loadShadingSettings();
+    m_preference->applyShadingSettings();
+    totalParticles();
     m_screen->update();
+
 }
 
 MergePanel::CheckPattern MergePanel::checkPattern( int row )
@@ -390,7 +395,7 @@ void MergePanel::timeStepCheckAndImport( int row )
                 }
                 else
                 {
-
+                    nextObject = m_connect->connect2( nextTimeStep );
                 }
                 m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
             }
@@ -407,7 +412,7 @@ void MergePanel::timeStepCheckAndImport( int row )
                     }
                     else
                     {
-
+                        nextObject = m_connect->connect2( minTimeStep );
                     }
                     m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
                 }
@@ -425,7 +430,7 @@ void MergePanel::timeStepCheckAndImport( int row )
                     }
                     else
                     {
-
+                        nextObject = m_connect->connect2( maxTimeStep );
                     }
                     m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
                 }
@@ -474,7 +479,7 @@ void MergePanel::timeStepCheckAndImport( int row )
                             }
                             else
                             {
-
+                                nextObject = m_connect->connect2( nextTimeStep );
                             }
                             m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
                         }
@@ -501,7 +506,7 @@ void MergePanel::timeStepCheckAndImport( int row )
                                     }
                                     else
                                     {
-
+                                        nextObject = m_connect->connect2( minTimeStep );
                                     }
                                     m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
                                 }
@@ -531,7 +536,7 @@ void MergePanel::timeStepCheckAndImport( int row )
                                     }
                                     else
                                     {
-
+                                        nextObject = m_connect->connect2( maxTimeStep );
                                     }
                                     m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
                                 }
@@ -562,7 +567,7 @@ void MergePanel::timeStepCheckAndImport( int row )
                             }
                             else
                             {
-
+                                nextObject = m_connect->connect2( nextTimeStep );
                             }
                             m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
                         }
@@ -589,7 +594,7 @@ void MergePanel::timeStepCheckAndImport( int row )
                                     }
                                     else
                                     {
-
+                                        nextObject = m_connect->connect2( minTimeStep );
                                     }
                                     m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
                                 }
@@ -619,7 +624,7 @@ void MergePanel::timeStepCheckAndImport( int row )
                                     }
                                     else
                                     {
-
+                                        nextObject = m_connect->connect2( maxTimeStep );
                                     }
                                     m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
                                 }
@@ -665,7 +670,7 @@ void MergePanel::timeStepCheckAndImport( int row )
                             }
                             else
                             {
-
+                                nextObject = m_connect->connect2( nextTimeStep );
                             }
                             m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
                         }
@@ -693,7 +698,7 @@ void MergePanel::timeStepCheckAndImport( int row )
                                     }
                                     else
                                     {
-
+                                        nextObject = m_connect->connect2( minTimeStep );
                                     }
                                     m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
                                 }
@@ -723,7 +728,7 @@ void MergePanel::timeStepCheckAndImport( int row )
                                     }
                                     else
                                     {
-
+                                        nextObject = m_connect->connect2( maxTimeStep );
                                     }
                                     m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
                                 }
@@ -755,7 +760,7 @@ void MergePanel::timeStepCheckAndImport( int row )
                             }
                             else
                             {
-
+                                nextObject = m_connect->connect2( nextTimeStep );
                             }
                             m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
                         }
@@ -783,7 +788,7 @@ void MergePanel::timeStepCheckAndImport( int row )
                                     }
                                     else
                                     {
-
+                                        nextObject = m_connect->connect2( minTimeStep );
                                     }
                                     m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
                                 }
@@ -813,7 +818,7 @@ void MergePanel::timeStepCheckAndImport( int row )
                                     }
                                     else
                                     {
-
+                                        nextObject = m_connect->connect2( maxTimeStep );
                                     }
                                     m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
                                 }
@@ -880,6 +885,28 @@ QString MergePanel::updateTimeStepInFileName(QString fileName, int nextTimeStep)
     {
         return fileName;
     }
+}
+
+void MergePanel::totalParticles()
+{
+    int totalParticles = 0;
+    for( int row = 0; row < m_files_manager.size(); row++ )
+    {
+        if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObject ||
+            m_files_manager[row]->getFormat() == FilesManager::PointObjectKVSML ||
+            m_files_manager[row]->getFormat() == FilesManager::PointObjectLAS )
+        {
+            auto* object = m_screen->scene()->object( m_files_manager[row]->getIds().first );
+            if( object->isVisible() )
+            {
+                if (auto* pointObject = dynamic_cast<kvs::PointObject*>(object))
+                {
+                    totalParticles += pointObject->numberOfVertices();
+                }
+            }
+        }
+    }
+    m_data_summary->setTotalParticles( totalParticles );
 }
 
 void MergePanel::onCenteringButtonClicked()
@@ -962,5 +989,13 @@ void MergePanel::onCenteringButtonClicked()
 
 void MergePanel::serverObject( QString volumeDataFilePath, int min, int max )
 {
-
+    FilesManager *newFile = new FilesManager;
+    newFile->setFileInfo( QFileInfo( volumeDataFilePath ) );
+    newFile->setMinTimeStep( min );
+    newFile->setMaxTimeStep( max );
+    newFile->setCurrentDisplayedStep( -1 );
+    newFile->setFormat( FilesManager::ServerPointObject );
+    addRowToFilesTableWidget( newFile );
+    m_files_manager.append( newFile );
+    calculateTotalMinMaxTimeStep();
 }
