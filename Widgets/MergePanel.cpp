@@ -915,13 +915,16 @@ void MergePanel::onCenteringButtonClicked()
     kvs::Vec3 min_obj;
     kvs::Vec3 max_obj;
     int counter = 0;
-    for (int row = 0; row < m_files_manager.size() && counter < 2; row++)
+
+    for (int row = 0; row < m_files_manager.size(); ++row)
     {
-        if (m_files_manager[row]->getIds().first != -1 && m_files_manager[row]->getIds().second != -1)
+        if (m_screen->scene()->object(m_files_manager[row]->getIds().first)->isVisible())
         {
-            QCheckBox *displayCheckBox = qobject_cast<QCheckBox*>( ui->filesTWidget->cellWidget( row, 0 ) );
-            QCheckBox *keepInitialCheckBox = qobject_cast<QCheckBox*>( ui->filesTWidget->cellWidget( row, 1 ) );
-            QCheckBox *keepFinalCheckBox = qobject_cast<QCheckBox*>( ui->filesTWidget->cellWidget( row, 2 ) );
+            ++counter;
+            if (counter >= 2)
+            {
+                break;
+            }
         }
     }
 
