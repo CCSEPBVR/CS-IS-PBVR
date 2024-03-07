@@ -32,18 +32,18 @@ public:
     void setMaxTimeStep( int max_time_step ){ m_max_time_step = max_time_step; }
     void setFormat( FormatType format ){ m_format = format; }
     void setRGBColor( QColor rgb_color ) { m_rgb_color = rgb_color; }
-    void setOpacity( double opacity ) { m_opacity = opacity; }
-    void setIsModified( bool is_modified ) { m_is_modified = is_modified; }
+    void setOpacity( double opacity ) { m_opacity = opacity; }    
     void setIds( std::pair<int,int> ids ){ m_ids = ids; }
+    void setCurrentDisplayedStep( int current_displayed_step ) { m_current_displayed_step = current_displayed_step; }
 
     QFileInfo getFileInfo(){ return m_file_info; }
     int getMinTimeStep(){ return m_min_time_step; }
     int getMaxTimeStep(){ return m_max_time_step; }
     FormatType getFormat(){ return m_format; }
     QColor getRGBColor() { return m_rgb_color; }
-    double getOpacity() { return m_opacity; }
-    bool getIsModified() { return m_is_modified; }
+    double getOpacity() { return m_opacity; }    
     std::pair<int,int> getIds() { return m_ids; }
+    int getCurrentDisplayedStep() { return m_current_displayed_step; }
 
     QString formatTypeToString( FormatType format )
     {
@@ -78,9 +78,9 @@ private:
 //    Qt::CheckState m_is_keep_final;
     FormatType m_format;
     QColor m_rgb_color;
-    double m_opacity;
-    bool m_is_modified;
+    double m_opacity;    
     std::pair<int, int> m_ids = std::pair<int,int>(-1,-1);
+    int m_current_displayed_step;
 
 //    QColor m_rgb_color;
 //    double m_opacity;
@@ -94,12 +94,12 @@ class MergePanel : public QDockWidget
 {
     Q_OBJECT
 public:
-    enum CheckBoxPattern
-    {
-        BothChecked        = 0,
+    enum CheckPattern
+    {        
         KeepInitialChecked = 1,
         KeepFinalChecked   = 2,
-        NoneChecked        = 3,
+        BothChecked        = 3,
+        NoneChecked        = 4,
     };
 
 public:
@@ -127,7 +127,10 @@ private:
     void addRowToFilesTableWidget( FilesManager *newFile );
     void calculateTotalMinMaxTimeStep();
     void removeChecked();//removeRowToFilesTableWidget
+    void updatePolygonColorOpacity();
     void mergeObjects();
+    CheckPattern checkPattern( int row );
+    QString updateTimeStepInFileName(QString fileName, int nextTimeStep);
 
 private slots:
     void onFilesTWidgetCellDoubleClicked( int row, int column );
