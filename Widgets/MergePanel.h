@@ -130,6 +130,8 @@ private:
     void updatePolygonColorOpacity();
     void mergeObjects();
     CheckPattern checkPattern( int row );
+    template <typename Importer, typename ObjectType, typename RendererType>
+    void timeStepCheckAndImport( int row );
     QString updateTimeStepInFileName(QString fileName, int nextTimeStep);
 
 private slots:

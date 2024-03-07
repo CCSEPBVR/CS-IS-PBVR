@@ -310,385 +310,28 @@ void MergePanel::updatePolygonColorOpacity()
 
 void MergePanel::mergeObjects()
 {
-    kvs::Xform before_object_manager_xform = m_screen->scene()->objectManager()->xform();
     for( int row = 0; row < m_files_manager.size(); row++ )
     {
-        QCheckBox *displayCheckBox = qobject_cast<QCheckBox*>( ui->filesTWidget->cellWidget( row, 0 ) );
-        MergePanel::CheckPattern pattern = checkPattern( row );
-        const int minTimeStep  = m_files_manager[row]->getMinTimeStep();
-        const int maxTimeStep  = m_files_manager[row]->getMaxTimeStep();
-        const int currentTimeStep = m_time_control->getCurrentTimeStep();
-        const int nextTimeStep = m_time_control->getNextTimeStep();
-        const QString filePath = m_files_manager[row]->getFileInfo().filePath();
-        kvs::PolygonObject* nextPolygonObject = nullptr;
-
-        if( m_files_manager[row]->getIds().first == -1 && m_files_manager[row]->getIds().second == -1 ) //オブジェクトが登録されていない
+        switch ( m_files_manager[row]->getFormat() )
         {
-            qInfo() << "オブジェクトの登録が行われていません。" << __LINE__;
-            if( displayCheckBox->isChecked() ) //表示の要求がある。
-            {
-                qInfo() << "表示にチェックがついています。" << __LINE__;
-                if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep ) //次のステップがローカルファイルの最小最大の範囲である場合
-                {
-                    qInfo() << "次のタイムステップがローカルタイムステップの範囲内です。" << __LINE__;
-                    qInfo() << "次ステップをインポートします。" << __LINE__;
-                    nextPolygonObject = new kvs::PolygonImporter( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
-                    m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
-                }
-                else if( nextTimeStep < minTimeStep ) //次のステップがローカルファイルの最小よりも低い場合
-                {
-                    qInfo() << "次のタイムステップがローカルの最小ステップよりも小さいです。" << __LINE__;
-                    if( pattern == MergePanel::KeepInitialChecked || pattern == MergePanel::BothChecked ) //KeepInitialがついている場合は最小のファイルを表示
-                    {
-                        qInfo() << "KeepInitialにチェックがついています。" << __LINE__;
-                        qInfo() << "最小ステップをインポートします。" << __LINE__;
-                        nextPolygonObject = new kvs::PolygonImporter( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() );
-                        m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
-                    }
-                }
-                else if( nextTimeStep > maxTimeStep ) //次のステップがローカルファイルの最大よりも大きい場合
-                {
-                    qInfo() << "次のタイムステップがローカルの最大ステップよりも大きいです。" << __LINE__;
-                    if( pattern == MergePanel::KeepFinalChecked || pattern == MergePanel::BothChecked ) //KeepFinalがついている場合は最大のファイルを表示
-                    {
-                        qInfo() << "KeepFinalにチェックがついています。" << __LINE__;
-                        qInfo() << "最大ステップをインポートします。" << __LINE__;
-                        nextPolygonObject = new kvs::PolygonImporter( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() );
-                        m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
-                    }
-                }
-
-                if( nextPolygonObject != nullptr ) //オブジェクトが生成されていれば登録
-                {
-                    qInfo() << "オブジェクトの生成があるため登録を行います。";
-                    nextPolygonObject->setXform( before_object_manager_xform );
-                    nextPolygonObject->setColor( kvs::RGBColor( m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue() ) );
-                    nextPolygonObject->setOpacity( m_files_manager[row]->getOpacity() * 255 );
-                    kvs::StochasticPolygonRenderer* polygonRenderer = new kvs::StochasticPolygonRenderer();
-                    m_files_manager[row]->setIds( m_screen->scene()->registerObject( nextPolygonObject, polygonRenderer ) );
-                }
-            }
-        }
-        else //オブジェクトが登録されている。
-        {
-            auto* object = m_screen->scene()->object(m_files_manager[row]->getIds().first);
-            if( object->isVisible() ) //オブジェクトが表示されている場合
-            {
-                qInfo() << "オブジェクトが表示状態です。" << __LINE__;
-                if( displayCheckBox->isChecked() ) //表示の要求がある。
-                {
-                    qInfo() << "表示にチェックがついています。" << __LINE__;
-                    if( nextTimeStep != currentTimeStep ) //タイムステップの更新がある場合
-                    {
-                        qInfo() << "タイムステップの更新があります。" << __LINE__;
-                        if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep ) //次のステップがローカルファイルの範囲内である。
-                        {
-                            qInfo() << "次のタイムステップがローカルタイムステップの範囲内です。" << __LINE__;
-                            if( m_files_manager[row]->getCurrentDisplayedStep() == nextTimeStep ) //表示中のオブジェクトが次のステップと一致する場合
-                            {
-                                qInfo() << "表示中のオブジェクトと次のステップが一致しているため何もしません。"  << __LINE__;
-                            }
-                            else //一致しなかった場合
-                            {
-                                qInfo() << "表示中のオブジェクトと次のステップが一致しないため次のステップをインポートします。" << __LINE__;
-                                nextPolygonObject = new kvs::PolygonImporter( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
-                            }
-                        }
-                        else //次のステップがローカルファイルの範囲外である。
-                        {
-                            qInfo() << "次のタイムステップがローカルタイムステップの範囲外です。" << __LINE__;
-                            if( nextTimeStep < minTimeStep ) //次のステップがローカルの最小ステップよりも低い場合
-                            {
-                                qInfo() << "次のタイムステップがローカルの最小ステップよりも小さいです。" << __LINE__;
-                                if( pattern == KeepInitialChecked || pattern == BothChecked ) //KeepInitialにチェックがついている場合
-                                {
-                                    qInfo() << "KeepInitialにチェックがついています。" << __LINE__;
-                                    if (m_files_manager[row]->getCurrentDisplayedStep() <= minTimeStep ) //表示中のオブジェクトがローカル最小ステップ以下である場合。
-                                    {
-                                        qInfo() << "表示中のオブジェクトがローカル最小ステップ以下であるため何もしません。"  << __LINE__;
-                                    }
-                                    else //一致しなかった場合
-                                    {
-                                        qInfo() << "表示中のオブジェクトがローカル最小ステップ以下ではないため最小ステップをインポートします。" << __LINE__;
-                                        nextPolygonObject = new kvs::PolygonImporter( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                        m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
-                                    }
-                                }
-                                else
-                                {
-                                    qInfo() << "KeepInitialにチェックがついていないため非表示にします。" << __LINE__;
-                                    object->hide();
-                                }
-                            }
-                            else if( nextTimeStep > maxTimeStep ) //次のステップがローカルの最大よりも高い場合
-                            {
-                                qInfo() << "次のタイムステップがローカルの最大ステップよりも大きいです。" << __LINE__;
-                                if( pattern == KeepFinalChecked || pattern == BothChecked ) //KeepInitialにチェックがついている場合
-                                {
-                                    qInfo() << "KeepFinalにチェックがついています。" << __LINE__;
-                                    if (m_files_manager[row]->getCurrentDisplayedStep() >= maxTimeStep ) //表示中のオブジェクトがローカル最大ステップ以上である場合。
-                                    {
-                                        qInfo() << "表示中のオブジェクトがローカル最大ステップ以上であるため何もしません。"  << __LINE__;
-                                    }
-                                    else //一致しなかった場合
-                                    {
-                                        qInfo() << "表示中のオブジェクトがローカル最大ステップ以上ではないため最大ステップをインポートします。" << __LINE__;
-                                        nextPolygonObject = new kvs::PolygonImporter( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                        m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
-                                    }
-                                }
-                                else
-                                {
-                                    qInfo() << "KeepFinalにチェックがついていないため非表示にします。" << __LINE__;
-                                    object->hide();
-                                }
-                            }
-                        }
-                    }
-                    else //タイムステップの更新がない場合
-                    {
-                        qInfo() << "タイムステップの更新がありません。" << __LINE__;
-                        if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep ) //次のステップがローカルファイルの範囲内である。
-                        {
-                            if( m_files_manager[row]->getCurrentDisplayedStep() == nextTimeStep ) //表示中のオブジェクトが次のステップと一致する場合
-                            {
-                                qInfo() << "表示中のオブジェクトと次のステップが一致しているため何もしません。"  << __LINE__;
-                            }
-                            else //一致しなかった場合
-                            {
-                                qInfo() << "表示中のオブジェクトと次のステップが一致しないため次のステップをインポートします。" << __LINE__;
-                                nextPolygonObject = new kvs::PolygonImporter( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
-                            }
-                        }
-                        else //次のステップがローカルファイルの範囲外である。
-                        {
-                            qInfo() << "次のタイムステップがローカルタイムステップの範囲外です。" << __LINE__;
-                            if( nextTimeStep < minTimeStep ) //次のステップがローカルの最小ステップよりも低い場合
-                            {
-                                qInfo() << "次のタイムステップがローカルの最小ステップよりも小さいです。" << __LINE__;
-                                if( pattern == KeepInitialChecked || pattern == BothChecked ) //KeepInitialにチェックがついている場合
-                                {
-                                    qInfo() << "KeepInitialにチェックがついています。" << __LINE__;
-                                    if (m_files_manager[row]->getCurrentDisplayedStep() <= minTimeStep ) //表示中のオブジェクトがローカル最小ステップ以下である場合。
-                                    {
-                                        qInfo() << "表示中のオブジェクトがローカル最小ステップ以下であるため何もしません。"  << __LINE__;
-                                    }
-                                    else //一致しなかった場合
-                                    {
-                                        qInfo() << "表示中のオブジェクトがローカル最小ステップ以下ではないため最小ステップをインポートします。" << __LINE__;
-                                        nextPolygonObject = new kvs::PolygonImporter( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                        m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
-                                    }
-                                }
-                                else
-                                {
-                                    qInfo() << "KeepInitialにチェックがついていないため非表示にします。" << __LINE__;
-                                    object->hide();
-                                }
-                            }
-                            else if( nextTimeStep > maxTimeStep ) //次のステップがローカルの最大よりも高い場合
-                            {
-                                qInfo() << "次のタイムステップがローカルの最大ステップよりも大きいです。" << __LINE__;
-                                if( pattern == KeepFinalChecked || pattern == BothChecked ) //KeepInitialにチェックがついている場合
-                                {
-                                    qInfo() << "KeepFinalにチェックがついています。" << __LINE__;
-                                    if (m_files_manager[row]->getCurrentDisplayedStep() >= maxTimeStep ) //表示中のオブジェクトがローカル最大ステップ以上である場合。
-                                    {
-                                        qInfo() << "表示中のオブジェクトがローカル最大ステップ以上であるため何もしません。"  << __LINE__;
-                                    }
-                                    else //一致しなかった場合
-                                    {
-                                        qInfo() << "表示中のオブジェクトがローカル最大ステップ以上ではないため最大ステップをインポートします。" << __LINE__;
-                                        nextPolygonObject = new kvs::PolygonImporter( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                        m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
-                                    }
-                                }
-                                else
-                                {
-                                    qInfo() << "KeepFinalにチェックがついていないため非表示にします。" << __LINE__;
-                                    object->hide();
-                                }
-                            }
-                        }
-                    }
-                }
-                else //表示の要求無し
-                {
-                    qInfo() << "表示の要求がないため非表示にします。" << __LINE__;
-                    object->hide();
-                }
-            }
-            else //オブジェクトが表示されていない
-            {
-                qInfo() << "オブジェクトが非表示状態です。" << __LINE__;
-                if( displayCheckBox->isChecked() ) //表示の要求がある。
-                {
-                    qInfo() << "表示にチェックがついています。" << __LINE__;
-                    if( nextTimeStep != currentTimeStep ) //タイムステップの更新がある場合
-                    {
-                        qInfo() << "タイムステップの更新があります。" << __LINE__;
-                        if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep ) //次のステップがローカルファイルの範囲内である。
-                        {
-                            qInfo() << "次のタイムステップがローカルタイムステップの範囲内です。" << __LINE__;
-                            if( m_files_manager[row]->getCurrentDisplayedStep() == nextTimeStep ) //表示中のオブジェクトが次のステップと一致する場合
-                            {
-                                qInfo() << "非表示中のオブジェクトと次のステップが一致しているため再表示します。"  << __LINE__;
-                                object->show();
-                            }
-                            else //一致しなかった場合
-                            {
-                                qInfo() << "非表示中のオブジェクトと次のステップが一致しないため次のステップをインポートし再表示します。" << __LINE__;
-                                nextPolygonObject = new kvs::PolygonImporter( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
-                            }
-                        }
-                        else //次のステップがローカルファイルの範囲外である。
-                        {
-                            qInfo() << "次のタイムステップがローカルタイムステップの範囲外です。" << __LINE__;
-                            if( nextTimeStep < minTimeStep ) //次のステップがローカルの最小ステップよりも低い場合
-                            {
-                                qInfo() << "次のタイムステップがローカルの最小ステップよりも小さいです。" << __LINE__;
-                                if( pattern == KeepInitialChecked || pattern == BothChecked ) //KeepInitialにチェックがついている場合
-                                {
-                                    qInfo() << "KeepInitialにチェックがついています。" << __LINE__;
-                                    if (m_files_manager[row]->getCurrentDisplayedStep() <= minTimeStep ) //表示中のオブジェクトがローカル最小ステップ以下である場合。
-                                    {
-                                        qInfo() << "非表示中のオブジェクトがローカル最小ステップ以下であるため再表示します。"  << __LINE__;
-                                        object->show();
-                                    }
-                                    else //一致しなかった場合
-                                    {
-                                        qInfo() << "非表示中のオブジェクトがローカル最小ステップ以下ではないため最小ステップをインポートし再表示します。" << __LINE__;
-                                        nextPolygonObject = new kvs::PolygonImporter( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                        m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
-                                    }
-                                }
-                                else
-                                {
-                                    qInfo() << "KeepInitialにチェックがついていないため何もしません。" << __LINE__;
-                                }
-                            }
-                            else if( nextTimeStep > maxTimeStep ) //次のステップがローカルの最大よりも高い場合
-                            {
-                                qInfo() << "次のタイムステップがローカルの最大ステップよりも大きいです。" << __LINE__;
-                                if( pattern == KeepFinalChecked || pattern == BothChecked ) //KeepInitialにチェックがついている場合
-                                {
-                                    qInfo() << "KeepFinalにチェックがついています。" << __LINE__;
-                                    if (m_files_manager[row]->getCurrentDisplayedStep() >= maxTimeStep ) //表示中のオブジェクトがローカル最大ステップ以上である場合。
-                                    {
-                                        qInfo() << "非表示中のオブジェクトがローカル最大ステップ以上であるため再表示します。"  << __LINE__;
-                                        object->show();
-                                    }
-                                    else //一致しなかった場合
-                                    {
-                                        qInfo() << "非表示中のオブジェクトがローカル最大ステップ以上ではないため最大ステップをインポートし再表示します。" << __LINE__;
-                                        nextPolygonObject = new kvs::PolygonImporter( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                        m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
-                                    }
-                                }
-                                else
-                                {
-                                    qInfo() << "KeepFinalにチェックがついていないため何もしません。" << __LINE__;
-                                }
-                            }
-                        }
-                    }
-                    else //タイムステップの更新がない場合
-                    {
-                        qInfo() << "タイムステップの更新がありません。" << __LINE__;
-                        if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep ) //次のステップがローカルファイルの範囲内である。
-                        {
-                            qInfo() << "次のタイムステップがローカルタイムステップの範囲内です。" << __LINE__;
-                            if( m_files_manager[row]->getCurrentDisplayedStep() == nextTimeStep ) //表示中のオブジェクトが次のステップと一致する場合
-                            {
-                                qInfo() << "非表示中のオブジェクトと次のステップが一致しているため再表示します。"  << __LINE__;
-                                object->show();
-                            }
-                            else //一致しなかった場合
-                            {
-                                qInfo() << "非表示中のオブジェクトと次のステップが一致しないため次のステップをインポートし再表示します。" << __LINE__;
-                                nextPolygonObject = new kvs::PolygonImporter( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
-                            }
-                        }
-                        else //次のステップがローカルファイルの範囲外である。
-                        {
-                            qInfo() << "次のタイムステップがローカルタイムステップの範囲外です。" << __LINE__;
-                            if( nextTimeStep < minTimeStep ) //次のステップがローカルの最小ステップよりも低い場合
-                            {
-                                qInfo() << "次のタイムステップがローカルの最小ステップよりも小さいです。" << __LINE__;
-                                if( pattern == KeepInitialChecked || pattern == BothChecked ) //KeepInitialにチェックがついている場合
-                                {
-                                    qInfo() << "KeepInitialにチェックがついています。" << __LINE__;
-                                    if (m_files_manager[row]->getCurrentDisplayedStep() <= minTimeStep ) //表示中のオブジェクトがローカル最小ステップ以下である場合。
-                                    {
-                                        qInfo() << "非表示中のオブジェクトがローカル最小ステップ以下であるため再表示します。"  << __LINE__;
-                                        object->show();
-                                    }
-                                    else //一致しなかった場合
-                                    {
-                                        qInfo() << "非表示中のオブジェクトがローカル最小ステップ以下ではないため最小ステップをインポートし再表示します。" << __LINE__;
-                                        nextPolygonObject = new kvs::PolygonImporter( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                        m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
-                                    }
-                                }
-                                else
-                                {
-                                    qInfo() << "KeepInitialにチェックがついていないため何もしません。" << __LINE__;
-                                }
-                            }
-                            else if( nextTimeStep > maxTimeStep ) //次のステップがローカルの最大よりも高い場合
-                            {
-                                qInfo() << "次のタイムステップがローカルの最大ステップよりも大きいです。" << __LINE__;
-                                if( pattern == KeepFinalChecked || pattern == BothChecked ) //KeepInitialにチェックがついている場合
-                                {
-                                    qInfo() << "KeepFinalにチェックがついています。" << __LINE__;
-                                    if (m_files_manager[row]->getCurrentDisplayedStep() >= maxTimeStep ) //表示中のオブジェクトがローカル最大ステップ以上である場合。
-                                    {
-                                        qInfo() << "非表示中のオブジェクトがローカル最大ステップ以上であるため再表示します。"  << __LINE__;
-                                        object->show();
-                                    }
-                                    else //一致しなかった場合
-                                    {
-                                        qInfo() << "非表示中のオブジェクトがローカル最大ステップ以上ではないため最大ステップをインポートし再表示します。" << __LINE__;
-                                        nextPolygonObject = new kvs::PolygonImporter( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                        m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
-                                    }
-                                }
-                                else
-                                {
-                                    qInfo() << "KeepFinalにチェックがついていないため何もしません。" << __LINE__;
-                                }
-                            }
-                        }
-                    }
-                }
-                else //表示の要求無し
-                {
-                    qInfo() << "表示の要求がないため何もしません。" << __LINE__;
-                }
-            }
-
-            if ( nextPolygonObject != nullptr ) //オブジェクトが生成されていれば交換
-            {
-                qInfo() << "オブジェクトの生成があるため更新を行います。";
-                nextPolygonObject->setXform(before_object_manager_xform);
-                nextPolygonObject->setColor( kvs::RGBColor( m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue() ) );
-                nextPolygonObject->setOpacity( m_files_manager[row]->getOpacity() * 255 );
-                m_screen->scene()->replaceObject(m_files_manager[row]->getIds().first, nextPolygonObject);
-            }
-            else if (auto* polygonObject = static_cast<kvs::PolygonObject*>(object))
-            {
-                kvs::PolygonObject* copiedObject = new kvs::PolygonObject(*polygonObject); // ディープコピーを作成
-                copiedObject->setColor(kvs::RGBColor(m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue()));
-                copiedObject->setOpacity(m_files_manager[row]->getOpacity() * 255);
-                m_screen->scene()->replaceObject(m_files_manager[row]->getIds().first, copiedObject);
-            }
+        case FilesManager::ServerPointObject:
+            timeStepCheckAndImport<void, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
+            break;
+        case FilesManager::PointObjectKVSML:
+        case FilesManager::PointObjectLAS:
+            timeStepCheckAndImport<kvs::PointImporter, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
+            break;
+        case FilesManager::NonTexturedPolygonObjectKVSML:
+        case FilesManager::NonTexturedPolygonObjectSTL:
+            timeStepCheckAndImport<kvs::PolygonImporter, kvs::PolygonObject, kvs::StochasticPolygonRenderer>( row );
+            break;
+        case FilesManager::TexturedPolygonObject3DS:
+        case FilesManager::TexturedPolygonObjectFBX:
+            break;
+        default:
+            break;
         }
     }
-
     m_time_control->setCurrentTimeStep( m_time_control->getNextTimeStep() );
     m_screen->update();
 }
@@ -715,6 +358,502 @@ MergePanel::CheckPattern MergePanel::checkPattern( int row )
     else
     {
         return NoneChecked;
+    }
+}
+
+template <typename Importer, typename ObjectType, typename RendererType>
+void MergePanel::timeStepCheckAndImport( int row )
+{
+    kvs::Xform before_object_manager_xform = m_screen->scene()->objectManager()->xform();
+    QCheckBox *displayCheckBox = qobject_cast<QCheckBox*>( ui->filesTWidget->cellWidget( row, 0 ) );
+    MergePanel::CheckPattern pattern = checkPattern( row );
+    const int minTimeStep  = m_files_manager[row]->getMinTimeStep();
+    const int maxTimeStep  = m_files_manager[row]->getMaxTimeStep();
+    const int currentTimeStep = m_time_control->getCurrentTimeStep();
+    const int nextTimeStep = m_time_control->getNextTimeStep();
+    const QString filePath = m_files_manager[row]->getFileInfo().filePath();
+    ObjectType* nextObject = nullptr;
+
+    if( m_files_manager[row]->getIds().first == -1 && m_files_manager[row]->getIds().second == -1 ) //オブジェクトが登録されていない
+    {
+        qInfo() << "オブジェクトの登録が行われていません。" << __LINE__;
+        if( displayCheckBox->isChecked() ) //表示の要求がある。
+        {
+            qInfo() << "表示にチェックがついています。" << __LINE__;
+            if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep ) //次のステップがローカルファイルの最小最大の範囲である場合
+            {
+                qInfo() << "次のタイムステップがローカルタイムステップの範囲内です。" << __LINE__;
+                qInfo() << "次ステップをインポートします。" << __LINE__;
+                if constexpr (!std::is_same_v<Importer, void>)
+                {
+                    nextObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
+                }
+                else
+                {
+
+                }
+                m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
+            }
+            else if( nextTimeStep < minTimeStep ) //次のステップがローカルファイルの最小よりも低い場合
+            {
+                qInfo() << "次のタイムステップがローカルの最小ステップよりも小さいです。" << __LINE__;
+                if( pattern == MergePanel::KeepInitialChecked || pattern == MergePanel::BothChecked ) //KeepInitialがついている場合は最小のファイルを表示
+                {
+                    qInfo() << "KeepInitialにチェックがついています。" << __LINE__;
+                    qInfo() << "最小ステップをインポートします。" << __LINE__;
+                    if constexpr (!std::is_same_v<Importer, void>)
+                    {
+                        nextObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() );
+                    }
+                    else
+                    {
+
+                    }
+                    m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
+                }
+            }
+            else if( nextTimeStep > maxTimeStep ) //次のステップがローカルファイルの最大よりも大きい場合
+            {
+                qInfo() << "次のタイムステップがローカルの最大ステップよりも大きいです。" << __LINE__;
+                if( pattern == MergePanel::KeepFinalChecked || pattern == MergePanel::BothChecked ) //KeepFinalがついている場合は最大のファイルを表示
+                {
+                    qInfo() << "KeepFinalにチェックがついています。" << __LINE__;
+                    qInfo() << "最大ステップをインポートします。" << __LINE__;
+                    if constexpr (!std::is_same_v<Importer, void>)
+                    {
+                        nextObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() );
+                    }
+                    else
+                    {
+
+                    }
+                    m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
+                }
+            }
+
+            if( nextObject != nullptr ) //オブジェクトが生成されていれば登録
+            {
+                qInfo() << "オブジェクトの生成があるため登録を行います。";
+                nextObject->setXform( before_object_manager_xform );
+                if constexpr (std::is_same_v<Importer, kvs::PolygonImporter>)
+                {
+                    nextObject->setColor( kvs::RGBColor( m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue() ) );
+                    nextObject->setOpacity( m_files_manager[row]->getOpacity() * 255 );
+                }
+
+                RendererType* polygonRenderer = new RendererType();
+                m_files_manager[row]->setIds( m_screen->scene()->registerObject( nextObject, polygonRenderer ) );
+            }
+        }
+    }
+    else //オブジェクトが登録されている。
+    {
+        auto* object = m_screen->scene()->object(m_files_manager[row]->getIds().first);
+        if( object->isVisible() ) //オブジェクトが表示されている場合
+        {
+            qInfo() << "オブジェクトが表示状態です。" << __LINE__;
+            if( displayCheckBox->isChecked() ) //表示の要求がある。
+            {
+                qInfo() << "表示にチェックがついています。" << __LINE__;
+                if( nextTimeStep != currentTimeStep ) //タイムステップの更新がある場合
+                {
+                    qInfo() << "タイムステップの更新があります。" << __LINE__;
+                    if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep ) //次のステップがローカルファイルの範囲内である。
+                    {
+                        qInfo() << "次のタイムステップがローカルタイムステップの範囲内です。" << __LINE__;
+                        if( m_files_manager[row]->getCurrentDisplayedStep() == nextTimeStep ) //表示中のオブジェクトが次のステップと一致する場合
+                        {
+                            qInfo() << "表示中のオブジェクトと次のステップが一致しているため何もしません。"  << __LINE__;
+                        }
+                        else //一致しなかった場合
+                        {
+                            qInfo() << "表示中のオブジェクトと次のステップが一致しないため次のステップをインポートします。" << __LINE__;
+                            if constexpr (!std::is_same_v<Importer, void>)
+                            {
+                                nextObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
+                            }
+                            else
+                            {
+
+                            }
+                            m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
+                        }
+                    }
+                    else //次のステップがローカルファイルの範囲外である。
+                    {
+                        qInfo() << "次のタイムステップがローカルタイムステップの範囲外です。" << __LINE__;
+                        if( nextTimeStep < minTimeStep ) //次のステップがローカルの最小ステップよりも低い場合
+                        {
+                            qInfo() << "次のタイムステップがローカルの最小ステップよりも小さいです。" << __LINE__;
+                            if( pattern == KeepInitialChecked || pattern == BothChecked ) //KeepInitialにチェックがついている場合
+                            {
+                                qInfo() << "KeepInitialにチェックがついています。" << __LINE__;
+                                if (m_files_manager[row]->getCurrentDisplayedStep() <= minTimeStep ) //表示中のオブジェクトがローカル最小ステップ以下である場合。
+                                {
+                                    qInfo() << "表示中のオブジェクトがローカル最小ステップ以下であるため何もしません。"  << __LINE__;
+                                }
+                                else //一致しなかった場合
+                                {
+                                    qInfo() << "表示中のオブジェクトがローカル最小ステップ以下ではないため最小ステップをインポートします。" << __LINE__;
+                                    if constexpr (!std::is_same_v<Importer, void>)
+                                    {
+                                        nextObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ); //次のステップのファイルを表示
+                                    }
+                                    else
+                                    {
+
+                                    }
+                                    m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
+                                }
+                            }
+                            else
+                            {
+                                qInfo() << "KeepInitialにチェックがついていないため非表示にします。" << __LINE__;
+                                object->hide();
+                            }
+                        }
+                        else if( nextTimeStep > maxTimeStep ) //次のステップがローカルの最大よりも高い場合
+                        {
+                            qInfo() << "次のタイムステップがローカルの最大ステップよりも大きいです。" << __LINE__;
+                            if( pattern == KeepFinalChecked || pattern == BothChecked ) //KeepInitialにチェックがついている場合
+                            {
+                                qInfo() << "KeepFinalにチェックがついています。" << __LINE__;
+                                if (m_files_manager[row]->getCurrentDisplayedStep() >= maxTimeStep ) //表示中のオブジェクトがローカル最大ステップ以上である場合。
+                                {
+                                    qInfo() << "表示中のオブジェクトがローカル最大ステップ以上であるため何もしません。"  << __LINE__;
+                                }
+                                else //一致しなかった場合
+                                {
+                                    qInfo() << "表示中のオブジェクトがローカル最大ステップ以上ではないため最大ステップをインポートします。" << __LINE__;
+                                    if constexpr (!std::is_same_v<Importer, void>)
+                                    {
+                                        nextObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ); //次のステップのファイルを表示
+                                    }
+                                    else
+                                    {
+
+                                    }
+                                    m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
+                                }
+                            }
+                            else
+                            {
+                                qInfo() << "KeepFinalにチェックがついていないため非表示にします。" << __LINE__;
+                                object->hide();
+                            }
+                        }
+                    }
+                }
+                else //タイムステップの更新がない場合
+                {
+                    qInfo() << "タイムステップの更新がありません。" << __LINE__;
+                    if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep ) //次のステップがローカルファイルの範囲内である。
+                    {
+                        if( m_files_manager[row]->getCurrentDisplayedStep() == nextTimeStep ) //表示中のオブジェクトが次のステップと一致する場合
+                        {
+                            qInfo() << "表示中のオブジェクトと次のステップが一致しているため何もしません。"  << __LINE__;
+                        }
+                        else //一致しなかった場合
+                        {
+                            qInfo() << "表示中のオブジェクトと次のステップが一致しないため次のステップをインポートします。" << __LINE__;
+                            if constexpr (!std::is_same_v<Importer, void>)
+                            {
+                                nextObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
+                            }
+                            else
+                            {
+
+                            }
+                            m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
+                        }
+                    }
+                    else //次のステップがローカルファイルの範囲外である。
+                    {
+                        qInfo() << "次のタイムステップがローカルタイムステップの範囲外です。" << __LINE__;
+                        if( nextTimeStep < minTimeStep ) //次のステップがローカルの最小ステップよりも低い場合
+                        {
+                            qInfo() << "次のタイムステップがローカルの最小ステップよりも小さいです。" << __LINE__;
+                            if( pattern == KeepInitialChecked || pattern == BothChecked ) //KeepInitialにチェックがついている場合
+                            {
+                                qInfo() << "KeepInitialにチェックがついています。" << __LINE__;
+                                if (m_files_manager[row]->getCurrentDisplayedStep() <= minTimeStep ) //表示中のオブジェクトがローカル最小ステップ以下である場合。
+                                {
+                                    qInfo() << "表示中のオブジェクトがローカル最小ステップ以下であるため何もしません。"  << __LINE__;
+                                }
+                                else //一致しなかった場合
+                                {
+                                    qInfo() << "表示中のオブジェクトがローカル最小ステップ以下ではないため最小ステップをインポートします。" << __LINE__;
+                                    if constexpr (!std::is_same_v<Importer, void>)
+                                    {
+                                        nextObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ); //次のステップのファイルを表示
+                                    }
+                                    else
+                                    {
+
+                                    }
+                                    m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
+                                }
+                            }
+                            else
+                            {
+                                qInfo() << "KeepInitialにチェックがついていないため非表示にします。" << __LINE__;
+                                object->hide();
+                            }
+                        }
+                        else if( nextTimeStep > maxTimeStep ) //次のステップがローカルの最大よりも高い場合
+                        {
+                            qInfo() << "次のタイムステップがローカルの最大ステップよりも大きいです。" << __LINE__;
+                            if( pattern == KeepFinalChecked || pattern == BothChecked ) //KeepInitialにチェックがついている場合
+                            {
+                                qInfo() << "KeepFinalにチェックがついています。" << __LINE__;
+                                if (m_files_manager[row]->getCurrentDisplayedStep() >= maxTimeStep ) //表示中のオブジェクトがローカル最大ステップ以上である場合。
+                                {
+                                    qInfo() << "表示中のオブジェクトがローカル最大ステップ以上であるため何もしません。"  << __LINE__;
+                                }
+                                else //一致しなかった場合
+                                {
+                                    qInfo() << "表示中のオブジェクトがローカル最大ステップ以上ではないため最大ステップをインポートします。" << __LINE__;
+                                    if constexpr (!std::is_same_v<Importer, void>)
+                                    {
+                                        nextObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ); //次のステップのファイルを表示
+                                    }
+                                    else
+                                    {
+
+                                    }
+                                    m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
+                                }
+                            }
+                            else
+                            {
+                                qInfo() << "KeepFinalにチェックがついていないため非表示にします。" << __LINE__;
+                                object->hide();
+                            }
+                        }
+                    }
+                }
+            }
+            else //表示の要求無し
+            {
+                qInfo() << "表示の要求がないため非表示にします。" << __LINE__;
+                object->hide();
+            }
+        }
+        else //オブジェクトが表示されていない
+        {
+            qInfo() << "オブジェクトが非表示状態です。" << __LINE__;
+            if( displayCheckBox->isChecked() ) //表示の要求がある。
+            {
+                qInfo() << "表示にチェックがついています。" << __LINE__;
+                if( nextTimeStep != currentTimeStep ) //タイムステップの更新がある場合
+                {
+                    qInfo() << "タイムステップの更新があります。" << __LINE__;
+                    if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep ) //次のステップがローカルファイルの範囲内である。
+                    {
+                        qInfo() << "次のタイムステップがローカルタイムステップの範囲内です。" << __LINE__;
+                        if( m_files_manager[row]->getCurrentDisplayedStep() == nextTimeStep ) //表示中のオブジェクトが次のステップと一致する場合
+                        {
+                            qInfo() << "非表示中のオブジェクトと次のステップが一致しているため再表示します。"  << __LINE__;
+                            object->show();
+                        }
+                        else //一致しなかった場合
+                        {
+                            qInfo() << "非表示中のオブジェクトと次のステップが一致しないため次のステップをインポートし再表示します。" << __LINE__;
+                            if constexpr (!std::is_same_v<Importer, void>)
+                            {
+                                nextObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
+                            }
+                            else
+                            {
+
+                            }
+                            m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
+                        }
+                    }
+                    else //次のステップがローカルファイルの範囲外である。
+                    {
+                        qInfo() << "次のタイムステップがローカルタイムステップの範囲外です。" << __LINE__;
+                        if( nextTimeStep < minTimeStep ) //次のステップがローカルの最小ステップよりも低い場合
+                        {
+                            qInfo() << "次のタイムステップがローカルの最小ステップよりも小さいです。" << __LINE__;
+                            if( pattern == KeepInitialChecked || pattern == BothChecked ) //KeepInitialにチェックがついている場合
+                            {
+                                qInfo() << "KeepInitialにチェックがついています。" << __LINE__;
+                                if (m_files_manager[row]->getCurrentDisplayedStep() <= minTimeStep ) //表示中のオブジェクトがローカル最小ステップ以下である場合。
+                                {
+                                    qInfo() << "非表示中のオブジェクトがローカル最小ステップ以下であるため再表示します。"  << __LINE__;
+                                    object->show();
+                                }
+                                else //一致しなかった場合
+                                {
+                                    qInfo() << "非表示中のオブジェクトがローカル最小ステップ以下ではないため最小ステップをインポートし再表示します。" << __LINE__;
+                                    if constexpr (!std::is_same_v<Importer, void>)
+                                    {
+                                        nextObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ); //次のステップのファイルを表示
+                                    }
+                                    else
+                                    {
+
+                                    }
+                                    m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
+                                }
+                            }
+                            else
+                            {
+                                qInfo() << "KeepInitialにチェックがついていないため何もしません。" << __LINE__;
+                            }
+                        }
+                        else if( nextTimeStep > maxTimeStep ) //次のステップがローカルの最大よりも高い場合
+                        {
+                            qInfo() << "次のタイムステップがローカルの最大ステップよりも大きいです。" << __LINE__;
+                            if( pattern == KeepFinalChecked || pattern == BothChecked ) //KeepInitialにチェックがついている場合
+                            {
+                                qInfo() << "KeepFinalにチェックがついています。" << __LINE__;
+                                if (m_files_manager[row]->getCurrentDisplayedStep() >= maxTimeStep ) //表示中のオブジェクトがローカル最大ステップ以上である場合。
+                                {
+                                    qInfo() << "非表示中のオブジェクトがローカル最大ステップ以上であるため再表示します。"  << __LINE__;
+                                    object->show();
+                                }
+                                else //一致しなかった場合
+                                {
+                                    qInfo() << "非表示中のオブジェクトがローカル最大ステップ以上ではないため最大ステップをインポートし再表示します。" << __LINE__;
+                                    if constexpr (!std::is_same_v<Importer, void>)
+                                    {
+                                        nextObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ); //次のステップのファイルを表示
+                                    }
+                                    else
+                                    {
+
+                                    }
+                                    m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
+                                }
+                            }
+                            else
+                            {
+                                qInfo() << "KeepFinalにチェックがついていないため何もしません。" << __LINE__;
+                            }
+                        }
+                    }
+                }
+                else //タイムステップの更新がない場合
+                {
+                    qInfo() << "タイムステップの更新がありません。" << __LINE__;
+                    if( nextTimeStep >= minTimeStep && nextTimeStep <= maxTimeStep ) //次のステップがローカルファイルの範囲内である。
+                    {
+                        qInfo() << "次のタイムステップがローカルタイムステップの範囲内です。" << __LINE__;
+                        if( m_files_manager[row]->getCurrentDisplayedStep() == nextTimeStep ) //表示中のオブジェクトが次のステップと一致する場合
+                        {
+                            qInfo() << "非表示中のオブジェクトと次のステップが一致しているため再表示します。"  << __LINE__;
+                            object->show();
+                        }
+                        else //一致しなかった場合
+                        {
+                            qInfo() << "非表示中のオブジェクトと次のステップが一致しないため次のステップをインポートし再表示します。" << __LINE__;
+                            if constexpr (!std::is_same_v<Importer, void>)
+                            {
+                                nextObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
+                            }
+                            else
+                            {
+
+                            }
+                            m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
+                        }
+                    }
+                    else //次のステップがローカルファイルの範囲外である。
+                    {
+                        qInfo() << "次のタイムステップがローカルタイムステップの範囲外です。" << __LINE__;
+                        if( nextTimeStep < minTimeStep ) //次のステップがローカルの最小ステップよりも低い場合
+                        {
+                            qInfo() << "次のタイムステップがローカルの最小ステップよりも小さいです。" << __LINE__;
+                            if( pattern == KeepInitialChecked || pattern == BothChecked ) //KeepInitialにチェックがついている場合
+                            {
+                                qInfo() << "KeepInitialにチェックがついています。" << __LINE__;
+                                if (m_files_manager[row]->getCurrentDisplayedStep() <= minTimeStep ) //表示中のオブジェクトがローカル最小ステップ以下である場合。
+                                {
+                                    qInfo() << "非表示中のオブジェクトがローカル最小ステップ以下であるため再表示します。"  << __LINE__;
+                                    object->show();
+                                }
+                                else //一致しなかった場合
+                                {
+                                    qInfo() << "非表示中のオブジェクトがローカル最小ステップ以下ではないため最小ステップをインポートし再表示します。" << __LINE__;
+                                    if constexpr (!std::is_same_v<Importer, void>)
+                                    {
+                                        nextObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ); //次のステップのファイルを表示
+                                    }
+                                    else
+                                    {
+
+                                    }
+                                    m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
+                                }
+                            }
+                            else
+                            {
+                                qInfo() << "KeepInitialにチェックがついていないため何もしません。" << __LINE__;
+                            }
+                        }
+                        else if( nextTimeStep > maxTimeStep ) //次のステップがローカルの最大よりも高い場合
+                        {
+                            qInfo() << "次のタイムステップがローカルの最大ステップよりも大きいです。" << __LINE__;
+                            if( pattern == KeepFinalChecked || pattern == BothChecked ) //KeepInitialにチェックがついている場合
+                            {
+                                qInfo() << "KeepFinalにチェックがついています。" << __LINE__;
+                                if (m_files_manager[row]->getCurrentDisplayedStep() >= maxTimeStep ) //表示中のオブジェクトがローカル最大ステップ以上である場合。
+                                {
+                                    qInfo() << "非表示中のオブジェクトがローカル最大ステップ以上であるため再表示します。"  << __LINE__;
+                                    object->show();
+                                }
+                                else //一致しなかった場合
+                                {
+                                    qInfo() << "非表示中のオブジェクトがローカル最大ステップ以上ではないため最大ステップをインポートし再表示します。" << __LINE__;
+                                    if constexpr (!std::is_same_v<Importer, void>)
+                                    {
+                                        nextObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ); //次のステップのファイルを表示
+                                    }
+                                    else
+                                    {
+
+                                    }
+                                    m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
+                                }
+                            }
+                            else
+                            {
+                                qInfo() << "KeepFinalにチェックがついていないため何もしません。" << __LINE__;
+                            }
+                        }
+                    }
+                }
+            }
+            else //表示の要求無し
+            {
+                qInfo() << "表示の要求がないため何もしません。" << __LINE__;
+            }
+        }
+
+        if ( nextObject != nullptr ) //オブジェクトが生成されていれば交換
+        {
+            qInfo() << "オブジェクトの生成があるため更新を行います。";
+            nextObject->setXform(before_object_manager_xform);
+            if constexpr (std::is_same_v<Importer, kvs::PolygonImporter>)
+            {
+                nextObject->setColor( kvs::RGBColor( m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue() ) );
+                nextObject->setOpacity( m_files_manager[row]->getOpacity() * 255 );
+            }
+            m_screen->scene()->replaceObject(m_files_manager[row]->getIds().first, nextObject);
+        }
+        else if (auto* polygonObject = static_cast<kvs::PolygonObject*>(object))
+        {
+            if constexpr (std::is_same_v<Importer, kvs::PolygonImporter>)
+            {
+                kvs::PolygonObject* copiedObject = new kvs::PolygonObject();
+                copiedObject->deepCopy( *polygonObject );
+                copiedObject->setColor(kvs::RGBColor(m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue()));
+                copiedObject->setOpacity(m_files_manager[row]->getOpacity() * 255);
+                m_screen->scene()->replaceObject(m_files_manager[row]->getIds().first, copiedObject);
+            }
+        }
     }
 }
 
