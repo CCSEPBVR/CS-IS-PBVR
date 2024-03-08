@@ -72,9 +72,23 @@
     </widget>
    </item>
    <item row="0" column="9" alignment="Qt::AlignLeft">
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="playTogglePBtn">
+     <property name="styleSheet">
+      <string notr="true">QPushButton:checked {
+	color: red;
+}
+QPushButton {
+	color: blue;
+}</string>
+     </property>
      <property name="text">
-      <string>Apply</string>
+      <string>►Start</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

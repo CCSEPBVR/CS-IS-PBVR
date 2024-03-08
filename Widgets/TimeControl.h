@@ -2,6 +2,9 @@
 #define TIMECONTROL_H
 
 #include <QWidget>
+#include <QTimer>
+
+class MergePanel;
 
 namespace Ui {
 class TimeControl;
@@ -14,6 +17,7 @@ class TimeControl : public QWidget
 public:
     explicit TimeControl(QWidget *parent = nullptr);
     ~TimeControl();
+    void setMerge( MergePanel* merge ){  m_merge = merge; }
 
 private:
     Ui::TimeControl *ui;
@@ -22,6 +26,8 @@ private:
     int m_limit_min_time_step;
     int m_limit_max_time_step;
     bool m_is_loop;
+    QTimer m_timer;
+    MergePanel* m_merge;
 
     void setNextTimeStep(int nextTimeStep);
     void setLimitMinTimeStep(int min);
@@ -30,8 +36,8 @@ private:
     void onNextTimeStepChanged();
     void onLimitMinTimeStepChanged();
     void onLimitMaxTimeStepChanged();
-    void onApplyButton();
-    void toggleLoop();
+    void onPlayToggleButtonClicked();
+    void onTimerStart();
 
 public:
     int getCurrentTimeStep() { return m_current_time_step; }

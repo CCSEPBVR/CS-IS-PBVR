@@ -65,6 +65,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     QWidgetAction *timeControlWidgetAction = new QWidgetAction( this );
     timeControlWidgetAction->setDefaultWidget( &m_timeControl );
     ui->timeControlTBar->addAction( timeControlWidgetAction );
+    m_timeControl.setMerge( &m_merge );
 
     QWidgetAction *dataSummaryWidgetAction = new QWidgetAction( this );
     dataSummaryWidgetAction->setDefaultWidget( &m_data_summary );

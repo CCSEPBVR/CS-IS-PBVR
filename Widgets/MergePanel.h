@@ -111,6 +111,7 @@ public:
     void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; };    
     void setDataSummary( DataSummary* data_summary ){ m_data_summary = data_summary; }
     void serverObject( QString volumeDataFilePath, int min, int max );
+    void mergeObjects();
 
 private:
     Ui::MergePanel *ui;
@@ -128,7 +129,7 @@ private:
     void calculateTotalMinMaxTimeStep();
     void removeChecked();//removeRowToFilesTableWidget
     void updatePolygonColorOpacity();
-    void mergeObjects();
+//    void mergeObjects();
     CheckPattern checkPattern( int row );
 
     template <typename Importer, typename ObjectType, typename RendererType>
