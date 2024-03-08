@@ -576,7 +576,7 @@ void Preference::applyShadingSettings()
                                 copy->DownCast( particleRenderer );
                                 if( ui->lambertRBtn->isChecked() )
                                 {
-                                    copy->setShader( kvs::Shader::Lambert( ui->kaDSBox->value(), ui->kdDSBox->value() ) );
+                                    copy->setShader( kvs::Shader::Lambert( ui->kaDSBox->value(), ui->kdDSBox->value() ) );                                    
                                 }
                                 else if( ui->phongRBtn->isChecked() )
                                 {
