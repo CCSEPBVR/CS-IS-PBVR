@@ -48,4 +48,4 @@
 | UnstructuredMultiBlock | 時系列混合要素非構造格子マルチブロック                                                     |
 | Vertex                 | 節点要素非構造格子                                                                         |
 | Vti                    | 時系列構造格子                                                                             |
-| VTKExamples            | [Kitware/vtk-examples](https://github.com/Kitware/vtk-examples) (外部リポジトリ)           |
+| VTKExamples            | [Kitware/vtk-examples](https://gitlab.kitware.com/vtk/vtk-examples) (外部リポジトリ)           |
