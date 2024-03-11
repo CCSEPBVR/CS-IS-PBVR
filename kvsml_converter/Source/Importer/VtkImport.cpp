@@ -139,7 +139,8 @@ kvs::VolumeObjectBase::Values GetValueArray( VtkPointSetPointerType data, int co
         {
             auto array = point_data->GetArray( i );
 
-            switch ( array->GetArrayType() )
+            //switch ( array->GetArrayType() )
+            switch ( array->GetDataType() )
             {
             case VTK_TYPE_UINT8:
                 array_type = std::max( array_type, 0 );
