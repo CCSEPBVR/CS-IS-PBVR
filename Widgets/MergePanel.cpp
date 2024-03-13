@@ -539,11 +539,13 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                 {
 //                    nextObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
                     m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ) );
+                    m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                 }
                 else
                 {
 //                    nextObject = m_merge->m_connect->connect2( nextTimeStep );
                     m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( nextTimeStep ) );
+                    m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                 }
                 m_merge->m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
             }
@@ -558,11 +560,13 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                     {
 //                        nextObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() );
                         m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ) );
+                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                     }
                     else
                     {
 //                        nextObject = m_merge->m_connect->connect2( minTimeStep );
                         m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( minTimeStep ) );
+                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
 
                     }
                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
@@ -579,11 +583,13 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                     {
 //                        nextObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() );
                         m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ) );
+                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                     }
                     else
                     {
 //                        nextObject = m_merge->m_connect->connect2( maxTimeStep );
                         m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( maxTimeStep ) );
+                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                     }
                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
                 }
@@ -630,11 +636,13 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                             {
 //                                nextObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
                                 m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ) );
+                                m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                             }
                             else
                             {
 //                                nextObject = m_merge->m_connect->connect2( nextTimeStep );
                                 m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( nextTimeStep ) );
+                                m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                             }
                             m_merge->m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
                         }
@@ -659,11 +667,13 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     {
 //                                        nextObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ); //次のステップのファイルを表示
                                         m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     else
                                     {
 //                                        nextObject = m_merge->m_connect->connect2( minTimeStep );
                                         m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( minTimeStep ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
                                 }
@@ -691,11 +701,13 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     {
 //                                        nextObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ); //次のステップのファイルを表示
                                         m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     else
                                     {
 //                                        nextObject = m_merge->m_connect->connect2( maxTimeStep );
                                         m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( maxTimeStep ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
                                 }
@@ -724,11 +736,13 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                             {
 //                                nextObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
                                 m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ) );
+                                m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                             }
                             else
                             {
 //                                nextObject = m_merge->m_connect->connect2( nextTimeStep );
                                 m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( nextTimeStep ) );
+                                m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                             }
                             m_merge->m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
                         }
@@ -753,11 +767,13 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     {
 //                                        nextObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ); //次のステップのファイルを表示
                                         m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     else
                                     {
 //                                        nextObject = m_merge->m_connect->connect2( minTimeStep );
                                         m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( minTimeStep ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
                                 }
@@ -785,11 +801,13 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     {
 //                                        nextObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ); //次のステップのファイルを表示
                                         m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     else
                                     {
 //                                        nextObject = m_merge->m_connect->connect2( maxTimeStep );
                                         m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( maxTimeStep ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
                                 }
@@ -833,11 +851,13 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                             {
 //                                nextObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
                                 m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ) );
+                                m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                             }
                             else
                             {
 //                                nextObject = m_merge->m_connect->connect2( nextTimeStep );
                                 m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( nextTimeStep ) );
+                                m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                             }
                             m_merge->m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
                         }
@@ -863,11 +883,13 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     {
 //                                        nextObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ); //次のステップのファイルを表示
                                         m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     else
                                     {
 //                                        nextObject = m_merge->m_connect->connect2( minTimeStep );
                                         m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( minTimeStep ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
                                 }
@@ -895,11 +917,13 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     {
 //                                        nextObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ); //次のステップのファイルを表示
                                         m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     else
                                     {
 //                                        nextObject = m_merge->m_connect->connect2( maxTimeStep );
                                         m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( maxTimeStep ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
                                 }
@@ -929,11 +953,13 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                             {
 //                                nextObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
                                 m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ) );
+                                m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                             }
                             else
                             {
 //                                nextObject = m_merge->m_connect->connect2( nextTimeStep );
                                 m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( nextTimeStep ) );
+                                m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                             }
                             m_merge->m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
                         }
@@ -959,11 +985,13 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     {
 //                                        nextObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ); //次のステップのファイルを表示
                                         m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     else
                                     {
 //                                        nextObject = m_merge->m_connect->connect2( minTimeStep );
                                         m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( minTimeStep ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
                                 }
@@ -991,11 +1019,13 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     {
 //                                        nextObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ); //次のステップのファイルを表示
                                         m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     else
                                     {
 //                                        nextObject = m_merge->m_connect->connect2( maxTimeStep );
                                         m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( maxTimeStep ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
                                 }

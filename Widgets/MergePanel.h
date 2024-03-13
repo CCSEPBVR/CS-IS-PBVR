@@ -36,6 +36,7 @@ public:
     void setIds( std::pair<int,int> ids ){ m_ids = ids; }
     void setCurrentDisplayedStep( int current_displayed_step ) { m_current_displayed_step = current_displayed_step; }
     void setObject( kvs::ObjectBase* object ) { m_object = object; }
+    void setIsReplacementNeeded( bool is_replacement_needed ){ m_is_replacement_needed = is_replacement_needed; }
 
     QFileInfo getFileInfo(){ return m_file_info; }
     int getMinTimeStep(){ return m_min_time_step; }
@@ -46,6 +47,7 @@ public:
     std::pair<int,int> getIds() { return m_ids; }
     int getCurrentDisplayedStep() { return m_current_displayed_step; }
     kvs::ObjectBase* getObject() const { return m_object; }
+    bool getIsReplacementNeeded() const { return m_is_replacement_needed; }
 
     QString formatTypeToString( FormatType format )
     {
@@ -84,6 +86,7 @@ private:
     std::pair<int, int> m_ids = std::pair<int,int>(-1,-1);
     int m_current_displayed_step;
     kvs::ObjectBase* m_object;
+    bool m_is_replacement_needed;
 
 //    QColor m_rgb_color;
 //    double m_opacity;
