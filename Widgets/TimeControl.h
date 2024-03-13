@@ -18,6 +18,7 @@ public:
     explicit TimeControl(QWidget *parent = nullptr);
     ~TimeControl();
     void setMerge( MergePanel* merge ){  m_merge = merge; }
+    void incrementSpinBox();
 
 private:
     Ui::TimeControl *ui;

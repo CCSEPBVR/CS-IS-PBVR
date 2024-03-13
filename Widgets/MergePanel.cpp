@@ -391,6 +391,7 @@ void MergePanel::onWorkerThreadFinished()
     m_preference->setCurrentTimeStep( m_time_control->getNextTimeStep() );
     m_is_worker_thread_running = false;
     m_screen->update();
+    m_time_control->incrementSpinBox();
 }
 
 void MergePanel::totalParticles()

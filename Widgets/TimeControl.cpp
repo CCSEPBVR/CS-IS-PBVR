@@ -107,7 +107,11 @@ void TimeControl::onPlayToggleButtonClicked()
 }
 
 void TimeControl::onTimerStart()
+{    
+    m_merge->mergeObjects();
+}
+
+void TimeControl::incrementSpinBox()
 {
     ui->timeStepSBox->setValue(ui->timeStepSBox->value() + 1);
-    m_merge->mergeObjects();
 }
