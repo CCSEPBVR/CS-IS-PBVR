@@ -108,6 +108,6 @@ void TimeControl::onPlayToggleButtonClicked()
 
 void TimeControl::onTimerStart()
 {
-    ui->timeStepSBox->setValue(ui->timeStepSBox->value() + 1);
-    m_merge->mergeObjects();
+//    ui->timeStepSBox->setValue(ui->timeStepSBox->value() + 1);
+//    m_merge->mergeObjects();
 }

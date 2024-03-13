@@ -143,11 +143,11 @@ void TransferFunctionEditor::updateRangeView()
         const kvs::visclient::FrequencyTable* freq_table = m_received_message->findColorFrequencyTable(trans_color->m_name);
         if ( freq_table != NULL )
         {
-            ui->colorHistogramBar->setTable( *freq_table );
-            ui->colorHistogramBar->setRange( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_min, m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_max );
-            ui->colorHistogramBar->update();
-            ui->colorMinRangeLbl->setNum( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_min );
-            ui->colorMaxRangeLbl->setNum( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_max );
+//            ui->colorHistogramBar->setTable( *freq_table );
+//            ui->colorHistogramBar->setRange( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_min, m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_max );
+//            ui->colorHistogramBar->update();
+//            ui->colorMinRangeLbl->setNum( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_min );
+//            ui->colorMaxRangeLbl->setNum( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_max );
         }
     }
 
@@ -163,11 +163,11 @@ void TransferFunctionEditor::updateRangeView()
         const kvs::visclient::FrequencyTable* freq_table = m_received_message->findOpacityFrequencyTable(trans_opacity->m_name);
         if ( freq_table != NULL )
         {
-            ui->opacityHistogramBar->setTable( *freq_table );
-            ui->opacityHistogramBar->setRange( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_min, m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_max );
-            ui->opacityHistogramBar->update();
-            ui->opacityMinRangeLbl->setNum( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_min );
-            ui->opacityMaxRangeLbl->setNum( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_max );
+//            ui->opacityHistogramBar->setTable( *freq_table );
+//            ui->opacityHistogramBar->setRange( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_min, m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_max );
+//            ui->opacityHistogramBar->update();
+//            ui->opacityMinRangeLbl->setNum( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_min );
+//            ui->opacityMaxRangeLbl->setNum( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_max );
         }
     }
 
@@ -176,8 +176,8 @@ void TransferFunctionEditor::updateRangeView()
     ui->range_min_opacity->setText( QString::number( m_server_message->m_variable_range.min( tag_o ) ) );
     ui->range_max_opacity->setText( QString::number( m_server_message->m_variable_range.max( tag_o ) ) );
     
-    ui->colorHistogramBar->update();
-    ui->opacityHistogramBar->update();
+//    ui->colorHistogramBar->update();
+//    ui->opacityHistogramBar->update();
 }
 
 jpv::ParticleTransferClientMessage::EquationToken TransferFunctionEditor::convertToken( std::string expression )

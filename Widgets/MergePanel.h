@@ -35,6 +35,7 @@ public:
     void setOpacity( double opacity ) { m_opacity = opacity; }    
     void setIds( std::pair<int,int> ids ){ m_ids = ids; }
     void setCurrentDisplayedStep( int current_displayed_step ) { m_current_displayed_step = current_displayed_step; }
+    void setObject( kvs::ObjectBase* object ) { m_object = object; }
 
     QFileInfo getFileInfo(){ return m_file_info; }
     int getMinTimeStep(){ return m_min_time_step; }
@@ -44,6 +45,7 @@ public:
     double getOpacity() { return m_opacity; }    
     std::pair<int,int> getIds() { return m_ids; }
     int getCurrentDisplayedStep() { return m_current_displayed_step; }
+    kvs::ObjectBase* getObject() const { return m_object; }
 
     QString formatTypeToString( FormatType format )
     {
@@ -81,6 +83,7 @@ private:
     double m_opacity;    
     std::pair<int, int> m_ids = std::pair<int,int>(-1,-1);
     int m_current_displayed_step;
+    kvs::ObjectBase* m_object;
 
 //    QColor m_rgb_color;
 //    double m_opacity;
@@ -122,6 +125,8 @@ private:
     DataSummary* m_data_summary;
     kvs::qt::jaea::Screen* m_screen;    
     int m_current_time_step;
+    class WorkerThread;
+    bool m_is_worker_thread_running;
 
     void checkMinMaxTimeStep( FilesManager *newFile );
     void checkFileFormat(  FilesManager *newFile );
@@ -144,6 +149,45 @@ private slots:
     void onAddButtonClicked();
     void onCenteringButtonClicked();
     void onApplyButtonClicked();
+    void onWorkerThreadFinished();
 };
 
+#include <QCheckBox>
+#include <kvs/PointImporter>
+#include <kvs/ParticleBasedRenderer>
+#include <kvs/PolygonImporter>
+#include <kvs/StochasticPolygonRenderer>
+class MergePanel::WorkerThread : public QThread
+{
+    Q_OBJECT
+
+public:
+    enum CheckPattern
+    {
+        KeepInitialChecked = 1,
+        KeepFinalChecked   = 2,
+        BothChecked        = 3,
+        NoneChecked        = 4,
+    };
+
+public:
+    explicit WorkerThread(MergePanel* gui);
+
+protected:
+    void run() override;
+
+signals:
+    void workFinished();
+
+private:
+    MergePanel* m_merge;
+
+private:
+    CheckPattern checkPattern( int row );
+
+    template <typename Importer, typename ObjectType, typename RendererType>
+    void timeStepCheckAndImport( int row );
+
+    QString updateTimeStepInFileName(QString fileName, int nextTimeStep);
+};
 #endif // MERGEPANEL_H
