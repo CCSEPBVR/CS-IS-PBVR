@@ -332,11 +332,65 @@ void MergePanel::mergeObjects()
 
 void MergePanel::onWorkerThreadFinished()
 {
-
-    qInfo() << "TEST";
+    kvs::Xform before_object_manager_xform = m_screen->scene()->objectManager()->xform();
+    for( int row = 0; row < m_files_manager.size(); row++ )
+    {
+        if( m_files_manager[row]->getIds().first == -1 && m_files_manager[row]->getIds().second == -1 ) //オブジェクトが登録されていない
+        {
+            //            if( nextObject != nullptr ) //オブジェクトが生成されていれば登録
+            if( m_files_manager[row]->getObject() != nullptr ) //オブジェクトが生成されていれば登録
+            {
+                qInfo() << "オブジェクトの生成があるため登録を行います。";
+                //                nextObject->setXform( before_object_manager_xform );
+                m_files_manager[row]->getObject()->setXform( before_object_manager_xform );
+                if( kvs::PolygonObject* polygon_object = dynamic_cast<kvs::PolygonObject*>(m_files_manager[row]->getObject()) )
+                {
+                    polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue() ) );
+                    polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
+                    kvs::StochasticPolygonRenderer* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer;
+                    m_files_manager[row]->setIds( m_screen->scene()->registerObject( polygon_object, stochastic_polygon_renderer ) );
+                }
+                else if( kvs::PointObject* polygon_object = dynamic_cast<kvs::PointObject*>(m_files_manager[row]->getObject()) )
+                {
+                    kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer;
+                    particle_based_renderer->enableShuffle();
+                    m_files_manager[row]->setIds( m_screen->scene()->registerObject( polygon_object, particle_based_renderer ) );
+                }
+                //                RendererType* polygonRenderer = new RendererType();
+                //                m_merge->m_files_manager[row]->setIds( m_merge->m_screen->scene()->registerObject( nextObject, polygonRenderer ) );
+            }
+        }
+        else //オブジェクトが登録されている。
+        {
+            auto* object = m_screen->scene()->object( m_files_manager[row]->getIds().first );
+            if( m_files_manager[row]->getObject() != nullptr ) //オブジェクトが生成されていれば交換
+            {
+                if( kvs::PolygonObject* polygon_object = dynamic_cast<kvs::PolygonObject*>(m_files_manager[row]->getObject()) )
+                {
+                    polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue() ) );
+                    polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
+                    m_screen->scene()->replaceObject(m_files_manager[row]->getIds().first, polygon_object );
+                }
+                else if( kvs::PointObject* point_object = dynamic_cast<kvs::PointObject*>(m_files_manager[row]->getObject()) )
+                {
+                    m_screen->scene()->replaceObject(m_files_manager[row]->getIds().first, point_object );
+                }
+            }
+//            else if ( auto* polygonObject = static_cast<kvs::PolygonObject*>( object ) )
+            else if ( auto* polygonObject = dynamic_cast<kvs::PolygonObject*>( object ) )
+            {
+                kvs::PolygonObject* copiedObject = new kvs::PolygonObject();
+                copiedObject->deepCopy( *polygonObject );
+                copiedObject->setColor(kvs::RGBColor(m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue()));
+                copiedObject->setOpacity(m_files_manager[row]->getOpacity() * 255);
+                m_screen->scene()->replaceObject(m_files_manager[row]->getIds().first, copiedObject);
+            }
+        }
+    }
+    m_time_control->setCurrentTimeStep( m_time_control->getNextTimeStep() );
+    m_preference->setCurrentTimeStep( m_time_control->getNextTimeStep() );
     m_is_worker_thread_running = false;
-//    m_time_control->setCurrentTimeStep( m_time_control->getNextTimeStep() );
-//    m_preference->setCurrentTimeStep( m_time_control->getNextTimeStep() );
+    m_screen->update();
 }
 
 void MergePanel::totalParticles()
@@ -523,7 +577,8 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
     const int currentTimeStep = m_merge->m_time_control->getCurrentTimeStep();
     const int nextTimeStep = m_merge->m_time_control->getNextTimeStep();
     const QString filePath = m_merge->m_files_manager[row]->getFileInfo().filePath();
-//    ObjectType* nextObject = nullptr;
+    //    ObjectType* nextObject = nullptr;
+    m_merge->m_files_manager[row]->setObject( nullptr );
 
     if( m_merge->m_files_manager[row]->getIds().first == -1 && m_merge->m_files_manager[row]->getIds().second == -1 ) //オブジェクトが登録されていない
     {
@@ -1066,7 +1121,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
 //                m_screen->scene()->replaceObject(m_files_manager[row]->getIds().first, copiedObject);
 //            }
 //        }
-    }
+    }    
 }
 
 QString MergePanel::WorkerThread::updateTimeStepInFileName(QString fileName, int nextTimeStep)
