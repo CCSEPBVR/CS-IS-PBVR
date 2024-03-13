@@ -17,24 +17,30 @@ RepetitionLevelControl::~RepetitionLevelControl()
     delete ui;
 }
 
-
 void RepetitionLevelControl::onApplyButtonClicked()
 {
-
-
-    for(int i = 1; i < m_screen->scene()->numberOfObjects(); i++ )
+    const int size = m_screen->scene()->IDManager()->size();
+    for( int index = 0; index < size; index++ )
     {
-        if( m_screen->scene()->hasObject(i) )
+        auto id = m_screen->scene()->IDManager()->id( index );
+        auto* object = m_screen->scene()->objectManager()->object( id.first );
+        auto* rendererBase = m_screen->scene()->rendererManager()->renderer( id.second );
+        if( object->isVisible() && rendererBase )
         {
-            if( strcmp( "kvs::glsl::ParticleBasedRenderer", m_screen->scene()->renderer(i)->moduleName()) == 0 )
+            if (auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>(rendererBase))
             {
-                kvs::glsl::ParticleBasedRenderer* particleBasedRenderer = new  kvs::glsl::ParticleBasedRenderer();
-                particleBasedRenderer->enableShuffle();
-                particleBasedRenderer->setRepetitionLevel( ui->nextRepetitionLevelSBox->value() );
-                m_screen->scene()->replaceRenderer( i, particleBasedRenderer );
+                if (auto* particleRenderer = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>(stochasticRenderer))
+                {
+                    kvs::glsl::ParticleBasedRenderer* copy = new kvs::glsl::ParticleBasedRenderer;
+                    copy->DownCast( particleRenderer );
+                    copy->enableShuffle();
+                    copy->setRepetitionLevel( ui->nextRepetitionLevelSBox->value() );
+                    m_screen->scene()->replaceRenderer( id.second, copy );
+                }
             }
         }
     }
-        m_compositor->setRepetitionLevel( ui->nextRepetitionLevelSBox->value() );
-        m_compositor->screen()->redraw();
+    m_compositor->setRepetitionLevel( ui->nextRepetitionLevelSBox->value() );
+    m_compositor->screen()->redraw();
+    ui->currentRepetitionLevelLEdit->setText( QString::number( ui->nextRepetitionLevelSBox->value() ) );
 }
