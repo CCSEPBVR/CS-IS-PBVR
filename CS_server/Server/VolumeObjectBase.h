@@ -87,7 +87,6 @@ struct CoordSynthesizerStrings
     std::string m_y_coord_synthesizer_string;
     std::string m_z_coord_synthesizer_string;
     int         m_time_step;
-
     CoordSynthesizerStrings( const int ts = 0,
                              const std::string& xs = std::string(),
                              const std::string& ys = std::string(),

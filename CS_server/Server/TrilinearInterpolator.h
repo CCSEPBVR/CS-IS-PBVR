@@ -11,11 +11,12 @@
  *  $Id: TrilinearInterpolator.h 653 2010-10-29 14:17:13Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef TFS__TRILINEAR_INTERPOLATOR_H_INCLUDE
-#define TFS__TRILINEAR_INTERPOLATOR_H_INCLUDE
+#ifndef KVS__TRILINEAR_INTERPOLATOR_H_INCLUDE
+#define KVS__TRILINEAR_INTERPOLATOR_H_INCLUDE
 
 #include <kvs/ClassName>
-#include <kvs/StructuredVolumeObject>
+//#include <kvs/StructuredVolumeObject>
+#include "StructuredVolumeObject.h"
 #include <kvs/Vector3>
 #include <kvs/Assert>
 //#include "../kvs_wrapper.h"
@@ -41,6 +42,12 @@ class TrilinearInterpolator
 
 private:
 
+    kvs::Vector3ui m_grid_index; ///< grid index
+//    kvs::UInt32    m_index[8];   ///< neighbouring grid index
+//    kvs::Real32    m_weight[8];  ///< weight for the neighbouring grid index
+    kvs::Real32    m_scalars[8]; 
+    float*          m_data;
+
     kvs::UInt32 m_grid_index_i[SIMDW]; ///< grid index
     kvs::UInt32 m_grid_index_j[SIMDW]; ///< grid index
     kvs::UInt32 m_grid_index_k[SIMDW]; ///< grid index
@@ -54,6 +61,7 @@ private:
     kvs::Real32 m_dNdz[8][SIMDW];
 
     const float*         m_reference_volume;
+//    const pbvr::StructuredVolumeObject& m_reference_volume;
     const kvs::Vector3ui m_resolution; ///< resolution 3D
     const int m_line_size;
     const int m_slice_size;
@@ -65,6 +73,9 @@ private:
 public:
 
     TrilinearInterpolator( const float* volume, const kvs::Vector3ui resolution );
+//    TrilinearInterpolator( const pbvr::StructuredVolumeObject& volume );
+//    TrilinearInterpolator( T* values,
+//              float* coords, int ncoords, int ncells);
 
 public:
 
@@ -86,6 +97,22 @@ private:
 
     const int id( const int i, const int j, const int k ) const;
 };
+
+//inline TrilinearInterpolator::TrilinearInterpolator( const pbvr::StructuredVolumeObject& volume ) 
+//    : m_grid_index( 0, 0, 0 )
+//    , m_reference_volume( volume )
+//{
+//    m_data = new float[m_reference_volume.nnodes()* m_reference_volume.veclen()];
+//    for ( int j = 0; j < m_reference_volume.veclen(); j++ )
+//    {
+//        for ( int i = 0; i < m_reference_volume.nnodes(); i++ )
+//        {
+//            int  it = j * m_reference_volume.nnodes() + i;
+//            m_data[it] = (float)(m_reference_volume.values().at<double>(it));  
+//        }
+//    }
+//
+//}
 
 inline TrilinearInterpolator::TrilinearInterpolator( const float* volume, const kvs::Vector3ui resolution )
     : m_reference_volume( volume )

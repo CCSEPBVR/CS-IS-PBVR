@@ -61,8 +61,8 @@ CXXFLAGS += -w -DCPU_SAMPLING_TIME -DJPV_CLIENT -I${KVS_SOURCE_DIR} -I${COMMON_D
 LDFLAGS  += -L${COMMON_DIR} -lpbvrCommon -L${FUNC_DIR} -lpbvrFunc -L${KVS_SOURCE_DIR}/Core/Release -lkvsCore
 
 SERVER_SRCS = CellByCellMetropolisSampling.cpp \
-              CellByCellRejectionSampling.cpp \
-              CellByCellUniformSampling.cpp \
+			  CellByCellRejectionSampling.cpp \
+			  CellByCellUniformSampling.cpp \
               CropRegion.cpp \
               DataArrayTag.cpp \
               ExtendedTransferFunction.cpp \
@@ -90,6 +90,8 @@ SERVER_SRCS = CellByCellMetropolisSampling.cpp \
               QuadraticHexahedralCell.cpp \
               QuadraticTetrahedralCell.cpp \
               RangeEstimater.cpp \
+              StructuredVolumeImporter.cpp \
+              StructuredVolumeObject.cpp \
               TetrahedralCell.cpp \
 			  timer.cpp \
               StructuredVolumeObject.cpp \
@@ -120,6 +122,7 @@ SERVER_HEADERS = Argument.h \
                  endian2.h \
                  ExtendedTransferFunction.h \
                  FilterInformation.h \
+				 FileChecker.h \
                  FrequencyTable.h \
                  GeometryObjectBase.h \
                  GlobalCore.h \
@@ -146,6 +149,7 @@ SERVER_HEADERS = Argument.h \
                  QuadraticTetrahedralCell.h \
                  RangeEstimater.h \
                  StructuredVolumeObject.h \
+                 StructuredVolumeImporter.h \
                  TagTable.h \
                  TetrahedralCell.h \
                  timer_simple.h \

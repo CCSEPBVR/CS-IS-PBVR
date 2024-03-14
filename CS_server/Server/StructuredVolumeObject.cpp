@@ -17,20 +17,15 @@
 namespace
 {
 
-const std::string GetGridTypeName( const pbvr::StructuredVolumeObject::GridType& type )
+const std::string GetGridTypeName( const pbvr::StructuredVolumeObject::GridType type )
 {
-    switch ( type )
+    switch( type )
     {
-    case pbvr::StructuredVolumeObject::Uniform:
-        return "uniform";
-    case pbvr::StructuredVolumeObject::Rectilinear:
-        return "rectiliear";
-    case pbvr::StructuredVolumeObject::Curvilinear:
-        return "curvilinear";
-    case pbvr::StructuredVolumeObject::Irregular:
-        return "irregular";
-    default:
-        return "unknown grid type";
+    case pbvr::StructuredVolumeObject::Uniform: return("uniform");
+    case pbvr::StructuredVolumeObject::Rectilinear: return("rectiliear");
+    case pbvr::StructuredVolumeObject::Curvilinear: return( "curvilinear" );
+    case pbvr::StructuredVolumeObject::Irregular: return( "irregular" );
+    default: return( "unknown grid type" );
     }
 }
 
@@ -202,7 +197,8 @@ void StructuredVolumeObject::setGridType( const GridType grid_type )
  *  Sets the node resolution.
  */
 /*==========================================================================*/
-void StructuredVolumeObject::setm_resolution( const kvs::Vector3ui& resolution )
+//void StructuredVolumeObject::setm_resolution( const kvs::Vector3ui& resolution )
+void StructuredVolumeObject::setResolution( const kvs::Vector3ui& resolution )
 {
     m_resolution = resolution;
 }

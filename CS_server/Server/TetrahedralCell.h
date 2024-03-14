@@ -712,7 +712,7 @@ public:
 public:
 
     const kvs::Real32* interpolationFunctions( const kvs::Vector3f& point ) const;
-    
+
     const kvs::Real32* differentialFunctions( const kvs::Vector3f& point ) const;
 
     void bindCell( const kvs::UInt32 cell, const size_t n = 0 );
@@ -915,9 +915,6 @@ const kvs::Vector3f TetrahedralCell<T>::randomSampling() const
         point[2] = - 0.5f * s - 0.5f * t + 0.5f * u + 0.5f;
     }
 
-      
-
-//      return point; 
     this->setLocalPoint( point );
     BaseClass::m_global_point = this->transformLocalToGlobal( point );
 

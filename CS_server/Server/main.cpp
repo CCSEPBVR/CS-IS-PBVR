@@ -59,7 +59,9 @@
 #define mkdir( dir, mode ) _mkdir( dir )
 #endif
 
+#include "FileChecker.h"
 #include "UnstructuredVolumeImporter.h"
+#include "StructuredVolumeImporter.h"
 #include "CellByCellParticleGenerator.h"
 #include "timer.h"
 
@@ -176,8 +178,7 @@ public:
             std::cout << "Error. read failed:" << param.m_input_data << std::endl;
             exit( 1 );
         }
-
-        m_generator.createFromFile( param, camera, param.m_subpixel_level, param.m_sampling_step);
+        m_generator.createFromFile( param, camera, param.m_subpixel_level, param.m_sampling_step );
 
         pbvr::PointObject* po = m_generator.getPointObject();
         return po;
@@ -346,9 +347,6 @@ protected:
         return true;
     }
 
-
-
-
     void read_gt5d_connections_and_values()
     {
 #if 0 //TEST_DELETE
@@ -436,7 +434,8 @@ bool IsDirectory( const std::string directory_path )
 #endif
 }
 
-inline pbvr::UnstructuredVolumeObject* CreateVolumeData( const Argument& param,
+//inline pbvr::UnstructuredVolumeObject* CreateVolumeData( const Argument& param,
+inline pbvr::VolumeObjectBase* CreateVolumeData( const Argument& param,
                                                          const FilterInformationFile& fi,
                                                          const int& steps, const int& subvols )
 {
@@ -444,8 +443,8 @@ inline pbvr::UnstructuredVolumeObject* CreateVolumeData( const Argument& param,
     {
         kvs::File ifpx( fi.m_file_path );
         std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
-        pbvr::UnstructuredVolumeObject* volume = new pbvr::UnstructuredVolumeImporter( path_base,
-                                                                                       fi.m_file_type, steps, subvols );
+        //pbvr::UnstructuredVolumeObject* volume = new pbvr::UnstructuredVolumeImporter( path_base,
+        pbvr::VolumeObjectBase* volume = new pbvr::UnstructuredVolumeImporter( path_base, fi.m_file_type, steps, subvols );
         volume->setMinMaxValues( fi.m_min_value, fi.m_max_value );
         volume->setMinMaxObjectCoords( fi.m_min_object_coord, fi.m_max_object_coord );
         volume->setMinMaxExternalCoords( fi.m_min_object_coord, fi.m_max_object_coord );
@@ -463,12 +462,29 @@ inline pbvr::UnstructuredVolumeObject* CreateVolumeData( const Argument& param,
         kvs::File ifpx( fi.m_file_path );
         std::string m_input_data = ifpx.pathName() + ifpx.Separator()
                                    + ifpx.baseName() + suffix.str() + ".kvsml";
-        pbvr::UnstructuredVolumeObject* volume = new pbvr::UnstructuredVolumeImporter( m_input_data );
+        //pbvr::UnstructuredVolumeObject* volume = new pbvr::UnstructuredVolumeImporter( m_input_data );
 
-        volume->setMinMaxValues( fi.m_min_value, fi.m_max_value );
-        volume->setMinMaxObjectCoords( fi.m_min_object_coord, fi.m_max_object_coord );
-        volume->setMinMaxExternalCoords( fi.m_min_object_coord, fi.m_max_object_coord );
+        pbvr::VolumeObjectBase* volume;
 
+        if      ( kvsview::FileChecker::ImportableStructuredVolume( m_input_data ))
+        {
+            std::cout << "Structured !" <<std::endl;
+            volume = new pbvr::StructuredVolumeImporter( m_input_data ); 
+        } 
+        else if ( kvsview::FileChecker::ImportableUnstructuredVolume( m_input_data))
+        {
+            std::cout << "Unstructured !" <<std::endl;
+            volume = new pbvr::UnstructuredVolumeImporter( m_input_data );  
+        }
+        else 
+        {
+            kvsMessageError("%s is not volume data.", m_input_data.c_str());
+            //return false;
+        }
+
+            volume->setMinMaxValues( fi.m_min_value, fi.m_max_value );
+            volume->setMinMaxObjectCoords( fi.m_min_object_coord, fi.m_max_object_coord );
+            volume->setMinMaxExternalCoords( fi.m_min_object_coord, fi.m_max_object_coord );
         return volume;
     }
 }
@@ -488,7 +504,8 @@ inline size_t CalculateSubpixelLevel( const Argument& param,
                                       const kvs::Camera& camera )
 {
     namespace Generator = pbvr::CellByCellParticleGenerator;
-    pbvr::UnstructuredVolumeObject* volume;
+    //pbvr::UnstructuredVolumeObject* volume;
+    pbvr::VolumeObjectBase* volume;
     double total_volume = 0.0;
     double density_lev1 = 0.0;//kawamura2: particle density for subpixel_level=1
     int steps = fil.m_total_start_steps;
@@ -520,7 +537,7 @@ inline size_t CalculateSubpixelLevel( const Argument& param,
             PBVR_TIMER_STA( 17 );
             double local_volume = Generator::CalculateTotalVolume( volume );
             PBVR_TIMER_END( 17 );
-            
+
             PBVR_TIMER_STA( 18 );
             density_lev1 += Generator::CalculateGreatDensity( camera, *volume, 1,
                                                               param.m_sampling_step ) * local_volume;
@@ -555,7 +572,8 @@ inline float CalculateDensityFactor( const Argument& param,
                                      const kvs::Camera& camera )
 {
     namespace Generator = pbvr::CellByCellParticleGenerator;
-    pbvr::UnstructuredVolumeObject* volume;
+    //pbvr::UnstructuredVolumeObject* volume;
+    pbvr::VolumeObjectBase* volume;
     double total_volume = 0.0;
     float great_density;
     int steps = fi.m_start_step;
@@ -719,12 +737,6 @@ int main( int argc, char** argv )
 	int mpi_size = 1;
 #endif
 
-    // set_timerfile
-//    std::string section_name = "initialize"; 
-//    std::string output_csv_file_path = "/home/g6/a214026/cal_log/time_rank" + std::to_string(rank) + ".txt";
-//    test.openfile(output_csv_file_path); 
-//    test.set_param(1,1);
-   
     if ( param.m_batch == true )
     {
         PBVR_TIMER_STA( 2 );
@@ -1523,7 +1535,6 @@ int main( int argc, char** argv )
         float*  tmp_max;
         float*  tmp_min;
 
-        
         if ( rank > 0 )
         {
             //--------------------- WORKER --------------------
@@ -1707,7 +1718,7 @@ int main( int argc, char** argv )
                         param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                              + ifpx.baseName() + suffix.str() + ".kvsml";
                         int timeStep = 1;
-                    try
+                        try
                         {
                             if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                             {
@@ -1777,7 +1788,6 @@ int main( int argc, char** argv )
                         }
 
                     } // end of while(DispatchNext)
-//                        timer.start();
 #ifndef CPU_VER
 
                     MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );

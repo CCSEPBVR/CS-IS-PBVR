@@ -73,7 +73,6 @@ private:
 
     bool                   m_batch;
 
-
 public:
     CellByCellUniformSampling();
 
@@ -95,7 +94,6 @@ public:
         const pbvr::TransferFunction& transfer_function,
         std::vector<pbvr::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-        //TransferFunctionSynthesizer* transfunc_synthesizer,
         const size_t                 normal_ingredient,
         const CropRegion&            crop,
         const float                  particle_density,
@@ -152,11 +150,34 @@ private:
 
     template <typename T>
     void generate_particles( const pbvr::UnstructuredVolumeObject& volume );
+ 
+    const float calculate_density( const float scalar );
+
+    const size_t calculate_number_of_particles( const float density, const float volume_of_cell );
+
+    void calculate_histogram( kvs::ValueArray<int>&   th_o_histogram,
+                          kvs::ValueArray<int>&   th_c_histogram,
+                          kvs::ValueArray<float>& th_O_min,
+                          kvs::ValueArray<float>& th_O_max,
+                          kvs::ValueArray<float>& th_C_min,
+                          kvs::ValueArray<float>& th_C_max,
+                          // ここまでoutput, 以下input
+                          const int nbins, // TFSから読み込む最大最小値
+                          const kvs::ValueArray<float>& o_min,
+                          const kvs::ValueArray<float>& o_max,
+                          const kvs::ValueArray<float>& c_min,
+                          const kvs::ValueArray<float>& c_max,
+                          const float o_scalars[][SIMDW], // åæå¤
+                          const float c_scalars[][SIMDW],
+                          const int tf_number  );
     
+    kvs::Vector3f RandomSamplingInCube( const kvs::Vector3f vertex, kvs::MersenneTwister* MT );
+
+   
+    const float calculate_maximum_density( const float scalar0, const float scalar1 );
 #ifdef ENABLE_MPI
     void generate_particles_gt5d( const pbvr::UnstructuredVolumeObject* volume );
 #endif
-
 };
 
 } // end of namespace pbvr

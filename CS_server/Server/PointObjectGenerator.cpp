@@ -19,7 +19,10 @@
 #include "common.h"
 #include <kvs/ValueArray>
 #include <kvs/File>
-#include <kvs/Timer>
+
+#include "FileChecker.h"
+#include "StructuredVolumeObject.h"
+#include "StructuredVolumeImporter.h"
 
 #include "Argument.h"
 #ifdef KMATH
@@ -35,22 +38,35 @@ extern KMATH_Random km_random;
 
 void PointObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera, const size_t subpixel_level, const float sampling_step )
 {
-
 //FJ_TIMER_KAWAMURA
     PBVR_TIMER_STA( 260 );
 //FJ_TIMER_KAWAMURA
 
-#ifdef DEBUG
-    std::cout << "param.m_input_data = "<< param.m_input_data <<std::endl;
-#endif
     delete m_object;
-    pbvr::UnstructuredVolumeObject* volume;
-    volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );
+
+    // add by shimomura 2023/0407
+    pbvr::VolumeObjectBase* volume;
+    if ( kvsview::FileChecker::ImportableStructuredVolume( param.m_input_data ))
+    {
+        std::cout << "Structured !" <<std::endl;
+        volume = new pbvr::StructuredVolumeImporter( param.m_input_data ); 
+
+    } 
+    else if ( kvsview::FileChecker::ImportableUnstructuredVolume( param.m_input_data))
+    {
+        std::cout << "Unstructured !" <<std::endl;
+        volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );  
+    }
+    else 
+    {
+        kvsMessageError("%s is not volume data.", param.m_input_data.c_str());
+    }
+
+    //pbvr::UnstructuredVolumeObject* volume;
+    //volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );
     if ( volume )
     {
-        //std::cout << " m_coord_synthesizer_strings.x = " << m_coord_synthesizer_strings.m_x_coord_synthesizer_string << std::endl;
         volume->setCoordSynthesizerStrings( m_coord_synthesizer_strings );
-        volume->setCoordSynthesizerTokens ( m_coord_synthesizer_tokens );
     }
 
 //FJ_TIMER_KAWAMURA
@@ -64,7 +80,8 @@ void PointObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
     std::cout << *volume << std::endl;
     std::cout << "min:" << volume->minObjectCoord() << ", max:" << volume->maxObjectCoord() << std::endl;
     std::cout << "min:" << volume->minExternalCoord() << ", max:" << volume->maxExternalCoord() << std::endl;
-    try
+
+   try
     {
         m_object = sampling( param, camera, volume, subpixel_level, sampling_step );
     }
@@ -86,8 +103,8 @@ void PointObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
     PBVR_TIMER_STA( 260 );
     delete m_object;
     pbvr::UnstructuredVolumeObject* volume;
+    volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );
 
-    // volume = new pbvr::UnstructuredVolumeImporter( param.input_data );
     kvs::File ifpx( m_fi->m_file_path );
     std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
 

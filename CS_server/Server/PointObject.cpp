@@ -366,7 +366,7 @@ void PointObject::add( const PointObject& other )
             // x,y,z, ... + x,y,z, ... = x,y,z, ... ,x,y,z, ...
             memcpy( pcoords, this->coords().pointer(), this->coords().byteSize() );
             memcpy( pcoords + this->coords().size(), other.coords().pointer(), other.coords().byteSize() );
-        } 
+        }
         BaseClass::setCoords( coords );
 
         // Integrate the normal vectors.

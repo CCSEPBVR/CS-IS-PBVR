@@ -62,10 +62,6 @@ public:
     int32_t renderingId;
     kvs::Camera* camera;
 
-    std::string m_x_synthesis;
-    std::string m_y_synthesis;
-    std::string m_z_synthesis;
-
     int32_t timeParam;
     int32_t beginTime;
     int32_t endTime;
@@ -81,9 +77,15 @@ public:
     float particle_density;
     float particle_data_size_limit;
     std::string inputDir;
+    std::string m_filter_parameter_filename;         // add by @hira at 2016/12/01
 
     std::vector<NamedTransferFunctionParameter> transfunc;
     std::vector<VolumeEquation> voleqn;
+
+    std::string m_x_synthesis;
+    std::string m_y_synthesis;
+    std::string m_z_synthesis;
+
     //std::string transferFunctionSynthesis;
     std::string color_tf_synthesis;
     std::string opacity_tf_synthesis;
@@ -151,6 +153,8 @@ public:
     float particle_density;
     float particle_data_size_limit;
     kvs::Camera* camera;
+    kvs::UInt64* m_color_nbins;
+    kvs::UInt64* m_opacity_bins_number;
     std::vector<NamedTransferFunctionParameter> transfunc;
     std::vector<VolumeEquation> voleqn;
     //std::string transferFunctionSynthesis;

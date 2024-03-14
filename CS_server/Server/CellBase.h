@@ -95,7 +95,7 @@ public:
 public:
 
     virtual const kvs::Real32* interpolationFunctions( const kvs::Vector3f& point ) const = 0;
-    
+
     virtual const kvs::Real32* differentialFunctions( const kvs::Vector3f& point ) const = 0;
  
 //    virtual const kvs::Real32** interpolationFunctions_array( const kvs::Vector3f* point, const int loop_cnt ) const = 0;
@@ -135,7 +135,6 @@ public:
             float *grad_array_y,
             float *grad_array_z );
 
-    
     virtual const kvs::Vector3f transformGlobalToLocal( const kvs::Vector3f& point ) const;
 
     virtual const kvs::Vector3f transformLocalToGlobal( const kvs::Vector3f& point ) const;
@@ -156,7 +155,7 @@ public:
     virtual const kvs::Real32 scalar() const;
 
     virtual const kvs::Vector3f gradient() const;
-    
+
     virtual const kvs::Real32 localGravityPointValue() const;
 
 public:
@@ -232,6 +231,7 @@ inline void CellBase<T>::deallocate()
     if ( m_scalars ) delete [] m_scalars;
     if ( m_interpolation_functions ) delete [] m_interpolation_functions;
     if ( m_differential_functions ) delete [] m_differential_functions;
+    if ( m_vertices_vec ) delete [] m_vertices_vec;
 }
 
 /*===========================================================================*/
@@ -458,6 +458,7 @@ inline void CellBase<T>::bindCellArray( const int loop_cnt, const kvs::UInt32 *c
         }
     }
 }
+
 /*===========================================================================*/
 /**
  *  @brief  Sets a point in the global coordinate.
@@ -822,7 +823,6 @@ inline const kvs::Matrix33f CellBase<T>::JacobiMatrix() const
         dYdz += dNdz[i] * V[i].y();
         dZdz += dNdz[i] * V[i].z();
     }
-    
     return kvs::Matrix33f( dXdx, dYdx, dZdx, dXdy, dYdy, dZdy, dXdz, dYdz, dZdz );
 }
 
@@ -980,7 +980,6 @@ void  CellBase<T>::reset_time()
    cal_time[0] = 0;
    cal_time[1] = 0;
 }
-
 
 } // end of namespace pbvr
 

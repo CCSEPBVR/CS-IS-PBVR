@@ -65,7 +65,7 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         s += sizeof( crop_region[0] ) * 6;
         s += sizeof( particle_limit );
         s += sizeof( particle_density );
-        s += sizeof( particle_data_size_limit );
+        s += sizeof( particle_data_size_limit ); //add by shimomura 0308
         s += sizeof( int64_t );
         s += sizeof( char ) * ( inputDir.size() + 1 );
         s += sizeof( size_t );
@@ -641,7 +641,7 @@ int32_t jpv::ParticleTransferServerMessage::byteSize( void ) const
     s += sizeof( messageSize );
     // MODIFIED START FEAST 2015.12.23
     s += sizeof( m_server_status );
-    if ( m_server_status == 1 )                                                                                                                                                            
+    if ( m_server_status == 1 )  
     {
         return s;
     }

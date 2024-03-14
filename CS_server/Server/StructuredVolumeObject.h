@@ -18,7 +18,6 @@
 #include <kvs/Module>
 #include "VolumeObjectBase.h"
 
-
 namespace pbvr
 {
 
@@ -83,7 +82,8 @@ public:
 
     void setGridType( const GridType grid_type );
 
-    void setm_resolution( const kvs::Vector3ui& resolution );
+    //void setm_resolution( const kvs::Vector3ui& resolution );
+    void setResolution( const kvs::Vector3ui& resolution );
 
 public:
 

@@ -51,6 +51,7 @@ protected:
     std::vector<EquationToken> m_col_var;//ex) q3*q4
 
     float m_var_value[128];
+    float **m_var_value_struct;
     float *m_var_value_array[NUMVAR];
     //float** m_var_value;//各変数の値[128][SIMDW]
     std::vector<float> m_scalars; //calc. results of m_opa_var or m_col_var.
@@ -119,7 +120,35 @@ public:
     ~TransferFunctionSynthesizer();
 
 public:
+//-----structured---------
 
+    void SynthesizedOpacityScalars(
+        std::vector< TFS::TrilinearInterpolator* > interp,
+        float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
+        float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
+        float scalars[][SIMDW] );//resulting scalars[TF_COUNT][SIMDW]
+
+    void SynthesizedColorScalars(
+        std::vector< TFS::TrilinearInterpolator* > interp,
+        float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
+        float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
+        float scalars[][SIMDW] );//resulting scalars[TF_COUNT][SIMDW]
+
+    void CalculateOpacity(
+        std::vector< TFS::TrilinearInterpolator* > interp,
+        std::vector<pbvr::TransferFunction>& tf,
+        float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
+        float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
+        float* opacity );//resulting opacity[SIMDW]
+
+    void CalculateColor(
+        std::vector< TFS::TrilinearInterpolator* > interp ,
+        std::vector<pbvr::TransferFunction>& tf,
+        float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
+        float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
+        kvs::UInt8* Red, kvs::UInt8* Green, kvs::UInt8* Blue );//resulting colors[SIMDW]
+
+//-----unstructured-------
     std::vector<float> SynthesizedOpacityScalars(
         //std::vector< pbvr::HexahedralCell<Type>* > interp ,
         std::vector< pbvr::CellBase<Type>* > interp ,
