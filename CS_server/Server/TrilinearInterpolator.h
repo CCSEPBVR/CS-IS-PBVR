@@ -174,7 +174,7 @@ inline void TrilinearInterpolator::attachPoint( const float* p_x, const float* p
         m_grid_index_j[I] = j;
         m_grid_index_k[I] = k;
 
-        m_index[0][I] = i + j * m_line_size + k * m_slice_size + m_leaf_index * m_leaf_size;
+        m_index[0][I] = i + j * m_line_size + k * m_slice_size; //+ m_leaf_index * m_leaf_size;
         m_index[1][I] = m_index[0][I] + 1;
         m_index[2][I] = m_index[1][I] + m_line_size;
         m_index[3][I] = m_index[0][I] + m_line_size;

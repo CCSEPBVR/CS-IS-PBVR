@@ -894,11 +894,11 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
                         const int i =  cell_id - k * nxy_1 - j * nx_1;
 
                         const int nparticles_I  = I<SIMDW ? nparticles[I] : 0;
+//                        const int nparticles_I  = I<SIMDW ? nparticles[I] : SIMDW - pp_id;
                         const int zero_id = I<SIMDW ? SIMDW : p_id;
                         int nparticles_count =0;  
-                        for(int p=0; p < nparticles_I; p++)
+                        while (nparticles_count < nparticles_I)
                         {
-                            int  finish_flag = 0;
                             const kvs::Vector3f vertex( (float)i, (float)j, (float)k );
                             const kvs::Vector3f coord_l( RandomSamplingInCube( vertex, &MT ) );
                             const kvs::Vector3f coord_g(
@@ -936,11 +936,6 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
                                 for( int pp=0; pp<zero_id; pp++)
                                 {
                                     //                                timed_section_start(td_CalculateDensity,thid);
-//                                    const float density =
-//                                        pp < zero_id ?
-//                                        Generator::CalculateDensity( particle_opacity[pp],
-//                                                sampling_volume_inverse,
-//                                                max_opacity, max_density ) : 0;
                                     const float density =
                                         Generator::CalculateDensity( particle_opacity[pp],
                                                 sampling_volume_inverse,
@@ -948,6 +943,10 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
 
 
                                     //                                timed_section_end(td_CalculateDensity,thid);
+                                const float random = (float)MT();
+                                if( density > max_density * random )
+                                {
+                                        th_vertex_coords.push_back( p_x_g[pp] );
                                         th_vertex_coords.push_back( p_y_g[pp] );
                                         th_vertex_coords.push_back( p_z_g[pp] );
 
@@ -958,10 +957,12 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
                                         th_vertex_normals.push_back( grad_x[pp] );
                                         th_vertex_normals.push_back( grad_y[pp] );
                                         th_vertex_normals.push_back( grad_z[pp] );
+                                        nparticles_count ++;
                                        //                                    timed_section_end(td_VectorPush,thid);
+                                } // end of if pp
                                 } // end of for pp
                             } // end of if p_id
-                        } // end of for p
+                        } // end of while loop 
                     } // end of for I 粒子位置を逐次計算
                 } // end of omp for J outer_loop
         } // end of 粒子生成ループ
