@@ -10,6 +10,7 @@
 
 int main( int argc, char** argv )
 {
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     kvs::qt::Application app( argc, argv );
     PBVRGUI pbvr_gui( app );
     pbvr_gui.show();
