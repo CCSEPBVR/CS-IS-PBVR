@@ -153,7 +153,7 @@ void PBVRGUI::keyPressEvent(QKeyEvent *event)
     {
         switch( event->key() )
         {
-            //for AnimationControls
+            //アニメーションコントロール用キーバインド
         case Qt::Key_D:
             m_animation_controls.clearKeyFrame();
             break;
@@ -186,14 +186,13 @@ void PBVRGUI::keyPressEvent(QKeyEvent *event)
             m_screen->update();
             break;
 
-            //for AnimationControls
+            //アニメーションコントロール用キーバインド
         case Qt::Key_X:
             m_animation_controls.addKeyFrameAdd( m_screen->scene()->objectManager()->xform() );
             break;
         case Qt::Key_D:
             m_animation_controls.removeLasrKeyFrame();
             break;
-
         default:
             break;
         }
