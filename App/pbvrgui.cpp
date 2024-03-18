@@ -12,9 +12,6 @@
 #include <kvs/PolygonImporter>
 #include <kvs/WidgetBase>
 
-//デバック用(将来的にデバッグ用マクロ定義ファイルに移行する。
-#define STOCHASTIC_RENDERING_WITH_HYDROGEN
-
 PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::PBVRGUI),
