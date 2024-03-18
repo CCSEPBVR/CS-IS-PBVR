@@ -53,7 +53,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_time_step_label = new kvs::Label( m_screen );
 
     // QGridLayout に kvs::qt::jaea::Screen を追加
-    ui->screenArea->addWidget(m_screen, 0, 0, 1, 1);//コンストラクタの最後にすると表示に差異が生じる、要相談
+    ui->screenArea->addWidget(m_screen, 0, 0, 1, 1);
 
     connect( ui->actionPreference, &QAction::triggered, this, &PBVRGUI::onPreference );
     connect( ui->actionMerge, &QAction::triggered, this, &PBVRGUI::onMerge );
