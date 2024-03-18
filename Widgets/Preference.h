@@ -60,7 +60,6 @@ public:
     void setTimeStepLabel( kvs::Label* time_step_label )                 { m_time_step_label = time_step_label;  }
     void setCurrentTimeStep( int currentTimeStep ) { m_time_step_label->setText("Time step: " + std::to_string(currentTimeStep));}
 
-    void doneInitialize()                                                { m_initialized = true;                 }
     void loadShadingSettings();
     void applyShadingSettings();
 
@@ -73,7 +72,6 @@ private:
     kvs::Label* m_fps_label;
     kvs::Label* m_time_step_label;
     QSettings m_settings;
-    bool m_initialized;
 
 private:
     bool checkConfigFileExists() { return QFile::exists( "config.ini" ); }

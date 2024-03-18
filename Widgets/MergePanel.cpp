@@ -389,7 +389,6 @@ void MergePanel::onWorkerThreadFinished()
     }
     m_time_control->setCurrentTimeStep( m_time_control->getNextTimeStep() );
     m_preference->setCurrentTimeStep( m_time_control->getNextTimeStep() );
-    m_preference->loadShadingSettings();
     m_preference->applyShadingSettings();
     totalParticles();
     m_is_worker_thread_running = false;

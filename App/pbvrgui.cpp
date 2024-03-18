@@ -82,9 +82,7 @@ void PBVRGUI::initializePanels()
     m_preference.setOrientationAxis( m_orientation_axis );
     m_preference.setFPSLabel( m_fps_label );
     m_preference.setTimeStepLabel( m_time_step_label );
-    m_preference.initialize();
-    m_preference.doneInitialize();
-    m_preference.applyShadingSettings();
+    m_preference.initialize();    
     //タイムコントロールウィジェットの初期化
     QWidgetAction *timeControlWidgetAction = new QWidgetAction( this );
     timeControlWidgetAction->setDefaultWidget( &m_timeControl );

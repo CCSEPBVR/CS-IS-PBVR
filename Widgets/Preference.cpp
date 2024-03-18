@@ -16,8 +16,7 @@ Preference::Preference(QWidget *parent) :
     m_orientation_axis( nullptr ),
     m_fps_label( nullptr ),
     m_time_step_label( nullptr ),
-    m_settings( "config.ini", QSettings::IniFormat ),
-    m_initialized( false )
+    m_settings( "config.ini", QSettings::IniFormat )
 {
     ui->setupUi(this);
     ui->orientationTypeCBox->addItem( "Horizontal", Horizontal );
@@ -536,59 +535,56 @@ void Preference::applyShadingSettings()
     bool isEnable = ui->shadingGBox->isChecked();
     if( isEnable )
     {
-        if( m_initialized )
+        if( m_screen->scene()->objectManager()->hasObject() )
         {
-            if( m_screen->scene()->objectManager()->hasObject() )
+            const int size = m_screen->scene()->IDManager()->size();
+            for( int index = 0; index < size; index++ )
             {
-                const int size = m_screen->scene()->IDManager()->size();
-                for( int index = 0; index < size; index++ )
+                auto id = m_screen->scene()->IDManager()->id( index );
+                auto* object = m_screen->scene()->objectManager()->object( id.first );
+                auto* rendererBase = m_screen->scene()->rendererManager()->renderer( id.second );
+
+                if( object->isVisible() && rendererBase )
                 {
-                    auto id = m_screen->scene()->IDManager()->id( index );
-                    auto* object = m_screen->scene()->objectManager()->object( id.first );
-                    auto* rendererBase = m_screen->scene()->rendererManager()->renderer( id.second );
-
-                    if( object->isVisible() && rendererBase )
+                    if (auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>(rendererBase))
                     {
-                        if (auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>(rendererBase))
+                        if (auto* stochasticPolygonRenderer = dynamic_cast<kvs::StochasticPolygonRenderer*>(stochasticRenderer))
                         {
-                            if (auto* stochasticPolygonRenderer = dynamic_cast<kvs::StochasticPolygonRenderer*>(stochasticRenderer))
+                            kvs::StochasticPolygonRenderer* copy = new kvs::StochasticPolygonRenderer;
+                            copy->DownCast( stochasticPolygonRenderer );
+                            if( ui->lambertRBtn->isChecked() )
                             {
-                                kvs::StochasticPolygonRenderer* copy = new kvs::StochasticPolygonRenderer;
-                                copy->DownCast( stochasticPolygonRenderer );
-                                if( ui->lambertRBtn->isChecked() )
-                                {
-                                    copy->setShader( kvs::Shader::Lambert( ui->kaDSBox->value(), ui->kdDSBox->value() ) );
-                                }
-                                else if( ui->phongRBtn->isChecked() )
-                                {
-                                    copy->setShader( kvs::Shader::Phong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
+                                copy->setShader( kvs::Shader::Lambert( ui->kaDSBox->value(), ui->kdDSBox->value() ) );
+                            }
+                            else if( ui->phongRBtn->isChecked() )
+                            {
+                                copy->setShader( kvs::Shader::Phong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
 
-                                }
-                                else if( ui->BlinnRBtn->isChecked() )
-                                {
-                                    copy->setShader( kvs::Shader::BlinnPhong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
-                                }
-                                m_screen->scene()->replaceRenderer( id.second, copy );
                             }
-                            else if (auto* particleRenderer = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>(stochasticRenderer))
+                            else if( ui->BlinnRBtn->isChecked() )
                             {
-                                kvs::glsl::ParticleBasedRenderer* copy = new kvs::glsl::ParticleBasedRenderer;
-                                copy->DownCast( particleRenderer );
-                                if( ui->lambertRBtn->isChecked() )
-                                {
-                                    copy->setShader( kvs::Shader::Lambert( ui->kaDSBox->value(), ui->kdDSBox->value() ) );                                    
-                                }
-                                else if( ui->phongRBtn->isChecked() )
-                                {
-                                    copy->setShader( kvs::Shader::Phong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
-                                }
-                                else if( ui->BlinnRBtn->isChecked() )
-                                {
-                                    copy->setShader( kvs::Shader::BlinnPhong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
-                                }
-                                copy->enableShuffle();
-                                m_screen->scene()->replaceRenderer( id.second, copy );
+                                copy->setShader( kvs::Shader::BlinnPhong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
                             }
+                            m_screen->scene()->replaceRenderer( id.second, copy );
+                        }
+                        else if (auto* particleRenderer = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>(stochasticRenderer))
+                        {
+                            kvs::glsl::ParticleBasedRenderer* copy = new kvs::glsl::ParticleBasedRenderer;
+                            copy->DownCast( particleRenderer );
+                            if( ui->lambertRBtn->isChecked() )
+                            {
+                                copy->setShader( kvs::Shader::Lambert( ui->kaDSBox->value(), ui->kdDSBox->value() ) );
+                            }
+                            else if( ui->phongRBtn->isChecked() )
+                            {
+                                copy->setShader( kvs::Shader::Phong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
+                            }
+                            else if( ui->BlinnRBtn->isChecked() )
+                            {
+                                copy->setShader( kvs::Shader::BlinnPhong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
+                            }
+                            copy->enableShuffle();
+                            m_screen->scene()->replaceRenderer( id.second, copy );
                         }
                     }
                 }
