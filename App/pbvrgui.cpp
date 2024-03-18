@@ -22,102 +22,49 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_fps_label( nullptr ),
     m_time_step_label( nullptr ),
     m_preference( this ),
-    m_merge( this ),
-    m_volumeTransform( this ),
-    m_connect( this ),
     m_timeControl( this ),
-    m_animation_controls( this ),
-    m_data_properties( this ),
     m_data_summary( this ),
-    m_render_options( this ),
+    m_merge( this ),
+    m_connect( this ),
+    m_volumeTransform( this ),
+    m_animation_controls( this ),
     m_repetition_level_control( this ),
-    m_transfer_function_editor( this ),
-    m_coordinates( this )
+    m_render_options( this ),
+    m_data_properties( this ),
+    m_coordinates( this ),
+    m_transfer_function_editor( this )
 {
     ui->setupUi(this);
     setWindowTitle( "QTPBVR vX.X.X" );
 
+    //スクリーンの初期化
     m_screen = new kvs::qt::jaea::Screen( &app );
-    initialize();
+
+    const size_t repetitions = 4;
+    //ストキャステックレンダリングコンポジタの初期化
+    m_compositor = new kvs::StochasticRenderingCompositor(m_screen->scene());
+    m_compositor->setRepetitionLevel( repetitions );
+    m_screen->setEvent(m_compositor);
+
+    //ビューワー用ウィジェットの初期化
+    m_color_map_bar = new kvs::ColorMapBar( m_screen );
+    m_orientation_axis = new kvs::OrientationAxis( m_screen, m_screen->scene() );
+    m_fps_label = new kvs::Label( m_screen );
+    m_time_step_label = new kvs::Label( m_screen );
+
+    // QGridLayout に kvs::qt::jaea::Screen を追加
+    ui->screenArea->addWidget(m_screen, 0, 0, 1, 1);//コンストラクタの最後にすると表示に差異が生じる、要相談
 
     connect( ui->actionPreference, &QAction::triggered, this, &PBVRGUI::onPreference );
     connect( ui->actionMerge, &QAction::triggered, this, &PBVRGUI::onMerge );
-    connect( ui->actionVolumeTransform, &QAction::triggered, this, &PBVRGUI::onVolumeTransform );
     connect( ui->actionConnectToServer, &QAction::triggered, this, &PBVRGUI::onConnect );
+    connect( ui->actionVolumeTransform, &QAction::triggered, this, &PBVRGUI::onVolumeTransform );
     connect( ui->actionAnimationControls, &QAction::triggered, this, &PBVRGUI::onAnimationControl );
+    connect( ui->actionRepetitionLevelControl, &QAction::triggered, this, &PBVRGUI::onRepetitionLevelControl );
     connect( ui->actionFilterInfomation, &QAction::triggered, this, &PBVRGUI::onFilterInfomation );
     connect( ui->actionRenderOptions, &QAction::triggered, this, &PBVRGUI::onRenderOptions );
-    connect( ui->actionRepetitionLevelControl, &QAction::triggered, this, &PBVRGUI::onRepetitionLevelControl );
-    connect( ui->actionTransferFunctionEditor, &QAction::triggered, this, &PBVRGUI::onTransferFunctionEditor );
     connect( ui->actionCoordinates, &QAction::triggered, this, &PBVRGUI::onCoordinates );
-
-    m_preference.setScreen( m_screen );
-    m_preference.setCompositor( m_compositor );
-    m_preference.setColorMapBar( m_color_map_bar );
-    m_preference.setOrientationAxis( m_orientation_axis );
-    m_preference.setFPSLabel( m_fps_label );
-    m_preference.setTimeStepLabel( m_time_step_label );
-    m_preference.initialize();
-
-    QWidgetAction *timeControlWidgetAction = new QWidgetAction( this );
-    timeControlWidgetAction->setDefaultWidget( &m_timeControl );
-    ui->timeControlTBar->addAction( timeControlWidgetAction );
-    m_timeControl.setMerge( &m_merge );
-
-    QWidgetAction *dataSummaryWidgetAction = new QWidgetAction( this );
-    dataSummaryWidgetAction->setDefaultWidget( &m_data_summary );
-    ui->dataSummaryTBar->addAction( dataSummaryWidgetAction );
-
-    m_merge.setScreen( m_screen );
-    m_merge.setTimeControl( &m_timeControl );
-    m_merge.setPreference( &m_preference );
-    m_merge.setConnect( &m_connect );
-    m_merge.setDataSummary( &m_data_summary );
-    m_merge.close();
-    m_merge.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    addDockWidget(Qt::RightDockWidgetArea, &m_merge);
-
-    m_volumeTransform.close();
-    m_volumeTransform.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    addDockWidget(Qt::LeftDockWidgetArea, &m_volumeTransform);
-    m_volumeTransform.show();
-    m_volumeTransform.setScreen( m_screen );
-
-    m_animation_controls.close();
-    m_animation_controls.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    addDockWidget(Qt::RightDockWidgetArea, &m_animation_controls);
-    m_animation_controls.show();
-    m_animation_controls.setScreen( m_screen );
-
-    m_data_properties.close();
-    m_data_properties.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    addDockWidget(Qt::RightDockWidgetArea, &m_data_properties);
-    m_data_properties.show();
-
-    m_connect.setScreen( m_screen );
-    m_connect.setCamera( m_screen->scene()->camera() );
-    m_connect.setMerge( &m_merge );
-    m_connect.setFilterInfomation( &m_data_properties );
-    m_connect.setTransferFunctionEditor( &m_transfer_function_editor );
-
-    m_render_options.close();
-    m_render_options.setClientMessage( m_connect.getClientMessage() );
-    m_render_options.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    addDockWidget(Qt::RightDockWidgetArea, &m_render_options);
-
-    m_repetition_level_control.close();
-    m_repetition_level_control.setScreen( m_screen );
-    m_repetition_level_control.setCompositor( m_compositor );
-    m_repetition_level_control.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    addDockWidget(Qt::LeftDockWidgetArea, &m_repetition_level_control);
-    m_repetition_level_control.setScreen( m_screen );
-
-    m_transfer_function_editor.setClientMessage( m_connect.getClientMessage() );
-    m_transfer_function_editor.setServerMessage( m_connect.getServerMessage() );
-    m_transfer_function_editor.setReceivedMessage( m_connect.getReceivedMessage() );
-
-    m_coordinates.setClientMessage( m_connect.getClientMessage() );
-
+    connect( ui->actionTransferFunctionEditor, &QAction::triggered, this, &PBVRGUI::onTransferFunctionEditor );
     setFocusPolicy(Qt::StrongFocus);    
 }
 
@@ -126,22 +73,69 @@ PBVRGUI::~PBVRGUI()
     delete ui;
 }
 
-void PBVRGUI::initialize()
+void PBVRGUI::initializePanels()
 {
-    const size_t repetitions = 4;
+    //プリファレンスパネルの初期化
+    m_preference.setScreen( m_screen );
+    m_preference.setCompositor( m_compositor );
+    m_preference.setColorMapBar( m_color_map_bar );
+    m_preference.setOrientationAxis( m_orientation_axis );
+    m_preference.setFPSLabel( m_fps_label );
+    m_preference.setTimeStepLabel( m_time_step_label );
+    m_preference.initialize();
+    m_preference.doneInitialize();
+    m_preference.applyShadingSettings();
+    //タイムコントロールウィジェットの初期化
+    QWidgetAction *timeControlWidgetAction = new QWidgetAction( this );
+    timeControlWidgetAction->setDefaultWidget( &m_timeControl );
+    ui->timeControlTBar->addAction( timeControlWidgetAction );
+    m_timeControl.setMerge( &m_merge );
+    //データサマリーウィジェットの初期化
+    QWidgetAction *dataSummaryWidgetAction = new QWidgetAction( this );
+    dataSummaryWidgetAction->setDefaultWidget( &m_data_summary );
+    ui->dataSummaryTBar->addAction( dataSummaryWidgetAction );
+    //マージパネルの初期化
+    m_merge.setScreen( m_screen );
+    m_merge.setPreference( &m_preference );
+    m_merge.setTimeControl( &m_timeControl );
+    m_merge.setDataSummary( &m_data_summary );
+    m_merge.setConnect( &m_connect );
+    m_merge.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    addDockWidget( Qt::RightDockWidgetArea, &m_merge );
+    //コネクトパネルの初期化
+    m_connect.setScreen( m_screen );
+    m_connect.setCamera( m_screen->scene()->camera() );
+    m_connect.setMerge( &m_merge );
+    m_connect.setFilterInfomation( &m_data_properties );
+    m_connect.setTransferFunctionEditor( &m_transfer_function_editor );
 
-    // ストキャスティック レンダリング コンポジタのセットアップ
-    m_compositor = new kvs::StochasticRenderingCompositor(m_screen->scene());
-    m_compositor->setRepetitionLevel( repetitions );
-    m_screen->setEvent(m_compositor);
-
-    m_color_map_bar = new kvs::ColorMapBar( m_screen );
-    m_orientation_axis = new kvs::OrientationAxis( m_screen, m_screen->scene() );
-    m_fps_label = new kvs::Label( m_screen );
-    m_time_step_label = new kvs::Label( m_screen );
-
-    // QGridLayout に kvs::qt::jaea::Screen を追加
-    ui->screenArea->addWidget(m_screen, 0, 0, 1, 1);//コンストラクタの最後にすると表示に差異が生じる、要相談
+    //ボリュームトランスフォームパネルの初期化
+    m_volumeTransform.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    addDockWidget( Qt::LeftDockWidgetArea, &m_volumeTransform );
+    m_volumeTransform.setScreen( m_screen );
+    //アニメーションコントロールパネルの初期化
+    m_animation_controls.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    addDockWidget( Qt::RightDockWidgetArea, &m_animation_controls );
+    m_animation_controls.setScreen( m_screen );
+    //リピテーションレベルコントロールパネルの初期化
+    m_repetition_level_control.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    addDockWidget( Qt::LeftDockWidgetArea, &m_repetition_level_control );
+    m_repetition_level_control.setScreen( m_screen );
+    m_repetition_level_control.setCompositor( m_compositor );
+    //データプロパティパネルの初期化
+    m_data_properties.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    addDockWidget( Qt::RightDockWidgetArea, &m_data_properties );
+    //レンダーオプションパネルの初期化
+    m_render_options.close();
+    m_render_options.setClientMessage( m_connect.getClientMessage() );
+    m_render_options.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    addDockWidget( Qt::RightDockWidgetArea, &m_render_options );
+    //コーディネートパネルの初期化
+    m_coordinates.setClientMessage( m_connect.getClientMessage() );
+    //伝達関数パネルの初期化
+    m_transfer_function_editor.setClientMessage( m_connect.getClientMessage() );
+    m_transfer_function_editor.setServerMessage( m_connect.getServerMessage() );
+    m_transfer_function_editor.setReceivedMessage( m_connect.getReceivedMessage() );
 }
 
 void PBVRGUI::keyPressEvent(QKeyEvent *event)
