@@ -143,11 +143,14 @@ void TransferFunctionEditor::updateRangeView()
         const kvs::visclient::FrequencyTable* freq_table = m_received_message->findColorFrequencyTable(trans_color->m_name);
         if ( freq_table != NULL )
         {
-//            ui->colorHistogramBar->setTable( *freq_table );
-//            ui->colorHistogramBar->setRange( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_min, m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_max );
-//            ui->colorHistogramBar->update();
-//            ui->colorMinRangeLbl->setNum( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_min );
-//            ui->colorMaxRangeLbl->setNum( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_max );
+            QMetaObject::invokeMethod(this, [this, freq_table, n_select_color]() {
+                    // ここに UI の更新などを行う
+                    ui->colorHistogramBar->setTable(*freq_table);
+                    ui->colorHistogramBar->setRange(m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_min, m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_max);
+                    ui->colorHistogramBar->update();
+                    ui->colorMinRangeLbl->setNum(m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_min);
+                    ui->colorMaxRangeLbl->setNum(m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_max);
+                }, Qt::QueuedConnection);
         }
     }
 
@@ -163,11 +166,13 @@ void TransferFunctionEditor::updateRangeView()
         const kvs::visclient::FrequencyTable* freq_table = m_received_message->findOpacityFrequencyTable(trans_opacity->m_name);
         if ( freq_table != NULL )
         {
-//            ui->opacityHistogramBar->setTable( *freq_table );
-//            ui->opacityHistogramBar->setRange( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_min, m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_max );
-//            ui->opacityHistogramBar->update();
-//            ui->opacityMinRangeLbl->setNum( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_min );
-//            ui->opacityMaxRangeLbl->setNum( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_max );
+            QMetaObject::invokeMethod(this, [this, freq_table, n_select_opacity]() {
+                    ui->opacityHistogramBar->setTable( *freq_table );
+                    ui->opacityHistogramBar->setRange( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_min, m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_max );
+                    ui->opacityHistogramBar->update();
+                    ui->opacityMinRangeLbl->setNum( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_min );
+                    ui->opacityMaxRangeLbl->setNum( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_max );
+                }, Qt::QueuedConnection);
         }
     }
 
