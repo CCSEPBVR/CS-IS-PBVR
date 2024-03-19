@@ -31,11 +31,9 @@ void RepetitionLevelControl::onApplyButtonClicked()
             {
                 if (auto* particleRenderer = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>(stochasticRenderer))
                 {
-                    kvs::glsl::ParticleBasedRenderer* copy = new kvs::glsl::ParticleBasedRenderer;
-                    copy->DownCast( particleRenderer );
-                    copy->enableShuffle();
-                    copy->setRepetitionLevel( ui->nextRepetitionLevelSBox->value() );
-                    m_screen->scene()->replaceRenderer( id.second, copy );
+                    kvs::RendererBase* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer;
+                    m_preference->applyShading( particle_based_renderer );
+                    m_screen->scene()->replaceRenderer( id.second, particle_based_renderer );
                 }
             }
         }

@@ -347,13 +347,14 @@ void MergePanel::onWorkerThreadFinished()
                 {
                     polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue() ) );
                     polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
-                    kvs::StochasticPolygonRenderer* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer;
+                    kvs::RendererBase* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer;
+                    m_preference->applyShading( stochastic_polygon_renderer );
                     m_files_manager[row]->setIds( m_screen->scene()->registerObject( polygon_object, stochastic_polygon_renderer ) );
                 }
                 else if( kvs::PointObject* polygon_object = dynamic_cast<kvs::PointObject*>(m_files_manager[row]->getObject()) )
                 {
-                    kvs::glsl::ParticleBasedRenderer* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer;
-                    particle_based_renderer->enableShuffle();
+                    kvs::RendererBase* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer;
+                    m_preference->applyShading( particle_based_renderer );
                     m_files_manager[row]->setIds( m_screen->scene()->registerObject( polygon_object, particle_based_renderer ) );
                 }
                 //                RendererType* polygonRenderer = new RendererType();
@@ -388,8 +389,7 @@ void MergePanel::onWorkerThreadFinished()
         }
     }
     m_time_control->setCurrentTimeStep( m_time_control->getNextTimeStep() );
-    m_preference->setCurrentTimeStep( m_time_control->getNextTimeStep() );
-    m_preference->applyShadingSettings();
+    m_preference->setCurrentTimeStep( m_time_control->getNextTimeStep() );    
     totalParticles();
     m_is_worker_thread_running = false;
     m_screen->update();

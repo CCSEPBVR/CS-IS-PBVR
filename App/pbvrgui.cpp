@@ -118,6 +118,7 @@ void PBVRGUI::initializePanels()
     //リピテーションレベルコントロールパネルの初期化
     m_repetition_level_control.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::LeftDockWidgetArea, &m_repetition_level_control );
+    m_repetition_level_control.setPreference( &m_preference );
     m_repetition_level_control.setScreen( m_screen );
     m_repetition_level_control.setCompositor( m_compositor );
     //データプロパティパネルの初期化

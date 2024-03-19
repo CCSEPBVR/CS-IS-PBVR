@@ -42,6 +42,14 @@ public:
         NoneBox
     };
 
+    enum ShaderType
+    {
+        NoShader,
+        LambertShading,
+        Phong,
+        BlinnPhong
+    };
+
 public:
     explicit Preference( QWidget *parent = nullptr );
     ~Preference();
@@ -60,8 +68,12 @@ public:
     void setTimeStepLabel( kvs::Label* time_step_label )                 { m_time_step_label = time_step_label;  }
     void setCurrentTimeStep( int currentTimeStep ) { m_time_step_label->setText("Time step: " + std::to_string(currentTimeStep));}
 
-    void loadShadingSettings();
-    void applyShadingSettings();
+    ShaderType getShaderType();
+    kvs::Shader::Lambert getLambertShader() { return m_lambert_shader; }
+    kvs::Shader::Phong getPhongShader() { return m_phong_shader; }
+    kvs::Shader::BlinnPhong getBlinnPhongShader() { return m_blinn_phong_shader; }
+
+    void applyShading(kvs::RendererBase*& rendererBase);
 
 private:
     Ui::Preference *ui;
@@ -72,6 +84,9 @@ private:
     kvs::Label* m_fps_label;
     kvs::Label* m_time_step_label;
     QSettings m_settings;
+    kvs::Shader::Lambert m_lambert_shader;
+    kvs::Shader::Phong m_phong_shader;
+    kvs::Shader::BlinnPhong m_blinn_phong_shader;
 
 private:
     bool checkConfigFileExists() { return QFile::exists( "config.ini" ); }
@@ -82,6 +97,7 @@ private:
     void loadResolutionSettings();
     void loadLabelsSettings();
     void loadFontSettings();
+    void loadShadingSettings();
 
     void setDefaultSettings();
 
@@ -101,6 +117,7 @@ private:
     void applyResolution();
     void applyLabelsSettings();
     void applyFontSettings();
+    void applyShadingSettings();
 
     void setBackGroundColor( const QColor& color );
     void setFontColor( const QColor& color );

@@ -74,6 +74,82 @@ void Preference::initialize()
     applySettings( true );
 }
 
+Preference::ShaderType Preference::getShaderType()
+{
+    if( ui->shadingGBox->isChecked() == false )
+    {
+        return Preference::NoShader;
+    }
+    else if( ui->lambertRBtn->isChecked() )
+    {
+        return Preference::LambertShading;
+    }
+    else if( ui->phongRBtn->isChecked() )
+    {
+        return Preference::Phong;
+    }
+    else if( ui->BlinnRBtn->isChecked() )
+    {
+        return Preference::BlinnPhong;
+    }
+    else
+    {
+        return Preference::NoShader;
+    }
+}
+
+void Preference::applyShading(kvs::RendererBase*& rendererBase)
+{
+    if (auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>(rendererBase))
+    {
+        if (auto* stochasticPolygonRenderer = dynamic_cast<kvs::StochasticPolygonRenderer*>(stochasticRenderer))
+        {
+            kvs::StochasticPolygonRenderer* copy = new kvs::StochasticPolygonRenderer;
+            copy->DownCast(stochasticPolygonRenderer);
+            switch (getShaderType())
+            {
+            case Preference::ShaderType::LambertShading:
+                copy->setShader(getLambertShader());
+                break;
+            case Preference::ShaderType::Phong:
+                copy->setShader(getPhongShader());
+                break;
+            case Preference::ShaderType::BlinnPhong:
+                copy->setShader(getBlinnPhongShader());
+                break;
+            case Preference::ShaderType::NoShader:
+            default:
+                copy->setShader(kvs::Shader::Lambert(1, 0));
+                break;
+            }
+            rendererBase = copy; // copyオブジェクトをrendererBaseに代入
+        }
+        else if (auto* particleRenderer = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>(stochasticRenderer))
+        {
+            kvs::glsl::ParticleBasedRenderer* copy = new kvs::glsl::ParticleBasedRenderer;
+            copy->DownCast(particleRenderer);
+            switch (getShaderType())
+            {
+            case Preference::ShaderType::LambertShading:
+                copy->setShader(getLambertShader());
+                break;
+            case Preference::ShaderType::Phong:
+                copy->setShader(getPhongShader());
+                break;
+            case Preference::ShaderType::BlinnPhong:
+                copy->setShader(getBlinnPhongShader());
+                break;
+            case Preference::ShaderType::NoShader:
+            default:
+                copy->setShader(kvs::Shader::Lambert(1, 0));
+                break;
+            }
+            copy->enableShuffle();
+            rendererBase = copy; // copyオブジェクトをrendererBaseに代入
+        }
+    }
+}
+
 void Preference::loadColorMapBarSettings()
 {
     m_settings.beginGroup( "ColorMapBar" );
@@ -234,6 +310,22 @@ void Preference::loadShadingSettings()
     ui->kdDSBox->setValue( kd );
     ui->ksDSBox->setValue( ks );
     ui->sDSBox->setValue( s );
+
+    m_lambert_shader.Ka = ka;
+    m_lambert_shader.Kd = kd;
+    m_lambert_shader.Ks = ks;
+    m_lambert_shader.S = s;
+
+    m_phong_shader.Ka = ka;
+    m_phong_shader.Kd = kd;
+    m_phong_shader.Ks = ks;
+    m_phong_shader.S = s;
+
+    m_blinn_phong_shader.Ka = ka;
+    m_blinn_phong_shader.Kd = kd;
+    m_blinn_phong_shader.Ks = ks;
+    m_blinn_phong_shader.S = s;
+
     m_settings.endGroup();
 }
 
@@ -532,94 +624,28 @@ void Preference::applyFontSettings()
 
 void Preference::applyShadingSettings()
 {
-    bool isEnable = ui->shadingGBox->isChecked();
-    if( isEnable )
-    {
-        if( m_screen->scene()->objectManager()->hasObject() )
-        {
-            const int size = m_screen->scene()->IDManager()->size();
-            for( int index = 0; index < size; index++ )
-            {
-                auto id = m_screen->scene()->IDManager()->id( index );
-                auto* object = m_screen->scene()->objectManager()->object( id.first );
-                auto* rendererBase = m_screen->scene()->rendererManager()->renderer( id.second );
+    m_lambert_shader.Ka = ui->kaDSBox->value();
+    m_lambert_shader.Kd = ui->kdDSBox->value();
 
-                if( object->isVisible() && rendererBase )
-                {
-                    if (auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>(rendererBase))
-                    {
-                        if (auto* stochasticPolygonRenderer = dynamic_cast<kvs::StochasticPolygonRenderer*>(stochasticRenderer))
-                        {
-                            kvs::StochasticPolygonRenderer* copy = new kvs::StochasticPolygonRenderer;
-                            copy->DownCast( stochasticPolygonRenderer );
-                            if( ui->lambertRBtn->isChecked() )
-                            {
-                                copy->setShader( kvs::Shader::Lambert( ui->kaDSBox->value(), ui->kdDSBox->value() ) );
-                            }
-                            else if( ui->phongRBtn->isChecked() )
-                            {
-                                copy->setShader( kvs::Shader::Phong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
+    m_phong_shader.Ka = ui->kaDSBox->value();
+    m_phong_shader.Kd = ui->kdDSBox->value();
+    m_phong_shader.Ks = ui->ksDSBox->value();
+    m_phong_shader.S = ui->sDSBox->value();
 
-                            }
-                            else if( ui->BlinnRBtn->isChecked() )
-                            {
-                                copy->setShader( kvs::Shader::BlinnPhong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
-                            }
-                            m_screen->scene()->replaceRenderer( id.second, copy );
-                        }
-                        else if (auto* particleRenderer = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>(stochasticRenderer))
-                        {
-                            kvs::glsl::ParticleBasedRenderer* copy = new kvs::glsl::ParticleBasedRenderer;
-                            copy->DownCast( particleRenderer );
-                            if( ui->lambertRBtn->isChecked() )
-                            {
-                                copy->setShader( kvs::Shader::Lambert( ui->kaDSBox->value(), ui->kdDSBox->value() ) );
-                            }
-                            else if( ui->phongRBtn->isChecked() )
-                            {
-                                copy->setShader( kvs::Shader::Phong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
-                            }
-                            else if( ui->BlinnRBtn->isChecked() )
-                            {
-                                copy->setShader( kvs::Shader::BlinnPhong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value()) );
-                            }
-                            copy->enableShuffle();
-                            m_screen->scene()->replaceRenderer( id.second, copy );
-                        }
-                    }
-                }
-            }
-        }
-    }
-    else
+    m_blinn_phong_shader.Ka = ui->kaDSBox->value();
+    m_blinn_phong_shader.Kd = ui->kdDSBox->value();
+    m_blinn_phong_shader.Ks = ui->ksDSBox->value();
+    m_blinn_phong_shader.S = ui->sDSBox->value();
+
+    if( m_screen->scene()->objectManager()->hasObject() )
     {
         const int size = m_screen->scene()->IDManager()->size();
         for( int index = 0; index < size; index++ )
         {
             auto id = m_screen->scene()->IDManager()->id( index );
-            auto* object = m_screen->scene()->objectManager()->object( id.first );
             auto* rendererBase = m_screen->scene()->rendererManager()->renderer( id.second );
-            if( object->isVisible() && rendererBase )
-            {
-                if (auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>(rendererBase))
-                {
-                    if (auto* stochasticPolygonRenderer = dynamic_cast<kvs::StochasticPolygonRenderer*>(stochasticRenderer))
-                    {
-                        kvs::StochasticPolygonRenderer* copy = new kvs::StochasticPolygonRenderer;
-                        copy->DownCast( stochasticPolygonRenderer );
-                        copy->setShader( kvs::Shader::Lambert( 1, 0 ) );
-                        m_screen->scene()->replaceRenderer( id.second, copy );
-                    }
-                    else if (auto* particleRenderer = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>(stochasticRenderer))
-                    {
-                        kvs::glsl::ParticleBasedRenderer* copy = new kvs::glsl::ParticleBasedRenderer;
-                        copy->DownCast( particleRenderer );
-                        copy->setShader( kvs::Shader::Lambert( 1, 0 ) );
-                        copy->enableShuffle();
-                        m_screen->scene()->replaceRenderer( id.second, copy );
-                    }
-                }
-            }
+            applyShading( rendererBase );
+            m_screen->scene()->replaceRenderer( id.second, rendererBase );
         }
     }
 }
