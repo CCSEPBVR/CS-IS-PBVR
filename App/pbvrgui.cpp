@@ -132,6 +132,7 @@ void PBVRGUI::initializePanels()
     //コーディネートパネルの初期化
     m_coordinates.setClientMessage( m_connect.getClientMessage() );
     //伝達関数パネルの初期化
+    m_transfer_function_editor.setMerge( &m_merge );
     m_transfer_function_editor.setClientMessage( m_connect.getClientMessage() );
     m_transfer_function_editor.setServerMessage( m_connect.getServerMessage() );
     m_transfer_function_editor.setReceivedMessage( m_connect.getReceivedMessage() );

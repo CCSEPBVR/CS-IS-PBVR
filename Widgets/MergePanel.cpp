@@ -686,6 +686,12 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                         if( m_merge->m_files_manager[row]->getCurrentDisplayedStep() == nextTimeStep ) //表示中のオブジェクトが次のステップと一致する場合
                         {
                             qInfo() << "表示中のオブジェクトと次のステップが一致しているため何もしません。"  << __LINE__;
+                            if( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_merge->getIsParticleGenerationNeeded() ) //サーバの更新が必要な場合
+                            {
+                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( nextTimeStep ) );
+                                m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
+                                m_merge->setIsParticleGenerationNeeded( false );
+                            }
                         }
                         else //一致しなかった場合
                         {
@@ -717,6 +723,12 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                 if ( m_merge->m_files_manager[row]->getCurrentDisplayedStep() <= minTimeStep ) //表示中のオブジェクトがローカル最小ステップ以下である場合。
                                 {
                                     qInfo() << "表示中のオブジェクトがローカル最小ステップ以下であるため何もしません。"  << __LINE__;
+                                    if( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_merge->getIsParticleGenerationNeeded() ) //サーバの更新が必要な場合
+                                    {
+                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( minTimeStep ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
+                                        m_merge->setIsParticleGenerationNeeded( false );
+                                    }
                                 }
                                 else //一致しなかった場合
                                 {
@@ -751,6 +763,12 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                 if ( m_merge->m_files_manager[row]->getCurrentDisplayedStep() >= maxTimeStep ) //表示中のオブジェクトがローカル最大ステップ以上である場合。
                                 {
                                     qInfo() << "表示中のオブジェクトがローカル最大ステップ以上であるため何もしません。"  << __LINE__;
+                                    if( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_merge->getIsParticleGenerationNeeded() ) //サーバの更新が必要な場合
+                                    {
+                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( maxTimeStep ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
+                                        m_merge->setIsParticleGenerationNeeded( false );
+                                    }
                                 }
                                 else //一致しなかった場合
                                 {
@@ -786,6 +804,12 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                         if( m_merge->m_files_manager[row]->getCurrentDisplayedStep() == nextTimeStep ) //表示中のオブジェクトが次のステップと一致する場合
                         {
                             qInfo() << "表示中のオブジェクトと次のステップが一致しているため何もしません。"  << __LINE__;
+                            if( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_merge->getIsParticleGenerationNeeded() ) //サーバの更新が必要な場合
+                            {
+                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( nextTimeStep ) );
+                                m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
+                                m_merge->setIsParticleGenerationNeeded( false );
+                            }
                         }
                         else //一致しなかった場合
                         {
@@ -817,6 +841,12 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                 if ( m_merge->m_files_manager[row]->getCurrentDisplayedStep() <= minTimeStep ) //表示中のオブジェクトがローカル最小ステップ以下である場合。
                                 {
                                     qInfo() << "表示中のオブジェクトがローカル最小ステップ以下であるため何もしません。"  << __LINE__;
+                                    if( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_merge->getIsParticleGenerationNeeded() ) //サーバの更新が必要な場合
+                                    {
+                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( minTimeStep ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
+                                        m_merge->setIsParticleGenerationNeeded( false );
+                                    }
                                 }
                                 else //一致しなかった場合
                                 {
@@ -851,6 +881,12 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                 if ( m_merge->m_files_manager[row]->getCurrentDisplayedStep() >= maxTimeStep ) //表示中のオブジェクトがローカル最大ステップ以上である場合。
                                 {
                                     qInfo() << "表示中のオブジェクトがローカル最大ステップ以上であるため何もしません。"  << __LINE__;
+                                    if( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_merge->getIsParticleGenerationNeeded() ) //サーバの更新が必要な場合
+                                    {
+                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( maxTimeStep ) );
+                                        m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
+                                        m_merge->setIsParticleGenerationNeeded( false );
+                                    }
                                 }
                                 else //一致しなかった場合
                                 {
@@ -901,6 +937,12 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                         {
                             qInfo() << "非表示中のオブジェクトと次のステップが一致しているため再表示します。"  << __LINE__;
                             object->show();
+                            if( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_merge->getIsParticleGenerationNeeded() ) //サーバの更新が必要な場合
+                            {
+                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->connect2( maxTimeStep ) );
+                                m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
+                                m_merge->setIsParticleGenerationNeeded( false );
+                            }
                         }
                         else //一致しなかった場合
                         {

@@ -8,6 +8,9 @@
 #include "ExtendedTransferFunctionMessage.h"
 #include "ReceivedMessage.h"
 #include "FunctionListEditor.h"
+
+class MergePanel;
+
 namespace Ui {
 class TransferFunctionEditor;
 }
@@ -19,6 +22,7 @@ class TransferFunctionEditor : public QDialog
 public:
     explicit TransferFunctionEditor(QWidget *parent = nullptr);
     ~TransferFunctionEditor();
+    void setMerge( MergePanel* merge ){  m_merge = merge; }
     void setClientMessage( jpv::ParticleTransferClientMessage* client_message ){ m_client_message = client_message; }
     void setServerMessage( jpv::ParticleTransferServerMessage* server_message ){ m_server_message = server_message; }
     void setReceivedMessage( kvs::visclient::ReceivedMessage* received_message ){ m_received_message = received_message; }
@@ -32,6 +36,7 @@ public:
 
 private:
     Ui::TransferFunctionEditor *ui;
+    MergePanel* m_merge;
 
     jpv::ParticleTransferClientMessage* m_client_message;
     jpv::ParticleTransferServerMessage* m_server_message;

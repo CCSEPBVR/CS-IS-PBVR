@@ -1,5 +1,6 @@
 #include "TransferFunctionEditor.h"
 #include "ui_TransferFunctionEditor.h"
+#include "Widgets/MergePanel.h"
 #include <kvs/ColorMapBar>
 #include <kvs/OpacityMapBar>
 #include <QOpenGLWidget>
@@ -537,6 +538,7 @@ void TransferFunctionEditor::onApplyButtonClicked()
 //    if( !m_client_message->m_x_synthesis.empty() ) m_client_message->x_synthesis_token = this->convertToken( m_client_message->m_x_synthesis );
 //    if( !m_client_message->m_y_synthesis.empty() ) m_client_message->y_synthesis_token = this->convertToken( m_client_message->m_y_synthesis );
 //    if( !m_client_message->m_z_synthesis.empty() ) m_client_message->z_synthesis_token = this->convertToken( m_client_message->m_z_synthesis );
+    m_merge->setIsParticleGenerationNeeded( true );
 }
 
 void TransferFunctionEditor::onImportButtonClicked()
