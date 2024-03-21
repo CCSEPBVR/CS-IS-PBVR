@@ -261,6 +261,11 @@ kvs::PointObject* Connect::connect2( int timeStep )
     return pointObject;
 }
 
+void Connect::deletedServerObject()
+{
+    ui->connectPBtn->setEnabled( true );
+}
+
 void Connect::onConnectButtonClicked()
 {
     connect1();

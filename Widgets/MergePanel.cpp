@@ -275,6 +275,10 @@ void MergePanel::removeChecked()
             delete deleteCheckBox;
 
             // m_files_managerからも対応する要素を削除する
+            if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObject )
+            {
+                m_connect->deletedServerObject();
+            }
             delete m_files_manager[row];
             m_files_manager.removeAt(row);
 
