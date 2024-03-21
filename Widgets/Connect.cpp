@@ -1,6 +1,7 @@
 #include "Connect.h"
 #include "ui_Connect.h"
 
+#include <QMessageBox>
 #include <kvs/Camera>
 #include <kvs/PointObject>
 #include <kvs/ParticleBasedRenderer>
@@ -89,6 +90,11 @@ void Connect::connect1()
     reply.camera = new kvs::Camera();
 
     int init = client.initClient();
+    if( init < 0 )
+    {
+        QMessageBox::information(this, tr("Connection Error"), tr("The connection to the server failed. Please verify if the server is up and running."));
+        return;
+    }
     strncpy( message.m_header, "JPTP /1.0\r\n", 11 );
     message.m_initialize_parameter = -3;
     message.m_input_directory = ui->volumeDataFilePathLEdit->text().toStdString();
