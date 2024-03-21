@@ -32,7 +32,8 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_render_options( this ),
     m_data_properties( this ),
     m_coordinates( this ),
-    m_transfer_function_editor( this )
+    m_transfer_function_editor( this ),
+    m_color_function_selector( this )
 {
     ui->setupUi(this);
     setWindowTitle( "QTPBVR vX.X.X" );
@@ -92,6 +93,10 @@ void PBVRGUI::initializePanels()
     QWidgetAction *dataSummaryWidgetAction = new QWidgetAction( this );
     dataSummaryWidgetAction->setDefaultWidget( &m_data_summary );
     ui->dataSummaryTBar->addAction( dataSummaryWidgetAction );
+    //色関数選択ウィジェット
+    QWidgetAction *colorFunctionSelectorWidgetAction = new QWidgetAction( this );
+    colorFunctionSelectorWidgetAction->setDefaultWidget( &m_color_function_selector );
+    ui->colorFunctionSelectorTBar->addAction( colorFunctionSelectorWidgetAction );
     //マージパネルの初期化
     m_merge.setScreen( m_screen );
     m_merge.setPreference( &m_preference );

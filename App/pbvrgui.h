@@ -20,6 +20,7 @@
 #include "Widgets/RepetitionLevelControl.h"
 #include "Widgets/TransferFunctionEditor.h"
 #include "Widgets/Coordinates.h"
+#include "Widgets/ColorFunctionSelector.h"
 
 namespace Ui {
 class PBVRGUI;
@@ -56,6 +57,7 @@ private:
     RepetitionLevelControl m_repetition_level_control;
     TransferFunctionEditor m_transfer_function_editor;
     Coordinates m_coordinates;
+    ColorFunctionSelector m_color_function_selector;
 
 private:
     void onPreference()      { m_preference.show(); }

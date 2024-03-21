@@ -30,6 +30,7 @@ TARGET = Widgets
 #=============================================================================
 HEADERS += \
     AnimationControls.h \
+    ColorFunctionSelector.h \
     ColorMapEditor.h \
     Coordinates.h \
     DataProperties.h \
@@ -62,6 +63,7 @@ HEADERS += \
 #=============================================================================
 SOURCES += \
     AnimationControls.cpp \
+    ColorFunctionSelector.cpp \
     ColorMapEditor.cpp \
     Coordinates.cpp \
     DataProperties.cpp \
@@ -92,6 +94,7 @@ SOURCES += \
 #=============================================================================
 FORMS += \
     AnimationControls.ui \
+    ColorFunctionSelector.ui \
     ColorMapEditor.ui \
     Coordinates.ui \
     DataProperties.ui \
