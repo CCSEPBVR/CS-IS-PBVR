@@ -76,10 +76,11 @@ PBVRGUI::~PBVRGUI()
 
 void PBVRGUI::initializePanels()
 {
+
     //プリファレンスパネルの初期化
     m_preference.setScreen( m_screen );
     m_preference.setCompositor( m_compositor );
-    m_preference.setColorMapBar( m_color_map_bar );
+    m_preference.setColorMapBar( m_color_map_bar );    
     m_preference.setOrientationAxis( m_orientation_axis );
     m_preference.setFPSLabel( m_fps_label );
     m_preference.setTimeStepLabel( m_time_step_label );
@@ -93,10 +94,6 @@ void PBVRGUI::initializePanels()
     QWidgetAction *dataSummaryWidgetAction = new QWidgetAction( this );
     dataSummaryWidgetAction->setDefaultWidget( &m_data_summary );
     ui->dataSummaryTBar->addAction( dataSummaryWidgetAction );
-    //色関数選択ウィジェット
-    QWidgetAction *colorFunctionSelectorWidgetAction = new QWidgetAction( this );
-    colorFunctionSelectorWidgetAction->setDefaultWidget( &m_color_function_selector );
-    ui->colorFunctionSelectorTBar->addAction( colorFunctionSelectorWidgetAction );
     //マージパネルの初期化
     m_merge.setScreen( m_screen );
     m_merge.setPreference( &m_preference );
@@ -141,6 +138,14 @@ void PBVRGUI::initializePanels()
     m_transfer_function_editor.setClientMessage( m_connect.getClientMessage() );
     m_transfer_function_editor.setServerMessage( m_connect.getServerMessage() );
     m_transfer_function_editor.setReceivedMessage( m_connect.getReceivedMessage() );
+    //色関数選択ウィジェット
+
+    QWidgetAction *colorFunctionSelectorWidgetAction = new QWidgetAction( this );
+    colorFunctionSelectorWidgetAction->setDefaultWidget( &m_color_function_selector );
+    ui->colorFunctionSelectorTBar->addAction( colorFunctionSelectorWidgetAction );
+    m_color_function_selector.setColorMapBar( m_color_map_bar );
+    m_color_function_selector.setExtendedTransferFunctionMessage( m_transfer_function_editor.getExtendedTransferFunctionMessage() );
+    m_color_function_selector.populateColorFunctionLists( m_color_function_selector.getExtendedTransferFunctionMessage()->m_transfer_function_number );
 }
 
 void PBVRGUI::keyPressEvent(QKeyEvent *event)

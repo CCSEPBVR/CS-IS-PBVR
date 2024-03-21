@@ -33,6 +33,7 @@ public:
     void updateRangeView();
     void importFile( const std::string& fileName );
     void exportFile( const std::string& fileName, const bool addition);
+    ExtendedTransferFunctionMessage* getExtendedTransferFunctionMessage() { return &m_extended_transfer_function_message; }
 
 private:
     Ui::TransferFunctionEditor *ui;
