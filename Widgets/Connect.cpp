@@ -116,6 +116,7 @@ void Connect::connect1()
     m_transfer_function_editor->applyVariableRange( reply.m_variable_range );
 //    qInfo() << reply.m_variable_range.min( "t1_var_c" );
 //    qInfo() << reply.m_min_value;
+    ui->cancelPBtn->setDisabled( true );
 }
 
 kvs::PointObject* Connect::connect2( int timeStep )
