@@ -67,6 +67,7 @@ void PointObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
     if ( volume )
     {
         volume->setCoordSynthesizerStrings( m_coord_synthesizer_strings );
+        volume->setCoordSynthesizerTokens( m_coord_synthesizer_tokens );
     }
 
 //FJ_TIMER_KAWAMURA
@@ -167,6 +168,7 @@ pbvr::PointObject* PointObjectGenerator::sampling( const Argument& param, const 
     pbvr::TransferFunction tf = param.m_transfer_function;
     std::vector<pbvr::TransferFunction> tf_array = param.m_transfunc_array;
 
+
     // volume calculate test.
 #if 0 //TEST_DELETE
     if ( param.m_test_volume )
@@ -184,6 +186,7 @@ pbvr::PointObject* PointObjectGenerator::sampling( const Argument& param, const 
     {
 // CO by shimomura 2022/12/21
     case 'u':
+        std::cout << "Uniform sampling" << std::endl;
         return new pbvr::CellByCellUniformSampling( camera, *volume, subpixel_level, sampling_step, tf, tf_array,
                                                     param.m_transfunc_synthesizer, param.m_normal_ingredient, param.m_crop,
                                                     param.m_particle_density, param.m_batch );

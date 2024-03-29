@@ -113,6 +113,40 @@ TransferFunctionSynthesizer::~TransferFunctionSynthesizer()
     delete[] m_var_value;
 }
 
+//add by shimomura 2024/03/25
+EquationToken TransferFunctionSynthesizer::convert_token(const std::string expression)
+{
+
+//    std::cout << "expression = " << expression << std::endl;
+    FuncParser::ExpressionTokenizer tokenizer;
+    FuncParser::ExpressionConverter exprconv;
+
+    EquationToken eq_token;
+
+    tokenizer.tokenizeString( expression );
+    exprconv.convertExpToken( tokenizer.m_exp_token );
+    int size = exprconv.token_array.size();
+    if( size > 128 ){ printf("Equation length too long\n");}
+
+    for( int i = 0; i < 128; i++ )
+    {
+        if( i < size )
+        {
+            eq_token.exp_token[i]   = exprconv.token_array[i];
+            eq_token.var_name[i]    = exprconv.var_array[i];
+            eq_token.val_array[i] = exprconv.value_array[i];
+        }
+        else
+        {
+            eq_token.exp_token[i]   = 0;
+            eq_token.var_name[i]    = 0;
+            eq_token.val_array[i] = 0;
+        }
+    }
+    return eq_token;
+}
+
+
 //kawamura
 void TransferFunctionSynthesizer::SynthesizedOpacityScalars(
     std::vector< TFS::TrilinearInterpolator* > interp ,

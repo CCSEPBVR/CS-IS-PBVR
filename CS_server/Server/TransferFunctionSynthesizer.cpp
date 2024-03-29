@@ -1,6 +1,7 @@
 #include "TransferFunctionSynthesizer.h"
 #include <fstream>
 #include <limits>
+#include "Token.h"
 
 #if (defined(KVS_PLATFORM_LINUX) || defined(KVS_PLATFORM_MACOSX))                                                                                                                   
 #include <execinfo.h>
@@ -100,37 +101,6 @@ TransferFunctionSynthesizer::TransferFunctionSynthesizer( TransferFunctionSynthe
 // function 4 debug add by shimomura 2022/12/28 
 void  TransferFunctionSynthesizer::setStabToken()
 {
-
-//    // stab token
-//    //  only q1
-//    EquationToken opa_func = {
-//        {VARIABLE, END}, // A1+A2 -> A1 A2 +
-//        {A1},// A1, A2
-//        {} //nothing
-//    };
-//
-//    m_opa_func = opa_func;
-//
-//    EquationToken col_func = {
-//        {VARIABLE, END},// C1
-//        {C1},// C1
-//        {}//nothing
-//    };
-//
-//    m_col_func = col_func;
-//
-//    EquationToken opa_var_1 = {
-//        {VARIABLE, END}, //q1-q2 -> q1 q2 -
-//        {Q1},
-//        {}
-//    };
-//
-//    EquationToken col_var_1 = {
-//        {VARIABLE, END}, //q1-q2 -> q1 q2 -
-//        {Q1},
-//        {}
-//    };
-
 
     EquationToken opa_func = {
         {VARIABLE, END}, // A1+A2 -> A1 A2 +
@@ -247,6 +217,24 @@ float TransferFunctionSynthesizer::getSamplingVolumeInverse() const
     return m_sampling_volume_inverse;
 }
 
+
+#if 0
+void setColorTransferFunctionSynthesis(std::string color_transfer_function_synthesis ) 
+{
+    m_color_transfer_function_synthesis = color_transfer_function_synthesis; 
+}
+
+void setOpacityTransferFunctionSynthesis(std::string opacity_transfer_function_synthesis )  
+{
+   m_opacity_transfer_function_synthesis = opacity_transfer_function_synthesis;
+}
+
+void setVolumeEquation( VolumeEquation volume_equation )
+{
+   m_volume_equation = volume_equation;
+}
+#endif
+
 float TransferFunctionSynthesizer::getMaxOpacity() const
 {
     return m_max_opacity;
@@ -308,6 +296,57 @@ void TransferFunctionSynthesizer::create()
     //m_variable_range.clear();
     //return;
 }
+
+#if 0
+void TransferFunctionSynthesizer::convert_token(const std::vector<VolumeEquation> voleq)
+{
+    m_opa_var.clear();
+    m_col_var.clear();
+
+    std::string m_color_transfer_function_synthesis;
+    std::string m_opacity_transfer_function_synthesis;
+}
+#endif
+
+EquationToken TransferFunctionSynthesizer::convert_token(const std::string expression)
+{
+
+    FuncParser::ExpressionTokenizer tokenizer;
+    FuncParser::ExpressionConverter exprconv;
+
+    EquationToken eq_token;
+
+    tokenizer.tokenizeString( expression );
+    exprconv.convertExpToken( tokenizer.m_exp_token );
+    int size = exprconv.token_array.size();
+    if( size > 128 ){ printf("Equation length too long\n");}
+
+    for( int i = 0; i < 128; i++ )
+    {
+        if( i < size )
+        {
+            eq_token.exp_token[i]   = exprconv.token_array[i];
+            eq_token.var_name[i]    = exprconv.var_array[i];
+            eq_token.val_array[i] = exprconv.value_array[i];
+        }
+        else
+        {
+            eq_token.exp_token[i]   = 0;
+            eq_token.var_name[i]    = 0;
+            eq_token.val_array[i] = 0;
+        }
+    }
+
+//    for(int i =0 ;i< 10 ; i++)
+//        {
+//            std::cout << "expression :eq.exp_token["<<i <<"] = " << eq_token.exp_token[i] <<std::endl; 
+//            std::cout << "expression :eq.exp_token["<<i <<"] = " << eq_token.var_name[i] <<std::endl; 
+//            std::cout << "expression :eq.exp_token["<<i <<"] = " << eq_token.val_array[i] <<std::endl; 
+//        }
+    return eq_token;
+
+}
+
 
 //---------structured----------------
 //kawamura
@@ -464,6 +503,8 @@ void TransferFunctionSynthesizer::CalculateOpacity(
         //m_rpn.eval( &scalars[0] );
         m_rpn.evalArray( &scalars[0], SIMDW );
 
+        //for(int I =0; I<10; I++ )    std::cout << " scalars[I] = " <<  scalars[I] << std::endl;
+//        std::cout<< "tf[i].opacityMap().max() = " << tf[i].opacityMap().maxValue() << std::endl;;
         //set opacity A1,A2,,,Ai. start 116 in VarName(Token.h)
         for( int I=0; I<SIMDW; I++ )
         {
@@ -631,6 +672,290 @@ void TransferFunctionSynthesizer::CalculateColor(
         Blue[I] = (kvs::UInt8)(blue[I]*255);
     }
 }
+
+void TransferFunctionSynthesizer::CalculateCoordArray(
+    std::vector< TFS::TrilinearInterpolator* > interp,
+    const int loop_cnt,
+    float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
+    float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
+    //const kvs::Vector3f *local_coord, 
+    //const kvs::Vector3f *global_coord,
+    std::vector<pbvr::TransferFunction>& tf,
+    const pbvr::CoordSynthesizerStrings css,
+    float* nx_g, float* ny_g, float* nz_g ) //global coord[SIMDW])
+{
+
+    //配列を追加
+    //float scalar_array[interp.size()][loop_cnt];
+
+    //float grad_array_x[interp.size()][loop_cnt];
+    //float grad_array_y[interp.size()][loop_cnt];
+    //float grad_array_z[interp.size()][loop_cnt];
+
+    //float global_coord_x[loop_cnt];
+    //float global_coord_y[loop_cnt];
+    //float global_coord_z[loop_cnt];
+
+    //float eval_result[loop_cnt];
+
+    //float opacity_map_array[m_opa_var.size()][loop_cnt];
+
+    float** scalar_array = new float* [interp.size()];
+    for (int i = 0; i < interp.size(); ++i)
+    {
+        scalar_array[i] = new float[loop_cnt];
+    }
+
+    float** grad_array_x = new float* [interp.size()];
+    for (int i = 0; i < interp.size(); ++i)
+    {
+        grad_array_x[i] = new float[loop_cnt];
+    }
+
+    float** grad_array_y = new float* [interp.size()];
+    for (int i = 0; i < interp.size(); ++i)
+    {
+        grad_array_y[i] = new float[loop_cnt];
+    }
+
+    float** grad_array_z = new float* [interp.size()];
+    for (int i = 0; i < interp.size(); ++i)
+    {
+        grad_array_z[i] = new float[loop_cnt];
+    }
+
+    float* global_coord_x;
+    global_coord_x = new float[loop_cnt];
+
+    float* global_coord_y;
+    global_coord_y = new float[loop_cnt];
+
+    float* global_coord_z;
+    global_coord_z = new float[loop_cnt];
+
+    float* eval_result;
+    eval_result = new float[loop_cnt];
+
+    float** opacity_map_array = new float* [m_opa_var.size()];
+    for (int i = 0; i < m_opa_var.size(); ++i)
+    {
+        opacity_map_array[i] = new float[loop_cnt];
+    }
+
+    EquationToken x_synthesis; 
+    EquationToken y_synthesis; 
+    EquationToken z_synthesis; 
+#if 0            
+    for(int i = 0 ; i<128; i++ )
+    {
+        x_synthesis.exp_token[i] = cst.m_x_coord_synthesizer_token.exp_token[i];
+        x_synthesis.var_name[i]  = cst.m_x_coord_synthesizer_token.var_name[i] ;
+        x_synthesis.val_array[i] = cst.m_x_coord_synthesizer_token.val_array[i];
+        y_synthesis.exp_token[i] = cst.m_y_coord_synthesizer_token.exp_token[i];
+        y_synthesis.var_name[i]  = cst.m_y_coord_synthesizer_token.var_name[i] ;
+        y_synthesis.val_array[i] = cst.m_y_coord_synthesizer_token.val_array[i];
+        z_synthesis.exp_token[i] = cst.m_z_coord_synthesizer_token.exp_token[i];
+        z_synthesis.var_name[i]  = cst.m_z_coord_synthesizer_token.var_name[i] ;
+        z_synthesis.val_array[i] = cst.m_z_coord_synthesizer_token.val_array[i];
+    }
+#endif        
+        x_synthesis = convert_token(css.m_x_coord_synthesizer_string);       
+        y_synthesis = convert_token(css.m_y_coord_synthesizer_string);       
+        z_synthesis = convert_token(css.m_z_coord_synthesizer_string);       
+
+    for (int i = 0; i < loop_cnt; i++)
+    {
+        global_coord_x[i] = x_g[i];
+        global_coord_y[i] = y_g[i];
+        global_coord_z[i] = z_g[i];
+    }
+
+    size_t nvar = interp.size();
+
+    //bindCell, setLocalPoint, gradient, scalar をまとめてこの関数内部でSIMD化
+    for( size_t j= 0; j < nvar; j++ )
+    {
+        float scalar[SIMDW];
+        float grad_x[SIMDW], grad_y[SIMDW], grad_z[SIMDW];
+        
+        interp[j]->attachPoint( x_l, y_l, z_l );
+        interp[j]->scalar( scalar );
+        interp[j]->gradient( grad_x, grad_y, grad_z );
+        
+        for(int k=0; k<loop_cnt; k++)
+        {
+            scalar_array[j][k] = scalar[k];
+            grad_array_x[j][k] = grad_x[k]; 
+            grad_array_y[j][k] = grad_y[k];
+            grad_array_z[j][k] = grad_z[k];
+        }
+    }
+
+    m_var_value_array[X] = global_coord_x;
+    m_var_value_array[Y] = global_coord_y;
+    m_var_value_array[Z] = global_coord_z;
+
+//    if(cst.x_token_empty)
+    if(css.m_x_coord_synthesizer_string.empty())
+//    if(css.m_x_coord_synthesizer_string.size() == 0)
+    { 
+        for( int jx=0; jx<loop_cnt; jx++ )
+        {
+            //new_coord_array[jx][0]   = global_coord_x[jx]; 
+            nx_g[jx]   = global_coord_x[jx]; 
+        }
+    }
+    else{
+//        //set variable eq. ex) Q1+Q2/Q3
+        m_rpn.setExpToken    ( &(x_synthesis.exp_token[0]) );
+        m_rpn.setVariableName( &(x_synthesis.var_name[0]) );
+        m_rpn.setNumber      ( &(x_synthesis.val_array[0]) );
+
+        //id of Q1=4, Q2=8,,,,, Qn=4*n
+        for( size_t j= 0; j < nvar; j++ )
+        {
+            m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
+            m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
+            m_var_value_array[4*(j+1)+2] = &grad_array_y[j][0];
+            m_var_value_array[4*(j+1)+3] = &grad_array_z[j][0];
+        }
+
+        m_rpn.setVariableValueArray( m_var_value_array );
+
+        //calc. m_opa_var
+        m_rpn.evalArray(eval_result, loop_cnt);
+    
+        //set opacity A1,A2,,,Ai. start 116 in VarName(Token.h)
+        for( int jx=0; jx<loop_cnt; jx++ )
+        {
+            //new_coord_array[jx][0]   = eval_result[jx]; 
+            nx_g[jx]   = eval_result[jx]; 
+        }
+    }
+
+    //if(cst.y_token_empty)
+    if(css.m_y_coord_synthesizer_string.empty())
+//    if(css.m_y_coord_synthesizer_string.size() == 0)
+    { 
+        for( int jx=0; jx<loop_cnt; jx++ )
+        {
+            //new_coord_array[jx][1]   = global_coord_y[jx]; 
+            ny_g[jx]   = global_coord_y[jx]; 
+        }
+    }
+    else
+    {
+
+//        //set variable eq. ex) Q1+Q2/Q3
+        m_rpn.setExpToken    ( &(y_synthesis.exp_token[0]) );
+        m_rpn.setVariableName( &(y_synthesis.var_name[0]) );
+        m_rpn.setNumber      ( &(y_synthesis.val_array[0]) );
+
+        //id of Q1=4, Q2=8,,,,, Qn=4*n
+        for( size_t j= 0; j < nvar; j++ )
+        {
+            m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
+            m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
+            m_var_value_array[4*(j+1)+2] = &grad_array_y[j][0];
+            m_var_value_array[4*(j+1)+3] = &grad_array_z[j][0];
+        }
+
+        m_rpn.setVariableValueArray( m_var_value_array );
+
+        //calc. m_opa_var
+        m_rpn.evalArray(eval_result, loop_cnt);
+    
+        //set opacity A1,A2,,,Ai. start 116 in VarName(Token.h)
+        for( int jx=0; jx<loop_cnt; jx++ )
+        {
+            //new_coord_array[jx][1]   = eval_result[jx]; 
+            ny_g[jx]   = eval_result[jx]; 
+        }
+    }
+
+    //if(cst.z_token_empty)
+    if(css.m_z_coord_synthesizer_string.empty())
+//    if(css.m_z_coord_synthesizer_string.size() == 0)
+    { 
+        for( int jx=0; jx<loop_cnt; jx++ )
+        {
+            nz_g[jx]   = global_coord_z[jx]; 
+        }
+    }
+    else
+    {
+
+       //set variable eq. ex) Q1+Q2/Q3
+        m_rpn.setExpToken    ( &(z_synthesis.exp_token[0]) );
+        m_rpn.setVariableName( &(z_synthesis.var_name[0]) );
+        m_rpn.setNumber      ( &(z_synthesis.val_array[0]) );
+
+
+        //id of Q1=4, Q2=8,,,,, Qn=4*n
+        for( size_t j= 0; j < nvar; j++ )
+        {
+            m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
+            m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
+            m_var_value_array[4*(j+1)+2] = &grad_array_y[j][0];
+            m_var_value_array[4*(j+1)+3] = &grad_array_z[j][0];
+        }
+
+        m_rpn.setVariableValueArray( m_var_value_array );
+
+        //calc. m_opa_var
+        m_rpn.evalArray(eval_result, loop_cnt);
+    
+        //set opacity A1,A2,,,Ai. start 116 in VarName(Token.h)
+        for( int jx=0; jx<loop_cnt; jx++ )
+        {
+//            new_coord_array[jx][2]   = eval_result[jx]; 
+            nz_g[jx]  = eval_result[jx];
+        }
+    }
+
+    //配列の削除
+    for (int i = 0; i < interp.size(); ++i)
+    {
+        delete[] scalar_array[i];
+    }
+    delete[] scalar_array;
+    scalar_array = nullptr;
+
+    for (int i = 0; i < interp.size(); ++i)
+    {
+        delete[] grad_array_x[i];
+    }
+    delete[] grad_array_x;
+    grad_array_x = nullptr;
+
+    for (int i = 0; i < interp.size(); ++i)
+    {
+        delete[] grad_array_y[i];
+    }
+    delete[] grad_array_y;
+    grad_array_y = nullptr;
+
+    for (int i = 0; i < interp.size(); ++i)
+    {
+        delete[] grad_array_z[i];
+    }
+    delete[] grad_array_z;
+    grad_array_z = nullptr;
+
+    delete[] global_coord_x;
+    delete[] global_coord_y;
+    delete[] global_coord_z;
+
+    delete[] eval_result;
+
+    for (int i = 0; i < m_opa_var.size(); ++i)
+    {
+        delete[] opacity_map_array[i];
+    }
+    delete[] opacity_map_array;
+    opacity_map_array = nullptr;
+}
+
 
 //------------unstructured------
 //kawamura
@@ -1161,7 +1486,8 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
     const kvs::Vector3f *local_coord, 
     const kvs::Vector3f *global_coord,
     std::vector<pbvr::TransferFunction>& tf,
-    const pbvr::CoordSynthesizerTokens cst,
+//    const pbvr::CoordSynthesizerTokens cst,
+    const pbvr::CoordSynthesizerStrings css,
 //    float *new_coord_array)
     kvs::Vector3f *new_coord_array)
 {
@@ -1226,7 +1552,7 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
     EquationToken x_synthesis; 
     EquationToken y_synthesis; 
     EquationToken z_synthesis; 
-            
+#if 0            
     for(int i = 0 ; i<128; i++ )
     {
         x_synthesis.exp_token[i] = cst.m_x_coord_synthesizer_token.exp_token[i];
@@ -1239,6 +1565,10 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
         z_synthesis.var_name[i]  = cst.m_z_coord_synthesizer_token.var_name[i] ;
         z_synthesis.val_array[i] = cst.m_z_coord_synthesizer_token.val_array[i];
     }
+#endif        
+        x_synthesis = convert_token(css.m_x_coord_synthesizer_string);       
+        y_synthesis = convert_token(css.m_y_coord_synthesizer_string);       
+        z_synthesis = convert_token(css.m_z_coord_synthesizer_string);       
 
     for (int i = 0; i < loop_cnt; i++)
     {
@@ -1265,7 +1595,9 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
 
-    if(cst.x_token_empty)
+//    if(cst.x_token_empty)
+    if(css.m_x_coord_synthesizer_string.empty())
+//    if(css.m_x_coord_synthesizer_string.size() == 0)
     { 
         for( int jx=0; jx<loop_cnt; jx++ )
         {
@@ -1299,7 +1631,9 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
         }
     }
 
-    if(cst.y_token_empty)
+    //if(cst.y_token_empty)
+    if(css.m_y_coord_synthesizer_string.empty())
+//    if(css.m_y_coord_synthesizer_string.size() == 0)
     { 
         for( int jx=0; jx<loop_cnt; jx++ )
         {
@@ -1335,7 +1669,9 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
         }
     }
 
-    if(cst.z_token_empty)
+    //if(cst.z_token_empty)
+    if(css.m_z_coord_synthesizer_string.empty())
+//    if(css.m_z_coord_synthesizer_string.size() == 0)
     { 
         for( int jx=0; jx<loop_cnt; jx++ )
         {

@@ -51,6 +51,14 @@ public:
     std::string m_y_synthesis;
     std::string m_z_synthesis;
 
+    class VolumeEquation
+    {
+    public:
+        std::string m_name;
+        std::string m_equation;
+    };
+
+    std::vector<VolumeEquation>        m_voleqn;
     size_t m_normal_ingredient;
 
 public:

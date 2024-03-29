@@ -154,11 +154,11 @@ void ExtendedTransferFunctionMessage::applyToClientMessage( jpv::ParticleTransfe
     message->opacity_func = this->convertToken( this->m_opacity_transfer_function_synthesis );
 #else
     std::string colorSynthBuf = this->m_color_transfer_function_synthesis;
-    std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
-    message->color_func = this->convertToken( colorSynthBuf );
+//    std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
+//    message->color_func = this->convertToken( colorSynthBuf );
     std::string opacitySynthBuf = this->m_opacity_transfer_function_synthesis;
-    std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
-    message->opacity_func = this->convertToken( opacitySynthBuf );
+//    std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
+//    message->opacity_func = this->convertToken( opacitySynthBuf );
 
     message->color_tf_synthesis =  this->m_color_transfer_function_synthesis;
     message->opacity_tf_synthesis = this->m_opacity_transfer_function_synthesis;
@@ -239,8 +239,8 @@ void ExtendedTransferFunctionMessage::applyToClientMessage( jpv::ParticleTransfe
         message->m_volume_equation.push_back( veq_c );
         message->m_volume_equation.push_back( veq_o );
 
-        message->color_var.push_back( this->convertToken( this->m_color_transfer_function[i].m_color_variable ) );
-        message->opacity_var.push_back( this->convertToken( this->m_opacity_transfer_function[i].m_opacity_variable ) );
+        //message->color_var.push_back( this->convertToken( this->m_color_transfer_function[i].m_color_variable ) );
+        //message->opacity_var.push_back( this->convertToken( this->m_opacity_transfer_function[i].m_opacity_variable ) );
     }
 
 #endif

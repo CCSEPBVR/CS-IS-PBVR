@@ -10,6 +10,9 @@
 #include "../kvs_wrapper.h"
 #include "ReversePolishNotation.h"
 #include "Token.h"
+#include "VolumeObjectBase.h"
+#include "ExpressionTokenizer.h"
+#include "ExpressionConverter.h"
 
 #define TF_COUNT 5 //伝達関数の数
 #define VAR_OFFSET_A 112 //Token.h->VarName-A1へのオフセット
@@ -57,6 +60,8 @@ public:
     void setOpacityVariable( std::vector<EquationToken> opa_var );
 
     void setColorVariable( std::vector<EquationToken> col_var );
+
+    EquationToken convert_token(std::string expression);
 
     ~TransferFunctionSynthesizer();
 

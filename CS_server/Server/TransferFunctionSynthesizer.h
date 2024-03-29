@@ -5,15 +5,16 @@
 #include <string>
 #include <vector>
 #include <kvs/RGBColor>
-//#include <kvs/TrilinearInterpolator>
 #include "HexahedralCell.h"
 #include "TrilinearInterpolator.h"
 #include "TransferFunction.h"
-//#include "../kvs_wrapper.h"
 #include "ReversePolishNotation.h"
 #include "Token.h"
 //add by shimomura  2022/12/20
 #include "../Common/VariableRange.h"
+#include "ExpressionTokenizer.h"
+#include "ExpressionConverter.h"
+
 
 #ifdef DOUBLE_SCHEME  
   typedef double Type;
@@ -43,6 +44,15 @@ typedef std::map<std::string, size_t> QuantityMap;
 
 class TransferFunctionSynthesizer
 {
+
+public:
+    class VolumeEquation
+    {
+    public:
+        std::string m_name;
+        std::string m_equation;
+    };
+
 protected:
     //2019 kawamura
     EquationToken m_opa_func;//ex) A1+A2*A3
@@ -50,6 +60,11 @@ protected:
     std::vector<EquationToken> m_opa_var;//ex) q1+q2
     std::vector<EquationToken> m_col_var;//ex) q3*q4
 
+    std::string m_opa_func_synthesis;//ex) A1+A2*A3
+    std::string m_col_func_synthesis;//ex) C1/C2-C3
+    std::vector<std::string> m_opa_var_synthesis;//ex) q1+q2
+    std::vector<std::string> m_col_var_synthesis;//ex) q3*q4
+    
     float m_var_value[128];
     float **m_var_value_struct;
     float *m_var_value_array[NUMVAR];
@@ -63,9 +78,24 @@ protected:
     float m_particle_data_size_limit; 
     // add by shimomura 2022/12/20
     VariableRange m_variable_range;
-    
 
+  
 public:
+
+    // expression 
+    std::string m_color_transfer_function_synthesis;
+    std::string m_opacity_transfer_function_synthesis;
+    VolumeEquation m_volume_equation;
+    // expression
+ 
+//    std::string color_transfer_function_synthesis(){ return m_color_transfer_function_synthesis  ;}
+//    std::string opacity_transfer_function_synthesis(){ return m_opacity_transfer_function_synthesis;}
+//
+//    VolumeEquation VolumeEquation(){return m_volume_equation;} 
+//
+//    void setColorTransferFunctionSynthesis(std::string color_transfer_function_synthesis ); 
+//    void setOpacityTransferFunctionSynthesis(std::string color_transfer_function_synthesis );  
+//    void setVolumeEquation(VolumeEquation volume_equation );
 
     std::vector<float> m_o_min; 
     std::vector<float> m_o_max; 
@@ -113,6 +143,10 @@ public:
     void  mergeVarRange( const TransferFunctionSynthesizer& tfs );
 
     void create();
+
+    //void convert_token(std::vector<VolumeEquation> voleq); 
+    EquationToken convert_token(std::string expression); 
+
     // function 4 debug  add by shimomura 2022/12/28 
     void setStabToken();
 
@@ -148,25 +182,34 @@ public:
         float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
         kvs::UInt8* Red, kvs::UInt8* Green, kvs::UInt8* Blue );//resulting colors[SIMDW]
 
+    void CalculateCoordArray(
+        std::vector< TFS::TrilinearInterpolator* > interp ,
+        const int loop_cnt,
+        float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
+        float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
+        //const kvs::Vector3f *local_coord,
+        //const kvs::Vector3f *global_coord,
+        std::vector<pbvr::TransferFunction>& tf,
+        const pbvr::CoordSynthesizerStrings css,
+        float* nx_g, float* ny_g, float* nz_g ); //global coord[SIMDW])
+        //kvs::Vector3f *new_coord_array);
+
+
 //-----unstructured-------
     std::vector<float> SynthesizedOpacityScalars(
-        //std::vector< pbvr::HexahedralCell<Type>* > interp ,
         std::vector< pbvr::CellBase<Type>* > interp ,
         kvs::Vector3f local_coord, kvs::Vector3f global_coord );
 
     std::vector<float> SynthesizedColorScalars(
-        //std::vector< pbvr::HexahedralCell<Type>* > interp ,
         std::vector< pbvr::CellBase<Type>* > interp ,
         kvs::Vector3f local_coord, kvs::Vector3f global_coord );
 
     float CalculateOpacity(
-        //std::vector< pbvr::HexahedralCell<Type>* > interp ,
         std::vector< pbvr::CellBase<Type>* > interp ,
         kvs::Vector3f local_coord, kvs::Vector3f global_coord,
         std::vector<pbvr::TransferFunction>& tf);
 
     kvs::RGBColor CalculateColor(
-        //std::vector< pbvr::HexahedralCell<Type>* > interp ,
         std::vector< pbvr::CellBase<Type>* > interp ,
         kvs::Vector3f local_coord, kvs::Vector3f global_coord,
         std::vector<pbvr::TransferFunction>& tf);
@@ -185,8 +228,7 @@ public:
         const kvs::Vector3f *local_coord,
         const kvs::Vector3f *global_coord,
         std::vector<pbvr::TransferFunction>& tf,
-        const pbvr::CoordSynthesizerTokens cst,
-//        float *new_coord_array);
+        const pbvr::CoordSynthesizerStrings css,
         kvs::Vector3f *new_coord_array);
 
    void CalculateOpacityArray(
@@ -220,32 +262,6 @@ public:
         std::vector<float> *c_scalars_array);
     //Fj add end
 
-//
-//    void SynthesizedOpacityScalars(
-//        std::vector< TFS::TrilinearInterpolator* > interp,
-//        float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
-//        float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
-//        float scalars[][SIMDW] );//resulting scalars[TF_COUNT][SIMDW]
-//
-//    void SynthesizedColorScalars(
-//        std::vector< TFS::TrilinearInterpolator* > interp,
-//        float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
-//        float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
-//        float scalars[][SIMDW] );//resulting scalars[TF_COUNT][SIMDW]
-//
-//    void CalculateOpacity(
-//        std::vector< TFS::TrilinearInterpolator* > interp,
-//        std::vector<pbvr::TransferFunction>& tf,
-//        float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
-//        float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
-//        float* opacity );//resulting opacity[SIMDW]
-//
-//    void CalculateColor(
-//        std::vector< TFS::TrilinearInterpolator* > interp ,
-//        std::vector<pbvr::TransferFunction>& tf,
-//        float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
-//        float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
-//        kvs::UInt8* Red, kvs::UInt8* Green, kvs::UInt8* Blue );//resulting colors[SIMDW]
 public:
     class NumericException : public std::runtime_error
     {

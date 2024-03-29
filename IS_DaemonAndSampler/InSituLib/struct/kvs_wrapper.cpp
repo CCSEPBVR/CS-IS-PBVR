@@ -213,6 +213,7 @@ void readTFfromParamInfo( ParamInfo* param,
     std::vector<EquationToken> var;
     int tf_number;
 
+#if 0
     i_table = param->getTableInt( "OPA_FUNC_EXP_TOKEN" );
     if (i_table.size() < 128){
         std::cerr<<"Error retrieving TF from ParamInfo"<<std::endl<<
@@ -239,10 +240,11 @@ void readTFfromParamInfo( ParamInfo* param,
     for(size_t i=0; i<128; i++) eq.val_array[i] = f_table[i];
 
     tfs->setColorFunction( eq );
+#endif
 
     // get TF_NUMBER
     tf_number = param->getInt( "TF_NUMBER" );
-
+#if 0
     for ( size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream tss;
@@ -283,7 +285,7 @@ void readTFfromParamInfo( ParamInfo* param,
     }
 
     tfs->setColorVariable( var );
-
+#endif
     //Read 1D tf
     int resolution = param->getInt( "TF_RESOLUTION" );
     float min, max;
@@ -314,6 +316,54 @@ void readTFfromParamInfo( ParamInfo* param,
         tfBuf.setOpacityMap( opacity_map );
         tf.push_back(tfBuf);
     }
+
+#if 1
+    var.clear();
+    // add by shimomura 2024/03/25
+    std::string  equation;
+
+    equation = param->getString( "OPACITY_SYNTH" );
+    std::replace(equation.begin(), equation.end(), 'O', 'a');
+    eq = tfs->convert_token(equation);
+    tfs->setOpacityFunction( eq );
+
+    equation = param->getString( "COLOR_SYNTH" );
+    std::replace(equation.begin(), equation.end(), 'C', 'c');
+    eq = tfs->convert_token(equation);
+//    std::cout << "equation =" <<equation <<std::endl;
+    tfs->setColorFunction( eq );
+
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        std::stringstream tss;
+        tss << "TF_NAME" << i + 1 << "_";
+        const std::string tag_base = tss.str();
+
+        equation = param->getString( tag_base +"VAR_C" );
+        eq = tfs->convert_token(equation);
+        var.push_back( eq );
+    }
+
+    tfs->setOpacityVariable( var );
+
+    var.clear();
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        std::stringstream tss;
+        tss << "TF_NAME" << i + 1 << "_";
+        const std::string tag_base = tss.str();
+
+        equation = param->getString( tag_base +"VAR_O" );
+        eq = tfs->convert_token(equation);
+        //for (int i = 0;i< 10; i++) std::cout << "str: eq.exp_token[i] =" << eq.exp_token[i] << std::endl;       
+
+        var.push_back( eq );
+    }
+
+    tfs->setColorVariable( var );
+    var.clear();
+#endif
+
 }
 
 bool initializeParameters(

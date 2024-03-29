@@ -13,6 +13,9 @@
 #include "ReversePolishNotation.h"
 #include "Token.h"
 #include "VolumeObjectBase.h"
+#include "ExpressionTokenizer.h"
+#include "ExpressionConverter.h"
+
 
 #define TF_COUNT 5
 #define VAR_OFFSET_A 112 //Token.h->VarName-A1へのオフセット
@@ -28,6 +31,14 @@ struct EquationToken
 
 class TransferFunctionSynthesizer
 {
+public:
+    class VolumeEquation
+    {
+    public:
+        std::string m_name;
+        std::string m_equation;
+    };
+
 protected:
     //2019 kawamura
     EquationToken m_opa_func;//ex) A1+A2*A3
@@ -35,12 +46,24 @@ protected:
     std::vector<EquationToken> m_opa_var;//ex) q1+q2
     std::vector<EquationToken> m_col_var;//ex) q3*q4
 
+    std::string m_opa_func_synthesis;//ex) A1+A2*A3
+    std::string m_col_func_synthesis;//ex) C1/C2-C3
+    std::vector<std::string> m_opa_var_synthesis;//ex) q1+q2
+    std::vector<std::string> m_col_var_synthesis;//ex) q3*q4
+
     float m_var_value[128];
     float *m_var_value_array[NUMVAR];
     std::vector<float> m_scalars; //calc. results of m_opa_var or m_col_var.
     FuncParser::ReversePolishNotation m_rpn;
 
 public:
+
+    // expression 
+    std::string m_color_transfer_function_synthesis;
+    std::string m_opacity_transfer_function_synthesis;
+    VolumeEquation m_volume_equation;
+    // expression
+
 
     TransferFunctionSynthesizer();
 
@@ -61,6 +84,8 @@ public:
     void setOpacityVariable( std::vector<EquationToken> opa_var );
 
     void setColorVariable( std::vector<EquationToken> col_var );
+
+    EquationToken convert_token(std::string expression);
 
     ~TransferFunctionSynthesizer();
 

@@ -72,7 +72,7 @@ VariableRange RangeEstimater::Estimation( const size_t step,
 
 VariableRange RangeEstimater::EstimationList(const size_t step,
                                              const FilterInformationList& fil,
-                                             const TransferFunctionSynthesizer& tfs,
+                                             TransferFunctionSynthesizer* tfs,
                                               jpv::ParticleTransferClientMessage clntMes )
 {
     FuncParser::ReversePolishNotation m_rpn;
@@ -80,7 +80,9 @@ VariableRange RangeEstimater::EstimationList(const size_t step,
     float* m_var_value_array[128];
     int loop_cnt = 2;
     int component_num = fil.m_list[0].m_number_ingredients;
-    int tf_num = clntMes.color_var.size(); 
+    //int tf_num = clntMes.color_var.size(); 
+    int tf_num = clntMes.voleqn.size()/2; 
+    
 
     //float comp_minmax[component_num][loop_cnt]; 
     float** comp_minmax = new float* [component_num];
@@ -103,12 +105,26 @@ VariableRange RangeEstimater::EstimationList(const size_t step,
         comp_minmax[i][1] = fil.m_total_ingredient[i].m_max;
     }
 
+    //----------convert token---------------
+    EquationToken eq;
+    std::vector<EquationToken> var_o; 
+    std::vector<EquationToken> var_c; 
+
+    for(int i =0; i <tf_num; i++ )
+    {
+    var_o.push_back( tfs->convert_token(clntMes.voleqn[i+tf_num].Equation) );
+    var_c.push_back( tfs->convert_token(clntMes.voleqn[i].Equation) );
+    }
+
     //----------------------------------- color 
     for (int i =0; i <tf_num; i++)
     {
-        m_rpn.setExpToken( &(clntMes.color_var[i].exp_token[0]) );
-        m_rpn.setVariableName( &(clntMes.color_var[i].var_name[0]) );
-        m_rpn.setNumber( &(clntMes.color_var[i].value_array[0]) );
+        //m_rpn.setExpToken( &(clntMes.color_var[i].exp_token[0]) );
+        //m_rpn.setVariableName( &(clntMes.color_var[i].var_name[0]) );
+        //m_rpn.setNumber( &(clntMes.color_var[i].value_array[0]) );
+        m_rpn.setExpToken( &(var_c[i].exp_token[0]) );
+        m_rpn.setVariableName( &(var_c[i].var_name[0]) );
+        m_rpn.setNumber( &(var_c[i].val_array[0]) );
 
         //id of Q1=4, Q2=8,,,,, Qn=4*n
         //id of dxQ1=5, dyQ1=6, dzQ1=7,
@@ -140,9 +156,12 @@ VariableRange RangeEstimater::EstimationList(const size_t step,
  
     for (int i =0; i <tf_num; i++)
     {
-        m_rpn.setExpToken( &(clntMes.opacity_var[i].exp_token[0]) );
-        m_rpn.setVariableName( &(clntMes.opacity_var[i].var_name[0]) );
-        m_rpn.setNumber( &(clntMes.opacity_var[i].value_array[0]) );
+        //m_rpn.setExpToken( &(clntMes.opacity_var[i].exp_token[0]) );
+        //m_rpn.setVariableName( &(clntMes.opacity_var[i].var_name[0]) );
+        //m_rpn.setNumber( &(clntMes.opacity_var[i].value_array[0]) );
+        m_rpn.setExpToken( &(var_o[i].exp_token[0]) );
+        m_rpn.setVariableName( &(var_o[i].var_name[0]) );
+        m_rpn.setNumber( &(var_o[i].val_array[0]) );
 
         //id of Q1=4, Q2=8,,,,, Qn=4*n
         //id of dxQ1=5, dyQ1=6, dzQ1=7,

@@ -151,6 +151,8 @@ void ParameterFileWriter::inputTransferFunctionMessage( const jpv::ParticleTrans
         const std::string tag_base = ss.str();
         m_name_list_file.setLine( tag_base + "VAR_C", client_message.voleqn[2*n].Equation );
 
+#if 0
+    std::cout << __FUNCTION__  << ": " << __LINE__ << std::endl;
         //2019 kawamura
         tag << tag_base << "C_EXP_TOKEN";
         for( int i = 0; i < 128; i++ )
@@ -160,6 +162,7 @@ void ParameterFileWriter::inputTransferFunctionMessage( const jpv::ParticleTrans
         m_name_list_file.setLine( tag.str(), table.str() );
         tag.str("");  tag.clear(std::stringstream::goodbit);
         table.str("");  table.clear(std::stringstream::goodbit);
+    std::cout << __FUNCTION__  << ": " << __LINE__ << std::endl;
 
         //2019 kawamura
         tag << tag_base<< "C_VAR_NAME";
@@ -171,6 +174,7 @@ void ParameterFileWriter::inputTransferFunctionMessage( const jpv::ParticleTrans
         tag.str("");  tag.clear(std::stringstream::goodbit);
         table.str("");  table.clear(std::stringstream::goodbit);
 
+    std::cout << __FUNCTION__  << ": " << __LINE__ << std::endl;
         //2019 kawamura
         tag << tag_base<< "C_VAL_ARRAY";
         for( int i = 0; i < 128; i++ )
@@ -180,13 +184,14 @@ void ParameterFileWriter::inputTransferFunctionMessage( const jpv::ParticleTrans
         m_name_list_file.setLine( tag.str(), table.str() );
         tag.str("");  tag.clear(std::stringstream::goodbit);
         table.str("");  table.clear(std::stringstream::goodbit);
-
+#endif
 
         m_name_list_file.setLine( tag_base + "MIN_C", client_message.transfunc[n].ColorVarMin   );
         m_name_list_file.setLine( tag_base + "MAX_C", client_message.transfunc[n].ColorVarMax   );
         m_name_list_file.setLine( tag_base + "VAR_O", client_message.voleqn[2*n + 1].Equation   );
 
 
+#if 0
         //2019 kawamura
         tag << tag_base << "O_EXP_TOKEN";
         for( int i = 0; i < 128; i++ )
@@ -216,7 +221,7 @@ void ParameterFileWriter::inputTransferFunctionMessage( const jpv::ParticleTrans
         m_name_list_file.setLine( tag.str(), table.str() );
         tag.str("");  tag.clear(std::stringstream::goodbit);
         table.str("");  table.clear(std::stringstream::goodbit);
-
+#endif
 
         m_name_list_file.setLine( tag_base + "MIN_O", client_message.transfunc[n].OpacityVarMin );
         m_name_list_file.setLine( tag_base + "MAX_O", client_message.transfunc[n].OpacityVarMax );

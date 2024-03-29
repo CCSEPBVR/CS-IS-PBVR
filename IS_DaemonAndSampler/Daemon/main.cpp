@@ -769,6 +769,7 @@ int main( int argc, char** argv )
                             ParameterFileWriter ppw;
                             ParameterFileReader ppr;
 
+                            clntMes.show();
                             // 20181226 start　環境変数で指定したパスおよび名前でファイル参照を行う
                             ppw.inputMessage( clntMes );
                             //ppr.readParameterFile("jupiter_old.tf");
@@ -785,7 +786,6 @@ int main( int argc, char** argv )
                             pbvr::PointObject* originalObject = new pbvr::PointObject;
 //                          ParticleMonitor pm( "/Users/admin/Work_noda/2015_PBVR/03_testrun/v1.08_test/pout/case","" );
                             TimerStart( 2 );
-
                             // 20181226 start　環境変数で指定したパスを使用
                             //std::string filename( jupiter_prefix );
                             std::string filename( particlePath );

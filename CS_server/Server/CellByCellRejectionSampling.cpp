@@ -620,6 +620,16 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
 
     int total_nparticles = 0;
 
+    const pbvr::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
+    CoordSynthesizerStrings css;
+    if ( pCrdSynthStr )
+    { 
+//        std::cout << "css.m_x_coord_synthesizer_string = " << css.m_x_coord_synthesizer_string <<std::endl;  
+//        std::cout << "css.m_y_coord_synthesizer_string = " << css.m_y_coord_synthesizer_string <<std::endl;  
+//        std::cout << "css.m_z_coord_synthesizer_string = " << css.m_z_coord_synthesizer_string <<std::endl;  
+        css = *pCrdSynthStr;
+    }
+
 //    static TimedScope td_gatherf("GatherF",1);
 //    static TimedScope td_gather("gather",1);
 //    static TimedScope td_kvsml("kvsml",1);
@@ -930,6 +940,36 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
                                         p_x_l, p_y_l, p_z_l,
                                         p_x_g, p_y_g, p_z_g,
                                         red, green, blue );
+
+#if 1                               
+                                float np_x_g[ SIMDW ];
+                                float np_y_g[ SIMDW ];
+                                float np_z_g[ SIMDW ];
+                                if ( !css.m_x_coord_synthesizer_string.empty() && 
+                                     !css.m_y_coord_synthesizer_string.empty() && 
+                                     !css.m_z_coord_synthesizer_string.empty()  ) 
+                                {
+                                    th_tfs[thid]->CalculateCoordArray( interp[thid],
+                                            SIMDW,
+                                            p_x_l, p_y_l, p_z_l,
+                                            p_x_g, p_y_g, p_z_g,
+                                            //local_coord_array,
+                                            //global_coord_array,
+                                            th_tf[thid],
+                                            /*CoordSynthesizerStrings*/        css,
+                                            np_x_g, np_y_g, np_z_g  );
+                                }
+                                else
+                                {
+                                    for( int j = 0; j < SIMDW; j++ )
+                                    {
+                                        np_x_g[j] = p_x_g[j];
+                                        np_y_g[j] = p_y_g[j];
+                                        np_z_g[j] = p_z_g[j];
+                                    }
+                                }
+#endif
+
                                 //                            timed_section_end(td_CalculateColor,thid); 
                                 //SIMDループ
                                 //for( int pp=0; pp<SIMDW; pp++)
@@ -946,9 +986,9 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
                                 const float random = (float)MT();
                                 if( density > max_density * random )
                                 {
-                                        th_vertex_coords.push_back( p_x_g[pp] );
-                                        th_vertex_coords.push_back( p_y_g[pp] );
-                                        th_vertex_coords.push_back( p_z_g[pp] );
+                                        th_vertex_coords.push_back( np_x_g[pp] );
+                                        th_vertex_coords.push_back( np_y_g[pp] );
+                                        th_vertex_coords.push_back( np_z_g[pp] );
 
                                         th_vertex_colors.push_back( red  [pp] );
                                         th_vertex_colors.push_back( green[pp] );
@@ -1989,20 +2029,31 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
                             color_array );
 
                     kvs::Vector3f new_coord_array[ SIMDW ];
-                    if ( pCrdSynthStr )
+//                    if ( pCrdSynthStr )
+                    if ( !css.m_x_coord_synthesizer_string.empty() && !css.m_y_coord_synthesizer_string.empty() && !css.m_z_coord_synthesizer_string.empty()  ) 
                     {
                         th_tfs[thid]->CalculateCoordArray( interp[thid],
                                 nparticles_count,
                                 local_coord_array,
                                 global_coord_array,
                                 th_tf[thid],
-      /*CoordSynthesizerTokens*/        cst,
+//      /*CoordSynthesizerTokens*/        cst,
+      /*CoordSynthesizerstring*/        css,
                                 new_coord_array );
                     }
-                   
+                    else
+                    {
+                        for( int j = 0; j < nparticles_count; j++ )
+                        {
+                            new_coord_array[j] = global_coord_array[j];
+                        }
+                    }
+
+
                     //2023 shimomura 
                     for( int j = 0; j < nparticles_count; j++ )
                     {
+//                         std::cout << "debug particle out " << std::endl;
                         kvs::Vector3f new_coord = new_coord_array[j];
                         th_vertex_coords.push_back( new_coord.x() );
                         th_vertex_coords.push_back( new_coord.y() );
@@ -2017,7 +2068,6 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
                         th_vertex_normals.push_back( grad_array[j].z() );
                     }
                     // ------------------------------------------------
-
 
                 }//end of for i
             }

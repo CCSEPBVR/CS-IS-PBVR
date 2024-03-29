@@ -188,7 +188,7 @@ void readTFfromParamInfo( ParamInfo* param,
     EquationToken eq;
     std::vector<EquationToken> var;
     int tf_number;
-    
+#if 0 
     i_table = param->getTableInt( "OPA_FUNC_EXP_TOKEN" );
     if (i_table.size() < 128){
         std::cerr<<"Error retrieving TF from ParamInfo"<<std::endl<<
@@ -196,29 +196,37 @@ void readTFfromParamInfo( ParamInfo* param,
         exit(1);
     }
     for(size_t i=0; i<128; i++) eq.exp_token[i] = i_table[i];
+    //for(size_t i=0; i<128; i++) std::cout << "eq.exp_token[i] =" << eq.exp_token[i] << std::endl;
+    
 
     i_table = param->getTableInt( "OPA_FUNC_VAR_NAME" );
     for(size_t i=0; i<128; i++) eq.var_name[i] = i_table[i];
+    //for(size_t i=0; i<128; i++) std::cout << "eq.var_name[i] =" << eq.var_name[i] << std::endl;
 
     f_table = param->getTableFloat( "OPA_FUNC_VAL_ARRAY" );
     for(size_t i=0; i<128; i++) eq.val_array[i] = f_table[i];
+    //for(size_t i=0; i<128; i++) std::cout << "eq.val_array[i] =" << eq.val_array[i] << std::endl;
 
     tfs->setOpacityFunction( eq );
-
-    i_table = param->getTableInt( "COL_FUNC_EXP_TOKEN" );
-    for(size_t i=0; i<128; i++) eq.exp_token[i] = i_table[i];
-
-    i_table = param->getTableInt( "COL_FUNC_VAR_NAME" );
-    for(size_t i=0; i<128; i++) eq.var_name[i] = i_table[i];
-
-    f_table = param->getTableFloat( "COL_FUNC_VAL_ARRAY" );
-    for(size_t i=0; i<128; i++) eq.val_array[i] = f_table[i];
+//
+//    i_table = param->getTableInt( "COL_FUNC_EXP_TOKEN" );
+//    for(size_t i=0; i<128; i++) eq.exp_token[i] = i_table[i];
+//    for(size_t i=0; i<10; i++) std::cout << "eq.exp_token[i] =" << eq.exp_token[i] << std::endl;
+//
+//    i_table = param->getTableInt( "COL_FUNC_VAR_NAME" );
+//    for(size_t i=0; i<128; i++) eq.var_name[i] = i_table[i];
+//
+//    f_table = param->getTableFloat( "COL_FUNC_VAL_ARRAY" );
+//    for(size_t i=0; i<128; i++) eq.val_array[i] = f_table[i];
+//
+//    tfs->setColorFunction( eq );
+#endif 
 
     // get TF_NUMBER
     tf_number = param->getInt( "TF_NUMBER" );
 
-    tfs->setColorFunction( eq );
 
+#if 0
     for ( size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream tss;
@@ -259,6 +267,8 @@ void readTFfromParamInfo( ParamInfo* param,
     }
 
     tfs->setColorVariable( var );
+    var.clear();
+#endif
 
     //Read 1D tf
     int resolution = param->getInt( "TF_RESOLUTION" );
@@ -290,6 +300,52 @@ void readTFfromParamInfo( ParamInfo* param,
         tfBuf.setOpacityMap( opacity_map );
         tf.push_back(tfBuf);
     }
+
+#if 1
+    // add by shimomura 2024/03/25
+    std::string  equation;
+
+    equation = param->getString( "OPACITY_SYNTH" );
+    std::replace(equation.begin(), equation.end(), 'O', 'a');
+    eq = tfs->convert_token(equation);
+    tfs->setOpacityFunction( eq );
+
+    equation = param->getString( "COLOR_SYNTH" );
+    std::cout << "equation =" <<equation <<std::endl;
+    std::replace(equation.begin(), equation.end(), 'C', 'c');
+    eq = tfs->convert_token(equation);
+    tfs->setColorFunction( eq );
+
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        std::stringstream tss;
+        tss << "TF_NAME" << i + 1 << "_";
+        const std::string tag_base = tss.str();
+
+        equation = param->getString( tag_base +"VAR_C" );
+        eq = tfs->convert_token(equation);
+        var.push_back( eq );
+    }
+
+    tfs->setOpacityVariable( var );
+
+    var.clear();
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        std::stringstream tss;
+        tss << "TF_NAME" << i + 1 << "_";
+        const std::string tag_base = tss.str();
+
+        equation = param->getString( tag_base +"VAR_O" );
+        eq = tfs->convert_token(equation);
+
+        var.push_back( eq );
+    }
+
+    tfs->setColorVariable( var );
+    var.clear();
+#endif 
+
 }
 
 bool initializeParameters(
@@ -730,21 +786,11 @@ void generate_particles( int time_step,
 
     int tf_number = tf.size();
 
-/*
-    for ( int j = 0; j < TF_COUNT; j++ )
-    {
-        std::cout<<"tf:min="<< tf[j].opacityMap().minValue() <<",max="<<tf[j].opacityMap().maxValue()<<std::endl;
-        for( int i=0; i<tf[j].opacityMap().table().size();i++){
-            std::cout<< tf[j].opacityMap().table()[i]<<",";
-        }std::cout<<std::endl;
-    }
-*/
     if( start_flag ) parameter_file_opened = tmp_parameter_file_opened;
 
     delete object;
     //if(mpi->rank==0)std::cout<<"end initializeTFS()\n";
 
-    // Calculate maximum number (upper limit) of particles for each cell.
     const int max_nparticles = (int)max_density + 1;
 
     if(mpi_rank == 0) std::cout<<"******* max_nparticles="<<max_nparticles<<std::endl;
@@ -916,8 +962,6 @@ void generate_particles( int time_step,
 
         //粒子生成ループ開始
 #pragma omp for schedule( dynamic ) nowait
-//#pragma omp for schedule( static ) nowait
-//#pragma omp for schedule( static, 1 ) nowait
         for( int cell_base = 0; cell_base < ncells; cell_base += SIMD_BLK_SIZE )
         {
            //ブロック内でのループ回数を取得
@@ -932,8 +976,6 @@ void generate_particles( int time_step,
                 local_center_array[cell_BLK] = interp[thid][0]->localGravityPoint();
             }
 
-            //if(cell_base == 0 ) std::cout <<" local_center_array[0] =  "<< local_center_array[0] <<std::endl;
-            //if(cell_base == 0 ) std::cout <<" o_max[0] =  "<< o_max[0] <<", o_min[0] = " << o_min[0]  << std::endl;
             //補間器にセルを一括でバインド
             for(int i = 0; i < nvariables; i++)
             {
@@ -1006,7 +1048,6 @@ void generate_particles( int time_step,
                 }
             }
 
-            //std::cout <<" th_O_max[0] =  "<< th_O_max[0] <<", th_O_min[0] = " << th_O_min[0]  << std::endl;
 
             th_tfs[thid]->CalculateOpacityArrayAverage( interp[thid],
                                                  remain,
@@ -1027,7 +1068,8 @@ void generate_particles( int time_step,
 //                    const float density = cell_opacity_array[cell_BLK] < 0.003 ? 0.0 : max_density; //  less than 1/256
                     interp[thid][0]->bindCell( cell_index[cell_BLK] );
                     nparticles_array[cell_BLK] 
-                        = calculate_number_of_particles( density, interp[thid][0]->volume(), &MT );
+//                        = calculate_number_of_particles( density, interp[thid][0]->volume(), &MT );
+                        = calculate_number_of_particles( density, interp[thid][0]->volume(), &MT ) ;
                 nparticles_array[cell_BLK] *= particle_density;
                 nparticles_num += nparticles_array[cell_BLK];
 
@@ -1269,6 +1311,7 @@ void generate_particles( int time_step,
             }
         /////////////////////////////// CalculateOpacity(), CalculateColor() ///////////////////////////////////
         }// end of for cell
+//            std::cout << __FUNCTION__  << ": " << __LINE__ << std::endl;
 //        #pragma omp barrier
         #pragma omp critical
         {
@@ -1301,7 +1344,7 @@ void generate_particles( int time_step,
                 timer.stop();
     } //#pragma omp parallel
 
-    //std::cout << "end sampling l: " << __LINE__<<  std::endl; 
+//    std::cout << "end sampling l: " << __LINE__<<  std::endl; 
 
     timer.stop();
     time.sampling = timer.sec();

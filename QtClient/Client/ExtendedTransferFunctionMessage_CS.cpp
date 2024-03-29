@@ -111,6 +111,7 @@ bool ExtendedTransferFunctionMessage::operator==( const ExtendedTransferFunction
     return v0;
 }
 
+
 //add by shimomura 2023/1/26
 jpv::ParticleTransferClientMessage::EquationToken ExtendedTransferFunctionMessage::convertToken( std::string expression ) const
 {
@@ -155,6 +156,9 @@ void ExtendedTransferFunctionMessage::applyToClientMessage( jpv::ParticleTransfe
     message->m_color_transfer_function_synthesis = this->m_color_transfer_function_synthesis;
     message->m_opacity_transfer_function_synthesis = this->m_opacity_transfer_function_synthesis;
 
+    //add by shimomura 2024/03/18
+    //essage->m_x_synthesis = this-> m_x_coordinate_synthesis;
+
     // 色関数リスト
     for ( size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
     {
@@ -192,47 +196,7 @@ void ExtendedTransferFunctionMessage::applyToClientMessage( jpv::ParticleTransfe
         message->m_volume_equation.push_back( veq );
     }
 
-//      //2023 shimomura   stab data
-//       jpv::ParticleTransferClientMessage::EquationToken opa_func = {
-//            {VARIABLE, END}, // A1+A2 -> A1 A2 +
-//            {A1},// A1, A2
-//            {} //nothing
-//        };
-
-//        message->opacity_func = opa_func;
-
-//        jpv::ParticleTransferClientMessage::EquationToken col_func = {
-//            {VARIABLE, END},// C1
-//            {C1},// C1
-//            {}//nothing
-//        };
-
-//        message->color_func = col_func;
-
-//        jpv::ParticleTransferClientMessage::EquationToken opa_var_1 = {
-//    //        {VARIABLE, VARIABLE, PLUS, END}, //q1+q1 -> q1 q1 +
-//    //        {Q1,Q1},
-//            {VARIABLE, END}, //q1+q1 -> q1 q1 +
-//            {Q1},
-//            {}
-//        };
-
-//        jpv::ParticleTransferClientMessage::EquationToken col_var_1 = {
-//    //        {VARIABLE,VARIABLE, PLUS, END}, //q1+q1 -> q1 q1 +
-//    //        {Q1, Q1},
-//            {VARIABLE, END}, //q1+q1 -> q1 q1 +
-//            {Q1},
-//            {}
-//        };
-
-//        std::vector<jpv::ParticleTransferClientMessage::EquationToken> opa_var;//ex) q1+q2
-//        std::vector<jpv::ParticleTransferClientMessage::EquationToken> col_var;//ex) q3*q4
-//        opa_var.push_back( opa_var_1 );
-//        col_var.push_back( col_var_1 );
-
-//        message->color_var = opa_var;
-//        message->opacity_var = col_var;
-
+#if 0
         std::string colorSynthBuf = this->m_color_transfer_function_synthesis;
         std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
         message->color_func = this->convertToken( colorSynthBuf );
@@ -251,7 +215,7 @@ void ExtendedTransferFunctionMessage::applyToClientMessage( jpv::ParticleTransfe
         if( !message->m_x_synthesis.empty() ) message->x_synthesis_token = this->convertToken( message->m_x_synthesis );
         if( !message->m_y_synthesis.empty() ) message->y_synthesis_token = this->convertToken( message->m_y_synthesis );
         if( !message->m_z_synthesis.empty() ) message->z_synthesis_token = this->convertToken( message->m_z_synthesis );
-
+#endif
     return;
 }
 

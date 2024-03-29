@@ -20,7 +20,7 @@ public:
 
     static VariableRange EstimationList( const size_t step,
                                          const FilterInformationList& fil,
-                                         const TransferFunctionSynthesizer& tfs,
+                                         TransferFunctionSynthesizer* tfs,
                                          const jpv::ParticleTransferClientMessage clntMes  );
 
 };

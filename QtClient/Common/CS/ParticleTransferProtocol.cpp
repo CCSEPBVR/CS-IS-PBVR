@@ -113,7 +113,7 @@ int32_t jpv::ParticleTransferClientMessage::byteSize() const
         // add by @hira at 2016/12/01 : 1次伝達関数（色、不透明度）
         s += jpv::Serializer::byteSize( m_color_transfer_function_synthesis );
         s += jpv::Serializer::byteSize( m_opacity_transfer_function_synthesis );
-
+#if 0
         //2019 kawamura
         s +=   sizeof(int)*128; //opacity_func
         s +=   sizeof(int)*128; //opacity_func
@@ -154,7 +154,7 @@ int32_t jpv::ParticleTransferClientMessage::byteSize() const
         s +=   sizeof(int)*128; //z_synthesis
         s +=   sizeof(int)*128; //z_synthesis
         s +=   sizeof(float)*128; //z_synthesis
-
+#endif
     }
     if ( m_initialize_parameter >= 0 )
     {
@@ -266,6 +266,7 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         index += jpv::Serializer::write( buf + index, m_color_transfer_function_synthesis );
         index += jpv::Serializer::write( buf + index, m_opacity_transfer_function_synthesis );
 
+#if 0
         //2019 kawamura
         index +=  jpv::Serializer::writeArray( buf + index, opacity_func.exp_token );
         index +=  jpv::Serializer::writeArray( buf + index, opacity_func.var_name );
@@ -304,6 +305,7 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         index +=  jpv::Serializer::writeArray( buf + index, z_synthesis_token.exp_token );
         index +=  jpv::Serializer::writeArray( buf + index, z_synthesis_token.var_name );
         index +=  jpv::Serializer::writeArray( buf + index, z_synthesis_token.value_array );
+#endif
     }
     if ( m_initialize_parameter >= 0 )
     {
@@ -456,7 +458,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         // add by @hira at 2016/12/01 : 1次伝達関数（色、不透明度）
         index += jpv::Serializer::read( buf + index, &m_color_transfer_function_synthesis );
         index += jpv::Serializer::read( buf + index, &m_opacity_transfer_function_synthesis );
-
+#if 0
         //2019 kawamura
         index +=  jpv::Serializer::readArray( buf + index, opacity_func.exp_token, 128 );
         index +=  jpv::Serializer::readArray( buf + index, opacity_func.var_name, 128 );
@@ -501,7 +503,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         index +=  jpv::Serializer::readArray( buf + index, z_synthesis_token.exp_token, 128 );
         index +=  jpv::Serializer::readArray( buf + index, z_synthesis_token.var_name, 128 );
         index +=  jpv::Serializer::readArray( buf + index, z_synthesis_token.value_array, 128 );
-
+#endif
     }
     if ( m_initialize_parameter >= 0 )
     {

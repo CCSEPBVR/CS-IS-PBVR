@@ -123,24 +123,19 @@ TransferFunctionSynthesizerCreator::~TransferFunctionSynthesizerCreator()
 
 TransferFunctionSynthesizer* TransferFunctionSynthesizerCreator::create()
 {
-    //m_synthesizer = new TransferFunctionSynthesizer();
-    //m_synthesizer->clear();
-
-    //this->assign();
-    //m_synthesizer->setQuantityMap( m_qmap );
-    //m_synthesizer.m_component = m_component;
-
-    //m_synthesizer->optimize();
-    //m_synthesizer->create();
-
     return m_synthesizer;
 }
 
 std::vector<NamedTransferFunction> TransferFunctionSynthesizerCreator::transfunc()
 {
-return m_transfunc;
+    return m_transfunc;
 }
 
+
+//std::vector<VolumeEquation> TransferFunctionSynthesizerCreator::voleq()
+//{
+//    return m_voleqn;
+//}
 
 //void TransferFunctionSynthesizerCreator::assign()
 //{
@@ -212,7 +207,6 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
 
     m_synthesizer = new TransferFunctionSynthesizer();
     
-    size_t cnt = clntMes.transfunc.size()/2;
     for ( size_t i = 0; i < clntMes.transfunc.size(); i++ )
     {
         NamedTransferFunction tf;
@@ -232,43 +226,6 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
         tf.setColorMap( clntMes.transfunc[i].colorMap() );
         tf.setOpacityMap( clntMes.transfunc[i].opacityMap() );
 
-        // add by shimomura at 2022/12/12
-        EquationToken eq;
-        std::vector<EquationToken> var; 
-
-        for(size_t j=0; j<128; j++) eq.exp_token[j] = clntMes.opacity_func.exp_token[j];                    
-        for(size_t j=0; j<128; j++) eq.var_name[j]  = clntMes.opacity_func.var_name[j];                    
-        for(size_t j=0; j<128; j++) eq.val_array[j] = clntMes.opacity_func.value_array[j];                    
-        m_synthesizer -> setOpacityFunction( eq );
-
-        for(size_t j=0; j<128; j++) eq.exp_token[j] = clntMes.color_func.exp_token[j];  
-        for(size_t j=0; j<128; j++) eq.var_name[j]  = clntMes.color_func.var_name[j];                    
-        for(size_t j=0; j<128; j++) eq.val_array[j] = clntMes.color_func.value_array[j];                    
-        m_synthesizer -> setColorFunction( eq );
-
-//        std::cout << "clntMes.opacity_var.size()  = " << clntMes.opacity_var.size() <<std::endl;
-        for(size_t k=0; k< clntMes.opacity_var.size(); k++)
-        {
-            for(size_t j=0; j<128; j++) eq.exp_token[j] = clntMes.opacity_var[k].exp_token[j];  
-            for(size_t j=0; j<128; j++) eq.var_name[j]  = clntMes.opacity_var[k].var_name[j];                    
-            for(size_t j=0; j<128; j++) eq.val_array[j] = clntMes.opacity_var[k].value_array[j];  
-
-            var.push_back( eq );
-        }
-        m_synthesizer -> setOpacityVariable( var );
-
-	var.clear();
-
-        for(size_t k=0; k< clntMes.color_var.size(); k++)
-        {
-            for(size_t j=0; j<128; j++) eq.exp_token[j] = clntMes.color_var[k].exp_token[j];  
-            for(size_t j=0; j<128; j++) eq.var_name[j]  = clntMes.color_var[k].var_name[j];                    
-            for(size_t j=0; j<128; j++) eq.val_array[j] = clntMes.color_var[k].value_array[j];                    
-
-            var.push_back( eq );
-        }
-        m_synthesizer -> setColorVariable( var );
-        
         if ( clntMes.transfunc[i].selection == NamedTransferFunctionParameter::SelectExtendTransferFunction )
         {
             tf.m_selection = NamedTransferFunction::SelectExtendTransferFunction;
@@ -280,7 +237,36 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
            m_transfunc.push_back( tf );
     }
 
+
+        // add by shimomura at 2022/12/12
+        EquationToken eq;
+        std::vector<EquationToken> var; 
+        std::vector<EquationToken> var_o; 
+        std::vector<EquationToken> var_c; 
+
+        std::string opacitySynthBuf = clntMes.opacity_tf_synthesis;
+        std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
+        eq = m_synthesizer -> convert_token(opacitySynthBuf);
+
+        m_synthesizer -> setOpacityFunction( eq );
+
+        std::string colorSynthBuf = clntMes.color_tf_synthesis;
+        std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
+        eq = m_synthesizer -> convert_token(colorSynthBuf);
+        m_synthesizer -> setColorFunction( eq );
+
+        int vloeqsize2=clntMes.voleqn.size()/2;
+        for ( size_t i = 0; i < clntMes.voleqn.size()/2; i++ ) 
+        {
+            var_o.push_back( m_synthesizer -> convert_token(clntMes.voleqn[i+vloeqsize2].Equation) );
+            var_c.push_back( m_synthesizer -> convert_token(clntMes.voleqn[i].Equation ));
+        }
+
+        m_synthesizer -> setOpacityVariable( var_o );
+        m_synthesizer -> setColorVariable( var_c );
+        
     // overwrite opacitymap add by shimomura  2023/1/24    
+    size_t cnt = clntMes.transfunc.size()/2;
     for ( size_t i = 0; i < cnt; i++ )
     {
         m_transfunc[i].m_color_variable     = clntMes.transfunc[i].ColorVar;
@@ -295,7 +281,7 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
         m_transfunc[i].setOpacityMap( clntMes.transfunc[i+cnt].opacityMap() );
 	m_transfunc[i].setOpacityRange( m_transfunc[i].m_opacity_variable_min, m_transfunc[i].m_opacity_variable_max );
 
-        //m_transfunc[i].setRange(m_transfunc[i].m_color_variable_min,m_transfunc[i].m_color_variable_max);
+    //    std::cout << "clntMes.transfunc[i+cnt].OpacityVarMax = " << clntMes.transfunc[i+cnt].OpacityVarMax <<std::endl;
         //for(int j=0; j<256; j++) std::cout << "m_transfunc["<< i <<"].opacityMap().["<< j <<"] = " << m_transfunc[i].opacityMap()[j] <<std::endl;
     }    
         //for(int i=0; i<clntMes.transfunc.size(); i++) std::cout << "m_transfunc["<< i <<"].colorMap().maxValue() = " << m_transfunc[i].colorMap().maxValue() << std::endl;

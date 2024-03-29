@@ -90,6 +90,7 @@ public:
     std::string color_tf_synthesis;
     std::string opacity_tf_synthesis;
 
+#if 0
     //2019 kawamura
     EquationToken opacity_func;//tfs_eq_token;
     EquationToken color_func;//tfs_eq_token;
@@ -100,6 +101,7 @@ public:
     EquationToken x_synthesis_token;//x_synthesis;
     EquationToken y_synthesis_token;//y_synthesis;
     EquationToken z_synthesis_token;//z_synthesis;
+#endif
 
     // message のサイズを計算
     int32_t byteSize( void ) const;

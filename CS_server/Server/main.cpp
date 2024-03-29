@@ -641,10 +641,7 @@ inline float CalculateDensityFactor( const Argument& param,
 VariableRange  setVariablerange2(const float* tmp_max, const float* tmp_min, const int cnt )
 {
     VariableRange vr;
-//    if(tmp_obj.getColorHistogram().size() == tmp_obj.getOpacityHistogram().size())
-//    {
     
-    //for ( int tf = 0; tf < tmp_obj.getColorHistogram().size(); tf++ )
     for ( int tf = 0; tf < cnt; tf++ )
     {
         std::stringstream ss; 
@@ -655,34 +652,7 @@ VariableRange  setVariablerange2(const float* tmp_max, const float* tmp_min, con
         vr.setValue( "t" + idxbuf + "_var_c", tmp_max[2*tf+1]);
         vr.setValue( "t" + idxbuf + "_var_c", tmp_min[2*tf+1]);
 //        std::cout << "tmp_obj.getOpacityHistogram()[ tf ].maxRange() = " << tmp_max[0] <<  std::endl;
-//        std::cout << "tmp_obj.getColorHistogram()[ tf ].maxRange()   = " << tmp_max[1] <<  std::endl;
     }   
-//    }
-    
-    return vr;
-}
-
-VariableRange  setVariablerange(const pbvr::PointObject &tmp_obj)
-{
-    VariableRange vr;
-    if(tmp_obj.getColorHistogram().size() == tmp_obj.getOpacityHistogram().size())
-    {
-    
-    //for (int i = 0; i < cur_tf_number; i++) {
-    for ( int tf = 0; tf < tmp_obj.getColorHistogram().size(); tf++ )
-    {
-        std::stringstream ss; 
-        ss << (tf + 1); 
-        const std::string idxbuf = ss.str();
-        vr.setValue( "t" + idxbuf + "_var_o", tmp_obj.getOpacityHistogram()[ tf ].maxRange());
-        vr.setValue( "t" + idxbuf + "_var_o", tmp_obj.getOpacityHistogram()[ tf ].minRange());
-        vr.setValue( "t" + idxbuf + "_var_c", tmp_obj.getColorHistogram()[ tf ].maxRange());
-        vr.setValue( "t" + idxbuf + "_var_c", tmp_obj.getColorHistogram()[ tf ].minRange());
-    }   
-    }
-    
-//    std::cout << "tmp_obj.getOpacityHistogram()[ tf ].maxRange() = " << tmp_obj.getOpacityHistogram()[ 0 ].maxRange() <<  std::endl;
-//    std::cout << "tmp_obj.getColorHistogram()[ tf ].maxRange() = " << tmp_obj.getColorHistogram()[ 0 ].maxRange() <<  std::endl;
     return vr;
 }
 
@@ -1156,17 +1126,14 @@ int main( int argc, char** argv )
 
         transfunc_creator.setAsisTransferFunction ( param.m_transfer_function );
         // delete by @hira at 2016/12/01 : "t"?I?v?V?????͑??݂??Ȃ??B
-        // if ( param.hasOption( "t" ) ) transfunc_creator.setTransferFunction ( "t1", param.m_transfer_function );
         param.m_transfunc_synthesizer = transfunc_creator.create();
         param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
         for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
         {
         param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
         }
-        //param.m_transfunc_synthesizer->optimize2();
 
 //        std::cout << "param.m_transfunc_array[0].minValue() = " << param.m_transfunc_array[0].opacityMap().minValue() << std::endl;
-//        std::cout << "param.m_transfunc_array[0].maxValue() = " << param.m_transfunc_array[0].opacityMap().maxValue() << std::endl;
 
 
         camera.setWindowSize( param.m_window_width, param.m_window_height );
@@ -1627,8 +1594,8 @@ int main( int argc, char** argv )
                         point_creator.setFilterInfo( fil.m_list[idx] );
                         point_creator.setCoordSynthStr( clntMes.m_x_synthesis,
                                                         clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-                        point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
-                                                        clntMes.y_synthesis_token, clntMes.z_synthesis_token );
+//                        point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
+//                                                        clntMes.y_synthesis_token, clntMes.z_synthesis_token );
                         point_creator_lst.push_back( point_creator );
                     }
 
@@ -1823,127 +1790,8 @@ int main( int argc, char** argv )
 //            std::cout << "first reading time[ms]:" << timer.msec() << std::endl;
 
             jpv::ParticleTransferServer pts;
-            //ptss = pts.initializeServer( param.m_port );
             ptss = pts.initServer( param.m_port );
-#if 0
-            if ( ptss == -1 )
-            {
-                bsz = -1;
-#ifndef CPU_VER
-                MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
-#endif
-            }
-            else
-            {
-                pts.acceptServer();
-                jpv::ParticleTransferServerMessage servMes;
-                jpv::ParticleTransferClientMessage clntMes;
 
-                pts.recvMessage( &clntMes );
-                param.m_input_data_base = clntMes.inputDir;
-
-                std::string pflfile, pfifile;
-                if ( param.m_input_data_base.substr( param.m_input_data_base.size() - 3 ) == "pfl" )
-                {
-                    pflfile = param.m_input_data_base;
-                    param.m_input_data_base = pflfile.substr( 0, pflfile.size() - 4 );
-                    kvs::File pfl( pflfile );
-                    if ( pfl.isExisted() )
-                    {
-                        fil.loadPFL( pflfile );
-                    }
-                }
-                else
-                {
-                    pfifile = param.m_input_data_base + ".pfi";
-                    kvs::File pfi( pfifile );
-                    pflfile = param.m_input_data_base + ".pfl";
-                    kvs::File pfl( pflfile );
-                    if ( pfl.isExisted() )
-                    {
-                        fil.loadPFL( pflfile );
-                    }
-                    else if ( pfi.isExisted() )
-                    {
-                        fil.loadPFL( pfifile );
-                    }
-                }
-
-                if ( fil.m_list.size() > 0 )
-                {
-                    point_creator_lst.clear();
-                    for ( int idx = 0; idx < fil.m_list.size(); idx++ )
-                    {
-                        PointObjectCreator point_creator;
-                        if ( param.m_gt5d == true ) point_creator.setGT5D();
-                        point_creator.setFilterInfo( fil.m_list[idx] );
-                        point_creator.setCoordSynthStr( clntMes.m_x_synthesis,
-                                                        clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-                        point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
-                                                        clntMes.y_synthesis_token, clntMes.z_synthesis_token );
-                        point_creator_lst.push_back( point_creator );
-                    }
-
-                    transfunc_creator.setFilterInfo( fil.m_list[0] );
-
-                    std::cout << " start step = "         << fil.m_total_start_steps
-                              << " end step = "           << fil.m_total_end_step
-                              << " time step = "          << fil.m_total_number_steps
-                              << " subvolume division = " << fil.m_total_number_subvolumes
-                              << std::endl;
-
-                }
-                else
-                {
-                    std::cerr << "Error: pfifile (" << pfifile << ") nor pflfile ("
-                              << pflfile << ") doesn't exist" << std::endl;
-                    bsz = -1;
-#ifndef CPU_VER
-                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
-#endif
-#ifdef KMATH
-                    km_random.finalize();
-#endif
-#ifndef CPU_VER
-                    MPI_Finalize();
-#endif
-                    return 0;
-                }
-
-                transfunc_creator.setProtocol( clntMes );
-                TransferFunctionSynthesizer* tfs = transfunc_creator.create();
-                VariableRange range = RangeEstimater::EstimationList( 0, fil, *tfs );
-                delete tfs;
-
-                strncpy( servMes.header, "JPTP /1.0 000 OK\r\n", 18 );
-                servMes.m_server_status = 0; // Add 2016.1.4
-                servMes.numParticle = 0;
-                servMes.transfunc_count = 0;
-                servMes.numVolDiv = fil.m_total_number_subvolumes;
-                servMes.timeStep = fil.m_total_start_steps;
-                servMes.staStep = fil.m_total_start_steps;
-                servMes.endStep = fil.m_total_end_step;
-                servMes.numStep = fil.m_total_number_steps;
-                servMes.minObjectCoord[0] = fil.m_total_min_object_coord[0];
-                servMes.minObjectCoord[1] = fil.m_total_min_object_coord[1];
-                servMes.minObjectCoord[2] = fil.m_total_min_object_coord[2];
-                servMes.maxObjectCoord[0] = fil.m_total_max_object_coord[0];
-                servMes.maxObjectCoord[1] = fil.m_total_max_object_coord[1];
-                servMes.maxObjectCoord[2] = fil.m_total_max_object_coord[2];
-                servMes.minValue = fil.m_total_min_value;
-                servMes.maxValue = fil.m_total_max_value;
-                servMes.numNodes = fil.m_total_number_nodes;
-                servMes.numElements = fil.m_total_number_elements;
-                servMes.elemType = fil.m_list[0].m_elem_type;
-                servMes.fileType = fil.m_list[0].m_file_type;
-                servMes.numIngredients = fil.m_list[0].m_number_ingredients;
-                servMes.varRange = range;
-                servMes.flag_send_bins = 0;
-
-                servMes.messageSize = servMes.byteSize();
-                pts.sendMessage( servMes );
-            }
-#endif
             jpv::ParticleTransferServerMessage servMes;
             jpv::ParticleTransferClientMessage clntMes;
             clntMes.camera = new kvs::Camera();
@@ -1959,7 +1807,7 @@ int main( int argc, char** argv )
                 ptss = pts.recvMessage( clntMes );
                 //debug add by shimomura 2023/1/18
                 //std::cout << __FUNCTION__ << ", l. " << __LINE__ <<std::endl;
-                //clntMes.show();
+                clntMes.show();
 
                 if ( ptss == -1 ) break;
                 /* 140319 for client stop by Ctrl+c */
@@ -2053,8 +1901,8 @@ int main( int argc, char** argv )
                             point_creator.setFilterInfo( fil.m_list[idx] );
                             point_creator.setCoordSynthStr( clntMes.m_x_synthesis,
                                                             clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-                            point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
-                                                            clntMes.y_synthesis_token, clntMes.z_synthesis_token );
+//                            point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
+//                                                            clntMes.y_synthesis_token, clntMes.z_synthesis_token );
                             point_creator_lst.push_back( point_creator );
                         }
 
@@ -2083,8 +1931,7 @@ int main( int argc, char** argv )
 
                     transfunc_creator.setProtocol( clntMes );
                     TransferFunctionSynthesizer* tfs = transfunc_creator.create();
-                    VariableRange range = RangeEstimater::EstimationList( 0, fil, *tfs , clntMes);
-//                    VariableRange range = RangeEstimater::EstimationList( 0, fil, *tfs );
+                    VariableRange range = RangeEstimater::EstimationList( 0, fil, tfs , clntMes);
 
                     //VariableRange range;
                     strncpy( servMes.header, "JPTP /1.0 000 OK\r\n", 18 );
@@ -2102,6 +1949,7 @@ int main( int argc, char** argv )
                     servMes.maxObjectCoord[2] = fil.m_total_max_object_coord[2];
                     servMes.minValue = fil.m_total_min_value;
                     servMes.maxValue = fil.m_total_max_value;
+                    std::cout << "fil.m_total_max_value = " << fil.m_total_max_value <<std::endl;
                     servMes.numNodes = fil.m_total_number_nodes;
                     servMes.numElements = fil.m_total_number_elements;
                     servMes.elemType = fil.m_list[0].m_elem_type;
@@ -2207,40 +2055,11 @@ int main( int argc, char** argv )
                         transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
                         param.m_transfunc_synthesizer = transfunc_creator.create();
 
-                    //param.m_transfunc_array       = transfunc_creator.transfunc();
                      param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
                     for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
                     {
                         param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
-//                    std::cout << "transfunc_creator.transfunc().opacityMap().minValue() = " << transfunc_creator.transfunc()[0].opacityMap().minValue() << std::endl;
-//                    std::cout << "transfunc_creator.transfunc().opacityMap().maxValue() = " << transfunc_creator.transfunc()[0].opacityMap().maxValue() << std::endl;
-//                    for (int i=0 ; i < param.m_transfunc_array.size(); i++)
-//                    {
-//                    std::cout << "param.m_transfunc_array[0].minValue() = " << param.m_transfunc_array[i].opacityMap().minValue() << std::endl;
-//                    std::cout << "param.m_transfunc_array[0].maxValue() = " << param.m_transfunc_array[i].opacityMap().maxValue() << std::endl;
-//                    }
-//                        std::vector<std::string> transfer_function_names;
-//                        std::vector<std::string> transfunc_synthesizer_color_names;
-//                        std::vector<std::string> transfunc_synthesizer_opacity_names;
-//                        std::vector<NamedTransferFunctionParameter>::iterator itr;
-//                        for (itr=clntMes.transfunc.begin();itr!=clntMes.transfunc.end(); itr++) {
-//                            transfer_function_names.push_back((*itr).m_name);
-//                        }
-
-//                        for ( TransferFunctionMap::const_iterator itr = param.m_transfunc_synthesizer->colorTransferFunctionMap().begin();
-//                                itr != param.m_transfunc_synthesizer->colorTransferFunctionMap().end();
-//                                itr++ ) {
-//                            std::string fn = itr->first;
-//                            transfunc_synthesizer_color_names.push_back( fn );
-//                        }
-//
-//                        for ( TransferFunctionMap::const_iterator itr = param.m_transfunc_synthesizer->opacityTransferFunctionMap().begin();
-//                                itr != param.m_transfunc_synthesizer->opacityTransferFunctionMap().end();
-//                                itr++ ) {
-//                            std::string fn = itr->first;
-//                            transfunc_synthesizer_opacity_names.push_back( fn );
-//                        }
 
                         if ( clntMes.nodeType == 'a' )
                         {
@@ -2361,8 +2180,8 @@ int main( int argc, char** argv )
                             {
                                 point_creator_lst[fidx].setCoordSynthStr( clntMes.m_x_synthesis,
                                                                           clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-                                point_creator_lst[fidx].setCoordSynthTkn( clntMes.x_synthesis_token,
-                                                                          clntMes.y_synthesis_token, clntMes.z_synthesis_token );
+//                                point_creator_lst[fidx].setCoordSynthTkn( clntMes.x_synthesis_token,
+//                                                                          clntMes.y_synthesis_token, clntMes.z_synthesis_token );
                                 if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                                 {
                                     tmp_obj = point_creator_lst[fidx].run( param, *clntMes.camera, timeStep, st, xvl);
@@ -2382,65 +2201,34 @@ int main( int argc, char** argv )
                                 originalObject->setColors( colors_array );
                                 originalObject->setNormals( normals_array );
 
-                                //add by shimomura 2023/1/23
-                                //vr = setVariablerange( *tmp_obj );
-
                                 // modify by @hira at 2016/12/01  
                                 int c_count = 0;
-                                //for ( int tf = 0; tf < tmp_obj->getColorHistogram().size(); tf++ )
                                 for ( int tf = 0; tf < tmp_obj->getTfnumber(); tf++ )
                                 {
-                                    //int c_nbins = tmp_obj->getColorHistogram()[ tf ].nbins();
                                     int c_nbins = tmp_obj->getNbins();
                                     //changed by shimomura 2023/07/24
-//                                    tmp_max[2*tf] = tmp_obj->getColorHistogram()[ tf ].maxRange();
-//                                    tmp_min[2*tf] = tmp_obj->getColorHistogram()[ tf ].minRange();
                                     tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
                                     tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
                                     for ( int res = 0; res < c_nbins; res++ )
                                     {
-                                    //    tmp_c_bins[c_count++] += static_cast<kvs::UInt64>( tmp_obj->getColorHistogram()[ tf ][res] );
                                         tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ] ;
                                         c_count++;
                                     }
                                 }
                                 int o_count = 0;
-//                                for ( int tf = 0; tf < tmp_obj->getOpacityHistogram().size(); tf++ )
                                 for ( int tf = 0; tf < tmp_obj->getTfnumber(); tf++ )
                                 {
                                     int o_nbins = tmp_obj->getNbins();
                                     //changed by shimomura 2023/07/24
-//                                    tmp_max[2*tf+1] = tmp_obj->getOpacityHistogram()[ tf ].maxRange();
-//                                    tmp_min[2*tf+1] = tmp_obj->getOpacityHistogram()[ tf ].minRange();
                                     tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_o_max[tf];
                                     tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_o_min[tf];
                                     for ( int res = 0; res < o_nbins; res++ )
                                     {
-                                    //    tmp_o_bins[o_count++] += static_cast<kvs::UInt64>( tmp_obj->getOpacityHistogram()[ tf ][res] );
                                         tmp_o_bins[o_count] += tmp_obj->getOHistogram()[ o_count ] ;
                                         o_count++;
                                     }
                                 }
                                  
-#if 0			// delete by @hira at 2016/12/011
-                                for ( int tf = 0; tf < tmp_obj->getColorHistogram().size(); tf++ )
-                                {
-                                    servMes.c_nbins[tf] = tmp_obj->getColorHistogram()[ tf ].nbins();
-                                    for ( int res = 0; res < servMes.c_nbins[tf]; res++ )
-                                    {
-                                        servMes.c_bins[tf][res] += static_cast<kvs::UInt64>( tmp_obj->getColorHistogram()[ tf ][res] );
-                                    }
-                                }
-
-                                for ( int tf = 0; tf < tmp_obj->getOpacityHistogram().size(); tf++ )
-                                {
-                                    servMes.o_nbins[tf] = tmp_obj->getOpacityHistogram()[ tf ].nbins();
-                                    for ( int res = 0; res < servMes.o_nbins[tf]; res++ )
-                                    {
-                                        servMes.o_bins[tf][res] += static_cast<kvs::UInt64>( tmp_obj->getOpacityHistogram()[ tf ][res] );
-                                    }
-                                }
-#endif
                             }
                             catch ( const std::runtime_error& e )
                             {
@@ -2451,7 +2239,6 @@ int main( int argc, char** argv )
                                 nan_error = true;
                             }
 
-                            //vr = param.m_transfunc_synthesizer->variableRange();
                             }
 
 #ifndef CPU_VER
@@ -2465,8 +2252,6 @@ int main( int argc, char** argv )
 							printf(" %zu perticles generated\n", object->coords().size() / 3);
 
 //                            //add by shimomura 2023/06/14
-//                            VariableRange tmp_vr;
-//                            tmp_vr = setVariablerange( *object );
                             if ( originalObject != object ) delete originalObject;
                             servMes.numParticle = object->coords().size() / 3;
                             if ( servMes.numParticle > 0 )
@@ -2532,30 +2317,11 @@ int main( int argc, char** argv )
                             MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
                             MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
 
-#if 0			// delete by @hira at 2016/12/011
-                            int c_count = 0;
-                            int o_count = 0;
-                            for ( int tf = 0; tf < servMes.tf_count ; tf++ )
-                            {
-                                for ( int res = 0; res < servMes.c_nbins[tf]; res++ )
-                                {
-                                    servMes.c_bins[tf][res] = tmp_c_bins[c_count];
-                                    c_count++;
-                                }
-
-                                for ( int res = 0; res < servMes.o_nbins[tf]; res++ )
-                                {
-                                    servMes.o_bins[tf][res] = tmp_o_bins[o_count];
-                                    o_count++;
-                                }
-                            }
-#endif
                         }
 #endif
                         //add by shimomura 2023/06/14
                         vr = setVariablerange2( tmp_max,tmp_min, cnt );
                         servMes.varRange = vr;
-//                        vr = setMinMax( tmp_max,tmp_min, cnt );
                         // add by shimomura 2022/12/16
                         servMes.setColorHistogramBins(                                                     
                                     param.m_transfunc_array.size(),

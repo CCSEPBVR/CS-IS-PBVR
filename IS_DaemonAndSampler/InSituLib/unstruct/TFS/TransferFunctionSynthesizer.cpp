@@ -1,6 +1,7 @@
 #include "TransferFunctionSynthesizer.h"
 #include <fstream>
 #include <limits>
+#include "Token.h"
 
 TransferFunctionSynthesizer::TransferFunctionSynthesizer():
     m_scalars(TF_COUNT)
@@ -104,6 +105,40 @@ void TransferFunctionSynthesizer::setColorVariable( std::vector<EquationToken> c
 TransferFunctionSynthesizer::~TransferFunctionSynthesizer()
 {
 }
+
+//add by shimomura 2024/03/25
+EquationToken TransferFunctionSynthesizer::convert_token(const std::string expression)
+{
+
+//    std::cout << "expression = " << expression << std::endl;
+    FuncParser::ExpressionTokenizer tokenizer;
+    FuncParser::ExpressionConverter exprconv;
+
+    EquationToken eq_token;
+
+    tokenizer.tokenizeString( expression );
+    exprconv.convertExpToken( tokenizer.m_exp_token );
+    int size = exprconv.token_array.size();
+    if( size > 128 ){ printf("Equation length too long\n");}
+
+    for( int i = 0; i < 128; i++ )
+    {
+        if( i < size )
+        {
+            eq_token.exp_token[i]   = exprconv.token_array[i];
+            eq_token.var_name[i]    = exprconv.var_array[i];
+            eq_token.val_array[i] = exprconv.value_array[i];
+        }
+        else
+        {
+            eq_token.exp_token[i]   = 0;
+            eq_token.var_name[i]    = 0;
+            eq_token.val_array[i] = 0;
+        }
+    }
+    return eq_token;
+}
+
 
 //kawamura
 std::vector<float> TransferFunctionSynthesizer::SynthesizedOpacityScalars(
@@ -911,8 +946,8 @@ void TransferFunctionSynthesizer::CalculateOpacityArrayAverage(
         m_rpn.evalArray(eval_result, loop_cnt);
 
         //set opacity A1,A2,,,Ai. start 116 in VarName(Token.h)
-        //m_var_value[ VAR_OFFSET_A+i ] = tf[i].opacityMap().at( m_scalars[i] );
-        //std::cout << "tf[i].opacityMap().maxvalue() = "  << tf[i].opacityMap().maxValue() << ": tf[i].opacityMap().minValue() = " << tf[i].opacityMap().minValue()<< std::endl;
+        m_var_value[ VAR_OFFSET_A+i ] = tf[i].opacityMap().at( m_scalars[i] );
+        //std::cout << "tf["<<i<<"].opacityMap().maxvalue() = "  << tf[i].opacityMap().maxValue() << ": tf[i].opacityMap().minValue() = " << tf[i].opacityMap().minValue()<< std::endl;
         for( int jx=0; jx<loop_cnt; jx++ )
         {
             opacity_map_array[i][jx] = tf[i].opacityMap().at( eval_result[jx] );

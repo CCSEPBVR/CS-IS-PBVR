@@ -39,6 +39,7 @@ public:
 
     std::vector<NamedTransferFunction> transfunc(); 
     //std::vector<pbvr::TransferFunction> transfunc(); 
+    //std::vector<VolumeEquation>        voleq();
     void setFilterInfo( const FilterInformationFile& fi );
     void initQuantityMap( const int32_t m_number_ingredients );
     void setRange( const std::string name, const float min_value, const float max_value );
@@ -68,16 +69,18 @@ private:
     std::string m_opacity_transfunc_synthesis;
 
     // add by @shimomura 2022/12/12 
-    EquationToken m_opacity_func;
-    EquationToken m_color_func;
-    std::vector<EquationToken> m_opacity_var;
-    std::vector<EquationToken> m_color_var;
+//    EquationToken m_opacity_func;
+//    EquationToken m_color_func;
+//    std::vector<EquationToken> m_opacity_var;
+//    std::vector<EquationToken> m_color_var;
 
 private:
     void assign();
     void set_protocol(  const jpv::ParticleTransferClientMessage& clntMes );
     void set_param_info(  const ParameterFile& pa );
     void read_TF_from_ParamInfo(  const ParameterFile& pa );
+    
+//    EquationToken convert_token(std::string expression); 
     
     size_t m_component;
     QuantityMap m_qmap;

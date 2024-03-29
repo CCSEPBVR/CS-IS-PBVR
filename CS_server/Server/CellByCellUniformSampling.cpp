@@ -571,7 +571,6 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
         {
             int  it = j * nnodes  + i;
             values[j][i] = (float)(valueArray.at<double>(it));  
-            // ¿¿¿¿¿ double¿¿¿¿¿¿¿¿¿¿¿¿¿float¿¿¿¿¿¿¿¿¿¿¿¿float¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿
         }
     } 
 
@@ -615,14 +614,11 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
     kvs::ValueArray<float> c_min( tf_number );
     kvs::ValueArray<float> c_max( tf_number );
 
-    kvs::ValueArray<int> o_histogram( tf_number * nbins );//¿¿¿¿¿¿¿¿¿¿¿¿¿
-    kvs::ValueArray<int> c_histogram( tf_number * nbins );//¿¿¿¿¿¿¿¿¿¿
-
-    if( parameter_file_opened )
-    {
-        o_histogram.fill(0x00);
-        c_histogram.fill(0x00);
-    }
+    // 2023/07/31 add by shimomura
+    SuperClass::m_c_histogram = kvs::ValueArray<int> (tf_number * nbins);
+    SuperClass::m_o_histogram = kvs::ValueArray<int> (tf_number * nbins);
+    SuperClass::setTfnumber(tf_number);
+    SuperClass::setNbins(nbins);
 
     for( size_t i = 0; i < tf_number; i++ )
     {
@@ -653,7 +649,6 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
             C_max[ i ] = -FLT_MAX;
         }
     }
-
 
     TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
     std::vector< std::vector<pbvr::TransferFunction> > th_tf;
@@ -693,6 +688,17 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
     const int nxy_1 = nx_1 * ny_1;
 
     int total_nparticles = 0;
+
+    const pbvr::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
+    CoordSynthesizerStrings css;
+    if ( pCrdSynthStr )
+    { 
+//        std::cout << "css.m_x_coord_synthesizer_string = " << css.m_x_coord_synthesizer_string <<std::endl;  
+//        std::cout << "css.m_y_coord_synthesizer_string = " << css.m_y_coord_synthesizer_string <<std::endl;  
+//        std::cout << "css.m_z_coord_synthesizer_string = " << css.m_z_coord_synthesizer_string <<std::endl;  
+        css = *pCrdSynthStr;
+    }
+
 
 //    static TimedScope td_gatherf("GatherF",1);
 //    static TimedScope td_gather("gather",1);
@@ -925,6 +931,7 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
                                                 X_l, Y_l, Z_l, X_g, Y_g, Z_g, cell_opacity );
 //                timed_section_end(td_CalculateOpacity,thid);
 
+             
                 //int nparticles[SIMDW];
                 int nparticles[SIMDW+1];
                 #pragma ivdep
@@ -940,15 +947,14 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
 //                    timed_section_start(td_CalculateNumPar,thid);
 
                     const int np = calculate_number_of_particles( density, 1, &MT ) * m_particle_density;
-//                    const int np = calculate_number_of_particles( density, 1, &MT ) * 0.01;
+//                    const int np = calculate_number_of_particles( density, 1, &MT ) * 0.1;
 //                    timed_section_end(td_CalculateNumPar,thid);
 
                     const int cell_id = I + J * SIMDW;
 
                     nparticles[I] = cell_id < ncells ? np : 0;
 //                    nparticles[I] = cell_id < ncells ? 10 : 0;
-                    th_total_nparticles += nparticles[I];
-//                    std::cout << "th_total_nparticles =" << th_total_nparticles <<std::endl;
+                    th_total_nparticles += nparticles[I] ;
                 }
 
                 // ¿¿¿¿¿SIMD¿¿¿¿¿
@@ -1005,6 +1011,35 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
                                         p_x_g, p_y_g, p_z_g,
                                         red, green, blue );
                                 //                            timed_section_end(td_CalculateColor,thid); 
+#if 1                               
+                                float np_x_g[ SIMDW ];
+                                float np_y_g[ SIMDW ];
+                                float np_z_g[ SIMDW ];
+                                if ( !css.m_x_coord_synthesizer_string.empty() && 
+                                     !css.m_y_coord_synthesizer_string.empty() && 
+                                     !css.m_z_coord_synthesizer_string.empty()  ) 
+                                {
+                                    th_tfs[thid]->CalculateCoordArray( interp[thid],
+                                            SIMDW,
+                                            p_x_l, p_y_l, p_z_l,
+                                            p_x_g, p_y_g, p_z_g,
+                                            //local_coord_array,
+                                            //global_coord_array,
+                                            th_tf[thid],
+                                            /*CoordSynthesizerStrings*/        css,
+                                            np_x_g, np_y_g, np_z_g  );
+                                }
+                                else
+                                {
+                                    for( int j = 0; j < SIMDW; j++ )
+                                    {
+                                        np_x_g[j] = p_x_g[j];
+                                        np_y_g[j] = p_y_g[j];
+                                        np_z_g[j] = p_z_g[j];
+                                    }
+                                }
+#endif
+
                                 //SIMD¿¿¿
                                 for( int pp=0; pp<SIMDW; pp++)
                                 {
@@ -1021,9 +1056,9 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
 
 
                                     //                                timed_section_end(td_CalculateDensity,thid);
-                                        th_vertex_coords.push_back( p_x_g[pp] );
-                                        th_vertex_coords.push_back( p_y_g[pp] );
-                                        th_vertex_coords.push_back( p_z_g[pp] );
+                                        th_vertex_coords.push_back( np_x_g[pp] );
+                                        th_vertex_coords.push_back( np_y_g[pp] );
+                                        th_vertex_coords.push_back( np_z_g[pp] );
 
                                         th_vertex_colors.push_back( red  [pp] );
                                         th_vertex_colors.push_back( green[pp] );
@@ -1032,12 +1067,10 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
                                         th_vertex_normals.push_back( grad_x[pp] );
                                         th_vertex_normals.push_back( grad_y[pp] );
                                         th_vertex_normals.push_back( grad_z[pp] );
-                                        nparticles_count ++;
                                        //                                    timed_section_end(td_VectorPush,thid);
-                                    } // end of if pp
                                 } // end of for pp
                             } // end of if p_id
-//                        } // end of for p
+                        } // end of for p
                     } // end of for I ¿¿¿¿¿¿¿¿¿
                 } // end of omp for J outer_loop
         } // end of ¿¿¿¿¿¿¿
@@ -1061,8 +1094,8 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
 
                 for( int n = 0; n < tf_number * nbins; n++ )
                 {
-                    o_histogram[n] += th_o_histogram[n];
-                    c_histogram[n] += th_c_histogram[n];
+                    m_o_histogram[n] += th_o_histogram[n];
+                    m_c_histogram[n] += th_c_histogram[n];
                 }
             }
 
@@ -1402,12 +1435,6 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
 {
     double start = GetTime();
     size_t resolution = DEFAULT_NBINS;
-//    kvs::ValueArray<float> O_min_recv;
-//    kvs::ValueArray<float> O_max_recv;
-//    kvs::ValueArray<float> C_min_recv;
-//    kvs::ValueArray<float> C_max_recv;
-//    kvs::ValueArray<int> o_histogram_recv;
-//    kvs::ValueArray<int> c_histogram_recv;
 
     kvs::AnyValueArray valueArray = volume.values(); 
     Type* coordinates =  (float * )volume.coords().pointer(); 
@@ -1452,7 +1479,6 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
 
     //if(mpi->rank==0)std::cout<<"start generate_particles\n";
     static bool start_flag = true;
-    //static bool parameter_file_opened=false;
     static bool parameter_file_opened=true;
 
     std::vector< std::vector< pbvr::CellBase<Type>* > >  interp;
@@ -1600,6 +1626,7 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
     SuperClass::m_color_histogram  = kvs::ValueArray<pbvr::FrequencyTable>( tf_number );
     SuperClass::m_opacity_histogram  = kvs::ValueArray<pbvr::FrequencyTable>( tf_number );
 
+    std::cout<<"******* getMaxDensity()="<<m_transfer_function_synthesizer->getMaxDensity()<<std::endl;
     const int max_nparticles = (int)m_transfer_function_synthesizer->getMaxDensity() + 1;
 
     if(mpi_rank==RANK) std::cout<<"******* max_nparticles="<<max_nparticles<<std::endl;
@@ -1684,21 +1711,17 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
             / ( sizeof( float ) + sizeof( Byte ) + sizeof( float ) ) );
     bool particle_limit_over = false;
     // coordinate synthesis
-    // 2023 shimomura 
-    const pbvr::CoordSynthesizerTokens* pCrdSynthTkn = volume.getCoordSynthesizerTokens();
-    CoordSynthesizerTokens cst;
-    if ( pCrdSynthTkn ) cst = *pCrdSynthTkn;
-
     const pbvr::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
     CoordSynthesizerStrings css;
     if ( pCrdSynthStr ) 
+    //if ( ! pCrdSynthStr.m_x_coord_synthesizer_string.empty() && pCrdSynthStr.m_y_coord_synthesizer_string.empty() && pCrdSynthStr.m_z_coord_synthesizer_string.empty()  ) 
     {
+//        std::cout << "css.m_x_coord_synthesizer_string = " << css.m_x_coord_synthesizer_string <<std::endl;  
+//        std::cout << "css.m_y_coord_synthesizer_string = " << css.m_y_coord_synthesizer_string <<std::endl;  
+//        std::cout << "css.m_z_coord_synthesizer_string = " << css.m_z_coord_synthesizer_string <<std::endl;  
         css = *pCrdSynthStr;
     }
 
-    if (! css.m_x_coord_synthesizer_string.empty() )cst.x_token_empty=false;
-    if (! css.m_y_coord_synthesizer_string.empty() )cst.y_token_empty=false;
-    if (! css.m_z_coord_synthesizer_string.empty() )cst.z_token_empty=false;
 
 #pragma omp parallel
     {
@@ -1853,7 +1876,6 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
                 }
             }
 
-//            th_tfs[thid]->CalculateOpacityArray( interp[thid],
                 th_tfs[thid]->CalculateOpacityArrayAverage( interp[thid],
                     remain,
                     local_center_array,
@@ -1872,7 +1894,8 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
                     interp[thid][0]->bindCell( cell_index[cell_BLK] );
                     nparticles_array[cell_BLK] 
                         = calculate_number_of_particles( density, interp[thid][0]->volume(), &MT );
-                nparticles_array[cell_BLK] *= m_particle_density;
+                nparticles_array[cell_BLK] *= m_particle_density ;
+                //nparticles_array[cell_BLK] *= m_particle_density * 0.1 ;
                 nparticles_num += nparticles_array[cell_BLK];
             }
             /////////////////////////////// Synthesized~ (), CalculateOpacity() ///////////////////////////////////
@@ -1903,7 +1926,8 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
                             interp[thid][0]->setLocalPoint( local_coord_array[j] );
                             global_coord_array[j] = interp[thid][0]->transformLocalToGlobal( local_coord_array[j] );
                     }
-                    
+ 
+                  
                     //¿¿¿¿¿cell_index, local_coord¿¿¿¿
                     int nparticles_count = 0;
                     for( int j = 0; j < remain_BLK; j++ )
@@ -1912,6 +1936,7 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
                         local_coord_array[ nparticles_count ] = local_coord_array[j];
                         global_coord_array[ nparticles_count ] = global_coord_array[j];
                         nparticles_count +=1;
+//                        std::cout << "global_coord_array[ nparticles_count ]  =" << global_coord_array[ nparticles_count ]  <<std::endl;
                     }
 
                     // ------------------------------------------------
@@ -2049,17 +2074,26 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
                             color_array );
 
                     kvs::Vector3f new_coord_array[ SIMDW ];
-                    if ( pCrdSynthStr )
+                    //if ( pCrdSynthStr )
+                    if ( !css.m_x_coord_synthesizer_string.empty() && !css.m_y_coord_synthesizer_string.empty() && !css.m_z_coord_synthesizer_string.empty()  ) 
                     {
                         th_tfs[thid]->CalculateCoordArray( interp[thid],
                                 nparticles_count,
                                 local_coord_array,
                                 global_coord_array,
                                 th_tf[thid],
-      /*CoordSynthesizerTokens*/        cst,
+//      /*CoordSynthesizerTokens*/        cst,
+      /*CoordSynthesizerStrings*/        css,
                                 new_coord_array );
                     }
-                   
+                    else
+                    {
+                        for( int j = 0; j < nparticles_count; j++ )
+                        {
+                            new_coord_array[j] = global_coord_array[j];
+                        }
+                    }
+
                     //2023 shimomura 
                     for( int j = 0; j < nparticles_count; j++ )
                     {
@@ -2100,8 +2134,6 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
 
             for( int n = 0; n < tf_number * nbins; n++ )
             {
-//                o_histogram[n] += th_o_histogram[n];
-//                c_histogram[n] += th_c_histogram[n];
                 m_o_histogram[n] += th_o_histogram[n];
                 m_c_histogram[n] += th_c_histogram[n];
             }
@@ -2111,17 +2143,7 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
             vertex_normals.insert( vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end() );
         }
 
-
     } //#pragma omp parallel
-
-//        O_min_recv.fill(0x00);
-//        O_max_recv.fill(0x00);
-//        C_min_recv.fill(0x00);
-//        C_max_recv.fill(0x00);
-//
-//        //¿¿¿¿¿¿¿¿¿
-//        o_histogram_recv.fill(0x00);
-//        c_histogram_recv.fill(0x00);
 
     // add by shimomura 
     // set minmax range
@@ -2137,8 +2159,6 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
         m_transfer_function_synthesizer->m_c_min[i] = C_min[i];
         m_transfer_function_synthesizer->m_c_max[i] = C_max[i];
     }
-
-    //delete tfs;  // ¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿
 
     for(int i=0; i<max_threads; i++)
     {
@@ -2179,7 +2199,6 @@ const size_t CellByCellUniformSampling::calculate_number_of_particles(
 {
     const float N = density * volume_of_cell;
     const float R = MT->rand();
-    //const float R = 0.5;
 
     size_t n = static_cast<size_t>( N ); 
     if ( N - n > R )
@@ -2405,7 +2424,6 @@ void CellByCellUniformSampling::calculate_histogram( kvs::ValueArray<int>&   th_
                           const float c_scalars[][SIMDW],
                           const int tf_number  )
 {
-    //¿¿¿¿¿¿¿¿¿¿¿¿
     for( int i = 0; i < tf_number; i++ )
     {
         for( int I = 0; I < SIMDW; I++ )
