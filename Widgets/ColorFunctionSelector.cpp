@@ -32,5 +32,6 @@ void ColorFunctionSelector::onColorFunctionChanged( int index )
         kvs::ColorMap color_map = transfer_function_color->colorMap();
         m_color_map_bar->setColorMap( color_map );
         m_color_map_bar->setRange( m_extended_transfer_function_message->getColorTransferFunction(index + 1)->m_color_variable_min, m_extended_transfer_function_message->getColorTransferFunction(index + 1)->m_color_variable_max );
+        m_screen->update();
     }
 }

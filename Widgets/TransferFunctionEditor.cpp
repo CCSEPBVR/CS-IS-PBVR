@@ -242,6 +242,7 @@ void TransferFunctionEditor::onNumberOfTransferFunctionValueChanged( int value )
     m_extended_transfer_function_message.m_transfer_function_number = num_transfer_function;
     this->populateColorFunctionLists( value );
     this->populateOpacityFunctionLists( value );
+    m_color_function_selector->populateColorFunctionLists( value );
 
     int n;
     int current_size;

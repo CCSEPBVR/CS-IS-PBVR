@@ -134,6 +134,7 @@ void PBVRGUI::initializePanels()
     //コーディネートパネルの初期化
     m_coordinates.setClientMessage( m_connect.getClientMessage() );
     //伝達関数パネルの初期化
+    m_transfer_function_editor.setColorFunctionSelector( &m_color_function_selector );
     m_transfer_function_editor.setMerge( &m_merge );
     m_transfer_function_editor.setClientMessage( m_connect.getClientMessage() );
     m_transfer_function_editor.setServerMessage( m_connect.getServerMessage() );
@@ -143,6 +144,7 @@ void PBVRGUI::initializePanels()
     QWidgetAction *colorFunctionSelectorWidgetAction = new QWidgetAction( this );
     colorFunctionSelectorWidgetAction->setDefaultWidget( &m_color_function_selector );
     ui->colorFunctionSelectorTBar->addAction( colorFunctionSelectorWidgetAction );
+    m_color_function_selector.setScreen( m_screen );
     m_color_function_selector.setColorMapBar( m_color_map_bar );
     m_color_function_selector.setExtendedTransferFunctionMessage( m_transfer_function_editor.getExtendedTransferFunctionMessage() );
     m_color_function_selector.populateColorFunctionLists( m_color_function_selector.getExtendedTransferFunctionMessage()->m_transfer_function_number );

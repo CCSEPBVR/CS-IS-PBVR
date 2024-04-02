@@ -130,7 +130,7 @@ private:
     Connect* m_connect;
     DataSummary* m_data_summary;
     bool m_is_particle_generation_needed;
-    kvs::qt::jaea::Screen* m_screen;    
+    kvs::qt::jaea::Screen* m_screen;
     int m_current_time_step;
     class WorkerThread;
     bool m_is_worker_thread_running;
