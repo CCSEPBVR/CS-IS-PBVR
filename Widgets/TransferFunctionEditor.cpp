@@ -542,6 +542,7 @@ void TransferFunctionEditor::onApplyButtonClicked()
 //    if( !m_client_message->m_y_synthesis.empty() ) m_client_message->y_synthesis_token = this->convertToken( m_client_message->m_y_synthesis );
 //    if( !m_client_message->m_z_synthesis.empty() ) m_client_message->z_synthesis_token = this->convertToken( m_client_message->m_z_synthesis );
     m_merge->setIsParticleGenerationNeeded( true );
+    m_color_function_selector->updateColorMap();
 }
 
 void TransferFunctionEditor::onImportButtonClicked()

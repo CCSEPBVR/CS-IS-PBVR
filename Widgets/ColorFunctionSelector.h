@@ -23,6 +23,7 @@ public:
     ExtendedTransferFunctionMessage* getExtendedTransferFunctionMessage() { return m_extended_transfer_function_message; }
     void populateColorFunctionLists(int n);
     void onColorFunctionChanged( int index );
+    void updateColorMap();
 
 private:
     Ui::ColorFunctionSelector *ui;

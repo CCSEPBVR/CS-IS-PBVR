@@ -35,3 +35,15 @@ void ColorFunctionSelector::onColorFunctionChanged( int index )
         m_screen->update();
     }
 }
+
+void ColorFunctionSelector::updateColorMap()
+{
+    const NamedTransferFunctionParameter *transfer_function_color = m_extended_transfer_function_message->getColorTransferFunction( ui->comboBox->currentIndex() + 1  );
+    if( transfer_function_color != NULL )
+    {
+        kvs::ColorMap color_map = transfer_function_color->colorMap();
+        m_color_map_bar->setColorMap( color_map );
+        m_color_map_bar->setRange( m_extended_transfer_function_message->getColorTransferFunction( ui->comboBox->currentIndex() + 1)->m_color_variable_min, m_extended_transfer_function_message->getColorTransferFunction( ui->comboBox->currentIndex() + 1)->m_color_variable_max );
+        m_screen->update();
+    }
+}
