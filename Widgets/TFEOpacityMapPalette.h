@@ -1,12 +1,12 @@
 #ifndef TFEOPACITYMAPPALETTE_H
 #define TFEOPACITYMAPPALETTE_H
 
-#include <QOpenGLWidget>
-#include <QOpenGLFunctions>
 #include <kvs/Texture1D>
 #include <kvs/Texture2D>
-#include <kvs/OpacityMap>
 #include <kvs/OpenGL>
+#include <QOpenGLWidget>
+#include <QOpenGLFunctions>
+#include <kvs/OpacityMap>
 
 class TFEOpacityMapPalette : public QOpenGLWidget, protected QOpenGLFunctions
 {

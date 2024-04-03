@@ -1,12 +1,12 @@
 #ifndef TFECOLORMAPPALETTE_H
 #define TFECOLORMAPPALETTE_H
 
+#include <kvs/Texture1D>
+#include <kvs/OpenGL>
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <kvs/ColorMap>
-#include <kvs/Texture1D>
 #include <kvs/RGBColor>
-#include <kvs/OpenGL>
 
 class TFEColorMapPalette : public QOpenGLWidget, protected QOpenGLFunctions
 {

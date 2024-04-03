@@ -1,11 +1,11 @@
 #ifndef TFECOLORMAPBAR_H
 #define TFECOLORMAPBAR_H
 
+#include <kvs/Texture2D>
+#include <kvs/OpenGL>
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <kvs/ColorMap>
-#include <kvs/Texture2D>
-#include <kvs/OpenGL>
 
 class TFEColorMapBar : public QOpenGLWidget, protected QOpenGLFunctions
 {

@@ -1,11 +1,12 @@
 #ifndef TFEHISTOGRAMBAR_H
 #define TFEHISTOGRAMBAR_H
 
+#include <kvs/Texture2D>
+#include <kvs/OpenGL>
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <kvs/FrequencyTable>
-#include <kvs/Texture2D>
-#include <kvs/OpenGL>
+
 class TFEHistogramBar : public QOpenGLWidget, protected QOpenGLFunctions
 {
 public:

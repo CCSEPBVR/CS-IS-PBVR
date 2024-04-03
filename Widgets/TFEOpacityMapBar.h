@@ -1,11 +1,11 @@
 #ifndef TFEOPACITYMAPBAR_H
 #define TFEOPACITYMAPBAR_H
 
+#include <kvs/Texture2D>
+#include <kvs/OpenGL>
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <kvs/OpacityMap>
-#include <kvs/Texture2D>
-#include <kvs/OpenGL>
 
 class TFEOpacityMapBar : public QOpenGLWidget, protected QOpenGLFunctions
 {
