@@ -176,12 +176,14 @@ void TransferFunctionEditor::updateRangeView()
                 }, Qt::QueuedConnection);
         }
     }
+    QMetaObject::invokeMethod( this, [this, tag_c, tag_o]()
+        {
+            ui->range_min_color->setText( QString::number( m_server_message->m_variable_range.min( tag_c ) ) );
+            ui->range_max_color->setText( QString::number( m_server_message->m_variable_range.max( tag_c ) ) );
+            ui->range_min_opacity->setText( QString::number( m_server_message->m_variable_range.min( tag_o ) ) );
+            ui->range_max_opacity->setText( QString::number( m_server_message->m_variable_range.max( tag_o ) ) );
+        }, Qt::QueuedConnection);
 
-    ui->range_min_color->setText( QString::number( m_server_message->m_variable_range.min( tag_c ) ) );
-    ui->range_max_color->setText( QString::number( m_server_message->m_variable_range.max( tag_c ) ) );
-    ui->range_min_opacity->setText( QString::number( m_server_message->m_variable_range.min( tag_o ) ) );
-    ui->range_max_opacity->setText( QString::number( m_server_message->m_variable_range.max( tag_o ) ) );
-    
 //    ui->colorHistogramBar->update();
 //    ui->opacityHistogramBar->update();
 }
