@@ -31,7 +31,10 @@ KVS_CPP = $$(KVS_CPP)
 #=============================================================================
 #  Configuration valiable.
 #=============================================================================
-
+win32 {
+QMAKE_CFLAGS_RELEASE += /MT
+QMAKE_CXXFLAGS_RELEASE += /MT
+}
 equals( KVS_SUPPORT_PYTHON, "1" ) { CONFIG += no_keywords }
 
 
@@ -228,7 +231,9 @@ win32 {
     LIBS += $$KVS_DIR/lib/kvsSupportQt.lib
     LIBS += $$KVS_DIR/lib/kvsCore.lib
     equals( KVS_ENABLE_GLEW, "1" ) {
-        LIBS += glew32.lib
+        win32: LIBS += -lopengl32
+        win32: LIBS += -lglu32
+        LIBS += $$GLEW_LIBRARY_PATH/glew32.lib
     }
     equals( KVS_SUPPORT_GLUT, "1" ) {
         LIBS += $$KVS_DIR/lib/kvsSupportGLUT.lib
