@@ -495,11 +495,11 @@ void Preference::applyColorMapBarSettings()
         case Horizontal:
             m_color_map_bar->setOrientationToHorizontal();
             m_color_map_bar->setWidth( 200 );
-            m_color_map_bar->setHeight( 60 );
+            m_color_map_bar->setHeight( 30 );
             break;
         case Vertical:
             m_color_map_bar->setOrientationToVertical();
-            m_color_map_bar->setWidth( 60 );
+            m_color_map_bar->setWidth( 30 );
             m_color_map_bar->setHeight( 200 );
             break;
         default:
