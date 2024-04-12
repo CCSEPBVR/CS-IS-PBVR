@@ -17,11 +17,13 @@ public:
     ~TFEOpacityMapPalette();
 
     void setOpacityMap( const kvs::OpacityMap& opacity_map );
+    void setInitialOpacityMap( const kvs::OpacityMap& opacitymap ) { m_initial_opacity_map = opacitymap; };
     kvs::OpacityMap getOpacity()
     {
         kvs::OpacityMap::Table opacity_map_table( m_opacity_map.table().pointer(), m_opacity_map.table().size() );
         return( kvs::OpacityMap( opacity_map_table ) );
     }
+    void reset() { setOpacityMap( m_initial_opacity_map ); update(); }
     void setUndoStack( QUndoStack *undo_stack ) { m_undo_stack = undo_stack; }
 
 protected:
@@ -34,6 +36,7 @@ protected:
 
 private:
     kvs::OpacityMap m_opacity_map; ///< opacity
+    kvs::OpacityMap m_initial_opacity_map;
     kvs::OpacityMap m_from_opacity_map;
     kvs::Texture1D m_texture; ///< opacity map texture
     kvs::Texture2D m_checkerboard; ///< checkerboard texture

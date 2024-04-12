@@ -17,12 +17,14 @@ public:
     ~TFEColorMapPalette();
 
     void setColorMap( const kvs::ColorMap& colormap );
+    void setInitialColorMap( const kvs::ColorMap& colormap ) { m_initial_color_map = colormap; };
     void setDrawingColor( const kvs::RGBColor& color ) { m_drawing_color = color; }
     kvs::ColorMap getColor()
     {
         kvs::ColorMap::Table color_map_table( m_color_map.table().pointer(), m_color_map.table().size() );
         return ( kvs::ColorMap( color_map_table ) );
     }
+    void reset() { setColorMap( m_initial_color_map ); update(); }
     void setUndoStack( QUndoStack *undo_stack ) { m_undo_stack = undo_stack; }
 
 protected:
@@ -35,6 +37,7 @@ protected:
 
 private:
     kvs::ColorMap m_color_map; ///< color map
+    kvs::ColorMap m_initial_color_map;
     kvs::ColorMap m_from_color_map;
     kvs::Texture1D m_texture; ///< color map texture
     QRect m_palette; ///< palette

@@ -19,7 +19,10 @@ class ColorMapEditor : public QDialog
 public:
     explicit ColorMapEditor(QWidget *parent = nullptr);
     ~ColorMapEditor();
+    void setColorMap( kvs::ColorMap colorMap );
+    void setInitialColorMap( kvs::ColorMap colorMap );
     kvs::ColorMap getColorMap();
+    void clearUndoStack() { m_undo_stack->clear(); }
 
 private:
     Ui::ColorMapEditor *ui;
@@ -29,6 +32,7 @@ private:
 private slots:
     void onCurrentTabChanged( int index );
     void onDrawingColorDoubleClicked();
+    void onResetButtonClicked();
     void onColorMapBarTableWidgetCellDoubleClicked( int row, int column );
     void onExpressionChanged();
     void onNumberOfControlPointsChabged( int value );

@@ -18,7 +18,10 @@ class OpacityMapEditor : public QDialog
 public:
     explicit OpacityMapEditor(QWidget *parent = nullptr);
     ~OpacityMapEditor();
+    void setOpacityMap( kvs::OpacityMap opacityMap );
+    void setInitialOpacityMap( kvs::OpacityMap opacityMap );
     kvs::OpacityMap getOpacityMap();
+    void clearUndoStack() { m_undo_stack->clear(); }
 
 private:
     Ui::OpacityMapEditor *ui;
@@ -26,6 +29,7 @@ private:
 
 private slots:
     void onCurrentTabChanged( int index );
+    void onResetButtonClicked();
     void onExpressionChanged();
     void onNumberOfControlPointsChabged( int value );
     void onControlPointChanged();

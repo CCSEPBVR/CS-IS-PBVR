@@ -13,6 +13,7 @@ OpacityMapEditor::OpacityMapEditor(QWidget *parent) :
     ui->controlPointsTWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->opacityMapBarTabWidget->setCurrentIndex( 0 );
 
+    connect( ui->resetPBtn, &QPushButton::clicked, this, &OpacityMapEditor::onResetButtonClicked );
     connect( ui->undoPBtn, &QPushButton::clicked, m_undo_stack, &QUndoStack::undo );
     connect( ui->redoPBtn, &QPushButton::clicked, m_undo_stack, &QUndoStack::redo );
     connect( ui->opacityMapBarTabWidget, &QTabWidget::currentChanged, this, &OpacityMapEditor::onCurrentTabChanged );
@@ -28,6 +29,16 @@ OpacityMapEditor::OpacityMapEditor(QWidget *parent) :
 OpacityMapEditor::~OpacityMapEditor()
 {
     delete ui;
+}
+
+void OpacityMapEditor::setOpacityMap( kvs::OpacityMap OpacityMap )
+{
+    ui->opacityMapPalette->setOpacityMap( OpacityMap );
+}
+
+void OpacityMapEditor::setInitialOpacityMap( kvs::OpacityMap OpacityMap )
+{
+    ui->opacityMapPalette->setInitialOpacityMap( OpacityMap );
 }
 
 kvs::OpacityMap OpacityMapEditor::getOpacityMap()
@@ -53,6 +64,11 @@ void OpacityMapEditor::onCurrentTabChanged( int index )
     {
         resize( width(), 500 );
     }
+}
+
+void OpacityMapEditor::onResetButtonClicked()
+{
+    ui->opacityMapPalette->reset();
 }
 
 void OpacityMapEditor::onExpressionChanged()

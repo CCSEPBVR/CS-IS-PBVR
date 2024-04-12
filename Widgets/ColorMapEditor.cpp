@@ -39,6 +39,7 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
 
     connect( ui->colorMapBarTabWidget, &QTabWidget::currentChanged, this, &ColorMapEditor::onCurrentTabChanged );
     connect( ui->drawingColorCLbl, &ClickableLabel::doubleClicked, this, &ColorMapEditor::onDrawingColorDoubleClicked );
+    connect( ui->resetPBtn, &QPushButton::clicked, this, &ColorMapEditor::onResetButtonClicked );
     connect( ui->undoPBtn, &QPushButton::clicked, m_undo_stack, &QUndoStack::undo );
     connect( ui->redoPBtn, &QPushButton::clicked, m_undo_stack, &QUndoStack::redo );
     connect( ui->colorMapBarTWidget, &QTableWidget::cellDoubleClicked, this, &ColorMapEditor::onColorMapBarTableWidgetCellDoubleClicked );
@@ -58,6 +59,16 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
 ColorMapEditor::~ColorMapEditor()
 {
     delete ui;
+}
+
+void ColorMapEditor::setColorMap( kvs::ColorMap colorMap )
+{
+    ui->colorMapPalette->setColorMap( colorMap );
+}
+
+void ColorMapEditor::setInitialColorMap( kvs::ColorMap colorMap )
+{
+    ui->colorMapPalette->setInitialColorMap( colorMap );
 }
 
 kvs::ColorMap ColorMapEditor::getColorMap()
@@ -272,6 +283,11 @@ void ColorMapEditor::onDrawingColorDoubleClicked()
 
     ui->colorMapPalette->setDrawingColor( kvs::RGBColor( color.red(), color.green(), color.blue() ) );
     raise();
+}
+
+void ColorMapEditor::onResetButtonClicked()
+{
+    ui->colorMapPalette->reset();
 }
 
 void ColorMapEditor::onColorMapBarTableWidgetCellDoubleClicked( int row, int column )

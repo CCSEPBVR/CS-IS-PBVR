@@ -438,6 +438,10 @@ void TransferFunctionEditor::onColorMapEditorButtonClicked()
     const NamedTransferFunctionParameter *trans_color = m_extended_transfer_function_message.getColorTransferFunction( n_select_color );
     kvs::ColorMap color_map = trans_color->colorMap();
 
+    m_color_map_editor.setColorMap( ui->colorMapBar->getColor() );
+    m_color_map_editor.setInitialColorMap( ui->colorMapBar->getColor() );
+    m_color_map_editor.clearUndoStack();
+
     if( m_color_map_editor.exec() == QDialog::Accepted )
     {
 //        ui->colorMapBar->setColorMap( m_color_map_editor.getColorMap() );
@@ -454,6 +458,10 @@ void TransferFunctionEditor::onOpacityMapEditorButtonClicked()
     int n_select_opacity = ui->opacityFunctionCBox->currentIndex() + 1;
     const NamedTransferFunctionParameter *trans_opacity = m_extended_transfer_function_message.getOpacityTransferFunction( n_select_opacity );
     kvs::OpacityMap opacity_map = trans_opacity->opacityMap();
+
+    m_opacity_map_editor.setOpacityMap( ui->opacityMapPalette->getOpacity() );
+    m_opacity_map_editor.setInitialOpacityMap( ui->opacityMapPalette->getOpacity() );
+    m_opacity_map_editor.clearUndoStack();
 
     if( m_opacity_map_editor.exec() == QDialog::Accepted )
     {
