@@ -119,6 +119,7 @@ public:
     void setIsParticleGenerationNeeded( bool is_particle_generation_needed ){ m_is_particle_generation_needed = is_particle_generation_needed; }
     void serverObject( QString volumeDataFilePath, int min, int max );
     void mergeObjects();
+    void exportingServerSidePointObject();
 
     bool getIsParticleGenerationNeeded(){ return m_is_particle_generation_needed; }
 
@@ -134,6 +135,9 @@ private:
     int m_current_time_step;
     class WorkerThread;
     bool m_is_worker_thread_running;
+
+    bool m_is_export;
+    QString m_export_file_path;
 
 
     void checkMinMaxTimeStep( FilesManager *newFile );
@@ -156,6 +160,7 @@ private slots:
     void onBrowserButtonClicked();
     void onAddButtonClicked();
     void onCenteringButtonClicked();
+    void onExportButtonClicked();
     void onApplyButtonClicked();
     void onWorkerThreadFinished();
 };

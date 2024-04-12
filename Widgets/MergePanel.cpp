@@ -27,12 +27,14 @@ MergePanel::MergePanel(QWidget *parent) :
     m_files_manager(),
     m_time_control( nullptr ),
     m_current_time_step( -1 ),
-    m_is_worker_thread_running( false )
+    m_is_worker_thread_running( false ),
+    m_is_export( false )
 {
     ui->setupUi(this);
     connect(ui->filesTWidget, &QTableWidget::cellDoubleClicked, this, &MergePanel::onFilesTWidgetCellDoubleClicked);
     connect(ui->importFilesBrowsePBtn, &QPushButton::clicked, this, &MergePanel::onBrowserButtonClicked );
     connect(ui->importFilesAddPBtn, &QPushButton::clicked, this, &MergePanel::onAddButtonClicked );
+    connect(ui->exportPBtn, &QPushButton::clicked, this, &MergePanel::onExportButtonClicked );
     connect(ui->centeringPBtn, &QPushButton::clicked, this, &MergePanel::onCenteringButtonClicked );
     connect(ui->applyPBtn, &QPushButton::clicked, this, &MergePanel::onApplyButtonClicked );
 }
@@ -253,6 +255,20 @@ void MergePanel::calculateTotalMinMaxTimeStep()
     m_time_control->updateTimeStepMinMax( totalMinTimeStep, totalMaxTimeStep, isSingleObject);
 }
 
+void MergePanel::onExportButtonClicked()
+{
+    m_export_file_path = QFileDialog::getSaveFileName(this, tr("Save Server-Side Point Object"), QDir::homePath(), tr("すべてのファイル (*.*)"));
+    if (!m_export_file_path.isEmpty())
+    {
+        ui->exportPBtn->setEnabled( false );
+        m_is_export = true;
+    }
+    else
+    {
+        m_is_export = false;
+    }
+}
+
 void MergePanel::onApplyButtonClicked()
 {
     removeChecked();
@@ -334,6 +350,11 @@ void MergePanel::mergeObjects()
 //    m_screen->update();
 }
 
+void MergePanel::exportingServerSidePointObject()
+{
+    qInfo() << "EXPORT";
+}
+
 void MergePanel::onWorkerThreadFinished()
 {
     kvs::Xform before_object_manager_xform = m_screen->scene()->objectManager()->xform();
@@ -355,11 +376,16 @@ void MergePanel::onWorkerThreadFinished()
                     m_preference->applyShading( stochastic_polygon_renderer );
                     m_files_manager[row]->setIds( m_screen->scene()->registerObject( polygon_object, stochastic_polygon_renderer ) );
                 }
-                else if( kvs::PointObject* polygon_object = dynamic_cast<kvs::PointObject*>(m_files_manager[row]->getObject()) )
+                else if( kvs::PointObject* point_object = dynamic_cast<kvs::PointObject*>(m_files_manager[row]->getObject()) )
                 {
                     kvs::RendererBase* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer;
                     m_preference->applyShading( particle_based_renderer );
-                    m_files_manager[row]->setIds( m_screen->scene()->registerObject( polygon_object, particle_based_renderer ) );
+                    m_files_manager[row]->setIds( m_screen->scene()->registerObject( point_object, particle_based_renderer ) );
+
+                    if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_is_export == true ) //サーバサイドポイントオブジェクトを保存する場合
+                    {
+                        exportingServerSidePointObject();
+                    }
                 }
                 //                RendererType* polygonRenderer = new RendererType();
                 //                m_merge->m_files_manager[row]->setIds( m_merge->m_screen->scene()->registerObject( nextObject, polygonRenderer ) );
