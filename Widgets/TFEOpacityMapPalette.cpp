@@ -141,7 +141,7 @@ void TFEOpacityMapPalette::mouseReleaseEvent( QMouseEvent *event )
     Q_UNUSED( event );
     if( m_undo_stack != nullptr ) //操作可能なパレットの場合
     {
-        UndoRedo *undoredocommand = new UndoRedo( this, m_from_opacity_map, this->getOpacity() );
+        OpacityUndoRedo *undoredocommand = new OpacityUndoRedo( this, m_from_opacity_map, this->getOpacity() );
         this->m_undo_stack->push(undoredocommand);
     }
 }

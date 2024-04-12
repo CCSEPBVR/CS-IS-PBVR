@@ -49,10 +49,10 @@ private:
 
 };
 
-class UndoRedo : public QUndoCommand
+class ColorUndoRedo : public QUndoCommand
 {
 public:
-    UndoRedo( TFEColorMapPalette *cmapp, const kvs::ColorMap from_color_map, const kvs::ColorMap to_color_map, QUndoCommand *parent = 0 ) :
+    ColorUndoRedo( TFEColorMapPalette *cmapp, const kvs::ColorMap from_color_map, const kvs::ColorMap to_color_map, QUndoCommand *parent = 0 ) :
         QUndoCommand(parent),
         m_tfe_color_map_palette(cmapp),
         m_from_color_map(from_color_map),

@@ -52,12 +52,12 @@ private:
 
 };
 
-class UndoRedo : public QUndoCommand
+class OpacityUndoRedo : public QUndoCommand
 {
 public:
-    UndoRedo( TFEOpacityMapPalette *cmapp, const kvs::OpacityMap from_opacity_map, const kvs::OpacityMap to_opacity_map, QUndoCommand *parent = 0 ) :
+    OpacityUndoRedo( TFEOpacityMapPalette *omapp, const kvs::OpacityMap from_opacity_map, const kvs::OpacityMap to_opacity_map, QUndoCommand *parent = 0 ) :
         QUndoCommand(parent),
-        m_tfe_opacity_map_palette(cmapp),
+        m_tfe_opacity_map_palette(omapp),
         m_from_opacity_map(from_opacity_map),
         m_to_opacity_map(to_opacity_map)
     {

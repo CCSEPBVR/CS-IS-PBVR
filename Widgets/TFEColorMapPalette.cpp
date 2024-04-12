@@ -168,7 +168,7 @@ void TFEColorMapPalette::mouseReleaseEvent( QMouseEvent *event )
 {
     Q_UNUSED( event );
 
-    UndoRedo *undoredocommand = new UndoRedo( this, m_from_color_map, this->getColor() );
+    ColorUndoRedo *undoredocommand = new ColorUndoRedo( this, m_from_color_map, this->getColor() );
     this->m_undo_stack->push(undoredocommand);
 }
 
