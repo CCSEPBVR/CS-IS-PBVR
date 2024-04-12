@@ -84,47 +84,65 @@ void TFEOpacityMapPalette::resizeGL(int w, int h)
 
 void TFEOpacityMapPalette::mousePressEvent( QMouseEvent *event )
 {
-    // Opacity map palette geometry.
-    const int x0 = m_palette.x();
-    const int x1 = m_palette.x() + m_palette.width();
-    const int y0 = m_palette.y();
-    const int y1 = m_palette.y() + m_palette.height();
+    if( m_undo_stack != nullptr )
+    {
+        m_from_opacity_map = getOpacity();
 
-    // Current mouse cursor position.
-    const int x = event->x() * this->devicePixelRatio();
-    const int y = event->y() * this->devicePixelRatio();
-    m_pressed_position.set( x, y );
-    m_previous_position.set( x, y );
+        // Opacity map palette geometry.
+        const int x0 = m_palette.x();
+        const int x1 = m_palette.x() + m_palette.width();
+        const int y0 = m_palette.y();
+        const int y1 = m_palette.y() + m_palette.height();
 
-    // Opacity value.
-    const float resolution = static_cast<float>( m_opacity_map.resolution() );
-    const int index = static_cast<int>( ( x - x0 ) * resolution / ( x1 - x0 ) + 0.5f );
-    const float opacity = static_cast<float>( y1 - y ) / ( y1 - y0 );
+        // Current mouse cursor position.
+        const int x = event->x() * this->devicePixelRatio();
+        const int y = event->y() * this->devicePixelRatio();
+        m_pressed_position.set( x, y );
+        m_previous_position.set( x, y );
 
-    // Update the opacity map.
-    kvs::Real32* data = const_cast<kvs::Real32*>( m_opacity_map.table().data() );
-    kvs::Real32* pdata = data;
-    pdata = data + index;
-    pdata[0] = opacity;
+        // Opacity value.
+        const float resolution = static_cast<float>( m_opacity_map.resolution() );
+        const int index = static_cast<int>( ( x - x0 ) * resolution / ( x1 - x0 ) + 0.5f );
+        const float opacity = static_cast<float>( y1 - y ) / ( y1 - y0 );
 
-    // Download to GPU.
-    const size_t width = m_opacity_map.resolution();
-    m_texture.bind();
-    m_texture.load( width, data );
-    m_texture.unbind();
+        // Update the opacity map.
+        kvs::Real32* data = const_cast<kvs::Real32*>( m_opacity_map.table().data() );
+        kvs::Real32* pdata = data;
+        pdata = data + index;
+        pdata[0] = opacity;
 
-    update();
+        // Download to GPU.
+        const size_t width = m_opacity_map.resolution();
+        m_texture.bind();
+        m_texture.load( width, data );
+        m_texture.unbind();
+
+        update();
+    }
 }
 
 void TFEOpacityMapPalette::mouseMoveEvent( QMouseEvent *event )
 {
-    if(event->buttons() == Qt::LeftButton)
+    if( m_undo_stack != nullptr )
     {
-        this->draw_free_hand_line( event );
+        if(event->buttons() == Qt::LeftButton)
+        {
+            this->draw_free_hand_line( event );
+        }
+        else if(event->buttons() == Qt::RightButton)
+        {
+//            this->draw_straight_line( event );
+        }
     }
-    else if(event->buttons() == Qt::RightButton)
+}
+
+void TFEOpacityMapPalette::mouseReleaseEvent( QMouseEvent *event )
+{
+    Q_UNUSED( event );
+    if( m_undo_stack != nullptr ) //操作可能なパレットの場合
     {
-//        this->draw_straight_line( event );
+        UndoRedo *undoredocommand = new UndoRedo( this, m_from_opacity_map, this->getOpacity() );
+        this->m_undo_stack->push(undoredocommand);
     }
 }
 

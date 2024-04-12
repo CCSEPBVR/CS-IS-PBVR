@@ -18,6 +18,10 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
     ui(new Ui::ColorMapEditor)
 {    
     ui->setupUi(this);
+    m_undo_stack = new QUndoStack;
+    m_undo_stack->setUndoLimit( 50 );
+    ui->colorMapPalette->setUndoStack( m_undo_stack );
+
     ui->colorMapBarTWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->colorMapBarTWidget->verticalHeader()->setDefaultSectionSize(60);
 
@@ -35,6 +39,8 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
 
     connect( ui->colorMapBarTabWidget, &QTabWidget::currentChanged, this, &ColorMapEditor::onCurrentTabChanged );
     connect( ui->drawingColorCLbl, &ClickableLabel::doubleClicked, this, &ColorMapEditor::onDrawingColorDoubleClicked );
+    connect( ui->undoPBtn, &QPushButton::clicked, m_undo_stack, &QUndoStack::undo );
+    connect( ui->redoPBtn, &QPushButton::clicked, m_undo_stack, &QUndoStack::redo );
     connect( ui->colorMapBarTWidget, &QTableWidget::cellDoubleClicked, this, &ColorMapEditor::onColorMapBarTableWidgetCellDoubleClicked );
 
     connect( ui->redLEdit, &QLineEdit::textChanged, this, &ColorMapEditor::onExpressionChanged );

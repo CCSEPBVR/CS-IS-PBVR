@@ -6,10 +6,15 @@ OpacityMapEditor::OpacityMapEditor(QWidget *parent) :
     ui(new Ui::OpacityMapEditor)
 {
     ui->setupUi(this);
+    m_undo_stack = new QUndoStack;
+    m_undo_stack->setUndoLimit( 50 );
+    ui->opacityMapPalette->setUndoStack( m_undo_stack );
 
     ui->controlPointsTWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->opacityMapBarTabWidget->setCurrentIndex( 0 );
 
+    connect( ui->undoPBtn, &QPushButton::clicked, m_undo_stack, &QUndoStack::undo );
+    connect( ui->redoPBtn, &QPushButton::clicked, m_undo_stack, &QUndoStack::redo );
     connect( ui->opacityMapBarTabWidget, &QTabWidget::currentChanged, this, &OpacityMapEditor::onCurrentTabChanged );
     connect( ui->numberOfControlPointsSBox, &QSpinBox::valueChanged, this, &OpacityMapEditor::onNumberOfControlPointsChabged );
     ui->controlPointsTWidget->setRowCount( ui->numberOfControlPointsSBox->value() );

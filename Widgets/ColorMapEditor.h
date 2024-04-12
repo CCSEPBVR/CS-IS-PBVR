@@ -6,6 +6,8 @@
 #include <kvs/RGBColor>
 #include <kvs/ColorMap>
 
+#include <QUndoStack>
+
 namespace Ui {
 class ColorMapEditor;
 }
@@ -22,6 +24,7 @@ public:
 private:
     Ui::ColorMapEditor *ui;
     void readJsonFile();//Load Presets ColorMapBar
+    QUndoStack *m_undo_stack;
 
 private slots:
     void onCurrentTabChanged( int index );

@@ -83,6 +83,8 @@ void TFEColorMapPalette::resizeGL(int w, int h)
 
 void TFEColorMapPalette::mousePressEvent( QMouseEvent *event )
 {
+    m_from_color_map = getColor();
+
     // Color map palette geometry.
     const int x0 = m_palette.x();
     const int x1 = m_palette.x() + m_palette.width();
@@ -165,6 +167,9 @@ void TFEColorMapPalette::mouseMoveEvent( QMouseEvent *event )
 void TFEColorMapPalette::mouseReleaseEvent( QMouseEvent *event )
 {
     Q_UNUSED( event );
+
+    UndoRedo *undoredocommand = new UndoRedo( this, m_from_color_map, this->getColor() );
+    this->m_undo_stack->push(undoredocommand);
 }
 
 void TFEColorMapPalette::initialize_texture( const kvs::ColorMap& color_map )

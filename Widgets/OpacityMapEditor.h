@@ -4,6 +4,9 @@
 #include <QDialog>
 
 #include <kvs/OpacityMap>
+
+#include <QUndoStack>
+
 namespace Ui {
 class OpacityMapEditor;
 }
@@ -19,6 +22,7 @@ public:
 
 private:
     Ui::OpacityMapEditor *ui;
+    QUndoStack *m_undo_stack;
 
 private slots:
     void onCurrentTabChanged( int index );
