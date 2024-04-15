@@ -119,7 +119,9 @@ public:
     void setIsParticleGenerationNeeded( bool is_particle_generation_needed ){ m_is_particle_generation_needed = is_particle_generation_needed; }
     void serverObject( QString volumeDataFilePath, int min, int max );
     void mergeObjects();
-    void exportingServerSidePointObject();
+//    void exportingServerSidePointObject( FilesManager& filesManager, const kvs::PointObject& server_point_object );
+    void exportingServerSidePointObject( FilesManager& filesManager );
+    void isExportDone( FilesManager& filesManager );
 
     bool getIsParticleGenerationNeeded(){ return m_is_particle_generation_needed; }
 
@@ -138,6 +140,8 @@ private:
 
     bool m_is_export;
     QString m_export_file_path;
+//    int m_last_export_time_step = -1;
+
 
 
     void checkMinMaxTimeStep( FilesManager *newFile );

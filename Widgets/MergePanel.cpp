@@ -20,6 +20,8 @@
 
 #include <kvs/IDManager>
 #include "ExtendedKVS/CustomObjectManager.h"
+#include <kvs/KVSMLPointObject>
+#include <kvs/PointExporter>
 
 MergePanel::MergePanel(QWidget *parent) :
     QDockWidget(parent),
@@ -258,6 +260,18 @@ void MergePanel::calculateTotalMinMaxTimeStep()
 void MergePanel::onExportButtonClicked()
 {
     m_export_file_path = QFileDialog::getSaveFileName(this, tr("Save Server-Side Point Object"), QDir::homePath(), tr("すべてのファイル (*.*)"));
+//    QFileInfo fileInfo( m_export_file_path );
+//    qInfo() << fileInfo.dir();
+//    qInfo() << fileInfo.fileName();
+//    qInfo() << fileInfo.path();
+
+//    QDir dir("/Users/t0603/Desktop");
+//    QStringList files = fileInfo.dir().entryList(QStringList("test_*.kvsml"), QDir::Files);
+//    for (const auto& file : files)
+//    {
+//        qDebug() << "マッチしたファイル:" << file;
+//    }
+
     if (!m_export_file_path.isEmpty())
     {
         ui->exportPBtn->setEnabled( false );
@@ -350,9 +364,50 @@ void MergePanel::mergeObjects()
 //    m_screen->update();
 }
 
-void MergePanel::exportingServerSidePointObject()
+//void MergePanel::exportingServerSidePointObject( FilesManager& filesManager, const kvs::PointObject& server_point_object )
+void MergePanel::exportingServerSidePointObject( FilesManager& filesManager )
 {
-    qInfo() << "EXPORT";
+    const int nextTimeStep = m_time_control->getNextTimeStep();
+    QFileInfo fileInfo( m_export_file_path + "_" + QString( "%1" ).arg( nextTimeStep, 5, 10, QChar('0') ) + ".kvsml" );
+
+    if( fileInfo.exists() ) //ファイルが存在している場合はエクスポート済みとする。
+    {
+        //何もしない。
+    }
+    else //ファイルが存在しない場合はエクスポートする。
+    {
+//        kvs::KVSMLPointObject* kvsml = new kvs::PointExporter<kvs::KVSMLPointObject>( &server_point_object );
+        auto* pointObject = dynamic_cast<kvs::PointObject*>( m_screen->scene()->objectManager()->object( filesManager.getIds().first ) );
+        kvs::KVSMLPointObject* kvsml = new kvs::PointExporter<kvs::KVSMLPointObject>( pointObject );
+        if( !kvsml )
+        {
+            ui->exportPBtn->setEnabled( true );
+            m_is_export = false;
+        }
+        else
+        {
+            kvsml->setWritingDataTypeToExternalBinary();
+            kvsml->write( fileInfo.filePath().toStdString() );
+        }
+        delete kvsml;
+    }
+}
+
+void MergePanel::isExportDone( FilesManager& filesManager )
+{
+    QFileInfo fileInfo( m_export_file_path );
+    QStringList files = fileInfo.dir().entryList(QStringList( fileInfo.fileName() + "_*.kvsml"), QDir::Files);
+    int count = 0;
+    for (const auto& file : files)
+    {
+        count++;
+    }
+
+    if( filesManager.getMaxTimeStep() - filesManager.getMinTimeStep() + 1 == count )
+    {
+        ui->exportPBtn->setEnabled( true );
+        m_is_export = false;
+    }
 }
 
 void MergePanel::onWorkerThreadFinished()
@@ -382,10 +437,10 @@ void MergePanel::onWorkerThreadFinished()
                     m_preference->applyShading( particle_based_renderer );
                     m_files_manager[row]->setIds( m_screen->scene()->registerObject( point_object, particle_based_renderer ) );
 
-                    if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_is_export == true ) //サーバサイドポイントオブジェクトを保存する場合
-                    {
-                        exportingServerSidePointObject();
-                    }
+//                    if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_is_export == true ) //サーバサイドポイントオブジェクトを保存する場合
+//                    {
+//                        exportingServerSidePointObject( *m_files_manager[row] ,*point_object );
+//                    }
                 }
                 //                RendererType* polygonRenderer = new RendererType();
                 //                m_merge->m_files_manager[row]->setIds( m_merge->m_screen->scene()->registerObject( nextObject, polygonRenderer ) );
@@ -405,6 +460,10 @@ void MergePanel::onWorkerThreadFinished()
                 else if( kvs::PointObject* point_object = dynamic_cast<kvs::PointObject*>(m_files_manager[row]->getObject()) )
                 {
                     m_screen->scene()->replaceObject(m_files_manager[row]->getIds().first, point_object );
+//                    if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_is_export == true ) //サーバサイドポイントオブジェクトを保存する場合
+//                    {
+//                        exportingServerSidePointObject( *m_files_manager[row] ,*point_object );
+//                    }
                 }
             }
 //            else if ( auto* polygonObject = static_cast<kvs::PolygonObject*>( object ) )
@@ -417,7 +476,13 @@ void MergePanel::onWorkerThreadFinished()
                 m_screen->scene()->replaceObject(m_files_manager[row]->getIds().first, copiedObject);
             }
         }
-    }
+        if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_is_export == true ) //サーバサイドポイントオブジェクトを保存する場合
+        {
+            exportingServerSidePointObject( *m_files_manager[row] );
+//            m_screen->scene()->objectManager()->object( m_files_manager[row]->getIds().first );
+            isExportDone( *m_files_manager[row] );
+        }
+    }   
     m_time_control->setCurrentTimeStep( m_time_control->getNextTimeStep() );
     m_preference->setCurrentTimeStep( m_time_control->getNextTimeStep() );    
     totalParticles();
