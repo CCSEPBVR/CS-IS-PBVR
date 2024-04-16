@@ -27,8 +27,14 @@ TARGET = ExtendedKVS
 #=============================================================================
 HEADERS += \
     CustomObjectManager.h \
+    FBX.h \
     LASImporter.h \
-    Screen.h
+    Screen.h \
+    StochasticTexturedPolygonRenderer.h \
+    TexturedPolygonImporter.h \
+    TexturedPolygonObject.h \
+    Utils.h \
+    stb_image.h
 
 
 
@@ -37,8 +43,13 @@ HEADERS += \
 #=============================================================================
 SOURCES += \
     CustomObjectManager.cpp \
+    FBX.cpp \
     LASImporter.cpp \
-    Screen.cpp
+    Screen.cpp \
+    StochasticTexturedPolygonRenderer.cpp \
+    TexturedPolygonImporter.cpp \
+    TexturedPolygonObject.cpp \
+    Utils.cpp
 
 
 

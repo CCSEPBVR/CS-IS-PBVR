@@ -215,6 +215,7 @@ INCLUDEPATH += $$NUMPY_INCLUDE_PATH
 
 INCLUDEPATH += /opt/homebrew/Cellar/boost/1.83.0/include
 INCLUDEPATH += /usr/local/include
+INCLUDEPATH += "/Applications/Autodesk/FBX SDK/2020.3.4/include"
 
 INCLUDEPATH += ../
 INCLUDEPATH += ../Common/
@@ -269,6 +270,8 @@ macx {
         LIBS += $$PYTHON_LINK_LIBRARY
     }
     LIBS += -L/usr/local/lib -llas
+#    LIBS += -LLIBS += -L$$(FBX_SDK_LIB_DIR) -lfbxsdk
+    LIBS += -L"/Applications/Autodesk/FBX SDK/2020.3.4/lib/clang/release" -lfbxsdk
 }
 
 unix:!macx {

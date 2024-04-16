@@ -24,6 +24,10 @@
 #include <kvs/PointExporter>
 
 #include "ExtendedKVS/LASImporter.h"
+#include "ExtendedKVS/TexturedPolygonImporter.h"
+#include "ExtendedKVS/TexturedPolygonObject.h"
+#include "ExtendedKVS/StochasticTexturedPolygonRenderer.h"
+#include "ExtendedKVS/FBX.h"
 
 MergePanel::MergePanel(QWidget *parent) :
     QDockWidget(parent),
@@ -261,28 +265,40 @@ void MergePanel::calculateTotalMinMaxTimeStep()
 
 void MergePanel::onExportButtonClicked()
 {
-    m_export_file_path = QFileDialog::getSaveFileName(this, tr("Save Server-Side Point Object"), QDir::homePath(), tr("すべてのファイル (*.*)"));
-//    QFileInfo fileInfo( m_export_file_path );
-//    qInfo() << fileInfo.dir();
-//    qInfo() << fileInfo.fileName();
-//    qInfo() << fileInfo.path();
+    kvs::FileFormatBase* io = nullptr;
+    io = new kvs::jaea::FBX();
+    io->read( "/Users/t0603/Work/PBVR/SampleData/fbx/cube/Test1_00002.fbx" );
+    kvs::jaea::TexturedPolygonImporter* importer = new kvs::jaea::TexturedPolygonImporter();
+    importer->exec(io);
+    importer->updateMinMaxCoords();
 
-//    QDir dir("/Users/t0603/Desktop");
-//    QStringList files = fileInfo.dir().entryList(QStringList("test_*.kvsml"), QDir::Files);
-//    for (const auto& file : files)
+    kvs::jaea::StochasticTexturedPolygonRenderer* stpr = new kvs::jaea::StochasticTexturedPolygonRenderer();
+
+    m_screen->registerObject( importer, stpr );
+
+
+//    m_export_file_path = QFileDialog::getSaveFileName(this, tr("Save Server-Side Point Object"), QDir::homePath(), tr("すべてのファイル (*.*)"));
+////    QFileInfo fileInfo( m_export_file_path );
+////    qInfo() << fileInfo.dir();
+////    qInfo() << fileInfo.fileName();
+////    qInfo() << fileInfo.path();
+
+////    QDir dir("/Users/t0603/Desktop");
+////    QStringList files = fileInfo.dir().entryList(QStringList("test_*.kvsml"), QDir::Files);
+////    for (const auto& file : files)
+////    {
+////        qDebug() << "マッチしたファイル:" << file;
+////    }
+
+//    if (!m_export_file_path.isEmpty())
 //    {
-//        qDebug() << "マッチしたファイル:" << file;
+//        ui->exportPBtn->setEnabled( false );
+//        m_is_export = true;
 //    }
-
-    if (!m_export_file_path.isEmpty())
-    {
-        ui->exportPBtn->setEnabled( false );
-        m_is_export = true;
-    }
-    else
-    {
-        m_is_export = false;
-    }
+//    else
+//    {
+//        m_is_export = false;
+//    }
 }
 
 void MergePanel::onApplyButtonClicked()
@@ -635,6 +651,7 @@ void MergePanel::WorkerThread::run()
             break;
         case FilesManager::TexturedPolygonObject3DS:
         case FilesManager::TexturedPolygonObjectFBX:
+//            timeStepCheckAndImport<kvs::jaea::TexturedPolygonImporter, kvs::jaea::TexturedPolygonObject, kvs::jaea::StochasticTexturedPolygonRenderer>( row );
             break;
         default:
             break;
