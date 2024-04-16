@@ -27,6 +27,7 @@ TARGET = ExtendedKVS
 #=============================================================================
 HEADERS += \
     CustomObjectManager.h \
+    LASImporter.h \
     Screen.h
 
 
@@ -36,6 +37,7 @@ HEADERS += \
 #=============================================================================
 SOURCES += \
     CustomObjectManager.cpp \
+    LASImporter.cpp \
     Screen.cpp
 
 

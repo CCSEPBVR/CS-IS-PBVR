@@ -23,6 +23,8 @@
 #include <kvs/KVSMLPointObject>
 #include <kvs/PointExporter>
 
+#include "ExtendedKVS/LASImporter.h"
+
 MergePanel::MergePanel(QWidget *parent) :
     QDockWidget(parent),
     ui(new Ui::MergePanel),
@@ -622,8 +624,10 @@ void MergePanel::WorkerThread::run()
             timeStepCheckAndImport<void, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
             break;
         case FilesManager::PointObjectKVSML:
-        case FilesManager::PointObjectLAS:
             timeStepCheckAndImport<kvs::PointImporter, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
+            break;
+        case FilesManager::PointObjectLAS:
+            timeStepCheckAndImport<LASImporter, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
             break;
         case FilesManager::NonTexturedPolygonObjectKVSML:
         case FilesManager::NonTexturedPolygonObjectSTL:

@@ -213,6 +213,9 @@ equals( KVS_SUPPORT_PYTHON, "1" ) {
 INCLUDEPATH += $$PYTHON_INCLUDE_PATH
 INCLUDEPATH += $$NUMPY_INCLUDE_PATH
 
+INCLUDEPATH += /opt/homebrew/Cellar/boost/1.83.0/include
+INCLUDEPATH += /usr/local/include
+
 INCLUDEPATH += ../
 INCLUDEPATH += ../Common/
 INCLUDEPATH += ../FunctionParser
@@ -265,6 +268,7 @@ macx {
         LIBS += $$KVS_DIR/lib/libkvsSupportPython.a $$PYTHON_LIBRARY_PATH
         LIBS += $$PYTHON_LINK_LIBRARY
     }
+    LIBS += -L/usr/local/lib -llas
 }
 
 unix:!macx {
