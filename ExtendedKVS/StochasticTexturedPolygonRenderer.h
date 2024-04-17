@@ -110,7 +110,7 @@ public:
 private:
 
     void create_shader_program();
-    void create_buffer_object( const kvs::jaea::TexturedPolygonObject* texturedPolygon );
+    void create_buffer_object( const kvs::TexturedPolygonObject* texturedPolygon );
 };
 
 } // end of namespace jaea

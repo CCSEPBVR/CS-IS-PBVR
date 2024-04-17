@@ -28,8 +28,6 @@
 
 namespace kvs
 {
-namespace jaea
-{
 /*==========================================================================*/
 /**
  *  Polygon object class.
@@ -37,7 +35,7 @@ namespace jaea
 /*==========================================================================*/
 class TexturedPolygonObject : public kvs::GeometryObjectBase
 {
-    kvsModule( kvs::jaea::TexturedPolygonObject, Object );
+    kvsModule( kvs::TexturedPolygonObject, Object );
     kvsModuleBaseClass( kvs::GeometryObjectBase );
 
 public:
@@ -133,5 +131,4 @@ private:
 
 };
 
-} // end of namespace jaea
 } // end of namespace kvs

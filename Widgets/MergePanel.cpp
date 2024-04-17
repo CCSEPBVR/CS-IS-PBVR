@@ -266,9 +266,9 @@ void MergePanel::calculateTotalMinMaxTimeStep()
 void MergePanel::onExportButtonClicked()
 {
     kvs::FileFormatBase* io = nullptr;
-    io = new kvs::jaea::FBX();
+    io = new kvs::FBX();
     io->read( "/Users/t0603/Work/PBVR/SampleData/fbx/cube/Test1_00002.fbx" );
-    kvs::jaea::TexturedPolygonImporter* importer = new kvs::jaea::TexturedPolygonImporter();
+    kvs::TexturedPolygonImporter* importer = new kvs::TexturedPolygonImporter();
     importer->exec(io);
     importer->updateMinMaxCoords();
 
@@ -460,6 +460,14 @@ void MergePanel::onWorkerThreadFinished()
 //                        exportingServerSidePointObject( *m_files_manager[row] ,*point_object );
 //                    }
                 }
+                else if( kvs::TexturedPolygonObject* textured_polygon_object = dynamic_cast<kvs::TexturedPolygonObject*>(m_files_manager[row]->getObject()) )
+                {
+                    textured_polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue() ) );
+                    textured_polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
+                    kvs::RendererBase* stochastic_textured_polygon_renderer = new kvs::jaea::StochasticTexturedPolygonRenderer;
+                    m_preference->applyShading( stochastic_textured_polygon_renderer );
+                    m_files_manager[row]->setIds( m_screen->scene()->registerObject( textured_polygon_object, stochastic_textured_polygon_renderer ) );
+                }
                 //                RendererType* polygonRenderer = new RendererType();
                 //                m_merge->m_files_manager[row]->setIds( m_merge->m_screen->scene()->registerObject( nextObject, polygonRenderer ) );
             }
@@ -482,6 +490,10 @@ void MergePanel::onWorkerThreadFinished()
 //                    {
 //                        exportingServerSidePointObject( *m_files_manager[row] ,*point_object );
 //                    }
+                }
+                else if( kvs::TexturedPolygonObject* textured_polygon_object = dynamic_cast<kvs::TexturedPolygonObject*>(m_files_manager[row]->getObject()) )
+                {
+                    m_screen->scene()->replaceObject(m_files_manager[row]->getIds().first, textured_polygon_object );
                 }
             }
 //            else if ( auto* polygonObject = static_cast<kvs::PolygonObject*>( object ) )
@@ -651,7 +663,7 @@ void MergePanel::WorkerThread::run()
             break;
         case FilesManager::TexturedPolygonObject3DS:
         case FilesManager::TexturedPolygonObjectFBX:
-//            timeStepCheckAndImport<kvs::jaea::TexturedPolygonImporter, kvs::jaea::TexturedPolygonObject, kvs::jaea::StochasticTexturedPolygonRenderer>( row );
+            timeStepCheckAndImport<kvs::TexturedPolygonImporter, kvs::TexturedPolygonObject, kvs::jaea::StochasticTexturedPolygonRenderer>( row );
             break;
         default:
             break;

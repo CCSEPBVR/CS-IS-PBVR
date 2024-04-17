@@ -28,14 +28,14 @@ namespace
  *  @return polygon type
  */
 /*==========================================================================*/
-kvs::jaea::TexturedPolygonObject::PolygonType GetPolygonType( const std::string& polygon_type )
+kvs::TexturedPolygonObject::PolygonType GetPolygonType( const std::string& polygon_type )
 {
-    if (      polygon_type == "triangle"   ) { return kvs::jaea::TexturedPolygonObject::Triangle; }
-    else if ( polygon_type == "quadrangle" ) { return kvs::jaea::TexturedPolygonObject::Quadrangle; }
+    if (      polygon_type == "triangle"   ) { return kvs::TexturedPolygonObject::Triangle; }
+    else if ( polygon_type == "quadrangle" ) { return kvs::TexturedPolygonObject::Quadrangle; }
     else
     {
         kvsMessageError( "Unknown polygon type '%s'.", polygon_type.c_str() );
-        return kvs::jaea::TexturedPolygonObject::UnknownPolygonType;
+        return kvs::TexturedPolygonObject::UnknownPolygonType;
     }
 }
 
@@ -46,14 +46,14 @@ kvs::jaea::TexturedPolygonObject::PolygonType GetPolygonType( const std::string&
  *  @return polygon color type
  */
 /*==========================================================================*/
-kvs::jaea::TexturedPolygonObject::ColorType GetColorType( const std::string& color_type )
+kvs::TexturedPolygonObject::ColorType GetColorType( const std::string& color_type )
 {
-    if (      color_type == "vertex"  ) { return kvs::jaea::TexturedPolygonObject::VertexColor; }
-    else if ( color_type == "polygon" ) { return kvs::jaea::TexturedPolygonObject::PolygonColor; }
+    if (      color_type == "vertex"  ) { return kvs::TexturedPolygonObject::VertexColor; }
+    else if ( color_type == "polygon" ) { return kvs::TexturedPolygonObject::PolygonColor; }
     else
     {
         kvsMessageError( "Unknown polygon color type '%s'.", color_type.c_str() );
-        return kvs::jaea::TexturedPolygonObject::UnknownColorType;
+        return kvs::TexturedPolygonObject::UnknownColorType;
     }
 }
 
@@ -64,14 +64,14 @@ kvs::jaea::TexturedPolygonObject::ColorType GetColorType( const std::string& col
  *  @return polygon normal type
  */
 /*==========================================================================*/
-kvs::jaea::TexturedPolygonObject::NormalType GetNormalType( const std::string& normal_type )
+kvs::TexturedPolygonObject::NormalType GetNormalType( const std::string& normal_type )
 {
-    if (      normal_type == "vertex"  ) { return kvs::jaea::TexturedPolygonObject::VertexNormal; }
-    else if ( normal_type == "polygon" ) { return kvs::jaea::TexturedPolygonObject::PolygonNormal; }
+    if (      normal_type == "vertex"  ) { return kvs::TexturedPolygonObject::VertexNormal; }
+    else if ( normal_type == "polygon" ) { return kvs::TexturedPolygonObject::PolygonNormal; }
     else
     {
         kvsMessageError( "Unknown polygon normal type '%s'.", normal_type.c_str() );
-        return kvs::jaea::TexturedPolygonObject::UnknownNormalType;
+        return kvs::TexturedPolygonObject::UnknownNormalType;
     }
 }
 
@@ -82,12 +82,12 @@ kvs::jaea::TexturedPolygonObject::NormalType GetNormalType( const std::string& n
  *  @return name of the polygon type
  */
 /*===========================================================================*/
-const std::string GetPolygonTypeName( const kvs::jaea::TexturedPolygonObject::PolygonType type )
+const std::string GetPolygonTypeName( const kvs::TexturedPolygonObject::PolygonType type )
 {
     switch( type )
     {
-    case kvs::jaea::TexturedPolygonObject::Triangle: return "triangle";
-    case kvs::jaea::TexturedPolygonObject::Quadrangle: return "quadrangle";
+    case kvs::TexturedPolygonObject::Triangle: return "triangle";
+    case kvs::TexturedPolygonObject::Quadrangle: return "quadrangle";
     default: return "unknown";
     }
 }
@@ -99,12 +99,12 @@ const std::string GetPolygonTypeName( const kvs::jaea::TexturedPolygonObject::Po
  *  @return name of the color type
  */
 /*===========================================================================*/
-const std::string GetColorTypeName( const kvs::jaea::TexturedPolygonObject::ColorType type )
+const std::string GetColorTypeName( const kvs::TexturedPolygonObject::ColorType type )
 {
     switch( type )
     {
-    case kvs::jaea::TexturedPolygonObject::VertexColor: return "vertex";
-    case kvs::jaea::TexturedPolygonObject::PolygonColor: return "polygon";
+    case kvs::TexturedPolygonObject::VertexColor: return "vertex";
+    case kvs::TexturedPolygonObject::PolygonColor: return "polygon";
     default: return "unknown";
     }
 }
@@ -116,12 +116,12 @@ const std::string GetColorTypeName( const kvs::jaea::TexturedPolygonObject::Colo
  *  @return name of the normal type
  */
 /*===========================================================================*/
-const std::string GetNormalTypeName( const kvs::jaea::TexturedPolygonObject::NormalType type )
+const std::string GetNormalTypeName( const kvs::TexturedPolygonObject::NormalType type )
 {
     switch( type )
     {
-    case kvs::jaea::TexturedPolygonObject::VertexNormal: return "vertex";
-    case kvs::jaea::TexturedPolygonObject::PolygonNormal: return "polygon";
+    case kvs::TexturedPolygonObject::VertexNormal: return "vertex";
+    case kvs::TexturedPolygonObject::PolygonNormal: return "polygon";
     default: return "unknown";
     }
 }
@@ -130,8 +130,6 @@ const std::string GetNormalTypeName( const kvs::jaea::TexturedPolygonObject::Nor
 
 
 namespace kvs
-{
-namespace jaea
 {
 /*===========================================================================*/
 /**
@@ -304,5 +302,4 @@ std::ostream& operator << ( std::ostream& os, const TexturedPolygonObject& objec
     return os;
 }
 
-} // end of namespace jaea
 } // end of namespace kvs

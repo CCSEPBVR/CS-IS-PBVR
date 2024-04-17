@@ -47,13 +47,13 @@ int RandomNumber()
  *  @return true if the textured polygon object has the connectivity
  */
 /*===========================================================================*/
-bool HasConnections( const kvs::jaea::TexturedPolygonObject* texturedPolygon )
+bool HasConnections( const kvs::TexturedPolygonObject* texturedPolygon )
 {
     bool has_connection = texturedPolygon->numberOfConnections() > 0;
 
     // In the following cases, the connection stored in the polygon object will be ignored.
-    if ( texturedPolygon->normalType() == kvs::jaea::TexturedPolygonObject::PolygonNormal ) { has_connection = false; }
-    if ( texturedPolygon->colorType() == kvs::jaea::TexturedPolygonObject::PolygonColor ) { has_connection = false; }
+    if ( texturedPolygon->normalType() == kvs::TexturedPolygonObject::PolygonNormal ) { has_connection = false; }
+    if ( texturedPolygon->colorType() == kvs::TexturedPolygonObject::PolygonColor ) { has_connection = false; }
 
     return has_connection;
 }
@@ -66,7 +66,7 @@ bool HasConnections( const kvs::jaea::TexturedPolygonObject* texturedPolygon )
  *  @return number of vertices
  */
 /*===========================================================================*/
-size_t NumberOfVertices( const kvs::jaea::TexturedPolygonObject* texturedPolygon, kvs::UInt32 texture_id )
+size_t NumberOfVertices( const kvs::TexturedPolygonObject* texturedPolygon, kvs::UInt32 texture_id )
 {
     if ( texturedPolygon->connections().size() > 0 )
     {
@@ -107,7 +107,7 @@ size_t NumberOfVertices( const kvs::jaea::TexturedPolygonObject* texturedPolygon
  */
 /*===========================================================================*/
 kvs::ValueArray<kvs::Real32> VertexCoords(
-    const kvs::jaea::TexturedPolygonObject* texturedPolygon,
+    const kvs::TexturedPolygonObject* texturedPolygon,
     const kvs::UInt32 texture_id,
     const size_t nvertices )
 {
@@ -158,7 +158,7 @@ kvs::ValueArray<kvs::Real32> VertexCoords(
  */
 /*===========================================================================*/
 kvs::ValueArray<kvs::Real32> VertexNormals(
-    const kvs::jaea::TexturedPolygonObject* texturedPolygon,
+    const kvs::TexturedPolygonObject* texturedPolygon,
     const kvs::UInt32 texture_id,
     const size_t nvertices )
 {
@@ -257,7 +257,7 @@ kvs::ValueArray<kvs::Real32> VertexNormals(
  */
 /*===========================================================================*/
 kvs::ValueArray<kvs::UInt8> VertexColors(
-    const kvs::jaea::TexturedPolygonObject* texturedPolygon,
+    const kvs::TexturedPolygonObject* texturedPolygon,
     const kvs::UInt32 texture_id,
     const size_t nvertices )
 {
@@ -311,7 +311,7 @@ kvs::ValueArray<kvs::UInt8> VertexColors(
  */
 /*===========================================================================*/
 kvs::ValueArray<kvs::Real32> VertexTexture2DCoords(
-    const kvs::jaea::TexturedPolygonObject* texturedPolygon,
+    const kvs::TexturedPolygonObject* texturedPolygon,
     const kvs::UInt32 texture_id,
     const size_t nvertices )
 {
@@ -491,9 +491,9 @@ void StochasticTexturedPolygonRenderer::Engine::release()
 /*===========================================================================*/
 void StochasticTexturedPolygonRenderer::Engine::create( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light )
 {
-    kvs::jaea::TexturedPolygonObject* texturedPolygon = kvs::jaea::TexturedPolygonObject::DownCast( object );
+    kvs::TexturedPolygonObject* texturedPolygon = kvs::TexturedPolygonObject::DownCast( object );
     m_has_normal = ( texturedPolygon->normals().size() > 0 &&
-                    texturedPolygon->normalType() == kvs::jaea::TexturedPolygonObject::VertexNormal );
+                    texturedPolygon->normalType() == kvs::TexturedPolygonObject::VertexNormal );
     m_has_connection = ::HasConnections( texturedPolygon );
     if ( !m_has_normal ) setEnabledShading( false );
 
@@ -637,7 +637,7 @@ void StochasticTexturedPolygonRenderer::Engine::setup( kvs::ObjectBase* object, 
 /*===========================================================================*/
 void StochasticTexturedPolygonRenderer::Engine::draw( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light )
 {
-    kvs::jaea::TexturedPolygonObject* texturedPolygon = kvs::jaea::TexturedPolygonObject::DownCast( object );
+    kvs::TexturedPolygonObject* texturedPolygon = kvs::TexturedPolygonObject::DownCast( object );
 
     kvs::ProgramObject::Binder bind_shacer_program( m_shader_program );
     KVS_GL_CALL( glActiveTexture( GL_TEXTURE0 ) );
@@ -792,9 +792,9 @@ void StochasticTexturedPolygonRenderer::Engine::create_shader_program()
  *  @param  texturedPolygon [in] pointer to the textured polygon object
  */
 /*===========================================================================*/
-void StochasticTexturedPolygonRenderer::Engine::create_buffer_object( const kvs::jaea::TexturedPolygonObject* texturedPolygon )
+void StochasticTexturedPolygonRenderer::Engine::create_buffer_object( const kvs::TexturedPolygonObject* texturedPolygon )
 {
-    if ( texturedPolygon->polygonType() != kvs::jaea::TexturedPolygonObject::Triangle )
+    if ( texturedPolygon->polygonType() != kvs::TexturedPolygonObject::Triangle )
     {
         kvsMessageError("Not supported textured polygon type.");
         return;
