@@ -272,7 +272,7 @@ void MergePanel::onExportButtonClicked()
     importer->exec(io);
     importer->updateMinMaxCoords();
 
-    kvs::jaea::StochasticTexturedPolygonRenderer* stpr = new kvs::jaea::StochasticTexturedPolygonRenderer();
+    kvs::StochasticTexturedPolygonRenderer* stpr = new kvs::StochasticTexturedPolygonRenderer();
 
     m_screen->registerObject( importer, stpr );
 
@@ -464,7 +464,7 @@ void MergePanel::onWorkerThreadFinished()
                 {
                     textured_polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue() ) );
                     textured_polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
-                    kvs::RendererBase* stochastic_textured_polygon_renderer = new kvs::jaea::StochasticTexturedPolygonRenderer;
+                    kvs::RendererBase* stochastic_textured_polygon_renderer = new kvs::StochasticTexturedPolygonRenderer;
                     m_preference->applyShading( stochastic_textured_polygon_renderer );
                     m_files_manager[row]->setIds( m_screen->scene()->registerObject( textured_polygon_object, stochastic_textured_polygon_renderer ) );
                 }
@@ -663,7 +663,7 @@ void MergePanel::WorkerThread::run()
             break;
         case FilesManager::TexturedPolygonObject3DS:
         case FilesManager::TexturedPolygonObjectFBX:
-            timeStepCheckAndImport<kvs::TexturedPolygonImporter, kvs::TexturedPolygonObject, kvs::jaea::StochasticTexturedPolygonRenderer>( row );
+            timeStepCheckAndImport<kvs::TexturedPolygonImporter, kvs::TexturedPolygonObject, kvs::StochasticTexturedPolygonRenderer>( row );
             break;
         default:
             break;

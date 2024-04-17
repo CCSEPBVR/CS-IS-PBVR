@@ -27,8 +27,6 @@
 
 namespace kvs
 {
-namespace jaea
-{
 class PolygonObject;
 
 /*===========================================================================*/
@@ -38,7 +36,7 @@ class PolygonObject;
 /*===========================================================================*/
 class StochasticTexturedPolygonRenderer : public kvs::StochasticRendererBase
 {
-    kvsModule( kvs::jaea::StochasticTexturedPolygonRenderer, Renderer );
+    kvsModule( kvs::StochasticTexturedPolygonRenderer, Renderer );
     kvsModuleBaseClass( kvs::StochasticRendererBase );
 
 public:
@@ -113,7 +111,6 @@ private:
     void create_buffer_object( const kvs::TexturedPolygonObject* texturedPolygon );
 };
 
-} // end of namespace jaea
 } // end of namespace kvs
 
 #endif // KVS__STOCHASTIC_TEXTURED_POLYGON_RENDERER_H_INCLUDE
