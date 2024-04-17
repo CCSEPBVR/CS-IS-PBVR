@@ -469,4 +469,5 @@ bool FBX::write( const std::string& filename )
     setSuccess( false );
     return false;
 }
+
 }

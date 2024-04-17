@@ -9,6 +9,7 @@
 
 //#include <kvs/FBX>
 #include "FBX.h"
+#include "ThreeDS.h"
 
 //#include <kvs/Stl>
 //#include <kvs/Ply>
@@ -32,7 +33,7 @@ public:
 
 private:
     void import( const kvs::FBX* fbx );
-//    void import( const kvs::3DS* 3ds );
+    void import( const kvs::ThreeDS* threeDS );
     void set_min_max_coord();
 };
 }

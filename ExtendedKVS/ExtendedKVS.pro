@@ -33,6 +33,7 @@ HEADERS += \
     StochasticTexturedPolygonRenderer.h \
     TexturedPolygonImporter.h \
     TexturedPolygonObject.h \
+    ThreeDS.h \
     Utils.h \
     stb_image.h
 
@@ -49,6 +50,7 @@ SOURCES += \
     StochasticTexturedPolygonRenderer.cpp \
     TexturedPolygonImporter.cpp \
     TexturedPolygonObject.cpp \
+    ThreeDS.cpp \
     Utils.cpp
 
 
