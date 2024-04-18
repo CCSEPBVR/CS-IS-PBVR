@@ -265,40 +265,16 @@ void MergePanel::calculateTotalMinMaxTimeStep()
 
 void MergePanel::onExportButtonClicked()
 {
-    kvs::FileFormatBase* io = nullptr;
-    io = new kvs::FBX();
-    io->read( "/Users/t0603/Work/PBVR/SampleData/fbx/cube/Test1_00002.fbx" );
-    kvs::TexturedPolygonImporter* importer = new kvs::TexturedPolygonImporter();
-    importer->exec(io);
-    importer->updateMinMaxCoords();
-
-    kvs::StochasticTexturedPolygonRenderer* stpr = new kvs::StochasticTexturedPolygonRenderer();
-
-    m_screen->registerObject( importer, stpr );
-
-
-//    m_export_file_path = QFileDialog::getSaveFileName(this, tr("Save Server-Side Point Object"), QDir::homePath(), tr("すべてのファイル (*.*)"));
-////    QFileInfo fileInfo( m_export_file_path );
-////    qInfo() << fileInfo.dir();
-////    qInfo() << fileInfo.fileName();
-////    qInfo() << fileInfo.path();
-
-////    QDir dir("/Users/t0603/Desktop");
-////    QStringList files = fileInfo.dir().entryList(QStringList("test_*.kvsml"), QDir::Files);
-////    for (const auto& file : files)
-////    {
-////        qDebug() << "マッチしたファイル:" << file;
-////    }
-
-//    if (!m_export_file_path.isEmpty())
-//    {
-//        ui->exportPBtn->setEnabled( false );
-//        m_is_export = true;
-//    }
-//    else
-//    {
-//        m_is_export = false;
-//    }
+    m_export_file_path = QFileDialog::getSaveFileName(this, tr("Save Server-Side Point Object"), QDir::homePath(), tr("すべてのファイル (*.*)"));
+    if ( !m_export_file_path.isEmpty() )
+    {
+        ui->exportPBtn->setEnabled( false );
+        m_is_export = true;
+    }
+    else
+    {
+        m_is_export = false;
+    }
 }
 
 void MergePanel::onApplyButtonClicked()
@@ -394,7 +370,6 @@ void MergePanel::exportingServerSidePointObject( FilesManager& filesManager )
     }
     else //ファイルが存在しない場合はエクスポートする。
     {
-//        kvs::KVSMLPointObject* kvsml = new kvs::PointExporter<kvs::KVSMLPointObject>( &server_point_object );
         auto* pointObject = dynamic_cast<kvs::PointObject*>( m_screen->scene()->objectManager()->object( filesManager.getIds().first ) );
         kvs::KVSMLPointObject* kvsml = new kvs::PointExporter<kvs::KVSMLPointObject>( pointObject );
         if( !kvsml )
