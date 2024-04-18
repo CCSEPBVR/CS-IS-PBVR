@@ -7,6 +7,7 @@
 
 #include <kvs/ParticleBasedRenderer>
 #include <kvs/StochasticPolygonRenderer>
+#include "ExtendedKVS/StochasticTexturedPolygonRenderer.h"
 Preference::Preference(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Preference),
@@ -145,6 +146,28 @@ void Preference::applyShading(kvs::RendererBase*& rendererBase)
                 break;
             }
             copy->enableShuffle();
+            rendererBase = copy; // copyオブジェクトをrendererBaseに代入
+        }
+        else if (auto* stochasticTexturedPolygonRenderer = dynamic_cast<kvs::StochasticTexturedPolygonRenderer*>(stochasticRenderer) )
+        {
+            kvs::StochasticTexturedPolygonRenderer* copy = new kvs::StochasticTexturedPolygonRenderer;
+            copy->DownCast(stochasticPolygonRenderer);
+            switch (getShaderType())
+            {
+            case Preference::ShaderType::LambertShading:
+                copy->setShader(getLambertShader());
+                break;
+            case Preference::ShaderType::Phong:
+                copy->setShader(getPhongShader());
+                break;
+            case Preference::ShaderType::BlinnPhong:
+                copy->setShader(getBlinnPhongShader());
+                break;
+            case Preference::ShaderType::NoShader:
+            default:
+                copy->setShader(kvs::Shader::Lambert(1, 0));
+                break;
+            }
             rendererBase = copy; // copyオブジェクトをrendererBaseに代入
         }
     }
