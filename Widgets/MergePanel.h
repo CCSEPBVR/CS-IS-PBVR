@@ -20,10 +20,11 @@ public:
         ServerPointObject             = 1, // Server side Point Object
         PointObjectKVSML              = 2, // Point Object(.kvsml)
         PointObjectLAS                = 3, // Point Object(.las)
-        NonTexturedPolygonObjectKVSML = 4, // Non Textured Polygon Object(.kvsml)
-        NonTexturedPolygonObjectSTL   = 5, // Non Textured Polygon Object(.stl)
-        TexturedPolygonObject3DS      = 6, // Textured Polygon Object(.3ds)
-        TexturedPolygonObjectFBX      = 7, // Textured Polygon Object(.fbx)
+        PointObjectPTS                = 4, // Point Object(.pts)
+        NonTexturedPolygonObjectKVSML = 5, // Non Textured Polygon Object(.kvsml)
+        NonTexturedPolygonObjectSTL   = 6, // Non Textured Polygon Object(.stl)
+        TexturedPolygonObject3DS      = 7, // Textured Polygon Object(.3ds)
+        TexturedPolygonObjectFBX      = 8, // Textured Polygon Object(.fbx)
     };
 
 public:
@@ -61,6 +62,8 @@ public:
             return QStringLiteral( "KVSML(PointObject)" );
         case PointObjectLAS:
             return QStringLiteral( "las" );
+        case PointObjectPTS:
+            return QStringLiteral( "pts" );
         case NonTexturedPolygonObjectKVSML:
             return QStringLiteral( "KVSML(PolygonObject)" );
         case NonTexturedPolygonObjectSTL:

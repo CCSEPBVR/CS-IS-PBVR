@@ -29,6 +29,7 @@ HEADERS += \
     CustomObjectManager.h \
     FBX.h \
     LASImporter.h \
+    PTSImporter.h \
     Screen.h \
     StochasticTexturedPolygonRenderer.h \
     TexturedPolygonImporter.h \
@@ -46,6 +47,7 @@ SOURCES += \
     CustomObjectManager.cpp \
     FBX.cpp \
     LASImporter.cpp \
+    PTSImporter.cpp \
     Screen.cpp \
     StochasticTexturedPolygonRenderer.cpp \
     TexturedPolygonImporter.cpp \

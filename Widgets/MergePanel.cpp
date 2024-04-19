@@ -24,6 +24,7 @@
 #include <kvs/PointExporter>
 
 #include "ExtendedKVS/LASImporter.h"
+#include "ExtendedKVS/PTSImporter.h"
 #include "ExtendedKVS/TexturedPolygonImporter.h"
 #include "ExtendedKVS/TexturedPolygonObject.h"
 #include "ExtendedKVS/StochasticTexturedPolygonRenderer.h"
@@ -70,7 +71,7 @@ void MergePanel::onBrowserButtonClicked()
 {
     QFileDialog fileDialog( this );
     fileDialog.setFileMode( QFileDialog::ExistingFile );
-    fileDialog.setNameFilter("*.kvsml *.stl *.3ds *.fbx *.las");
+    fileDialog.setNameFilter("*.kvsml *.stl *.3ds *.fbx *.las *.pts");
     if( fileDialog.exec() )
     {
         QString filePath = fileDialog.selectedFiles().at( 0 );
@@ -182,6 +183,10 @@ void MergePanel::checkFileFormat( FilesManager *newFile )
     else if( fileSuffix == "las" )
     {
         newFile->setFormat( FilesManager::PointObjectLAS );
+    }
+    else if( fileSuffix == "pts" )
+    {
+        newFile->setFormat( FilesManager::PointObjectPTS );
     }
     else //NOT SUPPORTED FORMAT
     {
@@ -503,7 +508,8 @@ void MergePanel::totalParticles()
     {
         if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObject ||
             m_files_manager[row]->getFormat() == FilesManager::PointObjectKVSML ||
-            m_files_manager[row]->getFormat() == FilesManager::PointObjectLAS )
+            m_files_manager[row]->getFormat() == FilesManager::PointObjectLAS ||
+            m_files_manager[row]->getFormat() == FilesManager::PointObjectPTS )
         {
             auto* object = m_screen->scene()->object( m_files_manager[row]->getIds().first );
             if( object->isVisible() )
@@ -631,6 +637,9 @@ void MergePanel::WorkerThread::run()
             break;
         case FilesManager::PointObjectLAS:
             timeStepCheckAndImport<LASImporter, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
+            break;
+        case FilesManager::PointObjectPTS:
+            timeStepCheckAndImport<PTSImporter, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
             break;
         case FilesManager::NonTexturedPolygonObjectKVSML:
         case FilesManager::NonTexturedPolygonObjectSTL:
@@ -1289,7 +1298,7 @@ QString MergePanel::WorkerThread::updateTimeStepInFileName(QString fileName, int
         int startPos = match.capturedStart();
         int endPos = match.capturedEnd();
 
-        return fileName.left(startPos) + extractedNumber + fileName.mid(endPos);
+        return fileName.left(startPos) + extractedNumber + fileName.mid(endPos);        
     }
     else
     {
