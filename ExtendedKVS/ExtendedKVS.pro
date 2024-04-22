@@ -26,36 +26,50 @@ TARGET = ExtendedKVS
 #  Header.
 #=============================================================================
 HEADERS += \
-    CustomObjectManager.h \
-    FBX.h \
+    CustomObjectManager.h \    
     LASImporter.h \
     PTSImporter.h \
-    Screen.h \
+    Screen.h
+
+contains(DEFINES, PBVR_SUPPORT_FBX) | contains(DEFINES, PBVR_SUPPORT_3DS){
+HEADERS += \
     StochasticTexturedPolygonRenderer.h \
     TexturedPolygonImporter.h \
     TexturedPolygonObject.h \
-    ThreeDS.h \
-    Utils.h \
     stb_image.h
-
-
+}
+contains(DEFINES, PBVR_SUPPORT_FBX){
+HEADERS += \
+    FBX.h
+}
+contains(DEFINES, PBVR_SUPPORT_3DS){
+HEADERS += \
+    ThreeDS.h
+}
 
 #=============================================================================
 #  Source.
 #=============================================================================
 SOURCES += \
-    CustomObjectManager.cpp \
-    FBX.cpp \
+    CustomObjectManager.cpp \    
     LASImporter.cpp \
     PTSImporter.cpp \
-    Screen.cpp \
+    Screen.cpp
+
+contains(DEFINES, PBVR_SUPPORT_FBX) | contains(DEFINES, PBVR_SUPPORT_3DS){
+SOURCES += \
     StochasticTexturedPolygonRenderer.cpp \
     TexturedPolygonImporter.cpp \
-    TexturedPolygonObject.cpp \
-    ThreeDS.cpp \
-    Utils.cpp
-
-
+    TexturedPolygonObject.cpp
+}
+contains(DEFINES, PBVR_SUPPORT_FBX){
+SOURCES += \
+    FBX.cpp
+}
+contains(DEFINES, PBVR_SUPPORT_3DS){
+SOURCES += \
+    ThreeDS.cpp
+}
 
 #=============================================================================
 #  Forms.
@@ -67,4 +81,3 @@ FORMS += \
 #  Resource.
 #=============================================================================
 RESOURCES += \
-

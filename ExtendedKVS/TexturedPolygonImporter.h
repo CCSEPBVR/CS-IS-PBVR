@@ -8,8 +8,12 @@
 //#include <kvs/KVSMLPolygonObject>
 
 //#include <kvs/FBX>
+#ifdef PBVR_SUPPORT_FBX
 #include "FBX.h"
+#endif
+#ifdef PBVR_SUPPORT_3DS
 #include "ThreeDS.h"
+#endif
 
 //#include <kvs/Stl>
 //#include <kvs/Ply>
@@ -32,8 +36,12 @@ public:
     SuperClass* exec( const kvs::FileFormatBase* file_format );
 
 private:
+#ifdef PBVR_SUPPORT_FBX
     void import( const kvs::FBX* fbx );
+#endif
+#ifdef PBVR_SUPPORT_3DS
     void import( const kvs::ThreeDS* threeDS );
+#endif
     void set_min_max_coord();
 };
 }

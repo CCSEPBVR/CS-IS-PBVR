@@ -69,6 +69,9 @@ equals( KVS_SUPPORT_CUDA, "1" ) { DEFINES += KVS_SUPPORT_CUDA }
 equals( KVS_SUPPORT_PYTHON, "1" ) { DEFINES += KVS_SUPPORT_PYTHON }
 equals( KVS_SUPPORT_EGL, "1" ) { DEFINES += KVS_SUPPORT_EGL }
 
+equals( PBVR_SUPPORT_FBX, "1" ) { DEFINES += PBVR_SUPPORT_FBX }
+equals( PBVR_SUPPORT_3DS, "1" ) { DEFINES += PBVR_SUPPORT_3DS }
+
 
 #=============================================================================
 #  Include path.
@@ -213,8 +216,22 @@ equals( KVS_SUPPORT_PYTHON, "1" ) {
 INCLUDEPATH += $$PYTHON_INCLUDE_PATH
 INCLUDEPATH += $$NUMPY_INCLUDE_PATH
 
-INCLUDEPATH += "/Applications/Autodesk/FBX SDK/2020.3.4/include"
-INCLUDEPATH += /Users/t0603/Work/PBVR/lib/assimp-5.0.0/include
+contains(DEFINES, PBVR_SUPPORT_FBX) {
+    isEmpty( FBXSDK_INC_DIR ) {
+        error( "FBXSDK_INC_DIR is not defined" );
+    }
+    else{
+        INCLUDEPATH += $$FBXSDK_INC_DIR
+    }
+}
+contains(DEFINES, PBVR_SUPPORT_3DS) {
+    isEmpty( ASSIMP_INC_DIR ) {
+        error( "ASSIMP_INC_DIR is not defined" );
+    }
+    else{
+        INCLUDEPATH += $$ASSIMP_INC_DIR
+    }
+}
 
 INCLUDEPATH += ../
 INCLUDEPATH += ../Common/
@@ -230,6 +247,40 @@ exists( kvsmake.qt.conf ) { include( kvsmake.qt.conf ) }
 #=============================================================================
 #  Link library.
 #=============================================================================
+contains(DEFINES, PBVR_SUPPORT_FBX) {
+    win32 {
+    }
+
+    macx {
+        isEmpty( FBXSDK_LIB_DIR ) {
+            error( "FBXSDK_LIB_DIR is not defined" );
+        }
+        else{
+            LIBS += -L$$FBXSDK_LIB_DIR -lfbxsdk
+        }
+    }
+
+    unix:!macx {
+    }
+}
+
+contains(DEFINES, PBVR_SUPPORT_3DS) {
+    win32 {
+    }
+
+    macx {
+        isEmpty( ASSIMP_LIB_DIR ) {
+            error( "ASSIMP_LIB_DIR is not defined" );
+        }
+        else{
+            LIBS += -L$$ASSIMP_LIB_DIR -lassimp -lIrrXML -lzlibstatic
+        }
+    }
+
+    unix:!macx {
+    }
+}
+
 win32 {
     LIBS += $$KVS_DIR/lib/kvsSupportQt.lib
     LIBS += $$KVS_DIR/lib/kvsCore.lib
@@ -268,10 +319,6 @@ macx {
         LIBS += $$KVS_DIR/lib/libkvsSupportPython.a $$PYTHON_LIBRARY_PATH
         LIBS += $$PYTHON_LINK_LIBRARY
     }
-
-#    LIBS += -LLIBS += -L$$(FBX_SDK_LIB_DIR) -lfbxsdk
-    LIBS += -L"/Applications/Autodesk/FBX SDK/2020.3.4/lib/clang/release" -lfbxsdk
-    LIBS += -L/Users/t0603/Work/PBVR/lib/assimp-5.0.0/lib -lassimp -lIrrXML -lzlibstatic
 }
 
 unix:!macx {

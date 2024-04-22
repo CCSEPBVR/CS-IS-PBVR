@@ -12,6 +12,7 @@ TexturedPolygonImporter::TexturedPolygonImporter()
 
 TexturedPolygonImporter::TexturedPolygonImporter( const std::string& filename )
 {
+#ifdef PBVR_SUPPORT_FBX
     if( kvs::FBX::CheckExtension( filename ) )
     {
         kvs::FBX* file_format = new kvs::FBX( filename );
@@ -33,7 +34,9 @@ TexturedPolygonImporter::TexturedPolygonImporter( const std::string& filename )
         this->import( file_format );
         delete file_format;
     }
-    else if( kvs::ThreeDS::CheckExtension( filename ) )
+#endif
+#ifdef PBVR_SUPPORT_3DS
+    if( kvs::ThreeDS::CheckExtension( filename ) )
     {
         kvs::ThreeDS* file_format = new kvs::ThreeDS( filename );
         if ( !file_format )
@@ -54,12 +57,14 @@ TexturedPolygonImporter::TexturedPolygonImporter( const std::string& filename )
         this->import( file_format );
         delete file_format;
     }
+#endif
     else
     {
         BaseClass::setSuccess( false );
         kvsMessageError("Cannot import '%s'.",filename.c_str());
         return;
     }
+
 }
 
 TexturedPolygonImporter::TexturedPolygonImporter( const kvs::FileFormatBase* file_format )
@@ -80,6 +85,7 @@ TexturedPolygonImporter::SuperClass* TexturedPolygonImporter::exec( const kvs::F
         return NULL;
     }
 
+#ifdef PBVR_SUPPORT_FBX
     if ( const kvs::FBX* texturedPolygon = dynamic_cast<const kvs::FBX*>(file_format) )
     {
         this->import( texturedPolygon );
@@ -90,10 +96,23 @@ TexturedPolygonImporter::SuperClass* TexturedPolygonImporter::exec( const kvs::F
         kvsMessageError("Input file format is not supported.");
         return NULL;
     }
-
+#endif
+#ifdef PBVR_SUPPORT_3DS
+    if ( const kvs::ThreeDS* texturedPolygon = dynamic_cast<const kvs::ThreeDS*>(file_format) )
+    {
+        this->import( texturedPolygon );
+    }
+    else
+    {
+        BaseClass::setSuccess( false );
+        kvsMessageError("Input file format is not supported.");
+        return NULL;
+    }
+#endif
     return this;
 }
 
+#ifdef PBVR_SUPPORT_FBX
 void TexturedPolygonImporter::import( const kvs::FBX* fbx )
 {
     this->setPolygonTypeToTriangle();
@@ -129,7 +148,9 @@ void TexturedPolygonImporter::import( const kvs::FBX* fbx )
         this->addColorArray(id, color_arrays[id], image_widths[id], image_heights[id]);
     }
 }
+#endif
 
+#ifdef PBVR_SUPPORT_3DS
 void TexturedPolygonImporter::import( const kvs::ThreeDS* threeDS )
 {
     this->setPolygonTypeToTriangle();
@@ -165,5 +186,6 @@ void TexturedPolygonImporter::import( const kvs::ThreeDS* threeDS )
         this->addColorArray(id, color_arrays[id], image_widths[id], image_heights[id]);
     }
 }
+#endif
 
 }

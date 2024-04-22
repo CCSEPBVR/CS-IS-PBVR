@@ -25,10 +25,12 @@
 
 #include "ExtendedKVS/LASImporter.h"
 #include "ExtendedKVS/PTSImporter.h"
+
+#if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
 #include "ExtendedKVS/TexturedPolygonImporter.h"
 #include "ExtendedKVS/TexturedPolygonObject.h"
 #include "ExtendedKVS/StochasticTexturedPolygonRenderer.h"
-#include "ExtendedKVS/FBX.h"
+#endif
 
 MergePanel::MergePanel(QWidget *parent) :
     QDockWidget(parent),
@@ -71,7 +73,17 @@ void MergePanel::onBrowserButtonClicked()
 {
     QFileDialog fileDialog( this );
     fileDialog.setFileMode( QFileDialog::ExistingFile );
-    fileDialog.setNameFilter("*.kvsml *.stl *.3ds *.fbx *.las *.pts");
+
+#if defined( PBVR_SUPPORT_FBX ) && defined( PBVR_SUPPORT_3DS )
+    fileDialog.setNameFilter("*.kvsml *.stl *.fbx *.3ds *.las *.pts");
+#elif PBVR_SUPPORT_FBX
+    fileDialog.setNameFilter("*.kvsml *.stl *.fbx *.las *.pts");
+#elif PBVR_SUPPORT_3DS
+    fileDialog.setNameFilter("*.kvsml *.stl *.3ds *.las *.pts");
+#else
+    fileDialog.setNameFilter("*.kvsml *.stl *.las *.pts");
+#endif
+
     if( fileDialog.exec() )
     {
         QString filePath = fileDialog.selectedFiles().at( 0 );
@@ -172,14 +184,18 @@ void MergePanel::checkFileFormat( FilesManager *newFile )
     {
         newFile->setFormat( FilesManager::NonTexturedPolygonObjectSTL );
     }
-    else if( fileSuffix == "3ds" )
-    {
-        newFile->setFormat( FilesManager::TexturedPolygonObject3DS );
-    }
+#ifdef PBVR_SUPPORT_FBX
     else if( fileSuffix == "fbx" )
     {
         newFile->setFormat( FilesManager::TexturedPolygonObjectFBX );
     }
+#endif
+#ifdef PBVR_SUPPORT_3DS
+    else if( fileSuffix == "3ds" )
+    {
+        newFile->setFormat( FilesManager::TexturedPolygonObject3DS );
+    }
+#endif
     else if( fileSuffix == "las" )
     {
         newFile->setFormat( FilesManager::PointObjectLAS );
@@ -440,6 +456,7 @@ void MergePanel::onWorkerThreadFinished()
 //                        exportingServerSidePointObject( *m_files_manager[row] ,*point_object );
 //                    }
                 }
+#if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
                 else if( kvs::TexturedPolygonObject* textured_polygon_object = dynamic_cast<kvs::TexturedPolygonObject*>(m_files_manager[row]->getObject()) )
                 {
                     textured_polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue() ) );
@@ -448,6 +465,7 @@ void MergePanel::onWorkerThreadFinished()
                     m_preference->applyShading( stochastic_textured_polygon_renderer );
                     m_files_manager[row]->setIds( m_screen->scene()->registerObject( textured_polygon_object, stochastic_textured_polygon_renderer ) );
                 }
+#endif
                 //                RendererType* polygonRenderer = new RendererType();
                 //                m_merge->m_files_manager[row]->setIds( m_merge->m_screen->scene()->registerObject( nextObject, polygonRenderer ) );
             }
@@ -471,10 +489,12 @@ void MergePanel::onWorkerThreadFinished()
 //                        exportingServerSidePointObject( *m_files_manager[row] ,*point_object );
 //                    }
                 }
+#if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
                 else if( kvs::TexturedPolygonObject* textured_polygon_object = dynamic_cast<kvs::TexturedPolygonObject*>(m_files_manager[row]->getObject()) )
                 {
                     m_screen->scene()->replaceObject(m_files_manager[row]->getIds().first, textured_polygon_object );
                 }
+#endif
             }
 //            else if ( auto* polygonObject = static_cast<kvs::PolygonObject*>( object ) )
             else if ( auto* polygonObject = dynamic_cast<kvs::PolygonObject*>( object ) )
@@ -645,10 +665,16 @@ void MergePanel::WorkerThread::run()
         case FilesManager::NonTexturedPolygonObjectSTL:
             timeStepCheckAndImport<kvs::PolygonImporter, kvs::PolygonObject, kvs::StochasticPolygonRenderer>( row );
             break;
-        case FilesManager::TexturedPolygonObject3DS:
+#ifdef PBVR_SUPPORT_FBX
         case FilesManager::TexturedPolygonObjectFBX:
-            timeStepCheckAndImport<kvs::TexturedPolygonImporter, kvs::TexturedPolygonObject, kvs::StochasticTexturedPolygonRenderer>( row );
+#endif
+#ifdef PBVR_SUPPORT_3DS
+        case FilesManager::TexturedPolygonObject3DS:
+#endif
+#if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
+            timeStepCheckAndImport<kvs::TexturedPolygonImporter, kvs::TexturedPolygonObject, kvs::StochasticTexturedPolygonRenderer>(row);
             break;
+#endif
         default:
             break;
         }

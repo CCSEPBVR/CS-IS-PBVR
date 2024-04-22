@@ -6,8 +6,11 @@
 #include <QPalette>
 
 #include <kvs/ParticleBasedRenderer>
+
 #include <kvs/StochasticPolygonRenderer>
+#if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
 #include "ExtendedKVS/StochasticTexturedPolygonRenderer.h"
+#endif
 Preference::Preference(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Preference),
@@ -148,6 +151,7 @@ void Preference::applyShading(kvs::RendererBase*& rendererBase)
             copy->enableShuffle();
             rendererBase = copy; // copyオブジェクトをrendererBaseに代入
         }
+#if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
         else if (auto* stochasticTexturedPolygonRenderer = dynamic_cast<kvs::StochasticTexturedPolygonRenderer*>(stochasticRenderer) )
         {
             kvs::StochasticTexturedPolygonRenderer* copy = new kvs::StochasticTexturedPolygonRenderer;
@@ -170,6 +174,7 @@ void Preference::applyShading(kvs::RendererBase*& rendererBase)
             }
             rendererBase = copy; // copyオブジェクトをrendererBaseに代入
         }
+#endif
     }
 }
 
