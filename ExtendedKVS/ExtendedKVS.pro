@@ -37,6 +37,11 @@ HEADERS += \
     TexturedPolygonImporter.h \
     TexturedPolygonObject.h \
     stb_image.h
+
+    win32{
+        HEADERS += \
+        Utils.h
+    }
 }
 contains(DEFINES, PBVR_SUPPORT_FBX){
 HEADERS += \
@@ -61,6 +66,11 @@ SOURCES += \
     StochasticTexturedPolygonRenderer.cpp \
     TexturedPolygonImporter.cpp \
     TexturedPolygonObject.cpp
+
+    win32{
+        SOURCES += \
+        Utils.cpp
+    }
 }
 contains(DEFINES, PBVR_SUPPORT_FBX){
 SOURCES += \

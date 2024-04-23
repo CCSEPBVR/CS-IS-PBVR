@@ -251,6 +251,12 @@ exists( kvsmake.qt.conf ) { include( kvsmake.qt.conf ) }
 #=============================================================================
 contains(DEFINES, PBVR_SUPPORT_FBX) {
     win32 {
+        isEmpty( FBXSDK_LIB_DIR ) {
+            error( "FBXSDK_LIB_DIR is not defined" );
+        }
+        else{
+            LIBS += -L$$FBXSDK_LIB_DIR -llibfbxsdk-mt -llibxml2-mt -lzlib-mt -ladvapi32
+        }
     }
 
     macx {
@@ -268,6 +274,12 @@ contains(DEFINES, PBVR_SUPPORT_FBX) {
 
 contains(DEFINES, PBVR_SUPPORT_3DS) {
     win32 {
+        isEmpty( ASSIMP_LIB_DIR ) {
+            error( "ASSIMP_LIB_DIR is not defined" );
+        }
+        else{
+            LIBS += -L$$ASSIMP_LIB_DIR -lassimp-vc143-mt
+        }
     }
 
     macx {

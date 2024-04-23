@@ -7,6 +7,10 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#ifdef _WIN32
+#include <cassert>
+#include "Utils.h"
+#endif
 
 namespace
 {

@@ -11,7 +11,6 @@
 #include <string>
 
 namespace kvs{
-namespace jaea{
 
 std::string MultibyteToUTF8(const std::string& text){
 #ifdef _WIN32
@@ -65,5 +64,4 @@ std::string MultibyteToUTF8(const std::string& text){
     return strUTF8;
 }
 
-} // namespace jaea
 } // kvs

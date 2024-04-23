@@ -6,6 +6,11 @@
 #include <kvs/Assert>
 #include <fbxsdk.h>
 
+#ifdef _WIN32
+#include <cassert>
+#include "Utils.h"
+#endif
+
 
 namespace
 {
