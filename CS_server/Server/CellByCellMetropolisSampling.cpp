@@ -1041,8 +1041,8 @@ void CellByCellMetropolisSampling::generate_particles( const pbvr::StructuredVol
                                 float np_x_g[ SIMDW ];
                                 float np_y_g[ SIMDW ];
                                 float np_z_g[ SIMDW ];
-                                if ( !css.m_x_coord_synthesizer_string.empty() && 
-                                     !css.m_y_coord_synthesizer_string.empty() && 
+                                if ( !css.m_x_coord_synthesizer_string.empty() || 
+                                     !css.m_y_coord_synthesizer_string.empty() || 
                                      !css.m_z_coord_synthesizer_string.empty()  ) 
                                 {
                                     th_tfs[thid]->CalculateCoordArray( interp[thid],
@@ -2528,7 +2528,7 @@ void CellByCellMetropolisSampling::generate_particles<kvs::Real32>( const pbvr::
 
                     kvs::Vector3f new_coord_array[ SIMDW ];
                     //if ( pCrdSynthStr )
-                    if ( !css.m_x_coord_synthesizer_string.empty() && !css.m_y_coord_synthesizer_string.empty() && !css.m_z_coord_synthesizer_string.empty()  ) 
+                    if ( !css.m_x_coord_synthesizer_string.empty() || !css.m_y_coord_synthesizer_string.empty() || !css.m_z_coord_synthesizer_string.empty()  ) 
                     {
                         th_tfs[thid]->CalculateCoordArray( interp[thid],
                                 nparticles_count,

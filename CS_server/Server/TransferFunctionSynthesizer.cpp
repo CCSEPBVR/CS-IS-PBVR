@@ -759,6 +759,7 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
         z_synthesis.val_array[i] = cst.m_z_coord_synthesizer_token.val_array[i];
     }
 #endif        
+
         x_synthesis = convert_token(css.m_x_coord_synthesizer_string);       
         y_synthesis = convert_token(css.m_y_coord_synthesizer_string);       
         z_synthesis = convert_token(css.m_z_coord_synthesizer_string);       
