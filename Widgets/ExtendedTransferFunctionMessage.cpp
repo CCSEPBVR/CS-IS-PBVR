@@ -107,39 +107,6 @@ bool ExtendedTransferFunctionMessage::operator==( const ExtendedTransferFunction
     return v0;
 }
 
-//add by shimomura 2023/1/26
-jpv::ParticleTransferClientMessage::EquationToken ExtendedTransferFunctionMessage::convertToken( std::string expression ) const
-{
-    FuncParser::ExpressionTokenizer tokenizer;
-    FuncParser::ExpressionConverter exprconv;
-
-    jpv::ParticleTransferClientMessage::EquationToken eq_token;
-
-    tokenizer.tokenizeString( expression );
-    exprconv.convertExpToken( tokenizer.m_exp_token );
-    int size = exprconv.token_array.size();
-    if( size > 128 ){ printf("Equation length too long\n");}
-
-    for( int i = 0; i < 128; i++ )
-    {
-        if( i < size )
-        {
-            eq_token.exp_token[i]   = exprconv.token_array[i];
-            eq_token.var_name[i]    = exprconv.var_array[i];
-            eq_token.value_array[i] = exprconv.value_array[i];
-        }
-        else
-        {
-            eq_token.exp_token[i]   = 0;
-            eq_token.var_name[i]    = 0;
-            eq_token.value_array[i] = 0;
-        }
-    }
-
-    return eq_token;
-}
-
-
 void ExtendedTransferFunctionMessage::applyToClientMessage( jpv::ParticleTransferClientMessage* message ) const
 {
     message->m_transfer_function.clear();
@@ -231,22 +198,9 @@ void ExtendedTransferFunctionMessage::applyToClientMessage( jpv::ParticleTransfe
 
     std::string colorSynthBuf = this->m_color_transfer_function_synthesis;
     std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
-    message->color_func = this->convertToken( colorSynthBuf );
+
     std::string opacitySynthBuf = this->m_opacity_transfer_function_synthesis;
     std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
-    message->opacity_func = this->convertToken( opacitySynthBuf );
-
-    for ( size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
-    {
-        message->color_var.push_back( this->convertToken( this->m_color_transfer_function[i].m_color_variable ) );
-        message->opacity_var.push_back( this->convertToken( this->m_opacity_transfer_function[i].m_opacity_variable ) );
-    }
-
-    //2023 shimomura
-    std::cout <<" message->m_x_synthesis ="  << message->m_x_synthesis << std::endl;
-    if( !message->m_x_synthesis.empty() ) message->x_synthesis_token = this->convertToken( message->m_x_synthesis );
-    if( !message->m_y_synthesis.empty() ) message->y_synthesis_token = this->convertToken( message->m_y_synthesis );
-    if( !message->m_z_synthesis.empty() ) message->z_synthesis_token = this->convertToken( message->m_z_synthesis );
 
     return;
 }
