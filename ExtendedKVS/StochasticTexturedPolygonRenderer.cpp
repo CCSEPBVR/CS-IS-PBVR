@@ -749,7 +749,6 @@ void StochasticTexturedPolygonRenderer::Engine::draw( kvs::ObjectBase* object, k
 void StochasticTexturedPolygonRenderer::Engine::create_shader_program()
 {
 //    kvs::ShaderSource::AddSearchPath(std::getenv("CGFORMAT_EXT4KVS_SHADER_DIR"));
-    kvs::ShaderSource::AddSearchPath( "/Users/t0603/Work/PBVR/source/QTPBVR/Shader " );
     kvs::ShaderSource vert( "SR_textured_polygon.vert" );
     kvs::ShaderSource frag( "SR_textured_polygon.frag" );
     if ( isEnabledShading() )
