@@ -52,7 +52,6 @@ private:
     jpv::ParticleTransferServerMessage m_server_message;
     kvs::visclient::ReceivedMessage m_received_message;
 
-//    jpv::ParticleTransferClientMessage::EquationToken convertToken( std::string );
     void connect1();
 
     void onConnectButtonClicked();

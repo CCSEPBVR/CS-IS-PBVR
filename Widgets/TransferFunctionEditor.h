@@ -61,8 +61,6 @@ private:
     void populateOpacityFunctionLists(int n);
 
 private slots:
-//    jpv::ParticleTransferClientMessage::EquationToken convertToken( std::string );
-
     void onNumberOfTransferFunctionValueChanged( int value );
 
     void onColorFunctionChanged( int index );

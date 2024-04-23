@@ -21,7 +21,6 @@ private:
     jpv::ParticleTransferClientMessage* m_client_message;
 
 private slots:
-//    jpv::ParticleTransferClientMessage::EquationToken convertToken( std::string );
     void onApplyButtonClicked();
 };
 
