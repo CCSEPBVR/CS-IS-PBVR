@@ -50,7 +50,7 @@ public:
     // END FROM INSITU
 
     //add by shimomura 2023/1/26
-    jpv::ParticleTransferClientMessage::EquationToken convertToken( std::string expression ) const;
+//    jpv::ParticleTransferClientMessage::EquationToken convertToken( std::string expression ) const;
 public:
     ExtendedTransferFunctionMessage();
     virtual ~ExtendedTransferFunctionMessage();

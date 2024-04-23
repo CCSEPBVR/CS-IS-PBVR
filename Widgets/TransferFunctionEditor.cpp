@@ -188,55 +188,55 @@ void TransferFunctionEditor::updateRangeView()
 //    ui->opacityHistogramBar->update();
 }
 
-jpv::ParticleTransferClientMessage::EquationToken TransferFunctionEditor::convertToken( std::string expression )
-{
-    FuncParser::ExpressionTokenizer tokenizer;
-    FuncParser::ExpressionConverter exprconv;
+//jpv::ParticleTransferClientMessage::EquationToken TransferFunctionEditor::convertToken( std::string expression )
+//{
+//    FuncParser::ExpressionTokenizer tokenizer;
+//    FuncParser::ExpressionConverter exprconv;
 
-    jpv::ParticleTransferClientMessage::EquationToken eq_token;
+//    jpv::ParticleTransferClientMessage::EquationToken eq_token;
 
-    tokenizer.tokenizeString( expression );
-    exprconv.convertExpToken( tokenizer.m_exp_token );
-    int size = exprconv.token_array.size();
-    if( size > 128 ){ printf("Equation length too long\n");}
+//    tokenizer.tokenizeString( expression );
+//    exprconv.convertExpToken( tokenizer.m_exp_token );
+//    int size = exprconv.token_array.size();
+//    if( size > 128 ){ printf("Equation length too long\n");}
 
-    for( int i = 0; i < 128; i++ )
-    {
-        if( i < size )
-        {
-            eq_token.exp_token[i]   = exprconv.token_array[i];
-            eq_token.var_name[i]    = exprconv.var_array[i];
-            eq_token.value_array[i] = exprconv.value_array[i];
-        }
-        else
-        {
-            eq_token.exp_token[i]   = 0;
-            eq_token.var_name[i]    = 0;
-            eq_token.value_array[i] = 0;
-        }
-    }
+//    for( int i = 0; i < 128; i++ )
+//    {
+//        if( i < size )
+//        {
+//            eq_token.exp_token[i]   = exprconv.token_array[i];
+//            eq_token.var_name[i]    = exprconv.var_array[i];
+//            eq_token.value_array[i] = exprconv.value_array[i];
+//        }
+//        else
+//        {
+//            eq_token.exp_token[i]   = 0;
+//            eq_token.var_name[i]    = 0;
+//            eq_token.value_array[i] = 0;
+//        }
+//    }
 
-    std::cout << "exp" << std::endl;
-    for(int i = 0; i < 128; i++)
-    {
-        std::cout << eq_token.exp_token[i] << ",";
-    }
-    std::cout << std::endl;
-    std::cout << "var_name" << std::endl;
-    for(int i = 0; i < 128; i++)
-    {
-        std::cout << eq_token.var_name[i] << ",";
-    }
-    std::cout << std::endl;
-    std::cout << "value_array" << std::endl;
-    for(int i = 0; i < 128; i++)
-    {
-        std::cout << eq_token.value_array[i] << ",";
-    }
-    std::cout << std::endl;
+//    std::cout << "exp" << std::endl;
+//    for(int i = 0; i < 128; i++)
+//    {
+//        std::cout << eq_token.exp_token[i] << ",";
+//    }
+//    std::cout << std::endl;
+//    std::cout << "var_name" << std::endl;
+//    for(int i = 0; i < 128; i++)
+//    {
+//        std::cout << eq_token.var_name[i] << ",";
+//    }
+//    std::cout << std::endl;
+//    std::cout << "value_array" << std::endl;
+//    for(int i = 0; i < 128; i++)
+//    {
+//        std::cout << eq_token.value_array[i] << ",";
+//    }
+//    std::cout << std::endl;
 
-    return eq_token;
-}
+//    return eq_token;
+//}
 
 void TransferFunctionEditor::onNumberOfTransferFunctionValueChanged( int value )
 {
@@ -532,16 +532,17 @@ void TransferFunctionEditor::onApplyButtonClicked()
 
     std::string colorSynthBuf = m_extended_transfer_function_message.m_color_transfer_function_synthesis;
     std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
-    m_client_message->color_func = this->convertToken( colorSynthBuf );
+//    m_client_message->color_func = this->convertToken( colorSynthBuf );
+//    m_client_message->color_func = colorSynthBuf;
     std::string opacitySynthBuf = m_extended_transfer_function_message.m_opacity_transfer_function_synthesis;
     std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
-    m_client_message->opacity_func = this->convertToken( opacitySynthBuf );
+//    m_client_message->opacity_func = this->convertToken( opacitySynthBuf );
 
-    for ( size_t i = 0; i < m_extended_transfer_function_message.m_color_transfer_function.size(); i++ )
-    {
-        m_client_message->color_var.push_back( this->convertToken( m_extended_transfer_function_message.m_color_transfer_function[i].m_color_variable ) );
-        m_client_message->opacity_var.push_back( this->convertToken( m_extended_transfer_function_message.m_opacity_transfer_function[i].m_opacity_variable ) );
-    }
+//    for ( size_t i = 0; i < m_extended_transfer_function_message.m_color_transfer_function.size(); i++ )
+//    {
+//        m_client_message->color_var.push_back( this->convertToken( m_extended_transfer_function_message.m_color_transfer_function[i].m_color_variable ) );
+//        m_client_message->opacity_var.push_back( this->convertToken( m_extended_transfer_function_message.m_opacity_transfer_function[i].m_opacity_variable ) );
+//    }
 
     //2023 shimomura
 //    std::cout <<" message->m_x_synthesis ="  << m_client_message->m_x_synthesis << std::endl;
