@@ -78,7 +78,8 @@ kvs::ColorMap ColorMapEditor::getColorMap()
 
 void ColorMapEditor::readJsonFile()
 {
-    QFile file("/Users/t0603/Work/json/test2.json"); //将来的にリソースディレクトリ内のjsonを読み込むように修正すること。
+    QString filePath = QString("%1/preset_color_map.json").arg(JSON_DIR);
+    QFile file(filePath);
     if ( !file.open(QIODevice::ReadOnly | QIODevice::Text) )
     {
         qDebug() << "Failed to open preset.json.";

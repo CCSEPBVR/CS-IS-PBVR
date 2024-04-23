@@ -73,6 +73,7 @@ equals( PBVR_SUPPORT_FBX, "1" ) { DEFINES += PBVR_SUPPORT_FBX }
 equals( PBVR_SUPPORT_3DS, "1" ) { DEFINES += PBVR_SUPPORT_3DS }
 
 DEFINES += ADDITIONAL_SHADER_DIR=\\\"$$PWD/Shader\\\"
+DEFINES += JSON_DIR=\\\"$$PWD/json\\\"
 
 
 #=============================================================================
