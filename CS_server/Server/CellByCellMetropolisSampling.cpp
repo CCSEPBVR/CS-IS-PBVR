@@ -2528,8 +2528,18 @@ void CellByCellMetropolisSampling::generate_particles<kvs::Real32>( const pbvr::
 
                     kvs::Vector3f new_coord_array[ SIMDW ];
                     //if ( pCrdSynthStr )
-                    if ( !css.m_x_coord_synthesizer_string.empty() || !css.m_y_coord_synthesizer_string.empty() || !css.m_z_coord_synthesizer_string.empty()  ) 
+                    if ( css.m_x_coord_synthesizer_string.empty() && 
+                         css.m_y_coord_synthesizer_string.empty() &&
+                         css.m_z_coord_synthesizer_string.empty()  ) 
                     {
+                        for( int j = 0; j < nparticles_count; j++ )
+                        {
+                            new_coord_array[j] = global_coord_array[j];
+                        }
+                    }
+                    else
+                    {
+
                         th_tfs[thid]->CalculateCoordArray( interp[thid],
                                 nparticles_count,
                                 local_coord_array,
@@ -2538,13 +2548,6 @@ void CellByCellMetropolisSampling::generate_particles<kvs::Real32>( const pbvr::
 //      /*CoordSynthesizerTokens*/        cst,
       /*CoordSynthesizerstring*/        css,
                                 new_coord_array );
-                    }
-                    else
-                    {
-                        for( int j = 0; j < nparticles_count; j++ )
-                        {
-                            new_coord_array[j] = global_coord_array[j];
-                        }
                     }
 
 

@@ -229,9 +229,9 @@ protected:
             var_str[124].set("a14",A14);
             var_str[125].set("a15",A15);
             var_str[126].set("a16",A16);
-            var_str[127].set("X",X);
-            var_str[128].set("Y",Y);
-            var_str[129].set("Z",Z);
+            var_str[127].set("x",X);
+            var_str[128].set("y",Y);
+            var_str[129].set("z",Z);
 
             //関数文字列を降順でソート
             std::sort( func_str.begin(), func_str.end(), std::greater<ExpString>() );

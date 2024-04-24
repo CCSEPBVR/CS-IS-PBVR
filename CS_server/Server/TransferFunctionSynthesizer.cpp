@@ -684,7 +684,8 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
     const pbvr::CoordSynthesizerStrings css,
     float* nx_g, float* ny_g, float* nz_g ) //global coord[SIMDW])
 {
-
+    std::cout << __LINE__ << std::endl;
+        
     //配列を追加
     //float scalar_array[interp.size()][loop_cnt];
 
@@ -760,9 +761,35 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
     }
 #endif        
 
-        x_synthesis = convert_token(css.m_x_coord_synthesizer_string);       
-        y_synthesis = convert_token(css.m_y_coord_synthesizer_string);       
-        z_synthesis = convert_token(css.m_z_coord_synthesizer_string);       
+#if 1
+        std::string XSynthBuf = css.m_x_coord_synthesizer_string;
+        std::replace(XSynthBuf.begin(), XSynthBuf.end(), 'X', 'x');
+        std::replace(XSynthBuf.begin(), XSynthBuf.end(), 'Y', 'y');
+        std::replace(XSynthBuf.begin(), XSynthBuf.end(), 'Z', 'z');
+
+        std::string YSynthBuf = css.m_y_coord_synthesizer_string;
+        std::replace(YSynthBuf.begin(), YSynthBuf.end(), 'X', 'x');
+        std::replace(YSynthBuf.begin(), YSynthBuf.end(), 'Y', 'y');
+        std::replace(YSynthBuf.begin(), YSynthBuf.end(), 'Z', 'z');
+
+        std::string ZSynthBuf = css.m_z_coord_synthesizer_string;
+        std::replace(ZSynthBuf.begin(), ZSynthBuf.end(), 'X', 'x');
+        std::replace(ZSynthBuf.begin(), ZSynthBuf.end(), 'Y', 'y');
+        std::replace(ZSynthBuf.begin(), ZSynthBuf.end(), 'Z', 'z');
+
+        if(!css.m_x_coord_synthesizer_string.empty())x_synthesis = convert_token(XSynthBuf);       
+        if(!css.m_y_coord_synthesizer_string.empty())y_synthesis = convert_token(YSynthBuf);       
+        if(!css.m_z_coord_synthesizer_string.empty())z_synthesis = convert_token(ZSynthBuf);       
+#else
+//        std::cout << "css.m_x_coord_synthesizer_string  =" << css.m_x_coord_synthesizer_string << std::endl;
+        if(!css.m_x_coord_synthesizer_string.empty()) x_synthesis = convert_token(css.m_x_coord_synthesizer_string);       
+        if(!css.m_y_coord_synthesizer_string.empty()) y_synthesis = convert_token(css.m_y_coord_synthesizer_string);       
+        if(!css.m_z_coord_synthesizer_string.empty()) z_synthesis = convert_token(css.m_z_coord_synthesizer_string);       
+#endif
+
+//        //x_synthesis = convert_token(css.m_x_coord_synthesizer_string);       
+//        //y_synthesis = convert_token(css.m_y_coord_synthesizer_string);       
+//        //z_synthesis = convert_token(css.m_z_coord_synthesizer_string);       
 
     for (int i = 0; i < loop_cnt; i++)
     {
@@ -796,6 +823,7 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
 
+    std::cout << __LINE__ << std::endl;
 //    if(cst.x_token_empty)
     if(css.m_x_coord_synthesizer_string.empty())
 //    if(css.m_x_coord_synthesizer_string.size() == 0)
@@ -1480,6 +1508,7 @@ float TransferFunctionSynthesizer::CalculateOpacity(
     return kvs::Math::Clamp<float>( opacity, 0.0, 1.0 );
 }
 
+
 void TransferFunctionSynthesizer::CalculateCoordArray(
     //std::vector< pbvr::HexahedralCell<Type>* > interp , 
     std::vector< pbvr::CellBase<Type>* > interp , 
@@ -1567,9 +1596,32 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
         z_synthesis.val_array[i] = cst.m_z_coord_synthesizer_token.val_array[i];
     }
 #endif        
-        x_synthesis = convert_token(css.m_x_coord_synthesizer_string);       
-        y_synthesis = convert_token(css.m_y_coord_synthesizer_string);       
-        z_synthesis = convert_token(css.m_z_coord_synthesizer_string);       
+
+#if 1
+        std::string XSynthBuf = css.m_x_coord_synthesizer_string;
+        std::replace(XSynthBuf.begin(), XSynthBuf.end(), 'X', 'x');
+        std::replace(XSynthBuf.begin(), XSynthBuf.end(), 'Y', 'y');
+        std::replace(XSynthBuf.begin(), XSynthBuf.end(), 'Z', 'z');
+
+        std::string YSynthBuf = css.m_y_coord_synthesizer_string;
+        std::replace(YSynthBuf.begin(), YSynthBuf.end(), 'X', 'x');
+        std::replace(YSynthBuf.begin(), YSynthBuf.end(), 'Y', 'y');
+        std::replace(YSynthBuf.begin(), YSynthBuf.end(), 'Z', 'z');
+
+        std::string ZSynthBuf = css.m_z_coord_synthesizer_string;
+        std::replace(ZSynthBuf.begin(), ZSynthBuf.end(), 'X', 'x');
+        std::replace(ZSynthBuf.begin(), ZSynthBuf.end(), 'Y', 'y');
+        std::replace(ZSynthBuf.begin(), ZSynthBuf.end(), 'Z', 'z');
+
+        if(!css.m_x_coord_synthesizer_string.empty())x_synthesis = convert_token(XSynthBuf);       
+        if(!css.m_y_coord_synthesizer_string.empty())y_synthesis = convert_token(YSynthBuf);       
+        if(!css.m_z_coord_synthesizer_string.empty())z_synthesis = convert_token(ZSynthBuf);       
+#else
+//        std::cout << "css.m_x_coord_synthesizer_string  =" << css.m_x_coord_synthesizer_string << std::endl;
+        if(!css.m_x_coord_synthesizer_string.empty()) x_synthesis = convert_token(css.m_x_coord_synthesizer_string);       
+        if(!css.m_y_coord_synthesizer_string.empty()) y_synthesis = convert_token(css.m_y_coord_synthesizer_string);       
+        if(!css.m_z_coord_synthesizer_string.empty()) z_synthesis = convert_token(css.m_z_coord_synthesizer_string);       
+#endif
 
     for (int i = 0; i < loop_cnt; i++)
     {
@@ -1591,7 +1643,7 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
                                    grad_array_y[j],
                                    grad_array_z[j] );
     }
-
+        
     m_var_value_array[X] = global_coord_x;
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
@@ -1622,7 +1674,7 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
 
         m_rpn.setVariableValueArray( m_var_value_array );
 
-        //calc. m_opa_var
+        //calc. xcoord
         m_rpn.evalArray(eval_result, loop_cnt);
     
         //set opacity A1,A2,,,Ai. start 116 in VarName(Token.h)
@@ -1634,7 +1686,6 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
 
     //if(cst.y_token_empty)
     if(css.m_y_coord_synthesizer_string.empty())
-//    if(css.m_y_coord_synthesizer_string.size() == 0)
     { 
         for( int jx=0; jx<loop_cnt; jx++ )
         {
@@ -1672,7 +1723,6 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
 
     //if(cst.z_token_empty)
     if(css.m_z_coord_synthesizer_string.empty())
-//    if(css.m_z_coord_synthesizer_string.size() == 0)
     { 
         for( int jx=0; jx<loop_cnt; jx++ )
         {
