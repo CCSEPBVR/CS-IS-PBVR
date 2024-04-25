@@ -45,7 +45,7 @@ void PointObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
     delete m_object;
 
     // add by shimomura 2023/0407
-    pbvr::VolumeObjectBase* volume;
+    pbvr::VolumeObjectBase* volume = nullptr;
     if ( kvsview::FileChecker::ImportableStructuredVolume( param.m_input_data ))
     {
         std::cout << "Structured !" <<std::endl;

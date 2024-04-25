@@ -164,8 +164,10 @@ private:
                           const kvs::ValueArray<float>& o_max,
                           const kvs::ValueArray<float>& c_min,
                           const kvs::ValueArray<float>& c_max,
-                          const float o_scalars[][SIMDW], // åæå¤
-                          const float c_scalars[][SIMDW],
+ //                         const float o_scalars[][SIMDW], // åæå¤
+ //                         const float c_scalars[][SIMDW],
+                            float** o_scalars, // åæå¤
+                            float** c_scalars,
                           const int tf_number  );
     
     kvs::Vector3f RandomSamplingInCube( const kvs::Vector3f vertex, kvs::MersenneTwister* MT );

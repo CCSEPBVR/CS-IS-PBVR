@@ -354,7 +354,8 @@ void TransferFunctionSynthesizer::SynthesizedOpacityScalars(
     std::vector< TFS::TrilinearInterpolator* > interp ,
     float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
     float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
-    float scalars[][SIMDW] )//resulting scalars[TF_COUNT][SIMDW]
+    //float scalars[][SIMDW] )//resulting scalars[TF_COUNT][SIMDW]
+    float** scalars )//resulting scalars[TF_COUNT][SIMDW]
 {
     for( int I=0; I<SIMDW; I++)
     {
@@ -405,7 +406,8 @@ void TransferFunctionSynthesizer::SynthesizedColorScalars(
     std::vector< TFS::TrilinearInterpolator* > interp ,
     float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
     float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
-    float scalars[][SIMDW] )//resulting scalars[TF_COUNT][SIMDW]
+    //float scalars[][SIMDW] )//resulting scalars[TF_COUNT][SIMDW]
+    float** scalars )//resulting scalars[TF_COUNT][SIMDW]
 {
     for( int I=0; I<SIMDW; I++)
     {
@@ -568,7 +570,12 @@ void TransferFunctionSynthesizer::CalculateColor(
         }
     }
 
-    kvs::RGBColor colors[m_col_var.size()][SIMDW]; //result of t_func.colorMap().at( m_scalars[i] );
+    //kvs::RGBColor colors[m_col_var.size()][SIMDW]; //result of t_func.colorMap().at( m_scalars[i] );
+    kvs::RGBColor** colors = new kvs::RGBColor*[m_col_var.size()];
+    for (size_t i = 0; i < m_col_var.size(); i++)
+    {
+        colors[i] = new kvs::RGBColor[SIMDW];
+    }
 
     //ボリュームデータ合成式のループ
     for( size_t i = 0; i < m_col_var.size(); i++ )

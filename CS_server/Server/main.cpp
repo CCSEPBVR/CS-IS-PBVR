@@ -464,7 +464,7 @@ inline pbvr::VolumeObjectBase* CreateVolumeData( const Argument& param,
                                    + ifpx.baseName() + suffix.str() + ".kvsml";
         //pbvr::UnstructuredVolumeObject* volume = new pbvr::UnstructuredVolumeImporter( m_input_data );
 
-        pbvr::VolumeObjectBase* volume;
+        pbvr::VolumeObjectBase* volume = nullptr;
 
         if      ( kvsview::FileChecker::ImportableStructuredVolume( m_input_data ))
         {

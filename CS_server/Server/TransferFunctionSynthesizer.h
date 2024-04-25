@@ -160,13 +160,15 @@ public:
         std::vector< TFS::TrilinearInterpolator* > interp,
         float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
         float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
-        float scalars[][SIMDW] );//resulting scalars[TF_COUNT][SIMDW]
+        //float scalars[][SIMDW] );//resulting scalars[TF_COUNT][SIMDW]
+        float** scalars);//resulting scalars[TF_COUNT][SIMDW]
 
     void SynthesizedColorScalars(
         std::vector< TFS::TrilinearInterpolator* > interp,
         float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
         float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
-        float scalars[][SIMDW] );//resulting scalars[TF_COUNT][SIMDW]
+        //float scalars[][SIMDW] );//resulting scalars[TF_COUNT][SIMDW]
+        float** scalars );//resulting scalars[TF_COUNT][SIMDW]
 
     void CalculateOpacity(
         std::vector< TFS::TrilinearInterpolator* > interp,

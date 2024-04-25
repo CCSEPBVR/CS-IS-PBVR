@@ -664,8 +664,17 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
         std::vector<float> th_vertex_normals;
 
         //ヒストグラムの配列
-        float o_scalars[tf_number][SIMDW];//頂点の不透明度
-        float c_scalars[tf_number][SIMDW];//頂点の色
+        //float o_scalars[tf_number][SIMDW];//頂点の不透明度
+        //float c_scalars[tf_number][SIMDW];//頂点の色
+
+        float** o_scalars = new float* [tf_number];
+        float** c_scalars = new float* [tf_number];
+
+        for (int i = 0; i < tf_number; i++)
+        {
+            o_scalars[i] = new float[SIMDW];
+            c_scalars[i] = new float[SIMDW];
+        }
 
         kvs::ValueArray<int> th_o_histogram( tf_number * nbins );//不透明度
         kvs::ValueArray<int> th_c_histogram( tf_number * nbins );//色
@@ -2324,8 +2333,10 @@ void CellByCellRejectionSampling::calculate_histogram( kvs::ValueArray<int>&   t
                           const kvs::ValueArray<float>& o_max,
                           const kvs::ValueArray<float>& c_min,
                           const kvs::ValueArray<float>& c_max,
-                          const float o_scalars[][SIMDW], // åæå¤
-                          const float c_scalars[][SIMDW],
+ //                         const float o_scalars[][SIMDW], // åæå¤
+ //                         const float c_scalars[][SIMDW],
+                          float** o_scalars, // åæå¤
+                          float** c_scalars,
                           const int tf_number  )
 {
     //ヒストグラムと最大最小値

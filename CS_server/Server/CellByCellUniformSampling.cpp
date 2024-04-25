@@ -1,4 +1,4 @@
-/****************************************************************************/
+ï»¿/****************************************************************************/
 /**
  *  @file CellByCellUniformSampling.cpp
  */
@@ -607,9 +607,9 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
     const int max_nparticles = (int)m_transfer_function_synthesizer->getMaxDensity() + 1;
     if(mpi_rank==0) std::cout<<"******* max_nparticles="<<max_nparticles<<std::endl;
 
-    //¿¿¿¿¿¿
+    //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
     int nbins = 256;
-    kvs::ValueArray<float> o_min( tf_number );//TFS¿¿¿¿¿¿¿¿¿¿¿
+    kvs::ValueArray<float> o_min( tf_number );//TFSï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
     kvs::ValueArray<float> o_max( tf_number );
     kvs::ValueArray<float> c_min( tf_number );
     kvs::ValueArray<float> c_max( tf_number );
@@ -628,20 +628,20 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
         c_max[i] = m_transfer_function_array[i].colorMap().maxValue();
     }
 
-    //¿¿¿¿¿
-    kvs::ValueArray<float> O_min( tf_number );//¿¿¿¿¿¿¿¿¿¿¿
+    //ï½¿ï½¿ï½¿ï½¿ï½¿
+    kvs::ValueArray<float> O_min( tf_number );//ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
     kvs::ValueArray<float> O_max( tf_number );
     kvs::ValueArray<float> C_min( tf_number );
     kvs::ValueArray<float> C_max( tf_number );
 
-    // ¿¿¿¿¿¿¿¿¿¿
+    // ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
     std::vector<float> vertex_coords;
     std::vector<Byte>  vertex_colors;
     std::vector<float> vertex_normals;
 
     if( parameter_file_opened )
     {
-        for ( size_t i = 0; i < tf_number; i++ ) //¿¿¿
+        for ( size_t i = 0; i < tf_number; i++ ) //ï½¿ï½¿ï½¿
         {
             O_min[ i ] =  FLT_MAX;
             O_max[ i ] = -FLT_MAX;
@@ -677,7 +677,7 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
 //    time.initialize = timer.sec();
 //    timer.start();
 
-    //¿¿¿¿¿¿¿¿¿¿¿
+    //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
     const int nx = resolution.x();
     const int ny = resolution.y();
     const int nz = resolution.z();
@@ -725,20 +725,29 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
         //th_tfs[thid]->set_debug_thid(thid,max_threads);
 
         int th_total_nparticles = 0;
-        //¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿
+        //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
         kvs::MersenneTwister MT( thid + mpi_rank * nthreads );
 
-        // ¿¿¿¿¿¿¿¿¿¿
+        // ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
         std::vector<float> th_vertex_coords;
         std::vector<Byte>  th_vertex_colors;
         std::vector<float> th_vertex_normals;
 
-        //¿¿¿¿¿¿¿¿¿
-        float o_scalars[tf_number][SIMDW];//¿¿¿¿¿¿¿
-        float c_scalars[tf_number][SIMDW];//¿¿¿¿
+        //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
+//        float o_scalars[tf_number][SIMDW];//ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
+//        float c_scalars[tf_number][SIMDW];//ï½¿ï½¿ï½¿ï½¿
 
-        kvs::ValueArray<int> th_o_histogram( tf_number * nbins );//¿¿¿¿
-        kvs::ValueArray<int> th_c_histogram( tf_number * nbins );//¿
+        float** o_scalars = new float* [tf_number];
+        float** c_scalars = new float* [tf_number];
+
+        for (int i = 0; i < tf_number; i++)
+        {
+            o_scalars[i] = new float[SIMDW];
+            c_scalars[i] = new float[SIMDW];
+        }
+
+        kvs::ValueArray<int> th_o_histogram( tf_number * nbins );//ï½¿ï½¿ï½¿ï½¿
+        kvs::ValueArray<int> th_c_histogram( tf_number * nbins );//ï½¿
 
         if( parameter_file_opened )
         {
@@ -746,15 +755,15 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
             th_c_histogram.fill(0x00);
         }
 
-        //¿¿¿¿¿
-        kvs::ValueArray<float> th_O_min( tf_number );//¿¿¿¿¿¿¿¿¿¿¿
+        //ï½¿ï½¿ï½¿ï½¿ï½¿
+        kvs::ValueArray<float> th_O_min( tf_number );//ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
         kvs::ValueArray<float> th_O_max( tf_number );
         kvs::ValueArray<float> th_C_min( tf_number );
         kvs::ValueArray<float> th_C_max( tf_number );
 
         if( parameter_file_opened )
         {
-            for ( int i = 0; i < tf_number; i++ ) //¿¿¿
+            for ( int i = 0; i < tf_number; i++ ) //ï½¿ï½¿ï½¿
             {
                 th_O_min[ i ] =  FLT_MAX;
                 th_O_max[ i ] = -FLT_MAX;
@@ -826,9 +835,9 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
         } // end of Histogram
 
         //-----------------------------------------//
-        //--------------¿¿¿¿¿¿¿¿¿------------//
+        //--------------ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿------------//
         //------------------------------------------//
-        //¿¿¿¿¿¿¿¿¿¿¿¿
+        //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
         {
             // Marge x-y-z loop
             const int nvertices = nx * ny * nz;
@@ -839,8 +848,8 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
             #pragma omp for
             for( int J=0; J<outer_loop; J++ )
             {
-                float X_l[SIMDW], Y_l[SIMDW], Z_l[SIMDW];//interp¿¿¿¿¿¿
-                float X_g[SIMDW], Y_g[SIMDW], Z_g[SIMDW];//TFS¿¿¿¿¿¿
+                float X_l[SIMDW], Y_l[SIMDW], Z_l[SIMDW];//interpï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
+                float X_g[SIMDW], Y_g[SIMDW], Z_g[SIMDW];//TFSï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
                 #pragma ivdep
                 for( int I=0; I<SIMDW; I++ )
                 {
@@ -882,14 +891,14 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
                     }
                 }
             }
-        }// end of ¿¿¿¿¿¿¿¿¿¿¿¿
+        }// end of ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
 
 #pragma omp critical
         {
             interp_opacity[thid] = new TFS::TrilinearInterpolator( opacity_volume, resolution );
         }
 
-        //¿¿¿¿¿¿¿¿¿
+        //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
         {
             // Marge x-y-z loop
             const int ncells = nx_1 * ny_1 * nz_1;
@@ -900,8 +909,8 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
             #pragma omp for schedule(dynamic)
             for( int J=0; J<outer_loop; J++ )
             {
-                float X_l[SIMDW], Y_l[SIMDW], Z_l[SIMDW];//interp¿¿¿¿¿¿
-                float X_g[SIMDW], Y_g[SIMDW], Z_g[SIMDW];//TFS¿¿¿¿¿¿
+                float X_l[SIMDW], Y_l[SIMDW], Z_l[SIMDW];//interpï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
+                float X_g[SIMDW], Y_g[SIMDW], Z_g[SIMDW];//TFSï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
                 #pragma ivdep
                 for( int I=0; I<SIMDW; I++ )
                 {
@@ -957,8 +966,8 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
                     th_total_nparticles += nparticles[I] ;
                 }
 
-                // ¿¿¿¿¿SIMD¿¿¿¿¿
-                // ¿¿¿¿¿¿¿¿¿
+                // ï½¿ï½¿ï½¿ï½¿ï½¿SIMDï½¿ï½¿ï½¿ï½¿ï½¿
+                // ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
                 int p_id = 0;
                 float p_x_l[SIMDW], p_y_l[SIMDW], p_z_l[SIMDW];
                 float p_x_g[SIMDW], p_y_g[SIMDW], p_z_g[SIMDW];
@@ -1040,7 +1049,7 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
                                 }
 #endif
 
-                                //SIMD¿¿¿
+                                //SIMDï½¿ï½¿ï½¿
                                 for( int pp=0; pp<SIMDW; pp++)
                                 {
                                     //                                timed_section_start(td_CalculateDensity,thid);
@@ -1071,22 +1080,22 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
                                 } // end of for pp
                             } // end of if p_id
                         } // end of for p
-                    } // end of for I ¿¿¿¿¿¿¿¿¿
+                    } // end of for I ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
                 } // end of omp for J outer_loop
-        } // end of ¿¿¿¿¿¿¿
+        } // end of ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
 
 //        timed_section_start(td_VectorIns,thid);
         #pragma omp critical
         {
             if( parameter_file_opened )
             {
-                //¿¿¿¿¿
+                //ï½¿ï½¿ï½¿ï½¿ï½¿
                 for( int i = 0; i < tf_number; i++ )
                 {
-                    //¿¿¿¿
+                    //ï½¿ï½¿ï½¿ï½¿
                     O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
                     O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
-                    //¿
+                    //ï½¿
                     C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
                     C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
 
@@ -1740,7 +1749,7 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
         std::vector<float> th_vertex_normals;
 
 
-        //¿¿¿¿¿¿¿¿¿
+        //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
         std::vector<float> o_scalars( tf_number );//vertex opacity
         std::vector<float> c_scalars( tf_number );//vertex color
         kvs::ValueArray<int> th_o_histogram( tf_number * nbins );// opacity
@@ -1752,15 +1761,15 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
             th_c_histogram.fill(0x00);
         }
 
-        //¿¿¿¿¿
-        kvs::ValueArray<float> th_O_min( tf_number );//¿¿¿¿¿¿¿¿¿¿¿
+        //ï½¿ï½¿ï½¿ï½¿ï½¿
+        kvs::ValueArray<float> th_O_min( tf_number );//ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
         kvs::ValueArray<float> th_O_max( tf_number );
         kvs::ValueArray<float> th_C_min( tf_number );
         kvs::ValueArray<float> th_C_max( tf_number );
 
         if( parameter_file_opened )
         {
-            for ( int i = 0; i < tf_number; i++ ) //¿¿¿
+            for ( int i = 0; i < tf_number; i++ ) //ï½¿ï½¿ï½¿
             {
                 th_O_min[ i ] =  FLT_MAX;
                 th_O_max[ i ] = -FLT_MAX;
@@ -1770,7 +1779,7 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
         }
 
         // -----------------------------------
-        //¿¿¿¿¿
+        //ï½¿ï½¿ï½¿ï½¿ï½¿
         kvs::Vector3f local_center_array[ SIMDW ];
         kvs::Vector3f global_center_array[ SIMDW ];
         kvs::UInt32 cell_index[ SIMDW ];
@@ -1804,24 +1813,24 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
         kvs::RGBColor color_array[ SIMDW ];
         // -----------------------------------
 
-        //¿¿¿¿¿¿¿¿¿
+        //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
 #pragma omp for schedule( dynamic ) nowait  
         //#pragma omp for schedule( static ) nowait
         //#pragma omp for schedule( static, 1 ) nowait
         for( int cell_base = 0; cell_base < ncells; cell_base += SIMDW )
         {
-            //¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿
+            //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
             int remain = ( ncells - cell_base > SIMDW )? SIMDW: ncells - cell_base;
 
             /////////////////////////////// Synthesized~ (), CalculateOpacity() ///////////////////////////////////
-            //¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿
+            //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
                 cell_index[cell_BLK] = (kvs::UInt32)(cell_base + cell_BLK);
                 local_center_array[cell_BLK] = kvs::Vector3f ( 0.5, 0.5, 0.5 );
             }
 
-            //¿¿¿¿¿¿¿¿¿¿¿¿¿¿
+            //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
             for(int i = 0; i < nvariables; i++)
             {
                 interp[thid][i]->bindCellArray(remain, cell_index);
@@ -1866,7 +1875,7 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
                             if( H == nbins ) H--;
                             th_c_histogram[ H + nbins*i]++;
                         }
-                        // 20190128 ¿¿
+                        // 20190128 ï½¿ï½¿
                         th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
                         th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
                         th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
@@ -1907,17 +1916,17 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
 
                 for( int i = 0; i < nparticles_array[cell_BLK]; i+=SIMD_BLK_SIZE )
                 {
-                    //¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿
+                    //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
                     int remain_BLK = ( nparticles_array[cell_BLK] - i > SIMD_BLK_SIZE )
                                                         ? SIMD_BLK_SIZE: nparticles_array[cell_BLK] - i;
 
-                    //¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿
+                    //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
                     for( int j = 0; j < remain_BLK; j++ ) 
                     {
                         cell_index[j] = cell_base + cell_BLK;
                             local_coord_array[j] = interp[thid][0] -> randomSampling_MT( &MT);
 
-                            //¿¿¿¿¿¿¿¿¿¿¿¿¿¿
+                            //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
                             for( int k = 0; k < nvariables; k++ )
                             {
                                 interp[thid][k]->bindCell( cell_index[j] );
@@ -1928,7 +1937,7 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
                     }
  
                   
-                    //¿¿¿¿¿cell_index, local_coord¿¿¿¿
+                    //ï½¿ï½¿ï½¿ï½¿ï½¿cell_index, local_coordï½¿ï½¿ï½¿ï½¿
                     int nparticles_count = 0;
                     for( int j = 0; j < remain_BLK; j++ )
                     {
@@ -2052,10 +2061,10 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
                         dsdz_array[j] = ( S_plus_opacity[j] - S_minus_opacity[j] )*5.0;
                     }
                     // ------------------------------------------------
-                    //grad_array¿¿¿
+                    //grad_arrayï½¿ï½¿ï½¿
                     for( int j = 0; j < nparticles_count; j++ )
                     {
-                        //JacobiMatrix¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿
+                        //JacobiMatrixï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
                         interp[thid][0]->bindCell( cell_index[j] );
 
                         const kvs::Vector3f g( -dsdx_array[j], -dsdy_array[j], -dsdz_array[j] );
@@ -2120,13 +2129,13 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
         {
             if( parameter_file_opened )
             {
-                //¿¿¿¿¿
+                //ï½¿ï½¿ï½¿ï½¿ï½¿
                 for( int i = 0; i < tf_number; i++ )
                 {
-                    //¿¿¿¿
+                    //ï½¿ï½¿ï½¿ï½¿
                     O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
                     O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
-                    //¿
+                    //ï½¿
                     C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
                     C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
                 }
@@ -2414,21 +2423,23 @@ void CellByCellUniformSampling::calculate_histogram( kvs::ValueArray<int>&   th_
                           kvs::ValueArray<float>& th_O_max,
                           kvs::ValueArray<float>& th_C_min,
                           kvs::ValueArray<float>& th_C_max,
-                          // ¿¿¿¿output, ¿¿input
-                          const int nbins, // TFS¿¿¿¿¿¿¿¿¿¿¿
+                          // ï½¿ï½¿ï½¿ï½¿output, ï½¿ï½¿input
+                          const int nbins, // TFSï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
                           const kvs::ValueArray<float>& o_min,
                           const kvs::ValueArray<float>& o_max,
                           const kvs::ValueArray<float>& c_min,
                           const kvs::ValueArray<float>& c_max,
-                          const float o_scalars[][SIMDW], // åˆæˆå€¤
-                          const float c_scalars[][SIMDW],
+                          //const float o_scalars[][SIMDW], // èœ·åŸŸãƒ»è›Ÿï½¤
+                          //const float c_scalars[][SIMDW],
+                          float** o_scalars, // Ã¥ÂÂˆÃ¦ÂˆÂÃ¥Â€Â¤
+                          float** c_scalars,
                           const int tf_number  )
 {
     for( int i = 0; i < tf_number; i++ )
     {
         for( int I = 0; I < SIMDW; I++ )
         {
-            //¿¿¿¿¿¿¿¿¿¿¿
+            //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
             float h = (o_scalars[i][I] - o_min[i])/( o_max[i] - o_min[i] )*nbins;
             int H = (int)h;
             if( 0 <= H && H <= nbins )
@@ -2437,7 +2448,7 @@ void CellByCellUniformSampling::calculate_histogram( kvs::ValueArray<int>&   th_
                 th_o_histogram[ H + nbins*i]++;
             }
 
-            //¿¿¿¿¿¿¿¿
+            //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
             h = (c_scalars[i][I] - c_min[i])/( c_max[i] - c_min[i] )*nbins;
             H = (int)h;
             if( 0 <= H && H <= nbins )
@@ -2446,10 +2457,10 @@ void CellByCellUniformSampling::calculate_histogram( kvs::ValueArray<int>&   th_
                 th_c_histogram[ H + nbins*i]++;
             }
 
-            //¿¿¿¿¿¿¿¿¿¿
+            //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
             th_O_min[i] = th_O_min[i] < o_scalars[i][I] ? th_O_min[i] : o_scalars[i][I];
             th_O_max[i] = th_O_max[i] > o_scalars[i][I] ? th_O_max[i] : o_scalars[i][I];
-            //¿¿¿¿¿¿¿
+            //ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿ï½¿
             th_C_min[i] = th_C_min[i] < c_scalars[i][I] ? th_C_min[i] : c_scalars[i][I];
             th_C_max[i] = th_C_max[i] > c_scalars[i][I] ? th_C_max[i] : c_scalars[i][I];
         }
