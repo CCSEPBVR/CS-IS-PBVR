@@ -52,6 +52,7 @@
     <ClCompile Include="SPLITTypeSubvolume.cpp" />
     <ClCompile Include="SquareCell.cpp" />
     <ClCompile Include="StepAggregateTypeSubvolume.cpp" />
+    <ClCompile Include="StructuredVolumeImporter.cpp" />
     <ClCompile Include="StructuredVolumeObject.cpp" />
     <ClCompile Include="TetrahedralCell.cpp" />
     <ClCompile Include="TransferFunction.cpp" />
@@ -106,6 +107,7 @@
     <ClInclude Include="SPLITTypeSubvolume.h" />
     <ClInclude Include="SquareCell.h" />
     <ClInclude Include="StepAggregateTypeSubvolume.h" />
+    <ClInclude Include="StructuredVolumeImporter.h" />
     <ClInclude Include="StructuredVolumeObject.h" />
     <ClInclude Include="TagTable.h" />
     <ClInclude Include="TetrahedralCell.h" />
