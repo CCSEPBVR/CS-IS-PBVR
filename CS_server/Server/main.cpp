@@ -2038,7 +2038,6 @@ int main( int argc, char** argv )
                     }
                     else if ( clntMes.timeParam == 2 )
                     {
-                        
                         strncpy( servMes.header, "JPTP /1.0 100 OK\r\n", 18 );
                         servMes.messageSize = servMes.byteSize();
                         servMes.timeStep = clntMes.step;

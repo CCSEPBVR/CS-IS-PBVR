@@ -258,8 +258,20 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
         int vloeqsize2=clntMes.voleqn.size()/2;
         for ( size_t i = 0; i < clntMes.voleqn.size()/2; i++ ) 
         {
-            var_o.push_back( m_synthesizer -> convert_token(clntMes.voleqn[i+vloeqsize2].Equation) );
-            var_c.push_back( m_synthesizer -> convert_token(clntMes.voleqn[i].Equation ));
+            std::string OSynthBuf = clntMes.voleqn[i+vloeqsize2].Equation;
+            std::replace(OSynthBuf.begin(), OSynthBuf.end(), 'X', 'x');
+            std::replace(OSynthBuf.begin(), OSynthBuf.end(), 'Y', 'y');
+            std::replace(OSynthBuf.begin(), OSynthBuf.end(), 'Z', 'z');
+
+            std::string CSynthBuf = clntMes.voleqn[i].Equation ;
+            std::replace(CSynthBuf.begin(), CSynthBuf.end(), 'X', 'x');
+            std::replace(CSynthBuf.begin(), CSynthBuf.end(), 'Y', 'y');
+            std::replace(CSynthBuf.begin(), CSynthBuf.end(), 'Z', 'z');
+
+            var_o.push_back( m_synthesizer ->  convert_token(OSynthBuf ));
+            var_c.push_back( m_synthesizer ->  convert_token(CSynthBuf ));
+            //var_o.push_back( m_synthesizer -> convert_token(clntMes.voleqn[i+vloeqsize2].Equation) );
+            //var_c.push_back( m_synthesizer -> convert_token(clntMes.voleqn[i].Equation ));
         }
 
         m_synthesizer -> setOpacityVariable( var_o );

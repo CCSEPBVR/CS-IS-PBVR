@@ -713,6 +713,16 @@ void CellByCellMetropolisSampling::generate_particles( const pbvr::StructuredVol
             c_scalars[i] = new float[SIMDW];
         }
 
+//        float** o_scalars = new float*[tf_number];
+//        float** c_scalars = new float*[tf_number];
+//
+//        for (int i = 0; i < tf_number; ++i)
+//        {
+//            o_scalars[i] = new float[SIMDW];
+//            c_scalars[i] = new float[SIMDW];
+//        }
+
+
         kvs::ValueArray<int> th_o_histogram( tf_number * nbins );//不透明度
         kvs::ValueArray<int> th_c_histogram( tf_number * nbins );//色
 
