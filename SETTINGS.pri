@@ -2,6 +2,7 @@ include(qtpbvr.conf)
 #=============================================================================
 #  KVS directory.
 #=============================================================================
+KVS_DIR=$$(KVS_DIR)
 isEmpty( KVS_DIR ) {
     error( "KVS_DIR is not defined." )
 }
@@ -245,126 +246,6 @@ INCLUDEPATH += ../FunctionParser
 #  Include.
 #=============================================================================
 exists( kvsmake.qt.conf ) { include( kvsmake.qt.conf ) }
-
-
-#=============================================================================
-#  Link library.
-#=============================================================================
-contains(DEFINES, PBVR_SUPPORT_FBX) {
-    win32 {
-        isEmpty( FBXSDK_LIB_DIR ) {
-            error( "FBXSDK_LIB_DIR is not defined" );
-        }
-        else{
-            LIBS += -L$$FBXSDK_LIB_DIR -llibfbxsdk-mt -llibxml2-mt -lzlib-mt -ladvapi32
-        }
-    }
-
-    macx {
-        isEmpty( FBXSDK_LIB_DIR ) {
-            error( "FBXSDK_LIB_DIR is not defined" );
-        }
-        else{
-            LIBS += -L$$FBXSDK_LIB_DIR -lfbxsdk
-        }
-    }
-
-    unix:!macx {
-    }
-}
-
-contains(DEFINES, PBVR_SUPPORT_3DS) {
-    win32 {
-        isEmpty( ASSIMP_LIB_DIR ) {
-            error( "ASSIMP_LIB_DIR is not defined" );
-        }
-        else{
-            LIBS += -L$$ASSIMP_LIB_DIR -lassimp-vc143-mt
-        }
-    }
-
-    macx {
-        isEmpty( ASSIMP_LIB_DIR ) {
-            error( "ASSIMP_LIB_DIR is not defined" );
-        }
-        else{
-            LIBS += -L$$ASSIMP_LIB_DIR -lassimp -lIrrXML -lzlibstatic
-        }
-    }
-
-    unix:!macx {
-    }
-}
-
-win32 {
-    LIBS += $$KVS_DIR/lib/kvsSupportQt.lib
-    LIBS += $$KVS_DIR/lib/kvsCore.lib
-    equals( KVS_ENABLE_GLEW, "1" ) {
-        win32: LIBS += -lopengl32
-        win32: LIBS += -lglu32
-        LIBS += $$GLEW_LIBRARY_PATH/glew32.lib
-    }
-    equals( KVS_SUPPORT_GLUT, "1" ) {
-        LIBS += $$KVS_DIR/lib/kvsSupportGLUT.lib
-    }
-}
-
-macx {
-    LIBS += $$KVS_DIR/lib/libkvsSupportQt.a
-    LIBS += $$KVS_DIR/lib/libkvsCore.a
-    equals( KVS_ENABLE_GLEW, "1" ) {
-        LIBS += -L$$GLEW_LIBRARY_PATH -lGLEW
-    }
-    equals( KVS_ENABLE_OPENMP, "1" ) {
-        LIBS += -L$$OPENMP_LIBRARY_PATH
-        macx-clang { LIBS += -lomp } else { LIBS += -lgomp }
-    }
-    equals( KVS_SUPPORT_GLUT, "1" ) {
-        LIBS += $$KVS_DIR/lib/libkvsSupportGLUT.a -framework GLUT
-    }
-    equals( KVS_SUPPORT_FFMPEG, "1" ) {
-        LIBS += $$KVS_DIR/lib/libkvsSupportFFmpeg.a -L$$FFMPEG_LIBRARY_PATH
-        LIBS += -lavcodec -lavformat -lavutil -lavdevice -lavfilter -lswscale
-    }
-    equals( KVS_SUPPORT_OPENCV, "1" ) {
-        LIBS += $$KVS_DIR/lib/libkvsSupportOpenCV.a $$OPENCV_LIBRARY_PATH
-        LIBS += $$OPENCV_LINK_LIBRARY
-    }
-    equals( KVS_SUPPORT_PYTHON, "1" ) {
-        LIBS += $$KVS_DIR/lib/libkvsSupportPython.a $$PYTHON_LIBRARY_PATH
-        LIBS += $$PYTHON_LINK_LIBRARY
-    }
-}
-
-unix:!macx {
-    LIBS += $$KVS_DIR/lib/libkvsSupportQt.a
-    LIBS += $$KVS_DIR/lib/libkvsCore.a
-    equals( KVS_ENABLE_GLU, "1" ) {
-        LIBS += -lGLU
-    }
-    equals( KVS_ENABLE_GLEW, "1" ) {
-        LIBS += -L$$GLEW_LIBRARY_PATH -lGLEW
-    }
-    equals( KVS_ENABLE_OPENMP, "1" ) {
-        LIBS += -L$$OPENMP_LIBRARY_PATH -lgomp -fopenmp
-    }
-    equals( KVS_SUPPORT_GLUT, "1" ) {
-        LIBS += $$KVS_DIR/lib/libkvsSupportGLUT.a -lglut
-    }
-    equals( KVS_SUPPORT_FFMPEG, "1" ) {
-        LIBS += $$KVS_DIR/lib/libkvsSupportFFmpeg.a $$FFMPEG_LIBRARY_PATH
-        LIBS += -lavcodec -lavformat -lavutil -lavdevice -lavfilter -lswscale
-    }
-    equals( KVS_SUPPORT_OPENCV, "1" ) {
-        LIBS += $$KVS_DIR/lib/libkvsSupportOpenCV.a $$OPENCV_LIBRARY_PATH
-        LIBS += $$OPENCV_LINK_LIBRARY
-    }
-    equals( KVS_SUPPORT_PYTHON, "1" ) {
-        LIBS += $$KVS_DIR/lib/libkvsSupportPython.a $$PYTHON_LIBRARY_PATH
-        LIBS += $$PYTHON_LINK_LIBRARY
-    }
-}
-
 
 #=============================================================================
 #  Flags.

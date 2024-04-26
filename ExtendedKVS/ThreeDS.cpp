@@ -7,8 +7,10 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__linux)
 #include <cassert>
+#endif
+#ifdef _WIN32
 #include "Utils.h"
 #endif
 
