@@ -46,6 +46,13 @@ LIBS += -L../ExtendedKVS -lExtendedKVS
 LIBS += -L../ExtendedQT -lExtendedQT
 }
 
+unix:!macx {
+LIBS += -L../Widgets -lWidgets
+LIBS += -L../FunctionParser -lpbvrFunc
+LIBS += -L../Common -lCommon
+LIBS += -L../ExtendedKVS -lExtendedKVS
+LIBS += -L../ExtendedQT -lExtendedQT
+}
 
 #=============================================================================
 #  Header.
@@ -96,4 +103,15 @@ PRE_TARGETDEPS += ../Common/libCommon.a
 PRE_TARGETDEPS += ../Widgets/libWidgets.a
 PRE_TARGETDEPS += ../ExtendedKVS/libExtendedKVS.a
 PRE_TARGETDEPS += ../ExtendedQT/libExtendedQT.a
+}
+
+unix:!macx {
+PRE_TARGETDEPS += ../Widgets/libWidgets.a
+PRE_TARGETDEPS += ../FunctionParser/libpbvrFunc.a
+PRE_TARGETDEPS += ../Common/libCommon.a
+PRE_TARGETDEPS += ../ExtendedKVS/libExtendedKVS.a
+PRE_TARGETDEPS += ../ExtendedQT/libExtendedQT.a
+LIBS += $$KVS_DIR/lib/libkvsSupportQt.a
+LIBS += $$KVS_DIR/lib/libkvsCore.a
+LIBS += -lGLU
 }
