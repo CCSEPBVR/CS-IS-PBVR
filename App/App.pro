@@ -129,6 +129,11 @@ LIBS += -L../ExtendedQT -lExtendedQT
         }
     }
     contains(DEFINES, PBVR_SUPPORT_3DS) {
+        isEmpty( ASSIMP_LIB_DIR ) {
+            error( "ASSIMP_LIB_DIR is not defined" );
+        }else{
+            LIBS += -L$$ASSIMP_LIB_DIR -lassimp -lIrrXML -lzlibstatic
+        }
     }
 
 LIBS += $$KVS_DIR/lib/libkvsSupportQt.a
