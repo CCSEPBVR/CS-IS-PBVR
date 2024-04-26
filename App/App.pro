@@ -216,7 +216,4 @@ PRE_TARGETDEPS += ../FunctionParser/libpbvrFunc.a
 PRE_TARGETDEPS += ../Common/libCommon.a
 PRE_TARGETDEPS += ../ExtendedKVS/libExtendedKVS.a
 PRE_TARGETDEPS += ../ExtendedQT/libExtendedQT.a
-LIBS += $$KVS_DIR/lib/libkvsSupportQt.a
-LIBS += $$KVS_DIR/lib/libkvsCore.a
-LIBS += -lGLU
 }
