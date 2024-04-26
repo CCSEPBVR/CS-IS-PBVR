@@ -44,6 +44,14 @@ LIBS += -L../ExtendedQT/release -lExtendedQT
             LIBS += -L$$FBXSDK_LIB_DIR -llibfbxsdk-mt -llibxml2-mt -lzlib-mt -ladvapi32
         }
     }
+    contains(DEFINES, PBVR_SUPPORT_3DS) {
+        isEmpty( ASSIMP_LIB_DIR ) {
+            error( "ASSIMP_LIB_DIR is not defined" );
+        }else{
+            LIBS += -L$$ASSIMP_LIB_DIR -lassimp-vc143-mt
+        }
+    }
+
 
 LIBS += $$KVS_DIR/lib/kvsSupportQt.lib
 LIBS += $$KVS_DIR/lib/kvsCore.lib
@@ -67,9 +75,15 @@ LIBS += -L../ExtendedQT -lExtendedQT
     contains(DEFINES, PBVR_SUPPORT_FBX) {
         isEmpty( FBXSDK_LIB_DIR ) {
             error( "FBXSDK_LIB_DIR is not defined" );
-        }
-        else{
+        }else{
             LIBS += -L$$FBXSDK_LIB_DIR -lfbxsdk
+        }
+    }
+    contains(DEFINES, PBVR_SUPPORT_3DS) {
+        isEmpty( ASSIMP_LIB_DIR ) {
+            error( "ASSIMP_LIB_DIR is not defined" );
+        }else{
+            LIBS += -L$$ASSIMP_LIB_DIR -lassimp -lIrrXML -lzlibstatic
         }
     }
 
@@ -113,6 +127,8 @@ LIBS += -L../ExtendedQT -lExtendedQT
         else{
             LIBS += -L$$FBXSDK_LIB_DIR -lfbxsdk
         }
+    }
+    contains(DEFINES, PBVR_SUPPORT_3DS) {
     }
 
 LIBS += $$KVS_DIR/lib/libkvsSupportQt.a
