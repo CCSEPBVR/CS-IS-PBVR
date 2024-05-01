@@ -62,7 +62,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     connect( ui->actionVolumeTransform, &QAction::triggered, this, &PBVRGUI::onVolumeTransform );
     connect( ui->actionAnimationControls, &QAction::triggered, this, &PBVRGUI::onAnimationControl );
     connect( ui->actionRepetitionLevelControl, &QAction::triggered, this, &PBVRGUI::onRepetitionLevelControl );
-    connect( ui->actionFilterInfomation, &QAction::triggered, this, &PBVRGUI::onFilterInfomation );
+    connect( ui->actionDataProperties, &QAction::triggered, this, &PBVRGUI::onFilterInfomation );
     connect( ui->actionRenderOptions, &QAction::triggered, this, &PBVRGUI::onRenderOptions );
     connect( ui->actionCoordinates, &QAction::triggered, this, &PBVRGUI::onCoordinates );
     connect( ui->actionTransferFunctionEditor, &QAction::triggered, this, &PBVRGUI::onTransferFunctionEditor );
@@ -181,6 +181,9 @@ void PBVRGUI::keyPressEvent(QKeyEvent *event)
     {
         switch( event->key() )
         {
+        case Qt::Key_C:
+            m_screen->setControlTarget( kvs::qt::jaea::Screen::ControlTarget::TargetCamera );
+            break;
         case Qt::Key_L:
             m_screen->setControlTarget( kvs::qt::jaea::Screen::ControlTarget::TargetLight );
             break;
