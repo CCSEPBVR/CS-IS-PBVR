@@ -18,11 +18,13 @@ TimeControl::TimeControl(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->timeStepSBox->setWrapping( true );
+    m_timer.setInterval( ui->stepIntervalSBox->value() );
     connect(ui->timeStepSBox, &QSpinBox::valueChanged, this, &TimeControl::onNextTimeStepChanged);
     connect(ui->limitMinTimeStepSBox, &QSpinBox::valueChanged, this, &TimeControl::onLimitMinTimeStepChanged);
     connect(ui->limitMaxTimeStepSBox, &QSpinBox::valueChanged, this, &TimeControl::onLimitMaxTimeStepChanged);
     connect(ui->playTogglePBtn, &QPushButton::clicked, this, &TimeControl::onPlayToggleButtonClicked );
     connect( &m_timer, &QTimer::timeout, this, &TimeControl::onTimerStart );
+    connect( ui->stepIntervalSBox, &QSpinBox::valueChanged, this, &TimeControl::onStepIntervalChanged );
 }
 
 TimeControl::~TimeControl()
@@ -101,7 +103,7 @@ void TimeControl::onPlayToggleButtonClicked()
     else
     {
         ui->timeStepSBox->setEnabled( false );
-        m_timer.start(70);
+        m_timer.start();
         ui->playTogglePBtn->setText(STOP_LABEL);
     }
 }
@@ -109,6 +111,11 @@ void TimeControl::onPlayToggleButtonClicked()
 void TimeControl::onTimerStart()
 {    
     m_merge->mergeObjects();
+}
+
+void TimeControl::onStepIntervalChanged()
+{
+    m_timer.setInterval( ui->stepIntervalSBox->value() );
 }
 
 void TimeControl::incrementSpinBox()

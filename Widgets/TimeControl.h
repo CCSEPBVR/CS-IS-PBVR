@@ -39,6 +39,7 @@ private:
     void onLimitMaxTimeStepChanged();
     void onPlayToggleButtonClicked();
     void onTimerStart();
+    void onStepIntervalChanged();
 
 public:
     int getCurrentTimeStep() { return m_current_time_step; }
@@ -46,7 +47,7 @@ public:
     int getLimitMinTimeStep() { return m_limit_min_time_step; }
     int getLimitMaxTimeStep() { return m_limit_max_time_step; }
     void updateTimeStepMinMax(int min,int max, bool isSingleObject);
-    void setCurrentTimeStep(int current);
+    void setCurrentTimeStep(int current);    
 };
 
 #endif // TIMECONTROL_H
