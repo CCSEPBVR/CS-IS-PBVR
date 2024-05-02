@@ -66,7 +66,7 @@ public:
     void setOrientationAxis( kvs::OrientationAxis* orientationAxis )     { m_orientation_axis = orientationAxis; }
     void setFPSLabel( kvs::Label* fps_label )                            { m_fps_label = fps_label;              }
     void setTimeStepLabel( kvs::Label* time_step_label )                 { m_time_step_label = time_step_label;  }
-    void setCurrentTimeStep( int currentTimeStep ) { m_time_step_label->setText("Time step: " + std::to_string(currentTimeStep));}
+    void setCurrentTimeStep( int currentTimeStep ) { m_current_time_step = currentTimeStep; m_time_step_label->setText( "Time step: " + std::to_string( m_current_time_step ) ); }
 
     ShaderType getShaderType();
     kvs::Shader::Lambert getLambertShader() { return m_lambert_shader; }
@@ -87,6 +87,7 @@ private:
     kvs::Shader::Lambert m_lambert_shader;
     kvs::Shader::Phong m_phong_shader;
     kvs::Shader::BlinnPhong m_blinn_phong_shader;
+    int m_current_time_step;
 
 private:
     bool checkConfigFileExists() { return QFile::exists( "config.ini" ); }

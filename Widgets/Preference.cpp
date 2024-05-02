@@ -20,7 +20,8 @@ Preference::Preference(QWidget *parent) :
     m_orientation_axis( nullptr ),
     m_fps_label( nullptr ),
     m_time_step_label( nullptr ),
-    m_settings( "config.ini", QSettings::IniFormat )
+    m_settings( "config.ini", QSettings::IniFormat ),
+    m_current_time_step( 0 )
 {
     ui->setupUi(this);
     ui->orientationTypeCBox->addItem( "Horizontal", Horizontal );
@@ -629,7 +630,7 @@ void Preference::applyLabelsSettings()
     if( timeStepIsShowing )
     {
         m_time_step_label->setPosition( 100, 580 );        
-        m_time_step_label->setText("Time step: ");
+        m_time_step_label->setText( "Time step: " + std::to_string( m_current_time_step ) );
         m_time_step_label->show();
     }
     else
