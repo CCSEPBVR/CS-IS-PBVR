@@ -30,7 +30,7 @@ Connect::Connect(QWidget *parent) :
     m_client_message.m_particle_data_size_limit = 20;
 
     connect( ui->connectPBtn, &QPushButton::clicked, this, &Connect::onConnectButtonClicked );
-#include"QPushButton"
+
 }
 
 Connect::~Connect()
