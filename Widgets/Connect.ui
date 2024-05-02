@@ -102,12 +102,19 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="transferFunctionFilePathLEdit"/>
+       <widget class="QLineEdit" name="transferFunctionFilePathLEdit">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
       </item>
       <item row="2" column="1">
        <widget class="QLineEdit" name="volumeDataFilePathLEdit">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
-         <string>/Users/t0603/Work/PBVR/SampleData/ucd/out/spx.pfi</string>
+         <string/>
         </property>
        </widget>
       </item>

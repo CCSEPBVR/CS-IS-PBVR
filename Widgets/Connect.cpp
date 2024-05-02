@@ -30,7 +30,8 @@ Connect::Connect(QWidget *parent) :
     m_client_message.m_particle_data_size_limit = 20;
 
     connect( ui->connectPBtn, &QPushButton::clicked, this, &Connect::onConnectButtonClicked );
-
+    connect( ui->volumeDataFilePathBrowsePBtn, &QPushButton::clicked, this, &Connect::onVolumeDataBrowseButtonClicked );
+    connect( ui->transferFunctionFilePathBrowsePBtn, &QPushButton::clicked, this, &Connect::onTransferFunctionFileBrowseButtonClicked );
 }
 
 Connect::~Connect()
@@ -222,6 +223,16 @@ kvs::PointObject* Connect::connect2( int timeStep )
 void Connect::deletedServerObject()
 {
     ui->connectPBtn->setEnabled( true );
+}
+
+void Connect::onVolumeDataBrowseButtonClicked()
+{
+    ui->volumeDataFilePathLEdit->setText( QFileDialog::getOpenFileName( this, tr("Select Volume Data File"), ".", tr("Volume Data Files (*.pfi)") ) );
+}
+
+void Connect::onTransferFunctionFileBrowseButtonClicked()
+{
+    ui->transferFunctionFilePathLEdit->setText( QFileDialog::getOpenFileName( this, tr("Select Transfer Function File"), ".", tr("Transfer Function Files (*.tfe *.TFE *.tf *.TF )") ) );
 }
 
 void Connect::onConnectButtonClicked()

@@ -54,6 +54,8 @@ private:
 
     void connect1();
 
+    void onVolumeDataBrowseButtonClicked();
+    void onTransferFunctionFileBrowseButtonClicked();
     void onConnectButtonClicked();
 };
 
