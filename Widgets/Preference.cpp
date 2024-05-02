@@ -516,6 +516,8 @@ void Preference::applyColorMapBarSettings()
     const bool isShowing = ui->colorMapBarGBox->isChecked();
     const OrientationType orientationType = static_cast<OrientationType>( ui->orientationTypeCBox->currentIndex() );
 
+    m_color_map_bar->setCaption( ui->captionLEdit->text().toStdString() );
+
     if( isShowing )
     {
         switch ( orientationType )
