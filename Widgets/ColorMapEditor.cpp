@@ -52,7 +52,7 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
     ui->controlPointsTWidget->setRowCount( ui->numberOfControlPointsSBox->value() );
 
     connect( ui->controlPointsTWidget, &QTableWidget::cellChanged, this, &ColorMapEditor::onControlPointChanged );
-
+    connect( ui->cancelPBtn, &QPushButton::clicked, this, &ColorMapEditor::close );
     connect( ui->applyPBtn, &QPushButton::clicked, this, &ColorMapEditor::accept );
 }
 

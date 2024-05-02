@@ -22,7 +22,7 @@ OpacityMapEditor::OpacityMapEditor(QWidget *parent) :
 
     connect( ui->oLEdit, &QLineEdit::textChanged, this, &OpacityMapEditor::onExpressionChanged );
     connect( ui->controlPointsTWidget, &QTableWidget::cellChanged, this, &OpacityMapEditor::onControlPointChanged );
-
+    connect( ui->cancelPBtn, &QPushButton::clicked, this, &OpacityMapEditor::close );
     connect( ui->applyPBtn, &QPushButton::clicked, this, &OpacityMapEditor::accept );
 }
 
