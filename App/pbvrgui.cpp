@@ -128,10 +128,12 @@ void PBVRGUI::initializePanels()
     addDockWidget( Qt::RightDockWidgetArea, &m_data_properties );
     //レンダーオプションパネルの初期化
     m_render_options.close();
+    m_render_options.setMerge( &m_merge );
     m_render_options.setClientMessage( m_connect.getClientMessage() );
     m_render_options.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::RightDockWidgetArea, &m_render_options );
     //コーディネートパネルの初期化
+    m_coordinates.setMerge( &m_merge );
     m_coordinates.setClientMessage( m_connect.getClientMessage() );
     //伝達関数パネルの初期化
     m_transfer_function_editor.setColorFunctionSelector( &m_color_function_selector );

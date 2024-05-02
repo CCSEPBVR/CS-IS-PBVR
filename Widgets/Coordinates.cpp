@@ -23,4 +23,5 @@ void Coordinates::onApplyButtonClicked()
     m_client_message->m_x_synthesis = ui->coordinateXLEdit->text().toStdString();
     m_client_message->m_y_synthesis = ui->coordinateYLEdit->text().toStdString();
     m_client_message->m_z_synthesis = ui->coordinateZLEdit->text().toStdString();
+    m_merge->setIsParticleGenerationNeeded( true );
 }
