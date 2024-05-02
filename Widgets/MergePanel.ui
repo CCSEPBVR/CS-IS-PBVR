@@ -23,8 +23,11 @@
       <layout class="QGridLayout" name="gridLayout_3">
        <item row="0" column="1">
         <widget class="QLineEdit" name="importFilesPathLEdit">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="text">
-          <string>/Users/t0603/3d/clock/clock_00000.stl</string>
+          <string/>
          </property>
         </widget>
        </item>
