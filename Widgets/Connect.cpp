@@ -23,6 +23,12 @@ Connect::Connect(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->uniformRBtn->setChecked( true );
+
+    //Init particle limit, particle density, data size limit
+    m_client_message.m_particle_limit = 10000000;
+    m_client_message.m_particle_density = 1;
+    m_client_message.m_particle_data_size_limit = 20;
+
     connect( ui->connectPBtn, &QPushButton::clicked, this, &Connect::onConnectButtonClicked );
 #include"QPushButton"
 }
@@ -64,6 +70,8 @@ void Connect::connect1()
 
     m_merge->serverObject( ui->volumeDataFilePathLEdit->text(), reply.m_start_step, reply.m_end_step );
     m_transfer_function_editor->applyVariableRange( reply.m_variable_range );
+    m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
+    m_transfer_function_editor->onApplyButtonClicked();
 //    qInfo() << reply.m_variable_range.min( "t1_var_c" );
 //    qInfo() << reply.m_min_value;
     ui->cancelPBtn->setDisabled( true );

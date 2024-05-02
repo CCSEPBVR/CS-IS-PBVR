@@ -81,9 +81,10 @@ private slots:
     void onTransferFunctionRangeColorChanged();
     void onTransferFunctionRangeOpacityChanged();
 
-    void onApplyButtonClicked();
     void onImportButtonClicked();
     void onExportButtonClicked();
+public slots:
+    void onApplyButtonClicked();
 };
 
 #endif // TRANSFERFUNCTIONEDITOR_H
