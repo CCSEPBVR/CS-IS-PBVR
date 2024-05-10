@@ -29,6 +29,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_volumeTransform( this ),
     m_animation_controls( this ),
     m_repetition_level_control( this ),
+    m_display_point_size_control( this ),
     m_render_options( this ),
     m_data_properties( this ),
     m_coordinates( this ),
@@ -64,6 +65,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     connect( ui->actionRepetitionLevelControl, &QAction::triggered, this, &PBVRGUI::onRepetitionLevelControl );
     connect( ui->actionDataProperties, &QAction::triggered, this, &PBVRGUI::onFilterInfomation );
     connect( ui->actionRenderOptions, &QAction::triggered, this, &PBVRGUI::onRenderOptions );
+    connect( ui->actionDisplayPointSizeControl, &QAction::triggered, this, &PBVRGUI::onDisplayPointSizeControl );
     connect( ui->actionCoordinates, &QAction::triggered, this, &PBVRGUI::onCoordinates );
     connect( ui->actionTransferFunctionEditor, &QAction::triggered, this, &PBVRGUI::onTransferFunctionEditor );
     setFocusPolicy(Qt::StrongFocus);    
@@ -123,6 +125,11 @@ void PBVRGUI::initializePanels()
     m_repetition_level_control.setPreference( &m_preference );
     m_repetition_level_control.setScreen( m_screen );
     m_repetition_level_control.setCompositor( m_compositor );
+    //ディスプレイポイントサイズコントロールパネルの初期化
+    m_display_point_size_control.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    addDockWidget( Qt::LeftDockWidgetArea, &m_display_point_size_control );
+    m_display_point_size_control.setPreference( &m_preference );
+    m_display_point_size_control.setScreen( m_screen );
     //データプロパティパネルの初期化
     m_data_properties.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::RightDockWidgetArea, &m_data_properties );

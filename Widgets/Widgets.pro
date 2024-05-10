@@ -35,6 +35,7 @@ HEADERS += \
     Coordinates.h \
     DataProperties.h \
     DataSummary.h \
+    DisplayPointSizeControl.h \
     ExtendedTransferFunctionMessage.h \
     FrequencyTable.h \
     FunctionListEditor.h \
@@ -68,6 +69,7 @@ SOURCES += \
     Coordinates.cpp \
     DataProperties.cpp \
     DataSummary.cpp \
+    DisplayPointSizeControl.cpp \
     ExtendedTransferFunctionMessage.cpp \
     FunctionListEditor.cpp \
     Merge.cpp \
@@ -99,6 +101,7 @@ FORMS += \
     Coordinates.ui \
     DataProperties.ui \
     DataSummary.ui \
+    DisplayPointSizeControl.ui \
     FunctionListEditor.ui \
     Merge.ui \
     MergePanel.ui \
