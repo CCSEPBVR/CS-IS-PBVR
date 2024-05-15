@@ -46,6 +46,7 @@ HEADERS += \
     ReceivedMessage.h \
     RenderOptions.h \
     RepetitionLevelControl.h \
+    ShadingController.h \
     TFEColorMapBar.h \
     TFEColorMapPalette.h \
     TFEHistogramBar.h \
@@ -77,6 +78,7 @@ SOURCES += \
     Preference.cpp \
     RenderOptions.cpp \
     RepetitionLevelControl.cpp \
+    ShadingController.cpp \
     TFEColorMapBar.cpp \
     TFEColorMapPalette.cpp \
     TFEHistogramBar.cpp \
@@ -106,6 +108,7 @@ FORMS += \
     Preference.ui \
     RenderOptions.ui \
     RepetitionLevelControl.ui \
+    ShadingController.ui \
     TimeControl.ui \
     TransferFunctionEditor.ui \
     VolumeTransform.ui \
