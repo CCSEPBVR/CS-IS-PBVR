@@ -18,6 +18,7 @@
 #include "Widgets/DataSummary.h"
 #include "Widgets/RenderOptions.h"
 #include "Widgets/RepetitionLevelControl.h"
+#include "Widgets/DisplayPointSizeControl.h"
 #include "Widgets/TransferFunctionEditor.h"
 #include "Widgets/Coordinates.h"
 #include "Widgets/ColorFunctionSelector.h"
@@ -55,6 +56,7 @@ private:
     DataSummary m_data_summary;
     RenderOptions m_render_options;
     RepetitionLevelControl m_repetition_level_control;
+    DisplayPointSizeControl m_display_point_size_control;
     TransferFunctionEditor m_transfer_function_editor;
     Coordinates m_coordinates;
     ColorFunctionSelector m_color_function_selector;
@@ -68,6 +70,7 @@ private:
     void onFilterInfomation() { m_data_properties.show(); }
     void onRenderOptions() { m_render_options.show(); }
     void onRepetitionLevelControl() { m_repetition_level_control.show(); }
+    void onDisplayPointSizeControl() { m_display_point_size_control.show(); }
     void onTransferFunctionEditor() { m_transfer_function_editor.show(); }
     void onCoordinates() { m_coordinates.show(); }
 

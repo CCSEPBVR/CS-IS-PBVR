@@ -27,7 +27,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>37</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuQTPBVR">
@@ -49,6 +49,7 @@
     <addaction name="actionAnimationControls"/>
     <addaction name="actionRenderOptions"/>
     <addaction name="actionRepetitionLevelControl"/>
+    <addaction name="actionDisplayPointSizeControl"/>
     <addaction name="actionCoordinates"/>
    </widget>
    <addaction name="menuQTPBVR"/>
@@ -138,6 +139,11 @@
   <action name="actionCoordinates">
    <property name="text">
     <string>Coordinates</string>
+   </property>
+  </action>
+  <action name="actionDisplayPointSizeControl">
+   <property name="text">
+    <string>DisplayPointSizeControl</string>
    </property>
   </action>
  </widget>
