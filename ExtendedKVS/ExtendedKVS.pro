@@ -26,7 +26,8 @@ TARGET = ExtendedKVS
 #  Header.
 #=============================================================================
 HEADERS += \
-    CustomObjectManager.h \    
+    CustomObjectManager.h \
+    ParticleBasedRendererGLSL.h \
     LASImporter.h \
     PTSImporter.h \
     Screen.h
@@ -56,7 +57,8 @@ HEADERS += \
 #  Source.
 #=============================================================================
 SOURCES += \
-    CustomObjectManager.cpp \    
+    CustomObjectManager.cpp \
+    ParticleBasedRendererGLSL.cpp \
     LASImporter.cpp \
     PTSImporter.cpp \
     Screen.cpp
