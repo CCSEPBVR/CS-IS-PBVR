@@ -7,7 +7,7 @@
 
 #include "ExtendedKVS/ParticleBasedRendererGLSL.h"
 
-#include <kvs/StochasticPolygonRenderer>
+#include "ExtendedKVS/StochasticPolygonRenderer.h"
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
 #include "ExtendedKVS/StochasticTexturedPolygonRenderer.h"
 #endif
@@ -107,9 +107,9 @@ void Preference::applyShading(kvs::RendererBase*& rendererBase)
 {
     if (auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>(rendererBase))
     {
-        if (auto* stochasticPolygonRenderer = dynamic_cast<kvs::StochasticPolygonRenderer*>(stochasticRenderer))
+        if (auto* stochasticPolygonRenderer = dynamic_cast<kvs::mod::StochasticPolygonRenderer*>(stochasticRenderer))
         {
-            kvs::StochasticPolygonRenderer* copy = new kvs::StochasticPolygonRenderer;
+            kvs::mod::StochasticPolygonRenderer* copy = new kvs::mod::StochasticPolygonRenderer;
             copy->DownCast(stochasticPolygonRenderer);
             switch (getShaderType())
             {
@@ -153,9 +153,9 @@ void Preference::applyShading(kvs::RendererBase*& rendererBase)
             rendererBase = copy; // copyオブジェクトをrendererBaseに代入
         }
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
-        else if (auto* stochasticTexturedPolygonRenderer = dynamic_cast<kvs::StochasticTexturedPolygonRenderer*>(stochasticRenderer) )
+        else if (auto* stochasticTexturedPolygonRenderer = dynamic_cast<kvs::mod::StochasticTexturedPolygonRenderer*>(stochasticRenderer) )
         {
-            kvs::StochasticTexturedPolygonRenderer* copy = new kvs::StochasticTexturedPolygonRenderer;
+            kvs::mod::StochasticTexturedPolygonRenderer* copy = new kvs::mod::StochasticTexturedPolygonRenderer;
             copy->DownCast(stochasticPolygonRenderer);
             switch (getShaderType())
             {

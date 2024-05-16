@@ -2,8 +2,9 @@
 #include "ui_ShadingController.h"
 #include <QButtonGroup>
 
-#include <kvs/StochasticPolygonRenderer>
+#include "ExtendedKVS/StochasticPolygonRenderer.h"
 #include "ExtendedKVS/ParticleBasedRendererGLSL.h"
+#include "ExtendedKVS/StochasticTexturedPolygonRenderer.h"
 ShadingController::ShadingController(QWidget *parent) :
     QDockWidget(parent),
     m_screen( nullptr ),
@@ -41,7 +42,7 @@ void ShadingController::onChangeShader()
         {
             if (auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>(rendererBase))
             {
-                if (auto* stochasticPolygonRenderer = dynamic_cast<kvs::StochasticPolygonRenderer*>(stochasticRenderer))
+                if (auto* stochasticPolygonRenderer = dynamic_cast<kvs::mod::StochasticPolygonRenderer*>(stochasticRenderer))
                 {
                     if( ui->noneRBtn->isChecked() )
                     {
@@ -77,6 +78,25 @@ void ShadingController::onChangeShader()
                     else if( ui->blinnPhongRBtn->isChecked() )
                     {
                         particleRenderer->setShader( kvs::Shader::BlinnPhong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value() ) );
+                    }
+                }
+                else if (auto* stochasticTexturedPolygonRenderer = dynamic_cast<kvs::mod::StochasticTexturedPolygonRenderer*>(stochasticRenderer))
+                {
+                    if( ui->noneRBtn->isChecked() )
+                    {
+                        stochasticTexturedPolygonRenderer->setShader( kvs::Shader::Lambert( 1, 0 ) );
+                    }
+                    else if( ui->phongRBtn->isChecked() )
+                    {
+                        stochasticTexturedPolygonRenderer->setShader( kvs::Shader::Phong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value() ) );
+                    }
+                    else if( ui->lambertRBtn->isChecked() )
+                    {
+                        stochasticTexturedPolygonRenderer->setShader( kvs::Shader::Lambert( ui->kaDSBox->value(), ui->kdDSBox->value() ) );
+                    }
+                    else if( ui->blinnPhongRBtn->isChecked() )
+                    {
+                        stochasticTexturedPolygonRenderer->setShader( kvs::Shader::BlinnPhong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value() ) );
                     }
                 }
             }

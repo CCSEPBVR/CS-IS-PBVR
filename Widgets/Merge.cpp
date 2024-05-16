@@ -18,7 +18,7 @@
 #include <kvs/IDManager>
 #include <kvs/PolygonImporter>
 #include <kvs/PolygonObject>
-#include <kvs/StochasticPolygonRenderer>
+#include "ExtendedKVS/StochasticPolygonRenderer.h"
 
 Merge::Merge(QWidget *parent) :
     QDockWidget(parent),
@@ -1442,7 +1442,7 @@ void Merge::updateObject( FilesManager* filesManager, kvs::ObjectBase* object )
             kvs::PolygonObject* polygonObject = dynamic_cast<kvs::PolygonObject*>(object);
             polygonObject->setColor(kvs::RGBColor(filesManager->getRGBColor().red(), filesManager->getRGBColor().green(), filesManager->getRGBColor().blue()));
             polygonObject->setOpacity(filesManager->getOpacity() * 255);
-            renderer = new kvs::StochasticPolygonRenderer();
+            renderer = new kvs::mod::StochasticPolygonRenderer();
         }
         filesManager->setIds(m_screen->registerObject(object, renderer));
     }
