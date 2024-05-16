@@ -134,6 +134,7 @@ void PBVRGUI::initializePanels()
     //シェーディングコントローラーパネルの初期化
     m_shading_controller.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::LeftDockWidgetArea, &m_shading_controller );
+    m_shading_controller.setScreen( m_screen );
     //データプロパティパネルの初期化
     m_data_properties.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::RightDockWidgetArea, &m_data_properties );
