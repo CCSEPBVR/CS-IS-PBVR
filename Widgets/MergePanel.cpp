@@ -12,7 +12,7 @@
 
 #include <kvs/PolygonImporter>
 #include <kvs/PolygonObject>
-#include "ExtendedKVS/StochasticPolygonRenderer.h"
+#include <kvs/StochasticPolygonRenderer>
 
 #include <kvs/PointImporter>
 //#include <kvs/PointObject>
@@ -441,7 +441,7 @@ void MergePanel::onWorkerThreadFinished()
                 {
                     polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue() ) );
                     polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
-                    kvs::RendererBase* stochastic_polygon_renderer = new kvs::mod::StochasticPolygonRenderer;
+                    kvs::RendererBase* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer;
                     m_preference->applyShading( stochastic_polygon_renderer );
                     m_files_manager[row]->setIds( m_screen->scene()->registerObject( polygon_object, stochastic_polygon_renderer ) );
                 }
@@ -663,7 +663,7 @@ void MergePanel::WorkerThread::run()
             break;
         case FilesManager::NonTexturedPolygonObjectKVSML:
         case FilesManager::NonTexturedPolygonObjectSTL:
-            timeStepCheckAndImport<kvs::PolygonImporter, kvs::PolygonObject, kvs::mod::StochasticPolygonRenderer>( row );
+            timeStepCheckAndImport<kvs::PolygonImporter, kvs::PolygonObject, kvs::StochasticPolygonRenderer>( row );
             break;
 #ifdef PBVR_SUPPORT_FBX
         case FilesManager::TexturedPolygonObjectFBX:

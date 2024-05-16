@@ -2,7 +2,7 @@
 #include "ui_ShadingController.h"
 #include <QButtonGroup>
 
-#include "ExtendedKVS/StochasticPolygonRenderer.h"
+#include <kvs/StochasticPolygonRenderer>
 #include <kvs/ParticleBasedRenderer>
 #include "ExtendedKVS/StochasticTexturedPolygonRenderer.h"
 ShadingController::ShadingController(QWidget *parent) :
@@ -42,7 +42,7 @@ void ShadingController::onChangeShader()
         {
             if (auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>(rendererBase))
             {
-                if (auto* stochasticPolygonRenderer = dynamic_cast<kvs::mod::StochasticPolygonRenderer*>(stochasticRenderer))
+                if (auto* stochasticPolygonRenderer = dynamic_cast<kvs::StochasticPolygonRenderer*>(stochasticRenderer))
                 {
                     if( ui->noneRBtn->isChecked() )
                     {

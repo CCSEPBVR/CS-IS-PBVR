@@ -7,7 +7,7 @@
 
 #include <kvs/ParticleBasedRenderer>
 
-#include "ExtendedKVS/StochasticPolygonRenderer.h"
+#include <kvs/StochasticPolygonRenderer>
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
 #include "ExtendedKVS/StochasticTexturedPolygonRenderer.h"
 #endif
@@ -107,9 +107,9 @@ void Preference::applyShading(kvs::RendererBase*& rendererBase)
 {
     if (auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>(rendererBase))
     {
-        if (auto* stochasticPolygonRenderer = dynamic_cast<kvs::mod::StochasticPolygonRenderer*>(stochasticRenderer))
+        if (auto* stochasticPolygonRenderer = dynamic_cast<kvs::StochasticPolygonRenderer*>(stochasticRenderer))
         {
-            kvs::mod::StochasticPolygonRenderer* copy = new kvs::mod::StochasticPolygonRenderer;
+            kvs::StochasticPolygonRenderer* copy = new kvs::StochasticPolygonRenderer;
             copy->DownCast(stochasticPolygonRenderer);
             switch (getShaderType())
             {

@@ -29,9 +29,7 @@ HEADERS += \
     CustomObjectManager.h \
     LASImporter.h \
     PTSImporter.h \
-    PolygonRendererGLSL.h \
-    Screen.h \
-    StochasticPolygonRenderer.h
+    Screen.h
 
 contains(DEFINES, PBVR_SUPPORT_FBX) | contains(DEFINES, PBVR_SUPPORT_3DS){
 HEADERS += \
@@ -61,9 +59,7 @@ SOURCES += \
     CustomObjectManager.cpp \
     LASImporter.cpp \
     PTSImporter.cpp \
-    PolygonRendererGLSL.cpp \
-    Screen.cpp \
-    StochasticPolygonRenderer.cpp
+    Screen.cpp
 
 contains(DEFINES, PBVR_SUPPORT_FBX) | contains(DEFINES, PBVR_SUPPORT_3DS){
 SOURCES += \
