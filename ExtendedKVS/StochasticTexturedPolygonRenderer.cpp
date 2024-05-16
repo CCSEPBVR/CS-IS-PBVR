@@ -355,6 +355,10 @@ kvs::ValueArray<kvs::Real32> VertexTexture2DCoords(
 
 namespace kvs
 {
+
+namespace mod
+{
+
 /*===========================================================================*/
 /**
  *  @brief  Constructs a new StochasticPolygonRenderer class.
@@ -615,6 +619,34 @@ void StochasticTexturedPolygonRenderer::Engine::setup( kvs::ObjectBase* object, 
     const kvs::Mat4 PM = kvs::OpenGL::ProjectionMatrix() * M;
     const kvs::Mat3 N = kvs::Mat3( M[0].xyz(), M[1].xyz(), M[2].xyz() );
     m_shader_program.bind();
+    if( shader().type() == kvs::Shader::LambertShading )
+    {
+        m_shader_program.setUniform( "is_lambert_shading", true );
+        m_shader_program.setUniform( "is_phong_shading", false );
+        m_shader_program.setUniform( "is_blinn_phong_shading", false );
+    }
+    else if( shader().type() == kvs::Shader::PhongShading )
+    {
+        m_shader_program.setUniform( "is_lambert_shading", false );
+        m_shader_program.setUniform( "is_phong_shading", true );
+        m_shader_program.setUniform( "is_blinn_phong_shading", false );
+    }
+    else if( shader().type() == kvs::Shader::BlinnPhongShading )
+    {
+        m_shader_program.setUniform( "is_lambert_shading", false );
+        m_shader_program.setUniform( "is_phong_shading", false );
+        m_shader_program.setUniform( "is_blinn_phong_shading", true );
+    }
+    else
+    {
+        m_shader_program.setUniform( "is_lambert_shading", false );
+        m_shader_program.setUniform( "is_phong_shading", false );
+        m_shader_program.setUniform( "is_blinn_phong_shading", false );
+    }
+    m_shader_program.setUniform( "shading.Ka", shader().Ka );
+    m_shader_program.setUniform( "shading.Kd", shader().Kd );
+    m_shader_program.setUniform( "shading.Ks", shader().Ks );
+    m_shader_program.setUniform( "shading.S",  shader().S );
     m_shader_program.setUniform( "ModelViewMatrix", M );
     m_shader_program.setUniform( "ModelViewProjectionMatrix", PM );
     m_shader_program.setUniform( "NormalMatrix", N );
@@ -753,24 +785,25 @@ void StochasticTexturedPolygonRenderer::Engine::create_shader_program()
     kvs::ShaderSource frag( "SR_textured_polygon.frag" );
     if ( isEnabledShading() )
     {
-        switch ( shader().type() )
-        {
-        case kvs::Shader::LambertShading: frag.define("ENABLE_LAMBERT_SHADING"); break;
-        case kvs::Shader::PhongShading: frag.define("ENABLE_PHONG_SHADING"); break;
-        case kvs::Shader::BlinnPhongShading: frag.define("ENABLE_BLINN_PHONG_SHADING"); break;
-        default: break; // NO SHADING
-        }
-
         if ( kvs::OpenGL::Boolean( GL_LIGHT_MODEL_TWO_SIDE ) == GL_TRUE )
         {
             frag.define("ENABLE_TWO_SIDE_LIGHTING");
         }
     }
 
-    //std::cerr << "StochasticTexturedPolygonRenderer::Engine::create_shader_program() :build shaders." << std::endl;
+    std::cerr << "StochasticTexturedPolygonRenderer::Engine::create_shader_program() :build shaders." << std::endl;
 
     m_shader_program.build( vert, frag );
     m_shader_program.bind();
+
+    switch ( shader().type() )
+    {
+    case kvs::Shader::LambertShading: m_shader_program.setUniform( "is_lambert_shading", true ); break;
+    case kvs::Shader::PhongShading: m_shader_program.setUniform( "is_phong_shading", true ); break;
+    case kvs::Shader::BlinnPhongShading: m_shader_program.setUniform( "is_blinn_phong_shading", true ); break;
+    default: break; // NO SHADING
+    }
+
     m_shader_program.setUniform( "shading.Ka", shader().Ka );
     m_shader_program.setUniform( "shading.Kd", shader().Kd );
     m_shader_program.setUniform( "shading.Ks", shader().Ks );
@@ -883,5 +916,7 @@ void StochasticTexturedPolygonRenderer::Engine::create_buffer_object( const kvs:
 
     m_vbo.unbind();
 }
+
+} // end of namespace mod
 
 } // end of namespace kvs

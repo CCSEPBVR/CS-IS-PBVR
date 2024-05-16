@@ -24,6 +24,11 @@ FragIn vec3 normal; // normal vector in camera coodinate
 FragIn vec2 index; // index for accessing to the random texture
 FragIn vec2 uv_coords; // uv coords for 2d texture
 
+//Shading Types.
+uniform bool  is_lambert_shading;
+uniform bool  is_phong_shading;
+uniform bool  is_blinn_phong_shading;
+
 // Uniform parameters.
 uniform sampler2D random_texture; // random texture to generate random number
 uniform sampler2D material_texture;
@@ -70,20 +75,25 @@ void main()
     vec3 N = normalize( normal );
 
     // Shading.
-#if   defined( ENABLE_LAMBERT_SHADING )
-    vec3 shaded_color = ShadingLambert( shading, color, L, N );
-
-#elif defined( ENABLE_PHONG_SHADING )
-    vec3 V = normalize( -position );
-    vec3 shaded_color = ShadingPhong( shading, color, L, N, V );
-
-#elif defined( ENABLE_BLINN_PHONG_SHADING )
-    vec3 V = normalize( -position );
-    vec3 shaded_color = ShadingBlinnPhong( shading, color, L, N, V );
-
-#else // DISABLE SHADING
-    vec3 shaded_color = ShadingNone( shading, color );
-#endif
+    vec3 shaded_color;
+    if ( is_lambert_shading )
+    {
+        shaded_color = ShadingLambert( shading, color, L, N );
+    }
+    else if ( is_phong_shading )
+    {
+        vec3 V = normalize ( -position );
+        shaded_color = ShadingPhong( shading, color, L, N, V );
+    }
+    else if ( is_blinn_phong_shading )
+    {
+        vec3 V = normalize ( -position );
+        shaded_color = ShadingBlinnPhong( shading, color, L, N, V );
+    }
+    else
+    {
+        shaded_color = ShadingNone( shading, color );
+    }
 
     gl_FragColor = vec4( shaded_color, 1.0 );
 }

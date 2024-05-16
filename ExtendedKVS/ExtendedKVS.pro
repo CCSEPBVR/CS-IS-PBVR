@@ -30,7 +30,9 @@ HEADERS += \
     ParticleBasedRendererGLSL.h \
     LASImporter.h \
     PTSImporter.h \
-    Screen.h
+    PolygonRendererGLSL.h \
+    Screen.h \
+    StochasticPolygonRenderer.h
 
 contains(DEFINES, PBVR_SUPPORT_FBX) | contains(DEFINES, PBVR_SUPPORT_3DS){
 HEADERS += \
@@ -61,7 +63,9 @@ SOURCES += \
     ParticleBasedRendererGLSL.cpp \
     LASImporter.cpp \
     PTSImporter.cpp \
-    Screen.cpp
+    PolygonRendererGLSL.cpp \
+    Screen.cpp \
+    StochasticPolygonRenderer.cpp
 
 contains(DEFINES, PBVR_SUPPORT_FBX) | contains(DEFINES, PBVR_SUPPORT_3DS){
 SOURCES += \

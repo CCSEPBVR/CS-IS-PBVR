@@ -11,6 +11,8 @@ varying vec3  position;
 varying vec3  normal;
 varying vec2  center;
 varying float radius;
+
+//Shading Types.
 uniform bool  is_lambert_shading;
 uniform bool  is_phong_shading;
 uniform bool  is_blinn_phong_shading;

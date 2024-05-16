@@ -29,6 +29,9 @@ namespace kvs
 {
 class PolygonObject;
 
+namespace mod
+{
+
 /*===========================================================================*/
 /**
  *  @brief  Stochastic textured polygon renderer class.
@@ -36,7 +39,7 @@ class PolygonObject;
 /*===========================================================================*/
 class StochasticTexturedPolygonRenderer : public kvs::StochasticRendererBase
 {
-    kvsModule( kvs::StochasticTexturedPolygonRenderer, Renderer );
+    kvsModule( kvs::mod::StochasticTexturedPolygonRenderer, Renderer );
     kvsModuleBaseClass( kvs::StochasticRendererBase );
 
 public:
@@ -110,6 +113,8 @@ private:
     void create_shader_program();
     void create_buffer_object( const kvs::TexturedPolygonObject* texturedPolygon );
 };
+
+} // end of namespace mod
 
 } // end of namespace kvs
 
