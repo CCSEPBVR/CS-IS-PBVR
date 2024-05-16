@@ -13,7 +13,7 @@
 #include <kvs/RendererManager>
 #include <kvs/PointImporter>
 #include <kvs/PointObject>
-#include <kvs/ParticleBasedRenderer>
+#include "ExtendedKVS/ParticleBasedRendererGLSL.h"
 
 #include <kvs/IDManager>
 #include <kvs/PolygonImporter>
@@ -1435,7 +1435,7 @@ void Merge::updateObject( FilesManager* filesManager, kvs::ObjectBase* object )
 
         if( dynamic_cast<kvs::PointObject*>(object) != nullptr )
         {
-            renderer = new kvs::glsl::ParticleBasedRenderer();
+            renderer = new kvs::mod::glsl::ParticleBasedRenderer();
         }
         else if( dynamic_cast<kvs::PolygonObject*>(object) != nullptr )
         {

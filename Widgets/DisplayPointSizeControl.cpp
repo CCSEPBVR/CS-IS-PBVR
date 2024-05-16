@@ -1,7 +1,7 @@
 #include "DisplayPointSizeControl.h"
 #include "ui_DisplayPointSizeControl.h"
 
-#include <kvs/ParticleBasedRenderer>
+#include "ExtendedKVS/ParticleBasedRendererGLSL.h"
 DisplayPointSizeControl::DisplayPointSizeControl(QWidget *parent) :
     QDockWidget(parent),
     ui(new Ui::DisplayPointSizeControl),
@@ -29,7 +29,7 @@ void DisplayPointSizeControl::onApplyButtonClicked()
         {
             if (auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>(rendererBase))
             {
-                if (auto* particleRenderer = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>(stochasticRenderer))
+                if (auto* particleRenderer = dynamic_cast<kvs::mod::glsl::ParticleBasedRenderer*>(stochasticRenderer))
                 {
                     particleRenderer->setDisplayPointSize( ui->doubleSpinBox->value() );
                 }

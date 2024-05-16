@@ -1,7 +1,7 @@
 #include "RepetitionLevelControl.h"
 #include "ui_RepetitionLevelControl.h"
 
-#include <kvs/ParticleBasedRenderer>
+#include "ExtendedKVS/ParticleBasedRendererGLSL.h"
 RepetitionLevelControl::RepetitionLevelControl(QWidget *parent) :
     QDockWidget(parent),
     ui(new Ui::RepetitionLevelControl),
@@ -29,9 +29,9 @@ void RepetitionLevelControl::onApplyButtonClicked()
         {
             if (auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>(rendererBase))
             {
-                if (auto* particleRenderer = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>(stochasticRenderer))
+                if (auto* particleRenderer = dynamic_cast<kvs::mod::glsl::ParticleBasedRenderer*>(stochasticRenderer))
                 {
-                    kvs::RendererBase* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer;
+                    kvs::RendererBase* particle_based_renderer = new kvs::mod::glsl::ParticleBasedRenderer;
                     m_preference->applyShading( particle_based_renderer );
                     m_screen->scene()->replaceRenderer( id.second, particle_based_renderer );
                 }
