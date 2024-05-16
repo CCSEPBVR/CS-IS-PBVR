@@ -3,7 +3,6 @@
 
 #include <kvs/HydrogenVolumeData>
 #include <kvs/CellByCellMetropolisSampling>
-#include "ExtendedKVS/ParticleBasedRendererGLSL.h"
 #include <kvs/ExternalFaces>
 #include <kvs/StochasticPolygonRenderer>
 #include <kvs/Label>

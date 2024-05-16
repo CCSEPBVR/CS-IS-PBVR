@@ -174,7 +174,6 @@ private slots:
 
 #include <QCheckBox>
 #include <kvs/PointImporter>
-#include "ExtendedKVS/ParticleBasedRendererGLSL.h"
 #include <kvs/PolygonImporter>
 #include <kvs/StochasticPolygonRenderer>
 class MergePanel::WorkerThread : public QThread

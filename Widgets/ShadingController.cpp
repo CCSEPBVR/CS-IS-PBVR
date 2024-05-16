@@ -3,7 +3,7 @@
 #include <QButtonGroup>
 
 #include "ExtendedKVS/StochasticPolygonRenderer.h"
-#include "ExtendedKVS/ParticleBasedRendererGLSL.h"
+#include <kvs/ParticleBasedRenderer>
 #include "ExtendedKVS/StochasticTexturedPolygonRenderer.h"
 ShadingController::ShadingController(QWidget *parent) :
     QDockWidget(parent),
@@ -61,7 +61,7 @@ void ShadingController::onChangeShader()
                         stochasticPolygonRenderer->setShader( kvs::Shader::BlinnPhong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value() ) );
                     }
                 }
-                else if (auto* particleRenderer = dynamic_cast<kvs::mod::glsl::ParticleBasedRenderer*>(stochasticRenderer))
+                else if (auto* particleRenderer = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>(stochasticRenderer))
                 {
                     if( ui->noneRBtn->isChecked() )
                     {

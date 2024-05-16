@@ -4,7 +4,6 @@
 #include <QMessageBox>
 #include <kvs/Camera>
 #include <kvs/PointObject>
-#include "ExtendedKVS/ParticleBasedRendererGLSL.h"
 
 #include "Widgets/MergePanel.h"
 

@@ -27,7 +27,6 @@ TARGET = ExtendedKVS
 #=============================================================================
 HEADERS += \
     CustomObjectManager.h \
-    ParticleBasedRendererGLSL.h \
     LASImporter.h \
     PTSImporter.h \
     PolygonRendererGLSL.h \
@@ -60,7 +59,6 @@ HEADERS += \
 #=============================================================================
 SOURCES += \
     CustomObjectManager.cpp \
-    ParticleBasedRendererGLSL.cpp \
     LASImporter.cpp \
     PTSImporter.cpp \
     PolygonRendererGLSL.cpp \

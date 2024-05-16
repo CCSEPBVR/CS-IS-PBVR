@@ -5,7 +5,7 @@
 #include <QMessageBox>
 #include <QPalette>
 
-#include "ExtendedKVS/ParticleBasedRendererGLSL.h"
+#include <kvs/ParticleBasedRenderer>
 
 #include "ExtendedKVS/StochasticPolygonRenderer.h"
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
@@ -129,9 +129,9 @@ void Preference::applyShading(kvs::RendererBase*& rendererBase)
             }
             rendererBase = copy; // copyオブジェクトをrendererBaseに代入
         }
-        else if (auto* particleRenderer = dynamic_cast<kvs::mod::glsl::ParticleBasedRenderer*>(stochasticRenderer))
+        else if (auto* particleRenderer = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>(stochasticRenderer))
         {
-            kvs::mod::glsl::ParticleBasedRenderer* copy = new kvs::mod::glsl::ParticleBasedRenderer;
+            kvs::glsl::ParticleBasedRenderer* copy = new kvs::glsl::ParticleBasedRenderer;
             copy->DownCast(particleRenderer);
             switch (getShaderType())
             {

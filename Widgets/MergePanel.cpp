@@ -16,7 +16,7 @@
 
 #include <kvs/PointImporter>
 //#include <kvs/PointObject>
-#include "ExtendedKVS/ParticleBasedRendererGLSL.h"
+#include <kvs/ParticleBasedRenderer>
 
 #include <kvs/IDManager>
 #include "ExtendedKVS/CustomObjectManager.h"
@@ -447,7 +447,7 @@ void MergePanel::onWorkerThreadFinished()
                 }
                 else if( kvs::PointObject* point_object = dynamic_cast<kvs::PointObject*>(m_files_manager[row]->getObject()) )
                 {
-                    kvs::RendererBase* particle_based_renderer = new kvs::mod::glsl::ParticleBasedRenderer;
+                    kvs::RendererBase* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer;
                     m_preference->applyShading( particle_based_renderer );
                     m_files_manager[row]->setIds( m_screen->scene()->registerObject( point_object, particle_based_renderer ) );
 
@@ -650,16 +650,16 @@ void MergePanel::WorkerThread::run()
         switch ( m_merge->m_files_manager[row]->getFormat() )
         {
         case FilesManager::ServerPointObject:
-            timeStepCheckAndImport<void, kvs::PointObject, kvs::mod::glsl::ParticleBasedRenderer>( row );
+            timeStepCheckAndImport<void, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
             break;
         case FilesManager::PointObjectKVSML:
-            timeStepCheckAndImport<kvs::PointImporter, kvs::PointObject, kvs::mod::glsl::ParticleBasedRenderer>( row );
+            timeStepCheckAndImport<kvs::PointImporter, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
             break;
         case FilesManager::PointObjectLAS:
-            timeStepCheckAndImport<LASImporter, kvs::PointObject, kvs::mod::glsl::ParticleBasedRenderer>( row );
+            timeStepCheckAndImport<LASImporter, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
             break;
         case FilesManager::PointObjectPTS:
-            timeStepCheckAndImport<PTSImporter, kvs::PointObject, kvs::mod::glsl::ParticleBasedRenderer>( row );
+            timeStepCheckAndImport<PTSImporter, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
             break;
         case FilesManager::NonTexturedPolygonObjectKVSML:
         case FilesManager::NonTexturedPolygonObjectSTL:
