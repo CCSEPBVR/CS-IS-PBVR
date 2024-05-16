@@ -19,6 +19,7 @@
 #include "Widgets/RenderOptions.h"
 #include "Widgets/RepetitionLevelControl.h"
 #include "Widgets/DisplayPointSizeControl.h"
+#include "Widgets/ShadingController.h"
 #include "Widgets/TransferFunctionEditor.h"
 #include "Widgets/Coordinates.h"
 #include "Widgets/ColorFunctionSelector.h"
@@ -57,6 +58,7 @@ private:
     RenderOptions m_render_options;
     RepetitionLevelControl m_repetition_level_control;
     DisplayPointSizeControl m_display_point_size_control;
+    ShadingController m_shading_controller;
     TransferFunctionEditor m_transfer_function_editor;
     Coordinates m_coordinates;
     ColorFunctionSelector m_color_function_selector;

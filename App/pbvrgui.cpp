@@ -30,6 +30,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_animation_controls( this ),
     m_repetition_level_control( this ),
     m_display_point_size_control( this ),
+    m_shading_controller( this ),
     m_render_options( this ),
     m_data_properties( this ),
     m_coordinates( this ),
@@ -130,6 +131,9 @@ void PBVRGUI::initializePanels()
     addDockWidget( Qt::LeftDockWidgetArea, &m_display_point_size_control );
     m_display_point_size_control.setPreference( &m_preference );
     m_display_point_size_control.setScreen( m_screen );
+    //シェーディングコントローラーパネルの初期化
+    m_shading_controller.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    addDockWidget( Qt::LeftDockWidgetArea, &m_shading_controller );
     //データプロパティパネルの初期化
     m_data_properties.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::RightDockWidgetArea, &m_data_properties );
