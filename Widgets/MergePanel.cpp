@@ -23,9 +23,6 @@
 #include <kvs/KVSMLPointObject>
 #include <kvs/PointExporter>
 
-#include "ExtendedKVS/LASImporter.h"
-#include "ExtendedKVS/PTSImporter.h"
-
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
 #include "ExtendedKVS/TexturedPolygonImporter.h"
 #include "ExtendedKVS/TexturedPolygonObject.h"
