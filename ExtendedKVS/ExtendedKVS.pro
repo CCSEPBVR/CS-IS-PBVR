@@ -27,8 +27,6 @@ TARGET = ExtendedKVS
 #=============================================================================
 HEADERS += \
     CustomObjectManager.h \
-    LASImporter.h \
-    PTSImporter.h \
     Screen.h
 
 contains(DEFINES, PBVR_SUPPORT_FBX) | contains(DEFINES, PBVR_SUPPORT_3DS){
@@ -57,8 +55,6 @@ HEADERS += \
 #=============================================================================
 SOURCES += \
     CustomObjectManager.cpp \
-    LASImporter.cpp \
-    PTSImporter.cpp \
     Screen.cpp
 
 contains(DEFINES, PBVR_SUPPORT_FBX) | contains(DEFINES, PBVR_SUPPORT_3DS){

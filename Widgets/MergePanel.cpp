@@ -653,13 +653,9 @@ void MergePanel::WorkerThread::run()
             timeStepCheckAndImport<void, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
             break;
         case FilesManager::PointObjectKVSML:
-            timeStepCheckAndImport<kvs::PointImporter, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
-            break;
         case FilesManager::PointObjectLAS:
-            timeStepCheckAndImport<LASImporter, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
-            break;
         case FilesManager::PointObjectPTS:
-            timeStepCheckAndImport<PTSImporter, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
+            timeStepCheckAndImport<kvs::PointImporter, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
             break;
         case FilesManager::NonTexturedPolygonObjectKVSML:
         case FilesManager::NonTexturedPolygonObjectSTL:
