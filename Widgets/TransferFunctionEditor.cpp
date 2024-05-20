@@ -182,6 +182,24 @@ void TransferFunctionEditor::updateRangeView()
             ui->range_max_color->setText( QString::number( m_server_message->m_variable_range.max( tag_c ) ) );
             ui->range_min_opacity->setText( QString::number( m_server_message->m_variable_range.min( tag_o ) ) );
             ui->range_max_opacity->setText( QString::number( m_server_message->m_variable_range.max( tag_o ) ) );
+
+            if( ui->colorRangeSyncTBtn->isChecked() )
+            {
+                ui->transfer_function_min_color->setValue( ui->range_min_color->text().toDouble() );
+                ui->transfer_function_max_color->setValue( ui->range_max_color->text().toDouble() );
+            }
+
+            if( ui->opacityRangeSyncTBtn->isChecked() )
+            {
+                ui->transfer_function_min_opacity->setValue( ui->range_min_opacity->text().toDouble() );
+                ui->transfer_function_max_opacity->setValue( ui->range_max_opacity->text().toDouble() );
+            }
+
+            if( ui->colorRangeSyncTBtn->isChecked() || ui->opacityRangeSyncTBtn->isChecked() )
+            {
+                onApplyButtonClicked();
+            }
+
         }, Qt::QueuedConnection);
 
 //    ui->colorHistogramBar->update();
