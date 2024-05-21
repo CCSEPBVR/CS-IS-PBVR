@@ -9,7 +9,7 @@
 
 #include <kvs/StochasticPolygonRenderer>
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
-#include "ExtendedKVS/StochasticTexturedPolygonRenderer.h"
+#include <kvs/StochasticTexturedPolygonRenderer>
 #endif
 Preference::Preference(QWidget *parent) :
     QDialog(parent),
@@ -153,9 +153,9 @@ void Preference::applyShading(kvs::RendererBase*& rendererBase)
             rendererBase = copy; // copyオブジェクトをrendererBaseに代入
         }
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
-        else if (auto* stochasticTexturedPolygonRenderer = dynamic_cast<kvs::mod::StochasticTexturedPolygonRenderer*>(stochasticRenderer) )
+        else if (auto* stochasticTexturedPolygonRenderer = dynamic_cast<kvs::StochasticTexturedPolygonRenderer*>(stochasticRenderer) )
         {
-            kvs::mod::StochasticTexturedPolygonRenderer* copy = new kvs::mod::StochasticTexturedPolygonRenderer;
+            kvs::StochasticTexturedPolygonRenderer* copy = new kvs::StochasticTexturedPolygonRenderer;
             copy->DownCast(stochasticPolygonRenderer);
             switch (getShaderType())
             {

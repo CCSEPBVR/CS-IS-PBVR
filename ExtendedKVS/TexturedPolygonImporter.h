@@ -3,7 +3,7 @@
 #include <kvs/Module>
 
 //#include <kvs/TexturedPolygonObject>
-#include "TexturedPolygonObject.h"
+#include <kvs/TexturedPolygonObject>
 
 //#include <kvs/KVSMLPolygonObject>
 

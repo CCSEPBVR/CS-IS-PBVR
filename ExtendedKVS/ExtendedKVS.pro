@@ -31,9 +31,7 @@ HEADERS += \
 
 contains(DEFINES, PBVR_SUPPORT_FBX) | contains(DEFINES, PBVR_SUPPORT_3DS){
 HEADERS += \
-    StochasticTexturedPolygonRenderer.h \
     TexturedPolygonImporter.h \
-    TexturedPolygonObject.h \
     stb_image.h
 
     win32{
@@ -59,9 +57,7 @@ SOURCES += \
 
 contains(DEFINES, PBVR_SUPPORT_FBX) | contains(DEFINES, PBVR_SUPPORT_3DS){
 SOURCES += \
-    StochasticTexturedPolygonRenderer.cpp \
-    TexturedPolygonImporter.cpp \
-    TexturedPolygonObject.cpp
+    TexturedPolygonImporter.cpp
 
     win32{
         SOURCES += \

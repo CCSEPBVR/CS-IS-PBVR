@@ -4,7 +4,7 @@
 
 #include <kvs/StochasticPolygonRenderer>
 #include <kvs/ParticleBasedRenderer>
-#include "ExtendedKVS/StochasticTexturedPolygonRenderer.h"
+#include <kvs/StochasticTexturedPolygonRenderer>
 ShadingController::ShadingController(QWidget *parent) :
     QDockWidget(parent),
     m_screen( nullptr ),
@@ -80,7 +80,7 @@ void ShadingController::onChangeShader()
                         particleRenderer->setShader( kvs::Shader::BlinnPhong( ui->kaDSBox->value(), ui->kdDSBox->value(), ui->ksDSBox->value(), ui->sDSBox->value() ) );
                     }
                 }
-                else if (auto* stochasticTexturedPolygonRenderer = dynamic_cast<kvs::mod::StochasticTexturedPolygonRenderer*>(stochasticRenderer))
+                else if (auto* stochasticTexturedPolygonRenderer = dynamic_cast<kvs::StochasticTexturedPolygonRenderer*>(stochasticRenderer))
                 {
                     if( ui->noneRBtn->isChecked() )
                     {
