@@ -614,7 +614,7 @@ void Preference::applyLabelsSettings()
 
     if( fpsIsShowing )
     {
-        m_fps_label->setPosition( 20, 580 );        
+        m_fps_label->setPosition( 20, m_screen->height() - 40 );
         m_fps_label->screenUpdated( [&]()
                                    {
                                        const auto fps = kvs::String::From( m_compositor->timer().fps(), 4 );
@@ -629,7 +629,7 @@ void Preference::applyLabelsSettings()
 
     if( timeStepIsShowing )
     {
-        m_time_step_label->setPosition( 100, 580 );        
+        m_time_step_label->setPosition( 100, m_screen->height() - 40 );
         m_time_step_label->setText( "Time step: " + std::to_string( m_current_time_step ) );
         m_time_step_label->show();
     }
