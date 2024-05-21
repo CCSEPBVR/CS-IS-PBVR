@@ -25,8 +25,8 @@
 
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
 #include "ExtendedKVS/TexturedPolygonImporter.h"
-#include "ExtendedKVS/TexturedPolygonObject.h"
-#include "ExtendedKVS/StochasticTexturedPolygonRenderer.h"
+#include <kvs/TexturedPolygonObject>
+#include <kvs/StochasticTexturedPolygonRenderer>
 #endif
 
 MergePanel::MergePanel(QWidget *parent) :
@@ -458,7 +458,7 @@ void MergePanel::onWorkerThreadFinished()
                 {
                     textured_polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue() ) );
                     textured_polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
-                    kvs::RendererBase* stochastic_textured_polygon_renderer = new kvs::mod::StochasticTexturedPolygonRenderer;
+                    kvs::RendererBase* stochastic_textured_polygon_renderer = new kvs::StochasticTexturedPolygonRenderer;
                     m_preference->applyShading( stochastic_textured_polygon_renderer );
                     m_files_manager[row]->setIds( m_screen->scene()->registerObject( textured_polygon_object, stochastic_textured_polygon_renderer ) );
                 }
@@ -665,7 +665,7 @@ void MergePanel::WorkerThread::run()
         case FilesManager::TexturedPolygonObject3DS:
 #endif
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
-            timeStepCheckAndImport<kvs::TexturedPolygonImporter, kvs::TexturedPolygonObject, kvs::mod::StochasticTexturedPolygonRenderer>(row);
+            timeStepCheckAndImport<kvs::TexturedPolygonImporter, kvs::TexturedPolygonObject, kvs::StochasticTexturedPolygonRenderer>(row);
             break;
 #endif
         default:
