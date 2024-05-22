@@ -57,6 +57,9 @@ private:
     ExtendedTransferFunctionMessage m_extended_transfer_function_message;
     ExtendedTransferFunctionMessage m_extended_transfer_function_message_initial;
 
+    QVector<bool> m_is_color_sync;
+    QVector<bool> m_is_opacity_sync;
+
     void populateColorFunctionLists(int n);
     void populateOpacityFunctionLists(int n);
 
@@ -83,6 +86,9 @@ private slots:
 
     void onImportButtonClicked();
     void onExportButtonClicked();
+
+    void onColorRangeSyncToolButtonClicked();
+    void onOpacityRangeSyncToolButtonClicked();
 public slots:
     void onApplyButtonClicked();
 };

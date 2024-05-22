@@ -29,6 +29,14 @@ TransferFunctionEditor::TransferFunctionEditor(QWidget *parent) :
     populateColorFunctionLists( m_extended_transfer_function_message.m_transfer_function_number );
     populateOpacityFunctionLists( m_extended_transfer_function_message.m_transfer_function_number );
 
+    m_is_color_sync.resize( m_extended_transfer_function_message.m_transfer_function_number );
+    m_is_opacity_sync.resize( m_extended_transfer_function_message.m_transfer_function_number );
+    for( int i = 0; i < m_extended_transfer_function_message.m_transfer_function_number; i++ )
+    {
+        m_is_color_sync[i] = false;
+        m_is_opacity_sync[i] = false;
+    }
+
     connect( ui->numberOfTransferFunctionSBox, &QSpinBox::valueChanged, this, &TransferFunctionEditor::onNumberOfTransferFunctionValueChanged );
     connect( ui->colorFunctionCBox, &QComboBox::currentIndexChanged, this, &TransferFunctionEditor::onColorFunctionChanged );
     connect( ui->opacityFunctionCBox, &QComboBox::currentIndexChanged, this, &TransferFunctionEditor::onOpacityFunctionChanged );
@@ -55,6 +63,9 @@ TransferFunctionEditor::TransferFunctionEditor(QWidget *parent) :
     connect( ui->applyPBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onApplyButtonClicked );
     connect( ui->importPBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onImportButtonClicked );
     connect( ui->exportPBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onExportButtonClicked );
+
+    connect( ui->colorRangeSyncTBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onColorRangeSyncToolButtonClicked );
+    connect( ui->opacityRangeSyncTBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onOpacityRangeSyncToolButtonClicked );
 }
 
 TransferFunctionEditor::~TransferFunctionEditor()
@@ -183,19 +194,50 @@ void TransferFunctionEditor::updateRangeView()
             ui->range_min_opacity->setText( QString::number( m_server_message->m_variable_range.min( tag_o ) ) );
             ui->range_max_opacity->setText( QString::number( m_server_message->m_variable_range.max( tag_o ) ) );
 
-            if( ui->colorRangeSyncTBtn->isChecked() )
+            bool applyFlag = false;
+            for( int i = 0; i < ui->colorFunctionCBox->count(); i++ )
             {
-                ui->transfer_function_min_color->setValue( ui->range_min_color->text().toDouble() );
-                ui->transfer_function_max_color->setValue( ui->range_max_color->text().toDouble() );
+                if( m_is_color_sync[i] )
+                {
+                    QString colorFunctionName = QString("C%1").arg( i + 1 );
+                    QString colorTag = QString("t%1_var_c").arg( i + 1 );
+                    m_extended_transfer_function_message.setColorTransferRange( colorFunctionName.toStdString(), m_server_message->m_variable_range.min( colorTag.toStdString() ), m_server_message->m_variable_range.max( colorTag.toStdString() ) );
+
+                    if( i == ui->colorFunctionCBox->currentIndex() )
+                    {
+                        ui->transfer_function_min_color->blockSignals( true );
+                        ui->transfer_function_max_color->blockSignals( true );
+                        ui->transfer_function_min_color->setValue( m_server_message->m_variable_range.min( colorTag.toStdString() ) );
+                        ui->transfer_function_max_color->setValue( m_server_message->m_variable_range.max( colorTag.toStdString() ) );
+                        ui->transfer_function_min_color->blockSignals( false );
+                        ui->transfer_function_max_color->blockSignals( false );
+                    }
+                    applyFlag = true;
+                }
             }
 
-            if( ui->opacityRangeSyncTBtn->isChecked() )
+            for( int i = 0; i < ui->opacityFunctionCBox->count(); i++ )
             {
-                ui->transfer_function_min_opacity->setValue( ui->range_min_opacity->text().toDouble() );
-                ui->transfer_function_max_opacity->setValue( ui->range_max_opacity->text().toDouble() );
+                if( m_is_opacity_sync[i] )
+                {
+                    QString opacityFunctionName = QString("O%1").arg( i + 1 );
+                    QString opacityTag = QString("t%1_var_o").arg( i + 1 );
+                    m_extended_transfer_function_message.setOpacityTransferRange( opacityFunctionName.toStdString(), m_server_message->m_variable_range.min( opacityTag.toStdString() ), m_server_message->m_variable_range.max( opacityTag.toStdString() ) );
+
+                    if( i == ui->colorFunctionCBox->currentIndex() )
+                    {
+                        ui->transfer_function_min_opacity->blockSignals( true );
+                        ui->transfer_function_max_opacity->blockSignals( true );
+                        ui->transfer_function_min_opacity->setValue( m_server_message->m_variable_range.min( opacityTag.toStdString() ) );
+                        ui->transfer_function_max_opacity->setValue( m_server_message->m_variable_range.max( opacityTag.toStdString() ) );
+                        ui->transfer_function_min_opacity->blockSignals( false );
+                        ui->transfer_function_max_opacity->blockSignals( false );
+                    }
+                    applyFlag = true;
+                }
             }
 
-            if( ui->colorRangeSyncTBtn->isChecked() || ui->opacityRangeSyncTBtn->isChecked() )
+            if( applyFlag )
             {
                 onApplyButtonClicked();
             }
@@ -250,6 +292,22 @@ void TransferFunctionEditor::onNumberOfTransferFunctionValueChanged( int value )
             this->m_extended_transfer_function_message.removeOpacityTransferFunction(name);
         }
     }
+
+    int currentSize = m_is_color_sync.size();
+
+    // 新しいサイズが現在のサイズより大きい場合、追加分を初期化
+    if (value > currentSize) {
+        m_is_color_sync.resize(value);
+        m_is_opacity_sync.resize(value);
+        for (int i = currentSize; i < value; ++i) {
+            m_is_color_sync[i] = false; // 新しい要素のみ初期化
+            m_is_opacity_sync[i] = false; // 新しい要素のみ初期化
+        }
+    } else if (value < currentSize) {
+        // 新しいサイズが現在のサイズより小さい場合、要素を削除
+        m_is_color_sync.resize(value);
+        m_is_opacity_sync.resize(value);
+    }
 }
 
 void TransferFunctionEditor::onColorFunctionChanged( int index )
@@ -279,14 +337,17 @@ void TransferFunctionEditor::onColorFunctionChanged( int index )
         ui->transfer_function_var_color->blockSignals(true);
         ui->transfer_function_min_color->blockSignals(true);
         ui->transfer_function_max_color->blockSignals(true);
+        ui->colorRangeSyncTBtn->blockSignals( true );
 
         ui->transfer_function_var_color->setText(  transfer_function_color->m_color_variable.c_str() );
         ui->transfer_function_min_color->setValue( transfer_function_color->m_color_variable_min );
         ui->transfer_function_max_color->setValue( transfer_function_color->m_color_variable_max );
+        ui->colorRangeSyncTBtn->setChecked( m_is_color_sync[index] );
 
         ui->transfer_function_var_color->blockSignals(false);
         ui->transfer_function_min_color->blockSignals(false);
         ui->transfer_function_max_color->blockSignals(false);
+        ui->colorRangeSyncTBtn->blockSignals( false );
     }
 }
 
@@ -317,14 +378,17 @@ void TransferFunctionEditor::onOpacityFunctionChanged( int index )
         ui->transfer_function_var_opacity->blockSignals(true);
         ui->transfer_function_min_opacity->blockSignals(true);
         ui->transfer_function_max_opacity->blockSignals(true);
+        ui->opacityRangeSyncTBtn->blockSignals( true );
 
         ui->transfer_function_var_opacity->setText(  transfer_function_opacity->m_opacity_variable.c_str() );
         ui->transfer_function_min_opacity->setValue( transfer_function_opacity->m_opacity_variable_min );
         ui->transfer_function_max_opacity->setValue( transfer_function_opacity->m_opacity_variable_max );
+        ui->opacityRangeSyncTBtn->setChecked( m_is_opacity_sync[index] );
 
         ui->transfer_function_var_opacity->blockSignals(false);
         ui->transfer_function_min_opacity->blockSignals(false);
         ui->transfer_function_max_opacity->blockSignals(false);
+        ui->opacityRangeSyncTBtn->blockSignals( false );
     }
 }
 
@@ -722,4 +786,14 @@ void TransferFunctionEditor::exportFile( const std::string& fname, const bool ap
 
     std::cerr << "TransferFunction parameters are exported to " << fname << std::endl;
 
+}
+
+void TransferFunctionEditor::onColorRangeSyncToolButtonClicked()
+{
+    m_is_color_sync[ui->colorFunctionCBox->currentIndex()] = ui->colorRangeSyncTBtn->isChecked();
+}
+
+void TransferFunctionEditor::onOpacityRangeSyncToolButtonClicked()
+{
+    m_is_opacity_sync[ui->opacityFunctionCBox->currentIndex()] = ui->opacityRangeSyncTBtn->isChecked();
 }
