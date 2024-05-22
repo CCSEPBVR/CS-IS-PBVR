@@ -57,8 +57,8 @@ private:
     ExtendedTransferFunctionMessage m_extended_transfer_function_message;
     ExtendedTransferFunctionMessage m_extended_transfer_function_message_initial;
 
-    QVector<bool> m_is_color_sync;
-    QVector<bool> m_is_opacity_sync;
+    QVector<bool> m_is_color_range_sync;
+    QVector<bool> m_is_opacity_range_sync;
 
     void populateColorFunctionLists(int n);
     void populateOpacityFunctionLists(int n);
