@@ -7,54 +7,85 @@
     <x>0</x>
     <y>0</y>
     <width>267</width>
-    <height>863</height>
+    <height>654</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Preference</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="8" column="2">
-    <widget class="QPushButton" name="okPBtn">
-     <property name="text">
-      <string>OK</string>
-     </property>
-     <property name="default">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="3">
-    <widget class="QGroupBox" name="backGroundColorGBox">
+   <item row="4" column="0" colspan="3">
+    <widget class="QGroupBox" name="resolutionGBox">
      <property name="title">
-      <string>BackGroundColor</string>
+      <string>Resolution</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_4">
-      <item row="0" column="0" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="backGroundColorLbl">
-        <property name="maximumSize">
-         <size>
-          <width>100</width>
-          <height>16777215</height>
-         </size>
-        </property>
+     <layout class="QGridLayout" name="gridLayout_5">
+      <item row="1" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="heightLbl">
         <property name="text">
-         <string>Color :</string>
+         <string>Height :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="widthLbl">
+        <property name="text">
+         <string>Width :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="heightSBox">
+        <property name="maximum">
+         <number>2160</number>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="ClickableLabel" name="backGroundColorCLbl">
-        <property name="frameShape">
-         <enum>QFrame::Box</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
-        </property>
-        <property name="text">
-         <string/>
+       <widget class="QSpinBox" name="widthSBox">
+        <property name="maximum">
+         <number>3840</number>
         </property>
        </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QPushButton" name="cancelPBtn">
+     <property name="text">
+      <string>Cancel</string>
+     </property>
+     <property name="autoDefault">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="3">
+    <widget class="QGroupBox" name="labelsGBox">
+     <property name="title">
+      <string>Labels</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_7">
+      <item row="0" column="1">
+       <widget class="QComboBox" name="showFPSCBox"/>
+      </item>
+      <item row="0" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="showFPSLbl">
+        <property name="text">
+         <string>Show FPS :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="showTimeStepLbl">
+        <property name="text">
+         <string>Show TimeStep :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="showTimeStepCBox"/>
       </item>
      </layout>
     </widget>
@@ -103,41 +134,59 @@
      </layout>
     </widget>
    </item>
-   <item row="4" column="0" colspan="3">
-    <widget class="QGroupBox" name="resolutionGBox">
-     <property name="title">
-      <string>Resolution</string>
+   <item row="7" column="2">
+    <widget class="QPushButton" name="okPBtn">
+     <property name="text">
+      <string>OK</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_5">
-      <item row="1" column="0" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="heightLbl">
-        <property name="text">
-         <string>Height :</string>
-        </property>
-       </widget>
-      </item>
+     <property name="default">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="3">
+    <widget class="QGroupBox" name="backGroundColorGBox">
+     <property name="title">
+      <string>BackGroundColor</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
       <item row="0" column="0" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="widthLbl">
-        <property name="text">
-         <string>Width :</string>
+       <widget class="QLabel" name="backGroundColorLbl">
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
         </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QSpinBox" name="heightSBox">
-        <property name="maximum">
-         <number>2160</number>
+        <property name="text">
+         <string>Color :</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QSpinBox" name="widthSBox">
-        <property name="maximum">
-         <number>3840</number>
+       <widget class="ClickableLabel" name="backGroundColorCLbl">
+        <property name="frameShape">
+         <enum>QFrame::Box</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <property name="text">
+         <string/>
         </property>
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QPushButton" name="applyPBtn">
+     <property name="text">
+      <string>Apply</string>
+     </property>
+     <property name="autoDefault">
+      <bool>false</bool>
+     </property>
     </widget>
    </item>
    <item row="0" column="0" colspan="3">
@@ -190,166 +239,6 @@
       </item>
       <item row="2" column="1">
        <widget class="QSpinBox" name="divisionSBox"/>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="5" column="0" colspan="3">
-    <widget class="QGroupBox" name="labelsGBox">
-     <property name="title">
-      <string>Labels</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_7">
-      <item row="0" column="1">
-       <widget class="QComboBox" name="showFPSCBox"/>
-      </item>
-      <item row="0" column="0" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="showFPSLbl">
-        <property name="text">
-         <string>Show FPS :</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="showTimeStepLbl">
-        <property name="text">
-         <string>Show TimeStep :</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="showTimeStepCBox"/>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="8" column="1">
-    <widget class="QPushButton" name="cancelPBtn">
-     <property name="text">
-      <string>Cancel</string>
-     </property>
-     <property name="autoDefault">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="0">
-    <widget class="QPushButton" name="applyPBtn">
-     <property name="text">
-      <string>Apply</string>
-     </property>
-     <property name="autoDefault">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="0" colspan="3">
-    <widget class="QGroupBox" name="shadingGBox">
-     <property name="title">
-      <string>Shading</string>
-     </property>
-     <property name="flat">
-      <bool>false</bool>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_6">
-      <item row="3" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="kdDSBox">
-        <property name="singleStep">
-         <double>0.100000000000000</double>
-        </property>
-        <property name="value">
-         <double>0.600000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QRadioButton" name="lambertRBtn">
-        <property name="text">
-         <string>Lambert</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="kaDSBox">
-        <property name="singleStep">
-         <double>0.100000000000000</double>
-        </property>
-        <property name="value">
-         <double>0.600000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="ksDSBox">
-        <property name="singleStep">
-         <double>0.100000000000000</double>
-        </property>
-        <property name="value">
-         <double>0.600000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QRadioButton" name="BlinnRBtn">
-        <property name="text">
-         <string>Blinn</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="kaLbl">
-        <property name="text">
-         <string>Ambient :</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="ksLbl">
-        <property name="text">
-         <string>Specular :</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="kdLbl">
-        <property name="text">
-         <string>Diffuse :</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QRadioButton" name="phongRBtn">
-        <property name="text">
-         <string>Phong</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="sDSBox">
-        <property name="singleStep">
-         <double>0.100000000000000</double>
-        </property>
-        <property name="value">
-         <double>30.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" colspan="3">
-       <widget class="Line" name="line">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="sLbl">
-        <property name="text">
-         <string>Shininess :</string>
-        </property>
-       </widget>
       </item>
      </layout>
     </widget>

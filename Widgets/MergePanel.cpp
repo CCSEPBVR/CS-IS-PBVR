@@ -439,13 +439,11 @@ void MergePanel::onWorkerThreadFinished()
                     polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue() ) );
                     polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
                     kvs::RendererBase* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer;
-                    m_preference->applyShading( stochastic_polygon_renderer );
                     m_files_manager[row]->setIds( m_screen->scene()->registerObject( polygon_object, stochastic_polygon_renderer ) );
                 }
                 else if( kvs::PointObject* point_object = dynamic_cast<kvs::PointObject*>(m_files_manager[row]->getObject()) )
                 {
                     kvs::RendererBase* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer;
-                    m_preference->applyShading( particle_based_renderer );
                     m_files_manager[row]->setIds( m_screen->scene()->registerObject( point_object, particle_based_renderer ) );
 
 //                    if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_is_export == true ) //サーバサイドポイントオブジェクトを保存する場合
@@ -459,7 +457,6 @@ void MergePanel::onWorkerThreadFinished()
                     textured_polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getRGBColor().red(), m_files_manager[row]->getRGBColor().green(), m_files_manager[row]->getRGBColor().blue() ) );
                     textured_polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
                     kvs::RendererBase* stochastic_textured_polygon_renderer = new kvs::StochasticTexturedPolygonRenderer;
-                    m_preference->applyShading( stochastic_textured_polygon_renderer );
                     m_files_manager[row]->setIds( m_screen->scene()->registerObject( textured_polygon_object, stochastic_textured_polygon_renderer ) );
                 }
 #endif

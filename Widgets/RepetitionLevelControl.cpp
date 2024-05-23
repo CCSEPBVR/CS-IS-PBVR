@@ -32,7 +32,6 @@ void RepetitionLevelControl::onApplyButtonClicked()
                 if (auto* particleRenderer = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>(stochasticRenderer))
                 {
                     kvs::RendererBase* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer;
-                    m_preference->applyShading( particle_based_renderer );
                     m_screen->scene()->replaceRenderer( id.second, particle_based_renderer );
                 }
             }

@@ -64,7 +64,6 @@ void Preference::initialize()
         loadResolutionSettings();
         loadLabelsSettings();
         loadFontSettings();
-        loadShadingSettings();
     }
     //存在しない場合はデフォルトの値を設定し保存する。
     else
@@ -77,106 +76,6 @@ void Preference::initialize()
     m_orientation_axis->anchorToBottomRight();
 
     applySettings( true );
-}
-
-Preference::ShaderType Preference::getShaderType()
-{
-    if( ui->shadingGBox->isChecked() == false )
-    {
-        return Preference::NoShader;
-    }
-    else if( ui->lambertRBtn->isChecked() )
-    {
-        return Preference::LambertShading;
-    }
-    else if( ui->phongRBtn->isChecked() )
-    {
-        return Preference::Phong;
-    }
-    else if( ui->BlinnRBtn->isChecked() )
-    {
-        return Preference::BlinnPhong;
-    }
-    else
-    {
-        return Preference::NoShader;
-    }
-}
-
-void Preference::applyShading(kvs::RendererBase*& rendererBase)
-{
-    if (auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>(rendererBase))
-    {
-        if (auto* stochasticPolygonRenderer = dynamic_cast<kvs::StochasticPolygonRenderer*>(stochasticRenderer))
-        {
-            kvs::StochasticPolygonRenderer* copy = new kvs::StochasticPolygonRenderer;
-            copy->DownCast(stochasticPolygonRenderer);
-            switch (getShaderType())
-            {
-            case Preference::ShaderType::LambertShading:
-                copy->setShader(getLambertShader());
-                break;
-            case Preference::ShaderType::Phong:
-                copy->setShader(getPhongShader());
-                break;
-            case Preference::ShaderType::BlinnPhong:
-                copy->setShader(getBlinnPhongShader());
-                break;
-            case Preference::ShaderType::NoShader:
-            default:
-                copy->setShader(kvs::Shader::Lambert(1, 0));
-                break;
-            }
-            rendererBase = copy; // copyオブジェクトをrendererBaseに代入
-        }
-        else if (auto* particleRenderer = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>(stochasticRenderer))
-        {
-            kvs::glsl::ParticleBasedRenderer* copy = new kvs::glsl::ParticleBasedRenderer;
-            copy->DownCast(particleRenderer);
-            switch (getShaderType())
-            {
-            case Preference::ShaderType::LambertShading:
-                copy->setShader(getLambertShader());
-                break;
-            case Preference::ShaderType::Phong:
-                copy->setShader(getPhongShader());
-                break;
-            case Preference::ShaderType::BlinnPhong:
-                copy->setShader(getBlinnPhongShader());
-                break;
-            case Preference::ShaderType::NoShader:
-            default:
-                copy->setShader(kvs::Shader::Lambert(1, 0));
-                break;
-            }
-            copy->enableShuffle();
-            rendererBase = copy; // copyオブジェクトをrendererBaseに代入
-        }
-#if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
-        else if (auto* stochasticTexturedPolygonRenderer = dynamic_cast<kvs::StochasticTexturedPolygonRenderer*>(stochasticRenderer) )
-        {
-            kvs::StochasticTexturedPolygonRenderer* copy = new kvs::StochasticTexturedPolygonRenderer;
-            copy->DownCast(stochasticPolygonRenderer);
-            switch (getShaderType())
-            {
-            case Preference::ShaderType::LambertShading:
-                copy->setShader(getLambertShader());
-                break;
-            case Preference::ShaderType::Phong:
-                copy->setShader(getPhongShader());
-                break;
-            case Preference::ShaderType::BlinnPhong:
-                copy->setShader(getBlinnPhongShader());
-                break;
-            case Preference::ShaderType::NoShader:
-            default:
-                copy->setShader(kvs::Shader::Lambert(1, 0));
-                break;
-            }
-            rendererBase = copy; // copyオブジェクトをrendererBaseに代入
-        }
-#endif
-    }
 }
 
 void Preference::loadColorMapBarSettings()
@@ -303,61 +202,6 @@ void Preference::loadFontSettings()
     m_settings.endGroup();
 }
 
-void Preference::loadShadingSettings()
-{
-    m_settings.beginGroup( "Shading" );
-    const bool isEnable = m_settings.value( "isEnable" ).toBool();
-    const QString shadingType = m_settings.value( "ShadingType" ).toString();
-    const double ka = m_settings.value( "ka" ).toDouble();
-    const double kd = m_settings.value( "kd" ).toDouble();
-    const double ks = m_settings.value( "ks" ).toDouble();
-    const double s = m_settings.value( "s" ).toDouble();
-
-    if( isEnable )
-    {
-        ui->shadingGBox->setChecked( true );
-    }
-    else
-    {
-        ui->shadingGBox->setChecked( false );
-    }
-
-    if( shadingType == "Lambert" )
-    {
-        ui->lambertRBtn->setChecked( true );
-    }
-    else if( shadingType == "Phong" )
-    {
-        ui->phongRBtn->setChecked( true );
-    }
-    else if( shadingType == "Blinn" )
-    {
-        ui->BlinnRBtn->setChecked( true );
-    }
-
-    ui->kaDSBox->setValue( ka );
-    ui->kdDSBox->setValue( kd );
-    ui->ksDSBox->setValue( ks );
-    ui->sDSBox->setValue( s );
-
-    m_lambert_shader.Ka = ka;
-    m_lambert_shader.Kd = kd;
-    m_lambert_shader.Ks = ks;
-    m_lambert_shader.S = s;
-
-    m_phong_shader.Ka = ka;
-    m_phong_shader.Kd = kd;
-    m_phong_shader.Ks = ks;
-    m_phong_shader.S = s;
-
-    m_blinn_phong_shader.Ka = ka;
-    m_blinn_phong_shader.Kd = kd;
-    m_blinn_phong_shader.Ks = ks;
-    m_blinn_phong_shader.S = s;
-
-    m_settings.endGroup();
-}
-
 void Preference::setBackGroundColor( const QColor& color )
 {
     if( color.isValid() )
@@ -401,9 +245,6 @@ void Preference::setDefaultSettings()
     ui->showTimeStepCBox->setCurrentText( "Hide" );
     //Font
     setFontColor( QColor( 0, 0, 0 ) );
-    //Shading
-    ui->shadingGBox->setChecked( false );
-    ui->phongRBtn->setChecked( true );
 }
 
 void Preference::saveSettings()
@@ -414,7 +255,6 @@ void Preference::saveSettings()
     saveResolutionSettings();
     saveLabelsSettings();
     saveFontSettings();
-    saveShadingSettings();
 
     m_settings.sync();
 }
@@ -471,29 +311,6 @@ void Preference::saveFontSettings()
     m_settings.endGroup();
 }
 
-void Preference::saveShadingSettings()
-{
-    m_settings.beginGroup( "Shading" );
-    m_settings.setValue( "isEnable", ui->shadingGBox->isChecked() );
-    if( ui->lambertRBtn->isChecked() )
-    {
-        m_settings.setValue( "ShadingType", "Lambert" );
-    }
-    else if( ui->phongRBtn->isChecked() )
-    {
-        m_settings.setValue( "ShadingType", "Phong" );
-    }
-    else if( ui->BlinnRBtn->isChecked() )
-    {
-        m_settings.setValue( "ShadingType", "Blinn" );
-    }
-    m_settings.setValue( "ka", ui->kaDSBox->value() );
-    m_settings.setValue( "kd", ui->kdDSBox->value() );
-    m_settings.setValue( "ks", ui->ksDSBox->value() );
-    m_settings.setValue( "s", ui->sDSBox->value() );
-    m_settings.endGroup();
-}
-
 void Preference::applySettings( bool isInit )
 {
     applyColorMapBarSettings();
@@ -502,7 +319,6 @@ void Preference::applySettings( bool isInit )
     applyResolution();
     applyLabelsSettings();
     applyFontSettings();
-    applyShadingSettings();
 
     if( !isInit )
     {
@@ -653,34 +469,6 @@ void Preference::applyFontSettings()
     m_time_step_label->setFont( font );
 }
 
-void Preference::applyShadingSettings()
-{
-    m_lambert_shader.Ka = ui->kaDSBox->value();
-    m_lambert_shader.Kd = ui->kdDSBox->value();
-
-    m_phong_shader.Ka = ui->kaDSBox->value();
-    m_phong_shader.Kd = ui->kdDSBox->value();
-    m_phong_shader.Ks = ui->ksDSBox->value();
-    m_phong_shader.S = ui->sDSBox->value();
-
-    m_blinn_phong_shader.Ka = ui->kaDSBox->value();
-    m_blinn_phong_shader.Kd = ui->kdDSBox->value();
-    m_blinn_phong_shader.Ks = ui->ksDSBox->value();
-    m_blinn_phong_shader.S = ui->sDSBox->value();
-
-    if( m_screen->scene()->objectManager()->hasObject() )
-    {
-        const int size = m_screen->scene()->IDManager()->size();
-        for( int index = 0; index < size; index++ )
-        {
-            auto id = m_screen->scene()->IDManager()->id( index );
-            auto* rendererBase = m_screen->scene()->rendererManager()->renderer( id.second );
-            applyShading( rendererBase );
-            m_screen->scene()->replaceRenderer( id.second, rendererBase );
-        }
-    }
-}
-
 void Preference::closeEvent( QCloseEvent* event )
 {
     loadColorMapBarSettings();
@@ -689,7 +477,6 @@ void Preference::closeEvent( QCloseEvent* event )
     loadResolutionSettings();
     loadLabelsSettings();
     loadFontSettings();
-    loadShadingSettings();
 
     event->accept();
 }
