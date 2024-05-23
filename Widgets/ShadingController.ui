@@ -26,6 +26,9 @@
          <property name="text">
           <string>None</string>
          </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
         </widget>
        </item>
        <item row="0" column="1">
@@ -33,12 +36,18 @@
          <property name="text">
           <string>Lambert</string>
          </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item row="0" column="2">
         <widget class="QRadioButton" name="phongRBtn">
          <property name="text">
           <string>Phong</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -114,7 +123,7 @@
           <double>0.010000000000000</double>
          </property>
          <property name="value">
-          <double>0.600000000000000</double>
+          <double>0.400000000000000</double>
          </property>
         </widget>
        </item>
