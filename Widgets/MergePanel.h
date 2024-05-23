@@ -151,7 +151,7 @@ private:
 
 
     void checkMinMaxTimeStep( FilesManager *newFile );
-    void checkFileFormat(  FilesManager *newFile );
+    void checkFileFormat( FilesManager *&newFile );
     void addRowToFilesTableWidget( FilesManager *newFile );
     void calculateTotalMinMaxTimeStep();
     void removeChecked();//removeRowToFilesTableWidget

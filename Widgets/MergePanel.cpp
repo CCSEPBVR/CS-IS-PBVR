@@ -97,10 +97,13 @@ void MergePanel::onAddButtonClicked()
     checkMinMaxTimeStep( newFile );
     newFile->setCurrentDisplayedStep( -1 );
     checkFileFormat( newFile );
-    newFile->setObject( nullptr );
-    addRowToFilesTableWidget( newFile );
-    m_files_manager.append( newFile );
-    calculateTotalMinMaxTimeStep();
+    if( newFile != nullptr )
+    {
+        newFile->setObject( nullptr );
+        addRowToFilesTableWidget( newFile );
+        m_files_manager.append( newFile );
+        calculateTotalMinMaxTimeStep();
+    }
 }
 
 void MergePanel::checkMinMaxTimeStep( FilesManager *newFile )
@@ -140,7 +143,7 @@ void MergePanel::checkMinMaxTimeStep( FilesManager *newFile )
     }
 }
 
-void MergePanel::checkFileFormat( FilesManager *newFile )
+void MergePanel::checkFileFormat( FilesManager *&newFile )
 {
     QFile file(newFile->getFileInfo().filePath());
     QXmlStreamReader xml( &file );
@@ -149,6 +152,8 @@ void MergePanel::checkFileFormat( FilesManager *newFile )
 
     if( !file.open( QIODevice::ReadOnly | QIODevice::Text ) )//CAN NOT OPEN FILE
     {
+        delete newFile;
+        newFile = nullptr;
         return;
     }
 
