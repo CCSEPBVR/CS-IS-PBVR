@@ -101,6 +101,7 @@ void PBVRGUI::initializePanels()
     m_merge.setPreference( &m_preference );
     m_merge.setTimeControl( &m_timeControl );
     m_merge.setDataSummary( &m_data_summary );
+    m_merge.setShadingController( &m_shading_controller );
     m_merge.setConnect( &m_connect );
     m_merge.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::RightDockWidgetArea, &m_merge );

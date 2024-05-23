@@ -10,6 +10,7 @@
 #include "Widgets/Preference.h"
 #include "Widgets/Connect.h"
 #include "Widgets/DataSummary.h"
+#include "Widgets/ShadingController.h"
 #include <kvs/PointObject>
 class FilesManager
 {
@@ -119,6 +120,7 @@ public:
     void setConnect( Connect* connect ){ m_connect = connect; }
     void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; };    
     void setDataSummary( DataSummary* data_summary ){ m_data_summary = data_summary; }
+    void setShadingController( ShadingController* shading_controller ){ m_shading_controller = shading_controller; }
     void setIsParticleGenerationNeeded( bool is_particle_generation_needed ){ m_is_particle_generation_needed = is_particle_generation_needed; }
     void serverObject( QString volumeDataFilePath, int min, int max );
     void mergeObjects();
@@ -135,6 +137,7 @@ private:
     Preference* m_preference;
     Connect* m_connect;
     DataSummary* m_data_summary;
+    ShadingController* m_shading_controller;
     bool m_is_particle_generation_needed;
     kvs::qt::jaea::Screen* m_screen;
     int m_current_time_step;
