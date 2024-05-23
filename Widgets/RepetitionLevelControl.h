@@ -3,7 +3,7 @@
 
 #include <QDockWidget>
 
-#include "Widgets/Preference.h"
+#include "Widgets/ShadingController.h"
 #include "ExtendedKVS/Screen.h"
 #include <kvs/StochasticRenderingCompositor>
 
@@ -19,13 +19,13 @@ public:
     explicit RepetitionLevelControl(QWidget *parent = nullptr);
     ~RepetitionLevelControl();
 
-    void setPreference( Preference* preference ){ m_preference = preference; }
+    void setShadingController( ShadingController* shading_controller ){ m_shading_controller = shading_controller; }
     void setScreen( kvs::qt::jaea::Screen* screen ) { m_screen = screen; }
     void setCompositor( kvs::StochasticRenderingCompositor* compositor ) { m_compositor = compositor; }
 
 private:
     Ui::RepetitionLevelControl *ui;
-    Preference* m_preference;
+    ShadingController* m_shading_controller;
     kvs::qt::jaea::Screen* m_screen;
     kvs::StochasticRenderingCompositor* m_compositor;
 
