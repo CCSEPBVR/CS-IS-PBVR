@@ -2452,8 +2452,8 @@ void TransferFunctionSynthesizer::CalculateColorArray(
     }
 
     //kvs::RGBColor colors[10][loop_cnt]; //result of t_func.colorMap().at( m_scalars[i] );
-    kvs::RGBColor** colors = new kvs::RGBColor* [10];
-    for (int i = 0; i < 10; ++i)
+    kvs::RGBColor** colors = new kvs::RGBColor* [m_col_var.size()];
+    for( size_t i = 0; i < m_col_var.size(); i++ )
     {
         colors[i] = new kvs::RGBColor[loop_cnt];
     }
@@ -2587,7 +2587,7 @@ void TransferFunctionSynthesizer::CalculateColorArray(
 
     delete[] eval_result;
 
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < m_col_var.size(); ++i)
     {
         delete[] colors[i];
     }
