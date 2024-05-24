@@ -526,10 +526,10 @@ void jpv::ParticleTransferClientMessage::show( void ) const
     std::cout<<"transParam="<<transParam<<std::endl;
 
     std::cout<<"transfunc.size="<<transfunc.size()<<std::endl;
-    std::cout<<"transfunc.Name,ColorVar,OpacityVar,ColorVarMin,ColorVarMax"<<std::endl;
+    std::cout<<"transfunc.Name,ColorVar,OpacityVar,ColorVarMin,ColorVarMax, OpacityVarMin, OpacityVarMax"<<std::endl;
     for(int i=0; i<transfunc.size(); i++)
     {
-        std::cout<<transfunc[i].Name<<","<<transfunc[i].ColorVar<<","<<transfunc[i].OpacityVar<<","<<transfunc[i].ColorVarMin<<","<<transfunc[i].ColorVarMax<<std::endl;
+        std::cout<<transfunc[i].Name<<","<<transfunc[i].ColorVar<<","<<transfunc[i].OpacityVar<<","<<transfunc[i].ColorVarMin<<","<<transfunc[i].ColorVarMax << ", " << transfunc[i].OpacityVarMin<<","<< transfunc[i].OpacityVarMax  << std::endl;
     }
 
     //for(int i=0; i<transfunc.size(); i++) std::cout << "m_transfunc["<< i <<"].colorMap().maxValue() = " << transfunc[i].colorMap().maxValue() << std::endl;
