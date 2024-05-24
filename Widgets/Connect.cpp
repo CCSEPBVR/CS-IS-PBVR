@@ -137,10 +137,7 @@ kvs::PointObject* Connect::connect2( int timeStep )
 
     for ( int n = 0; n < serve_numvol; n++ )
     {
-    if ( client.recvMessage( &m_server_message ) == 1 ){}
-    //    if ( client.recvMessage( &reply ) == 1 ){}
-
-
+        if ( client.recvMessage( &m_server_message ) == 1 ){}
 
         int nmemb = m_server_message.m_number_particle * 3;
         if ( nmemb != 0 )
@@ -185,14 +182,11 @@ kvs::PointObject* Connect::connect2( int timeStep )
     std::cout << serverSideMaxObjectCoords[1] << std::endl;
     std::cout << serverSideMaxObjectCoords[2] << std::endl;
 
- //   if ( client.recvMessage( &reply ) == 1 )
- //   {
     m_client_message.m_initialize_parameter = -1;
     m_client_message.m_message_size = m_client_message.byteSize();
     client.sendMessage( m_client_message );
     client.recvMessage( &m_server_message );
     client.termClient();
- //   }
 
     //ここでサーバのレンジが手に入る。
     std::cout << m_server_message.m_variable_range.min( "t1_var_c" ) << std::endl;
@@ -236,7 +230,7 @@ void Connect::deletedServerObject()
 
 void Connect::onVolumeDataBrowseButtonClicked()
 {
-    ui->volumeDataFilePathLEdit->setText( QFileDialog::getOpenFileName( this, tr("Select Volume Data File"), ".", tr("Volume Data Files (*.pfi)") ) );
+    ui->volumeDataFilePathLEdit->setText( QFileDialog::getOpenFileName( this, tr("Select Volume Data File"), ".", tr("Volume Data Files (*.pfi *.pfl)") ) );
 }
 
 void Connect::onTransferFunctionFileBrowseButtonClicked()
