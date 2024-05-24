@@ -130,31 +130,38 @@ kvs::PointObject* Connect::connect2( int timeStep )
     client.sendMessage( m_client_message );
     client.recvMessage( &m_server_message );
 
+    size_t allParticle = 0;
+    kvs::PointObject* object = new kvs::PointObject();
+    int serve_numvol = m_server_message.m_number_volume_divide;
+
+
+    for ( int n = 0; n < serve_numvol; n++ )
+    {
     if ( client.recvMessage( &m_server_message ) == 1 ){}
     //    if ( client.recvMessage( &reply ) == 1 ){}
 
-    size_t allParticle = 0;
-    kvs::PointObject* object = new kvs::PointObject();
 
-    int nmemb = m_server_message.m_number_particle * 3;
-    if ( nmemb != 0 )
-    {
-        kvs::ValueArray<kvs::Real32> positions ( m_server_message.m_positions, nmemb );
-        kvs::ValueArray<kvs::Real32> normals ( m_server_message.m_normals, nmemb );
-        kvs::ValueArray<kvs::UInt8>  colors ( m_server_message.m_colors, nmemb );
 
-        kvs::PointObject obj;
-        obj.setCoords( positions );
-        obj.setNormals( normals );
-        obj.setColors( colors );
+        int nmemb = m_server_message.m_number_particle * 3;
+        if ( nmemb != 0 )
+        {
+            kvs::ValueArray<kvs::Real32> positions ( m_server_message.m_positions, nmemb );
+            kvs::ValueArray<kvs::Real32> normals ( m_server_message.m_normals, nmemb );
+            kvs::ValueArray<kvs::UInt8>  colors ( m_server_message.m_colors, nmemb );
 
-        object->add(obj);
-        obj.clear();
-        std::cout<<" getPointObjectFromServer 331"<<std::endl;
-        allParticle = allParticle + m_server_message.m_number_particle;
-        delete[] m_server_message.m_colors;
-        delete[] m_server_message.m_normals;
-        delete[] m_server_message.m_positions;
+            kvs::PointObject obj;
+            obj.setCoords( positions );
+            obj.setNormals( normals );
+            obj.setColors( colors );
+
+            object->add(obj);
+            obj.clear();
+            std::cout<<" getPointObjectFromServer 331"<<std::endl;
+            allParticle = allParticle + m_server_message.m_number_particle;
+            delete[] m_server_message.m_colors;
+            delete[] m_server_message.m_normals;
+            delete[] m_server_message.m_positions;
+        }
     }
 
     kvs::PointObject* pointObject = object;
@@ -178,11 +185,14 @@ kvs::PointObject* Connect::connect2( int timeStep )
     std::cout << serverSideMaxObjectCoords[1] << std::endl;
     std::cout << serverSideMaxObjectCoords[2] << std::endl;
 
+ //   if ( client.recvMessage( &reply ) == 1 )
+ //   {
     m_client_message.m_initialize_parameter = -1;
     m_client_message.m_message_size = m_client_message.byteSize();
     client.sendMessage( m_client_message );
     client.recvMessage( &m_server_message );
     client.termClient();
+ //   }
 
     //ここでサーバのレンジが手に入る。
     std::cout << m_server_message.m_variable_range.min( "t1_var_c" ) << std::endl;
