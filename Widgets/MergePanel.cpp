@@ -288,7 +288,7 @@ void MergePanel::calculateTotalMinMaxTimeStep()
 
 void MergePanel::onExportButtonClicked()
 {
-    m_export_file_path = QFileDialog::getSaveFileName(this, tr("Save Server-Side Point Object"), QDir::homePath(), tr("すべてのファイル (*.*)"));
+    m_export_file_path = QFileDialog::getSaveFileName(this, tr("Save Server-Side Point Object"), QDir::homePath(), tr("すべてのファイル ( * )"));
     if ( !m_export_file_path.isEmpty() )
     {
         ui->exportPBtn->setEnabled( false );
@@ -403,7 +403,11 @@ void MergePanel::exportingServerSidePointObject( FilesManager& filesManager )
         else
         {
             kvsml->setWritingDataTypeToExternalBinary();
+#ifdef Q_OS_WIN
+            kvsml->write( fileInfo.filePath().replace( "/","\\" ).toStdString() );
+#else
             kvsml->write( fileInfo.filePath().toStdString() );
+#endif
         }
         delete kvsml;
     }
@@ -1321,11 +1325,20 @@ QString MergePanel::WorkerThread::updateTimeStepInFileName(QString fileName, int
         // 5桁の数字を含む前後の文字列を抜き取り
         int startPos = match.capturedStart();
         int endPos = match.capturedEnd();
-
-        return fileName.left(startPos) + extractedNumber + fileName.mid(endPos);        
+#ifdef Q_OS_WIN
+        qInfo() << fileName.left(startPos).replace( "/", "\\" );
+        return fileName.left(startPos).replace( "/", "\\" ) + extractedNumber + fileName.mid(endPos);
+#else
+        return fileName.left(startPos) + extractedNumber + fileName.mid(endPos);
+#endif
     }
     else
     {
+#ifdef Q_OS_WIN
+        qInfo() << fileName.replace( "/", "\\" );
+        return fileName.replace( "/", "\\" );
+#else
         return fileName;
+#endif
     }
 }

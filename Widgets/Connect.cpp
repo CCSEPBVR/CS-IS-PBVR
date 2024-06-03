@@ -53,7 +53,11 @@ void Connect::connect1()
     }
     strncpy( message.m_header, "JPTP /1.0\r\n", 11 );
     message.m_initialize_parameter = -3;
+#ifdef Q_OS_WIN
+    message.m_input_directory = ui->volumeDataFilePathLEdit->text().replace( "/","\\" ).toStdString();
+#else
     message.m_input_directory = ui->volumeDataFilePathLEdit->text().toStdString();
+#endif
     m_extended_transfer_function_message.applyToClientMessage( &message );
     message.m_message_size = message.byteSize();
     client.sendMessage( message );
