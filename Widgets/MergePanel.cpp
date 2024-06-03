@@ -94,52 +94,15 @@ void MergePanel::onAddButtonClicked()
     newFile->setFileInfo( QFileInfo( ui->importFilesPathLEdit->text() ) );
     newFile->setRGBColor( QColor( 128, 128, 128 ) );
     newFile->setOpacity( 0.5 );
-    checkMinMaxTimeStep( newFile );
     newFile->setCurrentDisplayedStep( -1 );
     checkFileFormat( newFile );
     if( newFile != nullptr )
     {
+        checkMinMaxTimeStep( newFile );
         newFile->setObject( nullptr );
         addRowToFilesTableWidget( newFile );
         m_files_manager.append( newFile );
         calculateTotalMinMaxTimeStep();
-    }
-}
-
-void MergePanel::checkMinMaxTimeStep( FilesManager *newFile )
-{
-    const QRegularExpression regex( newFile->getFileInfo().baseName().left( newFile->getFileInfo().baseName().indexOf('_')) + "_([0-9]+)\\.*");
-
-    int minStep = std::numeric_limits<int>::max();
-    int maxStep = std::numeric_limits<int>::min();
-
-    //    foreach( fileInfo, fileInfo.dir().entryInfoList( QDir::Files ) )
-    foreach( const QFileInfo &fileInfo, newFile->getFileInfo().dir().entryInfoList( QDir::Files ) )
-    {
-        QRegularExpressionMatch match = regex.match( fileInfo.fileName() );
-
-        if( match.hasMatch() )
-        {
-            int nummericalValue = match.captured(1).toInt();
-            if( nummericalValue < minStep )
-            {
-                minStep = nummericalValue;
-            }
-            if( nummericalValue > maxStep )
-            {
-                maxStep = nummericalValue;
-            }
-        }
-    }
-
-    if( minStep != std::numeric_limits<int>::max() && maxStep != std::numeric_limits<int>::min() )
-    {
-        //        qInfo() << minStep << "," << maxStep;
-        newFile->setMinTimeStep( minStep );
-        newFile->setMaxTimeStep( maxStep );
-    }
-    else//CAN NOT FIND MIN MAX TIME STEP
-    {
     }
 }
 
@@ -207,6 +170,53 @@ void MergePanel::checkFileFormat( FilesManager *&newFile )
         newFile->setFormat( FilesManager::PointObjectPTS );
     }
     else //NOT SUPPORTED FORMAT
+    {
+    }
+}
+
+void MergePanel::checkMinMaxTimeStep( FilesManager *newFile )
+{
+    QRegularExpression regex;
+    switch ( newFile->getFormat() )
+    {
+    case FilesManager::PointObjectKVSML:
+    case FilesManager::NonTexturedPolygonObjectKVSML:
+        regex.setPattern( newFile->getFileInfo().baseName().left( newFile->getFileInfo().baseName().indexOf( '_' )) + "_([0-9]+)\\.*" );
+        break;
+    default:
+        regex.setPattern( newFile->getFileInfo().baseName().left( newFile->getFileInfo().baseName().lastIndexOf( '_' )) + "_([0-9]+)\\.*" );
+        break;
+    }
+
+    int minStep = std::numeric_limits<int>::max();
+    int maxStep = std::numeric_limits<int>::min();
+
+    //    foreach( fileInfo, fileInfo.dir().entryInfoList( QDir::Files ) )
+    foreach( const QFileInfo &fileInfo, newFile->getFileInfo().dir().entryInfoList( QDir::Files ) )
+    {
+        QRegularExpressionMatch match = regex.match( fileInfo.fileName() );
+
+        if( match.hasMatch() )
+        {
+            int nummericalValue = match.captured(1).toInt();
+            if( nummericalValue < minStep )
+            {
+                minStep = nummericalValue;
+            }
+            if( nummericalValue > maxStep )
+            {
+                maxStep = nummericalValue;
+            }
+        }
+    }
+
+    if( minStep != std::numeric_limits<int>::max() && maxStep != std::numeric_limits<int>::min() )
+    {
+        //        qInfo() << minStep << "," << maxStep;
+        newFile->setMinTimeStep( minStep );
+        newFile->setMaxTimeStep( maxStep );
+    }
+    else//CAN NOT FIND MIN MAX TIME STEP
     {
     }
 }
