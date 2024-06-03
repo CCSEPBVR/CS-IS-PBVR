@@ -1326,7 +1326,6 @@ QString MergePanel::WorkerThread::updateTimeStepInFileName(QString fileName, int
         int startPos = match.capturedStart();
         int endPos = match.capturedEnd();
 #ifdef Q_OS_WIN
-        qInfo() << fileName.left(startPos).replace( "/", "\\" );
         return fileName.left(startPos).replace( "/", "\\" ) + extractedNumber + fileName.mid(endPos);
 #else
         return fileName.left(startPos) + extractedNumber + fileName.mid(endPos);
@@ -1335,7 +1334,6 @@ QString MergePanel::WorkerThread::updateTimeStepInFileName(QString fileName, int
     else
     {
 #ifdef Q_OS_WIN
-        qInfo() << fileName.replace( "/", "\\" );
         return fileName.replace( "/", "\\" );
 #else
         return fileName;
