@@ -151,7 +151,7 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
     this->setObjectDepth( object_depth );
-    this->exec( volume);
+    this->exec( volume); 
 }
 
 CellByCellUniformSampling::CellByCellUniformSampling(
@@ -554,7 +554,6 @@ void CellByCellUniformSampling::mapping( const kvs::Camera& camera, const pbvr::
 template <typename T>
 void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolumeObject& volume )
 {
-#if 1
 
     kvs::AnyValueArray valueArray = volume.values(); 
     int nnodes = volume.nnodes();
@@ -574,6 +573,7 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
         }
     } 
 
+#if 1
     int tf_number = m_transfer_function_array.size();
     float sampling_volume_inverse = m_transfer_function_synthesizer -> getSamplingVolumeInverse()  ;
     float max_opacity = m_transfer_function_synthesizer -> getMaxOpacity();
@@ -1165,6 +1165,13 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
     delete[] interp_opacity;
 
 #endif
+    for (int i = 0; i < nvariables; i++)
+    //for (int i = 0; i < nnodes; i++)
+    {
+        delete[] values[i];
+    }
+    delete[] values;
+
 }
 
 
@@ -1688,6 +1695,7 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
         }
     }
 
+
     TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
     std::vector< std::vector<pbvr::TransferFunction> > th_tf;
 
@@ -1730,7 +1738,6 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
 //        std::cout << "css.m_z_coord_synthesizer_string = " << css.m_z_coord_synthesizer_string <<std::endl;  
         css = *pCrdSynthStr;
     }
-
 
 #pragma omp parallel
     {
@@ -2176,12 +2183,13 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
     delete[] th_tfs;
     for ( int i = 0; i < max_threads; i++ )
     {
-        for ( int j = 0; j < interp[i].size(); j++ )
+        for ( int j = 0; j < nvariables; j++ )
         {
-           if (interp[i][j] != NULL)delete interp[i][j];
+             delete interp[i][j];
         }
     }
 
+    //for (int i = 0; i < nvariables; i++)
     for (int i = 0; i < nvariables; i++)
     {
         delete[] values[i];

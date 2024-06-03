@@ -92,6 +92,7 @@ VolumeObjectBase::VolumeObjectBase( const VolumeObjectBase& other ):
 VolumeObjectBase::~VolumeObjectBase()
 {
     if ( m_pCoordSynthStrs ) delete m_pCoordSynthStrs;
+    if ( m_pCoordSynthTkns )delete m_pCoordSynthTkns; //add by shimomura 2024/0603
 }
 
 pbvr::VolumeObjectBase* VolumeObjectBase::DownCast( pbvr::ObjectBase* object )

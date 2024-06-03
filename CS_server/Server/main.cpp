@@ -1763,6 +1763,9 @@ int main( int argc, char** argv )
                     MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
                     delete[] tmp_c_bins;
                     delete[] tmp_o_bins;
+                    //add by shimomura 20240603
+                    delete[] tmp_max;
+                    delete[] tmp_min;
 #endif
                     if ( timer_count == PBVR_TIMER_COUNT_NUM )
                     {
@@ -2191,6 +2194,7 @@ int main( int argc, char** argv )
                                 }
 
                                 size_t nmemb = tmp_obj->nvertices() * 3;
+                                //size_t nmemb = 0; // 4 debug
                                 kvs::ValueArray<kvs::Real32> coords_array ( tmp_obj->coords().pointer(), nmemb );
                                 kvs::ValueArray<kvs::UInt8>  colors_array ( tmp_obj->colors().pointer(), nmemb );
                                 kvs::ValueArray<kvs::Real32> normals_array( tmp_obj->normals().pointer(), nmemb );
@@ -2202,7 +2206,9 @@ int main( int argc, char** argv )
 
                                 // modify by @hira at 2016/12/01  
                                 int c_count = 0;
-                                for ( int tf = 0; tf < tmp_obj->getTfnumber(); tf++ )
+                                //for ( int tf = 0; tf < tmp_obj->getTfnumber(); tf++ )
+                                //for ( int tf = 0; tf < 0; tf++ ) //4 debug
+                                for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
                                 {
                                     int c_nbins = tmp_obj->getNbins();
                                     //changed by shimomura 2023/07/24
@@ -2215,7 +2221,9 @@ int main( int argc, char** argv )
                                     }
                                 }
                                 int o_count = 0;
-                                for ( int tf = 0; tf < tmp_obj->getTfnumber(); tf++ )
+                                //for ( int tf = 0; tf < tmp_obj->getTfnumber(); tf++ )
+                                for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
+                                //for ( int tf = 0; tf < 0; tf++ ) //4 debug
                                 {
                                     int o_nbins = tmp_obj->getNbins();
                                     //changed by shimomura 2023/07/24
@@ -2250,7 +2258,7 @@ int main( int argc, char** argv )
                             pbvr::PointObject* object = originalObject;
 							printf(" %zu perticles generated\n", object->coords().size() / 3);
 
-//                            //add by shimomura 2023/06/14
+//                           //add by shimomura 2023/06/14
                             if ( originalObject != object ) delete originalObject;
                             servMes.numParticle = object->coords().size() / 3;
                             if ( servMes.numParticle > 0 )
@@ -2319,7 +2327,7 @@ int main( int argc, char** argv )
                         }
 #endif
                         //add by shimomura 2023/06/14
-                        vr = setVariablerange2( tmp_max,tmp_min, cnt );
+                        vr = setVariablerange2( tmp_max,tmp_min, cnt/2 );
                         servMes.varRange = vr;
                         // add by shimomura 2022/12/16
                         servMes.setColorHistogramBins(                                                     
@@ -2361,7 +2369,9 @@ int main( int argc, char** argv )
                         servMes.flag_send_bins = 0;
                         delete[] tmp_c_bins;
                         delete[] tmp_o_bins;
-
+                        //add by shimomura 20240603
+                        delete[] tmp_max;
+                        delete[] tmp_min;
                         delete param.m_transfunc_synthesizer;
 
                         if ( timer_count <= PBVR_TIMER_COUNT_NUM )
@@ -2386,7 +2396,7 @@ int main( int argc, char** argv )
             } // end of while (pts.good)
 
             delete clntMes.camera;
-
+            delete servMes.camera;
             bsz = -1;
 #ifndef CPU_VER
             MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
