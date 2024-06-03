@@ -227,11 +227,37 @@ inline void CellBase<T>::allocate()
 template <typename T>
 inline void CellBase<T>::deallocate()
 {
+    int dimension = 3;
     if ( m_vertices ) delete [] m_vertices;
     if ( m_scalars ) delete [] m_scalars;
     if ( m_interpolation_functions ) delete [] m_interpolation_functions;
     if ( m_differential_functions ) delete [] m_differential_functions;
     if ( m_vertices_vec ) delete [] m_vertices_vec;
+
+    //add by shimomura 2024/0603
+    if ( m_vertices_array)
+    { 
+        for (int i = 0; i<m_nnodes; i++ )  delete [] m_vertices_array[i];
+        delete [] m_vertices_array;
+    }
+
+    if ( m_scalars_array)
+    { 
+        for (int i = 0; i<m_nnodes; i++ )  delete [] m_scalars_array[i];
+        delete [] m_scalars_array;
+    }
+
+    if ( m_interpolation_functions_array )
+    {
+        for (int i = 0; i<m_nnodes; i++ )  delete [] m_interpolation_functions_array[i];
+        delete [] m_interpolation_functions_array;
+    }
+
+    if ( m_differential_functions_array )
+    {
+        for (int i = 0; i<m_nnodes*dimension; i++ )  delete [] m_differential_functions_array[i];
+        delete [] m_differential_functions_array;
+    }
 }
 
 /*===========================================================================*/

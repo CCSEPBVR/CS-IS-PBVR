@@ -691,7 +691,6 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
     const pbvr::CoordSynthesizerStrings css,
     float* nx_g, float* ny_g, float* nz_g ) //global coord[SIMDW])
 {
-    std::cout << __LINE__ << std::endl;
         
     //配列を追加
     //float scalar_array[interp.size()][loop_cnt];
@@ -830,7 +829,6 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
 
-    std::cout << __LINE__ << std::endl;
 //    if(cst.x_token_empty)
     if(css.m_x_coord_synthesizer_string.empty())
 //    if(css.m_x_coord_synthesizer_string.size() == 0)
@@ -2140,7 +2138,7 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 
         //calc. m_opa_var
         m_rpn.evalArray(eval_result, loop_cnt);
-    
+  
         // debug stab 2023/01/10 add by shimomura 
         //tf[i].setRange(1.0, 3.0);
         //tf[i].setRange(0.0, 1.0);
@@ -2170,35 +2168,34 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
     {
         opacity_array[jx] = kvs::Math::Clamp<float>( eval_result[jx], 0.0, 1.0 );
     }
-
     //配列の削除
     for (int i = 0; i < interp.size(); ++i)
     {
         delete[] scalar_array[i];
     }
     delete[] scalar_array;
-    scalar_array = nullptr;
+    scalar_array = nullptr; 
 
     for (int i = 0; i < interp.size(); ++i)
     {
         delete[] grad_array_x[i];
     }
     delete[] grad_array_x;
-    grad_array_x = nullptr;
+    grad_array_x = nullptr; 
 
     for (int i = 0; i < interp.size(); ++i)
     {
         delete[] grad_array_y[i];
     }
     delete[] grad_array_y;
-    grad_array_y = nullptr;
+    grad_array_y = nullptr; 
 
     for (int i = 0; i < interp.size(); ++i)
     {
         delete[] grad_array_z[i];
     }
     delete[] grad_array_z;
-    grad_array_z = nullptr;
+    grad_array_z = nullptr; 
 
     delete[] global_coord_x;
     delete[] global_coord_y;
@@ -2211,7 +2208,7 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
         delete[] opacity_map_array[i];
     }
     delete[] opacity_map_array;
-    opacity_map_array = nullptr;
+    opacity_map_array = nullptr; 
 }
 
 ////kawamura
@@ -2452,8 +2449,10 @@ void TransferFunctionSynthesizer::CalculateColorArray(
     }
 
     //kvs::RGBColor colors[10][loop_cnt]; //result of t_func.colorMap().at( m_scalars[i] );
-    kvs::RGBColor** colors = new kvs::RGBColor* [10];
-    for (int i = 0; i < 10; ++i)
+    kvs::RGBColor** colors = new kvs::RGBColor* [m_col_var.size()];
+    //kvs::RGBColor** colors = new kvs::RGBColor* [10];
+    for (int i = 0; i < m_col_var.size(); ++i)
+    //for (int i = 0; i < 10; ++i)
     {
         colors[i] = new kvs::RGBColor[loop_cnt];
     }
@@ -2587,7 +2586,7 @@ void TransferFunctionSynthesizer::CalculateColorArray(
 
     delete[] eval_result;
 
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < m_col_var.size(); ++i)
     {
         delete[] colors[i];
     }
