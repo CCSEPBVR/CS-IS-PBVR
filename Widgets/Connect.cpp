@@ -45,6 +45,12 @@ void Connect::connect1()
     jpv::ParticleTransferServerMessage reply;
     reply.camera = new kvs::Camera();
 
+    if( !ui->volumeDataFilePathLEdit->text().endsWith( ".pfi" ) && !ui->volumeDataFilePathLEdit->text().endsWith( ".pfl" ) )
+    {
+        QMessageBox::information( this, tr( "Connection Error" ), tr( "The file path does not end with .pfi or pfl" ) );
+        return;
+    }
+
     int init = client.initClient();
     if( init < 0 )
     {
