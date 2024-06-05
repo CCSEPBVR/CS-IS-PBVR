@@ -211,12 +211,6 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="orientationTypeCBox"/>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="captionLEdit"/>
-      </item>
       <item row="0" column="0" alignment="Qt::AlignRight">
        <widget class="QLabel" name="captionLbl">
         <property name="maximumSize">
@@ -230,15 +224,11 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="divisionLbl">
-        <property name="text">
-         <string>Division :</string>
-        </property>
-       </widget>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="orientationTypeCBox"/>
       </item>
-      <item row="2" column="1">
-       <widget class="QSpinBox" name="divisionSBox"/>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="captionLEdit"/>
       </item>
      </layout>
     </widget>
