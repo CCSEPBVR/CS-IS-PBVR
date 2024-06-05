@@ -73,6 +73,7 @@ private:
     void onRenderOptions() { m_render_options.show(); }
     void onRepetitionLevelControl() { m_repetition_level_control.show(); }
     void onDisplayPointSizeControl() { m_display_point_size_control.show(); }
+    void onShadingControl() { m_shading_controller.show(); }
     void onTransferFunctionEditor() { m_transfer_function_editor.show(); }
     void onCoordinates() { m_coordinates.show(); }
 

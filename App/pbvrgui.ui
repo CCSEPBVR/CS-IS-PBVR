@@ -50,6 +50,7 @@
     <addaction name="actionRenderOptions"/>
     <addaction name="actionRepetitionLevelControl"/>
     <addaction name="actionDisplayPointSizeControl"/>
+    <addaction name="actionShadingControll"/>
     <addaction name="actionCoordinates"/>
    </widget>
    <addaction name="menuQTPBVR"/>
@@ -144,6 +145,11 @@
   <action name="actionDisplayPointSizeControl">
    <property name="text">
     <string>DisplayPointSizeControl</string>
+   </property>
+  </action>
+  <action name="actionShadingControll">
+   <property name="text">
+    <string>ShadingControll</string>
    </property>
   </action>
  </widget>

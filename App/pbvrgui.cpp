@@ -66,6 +66,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     connect( ui->actionDataProperties, &QAction::triggered, this, &PBVRGUI::onFilterInfomation );
     connect( ui->actionRenderOptions, &QAction::triggered, this, &PBVRGUI::onRenderOptions );
     connect( ui->actionDisplayPointSizeControl, &QAction::triggered, this, &PBVRGUI::onDisplayPointSizeControl );
+    connect( ui->actionShadingControll, &QAction::triggered, this, &PBVRGUI::onShadingControl );
     connect( ui->actionCoordinates, &QAction::triggered, this, &PBVRGUI::onCoordinates );
     connect( ui->actionTransferFunctionEditor, &QAction::triggered, this, &PBVRGUI::onTransferFunctionEditor );
     setFocusPolicy(Qt::StrongFocus);    
