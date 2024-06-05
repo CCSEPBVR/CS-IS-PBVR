@@ -181,6 +181,12 @@ void AnimationControls::loadKeyFrameFile()
 void AnimationControls::saveKeyFrameFile()
 {
     QString file_name = QFileDialog::getSaveFileName(this, "Save Keyframes", QDir::currentPath(), "Binary Files (*.bin)");
+
+    if( file_name.right(4) != ".bin" )
+    {
+        file_name += ".bin";
+    }
+
     if (file_name.isEmpty())
         return;
 
