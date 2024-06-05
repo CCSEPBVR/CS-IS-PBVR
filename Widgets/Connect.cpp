@@ -28,6 +28,7 @@ Connect::Connect(QWidget *parent) :
     m_client_message.m_particle_density = 1;
     m_client_message.m_particle_data_size_limit = 20;
 
+    connect( ui->cancelPBtn, &QPushButton::clicked, this, &Connect::close );
     connect( ui->connectPBtn, &QPushButton::clicked, this, &Connect::onConnectButtonClicked );
     connect( ui->volumeDataFilePathBrowsePBtn, &QPushButton::clicked, this, &Connect::onVolumeDataBrowseButtonClicked );
     connect( ui->transferFunctionFilePathBrowsePBtn, &QPushButton::clicked, this, &Connect::onTransferFunctionFileBrowseButtonClicked );
