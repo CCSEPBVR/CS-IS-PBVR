@@ -224,6 +224,10 @@ PRE_TARGETDEPS += ../ExtendedKVS/libExtendedKVS.a
 PRE_TARGETDEPS += ../ExtendedQT/libExtendedQT.a
 }
 
+win32 {
+QMAKE_POST_LINK = mkdir .\release\Font & xcopy ..\..\Font\* .\release\Font\ & mkdir .\release\Shader & xcopy ..\..\Shader\* .\release\Shader\
+}
+
 macx {
 QMAKE_POST_LINK = mkdir QTPBVR.app/Contents/MacOS/Font && cp -rf ../../Font/* QTPBVR.app/Contents/MacOS/Font/ && mkdir QTPBVR.app/Contents/MacOS/Shader && cp -rf ../../Shader/* QTPBVR.app/Contents/MacOS/Shader/
 }
