@@ -78,7 +78,7 @@ kvs::ColorMap ColorMapEditor::getColorMap()
 
 void ColorMapEditor::readJsonFile()
 {
-    QString filePath = QString("%1/preset_color_map.json").arg(JSON_DIR);
+    QString filePath = ":/Resources/json/preset_color_map.json";
     QFile file(filePath);
     if ( !file.open(QIODevice::ReadOnly | QIODevice::Text) )
     {
