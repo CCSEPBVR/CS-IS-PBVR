@@ -223,3 +223,7 @@ PRE_TARGETDEPS += ../Common/libCommon.a
 PRE_TARGETDEPS += ../ExtendedKVS/libExtendedKVS.a
 PRE_TARGETDEPS += ../ExtendedQT/libExtendedQT.a
 }
+
+macx {
+QMAKE_POST_LINK = mkdir QTPBVR.app/Contents/MacOS/Font && cp -rf ../../Font/* QTPBVR.app/Contents/MacOS/Font/ && mkdir QTPBVR.app/Contents/MacOS/Shader && cp -rf ../../Shader/* QTPBVR.app/Contents/MacOS/Shader/
+}

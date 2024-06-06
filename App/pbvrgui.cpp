@@ -79,6 +79,18 @@ PBVRGUI::~PBVRGUI()
 
 void PBVRGUI::initializePanels()
 {
+    //フォントディレクトリ
+    QString exeLocation = QCoreApplication::applicationDirPath();
+    QString fontDir = QDir( exeLocation ).filePath( "Font/" );
+    m_screen->paintDevice()->textEngine()->addFont( "SansRegular", fontDir.toStdString() + "NotoSans-Regular.ttf" );
+    m_screen->paintDevice()->textEngine()->addFont( "SansItalic", fontDir.toStdString() + "NotoSans-Italic.ttf" );
+    m_screen->paintDevice()->textEngine()->addFont( "SansBold", fontDir.toStdString() + "NotoSans-Bold.ttf" );
+    m_screen->paintDevice()->textEngine()->addFont( "SansBoldItalic", fontDir.toStdString() + "NotoSans-BoldItalic.ttf" );
+    m_screen->paintDevice()->textEngine()->addFont( "SerifRegular", fontDir.toStdString() + "NotoSerif-Regular.ttf" );
+    m_screen->paintDevice()->textEngine()->addFont( "SerifItalic", fontDir.toStdString() + "NotoSerif-Italic.ttf" );
+    m_screen->paintDevice()->textEngine()->addFont( "SerifBold", fontDir.toStdString() + "NotoSerif-Bold.ttf" );
+    m_screen->paintDevice()->textEngine()->addFont( "SerifBoldItalic", fontDir.toStdString() + "NotoSerif-BoldItalic.ttf" );
+    m_screen->paintDevice()->textEngine()->addFont( "Icon", fontDir.toStdString() + "entypo.ttf" );
 
     //プリファレンスパネルの初期化
     m_preference.setScreen( m_screen );
