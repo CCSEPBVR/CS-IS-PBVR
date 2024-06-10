@@ -1497,6 +1497,7 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
     static bool start_flag = true;
     static bool parameter_file_opened=true;
 
+//#if 0
     std::vector< std::vector< pbvr::CellBase<Type>* > >  interp;
 
     interp.resize( max_threads );
@@ -1704,6 +1705,7 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
         th_tfs[n] = new TransferFunctionSynthesizer( *m_transfer_function_synthesizer );
     }
 
+#if 1
     th_tf.resize( max_threads );
     for ( int i = 0; i < max_threads; i++ )
     {
@@ -1916,6 +1918,7 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
             }
             /////////////////////////////// Synthesized~ (), CalculateOpacity() ///////////////////////////////////
 
+#if 1
             /////////////////////////////// CalculateOpacity(), CalculateColor() ///////////////////////////////////
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
@@ -2110,6 +2113,7 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
                         }
                     }
 
+#if 1
                     //2023 shimomura 
                     for( int j = 0; j < nparticles_count; j++ )
                     {
@@ -2127,10 +2131,13 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
                         th_vertex_normals.push_back( grad_array[j].z() );
                     }
                     // ------------------------------------------------
+#endif
                 }//end of for i
             }
             /////////////////////////////// CalculateOpacity(), CalculateColor() ///////////////////////////////////
+#endif 
         }// end of for cell
+
 
 #pragma omp critical
         {
@@ -2154,10 +2161,13 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
                 m_c_histogram[n] += th_c_histogram[n];
             }
 
-            vertex_coords.insert ( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
-            vertex_colors.insert ( vertex_colors.end(), th_vertex_colors.begin(), th_vertex_colors.end() );
-            vertex_normals.insert( vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end() );
+//            vertex_coords.insert ( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
+//            vertex_colors.insert ( vertex_colors.end(), th_vertex_colors.begin(), th_vertex_colors.end() );
+//            vertex_normals.insert( vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end() );
         }
+        th_vertex_coords.clear();
+        th_vertex_colors.clear();
+        th_vertex_normals.clear();
 
     } //#pragma omp parallel
 
@@ -2176,6 +2186,7 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
         m_transfer_function_synthesizer->m_c_max[i] = C_max[i];
     }
 
+#endif
     for(int i=0; i<max_threads; i++)
     {
         delete th_tfs[i];
@@ -2188,8 +2199,8 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
              delete interp[i][j];
         }
     }
+//#endif
 
-    //for (int i = 0; i < nvariables; i++)
     for (int i = 0; i < nvariables; i++)
     {
         delete[] values[i];
@@ -2198,9 +2209,9 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
 
     //TIMER_END( 290 );
 
-    SuperClass::m_coords  = kvs::ValueArray<kvs::Real32>( vertex_coords );
-    SuperClass::m_colors  = kvs::ValueArray<kvs::UInt8>( vertex_colors );
-    SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( vertex_normals );
+//    SuperClass::m_coords  = kvs::ValueArray<kvs::Real32>( vertex_coords );
+//    SuperClass::m_colors  = kvs::ValueArray<kvs::UInt8>( vertex_colors );
+//    SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( vertex_normals );
 
 //#endif
     SuperClass::setSize( 1.0f );
