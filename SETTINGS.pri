@@ -10,6 +10,8 @@ else {
     include( $$KVS_DIR/kvs.conf )
 }
 
+FONT_DIR=$$PWD/Font
+SHADER_DIR=$$PWD/Shader
 
 #=============================================================================
 #  Compiler.
