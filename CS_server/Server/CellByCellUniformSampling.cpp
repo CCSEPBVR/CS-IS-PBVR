@@ -2161,9 +2161,9 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
                 m_c_histogram[n] += th_c_histogram[n];
             }
 
-//            vertex_coords.insert ( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
-//            vertex_colors.insert ( vertex_colors.end(), th_vertex_colors.begin(), th_vertex_colors.end() );
-//            vertex_normals.insert( vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end() );
+            vertex_coords.insert ( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
+            vertex_colors.insert ( vertex_colors.end(), th_vertex_colors.begin(), th_vertex_colors.end() );
+            vertex_normals.insert( vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end() );
         }
         th_vertex_coords.clear();
         th_vertex_colors.clear();
@@ -2209,9 +2209,9 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
 
     //TIMER_END( 290 );
 
-//    SuperClass::m_coords  = kvs::ValueArray<kvs::Real32>( vertex_coords );
-//    SuperClass::m_colors  = kvs::ValueArray<kvs::UInt8>( vertex_colors );
-//    SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( vertex_normals );
+    SuperClass::m_coords  = kvs::ValueArray<kvs::Real32>( vertex_coords );
+    SuperClass::m_colors  = kvs::ValueArray<kvs::UInt8>( vertex_colors );
+    SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( vertex_normals );
 
 //#endif
     SuperClass::setSize( 1.0f );
