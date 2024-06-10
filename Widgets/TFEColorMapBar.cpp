@@ -26,6 +26,7 @@ void TFEColorMapBar::setColorMap( const kvs::ColorMap& colormap )
 
     // Download the texture data onto GPU.
     m_texture_downloaded = false;
+    update();
 }
 
 void TFEColorMapBar::initializeGL()

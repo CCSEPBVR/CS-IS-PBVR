@@ -46,6 +46,19 @@ kvs::OpacityMap OpacityMapEditor::getOpacityMap()
     return ui->opacityMapPalette->getOpacity();
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  showEvent function.
+ *  @note   This is to address the problem that the OpacityMap of the Function selected in TransferFunctionEditor
+ *  @note   is not immediately reflected when OpacityMapEditor is opened in a linux environment.
+ */
+/*===========================================================================*/
+void OpacityMapEditor::showEvent(QShowEvent *event)
+{
+    Q_UNUSED( event );
+    ui->opacityMapPalette->update();
+}
+
 //Freeform curve 0
 //Expression     1
 //Control Point  2

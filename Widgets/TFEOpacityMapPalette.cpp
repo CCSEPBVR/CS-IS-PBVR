@@ -23,6 +23,7 @@ void TFEOpacityMapPalette::setOpacityMap( const kvs::OpacityMap& opacity_map )
     kvs::OpacityMap::Table opacity_map_table( opacity_map.table().data(), opacity_map.table().size() );
     m_opacity_map = kvs::OpacityMap( opacity_map_table );
     m_update = true;
+    update();
 }
 
 void TFEOpacityMapPalette::paintGL()

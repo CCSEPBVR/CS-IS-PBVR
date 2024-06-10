@@ -252,6 +252,19 @@ void ColorMapEditor::readJsonFile()
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  showEvent function.
+ *  @note   This is to address the problem that the ColorMap of the Function selected in TransferFunctionEditor
+ *  @note   is not immediately reflected when ColorMapEditor is opened in a linux environment.
+ */
+/*===========================================================================*/
+void ColorMapEditor::showEvent(QShowEvent *event)
+{
+    Q_UNUSED( event );
+    ui->colorMapPalette->update();
+}
+
 //Presets        0
 //Freeform curve 1
 //Expression     2

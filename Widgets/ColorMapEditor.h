@@ -29,6 +29,9 @@ private:
     void readJsonFile();//Load Presets ColorMapBar
     QUndoStack *m_undo_stack;
 
+protected:
+    void showEvent( QShowEvent* event ) override;
+
 private slots:
     void onCurrentTabChanged( int index );
     void onDrawingColorDoubleClicked();
