@@ -224,17 +224,14 @@ PRE_TARGETDEPS += ../ExtendedKVS/libExtendedKVS.a
 PRE_TARGETDEPS += ../ExtendedQT/libExtendedQT.a
 }
 
-win32
-{
-    QMAKE_POST_LINK = mkdir .\release\Font & xcopy ..\..\Font\* .\release\Font\ & mkdir .\release\Shader & xcopy $$SHADER_DIR/* .\release\Shader\
+win32 {
+QMAKE_POST_LINK = rmdir /s /q .\release\Font & mkdir .\release\Font & xcopy "$$replace(FONT_DIR, /, \\)\*" .\release\Font & rmdir /s /q .\release\Shader & mkdir .\release\Shader & xcopy "$$replace(SHADER_DIR, /, \\)\*" .\release\Shader
 }
 
-macx
-{
-    QMAKE_POST_LINK = mkdir -p QTPBVR.app/Contents/MacOS/Font && cp -rf $$FONT_DIR/* QTPBVR.app/Contents/MacOS/Font/ && mkdir -p QTPBVR.app/Contents/MacOS/Shader && cp -rf $$SHADER_DIR/* QTPBVR.app/Contents/MacOS/Shader/
+macx {
+QMAKE_POST_LINK = mkdir -p QTPBVR.app/Contents/MacOS/Font && cp -rf $$FONT_DIR/* QTPBVR.app/Contents/MacOS/Font/ && mkdir -p QTPBVR.app/Contents/MacOS/Shader && cp -rf $$SHADER_DIR/* QTPBVR.app/Contents/MacOS/Shader/
 }
 
-unix:!macx
-{
-    QMAKE_POST_LINK = mkdir Font && cp -rf $$FONT_DIR/* Font && mkdir Shader && cp -rf $$SHADER_DIR/* Shader
+unix:!macx {
+QMAKE_POST_LINK = mkdir Font && cp -rf $$FONT_DIR/* Font && mkdir Shader && cp -rf $$SHADER_DIR/* Shader
 }
