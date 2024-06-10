@@ -28,6 +28,7 @@ private:
     Ui::ColorMapEditor *ui;
     void readJsonFile();//Load Presets ColorMapBar
     QUndoStack *m_undo_stack;
+    bool m_is_dark_mode;
 
 protected:
     void showEvent( QShowEvent* event ) override;

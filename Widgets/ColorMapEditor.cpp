@@ -54,6 +54,17 @@ ColorMapEditor::ColorMapEditor(QWidget *parent) :
     connect( ui->controlPointsTWidget, &QTableWidget::cellChanged, this, &ColorMapEditor::onControlPointChanged );
     connect( ui->cancelPBtn, &QPushButton::clicked, this, &ColorMapEditor::close );
     connect( ui->applyPBtn, &QPushButton::clicked, this, &ColorMapEditor::accept );
+
+    QPalette app_palette = QApplication::palette();
+    QColor backgroundColor = app_palette.color(QPalette::Window);
+    if( backgroundColor.value() < 128 )
+    {
+        m_is_dark_mode = true;
+    }
+    else
+    {
+        m_is_dark_mode = false;
+    }
 }
 
 ColorMapEditor::~ColorMapEditor()
@@ -435,7 +446,14 @@ void ColorMapEditor::onControlPointChanged()
                 QString text= ui->controlPointsTWidget->item(n,c)->text();
                 row_values[c]=text.toFloat(&valid_float);
                 valid_row=valid_row&valid_float;
-                ui->controlPointsTWidget->item(n,c)->setForeground(valid_float?Qt::white:Qt::red);
+                if( m_is_dark_mode )
+                {
+                    ui->controlPointsTWidget->item(n,c)->setForeground(valid_float?Qt::white:Qt::red);
+                }
+                else
+                {
+                    ui->controlPointsTWidget->item(n,c)->setForeground(valid_float?Qt::black:Qt::red);
+                }
             }
             else
             {
