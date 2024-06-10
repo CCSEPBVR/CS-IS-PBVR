@@ -866,18 +866,18 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
     if ( flag_send_bins == 1 )
     {
     index += jpv::Serializer::read( buf + index, tf_count );
-    c_nbins = new kvs::UInt64[ tf_count ];
-    o_nbins = new kvs::UInt64[ tf_count ];
+//    c_nbins = new kvs::UInt64[ tf_count ];
+//    o_nbins = new kvs::UInt64[ tf_count ];
 
     c_bins.resize( tf_count );
     o_bins.resize( tf_count );
     for ( int i = 0; i < tf_count; i++ )
     {
         index += jpv::Serializer::read( buf + index, c_nbins[i] );
-        c_bins[i] =  new kvs::UInt64[ c_nbins[i] ];
+//        c_bins[i] =  new kvs::UInt64[ c_nbins[i] ];
         index += jpv::Serializer::readArray<kvs::UInt64>( buf + index, c_bins[i], c_nbins[i] );
         index += jpv::Serializer::read( buf + index, o_nbins[i] );
-        o_bins[i] =  new kvs::UInt64[ o_nbins[i] ];
+//        o_bins[i] =  new kvs::UInt64[ o_nbins[i] ];
         index += jpv::Serializer::readArray<kvs::UInt64>( buf + index, o_bins[i], o_nbins[i] );
     }
 
