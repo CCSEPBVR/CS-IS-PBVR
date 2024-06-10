@@ -229,9 +229,9 @@ QMAKE_POST_LINK = rmdir /s /q .\release\Font & mkdir .\release\Font & xcopy "$$r
 }
 
 macx {
-QMAKE_POST_LINK = mkdir -p QTPBVR.app/Contents/MacOS/Font && cp -rf $$FONT_DIR/* QTPBVR.app/Contents/MacOS/Font/ && mkdir -p QTPBVR.app/Contents/MacOS/Shader && cp -rf $$SHADER_DIR/* QTPBVR.app/Contents/MacOS/Shader/
+QMAKE_POST_LINK = rm -rf QTPBVR.app/Contents/MacOS/Font mkdir -p QTPBVR.app/Contents/MacOS/Font && cp -rf $$FONT_DIR/* QTPBVR.app/Contents/MacOS/Font/ && rm -rf QTPBVR.app/Contents/MacOS/Shader mkdir -p QTPBVR.app/Contents/MacOS/Shader && cp -rf $$SHADER_DIR/* QTPBVR.app/Contents/MacOS/Shader/
 }
 
 unix:!macx {
-QMAKE_POST_LINK = mkdir Font && cp -rf $$FONT_DIR/* Font && mkdir Shader && cp -rf $$SHADER_DIR/* Shader
+QMAKE_POST_LINK = rm -rf Font && mkdir Font && cp -rf $$FONT_DIR/* Font && rm -rf Shader && mkdir Shader && cp -rf $$SHADER_DIR/* Shader
 }
