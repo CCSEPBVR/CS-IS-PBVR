@@ -319,6 +319,11 @@ void MergePanel::onApplyButtonClicked()
 
 void MergePanel::removeChecked()
 {
+    if( m_is_worker_thread_running )//スレッド処理実行中は何もしない。
+    {
+        return;
+    }
+
     for (int row = 0; row < m_files_manager.size(); row++)
     {
         QWidget *widget = ui->filesTWidget->cellWidget(row, 6); // deleteCheckBox の列を指定

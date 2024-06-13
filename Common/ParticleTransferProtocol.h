@@ -149,9 +149,12 @@ public:
     int32_t m_start_step;
     int32_t m_end_step;
     int32_t m_number_step;
-    float* m_positions;
-    float* m_normals;
-    unsigned char* m_colors;
+    // float* m_positions;
+    // float* m_normals;
+    // unsigned char* m_colors;
+    std::unique_ptr<float[]> m_positions;
+    std::unique_ptr<float[]> m_normals;
+    std::unique_ptr<unsigned char[]> m_colors;
     float m_min_object_coord[3];
     float m_max_object_coord[3];
     float m_min_value;
@@ -196,6 +199,34 @@ public:
     VariableRange m_variable_range;
 
     ParticleTransferServerMessage();
+
+    ParticleTransferServerMessage(size_t message_size, size_t number_particle)
+        : m_message_size(message_size),
+        m_number_particle(number_particle) {}
+
+    // ムーブコンストラクタ
+    ParticleTransferServerMessage(ParticleTransferServerMessage&& other) noexcept
+        : m_message_size(other.m_message_size),
+        m_number_particle(other.m_number_particle),
+        m_positions(std::move(other.m_positions)),
+        m_normals(std::move(other.m_normals)),
+        m_colors(std::move(other.m_colors)) {}
+
+    // ムーブ代入演算子
+    ParticleTransferServerMessage& operator=(ParticleTransferServerMessage&& other) noexcept {
+        if (this != &other) {
+            m_message_size = other.m_message_size;
+            m_number_particle = other.m_number_particle;
+            m_positions = std::move(other.m_positions);
+            m_normals = std::move(other.m_normals);
+            m_colors = std::move(other.m_colors);
+        }
+        return *this;
+    }
+
+    // コピーコンストラクタとコピー代入演算子を削除
+    ParticleTransferServerMessage(const ParticleTransferServerMessage&) = delete;
+    ParticleTransferServerMessage& operator=(const ParticleTransferServerMessage&) = delete;
 
 //    // add by @hira at 2016/12/01
 //    void setColorHistogramBins(

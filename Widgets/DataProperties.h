@@ -15,7 +15,7 @@ class DataProperties : public QDockWidget
 public:
     explicit DataProperties(QWidget *parent = nullptr);
     ~DataProperties();
-    void updateFilterInfomation( QString volumeDataFilePath, jpv::ParticleTransferServerMessage reply );
+    void updateFilterInfomation( QString volumeDataFilePath, jpv::ParticleTransferServerMessage& reply );
 
 private:
     Ui::DataProperties *ui;

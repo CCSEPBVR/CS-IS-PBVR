@@ -85,6 +85,7 @@ void Connect::connect1()
     m_transfer_function_editor->onApplyButtonClicked();
 //    qInfo() << reply.m_variable_range.min( "t1_var_c" );
 //    qInfo() << reply.m_min_value;
+    delete reply.camera;
     ui->connectPBtn->setDisabled( true );
 }
 
@@ -153,9 +154,9 @@ kvs::PointObject* Connect::connect2( int timeStep )
         int nmemb = m_server_message.m_number_particle * 3;
         if ( nmemb != 0 )
         {
-            kvs::ValueArray<kvs::Real32> positions ( m_server_message.m_positions, nmemb );
-            kvs::ValueArray<kvs::Real32> normals ( m_server_message.m_normals, nmemb );
-            kvs::ValueArray<kvs::UInt8>  colors ( m_server_message.m_colors, nmemb );
+            kvs::ValueArray<kvs::Real32> positions ( m_server_message.m_positions.get(), nmemb );
+            kvs::ValueArray<kvs::Real32> normals ( m_server_message.m_normals.get(), nmemb );
+            kvs::ValueArray<kvs::UInt8>  colors ( m_server_message.m_colors.get(), nmemb );
 
             kvs::PointObject obj;
             obj.setCoords( positions );
@@ -166,9 +167,9 @@ kvs::PointObject* Connect::connect2( int timeStep )
             obj.clear();
             std::cout<<" getPointObjectFromServer 331"<<std::endl;
             allParticle = allParticle + m_server_message.m_number_particle;
-            delete[] m_server_message.m_colors;
-            delete[] m_server_message.m_normals;
-            delete[] m_server_message.m_positions;
+            // delete[] m_server_message.m_colors;
+            // delete[] m_server_message.m_normals;
+            // delete[] m_server_message.m_positions;
         }
     }
 
@@ -231,6 +232,43 @@ kvs::PointObject* Connect::connect2( int timeStep )
     m_transfer_function_editor->updateRangeView();
 
 //    pointObject->updateMinMaxCoords();
+
+    if ( m_server_message.camera )
+    {
+        delete m_server_message.camera;
+        m_server_message.camera = nullptr;
+    }
+
+    if ( m_server_message.m_color_nbins )
+    {
+        delete[] m_server_message.m_color_nbins;
+        m_server_message.m_color_nbins = nullptr;
+    }
+
+    if ( m_server_message.m_opacity_nbins )
+    {
+        delete[] m_server_message.m_opacity_nbins;
+        m_server_message.m_opacity_nbins = nullptr;
+    }
+
+    if ( !m_server_message.m_color_bins.empty() )
+    {
+        for( auto ptr : m_server_message.m_color_bins )
+        {
+            delete ptr;
+        }
+        m_server_message.m_color_bins.clear();
+    }
+
+    if ( !m_server_message.m_opacity_bins.empty() )
+    {
+        for( auto ptr : m_server_message.m_opacity_bins )
+        {
+            delete ptr;
+        }
+        m_server_message.m_opacity_bins.clear();
+    }
+
     return pointObject;
 }
 
