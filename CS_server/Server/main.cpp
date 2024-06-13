@@ -2194,7 +2194,6 @@ int main( int argc, char** argv )
                                 }
 
                                 size_t nmemb = tmp_obj->nvertices() * 3;
-                                //size_t nmemb = 0; // 4 debug
                                 kvs::ValueArray<kvs::Real32> coords_array ( tmp_obj->coords().pointer(), nmemb );
                                 kvs::ValueArray<kvs::UInt8>  colors_array ( tmp_obj->colors().pointer(), nmemb );
                                 kvs::ValueArray<kvs::Real32> normals_array( tmp_obj->normals().pointer(), nmemb );
@@ -2206,8 +2205,6 @@ int main( int argc, char** argv )
 
                                 // modify by @hira at 2016/12/01  
                                 int c_count = 0;
-                                //for ( int tf = 0; tf < tmp_obj->getTfnumber(); tf++ )
-                                //for ( int tf = 0; tf < 0; tf++ ) //4 debug
                                 for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
                                 {
                                     int c_nbins = tmp_obj->getNbins();
@@ -2221,9 +2218,7 @@ int main( int argc, char** argv )
                                     }
                                 }
                                 int o_count = 0;
-                                //for ( int tf = 0; tf < tmp_obj->getTfnumber(); tf++ )
                                 for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
-                                //for ( int tf = 0; tf < 0; tf++ ) //4 debug
                                 {
                                     int o_nbins = tmp_obj->getNbins();
                                     //changed by shimomura 2023/07/24
@@ -2246,12 +2241,6 @@ int main( int argc, char** argv )
                                 nan_error = true;
                             }
 
-
-                            //delete tmp_obj;
-                            //point_creator_lst[fidx].deallocate();
-                            //delete tmp_obj->coords().pointer();
-                            //delete tmp_obj->colors().pointer();
-                            //delete tmp_obj->normals().pointer();
                             }
 
 #ifndef CPU_VER
