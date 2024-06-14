@@ -137,7 +137,7 @@ void AnimationControls::loadKeyFrameFile()
 {
     clearKeyFrame();
 
-    QString file_name = QFileDialog::getOpenFileName(this, "Load Keyframes", QDir::currentPath(), "Binary Files (*.bin)");
+    QString file_name = QFileDialog::getOpenFileName(this, "Load Keyframes", QDir::currentPath(), "Binary Files (*.anim)");
     if (file_name.isEmpty())
         return;
 
@@ -180,11 +180,11 @@ void AnimationControls::loadKeyFrameFile()
 
 void AnimationControls::saveKeyFrameFile()
 {
-    QString file_name = QFileDialog::getSaveFileName(this, "Save Keyframes", QDir::currentPath(), "Binary Files (*.bin)");
+    QString file_name = QFileDialog::getSaveFileName(this, "Save Keyframes", QDir::currentPath(), "Binary Files (*.anim)");
 
-    if( file_name.right(4) != ".bin" )
+    if( file_name.right(4) != ".anim" )
     {
-        file_name += ".bin";
+        file_name += ".anim";
     }
 
     if (file_name.isEmpty())
