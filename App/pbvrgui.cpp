@@ -130,21 +130,25 @@ void PBVRGUI::initializePanels()
     addDockWidget( Qt::LeftDockWidgetArea, &m_volumeTransform );
     m_volumeTransform.setScreen( m_screen );
     //アニメーションコントロールパネルの初期化
+    m_animation_controls.close();
     m_animation_controls.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::RightDockWidgetArea, &m_animation_controls );
     m_animation_controls.setScreen( m_screen );
     //リピテーションレベルコントロールパネルの初期化
+    m_repetition_level_control.close();
     m_repetition_level_control.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::LeftDockWidgetArea, &m_repetition_level_control );
     m_repetition_level_control.setShadingController( &m_shading_controller );
     m_repetition_level_control.setScreen( m_screen );
     m_repetition_level_control.setCompositor( m_compositor );
     //ディスプレイポイントサイズコントロールパネルの初期化
+    m_display_point_size_control.close();
     m_display_point_size_control.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::LeftDockWidgetArea, &m_display_point_size_control );
     m_display_point_size_control.setPreference( &m_preference );
     m_display_point_size_control.setScreen( m_screen );
     //シェーディングコントローラーパネルの初期化
+    m_shading_controller.close();
     m_shading_controller.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::LeftDockWidgetArea, &m_shading_controller );
     m_shading_controller.setScreen( m_screen );

@@ -710,9 +710,9 @@ size_t jpv::ParticleTransferServerMessage::pack( char* buf ) const
     }
     else
     {
-        index += jpv::Serializer::writeArray<float>( buf + index, m_positions, 3 * m_number_particle );
-        index += jpv::Serializer::writeArray<float>( buf + index, m_normals, 3 * m_number_particle );
-        index += jpv::Serializer::writeArray<unsigned char>( buf + index, m_colors, 3 * m_number_particle );
+        index += jpv::Serializer::writeArray<float>( buf + index, m_positions.get(), 3 * m_number_particle );
+        index += jpv::Serializer::writeArray<float>( buf + index, m_normals.get(), 3 * m_number_particle );
+        index += jpv::Serializer::writeArray<unsigned char>( buf + index, m_colors.get(), 3 * m_number_particle );
     }
     return index;
 }
@@ -833,12 +833,15 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
 size_t jpv::ParticleTransferServerMessage::unpack_particles( const char* buf )
 {
     size_t index = m_message_size;
-    m_positions = new float[3 * m_number_particle];
-    m_normals = new float[3 * m_number_particle];
-    m_colors = new unsigned char[3 * m_number_particle];
-    index += jpv::Serializer::readArray<float>( buf + index, m_positions, 3 * m_number_particle );
-    index += jpv::Serializer::readArray<float>( buf + index, m_normals, 3 * m_number_particle );
-    index += jpv::Serializer::readArray<unsigned char>( buf + index, m_colors, 3 * m_number_particle );
+    // m_positions = new float[3 * m_number_particle];
+    // m_normals = new float[3 * m_number_particle];
+    // m_colors = new unsigned char[3 * m_number_particle];
+    m_positions = std::make_unique<float[]>(3 * m_number_particle);
+    m_normals = std::make_unique<float[]>(3 * m_number_particle);
+    m_colors = std::make_unique<unsigned char[]>(3 * m_number_particle);
+    index += jpv::Serializer::readArray<float>( buf + index, m_positions.get(), 3 * m_number_particle );
+    index += jpv::Serializer::readArray<float>( buf + index, m_normals.get(), 3 * m_number_particle );
+    index += jpv::Serializer::readArray<unsigned char>( buf + index, m_colors.get(), 3 * m_number_particle );
     return index;
 }
 

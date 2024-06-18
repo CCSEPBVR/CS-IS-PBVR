@@ -338,7 +338,8 @@ void TransferFunctionEditor::onColorFunctionChanged( int index )
         ui->transfer_function_min_color->blockSignals(true);
         ui->transfer_function_max_color->blockSignals(true);
         ui->colorRangeSyncTBtn->blockSignals( true );
-
+        ui->userSideColorRangeLbl->setText( QString( "C%1 Min:Max : " ).arg( index + 1 ) );
+        ui->serverSideColorRangeLbl->setText( QString( "C%1 Server side Range Min:Max : " ).arg( index + 1 ) );
         ui->transfer_function_var_color->setText(  transfer_function_color->m_color_variable.c_str() );
         ui->transfer_function_min_color->setValue( transfer_function_color->m_color_variable_min );
         ui->transfer_function_max_color->setValue( transfer_function_color->m_color_variable_max );
@@ -379,7 +380,8 @@ void TransferFunctionEditor::onOpacityFunctionChanged( int index )
         ui->transfer_function_min_opacity->blockSignals(true);
         ui->transfer_function_max_opacity->blockSignals(true);
         ui->opacityRangeSyncTBtn->blockSignals( true );
-
+        ui->userSideOpacityRangeLbl->setText( QString( "O%1 Min:Max : " ).arg( index + 1 ) );
+        ui->serverSideOpacityRangeLbl->setText( QString( "O%1 Server side Range Min:Max : " ).arg( index + 1 ) );
         ui->transfer_function_var_opacity->setText(  transfer_function_opacity->m_opacity_variable.c_str() );
         ui->transfer_function_min_opacity->setValue( transfer_function_opacity->m_opacity_variable_min );
         ui->transfer_function_max_opacity->setValue( transfer_function_opacity->m_opacity_variable_max );

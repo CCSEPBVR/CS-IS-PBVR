@@ -13,7 +13,7 @@ DataProperties::~DataProperties()
     delete ui;
 }
 
-void DataProperties::updateFilterInfomation( QString volumeDataFilePath, jpv::ParticleTransferServerMessage reply )
+void DataProperties::updateFilterInfomation( QString volumeDataFilePath, jpv::ParticleTransferServerMessage& reply )
 {
     ui->filterParameterFileLEdit->setText( volumeDataFilePath );
 
