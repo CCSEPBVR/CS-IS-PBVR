@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>256</width>
-    <height>199</height>
+    <height>202</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -57,6 +57,9 @@
        </item>
        <item row="2" column="1">
         <widget class="QSpinBox" name="dataSizeLimitSBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="minimum">
           <number>1</number>
          </property>
