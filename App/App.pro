@@ -31,12 +31,19 @@ TARGET = QTPBVR
 #=============================================================================
 win32 {
 LIBS += ws2_32.lib
+CONFIG(release, debug|release) {
 LIBS += -L../Widgets/release -lWidgets
 LIBS += -L../FunctionParser/release -lpbvrFunc
 LIBS += -L../Common/release -lCommon
 LIBS += -L../ExtendedKVS/release -lExtendedKVS
 LIBS += -L../ExtendedQT/release -lExtendedQT
-
+} else:CONFIG(debug, debug|release) {
+LIBS += -L../Widgets/debug -lWidgets
+LIBS += -L../FunctionParser/debug -lpbvrFunc
+LIBS += -L../Common/debug -lCommon
+LIBS += -L../ExtendedKVS/debug -lExtendedKVS
+LIBS += -L../ExtendedQT/debug -lExtendedQT
+}
     contains(DEFINES, PBVR_SUPPORT_FBX) {
         isEmpty( FBXSDK_LIB_DIR ) {
             error( "FBXSDK_LIB_DIR is not defined" );
@@ -201,11 +208,19 @@ RESOURCES += \
 #  Pre Targetdeps
 #=============================================================================
 win32 {
-PRE_TARGETDEPS += ../Widgets/release/Widgets.lib
-PRE_TARGETDEPS += ../FunctionParser/release/pbvrFunc.lib
-PRE_TARGETDEPS += ../Common/release/Common.lib
-PRE_TARGETDEPS += ../ExtendedKVS/release/ExtendedKVS.lib
-PRE_TARGETDEPS += ../ExtendedQT/release/ExtendedQT.lib
+CONFIG(release, debug|release) {
+    PRE_TARGETDEPS += ../Widgets/release/Widgets.lib
+    PRE_TARGETDEPS += ../FunctionParser/release/pbvrFunc.lib
+    PRE_TARGETDEPS += ../Common/release/Common.lib
+    PRE_TARGETDEPS += ../ExtendedKVS/release/ExtendedKVS.lib
+    PRE_TARGETDEPS += ../ExtendedQT/release/ExtendedQT.lib
+} else:CONFIG(debug, debug|release) {
+    PRE_TARGETDEPS += ../Widgets/debug/Widgets.lib
+    PRE_TARGETDEPS += ../FunctionParser/debug/pbvrFunc.lib
+    PRE_TARGETDEPS += ../Common/debug/Common.lib
+    PRE_TARGETDEPS += ../ExtendedKVS/debug/ExtendedKVS.lib
+    PRE_TARGETDEPS += ../ExtendedQT/debug/ExtendedQT.lib
+}
 }
 
 macx {
@@ -225,7 +240,11 @@ PRE_TARGETDEPS += ../ExtendedQT/libExtendedQT.a
 }
 
 win32 {
+CONFIG(release, debug|release) {
 QMAKE_POST_LINK = rmdir /s /q .\release\Font & mkdir .\release\Font & xcopy "$$replace(FONT_DIR, /, \\)\*" .\release\Font & rmdir /s /q .\release\Shader & mkdir .\release\Shader & xcopy "$$replace(SHADER_DIR, /, \\)\*" .\release\Shader
+} else:CONFIG(debug, debug|release) {
+QMAKE_POST_LINK = rmdir /s /q .\debug\Font & mkdir .\debug\Font & xcopy "$$replace(FONT_DIR, /, \\)\*" .\debug\Font & rmdir /s /q .\debug\Shader & mkdir .\debug\Shader & xcopy "$$replace(SHADER_DIR, /, \\)\*" .\debug\Shader
+}
 }
 
 macx {
