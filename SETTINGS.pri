@@ -34,11 +34,23 @@ KVS_CPP = $$(KVS_CPP)
 #=============================================================================
 #  Configuration valiable.
 #=============================================================================
-win32 {
-QMAKE_CFLAGS_RELEASE += /MT
-QMAKE_CXXFLAGS_RELEASE += /MT
-QMAKE_CFLAGS_DEBUG += /MTd
-QMAKE_CXXFLAGS_DEBUG += /MTd
+CONFIG(release, debug|release) {
+    CONFIG += release
+    #CONFIG += optimize_full
+    win32 {
+        QMAKE_CFLAGS_RELEASE += /MT
+        QMAKE_CXXFLAGS_RELEASE += /MT
+    }
+}
+
+# デバッグモードの設定
+CONFIG(debug, debug|release) {
+    CONFIG += debug
+    QMAKE_CXXFLAGS_DEBUG += -O0 -DDEBUG
+    win32 {
+        QMAKE_CFLAGS_DEBUG += /MTd
+        QMAKE_CXXFLAGS_DEBUG += /MTd
+    }
 }
 equals( KVS_SUPPORT_PYTHON, "1" ) { CONFIG += no_keywords }
 
