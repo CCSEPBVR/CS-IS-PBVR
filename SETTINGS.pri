@@ -36,20 +36,36 @@ KVS_CPP = $$(KVS_CPP)
 #=============================================================================
 CONFIG(release, debug|release) {
     CONFIG += release
-    #CONFIG += optimize_full
     win32 {
+        QMAKE_CXXFLAGS_RELEASE -= -O2
+        QMAKE_CXXFLAGS_RELEASE += /Ox
         QMAKE_CFLAGS_RELEASE += /MT
         QMAKE_CXXFLAGS_RELEASE += /MT
+    }
+    macx {
+        CONFIG += optimize_full
+    }
+    unix {
+        CONFIG += optimize_full
     }
 }
 
 # デバッグモードの設定
 CONFIG(debug, debug|release) {
     CONFIG += debug
-    QMAKE_CXXFLAGS_DEBUG += -O0 -DDEBUG
     win32 {
-        QMAKE_CFLAGS_DEBUG += /MTd
-        QMAKE_CXXFLAGS_DEBUG += /MTd
+        QMAKE_CXXFLAGS_DEBUG += /Od /DDEBUG
+        #When using KVS with DEBUG=1, please use MTd.
+        QMAKE_CFLAGS_DEBUG += /MT
+        QMAKE_CXXFLAGS_DEBUG += /MT
+        # QMAKE_CFLAGS_DEBUG += /MTd
+        # QMAKE_CXXFLAGS_DEBUG += /MTd
+    }
+    macx {
+        QMAKE_CXXFLAGS_DEBUG += -O0 -DDEBUG
+    }
+    unix {
+        QMAKE_CXXFLAGS_DEBUG += -O0 -DDEBUG
     }
 }
 equals( KVS_SUPPORT_PYTHON, "1" ) { CONFIG += no_keywords }
