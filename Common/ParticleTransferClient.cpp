@@ -218,7 +218,7 @@ int jpv::ParticleTransferClient::recvMessage( ParticleTransferServerMessage* mes
     std::stringstream ss;
     int recvSize( 0 );
     size_t mSize, rSize;
-    size_t host_particle_limit; //HOST_PARTICLE_LIMIT
+    size_t host_particle_limit = 0; //HOST_PARTICLE_LIMIT
 
     // tantantan
     //MOVED TO 236)T0603 2020.03.05
