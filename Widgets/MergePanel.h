@@ -210,6 +210,6 @@ private:
     template <typename Importer, typename ObjectType, typename RendererType>
     void timeStepCheckAndImport( int row );
 
-    QString updateTimeStepInFileName(QString fileName, int nextTimeStep);
+    std::string updateTimeStepInFileName( QString fileName, int nextTimeStep );
 };
 #endif // MERGEPANEL_H

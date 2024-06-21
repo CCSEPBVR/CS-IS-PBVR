@@ -61,7 +61,7 @@ void Connect::connect1()
     strncpy( message.m_header, "JPTP /1.0\r\n", 11 );
     message.m_initialize_parameter = -3;
 #ifdef Q_OS_WIN
-    message.m_input_directory = ui->volumeDataFilePathLEdit->text().replace( "/","\\" ).toStdString();
+    message.m_input_directory = ( ui->volumeDataFilePathLEdit->text().replace( "/","\\" ) ).toLocal8Bit().constData();
 #else
     message.m_input_directory = ui->volumeDataFilePathLEdit->text().toStdString();
 #endif
@@ -81,7 +81,11 @@ void Connect::connect1()
 
     m_merge->serverObject( ui->volumeDataFilePathLEdit->text(), reply.m_start_step, reply.m_end_step );
     m_transfer_function_editor->applyVariableRange( reply.m_variable_range );
+#ifdef Q_OS_WIN
+    m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
+#else
     m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
+#endif
     m_transfer_function_editor->onApplyButtonClicked();
 //    qInfo() << reply.m_variable_range.min( "t1_var_c" );
 //    qInfo() << reply.m_min_value;

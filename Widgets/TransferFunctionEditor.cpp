@@ -577,7 +577,12 @@ void TransferFunctionEditor::onApplyButtonClicked()
 void TransferFunctionEditor::onImportButtonClicked()
 {
     QString fileName = QFileDialog::getOpenFileName( this, tr("Import Transfer Function File"), ".", tr("Transfer Function Files (*.tfe *.TFE *.tf *.TF )") );
-    this->importFile(fileName.toStdString());
+
+#ifdef Q_OS_WIN
+    this->importFile( fileName.toLocal8Bit().constData() );
+#else
+    this->importFile( fileName.toStdString() );
+#endif
 }
 
 void TransferFunctionEditor::importFile( const std::string& fname )
@@ -699,8 +704,15 @@ void TransferFunctionEditor::importFile( const std::string& fname )
     //DEL BY)T0603 2020.05.25
     //ui->resolution->setValue(resolution);
     ui->numberOfTransferFunctionSBox->setValue( importdoc.m_transfer_function_number );
-    ui->color_function_synth->setText(QString::fromStdString(importdoc.m_color_transfer_function_synthesis) );
-    ui->opacity_function_synth->setText(QString::fromStdString(importdoc.m_opacity_transfer_function_synthesis));
+
+#ifdef Q_OS_WIN
+    ui->color_function_synth->setText( QString::fromUtf8(importdoc.m_color_transfer_function_synthesis.c_str() ) );
+    ui->opacity_function_synth->setText( QString::fromUtf8(importdoc.m_opacity_transfer_function_synthesis.c_str() ) );
+#else
+    ui->color_function_synth->setText( QString::fromStdString(importdoc.m_color_transfer_function_synthesis ) );
+    ui->opacity_function_synth->setText( QString::fromStdString(importdoc.m_opacity_transfer_function_synthesis ) );
+#endif
+
     onColorFunctionChanged( ui->colorFunctionCBox->currentIndex() );
     onOpacityFunctionChanged( ui->opacityFunctionCBox->currentIndex() );
 
@@ -715,7 +727,11 @@ void TransferFunctionEditor::onExportButtonClicked()
     {
         fileName += ".tfe";
     }
-    this->exportFile(fileName.toStdString(), false);
+#ifdef Q_OS_WIN
+    this->exportFile( fileName.toLocal8Bit().constData(), false );
+#else
+    this->exportFile( fileName.toStdString(), false );
+#endif
 }
 
 void TransferFunctionEditor::exportFile( const std::string& fname, const bool append)

@@ -327,9 +327,16 @@ void ColorMapEditor::onColorMapBarTableWidgetCellDoubleClicked( int row, int col
 //IMPORT FROM OLD PBVR(colormappalette.cpp setColorMapEquation)
 void ColorMapEditor::onExpressionChanged()
 {
+
+#ifdef Q_OS_WIN
+    std::string rfe = ui->redLEdit->text().toLocal8Bit().constData();
+    std::string gfe = ui->greenLEdit->text().toLocal8Bit().constData();
+    std::string bfe = ui->blueLEdit->text().toLocal8Bit().constData();
+#else
     std::string rfe = ui->redLEdit->text().toStdString();
     std::string gfe = ui->greenLEdit->text().toStdString();
     std::string bfe = ui->blueLEdit->text().toStdString();
+#endif
 
     const float min_value = 0.0;
     const float max_value = 1.0;

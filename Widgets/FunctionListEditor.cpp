@@ -113,8 +113,13 @@ void FunctionListEditor::save()
 void FunctionListEditor::onCellChanged( int row, int column )
 {
     qInfo() << "CHANGED" << row << "," << column;
+#ifdef Q_OS_WIN
+    std::string selected_left = ui->functionTWidget->item( row, 0 )->text().toLocal8Bit().constData();
+    std::string selected_right = ui->functionTWidget->item( row, 1 )->text().toLocal8Bit().constData();
+#else
     std::string selected_left = ui->functionTWidget->item( row, 0 )->text().toStdString();
     std::string selected_right = ui->functionTWidget->item( row, 1 )->text().toStdString();
+#endif
 
     const char *left = selected_left.c_str();
     const char *right = selected_right.c_str();

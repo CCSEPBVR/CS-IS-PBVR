@@ -91,7 +91,13 @@ void MergePanel::onBrowserButtonClicked()
 void MergePanel::onAddButtonClicked()
 {
     FilesManager *newFile = new FilesManager;
+
+#ifdef Q_OS_WIN
+    newFile->setFileInfo( QFileInfo( ui->importFilesPathLEdit->text().toLocal8Bit().constData() ) );
+#else
     newFile->setFileInfo( QFileInfo( ui->importFilesPathLEdit->text() ) );
+#endif
+
     newFile->setRGBColor( QColor( 128, 128, 128 ) );
     newFile->setOpacity( 0.5 );
     newFile->setCurrentDisplayedStep( -1 );
@@ -419,7 +425,7 @@ void MergePanel::exportingServerSidePointObject( FilesManager& filesManager )
         {
             kvsml->setWritingDataTypeToExternalBinary();
 #ifdef Q_OS_WIN
-            kvsml->write( fileInfo.filePath().replace( "/","\\" ).toStdString() );
+            kvsml->write( fileInfo.filePath().replace( "/","\\" ).toLocal8Bit().constData() );
 #else
             kvsml->write( fileInfo.filePath().toStdString() );
 #endif
@@ -751,7 +757,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                 if constexpr (!std::is_same_v<Importer, void>)
                 {
 //                    nextObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
-                    m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ) );
+                    m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, nextTimeStep ) ) );
                     m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                 }
                 else
@@ -772,7 +778,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                     if constexpr (!std::is_same_v<Importer, void>)
                     {
 //                        nextObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() );
-                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ) );
+                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ) ) );
                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                     }
                     else
@@ -795,7 +801,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                     if constexpr (!std::is_same_v<Importer, void>)
                     {
 //                        nextObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() );
-                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ) );
+                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ) ) );
                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                     }
                     else
@@ -854,7 +860,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                             if constexpr (!std::is_same_v<Importer, void>)
                             {
 //                                nextObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ) );
+                                m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, nextTimeStep ) ) );
                                 m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                             }
                             else
@@ -891,7 +897,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     if constexpr (!std::is_same_v<Importer, void>)
                                     {
 //                                        nextObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ) );
+                                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ) ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     else
@@ -931,7 +937,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     if constexpr (!std::is_same_v<Importer, void>)
                                     {
 //                                        nextObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ) );
+                                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ) ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     else
@@ -972,7 +978,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                             if constexpr (!std::is_same_v<Importer, void>)
                             {
 //                                nextObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ) );
+                                m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, nextTimeStep ) ) );
                                 m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                             }
                             else
@@ -1009,7 +1015,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     if constexpr (!std::is_same_v<Importer, void>)
                                     {
 //                                        nextObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ) );
+                                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ) ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     else
@@ -1049,7 +1055,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     if constexpr (!std::is_same_v<Importer, void>)
                                     {
 //                                        nextObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ) );
+                                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ) ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     else
@@ -1105,7 +1111,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                             if constexpr (!std::is_same_v<Importer, void>)
                             {
 //                                nextObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ) );
+                                m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, nextTimeStep ) ) );
                                 m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                             }
                             else
@@ -1137,7 +1143,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     if constexpr (!std::is_same_v<Importer, void>)
                                     {
 //                                        nextObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ) );
+                                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ) ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     else
@@ -1171,7 +1177,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     if constexpr (!std::is_same_v<Importer, void>)
                                     {
 //                                        nextObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ) );
+                                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ) ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     else
@@ -1207,7 +1213,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                             if constexpr (!std::is_same_v<Importer, void>)
                             {
 //                                nextObject = new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, nextTimeStep ).toStdString() ) );
+                                m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, nextTimeStep ) ) );
                                 m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                             }
                             else
@@ -1239,7 +1245,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     if constexpr (!std::is_same_v<Importer, void>)
                                     {
 //                                        nextObject = new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ).toStdString() ) );
+                                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ) ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     else
@@ -1273,7 +1279,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     if constexpr (!std::is_same_v<Importer, void>)
                                     {
 //                                        nextObject = new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ); //次のステップのファイルを表示
-                                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ).toStdString() ) );
+                                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ) ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     else
@@ -1324,7 +1330,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
     }    
 }
 
-QString MergePanel::WorkerThread::updateTimeStepInFileName(QString fileName, int nextTimeStep)
+std::string MergePanel::WorkerThread::updateTimeStepInFileName(QString fileName, int nextTimeStep)
 {
     // 正規表現パターン: 5桁の数字
     QRegularExpression regex(R"(\d{5})");
@@ -1341,17 +1347,17 @@ QString MergePanel::WorkerThread::updateTimeStepInFileName(QString fileName, int
         int startPos = match.capturedStart();
         int endPos = match.capturedEnd();
 #ifdef Q_OS_WIN
-        return fileName.left(startPos).replace( "/", "\\" ) + extractedNumber + fileName.mid(endPos);
+        return ( fileName.left(startPos).replace( "/", "\\" ) + extractedNumber + fileName.mid(endPos) ).toLocal8Bit().constData();
 #else
-        return fileName.left(startPos) + extractedNumber + fileName.mid(endPos);
+        return ( fileName.left(startPos) + extractedNumber + fileName.mid(endPos) ).toStdString();
 #endif
     }
     else
     {
 #ifdef Q_OS_WIN
-        return fileName.replace( "/", "\\" );
+        return ( fileName.replace( "/", "\\" ) ).toLocal8Bit().constData();
 #else
-        return fileName;
+        return ( fileName ).toStdString();
 #endif
     }
 }

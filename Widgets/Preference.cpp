@@ -333,7 +333,11 @@ void Preference::applyColorMapBarSettings()
     const bool isShowing = ui->colorMapBarGBox->isChecked();
     const OrientationType orientationType = static_cast<OrientationType>( ui->orientationTypeCBox->currentIndex() );
 
+#ifdef Q_OS_WIN
+    m_color_map_bar->setCaption( ui->captionLEdit->text().toLocal8Bit().constData() );
+#else
     m_color_map_bar->setCaption( ui->captionLEdit->text().toStdString() );
+#endif
 
     if( isShowing )
     {
@@ -452,7 +456,7 @@ void Preference::applyLabelsSettings()
     else
     {
         m_time_step_label->hide();
-    }    
+    }
 }
 
 void Preference::applyFontSettings()

@@ -20,8 +20,15 @@ Coordinates::~Coordinates()
 
 void Coordinates::onApplyButtonClicked()
 {
+#ifdef Q_OS_WIN
+    m_client_message->m_x_synthesis = ui->coordinateXLEdit->text().toLocal8Bit().constData();
+    m_client_message->m_y_synthesis = ui->coordinateYLEdit->text().toLocal8Bit().constData();
+    m_client_message->m_z_synthesis = ui->coordinateZLEdit->text().toLocal8Bit().constData();
+#else
     m_client_message->m_x_synthesis = ui->coordinateXLEdit->text().toStdString();
     m_client_message->m_y_synthesis = ui->coordinateYLEdit->text().toStdString();
     m_client_message->m_z_synthesis = ui->coordinateZLEdit->text().toStdString();
+#endif
+
     m_merge->setIsParticleGenerationNeeded( true );
 }

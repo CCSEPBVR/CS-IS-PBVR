@@ -97,7 +97,11 @@ void OpacityMapEditor::onResetButtonClicked()
 
 void OpacityMapEditor::onExpressionChanged()
 {
+#ifdef Q_OS_WIN
+    std::string ofe = ui->oLEdit->text().toLocal8Bit().constData();
+#else
     std::string ofe = ui->oLEdit->text().toStdString();
+#endif
 
     const float min_value = 0.0;
     const float max_value = 1.0;
