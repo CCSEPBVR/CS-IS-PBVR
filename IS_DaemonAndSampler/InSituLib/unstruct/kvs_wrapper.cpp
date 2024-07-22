@@ -1344,8 +1344,6 @@ void generate_particles( int time_step,
                 timer.stop();
     } //#pragma omp parallel
 
-//    std::cout << "end sampling l: " << __LINE__<<  std::endl; 
-
     timer.stop();
     time.sampling = timer.sec();
     time.nparticles = vertex_coords.size()/3;
@@ -1367,6 +1365,7 @@ void generate_particles( int time_step,
         }
     }
     
+
     ///-------------------------------------//
     ///--------粒子配列をファイル出力----------//
     //--------------------------------------//
