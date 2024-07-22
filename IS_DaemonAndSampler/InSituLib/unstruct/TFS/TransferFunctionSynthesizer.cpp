@@ -1114,7 +1114,7 @@ void TransferFunctionSynthesizer::CalculateColorArray(
                                    grad_array_z[j] );
     }
 
-    kvs::RGBColor colors[10][loop_cnt]; //result of t_func.colorMap().at( m_scalars[i] );
+    kvs::RGBColor colors[m_col_var.size()][loop_cnt]; //result of t_func.colorMap().at( m_scalars[i] );
 
     m_var_value_array[X] = global_coord_x;
     m_var_value_array[Y] = global_coord_y;
@@ -1245,7 +1245,7 @@ void TransferFunctionSynthesizer::CalculateColorArray(
                                    grad_array_z[j] );
     }
 
-    kvs::RGBColor colors[10][loop_cnt]; //result of t_func.colorMap().at( m_scalars[i] );
+    kvs::RGBColor colors[m_col_var.size()][loop_cnt]; //result of t_func.colorMap().at( m_scalars[i] );
 
     m_var_value_array[X] = global_coord_x;
     m_var_value_array[Y] = global_coord_y;

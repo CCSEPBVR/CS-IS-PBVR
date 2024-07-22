@@ -82,6 +82,7 @@ void ParameterFileWriter::inputTransferFunctionMessage( const jpv::ParticleTrans
     m_name_list_file.setLine( "OPACITY_SYNTH", client_message.opacity_tf_synthesis);
     m_name_list_file.setLine( "TF_NUMBER"    , (int)(client_message.transfunc.size()) );
 
+#if 0
     //2019 kawamura
     std::stringstream tag, table;
     tag << "OPA_FUNC_EXP_TOKEN";
@@ -142,6 +143,7 @@ void ParameterFileWriter::inputTransferFunctionMessage( const jpv::ParticleTrans
     m_name_list_file.setLine( tag.str(), table.str() );
     tag.str("");  tag.clear(std::stringstream::goodbit);
     table.str("");  table.clear(std::stringstream::goodbit);
+#endif
 
     for ( size_t n = 0; n < client_message.transfunc.size(); n++ )
     {

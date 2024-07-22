@@ -98,12 +98,12 @@ void ParameterFileReader::readParameterFile( const char* fname )
     m_name_list_file.setName( "OPACITY_SYNTH" );
     m_name_list_file.setName( "TF_NUMBER" );
 
-    m_name_list_file.setName( "OPA_FUNC_EXP_TOKEN");
-    m_name_list_file.setName( "OPA_FUNC_VAR_NAME");
-    m_name_list_file.setName( "OPA_FUNC_VAL_ARRAY");
-    m_name_list_file.setName( "COL_FUNC_EXP_TOKEN");
-    m_name_list_file.setName( "COL_FUNC_VAR_NAME");
-    m_name_list_file.setName( "COL_FUNC_VAL_ARRAY");
+//    m_name_list_file.setName( "OPA_FUNC_EXP_TOKEN");
+//    m_name_list_file.setName( "OPA_FUNC_VAR_NAME");
+//    m_name_list_file.setName( "OPA_FUNC_VAL_ARRAY");
+//    m_name_list_file.setName( "COL_FUNC_EXP_TOKEN");
+//    m_name_list_file.setName( "COL_FUNC_VAR_NAME");
+//    m_name_list_file.setName( "COL_FUNC_VAL_ARRAY");
 
 
     for ( size_t n = 0; n < BEFORE_READ_TF_NUMBER; n++ )
@@ -121,12 +121,12 @@ void ParameterFileReader::readParameterFile( const char* fname )
         m_name_list_file.setName( tag_base + "TABLE_C" );
         m_name_list_file.setName( tag_base + "TABLE_O" );
 
-        m_name_list_file.setName( tag_base + "O_EXP_TOKEN" );
-        m_name_list_file.setName( tag_base + "O_VAR_NAME" );
-        m_name_list_file.setName( tag_base + "O_VAL_ARRAY" );
-        m_name_list_file.setName( tag_base + "C_EXP_TOKEN" );
-        m_name_list_file.setName( tag_base + "C_VAR_NAME" );
-        m_name_list_file.setName( tag_base + "C_VAL_ARRAY" );
+//        m_name_list_file.setName( tag_base + "O_EXP_TOKEN" );
+//        m_name_list_file.setName( tag_base + "O_VAR_NAME" );
+//        m_name_list_file.setName( tag_base + "O_VAL_ARRAY" );
+//        m_name_list_file.setName( tag_base + "C_EXP_TOKEN" );
+//        m_name_list_file.setName( tag_base + "C_VAR_NAME" );
+//        m_name_list_file.setName( tag_base + "C_VAL_ARRAY" );
     }
 
     m_name_list_file.setFileName( std::string( fname ) );
@@ -153,12 +153,12 @@ void ParameterFileReader::readParameterFile( const char* fname )
             m_name_list_file.deleteLine( tag_base + "TABLE_C" );
             m_name_list_file.deleteLine( tag_base + "TABLE_O" );
 
-            m_name_list_file.deleteLine( tag_base + "O_EXP_TOKEN" );
-            m_name_list_file.deleteLine( tag_base + "O_VAR_NAME" );
-            m_name_list_file.deleteLine( tag_base + "O_VAL_ARRAY" );
-            m_name_list_file.deleteLine( tag_base + "C_EXP_TOKEN" );
-            m_name_list_file.deleteLine( tag_base + "C_VAR_NAME" );
-            m_name_list_file.deleteLine( tag_base + "C_VAL_ARRAY" );
+//            m_name_list_file.deleteLine( tag_base + "O_EXP_TOKEN" );
+//            m_name_list_file.deleteLine( tag_base + "O_VAR_NAME" );
+//            m_name_list_file.deleteLine( tag_base + "O_VAL_ARRAY" );
+//            m_name_list_file.deleteLine( tag_base + "C_EXP_TOKEN" );
+//            m_name_list_file.deleteLine( tag_base + "C_VAR_NAME" );
+//            m_name_list_file.deleteLine( tag_base + "C_VAL_ARRAY" );
         }
     }
 
