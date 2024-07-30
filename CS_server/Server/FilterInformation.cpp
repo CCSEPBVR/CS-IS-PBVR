@@ -5,14 +5,150 @@
 #include "FilterInformation.h"
 #include <kvs/File>
 #include "endian2.h"
+#include "NameListFile.h"
 
 //--------------------------------------------------------------------------
 
 int FilterInformationFile::loadPFI( const std::string& filename )
 {
-    std::ifstream fin( filename.c_str(), std::ios::in | std::ios::binary );
-    if ( ! fin ) return -1;
 
+    NameListFile m_name_list_file(filename); 
+    m_name_list_file.setName( "NODE_NUM" );
+    m_name_list_file.setName( "CELL_NUM" );
+    m_name_list_file.setName( "CELLTYPE" ); 
+    m_name_list_file.setName( "FILETYPE" ); 
+    m_name_list_file.setName( "FILES_NUM" ); 
+    m_name_list_file.setName( "COMPONENT_NUM" ); 
+    m_name_list_file.setName( "BEGINNING_STEP" ); 
+    m_name_list_file.setName( "LAST_STEP" ); 
+    m_name_list_file.setName( "SUBVOLUME_NUM" ); 
+    m_name_list_file.setName( "MIN_COORD_0" ); 
+    m_name_list_file.setName( "MIN_COORD_1" ); 
+    m_name_list_file.setName( "MIN_COORD_2" ); 
+    m_name_list_file.setName( "MAX_COORD_0" ); 
+    m_name_list_file.setName( "MAX_COORD_1" ); 
+    m_name_list_file.setName( "MAX_COORD_2" );
+
+    m_name_list_file.read();
+
+    m_number_nodes        = m_name_list_file.getValue<int>("NODE_NUM");
+    m_number_elements     = m_name_list_file.getValue<int>("CELL_NUM");
+    m_elem_type           = m_name_list_file.getValue<int>("CELLTYPE");
+    m_file_type           = m_name_list_file.getValue<int>("FILETYPE");
+    m_number_files        = m_name_list_file.getValue<int>("FILES_NUM");
+    m_number_ingredients  = m_name_list_file.getValue<int>("COMPONENT_NUM");
+    m_start_step          = m_name_list_file.getValue<int>("BEGINNING_STEP");
+    m_end_steps           = m_name_list_file.getValue<int>("LAST_STEP");
+    m_number_subvolumes   = m_name_list_file.getValue<int>("SUBVOLUME_NUM");
+    float x_min, y_min, z_min;
+    float x_max, y_max, z_max;
+    x_min = m_name_list_file.getValue<float>("MIN_COORD_0"); 
+    y_min = m_name_list_file.getValue<float>("MIN_COORD_1"); 
+    y_min = m_name_list_file.getValue<float>("MIN_COORD_2"); 
+    x_max = m_name_list_file.getValue<float>("MAX_COORD_0"); 
+    y_max = m_name_list_file.getValue<float>("MAX_COORD_1"); 
+    y_max = m_name_list_file.getValue<float>("MAX_COORD_2"); 
+    m_min_object_coord.set( x_min, y_min, z_min );
+    m_max_object_coord.set( x_max, y_max, z_max );
+
+
+    for(int i =0; i< m_number_subvolumes; i++)
+    {
+            std::stringstream ss_min, ss_max;
+            ss_min << "SUB_VOLUME_MIN_COORD_" << i << "_";
+            ss_max << "SUB_VOLUME_MAX_COORD_" << i << "_";
+            const std::string tag_min_coord_base = ss_min.str();
+            const std::string tag_max_coord_base = ss_max.str();
+            m_name_list_file.setName( tag_min_coord_base + "0" );
+            m_name_list_file.setName( tag_min_coord_base + "1" );
+            m_name_list_file.setName( tag_min_coord_base + "2" );
+            m_name_list_file.setName( tag_max_coord_base + "0" );
+            m_name_list_file.setName( tag_max_coord_base + "1" );
+            m_name_list_file.setName( tag_max_coord_base + "2" );
+    }
+
+//////    for (int i= 0; i <= 0; i++ )
+//    {
+//        int i= 0;
+//        for ( int32_t j = 0; j < m_number_ingredients; j++ )
+//        {
+//            std::stringstream ss_val_min, ss_val_max;
+//            ss_val_min << "MIN_VAL_" << i << "_" << j;
+//            ss_val_max << "MAX_VAL_" << i << "_" << j;
+//            const std::string tag_min_val_base = ss_val_min.str();
+//            const std::string tag_max_val_base = ss_val_max.str();
+//            m_name_list_file.setName( tag_min_val_base );
+//            m_name_list_file.setName( tag_max_val_base );
+//        }
+//    } 
+
+    m_min_subvolume_coord.resize( m_number_subvolumes );
+    m_max_subvolume_coord.resize( m_number_subvolumes );
+    m_name_list_file.read();
+
+    for(int vl =0; vl< m_number_subvolumes; vl++)
+    {
+        float sub_x_min, sub_y_min, sub_z_min;
+        float sub_x_max, sub_y_max, sub_z_max;
+        std::stringstream ss_min, ss_max;
+        ss_min << "SUB_VOLUME_MIN_COORD_" << vl << "_";
+        ss_max << "SUB_VOLUME_MAX_COORD_" << vl << "_";
+        std::cout << __LINE__ << std::endl;
+        //変数読み取り処理
+        const std::string tag_min_coord_base = ss_min.str();
+        const std::string tag_max_coord_base = ss_max.str();
+        sub_x_min = m_name_list_file.getValue<float>( tag_min_coord_base + "0"); 
+        sub_y_min = m_name_list_file.getValue<float>( tag_min_coord_base + "1"); 
+        sub_y_min = m_name_list_file.getValue<float>( tag_min_coord_base + "2"); 
+        sub_x_max = m_name_list_file.getValue<float>( tag_max_coord_base + "0"); 
+        sub_y_max = m_name_list_file.getValue<float>( tag_max_coord_base + "1"); 
+        sub_y_max = m_name_list_file.getValue<float>( tag_max_coord_base + "2"); 
+        std::cout << __LINE__ << std::endl;
+        m_min_subvolume_coord[vl].set( sub_x_min, sub_y_min, sub_z_min );
+        m_max_subvolume_coord[vl].set( sub_x_max, sub_y_max, sub_z_max );
+    }
+
+//    m_ingredient_step.clear();
+////    for (int i= 0; i <= 0; i++ )
+//    {
+//        int i= 0;
+////        for ( int32_t i = 0; i < m_number_ingredients; i++ )
+////            {
+////                std::stringstream ss_val_min, ss_val_max;
+////                ss_val_min << "MIN_VAL_" << i << "_" << j;
+////                ss_val_max << "MAX_VAL_" << i << "_" << j;
+////                const std::string tag_min_val_base = ss_val_min.str();
+////                const std::string tag_max_val_base = ss_val_max.str();
+//////                std::cout << tag_min_val_base << "=" << m_name_list_file.m_name_list[tag_min_val_base]<< std::endl;
+//////                std::cout << tag_max_val_base << "=" << m_name_list_file.[tag_max_val_base]<< std::endl;
+////                std::cout << tag_min_val_base << "=" << m_name_list_file.getValue<float>(tag_min_val_base)<< std::endl;
+////                std::cout << tag_max_val_base << "=" << m_name_list_file.getValue<float>(tag_max_val_base)<< std::endl;
+////            }
+//
+//        m_ingredient_step.push_back( IngredientsStep() );
+//        m_ingredient_step[i].m_ingredient.clear();
+//        for ( int32_t j = 0; j < m_number_ingredients; j++ )
+//        {
+//            std::stringstream ss_val_min, ss_val_max;
+//            ss_val_min << "MIN_VAL_" << i << "_" << j;
+//            ss_val_max << "MAX_VAL_" << i << "_" << j;
+//            const std::string tag_min_val_base = ss_val_min.str();
+//            const std::string tag_max_val_base = ss_val_max.str();
+//
+//            float min, max;
+//            min = m_name_list_file.getValue<float>(tag_min_val_base);
+//            max = m_name_list_file.getValue<float>(tag_max_val_base);
+//            m_ingredient_step[i].m_ingredient.push_back( IngredientsMinMax() );
+//            m_ingredient_step[i].m_ingredient[j].m_min = min;
+//            m_ingredient_step[i].m_ingredient[j].m_max = max;
+//            std::cout << "m_ingredient_step[i].m_ingredient[j].m_min = " << m_ingredient_step[i].m_ingredient[j].m_min <<std::endl;  
+//        }
+//    } 
+
+
+#if 0
+    //std::ifstream fin( filename.c_str(), std::ios::in | std::ios::binary );
+    //if ( ! fin ) return -1;
     fin.read( ( char* )&m_number_nodes, sizeof( int32_t ) );
     fin.read( ( char* )&m_number_elements, sizeof( int32_t ) );
     fin.read( ( char* )&m_elem_type, sizeof( int32_t ) );
@@ -108,8 +244,8 @@ int FilterInformationFile::loadPFI( const std::string& filename )
             if ( max > m_max_value ) m_max_value = max;
         }
     }
-
-    fin.close();
+#endif
+    //fin.close();
 
     /*
       std::cout << "numNodes:      " << numNodes       << std::endl;
@@ -151,8 +287,10 @@ int FilterInformationList::loadPFL( const std::string& filename )
     {
         FilterInformationFile fi;
         if ( fi.loadPFI( filename ) < 0 ) return -1;
+        std::cout << __LINE__ << std::endl;
         m_list.push_back( fi );
 
+        std::cout << __LINE__ << std::endl;
         m_total_number_nodes = fi.m_number_nodes;
         m_total_number_elements = fi.m_number_elements;
         m_total_number_files = fi.m_number_files;
@@ -168,12 +306,14 @@ int FilterInformationList::loadPFL( const std::string& filename )
         m_total_max_value = fi.m_max_value;
         m_total_number_ingredients = fi.m_number_ingredients;
         m_total_ingredient.resize( m_total_number_ingredients );
+        std::cout << __LINE__ << std::endl;
         for (int32_t i = 0; i < m_total_number_ingredients; i++)
         {
             m_total_ingredient[i].m_min = FLT_MAX;
             m_total_ingredient[i].m_max = -FLT_MAX;
         }
-        calculate_ingredient_min_max( fi, &m_total_ingredient );
+// comment out by shimomura 20240730
+//        calculate_ingredient_min_max( fi, &m_total_ingredient );
         return 1;
     }
 
@@ -250,10 +390,11 @@ int FilterInformationList::loadPFL( const std::string& filename )
  
     m_total_ingredient.resize( m_total_number_ingredients );
 
-    for ( int32_t idx = 0; idx < m_list.size(); idx++ )
-    {
-        calculate_ingredient_min_max( m_list[idx], &m_total_ingredient );
-    }
+// comment out by shimomura 20240730
+//    for ( int32_t idx = 0; idx < m_list.size(); idx++ )
+//    {
+//        calculate_ingredient_min_max( m_list[idx], &m_total_ingredient );
+//    }
 
     return m_list.size();
 }

@@ -664,7 +664,6 @@ inline const double CalculateTotalVolume( const pbvr::VolumeObjectBase* object )
         }
         case pbvr::VolumeObjectBase::QuadraticHexahedra:
         {
-            std::cout << __FILE__ << ":" << __LINE__ <<  ":" << __func__ << std::endl;
             for ( int n = 0; n < max_threads; n++ )
             {
                 cell[n] = new pbvr::QuadraticHexahedralCell<float>( *volume );

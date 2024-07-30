@@ -162,6 +162,9 @@ private:
     CoordSynthesizerStrings*     m_pCoordSynthStrs;    ///< String set for coord synthesizer
     CoordSynthesizerTokens*      m_pCoordSynthTkns;
 
+//    m_min_values;
+
+
 public:
 
     VolumeObjectBase();

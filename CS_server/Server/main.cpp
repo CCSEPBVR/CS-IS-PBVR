@@ -445,7 +445,9 @@ inline pbvr::VolumeObjectBase* CreateVolumeData( const Argument& param,
         std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
         //pbvr::UnstructuredVolumeObject* volume = new pbvr::UnstructuredVolumeImporter( path_base,
         pbvr::VolumeObjectBase* volume = new pbvr::UnstructuredVolumeImporter( path_base, fi.m_file_type, steps, subvols );
-        volume->setMinMaxValues( fi.m_min_value, fi.m_max_value );
+        // change by shimomura 20240730
+        volume->updateMinMaxValues();
+        //volume->setMinMaxValues( fi.m_min_value, fi.m_max_value );
         volume->setMinMaxObjectCoords( fi.m_min_object_coord, fi.m_max_object_coord );
         volume->setMinMaxExternalCoords( fi.m_min_object_coord, fi.m_max_object_coord );
 
@@ -482,7 +484,9 @@ inline pbvr::VolumeObjectBase* CreateVolumeData( const Argument& param,
             //return false;
         }
 
-            volume->setMinMaxValues( fi.m_min_value, fi.m_max_value );
+            // change by shimomura 20240730
+            volume->updateMinMaxValues();
+            //volume->setMinMaxValues( fi.m_min_value, fi.m_max_value );
             volume->setMinMaxObjectCoords( fi.m_min_object_coord, fi.m_max_object_coord );
             volume->setMinMaxExternalCoords( fi.m_min_object_coord, fi.m_max_object_coord );
         return volume;
@@ -566,6 +570,68 @@ inline size_t CalculateSubpixelLevel( const Argument& param,
 
     return static_cast<size_t>( subpixel_level + 0.5f );
 }
+
+//shimomura: This calculates q1 minmax.
+inline VariableRange Calculate_minmax( const Argument& param,
+                                      const FilterInformationList& fil)
+{
+    namespace Generator = pbvr::CellByCellParticleGenerator;
+    //pbvr::UnstructuredVolumeObject* volume;
+    pbvr::VolumeObjectBase* volume;
+    double total_volume = 0.0;
+    double density_lev1 = 0.0;//kawamura2: particle density for subpixel_level=1
+    int steps = fil.m_total_start_steps;
+    int subvols = 0;
+
+    kvs::Real64 tmp_min, tmp_max;
+    //Total Volume Calculation
+#ifndef CPU_VER
+    int rank;
+    int nprocs;
+    MPI_Comm_size( MPI_COMM_WORLD, &nprocs );
+    MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+#else
+    int rank = 0;
+    int nprocs = 1;
+#endif
+
+    for ( subvols = 0; subvols < fil.m_total_number_subvolumes; subvols++ )
+    {
+        int xvl, fidx;
+        fidx = fil.getFileIndex( subvols, &xvl );
+        const FilterInformationFile& fi = fil.m_list[fidx];
+
+        if ( subvols % nprocs == rank )
+        {
+            volume = CreateVolumeData( param, fi, steps, xvl );
+            //volume->updateMinMaxValues();
+            tmp_min = volume->values().at<float>(0) ; 
+            tmp_max = volume->values().at<float>(0) ; 
+            for (int i =1; i< volume->nnodes(); i++)
+            {
+            tmp_min = tmp_min < volume->values().at<float>(i) ? tmp_min : volume->values().at<float>(i) ; 
+            tmp_max = tmp_min > volume->values().at<float>(i) ? tmp_max : volume->values().at<float>(i) ; 
+            }
+            delete volume;
+        }
+    }
+
+#ifndef CPU_VER
+    PBVR_TIMER_STA( 19 );
+    MPI_Allreduce( MPI_IN_PLACE, &tmp_min, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
+    MPI_Allreduce( MPI_IN_PLACE, &tmp_max, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
+    PBVR_TIMER_END( 19 );
+#endif
+
+   VariableRange vr;
+   vr.setValue( "t1_var_o", tmp_max);
+   vr.setValue( "t1_var_o", tmp_min);
+   vr.setValue( "t1_var_c", tmp_max);
+   vr.setValue( "t1_var_c", tmp_min);
+
+   return vr;
+}
+
 
 inline float CalculateDensityFactor( const Argument& param,
                                      const FilterInformationFile& fi,
@@ -1934,7 +2000,8 @@ int main( int argc, char** argv )
 
                     transfunc_creator.setProtocol( clntMes );
                     TransferFunctionSynthesizer* tfs = transfunc_creator.create();
-                    VariableRange range = RangeEstimater::EstimationList( 0, fil, tfs , clntMes);
+//                    VariableRange range = RangeEstimater::EstimationList( 0, fil, tfs , clntMes); // change by shimomura 20240730 
+                    VariableRange range = Calculate_minmax( param, fil); 
 
                     //VariableRange range;
                     strncpy( servMes.header, "JPTP /1.0 000 OK\r\n", 18 );
@@ -1952,7 +2019,6 @@ int main( int argc, char** argv )
                     servMes.maxObjectCoord[2] = fil.m_total_max_object_coord[2];
                     servMes.minValue = fil.m_total_min_value;
                     servMes.maxValue = fil.m_total_max_value;
-                    std::cout << "fil.m_total_max_value = " << fil.m_total_max_value <<std::endl;
                     servMes.numNodes = fil.m_total_number_nodes;
                     servMes.numElements = fil.m_total_number_elements;
                     servMes.elemType = fil.m_list[0].m_elem_type;
