@@ -31,7 +31,8 @@ VolumeObjectBase::VolumeObjectBase():
     m_has_min_max_values( false ),
     m_min_value( 0.0 ),
     m_max_value( 0.0 ),
-    m_pCoordSynthStrs( NULL )
+    m_pCoordSynthStrs( NULL ),
+    m_pCoordSynthTkns( NULL )
 {
 }
 
@@ -56,7 +57,8 @@ VolumeObjectBase::VolumeObjectBase(
     m_has_min_max_values( false ),
     m_min_value( 0.0 ),
     m_max_value( 0.0 ),
-    m_pCoordSynthStrs( NULL )
+    m_pCoordSynthStrs( NULL ),
+    m_pCoordSynthTkns( NULL )
 {
 }
 
@@ -76,7 +78,8 @@ VolumeObjectBase::VolumeObjectBase( const VolumeObjectBase& other ):
     m_has_min_max_values( other.hasMinMaxValues() ),
     m_min_value( other.minValue() ),
     m_max_value( other.maxValue() ),
-    m_pCoordSynthStrs( NULL )
+    m_pCoordSynthStrs( NULL ),
+    m_pCoordSynthTkns( NULL )
 {
     // this->shallowCopy( other );
     setCoordSynthesizerStrings( *other.getCoordSynthesizerStrings() );

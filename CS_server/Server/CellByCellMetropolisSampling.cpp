@@ -1402,6 +1402,11 @@ void CellByCellMetropolisSampling::generate_particles( const pbvr::StructuredVol
     //delete volume_opacity;
     delete[] interp_opacity;
 
+    for (int i = 0; i < nvariables; i++)
+    {
+        delete[] values[i];
+    }
+    delete[] values;
 
 #endif
 

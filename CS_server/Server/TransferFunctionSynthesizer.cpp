@@ -678,6 +678,12 @@ void TransferFunctionSynthesizer::CalculateColor(
         Green[I] = (kvs::UInt8)(green[I]*255);
         Blue[I] = (kvs::UInt8)(blue[I]*255);
     }
+    for (size_t i = 0; i < m_col_var.size(); i++)
+    {
+        delete [] colors[i];
+    }   
+    delete[] colors;
+
 }
 
 void TransferFunctionSynthesizer::CalculateCoordArray(
@@ -2404,14 +2410,14 @@ void TransferFunctionSynthesizer::CalculateColorArray(
         grad_array_z[i] = new float[loop_cnt];
     }
 
-    float* local_coord_x;
-    local_coord_x = new float[loop_cnt];
-
-    float* local_coord_y;
-    local_coord_y = new float[loop_cnt];
-
-    float* local_coord_z;
-    local_coord_z = new float[loop_cnt];
+//    float* local_coord_x;
+//    local_coord_x = new float[loop_cnt];
+//
+//    float* local_coord_y;
+//    local_coord_y = new float[loop_cnt];
+//
+//    float* local_coord_z;
+//    local_coord_z = new float[loop_cnt];
 
     float* global_coord_x;
     global_coord_x = new float[loop_cnt];
@@ -2427,9 +2433,9 @@ void TransferFunctionSynthesizer::CalculateColorArray(
 
     for (int jx = 0; jx < loop_cnt; jx++)
     {
-        local_coord_x[jx] = local_coord[jx].x();
-        local_coord_y[jx] = local_coord[jx].y();
-        local_coord_z[jx] = local_coord[jx].z();
+//        local_coord_x[jx] = local_coord[jx].x();
+//        local_coord_y[jx] = local_coord[jx].y();
+//        local_coord_z[jx] = local_coord[jx].z();
         global_coord_x[jx] = global_coord[jx].x();
         global_coord_y[jx] = global_coord[jx].y();
         global_coord_z[jx] = global_coord[jx].z();
@@ -2450,9 +2456,7 @@ void TransferFunctionSynthesizer::CalculateColorArray(
 
     //kvs::RGBColor colors[10][loop_cnt]; //result of t_func.colorMap().at( m_scalars[i] );
     kvs::RGBColor** colors = new kvs::RGBColor* [m_col_var.size()];
-    //kvs::RGBColor** colors = new kvs::RGBColor* [10];
-    for (int i = 0; i < m_col_var.size(); ++i)
-    //for (int i = 0; i < 10; ++i)
+    for( size_t i = 0; i < m_col_var.size(); i++ )
     {
         colors[i] = new kvs::RGBColor[loop_cnt];
     }

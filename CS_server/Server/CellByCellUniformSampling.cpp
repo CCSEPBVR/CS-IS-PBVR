@@ -1163,7 +1163,6 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
         }
     }
     delete[] interp_opacity;
-
 #endif
     for (int i = 0; i < nvariables; i++)
     //for (int i = 0; i < nnodes; i++)
@@ -2132,6 +2131,7 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
             /////////////////////////////// CalculateOpacity(), CalculateColor() ///////////////////////////////////
         }// end of for cell
 
+
 #pragma omp critical
         {
             if( parameter_file_opened )
@@ -2158,6 +2158,9 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
             vertex_colors.insert ( vertex_colors.end(), th_vertex_colors.begin(), th_vertex_colors.end() );
             vertex_normals.insert( vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end() );
         }
+        th_vertex_coords.clear();
+        th_vertex_colors.clear();
+        th_vertex_normals.clear();
 
     } //#pragma omp parallel
 
@@ -2189,7 +2192,6 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
         }
     }
 
-    //for (int i = 0; i < nvariables; i++)
     for (int i = 0; i < nvariables; i++)
     {
         delete[] values[i];
@@ -2202,7 +2204,6 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
     SuperClass::m_colors  = kvs::ValueArray<kvs::UInt8>( vertex_colors );
     SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( vertex_normals );
 
-//#endif
     SuperClass::setSize( 1.0f );
     //TIMER_END( 280 );
     double end = GetTime();

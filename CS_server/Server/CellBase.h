@@ -211,6 +211,21 @@ inline void CellBase<T>::allocate()
         m_vertices_vec = new kvs::Real32 [nnodes * dimension];
         if ( !m_vertices_vec ) throw "Cannot allocate memory for 'm_vertices_vec'";
         memset( m_vertices_vec, 0, sizeof( kvs::Real32 ) * nnodes * dimension );
+
+        m_vertices_array  = new kvs::Vector3f* [nnodes]; //[nnodes];
+        m_scalars_array   = new T* [nnodes]; //[nnodes];
+        m_interpolation_functions_array = new kvs::Real32* [nnodes]; // [nnodes];
+        m_differential_functions_array  = new kvs::Real32* [nnodes*dimension]; // [nnodes*3];
+        for (int i = 0; i<nnodes; i++ )
+        {
+        m_vertices_array[i]  = new kvs::Vector3f[SIMD_BLK_SIZE];
+        m_scalars_array[i]   = new T[SIMD_BLK_SIZE] ;  
+        m_interpolation_functions_array[i] = new kvs::Real32[SIMD_BLK_SIZE] ;
+        m_differential_functions_array[3*i]  = new kvs::Real32[SIMD_BLK_SIZE] ;
+        m_differential_functions_array[3*i+1]  = new kvs::Real32[SIMD_BLK_SIZE] ;
+        m_differential_functions_array[3*i+2]  = new kvs::Real32[SIMD_BLK_SIZE] ;
+        } 
+
     }
     catch ( char* error_message )
     {
@@ -234,7 +249,7 @@ inline void CellBase<T>::deallocate()
     if ( m_differential_functions ) delete [] m_differential_functions;
     if ( m_vertices_vec ) delete [] m_vertices_vec;
 
-    //add by shimomura 2024/0603
+//    //add by shimomura 2024/0603
     if ( m_vertices_array)
     { 
         for (int i = 0; i<m_nnodes; i++ )  delete [] m_vertices_array[i];

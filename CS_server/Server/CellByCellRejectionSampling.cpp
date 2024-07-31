@@ -1096,6 +1096,11 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
     }
     delete[] interp_opacity;
 
+    for (int i = 0; i < nvariables; i++)
+    {
+        delete[] values[i];
+    }
+    delete[] values;
 
 #endif
 }
