@@ -601,8 +601,8 @@ inline VariableRange Calculate_minmax( const Argument& param,
         fidx = fil.getFileIndex( subvols, &xvl );
         const FilterInformationFile& fi = fil.m_list[fidx];
 
-        if ( subvols % nprocs == rank )
-        {
+//        if ( subvols % nprocs == rank )
+//        {
             volume = CreateVolumeData( param, fi, steps, xvl );
             //volume->updateMinMaxValues();
             tmp_min = volume->values().at<float>(0) ; 
@@ -613,15 +613,15 @@ inline VariableRange Calculate_minmax( const Argument& param,
             tmp_max = tmp_min > volume->values().at<float>(i) ? tmp_max : volume->values().at<float>(i) ; 
             }
             delete volume;
-        }
+//        }
     }
 
-#ifndef CPU_VER
-    PBVR_TIMER_STA( 19 );
-    MPI_Allreduce( MPI_IN_PLACE, &tmp_min, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
-    MPI_Allreduce( MPI_IN_PLACE, &tmp_max, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
-    PBVR_TIMER_END( 19 );
-#endif
+//#ifndef CPU_VER
+//    PBVR_TIMER_STA( 19 );
+//    MPI_Allreduce( MPI_IN_PLACE, &tmp_min, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
+//    MPI_Allreduce( MPI_IN_PLACE, &tmp_max, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
+//    PBVR_TIMER_END( 19 );
+//#endif
 
    VariableRange vr;
    vr.setValue( "t1_var_o", tmp_max);
@@ -2002,7 +2002,7 @@ int main( int argc, char** argv )
                     TransferFunctionSynthesizer* tfs = transfunc_creator.create();
 //                    VariableRange range = RangeEstimater::EstimationList( 0, fil, tfs , clntMes); // change by shimomura 20240730 
                     VariableRange range = Calculate_minmax( param, fil); 
-
+    
                     //VariableRange range;
                     strncpy( servMes.header, "JPTP /1.0 000 OK\r\n", 18 );
                     servMes.numParticle = 0;

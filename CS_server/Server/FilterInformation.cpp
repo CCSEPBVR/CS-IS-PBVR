@@ -93,7 +93,6 @@ int FilterInformationFile::loadPFI( const std::string& filename )
         std::stringstream ss_min, ss_max;
         ss_min << "SUB_VOLUME_MIN_COORD_" << vl << "_";
         ss_max << "SUB_VOLUME_MAX_COORD_" << vl << "_";
-        std::cout << __LINE__ << std::endl;
         //変数読み取り処理
         const std::string tag_min_coord_base = ss_min.str();
         const std::string tag_max_coord_base = ss_max.str();
@@ -103,7 +102,6 @@ int FilterInformationFile::loadPFI( const std::string& filename )
         sub_x_max = m_name_list_file.getValue<float>( tag_max_coord_base + "0"); 
         sub_y_max = m_name_list_file.getValue<float>( tag_max_coord_base + "1"); 
         sub_y_max = m_name_list_file.getValue<float>( tag_max_coord_base + "2"); 
-        std::cout << __LINE__ << std::endl;
         m_min_subvolume_coord[vl].set( sub_x_min, sub_y_min, sub_z_min );
         m_max_subvolume_coord[vl].set( sub_x_max, sub_y_max, sub_z_max );
     }
@@ -287,10 +285,8 @@ int FilterInformationList::loadPFL( const std::string& filename )
     {
         FilterInformationFile fi;
         if ( fi.loadPFI( filename ) < 0 ) return -1;
-        std::cout << __LINE__ << std::endl;
         m_list.push_back( fi );
 
-        std::cout << __LINE__ << std::endl;
         m_total_number_nodes = fi.m_number_nodes;
         m_total_number_elements = fi.m_number_elements;
         m_total_number_files = fi.m_number_files;
@@ -306,7 +302,6 @@ int FilterInformationList::loadPFL( const std::string& filename )
         m_total_max_value = fi.m_max_value;
         m_total_number_ingredients = fi.m_number_ingredients;
         m_total_ingredient.resize( m_total_number_ingredients );
-        std::cout << __LINE__ << std::endl;
         for (int32_t i = 0; i < m_total_number_ingredients; i++)
         {
             m_total_ingredient[i].m_min = FLT_MAX;
