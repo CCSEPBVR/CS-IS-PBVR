@@ -727,7 +727,6 @@ inline const double CalculateTotalVolume( const pbvr::VolumeObjectBase* object )
 
         double total_volume = 0.0f;
         const size_t ncells = volume->ncells();
-//            std::cout << __FILE__ << ":" << __LINE__ <<  ":" << __func__ << std::endl;
         #pragma omp parallel reduction(+: total_volume)
         {
 #if _OPENMP

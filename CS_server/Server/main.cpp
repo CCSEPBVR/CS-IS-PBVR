@@ -601,8 +601,8 @@ inline VariableRange Calculate_minmax( const Argument& param,
         fidx = fil.getFileIndex( subvols, &xvl );
         const FilterInformationFile& fi = fil.m_list[fidx];
 
-//        if ( subvols % nprocs == rank )
-//        {
+        if ( subvols % nprocs == rank )
+        {
             volume = CreateVolumeData( param, fi, steps, xvl );
             //volume->updateMinMaxValues();
             tmp_min = volume->values().at<float>(0) ; 
@@ -613,15 +613,15 @@ inline VariableRange Calculate_minmax( const Argument& param,
             tmp_max = tmp_min > volume->values().at<float>(i) ? tmp_max : volume->values().at<float>(i) ; 
             }
             delete volume;
-//        }
+        }
     }
 
-//#ifndef CPU_VER
-//    PBVR_TIMER_STA( 19 );
-//    MPI_Allreduce( MPI_IN_PLACE, &tmp_min, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
-//    MPI_Allreduce( MPI_IN_PLACE, &tmp_max, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
-//    PBVR_TIMER_END( 19 );
-//#endif
+#ifndef CPU_VER
+    PBVR_TIMER_STA( 19 );
+    MPI_Allreduce( MPI_IN_PLACE, &tmp_min, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
+    MPI_Allreduce( MPI_IN_PLACE, &tmp_max, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
+    PBVR_TIMER_END( 19 );
+#endif
 
    VariableRange vr;
    vr.setValue( "t1_var_o", tmp_max);
@@ -1597,6 +1597,19 @@ int main( int argc, char** argv )
                 delete[] buf;
                 std::cout << "Rank " << rank << ": Recv Client Message" << std::endl;
                 // recv cltMes from process 0 <<
+                
+               if ( clntMes.initParam == -1 )
+               {
+               }
+               else if ( clntMes.initParam == -2 )
+               {
+               }
+               else if ( clntMes.initParam == -3 ) 
+               {
+                    VariableRange range = Calculate_minmax( param, fil); 
+               }
+               else
+               { 
 
                 if ( clntMes.timeParam == 0 )
                 {
@@ -1840,6 +1853,7 @@ int main( int argc, char** argv )
                     }
                     delete param.m_transfunc_synthesizer;
                 }
+                }
             } // end of while(loop)
             delete clntMes.camera;
 
@@ -1997,6 +2011,21 @@ int main( int argc, char** argv )
 #endif
                         return 0;
                     }
+
+
+                    // send cltMes to all worker process >>
+                    bsz = clntMes.byteSize();
+#ifndef CPU_VER
+                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+                    buf = new char[bsz];
+                    clntMes.pack( buf );
+#ifndef CPU_VER
+                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+#endif
+                    delete[] buf;
+                    // send cltMes to all worker process <<
+
 
                     transfunc_creator.setProtocol( clntMes );
                     TransferFunctionSynthesizer* tfs = transfunc_creator.create();
