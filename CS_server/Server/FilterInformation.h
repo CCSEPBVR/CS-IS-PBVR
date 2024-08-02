@@ -41,6 +41,8 @@ public:
     float   m_max_value;
     std::string m_file_path;
     std::vector<IngredientsStep> m_ingredient_step;
+    
+    std::vector<std::string> m_name_list; //add by shimomura 20240726
 
 public:
     int loadPFI( const std::string& filename );

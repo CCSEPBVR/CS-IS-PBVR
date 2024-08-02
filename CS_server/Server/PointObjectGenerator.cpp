@@ -73,8 +73,10 @@ void PointObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
 //FJ_TIMER_KAWAMURA
     PBVR_TIMER_END( 260 );
 //FJ_TIMER_KAWAMURA
-
-    volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
+    
+    // change by shimomura 20240730
+    volume->updateMinMaxValues();
+    //volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
     volume->setMinMaxObjectCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
     volume->setMinMaxExternalCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
 
