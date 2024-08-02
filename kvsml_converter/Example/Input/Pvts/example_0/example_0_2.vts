@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<VTKFile type="StructuredGrid" version="2.2" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+  <StructuredGrid WholeExtent="2 4 0 3 0 4">
+    <Piece Extent="2 4 0 3 0 4"                                                       >
+      <PointData>
+        <DataArray type="Float32" Name="distance" format="appended" RangeMin="2"                    RangeMax="6.4031243324"         offset="0"                   >
+        </DataArray>
+        <DataArray type="UInt8" Name="vtkGhostType" format="appended" RangeMin="0"                    RangeMax="1"                    offset="212"                 >
+        </DataArray>
+      </PointData>
+      <CellData>
+        <DataArray type="UInt8" Name="vtkGhostType" format="appended" RangeMin="0"                    RangeMax="1"                    offset="256"                 >
+        </DataArray>
+      </CellData>
+      <Points>
+        <DataArray type="Float64" Name="Points" NumberOfComponents="3" format="appended" RangeMin="2"                    RangeMax="6.4031242374"         offset="296"                 >
+          <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+            <Value index="0">
+              2
+            </Value>
+            <Value index="1">
+              6.4031242374
+            </Value>
+          </InformationKey>
+        </DataArray>
+      </Points>
+    </Piece>
+  </StructuredGrid>
+  <AppendedData encoding="base64">
+   _AQAAAACAAADwAAAAjQAAAA==eJxjYGBwACIgbnDYK83vcCjJy6H6Q7PDZxZTh6iDaUCxfjC97XA7UM0CFDWFR2QcpjqHQOUcHALL8x3KlkwC01I13Q7a2otRzEFWc31zLNSMOWD6sfg0B9fgNSh2IZuDrAZEP3Rb5qAxfRfU3AVAe7aCzQWpLb28HWwuSC0DwwEwDVKb+uyMAwCgH18WAQAAAACAAAA8AAAADgAAAA==eJxjYGBkIBcBAAKKABU=AQAAAACAAAAYAAAADAAAAA==eJxjYGTACgEAqAANAQAAAACAAACgBQAApwAAAA==eJyVk8ENwCAMA3nyZKOy/zQdoVKlUHHpKS0fFAuM45jW7jXb6+qCD8GD5zzeeYgPwZcevNMFH4JHzT664ENw8oZenguc/qz+5l6Thzj9IQ/56E/SA5z+kIc4/Ul62l6bjyk/P/WRx3zhnvJDPR/vpfyAx96JZfmLmv7YXG1O5LF8VP0kPcW5aqc/1X+2/0l/LN+WV/LYP6nmmvRIXfVPnge/ADTGQu4=
+  </AppendedData>
+</VTKFile>

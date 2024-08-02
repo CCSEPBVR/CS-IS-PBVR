@@ -1,0 +1,50 @@
+# AVS field file
+nstep=3
+ndim=2
+dim1=4
+dim2=2
+nspace=3
+veclen=1
+data=float
+field=irregular
+time filetype=ascii skip=1 close=0
+variable 1 filetype=ascii skip=2 offset=0 stride=4 close=0
+coord    1 filetype=ascii skip=2 offset=1 stride=4 close=0
+coord    2 filetype=ascii skip=2 offset=2 stride=4 close=0
+coord    3 filetype=ascii skip=2 offset=3 stride=4 close=0
+EOT
+DO
+time filetype=ascii skip=8 close=0
+variable 1 filetype=ascii skip=1 offset=0 stride=4 close=0
+coord    1 filetype=ascii skip=1 offset=1 stride=4 close=0
+coord    2 filetype=ascii skip=1 offset=2 stride=4 close=0
+coord    3 filetype=ascii skip=1 offset=3 stride=4 close=0
+EOT
+ENDDOdata    X   Y   Z
+1
+5.0   -2.0 -1.0 0.0
+10.0  -1.0 -1.0 0.0
+20.0   0.0 -1.0 0.0
+25.0   1.0 -1.0 0.0
+30.0  -2.0 0.0 0.0
+40.0  -1.0  0.0 0.0
+50.0   0.0  0.0 0.0
+60.0   2.0  0.0 0.0
+2
+5.0   -2.0 -1.0 0.0
+10.0  -1.0 -1.0 0.0
+20.0   0.0 -1.0 0.0
+25.0   1.0 -1.0 0.0
+30.0  -2.0 0.0 0.0
+40.0  -1.0 0.0 0.0
+50.0   0.0 0.0 0.0
+60.0   2.0 0.0 0.0
+3
+5.0   -2.0 -1.0 0.0
+10.0  -1.0 -1.0 0.0
+20.0   0.0 -1.0 0.0
+50.0   2.0 -1.0 0.0
+35.0  -2.0 0.0 0.0
+45.0  -1.0 0.0 0.0
+55.0   0.0 0.0 0.0
+95.0   3.0 0.0 0.0
