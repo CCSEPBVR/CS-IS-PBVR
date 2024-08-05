@@ -134,7 +134,7 @@ void ExtendedTransferFunctionMessage::applyToClientMessage( jpv::ParticleTransfe
         veq.m_equation = this->m_color_transfer_function[i].m_color_variable;
         message->m_transfer_function.push_back( etf );
         message->m_volume_equation.push_back( veq );
-        message->show();
+        message->showCS();
     }
 
     // 不透明度関数リスト

@@ -1,4 +1,4 @@
-﻿#ifndef PBVR__JPV__PARTICLE_TRANSFER_PROTOCOL_H_INCLUDE
+#ifndef PBVR__JPV__PARTICLE_TRANSFER_PROTOCOL_H_INCLUDE
 #define PBVR__JPV__PARTICLE_TRANSFER_PROTOCOL_H_INCLUDE
 
 #include <string>
@@ -23,7 +23,12 @@ namespace jpv
 class ParticleTransferUtils
 {
 public:
-    static bool isLittleEndian();
+    template<typename T>
+    static void appendMessage( std::ostringstream& ss, T& content )
+    {
+        ss.write( reinterpret_cast<const char*>( &content ), sizeof( content ) );
+    }
+    static bool isLittleEndian( void );
 
 private:
     static const int32_t m_magic_number;
@@ -45,7 +50,7 @@ public:
         std::string m_equation;
     };
 
-    //2023/07/19 shimomura
+    //2019 kawamura
     struct EquationToken
     {
         int exp_token[128];//数式のトークン配列
@@ -73,7 +78,7 @@ public:
     int32_t m_memory_size;
     int32_t m_step;
 
-    int32_t m_trans_Parameter;
+    int32_t m_trans_parameter;
     int32_t m_level_index;
 
     int32_t m_enable_crop_region;
@@ -84,41 +89,48 @@ public:
     float m_particle_data_size_limit;
 // #endif
     std::string m_input_directory;
-    std::string m_filter_parameter_filename;         // add by @hira at 2016/12/01
+    std::string m_filter_parameter_filename;         // add by @hira at 2016/12/01 //CS ONLY
 
-    std::string m_x_synthesis;
-    std::string m_y_synthesis;
-    std::string m_z_synthesis;
+    std::string m_x_synthesis; //CS ONLY
+    std::string m_y_synthesis; //CS ONLY
+    std::string m_z_synthesis; //CS ONLY
 
     std::vector<NamedTransferFunctionParameter> m_transfer_function;
     std::vector<VolumeEquation> m_volume_equation;
 
-    std::string m_transfer_function_synthesis;
+    std::string m_transfer_function_synthesis; //CS ONLY
 
     // add by @hira at 2016/12/01
     std::string m_color_transfer_function_synthesis;
     std::string m_opacity_transfer_function_synthesis;
 
-    //2023/07/19 shimomura
+    //2019 kawamura
     EquationToken opacity_func;//tfs_eq_token;
     EquationToken color_func;//tfs_eq_token;
     std::vector<EquationToken> opacity_var;//opacity_eq_token;
     std::vector<EquationToken> color_var;//color_eq_token;
 
-    EquationToken x_synthesis_token;//x_synthesis;
-    EquationToken y_synthesis_token;//y_synthesis;
-    EquationToken z_synthesis_token;//z_synthesis;
+    //2023 shimomura
+    EquationToken x_synthesis_token;//x_synthesis; CS ONLY
+    EquationToken y_synthesis_token;//y_synthesis; CS ONLY
+    EquationToken z_synthesis_token;//z_synthesis; CS ONLY
 
 public:
     // message のサイズを計算
-    int32_t byteSize() const;
+    int32_t byteSizeCS( void ) const;
+    int32_t byteSizeIS( void ) const;
     // メッセージを byte 列に pack
-    size_t pack( char* buf ) const;
+    size_t packCS( char* buf ) const;
+    size_t packIS( char* buf ) const;
     // byte 列からメッセージに unpack
-    size_t unpack( const char* buf );
+    size_t unpackCS( const char* buf );
+    size_t unpackIS( const char* buf );
 
-    ParticleTransferClientMessage();
-    void show( void ) const;
+    ParticleTransferClientMessage( void );
+
+    //2019 kawamura
+    void showCS( void ) const;
+    void showIS( void ) const;
 };
 
 class ParticleTransferServerMessage
@@ -132,14 +144,9 @@ public:
     };
 
 public:
-#ifdef COMM_MODE_IS
-    float maxObjectCoord[3];
-    float minObjectCoord[3];
-#endif
-
     char m_header[18];
     int32_t m_message_size;
-    int32_t m_server_status;   // 2015.12.23 Add Param for NaN
+    int32_t m_server_status;   // 2015.12.23 Add Param for NaN CS ONLY
     int32_t m_time_step;
     int32_t m_subpixel_level;
     int32_t m_repeat_level;
@@ -164,32 +171,35 @@ public:
     int32_t m_element_type;
     int32_t m_file_type;
     int32_t m_number_ingredients;
-    int32_t m_flag_send_bins;
+    int32_t m_flag_send_bins;  // 0:none, 1:histogram, 2: particle
     int32_t m_transfer_function_count;
 //#ifdef COMM_MODE_IS
-    int32_t particle_limit;
-    float particle_density;
-    float particle_data_size_limit;
-    kvs::Camera* camera;
-    std::vector<NamedTransferFunctionParameter> transfunc;
-    std::vector<VolumeEquation> voleqn;
+    int32_t m_particle_limit;
+    float m_particle_density;
+    float m_particle_data_size_limit;
+    kvs::Camera* m_camera;
+    std::vector<NamedTransferFunctionParameter> m_transfer_function;
+    std::vector<VolumeEquation> m_volume_equation;
 //    std::vector<ParticleTransferClientMessage::VolumeEquation> voleqn;
 //    std::string transferFunctionSynthesis;
 //#endif
-    std::string color_tf_synthesis;
-    std::string opacity_tf_synthesis;
+    std::string m_color_transfer_function_synthesis;
+    std::string m_opacity_transfer_function_synthesis;
     kvs::UInt64* m_color_nbins;
     kvs::UInt64* m_opacity_nbins;
     std::vector<kvs::UInt64*> m_color_bins;
     std::vector<kvs::UInt64*> m_opacity_bins;
-    std::vector<std::string> m_color_bin_names;			// add by @hira at 2016/12/01
-    std::vector<std::string> m_opacity_bin_names;		// add by @hira at 2016/12/01
+//    std::vector<std::string> m_color_bin_names;			// add by @hira at 2016/12/01
+//    std::vector<std::string> m_opacity_bin_names;		// add by @hira at 2016/12/01
     // message のサイズを計算
-    int32_t byteSize() const;
+    int32_t byteSizeCS( void ) const;
+    int32_t byteSizeIS( void ) const;
     // メッセージを byte 列に pack
-    size_t pack( char* buf ) const;
+    size_t packCS( char* buf ) const;
+    size_t packIS( char* buf ) const;
     // byte 列からメッセージに unpack
-    size_t unpack_message( const char* buf );
+    size_t unpack_messageCS( const char* buf );
+    size_t unpack_messageIS( const char* buf );
     size_t unpack_particles( const char* buf );
     size_t unpack_bins( const size_t index, const char* buf );
 private:
@@ -198,7 +208,7 @@ private:
 public:
     VariableRange m_variable_range;
 
-    ParticleTransferServerMessage();
+    ParticleTransferServerMessage( void );
 
     ParticleTransferServerMessage(size_t message_size, size_t number_particle)
         : m_message_size(message_size),
@@ -228,21 +238,23 @@ public:
     ParticleTransferServerMessage(const ParticleTransferServerMessage&) = delete;
     ParticleTransferServerMessage& operator=(const ParticleTransferServerMessage&) = delete;
 
-//    // add by @hira at 2016/12/01
-//    void setColorHistogramBins(
-//            int histogram_size,
-//            int nbins,
-//            const kvs::UInt64* c_bins,
-//            const std::vector<std::string> &transfer_function_names,
-//            const std::vector<std::string> &transfunc_synthesizer_names);
-//    void setOpacityHistogramBins(
-//            int histogram_size,
-//            int nbins,
-//            const kvs::UInt64* o_bins,
-//            const std::vector<std::string> &transfer_function_names,
-//            const std::vector<std::string> &transfunc_synthesizer_names);
-   void initializeTransferFunction(const int32_t transfer_function_count, const int nbins);
-    void show( void ) const;
+    void setColorHistogramBins(
+        int histogram_size,
+        int nbins,
+        const kvs::UInt64* arg_c_bins);/*,
+            const std::vector<std::string> &transfer_function_names,
+            const std::vector<std::string> &transfunc_synthesizer_names);*/
+    void setOpacityHistogramBins(
+        int histogram_size,
+        int nbins,
+        const kvs::UInt64* arg_o_bins);/*,
+            const std::vector<std::string> &transfer_function_names,
+            const std::vector<std::string> &transfunc_synthesizer_names);*/
+
+    void initializeTransferFunction(const int32_t transfer_function_count, const int nbins);
+    //2019 kawamura
+    void showCS( void ) const;
+    void showIS( void ) const;
 };
 
 }

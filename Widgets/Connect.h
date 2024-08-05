@@ -36,7 +36,7 @@ public:
     jpv::ParticleTransferClientMessage* getClientMessage(){ return &m_client_message; }
     jpv::ParticleTransferServerMessage* getServerMessage(){ return &m_server_message; }
     kvs::visclient::ReceivedMessage* getReceivedMessage(){ return &m_received_message; }
-    kvs::PointObject* connect2( int timeStep );
+    kvs::PointObject* generateParticleCS( int timeStep );
     void deletedServerObject();
 
 private:
@@ -52,7 +52,7 @@ private:
     jpv::ParticleTransferServerMessage m_server_message;
     kvs::visclient::ReceivedMessage m_received_message;
 
-    void connect1();
+    void connectCS();
 
     void onVolumeDataBrowseButtonClicked();
     void onTransferFunctionFileBrowseButtonClicked();

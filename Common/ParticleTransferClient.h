@@ -33,8 +33,10 @@ public:
     ~ParticleTransferClient();
     int initClient();
     int termClient();
-    int sendMessage( const ParticleTransferClientMessage& message );
-    int recvMessage( ParticleTransferServerMessage* message );
+    int sendMessageCS( const ParticleTransferClientMessage& message );
+    int sendMessageIS( const ParticleTransferClientMessage& message );
+    int recvMessageCS( ParticleTransferServerMessage* message );
+    int recvMessageIS( ParticleTransferServerMessage* message );
 // APPEND START fp)m.tanaka 2013.09.01
     int recvFromFile( const int, ParticleTransferServerMessage* message );
 // APPEND END   fp)m.tanaka 2013.09.01

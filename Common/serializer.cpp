@@ -3,7 +3,7 @@
 #define SERIALIZER_CPP
 #endif
 
-#include "serializer.h"
+#include "Serializer.h"
 
 #include <kvs/Camera>
 #include <kvs/Xform>
