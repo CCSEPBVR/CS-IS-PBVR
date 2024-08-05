@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PBVR__JPV__PARTICLE_TRANSFER_CLIENT_H_INCLUDE
+#define PBVR__JPV__PARTICLE_TRANSFER_CLIENT_H_INCLUDE
 
 //#if defined JPV_CLIENT
 
@@ -18,31 +19,34 @@ namespace jpv
 class ParticleTransferClient
 {
 protected:
-    std::string hostname;
-    int port;
+    std::string m_hostname;
+    int m_port;
 #if defined WIN32
-    SOCKET sock;
+    SOCKET m_sock;
 #else
-    int sock;
+    int m_sock;
 #endif
 
 
 public:
-    ParticleTransferClient( std::string _host, int _port );
-    ~ParticleTransferClient( void );
-    int initClient( void );
-    int termClient( void );
-    int sendMessage( ParticleTransferClientMessage& message );
-    int recvMessage( ParticleTransferServerMessage& message );
+    ParticleTransferClient( const std::string& _host, const int _port );
+    ~ParticleTransferClient();
+    int initClient();
+    int termClient();
+    int sendMessageCS( const ParticleTransferClientMessage& message );
+    int sendMessageIS( const ParticleTransferClientMessage& message );
+    int recvMessageCS( ParticleTransferServerMessage* message );
+    int recvMessageIS( ParticleTransferServerMessage* message );
 // APPEND START fp)m.tanaka 2013.09.01
-    int recvfromfile( int, ParticleTransferServerMessage& message );
+    int recvFromFile( const int, ParticleTransferServerMessage* message );
 // APPEND END   fp)m.tanaka 2013.09.01
 // APPEND START fp)m.tanaka 2014.03.11
-    int datatofile( int, char*, int );
-    int datafromfile( int, char*, int );
+    int dataToFile( const int, char*, const int );
+    int dataFromFile( const int, char*, const int );
 // APPEND END   fp)m.tanaka 2014.03.11
 };
 
 }
 //#endif
 
+#endif //PBVR__JPV__PARTICLE_TRANSFER_CLIENT_H_INCLUDE

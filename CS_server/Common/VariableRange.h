@@ -1,5 +1,5 @@
-#ifndef __VARIABLE_RANGE_H__
-#define __VARIABLE_RANGE_H__
+#ifndef PBVR__VARIABLE_RANGE_H_INCLUDE
+#define PBVR__VARIABLE_RANGE_H_INCLUDE
 
 #include <map>
 #include <string>
@@ -35,5 +35,5 @@ public:
     size_t unpack( const char* buf );
 };
 
-#endif // __VARIABLE_RANGE_H__
+#endif // PBVR__VARIABLE_RANGE_H_INCLUDE
 

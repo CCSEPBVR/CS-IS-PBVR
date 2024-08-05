@@ -13,35 +13,29 @@
 #include <unistd.h>
 #endif
 
-#include <cerrno>
-
-#include "../Daemon/Timer.h"
-
-jpv::ParticleTransferServer::ParticleTransferServer( void )
-    : srcSock( -1 ), dstSock( -1 )
-//	: port(60000), srcSock(-1), dstSock(-1)
+jpv::ParticleTransferServer::ParticleTransferServer():
+    m_source_socket( -1 ),
+    m_destination_socket( -1 )
+//	: m_port(60000), m_source_socket(-1), m_destination_socket(-1)
 {
 }
 
-jpv::ParticleTransferServer::~ParticleTransferServer( void )
+jpv::ParticleTransferServer::~ParticleTransferServer()
 {
 }
 
-bool jpv::ParticleTransferServer::good( void )
+bool jpv::ParticleTransferServer::good()
 {
-    std::cout << "Source = " << srcSock << " Destination = " << dstSock << std::endl;
-    return ( srcSock >= 0 );
+    std::cout << "Source = " << m_source_socket << " Destination = " << m_destination_socket << std::endl;
+    return m_source_socket >= 0;
 }
 
-int jpv::ParticleTransferServer::initServer( int port )
+int jpv::ParticleTransferServer::initializeServer( const int m_port )
 {
-    std::cout<<"ParticleTransferServer.cpp:L36"<<std::endl;
-    std::cout<<"port="<<port<<std::endl;
-
     struct sockaddr_in source;
     memset( &source, 0, sizeof( source ) );
     source.sin_family = AF_INET;
-    source.sin_port = htons( port );
+    source.sin_port = htons( m_port );
 #if defined WIN32
     WSADATA data;
     WSAStartup( MAKEWORD( 2, 0 ), &data );
@@ -49,8 +43,8 @@ int jpv::ParticleTransferServer::initServer( int port )
 #else
     source.sin_addr.s_addr = INADDR_ANY;
 #endif
-    srcSock = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
-    if ( srcSock < 0 )
+    m_source_socket = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
+    if ( m_source_socket < 0 )
     {
         std::cout << "Server initialize error" << std::endl;
         return -1;
@@ -61,9 +55,9 @@ int jpv::ParticleTransferServer::initServer( int port )
     }
     /* 140319 for server stop by Ctrl+c */
     int yes = 1;
-    setsockopt( srcSock, SOL_SOCKET, SO_REUSEADDR, ( const char* )&yes, sizeof( yes ) );
+    setsockopt( m_source_socket, SOL_SOCKET, SO_REUSEADDR, ( const char* )&yes, sizeof( yes ) );
     /* 140319 for server stop by Ctrl+c */
-    int result_bind = bind( srcSock, ( struct sockaddr* )&source, sizeof( source ) );
+    int result_bind = bind( m_source_socket, ( struct sockaddr* )&source, sizeof( source ) );
     if ( result_bind < 0 )
     {
         std::cout << "Server bind error" << std::endl;
@@ -74,7 +68,7 @@ int jpv::ParticleTransferServer::initServer( int port )
         std::cout << "Server bind done" << std::endl;
     }
 
-    int result_listen = listen( srcSock, 1 );
+    int result_listen = listen( m_source_socket, 1 );
     if ( result_listen < 0 )
     {
         std::cout << "Server listen error" << std::endl;
@@ -88,7 +82,7 @@ int jpv::ParticleTransferServer::initServer( int port )
     return 0;
 }
 
-int jpv::ParticleTransferServer::acceptServer( void )
+int jpv::ParticleTransferServer::acceptServer()
 {
     struct sockaddr_in dstAddr;
 #if defined WIN32
@@ -97,66 +91,60 @@ int jpv::ParticleTransferServer::acceptServer( void )
     socklen_t dstAddrSize = sizeof( dstAddr );
 #endif
     std::cout << "Waiting for connection ..." << std::endl;
-    dstSock = accept( srcSock, ( struct sockaddr* ) &dstAddr, &dstAddrSize );
-    std::cout << "Connected from " << inet_ntoa( dstAddr.sin_addr ) << " ,dstSock="<<dstSock<<std::endl;
+    m_destination_socket = accept( m_source_socket, ( struct sockaddr* ) &dstAddr, &dstAddrSize );
+    std::cout << "Connected from " << inet_ntoa( dstAddr.sin_addr ) << std::endl;
     return 0;
 }
 
-int jpv::ParticleTransferServer::disconnect( void )
+int jpv::ParticleTransferServer::disconnect()
 {
-    if ( dstSock != -1 )
+    if ( m_destination_socket != -1 )
     {
 #if defined WIN32
-        shutdown( dstSock, SD_BOTH );
-        closesocket( dstSock );
+        shutdown( m_destination_socket, SD_BOTH );
+        closesocket( m_destination_socket );
 #else
-        shutdown( dstSock, SHUT_RDWR );
-        close( dstSock );
+        shutdown( m_destination_socket, SHUT_RDWR );
+        close( m_destination_socket );
 #endif
-        dstSock = -1;
+        m_destination_socket = -1;
     }
     return 0;
 }
 
-int jpv::ParticleTransferServer::termServer( void )
+int jpv::ParticleTransferServer::termServer()
 {
 #if defined WIN32
-    shutdown( srcSock, SD_BOTH );
-    shutdown( dstSock, SD_BOTH );
-    closesocket( srcSock );
-    closesocket( dstSock );
+    shutdown( m_source_socket, SD_BOTH );
+    shutdown( m_destination_socket, SD_BOTH );
+    closesocket( m_source_socket );
+    closesocket( m_destination_socket );
     WSACleanup();
 #else
-    shutdown( srcSock, SHUT_RDWR );
-    shutdown( dstSock, SHUT_RDWR );
-    close( srcSock );
-    close( dstSock );
+    shutdown( m_source_socket, SHUT_RDWR );
+    shutdown( m_destination_socket, SHUT_RDWR );
+    close( m_source_socket );
+    close( m_destination_socket );
 #endif
     std::cout << "Server terminated" << std::endl;
-    srcSock = -1;
+    m_source_socket = -1;
     return 0;
 }
 
-int jpv::ParticleTransferServer::sendMessage( ParticleTransferServerMessage& message )
+int jpv::ParticleTransferServer::sendMessageCS( const ParticleTransferServerMessage& message )
 {
-    int messageSize = message.byteSize();
-    int size = messageSize + ( 12 + 12 + 3 ) * message.numParticle;
+    int m_message_size = message.byteSizeCS();
+    int size = m_message_size + ( 12 + 12 + 3 ) * message.m_number_particle;
     char* buf = new char[size];
     memset(buf, 0x00, sizeof(char)*size);
-    
-    assert( messageSize == message.messageSize );
 
-    std::cout << "Send Server Message Size = " << messageSize << std::endl;
-    std::cout << "Send Server Particle Size = " << message.numParticle << std::endl;
-    
-    TimerStart( 8 );
-    message.pack( buf );
-    TimerStop( 8 );
-    TimerStart( 9 );
-    int send_result = 0;
-    send_result = send( dstSock, buf, size, 0 );
-    std::cout<<"send_result="<<send_result<<std::endl;
-    TimerStop( 9 );
+    assert( m_message_size == message.m_message_size );
+
+    std::cout << "Send Server Message Size = " << m_message_size << std::endl;
+    std::cout << "Send Server Particle Size = " << message.m_number_particle << std::endl;
+
+    message.packCS( buf );
+    send( m_destination_socket, buf, size, 0 );
 
 #ifdef _DEBUG
     std::ofstream output;
@@ -169,76 +157,109 @@ int jpv::ParticleTransferServer::sendMessage( ParticleTransferServerMessage& mes
     return 0;
 }
 
-int jpv::ParticleTransferServer::recvMessage( ParticleTransferClientMessage& message )
+int jpv::ParticleTransferServer::sendMessageIS( const ParticleTransferServerMessage& message )
 {
-    this->good();
+    int m_message_size = message.byteSizeIS();
+    int size = m_message_size + ( 12 + 12 + 3 ) * message.m_number_particle;
+    char* buf = new char[size];
+    memset(buf, 0x00, sizeof(char)*size);
 
+    assert( m_message_size == message.m_message_size );
+
+    std::cout << "Send Server Message Size = " << m_message_size << std::endl;
+    std::cout << "Send Server Particle Size = " << message.m_number_particle << std::endl;
+
+    message.packIS( buf );
+    send( m_destination_socket, buf, size, 0 );
+
+#ifdef _DEBUG
+    std::ofstream output;
+    output.open( "debug_server.send" );
+    output.write( buf, size );
+    output.flush();
+    output.close();
+#endif
+    delete[] buf;
+    return 0;
+}
+
+int jpv::ParticleTransferServer::recvMessageCS( ParticleTransferClientMessage* message )
+{
     // クライアントメッセージの受信
-    const size_t hSize = sizeof( message.header ) + sizeof( message.messageSize );
+    const size_t hSize = sizeof( message->m_header ) + sizeof( message->m_message_size );
     char hsbuf[hSize];
     char* buf;
     std::stringstream ss;
     int recvSize( 0 );
     size_t mSize, rSize;
 
-    std::cout<<"ParticleTransferServer.cpp:L173"<<std::endl;
-
-    this->good();
-
-    message.messageSize = 0;
+    message->m_message_size = 0;
     for ( rSize = 0; rSize < hSize; rSize += recvSize )
     {
-        recvSize = recv( dstSock, hsbuf, hSize - rSize, 0 );
-        std::cout<<"recvSize="<<recvSize<<",dstSock="<<dstSock<<",hSize="<<hSize<<",errno="<<errno<<std::endl;
-        if( recvSize <= 0 ) return -1;
+        recvSize = recv( m_destination_socket, hsbuf, hSize - rSize, 0 );
         ss.write( hsbuf, recvSize );
-
-// MODIFIED START 2019 kawamura
-/*
-            if ( recvSize < 0 )
-            {
-                recvSize = 0;
-            }
-            else
-            {
-                ss.write( hsbuf, recvSize );
-            }
-*/
-// MODIFIED END 2019 kawamura
     }
-    ss.seekg( sizeof( message.header ) );
-    ss.read( reinterpret_cast<char*>( &message.messageSize ), sizeof( message.messageSize ) );
-    std::cout << "Receive Client Message Size = " << message.messageSize << std::endl;
+    ss.seekg( sizeof( message->m_header ) );
+    ss.read( reinterpret_cast<char*>( &message->m_message_size ), sizeof( message->m_message_size ) );
+    std::cout << "Receive Client Message Size = " << message->m_message_size << std::endl;
 
-    mSize = message.messageSize - hSize;
+    mSize = message->m_message_size - hSize;
     buf = new char[mSize];
     for ( rSize = 0; rSize < mSize; rSize += recvSize )
     {
-        recvSize = recv( dstSock, buf, mSize - rSize, 0 );
-        if( recvSize <= 0 ) return -1;
+        recvSize = recv( m_destination_socket, buf, mSize - rSize, 0 );
         ss.write( buf, recvSize );
-
-// MODIFIED START 2019 kawamura
-/*
-            if ( recvSize < 0 )
-            {
-                recvSize = 0;
-            }
-            else
-            {
-                ss.write( buf, recvSize );
-            }
-*/
-// MODIFIED END 2019 kawamura
     }
     delete[] buf;
 
-    message.unpack( ss.str().c_str() );
+    message->unpackCS( ss.str().c_str() );
 
 #ifdef _DEBUG
     std::ofstream output;
     output.open( "debug_server.send" );
-    output.write( ss.str().c_str(), message.messageSize );
+    output.write( ss.str().c_str(), message->m_message_size );
+    output.flush();
+    output.close();
+#endif
+    return 0;
+}
+
+
+int jpv::ParticleTransferServer::recvMessageIS( ParticleTransferClientMessage* message )
+{
+    // クライアントメッセージの受信
+    const size_t hSize = sizeof( message->m_header ) + sizeof( message->m_message_size );
+    char hsbuf[hSize];
+    char* buf;
+    std::stringstream ss;
+    int recvSize( 0 );
+    size_t mSize, rSize;
+
+    message->m_message_size = 0;
+    for ( rSize = 0; rSize < hSize; rSize += recvSize )
+    {
+        recvSize = recv( m_destination_socket, hsbuf, hSize - rSize, 0 );
+        ss.write( hsbuf, recvSize );
+    }
+    ss.seekg( sizeof( message->m_header ) );
+    ss.read( reinterpret_cast<char*>( &message->m_message_size ), sizeof( message->m_message_size ) );
+    std::cout << "Receive Client Message Size = " << message->m_message_size << std::endl;
+
+    mSize = message->m_message_size - hSize;
+    buf = new char[mSize];
+    for ( rSize = 0; rSize < mSize; rSize += recvSize )
+    {
+        recvSize = recv( m_destination_socket, buf, mSize - rSize, 0 );
+        ss.write( buf, recvSize );
+    }
+    delete[] buf;
+
+    message->unpackIS( ss.str().c_str() );
+
+#ifdef _DEBUG
+    std::ofstream output;
+    output.open( "debug_server.send" );
+    output.write( ss.str().c_str(), message->m_message_size );
     output.flush();
     output.close();
 #endif

@@ -9,9 +9,9 @@ void ParameterFileWriter::inputMessage( const jpv::ParticleTransferClientMessage
 void ParameterFileWriter::inputParameterMessage( const jpv::ParticleTransferClientMessage& client_message )
 {
 //  m_name_list_file.setLine( "SUB_PIXEL_LEVEL", client_message.subPixelLevel  );
-    m_name_list_file.setLine( "PARTICLE_LIMIT" , client_message.particle_limit );
-    m_name_list_file.setLine( "PARTICLE_DENSITY" ,client_message.particle_density );
-    m_name_list_file.setLine( "PARTICLE_DATA_SIZE_LIMIT" ,client_message.particle_data_size_limit );
+    m_name_list_file.setLine( "PARTICLE_LIMIT" , client_message.m_particle_limit );
+    m_name_list_file.setLine( "PARTICLE_DENSITY" ,client_message.m_particle_density );
+    m_name_list_file.setLine( "PARTICLE_DATA_SIZE_LIMIT" ,client_message.m_particle_data_size_limit );
 //  if ( client_message.samplingMethod == 'u' )
 //  {
 //      m_name_list_file.setLine( "SAMPLING_TYPE", kvs::visclient::PBVRParam::UniformSampling );
@@ -24,17 +24,17 @@ void ParameterFileWriter::inputParameterMessage( const jpv::ParticleTransferClie
 //  {
 //      m_name_list_file.setLine( "SAMPLING_TYPE", kvs::visclient::PBVRParam::MetropolisSampling );
 //  }
-//  m_name_list_file.setLine( "EYE_POINT_X"      , client_message.camera->lookAt().x() );
-//  m_name_list_file.setLine( "EYE_POINT_Y"      , client_message.camera->lookAt().y() );
-//  m_name_list_file.setLine( "EYE_POINT_Z"      , client_message.camera->lookAt().z() );
-//  m_name_list_file.setLine( "CENTER_POINT_X"   , client_message.camera->position().x() );
-//  m_name_list_file.setLine( "CENTER_POINT_Y"   , client_message.camera->position().y() );
-//  m_name_list_file.setLine( "CENTER_POINT_Z"   , client_message.camera->position().z() );
-//  m_name_list_file.setLine( "UP_VECTOR_X"      , client_message.camera->upVector().x() );
-//  m_name_list_file.setLine( "UP_VECTOR_Y"      , client_message.camera->upVector().y() );
-//  m_name_list_file.setLine( "UP_VECTOR_Z"      , client_message.camera->upVector().z() );
-    m_name_list_file.setLine( "RESOLUTION_WIDTH" , client_message.camera->windowWidth() );
-    m_name_list_file.setLine( "RESOLUTION_HEIGHT", client_message.camera->windowHeight() );
+//  m_name_list_file.setLine( "EYE_POINT_X"      , client_message.m_camera->lookAt().x() );
+//  m_name_list_file.setLine( "EYE_POINT_Y"      , client_message.m_camera->lookAt().y() );
+//  m_name_list_file.setLine( "EYE_POINT_Z"      , client_message.m_camera->lookAt().z() );
+//  m_name_list_file.setLine( "CENTER_POINT_X"   , client_message.m_camera->position().x() );
+//  m_name_list_file.setLine( "CENTER_POINT_Y"   , client_message.m_camera->position().y() );
+//  m_name_list_file.setLine( "CENTER_POINT_Z"   , client_message.m_camera->position().z() );
+//  m_name_list_file.setLine( "UP_VECTOR_X"      , client_message.m_camera->upVector().x() );
+//  m_name_list_file.setLine( "UP_VECTOR_Y"      , client_message.m_camera->upVector().y() );
+//  m_name_list_file.setLine( "UP_VECTOR_Z"      , client_message.m_camera->upVector().z() );
+    m_name_list_file.setLine( "RESOLUTION_WIDTH" , client_message.m_camera->windowWidth() );
+    m_name_list_file.setLine( "RESOLUTION_HEIGHT", client_message.m_camera->windowHeight() );
 //  m_name_list_file.setLine( "PFI_PATH_SERVER"  , client_message.inputDir );
 
 //  m_name_list_file.setLine( "CROP_TYPE"        , client_message.enable_crop_region ) ;
@@ -56,31 +56,31 @@ void ParameterFileWriter::inputParameterMessage( const jpv::ParticleTransferClie
 //  m_name_list_file.setLine( "CROP_PRADIUS"     , client_message.crop_region[3] );
 //  m_name_list_file.setLine( "CROP_PHEIGHT"     , client_message.crop_region[4] );
 
-//  m_name_list_file.setLine( "ROTATION1X"       , client_message.camera->rotation()[0][0] );
-//  m_name_list_file.setLine( "ROTATION1Y"       , client_message.camera->rotation()[0][1] );
-//  m_name_list_file.setLine( "ROTATION1Z"       , client_message.camera->rotation()[0][2] );
-//  m_name_list_file.setLine( "ROTATION2X"       , client_message.camera->rotation()[1][0] );
-//  m_name_list_file.setLine( "ROTATION2Y"       , client_message.camera->rotation()[1][1] );
-//  m_name_list_file.setLine( "ROTATION2Z"       , client_message.camera->rotation()[1][2] );
-//  m_name_list_file.setLine( "ROTATION3X"       , client_message.camera->rotation()[2][0] );
-//  m_name_list_file.setLine( "ROTATION3Y"       , client_message.camera->rotation()[2][1] );
-//  m_name_list_file.setLine( "ROTATION3Z"       , client_message.camera->rotation()[2][2] );
+//  m_name_list_file.setLine( "ROTATION1X"       , client_message.m_camera->rotation()[0][0] );
+//  m_name_list_file.setLine( "ROTATION1Y"       , client_message.m_camera->rotation()[0][1] );
+//  m_name_list_file.setLine( "ROTATION1Z"       , client_message.m_camera->rotation()[0][2] );
+//  m_name_list_file.setLine( "ROTATION2X"       , client_message.m_camera->rotation()[1][0] );
+//  m_name_list_file.setLine( "ROTATION2Y"       , client_message.m_camera->rotation()[1][1] );
+//  m_name_list_file.setLine( "ROTATION2Z"       , client_message.m_camera->rotation()[1][2] );
+//  m_name_list_file.setLine( "ROTATION3X"       , client_message.m_camera->rotation()[2][0] );
+//  m_name_list_file.setLine( "ROTATION3Y"       , client_message.m_camera->rotation()[2][1] );
+//  m_name_list_file.setLine( "ROTATION3Z"       , client_message.m_camera->rotation()[2][2] );
 
-//  m_name_list_file.setLine( "TRANSLATIONX"     , client_message.camera->translation()[0] );
-//  m_name_list_file.setLine( "TRANSLATIONY"     , client_message.camera->translation()[1] );
-//  m_name_list_file.setLine( "TRANSLATIONZ"     , client_message.camera->translation()[2] );
-//  m_name_list_file.setLine( "SCALINGX"         , client_message.camera->scaling()[0] );
-//  m_name_list_file.setLine( "SCALINGY"         , client_message.camera->scaling()[1] );
-//  m_name_list_file.setLine( "SCALINGZ"         , client_message.camera->scaling()[2] );
+//  m_name_list_file.setLine( "TRANSLATIONX"     , client_message.m_camera->translation()[0] );
+//  m_name_list_file.setLine( "TRANSLATIONY"     , client_message.m_camera->translation()[1] );
+//  m_name_list_file.setLine( "TRANSLATIONZ"     , client_message.m_camera->translation()[2] );
+//  m_name_list_file.setLine( "SCALINGX"         , client_message.m_camera->scaling()[0] );
+//  m_name_list_file.setLine( "SCALINGY"         , client_message.m_camera->scaling()[1] );
+//  m_name_list_file.setLine( "SCALINGZ"         , client_message.m_camera->scaling()[2] );
 }
 
 void ParameterFileWriter::inputTransferFunctionMessage( const jpv::ParticleTransferClientMessage& client_message )
 {
-    m_name_list_file.setLine( "TF_RESOLUTION", client_message.transfunc[0].Resolution);
+    m_name_list_file.setLine( "TF_RESOLUTION", client_message.m_transfer_function[0].m_resolution);
     //m_name_list_file.setLine( "TF_SYNTH"     , client_message.transferFunctionSynthesis);
-    m_name_list_file.setLine( "COLOR_SYNTH"  , client_message.color_tf_synthesis);
-    m_name_list_file.setLine( "OPACITY_SYNTH", client_message.opacity_tf_synthesis);
-    m_name_list_file.setLine( "TF_NUMBER"    , (int)(client_message.transfunc.size()) );
+    m_name_list_file.setLine( "COLOR_SYNTH"  , client_message.m_color_transfer_function_synthesis);
+    m_name_list_file.setLine( "OPACITY_SYNTH", client_message.m_opacity_transfer_function_synthesis);
+    m_name_list_file.setLine( "TF_NUMBER"    , (int)(client_message.m_transfer_function.size()) );
 
 #if 0
     //2019 kawamura
@@ -145,13 +145,13 @@ void ParameterFileWriter::inputTransferFunctionMessage( const jpv::ParticleTrans
     table.str("");  table.clear(std::stringstream::goodbit);
 #endif
 
-    for ( size_t n = 0; n < client_message.transfunc.size(); n++ )
+    for ( size_t n = 0; n < client_message.m_transfer_function.size(); n++ )
     {
         std::stringstream ss;
         ss << "TF_NAME" << n + 1 << "_";
 
         const std::string tag_base = ss.str();
-        m_name_list_file.setLine( tag_base + "VAR_C", client_message.voleqn[2*n].Equation );
+        m_name_list_file.setLine( tag_base + "VAR_C", client_message.m_volume_equation[2*n].m_equation );
 
 #if 0
     std::cout << __FUNCTION__  << ": " << __LINE__ << std::endl;
@@ -188,9 +188,9 @@ void ParameterFileWriter::inputTransferFunctionMessage( const jpv::ParticleTrans
         table.str("");  table.clear(std::stringstream::goodbit);
 #endif
 
-        m_name_list_file.setLine( tag_base + "MIN_C", client_message.transfunc[n].ColorVarMin   );
-        m_name_list_file.setLine( tag_base + "MAX_C", client_message.transfunc[n].ColorVarMax   );
-        m_name_list_file.setLine( tag_base + "VAR_O", client_message.voleqn[2*n + 1].Equation   );
+        m_name_list_file.setLine( tag_base + "MIN_C", client_message.m_transfer_function[n].m_color_variable_min   );
+        m_name_list_file.setLine( tag_base + "MAX_C", client_message.m_transfer_function[n].m_color_variable_max   );
+        m_name_list_file.setLine( tag_base + "VAR_O", client_message.m_volume_equation[2*n + 1].m_equation   );
 
 
 #if 0
@@ -225,11 +225,11 @@ void ParameterFileWriter::inputTransferFunctionMessage( const jpv::ParticleTrans
         table.str("");  table.clear(std::stringstream::goodbit);
 #endif
 
-        m_name_list_file.setLine( tag_base + "MIN_O", client_message.transfunc[n].OpacityVarMin );
-        m_name_list_file.setLine( tag_base + "MAX_O", client_message.transfunc[n].OpacityVarMax );
+        m_name_list_file.setLine( tag_base + "MIN_O", client_message.m_transfer_function[n].m_opacity_variable_min );
+        m_name_list_file.setLine( tag_base + "MAX_O", client_message.m_transfer_function[n].m_opacity_variable_max );
 
-        kvs::ColorMap::Table   color_table   = client_message.transfunc[n].colorMap().table();
-        kvs::OpacityMap::Table opacity_table = client_message.transfunc[n].opacityMap().table();
+        kvs::ColorMap::Table   color_table   = client_message.m_transfer_function[n].colorMap().table();
+        kvs::OpacityMap::Table opacity_table = client_message.m_transfer_function[n].opacityMap().table();
 
         std::stringstream tag_c, table_c;
 

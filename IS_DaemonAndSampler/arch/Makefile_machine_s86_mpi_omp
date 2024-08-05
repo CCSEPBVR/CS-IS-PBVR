@@ -1,11 +1,11 @@
 CXX = icpc
-CXXFLAGS = -O3 -xCORE-AVX2 -qopenmp -std=c++11
+CXXFLAGS = -O3 -xCORE-AVX2 -qopenmp -std=c++14
 
 LD = icpc
 LDFLAGS= -O3 -xCORE-AVX2 -qopenmp 
 
 MPICXX = mpicxx
-MPICXXFLAGS = -O3 -xCORE-AVX2 -qopenmp -std=c++11
+MPICXXFLAGS = -O3 -xCORE-AVX2 -qopenmp -std=c++14
 
 MPICC = mpicc
 MPICCFLAGS = -O3 -xCORE-AVX2 -qopenmp 

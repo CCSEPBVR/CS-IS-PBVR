@@ -1,4 +1,5 @@
-#pragma once
+﻿#ifndef PBVR__TYPES_H_INCLUDE
+#define PBVR__TYPES_H_INCLUDE
 
 #if (_MSC_VER >= 1300 )
 #ifndef HAVE_INT8_T
@@ -29,3 +30,5 @@ typedef unsigned __int64 uint64_t;
 /* C99 から導入されている */
 #include <stdint.h>
 #endif
+
+#endif //PBVR__TYPES_H_INCLUDE

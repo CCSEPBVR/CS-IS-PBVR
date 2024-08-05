@@ -119,18 +119,18 @@ size_t VariableRange::unpack( const char* buf )
     size_t s;
     size_t index = 0;
 
-    index += jpv::Serializer::read( buf + index, s );
+    index += jpv::Serializer::read( buf + index, &s );
     for ( size_t i = 0; i != s; i++ )
     {
-        index += jpv::Serializer::read( buf + index, nm );
-        index += jpv::Serializer::read( buf + index, val );
+        index += jpv::Serializer::read( buf + index, &nm );
+        index += jpv::Serializer::read( buf + index, &val );
         m_min[nm] = val;
     }
-    index += jpv::Serializer::read( buf + index, s );
+    index += jpv::Serializer::read( buf + index, &s );
     for ( size_t i = 0; i != s; i++ )
     {
-        index += jpv::Serializer::read( buf + index, nm );
-        index += jpv::Serializer::read( buf + index, val );
+        index += jpv::Serializer::read( buf + index, &nm );
+        index += jpv::Serializer::read( buf + index, &val );
         m_max[nm] = val;
     }
 

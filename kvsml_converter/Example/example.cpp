@@ -214,12 +214,22 @@ int main( int argc, char** argv )
     }
     else if ( example_name == "avsucd2kvsml" )
     {
+      /*
         fs::path src = input_directory;
         src /= "frontstr.inp";
         fs::path dst = output_directory;
         dst /= "AVS";
         mkdir( dst );
         AvsUcd2Kvsml( dst.string(), "frontstr", src.string() );
+      */
+      fs::path src = input_directory;
+      src /= "pbvr_sample_data";
+      src /= "ucd";
+      src /= "spx.inp";
+      fs::path dst = output_directory;
+      dst /= "AVS";
+      mkdir( dst );
+      AvsUcd2Kvsml( dst.string(), "spx", src.string() );
     }
     else if ( example_name == "vtu2kvsml" )
     {

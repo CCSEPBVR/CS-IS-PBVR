@@ -80,8 +80,8 @@ VariableRange RangeEstimater::EstimationList(const size_t step,
     float* m_var_value_array[128];
     int loop_cnt = 2;
     int component_num = fil.m_list[0].m_number_ingredients;
-    //int tf_num = clntMes.color_var.size(); 
-    int tf_num = clntMes.voleqn.size()/2; 
+    //int tf_num = clntMes.color_var.size();
+    int tf_num = clntMes.m_volume_equation.size()/2;
     
 
     //float comp_minmax[component_num][loop_cnt]; 
@@ -112,8 +112,8 @@ VariableRange RangeEstimater::EstimationList(const size_t step,
 
     for(int i =0; i <tf_num; i++ )
     {
-    var_o.push_back( tfs->convert_token(clntMes.voleqn[i+tf_num].Equation) );
-    var_c.push_back( tfs->convert_token(clntMes.voleqn[i].Equation) );
+    var_o.push_back( tfs->convert_token(clntMes.m_volume_equation[i+tf_num].m_equation) );
+    var_c.push_back( tfs->convert_token(clntMes.m_volume_equation[i].m_equation) );
     }
 
     //----------------------------------- color 

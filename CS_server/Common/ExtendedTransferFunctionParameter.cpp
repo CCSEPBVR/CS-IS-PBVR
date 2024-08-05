@@ -1,14 +1,14 @@
-#include "ExtendedTransferFunctionParameter.h"
+﻿#include "ExtendedTransferFunctionParameter.h"
 
 bool ExtendedTransferFunctionParameter::operator==( const ExtendedTransferFunctionParameter& s ) const
 {
     bool v0 = true;
 
-    v0 &= ( this->Resolution == s.Resolution );
-    v0 &= ( this->ColorVarMin == s.ColorVarMin );
-    v0 &= ( this->ColorVarMax == s.ColorVarMax );
-    v0 &= ( this->OpacityVarMin == s.OpacityVarMin );
-    v0 &= ( this->OpacityVarMax == s.OpacityVarMax );
+    v0 &= ( this->m_resolution == s.m_resolution );
+    v0 &= ( this->m_color_variable_min == s.m_color_variable_min );
+    v0 &= ( this->m_color_variable_max == s.m_color_variable_max );
+    v0 &= ( this->m_opacity_variable_min == s.m_opacity_variable_min );
+    v0 &= ( this->m_opacity_variable_max == s.m_opacity_variable_max );
 
     const size_t n_color   = this->colorMap().table().size();
     const size_t n_opacity = this->opacityMap().table().size();
@@ -39,9 +39,9 @@ bool NamedTransferFunctionParameter::operator==( const NamedTransferFunctionPara
 {
     bool v0 = true;
 
-    v0 &= ( this->Name == s.Name );
-    v0 &= ( this->ColorVar == s.ColorVar );
-    v0 &= ( this->OpacityVar == s.OpacityVar );
+    v0 &= ( this->m_name == s.m_name );
+    v0 &= ( this->m_color_variable == s.m_color_variable );
+    v0 &= ( this->m_opacity_variable == s.m_opacity_variable );
 
     if ( v0 )
     {
@@ -59,8 +59,8 @@ bool NamedTransferFunctionParameter::operator==( const NamedTransferFunctionPara
  */
 bool NamedTransferFunctionParameter::compareName(const NamedTransferFunctionParameter& left, const NamedTransferFunctionParameter& right)
 {
-    std::string left_name = left.Name;
-    std::string right_name = right.Name;
+    std::string left_name = left.m_name;
+    std::string right_name = right.m_name;
     if (left_name.length() <= 1 || right_name.length() <= 1) {
         return left_name.compare(right_name);
     }
@@ -82,12 +82,12 @@ bool NamedTransferFunctionParameter::compareName(const NamedTransferFunctionPara
  */
 int NamedTransferFunctionParameter::getNameNumber() const
 {
-    if (this->Name.length() <= 1) {
+    if (this->m_name.length() <= 1) {
         return 0;
     }
 
-    std::string prefix = this->Name.substr(0, 1);
-    int name_num = std::atoi(this->Name.substr(1).c_str());
+    std::string prefix = this->m_name.substr(0, 1);
+    int name_num = std::atoi(this->m_name.substr(1).c_str());
 
     return name_num;
 }

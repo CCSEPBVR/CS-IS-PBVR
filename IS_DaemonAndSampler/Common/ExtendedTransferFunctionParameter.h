@@ -1,6 +1,9 @@
-#ifndef __EXTEND_TRANSFER_FUNCTION_H__
-#define __EXTEND_TRANSFER_FUNCTION_H__
+﻿#ifndef PBVR__EXTEND_TRANSFER_FUNCTION_PARAMETER_H_INCLUDE
+#define PBVR__EXTEND_TRANSFER_FUNCTION_PARAMETER_H_INCLUDE
 
+#include <iostream>
+#include <string>
+#include <typeinfo>
 #include <kvs/TransferFunction>
 #include "Types.h"
 
@@ -8,29 +11,43 @@ class ExtendedTransferFunctionParameter : public kvs::TransferFunction
 {
 
 public:
-    int32_t Resolution;
-    std::string EquationR;
-    std::string EquationG;
-    std::string EquationB;
-    std::string EquationA;
-    float ColorVarMin;
-    float ColorVarMax;
-    float OpacityVarMin;
-    float OpacityVarMax;
+    int32_t m_resolution;
+    std::string m_equation_red;
+    std::string m_equation_green;
+    std::string m_equation_blue;
+    std::string m_equation_opacity;
+    float m_color_variable_min;
+    float m_color_variable_max;
+    float m_opacity_variable_min;
+    float m_opacity_variable_max;
 
 public:
     ExtendedTransferFunctionParameter() :
-        Resolution( 256 ),
-        EquationR( "" ), EquationG( "" ),
-        EquationB( "" ), EquationA( "" ),
-        ColorVarMin( 0.0 ), ColorVarMax( 1.0 ),
-        OpacityVarMin( 0.0 ), OpacityVarMax( 1.0 )
+        m_resolution( 256 ),
+        m_equation_red( "" ), m_equation_green( "" ),
+        m_equation_blue( "" ), m_equation_opacity( "" ),
+        m_color_variable_min( 0.0 ), m_color_variable_max( 1.0 ),
+        m_opacity_variable_min( 0.0 ), m_opacity_variable_max( 1.0 )
     {
     }
 
-    void setResolution( size_t resolution )
+    /**
+     * コピーコンストラクタ
+     * @param other		コピー元
+     */
+    ExtendedTransferFunctionParameter(const ExtendedTransferFunctionParameter &other) :
+        kvs::TransferFunction(other),
+        m_resolution(other.m_resolution),
+        m_equation_red( other.m_equation_red ), m_equation_green(other.m_equation_green ),
+        m_equation_blue( other.m_equation_blue ), m_equation_opacity( other.m_equation_opacity ),
+        m_color_variable_min( other.m_color_variable_min ), m_color_variable_max( other.m_color_variable_max ),
+        m_opacity_variable_min( other.m_opacity_variable_min ), m_opacity_variable_max( other.m_opacity_variable_max )
     {
-        Resolution = resolution;
+    }
+
+    void setResolution( const size_t resolution )
+    {
+        m_resolution = resolution;
 
         kvs::ColorMap color_map( resolution, 0.0, 1.0 );
         kvs::OpacityMap opacity_map( resolution, 0.0, 1.0 );
@@ -81,25 +98,48 @@ public:
     };
 
 public:
-    Selection selection;
-
-    std::string Name;
-    std::string ColorVar;
-    std::string OpacityVar;
+    Selection m_selection;
+    std::string m_name;
+    std::string m_color_variable;
+    std::string m_opacity_variable;
     bool m_range_initialized;		// add by @hira at 2016/12/01
 
 public:
     NamedTransferFunctionParameter() :
-        selection( SelectTransferFunction ),
-        Name( "" ), ColorVar( "" ), OpacityVar( "" )
+        m_selection( SelectTransferFunction ),
+        m_name( "" ), m_color_variable( "" ), m_opacity_variable( "" ), m_range_initialized(false)
     {
     }
+
+    NamedTransferFunctionParameter(
+            Selection selection,
+            const std::string &name,
+            const std::string &color_variable,
+            const std::string &opacity_variable,
+            bool range_initialized) :
+            m_selection( selection ),
+            m_name( name ), m_color_variable( color_variable ), m_opacity_variable( opacity_variable ), m_range_initialized(range_initialized)
+    {
+    }
+
+    /**
+     * コピーコンストラクタ
+     * @param other		コピー元
+     */
+    NamedTransferFunctionParameter(const NamedTransferFunctionParameter &other)
+        : ExtendedTransferFunctionParameter(other),
+            m_selection( other.m_selection ),
+            m_name( other.m_name ),
+            m_color_variable(other.m_color_variable ), m_opacity_variable( other.m_opacity_variable ),
+            m_range_initialized(other.m_range_initialized)
+    {
+    }
+
     virtual bool operator==( const NamedTransferFunctionParameter& s ) const;
-	static bool compareName(const NamedTransferFunctionParameter& left, const NamedTransferFunctionParameter& right);
+    static bool compareName(const NamedTransferFunctionParameter& left, const NamedTransferFunctionParameter& right);
     int getNameNumber() const;
 };
 
 
 
-#endif // __EXTEND_TRANSFER_FUNCTION_H__
-
+#endif // PBVR__EXTEND_TRANSFER_FUNCTION_PARAMETER_H_INCLUDE

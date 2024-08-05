@@ -1,21 +1,21 @@
 CXX	= FCCpx
-CXXFLAGS= -Kfast,openmp -Xg -std=c++11
+CXXFLAGS= -Kfast,openmp -Xg -std=c++14
 
 CC	= fccpx
-CCFLAGS= -Kfast,openmp -Xg -std=c++11
+CCFLAGS= -Kfast,openmp -Xg -std=c++14
 
 LD	= FCCpx
-LDFLAGS	= -Kfast,openmp -Xg -std=c++11 
+LDFLAGS	= -Kfast,openmp -Xg -std=c++14 
 
 MPICXX	= mpiFCCpx
-MPICXXFLAGS=-Kfast,openmp -Xg -std=c++11
+MPICXXFLAGS=-Kfast,openmp -Xg -std=c++14
 
 MPICC	= mpifccpx
-MPICCFLAGS=-Kfast,openmp -Xg -std=c++11
+MPICCFLAGS=-Kfast,openmp -Xg -std=c++14
 
 MPILD	= mpiFCCpx
-MPILDFLAGS=-Kfast,openmp -Xg -std=c++11
+MPILDFLAGS=-Kfast,openmp -Xg -std=c++14
 
 NTL_CC	= fcc
 NTL_CXX	= FCC
-NTL_CFLAGS = -O0 -Kopenmp -Xg -std=gnu99 -std=c++11
+NTL_CFLAGS = -O0 -Kopenmp -Xg -std=gnu99 -std=c++14

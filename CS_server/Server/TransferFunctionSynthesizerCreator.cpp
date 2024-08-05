@@ -207,30 +207,30 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
 
     m_synthesizer = new TransferFunctionSynthesizer();
     
-    for ( size_t i = 0; i < clntMes.transfunc.size(); i++ )
+    for ( size_t i = 0; i < clntMes.m_transfer_function.size(); i++ )
     {
         NamedTransferFunction tf;
 
-        tf.m_name          = clntMes.transfunc[i].Name;
-        tf.m_color_variable       = clntMes.transfunc[i].ColorVar;
-        tf.m_color_variable_min   = clntMes.transfunc[i].ColorVarMin;
-        tf.m_color_variable_max   = clntMes.transfunc[i].ColorVarMax;
-        tf.m_opacity_variable     = clntMes.transfunc[i].OpacityVar;
-        tf.m_opacity_variable_min = clntMes.transfunc[i].OpacityVarMin;
-        tf.m_opacity_variable_max = clntMes.transfunc[i].OpacityVarMax;
-        tf.m_resolution    = clntMes.transfunc[i].Resolution;
-        tf.m_equation_red     = clntMes.transfunc[i].EquationR;
-        tf.m_equation_green     = clntMes.transfunc[i].EquationG;
-        tf.m_equation_blue     = clntMes.transfunc[i].EquationB;
-        tf.m_equation_opacity     = clntMes.transfunc[i].EquationA;
-        tf.setColorMap( clntMes.transfunc[i].colorMap() );
-        tf.setOpacityMap( clntMes.transfunc[i].opacityMap() );
+        tf.m_name          = clntMes.m_transfer_function[i].m_name;
+        tf.m_color_variable       = clntMes.m_transfer_function[i].m_color_variable;
+        tf.m_color_variable_min   = clntMes.m_transfer_function[i].m_color_variable_min;
+        tf.m_color_variable_max   = clntMes.m_transfer_function[i].m_color_variable_max;
+        tf.m_opacity_variable     = clntMes.m_transfer_function[i].m_opacity_variable;
+        tf.m_opacity_variable_min = clntMes.m_transfer_function[i].m_opacity_variable_min;
+        tf.m_opacity_variable_max = clntMes.m_transfer_function[i].m_opacity_variable_max;
+        tf.m_resolution    = clntMes.m_transfer_function[i].m_resolution;
+        tf.m_equation_red     = clntMes.m_transfer_function[i].m_equation_red;
+        tf.m_equation_green     = clntMes.m_transfer_function[i].m_equation_green;
+        tf.m_equation_blue     = clntMes.m_transfer_function[i].m_equation_blue;
+        tf.m_equation_opacity     = clntMes.m_transfer_function[i].m_equation_opacity;
+        tf.setColorMap( clntMes.m_transfer_function[i].colorMap() );
+        tf.setOpacityMap( clntMes.m_transfer_function[i].opacityMap() );
 
-        if ( clntMes.transfunc[i].selection == NamedTransferFunctionParameter::SelectExtendTransferFunction )
+        if ( clntMes.m_transfer_function[i].m_selection == NamedTransferFunctionParameter::SelectExtendTransferFunction )
         {
             tf.m_selection = NamedTransferFunction::SelectExtendTransferFunction;
         }
-        else if ( clntMes.transfunc[i].selection == NamedTransferFunctionParameter::SelectTransferFunction )
+        else if ( clntMes.m_transfer_function[i].m_selection == NamedTransferFunctionParameter::SelectTransferFunction )
         {
             tf.m_selection = NamedTransferFunction::SelectTransferFunction;
         }
@@ -244,65 +244,65 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
         std::vector<EquationToken> var_o; 
         std::vector<EquationToken> var_c; 
 
-        std::string opacitySynthBuf = clntMes.opacity_tf_synthesis;
+        std::string opacitySynthBuf = clntMes.m_opacity_transfer_function_synthesis;
         std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
         eq = m_synthesizer -> convert_token(opacitySynthBuf);
 
         m_synthesizer -> setOpacityFunction( eq );
 
-        std::string colorSynthBuf = clntMes.color_tf_synthesis;
+        std::string colorSynthBuf = clntMes.m_color_transfer_function_synthesis;
         std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
         eq = m_synthesizer -> convert_token(colorSynthBuf);
         m_synthesizer -> setColorFunction( eq );
 
-        int vloeqsize2=clntMes.voleqn.size()/2;
-        for ( size_t i = 0; i < clntMes.voleqn.size()/2; i++ ) 
+        int vloeqsize2=clntMes.m_volume_equation.size()/2;
+        for ( size_t i = 0; i < clntMes.m_volume_equation.size()/2; i++ )
         {
-            std::string OSynthBuf = clntMes.voleqn[i+vloeqsize2].Equation;
+            std::string OSynthBuf = clntMes.m_volume_equation[i+vloeqsize2].m_equation;
             std::replace(OSynthBuf.begin(), OSynthBuf.end(), 'X', 'x');
             std::replace(OSynthBuf.begin(), OSynthBuf.end(), 'Y', 'y');
             std::replace(OSynthBuf.begin(), OSynthBuf.end(), 'Z', 'z');
 
-            std::string CSynthBuf = clntMes.voleqn[i].Equation ;
+            std::string CSynthBuf = clntMes.m_volume_equation[i].m_equation ;
             std::replace(CSynthBuf.begin(), CSynthBuf.end(), 'X', 'x');
             std::replace(CSynthBuf.begin(), CSynthBuf.end(), 'Y', 'y');
             std::replace(CSynthBuf.begin(), CSynthBuf.end(), 'Z', 'z');
 
             var_o.push_back( m_synthesizer ->  convert_token(OSynthBuf ));
             var_c.push_back( m_synthesizer ->  convert_token(CSynthBuf ));
-            //var_o.push_back( m_synthesizer -> convert_token(clntMes.voleqn[i+vloeqsize2].Equation) );
-            //var_c.push_back( m_synthesizer -> convert_token(clntMes.voleqn[i].Equation ));
+            //var_o.push_back( m_synthesizer -> convert_token(clntMes.m_volume_equation[i+vloeqsize2].m_equation) );
+            //var_c.push_back( m_synthesizer -> convert_token(clntMes.m_volume_equation[i].m_equation ));
         }
 
         m_synthesizer -> setOpacityVariable( var_o );
         m_synthesizer -> setColorVariable( var_c );
         
     // overwrite opacitymap add by shimomura  2023/1/24    
-    size_t cnt = clntMes.transfunc.size()/2;
+    size_t cnt = clntMes.m_transfer_function.size()/2;
     for ( size_t i = 0; i < cnt; i++ )
     {
-        m_transfunc[i].m_color_variable     = clntMes.transfunc[i].ColorVar;
-        m_transfunc[i].m_color_variable_min = clntMes.transfunc[i].ColorVarMin;
-        m_transfunc[i].m_color_variable_max = clntMes.transfunc[i].ColorVarMax;
-        m_transfunc[i].setColorMap( clntMes.transfunc[i].colorMap() );
+        m_transfunc[i].m_color_variable     = clntMes.m_transfer_function[i].m_color_variable;
+        m_transfunc[i].m_color_variable_min = clntMes.m_transfer_function[i].m_color_variable_min;
+        m_transfunc[i].m_color_variable_max = clntMes.m_transfer_function[i].m_color_variable_max;
+        m_transfunc[i].setColorMap( clntMes.m_transfer_function[i].colorMap() );
 	m_transfunc[i].setColorRange( m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max );
 	
-        m_transfunc[i].m_opacity_variable     = clntMes.transfunc[i+cnt].OpacityVar;
-        m_transfunc[i].m_opacity_variable_min = clntMes.transfunc[i+cnt].OpacityVarMin;
-        m_transfunc[i].m_opacity_variable_max = clntMes.transfunc[i+cnt].OpacityVarMax;
-        m_transfunc[i].setOpacityMap( clntMes.transfunc[i+cnt].opacityMap() );
+        m_transfunc[i].m_opacity_variable     = clntMes.m_transfer_function[i+cnt].m_opacity_variable;
+        m_transfunc[i].m_opacity_variable_min = clntMes.m_transfer_function[i+cnt].m_opacity_variable_min;
+        m_transfunc[i].m_opacity_variable_max = clntMes.m_transfer_function[i+cnt].m_opacity_variable_max;
+        m_transfunc[i].setOpacityMap( clntMes.m_transfer_function[i+cnt].opacityMap() );
 	m_transfunc[i].setOpacityRange( m_transfunc[i].m_opacity_variable_min, m_transfunc[i].m_opacity_variable_max );
 
-    //    std::cout << "clntMes.transfunc[i+cnt].OpacityVarMax = " << clntMes.transfunc[i+cnt].OpacityVarMax <<std::endl;
+    //    std::cout << "clntMes.m_transfer_function[i+cnt].m_opacity_variable_max = " << clntMes.m_transfer_function[i+cnt].m_opacity_variable_max <<std::endl;
         //for(int j=0; j<256; j++) std::cout << "m_transfunc["<< i <<"].opacityMap().["<< j <<"] = " << m_transfunc[i].opacityMap()[j] <<std::endl;
     }    
-        //for(int i=0; i<clntMes.transfunc.size(); i++) std::cout << "m_transfunc["<< i <<"].colorMap().maxValue() = " << m_transfunc[i].colorMap().maxValue() << std::endl;
+        //for(int i=0; i<clntMes.m_transfer_function.size(); i++) std::cout << "m_transfunc["<< i <<"].colorMap().maxValue() = " << m_transfunc[i].colorMap().maxValue() << std::endl;
 
-    for ( size_t i = 0; i < clntMes.voleqn.size(); i++ )
+    for ( size_t i = 0; i < clntMes.m_volume_equation.size(); i++ )
     {
         VolumeEquation ve;
-        ve.m_name     = clntMes.voleqn[i].Name;
-        ve.m_equation = clntMes.voleqn[i].Equation;
+        ve.m_name     = clntMes.m_volume_equation[i].m_name;
+        ve.m_equation = clntMes.m_volume_equation[i].m_equation;
         m_voleqn.push_back( ve );
     }
 }

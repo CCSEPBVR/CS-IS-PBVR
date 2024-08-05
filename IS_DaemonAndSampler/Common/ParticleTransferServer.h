@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PBVR__JPV__PARTICLE_TRANSFER_SERVER_H_INCLUDE
+#define PBVR__JPV__PARTICLE_TRANSFER_SERVER_H_INCLUDE
 
 #include "ParticleTransferProtocol.h"
 
@@ -14,26 +15,31 @@ namespace jpv
 class ParticleTransferServer
 {
 protected:
-//	int port;
+//	int m_port;
 #if defined WIN32
-    SOCKET srcSock; // 自分
-    SOCKET dstSock; // 相手
+    SOCKET m_source_socket; // 自分
+    SOCKET m_destination_socket; // 相手
 #else
-    int srcSock;
-    int dstSock;
+    int m_source_socket;
+    int m_destination_socket;
 #endif
 public:
-    ParticleTransferServer( void );
-    ~ParticleTransferServer( void );
-    bool good( void );
-    int initServer( int port );
-    int termServer( void );
-    int acceptServer( void );
-    int disconnect( void );
+    ParticleTransferServer();
+    ~ParticleTransferServer();
+    bool good();
+    int initializeServer( const int m_port );
+    int termServer();
+    int acceptServer();
+    int disconnect();
     // server => client
-    int sendMessage( ParticleTransferServerMessage& message );
+    int sendMessageCS( const ParticleTransferServerMessage& message );
+    int sendMessageIS( const ParticleTransferServerMessage& message );
     // client => server
-    int recvMessage( ParticleTransferClientMessage& message );
+    int recvMessageCS( ParticleTransferClientMessage* message );
+    int recvMessageIS( ParticleTransferClientMessage* message );
 };
 
 }
+
+#endif    // PBVR__JPV__PARTICLE_TRANSFER_SERVER_H_INCLUDE
+

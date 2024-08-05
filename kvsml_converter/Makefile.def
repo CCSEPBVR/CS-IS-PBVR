@@ -171,32 +171,32 @@ OUTDIR := $(SOLUTION)
 #=============================================================================
 #  KVS_INCLUDE_PATH, KVS_LIBRARY_PATH, KVS_LINK_LIBRARY
 #=============================================================================
-KVS_INCLUDE_PATH :=
-KVS_LIBRARY_PATH :=
+KVS_INCLUDE_PATH :=/Users/t0603/Work/PBVR/lib/KVS_FOR_DEV_RELEASE/install/include
+KVS_LIBRARY_PATH :=/Users/t0603/Work/PBVR/lib/KVS_FOR_DEV_RELEASE/install/lib
 KVS_LINK_LIBRARY := -lkvsCore
 
 
 #=============================================================================
 #  VTK_INCLUDE_PATH, VTK_LIBRARY_PATH, VTK_LINK_LIBRARY
 #=============================================================================
-VTK_INCLUDE_PATH :=
-VTK_LIBRARY_PATH :=
+VTK_INCLUDE_PATH :=/opt/homebrew/Cellar/vtk/9.3.1/include/vtk-9.3/
+VTK_LIBRARY_PATH :=/opt/homebrew/Cellar/vtk/9.3.1/lib
 VTK_LINK_LIBRARY := \
--lvtksys-9.2 \
--lvtkCommonCore-9.2 \
--lvtkCommonExecutionModel-9.2 \
--lvtkCommonDataModel-9.2 \
--lvtkFiltersCore-9.2 \
--lvtkFiltersExtraction-9.2 \
--lvtkFiltersGeometry-9.2 \
--lvtkFiltersParallel-9.2 \
--lvtkIOCore-9.2 \
--lvtkIOGeometry-9.2 \
--lvtkIOCGNSReader-9.2 \
--lvtkIOEnSight-9.2 \
--lvtkIOParallel-9.2 \
--lvtkIOLegacy-9.2 \
--lvtkIOXML-9.2 
+-lvtksys-9.3 \
+-lvtkCommonCore-9.3 \
+-lvtkCommonExecutionModel-9.3 \
+-lvtkCommonDataModel-9.3 \
+-lvtkFiltersCore-9.3 \
+-lvtkFiltersExtraction-9.3 \
+-lvtkFiltersGeometry-9.3 \
+-lvtkFiltersParallel-9.3 \
+-lvtkIOCore-9.3 \
+-lvtkIOGeometry-9.3 \
+-lvtkIOCGNSReader-9.3 \
+-lvtkIOEnSight-9.3 \
+-lvtkIOParallel-9.3 \
+-lvtkIOLegacy-9.3 \
+-lvtkIOXML-9.3 
 
 
 #=============================================================================

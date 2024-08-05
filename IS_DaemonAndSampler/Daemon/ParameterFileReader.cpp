@@ -11,23 +11,23 @@ void ParameterFileReader::outputMessage( jpv::ParticleTransferServerMessage* ser
 
 void ParameterFileReader::outputParameterMessage( jpv::ParticleTransferServerMessage* server_message )
 {
-    server_message->particle_limit         =  m_name_list_file.getValue<int32_t>( "PARTICLE_LIMIT"    );
-    server_message->particle_density       =  m_name_list_file.getValue<float>(   "PARTICLE_DENSITY"  );
+    server_message->m_particle_limit         =  m_name_list_file.getValue<int32_t>( "PARTICLE_LIMIT"    );
+    server_message->m_particle_density       =  m_name_list_file.getValue<float>(   "PARTICLE_DENSITY"  );
     size_t width                           =  m_name_list_file.getValue<size_t>(  "RESOLUTION_WIDTH"  );
     size_t height                          =  m_name_list_file.getValue<size_t>(  "RESOLUTION_HEIGHT" );
-    server_message->camera->setWindowSize( width, height );
-    server_message->particle_data_size_limit =  m_name_list_file.getValue<float>(   "PARTICLE_DATA_SIZE_LIMIT"  );
+    server_message->m_camera->setWindowSize( width, height );
+    server_message->m_particle_data_size_limit =  m_name_list_file.getValue<float>(   "PARTICLE_DATA_SIZE_LIMIT"  );
 }
 
 void ParameterFileReader::outputTransferFunctionMessage( jpv::ParticleTransferServerMessage* server_message )
 {
     const size_t resolution                   = m_name_list_file.getValue<int>(         "TF_RESOLUTION" );
     //server_message->transferFunctionSynthesis  = m_name_list_file.getValue<std::string>( "TF_SYNTH"      );
-    server_message->color_tf_synthesis = m_name_list_file.getValue<std::string>( "COLOR_SYNTH" );
-    server_message->opacity_tf_synthesis = m_name_list_file.getValue<std::string>( "OPACITY_SYNTH" );
+    server_message->m_color_transfer_function_synthesis = m_name_list_file.getValue<std::string>( "COLOR_SYNTH" );
+    server_message->m_opacity_transfer_function_synthesis = m_name_list_file.getValue<std::string>( "OPACITY_SYNTH" );
 
     const int cur_tf_number = m_name_list_file.getValue<int>("TF_NUMBER");
-    server_message->transfunc.resize( cur_tf_number );
+    server_message->m_transfer_function.resize( cur_tf_number );
     for ( size_t n = 0; n < cur_tf_number; n++ )
     {
         std::stringstream ss;
@@ -37,14 +37,14 @@ void ParameterFileReader::outputTransferFunctionMessage( jpv::ParticleTransferSe
         s_name << "t" << n + 1;
 
         const std::string tag_base = ss.str();
-        server_message->transfunc[n].setResolution( resolution );
-        server_message->transfunc[n].Name          = s_name.str();
-        server_message->transfunc[n].ColorVar      = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
-        server_message->transfunc[n].ColorVarMin   = m_name_list_file.getValue<float>( tag_base + "MIN_C" );
-        server_message->transfunc[n].ColorVarMax   = m_name_list_file.getValue<float>( tag_base + "MAX_C" );
-        server_message->transfunc[n].OpacityVar    = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
-        server_message->transfunc[n].OpacityVarMin = m_name_list_file.getValue<float>( tag_base + "MIN_O" );
-        server_message->transfunc[n].OpacityVarMax = m_name_list_file.getValue<float>( tag_base + "MAX_O" );
+        server_message->m_transfer_function[n].setResolution( resolution );
+        server_message->m_transfer_function[n].m_name          = s_name.str();
+        server_message->m_transfer_function[n].m_color_variable      = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
+        server_message->m_transfer_function[n].m_color_variable_min   = m_name_list_file.getValue<float>( tag_base + "MIN_C" );
+        server_message->m_transfer_function[n].m_color_variable_max   = m_name_list_file.getValue<float>( tag_base + "MAX_C" );
+        server_message->m_transfer_function[n].m_opacity_variable    = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
+        server_message->m_transfer_function[n].m_opacity_variable_min = m_name_list_file.getValue<float>( tag_base + "MIN_O" );
+        server_message->m_transfer_function[n].m_opacity_variable_max = m_name_list_file.getValue<float>( tag_base + "MAX_O" );
 
         std::string s_color =   m_name_list_file.getValue<std::string>( tag_base + "TABLE_C" );
         std::string s_opacity = m_name_list_file.getValue<std::string>( tag_base + "TABLE_O" );
@@ -78,7 +78,7 @@ void ParameterFileReader::outputTransferFunctionMessage( jpv::ParticleTransferSe
         kvs::ColorMap color_map( color_table );
         kvs::OpacityMap opacity_map( opacity_table );
         kvs::TransferFunction tf( color_map, opacity_map );
-        kvs::TransferFunction& tt = server_message->transfunc[n];
+        kvs::TransferFunction& tt = server_message->m_transfer_function[n];
         tt = tf;
     }
 

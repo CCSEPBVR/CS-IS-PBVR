@@ -33,14 +33,14 @@ size_t Serializer::write<std::string>( char* buf, const std::string& object )
 }
 
 template<>
-size_t Serializer::read<std::string>( const char* buf, std::string& object )
+size_t Serializer::read<std::string>( const char* buf, std::string* object )
 {
     size_t index = 0, size;
     char* tmp;
-    index += read( buf + index, size );
+    index += read( buf + index, &size );
     tmp = new char[size];
     index += readArray( buf + index, tmp, size );
-    object = std::string( tmp );
+    *object = std::string( tmp );
     delete[] tmp;
     return index;
 }
@@ -74,17 +74,26 @@ size_t Serializer::pack<kvs::Camera>( char* buf, const kvs::Camera& object )
     float r[9];
     for ( int i = 0; i < 9; ++i )
     {
-        r[i] = object.rotation()[i / 3][i % 3];
+        //KVS2.7.0
+        //MOD BY)T0603 2020.05.28
+        //r[i] = object.rotation()[i / 3][i % 3];
+        r[i] = object.xform().rotation()[i / 3][i % 3];
     }
     float t[3];
     for ( int i = 0; i < 3; ++i )
     {
-        t[i] = object.translation()[i];
+        //KVS2.7.0
+        //MOD BY)T0603 2020.05.28
+        //t[i] = object.translation()[i];
+        t[i] = object.xform().translation()[i];
     }
     float s[3];
     for ( int i = 0; i < 3; ++i )
     {
-        s[i] = object.scaling()[i];
+        //KVS2.7.0
+        //MOD BY)T0603 2020.05.28
+        //s[i] = object.scaling()[i];
+        s[i] = object.xform().scaling()[i];
     }
     size_t index = 0;
     index += writeArray( buf + index, r );
@@ -113,7 +122,7 @@ size_t Serializer::pack<kvs::Camera>( char* buf, const kvs::Camera& object )
 }
 
 template<>
-size_t Serializer::unpack<kvs::Camera>( const char* buf, kvs::Camera& object )
+size_t Serializer::unpack<kvs::Camera>( const char* buf, kvs::Camera* object )
 {
     float r[9];
     float t[3];
@@ -126,40 +135,43 @@ size_t Serializer::unpack<kvs::Camera>( const char* buf, kvs::Camera& object )
     kvs::Matrix33f rotation( r );
     kvs::Vector3f translation( t );
     kvs::Vector3f scaling( s );
-    object.set( translation, scaling, rotation );
+    //KVS2.7.0
+    //MOD BY)T0603 2020.05.28
+    //object->set( translation, scaling, rotation );
+    object->setXform( kvs::Xform( translation, scaling, rotation ) );
     kvs::Camera::ProjectionType pType;
-    index += read( buf + index, pType );
-    object.setProjectionType( pType );
-    index += read( buf + index, x );
-    index += read( buf + index, y );
-    index += read( buf + index, z );
-    object.setPosition( kvs::Vector3f( x, y, z ) );
-    index += read( buf + index, x );
-    index += read( buf + index, y );
-    index += read( buf + index, z );
-    object.setUpVector( kvs::Vector3f( x, y, z ) );
-    index += read( buf + index, x );
-    index += read( buf + index, y );
-    index += read( buf + index, z );
-    object.setLookAt( kvs::Vector3f( x, y, z ) );
-    index += read( buf + index, v );
-    object.setFieldOfView( v );
-    index += read( buf + index, v );
-    object.setBack( v );
-    index += read( buf + index, v );
-    object.setFront( v );
-    index += read( buf + index, v );
-    object.setRight( v );
-    index += read( buf + index, v );
-    object.setLeft( v );
-    index += read( buf + index, v );
-    object.setBottom( v );
-    index += read( buf + index, v );
-    object.setTop( v );
+    index += read( buf + index, &pType );
+    object->setProjectionType( pType );
+    index += read( buf + index, &x );
+    index += read( buf + index, &y );
+    index += read( buf + index, &z );
+    object->setPosition( kvs::Vector3f( x, y, z ) );
+    index += read( buf + index, &x );
+    index += read( buf + index, &y );
+    index += read( buf + index, &z );
+    object->setUpVector( kvs::Vector3f( x, y, z ) );
+    index += read( buf + index, &x );
+    index += read( buf + index, &y );
+    index += read( buf + index, &z );
+    object->setLookAt( kvs::Vector3f( x, y, z ) );
+    index += read( buf + index, &v );
+    object->setFieldOfView( v );
+    index += read( buf + index, &v );
+    object->setBack( v );
+    index += read( buf + index, &v );
+    object->setFront( v );
+    index += read( buf + index, &v );
+    object->setRight( v );
+    index += read( buf + index, &v );
+    object->setLeft( v );
+    index += read( buf + index, &v );
+    object->setBottom( v );
+    index += read( buf + index, &v );
+    object->setTop( v );
     size_t w, h;
-    index += read( buf + index, w );
-    index += read( buf + index, h );
-    object.setWindowSize( w, h );
+    index += read( buf + index, &w );
+    index += read( buf + index, &h );
+    object->setWindowSize( w, h );
     return index;
 }
 
@@ -201,36 +213,36 @@ size_t jpv::Serializer::pack<kvs::TransferFunction>( char* buf, const kvs::Trans
 }
 
 template<>
-size_t jpv::Serializer::unpack<kvs::TransferFunction>( const char* buf, kvs::TransferFunction& object )
+size_t jpv::Serializer::unpack<kvs::TransferFunction>( const char* buf, kvs::TransferFunction* object )
 {
     size_t index = 0;
     size_t resolution;
     float max_value, min_value;
-    index += read( buf + index, resolution );
-    index += read( buf + index, max_value );
-    index += read( buf + index, min_value );
+    index += read( buf + index, &resolution );
+    index += read( buf + index, &max_value );
+    index += read( buf + index, &min_value );
 
     kvs::ColorMap::Table colorTable( resolution * 3 );
     for ( size_t i = 0; i < resolution; ++i )
     {
-        index += read( buf + index, colorTable[3 * i + 0] );
-        index += read( buf + index, colorTable[3 * i + 1] );
-        index += read( buf + index, colorTable[3 * i + 2] );
+        index += read( buf + index, &colorTable[3 * i + 0] );
+        index += read( buf + index, &colorTable[3 * i + 1] );
+        index += read( buf + index, &colorTable[3 * i + 2] );
     }
     kvs::OpacityMap::Table opacityTable( resolution );
     for ( size_t i = 0; i < resolution; ++i )
     {
-        index += read( buf + index, opacityTable[i] );
+        index += read( buf + index, &opacityTable[i] );
     }
     kvs::ColorMap colorMap( colorTable );
     kvs::OpacityMap opacityMap( opacityTable );
-    object.create( resolution );
+    object->create( resolution );
     colorMap.setResolution( resolution );
     colorMap.setRange( min_value, max_value );
     opacityMap.setResolution( resolution );
     opacityMap.setRange( min_value, max_value );
-    object.setColorMap( colorMap );
-    object.setOpacityMap( opacityMap );
+    object->setColorMap( colorMap );
+    object->setOpacityMap( opacityMap );
     return index;
 }
 

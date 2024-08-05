@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-O3 -mcpu=apple-m1 -std=c++11
+CXXFLAGS=-O3 -mcpu=apple-m1 -std=c++14
 CC=gcc
 CCFLAGS=-O3 -mcpu=apple-m1
 LD=g++
