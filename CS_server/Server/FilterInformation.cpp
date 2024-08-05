@@ -44,10 +44,10 @@ int FilterInformationFile::loadPFI( const std::string& filename )
     float x_max, y_max, z_max;
     x_min = m_name_list_file.getValue<float>("MIN_COORD_0"); 
     y_min = m_name_list_file.getValue<float>("MIN_COORD_1"); 
-    y_min = m_name_list_file.getValue<float>("MIN_COORD_2"); 
+    z_min = m_name_list_file.getValue<float>("MIN_COORD_2"); 
     x_max = m_name_list_file.getValue<float>("MAX_COORD_0"); 
     y_max = m_name_list_file.getValue<float>("MAX_COORD_1"); 
-    y_max = m_name_list_file.getValue<float>("MAX_COORD_2"); 
+    z_max = m_name_list_file.getValue<float>("MAX_COORD_2"); 
     m_min_object_coord.set( x_min, y_min, z_min );
     m_max_object_coord.set( x_max, y_max, z_max );
 
@@ -98,10 +98,10 @@ int FilterInformationFile::loadPFI( const std::string& filename )
         const std::string tag_max_coord_base = ss_max.str();
         sub_x_min = m_name_list_file.getValue<float>( tag_min_coord_base + "0"); 
         sub_y_min = m_name_list_file.getValue<float>( tag_min_coord_base + "1"); 
-        sub_y_min = m_name_list_file.getValue<float>( tag_min_coord_base + "2"); 
+        sub_z_min = m_name_list_file.getValue<float>( tag_min_coord_base + "2"); 
         sub_x_max = m_name_list_file.getValue<float>( tag_max_coord_base + "0"); 
         sub_y_max = m_name_list_file.getValue<float>( tag_max_coord_base + "1"); 
-        sub_y_max = m_name_list_file.getValue<float>( tag_max_coord_base + "2"); 
+        sub_z_max = m_name_list_file.getValue<float>( tag_max_coord_base + "2"); 
         m_min_subvolume_coord[vl].set( sub_x_min, sub_y_min, sub_z_min );
         m_max_subvolume_coord[vl].set( sub_x_max, sub_y_max, sub_z_max );
     }
