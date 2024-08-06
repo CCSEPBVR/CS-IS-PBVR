@@ -567,6 +567,67 @@ inline size_t CalculateSubpixelLevel( const Argument& param,
     return static_cast<size_t>( subpixel_level + 0.5f );
 }
 
+inline VariableRange Calculate_minmax( const Argument& param,
+                                      const FilterInformationList& fil)
+{
+    namespace Generator = pbvr::CellByCellParticleGenerator;
+    //pbvr::UnstructuredVolumeObject* volume;
+    pbvr::VolumeObjectBase* volume;
+    double total_volume = 0.0;
+    double density_lev1 = 0.0;//kawamura2: particle density for subpixel_level=1
+    int steps = fil.m_total_start_steps;
+    int subvols = 0;
+
+    kvs::Real64 tmp_min, tmp_max;
+    //Total Volume Calculation
+#ifndef CPU_VER
+    int rank;
+    int nprocs;
+    MPI_Comm_size( MPI_COMM_WORLD, &nprocs );
+    MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+#else
+    int rank = 0;
+    int nprocs = 1;
+#endif
+
+    for ( subvols = 0; subvols < fil.m_total_number_subvolumes; subvols++ )                                                                                                                                
+    {
+        int xvl, fidx;
+        fidx = fil.getFileIndex( subvols, &xvl );
+        const FilterInformationFile& fi = fil.m_list[fidx];
+
+        if ( subvols % nprocs == rank )
+        {
+            volume = CreateVolumeData( param, fi, steps, xvl );
+            //volume->updateMinMaxValues();
+            tmp_min = volume->values().at<float>(0) ; 
+            tmp_max = volume->values().at<float>(0) ; 
+            for (int i =1; i< volume->nnodes(); i++)
+            {
+            tmp_min = tmp_min < volume->values().at<float>(i) ? tmp_min : volume->values().at<float>(i) ; 
+            tmp_max = tmp_min > volume->values().at<float>(i) ? tmp_max : volume->values().at<float>(i) ; 
+            }
+            delete volume;
+        }
+    }
+
+#ifndef CPU_VER
+    PBVR_TIMER_STA( 19 );
+    MPI_Allreduce( MPI_IN_PLACE, &tmp_min, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
+    MPI_Allreduce( MPI_IN_PLACE, &tmp_max, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
+    PBVR_TIMER_END( 19 );
+#endif
+
+   VariableRange vr;
+   vr.setValue( "t1_var_o", tmp_max);
+   vr.setValue( "t1_var_o", tmp_min);
+   vr.setValue( "t1_var_c", tmp_max);
+   vr.setValue( "t1_var_c", tmp_min);
+
+   return vr;
+}
+
+
 inline float CalculateDensityFactor( const Argument& param,
                                      const FilterInformationFile& fi,
                                      const kvs::Camera& camera )
@@ -1531,6 +1592,18 @@ int main( int argc, char** argv )
                 delete[] buf;
                 std::cout << "Rank " << rank << ": Recv Client Message" << std::endl;
                 // recv cltMes from process 0 <<
+               if ( clntMes.m_initialize_parameter == -1 )
+               {
+               }
+               else if ( clntMes.m_initialize_parameter == -2 )
+               {
+               }
+               else if ( clntMes.m_initialize_parameter == -3 ) 
+               {
+                    VariableRange range = Calculate_minmax( param, fil); 
+               }
+               else
+               {
 
                 if ( clntMes.m_time_parameter == 0 )
                 {
@@ -1774,6 +1847,8 @@ int main( int argc, char** argv )
                     }
                     delete param.m_transfunc_synthesizer;
                 }
+
+            }
             } // end of while(loop)
             delete clntMes.m_camera;
 
@@ -1934,7 +2009,8 @@ int main( int argc, char** argv )
 
                     transfunc_creator.setProtocol( clntMes );
                     TransferFunctionSynthesizer* tfs = transfunc_creator.create();
-                    VariableRange range = RangeEstimater::EstimationList( 0, fil, tfs , clntMes);
+//                    VariableRange range = RangeEstimater::EstimationList( 0, fil, tfs , clntMes);
+                    VariableRange range = Calculate_minmax( param, fil); 
 
                     //VariableRange range;
                     strncpy( servMes.m_header, "JPTP /1.0 000 OK\r\n", 18 );
