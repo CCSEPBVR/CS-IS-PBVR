@@ -107,7 +107,7 @@ bool ExtendedTransferFunctionMessage::operator==( const ExtendedTransferFunction
     return v0;
 }
 
-void ExtendedTransferFunctionMessage::applyToClientMessage( jpv::ParticleTransferClientMessage* message ) const
+void ExtendedTransferFunctionMessage::applyToClientMessageCS( jpv::ParticleTransferClientMessage* message ) const
 {
     message->m_transfer_function.clear();
     message->m_volume_equation.clear();
@@ -205,6 +205,51 @@ void ExtendedTransferFunctionMessage::applyToClientMessage( jpv::ParticleTransfe
     return;
 }
 
+
+void ExtendedTransferFunctionMessage::applyToClientMessageIS( jpv::ParticleTransferClientMessage* message ) const
+{
+    message->m_transfer_function.clear();
+    message->m_volume_equation.clear();
+    message->opacity_var.clear();
+    message->color_var.clear();
+
+    // 1次伝達関数
+    std::string colorSynthBuf = this->m_color_transfer_function_synthesis;
+    std::string opacitySynthBuf = this->m_opacity_transfer_function_synthesis;
+
+    for ( size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
+    {
+        NamedTransferFunctionParameter etf;
+        jpv::ParticleTransferClientMessage::VolumeEquation veq_c, veq_o;
+
+        const NamedTransferFunctionParameter& c_tf = this->m_color_transfer_function[i];
+        const NamedTransferFunctionParameter& o_tf = this->m_opacity_transfer_function[i];
+
+        etf = c_tf;
+
+        std::stringstream ss;
+        ss << "_F" << i;
+
+        etf.m_color_variable   = ss.str() + "_VAR_C";
+        etf.m_opacity_variable = ss.str() + "_VAR_O";
+        veq_c.m_name     = etf.m_color_variable;
+        veq_o.m_name     = etf.m_opacity_variable;
+        veq_c.m_equation = this->m_color_transfer_function[i].m_color_variable;
+        veq_o.m_equation = this->m_opacity_transfer_function[i].m_opacity_variable;
+
+        std::replace(etf.m_name.begin(), etf.m_name.end(), 'C', 't');
+        etf.setOpacityMap( o_tf.opacityMap() );
+        etf.m_equation_opacity = o_tf.m_equation_opacity;
+        etf.m_opacity_variable_min = o_tf.m_opacity_variable_min;
+        etf.m_opacity_variable_max = o_tf.m_opacity_variable_max;
+
+        message->m_transfer_function.push_back( etf );
+        message->m_volume_equation.push_back( veq_c );
+        message->m_volume_equation.push_back( veq_o );
+    }
+
+    return;
+}
 
 
 /**

@@ -18,14 +18,15 @@ public:
     enum FormatType
     {
         Unknown                       = 0, // Aka Error
-        ServerPointObject             = 1, // Server side Point Object
-        PointObjectKVSML              = 2, // Point Object(.kvsml)
-        PointObjectLAS                = 3, // Point Object(.las)
-        PointObjectPTS                = 4, // Point Object(.pts)
-        NonTexturedPolygonObjectKVSML = 5, // Non Textured Polygon Object(.kvsml)
-        NonTexturedPolygonObjectSTL   = 6, // Non Textured Polygon Object(.stl)
-        TexturedPolygonObject3DS      = 7, // Textured Polygon Object(.3ds)
-        TexturedPolygonObjectFBX      = 8, // Textured Polygon Object(.fbx)
+        ServerPointObjectCS           = 1, // Server side Point Object
+        ServerPointObjectIS           = 2, // Server side Point Object
+        PointObjectKVSML              = 3, // Point Object(.kvsml)
+        PointObjectLAS                = 4, // Point Object(.las)
+        PointObjectPTS                = 5, // Point Object(.pts)
+        NonTexturedPolygonObjectKVSML = 6, // Non Textured Polygon Object(.kvsml)
+        NonTexturedPolygonObjectSTL   = 7, // Non Textured Polygon Object(.stl)
+        TexturedPolygonObject3DS      = 8, // Textured Polygon Object(.3ds)
+        TexturedPolygonObjectFBX      = 9, // Textured Polygon Object(.fbx)
     };
 
 public:
@@ -57,8 +58,10 @@ public:
         {
         case Unknown:
             return QStringLiteral( "Unknown" );
-        case ServerPointObject:
-            return QStringLiteral( "Server" );
+        case ServerPointObjectCS:
+            return QStringLiteral( "Server(CS)" );
+        case ServerPointObjectIS:
+            return QStringLiteral( "Server(IS)" );
         case PointObjectKVSML:
             return QStringLiteral( "KVSML(PointObject)" );
         case PointObjectLAS:
@@ -123,6 +126,8 @@ public:
     void setShadingController( ShadingController* shading_controller ){ m_shading_controller = shading_controller; }
     void setIsParticleGenerationNeeded( bool is_particle_generation_needed ){ m_is_particle_generation_needed = is_particle_generation_needed; }
     void serverObject( QString volumeDataFilePath, int min, int max );
+    void serverObjectIS( QString volumeDataFilePath, int min, int max );
+    void updateObjectTimeStepIS( int min, int max );
     void mergeObjects();
 //    void exportingServerSidePointObject( FilesManager& filesManager, const kvs::PointObject& server_point_object );
     void exportingServerSidePointObject( FilesManager& filesManager );

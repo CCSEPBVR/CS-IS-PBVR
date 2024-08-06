@@ -52,7 +52,8 @@ private:
     jpv::ParticleTransferServerMessage m_server_message;
     kvs::visclient::ReceivedMessage m_received_message;
 
-    void connectCS();
+    void connectServerCS();
+    void connectServerIS();
 
     void onVolumeDataBrowseButtonClicked();
     void onTransferFunctionFileBrowseButtonClicked();

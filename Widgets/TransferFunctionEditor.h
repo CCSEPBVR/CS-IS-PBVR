@@ -19,6 +19,13 @@ class TransferFunctionEditor;
 class TransferFunctionEditor : public QDialog
 {
     Q_OBJECT
+public:
+    enum class Mode
+    {
+        CS,  //Client Server
+        IS,  //In-situ
+        None //No select
+    };
 
 public:
     explicit TransferFunctionEditor(QWidget *parent = nullptr);
@@ -36,6 +43,9 @@ public:
     void importFile( const std::string& fileName );
     void exportFile( const std::string& fileName, const bool addition);
     ExtendedTransferFunctionMessage* getExtendedTransferFunctionMessage() { return &m_extended_transfer_function_message; }
+    void importFromServerIS();
+    void setMode( Mode mode ) { m_mode = mode; }
+    Mode getMode() { return m_mode; }
 
 private:
     Ui::TransferFunctionEditor *ui;
@@ -59,6 +69,8 @@ private:
 
     QVector<bool> m_is_color_range_sync;
     QVector<bool> m_is_opacity_range_sync;
+
+    Mode m_mode;
 
     void populateColorFunctionLists(int n);
     void populateOpacityFunctionLists(int n);

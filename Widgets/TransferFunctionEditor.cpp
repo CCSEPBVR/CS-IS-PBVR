@@ -22,7 +22,8 @@ TransferFunctionEditor::TransferFunctionEditor(QWidget *parent) :
     m_color_map_editor( this ),
     m_opacity_map_editor( this ),
     m_extended_transfer_function_message(),
-    m_extended_transfer_function_message_initial()
+    m_extended_transfer_function_message_initial(),
+    m_mode( TransferFunctionEditor::Mode::None )
 {
     ui->setupUi(this);
 
@@ -529,48 +530,84 @@ void TransferFunctionEditor::onApplyButtonClicked()
     m_client_message->m_color_transfer_function_synthesis = m_extended_transfer_function_message.m_color_transfer_function_synthesis;
     m_client_message->m_opacity_transfer_function_synthesis = m_extended_transfer_function_message.m_opacity_transfer_function_synthesis;
 
-//    for ( size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
-    for ( size_t i = 0; i < m_extended_transfer_function_message.m_color_transfer_function.size(); i++ )
+    if( m_mode == TransferFunctionEditor::Mode::CS )
     {
-        NamedTransferFunctionParameter etf;
-        jpv::ParticleTransferClientMessage::VolumeEquation veq;
+        //    for ( size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
+        for ( size_t i = 0; i < m_extended_transfer_function_message.m_color_transfer_function.size(); i++ )
+        {
+            NamedTransferFunctionParameter etf;
+            jpv::ParticleTransferClientMessage::VolumeEquation veq;
 
-        const NamedTransferFunctionParameter& tf = m_extended_transfer_function_message.m_color_transfer_function[i];
-        etf = tf;
-        int func_num = etf.getNameNumber();
-        std::stringstream ss;
-        ss << "_F" << func_num;
-        etf.m_color_variable   = ss.str() + "_VAR_C";
-        veq.m_name     = etf.m_color_variable;
-        veq.m_equation = m_extended_transfer_function_message.m_color_transfer_function[i].m_color_variable;
-        m_client_message->m_transfer_function.push_back( etf );
-        m_client_message->m_volume_equation.push_back( veq );
+            const NamedTransferFunctionParameter& tf = m_extended_transfer_function_message.m_color_transfer_function[i];
+            etf = tf;
+            int func_num = etf.getNameNumber();
+            std::stringstream ss;
+            ss << "_F" << func_num;
+            etf.m_color_variable   = ss.str() + "_VAR_C";
+            veq.m_name     = etf.m_color_variable;
+            veq.m_equation = m_extended_transfer_function_message.m_color_transfer_function[i].m_color_variable;
+            m_client_message->m_transfer_function.push_back( etf );
+            m_client_message->m_volume_equation.push_back( veq );
+        }
+
+        for ( size_t i = 0; i < m_extended_transfer_function_message.m_opacity_transfer_function.size(); i++ )
+        {
+            NamedTransferFunctionParameter etf;
+            jpv::ParticleTransferClientMessage::VolumeEquation veq;
+
+            const NamedTransferFunctionParameter& tf = m_extended_transfer_function_message.m_opacity_transfer_function[i];
+            etf = tf;
+            int func_num = etf.getNameNumber();
+            std::stringstream ss;
+            ss << "_F" << func_num;
+            etf.m_opacity_variable   = ss.str() + "_VAR_O";
+            veq.m_name     = etf.m_opacity_variable;
+            veq.m_equation = m_extended_transfer_function_message.m_opacity_transfer_function[i].m_opacity_variable;
+            m_client_message->m_transfer_function.push_back( etf );
+            m_client_message->m_volume_equation.push_back( veq );
+        }
+
+        std::string colorSynthBuf = m_extended_transfer_function_message.m_color_transfer_function_synthesis;
+        std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
+
+        std::string opacitySynthBuf = m_extended_transfer_function_message.m_opacity_transfer_function_synthesis;
+        std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
+
+        m_merge->setIsParticleGenerationNeeded( true );
     }
-
-    for ( size_t i = 0; i < m_extended_transfer_function_message.m_opacity_transfer_function.size(); i++ )
+    else if( m_mode == TransferFunctionEditor::Mode::IS )
     {
-        NamedTransferFunctionParameter etf;
-        jpv::ParticleTransferClientMessage::VolumeEquation veq;
+        for( size_t i = 0; i < m_extended_transfer_function_message.m_transfer_function_number; i++ )
+        {
+            NamedTransferFunctionParameter etf;
+            jpv::ParticleTransferClientMessage::VolumeEquation veq_c, veq_o;
 
-        const NamedTransferFunctionParameter& tf = m_extended_transfer_function_message.m_opacity_transfer_function[i];
-        etf = tf;
-        int func_num = etf.getNameNumber();
-        std::stringstream ss;
-        ss << "_F" << func_num;
-        etf.m_opacity_variable   = ss.str() + "_VAR_O";
-        veq.m_name     = etf.m_opacity_variable;
-        veq.m_equation = m_extended_transfer_function_message.m_opacity_transfer_function[i].m_opacity_variable;
-        m_client_message->m_transfer_function.push_back( etf );
-        m_client_message->m_volume_equation.push_back( veq );
+            const NamedTransferFunctionParameter& c_tf = m_extended_transfer_function_message.m_color_transfer_function[i];
+            const NamedTransferFunctionParameter& o_tf = m_extended_transfer_function_message.m_opacity_transfer_function[i];
+
+            etf = c_tf;
+
+            std::stringstream ss;
+            ss << "_F" << i;
+
+            etf.m_color_variable   = ss.str() + "_VAR_C";
+            etf.m_opacity_variable = ss.str() + "_VAR_O";
+            veq_c.m_name     = etf.m_color_variable;
+            veq_o.m_name     = etf.m_opacity_variable;
+            veq_c.m_equation = m_extended_transfer_function_message.m_color_transfer_function[i].m_color_variable;
+            veq_o.m_equation = m_extended_transfer_function_message.m_opacity_transfer_function[i].m_opacity_variable;
+
+            std::replace(etf.m_name.begin(), etf.m_name.end(), 'C', 't');
+            etf.setOpacityMap( o_tf.opacityMap() );
+            etf.m_equation_opacity = o_tf.m_equation_opacity;
+            etf.m_opacity_variable_min = o_tf.m_opacity_variable_min;
+            etf.m_opacity_variable_max = o_tf.m_opacity_variable_max;
+
+            m_client_message->m_transfer_function.push_back( etf );
+            m_client_message->m_volume_equation.push_back( veq_c );
+            m_client_message->m_volume_equation.push_back( veq_o );
+        }
     }
-
-    std::string colorSynthBuf = m_extended_transfer_function_message.m_color_transfer_function_synthesis;
-    std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
-
-    std::string opacitySynthBuf = m_extended_transfer_function_message.m_opacity_transfer_function_synthesis;
-    std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
-
-    m_merge->setIsParticleGenerationNeeded( true );
     m_color_function_selector->updateColorMap();
 }
 
@@ -804,6 +841,66 @@ void TransferFunctionEditor::exportFile( const std::string& fname, const bool ap
 
     std::cerr << "TransferFunction parameters are exported to " << fname << std::endl;
 
+}
+
+void TransferFunctionEditor::importFromServerIS()
+{
+    m_extended_transfer_function_message.m_extend_transfer_function_resolution= 256;
+
+    //m_extended_transfer_function_message->transferFunction.clear();
+    m_extended_transfer_function_message.m_color_transfer_function.clear();
+    m_extended_transfer_function_message.m_opacity_transfer_function.clear();
+
+    // set tf_number
+    m_extended_transfer_function_message.m_transfer_function_number = m_server_message->m_transfer_function.size();
+    qDebug() << m_extended_transfer_function_message.m_transfer_function_number;
+    for ( size_t i = 0, j = 0; i < m_server_message->m_transfer_function.size(); i++, j+=2 )
+    {
+        NamedTransferFunctionParameter etf;
+        jpv::ParticleTransferClientMessage::VolumeEquation veq_c, veq_o;
+
+        const NamedTransferFunctionParameter& tf = m_server_message->m_transfer_function[i];
+
+        etf = tf;
+
+        //m_extended_transfer_function_message->transferFunction.push_back( etf );
+        m_extended_transfer_function_message.m_color_transfer_function.push_back(etf);
+        m_extended_transfer_function_message.m_opacity_transfer_function.push_back(etf);
+
+        std::string* nameBuf = &m_extended_transfer_function_message.m_color_transfer_function[i].m_name;
+        std::replace(nameBuf->begin(), nameBuf->end(), 't', 'C');
+        nameBuf = &m_extended_transfer_function_message.m_opacity_transfer_function[i].m_name;
+        std::replace(nameBuf->begin(), nameBuf->end(), 't', 'O');
+    }
+
+    m_extended_transfer_function_message.m_color_transfer_function_synthesis = m_server_message->m_color_transfer_function_synthesis;
+    m_extended_transfer_function_message.m_opacity_transfer_function_synthesis = m_server_message->m_opacity_transfer_function_synthesis;
+
+    ui->numberOfTransferFunctionSBox->setValue( m_extended_transfer_function_message.m_transfer_function_number );
+
+#ifdef Q_OS_WIN
+    ui->color_function_synth->setText( QString::fromUtf8(importdoc.m_color_transfer_function_synthesis.c_str() ) );
+    ui->opacity_function_synth->setText( QString::fromUtf8(importdoc.m_opacity_transfer_function_synthesis.c_str() ) );
+#else
+    ui->color_function_synth->setText( QString::fromStdString( m_extended_transfer_function_message.m_color_transfer_function_synthesis ) );
+    ui->opacity_function_synth->setText( QString::fromStdString( m_extended_transfer_function_message.m_opacity_transfer_function_synthesis ) );
+#endif
+
+    qDebug() << QString::fromStdString( m_extended_transfer_function_message.m_color_transfer_function_synthesis );
+    qDebug() << QString::fromStdString( m_extended_transfer_function_message.m_color_transfer_function[0].m_color_variable );
+    qDebug() << m_extended_transfer_function_message.m_color_transfer_function[0].m_color_variable_min;
+    qDebug() << m_extended_transfer_function_message.m_color_transfer_function[0].m_color_variable_max;
+
+    qDebug() << QString::fromStdString( m_extended_transfer_function_message.m_opacity_transfer_function_synthesis );
+    qDebug() << QString::fromStdString( m_extended_transfer_function_message.m_opacity_transfer_function[0].m_opacity_variable );
+    qDebug() << m_extended_transfer_function_message.m_opacity_transfer_function[0].m_opacity_variable_min;
+    qDebug() << m_extended_transfer_function_message.m_opacity_transfer_function[0].m_opacity_variable_max;
+
+    onColorFunctionChanged( ui->colorFunctionCBox->currentIndex() );
+    onOpacityFunctionChanged( ui->opacityFunctionCBox->currentIndex() );
+
+    m_is_import_transfer_function_parameter = true;
+    onApplyButtonClicked();
 }
 
 void TransferFunctionEditor::onColorRangeSyncToolButtonClicked()

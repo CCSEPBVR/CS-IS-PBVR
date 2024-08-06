@@ -39,7 +39,7 @@ Connect::~Connect()
     delete ui;
 }
 
-void Connect::connectCS()
+void Connect::connectServerCS()
 {
     jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
     jpv::ParticleTransferClientMessage message;
@@ -65,7 +65,7 @@ void Connect::connectCS()
 #else
     message.m_input_directory = ui->volumeDataFilePathLEdit->text().toStdString();
 #endif
-    m_extended_transfer_function_message.applyToClientMessage( &message );
+    m_extended_transfer_function_message.applyToClientMessageCS( &message );
     message.m_message_size = message.byteSizeCS();
     client.sendMessageCS( message );
     client.recvMessageCS( &reply );
@@ -87,9 +87,64 @@ void Connect::connectCS()
     m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
 #endif
     m_transfer_function_editor->onApplyButtonClicked();
+    //    qInfo() << reply.m_variable_range.min( "t1_var_c" );
+    //    qInfo() << reply.m_min_value;
+    delete reply.m_camera;
+    ui->connectPBtn->setDisabled( true );
+}
+
+void Connect::connectServerIS()
+{
+    jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
+    jpv::ParticleTransferClientMessage message;
+    m_server_message.m_camera = new kvs::Camera();
+
+//    if( !ui->volumeDataFilePathLEdit->text().endsWith( ".pfi" ) && !ui->volumeDataFilePathLEdit->text().endsWith( ".pfl" ) )
+//    {
+//        QMessageBox::information( this, tr( "Connection Error" ), tr( "The file path does not end with .pfi or pfl" ) );
+//        return;
+//    }
+
+    int init = client.initClient();
+    if( init < 0 )
+    {
+        QMessageBox::information(this, tr("Connection Error"), tr("The connection to the server failed. Please verify if the server is up and running."));
+        return;
+    }
+    strncpy( message.m_header, "JPTP /1.0\r\n", 11 );
+    message.m_initialize_parameter = -3;
+#ifdef Q_OS_WIN
+    message.m_input_directory = ( ui->volumeDataFilePathLEdit->text().replace( "/","\\" ) ).toLocal8Bit().constData();
+#else
+    message.m_input_directory = ui->volumeDataFilePathLEdit->text().toStdString();
+#endif
+    m_extended_transfer_function_message.applyToClientMessageIS( &message );
+    message.m_message_size = message.byteSizeIS();
+    client.sendMessageIS( message );
+    client.recvMessageIS( &m_server_message );
+
+    m_transfer_function_editor->importFromServerIS();
+
+    m_filter_infomation->updateFilterInfomation( ui->volumeDataFilePathLEdit->text(), m_server_message );
+
+    strncpy( message.m_header, "JPTP /1.0\r\n", 11 );
+    message.m_initialize_parameter = -1;
+    message.m_message_size = message.byteSizeIS();
+    client.sendMessageIS( message );
+    client.recvMessageIS( &m_server_message );
+    client.termClient();
+
+    m_merge->serverObjectIS( "IS-Object", 0, 0 );
+//    m_transfer_function_editor->applyVariableRange( reply.m_variable_range );
+//#ifdef Q_OS_WIN
+//    m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
+//#else
+//    m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
+//#endif
+//    m_transfer_function_editor->onApplyButtonClicked();
 //    qInfo() << reply.m_variable_range.min( "t1_var_c" );
 //    qInfo() << reply.m_min_value;
-    delete reply.m_camera;
+    delete m_server_message.m_camera;
     ui->connectPBtn->setDisabled( true );
 }
 
@@ -122,7 +177,14 @@ kvs::PointObject* Connect::generateParticleCS( int timeStep )
 //    m_client_message.particle_data_size_limit = 20;    
     m_client_message.m_camera = m_camera;//足りないかも
     m_client_message.m_step = timeStep;
-    m_client_message.m_message_size = m_client_message.byteSizeCS();
+    if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::CS )
+    {
+        m_client_message.m_message_size = m_client_message.byteSizeCS();
+    }
+    else if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
+    {
+        m_client_message.m_message_size = m_client_message.byteSizeIS();
+    }
     m_client_message.m_sampling_step = 1.0f;
 //    m_client_message.m_x_synthesis = "";
 //    m_client_message.m_y_synthesis = "";
@@ -141,10 +203,21 @@ kvs::PointObject* Connect::generateParticleCS( int timeStep )
 
 //    m_extended_transfer_function_message.applyToClientMessage( &m_client_message );
 
-    m_client_message.m_message_size = m_client_message.byteSizeCS();
+
     std::cout << "SEND" << std::endl;
-    client.sendMessageCS( m_client_message );
-    client.recvMessageCS( &m_server_message );
+
+    if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::CS )
+    {
+        m_client_message.m_message_size = m_client_message.byteSizeCS();
+        client.sendMessageCS( m_client_message );
+        client.recvMessageCS( &m_server_message );
+    }
+    else if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
+    {
+        m_client_message.m_message_size = m_client_message.byteSizeIS();
+        client.sendMessageIS( m_client_message );
+        client.recvMessageIS( &m_server_message );
+    }
 
     size_t allParticle = 0;
     kvs::PointObject* object = new kvs::PointObject();
@@ -153,7 +226,14 @@ kvs::PointObject* Connect::generateParticleCS( int timeStep )
 
     for ( int n = 0; n < serve_numvol; n++ )
     {
-        if ( client.recvMessageCS( &m_server_message ) == 1 ){}
+        if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::CS )
+        {
+            if ( client.recvMessageCS( &m_server_message ) == 1 ){}
+        }
+        else if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
+        {
+            if ( client.recvMessageIS( &m_server_message ) == 1 ){}
+        }
 
         int nmemb = m_server_message.m_number_particle * 3;
         if ( nmemb != 0 )
@@ -174,6 +254,29 @@ kvs::PointObject* Connect::generateParticleCS( int timeStep )
             // delete[] m_server_message.m_colors;
             // delete[] m_server_message.m_normals;
             // delete[] m_server_message.m_positions;
+        }
+    }
+
+    //ヒストグラム更新用(IS)
+    if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
+    {
+        m_received_message.m_var_range.merge( m_server_message.m_variable_range );
+        m_received_message.m_color_bins.resize( m_server_message.m_transfer_function_count );
+        m_received_message.m_opacity_bins.resize( m_server_message.m_transfer_function_count );
+        for ( int tf = 0; tf < m_server_message.m_transfer_function_count; tf++ )
+        {
+            char color_function_name[8] = {0x00};
+            char opacity_function_name[8] = {0x00};
+            sprintf(color_function_name, "C%d", tf+1);
+            sprintf(opacity_function_name, "O%d", tf+1);
+            if ( m_server_message.m_color_nbins[tf] > 0 )
+            {
+                m_received_message.m_color_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_color_nbins[tf], (size_t *)m_server_message.m_color_bins[tf], std::string(color_function_name) );
+            }
+            if ( m_server_message.m_opacity_nbins[tf] )
+            {
+                m_received_message.m_opacity_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_opacity_nbins[tf],(size_t *) m_server_message.m_opacity_bins[tf], std::string(opacity_function_name) );
+            }
         }
     }
 
@@ -199,9 +302,20 @@ kvs::PointObject* Connect::generateParticleCS( int timeStep )
     std::cout << serverSideMaxObjectCoords[2] << std::endl;
 
     m_client_message.m_initialize_parameter = -1;
-    m_client_message.m_message_size = m_client_message.byteSizeCS();
-    client.sendMessageCS( m_client_message );
-    client.recvMessageCS( &m_server_message );
+
+    if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::CS )
+    {
+        m_client_message.m_message_size = m_client_message.byteSizeCS();
+        client.sendMessageCS( m_client_message );
+        client.recvMessageCS( &m_server_message );
+    }
+    else if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
+    {
+        m_client_message.m_message_size = m_client_message.byteSizeIS();
+        client.sendMessageIS( m_client_message );
+        client.recvMessageIS( &m_server_message );
+    }
+
     client.termClient();
 
     //ここでサーバのレンジが手に入る。
@@ -210,23 +324,26 @@ kvs::PointObject* Connect::generateParticleCS( int timeStep )
     std::cout << m_server_message.m_variable_range.min( "t1_var_o" ) << std::endl;
     std::cout << m_server_message.m_variable_range.max( "t1_var_o" ) << std::endl;
 
-    //ヒストグラム更新用
-    m_received_message.m_var_range.merge( m_server_message.m_variable_range );
-    m_received_message.m_color_bins.resize( m_server_message.m_transfer_function_count );
-    m_received_message.m_opacity_bins.resize( m_server_message.m_transfer_function_count );
-    for ( int tf = 0; tf < m_server_message.m_transfer_function_count; tf++ )
+    //ヒストグラム更新用(CS)
+    if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::CS )
     {
-        char color_function_name[8] = {0x00};
-        char opacity_function_name[8] = {0x00};
-        sprintf(color_function_name, "C%d", tf+1);
-        sprintf(opacity_function_name, "O%d", tf+1);
-        if ( m_server_message.m_color_nbins[tf] > 0 )
+        m_received_message.m_var_range.merge( m_server_message.m_variable_range );
+        m_received_message.m_color_bins.resize( m_server_message.m_transfer_function_count );
+        m_received_message.m_opacity_bins.resize( m_server_message.m_transfer_function_count );
+        for ( int tf = 0; tf < m_server_message.m_transfer_function_count; tf++ )
         {
-            m_received_message.m_color_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_color_nbins[tf], (size_t *)m_server_message.m_color_bins[tf], std::string(color_function_name) );
-        }
-        if ( m_server_message.m_opacity_nbins[tf] )
-        {
-            m_received_message.m_opacity_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_opacity_nbins[tf],(size_t *) m_server_message.m_opacity_bins[tf], std::string(opacity_function_name) );
+            char color_function_name[8] = {0x00};
+            char opacity_function_name[8] = {0x00};
+            sprintf(color_function_name, "C%d", tf+1);
+            sprintf(opacity_function_name, "O%d", tf+1);
+            if ( m_server_message.m_color_nbins[tf] > 0 )
+            {
+                m_received_message.m_color_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_color_nbins[tf], (size_t *)m_server_message.m_color_bins[tf], std::string(color_function_name) );
+            }
+            if ( m_server_message.m_opacity_nbins[tf] )
+            {
+                m_received_message.m_opacity_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_opacity_nbins[tf],(size_t *) m_server_message.m_opacity_bins[tf], std::string(opacity_function_name) );
+            }
         }
     }
 
@@ -273,6 +390,11 @@ kvs::PointObject* Connect::generateParticleCS( int timeStep )
         m_server_message.m_opacity_bins.clear();
     }
 
+    if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
+    {
+        m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_end_step );
+    }
+
     return pointObject;
 }
 
@@ -293,5 +415,20 @@ void Connect::onTransferFunctionFileBrowseButtonClicked()
 
 void Connect::onConnectButtonClicked()
 {
-    connectCS();
+    if( ui->clientServerRBtn->isChecked() )
+    {
+        qDebug("CS CONNECT!");
+        m_transfer_function_editor->setMode( TransferFunctionEditor::Mode::CS );
+        connectServerCS();
+    }
+    else if( ui->inSituRBtn->isChecked() )
+    {
+        qDebug("IS CONNECT!");
+        m_transfer_function_editor->setMode( TransferFunctionEditor::Mode::IS );
+        connectServerIS();
+    }
+    else
+    {
+        qDebug("No option selected!");
+    }
 }

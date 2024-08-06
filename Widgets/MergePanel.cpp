@@ -343,7 +343,7 @@ void MergePanel::removeChecked()
             delete deleteCheckBox;
 
             // m_files_managerからも対応する要素を削除する
-            if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObject )
+            if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectCS )
             {
                 m_connect->deletedServerObject();
             }
@@ -533,7 +533,7 @@ void MergePanel::onWorkerThreadFinished()
                 m_screen->scene()->replaceObject(m_files_manager[row]->getIds().first, copiedObject);
             }
         }
-        if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_is_export == true ) //サーバサイドポイントオブジェクトを保存する場合
+        if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectCS && m_is_export == true ) //サーバサイドポイントオブジェクトを保存する場合
         {
             exportingServerSidePointObject( *m_files_manager[row] );
 //            m_screen->scene()->objectManager()->object( m_files_manager[row]->getIds().first );
@@ -553,7 +553,7 @@ void MergePanel::totalParticles()
     int totalParticles = 0;
     for( int row = 0; row < m_files_manager.size(); row++ )
     {
-        if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObject ||
+        if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectCS ||
             m_files_manager[row]->getFormat() == FilesManager::PointObjectKVSML ||
             m_files_manager[row]->getFormat() == FilesManager::PointObjectLAS ||
             m_files_manager[row]->getFormat() == FilesManager::PointObjectPTS )
@@ -659,11 +659,38 @@ void MergePanel::serverObject( QString volumeDataFilePath, int min, int max )
     newFile->setMinTimeStep( min );
     newFile->setMaxTimeStep( max );
     newFile->setCurrentDisplayedStep( -1 );
-    newFile->setFormat( FilesManager::ServerPointObject );
+    newFile->setFormat( FilesManager::ServerPointObjectCS );
     newFile->setObject( nullptr );
     addRowToFilesTableWidget( newFile );
     m_files_manager.append( newFile );
     calculateTotalMinMaxTimeStep();
+}
+
+void MergePanel::serverObjectIS( QString volumeDataFilePath, int min, int max )
+{
+    FilesManager *newFile = new FilesManager;
+    newFile->setFileInfo( QFileInfo( volumeDataFilePath ) );
+    newFile->setMinTimeStep( min );
+    newFile->setMaxTimeStep( max );
+    newFile->setCurrentDisplayedStep( -1 );
+    newFile->setFormat( FilesManager::ServerPointObjectIS );
+    newFile->setObject( nullptr );
+    addRowToFilesTableWidget( newFile );
+    m_files_manager.append( newFile );
+    calculateTotalMinMaxTimeStep();
+}
+
+void MergePanel::updateObjectTimeStepIS( int min, int max )
+{
+    for( int row = 0; row < m_files_manager.size(); row++ )
+    {
+        if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS )
+        {
+            m_files_manager[row]->setMinTimeStep( min );
+            m_files_manager[row]->setMaxTimeStep( max );
+            calculateTotalMinMaxTimeStep();
+        }
+    }
 }
 
 MergePanel::WorkerThread::WorkerThread(MergePanel* gui) : m_merge(gui)
@@ -676,7 +703,8 @@ void MergePanel::WorkerThread::run()
     {
         switch ( m_merge->m_files_manager[row]->getFormat() )
         {
-        case FilesManager::ServerPointObject:
+        case FilesManager::ServerPointObjectCS:
+        case FilesManager::ServerPointObjectIS:
             timeStepCheckAndImport<void, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
             break;
         case FilesManager::PointObjectKVSML:
@@ -847,7 +875,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                         if( m_merge->m_files_manager[row]->getCurrentDisplayedStep() == nextTimeStep ) //表示中のオブジェクトが次のステップと一致する場合
                         {
                             qInfo() << "表示中のオブジェクトと次のステップが一致しているため何もしません。"  << __LINE__;
-                            if( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_merge->getIsParticleGenerationNeeded() ) //サーバの更新が必要な場合
+                            if( m_merge->m_files_manager[row]->getFormat() == ( FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) //サーバの更新が必要な場合
                             {
                                 m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( nextTimeStep ) );
                                 m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
@@ -884,7 +912,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                 if ( m_merge->m_files_manager[row]->getCurrentDisplayedStep() <= minTimeStep ) //表示中のオブジェクトがローカル最小ステップ以下である場合。
                                 {
                                     qInfo() << "表示中のオブジェクトがローカル最小ステップ以下であるため何もしません。"  << __LINE__;
-                                    if( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_merge->getIsParticleGenerationNeeded() ) //サーバの更新が必要な場合
+                                    if( m_merge->m_files_manager[row]->getFormat() == ( FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) //サーバの更新が必要な場合
                                     {
                                         m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( minTimeStep ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
@@ -924,7 +952,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                 if ( m_merge->m_files_manager[row]->getCurrentDisplayedStep() >= maxTimeStep ) //表示中のオブジェクトがローカル最大ステップ以上である場合。
                                 {
                                     qInfo() << "表示中のオブジェクトがローカル最大ステップ以上であるため何もしません。"  << __LINE__;
-                                    if( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_merge->getIsParticleGenerationNeeded() ) //サーバの更新が必要な場合
+                                    if( m_merge->m_files_manager[row]->getFormat() == ( FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) //サーバの更新が必要な場合
                                     {
                                         m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( maxTimeStep ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
@@ -965,7 +993,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                         if( m_merge->m_files_manager[row]->getCurrentDisplayedStep() == nextTimeStep ) //表示中のオブジェクトが次のステップと一致する場合
                         {
                             qInfo() << "表示中のオブジェクトと次のステップが一致しているため何もしません。"  << __LINE__;
-                            if( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_merge->getIsParticleGenerationNeeded() ) //サーバの更新が必要な場合
+                            if( m_merge->m_files_manager[row]->getFormat() == ( FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) //サーバの更新が必要な場合
                             {
                                 m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( nextTimeStep ) );
                                 m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
@@ -1002,7 +1030,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                 if ( m_merge->m_files_manager[row]->getCurrentDisplayedStep() <= minTimeStep ) //表示中のオブジェクトがローカル最小ステップ以下である場合。
                                 {
                                     qInfo() << "表示中のオブジェクトがローカル最小ステップ以下であるため何もしません。"  << __LINE__;
-                                    if( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_merge->getIsParticleGenerationNeeded() ) //サーバの更新が必要な場合
+                                    if( m_merge->m_files_manager[row]->getFormat() == ( FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) //サーバの更新が必要な場合
                                     {
                                         m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( minTimeStep ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
@@ -1042,7 +1070,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                 if ( m_merge->m_files_manager[row]->getCurrentDisplayedStep() >= maxTimeStep ) //表示中のオブジェクトがローカル最大ステップ以上である場合。
                                 {
                                     qInfo() << "表示中のオブジェクトがローカル最大ステップ以上であるため何もしません。"  << __LINE__;
-                                    if( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_merge->getIsParticleGenerationNeeded() ) //サーバの更新が必要な場合
+                                    if( m_merge->m_files_manager[row]->getFormat() == ( FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) //サーバの更新が必要な場合
                                     {
                                         m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( maxTimeStep ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
@@ -1098,7 +1126,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                         {
                             qInfo() << "非表示中のオブジェクトと次のステップが一致しているため再表示します。"  << __LINE__;
                             object->show();
-                            if( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObject && m_merge->getIsParticleGenerationNeeded() ) //サーバの更新が必要な場合
+                            if( m_merge->m_files_manager[row]->getFormat() == ( FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) //サーバの更新が必要な場合
                             {
                                 m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( maxTimeStep ) );
                                 m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
