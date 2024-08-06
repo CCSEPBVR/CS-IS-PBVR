@@ -791,7 +791,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                 else
                 {
 //                    nextObject = m_merge->m_connect->connect2( nextTimeStep );
-                    m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( nextTimeStep ) );
+                    m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( nextTimeStep ) );
                     m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                 }
                 m_merge->m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
@@ -812,7 +812,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                     else
                     {
 //                        nextObject = m_merge->m_connect->connect2( minTimeStep );
-                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( minTimeStep ) );
+                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( minTimeStep ) );
                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
 
                     }
@@ -835,7 +835,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                     else
                     {
 //                        nextObject = m_merge->m_connect->connect2( maxTimeStep );
-                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( maxTimeStep ) );
+                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( maxTimeStep ) );
                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                     }
                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
@@ -877,7 +877,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                             qInfo() << "表示中のオブジェクトと次のステップが一致しているため何もしません。"  << __LINE__;
                             if( m_merge->m_files_manager[row]->getFormat() == ( FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) //サーバの更新が必要な場合
                             {
-                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( nextTimeStep ) );
+                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( nextTimeStep ) );
                                 m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                 m_merge->setIsParticleGenerationNeeded( false );
                             }
@@ -894,7 +894,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                             else
                             {
 //                                nextObject = m_merge->m_connect->connect2( nextTimeStep );
-                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( nextTimeStep ) );
+                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( nextTimeStep ) );
                                 m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                             }
                             m_merge->m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
@@ -914,7 +914,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     qInfo() << "表示中のオブジェクトがローカル最小ステップ以下であるため何もしません。"  << __LINE__;
                                     if( m_merge->m_files_manager[row]->getFormat() == ( FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) //サーバの更新が必要な場合
                                     {
-                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( minTimeStep ) );
+                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( minTimeStep ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                         m_merge->setIsParticleGenerationNeeded( false );
                                     }
@@ -931,7 +931,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     else
                                     {
 //                                        nextObject = m_merge->m_connect->connect2( minTimeStep );
-                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( minTimeStep ) );
+                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( minTimeStep ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
@@ -954,7 +954,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     qInfo() << "表示中のオブジェクトがローカル最大ステップ以上であるため何もしません。"  << __LINE__;
                                     if( m_merge->m_files_manager[row]->getFormat() == ( FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) //サーバの更新が必要な場合
                                     {
-                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( maxTimeStep ) );
+                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( maxTimeStep ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                         m_merge->setIsParticleGenerationNeeded( false );
                                     }
@@ -971,7 +971,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     else
                                     {
 //                                        nextObject = m_merge->m_connect->connect2( maxTimeStep );
-                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( maxTimeStep ) );
+                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( maxTimeStep ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
@@ -995,7 +995,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                             qInfo() << "表示中のオブジェクトと次のステップが一致しているため何もしません。"  << __LINE__;
                             if( m_merge->m_files_manager[row]->getFormat() == ( FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) //サーバの更新が必要な場合
                             {
-                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( nextTimeStep ) );
+                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( nextTimeStep ) );
                                 m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                 m_merge->setIsParticleGenerationNeeded( false );
                             }
@@ -1012,7 +1012,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                             else
                             {
 //                                nextObject = m_merge->m_connect->connect2( nextTimeStep );
-                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( nextTimeStep ) );
+                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( nextTimeStep ) );
                                 m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                             }
                             m_merge->m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
@@ -1032,7 +1032,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     qInfo() << "表示中のオブジェクトがローカル最小ステップ以下であるため何もしません。"  << __LINE__;
                                     if( m_merge->m_files_manager[row]->getFormat() == ( FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) //サーバの更新が必要な場合
                                     {
-                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( minTimeStep ) );
+                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( minTimeStep ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                         m_merge->setIsParticleGenerationNeeded( false );
                                     }
@@ -1049,7 +1049,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     else
                                     {
 //                                        nextObject = m_merge->m_connect->connect2( minTimeStep );
-                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( minTimeStep ) );
+                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( minTimeStep ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
@@ -1072,7 +1072,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     qInfo() << "表示中のオブジェクトがローカル最大ステップ以上であるため何もしません。"  << __LINE__;
                                     if( m_merge->m_files_manager[row]->getFormat() == ( FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) //サーバの更新が必要な場合
                                     {
-                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( maxTimeStep ) );
+                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( maxTimeStep ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                         m_merge->setIsParticleGenerationNeeded( false );
                                     }
@@ -1089,7 +1089,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     else
                                     {
 //                                        nextObject = m_merge->m_connect->connect2( maxTimeStep );
-                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( maxTimeStep ) );
+                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( maxTimeStep ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
@@ -1128,7 +1128,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                             object->show();
                             if( m_merge->m_files_manager[row]->getFormat() == ( FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) //サーバの更新が必要な場合
                             {
-                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( maxTimeStep ) );
+                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( maxTimeStep ) );
                                 m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                 m_merge->setIsParticleGenerationNeeded( false );
                             }
@@ -1145,7 +1145,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                             else
                             {
 //                                nextObject = m_merge->m_connect->connect2( nextTimeStep );
-                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( nextTimeStep ) );
+                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( nextTimeStep ) );
                                 m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                             }
                             m_merge->m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
@@ -1177,7 +1177,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     else
                                     {
 //                                        nextObject = m_merge->m_connect->connect2( minTimeStep );
-                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( minTimeStep ) );
+                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( minTimeStep ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
@@ -1211,7 +1211,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     else
                                     {
 //                                        nextObject = m_merge->m_connect->connect2( maxTimeStep );
-                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( maxTimeStep ) );
+                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( maxTimeStep ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );
@@ -1247,7 +1247,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                             else
                             {
 //                                nextObject = m_merge->m_connect->connect2( nextTimeStep );
-                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( nextTimeStep ) );
+                                m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( nextTimeStep ) );
                                 m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                             }
                             m_merge->m_files_manager[row]->setCurrentDisplayedStep( nextTimeStep );
@@ -1279,7 +1279,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     else
                                     {
 //                                        nextObject = m_merge->m_connect->connect2( minTimeStep );
-                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( minTimeStep ) );
+                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( minTimeStep ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( minTimeStep );
@@ -1313,7 +1313,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                                     else
                                     {
 //                                        nextObject = m_merge->m_connect->connect2( maxTimeStep );
-                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticleCS( maxTimeStep ) );
+                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( maxTimeStep ) );
                                         m_merge->m_files_manager[row]->setIsReplacementNeeded( true );
                                     }
                                     m_merge->m_files_manager[row]->setCurrentDisplayedStep( maxTimeStep );

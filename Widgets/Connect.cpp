@@ -148,7 +148,7 @@ void Connect::connectServerIS()
     ui->connectPBtn->setDisabled( true );
 }
 
-kvs::PointObject* Connect::generateParticleCS( int timeStep )
+kvs::PointObject* Connect::generateParticles( int timeStep )
 {
     std::cout << "********" << std::endl;
     std::cout << "********" << std::endl;

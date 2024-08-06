@@ -36,7 +36,7 @@ public:
     jpv::ParticleTransferClientMessage* getClientMessage(){ return &m_client_message; }
     jpv::ParticleTransferServerMessage* getServerMessage(){ return &m_server_message; }
     kvs::visclient::ReceivedMessage* getReceivedMessage(){ return &m_received_message; }
-    kvs::PointObject* generateParticleCS( int timeStep );
+    kvs::PointObject* generateParticles( int timeStep );
     void deletedServerObject();
 
 private:
