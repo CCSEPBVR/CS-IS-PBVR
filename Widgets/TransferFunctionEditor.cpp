@@ -190,10 +190,10 @@ void TransferFunctionEditor::updateRangeView()
     }
     QMetaObject::invokeMethod( this, [this, tag_c, tag_o]()
         {
-            ui->range_min_color->setText( QString::number( m_server_message->m_variable_range.min( tag_c ) ) );
-            ui->range_max_color->setText( QString::number( m_server_message->m_variable_range.max( tag_c ) ) );
-            ui->range_min_opacity->setText( QString::number( m_server_message->m_variable_range.min( tag_o ) ) );
-            ui->range_max_opacity->setText( QString::number( m_server_message->m_variable_range.max( tag_o ) ) );
+            ui->range_min_color->setText( QString::number( m_server_message->m_server_side_variable_range.min( tag_c ) ) );
+            ui->range_max_color->setText( QString::number( m_server_message->m_server_side_variable_range.max( tag_c ) ) );
+            ui->range_min_opacity->setText( QString::number( m_server_message->m_server_side_variable_range.min( tag_o ) ) );
+            ui->range_max_opacity->setText( QString::number( m_server_message->m_server_side_variable_range.max( tag_o ) ) );
 
             bool applyFlag = false;
             for( int i = 0; i < ui->colorFunctionCBox->count(); i++ )
@@ -202,14 +202,14 @@ void TransferFunctionEditor::updateRangeView()
                 {
                     QString colorFunctionName = QString("C%1").arg( i + 1 );
                     QString colorTag = QString("t%1_var_c").arg( i + 1 );
-                    m_extended_transfer_function_message.setColorTransferRange( colorFunctionName.toStdString(), m_server_message->m_variable_range.min( colorTag.toStdString() ), m_server_message->m_variable_range.max( colorTag.toStdString() ) );
+                    m_extended_transfer_function_message.setColorTransferRange( colorFunctionName.toStdString(), m_server_message->m_server_side_variable_range.min( colorTag.toStdString() ), m_server_message->m_server_side_variable_range.max( colorTag.toStdString() ) );
 
                     if( i == ui->colorFunctionCBox->currentIndex() )
                     {
                         ui->transfer_function_min_color->blockSignals( true );
                         ui->transfer_function_max_color->blockSignals( true );
-                        ui->transfer_function_min_color->setValue( m_server_message->m_variable_range.min( colorTag.toStdString() ) );
-                        ui->transfer_function_max_color->setValue( m_server_message->m_variable_range.max( colorTag.toStdString() ) );
+                        ui->transfer_function_min_color->setValue( m_server_message->m_server_side_variable_range.min( colorTag.toStdString() ) );
+                        ui->transfer_function_max_color->setValue( m_server_message->m_server_side_variable_range.max( colorTag.toStdString() ) );
                         ui->transfer_function_min_color->blockSignals( false );
                         ui->transfer_function_max_color->blockSignals( false );
                     }
@@ -223,14 +223,14 @@ void TransferFunctionEditor::updateRangeView()
                 {
                     QString opacityFunctionName = QString("O%1").arg( i + 1 );
                     QString opacityTag = QString("t%1_var_o").arg( i + 1 );
-                    m_extended_transfer_function_message.setOpacityTransferRange( opacityFunctionName.toStdString(), m_server_message->m_variable_range.min( opacityTag.toStdString() ), m_server_message->m_variable_range.max( opacityTag.toStdString() ) );
+                    m_extended_transfer_function_message.setOpacityTransferRange( opacityFunctionName.toStdString(), m_server_message->m_server_side_variable_range.min( opacityTag.toStdString() ), m_server_message->m_server_side_variable_range.max( opacityTag.toStdString() ) );
 
                     if( i == ui->colorFunctionCBox->currentIndex() )
                     {
                         ui->transfer_function_min_opacity->blockSignals( true );
                         ui->transfer_function_max_opacity->blockSignals( true );
-                        ui->transfer_function_min_opacity->setValue( m_server_message->m_variable_range.min( opacityTag.toStdString() ) );
-                        ui->transfer_function_max_opacity->setValue( m_server_message->m_variable_range.max( opacityTag.toStdString() ) );
+                        ui->transfer_function_min_opacity->setValue( m_server_message->m_server_side_variable_range.min( opacityTag.toStdString() ) );
+                        ui->transfer_function_max_opacity->setValue( m_server_message->m_server_side_variable_range.max( opacityTag.toStdString() ) );
                         ui->transfer_function_min_opacity->blockSignals( false );
                         ui->transfer_function_max_opacity->blockSignals( false );
                     }
@@ -331,8 +331,8 @@ void TransferFunctionEditor::onColorFunctionChanged( int index )
 
             char tag_c[16] = {0x00};
             sprintf(tag_c, "t%d_var_c", index + 1);
-            ui->range_min_color->setText( QString::number( m_server_message->m_variable_range.min( tag_c ) ) );
-            ui->range_max_color->setText( QString::number( m_server_message->m_variable_range.max( tag_c ) ) );
+            ui->range_min_color->setText( QString::number( m_server_message->m_server_side_variable_range.min( tag_c ) ) );
+            ui->range_max_color->setText( QString::number( m_server_message->m_server_side_variable_range.max( tag_c ) ) );
         }
 
         ui->transfer_function_var_color->blockSignals(true);
@@ -373,8 +373,8 @@ void TransferFunctionEditor::onOpacityFunctionChanged( int index )
 
             char tag_o[16] = {0x00};
             sprintf(tag_o, "t%d_var_o", index + 1);
-            ui->range_min_opacity->setText( QString::number( m_server_message->m_variable_range.min( tag_o ) ) );
-            ui->range_max_opacity->setText( QString::number( m_server_message->m_variable_range.max( tag_o ) ) );
+            ui->range_min_opacity->setText( QString::number( m_server_message->m_server_side_variable_range.min( tag_o ) ) );
+            ui->range_max_opacity->setText( QString::number( m_server_message->m_server_side_variable_range.max( tag_o ) ) );
         }
 
         ui->transfer_function_var_opacity->blockSignals(true);

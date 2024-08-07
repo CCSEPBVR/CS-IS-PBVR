@@ -80,7 +80,7 @@ void Connect::connectServerCS()
     client.termClient();
 
     m_merge->serverObject( ui->volumeDataFilePathLEdit->text(), reply.m_start_step, reply.m_end_step );
-    m_transfer_function_editor->applyVariableRange( reply.m_variable_range );
+    m_transfer_function_editor->applyVariableRange( reply.m_server_side_variable_range );
 #ifdef Q_OS_WIN
     m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
 #else
@@ -260,7 +260,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
     //ヒストグラム更新用(IS)
     if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
     {
-        m_received_message.m_var_range.merge( m_server_message.m_variable_range );
+        m_received_message.m_var_range.merge( m_server_message.m_server_side_variable_range );
         m_received_message.m_color_bins.resize( m_server_message.m_transfer_function_count );
         m_received_message.m_opacity_bins.resize( m_server_message.m_transfer_function_count );
         for ( int tf = 0; tf < m_server_message.m_transfer_function_count; tf++ )
@@ -319,15 +319,15 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
     client.termClient();
 
     //ここでサーバのレンジが手に入る。
-    std::cout << m_server_message.m_variable_range.min( "t1_var_c" ) << std::endl;
-    std::cout << m_server_message.m_variable_range.max( "t1_var_c" ) << std::endl;
-    std::cout << m_server_message.m_variable_range.min( "t1_var_o" ) << std::endl;
-    std::cout << m_server_message.m_variable_range.max( "t1_var_o" ) << std::endl;
+    std::cout << m_server_message.m_server_side_variable_range.min( "t1_var_c" ) << std::endl;
+    std::cout << m_server_message.m_server_side_variable_range.max( "t1_var_c" ) << std::endl;
+    std::cout << m_server_message.m_server_side_variable_range.min( "t1_var_o" ) << std::endl;
+    std::cout << m_server_message.m_server_side_variable_range.max( "t1_var_o" ) << std::endl;
 
     //ヒストグラム更新用(CS)
     if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::CS )
     {
-        m_received_message.m_var_range.merge( m_server_message.m_variable_range );
+        m_received_message.m_var_range.merge( m_server_message.m_server_side_variable_range );
         m_received_message.m_color_bins.resize( m_server_message.m_transfer_function_count );
         m_received_message.m_opacity_bins.resize( m_server_message.m_transfer_function_count );
         for ( int tf = 0; tf < m_server_message.m_transfer_function_count; tf++ )
@@ -347,7 +347,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
         }
     }
 
-    m_transfer_function_editor->applyVariableRange( m_server_message.m_variable_range );
+    m_transfer_function_editor->applyVariableRange( m_server_message.m_server_side_variable_range );
 //    m_transfer_function_editor->updateRangeView( reply.m_variable_range );
 //    m_transfer_function_editor->updateRangeView( reply );
     m_transfer_function_editor->updateRangeView();

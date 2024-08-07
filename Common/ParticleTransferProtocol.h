@@ -206,7 +206,7 @@ private:
     float m_transfer_function_min_value;
     float m_transfer_function_max_value;
 public:
-    VariableRange m_variable_range;
+    VariableRange m_server_side_variable_range;
 
     ParticleTransferServerMessage( void );
 

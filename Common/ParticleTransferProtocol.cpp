@@ -988,7 +988,7 @@ int32_t jpv::ParticleTransferServerMessage::byteSizeCS( void ) const
     s += sizeof( m_element_type );
     s += sizeof( m_file_type );
     s += sizeof( m_number_ingredients );
-    s += m_variable_range.byteSize();
+    s += m_server_side_variable_range.byteSize();
     s += sizeof( m_flag_send_bins );
     s += sizeof( m_particle_limit );
     s += sizeof( m_particle_density );
@@ -1066,7 +1066,7 @@ int32_t jpv::ParticleTransferServerMessage::byteSizeIS( void ) const
     s += sizeof( m_element_type );
     s += sizeof( m_file_type );
     s += sizeof( m_number_ingredients );
-    s += m_variable_range.byteSize();
+    s += m_server_side_variable_range.byteSize();
     s += sizeof( m_flag_send_bins );
     s += sizeof( m_particle_limit );
     s += sizeof( m_particle_density );
@@ -1152,7 +1152,7 @@ size_t jpv::ParticleTransferServerMessage::packCS( char* buf ) const
     index += jpv::Serializer::write( buf + index, m_element_type );
     index += jpv::Serializer::write( buf + index, m_file_type );
     index += jpv::Serializer::write( buf + index, m_number_ingredients );
-    index += m_variable_range.pack( buf + index );
+    index += m_server_side_variable_range.pack( buf + index );
     index += jpv::Serializer::write( buf + index, m_flag_send_bins );
     index += jpv::Serializer::write( buf + index, m_particle_limit );
     index += jpv::Serializer::write( buf + index, m_particle_density );
@@ -1240,7 +1240,7 @@ size_t jpv::ParticleTransferServerMessage::packIS( char* buf ) const
     index += jpv::Serializer::write( buf + index, m_element_type );
     index += jpv::Serializer::write( buf + index, m_file_type );
     index += jpv::Serializer::write( buf + index, m_number_ingredients );
-    index += m_variable_range.pack( buf + index );
+    index += m_server_side_variable_range.pack( buf + index );
     index += jpv::Serializer::write( buf + index, m_flag_send_bins );
     index += jpv::Serializer::write( buf + index, m_particle_limit );
     index += jpv::Serializer::write( buf + index, m_particle_density );
@@ -1337,7 +1337,7 @@ size_t jpv::ParticleTransferServerMessage::unpack_messageCS( const char* buf )
     index += jpv::Serializer::read( buf + index, &m_element_type );
     index += jpv::Serializer::read( buf + index, &m_file_type );
     index += jpv::Serializer::read( buf + index, &m_number_ingredients );
-    index += m_variable_range.unpack( buf + index );
+    index += m_server_side_variable_range.unpack( buf + index );
     index += jpv::Serializer::read( buf + index, &m_flag_send_bins );
     index += jpv::Serializer::read( buf + index, &m_particle_limit );
     index += jpv::Serializer::read( buf + index, &m_particle_density );
@@ -1443,7 +1443,7 @@ size_t jpv::ParticleTransferServerMessage::unpack_messageIS( const char* buf )
     index += jpv::Serializer::read( buf + index, &m_element_type );
     index += jpv::Serializer::read( buf + index, &m_file_type );
     index += jpv::Serializer::read( buf + index, &m_number_ingredients );
-    index += m_variable_range.unpack( buf + index );
+    index += m_server_side_variable_range.unpack( buf + index );
     index += jpv::Serializer::read( buf + index, &m_flag_send_bins );
     index += jpv::Serializer::read( buf + index, &m_particle_limit );
     index += jpv::Serializer::read( buf + index, &m_particle_density );
