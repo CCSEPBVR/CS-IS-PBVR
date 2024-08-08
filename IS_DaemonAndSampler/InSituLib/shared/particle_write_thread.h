@@ -20,6 +20,7 @@ private:
 //    char* m_filename;    // Underlying pointer changes in main thread.
     std::string m_filename;
     std::string m_state_filename;
+    size_t m_sta_timestep = 0;
     size_t m_timestep;
 
     std::thread* m_thread;
@@ -50,6 +51,11 @@ public:
             m_filename = filename;
         }
 
+    void setStartTimestep( int step)
+    {
+        m_sta_timestep=step;
+    }
+
     void setTimestep( int step,const char* filename)
     {
         m_timestep=step;
@@ -70,7 +76,7 @@ public:
             // Output state.txt
             std::ofstream ofs( m_state_filename, std::ios::out);
             if( !ofs.is_open() ) std::cout<<"Cannot open state.txt"<<std::endl;
-            ofs<<"START_STEP="<< 0 <<std::endl;
+            ofs<<"START_STEP="<< m_sta_timestep <<std::endl;
             ofs<<"LATEST_STEP="<<m_timestep<<std::endl;
             ofs.close();
 

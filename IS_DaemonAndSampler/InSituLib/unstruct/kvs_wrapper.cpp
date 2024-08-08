@@ -57,6 +57,8 @@ kvs::ValueArray<float> C_min_recv;
 kvs::ValueArray<float> C_max_recv;
 kvs::ValueArray<int> o_histogram_recv;
 kvs::ValueArray<int> c_histogram_recv;
+static bool generate_flag  = false;
+size_t  st_time_step = 0;
 
 pbvr::ParticleWriteThread pwt;
 /**
@@ -357,7 +359,9 @@ bool initializeParameters(
     float* max_opacity, float* max_density, int* subpixel_level, float* particle_density,
     float* particle_data_size_limit,
     const std::string &visParamDir,
-    const std::string &tfFilename )
+    const std::string &tfFilename, 
+    const int time_step )
+//    const std::string &tfFilename )
 {
     //std::cout<<"param.LoadIN()\n";
     ParamInfo& param = (*param_info);
@@ -375,6 +379,17 @@ bool initializeParameters(
 #endif
 
     opend = LoadParameterFile( param_info, param_filename, old_param_filename );
+    // add by shimomura 0808
+    if (generate_flag ==false && opend == false)
+    {
+        //  TFファイル未読み取り判定ならば、return
+        return opend; 
+    }
+    else if (generate_flag ==false && opend == true )
+    {
+        generate_flag =true;
+        st_time_step = time_step;
+    }
 
     *particle_density         = param.getFloat( "PARTICLE_DENSITY" );
     *particle_data_size_limit = param.getFloat( "PARTICLE_DATA_SIZE_LIMIT" );
@@ -542,7 +557,111 @@ void generate_particles( int time_step,
 #endif
 
     int mpi_rank = 0;
+
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+
+    // moved by shimomura 20240807
+    TransferFunctionSynthesizer* tfs = new TransferFunctionSynthesizer();
+    std::vector<pbvr::TransferFunction> tf;
+    static ParamInfo param;
+    float sampling_volume_inverse;
+    float max_opacity;
+    float max_density;
+    int subpixel_level;
+    float particle_density;
+    float particle_data_size_limit;
+
+    // 20181226 start  環境変数で指定したファイルパスを参照する
+    std::string visParamDir;
+    std::string tfFilename;
+    std::string stateFilePath;
+    std::string minmaxFilePath;
+    std::string ptcFilePath;
+
+    const char *envBuf = NULL;
+    envBuf = std::getenv( "VIS_PARAM_DIR" );
+    if (envBuf == NULL) {
+        visParamDir = "./";
+    }
+    else {
+        visParamDir = envBuf;
+        if (visParamDir[visParamDir.size() - 1] != '/') {
+            visParamDir += "/";
+        }
+    }
+    envBuf = std::getenv( "TF_NAME" );
+    if (envBuf == NULL) {
+        tfFilename = "default";
+    }
+    else {
+        tfFilename = envBuf;
+    }
+    stateFilePath = visParamDir + "state.txt";
+    envBuf = std::getenv( "PARTICLE_DIR" );
+    if (envBuf == NULL) {
+        minmaxFilePath = "./t_pfi_coords_minmax.txt";
+        ptcFilePath = "./t_";
+    }
+    else {
+        minmaxFilePath = envBuf;
+        ptcFilePath = envBuf;
+        if (minmaxFilePath[minmaxFilePath.size() - 1] != '/') {
+            minmaxFilePath += "/t_pfi_coords_minmax.txt";
+            ptcFilePath += "/t_";
+        }
+        else {
+            minmaxFilePath += "t_pfi_coords_minmax.txt";
+            ptcFilePath += "t_";
+        }
+    }
+    // 20181226 end
+
+    // 20190318 ボリュームサイズのファイル出力
+    //全体の最大最小値を示すpfiファイルを生成
+    static bool minmaxFlag = false;
+    if (minmaxFlag == false && mpi_rank == 0) {
+        FILE* fp = fopen( minmaxFilePath.c_str(), "w" );
+        if( fp )
+        {
+            fprintf( fp, "%f %f %f %f %f %f\n",
+                     dom.x_global_min,
+                     dom.y_global_min,
+                     dom.z_global_min,
+                     dom.x_global_max,
+                     dom.y_global_max,
+                     dom.z_global_max );
+            fclose( fp );
+        }
+        minmaxFlag = true;
+    }
+    // 20190318 end
+
+    //if(mpi->rank==0)std::cout<<"start initializeTFS()\n";
+    kvs::StructuredVolumeObject* object = new kvs::StructuredVolumeObject();//Global Min Max volume object
+    kvs::Vector3f min_vec(
+        dom.x_global_min,
+        dom.y_global_min,
+        dom.z_global_min);
+    kvs::Vector3f max_vec(
+        dom.x_global_max,
+        dom.y_global_max,
+        dom.z_global_max );
+    object->setMinMaxObjectCoords( min_vec, max_vec );
+    object->setMinMaxExternalCoords( min_vec, max_vec );
+    if(mpi_rank==RANK) std::cout<<"max_vec:"<<max_vec<<std::endl;
+    bool tmp_parameter_file_opened = 
+        initializeParameters( tfs, tf, &param, object, &sampling_volume_inverse, &max_opacity, &max_density, &subpixel_level, &particle_density, &particle_data_size_limit, visParamDir, tfFilename, time_step );
+    delete object;
+
+    // TFファイルがないならば、return
+    if ( generate_flag == false )
+    {
+        std::cout << "find no .tf!! skipping generate_particle !!!" << std::endl;
+        delete tfs;
+        return;
+    }
+
+    // moved by shimomura 20240807
 
     const int num_volume_data = nvariables;
 
@@ -693,102 +812,10 @@ void generate_particles( int time_step,
    
 
     // Set Transfer function synthesizer.
-    TransferFunctionSynthesizer* tfs = new TransferFunctionSynthesizer();
-    std::vector<pbvr::TransferFunction> tf;
-    static ParamInfo param;
-    float sampling_volume_inverse;
-    float max_opacity;
-    float max_density;
-    int subpixel_level;
-    float particle_density;
-    float particle_data_size_limit;
-
-    // 20181226 start  環境変数で指定したファイルパスを参照する
-    std::string visParamDir;
-    std::string tfFilename;
-    std::string stateFilePath;
-    std::string minmaxFilePath;
-    std::string ptcFilePath;
-
-    const char *envBuf = NULL;
-    envBuf = std::getenv( "VIS_PARAM_DIR" );
-    if (envBuf == NULL) {
-        visParamDir = "./";
-    }
-    else {
-        visParamDir = envBuf;
-        if (visParamDir[visParamDir.size() - 1] != '/') {
-            visParamDir += "/";
-        }
-    }
-    envBuf = std::getenv( "TF_NAME" );
-    if (envBuf == NULL) {
-        tfFilename = "default";
-    }
-    else {
-        tfFilename = envBuf;
-    }
-    stateFilePath = visParamDir + "state.txt";
-    envBuf = std::getenv( "PARTICLE_DIR" );
-    if (envBuf == NULL) {
-        minmaxFilePath = "./t_pfi_coords_minmax.txt";
-        ptcFilePath = "./t_";
-    }
-    else {
-        minmaxFilePath = envBuf;
-        ptcFilePath = envBuf;
-        if (minmaxFilePath[minmaxFilePath.size() - 1] != '/') {
-            minmaxFilePath += "/t_pfi_coords_minmax.txt";
-            ptcFilePath += "/t_";
-        }
-        else {
-            minmaxFilePath += "t_pfi_coords_minmax.txt";
-            ptcFilePath += "t_";
-        }
-    }
-    // 20181226 end
-
-    // 20190318 ボリュームサイズのファイル出力
-    //全体の最大最小値を示すpfiファイルを生成
-    static bool minmaxFlag = false;
-    if (minmaxFlag == false && mpi_rank == 0) {
-        FILE* fp = fopen( minmaxFilePath.c_str(), "w" );
-        if( fp )
-        {
-            fprintf( fp, "%f %f %f %f %f %f\n",
-                     dom.x_global_min,
-                     dom.y_global_min,
-                     dom.z_global_min,
-                     dom.x_global_max,
-                     dom.y_global_max,
-                     dom.z_global_max );
-            fclose( fp );
-        }
-        minmaxFlag = true;
-    }
-    // 20190318 end
-
-    //if(mpi->rank==0)std::cout<<"start initializeTFS()\n";
-    kvs::StructuredVolumeObject* object = new kvs::StructuredVolumeObject();//Global Min Max volume object
-    kvs::Vector3f min_vec(
-        dom.x_global_min,
-        dom.y_global_min,
-        dom.z_global_min);
-    kvs::Vector3f max_vec(
-        dom.x_global_max,
-        dom.y_global_max,
-        dom.z_global_max );
-    object->setMinMaxObjectCoords( min_vec, max_vec );
-    object->setMinMaxExternalCoords( min_vec, max_vec );
-    if(mpi_rank==RANK) std::cout<<"max_vec:"<<max_vec<<std::endl;
-    bool tmp_parameter_file_opened = 
-        initializeParameters( tfs, tf, &param, object, &sampling_volume_inverse, &max_opacity, &max_density, &subpixel_level, &particle_density, &particle_data_size_limit, visParamDir, tfFilename );
-
     int tf_number = tf.size();
 
     if( start_flag ) parameter_file_opened = tmp_parameter_file_opened;
 
-    delete object;
     //if(mpi->rank==0)std::cout<<"end initializeTFS()\n";
 
     const int max_nparticles = (int)max_density + 1;
@@ -1508,6 +1535,7 @@ void generate_particles( int time_step,
             particle_write_thread->setPointObject( point_object );
             particle_write_thread->setFilename(ptcFilePath.c_str());
             particle_write_thread->setTimestep(time_step ,stateFilePath.c_str());
+            particle_write_thread->setStartTimestep(st_time_step); //add by shimomura 20240808
             particle_write_thread->work(true);
         }// If async_io is disabled, use kvs::PointExporter here in main thread.
         else{
