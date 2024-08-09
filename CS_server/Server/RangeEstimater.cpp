@@ -112,16 +112,13 @@ VariableRange RangeEstimater::EstimationList(const size_t step,
 
     for(int i =0; i <tf_num; i++ )
     {
-    var_o.push_back( tfs->convert_token(clntMes.m_volume_equation[i+tf_num].m_equation) );
-    var_c.push_back( tfs->convert_token(clntMes.m_volume_equation[i].m_equation) );
+    var_o.push_back( tfs->convert_token(clntMes.m_volume_equation[2*i+1].m_equation) );
+    var_c.push_back( tfs->convert_token(clntMes.m_volume_equation[2*i].m_equation) );
     }
 
     //----------------------------------- color 
     for (int i =0; i <tf_num; i++)
     {
-        //m_rpn.setExpToken( &(clntMes.color_var[i].exp_token[0]) );
-        //m_rpn.setVariableName( &(clntMes.color_var[i].var_name[0]) );
-        //m_rpn.setNumber( &(clntMes.color_var[i].value_array[0]) );
         m_rpn.setExpToken( &(var_c[i].exp_token[0]) );
         m_rpn.setVariableName( &(var_c[i].var_name[0]) );
         m_rpn.setNumber( &(var_c[i].val_array[0]) );
@@ -147,8 +144,6 @@ VariableRange RangeEstimater::EstimationList(const size_t step,
         const std::string idxbuf = ss.str();
         range.setValue( "t" + idxbuf + "_var_c", eval_result[tf][0]);
         range.setValue( "t" + idxbuf + "_var_c", eval_result[tf][1]);
-//        std::cout << "opa_min_eval_result[tf][0] = " << eval_result[tf][0] <<std::endl;
-//        std::cout << "opa_min_eval_result[tf][1] = " << eval_result[tf][1] <<std::endl;
     }   
 
 
@@ -156,9 +151,6 @@ VariableRange RangeEstimater::EstimationList(const size_t step,
  
     for (int i =0; i <tf_num; i++)
     {
-        //m_rpn.setExpToken( &(clntMes.opacity_var[i].exp_token[0]) );
-        //m_rpn.setVariableName( &(clntMes.opacity_var[i].var_name[0]) );
-        //m_rpn.setNumber( &(clntMes.opacity_var[i].value_array[0]) );
         m_rpn.setExpToken( &(var_o[i].exp_token[0]) );
         m_rpn.setVariableName( &(var_o[i].var_name[0]) );
         m_rpn.setNumber( &(var_o[i].val_array[0]) );
