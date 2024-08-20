@@ -16,23 +16,140 @@
  */
 #include "VtkCompositeDataSetFileFormat.h"
 
+#include <set>
 #include <stdexcept>
 #include <string>
 
 #include "kvs/FileFormatBase"
+
+#include <vtkAppendFilter.h>
+#include <vtkCompositeDataSet.h>
+#include <vtkDataObjectTreeIterator.h>
 #include <vtkDataSet.h>
+#include <vtkGeometryFilter.h>
 #include <vtkImageData.h>
 #include <vtkPCellDataToPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRemoveGhosts.h>
+#include <vtkSmartPointer.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkXMLDataParser.h>
 
+#include "FileFormat/STL/Stl.h"
 #include "FileFormat/VTK/VtkXmlImageData.h"
 #include "FileFormat/VTK/VtkXmlPolyData.h"
 #include "FileFormat/VTK/VtkXmlRectilinearGrid.h"
 #include "FileFormat/VTK/VtkXmlStructuredGrid.h"
 #include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
+
+namespace
+{
+std::set<int> ReadMergeBlockIndices( const char* file_path )
+{
+    std::set<int> merge_block_indices;
+
+    auto parser = vtkNew<vtkXMLDataParser>();
+    parser->SetFileName( file_path );
+    std::cout << parser->Parse() << std::endl;
+
+    auto root = parser->GetRootElement();
+    std::cout << root->GetName() << std::endl;
+
+    for ( int i = 0; i < root->GetNumberOfNestedElements(); ++i )
+    {
+        auto child = root->GetNestedElement( i );
+
+        const char* SERIAL_BLOCK_TAG_NAME = "serialBlocks";
+        if ( std::strncmp( SERIAL_BLOCK_TAG_NAME, child->GetName(),
+                           sizeof( *SERIAL_BLOCK_TAG_NAME ) ) == 0 )
+        {
+            int start = -1;
+            int end = -1;
+            auto start_value = child->GetAttribute( "start" );
+            if ( start_value != 0 )
+            {
+                start = std::atoi( start_value );
+            }
+            auto end_value = child->GetAttribute( "end" );
+            if ( end_value != 0 )
+            {
+                end = std::atoi( end_value );
+            }
+
+            if ( start >= 0 && end >= 0 )
+            {
+                for ( int j = start; j <= end; ++j )
+                {
+                    merge_block_indices.insert( j );
+                }
+            }
+            else
+            {
+                kvsMessageError(
+                    "start and end attribute in serial-blocks tag must be positive numbers" );
+                return std::set<int>();
+            }
+        }
+        const char* BLOCK_TAG_NAME = "block";
+        if ( std::strncmp( BLOCK_TAG_NAME, child->GetName(), sizeof( *BLOCK_TAG_NAME ) ) == 0 )
+        {
+            auto block_value = child->GetCharacterData();
+            int block = std::atoi( block_value );
+            if ( block >= 0 )
+            {
+                merge_block_indices.insert( block );
+            }
+            else
+            {
+                kvsMessageError( "A value of block tag must be positive numbers" );
+                return std::set<int>();
+            }
+        }
+    }
+
+    for ( auto i : merge_block_indices )
+    {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
+
+    return merge_block_indices;
+}
+
+vtkSmartPointer<vtkUnstructuredGrid> MergeBlocks( vtkCompositeDataSet* dataset,
+                                                  const char* file_path, bool enable_point_merge )
+{
+    auto merge_block_indices = ::ReadMergeBlockIndices( file_path );
+
+    vtkNew<vtkDataObjectTreeIterator> itr;
+
+    itr->SetDataSet( dataset );
+    itr->SkipEmptyNodesOn();
+    itr->VisitOnlyLeavesOn();
+    itr->InitTraversal();
+
+    vtkNew<vtkAppendFilter> append_filter;
+    append_filter->SetMergePoints( enable_point_merge );
+
+    int i = 0;
+    for ( ; itr->IsDoneWithTraversal() != 1; itr->GoToNextItem() )
+    {
+        if ( merge_block_indices.count( i ) > 0 )
+        {
+            vtkSmartPointer<vtkDataSet> data_object =
+                vtkDataSet::SafeDownCast( itr->GetCurrentDataObject() );
+            append_filter->AddInputData( data_object );
+        }
+        ++i;
+    }
+
+    append_filter->Update();
+    vtkSmartPointer<vtkUnstructuredGrid> o = append_filter->GetOutput();
+
+    return o;
+}
+} // namespace
 
 std::shared_ptr<kvs::FileFormatBase> cvt::detail::VtkMultiBlockIterator::dereference() const
 {
@@ -90,4 +207,25 @@ std::shared_ptr<kvs::FileFormatBase> cvt::detail::VtkMultiBlockIterator::derefer
     {
         return nullptr;
     }
+}
+
+std::shared_ptr<cvt::VtkXmlUnstructuredGrid> cvt::detail::MergeBlocks( vtkCompositeDataSet* dataset,
+                                                                       const char* file_path,
+                                                                       bool enable_point_merge )
+{
+    auto merged = ::MergeBlocks( dataset, file_path, enable_point_merge );
+
+    return std::make_shared<cvt::VtkXmlUnstructuredGrid>( merged );
+}
+
+std::shared_ptr<cvt::VtkXmlPolyData> cvt::detail::MergeBlocksAsPolyData(
+    vtkCompositeDataSet* dataset, const char* file_path, bool enable_point_merge )
+{
+    auto merged = ::MergeBlocks( dataset, file_path, enable_point_merge );
+
+    vtkNew<vtkGeometryFilter> geo;
+    geo->SetInputData( merged );
+    geo->Update();
+
+    return std::make_shared<cvt::VtkXmlPolyData>( geo->GetOutput() );
 }

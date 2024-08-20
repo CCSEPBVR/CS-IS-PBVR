@@ -14,7 +14,8 @@
 
 ## 推奨環境
 
--   Doxygen
+-  OpenMPI または MS MPI
+-  Doxygen
 
 ## リンク
 

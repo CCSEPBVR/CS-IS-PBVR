@@ -44,12 +44,20 @@
 #  DON'T EDIT THIS FILE.
 
 OBJECTS := \
+$(OUTDIR)/Converter/ConverterTaskOutput.o \
+$(OUTDIR)/Converter/ConverterTaskInput.o \
+$(OUTDIR)/Converter/ConverterTask.o \
+$(OUTDIR)/Converter/ConverterInputs.o \
 $(OUTDIR)/PBVRFileInformation/UnstructuredPfi.o \
 $(OUTDIR)/Exporter/UnstructuredVolumeObjectExporter.o \
 $(OUTDIR)/Exporter/StructuredVolumeObjectExporter.o \
 $(OUTDIR)/FileFormat/VtkCompositeDataSetFileFormat.o \
 $(OUTDIR)/Importer/VtkImport.o
 
+
+$(OUTDIR)/Converter/%.o: ./Converter/%.cpp ./Converter/%.h
+	$(MKDIR) $(OUTDIR)/Converter
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 $(OUTDIR)/PBVRFileInformation/%.o: ./PBVRFileInformation/%.cpp ./PBVRFileInformation/%.h
 	$(MKDIR) $(OUTDIR)/PBVRFileInformation
@@ -67,10 +75,24 @@ $(OUTDIR)/Importer/%.o: ./Importer/%.cpp ./Importer/%.h
 	$(MKDIR) $(OUTDIR)/Importer
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
-$(OUTDIR)/./%.o: ./%.cpp ./%.h
+$(OUTDIR)/kvsml-converter.o: ./kvsml-converter.cpp
 	$(MKDIR) $(OUTDIR)
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $(OUTDIR)/kvsml-converter.o ./kvsml-converter.cpp
+
+ifdef CVT_ENABLE_MPI
+MPI_OBJECTS:= \
+$(OUTDIR)/MPIRunner/MpiMainProcess.o \
+$(OUTDIR)/MPIRunner/MpiSubProcess.o
+
+
+$(OUTDIR)/MPIRunner/%.o: ./MPIRunner/%.cpp ./MPIRunner/%.h
+	$(MKDIR) $(OUTDIR)/MPIRunner
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
+$(OUTDIR)/kvsml-converter-mpi.o: ./kvsml-converter-mpi.cpp
+	$(MKDIR) $(OUTDIR)
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $(OUTDIR)/kvsml-converter-mpi.o ./kvsml-converter-mpi.cpp
+endif
 
 install::
 	$(MKDIR) $(INSTALL_DIR)/include/
@@ -99,3 +121,10 @@ install::
 	$(INSTALL) ./TimeSeriesFiles/*.h $(INSTALL_DIR)/include/TimeSeriesFiles
 	$(MKDIR) $(INSTALL_DIR)/include/TimeSeriesFiles/EnSight
 	$(INSTALL) ./TimeSeriesFiles/EnSight/*.h $(INSTALL_DIR)/include/TimeSeriesFiles/EnSight
+ifdef CVT_ENABLE_MPI
+install::
+	$(MKDIR) $(INSTALL_DIR)/include/Converter
+	$(INSTALL) ./Converter/*.h $(INSTALL_DIR)/include/Converter
+	$(MKDIR) $(INSTALL_DIR)/include/MPIRunner
+	$(INSTALL) ./MPIRunner/*.h $(INSTALL_DIR)/include/MPIRunner
+endif

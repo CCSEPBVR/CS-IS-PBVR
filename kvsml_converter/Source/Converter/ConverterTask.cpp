@@ -1,0 +1,971 @@
+#include "Converter/ConverterTask.h"
+
+#include "kvs/PolygonExporter"
+#include "kvs/PolygonObject"
+
+#include "Converter/ConverterTaskInput.h"
+#include "Converter/ConverterTaskOutput.h"
+#include "Exporter/StructuredVolumeObjectExporter.h"
+#include "Exporter/UnstructuredVolumeObjectExporter.h"
+#include "FileFormat/AVS/AvsUcd.h"
+#include "FileFormat/CGNS/Cgns.h"
+#include "FileFormat/KVSML/KvsmlUnstructuredVolumeObject.h"
+#include "FileFormat/PLOT3D/Plot3d.h"
+#include "FileFormat/STL/Stl.h"
+#include "FileFormat/VTK/VtkStructuredGrid.h"
+#include "FileFormat/VTK/VtkUnstructuredGrid.h"
+#include "FileFormat/VTK/VtkXmlImageData.h"
+#include "FileFormat/VTK/VtkXmlMultiBlock.h"
+#include "FileFormat/VTK/VtkXmlPStructuredGrid.h"
+#include "FileFormat/VTK/VtkXmlPUnstructuredGrid.h"
+#include "FileFormat/VTK/VtkXmlRectilinearGrid.h"
+#include "FileFormat/VTK/VtkXmlStructuredGrid.h"
+#include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
+#include "Filesystem.h"
+#include "Importer/VtkImporter.h"
+#include "PBVRFileInformation/Pfl.h"
+#include "PBVRFileInformation/UnstructuredPfi.h"
+#include "TimeSeriesFiles/EnSight/EnSightGold.h"
+#include "TimeSeriesFiles/EnSight/EnSightGoldBinary.h"
+
+namespace
+{
+template <typename FileFormat>
+std::optional<cvt::ConverterTaskOutput> ConvertUnstructuredGridToKvsml(
+    const std::string& directory, const std::string& base, const std::vector<std::string>& src,
+    int target_index, int time_step, int last_time_step, int has_mesh_deformation )
+{
+    std::unordered_map<int, int> veclens;
+    std::unordered_map<int, int> sub_volume_counts;
+    int ghost_cell_count = 0;
+    // one pass
+    for ( auto& path : src )
+    {
+        auto vtu = FileFormat( path );
+
+        for ( auto file_format : vtu.eachCellType() )
+        {
+            cvt::VtkImporter<FileFormat> importer( &file_format );
+            kvs::UnstructuredVolumeObject* object = &importer;
+
+            auto cell_type = object->cellType();
+            sub_volume_counts[cell_type] = ( sub_volume_counts.count( cell_type ) == 0 )
+                                               ? 1
+                                               : ( sub_volume_counts[cell_type] + 1 );
+            veclens[cell_type] = object->veclen();
+            ghost_cell_count += file_format.getGhostCellCount();
+        }
+    }
+
+    // Check if the sub volume has same data arrays.
+    if ( !std::all_of( veclens.begin(), veclens.end(),
+                       [&]( auto& v ) { return veclens.begin()->second == v.second; } ) )
+    {
+        return std::nullopt;
+    }
+
+    std::unordered_map<std::string, int> sub_volume_counts0;
+    for ( auto& e : sub_volume_counts )
+    {
+        auto local_base = std::string( base ) + "_" + std::to_string( e.first );
+        sub_volume_counts0[local_base] = e.second;
+    }
+
+    // two pass
+    cvt::ConverterTaskOutput output( target_index, time_step, last_time_step, has_mesh_deformation,
+                                     sub_volume_counts0, ghost_cell_count );
+    std::unordered_map<int, int> sub_volume_ids;
+    for ( auto& e : sub_volume_counts )
+    {
+        sub_volume_ids[e.first] = 1;
+    }
+    for ( auto& path : src )
+    {
+        FileFormat input_vtu( path );
+
+        for ( auto vtu : input_vtu.eachCellType() )
+        {
+            cvt::VtkImporter<FileFormat> importer( &vtu );
+            kvs::UnstructuredVolumeObject* object = &importer;
+
+            auto local_base = std::string( base ) + "_" + std::to_string( object->cellType() );
+
+            cvt::UnstructuredVolumeObjectExporter exporter( &importer );
+            exporter.setWritingDataTypeToExternalBinary();
+            exporter.write( directory, local_base, time_step, sub_volume_ids[object->cellType()],
+                            sub_volume_counts[object->cellType()], has_mesh_deformation == 0 );
+
+            output.registerObject( &exporter, local_base, sub_volume_ids[object->cellType()] );
+
+            ++sub_volume_ids[object->cellType()];
+        }
+    }
+
+    return output;
+}
+
+template <typename FileFormat>
+std::optional<cvt::ConverterTaskOutput> ConvertMultiBlockToKvsml(
+    const std::string& directory, const std::string& base, const std::vector<std::string>& src,
+    int target_index, int time_step, int last_time_step, int has_mesh_deformation,
+    std::string grid_type )
+{
+    std::unordered_map<int, int> sub_volume_counts;
+    int ghost_cell_count = 0;
+    auto update = [&]( int cell_type ) {
+        sub_volume_counts[cell_type] = ( sub_volume_counts.count( cell_type ) == 0 )
+                                           ? 1
+                                           : ( sub_volume_counts[cell_type] + 1 );
+    };
+
+    // one pass
+    for ( auto& path : src )
+    {
+        FileFormat input_vtm( path );
+
+        for ( auto format : input_vtm.eachBlock() )
+        {
+            if ( grid_type == "structured" )
+            {
+                if ( auto structured_volume_format =
+                         dynamic_cast<cvt::VtkXmlRectilinearGrid*>( format.get() ) )
+                {
+                    update( 2 );
+                    ghost_cell_count += structured_volume_format->getGhostCellCount();
+                }
+                else if ( auto structured_volume_format =
+                              dynamic_cast<cvt::VtkXmlImageData*>( format.get() ) )
+                {
+                    update( 2 );
+                    ghost_cell_count += structured_volume_format->getGhostCellCount();
+                }
+                else if ( auto structured_volume_format =
+                              dynamic_cast<cvt::VtkXmlStructuredGrid*>( format.get() ) )
+                {
+                    update( 2 );
+                    ghost_cell_count += structured_volume_format->getGhostCellCount();
+                }
+            }
+            else if ( grid_type == "unstructured" )
+            {
+                if ( auto unstructured_volume_format =
+                         dynamic_cast<cvt::VtkXmlUnstructuredGrid*>( format.get() ) )
+                {
+                    for ( auto file_format : unstructured_volume_format->eachCellType() )
+                    {
+                        cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &file_format );
+                        kvs::UnstructuredVolumeObject* object = &importer;
+
+                        update( object->cellType() );
+                        ghost_cell_count += unstructured_volume_format->getGhostCellCount();
+                    }
+                }
+            }
+        }
+    }
+
+    std::unordered_map<std::string, int> sub_volume_counts0;
+    for ( auto& e : sub_volume_counts )
+    {
+        auto local_base = std::string( base ) + "_" + std::to_string( e.first );
+        sub_volume_counts0[local_base] = e.second;
+    }
+
+    // two pass
+    cvt::ConverterTaskOutput output( target_index, time_step, last_time_step, has_mesh_deformation,
+                                     sub_volume_counts0, ghost_cell_count );
+    std::unordered_map<int, int> sub_volume_ids;
+    for ( auto& e : sub_volume_counts )
+    {
+        sub_volume_ids[e.first] = 1;
+    }
+    for ( auto& path : src )
+    {
+        FileFormat input_vtm( path );
+
+        for ( auto format : input_vtm.eachBlock() )
+        {
+            if ( grid_type == "structured" )
+            {
+                auto write = [&]( auto& importer ) {
+                    kvs::StructuredVolumeObject* object = &importer;
+                    object->updateMinMaxCoords();
+                    object->setMinMaxExternalCoords( object->minObjectCoord(),
+                                                     object->maxObjectCoord() );
+
+                    cvt::StructuredVolumeObjectExporter exporter( &importer );
+                    exporter.setWritingDataTypeToExternalBinary();
+                    exporter.write( directory, base, time_step, sub_volume_ids[2],
+                                    sub_volume_counts[2], has_mesh_deformation == 0 );
+                    auto local_base = std::string( base ) + "_2";
+                    output.registerObject( &exporter, local_base, sub_volume_ids[2] );
+                    ++sub_volume_ids[2];
+                };
+
+                if ( auto structured_volume_format =
+                         dynamic_cast<cvt::VtkXmlRectilinearGrid*>( format.get() ) )
+                {
+                    cvt::VtkImporter<cvt::VtkXmlRectilinearGrid> importer(
+                        structured_volume_format );
+                    write( importer );
+                }
+                else if ( auto structured_volume_format =
+                              dynamic_cast<cvt::VtkXmlImageData*>( format.get() ) )
+                {
+                    cvt::VtkImporter<cvt::VtkXmlImageData> importer( structured_volume_format );
+                    write( importer );
+                }
+                else if ( auto structured_volume_format =
+                              dynamic_cast<cvt::VtkXmlStructuredGrid*>( format.get() ) )
+                {
+                    cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer(
+                        structured_volume_format );
+                    write( importer );
+                }
+            }
+            else if ( grid_type == "unstructured" )
+            {
+                if ( auto unstructured_volume_format =
+                         dynamic_cast<cvt::VtkXmlUnstructuredGrid*>( format.get() ) )
+                {
+                    cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer(
+                        unstructured_volume_format );
+                    kvs::UnstructuredVolumeObject* object = &importer;
+
+                    auto local_base =
+                        std::string( base ) + "_" + std::to_string( object->cellType() );
+
+                    cvt::UnstructuredVolumeObjectExporter exporter( &importer );
+                    exporter.setWritingDataTypeToExternalBinary();
+                    exporter.write(
+                        directory, local_base, time_step, sub_volume_ids[object->cellType()],
+                        sub_volume_counts[object->cellType()], has_mesh_deformation == 0 );
+
+                    output.registerObject( &exporter, local_base,
+                                           sub_volume_ids[object->cellType()] );
+
+                    ++sub_volume_ids[object->cellType()];
+                }
+            }
+        }
+    }
+
+    return output;
+}
+
+std::optional<cvt::ConverterTaskOutput> Plot3d2Kvsml(
+    const std::string& directory, const std::string& base, const std::vector<std::string>& src,
+    const std::vector<std::string>& q, const std::vector<std::string>& f, int target_index,
+    int time_step, int last_time_step, int has_mesh_deformation, std::string grid_type )
+{
+    std::unordered_map<int, int> sub_volume_counts;
+    int ghost_cell_count = 0;
+
+    auto update = [&]( int cell_type ) {
+        sub_volume_counts[cell_type] = ( sub_volume_counts.count( cell_type ) == 0 )
+                                           ? 1
+                                           : ( sub_volume_counts[cell_type] + 1 );
+    };
+
+    // one pass
+    int src_i = -1;
+    for ( auto& path : src )
+    {
+        ++src_i;
+        cvt::Plot3d input_vtm( path, [&]( vtkMultiBlockPLOT3DReader* reader ) {
+            reader->AutoDetectFormatOn();
+            if ( q[src_i] != "" )
+            {
+                reader->SetQFileName( q[src_i].c_str() );
+            }
+            if ( f[src_i] != "" )
+            {
+                reader->SetFunctionFileName( f[src_i].c_str() );
+            }
+        } );
+
+        for ( auto format : input_vtm.eachBlock() )
+        {
+            if ( grid_type == "structured" )
+            {
+                if ( auto structured_volume_format =
+                         dynamic_cast<cvt::VtkXmlRectilinearGrid*>( format.get() ) )
+                {
+                    update( 2 );
+                    ghost_cell_count += structured_volume_format->getGhostCellCount();
+                }
+                else if ( auto structured_volume_format =
+                              dynamic_cast<cvt::VtkXmlImageData*>( format.get() ) )
+                {
+                    update( 2 );
+                    ghost_cell_count += structured_volume_format->getGhostCellCount();
+                }
+                else if ( auto structured_volume_format =
+                              dynamic_cast<cvt::VtkXmlStructuredGrid*>( format.get() ) )
+                {
+                    update( 2 );
+                    ghost_cell_count += structured_volume_format->getGhostCellCount();
+                }
+            }
+            else if ( grid_type == "unstructured" )
+            {
+                if ( auto unstructured_volume_format =
+                         dynamic_cast<cvt::VtkXmlUnstructuredGrid*>( format.get() ) )
+                {
+                    for ( auto file_format : unstructured_volume_format->eachCellType() )
+                    {
+                        cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &file_format );
+                        kvs::UnstructuredVolumeObject* object = &importer;
+
+                        update( object->cellType() );
+                        ghost_cell_count += unstructured_volume_format->getGhostCellCount();
+                    }
+                }
+            }
+        }
+    }
+
+    std::unordered_map<std::string, int> sub_volume_counts0;
+    for ( auto& e : sub_volume_counts )
+    {
+        auto local_base = std::string( base ) + "_" + std::to_string( e.first );
+        sub_volume_counts0[local_base] = e.second;
+    }
+
+    // two pass
+    cvt::ConverterTaskOutput output( target_index, time_step, last_time_step, has_mesh_deformation,
+                                     sub_volume_counts0, ghost_cell_count );
+    std::unordered_map<int, int> sub_volume_ids;
+    for ( auto& e : sub_volume_counts )
+    {
+        sub_volume_ids[e.first] = 1;
+    }
+    src_i = -1;
+    for ( auto& path : src )
+    {
+        ++src_i;
+        cvt::Plot3d input_vtm( path, [&]( vtkMultiBlockPLOT3DReader* reader ) {
+            reader->AutoDetectFormatOn();
+            if ( q[src_i] != "" )
+            {
+                reader->SetQFileName( q[src_i].c_str() );
+            }
+            if ( f[src_i] != "" )
+            {
+                reader->SetFunctionFileName( f[src_i].c_str() );
+            }
+        } );
+
+        for ( auto format : input_vtm.eachBlock() )
+        {
+            if ( grid_type == "structured" )
+            {
+                auto write = [&]( auto& importer ) {
+                    kvs::StructuredVolumeObject* object = &importer;
+                    object->updateMinMaxCoords();
+                    object->setMinMaxExternalCoords( object->minObjectCoord(),
+                                                     object->maxObjectCoord() );
+
+                    cvt::StructuredVolumeObjectExporter exporter( &importer );
+                    exporter.setWritingDataTypeToExternalBinary();
+                    exporter.write( directory, base, time_step, sub_volume_ids[2],
+                                    sub_volume_counts[2], has_mesh_deformation == 0 );
+                    auto local_base = std::string( base ) + "_2";
+                    output.registerObject( &exporter, local_base, sub_volume_ids[2] );
+                    ++sub_volume_ids[2];
+                };
+
+                if ( auto structured_volume_format =
+                         dynamic_cast<cvt::VtkXmlRectilinearGrid*>( format.get() ) )
+                {
+                    cvt::VtkImporter<cvt::VtkXmlRectilinearGrid> importer(
+                        structured_volume_format );
+                    write( importer );
+                }
+                else if ( auto structured_volume_format =
+                              dynamic_cast<cvt::VtkXmlImageData*>( format.get() ) )
+                {
+                    cvt::VtkImporter<cvt::VtkXmlImageData> importer( structured_volume_format );
+                    write( importer );
+                }
+                else if ( auto structured_volume_format =
+                              dynamic_cast<cvt::VtkXmlStructuredGrid*>( format.get() ) )
+                {
+                    cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer(
+                        structured_volume_format );
+                    write( importer );
+                }
+            }
+            else if ( grid_type == "unstructured" )
+            {
+                if ( auto unstructured_volume_format =
+                         dynamic_cast<cvt::VtkXmlUnstructuredGrid*>( format.get() ) )
+                {
+                    cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer(
+                        unstructured_volume_format );
+                    kvs::UnstructuredVolumeObject* object = &importer;
+
+                    auto local_base =
+                        std::string( base ) + "_" + std::to_string( object->cellType() );
+
+                    cvt::UnstructuredVolumeObjectExporter exporter( &importer );
+                    exporter.setWritingDataTypeToExternalBinary();
+                    exporter.write(
+                        directory, local_base, time_step, sub_volume_ids[object->cellType()],
+                        sub_volume_counts[object->cellType()], has_mesh_deformation == 0 );
+
+                    output.registerObject( &exporter, local_base,
+                                           sub_volume_ids[object->cellType()] );
+
+                    ++sub_volume_ids[object->cellType()];
+                }
+            }
+        }
+    }
+
+    return output;
+}
+
+std::optional<cvt::ConverterTaskOutput> PVtu2Kvsml( const std::string& directory,
+                                                    const std::string& base,
+                                                    const std::vector<std::string>& src,
+                                                    int target_index, int time_step,
+                                                    int last_time_step, int has_mesh_deformation )
+{
+    std::unordered_map<int, int> veclens;
+    std::unordered_map<int, int> sub_volume_counts;
+    int ghost_cell_count = 0;
+
+    // one pass
+    for ( auto& path : src )
+    {
+        auto pvtu = cvt::VtkXmlPUnstructuredGrid( path );
+
+        for ( auto vtu : pvtu.eachPiece() )
+        {
+            for ( auto file_format : vtu.eachCellType() )
+            {
+                cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &file_format );
+                kvs::UnstructuredVolumeObject* object = &importer;
+
+                auto cell_type = object->cellType();
+                sub_volume_counts[cell_type] = ( sub_volume_counts.count( cell_type ) == 0 )
+                                                   ? 1
+                                                   : ( sub_volume_counts[cell_type] + 1 );
+                veclens[cell_type] = object->veclen();
+                ghost_cell_count += file_format.getGhostCellCount();
+            }
+        }
+    }
+    // Check if the sub volume has same data arrays.
+    if ( !std::all_of( veclens.begin(), veclens.end(),
+                       [&]( auto& v ) { return veclens.begin()->second == v.second; } ) )
+    {
+        return std::nullopt;
+    }
+
+    std::unordered_map<std::string, int> sub_volume_counts0;
+    for ( auto& e : sub_volume_counts )
+    {
+        auto local_base = std::string( base ) + "_" + std::to_string( e.first );
+        sub_volume_counts0[local_base] = e.second;
+    }
+
+    // two pass
+    cvt::ConverterTaskOutput output( target_index, time_step, last_time_step, has_mesh_deformation,
+                                     sub_volume_counts0, ghost_cell_count );
+    std::unordered_map<int, int> sub_volume_ids;
+    for ( auto& e : sub_volume_counts )
+    {
+        sub_volume_ids[e.first] = 1;
+    }
+    for ( auto& path : src )
+    {
+        cvt::VtkXmlPUnstructuredGrid input_pvtu( path );
+
+        for ( auto vtu : input_pvtu.eachPiece() )
+        {
+            for ( auto file_format : vtu.eachCellType() )
+            {
+                cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &file_format );
+
+                kvs::UnstructuredVolumeObject* object = &importer;
+
+                std::string local_base =
+                    std::string( base ) + "_" + std::to_string( object->cellType() );
+                cvt::UnstructuredVolumeObjectExporter exporter( &importer );
+                exporter.setWritingDataTypeToExternalBinary();
+                exporter.write( directory, local_base, time_step,
+                                sub_volume_ids[object->cellType()],
+                                sub_volume_counts[object->cellType()], has_mesh_deformation == 0 );
+
+                output.registerObject( &exporter, local_base, sub_volume_ids[object->cellType()] );
+
+                ++sub_volume_ids[object->cellType()];
+            }
+        }
+    }
+
+    return output;
+}
+
+template <typename FileFormat>
+std::optional<cvt::ConverterTaskOutput> ConvertStructuredGridToKvsml(
+    const std::string& directory, const std::string& base, const std::vector<std::string>& src,
+    int target_index, int time_step, int last_time_step, int has_mesh_deformation )
+{
+    int sub_volume_id = 1;
+    int sub_volume_count = src.size();
+    std::unordered_map<std::string, int> sub_volume_counts;
+    sub_volume_counts[base] = sub_volume_count;
+
+    cvt::ConverterTaskOutput output( target_index, time_step, last_time_step, has_mesh_deformation,
+                                     sub_volume_counts, 0 );
+    for ( auto& path : src )
+    {
+        FileFormat file_format( path );
+        cvt::VtkImporter<FileFormat> importer( &file_format );
+
+        kvs::StructuredVolumeObject* object = &importer;
+        object->updateMinMaxCoords();
+        object->setMinMaxExternalCoords( object->minObjectCoord(), object->maxObjectCoord() );
+
+        cvt::StructuredVolumeObjectExporter exporter( &importer );
+        exporter.setWritingDataTypeToExternalBinary();
+        exporter.write( directory, base, time_step, sub_volume_id, sub_volume_count,
+                        has_mesh_deformation == 0 );
+        output.registerObject( &exporter, base, sub_volume_id++ );
+        output.ghost_cell_count += file_format.getGhostCellCount();
+    }
+
+    return output;
+}
+
+std::optional<cvt::ConverterTaskOutput> Pvts2Kvsml( const std::string& directory,
+                                                    const std::string& base,
+                                                    const std::vector<std::string>& src,
+                                                    int target_index, int time_step,
+                                                    int last_time_step, int has_mesh_deformation )
+{
+    int sub_volume_count = 0;
+    // one pass
+    for ( auto& path : src )
+    {
+        cvt::VtkXmlPStructuredGrid input_pvts( path );
+        sub_volume_count += input_pvts.numberOfPieces();
+    }
+
+    // two pass
+    std::unordered_map<std::string, int> sub_volume_counts;
+    sub_volume_counts[base] = sub_volume_count;
+
+    cvt::ConverterTaskOutput output( target_index, time_step, last_time_step, has_mesh_deformation,
+                                     sub_volume_counts, 0 );
+    for ( auto& path : src )
+    {
+        cvt::VtkXmlPStructuredGrid input_pvts( path );
+
+        int sub_volume_id = 1;
+
+        for ( auto file_format : input_pvts.eachPiece() )
+        {
+            cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer( &file_format );
+
+            kvs::StructuredVolumeObject* object = &importer;
+            object->updateMinMaxCoords();
+            object->setMinMaxExternalCoords( object->minObjectCoord(), object->maxObjectCoord() );
+
+            cvt::StructuredVolumeObjectExporter exporter( &importer );
+            exporter.setWritingDataTypeToExternalBinary();
+            exporter.write( directory, base, time_step, sub_volume_id, sub_volume_count,
+                            has_mesh_deformation == 0 );
+
+            output.registerObject( &exporter, base, sub_volume_id++ );
+            output.ghost_cell_count += file_format.getGhostCellCount();
+        }
+    }
+
+    return output;
+}
+
+std::optional<cvt::ConverterTaskOutput> OutputConvertProfile(
+    std::optional<cvt::ConverterTaskOutput>&& output, const std::string& destination_directory,
+    const std::string& destination_prefix, int output_profile )
+{
+    if ( output_profile > 0 )
+    {
+        std::filesystem::path dst( destination_directory );
+        dst /= destination_prefix + "_" + std::to_string( output->time_step ) + ".xml";
+        std::ofstream ostream( dst );
+
+        ostream << output->serialize();
+    }
+
+    return output;
+}
+
+template <typename EnSightFileFormat>
+std::optional<cvt::ConverterTaskOutput> Case2Kvsml( const std::string& directory,
+                                                    const std::string& base, const std::string& src,
+                                                    int target_index, int output_profile )
+{
+    EnSightFileFormat input_case( src );
+
+    std::unordered_map<int, cvt::UnstructuredPfi> pfi_map;
+
+    auto time_steps_container = input_case.eachTimeStep();
+    int last_time_step = time_steps_container.lastTimeStep();
+    int time_step = 0;
+    std::unordered_map<int, int> sub_volume_counts;
+    int ghost_cell_count = 0;
+
+    for ( auto time_and_format : time_steps_container )
+    {
+        auto& multi_block_format = time_and_format.second;
+
+        if ( time_step == 0 )
+        {
+            // one pass
+            for ( auto format : multi_block_format.eachBlock() )
+            {
+                if ( format )
+                {
+                    if ( auto unstructured_volume_format =
+                             dynamic_cast<cvt::VtkXmlUnstructuredGrid*>( format.get() ) )
+                    {
+                        for ( auto file_format : unstructured_volume_format->eachCellType() )
+                        {
+                            cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &file_format );
+                            kvs::UnstructuredVolumeObject* object = &importer;
+                            if ( object->cellType() ==
+                                 kvs::UnstructuredVolumeObject::CellType::UnknownCellType )
+                            {
+                                continue;
+                            }
+
+                            auto cell_type = object->cellType();
+                            sub_volume_counts[cell_type] =
+                                ( sub_volume_counts.count( cell_type ) == 0 )
+                                    ? 1
+                                    : ( sub_volume_counts[cell_type] + 1 );
+                            ghost_cell_count = file_format.getGhostCellCount();
+                        }
+                    }
+                    else if ( auto structured_volume_format =
+                                  dynamic_cast<cvt::VtkXmlStructuredGrid*>( format.get() ) )
+                    {
+                        int cell_type = 2;
+                        sub_volume_counts[cell_type] = ( sub_volume_counts.count( cell_type ) == 0 )
+                                                           ? 1
+                                                           : ( sub_volume_counts[cell_type] + 1 );
+                    }
+                }
+            }
+        }
+
+        // two pass
+        std::unordered_map<std::string, int> sub_volume_counts0;
+        for ( auto& e : sub_volume_counts )
+        {
+            auto local_base = std::string( base ) + "_" + std::to_string( e.first );
+            sub_volume_counts0[local_base] = e.second;
+        }
+        cvt::ConverterTaskOutput output( target_index, time_step, last_time_step, 1,
+                                         sub_volume_counts0, ghost_cell_count );
+        std::unordered_map<int, int> sub_volume_ids;
+        for ( auto& e : sub_volume_counts )
+        {
+            sub_volume_ids[e.first] = 1;
+        }
+        for ( auto format : multi_block_format.eachBlock() )
+        {
+            if ( !format )
+            {
+                std::cout << "      Unsupported VTK data type" << std::endl;
+            }
+            else if ( auto unstructured_volume_format =
+                          dynamic_cast<cvt::VtkXmlUnstructuredGrid*>( format.get() ) )
+            {
+                for ( auto vtu : unstructured_volume_format->eachCellType() )
+                {
+                    cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &vtu );
+
+                    kvs::UnstructuredVolumeObject* object = &importer;
+
+                    if ( object->cellType() ==
+                         kvs::UnstructuredVolumeObject::CellType::UnknownCellType )
+                    {
+                        continue;
+                    }
+
+                    auto local_base =
+                        std::string( base ) + "_" + std::to_string( object->cellType() );
+
+                    cvt::UnstructuredVolumeObjectExporter exporter( &importer );
+                    exporter.setWritingDataTypeToExternalBinary();
+                    exporter.write( directory, local_base, time_step,
+                                    sub_volume_ids[object->cellType()],
+                                    sub_volume_counts[object->cellType()] );
+                    output.registerObject( &exporter, local_base,
+                                           sub_volume_ids[object->cellType()] );
+                    if ( time_step == 0 )
+                    {
+                        pfi_map.emplace(
+                            static_cast<int>( object->cellType() ),
+                            cvt::UnstructuredPfi( object->veclen(), last_time_step,
+                                                  sub_volume_counts[object->cellType()] ) );
+                    }
+                    pfi_map.at( static_cast<int>( object->cellType() ) )
+                        .registerObject( &exporter, time_step, sub_volume_ids[object->cellType()] );
+                    ++sub_volume_ids[object->cellType()];
+                }
+            }
+            else if ( auto structured_volume_format =
+                          dynamic_cast<cvt::VtkXmlStructuredGrid*>( format.get() ) )
+            {
+                cvt::VtkImporter<cvt::VtkXmlStructuredGrid> importer( structured_volume_format );
+
+                kvs::StructuredVolumeObject* object = &importer;
+                object->updateMinMaxCoords();
+                object->setMinMaxExternalCoords( object->minObjectCoord(),
+                                                 object->maxObjectCoord() );
+
+                auto local_base = std::string( base ) + "_2";
+                cvt::StructuredVolumeObjectExporter exporter( &importer );
+                exporter.setWritingDataTypeToExternalBinary();
+                exporter.write( directory, local_base, time_step, sub_volume_ids[2],
+                                sub_volume_counts[2] );
+                if ( time_step == 0 )
+                {
+                    pfi_map.emplace( 2, cvt::UnstructuredPfi( object->veclen(), last_time_step,
+                                                              sub_volume_counts[2] ) );
+                }
+                pfi_map.at( static_cast<int>( 2 ) )
+                    .registerObject( &exporter, time_step, sub_volume_ids[2] );
+
+                ++sub_volume_ids[2];
+            }
+            else
+            {
+                std::cout << "unsupported" << std::endl;
+            }
+
+            ::OutputConvertProfile( output, directory, base, output_profile );
+        }
+
+        ++time_step;
+    }
+
+    cvt::Pfl pfl;
+    for ( auto& e : pfi_map )
+    {
+        std::string local_base = std::string( base ) + "_" + std::to_string( e.first );
+        e.second.write( directory, local_base );
+        pfl.registerPfi( directory, local_base );
+    }
+    pfl.write( directory, base );
+
+    // Return empty
+    return cvt::ConverterTaskOutput( target_index, time_step );
+}
+
+std::optional<cvt::ConverterTaskOutput> Stl2Kvsml( const std::string& directory,
+                                                   const std::string& base,
+                                                   const std::vector<std::string>& src,
+                                                   int target_index, int time_step )
+{
+    int sub = 1;
+    for ( auto& path : src )
+    {
+        cvt::Stl input_stl( path, []( vtkSTLReader* stl_reader ) { stl_reader->MergingOn(); } );
+        cvt::VtkImporter<cvt::Stl> importer( &input_stl );
+
+        kvs::PolygonExporter<kvs::KVSMLPolygonObject> exporter( &importer );
+        exporter.setWritingDataTypeToExternalBinary();
+
+        std::filesystem::path dst = directory + base + std::to_string( sub );
+        exporter.write( dst.u8string().c_str() );
+
+        ++sub;
+    }
+
+    // Return empty
+    return cvt::ConverterTaskOutput( target_index, time_step );
+}
+} // namespace
+
+std::optional<cvt::ConverterTaskOutput> cvt::Convert( cvt::ConverterTaskInput input )
+{
+    try
+    {
+        std::filesystem::path path( input.source_file_paths[0] );
+
+        // Create a destination directory
+        std::filesystem::path directory( input.destination_directory );
+
+        if ( !std::filesystem::exists( directory ) )
+        {
+            try
+            {
+                std::filesystem::create_directories( directory );
+            }
+            catch ( ... )
+            {
+            }
+        }
+        if ( !std::filesystem::exists( directory ) )
+        {
+            return std::nullopt;
+        }
+
+        auto extension = path.extension();
+
+        if ( extension == ".vtu" )
+        {
+            return ::OutputConvertProfile(
+                ::ConvertUnstructuredGridToKvsml<cvt::VtkXmlUnstructuredGrid>(
+                    input.destination_directory, input.destination_prefix, input.source_file_paths,
+                    input.target_index, input.time_step, input.last_time_step,
+                    input.has_mesh_deformation ),
+                input.destination_directory, input.destination_prefix, input.output_profile );
+        }
+        else if ( extension == ".pvtu" )
+        {
+            return ::OutputConvertProfile(
+                ::PVtu2Kvsml( input.destination_directory, input.destination_prefix,
+                              input.source_file_paths, input.target_index, input.time_step,
+                              input.last_time_step, input.has_mesh_deformation ),
+                input.destination_directory, input.destination_prefix, input.output_profile );
+        }
+        else if ( extension == ".inp" )
+        {
+            return ::OutputConvertProfile(
+                ::ConvertUnstructuredGridToKvsml<cvt::AvsUcd>(
+                    input.destination_directory, input.destination_prefix, input.source_file_paths,
+                    input.target_index, input.time_step, input.last_time_step,
+                    input.has_mesh_deformation ),
+                input.destination_directory, input.destination_prefix, input.output_profile );
+        }
+        else if ( extension == ".vti" )
+        {
+            return ::OutputConvertProfile(
+                ::ConvertStructuredGridToKvsml<cvt::VtkXmlImageData>(
+                    input.destination_directory, input.destination_prefix, input.source_file_paths,
+                    input.target_index, input.time_step, input.last_time_step,
+                    input.has_mesh_deformation ),
+                input.destination_directory, input.destination_prefix, input.output_profile );
+        }
+        else if ( extension == ".vtr" )
+        {
+            return ::OutputConvertProfile(
+                ::ConvertStructuredGridToKvsml<cvt::VtkXmlRectilinearGrid>(
+                    input.destination_directory, input.destination_prefix, input.source_file_paths,
+                    input.target_index, input.time_step, input.last_time_step,
+                    input.has_mesh_deformation ),
+                input.destination_directory, input.destination_prefix, input.output_profile );
+        }
+        else if ( extension == ".vts" )
+        {
+            return ::OutputConvertProfile(
+                ::ConvertStructuredGridToKvsml<cvt::VtkXmlStructuredGrid>(
+                    input.destination_directory, input.destination_prefix, input.source_file_paths,
+                    input.target_index, input.time_step, input.last_time_step,
+                    input.has_mesh_deformation ),
+                input.destination_directory, input.destination_prefix, input.output_profile );
+        }
+        else if ( extension == ".pvts" )
+        {
+            return ::OutputConvertProfile(
+                ::Pvts2Kvsml( input.destination_directory, input.destination_prefix,
+                              input.source_file_paths, input.target_index, input.time_step,
+                              input.last_time_step, input.has_mesh_deformation ),
+                input.destination_directory, input.destination_prefix, input.output_profile );
+        }
+        else if ( extension == ".vtk" )
+        {
+            if ( input.source_grid_type == "structured" )
+            {
+                return ::OutputConvertProfile(
+                    ::ConvertStructuredGridToKvsml<cvt::VtkStructuredGrid>(
+                        input.destination_directory, input.destination_prefix,
+                        input.source_file_paths, input.target_index, input.time_step,
+                        input.last_time_step, input.has_mesh_deformation ),
+                    input.destination_directory, input.destination_prefix, input.output_profile );
+            }
+            else if ( input.source_grid_type == "unstructured" )
+            {
+                return ::OutputConvertProfile(
+                    ::ConvertUnstructuredGridToKvsml<cvt::VtkUnstructuredGrid>(
+                        input.destination_directory, input.destination_prefix,
+                        input.source_file_paths, input.target_index, input.time_step,
+                        input.last_time_step, input.has_mesh_deformation ),
+                    input.destination_directory, input.destination_prefix, input.output_profile );
+            }
+            else
+            {
+                return std::nullopt;
+            }
+        }
+        else if ( extension == ".case" )
+        {
+            if ( input.is_binary > 0 )
+            {
+                return ::Case2Kvsml<cvt::EnSightGoldBinary>(
+                    input.destination_directory, input.destination_prefix,
+                    input.source_file_paths[0], input.target_index, input.output_profile );
+            }
+            else
+            {
+                return ::Case2Kvsml<cvt::EnSightGold<>>(
+                    input.destination_directory, input.destination_prefix,
+                    input.source_file_paths[0], input.target_index, input.output_profile );
+            }
+        }
+        else if ( extension == ".cgns" )
+        {
+            return ::OutputConvertProfile(
+                ::ConvertMultiBlockToKvsml<cvt::Cgns>(
+                    input.destination_directory, input.destination_prefix, input.source_file_paths,
+                    input.target_index, input.time_step, input.last_time_step,
+                    input.has_mesh_deformation, input.source_grid_type ),
+                input.destination_directory, input.destination_prefix, input.output_profile );
+            return std::nullopt;
+        }
+        else if ( extension == ".vtm" )
+        {
+            return ::OutputConvertProfile(
+                ::ConvertMultiBlockToKvsml<cvt::VtkXmlMultiBlock>(
+                    input.destination_directory, input.destination_prefix, input.source_file_paths,
+                    input.target_index, input.time_step, input.last_time_step,
+                    input.has_mesh_deformation, input.source_grid_type ),
+                input.destination_directory, input.destination_prefix, input.output_profile );
+        }
+        else if ( extension == ".xyz" )
+        {
+            return ::OutputConvertProfile(
+                ::Plot3d2Kvsml( input.destination_directory, input.destination_prefix,
+                                input.source_file_paths, input.q, input.f, input.target_index,
+                                input.time_step, input.last_time_step, input.has_mesh_deformation,
+                                input.source_grid_type ),
+                input.destination_directory, input.destination_prefix, input.output_profile );
+        }
+        else if ( extension == ".stl" )
+        {
+            return Stl2Kvsml( input.destination_directory, input.destination_prefix,
+                              input.source_file_paths, input.target_index, input.time_step );
+        }
+        else
+        {
+            return std::nullopt;
+        }
+    }
+    catch ( std::exception& e )
+    {
+        std::cerr << e.what() << std::endl;
+        return std::nullopt;
+    }
+    catch ( ... )
+    {
+        return std::nullopt;
+    }
+}

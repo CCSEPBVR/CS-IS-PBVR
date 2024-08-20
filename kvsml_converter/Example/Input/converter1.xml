@@ -1,0 +1,222 @@
+<kvsmlConverter version="0">
+  <target>
+    <input>
+      <distributed stepId="0" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeVti</directoryPath>
+        <wildcard>union.*.0.vti</wildcard>
+      </distributed>
+      <distributed stepId="1" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeVti</directoryPath>
+        <wildcard>union.*.1.vti</wildcard>
+      </distributed>
+      <distributed stepId="2" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeVti</directoryPath>
+        <wildcard>union.*.2.vti</wildcard>
+      </distributed>
+      <distributed stepId="3" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeVti</directoryPath>
+        <wildcard>union.*.3.vti</wildcard>
+      </distributed>
+      <distributed stepId="4" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeVti</directoryPath>
+        <wildcard>union.*.4.vti</wildcard>
+      </distributed>
+      <distributed stepId="5" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeVti</directoryPath>
+        <wildcard>union.*.5.vti</wildcard>
+      </distributed>
+      <distributed stepId="6" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeVti</directoryPath>
+        <wildcard>union.*.6.vti</wildcard>
+      </distributed>
+      <distributed stepId="7" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeVti</directoryPath>
+        <wildcard>union.*.7.vti</wildcard>
+      </distributed>
+    </input>
+    <output>
+      <directoryPath>
+        /tmp/union
+      </directoryPath>
+      <prefix>
+        union
+      </prefix>
+    </output>
+  </target>
+  <target>
+    <input>
+      <distributed stepId="0" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeHexa</directoryPath>
+        <wildcard>large_hexa.*.0.vtu</wildcard>
+      </distributed>
+      <distributed stepId="1" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeHexa</directoryPath>
+        <wildcard>large_hexa.*.1.vtu</wildcard>
+      </distributed>
+      <distributed stepId="2" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeHexa</directoryPath>
+        <wildcard>large_hexa.*.2.vtu</wildcard>
+      </distributed>
+      <distributed stepId="3" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeHexa</directoryPath>
+        <wildcard>large_hexa.*.3.vtu</wildcard>
+      </distributed>
+      <distributed stepId="4" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeHexa</directoryPath>
+        <wildcard>large_hexa.*.4.vtu</wildcard>
+      </distributed>
+      <distributed stepId="5" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeHexa</directoryPath>
+        <wildcard>large_hexa.*.5.vtu</wildcard>
+      </distributed>
+      <distributed stepId="6" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeHexa</directoryPath>
+        <wildcard>large_hexa.*.6.vtu</wildcard>
+      </distributed>
+      <distributed stepId="7" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeHexa</directoryPath>
+        <wildcard>large_hexa.*.7.vtu</wildcard>
+      </distributed>
+    </input>
+    <output>
+      <directoryPath>
+        /tmp/large_hexa
+      </directoryPath>
+      <prefix>
+        large_hexa
+      </prefix>
+    </output>
+  </target>
+  <target>
+    <input>
+      <distributed stepId="0" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargePrism</directoryPath>
+        <wildcard>large_prism.*.0.vtu</wildcard>
+      </distributed>
+      <distributed stepId="1" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargePrism</directoryPath>
+        <wildcard>large_prism.*.1.vtu</wildcard>
+      </distributed>
+      <distributed stepId="2" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargePrism</directoryPath>
+        <wildcard>large_prism.*.2.vtu</wildcard>
+      </distributed>
+      <distributed stepId="3" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargePrism</directoryPath>
+        <wildcard>large_prism.*.3.vtu</wildcard>
+      </distributed>
+      <distributed stepId="4" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargePrism</directoryPath>
+        <wildcard>large_prism.*.4.vtu</wildcard>
+      </distributed>
+      <distributed stepId="5" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargePrism</directoryPath>
+        <wildcard>large_prism.*.5.vtu</wildcard>
+      </distributed>
+      <distributed stepId="6" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargePrism</directoryPath>
+        <wildcard>large_prism.*.6.vtu</wildcard>
+      </distributed>
+      <distributed stepId="7" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargePrism</directoryPath>
+        <wildcard>large_prism.*.7.vtu</wildcard>
+      </distributed>
+    </input>
+    <output>
+      <directoryPath>
+        /tmp/large_prism
+      </directoryPath>
+      <prefix>
+        large_prism
+      </prefix>
+    </output>
+  </target>
+  <target>
+    <input>
+      <distributed stepId="0" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargePyramid</directoryPath>
+        <wildcard>large_pyramid.*.0.vtu</wildcard>
+      </distributed>
+      <distributed stepId="1" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargePyramid</directoryPath>
+        <wildcard>large_pyramid.*.1.vtu</wildcard>
+      </distributed>
+      <distributed stepId="2" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargePyramid</directoryPath>
+        <wildcard>large_pyramid.*.2.vtu</wildcard>
+      </distributed>
+      <distributed stepId="3" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargePyramid</directoryPath>
+        <wildcard>large_pyramid.*.3.vtu</wildcard>
+      </distributed>
+      <distributed stepId="4" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargePyramid</directoryPath>
+        <wildcard>large_pyramid.*.4.vtu</wildcard>
+      </distributed>
+      <distributed stepId="5" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargePyramid</directoryPath>
+        <wildcard>large_pyramid.*.5.vtu</wildcard>
+      </distributed>
+      <distributed stepId="6" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargePyramid</directoryPath>
+        <wildcard>large_pyramid.*.6.vtu</wildcard>
+      </distributed>
+      <distributed stepId="7" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargePyramid</directoryPath>
+        <wildcard>large_pyramid.*.7.vtu</wildcard>
+      </distributed>
+    </input>
+    <output>
+      <directoryPath>
+        /tmp/large_pyramid
+      </directoryPath>
+      <prefix>
+        large_pyramid
+      </prefix>
+    </output>
+  </target>
+  <target>
+    <input>
+      <distributed stepId="0" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeTetra</directoryPath>
+        <wildcard>large_tetra.*.0.vtu</wildcard>
+      </distributed>
+      <distributed stepId="1" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeTetra</directoryPath>
+        <wildcard>large_tetra.*.1.vtu</wildcard>
+      </distributed>
+      <distributed stepId="2" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeTetra</directoryPath>
+        <wildcard>large_tetra.*.2.vtu</wildcard>
+      </distributed>
+      <distributed stepId="3" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeTetra</directoryPath>
+        <wildcard>large_tetra.*.3.vtu</wildcard>
+      </distributed>
+      <distributed stepId="4" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeTetra</directoryPath>
+        <wildcard>large_tetra.*.4.vtu</wildcard>
+      </distributed>
+      <distributed stepId="5" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeTetra</directoryPath>
+        <wildcard>large_tetra.*.5.vtu</wildcard>
+      </distributed>
+      <distributed stepId="6" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeTetra</directoryPath>
+        <wildcard>large_tetra.*.6.vtu</wildcard>
+      </distributed>
+      <distributed stepId="7" lastStepId="7">
+        <directoryPath>../Example/Input/Large/LargeTetra</directoryPath>
+        <wildcard>large_tetra.*.7.vtu</wildcard>
+      </distributed>
+    </input>
+    <output>
+      <directoryPath>
+        /tmp/large_tetra
+      </directoryPath>
+      <prefix>
+        large_tetra
+      </prefix>
+    </output>
+  </target>
+</kvsmlConverter>

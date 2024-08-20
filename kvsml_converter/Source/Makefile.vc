@@ -54,9 +54,9 @@
 #=============================================================================
 #  INCLUDE_PATH, LIBRARY_PATH, LINK_LIBRARY, INSTALL_DIR.
 #=============================================================================
-INCLUDE_PATH = /I. $(KVS_INCLUDE_OPTION) $(VTK_INCLUDE_OPTION)
-LIBRARY_PATH = $(KVS_LIBRARY_OPTION) $(VTK_LIBRARY_OPTION)
-LINK_LIBRARY = $(KVS_LINK_LIBRARY) $(VTK_LINK_LIBRARY)
+INCLUDE_PATH = /I. $(KVS_INCLUDE_OPTION) $(VTK_INCLUDE_OPTION) $(MPI_INCLUDE_OPTION)
+LIBRARY_PATH = $(KVS_LIBRARY_OPTION) $(VTK_LIBRARY_OPTION) $(MPI_LIBRARY_OPTION)
+LINK_LIBRARY = $(KVS_LINK_LIBRARY) $(VTK_LINK_LIBRARY) $(MPI_LINK_LIBRARY)
 INSTALL_DIR  = $(INSTALL_PREFIX)
 
 
@@ -70,7 +70,10 @@ INSTALL_DIR  = $(INSTALL_PREFIX)
 #  Project name.
 #=============================================================================
 TARGET_LIB = $(OUTDIR)\$(LIB_KVSML_CONVERTER)
-
+TARGET_EXE = $(OUTDIR)\$(KVSML_CONVERTER_BIN)
+!IFDEF CVT_ENABLE_MPI
+TARGET_EXE_MPI = $(OUTDIR)\$(KVSML_CONVERTER_MPI_BIN)
+!ENDIF
 
 #=============================================================================
 #  Build rule.
@@ -83,11 +86,27 @@ $**
 .h.cpp::
 
 
+$(TARGET_EXE): $(OUTDIR)/kvsml-converter.obj $(OBJECTS)
+	$(LD) $(LDFLAGS) $(LIBRARY_PATH) /OUT:$@ $** $(LINK_LIBRARY)
+	mt -nologo -manifest $@.manifest -outputresource:$@;1
+	$(RM) $@.manifest
+
+!IFDEF CVT_ENABLE_MPI
+$(TARGET_EXE_MPI): $(TARGET_LIB) $(MPI_OBJECTS)
+	$(LD) $(LDFLAGS) $(LIBRARY_PATH) /OUT:$@ $** $(LINK_LIBRARY)
+	mt -nologo -manifest $@.manifest -outputresource:$@;1
+	$(RM) $@.manifest
+!ENDIF
+
+
 #=============================================================================
 #  build.
 #=============================================================================
 build:: $(TARGET_LIB)
-
+build:: $(TARGET_EXE)
+!IFDEF CVT_ENABLE_MPI
+build:: $(TARGET_EXE_MPI)
+!ENDIF
 
 #=============================================================================
 #  clean.
@@ -102,3 +121,11 @@ clean::
 install::
 	IF NOT EXIST "$(INSTALL_DIR)\lib" $(MKDIR) "$(INSTALL_DIR)\lib"
 	$(INSTALL) $(TARGET_LIB) "$(INSTALL_DIR)\lib"
+install::
+	IF NOT EXIST "$(INSTALL_DIR)\bin" $(MKDIR) "$(INSTALL_DIR)\bin"
+	$(INSTALL) $(TARGET_EXE) "$(INSTALL_DIR)\bin"
+!IFDEF CVT_ENABLE_MPI
+install::
+	IF NOT EXIST "$(INSTALL_DIR)\bin" $(MKDIR) "$(INSTALL_DIR)\bin"
+	$(INSTALL) $(TARGET_EXE_MPI) "$(INSTALL_DIR)\bin"
+!ENDIF

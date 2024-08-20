@@ -17,15 +17,120 @@
 #ifndef CVT__UNSTRUCTURED_PFI_H_INCLUDE
 #define CVT__UNSTRUCTURED_PFI_H_INCLUDE
 
+#include <limits>
 #include <string>
 #include <vector>
 
+#include "kvs/AnyValueArray"
 #include "kvs/KVSMLStructuredVolumeObject"
 #include "kvs/KVSMLUnstructuredVolumeObject"
 #include "kvs/Message"
 #include "kvs/Vector3"
 
+#include "Converter/ConverterTaskOutput.h"
 #include "Filesystem.h"
+
+namespace cvt
+{
+namespace detail
+{
+template <typename Array>
+inline std::tuple<std::vector<float>, std::vector<float>> GetMinMaxValuesImpl( const Array& array,
+                                                                               int veclen,
+                                                                               int number_of_nodes )
+{
+    std::tuple<std::vector<float>, std::vector<float>> minmax(
+        std::vector<float>( veclen, std::numeric_limits<float>::max() ),
+        std::vector<float>( veclen, std::numeric_limits<float>::lowest() ) );
+    auto& mins = std::get<0>( minmax );
+    auto& maxes = std::get<1>( minmax );
+
+    for ( int v = 0; v < veclen; ++v )
+    {
+        auto min = static_cast<float>( *std::min_element(
+            array.data() + v * number_of_nodes, array.data() + ( v + 1 ) * number_of_nodes ) );
+        auto max = static_cast<float>( *std::max_element(
+            array.data() + v * number_of_nodes, array.data() + ( v + 1 ) * number_of_nodes ) );
+
+        mins[v] = std::min( min, mins[v] );
+        maxes[v] = std::max( max, maxes[v] );
+    }
+
+    return minmax;
+}
+
+inline std::tuple<std::vector<float>, std::vector<float>> GetMinMaxValues(
+    const kvs::AnyValueArray& array, int veclen, int number_of_nodes )
+{
+    switch ( array.typeID() )
+    {
+    case kvs::Type::TypeID::TypeReal32: {
+        auto values = array.template asValueArray<kvs::Real32>();
+        return cvt::detail::GetMinMaxValuesImpl( values, veclen, number_of_nodes );
+    }
+    case kvs::Type::TypeID::TypeInt8: {
+        auto values = array.template asValueArray<kvs::Int8>();
+        return cvt::detail::GetMinMaxValuesImpl( values, veclen, number_of_nodes );
+    }
+    case kvs::Type::TypeID::TypeInt16: {
+        auto values = array.template asValueArray<kvs::Int16>();
+        return cvt::detail::GetMinMaxValuesImpl( values, veclen, number_of_nodes );
+    }
+    case kvs::Type::TypeID::TypeInt32: {
+        auto values = array.template asValueArray<kvs::Int32>();
+        return cvt::detail::GetMinMaxValuesImpl( values, veclen, number_of_nodes );
+    }
+    case kvs::Type::TypeID::TypeInt64: {
+        auto values = array.template asValueArray<kvs::Int64>();
+        return cvt::detail::GetMinMaxValuesImpl( values, veclen, number_of_nodes );
+    }
+    case kvs::Type::TypeID::TypeUInt8: {
+        auto values = array.template asValueArray<kvs::UInt8>();
+        return cvt::detail::GetMinMaxValuesImpl( values, veclen, number_of_nodes );
+    }
+    case kvs::Type::TypeID::TypeUInt16: {
+        auto values = array.template asValueArray<kvs::UInt16>();
+        return cvt::detail::GetMinMaxValuesImpl( values, veclen, number_of_nodes );
+    }
+    case kvs::Type::TypeID::TypeUInt32: {
+        auto values = array.template asValueArray<kvs::UInt32>();
+        return cvt::detail::GetMinMaxValuesImpl( values, veclen, number_of_nodes );
+    }
+    case kvs::Type::TypeID::TypeUInt64: {
+        auto values = array.template asValueArray<kvs::UInt64>();
+        return cvt::detail::GetMinMaxValuesImpl( values, veclen, number_of_nodes );
+    }
+    case kvs::Type::TypeID::TypeReal64:
+    default: {
+        auto values = array.template asValueArray<kvs::Real64>();
+        return cvt::detail::GetMinMaxValuesImpl( values, veclen, number_of_nodes );
+    }
+    }
+}
+
+inline void MinVec3( kvs::Vec3& v0, const kvs::Vec3& v1 )
+{
+    v0[0] = std::min( v0[0], v1[0] );
+    v0[1] = std::min( v0[1], v1[1] );
+    v0[2] = std::min( v0[2], v1[2] );
+}
+
+inline void MaxVec3( kvs::Vec3& v0, const kvs::Vec3& v1 )
+{
+    v0[0] = std::max( v0[0], v1[0] );
+    v0[1] = std::max( v0[1], v1[1] );
+    v0[2] = std::max( v0[2], v1[2] );
+}
+} // namespace detail
+} // namespace cvt
+
+namespace cvt
+{
+namespace detail
+{
+int GetKvsCellTypeId( const std::string& cell_type_expr );
+} // namespace detail
+} // namespace cvt
 
 namespace cvt
 {
@@ -66,6 +171,13 @@ public:
      */
     void registerObject( kvs::KVSMLStructuredVolumeObject* object, int time_step = 0,
                          int sub_volume_id = 0 );
+    /**
+     * Register a file for a PFI file.
+     *
+     * \param[in] output A data from a converter task.
+     * \param[in] key A local file name prefix.
+     */
+    void registerObject( const ConverterTaskOutput* output, const std::string& key );
     /**
      * Write to a PFI file.
      *
@@ -127,10 +239,14 @@ public:
     void print( Stream& stream, int indent_count = 0 )
     {
         std::string indent( indent_count, ' ' );
-        std::cout << indent << "Type of element : " << type_of_elements << std::endl;
+        std::cout << indent << "Type of element : " << type_of_cells << std::endl;
         std::cout << indent << "Last time step : " << last_time_step << std::endl;
         std::cout << indent << "Max sub volume ID : " << max_sub_volume_id << std::endl;
         std::cout << indent << "Number of components : " << number_of_component << std::endl;
+        std::cout << std::string( indent_count + 4, ' ' )
+                  << "Min. externals: " << min_external_coords << std::endl;
+        std::cout << std::string( indent_count + 4, ' ' )
+                  << "Max. externals: " << max_external_coords << std::endl;
 
         for ( int time_step = 0; time_step <= last_time_step; ++time_step )
         {
@@ -143,15 +259,11 @@ public:
                 std::cout << std::string( indent_count + 4, ' ' )
                           << "Node count : " << node_counts[time_step][s] << std::endl;
                 std::cout << std::string( indent_count + 4, ' ' )
-                          << "Element count : " << element_counts[time_step][s] << std::endl;
+                          << "Element count : " << cell_counts[time_step][s] << std::endl;
                 std::cout << std::string( indent_count + 4, ' ' )
                           << "Min. coords: " << min_object_coords[time_step][s] << std::endl;
                 std::cout << std::string( indent_count + 4, ' ' )
                           << "Max. coords: " << max_object_coords[time_step][s] << std::endl;
-                std::cout << std::string( indent_count + 4, ' ' )
-                          << "Min. externals: " << min_external_coords[time_step][s] << std::endl;
-                std::cout << std::string( indent_count + 4, ' ' )
-                          << "Max. externals: " << max_external_coords[time_step][s] << std::endl;
             }
 
             for ( int i = 0; i < number_of_component; ++i )
@@ -168,10 +280,10 @@ private:
     int max_sub_volume_id;
     int last_time_step;
     std::vector<std::vector<int>> node_counts;
-    std::vector<std::vector<int>> element_counts;
-    int type_of_elements;
-    std::vector<std::vector<kvs::Vec3>> min_external_coords;
-    std::vector<std::vector<kvs::Vec3>> max_external_coords;
+    std::vector<std::vector<int>> cell_counts;
+    int type_of_cells;
+    kvs::Vec3 min_external_coords;
+    kvs::Vec3 max_external_coords;
     std::vector<std::vector<kvs::Vec3>> min_object_coords;
     std::vector<std::vector<kvs::Vec3>> max_object_coords;
     std::vector<std::vector<float>> min_values;

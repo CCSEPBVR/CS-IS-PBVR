@@ -44,12 +44,20 @@
 #  DON'T EDIT THIS FILE.
 
 OBJECTS = \
-$(OUTDIR)/PBVRFileInformation/UnstructuredPfi.obj \
+$(OUTDIR)/Converter/ConverterTaskOutput.obj \
+$(OUTDIR)/Converter/ConverterTaskInput.obj \
+$(OUTDIR)/Converter/ConverterTask.obj \
+$(OUTDIR)/Converter/ConverterInputs.obj \
 $(OUTDIR)/Exporter/UnstructuredVolumeObjectExporter.obj \
 $(OUTDIR)/Exporter/StructuredVolumeObjectExporter.obj \
 $(OUTDIR)/FileFormat/VtkCompositeDataSetFileFormat.obj \
-$(OUTDIR)/Importer/VtkImport.obj
+$(OUTDIR)/Importer/VtkImport.obj \
+$(OUTDIR)/PBVRFileInformation/UnstructuredPfi.obj
 
+
+$(OUTDIR)/kvsml-converter.obj:
+	IF NOT EXIST $(OUTDIR) $(MKDIR) $(OUTDIR)
+	$(CPP) /c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) /Fo$(OUTDIR)/ ./kvsml-converter.cpp
 
 {.\PBVRFileInformation\}.cpp{$(OUTDIR)\PBVRFileInformation\}.obj::
 	IF NOT EXIST $(OUTDIR)\PBVRFileInformation $(MKDIR) $(OUTDIR)\PBVRFileInformation
@@ -74,6 +82,31 @@ $<
 	$(CPP) /c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) /Fo$(OUTDIR)\Importer\ @<<
 $<
 <<
+
+{.\Converter\}.cpp{$(OUTDIR)\Converter\}.obj::
+	IF NOT EXIST $(OUTDIR)\Converter $(MKDIR) $(OUTDIR)\Converter
+	$(CPP) /c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) /Fo$(OUTDIR)\Converter\ @<<
+$<
+<<
+
+
+!IFDEF CVT_ENABLE_MPI
+MPI_OBJECTS = \
+$(OUTDIR)/kvsml-converter-mpi.obj \
+$(OUTDIR)/MPIRunner/MpiMainProcess.obj \
+$(OUTDIR)/MPIRunner/MpiSubProcess.obj
+
+
+{.\MPIRunner\}.cpp{$(OUTDIR)\MPIRunner\}.obj::
+	IF NOT EXIST $(OUTDIR)\MPIRunner $(MKDIR) $(OUTDIR)\MPIRunner
+	$(CPP) /c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) /Fo$(OUTDIR)\MPIRunner\ @<<
+$<
+<<
+
+$(OUTDIR)/kvsml-converter-mpi.obj: ./kvsml-converter-mpi.cpp
+	IF NOT EXIST $(OUTDIR) $(MKDIR) $(OUTDIR)
+	$(CPP) /c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) /Fo$(OUTDIR)/ ./kvsml-converter-mpi.cpp
+!ENDIF
 
 
 install::
@@ -103,3 +136,11 @@ install::
 	$(INSTALL) .\TimeSeriesFiles\*.h $(INSTALL_DIR)\include\TimeSeriesFiles
 	IF NOT EXIST $(INSTALL_DIR)\include\TimeSeriesFiles\EnSight $(MKDIR) $(INSTALL_DIR)\include\TimeSeriesFiles\EnSight
 	$(INSTALL) .\TimeSeriesFiles\EnSight\*.h $(INSTALL_DIR)\include\TimeSeriesFiles\EnSight
+
+!IFDEF CVT_ENABLE_MPI
+install::
+	IF NOT EXIST $(INSTALL_DIR)\include\Converter $(MKDIR) $(INSTALL_DIR)\include\Converter
+	$(INSTALL) .\Converter\*.h $(INSTALL_DIR)\include\Converter
+	IF NOT EXIST $(INSTALL_DIR)\include\MPIRunner $(MKDIR) $(INSTALL_DIR)\include\MPIRunner
+	$(INSTALL) .\MPIRunner\*.h $(INSTALL_DIR)\include\MPIRunner
+!ENDIF

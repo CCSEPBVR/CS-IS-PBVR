@@ -2,21 +2,21 @@
 
 ## サンプルコードの簡易実行
 
-ビルド成功後, Example/Release, またはインストール先/binにkvsml-converterというバイナリが生成されます.
+ビルド成功後, Example/Release, またはインストール先/binにkvsml-exampleというバイナリが生成されます.
 
 このバイナリはExample/Input以下の特定のファイルを入力とし, Example以下のサンプルコード例を実行するものです.
 
 ここではもっとも単純なvtu2kvsmlを以下実行します.
 
 ```bash
-<パス>/kvsml-converter vtu2kvsml <Example/Inputへのパス> <出力先>
+<パス>/kvsml-example vtu2kvsml <Example/Inputへのパス> <出力先>
 ```
 
-もし, kvsml-converterのルートディレクトリがカレントディレクトリであるならば, 以下コマンドとなります.
+もし, kvsml-exampleのルートディレクトリがカレントディレクトリであるならば, 以下コマンドとなります.
 
 ```bash
 # 出力先を./fire_ug
-Example/Release/kvsml-converter vtu2kvsml ./Example/Input ./fire_ug
+Example/Release/kvsml-example vtu2kvsml ./Example/Input ./fire_ug
 ```
 
 実行すると, 以下ファイルが作成されます.

@@ -49,3 +49,12 @@
 | Vertex                 | 節点要素非構造格子                                                                         |
 | Vti                    | 時系列構造格子                                                                             |
 | VTKExamples            | [Kitware/vtk-examples](https://gitlab.kitware.com/vtk/vtk-examples) (外部リポジトリ)           |
+
+# 設定ファイル例
+
+以下 Example/Input 以下に格納されています.
+
+| ファイル名        | 概要                                                |
+| ----------------- | --------------------------------------------------- |
+| convert\*.xml     | kvsml-converter, kvsml-converter-mpi の入力ファイル |
+| merge-config0.xml | マルチブロックデータのマージ設定ファイル例          |

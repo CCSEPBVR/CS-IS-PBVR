@@ -54,16 +54,16 @@
 #=============================================================================
 #  INCLUDE_PATH, LIBRARY_PATH, LINK_LIBRARY, INSTALL_DIR.
 #=============================================================================
-INCLUDE_PATH = /I..\Source $(KVS_INCLUDE_OPTION) $(VTK_INCLUDE_OPTION)
-LIBRARY_PATH = /LIBPATH:..\Source\$(OUTDIR) $(KVS_LIBRARY_OPTION) $(VTK_LIBRARY_OPTION)
-LINK_LIBRARY = $(LIB_KVSML_CONVERTER) $(KVS_LINK_LIBRARY) $(VTK_LINK_LIBRARY)
+INCLUDE_PATH = /I..\Source $(KVS_INCLUDE_OPTION) $(VTK_INCLUDE_OPTION) $(MPI_INCLUDE_OPTION)
+LIBRARY_PATH = /LIBPATH:..\Source\$(OUTDIR) $(KVS_LIBRARY_OPTION) $(VTK_LIBRARY_OPTION) $(MPI_LIBRARY_OPTION)
+LINK_LIBRARY = $(LIB_KVSML_CONVERTER) $(KVS_LINK_LIBRARY) $(VTK_LINK_LIBRARY) $(MPI_LINK_LIBRARY)
 INSTALL_DIR  = $(INSTALL_PREFIX)
 
 
 #=============================================================================
 #  Project name.
 #=============================================================================
-PROJECT_NAME = kvsml-converter
+PROJECT_NAME = kvsml-example
 
 TARGET_EXE = $(OUTDIR)\$(PROJECT_NAME).exe
 

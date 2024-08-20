@@ -10,10 +10,16 @@
  */
 #include <iostream>
 
+#include <vtkXMLPolyDataWriter.h>
+#include <vtkXMLUnstructuredGridWriter.h>
+
+#include "kvs/KVSMLPolygonObject"
 #include "kvs/ObjectBase"
+#include "kvs/PolygonExporter"
 #include "kvs/PolygonObject"
 
 #include "Exporter/UnstructuredVolumeObjectExporter.h"
+#include "FileFormat/STL/Stl.h"
 #include "FileFormat/VTK/VtkXmlImageData.h"
 #include "FileFormat/VTK/VtkXmlMultiBlock.h"
 #include "FileFormat/VTK/VtkXmlPolyData.h"
@@ -174,4 +180,50 @@ void SeriesVtm2Kvsml( const std::string& directory, const std::string& base,
         pfl.registerPfi( directory, local_base );
     }
     pfl.write( directory, base );
+}
+
+void MergeBlock( const std::string& dst, const std::string& src, const std::string& config_path )
+{
+    std::cout << "Reading " << src << " ..." << std::endl;
+    cvt::VtkXmlMultiBlock input_vtm( src );
+    auto unstructured_grid = input_vtm.mergeBlocks( config_path );
+
+    cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer(
+        dynamic_cast<cvt::VtkXmlUnstructuredGrid*>( unstructured_grid.get() ) );
+    importer.print( std::cout, kvs::Indent( 2 ) );
+
+    auto vtk_data = dynamic_cast<cvt::VtkXmlUnstructuredGrid*>( unstructured_grid.get() )->get();
+    vtkNew<vtkXMLUnstructuredGridWriter> writer;
+    writer->SetFileName( dst.c_str() );
+    writer->SetInputData( vtk_data );
+    writer->Write();
+}
+
+void MergeBlockAsPolygon( const std::string& dst_vtk, const std::string& dst_kvsml,
+                          const std::string& dst_stl, const std::string& src,
+                          const std::string& config_path )
+{
+    std::cout << "Reading " << src << " ..." << std::endl;
+    cvt::VtkXmlMultiBlock input_vtm( src );
+    auto polygons = input_vtm.mergeBlocksAsPolygon( config_path );
+
+    cvt::VtkImporter<cvt::VtkXmlPolyData> importer( polygons.get() );
+    importer.print( std::cout, kvs::Indent( 2 ) );
+
+    auto vtk_data = polygons->get();
+    vtkNew<vtkXMLPolyDataWriter> writer;
+    writer->SetFileName( dst_vtk.c_str() );
+    writer->SetInputData( vtk_data );
+    writer->Write();
+
+    kvs::PolygonExporter<kvs::KVSMLPolygonObject> exporter( &importer );
+    exporter.setWritingDataTypeToExternalBinary();
+    exporter.write( dst_kvsml );
+
+    // only for triangle elements
+    /*
+    kvs::PolygonExporter<kvs::Stl> stl_exporter( &importer );
+    exporter.setWritingDataTypeToExternalBinary();
+    exporter.write( dst_stl );
+    */
 }

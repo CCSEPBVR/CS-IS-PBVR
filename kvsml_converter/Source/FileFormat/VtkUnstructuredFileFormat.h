@@ -281,13 +281,10 @@ private:
     {
         auto data = this->get();
 
-        if ( data->GetNumberOfPoints() > 0 )
+        if ( data )
         {
-            for ( vtkIdType i = 0; i < data->GetNumberOfCells(); ++i )
-            {
-                auto cell = data->GetCell( i );
-                m_cell_types.insert( cell->GetCellType() );
-            }
+            auto cell_types = data->GetDistinctCellTypesArray();
+            m_cell_types.insert( cell_types->Begin(), cell_types->End() );
         }
     }
 

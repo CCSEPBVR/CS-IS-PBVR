@@ -42,6 +42,10 @@ void SeriesPvtu2KvsmlWhole( const std::string& directory, const std::string& bas
 void AccessToVtm( const std::string& src );
 void SeriesVtm2Kvsml( const std::string& directory, const std::string& base,
                       const std::string& src );
+void MergeBlock( const std::string& dst, const std::string& src, const std::string& config_path );
+void MergeBlockAsPolygon( const std::string& dst_vtk, const std::string& dst_kvsml,
+                          const std::string& dst_stl, const std::string& src,
+                          const std::string& config_path );
 void Case2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void Cgns2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 
@@ -193,7 +197,7 @@ int main( int argc, char** argv )
         fs::path src = input_directory;
         src /= "Vti";
         src /= "union_*.vti";
-        SeriesVti2Kvsml( output_directory, "union", src.string() );
+        SeriesVti2Kvsml( output_directory, "union", src.generic_string() );
     }
     else if ( example_name == "vts2kvsml" )
     {
@@ -214,22 +218,22 @@ int main( int argc, char** argv )
     }
     else if ( example_name == "avsucd2kvsml" )
     {
-      /*
+        /*
         fs::path src = input_directory;
         src /= "frontstr.inp";
         fs::path dst = output_directory;
         dst /= "AVS";
         mkdir( dst );
         AvsUcd2Kvsml( dst.string(), "frontstr", src.string() );
-      */
-      fs::path src = input_directory;
-      src /= "pbvr_sample_data";
-      src /= "ucd";
-      src /= "spx.inp";
-      fs::path dst = output_directory;
-      dst /= "AVS";
-      mkdir( dst );
-      AvsUcd2Kvsml( dst.string(), "spx", src.string() );
+        */
+        fs::path src = input_directory;
+        src /= "pbvr_sample_data";
+        src /= "ucd";
+        src /= "spx.inp";
+        fs::path dst = output_directory;
+        dst /= "AVS";
+        mkdir( dst );
+        AvsUcd2Kvsml( dst.string(), "spx", src.string() );
     }
     else if ( example_name == "vtu2kvsml" )
     {
@@ -252,7 +256,7 @@ int main( int argc, char** argv )
         fs::path dst_t = output_directory;
         dst_t /= "Tetra";
         mkdir( dst_t );
-        SeriesVtu2Kvsml( dst_t.string(), "tetra_only", pattern_t.string() );
+        SeriesVtu2Kvsml( dst_t.string(), "tetra_only", pattern_t.generic_string() );
 
         fs::path pattern_h = input_directory;
         pattern_h /= "Hex";
@@ -260,7 +264,7 @@ int main( int argc, char** argv )
         fs::path dst_h = output_directory;
         dst_h /= "Hex";
         mkdir( dst_h );
-        SeriesVtu2Kvsml( dst_h.string(), "hex_only", pattern_h.string() );
+        SeriesVtu2Kvsml( dst_h.string(), "hex_only", pattern_h.generic_string() );
 
         fs::path pattern_th = input_directory;
         pattern_th /= "TetraAndHex";
@@ -268,7 +272,7 @@ int main( int argc, char** argv )
         fs::path dst_th = output_directory;
         dst_th /= "TetraAndHex";
         mkdir( dst_th );
-        SeriesVtu2Kvsml( dst_th.string(), "tetra_and_hex", pattern_th.string() );
+        SeriesVtu2Kvsml( dst_th.string(), "tetra_and_hex", pattern_th.generic_string() );
     }
     else if ( example_name == "point2kvsml" )
     {
@@ -313,12 +317,12 @@ int main( int argc, char** argv )
         fs::path dst_p = output_directory;
         dst_p /= "Piece";
         mkdir( dst_p );
-        SeriesPvtu2Kvsml( dst_p.string(), "example", src.string() );
+        SeriesPvtu2Kvsml( dst_p.string(), "example", src.generic_string() );
 
         fs::path dst_w = output_directory;
         dst_w /= "Whole";
         mkdir( dst_w );
-        SeriesPvtu2KvsmlWhole( dst_w.string(), "example", src.string() );
+        SeriesPvtu2KvsmlWhole( dst_w.string(), "example", src.generic_string() );
     }
     else if ( example_name == "accessvtm" )
     {
@@ -335,7 +339,32 @@ int main( int argc, char** argv )
         fs::path dst = output_directory;
         dst /= "UnstructuredMultiBlock";
         mkdir( dst );
-        SeriesVtm2Kvsml( dst.string(), "multiblock", src.string() );
+        SeriesVtm2Kvsml( dst.string(), "multiblock", src.generic_string() );
+    }
+    else if ( example_name == "mergeblock" )
+    {
+        fs::path src = input_directory;
+        src /= "MultiBlock";
+        src /= "multiblock_0.vtm";
+        fs::path config_path = input_directory;
+        config_path /= "merge-config0.xml";
+        fs::path dst = output_directory;
+        dst /= "MergedBlock";
+        mkdir( dst );
+        dst /= "merged_grid.vtu";
+        MergeBlock( dst.string(), src.string(), config_path.string() );
+
+        fs::path dst_vtk = output_directory;
+        dst_vtk /= "MergedBlock";
+        dst_vtk /= "merged_polygon.vtp";
+        fs::path dst_kvsml = output_directory;
+        dst_kvsml /= "MergedBlock";
+        dst_kvsml /= "merged_polygon.kvsml";
+        fs::path dst_stl = output_directory;
+        dst_stl /= "MergedBlock";
+        dst_stl /= "merged_polygon.stl";
+        MergeBlockAsPolygon( dst_vtk.string(), dst_kvsml.string(), dst_stl.string(), src.string(),
+                             config_path.string() );
     }
     else if ( example_name == "case2kvsml" )
     {

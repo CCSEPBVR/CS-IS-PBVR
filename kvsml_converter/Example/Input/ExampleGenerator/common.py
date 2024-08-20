@@ -67,10 +67,11 @@ def append_cell_data(point_data_set, offset=0):
     point_data_set.GetCellData().AddArray(dist)
 
 
-def make_hexahedron_only_mesh(dimensions, origin=[0, 0, 0], time_step=0):
+def make_hexahedron_only_mesh(dimensions, origin=[0, 0, 0], time_step=0, spacing=[1.0, 1.0, 1.0]):
     image_data = vtk.vtkImageData()
     image_data.SetDimensions(dimensions)
     image_data.SetOrigin(origin)
+    image_data.SetSpacing(spacing)
 
     itos = vtk.vtkImageToStructuredGrid()
     itos.SetInputData(image_data)
@@ -103,10 +104,12 @@ def make_hexahedron_only_mesh(dimensions, origin=[0, 0, 0], time_step=0):
     return unstructured_grid
 
 
-def make_tetrahedron_only_mesh(dimensions, origin=[0, 0, 0], time_step=0):
+def make_tetrahedron_only_mesh(
+        dimensions, origin=[0, 0, 0], time_step=0, spacing=[1.0, 1.0, 1.0]):
     image_data = vtk.vtkImageData()
     image_data.SetDimensions(dimensions)
     image_data.SetOrigin(origin)
+    image_data.SetSpacing(spacing)
 
     itos = vtk.vtkImageToStructuredGrid()
     itos.SetInputData(image_data)
@@ -152,10 +155,12 @@ def make_tetrahedron_only_mesh(dimensions, origin=[0, 0, 0], time_step=0):
     return unstructured_grid
 
 
-def make_pyramid_only_mesh(dimensions, origin=[0, 0, 0], time_step=0):
+def make_pyramid_only_mesh(
+        dimensions, origin=[0, 0, 0], time_step=0, spacing=[1.0, 1.0, 1.0]):
     image_data = vtk.vtkImageData()
     image_data.SetDimensions(dimensions)
     image_data.SetOrigin(origin)
+    image_data.SetSpacing(spacing)
 
     itos = vtk.vtkImageToStructuredGrid()
     itos.SetInputData(image_data)
@@ -201,10 +206,12 @@ def make_pyramid_only_mesh(dimensions, origin=[0, 0, 0], time_step=0):
     return unstructured_grid
 
 
-def make_wedge_only_mesh(dimensions, origin=[0, 0, 0], time_step=0):
+def make_wedge_only_mesh(
+        dimensions, origin=[0, 0, 0], time_step=0, spacing=[1.0, 1.0, 1.0]):
     image_data = vtk.vtkImageData()
     image_data.SetDimensions(dimensions)
     image_data.SetOrigin(origin)
+    image_data.SetSpacing(spacing)
 
     itos = vtk.vtkImageToStructuredGrid()
     itos.SetInputData(image_data)
@@ -242,10 +249,12 @@ def make_wedge_only_mesh(dimensions, origin=[0, 0, 0], time_step=0):
     return unstructured_grid
 
 
-def make_image_data(dimensions, origin=[0, 0, 0], time_step=0):
+def make_image_data(
+        dimensions, origin=[0, 0, 0], time_step=0, spacing=[1.0, 1.0, 1.0]):
     image_data = vtk.vtkImageData()
     image_data.SetDimensions(dimensions)
     image_data.SetOrigin(origin)
+    image_data.SetSpacing(spacing)
 
     append_point_data(image_data, time_step)
 

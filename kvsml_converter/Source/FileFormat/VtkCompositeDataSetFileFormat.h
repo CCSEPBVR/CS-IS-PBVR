@@ -24,7 +24,8 @@
 #include <vtkSmartPointer.h>
 #include <vtkXMLMultiBlockDataWriter.h>
 
-#include "FileFormat/VtkFileFormat.h"
+#include "VTK/VtkXmlPolyData.h"
+#include "VTK/VtkXmlUnstructuredGrid.h"
 #include "VtkFileFormat.h"
 
 namespace cvt
@@ -144,6 +145,25 @@ private:
 
 namespace cvt
 {
+namespace detail
+{
+/**
+ * \private
+ */
+std::shared_ptr<cvt::VtkXmlUnstructuredGrid> MergeBlocks( vtkCompositeDataSet* dataset,
+                                                          const char* file_path,
+                                                          bool enable_point_merge );
+/**
+ * \private
+ */
+std::shared_ptr<cvt::VtkXmlPolyData> MergeBlocksAsPolyData( vtkCompositeDataSet* dataset,
+                                                            const char* file_path,
+                                                            bool enable_point_merge );
+} // namespace detail
+} // namespace cvt
+
+namespace cvt
+{
 
 /**
  * A VTK composite data set IO.
@@ -202,6 +222,58 @@ public:
     cvt::detail::VtkMultiBlockContainer<VtkDataType> eachBlock() const
     {
         return cvt::detail::VtkMultiBlockContainer<VtkDataType>( BaseClass::get() );
+    }
+
+public:
+    /**
+     * Merge some blocks.
+     *
+     * \param[in] file_path A XML file path to configure block merge.
+     * \param[in] enable_point_merge Merge same coordinate points if this is true.
+     * \return A merged block unstructured grid.
+     */
+    std::shared_ptr<cvt::VtkXmlUnstructuredGrid> mergeBlocks( const char* file_path,
+                                                              bool enable_point_merge = true )
+    {
+        return cvt::detail::MergeBlocks( BaseClass::get(), file_path, enable_point_merge );
+    }
+    /**
+     * Merge some blocks.
+     *
+     * \param[in] file_path A XML file path to configure block merge.
+     * \param[in] enable_point_merge Merge same coordinate points if this is true.
+     * \return A merged block unstructured grid.
+     */
+    std::shared_ptr<cvt::VtkXmlUnstructuredGrid> mergeBlocks( const std::string& file_path,
+                                                              bool enable_point_merge = true )
+    {
+        return cvt::detail::MergeBlocks( BaseClass::get(), file_path.c_str(), enable_point_merge );
+    }
+    /**
+     * Extract some block surfaces.
+     *
+     * \param[in] file_path A XML file path to configure block merge.
+     * \param[in] enable_point_merge Merge same coordinate points if this is true.
+     * \return A merged surface.
+     */
+    std::shared_ptr<cvt::VtkXmlPolyData> mergeBlocksAsPolygon( const char* file_path,
+                                                               bool enable_point_merge )
+    {
+        return cvt::detail::MergeBlocksAsPolyData( BaseClass::get(), file_path,
+                                                   enable_point_merge );
+    }
+    /**
+     * Extract some block surfaces.
+     *
+     * \param[in] file_path A XML file path to configure block merge.
+     * \param[in] enable_point_merge Merge same coordinate points if this is true.
+     * \return A merged surface.
+     */
+    std::shared_ptr<cvt::VtkXmlPolyData> mergeBlocksAsPolygon( const std::string& file_path,
+                                                               bool enable_point_merge = true )
+    {
+        return cvt::detail::MergeBlocksAsPolyData( BaseClass::get(), file_path.c_str(),
+                                                   enable_point_merge );
     }
 };
 } // namespace cvt

@@ -44,6 +44,11 @@
 #*****************************************************************************
 #  $Id: Makefile.vc.def 1728 2014-04-25 09:11:19Z naohisa.sakamoto@gmail.com $
 #*****************************************************************************
+#=============================================================================
+#  Variable definitions.
+#=============================================================================
+CVT_ENABLE_MPI = 1
+
 
 #=============================================================================
 #  Install destination.
@@ -95,6 +100,13 @@ MAKEFILE = Makefile.vc
 
 
 #=============================================================================
+#  Binary name.
+#=============================================================================
+KVSML_CONVERTER_BIN = kvsml-converter.exe
+KVSML_CONVERTER_MPI_BIN = kvsml-converter-mpi.exe
+
+
+#=============================================================================
 #  KVS library.
 #=============================================================================
 LIB_KVSML_CONVERTER = kvsmlconverter.lib
@@ -143,6 +155,7 @@ vtkCommonExecutionModel-9.2d.lib \
 vtkCommonDataModel-9.2d.lib \
 vtkFiltersCore-9.2d.lib \
 vtkFiltersExtraction-9.2d.lib \
+vtkFiltersGeneral-9.2d.lib \
 vtkFiltersGeometry-9.2d.lib \
 vtkFiltersParallel-9.2d.lib \
 vtkIOCore-9.2d.lib \
@@ -151,8 +164,14 @@ vtkIOCGNSReader-9.2d.lib \
 vtkIOEnSight-9.2d.lib \
 vtkIOLegacy-9.2d.lib \
 vtkIOParallel-9.2d.lib \
-vtkIOXML-9.2d.lib
+vtkIOXML-9.2d.lib \
+vtkIOXMLParser-9.2d.lib
 
+!IFDEF CVT_ENABLE_MPI
+VTK_LINK_LIBRARY = $(VTK_LINK_LIBRARY) \
+vtkParallelCore-9.2d.lib \
+vtkParallelMPI-9.2d.lib
+!ENDIF
 !ELSE
 VTK_LINK_LIBRARY = \
 vtksys-9.2.lib \
@@ -161,6 +180,7 @@ vtkCommonExecutionModel-9.2.lib \
 vtkCommonDataModel-9.2.lib \
 vtkFiltersCore-9.2.lib \
 vtkFiltersExtraction-9.2.lib \
+vtkFiltersGeneral-9.2.lib \
 vtkFiltersGeometry-9.2.lib \
 vtkFiltersParallel-9.2.lib \
 vtkIOCore-9.2.lib \
@@ -169,7 +189,31 @@ vtkIOCGNSReader-9.2.lib \
 vtkIOEnSight-9.2.lib \
 vtkIOLegacy-9.2.lib \
 vtkIOParallel-9.2.lib \
-vtkIOXML-9.2.lib
+vtkIOXML-9.2.lib \
+vtkIOXMLParser-9.2.lib
+
+!IFDEF CVT_ENABLE_MPI
+VTK_LINK_LIBRARY = $(VTK_LINK_LIBRARY) \
+vtkParallelCore-9.2.lib \
+vtkParallelMPI-9.2.lib
+!ENDIF
+!ENDIF
+
+
+#=============================================================================
+#  MPI_INCLUDE_PATH, MPI_LIBRARY_PATH, MPI_LINK_LIBRARY
+#=============================================================================
+!IFDEF CVT_ENABLE_MPI
+# /I<PATH>
+MPI_INCLUDE_OPTION = /I"C:\Program Files (x86)\Microsoft SDKs\MPI\Include"
+# /LIBPATH:<PATH>
+MPI_LIBRARY_OPTION = /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\MPI\Lib\x64"
+
+MPI_LINK_LIBRARY = msmpi.lib
+!ELSE
+MPI_INCLUDE_OPTION =
+MPI_LIBRARY_OPTION =
+MPI_LINK_LIBRARY =
 !ENDIF
 
 
@@ -185,7 +229,7 @@ CPPFLAGS = $(CPPFLAGS) /Ox /MT
 !ENDIF
 
 # OpenMP
-!IF "$(KVS_ENABLE_OPENMP)" == "1"
+!IF "$(CVT_ENABLE_OPENMP)" == "1"
 CPPFLAGS = $(CPPFLAGS) /openmp
 !ENDIF
 

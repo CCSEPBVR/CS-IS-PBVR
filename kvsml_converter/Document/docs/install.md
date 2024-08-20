@@ -19,6 +19,7 @@ GNU Makeならば _Makefile.def_ , Visual Studio nmakeならば _Makefile.vs.def
 -   `KVS_LIBRARY_PATH`, または `KVS_LIBRARY_OPTION`. KVSのインストール先libディレクトリ.
 -   `VTK_INCLUDE_PATH`, または `VTK_INCLUDE_OPTION`. VTKのインストール先includeディレクトリ. インクルードが例えば`vtk-9.2/vtkSmartPointer.h` ではなく, `vtkSmartPointer.h` となるよう指定してください.
 -   `VTK_LIBRARY_PATH`, または  `VTK_LIBRARY_PATH`. VTKのインストール先libディレクトリ.
+-   `CVT_ENABLE_MPI`. MPI を有効化.
 
 ## ビルド
 

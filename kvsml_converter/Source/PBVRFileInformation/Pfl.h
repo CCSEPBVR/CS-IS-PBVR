@@ -51,9 +51,7 @@ public:
     template <typename PathLike0, typename PathLike1>
     void registerPfi( PathLike0&& directory, PathLike1&& base )
     {
-        std::filesystem::path path = directory;
-        path.make_preferred();
-        path /= ( std::string( base ) + ".pfi" );
+        std::filesystem::path path = std::string( base ) + ".pfi";
         pfi_list.push_front( path.string() );
     }
     /**

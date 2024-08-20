@@ -47,16 +47,14 @@ kvs::ValueArray<kvs::Real32> GetCoordinates( VtkPointSetPointerType data )
 {
     std::vector<kvs::Real32> coords( data->GetNumberOfPoints() * 3 );
 
-    auto c_head = coords.data();
+#pragma omp parallel for
     for ( vtkIdType i = 0; i < data->GetNumberOfPoints(); ++i )
     {
         auto p = data->GetPoint( i );
 
-        *c_head = static_cast<kvs::Real32>( p[0] );
-        *( c_head + 1 ) = static_cast<kvs::Real32>( p[1] );
-        *( c_head + 2 ) = static_cast<kvs::Real32>( p[2] );
-
-        c_head += 3;
+        coords[i * 3] = static_cast<kvs::Real32>( p[0] );
+        coords[i * 3 + 1] = static_cast<kvs::Real32>( p[1] );
+        coords[i * 3 + 2] = static_cast<kvs::Real32>( p[2] );
     }
 
     return kvs::ValueArray<kvs::Real32>( coords );
@@ -110,6 +108,7 @@ kvs::AnyValueArray GetValueArrayImpl( vtkPointData* point_data, vtkIdType node_c
         {
             auto array = point_data->GetArray( i );
 
+#pragma omp parallel for
             for ( vtkIdType p = 0; p < node_count; ++p )
             {
                 auto t = array->GetTuple( p );
@@ -294,7 +293,8 @@ void ReorderElementNodeIndices( DestinationIterator& kvs_connection, vtkIdList* 
         break;
     }
     case VTK_QUADRATIC_HEXAHEDRON: {
-        constexpr int order[] = { 4, 5, 6, 7, 0, 1, 2, 3, 12, 13, 14, 15, 8, 9, 10, 11 };
+        constexpr int order[] = { 7,  4,  5,  6, 3, 0,  1,  2,  15, 12,
+                                  13, 14, 11, 8, 9, 10, 19, 16, 17, 18 };
         ::Reorder( kvs_connection, vtk_cell, order, sizeof( order ) / sizeof( int ) );
         break;
     }

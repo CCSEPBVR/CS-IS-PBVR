@@ -24,6 +24,7 @@
 #include "kvs/File"
 #include "kvs/FileFormatBase"
 #include <vtkCompositeDataSet.h>
+#include <vtkExtractGhostCells.h>
 #include <vtkNew.h>
 #include <vtkPCellDataToPointData.h>
 #include <vtkPolyData.h>
@@ -209,7 +210,27 @@ public:
      *
      * \param[in] object A writing object.
      */
-    void set( VtkDataType* object ) { vtk_data = object; };
+    void set( VtkDataType* object ) { vtk_data = object; }
+    /**
+     * Get ghost cell count.
+     *
+     * \return A count of ghost cells.
+     */
+    int getGhostCellCount() const
+    {
+        if ( vtk_data )
+        {
+            vtkNew<vtkExtractGhostCells> extractor;
+            extractor->SetInputData( vtk_data );
+            extractor->Update();
+
+            return extractor->GetOutput()->GetNumberOfCells();
+        }
+        else
+        {
+            return 0;
+        }
+    }
 
 private:
     ReaderOptionSetter set_reader_options;

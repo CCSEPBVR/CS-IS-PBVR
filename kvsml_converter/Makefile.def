@@ -105,10 +105,17 @@ endif
 
 SHELL  := /bin/bash
 CCACHE := $(shell $(SHELL) -c "(type -p ccache; type -p ccache-swig) | head -1")
+ifdef CVT_ENABLE_MPI
+CPP    := $(CCACHE) $(KVS_MPI_CPP)
+CC     := $(CCACHE) $(KVS_MPI_CC)
+FC     := $(CCACHE) $(KVS_MPI_FC)
+LD     := $(KVS_MPI_LD)
+else
 CPP    := $(CCACHE) $(KVS_CPP)
 CC     := $(CCACHE) $(KVS_CC)
 FC     := $(CCACHE) $(KVS_FC)
 LD     := $(KVS_LD)
+endif
 MPICPP := $(CCACHE) $(KVS_MPI_CPP)
 MPICC  := $(CCACHE) $(KVS_MPI_CC)
 MPIFC  := $(CCACHE) $(KVS_MPI_FC)
@@ -147,6 +154,13 @@ MAKEFILE := Makefile
 
 
 #=============================================================================
+#  Binary name.
+#=============================================================================
+KVSML_CONVERTER_BIN := kvsml-converter
+KVSML_CONVERTER_MPI_BIN := kvsml-converter-mpi
+
+
+#=============================================================================
 #  Library name.
 #=============================================================================
 LIB_KVSML_CONVERTER := libkvsmlconverter.a
@@ -171,33 +185,40 @@ OUTDIR := $(SOLUTION)
 #=============================================================================
 #  KVS_INCLUDE_PATH, KVS_LIBRARY_PATH, KVS_LINK_LIBRARY
 #=============================================================================
-KVS_INCLUDE_PATH :=/Users/t0603/Work/PBVR/lib/KVS_FOR_DEV_RELEASE/install/include
-KVS_LIBRARY_PATH :=/Users/t0603/Work/PBVR/lib/KVS_FOR_DEV_RELEASE/install/lib
+KVS_INCLUDE_PATH :=
+KVS_LIBRARY_PATH :=
 KVS_LINK_LIBRARY := -lkvsCore
 
 
 #=============================================================================
 #  VTK_INCLUDE_PATH, VTK_LIBRARY_PATH, VTK_LINK_LIBRARY
 #=============================================================================
-VTK_INCLUDE_PATH :=/opt/homebrew/Cellar/vtk/9.3.1/include/vtk-9.3/
-VTK_LIBRARY_PATH :=/opt/homebrew/Cellar/vtk/9.3.1/lib
+VTK_INCLUDE_PATH :=
+VTK_LIBRARY_PATH :=
 VTK_LINK_LIBRARY := \
--lvtksys-9.3 \
--lvtkCommonCore-9.3 \
--lvtkCommonExecutionModel-9.3 \
--lvtkCommonDataModel-9.3 \
--lvtkFiltersCore-9.3 \
--lvtkFiltersExtraction-9.3 \
--lvtkFiltersGeometry-9.3 \
--lvtkFiltersParallel-9.3 \
--lvtkIOCore-9.3 \
--lvtkIOGeometry-9.3 \
--lvtkIOCGNSReader-9.3 \
--lvtkIOEnSight-9.3 \
--lvtkIOParallel-9.3 \
--lvtkIOLegacy-9.3 \
--lvtkIOXML-9.3 
+-lvtksys-9.2 \
+-lvtkCommonCore-9.2 \
+-lvtkCommonExecutionModel-9.2 \
+-lvtkCommonDataModel-9.2 \
+-lvtkFiltersCore-9.2 \
+-lvtkFiltersExtraction-9.2 \
+-lvtkFiltersGeneral-9.2 \
+-lvtkFiltersGeometry-9.2 \
+-lvtkFiltersParallel-9.2 \
+-lvtkIOCore-9.2 \
+-lvtkIOGeometry-9.2 \
+-lvtkIOCGNSReader-9.2 \
+-lvtkIOEnSight-9.2 \
+-lvtkIOParallel-9.2 \
+-lvtkIOLegacy-9.2 \
+-lvtkIOXML-9.2 \
+-lvtkIOXMLParser-9.2
 
+ifdef CVT_ENABLE_MPI
+VTK_LINK_LIBRARY += \
+-lvtkParallelCore-9.2 \
+-lvtkParallelMPI-9.2
+endif
 
 #=============================================================================
 #  Compiler option.
@@ -244,7 +265,7 @@ else
 endif
 
 # OpenMP
-ifeq "$(KVS_ENABLE_OPENMP)" "1"
+ifeq "$(CVT_ENABLE_OPENMP)" "1"
   # For Fujitsu C++ compiler (FCCpx/mpiFCCpx)
   ifeq ($(KVS_CPP),$(findstring $(KVS_CPP),FCCpx mpiFCCpx))
     CPPFLAGS += -Kopenmp

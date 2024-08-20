@@ -41,15 +41,23 @@ public:
         reader->UpdatePiece( piece_id, reader->GetNumberOfPieces(), -1 );
         auto piece = dynamic_cast<typename FileFormatType::VtkDataType*>( reader->GetOutput() );
 
-        vtkNew<vtkPCellDataToPointData> point_data_sampler;
-        point_data_sampler->SetInputData( piece );
-        vtkNew<vtkRemoveGhosts> ghost_remover;
-        ghost_remover->SetInputConnection( point_data_sampler->GetOutputPort() );
-        ghost_remover->Update();
-        auto output =
-            dynamic_cast<typename FileFormatType::VtkDataType*>( ghost_remover->GetOutput() );
+        if ( std::is_base_of_v<vtkPolyData, typename FileFormatType::VtkDataType> ||
+             std::is_base_of_v<vtkUnstructuredGrid, typename FileFormatType::VtkDataType> )
+        {
+            vtkNew<vtkPCellDataToPointData> point_data_sampler;
+            point_data_sampler->SetInputData( piece );
+            vtkNew<vtkRemoveGhosts> ghost_remover;
+            ghost_remover->SetInputConnection( point_data_sampler->GetOutputPort() );
+            ghost_remover->Update();
+            auto output =
+                dynamic_cast<typename FileFormatType::VtkDataType*>( ghost_remover->GetOutput() );
 
-        return FileFormatType( output );
+            return FileFormatType( output );
+        }
+        else
+        {
+            return FileFormatType( piece );
+        }
     }
     void operator++() noexcept { ++piece_id; }
     VtkPieceIterator operator++( int )
