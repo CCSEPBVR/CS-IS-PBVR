@@ -100,7 +100,7 @@ endif
 ifdef VTK_LIBRARY_PATH 
 LIBRARY_PATH += -L$(VTK_LIBRARY_PATH)
 endif
-LINK_LIBRARY := -lstdc++fs -lkvsmlconverter $(KVS_LINK_LIBRARY) $(VTK_LINK_LIBRARY)
+LINK_LIBRARY :=  -lkvsmlconverter $(KVS_LINK_LIBRARY) $(VTK_LINK_LIBRARY)
 
 ifeq "$(findstring CYGWIN,$(shell uname -s))" "CYGWIN"
 TARGET_EXE := $(OUTDIR)/$(KVSML_CONVERTER_BIN).exe

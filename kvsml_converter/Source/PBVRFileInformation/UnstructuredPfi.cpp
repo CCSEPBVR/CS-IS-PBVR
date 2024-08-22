@@ -55,14 +55,26 @@ void UpdateMinMaxValues( A& mins, A& maxes, const kvs::AnyValueArray& array, int
 }
 
 template <typename T, typename Array, typename FileDescriptor>
-void WriteN( Array& array, FileDescriptor f, std::size_t n, std::size_t start = 0 )
+void WriteN( Array& array, FileDescriptor f, std::size_t n, std::string name , std::size_t start = 0 )
 {
     for ( std::size_t i = start; i < start + n; ++i )
     {
         T m = array[i];
-        std::fwrite( &m, sizeof( T ), 1, f );
+        //std::fwrite( &m, sizeof( T ), 1, f );
+        std::string m_str = name + "_" +  std::to_string(i) +  "=" + std::to_string(float(m)) + "\n";
+        std::fwrite( m_str.c_str(), sizeof( char ), m_str.size(), f );
     }
 }
+
+//template <typename T, typename Array, typename FileDescriptor>
+//void WriteN( Array& array, FileDescriptor f, std::size_t n, std::size_t start = 0 )
+//{
+//    for ( std::size_t i = start; i < start + n; ++i )
+//    {
+//        T m = array[i];
+//        std::fwrite( &m, sizeof( T ), 1, f );
+//    }
+//}
 } // namespace
 
 cvt::UnstructuredPfi::UnstructuredPfi( int number_of_components, int last_time_step,
@@ -176,6 +188,92 @@ void cvt::UnstructuredPfi::registerObject( const ConverterTaskOutput* output,
 
 bool cvt::UnstructuredPfi::write( const char* const filename )
 {
+    if ( auto f = fopen( filename, "w" ) )
+    {
+        int number_of_nodes = std::accumulate( node_counts[0].begin(), node_counts[0].end(), 0 );
+        std::string number_of_nodes_str = "NODE_NUM=" + std::to_string(number_of_nodes) + "\n";
+        std::fwrite( number_of_nodes_str.c_str(), sizeof( char ), number_of_nodes_str.size(), f );
+        
+        int number_of_elements =
+            std::accumulate( cell_counts[0].begin(), cell_counts[0].end(), 0 );
+        std::string number_of_elements_str = "CELL_NUM=" + std::to_string(number_of_elements) + "\n";
+        std::fwrite( number_of_elements_str.c_str(), sizeof( char ), number_of_elements_str.size(), f );
+
+        std::string type_of_elements_str  = "CELLTYPE=" + std::to_string(type_of_cells) + "\n";
+        std::fwrite( type_of_elements_str.c_str(), sizeof( char ), type_of_elements_str.size(), f );
+
+        int type_of_file = 0;
+        std::string type_of_file_str  = "FILETYPE=" +std::to_string(type_of_file) + "\n" ;
+        std::fwrite( type_of_file_str.c_str(), sizeof( char ), type_of_file_str.size(), f );
+
+        int number_of_file = max_sub_volume_id * ( last_time_step + 1 );
+        std::string number_of_file_str = "FILES_NUM=" + std::to_string(number_of_file) + "\n";
+        std::fwrite( number_of_file_str.c_str(), sizeof( char ), number_of_file_str.size(), f );
+
+        std::string number_of_component_str = "COMPONENT_NUM=" + std::to_string(number_of_component) + "\n";
+        std::fwrite( number_of_component_str.c_str(), sizeof( char ), number_of_component_str.size(), f );
+
+        int step_of_beginning = 0;
+        std::string step_of_beginning_str = "BEGINNING_STEP=" + std::to_string(step_of_beginning) + "\n";
+        std::fwrite( step_of_beginning_str.c_str(), sizeof( char ), step_of_beginning_str.size(), f );
+        int step_of_end = last_time_step;
+        std::string step_of_end_str = "LAST_STEP=" + std::to_string(step_of_end) + "\n";
+        std::fwrite( step_of_end_str.c_str(), sizeof( char ), step_of_end_str.size(), f );
+
+        int number_of_sub_volumes = max_sub_volume_id;
+        std::string number_of_sub_volumes_str = "SUBVOLUME_NUM=" + std::to_string(number_of_sub_volumes) + "\n";
+        std::fwrite( number_of_sub_volumes_str.c_str(), sizeof( char ), number_of_sub_volumes_str.size(), f );
+
+       //calc minmax coord
+        kvs::Vec3 min_coords = min_object_coords[0][0];
+        kvs::Vec3 max_coords = max_object_coords[0][0];
+        for (int i =1; i <number_of_sub_volumes; i++ )
+        {
+            min_coords[0] = min_coords[0] < min_object_coords[0][i][0] ? min_coords[0] : min_object_coords[0][i][0];
+            min_coords[1] = min_coords[1] < min_object_coords[0][i][1] ? min_coords[1] : min_object_coords[0][i][1];
+            min_coords[2] = min_coords[2] < min_object_coords[0][i][2] ? min_coords[2] : min_object_coords[0][i][2];
+            
+            max_coords[0] = max_coords[0] > max_object_coords[0][i][0] ? max_coords[0] : max_object_coords[0][i][0];
+            max_coords[1] = max_coords[1] > max_object_coords[0][i][1] ? max_coords[1] : max_object_coords[0][i][1];
+            max_coords[2] = max_coords[2] > max_object_coords[0][i][2] ? max_coords[2] : max_object_coords[0][i][2];
+        }
+
+        std::string name = "MIN_COORD" ;
+        //::WriteN<float>( min_external_coords[0][0], f, 3 ,name );
+        ::WriteN<float>( min_coords, f, 3 ,name );
+        name = "MAX_COORD" ;
+        //::WriteN<float>( max_external_coords[0][0], f, 3 ,name);
+        ::WriteN<float>( max_coords, f, 3 ,name);
+
+        for ( int i = 0; i < max_sub_volume_id; ++i )
+        {
+        std::string node_counts_str = "SUBVOLUME_NODE_NUM_" + std::to_string(i) +"=" + std::to_string(node_counts[0][i]) + "\n";
+        std::fwrite( node_counts_str.c_str(), sizeof( char ), node_counts_str.size(), f );
+        }
+        for ( int i = 0; i < max_sub_volume_id; ++i )
+        {
+        std::string element_counts_str = "ELEMENT_COUNT_NUM_" + std::to_string(i) +  "=" + std::to_string(cell_counts[0][i]) + "\n";
+        std::fwrite( element_counts_str.c_str(), sizeof( char ), element_counts_str.size(), f );
+        }
+
+        for ( int i = 0; i < max_sub_volume_id; ++i )
+        {
+            std::string name = "SUB_VOLUME_MIN_COORD_" + std::to_string(i);
+            ::WriteN<float>( min_object_coords[0][i], f, 3 ,name );
+            name = "SUB_VOLUME_MAX_COORD_" + std::to_string(i) ;
+            ::WriteN<float>( max_object_coords[0][i], f, 3 ,name );
+        }
+
+        std::fclose( f );
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+
+#if 0
     if ( auto f = fopen( filename, "wb" ) )
     {
         int number_of_nodes = std::accumulate( node_counts[0].begin(), node_counts[0].end(), 0 );
@@ -234,6 +332,7 @@ bool cvt::UnstructuredPfi::write( const char* const filename )
     {
         return false;
     }
+#endif
 }
 
 int cvt::detail::GetKvsCellTypeId( const std::string& cell_type_expr )
