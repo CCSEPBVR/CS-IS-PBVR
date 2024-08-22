@@ -526,7 +526,7 @@ void CellByCellMetropolisSampling::generate_particles( const pbvr::StructuredVol
         for ( int i = 0; i < nnodes; i++ )
         {
             int  it = j * nnodes  + i;
-            values[j][i] = (float)(valueArray.at<double>(it));  
+            values[j][i] = valueArray.at<Type>(it);
             // データ値は double型で出力されている。これをfloat型に変更する必要がある。float型で読み込もうとすると、値がバグる。
         }
     } 
