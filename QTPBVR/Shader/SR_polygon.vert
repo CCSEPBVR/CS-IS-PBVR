@@ -1,0 +1,37 @@
+/*****************************************************************************/
+/**
+ *  @file   polygon.vert
+ *  @author Jun Nishimura, Naohisa Sakamoto
+ */
+/*****************************************************************************/
+#version 120
+#include "qualifire.h"
+
+// Input parameters.
+VertIn vec2 random_index; // index for accessing to the random texture
+
+// Output parameters to fragment shader.
+VertOut vec3 position; // vertex position in camera coordinate
+VertOut vec3 normal; // normal vector in camera coodinate
+VertOut vec2 index; // index for accessing to the random texture
+
+// Uniform variables (OpenGL variables).
+uniform mat4 ModelViewMatrix; // model-view matrix
+uniform mat4 ModelViewProjectionMatrix; // model-view projection matrix
+uniform mat3 NormalMatrix; // normal matrix
+
+
+/*===========================================================================*/
+/**
+ *  @brief  Main function of vertex shader.
+ */
+/*===========================================================================*/
+void main()
+{
+    gl_Position = ModelViewProjectionMatrix * gl_Vertex;
+    gl_FrontColor = gl_Color;
+
+    position = ( ModelViewMatrix * gl_Vertex ).xyz;
+    normal = NormalMatrix * gl_Normal;
+    index = random_index;
+}
