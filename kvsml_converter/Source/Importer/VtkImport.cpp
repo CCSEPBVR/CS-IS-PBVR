@@ -488,6 +488,7 @@ void cvt::detail::ImportUniformStructuredVolumeObject( kvs::StructuredVolumeObje
         uniform_object->setValues( values );
         uniform_object->updateMinMaxValues();
     }
+    uniform_object->updateMinMaxCoords();
 }
 
 void cvt::detail::ImportIrregularStructuredVolumeObject(
@@ -512,6 +513,7 @@ void cvt::detail::ImportIrregularStructuredVolumeObject(
         irregular_object->setValues( values );
         irregular_object->updateMinMaxValues();
     }
+    irregular_object->updateMinMaxCoords();
 }
 
 void cvt::detail::ImportUnstructuredVolumeObject( kvs::UnstructuredVolumeObject* object,

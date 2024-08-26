@@ -224,26 +224,10 @@ bool cvt::UnstructuredPfi::write( const char* const filename )
         std::string number_of_sub_volumes_str = "SUBVOLUME_NUM=" + std::to_string(number_of_sub_volumes) + "\n";
         std::fwrite( number_of_sub_volumes_str.c_str(), sizeof( char ), number_of_sub_volumes_str.size(), f );
 
-       //calc minmax coord
-        kvs::Vec3 min_coords = min_object_coords[0][0];
-        kvs::Vec3 max_coords = max_object_coords[0][0];
-        for (int i =1; i <number_of_sub_volumes; i++ )
-        {
-            min_coords[0] = min_coords[0] < min_object_coords[0][i][0] ? min_coords[0] : min_object_coords[0][i][0];
-            min_coords[1] = min_coords[1] < min_object_coords[0][i][1] ? min_coords[1] : min_object_coords[0][i][1];
-            min_coords[2] = min_coords[2] < min_object_coords[0][i][2] ? min_coords[2] : min_object_coords[0][i][2];
-            
-            max_coords[0] = max_coords[0] > max_object_coords[0][i][0] ? max_coords[0] : max_object_coords[0][i][0];
-            max_coords[1] = max_coords[1] > max_object_coords[0][i][1] ? max_coords[1] : max_object_coords[0][i][1];
-            max_coords[2] = max_coords[2] > max_object_coords[0][i][2] ? max_coords[2] : max_object_coords[0][i][2];
-        }
-
         std::string name = "MIN_COORD" ;
-        //::WriteN<float>( min_external_coords[0][0], f, 3 ,name );
-        ::WriteN<float>( min_coords, f, 3 ,name );
+        ::WriteN<float>( min_external_coords, f, 3, name);
         name = "MAX_COORD" ;
-        //::WriteN<float>( max_external_coords[0][0], f, 3 ,name);
-        ::WriteN<float>( max_coords, f, 3 ,name);
+        ::WriteN<float>( max_external_coords, f, 3, name );
 
         for ( int i = 0; i < max_sub_volume_id; ++i )
         {
