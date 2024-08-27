@@ -2,13 +2,13 @@
 #include "ui_DisplayPointSizeControl.h"
 
 #include <kvs/ParticleBasedRenderer>
-DisplayPointSizeControl::DisplayPointSizeControl(QWidget *parent) :
+DisplayPointSizeControl::DisplayPointSizeControl(QWidget *parent, Preference* preference) :
     QDockWidget(parent),
     ui(new Ui::DisplayPointSizeControl),
+    m_preference( preference ),
     m_screen( nullptr )
 {
     ui->setupUi(this);
-//    connect( ui->pushButton, &QPushButton::clicked, this, &DisplayPointSizeControl::onApplyButtonClicked );
     connect( ui->doubleSpinBox, &QDoubleSpinBox::valueChanged, this, &DisplayPointSizeControl::onApplyButtonClicked);
 }
 

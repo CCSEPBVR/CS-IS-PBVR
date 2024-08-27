@@ -1,6 +1,6 @@
 #include "TransferFunctionEditor.h"
 #include "ui_TransferFunctionEditor.h"
-#include "Widgets/MergePanel.h"
+#include "Widgets/MergePanel2.h"
 #include <kvs/ColorMapBar>
 #include <kvs/OpacityMapBar>
 #include <QOpenGLWidget>
@@ -10,9 +10,10 @@
 #include "ParameterFile.h"
 #include <fstream>
 
-TransferFunctionEditor::TransferFunctionEditor(QWidget *parent) :
+TransferFunctionEditor::TransferFunctionEditor(QWidget *parent,MergePanel2* merge) :
     QDialog(parent),
-    ui(new Ui::TransferFunctionEditor),    
+    ui(new Ui::TransferFunctionEditor),
+    m_merge( merge ),
     m_client_message( nullptr ),
     m_server_message( nullptr ),
     m_received_message( nullptr ),
@@ -255,7 +256,7 @@ void TransferFunctionEditor::onNumberOfTransferFunctionValueChanged( int value )
     m_extended_transfer_function_message.m_transfer_function_number = num_transfer_function;
     this->populateColorFunctionLists( value );
     this->populateOpacityFunctionLists( value );
-    m_color_function_selector->populateColorFunctionLists( value );
+//    m_color_function_selector->populateColorFunctionLists( value );
 
     int n;
     int current_size;
@@ -573,7 +574,7 @@ void TransferFunctionEditor::onApplyButtonClicked()
         std::string opacitySynthBuf = m_extended_transfer_function_message.m_opacity_transfer_function_synthesis;
         std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
 
-        m_merge->setIsParticleGenerationNeeded( true );
+//        m_merge->setIsParticleGenerationNeeded( true );
     }
     else if( m_mode == TransferFunctionEditor::Mode::IS )
     {
@@ -608,7 +609,7 @@ void TransferFunctionEditor::onApplyButtonClicked()
             m_client_message->m_volume_equation.push_back( veq_o );
         }
     }
-    m_color_function_selector->updateColorMap();
+//    m_color_function_selector->updateColorMap();
 }
 
 void TransferFunctionEditor::onImportButtonClicked()

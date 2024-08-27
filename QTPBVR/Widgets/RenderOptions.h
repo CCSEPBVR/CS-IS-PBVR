@@ -3,7 +3,7 @@
 
 #include <QDockWidget>
 #include "ParticleTransferProtocol.h"
-#include "Widgets/MergePanel.h"
+#include "Widgets/MergePanel2.h"
 namespace Ui {
 class RenderOptions;
 }
@@ -13,15 +13,14 @@ class RenderOptions : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit RenderOptions(QWidget *parent = nullptr);
+    explicit RenderOptions(QWidget *parent = nullptr, MergePanel2* merge = nullptr);
     ~RenderOptions();
-    void setMerge( MergePanel* merge ){  m_merge = merge; }
     void setClientMessage( jpv::ParticleTransferClientMessage* client_message ){ m_client_message = client_message; }
 
 
 private:
     Ui::RenderOptions *ui;
-    MergePanel* m_merge;
+    MergePanel2* m_merge;
     jpv::ParticleTransferClientMessage* m_client_message;
 
 private slots:

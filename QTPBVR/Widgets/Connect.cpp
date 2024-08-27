@@ -5,16 +5,16 @@
 #include <kvs/Camera>
 #include <kvs/PointObject>
 
-#include "Widgets/MergePanel.h"
+#include "Widgets/MergePanel2.h"
 
-Connect::Connect(QWidget *parent) :
+Connect::Connect(QWidget *parent, MergePanel2* merge, DataProperties* filter_infomation, TransferFunctionEditor* transfer_function_editor) :
     QDialog(parent),
     ui(new Ui::Connect),
     m_screen( nullptr ),
     m_camera( nullptr ),
-    m_merge( nullptr ),
-    m_filter_infomation( nullptr ),
-    m_transfer_function_editor( nullptr ),
+    m_merge( merge ),
+    m_filter_infomation( filter_infomation ),
+    m_transfer_function_editor( transfer_function_editor ),
     m_extended_transfer_function_message(),
     m_client_message(),
     m_server_message(),
@@ -79,7 +79,7 @@ void Connect::connectServerCS()
     client.recvMessageCS( &reply );
     client.termClient();
 
-    m_merge->serverObject( ui->volumeDataFilePathLEdit->text(), reply.m_start_step, reply.m_end_step );
+    m_merge->serverObjectCS( ui->volumeDataFilePathLEdit->text(), reply.m_start_step, reply.m_end_step );
     m_transfer_function_editor->applyVariableRange( reply.m_server_side_variable_range );
 #ifdef Q_OS_WIN
     m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
@@ -134,7 +134,7 @@ void Connect::connectServerIS()
     client.recvMessageIS( &m_server_message );
     client.termClient();
 
-    m_merge->serverObjectIS( "IS-Object", 0, 0 );
+//    m_merge->serverObjectIS( "IS-Object", 0, 0 );
 //    m_transfer_function_editor->applyVariableRange( reply.m_variable_range );
 //#ifdef Q_OS_WIN
 //    m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
@@ -392,7 +392,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
 
     if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
     {
-        m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_end_step );
+//        m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_end_step );
     }
 
     return pointObject;
@@ -402,7 +402,7 @@ void Connect::deletedServerObject()
 {
     ui->connectPBtn->setEnabled( true );
 }
-
+#include <QFileDialog>
 void Connect::onVolumeDataBrowseButtonClicked()
 {
     ui->volumeDataFilePathLEdit->setText( QFileDialog::getOpenFileName( this, tr("Select Volume Data File"), ".", tr("Volume Data Files (*.pfi *.pfl)") ) );

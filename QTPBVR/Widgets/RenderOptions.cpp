@@ -1,9 +1,10 @@
 #include "RenderOptions.h"
 #include "ui_RenderOptions.h"
 
-RenderOptions::RenderOptions(QWidget *parent) :
+RenderOptions::RenderOptions(QWidget *parent, MergePanel2* merge) :
     QDockWidget(parent),
     ui(new Ui::RenderOptions),
+    m_merge( merge ),
     m_client_message( nullptr )
 {
     ui->setupUi(this);
@@ -20,5 +21,5 @@ void RenderOptions::onApplyButtonClicked()
     m_client_message->m_particle_density = ui->densityDSBox->value();
     m_client_message->m_particle_limit = ui->limitSBox->value();
     m_client_message->m_particle_data_size_limit = ui->dataSizeLimitSBox->value();
-    m_merge->setIsParticleGenerationNeeded( true );
+//    m_merge->setIsParticleGenerationNeeded( true );
 }

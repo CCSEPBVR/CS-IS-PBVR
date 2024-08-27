@@ -16,9 +16,8 @@ class DisplayPointSizeControl : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit DisplayPointSizeControl(QWidget *parent = nullptr);
+    explicit DisplayPointSizeControl(QWidget *parent = nullptr, Preference* preference = nullptr);
     ~DisplayPointSizeControl();
-    void setPreference( Preference* preference ){ m_preference = preference; }
     void setScreen( kvs::qt::jaea::Screen* screen ) { m_screen = screen; }
 
 private:

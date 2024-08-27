@@ -4,9 +4,10 @@
 #include "FunctionParser/ExpressionTokenizer.h"
 #include "FunctionParser/ExpressionConverter.h"
 
-Coordinates::Coordinates(QWidget *parent) :
+Coordinates::Coordinates(QWidget *parent,MergePanel2 *merge) :
     QDialog(parent),
     ui(new Ui::Coordinates),
+    m_merge( merge ),
     m_client_message( nullptr )
 {
     ui->setupUi(this);
@@ -30,5 +31,5 @@ void Coordinates::onApplyButtonClicked()
     m_client_message->m_z_synthesis = ui->coordinateZLEdit->text().toStdString();
 #endif
 
-    m_merge->setIsParticleGenerationNeeded( true );
+//    m_merge->setIsParticleGenerationNeeded( true );
 }

@@ -2,9 +2,10 @@
 #include "ui_RepetitionLevelControl.h"
 
 #include <kvs/ParticleBasedRenderer>
-RepetitionLevelControl::RepetitionLevelControl(QWidget *parent) :
+RepetitionLevelControl::RepetitionLevelControl(QWidget *parent, ShadingController* shading_controller) :
     QDockWidget(parent),
     ui(new Ui::RepetitionLevelControl),
+    m_shading_controller( shading_controller ),
     m_screen( nullptr ),
     m_compositor( nullptr )
 {
