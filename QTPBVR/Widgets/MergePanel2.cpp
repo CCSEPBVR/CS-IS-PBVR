@@ -459,10 +459,10 @@ void MergePanel2::updateCheckState()
             delete deleteCheckBox;
 
             // m_files_managerからも対応する要素を削除する
-            //            if( m_files_manager2[row]->getFormat() == FilesManager::ServerPointObjectCS || m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS )
-            //            {
-            //                m_connect->deletedServerObject();
-            //            }
+            if( m_files_manager2[row]->getFormat() == FilesManager2::ServerPointObjectCS || m_files_manager2[row]->getFormat() == FilesManager2::ServerPointObjectIS )
+            {
+                m_connect->deletedServerObject();
+            }
             delete m_files_manager2[row];
             m_files_manager2.removeAt(row);
 
