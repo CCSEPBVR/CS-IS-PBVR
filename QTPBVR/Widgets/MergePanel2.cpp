@@ -444,48 +444,6 @@ void MergePanel2::calculateTotalMinMaxTimeStep()
     m_time_controller_b->updateMinMax( totalMinTimeStep, totalMaxTimeStep, isSingleObject );
 }
 
-/**
- * @brief MergePanel::isEraseChecked
- * @author TO0603
- * @date 2024/08/16
- * @details
- * この関数はファイルテーブルを走査し、削除チェックボックスがチェックされている行のファイルを削除する。
- * 削除が確認されたファイルは以下の処理が行われる。
- * - シーンからオブジェクトを削除 (コメントアウトされているコードにて)
- * - `FilesManager` オブジェクトのIDをリセット
- * - テーブルから該当行を削除
- * - `m_files_manager` リストから該当オブジェクトを削除し、そのメモリを解放
- *
- * 行を削除するとテーブルのインデックスが変わるため、ループ内でインデックスの調整を行う。
- */
-void MergePanel2::isEraseChecked()
-{
-    for (int row = 0; row < m_files_manager2.size(); row++)
-    {
-        QWidget *widget = ui->filesTableWidget->cellWidget(row, 6); // deleteCheckBox の列を指定
-        QCheckBox *deleteCheckBox = qobject_cast<QCheckBox*>(widget);
-        if (deleteCheckBox && deleteCheckBox->checkState() == Qt::Checked)
-        {
-//            m_screen->scene()->removeObject( m_files_manager2[row]->getIDs().first );
-
-            m_files_manager2[row]->setIDs( std::pair<int,int>(-1,-1) );
-            ui->filesTableWidget->removeRow(row);
-            delete deleteCheckBox;
-
-            // m_files_managerからも対応する要素を削除する
-            //            if( m_files_manager2[row]->getFormat() == FilesManager::ServerPointObjectCS || m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS )
-            //            {
-            //                m_connect->deletedServerObject();
-            //            }
-            delete m_files_manager2[row];
-            m_files_manager2.removeAt(row);
-
-            row--; // 行が削除されたので、ループのインデックスを調整する
-        }
-    }
-    calculateTotalMinMaxTimeStep();
-}
-
 void MergePanel2::updateCheckState()
 {
     for( int row = 0; row < m_files_manager2.size(); row++ )
@@ -617,6 +575,7 @@ void MergePanel2::onApply()
     //    isEraseChecked();
     updateCheckState();
     updatePolygonColorOpacity();
+    m_screen->update();
 }
 
 void MergePanel2::mergeObjects( int currentTimeStep, int requestTimeStep )

@@ -144,8 +144,7 @@ private:
     bool checkFormat( FilesManager2* newFile );
     bool checkMinMaxTimeStep( FilesManager2* newFile );
     void addFilesTable( FilesManager2* newFile );
-    void calculateTotalMinMaxTimeStep();
-    void isEraseChecked();
+    void calculateTotalMinMaxTimeStep();    
     void updateCheckState();
     void updatePolygonColorOpacity();
     void totalParticles();
