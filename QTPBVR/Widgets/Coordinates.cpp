@@ -31,5 +31,5 @@ void Coordinates::onApplyButtonClicked()
     m_client_message->m_z_synthesis = ui->coordinateZLEdit->text().toStdString();
 #endif
 
-//    m_merge->setIsParticleGenerationNeeded( true );
+    m_merge->setIsParticleGenerationNeeded( true );
 }

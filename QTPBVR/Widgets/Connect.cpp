@@ -134,7 +134,7 @@ void Connect::connectServerIS()
     client.recvMessageIS( &m_server_message );
     client.termClient();
 
-//    m_merge->serverObjectIS( "IS-Object", 0, 0 );
+    m_merge->serverObjectIS( "IS-Object", 0, 0 );
 //    m_transfer_function_editor->applyVariableRange( reply.m_variable_range );
 //#ifdef Q_OS_WIN
 //    m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
@@ -392,7 +392,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
 
     if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
     {
-//        m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_end_step );
+        m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_end_step );
     }
 
     return pointObject;

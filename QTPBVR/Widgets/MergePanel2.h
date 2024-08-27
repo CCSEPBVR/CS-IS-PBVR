@@ -121,6 +121,10 @@ public:
 
     void mergeObjects( int currentTimeStep, int requestTimeStep );
     void serverObjectCS( QString volumeDataFilePath, int min, int max );
+    void serverObjectIS( QString volumeDataFilePath, int min, int max );
+    void updateObjectTimeStepIS( int min, int max );
+    void setIsParticleGenerationNeeded( const bool& is_particle_generation_needed ){ m_is_particle_generation_needed = is_particle_generation_needed; }
+    const bool& getIsParticleGenerationNeeded() const { return m_is_particle_generation_needed; }
 
 private:
     Ui::MergePanel2 *ui;
@@ -133,6 +137,7 @@ private:
     QVector<FilesManager2*> m_files_manager2;
     class WorkerThread2;
     bool m_is_worker_thread_running;
+    bool m_is_particle_generation_needed;
 
 private:
     void registerFiles( const QString& filePath );

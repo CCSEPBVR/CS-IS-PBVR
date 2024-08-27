@@ -574,7 +574,7 @@ void TransferFunctionEditor::onApplyButtonClicked()
         std::string opacitySynthBuf = m_extended_transfer_function_message.m_opacity_transfer_function_synthesis;
         std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
 
-//        m_merge->setIsParticleGenerationNeeded( true );
+        m_merge->setIsParticleGenerationNeeded( true );
     }
     else if( m_mode == TransferFunctionEditor::Mode::IS )
     {

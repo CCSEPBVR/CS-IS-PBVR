@@ -91,6 +91,7 @@ void MergePanel2::registerFiles( const QString& filePath )
         newFile->setKeepFinal( false );
         newFile->setColor( QColor( 128, 128, 128 ) ); //テクスチャ無しポリゴン用の初期値
         newFile->setOpacity( 0.5 ); //テクスチャ無しポリゴン用の初期値
+        newFile->setChangePolygonTransferFunction( false );
         newFile->setIDs( std::pair<int,int>( -1, -1 ) ); //登録時に表示されることはないので-1となる。registerObjectされた際に値が決まる。
         newFile->setAlreadyImportedTimeStep( -1 ); //登録時に表示されることはないので-1となる。
         newFile->setObject( nullptr );
@@ -117,12 +118,47 @@ void MergePanel2::serverObjectCS( QString volumeDataFilePath, int min, int max )
     newFile->setKeepFinal( false );
     newFile->setColor( QColor( 128, 128, 128 ) ); //テクスチャ無しポリゴン用の初期値
     newFile->setOpacity( 0.5 ); //テクスチャ無しポリゴン用の初期値
+    newFile->setChangePolygonTransferFunction( false );
     newFile->setIDs( std::pair<int,int>( -1, -1 ) ); //登録時に表示されることはないので-1となる。registerObjectされた際に値が決まる。
     newFile->setAlreadyImportedTimeStep( -1 ); //登録時に表示されることはないので-1となる。
     newFile->setObject( nullptr );
     m_files_manager2.append( newFile );
     addFilesTable( m_files_manager2.last() ); //アペンド直後のFilesManagerをテーブルウィジェットに追加する。
     calculateTotalMinMaxTimeStep();
+}
+
+void MergePanel2::serverObjectIS( QString volumeDataFilePath, int min, int max )
+{
+    FilesManager2 *newFile = new FilesManager2;
+    newFile->setFileInfo( QFileInfo( volumeDataFilePath ) );
+    newFile->setFormat( FilesManager2::ServerPointObjectIS );
+    newFile->setMinTimeStep( min );
+    newFile->setMaxTimeStep( max );
+    newFile->setDisplay( true );
+    newFile->setKeepInital( false );
+    newFile->setKeepFinal( false );
+    newFile->setColor( QColor( 128, 128, 128 ) ); //テクスチャ無しポリゴン用の初期値
+    newFile->setOpacity( 0.5 ); //テクスチャ無しポリゴン用の初期値
+    newFile->setChangePolygonTransferFunction( false );
+    newFile->setIDs( std::pair<int,int>( -1, -1 ) ); //登録時に表示されることはないので-1となる。registerObjectされた際に値が決まる。
+    newFile->setAlreadyImportedTimeStep( -1 ); //登録時に表示されることはないので-1となる。
+    newFile->setObject( nullptr );
+    m_files_manager2.append( newFile );
+    addFilesTable( m_files_manager2.last() ); //アペンド直後のFilesManagerをテーブルウィジェットに追加する。
+    calculateTotalMinMaxTimeStep();
+}
+
+void MergePanel2::updateObjectTimeStepIS( int min, int max )
+{
+    for( int row = 0; row < m_files_manager2.size(); row++ )
+    {
+        if( m_files_manager2[row]->getFormat() == FilesManager2::ServerPointObjectIS )
+        {
+            m_files_manager2[row]->setMinTimeStep( min );
+            m_files_manager2[row]->setMaxTimeStep( max );
+            calculateTotalMinMaxTimeStep();
+        }
+    }
 }
 
 #include <QXmlStreamReader>
@@ -783,6 +819,12 @@ void MergePanel2::WorkerThread2::timeStepCheckAndImport( int row )
                 if( m_merge->m_files_manager2[row]->getAlreadyImportedTimeStep() == m_request_time_step )
                 {
                     qDebug() << "既に要求されたタイムステップのデータをインポートしています。" << "[" << row << "]" << __LINE__;
+                    if( m_merge->m_files_manager2[row]->getFormat() == ( FilesManager2::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager2::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) )
+                    {
+                        qDebug() << "粒子生成の要求があります。";
+                        m_merge->m_files_manager2[row]->setObject( m_merge->m_connect->generateParticles( m_request_time_step ) );
+                        m_merge->setIsParticleGenerationNeeded( false );
+                    }
                     if( object->isVisible() == false ) object->show();
                 }
                 else
@@ -810,6 +852,12 @@ void MergePanel2::WorkerThread2::timeStepCheckAndImport( int row )
                     if( m_merge->m_files_manager2[row]->getAlreadyImportedTimeStep() <= minTimeStep )
                     {
                         qDebug() << "既に対象データの最小タイムステップのデータをインポートしています。" << "[" << row << "]" << __LINE__;
+                        if( m_merge->m_files_manager2[row]->getFormat() == ( FilesManager2::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager2::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) )
+                        {
+                            qDebug() << "粒子生成の要求があります。";
+                            m_merge->m_files_manager2[row]->setObject( m_merge->m_connect->generateParticles( minTimeStep ) );
+                            m_merge->setIsParticleGenerationNeeded( false );
+                        }
                         if( object->isVisible() == false ) object->show();
                     }
                     else
@@ -843,6 +891,12 @@ void MergePanel2::WorkerThread2::timeStepCheckAndImport( int row )
                     if( m_merge->m_files_manager2[row]->getAlreadyImportedTimeStep() >= maxTimeStep )
                     {
                         qDebug() << "既に対象データの最大タイムステップのデータをインポートしています。" << "[" << row << "]" << __LINE__;
+                        if( m_merge->m_files_manager2[row]->getFormat() == ( FilesManager2::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager2::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) )
+                        {
+                            qDebug() << "粒子生成の要求があります。";
+                            m_merge->m_files_manager2[row]->setObject( m_merge->m_connect->generateParticles( maxTimeStep ) );
+                            m_merge->setIsParticleGenerationNeeded( false );
+                        }
                         if( object->isVisible() == false ) object->show();
                     }
                     else
