@@ -1,0 +1,21 @@
+CXX = icpc
+CXXFLAGS = -O3 -no-prec-div -xHost -openmp
+
+CC = icc
+CCFLAGS = -O3 -no-prec-div -xHost -openmp
+
+LD = icpc
+LDFLAGS = -O3 -no-prec-div -xHost -openmp
+
+MPICXX = mpic++
+MPICXXFLAGS = -O3 -no-prec-div -xHost -openmp
+
+MPICC = mpicc
+MPICCFLAGS = -O3 -no-prec-div -xHost -openmp
+
+MPILD = mpic++
+MPILDFLAGS = -O3 -no-prec-div -xHost -openmp 
+
+NTL_CC  = icc
+NTL_CXX = icpc
+NTL_CFLAGS = -O3 -no-prec-div -xHost -fp-model precise

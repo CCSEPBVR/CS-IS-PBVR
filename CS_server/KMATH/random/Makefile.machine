@@ -1,0 +1,30 @@
+include ../../../pbvr.conf
+include ../../../arch/${PBVR_MACHINE}
+
+# compilers
+CC              = ${MPICC}
+CXX             = ${MPICXX}
+
+# compiler options
+#
+NTL_INC		= ../../ntl-5.5.2/include
+#-- no debug
+CFLAGS		= -c $(MPICCFLAGS) -DNDEBUG -I$(NTL_INC)
+CPPFLAGS	= -c $(MPICXXFLAGS) -DNDEBUG -I$(NTL_INC)
+
+ifneq (,$(findstring fujitsu,$(PBVR_MACHINE)))
+    CFLAGS	+= -I../../fujitsu/include
+    CPPFLAGS	+= -I../../fujitsu/include
+endif
+#-- debug
+# FFLAGS	= -c -O0 -g -DDEBUG
+# CFLAGS	= -c -O0 -g -DDEBUG
+# CPPFLAGS	= -c -O0 -g -DDEBUG
+
+F90FLAGS	= $(FFLAGS) -ffree-form
+LFLAGS		= 
+ARFLAGS		= 
+
+CFLAGS  	+= -DDSFMT_MEXP=19937
+CPPFLAGS	+= -DDSFMT_MEXP=19937
+

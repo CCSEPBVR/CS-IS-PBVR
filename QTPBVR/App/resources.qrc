@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Resources/images/sync.png</file>
+        <file>Resources/json/preset_color_map.json</file>
+    </qresource>
+</RCC>

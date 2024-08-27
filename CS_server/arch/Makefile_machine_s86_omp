@@ -1,0 +1,6 @@
+CXX = icpc
+CXXFLAGS = -O3 -xCORE-AVX2 -qopenmp
+CC  = icc
+CCFLAGS =-O3 -xCORE-AVX2 -qopenmp
+LD = icpc
+LDFLAGS = -O3 -xCORE-AVX2 -qopenmp

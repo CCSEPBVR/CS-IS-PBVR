@@ -1,0 +1,6 @@
+CXX=g++-7
+CXXFLAGS=-O3 -march=native
+CC=gcc-7
+CCFLAGS=-O3 -march=native
+LD=g++-7
+LDFLAGS=-lstdc++ -static-libgcc -static-libstdc++

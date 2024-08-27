@@ -1,0 +1,10 @@
+CXX=g++
+#CXXFLAGS=-O3 -fopenmp -march=native
+#CXXFLAGS=-O3 -fopenmp -march=corei7
+CXXFLAGS=-g -O0 -fopenmp -march=corei7
+CC=gcc
+#CCFLAGS=-O3 -fopenmp -march=native
+#CCFLAGS=-O3 -fopenmp -march=corei7
+CCFLAGS=-g -O0 -fopenmp -march=corei7
+LD=g++
+LDFLAGS=-fopenmp -lstdc++ -static-libgcc -static-libstdc++ 

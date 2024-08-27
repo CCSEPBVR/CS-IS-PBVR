@@ -1,0 +1,34 @@
+#!/bin/bash -ue
+
+#PBS -q pg9
+#PBS -P PBVR
+#PBS -l select=1:ncpus=48:mpiprocs=4:ompthreads=12:ngpus=1
+#PBS -l walltime=0:30:0
+#PBS -N pbvr_hydro_struct
+#PBS -o ../log/
+#PBS -j oe
+echo start PBVR Hydrogen struct example
+if [ -n "${PBS_O_WORKDIR}" ]; then
+    cd ${PBS_O_WORKDIR}
+fi
+
+# env
+. /etc/profile.d/modules.sh 
+module purge
+. ../../../arch/modules_sgi8600_icc.sh
+
+export OMP_NUM_THREADS=12
+export PARTICLEDIR=./particle_out
+
+module list 2>&1 
+
+
+env
+
+echo start mpi
+
+mpiexec_mpt -np 4 omplace -nt ${OMP_NUM_THREADS} \
+   ./run 2>&1 | tee -a logfile.txt
+
+echo finish mpi
+

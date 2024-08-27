@@ -1,0 +1,21 @@
+COMMON_FLAGS := -Kfast,parallel,openmp -Krestp=all
+C_FLAGS      :=$(COMMON_FLAGS),optmsg=2 -Nsta -Nlst=t -DFUGAKU_OPT=1
+
+
+CXX	  = FCCpx
+CXXFLAGS := $(C_FLAGS) 
+
+CC	  = fccpx
+CCFLAGS  := $(C_FLAGS) 
+
+LD	  = FCCpx
+LDFLAGS	  =  $(COMMON_FLAGS) 
+
+MPICXX	    = mpiFCCpx
+MPICXXFLAGS:= $(C_FLAGS) 
+
+MPICC	    = mpifccpx
+MPICCFLAGS := $(C_FLAGS) 
+
+MPILD	    = mpiFCCpx
+MPILDFLAGS := $(COMMON_FLAGS) 

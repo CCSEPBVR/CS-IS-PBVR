@@ -1,0 +1,21 @@
+CXX = icpc
+CXXFLAGS = -O3 -axMIC-AVX512 -qopenmp -ipo -qopt-report=5
+
+CC = icc
+CCFLAGS = -O3 -axMIC-AVX512 -qopenmp -ipo -qopt-report=5
+
+LD = icpc
+LDFLAGS = -O3 -axMIC-AVX512 -qopenmp -ipo -qopt-report=5
+
+MPICXX = mpiicpc
+MPICXXFLAGS = -O3 -axMIC-AVX512 -qopenmp -ipo -qopt-report=5
+
+MPICC = mpiicc
+MPICCFLAGS = -O3 -axMIC-AVX512 -qopenmp -ipo -qopt-report=5
+
+MPILD = mpiicpc
+MPILDFLAGS = -O3 -axMIC-AVX512 -qopenmp -ipo -qopt-report=5
+
+NTL_CC  = icc
+NTL_CXX = icpc
+NTL_CFLAGS = -O3 -axMIC-AVX512 -qopenmp -fp-model precise -ipo

@@ -1,0 +1,26 @@
+
+# compilers
+F90		= mpif90
+CC		= mpicc
+CXX             = mpic++
+
+# compiler options
+#
+
+#-- no debug
+FFLAGS		= -c -O3 -DNDEBUG
+CFLAGS		= -c -O3 -DNDEBUG
+CPPFLAGS	= -c -O3 -DNDEBUG
+
+#-- debug
+# FFLAGS	= -c -O0 -g -DDEBUG
+# CFLAGS	= -c -O0 -g -DDEBUG
+# CPPFLAGS	= -c -O0 -g -DDEBUG
+
+F90FLAGS	= $(FFLAGS) -ffree-form
+LFLAGS		= 
+ARFLAGS		= 
+
+CFLAGS  	+= -DDSFMT_MEXP=19937
+CPPFLAGS	+= -DDSFMT_MEXP=19937
+

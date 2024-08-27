@@ -1,0 +1,12 @@
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.lib
+*.d
+*.obj
+*.idb
+*.pdb
+*.suo
+*~
