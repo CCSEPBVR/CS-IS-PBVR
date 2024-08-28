@@ -32,6 +32,7 @@ MergePanel2::MergePanel2(QWidget *parent, Preference* preference, TimeController
     connect(ui->filesTableWidget, &QTableWidget::cellDoubleClicked, this, &MergePanel2::onFilesTWidgetCellDoubleClicked);
     connect( ui->browserPushButton, &QPushButton::clicked, this, &MergePanel2::onBrowser );
     connect( ui->exportPushButton, &QPushButton::clicked, this, &MergePanel2::onExport );
+    connect( ui->centeringPushButton, &QPushButton::clicked, this, &MergePanel2::onCentering );
     connect( ui->applyPushButton, &QPushButton::clicked, this, &MergePanel2::onApply );
 }
 
@@ -577,6 +578,89 @@ void MergePanel2::onExport()
     {
         m_is_export = false;
     }
+}
+
+#include "ExtendedKVS/CustomObjectManager.h"
+
+void MergePanel2::onCentering()
+{
+    CustomObjectManager* object_manager = static_cast<CustomObjectManager*>( m_screen->scene()->objectManager() );
+    kvs::Vec3 min_obj;
+    kvs::Vec3 max_obj;
+    int counter = 0;
+
+    for (int row = 0; row < m_files_manager2.size(); ++row)
+    {
+        if (m_screen->scene()->object(m_files_manager2[row]->getIDs().first)->isVisible())
+        {
+            ++counter;
+            if (counter >= 2)
+            {
+                break;
+            }
+        }
+    }
+
+    if( counter == 1 )
+    {
+        kvs::Vec3 init_object_manager_min_object( 1e+06, 1e+06, 1e+06 );
+        kvs::Vec3 init_object_manager_max_object( -1e+06, -1e+06, -1e+06 );
+        for( int row = 0; row < m_files_manager2.size(); row++ )
+        {
+            if( m_files_manager2[row]->getIDs().first != -1 && m_files_manager2[row]->getIDs().second != -1 )
+            {
+                auto* object = m_screen->scene()->object( m_files_manager2[row]->getIDs().first );
+                if( object->isVisible() )
+                {
+                    min_obj.x() = kvs::Math::Min( init_object_manager_min_object.x(), object->minExternalCoord().x() );
+                    min_obj.y() = kvs::Math::Min( init_object_manager_min_object.y(), object->minExternalCoord().y() );
+                    min_obj.z() = kvs::Math::Min( init_object_manager_min_object.z(), object->minExternalCoord().z() );
+
+                    max_obj.x() = kvs::Math::Max( init_object_manager_max_object.x(), object->maxExternalCoord().x() );
+                    max_obj.y() = kvs::Math::Max( init_object_manager_max_object.y(), object->maxExternalCoord().y() );
+                    max_obj.z() = kvs::Math::Max( init_object_manager_max_object.z(), object->maxExternalCoord().z() );
+                }
+            }
+        }
+        kvs::Vec3 diff = max_obj - min_obj;
+        float max_diff = kvs::Math::Max( diff.x(), diff.y(), diff.z() );
+        float normalize = 6.0f / max_diff;
+
+        object_manager->setMinMaxObjectCoords( min_obj, max_obj );
+        object_manager->setMinMaxExternalCoords( kvs::Vec3( -3, -3, -3 ), kvs::Vec3( 3, 3, 3 ) );
+        object_manager->setNormalize( kvs::Vec3( normalize, normalize, normalize) );
+    }
+    else
+    {
+        kvs::Vec3 init_object_manager_min_object = m_screen->scene()->objectManager()->minObjectCoord();
+        kvs::Vec3 init_object_manager_max_object = m_screen->scene()->objectManager()->maxObjectCoord();
+        for( int row = 0; row < m_files_manager2.size(); row++ )
+        {
+            if( m_files_manager2[row]->getIDs().first != -1 && m_files_manager2[row]->getIDs().second != -1 )
+            {
+                auto* object = m_screen->scene()->object( m_files_manager2[row]->getIDs().first );
+                if( object->isVisible() )
+                {
+                    min_obj.x() = kvs::Math::Min( init_object_manager_min_object.x(), object->minExternalCoord().x() );
+                    min_obj.y() = kvs::Math::Min( init_object_manager_min_object.y(), object->minExternalCoord().y() );
+                    min_obj.z() = kvs::Math::Min( init_object_manager_min_object.z(), object->minExternalCoord().z() );
+
+                    max_obj.x() = kvs::Math::Max( init_object_manager_max_object.x(), object->maxExternalCoord().x() );
+                    max_obj.y() = kvs::Math::Max( init_object_manager_max_object.y(), object->maxExternalCoord().y() );
+                    max_obj.z() = kvs::Math::Max( init_object_manager_max_object.z(), object->maxExternalCoord().z() );
+                }
+            }
+        }
+        kvs::Vec3 diff = max_obj - min_obj;
+        float max_diff = kvs::Math::Max( diff.x(), diff.y(), diff.z() );
+        float normalize = 6.0f / max_diff;
+
+        object_manager->setMinMaxObjectCoords( min_obj, max_obj );
+        object_manager->setMinMaxExternalCoords( kvs::Vec3( -3, -3, -3 ), kvs::Vec3( 3, 3, 3 ) );
+        object_manager->setNormalize( kvs::Vec3( normalize, normalize, normalize) );
+    }
+    m_screen->scene()->reset();
+    m_screen->update();
 }
 
 /**

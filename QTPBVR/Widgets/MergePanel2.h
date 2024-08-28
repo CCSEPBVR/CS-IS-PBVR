@@ -160,6 +160,7 @@ private:
 private slots:
     void onBrowser();
     void onExport();
+    void onCentering();
     void onApply();
     void onFilesTWidgetCellDoubleClicked( int row, int column );
     void onWorkerThreadFinished();
