@@ -1174,6 +1174,7 @@ void MergePanel2::totalParticles()
     for( int row = 0; row < m_files_manager2.size(); row++ )
     {
         if( m_files_manager2[row]->getFormat() == FilesManager2::ServerPointObjectCS ||
+            m_files_manager2[row]->getFormat() == FilesManager2::ServerPointObjectIS ||
             m_files_manager2[row]->getFormat() == FilesManager2::PointObjectKVSML ||
             m_files_manager2[row]->getFormat() == FilesManager2::PointObjectLAS ||
             m_files_manager2[row]->getFormat() == FilesManager2::PointObjectPTS )
