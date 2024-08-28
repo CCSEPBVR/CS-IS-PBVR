@@ -23,12 +23,15 @@ MergePanel2::MergePanel2(QWidget *parent, Preference* preference, TimeController
     m_connect( connectUI ),
     m_shading_controller( shading_controller ),
     m_files_manager2(),
-    m_is_worker_thread_running( false )
+    m_is_worker_thread_running( false ),
+    m_is_particle_generation_needed( false ),
+    m_is_export( false )
 {
     ui->setupUi(this);
 
     connect(ui->filesTableWidget, &QTableWidget::cellDoubleClicked, this, &MergePanel2::onFilesTWidgetCellDoubleClicked);
     connect( ui->browserPushButton, &QPushButton::clicked, this, &MergePanel2::onBrowser );
+    connect( ui->exportPushButton, &QPushButton::clicked, this, &MergePanel2::onExport );
     connect( ui->applyPushButton, &QPushButton::clicked, this, &MergePanel2::onApply );
 }
 
@@ -562,6 +565,20 @@ void MergePanel2::onBrowser()
     calculateTotalMinMaxTimeStep();
 }
 
+void MergePanel2::onExport()
+{
+    m_export_file_path = QFileDialog::getSaveFileName(this, tr("Save Server-Side Point Object"), QDir::homePath(), tr("すべてのファイル ( * )"));
+    if ( !m_export_file_path.isEmpty() )
+    {
+        ui->exportPushButton->setEnabled( false );
+        m_is_export = true;
+    }
+    else
+    {
+        m_is_export = false;
+    }
+}
+
 /**
  * @brief MergePanel::onApply
  * @author TO0603
@@ -571,8 +588,7 @@ void MergePanel2::onBrowser()
  * この関数はユーザが適用ボタンを押した際に呼び出され、isEraseChecked関数を実行する。
  */
 void MergePanel2::onApply()
-{
-    //    isEraseChecked();
+{    
     updateCheckState();
     updatePolygonColorOpacity();
     m_screen->update();
@@ -778,9 +794,10 @@ void MergePanel2::WorkerThread2::timeStepCheckAndImport( int row )
                 if( m_merge->m_files_manager2[row]->getAlreadyImportedTimeStep() == m_request_time_step )
                 {
                     qDebug() << "既に要求されたタイムステップのデータをインポートしています。" << "[" << row << "]" << __LINE__;
-                    if( m_merge->m_files_manager2[row]->getFormat() == ( FilesManager2::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager2::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) )
+                    if( ( m_merge->m_files_manager2[row]->getFormat() == FilesManager2::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) ||
+                        ( m_merge->m_files_manager2[row]->getFormat() == FilesManager2::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) )
                     {
-                        qDebug() << "粒子生成の要求があります。";
+                        qDebug() << "粒子生成の要求があります。" << "[" << row << "]" << __LINE__;
                         m_merge->m_files_manager2[row]->setObject( m_merge->m_connect->generateParticles( m_request_time_step ) );
                         m_merge->setIsParticleGenerationNeeded( false );
                     }
@@ -811,9 +828,10 @@ void MergePanel2::WorkerThread2::timeStepCheckAndImport( int row )
                     if( m_merge->m_files_manager2[row]->getAlreadyImportedTimeStep() <= minTimeStep )
                     {
                         qDebug() << "既に対象データの最小タイムステップのデータをインポートしています。" << "[" << row << "]" << __LINE__;
-                        if( m_merge->m_files_manager2[row]->getFormat() == ( FilesManager2::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager2::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) )
+                        if( ( m_merge->m_files_manager2[row]->getFormat() == FilesManager2::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) ||
+                            ( m_merge->m_files_manager2[row]->getFormat() == FilesManager2::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) )
                         {
-                            qDebug() << "粒子生成の要求があります。";
+                            qDebug() << "粒子生成の要求があります。" << "[" << row << "]" << __LINE__;
                             m_merge->m_files_manager2[row]->setObject( m_merge->m_connect->generateParticles( minTimeStep ) );
                             m_merge->setIsParticleGenerationNeeded( false );
                         }
@@ -850,9 +868,10 @@ void MergePanel2::WorkerThread2::timeStepCheckAndImport( int row )
                     if( m_merge->m_files_manager2[row]->getAlreadyImportedTimeStep() >= maxTimeStep )
                     {
                         qDebug() << "既に対象データの最大タイムステップのデータをインポートしています。" << "[" << row << "]" << __LINE__;
-                        if( m_merge->m_files_manager2[row]->getFormat() == ( FilesManager2::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) || ( FilesManager2::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) )
+                        if( ( m_merge->m_files_manager2[row]->getFormat() == FilesManager2::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) ||
+                            ( m_merge->m_files_manager2[row]->getFormat() == FilesManager2::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) )
                         {
-                            qDebug() << "粒子生成の要求があります。";
+                            qDebug() << "粒子生成の要求があります。" << "[" << row << "]" << __LINE__;
                             m_merge->m_files_manager2[row]->setObject( m_merge->m_connect->generateParticles( maxTimeStep ) );
                             m_merge->setIsParticleGenerationNeeded( false );
                         }
@@ -920,6 +939,8 @@ std::string MergePanel2::WorkerThread2::updateTimeStepInFileName(QString fileNam
 #endif
     }
 }
+
+#include <kvs/PointExporter>
 
 void MergePanel2::onWorkerThreadFinished()
 {
@@ -999,6 +1020,61 @@ void MergePanel2::onWorkerThreadFinished()
                 m_files_manager2[row]->setChangePolygonTransferFunction( false );
             }
         }
+
+        if( m_files_manager2[row]->getFormat() == FilesManager2::ServerPointObjectCS && m_is_export == true )
+        {
+            for( int i = m_files_manager2[row]->getMinTimeStep(); i <= m_files_manager2[row]->getMaxTimeStep(); i++ )
+            {
+                // 現在のタイムステップに対応するファイルのパスを生成
+                QFileInfo fileInfo( m_export_file_path + "_" + QString( "%1" ).arg( i, 5, 10, QChar('0') ) + ".kvsml" );
+
+                // ファイルが存在するかどうかをチェック
+                if( fileInfo.exists() )
+                {
+                    continue;  // ファイルが存在する場合は次のタイムステップへ
+                }
+                else
+                {
+                    // getAlreadyImportedTimeStep の値を使用して新しいファイルを生成
+                    QFileInfo newFileInfo( m_export_file_path + "_" + QString( "%1" ).arg( m_files_manager2[row]->getAlreadyImportedTimeStep(), 5, 10, QChar('0') ) + ".kvsml" );
+                    auto* pointObject = dynamic_cast<kvs::PointObject*>( m_screen->scene()->objectManager()->object( m_files_manager2[row]->getIDs().first ) );
+                    if( pointObject )
+                    {
+                        kvs::KVSMLPointObject* kvsml = new kvs::PointExporter<kvs::KVSMLPointObject>( pointObject );
+
+                        if (kvsml) // kvsml が正しく作成された場合のみ処理を実行
+                        {
+                            kvsml->setWritingDataTypeToExternalBinary();
+                            kvsml->write( newFileInfo.filePath().toStdString() );
+                            delete kvsml;
+                        }
+                        else
+                        {
+                            // kvsml の作成が失敗した場合のエラーハンドリング（必要であれば追加）
+                            m_is_export = false;
+                            ui->exportPushButton->setEnabled(true);
+                            return;
+                        }
+                    }
+                }
+            }
+
+            bool allTimeStepExported = true;
+            for( int i = m_files_manager2[row]->getMinTimeStep(); i <= m_files_manager2[row]->getMaxTimeStep(); i++ )
+            {
+                QFileInfo fileInfo( m_export_file_path + "_" + QString( "%1" ).arg( i, 5, 10, QChar('0') ) + ".kvsml" );
+                if( !fileInfo.exists() )
+                {
+                    allTimeStepExported = false;
+                }
+            }
+
+            if( allTimeStepExported == true )
+            {
+                m_is_export = false;
+                ui->exportPushButton->setEnabled(true);
+            }
+        }
     }
     m_time_controller_b->getTimeControllerA()->getCurrentTimeStepLineEdit()->setValue( m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() );
     m_preference->setCurrentTimeStep( m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() );
@@ -1019,7 +1095,7 @@ void MergePanel2::totalParticles()
             m_files_manager2[row]->getFormat() == FilesManager2::PointObjectPTS )
         {
             auto* object = m_screen->scene()->object( m_files_manager2[row]->getIDs().first );
-            if( object->isVisible() )
+            if( object && object->isVisible() )
             {
                 if (auto* pointObject = dynamic_cast<kvs::PointObject*>(object))
                 {

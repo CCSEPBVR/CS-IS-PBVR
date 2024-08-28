@@ -123,8 +123,14 @@ public:
     void serverObjectCS( QString volumeDataFilePath, int min, int max );
     void serverObjectIS( QString volumeDataFilePath, int min, int max );
     void updateObjectTimeStepIS( int min, int max );
+
     void setIsParticleGenerationNeeded( const bool& is_particle_generation_needed ){ m_is_particle_generation_needed = is_particle_generation_needed; }
+    void setIsExport( const bool& is_export ){ m_is_export = is_export; }
+    void setExportFilePath( const QString& export_file_path ){ m_export_file_path = export_file_path; }
+
     const bool& getIsParticleGenerationNeeded() const { return m_is_particle_generation_needed; }
+    const bool& getIsExport() const { return m_is_export; }
+    const QString& getExportFilePath() const { return m_export_file_path; }
 
 private:
     Ui::MergePanel2 *ui;
@@ -138,6 +144,8 @@ private:
     class WorkerThread2;
     bool m_is_worker_thread_running;
     bool m_is_particle_generation_needed;
+    bool m_is_export;
+    QString m_export_file_path;
 
 private:
     void registerFiles( const QString& filePath );
@@ -151,6 +159,7 @@ private:
 
 private slots:
     void onBrowser();
+    void onExport();
     void onApply();
     void onFilesTWidgetCellDoubleClicked( int row, int column );
     void onWorkerThreadFinished();
@@ -182,9 +191,6 @@ private:
 private:
     template <typename Importer, typename ObjectType, typename RendererType>
     void timeStepCheckAndImport( int row );
-
-    template <typename Importer, typename ObjectType, typename RendererType>
-    void test( int row, QString filePath, bool keepInitial, bool keepFinal, int minTimeStep, int maxTimeStep, kvs::ObjectBase* object );
 
     std::string updateTimeStepInFileName( QString fileName, int nextTimeStep );
 };
