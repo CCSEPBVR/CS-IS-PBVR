@@ -39,7 +39,6 @@ HEADERS += \
     ExtendedTransferFunctionMessage.h \
     FrequencyTable.h \
     FunctionListEditor.h \
-    MergePanel.h \
     MergePanel2.h \
     OpacityMapEditor.h \
     ParameterFile.h \
@@ -53,7 +52,6 @@ HEADERS += \
     TFEHistogramBar.h \
     TFEOpacityMapBar.h \
     TFEOpacityMapPalette.h \
-    TimeControl.h \
     TimeController.h \
     TransferFunctionEditor.h \
     VolumeTransform.h \
@@ -74,7 +72,6 @@ SOURCES += \
     DisplayPointSizeControl.cpp \
     ExtendedTransferFunctionMessage.cpp \
     FunctionListEditor.cpp \
-    MergePanel.cpp \
     MergePanel2.cpp \
     OpacityMapEditor.cpp \
     ParameterFile.cpp \
@@ -87,7 +84,6 @@ SOURCES += \
     TFEHistogramBar.cpp \
     TFEOpacityMapBar.cpp \
     TFEOpacityMapPalette.cpp \
-    TimeControl.cpp \
     TimeController.cpp \
     TransferFunctionEditor.cpp \
     VolumeTransform.cpp \
@@ -107,14 +103,12 @@ FORMS += \
     DataSummary.ui \
     DisplayPointSizeControl.ui \
     FunctionListEditor.ui \
-    MergePanel.ui \
     MergePanel2.ui \
     OpacityMapEditor.ui \
     Preference.ui \
     RenderOptions.ui \
     RepetitionLevelControl.ui \
     ShadingController.ui \
-    TimeControl.ui \
     TransferFunctionEditor.ui \
     VolumeTransform.ui \
     Connect.ui

@@ -12,7 +12,6 @@
 #include "Widgets/MergePanel2.h"
 #include "Widgets/VolumeTransform.h"
 #include "Widgets/Connect.h"
-#include "Widgets/TimeControl.h"
 #include "Widgets/AnimationControls.h"
 #include "Widgets/DataProperties.h"
 #include "Widgets/DataSummary.h"
