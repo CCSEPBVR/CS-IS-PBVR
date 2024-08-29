@@ -662,6 +662,7 @@ void MergePanel2::onApply()
 {
     updateCheckState();
     updatePolygonColorOpacity();
+    totalParticles();
     m_screen->update();
 }
 
