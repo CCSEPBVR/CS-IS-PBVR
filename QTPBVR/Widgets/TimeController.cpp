@@ -12,8 +12,10 @@ TimeControllerA::TimeControllerA(QWidget *parent) :
 
         m_current_time_step_spin_box = new QSpinBox(this);
         m_current_time_step_spin_box->setFixedWidth(100);
-        m_current_time_step_spin_box->setMinimum(0);
+        m_current_time_step_spin_box->setMinimum(-1);
         m_current_time_step_spin_box->setMaximum( INT_MAX );
+        m_current_time_step_spin_box->setValue(-1);
+        m_current_time_step_spin_box->setSpecialValueText( "NO OBJECT" );
         m_current_time_step_spin_box->setButtonSymbols( QAbstractSpinBox::NoButtons );
         m_current_time_step_spin_box->setEnabled(false);
         QWidgetAction *m_current_time_step_line_editAction = new QWidgetAction(this);
@@ -183,7 +185,7 @@ void TimeControllerB::updateMinMax( int min, int max, int totalFiles )
     switch ( totalFiles )
     {
     case 0:
-        m_time_controller_a->getCurrentTimeStepLineEdit()->setValue( 0 );
+        m_time_controller_a->getCurrentTimeStepLineEdit()->setValue( -1 );
 
         m_time_controller_a->getMinLimitTimeStepSpinBox()->setValue( 0 );
         m_time_controller_a->getMinLimitTimeStepSpinBox()->setMinimum( 0 );
@@ -192,6 +194,7 @@ void TimeControllerB::updateMinMax( int min, int max, int totalFiles )
         m_time_controller_a->getMaxLimitTimeStepSpinBox()->setValue( 0 );
         m_time_controller_a->getMaxLimitTimeStepSpinBox()->setMinimum( 0 );
         m_time_controller_a->getMaxLimitTimeStepSpinBox()->setMaximum( 0 );
+        m_time_controller_a->getTotalTimeStepRangeLabel()->setText( QString( "(Min : %1, Max : %2)" ).arg( 0 ).arg( 0 ) );
         break;
     case 1:
         m_time_controller_a->getMinLimitTimeStepSpinBox()->setValue( min );
@@ -342,7 +345,14 @@ void TimeControllerB::onPrevious()
     qDebug() << "previous!!";
     disableButtons();
     int currentValue = m_time_controller_a->getCurrentTimeStepLineEdit()->value();
-    m_time_controller_a->getJumpTimeStepSpinBox()->setValue( currentValue - 1 );
+    if( currentValue == -1 )
+    {
+        m_time_controller_a->getJumpTimeStepSpinBox()->setValue( 0 );
+    }
+    else
+    {
+        m_time_controller_a->getJumpTimeStepSpinBox()->setValue( currentValue - 1 );
+    }
     m_merge->mergeObjects( m_time_controller_a->getCurrentTimeStepLineEdit()->value(), m_time_controller_a->getJumpTimeStepSpinBox()->value() );
 }
 
@@ -446,7 +456,14 @@ void TimeControllerB::onTimerStart()
     }
     else if( m_reverse_push_button->isChecked() )
     {
-        m_time_controller_a->getJumpTimeStepSpinBox()->setValue( currentValue - 1 );
+        if( currentValue == -1 )
+        {
+            m_time_controller_a->getJumpTimeStepSpinBox()->setValue( 0 );
+        }
+        else
+        {
+            m_time_controller_a->getJumpTimeStepSpinBox()->setValue( currentValue - 1 );
+        }
         m_merge->mergeObjects( m_time_controller_a->getCurrentTimeStepLineEdit()->value(), m_time_controller_a->getJumpTimeStepSpinBox()->value() );
     }
 }

@@ -659,7 +659,7 @@ void MergePanel2::onCentering()
  * この関数はユーザが適用ボタンを押した際に呼び出され、isEraseChecked関数を実行する。
  */
 void MergePanel2::onApply()
-{    
+{
     updateCheckState();
     updatePolygonColorOpacity();
     m_screen->update();
@@ -1153,7 +1153,14 @@ void MergePanel2::onWorkerThreadFinished()
             }
         }
     }
-    m_time_controller_b->getTimeControllerA()->getCurrentTimeStepLineEdit()->setValue( m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() );
+    if( m_files_manager2.size() == 0 )
+    {
+        m_time_controller_b->getTimeControllerA()->getCurrentTimeStepLineEdit()->setValue( -1 );
+    }
+    else
+    {
+        m_time_controller_b->getTimeControllerA()->getCurrentTimeStepLineEdit()->setValue( m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() );
+    }
     m_preference->setCurrentTimeStep( m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() );
     totalParticles();
     m_is_worker_thread_running = false;
