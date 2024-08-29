@@ -81,6 +81,8 @@ TimeControllerA::TimeControllerA(QWidget *parent) :
         m_update_interval_spin_box->setFixedWidth( 100 );
         m_update_interval_spin_box->setMinimum( 0 );
         m_update_interval_spin_box->setMaximum( 60000 );
+        m_update_interval_spin_box->setValue( 100 );
+        m_update_interval_spin_box->setSuffix( "ms" );
         QWidgetAction *stepIntervalSBoxAction = new QWidgetAction(this);
         stepIntervalSBoxAction->setDefaultWidget(m_update_interval_spin_box);
         this->addAction(stepIntervalSBoxAction);
