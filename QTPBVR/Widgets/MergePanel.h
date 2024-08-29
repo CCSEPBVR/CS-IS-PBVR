@@ -4,7 +4,7 @@
 #include <QDockWidget>
 
 #include "ExtendedKVS/Screen.h"
-#include "Widgets/TimeController.h"
+#include "Widgets/ToolBars.h"
 #include "Widgets/Connect.h"
 #include "Widgets/ShadingController.h"
 #include <QFileInfo>

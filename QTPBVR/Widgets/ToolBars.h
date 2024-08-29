@@ -1,5 +1,5 @@
-#ifndef TIMECONTROLLER_H
-#define TIMECONTROLLER_H
+#ifndef TOOLBARS_H
+#define TOOLBARS_H
 
 #include <QToolBar>
 #include <QLabel>
@@ -123,4 +123,4 @@ private:
     QComboBox* m_color_map_bar_selector_combo_box;
 };
 
-#endif // TIMECONTROLLER_H
+#endif // TOOLBARS_H

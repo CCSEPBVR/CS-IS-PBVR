@@ -22,7 +22,7 @@
 #include "Widgets/TransferFunctionEditor.h"
 #include "Widgets/Coordinates.h"
 #include "Widgets/ColorFunctionSelector.h"
-#include "Widgets/TimeController.h"
+#include "Widgets/ToolBars.h"
 
 namespace Ui {
 class PBVRGUI;

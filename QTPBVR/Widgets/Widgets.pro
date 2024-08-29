@@ -52,7 +52,7 @@ HEADERS += \
     TFEHistogramBar.h \
     TFEOpacityMapBar.h \
     TFEOpacityMapPalette.h \
-    TimeController.h \
+    ToolBars.h \
     TransferFunctionEditor.h \
     VolumeTransform.h \
     Connect.h
@@ -84,7 +84,7 @@ SOURCES += \
     TFEHistogramBar.cpp \
     TFEOpacityMapBar.cpp \
     TFEOpacityMapPalette.cpp \
-    TimeController.cpp \
+    ToolBars.cpp \
     TransferFunctionEditor.cpp \
     VolumeTransform.cpp \
     Connect.cpp
