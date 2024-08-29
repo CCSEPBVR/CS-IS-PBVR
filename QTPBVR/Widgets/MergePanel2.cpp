@@ -422,30 +422,17 @@ void MergePanel2::calculateTotalMinMaxTimeStep()
 {
     int totalMinTimeStep = std::numeric_limits<int>::max();
     int totalMaxTimeStep = std::numeric_limits<int>::min();
-    int count;
-    bool isSingleObject = true;
-    bool isNoObject = true;
+    int totalFiles;
 
-    for( count = 0; count < m_files_manager2.size(); count++ )
+    for( totalFiles = 0; totalFiles < m_files_manager2.size(); totalFiles++ )
     {
-        FilesManager2* filesManager = m_files_manager2[count];
+        FilesManager2* filesManager = m_files_manager2[totalFiles];
         totalMinTimeStep = std::min( totalMinTimeStep, filesManager->getMinTimeStep() );
         totalMaxTimeStep = std::max( totalMaxTimeStep, filesManager->getMaxTimeStep() );
-
-        if( count >= 1 )
-        {
-            isSingleObject = false;
-        }
-        isNoObject = false;
     }
 
-    if( isNoObject )
-    {
-        totalMinTimeStep = 0;
-        totalMaxTimeStep = 0;
-    }
     qDebug() << totalMinTimeStep << "," << totalMaxTimeStep;
-    m_time_controller_b->updateMinMax( totalMinTimeStep, totalMaxTimeStep, isSingleObject );
+    m_time_controller_b->updateMinMax( totalMinTimeStep, totalMaxTimeStep, totalFiles );
 }
 
 void MergePanel2::updateCheckState()

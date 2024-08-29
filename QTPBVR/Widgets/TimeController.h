@@ -52,7 +52,7 @@ public:
     ~TimeControllerB();
 
     bool getLoopButtonEnabled() const;
-    void updateMinMax( int min, int max, bool isSingleObject );
+    void updateMinMax( int min, int max, int totalFiles );
     void updateTimeStep();
 //    void setMerge( MergePanel2* merge ){  m_merge = merge; }
 

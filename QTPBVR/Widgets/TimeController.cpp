@@ -170,7 +170,7 @@ bool TimeControllerB::getLoopButtonEnabled() const
     return m_loop_push_button->isChecked();
 }
 
-void TimeControllerB::updateMinMax( int min, int max, bool isSingleObject )
+void TimeControllerB::updateMinMax( int min, int max, int totalFiles )
 {
     m_time_controller_a->getMinLimitTimeStepSpinBox()->setMinimum( min );
     m_time_controller_a->getMinLimitTimeStepSpinBox()->setMaximum( max );
@@ -180,10 +180,25 @@ void TimeControllerB::updateMinMax( int min, int max, bool isSingleObject )
 
     m_time_controller_a->getTotalTimeStepRangeLabel()->setText( QString( "(Min : %1, Max : %2)" ).arg( min ).arg( max ) );
 
-    if( isSingleObject == true )
+    switch ( totalFiles )
     {
+    case 0:
+        m_time_controller_a->getCurrentTimeStepLineEdit()->setValue( 0 );
+
+        m_time_controller_a->getMinLimitTimeStepSpinBox()->setValue( 0 );
+        m_time_controller_a->getMinLimitTimeStepSpinBox()->setMinimum( 0 );
+        m_time_controller_a->getMinLimitTimeStepSpinBox()->setMaximum( 0 );
+
+        m_time_controller_a->getMaxLimitTimeStepSpinBox()->setValue( 0 );
+        m_time_controller_a->getMaxLimitTimeStepSpinBox()->setMinimum( 0 );
+        m_time_controller_a->getMaxLimitTimeStepSpinBox()->setMaximum( 0 );
+        break;
+    case 1:
         m_time_controller_a->getMinLimitTimeStepSpinBox()->setValue( min );
         m_time_controller_a->getMaxLimitTimeStepSpinBox()->setValue( max );
+        break;
+    default:
+        break;
     }
 }
 
