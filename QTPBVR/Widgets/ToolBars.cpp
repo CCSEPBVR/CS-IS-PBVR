@@ -102,13 +102,11 @@ TimeControllerB::TimeControllerB( QWidget *parent, TimeControllerA *time_control
     QSize buttonSize(50, 50);
 
     m_first_time_step_push_button = createButton("://Resources/images/first.svg", iconSize, buttonSize, this);
-    m_first_time_step_push_button->setCheckable( true );
     QWidgetAction *firstAction = new QWidgetAction(this);
     firstAction->setDefaultWidget(m_first_time_step_push_button);
     this->addAction(firstAction);
 
     m_previous_time_step_push_button = createButton("://Resources/images/previous.svg", iconSize, buttonSize, this);
-    m_previous_time_step_push_button->setCheckable( true );
     QWidgetAction *previousAction = new QWidgetAction(this);
     previousAction->setDefaultWidget(m_previous_time_step_push_button);
     this->addAction(previousAction);
@@ -126,19 +124,16 @@ TimeControllerB::TimeControllerB( QWidget *parent, TimeControllerA *time_control
     this->addAction(playAction);
 
     m_next_time_step_push_button = createButton("://Resources/images/next.svg", iconSize, buttonSize, this);
-    m_next_time_step_push_button->setCheckable( true );
     QWidgetAction *nextAction = new QWidgetAction(this);
     nextAction->setDefaultWidget(m_next_time_step_push_button);
     this->addAction(nextAction);
 
     m_last_time_step_push_button = createButton("://Resources/images/last.svg", iconSize, buttonSize, this);
-    m_last_time_step_push_button->setCheckable( true );
     QWidgetAction *lastAction = new QWidgetAction(this);
     lastAction->setDefaultWidget(m_last_time_step_push_button);
     this->addAction(lastAction);
 
     m_jump_push_button = createButton("://Resources/images/jump.svg", iconSize, buttonSize, this);
-    m_jump_push_button->setCheckable( true );
     QWidgetAction *jumpAction = new QWidgetAction(this);
     jumpAction->setDefaultWidget(m_jump_push_button);
     this->addAction(jumpAction);
@@ -155,7 +150,8 @@ TimeControllerB::TimeControllerB( QWidget *parent, TimeControllerA *time_control
     connect( m_reverse_push_button, &QPushButton::clicked, this, &TimeControllerB::onReverse );
     connect( m_play_push_button, &QPushButton::clicked, this, &TimeControllerB::onPlay );
     connect( m_next_time_step_push_button, &QPushButton::clicked, this, &TimeControllerB::onNext );
-    connect( m_last_time_step_push_button, &QPushButton::clicked, this, &TimeControllerB::onLast );
+    connect( m_last_time_step_push_button, &QPushButton::pressed, this, &TimeControllerB::onLastPressed );
+    connect( m_last_time_step_push_button, &QPushButton::released, this, &TimeControllerB::onLastReleased );
     connect( m_jump_push_button, &QPushButton::clicked, this, &TimeControllerB::onJump );
     connect( m_loop_push_button, &QPushButton::clicked, this, &TimeControllerB::onLoop );
 
@@ -210,41 +206,19 @@ void TimeControllerB::updateMinMax( int min, int max, int totalFiles )
 void TimeControllerB::updateTimeStep()
 {
     qInfo() << "update!";
-    // ボタンの配列を定義
-    QPushButton* buttons[] = {
-        m_first_time_step_push_button,
-        m_previous_time_step_push_button,
-        m_reverse_push_button,
-        m_play_push_button,
-        m_next_time_step_push_button,
-        m_last_time_step_push_button,
-        m_jump_push_button
-    };
-
-    // 現在のタイムステップの値を取得
     int currentValue = m_time_controller_a->getCurrentTimeStepLineEdit()->value();
-
-    // ボタンの処理を実行
-    for (QPushButton* button : buttons)
+    if( m_reverse_push_button->isChecked() == true )
     {
-        if (button->isChecked())
-        {
-            if (button == m_reverse_push_button)
-            {
-                m_time_controller_a->getJumpTimeStepSpinBox()->setValue(currentValue - 1);
-            }
-            else if (button == m_play_push_button)
-            {
-                m_time_controller_a->getJumpTimeStepSpinBox()->setValue(currentValue + 1);
-            }
-            else
-            {
-                enableButtons();
-                button->setChecked(false);
-            }
-        }
+        m_time_controller_a->getJumpTimeStepSpinBox()->setValue(currentValue - 1);
     }
-    qInfo() << "debug!";
+    else if( m_play_push_button->isChecked() == true )
+    {
+        m_time_controller_a->getJumpTimeStepSpinBox()->setValue(currentValue + 1);
+    }
+    else
+    {
+        enableButtons();
+    }
 }
 
 QPushButton* TimeControllerB::createButton(const QString &iconPath, const QSize &iconSize, const QSize &buttonSize, QWidget *parent)
@@ -268,35 +242,25 @@ QPushButton* TimeControllerB::createButton(const QString &iconPath, const QSize 
     return button;
 }
 
-void TimeControllerB::disableButtons()
+void TimeControllerB::disableButtons(QPushButton *pressedButton)
 {
-    // ボタンの配列を定義
-    QPushButton* buttons[] = {
-        m_first_time_step_push_button,
-        m_previous_time_step_push_button,
-        m_reverse_push_button,
-        m_play_push_button,
-        m_next_time_step_push_button,
-        m_last_time_step_push_button,
-        m_jump_push_button
-    };
-
-    // ボタンがチェックされているかどうかを判定
-    bool isChecked = false;
-    for (QPushButton* button : buttons)
+    // 押されたボタン以外のボタンを無効化する
+    m_first_time_step_push_button->setDisabled(true);
+    m_previous_time_step_push_button->setDisabled(true);
+    if( (pressedButton == m_reverse_push_button) == false )
     {
-        if (button->isChecked())
-        {
-            isChecked = true;
-            break;
-        }
+        m_reverse_push_button->setDisabled(true);
     }
-
-    // チェックされているボタン以外を無効にする
-    for (QPushButton* button : buttons)
+    if( (pressedButton == m_play_push_button) == false )
     {
-        button->setEnabled(!isChecked || button->isChecked());
+        m_play_push_button->setDisabled(true);
     }
+    m_next_time_step_push_button->setDisabled(true);
+    if( (pressedButton == m_last_time_step_push_button) == false )
+    {
+        m_last_time_step_push_button->setDisabled(true);
+    }
+    m_jump_push_button->setDisabled(true);
 }
 
 void TimeControllerB::enableButtons()
@@ -337,7 +301,7 @@ void TimeControllerB::enableButtons()
 void TimeControllerB::onFirst()
 {
     qDebug() << "first!!";
-    disableButtons();
+    disableButtons( m_first_time_step_push_button );
     m_time_controller_a->getJumpTimeStepSpinBox()->setValue( m_time_controller_a->getJumpTimeStepSpinBox()->minimum() );
     m_merge->mergeObjects( m_time_controller_a->getCurrentTimeStepLineEdit()->value(), m_time_controller_a->getJumpTimeStepSpinBox()->value() );
 }
@@ -345,7 +309,7 @@ void TimeControllerB::onFirst()
 void TimeControllerB::onPrevious()
 {
     qDebug() << "previous!!";
-    disableButtons();
+    disableButtons( m_previous_time_step_push_button );
     int currentValue = m_time_controller_a->getCurrentTimeStepLineEdit()->value();
     if( currentValue == -1 )
     {
@@ -363,7 +327,7 @@ void TimeControllerB::onReverse()
     if( m_reverse_push_button->isChecked() )
     {
         qDebug() << "reverse!";
-        disableButtons();
+        disableButtons( m_reverse_push_button );
         m_time_controller_a->getJumpTimeStepSpinBox()->setDisabled( true );
         m_time_controller_a->getMinLimitTimeStepSpinBox()->setDisabled( true );
         m_time_controller_a->getMaxLimitTimeStepSpinBox()->setDisabled( true );
@@ -387,7 +351,7 @@ void TimeControllerB::onPlay()
     if( m_play_push_button->isChecked() )
     {
         qDebug() << "play!";
-        disableButtons();
+        disableButtons( m_play_push_button );
         m_time_controller_a->getJumpTimeStepSpinBox()->setDisabled( true );
         m_time_controller_a->getMinLimitTimeStepSpinBox()->setDisabled( true );
         m_time_controller_a->getMaxLimitTimeStepSpinBox()->setDisabled( true );
@@ -410,24 +374,71 @@ void TimeControllerB::onPlay()
 void TimeControllerB::onNext()
 {
     qDebug() << "next!!";
-    disableButtons();
+    disableButtons( m_next_time_step_push_button );
     int currentValue = m_time_controller_a->getCurrentTimeStepLineEdit()->value();
     m_time_controller_a->getJumpTimeStepSpinBox()->setValue( currentValue + 1 );
     m_merge->mergeObjects( m_time_controller_a->getCurrentTimeStepLineEdit()->value(), m_time_controller_a->getJumpTimeStepSpinBox()->value() );
 }
 
-void TimeControllerB::onLast()
+void TimeControllerB::onLastPressed()
 {
-    qDebug() << "last!!";
-    disableButtons();
-    m_time_controller_a->getJumpTimeStepSpinBox()->setValue( m_time_controller_a->getJumpTimeStepSpinBox()->maximum() );
-    m_merge->mergeObjects( m_time_controller_a->getCurrentTimeStepLineEdit()->value(), m_time_controller_a->getJumpTimeStepSpinBox()->value() );
+    m_last_pressed_timer.start();
+}
+
+void TimeControllerB::onLastReleased()
+{
+    qint64 elapsed = m_last_pressed_timer.elapsed();
+
+    if(elapsed > 500) // 長押しと判断される閾値（例えば500ミリ秒）
+    {
+        onLastLong();
+    }
+    else
+    {
+        onLastShort();
+    }
+}
+
+void TimeControllerB::onLastShort()
+{
+    if( m_is_long_press_active == false )
+    {
+        qDebug() << "last short!!";
+        disableButtons( m_last_time_step_push_button );
+        m_time_controller_a->getJumpTimeStepSpinBox()->setValue( m_time_controller_a->getJumpTimeStepSpinBox()->maximum() );
+        m_merge->mergeObjects( m_time_controller_a->getCurrentTimeStepLineEdit()->value(), m_time_controller_a->getJumpTimeStepSpinBox()->value() );
+    }
+    else
+    {
+        m_last_time_step_push_button->setChecked(true);
+    }
+}
+
+void TimeControllerB::onLastLong()
+{
+    if( m_last_time_step_push_button->isCheckable() == false )
+    {
+        qDebug() << "last long start!!";
+        disableButtons( m_last_time_step_push_button );
+        m_last_time_step_push_button->setCheckable( true );
+        m_last_time_step_push_button->setChecked( true );
+        m_is_long_press_active = true;
+        m_timer.start();
+    }
+    else
+    {
+        qDebug() << "last long stop!!";
+        enableButtons();
+        m_last_time_step_push_button->setCheckable( false );
+        m_is_long_press_active = false;
+        m_timer.stop();
+    }
 }
 
 void TimeControllerB::onJump()
 {
     qDebug() << "jump!!";
-    disableButtons();
+    disableButtons( m_jump_push_button );
     m_merge->mergeObjects( m_time_controller_a->getCurrentTimeStepLineEdit()->value(), m_time_controller_a->getJumpTimeStepSpinBox()->value() );
 
 }
@@ -466,6 +477,13 @@ void TimeControllerB::onTimerStart()
         {
             m_time_controller_a->getJumpTimeStepSpinBox()->setValue( currentValue - 1 );
         }
+        m_merge->mergeObjects( m_time_controller_a->getCurrentTimeStepLineEdit()->value(), m_time_controller_a->getJumpTimeStepSpinBox()->value() );
+    }
+    else if( m_last_time_step_push_button->isChecked() )
+    {
+        m_time_controller_a->getMaxLimitTimeStepSpinBox()->setValue( m_time_controller_a->getMaxLimitTimeStepSpinBox()->maximum() );
+        m_time_controller_a->getJumpTimeStepSpinBox()->setValue( m_time_controller_a->getJumpTimeStepSpinBox()->maximum() );
+        m_merge->setIsParticleGenerationNeeded( true );
         m_merge->mergeObjects( m_time_controller_a->getCurrentTimeStepLineEdit()->value(), m_time_controller_a->getJumpTimeStepSpinBox()->value() );
     }
 }

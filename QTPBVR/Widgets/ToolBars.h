@@ -8,6 +8,7 @@
 #include <QWidgetAction>
 #include <QPushButton>
 #include <QComboBox>>
+#include <QElapsedTimer>
 #include <QTimer>
 
 class MergePanel;
@@ -61,7 +62,7 @@ private:
     TimeControllerA *m_time_controller_a;
 
     QPushButton* createButton(const QString &iconPath, const QSize &iconSize, const QSize &buttonSize, QWidget *parent);
-    void disableButtons();
+    void disableButtons(QPushButton *pressedButton);
     void enableButtons();
 
     QPushButton *m_first_time_step_push_button;
@@ -73,7 +74,9 @@ private:
     QPushButton *m_jump_push_button;
     QPushButton *m_loop_push_button;
 
+    QElapsedTimer m_last_pressed_timer;
     QTimer m_timer;
+    bool m_is_long_press_active;
 
     MergePanel* m_merge;
 
@@ -83,7 +86,10 @@ private slots:
     void onReverse();
     void onPlay();
     void onNext();
-    void onLast();
+    void onLastPressed();
+    void onLastReleased();
+    void onLastShort();
+    void onLastLong();
     void onJump();
     void onLoop();
 
