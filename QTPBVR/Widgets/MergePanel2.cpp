@@ -821,6 +821,7 @@ void MergePanel2::WorkerThread2::timeStepCheckAndImport( int row )
                 else
                 {
                     m_merge->m_files_manager2[row]->setObject( m_merge->m_connect->generateParticles( m_request_time_step ) );
+                    m_merge->setIsParticleGenerationNeeded( false );
                 }
                 m_merge->m_files_manager2[row]->setAlreadyImportedTimeStep( m_request_time_step );
             }
@@ -839,6 +840,7 @@ void MergePanel2::WorkerThread2::timeStepCheckAndImport( int row )
                     else
                     {
                         m_merge->m_files_manager2[row]->setObject( m_merge->m_connect->generateParticles( minTimeStep ) );
+                        m_merge->setIsParticleGenerationNeeded( false );
                     }
                     m_merge->m_files_manager2[row]->setAlreadyImportedTimeStep( minTimeStep );
                 }
@@ -858,6 +860,7 @@ void MergePanel2::WorkerThread2::timeStepCheckAndImport( int row )
                     else
                     {
                         m_merge->m_files_manager2[row]->setObject( m_merge->m_connect->generateParticles( maxTimeStep ) );
+                        m_merge->setIsParticleGenerationNeeded( false );
                     }
                     m_merge->m_files_manager2[row]->setAlreadyImportedTimeStep( maxTimeStep );
                 }
@@ -897,6 +900,7 @@ void MergePanel2::WorkerThread2::timeStepCheckAndImport( int row )
                     else
                     {
                         m_merge->m_files_manager2[row]->setObject( m_merge->m_connect->generateParticles( m_request_time_step ) );
+                        m_merge->setIsParticleGenerationNeeded( false );
                     }
                     m_merge->m_files_manager2[row]->setAlreadyImportedTimeStep( m_request_time_step );
                     if( object->isVisible() == false ) object->show();
@@ -931,6 +935,7 @@ void MergePanel2::WorkerThread2::timeStepCheckAndImport( int row )
                         else
                         {
                             m_merge->m_files_manager2[row]->setObject( m_merge->m_connect->generateParticles( minTimeStep ) );
+                            m_merge->setIsParticleGenerationNeeded( false );
                         }
                         m_merge->m_files_manager2[row]->setAlreadyImportedTimeStep( minTimeStep );
                         if( object->isVisible() == false ) object->show();
@@ -971,6 +976,7 @@ void MergePanel2::WorkerThread2::timeStepCheckAndImport( int row )
                         else
                         {
                             m_merge->m_files_manager2[row]->setObject( m_merge->m_connect->generateParticles( maxTimeStep ) );
+                            m_merge->setIsParticleGenerationNeeded( false );
                         }
                         m_merge->m_files_manager2[row]->setAlreadyImportedTimeStep( maxTimeStep );
                         if( object->isVisible() == false ) object->show();
