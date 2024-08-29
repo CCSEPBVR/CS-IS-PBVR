@@ -1,6 +1,6 @@
 #include "TransferFunctionEditor.h"
 #include "ui_TransferFunctionEditor.h"
-#include "Widgets/MergePanel2.h"
+#include "Widgets/MergePanel.h"
 #include <kvs/ColorMapBar>
 #include <kvs/OpacityMapBar>
 #include <QOpenGLWidget>
@@ -10,7 +10,7 @@
 #include "ParameterFile.h"
 #include <fstream>
 
-TransferFunctionEditor::TransferFunctionEditor(QWidget *parent,MergePanel2* merge) :
+TransferFunctionEditor::TransferFunctionEditor(QWidget *parent,MergePanel* merge) :
     QDialog(parent),
     ui(new Ui::TransferFunctionEditor),
     m_merge( merge ),

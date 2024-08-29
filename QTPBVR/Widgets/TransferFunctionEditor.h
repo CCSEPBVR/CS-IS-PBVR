@@ -10,7 +10,7 @@
 #include "ReceivedMessage.h"
 #include "FunctionListEditor.h"
 
-class MergePanel2;
+class MergePanel;
 
 namespace Ui {
 class TransferFunctionEditor;
@@ -28,7 +28,7 @@ public:
     };
 
 public:
-    explicit TransferFunctionEditor(QWidget *parent = nullptr, MergePanel2* merge = nullptr);
+    explicit TransferFunctionEditor(QWidget *parent = nullptr, MergePanel* merge = nullptr);
     ~TransferFunctionEditor();
 //    void setColorFunctionSelector( ColorFunctionSelector* color_function_selector ){ m_color_function_selector = color_function_selector; }
     void setClientMessage( jpv::ParticleTransferClientMessage* client_message ){ m_client_message = client_message; }
@@ -49,7 +49,7 @@ public:
 private:
     Ui::TransferFunctionEditor *ui;
 //    ColorFunctionSelector* m_color_function_selector;
-    MergePanel2* m_merge;
+    MergePanel* m_merge;
 
     jpv::ParticleTransferClientMessage* m_client_message;
     jpv::ParticleTransferServerMessage* m_server_message;

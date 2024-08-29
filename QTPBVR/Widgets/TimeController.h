@@ -10,7 +10,7 @@
 #include <QComboBox>>
 #include <QTimer>
 
-class MergePanel2;
+class MergePanel;
 
 /* A */
 class TimeControllerA : public QToolBar
@@ -48,13 +48,12 @@ class TimeControllerB : public QToolBar
     Q_OBJECT
 
 public:
-    explicit TimeControllerB(QWidget *parent = nullptr, TimeControllerA *time_controller_a = nullptr , MergePanel2* merge = nullptr);
+    explicit TimeControllerB(QWidget *parent = nullptr, TimeControllerA *time_controller_a = nullptr , MergePanel* merge = nullptr);
     ~TimeControllerB();
 
     bool getLoopButtonEnabled() const;
     void updateMinMax( int min, int max, int totalFiles );
     void updateTimeStep();
-//    void setMerge( MergePanel2* merge ){  m_merge = merge; }
 
     TimeControllerA* getTimeControllerA(){ return m_time_controller_a; }
 
@@ -76,7 +75,7 @@ private:
 
     QTimer m_timer;
 
-    MergePanel2* m_merge;
+    MergePanel* m_merge;
 
 private slots:
     void onFirst();

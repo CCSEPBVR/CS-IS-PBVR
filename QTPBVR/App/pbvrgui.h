@@ -9,7 +9,7 @@
 #include <QMainWindow>
 
 #include "Widgets/Preference.h"
-#include "Widgets/MergePanel2.h"
+#include "Widgets/MergePanel.h"
 #include "Widgets/VolumeTransform.h"
 #include "Widgets/Connect.h"
 #include "Widgets/AnimationControls.h"
@@ -49,7 +49,7 @@ private:
 
     Preference      m_preference;
 //    MergePanel      m_merge;
-    MergePanel2      m_merge2;
+    MergePanel      m_merge2;
     VolumeTransform m_volumeTransform;
     Connect         m_connect;
     AnimationControls m_animation_controls;

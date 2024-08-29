@@ -1,5 +1,5 @@
-#ifndef MERGEPANEL2_H
-#define MERGEPANEL2_H
+#ifndef MERGEPANEL_H
+#define MERGEPANEL_H
 
 #include <QDockWidget>
 
@@ -9,7 +9,7 @@
 #include "Widgets/ShadingController.h"
 #include <QFileInfo>
 #include <kvs/ObjectBase>
-class FilesManager2
+class FilesManager
 {
 public:
     enum Format
@@ -101,21 +101,21 @@ private:
 };
 
 namespace Ui {
-class MergePanel2;
+class MergePanel;
 }
 
-class MergePanel2 : public QDockWidget
+class MergePanel : public QDockWidget
 {
     Q_OBJECT
 
 public:
-    explicit MergePanel2(QWidget *parent = nullptr,
+    explicit MergePanel(QWidget *parent = nullptr,
                          Preference* preference = nullptr,
                          TimeControllerB* time_controller_b = nullptr,
                          TotalParticles* total_particles = nullptr,
                          Connect* connectUI = nullptr,
                          ShadingController* shading_controller = nullptr );
-    ~MergePanel2();
+    ~MergePanel();
 
     void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; };
 
@@ -133,15 +133,15 @@ public:
     const QString& getExportFilePath() const { return m_export_file_path; }
 
 private:
-    Ui::MergePanel2 *ui;
+    Ui::MergePanel *ui;
     kvs::qt::jaea::Screen* m_screen;
     Preference* m_preference;
     TimeControllerB* m_time_controller_b;
     TotalParticles* m_total_particles;
     Connect* m_connect;
     ShadingController* m_shading_controller;
-    QVector<FilesManager2*> m_files_manager2;
-    class WorkerThread2;
+    QVector<FilesManager*> m_files_manager;
+    class WorkerThread;
     bool m_is_worker_thread_running;
     bool m_is_particle_generation_needed;
     bool m_is_export;
@@ -149,9 +149,9 @@ private:
 
 private:
     void registerFiles( const QString& filePath );
-    bool checkFormat( FilesManager2* newFile );
-    bool checkMinMaxTimeStep( FilesManager2* newFile );
-    void addFilesTable( FilesManager2* newFile );
+    bool checkFormat( FilesManager* newFile );
+    bool checkMinMaxTimeStep( FilesManager* newFile );
+    void addFilesTable( FilesManager* newFile );
     void calculateTotalMinMaxTimeStep();    
     void updateCheckState();
     void updatePolygonColorOpacity();
@@ -167,14 +167,14 @@ private slots:
 };
 
 #include <QThread>
-class MergePanel2::WorkerThread2 : public QThread
+class MergePanel::WorkerThread : public QThread
 {
     Q_OBJECT
 
 public:
 
 public:
-    explicit WorkerThread2( MergePanel2* gui );
+    explicit WorkerThread( MergePanel* gui );
     void setCurrentTimeStep( int current_time_step ) { m_current_time_step = current_time_step; }
     void setRequestTimeStep( int request_time_step ) { m_request_time_step = request_time_step; }
 
@@ -185,7 +185,7 @@ signals:
     void workFinished();
 
 private:
-    MergePanel2* m_merge;
+    MergePanel* m_merge;
     int m_current_time_step;
     int m_request_time_step;
 
@@ -196,4 +196,4 @@ private:
     std::string updateTimeStepInFileName( QString fileName, int nextTimeStep );
 };
 
-#endif // MERGEPANEL2_H
+#endif // MERGEPANEL_H

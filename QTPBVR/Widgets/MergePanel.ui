@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MergePanel2</class>
- <widget class="QDockWidget" name="MergePanel2">
+ <class>MergePanel</class>
+ <widget class="QDockWidget" name="MergePanel">
   <property name="geometry">
    <rect>
     <x>0</x>

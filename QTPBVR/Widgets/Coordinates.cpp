@@ -4,7 +4,7 @@
 #include "FunctionParser/ExpressionTokenizer.h"
 #include "FunctionParser/ExpressionConverter.h"
 
-Coordinates::Coordinates(QWidget *parent,MergePanel2 *merge) :
+Coordinates::Coordinates(QWidget *parent,MergePanel *merge) :
     QDialog(parent),
     ui(new Ui::Coordinates),
     m_merge( merge ),

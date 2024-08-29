@@ -1,7 +1,7 @@
 #include "RenderOptions.h"
 #include "ui_RenderOptions.h"
 
-RenderOptions::RenderOptions(QWidget *parent, MergePanel2* merge) :
+RenderOptions::RenderOptions(QWidget *parent, MergePanel* merge) :
     QDockWidget(parent),
     ui(new Ui::RenderOptions),
     m_merge( merge ),

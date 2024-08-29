@@ -1,6 +1,6 @@
 #include "TimeController.h"
 
-#include "Widgets/MergePanel2.h"
+#include "Widgets/MergePanel.h"
 /* A */
 TimeControllerA::TimeControllerA(QWidget *parent) :
     QToolBar(parent)
@@ -93,7 +93,7 @@ TimeControllerA::~TimeControllerA()
 }
 
 /* B */
-TimeControllerB::TimeControllerB( QWidget *parent, TimeControllerA *time_controller_a, MergePanel2* merge ) :
+TimeControllerB::TimeControllerB( QWidget *parent, TimeControllerA *time_controller_a, MergePanel* merge ) :
     QToolBar(parent),
     m_time_controller_a( time_controller_a ),
     m_merge( merge )

@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include "ParticleTransferProtocol.h"
-#include "Widgets/MergePanel2.h"
+#include "Widgets/MergePanel.h"
 namespace Ui {
 class Coordinates;
 }
@@ -13,13 +13,13 @@ class Coordinates : public QDialog
     Q_OBJECT
 
 public:
-    explicit Coordinates(QWidget *parent = nullptr, MergePanel2 *merge = nullptr);
+    explicit Coordinates(QWidget *parent = nullptr, MergePanel *merge = nullptr);
     ~Coordinates();
     void setClientMessage( jpv::ParticleTransferClientMessage* client_message ){ m_client_message = client_message; }
 
 private:
     Ui::Coordinates *ui;
-    MergePanel2* m_merge;
+    MergePanel* m_merge;
     jpv::ParticleTransferClientMessage* m_client_message;
 
 private slots:

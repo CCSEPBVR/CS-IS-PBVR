@@ -5,9 +5,9 @@
 #include <kvs/Camera>
 #include <kvs/PointObject>
 
-#include "Widgets/MergePanel2.h"
+#include "Widgets/MergePanel.h"
 
-Connect::Connect(QWidget *parent, MergePanel2* merge, DataProperties* filter_infomation, TransferFunctionEditor* transfer_function_editor) :
+Connect::Connect(QWidget *parent, MergePanel* merge, DataProperties* filter_infomation, TransferFunctionEditor* transfer_function_editor) :
     QDialog(parent),
     ui(new Ui::Connect),
     m_screen( nullptr ),

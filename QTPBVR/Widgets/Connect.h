@@ -15,7 +15,7 @@
 #include "ExtendedKVS/Screen.h"
 #include "ReceivedMessage.h"
 
-class MergePanel2;
+class MergePanel;
 
 namespace Ui {
 class Connect;
@@ -26,7 +26,7 @@ class Connect : public QDialog
     Q_OBJECT
 
 public:
-    explicit Connect(QWidget *parent = nullptr, MergePanel2* merge = nullptr, DataProperties* filter_infomation = nullptr, TransferFunctionEditor* transfer_function_editor = nullptr);
+    explicit Connect(QWidget *parent = nullptr, MergePanel* merge = nullptr, DataProperties* filter_infomation = nullptr, TransferFunctionEditor* transfer_function_editor = nullptr);
     ~Connect();
     void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; }
     void setCamera( kvs::Camera* camera ){ m_camera = camera; }
@@ -40,7 +40,7 @@ private:
     Ui::Connect *ui;
     kvs::qt::jaea::Screen* m_screen;
     kvs::Camera* m_camera;
-    MergePanel2* m_merge;
+    MergePanel* m_merge;
     DataProperties* m_filter_infomation;
     TransferFunctionEditor* m_transfer_function_editor;
     ExtendedTransferFunctionMessage m_extended_transfer_function_message;
