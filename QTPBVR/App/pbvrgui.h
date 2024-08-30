@@ -14,7 +14,6 @@
 #include "Widgets/Connect.h"
 #include "Widgets/AnimationControls.h"
 #include "Widgets/DataProperties.h"
-#include "Widgets/DataSummary.h"
 #include "Widgets/RenderOptions.h"
 #include "Widgets/RepetitionLevelControl.h"
 #include "Widgets/DisplayPointSizeControl.h"

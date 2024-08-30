@@ -33,7 +33,6 @@ HEADERS += \
     ColorMapEditor.h \
     Coordinates.h \
     DataProperties.h \
-    DataSummary.h \
     DisplayPointSizeControl.h \
     ExtendedTransferFunctionMessage.h \
     FrequencyTable.h \
@@ -66,7 +65,6 @@ SOURCES += \
     ColorMapEditor.cpp \
     Coordinates.cpp \
     DataProperties.cpp \
-    DataSummary.cpp \
     DisplayPointSizeControl.cpp \
     ExtendedTransferFunctionMessage.cpp \
     FunctionListEditor.cpp \
@@ -97,7 +95,6 @@ FORMS += \
     ColorMapEditor.ui \
     Coordinates.ui \
     DataProperties.ui \
-    DataSummary.ui \
     DisplayPointSizeControl.ui \
     FunctionListEditor.ui \
     MergePanel.ui \
