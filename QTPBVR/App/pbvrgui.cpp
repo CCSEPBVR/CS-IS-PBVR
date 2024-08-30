@@ -22,20 +22,20 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_time_step_label( nullptr ),
     m_preference( this ),
     m_time_controller_A( this ),
-    m_time_controller_B( this, &m_time_controller_A, &m_merge2 ),
+    m_time_controller_B( this, &m_time_controller_A, &m_merge ),
     m_total_particles( this ),
     m_color_map_bar_selector( this ),
-    m_merge2( this, &m_preference ,&m_time_controller_B, &m_total_particles, &m_connect, &m_shading_controller ),
-    m_connect( this, &m_merge2, &m_data_properties, &m_transfer_function_editor ),
+    m_merge( this, &m_preference ,&m_time_controller_B, &m_total_particles, &m_connect, &m_shading_controller ),
+    m_connect( this, &m_merge, &m_data_properties, &m_transfer_function_editor ),
     m_volumeTransform( this ),
     m_animation_controls( this ),
     m_repetition_level_control( this, &m_shading_controller ),
     m_display_point_size_control( this, &m_preference ),
     m_shading_controller( this ),
-    m_render_options( this, &m_merge2 ),
+    m_render_options( this, &m_merge ),
     m_data_properties( this ),
-    m_coordinates( this, &m_merge2 ),
-    m_transfer_function_editor( this, &m_merge2 )
+    m_coordinates( this, &m_merge ),
+    m_transfer_function_editor( this, &m_merge )
 {
     ui->setupUi(this);
     setWindowTitle( "QTPBVR vX.X.X" );
@@ -118,9 +118,9 @@ void PBVRGUI::initializePanels()
     this->addToolBar(Qt::TopToolBarArea, &m_time_controller_B);    
 
     //マージパネルの初期化
-    m_merge2.setScreen( m_screen );
-    m_merge2.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
-    addDockWidget( Qt::RightDockWidgetArea, &m_merge2 );
+    m_merge.setScreen( m_screen );
+    m_merge.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    addDockWidget( Qt::RightDockWidgetArea, &m_merge );
 
     //コネクトパネルの初期化
     m_connect.setScreen( m_screen );
@@ -173,15 +173,6 @@ void PBVRGUI::initializePanels()
     m_transfer_function_editor.setClientMessage( m_connect.getClientMessage() );
     m_transfer_function_editor.setServerMessage( m_connect.getServerMessage() );
     m_transfer_function_editor.setReceivedMessage( m_connect.getReceivedMessage() );
-
-    //色関数選択ウィジェット
-//    QWidgetAction *colorFunctionSelectorWidgetAction = new QWidgetAction( this );
-//    colorFunctionSelectorWidgetAction->setDefaultWidget( &m_color_function_selector );
-//    ui->colorFunctionSelectorTBar->addAction( colorFunctionSelectorWidgetAction );
-//    m_color_function_selector.setScreen( m_screen );
-//    m_color_function_selector.setColorMapBar( m_color_map_bar );
-//    m_color_function_selector.setExtendedTransferFunctionMessage( m_transfer_function_editor.getExtendedTransferFunctionMessage() );
-//    m_color_function_selector.populateColorFunctionLists( m_color_function_selector.getExtendedTransferFunctionMessage()->m_transfer_function_number );
 }
 
 void PBVRGUI::keyPressEvent(QKeyEvent *event)

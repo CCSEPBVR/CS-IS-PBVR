@@ -47,8 +47,7 @@ private:
     kvs::Label* m_time_step_label;
 
     Preference      m_preference;
-//    MergePanel      m_merge;
-    MergePanel      m_merge2;
+    MergePanel      m_merge;
     VolumeTransform m_volumeTransform;
     Connect         m_connect;
     AnimationControls m_animation_controls;
@@ -59,7 +58,6 @@ private:
     ShadingController m_shading_controller;
     TransferFunctionEditor m_transfer_function_editor;
     Coordinates m_coordinates;
-//    ColorFunctionSelector m_color_function_selector;
     TimeControllerA m_time_controller_A;
     TimeControllerB m_time_controller_B;
     TotalParticles m_total_particles;
@@ -67,7 +65,7 @@ private:
 
 private:
     void onPreference()      { m_preference.show(); }
-    void onMerge()           { m_merge2.show(); }
+    void onMerge()           { m_merge.show(); }
     void onVolumeTransform() { m_volumeTransform.show(); }
     void onConnect()         { m_connect.show(); }
     void onAnimationControl() { m_animation_controls.show(); }
