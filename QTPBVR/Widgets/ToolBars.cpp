@@ -543,8 +543,44 @@ ColorMapBarSelector::ColorMapBarSelector( QWidget *parent ) :
     QWidgetAction *colorMapBarSelectorComboBox = new QWidgetAction( this );
     colorMapBarSelectorComboBox->setDefaultWidget( m_color_map_bar_selector_combo_box );
     this->addAction( colorMapBarSelectorComboBox );
+
+    connect( m_color_map_bar_selector_combo_box, &QComboBox::currentIndexChanged, this, &ColorMapBarSelector::onColorFunctionChanged );
 }
 
 ColorMapBarSelector::~ColorMapBarSelector()
 {
+}
+
+void ColorMapBarSelector::populateColorFunctionLists(int n){
+    QStringList itemList;
+    for (int i=1;i <=n;i++ )
+    {
+        itemList.append(QString("C%1").arg(i));
+    }
+    m_color_map_bar_selector_combo_box->clear();
+    m_color_map_bar_selector_combo_box->addItems( itemList );
+}
+
+void ColorMapBarSelector::onColorFunctionChanged( int index )
+{
+    const NamedTransferFunctionParameter *transfer_function_color = m_extended_transfer_function_message->getColorTransferFunction( index + 1 );
+    if( transfer_function_color != NULL )
+    {
+        kvs::ColorMap color_map = transfer_function_color->colorMap();
+        m_color_map_bar->setColorMap( color_map );
+        m_color_map_bar->setRange( m_extended_transfer_function_message->getColorTransferFunction(index + 1)->m_color_variable_min, m_extended_transfer_function_message->getColorTransferFunction(index + 1)->m_color_variable_max );
+        m_screen->update();
+    }
+}
+
+void ColorMapBarSelector::updateColorMap()
+{
+    const NamedTransferFunctionParameter *transfer_function_color = m_extended_transfer_function_message->getColorTransferFunction( m_color_map_bar_selector_combo_box->currentIndex() + 1  );
+    if( transfer_function_color != NULL )
+    {
+        kvs::ColorMap color_map = transfer_function_color->colorMap();
+        m_color_map_bar->setColorMap( color_map );
+        m_color_map_bar->setRange( m_extended_transfer_function_message->getColorTransferFunction( m_color_map_bar_selector_combo_box->currentIndex() + 1)->m_color_variable_min, m_extended_transfer_function_message->getColorTransferFunction( m_color_map_bar_selector_combo_box->currentIndex() + 1)->m_color_variable_max );
+        m_screen->update();
+    }
 }

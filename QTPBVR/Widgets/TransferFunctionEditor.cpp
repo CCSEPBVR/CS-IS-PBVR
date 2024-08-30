@@ -256,7 +256,7 @@ void TransferFunctionEditor::onNumberOfTransferFunctionValueChanged( int value )
     m_extended_transfer_function_message.m_transfer_function_number = num_transfer_function;
     this->populateColorFunctionLists( value );
     this->populateOpacityFunctionLists( value );
-//    m_color_function_selector->populateColorFunctionLists( value );
+    m_color_map_bar_selector->populateColorFunctionLists( value );
 
     int n;
     int current_size;
@@ -609,7 +609,7 @@ void TransferFunctionEditor::onApplyButtonClicked()
             m_client_message->m_volume_equation.push_back( veq_o );
         }
     }
-//    m_color_function_selector->updateColorMap();
+    m_color_map_bar_selector->updateColorMap();
 }
 
 void TransferFunctionEditor::onImportButtonClicked()

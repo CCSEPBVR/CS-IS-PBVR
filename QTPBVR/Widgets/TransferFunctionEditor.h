@@ -2,7 +2,7 @@
 #define TRANSFERFUNCTIONEDITOR_H
 
 #include <QDialog>
-#include "Widgets/ColorFunctionSelector.h"
+#include "ToolBars.h"
 #include "Widgets/ColorMapEditor.h"
 #include "Widgets/OpacityMapEditor.h"
 
@@ -30,7 +30,7 @@ public:
 public:
     explicit TransferFunctionEditor(QWidget *parent = nullptr, MergePanel* merge = nullptr);
     ~TransferFunctionEditor();
-//    void setColorFunctionSelector( ColorFunctionSelector* color_function_selector ){ m_color_function_selector = color_function_selector; }
+    void setColorMapBarSelector( ColorMapBarSelector* color_map_bar_selector ){ m_color_map_bar_selector = color_map_bar_selector; }
     void setClientMessage( jpv::ParticleTransferClientMessage* client_message ){ m_client_message = client_message; }
     void setServerMessage( jpv::ParticleTransferServerMessage* server_message ){ m_server_message = server_message; }
     void setReceivedMessage( kvs::visclient::ReceivedMessage* received_message ){ m_received_message = received_message; }
@@ -48,7 +48,7 @@ public:
 
 private:
     Ui::TransferFunctionEditor *ui;
-//    ColorFunctionSelector* m_color_function_selector;
+    ColorMapBarSelector* m_color_map_bar_selector;
     MergePanel* m_merge;
 
     jpv::ParticleTransferClientMessage* m_client_message;

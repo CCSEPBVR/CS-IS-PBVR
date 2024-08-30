@@ -24,7 +24,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_time_controller_A( this ),
     m_time_controller_B( this, &m_time_controller_A, &m_merge2 ),
     m_total_particles( this ),
-    m_color_map_selector( this ),
+    m_color_map_bar_selector( this ),
     m_merge2( this, &m_preference ,&m_time_controller_B, &m_total_particles, &m_connect, &m_shading_controller ),
     m_connect( this, &m_merge2, &m_data_properties, &m_transfer_function_editor ),
     m_volumeTransform( this ),
@@ -35,8 +35,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_render_options( this, &m_merge2 ),
     m_data_properties( this ),
     m_coordinates( this, &m_merge2 ),
-    m_transfer_function_editor( this, &m_merge2 )/*,
-    m_color_function_selector( this )*/
+    m_transfer_function_editor( this, &m_merge2 )
 {
     ui->setupUi(this);
     setWindowTitle( "QTPBVR vX.X.X" );
@@ -110,7 +109,11 @@ void PBVRGUI::initializePanels()
     this->addToolBar(Qt::TopToolBarArea, &m_time_controller_A);
     this->addToolBarBreak(Qt::TopToolBarArea);
     this->addToolBar(Qt::TopToolBarArea, &m_total_particles);
-    this->addToolBar(Qt::TopToolBarArea, &m_color_map_selector);
+    this->addToolBar(Qt::TopToolBarArea, &m_color_map_bar_selector);
+    m_color_map_bar_selector.setScreen( m_screen );
+    m_color_map_bar_selector.setColorMapBar( m_color_map_bar );
+    m_color_map_bar_selector.setExtendedTransferFunctionMessage( m_transfer_function_editor.getExtendedTransferFunctionMessage() );
+    m_color_map_bar_selector.populateColorFunctionLists( m_color_map_bar_selector.getExtendedTransferFunctionMessage()->m_transfer_function_number );
     this->addToolBarBreak(Qt::TopToolBarArea);
     this->addToolBar(Qt::TopToolBarArea, &m_time_controller_B);    
 
@@ -166,7 +169,7 @@ void PBVRGUI::initializePanels()
     //コーディネートパネルの初期化
     m_coordinates.setClientMessage( m_connect.getClientMessage() );
     //伝達関数パネルの初期化
-//    m_transfer_function_editor.setColorFunctionSelector( &m_color_function_selector );
+    m_transfer_function_editor.setColorMapBarSelector( &m_color_map_bar_selector );
     m_transfer_function_editor.setClientMessage( m_connect.getClientMessage() );
     m_transfer_function_editor.setServerMessage( m_connect.getServerMessage() );
     m_transfer_function_editor.setReceivedMessage( m_connect.getReceivedMessage() );

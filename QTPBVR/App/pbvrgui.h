@@ -21,7 +21,6 @@
 #include "Widgets/ShadingController.h"
 #include "Widgets/TransferFunctionEditor.h"
 #include "Widgets/Coordinates.h"
-#include "Widgets/ColorFunctionSelector.h"
 #include "Widgets/ToolBars.h"
 
 namespace Ui {
@@ -64,7 +63,7 @@ private:
     TimeControllerA m_time_controller_A;
     TimeControllerB m_time_controller_B;
     TotalParticles m_total_particles;
-    ColorMapBarSelector m_color_map_selector;
+    ColorMapBarSelector m_color_map_bar_selector;
 
 private:
     void onPreference()      { m_preference.show(); }
