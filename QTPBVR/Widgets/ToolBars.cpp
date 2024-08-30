@@ -199,6 +199,11 @@ void TimeControllerB::updateMinMax( int min, int max, int totalFiles )
         m_time_controller_a->getMaxLimitTimeStepSpinBox()->setValue( max );
         break;
     default:
+        if( m_time_controller_a->getCurrentTimeStepLineEdit()->value() == -1 )
+        {
+            m_time_controller_a->getMinLimitTimeStepSpinBox()->setValue( min );
+            m_time_controller_a->getMaxLimitTimeStepSpinBox()->setValue( max );
+        }
         break;
     }
 }
