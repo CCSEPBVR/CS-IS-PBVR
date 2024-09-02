@@ -1066,7 +1066,7 @@ void MergePanel::onWorkerThreadFinished()
             {
                 if( kvs::PointObject* point_object = dynamic_cast<kvs::PointObject*>(m_files_manager[row]->getObject()) )
                 {
-                    if( m_time_controller_b->getTimeControllerA()->getCurrentTimeStepLineEdit()->value() == m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() )
+                    if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS && m_time_controller_b->getTimeControllerA()->getCurrentTimeStepLineEdit()->value() == m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() )
                     {
                     }
                     else
