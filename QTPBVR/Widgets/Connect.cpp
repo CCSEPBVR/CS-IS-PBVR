@@ -8,15 +8,11 @@
 
 #include "Widgets/MergePanel.h"
 
-//Connect::Connect(QWidget *parent) :
 Connect::Connect(QWidget *parent, MergePanel* merge, DataProperties* filter_infomation, TransferFunctionEditor* transfer_function_editor):
     QDialog(parent),
     ui(new Ui::Connect),
     m_screen( nullptr ),
     m_camera( nullptr ),
-    // m_merge( nullptr ),
-    // m_filter_infomation( nullptr ),
-    // m_transfer_function_editor( nullptr ),
     m_merge( merge  ),
     m_filter_infomation( filter_infomation ),
     m_transfer_function_editor( transfer_function_editor ),
@@ -132,7 +128,6 @@ void Connect::connectServer()
 
 kvs::PointObject* Connect::generateParticles( int timeStep )
 {
-    std::cout << __func__ << std::endl;
     std::cout << "********" << std::endl;
     std::cout << "********" << std::endl;
     std::cout << "********" << std::endl;

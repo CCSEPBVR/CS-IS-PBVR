@@ -566,7 +566,7 @@ void TransferFunctionEditor::onApplyButtonClicked()
         std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
 
         m_merge->setIsParticleGenerationNeeded( true );
-        //m_color_function_selector->updateColorMap();
+        m_color_map_bar_selector->updateColorMap();
 }
 
 void TransferFunctionEditor::onImportButtonClicked()
