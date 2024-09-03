@@ -272,21 +272,22 @@ int main( int argc, char** argv )
 
                 pts.good();
 
+                servMes.m_camera = new kvs::Camera();
+                clntMes.m_camera = new kvs::Camera();
                 //ソケット通信手順(5)
                 //受信したデータをclntMesが読み取る
                 int ptss = 0;
-                ptss = pts.recvMessageIS( &clntMes );
+                ptss = pts.recvMessage( &clntMes );
                 if( ptss == -1 ) std::cout<<"main.cpp:L214. pts.recvMessage has ERROR."<<std::endl;
                 //最初の受信(client->daemon)
                 //受信内容clntMesにはデフォルト伝達関数が含まれるが
                 //jupiter_old.tfを反映するため無視する
 //jupiter start
-                servMes.m_camera = new kvs::Camera();
 //              param.input_data_base = clntMes.m_input_directory;
                 param.input_data_base = "dummy";
 
                 std::cout<<"main.cpp:L221"<<std::endl;
-                clntMes.showIS();
+                clntMes.show();
 //jupiter end
 
 /* 2018 kawamura comment out
@@ -419,7 +420,7 @@ int main( int argc, char** argv )
               //servMes.fileType = fil.m_list[0].fileType;
               //servMes.numIngredients = fil.m_list[0].numIngredients;
                 servMes.m_variable_range = range;
-                servMes.m_flag_send_bins = 0;
+                servMes.m_flag_send_bins = 1;
 
                 // 20181226 start  環境変数で指定したパスおよび名前でファイル参照を行う
                 //初期化 : jupiter_old.tfを読む
@@ -437,16 +438,21 @@ int main( int argc, char** argv )
                 ofs.close();
                 // 20181226 end
                 
+                ParameterFileWriter ppw;
+                ppw.inputMessage( clntMes );
+                ppw.writeParameterFile( tfFilePath.c_str() );
+                
                 //最初の送信(daemon->client)
                 //jupiter_old.tfの内容をクライアントに送信
                 ppr.outputMessage( &servMes );
-                servMes.m_message_size = servMes.byteSizeIS();
+                servMes.m_message_size = servMes.byteSize();
 
                 std::cout<<"main.cpp:L366"<<std::endl;
-                clntMes.showIS();
+                clntMes.show();
 
-                pts.sendMessageIS( servMes );
+                pts.sendMessage( servMes );
                 delete servMes.m_camera;
+                delete clntMes.m_camera;
             }// end of init process 初期化終了
 
             jpv::ParticleTransferServerMessage servMes;
@@ -469,10 +475,10 @@ int main( int argc, char** argv )
                 //ソケット通信手順(5)
                 //２回めの受信(client->daemon)
                 //受信したデータをclntMesが読み取る
-                ptss = pts.recvMessageIS( &clntMes );
+                ptss = pts.recvMessage( &clntMes );
 
                 std::cout<<"main.cpp:L388"<<std::endl;
-                clntMes.showIS();
+                clntMes.show();
                 std::cout<<"ptss="<<ptss<<std::endl;
 
                 if ( ptss == -1 ) break;
@@ -502,18 +508,18 @@ int main( int argc, char** argv )
                     //ほぼ空のソケットを送信する
                     strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
                     servMes.m_number_particle = 0;
-                    servMes.m_flag_send_bins = 0;
+                    servMes.m_flag_send_bins = 1;
                     servMes.m_transfer_function_count = 0;
 
-                    servMes.m_message_size = servMes.byteSizeIS();
+                    servMes.m_message_size = servMes.byteSize();
 
                     //2回目の送信(daemon->client)
                     //servMesの中身はheaderのみ。
                     //ほぼ空の情報を送信する。
                     std::cout<<"main.cpp:L422"<<std::endl;
-                    clntMes.showIS();
+                    clntMes.show();
 
-                    pts.sendMessageIS( servMes );
+                    pts.sendMessage( servMes );
                     pts.disconnect();
 
                     //ソケット通信手順(4)
@@ -525,15 +531,15 @@ int main( int argc, char** argv )
                     //終了する
                     strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
                     servMes.m_number_particle = 0;
-                    servMes.m_flag_send_bins = 0;
+                    servMes.m_flag_send_bins = 1;
                     servMes.m_transfer_function_count = 0;
 
-                    servMes.m_message_size = servMes.byteSizeIS();
+                    servMes.m_message_size = servMes.byteSize();
 
                     std::cout<<"main.cpp:L439"<<std::endl;
-                    clntMes.showIS();
+                    clntMes.show();
 
-                    pts.sendMessageIS( servMes );
+                    pts.sendMessage( servMes );
                     break;
                     //whileループを抜けてpts.terminateを実行
                 }
@@ -549,12 +555,12 @@ int main( int argc, char** argv )
                     }
 
                     // send cltMes to all worker process >>
-                    bsz = clntMes.byteSizeIS();
+                    bsz = clntMes.byteSize();
 #ifndef CPU_VER
                     MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
 #endif
                     buf = new char[bsz];
-                    clntMes.packIS( buf );
+                    clntMes.pack( buf );
 #ifndef CPU_VER
                     MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
 #endif
@@ -597,14 +603,14 @@ int main( int argc, char** argv )
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_number_particle = 0;
-                        servMes.m_flag_send_bins = 0;
+                        servMes.m_flag_send_bins = 1;
 
-                        servMes.m_message_size = servMes.byteSizeIS();
+                        servMes.m_message_size = servMes.byteSize();
 
                         std::cout<<"main.cpp:L509"<<std::endl;
-                        clntMes.showIS();
+                        clntMes.show();
 
-                        pts.sendMessageIS( servMes );
+                        pts.sendMessage( servMes );
                     }
                     else if ( clntMes.m_time_parameter == 1 )
                     {
@@ -614,23 +620,22 @@ int main( int argc, char** argv )
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_number_particle = 0;
-                        servMes.m_flag_send_bins = 0;
+                        servMes.m_flag_send_bins = 1;
 
-                        servMes.m_message_size = servMes.byteSizeIS();
+                        servMes.m_message_size = servMes.byteSize();
 
                         std::cout<<"main.cpp:L526"<<std::endl;
-                        clntMes.showIS();
+                        clntMes.show();
 
-                        pts.sendMessageIS( servMes );
+                        pts.sendMessage( servMes );
                     }
                     else if ( clntMes.m_time_parameter == 2 )
                     {
                         TimerInitialize();
                         TimerStart( 10 );
                         strncpy( servMes.m_header, "JPTP /1.0 100 OK\r\n", 18 );
-                        servMes.m_message_size = servMes.byteSizeIS();
+                        servMes.m_message_size = servMes.byteSize();
                       //servMes.m_time_step = clntMes.m_step;
-                      //servMes.m_time_step = 15;
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         param.sampling_method = clntMes.m_sampling_method;
@@ -707,9 +712,9 @@ int main( int argc, char** argv )
                         }
 
                         std::cout<<"main.cpp:L614"<<std::endl;
-                        clntMes.showIS();
+                        servMes.show();
 
-                        pts.sendMessageIS( servMes );
+                        pts.sendMessage( servMes );
 
 
                         timer.start();
@@ -769,7 +774,7 @@ int main( int argc, char** argv )
                             ParameterFileWriter ppw;
                             ParameterFileReader ppr;
 
-                            clntMes.showIS();
+                            clntMes.show();
                             // 20181226 start　環境変数で指定したパスおよび名前でファイル参照を行う
                             ppw.inputMessage( clntMes );
                             //ppr.readParameterFile("jupiter_old.tf");
@@ -809,9 +814,9 @@ int main( int argc, char** argv )
                             }
 
                             TimerStop( 2 );
-                            if( pm.setTimeStep( clntMes.m_step ) ) servMes.m_flag_send_bins = 1;
-                            else                                 servMes.m_flag_send_bins = 0;
-                            if( servMes.m_flag_send_bins )
+                            if( pm.setTimeStep( clntMes.m_step ) ) servMes.m_flag_send_bins = 0;
+                            else                                 servMes.m_flag_send_bins = 1;
+                            if( servMes.m_flag_send_bins == 0)
                             {
                                 pm.readParticleHistoryFile();
                                 pm.readParticleFile();
@@ -822,7 +827,6 @@ int main( int argc, char** argv )
                             vr = pm.particleHistoryFile().variableRange();
 
                             TimerStart( 3 );
-                            //for ( int tf = 0; tf < pm.particleHistoryFile().colorHistogramArray().size(); tf++ )
                             for ( int tf = 0; tf < pm.particleHistoryFile().colorHistogramArray().size() && tf < servMes.m_transfer_function_count; tf++ )
                             {
                                 servMes.m_color_nbins[tf] = pm.particleHistoryFile().colorHistogramArray()[ tf ].size();
@@ -832,7 +836,6 @@ int main( int argc, char** argv )
                                 }
                             }
 
-                            //for ( int tf = 0; tf < pm.particleHistoryFile().opacityHistogramArray().size(); tf++ )
                             for ( int tf = 0; tf < pm.particleHistoryFile().opacityHistogramArray().size() && tf < servMes.m_transfer_function_count; tf++ )
                             {
                                 servMes.m_opacity_nbins[tf] = pm.particleHistoryFile().opacityHistogramArray()[ tf ].size();
@@ -883,14 +886,13 @@ int main( int argc, char** argv )
                             {
                                 TIMER_STA( 472 );
                             }
-                            //servMes.m_flag_send_bins = 1;
-                            servMes.m_message_size = servMes.byteSizeIS();
+                            servMes.m_message_size = servMes.byteSize();
                             TimerStart( 4 );
 
                             std::cout<<"main.cpp:L779"<<std::endl;
-                            clntMes.showIS();
+                            clntMes.show();
 
-                            pts.sendMessageIS( servMes );
+                            pts.sendMessage( servMes );
                             TimerStop( 4 );
                             if ( timer_count <= TIMER_COUNT_NUM )
                             {
@@ -934,11 +936,13 @@ int main( int argc, char** argv )
                             }
                         }
 #endif
-//                      servMes.m_flag_send_bins = 1;
+                        servMes.m_flag_send_bins = 1;
 //                      servMes.m_subpixel_level = param.subpixel_level;
-//                      servMes.m_message_size = servMes.byteSizeIS();
+                        servMes.m_message_size = servMes.byteSize();
+                        //servMes.m_number_particle = 2;
+                        servMes.m_number_particle = 0;
                         TimerStart( 11 );
-//                      pts.sendMessageIS( servMes );
+                        pts.sendMessage( servMes );
                         TimerStop( 11 );
 
                         for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
@@ -949,7 +953,7 @@ int main( int argc, char** argv )
                         delete[] servMes.m_color_nbins;
                         delete[] servMes.m_opacity_nbins;
                         servMes.m_transfer_function_count = 0;
-                        servMes.m_flag_send_bins = 0;
+                        servMes.m_flag_send_bins = 1;
                         delete[] tmp_c_bins;
                         delete[] tmp_o_bins;
 

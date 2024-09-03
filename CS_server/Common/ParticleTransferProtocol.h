@@ -117,20 +117,16 @@ public:
 
 public:
     // message のサイズを計算
-    int32_t byteSizeCS( void ) const;
-    int32_t byteSizeIS( void ) const;
+    int32_t byteSize( void ) const;
     // メッセージを byte 列に pack
-    size_t packCS( char* buf ) const;
-    size_t packIS( char* buf ) const;
+    size_t pack( char* buf ) const;
     // byte 列からメッセージに unpack
-    size_t unpackCS( const char* buf );
-    size_t unpackIS( const char* buf );
+    size_t unpack( const char* buf );
 
     ParticleTransferClientMessage( void );
 
     //2019 kawamura
-    void showCS( void ) const;
-    void showIS( void ) const;
+    void show( void ) const;
 };
 
 class ParticleTransferServerMessage
@@ -192,14 +188,11 @@ public:
 //    std::vector<std::string> m_color_bin_names;			// add by @hira at 2016/12/01
 //    std::vector<std::string> m_opacity_bin_names;		// add by @hira at 2016/12/01
     // message のサイズを計算
-    int32_t byteSizeCS( void ) const;
-    int32_t byteSizeIS( void ) const;
+    int32_t byteSize( void ) const;
     // メッセージを byte 列に pack
-    size_t packCS( char* buf ) const;
-    size_t packIS( char* buf ) const;
+    size_t pack( char* buf ) const;
     // byte 列からメッセージに unpack
-    size_t unpack_messageCS( const char* buf );
-    size_t unpack_messageIS( const char* buf );
+    size_t unpack_message( const char* buf );
     size_t unpack_particles( const char* buf );
     size_t unpack_bins( const size_t index, const char* buf );
 private:
@@ -253,8 +246,7 @@ public:
 
     void initializeTransferFunction(const int32_t transfer_function_count, const int nbins);
     //2019 kawamura
-    void showCS( void ) const;
-    void showIS( void ) const;
+    void show( void ) const;
 };
 
 }

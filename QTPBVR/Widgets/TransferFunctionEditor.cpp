@@ -107,7 +107,6 @@ void TransferFunctionEditor::applyVariableRange( const VariableRange& range )
                 isRangeInitialized = true;
             }
         }
-
         if( isRangeInitialized )
         {
             updateRangeEdit();
@@ -320,7 +319,6 @@ void TransferFunctionEditor::onColorFunctionChanged( int index )
         kvs::ColorMap color_map = transfer_function_color->colorMap();
         ui->colorMapBar->setColorMap( color_map );
         ui->colorMapBar->update();
-
         const kvs::visclient::FrequencyTable* freq_table = m_received_message->findColorFrequencyTable(transfer_function_color->m_name);
         if ( freq_table != NULL )
         {
@@ -329,7 +327,6 @@ void TransferFunctionEditor::onColorFunctionChanged( int index )
             ui->colorHistogramBar->update();
             ui->colorMinRangeLbl->setNum( m_extended_transfer_function_message.getColorTransferFunction(index + 1)->m_color_variable_min );
             ui->colorMaxRangeLbl->setNum( m_extended_transfer_function_message.getColorTransferFunction(index + 1)->m_color_variable_max );
-
             char tag_c[16] = {0x00};
             sprintf(tag_c, "t%d_var_c", index + 1);
             ui->range_min_color->setText( QString::number( m_server_message->m_server_side_variable_range.min( tag_c ) ) );
@@ -531,53 +528,6 @@ void TransferFunctionEditor::onApplyButtonClicked()
     m_client_message->m_color_transfer_function_synthesis = m_extended_transfer_function_message.m_color_transfer_function_synthesis;
     m_client_message->m_opacity_transfer_function_synthesis = m_extended_transfer_function_message.m_opacity_transfer_function_synthesis;
 
-    if( m_mode == TransferFunctionEditor::Mode::CS )
-    {
-        //    for ( size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
-        for ( size_t i = 0; i < m_extended_transfer_function_message.m_color_transfer_function.size(); i++ )
-        {
-            NamedTransferFunctionParameter etf;
-            jpv::ParticleTransferClientMessage::VolumeEquation veq;
-
-            const NamedTransferFunctionParameter& tf = m_extended_transfer_function_message.m_color_transfer_function[i];
-            etf = tf;
-            int func_num = etf.getNameNumber();
-            std::stringstream ss;
-            ss << "_F" << func_num;
-            etf.m_color_variable   = ss.str() + "_VAR_C";
-            veq.m_name     = etf.m_color_variable;
-            veq.m_equation = m_extended_transfer_function_message.m_color_transfer_function[i].m_color_variable;
-            m_client_message->m_transfer_function.push_back( etf );
-            m_client_message->m_volume_equation.push_back( veq );
-        }
-
-        for ( size_t i = 0; i < m_extended_transfer_function_message.m_opacity_transfer_function.size(); i++ )
-        {
-            NamedTransferFunctionParameter etf;
-            jpv::ParticleTransferClientMessage::VolumeEquation veq;
-
-            const NamedTransferFunctionParameter& tf = m_extended_transfer_function_message.m_opacity_transfer_function[i];
-            etf = tf;
-            int func_num = etf.getNameNumber();
-            std::stringstream ss;
-            ss << "_F" << func_num;
-            etf.m_opacity_variable   = ss.str() + "_VAR_O";
-            veq.m_name     = etf.m_opacity_variable;
-            veq.m_equation = m_extended_transfer_function_message.m_opacity_transfer_function[i].m_opacity_variable;
-            m_client_message->m_transfer_function.push_back( etf );
-            m_client_message->m_volume_equation.push_back( veq );
-        }
-
-        std::string colorSynthBuf = m_extended_transfer_function_message.m_color_transfer_function_synthesis;
-        std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
-
-        std::string opacitySynthBuf = m_extended_transfer_function_message.m_opacity_transfer_function_synthesis;
-        std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
-
-        m_merge->setIsParticleGenerationNeeded( true );
-    }
-    else if( m_mode == TransferFunctionEditor::Mode::IS )
-    {
         for( size_t i = 0; i < m_extended_transfer_function_message.m_transfer_function_number; i++ )
         {
             NamedTransferFunctionParameter etf;
@@ -608,8 +558,15 @@ void TransferFunctionEditor::onApplyButtonClicked()
             m_client_message->m_volume_equation.push_back( veq_c );
             m_client_message->m_volume_equation.push_back( veq_o );
         }
-    }
-    m_color_map_bar_selector->updateColorMap();
+
+        std::string colorSynthBuf = m_extended_transfer_function_message.m_color_transfer_function_synthesis;
+        std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
+
+        std::string opacitySynthBuf = m_extended_transfer_function_message.m_opacity_transfer_function_synthesis;
+        std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
+
+        m_merge->setIsParticleGenerationNeeded( true );
+        //m_color_function_selector->updateColorMap();
 }
 
 void TransferFunctionEditor::onImportButtonClicked()

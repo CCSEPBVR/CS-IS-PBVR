@@ -207,6 +207,12 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
 
     m_synthesizer = new TransferFunctionSynthesizer();
     
+    if (clntMes.m_transfer_function.size() == 0)
+    {
+        std::cout << "TF_number is 0 !!" << std::endl;
+        return;
+    }
+
     for ( size_t i = 0; i < clntMes.m_transfer_function.size(); i++ )
     {
         NamedTransferFunction tf;
@@ -237,7 +243,6 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
            m_transfunc.push_back( tf );
     }
 
-
         // add by shimomura at 2022/12/12
         EquationToken eq;
         std::vector<EquationToken> var; 
@@ -256,14 +261,14 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
         m_synthesizer -> setColorFunction( eq );
 
         int vloeqsize2=clntMes.m_volume_equation.size()/2;
-        for ( size_t i = 0; i < clntMes.m_volume_equation.size()/2; i++ )
+        for ( size_t i = 0; i < vloeqsize2 ; i++ )
         {
-            std::string OSynthBuf = clntMes.m_volume_equation[i+vloeqsize2].m_equation;
+            std::string OSynthBuf = clntMes.m_volume_equation[2*i+1].m_equation;
             std::replace(OSynthBuf.begin(), OSynthBuf.end(), 'X', 'x');
             std::replace(OSynthBuf.begin(), OSynthBuf.end(), 'Y', 'y');
             std::replace(OSynthBuf.begin(), OSynthBuf.end(), 'Z', 'z');
 
-            std::string CSynthBuf = clntMes.m_volume_equation[i].m_equation ;
+            std::string CSynthBuf = clntMes.m_volume_equation[2*i].m_equation ;
             std::replace(CSynthBuf.begin(), CSynthBuf.end(), 'X', 'x');
             std::replace(CSynthBuf.begin(), CSynthBuf.end(), 'Y', 'y');
             std::replace(CSynthBuf.begin(), CSynthBuf.end(), 'Z', 'z');
@@ -278,7 +283,8 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
         m_synthesizer -> setColorVariable( var_c );
         
     // overwrite opacitymap add by shimomura  2023/1/24    
-    size_t cnt = clntMes.m_transfer_function.size()/2;
+    //size_t cnt = clntMes.m_transfer_function.size()/2;
+    size_t cnt = clntMes.m_transfer_function.size();
     for ( size_t i = 0; i < cnt; i++ )
     {
         m_transfunc[i].m_color_variable     = clntMes.m_transfer_function[i].m_color_variable;
@@ -287,10 +293,10 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
         m_transfunc[i].setColorMap( clntMes.m_transfer_function[i].colorMap() );
 	m_transfunc[i].setColorRange( m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max );
 	
-        m_transfunc[i].m_opacity_variable     = clntMes.m_transfer_function[i+cnt].m_opacity_variable;
-        m_transfunc[i].m_opacity_variable_min = clntMes.m_transfer_function[i+cnt].m_opacity_variable_min;
-        m_transfunc[i].m_opacity_variable_max = clntMes.m_transfer_function[i+cnt].m_opacity_variable_max;
-        m_transfunc[i].setOpacityMap( clntMes.m_transfer_function[i+cnt].opacityMap() );
+        m_transfunc[i].m_opacity_variable     = clntMes.m_transfer_function[i].m_opacity_variable;
+        m_transfunc[i].m_opacity_variable_min = clntMes.m_transfer_function[i].m_opacity_variable_min;
+        m_transfunc[i].m_opacity_variable_max = clntMes.m_transfer_function[i].m_opacity_variable_max;
+        m_transfunc[i].setOpacityMap( clntMes.m_transfer_function[i].opacityMap() );
 	m_transfunc[i].setOpacityRange( m_transfunc[i].m_opacity_variable_min, m_transfunc[i].m_opacity_variable_max );
 
     //    std::cout << "clntMes.m_transfer_function[i+cnt].m_opacity_variable_max = " << clntMes.m_transfer_function[i+cnt].m_opacity_variable_max <<std::endl;

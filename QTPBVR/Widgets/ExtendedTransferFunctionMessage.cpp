@@ -107,7 +107,7 @@ bool ExtendedTransferFunctionMessage::operator==( const ExtendedTransferFunction
     return v0;
 }
 
-void ExtendedTransferFunctionMessage::applyToClientMessageCS( jpv::ParticleTransferClientMessage* message ) const
+void ExtendedTransferFunctionMessage::applyToClientMessage( jpv::ParticleTransferClientMessage* message ) const
 {
     message->m_transfer_function.clear();
     message->m_volume_equation.clear();
@@ -117,105 +117,6 @@ void ExtendedTransferFunctionMessage::applyToClientMessageCS( jpv::ParticleTrans
     // 1次伝達関数
     message->m_color_transfer_function_synthesis = this->m_color_transfer_function_synthesis;
     message->m_opacity_transfer_function_synthesis = this->m_opacity_transfer_function_synthesis;
-
-    // 色関数リスト
-    for ( size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
-    {
-        NamedTransferFunctionParameter etf;
-        jpv::ParticleTransferClientMessage::VolumeEquation veq;
-
-        const NamedTransferFunctionParameter& tf = this->m_color_transfer_function[i];
-        etf = tf;
-        int func_num = etf.getNameNumber();
-        std::stringstream ss;
-        ss << "_F" << func_num;
-        etf.m_color_variable   = ss.str() + "_VAR_C";
-        veq.m_name     = etf.m_color_variable;
-        veq.m_equation = this->m_color_transfer_function[i].m_color_variable;
-        message->m_transfer_function.push_back( etf );
-        message->m_volume_equation.push_back( veq );
-        message->showCS();
-    }
-
-    // 不透明度関数リスト
-    for ( size_t i = 0; i < this->m_opacity_transfer_function.size(); i++ )
-    {
-        NamedTransferFunctionParameter etf;
-        jpv::ParticleTransferClientMessage::VolumeEquation veq;
-
-        const NamedTransferFunctionParameter& tf = this->m_opacity_transfer_function[i];
-        etf = tf;
-        int func_num = etf.getNameNumber();
-        std::stringstream ss;
-        ss << "_F" << func_num;
-        etf.m_opacity_variable   = ss.str() + "_VAR_O";
-        veq.m_name     = etf.m_opacity_variable;
-        veq.m_equation = this->m_opacity_transfer_function[i].m_opacity_variable;
-        message->m_transfer_function.push_back( etf );
-        message->m_volume_equation.push_back( veq );
-    }
-
-    //      //2023 shimomura   stab data
-    //       jpv::ParticleTransferClientMessage::EquationToken opa_func = {
-    //            {VARIABLE, END}, // A1+A2 -> A1 A2 +
-    //            {A1},// A1, A2
-    //            {} //nothing
-    //        };
-
-    //        message->opacity_func = opa_func;
-
-    //        jpv::ParticleTransferClientMessage::EquationToken col_func = {
-    //            {VARIABLE, END},// C1
-    //            {C1},// C1
-    //            {}//nothing
-    //        };
-
-    //        message->color_func = col_func;
-
-    //        jpv::ParticleTransferClientMessage::EquationToken opa_var_1 = {
-    //    //        {VARIABLE, VARIABLE, PLUS, END}, //q1+q1 -> q1 q1 +
-    //    //        {Q1,Q1},
-    //            {VARIABLE, END}, //q1+q1 -> q1 q1 +
-    //            {Q1},
-    //            {}
-    //        };
-
-    //        jpv::ParticleTransferClientMessage::EquationToken col_var_1 = {
-    //    //        {VARIABLE,VARIABLE, PLUS, END}, //q1+q1 -> q1 q1 +
-    //    //        {Q1, Q1},
-    //            {VARIABLE, END}, //q1+q1 -> q1 q1 +
-    //            {Q1},
-    //            {}
-    //        };
-
-    //        std::vector<jpv::ParticleTransferClientMessage::EquationToken> opa_var;//ex) q1+q2
-    //        std::vector<jpv::ParticleTransferClientMessage::EquationToken> col_var;//ex) q3*q4
-    //        opa_var.push_back( opa_var_1 );
-    //        col_var.push_back( col_var_1 );
-
-    //        message->color_var = opa_var;
-    //        message->opacity_var = col_var;
-
-    std::string colorSynthBuf = this->m_color_transfer_function_synthesis;
-    std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
-
-    std::string opacitySynthBuf = this->m_opacity_transfer_function_synthesis;
-    std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
-
-    return;
-}
-
-
-void ExtendedTransferFunctionMessage::applyToClientMessageIS( jpv::ParticleTransferClientMessage* message ) const
-{
-    message->m_transfer_function.clear();
-    message->m_volume_equation.clear();
-    message->opacity_var.clear();
-    message->color_var.clear();
-
-    // 1次伝達関数
-    std::string colorSynthBuf = this->m_color_transfer_function_synthesis;
-    std::string opacitySynthBuf = this->m_opacity_transfer_function_synthesis;
 
     for ( size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
     {
@@ -248,8 +149,16 @@ void ExtendedTransferFunctionMessage::applyToClientMessageIS( jpv::ParticleTrans
         message->m_volume_equation.push_back( veq_o );
     }
 
+
+    std::string colorSynthBuf = this->m_color_transfer_function_synthesis;
+    std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
+
+    std::string opacitySynthBuf = this->m_opacity_transfer_function_synthesis;
+    std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
+
     return;
 }
+
 
 
 /**

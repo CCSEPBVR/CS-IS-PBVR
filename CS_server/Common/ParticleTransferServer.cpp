@@ -131,9 +131,9 @@ int jpv::ParticleTransferServer::termServer()
     return 0;
 }
 
-int jpv::ParticleTransferServer::sendMessageCS( const ParticleTransferServerMessage& message )
+int jpv::ParticleTransferServer::sendMessage( const ParticleTransferServerMessage& message )
 {
-    int m_message_size = message.byteSizeCS();
+    int m_message_size = message.byteSize();
     int size = m_message_size + ( 12 + 12 + 3 ) * message.m_number_particle;
     char* buf = new char[size];
     memset(buf, 0x00, sizeof(char)*size);
@@ -143,7 +143,7 @@ int jpv::ParticleTransferServer::sendMessageCS( const ParticleTransferServerMess
     std::cout << "Send Server Message Size = " << m_message_size << std::endl;
     std::cout << "Send Server Particle Size = " << message.m_number_particle << std::endl;
 
-    message.packCS( buf );
+    message.pack( buf );
     send( m_destination_socket, buf, size, 0 );
 
 #ifdef _DEBUG
@@ -157,33 +157,7 @@ int jpv::ParticleTransferServer::sendMessageCS( const ParticleTransferServerMess
     return 0;
 }
 
-int jpv::ParticleTransferServer::sendMessageIS( const ParticleTransferServerMessage& message )
-{
-    int m_message_size = message.byteSizeIS();
-    int size = m_message_size + ( 12 + 12 + 3 ) * message.m_number_particle;
-    char* buf = new char[size];
-    memset(buf, 0x00, sizeof(char)*size);
-
-    assert( m_message_size == message.m_message_size );
-
-    std::cout << "Send Server Message Size = " << m_message_size << std::endl;
-    std::cout << "Send Server Particle Size = " << message.m_number_particle << std::endl;
-
-    message.packIS( buf );
-    send( m_destination_socket, buf, size, 0 );
-
-#ifdef _DEBUG
-    std::ofstream output;
-    output.open( "debug_server.send" );
-    output.write( buf, size );
-    output.flush();
-    output.close();
-#endif
-    delete[] buf;
-    return 0;
-}
-
-int jpv::ParticleTransferServer::recvMessageCS( ParticleTransferClientMessage* message )
+int jpv::ParticleTransferServer::recvMessage( ParticleTransferClientMessage* message )
 {
     // クライアントメッセージの受信
     const size_t hSize = sizeof( message->m_header ) + sizeof( message->m_message_size );
@@ -212,7 +186,7 @@ int jpv::ParticleTransferServer::recvMessageCS( ParticleTransferClientMessage* m
     }
     delete[] buf;
 
-    message->unpackCS( ss.str().c_str() );
+    message->unpack( ss.str().c_str() );
 
 #ifdef _DEBUG
     std::ofstream output;
@@ -224,45 +198,4 @@ int jpv::ParticleTransferServer::recvMessageCS( ParticleTransferClientMessage* m
     return 0;
 }
 
-
-int jpv::ParticleTransferServer::recvMessageIS( ParticleTransferClientMessage* message )
-{
-    // クライアントメッセージの受信
-    const size_t hSize = sizeof( message->m_header ) + sizeof( message->m_message_size );
-    char hsbuf[hSize];
-    char* buf;
-    std::stringstream ss;
-    int recvSize( 0 );
-    size_t mSize, rSize;
-
-    message->m_message_size = 0;
-    for ( rSize = 0; rSize < hSize; rSize += recvSize )
-    {
-        recvSize = recv( m_destination_socket, hsbuf, hSize - rSize, 0 );
-        ss.write( hsbuf, recvSize );
-    }
-    ss.seekg( sizeof( message->m_header ) );
-    ss.read( reinterpret_cast<char*>( &message->m_message_size ), sizeof( message->m_message_size ) );
-    std::cout << "Receive Client Message Size = " << message->m_message_size << std::endl;
-
-    mSize = message->m_message_size - hSize;
-    buf = new char[mSize];
-    for ( rSize = 0; rSize < mSize; rSize += recvSize )
-    {
-        recvSize = recv( m_destination_socket, buf, mSize - rSize, 0 );
-        ss.write( buf, recvSize );
-    }
-    delete[] buf;
-
-    message->unpackIS( ss.str().c_str() );
-
-#ifdef _DEBUG
-    std::ofstream output;
-    output.open( "debug_server.send" );
-    output.write( ss.str().c_str(), message->m_message_size );
-    output.flush();
-    output.close();
-#endif
-    return 0;
-}
 

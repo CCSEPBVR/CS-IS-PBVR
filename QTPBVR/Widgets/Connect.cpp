@@ -4,15 +4,20 @@
 #include <QMessageBox>
 #include <kvs/Camera>
 #include <kvs/PointObject>
+#include <QFileDialog>
 
 #include "Widgets/MergePanel.h"
 
-Connect::Connect(QWidget *parent, MergePanel* merge, DataProperties* filter_infomation, TransferFunctionEditor* transfer_function_editor) :
+//Connect::Connect(QWidget *parent) :
+Connect::Connect(QWidget *parent, MergePanel* merge, DataProperties* filter_infomation, TransferFunctionEditor* transfer_function_editor):
     QDialog(parent),
     ui(new Ui::Connect),
     m_screen( nullptr ),
     m_camera( nullptr ),
-    m_merge( merge ),
+    // m_merge( nullptr ),
+    // m_filter_infomation( nullptr ),
+    // m_transfer_function_editor( nullptr ),
+    m_merge( merge  ),
     m_filter_infomation( filter_infomation ),
     m_transfer_function_editor( transfer_function_editor ),
     m_extended_transfer_function_message(),
@@ -39,71 +44,20 @@ Connect::~Connect()
     delete ui;
 }
 
-void Connect::connectServerCS()
+void Connect::connectServer()
 {
     jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
-    jpv::ParticleTransferClientMessage message;
-    jpv::ParticleTransferServerMessage reply;
-    reply.m_camera = new kvs::Camera();
-
-    if( !ui->volumeDataFilePathLEdit->text().endsWith( ".pfi" ) && !ui->volumeDataFilePathLEdit->text().endsWith( ".pfl" ) )
-    {
-        QMessageBox::information( this, tr( "Connection Error" ), tr( "The file path does not end with .pfi or pfl" ) );
-        return;
-    }
-
-    int init = client.initClient();
-    if( init < 0 )
-    {
-        QMessageBox::information(this, tr("Connection Error"), tr("The connection to the server failed. Please verify if the server is up and running."));
-        return;
-    }
-    strncpy( message.m_header, "JPTP /1.0\r\n", 11 );
-    message.m_initialize_parameter = -3;
-#ifdef Q_OS_WIN
-    message.m_input_directory = ( ui->volumeDataFilePathLEdit->text().replace( "/","\\" ) ).toLocal8Bit().constData();
-#else
-    message.m_input_directory = ui->volumeDataFilePathLEdit->text().toStdString();
-#endif
-    m_extended_transfer_function_message.applyToClientMessageCS( &message );
-    message.m_message_size = message.byteSizeCS();
-    client.sendMessageCS( message );
-    client.recvMessageCS( &reply );
-
-    m_filter_infomation->updateFilterInfomation( ui->volumeDataFilePathLEdit->text(), reply );
-
-    strncpy( message.m_header, "JPTP /1.0\r\n", 11 );
-    message.m_initialize_parameter = -1;
-    message.m_message_size = message.byteSizeCS();
-    client.sendMessageCS( message );
-    client.recvMessageCS( &reply );
-    client.termClient();
-
-    m_merge->serverObjectCS( ui->volumeDataFilePathLEdit->text(), reply.m_start_step, reply.m_end_step );
-    m_transfer_function_editor->applyVariableRange( reply.m_server_side_variable_range );
-#ifdef Q_OS_WIN
-    m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
-#else
-    m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
-#endif
-    m_transfer_function_editor->onApplyButtonClicked();
-    //    qInfo() << reply.m_variable_range.min( "t1_var_c" );
-    //    qInfo() << reply.m_min_value;
-    delete reply.m_camera;
-    ui->connectPBtn->setDisabled( true );
-}
-
-void Connect::connectServerIS()
-{
-    jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
-    jpv::ParticleTransferClientMessage message;
     m_server_message.m_camera = new kvs::Camera();
+    m_client_message.m_camera = m_camera;
 
-//    if( !ui->volumeDataFilePathLEdit->text().endsWith( ".pfi" ) && !ui->volumeDataFilePathLEdit->text().endsWith( ".pfl" ) )
-//    {
-//        QMessageBox::information( this, tr( "Connection Error" ), tr( "The file path does not end with .pfi or pfl" ) );
-//        return;
-//    }
+    if( ui-> clientServerRBtn -> isChecked() )
+    {
+        if( !ui->volumeDataFilePathLEdit->text().endsWith( ".pfi" ) && !ui->volumeDataFilePathLEdit->text().endsWith( ".pfl" ) )
+        {
+            QMessageBox::information( this, tr( "Connection Error" ), tr( "The file path does not end with .pfi or pfl" ) );
+            return;
+        }
+    }
 
     int init = client.initClient();
     if( init < 0 )
@@ -111,45 +65,74 @@ void Connect::connectServerIS()
         QMessageBox::information(this, tr("Connection Error"), tr("The connection to the server failed. Please verify if the server is up and running."));
         return;
     }
-    strncpy( message.m_header, "JPTP /1.0\r\n", 11 );
-    message.m_initialize_parameter = -3;
-#ifdef Q_OS_WIN
-    message.m_input_directory = ( ui->volumeDataFilePathLEdit->text().replace( "/","\\" ) ).toLocal8Bit().constData();
-#else
-    message.m_input_directory = ui->volumeDataFilePathLEdit->text().toStdString();
-#endif
-    m_extended_transfer_function_message.applyToClientMessageIS( &message );
-    message.m_message_size = message.byteSizeIS();
-    client.sendMessageIS( message );
-    client.recvMessageIS( &m_server_message );
 
-    m_transfer_function_editor->importFromServerIS();
+    strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
+
+#ifdef Q_OS_WIN
+    m_client_message.m_input_directory = ( ui->volumeDataFilePathLEdit->text().replace( "/","\\" ) ).toLocal8Bit().constData();
+#else
+    m_client_message.m_input_directory = ui->volumeDataFilePathLEdit->text().toStdString();
+#endif
+
+     if( ui-> inSituRBtn -> isChecked())
+     {
+#ifdef Q_OS_WIN
+        m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
+#else
+        m_transfer_function_editor->importFile( "/Users/shimomurakazuya/SGI/UNPBVR/IntegPBVRv220_CS_TFnumber/CS-IS-PBVR/IS_DaemonAndSampler/Example/C/Hydrogen_unstruct/test.tf" );
+        //m_transfer_function_editor->importFile( "/Users/shimomurakazuya/SGI/visualization_data/defalut/defalut.tf" );
+        //am_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
+
+#endif
+        m_transfer_function_editor->onApplyButtonClicked();
+        m_client_message.m_camera ->setWindowSize( m_screen->width() , m_screen->height() );
+
+     }
+
+     m_client_message.m_initialize_parameter = -3;
+
+    m_client_message.show();
+    m_client_message.m_message_size = m_client_message.byteSize();
+    client.sendMessage( m_client_message );
+    client.recvMessage( &m_server_message );
+
+    if ( ui->inSituRBtn->isChecked() ) m_transfer_function_editor->importFromServerIS();
 
     m_filter_infomation->updateFilterInfomation( ui->volumeDataFilePathLEdit->text(), m_server_message );
 
-    strncpy( message.m_header, "JPTP /1.0\r\n", 11 );
-    message.m_initialize_parameter = -1;
-    message.m_message_size = message.byteSizeIS();
-    client.sendMessageIS( message );
-    client.recvMessageIS( &m_server_message );
+    strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
+
+    m_client_message.m_initialize_parameter = -1;
+    m_client_message.m_message_size = m_client_message.byteSize();
+    client.sendMessage( m_client_message );
+    client.recvMessage( &m_server_message );
     client.termClient();
 
-    m_merge->serverObjectIS( "IS-Object", 0, 0 );
-//    m_transfer_function_editor->applyVariableRange( reply.m_variable_range );
-//#ifdef Q_OS_WIN
-//    m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
-//#else
-//    m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
-//#endif
-//    m_transfer_function_editor->onApplyButtonClicked();
-//    qInfo() << reply.m_variable_range.min( "t1_var_c" );
-//    qInfo() << reply.m_min_value;
+    if( ui-> clientServerRBtn -> isChecked() )
+    {
+        m_merge->serverObjectCS( ui->volumeDataFilePathLEdit->text(), m_server_message.m_start_step, m_server_message.m_end_step );
+        m_transfer_function_editor->applyVariableRange( m_server_message.m_server_side_variable_range );
+    #ifdef Q_OS_WIN
+        m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
+    #else
+        m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
+    #endif
+        m_transfer_function_editor->onApplyButtonClicked();
+        //    qInfo() << m_server_message.m_variable_range.min( "t1_var_c" );
+        //    qInfo() << m_server_message.m_min_value;
+    }
+    else if ( ui->inSituRBtn->isChecked() )
+    {
+        m_merge->serverObjectIS( "IS-Object", 0, 0 );
+    }
     delete m_server_message.m_camera;
     ui->connectPBtn->setDisabled( true );
 }
 
+
 kvs::PointObject* Connect::generateParticles( int timeStep )
 {
+    std::cout << __func__ << std::endl;
     std::cout << "********" << std::endl;
     std::cout << "********" << std::endl;
     std::cout << "********" << std::endl;
@@ -177,14 +160,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
 //    m_client_message.particle_data_size_limit = 20;    
     m_client_message.m_camera = m_camera;//足りないかも
     m_client_message.m_step = timeStep;
-    if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::CS )
-    {
-        m_client_message.m_message_size = m_client_message.byteSizeCS();
-    }
-    else if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
-    {
-        m_client_message.m_message_size = m_client_message.byteSizeIS();
-    }
+    m_client_message.m_message_size = m_client_message.byteSize();
     m_client_message.m_sampling_step = 1.0f;
 //    m_client_message.m_x_synthesis = "";
 //    m_client_message.m_y_synthesis = "";
@@ -206,18 +182,9 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
 
     std::cout << "SEND" << std::endl;
 
-    if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::CS )
-    {
-        m_client_message.m_message_size = m_client_message.byteSizeCS();
-        client.sendMessageCS( m_client_message );
-        client.recvMessageCS( &m_server_message );
-    }
-    else if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
-    {
-        m_client_message.m_message_size = m_client_message.byteSizeIS();
-        client.sendMessageIS( m_client_message );
-        client.recvMessageIS( &m_server_message );
-    }
+        m_client_message.m_message_size = m_client_message.byteSize();
+        client.sendMessage( m_client_message );
+        client.recvMessage( &m_server_message );
 
     size_t allParticle = 0;
     kvs::PointObject* object = new kvs::PointObject();
@@ -226,14 +193,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
 
     for ( int n = 0; n < serve_numvol; n++ )
     {
-        if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::CS )
-        {
-            if ( client.recvMessageCS( &m_server_message ) == 1 ){}
-        }
-        else if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
-        {
-            if ( client.recvMessageIS( &m_server_message ) == 1 ){}
-        }
+            if ( client.recvMessage( &m_server_message ) == 1 ){}
 
         int nmemb = m_server_message.m_number_particle * 3;
         if ( nmemb != 0 )
@@ -254,29 +214,6 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
             // delete[] m_server_message.m_colors;
             // delete[] m_server_message.m_normals;
             // delete[] m_server_message.m_positions;
-        }
-    }
-
-    //ヒストグラム更新用(IS)
-    if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
-    {
-        m_received_message.m_var_range.merge( m_server_message.m_server_side_variable_range );
-        m_received_message.m_color_bins.resize( m_server_message.m_transfer_function_count );
-        m_received_message.m_opacity_bins.resize( m_server_message.m_transfer_function_count );
-        for ( int tf = 0; tf < m_server_message.m_transfer_function_count; tf++ )
-        {
-            char color_function_name[8] = {0x00};
-            char opacity_function_name[8] = {0x00};
-            sprintf(color_function_name, "C%d", tf+1);
-            sprintf(opacity_function_name, "O%d", tf+1);
-            if ( m_server_message.m_color_nbins[tf] > 0 )
-            {
-                m_received_message.m_color_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_color_nbins[tf], (size_t *)m_server_message.m_color_bins[tf], std::string(color_function_name) );
-            }
-            if ( m_server_message.m_opacity_nbins[tf] )
-            {
-                m_received_message.m_opacity_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_opacity_nbins[tf],(size_t *) m_server_message.m_opacity_bins[tf], std::string(opacity_function_name) );
-            }
         }
     }
 
@@ -302,19 +239,10 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
     std::cout << serverSideMaxObjectCoords[2] << std::endl;
 
     m_client_message.m_initialize_parameter = -1;
+    m_client_message.m_message_size = m_client_message.byteSize();
+    client.sendMessage( m_client_message );
+    client.recvMessage( &m_server_message );
 
-    if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::CS )
-    {
-        m_client_message.m_message_size = m_client_message.byteSizeCS();
-        client.sendMessageCS( m_client_message );
-        client.recvMessageCS( &m_server_message );
-    }
-    else if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
-    {
-        m_client_message.m_message_size = m_client_message.byteSizeIS();
-        client.sendMessageIS( m_client_message );
-        client.recvMessageIS( &m_server_message );
-    }
 
     client.termClient();
 
@@ -324,9 +252,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
     std::cout << m_server_message.m_server_side_variable_range.min( "t1_var_o" ) << std::endl;
     std::cout << m_server_message.m_server_side_variable_range.max( "t1_var_o" ) << std::endl;
 
-    //ヒストグラム更新用(CS)
-    if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::CS )
-    {
+    //ヒストグラム更新用(CS, IS)
         m_received_message.m_var_range.merge( m_server_message.m_server_side_variable_range );
         m_received_message.m_color_bins.resize( m_server_message.m_transfer_function_count );
         m_received_message.m_opacity_bins.resize( m_server_message.m_transfer_function_count );
@@ -345,7 +271,6 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
                 m_received_message.m_opacity_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_opacity_nbins[tf],(size_t *) m_server_message.m_opacity_bins[tf], std::string(opacity_function_name) );
             }
         }
-    }
 
     m_transfer_function_editor->applyVariableRange( m_server_message.m_server_side_variable_range );
 //    m_transfer_function_editor->updateRangeView( reply.m_variable_range );
@@ -353,6 +278,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
     m_transfer_function_editor->updateRangeView();
 
 //    pointObject->updateMinMaxCoords();
+
 
     if ( m_server_message.m_camera )
     {
@@ -402,7 +328,7 @@ void Connect::deletedServerObject()
 {
     ui->connectPBtn->setEnabled( true );
 }
-#include <QFileDialog>
+
 void Connect::onVolumeDataBrowseButtonClicked()
 {
     ui->volumeDataFilePathLEdit->setText( QFileDialog::getOpenFileName( this, tr("Select Volume Data File"), ".", tr("Volume Data Files (*.pfi *.pfl)") ) );
@@ -419,13 +345,13 @@ void Connect::onConnectButtonClicked()
     {
         qDebug("CS CONNECT!");
         m_transfer_function_editor->setMode( TransferFunctionEditor::Mode::CS );
-        connectServerCS();
+        connectServer();
     }
     else if( ui->inSituRBtn->isChecked() )
     {
         qDebug("IS CONNECT!");
         m_transfer_function_editor->setMode( TransferFunctionEditor::Mode::IS );
-        connectServerIS();
+        connectServer();
     }
     else
     {

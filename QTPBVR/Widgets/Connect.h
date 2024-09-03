@@ -26,10 +26,14 @@ class Connect : public QDialog
     Q_OBJECT
 
 public:
+    //explicit Connect(QWidget *parent = nullptr);
     explicit Connect(QWidget *parent = nullptr, MergePanel* merge = nullptr, DataProperties* filter_infomation = nullptr, TransferFunctionEditor* transfer_function_editor = nullptr);
     ~Connect();
     void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; }
     void setCamera( kvs::Camera* camera ){ m_camera = camera; }
+    void setMerge( MergePanel* merge ){  m_merge = merge; }
+    void setFilterInfomation( DataProperties* filter_infomation ){ m_filter_infomation = filter_infomation; }
+    void setTransferFunctionEditor( TransferFunctionEditor* transfer_function_editor ){ m_transfer_function_editor = transfer_function_editor; }
     jpv::ParticleTransferClientMessage* getClientMessage(){ return &m_client_message; }
     jpv::ParticleTransferServerMessage* getServerMessage(){ return &m_server_message; }
     kvs::visclient::ReceivedMessage* getReceivedMessage(){ return &m_received_message; }
@@ -49,7 +53,7 @@ private:
     jpv::ParticleTransferServerMessage m_server_message;
     kvs::visclient::ReceivedMessage m_received_message;
 
-    void connectServerCS();
+    void connectServer();
     void connectServerIS();
 
     void onVolumeDataBrowseButtonClicked();

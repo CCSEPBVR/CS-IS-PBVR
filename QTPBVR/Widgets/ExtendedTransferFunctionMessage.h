@@ -58,8 +58,7 @@ public:
 
 public:
     bool operator==( const ExtendedTransferFunctionMessage& s ) const;
-    void applyToClientMessageCS( jpv::ParticleTransferClientMessage* message ) const;
-    void applyToClientMessageIS( jpv::ParticleTransferClientMessage* message ) const;
+    void applyToClientMessage( jpv::ParticleTransferClientMessage* message ) const;
     void setColorTransferFunction(const std::string &name, const std::string &variable);
     void setOpacityTransferFunction(const std::string &name, const std::string &variable);
     NamedTransferFunctionParameter* getColorTransferFunction(const std::string &name);
