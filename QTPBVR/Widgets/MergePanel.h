@@ -100,6 +100,8 @@ private:
     kvs::ObjectBase* m_object;
 };
 
+class PBVRGUI;
+
 namespace Ui {
 class MergePanel;
 }
@@ -110,14 +112,13 @@ class MergePanel : public QDockWidget
 
 public:
     explicit MergePanel(QWidget *parent = nullptr,
+                         PBVRGUI *pbvr_gui = nullptr,
                          Preference* preference = nullptr,
                          TimeControllerB* time_controller_b = nullptr,
                          TotalParticles* total_particles = nullptr,
                          Connect* connectUI = nullptr,
                          ShadingController* shading_controller = nullptr );
     ~MergePanel();
-
-    void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; };
 
     void mergeObjects( int currentTimeStep, int requestTimeStep );
     void serverObjectCS( QString volumeDataFilePath, int min, int max );
@@ -134,7 +135,7 @@ public:
 
 private:
     Ui::MergePanel *ui;
-    kvs::qt::jaea::Screen* m_screen;
+    PBVRGUI *m_pbvr_gui;
     Preference* m_preference;
     TimeControllerB* m_time_controller_b;
     TotalParticles* m_total_particles;

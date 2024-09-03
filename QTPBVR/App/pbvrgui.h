@@ -32,6 +32,12 @@ class PBVRGUI : public QMainWindow
 
 public:
     explicit PBVRGUI(kvs::qt::Application& app, QWidget *parent = nullptr);
+    kvs::qt::jaea::Screen* screen() const { return m_screen; }
+    kvs::StochasticRenderingCompositor* compositor() const { return m_compositor; }
+    kvs::ColorMapBar* colorMapBar() const { return m_color_map_bar; }
+    kvs::OrientationAxis* orientationAxis() const { return m_orientation_axis; }
+    kvs::Label* fpsLabel() const { return m_fps_label; }
+    kvs::Label* timeStepLabel() const { return m_time_step_label; }
     void initializePanels();
     Preference& preference() { return this->m_preference; };
     ~PBVRGUI();

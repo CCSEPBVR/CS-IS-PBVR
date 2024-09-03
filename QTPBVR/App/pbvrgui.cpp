@@ -14,24 +14,24 @@
 PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::PBVRGUI),
-    m_screen( nullptr ),
-    m_compositor( nullptr ),
+    m_screen( new kvs::qt::jaea::Screen( &app ) ),
+    m_compositor( new kvs::StochasticRenderingCompositor( m_screen->scene() ) ),
     m_color_map_bar( nullptr ),
     m_orientation_axis( nullptr ),
     m_fps_label( nullptr ),
     m_time_step_label( nullptr ),
-    m_preference( this ),
+    m_preference( this, this ),
     m_time_controller_A( this ),
     m_time_controller_B( this, &m_time_controller_A, &m_merge ),
     m_total_particles( this ),
-    m_color_map_bar_selector( this ),
-    m_merge( this, &m_preference ,&m_time_controller_B, &m_total_particles, &m_connect, &m_shading_controller ),
-    m_connect( this, &m_merge, &m_data_properties, &m_transfer_function_editor ),
-    m_volumeTransform( this ),
-    m_animation_controls( this ),
-    m_repetition_level_control( this, &m_shading_controller ),
-    m_display_point_size_control( this, &m_preference ),
-    m_shading_controller( this ),
+    m_color_map_bar_selector( this, this ),
+    m_merge( this, this, &m_preference ,&m_time_controller_B, &m_total_particles, &m_connect, &m_shading_controller ),
+    m_connect( this, this, &m_merge, &m_data_properties, &m_transfer_function_editor ),
+    m_volumeTransform( this, this ),
+    m_animation_controls( this, this ),
+    m_repetition_level_control( this, this, &m_shading_controller ),
+    m_display_point_size_control( this, this, &m_preference ),
+    m_shading_controller( this, this ),
     m_render_options( this, &m_merge ),
     m_data_properties( this ),
     m_coordinates( this, &m_merge ),
@@ -40,12 +40,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     ui->setupUi(this);
     setWindowTitle( "QTPBVR vX.X.X" );
 
-    //スクリーンの初期化
-    m_screen = new kvs::qt::jaea::Screen( &app );
-
     const size_t repetitions = 4;
-    //ストキャステックレンダリングコンポジタの初期化
-    m_compositor = new kvs::StochasticRenderingCompositor(m_screen->scene());
     m_compositor->setRepetitionLevel( repetitions );
     m_screen->setEvent(m_compositor);
 
@@ -97,12 +92,6 @@ void PBVRGUI::initializePanels()
     m_screen->paintDevice()->textEngine()->addFont( "Icon", fontDir + "entypo.ttf" );
 
     //プリファレンスパネルの初期化
-    m_preference.setScreen( m_screen );
-    m_preference.setCompositor( m_compositor );
-    m_preference.setColorMapBar( m_color_map_bar );    
-    m_preference.setOrientationAxis( m_orientation_axis );
-    m_preference.setFPSLabel( m_fps_label );
-    m_preference.setTimeStepLabel( m_time_step_label );
     m_preference.initialize();
 
     //タイムコントロールウィジェットの初期化
@@ -110,51 +99,40 @@ void PBVRGUI::initializePanels()
     this->addToolBarBreak(Qt::TopToolBarArea);
     this->addToolBar(Qt::TopToolBarArea, &m_total_particles);
     this->addToolBar(Qt::TopToolBarArea, &m_color_map_bar_selector);
-    m_color_map_bar_selector.setScreen( m_screen );
-    m_color_map_bar_selector.setColorMapBar( m_color_map_bar );
     m_color_map_bar_selector.setExtendedTransferFunctionMessage( m_transfer_function_editor.getExtendedTransferFunctionMessage() );
     m_color_map_bar_selector.populateColorFunctionLists( m_color_map_bar_selector.getExtendedTransferFunctionMessage()->m_transfer_function_number );
     this->addToolBarBreak(Qt::TopToolBarArea);
     this->addToolBar(Qt::TopToolBarArea, &m_time_controller_B);    
 
     //マージパネルの初期化
-    m_merge.setScreen( m_screen );
     m_merge.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::RightDockWidgetArea, &m_merge );
 
     //コネクトパネルの初期化
-    m_connect.setScreen( m_screen );
-    m_connect.setCamera( m_screen->scene()->camera() );
 
     //ボリュームトランスフォームパネルの初期化
     m_volumeTransform.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::LeftDockWidgetArea, &m_volumeTransform );
-    m_volumeTransform.setScreen( m_screen );
 
     //アニメーションコントロールパネルの初期化
     m_animation_controls.close();
     m_animation_controls.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::RightDockWidgetArea, &m_animation_controls );
-    m_animation_controls.setScreen( m_screen );
 
     //リピテーションレベルコントロールパネルの初期化
     m_repetition_level_control.close();
     m_repetition_level_control.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::LeftDockWidgetArea, &m_repetition_level_control );
-    m_repetition_level_control.setScreen( m_screen );
-    m_repetition_level_control.setCompositor( m_compositor );
 
     //ディスプレイポイントサイズコントロールパネルの初期化
     m_display_point_size_control.close();
     m_display_point_size_control.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::LeftDockWidgetArea, &m_display_point_size_control );    
-    m_display_point_size_control.setScreen( m_screen );
 
     //シェーディングコントローラーパネルの初期化
     m_shading_controller.close();
     m_shading_controller.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::LeftDockWidgetArea, &m_shading_controller );
-    m_shading_controller.setScreen( m_screen );
 
     //データプロパティパネルの初期化
     m_data_properties.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );

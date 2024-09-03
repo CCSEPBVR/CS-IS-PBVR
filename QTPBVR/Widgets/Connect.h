@@ -15,6 +15,7 @@
 #include "ExtendedKVS/Screen.h"
 #include "ReceivedMessage.h"
 
+class PBVRGUI;
 class MergePanel;
 
 namespace Ui {
@@ -26,10 +27,8 @@ class Connect : public QDialog
     Q_OBJECT
 
 public:
-    explicit Connect(QWidget *parent = nullptr, MergePanel* merge = nullptr, DataProperties* filter_infomation = nullptr, TransferFunctionEditor* transfer_function_editor = nullptr);
+    explicit Connect(QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr, MergePanel* merge = nullptr, DataProperties* filter_infomation = nullptr, TransferFunctionEditor* transfer_function_editor = nullptr);
     ~Connect();
-    void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; }
-    void setCamera( kvs::Camera* camera ){ m_camera = camera; }
     jpv::ParticleTransferClientMessage* getClientMessage(){ return &m_client_message; }
     jpv::ParticleTransferServerMessage* getServerMessage(){ return &m_server_message; }
     kvs::visclient::ReceivedMessage* getReceivedMessage(){ return &m_received_message; }
@@ -38,8 +37,7 @@ public:
 
 private:
     Ui::Connect *ui;
-    kvs::qt::jaea::Screen* m_screen;
-    kvs::Camera* m_camera;
+    PBVRGUI *m_pbvr_gui;
     MergePanel* m_merge;
     DataProperties* m_filter_infomation;
     TransferFunctionEditor* m_transfer_function_editor;
@@ -50,7 +48,6 @@ private:
     kvs::visclient::ReceivedMessage m_received_message;
 
     void connectServer();
-    void connectServerIS();
 
     void onVolumeDataBrowseButtonClicked();
     void onTransferFunctionFileBrowseButtonClicked();

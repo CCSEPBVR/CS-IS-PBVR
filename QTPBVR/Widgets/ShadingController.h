@@ -14,15 +14,14 @@ class ShadingController : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit ShadingController(QWidget *parent = nullptr);
+    explicit ShadingController(QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr);
     ~ShadingController();
 
-    void setScreen( kvs::qt::jaea::Screen* screen ) { m_screen = screen; }
     void applyShading( kvs::RendererBase*& rendererBase );
 
 private:
     Ui::ShadingController *ui;
-    kvs::qt::jaea::Screen* m_screen;
+    PBVRGUI *m_pbvr_gui;
 
 private slots:
     void onChangeShaderParameter();

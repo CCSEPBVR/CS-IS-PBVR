@@ -1,6 +1,6 @@
 #include "MergePanel.h"
 #include "ui_MergePanel.h"
-
+#include "App/pbvrgui.h"
 /**
  * @brief MergePanel::MergePanel
  * @author TO0603
@@ -14,9 +14,10 @@
  *
  * メンバー変数 `m_files_manager` は、`FilesManager` オブジェクトのリストを管理するために初期化されます。
  */
-MergePanel::MergePanel(QWidget *parent, Preference* preference, TimeControllerB* time_controller_b, TotalParticles* total_particles, Connect* connectUI, ShadingController* shading_controller ) :
+MergePanel::MergePanel(QWidget *parent, PBVRGUI *pbvr_gui, Preference* preference, TimeControllerB* time_controller_b, TotalParticles* total_particles, Connect* connectUI, ShadingController* shading_controller ) :
     QDockWidget(parent),
     ui(new Ui::MergePanel),
+    m_pbvr_gui( pbvr_gui ),
     m_preference( preference ),
     m_time_controller_b( time_controller_b ),
     m_total_particles( total_particles ),
@@ -443,7 +444,7 @@ void MergePanel::updateCheckState()
 
         if (deleteCheckBox && deleteCheckBox->checkState() == Qt::Checked)
         {
-            m_screen->scene()->removeObject( m_files_manager[row]->getIDs().first );
+            m_pbvr_gui->screen()->scene()->removeObject( m_files_manager[row]->getIDs().first );
 
             m_files_manager[row]->setIDs( std::pair<int,int>(-1,-1) );
             ui->filesTableWidget->removeRow(row);
@@ -571,14 +572,14 @@ void MergePanel::onExport()
 
 void MergePanel::onCentering()
 {
-    CustomObjectManager* object_manager = static_cast<CustomObjectManager*>( m_screen->scene()->objectManager() );
+    CustomObjectManager* object_manager = static_cast<CustomObjectManager*>( m_pbvr_gui->screen()->scene()->objectManager() );
     kvs::Vec3 min_obj;
     kvs::Vec3 max_obj;
     int counter = 0;
 
     for (int row = 0; row < m_files_manager.size(); ++row)
     {
-        if (m_screen->scene()->object(m_files_manager[row]->getIDs().first)->isVisible())
+        if (m_pbvr_gui->screen()->scene()->object(m_files_manager[row]->getIDs().first)->isVisible())
         {
             ++counter;
             if (counter >= 2)
@@ -596,7 +597,7 @@ void MergePanel::onCentering()
         {
             if( m_files_manager[row]->getIDs().first != -1 && m_files_manager[row]->getIDs().second != -1 )
             {
-                auto* object = m_screen->scene()->object( m_files_manager[row]->getIDs().first );
+                auto* object = m_pbvr_gui->screen()->scene()->object( m_files_manager[row]->getIDs().first );
                 if( object->isVisible() )
                 {
                     min_obj.x() = kvs::Math::Min( init_object_manager_min_object.x(), object->minExternalCoord().x() );
@@ -619,13 +620,13 @@ void MergePanel::onCentering()
     }
     else
     {
-        kvs::Vec3 init_object_manager_min_object = m_screen->scene()->objectManager()->minObjectCoord();
-        kvs::Vec3 init_object_manager_max_object = m_screen->scene()->objectManager()->maxObjectCoord();
+        kvs::Vec3 init_object_manager_min_object = m_pbvr_gui->screen()->scene()->objectManager()->minObjectCoord();
+        kvs::Vec3 init_object_manager_max_object = m_pbvr_gui->screen()->scene()->objectManager()->maxObjectCoord();
         for( int row = 0; row < m_files_manager.size(); row++ )
         {
             if( m_files_manager[row]->getIDs().first != -1 && m_files_manager[row]->getIDs().second != -1 )
             {
-                auto* object = m_screen->scene()->object( m_files_manager[row]->getIDs().first );
+                auto* object = m_pbvr_gui->screen()->scene()->object( m_files_manager[row]->getIDs().first );
                 if( object->isVisible() )
                 {
                     min_obj.x() = kvs::Math::Min( init_object_manager_min_object.x(), object->minExternalCoord().x() );
@@ -646,8 +647,8 @@ void MergePanel::onCentering()
         object_manager->setMinMaxExternalCoords( kvs::Vec3( -3, -3, -3 ), kvs::Vec3( 3, 3, 3 ) );
         object_manager->setNormalize( kvs::Vec3( normalize, normalize, normalize) );
     }
-    m_screen->scene()->reset();
-    m_screen->update();
+    m_pbvr_gui->screen()->scene()->reset();
+    m_pbvr_gui->screen()->update();
 }
 
 /**
@@ -663,7 +664,7 @@ void MergePanel::onApply()
     updateCheckState();
     updatePolygonColorOpacity();
     totalParticles();
-    m_screen->update();
+    m_pbvr_gui->screen()->update();
 }
 
 void MergePanel::mergeObjects( int currentTimeStep, int requestTimeStep )
@@ -858,7 +859,7 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
     else
     {
         qDebug() << "対象のデータはシーンに登録されています。" << "[" << row << "]" << __LINE__;
-        auto* object = m_merge->m_screen->scene()->object( m_merge->m_files_manager[row]->getIDs().first );
+        auto* object = m_merge->m_pbvr_gui->screen()->scene()->object( m_merge->m_files_manager[row]->getIDs().first );
 
         if( display == true )
         {
@@ -1022,7 +1023,7 @@ std::string MergePanel::WorkerThread::updateTimeStepInFileName(QString fileName,
 
 void MergePanel::onWorkerThreadFinished()
 {
-    kvs::Xform before_object_manager_xform = m_screen->scene()->objectManager()->xform();
+    kvs::Xform before_object_manager_xform = m_pbvr_gui->screen()->scene()->objectManager()->xform();
     for( int row = 0; row < m_files_manager.size(); row++ ) //登録されているアイテム分ループを行う。
     {
         if( m_files_manager[row]->getIDs().first == -1 && m_files_manager[row]->getIDs().second == -1 ) //オブジェクトが登録されていない場合
@@ -1036,7 +1037,7 @@ void MergePanel::onWorkerThreadFinished()
                 {
                     kvs::RendererBase* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer;
                     m_shading_controller->applyShading( particle_based_renderer );
-                    m_files_manager[row]->setIDs( m_screen->scene()->registerObject( point_object, particle_based_renderer ) );
+                    m_files_manager[row]->setIDs( m_pbvr_gui->screen()->scene()->registerObject( point_object, particle_based_renderer ) );
                 }
                 else if( kvs::PolygonObject* polygon_object = dynamic_cast<kvs::PolygonObject*>(m_files_manager[row]->getObject()) )
                 {
@@ -1044,7 +1045,7 @@ void MergePanel::onWorkerThreadFinished()
                     polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
                     kvs::RendererBase* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer;
                     m_shading_controller->applyShading( stochastic_polygon_renderer );
-                    m_files_manager[row]->setIDs( m_screen->scene()->registerObject( polygon_object, stochastic_polygon_renderer ) );
+                    m_files_manager[row]->setIDs( m_pbvr_gui->screen()->scene()->registerObject( polygon_object, stochastic_polygon_renderer ) );
                     m_files_manager[row]->setChangePolygonTransferFunction( false );
                 }
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
@@ -1054,14 +1055,14 @@ void MergePanel::onWorkerThreadFinished()
                     textured_polygon_object->setOpacity( m_files_manager2[row]->getOpacity() * 255 );
                     kvs::RendererBase* stochastic_textured_polygon_renderer = new kvs::StochasticTexturedPolygonRenderer;
                     m_shading_controller->applyShading( stochastic_textured_polygon_renderer );
-                    m_files_manager2[row]->setIds( m_screen->scene()->registerObject( textured_polygon_object, stochastic_textured_polygon_renderer ) );
+                    m_files_manager2[row]->setIds( m_pbvr_gui->screen()->scene()->registerObject( textured_polygon_object, stochastic_textured_polygon_renderer ) );
                 }
 #endif
             }
         }
         else
         {
-//            auto* object = m_screen->scene()->object( m_files_manager2[row]->getIDs().first );
+//            auto* object = m_pbvr_gui->screen()->scene()->object( m_files_manager2[row]->getIDs().first );
             if( m_files_manager[row]->getObject() != nullptr ) //オブジェクトがインポートされていれば交換を行う。
             {
                 if( kvs::PointObject* point_object = dynamic_cast<kvs::PointObject*>(m_files_manager[row]->getObject()) )
@@ -1073,7 +1074,7 @@ void MergePanel::onWorkerThreadFinished()
                     {
                         if( point_object->numberOfVertices() != 0 )
                         {
-                            m_screen->scene()->replaceObject(m_files_manager[row]->getIDs().first, point_object );
+                            m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, point_object );
                         }
                     }
                 }
@@ -1081,19 +1082,19 @@ void MergePanel::onWorkerThreadFinished()
                 {
                     polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getColor().red(), m_files_manager[row]->getColor().green(), m_files_manager[row]->getColor().blue() ) );
                     polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
-                    m_screen->scene()->replaceObject(m_files_manager[row]->getIDs().first, polygon_object );
+                    m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, polygon_object );
                 }
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
                 else if( kvs::TexturedPolygonObject* textured_polygon_object = dynamic_cast<kvs::TexturedPolygonObject*>(m_files_manager2[row]->getObject()) )
                 {
-                    m_screen->scene()->replaceObject(m_files_manager2[row]->getIds().first, textured_polygon_object );
+                    m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager2[row]->getIds().first, textured_polygon_object );
                 }
 #endif
             }
 
             if( m_files_manager[row]->getChangePolygonTransferFunction() == true ) //色不透明度の変更がある場合はポリゴンを作り替える。
             {
-                auto* polygonObject = dynamic_cast<kvs::PolygonObject*>( m_screen->scene()->object( m_files_manager[row]->getIDs().first ) );
+                auto* polygonObject = dynamic_cast<kvs::PolygonObject*>( m_pbvr_gui->screen()->scene()->object( m_files_manager[row]->getIDs().first ) );
 
                 kvs::RGBColor color( m_files_manager[row]->getColor().red(), m_files_manager[row]->getColor().green(), m_files_manager[row]->getColor().blue() );
                 int opacity = m_files_manager[row]->getOpacity() * 255;
@@ -1102,7 +1103,7 @@ void MergePanel::onWorkerThreadFinished()
                 copiedObject->setColor( color );
                 copiedObject->setOpacity( opacity );
 
-                m_screen->scene()->replaceObject( m_files_manager[row]->getIDs().first, copiedObject );
+                m_pbvr_gui->screen()->scene()->replaceObject( m_files_manager[row]->getIDs().first, copiedObject );
 
                 m_files_manager[row]->setChangePolygonTransferFunction( false );
             }
@@ -1124,7 +1125,7 @@ void MergePanel::onWorkerThreadFinished()
                 {
                     // getAlreadyImportedTimeStep の値を使用して新しいファイルを生成
                     QFileInfo newFileInfo( m_export_file_path + "_" + QString( "%1" ).arg( m_files_manager[row]->getAlreadyImportedTimeStep(), 5, 10, QChar('0') ) + ".kvsml" );
-                    auto* pointObject = dynamic_cast<kvs::PointObject*>( m_screen->scene()->objectManager()->object( m_files_manager[row]->getIDs().first ) );
+                    auto* pointObject = dynamic_cast<kvs::PointObject*>( m_pbvr_gui->screen()->scene()->objectManager()->object( m_files_manager[row]->getIDs().first ) );
                     if( pointObject )
                     {
                         kvs::KVSMLPointObject* kvsml = new kvs::PointExporter<kvs::KVSMLPointObject>( pointObject );
@@ -1171,10 +1172,10 @@ void MergePanel::onWorkerThreadFinished()
     {
         m_time_controller_b->getTimeControllerA()->getCurrentTimeStepLineEdit()->setValue( m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() );
     }
-    m_preference->setCurrentTimeStep( m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() );
+//    m_preference->setCurrentTimeStep( m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() );
     totalParticles();
     m_is_worker_thread_running = false;
-    m_screen->update();
+    m_pbvr_gui->screen()->update();
     m_time_controller_b->updateTimeStep();
 }
 
@@ -1189,7 +1190,7 @@ void MergePanel::totalParticles()
             m_files_manager[row]->getFormat() == FilesManager::PointObjectLAS ||
             m_files_manager[row]->getFormat() == FilesManager::PointObjectPTS )
         {
-            auto* object = m_screen->scene()->object( m_files_manager[row]->getIDs().first );
+            auto* object = m_pbvr_gui->screen()->scene()->object( m_files_manager[row]->getIDs().first );
             if( object && object->isVisible() )
             {
                 if (auto* pointObject = dynamic_cast<kvs::PointObject*>(object))

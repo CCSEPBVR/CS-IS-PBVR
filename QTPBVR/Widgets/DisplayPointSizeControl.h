@@ -16,14 +16,13 @@ class DisplayPointSizeControl : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit DisplayPointSizeControl(QWidget *parent = nullptr, Preference* preference = nullptr);
+    explicit DisplayPointSizeControl(QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr, Preference* preference = nullptr);
     ~DisplayPointSizeControl();
-    void setScreen( kvs::qt::jaea::Screen* screen ) { m_screen = screen; }
 
 private:
     Ui::DisplayPointSizeControl *ui;
+    PBVRGUI *m_pbvr_gui;
     Preference* m_preference;
-    kvs::qt::jaea::Screen* m_screen;
 
 private slots:
     void onApplyButtonClicked();

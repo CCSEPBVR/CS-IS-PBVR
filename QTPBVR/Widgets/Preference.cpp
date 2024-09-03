@@ -1,6 +1,7 @@
 #include "Preference.h"
 #include "ui_Preference.h"
 
+#include "App/pbvrgui.h"
 #include <QColorDialog>
 #include <QMessageBox>
 #include <QPalette>
@@ -11,15 +12,10 @@
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
 #include <kvs/StochasticTexturedPolygonRenderer>
 #endif
-Preference::Preference(QWidget *parent) :
+Preference::Preference(QWidget *parent, PBVRGUI *pbvr_gui) :
     QDialog(parent),
     ui(new Ui::Preference),
-    m_screen( nullptr ),
-    m_compositor( nullptr ),
-    m_color_map_bar( nullptr ),
-    m_orientation_axis( nullptr ),
-    m_fps_label( nullptr ),
-    m_time_step_label( nullptr ),
+    m_pbvr_gui( pbvr_gui ),
     m_settings( "config.ini", QSettings::IniFormat ),
     m_current_time_step( 0 )
 {
@@ -72,8 +68,8 @@ void Preference::initialize()
         saveSettings();
     }
 
-    m_color_map_bar->anchorToTopLeft();
-    m_orientation_axis->anchorToBottomRight();
+    m_pbvr_gui->colorMapBar()->anchorToTopLeft();
+    m_pbvr_gui->orientationAxis()->anchorToBottomRight();
 
     applySettings( true );
 }
@@ -325,7 +321,7 @@ void Preference::applySettings( bool isInit )
         saveSettings();
     }
 
-    m_screen->update();
+    m_pbvr_gui->screen()->update();
 }
 
 void Preference::applyColorMapBarSettings()
@@ -334,9 +330,9 @@ void Preference::applyColorMapBarSettings()
     const OrientationType orientationType = static_cast<OrientationType>( ui->orientationTypeCBox->currentIndex() );
 
 #ifdef Q_OS_WIN
-    m_color_map_bar->setCaption( ui->captionLEdit->text().toLocal8Bit().constData() );
+    m_pbvr_gui->colorMapBar()->setCaption( ui->captionLEdit->text().toLocal8Bit().constData() );
 #else
-    m_color_map_bar->setCaption( ui->captionLEdit->text().toStdString() );
+    m_pbvr_gui->colorMapBar()->setCaption( ui->captionLEdit->text().toStdString() );
 #endif
 
     if( isShowing )
@@ -344,23 +340,23 @@ void Preference::applyColorMapBarSettings()
         switch ( orientationType )
         {
         case Horizontal:
-            m_color_map_bar->setOrientationToHorizontal();
-            m_color_map_bar->setWidth( 200 );
-            m_color_map_bar->setHeight( 30 );
+            m_pbvr_gui->colorMapBar()->setOrientationToHorizontal();
+            m_pbvr_gui->colorMapBar()->setWidth( 200 );
+            m_pbvr_gui->colorMapBar()->setHeight( 30 );
             break;
         case Vertical:
-            m_color_map_bar->setOrientationToVertical();
-            m_color_map_bar->setWidth( 30 );
-            m_color_map_bar->setHeight( 200 );
+            m_pbvr_gui->colorMapBar()->setOrientationToVertical();
+            m_pbvr_gui->colorMapBar()->setWidth( 30 );
+            m_pbvr_gui->colorMapBar()->setHeight( 200 );
             break;
         default:
             break;
         }
-        m_color_map_bar->show();
+        m_pbvr_gui->colorMapBar()->show();
     }
     else
     {
-        m_color_map_bar->hide();
+        m_pbvr_gui->colorMapBar()->hide();
     }
 }
 
@@ -375,13 +371,13 @@ void Preference::applyOrientationAxisSettings()
         switch ( axisType )
         {
         case CorneredAxis:
-            m_orientation_axis->setAxisTypeToCornered();
+            m_pbvr_gui->orientationAxis()->setAxisTypeToCornered();
             break;
         case CenteredAxis:
-            m_orientation_axis->setAxisTypeToCentered();
+            m_pbvr_gui->orientationAxis()->setAxisTypeToCentered();
             break;
         case NoneAxis:
-            m_orientation_axis->setAxisType( kvs::OrientationAxis::NoneAxis );
+            m_pbvr_gui->orientationAxis()->setAxisType( kvs::OrientationAxis::NoneAxis );
             break;
         default:
             break;
@@ -390,21 +386,21 @@ void Preference::applyOrientationAxisSettings()
         switch ( boxType )
         {
         case WiredBox:
-            m_orientation_axis->setBoxTypeToWired();
+            m_pbvr_gui->orientationAxis()->setBoxTypeToWired();
             break;
         case SolidBox:
-            m_orientation_axis->setBoxTypeToSolid();
+            m_pbvr_gui->orientationAxis()->setBoxTypeToSolid();
             break;
         case NoneBox:
-            m_orientation_axis->setBoxType( kvs::OrientationAxis::NoneBox );
+            m_pbvr_gui->orientationAxis()->setBoxType( kvs::OrientationAxis::NoneBox );
         default:
             break;
         }
-        m_orientation_axis->show();
+        m_pbvr_gui->orientationAxis()->show();
     }
     else
     {
-        m_orientation_axis->hide();
+        m_pbvr_gui->orientationAxis()->hide();
     }
 }
 
@@ -415,16 +411,16 @@ void Preference::applyBackGroundColor()
         ui->backGroundColorCLbl->palette().color(QPalette::Window).green(),
         ui->backGroundColorCLbl->palette().color(QPalette::Window).blue());
 
-    m_screen->setBackgroundColor( kvs::RGBColor( backGroundColor ) );
+    m_pbvr_gui->screen()->setBackgroundColor( kvs::RGBColor( backGroundColor ) );
 }
 
 void Preference::applyResolution()
 {
     const int width = ui->widthSBox->value();
     const int height = ui->heightSBox->value();
-    m_screen->setSize( width, height );
-    m_screen->setFixedSize( width, height );
-    m_screen->scene()->resizeFunction( width, height, m_screen->screen()->devicePixelRatio() );
+    m_pbvr_gui->screen()->setSize( width, height );
+    m_pbvr_gui->screen()->setFixedSize( width, height );
+    m_pbvr_gui->screen()->scene()->resizeFunction( width, height, m_pbvr_gui->screen()->screen()->devicePixelRatio() );
 }
 
 void Preference::applyLabelsSettings()
@@ -434,28 +430,28 @@ void Preference::applyLabelsSettings()
 
     if( fpsIsShowing )
     {
-        m_fps_label->setPosition( 20, m_screen->height() - 40 );
-        m_fps_label->screenUpdated( [&]()
+        m_pbvr_gui->fpsLabel()->setPosition( 20, m_pbvr_gui->screen()->height() - 40 );
+        m_pbvr_gui->fpsLabel()->screenUpdated( [&]()
                                    {
-                                       const auto fps = kvs::String::From( m_compositor->timer().fps(), 4 );
-                                       m_fps_label->setText( std::string( "FPS:" + fps).c_str());
+                                       const auto fps = kvs::String::From( m_pbvr_gui->compositor()->timer().fps(), 4 );
+                                       m_pbvr_gui->fpsLabel()->setText( std::string( "FPS:" + fps).c_str());
                                    });
-        m_fps_label->show();
+        m_pbvr_gui->fpsLabel()->show();
     }
     else
     {
-        m_fps_label->hide();
+        m_pbvr_gui->fpsLabel()->hide();
     }
 
     if( timeStepIsShowing )
     {
-        m_time_step_label->setPosition( 100, m_screen->height() - 40 );
-        m_time_step_label->setText( "Time step: " + std::to_string( m_current_time_step ) );
-        m_time_step_label->show();
+        m_pbvr_gui->timeStepLabel()->setPosition( 100, m_pbvr_gui->screen()->height() - 40 );
+        m_pbvr_gui->timeStepLabel()->setText( "Time step: " + std::to_string( m_current_time_step ) );
+        m_pbvr_gui->timeStepLabel()->show();
     }
     else
     {
-        m_time_step_label->hide();
+        m_pbvr_gui->timeStepLabel()->hide();
     }
 }
 
@@ -468,9 +464,9 @@ void Preference::applyFontSettings()
 
     kvs::Font font;
     font.setColor( labelsColor );
-    m_color_map_bar->setFont( font );
-    m_fps_label->setFont( font );
-    m_time_step_label->setFont( font );
+    m_pbvr_gui->colorMapBar()->setFont( font );
+    m_pbvr_gui->fpsLabel()->setFont( font );
+    m_pbvr_gui->timeStepLabel()->setFont( font );
 }
 
 void Preference::closeEvent( QCloseEvent* event )

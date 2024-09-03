@@ -103,6 +103,8 @@ private slots:
 };
 
 /* TotalParticles */
+class PBVRGUI;
+
 class TotalParticles :public QToolBar
 {
     Q_OBJECT
@@ -124,21 +126,18 @@ class ColorMapBarSelector :public QToolBar
     Q_OBJECT
 
 public:
-    explicit ColorMapBarSelector( QWidget *parent = nullptr );
+    explicit ColorMapBarSelector( QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr );
     ~ColorMapBarSelector();
-    void setExtendedTransferFunctionMessage( ExtendedTransferFunctionMessage* extended_transfer_function_message ){ m_extended_transfer_function_message = extended_transfer_function_message; }
-    void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; };
-    void setColorMapBar( kvs::ColorMapBar* colorMapBar ) { m_color_map_bar = colorMapBar; }
+    void setExtendedTransferFunctionMessage( ExtendedTransferFunctionMessage* extended_transfer_function_message ){ m_extended_transfer_function_message = extended_transfer_function_message; }    
     ExtendedTransferFunctionMessage* getExtendedTransferFunctionMessage() { return m_extended_transfer_function_message; }
     void populateColorFunctionLists(int n);
     void onColorFunctionChanged( int index );
     void updateColorMap();
 
 private:
+    PBVRGUI *m_pbvr_gui;
     QLabel* m_color_map_bar_selector_label;
     QComboBox* m_color_map_bar_selector_combo_box;
-    kvs::qt::jaea::Screen* m_screen;
-    kvs::ColorMapBar* m_color_map_bar;
     ExtendedTransferFunctionMessage* m_extended_transfer_function_message;
 };
 

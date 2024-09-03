@@ -530,8 +530,10 @@ void TotalParticles::setTotalParticles( int totalParticles )
     m_total_particles_line_edit->setText( QString::number( totalParticles ) );
 }
 
-ColorMapBarSelector::ColorMapBarSelector( QWidget *parent ) :
-    QToolBar(parent)
+#include "App/pbvrgui.h"
+ColorMapBarSelector::ColorMapBarSelector( QWidget *parent, PBVRGUI *pbvr_gui) :
+    QToolBar( parent ),
+    m_pbvr_gui( pbvr_gui )
 {
     m_color_map_bar_selector_label = new QLabel( "Color Function : ", this );
     QWidgetAction *colorMapBarSelectorLableAction = new QWidgetAction( this );
@@ -566,10 +568,10 @@ void ColorMapBarSelector::onColorFunctionChanged( int index )
     const NamedTransferFunctionParameter *transfer_function_color = m_extended_transfer_function_message->getColorTransferFunction( index + 1 );
     if( transfer_function_color != NULL )
     {
-        kvs::ColorMap color_map = transfer_function_color->colorMap();
-        m_color_map_bar->setColorMap( color_map );
-        m_color_map_bar->setRange( m_extended_transfer_function_message->getColorTransferFunction(index + 1)->m_color_variable_min, m_extended_transfer_function_message->getColorTransferFunction(index + 1)->m_color_variable_max );
-        m_screen->update();
+        kvs::ColorMap color_map = transfer_function_color->colorMap();        
+        m_pbvr_gui->colorMapBar()->setColorMap( color_map );
+        m_pbvr_gui->colorMapBar()->setRange( m_extended_transfer_function_message->getColorTransferFunction(index + 1)->m_color_variable_min, m_extended_transfer_function_message->getColorTransferFunction(index + 1)->m_color_variable_max );
+        m_pbvr_gui->screen()->update();
     }
 }
 
@@ -579,8 +581,8 @@ void ColorMapBarSelector::updateColorMap()
     if( transfer_function_color != NULL )
     {
         kvs::ColorMap color_map = transfer_function_color->colorMap();
-        m_color_map_bar->setColorMap( color_map );
-        m_color_map_bar->setRange( m_extended_transfer_function_message->getColorTransferFunction( m_color_map_bar_selector_combo_box->currentIndex() + 1)->m_color_variable_min, m_extended_transfer_function_message->getColorTransferFunction( m_color_map_bar_selector_combo_box->currentIndex() + 1)->m_color_variable_max );
-        m_screen->update();
+        m_pbvr_gui->colorMapBar()->setColorMap( color_map );
+        m_pbvr_gui->colorMapBar()->setRange( m_extended_transfer_function_message->getColorTransferFunction( m_color_map_bar_selector_combo_box->currentIndex() + 1)->m_color_variable_min, m_extended_transfer_function_message->getColorTransferFunction( m_color_map_bar_selector_combo_box->currentIndex() + 1)->m_color_variable_max );
+        m_pbvr_gui->screen()->update();
     }
 }

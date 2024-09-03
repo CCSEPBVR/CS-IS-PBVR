@@ -1,6 +1,6 @@
 #include "Connect.h"
 #include "ui_Connect.h"
-
+#include "App/pbvrgui.h"
 #include <QMessageBox>
 #include <kvs/Camera>
 #include <kvs/PointObject>
@@ -8,11 +8,10 @@
 
 #include "Widgets/MergePanel.h"
 
-Connect::Connect(QWidget *parent, MergePanel* merge, DataProperties* filter_infomation, TransferFunctionEditor* transfer_function_editor):
+Connect::Connect(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, DataProperties* filter_infomation, TransferFunctionEditor* transfer_function_editor):
     QDialog(parent),
     ui(new Ui::Connect),
-    m_screen( nullptr ),
-    m_camera( nullptr ),
+    m_pbvr_gui( pbvr_gui ),
     m_merge( merge  ),
     m_filter_infomation( filter_infomation ),
     m_transfer_function_editor( transfer_function_editor ),
@@ -44,7 +43,7 @@ void Connect::connectServer()
 {
     jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
     m_server_message.m_camera = new kvs::Camera();
-    m_client_message.m_camera = m_camera;
+    m_client_message.m_camera = m_pbvr_gui->screen()->scene()->camera();
 
     if( ui-> clientServerRBtn -> isChecked() )
     {
@@ -81,7 +80,7 @@ void Connect::connectServer()
 
 #endif
         m_transfer_function_editor->onApplyButtonClicked();
-        m_client_message.m_camera ->setWindowSize( m_screen->width() , m_screen->height() );
+        m_client_message.m_camera ->setWindowSize( m_pbvr_gui->screen()->width() , m_pbvr_gui->screen()->height() );
 
      }
 
@@ -153,7 +152,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
 //    m_client_message.m_particle_limit = 10000000;
 //    m_client_message.m_particle_density = 1;
 //    m_client_message.particle_data_size_limit = 20;    
-    m_client_message.m_camera = m_camera;//足りないかも
+    m_client_message.m_camera = m_pbvr_gui->screen()->scene()->camera();//足りないかも
     m_client_message.m_step = timeStep;
     m_client_message.m_message_size = m_client_message.byteSize();
     m_client_message.m_sampling_step = 1.0f;
