@@ -1172,7 +1172,7 @@ void MergePanel::onWorkerThreadFinished()
     {
         m_time_controller_b->getTimeControllerA()->getCurrentTimeStepLineEdit()->setValue( m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() );
     }
-//    m_preference->setCurrentTimeStep( m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() );
+    m_preference->setCurrentTimeStep( m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() );
     totalParticles();
     m_is_worker_thread_running = false;
     m_pbvr_gui->screen()->update();

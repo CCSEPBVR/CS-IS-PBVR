@@ -74,6 +74,11 @@ void Preference::initialize()
     applySettings( true );
 }
 
+void Preference::setCurrentTimeStep( int currentTimeStep )
+{
+    m_current_time_step = currentTimeStep; m_pbvr_gui->timeStepLabel()->setText( "Time step: " + std::to_string( m_current_time_step ) );
+}
+
 void Preference::loadColorMapBarSettings()
 {
     m_settings.beginGroup( "ColorMapBar" );

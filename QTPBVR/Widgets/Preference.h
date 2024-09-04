@@ -47,8 +47,7 @@ protected:
 
 public:
     void initialize();
-
-//    void setCurrentTimeStep( int currentTimeStep ) { m_current_time_step = currentTimeStep; m_time_step_label->setText( "Time step: " + std::to_string( m_current_time_step ) ); }
+    void setCurrentTimeStep( int currentTimeStep );
 
 private:
     Ui::Preference *ui;
