@@ -32,10 +32,10 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_repetition_level_control( this, this, &m_shading_controller ),
     m_display_point_size_control( this, this ),
     m_shading_controller( this, this ),
-    m_render_options( this, &m_merge ),
+    m_render_options( this, &m_merge, &m_connect ),
     m_data_properties( this ),
-    m_coordinates( this, &m_merge ),
-    m_transfer_function_editor( this, &m_merge )
+    m_coordinates( this, &m_merge, &m_connect ),
+    m_transfer_function_editor( this, &m_color_map_bar_selector ,&m_merge, &m_connect )
 {
     ui->setupUi(this);
     setWindowTitle( "QTPBVR vX.X.X" );
@@ -140,17 +140,12 @@ void PBVRGUI::initializePanels()
 
     //レンダーオプションパネルの初期化
     m_render_options.close();
-    m_render_options.setClientMessage( m_connect.getClientMessage() );
     m_render_options.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::RightDockWidgetArea, &m_render_options );
 
     //コーディネートパネルの初期化
-    m_coordinates.setClientMessage( m_connect.getClientMessage() );
+
     //伝達関数パネルの初期化
-    m_transfer_function_editor.setColorMapBarSelector( &m_color_map_bar_selector );
-    m_transfer_function_editor.setClientMessage( m_connect.getClientMessage() );
-    m_transfer_function_editor.setServerMessage( m_connect.getServerMessage() );
-    m_transfer_function_editor.setReceivedMessage( m_connect.getReceivedMessage() );
 }
 
 void PBVRGUI::keyPressEvent(QKeyEvent *event)

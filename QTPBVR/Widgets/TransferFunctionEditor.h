@@ -11,6 +11,7 @@
 #include "FunctionListEditor.h"
 
 class MergePanel;
+class Connect;
 
 namespace Ui {
 class TransferFunctionEditor;
@@ -28,12 +29,8 @@ public:
     };
 
 public:
-    explicit TransferFunctionEditor(QWidget *parent = nullptr, MergePanel* merge = nullptr);
+    explicit TransferFunctionEditor(QWidget *parent = nullptr, ColorMapBarSelector* colonr_map_bar_selector = nullptr, MergePanel* merge = nullptr, Connect* connect_panel = nullptr);
     ~TransferFunctionEditor();
-    void setColorMapBarSelector( ColorMapBarSelector* color_map_bar_selector ){ m_color_map_bar_selector = color_map_bar_selector; }
-    void setClientMessage( jpv::ParticleTransferClientMessage* client_message ){ m_client_message = client_message; }
-    void setServerMessage( jpv::ParticleTransferServerMessage* server_message ){ m_server_message = server_message; }
-    void setReceivedMessage( kvs::visclient::ReceivedMessage* received_message ){ m_received_message = received_message; }
     void applyVariableRange( const VariableRange& range );
     void updateRangeEdit();
 //    void updateRangeView( const VariableRange& range );
@@ -50,10 +47,7 @@ private:
     Ui::TransferFunctionEditor *ui;
     ColorMapBarSelector* m_color_map_bar_selector;
     MergePanel* m_merge;
-
-    jpv::ParticleTransferClientMessage* m_client_message;
-    jpv::ParticleTransferServerMessage* m_server_message;
-    kvs::visclient::ReceivedMessage* m_received_message;
+    Connect* m_connect;
 
     bool m_is_import_transfer_function_parameter;
 
