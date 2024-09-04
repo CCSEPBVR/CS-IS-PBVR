@@ -30,7 +30,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_volumeTransform( this, this ),
     m_animation_controls( this, this ),
     m_repetition_level_control( this, this, &m_shading_controller ),
-    m_display_point_size_control( this, this, &m_preference ),
+    m_display_point_size_control( this, this ),
     m_shading_controller( this, this ),
     m_render_options( this, &m_merge ),
     m_data_properties( this ),

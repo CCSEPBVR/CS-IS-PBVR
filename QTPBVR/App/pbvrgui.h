@@ -39,7 +39,6 @@ public:
     kvs::Label* fpsLabel() const { return m_fps_label; }
     kvs::Label* timeStepLabel() const { return m_time_step_label; }
     void initializePanels();
-    Preference& preference() { return this->m_preference; };
     ~PBVRGUI();
 
 private:

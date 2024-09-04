@@ -2,11 +2,10 @@
 #include "ui_DisplayPointSizeControl.h"
 #include "App/pbvrgui.h"
 #include <kvs/ParticleBasedRenderer>
-DisplayPointSizeControl::DisplayPointSizeControl(QWidget *parent, PBVRGUI *pbvr_gui, Preference* preference) :
+DisplayPointSizeControl::DisplayPointSizeControl(QWidget *parent, PBVRGUI *pbvr_gui) :
     QDockWidget(parent),
     ui(new Ui::DisplayPointSizeControl),
-    m_pbvr_gui( pbvr_gui ),
-    m_preference( preference )
+    m_pbvr_gui( pbvr_gui )
 {
     ui->setupUi(this);
     connect( ui->doubleSpinBox, &QDoubleSpinBox::valueChanged, this, &DisplayPointSizeControl::onApplyButtonClicked);
