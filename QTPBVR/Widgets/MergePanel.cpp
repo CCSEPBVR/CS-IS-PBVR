@@ -1072,7 +1072,11 @@ void MergePanel::onWorkerThreadFinished()
                     }
                     else
                     {
-                        if( point_object->numberOfVertices() != 0 )
+                        if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS  && point_object->numberOfVertices() != 0 )
+                        {
+                            m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, point_object );
+                        }
+                        else
                         {
                             m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, point_object );
                         }
