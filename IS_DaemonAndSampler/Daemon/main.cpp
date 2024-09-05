@@ -438,10 +438,14 @@ int main( int argc, char** argv )
                 ofs.close();
                 // 20181226 end
                 
+
                 ParameterFileWriter ppw;
                 ppw.inputMessage( clntMes );
-                ppw.writeParameterFile( tfFilePath.c_str() );
-                
+                std::ifstream file(tfFilePath.c_str());
+                if(!file)
+                {
+                    ppw.writeParameterFile( tfFilePath.c_str() );
+                }
                 //最初の送信(daemon->client)
                 //jupiter_old.tfの内容をクライアントに送信
                 ppr.outputMessage( &servMes );
