@@ -74,9 +74,7 @@ void Connect::connectServer()
 #ifdef Q_OS_WIN
         m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
 #else
-        m_transfer_function_editor->importFile( "/Users/shimomurakazuya/SGI/UNPBVR/IntegPBVRv220_CS_TFnumber/CS-IS-PBVR/IS_DaemonAndSampler/Example/C/Hydrogen_unstruct/test.tf" );
-        //m_transfer_function_editor->importFile( "/Users/shimomurakazuya/SGI/visualization_data/defalut/defalut.tf" );
-        //am_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
+        m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
 
 #endif
         m_transfer_function_editor->onApplyButtonClicked();
