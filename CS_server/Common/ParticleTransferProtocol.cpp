@@ -340,7 +340,6 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         std::cout << "Receive Z Syth = " << m_z_synthesis << std::endl;
 
         index += jpv::Serializer::unpack( buf + index, m_camera );
-        std::cout << __LINE__ <<std::endl;
     }
     if ( m_initialize_parameter == 1 || m_initialize_parameter == -3 )
     {
@@ -892,10 +891,10 @@ void jpv::ParticleTransferServerMessage::setOpacityHistogramBins(
         }
     }
 
-    //std::stringstream debug11;
-    //debug11 << "o_bins[1] = {";
-    //for(int i =0; i< nbins; i++) debug11 << o_bins[1][i] << "," ;
-    //std::cout << debug11.str() << std::endl;
+//    std::stringstream debug11;
+//    debug11 << "o_bins[0] = {";
+//    for(int i =0; i< nbins; i++) debug11 << m_opacity_bins[3][i] << "," ;
+//    std::cout << debug11.str() << std::endl;
 
     return;
 }

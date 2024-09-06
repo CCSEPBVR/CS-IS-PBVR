@@ -438,6 +438,7 @@ int main( int argc, char** argv )
                 ofs.close();
                 // 20181226 end
                 
+<<<<<<< HEAD
 
                 ParameterFileWriter ppw;
                 ppw.inputMessage( clntMes );
@@ -446,6 +447,12 @@ int main( int argc, char** argv )
                 {
                     ppw.writeParameterFile( tfFilePath.c_str() );
                 }
+=======
+                ParameterFileWriter ppw;
+                ppw.inputMessage( clntMes );
+                ppw.writeParameterFile( tfFilePath.c_str() );
+                
+>>>>>>> upstream/feature/CSPBVR_Initprotcol_rev
                 //最初の送信(daemon->client)
                 //jupiter_old.tfの内容をクライアントに送信
                 ppr.outputMessage( &servMes );

@@ -15,22 +15,6 @@ TransferFunctionSynthesizer::TransferFunctionSynthesizer():
     m_var_value_struct = new float*[128];
     for(int i=0; i<128; i++) m_var_value_struct[i] = new float[SIMDW];
 
-//    EquationToken opa_func = {
-//        {VARIABLE, VARIABLE, PLUS, END}, // A1+A2 -> A1 A2 +
-//        {A1, A2},// A1, A2
-//        {} //nothing
-//    };
-//
-//    m_opa_func = opa_func;
-//
-//    EquationToken col_func = {
-//        {VARIABLE, VARIABLE, PLUS, END},// C1+C2 -> C1 C2 +
-//        {C1, C2},// C1, C2
-//        {}//nothing
-//    };
-//
-//    m_col_func = col_func;
-
     EquationToken opa_func = {
         {VARIABLE, END}, // A1+A2 -> A1 A2 +
         {A1},// A1, A2
@@ -47,9 +31,6 @@ TransferFunctionSynthesizer::TransferFunctionSynthesizer():
 
     m_col_func = col_func;
 
-
-
-
     EquationToken opa_var_1 = {
         {VARIABLE, VALUE, POW, VARIABLE, VALUE, POW, PLUS, SQRT, END}, //sqrt(q1^2+q2^2)->q1 2 ^ q2 2 ^ + sqrt
         {Q1,NOTHING,NOTHING,Q2},//q1,,,q2,,,
@@ -62,9 +43,7 @@ TransferFunctionSynthesizer::TransferFunctionSynthesizer():
         {}
     };
 
-    //m_opa_var.push_back( opa_var_1 );
     m_opa_var.push_back( opa_var_2 );
-    //m_opa_var.push_back( opa_var_2 );
 
     EquationToken col_var_1 = {
         {VARIABLE, VALUE, POW, VARIABLE, VALUE, POW, PLUS, SQRT, END}, //sqrt(q1^2+q2^2)->q1 2 ^ q2 2 ^ + sqrt
@@ -78,9 +57,7 @@ TransferFunctionSynthesizer::TransferFunctionSynthesizer():
         {}
     };
 
-    //m_col_var.push_back( col_var_1 );
     m_col_var.push_back( col_var_2 );
-    //m_col_var.push_back( col_var_2 );
 }
 
 TransferFunctionSynthesizer::TransferFunctionSynthesizer( TransferFunctionSynthesizer& tfs ):
@@ -154,7 +131,6 @@ void  TransferFunctionSynthesizer::setStabToken()
 //            debug10 << "}" << std::endl;
 //            std::cout <<debug10.str() << std::endl;  
 
-
 }
 
 EquationToken TransferFunctionSynthesizer::opacityFunction( void )
@@ -217,24 +193,6 @@ float TransferFunctionSynthesizer::getSamplingVolumeInverse() const
     return m_sampling_volume_inverse;
 }
 
-
-#if 0
-void setColorTransferFunctionSynthesis(std::string color_transfer_function_synthesis ) 
-{
-    m_color_transfer_function_synthesis = color_transfer_function_synthesis; 
-}
-
-void setOpacityTransferFunctionSynthesis(std::string opacity_transfer_function_synthesis )  
-{
-   m_opacity_transfer_function_synthesis = opacity_transfer_function_synthesis;
-}
-
-void setVolumeEquation( VolumeEquation volume_equation )
-{
-   m_volume_equation = volume_equation;
-}
-#endif
-
 float TransferFunctionSynthesizer::getMaxOpacity() const
 {
     return m_max_opacity;
@@ -296,17 +254,6 @@ void TransferFunctionSynthesizer::create()
     //m_variable_range.clear();
     //return;
 }
-
-#if 0
-void TransferFunctionSynthesizer::convert_token(const std::vector<VolumeEquation> voleq)
-{
-    m_opa_var.clear();
-    m_col_var.clear();
-
-    std::string m_color_transfer_function_synthesis;
-    std::string m_opacity_transfer_function_synthesis;
-}
-#endif
 
 EquationToken TransferFunctionSynthesizer::convert_token(const std::string expression)
 {

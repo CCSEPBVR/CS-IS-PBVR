@@ -1,6 +1,6 @@
 ﻿/****************************************************************************/
 /**
- *  @file CellByCellUniformSampling.cpp
+ *  @file CellByCellHistogram.cpp
  */
 /*----------------------------------------------------------------------------
  *
@@ -8,7 +8,7 @@
  *  All rights reserved.
  *  See http://www.viz.media.kyoto-u.ac.jp/kvs/copyright/ for details.
  *
- *  $Id: CellByCellUniformSampling.cpp 633 2010-10-10 05:12:37Z naohisa.sakamoto $
+ *  $Id: CellByCellHistogram.cpp 633 2010-10-10 05:12:37Z naohisa.sakamoto $
  */
 /****************************************************************************/
 #include <kvs/Compiler>
@@ -17,7 +17,7 @@
 #else
 #include <sys/time.h>
 #endif
-#include "CellByCellUniformSampling.h"
+#include "CellByCellHistogram.h"
 #include <vector>
 #include <stdlib.h>
 #include <kvs/DebugNew>
@@ -68,10 +68,10 @@ namespace pbvr
 
 /*===========================================================================*/
 /**
- *  @brief  Constructs a new CellByCellUniformSampling class.
+ *  @brief  Constructs a new CellByCellHistogram class.
  */
 /*===========================================================================*/
-CellByCellUniformSampling::CellByCellUniformSampling():
+CellByCellHistogram::CellByCellHistogram():
     pbvr::MapperBase(),
     pbvr::PointObject(),
     m_transfer_function_synthesizer( NULL ),
@@ -82,7 +82,7 @@ CellByCellUniformSampling::CellByCellUniformSampling():
 
 /*===========================================================================*/
 /**
- *  @brief  Constructs a new CellByCellUniformSampling class.
+ *  @brief  Constructs a new CellByCellHistogram class.
  *  @param  volume [in] pointer to the volume object
  *  @param  m_subpixel_level [in] sub-pixel level
  *  @param  m_sampling_step [in] sapling step
@@ -90,7 +90,7 @@ CellByCellUniformSampling::CellByCellUniformSampling():
  *  @param  object_depth [in] depth value of the input volume at the CoG
  */
 /*===========================================================================*/
-CellByCellUniformSampling::CellByCellUniformSampling(
+CellByCellHistogram::CellByCellHistogram(
     const pbvr::VolumeObjectBase& volume,
     const size_t                 subpixel_level,
     const float                  sampling_step,
@@ -116,7 +116,7 @@ CellByCellUniformSampling::CellByCellUniformSampling(
 
 /*===========================================================================*/
 /**
- *  @brief  Constructs a new CellByCellUniformSampling class.
+ *  @brief  Constructs a new CellByCellHistogram class.
  *  @param  camera [in] pointer to the camera
  *  @param  volume [in] pointer to the volume object
  *  @param  m_subpixel_level [in] sub-pixel level
@@ -125,7 +125,7 @@ CellByCellUniformSampling::CellByCellUniformSampling(
  *  @param  object_depth [in] depth value of the input volume at the CoG
  */
 /*===========================================================================*/
-CellByCellUniformSampling::CellByCellUniformSampling(
+CellByCellHistogram::CellByCellHistogram(
     const kvs::Camera&           camera,
     const pbvr::VolumeObjectBase& volume,
     const size_t                 subpixel_level,
@@ -154,7 +154,7 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     this->exec( volume); 
 }
 
-CellByCellUniformSampling::CellByCellUniformSampling(
+CellByCellHistogram::CellByCellHistogram(
     const kvs::Camera&           camera,
     const pbvr::VolumeObjectBase& volume,
     const size_t                 subpixel_level,
@@ -186,7 +186,7 @@ CellByCellUniformSampling::CellByCellUniformSampling(
  *  @brief  Destroys the CellByCellMetropolisSampling class.
  */
 /*===========================================================================*/
-CellByCellUniformSampling::~CellByCellUniformSampling()
+CellByCellHistogram::~CellByCellHistogram()
 {
     m_density_map.deallocate();
 }
@@ -197,7 +197,7 @@ CellByCellUniformSampling::~CellByCellUniformSampling()
  *  @return sub-pixel level
  */
 /*===========================================================================*/
-const size_t CellByCellUniformSampling::subpixelLevel() const
+const size_t CellByCellHistogram::subpixelLevel() const
 {
     return m_subpixel_level;
 }
@@ -208,7 +208,7 @@ const size_t CellByCellUniformSampling::subpixelLevel() const
  *  @return sampling step
  */
 /*===========================================================================*/
-const float CellByCellUniformSampling::samplingStep() const
+const float CellByCellHistogram::samplingStep() const
 {
     return m_sampling_step;
 }
@@ -219,7 +219,7 @@ const float CellByCellUniformSampling::samplingStep() const
  *  @return depth
  */
 /*===========================================================================*/
-const float CellByCellUniformSampling::objectDepth() const
+const float CellByCellHistogram::objectDepth() const
 {
     return m_object_depth;
 }
@@ -230,7 +230,7 @@ const float CellByCellUniformSampling::objectDepth() const
  *  @param  camera [in] pointer to the camera
  */
 /*===========================================================================*/
-void CellByCellUniformSampling::attachCamera( const kvs::Camera& camera )
+void CellByCellHistogram::attachCamera( const kvs::Camera& camera )
 {
     m_camera = &camera;
 }
@@ -241,7 +241,7 @@ void CellByCellUniformSampling::attachCamera( const kvs::Camera& camera )
  *  @param  m_subpixel_level [in] sub-pixel level
  */
 /*===========================================================================*/
-void CellByCellUniformSampling::setSubpixelLevel( const size_t subpixel_level )
+void CellByCellHistogram::setSubpixelLevel( const size_t subpixel_level )
 {
     m_subpixel_level = subpixel_level;
 }
@@ -252,7 +252,7 @@ void CellByCellUniformSampling::setSubpixelLevel( const size_t subpixel_level )
  *  @param  m_sampling_step [in] sampling step
  */
 /*===========================================================================*/
-void CellByCellUniformSampling::setSamplingStep( const float sampling_step )
+void CellByCellHistogram::setSamplingStep( const float sampling_step )
 {
     m_sampling_step = sampling_step;
 }
@@ -263,7 +263,7 @@ void CellByCellUniformSampling::setSamplingStep( const float sampling_step )
  *  @param  object_depth [in] depth
  */
 /*===========================================================================*/
-void CellByCellUniformSampling::setObjectDepth( const float object_depth )
+void CellByCellHistogram::setObjectDepth( const float object_depth )
 {
     m_object_depth = object_depth;
 }
@@ -275,7 +275,7 @@ void CellByCellUniformSampling::setObjectDepth( const float object_depth )
  *  @return pointer to the point object
  */
 /*===========================================================================*/
-CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::exec( const pbvr::ObjectBase& object )
+CellByCellHistogram::SuperClass* CellByCellHistogram::exec( const pbvr::ObjectBase& object )
 {
     if ( !&object )
     {
@@ -361,7 +361,7 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::exec( const pb
  *  @param  volume [in] pointer to the input volume object
  */
 /*===========================================================================*/
-void CellByCellUniformSampling::mapping( const kvs::Camera& camera, const pbvr::StructuredVolumeObject& volume )
+void CellByCellHistogram::mapping( const kvs::Camera& camera, const pbvr::StructuredVolumeObject& volume )
 {
     // Attach the pointer to the volume object and set the min/max coordinates.
     BaseClass::attach_volume( volume );
@@ -412,14 +412,14 @@ void CellByCellUniformSampling::mapping( const kvs::Camera& camera, const pbvr::
 
     // Generate the particles.
     const std::type_info& type = volume.values().typeInfo()->type();
-    if (      type == typeid( kvs::Int8   ) ) this->generate_particles<kvs::Int8>( volume );
-    else if ( type == typeid( kvs::Int16  ) ) this->generate_particles<kvs::Int16>( volume );
-    else if ( type == typeid( kvs::Int32  ) ) this->generate_particles<kvs::Int32>( volume );
-    else if ( type == typeid( kvs::UInt8  ) ) this->generate_particles<kvs::UInt8>( volume );
-    else if ( type == typeid( kvs::UInt16 ) ) this->generate_particles<kvs::UInt16>( volume );
-    else if ( type == typeid( kvs::UInt32 ) ) this->generate_particles<kvs::UInt32>( volume );
-    else if ( type == typeid( kvs::Real32 ) ) this->generate_particles<kvs::Real32>( volume );
-    else if ( type == typeid( kvs::Real64 ) ) this->generate_particles<kvs::Real64>( volume );
+    if (      type == typeid( kvs::Int8   ) ) this->generate_histogram<kvs::Int8>( volume );
+    else if ( type == typeid( kvs::Int16  ) ) this->generate_histogram<kvs::Int16>( volume );
+    else if ( type == typeid( kvs::Int32  ) ) this->generate_histogram<kvs::Int32>( volume );
+    else if ( type == typeid( kvs::UInt8  ) ) this->generate_histogram<kvs::UInt8>( volume );
+    else if ( type == typeid( kvs::UInt16 ) ) this->generate_histogram<kvs::UInt16>( volume );
+    else if ( type == typeid( kvs::UInt32 ) ) this->generate_histogram<kvs::UInt32>( volume );
+    else if ( type == typeid( kvs::Real32 ) ) this->generate_histogram<kvs::Real32>( volume );
+    else if ( type == typeid( kvs::Real64 ) ) this->generate_histogram<kvs::Real64>( volume );
     else
     {
         BaseClass::m_is_success = false;
@@ -428,7 +428,7 @@ void CellByCellUniformSampling::mapping( const kvs::Camera& camera, const pbvr::
 }
 
 template <>
-void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::UnstructuredVolumeObject& volume );
+void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::UnstructuredVolumeObject& volume );
 
 /*===========================================================================*/
 /**
@@ -437,7 +437,7 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
  *  @param  volume [in] pointer to the input volume object
  */
 /*===========================================================================*/
-void CellByCellUniformSampling::mapping( const kvs::Camera& camera, const pbvr::UnstructuredVolumeObject& volume )
+void CellByCellHistogram::mapping( const kvs::Camera& camera, const pbvr::UnstructuredVolumeObject& volume )
 {
     // Attach the pointer to the volume object and set the min/max coordinates.
     BaseClass::attach_volume( volume );
@@ -492,51 +492,51 @@ void CellByCellUniformSampling::mapping( const kvs::Camera& camera, const pbvr::
     if (      type == typeid( kvs::Int8   ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( -128, 127 );
-        this->generate_particles<kvs::Int8>( volume );
+        this->generate_histogram<kvs::Int8>( volume );
     }
     else if ( type == typeid( kvs::Int16  ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_particles<kvs::Int16>( volume );
+        this->generate_histogram<kvs::Int16>( volume );
     }
     else if ( type == typeid( kvs::Int32  ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_particles<kvs::Int32>( volume );
+        this->generate_histogram<kvs::Int32>( volume );
     }
     else if ( type == typeid( kvs::Int64  ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_particles<kvs::Int64>( volume );
+        this->generate_histogram<kvs::Int64>( volume );
     }
     else if ( type == typeid( kvs::UInt8  ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( 0, 255 );
-        this->generate_particles<kvs::UInt8>( volume );
+        this->generate_histogram<kvs::UInt8>( volume );
     }
     else if ( type == typeid( kvs::UInt16 ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_particles<kvs::UInt16>( volume );
+        this->generate_histogram<kvs::UInt16>( volume );
     }
     else if ( type == typeid( kvs::UInt32 ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_particles<kvs::UInt32>( volume );
+        this->generate_histogram<kvs::UInt32>( volume );
     }
     else if ( type == typeid( kvs::UInt64 ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_particles<kvs::UInt64>( volume );
+        this->generate_histogram<kvs::UInt64>( volume );
     }
     else if ( type == typeid( kvs::Real32 ) )
     {
-        this->generate_particles<kvs::Real32>( volume );
+        this->generate_histogram<kvs::Real32>( volume );
     }
     else if ( type == typeid( kvs::Real64 ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_particles<kvs::Real64>( volume );
+        this->generate_histogram<kvs::Real64>( volume );
     }
     else
     {
@@ -552,7 +552,7 @@ void CellByCellUniformSampling::mapping( const kvs::Camera& camera, const pbvr::
  */
 /*===========================================================================*/
 template <typename T>
-void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolumeObject& volume )
+void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject& volume )
 {
 
     kvs::AnyValueArray valueArray = volume.values(); 
@@ -695,25 +695,9 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
     CoordSynthesizerStrings css;
     if ( pCrdSynthStr )
     { 
-//        std::cout << "css.m_x_coord_synthesizer_string = " << css.m_x_coord_synthesizer_string <<std::endl;  
-//        std::cout << "css.m_y_coord_synthesizer_string = " << css.m_y_coord_synthesizer_string <<std::endl;  
-//        std::cout << "css.m_z_coord_synthesizer_string = " << css.m_z_coord_synthesizer_string <<std::endl;  
         css = *pCrdSynthStr;
     }
 
-
-//    static TimedScope td_gatherf("GatherF",1);
-//    static TimedScope td_gather("gather",1);
-//    static TimedScope td_kvsml("kvsml",1);
-//    static TimedScope td_SynthOpacityScalars("SynthesizedOpacityScalars",max_threads);
-//    static TimedScope td_SynthColorScalars("SynthesizedColorScalars",max_threads);
-//    static TimedScope td_CalculateHistogram("CalculateHistogram",max_threads);
-//    static TimedScope td_CalculateOpacity("CalculateOpacity",max_threads);
-//    static TimedScope td_CalculateDensity("CalculateDensity",max_threads);
-//    static TimedScope td_CalculateNumPar("Ccalculate_number_of_particles (Random)",max_threads);
-//    static TimedScope td_CalculateColor("CalculateColor",max_threads);
-//    static  TimedScope td_VectorPush("Vector Push",max_threads);
-//    static TimedScope td_VectorIns("Vector Insert",max_threads);
     #pragma omp parallel
     {
 #if _OPENMP
@@ -723,8 +707,6 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
         int nthreads = 1;
         int thid     = 0;
 #endif
-
-        //th_tfs[thid]->set_debug_thid(thid,max_threads);
 
         int th_total_nparticles = 0;
         //ｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿ
@@ -836,6 +818,7 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
             }
         } // end of Histogram
 
+#if 0
         //-----------------------------------------//
         //--------------ｿｿｿｿｿｿｿｿｿ------------//
         //------------------------------------------//
@@ -1085,7 +1068,7 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
                     } // end of for I ｿｿｿｿｿｿｿｿｿ
                 } // end of omp for J outer_loop
         } // end of ｿｿｿｿｿｿｿ
-
+#endif
 //        timed_section_start(td_VectorIns,thid);
         #pragma omp critical
         {
@@ -1110,10 +1093,10 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
                 }
             }
 
-            total_nparticles += th_total_nparticles;
-            vertex_coords.insert ( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
-            vertex_colors.insert ( vertex_colors.end(), th_vertex_colors.begin(), th_vertex_colors.end() );
-            vertex_normals.insert( vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end() );
+//            total_nparticles += th_total_nparticles;
+//            vertex_coords.insert ( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
+//            vertex_colors.insert ( vertex_colors.end(), th_vertex_colors.begin(), th_vertex_colors.end() );
+//            vertex_normals.insert( vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end() );
 
             delete interp_opacity[thid];
 
@@ -1122,7 +1105,7 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
     } // end of omp parallel
 
     //if(mpi->rank == 0) std::cout<<"total_nparticles="<<total_nparticles<<std::endl;
-    std::cout<<"rank="<<mpi_rank<<",total_nparticles="<<total_nparticles<<std::endl;
+    //std::cout<<"rank="<<mpi_rank<<",total_nparticles="<<total_nparticles<<std::endl;
 
     // add by shimomura 
     // set variable range
@@ -1138,9 +1121,9 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
         m_transfer_function_synthesizer->m_c_max[i] = C_max[i];
     }
 
-    SuperClass::m_coords  = kvs::ValueArray<kvs::Real32>( vertex_coords );
-    SuperClass::m_colors  = kvs::ValueArray<kvs::UInt8>( vertex_colors );
-    SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( vertex_normals );
+//    SuperClass::m_coords  = kvs::ValueArray<kvs::Real32>( vertex_coords );
+//    SuperClass::m_colors  = kvs::ValueArray<kvs::UInt8>( vertex_colors );
+//    SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( vertex_normals );
 
 //    timer.stop();
 //    time.sampling = timer.sec();
@@ -1183,7 +1166,7 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
  */
 /*===========================================================================*/
 template <typename T>
-void CellByCellUniformSampling::generate_particles( const pbvr::UnstructuredVolumeObject& volume )
+void CellByCellHistogram::generate_histogram( const pbvr::UnstructuredVolumeObject& volume )
 {
     // Vertex data arrays. (output)
     std::vector<kvs::Real32> vertex_coords;
@@ -1448,7 +1431,7 @@ void CellByCellUniformSampling::generate_particles( const pbvr::UnstructuredVolu
 }
 
 template <>
-void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::UnstructuredVolumeObject& volume )
+void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::UnstructuredVolumeObject& volume )
 {
     double start = GetTime();
     size_t resolution = DEFAULT_NBINS;
@@ -1734,9 +1717,6 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
     if ( pCrdSynthStr ) 
     //if ( ! pCrdSynthStr.m_x_coord_synthesizer_string.empty() && pCrdSynthStr.m_y_coord_synthesizer_string.empty() && pCrdSynthStr.m_z_coord_synthesizer_string.empty()  ) 
     {
-//        std::cout << "css.m_x_coord_synthesizer_string = " << css.m_x_coord_synthesizer_string <<std::endl;  
-//        std::cout << "css.m_y_coord_synthesizer_string = " << css.m_y_coord_synthesizer_string <<std::endl;  
-//        std::cout << "css.m_z_coord_synthesizer_string = " << css.m_z_coord_synthesizer_string <<std::endl;  
         css = *pCrdSynthStr;
     }
 
@@ -1892,244 +1872,6 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
                     }
                 }
             }
-
-                th_tfs[thid]->CalculateOpacityArrayAverage( interp[thid],
-                    remain,
-                    local_center_array,
-                    global_center_array,
-                    th_tf[thid],
-                    cell_opacity_array );
-
-            //clac num of particles in the each cell
-            int nparticles_num = 0;
-            for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
-            {
-                    const float density = Generator::CalculateDensity( cell_opacity_array[cell_BLK],
-                            sampling_volume_inverse,
-                            max_opacity, max_density );
-                    //interp[thid][0]->bindCellWoVol( cell_index[cell_BLK] );
-                    interp[thid][0]->bindCell( cell_index[cell_BLK] );
-                    nparticles_array[cell_BLK] 
-                        = calculate_number_of_particles( density, interp[thid][0]->volume(), &MT );
-                nparticles_array[cell_BLK] *= m_particle_density ;
-                //nparticles_array[cell_BLK] *= m_particle_density * 0.1 ;
-                nparticles_num += nparticles_array[cell_BLK];
-            }
-            /////////////////////////////// Synthesized~ (), CalculateOpacity() ///////////////////////////////////
-
-            /////////////////////////////// CalculateOpacity(), CalculateColor() ///////////////////////////////////
-            for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
-            {
-                // ------------------------------------------------
-
-                for( int i = 0; i < nparticles_array[cell_BLK]; i+=SIMD_BLK_SIZE )
-                {
-                    //ｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿ
-                    int remain_BLK = ( nparticles_array[cell_BLK] - i > SIMD_BLK_SIZE )
-                                                        ? SIMD_BLK_SIZE: nparticles_array[cell_BLK] - i;
-
-                    //ｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿ
-                    for( int j = 0; j < remain_BLK; j++ ) 
-                    {
-                        cell_index[j] = cell_base + cell_BLK;
-                            local_coord_array[j] = interp[thid][0] -> randomSampling_MT( &MT);
-
-                            //ｿｿｿｿｿｿｿｿｿｿｿｿｿｿ
-                            for( int k = 0; k < nvariables; k++ )
-                            {
-                                interp[thid][k]->bindCell( cell_index[j] );
-                            }
-
-                            interp[thid][0]->setLocalPoint( local_coord_array[j] );
-                            global_coord_array[j] = interp[thid][0]->transformLocalToGlobal( local_coord_array[j] );
-                    }
- 
-                  
-                    //ｿｿｿｿｿcell_index, local_coordｿｿｿｿ
-                    int nparticles_count = 0;
-                    for( int j = 0; j < remain_BLK; j++ )
-                    {
-                        cell_index[ nparticles_count ] = cell_index[j];
-                        local_coord_array[ nparticles_count ] = local_coord_array[j];
-                        global_coord_array[ nparticles_count ] = global_coord_array[j];
-                        nparticles_count +=1;
-//                        std::cout << "global_coord_array[ nparticles_count ]  =" << global_coord_array[ nparticles_count ]  <<std::endl;
-                    }
-
-                    // ------------------------------------------------
-
-                    // bind cell in bulk 
-                    for( int j = 0; j < nvariables; j++ )
-                    {
-                        interp[thid][j]->bindCellArray( nparticles_count, cell_index );
-                    }
-
-                    // dsdx ----------------------------------------
-                    for( int j = 0; j < nparticles_count; j++ )
-                    {
-                        l_plus_coord[j] = local_coord_array[j] + kvs::Vector3f(0.1,0,0);
-                        l_minus_coord[j] = local_coord_array[j] + kvs::Vector3f(-0.1,0,0);
-                    }
-
-                    interp[thid][0]->setLocalPointArray( nparticles_count, l_plus_coord );
-                    interp[thid][0]->transformLocalToGlobalArray( nparticles_count,
-                            l_plus_coord,
-                            g_plus_coord );
-
-                    interp[thid][0]->setLocalPointArray( nparticles_count, l_minus_coord );
-                    interp[thid][0]->transformLocalToGlobalArray( nparticles_count,
-                            l_minus_coord,
-                            g_minus_coord );
-
-                    th_tfs[thid]->CalculateOpacityArray( interp[thid],
-                            nparticles_count,
-                            l_plus_coord,
-                            g_plus_coord,
-                            th_tf[thid],
-                            S_plus_opacity );
-                    th_tfs[thid]->CalculateOpacityArray( interp[thid],
-                            nparticles_count,
-                            l_minus_coord,
-                            g_minus_coord,
-                            th_tf[thid],
-                            S_minus_opacity );
-
-                    for( int j = 0; j < nparticles_count; j++ )
-                    {
-                        dsdx_array[j] = ( S_plus_opacity[j] - S_minus_opacity[j] )*5.0;
-                    }
-                    // ------------------------------------------------
-                    // dsdy ----------------------------------------
-                    for( int j = 0; j < nparticles_count; j++ )
-                    {
-                        l_plus_coord[j] = local_coord_array[j] + kvs::Vector3f(0,0.1,0);
-                        l_minus_coord[j] = local_coord_array[j] + kvs::Vector3f(0,-0.1,0);
-                    }
-
-                    interp[thid][0]->setLocalPointArray( nparticles_count, l_plus_coord );
-                    interp[thid][0]->transformLocalToGlobalArray( nparticles_count,
-                            l_plus_coord,
-                            g_plus_coord );
-
-                    interp[thid][0]->setLocalPointArray( nparticles_count, l_minus_coord );
-                    interp[thid][0]->transformLocalToGlobalArray( nparticles_count,
-                            l_minus_coord,
-                            g_minus_coord );
-
-                    th_tfs[thid]->CalculateOpacityArray( interp[thid],
-                            nparticles_count,
-                            l_plus_coord,
-                            g_plus_coord,
-                            th_tf[thid],
-                            S_plus_opacity );
-                    th_tfs[thid]->CalculateOpacityArray( interp[thid],
-                            nparticles_count,
-                            l_minus_coord,
-                            g_minus_coord,
-                            th_tf[thid],
-                            S_minus_opacity );
-
-                    for( int j = 0; j < nparticles_count; j++ )
-                    {
-                        dsdy_array[j] = ( S_plus_opacity[j] - S_minus_opacity[j] )*5.0;
-                    }
-                    // ------------------------------------------------
-                    // dsdz ----------------------------------------
-                    for( int j = 0; j < nparticles_count; j++ )
-                    {
-                        l_plus_coord[j] = local_coord_array[j] + kvs::Vector3f(0,0,0.1);
-                        l_minus_coord[j] = local_coord_array[j] + kvs::Vector3f(0,0,-0.1);
-                    }
-
-                    interp[thid][0]->setLocalPointArray( nparticles_count, l_plus_coord );
-                    interp[thid][0]->transformLocalToGlobalArray( nparticles_count,
-                            l_plus_coord,
-                            g_plus_coord );
-
-                    interp[thid][0]->setLocalPointArray( nparticles_count, l_minus_coord );
-                    interp[thid][0]->transformLocalToGlobalArray( nparticles_count,
-                            l_minus_coord,
-                            g_minus_coord );
-
-                    th_tfs[thid]->CalculateOpacityArray( interp[thid],
-                            nparticles_count,
-                            l_plus_coord,
-                            g_plus_coord,
-                            th_tf[thid],
-                            S_plus_opacity );
-                    th_tfs[thid]->CalculateOpacityArray( interp[thid],
-                            nparticles_count,
-                            l_minus_coord,
-                            g_minus_coord,
-                            th_tf[thid],
-                            S_minus_opacity );
-
-                    for( int j = 0; j < nparticles_count; j++ )
-                    {
-                        dsdz_array[j] = ( S_plus_opacity[j] - S_minus_opacity[j] )*5.0;
-                    }
-                    // ------------------------------------------------
-                    //grad_arrayｿｿｿ
-                    for( int j = 0; j < nparticles_count; j++ )
-                    {
-                        //JacobiMatrixｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿ
-                        interp[thid][0]->bindCell( cell_index[j] );
-
-                        const kvs::Vector3f g( -dsdx_array[j], -dsdy_array[j], -dsdz_array[j] );
-                        const kvs::Matrix33f J = interp[thid][0]->JacobiMatrix();
-                        float determinant = 0.0f;
-                        const kvs::Vector3f G = J.inverse( &determinant ) * g;
-                        grad_array[j] = kvs::Math::IsZero( determinant ) ? kvs::Vector3f( 0.0f, 0.0f, 0.0f ) : G;
-                    }
-
-                    //color
-                    th_tfs[thid]->CalculateColorArray( interp[thid],
-                            nparticles_count,
-                            local_coord_array,
-                            global_coord_array,
-                            th_tf[thid],
-                            color_array );
-
-                    kvs::Vector3f new_coord_array[ SIMDW ];
-                    //if ( pCrdSynthStr )
-                    if ( !css.m_x_coord_synthesizer_string.empty() || !css.m_y_coord_synthesizer_string.empty() || !css.m_z_coord_synthesizer_string.empty()  ) 
-                    {
-                        th_tfs[thid]->CalculateCoordArray( interp[thid],
-                                nparticles_count,
-                                local_coord_array,
-                                global_coord_array,
-                                th_tf[thid],
-//      /*CoordSynthesizerTokens*/        cst,
-      /*CoordSynthesizerStrings*/        css,
-                                new_coord_array );
-                    }
-                    else
-                    {
-                        for( int j = 0; j < nparticles_count; j++ )
-                        {
-                            new_coord_array[j] = global_coord_array[j];
-                        }
-                    }
-
-                    //2023 shimomura 
-                    for( int j = 0; j < nparticles_count; j++ )
-                    {
-                        kvs::Vector3f new_coord = new_coord_array[j];
-                        th_vertex_coords.push_back( new_coord.x() );
-                        th_vertex_coords.push_back( new_coord.y() );
-                        th_vertex_coords.push_back( new_coord.z() );
-
-                        th_vertex_colors.push_back( color_array[j].r() );
-                        th_vertex_colors.push_back( color_array[j].g() );
-                        th_vertex_colors.push_back( color_array[j].b() );
-
-                        th_vertex_normals.push_back( grad_array[j].x() );
-                        th_vertex_normals.push_back( grad_array[j].y() );
-                        th_vertex_normals.push_back( grad_array[j].z() );
-                    }
-                    // ------------------------------------------------
-                }//end of for i
-            }
             /////////////////////////////// CalculateOpacity(), CalculateColor() ///////////////////////////////////
         }// end of for cell
 
@@ -2156,13 +1898,17 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
                 m_c_histogram[n] += th_c_histogram[n];
             }
 
-            vertex_coords.insert ( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
-            vertex_colors.insert ( vertex_colors.end(), th_vertex_colors.begin(), th_vertex_colors.end() );
-            vertex_normals.insert( vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end() );
+//            std::stringstream debug11;
+//            debug11 << "m_c_histogram[n] = {";
+//            for(int i =0; i< tf_number *nbins; i++) debug11 << m_c_histogram[i] << "," ;
+//            std::cout << debug11.str() << std::endl;
+//            vertex_coords.insert ( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
+//            vertex_colors.insert ( vertex_colors.end(), th_vertex_colors.begin(), th_vertex_colors.end() );
+//            vertex_normals.insert( vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end() );
         }
-        th_vertex_coords.clear();
-        th_vertex_colors.clear();
-        th_vertex_normals.clear();
+//        th_vertex_coords.clear();
+//        th_vertex_colors.clear();
+//        th_vertex_normals.clear();
 
     } //#pragma omp parallel
 
@@ -2202,17 +1948,13 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
 
     //TIMER_END( 290 );
 
-    SuperClass::m_coords  = kvs::ValueArray<kvs::Real32>( vertex_coords );
-    SuperClass::m_colors  = kvs::ValueArray<kvs::UInt8>( vertex_colors );
-    SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( vertex_normals );
-
     SuperClass::setSize( 1.0f );
     //TIMER_END( 280 );
     double end = GetTime();
-    printf( " \n  CPU:generate_particles: %lf ms\n", end - start );
+    printf( " \n  CPU:generate_histogram: %lf ms\n", end - start );
 }
 
-const size_t CellByCellUniformSampling::calculate_number_of_particles(
+const size_t CellByCellHistogram::calculate_number_of_particles(
     const float density,
     const float volume_of_cell,
     kvs::MersenneTwister* MT ) 
@@ -2231,7 +1973,7 @@ const size_t CellByCellUniformSampling::calculate_number_of_particles(
 
 
 #ifdef ENABLE_MPI
-void CellByCellUniformSampling::generate_particles_gt5d(
+void CellByCellHistogram::generate_particles_gt5d(
     const pbvr::UnstructuredVolumeObject* volume )
 {
     // Vertex data arrays. (output)
@@ -2307,7 +2049,7 @@ void CellByCellUniformSampling::generate_particles_gt5d(
  *  @return density value
  */
 /*===========================================================================*/
-const float CellByCellUniformSampling::calculate_density( const float scalar )
+const float CellByCellHistogram::calculate_density( const float scalar )
 {
     const float min_value = BaseClass::transferFunction().colorMap().minValue();
     const float max_value = BaseClass::transferFunction().colorMap().maxValue();
@@ -2351,7 +2093,7 @@ const float CellByCellUniformSampling::calculate_density( const float scalar )
  *  @return number of particles
  */
 /*===========================================================================*/
-const size_t CellByCellUniformSampling::calculate_number_of_particles(
+const size_t CellByCellHistogram::calculate_number_of_particles(
     const float density,
     const float volume_of_cell )
 {
@@ -2375,7 +2117,7 @@ const size_t CellByCellUniformSampling::calculate_number_of_particles(
  *  @return density value
  */
 /*===========================================================================*/
-const float CellByCellUniformSampling::calculate_maximum_density( const float scalar0, const float scalar1 )
+const float CellByCellHistogram::calculate_maximum_density( const float scalar0, const float scalar1 )
 {
     if ( scalar0 > scalar1 )
     {
@@ -2428,7 +2170,7 @@ const float CellByCellUniformSampling::calculate_maximum_density( const float sc
     return maximum_density;
 }
 
-void CellByCellUniformSampling::calculate_histogram( kvs::ValueArray<int>&   th_o_histogram,
+void CellByCellHistogram::calculate_histogram( kvs::ValueArray<int>&   th_o_histogram,
                           kvs::ValueArray<int>&   th_c_histogram,
                           kvs::ValueArray<float>& th_O_min,
                           kvs::ValueArray<float>& th_O_max,
@@ -2478,7 +2220,7 @@ void CellByCellUniformSampling::calculate_histogram( kvs::ValueArray<int>&   th_
     }
 }
 
-kvs::Vector3f CellByCellUniformSampling::RandomSamplingInCube( const kvs::Vector3f vertex, kvs::MersenneTwister* MT  )
+kvs::Vector3f CellByCellHistogram::RandomSamplingInCube( const kvs::Vector3f vertex, kvs::MersenneTwister* MT  )
 {
     const float x = (float)MT->rand();
     const float y = (float)MT->rand();

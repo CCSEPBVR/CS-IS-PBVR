@@ -200,6 +200,107 @@ std::vector<NamedTransferFunction> TransferFunctionSynthesizerCreator::transfunc
 //    m_synthesizer->setOpacitySynthFunctionString( m_opacity_transfunc_synthesis );
 //}
 
+void TransferFunctionSynthesizerCreator::setInitialProtocol( const int nvariable, const VariableRange vr)
+{
+    m_transfunc.clear();
+    m_voleqn.clear();
+
+    m_synthesizer = new TransferFunctionSynthesizer();
+    
+    if (nvariable == 0)
+    {
+        std::cout << "TF_number is 0 !!" << std::endl;
+        return;
+    }
+
+    int TF_resolution = 256;
+    for ( size_t i = 0; i < nvariable; i++ )
+    {
+        NamedTransferFunction tf;
+        std::stringstream cc, qq, tt;
+        cc << "C" << i + 1;
+        qq << "q" << i + 1;
+        tt << "t" << i + 1;  
+        tf.m_name          = cc.str();
+        tf.m_color_variable       = qq.str();
+        tf.m_color_variable_min   = vr.min( tt.str() + "_var_c" );
+        tf.m_color_variable_max   = vr.max( tt.str() + "_var_c" ); 
+        tf.m_opacity_variable     = qq.str();
+        tf.m_opacity_variable_min = vr.min( tt.str() + "_var_o" );
+        tf.m_opacity_variable_max = vr.max( tt.str() + "_var_o" );
+        tf.m_resolution           = TF_resolution;
+        tf.m_equation_red         = ""; 
+        tf.m_equation_green       = ""; 
+        tf.m_equation_blue        = ""; 
+        tf.m_equation_opacity     = "";
+        kvs::ColorMap color_map( TF_resolution, tf.m_color_variable_min, tf.m_color_variable_max  );
+        kvs::OpacityMap opacity_map( TF_resolution, tf.m_color_variable_min, tf.m_color_variable_max  );
+        tf.setColorMap( color_map );
+        tf.setOpacityMap( opacity_map );
+
+        tf.m_selection = NamedTransferFunction::SelectExtendTransferFunction;
+        m_transfunc.push_back( tf );
+    }
+
+    std::cout << "nvariables = " << m_transfunc.size() << std::endl;
+
+        // add by shimomura at 2022/12/12
+        EquationToken eq;
+        std::vector<EquationToken> var; 
+        std::vector<EquationToken> var_o; 
+        std::vector<EquationToken> var_c; 
+
+        std::string opacitySynthBuf = "a1"; 
+        std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
+        eq = m_synthesizer -> convert_token(opacitySynthBuf);
+
+        m_synthesizer -> setOpacityFunction( eq );
+
+        std::string colorSynthBuf = "c1"; 
+        std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
+        eq = m_synthesizer -> convert_token(colorSynthBuf);
+        m_synthesizer -> setColorFunction( eq );
+
+        for ( size_t i = 0; i < nvariable ; i++ )
+        {
+            std::stringstream cc, qq;
+            qq << "q" << i + 1;
+            std::string OSynthBuf = qq.str();
+            std::string CSynthBuf = qq.str() ;
+
+            var_o.push_back( m_synthesizer ->  convert_token(OSynthBuf ));
+            var_c.push_back( m_synthesizer ->  convert_token(CSynthBuf ));
+        }
+
+        m_synthesizer -> setOpacityVariable( var_o );
+        m_synthesizer -> setColorVariable( var_c );
+        
+    // overwrite opacitymap add by shimomura  2023/1/24    
+    size_t cnt = nvariable;
+    for ( size_t i = 0; i < cnt; i++ )
+    {
+        m_transfunc[i].setColorRange( m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max );
+        m_transfunc[i].setOpacityRange( m_transfunc[i].m_opacity_variable_min, m_transfunc[i].m_opacity_variable_max );
+    }    
+
+    for ( size_t i = 0; i < nvariable; i++ )
+    {
+        std::stringstream ff, qq;
+        ff << "_F" << i << "_VAR_";
+        qq << "q" << i ; 
+        VolumeEquation ve;
+        ve.m_name     = ff.str() + "C";
+        ve.m_equation = qq.str();
+        m_voleqn.push_back( ve );
+
+        VolumeEquation vo;
+        vo.m_name     = ff.str() + "O";
+        vo.m_equation = qq.str();
+        m_voleqn.push_back( vo );
+    }
+}
+
+
 void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransferClientMessage& clntMes )
 {
     m_transfunc.clear();

@@ -579,6 +579,10 @@ inline VariableRange Calculate_minmax( const Argument& param,
     int subvols = 0;
 
     kvs::Real64 tmp_min, tmp_max;
+    std::vector<kvs::Real64> min_vec, max_vec;
+    int nvariable = fil.m_total_number_ingredients;
+    min_vec.resize(nvariable);
+    max_vec.resize(nvariable);
     //Total Volume Calculation
 #ifndef CPU_VER
     int rank;
@@ -590,39 +594,59 @@ inline VariableRange Calculate_minmax( const Argument& param,
     int nprocs = 1;
 #endif
 
-    for ( subvols = 0; subvols < fil.m_total_number_subvolumes; subvols++ )                                                                                                                                
+    for ( steps = fil.m_total_start_steps; steps < fil.m_total_end_step; steps++ )
     {
-        int xvl, fidx;
-        fidx = fil.getFileIndex( subvols, &xvl );
-        const FilterInformationFile& fi = fil.m_list[fidx];
-
-        if ( subvols % nprocs == rank )
+        for ( subvols = 0; subvols < fil.m_total_number_subvolumes; subvols++ )
         {
-            volume = CreateVolumeData( param, fi, steps, xvl );
-            //volume->updateMinMaxValues();
-            tmp_min = volume->values().at<float>(0) ; 
-            tmp_max = volume->values().at<float>(0) ; 
-            for (int i =1; i< volume->nnodes(); i++)
+            int xvl, fidx;
+            fidx = fil.getFileIndex( subvols, &xvl );
+            const FilterInformationFile& fi = fil.m_list[fidx];
+
+            if ( subvols % nprocs == rank )
             {
-            tmp_min = tmp_min < volume->values().at<float>(i) ? tmp_min : volume->values().at<float>(i) ; 
-            tmp_max = tmp_min > volume->values().at<float>(i) ? tmp_max : volume->values().at<float>(i) ; 
+                volume = CreateVolumeData( param, fi, steps, xvl );
+                //volume->updateMinMaxValues();
+                int nnodes = volume->nnodes();
+                for (int n =0; n< nvariable; n++) 
+                {
+                    tmp_min = volume->values().at<float>(0+n*nnodes); 
+                    tmp_max = volume->values().at<float>(0+n*nnodes); 
+                    for (int i = 1; i< nnodes; i++)
+                    {
+                        tmp_min = tmp_min < volume->values().at<float>(i+n*nnodes) ? tmp_min : volume->values().at<float>(i+n*nnodes) ; 
+                        tmp_max = tmp_min > volume->values().at<float>(i+n*nnodes) ? tmp_max : volume->values().at<float>(i+n*nnodes) ; 
+                    }
+                    min_vec[n]=tmp_min;
+                    max_vec[n]=tmp_max;
+                }
+                delete volume;
             }
-            delete volume;
         }
     }
 
 #ifndef CPU_VER
     PBVR_TIMER_STA( 19 );
-    MPI_Allreduce( MPI_IN_PLACE, &tmp_min, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
-    MPI_Allreduce( MPI_IN_PLACE, &tmp_max, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
+    //std::cout << rank << ":"  << __LINE__ << std::endl;
+    MPI_Allreduce( MPI_IN_PLACE, min_vec.data(), nvariable, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
+    MPI_Allreduce( MPI_IN_PLACE, max_vec.data(), nvariable, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
+    //MPI_Allreduce( MPI_IN_PLACE, &tmp_min, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
+    //MPI_Allreduce( MPI_IN_PLACE, &tmp_max, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
     PBVR_TIMER_END( 19 );
 #endif
 
    VariableRange vr;
-   vr.setValue( "t1_var_o", tmp_max);
-   vr.setValue( "t1_var_o", tmp_min);
-   vr.setValue( "t1_var_c", tmp_max);
-   vr.setValue( "t1_var_c", tmp_min);
+   for (int n =0; n< nvariable; n++) 
+   {
+        std::stringstream ss; 
+        ss << (n + 1); 
+        const std::string idxbuf = ss.str();
+        vr.setValue( "t" + idxbuf + "_var_o", max_vec[n]);
+        vr.setValue( "t" + idxbuf + "_var_o", min_vec[n]);
+        vr.setValue( "t" + idxbuf + "_var_c", max_vec[n]);
+        vr.setValue( "t" + idxbuf + "_var_c", min_vec[n]);
+   }
+
+//   std::cout  << vr.max( "t1_var_c" ) << std::endl;     
 
    return vr;
 }
@@ -1600,7 +1624,253 @@ int main( int argc, char** argv )
                }
                else if ( clntMes.m_initialize_parameter == -3 ) 
                {
+                    timer_count++;
+//                  param.m_transfer_function = pbvr::TransferFunction(); // *( clntMes.m_transfer_function );
+                    param.m_sampling_method = 'h';
+                    param.m_component_Id = clntMes.m_rendering_id;
+                    clntMes.m_enable_crop_region = 0;
+                    param.m_crop.setEnable( clntMes.m_enable_crop_region );
+                    param.m_crop.set( clntMes.m_crop_region );
+                    param.m_input_data_base = clntMes.m_input_directory;
+                    param.m_particle_limit = clntMes.m_particle_limit;
+                    param.m_particle_density = clntMes.m_particle_density;
+
+                    std::string pfifile, pflfile;
+                    if ( param.m_input_data_base.substr( param.m_input_data_base.size() - 3 ) == "pfl" )
+                    {
+                        pflfile = param.m_input_data_base;
+                        param.m_input_data_base = pflfile.substr( 0, pflfile.size() - 4 );
+                        kvs::File pfl( pflfile );
+                        if ( pfl.isExisted() )
+                        {
+                            fil.loadPFL( pflfile );
+                        }
+                    }
+                    else
+                    {
+#if 0
+                        pfifile = param.m_input_data_base + ".pfi";
+                        kvs::File pfi( pfifile );
+                        pflfile = param.m_input_data_base + ".pfl";
+                        kvs::File pfl( pflfile );
+                        if ( pfl.isExisted() )
+                        {
+                            fil.loadPFL( pflfile );
+                        }
+                        else if ( pfi.isExisted() )
+                        {
+                            fil.loadPFL( pfifile );
+                        }
+#else
+						pflfile = param.m_input_data_base;
+						kvs::File pfl( pflfile );
+						if ( pfl.isExisted() )
+						{
+							fil.loadPFL( pflfile );
+						}
+#endif
+                    }
+
+                    point_creator_lst.clear();
+                    for ( int idx = 0; idx < fil.m_list.size(); idx++ )
+                    {
+                        PointObjectCreator point_creator;
+                        if ( param.m_gt5d == true ) point_creator.setGT5D();
+                        point_creator.setFilterInfo( fil.m_list[idx] );
+                        point_creator.setCoordSynthStr( clntMes.m_x_synthesis,
+                                                        clntMes.m_y_synthesis, clntMes.m_z_synthesis );
+//                        point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
+//                                                        clntMes.y_synthesis_token, clntMes.z_synthesis_token );
+                        point_creator_lst.push_back( point_creator );
+                    }
+
+                    transfunc_creator.setFilterInfo( fil.m_list[0] );
+                    //transfunc_creator.setProtocol( clntMes );
+                    //transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
+                    //param.m_transfunc_synthesizer = transfunc_creator.create();
+                    //param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+
+//                    int nvariable = fil.m_total_number_ingredients;
+                    int nvariable;
                     VariableRange range = Calculate_minmax( param, fil); 
+//                    if( clntMes.m_transfer_function.size() ==0 ) transfunc_creator.setInitialProtocol( nvariable, range );
+//                    else transfunc_creator.setProtocol(clntMes);
+                    if( clntMes.m_transfer_function.size() ==0 ) 
+                    {
+                        std::cout << "defalt parameter " << std::endl;
+                        nvariable = fil.m_total_number_ingredients;
+                        transfunc_creator.setInitialProtocol( nvariable, range );
+                    }
+                    else
+                    {
+                        std::cout << "user define parameter " << std::endl;
+                        nvariable = clntMes.m_transfer_function.size();
+                        transfunc_creator.setProtocol(clntMes);
+                    }
+                    param.m_transfunc_synthesizer = transfunc_creator.create();
+                    param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+
+                    for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
+                    {
+                        param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
+                    }
+
+                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+                    if ( param.m_crop.isEnabled() )
+                    {
+                        jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
+                                       fil.m_total_min_subvolume_coord,
+                                       fil.m_total_max_subvolume_coord,
+                                       param.m_latency_threshold, param.m_job_id_pack_size,
+                                       param.m_crop.getMinCoord(),
+                                       param.m_crop.getMaxCoord() );
+                    }
+                    else
+                    {
+                        jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
+                                       fil.m_total_min_subvolume_coord,
+                                       fil.m_total_max_subvolume_coord,
+                                       param.m_latency_threshold, param.m_job_id_pack_size );
+                    }
+
+                    param.m_sampling_step = CalculateSamplingStep( fil );
+                    //param.m_sampling_step = 1;
+                    param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
+                    param.m_particle_limit_pre = param.m_particle_limit;
+
+                    clntMes.show();
+                    //int tf_count = clntMes.m_transfer_function.size();
+                    int tf_count = nvariable;
+                    int c_nbins = DEFAULT_NBINS;
+                    int o_nbins = DEFAULT_NBINS;
+
+                    c_bins_size = 0;
+                    o_bins_size = 0;
+
+                    for ( int tf = 0; tf < tf_count; tf++ )
+                    {
+                        c_bins_size += c_nbins;
+                        o_bins_size += o_nbins;
+                    }
+
+                    tmp_c_bins = new kvs::UInt64[c_bins_size];
+                    tmp_o_bins = new kvs::UInt64[o_bins_size];
+                    //add by shimomura 2023/06/14
+                    int cnt = 2* tf_count ;
+                    tmp_max = new float[cnt]; 
+                    tmp_min = new float[cnt]; 
+
+                    for ( int tf = 0; tf < cnt; tf++ )
+                    {
+                        tmp_max[tf] = 0;
+                        tmp_min[tf] = 0;
+                    }
+                        
+                    for ( int tf = 0; tf < c_bins_size; tf++ )
+                    {
+                        tmp_c_bins[tf] = 0;
+                    }
+
+                    for ( int tf = 0; tf < o_bins_size; tf++ )
+                    {
+                        tmp_o_bins[tf] = 0;
+                    }
+
+                    while ( jd.dispatchNext( wid, &st, &vl ) )
+                    {
+                        int xvl, fidx;
+                        fidx = fil.getFileIndex( vl, &xvl );
+                        FilterInformationFile& fi = fil.m_list[fidx];
+
+                        std::stringstream suffix;
+                        suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
+                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
+                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
+                        //param.m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
+                        kvs::File ifpx( fi.m_file_path );
+                        param.m_input_data = ifpx.pathName() + ifpx.Separator()
+                                             + ifpx.baseName() + suffix.str() + ".kvsml";
+                        int timeStep = 1;
+                        try
+                        {
+                            if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+                            {
+                                object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
+
+                            }
+                            else     // filetype: kvsml
+                            {
+                                object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
+                            }
+                        }
+                        catch ( const std::runtime_error& e )
+                        {
+#ifdef _DEBUG		// debug by @hira
+                            printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
+#endif
+                            std::cerr << e.what();
+                            nan_error = true;
+                        }
+#ifndef CPU_VER
+                        VariableRange* p_vr = &param.m_transfunc_synthesizer->variableRange();
+                        jc.jobCollect( object, p_vr, &nan_error, &wid );
+#endif
+                        if ( nan_error )
+                        {
+                            nan_error = false;
+                            continue;
+                        }
+
+                        int c_count = 0;
+                        int o_count = 0;
+
+                        for ( int tf = 0; tf < object->getTfnumber(); tf++ )
+                        {
+                            c_nbins = object->getNbins();
+                            //add by shimomura 2023/06/14
+                            tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
+                            tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
+                            for ( int res = 0; res < c_nbins; res++ )
+                            {
+                                tmp_c_bins[c_count] += object->getCHistogram()[ c_count ] ;
+                                c_count++;
+                            }
+                        }
+
+                        for ( int tf = 0; tf < object->getTfnumber(); tf++ )
+                        {
+                            o_nbins = object->getNbins();
+                            //add by shimomura 2023/06/14
+                            tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_c_max[tf];
+                            tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_c_min[tf];
+                            for ( int res = 0; res < o_nbins; res++ )
+                            {
+                                tmp_o_bins[o_count] += object->getOHistogram()[ o_count ] ;
+                                o_count++;
+                            }
+                        }
+
+                    } // end of while(DispatchNext)
+#ifndef CPU_VER
+
+                     std::cout << "c_bins_size = " << c_bins_size <<std::endl;
+                    MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
+                    MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
+                    MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
+                    MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
+                    delete[] tmp_c_bins;
+                    delete[] tmp_o_bins;
+                    //add by shimomura 20240603
+                    delete[] tmp_max;
+                    delete[] tmp_min;
+#endif
+                    if ( timer_count == PBVR_TIMER_COUNT_NUM )
+                    {
+                        PBVR_TIMER_END( 1 );
+                        PBVR_TIMER_FIN();
+                    }
+                    delete param.m_transfunc_synthesizer;
+                
                }
                else
                {
@@ -1791,37 +2061,27 @@ int main( int argc, char** argv )
                         int c_count = 0;
                         int o_count = 0;
 
-//                         for ( int tf = 0; tf < object->getColorHistogram().size(); tf++ )
                         for ( int tf = 0; tf < object->getTfnumber(); tf++ )
                         {
-//                            c_nbins = object->getColorHistogram()[ tf ].nbins();
                             c_nbins = object->getNbins();
                             //add by shimomura 2023/06/14
-//                            tmp_max[2*tf+1] = object->getColorHistogram()[ tf ].maxRange();
-//                            tmp_min[2*tf+1] = object->getColorHistogram()[ tf ].minRange();
                             tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
                             tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
                             for ( int res = 0; res < c_nbins; res++ )
                             {
-//                                tmp_c_bins[c_count] += static_cast<kvs::UInt64>( object->getColorHistogram()[ tf ][res] );
                                 tmp_c_bins[c_count] += object->getCHistogram()[ c_count ] ;
                                 c_count++;
                             }
                         }
 
-//                        for ( int tf = 0; tf < object->getOpacityHistogram().size(); tf++ )
                         for ( int tf = 0; tf < object->getTfnumber(); tf++ )
                         {
-//                            o_nbins = object->getOpacityHistogram()[ tf ].nbins();
                             o_nbins = object->getNbins();
                             //add by shimomura 2023/06/14
-//                            tmp_max[2*tf] = object->getOpacityHistogram()[ tf ].maxRange();
-//                            tmp_min[2*tf] = object->getOpacityHistogram()[ tf ].minRange();
                             tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_c_max[tf];
                             tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_c_min[tf];
                             for ( int res = 0; res < o_nbins; res++ )
                             {
-//                                tmp_o_bins[o_count] += static_cast<kvs::UInt64>( object->getOpacityHistogram()[ tf ][res] );
                                 tmp_o_bins[o_count] += object->getOHistogram()[ o_count ] ;
                                 o_count++;
                             }
@@ -1990,6 +2250,19 @@ int main( int argc, char** argv )
                                   << " subvolume division = " << fil.m_total_number_subvolumes
                                   << std::endl;
 
+                    // send cltMes to all worker process >>
+                    bsz = clntMes.byteSize();
+#ifndef CPU_VER
+                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+                    buf = new char[bsz];
+                    clntMes.pack( buf );
+#ifndef CPU_VER
+                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+#endif
+                    delete[] buf;
+                    // send cltMes to all worker process <<
+
                     }
                     else
                     {
@@ -2007,12 +2280,284 @@ int main( int argc, char** argv )
                         return 0;
                     }
 
-                    transfunc_creator.setProtocol( clntMes );
-//                    TransferFunctionSynthesizer* tfs = transfunc_creator.create();
-//                    VariableRange range = RangeEstimater::EstimationList( 0, fil, tfs , clntMes);
+                    //transfunc_creator.setProtocol( clntMes );
+                    //int nvariable = fil.m_total_number_ingredients;
+                    int nvariable;
                     VariableRange range = Calculate_minmax( param, fil); 
+                    if( clntMes.m_transfer_function.size() ==0 ) 
+                    {
+                        std::cout << "defalt parameter " << std::endl;
+                        nvariable = fil.m_total_number_ingredients;
+                        transfunc_creator.setInitialProtocol( nvariable, range );
+                    }
+                    else
+                    {
+                        std::cout << "user define parameter " << std::endl;
+                        nvariable = clntMes.m_transfer_function.size();
+                        transfunc_creator.setProtocol(clntMes);
+                    }
+#if 1
+                    // generate_histogram
+                    param.m_sampling_method = 'h';
+                    param.m_component_Id = clntMes.m_rendering_id;
+                    clntMes.m_enable_crop_region = 0;
+                    param.m_crop.setEnable( clntMes.m_enable_crop_region );
+                    param.m_crop.set( clntMes.m_crop_region );
+                    param.m_particle_limit = clntMes.m_particle_limit;
+                    param.m_particle_density = clntMes.m_particle_density;
 
-                    //VariableRange range;
+//                    transfunc_creator.setInitialProtocol( nvariable, range );
+                    param.m_transfunc_synthesizer = transfunc_creator.create();
+                    param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+                    for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
+                    {
+                        param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
+                    }
+
+                    // 4 calc histgram
+                    clntMes.m_node_type = 'a';  
+                    if ( clntMes.m_node_type == 'a' )
+                    {
+                        useAllNodes = true;
+                    }
+                    else if ( clntMes.m_node_type == 's' )
+                    {
+                        useAllNodes = false;
+                    }
+                    else
+                    {
+                        assert( false );
+                    }
+                    if ( param.m_gt5d == true || param.m_gt5d_full == true )
+                    {
+                        int timeStep = servMes.m_time_step;
+
+                        if ( servMes.m_time_step > 1 )
+                        {
+                            for ( int nf = 0; nf < point_creator_lst.size(); nf++ )
+                                point_creator_lst[nf].progressValues();
+                        }
+                    }
+
+                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+
+                    if ( param.m_crop.isEnabled() )
+                    {
+                        jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
+                                fil.m_total_min_subvolume_coord,
+                                fil.m_total_max_subvolume_coord,
+                                param.m_latency_threshold, param.m_job_id_pack_size,
+                                param.m_crop.getMinCoord(),
+                                param.m_crop.getMaxCoord() );
+                        servMes.m_number_volume_divide = jd.getCountVolumes();
+                    }
+                    else
+                    {
+                        jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
+                                fil.m_total_min_subvolume_coord,
+                                fil.m_total_max_subvolume_coord,
+                                param.m_latency_threshold, param.m_job_id_pack_size );
+                        servMes.m_number_volume_divide = fil.m_total_number_subvolumes;
+                    }
+
+                    if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                    {
+                        PBVR_TIMER_STA( 470 );
+                    }
+
+                    param.m_sampling_step = CalculateSamplingStep( fil );
+                    param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
+
+                    VariableRange vr;
+//                    pts.sendMessage( servMes );
+
+                    // 関数の領域確保、初期化を行う : by @hira 2016/12/01
+                    servMes.initializeTransferFunction(nvariable, DEFAULT_NBINS);
+
+                    //int tf_count = clntMes.m_transfer_function.size();
+                    int tf_count = nvariable;
+                    c_bins_size = 0;
+                    o_bins_size = 0;
+                    //for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
+                    for ( int tf = 0; tf < tf_count; tf++ )
+                    {
+                        c_bins_size += servMes.m_color_nbins[tf];
+                        o_bins_size += servMes.m_opacity_nbins[tf];
+                    }
+
+                    tmp_c_bins = new kvs::UInt64[c_bins_size];
+                    tmp_o_bins = new kvs::UInt64[o_bins_size];
+
+                    //add by shimomura 2023/06/14
+                    int cnt = 2* servMes.m_transfer_function_count ;
+                    tmp_max = new float[cnt]; 
+                    tmp_min = new float[cnt];
+
+                    for ( int tf = 0; tf < cnt; tf++ )
+                    {
+                        tmp_max[tf] = FLT_MIN;
+                        tmp_min[tf] = FLT_MAX;
+                    }
+
+
+                    for ( int tf = 0; tf < c_bins_size; tf++ )
+                    {
+                        tmp_c_bins[tf] = 0;
+                    }
+
+                    for ( int tf = 0; tf < o_bins_size; tf++ )
+                    {
+                        tmp_o_bins[tf] = 0;
+                    }
+
+                    while ( jd.dispatchNext( wid, &st, &vl ) )
+                    {
+                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        {
+                            PBVR_TIMER_STA( 471 );
+                        }
+
+                        pbvr::PointObject* originalObject = new pbvr::PointObject;
+
+                        if (mpi_size == 1) 
+                        {
+                            int xvl, fidx;
+                            fidx = fil.getFileIndex( vl, &xvl );
+                            FilterInformationFile& fi = fil.m_list[fidx];
+
+                            pbvr::PointObject* tmp_obj = NULL;
+                            std::stringstream suffix;
+                            suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
+                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
+                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
+                            kvs::File ifpx( fil.m_list[fidx].m_file_path );
+                            param.m_input_data = ifpx.pathName() + ifpx.Separator()
+                                + ifpx.baseName() + suffix.str() + ".kvsml";
+                            int timeStep = 1;
+                            try
+                            {
+                                point_creator_lst[fidx].setCoordSynthStr( clntMes.m_x_synthesis,
+                                        clntMes.m_y_synthesis, clntMes.m_z_synthesis );
+                                if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+                                {
+                                    tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
+                                }
+                                else     // filetype: kvsml
+                                {
+                                    tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
+                                }
+
+                                size_t nmemb = tmp_obj->nvertices() * 3;
+                                // modify by @hira at 2016/12/01  
+                                int c_count = 0;
+                                for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
+                                {
+                                    int c_nbins = tmp_obj->getNbins();
+                                    //changed by shimomura 2023/07/24
+                                    tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
+                                    tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
+                                    for ( int res = 0; res < c_nbins; res++ )
+                                    {
+                                        tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ] ;
+                                        c_count++;
+                                    }
+                                }
+                                int o_count = 0;
+                                for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
+                                {
+                                    int o_nbins = tmp_obj->getNbins();
+                                    //changed by shimomura 2023/07/24
+                                    tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_o_max[tf];
+                                    tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_o_min[tf];
+                                    for ( int res = 0; res < o_nbins; res++ )
+                                    {
+                                        tmp_o_bins[o_count] += tmp_obj->getOHistogram()[ o_count ] ;
+                                        o_count++;
+                                    }
+                                }
+
+                            }
+                            catch ( const std::runtime_error& e )
+                            {
+#ifdef _DEBUG		// debug by @hira
+                                printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
+#endif
+                                std::cerr << e.what();
+                                nan_error = true;
+                            }
+
+                        }
+
+#ifndef CPU_VER
+                        if (mpi_size > 1) {
+                            jc.jobCollect( originalObject, &vr, &nan_error, &wid );
+                        }
+#endif
+                        //int nvertices = originalObject->coords().size() / 3;
+
+                        pbvr::PointObject* object = originalObject;
+                        printf(" %zu perticles generated\n", object->coords().size() / 3);
+
+                        //                           //add by shimomura 2023/06/14
+                        if ( originalObject != object ) delete originalObject;
+                        servMes.m_number_particle = object->coords().size() / 3;
+                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        {
+                            PBVR_TIMER_END( 471 );
+                        }
+                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        {
+                            PBVR_TIMER_STA( 472 );
+                        }
+
+                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        {
+                            PBVR_TIMER_END( 472 );
+                        }
+                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        {
+                            PBVR_TIMER_STA( 473 );
+                        }
+                        delete object;
+                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        {
+                            PBVR_TIMER_END( 473 );
+                        }
+                    } // end of while(DispatchNext)
+
+#ifndef CPU_VER
+                    if (mpi_size > 1) {
+                        MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
+                        MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
+                        MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
+                        MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
+
+                    }
+#endif
+                    //add by shimomura 2023/06/14
+                    vr = setVariablerange2( tmp_max,tmp_min, cnt/2 );
+                    servMes.m_variable_range = vr;
+                    // add by shimomura 2022/12/16
+                    servMes.setColorHistogramBins(                                                     
+                            param.m_transfunc_array.size(),
+                            DEFAULT_NBINS,
+                            tmp_c_bins);//,
+                    servMes.setOpacityHistogramBins(
+                            param.m_transfunc_array.size(),
+                            DEFAULT_NBINS,
+                            tmp_o_bins); // change by shimomura 2022/12/26
+
+                    // TEST START 2015.1.14
+                    if ( nan_error )
+                    {
+                        strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
+                        servMes.m_server_status = 1;
+                        servMes.m_number_particle = 0;
+                        servMes.m_flag_send_bins = 1;
+                        std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
+                        nan_error = false;
+                    }
+#endif
                     strncpy( servMes.m_header, "JPTP /1.0 000 OK\r\n", 18 );
                     servMes.m_number_particle = 0;
                     servMes.m_number_volume_divide = fil.m_total_number_subvolumes;
@@ -2033,11 +2578,34 @@ int main( int argc, char** argv )
                     servMes.m_element_type = fil.m_list[0].m_elem_type;
                     servMes.m_file_type = fil.m_list[0].m_file_type;
                     servMes.m_number_ingredients = fil.m_list[0].m_number_ingredients;
-                    servMes.m_variable_range = range;
-                    servMes.m_flag_send_bins = 1;
 
+                    servMes.m_flag_send_bins = 1;
+                    servMes.m_subpixel_level = param.m_subpixel_level;
                     servMes.m_message_size = servMes.byteSize();
                     pts.sendMessage( servMes );
+                    // TEST START 2015.1.14
+                    servMes.m_server_status = 0;
+                    // TEST END 2015.1.14
+
+                    for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
+                    {
+                        delete[] servMes.m_color_bins[tf];
+                        delete[] servMes.m_opacity_bins[tf];
+                    }
+                    delete[] servMes.m_color_nbins;
+                    delete[] servMes.m_opacity_nbins;
+                    servMes.m_transfer_function_count = 0;
+                    delete[] tmp_c_bins;
+                    delete[] tmp_o_bins;
+                    //add by shimomura 20240603
+                    delete[] tmp_max;
+                    delete[] tmp_min;
+                    delete param.m_transfunc_synthesizer;
+
+                    if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                    {
+                        PBVR_TIMER_END( 470 );
+                    }
                 } // end of change PFI
                 else
                 {
@@ -2214,8 +2782,8 @@ int main( int argc, char** argv )
 
                         for ( int tf = 0; tf < cnt; tf++ )
                         {
-                            tmp_max[tf] = 0;
-                            tmp_min[tf] = 0;
+                            tmp_max[tf] = FLT_MIN;
+                            tmp_min[tf] = FLT_MAX;
                         }
 
 
@@ -2328,6 +2896,10 @@ int main( int argc, char** argv )
                             pbvr::PointObject* object = originalObject;
 							printf(" %zu perticles generated\n", object->coords().size() / 3);
 
+                            std::cout << "object -> coords() = " << object->coords()[0] << ", " << object->coords()[1] << ", "  
+                                                                 << object->coords()[2] << ", " << object->coords()[3] << ", " 
+                                                                 << object->coords()[4] << ", " << object->coords()[5] << ", " 
+                                                                 << std::endl;
 //                           //add by shimomura 2023/06/14
                             if ( originalObject != object ) delete originalObject;
                             servMes.m_number_particle = object->coords().size() / 3;
@@ -2358,6 +2930,10 @@ int main( int argc, char** argv )
                                 servMes.m_colors[3 * i + 1] = object->colors()[3 * i + 1];
                                 servMes.m_colors[3 * i + 2] = object->colors()[3 * i + 2];
                             }
+                            std::cout << "servMes.m_positions = " << servMes.m_positions[0] << ", " << servMes.m_positions[1] << ", "  
+                                                                 << servMes.m_positions[2] << ", " << servMes.m_positions[3] << ", " 
+                                                                 << servMes.m_positions[4] << ", " << servMes.m_positions[5] << ", " 
+                                                                 << std::endl;
                             servMes.m_variable_range = vr;
 
                             if ( timer_count <= PBVR_TIMER_COUNT_NUM )
@@ -2368,6 +2944,7 @@ int main( int argc, char** argv )
                             {
                                 PBVR_TIMER_STA( 472 );
                             }
+                            servMes.m_flag_send_bins = 0;
                             servMes.m_message_size = servMes.byteSize();
                             servMes.show();
                             pts.sendMessage( servMes );

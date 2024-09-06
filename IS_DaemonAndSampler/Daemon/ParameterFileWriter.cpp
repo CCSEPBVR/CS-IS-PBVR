@@ -271,4 +271,5 @@ void ParameterFileWriter::writeParameterFile( const char* fname )
 const NameListFile& ParameterFileWriter::getNameListFile() const
 {
     return m_name_list_file ;
+
 }
