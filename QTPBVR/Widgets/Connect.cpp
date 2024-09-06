@@ -69,8 +69,6 @@ void Connect::connectServer()
     m_client_message.m_input_directory = ui->volumeDataFilePathLEdit->text().toStdString();
 #endif
 
-     if( ui-> inSituRBtn -> isChecked())
-     {
 #ifdef Q_OS_WIN
         m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
 #else
@@ -80,7 +78,6 @@ void Connect::connectServer()
         m_transfer_function_editor->onApplyButtonClicked();
         m_client_message.m_camera ->setWindowSize( m_pbvr_gui->screen()->width() , m_pbvr_gui->screen()->height() );
 
-     }
 
      m_client_message.m_initialize_parameter = -3;
 
@@ -88,6 +85,29 @@ void Connect::connectServer()
     m_client_message.m_message_size = m_client_message.byteSize();
     client.sendMessage( m_client_message );
     client.recvMessage( &m_server_message );
+
+    //ヒストグラム更新用(CS, IS)
+    m_received_message.m_var_range.merge( m_server_message.m_server_side_variable_range );
+    m_received_message.m_color_bins.resize( m_server_message.m_transfer_function_count );
+    m_received_message.m_opacity_bins.resize( m_server_message.m_transfer_function_count );
+    for ( int tf = 0; tf < m_server_message.m_transfer_function_count; tf++ )
+    {
+        char color_function_name[8] = {0x00};
+        char opacity_function_name[8] = {0x00};
+        sprintf(color_function_name, "C%d", tf+1);
+        sprintf(opacity_function_name, "O%d", tf+1);
+        if ( m_server_message.m_color_nbins[tf] > 0 )
+        {
+            m_received_message.m_color_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_color_nbins[tf], (size_t *)m_server_message.m_color_bins[tf], std::string(color_function_name) );
+        }
+        if ( m_server_message.m_opacity_nbins[tf] )
+        {
+            m_received_message.m_opacity_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_opacity_nbins[tf],(size_t *) m_server_message.m_opacity_bins[tf], std::string(opacity_function_name) );
+        }
+    }
+
+    m_transfer_function_editor->applyVariableRange( m_server_message.m_server_side_variable_range );
+    m_transfer_function_editor->updateRangeView();
 
     if ( ui->inSituRBtn->isChecked() ) m_transfer_function_editor->importFromServerIS();
 

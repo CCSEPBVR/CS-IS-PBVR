@@ -586,7 +586,12 @@ void TransferFunctionEditor::importFile( const std::string& fname )
 
     stat = param.loadIN( fname );
 
-    if ( !stat ) return;
+    // if ( !stat ) return;
+    if ( !stat )
+    {
+        m_extended_transfer_function_message.m_transfer_function_number = 0;
+        return;
+    }
     ExtendedTransferFunctionMessage importdoc;
 
     const size_t resolution = param.getInt( "tf_resolution" );
