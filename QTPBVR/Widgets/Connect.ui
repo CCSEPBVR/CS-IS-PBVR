@@ -110,7 +110,7 @@
          <bool>false</bool>
         </property>
         <property name="text">
-         <string>/Users/shimomurakazuya/SGI/visualization_data/mej_data/mej_v2.tfe</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -120,7 +120,7 @@
          <bool>true</bool>
         </property>
         <property name="text">
-         <string>/home/g6/a214026/vis_data/mej_ascii/Whole/example.pfl</string>
+         <string/>
         </property>
        </widget>
       </item>
