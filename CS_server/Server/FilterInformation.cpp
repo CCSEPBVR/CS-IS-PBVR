@@ -264,7 +264,7 @@ int FilterInformationFile::loadPFI( const std::string& filename )
 
 FilterInformationList::FilterInformationList():
     m_total_number_nodes( 0 ), m_total_number_elements( 0 ), m_total_number_files( 0 ),
-    m_total_start_steps( 0 ), m_total_end_step( 0 ), m_total_number_steps( 0 ),
+    m_total_start_steps( 0 ), m_total_last_step( 0 ), m_total_number_steps( 0 ),
     m_total_number_subvolumes( 0 ), m_total_min_value( 0.f ), m_total_max_value( 0.f )
 {
 }
@@ -291,7 +291,7 @@ int FilterInformationList::loadPFL( const std::string& filename )
         m_total_number_elements = fi.m_number_elements;
         m_total_number_files = fi.m_number_files;
         m_total_start_steps = fi.m_start_step;
-        m_total_end_step = fi.m_end_steps;
+        m_total_last_step = fi.m_end_steps;
         m_total_number_steps = fi.m_number_steps;
         m_total_number_subvolumes = fi.m_number_subvolumes;
         m_total_min_object_coord = fi.m_min_object_coord;
@@ -338,7 +338,7 @@ int FilterInformationList::loadPFL( const std::string& filename )
             m_total_number_elements = fi.m_number_elements;
             m_total_number_files = fi.m_number_files;
             m_total_start_steps = fi.m_start_step;
-            m_total_end_step = fi.m_end_steps;
+            m_total_last_step = fi.m_end_steps;
             m_total_number_steps = fi.m_number_steps;
             m_total_number_subvolumes = fi.m_number_subvolumes;
             m_total_min_object_coord = fi.m_min_object_coord;
@@ -355,8 +355,8 @@ int FilterInformationList::loadPFL( const std::string& filename )
             m_total_number_elements += fi.m_number_elements;
             m_total_number_files += fi.m_number_files;
             m_total_start_steps = std::min( m_total_start_steps, fi.m_start_step );
-            m_total_end_step = std::max( m_total_end_step, fi.m_end_steps );
-            m_total_number_steps = m_total_end_step - m_total_start_steps + 1;
+            m_total_last_step = std::max( m_total_last_step, fi.m_end_steps );
+            m_total_number_steps = m_total_last_step - m_total_start_steps + 1;
             m_total_number_subvolumes += fi.m_number_subvolumes;
             m_total_min_object_coord[0]
                 = std::min( m_total_min_object_coord[0], fi.m_min_object_coord[0] );
@@ -435,9 +435,9 @@ void FilterInformationList::cropTimeStep( const int s, const int e )
 
     if ( e != INT_MAX )
     {
-        if ( e < m_total_end_step )
-            m_total_end_step = e;
+        if ( e < m_total_last_step )
+            m_total_last_step = e;
     }
 
-    m_total_number_steps = m_total_end_step - m_total_start_steps + 1;
+    m_total_number_steps = m_total_last_step - m_total_start_steps + 1;
 }

@@ -369,7 +369,7 @@ int main( int argc, char** argv )
                 servMes.m_number_volume_divide = fil.total_numSubVolumes;
                 servMes.m_time_step = fil.total_staSteps;
                 servMes.m_start_step = fil.total_staSteps;
-                servMes.m_end_step = fil.total_endSteps;
+                servMes.m_last_step = fil.total_endSteps;
                 servMes.m_number_step = fil.total_numSteps;
 //jupiter start
 #if 0
@@ -438,7 +438,6 @@ int main( int argc, char** argv )
                 ofs.close();
                 // 20181226 end
                 
-<<<<<<< HEAD
 
                 ParameterFileWriter ppw;
                 ppw.inputMessage( clntMes );
@@ -447,12 +446,7 @@ int main( int argc, char** argv )
                 {
                     ppw.writeParameterFile( tfFilePath.c_str() );
                 }
-=======
-                ParameterFileWriter ppw;
-                ppw.inputMessage( clntMes );
-                ppw.writeParameterFile( tfFilePath.c_str() );
-                
->>>>>>> upstream/feature/CSPBVR_Initprotcol_rev
+                file.close();
                 //最初の送信(daemon->client)
                 //jupiter_old.tfの内容をクライアントに送信
                 ppr.outputMessage( &servMes );
@@ -500,21 +494,21 @@ int main( int argc, char** argv )
 
                 if ( SigServer )
                 {
-                    clntMes.m_initialize_parameter = -2;
-                    std::cout << "*** SigServer" << clntMes.m_initialize_parameter << std::endl;
+                    clntMes.m_initialize_parameter = jpv::InitializeParameter::end ;
+                    std::cout << "*** SigServer" << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
                 }
                 else
                 {
                     /* 140319 for client stop by Ctrl+c */
-                    if ( clntMes.m_initialize_parameter != -3 )
+                    if ( clntMes.m_initialize_parameter != jpv::InitializeParameter::initial_step )
                     {
                         clntMes.m_input_directory = param.input_data_base;
                     }
                 }
 
-                std::cout << "Receive message initParam = " << clntMes.m_initialize_parameter << std::endl;
+                std::cout << "Receive message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
                 //initParam -1:空ソケットの送信, -2:daemonを終了, それ以外:粒子データの送信
-                if ( clntMes.m_initialize_parameter == -1 )
+                if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::empty )
                 {
                     //ほぼ空のソケットを送信する
                     strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
@@ -537,7 +531,7 @@ int main( int argc, char** argv )
                     pts.acceptServer();
                     //whileループの頭に戻る
                 }
-                else if ( clntMes.m_initialize_parameter == -2 )
+                else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::end )
                 {
                     //終了する
                     strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
@@ -554,7 +548,7 @@ int main( int argc, char** argv )
                     break;
                     //whileループを抜けてpts.terminateを実行
                 }
-                else if ( clntMes.m_initialize_parameter == -3 ) // change PFI file.
+                else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step ) // change PFI file.
                 {
                 } // end of change PFI
                 else
@@ -578,8 +572,8 @@ int main( int argc, char** argv )
                     delete[] buf;
                     // send cltMes to all worker process <<
 
-                    std::cout << "initParam = " << clntMes.m_initialize_parameter << std::endl;
-                    if ( clntMes.m_initialize_parameter == 1 )
+                    std::cout << "initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+                    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::empty )
                     {
 
                         std::cout << "sampling method = " << clntMes.m_sampling_method << std::endl;
@@ -595,7 +589,7 @@ int main( int argc, char** argv )
                     else if ( clntMes.m_time_parameter == 1 )
                     {
                         std::cout << "beginTime = " << clntMes.m_begin_time << std::endl;
-                        std::cout << "endTime = " << clntMes.m_end_time << std::endl;
+                        std::cout << "endTime = " << clntMes.m_last_time << std::endl;
                         std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
                     }
                     else if ( clntMes.m_time_parameter == 2 )
@@ -704,10 +698,10 @@ int main( int argc, char** argv )
 
                         pm.check();
                         servMes.m_start_step = pm.particleStatusFile().getStartTimeStep();
-                        servMes.m_end_step = pm.particleStatusFile().getLatestTimeStep();
+                        servMes.m_last_step = pm.particleStatusFile().getLatestTimeStep();
                         if( pm.stepExisted() )
                         {
-                            if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_end_step && pm.getTimeStep() > -1 )
+                            if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step && pm.getTimeStep() > -1 )
                             {
                                 servMes.m_time_step = clntMes.m_step;
                             }

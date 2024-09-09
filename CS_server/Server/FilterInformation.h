@@ -72,7 +72,7 @@ public:
     int32_t m_total_number_elements;
     int32_t m_total_number_files;
     int32_t m_total_start_steps;
-    int32_t m_total_end_step;
+    int32_t m_total_last_step;
     int32_t m_total_number_steps;
     int32_t m_total_number_subvolumes;
     kvs::Vector3f m_total_min_object_coord;

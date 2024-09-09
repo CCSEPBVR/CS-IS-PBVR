@@ -594,7 +594,7 @@ inline VariableRange Calculate_minmax( const Argument& param,
     int nprocs = 1;
 #endif
 
-    for ( steps = fil.m_total_start_steps; steps < fil.m_total_end_step; steps++ )
+    for ( steps = fil.m_total_start_steps; steps < fil.m_total_last_step; steps++ )
     {
         for ( subvols = 0; subvols < fil.m_total_number_subvolumes; subvols++ )
         {
@@ -920,7 +920,7 @@ int main( int argc, char** argv )
             if ( rank == 0 )
             {
                 std::cout << " start step = "         << fil.m_total_start_steps
-                          << " end step = "           << fil.m_total_end_step
+                          << " end step = "           << fil.m_total_last_step
                           << " time step = "          << fil.m_total_number_steps
                           << " subvolume division = " << fil.m_total_number_subvolumes
                           << std::endl;
@@ -1241,7 +1241,7 @@ int main( int argc, char** argv )
             pbvr::PointObject joined_obj;
             int32_t stp;
 #if defined(CPU_VER)
-            for ( stp = fil.m_total_start_steps; stp <= fil.m_total_end_step; stp++ )
+            for ( stp = fil.m_total_start_steps; stp <= fil.m_total_last_step; stp++ )
             {
                 joined_obj.clear();
                 PBVR_TIMER_STA( 14 );
@@ -1324,7 +1324,7 @@ int main( int argc, char** argv )
 
 #else // ! CPU_VER
 
-            for ( stp = fil.m_total_start_steps; stp <= fil.m_total_end_step; stp++ )
+            for ( stp = fil.m_total_start_steps; stp <= fil.m_total_last_step; stp++ )
             {
                 joined_obj.clear();
                 PBVR_TIMER_STA( 14 );
@@ -1452,7 +1452,7 @@ int main( int argc, char** argv )
             PBVR_TIMER_STA( 14 );
             if ( param.m_crop.isEnabled() )
             {
-                jd.initialize( fil.m_total_start_steps, fil.m_total_end_step, fil.m_total_number_subvolumes,
+                jd.initialize( fil.m_total_start_steps, fil.m_total_last_step, fil.m_total_number_subvolumes,
                                fil.m_total_min_subvolume_coord,
                                fil.m_total_max_subvolume_coord,
                                param.m_latency_threshold, param.m_job_id_pack_size,
@@ -1461,7 +1461,7 @@ int main( int argc, char** argv )
             }
             else
             {
-                jd.initialize( fil.m_total_start_steps, fil.m_total_end_step, fil.m_total_number_subvolumes,
+                jd.initialize( fil.m_total_start_steps, fil.m_total_last_step, fil.m_total_number_subvolumes,
                                fil.m_total_min_subvolume_coord,
                                fil.m_total_max_subvolume_coord,
                                param.m_latency_threshold, param.m_job_id_pack_size );
@@ -1616,13 +1616,13 @@ int main( int argc, char** argv )
                 delete[] buf;
                 std::cout << "Rank " << rank << ": Recv Client Message" << std::endl;
                 // recv cltMes from process 0 <<
-               if ( clntMes.m_initialize_parameter == -1 )
+               if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::empty )
                {
                }
-               else if ( clntMes.m_initialize_parameter == -2 )
+               else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::end )
                {
                }
-               else if ( clntMes.m_initialize_parameter == -3 ) 
+               else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
                {
                     timer_count++;
 //                  param.m_transfer_function = pbvr::TransferFunction(); // *( clntMes.m_transfer_function );
@@ -2153,9 +2153,9 @@ int main( int argc, char** argv )
                 signal( SIGTERM, SignalHandler );
                 signal( SIGINT, SignalHandler ); /* SIGINT is invalid here, because mpiexec uses it. */
 //              signal( SIGSEGV, SignalHandler );
-                if ( clntMes.m_step > fil.m_total_end_step )
+                if ( clntMes.m_step > fil.m_total_last_step )
                 {
-                    clntMes.m_step = fil.m_total_end_step;
+                    clntMes.m_step = fil.m_total_last_step;
                 }
                 else if ( clntMes.m_step < fil.m_total_start_steps )
                 {
@@ -2164,20 +2164,20 @@ int main( int argc, char** argv )
 
                 if ( SigServer )
                 {
-                    clntMes.m_initialize_parameter = -2;
-                    std::cout << "*** SigServer" << clntMes.m_initialize_parameter << std::endl;
+                    clntMes.m_initialize_parameter = jpv::InitializeParameter::end; 
+                    std::cout << "*** SigServer" << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
                 }
                 else
                 {
                     /* 140319 for client stop by Ctrl+c */
-                    if ( clntMes.m_initialize_parameter != -3 )
+                    if ( clntMes.m_initialize_parameter != jpv::InitializeParameter::initial_step )
                     {
                         clntMes.m_input_directory = param.m_input_data_base;
                     }
                 }
 
-                std::cout << "Recieve message initParam = " << clntMes.m_initialize_parameter << std::endl;
-                if ( clntMes.m_initialize_parameter == -1 )
+                std::cout << "Recieve message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+                if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::empty )
                 {
 
                     strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
@@ -2189,7 +2189,7 @@ int main( int argc, char** argv )
 
                     pts.acceptServer();
                 }
-                else if ( clntMes.m_initialize_parameter == -2 )
+                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::end )
                 {
 
                     strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
@@ -2203,7 +2203,7 @@ int main( int argc, char** argv )
                     pts.sendMessage( servMes );
                     break;
                 }
-                else if ( clntMes.m_initialize_parameter == -3 ) // change PFI file.
+                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::initial_step ) // change PFI file.
                 {
                     param.m_input_data_base = clntMes.m_input_directory;
                     
@@ -2221,12 +2221,12 @@ int main( int argc, char** argv )
                         fil.loadPFL( pfifile );
                     }
 #else
-					std::string pflfile = param.m_input_data_base;
-					kvs::File pfl( pflfile );
-					if ( pfl.isExisted() )
-					{
-						fil.loadPFL( pflfile );
-					}
+                                       std::string pflfile = param.m_input_data_base;
+                                       kvs::File pfl( pflfile );
+                                       if ( pfl.isExisted() )
+                                       {
+                                               fil.loadPFL( pflfile );
+                                       }
 #endif
 
                     if ( fil.m_list.size() > 0 )
@@ -2479,7 +2479,7 @@ int main( int argc, char** argv )
                             }
                             catch ( const std::runtime_error& e )
                             {
-#ifdef _DEBUG		// debug by @hira
+#ifdef _DEBUG          // debug by @hira
                                 printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
 #endif
                                 std::cerr << e.what();
@@ -2563,7 +2563,7 @@ int main( int argc, char** argv )
                     servMes.m_number_volume_divide = fil.m_total_number_subvolumes;
                     servMes.m_time_step = fil.m_total_start_steps;
                     servMes.m_start_step = fil.m_total_start_steps;
-                    servMes.m_end_step = fil.m_total_end_step;
+                    servMes.m_last_step = fil.m_total_last_step;
                     servMes.m_number_step = fil.m_total_number_steps;
                     servMes.m_min_object_coord[0] = fil.m_total_min_object_coord[0];
                     servMes.m_min_object_coord[1] = fil.m_total_min_object_coord[1];
@@ -2628,8 +2628,8 @@ int main( int argc, char** argv )
                     delete[] buf;
                     // send cltMes to all worker process <<
 
-                    std::cout << "initParam = " << clntMes.m_initialize_parameter << std::endl;
-                    if ( clntMes.m_initialize_parameter == 1 )
+                    std::cout << "Recieve message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+                    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::empty )
                     {
 
                         std::cout << "sampling method = " << clntMes.m_sampling_method << std::endl;
@@ -2645,7 +2645,7 @@ int main( int argc, char** argv )
                     else if ( clntMes.m_time_parameter == 1 )
                     {
                         std::cout << "beginTime = " << clntMes.m_begin_time << std::endl;
-                        std::cout << "endTime = " << clntMes.m_end_time << std::endl;
+                        std::cout << "endTime = " << clntMes.m_last_time << std::endl;
                         std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
                     }
                     else if ( clntMes.m_time_parameter == 2 )
