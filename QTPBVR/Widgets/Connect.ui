@@ -109,6 +109,9 @@
         <property name="enabled">
          <bool>false</bool>
         </property>
+        <property name="text">
+         <string>/Users/shimomurakazuya/SGI/visualization_data/mej_data/mej_v2.tfe</string>
+        </property>
        </widget>
       </item>
       <item row="2" column="1">
@@ -117,7 +120,7 @@
          <bool>true</bool>
         </property>
         <property name="text">
-         <string/>
+         <string>/home/g6/a214026/vis_data/mej_ascii/Whole/example.pfl</string>
         </property>
        </widget>
       </item>

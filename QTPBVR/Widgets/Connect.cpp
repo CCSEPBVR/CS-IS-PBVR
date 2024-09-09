@@ -79,7 +79,8 @@ void Connect::connectServer()
         m_client_message.m_camera ->setWindowSize( m_pbvr_gui->screen()->width() , m_pbvr_gui->screen()->height() );
 
 
-     m_client_message.m_initialize_parameter = -3;
+     //m_client_message.m_initialize_parameter = -3;
+     m_client_message.m_initialize_parameter = jpv::InitializeParameter::initial_step;
 
     m_client_message.show();
     m_client_message.m_message_size = m_client_message.byteSize();
@@ -115,7 +116,8 @@ void Connect::connectServer()
 
     strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
 
-    m_client_message.m_initialize_parameter = -1;
+    //m_client_message.m_initialize_parameter = -1;
+    m_client_message.m_initialize_parameter = jpv::InitializeParameter::empty;
     m_client_message.m_message_size = m_client_message.byteSize();
     client.sendMessage( m_client_message );
     client.recvMessage( &m_server_message );
@@ -123,7 +125,7 @@ void Connect::connectServer()
 
     if( ui-> clientServerRBtn -> isChecked() )
     {
-        m_merge->serverObjectCS( ui->volumeDataFilePathLEdit->text(), m_server_message.m_start_step, m_server_message.m_end_step );
+        m_merge->serverObjectCS( ui->volumeDataFilePathLEdit->text(), m_server_message.m_start_step, m_server_message.m_last_step );
         m_transfer_function_editor->applyVariableRange( m_server_message.m_server_side_variable_range );
     #ifdef Q_OS_WIN
         m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
@@ -156,7 +158,8 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
     m_server_message.m_camera = new kvs::Camera();
     client.initClient();
     strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
-    m_client_message.m_initialize_parameter = 1;
+    m_client_message.m_initialize_parameter = jpv::InitializeParameter::generate_particle;
+    //m_client_message.m_initialize_parameter = 1;
     m_client_message.m_rendering_id = 0;
     if( ui->uniformRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'u'; }
     if( ui->metropolisRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'm'; }
@@ -250,7 +253,8 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
     std::cout << serverSideMaxObjectCoords[1] << std::endl;
     std::cout << serverSideMaxObjectCoords[2] << std::endl;
 
-    m_client_message.m_initialize_parameter = -1;
+    // m_client_message.m_initialize_parameter = -1;
+    m_client_message.m_initialize_parameter = jpv::InitializeParameter::empty;
     m_client_message.m_message_size = m_client_message.byteSize();
     client.sendMessage( m_client_message );
     client.recvMessage( &m_server_message );
@@ -330,7 +334,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
 
     if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
     {
-        m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_end_step );
+        m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_last_step );
     }
 
     return pointObject;

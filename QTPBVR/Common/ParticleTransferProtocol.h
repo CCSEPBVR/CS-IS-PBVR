@@ -20,6 +20,14 @@ class TransferFunction;
 namespace jpv
 {
 
+enum class InitializeParameter : int32_t {
+     initial_step = -3,  // 値の設定
+     end = -2,
+     empty = -1,
+     generate_particle = 1
+};
+
+
 class ParticleTransferUtils
 {
 public:
@@ -62,7 +70,7 @@ public:
     char m_header[11];
     int32_t m_message_size;
 
-    int32_t m_initialize_parameter;
+    InitializeParameter m_initialize_parameter;
     char m_sampling_method;
     int32_t m_subpixel_level;
     int32_t m_repeat_level;
@@ -74,7 +82,7 @@ public:
 
     int32_t m_time_parameter;
     int32_t m_begin_time;
-    int32_t m_end_time;
+    int32_t m_last_time;
     int32_t m_memory_size;
     int32_t m_step;
 
@@ -150,7 +158,7 @@ public:
     int32_t m_number_particle;
     int32_t m_number_volume_divide;
     int32_t m_start_step;
-    int32_t m_end_step;
+    int32_t m_last_step;
     int32_t m_number_step;
     // float* m_positions;
     // float* m_normals;

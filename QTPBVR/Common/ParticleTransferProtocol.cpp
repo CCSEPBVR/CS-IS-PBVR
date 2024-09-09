@@ -39,7 +39,7 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
     s += sizeof( m_header );
     s += sizeof( m_message_size );
     s += sizeof( m_initialize_parameter );
-    if ( m_initialize_parameter == -3 )
+    if ( m_initialize_parameter == InitializeParameter::initial_step )
     {
         s += sizeof( int64_t );
         s += sizeof( char ) * ( m_input_directory.size() + 1 );
@@ -48,7 +48,7 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         //        s += sizeof( char ) * ( m_filter_parameter_filename.size() + 1 );
         //        // add:end by @hira at 2016/12/01
     }
-    if ( m_initialize_parameter == 1 || m_initialize_parameter == -3)
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step )
     {
         s += sizeof( m_sampling_method );
         s += sizeof( m_subpixel_level );
@@ -75,9 +75,6 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         s += sizeof( size_t );
         s += sizeof( char ) * ( m_z_synthesis.size() + 1 );
         s += jpv::Serializer::byteSize<kvs::Camera>( *m_camera );
-    }
-    if ( m_initialize_parameter == 1 || m_initialize_parameter == -3 )
-    {
         s += jpv::Serializer::byteSize( m_transfer_function.size() );
         for ( size_t i = 0; i < m_transfer_function.size(); i++ )
         {
@@ -115,7 +112,7 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         s += jpv::Serializer::byteSize( m_color_transfer_function_synthesis );
         s += jpv::Serializer::byteSize( m_opacity_transfer_function_synthesis );
     }
-    if ( m_initialize_parameter >= 0 )
+    if ( m_initialize_parameter == InitializeParameter::generate_particle )
     {
         s += sizeof( m_time_parameter );
         if ( m_time_parameter == 0 )
@@ -125,7 +122,7 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         else if ( m_time_parameter == 1 )
         {
             s += sizeof( m_begin_time );
-            s += sizeof( m_end_time );
+            s += sizeof( m_last_time );
             s += sizeof( m_memory_size );
         }
         else if ( m_time_parameter == 2 )
@@ -147,7 +144,8 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
     index += jpv::Serializer::writeArray( buf + index, m_header );
     index += jpv::Serializer::write( buf + index, m_message_size );
     index += jpv::Serializer::write( buf + index, m_initialize_parameter );
-    if ( m_initialize_parameter == -3 )
+    // index += jpv::Serializer::write( buf + index, m_initialize_parameter );
+    if ( m_initialize_parameter == InitializeParameter::initial_step )
     {
         index += jpv::Serializer::write( buf + index, m_input_directory.size() );
         index += jpv::Serializer::writeArray( buf + index, m_input_directory.c_str(), m_input_directory.size() + 1 );
@@ -156,7 +154,7 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         //        index += jpv::Serializer::writeArray( buf + index, m_filter_parameter_filename.c_str(), m_filter_parameter_filename.size() + 1 );
         //        // add:end by @hira at 2016/12/01
     }
-    if ( m_initialize_parameter == 1 || m_initialize_parameter == -3)
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step )
     {
         index += jpv::Serializer::write( buf + index, m_sampling_method );
         index += jpv::Serializer::write( buf + index, m_subpixel_level );
@@ -187,9 +185,6 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         index += jpv::Serializer::writeArray( buf + index, m_z_synthesis.c_str(), m_z_synthesis.size() + 1 );
 
         index += jpv::Serializer::pack( buf + index, *m_camera );
-    }
-    if ( m_initialize_parameter == 1 || m_initialize_parameter == -3 )
-    {
         index += jpv::Serializer::write( buf + index, m_transfer_function.size() );
         for ( size_t i = 0; i < m_transfer_function.size(); i++ )
         {
@@ -227,7 +222,7 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         index += jpv::Serializer::write( buf + index, m_color_transfer_function_synthesis );
         index += jpv::Serializer::write( buf + index, m_opacity_transfer_function_synthesis );
     }
-    if ( m_initialize_parameter >= 0 )
+    if ( m_initialize_parameter == InitializeParameter::generate_particle )
     {
         index += jpv::Serializer::write( buf + index, m_time_parameter );
         if ( m_time_parameter == 0 )
@@ -237,7 +232,7 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         else if ( m_time_parameter == 1 )
         {
             index += jpv::Serializer::write( buf + index, m_begin_time );
-            index += jpv::Serializer::write( buf + index, m_end_time );
+            index += jpv::Serializer::write( buf + index, m_last_time );
             index += jpv::Serializer::write( buf + index, m_memory_size );
         }
         else if ( m_time_parameter == 2 )
@@ -268,7 +263,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
     }
     index += jpv::Serializer::read( buf + index, &m_message_size );
     index += jpv::Serializer::read( buf + index, &m_initialize_parameter );
-    if ( m_initialize_parameter == -3 )
+    if ( m_initialize_parameter == InitializeParameter::initial_step )
     {
         index += jpv::Serializer::read( buf + index, &tmp_char_size );
         tmp_char = new char[tmp_char_size + 1];
@@ -284,7 +279,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         //        delete[] tmp_char;
         //        // add:end by @hira at 2016/12/01
     }
-    if ( m_initialize_parameter == 1 || m_initialize_parameter == -3)
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step )
     {
         index += jpv::Serializer::read( buf + index, &m_sampling_method );
         index += jpv::Serializer::read( buf + index, &m_subpixel_level );
@@ -336,9 +331,6 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         std::cout << "Receive Z Syth = " << m_z_synthesis << std::endl;
 
         index += jpv::Serializer::unpack( buf + index, m_camera );
-    }
-    if ( m_initialize_parameter == 1 || m_initialize_parameter == -3 )
-    {
         size_t s;
         index += jpv::Serializer::read( buf + index, &s );
         m_transfer_function.clear();
@@ -381,7 +373,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         index += jpv::Serializer::read( buf + index, &m_color_transfer_function_synthesis );
         index += jpv::Serializer::read( buf + index, &m_opacity_transfer_function_synthesis );
     }
-    if ( m_initialize_parameter >= 0 )
+    if ( m_initialize_parameter == InitializeParameter::generate_particle )
     {
         index += jpv::Serializer::read( buf + index, &m_time_parameter );
         if ( m_time_parameter == 0 )
@@ -391,7 +383,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         else if ( m_time_parameter == 1 )
         {
             index += jpv::Serializer::read( buf + index, &m_begin_time );
-            index += jpv::Serializer::read( buf + index, &m_end_time );
+            index += jpv::Serializer::read( buf + index, &m_last_time );
             index += jpv::Serializer::read( buf + index, &m_memory_size );
         }
         else if ( m_time_parameter == 2 )
@@ -415,7 +407,7 @@ void jpv::ParticleTransferClientMessage::show( void ) const
 
     std::cout<<"header="<<m_header<<std::endl;
     std::cout<<"messageSize="<<m_message_size<<std::endl;
-    std::cout<<"initParam="<<m_initialize_parameter<<std::endl;
+    std::cout<<"initParam="<<static_cast<int>(m_initialize_parameter)<<std::endl;
     std::cout<<"timeParam="<<m_time_parameter<<std::endl;
     std::cout<<"transParam="<<m_trans_parameter<<std::endl;
 
@@ -545,7 +537,7 @@ int32_t jpv::ParticleTransferServerMessage::byteSize( void ) const
     s += sizeof( m_number_particle );
     s += sizeof( m_number_volume_divide );
     s += sizeof( m_start_step );
-    s += sizeof( m_end_step );
+    s += sizeof( m_last_step );
     s += sizeof( m_number_step );
     s += sizeof( m_min_object_coord[0] ) * 3;
     s += sizeof( m_max_object_coord[0] ) * 3;
@@ -630,7 +622,7 @@ size_t jpv::ParticleTransferServerMessage::pack( char* buf ) const
     index += jpv::Serializer::write( buf + index, m_number_particle );
     index += jpv::Serializer::write( buf + index, m_number_volume_divide );
     index += jpv::Serializer::write( buf + index, m_start_step );
-    index += jpv::Serializer::write( buf + index, m_end_step );
+    index += jpv::Serializer::write( buf + index, m_last_step );
     index += jpv::Serializer::write( buf + index, m_number_step );
     index += jpv::Serializer::write( buf + index, m_min_object_coord[0] );
     index += jpv::Serializer::write( buf + index, m_min_object_coord[1] );
@@ -730,7 +722,7 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
     index += jpv::Serializer::read( buf + index, &m_number_particle );
     index += jpv::Serializer::read( buf + index, &m_number_volume_divide );
     index += jpv::Serializer::read( buf + index, &m_start_step );
-    index += jpv::Serializer::read( buf + index, &m_end_step );
+    index += jpv::Serializer::read( buf + index, &m_last_step );
     index += jpv::Serializer::read( buf + index, &m_number_step );
     index += jpv::Serializer::read( buf + index, &m_min_object_coord[0] );
     index += jpv::Serializer::read( buf + index, &m_min_object_coord[1] );
