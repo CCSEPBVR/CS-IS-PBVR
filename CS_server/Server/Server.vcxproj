@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AggregateTypeSubvolume.cpp" />
+    <ClCompile Include="CellByCellHistogram.cpp" />
     <ClCompile Include="CellByCellMetropolisSampling.cpp" />
     <ClCompile Include="CellByCellRejectionSampling.cpp" />
     <ClCompile Include="CellByCellUniformSampling.cpp" />
@@ -67,6 +68,7 @@
     <ClInclude Include="AggregateTypeSubvolume.h" />
     <ClInclude Include="Argument.h" />
     <ClInclude Include="CellBase.h" />
+    <ClInclude Include="CellByCellHistogram.h" />
     <ClInclude Include="CellByCellMetropolisSampling.h" />
     <ClInclude Include="CellByCellParticleGenerator.h" />
     <ClInclude Include="CellByCellRejectionSampling.h" />
