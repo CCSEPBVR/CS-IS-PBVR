@@ -1718,7 +1718,7 @@ int main( int argc, char** argv )
                     if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                     if ( param.m_crop.isEnabled() )
                     {
-                        jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
+                        jd.initialize( fil.m_total_start_steps, fil.m_total_last_step, fil.m_total_number_subvolumes,
                                        fil.m_total_min_subvolume_coord,
                                        fil.m_total_max_subvolume_coord,
                                        param.m_latency_threshold, param.m_job_id_pack_size,
@@ -1727,7 +1727,7 @@ int main( int argc, char** argv )
                     }
                     else
                     {
-                        jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
+                        jd.initialize( fil.m_total_start_steps, fil.m_total_last_step, fil.m_total_number_subvolumes,
                                        fil.m_total_min_subvolume_coord,
                                        fil.m_total_max_subvolume_coord,
                                        param.m_latency_threshold, param.m_job_id_pack_size );
@@ -2343,7 +2343,7 @@ int main( int argc, char** argv )
 
                     if ( param.m_crop.isEnabled() )
                     {
-                        jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
+                        jd.initialize( fil.m_total_start_steps, fil.m_total_last_step, fil.m_total_number_subvolumes,
                                 fil.m_total_min_subvolume_coord,
                                 fil.m_total_max_subvolume_coord,
                                 param.m_latency_threshold, param.m_job_id_pack_size,
@@ -2353,7 +2353,7 @@ int main( int argc, char** argv )
                     }
                     else
                     {
-                        jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
+                        jd.initialize( fil.m_total_start_steps, fil.m_total_last_step, fil.m_total_number_subvolumes,
                                 fil.m_total_min_subvolume_coord,
                                 fil.m_total_max_subvolume_coord,
                                 param.m_latency_threshold, param.m_job_id_pack_size );

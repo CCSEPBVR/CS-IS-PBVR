@@ -589,7 +589,6 @@ void TransferFunctionEditor::importFile( const std::string& fname )
     // if ( !stat ) return;
     if ( !stat )
     {
-        m_extended_transfer_function_message.m_transfer_function_number = 0;
         return;
     }
     ExtendedTransferFunctionMessage importdoc;
