@@ -57,6 +57,7 @@ kvs::ValueArray<float> C_min_recv;
 kvs::ValueArray<float> C_max_recv;
 kvs::ValueArray<int> o_histogram_recv;
 kvs::ValueArray<int> c_histogram_recv;
+TransferFunctionSynthesizer* m_tfs;
 static bool generate_flag  = false;
 size_t  st_time_step = 0;
 
@@ -532,6 +533,150 @@ void show_timer( time_parameters time )
     }
 }
 
+void generate_particles( int time_step, domain_parameters dom,
+                             Type** values, int nvariables,
+                             float* coordinates, int ncoords,
+                             unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype )
+{
+    static ParamInfo param;
+    pbvr_parameters particleBase;
+    bool skip_flag;
+    skip_flag = SetParameter(dom, &particleBase, &param, time_step);
+    if (skip_flag == false) return;
+
+    GenerateParticles(time_step, dom, values,
+            nvariables, coordinates, ncoords,
+            connections, ncells, celltype, particleBase);
+
+    OutputParticles(time_step, nvariables, particleBase, &param);
+    delete m_tfs;
+}
+
+bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, ParamInfo *m_param ,const int time_step)
+{
+    int mpi_rank = 0;
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+    // Set Transfer function synthesizer.
+    particleBase->m_tf.resize(0);
+    m_tfs = new TransferFunctionSynthesizer();
+    // 20181226 start  環境変数で指定したファイルパスを参照する
+    std::string visParamDir;
+    std::string tfFilename;
+    std::string stateFilePath;
+    std::string minmaxFilePath;
+    std::string ptcFilePath;
+
+    const char *envBuf = NULL;
+    envBuf = std::getenv( "VIS_PARAM_DIR" );
+    if (envBuf == NULL) {
+        visParamDir = "./";
+    }
+    else {
+        visParamDir = envBuf;
+        if (visParamDir[visParamDir.size() - 1] != '/') {
+            visParamDir += "/";
+        }
+    }
+    envBuf = std::getenv( "TF_NAME" );
+    if (envBuf == NULL) {
+        tfFilename = "default";
+    }
+    else {
+        tfFilename = envBuf;
+    }
+    stateFilePath = visParamDir + "state.txt";
+    envBuf = std::getenv( "PARTICLE_DIR" );
+    if (envBuf == NULL) {
+        minmaxFilePath = "./t_pfi_coords_minmax.txt";
+        ptcFilePath = "./t_";
+    }
+    else {
+        minmaxFilePath = envBuf;
+        ptcFilePath = envBuf;
+        if (minmaxFilePath[minmaxFilePath.size() - 1] != '/') {
+            minmaxFilePath += "/t_pfi_coords_minmax.txt";
+            ptcFilePath += "/t_";
+        }
+        else {
+            minmaxFilePath += "t_pfi_coords_minmax.txt";
+            ptcFilePath += "t_";
+        }
+    }
+    particleBase->m_visParamDir = visParamDir;
+    particleBase->m_ptcFilePath = ptcFilePath;
+    particleBase->m_stateFilePath = stateFilePath;
+    particleBase->m_tfFilename = tfFilename;
+
+    // 20181226 end
+
+    // 20190318 ボリュームサイズのファイル出力
+    //全体の最大最小値を示すpfiファイルを生成
+    static bool minmaxFlag = false;
+    if (minmaxFlag == false && mpi_rank == 0) {
+        FILE* fp = fopen( minmaxFilePath.c_str(), "w" );
+        if( fp )
+        {
+            fprintf( fp, "%f %f %f %f %f %f\n",
+                     dom.x_global_min,
+                     dom.y_global_min,
+                     dom.z_global_min,
+                     dom.x_global_max,
+                     dom.y_global_max,
+                     dom.z_global_max );
+            fclose( fp );
+        }
+        minmaxFlag = true;
+    }
+    // 20190318 end
+
+    //if(mpi->rank==0)std::cout<<"start initializeTFS()\n";
+    kvs::StructuredVolumeObject* object = new kvs::StructuredVolumeObject();//Global Min Max volume object
+    kvs::Vector3f min_vec(
+        dom.x_global_min,
+        dom.y_global_min,
+        dom.z_global_min);
+    kvs::Vector3f max_vec(
+        dom.x_global_max,
+        dom.y_global_max,
+        dom.z_global_max );
+    object->setMinMaxObjectCoords( min_vec, max_vec );
+    object->setMinMaxExternalCoords( min_vec, max_vec );
+    particleBase->m_min_vec = min_vec;
+    particleBase->m_max_vec = max_vec;
+    if(mpi_rank==RANK) std::cout<<"max_vec:"<<max_vec<<std::endl;
+    bool tmp_parameter_file_opened =
+        initializeParameters( m_tfs, particleBase->m_tf, m_param, object, &particleBase->m_sampling_volume_inverse, &particleBase->m_max_opacity, &particleBase->m_max_density,
+                             &particleBase->m_subpixel_level, &particleBase->m_particle_density, &particleBase->m_particle_data_size_limit, visParamDir, tfFilename, time_step );
+
+    int tf_number = particleBase->m_tf.size();
+
+    particleBase->m_tf_number = tf_number;
+    particleBase->m_parameter_file_opened = tmp_parameter_file_opened;
+
+    delete object;
+    //if(mpi->rank==0)std::cout<<"end initializeTFS()\n";
+
+    //add by shimomura 20240722
+    int nbin =256;
+    particleBase->m_O_max.allocate(particleBase->m_tf_number);
+    particleBase->m_O_min.allocate(particleBase->m_tf_number);
+    particleBase->m_C_max.allocate(particleBase->m_tf_number);
+    particleBase->m_C_min.allocate(particleBase->m_tf_number);
+    particleBase->m_o_histogram.allocate(particleBase->m_tf_number*nbin);
+    particleBase->m_c_histogram.allocate(particleBase->m_tf_number*nbin);
+
+    // TFファイルがないならば、return
+    if ( generate_flag == false )
+    {
+        std::cout << "find no .tf!! skipping generate_particle !!!" << std::endl;
+        delete m_tfs;
+        //return;
+        return false;
+    }
+    // moved by shimomura 20240807
+
+    return true;
+}
 
 #if 0
 void generate_particles( const int time_step,
@@ -542,11 +687,11 @@ void generate_particles( const int time_step,
                          mpi_parameters* mpi,
                          time_parameters* time )
 #else
-void generate_particles( int time_step,
+void GenerateParticles( int time_step,
                          domain_parameters dom,
                          Type** values, int nvariables,
                          float* coordinates, int ncoords,
-                         unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype) //celltype  enum 型に変更
+                         unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase) //celltype  enum 型に変更
 #endif
 {
 
@@ -560,6 +705,7 @@ void generate_particles( int time_step,
 
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
 
+#if 0
     // moved by shimomura 20240807
     TransferFunctionSynthesizer* tfs = new TransferFunctionSynthesizer();
     std::vector<pbvr::TransferFunction> tf;
@@ -664,7 +810,7 @@ void generate_particles( int time_step,
     // moved by shimomura 20240807
 
     const int num_volume_data = nvariables;
-
+#endif
     //if(mpi->rank==0)std::cout<<"start generate_particles\n";
     static bool start_flag = true;
     static bool parameter_file_opened=false;
@@ -809,18 +955,29 @@ void generate_particles( int time_step,
             }
        }
    
-   
-
-    // Set Transfer function synthesizer.
-    int tf_number = tf.size();
-
-    if( start_flag ) parameter_file_opened = tmp_parameter_file_opened;
-
-    //if(mpi->rank==0)std::cout<<"end initializeTFS()\n";
-
+    int   tf_number                = particleBase.m_tf_number;
+    float sampling_volume_inverse  = particleBase.m_sampling_volume_inverse ;
+    float max_opacity              = particleBase.m_max_opacity             ;
+    float max_density              = particleBase.m_max_density             ;
+    int   subpixel_level           = particleBase.m_subpixel_level          ;
+    float particle_density         = particleBase.m_particle_density        ;
+    float particle_data_size_limit = particleBase.m_particle_data_size_limit;
+    //std::vector<pbvr::TransferFunction> tf = particleBase.m_tf;
+    parameter_file_opened = particleBase.m_parameter_file_opened;
     const int max_nparticles = (int)max_density + 1;
 
     if(mpi_rank == 0) std::cout<<"******* max_nparticles="<<max_nparticles<<std::endl;
+   
+//    // Set Transfer function synthesizer.
+//    int tf_number = tf.size();
+//
+//    if( start_flag ) parameter_file_opened = tmp_parameter_file_opened;
+//
+//    //if(mpi->rank==0)std::cout<<"end initializeTFS()\n";
+//
+//    const int max_nparticles = (int)max_density + 1;
+//
+//    if(mpi_rank == 0) std::cout<<"******* max_nparticles="<<max_nparticles<<std::endl;
 
     //ヒストグラム
     int nbins = 256;
@@ -847,10 +1004,10 @@ void generate_particles( int time_step,
 
     for( size_t i = 0; i < tf_number; i++ )
     {
-        o_min[i] = tf[i].opacityMap().minValue();
-        o_max[i] = tf[i].opacityMap().maxValue();
-        c_min[i] = tf[i].colorMap().minValue();
-        c_max[i] = tf[i].colorMap().maxValue();
+        o_min[i] = particleBase.m_tf[i].opacityMap().minValue();
+        o_max[i] = particleBase.m_tf[i].opacityMap().maxValue();
+        c_min[i] = particleBase.m_tf[i].colorMap().minValue();
+        c_max[i] = particleBase.m_tf[i].colorMap().maxValue();
     }
 
     //最大最小値
@@ -880,7 +1037,8 @@ void generate_particles( int time_step,
 
     for ( int n = 0; n < max_threads; n++ )
     {
-        th_tfs[n] = new TransferFunctionSynthesizer( *tfs );
+        //th_tfs[n] = new TransferFunctionSynthesizer( *tfs );
+        th_tfs[n] = new TransferFunctionSynthesizer( *m_tfs );
     }
 
     th_tf.resize( max_threads );
@@ -889,7 +1047,8 @@ void generate_particles( int time_step,
         th_tf[ i ].resize( tf_number );
         for ( int j = 0; j < tf_number; j++ )
         {
-            th_tf[i][j] = tf[j];
+//            th_tf[i][j] = tf[j];
+            th_tf[i][j] = particleBase.m_tf[j];
         }
     }
 
@@ -1101,7 +1260,6 @@ void generate_particles( int time_step,
                 nparticles_num += nparticles_array[cell_BLK];
 
             }
-
         /////////////////////////////// Synthesized~ (), CalculateOpacity() ///////////////////////////////////
         /////////////////////////////// CalculateOpacity(), CalculateColor() ///////////////////////////////////
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
@@ -1368,7 +1526,7 @@ void generate_particles( int time_step,
             vertex_normals.insert( vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end() );
         }
 
-                timer.stop();
+//                timer.stop();
     } //#pragma omp parallel
 
     timer.stop();
@@ -1376,7 +1534,7 @@ void generate_particles( int time_step,
     time.nparticles = vertex_coords.size()/3;
     timer.start();
 
-    delete tfs;
+//    delete tfs;
 
     for(int i=0; i<max_threads; i++)
     {
@@ -1392,7 +1550,32 @@ void generate_particles( int time_step,
         }
     }
     
+    for( int n = 0; n < tf_number * nbins; n++ )
+    {
+        particleBase.m_o_histogram[n] += o_histogram[n];
+        particleBase.m_c_histogram[n] += c_histogram[n];
+    }
 
+    for( int i = 0; i < tf_number; i++ )
+    {
+        //不透明度
+        particleBase.m_O_min[i] = particleBase.m_O_min[i] < O_min[i] ? particleBase.m_O_min[i] : O_min[i];
+        particleBase.m_O_max[i] = particleBase.m_O_max[i] > O_max[i] ? particleBase.m_O_max[i] : O_max[i];
+        //色
+        particleBase.m_C_min[i] = particleBase.m_C_min[i] < C_min[i] ? particleBase.m_C_min[i] : C_min[i];
+        particleBase.m_C_max[i] = particleBase.m_C_max[i] > C_max[i] ? particleBase.m_C_max[i] : C_max[i];
+    }
+
+    std::cout << "nparticles = " <<  vertex_coords.size()/3   << std::endl;
+    particleBase.m_sample_coords.insert(particleBase.m_sample_coords.end(), vertex_coords.begin(), vertex_coords.end());
+    particleBase.m_sample_colors.insert(particleBase.m_sample_colors.end(), vertex_colors.begin(), vertex_colors.end());
+    particleBase.m_sample_normals.insert(particleBase.m_sample_normals.end(), vertex_normals.begin(), vertex_normals.end());
+
+    timer.stop();
+    time.writting = timer.sec();
+    show_timer( time );
+
+# if 0
     ///-------------------------------------//
     ///--------粒子配列をファイル出力----------//
     //--------------------------------------//
@@ -1652,6 +1835,276 @@ void generate_particles( int time_step,
     time.write_text = timer.sec();
 
     show_timer( time );
+    //if(mpi->rank==0)std::cout<<"end generate_particles\n";
+#endif
+}
+
+void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBase, ParamInfo *param)
+{
+    int mpi_rank;
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+    int tf_number = particleBase.m_tf_number;
+    int nbins = 256;
+
+    ///-------------------------------------//
+    ///--------粒子配列をファイル出力----------//
+    //--------------------------------------//
+    kvs::ValueArray<float> coords( particleBase.m_sample_coords );
+    kvs::ValueArray<Byte>  colors( particleBase.m_sample_colors );
+    kvs::ValueArray<float> normals(particleBase.m_sample_normals );
+
+    static bool first_step = true;
+    static MPI_Comm new_comm;
+    static int count;
+    static int num_nodes;
+
+    /* 各ノード毎に粒子データを出力する。 */
+    if( first_step )
+    {
+        int numprocs, myrank;
+        int resultlen;
+        char procname[MPI_MAX_PROCESSOR_NAME];
+        char* procname_bak;
+        char* procname_g;
+        char* procname_p;
+
+        MPI_Comm_size( MPI_COMM_WORLD, &numprocs );
+        MPI_Comm_rank( MPI_COMM_WORLD, &myrank );
+
+        /* ノード名を取得し、各ランクで共有する. */
+        MPI_Get_processor_name( procname, &resultlen );
+        procname_g = new char[ MPI_MAX_PROCESSOR_NAME * numprocs ];
+        MPI_Allgather( procname,   MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
+                       procname_g, MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
+                       MPI_COMM_WORLD );
+
+        int color;
+        count = 1;
+        for( color = 0; color < numprocs; color++ )
+        {
+            procname_p = procname_g + MPI_MAX_PROCESSOR_NAME * color;
+
+            /* 要素の隣同士を比較して差異があった場合にカウントし, *
+             * ノード毎に連続した番号を割り当てる.                 */
+            if( color > 0 )
+            {
+                procname_bak = procname_p - MPI_MAX_PROCESSOR_NAME;
+                if( strcmp( procname_p, procname_bak ) != 0 )
+                    count++;
+            }
+
+            /* 自分のノード名が一致した要素番号をコミュニケータ分割のcolorとする */
+            if( strcmp( procname_p, procname ) == 0 )
+                break;
+        }
+
+        delete[] procname_g;
+        
+        MPI_Comm_split( MPI_COMM_WORLD, color, myrank, &new_comm );
+        
+        int split_numprocs;
+        MPI_Comm_size( new_comm, &split_numprocs );
+        
+        /*
+         * 各ノードに均等にランクが割り当てられることを前提とし,
+         * 分割前のプロセス数と分割後のプロセス数の非を粒子ファイル数とする.
+         */
+        num_nodes = numprocs / split_numprocs;
+        if( numprocs % split_numprocs > 0 ) num_nodes++;
+        first_step = false;
+    }   
+    
+    /*
+     * ファイル名の粒子データのファイル名を入力する.
+     * countが各ファイルで連続でない場合,ファイルが不在と見なしてデーモンでスピンロックがかかる.
+     */
+#if 0
+    char filename[256];
+    sprintf(filename, "./jupiter_particle_out/t_%05d_",time_step);
+    sprintf(filename,"%s%07d_%07d.kvsml", filename, count, num_nodes );
+#else
+    // 20181226 start  環境変数で指定したファイルパスを参照する
+    std::stringstream ss;
+    //add by shimomura 20240614
+//    ss << std::setfill('0') << std::setw(2) << static_cast<int>(celltype);
+//    ss << "_";
+    ss << std::setfill('0') << std::setw(5) << time_step;
+    ss << "_";
+    ss << std::setfill('0') << std::setw(7) << count;
+    ss << "_";
+    ss << std::setfill('0') << std::setw(7) << num_nodes;
+    ss << ".kvsml";
+    particleBase.m_ptcFilePath += ss.str();
+    // 20181226 end
+#endif
+
+    int particle_size = coords.size();
+    int *recvcounts;
+    int *displs;
+    int  new_number_of_process;
+    int new_rank;
+
+    MPI_Comm_rank( new_comm, &new_rank );
+    MPI_Comm_size( new_comm, &new_number_of_process );
+
+    /*
+     *  recvcounts: 各ランク毎の受信バッファサイズ.
+     *  displs:     受信先バッファ上の各ランク毎の受信バッファの位置(オフセット)
+     */
+
+    displs = new int[ new_number_of_process ];
+    recvcounts = new int[ new_number_of_process ];
+
+    MPI_Allgather( &particle_size, 1, MPI_INT,
+                   recvcounts,     1, MPI_INT,
+                   new_comm );
+    displs[0] = 0;
+    for( int i =1; i< new_number_of_process; i++ )
+        displs[i] = displs[i-1] + recvcounts[i-1];
+
+    kvs::ValueArray<float> new_coords(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+    kvs::ValueArray<Byte>  new_colors(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+    kvs::ValueArray<float> new_normals( displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+
+    MPI_Gatherv( coords.pointer(),   particle_size, MPI_FLOAT,
+                 new_coords.pointer(), recvcounts, displs, MPI_FLOAT,
+                 0, new_comm );
+
+    MPI_Gatherv( colors.pointer(),   particle_size, MPI_BYTE,
+                 new_colors.pointer(), recvcounts, displs, MPI_BYTE,
+                 0, new_comm );
+
+    MPI_Gatherv( normals.pointer(),   particle_size, MPI_FLOAT,
+                 new_normals.pointer(), recvcounts, displs, MPI_FLOAT,
+                 0, new_comm );
+
+    /*  分割後コミュニケータのランク0で出力する  */
+    if( new_rank == 0 )
+    {
+        kvs::PointObject* point_object = new kvs::PointObject( new_coords, new_colors, new_normals, particleBase.m_subpixel_level );
+        point_object->setMinMaxObjectCoords( particleBase.m_min_vec, particleBase.m_max_vec );
+        // If async_io is enabled, use worker thread to write kvsml data and state.txt
+        if (async_io_enabled){
+            pbvr::ParticleWriteThread* particle_write_thread =  &pwt;
+            particle_write_thread->join(true);
+            particle_write_thread->setPointObject( point_object );
+            particle_write_thread->setFilename(particleBase.m_ptcFilePath.c_str());
+            particle_write_thread->setTimestep(time_step ,particleBase.m_stateFilePath.c_str());
+            particle_write_thread->setStartTimestep(st_time_step); //add by shimomura 20240808
+            particle_write_thread->work(true);
+        }// If async_io is disabled, use kvs::PointExporter here in main thread.
+        else{
+            kvs::KVSMLObjectPoint* kvsml_object = new kvs::PointExporter<kvs::KVSMLObjectPoint>( point_object );
+            kvsml_object->setWritingDataType( kvs::KVSMLObjectPoint::ExternalBinary );
+            kvsml_object->write( particleBase.m_ptcFilePath.c_str() );
+            delete kvsml_object;
+        }
+        delete point_object;
+    }
+
+//    timer.stop();
+//    time.writting = timer.sec();
+//    timer.start();
+
+    static bool parameter_file_opened= particleBase.m_parameter_file_opened;;
+    //最大最小値の集計
+    if( parameter_file_opened )
+    {
+        O_min_recv.fill(0x00);
+        O_max_recv.fill(0x00);
+        C_min_recv.fill(0x00);
+        C_max_recv.fill(0x00);
+
+        //if(mpi->rank==0)std::cout<<"MPI_Reduce"<<std::endl;
+        MPI_Reduce( particleBase.m_O_min.pointer(), O_min_recv.pointer(),
+                    tf_number, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
+        MPI_Reduce( particleBase.m_O_max.pointer(), O_max_recv.pointer(),
+                    tf_number, MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
+        MPI_Reduce( particleBase.m_C_min.pointer(), C_min_recv.pointer(),
+                    tf_number, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
+        MPI_Reduce( particleBase.m_C_max.pointer(), C_max_recv.pointer(),
+                    tf_number, MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
+
+        //if(mpi->rank==0) std::cout<<"end MPI_Reduce"<<std::endl;
+
+        //ヒストグラムの集計
+        o_histogram_recv.fill(0x00);
+        MPI_Reduce( particleBase.m_o_histogram.pointer(), o_histogram_recv.pointer(),
+                    tf_number*nbins, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+
+        c_histogram_recv.fill(0x00);
+        MPI_Reduce( particleBase.m_c_histogram.pointer(), c_histogram_recv.pointer(),
+                    tf_number*nbins, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+    }
+
+//    timer.stop();
+//    time.mpi_reduce = timer.sec();
+//    timer.start();
+
+    //状態ファイルの出力
+    if( mpi_rank == 0 )
+    {
+        // 20181226 start 環境変数で指定したファイルパスを使用
+        //std::ofstream ofs( "state.txt", std::ios::out);
+        // If async_io is enabled, state.txt will be written from worker thread.
+        // If async_io is disabled, state.txt will be written here.
+        if (!async_io_enabled){
+            std::ofstream ofs( particleBase.m_stateFilePath.c_str(), std::ios::out);
+            // 20181226 end
+            if( !ofs.is_open() ) std::cout<<"Cannot open state.txt"<<std::endl;
+
+            ofs<<"START_STEP="<< 0 <<std::endl;
+            ofs<<"LATEST_STEP="<<time_step<<std::endl;
+
+            ofs.close();
+        }
+        std::stringstream step;
+        step << '_' << std::setw( 5 ) << std::setfill( '0' ) << time_step;
+
+        // 20181226 start 環境変数で指定したファイルパスを使用
+        //std::string history_file_name = "history" + step.str() + ".txt";
+        std::string history_file_name = particleBase.m_visParamDir + "history" + step.str() + ".txt";
+        // 20181226 end
+        std::ofstream ofs2( history_file_name.c_str(), std::ios::out);
+
+
+        std::cout << "O_min_recv[0] = " << O_min_recv[0] <<std::endl;
+        std::cout << "tf_number = " << tf_number <<std::endl;
+        ofs2<<"TF_NUMBER="<<tf_number<<std::endl;
+        for( int i = 0; i < tf_number; i++ )
+        {
+            ofs2<<"MIN_O"<<i+1<<"="<<O_min_recv[i]<<std::endl;
+            ofs2<<"MAX_O"<<i+1<<"="<<O_max_recv[i]<<std::endl;
+            ofs2<<"MIN_C"<<i+1<<"="<<C_min_recv[i]<<std::endl;
+            ofs2<<"MAX_C"<<i+1<<"="<<C_max_recv[i]<<std::endl;
+            ofs2<<"RESOLUTION_O"<<i+1<<"="<<nbins<<std::endl;
+            ofs2<<"HISTOGRAM_O"<<i+1<<"=";
+            for(int j=0; j<nbins; j++)
+            {
+                ofs2<<o_histogram_recv[j + i*nbins]<<",";
+            }
+            ofs2<<std::endl;
+            ofs2<<"RESOLUTION_C"<<i+1<<"="<<nbins<<std::endl;
+            ofs2<<"HISTOGRAM_C"<<i+1<<"=";
+            for(int j=0; j<nbins; j++)
+            {
+                ofs2<<c_histogram_recv[j + i*nbins]<<",";
+            }
+            ofs2<<std::endl;
+        }
+        ofs2 << "END_HISTORY_FILE=SUCCESS" << std::endl;
+        ofs2.close();
+
+        // 20181226 start 環境変数で指定したファイルパスを使用
+        //std::string jupiter_file_name = "jupiter" + step.str() + ".tf";
+        std::string jupiter_file_name = particleBase.m_visParamDir + particleBase.m_tfFilename + step.str() + ".tf";
+        // 20181226 end
+        param->write( jupiter_file_name );
+    }
+//    timer.stop();
+//    time.write_text = timer.sec();
+//
+//    show_timer( time );
     //if(mpi->rank==0)std::cout<<"end generate_particles\n";
 
 }
