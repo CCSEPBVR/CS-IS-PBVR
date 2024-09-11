@@ -387,7 +387,6 @@ void CellByCellHistogram::mapping( const kvs::Camera& camera, const pbvr::Struct
             &max_opacity,
             &max_density );
 
-        std::cout << "sampling_volume_inverse = " << sampling_volume_inverse  << "\n" ; 
         m_transfer_function_synthesizer->setMaxOpacity( max_opacity );
         m_transfer_function_synthesizer->setMaxDensity( max_density );
         m_transfer_function_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
@@ -818,257 +817,6 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
             }
         } // end of Histogram
 
-#if 0
-        //-----------------------------------------//
-        //--------------ｿｿｿｿｿｿｿｿｿ------------//
-        //------------------------------------------//
-        //ｿｿｿｿｿｿｿｿｿｿｿｿ
-        {
-            // Marge x-y-z loop
-            const int nvertices = nx * ny * nz;
-            // "+ 1" means remained loop
-            const int outer_loop = (nvertices % SIMDW == 0) ?
-                nvertices / SIMDW : nvertices / SIMDW + 1;
-
-            #pragma omp for
-            for( int J=0; J<outer_loop; J++ )
-            {
-                float X_l[SIMDW], Y_l[SIMDW], Z_l[SIMDW];//interpｿｿｿｿｿｿ
-                float X_g[SIMDW], Y_g[SIMDW], Z_g[SIMDW];//TFSｿｿｿｿｿｿ
-                #pragma ivdep
-                for( int I=0; I<SIMDW; I++ )
-                {
-                    const int vertex_id = I + J * SIMDW;
-                    const int k =  vertex_id / nxy;
-                    const int j = (vertex_id - k * nxy) / nx;
-                    const int i =  vertex_id - k * nxy - j * nx;
-
-                    const float x_l = (float)i;
-                    const float y_l = (float)j;
-                    const float z_l = (float)k;
-                    const float x_g = (x_l * cell_length.x())+min_vec.x();
-                    const float y_g = (y_l * cell_length.y())+min_vec.y();
-                    const float z_g = (z_l * cell_length.z())+min_vec.z();
-
-                    X_l[I] = x_l;
-                    Y_l[I] = y_l;
-                    Z_l[I] = z_l;
-                    X_g[I] = x_g;
-                    Y_g[I] = y_g;
-                    Z_g[I] = z_g;
-                }
-
-                float vertex_opacity[SIMDW];
-
-//                timed_section_start(td_CalculateOpacity,thid);
-                th_tfs[thid]->CalculateOpacity( interp[thid], th_tf[thid],
-                                                X_l, Y_l, Z_l, X_g, Y_g, Z_g, vertex_opacity );
-//                timed_section_end(td_CalculateOpacity,thid);
-
-#pragma ivdep
-                for( int I = 0; I <SIMDW; I++ )
-                {
-                    const int vertex_id = I + J * SIMDW;
-                    if( vertex_id < nvertices )
-                    {
-                        //ov[ vertex_id ] = vertex_opacity[I];
-                        opacity_volume[ vertex_id ] = vertex_opacity[I];
-                    }
-                }
-            }
-        }// end of ｿｿｿｿｿｿｿｿｿｿｿｿ
-
-#pragma omp critical
-        {
-            interp_opacity[thid] = new TFS::TrilinearInterpolator( opacity_volume, resolution );
-        }
-
-        //ｿｿｿｿｿｿｿｿｿ
-        {
-            // Marge x-y-z loop
-            const int ncells = nx_1 * ny_1 * nz_1;
-            // "+ 1" means remained loop
-            const int outer_loop = (ncells % SIMDW == 0) ?
-                ncells / SIMDW : ncells / SIMDW + 1;
-
-            #pragma omp for schedule(dynamic)
-            for( int J=0; J<outer_loop; J++ )
-            {
-                float X_l[SIMDW], Y_l[SIMDW], Z_l[SIMDW];//interpｿｿｿｿｿｿ
-                float X_g[SIMDW], Y_g[SIMDW], Z_g[SIMDW];//TFSｿｿｿｿｿｿ
-                #pragma ivdep
-                for( int I=0; I<SIMDW; I++ )
-                {
-                    const int cell_id = I + J * SIMDW;
-                    const int k =  cell_id / nxy_1;
-                    const int j = (cell_id - k * nxy_1) / nx_1;
-                    const int i =  cell_id - k * nxy_1 - j * nx_1;
-
-                    const float x_l = (float)i + 0.5;
-                    const float y_l = (float)j + 0.5;
-                    const float z_l = (float)k + 0.5;
-                    const float x_g = (x_l * cell_length.x())+min_vec.x();
-                    const float y_g = (y_l * cell_length.y())+min_vec.y();
-                    const float z_g = (z_l * cell_length.z())+min_vec.z();
-
-                    X_l[I] =  x_l;
-                    Y_l[I] =  y_l;
-                    Z_l[I] =  z_l;
-                    X_g[I] =  x_g;
-                    Y_g[I] =  y_g;
-                    Z_g[I] =  z_g;
-                }
-
-                float cell_opacity[SIMDW];
-//                timed_section_start(td_CalculateOpacity,thid);
-                th_tfs[thid]->CalculateOpacity( interp[thid], th_tf[thid],
-                                                X_l, Y_l, Z_l, X_g, Y_g, Z_g, cell_opacity );
-//                timed_section_end(td_CalculateOpacity,thid);
-
-             
-                //int nparticles[SIMDW];
-                int nparticles[SIMDW+1];
-                #pragma ivdep
-                for( int I=0; I<SIMDW; I++)
-                {
-//                     timed_section_start(td_CalculateDensity,thid);
-                    const float density = Generator::CalculateDensity( cell_opacity[I],
-                                                                       sampling_volume_inverse,
-                                                                       max_opacity, max_density );
-
-
-//                    timed_section_end(td_CalculateDensity,thid);
-//                    timed_section_start(td_CalculateNumPar,thid);
-
-                    const int np = calculate_number_of_particles( density, 1, &MT ) * m_particle_density;
-//                    const int np = calculate_number_of_particles( density, 1, &MT ) * 0.1;
-//                    timed_section_end(td_CalculateNumPar,thid);
-
-                    const int cell_id = I + J * SIMDW;
-
-                    nparticles[I] = cell_id < ncells ? np : 0;
-//                    nparticles[I] = cell_id < ncells ? 10 : 0;
-                    th_total_nparticles += nparticles[I] ;
-                }
-
-                // ｿｿｿｿｿSIMDｿｿｿｿｿ
-                // ｿｿｿｿｿｿｿｿｿ
-                int p_id = 0;
-                float p_x_l[SIMDW], p_y_l[SIMDW], p_z_l[SIMDW];
-                float p_x_g[SIMDW], p_y_g[SIMDW], p_z_g[SIMDW];
-                float grad_x[SIMDW], grad_y[SIMDW], grad_z[SIMDW];
-                kvs::UInt8 red[SIMDW], green[SIMDW], blue[SIMDW];
-                float particle_opacity[SIMDW];
-                // the last loop "I==SIMDW" is used for occupy ramained array.
-                    for(int I=0; I<SIMDW+1; I++)
-                    {
-                        const int cell_id = I + J * SIMDW;
-                        const int k =  cell_id / nxy_1;
-                        const int j = (cell_id - k * nxy_1) / nx_1;
-                        const int i =  cell_id - k * nxy_1 - j * nx_1;
-
-                        const int nparticles_I  = I<SIMDW ? nparticles[I] : 0;
-                        const int zero_id = I<SIMDW ? SIMDW : p_id;
-                        int nparticles_count =0;  
-                       for(int p=0; p < nparticles_I; p++)
-                        {
-                            int  finish_flag = 0;
-                            const kvs::Vector3f vertex( (float)i, (float)j, (float)k );
-                            const kvs::Vector3f coord_l( RandomSamplingInCube( vertex, &MT ) );
-                            const kvs::Vector3f coord_g(
-                                    (coord_l.x()*cell_length.x())+min_vec.x(),
-                                    (coord_l.y()*cell_length.y())+min_vec.y(),
-                                    (coord_l.z()*cell_length.z())+min_vec.z() );
-                            p_x_l[ p_id ] = coord_l.x();
-                            p_y_l[ p_id ] = coord_l.y();
-                            p_z_l[ p_id ] = coord_l.z();
-                            p_x_g[ p_id ] = coord_g.x();
-                            p_y_g[ p_id ] = coord_g.y();
-                            p_z_g[ p_id ] = coord_g.z();
-                            p_id++;
-
-                            if( p_id == SIMDW )
-                            {
-                                p_id = 0;
-
-                                //                            timed_section_start(td_CalculateOpacity,thid);
-                                th_tfs[thid]->CalculateOpacity( interp[thid], th_tf[thid],
-                                        p_x_l, p_y_l, p_z_l,
-                                        p_x_g, p_y_g, p_z_g,
-                                        particle_opacity );
-                                //                            timed_section_end(td_CalculateOpacity,thid); 
-                                interp_opacity[thid]->attachPoint( p_x_l, p_y_l, p_z_l );
-                                interp_opacity[thid]->gradient( grad_x, grad_y, grad_z );
-                                //                            timed_section_start(td_CalculateColor,thid);
-                                th_tfs[thid]->CalculateColor( interp[thid], th_tf[thid],
-                                        p_x_l, p_y_l, p_z_l,
-                                        p_x_g, p_y_g, p_z_g,
-                                        red, green, blue );
-                                //                            timed_section_end(td_CalculateColor,thid); 
-#if 1                               
-                                float np_x_g[ SIMDW ];
-                                float np_y_g[ SIMDW ];
-                                float np_z_g[ SIMDW ];
-                                if ( !css.m_x_coord_synthesizer_string.empty() || 
-                                     !css.m_y_coord_synthesizer_string.empty() || 
-                                     !css.m_z_coord_synthesizer_string.empty()  ) 
-                                {
-                                    th_tfs[thid]->CalculateCoordArray( interp[thid],
-                                            SIMDW,
-                                            p_x_l, p_y_l, p_z_l,
-                                            p_x_g, p_y_g, p_z_g,
-                                            //local_coord_array,
-                                            //global_coord_array,
-                                            th_tf[thid],
-                                            /*CoordSynthesizerStrings*/        css,
-                                            np_x_g, np_y_g, np_z_g  );
-                                }
-                                else
-                                {
-                                    for( int j = 0; j < SIMDW; j++ )
-                                    {
-                                        np_x_g[j] = p_x_g[j];
-                                        np_y_g[j] = p_y_g[j];
-                                        np_z_g[j] = p_z_g[j];
-                                    }
-                                }
-#endif
-
-                                //SIMDｿｿｿ
-                                for( int pp=0; pp<SIMDW; pp++)
-                                {
-                                    //                                timed_section_start(td_CalculateDensity,thid);
-//                                    const float density =
-//                                        pp < zero_id ?
-//                                        Generator::CalculateDensity( particle_opacity[pp],
-//                                                sampling_volume_inverse,
-//                                                max_opacity, max_density ) : 0;
-                                    const float density =
-                                        Generator::CalculateDensity( particle_opacity[pp],
-                                                sampling_volume_inverse,
-                                                max_opacity, max_density );
-
-
-                                    //                                timed_section_end(td_CalculateDensity,thid);
-                                        th_vertex_coords.push_back( np_x_g[pp] );
-                                        th_vertex_coords.push_back( np_y_g[pp] );
-                                        th_vertex_coords.push_back( np_z_g[pp] );
-
-                                        th_vertex_colors.push_back( red  [pp] );
-                                        th_vertex_colors.push_back( green[pp] );
-                                        th_vertex_colors.push_back( blue [pp] );
-
-                                        th_vertex_normals.push_back( grad_x[pp] );
-                                        th_vertex_normals.push_back( grad_y[pp] );
-                                        th_vertex_normals.push_back( grad_z[pp] );
-                                       //                                    timed_section_end(td_VectorPush,thid);
-                                } // end of for pp
-                            } // end of if p_id
-                        } // end of for p
-                    } // end of for I ｿｿｿｿｿｿｿｿｿ
-                } // end of omp for J outer_loop
-        } // end of ｿｿｿｿｿｿｿ
-#endif
 //        timed_section_start(td_VectorIns,thid);
         #pragma omp critical
         {
@@ -1092,11 +840,6 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
                     m_c_histogram[n] += th_c_histogram[n];
                 }
             }
-
-//            total_nparticles += th_total_nparticles;
-//            vertex_coords.insert ( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
-//            vertex_colors.insert ( vertex_colors.end(), th_vertex_colors.begin(), th_vertex_colors.end() );
-//            vertex_normals.insert( vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end() );
 
             delete interp_opacity[thid];
 
@@ -1656,6 +1399,7 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
         o_max[i] = m_transfer_function_array[i].opacityMap().maxValue();
         c_min[i] = m_transfer_function_array[i].colorMap().minValue();
         c_max[i] = m_transfer_function_array[i].colorMap().maxValue();
+        std::cout << "o_max[i] = " << o_max[i] <<  std::endl;
     }
     //min max
     kvs::ValueArray<float> O_min( tf_number );// 4 calculate
@@ -1902,19 +1646,12 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
 //            debug11 << "m_c_histogram[n] = {";
 //            for(int i =0; i< tf_number *nbins; i++) debug11 << m_c_histogram[i] << "," ;
 //            std::cout << debug11.str() << std::endl;
-//            vertex_coords.insert ( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
-//            vertex_colors.insert ( vertex_colors.end(), th_vertex_colors.begin(), th_vertex_colors.end() );
-//            vertex_normals.insert( vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end() );
         }
-//        th_vertex_coords.clear();
-//        th_vertex_colors.clear();
-//        th_vertex_normals.clear();
 
     } //#pragma omp parallel
 
     // add by shimomura 
     // set minmax range
-    
     m_transfer_function_synthesizer->m_o_min.resize(tf_number);        
     m_transfer_function_synthesizer->m_o_max.resize(tf_number);        
     m_transfer_function_synthesizer->m_c_min.resize(tf_number);        

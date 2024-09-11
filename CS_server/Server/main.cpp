@@ -594,7 +594,7 @@ inline VariableRange Calculate_minmax( const Argument& param,
     int nprocs = 1;
 #endif
 
-    for ( steps = fil.m_total_start_steps; steps < fil.m_total_last_step; steps++ )
+    for ( steps = fil.m_total_start_steps; steps <= fil.m_total_last_step; steps++ )
     {
         for ( subvols = 0; subvols < fil.m_total_number_subvolumes; subvols++ )
         {
@@ -614,7 +614,7 @@ inline VariableRange Calculate_minmax( const Argument& param,
                     for (int i = 1; i< nnodes; i++)
                     {
                         tmp_min = tmp_min < volume->values().at<float>(i+n*nnodes) ? tmp_min : volume->values().at<float>(i+n*nnodes) ; 
-                        tmp_max = tmp_min > volume->values().at<float>(i+n*nnodes) ? tmp_max : volume->values().at<float>(i+n*nnodes) ; 
+                        tmp_max = tmp_max > volume->values().at<float>(i+n*nnodes) ? tmp_max : volume->values().at<float>(i+n*nnodes) ; 
                     }
                     min_vec[n]=tmp_min;
                     max_vec[n]=tmp_max;
@@ -626,11 +626,8 @@ inline VariableRange Calculate_minmax( const Argument& param,
 
 #ifndef CPU_VER
     PBVR_TIMER_STA( 19 );
-    //std::cout << rank << ":"  << __LINE__ << std::endl;
     MPI_Allreduce( MPI_IN_PLACE, min_vec.data(), nvariable, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
     MPI_Allreduce( MPI_IN_PLACE, max_vec.data(), nvariable, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
-    //MPI_Allreduce( MPI_IN_PLACE, &tmp_min, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
-    //MPI_Allreduce( MPI_IN_PLACE, &tmp_max, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
     PBVR_TIMER_END( 19 );
 #endif
 
@@ -646,7 +643,8 @@ inline VariableRange Calculate_minmax( const Argument& param,
         vr.setValue( "t" + idxbuf + "_var_c", min_vec[n]);
    }
 
-//   std::cout  << vr.max( "t1_var_c" ) << std::endl;     
+//   std::cout << "vr_max = " << vr.max( "t1_var_c" ) << std::endl;     
+//   std::cout << "vr_min = " << vr.min( "t1_var_c" ) << std::endl;     
 
    return vr;
 }
@@ -736,7 +734,6 @@ VariableRange  setVariablerange2(const float* tmp_max, const float* tmp_min, con
         vr.setValue( "t" + idxbuf + "_var_o", tmp_min[2*tf  ]);
         vr.setValue( "t" + idxbuf + "_var_c", tmp_max[2*tf+1]);
         vr.setValue( "t" + idxbuf + "_var_c", tmp_min[2*tf+1]);
-//        std::cout << "tmp_obj.getOpacityHistogram()[ tf ].maxRange() = " << tmp_max[0] <<  std::endl;
     }   
     return vr;
 }
@@ -1215,10 +1212,10 @@ int main( int argc, char** argv )
         param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
         for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
         {
-        param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
+            param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
         }
 
-//        std::cout << "param.m_transfunc_array[0].minValue() = " << param.m_transfunc_array[0].opacityMap().minValue() << std::endl;
+        std::cout << "param.m_transfunc_array[0].minValue() = " << param.m_transfunc_array[0].opacityMap().minValue() << std::endl;
 
 
         camera.setWindowSize( param.m_window_width, param.m_window_height );
@@ -1685,17 +1682,9 @@ int main( int argc, char** argv )
                     }
 
                     transfunc_creator.setFilterInfo( fil.m_list[0] );
-                    //transfunc_creator.setProtocol( clntMes );
-                    //transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
-                    //param.m_transfunc_synthesizer = transfunc_creator.create();
-                    //param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
-
-//                    int nvariable = fil.m_total_number_ingredients;
                     int nvariable;
                     VariableRange range = Calculate_minmax( param, fil); 
-//                    if( clntMes.m_transfer_function.size() ==0 ) transfunc_creator.setInitialProtocol( nvariable, range );
-//                    else transfunc_creator.setProtocol(clntMes);
-                    if( clntMes.m_transfer_function.size() ==0 ) 
+                    if( !clntMes.m_import_flag ) 
                     {
                         std::cout << "defalt parameter " << std::endl;
                         nvariable = fil.m_total_number_ingredients;
@@ -1714,6 +1703,7 @@ int main( int argc, char** argv )
                     {
                         param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
+                    std::cout << "param.m_transfunc_array[0].minValue() = " << param.m_transfunc_array[0].opacityMap().minValue() << std::endl;
 
                     if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                     if ( param.m_crop.isEnabled() )
@@ -1739,7 +1729,6 @@ int main( int argc, char** argv )
                     param.m_particle_limit_pre = param.m_particle_limit;
 
                     clntMes.show();
-                    //int tf_count = clntMes.m_transfer_function.size();
                     int tf_count = nvariable;
                     int c_nbins = DEFAULT_NBINS;
                     int o_nbins = DEFAULT_NBINS;
@@ -1853,7 +1842,6 @@ int main( int argc, char** argv )
                     } // end of while(DispatchNext)
 #ifndef CPU_VER
 
-                     std::cout << "c_bins_size = " << c_bins_size <<std::endl;
                     MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
                     MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
                     MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
@@ -2284,7 +2272,7 @@ int main( int argc, char** argv )
                     //int nvariable = fil.m_total_number_ingredients;
                     int nvariable;
                     VariableRange range = Calculate_minmax( param, fil); 
-                    if( clntMes.m_transfer_function.size() ==0 ) 
+                    if( !clntMes.m_import_flag ) 
                     {
                         std::cout << "defalt parameter " << std::endl;
                         nvariable = fil.m_total_number_ingredients;
@@ -2313,6 +2301,8 @@ int main( int argc, char** argv )
                     {
                         param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
+                    
+                    std::cout << "param.m_transfunc_array[0].minValue() = " << param.m_transfunc_array[0].opacityMap().minValue() << std::endl;
 
                     // 4 calc histgram
                     clntMes.m_node_type = 'a';  
@@ -2578,6 +2568,8 @@ int main( int argc, char** argv )
                     servMes.m_element_type = fil.m_list[0].m_elem_type;
                     servMes.m_file_type = fil.m_list[0].m_file_type;
                     servMes.m_number_ingredients = fil.m_list[0].m_number_ingredients;
+                    servMes.m_opacity_transfer_function_synthesis = "O1";
+                    servMes.m_color_transfer_function_synthesis = "C1";
 
                     servMes.m_flag_send_bins = 1;
                     servMes.m_subpixel_level = param.m_subpixel_level;
@@ -2896,10 +2888,6 @@ int main( int argc, char** argv )
                             pbvr::PointObject* object = originalObject;
 							printf(" %zu perticles generated\n", object->coords().size() / 3);
 
-                            std::cout << "object -> coords() = " << object->coords()[0] << ", " << object->coords()[1] << ", "  
-                                                                 << object->coords()[2] << ", " << object->coords()[3] << ", " 
-                                                                 << object->coords()[4] << ", " << object->coords()[5] << ", " 
-                                                                 << std::endl;
 //                           //add by shimomura 2023/06/14
                             if ( originalObject != object ) delete originalObject;
                             servMes.m_number_particle = object->coords().size() / 3;
@@ -2930,10 +2918,6 @@ int main( int argc, char** argv )
                                 servMes.m_colors[3 * i + 1] = object->colors()[3 * i + 1];
                                 servMes.m_colors[3 * i + 2] = object->colors()[3 * i + 2];
                             }
-                            std::cout << "servMes.m_positions = " << servMes.m_positions[0] << ", " << servMes.m_positions[1] << ", "  
-                                                                 << servMes.m_positions[2] << ", " << servMes.m_positions[3] << ", " 
-                                                                 << servMes.m_positions[4] << ", " << servMes.m_positions[5] << ", " 
-                                                                 << std::endl;
                             servMes.m_variable_range = vr;
 
                             if ( timer_count <= PBVR_TIMER_COUNT_NUM )

@@ -36,7 +36,7 @@ public:
 //    void updateRangeView( const VariableRange& range );
 //    void updateRangeView( const jpv::ParticleTransferServerMessage& reply );
     void updateRangeView();
-    void importFile( const std::string& fileName );
+    bool importFile( const std::string& fileName );
     void exportFile( const std::string& fileName, const bool addition);
     ExtendedTransferFunctionMessage* getExtendedTransferFunctionMessage() { return &m_extended_transfer_function_message; }
     void importFromServerIS();

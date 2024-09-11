@@ -41,6 +41,7 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
     s += sizeof( m_initialize_parameter );
     if ( m_initialize_parameter == InitializeParameter::initial_step )
     {
+        s += sizeof( bool );
         s += sizeof( int64_t );
         s += sizeof( char ) * ( m_input_directory.size() + 1 );
         //        // add:start by @hira at 2016/12/01
@@ -145,6 +146,7 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
     index += jpv::Serializer::write( buf + index, m_initialize_parameter );
     if ( m_initialize_parameter == InitializeParameter::initial_step )
     {
+        index += jpv::Serializer::write( buf + index, m_import_flag );
         index += jpv::Serializer::write( buf + index, m_input_directory.size() );
         index += jpv::Serializer::writeArray( buf + index, m_input_directory.c_str(), m_input_directory.size() + 1 );
         //        // add:start by @hira at 2016/12/01
@@ -264,6 +266,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
     index += jpv::Serializer::read( buf + index, &m_initialize_parameter );
     if ( m_initialize_parameter == InitializeParameter::initial_step )
     {
+        index += jpv::Serializer::read( buf + index, &m_import_flag );
         index += jpv::Serializer::read( buf + index, &tmp_char_size );
         tmp_char = new char[tmp_char_size + 1];
         index += jpv::Serializer::readArray( buf + index, tmp_char, tmp_char_size + 1 );
@@ -406,7 +409,7 @@ void jpv::ParticleTransferClientMessage::show( void ) const
 
     std::cout<<"header="<<m_header<<std::endl;
     std::cout<<"messageSize="<<m_message_size<<std::endl;
-    //std::cout<<"initParam="<<m_initialize_parameter<<std::endl;
+    std::cout<<"importFlag="<<m_import_flag<<std::endl;
     std::cout<<"initParam="<<static_cast<int>(m_initialize_parameter)<<std::endl;
     std::cout<<"timeParam="<<m_time_parameter<<std::endl;
     std::cout<<"transParam="<<m_trans_parameter<<std::endl;
@@ -880,7 +883,7 @@ void jpv::ParticleTransferServerMessage::setOpacityHistogramBins(
 
 //    std::stringstream debug11;
 //    debug11 << "o_bins[0] = {";
-//    for(int i =0; i< nbins; i++) debug11 << m_opacity_bins[3][i] << "," ;
+//    for(int i =0; i< nbins; i++) debug11 << m_opacity_bins[0][i] << "," ;
 //    std::cout << debug11.str() << std::endl;
 
     return;
@@ -945,6 +948,7 @@ void jpv::ParticleTransferServerMessage::show( void ) const
 
 //    std::cout << "c_bin = {" << std::endl;
 //    for(int i=0; i<256; i++) std::cout << m_color_bins[0][i] << " " ;
+//    << std::endl;
 
     std::cout<<"voleqn.size="<<m_volume_equation.size()<<std::endl;
     std::cout<<"voleqn.Name,Equation"<<std::endl;

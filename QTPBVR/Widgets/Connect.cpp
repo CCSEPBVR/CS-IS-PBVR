@@ -61,7 +61,7 @@ void Connect::connectServer()
         return;
     }
 
-    strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
+    strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 ); 
 
 #ifdef Q_OS_WIN
     m_client_message.m_input_directory = ( ui->volumeDataFilePathLEdit->text().replace( "/","\\" ) ).toLocal8Bit().constData();
@@ -70,9 +70,9 @@ void Connect::connectServer()
 #endif
 
 #ifdef Q_OS_WIN
-        m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
+        m_client_message.m_import_flag = m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
 #else
-        m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
+        m_client_message.m_import_flag = m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
 
 #endif
         m_transfer_function_editor->onApplyButtonClicked();
@@ -110,7 +110,8 @@ void Connect::connectServer()
     m_transfer_function_editor->applyVariableRange( m_server_message.m_server_side_variable_range );
     m_transfer_function_editor->updateRangeView();
 
-    if ( ui->inSituRBtn->isChecked() ) m_transfer_function_editor->importFromServerIS();
+    //if ( ui->inSituRBtn->isChecked() ) m_transfer_function_editor->importFromServerIS();
+    m_transfer_function_editor->importFromServerIS();
 
     m_filter_infomation->updateFilterInfomation( ui->volumeDataFilePathLEdit->text(), m_server_message );
 
@@ -127,12 +128,12 @@ void Connect::connectServer()
     {
         m_merge->serverObjectCS( ui->volumeDataFilePathLEdit->text(), m_server_message.m_start_step, m_server_message.m_last_step );
         m_transfer_function_editor->applyVariableRange( m_server_message.m_server_side_variable_range );
-    #ifdef Q_OS_WIN
-        m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
-    #else
-        m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
-    #endif
-        m_transfer_function_editor->onApplyButtonClicked();
+    // #ifdef Q_OS_WIN
+    //     m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
+    // #else
+    //     m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
+    // #endif
+    //     m_transfer_function_editor->onApplyButtonClicked();
         //    qInfo() << m_server_message.m_variable_range.min( "t1_var_c" );
         //    qInfo() << m_server_message.m_min_value;
     }

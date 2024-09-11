@@ -70,6 +70,7 @@ public:
     int32_t m_message_size;
 
     InitializeParameter m_initialize_parameter;
+    bool m_import_flag;
     char m_sampling_method;
     int32_t m_subpixel_level;
     int32_t m_repeat_level;

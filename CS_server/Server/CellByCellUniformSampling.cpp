@@ -387,7 +387,6 @@ void CellByCellUniformSampling::mapping( const kvs::Camera& camera, const pbvr::
             &max_opacity,
             &max_density );
 
-        std::cout << "sampling_volume_inverse = " << sampling_volume_inverse  << "\n" ; 
         m_transfer_function_synthesizer->setMaxOpacity( max_opacity );
         m_transfer_function_synthesizer->setMaxDensity( max_density );
         m_transfer_function_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
@@ -695,9 +694,6 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
     CoordSynthesizerStrings css;
     if ( pCrdSynthStr )
     { 
-//        std::cout << "css.m_x_coord_synthesizer_string = " << css.m_x_coord_synthesizer_string <<std::endl;  
-//        std::cout << "css.m_y_coord_synthesizer_string = " << css.m_y_coord_synthesizer_string <<std::endl;  
-//        std::cout << "css.m_z_coord_synthesizer_string = " << css.m_z_coord_synthesizer_string <<std::endl;  
         css = *pCrdSynthStr;
     }
 
@@ -1734,9 +1730,6 @@ void CellByCellUniformSampling::generate_particles<kvs::Real32>( const pbvr::Uns
     if ( pCrdSynthStr ) 
     //if ( ! pCrdSynthStr.m_x_coord_synthesizer_string.empty() && pCrdSynthStr.m_y_coord_synthesizer_string.empty() && pCrdSynthStr.m_z_coord_synthesizer_string.empty()  ) 
     {
-//        std::cout << "css.m_x_coord_synthesizer_string = " << css.m_x_coord_synthesizer_string <<std::endl;  
-//        std::cout << "css.m_y_coord_synthesizer_string = " << css.m_y_coord_synthesizer_string <<std::endl;  
-//        std::cout << "css.m_z_coord_synthesizer_string = " << css.m_z_coord_synthesizer_string <<std::endl;  
         css = *pCrdSynthStr;
     }
 

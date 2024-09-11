@@ -579,17 +579,16 @@ void TransferFunctionEditor::onImportButtonClicked()
 #endif
 }
 
-void TransferFunctionEditor::importFile( const std::string& fname )
+bool TransferFunctionEditor::importFile( const std::string& fname )
 {
     ParameterFile param;
     bool stat;
 
     stat = param.loadIN( fname );
 
-    // if ( !stat ) return;
     if ( !stat )
     {
-        return;
+        return false;
     }
     ExtendedTransferFunctionMessage importdoc;
 
@@ -601,7 +600,7 @@ void TransferFunctionEditor::importFile( const std::string& fname )
     {
 //        std::cerr << "[Error] This import file is old format. file=" << fname << std::endl;
 //        QMessageBox::warning(this, QString("Obsolete File Format"), QString("The selected file is using an old unsupported format"));
-        return;
+        return false;
     }
 
     importdoc.m_transfer_function_number = param.getInt( "TF_NUMBER" );
@@ -716,6 +715,7 @@ void TransferFunctionEditor::importFile( const std::string& fname )
 
     m_is_import_transfer_function_parameter = true;
     onApplyButtonClicked();
+    return true;
 }
 
 void TransferFunctionEditor::onExportButtonClicked()
