@@ -128,12 +128,12 @@ void Connect::connectServer()
     {
         m_merge->serverObjectCS( ui->volumeDataFilePathLEdit->text(), m_server_message.m_start_step, m_server_message.m_last_step );
         m_transfer_function_editor->applyVariableRange( m_server_message.m_server_side_variable_range );
-    // #ifdef Q_OS_WIN
-    //     m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
-    // #else
-    //     m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
-    // #endif
-    //     m_transfer_function_editor->onApplyButtonClicked();
+    #ifdef Q_OS_WIN
+        m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
+    #else
+        m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
+    #endif
+        m_transfer_function_editor->onApplyButtonClicked();
         //    qInfo() << m_server_message.m_variable_range.min( "t1_var_c" );
         //    qInfo() << m_server_message.m_min_value;
     }
