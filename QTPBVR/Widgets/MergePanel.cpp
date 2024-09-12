@@ -1067,19 +1067,22 @@ void MergePanel::onWorkerThreadFinished()
             {
                 if( kvs::PointObject* point_object = dynamic_cast<kvs::PointObject*>(m_files_manager[row]->getObject()) )
                 {
-                    if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS && m_time_controller_b->getTimeControllerA()->getCurrentTimeStepLineEdit()->value() == m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() )
+                    if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS )
                     {
-                    }
-                    else
-                    {
-                        if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS  && point_object->numberOfVertices() != 0 )
+                        if( m_time_controller_b->getTimeControllerA()->getCurrentTimeStepLineEdit()->value() == m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() )
                         {
-                            m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, point_object );
                         }
                         else
                         {
-                            m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, point_object );
+                            if( point_object->numberOfVertices() != 0 )
+                            {
+                                m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, point_object );
+                            }
                         }
+                    }
+                    else
+                    {
+                        m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, point_object );
                     }
                 }
                 else if( kvs::PolygonObject* polygon_object = dynamic_cast<kvs::PolygonObject*>(m_files_manager[row]->getObject()) )
