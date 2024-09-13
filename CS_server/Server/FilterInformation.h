@@ -40,6 +40,7 @@ public:
     float   m_min_value;
     float   m_max_value;
     std::string m_file_path;
+    bool is_binary;
     std::vector<IngredientsStep> m_ingredient_step;
     
     std::vector<std::string> m_name_list; //add by shimomura 20240726

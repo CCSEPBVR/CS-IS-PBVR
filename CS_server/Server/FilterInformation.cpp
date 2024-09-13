@@ -12,48 +12,66 @@
 int FilterInformationFile::loadPFI( const std::string& filename )
 {
 
-    NameListFile m_name_list_file(filename); 
-    m_name_list_file.setName( "NODE_NUM" );
-    m_name_list_file.setName( "CELL_NUM" );
-    m_name_list_file.setName( "CELLTYPE" ); 
-    m_name_list_file.setName( "FILETYPE" ); 
-    m_name_list_file.setName( "FILES_NUM" ); 
-    m_name_list_file.setName( "COMPONENT_NUM" ); 
-    m_name_list_file.setName( "BEGINNING_STEP" ); 
-    m_name_list_file.setName( "LAST_STEP" ); 
-    m_name_list_file.setName( "SUBVOLUME_NUM" ); 
-    m_name_list_file.setName( "MIN_COORD_0" ); 
-    m_name_list_file.setName( "MIN_COORD_1" ); 
-    m_name_list_file.setName( "MIN_COORD_2" ); 
-    m_name_list_file.setName( "MAX_COORD_0" ); 
-    m_name_list_file.setName( "MAX_COORD_1" ); 
-    m_name_list_file.setName( "MAX_COORD_2" );
-
-    m_name_list_file.read();
-
-    m_number_nodes        = m_name_list_file.getValue<int>("NODE_NUM");
-    m_number_elements     = m_name_list_file.getValue<int>("CELL_NUM");
-    m_elem_type           = m_name_list_file.getValue<int>("CELLTYPE");
-    m_file_type           = m_name_list_file.getValue<int>("FILETYPE");
-    m_number_files        = m_name_list_file.getValue<int>("FILES_NUM");
-    m_number_ingredients  = m_name_list_file.getValue<int>("COMPONENT_NUM");
-    m_start_step          = m_name_list_file.getValue<int>("BEGINNING_STEP");
-    m_end_steps           = m_name_list_file.getValue<int>("LAST_STEP");
-    m_number_subvolumes   = m_name_list_file.getValue<int>("SUBVOLUME_NUM");
-    float x_min, y_min, z_min;
-    float x_max, y_max, z_max;
-    x_min = m_name_list_file.getValue<float>("MIN_COORD_0"); 
-    y_min = m_name_list_file.getValue<float>("MIN_COORD_1"); 
-    z_min = m_name_list_file.getValue<float>("MIN_COORD_2"); 
-    x_max = m_name_list_file.getValue<float>("MAX_COORD_0"); 
-    y_max = m_name_list_file.getValue<float>("MAX_COORD_1"); 
-    z_max = m_name_list_file.getValue<float>("MAX_COORD_2"); 
-    m_min_object_coord.set( x_min, y_min, z_min );
-    m_max_object_coord.set( x_max, y_max, z_max );
-
-
-    for(int i =0; i< m_number_subvolumes; i++)
+    std::ifstream fin( filename, std::ios::in | std::ios::binary );
+    if (!fin.is_open()) {
+        std::cerr << "ファイルを開けませんでした: " << filename << std::endl;
+        return false;
+    }
+    char ch;
+    is_binary = false;
+    while (fin.get(ch))
     {
+        // 非ASCII文字（制御文字）が含まれていればバイナリファイルと判別
+        if (ch < 0x09 || (ch > 0x0D && ch < 0x20)) {
+            is_binary = true; // バイナリ
+        }
+    }
+    fin.close();
+
+    if(!is_binary) // アスキー
+    {
+        NameListFile m_name_list_file(filename); 
+        m_name_list_file.setName( "NODE_NUM" );
+        m_name_list_file.setName( "CELL_NUM" );
+        m_name_list_file.setName( "CELLTYPE" ); 
+        m_name_list_file.setName( "FILETYPE" ); 
+        m_name_list_file.setName( "FILES_NUM" ); 
+        m_name_list_file.setName( "COMPONENT_NUM" ); 
+        m_name_list_file.setName( "BEGINNING_STEP" ); 
+        m_name_list_file.setName( "LAST_STEP" ); 
+        m_name_list_file.setName( "SUBVOLUME_NUM" ); 
+        m_name_list_file.setName( "MIN_COORD_0" ); 
+        m_name_list_file.setName( "MIN_COORD_1" ); 
+        m_name_list_file.setName( "MIN_COORD_2" ); 
+        m_name_list_file.setName( "MAX_COORD_0" ); 
+        m_name_list_file.setName( "MAX_COORD_1" ); 
+        m_name_list_file.setName( "MAX_COORD_2" );
+
+        m_name_list_file.read();
+
+        m_number_nodes        = m_name_list_file.getValue<int>("NODE_NUM");
+        m_number_elements     = m_name_list_file.getValue<int>("CELL_NUM");
+        m_elem_type           = m_name_list_file.getValue<int>("CELLTYPE");
+        m_file_type           = m_name_list_file.getValue<int>("FILETYPE");
+        m_number_files        = m_name_list_file.getValue<int>("FILES_NUM");
+        m_number_ingredients  = m_name_list_file.getValue<int>("COMPONENT_NUM");
+        m_start_step          = m_name_list_file.getValue<int>("BEGINNING_STEP");
+        m_end_steps           = m_name_list_file.getValue<int>("LAST_STEP");
+        m_number_subvolumes   = m_name_list_file.getValue<int>("SUBVOLUME_NUM");
+        float x_min, y_min, z_min;
+        float x_max, y_max, z_max;
+        x_min = m_name_list_file.getValue<float>("MIN_COORD_0"); 
+        y_min = m_name_list_file.getValue<float>("MIN_COORD_1"); 
+        z_min = m_name_list_file.getValue<float>("MIN_COORD_2"); 
+        x_max = m_name_list_file.getValue<float>("MAX_COORD_0"); 
+        y_max = m_name_list_file.getValue<float>("MAX_COORD_1"); 
+        z_max = m_name_list_file.getValue<float>("MAX_COORD_2"); 
+        m_min_object_coord.set( x_min, y_min, z_min );
+        m_max_object_coord.set( x_max, y_max, z_max );
+
+
+        for(int i =0; i< m_number_subvolumes; i++)
+        {
             std::stringstream ss_min, ss_max;
             ss_min << "SUB_VOLUME_MIN_COORD_" << i << "_";
             ss_max << "SUB_VOLUME_MAX_COORD_" << i << "_";
@@ -65,186 +83,141 @@ int FilterInformationFile::loadPFI( const std::string& filename )
             m_name_list_file.setName( tag_max_coord_base + "0" );
             m_name_list_file.setName( tag_max_coord_base + "1" );
             m_name_list_file.setName( tag_max_coord_base + "2" );
-    }
+        }
 
-//////    for (int i= 0; i <= 0; i++ )
-//    {
-//        int i= 0;
-//        for ( int32_t j = 0; j < m_number_ingredients; j++ )
-//        {
-//            std::stringstream ss_val_min, ss_val_max;
-//            ss_val_min << "MIN_VAL_" << i << "_" << j;
-//            ss_val_max << "MAX_VAL_" << i << "_" << j;
-//            const std::string tag_min_val_base = ss_val_min.str();
-//            const std::string tag_max_val_base = ss_val_max.str();
-//            m_name_list_file.setName( tag_min_val_base );
-//            m_name_list_file.setName( tag_max_val_base );
-//        }
-//    } 
+        m_min_subvolume_coord.resize( m_number_subvolumes );
+        m_max_subvolume_coord.resize( m_number_subvolumes );
+        m_name_list_file.read();
 
-    m_min_subvolume_coord.resize( m_number_subvolumes );
-    m_max_subvolume_coord.resize( m_number_subvolumes );
-    m_name_list_file.read();
-
-    for(int vl =0; vl< m_number_subvolumes; vl++)
-    {
-        float sub_x_min, sub_y_min, sub_z_min;
-        float sub_x_max, sub_y_max, sub_z_max;
-        std::stringstream ss_min, ss_max;
-        ss_min << "SUB_VOLUME_MIN_COORD_" << vl << "_";
-        ss_max << "SUB_VOLUME_MAX_COORD_" << vl << "_";
-        //変数読み取り処理
-        const std::string tag_min_coord_base = ss_min.str();
-        const std::string tag_max_coord_base = ss_max.str();
-        sub_x_min = m_name_list_file.getValue<float>( tag_min_coord_base + "0"); 
-        sub_y_min = m_name_list_file.getValue<float>( tag_min_coord_base + "1"); 
-        sub_z_min = m_name_list_file.getValue<float>( tag_min_coord_base + "2"); 
-        sub_x_max = m_name_list_file.getValue<float>( tag_max_coord_base + "0"); 
-        sub_y_max = m_name_list_file.getValue<float>( tag_max_coord_base + "1"); 
-        sub_z_max = m_name_list_file.getValue<float>( tag_max_coord_base + "2"); 
-        m_min_subvolume_coord[vl].set( sub_x_min, sub_y_min, sub_z_min );
-        m_max_subvolume_coord[vl].set( sub_x_max, sub_y_max, sub_z_max );
-    }
-
-//    m_ingredient_step.clear();
-////    for (int i= 0; i <= 0; i++ )
-//    {
-//        int i= 0;
-////        for ( int32_t i = 0; i < m_number_ingredients; i++ )
-////            {
-////                std::stringstream ss_val_min, ss_val_max;
-////                ss_val_min << "MIN_VAL_" << i << "_" << j;
-////                ss_val_max << "MAX_VAL_" << i << "_" << j;
-////                const std::string tag_min_val_base = ss_val_min.str();
-////                const std::string tag_max_val_base = ss_val_max.str();
-//////                std::cout << tag_min_val_base << "=" << m_name_list_file.m_name_list[tag_min_val_base]<< std::endl;
-//////                std::cout << tag_max_val_base << "=" << m_name_list_file.[tag_max_val_base]<< std::endl;
-////                std::cout << tag_min_val_base << "=" << m_name_list_file.getValue<float>(tag_min_val_base)<< std::endl;
-////                std::cout << tag_max_val_base << "=" << m_name_list_file.getValue<float>(tag_max_val_base)<< std::endl;
-////            }
-//
-//        m_ingredient_step.push_back( IngredientsStep() );
-//        m_ingredient_step[i].m_ingredient.clear();
-//        for ( int32_t j = 0; j < m_number_ingredients; j++ )
-//        {
-//            std::stringstream ss_val_min, ss_val_max;
-//            ss_val_min << "MIN_VAL_" << i << "_" << j;
-//            ss_val_max << "MAX_VAL_" << i << "_" << j;
-//            const std::string tag_min_val_base = ss_val_min.str();
-//            const std::string tag_max_val_base = ss_val_max.str();
-//
-//            float min, max;
-//            min = m_name_list_file.getValue<float>(tag_min_val_base);
-//            max = m_name_list_file.getValue<float>(tag_max_val_base);
-//            m_ingredient_step[i].m_ingredient.push_back( IngredientsMinMax() );
-//            m_ingredient_step[i].m_ingredient[j].m_min = min;
-//            m_ingredient_step[i].m_ingredient[j].m_max = max;
-//            std::cout << "m_ingredient_step[i].m_ingredient[j].m_min = " << m_ingredient_step[i].m_ingredient[j].m_min <<std::endl;  
-//        }
-//    } 
-
-
-#if 0
-    //std::ifstream fin( filename.c_str(), std::ios::in | std::ios::binary );
-    //if ( ! fin ) return -1;
-    fin.read( ( char* )&m_number_nodes, sizeof( int32_t ) );
-    fin.read( ( char* )&m_number_elements, sizeof( int32_t ) );
-    fin.read( ( char* )&m_elem_type, sizeof( int32_t ) );
-    fin.read( ( char* )&m_file_type, sizeof( int32_t ) );
-    fin.read( ( char* )&m_number_files, sizeof( int32_t ) );
-    fin.read( ( char* )&m_number_ingredients, sizeof( int32_t ) );
-    fin.read( ( char* )&m_start_step, sizeof( int32_t ) );
-    fin.read( ( char* )&m_end_steps, sizeof( int32_t ) );
-    fin.read( ( char* )&m_number_subvolumes, sizeof( int32_t ) );
-
-    endian2::LittleToHost( &m_number_nodes );
-    endian2::LittleToHost( &m_number_elements );
-    endian2::LittleToHost( &m_elem_type );
-    endian2::LittleToHost( &m_file_type );
-    endian2::LittleToHost( &m_number_files );
-    endian2::LittleToHost( &m_number_ingredients );
-    endian2::LittleToHost( &m_start_step );
-    endian2::LittleToHost( &m_end_steps );
-    endian2::LittleToHost( &m_number_subvolumes );
-    m_number_steps = m_end_steps - m_start_step + 1;
-
-    float x_min, y_min, z_min;
-    float x_max, y_max, z_max;
-    fin.read( ( char* )&x_min, sizeof( float ) );
-    fin.read( ( char* )&y_min, sizeof( float ) );
-    fin.read( ( char* )&z_min, sizeof( float ) );
-    fin.read( ( char* )&x_max, sizeof( float ) );
-    fin.read( ( char* )&y_max, sizeof( float ) );
-    fin.read( ( char* )&z_max, sizeof( float ) );
-    endian2::LittleToHost( &x_min );
-    endian2::LittleToHost( &y_min );
-    endian2::LittleToHost( &z_min );
-    endian2::LittleToHost( &x_max );
-    endian2::LittleToHost( &y_max );
-    endian2::LittleToHost( &z_max );
-    m_min_object_coord.set( x_min, y_min, z_min );
-    m_max_object_coord.set( x_max, y_max, z_max );
-
-    int skipsize = 0;
-    skipsize += ( m_number_subvolumes + m_number_subvolumes ) * sizeof( int );
-    fin.seekg( skipsize, std::ios::cur );
-
-    m_min_subvolume_coord.resize( m_number_subvolumes );
-    m_max_subvolume_coord.resize( m_number_subvolumes );
-    for ( int32_t vl = 0; vl < m_number_subvolumes; vl++ )
-    {
-        float sub_x_min, sub_y_min, sub_z_min;
-        float sub_x_max, sub_y_max, sub_z_max;
-        fin.read( ( char* )&sub_x_min, sizeof( float ) );
-        fin.read( ( char* )&sub_y_min, sizeof( float ) );
-        fin.read( ( char* )&sub_z_min, sizeof( float ) );
-        fin.read( ( char* )&sub_x_max, sizeof( float ) );
-        fin.read( ( char* )&sub_y_max, sizeof( float ) );
-        fin.read( ( char* )&sub_z_max, sizeof( float ) );
-        endian2::LittleToHost( &sub_x_min );
-        endian2::LittleToHost( &sub_y_min );
-        endian2::LittleToHost( &sub_z_min );
-        endian2::LittleToHost( &sub_x_max );
-        endian2::LittleToHost( &sub_y_max );
-        endian2::LittleToHost( &sub_z_max );
-        m_min_subvolume_coord[vl].set( sub_x_min, sub_y_min, sub_z_min );
-        m_max_subvolume_coord[vl].set( sub_x_max, sub_y_max, sub_z_max );
-    }
-
-    m_ingredient_step.clear();
-    for ( int32_t s = 0; s < m_number_steps; s++ )
-    {
-        m_ingredient_step.push_back( IngredientsStep() );
-        m_ingredient_step[s].m_ingredient.clear();
-        for ( int32_t i = 0; i < m_number_ingredients; i++ )
+        for(int vl =0; vl< m_number_subvolumes; vl++)
         {
-            float min, max;
-            fin.read( ( char* )&min, sizeof( float ) );
-            fin.read( ( char* )&max, sizeof( float ) );
-            endian2::LittleToHost( &min );
-            endian2::LittleToHost( &max );
-
-            m_ingredient_step[s].m_ingredient.push_back( IngredientsMinMax() );
-            m_ingredient_step[s].m_ingredient[i].m_min = min;
-            m_ingredient_step[s].m_ingredient[i].m_max = max;
+            float sub_x_min, sub_y_min, sub_z_min;
+            float sub_x_max, sub_y_max, sub_z_max;
+            std::stringstream ss_min, ss_max;
+            ss_min << "SUB_VOLUME_MIN_COORD_" << vl << "_";
+            ss_max << "SUB_VOLUME_MAX_COORD_" << vl << "_";
+            //変数読み取り処理
+            const std::string tag_min_coord_base = ss_min.str();
+            const std::string tag_max_coord_base = ss_max.str();
+            sub_x_min = m_name_list_file.getValue<float>( tag_min_coord_base + "0"); 
+            sub_y_min = m_name_list_file.getValue<float>( tag_min_coord_base + "1"); 
+            sub_z_min = m_name_list_file.getValue<float>( tag_min_coord_base + "2"); 
+            sub_x_max = m_name_list_file.getValue<float>( tag_max_coord_base + "0"); 
+            sub_y_max = m_name_list_file.getValue<float>( tag_max_coord_base + "1"); 
+            sub_z_max = m_name_list_file.getValue<float>( tag_max_coord_base + "2"); 
+            m_min_subvolume_coord[vl].set( sub_x_min, sub_y_min, sub_z_min );
+            m_max_subvolume_coord[vl].set( sub_x_max, sub_y_max, sub_z_max );
         }
     }
+    else
+    { 
 
-    m_min_value = m_ingredient_step[0].m_ingredient[0].m_min;
-    m_max_value = m_ingredient_step[0].m_ingredient[0].m_max;
-    for ( int32_t s = 0; s < m_number_steps; s++ )
-    {
-        for ( int32_t i = 0; i < m_number_ingredients; i++ )
+#if 1
+        std::ifstream fin( filename.c_str(), std::ios::in | std::ios::binary );
+        if ( ! fin ) return -1;
+//        fin.seekg( 0, std::ios_base::beg );
+        fin.read( ( char* )&m_number_nodes, sizeof( int32_t ) );
+        fin.read( ( char* )&m_number_elements, sizeof( int32_t ) );
+        fin.read( ( char* )&m_elem_type, sizeof( int32_t ) );
+        fin.read( ( char* )&m_file_type, sizeof( int32_t ) );
+        fin.read( ( char* )&m_number_files, sizeof( int32_t ) );
+        fin.read( ( char* )&m_number_ingredients, sizeof( int32_t ) );
+        fin.read( ( char* )&m_start_step, sizeof( int32_t ) );
+        fin.read( ( char* )&m_end_steps, sizeof( int32_t ) );
+        fin.read( ( char* )&m_number_subvolumes, sizeof( int32_t ) );
+
+        std::cout << "m_start_step = " << m_start_step << std::endl;
+        std::cout << "m_end_step = " << m_end_steps << std::endl;
+        endian2::LittleToHost( &m_number_nodes );
+        endian2::LittleToHost( &m_number_elements );
+        endian2::LittleToHost( &m_elem_type );
+        endian2::LittleToHost( &m_file_type );
+        endian2::LittleToHost( &m_number_files );
+        endian2::LittleToHost( &m_number_ingredients );
+        endian2::LittleToHost( &m_start_step );
+        endian2::LittleToHost( &m_end_steps );
+        endian2::LittleToHost( &m_number_subvolumes );
+        m_number_steps = m_end_steps - m_start_step + 1;
+
+        std::cout << "m_start_step = " << m_start_step << std::endl;
+        std::cout << "m_end_step = " << m_end_steps << std::endl;
+        float x_min, y_min, z_min;
+        float x_max, y_max, z_max;
+        fin.read( ( char* )&x_min, sizeof( float ) );
+        fin.read( ( char* )&y_min, sizeof( float ) );
+        fin.read( ( char* )&z_min, sizeof( float ) );
+        fin.read( ( char* )&x_max, sizeof( float ) );
+        fin.read( ( char* )&y_max, sizeof( float ) );
+        fin.read( ( char* )&z_max, sizeof( float ) );
+        endian2::LittleToHost( &x_min );
+        endian2::LittleToHost( &y_min );
+        endian2::LittleToHost( &z_min );
+        endian2::LittleToHost( &x_max );
+        endian2::LittleToHost( &y_max );
+        endian2::LittleToHost( &z_max );
+        m_min_object_coord.set( x_min, y_min, z_min );
+        m_max_object_coord.set( x_max, y_max, z_max );
+
+        int skipsize = 0;
+        skipsize += ( m_number_subvolumes + m_number_subvolumes ) * sizeof( int );
+        fin.seekg( skipsize, std::ios::cur );
+
+        m_min_subvolume_coord.resize( m_number_subvolumes );
+        m_max_subvolume_coord.resize( m_number_subvolumes );
+        for ( int32_t vl = 0; vl < m_number_subvolumes; vl++ )
         {
-            float min = m_ingredient_step[s].m_ingredient[i].m_min;
-            float max = m_ingredient_step[s].m_ingredient[i].m_max;
-            if ( min < m_min_value ) m_min_value = min;
-            if ( max > m_max_value ) m_max_value = max;
+            float sub_x_min, sub_y_min, sub_z_min;
+            float sub_x_max, sub_y_max, sub_z_max;
+            fin.read( ( char* )&sub_x_min, sizeof( float ) );
+            fin.read( ( char* )&sub_y_min, sizeof( float ) );
+            fin.read( ( char* )&sub_z_min, sizeof( float ) );
+            fin.read( ( char* )&sub_x_max, sizeof( float ) );
+            fin.read( ( char* )&sub_y_max, sizeof( float ) );
+            fin.read( ( char* )&sub_z_max, sizeof( float ) );
+            endian2::LittleToHost( &sub_x_min );
+            endian2::LittleToHost( &sub_y_min );
+            endian2::LittleToHost( &sub_z_min );
+            endian2::LittleToHost( &sub_x_max );
+            endian2::LittleToHost( &sub_y_max );
+            endian2::LittleToHost( &sub_z_max );
+            m_min_subvolume_coord[vl].set( sub_x_min, sub_y_min, sub_z_min );
+            m_max_subvolume_coord[vl].set( sub_x_max, sub_y_max, sub_z_max );
         }
-    }
+
+//        m_ingredient_step.clear();
+//        for ( int32_t s = 0; s < m_number_steps; s++ )
+//        {
+//            m_ingredient_step.push_back( IngredientsStep() );
+//            m_ingredient_step[s].m_ingredient.clear();
+//            for ( int32_t i = 0; i < m_number_ingredients; i++ )
+//            {
+//                float min, max;
+//                fin.read( ( char* )&min, sizeof( float ) );
+//                fin.read( ( char* )&max, sizeof( float ) );
+//                endian2::LittleToHost( &min );
+//                endian2::LittleToHost( &max );
+//
+//                m_ingredient_step[s].m_ingredient.push_back( IngredientsMinMax() );
+//                m_ingredient_step[s].m_ingredient[i].m_min = min;
+//                m_ingredient_step[s].m_ingredient[i].m_max = max;
+//            }
+//        }
+//
+//        m_min_value = m_ingredient_step[0].m_ingredient[0].m_min;
+//        m_max_value = m_ingredient_step[0].m_ingredient[0].m_max;
+//        for ( int32_t s = 0; s < m_number_steps; s++ )
+//        {
+//            for ( int32_t i = 0; i < m_number_ingredients; i++ )
+//            {
+//                float min = m_ingredient_step[s].m_ingredient[i].m_min;
+//                float max = m_ingredient_step[s].m_ingredient[i].m_max;
+//                if ( min < m_min_value ) m_min_value = min;
+//                if ( max > m_max_value ) m_max_value = max;
+//            }
+//        }
 #endif
-    //fin.close();
-
+        fin.close();
+    }
     /*
       std::cout << "numNodes:      " << numNodes       << std::endl;
       std::cout << "m_number_elements:   " << m_number_elements    << std::endl;
@@ -307,8 +280,6 @@ int FilterInformationList::loadPFL( const std::string& filename )
             m_total_ingredient[i].m_min = FLT_MAX;
             m_total_ingredient[i].m_max = -FLT_MAX;
         }
-// comment out by shimomura 20240730
-//        calculate_ingredient_min_max( fi, &m_total_ingredient );
         return 1;
     }
 
@@ -384,12 +355,6 @@ int FilterInformationList::loadPFL( const std::string& filename )
     fin.close();
  
     m_total_ingredient.resize( m_total_number_ingredients );
-
-// comment out by shimomura 20240730
-//    for ( int32_t idx = 0; idx < m_list.size(); idx++ )
-//    {
-//        calculate_ingredient_min_max( m_list[idx], &m_total_ingredient );
-//    }
 
     return m_list.size();
 }
