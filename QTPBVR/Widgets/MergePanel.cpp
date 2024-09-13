@@ -151,6 +151,8 @@ void MergePanel::serverObjectIS( QString volumeDataFilePath, int min, int max )
     m_files_manager.append( newFile );
     addFilesTable( m_files_manager.last() ); //アペンド直後のFilesManagerをテーブルウィジェットに追加する。
     calculateTotalMinMaxTimeStep();
+    IS_OBJ = true;
+    IS_OBJ_DONE_INIT = false;
 }
 
 void MergePanel::updateObjectTimeStepIS( int min, int max )
@@ -454,6 +456,8 @@ void MergePanel::updateCheckState()
             if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectCS || m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS )
             {
                 m_connect->deletedServerObject();
+                IS_OBJ = false;
+                IS_OBJ_DONE_INIT = false;
             }
             delete m_files_manager[row];
             m_files_manager.removeAt(row);
@@ -1073,11 +1077,8 @@ void MergePanel::onWorkerThreadFinished()
                         {
                         }
                         else
-                        {
-                            if( point_object->numberOfVertices() != 0 )
-                            {
-                                m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, point_object );
-                            }
+                        {                            
+                                m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, point_object );                            
                         }
                     }
                     else
@@ -1177,7 +1178,23 @@ void MergePanel::onWorkerThreadFinished()
     }
     else
     {
-        m_time_controller_b->getTimeControllerA()->getCurrentTimeStepLineEdit()->setValue( m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() );
+        if( IS_OBJ == false )
+        {
+            m_time_controller_b->getTimeControllerA()->getCurrentTimeStepLineEdit()->setValue( m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() );
+        }
+        else
+        {
+            if( IS_OBJ_DONE_INIT == false )
+            {
+                m_time_controller_b->getTimeControllerA()->getCurrentTimeStepLineEdit()->setValue( m_connect->getServerMessage()->m_last_step );
+                m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->setValue( m_connect->getServerMessage()->m_last_step );
+                IS_OBJ_DONE_INIT = true;
+            }
+            else
+            {
+                m_time_controller_b->getTimeControllerA()->getCurrentTimeStepLineEdit()->setValue( m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() );
+            }
+        }
     }
     m_preference->setCurrentTimeStep( m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() );
     totalParticles();

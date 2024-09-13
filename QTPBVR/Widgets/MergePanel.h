@@ -147,6 +147,8 @@ private:
     bool m_is_particle_generation_needed;
     bool m_is_export;
     QString m_export_file_path;
+    bool IS_OBJ;
+    bool IS_OBJ_DONE_INIT;
 
 private:
     void registerFiles( const QString& filePath );
