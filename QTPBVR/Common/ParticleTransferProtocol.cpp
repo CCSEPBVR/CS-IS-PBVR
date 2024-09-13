@@ -946,9 +946,12 @@ void jpv::ParticleTransferServerMessage::show( void ) const
         std::cout<<m_transfer_function[i].m_name<<","<<m_transfer_function[i].m_color_variable<<","<<m_transfer_function[i].m_opacity_variable<<","<<m_transfer_function[i].m_color_variable_min<<","<<m_transfer_function[i].m_color_variable_max<<std::endl;
     }
 
-//    std::cout << "c_bin = {" << std::endl;
-//    for(int i=0; i<256; i++) std::cout << m_color_bins[0][i] << " " ;
-
+    // std::cout << "c_bin = {" << std::endl;
+    // for (int n = 0; n < m_transfer_function_count; n++)
+    // {
+    //     for(int i=0; i<256; i++) std::cout << m_color_bins[n][i] << " " ;
+    //     std::cout << std::endl;
+    // }
     std::cout<<"voleqn.size="<<m_volume_equation.size()<<std::endl;
     std::cout<<"voleqn.Name,Equation"<<std::endl;
     for(int i=0; i<m_volume_equation.size(); i++)

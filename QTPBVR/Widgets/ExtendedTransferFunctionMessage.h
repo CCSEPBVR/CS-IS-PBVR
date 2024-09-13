@@ -12,7 +12,7 @@
 class ExtendedTransferFunctionMessage
 {
 private:
-    static const size_t NPRTF = 5;
+    static const size_t NPRTF = 1;
     static const size_t NRGBA = 4;
 
 public:

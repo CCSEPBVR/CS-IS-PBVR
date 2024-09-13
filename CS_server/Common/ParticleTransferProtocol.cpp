@@ -881,11 +881,6 @@ void jpv::ParticleTransferServerMessage::setOpacityHistogramBins(
         }
     }
 
-//    std::stringstream debug11;
-//    debug11 << "o_bins[0] = {";
-//    for(int i =0; i< nbins; i++) debug11 << m_opacity_bins[0][i] << "," ;
-//    std::cout << debug11.str() << std::endl;
-
     return;
 }
 

@@ -701,6 +701,7 @@ bool TransferFunctionEditor::importFile( const std::string& fname )
     //DEL BY)T0603 2020.05.25
     //ui->resolution->setValue(resolution);
     ui->numberOfTransferFunctionSBox->setValue( importdoc.m_transfer_function_number );
+    onNumberOfTransferFunctionValueChanged(importdoc.m_transfer_function_number);
 
 #ifdef Q_OS_WIN
     ui->color_function_synth->setText( QString::fromUtf8(importdoc.m_color_transfer_function_synthesis.c_str() ) );
@@ -804,7 +805,7 @@ void TransferFunctionEditor::exportFile( const std::string& fname, const bool ap
 
 }
 
-void TransferFunctionEditor::importFromServerIS()
+void TransferFunctionEditor::importFromServer()
 {
     m_extended_transfer_function_message.m_extend_transfer_function_resolution= 256;
 
@@ -827,7 +828,6 @@ void TransferFunctionEditor::importFromServerIS()
         //m_extended_transfer_function_message->transferFunction.push_back( etf );
         m_extended_transfer_function_message.m_color_transfer_function.push_back(etf);
         m_extended_transfer_function_message.m_opacity_transfer_function.push_back(etf);
-
         std::string* nameBuf = &m_extended_transfer_function_message.m_color_transfer_function[i].m_name;
         std::replace(nameBuf->begin(), nameBuf->end(), 't', 'C');
         nameBuf = &m_extended_transfer_function_message.m_opacity_transfer_function[i].m_name;
@@ -864,6 +864,7 @@ void TransferFunctionEditor::importFromServerIS()
     onApplyButtonClicked();
 }
 
+
 void TransferFunctionEditor::onColorRangeSyncToolButtonClicked()
 {
     m_is_color_range_sync[ui->colorFunctionCBox->currentIndex()] = ui->colorRangeSyncTBtn->isChecked();
@@ -873,3 +874,4 @@ void TransferFunctionEditor::onOpacityRangeSyncToolButtonClicked()
 {
     m_is_opacity_range_sync[ui->opacityFunctionCBox->currentIndex()] = ui->opacityRangeSyncTBtn->isChecked();
 }
+

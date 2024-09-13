@@ -101,10 +101,40 @@ void TransferFunctionSynthesizerCreator::setAsisTransferFunction( const pbvr::Tr
 {
 }
 
-void TransferFunctionSynthesizerCreator::setTransferFunction( const std::string& name, const pbvr::TransferFunction& tf )
+void TransferFunctionSynthesizerCreator::setTransferFunction( jpv::ParticleTransferServerMessage* servMes )
 {
-//    for ( size_t i = 0; i < m_transfunc.size(); i++ )
-//    {
+    servMes->m_transfer_function.clear();
+    servMes->m_transfer_function.resize(m_transfunc.size());
+    int TF_resolution = 256;
+    for ( size_t i = 0; i < m_transfunc.size(); i++ )
+    {
+        NamedTransferFunction tf;
+        std::stringstream cc, qq, tt;
+        cc << "C" << i + 1;
+        qq << "q" << i + 1;
+        tt << "t" << i + 1;  
+        servMes->m_transfer_function[i].m_name          = tt.str();
+        servMes->m_transfer_function[i].m_color_variable       = qq.str();
+        servMes->m_transfer_function[i].m_color_variable_min   = m_transfunc[i].m_color_variable_min;
+        servMes->m_transfer_function[i].m_color_variable_max   = m_transfunc[i].m_color_variable_max; 
+        servMes->m_transfer_function[i].m_opacity_variable     = qq.str();
+        servMes->m_transfer_function[i].m_opacity_variable_min = m_transfunc[i].m_opacity_variable_min;
+        servMes->m_transfer_function[i].m_opacity_variable_max = m_transfunc[i].m_opacity_variable_max; 
+        servMes->m_transfer_function[i].m_resolution           = TF_resolution;
+        servMes->m_transfer_function[i].m_equation_red         = ""; 
+        servMes->m_transfer_function[i].m_equation_green       = ""; 
+        servMes->m_transfer_function[i].m_equation_blue        = ""; 
+        servMes->m_transfer_function[i].m_equation_opacity     = "";
+        kvs::ColorMap color_map( TF_resolution, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );
+        kvs::OpacityMap opacity_map( TF_resolution, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );
+        servMes->m_transfer_function[i].setColorMap( color_map );
+        servMes->m_transfer_function[i].setOpacityMap( opacity_map );
+
+        servMes->m_transfer_function[i].m_selection = NamedTransferFunctionParameter::SelectExtendTransferFunction;
+//        servMes->m_transfer_function.push_back( tf );
+    }
+
+
 //        if ( m_transfunc[i].m_name == name )
 //        {
 //            NamedTransferFunction ntf( tf );
@@ -218,7 +248,7 @@ void TransferFunctionSynthesizerCreator::setInitialProtocol( const int nvariable
     {
         NamedTransferFunction tf;
         std::stringstream cc, qq, tt;
-        cc << "C" << i + 1;
+        cc << "t" << i + 1;
         qq << "q" << i + 1;
         tt << "t" << i + 1;  
         tf.m_name          = cc.str();

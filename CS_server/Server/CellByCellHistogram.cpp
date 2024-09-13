@@ -1399,7 +1399,6 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
         o_max[i] = m_transfer_function_array[i].opacityMap().maxValue();
         c_min[i] = m_transfer_function_array[i].colorMap().minValue();
         c_max[i] = m_transfer_function_array[i].colorMap().maxValue();
-        std::cout << "o_max[i] = " << o_max[i] <<  std::endl;
     }
     //min max
     kvs::ValueArray<float> O_min( tf_number );// 4 calculate
@@ -1644,7 +1643,11 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
 
 //            std::stringstream debug11;
 //            debug11 << "m_c_histogram[n] = {";
-//            for(int i =0; i< tf_number *nbins; i++) debug11 << m_c_histogram[i] << "," ;
+//            for(int n=0; n < tf_number; n++)
+//            {
+//                for(int i =0; i< nbins; i++) debug11 << m_c_histogram[i + n*nbins ] << "," ;
+//                debug11 << std::endl;
+//            }
 //            std::cout << debug11.str() << std::endl;
         }
 

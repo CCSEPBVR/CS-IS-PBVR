@@ -1215,9 +1215,6 @@ int main( int argc, char** argv )
             param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
         }
 
-        std::cout << "param.m_transfunc_array[0].minValue() = " << param.m_transfunc_array[0].opacityMap().minValue() << std::endl;
-
-
         camera.setWindowSize( param.m_window_width, param.m_window_height );
         PBVR_TIMER_STA( 15 );
         //kawamura2 : It calculates subpixel level from particle limit.
@@ -1703,12 +1700,10 @@ int main( int argc, char** argv )
                     {
                         param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
-                    std::cout << "param.m_transfunc_array[0].minValue() = " << param.m_transfunc_array[0].opacityMap().minValue() << std::endl;
-
                     if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                     if ( param.m_crop.isEnabled() )
                     {
-                        jd.initialize( fil.m_total_start_steps, fil.m_total_last_step, fil.m_total_number_subvolumes,
+                        jd.initialize( fil.m_total_start_steps, fil.m_total_start_steps, fil.m_total_number_subvolumes,
                                        fil.m_total_min_subvolume_coord,
                                        fil.m_total_max_subvolume_coord,
                                        param.m_latency_threshold, param.m_job_id_pack_size,
@@ -1717,7 +1712,7 @@ int main( int argc, char** argv )
                     }
                     else
                     {
-                        jd.initialize( fil.m_total_start_steps, fil.m_total_last_step, fil.m_total_number_subvolumes,
+                        jd.initialize( fil.m_total_start_steps, fil.m_total_start_steps, fil.m_total_number_subvolumes,
                                        fil.m_total_min_subvolume_coord,
                                        fil.m_total_max_subvolume_coord,
                                        param.m_latency_threshold, param.m_job_id_pack_size );
@@ -2333,7 +2328,7 @@ int main( int argc, char** argv )
 
                     if ( param.m_crop.isEnabled() )
                     {
-                        jd.initialize( fil.m_total_start_steps, fil.m_total_last_step, fil.m_total_number_subvolumes,
+                        jd.initialize( fil.m_total_start_steps, fil.m_total_start_steps, fil.m_total_number_subvolumes,
                                 fil.m_total_min_subvolume_coord,
                                 fil.m_total_max_subvolume_coord,
                                 param.m_latency_threshold, param.m_job_id_pack_size,
@@ -2343,7 +2338,7 @@ int main( int argc, char** argv )
                     }
                     else
                     {
-                        jd.initialize( fil.m_total_start_steps, fil.m_total_last_step, fil.m_total_number_subvolumes,
+                        jd.initialize( fil.m_total_start_steps, fil.m_total_start_steps, fil.m_total_number_subvolumes,
                                 fil.m_total_min_subvolume_coord,
                                 fil.m_total_max_subvolume_coord,
                                 param.m_latency_threshold, param.m_job_id_pack_size );
@@ -2368,7 +2363,6 @@ int main( int argc, char** argv )
                     int tf_count = nvariable;
                     c_bins_size = 0;
                     o_bins_size = 0;
-                    //for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
                     for ( int tf = 0; tf < tf_count; tf++ )
                     {
                         c_bins_size += servMes.m_color_nbins[tf];
@@ -2450,6 +2444,7 @@ int main( int argc, char** argv )
                                     {
                                         tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ] ;
                                         c_count++;
+
                                     }
                                 }
                                 int o_count = 0;
@@ -2570,6 +2565,8 @@ int main( int argc, char** argv )
                     servMes.m_number_ingredients = fil.m_list[0].m_number_ingredients;
                     servMes.m_opacity_transfer_function_synthesis = "O1";
                     servMes.m_color_transfer_function_synthesis = "C1";
+                    transfunc_creator.setTransferFunction(&servMes); 
+
 
                     servMes.m_flag_send_bins = 1;
                     servMes.m_subpixel_level = param.m_subpixel_level;

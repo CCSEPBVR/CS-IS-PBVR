@@ -39,7 +39,8 @@ public:
     bool importFile( const std::string& fileName );
     void exportFile( const std::string& fileName, const bool addition);
     ExtendedTransferFunctionMessage* getExtendedTransferFunctionMessage() { return &m_extended_transfer_function_message; }
-    void importFromServerIS();
+    void importFromServer();
+    void importDefalutParameter();
     void setMode( Mode mode ) { m_mode = mode; }
     Mode getMode() { return m_mode; }
 

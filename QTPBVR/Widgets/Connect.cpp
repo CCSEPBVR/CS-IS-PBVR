@@ -86,6 +86,7 @@ void Connect::connectServer()
     m_client_message.m_message_size = m_client_message.byteSize();
     client.sendMessage( m_client_message );
     client.recvMessage( &m_server_message );
+    m_server_message.show();
 
     //ヒストグラム更新用(CS, IS)
     m_received_message.m_var_range.merge( m_server_message.m_server_side_variable_range );
@@ -101,17 +102,17 @@ void Connect::connectServer()
         {
             m_received_message.m_color_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_color_nbins[tf], (size_t *)m_server_message.m_color_bins[tf], std::string(color_function_name) );
         }
-        if ( m_server_message.m_opacity_nbins[tf] )
+        if ( m_server_message.m_opacity_nbins[tf] >0 )
         {
             m_received_message.m_opacity_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_opacity_nbins[tf],(size_t *) m_server_message.m_opacity_bins[tf], std::string(opacity_function_name) );
         }
     }
 
     m_transfer_function_editor->applyVariableRange( m_server_message.m_server_side_variable_range );
-    m_transfer_function_editor->updateRangeView();
+    // m_transfer_function_editor->updateRangeView();
 
-    //if ( ui->inSituRBtn->isChecked() ) m_transfer_function_editor->importFromServerIS();
-    m_transfer_function_editor->importFromServerIS();
+
+    m_transfer_function_editor->importFromServer();
 
     m_filter_infomation->updateFilterInfomation( ui->volumeDataFilePathLEdit->text(), m_server_message );
 
@@ -124,16 +125,20 @@ void Connect::connectServer()
     client.recvMessage( &m_server_message );
     client.termClient();
 
+
     if( ui-> clientServerRBtn -> isChecked() )
     {
         m_merge->serverObjectCS( ui->volumeDataFilePathLEdit->text(), m_server_message.m_start_step, m_server_message.m_last_step );
         m_transfer_function_editor->applyVariableRange( m_server_message.m_server_side_variable_range );
-    #ifdef Q_OS_WIN
-        m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
-    #else
-        m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
-    #endif
-        m_transfer_function_editor->onApplyButtonClicked();
+    //     if (m_client_message.m_import_flag)
+    //     {
+    // #ifdef Q_OS_WIN
+    //     m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
+    // #else
+    //     m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
+    // #endif
+    //     m_transfer_function_editor->onApplyButtonClicked();
+    //     }
         //    qInfo() << m_server_message.m_variable_range.min( "t1_var_c" );
         //    qInfo() << m_server_message.m_min_value;
     }
@@ -283,7 +288,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
             {
                 m_received_message.m_color_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_color_nbins[tf], (size_t *)m_server_message.m_color_bins[tf], std::string(color_function_name) );
             }
-            if ( m_server_message.m_opacity_nbins[tf] )
+            if ( m_server_message.m_opacity_nbins[tf] >0 )
             {
                 m_received_message.m_opacity_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_opacity_nbins[tf],(size_t *) m_server_message.m_opacity_bins[tf], std::string(opacity_function_name) );
             }
