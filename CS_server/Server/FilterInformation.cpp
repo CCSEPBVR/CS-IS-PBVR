@@ -68,7 +68,9 @@ int FilterInformationFile::loadPFI( const std::string& filename )
         z_max = m_name_list_file.getValue<float>("MAX_COORD_2"); 
         m_min_object_coord.set( x_min, y_min, z_min );
         m_max_object_coord.set( x_max, y_max, z_max );
-
+        std::cout << "m_end_steps = " << m_end_steps <<std::endl; 
+        std::cout << "m_start_step = " << m_start_step <<std::endl; 
+        m_number_steps = m_end_steps - m_start_step + 1;
 
         for(int i =0; i< m_number_subvolumes; i++)
         {
@@ -139,8 +141,6 @@ int FilterInformationFile::loadPFI( const std::string& filename )
         endian2::LittleToHost( &m_number_subvolumes );
         m_number_steps = m_end_steps - m_start_step + 1;
 
-        std::cout << "m_start_step = " << m_start_step << std::endl;
-        std::cout << "m_end_step = " << m_end_steps << std::endl;
         float x_min, y_min, z_min;
         float x_max, y_max, z_max;
         fin.read( ( char* )&x_min, sizeof( float ) );
