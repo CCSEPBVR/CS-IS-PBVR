@@ -38,7 +38,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_transfer_function_editor( this, &m_color_map_bar_selector ,&m_merge, &m_connect )
 {
     ui->setupUi(this);
-    setWindowTitle( "QTPBVR vX.X.X" );
+    setWindowTitle( "QTPBVR v3.1.0" );
 
     const size_t repetitions = 4;
     m_compositor->setRepetitionLevel( repetitions );
