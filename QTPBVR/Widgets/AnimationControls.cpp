@@ -1,14 +1,15 @@
 #include "AnimationControls.h"
 #include "ui_AnimationControls.h"
+#include "App/pbvrgui.h"
 #include <kvs/ObjectManager>
 #include <QFileDialog>
 
-AnimationControls::AnimationControls(QWidget *parent) :
+AnimationControls::AnimationControls(QWidget *parent, PBVRGUI *pbvr_gui) :
     QDockWidget(parent),
     ui(new Ui::AnimationControls),
+    m_pbvr_gui( pbvr_gui ),
     m_animationTimer( new QTimer( this ) ),
     m_animation_paused( false ),
-    m_screen( nullptr ),
     m_xforms(),
     m_xform_index( 0 ),
     m_ninterpolation( 0 ),
@@ -102,13 +103,13 @@ void AnimationControls::playKeyFrame()
             kvs::Xform Xform_new = InterpolateXform(step, interp_steps, m_xforms[i], m_xforms[i + 1]);
 
             // オブジェクトマネージャーに新しい変換を適用
-            m_screen->scene()->reset();
-            m_screen->scene()->objectManager()->translate(Xform_new.translation());
-            m_screen->scene()->objectManager()->scale(Xform_new.scaling());
-            m_screen->scene()->objectManager()->rotate(Xform_new.rotation());
+            m_pbvr_gui->screen()->scene()->reset();
+            m_pbvr_gui->screen()->scene()->objectManager()->translate(Xform_new.translation());
+            m_pbvr_gui->screen()->scene()->objectManager()->scale(Xform_new.scaling());
+            m_pbvr_gui->screen()->scene()->objectManager()->rotate(Xform_new.rotation());
 
             // 画面を更新
-            m_screen->update();
+            m_pbvr_gui->screen()->update();
             if( ui->captureCBox->currentData().toBool() == true )
             {
                 screenShot( loop_counter );
@@ -225,7 +226,7 @@ void AnimationControls::screenShot(int loop_counter)
     QString frame_number = QString::asprintf("%06d", loop_counter + 1);
     QString file_name = ui->imageFileLEdit->text();
 
-    QImage image = m_screen->grabFramebuffer();
+    QImage image = m_pbvr_gui->screen()->grabFramebuffer();
 
     // ファイル名を作成して保存
     QString full_file_name = file_name + "_" + frame_number + ".bmp";

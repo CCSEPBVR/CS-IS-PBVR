@@ -3,19 +3,16 @@
 
 #include <QDockWidget>
 
-#include <QFileDialog>
-//#include "ExtendedKVS/Screen.h"
-#include <kvs/qt/Screen>
-#include "Widgets/TimeControl.h"
-#include "Widgets/Preference.h"
+#include "ExtendedKVS/Screen.h"
+#include "Widgets/ToolBars.h"
 #include "Widgets/Connect.h"
-#include "Widgets/DataSummary.h"
 #include "Widgets/ShadingController.h"
-#include <kvs/PointObject>
+#include <QFileInfo>
+#include <kvs/ObjectBase>
 class FilesManager
 {
 public:
-    enum FormatType
+    enum Format
     {
         Unknown                       = 0, // Aka Error
         ServerPointObjectCS           = 1, // Server side Point Object
@@ -29,30 +26,7 @@ public:
         TexturedPolygonObjectFBX      = 9, // Textured Polygon Object(.fbx)
     };
 
-public:
-    void setFileInfo( QFileInfo file_info ){ m_file_info = file_info; }
-    void setMinTimeStep( int min_time_step ){ m_min_time_step = min_time_step; }
-    void setMaxTimeStep( int max_time_step ){ m_max_time_step = max_time_step; }
-    void setFormat( FormatType format ){ m_format = format; }
-    void setRGBColor( QColor rgb_color ) { m_rgb_color = rgb_color; }
-    void setOpacity( double opacity ) { m_opacity = opacity; }    
-    void setIds( std::pair<int,int> ids ){ m_ids = ids; }
-    void setCurrentDisplayedStep( int current_displayed_step ) { m_current_displayed_step = current_displayed_step; }
-    void setObject( kvs::ObjectBase* next_object ) { m_next_object = next_object; }
-    void setIsReplacementNeeded( bool is_replacement_needed ){ m_is_replacement_needed = is_replacement_needed; }
-
-    QFileInfo getFileInfo(){ return m_file_info; }
-    int getMinTimeStep(){ return m_min_time_step; }
-    int getMaxTimeStep(){ return m_max_time_step; }
-    FormatType getFormat(){ return m_format; }
-    QColor getRGBColor() { return m_rgb_color; }
-    double getOpacity() { return m_opacity; }    
-    std::pair<int,int> getIds() { return m_ids; }
-    int getCurrentDisplayedStep() { return m_current_displayed_step; }
-    kvs::ObjectBase* getObject() const { return m_next_object; }
-    bool getIsReplacementNeeded() const { return m_is_replacement_needed; }
-
-    QString formatTypeToString( FormatType format )
+    QString formatToString( Format format )
     {
         switch ( format )
         {
@@ -80,24 +54,53 @@ public:
             return QStringLiteral( "Unknown" );
         }
     }
-private:
+
+public:
+    void setFileInfo(const QFileInfo& file_info) { m_file_info = file_info; }
+    void setDisplay( const bool& is_display ) { m_is_display = is_display; }
+    void setKeepInital( const bool& is_keep_initial ) { m_is_keep_initial = is_keep_initial; }
+    void setKeepFinal( const bool& is_keep_final ) { m_is_keep_final = is_keep_final; }
+    void setFormat(const Format& format) { m_format = format; }
+    void setMinTimeStep(const int& min_time_step ) { m_min_time_step = min_time_step; }
+    void setMaxTimeStep(const int& max_time_step ) { m_max_time_step = max_time_step; }
+    void setColor( const QColor& color ) { m_color = color; }
+    void setOpacity( const double& opacity ) { m_opacity = opacity; }
+    void setChangePolygonTransferFunction( const bool& is_change_polygon_transfer_function ) { m_is_change_polygon_transfer_function = is_change_polygon_transfer_function; }
+    void setIDs( const std::pair<int,int>& ids ) { m_ids = ids; }
+    void setAlreadyImportedTimeStep( const int& current_displayed_time_step ) { m_already_imported_time_step = current_displayed_time_step; }
+    void setObject( kvs::ObjectBase* object ) { m_object = object; }
+
+    const QFileInfo& getFileInfo() const { return m_file_info; }
+    const bool& getDisplay() const { return m_is_display; }
+    const bool& getKeepInitial() const { return m_is_keep_initial; }
+    const bool& getKeepFinal() const { return m_is_keep_final; }
+    const Format& getFormat() const { return m_format; }
+    const int& getMinTimeStep() const { return m_min_time_step; }
+    const int& getMaxTimeStep() const { return m_max_time_step; }
+    const QColor& getColor() const { return m_color; }
+    const double& getOpacity() const { return m_opacity; }
+    const bool& getChangePolygonTransferFunction() const { return m_is_change_polygon_transfer_function; }
+    const std::pair<int,int>& getIDs() const { return m_ids; }
+    const int& getAlreadyImportedTimeStep() const { return m_already_imported_time_step; }
+    kvs::ObjectBase* getObject() const { return m_object; }
+
+private:    
     QFileInfo m_file_info;
+    bool m_is_display;
+    bool m_is_keep_initial;
+    bool m_is_keep_final;
+    Format m_format;
     int m_min_time_step;
     int m_max_time_step;
-//    Qt::CheckState m_is_display;
-//    Qt::CheckState m_is_keep_initial;
-//    Qt::CheckState m_is_keep_final;
-    FormatType m_format;
-    QColor m_rgb_color;
-    double m_opacity;    
-    std::pair<int, int> m_ids = std::pair<int,int>(-1,-1);
-    int m_current_displayed_step;
-    kvs::ObjectBase* m_next_object;
-    bool m_is_replacement_needed;
-
-//    QColor m_rgb_color;
-//    double m_opacity;
+    QColor m_color;
+    double m_opacity;
+    bool m_is_change_polygon_transfer_function;
+    std::pair<int,int> m_ids;
+    int m_already_imported_time_step;
+    kvs::ObjectBase* m_object;
 };
+
+class PBVRGUI;
 
 namespace Ui {
 class MergePanel;
@@ -106,99 +109,77 @@ class MergePanel;
 class MergePanel : public QDockWidget
 {
     Q_OBJECT
-public:
-    enum CheckPattern
-    {        
-        KeepInitialChecked = 1,
-        KeepFinalChecked   = 2,
-        BothChecked        = 3,
-        NoneChecked        = 4,
-    };
 
 public:
-    explicit MergePanel(QWidget *parent = nullptr);
+    explicit MergePanel(QWidget *parent = nullptr,
+                         PBVRGUI *pbvr_gui = nullptr,
+                         Preference* preference = nullptr,
+                         TimeControllerB* time_controller_b = nullptr,
+                         TotalParticles* total_particles = nullptr,
+                         Connect* connectUI = nullptr,
+                         ShadingController* shading_controller = nullptr );
     ~MergePanel();
-    void setTimeControl( TimeControl* time_control ){ m_time_control = time_control; }
-    void setPreference( Preference* preference ){ m_preference = preference; }
-    void setConnect( Connect* connect ){ m_connect = connect; }
-    void setScreen( kvs::qt::jaea::Screen* screen ){ m_screen = screen; };    
-    void setDataSummary( DataSummary* data_summary ){ m_data_summary = data_summary; }
-    void setShadingController( ShadingController* shading_controller ){ m_shading_controller = shading_controller; }
-    void setIsParticleGenerationNeeded( bool is_particle_generation_needed ){ m_is_particle_generation_needed = is_particle_generation_needed; }
-    void serverObject( QString volumeDataFilePath, int min, int max );
+
+    void mergeObjects( int currentTimeStep, int requestTimeStep );
+    void serverObjectCS( QString volumeDataFilePath, int min, int max );
     void serverObjectIS( QString volumeDataFilePath, int min, int max );
     void updateObjectTimeStepIS( int min, int max );
-    void mergeObjects();
-//    void exportingServerSidePointObject( FilesManager& filesManager, const kvs::PointObject& server_point_object );
-    void exportingServerSidePointObject( FilesManager& filesManager );
-    void isExportDone( FilesManager& filesManager );
 
-    bool getIsParticleGenerationNeeded(){ return m_is_particle_generation_needed; }
+    void setIsParticleGenerationNeeded( const bool& is_particle_generation_needed ){ m_is_particle_generation_needed = is_particle_generation_needed; }
+    void setIsExport( const bool& is_export ){ m_is_export = is_export; }
+    void setExportFilePath( const QString& export_file_path ){ m_export_file_path = export_file_path; }
+
+    const bool& getIsParticleGenerationNeeded() const { return m_is_particle_generation_needed; }
+    const bool& getIsExport() const { return m_is_export; }
+    const QString& getExportFilePath() const { return m_export_file_path; }
 
 private:
     Ui::MergePanel *ui;
-    QVector<FilesManager*> m_files_manager;
-    TimeControl* m_time_control;
+    PBVRGUI *m_pbvr_gui;
     Preference* m_preference;
+    TimeControllerB* m_time_controller_b;
+    TotalParticles* m_total_particles;
     Connect* m_connect;
-    DataSummary* m_data_summary;
     ShadingController* m_shading_controller;
-    bool m_is_particle_generation_needed;
-    kvs::qt::jaea::Screen* m_screen;
-    int m_current_time_step;
+    QVector<FilesManager*> m_files_manager;
     class WorkerThread;
     bool m_is_worker_thread_running;
-
+    bool m_is_particle_generation_needed;
     bool m_is_export;
     QString m_export_file_path;
-//    int m_last_export_time_step = -1;
+    bool IS_OBJ;
+    bool IS_OBJ_DONE_INIT;
 
-
-
-    void checkMinMaxTimeStep( FilesManager *newFile );
-    void checkFileFormat( FilesManager *&newFile );
-    void addRowToFilesTableWidget( FilesManager *newFile );
-    void calculateTotalMinMaxTimeStep();
-    void removeChecked();//removeRowToFilesTableWidget
+private:
+    void registerFiles( const QString& filePath );
+    bool checkFormat( FilesManager* newFile );
+    bool checkMinMaxTimeStep( FilesManager* newFile );
+    void addFilesTable( FilesManager* newFile );
+    void calculateTotalMinMaxTimeStep();    
+    void updateCheckState();
     void updatePolygonColorOpacity();
-//    void mergeObjects();
-    CheckPattern checkPattern( int row );
-
-    template <typename Importer, typename ObjectType, typename RendererType>
-    void timeStepCheckAndImport( int row );
-
-    QString updateTimeStepInFileName(QString fileName, int nextTimeStep);
     void totalParticles();
 
 private slots:
+    void onBrowser();
+    void onExport();
+    void onCentering();
+    void onApply();
     void onFilesTWidgetCellDoubleClicked( int row, int column );
-    void onBrowserButtonClicked();
-    void onAddButtonClicked();
-    void onCenteringButtonClicked();
-    void onExportButtonClicked();
-    void onApplyButtonClicked();
     void onWorkerThreadFinished();
 };
 
-#include <QCheckBox>
-#include <kvs/PointImporter>
-#include <kvs/PolygonImporter>
-#include <kvs/StochasticPolygonRenderer>
+#include <QThread>
 class MergePanel::WorkerThread : public QThread
 {
     Q_OBJECT
 
 public:
-    enum CheckPattern
-    {
-        KeepInitialChecked = 1,
-        KeepFinalChecked   = 2,
-        BothChecked        = 3,
-        NoneChecked        = 4,
-    };
 
 public:
-    explicit WorkerThread(MergePanel* gui);
+    explicit WorkerThread( MergePanel* gui );
+    void setCurrentTimeStep( int current_time_step ) { m_current_time_step = current_time_step; }
+    void setRequestTimeStep( int request_time_step ) { m_request_time_step = request_time_step; }
 
 protected:
     void run() override;
@@ -208,10 +189,10 @@ signals:
 
 private:
     MergePanel* m_merge;
+    int m_current_time_step;
+    int m_request_time_step;
 
 private:
-    CheckPattern checkPattern( int row );
-
     template <typename Importer, typename ObjectType, typename RendererType>
     void timeStepCheckAndImport( int row );
 

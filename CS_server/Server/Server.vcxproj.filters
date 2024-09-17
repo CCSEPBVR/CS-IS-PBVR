@@ -24,6 +24,9 @@
     <ClCompile Include="AggregateTypeSubvolume.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="CellByCellHistogram.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="CellByCellMetropolisSampling.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -153,6 +156,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="CellBase.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="CellByCellHistogram.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="CellByCellMetropolisSampling.h">

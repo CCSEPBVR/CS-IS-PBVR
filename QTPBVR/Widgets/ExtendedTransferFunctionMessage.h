@@ -12,7 +12,7 @@
 class ExtendedTransferFunctionMessage
 {
 private:
-    static const size_t NPRTF = 5;
+    static const size_t NPRTF = 1;
     static const size_t NRGBA = 4;
 
 public:
@@ -58,8 +58,7 @@ public:
 
 public:
     bool operator==( const ExtendedTransferFunctionMessage& s ) const;
-    void applyToClientMessageCS( jpv::ParticleTransferClientMessage* message ) const;
-    void applyToClientMessageIS( jpv::ParticleTransferClientMessage* message ) const;
+    void applyToClientMessage( jpv::ParticleTransferClientMessage* message ) const;
     void setColorTransferFunction(const std::string &name, const std::string &variable);
     void setOpacityTransferFunction(const std::string &name, const std::string &variable);
     NamedTransferFunctionParameter* getColorTransferFunction(const std::string &name);

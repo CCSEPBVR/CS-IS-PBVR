@@ -6,6 +6,8 @@
 #include "ExtendedKVS/Screen.h"
 #include <kvs/RotationMatrix33>
 
+class PBVRGUI;
+
 namespace Ui {
 class VolumeTransform;
 }
@@ -15,15 +17,12 @@ class VolumeTransform : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit VolumeTransform(QWidget *parent = nullptr);
+    explicit VolumeTransform(QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr);
     ~VolumeTransform();
-
-public:
-    void setScreen( kvs::qt::jaea::Screen* screen ) { m_screen = screen; }
 
 private:
     Ui::VolumeTransform *ui;
-    kvs::qt::jaea::Screen* m_screen;
+    PBVRGUI *m_pbvr_gui;
 
 private slots:
     void onApplyButtonClicked();

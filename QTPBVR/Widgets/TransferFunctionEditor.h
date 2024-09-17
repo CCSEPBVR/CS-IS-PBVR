@@ -2,7 +2,7 @@
 #define TRANSFERFUNCTIONEDITOR_H
 
 #include <QDialog>
-#include "Widgets/ColorFunctionSelector.h"
+#include "ToolBars.h"
 #include "Widgets/ColorMapEditor.h"
 #include "Widgets/OpacityMapEditor.h"
 
@@ -11,6 +11,7 @@
 #include "FunctionListEditor.h"
 
 class MergePanel;
+class Connect;
 
 namespace Ui {
 class TransferFunctionEditor;
@@ -28,33 +29,26 @@ public:
     };
 
 public:
-    explicit TransferFunctionEditor(QWidget *parent = nullptr);
+    explicit TransferFunctionEditor(QWidget *parent = nullptr, ColorMapBarSelector* colonr_map_bar_selector = nullptr, MergePanel* merge = nullptr, Connect* connect_panel = nullptr);
     ~TransferFunctionEditor();
-    void setColorFunctionSelector( ColorFunctionSelector* color_function_selector ){ m_color_function_selector = color_function_selector; }
-    void setMerge( MergePanel* merge ){  m_merge = merge; }
-    void setClientMessage( jpv::ParticleTransferClientMessage* client_message ){ m_client_message = client_message; }
-    void setServerMessage( jpv::ParticleTransferServerMessage* server_message ){ m_server_message = server_message; }
-    void setReceivedMessage( kvs::visclient::ReceivedMessage* received_message ){ m_received_message = received_message; }
     void applyVariableRange( const VariableRange& range );
     void updateRangeEdit();
 //    void updateRangeView( const VariableRange& range );
 //    void updateRangeView( const jpv::ParticleTransferServerMessage& reply );
     void updateRangeView();
-    void importFile( const std::string& fileName );
+    bool importFile( const std::string& fileName );
     void exportFile( const std::string& fileName, const bool addition);
     ExtendedTransferFunctionMessage* getExtendedTransferFunctionMessage() { return &m_extended_transfer_function_message; }
-    void importFromServerIS();
+    void importFromServer();
+    void importDefalutParameter();
     void setMode( Mode mode ) { m_mode = mode; }
     Mode getMode() { return m_mode; }
 
 private:
     Ui::TransferFunctionEditor *ui;
-    ColorFunctionSelector* m_color_function_selector;
+    ColorMapBarSelector* m_color_map_bar_selector;
     MergePanel* m_merge;
-
-    jpv::ParticleTransferClientMessage* m_client_message;
-    jpv::ParticleTransferServerMessage* m_server_message;
-    kvs::visclient::ReceivedMessage* m_received_message;
+    Connect* m_connect;
 
     bool m_is_import_transfer_function_parameter;
 

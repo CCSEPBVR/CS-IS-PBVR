@@ -6,6 +6,8 @@
 #include "ExtendedKVS/Screen.h"
 #include <kvs/Xform>
 
+class PBVRGUI;
+
 namespace Ui {
 class AnimationControls;
 }
@@ -15,10 +17,9 @@ class AnimationControls : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit AnimationControls(QWidget *parent = nullptr);
+    explicit AnimationControls( QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr );
     ~AnimationControls();
 
-    void setScreen( kvs::qt::jaea::Screen* screen ) { m_screen = screen; }    
     void addKeyFrameAdd( kvs::Xform xform ); //x
     void removeLasrKeyFrame();               //d
     void clearKeyFrame();                    //D
@@ -29,9 +30,9 @@ public:
 
 private:
     Ui::AnimationControls *ui;
+    PBVRGUI *m_pbvr_gui;
     QTimer* m_animationTimer;
     bool m_animation_paused;
-    kvs::qt::jaea::Screen* m_screen;
     QVector<kvs::Xform> m_xforms;
     int m_xform_index = 0;
     int m_ninterpolation;//消す

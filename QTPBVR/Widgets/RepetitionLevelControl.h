@@ -16,18 +16,13 @@ class RepetitionLevelControl : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit RepetitionLevelControl(QWidget *parent = nullptr);
+    explicit RepetitionLevelControl(QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr, ShadingController* shading_controller = nullptr);
     ~RepetitionLevelControl();
-
-    void setShadingController( ShadingController* shading_controller ){ m_shading_controller = shading_controller; }
-    void setScreen( kvs::qt::jaea::Screen* screen ) { m_screen = screen; }
-    void setCompositor( kvs::StochasticRenderingCompositor* compositor ) { m_compositor = compositor; }
 
 private:
     Ui::RepetitionLevelControl *ui;
+    PBVRGUI *m_pbvr_gui;
     ShadingController* m_shading_controller;
-    kvs::qt::jaea::Screen* m_screen;
-    kvs::StochasticRenderingCompositor* m_compositor;
 
 private slots:
     void onApplyButtonClicked();

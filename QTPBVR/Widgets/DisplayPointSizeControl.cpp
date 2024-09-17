@@ -1,14 +1,13 @@
 #include "DisplayPointSizeControl.h"
 #include "ui_DisplayPointSizeControl.h"
-
+#include "App/pbvrgui.h"
 #include <kvs/ParticleBasedRenderer>
-DisplayPointSizeControl::DisplayPointSizeControl(QWidget *parent) :
+DisplayPointSizeControl::DisplayPointSizeControl(QWidget *parent, PBVRGUI *pbvr_gui) :
     QDockWidget(parent),
     ui(new Ui::DisplayPointSizeControl),
-    m_screen( nullptr )
+    m_pbvr_gui( pbvr_gui )
 {
     ui->setupUi(this);
-//    connect( ui->pushButton, &QPushButton::clicked, this, &DisplayPointSizeControl::onApplyButtonClicked );
     connect( ui->doubleSpinBox, &QDoubleSpinBox::valueChanged, this, &DisplayPointSizeControl::onApplyButtonClicked);
 }
 
@@ -19,12 +18,12 @@ DisplayPointSizeControl::~DisplayPointSizeControl()
 
 void DisplayPointSizeControl::onApplyButtonClicked()
 {
-    const int size = m_screen->scene()->IDManager()->size();
+    const int size = m_pbvr_gui->screen()->scene()->IDManager()->size();
     for( int index = 0; index < size; index++ )
     {
-        auto id = m_screen->scene()->IDManager()->id( index );
-        auto* object = m_screen->scene()->objectManager()->object( id.first );
-        auto* rendererBase = m_screen->scene()->rendererManager()->renderer( id.second );
+        auto id = m_pbvr_gui->screen()->scene()->IDManager()->id( index );
+        auto* object = m_pbvr_gui->screen()->scene()->objectManager()->object( id.first );
+        auto* rendererBase = m_pbvr_gui->screen()->scene()->rendererManager()->renderer( id.second );
         if( object->isVisible() && rendererBase )
         {
             if (auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>(rendererBase))
@@ -36,5 +35,5 @@ void DisplayPointSizeControl::onApplyButtonClicked()
             }
         }
     }
-    m_screen->update();
+    m_pbvr_gui->screen()->update();
 }

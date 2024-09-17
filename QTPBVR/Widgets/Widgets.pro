@@ -30,11 +30,9 @@ TARGET = Widgets
 #=============================================================================
 HEADERS += \
     AnimationControls.h \
-    ColorFunctionSelector.h \
     ColorMapEditor.h \
     Coordinates.h \
     DataProperties.h \
-    DataSummary.h \
     DisplayPointSizeControl.h \
     ExtendedTransferFunctionMessage.h \
     FrequencyTable.h \
@@ -52,7 +50,7 @@ HEADERS += \
     TFEHistogramBar.h \
     TFEOpacityMapBar.h \
     TFEOpacityMapPalette.h \
-    TimeControl.h \
+    ToolBars.h \
     TransferFunctionEditor.h \
     VolumeTransform.h \
     Connect.h
@@ -64,11 +62,9 @@ HEADERS += \
 #=============================================================================
 SOURCES += \
     AnimationControls.cpp \
-    ColorFunctionSelector.cpp \
     ColorMapEditor.cpp \
     Coordinates.cpp \
     DataProperties.cpp \
-    DataSummary.cpp \
     DisplayPointSizeControl.cpp \
     ExtendedTransferFunctionMessage.cpp \
     FunctionListEditor.cpp \
@@ -84,7 +80,7 @@ SOURCES += \
     TFEHistogramBar.cpp \
     TFEOpacityMapBar.cpp \
     TFEOpacityMapPalette.cpp \
-    TimeControl.cpp \
+    ToolBars.cpp \
     TransferFunctionEditor.cpp \
     VolumeTransform.cpp \
     Connect.cpp
@@ -96,11 +92,9 @@ SOURCES += \
 #=============================================================================
 FORMS += \
     AnimationControls.ui \
-    ColorFunctionSelector.ui \
     ColorMapEditor.ui \
     Coordinates.ui \
     DataProperties.ui \
-    DataSummary.ui \
     DisplayPointSizeControl.ui \
     FunctionListEditor.ui \
     MergePanel.ui \
@@ -109,7 +103,6 @@ FORMS += \
     RenderOptions.ui \
     RepetitionLevelControl.ui \
     ShadingController.ui \
-    TimeControl.ui \
     TransferFunctionEditor.ui \
     VolumeTransform.ui \
     Connect.ui

@@ -18,8 +18,7 @@ COMMON_SRCS = ParticleTransferClient.cpp \
               ParticleTransferServer.cpp \
               Serializer.cpp \
               ExtendedTransferFunctionParameter.cpp \
-              VariableRange.cpp \
-			  Timer.cpp
+              VariableRange.cpp
 
 
 COMMON_HEADERS = ParticleTransferClient.h \
@@ -27,8 +26,7 @@ COMMON_HEADERS = ParticleTransferClient.h \
                  ParticleTransferServer.h \
                  Serializer.h \
                  ExtendedTransferFunctionParameter.h \
-                 VariableRange.h \
-				 Timer.h
+                 VariableRange.h
 
 COMMON_OBJS   = $(COMMON_SRCS:%.cpp=%.o)
 

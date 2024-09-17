@@ -32,11 +32,9 @@ public:
     int acceptServer();
     int disconnect();
     // server => client
-    int sendMessageCS( const ParticleTransferServerMessage& message );
-    int sendMessageIS( const ParticleTransferServerMessage& message );
+    int sendMessage( const ParticleTransferServerMessage& message );
     // client => server
-    int recvMessageCS( ParticleTransferClientMessage* message );
-    int recvMessageIS( ParticleTransferClientMessage* message );
+    int recvMessage( ParticleTransferClientMessage* message );
 };
 
 }

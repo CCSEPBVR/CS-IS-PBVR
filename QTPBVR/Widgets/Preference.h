@@ -3,13 +3,9 @@
 
 #include <QDialog>
 #include <QSettings>
+#include <QFile>
 
-#include "ExtendedKVS/Screen.h"
-#include <kvs/StochasticRenderingCompositor>
-#include <kvs/ColorMapBar>
-#include <kvs/OrientationAxis>
-#include <kvs/StochasticRendererBase>
-#include <kvs/Label>
+class PBVRGUI;
 
 namespace Ui {
 class Preference;
@@ -43,7 +39,7 @@ public:
     };
 
 public:
-    explicit Preference( QWidget *parent = nullptr );
+    explicit Preference( QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr );
     ~Preference();
 
 protected:
@@ -51,23 +47,11 @@ protected:
 
 public:
     void initialize();
-
-    void setScreen( kvs::qt::jaea::Screen* screen )                            { m_screen = screen;                    }
-    void setCompositor( kvs::StochasticRenderingCompositor* compositor ) { m_compositor = compositor;            }
-    void setColorMapBar( kvs::ColorMapBar* colorMapBar )                 { m_color_map_bar = colorMapBar;        }
-    void setOrientationAxis( kvs::OrientationAxis* orientationAxis )     { m_orientation_axis = orientationAxis; }
-    void setFPSLabel( kvs::Label* fps_label )                            { m_fps_label = fps_label;              }
-    void setTimeStepLabel( kvs::Label* time_step_label )                 { m_time_step_label = time_step_label;  }
-    void setCurrentTimeStep( int currentTimeStep ) { m_current_time_step = currentTimeStep; m_time_step_label->setText( "Time step: " + std::to_string( m_current_time_step ) ); }
+    void setCurrentTimeStep( int currentTimeStep );
 
 private:
     Ui::Preference *ui;
-    kvs::qt::jaea::Screen* m_screen;
-    kvs::StochasticRenderingCompositor* m_compositor;
-    kvs::ColorMapBar* m_color_map_bar;
-    kvs::OrientationAxis* m_orientation_axis;
-    kvs::Label* m_fps_label;
-    kvs::Label* m_time_step_label;
+    PBVRGUI *m_pbvr_gui;
     QSettings m_settings;
     int m_current_time_step;
 

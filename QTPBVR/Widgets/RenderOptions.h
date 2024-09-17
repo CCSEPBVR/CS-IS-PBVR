@@ -2,7 +2,6 @@
 #define RENDEROPTIONS_H
 
 #include <QDockWidget>
-#include "ParticleTransferProtocol.h"
 #include "Widgets/MergePanel.h"
 namespace Ui {
 class RenderOptions;
@@ -13,16 +12,13 @@ class RenderOptions : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit RenderOptions(QWidget *parent = nullptr);
+    explicit RenderOptions(QWidget *parent = nullptr, MergePanel* merge = nullptr, Connect* connect_panel = nullptr);
     ~RenderOptions();
-    void setMerge( MergePanel* merge ){  m_merge = merge; }
-    void setClientMessage( jpv::ParticleTransferClientMessage* client_message ){ m_client_message = client_message; }
-
 
 private:
     Ui::RenderOptions *ui;
     MergePanel* m_merge;
-    jpv::ParticleTransferClientMessage* m_client_message;
+    Connect* m_connect;
 
 private slots:
     void onApplyButtonClicked();

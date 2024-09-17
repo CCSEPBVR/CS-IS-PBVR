@@ -1,14 +1,18 @@
 #include "ShadingController.h"
 #include "ui_ShadingController.h"
+#include "App/pbvrgui.h"
 #include <QButtonGroup>
 
 #include <kvs/StochasticPolygonRenderer>
 #include <kvs/ParticleBasedRenderer>
 #include <kvs/StochasticTexturedPolygonRenderer>
-ShadingController::ShadingController(QWidget *parent) :
-    QDockWidget(parent),
-    m_screen( nullptr ),
-    ui(new Ui::ShadingController)
+#include <kvs/IDManager>
+#include <kvs/ObjectManager>
+#include <kvs/RendererManager>
+ShadingController::ShadingController(QWidget *parent, PBVRGUI *pbvr_gui) :
+    QDockWidget(parent),    
+    ui(new Ui::ShadingController),
+    m_pbvr_gui( pbvr_gui )
 {
     ui->setupUi(this);
 
@@ -101,16 +105,16 @@ void ShadingController::applyShading(kvs::RendererBase*& rendererBase)
 
 void ShadingController::onChangeShaderParameter()
 {
-    const int size = m_screen->scene()->IDManager()->size();
+    const int size = m_pbvr_gui->screen()->scene()->IDManager()->size();
     for( int index = 0; index < size; index++ )
     {
-        auto id = m_screen->scene()->IDManager()->id( index );
-        auto* object = m_screen->scene()->objectManager()->object( id.first );
-        auto* rendererBase = m_screen->scene()->rendererManager()->renderer( id.second );
+        auto id = m_pbvr_gui->screen()->scene()->IDManager()->id( index );
+        auto* object = m_pbvr_gui->screen()->scene()->objectManager()->object( id.first );
+        auto* rendererBase = m_pbvr_gui->screen()->scene()->rendererManager()->renderer( id.second );
 //        if( object->isVisible() && rendererBase )
         {
             applyShading( rendererBase );
         }
     }
-    m_screen->update();
+    m_pbvr_gui->screen()->update();
 }

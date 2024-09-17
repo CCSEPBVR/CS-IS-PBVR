@@ -10,12 +10,12 @@
 #include "ParameterFile.h"
 #include <fstream>
 
-TransferFunctionEditor::TransferFunctionEditor(QWidget *parent) :
+TransferFunctionEditor::TransferFunctionEditor(QWidget *parent, ColorMapBarSelector* color_map_bar_selector, MergePanel* merge, Connect* connect_panel) :
     QDialog(parent),
-    ui(new Ui::TransferFunctionEditor),    
-    m_client_message( nullptr ),
-    m_server_message( nullptr ),
-    m_received_message( nullptr ),
+    ui(new Ui::TransferFunctionEditor),
+    m_color_map_bar_selector( color_map_bar_selector ),
+    m_merge( merge ),
+    m_connect( connect_panel ),
     m_is_import_transfer_function_parameter( false ),
     m_color_function_list_editor( this ),
     m_opacity_function_list_editor( this ),
@@ -106,7 +106,6 @@ void TransferFunctionEditor::applyVariableRange( const VariableRange& range )
                 isRangeInitialized = true;
             }
         }
-
         if( isRangeInitialized )
         {
             updateRangeEdit();
@@ -153,7 +152,7 @@ void TransferFunctionEditor::updateRangeView()
 //        ui->colorMinRangeLbl->setNum( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_min );
 //        ui->colorMaxRangeLbl->setNum( m_extended_transfer_function_message.getColorTransferFunction(n_select_color)->m_color_variable_max );
 
-        const kvs::visclient::FrequencyTable* freq_table = m_received_message->findColorFrequencyTable(trans_color->m_name);
+        const kvs::visclient::FrequencyTable* freq_table = m_connect->getReceivedMessage()->findColorFrequencyTable(trans_color->m_name);
         if ( freq_table != NULL )
         {
             QMetaObject::invokeMethod(this, [this, freq_table, n_select_color]() {
@@ -176,7 +175,7 @@ void TransferFunctionEditor::updateRangeView()
 //        ui->opacityHistogramBar->setRange( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_min, m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_max );
 //        ui->opacityMinRangeLbl->setNum( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_min );
 //        ui->opacityMaxRangeLbl->setNum( m_extended_transfer_function_message.getOpacityTransferFunction(n_select_opacity)->m_opacity_variable_max );
-        const kvs::visclient::FrequencyTable* freq_table = m_received_message->findOpacityFrequencyTable(trans_opacity->m_name);
+        const kvs::visclient::FrequencyTable* freq_table = m_connect->getReceivedMessage()->findOpacityFrequencyTable(trans_opacity->m_name);
         if ( freq_table != NULL )
         {
             QMetaObject::invokeMethod(this, [this, freq_table, n_select_opacity]() {
@@ -190,10 +189,10 @@ void TransferFunctionEditor::updateRangeView()
     }
     QMetaObject::invokeMethod( this, [this, tag_c, tag_o]()
         {
-            ui->range_min_color->setText( QString::number( m_server_message->m_server_side_variable_range.min( tag_c ) ) );
-            ui->range_max_color->setText( QString::number( m_server_message->m_server_side_variable_range.max( tag_c ) ) );
-            ui->range_min_opacity->setText( QString::number( m_server_message->m_server_side_variable_range.min( tag_o ) ) );
-            ui->range_max_opacity->setText( QString::number( m_server_message->m_server_side_variable_range.max( tag_o ) ) );
+            ui->range_min_color->setText( QString::number( m_connect->getServerMessage()->m_server_side_variable_range.min( tag_c ) ) );
+            ui->range_max_color->setText( QString::number( m_connect->getServerMessage()->m_server_side_variable_range.max( tag_c ) ) );
+            ui->range_min_opacity->setText( QString::number( m_connect->getServerMessage()->m_server_side_variable_range.min( tag_o ) ) );
+            ui->range_max_opacity->setText( QString::number( m_connect->getServerMessage()->m_server_side_variable_range.max( tag_o ) ) );
 
             bool applyFlag = false;
             for( int i = 0; i < ui->colorFunctionCBox->count(); i++ )
@@ -202,14 +201,14 @@ void TransferFunctionEditor::updateRangeView()
                 {
                     QString colorFunctionName = QString("C%1").arg( i + 1 );
                     QString colorTag = QString("t%1_var_c").arg( i + 1 );
-                    m_extended_transfer_function_message.setColorTransferRange( colorFunctionName.toStdString(), m_server_message->m_server_side_variable_range.min( colorTag.toStdString() ), m_server_message->m_server_side_variable_range.max( colorTag.toStdString() ) );
+                    m_extended_transfer_function_message.setColorTransferRange( colorFunctionName.toStdString(), m_connect->getServerMessage()->m_server_side_variable_range.min( colorTag.toStdString() ), m_connect->getServerMessage()->m_server_side_variable_range.max( colorTag.toStdString() ) );
 
                     if( i == ui->colorFunctionCBox->currentIndex() )
                     {
                         ui->transfer_function_min_color->blockSignals( true );
                         ui->transfer_function_max_color->blockSignals( true );
-                        ui->transfer_function_min_color->setValue( m_server_message->m_server_side_variable_range.min( colorTag.toStdString() ) );
-                        ui->transfer_function_max_color->setValue( m_server_message->m_server_side_variable_range.max( colorTag.toStdString() ) );
+                        ui->transfer_function_min_color->setValue( m_connect->getServerMessage()->m_server_side_variable_range.min( colorTag.toStdString() ) );
+                        ui->transfer_function_max_color->setValue( m_connect->getServerMessage()->m_server_side_variable_range.max( colorTag.toStdString() ) );
                         ui->transfer_function_min_color->blockSignals( false );
                         ui->transfer_function_max_color->blockSignals( false );
                     }
@@ -223,14 +222,14 @@ void TransferFunctionEditor::updateRangeView()
                 {
                     QString opacityFunctionName = QString("O%1").arg( i + 1 );
                     QString opacityTag = QString("t%1_var_o").arg( i + 1 );
-                    m_extended_transfer_function_message.setOpacityTransferRange( opacityFunctionName.toStdString(), m_server_message->m_server_side_variable_range.min( opacityTag.toStdString() ), m_server_message->m_server_side_variable_range.max( opacityTag.toStdString() ) );
+                    m_extended_transfer_function_message.setOpacityTransferRange( opacityFunctionName.toStdString(), m_connect->getServerMessage()->m_server_side_variable_range.min( opacityTag.toStdString() ), m_connect->getServerMessage()->m_server_side_variable_range.max( opacityTag.toStdString() ) );
 
                     if( i == ui->colorFunctionCBox->currentIndex() )
                     {
                         ui->transfer_function_min_opacity->blockSignals( true );
                         ui->transfer_function_max_opacity->blockSignals( true );
-                        ui->transfer_function_min_opacity->setValue( m_server_message->m_server_side_variable_range.min( opacityTag.toStdString() ) );
-                        ui->transfer_function_max_opacity->setValue( m_server_message->m_server_side_variable_range.max( opacityTag.toStdString() ) );
+                        ui->transfer_function_min_opacity->setValue( m_connect->getServerMessage()->m_server_side_variable_range.min( opacityTag.toStdString() ) );
+                        ui->transfer_function_max_opacity->setValue( m_connect->getServerMessage()->m_server_side_variable_range.max( opacityTag.toStdString() ) );
                         ui->transfer_function_min_opacity->blockSignals( false );
                         ui->transfer_function_max_opacity->blockSignals( false );
                     }
@@ -255,7 +254,7 @@ void TransferFunctionEditor::onNumberOfTransferFunctionValueChanged( int value )
     m_extended_transfer_function_message.m_transfer_function_number = num_transfer_function;
     this->populateColorFunctionLists( value );
     this->populateOpacityFunctionLists( value );
-    m_color_function_selector->populateColorFunctionLists( value );
+    m_color_map_bar_selector->populateColorFunctionLists( value );
 
     int n;
     int current_size;
@@ -319,8 +318,7 @@ void TransferFunctionEditor::onColorFunctionChanged( int index )
         kvs::ColorMap color_map = transfer_function_color->colorMap();
         ui->colorMapBar->setColorMap( color_map );
         ui->colorMapBar->update();
-
-        const kvs::visclient::FrequencyTable* freq_table = m_received_message->findColorFrequencyTable(transfer_function_color->m_name);
+        const kvs::visclient::FrequencyTable* freq_table = m_connect->getReceivedMessage()->findColorFrequencyTable(transfer_function_color->m_name);
         if ( freq_table != NULL )
         {
             ui->colorHistogramBar->setTable( *freq_table );
@@ -328,11 +326,10 @@ void TransferFunctionEditor::onColorFunctionChanged( int index )
             ui->colorHistogramBar->update();
             ui->colorMinRangeLbl->setNum( m_extended_transfer_function_message.getColorTransferFunction(index + 1)->m_color_variable_min );
             ui->colorMaxRangeLbl->setNum( m_extended_transfer_function_message.getColorTransferFunction(index + 1)->m_color_variable_max );
-
             char tag_c[16] = {0x00};
             sprintf(tag_c, "t%d_var_c", index + 1);
-            ui->range_min_color->setText( QString::number( m_server_message->m_server_side_variable_range.min( tag_c ) ) );
-            ui->range_max_color->setText( QString::number( m_server_message->m_server_side_variable_range.max( tag_c ) ) );
+            ui->range_min_color->setText( QString::number( m_connect->getServerMessage()->m_server_side_variable_range.min( tag_c ) ) );
+            ui->range_max_color->setText( QString::number( m_connect->getServerMessage()->m_server_side_variable_range.max( tag_c ) ) );
         }
 
         ui->transfer_function_var_color->blockSignals(true);
@@ -362,7 +359,7 @@ void TransferFunctionEditor::onOpacityFunctionChanged( int index )
         ui->opacityMapPalette->setOpacityMap( opacity_map );
         ui->opacityMapPalette->update();
 
-        const kvs::visclient::FrequencyTable* freq_table = m_received_message->findOpacityFrequencyTable(transfer_function_opacity->m_name);
+        const kvs::visclient::FrequencyTable* freq_table = m_connect->getReceivedMessage()->findOpacityFrequencyTable(transfer_function_opacity->m_name);
         if ( freq_table != NULL )
         {
             ui->opacityHistogramBar->setTable( *freq_table );
@@ -373,8 +370,8 @@ void TransferFunctionEditor::onOpacityFunctionChanged( int index )
 
             char tag_o[16] = {0x00};
             sprintf(tag_o, "t%d_var_o", index + 1);
-            ui->range_min_opacity->setText( QString::number( m_server_message->m_server_side_variable_range.min( tag_o ) ) );
-            ui->range_max_opacity->setText( QString::number( m_server_message->m_server_side_variable_range.max( tag_o ) ) );
+            ui->range_min_opacity->setText( QString::number( m_connect->getServerMessage()->m_server_side_variable_range.min( tag_o ) ) );
+            ui->range_max_opacity->setText( QString::number( m_connect->getServerMessage()->m_server_side_variable_range.max( tag_o ) ) );
         }
 
         ui->transfer_function_var_opacity->blockSignals(true);
@@ -522,61 +519,14 @@ void TransferFunctionEditor::onTransferFunctionRangeOpacityChanged()
 void TransferFunctionEditor::onApplyButtonClicked()
 {
     //applyToClientMessage
-    m_client_message->m_transfer_function.clear();
-    m_client_message->m_volume_equation.clear();
-    m_client_message->color_var.clear();
-    m_client_message->opacity_var.clear();
+    m_connect->getClientMessage()->m_transfer_function.clear();
+    m_connect->getClientMessage()->m_volume_equation.clear();
+    m_connect->getClientMessage()->color_var.clear();
+    m_connect->getClientMessage()->opacity_var.clear();
 
-    m_client_message->m_color_transfer_function_synthesis = m_extended_transfer_function_message.m_color_transfer_function_synthesis;
-    m_client_message->m_opacity_transfer_function_synthesis = m_extended_transfer_function_message.m_opacity_transfer_function_synthesis;
+    m_connect->getClientMessage()->m_color_transfer_function_synthesis = m_extended_transfer_function_message.m_color_transfer_function_synthesis;
+    m_connect->getClientMessage()->m_opacity_transfer_function_synthesis = m_extended_transfer_function_message.m_opacity_transfer_function_synthesis;
 
-    if( m_mode == TransferFunctionEditor::Mode::CS )
-    {
-        //    for ( size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
-        for ( size_t i = 0; i < m_extended_transfer_function_message.m_color_transfer_function.size(); i++ )
-        {
-            NamedTransferFunctionParameter etf;
-            jpv::ParticleTransferClientMessage::VolumeEquation veq;
-
-            const NamedTransferFunctionParameter& tf = m_extended_transfer_function_message.m_color_transfer_function[i];
-            etf = tf;
-            int func_num = etf.getNameNumber();
-            std::stringstream ss;
-            ss << "_F" << func_num;
-            etf.m_color_variable   = ss.str() + "_VAR_C";
-            veq.m_name     = etf.m_color_variable;
-            veq.m_equation = m_extended_transfer_function_message.m_color_transfer_function[i].m_color_variable;
-            m_client_message->m_transfer_function.push_back( etf );
-            m_client_message->m_volume_equation.push_back( veq );
-        }
-
-        for ( size_t i = 0; i < m_extended_transfer_function_message.m_opacity_transfer_function.size(); i++ )
-        {
-            NamedTransferFunctionParameter etf;
-            jpv::ParticleTransferClientMessage::VolumeEquation veq;
-
-            const NamedTransferFunctionParameter& tf = m_extended_transfer_function_message.m_opacity_transfer_function[i];
-            etf = tf;
-            int func_num = etf.getNameNumber();
-            std::stringstream ss;
-            ss << "_F" << func_num;
-            etf.m_opacity_variable   = ss.str() + "_VAR_O";
-            veq.m_name     = etf.m_opacity_variable;
-            veq.m_equation = m_extended_transfer_function_message.m_opacity_transfer_function[i].m_opacity_variable;
-            m_client_message->m_transfer_function.push_back( etf );
-            m_client_message->m_volume_equation.push_back( veq );
-        }
-
-        std::string colorSynthBuf = m_extended_transfer_function_message.m_color_transfer_function_synthesis;
-        std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
-
-        std::string opacitySynthBuf = m_extended_transfer_function_message.m_opacity_transfer_function_synthesis;
-        std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
-
-        m_merge->setIsParticleGenerationNeeded( true );
-    }
-    else if( m_mode == TransferFunctionEditor::Mode::IS )
-    {
         for( size_t i = 0; i < m_extended_transfer_function_message.m_transfer_function_number; i++ )
         {
             NamedTransferFunctionParameter etf;
@@ -603,12 +553,19 @@ void TransferFunctionEditor::onApplyButtonClicked()
             etf.m_opacity_variable_min = o_tf.m_opacity_variable_min;
             etf.m_opacity_variable_max = o_tf.m_opacity_variable_max;
 
-            m_client_message->m_transfer_function.push_back( etf );
-            m_client_message->m_volume_equation.push_back( veq_c );
-            m_client_message->m_volume_equation.push_back( veq_o );
+            m_connect->getClientMessage()->m_transfer_function.push_back( etf );
+            m_connect->getClientMessage()->m_volume_equation.push_back( veq_c );
+            m_connect->getClientMessage()->m_volume_equation.push_back( veq_o );
         }
-    }
-    m_color_function_selector->updateColorMap();
+
+        std::string colorSynthBuf = m_extended_transfer_function_message.m_color_transfer_function_synthesis;
+        std::replace(colorSynthBuf.begin(), colorSynthBuf.end(), 'C', 'c');
+
+        std::string opacitySynthBuf = m_extended_transfer_function_message.m_opacity_transfer_function_synthesis;
+        std::replace(opacitySynthBuf.begin(), opacitySynthBuf.end(), 'O', 'a');
+
+        m_merge->setIsParticleGenerationNeeded( true );
+        m_color_map_bar_selector->updateColorMap();
 }
 
 void TransferFunctionEditor::onImportButtonClicked()
@@ -622,14 +579,17 @@ void TransferFunctionEditor::onImportButtonClicked()
 #endif
 }
 
-void TransferFunctionEditor::importFile( const std::string& fname )
+bool TransferFunctionEditor::importFile( const std::string& fname )
 {
     ParameterFile param;
     bool stat;
 
     stat = param.loadIN( fname );
 
-    if ( !stat ) return;
+    if ( !stat )
+    {
+        return false;
+    }
     ExtendedTransferFunctionMessage importdoc;
 
     const size_t resolution = param.getInt( "tf_resolution" );
@@ -640,7 +600,7 @@ void TransferFunctionEditor::importFile( const std::string& fname )
     {
 //        std::cerr << "[Error] This import file is old format. file=" << fname << std::endl;
 //        QMessageBox::warning(this, QString("Obsolete File Format"), QString("The selected file is using an old unsupported format"));
-        return;
+        return false;
     }
 
     importdoc.m_transfer_function_number = param.getInt( "TF_NUMBER" );
@@ -741,6 +701,7 @@ void TransferFunctionEditor::importFile( const std::string& fname )
     //DEL BY)T0603 2020.05.25
     //ui->resolution->setValue(resolution);
     ui->numberOfTransferFunctionSBox->setValue( importdoc.m_transfer_function_number );
+    onNumberOfTransferFunctionValueChanged(importdoc.m_transfer_function_number);
 
 #ifdef Q_OS_WIN
     ui->color_function_synth->setText( QString::fromUtf8(importdoc.m_color_transfer_function_synthesis.c_str() ) );
@@ -755,6 +716,7 @@ void TransferFunctionEditor::importFile( const std::string& fname )
 
     m_is_import_transfer_function_parameter = true;
     onApplyButtonClicked();
+    return true;
 }
 
 void TransferFunctionEditor::onExportButtonClicked()
@@ -843,7 +805,7 @@ void TransferFunctionEditor::exportFile( const std::string& fname, const bool ap
 
 }
 
-void TransferFunctionEditor::importFromServerIS()
+void TransferFunctionEditor::importFromServer()
 {
     m_extended_transfer_function_message.m_extend_transfer_function_resolution= 256;
 
@@ -852,29 +814,28 @@ void TransferFunctionEditor::importFromServerIS()
     m_extended_transfer_function_message.m_opacity_transfer_function.clear();
 
     // set tf_number
-    m_extended_transfer_function_message.m_transfer_function_number = m_server_message->m_transfer_function.size();
+    m_extended_transfer_function_message.m_transfer_function_number = m_connect->getServerMessage()->m_transfer_function.size();
     qDebug() << m_extended_transfer_function_message.m_transfer_function_number;
-    for ( size_t i = 0, j = 0; i < m_server_message->m_transfer_function.size(); i++, j+=2 )
+    for ( size_t i = 0, j = 0; i < m_connect->getServerMessage()->m_transfer_function.size(); i++, j+=2 )
     {
         NamedTransferFunctionParameter etf;
         jpv::ParticleTransferClientMessage::VolumeEquation veq_c, veq_o;
 
-        const NamedTransferFunctionParameter& tf = m_server_message->m_transfer_function[i];
+        const NamedTransferFunctionParameter& tf = m_connect->getServerMessage()->m_transfer_function[i];
 
         etf = tf;
 
         //m_extended_transfer_function_message->transferFunction.push_back( etf );
         m_extended_transfer_function_message.m_color_transfer_function.push_back(etf);
         m_extended_transfer_function_message.m_opacity_transfer_function.push_back(etf);
-
         std::string* nameBuf = &m_extended_transfer_function_message.m_color_transfer_function[i].m_name;
         std::replace(nameBuf->begin(), nameBuf->end(), 't', 'C');
         nameBuf = &m_extended_transfer_function_message.m_opacity_transfer_function[i].m_name;
         std::replace(nameBuf->begin(), nameBuf->end(), 't', 'O');
     }
 
-    m_extended_transfer_function_message.m_color_transfer_function_synthesis = m_server_message->m_color_transfer_function_synthesis;
-    m_extended_transfer_function_message.m_opacity_transfer_function_synthesis = m_server_message->m_opacity_transfer_function_synthesis;
+    m_extended_transfer_function_message.m_color_transfer_function_synthesis = m_connect->getServerMessage()->m_color_transfer_function_synthesis;
+    m_extended_transfer_function_message.m_opacity_transfer_function_synthesis = m_connect->getServerMessage()->m_opacity_transfer_function_synthesis;
 
     ui->numberOfTransferFunctionSBox->setValue( m_extended_transfer_function_message.m_transfer_function_number );
 
@@ -903,6 +864,7 @@ void TransferFunctionEditor::importFromServerIS()
     onApplyButtonClicked();
 }
 
+
 void TransferFunctionEditor::onColorRangeSyncToolButtonClicked()
 {
     m_is_color_range_sync[ui->colorFunctionCBox->currentIndex()] = ui->colorRangeSyncTBtn->isChecked();
@@ -912,3 +874,4 @@ void TransferFunctionEditor::onOpacityRangeSyncToolButtonClicked()
 {
     m_is_opacity_range_sync[ui->opacityFunctionCBox->currentIndex()] = ui->opacityRangeSyncTBtn->isChecked();
 }
+
