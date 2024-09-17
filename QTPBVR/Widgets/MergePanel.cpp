@@ -750,10 +750,10 @@ void MergePanel::WorkerThread::run()
             timeStepCheckAndImport<kvs::PolygonImporter, kvs::PolygonObject, kvs::StochasticPolygonRenderer>( row );
             break;
 #ifdef PBVR_SUPPORT_FBX
-        case FilesManager2::TexturedPolygonObjectFBX:
+        case FilesManager::TexturedPolygonObjectFBX:
 #endif
 #ifdef PBVR_SUPPORT_3DS
-        case FilesManager2::TexturedPolygonObject3DS:
+        case FilesManager::TexturedPolygonObject3DS:
 #endif
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
             timeStepCheckAndImport<kvs::TexturedPolygonImporter, kvs::TexturedPolygonObject, kvs::StochasticTexturedPolygonRenderer>( row );
@@ -1053,20 +1053,20 @@ void MergePanel::onWorkerThreadFinished()
                     m_files_manager[row]->setChangePolygonTransferFunction( false );
                 }
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
-                else if( kvs::TexturedPolygonObject* textured_polygon_object = dynamic_cast<kvs::TexturedPolygonObject*>(m_files_manager2[row]->getObject()) )
+                else if( kvs::TexturedPolygonObject* textured_polygon_object = dynamic_cast<kvs::TexturedPolygonObject*>(m_files_manager[row]->getObject()) )
                 {
-                    textured_polygon_object->setColor( kvs::RGBColor( m_files_manager2[row]->getColor().red(), m_files_manager2[row]->getColor().green(), m_files_manager2[row]->getColor().blue() ) );
-                    textured_polygon_object->setOpacity( m_files_manager2[row]->getOpacity() * 255 );
+                    textured_polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getColor().red(), m_files_manager[row]->getColor().green(), m_files_manager[row]->getColor().blue() ) );
+                    textured_polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
                     kvs::RendererBase* stochastic_textured_polygon_renderer = new kvs::StochasticTexturedPolygonRenderer;
                     m_shading_controller->applyShading( stochastic_textured_polygon_renderer );
-                    m_files_manager2[row]->setIds( m_pbvr_gui->screen()->scene()->registerObject( textured_polygon_object, stochastic_textured_polygon_renderer ) );
+                    m_files_manager[row]->setIDs( m_pbvr_gui->screen()->scene()->registerObject( textured_polygon_object, stochastic_textured_polygon_renderer ) );
                 }
 #endif
             }
         }
         else
         {
-//            auto* object = m_pbvr_gui->screen()->scene()->object( m_files_manager2[row]->getIDs().first );
+//            auto* object = m_pbvr_gui->screen()->scene()->object( m_files_manager[row]->getIDs().first );
             if( m_files_manager[row]->getObject() != nullptr ) //オブジェクトがインポートされていれば交換を行う。
             {
                 if( kvs::PointObject* point_object = dynamic_cast<kvs::PointObject*>(m_files_manager[row]->getObject()) )
@@ -1093,9 +1093,9 @@ void MergePanel::onWorkerThreadFinished()
                     m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, polygon_object );
                 }
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
-                else if( kvs::TexturedPolygonObject* textured_polygon_object = dynamic_cast<kvs::TexturedPolygonObject*>(m_files_manager2[row]->getObject()) )
+                else if( kvs::TexturedPolygonObject* textured_polygon_object = dynamic_cast<kvs::TexturedPolygonObject*>(m_files_manager[row]->getObject()) )
                 {
-                    m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager2[row]->getIds().first, textured_polygon_object );
+                    m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, textured_polygon_object );
                 }
 #endif
             }
