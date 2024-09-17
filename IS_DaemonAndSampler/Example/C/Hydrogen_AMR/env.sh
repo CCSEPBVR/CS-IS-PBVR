@@ -8,7 +8,7 @@ export MPICC_CC=icc; export MPICXX_CXX=icpc
 echo "end setting module & export"
 
 #cd ../
-cd ../../../InSituLib/unstruct
+cd ../../../InSituLib/AMR
 
 #file="citylbm"
 #if [ -e $file ]; then

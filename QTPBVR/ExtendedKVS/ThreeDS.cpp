@@ -1,6 +1,7 @@
 #include "ThreeDS.h"
 #include "stb_image.h"
 #include <cstring>
+#include <cassert>
 #include <kvs/File>
 #include <kvs/Assert>
 #include <assimp/Importer.hpp>

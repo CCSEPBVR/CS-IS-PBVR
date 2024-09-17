@@ -25,7 +25,7 @@ make -j
 
 echo "finish make pbvr"
 
-cd ../../Example/C/Hydrogen_unstruct_tetra
+cd ../../Example/C/Hydrogen_unstruct_prism
 make clean
 make -j
 
