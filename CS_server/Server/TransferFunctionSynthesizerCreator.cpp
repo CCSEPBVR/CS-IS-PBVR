@@ -132,8 +132,6 @@ void TransferFunctionSynthesizerCreator::setTransferFunction( jpv::ParticleTrans
         servMes->m_transfer_function[i].m_equation_green       = ""; 
         servMes->m_transfer_function[i].m_equation_blue        = ""; 
         servMes->m_transfer_function[i].m_equation_opacity     = "";
-        //std::vector<kvs::UInt8> c_table(TF_resolution*3);
-        //std::vector<float> o_table(TF_resolution);
         kvs::ValueArray<kvs::UInt8> cc_table(c_table);
         kvs::ValueArray<float> oo_table(o_table);
         kvs::ColorMap color_map( cc_table, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );

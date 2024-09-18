@@ -583,6 +583,11 @@ inline VariableRange Calculate_minmax( const Argument& param,
     int nvariable = fil.m_total_number_ingredients;
     min_vec.resize(nvariable);
     max_vec.resize(nvariable);
+    for(int i = 0 ;i < nvariable ; i++)
+    {
+        min_vec[i] = FLT_MAX; 
+        max_vec[i] = FLT_MIN; 
+    } 
     //Total Volume Calculation
 #ifndef CPU_VER
     int rank;
