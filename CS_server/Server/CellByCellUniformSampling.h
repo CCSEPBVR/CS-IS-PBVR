@@ -171,7 +171,8 @@ private:
                           //const float c_scalars[][SIMDW],
                           float** o_scalars, // åæå¤
                           float** c_scalars,
-                          const int tf_number  );
+                          const int tf_number,
+                          const int ncells );
     
     kvs::Vector3f RandomSamplingInCube( const kvs::Vector3f vertex, kvs::MersenneTwister* MT );
 
