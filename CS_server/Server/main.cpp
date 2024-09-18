@@ -616,8 +616,8 @@ inline VariableRange Calculate_minmax( const Argument& param,
                         tmp_min = tmp_min < volume->values().at<float>(i+n*nnodes) ? tmp_min : volume->values().at<float>(i+n*nnodes) ; 
                         tmp_max = tmp_max > volume->values().at<float>(i+n*nnodes) ? tmp_max : volume->values().at<float>(i+n*nnodes) ; 
                     }
-                    min_vec[n]=tmp_min;
-                    max_vec[n]=tmp_max;
+                    min_vec[n]=min_vec[n] < tmp_min ? min_vec[n] : tmp_min;
+                    max_vec[n]=max_vec[n] > tmp_max ? max_vec[n] : tmp_max;
                 }
                 delete volume;
             }

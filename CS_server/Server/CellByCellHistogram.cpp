@@ -619,6 +619,8 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
     SuperClass::setTfnumber(tf_number);
     SuperClass::setNbins(nbins);
 
+    m_o_histogram.fill(0x00);
+    m_c_histogram.fill(0x00);
     for( size_t i = 0; i < tf_number; i++ )
     {
         o_min[i] = m_transfer_function_array[i].opacityMap().minValue();
@@ -838,7 +840,6 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
                 }
             }
 
-
         } // end of omp critical
 //        timed_section_end(td_VectorIns,thid);
     } // end of omp parallel
@@ -854,10 +855,10 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
     m_transfer_function_synthesizer->m_c_max.resize(tf_number);        
     for (int i = 0; i < tf_number; i++)
     {
-        m_transfer_function_synthesizer->m_o_min[i] = O_min[i];
-        m_transfer_function_synthesizer->m_o_max[i] = O_max[i];
-        m_transfer_function_synthesizer->m_c_min[i] = C_min[i];
-        m_transfer_function_synthesizer->m_c_max[i] = C_max[i];
+        m_transfer_function_synthesizer->m_o_min[i] = m_transfer_function_synthesizer->m_o_min[i] < O_min[i] ? m_transfer_function_synthesizer->m_o_min[i] : O_min[i];
+        m_transfer_function_synthesizer->m_o_max[i] = m_transfer_function_synthesizer->m_o_max[i] > O_max[i] ? m_transfer_function_synthesizer->m_o_max[i] : O_max[i];
+        m_transfer_function_synthesizer->m_c_min[i] = m_transfer_function_synthesizer->m_c_min[i] < C_min[i] ? m_transfer_function_synthesizer->m_c_min[i] : C_min[i];
+        m_transfer_function_synthesizer->m_c_max[i] = m_transfer_function_synthesizer->m_c_max[i] > C_max[i] ? m_transfer_function_synthesizer->m_c_max[i] : C_max[i];
     }
 
 //    SuperClass::m_coords  = kvs::ValueArray<kvs::Real32>( vertex_coords );
