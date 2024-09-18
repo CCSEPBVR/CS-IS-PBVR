@@ -550,6 +550,16 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
         c_histogram.fill(0x00);
     }
 
+    // 2023/07/31 add by shimomura
+    SuperClass::m_c_histogram = kvs::ValueArray<int> (tf_number * nbins);
+    SuperClass::m_o_histogram = kvs::ValueArray<int> (tf_number * nbins);
+    SuperClass::setTfnumber(tf_number);
+    SuperClass::setNbins(nbins);
+
+    m_o_histogram.fill(0x00);
+    m_c_histogram.fill(0x00);
+
+
     for( size_t i = 0; i < tf_number; i++ )
     {
         o_min[i] = m_transfer_function_array[i].opacityMap().minValue();
@@ -720,6 +730,7 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
             #pragma omp for
             for( int J=0; J<outer_loop; J++ )
             {
+                int ncells = ((J+1) * SIMDW > nvertices) ? nvertices - J*SIMDW  : SIMDW ;
                 float X_l[SIMDW], Y_l[SIMDW], Z_l[SIMDW];
                 float X_g[SIMDW], Y_g[SIMDW], Z_g[SIMDW];
                 #pragma ivdep
@@ -759,7 +770,7 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
                                      nbins,
                                      o_min, o_max, c_min, c_max,
                                      o_scalars, c_scalars,
-                                     tf_number );
+                                     tf_number ,ncells);
 //                timed_section_end(td_CalculateHistogram,thid);
             }
         } // end of Histogram
@@ -1035,8 +1046,8 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
 
                 for( int n = 0; n < tf_number * nbins; n++ )
                 {
-                    o_histogram[n] += th_o_histogram[n];
-                    c_histogram[n] += th_c_histogram[n];
+                    m_o_histogram[n] += th_o_histogram[n];
+                    m_c_histogram[n] += th_c_histogram[n];
                 }
             }
 
@@ -2342,12 +2353,13 @@ void CellByCellRejectionSampling::calculate_histogram( kvs::ValueArray<int>&   t
  //                         const float c_scalars[][SIMDW],
                           float** o_scalars, // åæå¤
                           float** c_scalars,
-                          const int tf_number  )
+                          const int tf_number,
+                          const int ncells  )
 {
     //ヒストグラムと最大最小値
     for( int i = 0; i < tf_number; i++ )
     {
-        for( int I = 0; I < SIMDW; I++ )
+        for( int I = 0; I < ncells; I++ )
         {
             //不透明度のヒストグラム
             float h = (o_scalars[i][I] - o_min[i])/( o_max[i] - o_min[i] )*nbins;
