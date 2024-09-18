@@ -572,8 +572,6 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
         }
     } 
 
-    
-
 #if 1
     int tf_number = m_transfer_function_array.size();
     float sampling_volume_inverse = m_transfer_function_synthesizer -> getSamplingVolumeInverse()  ;
@@ -658,8 +656,6 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
     {
         th_tfs[n] = new TransferFunctionSynthesizer( *m_transfer_function_synthesizer );
     }
-
-    TFS::TrilinearInterpolator** interp_opacity  = new TFS::TrilinearInterpolator*[max_threads] ;
 
     th_tf.resize( max_threads );
     for ( int i = 0; i < max_threads; i++ )
@@ -841,7 +837,6 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
                 }
             }
 
-            delete interp_opacity[thid];
 
         } // end of omp critical
 //        timed_section_end(td_VectorIns,thid);
@@ -890,7 +885,7 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
              delete interp[i][j];
         }
     }
-    delete[] interp_opacity;
+ 
 #endif
     for (int i = 0; i < nvariables; i++)
     //for (int i = 0; i < nnodes; i++)
