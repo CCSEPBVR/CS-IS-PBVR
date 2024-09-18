@@ -840,8 +840,8 @@ void TransferFunctionEditor::importFromServer()
     ui->numberOfTransferFunctionSBox->setValue( m_extended_transfer_function_message.m_transfer_function_number );
 
 #ifdef Q_OS_WIN
-    ui->color_function_synth->setText( QString::fromUtf8(importdoc.m_color_transfer_function_synthesis.c_str() ) );
-    ui->opacity_function_synth->setText( QString::fromUtf8(importdoc.m_opacity_transfer_function_synthesis.c_str() ) );
+    ui->color_function_synth->setText( QString::fromUtf8( m_extended_transfer_function_message.m_color_transfer_function_synthesis.c_str() ) );
+    ui->opacity_function_synth->setText( QString::fromUtf8( m_extended_transfer_function_message.m_opacity_transfer_function_synthesis.c_str() ) );
 #else
     ui->color_function_synth->setText( QString::fromStdString( m_extended_transfer_function_message.m_color_transfer_function_synthesis ) );
     ui->opacity_function_synth->setText( QString::fromStdString( m_extended_transfer_function_message.m_opacity_transfer_function_synthesis ) );

@@ -1,6 +1,6 @@
 
 #include "VariableRange.h"
-#include "Serializer.h"
+#include "serializer.h"
 
 VariableRange::VariableRange()
 {

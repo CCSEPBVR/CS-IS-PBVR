@@ -769,6 +769,7 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
             #pragma omp for
             for( int J=0; J<outer_loop; J++ )
             {
+                int ncells = ((J+1) * SIMDW > nvertices) ? nvertices - J*SIMDW  : SIMDW ;
                 float X_l[SIMDW], Y_l[SIMDW], Z_l[SIMDW];
                 float X_g[SIMDW], Y_g[SIMDW], Z_g[SIMDW];
                 #pragma ivdep
@@ -808,7 +809,7 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
                                      nbins,
                                      o_min, o_max, c_min, c_max,
                                      o_scalars, c_scalars,
-                                     tf_number );
+                                     tf_number, ncells );
 //                timed_section_end(td_CalculateHistogram,thid);
             }
         } // end of Histogram
@@ -1553,7 +1554,8 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
                 cell_index[cell_BLK] = (kvs::UInt32)(cell_base + cell_BLK);
-                local_center_array[cell_BLK] = kvs::Vector3f ( 0.5, 0.5, 0.5 );
+                //local_center_array[cell_BLK] = kvs::Vector3f ( 0.5, 0.5, 0.5 );
+                local_center_array[cell_BLK] = kvs::Vector3f ( 0, 0, 0 );
             }
 
             //ｿｿｿｿｿｿｿｿｿｿｿｿｿｿ
@@ -1606,7 +1608,7 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
                         th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
                         th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
                         th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
-                        
+//                        std::cout << "th_O_min[i] = " << o_scalars_array[cell_BLK][i] <<std::endl;
                     }
                 }
             }
@@ -1921,11 +1923,12 @@ void CellByCellHistogram::calculate_histogram( kvs::ValueArray<int>&   th_o_hist
                           //const float c_scalars[][SIMDW],
                           float** o_scalars, // åæå¤
                           float** c_scalars,
-                          const int tf_number  )
+                          const int tf_number ,
+                          const int ncells )
 {
     for( int i = 0; i < tf_number; i++ )
     {
-        for( int I = 0; I < SIMDW; I++ )
+        for( int I = 0; I < ncells; I++ )
         {
             //ｿｿｿｿｿｿｿｿｿｿｿ
             float h = (o_scalars[i][I] - o_min[i])/( o_max[i] - o_min[i] )*nbins;
