@@ -106,6 +106,13 @@ void TransferFunctionSynthesizerCreator::setTransferFunction( jpv::ParticleTrans
     servMes->m_transfer_function.clear();
     servMes->m_transfer_function.resize(m_transfunc.size());
     int TF_resolution = 256;
+
+    // set defalut opacity & color  parameter
+    std::vector<float> o_table ={0, 0.00392157, 0.00784314, 0.0117647, 0.0156863, 0.0196078, 0.0235294, 0.027451, 0.0313726, 0.0352941, 0.0392157, 0.0431373, 0.0470588, 0.0509804, 0.054902, 0.0588235, 0.0627451, 0.0666667, 0.0705882, 0.0745098, 0.0784314, 0.0823529, 0.0862745, 0.0901961, 0.0941177, 0.0980392, 0.101961, 0.105882, 0.109804, 0.113725, 0.117647, 0.121569, 0.12549, 0.129412, 0.133333, 0.137255, 0.141176, 0.145098, 0.14902, 0.152941, 0.156863, 0.160784, 0.164706, 0.168627, 0.172549, 0.176471, 0.180392, 0.184314, 0.188235, 0.192157, 0.196078, 0.2, 0.203922, 0.207843, 0.211765, 0.215686, 0.219608, 0.223529, 0.227451, 0.231373, 0.235294, 0.239216, 0.243137, 0.247059, 0.25098, 0.254902, 0.258824, 0.262745, 0.266667, 0.270588, 0.27451, 0.278431, 0.282353, 0.286275, 0.290196, 0.294118, 0.298039, 0.301961, 0.305882, 0.309804, 0.313726, 0.317647, 0.321569, 0.32549, 0.329412, 0.333333, 0.337255, 0.341176, 0.345098, 0.34902, 0.352941, 0.356863, 0.360784, 0.364706, 0.368627, 0.372549, 0.376471, 0.380392, 0.384314, 0.388235, 0.392157, 0.396078, 0.4, 0.403922, 0.407843, 0.411765, 0.415686, 0.419608, 0.423529, 0.427451, 0.431373, 0.435294, 0.439216, 0.443137, 0.447059, 0.45098, 0.454902, 0.458824, 0.462745, 0.466667, 0.470588, 0.47451, 0.478431, 0.482353, 0.486275, 0.490196, 0.494118, 0.498039, 0.501961, 0.505882, 0.509804, 0.513726, 0.517647, 0.521569, 0.52549, 0.529412, 0.533333, 0.537255, 0.541176, 0.545098, 0.54902, 0.552941, 0.556863, 0.560784, 0.564706, 0.568627, 0.572549, 0.576471, 0.580392, 0.584314, 0.588235, 0.592157, 0.596078, 0.6, 0.603922, 0.607843, 0.611765, 0.615686, 0.619608, 0.623529, 0.627451, 0.631373, 0.635294, 0.639216, 0.643137, 0.647059, 0.65098, 0.654902, 0.658824, 0.662745, 0.666667, 0.670588, 0.67451, 0.678431, 0.682353, 0.686275, 0.690196, 0.694118, 0.698039, 0.701961, 0.705882, 0.709804, 0.713726, 0.717647, 0.721569, 0.72549, 0.729412, 0.733333, 0.737255, 0.741176, 0.745098, 0.74902, 0.752941, 0.756863, 0.760784, 0.764706, 0.768628, 0.772549, 0.776471, 0.780392, 0.784314, 0.788235, 0.792157, 0.796079, 0.8, 0.803922, 0.807843, 0.811765, 0.815686, 0.819608, 0.823529, 0.827451, 0.831373, 0.835294, 0.839216, 0.843137, 0.847059, 0.85098, 0.854902, 0.858824, 0.862745, 0.866667, 0.870588, 0.87451, 0.878431, 0.882353, 0.886275, 0.890196, 0.894118, 0.898039, 0.901961, 0.905882, 0.909804, 0.913726, 0.917647, 0.921569, 0.92549, 0.929412, 0.933333, 0.937255, 0.941177, 0.945098, 0.94902, 0.952941, 0.956863, 0.960784, 0.964706, 0.968628, 0.972549, 0.976471, 0.980392, 0.984314, 0.988235, 0.992157, 0.996078, 1};
+
+    std::vector<kvs::UInt8> c_table = {59,75,192,60,77,194,61,79,195,63,80,197,64,82,198,65,84,200,66,86,201,67,87,203,69,89,204,70,91,206,71,93,207,72,94,209,74,96,210,75,98,212,76,99,213,77,101,214,79,103,216,80,105,217,81,106,218,82,108,220,84,110,221,85,111,222,86,113,223,88,115,224,89,116,226,90,118,227,91,120,228,93,121,229,94,123,230,95,125,231,97,126,232,98,128,233,99,129,234,101,131,235,102,133,236,103,134,237,105,136,238,106,137,239,107,139,240,109,140,241,110,142,242,111,144,242,113,145,243,114,147,244,115,148,245,117,150,245,118,151,246,120,152,247,121,154,247,122,155,248,124,157,249,125,158,249,126,160,250,128,161,250,129,162,251,131,164,251,132,165,252,133,167,252,135,168,253,136,169,253,137,171,253,139,172,254,140,173,254,142,174,254,143,176,254,144,177,255,146,178,255,147,179,255,149,181,255,150,182,255,151,183,255,153,184,255,154,185,255,155,186,255,157,187,255,158,189,255,159,190,255,161,191,255,162,192,255,164,193,255,165,194,255,166,195,255,168,196,255,169,197,254,170,198,254,172,199,254,173,200,254,174,200,253,175,201,253,177,202,253,178,203,252,179,204,252,181,205,251,182,205,251,183,206,250,184,207,250,186,208,249,187,208,249,188,209,248,189,210,248,191,211,247,192,211,246,193,212,246,194,212,245,196,213,244,197,213,243,198,214,243,199,215,242,200,215,241,201,216,240,202,216,239,204,216,238,205,217,237,206,217,237,207,218,236,208,218,235,209,218,234,210,219,233,211,219,232,212,219,230,213,219,229,214,220,228,215,220,227,216,220,226,217,220,225,218,220,224,219,221,222,220,221,221,221,220,220,222,220,219,223,219,217,224,219,216,226,218,214,227,218,213,227,217,211,228,217,210,229,216,208,230,216,207,231,215,205,232,214,204,233,214,202,234,213,201,234,212,199,235,211,198,236,211,196,237,210,195,237,209,193,238,208,192,239,207,190,239,206,189,240,206,187,240,205,186,241,204,184,242,203,182,242,202,181,242,201,179,243,200,178,243,199,176,244,198,175,244,197,173,244,196,171,245,194,170,245,193,168,245,192,167,246,191,165,246,190,163,246,189,162,246,188,160,246,186,159,247,185,157,247,184,156,247,183,154,247,181,152,247,180,151,247,179,149,247,177,148,247,176,146,247,175,144,247,173,143,247,172,141,247,170,140,247,169,138,246,168,136,246,166,135,246,165,133,246,163,132,246,162,130,245,160,129,245,159,127,245,157,125,244,156,124,244,154,122,244,152,121,243,151,119,243,149,118,242,148,116,242,146,115,241,144,113,241,143,112,240,141,110,240,139,109,239,137,107,238,136,106,238,134,104,237,132,103,237,131,101,236,129,100,235,127,98,234,125,97,234,123,95,233,121,94,232,120,92,231,118,91,230,116,89,230,114,88,229,112,87,228,110,85,227,108,84,226,106,82,225,104,81,224,102,80,223,100,78,222,98,77,221,96,76,220,94,74,219,92,73,218,90,72,217,88,70,216,86,69,214,84,68,213,82,66,212,80,65,211,77,64,210,75,62,209,73,61,207,71,60,206,68,59,205,66,57,203,64,56,202,61,55,201,59,54,199,56,53,198,54,51,197,51,50,195,48,49,194,46,48,192,43,47,191,40,46,190,37,45,188,33,43,187,30,42,185,26,41,184,21,40,182,16,39,181,10,38,179,3,37};
+
+
     for ( size_t i = 0; i < m_transfunc.size(); i++ )
     {
         NamedTransferFunction tf;
@@ -125,12 +132,21 @@ void TransferFunctionSynthesizerCreator::setTransferFunction( jpv::ParticleTrans
         servMes->m_transfer_function[i].m_equation_green       = ""; 
         servMes->m_transfer_function[i].m_equation_blue        = ""; 
         servMes->m_transfer_function[i].m_equation_opacity     = "";
-        kvs::ColorMap color_map( TF_resolution, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );
-        kvs::OpacityMap opacity_map( TF_resolution, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );
+        //std::vector<kvs::UInt8> c_table(TF_resolution*3);
+        //std::vector<float> o_table(TF_resolution);
+        kvs::ValueArray<kvs::UInt8> cc_table(c_table);
+        kvs::ValueArray<float> oo_table(o_table);
+        kvs::ColorMap color_map( cc_table, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );
+        kvs::OpacityMap opacity_map( oo_table, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );
+        //kvs::ColorMap color_map( TF_resolution*3, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );
+        //kvs::OpacityMap opacity_map( TF_resolution, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );
+        //for (int n =0 ; n < TF_resolution*3 ; n++ ) color_map.table.at(n) = 1; // dummy data
+        //for (int n =0 ; n < TF_resolution ; n++ ) opacity_map.table.at(n) = 1; // dummy data
         servMes->m_transfer_function[i].setColorMap( color_map );
         servMes->m_transfer_function[i].setOpacityMap( opacity_map );
 
-        servMes->m_transfer_function[i].m_selection = NamedTransferFunctionParameter::SelectExtendTransferFunction;
+        //servMes->m_transfer_function[i].m_selection = NamedTransferFunctionParameter::SelectExtendTransferFunction;
+        servMes->m_transfer_function[i].m_selection = NamedTransferFunctionParameter::SelectTransferFunction;
 //        servMes->m_transfer_function.push_back( tf );
     }
 
@@ -263,12 +279,13 @@ void TransferFunctionSynthesizerCreator::setInitialProtocol( const int nvariable
         tf.m_equation_green       = ""; 
         tf.m_equation_blue        = ""; 
         tf.m_equation_opacity     = "";
-        kvs::ColorMap color_map( TF_resolution, tf.m_color_variable_min, tf.m_color_variable_max  );
+        //kvs::ColorMap color_map( TF_resolution, tf.m_color_variable_min, tf.m_color_variable_max  );
+        kvs::ColorMap color_map( TF_resolution*3, tf.m_color_variable_min, tf.m_color_variable_max  );
         kvs::OpacityMap opacity_map( TF_resolution, tf.m_color_variable_min, tf.m_color_variable_max  );
         tf.setColorMap( color_map );
         tf.setOpacityMap( opacity_map );
 
-        tf.m_selection = NamedTransferFunction::SelectExtendTransferFunction;
+        tf.m_selection = NamedTransferFunction::SelectTransferFunction;
         m_transfunc.push_back( tf );
     }
 
@@ -362,7 +379,6 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
         tf.m_equation_opacity     = clntMes.m_transfer_function[i].m_equation_opacity;
         tf.setColorMap( clntMes.m_transfer_function[i].colorMap() );
         tf.setOpacityMap( clntMes.m_transfer_function[i].opacityMap() );
-
         if ( clntMes.m_transfer_function[i].m_selection == NamedTransferFunctionParameter::SelectExtendTransferFunction )
         {
             tf.m_selection = NamedTransferFunction::SelectExtendTransferFunction;
@@ -430,10 +446,7 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
         m_transfunc[i].setOpacityMap( clntMes.m_transfer_function[i].opacityMap() );
 	m_transfunc[i].setOpacityRange( m_transfunc[i].m_opacity_variable_min, m_transfunc[i].m_opacity_variable_max );
 
-    //    std::cout << "clntMes.m_transfer_function[i+cnt].m_opacity_variable_max = " << clntMes.m_transfer_function[i+cnt].m_opacity_variable_max <<std::endl;
-        //for(int j=0; j<256; j++) std::cout << "m_transfunc["<< i <<"].opacityMap().["<< j <<"] = " << m_transfunc[i].opacityMap()[j] <<std::endl;
     }    
-        //for(int i=0; i<clntMes.m_transfer_function.size(); i++) std::cout << "m_transfunc["<< i <<"].colorMap().maxValue() = " << m_transfunc[i].colorMap().maxValue() << std::endl;
 
     for ( size_t i = 0; i < clntMes.m_volume_equation.size(); i++ )
     {
