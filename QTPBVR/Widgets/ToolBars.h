@@ -79,9 +79,8 @@ private:
 
     QElapsedTimer m_last_pressed_timer;
     QTimer m_timer;
-    bool m_is_long_press_active;
-
     MergePanel* m_merge;
+    bool m_is_long_press_active;
 
 private slots:
     void onFirst();

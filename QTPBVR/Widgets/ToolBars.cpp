@@ -96,7 +96,8 @@ TimeControllerA::~TimeControllerA()
 TimeControllerB::TimeControllerB( QWidget *parent, TimeControllerA *time_controller_a, MergePanel* merge ) :
     QToolBar(parent),
     m_time_controller_a( time_controller_a ),
-    m_merge( merge )
+    m_merge( merge ),
+    m_is_long_press_active( false )
 {
     QSize iconSize(60, 60);
     QSize buttonSize(50, 50);
