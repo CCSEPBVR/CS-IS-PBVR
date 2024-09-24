@@ -35,7 +35,7 @@ public:
             //文字列からスペースを削除
             expression  = remove_space( expression );
 
-            //std::cout<<"expression:"<<expression<<std::endl;
+//            std::cout<<"expression:"<<expression<<std::endl;
 
             //左側から文字列を比較し、トークンを作成
             string_2_token( expression );
