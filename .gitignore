@@ -2,3 +2,6 @@
 *.a
 particle_out
 timer.out.*
+history_*
+t_0*
+t_pfi_coords_minmax.txt
