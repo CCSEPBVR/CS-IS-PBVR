@@ -1141,7 +1141,11 @@ void MergePanel::onWorkerThreadFinished()
                         if (kvsml) // kvsml が正しく作成された場合のみ処理を実行
                         {
                             kvsml->setWritingDataTypeToExternalBinary();
+#ifdef Q_OS_WIN
+                            kvsml->write( newFileInfo.filePath().replace( "/","\\" ).toLocal8Bit().constData() );
+#else
                             kvsml->write( newFileInfo.filePath().toStdString() );
+#endif
                             delete kvsml;
                         }
                         else
