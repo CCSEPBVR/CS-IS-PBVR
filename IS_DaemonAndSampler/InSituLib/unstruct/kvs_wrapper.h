@@ -135,12 +135,18 @@ extern "C" {
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltypes );
 
+    void GenerateHistogram( int time_step,
+                             domain_parameters dom,
+                             Type** values, int nvariables,
+                             float* coordinates, int ncoords,
+                             unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase );
+ 
     void GenerateParticles( int time_step,
                              domain_parameters dom,
                              Type** values, int nvariables,
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase );
-    void OutputParticles( int time_step, int nvariables, pbvr_parameters& particleBase,  ParamInfo *param_info);
+    void OutputParticles( int time_step, int nvariables, pbvr_parameters& particleBase,  ParamInfo *param_info, bool skip_flag);
     bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, ParamInfo *param_info, const int time_step);
 
 #endif

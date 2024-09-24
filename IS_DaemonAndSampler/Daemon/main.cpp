@@ -412,6 +412,39 @@ int main( int argc, char** argv )
                 }
 #endif
 //jupiter end
+
+//// read minmax & histrogram 
+//                ParticleMonitor pm( particlePath, statePath.c_str(), historyPath.c_str() );
+//                pm.check();
+//                if( pm.stepExisted() )
+//                {
+//                    pm.setTimeStep(pm.particleStatusFile().getLatestTimeStep());
+//                }
+//                else
+//                {
+//                    pm.setTimeStep(0);
+//                }
+//                pm.readParticleHistoryFile();
+//                range = pm.particleHistoryFile().variableRange();
+//
+//                for ( int tf = 0; tf < pm.particleHistoryFile().colorHistogramArray().size() && tf < servMes.m_transfer_function_count; tf++ )
+//                {
+//                    servMes.m_color_nbins[tf] = pm.particleHistoryFile().colorHistogramArray()[ tf ].size();
+//                    for ( int res = 0; res < servMes.m_color_nbins[tf]; res++ )
+//                    {
+//                        servMes.m_color_bins[tf][res] = pm.particleHistoryFile().colorHistogramArray()[ tf ][res];
+//                    }
+//                }
+//
+//                for ( int tf = 0; tf < pm.particleHistoryFile().opacityHistogramArray().size() && tf < servMes.m_transfer_function_count; tf++ )
+//                {
+//                    servMes.m_opacity_nbins[tf] = pm.particleHistoryFile().opacityHistogramArray()[ tf ].size();
+//                    for ( int res = 0; res < servMes.m_opacity_nbins[tf]; res++ )
+//                    {
+//                        servMes.m_opacity_bins[tf][res] = pm.particleHistoryFile().opacityHistogramArray()[ tf ][ res ];
+//                    }
+//                }
+
                 servMes.m_min_value = fil.total_minValue;
                 servMes.m_max_value = fil.total_maxValue;
                 servMes.m_number_nodes = fil.total_numNodes;
@@ -438,7 +471,6 @@ int main( int argc, char** argv )
                 ofs.close();
                 // 20181226 end
                 
-
                 ParameterFileWriter ppw;
                 ppw.inputMessage( clntMes );
                 std::ifstream file(tfFilePath.c_str());
