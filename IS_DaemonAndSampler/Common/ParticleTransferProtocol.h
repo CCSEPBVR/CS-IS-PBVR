@@ -24,7 +24,8 @@ enum class InitializeParameter : int32_t {
      initial_step = -3,  // 値の設定
      end = -2,
      empty = -1,
-     generate_particle = 1
+     generate_particle = 1,
+     export_TFfile = 2
 };
 
 class ParticleTransferUtils
