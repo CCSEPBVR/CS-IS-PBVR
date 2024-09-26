@@ -49,7 +49,8 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         //        s += sizeof( char ) * ( m_filter_parameter_filename.size() + 1 );
         //        // add:end by @hira at 2016/12/01
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step )
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step
+         || m_initialize_parameter == InitializeParameter::export_TFfile  )
     {
         s += sizeof( m_sampling_method );
         s += sizeof( m_subpixel_level );
@@ -156,7 +157,8 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         //        index += jpv::Serializer::writeArray( buf + index, m_filter_parameter_filename.c_str(), m_filter_parameter_filename.size() + 1 );
         //        // add:end by @hira at 2016/12/01
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step )
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step
+         || m_initialize_parameter == InitializeParameter::export_TFfile         )
     {
         index += jpv::Serializer::write( buf + index, m_sampling_method );
         index += jpv::Serializer::write( buf + index, m_subpixel_level );
@@ -282,7 +284,8 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         //        delete[] tmp_char;
         //        // add:end by @hira at 2016/12/01
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step )
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step
+         || m_initialize_parameter == InitializeParameter::export_TFfile  )
     {
         index += jpv::Serializer::read( buf + index, &m_sampling_method );
         index += jpv::Serializer::read( buf + index, &m_subpixel_level );
