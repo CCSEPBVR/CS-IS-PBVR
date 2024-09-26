@@ -43,6 +43,7 @@ private:
     DataProperties* m_filter_infomation;
     TransferFunctionEditor* m_transfer_function_editor;
     ExtendedTransferFunctionMessage m_extended_transfer_function_message;
+    bool connecting = false; //通信状態の判定パラメータ
 
     jpv::ParticleTransferClientMessage m_client_message;
     jpv::ParticleTransferServerMessage m_server_message;

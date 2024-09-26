@@ -153,56 +153,76 @@ void Connect::connectServer()
 
 void Connect::sendTransferFunction()
 {
-    if( ui-> clientServerRBtn -> isChecked() )
+    if(connecting)
     {
-        qInfo() <<  "this botton doesn't work in CS_MODE !!!";
+        qInfo() << "Other conneciton mode working !!";
     }
-    else if ( ui->inSituRBtn->isChecked() )
+    else
     {
-        std::cout << "********" << std::endl;
-        std::cout << "********" << std::endl;
-        std::cout << "********" << std::endl;
-        std::cout << "********" << std::endl;
+        connecting = true;
+        if( ui-> clientServerRBtn -> isChecked() )
+        {
+            qInfo() <<  "this botton doesn't work in CS_MODE !!!";
+        }
+        else if ( ui->inSituRBtn->isChecked() )
+        {
 
-        jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
-        //    jpv::ParticleTransferClientMessage m_client_message;
-        //    jpv::ParticleTransferServerMessage reply;
-        m_server_message.m_camera = new kvs::Camera();
-        client.initClient();
-        strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
-        m_client_message.m_initialize_parameter = jpv::InitializeParameter::export_TFfile; // = 2
-        m_client_message.m_rendering_id = 0;
-        if( ui->uniformRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'u'; }
-        if( ui->metropolisRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'm'; }
-        if( ui->rejectionRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'r'; }
-        m_client_message.m_subpixel_level = 2;
-        m_client_message.m_repeat_level = 16;
-        m_client_message.m_shuffle_method = 'r';
-        m_client_message.m_time_parameter = 2;
-        m_client_message.m_trans_parameter = 2;
-        m_client_message.m_node_type = 'a';
-        m_client_message.m_camera = m_pbvr_gui->screen()->scene()->camera();//足りないかも
-        m_client_message.m_step = 0;
-        m_client_message.m_message_size = m_client_message.byteSize();
-        m_client_message.m_sampling_step = 1.0f;
-        m_client_message.m_enable_crop_region = 0;
+            std::cout << "********" << std::endl;
+            std::cout << "********" << std::endl;
+            std::cout << "********" << std::endl;
+            std::cout << "********" << std::endl;
 
-        m_client_message.m_message_size = m_client_message.byteSize();
-        // TF情報をサーバー側に送信　（サーバーからの受信はしない）
-        client.sendMessage( m_client_message );
+            jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
+            //    jpv::ParticleTransferClientMessage m_client_message;
+            //    jpv::ParticleTransferServerMessage reply;
+            m_server_message.m_camera = new kvs::Camera();
+            client.initClient();
+            strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
+            m_client_message.m_initialize_parameter = jpv::InitializeParameter::export_TFfile; // = 2
+            m_client_message.m_rendering_id = 0;
+            if( ui->uniformRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'u'; }
+            if( ui->metropolisRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'm'; }
+            if( ui->rejectionRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'r'; }
+            m_client_message.m_subpixel_level = 2;
+            m_client_message.m_repeat_level = 16;
+            m_client_message.m_shuffle_method = 'r';
+            m_client_message.m_time_parameter = 2;
+            m_client_message.m_trans_parameter = 2;
+            m_client_message.m_node_type = 'a';
+            m_client_message.m_camera = m_pbvr_gui->screen()->scene()->camera();//足りないかも
+            m_client_message.m_step = 0;
+            m_client_message.m_message_size = m_client_message.byteSize();
+            m_client_message.m_sampling_step = 1.0f;
+            m_client_message.m_enable_crop_region = 0;
 
-        m_client_message.m_initialize_parameter = jpv::InitializeParameter::empty;
-        m_client_message.m_message_size = m_client_message.byteSize();
-        client.sendMessage( m_client_message );
-        client.recvMessage( &m_server_message );
+            m_client_message.m_message_size = m_client_message.byteSize();
+            // TF情報をサーバー側に送信　（サーバーからの受信はしない）
+            client.sendMessage( m_client_message );
 
-        client.termClient();
+            m_client_message.m_initialize_parameter = jpv::InitializeParameter::empty;
+            m_client_message.m_message_size = m_client_message.byteSize();
+            client.sendMessage( m_client_message );
+            client.recvMessage( &m_server_message );
+
+            client.termClient();
+        }
+        connecting = false;
     }
 }
 
 
 kvs::PointObject* Connect::generateParticles( int timeStep )
 {
+
+    if(connecting)
+    {
+        qInfo() << "Other conneciton mode working !!";
+        kvs::PointObject* object = new kvs::PointObject();
+        return  object;
+    }
+    else
+    {
+        connecting = true;
     std::cout << "********" << std::endl;
     std::cout << "********" << std::endl;
     std::cout << "********" << std::endl;
@@ -390,7 +410,9 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
         m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_last_step );
     }
 
+    connecting = false;
     return pointObject;
+    }
 }
 
 void Connect::deletedServerObject()
