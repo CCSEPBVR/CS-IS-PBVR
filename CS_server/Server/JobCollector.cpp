@@ -30,7 +30,7 @@ JobCollector::~JobCollector()
     free( m_pack_normals );
 }
 
-int JobCollector::jobCollect( pbvr::PointObject* object, VariableRange* vr, bool* invalid, int* wid )
+void JobCollector::jobCollect( pbvr::PointObject* object, VariableRange* vr, bool* invalid, int* wid )
 {
     int size;
     int rank;
@@ -112,7 +112,7 @@ int JobCollector::jobCollect( pbvr::PointObject* object, VariableRange* vr, bool
                 bool sub_invalid;
                 MPI_Recv( &sub_invalid, sizeof( bool ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
                 *invalid |= sub_invalid;
-            }
+          }
 
             size_t nvertices = m_nvertices_list[m_pack_count];
             size_t nmemb = nvertices * 3;
@@ -133,18 +133,18 @@ int JobCollector::jobCollect( pbvr::PointObject* object, VariableRange* vr, bool
             object->setCoords( coords_array );
             object->setColors( colors_array );
             object->setNormals( normals_array );
-        }
+      }
 
-    }
-    else
-    {
-        const size_t nvertices = object->nvertices();
-        const size_t nmemb = nvertices * 3;
+  }
+  else
+  {
+      const size_t nvertices = object->nvertices();
+      const size_t nmemb = nvertices * 3;
 
-        std::cerr << "*nvertices: " << nvertices << std::endl;
+      std::cerr << "*nvertices: " << nvertices << std::endl;
 
-        if ( !m_batch )
-        {
+      if ( !m_batch )
+      {
             const float*         coords     = object->coords().pointer();
             const unsigned char* colors     = object->colors().pointer();
             const float*         normals    = object->normals().pointer();
@@ -163,10 +163,10 @@ int JobCollector::jobCollect( pbvr::PointObject* object, VariableRange* vr, bool
             memcpy( &m_pack_coords[m_pack_size - nmemb], coords, sizeof( float )*nmemb );
             memcpy( &m_pack_colors[m_pack_size - nmemb], colors, sizeof( unsigned char )*nmemb );
             memcpy( &m_pack_normals[m_pack_size - nmemb], normals, sizeof( float )*nmemb );
-        }
+      }
 
-        if ( m_jd->getCollectSendState() )
-        {
+      if ( m_jd->getCollectSendState() )
+      {
             double send_time = GetTime();
             size_t nvertices_list_size = m_nvertices_list.size();
             PBVR_TIMER_STA( 451 );
