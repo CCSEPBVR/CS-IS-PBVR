@@ -22,7 +22,7 @@ TEMPLATE = app
 #=============================================================================
 #  Target.
 #=============================================================================
-TARGET = QTPBVR
+TARGET = pbvr_client
 
 
 
@@ -248,7 +248,7 @@ QMAKE_POST_LINK = rmdir /s /q .\debug\Font & mkdir .\debug\Font & xcopy "$$repla
 }
 
 macx {
-QMAKE_POST_LINK = rm -rf QTPBVR.app/Contents/MacOS/Font && mkdir -p QTPBVR.app/Contents/MacOS/Font && cp -rf $$FONT_DIR/* QTPBVR.app/Contents/MacOS/Font/ && rm -rf QTPBVR.app/Contents/MacOS/Shader && mkdir -p QTPBVR.app/Contents/MacOS/Shader && cp -rf $$SHADER_DIR/* QTPBVR.app/Contents/MacOS/Shader/
+QMAKE_POST_LINK = rm -rf pbvr_client.app/Contents/MacOS/Font && mkdir -p pbvr_client.app/Contents/MacOS/Font && cp -rf $$FONT_DIR/* pbvr_client.app/Contents/MacOS/Font/ && rm -rf pbvr_client.app/Contents/MacOS/Shader && mkdir -p pbvr_client.app/Contents/MacOS/Shader && cp -rf $$SHADER_DIR/* pbvr_client.app/Contents/MacOS/Shader/
 }
 
 unix:!macx {
