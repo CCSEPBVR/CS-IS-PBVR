@@ -1,0 +1,26 @@
+<kvsmlConverter version="0">
+  <target>
+    <input>
+      <distributed stepId="0" lastTimeStepId="3">
+        <directoryPath>../Example/Input/Large/Mixed/mixed.0</directoryPath>
+        <wildcard>mixed.*.0.vtu</wildcard>
+      </distributed>
+      <distributed stepId="1" lastTimeStepId="3">
+        <directoryPath>../Example/Input/Large/Mixed/mixed.1</directoryPath>
+        <wildcard>mixed.*.1.vtu</wildcard>
+      </distributed>
+      <distributed stepId="2" lastTimeStepId="3">
+        <directoryPath>../Example/Input/Large/Mixed/mixed.2</directoryPath>
+        <wildcard>mixed.*.2.vtu</wildcard>
+      </distributed>
+      <distributed stepId="3" lastTimeStepId="3">
+        <directoryPath>../Example/Input/Large/Mixed/mixed.3</directoryPath>
+        <wildcard>mixed.*.3.vtu</wildcard>
+      </distributed>
+    </input>
+    <output>
+      <directoryPath>/tmp/mixed</directoryPath>
+      <prefix>mixed</prefix>
+    </output>
+  </target>
+</kvsmlConverter>
