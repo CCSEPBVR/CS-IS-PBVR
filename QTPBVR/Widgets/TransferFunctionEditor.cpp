@@ -847,15 +847,15 @@ void TransferFunctionEditor::importFromServer()
     ui->opacity_function_synth->setText( QString::fromStdString( m_extended_transfer_function_message.m_opacity_transfer_function_synthesis ) );
 #endif
 
-    qDebug() << QString::fromStdString( m_extended_transfer_function_message.m_color_transfer_function_synthesis );
-    qDebug() << QString::fromStdString( m_extended_transfer_function_message.m_color_transfer_function[0].m_color_variable );
-    qDebug() << m_extended_transfer_function_message.m_color_transfer_function[0].m_color_variable_min;
-    qDebug() << m_extended_transfer_function_message.m_color_transfer_function[0].m_color_variable_max;
+    // qDebug() << QString::fromStdString( m_extended_transfer_function_message.m_color_transfer_function_synthesis );
+    // qDebug() << QString::fromStdString( m_extended_transfer_function_message.m_color_transfer_function[0].m_color_variable );
+    // qDebug() << m_extended_transfer_function_message.m_color_transfer_function[0].m_color_variable_min;
+    // qDebug() << m_extended_transfer_function_message.m_color_transfer_function[0].m_color_variable_max;
 
-    qDebug() << QString::fromStdString( m_extended_transfer_function_message.m_opacity_transfer_function_synthesis );
-    qDebug() << QString::fromStdString( m_extended_transfer_function_message.m_opacity_transfer_function[0].m_opacity_variable );
-    qDebug() << m_extended_transfer_function_message.m_opacity_transfer_function[0].m_opacity_variable_min;
-    qDebug() << m_extended_transfer_function_message.m_opacity_transfer_function[0].m_opacity_variable_max;
+    // qDebug() << QString::fromStdString( m_extended_transfer_function_message.m_opacity_transfer_function_synthesis );
+    // qDebug() << QString::fromStdString( m_extended_transfer_function_message.m_opacity_transfer_function[0].m_opacity_variable );
+    // qDebug() << m_extended_transfer_function_message.m_opacity_transfer_function[0].m_opacity_variable_min;
+    // qDebug() << m_extended_transfer_function_message.m_opacity_transfer_function[0].m_opacity_variable_max;
 
     onColorFunctionChanged( ui->colorFunctionCBox->currentIndex() );
     onOpacityFunctionChanged( ui->opacityFunctionCBox->currentIndex() );
