@@ -34,9 +34,9 @@ void VolumeTransform::onApplyButtonClicked()
     m_pbvr_gui->screen()->scene()->objectManager()->scale( scaling );
 
     m_pbvr_gui->screen()->scene()->objectManager()->rotate( kvs::RPYRotationMatrix33<float>(
-        ui->rotationXAxisDSBox->value(),
+        ui->rotationZAxisDSBox->value(),
         ui->rotationYAxisDSBox->value(),
-        ui->rotationZAxisDSBox->value()) );
+        ui->rotationXAxisDSBox->value()) );
 
     m_pbvr_gui->screen()->update();
 }
