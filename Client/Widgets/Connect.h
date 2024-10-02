@@ -17,6 +17,7 @@
 
 class PBVRGUI;
 class MergePanel;
+class RenderOptions;
 
 namespace Ui {
 class Connect;
@@ -27,7 +28,7 @@ class Connect : public QDialog
     Q_OBJECT
 
 public:
-    explicit Connect(QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr, MergePanel* merge = nullptr, DataProperties* filter_infomation = nullptr, TransferFunctionEditor* transfer_function_editor = nullptr);
+    explicit Connect(QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr, MergePanel* merge = nullptr, DataProperties* filter_infomation = nullptr, RenderOptions* render_options = nullptr, TransferFunctionEditor* transfer_function_editor = nullptr);
     ~Connect();
     jpv::ParticleTransferClientMessage* getClientMessage(){ return &m_client_message; }
     jpv::ParticleTransferServerMessage* getServerMessage(){ return &m_server_message; }
@@ -40,6 +41,7 @@ private:
     PBVRGUI *m_pbvr_gui;
     MergePanel* m_merge;
     DataProperties* m_filter_infomation;
+    RenderOptions* m_render_options;
     TransferFunctionEditor* m_transfer_function_editor;
     ExtendedTransferFunctionMessage m_extended_transfer_function_message;
 

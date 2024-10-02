@@ -16,6 +16,12 @@ RenderOptions::~RenderOptions()
     delete ui;
 }
 
+void RenderOptions::updateParticleLimit()
+{
+    ui->limitSBox->setValue( m_connect->getServerMessage()->m_particle_limit );
+    m_connect->getClientMessage()->m_particle_limit = m_connect->getServerMessage()->m_particle_limit;
+}
+
 void RenderOptions::onApplyButtonClicked()
 {
     m_connect->getClientMessage()->m_particle_density = ui->densityDSBox->value();

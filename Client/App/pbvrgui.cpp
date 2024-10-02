@@ -26,7 +26,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_total_particles( this ),
     m_color_map_bar_selector( this, this ),
     m_merge( this, this, &m_preference ,&m_time_controller_B, &m_total_particles, &m_connect, &m_shading_controller ),
-    m_connect( this, this, &m_merge, &m_data_properties, &m_transfer_function_editor ),
+    m_connect( this, this, &m_merge, &m_data_properties, &m_render_options, &m_transfer_function_editor ),
     m_volumeTransform( this, this ),
     m_animation_controls( this, this ),
     m_repetition_level_control( this, this, &m_shading_controller ),
