@@ -14,6 +14,7 @@ class RenderOptions : public QDockWidget
 public:
     explicit RenderOptions(QWidget *parent = nullptr, MergePanel* merge = nullptr, Connect* connect_panel = nullptr);
     ~RenderOptions();
+    void updateParticleLimit();
 
 private:
     Ui::RenderOptions *ui;

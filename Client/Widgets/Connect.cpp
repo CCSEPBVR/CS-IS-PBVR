@@ -7,13 +7,15 @@
 #include <QFileDialog>
 
 #include "Widgets/MergePanel.h"
+#include "Widgets/RenderOptions.h"
 
-Connect::Connect(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, DataProperties* filter_infomation, TransferFunctionEditor* transfer_function_editor):
+Connect::Connect(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, DataProperties* filter_infomation, RenderOptions* render_options, TransferFunctionEditor* transfer_function_editor):
     QDialog(parent),
     ui(new Ui::Connect),
     m_pbvr_gui( pbvr_gui ),
     m_merge( merge  ),
     m_filter_infomation( filter_infomation ),
+    m_render_options( render_options ),
     m_transfer_function_editor( transfer_function_editor ),
     m_extended_transfer_function_message(),
     m_client_message(),
@@ -88,6 +90,11 @@ void Connect::connectServer()
     client.recvMessage( &m_server_message );
     m_server_message.show();
 
+    if ( ui->inSituRBtn->isChecked() )
+    {
+        m_render_options->updateParticleLimit();
+    }
+
     //ヒストグラム更新用(CS, IS)
     m_received_message.m_var_range.merge( m_server_message.m_server_side_variable_range );
     m_received_message.m_color_bins.resize( m_server_message.m_transfer_function_count );
@@ -144,7 +151,7 @@ void Connect::connectServer()
     }
     else if ( ui->inSituRBtn->isChecked() )
     {
-        m_merge->serverObjectIS( "IS-Object", 0, 0 );
+        m_merge->serverObjectIS( "IS-Object", 0, 0 );        
     }
     delete m_server_message.m_camera;
     ui->connectPBtn->setDisabled( true );

@@ -173,40 +173,42 @@ bool TimeControllerB::getLoopButtonEnabled() const
 
 void TimeControllerB::updateMinMax( int min, int max, int totalFiles )
 {
-    m_time_controller_a->getMinLimitTimeStepSpinBox()->setMinimum( min );
-    m_time_controller_a->getMinLimitTimeStepSpinBox()->setMaximum( max );
+    QMetaObject::invokeMethod(this, [this, min, max, totalFiles]() {
+            m_time_controller_a->getMinLimitTimeStepSpinBox()->setMinimum( min );
+            m_time_controller_a->getMinLimitTimeStepSpinBox()->setMaximum( max );
 
-    m_time_controller_a->getMaxLimitTimeStepSpinBox()->setMinimum( min );
-    m_time_controller_a->getMaxLimitTimeStepSpinBox()->setMaximum( max );
+            m_time_controller_a->getMaxLimitTimeStepSpinBox()->setMinimum( min );
+            m_time_controller_a->getMaxLimitTimeStepSpinBox()->setMaximum( max );
 
-    m_time_controller_a->getTotalTimeStepRangeLabel()->setText( QString( "(Min : %1, Max : %2)" ).arg( min ).arg( max ) );
+            m_time_controller_a->getTotalTimeStepRangeLabel()->setText( QString( "(Min : %1, Max : %2)" ).arg( min ).arg( max ) );
 
-    switch ( totalFiles )
-    {
-    case 0:
-        m_time_controller_a->getCurrentTimeStepLineEdit()->setValue( -1 );
+            switch ( totalFiles )
+            {
+            case 0:
+                m_time_controller_a->getCurrentTimeStepLineEdit()->setValue( -1 );
 
-        m_time_controller_a->getMinLimitTimeStepSpinBox()->setValue( 0 );
-        m_time_controller_a->getMinLimitTimeStepSpinBox()->setMinimum( 0 );
-        m_time_controller_a->getMinLimitTimeStepSpinBox()->setMaximum( 0 );
+                m_time_controller_a->getMinLimitTimeStepSpinBox()->setValue( 0 );
+                m_time_controller_a->getMinLimitTimeStepSpinBox()->setMinimum( 0 );
+                m_time_controller_a->getMinLimitTimeStepSpinBox()->setMaximum( 0 );
 
-        m_time_controller_a->getMaxLimitTimeStepSpinBox()->setValue( 0 );
-        m_time_controller_a->getMaxLimitTimeStepSpinBox()->setMinimum( 0 );
-        m_time_controller_a->getMaxLimitTimeStepSpinBox()->setMaximum( 0 );
-        m_time_controller_a->getTotalTimeStepRangeLabel()->setText( QString( "(Min : %1, Max : %2)" ).arg( 0 ).arg( 0 ) );
-        break;
-    case 1:
-        m_time_controller_a->getMinLimitTimeStepSpinBox()->setValue( min );
-        m_time_controller_a->getMaxLimitTimeStepSpinBox()->setValue( max );
-        break;
-    default:
-        if( m_time_controller_a->getCurrentTimeStepLineEdit()->value() == -1 )
-        {
-            m_time_controller_a->getMinLimitTimeStepSpinBox()->setValue( min );
-            m_time_controller_a->getMaxLimitTimeStepSpinBox()->setValue( max );
-        }
-        break;
-    }
+                m_time_controller_a->getMaxLimitTimeStepSpinBox()->setValue( 0 );
+                m_time_controller_a->getMaxLimitTimeStepSpinBox()->setMinimum( 0 );
+                m_time_controller_a->getMaxLimitTimeStepSpinBox()->setMaximum( 0 );
+                m_time_controller_a->getTotalTimeStepRangeLabel()->setText( QString( "(Min : %1, Max : %2)" ).arg( 0 ).arg( 0 ) );
+                break;
+            case 1:
+                m_time_controller_a->getMinLimitTimeStepSpinBox()->setValue( min );
+                m_time_controller_a->getMaxLimitTimeStepSpinBox()->setValue( max );
+                break;
+            default:
+                if( m_time_controller_a->getCurrentTimeStepLineEdit()->value() == -1 )
+                {
+                    m_time_controller_a->getMinLimitTimeStepSpinBox()->setValue( min );
+                    m_time_controller_a->getMaxLimitTimeStepSpinBox()->setValue( max );
+                }
+                break;
+            }
+        }, Qt::QueuedConnection);
 }
 
 void TimeControllerB::updateTimeStep()

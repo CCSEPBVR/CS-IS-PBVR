@@ -26,7 +26,7 @@ public:
     JobCollector( JobDispatcher* pjd );
     ~JobCollector();
 
-    int jobCollect( pbvr::PointObject* object, VariableRange* vr, bool* invalid, int* wid = NULL );
+    void jobCollect( pbvr::PointObject* object, VariableRange* vr, bool* invalid, int* wid = NULL );
     void setBatch( const bool stat )
     {
         m_batch = stat;

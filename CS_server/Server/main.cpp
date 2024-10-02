@@ -1801,7 +1801,7 @@ int main( int argc, char** argv )
                             nan_error = true;
                         }
 #ifndef CPU_VER
-                        VariableRange* p_vr = &param.m_transfunc_synthesizer->variableRange();
+                        VariableRange* p_vr = &range;
                         jc.jobCollect( object, p_vr, &nan_error, &wid );
 #endif
                         if ( nan_error )
