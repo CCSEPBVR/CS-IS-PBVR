@@ -16,6 +16,7 @@
 
 #include <sstream>
 #include <iomanip>
+#include <memory>
 
 #include "kvs_wrapper.h"
 #include "TFS/CellByCellParticleGenerator.h"
@@ -33,7 +34,19 @@
 #include "TFS/PrismaticCell.h"
 #include "TFS/PyramidalCell.h"
 
+#ifdef VTK
+//VTK
+#include <vtkSmartPointerBase.h>
+#include <vtkSmartPointer.h>
+#include <vtkPointData.h>
+#include "FileFormat/VtkUnstructuredFileFormat.h"
+#include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
+#include <vtkUnstructuredGrid.h>
+#endif
 
+//kvsmlImporter
+#include "CvtTypeTraits.h"
+#include "Importer/VtkImporter.h"
 
 // add FJ start
 #ifndef SIMD_BLK_SIZE
@@ -228,7 +241,6 @@ void SetDefalutParameter( TransferFunctionSynthesizer* tfs,
         tfBuf.setOpacityMap( opacity_map );
         tf.push_back(tfBuf);
     }
-    std::cout << "tf_size() = " << tf.size() <<std::endl;
     particleBase ->m_tf = tf;
 
     // add by shimomura 2024/03/25
@@ -651,6 +663,182 @@ void generate_particles( int time_step, domain_parameters dom,
     OutputParticles(time_step, nvariables, particleBase, &param, skip_flag);
     delete m_tfs;
 }
+
+#ifdef VTK
+void SetDomain( vtkUnstructuredGrid* ucd, domain_parameters* dom)
+{
+    double bounds[6];
+    ucd -> GetPoints() -> GetBounds(bounds); 
+    float recv_Xmin, recv_Xmax;
+    float recv_Ymin, recv_Ymax;
+    float recv_Zmin, recv_Zmax;
+
+    float Xmin = bounds[0];
+    float Xmax = bounds[1];
+    float Ymin = bounds[2];
+    float Ymax = bounds[3];
+    float Zmin = bounds[4];
+    float Zmax = bounds[5];
+    MPI_Allreduce(&Xmin, &recv_Xmin, 1 , MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD);
+    MPI_Allreduce(&Ymin, &recv_Ymin, 1 , MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD);
+    MPI_Allreduce(&Zmin, &recv_Zmin, 1 , MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD);
+    MPI_Allreduce(&Xmax, &recv_Xmax, 1 , MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(&Ymax, &recv_Ymax, 1 , MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(&Zmax, &recv_Zmax, 1 , MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD);
+
+    std:: cout << "maxX = "<< recv_Xmax << std::endl;
+    std:: cout << "minX = "<< recv_Xmin << std::endl;
+    std:: cout << "maxY = "<< recv_Ymax << std::endl;
+    std:: cout << "minY = "<< recv_Ymin << std::endl;
+    std:: cout << "maxZ = "<< recv_Zmax << std::endl;
+    std:: cout << "minZ = "<< recv_Zmin << std::endl;
+
+    dom->x_global_min = recv_Xmin;
+    dom->y_global_min = recv_Ymin;
+    dom->z_global_min = recv_Zmin;
+    dom->x_global_max = recv_Xmax;
+    dom->y_global_max = recv_Ymax;
+    dom->z_global_max = recv_Zmax;
+
+}
+
+void SetVariables(kvs::UnstructuredVolumeObject* object, Type** values, pbvr::VolumeObjectBase::CellType* celltype )
+{
+
+        switch ( object -> cellType() )
+        {
+            case 4: // pbvr::VolumeObjectBase::Tetrahedra:
+                {
+                    *celltype = pbvr::VolumeObjectBase::Tetrahedra;
+                    break;
+                }
+            case 10: //pbvr::VolumeObjectBase::QuadraticTetrahedra:
+                {
+                    *celltype = pbvr::VolumeObjectBase::QuadraticTetrahedra;
+                }
+            case 8: //  pbvr::VolumeObjectBase::Hexahedra:
+                {
+                    *celltype = pbvr::VolumeObjectBase::Hexahedra;
+                    break;
+                }
+            case 20: //pbvr::VolumeObjectBase::QuadraticHexahedra:
+                {
+                    *celltype = pbvr::VolumeObjectBase::QuadraticHexahedra;
+                    break;
+                }
+            case 6: // pbvr::VolumeObjectBase::Prism:
+                {
+                    *celltype = pbvr::VolumeObjectBase::Prism;
+                    break;
+                }
+            case 5: //pbvr::VolumeObjectBase::Pyramid:
+                {
+                    *celltype = pbvr::VolumeObjectBase::Pyramid;
+                    break;
+                }
+            default:
+                {
+                    std::cout << "Unsupported cell type." << std::endl; 
+                    return;
+                }
+        }
+
+        int nvariables = object -> veclen();    
+        int ncoords = object -> nnodes(); 
+        for ( int j = 0; j < nvariables; j++ )
+        {
+            for ( int i = 0; i < ncoords; i++ )
+            {
+                int  it = j * ncoords  + i;
+                values[j][i] = object ->values().at<Type>(it);
+            }
+        }
+}
+
+void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd ) 
+{
+    kvs::Timer timer( kvs::Timer::Start );
+ 
+    domain_parameters dom; 
+    SetDomain(ucd, &dom); 
+
+    static ParamInfo param;
+    pbvr_parameters particleBase;
+    bool skip_flag;
+    skip_flag = SetParameter(dom, &particleBase, &param, time_step);
+
+    int mpi_rank = 0;
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+    
+    timer.stop();
+    std::cout << mpi_rank << ", set_parameter = " << timer.sec() <<std::endl;
+    timer.start();
+
+    int  nvariables;
+    float t_extract = 0;
+    float t_generate_particles = 0;
+
+    cvt::VtkXmlUnstructuredGrid input_vtu( ucd );
+    for ( auto vtu : input_vtu.eachCellType() )
+    {
+        vtkSmartPointer<vtkUnstructuredGrid> volume = vtu.get();
+        cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &vtu );
+        kvs::UnstructuredVolumeObject* object = &importer;
+
+        int ncoords = object -> nnodes();
+        nvariables  = object -> veclen();
+
+        pbvr::VolumeObjectBase::CellType celltype;
+        Type** values;
+        values = new Type * [nvariables];
+        for ( int j = 0; j < nvariables; j++ )
+        {
+            values[j] = new float[ncoords];
+        }
+
+        SetVariables(object, values, &celltype); 
+
+        timer.stop();
+        t_extract += timer.sec();
+        timer.start();
+        if (skip_flag == false)
+        {
+            // デフォルト設定を伝達関数に設定
+            SetDefalutParameter(m_tfs, &particleBase, nvariables, values, ncoords);
+            GenerateHistogram(time_step, dom, values,
+                    nvariables, (float*)object->coords().pointer(), ncoords,
+                    (unsigned int*)object->connections().pointer(), object -> ncells(), celltype, particleBase);
+        }    
+        else
+        {
+            GenerateParticles(time_step, dom, values,
+                    nvariables, (float*)object->coords().pointer(), ncoords,
+                    (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, particleBase);
+
+        }
+        timer.stop();
+        t_generate_particles += timer.sec();
+        timer.start();
+
+        for (int i =0; i< nvariables ; i++)
+        {
+            delete  values[i];
+        }
+        delete[] values;
+    }
+
+    timer.stop();
+    std::cout << mpi_rank << ", extract() = " << t_extract <<std::endl;
+    std::cout << mpi_rank << ", generate_particles() = " << t_generate_particles <<std::endl;
+    timer.start();
+    std::cout << "all nparitcles = " << particleBase.m_sample_coords.size()/3 <<std::endl;  
+    OutputParticles(time_step, nvariables, particleBase, &param, skip_flag);
+    delete m_tfs;
+    
+    timer.stop();
+    std::cout << mpi_rank << ", output_particles =  " << timer.sec() <<std::endl;
+}
+#endif
 
 bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, ParamInfo *m_param ,const int time_step)
 {
