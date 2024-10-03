@@ -287,7 +287,7 @@ int main( int argc, char** argv )
                 param.input_data_base = "dummy";
 
                 std::cout<<"main.cpp:L221"<<std::endl;
-                clntMes.show();
+                //clntMes.show();
 //jupiter end
 
 /* 2018 kawamura comment out
@@ -453,7 +453,7 @@ int main( int argc, char** argv )
                 servMes.m_message_size = servMes.byteSize();
 
                 std::cout<<"main.cpp:L366"<<std::endl;
-                clntMes.show();
+                servMes.show();
 
                 pts.sendMessage( servMes );
                 delete servMes.m_camera;
@@ -481,9 +481,8 @@ int main( int argc, char** argv )
                 //２回めの受信(client->daemon)
                 //受信したデータをclntMesが読み取る
                 ptss = pts.recvMessage( &clntMes );
-
                 std::cout<<"main.cpp:L388"<<std::endl;
-                clntMes.show();
+//                clntMes.show();
                 std::cout<<"ptss="<<ptss<<std::endl;
 
                 if ( ptss == -1 ) break;
@@ -542,7 +541,6 @@ int main( int argc, char** argv )
                     servMes.m_message_size = servMes.byteSize();
 
                     std::cout<<"main.cpp:L439"<<std::endl;
-                    clntMes.show();
 
                     pts.sendMessage( servMes );
                     break;
@@ -701,7 +699,8 @@ int main( int argc, char** argv )
                         servMes.m_last_step = pm.particleStatusFile().getLatestTimeStep();
                         if( pm.stepExisted() )
                         {
-                            if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step && pm.getTimeStep() > -1 )
+                            //if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step && pm.getTimeStep() > -1 )
+                            if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step )
                             {
                                 servMes.m_time_step = clntMes.m_step;
                             }
@@ -713,11 +712,12 @@ int main( int argc, char** argv )
                         }
                         else
                         {
+                            std::cout << " no step !!!!!!!!!!!" << std::endl;
                             clntMes.m_step = -1;
                         }
 
                         std::cout<<"main.cpp:L614"<<std::endl;
-                        servMes.show();
+                        //clntMes.show();
 
                         pts.sendMessage( servMes );
 
@@ -779,7 +779,7 @@ int main( int argc, char** argv )
                             ParameterFileWriter ppw;
                             ParameterFileReader ppr;
 
-                            clntMes.show();
+                            //clntMes.show();
                             // 20181226 start　環境変数で指定したパスおよび名前でファイル参照を行う
                             ppw.inputMessage( clntMes );
                             //ppr.readParameterFile("jupiter_old.tf");
@@ -895,8 +895,8 @@ int main( int argc, char** argv )
                             TimerStart( 4 );
 
                             std::cout<<"main.cpp:L779"<<std::endl;
-                            clntMes.show();
 
+                            servMes.show();
                             pts.sendMessage( servMes );
                             TimerStop( 4 );
                             if ( timer_count <= TIMER_COUNT_NUM )
@@ -962,11 +962,7 @@ int main( int argc, char** argv )
                         delete[] tmp_c_bins;
                         delete[] tmp_o_bins;
 
-
                         timer.stop();
-                        std::cout << "Particle File: " << timer.sec() << " [sec/step]" << std::endl;
-
-
 
                         if ( timer_count <= TIMER_COUNT_NUM )
                         {
