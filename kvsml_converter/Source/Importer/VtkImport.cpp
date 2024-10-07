@@ -138,8 +138,32 @@ kvs::VolumeObjectBase::Values GetValueArray( VtkPointSetPointerType data, int co
         {
             auto array = point_data->GetArray( i );
 
-            //switch ( array->GetArrayType() )
-            switch ( array->GetDataType() )
+            // This statement will be removed in the future
+            // Currently, only float type is supported in the server program
+            // Convert all types to float until the server program supports non-float types
+            int tuple_count = array->GetNumberOfTuples();
+
+            vtkSmartPointer<vtkFloatArray> float_array = vtkSmartPointer<vtkFloatArray>::New();
+            float_array->SetName(array->GetName());
+            float_array->SetNumberOfComponents(component_count);
+            float_array->SetNumberOfTuples(tuple_count);
+
+            for ( int j = 0; j < tuple_count; ++j )
+            {
+                std::vector<float> tuple(component_count);
+                for ( int k = 0; k < component_count; ++k )
+                {
+                    tuple[k] = static_cast<float>(array->GetComponent(j, k));
+                }
+
+                float_array->SetTuple(j, tuple.data());
+            }
+
+            point_data->RemoveArray(array->GetName());
+            point_data->AddArray(float_array);
+
+            // switch ( array->GetArrayType() )
+            switch ( float_array->GetDataType() )
             {
             case VTK_TYPE_UINT8:
                 array_type = std::max( array_type, 0 );
