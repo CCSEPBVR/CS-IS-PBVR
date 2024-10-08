@@ -2,16 +2,16 @@ EXE_INC = \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
     -DVTK \
-    -I../../../InSituLib/unstruct \
-    -I../../../KVS/Source \
+    -I../../../../InSituLib/unstruct \
+    -I../../../../KVS/Source \
     -I/home/center/viztools/VTK-9.2.2/include/vtk-9.2 \
 
 EXE_LIBS = \
     -lfiniteVolume \
     -lmeshTools \
-    -L../../../InSituLib/unstruct -lInSituPBVR \
-    -L../../../KVS/Source/Core/Release  -lkvsCore \
-    -L../../../FunctionParser -lpbvrFunc \
+    -L../../../../InSituLib/unstruct -lInSituPBVR \
+    -L../../../../KVS/Source/Core/Release  -lkvsCore \
+    -L../../../../FunctionParser -lpbvrFunc \
     -L/lib64 \
     -L/home/center/viztools/VTK-9.2.2/lib64 -lvtkFiltersExtraction-9.2 -lvtkIOXML-9.2 -lvtkIOXMLParser-9.2 -lvtkexpat-9.2 -lvtkParallelCore-9.2 -lvtkIOLegacy-9.2 -lvtkIOCore-9.2 \
     -lvtkdoubleconversion-9.2 -lvtklz4-9.2 -lvtklzma-9.2 -lvtkFiltersStatistics-9.2 -lvtkFiltersCore-9.2 -lvtkCommonExecutionModel-9.2  \

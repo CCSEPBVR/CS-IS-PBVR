@@ -7,8 +7,9 @@ export MPICC_CC=icc; export MPICXX_CXX=icpc
 
 echo "end setting module & export"
 
+CURRENT=$(cd $(dirname $0);pwd)
 #cd ../
-cd ../../../InSituLib/unstruct
+cd ../../../../InSituLib/unstruct
 
 #file="citylbm"
 #if [ -e $file ]; then
@@ -25,7 +26,8 @@ make -j
 
 echo "finish make pbvr"
 
-cd ../../Example/C/Hydrogen_unstruct
+cd $CURRENT
+#cd ../../Example/C/Hydrogen_unstruct
 make clean
 make -j
 

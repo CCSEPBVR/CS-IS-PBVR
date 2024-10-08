@@ -11,10 +11,11 @@ bash /home/g6/a214026/OpenFOAM/env/OpenFOAM-v10/etc/bashrc
 mkdir bin 
 mkdir particle_out
 
+CURRENT=$(cd $(dirname $0);pwd)
 echo "end setting module & export"
 rm bin/icoFoam
 #cd ../
-cd ../../../InSituLib/unstruct
+cd ../../../../InSituLib/unstruct
 
 #file="citylbm"
 #if [ -e $file ]; then
@@ -31,7 +32,8 @@ make -j
 
 echo "finish make pbvr"
 
-cd ../../Example/C/cavity_OpenFOAM
+cd $CURRENT
+#cd ../../Example/C/gcc_mpi_omp/cavity_OpenFOAM
 wclean
 wmake -j
 
