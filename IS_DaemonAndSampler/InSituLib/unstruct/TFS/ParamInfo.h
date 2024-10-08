@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "Serializer.h"
+#include <map>
 
 class ParamInfo
 {

@@ -53,7 +53,12 @@ public:
     const bool isSuccess( void ) const;
 
     const bool isFailure( void ) const;
+
+protected:
+    void setSuccess( const bool success ) { m_is_success = success; }
 };
+
+
 
 } // end of namespace kvs
 

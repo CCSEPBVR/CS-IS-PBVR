@@ -138,8 +138,7 @@ kvs::VolumeObjectBase::Values GetValueArray( VtkPointSetPointerType data, int co
         {
             auto array = point_data->GetArray( i );
 
-            //switch ( array->GetArrayType() )
-            switch ( array->GetDataType() )
+            switch ( array->GetArrayType() )
             {
             case VTK_TYPE_UINT8:
                 array_type = std::max( array_type, 0 );
@@ -173,6 +172,11 @@ kvs::VolumeObjectBase::Values GetValueArray( VtkPointSetPointerType data, int co
                 array_type = std::numeric_limits<int>::max();
             }
         }
+
+        // This statement will be removed in the future
+        // Currently, only float type is supported in the server program
+        // Convert all types to float until the server program supports non-float types
+        array_type = 8;
 
         switch ( array_type )
         {
