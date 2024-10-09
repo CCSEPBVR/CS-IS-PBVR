@@ -59,8 +59,10 @@ int main( int argc, char** argv )
 
     if ( argc != 3 )
     {
-        std::cerr << "kvsml-converter [input_file] [output_directory]" << std::endl;
-        std::cout << "If input_file is time-series files, use wildcards" << std::endl;
+        std::cout << "kvsml-example [input_file] [output_directory]" << std::endl;
+        std::cout << "If input_file is time-series files, use a wildcard." << std::endl;
+        std::cout << "On MacOS or Linux, filename containing a wildcard should be enclosed in single quotation." << std::endl;
+        std::cout << "EXAMPLE:kvsml-example 'input_folder/input_subfolder/example_*.vtu' output_folder/output_subfolder" << std::endl;
         return -1;
     }
 
