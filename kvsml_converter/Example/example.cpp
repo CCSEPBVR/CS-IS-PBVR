@@ -93,12 +93,14 @@ int main( int argc, char** argv )
 
     if ( input_file_extension == ".stl" )
     {
-        std::string output_file_path = output_directory_path.string() + "/" + input_filename_without_extension.string() + ".kvsml";
+        std::string separator(1, fs::path::preferred_separator);
+        std::string output_file_path = output_directory_path.string() + separator + input_filename_without_extension.string() + ".kvsml";
         Stl2Kvsml( output_file_path, input_file_path.string() );
     }
     else if ( input_file_extension == ".vtp" )
     {
-        std::string output_file_path = output_directory_path.string() + "/" + input_filename_without_extension.string() + ".kvsml";
+        std::string separator(1, fs::path::preferred_separator);
+        std::string output_file_path = output_directory_path.string() + separator + input_filename_without_extension.string() + ".kvsml";
         Vtp2Kvsml( output_file_path, input_file_path.string() );
     }
     else if ( input_file_extension == ".xyz" || input_file_extension == ".q" || input_file_extension == ".f" )
@@ -153,17 +155,20 @@ int main( int argc, char** argv )
 
             if ( input_vtu.isPointObjectConvertible() )
             {
-                std::string output_file_path = output_directory_path.string() + "/" + input_filename_without_extension.string() + ".kvsml";
+                std::string separator(1, fs::path::preferred_separator);
+                std::string output_file_path = output_directory_path.string() + separator + input_filename_without_extension.string() + ".kvsml";
                 PointVtu2Kvsml( output_file_path, input_file_path.string() );
             }
             else if ( input_vtu.isLineObjectConvertible() )
             {
-                std::string output_file_path = output_directory_path.string() + "/" + input_filename_without_extension.string() + ".kvsml";
+                std::string separator(1, fs::path::preferred_separator);
+                std::string output_file_path = output_directory_path.string() + separator + input_filename_without_extension.string() + ".kvsml";
                 LineVtu2Kvsml( output_file_path, input_file_path.string() );
             }
             else if ( input_vtu.isPolygonObjectConvertible() )
             {
-                std::string output_file_path = output_directory_path.string() + "/" + input_filename_without_extension.string() + ".kvsml";
+                std::string separator(1, fs::path::preferred_separator);
+                std::string output_file_path = output_directory_path.string() + separator + input_filename_without_extension.string() + ".kvsml";
                 TriangleVtu2Kvsml( output_file_path, input_file_path.string() );
             }
             else
