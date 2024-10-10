@@ -105,6 +105,7 @@ int main( int argc, char** argv )
         std::string output_file_path = output_directory_path.string() + separator + input_filename_without_extension.string() + ".kvsml";
         Vtp2Kvsml( output_file_path, input_file_path.string() );
     }
+    /*
     else if ( input_file_extension == ".xyz" || input_file_extension == ".q" || input_file_extension == ".f" )
     {
         fs::path input_file_path_xyz = input_file_path.replace_extension(".xyz");
@@ -116,6 +117,7 @@ int main( int argc, char** argv )
     {
         Vtr2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
     }
+    */
     else if ( input_file_extension == ".vtk" )
     {
         StructuredPoints2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
@@ -140,10 +142,12 @@ int main( int argc, char** argv )
     {
         Pvts2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
     }
+    /*
     else if ( input_file_extension == ".inp" )
     {
         AvsUcd2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
     }
+    */
     else if ( input_file_extension == ".vtu" )
     {
         if ( contains_wildcard( input_file_path.string() ) )
