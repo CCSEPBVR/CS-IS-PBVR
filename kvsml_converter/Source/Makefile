@@ -126,7 +126,7 @@ endif
 #  build.
 #=============================================================================
 build:: $(TARGET_LIB)
-build:: $(TARGET_EXE)
+#build:: $(TARGET_EXE)
 ifdef CVT_ENABLE_MPI
 build:: $(TARGET_EXE_MPI)
 endif
@@ -146,9 +146,9 @@ install::
 	$(MKDIR) $(INSTALL_DIR)/lib
 	$(INSTALL) $(TARGET_LIB) $(INSTALL_DIR)/lib
 	$(RANLIB) $(INSTALL_DIR)/lib/$(LIB_KVSML_CONVERTER)
-install::
-	$(MKDIR) $(INSTALL_DIR)/bin
-	$(INSTALL_EXE) $(TARGET_EXE) $(INSTALL_DIR)/bin
+#install::
+#	$(MKDIR) $(INSTALL_DIR)/bin
+#	$(INSTALL_EXE) $(TARGET_EXE) $(INSTALL_DIR)/bin
 ifdef CVT_ENABLE_MPI
 install::
 	$(MKDIR) $(INSTALL_DIR)/bin
