@@ -103,7 +103,7 @@ $(TARGET_EXE_MPI): $(TARGET_LIB) $(MPI_OBJECTS)
 #  build.
 #=============================================================================
 build:: $(TARGET_LIB)
-build:: $(TARGET_EXE)
+#build:: $(TARGET_EXE)
 !IFDEF CVT_ENABLE_MPI
 build:: $(TARGET_EXE_MPI)
 !ENDIF
@@ -121,9 +121,9 @@ clean::
 install::
 	IF NOT EXIST "$(INSTALL_DIR)\lib" $(MKDIR) "$(INSTALL_DIR)\lib"
 	$(INSTALL) $(TARGET_LIB) "$(INSTALL_DIR)\lib"
-install::
-	IF NOT EXIST "$(INSTALL_DIR)\bin" $(MKDIR) "$(INSTALL_DIR)\bin"
-	$(INSTALL) $(TARGET_EXE) "$(INSTALL_DIR)\bin"
+#install::
+#	IF NOT EXIST "$(INSTALL_DIR)\bin" $(MKDIR) "$(INSTALL_DIR)\bin"
+#	$(INSTALL) $(TARGET_EXE) "$(INSTALL_DIR)\bin"
 !IFDEF CVT_ENABLE_MPI
 install::
 	IF NOT EXIST "$(INSTALL_DIR)\bin" $(MKDIR) "$(INSTALL_DIR)\bin"
