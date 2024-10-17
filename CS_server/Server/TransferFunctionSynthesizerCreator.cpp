@@ -101,7 +101,8 @@ void TransferFunctionSynthesizerCreator::setAsisTransferFunction( const pbvr::Tr
 {
 }
 
-void TransferFunctionSynthesizerCreator::setTransferFunction( jpv::ParticleTransferServerMessage* servMes )
+//void TransferFunctionSynthesizerCreator::setTransferFunction( jpv::ParticleTransferServerMessage* servMes )
+void TransferFunctionSynthesizerCreator::setTransferFunction( jpv::ParticleTransferServerMessage* servMes, const VariableRange vr )
 {
     servMes->m_transfer_function.clear();
     servMes->m_transfer_function.resize(m_transfunc.size());
@@ -122,11 +123,15 @@ void TransferFunctionSynthesizerCreator::setTransferFunction( jpv::ParticleTrans
         tt << "t" << i + 1;  
         servMes->m_transfer_function[i].m_name          = tt.str();
         servMes->m_transfer_function[i].m_color_variable       = qq.str();
-        servMes->m_transfer_function[i].m_color_variable_min   = m_transfunc[i].m_color_variable_min;
-        servMes->m_transfer_function[i].m_color_variable_max   = m_transfunc[i].m_color_variable_max; 
+        servMes->m_transfer_function[i].m_color_variable_min   = vr.min( tt.str() + "_var_c" );
+        servMes->m_transfer_function[i].m_color_variable_max   = vr.max( tt.str() + "_var_c" );
+        //servMes->m_transfer_function[i].m_color_variable_min   = m_transfunc[i].m_color_variable_min;
+        //servMes->m_transfer_function[i].m_color_variable_max   = m_transfunc[i].m_color_variable_max; 
         servMes->m_transfer_function[i].m_opacity_variable     = qq.str();
-        servMes->m_transfer_function[i].m_opacity_variable_min = m_transfunc[i].m_opacity_variable_min;
-        servMes->m_transfer_function[i].m_opacity_variable_max = m_transfunc[i].m_opacity_variable_max; 
+        servMes->m_transfer_function[i].m_opacity_variable_min   = vr.min( tt.str() + "_var_o" );
+        servMes->m_transfer_function[i].m_opacity_variable_max   = vr.max( tt.str() + "_var_o" );
+        //servMes->m_transfer_function[i].m_opacity_variable_min = m_transfunc[i].m_opacity_variable_min;
+        //servMes->m_transfer_function[i].m_opacity_variable_max = m_transfunc[i].m_opacity_variable_max; 
         servMes->m_transfer_function[i].m_resolution           = TF_resolution;
         servMes->m_transfer_function[i].m_equation_red         = ""; 
         servMes->m_transfer_function[i].m_equation_green       = ""; 
@@ -136,16 +141,10 @@ void TransferFunctionSynthesizerCreator::setTransferFunction( jpv::ParticleTrans
         kvs::ValueArray<float> oo_table(o_table);
         kvs::ColorMap color_map( cc_table, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );
         kvs::OpacityMap opacity_map( oo_table, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );
-        //kvs::ColorMap color_map( TF_resolution*3, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );
-        //kvs::OpacityMap opacity_map( TF_resolution, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );
-        //for (int n =0 ; n < TF_resolution*3 ; n++ ) color_map.table.at(n) = 1; // dummy data
-        //for (int n =0 ; n < TF_resolution ; n++ ) opacity_map.table.at(n) = 1; // dummy data
         servMes->m_transfer_function[i].setColorMap( color_map );
         servMes->m_transfer_function[i].setOpacityMap( opacity_map );
 
-        //servMes->m_transfer_function[i].m_selection = NamedTransferFunctionParameter::SelectExtendTransferFunction;
         servMes->m_transfer_function[i].m_selection = NamedTransferFunctionParameter::SelectTransferFunction;
-//        servMes->m_transfer_function.push_back( tf );
     }
 
 
@@ -174,75 +173,6 @@ std::vector<NamedTransferFunction> TransferFunctionSynthesizerCreator::transfunc
 {
     return m_transfunc;
 }
-
-
-//std::vector<VolumeEquation> TransferFunctionSynthesizerCreator::voleq()
-//{
-//    return m_voleqn;
-//}
-
-//void TransferFunctionSynthesizerCreator::assign()
-//{
-//    TransferFunctionMap      tfm_c, tfm_o;
-//    TransfuncQuantityBindMap tqm_c, tqm_o;
-//    FunctionStringMap        vfm;
-//
-//    // delete by @hira at 2016/12/01
-//    // const std::string tf_synth = m_transfunc_synthesis;
-//
-//    for ( size_t i = 0; i < m_transfunc.size(); i++ )
-//    {
-//        const NamedTransferFunction::Selection s = m_transfunc[i].m_selection;
-//        const std::string& name = m_transfunc[i].m_name;
-//        const std::string& var_c = m_transfunc[i].m_color_variable;
-//        const std::string& var_o = m_transfunc[i].m_opacity_variable;
-//        const std::string& R = m_transfunc[i].m_equation_red;
-//        const std::string& G = m_transfunc[i].m_equation_green;
-//        const std::string& B = m_transfunc[i].m_equation_blue;
-//        const std::string& A = m_transfunc[i].m_equation_opacity;
-//        const int32_t resolution = m_transfunc[i].m_resolution;
-//        const float min_c = m_transfunc[i].m_color_variable_min;
-//        const float max_c = m_transfunc[i].m_color_variable_max;
-//        const float min_o = m_transfunc[i].m_opacity_variable_min;
-//        const float max_o = m_transfunc[i].m_opacity_variable_max;
-//
-//        if ( s == NamedTransferFunction::SelectExtendTransferFunction )
-//        {
-//            tfm_c[name] = ExtendedTransferFunction( R, G, B, A, resolution, min_c, max_c );
-//            tfm_o[name] = ExtendedTransferFunction( R, G, B, A, resolution, min_o, max_o );
-//        }
-//        else if ( s == NamedTransferFunction::SelectTransferFunction )
-//        {
-//            tfm_c[name] = static_cast<pbvr::TransferFunction>( m_transfunc[i] );
-//            tfm_o[name] = static_cast<pbvr::TransferFunction>( m_transfunc[i] );
-//            tfm_c[name].setRange( min_c, max_c );
-//            tfm_o[name].setRange( min_o, max_o );
-//        }
-//
-//        tqm_c[name] = var_c;
-//        tqm_o[name] = var_o;
-//    }
-//
-//    for ( size_t i = 0; i < m_voleqn.size(); i++ )
-//    {
-//        const std::string& name  = m_voleqn[i].m_name;
-//        const std::string& value = m_voleqn[i].m_equation;
-//        vfm[name] = value;
-//    }
-//
-//    m_synthesizer->setColorTransferFunctionMap( tfm_c );
-//    m_synthesizer->setOpacityTransferFunctionMap( tfm_o );
-//    m_synthesizer->setColorTransfuncQuantityBindMap( tqm_c );
-//    m_synthesizer->setOpacityTransfuncQuantityBindMap( tqm_o );
-//    m_synthesizer->setVolumeFunctionStringMap( vfm );
-//
-//    // delete by @hira at 2016/12/01
-//    // m_synthesizer->setSynthFunctionString( tf_synth );
-//
-//    // add by @hira at 2016/12/01 : 1次伝達関数（色、不透明度）
-//    m_synthesizer->setColorSynthFunctionString( m_color_transfunc_synthesis );
-//    m_synthesizer->setOpacitySynthFunctionString( m_opacity_transfunc_synthesis );
-//}
 
 void TransferFunctionSynthesizerCreator::setInitialProtocol( const int nvariable, const VariableRange vr)
 {
