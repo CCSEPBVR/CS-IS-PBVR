@@ -35,7 +35,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_render_options( this, &m_merge, &m_connect ),
     m_data_properties( this ),
     m_coordinates( this, &m_merge, &m_connect ),
-    m_transfer_function_editor( this, &m_color_map_bar_selector ,&m_merge, &m_connect )
+    m_transfer_function_editor( this, &m_merge, &m_connect )
 {
     ui->setupUi(this);
     setWindowTitle( "pbvr_client v3.1.0" );
@@ -99,8 +99,8 @@ void PBVRGUI::initializePanels()
     this->addToolBarBreak(Qt::TopToolBarArea);
     this->addToolBar(Qt::TopToolBarArea, &m_total_particles);
     this->addToolBar(Qt::TopToolBarArea, &m_color_map_bar_selector);
-    m_color_map_bar_selector.setExtendedTransferFunctionMessage( m_transfer_function_editor.getExtendedTransferFunctionMessage() );
-    m_color_map_bar_selector.populateColorFunctionLists( m_color_map_bar_selector.getExtendedTransferFunctionMessage()->m_transfer_function_number );
+    // m_color_map_bar_selector.setExtendedTransferFunctionMessage( m_transfer_function_editor.getExtendedTransferFunctionMessage() );
+    // m_color_map_bar_selector.populateColorFunctionLists( m_color_map_bar_selector.getExtendedTransferFunctionMessage()->m_transfer_function_number );
     this->addToolBarBreak(Qt::TopToolBarArea);
     this->addToolBar(Qt::TopToolBarArea, &m_time_controller_B);    
 

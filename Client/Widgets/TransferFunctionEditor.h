@@ -2,13 +2,10 @@
 #define TRANSFERFUNCTIONEDITOR_H
 
 #include <QDialog>
-#include "ToolBars.h"
-#include "Widgets/ColorMapEditor.h"
-#include "Widgets/OpacityMapEditor.h"
-
-#include "ExtendedTransferFunctionMessage.h"
-#include "ReceivedMessage.h"
-#include "FunctionListEditor.h"
+#include <kvs/TransferFunction>
+// #include "ExtendedTransferFunctionMessage.h"
+#include "FrequencyTable.h"
+#include "Common/VariableRange.h"
 
 class MergePanel;
 class Connect;
@@ -17,85 +14,221 @@ namespace Ui {
 class TransferFunctionEditor;
 }
 
-class TransferFunctionEditor : public QDialog
+class Functions : public kvs::TransferFunction
 {
-    Q_OBJECT
 public:
-    enum class Mode
+    enum Selection //おそらく必要ない。
     {
-        CS,  //Client Server
-        IS,  //In-situ
-        None //No select
+        SelectExtendTransferFunction = 0,
+        SelectTransferFunction = 1,
+    };
+
+    enum SelectedRange
+    {
+        UserDefinedRange = 0,
+        ServerSideRange = 1
     };
 
 public:
-    explicit TransferFunctionEditor(QWidget *parent = nullptr, ColorMapBarSelector* colonr_map_bar_selector = nullptr, MergePanel* merge = nullptr, Connect* connect_panel = nullptr);
+    Selection m_selection;
+
+    std::string m_color_function_name;
+    std::string m_color_variable;
+    SelectedRange m_color_selected_range;
+    float m_color_user_defined_min;
+    float m_color_user_defined_max;
+    float m_color_server_side_min;
+    float m_color_server_side_max;
+    kvs::visclient::FrequencyTable m_color_histogram;
+
+    std::string m_opacity_function_name;
+    std::string m_opacity_variable;
+    SelectedRange m_opacity_selected_range;
+    float m_opacity_user_defined_min;
+    float m_opacity_user_defined_max;
+    float m_opacity_server_side_min;
+    float m_opacity_server_side_max;
+    kvs::visclient::FrequencyTable m_opacity_histogram;
+};
+
+class Parameter
+{
+public:
+    // int32_t m_resolution;
+    // std::string m_volume_synthesis;
+
+    int m_number_of_transfer_functions;
+
+    std::string m_color_synthesizer;
+    std::string m_opacity_synthesizer;
+
+    std::vector<Functions> m_transfer_function;
+
+public:
+    Functions* getTransferFunction( const std::string &colorName, const std::string &opacityName )
+    {
+        std::vector<Functions>::iterator itr;
+        for( itr = this->m_transfer_function.begin(); itr != this->m_transfer_function.end(); itr++ )
+        {
+            Functions func = (*itr);
+            if( func.m_color_function_name == colorName && func.m_opacity_function_name == opacityName )
+            {
+                return &(*itr);
+            }
+        }
+        return nullptr;
+    }
+
+    Functions* getTransferFunction( const std::string &functionName )
+    {
+        std::vector<Functions>::iterator itr;
+        for( itr = this->m_transfer_function.begin(); itr != this->m_transfer_function.end(); itr++ )
+        {
+            Functions func = (*itr);
+            if( func.m_color_function_name == functionName || func.m_opacity_function_name == functionName )
+            {
+                return &(*itr);
+            }
+        }
+        return nullptr;
+    }
+
+    Functions* getTransferFunction( const int n )
+    {
+        if( n >= 0 && n < static_cast<int>(this->m_transfer_function.size()) )
+        {
+            return &this->m_transfer_function[n];
+        }
+        return nullptr;
+    }
+
+    void addTransferFunction( const std::string &colorName, const std::string &opacityName, const std::string &variable )
+    {
+        Functions *func = getTransferFunction( colorName, opacityName );
+        if( func != nullptr )
+        {
+            return;
+        }
+
+        Functions transferFunction;
+
+        transferFunction.m_color_function_name = colorName;
+        transferFunction.m_color_variable = variable;
+        transferFunction.m_color_selected_range = Functions::UserDefinedRange;
+        transferFunction.m_color_user_defined_min = 0.0;
+        transferFunction.m_color_user_defined_max = 1.0;
+        transferFunction.m_color_server_side_min = std::numeric_limits<float>::quiet_NaN(); //Nan 追加された段階でサーバからの値を取得できないため。
+        transferFunction.m_color_server_side_max = std::numeric_limits<float>::quiet_NaN(); //Nan 追加された段階でサーバからの値を取得できないため。
+
+        transferFunction.m_opacity_function_name = opacityName;
+        transferFunction.m_opacity_variable = variable;
+        transferFunction.m_opacity_selected_range = Functions::UserDefinedRange;
+        transferFunction.m_opacity_user_defined_min = 0.0;
+        transferFunction.m_opacity_user_defined_max = 1.0;
+        transferFunction.m_opacity_server_side_min = std::numeric_limits<float>::quiet_NaN(); //Nan 追加された段階でサーバからの値を取得できないため。
+        transferFunction.m_opacity_server_side_max = std::numeric_limits<float>::quiet_NaN(); //Nan 追加された段階でサーバからの値を取得できないため。
+        m_transfer_function.push_back( transferFunction );
+    }
+
+    void removeTransferFunction(  const std::string &colorName, const std::string &opacityName )
+    {
+        std::vector<Functions>::iterator itr;
+        for( itr = this->m_transfer_function.begin(); itr != this->m_transfer_function.end(); itr++ )
+        {
+            if( itr->m_color_function_name == colorName && itr->m_opacity_function_name == opacityName )
+            {
+                this->m_transfer_function.erase( itr );
+                break;
+            }
+        }
+        return;
+    }
+
+    void setColorFunctionVariable( const std::string &colorName, const std::string &variable )
+    {
+        Functions *func = this->getTransferFunction( colorName );
+        if( func != nullptr )
+        {
+            func->m_color_function_name = colorName;
+            func->m_color_variable = variable;
+            return;
+        }
+    }
+
+    void setOpacityFunctionVariable( const std::string &opacityName, const std::string &variable )
+    {
+        Functions *func = this->getTransferFunction( opacityName );
+        if( func != nullptr )
+        {
+            func->m_opacity_function_name = opacityName;
+            func->m_opacity_variable = variable;
+            return;
+        }
+    }
+
+    void setColorFunctionRange( const std::string &colorName, float min, float max )
+    {
+        std::cout << colorName << ":" << min << "," << max << std::endl;
+        Functions *func = this->getTransferFunction( colorName );
+        if( func != nullptr )
+        {
+            func->m_color_user_defined_min = min;
+            func->m_color_user_defined_max = max;
+        }
+    }
+
+    void setOpacityFunctionRange( const std::string &opacityName, float min, float max )
+    {
+        Functions *func = this->getTransferFunction( opacityName );
+        if( func != nullptr )
+        {
+            func->m_opacity_user_defined_min = min;
+            func->m_opacity_user_defined_max = max;
+        }
+    }
+};
+
+class TransferFunctionEditor : public QDialog
+{
+    Q_OBJECT
+
+public:
+    explicit TransferFunctionEditor(QWidget *parent = nullptr, MergePanel* merge = nullptr, Connect* connect_panel = nullptr);
     ~TransferFunctionEditor();
-    void applyVariableRange( const VariableRange& range );
-    void updateRangeEdit();
-//    void updateRangeView( const VariableRange& range );
-//    void updateRangeView( const jpv::ParticleTransferServerMessage& reply );
+
+    void exportTransferFunctionFile( const std::string& transferFunctionFile, const bool append );
+    bool importTransferFunctionFromFile( const std::string& transferFunctionFile );
+    void importTransferFunctionFromServer();
+    void apply();
     void updateRangeView();
-    bool importFile( const std::string& fileName );
-    void exportFile( const std::string& fileName, const bool addition);
-    ExtendedTransferFunctionMessage* getExtendedTransferFunctionMessage() { return &m_extended_transfer_function_message; }
-    void importFromServer();
-    void importDefalutParameter();
-    void setMode( Mode mode ) { m_mode = mode; }
-    Mode getMode() { return m_mode; }
 
 private:
     Ui::TransferFunctionEditor *ui;
-    ColorMapBarSelector* m_color_map_bar_selector;
+    Parameter m_parameter;
     MergePanel* m_merge;
     Connect* m_connect;
 
-    bool m_is_import_transfer_function_parameter;
-
-    FunctionListEditor m_color_function_list_editor;
-    FunctionListEditor m_opacity_function_list_editor;
-
-    ColorMapEditor m_color_map_editor;
-    OpacityMapEditor m_opacity_map_editor;
-
-    ExtendedTransferFunctionMessage m_extended_transfer_function_message;
-    ExtendedTransferFunctionMessage m_extended_transfer_function_message_initial;
-
-    QVector<bool> m_is_color_range_sync;
-    QVector<bool> m_is_opacity_range_sync;
-
-    Mode m_mode;
-
-    void populateColorFunctionLists(int n);
-    void populateOpacityFunctionLists(int n);
+    void updateFunctionLists();
 
 private slots:
-    void onNumberOfTransferFunctionValueChanged( int value );
+    void onNumberOfTransferFunctionValueChanged( int numberOfTransferFunction );
 
+    void onColorSynthesizerEdited( const QString &arg1 );
     void onColorFunctionChanged( int index );
+    void onColorFunctionVariableEdited();
+    void onColorFunctionListEditorPushButtonClicked();
+    void onColorUserDefinedChanged();
+    void onEditColorMapPushButtonClicked();
+
+    void onOpacitySynthesizerEdited( const QString &arg1 );
     void onOpacityFunctionChanged( int index );
+    void onOpacityFunctionVariableEdited();
+    void onOpacityFunctionListEditorPushButtonClicked();
+    void onOpacityUserDefinedChanged();
+    void onEditOpacityMapPushButtonClicked();
 
-    void onColorFunctionSynthEdited( const QString &arg1 );
-    void onOpacityFunctionSynthEdited( const QString &arg1 );
-
-    void onTransferFunctionVarColorEdited( const QString &arg1 );
-    void onTransferFunctionVarOpacityEdited( const QString &arg1 );
-
-    void onColorFunctionListEditorButtonClicked();
-    void onOpacityFunctionListEditorButtonClicked();
-
-    void onColorMapEditorButtonClicked();
-    void onOpacityMapEditorButtonClicked();
-
-    void onTransferFunctionRangeColorChanged();
-    void onTransferFunctionRangeOpacityChanged();
-
-    void onImportButtonClicked();
     void onExportButtonClicked();
-
-    void onColorRangeSyncToolButtonClicked();
-    void onOpacityRangeSyncToolButtonClicked();
-public slots:
+    void onImportButtonClicked();
     void onApplyButtonClicked();
 };
 

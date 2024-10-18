@@ -74,10 +74,11 @@ void Connect::connectServer()
 #ifdef Q_OS_WIN
         m_client_message.m_import_flag = m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
 #else
-        m_client_message.m_import_flag = m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
+
+        m_client_message.m_import_flag = m_transfer_function_editor->importTransferFunctionFromFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
 
 #endif
-        m_transfer_function_editor->onApplyButtonClicked();
+        m_transfer_function_editor->apply();
         m_client_message.m_camera ->setWindowSize( m_pbvr_gui->screen()->width() , m_pbvr_gui->screen()->height() );
 
 
@@ -115,11 +116,7 @@ void Connect::connectServer()
         }
     }
 
-    m_transfer_function_editor->applyVariableRange( m_server_message.m_server_side_variable_range );
-    // m_transfer_function_editor->updateRangeView();
-
-
-    m_transfer_function_editor->importFromServer();
+    m_transfer_function_editor->importTransferFunctionFromServer();
 
     m_filter_infomation->updateFilterInfomation( ui->volumeDataFilePathLEdit->text(), m_server_message );
 
@@ -136,15 +133,14 @@ void Connect::connectServer()
     if( ui-> clientServerRBtn -> isChecked() )
     {
         m_merge->serverObjectCS( ui->volumeDataFilePathLEdit->text(), m_server_message.m_start_step, m_server_message.m_last_step );
-        m_transfer_function_editor->applyVariableRange( m_server_message.m_server_side_variable_range );
         if (m_client_message.m_import_flag)
         {
     #ifdef Q_OS_WIN
-        m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
+        m_transfer_function_editor->importTransferFunctionFromFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
     #else
-        m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
+        m_transfer_function_editor->importTransferFunctionFromFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
     #endif
-        m_transfer_function_editor->onApplyButtonClicked();
+        m_transfer_function_editor->apply();
         }
         //    qInfo() << m_server_message.m_variable_range.min( "t1_var_c" );
         //    qInfo() << m_server_message.m_min_value;
@@ -301,9 +297,6 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
             }
         }
 
-    m_transfer_function_editor->applyVariableRange( m_server_message.m_server_side_variable_range );
-//    m_transfer_function_editor->updateRangeView( reply.m_variable_range );
-//    m_transfer_function_editor->updateRangeView( reply );
     m_transfer_function_editor->updateRangeView();
 
 //    pointObject->updateMinMaxCoords();
@@ -345,10 +338,10 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
         m_server_message.m_opacity_bins.clear();
     }
 
-    if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
-    {
-        m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_last_step );
-    }
+    // if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
+    // {
+    //     m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_last_step );
+    // }
 
     return pointObject;
 }
@@ -373,13 +366,13 @@ void Connect::onConnectButtonClicked()
     if( ui->clientServerRBtn->isChecked() )
     {
         qDebug("CS CONNECT!");
-        m_transfer_function_editor->setMode( TransferFunctionEditor::Mode::CS );
+        // m_transfer_function_editor->setMode( TransferFunctionEditor::Mode::CS );
         connectServer();
     }
     else if( ui->inSituRBtn->isChecked() )
     {
         qDebug("IS CONNECT!");
-        m_transfer_function_editor->setMode( TransferFunctionEditor::Mode::IS );
+        // m_transfer_function_editor->setMode( TransferFunctionEditor::Mode::IS );
         connectServer();
     }
     else
