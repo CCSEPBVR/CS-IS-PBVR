@@ -35,6 +35,7 @@ public:
     std::string m_color_function_name;
     std::string m_color_variable;
     SelectedRange m_color_selected_range;
+    SelectedRange m_before_color_selected_range;
     float m_color_user_defined_min;
     float m_color_user_defined_max;
     float m_color_server_side_min;
@@ -44,6 +45,7 @@ public:
     std::string m_opacity_function_name;
     std::string m_opacity_variable;
     SelectedRange m_opacity_selected_range;
+    SelectedRange m_before_opacity_selected_range;
     float m_opacity_user_defined_min;
     float m_opacity_user_defined_max;
     float m_opacity_server_side_min;

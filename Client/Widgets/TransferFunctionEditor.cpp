@@ -458,6 +458,8 @@ bool TransferFunctionEditor::importTransferFunctionFromFile( const std::string& 
                     kvs::OpacityMap opacity_map( opacityTable );
                     m_parameter.m_transfer_function[i].setOpacityMap( opacity_map );
                 }
+                m_parameter.m_transfer_function[i].m_color_selected_range = Functions::UserDefinedRange;
+                m_parameter.m_transfer_function[i].m_opacity_selected_range = Functions::UserDefinedRange;
             }
         }
     }
@@ -466,18 +468,21 @@ bool TransferFunctionEditor::importTransferFunctionFromFile( const std::string& 
     {
         ui->colorFunctionComboBox->blockSignals( true );
         ui->colorFunctionVariableLineEdit->blockSignals( true );
+        ui->colorUserDefinedMinMaxRadioButton->blockSignals( true );
         ui->colorUserDefinedMinDoubleSpinBox->blockSignals( true );
         ui->colorUserDefinedMaxDoubleSpinBox->blockSignals( true );
         ui->colorMapBar->blockSignals( true );
 
         ui->colorFunctionComboBox->setCurrentIndex( 0 );
         ui->colorFunctionVariableLineEdit->setText( QString::fromStdString( m_parameter.m_transfer_function[0].m_color_variable ) );
+        ui->colorUserDefinedMinMaxRadioButton->setChecked( true );
         ui->colorUserDefinedMinDoubleSpinBox->setValue( m_parameter.m_transfer_function[0].m_color_user_defined_min );
         ui->colorUserDefinedMaxDoubleSpinBox->setValue( m_parameter.m_transfer_function[0].m_color_user_defined_max );
         ui->colorMapBar->setColorMap( m_parameter.m_transfer_function[0].colorMap() );
 
         ui->colorFunctionComboBox->blockSignals( false );
         ui->colorFunctionVariableLineEdit->blockSignals( false );
+        ui->colorUserDefinedMinMaxRadioButton->blockSignals( false );
         ui->colorUserDefinedMinDoubleSpinBox->blockSignals( false );
         ui->colorUserDefinedMaxDoubleSpinBox->blockSignals( false );
         ui->colorMapBar->blockSignals( false );
@@ -492,6 +497,7 @@ bool TransferFunctionEditor::importTransferFunctionFromFile( const std::string& 
 
         ui->opacityFunctionComboBox->setCurrentIndex( 0 );
         ui->opacityFunctionVariableLineEdit->setText( QString::fromStdString( m_parameter.m_transfer_function[0].m_opacity_variable ) );
+        ui->opacityUserDefinedMinMaxRadioButton->setChecked( true );
         ui->opacityUserDefinedMinDoubleSpinBox->setValue( m_parameter.m_transfer_function[0].m_opacity_user_defined_min );
         ui->opacityUserDefinedMaxDoubleSpinBox->setValue( m_parameter.m_transfer_function[0].m_opacity_user_defined_max );
         ui->opacityMapBar->setOpacityMap( m_parameter.m_transfer_function[0].opacityMap() );
@@ -520,6 +526,7 @@ void TransferFunctionEditor::importTransferFunctionFromServer()
         char tag_c[16] = {0x00};
         sprintf(tag_c, "t%d_var_c", i + 1);
         m_parameter.m_transfer_function[i].m_color_variable = m_connect->getServerMessage()->m_transfer_function[i].m_color_variable;
+        m_parameter.m_transfer_function[i].m_color_selected_range = Functions::ServerSideRange;
         m_parameter.m_transfer_function[i].m_color_server_side_min = m_connect->getServerMessage()->m_server_side_variable_range.min( tag_c );
         m_parameter.m_transfer_function[i].m_color_server_side_max = m_connect->getServerMessage()->m_server_side_variable_range.max( tag_c );
         m_parameter.m_transfer_function[i].setColorMap( m_connect->getServerMessage()->m_transfer_function[i].colorMap() );
@@ -528,6 +535,7 @@ void TransferFunctionEditor::importTransferFunctionFromServer()
         char tag_o[16] = {0x00};
         sprintf(tag_o, "t%d_var_o", i + 1);
         m_parameter.m_transfer_function[i].m_opacity_variable = m_connect->getServerMessage()->m_transfer_function[i].m_opacity_variable;
+        m_parameter.m_transfer_function[i].m_opacity_selected_range = Functions::ServerSideRange;
         m_parameter.m_transfer_function[i].m_opacity_server_side_min = m_connect->getServerMessage()->m_server_side_variable_range.min( tag_o );
         m_parameter.m_transfer_function[i].m_opacity_server_side_max = m_connect->getServerMessage()->m_server_side_variable_range.max( tag_o );
         m_parameter.m_transfer_function[i].setOpacityMap( m_connect->getServerMessage()->m_transfer_function[i].opacityMap() );
@@ -537,12 +545,14 @@ void TransferFunctionEditor::importTransferFunctionFromServer()
     {
         ui->colorFunctionComboBox->blockSignals( true );
         ui->colorFunctionVariableLineEdit->blockSignals( true );
+        ui->colorServerSideMinMaxRadioButton->blockSignals( true );
         ui->colorServerSideMinLineEdit->blockSignals( true );
         ui->colorServerSideMaxLineEdit->blockSignals( true );
         ui->colorMapBar->blockSignals( true );
 
         ui->colorFunctionComboBox->setCurrentIndex( 0 );
         ui->colorFunctionVariableLineEdit->setText( QString::fromStdString( m_parameter.m_transfer_function[0].m_color_variable ) );
+        ui->colorServerSideMinMaxRadioButton->setChecked( true );
         ui->colorServerSideMinLineEdit->setText( QString::number( m_parameter.m_transfer_function[0].m_color_server_side_min ) );
         ui->colorServerSideMaxLineEdit->setText( QString::number( m_parameter.m_transfer_function[0].m_color_server_side_max ) );
         ui->colorMapMinLabel->setNum( m_parameter.m_transfer_function[0].m_color_server_side_min );
@@ -553,6 +563,7 @@ void TransferFunctionEditor::importTransferFunctionFromServer()
 
         ui->colorFunctionComboBox->blockSignals( false );
         ui->colorFunctionVariableLineEdit->blockSignals( false );
+        ui->colorServerSideMinMaxRadioButton->blockSignals( false );
         ui->colorServerSideMinLineEdit->blockSignals( false );
         ui->colorServerSideMaxLineEdit->blockSignals( false );
         ui->colorMapBar->blockSignals( false );
@@ -561,12 +572,14 @@ void TransferFunctionEditor::importTransferFunctionFromServer()
     {
         ui->opacityFunctionComboBox->blockSignals( true );
         ui->opacityFunctionVariableLineEdit->blockSignals( true );
+        ui->opacityServerSideMinMaxRadioButton->blockSignals( true );
         ui->opacityServerSideMinLineEdit->blockSignals( true );
         ui->opacityServerSideMaxLineEdit->blockSignals( true );
         ui->opacityMapBar->blockSignals( true );
 
         ui->opacityFunctionComboBox->setCurrentIndex( 0 );
         ui->opacityFunctionVariableLineEdit->setText( QString::fromStdString( m_parameter.m_transfer_function[0].m_opacity_variable ) );
+        ui->opacityServerSideMinMaxRadioButton->setChecked( true );
         ui->opacityServerSideMinLineEdit->setText( QString::number( m_parameter.m_transfer_function[0].m_opacity_server_side_min ) );
         ui->opacityServerSideMaxLineEdit->setText( QString::number( m_parameter.m_transfer_function[0].m_opacity_server_side_max ) );
         ui->opacityMapMinLabel->setNum( m_parameter.m_transfer_function[0].m_opacity_server_side_min );
@@ -577,6 +590,7 @@ void TransferFunctionEditor::importTransferFunctionFromServer()
 
         ui->opacityFunctionComboBox->blockSignals( false );
         ui->opacityFunctionVariableLineEdit->blockSignals( false );
+        ui->opacityServerSideMinMaxRadioButton->blockSignals( false );
         ui->opacityServerSideMinLineEdit->blockSignals( false );
         ui->opacityServerSideMaxLineEdit->blockSignals( false );
         ui->opacityMapBar->blockSignals( false );
