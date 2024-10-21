@@ -26,7 +26,7 @@ public:
 
     void exportTransferFunctionFile( const std::string& transferFunctionFile, const bool append );
     bool importTransferFunctionFromFile( const std::string& transferFunctionFile );
-    void importTransferFunctionFromServer();
+    void importTransferFunctionFromServer( bool isISMode );
     void apply();
     void updateRangeView();
 

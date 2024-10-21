@@ -607,7 +607,7 @@ bool TransferFunctionEditor::importTransferFunctionFromFile( const std::string& 
     return true;
 }
 
-void TransferFunctionEditor::importTransferFunctionFromServer()
+void TransferFunctionEditor::importTransferFunctionFromServer( bool isISMode )
 {
     int resolution = 256;
     ui->numberOfTransferFunctionSpinBox->setValue( m_connect->getServerMessage()->m_transfer_function.size() );
@@ -624,7 +624,10 @@ void TransferFunctionEditor::importTransferFunctionFromServer()
         m_parameter.m_transfer_function[i].m_color_server_side_min = m_connect->getServerMessage()->m_server_side_variable_range.min( tag_c );
         m_parameter.m_transfer_function[i].m_color_server_side_max = m_connect->getServerMessage()->m_server_side_variable_range.max( tag_c );
         m_parameter.m_transfer_function[i].setColorMap( m_connect->getServerMessage()->m_transfer_function[i].colorMap() );
-        m_parameter.m_transfer_function[i].m_color_histogram = *m_connect->getReceivedMessage()->findColorFrequencyTable( m_parameter.m_transfer_function[i].m_color_function_name );
+        if( isISMode == false )
+        {
+            m_parameter.m_transfer_function[i].m_color_histogram = *m_connect->getReceivedMessage()->findColorFrequencyTable( m_parameter.m_transfer_function[i].m_color_function_name );
+        }
 
         char tag_o[16] = {0x00};
         sprintf(tag_o, "t%d_var_o", i + 1);
@@ -633,7 +636,10 @@ void TransferFunctionEditor::importTransferFunctionFromServer()
         m_parameter.m_transfer_function[i].m_opacity_server_side_min = m_connect->getServerMessage()->m_server_side_variable_range.min( tag_o );
         m_parameter.m_transfer_function[i].m_opacity_server_side_max = m_connect->getServerMessage()->m_server_side_variable_range.max( tag_o );
         m_parameter.m_transfer_function[i].setOpacityMap( m_connect->getServerMessage()->m_transfer_function[i].opacityMap() );
-        m_parameter.m_transfer_function[i].m_opacity_histogram = *m_connect->getReceivedMessage()->findOpacityFrequencyTable( m_parameter.m_transfer_function[i].m_opacity_function_name );
+        if( isISMode == false )
+        {
+            m_parameter.m_transfer_function[i].m_opacity_histogram = *m_connect->getReceivedMessage()->findOpacityFrequencyTable( m_parameter.m_transfer_function[i].m_opacity_function_name );
+        }
     }
 
     {
@@ -824,6 +830,7 @@ void TransferFunctionEditor::updateRangeView()
             {
                 m_connect->getClientMessage()->m_transfer_function[i].m_color_variable_min = m_parameter.m_transfer_function[i].m_color_server_side_min;
                 m_connect->getClientMessage()->m_transfer_function[i].m_color_variable_max = m_parameter.m_transfer_function[i].m_color_server_side_max;
+
                 isParticleGenerationNeeded = true;
             }
             if( m_parameter.m_transfer_function[i].m_opacity_selected_range == TransferFunctions::ServerSideRange )

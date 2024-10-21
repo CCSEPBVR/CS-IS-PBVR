@@ -118,7 +118,7 @@ void Connect::connectServer()
 
     // if( m_client_message.m_import_flag == false )
     {
-        m_transfer_function_editor->importTransferFunctionFromServer();
+        m_transfer_function_editor->importTransferFunctionFromServer( ui->inSituRBtn->isChecked() );
     }
 
     m_filter_infomation->updateFilterInfomation( ui->volumeDataFilePathLEdit->text(), m_server_message );
@@ -133,7 +133,7 @@ void Connect::connectServer()
     client.termClient();
 
 
-    if( ui-> clientServerRBtn -> isChecked() )
+    if( ui->clientServerRBtn->isChecked() )
     {
         m_merge->serverObjectCS( ui->volumeDataFilePathLEdit->text(), m_server_message.m_start_step, m_server_message.m_last_step );
         if (m_client_message.m_import_flag)
@@ -341,10 +341,10 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
         m_server_message.m_opacity_bins.clear();
     }
 
-    // if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
-    // {
-    //     m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_last_step );
-    // }
+    if( ui->inSituRBtn->isChecked() == true )
+    {
+        m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_last_step );
+    }
 
     return pointObject;
 }
@@ -369,13 +369,11 @@ void Connect::onConnectButtonClicked()
     if( ui->clientServerRBtn->isChecked() )
     {
         qDebug("CS CONNECT!");
-        // m_transfer_function_editor->setMode( TransferFunctionEditor::Mode::CS );
         connectServer();
     }
     else if( ui->inSituRBtn->isChecked() )
     {
         qDebug("IS CONNECT!");
-        // m_transfer_function_editor->setMode( TransferFunctionEditor::Mode::IS );
         connectServer();
     }
     else

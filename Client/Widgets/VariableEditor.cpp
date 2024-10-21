@@ -8,8 +8,8 @@ VariableEditor::VariableEditor(QWidget *parent)
 {
     ui->setupUi(this);
     connect( ui->tableWidget, &QTableWidget::cellChanged, this, &VariableEditor::onCellChanged );
-    connect( ui->pushButton, &QPushButton::clicked, this, &VariableEditor::onCancelButtonClicked );
-    connect( ui->pushButton_2, &QPushButton::clicked, this, &VariableEditor::onOKButtonClicked );
+    connect( ui->CancelPushButton, &QPushButton::clicked, this, &VariableEditor::onCancelButtonClicked );
+    connect( ui->OKPushButton, &QPushButton::clicked, this, &VariableEditor::onOKButtonClicked );
 }
 
 VariableEditor::~VariableEditor()
