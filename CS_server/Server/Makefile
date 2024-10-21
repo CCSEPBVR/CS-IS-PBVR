@@ -63,7 +63,6 @@ LDFLAGS  += -L${COMMON_DIR} -lpbvrCommon -L${FUNC_DIR} -lpbvrFunc -L${KVS_SOURCE
 SERVER_SRCS = CellByCellMetropolisSampling.cpp \
 			  CellByCellRejectionSampling.cpp \
 			  CellByCellUniformSampling.cpp \
-			  CellByCellHistogram.cpp \
               CropRegion.cpp \
               DataArrayTag.cpp \
               ExtendedTransferFunction.cpp \
@@ -115,7 +114,6 @@ SERVER_HEADERS = Argument.h \
                  CellByCellParticleGenerator.h \
                  CellByCellRejectionSampling.h \
                  CellByCellUniformSampling.h \
-                 CellByCellHistogram.h \
                  common.h \
                  Compiler.h \
                  CropRegion.h \

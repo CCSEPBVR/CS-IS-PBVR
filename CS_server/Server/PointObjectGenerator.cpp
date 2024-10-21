@@ -11,7 +11,6 @@
 #include "CellByCellUniformSampling.h"
 #include "CellByCellRejectionSampling.h"
 #include "CellByCellMetropolisSampling.h"
-#include "CellByCellHistogram.h"
 #if 0 //TEST_DELETE
 #include <kvs/TestVolume>
 #include <kvs/FrontSTRFileReader>
@@ -203,11 +202,11 @@ pbvr::PointObject* PointObjectGenerator::sampling( const Argument& param, const 
         return new pbvr::CellByCellMetropolisSampling( camera, *volume, subpixel_level, sampling_step, tf, tf_array,
                                                        param.m_transfunc_synthesizer, param.m_normal_ingredient, param.m_crop,
                                                        param.m_particle_density, param.m_batch );
-    case 'h':
-        std::cout << "Histogram " << std::endl;
-        return new pbvr::CellByCellHistogram( camera, *volume, subpixel_level, sampling_step, tf, tf_array,
-                                                       param.m_transfunc_synthesizer, param.m_normal_ingredient, param.m_crop,
-                                                       param.m_particle_density, param.m_batch );
+//    case 'h':
+//        std::cout << "Histogram " << std::endl;
+//        return new pbvr::CellByCellHistogram( camera, *volume, subpixel_level, sampling_step, tf, tf_array,
+//                                                       param.m_transfunc_synthesizer, param.m_normal_ingredient, param.m_crop,
+//                                                       param.m_particle_density, param.m_batch );
 
     default:
         std::cout << "Unknown sampling method:" << param.m_sampling_method << std::endl;
