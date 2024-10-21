@@ -135,7 +135,7 @@ void TransferFunctionEditor::onColorSynthesizerEdited( const QString &arg1 )
 
 void TransferFunctionEditor::onColorFunctionChanged( int index )
 {
-    const Functions* func = m_parameter.getTransferFunction( index );
+    const TransferFunctions* func = m_parameter.getTransferFunction( index );
     if( func != nullptr )
     {
         ui->colorFunctionVariableLineEdit->blockSignals( true );
@@ -144,12 +144,12 @@ void TransferFunctionEditor::onColorFunctionChanged( int index )
 
         switch ( func->m_color_selected_range )
         {
-        case Functions::UserDefinedRange:
+        case TransferFunctions::UserDefinedRange:
             ui->colorUserDefinedMinMaxRadioButton->blockSignals( true );
             ui->colorUserDefinedMinMaxRadioButton->setChecked( true );
             ui->colorUserDefinedMinMaxRadioButton->blockSignals( false );
             break;
-        case Functions::ServerSideRange:
+        case TransferFunctions::ServerSideRange:
             ui->colorServerSideMinMaxRadioButton->blockSignals( true );
             ui->colorServerSideMinMaxRadioButton->setChecked( true );
             ui->colorServerSideMinMaxRadioButton->blockSignals( false );
@@ -200,11 +200,11 @@ void TransferFunctionEditor::onColorSelectedRangeClicked()
     std::string colorName = ui->colorFunctionComboBox->currentText().toStdString();
     if( ui->colorUserDefinedMinMaxRadioButton->isChecked() )
     {
-        m_parameter.getTransferFunction( colorName )->m_color_selected_range = Functions::UserDefinedRange;
+        m_parameter.getTransferFunction( colorName )->m_color_selected_range = TransferFunctions::UserDefinedRange;
     }
     else if( ui->colorServerSideMinMaxRadioButton->isChecked() )
     {
-        m_parameter.getTransferFunction( colorName )->m_color_selected_range = Functions::ServerSideRange;
+        m_parameter.getTransferFunction( colorName )->m_color_selected_range = TransferFunctions::ServerSideRange;
     }
 }
 
@@ -237,7 +237,7 @@ void TransferFunctionEditor::onOpacitySynthesizerEdited( const QString &arg1 )
 
 void TransferFunctionEditor::onOpacityFunctionChanged( int index )
 {
-    const Functions* func = m_parameter.getTransferFunction( index );
+    const TransferFunctions* func = m_parameter.getTransferFunction( index );
     if( func != nullptr )
     {
         ui->opacityFunctionVariableLineEdit->blockSignals( true );
@@ -246,12 +246,12 @@ void TransferFunctionEditor::onOpacityFunctionChanged( int index )
 
         switch ( func->m_opacity_selected_range )
         {
-        case Functions::UserDefinedRange:
+        case TransferFunctions::UserDefinedRange:
             ui->opacityUserDefinedMinMaxRadioButton->blockSignals( true );
             ui->opacityUserDefinedMinMaxRadioButton->setChecked( true );
             ui->opacityUserDefinedMinMaxRadioButton->blockSignals( false );
             break;
-        case Functions::ServerSideRange:
+        case TransferFunctions::ServerSideRange:
             ui->opacityServerSideMinMaxRadioButton->blockSignals( true );
             ui->opacityServerSideMinMaxRadioButton->setChecked( true );
             ui->opacityServerSideMinMaxRadioButton->blockSignals( false );
@@ -302,11 +302,11 @@ void TransferFunctionEditor::onOpacitySelectedRangeClicked()
     std::string opacityName = ui->opacityFunctionComboBox->currentText().toStdString();
     if( ui->opacityUserDefinedMinMaxRadioButton->isChecked() )
     {
-        m_parameter.getTransferFunction( opacityName )->m_opacity_selected_range = Functions::UserDefinedRange;
+        m_parameter.getTransferFunction( opacityName )->m_opacity_selected_range = TransferFunctions::UserDefinedRange;
     }
     else if( ui->opacityServerSideMinMaxRadioButton->isChecked() )
     {
-        m_parameter.getTransferFunction( opacityName )->m_opacity_selected_range = Functions::ServerSideRange;
+        m_parameter.getTransferFunction( opacityName )->m_opacity_selected_range = TransferFunctions::ServerSideRange;
     }
 }
 
@@ -542,8 +542,8 @@ bool TransferFunctionEditor::importTransferFunctionFromFile( const std::string& 
                     kvs::OpacityMap opacity_map( opacityTable );
                     m_parameter.m_transfer_function[i].setOpacityMap( opacity_map );
                 }
-                m_parameter.m_transfer_function[i].m_color_selected_range = Functions::UserDefinedRange;
-                m_parameter.m_transfer_function[i].m_opacity_selected_range = Functions::UserDefinedRange;
+                m_parameter.m_transfer_function[i].m_color_selected_range = TransferFunctions::UserDefinedRange;
+                m_parameter.m_transfer_function[i].m_opacity_selected_range = TransferFunctions::UserDefinedRange;
             }
         }
     }
@@ -610,7 +610,7 @@ void TransferFunctionEditor::importTransferFunctionFromServer()
         char tag_c[16] = {0x00};
         sprintf(tag_c, "t%d_var_c", i + 1);
         m_parameter.m_transfer_function[i].m_color_variable = m_connect->getServerMessage()->m_transfer_function[i].m_color_variable;
-        m_parameter.m_transfer_function[i].m_color_selected_range = Functions::ServerSideRange;
+        m_parameter.m_transfer_function[i].m_color_selected_range = TransferFunctions::ServerSideRange;
         m_parameter.m_transfer_function[i].m_color_server_side_min = m_connect->getServerMessage()->m_server_side_variable_range.min( tag_c );
         m_parameter.m_transfer_function[i].m_color_server_side_max = m_connect->getServerMessage()->m_server_side_variable_range.max( tag_c );
         m_parameter.m_transfer_function[i].setColorMap( m_connect->getServerMessage()->m_transfer_function[i].colorMap() );
@@ -619,7 +619,7 @@ void TransferFunctionEditor::importTransferFunctionFromServer()
         char tag_o[16] = {0x00};
         sprintf(tag_o, "t%d_var_o", i + 1);
         m_parameter.m_transfer_function[i].m_opacity_variable = m_connect->getServerMessage()->m_transfer_function[i].m_opacity_variable;
-        m_parameter.m_transfer_function[i].m_opacity_selected_range = Functions::ServerSideRange;
+        m_parameter.m_transfer_function[i].m_opacity_selected_range = TransferFunctions::ServerSideRange;
         m_parameter.m_transfer_function[i].m_opacity_server_side_min = m_connect->getServerMessage()->m_server_side_variable_range.min( tag_o );
         m_parameter.m_transfer_function[i].m_opacity_server_side_max = m_connect->getServerMessage()->m_server_side_variable_range.max( tag_o );
         m_parameter.m_transfer_function[i].setOpacityMap( m_connect->getServerMessage()->m_transfer_function[i].opacityMap() );
@@ -701,12 +701,12 @@ void TransferFunctionEditor::apply()
 
         etf.m_color_variable   = ss.str() + "_VAR_C";
         etf.setColorMap( m_parameter.getTransferFunction(i)->colorMap() );
-        if( m_parameter.getTransferFunction(i)->m_color_selected_range == Functions::UserDefinedRange )
+        if( m_parameter.getTransferFunction(i)->m_color_selected_range == TransferFunctions::UserDefinedRange )
         {
             etf.m_color_variable_min = m_parameter.getTransferFunction(i)->m_color_user_defined_min;
             etf.m_color_variable_max = m_parameter.getTransferFunction(i)->m_color_user_defined_max;
         }
-        else if( m_parameter.getTransferFunction(i)->m_color_selected_range == Functions::ServerSideRange )
+        else if( m_parameter.getTransferFunction(i)->m_color_selected_range == TransferFunctions::ServerSideRange )
         {
             etf.m_color_variable_min = m_parameter.getTransferFunction(i)->m_color_server_side_min;
             etf.m_color_variable_max = m_parameter.getTransferFunction(i)->m_color_server_side_max;
@@ -716,12 +716,12 @@ void TransferFunctionEditor::apply()
 
         etf.m_opacity_variable   = ss.str() + "_VAR_O";
         etf.setOpacityMap( m_parameter.getTransferFunction(i)->opacityMap() );
-        if( m_parameter.getTransferFunction(i)->m_opacity_selected_range == Functions::UserDefinedRange )
+        if( m_parameter.getTransferFunction(i)->m_opacity_selected_range == TransferFunctions::UserDefinedRange )
         {
             etf.m_opacity_variable_min = m_parameter.getTransferFunction(i)->m_opacity_user_defined_min;
             etf.m_opacity_variable_max = m_parameter.getTransferFunction(i)->m_opacity_user_defined_max;
         }
-        else if( m_parameter.getTransferFunction(i)->m_opacity_selected_range == Functions::ServerSideRange )
+        else if( m_parameter.getTransferFunction(i)->m_opacity_selected_range == TransferFunctions::ServerSideRange )
         {
             etf.m_opacity_variable_min = m_parameter.getTransferFunction(i)->m_opacity_server_side_min;
             etf.m_opacity_variable_max = m_parameter.getTransferFunction(i)->m_opacity_server_side_max;
@@ -810,13 +810,13 @@ void TransferFunctionEditor::updateRangeView()
         bool isParticleGenerationNeeded = false;
         for( int i = 0; i < m_parameter.m_number_of_transfer_functions; i++ )
         {
-            if( m_parameter.m_transfer_function[i].m_color_selected_range == Functions::ServerSideRange )
+            if( m_parameter.m_transfer_function[i].m_color_selected_range == TransferFunctions::ServerSideRange )
             {
                 m_connect->getClientMessage()->m_transfer_function[i].m_color_variable_min = m_parameter.m_transfer_function[i].m_color_server_side_min;
                 m_connect->getClientMessage()->m_transfer_function[i].m_color_variable_max = m_parameter.m_transfer_function[i].m_color_server_side_max;
                 isParticleGenerationNeeded = true;
             }
-            if( m_parameter.m_transfer_function[i].m_opacity_selected_range == Functions::ServerSideRange )
+            if( m_parameter.m_transfer_function[i].m_opacity_selected_range == TransferFunctions::ServerSideRange )
             {
                 m_connect->getClientMessage()->m_transfer_function[i].m_opacity_variable_min = m_parameter.m_transfer_function[i].m_opacity_server_side_min;
                 m_connect->getClientMessage()->m_transfer_function[i].m_opacity_variable_max = m_parameter.m_transfer_function[i].m_opacity_server_side_max;

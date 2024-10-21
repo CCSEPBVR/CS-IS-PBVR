@@ -52,6 +52,7 @@ HEADERS += \
     TFEOpacityMapPalette.h \
     ToolBars.h \
     TransferFunctionEditor.h \
+    TransferFunctionParameter.h \
     VolumeTransform.h \
     Connect.h
 
