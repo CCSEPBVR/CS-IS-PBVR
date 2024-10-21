@@ -569,7 +569,7 @@ inline size_t CalculateSubpixelLevel( const Argument& param,
 
 inline VariableRange Calculate_minmax( const Argument& param,
                                        const FilterInformationList& fil,
-                                       kvs::ValueArray<int>& histogram  )
+                                       std::vector<kvs::UInt64>& histogram  )
 {
     namespace Generator = pbvr::CellByCellParticleGenerator;
     //pbvr::UnstructuredVolumeObject* volume;
@@ -673,8 +673,12 @@ inline VariableRange Calculate_minmax( const Argument& param,
    //kvs::ValueArray<int> histogram( 256 * nvariables );// opacity
    int nbins = 256;
    int bins_size = nbins * nvariable;
-   histogram.allocate( nbins * nvariable );
-   histogram.fill(0x00);
+   histogram.resize( nbins * nvariable );
+   for ( int tf = 0; tf < bins_size; tf++ )
+   {
+       histogram[tf] = 0;
+   }
+   //histogram.fill(0x00);
    steps = fil.m_total_start_steps;
    for ( subvols = 0; subvols < fil.m_total_number_subvolumes; subvols++ )
    {
@@ -706,8 +710,8 @@ inline VariableRange Calculate_minmax( const Argument& param,
 
 #ifndef CPU_VER
     PBVR_TIMER_STA( 19 );
-    MPI_Allreduce( MPI_IN_PLACE,  histogram, ins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-//    MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
+    MPI_Allreduce( MPI_IN_PLACE,  histogram.data(), bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
+    //MPI_Allreduce( MPI_IN_PLACE, tmp_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
     PBVR_TIMER_END( 19 );
 #endif
 
@@ -976,9 +980,8 @@ int main( int argc, char** argv )
                     }
 
                     transfunc_creator.setFilterInfo( fil.m_list[0] );
-                    kvs::ValueArray<int> histogram;// opacity
+                    std::vector<kvs::UInt64> histogram;// opacity
                     int nvariable;
-                    //VariableRange range = Calculate_minmax( param, fil); 
                     VariableRange range = Calculate_minmax( param, fil, histogram); 
                     if( !clntMes.m_import_flag ) 
                     {
@@ -1023,6 +1026,7 @@ int main( int argc, char** argv )
                     param.m_particle_limit_pre = param.m_particle_limit;
 
                     clntMes.show();
+                    std::cout << __LINE__ << std::endl;
                     int tf_count = nvariable;
                     int c_nbins = DEFAULT_NBINS;
                     int o_nbins = DEFAULT_NBINS;
@@ -1059,88 +1063,11 @@ int main( int argc, char** argv )
                         tmp_o_bins[tf] = 0;
                     }
 
-                    while ( jd.dispatchNext( wid, &st, &vl ) )
-                    {
-                        int xvl, fidx;
-                        fidx = fil.getFileIndex( vl, &xvl );
-                        FilterInformationFile& fi = fil.m_list[fidx];
-
-                        std::stringstream suffix;
-                        suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
-                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
-                        //param.m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
-                        kvs::File ifpx( fi.m_file_path );
-                        param.m_input_data = ifpx.pathName() + ifpx.Separator()
-                                             + ifpx.baseName() + suffix.str() + ".kvsml";
-                        int timeStep = 1;
-                        try
-                        {
-                            if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
-                            {
-                                object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
-                            }
-                            else     // filetype: kvsml
-                            {
-                                object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
-                            }
-                        }
-                        catch ( const std::runtime_error& e )
-                        {
-#ifdef _DEBUG		// debug by @hira
-                            printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
-#endif
-                            std::cerr << e.what();
-                            nan_error = true;
-                        }
-#ifndef CPU_VER
-                        VariableRange* p_vr = &range;
-                        jc.jobCollect( object, p_vr, &nan_error, &wid );
-#endif
-                        if ( nan_error )
-                        {
-                            nan_error = false;
-                            continue;
-                        }
-
-                        int c_count = 0;
-                        int o_count = 0;
-
-                        for ( int tf = 0; tf < object->getTfnumber(); tf++ )
-                        {
-                            c_nbins = object->getNbins();
-                            //add by shimomura 2023/06/14
-                            //tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
-                            //tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
-                            
-                        }
-
-                        for ( int tf = 0; tf < object->getTfnumber(); tf++ )
-                        {
-                            o_nbins = object->getNbins();
-                            //add by shimomura 2023/06/14
-                            tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_c_max[tf];
-                            tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_c_min[tf];
-                            for ( int res = 0; res < o_nbins; res++ )
-                            {
-                                tmp_o_bins[o_count] += object->getOHistogram()[ o_count ] ;
-                                o_count++;
-                            }
-                        }
-
-                    } // end of while(DispatchNext)
-#ifndef CPU_VER
-
-                    MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-                    MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-                    MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
-                    MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
                     delete[] tmp_c_bins;
                     delete[] tmp_o_bins;
                     //add by shimomura 20240603
                     delete[] tmp_max;
                     delete[] tmp_min;
-#endif
                     if ( timer_count == PBVR_TIMER_COUNT_NUM )
                     {
                         PBVR_TIMER_END( 1 );
@@ -1161,7 +1088,6 @@ int main( int argc, char** argv )
                 else
                 {
                     timer_count++;
-//                  param.m_transfer_function = pbvr::TransferFunction(); // *( clntMes.m_transfer_function );
                     param.m_sampling_method = clntMes.m_sampling_method;
                     param.m_component_Id = clntMes.m_rendering_id;
                     param.m_crop.setEnable( clntMes.m_enable_crop_region );
@@ -1560,8 +1486,7 @@ int main( int argc, char** argv )
                     //transfunc_creator.setProtocol( clntMes );
                     //int nvariable = fil.m_total_number_ingredients;
                     int nvariable;
-                    kvs::ValueArray<int> histogram;// opacity
-                    //VariableRange range = Calculate_minmax( param, fil); 
+                    std::vector<kvs::UInt64> histogram;// opacity
                     VariableRange range = Calculate_minmax( param, fil, histogram); 
                     if( !clntMes.m_import_flag ) 
                     {
@@ -1650,7 +1575,7 @@ int main( int argc, char** argv )
                     param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
 
                     VariableRange vr;
-//                    pts.sendMessage( servMes );
+                    std::cout << __LINE__ << std::endl;
 
                     // 関数の領域確保、初期化を行う : by @hira 2016/12/01
                     servMes.initializeTransferFunction(nvariable, DEFAULT_NBINS);
@@ -1692,11 +1617,6 @@ int main( int argc, char** argv )
 
                                 for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
                                 {
-                                    //int c_nbins = tmp_obj->getNbins();
-                                    //changed by shimomura 2023/07/24
-//                                    tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
-//                                    tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
-
                                     std::stringstream ss; 
                                     ss << (tf + 1); 
                                     const std::string idxbuf = ss.str();
@@ -1705,144 +1625,15 @@ int main( int argc, char** argv )
                                     tmp_max[2*tf] = range.max( "t" + idxbuf + "_var_o" );
                                     tmp_min[2*tf] = range.min( "t" + idxbuf + "_var_o" );
 
-//    for (int i = 0; i< 256; i++ )
-//    {
-//     std::cout << "hist= " << histogram[i] << ", "  << std::endl;
-//    }
                                 int c_count = 0;
                                     for ( int res = 0; res < c_bins_size; res++ )
                                     {
-                                        //tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ] ;
                                         tmp_c_bins[ c_count ] += histogram[c_count];
                                         tmp_o_bins[ c_count ] += histogram[c_count];
                                         c_count++;
                                     }
                                 }
 
-//                    while ( jd.dispatchNext( wid, &st, &vl ) )
-//                    {
-//                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
-//                        {
-//                            PBVR_TIMER_STA( 471 );
-//                        }
-//
-//                        pbvr::PointObject* originalObject = new pbvr::PointObject;
-//
-//                        if (mpi_size == 1) 
-//                        {
-//                            int xvl, fidx;
-//                            fidx = fil.getFileIndex( vl, &xvl );
-//                            FilterInformationFile& fi = fil.m_list[fidx];
-//
-//                            pbvr::PointObject* tmp_obj = NULL;
-//                            std::stringstream suffix;
-//                            suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
-//                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-//                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
-//                            kvs::File ifpx( fil.m_list[fidx].m_file_path );
-//                            param.m_input_data = ifpx.pathName() + ifpx.Separator()
-//                                + ifpx.baseName() + suffix.str() + ".kvsml";
-//                            int timeStep = 1;
-//                            try
-//                            {
-//                                point_creator_lst[fidx].setCoordSynthStr( clntMes.m_x_synthesis,
-//                                        clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-//                                if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
-//                                {
-//                                    tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
-//                                }
-//                                else     // filetype: kvsml
-//                                {
-//                                    tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
-//                                }
-//
-//                                size_t nmemb = tmp_obj->nvertices() * 3;
-//                                // modify by @hira at 2016/12/01  
-//                                int c_count = 0;
-//                                for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
-//                                {
-//                                    int c_nbins = tmp_obj->getNbins();
-//                                    //changed by shimomura 2023/07/24
-////                                    tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
-////                                    tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
-//
-//                                    std::stringstream ss; 
-//                                    ss << (tf + 1); 
-//                                    const std::string idxbuf = ss.str();
-//                                    tmp_max[2*tf+1] = range.max( "t" + idxbuf + "_var_c" );
-//                                    tmp_min[2*tf+1] = range.min( "t" + idxbuf + "_var_c" );
-//                                    tmp_max[2*tf] = range.max( "t" + idxbuf + "_var_o" );
-//                                    tmp_min[2*tf] = range.min( "t" + idxbuf + "_var_o" );
-//
-//    for (int i = 0; i< 256; i++ )
-//    {
-//     std::cout << "hist= " << histogram[i] << ", "  << std::endl;
-//    }
-//                                    for ( int res = 0; res < c_nbins; res++ )
-//                                    {
-//                                        //tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ] ;
-//                                        tmp_c_bins[ c_count ] += histogram[c_count];
-//                                        tmp_o_bins[ c_count ] += histogram[c_count];
-//                                        c_count++;
-//                                    }
-//                                }
-//                            }
-//                            catch ( const std::runtime_error& e )
-//                            {
-//#ifdef _DEBUG          // debug by @hira
-//                                printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
-//#endif
-//                                std::cerr << e.what();
-//                                nan_error = true;
-//                            }
-//
-//                        }
-//
-//#ifndef CPU_VER
-//                        if (mpi_size > 1) {
-//                            jc.jobCollect( originalObject, &vr, &nan_error, &wid );
-//                        }
-//#endif
-//                        //int nvertices = originalObject->coords().size() / 3;
-//
-//                        pbvr::PointObject* object = originalObject;
-//                        printf(" %zu perticles generated\n", object->coords().size() / 3);
-//
-//                        //                           //add by shimomura 2023/06/14
-//                        if ( originalObject != object ) delete originalObject;
-//                        servMes.m_number_particle = object->coords().size() / 3;
-//                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
-//                        {
-//                            PBVR_TIMER_END( 471 );
-//                        }
-//                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
-//                        {
-//                            PBVR_TIMER_STA( 472 );
-//                        }
-//
-//                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
-//                        {
-//                            PBVR_TIMER_END( 472 );
-//                        }
-//                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
-//                        {
-//                            PBVR_TIMER_STA( 473 );
-//                        }
-//                        delete object;
-//                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
-//                        {
-//                            PBVR_TIMER_END( 473 );
-//                        }
-//                    } // end of while(DispatchNext)
-
-#ifndef CPU_VER
-                    if (mpi_size > 1) {
-                        MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-                        MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-                        MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
-                        MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
-                    }
-#endif
                     //add by shimomura 2023/06/14
                     vr = setVariablerange2( tmp_max,tmp_min, cnt/2 );
                     servMes.m_variable_range = vr;
@@ -2138,8 +1929,6 @@ int main( int argc, char** argv )
                             {
                                 point_creator_lst[fidx].setCoordSynthStr( clntMes.m_x_synthesis,
                                                                           clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-//                                point_creator_lst[fidx].setCoordSynthTkn( clntMes.x_synthesis_token,
-//                                                                          clntMes.y_synthesis_token, clntMes.z_synthesis_token );
                                 if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                                 {
                                     tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
@@ -2214,9 +2003,6 @@ int main( int argc, char** argv )
                             servMes.m_number_particle = object->coords().size() / 3;
                             if ( servMes.m_number_particle > 0 )
                             {
-//                                servMes.m_positions = new float[3 * servMes.m_number_particle];
-//                                servMes.m_normals = new float[3 * servMes.m_number_particle];
-//                                servMes.m_colors = new unsigned char[3 * servMes.m_number_particle];
                                 servMes.m_positions = std::make_unique<float[]>(3 * servMes.m_number_particle);
                                 servMes.m_normals = std::make_unique<float[]>(3 * servMes.m_number_particle);
                                 servMes.m_colors = std::make_unique<unsigned char[]>(3 * servMes.m_number_particle);
