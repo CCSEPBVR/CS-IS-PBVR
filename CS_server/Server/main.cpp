@@ -1609,16 +1609,16 @@ int main( int argc, char** argv )
                     {
                         assert( false );
                     }
-                    if ( param.m_gt5d == true || param.m_gt5d_full == true )
-                    {
-                        int timeStep = servMes.m_time_step;
-
-                        if ( servMes.m_time_step > 1 )
-                        {
-                            for ( int nf = 0; nf < point_creator_lst.size(); nf++ )
-                                point_creator_lst[nf].progressValues();
-                        }
-                    }
+//                    if ( param.m_gt5d == true || param.m_gt5d_full == true )
+//                    {
+//                        int timeStep = servMes.m_time_step;
+//
+//                        if ( servMes.m_time_step > 1 )
+//                        {
+//                            for ( int nf = 0; nf < point_creator_lst.size(); nf++ )
+//                                point_creator_lst[nf].progressValues();
+//                        }
+//                    }
 
                     if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
 
@@ -1690,49 +1690,9 @@ int main( int argc, char** argv )
                         tmp_o_bins[tf] = 0;
                     }
 
-                    while ( jd.dispatchNext( wid, &st, &vl ) )
-                    {
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
-                        {
-                            PBVR_TIMER_STA( 471 );
-                        }
-
-                        pbvr::PointObject* originalObject = new pbvr::PointObject;
-
-                        if (mpi_size == 1) 
-                        {
-                            int xvl, fidx;
-                            fidx = fil.getFileIndex( vl, &xvl );
-                            FilterInformationFile& fi = fil.m_list[fidx];
-
-                            pbvr::PointObject* tmp_obj = NULL;
-                            std::stringstream suffix;
-                            suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
-                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
-                            kvs::File ifpx( fil.m_list[fidx].m_file_path );
-                            param.m_input_data = ifpx.pathName() + ifpx.Separator()
-                                + ifpx.baseName() + suffix.str() + ".kvsml";
-                            int timeStep = 1;
-                            try
-                            {
-                                point_creator_lst[fidx].setCoordSynthStr( clntMes.m_x_synthesis,
-                                        clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-                                if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
-                                {
-                                    tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
-                                }
-                                else     // filetype: kvsml
-                                {
-                                    tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
-                                }
-
-                                size_t nmemb = tmp_obj->nvertices() * 3;
-                                // modify by @hira at 2016/12/01  
-                                int c_count = 0;
                                 for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
                                 {
-                                    int c_nbins = tmp_obj->getNbins();
+                                    //int c_nbins = tmp_obj->getNbins();
                                     //changed by shimomura 2023/07/24
 //                                    tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
 //                                    tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
@@ -1745,11 +1705,12 @@ int main( int argc, char** argv )
                                     tmp_max[2*tf] = range.max( "t" + idxbuf + "_var_o" );
                                     tmp_min[2*tf] = range.min( "t" + idxbuf + "_var_o" );
 
-    for (int i = 0; i< 256; i++ )
-    {
-     std::cout << "hist= " << histogram[i] << ", "  << std::endl;
-    }
-                                    for ( int res = 0; res < c_nbins; res++ )
+//    for (int i = 0; i< 256; i++ )
+//    {
+//     std::cout << "hist= " << histogram[i] << ", "  << std::endl;
+//    }
+                                int c_count = 0;
+                                    for ( int res = 0; res < c_bins_size; res++ )
                                     {
                                         //tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ] ;
                                         tmp_c_bins[ c_count ] += histogram[c_count];
@@ -1757,68 +1718,122 @@ int main( int argc, char** argv )
                                         c_count++;
                                     }
                                 }
-//                                int o_count = 0;
+
+//                    while ( jd.dispatchNext( wid, &st, &vl ) )
+//                    {
+//                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+//                        {
+//                            PBVR_TIMER_STA( 471 );
+//                        }
+//
+//                        pbvr::PointObject* originalObject = new pbvr::PointObject;
+//
+//                        if (mpi_size == 1) 
+//                        {
+//                            int xvl, fidx;
+//                            fidx = fil.getFileIndex( vl, &xvl );
+//                            FilterInformationFile& fi = fil.m_list[fidx];
+//
+//                            pbvr::PointObject* tmp_obj = NULL;
+//                            std::stringstream suffix;
+//                            suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
+//                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
+//                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
+//                            kvs::File ifpx( fil.m_list[fidx].m_file_path );
+//                            param.m_input_data = ifpx.pathName() + ifpx.Separator()
+//                                + ifpx.baseName() + suffix.str() + ".kvsml";
+//                            int timeStep = 1;
+//                            try
+//                            {
+//                                point_creator_lst[fidx].setCoordSynthStr( clntMes.m_x_synthesis,
+//                                        clntMes.m_y_synthesis, clntMes.m_z_synthesis );
+//                                if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+//                                {
+//                                    tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
+//                                }
+//                                else     // filetype: kvsml
+//                                {
+//                                    tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
+//                                }
+//
+//                                size_t nmemb = tmp_obj->nvertices() * 3;
+//                                // modify by @hira at 2016/12/01  
+//                                int c_count = 0;
 //                                for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
 //                                {
-//                                    int o_nbins = tmp_obj->getNbins();
+//                                    int c_nbins = tmp_obj->getNbins();
 //                                    //changed by shimomura 2023/07/24
-//                                    tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_o_max[tf];
-//                                    tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_o_min[tf];
-//                                    for ( int res = 0; res < o_nbins; res++ )
+////                                    tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
+////                                    tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
+//
+//                                    std::stringstream ss; 
+//                                    ss << (tf + 1); 
+//                                    const std::string idxbuf = ss.str();
+//                                    tmp_max[2*tf+1] = range.max( "t" + idxbuf + "_var_c" );
+//                                    tmp_min[2*tf+1] = range.min( "t" + idxbuf + "_var_c" );
+//                                    tmp_max[2*tf] = range.max( "t" + idxbuf + "_var_o" );
+//                                    tmp_min[2*tf] = range.min( "t" + idxbuf + "_var_o" );
+//
+//    for (int i = 0; i< 256; i++ )
+//    {
+//     std::cout << "hist= " << histogram[i] << ", "  << std::endl;
+//    }
+//                                    for ( int res = 0; res < c_nbins; res++ )
 //                                    {
-//                                        tmp_o_bins[o_count] += tmp_obj->getOHistogram()[ o_count ] ;
-//                                        o_count++;
+//                                        //tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ] ;
+//                                        tmp_c_bins[ c_count ] += histogram[c_count];
+//                                        tmp_o_bins[ c_count ] += histogram[c_count];
+//                                        c_count++;
 //                                    }
 //                                }
-
-                            }
-                            catch ( const std::runtime_error& e )
-                            {
-#ifdef _DEBUG          // debug by @hira
-                                printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
-#endif
-                                std::cerr << e.what();
-                                nan_error = true;
-                            }
-
-                        }
-
-#ifndef CPU_VER
-                        if (mpi_size > 1) {
-                            jc.jobCollect( originalObject, &vr, &nan_error, &wid );
-                        }
-#endif
-                        //int nvertices = originalObject->coords().size() / 3;
-
-                        pbvr::PointObject* object = originalObject;
-                        printf(" %zu perticles generated\n", object->coords().size() / 3);
-
-                        //                           //add by shimomura 2023/06/14
-                        if ( originalObject != object ) delete originalObject;
-                        servMes.m_number_particle = object->coords().size() / 3;
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
-                        {
-                            PBVR_TIMER_END( 471 );
-                        }
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
-                        {
-                            PBVR_TIMER_STA( 472 );
-                        }
-
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
-                        {
-                            PBVR_TIMER_END( 472 );
-                        }
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
-                        {
-                            PBVR_TIMER_STA( 473 );
-                        }
-                        delete object;
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
-                        {
-                            PBVR_TIMER_END( 473 );
-                        }
-                    } // end of while(DispatchNext)
+//                            }
+//                            catch ( const std::runtime_error& e )
+//                            {
+//#ifdef _DEBUG          // debug by @hira
+//                                printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
+//#endif
+//                                std::cerr << e.what();
+//                                nan_error = true;
+//                            }
+//
+//                        }
+//
+//#ifndef CPU_VER
+//                        if (mpi_size > 1) {
+//                            jc.jobCollect( originalObject, &vr, &nan_error, &wid );
+//                        }
+//#endif
+//                        //int nvertices = originalObject->coords().size() / 3;
+//
+//                        pbvr::PointObject* object = originalObject;
+//                        printf(" %zu perticles generated\n", object->coords().size() / 3);
+//
+//                        //                           //add by shimomura 2023/06/14
+//                        if ( originalObject != object ) delete originalObject;
+//                        servMes.m_number_particle = object->coords().size() / 3;
+//                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+//                        {
+//                            PBVR_TIMER_END( 471 );
+//                        }
+//                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+//                        {
+//                            PBVR_TIMER_STA( 472 );
+//                        }
+//
+//                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+//                        {
+//                            PBVR_TIMER_END( 472 );
+//                        }
+//                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+//                        {
+//                            PBVR_TIMER_STA( 473 );
+//                        }
+//                        delete object;
+//                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+//                        {
+//                            PBVR_TIMER_END( 473 );
+//                        }
+//                    } // end of while(DispatchNext)
 
 #ifndef CPU_VER
                     if (mpi_size > 1) {
