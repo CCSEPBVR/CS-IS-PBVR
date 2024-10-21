@@ -6,6 +6,9 @@
 // #include "ExtendedTransferFunctionMessage.h"
 #include "FrequencyTable.h"
 #include "Common/VariableRange.h"
+// #include "Widgets/FunctionListEditor.h"
+#include "Widgets/ColorMapEditor.h"
+#include "Widgets/OpacityMapEditor.h"
 
 class MergePanel;
 class Connect;
@@ -209,6 +212,11 @@ private:
     Parameter m_parameter;
     MergePanel* m_merge;
     Connect* m_connect;
+
+    // FunctionListEditor m_color_function_list_editor;
+    // FunctionListEditor m_opacity_function_list_editor;
+    ColorMapEditor m_color_map_editor;
+    OpacityMapEditor m_opacity_map_editor;
 
     void updateFunctionLists();
 
