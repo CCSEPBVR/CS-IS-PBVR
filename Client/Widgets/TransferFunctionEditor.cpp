@@ -192,7 +192,12 @@ void TransferFunctionEditor::onColorFunctionVariableEdited()
 
 void TransferFunctionEditor::onColorFunctionListEditorPushButtonClicked()
 {
-    qDebug() << "未実装";
+    m_variable_editor.initalize( VariableEditor::COLOR, m_parameter );
+    if( m_variable_editor.exec() == QDialog::Accepted )
+    {
+        m_parameter = m_variable_editor.getEditTransferFunctionParameter();
+        ui->colorFunctionVariableLineEdit->setText( QString::fromStdString( m_variable_editor.getEditTransferFunctionParameter().m_transfer_function[ui->colorFunctionComboBox->currentIndex()].m_color_variable ) );
+    }
 }
 
 void TransferFunctionEditor::onColorSelectedRangeClicked()
@@ -294,7 +299,12 @@ void TransferFunctionEditor::onOpacityFunctionVariableEdited()
 
 void TransferFunctionEditor::onOpacityFunctionListEditorPushButtonClicked()
 {
-    qDebug() << "未実装";
+    m_variable_editor.initalize( VariableEditor::OPACITY, m_parameter );
+    if( m_variable_editor.exec() == QDialog::Accepted )
+    {
+        m_parameter = m_variable_editor.getEditTransferFunctionParameter();
+        ui->opacityFunctionVariableLineEdit->setText( QString::fromStdString( m_variable_editor.getEditTransferFunctionParameter().m_transfer_function[ui->opacityFunctionComboBox->currentIndex()].m_opacity_variable ) );
+    }
 }
 
 void TransferFunctionEditor::onOpacitySelectedRangeClicked()

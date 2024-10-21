@@ -5,6 +5,7 @@
 #include "Widgets/TransferFunctionParameter.h"
 #include "Common/VariableRange.h"
 // #include "Widgets/FunctionListEditor.h"
+#include "Widgets/VariableEditor.h"
 #include "Widgets/ColorMapEditor.h"
 #include "Widgets/OpacityMapEditor.h"
 
@@ -37,6 +38,7 @@ private:
 
     // FunctionListEditor m_color_function_list_editor;
     // FunctionListEditor m_opacity_function_list_editor;
+    VariableEditor m_variable_editor;
     ColorMapEditor m_color_map_editor;
     OpacityMapEditor m_opacity_map_editor;
 
