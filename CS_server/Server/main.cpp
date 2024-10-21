@@ -568,10 +568,9 @@ inline size_t CalculateSubpixelLevel( const Argument& param,
 }
 
 inline VariableRange Calculate_minmax( const Argument& param,
-                                      const FilterInformationList& fil)
+                                       const FilterInformationList& fil,
+                                       kvs::ValueArray<int>& histogram  )
 {
-
-
     namespace Generator = pbvr::CellByCellParticleGenerator;
     //pbvr::UnstructuredVolumeObject* volume;
     pbvr::VolumeObjectBase* volume;
@@ -590,7 +589,7 @@ inline VariableRange Calculate_minmax( const Argument& param,
         min_vec[i] = FLT_MAX; 
         max_vec[i] = FLT_MIN; 
     } 
-# if 0
+# if 1
     //Total Volume Calculation
 #ifndef CPU_VER
     int rank;
@@ -613,7 +612,6 @@ inline VariableRange Calculate_minmax( const Argument& param,
             if ( subvols % nprocs == rank )
             {
                 volume = CreateVolumeData( param, fi, steps, xvl );
-                //volume->updateMinMaxValues();
                 int nnodes = volume->nnodes();
                 for (int n =0; n< nvariable; n++) 
                 {
@@ -650,7 +648,8 @@ inline VariableRange Calculate_minmax( const Argument& param,
         vr.setValue( "t" + idxbuf + "_var_c", max_vec[n]);
         vr.setValue( "t" + idxbuf + "_var_c", min_vec[n]);
    }
-#endif
+
+#else
 
    VariableRange vr;
    for (int n =0; n< nvariable; n++) 
@@ -666,6 +665,51 @@ inline VariableRange Calculate_minmax( const Argument& param,
 
 //   std::cout << "vr_max = " << vr.max( "t1_var_c" ) << std::endl;     
 //   std::cout << "vr_min = " << vr.min( "t1_var_c" ) << std::endl;     
+
+#endif
+
+// calc histgoram
+
+   //kvs::ValueArray<int> histogram( 256 * nvariables );// opacity
+   int nbins = 256;
+   int bins_size = nbins * nvariable;
+   histogram.allocate( nbins * nvariable );
+   histogram.fill(0x00);
+   steps = fil.m_total_start_steps;
+   for ( subvols = 0; subvols < fil.m_total_number_subvolumes; subvols++ )
+   {
+       int xvl, fidx;
+       fidx = fil.getFileIndex( subvols, &xvl );
+       const FilterInformationFile& fi = fil.m_list[fidx];
+
+       if ( subvols % nprocs == rank )
+       {
+           volume = CreateVolumeData( param, fi, steps, xvl );
+           int nnodes = volume->nnodes();
+
+           for (int n =0; n< nvariable; n++) 
+           {
+               for (int i = 0; i< nnodes; i++)
+               {
+                   float h = ( volume->values().at<float>(i+n*nnodes) - min_vec[n])/( max_vec[n] - min_vec[n] )*nbins;
+                   int H = (int)h;
+                   if( 0 <= H && H <= nbins )
+                   {
+                       if( H == nbins ) H--;
+                       histogram[ H + nbins*n]++;
+                   }
+               }
+           }
+           delete volume;
+       }
+   }
+
+#ifndef CPU_VER
+    PBVR_TIMER_STA( 19 );
+    MPI_Allreduce( MPI_IN_PLACE,  histogram, ins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
+//    MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
+    PBVR_TIMER_END( 19 );
+#endif
 
    return vr;
 }
@@ -932,8 +976,10 @@ int main( int argc, char** argv )
                     }
 
                     transfunc_creator.setFilterInfo( fil.m_list[0] );
+                    kvs::ValueArray<int> histogram;// opacity
                     int nvariable;
-                    VariableRange range = Calculate_minmax( param, fil); 
+                    //VariableRange range = Calculate_minmax( param, fil); 
+                    VariableRange range = Calculate_minmax( param, fil, histogram); 
                     if( !clntMes.m_import_flag ) 
                     {
                         std::cout << "defalt parameter " << std::endl;
@@ -1064,13 +1110,9 @@ int main( int argc, char** argv )
                         {
                             c_nbins = object->getNbins();
                             //add by shimomura 2023/06/14
-                            tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
-                            tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
-                            for ( int res = 0; res < c_nbins; res++ )
-                            {
-                                tmp_c_bins[c_count] += object->getCHistogram()[ c_count ] ;
-                                c_count++;
-                            }
+                            //tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
+                            //tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
+                            
                         }
 
                         for ( int tf = 0; tf < object->getTfnumber(); tf++ )
@@ -1518,7 +1560,9 @@ int main( int argc, char** argv )
                     //transfunc_creator.setProtocol( clntMes );
                     //int nvariable = fil.m_total_number_ingredients;
                     int nvariable;
-                    VariableRange range = Calculate_minmax( param, fil); 
+                    kvs::ValueArray<int> histogram;// opacity
+                    //VariableRange range = Calculate_minmax( param, fil); 
+                    VariableRange range = Calculate_minmax( param, fil, histogram); 
                     if( !clntMes.m_import_flag ) 
                     {
                         std::cout << "defalt parameter " << std::endl;
@@ -1532,6 +1576,7 @@ int main( int argc, char** argv )
                         transfunc_creator.setProtocol(clntMes);
                     }
 #if 1
+
                     // generate_histogram
                     param.m_sampling_method = 'h';
                     param.m_component_Id = clntMes.m_rendering_id;
@@ -1689,28 +1734,42 @@ int main( int argc, char** argv )
                                 {
                                     int c_nbins = tmp_obj->getNbins();
                                     //changed by shimomura 2023/07/24
-                                    tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
-                                    tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
+//                                    tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
+//                                    tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
+
+                                    std::stringstream ss; 
+                                    ss << (tf + 1); 
+                                    const std::string idxbuf = ss.str();
+                                    tmp_max[2*tf+1] = range.max( "t" + idxbuf + "_var_c" );
+                                    tmp_min[2*tf+1] = range.min( "t" + idxbuf + "_var_c" );
+                                    tmp_max[2*tf] = range.max( "t" + idxbuf + "_var_o" );
+                                    tmp_min[2*tf] = range.min( "t" + idxbuf + "_var_o" );
+
+    for (int i = 0; i< 256; i++ )
+    {
+     std::cout << "hist= " << histogram[i] << ", "  << std::endl;
+    }
                                     for ( int res = 0; res < c_nbins; res++ )
                                     {
-                                        tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ] ;
+                                        //tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ] ;
+                                        tmp_c_bins[ c_count ] += histogram[c_count];
+                                        tmp_o_bins[ c_count ] += histogram[c_count];
                                         c_count++;
-
                                     }
                                 }
-                                int o_count = 0;
-                                for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
-                                {
-                                    int o_nbins = tmp_obj->getNbins();
-                                    //changed by shimomura 2023/07/24
-                                    tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_o_max[tf];
-                                    tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_o_min[tf];
-                                    for ( int res = 0; res < o_nbins; res++ )
-                                    {
-                                        tmp_o_bins[o_count] += tmp_obj->getOHistogram()[ o_count ] ;
-                                        o_count++;
-                                    }
-                                }
+//                                int o_count = 0;
+//                                for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
+//                                {
+//                                    int o_nbins = tmp_obj->getNbins();
+//                                    //changed by shimomura 2023/07/24
+//                                    tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_o_max[tf];
+//                                    tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_o_min[tf];
+//                                    for ( int res = 0; res < o_nbins; res++ )
+//                                    {
+//                                        tmp_o_bins[o_count] += tmp_obj->getOHistogram()[ o_count ] ;
+//                                        o_count++;
+//                                    }
+//                                }
 
                             }
                             catch ( const std::runtime_error& e )
