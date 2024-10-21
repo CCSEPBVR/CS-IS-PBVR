@@ -219,6 +219,7 @@ private slots:
     void onColorFunctionChanged( int index );
     void onColorFunctionVariableEdited();
     void onColorFunctionListEditorPushButtonClicked();
+    void onColorSelectedRangeClicked();
     void onColorUserDefinedChanged();
     void onEditColorMapPushButtonClicked();
 
@@ -226,6 +227,7 @@ private slots:
     void onOpacityFunctionChanged( int index );
     void onOpacityFunctionVariableEdited();
     void onOpacityFunctionListEditorPushButtonClicked();
+    void onOpacitySelectedRangeClicked();
     void onOpacityUserDefinedChanged();
     void onEditOpacityMapPushButtonClicked();
 

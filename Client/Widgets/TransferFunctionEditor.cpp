@@ -16,6 +16,8 @@ TransferFunctionEditor::TransferFunctionEditor(QWidget *parent, MergePanel* merg
 
     connect( ui->colorSynthesizerLineEdit, &QLineEdit::textEdited, this, &TransferFunctionEditor::onColorSynthesizerEdited );
     connect( ui->colorFunctionComboBox, &QComboBox::currentIndexChanged, this, &TransferFunctionEditor::onColorFunctionChanged );
+    connect( ui->colorUserDefinedMinMaxRadioButton, &QRadioButton::clicked, this, &TransferFunctionEditor::onColorSelectedRangeClicked );
+    connect( ui->colorServerSideMinMaxRadioButton, &QRadioButton::clicked, this, &TransferFunctionEditor::onColorSelectedRangeClicked );
     connect( ui->colorFunctionVariableLineEdit, &QLineEdit::textEdited, this, &TransferFunctionEditor::onColorFunctionVariableEdited );
     connect( ui->colorFunctionListEditorPushButton, &QPushButton::clicked, this, &TransferFunctionEditor::onColorFunctionListEditorPushButtonClicked );
     connect( ui->colorUserDefinedMinDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &TransferFunctionEditor::onColorUserDefinedChanged );
@@ -24,6 +26,8 @@ TransferFunctionEditor::TransferFunctionEditor(QWidget *parent, MergePanel* merg
 
     connect( ui->opacitySynthesizerLineEdit, &QLineEdit::textEdited, this, &TransferFunctionEditor::onOpacitySynthesizerEdited );
     connect( ui->opacityFunctionComboBox, &QComboBox::currentIndexChanged, this, &TransferFunctionEditor::onOpacityFunctionChanged );
+    connect( ui->opacityUserDefinedMinMaxRadioButton, &QRadioButton::clicked, this, &TransferFunctionEditor::onOpacitySelectedRangeClicked );
+    connect( ui->opacityServerSideMinMaxRadioButton, &QRadioButton::clicked, this, &TransferFunctionEditor::onOpacitySelectedRangeClicked );
     connect( ui->opacityFunctionVariableLineEdit, &QLineEdit::textEdited, this, &TransferFunctionEditor::onOpacityFunctionVariableEdited );
     connect( ui->opacityFunctionListEditorPushButton, &QPushButton::clicked, this, &TransferFunctionEditor::onOpacityFunctionListEditorPushButtonClicked );
     connect( ui->opacityUserDefinedMinDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &TransferFunctionEditor::onOpacityUserDefinedChanged );
@@ -138,6 +142,22 @@ void TransferFunctionEditor::onColorFunctionChanged( int index )
         ui->colorFunctionVariableLineEdit->setText( QString::fromStdString( func->m_color_variable ) );
         ui->colorFunctionVariableLineEdit->blockSignals( false );
 
+        switch ( func->m_color_selected_range )
+        {
+        case Functions::UserDefinedRange:
+            ui->colorUserDefinedMinMaxRadioButton->blockSignals( true );
+            ui->colorUserDefinedMinMaxRadioButton->setChecked( true );
+            ui->colorUserDefinedMinMaxRadioButton->blockSignals( false );
+            break;
+        case Functions::ServerSideRange:
+            ui->colorServerSideMinMaxRadioButton->blockSignals( true );
+            ui->colorServerSideMinMaxRadioButton->setChecked( true );
+            ui->colorServerSideMinMaxRadioButton->blockSignals( false );
+            break;
+        default:
+            break;
+        }
+
         ui->colorUserDefinedMinDoubleSpinBox->blockSignals( true );
         ui->colorUserDefinedMaxDoubleSpinBox->blockSignals( true );
         ui->colorUserDefinedMinDoubleSpinBox->setValue( func->m_color_user_defined_min );
@@ -175,6 +195,19 @@ void TransferFunctionEditor::onColorFunctionListEditorPushButtonClicked()
     qDebug() << "未実装";
 }
 
+void TransferFunctionEditor::onColorSelectedRangeClicked()
+{
+    std::string colorName = ui->colorFunctionComboBox->currentText().toStdString();
+    if( ui->colorUserDefinedMinMaxRadioButton->isChecked() )
+    {
+        m_parameter.getTransferFunction( colorName )->m_color_selected_range = Functions::UserDefinedRange;
+    }
+    else if( ui->colorServerSideMinMaxRadioButton->isChecked() )
+    {
+        m_parameter.getTransferFunction( colorName )->m_color_selected_range = Functions::ServerSideRange;
+    }
+}
+
 void TransferFunctionEditor::onColorUserDefinedChanged()
 {
     std::string colorName = ui->colorFunctionComboBox->currentText().toStdString();
@@ -199,6 +232,22 @@ void TransferFunctionEditor::onOpacityFunctionChanged( int index )
         ui->opacityFunctionVariableLineEdit->blockSignals( true );
         ui->opacityFunctionVariableLineEdit->setText( QString::fromStdString( func->m_opacity_variable ) );
         ui->opacityFunctionVariableLineEdit->blockSignals( false );
+
+        switch ( func->m_opacity_selected_range )
+        {
+        case Functions::UserDefinedRange:
+            ui->opacityUserDefinedMinMaxRadioButton->blockSignals( true );
+            ui->opacityUserDefinedMinMaxRadioButton->setChecked( true );
+            ui->opacityUserDefinedMinMaxRadioButton->blockSignals( false );
+            break;
+        case Functions::ServerSideRange:
+            ui->opacityServerSideMinMaxRadioButton->blockSignals( true );
+            ui->opacityServerSideMinMaxRadioButton->setChecked( true );
+            ui->opacityServerSideMinMaxRadioButton->blockSignals( false );
+            break;
+        default:
+            break;
+        }
 
         ui->opacityUserDefinedMinDoubleSpinBox->blockSignals( true );
         ui->opacityUserDefinedMaxDoubleSpinBox->blockSignals( true );
@@ -235,6 +284,19 @@ void TransferFunctionEditor::onOpacityFunctionVariableEdited()
 void TransferFunctionEditor::onOpacityFunctionListEditorPushButtonClicked()
 {
     qDebug() << "未実装";
+}
+
+void TransferFunctionEditor::onOpacitySelectedRangeClicked()
+{
+    std::string opacityName = ui->opacityFunctionComboBox->currentText().toStdString();
+    if( ui->opacityUserDefinedMinMaxRadioButton->isChecked() )
+    {
+        m_parameter.getTransferFunction( opacityName )->m_opacity_selected_range = Functions::UserDefinedRange;
+    }
+    else if( ui->opacityServerSideMinMaxRadioButton->isChecked() )
+    {
+        m_parameter.getTransferFunction( opacityName )->m_opacity_selected_range = Functions::ServerSideRange;
+    }
 }
 
 void TransferFunctionEditor::onOpacityUserDefinedChanged()
@@ -617,15 +679,31 @@ void TransferFunctionEditor::apply()
 
         etf.m_color_variable   = ss.str() + "_VAR_C";
         etf.setColorMap( m_parameter.getTransferFunction(i)->colorMap() );
-        etf.m_color_variable_min = m_parameter.getTransferFunction(i)->m_color_user_defined_min;
-        etf.m_color_variable_max = m_parameter.getTransferFunction(i)->m_color_user_defined_max;
+        if( m_parameter.getTransferFunction(i)->m_color_selected_range == Functions::UserDefinedRange )
+        {
+            etf.m_color_variable_min = m_parameter.getTransferFunction(i)->m_color_user_defined_min;
+            etf.m_color_variable_max = m_parameter.getTransferFunction(i)->m_color_user_defined_max;
+        }
+        else if( m_parameter.getTransferFunction(i)->m_color_selected_range == Functions::ServerSideRange )
+        {
+            etf.m_color_variable_min = m_parameter.getTransferFunction(i)->m_color_server_side_min;
+            etf.m_color_variable_max = m_parameter.getTransferFunction(i)->m_color_server_side_max;
+        }
         volumeEquationColor.m_name = etf.m_color_variable;
         volumeEquationColor.m_equation = m_parameter.m_transfer_function[i].m_color_variable;
 
         etf.m_opacity_variable   = ss.str() + "_VAR_O";
         etf.setOpacityMap( m_parameter.getTransferFunction(i)->opacityMap() );
-        etf.m_opacity_variable_min = m_parameter.getTransferFunction(i)->m_opacity_user_defined_min;
-        etf.m_opacity_variable_max = m_parameter.getTransferFunction(i)->m_opacity_user_defined_max;
+        if( m_parameter.getTransferFunction(i)->m_opacity_selected_range == Functions::UserDefinedRange )
+        {
+            etf.m_opacity_variable_min = m_parameter.getTransferFunction(i)->m_opacity_user_defined_min;
+            etf.m_opacity_variable_max = m_parameter.getTransferFunction(i)->m_opacity_user_defined_max;
+        }
+        else if( m_parameter.getTransferFunction(i)->m_opacity_selected_range == Functions::ServerSideRange )
+        {
+            etf.m_opacity_variable_min = m_parameter.getTransferFunction(i)->m_opacity_server_side_min;
+            etf.m_opacity_variable_max = m_parameter.getTransferFunction(i)->m_opacity_server_side_max;
+        }
         volumeEquationOpacity.m_name = etf.m_opacity_variable;
         volumeEquationOpacity.m_equation = m_parameter.m_transfer_function[i].m_opacity_variable;
 
@@ -649,7 +727,7 @@ void TransferFunctionEditor::updateRangeView()
             m_parameter.m_transfer_function[i].m_color_histogram = *color_histogram;
         }
         char tag_o[16] = {0x00};
-        sprintf(tag_o, "t%d_var_c", i + 1);
+        sprintf(tag_o, "t%d_var_o", i + 1);
         m_parameter.m_transfer_function[i].m_opacity_server_side_min = m_connect->getServerMessage()->m_server_side_variable_range.min( tag_o );
         m_parameter.m_transfer_function[i].m_opacity_server_side_max = m_connect->getServerMessage()->m_server_side_variable_range.max( tag_o );
         const auto* opacity_histogram = m_connect->getReceivedMessage()->findOpacityFrequencyTable( m_parameter.m_transfer_function[i].m_opacity_function_name );
@@ -705,6 +783,27 @@ void TransferFunctionEditor::updateRangeView()
             ui->opacityServerSideMinLineEdit->blockSignals( false );
             ui->opacityServerSideMaxLineEdit->blockSignals( false );
             ui->opacityMapBar->blockSignals( false );
+        }
+
+        bool isParticleGenerationNeeded = false;
+        for( int i = 0; i < m_parameter.m_number_of_transfer_functions; i++ )
+        {
+            if( m_parameter.m_transfer_function[i].m_color_selected_range == Functions::ServerSideRange )
+            {
+                m_connect->getClientMessage()->m_transfer_function[i].m_color_variable_min = m_parameter.m_transfer_function[i].m_color_server_side_min;
+                m_connect->getClientMessage()->m_transfer_function[i].m_color_variable_max = m_parameter.m_transfer_function[i].m_color_server_side_max;
+                isParticleGenerationNeeded = true;
+            }
+            if( m_parameter.m_transfer_function[i].m_opacity_selected_range == Functions::ServerSideRange )
+            {
+                m_connect->getClientMessage()->m_transfer_function[i].m_opacity_variable_min = m_parameter.m_transfer_function[i].m_opacity_server_side_min;
+                m_connect->getClientMessage()->m_transfer_function[i].m_opacity_variable_max = m_parameter.m_transfer_function[i].m_opacity_server_side_max;
+                isParticleGenerationNeeded = true;
+            }
+        }
+        if( isParticleGenerationNeeded )
+        {
+            m_merge->setIsParticleGenerationNeeded( true );
         }
     }, Qt::QueuedConnection);
 }

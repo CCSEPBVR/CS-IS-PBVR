@@ -116,7 +116,7 @@ void Connect::connectServer()
         }
     }
 
-    if( m_client_message.m_import_flag == false )
+    // if( m_client_message.m_import_flag == false )
     {
         m_transfer_function_editor->importTransferFunctionFromServer();
     }
