@@ -515,7 +515,6 @@ int main( int argc, char** argv )
                     }
                 }
 
-
                 servMes.m_min_value = fil.total_minValue;
                 servMes.m_max_value = fil.total_maxValue;
                 servMes.m_number_nodes = fil.total_numNodes;
