@@ -117,9 +117,8 @@ void Connect::connectServer()
         }
     }
 
-    // if( m_client_message.m_import_flag == false )
     {
-        m_transfer_function_editor->importTransferFunctionFromServer( ui->inSituRBtn->isChecked() );
+        m_transfer_function_editor->importTransferFunctionFromServer();
     }
 
     m_filter_infomation->updateFilterInfomation( ui->volumeDataFilePathLEdit->text(), m_server_message );
