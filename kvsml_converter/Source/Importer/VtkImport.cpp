@@ -40,6 +40,7 @@
 #include <vtkTypedArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkPolyhedron.h>
+#include <vtkDataSetTriangleFilter.h>
 
 namespace
 {
@@ -249,33 +250,14 @@ kvs::UnstructuredVolumeObject::CellType GetKvsCellType( int type )
 vtkSmartPointer<vtkUnstructuredGrid> Triangulate( vtkSmartPointer<vtkUnstructuredGrid> data )
 {
         vtkSmartPointer<vtkUnstructuredGrid> unstructuredGrid = data;
-        vtkSmartPointer<vtkPolyhedron> polyhedron = vtkSmartPointer<vtkPolyhedron>::New();
         vtkSmartPointer<vtkUnstructuredGrid> ucd = vtkSmartPointer<vtkUnstructuredGrid>::New();
-        ucd -> SetPoints( unstructuredGrid -> GetPoints()); 
-        ucd -> GetPointData() -> DeepCopy(unstructuredGrid -> GetPointData());   
 
-        for (vtkIdType i =0 ; i< unstructuredGrid -> GetNumberOfCells (); i++ )
-        {
-            polyhedron -> DeepCopy(unstructuredGrid -> GetCell(i)); 
+        vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter =
+            vtkSmartPointer<vtkDataSetTriangleFilter>::New();
+        triangleFilter->SetInputData(unstructuredGrid);
+        triangleFilter->Update();
 
-            vtkSmartPointer<vtkIdList> ptIds = vtkSmartPointer<vtkIdList>::New();
-            vtkSmartPointer<vtkPoints> pts = vtkSmartPointer<vtkPoints>::New();
-
-            polyhedron -> Triangulate(0, ptIds, pts); 
-
-            int ncell = ptIds->GetNumberOfIds()/4; 
-
-            vtkSmartPointer<vtkCellArray> carray = vtkSmartPointer<vtkCellArray>::New();
-            for (int i = 0; i<ncell ; i++)
-            {    
-                vtkSmartPointer<vtkIdList> cid = vtkSmartPointer<vtkIdList>::New();
-                for (int k = 0; k< 4; k++)
-                {
-                    cid->InsertNextId(ptIds->GetId(i*4+k));
-                }
-                ucd -> InsertNextCell(VTK_TETRA, cid); 
-            }
-        }
+        ucd = triangleFilter-> GetOutput();
         return  ucd;
 }
 
