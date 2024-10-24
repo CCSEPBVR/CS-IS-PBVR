@@ -891,9 +891,6 @@ void TransferFunctionEditor::updateRangeView()
         switch ( m_parameter.m_transfer_function[i].m_color_confirmed_select_range ) //confirmd
         {
         case TransferFunctions::UserDefinedRange:
-            // m_connect->getClientMessage()->m_transfer_function[i].m_color_variable_min = m_parameter.m_transfer_function[i].m_color_user_defined_min;
-            // m_connect->getClientMessage()->m_transfer_function[i].m_color_variable_max = m_parameter.m_transfer_function[i].m_color_user_defined_max;
-            // isParticleGenerationNeeded = true;
             break;
         case TransferFunctions::ServerSideRange:
             m_connect->getClientMessage()->m_transfer_function[i].m_color_variable_min = m_parameter.m_transfer_function[i].m_color_server_side_min;
@@ -907,9 +904,6 @@ void TransferFunctionEditor::updateRangeView()
         switch ( m_parameter.m_transfer_function[i].m_opacity_confirmed_select_range ) //confirmd
         {
         case TransferFunctions::UserDefinedRange:
-            // m_connect->getClientMessage()->m_transfer_function[i].m_opacity_variable_min = m_parameter.m_transfer_function[i].m_opacity_user_defined_min;
-            // m_connect->getClientMessage()->m_transfer_function[i].m_opacity_variable_max = m_parameter.m_transfer_function[i].m_opacity_user_defined_max;
-            // isParticleGenerationNeeded = true;
             break;
         case TransferFunctions::ServerSideRange:
             m_connect->getClientMessage()->m_transfer_function[i].m_opacity_variable_min = m_parameter.m_transfer_function[i].m_opacity_server_side_min;
