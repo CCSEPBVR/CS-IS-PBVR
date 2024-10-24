@@ -22,8 +22,8 @@ public:
 
     std::string m_color_function_name;
     std::string m_color_variable;
-    SelectedRange m_color_selected_range;
-    SelectedRange m_before_color_selected_range;
+    SelectedRange m_color_confirmed_select_range;
+    SelectedRange m_color_stored_select_range;
     float m_color_user_defined_min;
     float m_color_user_defined_max;
     float m_color_server_side_min;
@@ -32,8 +32,8 @@ public:
 
     std::string m_opacity_function_name;
     std::string m_opacity_variable;
-    SelectedRange m_opacity_selected_range;
-    SelectedRange m_before_opacity_selected_range;
+    SelectedRange m_opacity_confirmed_select_range;
+    SelectedRange m_opacity_stored_select_range;
     float m_opacity_user_defined_min;
     float m_opacity_user_defined_max;
     float m_opacity_server_side_min;
@@ -104,7 +104,7 @@ public:
 
         transferFunction.m_color_function_name = colorName;
         transferFunction.m_color_variable = variable;
-        transferFunction.m_color_selected_range = TransferFunctions::UserDefinedRange;
+        transferFunction.m_color_stored_select_range = TransferFunctions::UserDefinedRange;
         transferFunction.m_color_user_defined_min = 0.0;
         transferFunction.m_color_user_defined_max = 1.0;
         transferFunction.m_color_server_side_min = std::numeric_limits<float>::quiet_NaN(); //Nan 追加された段階でサーバからの値を取得できないため。
@@ -112,7 +112,7 @@ public:
 
         transferFunction.m_opacity_function_name = opacityName;
         transferFunction.m_opacity_variable = variable;
-        transferFunction.m_opacity_selected_range = TransferFunctions::UserDefinedRange;
+        transferFunction.m_opacity_stored_select_range = TransferFunctions::UserDefinedRange;
         transferFunction.m_opacity_user_defined_min = 0.0;
         transferFunction.m_opacity_user_defined_max = 1.0;
         transferFunction.m_opacity_server_side_min = std::numeric_limits<float>::quiet_NaN(); //Nan 追加された段階でサーバからの値を取得できないため。
