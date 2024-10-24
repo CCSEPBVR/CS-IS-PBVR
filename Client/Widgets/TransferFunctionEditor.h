@@ -36,8 +36,6 @@ private:
     MergePanel* m_merge;
     Connect* m_connect;
 
-    // FunctionListEditor m_color_function_list_editor;
-    // FunctionListEditor m_opacity_function_list_editor;
     VariableEditor m_variable_editor;
     ColorMapEditor m_color_map_editor;
     OpacityMapEditor m_opacity_map_editor;
