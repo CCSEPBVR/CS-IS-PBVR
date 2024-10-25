@@ -560,6 +560,12 @@ ColorMapBarSelector::~ColorMapBarSelector()
 
 void ColorMapBarSelector::updateFunctionLists()
 {
+    bool zero = false;
+    if( m_color_function_combo_box->count() == 0 )
+    {
+        zero = true;
+    }
+
     QString colorCurrentText = m_color_function_combo_box->currentText();
     QStringList colorItemList;
 
@@ -579,6 +585,10 @@ void ColorMapBarSelector::updateFunctionLists()
     if( colorIndex != -1 )
     {
         m_color_function_combo_box->setCurrentIndex( colorIndex );
+    }
+    else if( zero )
+    {
+        m_color_function_combo_box->setCurrentIndex( 0 );
     }
     else
     {
