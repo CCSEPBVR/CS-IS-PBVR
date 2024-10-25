@@ -782,6 +782,8 @@ void TransferFunctionEditor::apply()
     }
     m_merge->setIsParticleGenerationNeeded( true );
     m_color_map_bar_selector->updateFunctionLists();
+    onColorFunctionChanged( ui->colorFunctionComboBox->currentIndex() );
+    onOpacityFunctionChanged( ui->opacityFunctionComboBox->currentIndex() );
 }
 
 void TransferFunctionEditor::updateRangeView()
