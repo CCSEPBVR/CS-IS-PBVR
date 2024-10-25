@@ -4,11 +4,12 @@
 
 #include <QFileDialog>
 
-TransferFunctionEditor::TransferFunctionEditor(QWidget *parent, MergePanel* merge, Connect* connect_panel)
+TransferFunctionEditor::TransferFunctionEditor(QWidget *parent, MergePanel* merge, Connect* connect_panel, ColorMapBarSelector* color_map_bar_selector)
     : QDialog(parent),
     ui(new Ui::TransferFunctionEditor),
     m_merge( merge ),
-    m_connect( connect_panel )
+    m_connect( connect_panel ),
+    m_color_map_bar_selector( color_map_bar_selector )
 {
     ui->setupUi(this);
 

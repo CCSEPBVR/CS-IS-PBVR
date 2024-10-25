@@ -2,6 +2,7 @@
 #define TRANSFERFUNCTIONEDITOR_H
 
 #include <QDialog>
+#include "Widgets/ToolBars.h"
 #include "Widgets/TransferFunctionParameter.h"
 #include "Widgets/VariableEditor.h"
 #include "Widgets/ColorMapEditor.h"
@@ -19,7 +20,7 @@ class TransferFunctionEditor : public QDialog
     Q_OBJECT
 
 public:
-    explicit TransferFunctionEditor(QWidget *parent = nullptr, MergePanel* merge = nullptr, Connect* connect_panel = nullptr);
+    explicit TransferFunctionEditor(QWidget *parent = nullptr, MergePanel* merge = nullptr, Connect* connect_panel = nullptr, ColorMapBarSelector* color_map_bar_selector = nullptr);
     ~TransferFunctionEditor();
 
     void exportTransferFunctionFile( const std::string& transferFunctionFile, const bool append );
@@ -27,12 +28,14 @@ public:
     void importTransferFunctionFromServer();
     void apply();
     void updateRangeView();
+    TransferFunctionParameter& getTransferFunctionParameter() { return m_parameter; }
 
 private:
     Ui::TransferFunctionEditor *ui;
     TransferFunctionParameter m_parameter;
     MergePanel* m_merge;
     Connect* m_connect;
+    ColorMapBarSelector* m_color_map_bar_selector;
 
     VariableEditor m_variable_editor;
     ColorMapEditor m_color_map_editor;
