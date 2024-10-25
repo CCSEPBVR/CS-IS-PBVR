@@ -613,17 +613,62 @@ inline VariableRange Calculate_minmax( const Argument& param,
             {
                 volume = CreateVolumeData( param, fi, steps, xvl );
                 int nnodes = volume->nnodes();
-                for (int n =0; n< nvariable; n++) 
+
+                //                for (int n =0; n< nvariable; n++) 
+                //                {
+                //                    tmp_min = volume->values().at<float>(0+n*nnodes); 
+                //                    tmp_max = volume->values().at<float>(0+n*nnodes); 
+                //                    for (int i = 1; i< nnodes; i++)
+                //                    {
+                //                        tmp_min = tmp_min < volume->values().at<float>(i+n*nnodes) ? tmp_min : volume->values().at<float>(i+n*nnodes) ; 
+                //                        tmp_max = tmp_max > volume->values().at<float>(i+n*nnodes) ? tmp_max : volume->values().at<float>(i+n*nnodes) ; 
+                //                    }
+                //                    min_vec[n]=min_vec[n] < tmp_min ? min_vec[n] : tmp_min;
+                //                    max_vec[n]=max_vec[n] > tmp_max ? max_vec[n] : tmp_max;
+                //                }
+                //                delete volume;
+
+
+#pragma omp parallel
                 {
-                    tmp_min = volume->values().at<float>(0+n*nnodes); 
-                    tmp_max = volume->values().at<float>(0+n*nnodes); 
-                    for (int i = 1; i< nnodes; i++)
+
+#if _OPENMP
+                    int nthreads = omp_get_num_threads();
+                    int thid     = omp_get_thread_num();
+#else
+                    int nthreads = 1;
+                    int thid     = 0;
+#endif
+
+                    //                    tmp_min = volume->values().at<float>(0+n*nnodes); 
+                    //                    tmp_max = volume->values().at<float>(0+n*nnodes); 
+                    kvs::ValueArray<float> th_min( nvariable );//ｿｿｿｿｿｿｿｿｿｿｿ
+                    kvs::ValueArray<float> th_max( nvariable );
+
+                    for ( int i = 0; i < nvariable; i++ ) //ｿｿｿ
                     {
-                        tmp_min = tmp_min < volume->values().at<float>(i+n*nnodes) ? tmp_min : volume->values().at<float>(i+n*nnodes) ; 
-                        tmp_max = tmp_max > volume->values().at<float>(i+n*nnodes) ? tmp_max : volume->values().at<float>(i+n*nnodes) ; 
+                        th_min[ i ] =  FLT_MAX;
+                        th_max[ i ] = -FLT_MAX;
                     }
-                    min_vec[n]=min_vec[n] < tmp_min ? min_vec[n] : tmp_min;
-                    max_vec[n]=max_vec[n] > tmp_max ? max_vec[n] : tmp_max;
+
+#pragma omp for schedule( dynamic )
+                    for (int i = 0; i< nnodes; i++)
+                    {
+                        for (int n =0; n< nvariable; n++) 
+                        {
+                            th_min[n] = th_min[n] < volume->values().at<float>(i+n*nnodes) ? th_min[n] : volume->values().at<float>(i+n*nnodes) ; 
+                            th_max[n] = th_max[n] > volume->values().at<float>(i+n*nnodes) ? th_max[n] : volume->values().at<float>(i+n*nnodes) ; 
+                        }
+                    }
+#pragma omp critical
+        {
+            for( int n = 0; n < nvariable; n++ )
+            {
+                min_vec[n]=min_vec[n] < th_min[n] ? min_vec[n] : th_min[n];
+                max_vec[n]=max_vec[n] > th_max[n] ? max_vec[n] : th_max[n];
+            }
+        }
+
                 }
                 delete volume;
             }
@@ -691,27 +736,63 @@ inline VariableRange Calculate_minmax( const Argument& param,
            volume = CreateVolumeData( param, fi, steps, xvl );
            int nnodes = volume->nnodes();
 
-           for (int n =0; n< nvariable; n++) 
+//           for (int n =0; n< nvariable; n++) 
+//           {
+//               for (int i = 0; i< nnodes; i++)
+//               {
+//                   float h = ( volume->values().at<float>(i+n*nnodes) - min_vec[n])/( max_vec[n] - min_vec[n] )*nbins;
+//                   int H = (int)h;
+//                   if( 0 <= H && H <= nbins )
+//                   {
+//                       if( H == nbins ) H--;
+//                       histogram[ H + nbins*n]++;
+//                   }
+//               }
+//           }
+#pragma omp parallel
            {
+
+#if _OPENMP
+               int nthreads = omp_get_num_threads();
+               int thid     = omp_get_thread_num();
+#else
+               int nthreads = 1;
+               int thid     = 0;
+#endif
+               kvs::ValueArray<int> th_histogram( nvariable * nbins );// opacity
+               th_histogram.fill(0x00);
+
+#pragma omp for schedule( dynamic )
                for (int i = 0; i< nnodes; i++)
                {
-                   float h = ( volume->values().at<float>(i+n*nnodes) - min_vec[n])/( max_vec[n] - min_vec[n] )*nbins;
-                   int H = (int)h;
-                   if( 0 <= H && H <= nbins )
+                   for (int n =0; n< nvariable; n++) 
                    {
-                       if( H == nbins ) H--;
-                       histogram[ H + nbins*n]++;
+                       float h = ( volume->values().at<float>(i+n*nnodes) - min_vec[n])/( max_vec[n] - min_vec[n] )*nbins;
+                       int H = (int)h;
+                       if( 0 <= H && H <= nbins )
+                       {
+                           if( H == nbins ) H--;
+                           th_histogram[ H + nbins*n]++;
+                       }
                    }
                }
+#pragma omp critical
+               {
+                   for( int n = 0; n < nvariable * nbins; n++ )
+                   {
+                       histogram[n] += th_histogram[n];
+                   }
+               }
+
            }
+
            delete volume;
        }
    }
 
 #ifndef CPU_VER
     PBVR_TIMER_STA( 19 );
-    MPI_Allreduce( MPI_IN_PLACE,  histogram.data(), bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-    //MPI_Allreduce( MPI_IN_PLACE, tmp_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
+    MPI_Allreduce( MPI_IN_PLACE,  histogram, ins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
     PBVR_TIMER_END( 19 );
 #endif
 
