@@ -540,18 +540,18 @@ ColorMapBarSelector::ColorMapBarSelector( QWidget *parent, PBVRGUI *pbvr_gui, Co
     m_transfer_function_editor( transfer_function_editor ),
     m_connect( Connect )
 {
-    m_color_map_bar_selector_label = new QLabel( "Color Function : ", this );
+    m_color_function_label = new QLabel( "Color Function : ", this );
     QWidgetAction *colorMapBarSelectorLableAction = new QWidgetAction( this );
-    colorMapBarSelectorLableAction->setDefaultWidget( m_color_map_bar_selector_label );
+    colorMapBarSelectorLableAction->setDefaultWidget( m_color_function_label );
     this->addAction( colorMapBarSelectorLableAction );
 
-    m_color_map_bar_selector_combo_box = new QComboBox( this );
-    m_color_map_bar_selector_combo_box->setFixedWidth( 100 );
+    m_color_function_combo_box = new QComboBox( this );
+    m_color_function_combo_box->setFixedWidth( 100 );
     QWidgetAction *colorMapBarSelectorComboBox = new QWidgetAction( this );
-    colorMapBarSelectorComboBox->setDefaultWidget( m_color_map_bar_selector_combo_box );
+    colorMapBarSelectorComboBox->setDefaultWidget( m_color_function_combo_box );
     this->addAction( colorMapBarSelectorComboBox );
 
-    connect( m_color_map_bar_selector_combo_box, &QComboBox::currentIndexChanged, this, &ColorMapBarSelector::onColorFunctionChanged );
+    connect( m_color_function_combo_box, &QComboBox::currentIndexChanged, this, &ColorMapBarSelector::onColorFunctionChanged );
 }
 
 ColorMapBarSelector::~ColorMapBarSelector()
@@ -560,7 +560,7 @@ ColorMapBarSelector::~ColorMapBarSelector()
 
 void ColorMapBarSelector::updateFunctionLists()
 {
-    QString colorCurrentText = m_color_map_bar_selector_combo_box->currentText();
+    QString colorCurrentText = m_color_function_combo_box->currentText();
     QStringList colorItemList;
 
     const TransferFunctionParameter transferFunctionParameter = m_transfer_function_editor->getTransferFunctionParameter();
@@ -569,39 +569,39 @@ void ColorMapBarSelector::updateFunctionLists()
     {
         colorItemList.append( QString("C%1").arg(i) );
     }
-    m_color_map_bar_selector_combo_box->blockSignals( true );
-    m_color_map_bar_selector_combo_box->clear();
-    m_color_map_bar_selector_combo_box->blockSignals( false );
-    m_color_map_bar_selector_combo_box->addItems( colorItemList );
+    m_color_function_combo_box->blockSignals( true );
+    m_color_function_combo_box->clear();
+    m_color_function_combo_box->blockSignals( false );
+    m_color_function_combo_box->addItems( colorItemList );
 
     // 以前の選択項目を再度選択
-    int colorIndex = m_color_map_bar_selector_combo_box->findText( colorCurrentText );
+    int colorIndex = m_color_function_combo_box->findText( colorCurrentText );
     if( colorIndex != -1 )
     {
-        m_color_map_bar_selector_combo_box->setCurrentIndex( colorIndex );
+        m_color_function_combo_box->setCurrentIndex( colorIndex );
     }
     else
     {
         // 見つからなかった場合は最後の項目を選択
-        m_color_map_bar_selector_combo_box->setCurrentIndex( m_color_map_bar_selector_combo_box->count() -1 );
+        m_color_function_combo_box->setCurrentIndex( m_color_function_combo_box->count() -1 );
     }
 }
 
 void ColorMapBarSelector::updateRangeView()
 {
-    QString colorCurrentText = m_color_map_bar_selector_combo_box->currentText();
+    QString colorCurrentText = m_color_function_combo_box->currentText();
 
     // 以前の選択項目を再度選択
-    int colorIndex = m_color_map_bar_selector_combo_box->findText( colorCurrentText );
+    int colorIndex = m_color_function_combo_box->findText( colorCurrentText );
     if( colorIndex != -1 )
     {
-        m_color_map_bar_selector_combo_box->setCurrentIndex( colorIndex );
+        m_color_function_combo_box->setCurrentIndex( colorIndex );
         onColorFunctionChanged( colorIndex );
     }
     else
     {
         // 見つからなかった場合は最後の項目を選択
-        m_color_map_bar_selector_combo_box->setCurrentIndex( m_color_map_bar_selector_combo_box->count() -1 );
+        m_color_function_combo_box->setCurrentIndex( m_color_function_combo_box->count() -1 );
     }
 }
 

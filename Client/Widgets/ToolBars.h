@@ -139,8 +139,8 @@ private:
     PBVRGUI *m_pbvr_gui;
     Connect* m_connect;
     TransferFunctionEditor* m_transfer_function_editor;
-    QLabel* m_color_map_bar_selector_label;
-    QComboBox* m_color_map_bar_selector_combo_box;
+    QLabel* m_color_function_label;
+    QComboBox* m_color_function_combo_box;
 };
 
 #endif // TOOLBARS_H
