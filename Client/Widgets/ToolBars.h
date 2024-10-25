@@ -128,18 +128,13 @@ class ColorMapBarSelector :public QToolBar
 public:
     explicit ColorMapBarSelector( QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr, TransferFunctionEditor* transfer_function_editor = nullptr );
     ~ColorMapBarSelector();
-    void setExtendedTransferFunctionMessage( ExtendedTransferFunctionMessage* extended_transfer_function_message ){ m_extended_transfer_function_message = extended_transfer_function_message; }    
-    ExtendedTransferFunctionMessage* getExtendedTransferFunctionMessage() { return m_extended_transfer_function_message; }
-    void populateColorFunctionLists(int n);
     void onColorFunctionChanged( int index );
-    void updateColorMap();
 
 private:
     PBVRGUI *m_pbvr_gui;
     TransferFunctionEditor* m_transfer_function_editor;
     QLabel* m_color_map_bar_selector_label;
     QComboBox* m_color_map_bar_selector_combo_box;
-    ExtendedTransferFunctionMessage* m_extended_transfer_function_message;
 };
 
 #endif // TOOLBARS_H

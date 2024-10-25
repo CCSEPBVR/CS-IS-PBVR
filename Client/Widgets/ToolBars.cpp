@@ -557,37 +557,14 @@ ColorMapBarSelector::~ColorMapBarSelector()
 {
 }
 
-void ColorMapBarSelector::populateColorFunctionLists(int n)
-{
-    QStringList itemList;
-    for (int i=1;i <=n;i++ )
-    {
-        itemList.append(QString("C%1").arg(i));
-    }
-    m_color_map_bar_selector_combo_box->clear();
-    m_color_map_bar_selector_combo_box->addItems( itemList );
-}
-
 void ColorMapBarSelector::onColorFunctionChanged( int index )
 {
-    const NamedTransferFunctionParameter *transfer_function_color = m_extended_transfer_function_message->getColorTransferFunction( index + 1 );
-    if( transfer_function_color != NULL )
-    {
-        kvs::ColorMap color_map = transfer_function_color->colorMap();
-        m_pbvr_gui->colorMapBar()->setColorMap( color_map );
-        m_pbvr_gui->colorMapBar()->setRange( m_extended_transfer_function_message->getColorTransferFunction(index + 1)->m_color_variable_min, m_extended_transfer_function_message->getColorTransferFunction(index + 1)->m_color_variable_max );
-        m_pbvr_gui->screen()->update();
-    }
-}
-
-void ColorMapBarSelector::updateColorMap()
-{
-    const NamedTransferFunctionParameter *transfer_function_color = m_extended_transfer_function_message->getColorTransferFunction( m_color_map_bar_selector_combo_box->currentIndex() + 1  );
-    if( transfer_function_color != NULL )
-    {
-        kvs::ColorMap color_map = transfer_function_color->colorMap();
-        m_pbvr_gui->colorMapBar()->setColorMap( color_map );
-        m_pbvr_gui->colorMapBar()->setRange( m_extended_transfer_function_message->getColorTransferFunction( m_color_map_bar_selector_combo_box->currentIndex() + 1)->m_color_variable_min, m_extended_transfer_function_message->getColorTransferFunction( m_color_map_bar_selector_combo_box->currentIndex() + 1)->m_color_variable_max );
-        m_pbvr_gui->screen()->update();
-    }
+    // const NamedTransferFunctionParameter *transfer_function_color = m_extended_transfer_function_message->getColorTransferFunction( index + 1 );
+    // if( transfer_function_color != NULL )
+    // {
+    //     kvs::ColorMap color_map = transfer_function_color->colorMap();
+    //     m_pbvr_gui->colorMapBar()->setColorMap( color_map );
+    //     m_pbvr_gui->colorMapBar()->setRange( m_extended_transfer_function_message->getColorTransferFunction(index + 1)->m_color_variable_min, m_extended_transfer_function_message->getColorTransferFunction(index + 1)->m_color_variable_max );
+    //     m_pbvr_gui->screen()->update();
+    // }
 }
