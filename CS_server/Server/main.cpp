@@ -614,21 +614,6 @@ inline VariableRange Calculate_minmax( const Argument& param,
                 volume = CreateVolumeData( param, fi, steps, xvl );
                 int nnodes = volume->nnodes();
 
-                //                for (int n =0; n< nvariable; n++) 
-                //                {
-                //                    tmp_min = volume->values().at<float>(0+n*nnodes); 
-                //                    tmp_max = volume->values().at<float>(0+n*nnodes); 
-                //                    for (int i = 1; i< nnodes; i++)
-                //                    {
-                //                        tmp_min = tmp_min < volume->values().at<float>(i+n*nnodes) ? tmp_min : volume->values().at<float>(i+n*nnodes) ; 
-                //                        tmp_max = tmp_max > volume->values().at<float>(i+n*nnodes) ? tmp_max : volume->values().at<float>(i+n*nnodes) ; 
-                //                    }
-                //                    min_vec[n]=min_vec[n] < tmp_min ? min_vec[n] : tmp_min;
-                //                    max_vec[n]=max_vec[n] > tmp_max ? max_vec[n] : tmp_max;
-                //                }
-                //                delete volume;
-
-
 #pragma omp parallel
                 {
 
@@ -640,8 +625,6 @@ inline VariableRange Calculate_minmax( const Argument& param,
                     int thid     = 0;
 #endif
 
-                    //                    tmp_min = volume->values().at<float>(0+n*nnodes); 
-                    //                    tmp_max = volume->values().at<float>(0+n*nnodes); 
                     kvs::ValueArray<float> th_min( nvariable );//ｿｿｿｿｿｿｿｿｿｿｿ
                     kvs::ValueArray<float> th_max( nvariable );
 
@@ -736,19 +719,6 @@ inline VariableRange Calculate_minmax( const Argument& param,
            volume = CreateVolumeData( param, fi, steps, xvl );
            int nnodes = volume->nnodes();
 
-//           for (int n =0; n< nvariable; n++) 
-//           {
-//               for (int i = 0; i< nnodes; i++)
-//               {
-//                   float h = ( volume->values().at<float>(i+n*nnodes) - min_vec[n])/( max_vec[n] - min_vec[n] )*nbins;
-//                   int H = (int)h;
-//                   if( 0 <= H && H <= nbins )
-//                   {
-//                       if( H == nbins ) H--;
-//                       histogram[ H + nbins*n]++;
-//                   }
-//               }
-//           }
 #pragma omp parallel
            {
 
