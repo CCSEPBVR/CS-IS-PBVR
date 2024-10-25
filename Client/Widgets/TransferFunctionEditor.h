@@ -3,7 +3,6 @@
 
 #include <QDialog>
 #include "Widgets/TransferFunctionParameter.h"
-#include "Common/VariableRange.h"
 #include "Widgets/VariableEditor.h"
 #include "Widgets/ColorMapEditor.h"
 #include "Widgets/OpacityMapEditor.h"
