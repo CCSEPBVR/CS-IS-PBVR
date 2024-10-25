@@ -781,12 +781,15 @@ void TransferFunctionEditor::apply()
         m_connect->getClientMessage()->m_volume_equation.push_back( volumeEquationOpacity );
     }
     m_merge->setIsParticleGenerationNeeded( true );
+    m_color_map_bar_selector->updateFunctionLists();
 }
 
 void TransferFunctionEditor::updateRangeView()
 {
     for( size_t i = 0; i < m_parameter.m_transfer_function.size(); i++ )
     {
+        m_parameter.m_transfer_function[i].m_color_generated_server_side_min = m_parameter.m_transfer_function[i].m_color_server_side_min;
+        m_parameter.m_transfer_function[i].m_color_generated_server_side_max = m_parameter.m_transfer_function[i].m_color_server_side_max;
         char tag_c[16] = {0x00};
         sprintf(tag_c, "t%d_var_c", i + 1);
         m_parameter.m_transfer_function[i].m_color_server_side_min = m_connect->getServerMessage()->m_server_side_variable_range.min( tag_c );
@@ -795,6 +798,8 @@ void TransferFunctionEditor::updateRangeView()
         if (color_histogram != nullptr) {
             m_parameter.m_transfer_function[i].m_color_histogram = *color_histogram;
         }
+        m_parameter.m_transfer_function[i].m_opacity_generated_server_side_min = m_parameter.m_transfer_function[i].m_opacity_server_side_min;
+        m_parameter.m_transfer_function[i].m_opacity_generated_server_side_max = m_parameter.m_transfer_function[i].m_opacity_server_side_max;
         char tag_o[16] = {0x00};
         sprintf(tag_o, "t%d_var_o", i + 1);
         m_parameter.m_transfer_function[i].m_opacity_server_side_min = m_connect->getServerMessage()->m_server_side_variable_range.min( tag_o );
@@ -917,6 +922,7 @@ void TransferFunctionEditor::updateRangeView()
     }
     if( isParticleGenerationNeeded )
     {
-        m_merge->setIsParticleGenerationNeeded( true );
+        m_merge->setIsParticleGenerationNeeded( true );        
     }
+    m_color_map_bar_selector->updateRangeView();
 }

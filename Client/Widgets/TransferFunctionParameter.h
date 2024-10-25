@@ -28,6 +28,8 @@ public:
     float m_color_user_defined_max;
     float m_color_server_side_min;
     float m_color_server_side_max;
+    float m_color_generated_server_side_min = 0; //粒子生成に使用されたレンジを保持する。
+    float m_color_generated_server_side_max = 1; //粒子生成に使用されたレンジを保持する。
     kvs::visclient::FrequencyTable m_color_histogram;
 
     std::string m_opacity_function_name;
@@ -38,6 +40,8 @@ public:
     float m_opacity_user_defined_max;
     float m_opacity_server_side_min;
     float m_opacity_server_side_max;
+    float m_opacity_generated_server_side_min = 0; //粒子生成に使用されたレンジを保持する。
+    float m_opacity_generated_server_side_max = 1; //粒子生成に使用されたレンジを保持する。
     kvs::visclient::FrequencyTable m_opacity_histogram;
 };
 
