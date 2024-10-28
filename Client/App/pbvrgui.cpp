@@ -35,7 +35,8 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_render_options( this, &m_merge, &m_connect ),
     m_data_properties( this ),
     m_coordinates( this, &m_merge, &m_connect ),
-    m_transfer_function_editor( this, &m_merge, &m_connect, &m_color_map_bar_selector )
+    m_transfer_function_editor( this, &m_merge, &m_connect, &m_color_map_bar_selector ),
+    m_plot_over_line( this, &m_connect )
 {
     ui->setupUi(this);
     setWindowTitle( "pbvr_client v3.1.0" );
@@ -143,9 +144,9 @@ void PBVRGUI::initializePanels()
     m_render_options.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::RightDockWidgetArea, &m_render_options );
 
-    //コーディネートパネルの初期化
-
-    //伝達関数パネルの初期化
+    m_plot_over_line.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    addDockWidget( Qt::LeftDockWidgetArea, &m_plot_over_line );
+    m_plot_over_line.show();
 }
 
 void PBVRGUI::keyPressEvent(QKeyEvent *event)

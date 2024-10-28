@@ -39,6 +39,7 @@ HEADERS += \
     MergePanel.h \
     OpacityMapEditor.h \
     ParameterFile.h \
+    PlotOverLine.h \
     Preference.h \
     ReceivedMessage.h \
     RenderOptions.h \
@@ -71,6 +72,7 @@ SOURCES += \
     MergePanel.cpp \
     OpacityMapEditor.cpp \
     ParameterFile.cpp \
+    PlotOverLine.cpp \
     Preference.cpp \
     RenderOptions.cpp \
     RepetitionLevelControl.cpp \
@@ -99,6 +101,7 @@ FORMS += \
     DisplayPointSizeControl.ui \
     MergePanel.ui \
     OpacityMapEditor.ui \
+    PlotOverLine.ui \
     Preference.ui \
     RenderOptions.ui \
     RepetitionLevelControl.ui \

@@ -21,6 +21,7 @@
 #include "Widgets/TransferFunctionEditor.h"
 #include "Widgets/Coordinates.h"
 #include "Widgets/ToolBars.h"
+#include "Widgets/PlotOverLine.h"
 
 namespace Ui {
 class PBVRGUI;
@@ -66,6 +67,7 @@ private:
     TimeControllerB m_time_controller_B;
     TotalParticles m_total_particles;
     ColorMapBarSelector m_color_map_bar_selector;
+    PlotOverLine m_plot_over_line;
 
 private:
     void onPreference()      { m_preference.show(); }
