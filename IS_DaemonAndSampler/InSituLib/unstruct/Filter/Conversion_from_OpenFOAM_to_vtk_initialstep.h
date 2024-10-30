@@ -1,8 +1,7 @@
-// シミュレーションコード本体で以下を宣言！！！！！
-//    int time_step = 0;
-//    vtkSmartPointer<vtkUnstructuredGrid> ucd = vtkSmartPointer<vtkUnstructuredGrid>::New();
-//
-//
+
+int time_step = 0;
+vtkSmartPointer<vtkUnstructuredGrid> ucd = vtkSmartPointer<vtkUnstructuredGrid>::New();
+
 // time_step =0 のみ座標情報を入力する！！
 if(time_step == 0)
 {
@@ -111,3 +110,4 @@ cellDataToPointData -> Update();
 vtkPointData* pointData = cellDataToPointData->GetOutput()->GetPointData();
 ucd->GetPointData()->ShallowCopy(pointData);
 
+generate_particles_vtk(time_step, ucd);

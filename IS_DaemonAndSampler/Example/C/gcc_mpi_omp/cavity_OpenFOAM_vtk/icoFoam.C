@@ -48,6 +48,7 @@ Description
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellDataToPointData.h>
+#include <vtkXMLUnstructuredGridWriter.h>
 #include "vector.H"
 #include <chrono>
 #include <thread>
@@ -73,6 +74,7 @@ int main(int argc, char *argv[])
     int mpi_rank;
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
 
+    //デバッグ用条件
 //    for (int i = 0; i< U.size(); i++)
 //    {    
 //         Foam::vector newValue(0.3, 0.0, 0.0);
@@ -80,11 +82,8 @@ int main(int argc, char *argv[])
 //        U[i] = newValue;
 //    }
 
-    // using vtklib 
-    int time_step = 0; 
-    vtkSmartPointer<vtkUnstructuredGrid> ucd = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    #include "Filter/Conversion_from_OpenFOAM_to_vtk.h"   
-    generate_particles_vtk(time_step, ucd);
+    // PBVRの関数を呼び出す初回ステップはこちらのヘッダーを必ず指定する。
+    #include "Filter/Conversion_from_OpenFOAM_to_vtk_initialstep.h"   
     
 #if 1
     while (runTime.loop())
@@ -150,11 +149,7 @@ int main(int argc, char *argv[])
             U.correctBoundaryConditions();
         }
 
-    time_step++; 
-    #include "Filter/Conversion_from_OpenFOAM_to_vtk.h"   
-
-    generate_particles_vtk(time_step, ucd);
-    //std::this_thread::sleep_for(std::chrono::seconds(5));
+    #include "Filter/Conversion_from_OpenFOAM_to_vtk_laterstep.h"   
 
         runTime.write();
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
