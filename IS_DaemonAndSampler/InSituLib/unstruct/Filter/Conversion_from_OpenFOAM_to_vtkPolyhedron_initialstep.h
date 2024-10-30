@@ -10,14 +10,11 @@ forAll(mesh.points(),pid)
 }
 ucd ->SetPoints(vpoint);
 
-Info <<  mesh.cellShapes()[0].info() << endl;
 //cell  
 //#pragma omp parallel  
 for (int cid = 0; cid < mesh.cellShapes().size(); cid ++)
 {
     const  cellShape c = mesh.cellShapes()[cid];
-    for (int j =0 ; j< 8; j++ ) Info << "c = " << c[j]  << endl;
-    int index = c.model().index();
     int npoints = c.nPoints();
     vtkIdType pointIds[npoints]; // = {0, 1, 2, 3, 4, 5, 6, 7};
 
@@ -80,12 +77,13 @@ cellDataToPointData -> Update();
 vtkPointData* pointData = cellDataToPointData->GetOutput()->GetPointData();
 ucd->GetPointData()->ShallowCopy(pointData);
 
-vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter =
-vtkSmartPointer<vtkDataSetTriangleFilter>::New();
-triangleFilter->SetInputData(ucd);
-triangleFilter->Update();
+generate_particles_vtk(time_step, ucd);
+//vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter =
+//vtkSmartPointer<vtkDataSetTriangleFilter>::New();
+//triangleFilter->SetInputData(ucd);
+//triangleFilter->Update();
+//
+//vtkSmartPointer<vtkUnstructuredGrid> ucd_tri = vtkSmartPointer<vtkUnstructuredGrid>::New();
+//ucd_tri = triangleFilter-> GetOutput();
 
-vtkSmartPointer<vtkUnstructuredGrid> ucd_tri = vtkSmartPointer<vtkUnstructuredGrid>::New();
-ucd_tri = triangleFilter-> GetOutput();
-
-generate_particles_vtk(time_step, ucd_tri);
+//generate_particles_vtk(time_step, ucd_tri);

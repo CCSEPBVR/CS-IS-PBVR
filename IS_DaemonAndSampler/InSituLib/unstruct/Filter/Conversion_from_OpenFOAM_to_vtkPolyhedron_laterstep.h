@@ -38,10 +38,11 @@ cellDataToPointData -> Update();
 vtkPointData* pointData = cellDataToPointData->GetOutput()->GetPointData();
 ucd->GetPointData()->ShallowCopy(pointData);
 
-vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter =
-vtkSmartPointer<vtkDataSetTriangleFilter>::New();
-triangleFilter->SetInputData(ucd);
-triangleFilter->Update();
-ucd_tri = triangleFilter-> GetOutput();
- 
-generate_particles_vtk(time_step, ucd_tri);
+generate_particles_vtk(time_step, ucd);
+//vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter =
+//vtkSmartPointer<vtkDataSetTriangleFilter>::New();
+//triangleFilter->SetInputData(ucd);
+//triangleFilter->Update();
+//ucd_tri = triangleFilter-> GetOutput();
+// 
+//generate_particles_vtk(time_step, ucd_tri);
