@@ -1,6 +1,7 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 
+#include <kvs/openxr/Screen>
 #include <kvs/qt/Screen>
 
 namespace kvs
@@ -12,7 +13,8 @@ namespace qt
 namespace jaea
 {
 
-class Screen : public kvs::qt::Screen
+class Screen : public kvs::openxr::Screen //OpenXR
+// class Screen : public kvs::qt::Screen
 {
 public:
     Screen( kvs::qt::Application* application = 0, QWidget* parent = 0 );

@@ -189,7 +189,8 @@ void PBVRGUI::keyPressEvent(QKeyEvent *event)
             m_screen->setControlTarget( kvs::qt::jaea::Screen::ControlTarget::TargetObject );
             break;
         case Qt::Key_Home:
-            m_screen->scene()->reset();
+            //m_screen->scene()->reset();
+            m_screen->reset(); //OpenXR
             m_screen->update();
             break;
 
