@@ -55,15 +55,15 @@ void VariableEditor::setItems()
     {
         if( m_type == TYPE::COLOR )
         {
-            ui->tableWidget->setItem( i, 0, new QTableWidgetItem( QString::fromStdString( m_edit_transfer_function_parameter.m_transfer_function[i].m_color_function_name ) ) );
+            ui->tableWidget->setItem( i, 0, new QTableWidgetItem( QString::fromStdString( m_edit_transfer_function_parameter.m_transfer_functions[i].m_color_function_name ) ) );
             ui->tableWidget->item( i, 0 )->setFlags( ui->tableWidget->item( i, 0 )->flags() & ~Qt::ItemIsEditable );
-            ui->tableWidget->setItem( i, 1, new QTableWidgetItem( QString::fromStdString( m_edit_transfer_function_parameter.m_transfer_function[i].m_color_variable ) ) );
+            ui->tableWidget->setItem( i, 1, new QTableWidgetItem( QString::fromStdString( m_edit_transfer_function_parameter.m_transfer_functions[i].m_color_variable ) ) );
         }
         else if( m_type == TYPE::OPACITY )
         {
-            ui->tableWidget->setItem( i, 0, new QTableWidgetItem( QString::fromStdString( m_edit_transfer_function_parameter.m_transfer_function[i].m_opacity_function_name ) ) );
+            ui->tableWidget->setItem( i, 0, new QTableWidgetItem( QString::fromStdString( m_edit_transfer_function_parameter.m_transfer_functions[i].m_opacity_function_name ) ) );
             ui->tableWidget->item( i, 0 )->setFlags( ui->tableWidget->item( i, 0 )->flags() & ~Qt::ItemIsEditable );
-            ui->tableWidget->setItem( i, 1, new QTableWidgetItem( QString::fromStdString( m_edit_transfer_function_parameter.m_transfer_function[i].m_opacity_variable ) ) );
+            ui->tableWidget->setItem( i, 1, new QTableWidgetItem( QString::fromStdString( m_edit_transfer_function_parameter.m_transfer_functions[i].m_opacity_variable ) ) );
         }
     }
     ui->tableWidget->blockSignals( false );
@@ -73,11 +73,11 @@ void VariableEditor::onCellChanged( int row, int column )
 {
     if( m_type == TYPE::COLOR )
     {
-        m_edit_transfer_function_parameter.m_transfer_function[row].m_color_variable = ui->tableWidget->item( row, column )->text().toStdString();
+        m_edit_transfer_function_parameter.m_transfer_functions[row].m_color_variable = ui->tableWidget->item( row, column )->text().toStdString();
     }
     else if( m_type == TYPE::OPACITY )
     {
-        m_edit_transfer_function_parameter.m_transfer_function[row].m_opacity_variable = ui->tableWidget->item( row, column )->text().toStdString();
+        m_edit_transfer_function_parameter.m_transfer_functions[row].m_opacity_variable = ui->tableWidget->item( row, column )->text().toStdString();
     }
 }
 

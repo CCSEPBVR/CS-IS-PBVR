@@ -571,7 +571,7 @@ void ColorMapBarSelector::updateFunctionLists()
 
     const TransferFunctionParameter transferFunctionParameter = m_transfer_function_editor->getTransferFunctionParameter();
 
-    for( size_t i = 1; i <= transferFunctionParameter.m_transfer_function.size(); i++ )
+    for( size_t i = 1; i <= transferFunctionParameter.m_transfer_functions.size(); i++ )
     {
         colorItemList.append( QString("C%1").arg(i) );
     }
@@ -618,17 +618,17 @@ void ColorMapBarSelector::updateRangeView()
 void ColorMapBarSelector::onColorFunctionChanged( int index )
 {
     const TransferFunctionParameter transferFunctionParameter =  m_transfer_function_editor->getTransferFunctionParameter();
-    const TransferFunctions* func = m_transfer_function_editor->getTransferFunctionParameter().getTransferFunction( index );
+    const algebricTransferFunction* func = m_transfer_function_editor->getTransferFunctionParameter().getTransferFunction( index );
     if( func != nullptr )
     {
         m_pbvr_gui->colorMapBar()->setColorMap( func->colorMap() );
         switch ( func->m_color_confirmed_select_range )
         {
-        case TransferFunctions::UserDefinedRange:
+        case algebricTransferFunction::UserDefinedRange:
             m_pbvr_gui->colorMapBar()->setRange( m_connect->getClientMessage()->m_transfer_function[index].m_color_variable_min, m_connect->getClientMessage()->m_transfer_function[index].m_color_variable_max );
             break;
-        case TransferFunctions::ServerSideRange:
-            m_pbvr_gui->colorMapBar()->setRange( transferFunctionParameter.m_transfer_function[index].m_color_generated_server_side_min, transferFunctionParameter.m_transfer_function[index].m_color_generated_server_side_max );
+        case algebricTransferFunction::ServerSideRange:
+            m_pbvr_gui->colorMapBar()->setRange( transferFunctionParameter.m_transfer_functions[index].m_color_generated_server_side_min, transferFunctionParameter.m_transfer_functions[index].m_color_generated_server_side_max );
             break;
         default:
             break;

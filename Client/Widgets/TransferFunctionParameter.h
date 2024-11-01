@@ -2,7 +2,7 @@
 #define TRANSFERFUNCTIONPARAMETER_H
 #include <kvs/TransferFunction>
 #include "FrequencyTable.h"
-class TransferFunctions : public kvs::TransferFunction
+class algebricTransferFunction : public kvs::TransferFunction
 {
 public:
     enum Selection //おそらく必要ない。
@@ -56,15 +56,15 @@ public:
     std::string m_color_synthesizer;
     std::string m_opacity_synthesizer;
 
-    std::vector<TransferFunctions> m_transfer_function;
+    std::vector<algebricTransferFunction> m_transfer_functions;
 
 public:
-    TransferFunctions* getTransferFunction( const std::string &colorName, const std::string &opacityName )
+    algebricTransferFunction* getTransferFunction( const std::string &colorName, const std::string &opacityName )
     {
-        std::vector<TransferFunctions>::iterator itr;
-        for( itr = this->m_transfer_function.begin(); itr != this->m_transfer_function.end(); itr++ )
+        std::vector<algebricTransferFunction>::iterator itr;
+        for( itr = this->m_transfer_functions.begin(); itr != this->m_transfer_functions.end(); itr++ )
         {
-            TransferFunctions func = (*itr);
+            algebricTransferFunction func = (*itr);
             if( func.m_color_function_name == colorName && func.m_opacity_function_name == opacityName )
             {
                 return &(*itr);
@@ -73,12 +73,12 @@ public:
         return nullptr;
     }
 
-    TransferFunctions* getTransferFunction( const std::string &functionName )
+    algebricTransferFunction* getTransferFunction( const std::string &functionName )
     {
-        std::vector<TransferFunctions>::iterator itr;
-        for( itr = this->m_transfer_function.begin(); itr != this->m_transfer_function.end(); itr++ )
+        std::vector<algebricTransferFunction>::iterator itr;
+        for( itr = this->m_transfer_functions.begin(); itr != this->m_transfer_functions.end(); itr++ )
         {
-            TransferFunctions func = (*itr);
+            algebricTransferFunction func = (*itr);
             if( func.m_color_function_name == functionName || func.m_opacity_function_name == functionName )
             {
                 return &(*itr);
@@ -87,28 +87,28 @@ public:
         return nullptr;
     }
 
-    TransferFunctions* getTransferFunction( const int n )
+    algebricTransferFunction* getTransferFunction( const int n )
     {
-        if( n >= 0 && n < static_cast<int>(this->m_transfer_function.size()) )
+        if( n >= 0 && n < static_cast<int>(this->m_transfer_functions.size()) )
         {
-            return &this->m_transfer_function[n];
+            return &this->m_transfer_functions[n];
         }
         return nullptr;
     }
 
     void addTransferFunction( const std::string &colorName, const std::string &opacityName, const std::string &variable )
     {
-        TransferFunctions *func = getTransferFunction( colorName, opacityName );
+        algebricTransferFunction *func = getTransferFunction( colorName, opacityName );
         if( func != nullptr )
         {
             return;
         }
 
-        TransferFunctions transferFunction;
+        algebricTransferFunction transferFunction;
 
         transferFunction.m_color_function_name = colorName;
         transferFunction.m_color_variable = variable;
-        transferFunction.m_color_stored_select_range = TransferFunctions::UserDefinedRange;
+        transferFunction.m_color_stored_select_range = algebricTransferFunction::UserDefinedRange;
         transferFunction.m_color_user_defined_min = 0.0;
         transferFunction.m_color_user_defined_max = 1.0;
         transferFunction.m_color_server_side_min = std::numeric_limits<float>::quiet_NaN(); //Nan 追加された段階でサーバからの値を取得できないため。
@@ -116,22 +116,22 @@ public:
 
         transferFunction.m_opacity_function_name = opacityName;
         transferFunction.m_opacity_variable = variable;
-        transferFunction.m_opacity_stored_select_range = TransferFunctions::UserDefinedRange;
+        transferFunction.m_opacity_stored_select_range = algebricTransferFunction::UserDefinedRange;
         transferFunction.m_opacity_user_defined_min = 0.0;
         transferFunction.m_opacity_user_defined_max = 1.0;
         transferFunction.m_opacity_server_side_min = std::numeric_limits<float>::quiet_NaN(); //Nan 追加された段階でサーバからの値を取得できないため。
         transferFunction.m_opacity_server_side_max = std::numeric_limits<float>::quiet_NaN(); //Nan 追加された段階でサーバからの値を取得できないため。
-        m_transfer_function.push_back( transferFunction );
+        m_transfer_functions.push_back( transferFunction );
     }
 
     void removeTransferFunction(  const std::string &colorName, const std::string &opacityName )
     {
-        std::vector<TransferFunctions>::iterator itr;
-        for( itr = this->m_transfer_function.begin(); itr != this->m_transfer_function.end(); itr++ )
+        std::vector<algebricTransferFunction>::iterator itr;
+        for( itr = this->m_transfer_functions.begin(); itr != this->m_transfer_functions.end(); itr++ )
         {
             if( itr->m_color_function_name == colorName && itr->m_opacity_function_name == opacityName )
             {
-                this->m_transfer_function.erase( itr );
+                this->m_transfer_functions.erase( itr );
                 break;
             }
         }
@@ -140,7 +140,7 @@ public:
 
     void setColorFunctionVariable( const std::string &colorName, const std::string &variable )
     {
-        TransferFunctions *func = this->getTransferFunction( colorName );
+        algebricTransferFunction *func = this->getTransferFunction( colorName );
         if( func != nullptr )
         {
             func->m_color_function_name = colorName;
@@ -151,7 +151,7 @@ public:
 
     void setOpacityFunctionVariable( const std::string &opacityName, const std::string &variable )
     {
-        TransferFunctions *func = this->getTransferFunction( opacityName );
+        algebricTransferFunction *func = this->getTransferFunction( opacityName );
         if( func != nullptr )
         {
             func->m_opacity_function_name = opacityName;
@@ -163,7 +163,7 @@ public:
     void setColorFunctionRange( const std::string &colorName, float min, float max )
     {
         std::cout << colorName << ":" << min << "," << max << std::endl;
-        TransferFunctions *func = this->getTransferFunction( colorName );
+        algebricTransferFunction *func = this->getTransferFunction( colorName );
         if( func != nullptr )
         {
             func->m_color_user_defined_min = min;
@@ -173,7 +173,7 @@ public:
 
     void setOpacityFunctionRange( const std::string &opacityName, float min, float max )
     {
-        TransferFunctions *func = this->getTransferFunction( opacityName );
+        algebricTransferFunction *func = this->getTransferFunction( opacityName );
         if( func != nullptr )
         {
             func->m_opacity_user_defined_min = min;
