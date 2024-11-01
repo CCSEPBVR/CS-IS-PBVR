@@ -425,7 +425,6 @@ void Preference::applyResolution()
     const int height = ui->heightSBox->value();
     m_pbvr_gui->screen()->setSize( width, height );
     m_pbvr_gui->screen()->setFixedSize( width, height );
-    // m_pbvr_gui->screen()->scene()->resizeFunction( width, height, m_pbvr_gui->screen()->screen()->devicePixelRatio() ); OpenXR
 }
 
 void Preference::applyLabelsSettings()

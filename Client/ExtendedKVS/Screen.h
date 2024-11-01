@@ -1,8 +1,11 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 
-#include <kvs/openxr/Screen>
+#ifdef DESKTOP_SCREEN_MODE
 #include <kvs/qt/Screen>
+#elif OPENXR_SCREEN_MODE
+#include <kvs/openxr/Screen>
+#endif
 
 namespace kvs
 {
@@ -13,8 +16,11 @@ namespace qt
 namespace jaea
 {
 
-class Screen : public kvs::openxr::Screen //OpenXR
-// class Screen : public kvs::qt::Screen
+#ifdef DESKTOP_SCREEN_MODE
+class Screen : public kvs::qt::Screen
+#elif OPENXR_SCREEN_MODE
+class Screen : public kvs::openxr::Screen
+#endif
 {
 public:
     Screen( kvs::qt::Application* application = 0, QWidget* parent = 0 );

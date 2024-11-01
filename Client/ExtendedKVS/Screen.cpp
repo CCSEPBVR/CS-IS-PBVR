@@ -1,8 +1,11 @@
 #include "Screen.h"
 
 kvs::qt::jaea::Screen::Screen( kvs::qt::Application* application, QWidget* parent ):
-    kvs::openxr::Screen( application, parent ) //OpenXR
-//kvs::qt::Screen( application, parent )
+#ifdef DESKTOP_SCREEN_MODE
+    kvs::qt::Screen( application, parent )
+#elif OPENXR_SCREEN_MODE
+    kvs::openxr::Screen( application, parent )
+#endif
 {
     setFocusPolicy( Qt::NoFocus );
 }
