@@ -39,6 +39,7 @@ public:
     kvs::Label* fpsLabel() const { return m_fps_label; }
     kvs::Label* timeStepLabel() const { return m_time_step_label; }
     void initializePanels();
+    const kvs::Xform getInitializedCameraXform() { return m_initialize_camera_xform; }
     ~PBVRGUI();
 
 private:
@@ -66,6 +67,8 @@ private:
     TimeControllerB m_time_controller_B;
     TotalParticles m_total_particles;
     ColorMapBarSelector m_color_map_bar_selector;
+
+    const kvs::Xform m_initialize_camera_xform;
 
 private:
     void onPreference()      { m_preference.show(); }
