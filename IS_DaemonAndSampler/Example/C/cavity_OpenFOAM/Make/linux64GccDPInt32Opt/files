@@ -1,3 +1,0 @@
-SOURCE += icoFoam.C
-
-EXE = bin/icoFoam
