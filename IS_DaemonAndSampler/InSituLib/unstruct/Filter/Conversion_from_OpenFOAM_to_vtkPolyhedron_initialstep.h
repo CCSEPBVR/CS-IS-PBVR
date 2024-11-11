@@ -75,15 +75,18 @@ vtkSmartPointer<vtkCellDataToPointData>::New();
 cellDataToPointData -> SetInputData(ucd);
 cellDataToPointData -> Update();
 vtkPointData* pointData = cellDataToPointData->GetOutput()->GetPointData();
-ucd->GetPointData()->ShallowCopy(pointData);
+//ucd->GetPointData()->ShallowCopy(pointData);
+//generate_particles_vtk(time_step, ucd);
 
-generate_particles_vtk(time_step, ucd);
-//vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter =
-//vtkSmartPointer<vtkDataSetTriangleFilter>::New();
-//triangleFilter->SetInputData(ucd);
-//triangleFilter->Update();
-//
-//vtkSmartPointer<vtkUnstructuredGrid> ucd_tri = vtkSmartPointer<vtkUnstructuredGrid>::New();
-//ucd_tri = triangleFilter-> GetOutput();
+std::cout << __LINE__ <<std::endl;
 
-//generate_particles_vtk(time_step, ucd_tri);
+vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter =
+vtkSmartPointer<vtkDataSetTriangleFilter>::New();
+triangleFilter->SetInputData(ucd);
+triangleFilter->Update();
+
+vtkSmartPointer<vtkUnstructuredGrid> ucd_tri = vtkSmartPointer<vtkUnstructuredGrid>::New();
+ucd_tri = triangleFilter-> GetOutput();
+ucd_tri->GetPointData()->ShallowCopy(pointData);
+
+generate_particles_vtk(time_step, ucd_tri);
