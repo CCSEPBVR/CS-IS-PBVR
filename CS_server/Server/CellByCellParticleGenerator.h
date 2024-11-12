@@ -34,11 +34,6 @@
 #include "StructuredVolumeObject.h"
 #include "UnstructuredVolumeObject.h"
 
-#ifdef KMATH
-#include <kmath_random.h>
-extern KMATH_Random km_random;
-#endif
-
 #ifdef _OPENMP
 #  include <omp.h>
 #endif // _OPENMP
@@ -410,13 +405,6 @@ namespace CellByCellParticleGenerator
 inline const float GetRandomNumber()
 {
     double rv;
-#ifdef KMATH
-    #pragma omp critical(random)
-    {
-        km_random.get( rv );
-    }
-    return static_cast<kvs::Real32>( rv - 1.0 );
-#else
     // xorshift RGNs with period at least 2^128 - 1.
 //    static float t24 = 1.0/16777216.0; /* 0.5**24 */
     static kvs::UInt32 x = 123456789, y = 362436069, z = 521288629, w = 88675123;
@@ -429,7 +417,6 @@ inline const float GetRandomNumber()
 
     return w * ( 1.0f / 4294967296.0f ); // = w * ( 1.0f / kvs::Value<kvs::UInt32>::Max() + 1 )
 //    return t24 * static_cast<float>( w >> 8 );
-#endif
 }
 
 

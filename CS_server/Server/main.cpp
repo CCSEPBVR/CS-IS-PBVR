@@ -34,9 +34,6 @@
 #ifndef CPU_VER
 #include "mpi.h"
 #endif
-#ifdef KMATH
-#include <kmath_random.h>
-#endif
 
 #include <cassert>
 #include <signal.h> /* 140319 for client stop by Ctrl+c */
@@ -71,9 +68,6 @@ using FuncParser::Function;
 using FuncParser::FunctionParser;
 
 bool useAllNodes = true;
-#ifdef KMATH
-KMATH_Random km_random;
-#endif
 
 inline const size_t GetRevisedSubpixelLevel(
     const size_t subPixelLevel,
@@ -756,14 +750,6 @@ int main( int argc, char** argv )
 #endif
     PBVR_TIMER_INIT();
     PBVR_TIMER_STA( 1 );
-#ifdef KMATH
-#ifndef CPU_VER
-    km_random.init( MPI_COMM_WORLD );
-#else
-    km_random.init();
-#endif
-    km_random.seed( 1 );
-#endif
     Argument param( argc, argv );
     FilterInformationList fil;
     TransferFunctionSynthesizerCreator transfunc_creator;
@@ -825,9 +811,6 @@ int main( int argc, char** argv )
             else
             {
                 std::cerr << "Error \"-pout\" : " << "Prefix does not exist" << std::endl;
-#ifdef KMATH
-                km_random.finalize();
-#endif
 #ifndef CPU_VER
                 MPI_Finalize();
 #endif
@@ -837,9 +820,6 @@ int main( int argc, char** argv )
         else
         {
             if ( rank == 0 ) std::cerr << outdir << " : " << "The directory does not exist" << std::endl;
-#ifdef KMATH
-            km_random.finalize();
-#endif
 #ifndef CPU_VER
             MPI_Finalize();
 #endif
@@ -1068,9 +1048,6 @@ int main( int argc, char** argv )
                 if ( !pfi_Exist )
                 {
                     if ( rank == 0 ) std::cerr << "Error: pfifile doesn't exist" << std::endl;
-#ifdef KMATH
-                    km_random.finalize();
-#endif
 #ifndef CPU_VER
                     MPI_Finalize();
 #endif
@@ -2259,9 +2236,6 @@ int main( int argc, char** argv )
 #ifndef CPU_VER
                         MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
 #endif
-#ifdef KMATH
-                        km_random.finalize();
-#endif
 #ifndef CPU_VER
                         MPI_Finalize();
 #endif
@@ -3041,9 +3015,6 @@ int main( int argc, char** argv )
             pts.termServer();
         }		// rank == 0
     }		// client-server mode
-#ifdef KMATH
-    km_random.finalize();
-#endif
     if ( param.m_batch == true )
     {
         PBVR_TIMER_END( 1 );
