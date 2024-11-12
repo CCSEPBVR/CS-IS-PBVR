@@ -59,17 +59,58 @@ LIBS += -L../ExtendedQT/debug -lExtendedQT
         }
     }
 
+  LIBS += $$KVS_DIR/lib/kvsSupportQt.lib
+  LIBS += $$KVS_DIR/lib/kvsCore.lib
+  equals( KVS_ENABLE_GLEW, "1" ) {
+    LIBS += -lopengl32
+    LIBS += -lglu32
+    LIBS += $$GLEW_LIBRARY_PATH/glew32.lib
 
-LIBS += $$KVS_DIR/lib/kvsSupportQt.lib
-LIBS += $$KVS_DIR/lib/kvsCore.lib
-    equals( KVS_ENABLE_GLEW, "1" ) {
-        win32: LIBS += -lopengl32
-        win32: LIBS += -lglu32
-        LIBS += $$GLEW_LIBRARY_PATH/glew32.lib
-    }
-    equals( KVS_SUPPORT_GLUT, "1" ) {
-        LIBS += $$KVS_DIR/lib/kvsSupportGLUT.lib
-    }
+    COPY_GLEW_SRC = $$GLEW_BINARY_PATH
+    COPY_GLEW_SRC ~= s|/|\|gi
+    COPY_GLEW_DEST = $$OUT_PWD/release
+    COPY_GLEW_DEST ~= s|/|\|gi
+    copy_glew.target = copy_glew
+    copy_glew.commands = $$QMAKE_COPY $$COPY_GLEW_SRC\glew32.dll $$COPY_GLEW_DEST
+    QMAKE_EXTRA_TARGETS += copy_glew
+    POST_TARGETDEPS += copy_glew
+  }
+  
+  equals( KVS_SUPPORT_GLUT, "1" ) {
+    LIBS += $$GLUT_LIBRARY_PATH/freeglut.lib
+    LIBS += $$KVS_DIR/lib/kvsSupportGLUT.lib
+
+    COPY_GLUT_SRC = $$GLUT_BINARY_PATH
+    COPY_GLUT_SRC ~= s|/|\|gi
+    COPY_GLUT_DEST = $$OUT_PWD/release
+    COPY_GLUT_DEST ~= s|/|\|gi
+    copy_glut.target = copy_glut
+    copy_glut.commands = $$QMAKE_COPY $$COPY_GLUT_SRC\freeglut.dll $$COPY_GLUT_DEST
+    QMAKE_EXTRA_TARGETS += copy_glut
+    POST_TARGETDEPS += copy_glut
+  }
+  
+  equals( KVS_SUPPORT_OPENXR, "1" ) {
+    LIBS += $$KVS_DIR/lib/kvsSupportOpenXR.lib
+    LIBS += $$OPENXR_LIBRARY_PATH/openxr_loader.lib
+    LIBS += -lgdi32
+
+    COPY_OPENXR_SRC = $$OPENXR_BINARY_PATH
+    COPY_OPENXR_SRC ~= s|/|\|gi
+    COPY_OPENXR_DEST = $$OUT_PWD/release
+    COPY_OPENXR_DEST ~= s|/|\|gi
+    copy_openxr.target = copy_openxr
+    copy_openxr.commands += $$QMAKE_COPY $$COPY_OPENXR_SRC\openxr_loader.dll $$COPY_OPENXR_DEST
+    QMAKE_EXTRA_TARGETS += copy_openxr
+    POST_TARGETDEPS += copy_openxr
+    
+    COPY_MODEL_SRC = $$KVS_DIR/resources/SupportOpenXR/Models
+    COPY_MODEL_SRC ~= s|/|\|gi
+    copy_hand_model.target = copy_hand_model
+    copy_hand_model.commands += $$QMAKE_COPY_DIR $$COPY_MODEL_SRC $$COPY_OPENXR_DEST\Models
+    QMAKE_EXTRA_TARGETS += copy_hand_model
+    POST_TARGETDEPS += copy_hand_model
+  }
 }
 
 macx {

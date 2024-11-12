@@ -31,6 +31,12 @@ void RepetitionLevelControl::onApplyButtonClicked()
             {
                 if (auto* particleRenderer = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>(stochasticRenderer))
                 {
+                    kvs::Vec3 translationOffset = m_pbvr_gui->screen()->scene()->camera()->xform().translation() - m_pbvr_gui->getInitializedCameraXform().translation();
+                    particleRenderer->setTranslationOffset( translationOffset );
+                    particleRenderer->setObjectDepth(
+                        m_pbvr_gui->screen()->scene()->objectManager()->xform().scaling().z()
+                        / m_pbvr_gui->screen()->scene()->camera()->xform().scaling().z()
+                        );
                     kvs::RendererBase* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer;
                     m_shading_controller->applyShading( particle_based_renderer );
                     m_pbvr_gui->screen()->scene()->replaceRenderer( id.second, particle_based_renderer );
