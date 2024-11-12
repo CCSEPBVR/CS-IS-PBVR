@@ -47,7 +47,11 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
         )
 {
     ui->setupUi(this);
-    setWindowTitle( "pbvr_client v3.1.1" );
+#ifdef DESKTOP_SCREEN_MODE
+    setWindowTitle( "pbvr_client v" + QString( PBVR_VERSION ) + " (DESKTOP)" );
+#elif OPENXR_SCREEN_MODE
+    setWindowTitle( "pbvr_client v" + QString( PBVR_VERSION ) + " (OPENXR)" );
+#endif
 
     const size_t repetitions = 4;
     m_compositor->setRepetitionLevel( repetitions );
