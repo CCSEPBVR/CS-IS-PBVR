@@ -32,9 +32,6 @@
 #ifndef CPU_VER
 #include "mpi.h"
 #endif
-#ifdef KMATH
-#include <kmath_random.h>
-#endif
 
 #include <cassert>
 #include <signal.h> /* 140319 for client stop by Ctrl+c */
@@ -57,9 +54,6 @@
 #include "Timer.h" 
 
 bool useAllNodes = true;
-#ifdef KMATH
-KMATH_Random km_random;
-#endif
 
 inline const size_t GetRevisedSubpixelLevel(
     const size_t subpixel_level,
@@ -115,14 +109,6 @@ int main( int argc, char** argv )
     kvs::Timer timer( kvs::Timer::Start );
 
 
-#ifdef KMATH
-#ifndef CPU_VER
-    km_random.init( MPI_COMM_WORLD );
-#else
-    km_random.init();
-#endif
-    km_random.seed( 1 );
-#endif
     Argument param( argc, argv );
     FilterInfoLst fil;
     //2018 kawamura comment out
@@ -345,11 +331,6 @@ int main( int argc, char** argv )
 //                  bsz = -1;
 //#ifndef CPU_VER
 //                  MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
-//#endif
-//#ifdef KMATH
-//                  km_random.finalize();
-//#endif
-//#ifndef CPU_VER
 //                  MPI::Finalize();
 //#endif
 //                  return 0;
@@ -998,9 +979,6 @@ int main( int argc, char** argv )
             pts.termServer();
         }
     }
-#ifdef KMATH
-    km_random.finalize();
-#endif
     if ( param.batch == true )
     {
         TIMER_END( 1 );
