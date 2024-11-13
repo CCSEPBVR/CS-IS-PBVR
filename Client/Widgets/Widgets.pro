@@ -37,6 +37,7 @@ HEADERS += \
     ExtendedTransferFunctionMessage.h \
     FrequencyTable.h \
     FunctionListEditor.h \
+    GlyphEditor.h \
     MergePanel.h \
     OpacityMapEditor.h \
     ParameterFile.h \
@@ -68,6 +69,7 @@ SOURCES += \
     DisplayPointSizeControl.cpp \
     ExtendedTransferFunctionMessage.cpp \
     FunctionListEditor.cpp \
+    GlyphEditor.cpp \
     MergePanel.cpp \
     OpacityMapEditor.cpp \
     ParameterFile.cpp \
@@ -97,6 +99,7 @@ FORMS += \
     DataProperties.ui \
     DisplayPointSizeControl.ui \
     FunctionListEditor.ui \
+    GlyphEditor.ui \
     MergePanel.ui \
     OpacityMapEditor.ui \
     Preference.ui \
