@@ -92,6 +92,7 @@ private slots:
 
     void onImportButtonClicked();
     void onExportButtonClicked();
+    void onSendButtonClicked();
 
     void onColorRangeSyncToolButtonClicked();
     void onOpacityRangeSyncToolButtonClicked();

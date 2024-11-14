@@ -2,3 +2,9 @@
 *.a
 particle_out
 timer.out.*
+history_*
+default_0*
+processor*
+t_0*
+t_pfi_coords_minmax.txt
+damBr5k*

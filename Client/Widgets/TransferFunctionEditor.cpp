@@ -64,6 +64,7 @@ TransferFunctionEditor::TransferFunctionEditor(QWidget *parent, ColorMapBarSelec
     connect( ui->applyPBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onApplyButtonClicked );
     connect( ui->importPBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onImportButtonClicked );
     connect( ui->exportPBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onExportButtonClicked );
+    connect( ui->sendPBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onSendButtonClicked );
 
     connect( ui->colorRangeSyncTBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onColorRangeSyncToolButtonClicked );
     connect( ui->opacityRangeSyncTBtn, &QPushButton::clicked, this, &TransferFunctionEditor::onOpacityRangeSyncToolButtonClicked );
@@ -566,6 +567,8 @@ void TransferFunctionEditor::onApplyButtonClicked()
 
         m_merge->setIsParticleGenerationNeeded( true );
         m_color_map_bar_selector->updateColorMap();
+
+        //m_connect->sendTransferFunction();
 }
 
 void TransferFunctionEditor::onImportButtonClicked()
@@ -731,7 +734,15 @@ void TransferFunctionEditor::onExportButtonClicked()
 #else
     this->exportFile( fileName.toStdString(), false );
 #endif
+
 }
+
+void TransferFunctionEditor::onSendButtonClicked()
+{
+    // if (m_last_time_step_push_button ){};
+    m_connect->sendTransferFunction();
+}
+
 
 void TransferFunctionEditor::exportFile( const std::string& fname, const bool append)
 {

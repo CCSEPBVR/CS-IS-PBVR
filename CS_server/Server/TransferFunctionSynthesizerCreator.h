@@ -52,8 +52,7 @@ public:
     void setInitialProtocol(  const int nvariable, const VariableRange vr );
     void setParameterFile(  const ParameterFile& pa );
     void setAsisTransferFunction( const pbvr::TransferFunction& tf );
-    //void setTransferFunction( const std::string& name, const pbvr::TransferFunction& tf );
-    void setTransferFunction( jpv::ParticleTransferServerMessage* servMes );
+    void setTransferFunction( jpv::ParticleTransferServerMessage* servMes , const VariableRange vr);
     // add by @hira at 2016/12/01
     void setInitializeRange( const float min_value, const float max_value );
 

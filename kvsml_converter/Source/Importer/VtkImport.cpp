@@ -39,6 +39,8 @@
 #include <vtkStructuredGrid.h>
 #include <vtkTypedArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkPolyhedron.h>
+#include <vtkDataSetTriangleFilter.h>
 
 namespace
 {
@@ -243,6 +245,20 @@ kvs::UnstructuredVolumeObject::CellType GetKvsCellType( int type )
     default:
         return kvs::UnstructuredVolumeObject::UnknownCellType;
     }
+}
+
+vtkSmartPointer<vtkUnstructuredGrid> Triangulate( vtkSmartPointer<vtkUnstructuredGrid> data )
+{
+        vtkSmartPointer<vtkUnstructuredGrid> unstructuredGrid = data;
+        vtkSmartPointer<vtkUnstructuredGrid> ucd = vtkSmartPointer<vtkUnstructuredGrid>::New();
+
+        vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter =
+            vtkSmartPointer<vtkDataSetTriangleFilter>::New();
+        triangleFilter->SetInputData(unstructuredGrid);
+        triangleFilter->Update();
+
+        ucd = triangleFilter-> GetOutput();
+        return  ucd;
 }
 
 template <typename K, typename V, typename O>
@@ -523,6 +539,13 @@ void cvt::detail::ImportIrregularStructuredVolumeObject(
 void cvt::detail::ImportUnstructuredVolumeObject( kvs::UnstructuredVolumeObject* object,
                                                   vtkSmartPointer<vtkUnstructuredGrid> data )
 {
+
+    if( data -> GetCellType(0) == VTK_POLYHEDRON)
+    {
+        //traiangulate polyhedron mesh add by shiomura 20241018 
+        data = ::Triangulate( data );
+    }
+
     object->setNumberOfNodes( data->GetNumberOfPoints() );
     object->setNumberOfCells( data->GetNumberOfCells() );
 
