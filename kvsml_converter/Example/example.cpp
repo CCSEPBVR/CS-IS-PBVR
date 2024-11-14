@@ -142,12 +142,12 @@ int main( int argc, char** argv )
     {
         Pvts2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
     }
-    /*
+
     else if ( input_file_extension == ".inp" )
     {
         AvsUcd2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
     }
-    */
+
     else if ( input_file_extension == ".vtu" )
     {
         if ( contains_wildcard( input_file_path.string() ) )

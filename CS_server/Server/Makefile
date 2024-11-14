@@ -12,9 +12,6 @@ endif
 
 ifdef MPICXXFLAGS
     CXXFLAGS = ${MPICXXFLAGS}
-    ifeq "$(PBVR_SUPPORT_KMATH)" "1"
-        CXXFLAGS += -DKMATH -I../KMATH/random/c++/ -I../KMATH/ntl-5.5.2/include
-    endif
 endif
 
 ifdef MPILD
@@ -23,15 +20,6 @@ endif
 
 ifdef MPILDFLAGS
     LDFLAGS = ${MPILDFLAGS}
-    ifeq "$(PBVR_SUPPORT_KMATH)" "1"
-        LDFLAGS += -L../KMATH/random/c++/
-        ifneq (,$(findstring fujitsu,$(PBVR_MACHINE)))
-            LDFLAGS += -L../KMATH/fujitsu/lib
-        else
-            LDFLAGS += -L../KMATH/ntl-5.5.2/src 
-        endif
-        LDFLAGS += -lkm_random -lntl
-    endif
 endif
 
 ifneq "$(PBVR_MAKE_CLIENT)" "1"

@@ -70,14 +70,6 @@ namespace Generator = pbvr::CellByCellParticleGenerator;
 float GetRandomNumber()
 {
 
-#ifdef KMATH
-    double rv;
-#pragma omp critical(random)
-    {
-        km_random.get( rv );
-    }
-    return static_cast<kvs::Real32>( rv - 1.0 );
-#else
     // xorshift RGNs with period at least 2^128 - 1.
 //    static float t24 = 1.0/16777216.0; /* 0.5**24 */
     static kvs::UInt32 x = 123456789, y = 362436069, z = 521288629, w = 88675123;
@@ -91,7 +83,6 @@ float GetRandomNumber()
     //return 0;
     return w * ( 1.0f / 4294967296.0f ); // = w * ( 1.0f / kvs::Value<kvs::UInt32>::Max() + 1 )
 //    return t24 * static_cast<float>( w >> 8 );
-#endif
 }
 
 namespace
@@ -512,7 +503,6 @@ const size_t calculate_number_of_particles(
     kvs::MersenneTwister* MT )
 {
     const float N = density * volume_of_cell;
-    //const float R = GetRandomNumber();//KMATH使用
     const float R = (float)MT->rand();
 
     size_t n = static_cast<size_t>( N );

@@ -8,10 +8,6 @@ SUBDIR_KVS := KVS
 SUBDIRS := FunctionParser
 SUBDIRS += Common
 
-ifeq "$(PBVR_SUPPORT_KMATH)" "1"
-    SUBDIRS += KMATH
-endif
-
 ifeq "$(PBVR_MAKE_CLIENT)" "1"
     SUBDIRS += glui/src
     SUBDIRS += Client

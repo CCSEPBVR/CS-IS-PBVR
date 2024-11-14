@@ -5,7 +5,7 @@
 
 TransferFunctionSynthesizerCreator::TransferFunctionSynthesizerCreator()
 {
-    // FŠÖ”
+    // è‰²é–¢æ•°
     {
         VolumeEquation ve_c;
         NamedTransferFunction tf_c;
@@ -19,7 +19,7 @@ TransferFunctionSynthesizerCreator::TransferFunctionSynthesizerCreator()
         m_color_transfunc_synthesis = "C1";
     }
 
-    // •s“§–¾“xŠÖ”
+    // ä¸é€æ˜åº¦é–¢æ•°
     {
         VolumeEquation ve_o;
         NamedTransferFunction tf_o;
@@ -404,7 +404,7 @@ void TransferFunctionSynthesizerCreator::set_param_info( const ParameterFile& pa
     this->m_color_transfunc_synthesis = pa1.getString( "TF_SYNTH_C" );
     this->m_opacity_transfunc_synthesis = pa1.getString( "TF_SYNTH_O" );
 
-    // FŠÖ”
+    // è‰²é–¢æ•°
     for ( size_t n = 0; n < MAX_TF_NUMBER; n++ )
     {
         std::stringstream ss;
@@ -458,7 +458,7 @@ void TransferFunctionSynthesizerCreator::set_param_info( const ParameterFile& pa
         m_voleqn.push_back( ve_c );
     }
 
-    // •s“§–¾“xŠÖ”
+    // ä¸é€æ˜åº¦é–¢æ•°
     for ( size_t n = 0; n < MAX_TF_NUMBER; n++ )
     {
         std::stringstream ss;
@@ -662,7 +662,7 @@ void TransferFunctionSynthesizerCreator::read_TF_from_ParamInfo( const Parameter
 
 
 /**
- * ‚·‚×‚Ä‚ÌŠÖ”’è‹`‚ÉÅ¬’lAÅ‘å’l‚ğİ’è‚·‚é
+ * ã™ã¹ã¦ã®é–¢æ•°å®šç¾©ã«æœ€å°å€¤ã€æœ€å¤§å€¤ã‚’è¨­å®šã™ã‚‹
  */
 void TransferFunctionSynthesizerCreator::setInitializeRange( const float min_value, const float max_value )
 {

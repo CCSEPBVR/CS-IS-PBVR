@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GlyphEditor</class>
+ <widget class="QDockWidget" name="GlyphEditor">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>444</width>
+    <height>672</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>GlyphEditor</string>
+  </property>
+  <widget class="QWidget" name="dockWidgetContents">
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_6">
+      <property name="text">
+       <string>Scale Factor : </string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <widget class="QLineEdit" name="directionLineEdit3"/>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>Direction : </string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0" colspan="4">
+     <widget class="QGroupBox" name="groupBox_3">
+      <property name="title">
+       <string>ColorMap</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <item row="0" column="0">
+        <widget class="TFEColorMapBar" name="openGLWidget"/>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="8" column="3">
+     <widget class="QPushButton" name="applyPushButton">
+      <property name="text">
+       <string>Apply</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Glyph Type : </string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1" colspan="3">
+     <widget class="QDoubleSpinBox" name="scaleFactorDoubleSpinBox"/>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLineEdit" name="directionLineEdit1"/>
+    </item>
+    <item row="7" column="0" colspan="4">
+     <widget class="QGroupBox" name="groupBox_4">
+      <property name="title">
+       <string>ColorData</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="1">
+        <widget class="QRadioButton" name="colorSingleRadioButton">
+         <property name="text">
+          <string>Single Variable</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Variable 1 :</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QRadioButton" name="colorConstantRadioButton">
+         <property name="text">
+          <string>Constant</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QRadioButton" name="colorVariableArrayRadioButton">
+         <property name="text">
+          <string>Variables Array</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Variable 2 :</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" colspan="2">
+        <widget class="QLineEdit" name="colorVariable1LineEdit"/>
+       </item>
+       <item row="2" column="1" colspan="2">
+        <widget class="QLineEdit" name="colorVariable2LineEdit"/>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="5" column="0" colspan="4">
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="title">
+       <string>Spetial Distribution</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_5">
+       <item row="0" column="1">
+        <widget class="QRadioButton" name="allPointsRadioButton">
+         <property name="text">
+          <string>All Points</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Number Of Sample Points : </string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QRadioButton" name="everyNthPointsRadioButton">
+         <property name="text">
+          <string>Every Nth Points</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" colspan="2">
+        <widget class="QSpinBox" name="numberOfSamplePointsSpinBox"/>
+       </item>
+       <item row="0" column="0">
+        <widget class="QRadioButton" name="uniformDistributionRadioButton">
+         <property name="text">
+          <string>Uniform Distribution</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Stride : </string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" colspan="2">
+        <widget class="QSpinBox" name="strideSpinBox"/>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QComboBox" name="glyphTypeComboBox"/>
+    </item>
+    <item row="1" column="2">
+     <widget class="QLineEdit" name="directionLineEdit2"/>
+    </item>
+    <item row="2" column="0" colspan="4">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string>Size</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="1" column="1">
+        <widget class="QRadioButton" name="sizeSingleVariableRadioButton">
+         <property name="text">
+          <string>Single Variable</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Variable 1 : </string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QRadioButton" name="sizeVariablesArrayRadioButton">
+         <property name="text">
+          <string>Variables Array</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QRadioButton" name="sizeConstantRadioButton">
+         <property name="text">
+          <string>Constant</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Variable 2 :</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" colspan="2">
+        <widget class="QLineEdit" name="sizeVariable1"/>
+       </item>
+       <item row="3" column="1" colspan="2">
+        <widget class="QLineEdit" name="sizeVariable2"/>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TFEColorMapBar</class>
+   <extends>QOpenGLWidget</extends>
+   <header>Widgets/TFEColorMapBar.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
