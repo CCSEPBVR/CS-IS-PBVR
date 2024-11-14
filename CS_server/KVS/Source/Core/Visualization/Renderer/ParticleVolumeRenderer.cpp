@@ -306,4 +306,4 @@ void ParticleVolumeRenderer::project_particle(
     m_buffer->createImage( &m_color_data, &m_depth_data );
 }
 
-} // end of namespce kvs
+} // end of namespace kvs

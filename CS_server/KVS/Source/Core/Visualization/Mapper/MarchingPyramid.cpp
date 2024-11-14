@@ -370,4 +370,4 @@ const size_t MarchingPyramid::calculate_special_table_index( const size_t* local
     return( table_index );
 }
 
-} // end of namesapce kvs
+} // end of namespace kvs

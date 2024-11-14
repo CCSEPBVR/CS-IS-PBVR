@@ -213,4 +213,4 @@ const bool dcm::Item::read_undefined_length_item( std::ifstream& ifs, const bool
 
 } // end of namespace dcm
 
-} // end of namespcae kvs
+} // end of namespace kvs
