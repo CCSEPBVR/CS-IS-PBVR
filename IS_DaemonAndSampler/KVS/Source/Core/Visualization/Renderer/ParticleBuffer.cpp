@@ -409,4 +409,4 @@ void ParticleBuffer::create_image_without_shading(
     }
 }
 
-} // end of namesapce kvs
+} // end of namespace kvs

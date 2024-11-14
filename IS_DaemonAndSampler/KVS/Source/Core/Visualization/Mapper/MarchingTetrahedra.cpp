@@ -571,4 +571,4 @@ void MarchingTetrahedra::calculate_normals_on_vertex(
 }
 #endif // NOT_YET_IMPLEMENTED
 
-} // end of namesapce kvs
+} // end of namespace kvs

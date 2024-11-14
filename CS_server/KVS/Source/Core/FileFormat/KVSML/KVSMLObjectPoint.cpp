@@ -190,7 +190,7 @@ void KVSMLObjectPoint::setSizes( const kvs::ValueArray<kvs::Real32>& sizes )
 
 /*===========================================================================*/
 /**
- *  @brief  Read a KVSMl point object file.
+ *  @brief  Read a KVSML point object file.
  *  @param  filename [in] filename
  *  @return true, if the reading process is successfully
  */
