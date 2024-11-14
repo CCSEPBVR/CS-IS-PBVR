@@ -19,7 +19,6 @@
 #include "StructuredVolumeObject.h"
 #include <kvs/Vector3>
 #include <kvs/Assert>
-//#include "../kvs_wrapper.h"
 
 #ifndef SIMDW 
 #define SIMDW 128
