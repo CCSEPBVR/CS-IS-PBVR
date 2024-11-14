@@ -15,7 +15,6 @@
 #include <kvs/DebugNew>
 #include <kvs/AVSField>
 //#include <kvs/DicomList>
-//#include "../KVS/Source/Core/FileFormat/DICOM/DicomList.h"
 #include <kvs/Message>
 #include <kvs/Vector3>
 #include <kvs/Directory>
