@@ -36,6 +36,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_data_properties( this ),
     m_coordinates( this, &m_merge, &m_connect ),
     m_transfer_function_editor( this, &m_color_map_bar_selector ,&m_merge, &m_connect ),
+    m_glyph_editor( this, &m_merge, &m_connect  ),
     m_initialize_camera_xform
     (
         kvs::Mat4(
@@ -159,6 +160,10 @@ void PBVRGUI::initializePanels()
     //コーディネートパネルの初期化
 
     //伝達関数パネルの初期化
+
+    // m_glyph_editor.close();
+    m_glyph_editor.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    addDockWidget( Qt::RightDockWidgetArea, &m_glyph_editor );
 }
 
 void PBVRGUI::keyPressEvent(QKeyEvent *event)

@@ -21,6 +21,7 @@
 #include "Widgets/TransferFunctionEditor.h"
 #include "Widgets/Coordinates.h"
 #include "Widgets/ToolBars.h"
+#include "Widgets/GlyphEditor.h"
 
 namespace Ui {
 class PBVRGUI;
@@ -67,6 +68,7 @@ private:
     TimeControllerB m_time_controller_B;
     TotalParticles m_total_particles;
     ColorMapBarSelector m_color_map_bar_selector;
+    GlyphEditor m_glyph_editor;
 
     const kvs::Xform m_initialize_camera_xform;
 
