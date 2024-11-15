@@ -24,7 +24,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_time_controller_A( this ),
     m_time_controller_B( this, &m_time_controller_A, &m_merge ),
     m_total_particles( this ),
-    m_color_map_bar_selector( this, this ),
+    m_color_map_bar_selector( this, this, &m_connect, &m_transfer_function_editor ),
     m_merge( this, this, &m_preference ,&m_time_controller_B, &m_total_particles, &m_connect, &m_shading_controller ),
     m_connect( this, this, &m_merge, &m_data_properties, &m_render_options, &m_transfer_function_editor ),
     m_volumeTransform( this, this ),
@@ -35,7 +35,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_render_options( this, &m_merge, &m_connect ),
     m_data_properties( this ),
     m_coordinates( this, &m_merge, &m_connect ),
-    m_transfer_function_editor( this, &m_color_map_bar_selector ,&m_merge, &m_connect ),
+    m_transfer_function_editor( this, &m_merge, &m_connect, &m_color_map_bar_selector ),
     m_glyph_editor( this, &m_merge, &m_connect  ),
     m_initialize_camera_xform
     (
@@ -113,8 +113,8 @@ void PBVRGUI::initializePanels()
     this->addToolBarBreak(Qt::TopToolBarArea);
     this->addToolBar(Qt::TopToolBarArea, &m_total_particles);
     this->addToolBar(Qt::TopToolBarArea, &m_color_map_bar_selector);
-    m_color_map_bar_selector.setExtendedTransferFunctionMessage( m_transfer_function_editor.getExtendedTransferFunctionMessage() );
-    m_color_map_bar_selector.populateColorFunctionLists( m_color_map_bar_selector.getExtendedTransferFunctionMessage()->m_transfer_function_number );
+    // m_color_map_bar_selector.setExtendedTransferFunctionMessage( m_transfer_function_editor.getExtendedTransferFunctionMessage() );
+    // m_color_map_bar_selector.populateColorFunctionLists( m_color_map_bar_selector.getExtendedTransferFunctionMessage()->m_transfer_function_number );
     this->addToolBarBreak(Qt::TopToolBarArea);
     this->addToolBar(Qt::TopToolBarArea, &m_time_controller_B);    
 
