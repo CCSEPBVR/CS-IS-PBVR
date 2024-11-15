@@ -9,7 +9,7 @@
 #include "Widgets/MergePanel.h"
 #include "Widgets/RenderOptions.h"
 
-Connect::Connect(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, DataProperties* filter_infomation, RenderOptions* render_options, TransferFunctionEditor* transfer_function_editor):
+Connect::Connect(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, DataProperties* filter_infomation, RenderOptions* render_options, TransferFunctionEditor* transfer_function_editor, GlyphEditor* glyph_editor ):
     QDialog(parent),
     ui(new Ui::Connect),
     m_pbvr_gui( pbvr_gui ),
@@ -17,6 +17,7 @@ Connect::Connect(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, DataProp
     m_filter_infomation( filter_infomation ),
     m_render_options( render_options ),
     m_transfer_function_editor( transfer_function_editor ),
+    m_glyph_editor( glyph_editor ),
     m_extended_transfer_function_message(),
     m_client_message(),
     m_server_message(),
@@ -122,6 +123,7 @@ void Connect::connectServer()
     }
 
     m_filter_infomation->updateFilterInfomation( ui->volumeDataFilePathLEdit->text(), m_server_message );
+    m_glyph_editor->updateNumberOfVector( m_server_message );
 
     strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
 
