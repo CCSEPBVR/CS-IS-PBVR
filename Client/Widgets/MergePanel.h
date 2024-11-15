@@ -198,5 +198,4 @@ private:
 
     std::string updateTimeStepInFileName( QString fileName, int nextTimeStep );
 };
-
 #endif // MERGEPANEL_H

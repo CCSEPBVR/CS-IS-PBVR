@@ -76,7 +76,7 @@ INSTALL_DIR  := $(INSTALL_PREFIX)
 #=============================================================================
 #  Project name.
 #=============================================================================
-PROJECT_NAME := kvsml-example
+PROJECT_NAME := kvsml-converter
 
 ifeq "$(findstring CYGWIN,$(shell uname -s))" "CYGWIN"
 TARGET_EXE := $(OUTDIR)/$(PROJECT_NAME).exe

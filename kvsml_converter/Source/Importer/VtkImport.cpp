@@ -39,6 +39,8 @@
 #include <vtkStructuredGrid.h>
 #include <vtkTypedArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkPolyhedron.h>
+#include <vtkDataSetTriangleFilter.h>
 
 namespace
 {
@@ -138,8 +140,7 @@ kvs::VolumeObjectBase::Values GetValueArray( VtkPointSetPointerType data, int co
         {
             auto array = point_data->GetArray( i );
 
-            //switch ( array->GetArrayType() )
-            switch ( array->GetDataType() )
+            switch ( array->GetArrayType() )
             {
             case VTK_TYPE_UINT8:
                 array_type = std::max( array_type, 0 );
@@ -173,6 +174,11 @@ kvs::VolumeObjectBase::Values GetValueArray( VtkPointSetPointerType data, int co
                 array_type = std::numeric_limits<int>::max();
             }
         }
+
+        // This statement will be removed in the future
+        // Currently, only float type is supported in the server program
+        // Convert all types to float until the server program supports non-float types
+        array_type = 8;
 
         switch ( array_type )
         {
@@ -239,6 +245,20 @@ kvs::UnstructuredVolumeObject::CellType GetKvsCellType( int type )
     default:
         return kvs::UnstructuredVolumeObject::UnknownCellType;
     }
+}
+
+vtkSmartPointer<vtkUnstructuredGrid> Triangulate( vtkSmartPointer<vtkUnstructuredGrid> data )
+{
+        vtkSmartPointer<vtkUnstructuredGrid> unstructuredGrid = data;
+        vtkSmartPointer<vtkUnstructuredGrid> ucd = vtkSmartPointer<vtkUnstructuredGrid>::New();
+
+        vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter =
+            vtkSmartPointer<vtkDataSetTriangleFilter>::New();
+        triangleFilter->SetInputData(unstructuredGrid);
+        triangleFilter->Update();
+
+        ucd = triangleFilter-> GetOutput();
+        return  ucd;
 }
 
 template <typename K, typename V, typename O>
@@ -519,6 +539,13 @@ void cvt::detail::ImportIrregularStructuredVolumeObject(
 void cvt::detail::ImportUnstructuredVolumeObject( kvs::UnstructuredVolumeObject* object,
                                                   vtkSmartPointer<vtkUnstructuredGrid> data )
 {
+
+    if( data -> GetCellType(0) == VTK_POLYHEDRON)
+    {
+        //traiangulate polyhedron mesh add by shiomura 20241018 
+        data = ::Triangulate( data );
+    }
+
     object->setNumberOfNodes( data->GetNumberOfPoints() );
     object->setNumberOfCells( data->GetNumberOfCells() );
 

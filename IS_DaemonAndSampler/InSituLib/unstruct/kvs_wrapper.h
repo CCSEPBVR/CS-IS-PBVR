@@ -2,9 +2,14 @@
 #define KVS_WRAPPER_H_INCLUDED
 
 #include "../shared/thread_timer.h"
+#include <kvs/TransferFunction>
 #include "TFS/VolumeObjectBase.h"
 #include "TFS/ParamInfo.h"
 #include "TFS/TransferFunction.h"
+
+#ifdef VTK
+#include <vtkUnstructuredGrid.h>
+#endif
 
 #ifdef DOUBLE_SCHEME
   typedef double Type;
@@ -135,6 +140,10 @@ extern "C" {
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltypes );
 
+#ifdef VTK
+    void generate_particles_vtk( int time_step,vtkUnstructuredGrid* ucd ); 
+#endif
+
     void GenerateHistogram( int time_step,
                              domain_parameters dom,
                              Type** values, int nvariables,
@@ -145,7 +154,8 @@ extern "C" {
                              domain_parameters dom,
                              Type** values, int nvariables,
                              float* coordinates, int ncoords,
-                             unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase );
+                             unsigned int* connections, int ncells,
+                             const  pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase );
     void OutputParticles( int time_step, int nvariables, pbvr_parameters& particleBase,  ParamInfo *param_info, bool skip_flag);
     bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, ParamInfo *param_info, const int time_step);
 

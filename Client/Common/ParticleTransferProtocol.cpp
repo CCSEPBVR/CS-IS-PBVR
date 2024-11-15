@@ -969,4 +969,3 @@ void jpv::ParticleTransferServerMessage::show( void ) const
     std::cout<<std::endl;
 }
 
-

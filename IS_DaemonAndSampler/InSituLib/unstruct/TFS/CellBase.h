@@ -27,11 +27,6 @@
 //#include "SFMT/SFMT.h" 
 #include <kvs/Timer>
 
-#ifdef KMATH
-#include <kmath_random.h>
-extern KMATH_Random km_random;
-#endif
-
 #ifndef SIMD_BLK_SIZE
 #define SIMD_BLK_SIZE 128
 #endif
@@ -851,14 +846,6 @@ inline const kvs::Real32 CellBase<T>::randomNumber() const
 {
 
 
-#ifdef KMATH
-    double rv;
-    /* #pragma omp critical(random) */
-    /* { */
-    km_random.get( rv );
-    /* } */
-    return static_cast<kvs::Real32>( rv - 1.0 );
-#else
     // xorshift RGNs with period at least 2^128 - 1.
     static kvs::Real32 t24 = 1.0 / 16777216.0; /* 0.5**24 */
     static kvs::UInt32 x = 123456789, y = 362436069, z = 521288629, w = 88675123;
@@ -870,7 +857,6 @@ inline const kvs::Real32 CellBase<T>::randomNumber() const
     w = ( w ^ ( w >> 19 ) ) ^ ( t ^ ( t >> 8 ) );
 
     return t24 * static_cast<kvs::Real32>( w >> 8 );
-#endif
 }
 
 template <typename T>

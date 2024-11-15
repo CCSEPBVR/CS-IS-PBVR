@@ -1040,6 +1040,13 @@ void MergePanel::onWorkerThreadFinished()
                 if( kvs::PointObject* point_object = dynamic_cast<kvs::PointObject*>(m_files_manager[row]->getObject()) )
                 {
                     kvs::RendererBase* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer;
+                    kvs::Vec3 translationOffset = m_pbvr_gui->screen()->scene()->camera()->xform().translation() - m_pbvr_gui->getInitializedCameraXform().translation();
+                    static_cast<kvs::glsl::ParticleBasedRenderer*>(particle_based_renderer)->setTranslationOffset( translationOffset );
+                    static_cast<kvs::glsl::ParticleBasedRenderer*>(particle_based_renderer)->setObjectDepth(
+                        m_pbvr_gui->screen()->scene()->objectManager()->xform().scaling().z()
+                        / m_pbvr_gui->screen()->scene()->camera()->xform().scaling().z()
+                        );
+
                     m_shading_controller->applyShading( particle_based_renderer );
                     m_files_manager[row]->setIDs( m_pbvr_gui->screen()->scene()->registerObject( point_object, particle_based_renderer ) );
                 }

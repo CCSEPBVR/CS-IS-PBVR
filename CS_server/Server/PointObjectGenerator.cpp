@@ -26,16 +26,10 @@
 #include "StructuredVolumeImporter.h"
 
 #include "Argument.h"
-#ifdef KMATH
-#include <kmath_random.h>
-#endif
 
 #include "timer_simple.h"
 
 using namespace pbvr;
-#ifdef KMATH
-extern KMATH_Random km_random;
-#endif
 
 void PointObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera, const size_t subpixel_level, const float sampling_step )
 {
