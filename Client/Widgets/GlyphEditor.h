@@ -2,6 +2,9 @@
 #define GLYPHEDITOR_H
 
 #include <QDockWidget>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QComboBox>
 #include <kvs/ColorMap>
 
 class MergePanel;
@@ -46,6 +49,14 @@ private:
     MergePanel* m_merge;
     Connect* m_connect;
 
+    QVBoxLayout* m_size_variable_layout;
+    QVector<QLabel*> m_size_variable_labels;
+    QVector<QComboBox*> m_size_variable_comboboxes;
+
+    QVBoxLayout* m_color_data_variable_layout;
+    QVector<QLabel*> m_color_data_variable_labels;
+    QVector<QComboBox*> m_color_data_variable_comboboxes;
+
     GlyphType m_glyph_type;
     std::string m_glyph_direction_1;
     std::string m_glyph_direction_2;
@@ -57,6 +68,8 @@ private:
     DataDefines m_color_data;
 
 private slots:
+    void onSizeNumberOfVariableChanged( int value );
+    void onColorDataNumberOfVariableChanged( int value );
     void onApplyButtonClicked();
 };
 

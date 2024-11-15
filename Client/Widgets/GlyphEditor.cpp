@@ -12,10 +12,22 @@ GlyphEditor::GlyphEditor(QWidget *parent, MergePanel* merge, Connect* connect_pa
 {
     ui->setupUi(this);
 
-    QStringList types;
-    types << "Arrow" << "Diamond" << "Sphere";
-    ui->glyphTypeComboBox->addItems( types );
+    // QStringList types;
+    // types << "Arrow" << "Diamond" << "Sphere";
 
+    // スクロールエリア用のウィジェットを作成
+    QWidget *sizeScrollContentWidget = new QWidget(this);
+    m_size_variable_layout = new QVBoxLayout(sizeScrollContentWidget);
+    ui->sizeScrollArea->setWidget(sizeScrollContentWidget);
+    ui->sizeScrollArea->setWidgetResizable(true);  // スクロールエリアのコンテンツを自動リサイズする
+
+    QWidget *colorDataScrollContentWidget = new QWidget(this);
+    m_color_data_variable_layout = new QVBoxLayout(colorDataScrollContentWidget);
+    ui->colorDataScrollArea->setWidget(colorDataScrollContentWidget);
+    ui->colorDataScrollArea->setWidgetResizable(true);  // スクロールエリアのコンテンツを自動リサイズする
+
+    connect( ui->sizeNumberOfVariableSpinBox, &QSpinBox::valueChanged, this, &GlyphEditor::onSizeNumberOfVariableChanged );
+    connect( ui->colorDataNumberOfVariableSpinBox, &QSpinBox::valueChanged, this, &GlyphEditor::onColorDataNumberOfVariableChanged );
     connect( ui->applyPushButton, &QPushButton::clicked, this, &GlyphEditor::onApplyButtonClicked );
 }
 
@@ -24,8 +36,98 @@ GlyphEditor::~GlyphEditor()
     delete ui;
 }
 
+void GlyphEditor::onSizeNumberOfVariableChanged(int value)
+{
+    int currentCount = m_size_variable_labels.size();
+
+    if (value > currentCount) {
+        // 必要な分だけラベルとコンボボックスを追加
+        for (int i = currentCount; i < value; ++i) {
+            // 水平レイアウトを作成
+            QHBoxLayout *hLayout = new QHBoxLayout();
+
+            // QLabelの作成とレイアウトへの追加
+            QLabel *label = new QLabel(tr("Variable %1").arg(i + 1), this);
+            m_size_variable_labels.append(label);
+            hLayout->addWidget(label);
+
+            // QComboBoxの作成とレイアウトへの追加
+            QComboBox *comboBox = new QComboBox(this);
+            m_size_variable_comboboxes.append(comboBox);
+            hLayout->addWidget(comboBox);
+
+            // コンボボックスにアイテムを追加
+            comboBox->addItem("Option 1");
+            comboBox->addItem("Option 2");
+
+            // 水平レイアウトをメインの垂直レイアウトに追加
+            m_size_variable_layout->addLayout(hLayout);
+        }
+    } else if (value < currentCount) {
+        // 余分なラベルとコンボボックスを削除
+        for (int i = currentCount - 1; i >= value; --i) {
+            QLabel *label = m_size_variable_labels.takeLast();
+            m_size_variable_layout->removeWidget(label);
+            delete label;
+
+            QComboBox *comboBox = m_size_variable_comboboxes.takeLast();
+            m_size_variable_layout->removeWidget(comboBox);
+            delete comboBox;
+        }
+    }
+
+    // レイアウトを再調整
+    m_size_variable_layout->update();
+}
+
+void GlyphEditor::onColorDataNumberOfVariableChanged(int value)
+{
+    int currentCount = m_color_data_variable_labels.size();
+
+    if (value > currentCount) {
+        // 必要な分だけラベルとコンボボックスを追加
+        for (int i = currentCount; i < value; ++i) {
+            // 水平レイアウトを作成
+            QHBoxLayout *hLayout = new QHBoxLayout();
+
+            // QLabelの作成とレイアウトへの追加
+            QLabel *label = new QLabel(tr("Variable %1").arg(i + 1), this);
+            m_color_data_variable_labels.append(label);
+            hLayout->addWidget(label);
+
+            // QComboBoxの作成とレイアウトへの追加
+            QComboBox *comboBox = new QComboBox(this);
+            m_color_data_variable_comboboxes.append(comboBox);
+            hLayout->addWidget(comboBox);
+
+            // コンボボックスにアイテムを追加
+            comboBox->addItem("Option 1");
+            comboBox->addItem("Option 2");
+
+            // 水平レイアウトをメインの垂直レイアウトに追加
+            m_color_data_variable_layout->addLayout(hLayout);
+        }
+    } else if (value < currentCount) {
+        // 余分なラベルとコンボボックスを削除
+        for (int i = currentCount - 1; i >= value; --i) {
+            QLabel *label = m_color_data_variable_labels.takeLast();
+            m_color_data_variable_layout->removeWidget(label);
+            delete label;
+
+            QComboBox *comboBox = m_color_data_variable_comboboxes.takeLast();
+            m_color_data_variable_layout->removeWidget(comboBox);
+            delete comboBox;
+        }
+    }
+
+    // レイアウトを再調整
+    m_color_data_variable_layout->update();
+}
+
 void GlyphEditor::onApplyButtonClicked()
 {
+
+
     // m_connect->getClientMessage()->m_directions1 = ui->directionLineEdit1->text().toStdString();
     // m_connect->getClientMessage()->m_directions2 = ui->directionLineEdit2->text().toStdString();
     // m_connect->getClientMessage()->m_directions3 = ui->directionLineEdit3->text().toStdString();
