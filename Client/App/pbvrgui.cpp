@@ -35,10 +35,24 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_render_options( this, &m_merge, &m_connect ),
     m_data_properties( this ),
     m_coordinates( this, &m_merge, &m_connect ),
-    m_transfer_function_editor( this, &m_merge, &m_connect, &m_color_map_bar_selector )
+    m_transfer_function_editor( this, &m_merge, &m_connect, &m_color_map_bar_selector ),
+    m_glyph_editor( this, &m_merge, &m_connect  ),
+    m_initialize_camera_xform
+    (
+        kvs::Mat4(
+            1, 0, 0, 0 ,
+            0, 1, 0, 0 ,
+            0, 0, 1, 12,
+            0, 0, 0, 1
+            )
+        )
 {
     ui->setupUi(this);
-    setWindowTitle( "pbvr_client v3.1.0" );
+#ifdef DESKTOP_SCREEN_MODE
+    setWindowTitle( "pbvr_client v" + QString( PBVR_VERSION ) + " (DESKTOP)" );
+#elif OPENXR_SCREEN_MODE
+    setWindowTitle( "pbvr_client v" + QString( PBVR_VERSION ) + " (OPENXR)" );
+#endif
 
     const size_t repetitions = 4;
     m_compositor->setRepetitionLevel( repetitions );
@@ -146,6 +160,10 @@ void PBVRGUI::initializePanels()
     //コーディネートパネルの初期化
 
     //伝達関数パネルの初期化
+
+    // m_glyph_editor.close();
+    m_glyph_editor.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    addDockWidget( Qt::RightDockWidgetArea, &m_glyph_editor );
 }
 
 void PBVRGUI::keyPressEvent(QKeyEvent *event)
@@ -189,7 +207,7 @@ void PBVRGUI::keyPressEvent(QKeyEvent *event)
             m_screen->setControlTarget( kvs::qt::jaea::Screen::ControlTarget::TargetObject );
             break;
         case Qt::Key_Home:
-            m_screen->scene()->reset();
+            m_screen->reset();
             m_screen->update();
             break;
 

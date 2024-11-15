@@ -389,6 +389,7 @@ void TransferFunctionEditor::onExportButtonClicked()
 #else
     this->exportTransferFunctionFile( fileName.toStdString(), false );
 #endif
+
 }
 
 void TransferFunctionEditor::onImportButtonClicked()
