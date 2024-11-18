@@ -5,15 +5,15 @@
 #=============================================================================
 #  Include.
 #=============================================================================
-include ../../../pbvr.conf
-include ../../../arch/$(PBVR_MACHINE)
-include ../../Makefile.def
+include ../pbvr.conf
+include ../arch/$(PBVR_MACHINE)
+include ./Makefile.def
 
 
 #=============================================================================
 #  INCLUDE_PATH, LIBRARY_PATH, LINK_LIBRARY, INSTALL_DIR.
 #=============================================================================
-INCLUDE_PATH := -I..
+INCLUDE_PATH := -I. -I..
 LIBRARY_PATH :=
 LINK_LIBRARY :=
 INSTALL_DIR  := ../../../$(KVS_DIR_NAME)
