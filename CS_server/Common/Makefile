@@ -2,7 +2,7 @@ include ../pbvr.conf
 include ../arch/${PBVR_MACHINE}
 TARGET=libpbvrCommon.a
 FUNC_DIR=../FunctionParser
-KVS_SOURCE_DIR=../KVS/Source
+KVS_SOURCE_DIR=../Core
 CXXFLAGS+=-DDUPLICATION -DCPU_SAMPLING_TIME -DJPV_CLIENT -I${KVS_SOURCE_DIR} -I${FUNC_DIR}
 
 ifneq "$(PBVR_MAKE_CLIENT)" "1"

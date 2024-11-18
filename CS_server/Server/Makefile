@@ -4,7 +4,7 @@ include ../arch/${PBVR_MACHINE}
 TARGET        = pbvr_server
 FUNC_DIR      = ../FunctionParser
 COMMON_DIR    = ../Common/
-KVS_SOURCE_DIR= ../KVS/Source
+KVS_SOURCE_DIR= ../Core
 
 ifdef MPICXX
     CXX     = ${MPICXX}
@@ -46,7 +46,7 @@ endif
 #CXXFLAGS += -w -msse2 -DDUPLICATION -DCPU_SAMPLING_TIME -DJPV_CLIENT -I${KVS_SOURCE_DIR} -I${COMMON_DIR} -I${FUNC_DIR} -I./
 #CXXFLAGS += -w -qopt-report=5 -DSFMT_MEXP=607 -DCPU_SAMPLING_TIME -DJPV_CLIENT -I${KVS_SOURCE_DIR} -I${COMMON_DIR} -I${FUNC_DIR} -I./
 CXXFLAGS += -w -DCPU_SAMPLING_TIME -DJPV_CLIENT -I${KVS_SOURCE_DIR} -I${COMMON_DIR} -I${FUNC_DIR} -I./
-LDFLAGS  += -L${COMMON_DIR} -lpbvrCommon -L${FUNC_DIR} -lpbvrFunc -L${KVS_SOURCE_DIR}/Core/Release -lkvsCore
+LDFLAGS  += -L${COMMON_DIR} -lpbvrCommon -L${FUNC_DIR} -lpbvrFunc -L${KVS_SOURCE_DIR}/Release -lkvsCore
 
 SERVER_SRCS = CellByCellMetropolisSampling.cpp \
 			  CellByCellRejectionSampling.cpp \
