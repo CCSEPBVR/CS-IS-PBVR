@@ -1,0 +1,106 @@
+/****************************************************************************/
+/**
+ *  @file ColorMap.h
+ */
+/*----------------------------------------------------------------------------
+ *
+ *  Copyright (c) Visualization Laboratory, Kyoto University.
+ *  All rights reserved.
+ *  See http://www.viz.media.kyoto-u.ac.jp/kvs/copyright/ for details.
+ *
+ *  $Id: ColorMap.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
+ */
+/****************************************************************************/
+#ifndef KVS__COLOR_MAP_H_INCLUDE
+#define KVS__COLOR_MAP_H_INCLUDE
+
+#include <list>
+#include <utility>
+#include <kvs/ClassName>
+#include <kvs/ValueArray>
+#include <kvs/Type>
+#include <kvs/RGBColor>
+
+
+namespace kvs
+{
+
+/*==========================================================================*/
+/**
+ *  Color map class.
+ */
+/*==========================================================================*/
+class ColorMap
+{
+    kvsClassName( kvs::ColorMap );
+
+public:
+
+    typedef kvs::ValueArray<kvs::UInt8>    Table;
+    typedef std::pair<float,kvs::RGBColor> Point;
+    typedef std::list<Point>               Points;
+
+private:
+
+    size_t m_resolution; ///< table resolution
+    float  m_min_value;  ///< min. value
+    float  m_max_value;  ///< max. value
+    Points m_points;     ///< control point list
+    Table  m_table;      ///< value table
+
+public:
+
+    ColorMap( void );
+
+    explicit ColorMap( const size_t resolution );
+
+    explicit ColorMap( const Table& table );
+
+    ColorMap( const ColorMap& other );
+
+    ColorMap( const size_t resolution, const float min_value, const float max_value );
+
+    ColorMap( const Table& table, const float min_value, const float max_value );
+
+    virtual ~ColorMap( void );
+
+public:
+
+    const float minValue( void ) const;
+
+    const float maxValue( void ) const;
+
+    const size_t resolution( void ) const;
+
+    const Points& points( void ) const;
+
+    const Table& table( void ) const;
+
+public:
+
+    const bool hasRange( void ) const;
+
+    void setRange( const float min_value, const float max_value );
+
+    void setResolution( const size_t resolution );
+
+    void addPoint( const float value, const kvs::RGBColor color );
+
+    void removePoint( const float value );
+
+    void create( void );
+
+public:
+
+    const kvs::RGBColor operator []( const size_t index ) const;
+
+    const kvs::RGBColor at( const float value ) const;
+
+public:
+
+    ColorMap& operator =( const ColorMap& rhs );
+};
+
+} // end of namespace kvs
+
+#endif // KVS__COLOR_MAP_H_INCLUDE
