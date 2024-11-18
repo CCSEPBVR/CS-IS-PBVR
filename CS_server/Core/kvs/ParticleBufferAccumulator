@@ -1,1 +1,1 @@
-#include <Core/Visualization/Renderer/ParticleBufferAccumulator.h>
+#include <Visualization/Renderer/ParticleBufferAccumulator.h>

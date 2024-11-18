@@ -1,1 +1,1 @@
-#include <Core/Visualization/Object/GeometryObjectBase.h>
+#include <Visualization/Object/GeometryObjectBase.h>

@@ -1,1 +1,1 @@
-#include <Core/Visualization/Filter/StructuredVectorToScalar.h>
+#include <Visualization/Filter/StructuredVectorToScalar.h>

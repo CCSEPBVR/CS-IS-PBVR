@@ -1,1 +1,1 @@
-#include <Core/Visualization/Renderer/PointRenderer.h>
+#include <Visualization/Renderer/PointRenderer.h>

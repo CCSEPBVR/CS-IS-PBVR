@@ -1,1 +1,1 @@
-#include <Core/Visualization/Pipeline/VisualizationPipeline.h>
+#include <Visualization/Pipeline/VisualizationPipeline.h>

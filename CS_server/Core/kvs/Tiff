@@ -1,1 +1,1 @@
-#include <Core/FileFormat/TIFF/Tiff.h>
+#include <FileFormat/TIFF/Tiff.h>

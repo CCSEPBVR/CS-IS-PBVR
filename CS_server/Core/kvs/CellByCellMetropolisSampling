@@ -1,1 +1,1 @@
-#include <Core/Visualization/Mapper/CellByCellMetropolisSampling.h>
+#include <Visualization/Mapper/CellByCellMetropolisSampling.h>

@@ -1,1 +1,1 @@
-#include <Core/Image/BitImage.h>
+#include <Image/BitImage.h>

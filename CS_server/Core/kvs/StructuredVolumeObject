@@ -1,1 +1,1 @@
-#include <Core/Visualization/Object/StructuredVolumeObject.h>
+#include <Visualization/Object/StructuredVolumeObject.h>

@@ -13,7 +13,7 @@ include ./Makefile.def
 #=============================================================================
 #  INCLUDE_PATH, LIBRARY_PATH, LINK_LIBRARY, INSTALL_DIR.
 #=============================================================================
-INCLUDE_PATH := -I. -I..
+INCLUDE_PATH := -I.
 LIBRARY_PATH :=
 LINK_LIBRARY :=
 INSTALL_DIR  := ../../../$(KVS_DIR_NAME)

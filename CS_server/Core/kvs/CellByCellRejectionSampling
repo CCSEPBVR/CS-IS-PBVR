@@ -1,1 +1,1 @@
-#include <Core/Visualization/Mapper/CellByCellRejectionSampling.h>
+#include <Visualization/Mapper/CellByCellRejectionSampling.h>

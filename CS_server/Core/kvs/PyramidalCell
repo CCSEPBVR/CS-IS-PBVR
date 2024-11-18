@@ -1,1 +1,1 @@
-#include <Core/Visualization/Mapper/PyramidalCell.h>
+#include <Visualization/Mapper/PyramidalCell.h>

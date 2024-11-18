@@ -1,1 +1,1 @@
-#include <Core/Visualization/Filter/LineIntegralConvolution.h>
+#include <Visualization/Filter/LineIntegralConvolution.h>
