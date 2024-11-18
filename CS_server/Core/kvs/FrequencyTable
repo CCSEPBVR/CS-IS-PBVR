@@ -1,1 +1,1 @@
-#include <Core/Visualization/Mapper/FrequencyTable.h>
+#include <Visualization/Mapper/FrequencyTable.h>

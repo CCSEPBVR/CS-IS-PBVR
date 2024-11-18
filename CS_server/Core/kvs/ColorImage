@@ -1,1 +1,1 @@
-#include <Core/Image/ColorImage.h>
+#include <Image/ColorImage.h>

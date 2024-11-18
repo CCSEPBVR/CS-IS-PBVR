@@ -1,1 +1,1 @@
-#include <Core/Visualization/Mapper/CellByCellLayeredSampling.h>
+#include <Visualization/Mapper/CellByCellLayeredSampling.h>

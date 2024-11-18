@@ -4,12 +4,12 @@
  */
 /****************************************************************************/
 #include "AggregateTypeSubvolume.h"
-#include <Core/FileFormat/KVSML/UnstructuredVolumeObjectTag.h>
-#include <Core/FileFormat/KVSML/NodeTag.h>
-#include <Core/FileFormat/KVSML/CellTag.h>
-#include <Core/FileFormat/KVSML/ValueTag.h>
-#include <Core/FileFormat/KVSML/CoordTag.h>
-#include <Core/FileFormat/KVSML/ConnectionTag.h>
+#include <FileFormat/KVSML/UnstructuredVolumeObjectTag.h>
+#include <FileFormat/KVSML/NodeTag.h>
+#include <FileFormat/KVSML/CellTag.h>
+#include <FileFormat/KVSML/ValueTag.h>
+#include <FileFormat/KVSML/CoordTag.h>
+#include <FileFormat/KVSML/ConnectionTag.h>
 #include "DataArrayTag.h"
 #include <kvs/File>
 #include <kvs/AnyValueArray>

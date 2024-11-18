@@ -1,1 +1,1 @@
-#include <Core/Visualization/Renderer/ScatterPlotRenderer.h>
+#include <Visualization/Renderer/ScatterPlotRenderer.h>

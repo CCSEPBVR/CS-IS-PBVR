@@ -1,1 +1,1 @@
-#include <Core/Image/GrayImage.h>
+#include <Image/GrayImage.h>

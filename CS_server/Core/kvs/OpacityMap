@@ -1,1 +1,1 @@
-#include <Core/Visualization/Mapper/OpacityMap.h>
+#include <Visualization/Mapper/OpacityMap.h>

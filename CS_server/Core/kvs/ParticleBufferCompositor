@@ -1,1 +1,1 @@
-#include <Core/Visualization/Renderer/ParticleBufferCompositor.h>
+#include <Visualization/Renderer/ParticleBufferCompositor.h>

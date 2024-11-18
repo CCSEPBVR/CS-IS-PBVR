@@ -12,7 +12,7 @@
 #include <kvs/Type>
 #include <kvs/Vector3>
 #include <string>
-#include <Core/FileFormat/KVSML/ObjectTag.h>
+#include <FileFormat/KVSML/ObjectTag.h>
 
 
 namespace kvs

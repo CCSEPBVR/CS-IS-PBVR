@@ -1,1 +1,1 @@
-#include <Core/Visualization/Object/PointObject.h>
+#include <Visualization/Object/PointObject.h>

@@ -1,1 +1,1 @@
-#include <Core/Visualization/Viewer/ObjectManager.h>
+#include <Visualization/Viewer/ObjectManager.h>

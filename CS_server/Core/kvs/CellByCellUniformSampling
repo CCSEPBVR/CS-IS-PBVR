@@ -1,1 +1,1 @@
-#include <Core/Visualization/Mapper/CellByCellUniformSampling.h>
+#include <Visualization/Mapper/CellByCellUniformSampling.h>

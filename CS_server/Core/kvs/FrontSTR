@@ -1,1 +1,1 @@
-#include <Core/FileFormat/FrontSTR/FrontSTR.h>
+#include <FileFormat/FrontSTR/FrontSTR.h>

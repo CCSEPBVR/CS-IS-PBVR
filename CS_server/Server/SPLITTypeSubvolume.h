@@ -20,8 +20,8 @@
 #include <kvs/Type>
 #include <kvs/Vector3>
 #include <string>
-#include <Core/FileFormat/KVSML/KVSMLTag.h>
-#include <Core/FileFormat/KVSML/ObjectTag.h>
+#include <FileFormat/KVSML/KVSMLTag.h>
+#include <FileFormat/KVSML/ObjectTag.h>
 
 
 namespace pbvr

@@ -1,1 +1,1 @@
-#include <Core/Visualization/Viewer/GlobalCore.h>
+#include <Visualization/Viewer/GlobalCore.h>

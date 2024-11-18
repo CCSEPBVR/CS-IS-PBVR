@@ -1,1 +1,1 @@
-#include <Core/Visualization/Mapper/MarchingPyramidTable.h>
+#include <Visualization/Mapper/MarchingPyramidTable.h>

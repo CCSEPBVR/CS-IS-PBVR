@@ -1,1 +1,1 @@
-#include <Core/Visualization/Mapper/CellAdjacencyGraph.h>
+#include <Visualization/Mapper/CellAdjacencyGraph.h>

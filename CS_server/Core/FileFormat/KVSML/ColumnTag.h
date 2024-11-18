@@ -18,7 +18,7 @@
 #include <string>
 #include <kvs/XMLNode>
 #include <kvs/XMLElement>
-#include <Core/FileFormat/KVSML/TagBase.h>
+#include <FileFormat/KVSML/TagBase.h>
 
 
 namespace kvs

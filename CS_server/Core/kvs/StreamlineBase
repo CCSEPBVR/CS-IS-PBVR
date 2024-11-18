@@ -1,1 +1,1 @@
-#include <Core/Visualization/Mapper/StreamlineBase.h>
+#include <Visualization/Mapper/StreamlineBase.h>

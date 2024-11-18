@@ -1,1 +1,1 @@
-#include <Core/Image/RGBColor.h>
+#include <Image/RGBColor.h>
