@@ -13,7 +13,7 @@
 /****************************************************************************/
 #include "Vector.h"
 
-namespace kvs
+namespace vismodule
 {
 
 // Template instantiation.
@@ -28,4 +28,4 @@ template class Vector<unsigned long>;
 template class Vector<float>;
 template class Vector<double>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

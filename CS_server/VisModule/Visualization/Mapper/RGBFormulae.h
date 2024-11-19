@@ -12,19 +12,19 @@
  *  $Id$
  */
 /*****************************************************************************/
-#ifndef KVS__RGB_FORMULAE_H_INCLUDE
-#define KVS__RGB_FORMULAE_H_INCLUDE
+#ifndef VIS_MODULE__RGB_FORMULAE_H_INCLUDE
+#define VIS_MODULE__RGB_FORMULAE_H_INCLUDE
 
-#include <kvs/ColorMap>
+#include <vismodule/ColorMap>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace RGBFormulae
 {
 
-kvs::ColorMap Create( const int index0, const int index1, const int index2, const size_t resolution );
+vismodule::ColorMap Create( const int index0, const int index1, const int index2, const size_t resolution );
 
 /*===========================================================================*/
 /**
@@ -33,7 +33,7 @@ kvs::ColorMap Create( const int index0, const int index1, const int index2, cons
  *  @return colormap
  */
 /*===========================================================================*/
-inline kvs::ColorMap PM3D( const size_t resolution )
+inline vismodule::ColorMap PM3D( const size_t resolution )
 {
     return( Create( 7, 5, 15, resolution ) );
 }
@@ -45,7 +45,7 @@ inline kvs::ColorMap PM3D( const size_t resolution )
  *  @return colormap
  */
 /*===========================================================================*/
-inline kvs::ColorMap GreenRedViolet( const size_t resolution )
+inline vismodule::ColorMap GreenRedViolet( const size_t resolution )
 {
     return( Create( 3, 11, 6, resolution ) );
 }
@@ -57,7 +57,7 @@ inline kvs::ColorMap GreenRedViolet( const size_t resolution )
  *  @return colormap
  */
 /*===========================================================================*/
-inline kvs::ColorMap Ocean( const size_t resolution )
+inline vismodule::ColorMap Ocean( const size_t resolution )
 {
     return( Create( 23, 28, 3, resolution ) );
 }
@@ -69,7 +69,7 @@ inline kvs::ColorMap Ocean( const size_t resolution )
  *  @return colormap
  */
 /*===========================================================================*/
-inline kvs::ColorMap Hot( const size_t resolution )
+inline vismodule::ColorMap Hot( const size_t resolution )
 {
     return( Create( 21, 22, 23, resolution ) );
 }
@@ -81,7 +81,7 @@ inline kvs::ColorMap Hot( const size_t resolution )
  *  @return colormap
  */
 /*===========================================================================*/
-inline kvs::ColorMap ColorPrintable( const size_t resolution )
+inline vismodule::ColorMap ColorPrintable( const size_t resolution )
 {
     return( Create( 30, 31, 32, resolution ) );
 }
@@ -93,7 +93,7 @@ inline kvs::ColorMap ColorPrintable( const size_t resolution )
  *  @return colormap
  */
 /*===========================================================================*/
-inline kvs::ColorMap Rainbow( const size_t resolution )
+inline vismodule::ColorMap Rainbow( const size_t resolution )
 {
     return( Create( 33, 13, 10, resolution ) );
 }
@@ -105,7 +105,7 @@ inline kvs::ColorMap Rainbow( const size_t resolution )
  *  @return colormap
  */
 /*===========================================================================*/
-inline kvs::ColorMap AFMHot( const size_t resolution )
+inline vismodule::ColorMap AFMHot( const size_t resolution )
 {
     return( Create( 34, 35, 36, resolution ) );
 }
@@ -117,7 +117,7 @@ inline kvs::ColorMap AFMHot( const size_t resolution )
  *  @return colormap
  */
 /*===========================================================================*/
-inline kvs::ColorMap Jet( const size_t resolution )
+inline vismodule::ColorMap Jet( const size_t resolution )
 {
     return( Create( 37, 38, 39, resolution ) );
 }
@@ -129,13 +129,13 @@ inline kvs::ColorMap Jet( const size_t resolution )
  *  @return colormap
  */
 /*===========================================================================*/
-inline kvs::ColorMap Bone( const size_t resolution )
+inline vismodule::ColorMap Bone( const size_t resolution )
 {
     return( Create( 40, 41, 42, resolution ) );
 }
 
 } // end of namespace RGBFormulae
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__RGB_FORMULAE_H_INCLUDE
+#endif // VIS_MODULE__RGB_FORMULAE_H_INCLUDE

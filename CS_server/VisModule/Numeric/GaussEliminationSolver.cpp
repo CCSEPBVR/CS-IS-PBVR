@@ -13,13 +13,13 @@
  */
 /*****************************************************************************/
 #include "GaussEliminationSolver.h"
-#include <kvs/Matrix>
-#include <kvs/Vector>
-#include <kvs/Assert>
-#include <kvs/Message>
+#include <vismodule/Matrix>
+#include <vismodule/Vector>
+#include <vismodule/Assert>
+#include <vismodule/Message>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -40,7 +40,7 @@ GaussEliminationSolver<T>::GaussEliminationSolver( void )
  */
 /*===========================================================================*/
 template <typename T>
-GaussEliminationSolver<T>::GaussEliminationSolver( const kvs::Matrix<T>& A, const kvs::Vector<T>& b )
+GaussEliminationSolver<T>::GaussEliminationSolver( const vismodule::Matrix<T>& A, const vismodule::Vector<T>& b )
 {
     this->solve( A, b );
 }
@@ -64,13 +64,13 @@ GaussEliminationSolver<T>::~GaussEliminationSolver( void )
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector<T>& GaussEliminationSolver<T>::solve( const kvs::Matrix<T>& A, const kvs::Vector<T>& b )
+const vismodule::Vector<T>& GaussEliminationSolver<T>::solve( const vismodule::Matrix<T>& A, const vismodule::Vector<T>& b )
 {
-    KVS_ASSERT( A.nrows() == A.ncolumns() );
-    KVS_ASSERT( A.ncolumns() == b.size() );
+    VIS_MODULE_ASSERT( A.nrows() == A.ncolumns() );
+    VIS_MODULE_ASSERT( A.ncolumns() == b.size() );
 
-    kvs::Matrix<T> temp_mat( A );
-    kvs::Vector<T> temp_vec( b );
+    vismodule::Matrix<T> temp_mat( A );
+    vismodule::Vector<T> temp_vec( b );
 
     const int row = A.nrows();
     const int column = A.ncolumns();
@@ -81,16 +81,16 @@ const kvs::Vector<T>& GaussEliminationSolver<T>::solve( const kvs::Matrix<T>& A,
 
         // This matrix is a singular matrix. So it is impossible to
         // calculate the invert matrix, this method return a identity matrix.
-        if ( kvs::Math::Abs( temp_mat[index][k] ) < 1.0e-10 )
+        if ( vismodule::Math::Abs( temp_mat[index][k] ) < 1.0e-10 )
         {
-            kvsMessageError("Coefficient matrix is a singular marix.");
+            visModuleMessageError("Coefficient matrix is a singular marix.");
             return( *this );
         }
 
         // Swap the k-row vector and the index-row vector.
         if ( index != k )
         {
-            const kvs::Vector<T> temp_row = temp_mat[ k ];
+            const vismodule::Vector<T> temp_row = temp_mat[ k ];
             temp_mat[ k ]     = temp_mat[ index ];
             temp_mat[ index ] = temp_row;
 
@@ -132,7 +132,7 @@ const kvs::Vector<T>& GaussEliminationSolver<T>::solve( const kvs::Matrix<T>& A,
  */
 /*===========================================================================*/
 template <typename T>
-GaussEliminationSolver<T>& GaussEliminationSolver<T>::operator = ( const kvs::Vector<T>& v )
+GaussEliminationSolver<T>& GaussEliminationSolver<T>::operator = ( const vismodule::Vector<T>& v )
 {
     this->setSize( v.size() );
     for ( size_t i = 0; i < this->size(); ++i )
@@ -147,4 +147,4 @@ template class GaussEliminationSolver<int>;
 template class GaussEliminationSolver<float>;
 template class GaussEliminationSolver<double>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

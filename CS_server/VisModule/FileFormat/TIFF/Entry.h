@@ -11,17 +11,17 @@
  *  $Id: Entry.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__TIFF__ENTRY_H_INCLUDE
-#define KVS__TIFF__ENTRY_H_INCLUDE
+#ifndef VIS_MODULE__TIFF__ENTRY_H_INCLUDE
+#define VIS_MODULE__TIFF__ENTRY_H_INCLUDE
 
-#include <kvs/Type>
-#include <kvs/AnyValueArray>
+#include <vismodule/Type>
+#include <vismodule/AnyValueArray>
 #include <iostream>
 #include <fstream>
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace tiff
@@ -31,14 +31,14 @@ class Entry
 {
 protected:
 
-    kvs::UInt16        m_tag;    ///< tag
-    kvs::UInt16        m_type;   ///< value type
-    kvs::UInt32        m_count;  ///< value count
-    kvs::AnyValueArray m_values; ///< value array
+    vismodule::UInt16        m_tag;    ///< tag
+    vismodule::UInt16        m_type;   ///< value type
+    vismodule::UInt32        m_count;  ///< value count
+    vismodule::AnyValueArray m_values; ///< value array
 
 public:
 
-    Entry( const kvs::UInt16 tag );
+    Entry( const vismodule::UInt16 tag );
 
     Entry( std::ifstream& ifs );
 
@@ -50,17 +50,17 @@ public:
 
 public:
 
-    kvs::UInt16 tag( void ) const;
+    vismodule::UInt16 tag( void ) const;
 
-    kvs::UInt16 type( void ) const;
+    vismodule::UInt16 type( void ) const;
 
-    kvs::UInt32 count( void ) const;
+    vismodule::UInt32 count( void ) const;
 
     std::string tagDescription( void ) const;
 
     std::string typeName( void ) const;
 
-    kvs::AnyValueArray values( void ) const;
+    vismodule::AnyValueArray values( void ) const;
 
     bool read( std::ifstream& ifs );
 
@@ -71,6 +71,6 @@ private:
 
 } // end of namespace tiff
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TIFF__ENTRY_H_INCLUDE
+#endif // VIS_MODULE__TIFF__ENTRY_H_INCLUDE

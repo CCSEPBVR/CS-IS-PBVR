@@ -11,22 +11,22 @@
  *  $Id: VisualizationPipeline.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__VISUALIZATION_PIPELINE_H_INCLUDE
-#define KVS__VISUALIZATION_PIPELINE_H_INCLUDE
+#ifndef VIS_MODULE__VISUALIZATION_PIPELINE_H_INCLUDE
+#define VIS_MODULE__VISUALIZATION_PIPELINE_H_INCLUDE
 
 #include <iostream>
 #include <string>
 #include <list>
-#include <kvs/ClassName>
-#include <kvs/ObjectBase>
-#include <kvs/GeometryObjectBase>
-#include <kvs/VolumeObjectBase>
-#include <kvs/RendererBase>
-#include <kvs/Module>
-#include <kvs/PipelineModule>
+#include <vismodule/ClassName>
+#include <vismodule/ObjectBase>
+#include <vismodule/GeometryObjectBase>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/RendererBase>
+#include <vismodule/Module>
+#include <vismodule/PipelineModule>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -36,11 +36,11 @@ namespace kvs
 /*==========================================================================*/
 class VisualizationPipeline
 {
-    kvsClassName( kvs::VisualizationPipeline );
+    visModuleClassName( vismodule::VisualizationPipeline );
 
 public:
 
-    typedef std::list<kvs::PipelineModule> ModuleList;
+    typedef std::list<vismodule::PipelineModule> ModuleList;
 
 private:
 
@@ -49,8 +49,8 @@ private:
     bool        m_cache;       ///< cache mode (DISABLE NOW)
     ModuleList  m_module_list; ///< pipeline module list
 
-    const kvs::ObjectBase*   m_object;   ///< pointer to the object inserted to the manager
-    const kvs::RendererBase* m_renderer; ///< pointer to the renderer inserted to the manager
+    const vismodule::ObjectBase*   m_object;   ///< pointer to the object inserted to the manager
+    const vismodule::RendererBase* m_renderer; ///< pointer to the renderer inserted to the manager
 
 private:
 
@@ -60,13 +60,13 @@ public:
 
     explicit VisualizationPipeline( const std::string& filename );
 
-    explicit VisualizationPipeline( kvs::ObjectBase* object );
+    explicit VisualizationPipeline( vismodule::ObjectBase* object );
 
     virtual ~VisualizationPipeline( void );
 
 public:
 
-    VisualizationPipeline& connect( kvs::PipelineModule& module );
+    VisualizationPipeline& connect( vismodule::PipelineModule& module );
 
     bool import( void );
 
@@ -84,9 +84,9 @@ public:
 
     bool hasRenderer( void ) const;
 
-    const kvs::ObjectBase* object( void ) const;
+    const vismodule::ObjectBase* object( void ) const;
 
-    const kvs::RendererBase* renderer( void ) const;
+    const vismodule::RendererBase* renderer( void ) const;
 
     void print( void ) const;
 
@@ -100,19 +100,19 @@ private:
 
     bool create_object_module( const std::string& filename );
 
-    bool create_renderer_module( const kvs::ObjectBase* object );
+    bool create_renderer_module( const vismodule::ObjectBase* object );
 
-    bool create_renderer_module( const kvs::GeometryObjectBase* geometry );
+    bool create_renderer_module( const vismodule::GeometryObjectBase* geometry );
 
-    bool create_renderer_module( const kvs::VolumeObjectBase* volume );
+    bool create_renderer_module( const vismodule::VolumeObjectBase* volume );
 
 private:
 
-    ModuleList::iterator find_module( const kvs::PipelineModule::Category category );
+    ModuleList::iterator find_module( const vismodule::PipelineModule::Category category );
 
-    const size_t count_module( const kvs::PipelineModule::Category category ) const;
+    const size_t count_module( const vismodule::PipelineModule::Category category ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__VISUALIZATION_PIPELINE_H_INCLUDE
+#endif // VIS_MODULE__VISUALIZATION_PIPELINE_H_INCLUDE

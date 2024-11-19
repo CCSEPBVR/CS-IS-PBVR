@@ -16,13 +16,13 @@
 
 #include "ImporterBase.h"
 #include "ClassName.h"
-#include <kvs/Module>
+#include <vismodule/Module>
 #include "UnstructuredVolumeObject.h"
 #include "SPLITTypeSubvolume.h"
 #include "AggregateTypeSubvolume.h"
 #include "StepAggregateTypeSubvolume.h"
-#include <kvs/AVSUcd>
-#include <kvs/AVSField>
+#include <vismodule/AVSUcd>
+#include <vismodule/AVSField>
 
 
 namespace pbvr
@@ -34,16 +34,16 @@ namespace pbvr
  */
 /*==========================================================================*/
 class UnstructuredVolumeImporter:
-    public kvs::ImporterBase,
+    public vismodule::ImporterBase,
     public pbvr::UnstructuredVolumeObject
 {
     // Class name.
-    kvsClassName( pbvr::UnstructuredVolumeImporter );
+    visModuleClassName( pbvr::UnstructuredVolumeImporter );
 
     // Module information.
-    kvsModuleCategory( Importer );
-    kvsModuleBaseClass( kvs::ImporterBase );
-    kvsModuleSuperClass( pbvr::UnstructuredVolumeObject );
+    visModuleCategory( Importer );
+    visModuleBaseClass( vismodule::ImporterBase );
+    visModuleSuperClass( pbvr::UnstructuredVolumeObject );
 
 public:
 
@@ -51,7 +51,7 @@ public:
 
     UnstructuredVolumeImporter( const std::string& filename );
 
-    UnstructuredVolumeImporter( const kvs::FileFormatBase& file_format );
+    UnstructuredVolumeImporter( const vismodule::FileFormatBase& file_format );
 
     UnstructuredVolumeImporter( const std::string& filename, const int fileType, const int st, const int vl );
 
@@ -59,21 +59,21 @@ public:
 
 public:
 
-    SuperClass* exec( const kvs::FileFormatBase& file_format );
+    SuperClass* exec( const vismodule::FileFormatBase& file_format );
 
 private:
 
     void import( const pbvr::SPLITTypeSubvolume& kvsml );
 
-    void import( const kvs::AVSUcd& ucd );
+    void import( const vismodule::AVSUcd& ucd );
 
-    void import( const kvs::AVSField& field );
+    void import( const vismodule::AVSField& field );
 
-    void import( const kvs::AggregateTypeSubvolume& gs );
+    void import( const vismodule::AggregateTypeSubvolume& gs );
 
-    void import( const kvs::StepAggregateTypeSubvolume& gt );
+    void import( const vismodule::StepAggregateTypeSubvolume& gt );
 };
 
 } // end of namespace pbvr
 
-#endif // KVS__UNSTRUCTURED_VOLUME_IMPORTER_H_INCLUDE
+#endif // VIS_MODULE__UNSTRUCTURED_VOLUME_IMPORTER_H_INCLUDE

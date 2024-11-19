@@ -16,9 +16,9 @@
 #define PBVR__PRISMATIC_CELL_H_INCLUDE
 
 #include "ClassName.h"
-#include <kvs/Type>
-#include <kvs/Vector4>
-#include <kvs/Matrix44>
+#include <vismodule/Type>
+#include <vismodule/Vector4>
+#include <vismodule/Matrix44>
 #include "UnstructuredVolumeObject.h"
 #include "CellBase.h"
 
@@ -29,7 +29,7 @@ namespace pbvr
 template <typename T>
 class PrismaticCell : public pbvr::CellBase<T>
 {
-    kvsClassName( pbvr::PyramidalCell );
+    visModuleClassName( pbvr::PyramidalCell );
 
 public:
 
@@ -45,18 +45,18 @@ public:
 
     virtual ~PrismaticCell();
 
-    const kvs::Real32* interpolationFunctions( const kvs::Vector3f& point ) const;
-    const kvs::Real32* differentialFunctions( const kvs::Vector3f& point ) const;
-//    const kvs::Real32** interpolationFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const;
-//    const kvs::Real32** differentialFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const;
-    void interpolationFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const;
-    void differentialFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const;
+    const vismodule::Real32* interpolationFunctions( const vismodule::Vector3f& point ) const;
+    const vismodule::Real32* differentialFunctions( const vismodule::Vector3f& point ) const;
+//    const vismodule::Real32** interpolationFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const;
+//    const vismodule::Real32** differentialFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const;
+    void interpolationFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const;
+    void differentialFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const;
     void scalar_ary(float* scalar_array, const int loop_cnt ) const ;
     void grad_ary( float* grad_array_x, float* grad_array_y, float* grad_array_z, const int loop_cnt ) const ;
 
-    const kvs::Vector3f randomSampling() const;
-    const kvs::Vector3f randomSampling_MT(kvs::MersenneTwister* MT) const;
-    const kvs::Real32 volume() const;
+    const vismodule::Vector3f randomSampling() const;
+    const vismodule::Vector3f randomSampling_MT(vismodule::MersenneTwister* MT) const;
+    const vismodule::Real32 volume() const;
     void setLocalGravityPoint() const;
 };
 
@@ -111,7 +111,7 @@ inline void PrismaticCell<T>::scalar_ary( float* scalar_array, const int loop_cn
     #pragma ivdep
     for ( size_t i = 0; i < loop_cnt ; i++ )
     {
-        //scalar_array[i]= static_cast<kvs::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
+        //scalar_array[i]= static_cast<vismodule::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
         scalar_array[i] =  BaseClass::m_interpolation_functions_array[0][i] * BaseClass::m_scalars_array[0][i] 
                         +  BaseClass::m_interpolation_functions_array[1][i] * BaseClass::m_scalars_array[1][i]
                         +  BaseClass::m_interpolation_functions_array[2][i] * BaseClass::m_scalars_array[2][i]
@@ -151,7 +151,7 @@ inline void PrismaticCell<T>::grad_ary(float* grad_array_x, float* grad_array_y,
                               + ( BaseClass::m_scalars_array[ 3][i] * BaseClass::m_differential_functions_array[15][i]  )
                               + ( BaseClass::m_scalars_array[ 4][i] * BaseClass::m_differential_functions_array[16][i]  )
                               + ( BaseClass::m_scalars_array[ 5][i] * BaseClass::m_differential_functions_array[17][i]  );
-        const kvs::Vector3f g( dsdx, dsdy, dsdz );
+        const vismodule::Vector3f g( dsdx, dsdy, dsdz );
 
         ///////////////////////// JacobiMatrix /////////////////////////
 
@@ -242,7 +242,7 @@ inline void PrismaticCell<T>::grad_ary(float* grad_array_x, float* grad_array_y,
 
         float determinant = (float)det33;
 
-        kvs::Matrix33f J;
+        vismodule::Matrix33f J;
 /*
         J.set( ( dYdy * dZdz - dZdy * dYdz ), ( dYdx * dZdz - dZdx * dYdz ), ( dXdx * dYdz - dYdx * dXdz ),
                ( dXdy * dZdz - dZdy * dXdz ), ( dXdx * dZdz - dZdx * dXdz ), ( dXdx * dZdy - dZdx * dXdy ),
@@ -256,13 +256,13 @@ inline void PrismaticCell<T>::grad_ary(float* grad_array_x, float* grad_array_y,
         const T det_inverse = static_cast<T>( 1.0 / det33 );
 
         J *= det_inverse;
-        const kvs::Vector3f G = J * g;
+        const vismodule::Vector3f G = J * g;
 
         /////////////////////////   inverse   /////////////////////////
 
-        grad_array_x[i] =  kvs::Math::IsZero( determinant ) ? 0.0f : G.x();
-        grad_array_y[i] =  kvs::Math::IsZero( determinant ) ? 0.0f : G.y();
-        grad_array_z[i] =  kvs::Math::IsZero( determinant ) ? 0.0f : G.z();
+        grad_array_x[i] =  vismodule::Math::IsZero( determinant ) ? 0.0f : G.x();
+        grad_array_y[i] =  vismodule::Math::IsZero( determinant ) ? 0.0f : G.y();
+        grad_array_z[i] =  vismodule::Math::IsZero( determinant ) ? 0.0f : G.z();
 
         /////////////////////////// gradient ///////////////////////////
 
@@ -278,14 +278,14 @@ inline void PrismaticCell<T>::grad_ary(float* grad_array_x, float* grad_array_y,
  */
 /*==========================================================================*/
 template <typename T>
-const kvs::Real32* PrismaticCell<T>::interpolationFunctions( const kvs::Vector3f& point ) const
+const vismodule::Real32* PrismaticCell<T>::interpolationFunctions( const vismodule::Vector3f& point ) const
 {
     // 0 <= x,y,z <= 1, x + y <= 1
     const float x = point.x();
     const float y = point.y();
     const float z = point.z();
 
-    kvs::Real32* N = BaseClass::m_interpolation_functions;
+    vismodule::Real32* N = BaseClass::m_interpolation_functions;
     N[0] = ( 1 - x - y ) * z;
     N[1] = x * z;
     N[2] = y * z;
@@ -303,17 +303,17 @@ const kvs::Real32* PrismaticCell<T>::interpolationFunctions( const kvs::Vector3f
  */
 /*==========================================================================*/
 template <typename T>
-const kvs::Real32* PrismaticCell<T>::differentialFunctions( const kvs::Vector3f& point ) const
+const vismodule::Real32* PrismaticCell<T>::differentialFunctions( const vismodule::Vector3f& point ) const
 {
     const float x = point.x();
     const float y = point.y();
     const float z = point.z();
 
     const int nnodes = NumberOfNodes;
-    kvs::Real32* dN = BaseClass::m_differential_functions;
-    kvs::Real32* dNdx = dN;
-    kvs::Real32* dNdy = dNdx + nnodes;
-    kvs::Real32* dNdz = dNdy + nnodes;
+    vismodule::Real32* dN = BaseClass::m_differential_functions;
+    vismodule::Real32* dNdx = dN;
+    vismodule::Real32* dNdy = dNdx + nnodes;
+    vismodule::Real32* dNdz = dNdy + nnodes;
 
     dNdx[0] = -z;
     dNdx[1] =  z;
@@ -347,8 +347,8 @@ const kvs::Real32* PrismaticCell<T>::differentialFunctions( const kvs::Vector3f&
  */
 /*==========================================================================*/
 template <typename T>
-//const kvs::Real32** PrismaticCell<T>::interpolationFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const
-void PrismaticCell<T>::interpolationFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const
+//const vismodule::Real32** PrismaticCell<T>::interpolationFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const
+void PrismaticCell<T>::interpolationFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const
 {
     
     #pragma ivdep
@@ -359,7 +359,7 @@ void PrismaticCell<T>::interpolationFunctions_array( const kvs::Vector3f* local_
     const float y = local_array[i].y();
     const float z = local_array[i].z();
 
-//    kvs::Real32* N = BaseClass::m_interpolation_functions;
+//    vismodule::Real32* N = BaseClass::m_interpolation_functions;
 //    BaseClass::m_interpolation_functions_array[i][0] = ( 1 - x - y ) * z;
 //    BaseClass::m_interpolation_functions_array[i][1] = x * z;
 //    BaseClass::m_interpolation_functions_array[i][2] = y * z;
@@ -385,8 +385,8 @@ void PrismaticCell<T>::interpolationFunctions_array( const kvs::Vector3f* local_
  */
 /*==========================================================================*/
 template <typename T>
-//const kvs::Real32** PrismaticCell<T>::differentialFunctions_array(const kvs::Vector3f* local_array, const int loop_cnt ) const
-void PrismaticCell<T>::differentialFunctions_array(const kvs::Vector3f* local_array, const int loop_cnt ) const
+//const vismodule::Real32** PrismaticCell<T>::differentialFunctions_array(const vismodule::Vector3f* local_array, const int loop_cnt ) const
+void PrismaticCell<T>::differentialFunctions_array(const vismodule::Vector3f* local_array, const int loop_cnt ) const
 {
     
     #pragma ivdep
@@ -398,10 +398,10 @@ void PrismaticCell<T>::differentialFunctions_array(const kvs::Vector3f* local_ar
     const float z = local_array[i].z();
 
     //const int nnodes = NumberOfNodes;
-    //kvs::Real32* dN = BaseClass::m_differential_functions_array[i];
-    //kvs::Real32* dNdx = dN;
-    //kvs::Real32* dNdy = dNdx + nnodes;
-    //kvs::Real32* dNdz = dNdy + nnodes;
+    //vismodule::Real32* dN = BaseClass::m_differential_functions_array[i];
+    //vismodule::Real32* dNdx = dN;
+    //vismodule::Real32* dNdy = dNdx + nnodes;
+    //vismodule::Real32* dNdz = dNdy + nnodes;
 //    BaseClass::m_differential_functions_array[i][0] = -z;
 //    BaseClass::m_differential_functions_array[i][1] =  z;
 //    BaseClass::m_differential_functions_array[i][2] =  0;
@@ -455,7 +455,7 @@ void PrismaticCell<T>::differentialFunctions_array(const kvs::Vector3f* local_ar
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector3f PrismaticCell<T>::randomSampling() const
+const vismodule::Vector3f PrismaticCell<T>::randomSampling() const
 {
     // Generate a point in the local coordinate.
     /* const float s = BaseClass::randomNumber(); */
@@ -471,7 +471,7 @@ const kvs::Vector3f PrismaticCell<T>::randomSampling() const
         u = BaseClass::randomNumber();
     }
 
-    kvs::Vector3f point;
+    vismodule::Vector3f point;
     if ( s + t > 1.0f )
     {
         point[0] = 1.0f - t;
@@ -492,7 +492,7 @@ const kvs::Vector3f PrismaticCell<T>::randomSampling() const
 }
 
 template <typename T>
-const kvs::Vector3f PrismaticCell<T>::randomSampling_MT( kvs::MersenneTwister* MT ) const
+const vismodule::Vector3f PrismaticCell<T>::randomSampling_MT( vismodule::MersenneTwister* MT ) const
 {   
     // Generate a point in the local coordinate.
     /* const float s = BaseClass::randomNumber(); */
@@ -511,7 +511,7 @@ const kvs::Vector3f PrismaticCell<T>::randomSampling_MT( kvs::MersenneTwister* M
         u = (float)MT->rand();
 //    }
 
-    kvs::Vector3f point;
+    vismodule::Vector3f point;
     if ( s + t > 1.0f )
     {
         point[0] = 1.0f - t;
@@ -540,29 +540,29 @@ const kvs::Vector3f PrismaticCell<T>::randomSampling_MT( kvs::MersenneTwister* M
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Real32 PrismaticCell<T>::volume() const
+const vismodule::Real32 PrismaticCell<T>::volume() const
 {
     const size_t N = 9;
-    kvs::Vector3f P[ N ] =
+    vismodule::Vector3f P[ N ] =
     {
-        kvs::Vector3f( 0.3f, 0.3f, 0.2f ),
-        kvs::Vector3f( 0.6f, 0.3f, 0.2f ),
-        kvs::Vector3f( 0.3f, 0.6f, 0.2f ),
-        kvs::Vector3f( 0.3f, 0.3f, 0.5f ),
-        kvs::Vector3f( 0.6f, 0.3f, 0.5f ),
-        kvs::Vector3f( 0.3f, 0.6f, 0.5f ),
-        kvs::Vector3f( 0.3f, 0.3f, 0.8f ),
-        kvs::Vector3f( 0.6f, 0.3f, 0.8f ),
-        kvs::Vector3f( 0.3f, 0.6f, 0.8f )
+        vismodule::Vector3f( 0.3f, 0.3f, 0.2f ),
+        vismodule::Vector3f( 0.6f, 0.3f, 0.2f ),
+        vismodule::Vector3f( 0.3f, 0.6f, 0.2f ),
+        vismodule::Vector3f( 0.3f, 0.3f, 0.5f ),
+        vismodule::Vector3f( 0.6f, 0.3f, 0.5f ),
+        vismodule::Vector3f( 0.3f, 0.6f, 0.5f ),
+        vismodule::Vector3f( 0.3f, 0.3f, 0.8f ),
+        vismodule::Vector3f( 0.6f, 0.3f, 0.8f ),
+        vismodule::Vector3f( 0.3f, 0.6f, 0.8f )
     };
 
     float S = 0.0f;
     for ( size_t i = 0; i < N; i++ )
     {
         this->setLocalPoint( P[i] );
-        const kvs::Matrix33f J = BaseClass::JacobiMatrix();
+        const vismodule::Matrix33f J = BaseClass::JacobiMatrix();
         const float D = 0.5f * J.determinant();
-        S += kvs::Math::Abs<float>( D );
+        S += vismodule::Math::Abs<float>( D );
     }
 
     return S / N;
@@ -576,9 +576,9 @@ const kvs::Real32 PrismaticCell<T>::volume() const
 template <typename T>
 inline void PrismaticCell<T>::setLocalGravityPoint() const
 {
-    this->setLocalPoint( kvs::Vector3f( 1 / 3, 1 / 3, 0.5 ) );
+    this->setLocalPoint( vismodule::Vector3f( 1 / 3, 1 / 3, 0.5 ) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__PRISMATIC_CELL_H_INCLUDE
+#endif // VIS_MODULE__PRISMATIC_CELL_H_INCLUDE

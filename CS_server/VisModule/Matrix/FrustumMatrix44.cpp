@@ -15,10 +15,10 @@
 #include "FrustumMatrix44.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
-template kvs::Matrix44<float> FrustumMatrix44<float>(
+template vismodule::Matrix44<float> FrustumMatrix44<float>(
     const float left,
     const float right,
     const float bottom,
@@ -26,7 +26,7 @@ template kvs::Matrix44<float> FrustumMatrix44<float>(
     const float near,
     const float far );
 
-template kvs::Matrix44<double> FrustumMatrix44<double>(
+template vismodule::Matrix44<double> FrustumMatrix44<double>(
     const double left,
     const double right,
     const double bottom,
@@ -34,4 +34,4 @@ template kvs::Matrix44<double> FrustumMatrix44<double>(
     const double near,
     const double far );
 
-} // end of namespace kvs
+} // end of namespace vismodule

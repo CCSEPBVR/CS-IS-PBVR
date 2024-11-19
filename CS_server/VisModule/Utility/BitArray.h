@@ -11,17 +11,17 @@
  *  $Id: BitArray.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__BIT_ARRAY_H_INCLUDE
-#define KVS__BIT_ARRAY_H_INCLUDE
+#ifndef VIS_MODULE__BIT_ARRAY_H_INCLUDE
+#define VIS_MODULE__BIT_ARRAY_H_INCLUDE
 
 #include <iostream>
 #include <vector>
 
-#include <kvs/Type>
-#include <kvs/ClassName>
+#include <vismodule/Type>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class ReferenceCounter;
@@ -33,13 +33,13 @@ class ReferenceCounter;
 /*==========================================================================*/
 class BitArray
 {
-    kvsClassName( kvs::BitArray );
+    visModuleClassName( vismodule::BitArray );
 
 protected:
 
-    kvs::ReferenceCounter* m_counter; ///< reference counter
+    vismodule::ReferenceCounter* m_counter; ///< reference counter
     size_t                 m_nvalues; ///< number of values
-    kvs::UInt8*            m_values;  ///< value array (bit array)
+    vismodule::UInt8*            m_values;  ///< value array (bit array)
 
 public:
 
@@ -47,7 +47,7 @@ public:
 
     BitArray( const size_t nvalues );
 
-    BitArray( const kvs::UInt8* values, const size_t nvalues );
+    BitArray( const vismodule::UInt8* values, const size_t nvalues );
 
     BitArray( const bool* values, const size_t nvalues );
 
@@ -103,13 +103,13 @@ public:
 
     void deepCopy( const BitArray& other );
 
-    void deepCopy( const kvs::UInt8* values, const size_t nvalues );
+    void deepCopy( const vismodule::UInt8* values, const size_t nvalues );
 
     void deepCopy( const bool* values, const size_t nvalues );
 
 public:
 
-    kvs::UInt8* allocate( size_t nvalues );
+    vismodule::UInt8* allocate( size_t nvalues );
 
     void deallocate( void );
 
@@ -122,6 +122,6 @@ protected:
     void unref( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__BIT_ARRAY_H_INCLUDE
+#endif // VIS_MODULE__BIT_ARRAY_H_INCLUDE

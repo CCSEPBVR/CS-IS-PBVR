@@ -14,7 +14,7 @@
 #include "MarchingCubesTable.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace MarchingCubesTable
@@ -298,4 +298,4 @@ const int VertexID[12][2][3] =
 
 } // end of namespace MarchingCubesTable
 
-} // end of namespace kvs
+} // end of namespace vismodule

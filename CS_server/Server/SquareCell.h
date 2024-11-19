@@ -15,9 +15,9 @@
 #define PBVR__SQUARE_CELL_H_INCLUDE
 
 #include "ClassName.h"
-#include <kvs/Type>
-#include <kvs/Vector4>
-#include <kvs/Matrix44>
+#include <vismodule/Type>
+#include <vismodule/Vector4>
+#include <vismodule/Matrix44>
 #include "UnstructuredVolumeObject.h"
 #include "CellBase.h"
 
@@ -33,7 +33,7 @@ namespace pbvr
 template <typename T>
 class SquareCell : public pbvr::CellBase<T>
 {
-    kvsClassName( pbvr::SquareCell );
+    visModuleClassName( pbvr::SquareCell );
 
 public:
 
@@ -52,19 +52,19 @@ public:
 
 public:
 
-    const kvs::Real32* interpolationFunctions( const kvs::Vector3f& point ) const;
+    const vismodule::Real32* interpolationFunctions( const vismodule::Vector3f& point ) const;
 
-    const kvs::Real32* differentialFunctions( const kvs::Vector3f& point ) const;
+    const vismodule::Real32* differentialFunctions( const vismodule::Vector3f& point ) const;
 
-    const kvs::Vector3f randomSampling() const;
+    const vismodule::Vector3f randomSampling() const;
 
-    const kvs::Real32 volume() const;
+    const vismodule::Real32 volume() const;
 
-    //const kvs::Vector3f transformGlobalToLocal( const kvs::Vector3f& point ) const;
+    //const vismodule::Vector3f transformGlobalToLocal( const vismodule::Vector3f& point ) const;
 
-    //const kvs::Vector3f transformLocalToGlobal( const kvs::Vector3f& point ) const;
+    //const vismodule::Vector3f transformLocalToGlobal( const vismodule::Vector3f& point ) const;
 
-    const kvs::Vector3f gradient() const;
+    const vismodule::Vector3f gradient() const;
 
     void setLocalGravityPoint() const;
 };
@@ -102,7 +102,7 @@ inline SquareCell<T>::~SquareCell()
  */
 /*==========================================================================*/
 template <typename T>
-inline const kvs::Real32* SquareCell<T>::interpolationFunctions( const kvs::Vector3f& point ) const
+inline const vismodule::Real32* SquareCell<T>::interpolationFunctions( const vismodule::Vector3f& point ) const
 {
     const float x = point.x();
     const float y = point.y();
@@ -123,20 +123,20 @@ inline const kvs::Real32* SquareCell<T>::interpolationFunctions( const kvs::Vect
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Vector3f SquareCell<T>::gradient() const
+inline const vismodule::Vector3f SquareCell<T>::gradient() const
 {
     //Local coord (x,y), Global coord (X,Y,Z)=V.  V=V(x,y).
     //Normal of surface = dV/dx cross dV/dy
     const float* dN = BaseClass::m_differential_functions;
-    const kvs::Vector3f* V = BaseClass::m_vertices;
+    const vismodule::Vector3f* V = BaseClass::m_vertices;
     const size_t nnodes = BaseClass::m_nnodes;
 
     // dV/dx
-    kvs::Vector3f dVdx( 0, 0, 0 );
+    vismodule::Vector3f dVdx( 0, 0, 0 );
     for ( size_t i = 0; i < nnodes; i++ ) dVdx += dN[i] * V[i];
 
     // dV/dy
-    kvs::Vector3f dVdy( 0, 0, 0 );
+    vismodule::Vector3f dVdy( 0, 0, 0 );
     for ( size_t i = 0; i < nnodes; i++ ) dVdy += dN[i + nnodes] * V[i];
 
     return dVdx.cross( dVdy );
@@ -149,7 +149,7 @@ inline const kvs::Vector3f SquareCell<T>::gradient() const
  */
 /*==========================================================================*/
 template <typename T>
-inline const kvs::Real32* SquareCell<T>::differentialFunctions( const kvs::Vector3f& point ) const
+inline const vismodule::Real32* SquareCell<T>::differentialFunctions( const vismodule::Vector3f& point ) const
 {
     const float x = point.x();
     const float y = point.y();
@@ -182,14 +182,14 @@ inline const kvs::Real32* SquareCell<T>::differentialFunctions( const kvs::Vecto
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector3f SquareCell<T>::randomSampling() const
+const vismodule::Vector3f SquareCell<T>::randomSampling() const
 {
     // Generate a point in the local coordinate.
     const float s = BaseClass::randomNumber();
     const float t = BaseClass::randomNumber();
     const float u = 0.0f;
 
-    const kvs::Vector3f point( s, t, u );
+    const vismodule::Vector3f point( s, t, u );
     this->setLocalPoint( point );
     BaseClass::m_global_point = BaseClass::transformLocalToGlobal( point );
 
@@ -203,14 +203,14 @@ const kvs::Vector3f SquareCell<T>::randomSampling() const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Real32 SquareCell<T>::volume() const
+inline const vismodule::Real32 SquareCell<T>::volume() const
 {
-    const kvs::Vector3f v01( BaseClass::m_vertices[1] - BaseClass::m_vertices[0] );
-    const kvs::Vector3f v02( BaseClass::m_vertices[2] - BaseClass::m_vertices[0] );
-    const kvs::Vector3f v03( BaseClass::m_vertices[3] - BaseClass::m_vertices[0] );
+    const vismodule::Vector3f v01( BaseClass::m_vertices[1] - BaseClass::m_vertices[0] );
+    const vismodule::Vector3f v02( BaseClass::m_vertices[2] - BaseClass::m_vertices[0] );
+    const vismodule::Vector3f v03( BaseClass::m_vertices[3] - BaseClass::m_vertices[0] );
 
-    const kvs::Vector3f area012 = v01.cross( v02 );
-    const kvs::Vector3f area023 = v02.cross( v03 );
+    const vismodule::Vector3f area012 = v01.cross( v02 );
+    const vismodule::Vector3f area023 = v02.cross( v03 );
 
     return 0.5f * ( area012.length() + area023.length() );
 }
@@ -227,4 +227,4 @@ inline void SquareCell<T>::setLocalGravityPoint() const
 
 } // end of namespace pbvr
 
-#endif // KVS__HEXAHEDRAL_CELL_H_INCLUDE
+#endif // VIS_MODULE__HEXAHEDRAL_CELL_H_INCLUDE

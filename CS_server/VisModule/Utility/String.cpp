@@ -17,10 +17,10 @@
 #include <cstdlib>
 #include <cctype>
 #include <cstring>
-#include <kvs/DebugNew>
-#include <kvs/Message>
-#include <kvs/Assert>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/DebugNew>
+#include <vismodule/Message>
+#include <vismodule/Assert>
+#include <vismodule/IgnoreUnusedVariable>
 
 
 namespace
@@ -51,7 +51,7 @@ inline int Compare( register const char* str1, register const char* str2 )
 
 }
 
-namespace kvs
+namespace vismodule
 {
 
 String::String( void ):
@@ -86,14 +86,14 @@ String::~String( void )
 
 char& String::operator []( size_t index )
 {
-    KVS_ASSERT( index <= m_size );
+    VIS_MODULE_ASSERT( index <= m_size );
 
     return( m_data[ index ] );
 }
 
 const char String::operator []( size_t index ) const
 {
-    KVS_ASSERT( index <= m_size );
+    VIS_MODULE_ASSERT( index <= m_size );
 
     return( m_data[ index ] );
 }
@@ -109,7 +109,7 @@ String& String::operator =( const std::string& str )
         m_data = new char [ size + 1 ];
         if ( !m_data )
         {
-            kvsMessageError( "Cannot allocate memory." );
+            visModuleMessageError( "Cannot allocate memory." );
             return( *this );
         }
         memset( m_data, '\0', size + 1 );
@@ -131,7 +131,7 @@ String& String::operator =( const String& str )
         m_data = new char [ size + 1 ];
         if ( !m_data )
         {
-            kvsMessageError( "Cannot allocate memory." );
+            visModuleMessageError( "Cannot allocate memory." );
             return( *this );
         }
         memset( m_data, '\0', size + 1 );
@@ -155,7 +155,7 @@ String& String::operator +=( const std::string& str )
         char* data = new char [ size + 1 ];
         if ( !data )
         {
-            kvsMessageError( "Cannot allocate memory." );
+            visModuleMessageError( "Cannot allocate memory." );
             return( *this );
         }
         memset( data, '\0', size + 1 );
@@ -187,7 +187,7 @@ String& String::operator +=( const String& str )
         char* data = new char [ size + 1 ];
         if ( !data )
         {
-            kvsMessageError( "Cannot allocate memory." );
+            visModuleMessageError( "Cannot allocate memory." );
             return( *this );
         }
         memset( data, '\0', size + 1 );
@@ -253,14 +253,14 @@ std::ostream& operator <<( std::ostream& os, const String& str )
 
 char& String::at( size_t index )
 {
-    KVS_ASSERT( index <= m_size );
+    VIS_MODULE_ASSERT( index <= m_size );
 
     return( m_data[ index ] );
 }
 
 const char String::at( size_t index ) const
 {
-    KVS_ASSERT( index <= m_size );
+    VIS_MODULE_ASSERT( index <= m_size );
 
     return( m_data[ index ] );
 }
@@ -292,7 +292,7 @@ void String::upper( void )
 
 void String::upper( size_t index )
 {
-    KVS_ASSERT( index < m_size );
+    VIS_MODULE_ASSERT( index < m_size );
 
     m_data[ index ] = static_cast<char>( std::toupper( m_data[ index ] ) );
 }
@@ -309,7 +309,7 @@ void String::lower( void )
 
 void String::lower( size_t index )
 {
-    KVS_ASSERT( index < m_size );
+    VIS_MODULE_ASSERT( index < m_size );
 
     m_data[ index ] = static_cast<char>( std::tolower( m_data[ index ] ) );
 }
@@ -328,7 +328,7 @@ void String::format( const char* str, ... )
             buffer = new char [ buffer_size ];
             if ( !buffer )
             {
-                kvsMessageError( "Cannot allocate memory." );
+                visModuleMessageError( "Cannot allocate memory." );
                 break;
             }
             memset( buffer, '\0', buffer_size );
@@ -353,7 +353,7 @@ void String::format( const char* str, ... )
         m_data = new char [ size + 1 ];
         if ( !m_data )
         {
-            kvsMessageError( "Cannot allocate memory." );
+            visModuleMessageError( "Cannot allocate memory." );
             return;
         }
         memset( m_data, '\0', size + 1 );
@@ -426,14 +426,14 @@ const unsigned long String::toNumber<unsigned long>( int base ) const
 template<>
 const float String::toNumber<float>( int base ) const
 {
-    kvs::IgnoreUnusedVariable( base );
+    vismodule::IgnoreUnusedVariable( base );
     return( static_cast<float>( strtod( m_data, NULL ) ) );
 }
 
 template<>
 const double String::toNumber<double>( int base ) const
 {
-    kvs::IgnoreUnusedVariable( base );
+    vismodule::IgnoreUnusedVariable( base );
     return( strtod( m_data, NULL ) );
 }
 
@@ -469,4 +469,4 @@ template<> const unsigned long String::toNumber( const std::string& str, int bas
 template<> const float String::toNumber( const std::string& str, int base );
 template<> const double String::toNumber( const std::string& str, int base );
 
-} // end of namespace kvs
+} // end of namespace vismodule

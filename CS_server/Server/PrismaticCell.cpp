@@ -28,4 +28,4 @@ template class PrismaticCell<long>;
 template class PrismaticCell<unsigned long>;
 template class PrismaticCell<float>;
 template class PrismaticCell<double>;
-} // end of namespace kvs
+} // end of namespace vismodule

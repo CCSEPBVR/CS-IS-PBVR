@@ -11,8 +11,8 @@
  *  $Id: CellByCellHistogram.cpp 633 2010-10-10 05:12:37Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include <kvs/Compiler>
-#ifdef KVS_COMPILER_VC
+#include <vismodule/Compiler>
+#ifdef VIS_MODULE_COMPILER_VC
 #include <time.h>
 #else
 #include <sys/time.h>
@@ -20,11 +20,11 @@
 #include "CellByCellHistogram.h"
 #include <vector>
 #include <stdlib.h>
-#include <kvs/DebugNew>
+#include <vismodule/DebugNew>
 #include "ObjectManager.h"
-#include <kvs/Camera>
-//#include <kvs/TrilinearInterpolator>
-#include <kvs/Value>
+#include <vismodule/Camera>
+//#include <vismodule/TrilinearInterpolator>
+#include <vismodule/Value>
 #include "CellBase.h"
 #include "TrilinearInterpolator.h" 
 #include "TetrahedralCell.h"
@@ -46,7 +46,7 @@
 #ifdef ENABLE_MPI
 #include <mpi.h>
 #include "mpi_controller.h"
-#include <kvs/DistributedUniformSampling>
+#include <vismodule/DistributedUniformSampling>
 #endif
 
 #ifdef _OPENMP
@@ -126,7 +126,7 @@ CellByCellHistogram::CellByCellHistogram(
  */
 /*===========================================================================*/
 CellByCellHistogram::CellByCellHistogram(
-    const kvs::Camera&           camera,
+    const vismodule::Camera&           camera,
     const pbvr::VolumeObjectBase& volume,
     const size_t                 subpixel_level,
     const float                  sampling_step,
@@ -155,7 +155,7 @@ CellByCellHistogram::CellByCellHistogram(
 }
 
 CellByCellHistogram::CellByCellHistogram(
-    const kvs::Camera&           camera,
+    const vismodule::Camera&           camera,
     const pbvr::VolumeObjectBase& volume,
     const size_t                 subpixel_level,
     const float                  sampling_step,
@@ -230,7 +230,7 @@ const float CellByCellHistogram::objectDepth() const
  *  @param  camera [in] pointer to the camera
  */
 /*===========================================================================*/
-void CellByCellHistogram::attachCamera( const kvs::Camera& camera )
+void CellByCellHistogram::attachCamera( const vismodule::Camera& camera )
 {
     m_camera = &camera;
 }
@@ -280,7 +280,7 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::exec( const pbvr::ObjectBa
     if ( !&object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError( "Input object is NULL." );
+        visModuleMessageError( "Input object is NULL." );
         return NULL;
     }
 
@@ -288,14 +288,14 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::exec( const pbvr::ObjectBa
     if ( !volume )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError( "Input object is not volume dat." );
+        visModuleMessageError( "Input object is not volume dat." );
         return NULL;
     }
 
     const pbvr::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
     if ( volume_type == pbvr::VolumeObjectBase::Structured )
     {
-//        const kvs::Camera* camera = ( !m_camera ) ? pbvr::GlobalCore::camera : m_camera;
+//        const vismodule::Camera* camera = ( !m_camera ) ? pbvr::GlobalCore::camera : m_camera;
 //        this->mapping( camera, reinterpret_cast<const pbvr::StructuredVolumeObject*>( object ) );
         const pbvr::StructuredVolumeObject* svo_p = static_cast<const pbvr::StructuredVolumeObject*>( &object );
         if ( m_camera )
@@ -310,14 +310,14 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::exec( const pbvr::ObjectBa
             {
                 if ( pbvr::GlobalCore::m_camera->windowWidth() != 0 && pbvr::GlobalCore::m_camera->windowHeight() )
                 {
-                    const kvs::Camera* camera = pbvr::GlobalCore::m_camera;
+                    const vismodule::Camera* camera = pbvr::GlobalCore::m_camera;
 //                    this->mapping( camera, reinterpret_cast<const pbvr::StructuredVolumeObject*>( object ) );
                     this->mapping( *camera, *svo_p);
                 }
             }
             else
             {
-                kvs::Camera* camera = new kvs::Camera();
+                vismodule::Camera* camera = new vismodule::Camera();
                 //this->mapping( camera, reinterpret_cast<const pbvr::StructuredVolumeObject*>( object ) );
                 this->mapping( *camera, *svo_p);
                 delete camera;
@@ -338,13 +338,13 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::exec( const pbvr::ObjectBa
             {
                 if ( pbvr::GlobalCore::m_camera->windowWidth() != 0 && pbvr::GlobalCore::m_camera->windowHeight() )
                 {
-                    const kvs::Camera* camera = pbvr::GlobalCore::m_camera;
+                    const vismodule::Camera* camera = pbvr::GlobalCore::m_camera;
                     this->mapping( *camera, *uvo_p );
                 }
             }
             else
             {
-                kvs::Camera* camera = new kvs::Camera();
+                vismodule::Camera* camera = new vismodule::Camera();
                 this->mapping( *camera, *uvo_p );
                 delete camera;
             }
@@ -361,7 +361,7 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::exec( const pbvr::ObjectBa
  *  @param  volume [in] pointer to the input volume object
  */
 /*===========================================================================*/
-void CellByCellHistogram::mapping( const kvs::Camera& camera, const pbvr::StructuredVolumeObject& volume )
+void CellByCellHistogram::mapping( const vismodule::Camera& camera, const pbvr::StructuredVolumeObject& volume )
 {
     // Attach the pointer to the volume object and set the min/max coordinates.
     BaseClass::attach_volume( volume );
@@ -411,23 +411,23 @@ void CellByCellHistogram::mapping( const kvs::Camera& camera, const pbvr::Struct
 
     // Generate the particles.
     const std::type_info& type = volume.values().typeInfo()->type();
-    if (      type == typeid( kvs::Int8   ) ) this->generate_histogram<kvs::Int8>( volume );
-    else if ( type == typeid( kvs::Int16  ) ) this->generate_histogram<kvs::Int16>( volume );
-    else if ( type == typeid( kvs::Int32  ) ) this->generate_histogram<kvs::Int32>( volume );
-    else if ( type == typeid( kvs::UInt8  ) ) this->generate_histogram<kvs::UInt8>( volume );
-    else if ( type == typeid( kvs::UInt16 ) ) this->generate_histogram<kvs::UInt16>( volume );
-    else if ( type == typeid( kvs::UInt32 ) ) this->generate_histogram<kvs::UInt32>( volume );
-    else if ( type == typeid( kvs::Real32 ) ) this->generate_histogram<kvs::Real32>( volume );
-    else if ( type == typeid( kvs::Real64 ) ) this->generate_histogram<kvs::Real64>( volume );
+    if (      type == typeid( vismodule::Int8   ) ) this->generate_histogram<vismodule::Int8>( volume );
+    else if ( type == typeid( vismodule::Int16  ) ) this->generate_histogram<vismodule::Int16>( volume );
+    else if ( type == typeid( vismodule::Int32  ) ) this->generate_histogram<vismodule::Int32>( volume );
+    else if ( type == typeid( vismodule::UInt8  ) ) this->generate_histogram<vismodule::UInt8>( volume );
+    else if ( type == typeid( vismodule::UInt16 ) ) this->generate_histogram<vismodule::UInt16>( volume );
+    else if ( type == typeid( vismodule::UInt32 ) ) this->generate_histogram<vismodule::UInt32>( volume );
+    else if ( type == typeid( vismodule::Real32 ) ) this->generate_histogram<vismodule::Real32>( volume );
+    else if ( type == typeid( vismodule::Real64 ) ) this->generate_histogram<vismodule::Real64>( volume );
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError( "Unsupported data type '%s'.", volume.values().typeInfo()->typeName() );
+        visModuleMessageError( "Unsupported data type '%s'.", volume.values().typeInfo()->typeName() );
     }
 }
 
 template <>
-void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::UnstructuredVolumeObject& volume );
+void CellByCellHistogram::generate_histogram<vismodule::Real32>( const pbvr::UnstructuredVolumeObject& volume );
 
 /*===========================================================================*/
 /**
@@ -436,7 +436,7 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
  *  @param  volume [in] pointer to the input volume object
  */
 /*===========================================================================*/
-void CellByCellHistogram::mapping( const kvs::Camera& camera, const pbvr::UnstructuredVolumeObject& volume )
+void CellByCellHistogram::mapping( const vismodule::Camera& camera, const pbvr::UnstructuredVolumeObject& volume )
 {
     // Attach the pointer to the volume object and set the min/max coordinates.
     BaseClass::attach_volume( volume );
@@ -488,59 +488,59 @@ void CellByCellHistogram::mapping( const kvs::Camera& camera, const pbvr::Unstru
 //    const float min_value = static_cast<float>( volume.minValue() );
 //    const float max_value = static_cast<float>( volume.maxValue() );
     const std::type_info& type = volume.values().typeInfo()->type();
-    if (      type == typeid( kvs::Int8   ) )
+    if (      type == typeid( vismodule::Int8   ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( -128, 127 );
-        this->generate_histogram<kvs::Int8>( volume );
+        this->generate_histogram<vismodule::Int8>( volume );
     }
-    else if ( type == typeid( kvs::Int16  ) )
+    else if ( type == typeid( vismodule::Int16  ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_histogram<kvs::Int16>( volume );
+        this->generate_histogram<vismodule::Int16>( volume );
     }
-    else if ( type == typeid( kvs::Int32  ) )
+    else if ( type == typeid( vismodule::Int32  ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_histogram<kvs::Int32>( volume );
+        this->generate_histogram<vismodule::Int32>( volume );
     }
-    else if ( type == typeid( kvs::Int64  ) )
+    else if ( type == typeid( vismodule::Int64  ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_histogram<kvs::Int64>( volume );
+        this->generate_histogram<vismodule::Int64>( volume );
     }
-    else if ( type == typeid( kvs::UInt8  ) )
+    else if ( type == typeid( vismodule::UInt8  ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( 0, 255 );
-        this->generate_histogram<kvs::UInt8>( volume );
+        this->generate_histogram<vismodule::UInt8>( volume );
     }
-    else if ( type == typeid( kvs::UInt16 ) )
+    else if ( type == typeid( vismodule::UInt16 ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_histogram<kvs::UInt16>( volume );
+        this->generate_histogram<vismodule::UInt16>( volume );
     }
-    else if ( type == typeid( kvs::UInt32 ) )
+    else if ( type == typeid( vismodule::UInt32 ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_histogram<kvs::UInt32>( volume );
+        this->generate_histogram<vismodule::UInt32>( volume );
     }
-    else if ( type == typeid( kvs::UInt64 ) )
+    else if ( type == typeid( vismodule::UInt64 ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_histogram<kvs::UInt64>( volume );
+        this->generate_histogram<vismodule::UInt64>( volume );
     }
-    else if ( type == typeid( kvs::Real32 ) )
+    else if ( type == typeid( vismodule::Real32 ) )
     {
-        this->generate_histogram<kvs::Real32>( volume );
+        this->generate_histogram<vismodule::Real32>( volume );
     }
-    else if ( type == typeid( kvs::Real64 ) )
+    else if ( type == typeid( vismodule::Real64 ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_histogram<kvs::Real64>( volume );
+        this->generate_histogram<vismodule::Real64>( volume );
     }
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError( "Unsupported data type '%s'.", volume.values().typeInfo()->typeName() );
+        visModuleMessageError( "Unsupported data type '%s'.", volume.values().typeInfo()->typeName() );
     }
 }
 
@@ -554,10 +554,10 @@ template <typename T>
 void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject& volume )
 {
 
-    kvs::AnyValueArray valueArray = volume.values(); 
+    vismodule::AnyValueArray valueArray = volume.values(); 
     int nnodes = volume.nnodes();
     
-    const kvs::Vector3ui resolution( volume.resolution() );
+    const vismodule::Vector3ui resolution( volume.resolution() );
     const int nvariables = volume.veclen();
     Type** values;
     values = new Type * [nvariables];
@@ -608,14 +608,14 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
 
     //ｿｿｿｿｿｿ
     int nbins = 256;
-    kvs::ValueArray<float> o_min( tf_number );//TFSｿｿｿｿｿｿｿｿｿｿｿ
-    kvs::ValueArray<float> o_max( tf_number );
-    kvs::ValueArray<float> c_min( tf_number );
-    kvs::ValueArray<float> c_max( tf_number );
+    vismodule::ValueArray<float> o_min( tf_number );//TFSｿｿｿｿｿｿｿｿｿｿｿ
+    vismodule::ValueArray<float> o_max( tf_number );
+    vismodule::ValueArray<float> c_min( tf_number );
+    vismodule::ValueArray<float> c_max( tf_number );
 
     // 2023/07/31 add by shimomura
-    SuperClass::m_c_histogram = kvs::ValueArray<int> (tf_number * nbins);
-    SuperClass::m_o_histogram = kvs::ValueArray<int> (tf_number * nbins);
+    SuperClass::m_c_histogram = vismodule::ValueArray<int> (tf_number * nbins);
+    SuperClass::m_o_histogram = vismodule::ValueArray<int> (tf_number * nbins);
     SuperClass::setTfnumber(tf_number);
     SuperClass::setNbins(nbins);
 
@@ -630,10 +630,10 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
     }
 
     //ｿｿｿｿｿ
-    kvs::ValueArray<float> O_min( tf_number );//ｿｿｿｿｿｿｿｿｿｿｿ
-    kvs::ValueArray<float> O_max( tf_number );
-    kvs::ValueArray<float> C_min( tf_number );
-    kvs::ValueArray<float> C_max( tf_number );
+    vismodule::ValueArray<float> O_min( tf_number );//ｿｿｿｿｿｿｿｿｿｿｿ
+    vismodule::ValueArray<float> O_max( tf_number );
+    vismodule::ValueArray<float> C_min( tf_number );
+    vismodule::ValueArray<float> C_max( tf_number );
 
     // ｿｿｿｿｿｿｿｿｿｿ
     std::vector<float> vertex_coords;
@@ -707,7 +707,7 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
 
         int th_total_nparticles = 0;
         //ｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿ
-        kvs::MersenneTwister MT( thid + mpi_rank * nthreads );
+        vismodule::MersenneTwister MT( thid + mpi_rank * nthreads );
 
         // ｿｿｿｿｿｿｿｿｿｿ
         std::vector<float> th_vertex_coords;
@@ -727,8 +727,8 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
             c_scalars[i] = new float[SIMDW];
         }
 
-        kvs::ValueArray<int> th_o_histogram( tf_number * nbins );//ｿｿｿｿ
-        kvs::ValueArray<int> th_c_histogram( tf_number * nbins );//ｿ
+        vismodule::ValueArray<int> th_o_histogram( tf_number * nbins );//ｿｿｿｿ
+        vismodule::ValueArray<int> th_c_histogram( tf_number * nbins );//ｿ
 
         if( parameter_file_opened )
         {
@@ -737,10 +737,10 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
         }
 
         //ｿｿｿｿｿ
-        kvs::ValueArray<float> th_O_min( tf_number );//ｿｿｿｿｿｿｿｿｿｿｿ
-        kvs::ValueArray<float> th_O_max( tf_number );
-        kvs::ValueArray<float> th_C_min( tf_number );
-        kvs::ValueArray<float> th_C_max( tf_number );
+        vismodule::ValueArray<float> th_O_min( tf_number );//ｿｿｿｿｿｿｿｿｿｿｿ
+        vismodule::ValueArray<float> th_O_max( tf_number );
+        vismodule::ValueArray<float> th_C_min( tf_number );
+        vismodule::ValueArray<float> th_C_max( tf_number );
 
         if( parameter_file_opened )
         {
@@ -753,9 +753,9 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
             }
         }
 
-        const kvs::Vector3f min_vec = volume.minObjectCoord(); 
-        const kvs::Vector3f max_vec = volume.maxObjectCoord(); 
-        const kvs::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ nx_1,
+        const vismodule::Vector3f min_vec = volume.minObjectCoord(); 
+        const vismodule::Vector3f max_vec = volume.maxObjectCoord(); 
+        const vismodule::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ nx_1,
                                          (max_vec.y() - min_vec.y() )/ ny_1,
                                          (max_vec.z() - min_vec.z() )/ nz_1) ;
         //-----------------------------------------//
@@ -959,9 +959,9 @@ template <typename T>
 void CellByCellHistogram::generate_histogram( const pbvr::UnstructuredVolumeObject& volume )
 {
     // Vertex data arrays. (output)
-    std::vector<kvs::Real32> vertex_coords;
-    std::vector<kvs::UInt8>  vertex_colors;
-    std::vector<kvs::Real32> vertex_normals;
+    std::vector<vismodule::Real32> vertex_coords;
+    std::vector<vismodule::UInt8>  vertex_colors;
+    std::vector<vismodule::Real32> vertex_normals;
 
     // Set a tetrahedral cell interpolator.
     pbvr::CellBase<T>* cell = NULL;
@@ -1020,7 +1020,7 @@ void CellByCellHistogram::generate_histogram( const pbvr::UnstructuredVolumeObje
     default:
     {
         BaseClass::m_is_success = false;
-        kvsMessageError( "Unsupported cell type." );
+        visModuleMessageError( "Unsupported cell type." );
         return;
     }
     }
@@ -1031,7 +1031,7 @@ void CellByCellHistogram::generate_histogram( const pbvr::UnstructuredVolumeObje
     const float normalize_factor = max_range / ( max_value - min_value );
 
     const float* const  density_map = m_density_map.pointer();
-    const kvs::ColorMap color_map( BaseClass::transferFunction().colorMap() );
+    const vismodule::ColorMap color_map( BaseClass::transferFunction().colorMap() );
 
     // Generate particles for each cell.
     const size_t ncells = volume.ncells();
@@ -1147,19 +1147,19 @@ void CellByCellHistogram::generate_histogram( const pbvr::UnstructuredVolumeObje
         for ( size_t particle = 0; particle < nparticles_in_cell; ++particle )
         {
             // Calculate a coord.
-            const kvs::Vector3f coord = cell->randomSampling();
+            const vismodule::Vector3f coord = cell->randomSampling();
 
             // Calculate a color.
             const float scalar = cell->scalar();
-            const kvs::RGBColor color( color_map.at( scalar ) );
+            const vismodule::RGBColor color( color_map.at( scalar ) );
 
             // Calculate a normal.
             /* NOTE: The gradient vector of the cell is reversed for shading on the rendering process.
              */
-            const kvs::Vector3f normal( -cell->gradient() );
+            const vismodule::Vector3f normal( -cell->gradient() );
 
             // using coord synthesizer
-            kvs::Vector3f new_coord = coord;
+            vismodule::Vector3f new_coord = coord;
             if ( pCrdSynthStr )
             {
                 X = x = coord.x();
@@ -1174,7 +1174,7 @@ void CellByCellHistogram::generate_histogram( const pbvr::UnstructuredVolumeObje
                     synth_vars[qn + 8] = cell->scalar();
                 }
 
-                kvs::Vector3f new_coord;
+                vismodule::Vector3f new_coord;
                 if ( ! css.m_x_coord_synthesizer_string.empty() )
                 {
                     float d = ( float )synth_funcX.eval();
@@ -1212,21 +1212,21 @@ void CellByCellHistogram::generate_histogram( const pbvr::UnstructuredVolumeObje
         } // end of 'paricle' for-loop
     } // end of 'cell' for-loop
 
-    SuperClass::m_coords  = kvs::ValueArray<kvs::Real32>( vertex_coords );
-    SuperClass::m_colors  = kvs::ValueArray<kvs::UInt8>( vertex_colors );
-    SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( vertex_normals );
+    SuperClass::m_coords  = vismodule::ValueArray<vismodule::Real32>( vertex_coords );
+    SuperClass::m_colors  = vismodule::ValueArray<vismodule::UInt8>( vertex_colors );
+    SuperClass::m_normals = vismodule::ValueArray<vismodule::Real32>( vertex_normals );
     SuperClass::setSize( 1.0f );
 
     if (cell != NULL) delete cell;
 }
 
 template <>
-void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::UnstructuredVolumeObject& volume )
+void CellByCellHistogram::generate_histogram<vismodule::Real32>( const pbvr::UnstructuredVolumeObject& volume )
 {
     double start = GetTime();
     size_t resolution = DEFAULT_NBINS;
 
-    kvs::AnyValueArray valueArray = volume.values(); 
+    vismodule::AnyValueArray valueArray = volume.values(); 
     Type* coordinates =  (float * )volume.coords().pointer(); 
     int ncoords =  volume.nnodes();
     unsigned int* connections =  (unsigned int*)volume.connections().pointer();
@@ -1405,7 +1405,7 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
         default:
             {
                 BaseClass::m_is_success = false;
-                kvsMessageError( "Unsupported cell type." );
+                visModuleMessageError( "Unsupported cell type." );
                 return;
             }
     }
@@ -1413,8 +1413,8 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
 
     int tf_number = m_transfer_function_array.size();
 
-    SuperClass::m_color_histogram  = kvs::ValueArray<pbvr::FrequencyTable>( tf_number );
-    SuperClass::m_opacity_histogram  = kvs::ValueArray<pbvr::FrequencyTable>( tf_number );
+    SuperClass::m_color_histogram  = vismodule::ValueArray<pbvr::FrequencyTable>( tf_number );
+    SuperClass::m_opacity_histogram  = vismodule::ValueArray<pbvr::FrequencyTable>( tf_number );
 
     std::cout<<"******* getMaxDensity()="<<m_transfer_function_synthesizer->getMaxDensity()<<std::endl;
     const int max_nparticles = (int)m_transfer_function_synthesizer->getMaxDensity() + 1;
@@ -1422,18 +1422,18 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
     if(mpi_rank==RANK) std::cout<<"******* max_nparticles="<<max_nparticles<<std::endl;
 
     int nbins = 256;
-    kvs::ValueArray<float> o_min( tf_number );//read minmax from TFS
-    kvs::ValueArray<float> o_max( tf_number );
-    kvs::ValueArray<float> c_min( tf_number );
-    kvs::ValueArray<float> c_max( tf_number );
+    vismodule::ValueArray<float> o_min( tf_number );//read minmax from TFS
+    vismodule::ValueArray<float> o_max( tf_number );
+    vismodule::ValueArray<float> c_min( tf_number );
+    vismodule::ValueArray<float> c_max( tf_number );
 
 
-    kvs::ValueArray<int> o_histogram( tf_number * nbins );// opacity histogram
-    kvs::ValueArray<int> c_histogram( tf_number * nbins );// color histogram
+    vismodule::ValueArray<int> o_histogram( tf_number * nbins );// opacity histogram
+    vismodule::ValueArray<int> c_histogram( tf_number * nbins );// color histogram
     
     // 2023/07/31 add by shimomura
-    SuperClass::m_c_histogram = kvs::ValueArray<int> (tf_number * nbins);
-    SuperClass::m_o_histogram = kvs::ValueArray<int> (tf_number * nbins);
+    SuperClass::m_c_histogram = vismodule::ValueArray<int> (tf_number * nbins);
+    SuperClass::m_o_histogram = vismodule::ValueArray<int> (tf_number * nbins);
     SuperClass::setTfnumber(tf_number);
     SuperClass::setNbins(nbins);
 
@@ -1448,10 +1448,10 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
         c_max[i] = m_transfer_function_array[i].colorMap().maxValue();
     }
     //min max
-    kvs::ValueArray<float> O_min( tf_number );// 4 calculate
-    kvs::ValueArray<float> O_max( tf_number );
-    kvs::ValueArray<float> C_min( tf_number );
-    kvs::ValueArray<float> C_max( tf_number );
+    vismodule::ValueArray<float> O_min( tf_number );// 4 calculate
+    vismodule::ValueArray<float> O_max( tf_number );
+    vismodule::ValueArray<float> C_min( tf_number );
+    vismodule::ValueArray<float> C_max( tf_number );
 
     // dynamic  array 4 paritcle
     std::vector<float> vertex_coords;
@@ -1520,7 +1520,7 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
         int thid     = 0;
 #endif
 
-       kvs::MersenneTwister MT( thid + mpi_rank * nthreads );
+       vismodule::MersenneTwister MT( thid + mpi_rank * nthreads );
 
         std::vector<float> th_vertex_coords;
         std::vector<Byte>  th_vertex_colors;
@@ -1530,8 +1530,8 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
         //ｿｿｿｿｿｿｿｿｿ
         std::vector<float> o_scalars( tf_number );//vertex opacity
         std::vector<float> c_scalars( tf_number );//vertex color
-        kvs::ValueArray<int> th_o_histogram( tf_number * nbins );// opacity
-        kvs::ValueArray<int> th_c_histogram( tf_number * nbins );// color
+        vismodule::ValueArray<int> th_o_histogram( tf_number * nbins );// opacity
+        vismodule::ValueArray<int> th_c_histogram( tf_number * nbins );// color
 
         if( parameter_file_opened )
         {
@@ -1540,10 +1540,10 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
         }
 
         //ｿｿｿｿｿ
-        kvs::ValueArray<float> th_O_min( tf_number );//ｿｿｿｿｿｿｿｿｿｿｿ
-        kvs::ValueArray<float> th_O_max( tf_number );
-        kvs::ValueArray<float> th_C_min( tf_number );
-        kvs::ValueArray<float> th_C_max( tf_number );
+        vismodule::ValueArray<float> th_O_min( tf_number );//ｿｿｿｿｿｿｿｿｿｿｿ
+        vismodule::ValueArray<float> th_O_max( tf_number );
+        vismodule::ValueArray<float> th_C_min( tf_number );
+        vismodule::ValueArray<float> th_C_max( tf_number );
 
         if( parameter_file_opened )
         {
@@ -1558,9 +1558,9 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
 
         // -----------------------------------
         //ｿｿｿｿｿ
-        kvs::Vector3f local_center_array[ SIMDW ];
-        kvs::Vector3f global_center_array[ SIMDW ];
-        kvs::UInt32 cell_index[ SIMDW ];
+        vismodule::Vector3f local_center_array[ SIMDW ];
+        vismodule::Vector3f global_center_array[ SIMDW ];
+        vismodule::UInt32 cell_index[ SIMDW ];
 
         float cell_opacity_array[ SIMDW ];
         std::vector<float> o_scalars_array[ SIMDW ];
@@ -1574,21 +1574,21 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
 
         int nparticles_array[ SIMDW ];
 
-        kvs::Vector3f local_coord_array[ SIMDW ];
-        kvs::Vector3f global_coord_array[ SIMDW ];
+        vismodule::Vector3f local_coord_array[ SIMDW ];
+        vismodule::Vector3f global_coord_array[ SIMDW ];
         float density_array[ SIMDW ];
 
-        kvs::Vector3f l_plus_coord[ SIMDW ];
-        kvs::Vector3f l_minus_coord[ SIMDW ];
-        kvs::Vector3f g_plus_coord[ SIMDW ];
-        kvs::Vector3f g_minus_coord[ SIMDW ];
+        vismodule::Vector3f l_plus_coord[ SIMDW ];
+        vismodule::Vector3f l_minus_coord[ SIMDW ];
+        vismodule::Vector3f g_plus_coord[ SIMDW ];
+        vismodule::Vector3f g_minus_coord[ SIMDW ];
         float S_plus_opacity[ SIMDW ];
         float S_minus_opacity[ SIMDW ];
         float dsdx_array[ SIMDW ];
         float dsdy_array[ SIMDW ];
         float dsdz_array[ SIMDW ];
-        kvs::Vector3f grad_array[ SIMDW ];
-        kvs::RGBColor color_array[ SIMDW ];
+        vismodule::Vector3f grad_array[ SIMDW ];
+        vismodule::RGBColor color_array[ SIMDW ];
         // -----------------------------------
 
         //ｿｿｿｿｿｿｿｿｿ
@@ -1604,9 +1604,9 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
             //ｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿ
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
-                cell_index[cell_BLK] = (kvs::UInt32)(cell_base + cell_BLK);
-                //local_center_array[cell_BLK] = kvs::Vector3f ( 0.5, 0.5, 0.5 );
-                local_center_array[cell_BLK] = kvs::Vector3f ( 0, 0, 0 );
+                cell_index[cell_BLK] = (vismodule::UInt32)(cell_base + cell_BLK);
+                //local_center_array[cell_BLK] = vismodule::Vector3f ( 0.5, 0.5, 0.5 );
+                local_center_array[cell_BLK] = vismodule::Vector3f ( 0, 0, 0 );
             }
 
             //ｿｿｿｿｿｿｿｿｿｿｿｿｿｿ
@@ -1806,7 +1806,7 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
 const size_t CellByCellHistogram::calculate_number_of_particles(
     const float density,
     const float volume_of_cell,
-    kvs::MersenneTwister* MT ) 
+    vismodule::MersenneTwister* MT ) 
 {
     const float N = density * volume_of_cell;
     const float R = MT->rand();
@@ -1826,55 +1826,55 @@ void CellByCellHistogram::generate_particles_gt5d(
     const pbvr::UnstructuredVolumeObject* volume )
 {
     // Vertex data arrays. (output)
-    std::vector<kvs::Real32> vertex_coords;
-    std::vector<kvs::UInt8>  vertex_colors;
-    std::vector<kvs::Real32> vertex_normals;
+    std::vector<vismodule::Real32> vertex_coords;
+    std::vector<vismodule::UInt8>  vertex_colors;
+    std::vector<vismodule::Real32> vertex_normals;
 
     // Set a tetrahedral cell interpolator.
-    pbvr::CellBase<kvs::Real32>* cell = NULL;
+    pbvr::CellBase<vismodule::Real32>* cell = NULL;
     switch ( volume.cellType() )
     {
     case pbvr::VolumeObjectBase::Tetrahedra:
     {
-        cell = new pbvr::TetrahedralCell<kvs::Real32>( volume );
+        cell = new pbvr::TetrahedralCell<vismodule::Real32>( volume );
         break;
     }
     case pbvr::VolumeObjectBase::QuadraticTetrahedra:
     {
-        cell = new pbvr::QuadraticTetrahedralCell<kvs::Real32>( volume );
+        cell = new pbvr::QuadraticTetrahedralCell<vismodule::Real32>( volume );
         break;
     }
     case pbvr::VolumeObjectBase::Hexahedra:
     {
-        cell = new pbvr::HexahedralCell<kvs::Real32>( volume );
+        cell = new pbvr::HexahedralCell<vismodule::Real32>( volume );
         break;
     }
     case pbvr::VolumeObjectBase::QuadraticHexahedra:
     {
-        cell = new pbvr::QuadraticHexahedralCell<kvs::Real32>( volume );
+        cell = new pbvr::QuadraticHexahedralCell<vismodule::Real32>( volume );
         break;
     }
     case pbvr::VolumeObjectBase::Prism:
     {
-        cell = new pbvr::PrismaticCell<kvs::Real32>( volume );
+        cell = new pbvr::PrismaticCell<vismodule::Real32>( volume );
         break;
     }
     case pbvr::VolumeObjectBase::Pyramid:
     {
-        cell = new pbvr::PyramidalCell<kvs::Real32>( volume );
+        cell = new pbvr::PyramidalCell<vismodule::Real32>( volume );
         break;
     }
     default:
     {
         BaseClass::m_is_success = false;
-        kvsMessageError( "Unsupported cell type." );
+        visModuleMessageError( "Unsupported cell type." );
         return;
     }
     }
 
     double start = GetTime();
 
-    const kvs::ColorMap color_map( BaseClass::transferFunction().colorMap() );
+    const vismodule::ColorMap color_map( BaseClass::transferFunction().colorMap() );
 
     int m_sampling_method = MPIController::UNIFORM_SAMPLING;
     MPI_Bcast( &m_sampling_method, 1, MPI_INT, 0, MPI_COMM_WORLD );
@@ -1915,7 +1915,7 @@ const float CellByCellHistogram::calculate_density( const float scalar )
         index0 = static_cast<size_t>( normalized_scalar );
     }
     size_t index1 = index0 + 1;
-    index1 = kvs::Math::Clamp<size_t>( index1, 0, BaseClass::transferFunction().resolution() - 1 );
+    index1 = vismodule::Math::Clamp<size_t>( index1, 0, BaseClass::transferFunction().resolution() - 1 );
     const float scalar_offset = normalized_scalar - index0;
 
     const float* const density_map = m_density_map.pointer();
@@ -1970,7 +1970,7 @@ const float CellByCellHistogram::calculate_maximum_density( const float scalar0,
 {
     if ( scalar0 > scalar1 )
     {
-        kvsMessageError( "undefined use of calculate_maximum_density." );
+        visModuleMessageError( "undefined use of calculate_maximum_density." );
         return 0.0f;
     }
     const float min_value = BaseClass::transferFunction().colorMap().minValue();
@@ -1988,7 +1988,7 @@ const float CellByCellHistogram::calculate_maximum_density( const float scalar0,
         index0 = static_cast<size_t>( index0_float );
     }
     index0 += 1;
-    index0 = kvs::Math::Clamp<size_t>( index0, 0, BaseClass::transferFunction().resolution() - 1 );
+    index0 = vismodule::Math::Clamp<size_t>( index0, 0, BaseClass::transferFunction().resolution() - 1 );
 
     const float index1_float = ( scalar1 - min_value ) * normalize_factor;
     size_t index1 = 0;
@@ -2019,18 +2019,18 @@ const float CellByCellHistogram::calculate_maximum_density( const float scalar0,
     return maximum_density;
 }
 
-void CellByCellHistogram::calculate_histogram( kvs::ValueArray<int>&   th_o_histogram,
-                          kvs::ValueArray<int>&   th_c_histogram,
-                          kvs::ValueArray<float>& th_O_min,
-                          kvs::ValueArray<float>& th_O_max,
-                          kvs::ValueArray<float>& th_C_min,
-                          kvs::ValueArray<float>& th_C_max,
+void CellByCellHistogram::calculate_histogram( vismodule::ValueArray<int>&   th_o_histogram,
+                          vismodule::ValueArray<int>&   th_c_histogram,
+                          vismodule::ValueArray<float>& th_O_min,
+                          vismodule::ValueArray<float>& th_O_max,
+                          vismodule::ValueArray<float>& th_C_min,
+                          vismodule::ValueArray<float>& th_C_max,
                           // ｿｿｿｿoutput, ｿｿinput
                           const int nbins, // TFSｿｿｿｿｿｿｿｿｿｿｿ
-                          const kvs::ValueArray<float>& o_min,
-                          const kvs::ValueArray<float>& o_max,
-                          const kvs::ValueArray<float>& c_min,
-                          const kvs::ValueArray<float>& c_max,
+                          const vismodule::ValueArray<float>& o_min,
+                          const vismodule::ValueArray<float>& o_max,
+                          const vismodule::ValueArray<float>& c_min,
+                          const vismodule::ValueArray<float>& c_max,
                           //const float o_scalars[][SIMDW], // 蜷域・蛟､
                           //const float c_scalars[][SIMDW],
                           float** o_scalars, // åæå¤
@@ -2070,12 +2070,12 @@ void CellByCellHistogram::calculate_histogram( kvs::ValueArray<int>&   th_o_hist
     }
 }
 
-kvs::Vector3f CellByCellHistogram::RandomSamplingInCube( const kvs::Vector3f vertex, kvs::MersenneTwister* MT  )
+vismodule::Vector3f CellByCellHistogram::RandomSamplingInCube( const vismodule::Vector3f vertex, vismodule::MersenneTwister* MT  )
 {
     const float x = (float)MT->rand();
     const float y = (float)MT->rand();
     const float z = (float)MT->rand();
-    const kvs::Vector3f d( x, y, z );
+    const vismodule::Vector3f d( x, y, z );
 
     return vertex + d;
 }

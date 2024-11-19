@@ -12,12 +12,12 @@
  */
 /*****************************************************************************/
 #include "Streamline.h"
-#include <kvs/DebugNew>
-#include <kvs/Type>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/DebugNew>
+#include <vismodule/Type>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -26,7 +26,7 @@ namespace kvs
  */
 /*===========================================================================*/
 StreamlineBase::StreamlineBase( void ):
-    kvs::MapperBase(),
+    vismodule::MapperBase(),
     m_seed_points( NULL ),
     m_integration_method( Streamline::RungeKutta2nd ),
     m_integration_direction( Streamline::ForwardDirection ),
@@ -55,13 +55,13 @@ StreamlineBase::~StreamlineBase( void )
  *  @param  seed_points [in] pointer to the seed points
  */
 /*===========================================================================*/
-void StreamlineBase::setSeedPoints( const kvs::PointObject* seed_points )
+void StreamlineBase::setSeedPoints( const vismodule::PointObject* seed_points )
 {
     // Shallow copy.
-    m_seed_points = new kvs::PointObject( seed_points->coords() );
+    m_seed_points = new vismodule::PointObject( seed_points->coords() );
     if ( !m_seed_points )
     {
-        kvsMessageError( "Cannot allocate memory for the seed points." );
+        visModuleMessageError( "Cannot allocate memory for the seed points." );
     }
 }
 
@@ -159,18 +159,18 @@ void StreamlineBase::setEnableIntegrationTimesCondition( const bool enabled )
  *  @param  volume [in] pointer to the input volume object
  */
 /*===========================================================================*/
-void StreamlineBase::mapping( const kvs::VolumeObjectBase* volume )
+void StreamlineBase::mapping( const vismodule::VolumeObjectBase* volume )
 {
-    if ( volume->volumeType() == kvs::VolumeObjectBase::Structured )
+    if ( volume->volumeType() == vismodule::VolumeObjectBase::Structured )
     {
-        const kvs::StructuredVolumeObject* structured_volume =
-            reinterpret_cast<const kvs::StructuredVolumeObject*>( volume );
+        const vismodule::StructuredVolumeObject* structured_volume =
+            reinterpret_cast<const vismodule::StructuredVolumeObject*>( volume );
 
         this->extract_lines( structured_volume );
     }
-    else // volume->volumeType() == kvs::VolumeObjectBase::Unstructured
+    else // volume->volumeType() == vismodule::VolumeObjectBase::Unstructured
     {
-        kvsMessageError("Unstructured volume object is not supported in the current system.");
+        visModuleMessageError("Unstructured volume object is not supported in the current system.");
     }
 }
 
@@ -181,21 +181,21 @@ void StreamlineBase::mapping( const kvs::VolumeObjectBase* volume )
  */
 /*===========================================================================*/
 void StreamlineBase::extract_lines(
-    const kvs::StructuredVolumeObject* volume )
+    const vismodule::StructuredVolumeObject* volume )
 {
-    kvs::IgnoreUnusedVariable( volume );
+    vismodule::IgnoreUnusedVariable( volume );
 
     // Calculated data arrays.
-    std::vector<kvs::Real32> coords;
-    std::vector<kvs::UInt32> connections;
-    std::vector<kvs::UInt8>  colors;
+    std::vector<vismodule::Real32> coords;
+    std::vector<vismodule::UInt32> connections;
+    std::vector<vismodule::UInt8>  colors;
 
     // Calculate streamline for each seed point.
     const size_t npoints = m_seed_points->nvertices();
     for ( size_t index = 0; index < npoints; index++ )
     {
-        std::vector<kvs::Real32> line_coords;
-        std::vector<kvs::UInt8> line_colors;
+        std::vector<vismodule::Real32> line_coords;
+        std::vector<vismodule::UInt8> line_colors;
 
         if ( this->calculate_line( &line_coords, &line_colors, index ) )
         {
@@ -204,7 +204,7 @@ void StreamlineBase::extract_lines(
             // Set the first vertex ID to the connections.
             const size_t dimension = 3;
             const size_t start_id = coords.size() / dimension;
-            connections.push_back( static_cast<kvs::UInt32>( start_id ) );
+            connections.push_back( static_cast<vismodule::UInt32>( start_id ) );
 
             // Set the line coordinate and color value array to the coords and colors, respectively.
             const size_t ncoords = line_coords.size();
@@ -216,15 +216,15 @@ void StreamlineBase::extract_lines(
 
             // Set the last vertex ID to the connections.
             const size_t last_id = coords.size() / dimension - 1;
-            connections.push_back( static_cast<kvs::UInt32>( last_id ) );
+            connections.push_back( static_cast<vismodule::UInt32>( last_id ) );
         }
     }
 
-    SuperClass::setLineType( kvs::LineObject::Polyline );
-    SuperClass::setColorType( kvs::LineObject::VertexColor );
-    SuperClass::setCoords( kvs::ValueArray<kvs::Real32>( coords ) );
-    SuperClass::setConnections( kvs::ValueArray<kvs::UInt32>( connections ) );
-    SuperClass::setColors( kvs::ValueArray<kvs::UInt8>( colors ) );
+    SuperClass::setLineType( vismodule::LineObject::Polyline );
+    SuperClass::setColorType( vismodule::LineObject::VertexColor );
+    SuperClass::setCoords( vismodule::ValueArray<vismodule::Real32>( coords ) );
+    SuperClass::setConnections( vismodule::ValueArray<vismodule::UInt32>( connections ) );
+    SuperClass::setColors( vismodule::ValueArray<vismodule::UInt8>( colors ) );
     SuperClass::setSize( 1.0f );
 }
 
@@ -238,14 +238,14 @@ void StreamlineBase::extract_lines(
  */
 /*===========================================================================*/
 const bool StreamlineBase::calculate_line(
-    std::vector<kvs::Real32>* coords,
-    std::vector<kvs::UInt8>* colors,
+    std::vector<vismodule::Real32>* coords,
+    std::vector<vismodule::UInt8>* colors,
     const size_t index )
 {
-    const kvs::Vector3f seed_point = m_seed_points->coord( index );
+    const vismodule::Vector3f seed_point = m_seed_points->coord( index );
     if ( !this->check_for_inside_volume( seed_point ) ) return( false );
 
-    const kvs::Vector3f seed_vector = this->calculate_vector( seed_point );
+    const vismodule::Vector3f seed_vector = this->calculate_vector( seed_point );
     if ( m_integration_direction == StreamlineBase::ForwardDirection )
     {
         // Forward direction.
@@ -267,8 +267,8 @@ const bool StreamlineBase::calculate_line(
     else // m_direction == Streamline::BothDirections
     {
         // Forward direction.
-        std::vector<kvs::Real32> tmp_coords1;
-        std::vector<kvs::UInt8> tmp_colors1;
+        std::vector<vismodule::Real32> tmp_coords1;
+        std::vector<vismodule::UInt8> tmp_colors1;
         if ( !this->calculate_one_side(
                  &tmp_coords1,
                  &tmp_colors1,
@@ -279,8 +279,8 @@ const bool StreamlineBase::calculate_line(
         }
 
         // backward direction.
-        std::vector<kvs::Real32> tmp_coords2;
-        std::vector<kvs::UInt8> tmp_colors2;
+        std::vector<vismodule::Real32> tmp_coords2;
+        std::vector<vismodule::UInt8> tmp_colors2;
         if( !this->calculate_one_side(
                 &tmp_coords2,
                 &tmp_colors2,
@@ -332,25 +332,25 @@ const bool StreamlineBase::calculate_line(
  */
 /*===========================================================================*/
 const bool StreamlineBase::calculate_one_side(
-    std::vector<kvs::Real32>* coords,
-    std::vector<kvs::UInt8>* colors,
-    const kvs::Vector3f& seed_point,
-    const kvs::Vector3f& seed_vector )
+    std::vector<vismodule::Real32>* coords,
+    std::vector<vismodule::UInt8>* colors,
+    const vismodule::Vector3f& seed_point,
+    const vismodule::Vector3f& seed_vector )
 {
     // Register the seed point.
-    kvs::Vector3f current_vertex = seed_point;
-    kvs::Vector3f next_vertex = seed_point;
+    vismodule::Vector3f current_vertex = seed_point;
+    vismodule::Vector3f next_vertex = seed_point;
 
     coords->push_back( seed_point.x() );
     coords->push_back( seed_point.y() );
     coords->push_back( seed_point.z() );
 
     // Register the vector on the seed point.
-    kvs::Vector3f current_vector = seed_vector;
-    kvs::Vector3f previous_vector = seed_vector;
+    vismodule::Vector3f current_vector = seed_vector;
+    vismodule::Vector3f previous_vector = seed_vector;
 
     // Set the color of seed point.
-    kvs::RGBColor col = this->calculate_color( current_vector );
+    vismodule::RGBColor col = this->calculate_color( current_vector );
 
     colors->push_back( col.r() );
     colors->push_back( col.g() );
@@ -390,7 +390,7 @@ const bool StreamlineBase::calculate_one_side(
         current_vector = this->interpolate_vector( current_vertex, previous_vector );
 
         // Set color of vertex.
-        kvs::RGBColor col = this->calculate_color( current_vector );
+        vismodule::RGBColor col = this->calculate_color( current_vector );
 
         colors->push_back( col.r() );
         colors->push_back( col.g() );
@@ -410,9 +410,9 @@ const bool StreamlineBase::calculate_one_side(
  */
 /*===========================================================================*/
 const bool StreamlineBase::calculate_next_vertex(
-    const kvs::Vector3f& current_vertex,
-    const kvs::Vector3f& current_direction,
-    kvs::Vector3f* next_vertex )
+    const vismodule::Vector3f& current_vertex,
+    const vismodule::Vector3f& current_direction,
+    vismodule::Vector3f* next_vertex )
 {
     switch( m_integration_method )
     {
@@ -434,7 +434,7 @@ const bool StreamlineBase::calculate_next_vertex(
     default: break;
     }
 
-    kvsMessageError( "Specified integral method is not defined." );
+    visModuleMessageError( "Specified integral method is not defined." );
     return( false );
 }
 
@@ -448,16 +448,16 @@ const bool StreamlineBase::calculate_next_vertex(
  */
 /*===========================================================================*/
 const bool StreamlineBase::integrate_by_euler(
-    const kvs::Vector3f& current_vertex,
-    const kvs::Vector3f& current_direction,
-    kvs::Vector3f* next_vertex )
+    const vismodule::Vector3f& current_vertex,
+    const vismodule::Vector3f& current_direction,
+    vismodule::Vector3f* next_vertex )
 {
     if ( m_enable_boundary_condition )
     {
         if ( !this->check_for_inside_volume( current_vertex ) ) return( false );
     }
 
-    const kvs::Vector3f k1 = m_integration_interval * current_direction;
+    const vismodule::Vector3f k1 = m_integration_interval * current_direction;
     *next_vertex = current_vertex + k1;
 
     return( true );
@@ -473,26 +473,26 @@ const bool StreamlineBase::integrate_by_euler(
  */
 /*===========================================================================*/
 const bool StreamlineBase::integrate_by_runge_kutta_2nd(
-    const kvs::Vector3f& current_vertex,
-    const kvs::Vector3f& current_direction,
-    kvs::Vector3f* next_vertex )
+    const vismodule::Vector3f& current_vertex,
+    const vismodule::Vector3f& current_direction,
+    vismodule::Vector3f* next_vertex )
 {
     if ( m_enable_boundary_condition )
     {
         if ( !this->check_for_inside_volume( current_vertex ) ) return( false );
     }
 
-    const kvs::Vector3f k1 = m_integration_interval * current_direction;
+    const vismodule::Vector3f k1 = m_integration_interval * current_direction;
     // Interpolate vector from vertex of cell.
-    const kvs::Vector3f vertex = current_vertex + 0.5f * k1;
+    const vismodule::Vector3f vertex = current_vertex + 0.5f * k1;
 
     if ( m_enable_boundary_condition )
     {
         if ( !this->check_for_inside_volume( vertex ) ) return( false );
     }
 
-    const kvs::Vector3f direction = this->interpolate_vector( vertex, current_direction );
-    const kvs::Vector3f k2 = m_integration_interval * direction;
+    const vismodule::Vector3f direction = this->interpolate_vector( vertex, current_direction );
+    const vismodule::Vector3f k2 = m_integration_interval * direction;
     *next_vertex = vertex + k2;
 
     return( true );
@@ -508,9 +508,9 @@ const bool StreamlineBase::integrate_by_runge_kutta_2nd(
  */
 /*===========================================================================*/
 const bool StreamlineBase::integrate_by_runge_kutta_4th(
-    const kvs::Vector3f& current_vertex,
-    const kvs::Vector3f& current_direction,
-    kvs::Vector3f* next_vertex )
+    const vismodule::Vector3f& current_vertex,
+    const vismodule::Vector3f& current_direction,
+    vismodule::Vector3f* next_vertex )
 {
     if ( m_enable_boundary_condition )
     {
@@ -520,40 +520,40 @@ const bool StreamlineBase::integrate_by_runge_kutta_4th(
     // Calculate integration interval.
     const float interval = m_integration_interval / static_cast<float>(current_direction.length());
 
-    const kvs::Vector3f k1 = interval * current_direction;
+    const vismodule::Vector3f k1 = interval * current_direction;
 
     // Interpolate vector from vertex of cell.
-    const kvs::Vector3f vertex2 = current_vertex + 0.5f * k1;
+    const vismodule::Vector3f vertex2 = current_vertex + 0.5f * k1;
 
     if ( m_enable_boundary_condition )
     {
         if ( !this->check_for_inside_volume( vertex2 ) ) return( false );
     }
 
-    const kvs::Vector3f direction2 = this->interpolate_vector( vertex2, current_direction );
-    const kvs::Vector3f k2 = interval * direction2;
+    const vismodule::Vector3f direction2 = this->interpolate_vector( vertex2, current_direction );
+    const vismodule::Vector3f k2 = interval * direction2;
 
     // Interpolate vector from vertex of cell.
-    const kvs::Vector3f vertex3 = current_vertex + 0.5f * k2;
+    const vismodule::Vector3f vertex3 = current_vertex + 0.5f * k2;
 
     if ( m_enable_boundary_condition )
     {
         if ( !this->check_for_inside_volume( vertex3 ) ) return( false );
     }
 
-    const kvs::Vector3f direction3 = this->interpolate_vector( vertex3, current_direction );
-    const kvs::Vector3f k3 = interval * direction3;
+    const vismodule::Vector3f direction3 = this->interpolate_vector( vertex3, current_direction );
+    const vismodule::Vector3f k3 = interval * direction3;
 
     // Interpolate vector from vertex of cell.
-    const kvs::Vector3f vertex4 = current_vertex + k3;
+    const vismodule::Vector3f vertex4 = current_vertex + k3;
 
     if ( m_enable_boundary_condition )
     {
         if ( !this->check_for_inside_volume( vertex4 ) ) return( false );
     }
 
-    const kvs::Vector3f direction4 = this->interpolate_vector( vertex4, current_direction );
-    const kvs::Vector3f k4 = interval * direction4;
+    const vismodule::Vector3f direction4 = this->interpolate_vector( vertex4, current_direction );
+    const vismodule::Vector3f k4 = interval * direction4;
 
     *next_vertex = current_vertex + ( k1 + 2.0f * ( k2 + k3 ) + k4 ) / 6.0f;
 
@@ -567,10 +567,10 @@ const bool StreamlineBase::integrate_by_runge_kutta_4th(
  *  @return true, if the seed point is inside the volume
  */
 /*===========================================================================*/
-const bool StreamlineBase::check_for_inside_volume( const kvs::Vector3f& point )
+const bool StreamlineBase::check_for_inside_volume( const vismodule::Vector3f& point )
 {
-    const kvs::StructuredVolumeObject* structured_volume =
-        reinterpret_cast<const kvs::StructuredVolumeObject*>( BaseClass::volume() );
+    const vismodule::StructuredVolumeObject* structured_volume =
+        reinterpret_cast<const vismodule::StructuredVolumeObject*>( BaseClass::volume() );
     const float dimx = static_cast<float>( structured_volume->resolution().x() - 1 );
     const float dimy = static_cast<float>( structured_volume->resolution().y() - 1 );
     const float dimz = static_cast<float>( structured_volume->resolution().z() - 1 );
@@ -589,7 +589,7 @@ const bool StreamlineBase::check_for_inside_volume( const kvs::Vector3f& point )
  *  @return true if the vector length is smaller than the threshold
  */
 /*===========================================================================*/
-const bool StreamlineBase::check_for_vector_length( const kvs::Vector3f& direction )
+const bool StreamlineBase::check_for_vector_length( const vismodule::Vector3f& direction )
 {
     return( direction.length() < m_vector_length_threshold );
 }
@@ -606,4 +606,4 @@ const bool StreamlineBase::check_for_integration_times( const size_t times )
     return( times >= m_integration_times_threshold );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

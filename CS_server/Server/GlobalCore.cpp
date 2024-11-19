@@ -12,18 +12,18 @@
  */
 /****************************************************************************/
 #include "GlobalCore.h"
-#include <kvs/DebugNew>
-#include <kvs/Camera>
+#include <vismodule/DebugNew>
+#include <vismodule/Camera>
 /* 131018 removed
 #include "Light.h"
 #include "Background.h"
 #include "Mouse.h"
 */
 #include "ObjectManager.h"
-#include <kvs/RendererManager>
+#include <vismodule/RendererManager>
 #include "IDManager.h"
-#include <kvs/Message>
-#include <kvs/RGBColor>
+#include <vismodule/Message>
+#include <vismodule/RGBColor>
 
 
 namespace pbvr
@@ -32,15 +32,15 @@ namespace pbvr
 // Parameter instantiation.
 int                       GlobalCore::m_argc;
 char**                    GlobalCore::m_argv;
-kvs::Camera*              GlobalCore::m_camera;
+vismodule::Camera*              GlobalCore::m_camera;
 /* 131018 removed
-kvs::Light*               GlobalCore::light;
-kvs::Mouse*               GlobalCore::mouse;
-kvs::Background*          GlobalCore::background;
+vismodule::Light*               GlobalCore::light;
+vismodule::Mouse*               GlobalCore::mouse;
+vismodule::Background*          GlobalCore::background;
 */
 GlobalCore::ControlTarget GlobalCore::m_target;
 pbvr::ObjectManager*       GlobalCore::m_object_manager;
-kvs::RendererManager*     GlobalCore::m_renderer_manager;
+vismodule::RendererManager*     GlobalCore::m_renderer_manager;
 pbvr::IDManager*           GlobalCore::m_id_manager;
 
 /*==========================================================================*/
@@ -78,52 +78,52 @@ void GlobalCore::createCore( const int count, const char** values )
     m_argv   = ( char** )values;
     m_target = TargetObject;
 
-    m_camera = new kvs::Camera();
+    m_camera = new vismodule::Camera();
     if ( !m_camera )
     {
-        kvsMessageError( "Cannot allocate memory for the camera." );
+        visModuleMessageError( "Cannot allocate memory for the camera." );
         return;
     }
     /* 131018 removed
-        light = new kvs::Light();
+        light = new vismodule::Light();
         if( !light )
         {
-            kvsMessageError("Cannot allocate memory for the light.");
+            visModuleMessageError("Cannot allocate memory for the light.");
             return;
         }
 
-        mouse = new kvs::Mouse();
+        mouse = new vismodule::Mouse();
         if( !mouse )
         {
-            kvsMessageError("Cannot allocate memory for the mouse.");
+            visModuleMessageError("Cannot allocate memory for the mouse.");
             return;
         }
 
-        background = new kvs::Background( kvs::RGBColor( 212, 221, 229 ) );
+        background = new vismodule::Background( vismodule::RGBColor( 212, 221, 229 ) );
         if( !background )
         {
-            kvsMessageError("Cannot allocate memory for the background.");
+            visModuleMessageError("Cannot allocate memory for the background.");
             return;
         }
     */
     m_object_manager = new pbvr::ObjectManager();
     if ( !m_object_manager )
     {
-        kvsMessageError( "Cannot allocate memory for the object manager." );
+        visModuleMessageError( "Cannot allocate memory for the object manager." );
         return;
     }
 
-    m_renderer_manager = new kvs::RendererManager();
+    m_renderer_manager = new vismodule::RendererManager();
     if ( !m_renderer_manager )
     {
-        kvsMessageError( "Cannot allocate memory for the renderer manager." );
+        visModuleMessageError( "Cannot allocate memory for the renderer manager." );
         return;
     }
 
     m_id_manager = new pbvr::IDManager();
     if ( !m_id_manager )
     {
-        kvsMessageError( "Cannot allocate memory for the ID manager." );
+        visModuleMessageError( "Cannot allocate memory for the ID manager." );
         return;
     }
 }

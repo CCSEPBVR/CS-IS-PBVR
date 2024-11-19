@@ -12,13 +12,13 @@
  */
 /*****************************************************************************/
 #include "ObjectTag.h"
-#include <kvs/Tokenizer>
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
-#include <kvs/String>
+#include <vismodule/Tokenizer>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
+#include <vismodule/String>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -30,7 +30,7 @@ namespace kvsml
  */
 /*===========================================================================*/
 ObjectTag::ObjectTag( void ):
-    kvs::kvsml::TagBase( "Object" ),
+    vismodule::kvsml::TagBase( "Object" ),
     m_type( "" ),
     m_has_external_coord( false ),
     m_min_external_coord( -3.0f, -3.0f, -3.0f ),
@@ -77,7 +77,7 @@ const bool ObjectTag::hasExternalCoord( void ) const
  *  @return min. external coordinate
  */
 /*===========================================================================*/
-const kvs::Vector3f& ObjectTag::minExternalCoord( void ) const
+const vismodule::Vector3f& ObjectTag::minExternalCoord( void ) const
 {
     return( m_min_external_coord );
 }
@@ -88,7 +88,7 @@ const kvs::Vector3f& ObjectTag::minExternalCoord( void ) const
  *  @return max. external coordinate
  */
 /*===========================================================================*/
-const kvs::Vector3f& ObjectTag::maxExternalCoord( void ) const
+const vismodule::Vector3f& ObjectTag::maxExternalCoord( void ) const
 {
     return( m_max_external_coord );
 }
@@ -110,7 +110,7 @@ const bool ObjectTag::hasObjectCoord( void ) const
  *  @return min. object coordinate
  */
 /*===========================================================================*/
-const kvs::Vector3f& ObjectTag::minObjectCoord( void ) const
+const vismodule::Vector3f& ObjectTag::minObjectCoord( void ) const
 {
     return( m_min_object_coord );
 }
@@ -121,7 +121,7 @@ const kvs::Vector3f& ObjectTag::minObjectCoord( void ) const
  *  @return max. object coordinate
  */
 /*===========================================================================*/
-const kvs::Vector3f& ObjectTag::maxObjectCoord( void ) const
+const vismodule::Vector3f& ObjectTag::maxObjectCoord( void ) const
 {
     return( m_max_object_coord );
 }
@@ -145,7 +145,7 @@ void ObjectTag::setType( const std::string& type )
  *  @param  max_coord [in] max. external coordinate value
  */
 /*===========================================================================*/
-void ObjectTag::setMinMaxExternalCoords( const kvs::Vector3f& min_coord, const kvs::Vector3f& max_coord )
+void ObjectTag::setMinMaxExternalCoords( const vismodule::Vector3f& min_coord, const vismodule::Vector3f& max_coord )
 {
     m_has_external_coord = true;
     m_min_external_coord = min_coord;
@@ -159,7 +159,7 @@ void ObjectTag::setMinMaxExternalCoords( const kvs::Vector3f& min_coord, const k
  *  @param  max_coord [in] max. object coordinate value
  */
 /*===========================================================================*/
-void ObjectTag::setMinMaxObjectCoords( const kvs::Vector3f& min_coord, const kvs::Vector3f& max_coord )
+void ObjectTag::setMinMaxObjectCoords( const vismodule::Vector3f& min_coord, const vismodule::Vector3f& max_coord )
 {
     m_has_object_coord = true;
     m_min_object_coord = min_coord;
@@ -173,23 +173,23 @@ void ObjectTag::setMinMaxObjectCoords( const kvs::Vector3f& min_coord, const kvs
  *  @return true, if the reading process is done successfully.
  */
 /*===========================================================================*/
-const bool ObjectTag::read( const kvs::XMLNode::SuperClass* parent )
+const bool ObjectTag::read( const vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
 
     // <Object>
-    BaseClass::m_node = kvs::XMLNode::FindChildNode( parent, tag_name );
+    BaseClass::m_node = vismodule::XMLNode::FindChildNode( parent, tag_name );
     if( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot find <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot find <%s>.", tag_name.c_str() );
         return( false );
     }
 
     // Element
-    const kvs::XMLElement::SuperClass* element = kvs::XMLNode::ToElement( BaseClass::m_node );
+    const vismodule::XMLElement::SuperClass* element = vismodule::XMLNode::ToElement( BaseClass::m_node );
 
     // type="xxx"
-    const std::string type = kvs::XMLElement::AttributeValue( element, "type" );
+    const std::string type = vismodule::XMLElement::AttributeValue( element, "type" );
     if( type != "" )
     {
         m_has_type = true;
@@ -197,18 +197,18 @@ const bool ObjectTag::read( const kvs::XMLNode::SuperClass* parent )
     }
 
     // external_coord="xxx xxx xxx xxx xxx xxx"
-    const std::string external_coord = kvs::XMLElement::AttributeValue( element, "external_coord" );
+    const std::string external_coord = vismodule::XMLElement::AttributeValue( element, "external_coord" );
     if ( external_coord != "" )
     {
         const std::string delim(" \n");
-        kvs::Tokenizer t( external_coord, delim );
+        vismodule::Tokenizer t( external_coord, delim );
 
         float values[6];
         for ( size_t i = 0; i < 6; i++ )
         {
             if ( t.isLast() )
             {
-                kvsMessageError( "6 components are required for 'external_coord' in <%s>", tag_name.c_str() );
+                visModuleMessageError( "6 components are required for 'external_coord' in <%s>", tag_name.c_str() );
                 return( false );
             }
 
@@ -216,23 +216,23 @@ const bool ObjectTag::read( const kvs::XMLNode::SuperClass* parent )
         }
 
         m_has_external_coord = true;
-        m_min_external_coord = kvs::Vector3f( values[0], values[1], values[2] );
-        m_max_external_coord = kvs::Vector3f( values[3], values[4], values[5] );
+        m_min_external_coord = vismodule::Vector3f( values[0], values[1], values[2] );
+        m_max_external_coord = vismodule::Vector3f( values[3], values[4], values[5] );
     }
 
     // object_coord="xxx xxx xxx xxx xxx xxx"
-    const std::string object_coord = kvs::XMLElement::AttributeValue( element, "object_coord" );
+    const std::string object_coord = vismodule::XMLElement::AttributeValue( element, "object_coord" );
     if ( object_coord != "" )
     {
         const std::string delim(" \n");
-        kvs::Tokenizer t( object_coord, delim );
+        vismodule::Tokenizer t( object_coord, delim );
 
         float values[6];
         for ( size_t i = 0; i < 6; i++ )
         {
             if ( t.isLast() )
             {
-                kvsMessageError( "6 components are required for 'object_coord' in <%s>", tag_name.c_str() );
+                visModuleMessageError( "6 components are required for 'object_coord' in <%s>", tag_name.c_str() );
                 return( false );
             }
 
@@ -240,8 +240,8 @@ const bool ObjectTag::read( const kvs::XMLNode::SuperClass* parent )
         }
 
         m_has_object_coord = true;
-        m_min_object_coord = kvs::Vector3f( values[0], values[1], values[2] );
-        m_max_object_coord = kvs::Vector3f( values[3], values[4], values[5] );
+        m_min_object_coord = vismodule::Vector3f( values[0], values[1], values[2] );
+        m_max_object_coord = vismodule::Vector3f( values[3], values[4], values[5] );
     }
 
     return( true );
@@ -254,10 +254,10 @@ const bool ObjectTag::read( const kvs::XMLNode::SuperClass* parent )
  *  @return true, if the writing process is done successfully.
  */
 /*===========================================================================*/
-const bool ObjectTag::write( kvs::XMLNode::SuperClass* parent )
+const bool ObjectTag::write( vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
-    kvs::XMLElement element( tag_name );
+    vismodule::XMLElement element( tag_name );
 
     if ( m_has_type )
     {
@@ -267,19 +267,19 @@ const bool ObjectTag::write( kvs::XMLNode::SuperClass* parent )
     }
     else
     {
-        kvsMessageError( "'type' is not specified in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "'type' is not specified in <%s>.", tag_name.c_str() );
         return( false );
     }
 
     if ( m_has_external_coord )
     {
         const std::string name( "external_coord" );
-        const std::string min_x( kvs::String( m_min_external_coord.x() ).toStdString() );
-        const std::string min_y( kvs::String( m_min_external_coord.y() ).toStdString() );
-        const std::string min_z( kvs::String( m_min_external_coord.z() ).toStdString() );
-        const std::string max_x( kvs::String( m_max_external_coord.x() ).toStdString() );
-        const std::string max_y( kvs::String( m_max_external_coord.y() ).toStdString() );
-        const std::string max_z( kvs::String( m_max_external_coord.z() ).toStdString() );
+        const std::string min_x( vismodule::String( m_min_external_coord.x() ).toStdString() );
+        const std::string min_y( vismodule::String( m_min_external_coord.y() ).toStdString() );
+        const std::string min_z( vismodule::String( m_min_external_coord.z() ).toStdString() );
+        const std::string max_x( vismodule::String( m_max_external_coord.x() ).toStdString() );
+        const std::string max_y( vismodule::String( m_max_external_coord.y() ).toStdString() );
+        const std::string max_z( vismodule::String( m_max_external_coord.z() ).toStdString() );
         const std::string min_coord( min_x + " " + min_y + " " + min_z );
         const std::string max_coord( max_x + " " + max_y + " " + max_z );
         const std::string value( min_coord + max_coord );
@@ -289,12 +289,12 @@ const bool ObjectTag::write( kvs::XMLNode::SuperClass* parent )
     if ( m_has_object_coord )
     {
         const std::string name( "object_coord" );
-        const std::string min_x( kvs::String( m_min_object_coord.x() ).toStdString() );
-        const std::string min_y( kvs::String( m_min_object_coord.y() ).toStdString() );
-        const std::string min_z( kvs::String( m_min_object_coord.z() ).toStdString() );
-        const std::string max_x( kvs::String( m_max_object_coord.x() ).toStdString() );
-        const std::string max_y( kvs::String( m_max_object_coord.y() ).toStdString() );
-        const std::string max_z( kvs::String( m_max_object_coord.z() ).toStdString() );
+        const std::string min_x( vismodule::String( m_min_object_coord.x() ).toStdString() );
+        const std::string min_y( vismodule::String( m_min_object_coord.y() ).toStdString() );
+        const std::string min_z( vismodule::String( m_min_object_coord.z() ).toStdString() );
+        const std::string max_x( vismodule::String( m_max_object_coord.x() ).toStdString() );
+        const std::string max_y( vismodule::String( m_max_object_coord.y() ).toStdString() );
+        const std::string max_z( vismodule::String( m_max_object_coord.z() ).toStdString() );
         const std::string min_coord( min_x + " " + min_y + " " + min_z );
         const std::string max_coord( max_x + " " + max_y + " " + max_z );
         const std::string value( min_coord + max_coord );
@@ -304,7 +304,7 @@ const bool ObjectTag::write( kvs::XMLNode::SuperClass* parent )
     BaseClass::m_node = parent->InsertEndChild( element );
     if( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot insert <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot insert <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -313,4 +313,4 @@ const bool ObjectTag::write( kvs::XMLNode::SuperClass* parent )
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

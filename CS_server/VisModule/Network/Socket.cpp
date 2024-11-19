@@ -15,17 +15,17 @@
 #include "IPAddress.h"
 #include "SocketSelector.h"
 #include "SocketTimer.h"
-#include <kvs/Platform>
+#include <vismodule/Platform>
 
 
-namespace kvs
+namespace vismodule
 {
 
-#if defined( KVS_PLATFORM_WINDOWS )
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
 static WSADATA wsa_data;
 #endif
 
-#if defined( KVS_PLATFORM_WINDOWS )
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
 const Socket::id_type Socket::InvalidID  = INVALID_SOCKET;
 const int             Socket::ErrorValue = SOCKET_ERROR;
 const int             Socket::Timeout    = 1;
@@ -71,7 +71,7 @@ Socket::Socket( const Socket& other ):
  *  @param address [in] socket address
  */
 /*==========================================================================*/
-Socket::Socket( const Socket::id_type& id, const kvs::SocketAddress& address ):
+Socket::Socket( const Socket::id_type& id, const vismodule::SocketAddress& address ):
     m_id( id )
 {
     this->setAddress( address );
@@ -132,7 +132,7 @@ const SocketAddress& Socket::address( void ) const
  *  @param ip [in] IP address
  */
 /*==========================================================================*/
-void Socket::setIp( const kvs::IPAddress& ip )
+void Socket::setIp( const vismodule::IPAddress& ip )
 {
     m_address.setIp( ip );
 }
@@ -154,7 +154,7 @@ void Socket::setPort( const int port )
  *  @param address [in] socket address
  */
 /*==========================================================================*/
-void Socket::setAddress( const kvs::SocketAddress& address )
+void Socket::setAddress( const vismodule::SocketAddress& address )
 {
     m_address = address;
 }
@@ -211,7 +211,7 @@ bool Socket::isBlocking( void ) const
 /*==========================================================================*/
 void Socket::open( const int socket_type )
 {
-#if defined( KVS_PLATFORM_WINDOWS )
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
     WORD version = MAKEWORD( 2, 0 );
     if( WSAStartup( version, &wsa_data ) != 0 )
     {
@@ -246,7 +246,7 @@ void Socket::close( void )
         m_id = Socket::InvalidID;
     }
 
-#if defined( KVS_PLATFORM_WINDOWS )
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
     WSACleanup();
 #endif
 }
@@ -268,7 +268,7 @@ int Socket::bind( const SocketAddress& socket_address )
 
     this->setAddress( socket_address );
 
-    kvs::SocketAddress::address_type address = socket_address.address();
+    vismodule::SocketAddress::address_type address = socket_address.address();
 
     const length_type length = sizeof( address );
     const sockaddr*   server = reinterpret_cast<const sockaddr*>( &address );
@@ -309,7 +309,7 @@ void Socket::disableBlocking( void )
 /*==========================================================================*/
 int Socket::error( void )
 {
-#if defined(KVS_PLATFORM_WINDOWS)
+#if defined(VIS_MODULE_PLATFORM_WINDOWS)
     return( WSAGetLastError() );
 #else
     return( errno );
@@ -326,7 +326,7 @@ std::string Socket::errorString( void )
 {
     const char* error_string = NULL;
 
-#if defined( KVS_PLATFORM_WINDOWS )
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
     switch( this->error() )
     {
     case WSAEINTR:           error_string = "WSAEINTR";           break;
@@ -481,7 +481,7 @@ int Socket::receive_peek( id_type id, char* buffer, int length )
         received_size = ::recv( id, buffer, length, MSG_PEEK );
         if( received_size < 0 )
         {
-#if defined( KVS_PLATFORM_WINDOWS )
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
             if( this->error() == WSAEMSGSIZE )
             {
                 received_size = length;
@@ -505,11 +505,11 @@ int Socket::receive_peek( id_type id, char* buffer, int length )
  */
 /*==========================================================================*/
 int Socket::connect_to_host(
-    const kvs::SocketAddress& socket_address,
-    const kvs::SocketTimer*   timeout )
+    const vismodule::SocketAddress& socket_address,
+    const vismodule::SocketTimer*   timeout )
 {
     this->setAddress( socket_address );
-    kvs::SocketAddress::address_type address = this->address().address();
+    vismodule::SocketAddress::address_type address = this->address().address();
 
     const length_type length = sizeof( sockaddr_in );
     const sockaddr*   server = reinterpret_cast<const sockaddr*>( &address );
@@ -535,7 +535,7 @@ int Socket::connect_to_host(
         status = ::connect( this->id(), server, length );
         if( status == Socket::ErrorValue )
         {
-            kvs::SocketSelector selector;
+            vismodule::SocketSelector selector;
             selector.setWritable( this->id() );
             status = selector.select( *timeout );
 
@@ -553,7 +553,7 @@ int Socket::connect_to_host(
             else
             {
                 // Writable.
-                kvs::SocketAddress::address_type name;
+                vismodule::SocketAddress::address_type name;
                 Socket::length_type length = sizeof( name );
                 if( ::getpeername( this->id(), (struct sockaddr*)&name, &length ) < 0 )
                 {
@@ -596,7 +596,7 @@ void Socket::blocking_socket( id_type id )
 
     int status;
 
-#if defined( KVS_PLATFORM_WINDOWS )
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
     u_long flag = 0;
     status = ::ioctlsocket( id, FIONBIO, &flag );
 #else
@@ -619,7 +619,7 @@ void Socket::non_blocking_socket( id_type id )
 
     int status;
 
-#if defined( KVS_PLATFORM_WINDOWS )
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
     u_long flag = 1;
     status = ::ioctlsocket( id, FIONBIO, &flag );
 #else
@@ -638,11 +638,11 @@ void Socket::non_blocking_socket( id_type id )
 /*==========================================================================*/
 void Socket::close_socket( id_type id )
 {
-#if defined( KVS_PLATFORM_WINDOWS )
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
     ::closesocket( id );
 #else
     ::close( id );
 #endif
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -20,7 +20,7 @@
 #include "StreamReader.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace dcm
@@ -394,7 +394,7 @@ const bool dcm::Value::read( std::ifstream& ifs, const bool swap )
         bool state = item.read( ifs, swap );
         if( !state )
         {
-            kvsMessageError("Cannot read the item.");
+            visModuleMessageError("Cannot read the item.");
             return( false );
         }
 
@@ -414,7 +414,7 @@ const bool dcm::Value::read( std::ifstream& ifs, const bool swap )
     case dcm::DATA_DOUBLE: *this = dcm::StreamReader::Get<double>( ifs, swap );          break;
     case dcm::DATA_STRING: *this = dcm::StreamReader::Get( ifs, m_length, swap );        break;
     case dcm::DATA_OTHER:  *this = dcm::StreamReader::Get( ifs, m_length, swap );        break;
-    default: kvsMessageError("Unknown data type"); return( false );
+    default: visModuleMessageError("Unknown data type"); return( false );
     }
 
     return( true );
@@ -440,7 +440,7 @@ const bool dcm::Value::read_data( std::ifstream& ifs, const bool swap )
     ifs.read( vr, 2 );
     if( ifs.bad() )
     {
-        kvsMessageError("Cannot read the VR code.");
+        visModuleMessageError("Cannot read the VR code.");
         return( false );
     }
     vr[2] = '\0';
@@ -464,7 +464,7 @@ const bool dcm::Value::read_data( std::ifstream& ifs, const bool swap )
     bool state = item.read( ifs, swap );
     if( !state )
     {
-        kvsMessageError("Cannot read the item.");
+        visModuleMessageError("Cannot read the item.");
         return( false );
     }
 
@@ -476,4 +476,4 @@ const bool dcm::Value::read_data( std::ifstream& ifs, const bool swap )
 
 } // end of namespace dcm
 
-} // end of namespace kvs
+} // end of namespace vismodule

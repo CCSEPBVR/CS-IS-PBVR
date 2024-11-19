@@ -11,15 +11,15 @@
  *  $Id: PointRenderer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__POINT_RENDERER_H_INCLUDE
-#define KVS__POINT_RENDERER_H_INCLUDE
+#ifndef VIS_MODULE__POINT_RENDERER_H_INCLUDE
+#define VIS_MODULE__POINT_RENDERER_H_INCLUDE
 
-#include <kvs/RendererBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/RendererBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class ObjectBase;
@@ -31,14 +31,14 @@ class Light;
  *  Point renderer.
  */
 /*==========================================================================*/
-class PointRenderer : public kvs::RendererBase
+class PointRenderer : public vismodule::RendererBase
 {
     // Class name.
-    kvsClassName( kvs::PointRenderer );
+    visModuleClassName( vismodule::PointRenderer );
 
     // Module information.
-    kvsModuleCategory( Renderer );
-    kvsModuleBaseClass( kvs::RendererBase );
+    visModuleCategory( Renderer );
+    visModuleBaseClass( vismodule::RendererBase );
 
 protected:
 
@@ -66,7 +66,7 @@ public:
 
 public:
 
-    void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
+    void exec( vismodule::ObjectBase* object, vismodule::Camera* camera, vismodule::Light* light );
 
 protected:
 
@@ -75,6 +75,6 @@ protected:
     virtual void initialize_modelview( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__POINT_RENDERER_H_INCLUDE
+#endif // VIS_MODULE__POINT_RENDERER_H_INCLUDE

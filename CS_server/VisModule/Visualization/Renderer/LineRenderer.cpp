@@ -13,15 +13,15 @@
 /****************************************************************************/
 #include "LineRenderer.h"
 #include "LineRenderingFunction.h"
-#include <kvs/OpenGL>
-#include <kvs/Camera>
-#include <kvs/Light>
-#include <kvs/ObjectBase>
-#include <kvs/LineObject>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/OpenGL>
+#include <vismodule/Camera>
+#include <vismodule/Light>
+#include <vismodule/ObjectBase>
+#include <vismodule/LineObject>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -54,12 +54,12 @@ LineRenderer::~LineRenderer( void )
  *  @param light [in] pointer to the light
  */
 /*==========================================================================*/
-void LineRenderer::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light )
+void LineRenderer::exec( vismodule::ObjectBase* object, vismodule::Camera* camera, vismodule::Light* light )
 {
-    kvs::IgnoreUnusedVariable( light );
-    kvs::IgnoreUnusedVariable( camera );
+    vismodule::IgnoreUnusedVariable( light );
+    vismodule::IgnoreUnusedVariable( camera );
 
-    kvs::LineObject* line = reinterpret_cast<kvs::LineObject*>( object );
+    vismodule::LineObject* line = reinterpret_cast<vismodule::LineObject*>( object );
 
     glPushAttrib( GL_CURRENT_BIT | GL_ENABLE_BIT );
 
@@ -149,4 +149,4 @@ void LineRenderer::initialize_modelview( void )
     else                     glEnable( GL_LIGHTING );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -11,15 +11,15 @@
  *  $Id: HttpRequestHeader.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__HTTP_REQUEST_HEADER_H_INCLUDE
-#define KVS__HTTP_REQUEST_HEADER_H_INCLUDE
+#ifndef VIS_MODULE__HTTP_REQUEST_HEADER_H_INCLUDE
+#define VIS_MODULE__HTTP_REQUEST_HEADER_H_INCLUDE
 
 #include <string>
 #include <vector>
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -29,7 +29,7 @@ namespace kvs
 /*==========================================================================*/
 class HttpRequestHeader
 {
-    kvsClassName( kvs::HttpRequestHeader );
+    visModuleClassName( vismodule::HttpRequestHeader );
 
 public:
 
@@ -76,6 +76,6 @@ public:
     std::string makeMessage( void ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__HTTP_REQUEST_HEADER_H_INCLUDE
+#endif // VIS_MODULE__HTTP_REQUEST_HEADER_H_INCLUDE

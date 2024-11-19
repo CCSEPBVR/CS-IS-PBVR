@@ -14,7 +14,7 @@
 #include "RendererBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -64,7 +64,7 @@ const std::string& RendererBase::name( void ) const
  *  Get the rendering timer.
  */
 /*==========================================================================*/
-const kvs::Timer& RendererBase::timer( void ) const
+const vismodule::Timer& RendererBase::timer( void ) const
 {
     return( m_timer );
 }
@@ -74,7 +74,7 @@ const kvs::Timer& RendererBase::timer( void ) const
  *  Get the rendering timer.
  */
 /*==========================================================================*/
-kvs::Timer& RendererBase::timer( void )
+vismodule::Timer& RendererBase::timer( void )
 {
     return( m_timer );
 }
@@ -139,4 +139,4 @@ void RendererBase::initialize_modelview( void )
 {
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

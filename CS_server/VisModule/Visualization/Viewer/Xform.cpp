@@ -14,7 +14,7 @@
 #include "Xform.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -36,9 +36,9 @@ Xform::Xform( void )
  */
 /*==========================================================================*/
 Xform::Xform(
-    const kvs::Vector3f&  translation,
-    const kvs::Vector3f&  scaling,
-    const kvs::Matrix33f& rotation )
+    const vismodule::Vector3f&  translation,
+    const vismodule::Vector3f&  scaling,
+    const vismodule::Matrix33f& rotation )
 {
     this->set( translation, scaling, rotation );
 }
@@ -60,7 +60,7 @@ Xform::Xform( const Xform& xform )
  *  @param m [in] xform matrix
  */
 /*==========================================================================*/
-Xform::Xform( const kvs::Matrix44f& m )
+Xform::Xform( const vismodule::Matrix44f& m )
 {
     *this = m;
 }
@@ -82,7 +82,7 @@ Xform::~Xform( void )
  *  @return xform
  */
 /*==========================================================================*/
-Xform& Xform::operator = ( const kvs::Matrix44f& m )
+Xform& Xform::operator = ( const vismodule::Matrix44f& m )
 {
     (*this)[0] = m[0];
     (*this)[1] = m[1];
@@ -101,7 +101,7 @@ Xform& Xform::operator = ( const kvs::Matrix44f& m )
 /*==========================================================================*/
 Xform& Xform::operator = ( const Xform& xform )
 {
-    *this = kvs::Matrix44f( xform );
+    *this = vismodule::Matrix44f( xform );
 
     m_rotation = xform.m_rotation;
     m_scaling  = xform.m_scaling;
@@ -116,7 +116,7 @@ Xform& Xform::operator = ( const Xform& xform )
 /*==========================================================================*/
 void Xform::initialize( void )
 {
-    kvs::Matrix44f::identity();
+    vismodule::Matrix44f::identity();
 
     m_rotation.identity();
     m_scaling.set( 1.0, 1.0, 1.0 );
@@ -129,7 +129,7 @@ void Xform::initialize( void )
 /*==========================================================================*/
 void Xform::clear( void )
 {
-    kvs::Matrix44f::zero();
+    vismodule::Matrix44f::zero();
 
     m_rotation.zero();
     m_scaling.zero();
@@ -164,9 +164,9 @@ void Xform::clear( void )
  */
 /*==========================================================================*/
 void Xform::set(
-    const kvs::Vector3f&  translation,
-    const kvs::Vector3f&  scaling,
-    const kvs::Matrix33f& rotation )
+    const vismodule::Vector3f&  translation,
+    const vismodule::Vector3f&  scaling,
+    const vismodule::Matrix33f& rotation )
 {
     this->initialize();
     this->updateRotation( rotation );
@@ -191,15 +191,15 @@ void Xform::set( const Xform& xform )
  *  @param rotation [in] rotation matrix
  */
 /*==========================================================================*/
-void Xform::updateRotation( const kvs::Matrix33f& rotation )
+void Xform::updateRotation( const vismodule::Matrix33f& rotation )
 {
-    const kvs::Matrix44f rotation44(
+    const vismodule::Matrix44f rotation44(
         rotation[0][0], rotation[0][1], rotation[0][2], 0,
         rotation[1][0], rotation[1][1], rotation[1][2], 0,
         rotation[2][0], rotation[2][1], rotation[2][2], 0,
         0,              0,              0,              1 );
 
-    *this = rotation44 * kvs::Matrix44f( *this );
+    *this = rotation44 * vismodule::Matrix44f( *this );
 
     m_rotation = rotation * m_rotation;
 }
@@ -210,7 +210,7 @@ void Xform::updateRotation( const kvs::Matrix33f& rotation )
  *  @param translation [in] translation vector
  */
 /*==========================================================================*/
-void Xform::updateTranslation( const kvs::Vector3f& translation )
+void Xform::updateTranslation( const vismodule::Vector3f& translation )
 {
     (*this)[0][3] += translation.x();
     (*this)[1][3] += translation.y();
@@ -223,7 +223,7 @@ void Xform::updateTranslation( const kvs::Vector3f& translation )
  *  @param scaling [in] scaling vector
  */
 /*==========================================================================*/
-void Xform::updateScaling( const kvs::Vector3f& scaling )
+void Xform::updateScaling( const vismodule::Vector3f& scaling )
 {
     (*this)[0][0] *= scaling.x(); (*this)[0][1] *= scaling.x();
     (*this)[0][2] *= scaling.x(); (*this)[0][3] *= scaling.x();
@@ -265,9 +265,9 @@ void Xform::updateScaling( float scaling )
  *  @return translation vector
  */
 /*==========================================================================*/
-const kvs::Vector3f Xform::translation( void ) const
+const vismodule::Vector3f Xform::translation( void ) const
 {
-    return( kvs::Vector3f( (*this)[0][3], (*this)[1][3], (*this)[2][3] ) );
+    return( vismodule::Vector3f( (*this)[0][3], (*this)[1][3], (*this)[2][3] ) );
 }
 
 /*==========================================================================*/
@@ -276,7 +276,7 @@ const kvs::Vector3f Xform::translation( void ) const
  *  @return rotation matrix
  */
 /*==========================================================================*/
-const kvs::Matrix33f& Xform::rotation( void ) const
+const vismodule::Matrix33f& Xform::rotation( void ) const
 {
     return( m_rotation );
 }
@@ -287,9 +287,9 @@ const kvs::Matrix33f& Xform::rotation( void ) const
  *  @return scaled rotation matrix
  */
 /*==========================================================================*/
-const kvs::Matrix33f Xform::scaledRotation( void ) const
+const vismodule::Matrix33f Xform::scaledRotation( void ) const
 {
-    return( kvs::Matrix33f( (*this)[0][0], (*this)[1][0], (*this)[2][0],
+    return( vismodule::Matrix33f( (*this)[0][0], (*this)[1][0], (*this)[2][0],
                             (*this)[0][1], (*this)[1][1], (*this)[2][1],
                             (*this)[0][2], (*this)[1][2], (*this)[2][2] ) );
 }
@@ -300,7 +300,7 @@ const kvs::Matrix33f Xform::scaledRotation( void ) const
  *  @return rotation matrix
  */
 /*==========================================================================*/
-const kvs::Vector3f& Xform::scaling( void ) const
+const vismodule::Vector3f& Xform::scaling( void ) const
 {
     return( m_scaling );
 }
@@ -345,4 +345,4 @@ void Xform::get( float (*array)[16] ) const
     (*array)[15] = (*this)[3][3];
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

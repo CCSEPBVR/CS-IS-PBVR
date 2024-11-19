@@ -13,12 +13,12 @@
  */
 /*****************************************************************************/
 #include "Vars.h"
-#include <kvs/Tokenizer>
+#include <vismodule/Tokenizer>
 #include <cstdlib>
 #include <iostream>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace grads
@@ -34,7 +34,7 @@ namespace grads
 /*===========================================================================*/
 const bool Vars::read( std::string line, std::ifstream& ifs )
 {
-    kvs::Tokenizer t( line, " \t\n" );
+    vismodule::Tokenizer t( line, " \t\n" );
     t.token(); // VARS
 
     // varnum
@@ -45,7 +45,7 @@ const bool Vars::read( std::string line, std::ifstream& ifs )
     for ( size_t i = 0; i < varnum; i++ )
     {
         std::getline( ifs, line );
-        t = kvs::Tokenizer( line, " \t" );
+        t = vismodule::Tokenizer( line, " \t" );
 
         Var var;
 
@@ -74,4 +74,4 @@ const bool Vars::read( std::string line, std::ifstream& ifs )
 
 } // end of namespace grads
 
-} // end of namespace kvs
+} // end of namespace vismodule

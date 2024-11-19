@@ -12,17 +12,17 @@
  *  $Id: UnstructuredVectorToScalar.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__UNSTRUCTURED_VECTOR_TO_SCALAR_H_INCLUDE
-#define KVS__UNSTRUCTURED_VECTOR_TO_SCALAR_H_INCLUDE
+#ifndef VIS_MODULE__UNSTRUCTURED_VECTOR_TO_SCALAR_H_INCLUDE
+#define VIS_MODULE__UNSTRUCTURED_VECTOR_TO_SCALAR_H_INCLUDE
 
-#include <kvs/VolumeObjectBase>
-#include <kvs/UnstructuredVolumeObject>
-#include <kvs/FilterBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/FilterBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,34 +30,34 @@ namespace kvs
  *  @brief  Conversion class from vector to scalar value for unstructured volume.
  */
 /*===========================================================================*/
-class UnstructuredVectorToScalar : public kvs::FilterBase, public kvs::UnstructuredVolumeObject
+class UnstructuredVectorToScalar : public vismodule::FilterBase, public vismodule::UnstructuredVolumeObject
 {
     // Class name.
-    kvsClassName( kvs::UnstructuredVectorToScalar );
+    visModuleClassName( vismodule::UnstructuredVectorToScalar );
 
     // Module information.
-    kvsModuleCategory( Filter );
-    kvsModuleBaseClass( kvs::FilterBase );
-    kvsModuleSuperClass( kvs::UnstructuredVolumeObject );
+    visModuleCategory( Filter );
+    visModuleBaseClass( vismodule::FilterBase );
+    visModuleSuperClass( vismodule::UnstructuredVolumeObject );
 
 public:
 
     UnstructuredVectorToScalar( void );
 
-    UnstructuredVectorToScalar( const kvs::UnstructuredVolumeObject* volume );
+    UnstructuredVectorToScalar( const vismodule::UnstructuredVolumeObject* volume );
 
     virtual ~UnstructuredVectorToScalar( void );
 
 public:
 
-    SuperClass* exec( const kvs::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase* object );
 
 protected:
 
     template <typename T>
-    void calculate_magnitude( const kvs::UnstructuredVolumeObject* volume );
+    void calculate_magnitude( const vismodule::UnstructuredVolumeObject* volume );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__UNSTRUCTURED_VECTOR_TO_SCALAR_H_INCLUDE
+#endif // VIS_MODULE__UNSTRUCTURED_VECTOR_TO_SCALAR_H_INCLUDE

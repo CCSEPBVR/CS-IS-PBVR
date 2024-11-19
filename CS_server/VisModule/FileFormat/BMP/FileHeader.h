@@ -11,16 +11,16 @@
  *  $Id: FileHeader.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__BMP__FILE_HEADER_H_INCLUDE
-#define KVS__BMP__FILE_HEADER_H_INCLUDE
+#ifndef VIS_MODULE__BMP__FILE_HEADER_H_INCLUDE
+#define VIS_MODULE__BMP__FILE_HEADER_H_INCLUDE
 
 #include "HeaderBase.h"
-#include <kvs/Type>
+#include <vismodule/Type>
 
 
-namespace kvs { class Bmp; }
+namespace vismodule { class Bmp; }
 
-namespace kvs
+namespace vismodule
 {
 
 namespace bmp
@@ -31,21 +31,21 @@ namespace bmp
  *  Bitmap file header class
  */
 /*==========================================================================*/
-class FileHeader : public kvs::bmp::HeaderBase
+class FileHeader : public vismodule::bmp::HeaderBase
 {
-    friend class kvs::Bmp;
+    friend class vismodule::Bmp;
 
 public:
 
-    typedef kvs::bmp::HeaderBase BaseClass;
+    typedef vismodule::bmp::HeaderBase BaseClass;
 
 private:
 
-    kvs::UInt16 m_type;      ///< the file type
-    kvs::UInt32 m_size;      ///< the file size
-    kvs::UInt16 m_reserved1; ///< reserved value 1 (always 0)
-    kvs::UInt16 m_reserved2; ///< reserved value 2 (always 0)
-    kvs::UInt32 m_offset;    ///< starting position of image data, in bytes (54)
+    vismodule::UInt16 m_type;      ///< the file type
+    vismodule::UInt32 m_size;      ///< the file size
+    vismodule::UInt16 m_reserved1; ///< reserved value 1 (always 0)
+    vismodule::UInt16 m_reserved2; ///< reserved value 2 (always 0)
+    vismodule::UInt32 m_offset;    ///< starting position of image data, in bytes (54)
 
 public:
 
@@ -55,19 +55,19 @@ public:
 
 public:
 
-    friend std::ostream& operator << ( std::ostream& os, const kvs::bmp::FileHeader& fh );
+    friend std::ostream& operator << ( std::ostream& os, const vismodule::bmp::FileHeader& fh );
 
 public:
 
-    kvs::UInt16 type( void ) const;
+    vismodule::UInt16 type( void ) const;
 
-    kvs::UInt32 size( void ) const;
+    vismodule::UInt32 size( void ) const;
 
-    kvs::UInt16 reserved1( void ) const;
+    vismodule::UInt16 reserved1( void ) const;
 
-    kvs::UInt16 reserved2( void ) const;
+    vismodule::UInt16 reserved2( void ) const;
 
-    kvs::UInt32 offset( void ) const;
+    vismodule::UInt32 offset( void ) const;
 
 public:
 
@@ -84,6 +84,6 @@ private:
 
 } // end of namespace bmp
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__BMP__FILE_HEADER_H_INCLUDE
+#endif // VIS_MODULE__BMP__FILE_HEADER_H_INCLUDE

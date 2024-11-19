@@ -103,7 +103,7 @@ pbvr::VolumeObjectBase* VolumeObjectBase::DownCast( pbvr::ObjectBase* object )
     const pbvr::ObjectBase::ObjectType type = object->objectType();
     if ( type != pbvr::ObjectBase::Volume )
     {
-        kvsMessageError( "Input object is not a volume object." );
+        visModuleMessageError( "Input object is not a volume object." );
         return NULL;
     }
 
@@ -119,7 +119,7 @@ const pbvr::VolumeObjectBase* VolumeObjectBase::DownCast( const pbvr::ObjectBase
 
 std::ostream& operator << ( std::ostream& os, const pbvr::VolumeObjectBase& object )
 {
-#ifdef KVS_COMPILER_VC
+#ifdef VIS_MODULE_COMPILER_VC
 //#if PBVR_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
 //    // @TODO Cannot instance the object that is a abstract class here (error:C2259).
 //#endif
@@ -191,8 +191,8 @@ void VolumeObjectBase::setValues( const Values& values )
  */
 /*==========================================================================*/
 void VolumeObjectBase::setMinMaxValues(
-    const kvs::Real64 min_value,
-    const kvs::Real64 max_value ) const
+    const vismodule::Real64 min_value,
+    const vismodule::Real64 max_value ) const
 {
     m_min_value          = min_value;
     m_max_value          = max_value;
@@ -288,7 +288,7 @@ const bool VolumeObjectBase::hasMinMaxValues() const
  *  @return Minimum value.
  */
 /*==========================================================================*/
-const kvs::Real64 VolumeObjectBase::minValue() const
+const vismodule::Real64 VolumeObjectBase::minValue() const
 {
     return m_min_value;
 }
@@ -300,7 +300,7 @@ const kvs::Real64 VolumeObjectBase::minValue() const
  *  @return Maximum value.
  */
 /*==========================================================================*/
-const kvs::Real64 VolumeObjectBase::maxValue() const
+const vismodule::Real64 VolumeObjectBase::maxValue() const
 {
     return m_max_value;
 }
@@ -313,45 +313,45 @@ const kvs::Real64 VolumeObjectBase::maxValue() const
 void VolumeObjectBase::updateMinMaxValues() const
 {
     const std::type_info& type = m_values.typeInfo()->type();
-    if (      type == typeid( kvs::Int8   ) )
+    if (      type == typeid( vismodule::Int8   ) )
     {
-        this->calculate_min_max_values<kvs::Int8  >();
+        this->calculate_min_max_values<vismodule::Int8  >();
     }
-    else if ( type == typeid( kvs::Int16  ) )
+    else if ( type == typeid( vismodule::Int16  ) )
     {
-        this->calculate_min_max_values<kvs::Int16 >();
+        this->calculate_min_max_values<vismodule::Int16 >();
     }
-    else if ( type == typeid( kvs::Int32  ) )
+    else if ( type == typeid( vismodule::Int32  ) )
     {
-        this->calculate_min_max_values<kvs::Int32 >();
+        this->calculate_min_max_values<vismodule::Int32 >();
     }
-    else if ( type == typeid( kvs::Int64  ) )
+    else if ( type == typeid( vismodule::Int64  ) )
     {
-        this->calculate_min_max_values<kvs::Int64 >();
+        this->calculate_min_max_values<vismodule::Int64 >();
     }
-    else if ( type == typeid( kvs::UInt8  ) )
+    else if ( type == typeid( vismodule::UInt8  ) )
     {
-        this->calculate_min_max_values<kvs::UInt8 >();
+        this->calculate_min_max_values<vismodule::UInt8 >();
     }
-    else if ( type == typeid( kvs::UInt16 ) )
+    else if ( type == typeid( vismodule::UInt16 ) )
     {
-        this->calculate_min_max_values<kvs::UInt16>();
+        this->calculate_min_max_values<vismodule::UInt16>();
     }
-    else if ( type == typeid( kvs::UInt32 ) )
+    else if ( type == typeid( vismodule::UInt32 ) )
     {
-        this->calculate_min_max_values<kvs::UInt32>();
+        this->calculate_min_max_values<vismodule::UInt32>();
     }
-    else if ( type == typeid( kvs::UInt64 ) )
+    else if ( type == typeid( vismodule::UInt64 ) )
     {
-        this->calculate_min_max_values<kvs::UInt64>();
+        this->calculate_min_max_values<vismodule::UInt64>();
     }
-    else if ( type == typeid( kvs::Real32 ) )
+    else if ( type == typeid( vismodule::Real32 ) )
     {
-        this->calculate_min_max_values<kvs::Real32>();
+        this->calculate_min_max_values<vismodule::Real32>();
     }
-    else if ( type == typeid( kvs::Real64 ) )
+    else if ( type == typeid( vismodule::Real64 ) )
     {
-        this->calculate_min_max_values<kvs::Real64>();
+        this->calculate_min_max_values<vismodule::Real64>();
     }
 }
 
@@ -395,45 +395,45 @@ void VolumeObjectBase::deepCopy( const VolumeObjectBase& object )
 
     const size_t size = object.values().size();
     const std::type_info& type = object.values().typeInfo()->type();
-    if (      type == typeid( kvs::Int8 ) )
+    if (      type == typeid( vismodule::Int8 ) )
     {
-        this->m_values.deepCopy( object.values().pointer<kvs::Int8>(), size );
+        this->m_values.deepCopy( object.values().pointer<vismodule::Int8>(), size );
     }
-    else if ( type == typeid( kvs::UInt8 ) )
+    else if ( type == typeid( vismodule::UInt8 ) )
     {
-        this->m_values.deepCopy( object.values().pointer<kvs::UInt8>(), size );
+        this->m_values.deepCopy( object.values().pointer<vismodule::UInt8>(), size );
     }
-    else if ( type == typeid( kvs::Int16 ) )
+    else if ( type == typeid( vismodule::Int16 ) )
     {
-        this->m_values.deepCopy( object.values().pointer<kvs::Int16>(), size );
+        this->m_values.deepCopy( object.values().pointer<vismodule::Int16>(), size );
     }
-    else if ( type == typeid( kvs::UInt16 ) )
+    else if ( type == typeid( vismodule::UInt16 ) )
     {
-        this->m_values.deepCopy( object.values().pointer<kvs::UInt16>(), size );
+        this->m_values.deepCopy( object.values().pointer<vismodule::UInt16>(), size );
     }
-    else if ( type == typeid( kvs::Int32 ) )
+    else if ( type == typeid( vismodule::Int32 ) )
     {
-        this->m_values.deepCopy( object.values().pointer<kvs::Int32>(), size );
+        this->m_values.deepCopy( object.values().pointer<vismodule::Int32>(), size );
     }
-    else if ( type == typeid( kvs::UInt32 ) )
+    else if ( type == typeid( vismodule::UInt32 ) )
     {
-        this->m_values.deepCopy( object.values().pointer<kvs::UInt32>(), size );
+        this->m_values.deepCopy( object.values().pointer<vismodule::UInt32>(), size );
     }
-    else if ( type == typeid( kvs::Int64 ) )
+    else if ( type == typeid( vismodule::Int64 ) )
     {
-        this->m_values.deepCopy( object.values().pointer<kvs::Int64>(), size );
+        this->m_values.deepCopy( object.values().pointer<vismodule::Int64>(), size );
     }
-    else if ( type == typeid( kvs::UInt64 ) )
+    else if ( type == typeid( vismodule::UInt64 ) )
     {
-        this->m_values.deepCopy( object.values().pointer<kvs::UInt64>(), size );
+        this->m_values.deepCopy( object.values().pointer<vismodule::UInt64>(), size );
     }
-    else if ( type == typeid( kvs::Real32 ) )
+    else if ( type == typeid( vismodule::Real32 ) )
     {
-        this->m_values.deepCopy( object.values().pointer<kvs::Real32>(), size );
+        this->m_values.deepCopy( object.values().pointer<vismodule::Real32>(), size );
     }
-    else if ( type == typeid( kvs::Real64 ) )
+    else if ( type == typeid( vismodule::Real64 ) )
     {
-        this->m_values.deepCopy( object.values().pointer<kvs::Real64>(), size );
+        this->m_values.deepCopy( object.values().pointer<vismodule::Real64>(), size );
     }
 }
 

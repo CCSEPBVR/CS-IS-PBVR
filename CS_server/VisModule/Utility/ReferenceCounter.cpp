@@ -12,13 +12,13 @@
  */
 /****************************************************************************/
 #include "ReferenceCounter.h"
-#if defined ( KVS_ENABLE_THREAD_SAFE )
-#include <kvs/Mutex>
-#include <kvs/MutexLocker>
+#if defined ( VIS_MODULE_ENABLE_THREAD_SAFE )
+#include <vismodule/Mutex>
+#include <vismodule/MutexLocker>
 #endif
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -63,14 +63,14 @@ const size_t ReferenceCounter::value( void ) const
     return( m_value );
 }
 
-#if defined ( KVS_ENABLE_THREAD_SAFE )
+#if defined ( VIS_MODULE_ENABLE_THREAD_SAFE )
 /*==========================================================================*/
 /**
  *  Get a mutex lock key.
  *  @return mutex lock key
  */
 /*==========================================================================*/
-kvs::Mutex& ReferenceCounter::key( void ) const
+vismodule::Mutex& ReferenceCounter::key( void ) const
 {
     return( m_key );
 }
@@ -83,8 +83,8 @@ kvs::Mutex& ReferenceCounter::key( void ) const
 /*==========================================================================*/
 void ReferenceCounter::increment( void )
 {
-#if defined ( KVS_ENABLE_THREAD_SAFE )
-    kvs::MutexLocker lock( &m_key );
+#if defined ( VIS_MODULE_ENABLE_THREAD_SAFE )
+    vismodule::MutexLocker lock( &m_key );
 #endif
     ++m_value;
 }
@@ -96,10 +96,10 @@ void ReferenceCounter::increment( void )
 /*==========================================================================*/
 void ReferenceCounter::decrement( void )
 {
-#if defined ( KVS_ENABLE_THREAD_SAFE )
-    kvs::MutexLocker lock( &m_key );
+#if defined ( VIS_MODULE_ENABLE_THREAD_SAFE )
+    vismodule::MutexLocker lock( &m_key );
 #endif
     --m_value;
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

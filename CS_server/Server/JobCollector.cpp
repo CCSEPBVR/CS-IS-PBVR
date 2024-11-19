@@ -126,9 +126,9 @@ void JobCollector::jobCollect( pbvr::PointObject* object, VariableRange* vr, boo
             unsigned char* colors  = &m_pack_colors[m_pack_head];
             float*         normals = &m_pack_normals[m_pack_head];
 
-            kvs::ValueArray<kvs::Real32> coords_array( coords, nmemb );
-            kvs::ValueArray<kvs::UInt8>  colors_array( colors, nmemb );
-            kvs::ValueArray<kvs::Real32> normals_array( normals, nmemb );
+            vismodule::ValueArray<vismodule::Real32> coords_array( coords, nmemb );
+            vismodule::ValueArray<vismodule::UInt8>  colors_array( colors, nmemb );
+            vismodule::ValueArray<vismodule::Real32> normals_array( normals, nmemb );
 
             m_pack_head += nmemb;
             m_pack_count++;

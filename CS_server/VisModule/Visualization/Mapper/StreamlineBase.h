@@ -11,18 +11,18 @@
  *  $Id: StreamlineBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__STREAMLINE_BASE_H_INCLUDE
-#define KVS__STREAMLINE_BASE_H_INCLUDE
+#ifndef VIS_MODULE__STREAMLINE_BASE_H_INCLUDE
+#define VIS_MODULE__STREAMLINE_BASE_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/Module>
-#include <kvs/MapperBase>
-#include <kvs/LineObject>
-#include <kvs/PointObject>
-#include <kvs/StructuredVolumeObject>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
+#include <vismodule/MapperBase>
+#include <vismodule/LineObject>
+#include <vismodule/PointObject>
+#include <vismodule/StructuredVolumeObject>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,14 +30,14 @@ namespace kvs
  *  Streamline class.
  */
 /*===========================================================================*/
-class StreamlineBase : public kvs::MapperBase, public kvs::LineObject
+class StreamlineBase : public vismodule::MapperBase, public vismodule::LineObject
 {
     // Class name.
-    kvsClassName( kvs::StreamlineBase );
+    visModuleClassName( vismodule::StreamlineBase );
 
     // Module information.
-    kvsModuleBaseClass( kvs::MapperBase );
-    kvsModuleSuperClass( kvs::LineObject );
+    visModuleBaseClass( vismodule::MapperBase );
+    visModuleSuperClass( vismodule::LineObject );
 
 public:
 
@@ -57,7 +57,7 @@ public:
 
 protected:
 
-    kvs::PointObject* m_seed_points; ///< seed points
+    vismodule::PointObject* m_seed_points; ///< seed points
     IntegrationMethod m_integration_method; ///< integtration method
     IntegrationDirection m_integration_direction; ///< integration direction
     float m_integration_interval; ///< integration interval in the object coordinate
@@ -75,7 +75,7 @@ public:
 
 public:
 
-    void setSeedPoints( const kvs::PointObject* seed_points );
+    void setSeedPoints( const vismodule::PointObject* seed_points );
 
     void setIntegrationMethod( const StreamlineBase::IntegrationMethod method );
 
@@ -95,71 +95,71 @@ public:
 
 public:
 
-    virtual kvs::ObjectBase* exec( const kvs::ObjectBase* object ) = 0;
+    virtual vismodule::ObjectBase* exec( const vismodule::ObjectBase* object ) = 0;
 
 protected:
 
-    virtual const bool check_for_acceptance( const std::vector<kvs::Real32>& vertices ) = 0;
+    virtual const bool check_for_acceptance( const std::vector<vismodule::Real32>& vertices ) = 0;
 
     virtual const bool check_for_termination(
-        const kvs::Vector3f& current_vertex,
-        const kvs::Vector3f& direction,
+        const vismodule::Vector3f& current_vertex,
+        const vismodule::Vector3f& direction,
         const size_t integration_times,
-        const kvs::Vector3f& next_vertex ) = 0;
+        const vismodule::Vector3f& next_vertex ) = 0;
 
-    virtual const kvs::Vector3f interpolate_vector( const kvs::Vector3f& vertex, const kvs::Vector3f& direction ) = 0;
+    virtual const vismodule::Vector3f interpolate_vector( const vismodule::Vector3f& vertex, const vismodule::Vector3f& direction ) = 0;
 
-    virtual const kvs::Vector3f calculate_vector( const kvs::Vector3f& vertex ) = 0;
+    virtual const vismodule::Vector3f calculate_vector( const vismodule::Vector3f& vertex ) = 0;
 
-    virtual const kvs::RGBColor calculate_color( const kvs::Vector3f& direction ) = 0;
+    virtual const vismodule::RGBColor calculate_color( const vismodule::Vector3f& direction ) = 0;
 
 protected:
 
-    void mapping( const kvs::VolumeObjectBase* volume );
+    void mapping( const vismodule::VolumeObjectBase* volume );
 
     void extract_lines(
-        const kvs::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject* volume );
 
     const bool calculate_line(
-        std::vector<kvs::Real32>* vertices,
-        std::vector<kvs::UInt8>* colors,
+        std::vector<vismodule::Real32>* vertices,
+        std::vector<vismodule::UInt8>* colors,
         const size_t index );
 
     const bool calculate_one_side(
-        std::vector<kvs::Real32>* coords,
-        std::vector<kvs::UInt8>* colors,
-        const kvs::Vector3f& seed_point,
-        const kvs::Vector3f& seed_vector );
+        std::vector<vismodule::Real32>* coords,
+        std::vector<vismodule::UInt8>* colors,
+        const vismodule::Vector3f& seed_point,
+        const vismodule::Vector3f& seed_vector );
 
     const bool calculate_next_vertex(
-        const kvs::Vector3f& current_vertex,
-        const kvs::Vector3f& current_direction,
-        kvs::Vector3f* next_vertex );
+        const vismodule::Vector3f& current_vertex,
+        const vismodule::Vector3f& current_direction,
+        vismodule::Vector3f* next_vertex );
 
     const bool integrate_by_euler(
-        const kvs::Vector3f& current_vertex,
-        const kvs::Vector3f& current_direction,
-        kvs::Vector3f* next_vertex );
+        const vismodule::Vector3f& current_vertex,
+        const vismodule::Vector3f& current_direction,
+        vismodule::Vector3f* next_vertex );
 
     const bool integrate_by_runge_kutta_2nd(
-        const kvs::Vector3f& current_vertex,
-        const kvs::Vector3f& current_direction,
-        kvs::Vector3f* next_vertex );
+        const vismodule::Vector3f& current_vertex,
+        const vismodule::Vector3f& current_direction,
+        vismodule::Vector3f* next_vertex );
 
     const bool integrate_by_runge_kutta_4th(
-        const kvs::Vector3f& current_vertex,
-        const kvs::Vector3f& current_direction,
-        kvs::Vector3f* next_vertex );
+        const vismodule::Vector3f& current_vertex,
+        const vismodule::Vector3f& current_direction,
+        vismodule::Vector3f* next_vertex );
 
 protected:
 
-    const bool check_for_inside_volume( const kvs::Vector3f& seed );
+    const bool check_for_inside_volume( const vismodule::Vector3f& seed );
 
-    const bool check_for_vector_length( const kvs::Vector3f& direction );
+    const bool check_for_vector_length( const vismodule::Vector3f& direction );
 
     const bool check_for_integration_times( const size_t times );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__STREAMLINE_BASE_H_INCLUDE
+#endif // VIS_MODULE__STREAMLINE_BASE_H_INCLUDE

@@ -11,18 +11,18 @@
  *  $Id: KVSMLObjectLine.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__KVSML__KVSML_OBJECT_LINE_H_INCLUDE
-#define KVS__KVSML__KVSML_OBJECT_LINE_H_INCLUDE
+#ifndef VIS_MODULE__KVSML__KVSML_OBJECT_LINE_H_INCLUDE
+#define VIS_MODULE__KVSML__KVSML_OBJECT_LINE_H_INCLUDE
 
-#include <kvs/FileFormatBase>
-#include <kvs/ValueArray>
-#include <kvs/Type>
-#include <kvs/Vector3>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/Vector3>
 #include "KVSMLTag.h"
 #include "ObjectTag.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,9 +30,9 @@ namespace kvs
  *  @brief  KVSML line object format.
  */
 /*===========================================================================*/
-class KVSMLObjectLine : public kvs::FileFormatBase
+class KVSMLObjectLine : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::KVSMLObjectLine );
+    visModuleClassName( vismodule::KVSMLObjectLine );
 
 public:
 
@@ -45,15 +45,15 @@ public:
 
 protected:
 
-    kvs::kvsml::KVSMLTag         m_kvsml_tag;    ///< KVSML tag information
-    kvs::kvsml::ObjectTag        m_object_tag;   ///< Object tag information
+    vismodule::kvsml::KVSMLTag         m_kvsml_tag;    ///< KVSML tag information
+    vismodule::kvsml::ObjectTag        m_object_tag;   ///< Object tag information
     WritingDataType              m_writing_type; ///< writing data type
     std::string                  m_line_type;    ///< line type
     std::string                  m_color_type;   ///< line color type
-    kvs::ValueArray<kvs::Real32> m_coords;       ///< coordinate array
-    kvs::ValueArray<kvs::UInt32> m_connections;  ///< connection array
-    kvs::ValueArray<kvs::UInt8>  m_colors;       ///< color (r,g,b) array
-    kvs::ValueArray<kvs::Real32> m_sizes;        ///< size array
+    vismodule::ValueArray<vismodule::Real32> m_coords;       ///< coordinate array
+    vismodule::ValueArray<vismodule::UInt32> m_connections;  ///< connection array
+    vismodule::ValueArray<vismodule::UInt8>  m_colors;       ///< color (r,g,b) array
+    vismodule::ValueArray<vismodule::Real32> m_sizes;        ///< size array
 
 public:
 
@@ -65,9 +65,9 @@ public:
 
 public:
 
-    const kvs::kvsml::KVSMLTag& KVSMLTag( void ) const;
+    const vismodule::kvsml::KVSMLTag& KVSMLTag( void ) const;
 
-    const kvs::kvsml::ObjectTag& objectTag( void ) const;
+    const vismodule::kvsml::ObjectTag& objectTag( void ) const;
 
 public:
 
@@ -75,13 +75,13 @@ public:
 
     const std::string& colorType( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& coords( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& coords( void ) const;
 
-    const kvs::ValueArray<kvs::UInt8>& colors( void ) const;
+    const vismodule::ValueArray<vismodule::UInt8>& colors( void ) const;
 
-    const kvs::ValueArray<kvs::UInt32>& connections( void ) const;
+    const vismodule::ValueArray<vismodule::UInt32>& connections( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& sizes( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& sizes( void ) const;
 
 public:
 
@@ -91,13 +91,13 @@ public:
 
     void setColorType( const std::string& color_type );
 
-    void setCoords( const kvs::ValueArray<kvs::Real32>& coords );
+    void setCoords( const vismodule::ValueArray<vismodule::Real32>& coords );
 
-    void setColors( const kvs::ValueArray<kvs::UInt8>& colors );
+    void setColors( const vismodule::ValueArray<vismodule::UInt8>& colors );
 
-    void setConnections( const kvs::ValueArray<kvs::UInt32>& connections );
+    void setConnections( const vismodule::ValueArray<vismodule::UInt32>& connections );
 
-    void setSizes( const kvs::ValueArray<kvs::Real32>& sizes );
+    void setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes );
 
 public:
 
@@ -114,6 +114,6 @@ public:
     friend std::ostream& operator <<( std::ostream& os, const KVSMLObjectLine& rhs );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__KVSML_OBJECT_LINE_H_INCLUDE
+#endif // VIS_MODULE__KVSML_OBJECT_LINE_H_INCLUDE

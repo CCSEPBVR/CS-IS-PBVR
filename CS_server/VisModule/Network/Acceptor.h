@@ -12,15 +12,15 @@
  *  $Id: Acceptor.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__ACCEPTOR_H_INCLUDE
-#define KVS__ACCEPTOR_H_INCLUDE
+#ifndef VIS_MODULE__ACCEPTOR_H_INCLUDE
+#define VIS_MODULE__ACCEPTOR_H_INCLUDE
 
-#include <kvs/TCPServer>
-#include <kvs/IPAddress>
-#include <kvs/ClassName>
+#include <vismodule/TCPServer>
+#include <vismodule/IPAddress>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,11 +30,11 @@ namespace kvs
 /*===========================================================================*/
 class Acceptor
 {
-    kvsClassName_without_virtual( kvs::Acceptor );
+    visModuleClassName_without_virtual( vismodule::Acceptor );
 
 private:
 
-    kvs::TCPServer* m_handler; //< handler
+    vismodule::TCPServer* m_handler; //< handler
 
 public:
 
@@ -52,9 +52,9 @@ public:
 
     const bool bind( const int port, const size_t ntrials );
 
-    kvs::TCPSocket* newConnection( void );
+    vismodule::TCPSocket* newConnection( void );
 
-    const int receive( kvs::MessageBlock* block, kvs::SocketAddress* client_address = 0 );
+    const int receive( vismodule::MessageBlock* block, vismodule::SocketAddress* client_address = 0 );
 
 private:
 
@@ -63,6 +63,6 @@ private:
     void delete_handler( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__ACCEPTOR_H_INCLUDE
+#endif // VIS_MODULE__ACCEPTOR_H_INCLUDE

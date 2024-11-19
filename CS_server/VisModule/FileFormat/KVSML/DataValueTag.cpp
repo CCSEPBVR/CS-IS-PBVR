@@ -12,10 +12,10 @@
  */
 /*****************************************************************************/
 #include "DataValueTag.h"
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -27,7 +27,7 @@ namespace kvsml
  */
 /*===========================================================================*/
 DataValueTag::DataValueTag( void ):
-    kvs::kvsml::TagBase( "DataValue" )
+    vismodule::kvsml::TagBase( "DataValue" )
 {
 }
 
@@ -40,18 +40,18 @@ DataValueTag::~DataValueTag( void )
 {
 }
 
-const bool DataValueTag::read( const kvs::XMLNode::SuperClass* parent )
+const bool DataValueTag::read( const vismodule::XMLNode::SuperClass* parent )
 {
-    kvs::IgnoreUnusedVariable( parent );
+    vismodule::IgnoreUnusedVariable( parent );
     return( true );
 }
 
-const bool DataValueTag::write( kvs::XMLNode::SuperClass* parent )
+const bool DataValueTag::write( vismodule::XMLNode::SuperClass* parent )
 {
-    kvs::IgnoreUnusedVariable( parent );
+    vismodule::IgnoreUnusedVariable( parent );
     return( true );
 }
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

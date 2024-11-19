@@ -11,14 +11,14 @@
  *  $Id: FileFormatBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__FILE_FORMAT_BASE_H_INCLUDE
-#define KVS__FILE_FORMAT_BASE_H_INCLUDE
+#ifndef VIS_MODULE__FILE_FORMAT_BASE_H_INCLUDE
+#define VIS_MODULE__FILE_FORMAT_BASE_H_INCLUDE
 
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -28,7 +28,7 @@ namespace kvs
 /*==========================================================================*/
 class FileFormatBase
 {
-    kvsClassName( kvs::FileFormatBase );
+    visModuleClassName( vismodule::FileFormatBase );
 
 protected:
 
@@ -56,6 +56,6 @@ public:
     virtual const bool write( const std::string& filename ) = 0;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__FILE_FORMAT_BASE_H_INCLUDE
+#endif // VIS_MODULE__FILE_FORMAT_BASE_H_INCLUDE

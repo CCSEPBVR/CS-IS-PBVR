@@ -11,18 +11,18 @@
  *  $Id: TCPServer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__TCP_SERVER_H_INCLUDE
-#define KVS__TCP_SERVER_H_INCLUDE
+#ifndef VIS_MODULE__TCP_SERVER_H_INCLUDE
+#define VIS_MODULE__TCP_SERVER_H_INCLUDE
 
 #include "Socket.h"
 #include "SocketTimer.h"
 #include "SocketAddress.h"
 #include "MessageBlock.h"
 #include "TCPSocket.h"
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -30,9 +30,9 @@ namespace kvs
  *  TCP server class.
  */
 /*==========================================================================*/
-class TCPServer : public kvs::Socket
+class TCPServer : public vismodule::Socket
 {
-    kvsClassName( kvs::TCPServer );
+    visModuleClassName( vismodule::TCPServer );
 
 protected:
 
@@ -54,7 +54,7 @@ public:
 
     bool listen( void );
 
-    kvs::Socket::id_type accept( kvs::SocketAddress* socket_address = 0 );
+    vismodule::Socket::id_type accept( vismodule::SocketAddress* socket_address = 0 );
 
 public:
 
@@ -62,19 +62,19 @@ public:
 
 public:
 
-    kvs::TCPSocket* checkForNewConnection( const kvs::SocketTimer* blocking_time = 0 );
+    vismodule::TCPSocket* checkForNewConnection( const vismodule::SocketTimer* blocking_time = 0 );
 
 public:
 
-    int send( const void* buffer, int byte_size, kvs::SocketAddress* client_address = 0 );
+    int send( const void* buffer, int byte_size, vismodule::SocketAddress* client_address = 0 );
 
-    int send( const kvs::MessageBlock& message, kvs::SocketAddress* client_address = 0 );
+    int send( const vismodule::MessageBlock& message, vismodule::SocketAddress* client_address = 0 );
 
-    int receive( void* buffer, int byte_size, kvs::SocketAddress* client_address = 0 );
+    int receive( void* buffer, int byte_size, vismodule::SocketAddress* client_address = 0 );
 
-    int receive( kvs::MessageBlock* message, kvs::SocketAddress* client_address = 0 );
+    int receive( vismodule::MessageBlock* message, vismodule::SocketAddress* client_address = 0 );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TCP_SERVER_H_INCLUDE
+#endif // VIS_MODULE__TCP_SERVER_H_INCLUDE

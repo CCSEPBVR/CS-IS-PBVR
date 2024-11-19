@@ -12,13 +12,13 @@
  */
 /*****************************************************************************/
 #include "CellTag.h"
-#include <kvs/Message>
-#include <kvs/String>
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
+#include <vismodule/Message>
+#include <vismodule/String>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -30,7 +30,7 @@ namespace kvsml
  */
 /*===========================================================================*/
 CellTag::CellTag( void ):
-    kvs::kvsml::TagBase( "Cell" ),
+    vismodule::kvsml::TagBase( "Cell" ),
     m_has_ncells( false ),
     m_ncells( 0 )
 {
@@ -86,22 +86,22 @@ void CellTag::setNCells( const size_t ncells )
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool CellTag::read( const kvs::XMLNode::SuperClass* parent )
+const bool CellTag::read( const vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
 
-    BaseClass::m_node = kvs::XMLNode::FindChildNode( parent, tag_name );
+    BaseClass::m_node = vismodule::XMLNode::FindChildNode( parent, tag_name );
     if ( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot find <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot find <%s>.", tag_name.c_str() );
         return( false );
     }
 
     // Element
-    const kvs::XMLElement::SuperClass* element = kvs::XMLNode::ToElement( BaseClass::m_node );
+    const vismodule::XMLElement::SuperClass* element = vismodule::XMLNode::ToElement( BaseClass::m_node );
 
     // ncells="xxx"
-    const std::string ncells = kvs::XMLElement::AttributeValue( element, "ncells" );
+    const std::string ncells = vismodule::XMLElement::AttributeValue( element, "ncells" );
     if ( ncells != "" )
     {
         m_has_ncells = true;
@@ -118,22 +118,22 @@ const bool CellTag::read( const kvs::XMLNode::SuperClass* parent )
  *  @return true, if the writing process is done successfully
  */
 /*===========================================================================*/
-const bool CellTag::write( kvs::XMLNode::SuperClass* parent )
+const bool CellTag::write( vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
-    kvs::XMLElement element( tag_name );
+    vismodule::XMLElement element( tag_name );
 
     if ( m_has_ncells )
     {
         const std::string name( "ncells" );
-        const std::string value( kvs::String( m_ncells ).toStdString() );
+        const std::string value( vismodule::String( m_ncells ).toStdString() );
         element.setAttribute( name, value );
     }
 
     BaseClass::m_node = parent->InsertEndChild( element );
     if( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot insert <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot insert <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -142,4 +142,4 @@ const bool CellTag::write( kvs::XMLNode::SuperClass* parent )
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

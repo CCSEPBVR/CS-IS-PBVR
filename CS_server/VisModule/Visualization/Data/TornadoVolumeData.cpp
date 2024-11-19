@@ -13,11 +13,11 @@
  */
 /*****************************************************************************/
 #include "TornadoVolumeData.h"
-#include <kvs/AnyValueArray>
-#include <kvs/Vector3>
+#include <vismodule/AnyValueArray>
+#include <vismodule/Vector3>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -27,7 +27,7 @@ namespace kvs
  *  @param  time [in] time value
  */
 /*===========================================================================*/
-TornadoVolumeData::TornadoVolumeData( const kvs::Vector3ui resolution, const int time )
+TornadoVolumeData::TornadoVolumeData( const vismodule::Vector3ui resolution, const int time )
 {
     SuperClass::setResolution( resolution );
     this->setTime( time );
@@ -86,24 +86,24 @@ void TornadoVolumeData::setTime( const int time )
 /*===========================================================================*/
 TornadoVolumeData::SuperClass* TornadoVolumeData::exec( void )
 {
-    const kvs::UInt64 veclen = 3;
-    const kvs::UInt64 dim1 = SuperClass::resolution().x();
-    const kvs::UInt64 dim2 = SuperClass::resolution().y();
-    const kvs::UInt64 dim3 = SuperClass::resolution().z();
+    const vismodule::UInt64 veclen = 3;
+    const vismodule::UInt64 dim1 = SuperClass::resolution().x();
+    const vismodule::UInt64 dim2 = SuperClass::resolution().y();
+    const vismodule::UInt64 dim3 = SuperClass::resolution().z();
 
     const double dx = 1.0 / ( dim1 - 1.0 );
     const double dy = 1.0 / ( dim2 - 1.0 );
     const double dz = 1.0 / ( dim3 - 1.0 );
-    kvs::AnyValueArray values;
-    if ( !values.allocate<kvs::Real32>( static_cast<size_t>( dim1 * dim2 * dim3 * veclen ) ) )
+    vismodule::AnyValueArray values;
+    if ( !values.allocate<vismodule::Real32>( static_cast<size_t>( dim1 * dim2 * dim3 * veclen ) ) )
     {
-        kvsMessageError("Cannot allocate memory for the value.");
+        visModuleMessageError("Cannot allocate memory for the value.");
         return( this );
     }
 
-    kvs::Real32* pvalues = values.pointer<kvs::Real32>();
-    kvs::UInt64 index = 0;
-    for( kvs::UInt64 k = 0; k < dim3; k++ )
+    vismodule::Real32* pvalues = values.pointer<vismodule::Real32>();
+    vismodule::UInt64 index = 0;
+    for( vismodule::UInt64 k = 0; k < dim3; k++ )
     {
         /* map z to 0->1
          * For each z-slice, determine the spiral circle.
@@ -117,10 +117,10 @@ TornadoVolumeData::SuperClass* TornadoVolumeData::exec( void )
         const double r  = 0.1 + 0.4 * z * z + 0.1 * z * std::sin( 8.0 * z );
         const double r2 = 0.2 + 0.1 * z;
 
-        for( kvs::UInt64 j = 0; j < dim2; j++ )
+        for( vismodule::UInt64 j = 0; j < dim2; j++ )
         {
             const double y = j * dy;
-            for( kvs::UInt64 i = 0; i < dim1; i++, index++ )
+            for( vismodule::UInt64 i = 0; i < dim1; i++, index++ )
             {
                 const double x = i * dx;
 
@@ -147,14 +147,14 @@ TornadoVolumeData::SuperClass* TornadoVolumeData::exec( void )
                     scale * z0
                 };
 
-                pvalues[ 3 * index + 0 ] = static_cast<kvs::Real32>( v[0] );
-                pvalues[ 3 * index + 1 ] = static_cast<kvs::Real32>( v[1] );
-                pvalues[ 3 * index + 2 ] = static_cast<kvs::Real32>( v[2] );
+                pvalues[ 3 * index + 0 ] = static_cast<vismodule::Real32>( v[0] );
+                pvalues[ 3 * index + 1 ] = static_cast<vismodule::Real32>( v[1] );
+                pvalues[ 3 * index + 2 ] = static_cast<vismodule::Real32>( v[2] );
             }
         }
     }
 
-    SuperClass::setGridType( kvs::StructuredVolumeObject::Uniform );
+    SuperClass::setGridType( vismodule::StructuredVolumeObject::Uniform );
     SuperClass::setVeclen( veclen );
     SuperClass::setValues( values );
     SuperClass::updateMinMaxCoords();
@@ -163,4 +163,4 @@ TornadoVolumeData::SuperClass* TornadoVolumeData::exec( void )
     return( this );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

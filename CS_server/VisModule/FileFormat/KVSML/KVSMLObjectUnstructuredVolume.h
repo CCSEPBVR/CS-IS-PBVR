@@ -11,20 +11,20 @@
  *  $Id: KVSMLObjectUnstructuredVolume.h 848 2011-06-29 11:35:52Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__KVSML_OBJECT_UNSTRUCTURED_VOLUME_H_INCLUDE
-#define KVS__KVSML_OBJECT_UNSTRUCTURED_VOLUME_H_INCLUDE
+#ifndef VIS_MODULE__KVSML_OBJECT_UNSTRUCTURED_VOLUME_H_INCLUDE
+#define VIS_MODULE__KVSML_OBJECT_UNSTRUCTURED_VOLUME_H_INCLUDE
 
-#include <kvs/FileFormatBase>
-#include <kvs/AnyValueArray>
-#include <kvs/ValueArray>
-#include <kvs/Type>
-#include <kvs/Vector3>
+#include <vismodule/FileFormatBase>
+#include <vismodule/AnyValueArray>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/Vector3>
 #include <string>
 #include "KVSMLTag.h"
 #include "ObjectTag.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -32,9 +32,9 @@ namespace kvs
  *  @brief  KVSML unstructured volume object format.
  */
 /*===========================================================================*/
-class KVSMLObjectUnstructuredVolume : public kvs::FileFormatBase
+class KVSMLObjectUnstructuredVolume : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::KVSMLObjectUnstructuredVolume );
+    visModuleClassName( vismodule::KVSMLObjectUnstructuredVolume );
 
 public:
 
@@ -47,8 +47,8 @@ public:
 
 protected:
 
-    kvs::kvsml::KVSMLTag m_kvsml_tag;   ///< KVSML tag information
-    kvs::kvsml::ObjectTag m_object_tag; ///< Object tag information
+    vismodule::kvsml::KVSMLTag m_kvsml_tag;   ///< KVSML tag information
+    vismodule::kvsml::ObjectTag m_object_tag; ///< Object tag information
 
     WritingDataType              m_writing_type;  ///< writing data type
     std::string                  m_cell_type;     ///< cell type
@@ -61,9 +61,9 @@ protected:
     bool                         m_has_max_value; ///< max. value is specified or not
     double                       m_min_value;     ///< min. value
     double                       m_max_value;     ///< max. value
-    kvs::AnyValueArray           m_values;        ///< field value array
-    kvs::ValueArray<kvs::Real32> m_coords;        ///< coordinate value array
-    kvs::ValueArray<kvs::UInt32> m_connections;   ///< connection id array
+    vismodule::AnyValueArray           m_values;        ///< field value array
+    vismodule::ValueArray<vismodule::Real32> m_coords;        ///< coordinate value array
+    vismodule::ValueArray<vismodule::UInt32> m_connections;   ///< connection id array
 
 public:
 
@@ -75,9 +75,9 @@ public:
 
 public:
 
-    const kvs::kvsml::KVSMLTag& KVSMLTag( void ) const;
+    const vismodule::kvsml::KVSMLTag& KVSMLTag( void ) const;
 
-    const kvs::kvsml::ObjectTag& objectTag( void ) const;
+    const vismodule::kvsml::ObjectTag& objectTag( void ) const;
 
 public:
 
@@ -101,11 +101,11 @@ public:
 
     const double maxValue( void ) const;
 
-    const kvs::AnyValueArray& values( void ) const;
+    const vismodule::AnyValueArray& values( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& coords( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& coords( void ) const;
 
-    const kvs::ValueArray<kvs::UInt32>& connections( void ) const;
+    const vismodule::ValueArray<vismodule::UInt32>& connections( void ) const;
 
 public:
 
@@ -125,11 +125,11 @@ public:
 
     void setMaxValue( const double max_value );
 
-    void setValues( const kvs::AnyValueArray& values );
+    void setValues( const vismodule::AnyValueArray& values );
 
-    void setCoords( const kvs::ValueArray<kvs::Real32>& coords );
+    void setCoords( const vismodule::ValueArray<vismodule::Real32>& coords );
 
-    void setConnections( const kvs::ValueArray<kvs::UInt32>& connections );
+    void setConnections( const vismodule::ValueArray<vismodule::UInt32>& connections );
 
 public:
 
@@ -146,6 +146,6 @@ public:
     friend std::ostream& operator <<( std::ostream& os, const KVSMLObjectUnstructuredVolume& rhs );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__KVSML_OBJECT_UNSTRUCTURED_VOLUME_H_INCLUDE
+#endif // VIS_MODULE__KVSML_OBJECT_UNSTRUCTURED_VOLUME_H_INCLUDE

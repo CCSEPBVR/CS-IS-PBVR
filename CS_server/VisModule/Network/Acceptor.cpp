@@ -13,11 +13,11 @@
  */
 /*****************************************************************************/
 #include "Acceptor.h"
-#include <kvs/DebugNew>
-#include <kvs/Message>
+#include <vismodule/DebugNew>
+#include <vismodule/Message>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -28,7 +28,7 @@ namespace kvs
 Acceptor::Acceptor( void )
 {
     if ( this->create_handler() ) this->open();
-    else kvsMessageError("Cannot create handler.");
+    else visModuleMessageError("Cannot create handler.");
 }
 
 /*===========================================================================*/
@@ -46,7 +46,7 @@ Acceptor::Acceptor( const int port, const size_t ntrials )
     }
     else
     {
-        kvsMessageError("Cannot create handler.");
+        visModuleMessageError("Cannot create handler.");
     }
 }
 
@@ -71,7 +71,7 @@ const bool Acceptor::open( void )
     m_handler->open();
     if ( !m_handler->isOpen() )
     {
-        kvsMessageError("Cannot open server for acceptor.");
+        visModuleMessageError("Cannot open server for acceptor.");
         return( false );
     }
 
@@ -107,7 +107,7 @@ const bool Acceptor::bind( const int port, const size_t ntrials )
         {
             if ( m_handler->listen() ) return( true );
 
-            kvsMessageError( "Cannot listen port %d.", port );
+            visModuleMessageError( "Cannot listen port %d.", port );
             return( false );
         }
 
@@ -123,7 +123,7 @@ const bool Acceptor::bind( const int port, const size_t ntrials )
  *  @return pointer to the new connection (socket)
  */
 /*===========================================================================*/
-kvs::TCPSocket* Acceptor::newConnection( void )
+vismodule::TCPSocket* Acceptor::newConnection( void )
 {
     return( m_handler->checkForNewConnection() );
 }
@@ -136,7 +136,7 @@ kvs::TCPSocket* Acceptor::newConnection( void )
  *  @return received message size
  */
 /*===========================================================================*/
-const int Acceptor::receive( kvs::MessageBlock* block, kvs::SocketAddress* client_address )
+const int Acceptor::receive( vismodule::MessageBlock* block, vismodule::SocketAddress* client_address )
 {
     return( m_handler->receive( block, client_address ) );
 }
@@ -149,7 +149,7 @@ const int Acceptor::receive( kvs::MessageBlock* block, kvs::SocketAddress* clien
 /*===========================================================================*/
 const bool Acceptor::create_handler( void )
 {
-    m_handler = new kvs::TCPServer();
+    m_handler = new vismodule::TCPServer();
 
     return( m_handler != NULL );
 }
@@ -164,4 +164,4 @@ void Acceptor::delete_handler( void )
     if ( m_handler ) delete m_handler;
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

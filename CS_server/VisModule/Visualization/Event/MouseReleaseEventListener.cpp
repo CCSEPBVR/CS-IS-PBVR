@@ -15,7 +15,7 @@
 #include "MouseReleaseEventListener.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -25,7 +25,7 @@ namespace kvs
 /*===========================================================================*/
 MouseReleaseEventListener::MouseReleaseEventListener( void )
 {
-    kvs::EventListener::setEventType( kvs::EventBase::MouseReleaseEvent );
+    vismodule::EventListener::setEventType( vismodule::EventBase::MouseReleaseEvent );
 }
 
 /*===========================================================================*/
@@ -43,9 +43,9 @@ MouseReleaseEventListener::~MouseReleaseEventListener( void )
  *  @param  event [in] pointer to the event
  */
 /*===========================================================================*/
-void MouseReleaseEventListener::onEvent( kvs::EventBase* event )
+void MouseReleaseEventListener::onEvent( vismodule::EventBase* event )
 {
-    this->update( static_cast<kvs::MouseEvent*>(event) );
+    this->update( static_cast<vismodule::MouseEvent*>(event) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

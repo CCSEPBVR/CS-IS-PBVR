@@ -11,19 +11,19 @@
  *  $Id: PointObject.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__POINT_OBJECT_H_INCLUDE
-#define KVS__POINT_OBJECT_H_INCLUDE
+#ifndef VIS_MODULE__POINT_OBJECT_H_INCLUDE
+#define VIS_MODULE__POINT_OBJECT_H_INCLUDE
 
-#include <kvs/GeometryObjectBase>
-#include <kvs/ClassName>
-#include <kvs/ValueArray>
-#include <kvs/Type>
-#include <kvs/Vector3>
-#include <kvs/RGBColor>
-#include <kvs/Module>
+#include <vismodule/GeometryObjectBase>
+#include <vismodule/ClassName>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/Vector3>
+#include <vismodule/RGBColor>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class LineObject;
@@ -34,88 +34,88 @@ class PolygonObject;
  *  Point object class.
  */
 /*==========================================================================*/
-class PointObject : public kvs::GeometryObjectBase
+class PointObject : public vismodule::GeometryObjectBase
 {
     // Class name.
-    kvsClassName( kvs::PointObject );
+    visModuleClassName( vismodule::PointObject );
 
     // Module information.
-    kvsModuleCategory( Object );
-    kvsModuleBaseClass( kvs::GeometryObjectBase );
+    visModuleCategory( Object );
+    visModuleBaseClass( vismodule::GeometryObjectBase );
 
 protected:
 
-    kvs::ValueArray<kvs::Real32> m_sizes; ///< size array
+    vismodule::ValueArray<vismodule::Real32> m_sizes; ///< size array
 
 public:
 
     PointObject( void );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::ValueArray<kvs::UInt8>&  colors,
-        const kvs::ValueArray<kvs::Real32>& normals,
-        const kvs::ValueArray<kvs::Real32>& sizes );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::ValueArray<vismodule::UInt8>&  colors,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
+        const vismodule::ValueArray<vismodule::Real32>& sizes );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::ValueArray<kvs::UInt8>&  colors,
-        const kvs::ValueArray<kvs::Real32>& normals,
-        const kvs::Real32                   size );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::ValueArray<vismodule::UInt8>&  colors,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
+        const vismodule::Real32                   size );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::RGBColor&                color,
-        const kvs::ValueArray<kvs::Real32>& normals,
-        const kvs::ValueArray<kvs::Real32>& sizes );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::RGBColor&                color,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
+        const vismodule::ValueArray<vismodule::Real32>& sizes );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::ValueArray<kvs::Real32>& normals,
-        const kvs::ValueArray<kvs::Real32>& sizes );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
+        const vismodule::ValueArray<vismodule::Real32>& sizes );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::RGBColor&                color,
-        const kvs::ValueArray<kvs::Real32>& normals,
-        const kvs::Real32                   size );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::RGBColor&                color,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
+        const vismodule::Real32                   size );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::ValueArray<kvs::UInt8>&  colors,
-        const kvs::ValueArray<kvs::Real32>& sizes );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::ValueArray<vismodule::UInt8>&  colors,
+        const vismodule::ValueArray<vismodule::Real32>& sizes );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::RGBColor&                color,
-        const kvs::ValueArray<kvs::Real32>& sizes );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::RGBColor&                color,
+        const vismodule::ValueArray<vismodule::Real32>& sizes );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::ValueArray<kvs::UInt8>&  colors,
-        const kvs::Real32                   size );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::ValueArray<vismodule::UInt8>&  colors,
+        const vismodule::Real32                   size );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::RGBColor&                color,
-        const kvs::Real32                   size );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::RGBColor&                color,
+        const vismodule::Real32                   size );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords );
+        const vismodule::ValueArray<vismodule::Real32>& coords );
 
-    PointObject( const kvs::PointObject& other );
+    PointObject( const vismodule::PointObject& other );
 
-    PointObject( const kvs::LineObject& line );
+    PointObject( const vismodule::LineObject& line );
 
-    PointObject( const kvs::PolygonObject& polygon );
+    PointObject( const vismodule::PolygonObject& polygon );
 
     virtual ~PointObject( void );
 
 public:
 
-    static kvs::PointObject* DownCast( kvs::ObjectBase* object );
+    static vismodule::PointObject* DownCast( vismodule::ObjectBase* object );
 
-    static const kvs::PointObject* DownCast( const kvs::ObjectBase* object );
+    static const vismodule::PointObject* DownCast( const vismodule::ObjectBase* object );
 
 public:
 
@@ -137,9 +137,9 @@ public:
 
 public:
 
-    void setSizes( const kvs::ValueArray<kvs::Real32>& sizes );
+    void setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes );
 
-    void setSize( const kvs::Real32 size );
+    void setSize( const vismodule::Real32 size );
 
 public:
 
@@ -149,11 +149,11 @@ public:
 
 public:
 
-    const kvs::Real32 size( const size_t index = 0 ) const;
+    const vismodule::Real32 size( const size_t index = 0 ) const;
 
-    const kvs::ValueArray<kvs::Real32>& sizes( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& sizes( void ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__POINT_OBJECT_H_INCLUDE
+#endif // VIS_MODULE__POINT_OBJECT_H_INCLUDE

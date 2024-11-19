@@ -11,17 +11,17 @@
  *  $Id: AVSUcd.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__AVS_UCD_H_INCLUDE
-#define KVS__AVS_UCD_H_INCLUDE
+#ifndef VIS_MODULE__AVS_UCD_H_INCLUDE
+#define VIS_MODULE__AVS_UCD_H_INCLUDE
 
 #include <vector>
 #include <string>
-#include <kvs/FileFormatBase>
-#include <kvs/ValueArray>
-#include <kvs/Type>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -31,15 +31,15 @@ namespace kvs
 /*==========================================================================*/
 class AVSUcd : public FileFormatBase
 {
-    kvsClassName( kvs::AVSUcd );
+    visModuleClassName( vismodule::AVSUcd );
 
 public:
 
-    typedef kvs::FileFormatBase BaseClass;
+    typedef vismodule::FileFormatBase BaseClass;
 
-    typedef kvs::ValueArray<kvs::Real32> Coords;
-    typedef kvs::ValueArray<kvs::UInt32> Connections;
-    typedef kvs::ValueArray<kvs::Real32> Values;
+    typedef vismodule::ValueArray<vismodule::Real32> Coords;
+    typedef vismodule::ValueArray<vismodule::UInt32> Connections;
+    typedef vismodule::ValueArray<vismodule::Real32> Values;
 
 public:
 
@@ -224,6 +224,6 @@ public:
     static const bool CheckFileFormat( const std::string& filename );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__AVS_UCD_H_INCLUDE
+#endif // VIS_MODULE__AVS_UCD_H_INCLUDE

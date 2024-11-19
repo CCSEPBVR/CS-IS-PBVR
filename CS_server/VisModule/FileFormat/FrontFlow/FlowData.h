@@ -12,15 +12,15 @@
  *  $Id: FlowData.h 865 2011-07-22 01:41:18Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__GF__FLOW_DATA_H_INCLUDE
-#define KVS__GF__FLOW_DATA_H_INCLUDE
+#ifndef VIS_MODULE__GF__FLOW_DATA_H_INCLUDE
+#define VIS_MODULE__GF__FLOW_DATA_H_INCLUDE
 
 #include <string>
-#include <kvs/Type>
-#include <kvs/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/ValueArray>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace gf
@@ -39,10 +39,10 @@ protected:
     size_t m_nnodes; ///< number of nodes
     size_t m_nelements; ///< number of elements
     size_t m_nsteps; ///< number of time steps
-    kvs::Real32* m_times; ///< time values
-    kvs::Int32* m_steps; ///< step values
-    kvs::ValueArray<kvs::Real32>* m_velocities; ///< velocity values
-    kvs::ValueArray<kvs::Real32>* m_pressures; ///< pressure values
+    vismodule::Real32* m_times; ///< time values
+    vismodule::Int32* m_steps; ///< step values
+    vismodule::ValueArray<vismodule::Real32>* m_velocities; ///< velocity values
+    vismodule::ValueArray<vismodule::Real32>* m_pressures; ///< pressure values
 
 public:
 
@@ -62,13 +62,13 @@ public:
 
     const size_t nsteps( void ) const;
 
-    const kvs::Real32 time( const size_t index ) const;
+    const vismodule::Real32 time( const size_t index ) const;
 
-    const kvs::Int32 step( const size_t index ) const;
+    const vismodule::Int32 step( const size_t index ) const;
 
-    const kvs::ValueArray<kvs::Real32>& velocities( const size_t index ) const;
+    const vismodule::ValueArray<vismodule::Real32>& velocities( const size_t index ) const;
 
-    const kvs::ValueArray<kvs::Real32>& pressures( const size_t index ) const;
+    const vismodule::ValueArray<vismodule::Real32>& pressures( const size_t index ) const;
 
 public:
 
@@ -77,6 +77,6 @@ public:
 
 } // end of namespace gf
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GF__FLOW_DATA_H_INCLUDE
+#endif // VIS_MODULE__GF__FLOW_DATA_H_INCLUDE

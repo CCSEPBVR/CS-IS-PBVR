@@ -13,10 +13,10 @@
  */
 /*****************************************************************************/
 #include "TableObject.h"
-#include <kvs/Value>
+#include <vismodule/Value>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -26,10 +26,10 @@ namespace kvs
 /*===========================================================================*/
 TableObject::TableObject( void )
 {
-    m_min_object_coord   = kvs::Vector3f( 0.0, 0.0, 0.0 );
-    m_max_object_coord   = kvs::Vector3f( 0.0, 0.0, 0.0 );
-    m_min_external_coord = kvs::Vector3f( 0.0, 0.0, 0.0 );
-    m_max_external_coord = kvs::Vector3f( 0.0, 0.0, 0.0 );
+    m_min_object_coord   = vismodule::Vector3f( 0.0, 0.0, 0.0 );
+    m_max_object_coord   = vismodule::Vector3f( 0.0, 0.0, 0.0 );
+    m_min_external_coord = vismodule::Vector3f( 0.0, 0.0, 0.0 );
+    m_max_external_coord = vismodule::Vector3f( 0.0, 0.0, 0.0 );
 
     m_nrows = 0;
     m_ncolumns = 0;
@@ -41,7 +41,7 @@ TableObject::TableObject( void )
  *  @param  table [in] table object
  */
 /*===========================================================================*/
-TableObject::TableObject( const kvs::TableObject& table )
+TableObject::TableObject( const vismodule::TableObject& table )
 {
     m_nrows = table.nrows();
     m_ncolumns = table.ncolumns();
@@ -54,23 +54,23 @@ TableObject::TableObject( const kvs::TableObject& table )
     m_inside_range_list = table.insideRangeList();
 }
 
-kvs::TableObject* TableObject::DownCast( kvs::ObjectBase* object )
+vismodule::TableObject* TableObject::DownCast( vismodule::ObjectBase* object )
 {
-    const kvs::ObjectBase::ObjectType type = object->objectType();
-    if ( type != kvs::ObjectBase::Table )
+    const vismodule::ObjectBase::ObjectType type = object->objectType();
+    if ( type != vismodule::ObjectBase::Table )
     {
-        kvsMessageError("Input object is not table object.");
+        visModuleMessageError("Input object is not table object.");
         return( NULL );
     }
 
-    kvs::TableObject* table = static_cast<kvs::TableObject*>( object );
+    vismodule::TableObject* table = static_cast<vismodule::TableObject*>( object );
 
     return( table );
 }
 
-const kvs::TableObject* TableObject::DownCast( const kvs::ObjectBase* object )
+const vismodule::TableObject* TableObject::DownCast( const vismodule::ObjectBase* object )
 {
-    return( TableObject::DownCast( const_cast<kvs::ObjectBase*>( object ) ) );
+    return( TableObject::DownCast( const_cast<vismodule::ObjectBase*>( object ) ) );
 }
 
 /*===========================================================================*/
@@ -80,105 +80,105 @@ const kvs::TableObject* TableObject::DownCast( const kvs::ObjectBase* object )
  *  @param  label [in] column label
  */
 /*===========================================================================*/
-void TableObject::addColumn( const kvs::AnyValueArray& array, const std::string& label )
+void TableObject::addColumn( const vismodule::AnyValueArray& array, const std::string& label )
 {
     m_ncolumns++;
-    m_nrows = kvs::Math::Max( m_nrows, array.size() );
+    m_nrows = vismodule::Math::Max( m_nrows, array.size() );
 
     m_columns.push_back( array );
     m_labels.push_back( label );
 
-    kvs::Real64 min_value = kvs::Value<kvs::Real64>::Max();
-    kvs::Real64 max_value = kvs::Value<kvs::Real64>::Min();
+    vismodule::Real64 min_value = vismodule::Value<vismodule::Real64>::Max();
+    vismodule::Real64 max_value = vismodule::Value<vismodule::Real64>::Min();
     const std::type_info& type = array.typeInfo()->type();
-    if ( type == typeid( kvs::Int8 ) )
+    if ( type == typeid( vismodule::Int8 ) )
     {
-        const kvs::Int8* value = static_cast<const kvs::Int8*>( array.pointer() );
+        const vismodule::Int8* value = static_cast<const vismodule::Int8*>( array.pointer() );
         for( size_t i = 0; i < array.size(); i++ )
         {
-            min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
-            max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
+            min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
+            max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
         }
     }
-    else if ( type == typeid( kvs::UInt8 ) )
+    else if ( type == typeid( vismodule::UInt8 ) )
     {
-        const kvs::UInt8* value = static_cast<const kvs::UInt8*>( array.pointer() );
+        const vismodule::UInt8* value = static_cast<const vismodule::UInt8*>( array.pointer() );
         for( size_t i = 0; i < array.size(); i++ )
         {
-            min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
-            max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
+            min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
+            max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
         }
     }
-    else if ( type == typeid( kvs::Int16 ) )
+    else if ( type == typeid( vismodule::Int16 ) )
     {
-        const kvs::Int16* value = static_cast<const kvs::Int16*>( array.pointer() );
+        const vismodule::Int16* value = static_cast<const vismodule::Int16*>( array.pointer() );
         for( size_t i = 0; i < array.size(); i++ )
         {
-            min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
-            max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
+            min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
+            max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
         }
     }
-    else if ( type == typeid( kvs::UInt16 ) )
+    else if ( type == typeid( vismodule::UInt16 ) )
     {
-        const kvs::UInt16* value = static_cast<const kvs::UInt16*>( array.pointer() );
+        const vismodule::UInt16* value = static_cast<const vismodule::UInt16*>( array.pointer() );
         for( size_t i = 0; i < array.size(); i++ )
         {
-            min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
-            max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
+            min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
+            max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
         }
     }
-    else if ( type == typeid( kvs::Int32 ) )
+    else if ( type == typeid( vismodule::Int32 ) )
     {
-        const kvs::Int32* value = static_cast<const kvs::Int32*>( array.pointer() );
+        const vismodule::Int32* value = static_cast<const vismodule::Int32*>( array.pointer() );
         for( size_t i = 0; i < array.size(); i++ )
         {
-            min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
-            max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
+            min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
+            max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
         }
     }
-    else if ( type == typeid( kvs::UInt32 ) )
+    else if ( type == typeid( vismodule::UInt32 ) )
     {
-        const kvs::UInt32* value = static_cast<const kvs::UInt32*>( array.pointer() );
+        const vismodule::UInt32* value = static_cast<const vismodule::UInt32*>( array.pointer() );
         for( size_t i = 0; i < array.size(); i++ )
         {
-            min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
-            max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
+            min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
+            max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
         }
     }
-    else if ( type == typeid( kvs::Int64 ) )
+    else if ( type == typeid( vismodule::Int64 ) )
     {
-        const kvs::Int64* value = static_cast<const kvs::Int64*>( array.pointer() );
+        const vismodule::Int64* value = static_cast<const vismodule::Int64*>( array.pointer() );
         for( size_t i = 0; i < array.size(); i++ )
         {
-            min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
-            max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
+            min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
+            max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
         }
     }
-    else if ( type == typeid( kvs::UInt64 ) )
+    else if ( type == typeid( vismodule::UInt64 ) )
     {
-        const kvs::UInt64* value = static_cast<const kvs::UInt64*>( array.pointer() );
+        const vismodule::UInt64* value = static_cast<const vismodule::UInt64*>( array.pointer() );
         for( size_t i = 0; i < array.size(); i++ )
         {
-            min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
-            max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
+            min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
+            max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
         }
     }
-    else if ( type == typeid( kvs::Real32 ) )
+    else if ( type == typeid( vismodule::Real32 ) )
     {
-        const kvs::Real32* value = static_cast<const kvs::Real32*>( array.pointer() );
+        const vismodule::Real32* value = static_cast<const vismodule::Real32*>( array.pointer() );
         for( size_t i = 0; i < array.size(); i++ )
         {
-            min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
-            max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
+            min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
+            max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
         }
     }
-    else if ( type == typeid( kvs::Real64 ) )
+    else if ( type == typeid( vismodule::Real64 ) )
     {
-        const kvs::Real64* value = static_cast<const kvs::Real64*>( array.pointer() );
+        const vismodule::Real64* value = static_cast<const vismodule::Real64*>( array.pointer() );
         for( size_t i = 0; i < array.size(); i++ )
         {
-            min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
-            max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
+            min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
+            max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
         }
     }
     else if ( type == typeid( std::string ) )
@@ -258,7 +258,7 @@ const TableObject::ColumnList TableObject::columnList( void ) const
  *  @return column array
  */
 /*===========================================================================*/
-const kvs::AnyValueArray& TableObject::column( const size_t index ) const
+const vismodule::AnyValueArray& TableObject::column( const size_t index ) const
 {
     return( m_columns[index] );
 }
@@ -281,7 +281,7 @@ const TableObject::ValueList TableObject::minValueList( void ) const
  *  @return minimum value
  */
 /*===========================================================================*/
-const kvs::Real64 TableObject::minValue( const size_t index ) const
+const vismodule::Real64 TableObject::minValue( const size_t index ) const
 {
     return( m_min_values[index] );
 }
@@ -304,7 +304,7 @@ const TableObject::ValueList TableObject::maxValueList( void ) const
  *  @return maximum value
  */
 /*===========================================================================*/
-const kvs::Real64 TableObject::maxValue( const size_t index ) const
+const vismodule::Real64 TableObject::maxValue( const size_t index ) const
 {
     return( m_max_values[index] );
 }
@@ -316,7 +316,7 @@ const kvs::Real64 TableObject::maxValue( const size_t index ) const
  *  @param  value [in] minimum value
  */
 /*===========================================================================*/
-void TableObject::setMinValue( const size_t column_index, const kvs::Real64 value )
+void TableObject::setMinValue( const size_t column_index, const vismodule::Real64 value )
 {
     if ( value > m_min_ranges[column_index] ) { this->setMinRange( column_index, value ); }
     m_min_values[column_index] = value;
@@ -329,7 +329,7 @@ void TableObject::setMinValue( const size_t column_index, const kvs::Real64 valu
  *  @param  value [in] maximum value
  */
 /*===========================================================================*/
-void TableObject::setMaxValue( const size_t column_index, const kvs::Real64 value )
+void TableObject::setMaxValue( const size_t column_index, const vismodule::Real64 value )
 {
     if ( value < m_max_ranges[column_index] ) { this->setMaxRange( column_index, value ); }
     m_max_values[column_index] = value;
@@ -342,15 +342,15 @@ void TableObject::setMaxValue( const size_t column_index, const kvs::Real64 valu
  *  @param  range [in] range value
  */
 /*===========================================================================*/
-void TableObject::setMinRange( const size_t column_index, const kvs::Real64 range )
+void TableObject::setMinRange( const size_t column_index, const vismodule::Real64 range )
 {
-    const kvs::Real64 min_value = this->minValue(column_index);
-    const kvs::Real64 max_range = m_max_ranges[column_index];
+    const vismodule::Real64 min_value = this->minValue(column_index);
+    const vismodule::Real64 max_range = m_max_ranges[column_index];
 
-    const kvs::Real64 min_range_old = m_min_ranges[column_index];
-    const kvs::Real64 min_range_new = kvs::Math::Clamp( range, min_value, max_range );
+    const vismodule::Real64 min_range_old = m_min_ranges[column_index];
+    const vismodule::Real64 min_range_new = vismodule::Math::Clamp( range, min_value, max_range );
 
-    if ( kvs::Math::Equal( min_range_old, min_range_new ) ) return;
+    if ( vismodule::Math::Equal( min_range_old, min_range_new ) ) return;
     m_min_ranges[column_index] = min_range_new;
 
     const size_t nrows = this->nrows();
@@ -363,10 +363,10 @@ void TableObject::setMinRange( const size_t column_index, const kvs::Real64 rang
          *  (before) |xxx+oooooooo*xxxxxx|  o: on, x: off, +: min_range, *: max_range
          *  (after)  |xxxAxxxxBooo*xxxxxx|  A: min_range_old, B: min_range_new
          */
-        const kvs::AnyValueArray& column = this->column( column_index );
+        const vismodule::AnyValueArray& column = this->column( column_index );
         for ( size_t i = 0; i < nrows; i++ )
         {
-            const kvs::Real64 value = column.to<kvs::Real64>( i );
+            const vismodule::Real64 value = column.to<vismodule::Real64>( i );
             if (  min_range_old <= value && value <= min_range_new )
             {
                 m_inside_range_list[i] = 0;
@@ -385,8 +385,8 @@ void TableObject::setMinRange( const size_t column_index, const kvs::Real64 rang
             m_inside_range_list[i] = 1;
             for ( size_t j = 0; j < ncolumns; j++ )
             {
-                const kvs::AnyValueArray& column = this->column( j );
-                const kvs::Real64 value = column.to<kvs::Real64>( i );
+                const vismodule::AnyValueArray& column = this->column( j );
+                const vismodule::Real64 value = column.to<vismodule::Real64>( i );
                 if (  !( m_min_ranges[j] <= value && value <= m_max_ranges[j] ) )
                 {
                     m_inside_range_list[i] = 0;
@@ -404,15 +404,15 @@ void TableObject::setMinRange( const size_t column_index, const kvs::Real64 rang
  *  @param  range [in] range value
  */
 /*===========================================================================*/
-void TableObject::setMaxRange( const size_t column_index, const kvs::Real64 range )
+void TableObject::setMaxRange( const size_t column_index, const vismodule::Real64 range )
 {
-    const kvs::Real64 min_range = m_min_ranges[column_index];
-    const kvs::Real64 max_value = this->maxValue(column_index);
+    const vismodule::Real64 min_range = m_min_ranges[column_index];
+    const vismodule::Real64 max_value = this->maxValue(column_index);
 
-    const kvs::Real64 max_range_old = m_max_ranges[column_index];
-    const kvs::Real64 max_range_new = kvs::Math::Clamp( range, min_range, max_value );
+    const vismodule::Real64 max_range_old = m_max_ranges[column_index];
+    const vismodule::Real64 max_range_new = vismodule::Math::Clamp( range, min_range, max_value );
 
-    if ( kvs::Math::Equal( max_range_old, max_range_new ) ) return;
+    if ( vismodule::Math::Equal( max_range_old, max_range_new ) ) return;
     m_max_ranges[column_index] = max_range_new;
 
     const size_t nrows = this->nrows();
@@ -429,8 +429,8 @@ void TableObject::setMaxRange( const size_t column_index, const kvs::Real64 rang
             m_inside_range_list[i] = 1;
             for ( size_t j = 0; j < ncolumns; j++ )
             {
-                const kvs::AnyValueArray& column = this->column( j );
-                const kvs::Real64 value = column.to<kvs::Real64>( i );
+                const vismodule::AnyValueArray& column = this->column( j );
+                const vismodule::Real64 value = column.to<vismodule::Real64>( i );
                 if (  !( m_min_ranges[j] <= value && value <= m_max_ranges[j] ) )
                 {
                     m_inside_range_list[i] = 0;
@@ -447,10 +447,10 @@ void TableObject::setMaxRange( const size_t column_index, const kvs::Real64 rang
          *  (before) |xxx*oooooooo+xxxxxx|  o: on, x: off, *: min_range, +: max_range
          *  (after)  |xxx*ooooBxxxAxxxxxx|  A: max_range_old, B: max_range_new
          */
-        const kvs::AnyValueArray& column = this->column( column_index );
+        const vismodule::AnyValueArray& column = this->column( column_index );
         for ( size_t i = 0; i < nrows; i++ )
         {
-            const kvs::Real64 value = column.to<kvs::Real64>( i );
+            const vismodule::Real64 value = column.to<vismodule::Real64>( i );
             if (  max_range_new <= value && value <= max_range_old )
             {
                 m_inside_range_list[i] = 0;
@@ -467,7 +467,7 @@ void TableObject::setMaxRange( const size_t column_index, const kvs::Real64 rang
  *  @param  max_range [in] maximum range value
  */
 /*===========================================================================*/
-void TableObject::setRange( const size_t column_index, const kvs::Real64 min_range, const kvs::Real64 max_range )
+void TableObject::setRange( const size_t column_index, const vismodule::Real64 min_range, const vismodule::Real64 max_range )
 {
     this->setMinRange( column_index, min_range );
     this->setMaxRange( column_index, max_range );
@@ -480,9 +480,9 @@ void TableObject::setRange( const size_t column_index, const kvs::Real64 min_ran
  *  @param  drange [in] distance of range value
  */
 /*===========================================================================*/
-void TableObject::moveMinRange( const size_t column_index, const kvs::Real64 drange )
+void TableObject::moveMinRange( const size_t column_index, const vismodule::Real64 drange )
 {
-    const kvs::Real64 min_range = this->minRange( column_index );
+    const vismodule::Real64 min_range = this->minRange( column_index );
     this->setMinRange( column_index, min_range + drange );
 }
 
@@ -493,9 +493,9 @@ void TableObject::moveMinRange( const size_t column_index, const kvs::Real64 dra
  *  @param  drange [in] distance of range value
  */
 /*===========================================================================*/
-void TableObject::moveMaxRange( const size_t column_index, const kvs::Real64 drange )
+void TableObject::moveMaxRange( const size_t column_index, const vismodule::Real64 drange )
 {
-    const kvs::Real64 max_range = this->maxRange( column_index );
+    const vismodule::Real64 max_range = this->maxRange( column_index );
     this->setMaxRange( column_index, max_range + drange );
 }
 
@@ -506,13 +506,13 @@ void TableObject::moveMaxRange( const size_t column_index, const kvs::Real64 dra
  *  @param  drange [in] distance of range value
  */
 /*===========================================================================*/
-void TableObject::moveRange( const size_t column_index, const kvs::Real64 drange )
+void TableObject::moveRange( const size_t column_index, const vismodule::Real64 drange )
 {
-    const kvs::Real64 min_range = this->minRange( column_index );
-    const kvs::Real64 max_range = this->maxRange( column_index );
-    const kvs::Real64 min_value = this->minValue( column_index );
-    const kvs::Real64 max_value = this->maxValue( column_index );
-    const kvs::Real64 range_width = max_range - min_range;
+    const vismodule::Real64 min_range = this->minRange( column_index );
+    const vismodule::Real64 max_range = this->maxRange( column_index );
+    const vismodule::Real64 min_value = this->minValue( column_index );
+    const vismodule::Real64 max_value = this->maxValue( column_index );
+    const vismodule::Real64 range_width = max_range - min_range;
 
     if ( max_range + drange > max_value )
     {
@@ -566,7 +566,7 @@ void TableObject::resetRange( void )
  *  @return minimum range list
  */
 /*===========================================================================*/
-const kvs::TableObject::ValueList& TableObject::minRangeList( void ) const
+const vismodule::TableObject::ValueList& TableObject::minRangeList( void ) const
 {
     return( m_min_ranges );
 }
@@ -577,7 +577,7 @@ const kvs::TableObject::ValueList& TableObject::minRangeList( void ) const
  *  @return maximum range list
  */
 /*===========================================================================*/
-const kvs::TableObject::ValueList& TableObject::maxRangeList( void ) const
+const vismodule::TableObject::ValueList& TableObject::maxRangeList( void ) const
 {
     return( m_max_ranges );
 }
@@ -588,7 +588,7 @@ const kvs::TableObject::ValueList& TableObject::maxRangeList( void ) const
  *  @return inside range list
  */
 /*===========================================================================*/
-const kvs::TableObject::RangeList& TableObject::insideRangeList( void ) const
+const vismodule::TableObject::RangeList& TableObject::insideRangeList( void ) const
 {
     return( m_inside_range_list );
 }
@@ -600,7 +600,7 @@ const kvs::TableObject::RangeList& TableObject::insideRangeList( void ) const
  *  @return minimum range value
  */
 /*===========================================================================*/
-const kvs::Real64 TableObject::minRange( const size_t column_index ) const
+const vismodule::Real64 TableObject::minRange( const size_t column_index ) const
 {
     return( m_min_ranges[column_index] );
 }
@@ -612,7 +612,7 @@ const kvs::Real64 TableObject::minRange( const size_t column_index ) const
  *  @return maximum range value
  */
 /*===========================================================================*/
-const kvs::Real64 TableObject::maxRange( const size_t column_index ) const
+const vismodule::Real64 TableObject::maxRange( const size_t column_index ) const
 {
     return( m_max_ranges[column_index] );
 }
@@ -635,45 +635,45 @@ const bool TableObject::insideRange( const size_t row_index ) const
  *  @return object type
  */
 /*===========================================================================*/
-const kvs::ObjectBase::ObjectType TableObject::objectType( void ) const
+const vismodule::ObjectBase::ObjectType TableObject::objectType( void ) const
 {
-    return( kvs::ObjectBase::Table );
+    return( vismodule::ObjectBase::Table );
 }
 
-template<> void TableObject::addColumn<kvs::Int8>( const kvs::ValueArray<kvs::Int8>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::UInt8>( const kvs::ValueArray<kvs::UInt8>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::Int16>( const kvs::ValueArray<kvs::Int16>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::UInt16>( const kvs::ValueArray<kvs::UInt16>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::Int32>( const kvs::ValueArray<kvs::Int32>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::UInt32>( const kvs::ValueArray<kvs::UInt32>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::Int64>( const kvs::ValueArray<kvs::Int64>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::UInt64>( const kvs::ValueArray<kvs::UInt64>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::Real32>( const kvs::ValueArray<kvs::Real32>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::Real64>( const kvs::ValueArray<kvs::Real64>& array, const std::string& label );
-template<> void TableObject::addColumn<std::string>( const kvs::ValueArray<std::string>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::Int8>( const vismodule::ValueArray<vismodule::Int8>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::UInt8>( const vismodule::ValueArray<vismodule::UInt8>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::Int16>( const vismodule::ValueArray<vismodule::Int16>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::UInt16>( const vismodule::ValueArray<vismodule::UInt16>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::Int32>( const vismodule::ValueArray<vismodule::Int32>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::UInt32>( const vismodule::ValueArray<vismodule::UInt32>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::Int64>( const vismodule::ValueArray<vismodule::Int64>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::UInt64>( const vismodule::ValueArray<vismodule::UInt64>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::Real32>( const vismodule::ValueArray<vismodule::Real32>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::Real64>( const vismodule::ValueArray<vismodule::Real64>& array, const std::string& label );
+template<> void TableObject::addColumn<std::string>( const vismodule::ValueArray<std::string>& array, const std::string& label );
 
-template<> void TableObject::addColumn<kvs::Int8>( const std::vector<kvs::Int8>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::UInt8>( const std::vector<kvs::UInt8>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::Int16>( const std::vector<kvs::Int16>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::UInt16>( const std::vector<kvs::UInt16>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::Int32>( const std::vector<kvs::Int32>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::UInt32>( const std::vector<kvs::UInt32>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::Int64>( const std::vector<kvs::Int64>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::UInt64>( const std::vector<kvs::UInt64>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::Real32>( const std::vector<kvs::Real32>& array, const std::string& label );
-template<> void TableObject::addColumn<kvs::Real64>( const std::vector<kvs::Real64>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::Int8>( const std::vector<vismodule::Int8>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::UInt8>( const std::vector<vismodule::UInt8>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::Int16>( const std::vector<vismodule::Int16>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::UInt16>( const std::vector<vismodule::UInt16>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::Int32>( const std::vector<vismodule::Int32>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::UInt32>( const std::vector<vismodule::UInt32>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::Int64>( const std::vector<vismodule::Int64>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::UInt64>( const std::vector<vismodule::UInt64>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::Real32>( const std::vector<vismodule::Real32>& array, const std::string& label );
+template<> void TableObject::addColumn<vismodule::Real64>( const std::vector<vismodule::Real64>& array, const std::string& label );
 template<> void TableObject::addColumn<std::string>( const std::vector<std::string>& array, const std::string& label );
 
-template<> const kvs::Int8& TableObject::at<kvs::Int8>( const size_t row, const size_t column ) const;
-template<> const kvs::UInt8& TableObject::at<kvs::UInt8>( const size_t row, const size_t column ) const;
-template<> const kvs::Int16& TableObject::at<kvs::Int16>( const size_t row, const size_t column ) const;
-template<> const kvs::UInt16& TableObject::at<kvs::UInt16>( const size_t row, const size_t column ) const;
-template<> const kvs::Int32& TableObject::at<kvs::Int32>( const size_t row, const size_t column ) const;
-template<> const kvs::UInt32& TableObject::at<kvs::UInt32>( const size_t row, const size_t column ) const;
-template<> const kvs::Int64& TableObject::at<kvs::Int64>( const size_t row, const size_t column ) const;
-template<> const kvs::UInt64& TableObject::at<kvs::UInt64>( const size_t row, const size_t column ) const;
-template<> const kvs::Real32& TableObject::at<kvs::Real32>( const size_t row, const size_t column ) const;
-template<> const kvs::Real64& TableObject::at<kvs::Real64>( const size_t row, const size_t column ) const;
+template<> const vismodule::Int8& TableObject::at<vismodule::Int8>( const size_t row, const size_t column ) const;
+template<> const vismodule::UInt8& TableObject::at<vismodule::UInt8>( const size_t row, const size_t column ) const;
+template<> const vismodule::Int16& TableObject::at<vismodule::Int16>( const size_t row, const size_t column ) const;
+template<> const vismodule::UInt16& TableObject::at<vismodule::UInt16>( const size_t row, const size_t column ) const;
+template<> const vismodule::Int32& TableObject::at<vismodule::Int32>( const size_t row, const size_t column ) const;
+template<> const vismodule::UInt32& TableObject::at<vismodule::UInt32>( const size_t row, const size_t column ) const;
+template<> const vismodule::Int64& TableObject::at<vismodule::Int64>( const size_t row, const size_t column ) const;
+template<> const vismodule::UInt64& TableObject::at<vismodule::UInt64>( const size_t row, const size_t column ) const;
+template<> const vismodule::Real32& TableObject::at<vismodule::Real32>( const size_t row, const size_t column ) const;
+template<> const vismodule::Real64& TableObject::at<vismodule::Real64>( const size_t row, const size_t column ) const;
 template<> const std::string& TableObject::at<std::string>( const size_t row, const size_t column ) const;
 
-} // end of namespace kvs
+} // end of namespace vismodule

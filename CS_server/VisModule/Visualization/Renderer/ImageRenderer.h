@@ -11,17 +11,17 @@
  *  $Id: ImageRenderer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__IMAGE_RENDERER_H_INCLUDE
-#define KVS__IMAGE_RENDERER_H_INCLUDE
+#ifndef VIS_MODULE__IMAGE_RENDERER_H_INCLUDE
+#define VIS_MODULE__IMAGE_RENDERER_H_INCLUDE
 
 #include "RendererBase.h"
-#include <kvs/ClassName>
-#include <kvs/Texture2D>
-#include <kvs/ImageObject>
-#include <kvs/Module>
+#include <vismodule/ClassName>
+#include <vismodule/Texture2D>
+#include <vismodule/ImageObject>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class ObjectBase;
@@ -33,14 +33,14 @@ class Light;
  *  Image renderer class.
  */
 /*==========================================================================*/
-class ImageRenderer : public kvs::RendererBase
+class ImageRenderer : public vismodule::RendererBase
 {
     // Class name.
-    kvsClassName( kvs::ImageRenderer );
+    visModuleClassName( vismodule::ImageRenderer );
 
     // Module information.
-    kvsModuleCategory( Renderer );
-    kvsModuleBaseClass( kvs::RendererBase );
+    visModuleCategory( Renderer );
+    visModuleBaseClass( vismodule::RendererBase );
 
 public:
 
@@ -58,7 +58,7 @@ protected:
     double         m_bottom;               ///< screen bottom position
     double         m_top;                  ///< screen top position
     Type           m_type;                 ///< rendering type
-    kvs::Texture2D m_texture;              ///< texture image
+    vismodule::Texture2D m_texture;              ///< texture image
 
 public:
 
@@ -68,15 +68,15 @@ public:
 
 public:
 
-    void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
+    void exec( vismodule::ObjectBase* object, vismodule::Camera* camera, vismodule::Light* light );
 
 protected:
 
-    void create_texture( const kvs::ImageObject* image );
+    void create_texture( const vismodule::ImageObject* image );
 
     void centering( const double width, const double height );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__IMAGE_RENDERER_H_INCLUDE
+#endif // VIS_MODULE__IMAGE_RENDERER_H_INCLUDE

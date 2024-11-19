@@ -16,7 +16,7 @@
 #include "ResizeEvent.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -105,7 +105,7 @@ const int ResizeEvent::height( void ) const
 /*===========================================================================*/
 const int ResizeEvent::type( void ) const
 {
-    return( kvs::EventBase::ResizeEvent );
+    return( vismodule::EventBase::ResizeEvent );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

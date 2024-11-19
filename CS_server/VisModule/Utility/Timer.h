@@ -11,42 +11,42 @@
  *  $Id: Timer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS_CORE_TIMER_H_INCLUDE
-#define KVS_CORE_TIMER_H_INCLUDE
+#ifndef VIS_MODULE_CORE_TIMER_H_INCLUDE
+#define VIS_MODULE_CORE_TIMER_H_INCLUDE
 
 #include <ctime>
 #include <iostream>
 #include <vector>
-#include <kvs/Compiler>
-#include <kvs/Platform>
-#if defined ( KVS_COMPILER_VC )
+#include <vismodule/Compiler>
+#include <vismodule/Platform>
+#if defined ( VIS_MODULE_COMPILER_VC )
 #include <windows.h>
 #include <mmsystem.h>
 #pragma comment(lib, "winmm.lib")
-#else // KVS_COMPILER_GCC
+#else // VIS_MODULE_COMPILER_GCC
 #include <sys/time.h>
 #include <sys/timeb.h>
 #endif
-#include <kvs/Type>
-#include <kvs/Message>
-#include <kvs/ClassName>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/Type>
+#include <vismodule/Message>
+#include <vismodule/ClassName>
+#include <vismodule/IgnoreUnusedVariable>
 
 /* Hight precision CPU counter using RDTCS or QPC. It becomes possible to use
- * the CPU counter by defining 'KVS_TIMER_USE_RDTSC' or 'KVS_TIMER_USE_QPC'.
+ * the CPU counter by defining 'VIS_MODULE_TIMER_USE_RDTSC' or 'VIS_MODULE_TIMER_USE_QPC'.
  * In the default setting, Timer function is implemented by using gettimeofday()
  * without the CPU counter.
  *
- * #define KVS_TIMER_ENABLE_RDTSC // ReaD Time Stamp Counter
- * #define KVS_TIMER_ENABLE_QPC   // Query Performance Counter
+ * #define VIS_MODULE_TIMER_ENABLE_RDTSC // ReaD Time Stamp Counter
+ * #define VIS_MODULE_TIMER_ENABLE_QPC   // Query Performance Counter
  */
-#if defined( KVS_PLATFORM_WINDOWS )
-#define KVS_TIMER_ENABLE_QPC
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
+#define VIS_MODULE_TIMER_ENABLE_QPC
 #endif
-#if defined( KVS_TIMER_ENABLE_RDTSC ) || defined( KVS_TIMER_ENABLE_QPC )
-#define KVS_TIMER_USE_CPU_COUNTER
+#if defined( VIS_MODULE_TIMER_ENABLE_RDTSC ) || defined( VIS_MODULE_TIMER_ENABLE_QPC )
+#define VIS_MODULE_TIMER_USE_CPU_COUNTER
 #else
-#define KVS_TIMER_USE_GETTIMEOFDAY
+#define VIS_MODULE_TIMER_USE_GETTIMEOFDAY
 #endif
 
 /*==========================================================================*/
@@ -54,9 +54,9 @@
  *  RDTSC: ReaD Time Stamp Counter (Intel Pentium CPU only)
  */
 /*==========================================================================*/
-#if defined ( KVS_TIMER_ENABLE_RDTSC )
-#if defined ( KVS_COMPILER_VC )
-#define KVS_TIMER_GET_RDTSC( counter )           \
+#if defined ( VIS_MODULE_TIMER_ENABLE_RDTSC )
+#if defined ( VIS_MODULE_COMPILER_VC )
+#define VIS_MODULE_TIMER_GET_RDTSC( counter )           \
     {                                            \
         __asm {                                  \
             __asm _emit 0x0f                     \
@@ -66,15 +66,15 @@
         }                                        \
     }
 
-#elif defined ( KVS_COMPILER_GCC )
-#if defined ( KVS_PLATFORM_CPU_X86 ) || defined ( KVS_PLATFORM_CPU_I386 )
-#define KVS_TIMER_GET_RDTSC( counter )                                \
+#elif defined ( VIS_MODULE_COMPILER_GCC )
+#if defined ( VIS_MODULE_PLATFORM_CPU_X86 ) || defined ( VIS_MODULE_PLATFORM_CPU_I386 )
+#define VIS_MODULE_TIMER_GET_RDTSC( counter )                                \
     {                                                                 \
         __asm__ volatile (".byte 0x0f, 0x31" : "=A" (counter.value)); \
     }
 
-#elif defined ( KVS_PLATFORM_CPU_POWERPC )
-#define KVS_TIMER_GET_RDTSC( counter )                                         \
+#elif defined ( VIS_MODULE_PLATFORM_CPU_POWERPC )
+#define VIS_MODULE_TIMER_GET_RDTSC( counter )                                         \
     {                                                                          \
         uint32_t tmp;                                                          \
         __asm__ volatile ( "loop:                  \n"                         \
@@ -93,20 +93,20 @@
 
 // Unknown compiler.
 #else
-#error Unknown compiler. KVS supports GNU C++ compiler and
+#error Unknown compiler. VISMODULE supports GNU C++ compiler and
 #error Microsoft Visual C++ compiler only.
 #endif
 #endif
-// end of KVS_TIMER_ENABLE_RDTSC for KVS_TIMER_GET_RDTSC()
+// end of VIS_MODULE_TIMER_ENABLE_RDTSC for VISMODULE.TIMER_GET_RDTSC()
 
 /*==========================================================================*/
 /*
  *  QPC: Query Performance Counter (Microsoft Visual C++ only)
  */
 /*==========================================================================*/
-#if defined ( KVS_TIMER_ENABLE_QPC )
-#if defined ( KVS_COMPILER_VC )
-#define KVS_TIMER_GET_QPC( counter )                                           \
+#if defined ( VIS_MODULE_TIMER_ENABLE_QPC )
+#if defined ( VIS_MODULE_COMPILER_VC )
+#define VIS_MODULE_TIMER_GET_QPC( counter )                                           \
     {                                                                          \
         QueryPerformanceCounter( reinterpret_cast<LARGE_INTEGER*>(&counter) ); \
     }
@@ -116,10 +116,10 @@
 #error Not supported QPC.
 #endif
 #endif
-// end of KVS_TIMER_ENABLE_QPC for KVS_TIMER_GET_QPC()
+// end of VIS_MODULE_TIMER_ENABLE_QPC for VISMODULE.TIMER_GET_QPC()
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -127,24 +127,24 @@ namespace kvs
  *  Time-stamp (64 bit integer value)
  */
 /*==========================================================================*/
-#if defined ( KVS_TIMER_USE_CPU_COUNTER )
+#if defined ( VIS_MODULE_TIMER_USE_CPU_COUNTER )
 union TimeStamp
 {
     union
     {
         struct
         {
-            kvs::UInt32 low;  ///< low bit (32 bit)
-            kvs::UInt32 high; ///< high bit (32 bit)
+            vismodule::UInt32 low;  ///< low bit (32 bit)
+            vismodule::UInt32 high; ///< high bit (32 bit)
         };
-        kvs::UInt64 value;    ///< 64 bit integer value
+        vismodule::UInt64 value;    ///< 64 bit integer value
     };
 };
 #else
 typedef timeval TimeStamp;
 #endif
 
-#if defined ( KVS_TIMER_USE_CPU_COUNTER )
+#if defined ( VIS_MODULE_TIMER_USE_CPU_COUNTER )
 /*==========================================================================*/
 /**
  *  Get CPU counter.
@@ -155,16 +155,16 @@ inline TimeStamp GetCPUCounter( void )
 {
     TimeStamp counter;
 
-#if defined ( KVS_TIMER_ENABLE_RDTSC )
-    KVS_TIMER_GET_RDTSC( counter );
-#else // KVS_TIMER_ENABLE_QPC
-    KVS_TIMER_GET_QPC( counter );
+#if defined ( VIS_MODULE_TIMER_ENABLE_RDTSC )
+    VIS_MODULE_TIMER_GET_RDTSC( counter );
+#else // VIS_MODULE_TIMER_ENABLE_QPC
+    VIS_MODULE_TIMER_GET_QPC( counter );
 #endif
 
     return( counter );
 }
 
-#else // KVS_TIMER_USE_GETTIMEOFDAY
+#else // VIS_MODULE_TIMER_USE_GETTIMEOFDAY
 /*==========================================================================*/
 /**
  *  OS independent gettimeofday function.
@@ -179,7 +179,7 @@ inline void GetTimeOfDay( struct timeval& tv )
      * tv.tv_sec  = tb.time;
      * tv.tv_usec = tb.millitm * 1000 + 500;
      */
-#if defined ( KVS_COMPILER_VC )
+#if defined ( VIS_MODULE_COMPILER_VC )
     LARGE_INTEGER time = {0};
     if ( QueryPerformanceCounter( &time ) )
     {
@@ -195,7 +195,7 @@ inline void GetTimeOfDay( struct timeval& tv )
         tv.tv_usec = t % 1000;
     }
 /*
-#if defined ( KVS_PLATFORM_CPU_64 )
+#if defined ( VIS_MODULE_PLATFORM_CPU_64 )
     LARGE_INTEGER freq = {0};
     LARGE_INTEGER time = {0};
     QueryPerformanceFrequency( &freq );
@@ -207,7 +207,7 @@ inline void GetTimeOfDay( struct timeval& tv )
     tv.tv_usec = timeGetTime() * 1000L;
 #endif
 */
-#else // KVS_COMPILER_GCC
+#else // VIS_MODULE_COMPILER_GCC
     gettimeofday( &tv, NULL );
 #endif
 }
@@ -219,26 +219,26 @@ inline void GetTimeOfDay( struct timeval& tv )
  *  @return CPU frequency [Hz] = [clock/sec]
  */
 /*==========================================================================*/
-inline kvs::UInt32 GetCPUFrequency( void )
+inline vismodule::UInt32 GetCPUFrequency( void )
 {
-//    kvs::UInt32 frequency = 0;
-#if defined ( KVS_TIMER_ENABLE_QPC )
+//    vismodule::UInt32 frequency = 0;
+#if defined ( VIS_MODULE_TIMER_ENABLE_QPC )
     LARGE_INTEGER frequency;
 #else
-    kvs::UInt32 frequency = 0;
+    vismodule::UInt32 frequency = 0;
 #endif
 
-#if defined ( KVS_TIMER_ENABLE_RDTSC )
+#if defined ( VIS_MODULE_TIMER_ENABLE_RDTSC )
     TimeStamp start_tsc = GetCPUCounter();
     // Sleep 1 sec.
-#if defined ( KVS_COMPILER_VC )
+#if defined ( VIS_MODULE_COMPILER_VC )
     Sleep( 1000 );
-#else // KVS_COMPILER_GCC
+#else // VIS_MODULE_COMPILER_GCC
     sleep( 1 );
 #endif
     TimeStamp end_tsc = GetCPUCounter();
     frequency = end_tsc.value - start_tsc.value;
-#elif defined ( KVS_TIMER_ENABLE_QPC )
+#elif defined ( VIS_MODULE_TIMER_ENABLE_QPC )
     SetPriorityClass( GetCurrentProcess(), REALTIME_PRIORITY_CLASS );
     SetThreadPriority( GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL );
 //    QueryPerformanceFrequency( reinterpret_cast<LARGE_INTEGER*>(&frequency) );
@@ -248,24 +248,24 @@ inline kvs::UInt32 GetCPUFrequency( void )
     frequency = CLOCKS_PER_SEC;
 #endif
 
-#if defined ( KVS_TIMER_ENABLE_QPC )
-    return((kvs::UInt32)(frequency.QuadPart));
+#if defined ( VIS_MODULE_TIMER_ENABLE_QPC )
+    return((vismodule::UInt32)(frequency.QuadPart));
 #else
     return(frequency);
 #endif
 }
 
 // Weight values for converting time unit.
-#if defined ( KVS_TIMER_USE_CPU_COUNTER )
-const kvs::UInt32 KVS_TIMER_CPU_HZ        = GetCPUFrequency();
-const kvs::Real64 KVS_TIMER_CLOCK_TO_SEC  = 1.0 / KVS_TIMER_CPU_HZ;
-const kvs::Real64 KVS_TIMER_CLOCK_TO_MSEC = KVS_TIMER_CLOCK_TO_SEC  * 1000.0;
-const kvs::Real64 KVS_TIMER_CLOCK_TO_USEC = KVS_TIMER_CLOCK_TO_MSEC * 1000.0;
+#if defined ( VIS_MODULE_TIMER_USE_CPU_COUNTER )
+const vismodule::UInt32 VIS_MODULE_TIMER_CPU_HZ        = GetCPUFrequency();
+const vismodule::Real64 VIS_MODULE_TIMER_CLOCK_TO_SEC  = 1.0 / VIS_MODULE_TIMER_CPU_HZ;
+const vismodule::Real64 VIS_MODULE_TIMER_CLOCK_TO_MSEC = VIS_MODULE_TIMER_CLOCK_TO_SEC  * 1000.0;
+const vismodule::Real64 VIS_MODULE_TIMER_CLOCK_TO_USEC = VIS_MODULE_TIMER_CLOCK_TO_MSEC * 1000.0;
 #endif
-const kvs::Real64 KVS_TIMER_SEC_TO_USEC   = 1000000.0;
-const kvs::Real64 KVS_TIMER_SEC_TO_MSEC   =    1000.0;
-const kvs::Real64 KVS_TIMER_USEC_TO_SEC   =  0.000001;
-const kvs::Real64 KVS_TIMER_USEC_TO_MSEC  =     0.001;
+const vismodule::Real64 VIS_MODULE_TIMER_SEC_TO_USEC   = 1000000.0;
+const vismodule::Real64 VIS_MODULE_TIMER_SEC_TO_MSEC   =    1000.0;
+const vismodule::Real64 VIS_MODULE_TIMER_USEC_TO_SEC   =  0.000001;
+const vismodule::Real64 VIS_MODULE_TIMER_USEC_TO_MSEC  =     0.001;
 
 /*==========================================================================*/
 /**
@@ -275,7 +275,7 @@ const kvs::Real64 KVS_TIMER_USEC_TO_MSEC  =     0.001;
 /*==========================================================================*/
 inline TimeStamp GetStamp( void )
 {
-#if defined ( KVS_TIMER_USE_CPU_COUNTER )
+#if defined ( VIS_MODULE_TIMER_USE_CPU_COUNTER )
     return( GetCPUCounter() );
 #else
     TimeStamp ts;
@@ -293,10 +293,10 @@ inline TimeStamp GetStamp( void )
 /*==========================================================================*/
 inline double TimeStampToSec( const TimeStamp& ts )
 {
-#if defined ( KVS_TIMER_USE_CPU_COUNTER )
-    return( ts.value * KVS_TIMER_CLOCK_TO_SEC );
+#if defined ( VIS_MODULE_TIMER_USE_CPU_COUNTER )
+    return( ts.value * VIS_MODULE_TIMER_CLOCK_TO_SEC );
 #else
-    return( ts.tv_sec + ts.tv_usec * KVS_TIMER_USEC_TO_SEC );
+    return( ts.tv_sec + ts.tv_usec * VIS_MODULE_TIMER_USEC_TO_SEC );
 #endif
 }
 
@@ -309,11 +309,11 @@ inline double TimeStampToSec( const TimeStamp& ts )
 /*==========================================================================*/
 inline double TimeStampToMSec( const TimeStamp& ts )
 {
-#if defined ( KVS_TIMER_USE_CPU_COUNTER )
-    return( ts.value * KVS_TIMER_CLOCK_TO_MSEC );
+#if defined ( VIS_MODULE_TIMER_USE_CPU_COUNTER )
+    return( ts.value * VIS_MODULE_TIMER_CLOCK_TO_MSEC );
 #else
-    return( ts.tv_sec  * KVS_TIMER_SEC_TO_MSEC +
-            ts.tv_usec * KVS_TIMER_USEC_TO_MSEC );
+    return( ts.tv_sec  * VIS_MODULE_TIMER_SEC_TO_MSEC +
+            ts.tv_usec * VIS_MODULE_TIMER_USEC_TO_MSEC );
 #endif
 }
 
@@ -326,10 +326,10 @@ inline double TimeStampToMSec( const TimeStamp& ts )
 /*==========================================================================*/
 inline double TimeStampToUSec( const TimeStamp& ts )
 {
-#if defined ( KVS_TIMER_USE_CPU_COUNTER )
-    return( ts.value * KVS_TIMER_CLOCK_TO_USEC );
+#if defined ( VIS_MODULE_TIMER_USE_CPU_COUNTER )
+    return( ts.value * VIS_MODULE_TIMER_CLOCK_TO_USEC );
 #else
-    return( ts.tv_sec * KVS_TIMER_SEC_TO_USEC + ts.tv_usec );
+    return( ts.tv_sec * VIS_MODULE_TIMER_SEC_TO_USEC + ts.tv_usec );
 #endif
 }
 
@@ -344,7 +344,7 @@ inline double TimeStampToUSec( const TimeStamp& ts )
 inline TimeStamp TimeStampDiff( const TimeStamp& ts1, const TimeStamp& ts2 )
 {
     TimeStamp ts;
-#if defined ( KVS_TIMER_USE_CPU_COUNTER )
+#if defined ( VIS_MODULE_TIMER_USE_CPU_COUNTER )
     ts.low  = ts1.low - ts2.low;
     ts.high = ts.low > ts1.low ? ts1.high - ts2.high - 1 : ts1.high - ts2.high;
 #else
@@ -400,7 +400,7 @@ inline double TimeStampDiffInUSec( const TimeStamp& ts1, const TimeStamp& ts2 )
 /*==========================================================================*/
 class Timer
 {
-    kvsClassName_without_virtual( kvs::Timer );
+    visModuleClassName_without_virtual( vismodule::Timer );
 
 public:
 
@@ -441,7 +441,7 @@ public:
 /*==========================================================================*/
 inline Timer::Timer( void )
 {
-#if defined ( KVS_TIMER_USE_CPU_COUNTER )
+#if defined ( VIS_MODULE_TIMER_USE_CPU_COUNTER )
     m_start.value = 0;
     m_stop.value  = 0;
 #else
@@ -455,13 +455,13 @@ inline Timer::Timer( void )
 /*==========================================================================*/
 /**
  *  Constructor.
- *  @param trigger [in] trigger ('kvs::Timer::Start' is given)
+ *  @param trigger [in] trigger ('vismodule::Timer::Start' is given)
  */
 /*==========================================================================*/
 inline Timer::Timer( Trigger trigger )
 {
-    kvsMessageWarning( trigger == Timer::Start, "Unknown trigger." );
-    kvs::IgnoreUnusedVariable( trigger );
+    visModuleMessageWarning( trigger == Timer::Start, "Unknown trigger." );
+    vismodule::IgnoreUnusedVariable( trigger );
 
     this->start();
 }
@@ -539,6 +539,6 @@ inline double Timer::fps( void ) const
     return( 1.0 / TimeStampDiffInSec( m_stop, m_start ) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS_CORE_TIMER_H_INCLUDE
+#endif // VIS_MODULE_CORE_TIMER_H_INCLUDE

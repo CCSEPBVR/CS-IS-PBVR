@@ -11,18 +11,18 @@
  *  $Id: StructuredVolumeExporter.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__STRUCTURED_VOLUME_EXPORTER_H_INCLUDE
-#define KVS__STRUCTURED_VOLUME_EXPORTER_H_INCLUDE
+#ifndef VIS_MODULE__STRUCTURED_VOLUME_EXPORTER_H_INCLUDE
+#define VIS_MODULE__STRUCTURED_VOLUME_EXPORTER_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/ObjectBase>
-#include <kvs/StructuredVolumeObject>
-#include <kvs/KVSMLObjectStructuredVolume>
-#include <kvs/AVSField>
-#include <kvs/ExporterBase>
+#include <vismodule/ClassName>
+#include <vismodule/ObjectBase>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/KVSMLObjectStructuredVolume>
+#include <vismodule/AVSField>
+#include <vismodule/ExporterBase>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -31,15 +31,15 @@ namespace kvs
  */
 /*===========================================================================*/
 template <typename FileFormatType>
-class StructuredVolumeExporter : public kvs::ExporterBase<FileFormatType>
+class StructuredVolumeExporter : public vismodule::ExporterBase<FileFormatType>
 {
-    kvsClassName( kvs::StructuredVolumeExporter );
+    visModuleClassName( vismodule::StructuredVolumeExporter );
 
 public:
 
-    StructuredVolumeExporter( const kvs::StructuredVolumeObject* object );
+    StructuredVolumeExporter( const vismodule::StructuredVolumeObject* object );
 
-    FileFormatType* exec( const kvs::ObjectBase* object );
+    FileFormatType* exec( const vismodule::ObjectBase* object );
 };
 
 /*===========================================================================*/
@@ -50,7 +50,7 @@ public:
 /*===========================================================================*/
 template <typename FileFormatType>
 StructuredVolumeExporter<FileFormatType>::StructuredVolumeExporter(
-    const kvs::StructuredVolumeObject* object )
+    const vismodule::StructuredVolumeObject* object )
 {
     this->exec( object );
 }
@@ -62,43 +62,43 @@ StructuredVolumeExporter<FileFormatType>::StructuredVolumeExporter(
  */
 /*===========================================================================*/
 template <typename FileFormatType>
-FileFormatType* StructuredVolumeExporter<FileFormatType>::exec( const kvs::ObjectBase* object )
+FileFormatType* StructuredVolumeExporter<FileFormatType>::exec( const vismodule::ObjectBase* object )
 {
     return( NULL );
 }
 
 /*===========================================================================*/
 /**
- *  Specialized structured volume exporter class for kvs::KVSMLObjectStructuredVolume.
+ *  Specialized structured volume exporter class for vismodule::KVSMLObjectStructuredVolume.
  */
 /*===========================================================================*/
 template <>
-class StructuredVolumeExporter<kvs::KVSMLObjectStructuredVolume> :
-        public kvs::ExporterBase<kvs::KVSMLObjectStructuredVolume>
+class StructuredVolumeExporter<vismodule::KVSMLObjectStructuredVolume> :
+        public vismodule::ExporterBase<vismodule::KVSMLObjectStructuredVolume>
 {
 public:
 
-    StructuredVolumeExporter( const kvs::StructuredVolumeObject* object );
+    StructuredVolumeExporter( const vismodule::StructuredVolumeObject* object );
 
-    kvs::KVSMLObjectStructuredVolume* exec( const kvs::ObjectBase* object );
+    vismodule::KVSMLObjectStructuredVolume* exec( const vismodule::ObjectBase* object );
 };
 
 /*===========================================================================*/
 /**
- *  Specialized structured volume exporter class for kvs::AVSField.
+ *  Specialized structured volume exporter class for vismodule::AVSField.
  */
 /*===========================================================================*/
 template <>
-class StructuredVolumeExporter<kvs::AVSField> :
-        public kvs::ExporterBase<kvs::AVSField>
+class StructuredVolumeExporter<vismodule::AVSField> :
+        public vismodule::ExporterBase<vismodule::AVSField>
 {
 public:
 
-    StructuredVolumeExporter( const kvs::StructuredVolumeObject* object );
+    StructuredVolumeExporter( const vismodule::StructuredVolumeObject* object );
 
-    kvs::AVSField* exec( const kvs::ObjectBase* object );
+    vismodule::AVSField* exec( const vismodule::ObjectBase* object );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__STRUCTURED_VOLUME_EXPORTER_H_INCLUDE
+#endif // VIS_MODULE__STRUCTURED_VOLUME_EXPORTER_H_INCLUDE

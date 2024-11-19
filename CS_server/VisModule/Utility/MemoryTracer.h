@@ -12,16 +12,16 @@
  *  $Id: MemoryTracer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__MEMORY_TRACER_H_INCLUDE
-#define KVS__MEMORY_TRACER_H_INCLUDE
+#ifndef VIS_MODULE__MEMORY_TRACER_H_INCLUDE
+#define VIS_MODULE__MEMORY_TRACER_H_INCLUDE
 
 #include <map>
 #include <ostream>
-#include <kvs/Platform>
-#include <kvs/ClassName>
+#include <vismodule/Platform>
+#include <vismodule/ClassName>
 
 
-#if defined ( KVS_ENABLE_MEM_DEBUG )
+#if defined ( VIS_MODULE_ENABLE_MEM_DEBUG )
 
 void* operator new ( size_t size, char const* file, int line );
 
@@ -34,7 +34,7 @@ void operator delete [] ( void* address );
 #endif
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -44,7 +44,7 @@ namespace kvs
 /*===========================================================================*/
 class MemoryTracer
 {
-    kvsClassName( kvs::MemoryTracer );
+    visModuleClassName( vismodule::MemoryTracer );
 
 public:
 
@@ -168,6 +168,6 @@ public:
     const MemoryTracer::AllocationType type( void ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MEMORY_TRACER_H_INCLUDE
+#endif // VIS_MODULE__MEMORY_TRACER_H_INCLUDE

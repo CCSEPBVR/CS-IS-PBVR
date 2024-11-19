@@ -12,14 +12,14 @@
  *  $Id: TableObjectTag.h 846 2011-06-21 07:04:44Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__KVSML__TABLE_OBJECT_TAG_H_INCLUDE
-#define KVS__KVSML__TABLE_OBJECT_TAG_H_INCLUDE
+#ifndef VIS_MODULE__KVSML__TABLE_OBJECT_TAG_H_INCLUDE
+#define VIS_MODULE__KVSML__TABLE_OBJECT_TAG_H_INCLUDE
 
-#include <kvs/XMLNode>
+#include <vismodule/XMLNode>
 #include "TagBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -30,11 +30,11 @@ namespace kvsml
  *  @brief  Tag class for <TableObject>
  */
 /*===========================================================================*/
-class TableObjectTag : public kvs::kvsml::TagBase
+class TableObjectTag : public vismodule::kvsml::TagBase
 {
 public:
 
-    typedef kvs::kvsml::TagBase BaseClass;
+    typedef vismodule::kvsml::TagBase BaseClass;
 
 protected:
 
@@ -65,13 +65,13 @@ public:
 
 public:
 
-    const bool read( const kvs::XMLNode::SuperClass* parent );
+    const bool read( const vismodule::XMLNode::SuperClass* parent );
 
-    const bool write( kvs::XMLNode::SuperClass* parent );
+    const bool write( vismodule::XMLNode::SuperClass* parent );
 };
 
 } // end of namesapce kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__KVSML__TABLE_OBJECT_TAG_H_INCLUDE
+#endif // VIS_MODULE__KVSML__TABLE_OBJECT_TAG_H_INCLUDE

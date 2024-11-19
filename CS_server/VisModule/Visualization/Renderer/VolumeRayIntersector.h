@@ -11,16 +11,16 @@
  *  $Id: VolumeRayIntersector.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__VOLUME_RAY_INTERSECTOR_H_INCLUDE
-#define KVS__VOLUME_RAY_INTERSECTOR_H_INCLUDE
+#ifndef VIS_MODULE__VOLUME_RAY_INTERSECTOR_H_INCLUDE
+#define VIS_MODULE__VOLUME_RAY_INTERSECTOR_H_INCLUDE
 
-#include <kvs/Ray>
-#include <kvs/Vector3>
-#include <kvs/VolumeObjectBase>
-#include <kvs/ClassName>
+#include <vismodule/Ray>
+#include <vismodule/Vector3>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -28,35 +28,35 @@ namespace kvs
  *  RayInUniformVolume class.
  */
 /*==========================================================================*/
-class VolumeRayIntersector : public kvs::Ray
+class VolumeRayIntersector : public vismodule::Ray
 {
-    kvsClassName_without_virtual( kvs::VolumeRayIntersector );
+    visModuleClassName_without_virtual( vismodule::VolumeRayIntersector );
 
 private:
 
-    kvs::Vector3f                m_vertex[8];
-    const kvs::VolumeObjectBase* m_reference_volume;
+    vismodule::Vector3f                m_vertex[8];
+    const vismodule::VolumeObjectBase* m_reference_volume;
 
 public:
 
-    VolumeRayIntersector( const kvs::VolumeObjectBase* volume );
+    VolumeRayIntersector( const vismodule::VolumeObjectBase* volume );
 
 public:
 
     const bool isIntersected( void )
     {
         return(
-            kvs::Ray::isIntersected( m_vertex[0], m_vertex[3], m_vertex[2], m_vertex[1] ) ||
-            kvs::Ray::isIntersected( m_vertex[0], m_vertex[1], m_vertex[5], m_vertex[4] ) ||
-            kvs::Ray::isIntersected( m_vertex[1], m_vertex[2], m_vertex[6], m_vertex[5] ) ||
-            kvs::Ray::isIntersected( m_vertex[2], m_vertex[3], m_vertex[7], m_vertex[6] ) ||
-            kvs::Ray::isIntersected( m_vertex[3], m_vertex[0], m_vertex[4], m_vertex[7] ) ||
-            kvs::Ray::isIntersected( m_vertex[4], m_vertex[5], m_vertex[6], m_vertex[7] ) );
+            vismodule::Ray::isIntersected( m_vertex[0], m_vertex[3], m_vertex[2], m_vertex[1] ) ||
+            vismodule::Ray::isIntersected( m_vertex[0], m_vertex[1], m_vertex[5], m_vertex[4] ) ||
+            vismodule::Ray::isIntersected( m_vertex[1], m_vertex[2], m_vertex[6], m_vertex[5] ) ||
+            vismodule::Ray::isIntersected( m_vertex[2], m_vertex[3], m_vertex[7], m_vertex[6] ) ||
+            vismodule::Ray::isIntersected( m_vertex[3], m_vertex[0], m_vertex[4], m_vertex[7] ) ||
+            vismodule::Ray::isIntersected( m_vertex[4], m_vertex[5], m_vertex[6], m_vertex[7] ) );
     }
 
     const bool isInside( void ) const
     {
-        const kvs::Vector3f point( this->point() );
+        const vismodule::Vector3f point( this->point() );
 
         if ( m_vertex[0].z() < point.z() && point.z() < m_vertex[6].z() )
         {
@@ -78,6 +78,6 @@ public:
     }
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__VOLUME_RAY_INTERSECTOR_H_INCLUDE
+#endif // VIS_MODULE__VOLUME_RAY_INTERSECTOR_H_INCLUDE

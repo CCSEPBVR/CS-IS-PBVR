@@ -15,7 +15,7 @@
 #include "Mutex.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -24,7 +24,7 @@ namespace kvs
  *  @param mutex [in] pointer to the mutex
  */
 /*==========================================================================*/
-MutexLocker::MutexLocker( kvs::Mutex* mutex )
+MutexLocker::MutexLocker( vismodule::Mutex* mutex )
     : m_mutex( mutex )
 {
     this->relock();
@@ -71,4 +71,4 @@ Mutex* MutexLocker::mutex( void )
     return( m_mutex );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

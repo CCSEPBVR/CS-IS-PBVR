@@ -11,19 +11,19 @@
  *  $Id: ClassName.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__CLASS_NAME_H_INCLUDE
-#define KVS__CLASS_NAME_H_INCLUDE
+#ifndef VIS_MODULE__CLASS_NAME_H_INCLUDE
+#define VIS_MODULE__CLASS_NAME_H_INCLUDE
 
-#define kvsClassName( this_class )                \
+#define visModuleClassName( this_class )                \
     public:                                       \
     virtual const char* className() const { \
         return # this_class;                  \
     }
 
-#define kvsClassName_without_virtual( this_class ) \
+#define visModuleClassName_without_virtual( this_class ) \
     public:                                        \
     const char* className() const {          \
         return # this_class;                   \
     }
 
-#endif // PBVR__KVS__CLASS_NAME_H_INCLUDE
+#endif // PBVR__VIS_MODULE__CLASS_NAME_H_INCLUDE

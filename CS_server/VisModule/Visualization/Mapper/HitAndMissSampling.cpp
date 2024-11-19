@@ -12,12 +12,12 @@
  */
 /****************************************************************************/
 #include "HitAndMissSampling.h"
-#include <kvs/MersenneTwister>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/MersenneTwister>
+#include <vismodule/IgnoreUnusedVariable>
 #include <vector>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -26,8 +26,8 @@ namespace kvs
  */
 /*===========================================================================*/
 HitAndMissSampling::HitAndMissSampling( void ):
-    kvs::MapperBase(),
-    kvs::PointObject()
+    vismodule::MapperBase(),
+    vismodule::PointObject()
 {
 }
 
@@ -37,9 +37,9 @@ HitAndMissSampling::HitAndMissSampling( void ):
  *  @param  volume [in] pointer to the volume object
  */
 /*==========================================================================*/
-HitAndMissSampling::HitAndMissSampling( const kvs::VolumeObjectBase* volume ):
-    kvs::MapperBase(),
-    kvs::PointObject()
+HitAndMissSampling::HitAndMissSampling( const vismodule::VolumeObjectBase* volume ):
+    vismodule::MapperBase(),
+    vismodule::PointObject()
 {
     this->exec( volume );
 }
@@ -52,10 +52,10 @@ HitAndMissSampling::HitAndMissSampling( const kvs::VolumeObjectBase* volume ):
  */
 /*==========================================================================*/
 HitAndMissSampling::HitAndMissSampling(
-    const kvs::VolumeObjectBase* volume,
-    const kvs::TransferFunction& transfer_function ):
-    kvs::MapperBase( transfer_function ),
-    kvs::PointObject()
+    const vismodule::VolumeObjectBase* volume,
+    const vismodule::TransferFunction& transfer_function ):
+    vismodule::MapperBase( transfer_function ),
+    vismodule::PointObject()
 {
     this->exec( volume );
 }
@@ -76,31 +76,31 @@ HitAndMissSampling::~HitAndMissSampling( void )
  *  @return pointer to the point object
  */
 /*===========================================================================*/
-HitAndMissSampling::SuperClass* HitAndMissSampling::exec( const kvs::ObjectBase* object )
+HitAndMissSampling::SuperClass* HitAndMissSampling::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase* volume = kvs::VolumeObjectBase::DownCast( object );
+    const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
     if ( !volume )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not volume dat.");
+        visModuleMessageError("Input object is not volume dat.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
-    if ( volume_type == kvs::VolumeObjectBase::Structured )
+    const vismodule::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
+    if ( volume_type == vismodule::VolumeObjectBase::Structured )
     {
-        this->mapping( reinterpret_cast<const kvs::StructuredVolumeObject*>( object ) );
+        this->mapping( reinterpret_cast<const vismodule::StructuredVolumeObject*>( object ) );
     }
-    else // volume_type == kvs::VolumeObjectBase::Unstructured
+    else // volume_type == vismodule::VolumeObjectBase::Unstructured
     {
-        this->mapping( reinterpret_cast<const kvs::UnstructuredVolumeObject*>( object ) );
+        this->mapping( reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( object ) );
     }
 
     return( this );
@@ -112,7 +112,7 @@ HitAndMissSampling::SuperClass* HitAndMissSampling::exec( const kvs::ObjectBase*
  *  @param  volume [in] pointer to the structured volume object
  */
 /*==========================================================================*/
-void HitAndMissSampling::mapping( const kvs::StructuredVolumeObject* volume )
+void HitAndMissSampling::mapping( const vismodule::StructuredVolumeObject* volume )
 {
     // Attach the pointer to the volume object.
     BaseClass::attach_volume( volume );
@@ -121,12 +121,12 @@ void HitAndMissSampling::mapping( const kvs::StructuredVolumeObject* volume )
 
     // Generate the particles.
     const std::type_info& type = volume->values().typeInfo()->type();
-    if (      type == typeid( kvs::UInt8  ) ) this->generate_particles<kvs::UInt8>( volume );
-    else if ( type == typeid( kvs::UInt16 ) ) this->generate_particles<kvs::UInt16>( volume );
+    if (      type == typeid( vismodule::UInt8  ) ) this->generate_particles<vismodule::UInt8>( volume );
+    else if ( type == typeid( vismodule::UInt16 ) ) this->generate_particles<vismodule::UInt16>( volume );
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
+        visModuleMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
     }
 }
 
@@ -136,7 +136,7 @@ void HitAndMissSampling::mapping( const kvs::StructuredVolumeObject* volume )
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*==========================================================================*/
-void HitAndMissSampling::mapping( const kvs::UnstructuredVolumeObject* volume )
+void HitAndMissSampling::mapping( const vismodule::UnstructuredVolumeObject* volume )
 {
     // Attach the pointer to the volume object.
     BaseClass::attach_volume( volume );
@@ -145,20 +145,20 @@ void HitAndMissSampling::mapping( const kvs::UnstructuredVolumeObject* volume )
 
     // Generate the particles.
     const std::type_info& type = volume->values().typeInfo()->type();
-    if (      type == typeid( kvs::Int8   ) ) this->generate_particles<kvs::Int8>( volume );
-    else if ( type == typeid( kvs::Int16  ) ) this->generate_particles<kvs::Int16>( volume );
-    else if ( type == typeid( kvs::Int32  ) ) this->generate_particles<kvs::Int32>( volume );
-    else if ( type == typeid( kvs::Int64  ) ) this->generate_particles<kvs::Int64>( volume );
-    else if ( type == typeid( kvs::UInt8  ) ) this->generate_particles<kvs::UInt8>( volume );
-    else if ( type == typeid( kvs::UInt16 ) ) this->generate_particles<kvs::UInt16>( volume );
-    else if ( type == typeid( kvs::UInt32 ) ) this->generate_particles<kvs::UInt32>( volume );
-    else if ( type == typeid( kvs::UInt64 ) ) this->generate_particles<kvs::UInt64>( volume );
-    else if ( type == typeid( kvs::Real32 ) ) this->generate_particles<kvs::Real32>( volume );
-    else if ( type == typeid( kvs::Real64 ) ) this->generate_particles<kvs::Real64>( volume );
+    if (      type == typeid( vismodule::Int8   ) ) this->generate_particles<vismodule::Int8>( volume );
+    else if ( type == typeid( vismodule::Int16  ) ) this->generate_particles<vismodule::Int16>( volume );
+    else if ( type == typeid( vismodule::Int32  ) ) this->generate_particles<vismodule::Int32>( volume );
+    else if ( type == typeid( vismodule::Int64  ) ) this->generate_particles<vismodule::Int64>( volume );
+    else if ( type == typeid( vismodule::UInt8  ) ) this->generate_particles<vismodule::UInt8>( volume );
+    else if ( type == typeid( vismodule::UInt16 ) ) this->generate_particles<vismodule::UInt16>( volume );
+    else if ( type == typeid( vismodule::UInt32 ) ) this->generate_particles<vismodule::UInt32>( volume );
+    else if ( type == typeid( vismodule::UInt64 ) ) this->generate_particles<vismodule::UInt64>( volume );
+    else if ( type == typeid( vismodule::Real32 ) ) this->generate_particles<vismodule::Real32>( volume );
+    else if ( type == typeid( vismodule::Real64 ) ) this->generate_particles<vismodule::Real64>( volume );
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
+        visModuleMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
     }
 }
 
@@ -169,21 +169,21 @@ void HitAndMissSampling::mapping( const kvs::UnstructuredVolumeObject* volume )
  */
 /*==========================================================================*/
 template <typename T>
-void HitAndMissSampling::generate_particles( const kvs::StructuredVolumeObject* volume  )
+void HitAndMissSampling::generate_particles( const vismodule::StructuredVolumeObject* volume  )
 {
     // Set the geometry arrays.
     const size_t max_nparticles = volume->nnodes();
-    std::vector<kvs::Real32> coords;  coords.reserve( max_nparticles * 3 );
-    std::vector<kvs::UInt8>  colors;  colors.reserve( max_nparticles * 3 );
-    std::vector<kvs::Real32> normals; normals.reserve( max_nparticles * 3 );
+    std::vector<vismodule::Real32> coords;  coords.reserve( max_nparticles * 3 );
+    std::vector<vismodule::UInt8>  colors;  colors.reserve( max_nparticles * 3 );
+    std::vector<vismodule::Real32> normals; normals.reserve( max_nparticles * 3 );
 
     // Aliases.
-    const kvs::Vector3ui resolution = volume->resolution();
+    const vismodule::Vector3ui resolution = volume->resolution();
     const size_t line_size  = volume->nnodesPerLine();
     const size_t slice_size = volume->nnodesPerSlice();
     const T* values = reinterpret_cast<const T*>( volume->values().pointer() );
 
-    kvs::MersenneTwister R; // Random number generator
+    vismodule::MersenneTwister R; // Random number generator
     size_t index = 0;     // index of voxel
     for ( size_t k = 0; k < resolution.z(); k++ )
     {
@@ -196,9 +196,9 @@ void HitAndMissSampling::generate_particles( const kvs::StructuredVolumeObject* 
                 if( R() < BaseClass::opacityMap()[ voxel_value ] )
                 {
                     // Set coordinate value.
-                    coords.push_back( static_cast<kvs::Real32>(i) );
-                    coords.push_back( static_cast<kvs::Real32>(j) );
-                    coords.push_back( static_cast<kvs::Real32>(k) );
+                    coords.push_back( static_cast<vismodule::Real32>(i) );
+                    coords.push_back( static_cast<vismodule::Real32>(j) );
+                    coords.push_back( static_cast<vismodule::Real32>(k) );
 
                     // Set color value.
                     colors.push_back( BaseClass::colorMap()[ voxel_value ].r() );
@@ -206,8 +206,8 @@ void HitAndMissSampling::generate_particles( const kvs::StructuredVolumeObject* 
                     colors.push_back( BaseClass::colorMap()[ voxel_value ].b() );
 
                     // Calculate a normal vector at the node(i,j,k).
-                    kvs::Vector3ui front( index ); // front index
-                    kvs::Vector3ui back( index );  // back index
+                    vismodule::Vector3ui front( index ); // front index
+                    vismodule::Vector3ui back( index );  // back index
 
                     if(      i == 0                  ) front.x() += 1;
                     else if( i == resolution.x() - 1 ) back.x()  -= 1;
@@ -222,25 +222,25 @@ void HitAndMissSampling::generate_particles( const kvs::StructuredVolumeObject* 
                     else{ front.z() += slice_size; back.z() -= slice_size; }
 
                     // Set normal vector.
-                    normals.push_back( static_cast<kvs::Real32>( values[ front.x() ] - values[ back.x() ] ) );
-                    normals.push_back( static_cast<kvs::Real32>( values[ front.y() ] - values[ back.y() ] ) );
-                    normals.push_back( static_cast<kvs::Real32>( values[ front.z() ] - values[ back.z() ] ) );
+                    normals.push_back( static_cast<vismodule::Real32>( values[ front.x() ] - values[ back.x() ] ) );
+                    normals.push_back( static_cast<vismodule::Real32>( values[ front.y() ] - values[ back.y() ] ) );
+                    normals.push_back( static_cast<vismodule::Real32>( values[ front.z() ] - values[ back.z() ] ) );
                 }
             } // end of i-loop
         } // end of j-loop
     } // end of k-loop
 
-    SuperClass::m_coords  = kvs::ValueArray<kvs::Real32>( coords );
-    SuperClass::m_colors  = kvs::ValueArray<kvs::UInt8>( colors );
-    SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( normals );
+    SuperClass::m_coords  = vismodule::ValueArray<vismodule::Real32>( coords );
+    SuperClass::m_colors  = vismodule::ValueArray<vismodule::UInt8>( colors );
+    SuperClass::m_normals = vismodule::ValueArray<vismodule::Real32>( normals );
     SuperClass::setSize( 1.0f );
 }
 
 template
-void HitAndMissSampling::generate_particles<kvs::UInt8>( const kvs::StructuredVolumeObject* volume );
+void HitAndMissSampling::generate_particles<vismodule::UInt8>( const vismodule::StructuredVolumeObject* volume );
 
 template
-void HitAndMissSampling::generate_particles<kvs::UInt16>( const kvs::StructuredVolumeObject* volume );
+void HitAndMissSampling::generate_particles<vismodule::UInt16>( const vismodule::StructuredVolumeObject* volume );
 
 /*==========================================================================*/
 /**
@@ -249,12 +249,12 @@ void HitAndMissSampling::generate_particles<kvs::UInt16>( const kvs::StructuredV
  */
 /*==========================================================================*/
 template <typename T>
-void HitAndMissSampling::generate_particles( const kvs::UnstructuredVolumeObject* volume  )
+void HitAndMissSampling::generate_particles( const vismodule::UnstructuredVolumeObject* volume  )
 {
-    kvs::IgnoreUnusedVariable( volume );
+    vismodule::IgnoreUnusedVariable( volume );
 
     BaseClass::m_is_success = false;
-    kvsMessageError("Not yet implemented the hit-and-miss method for the unstructured volume.");
+    visModuleMessageError("Not yet implemented the hit-and-miss method for the unstructured volume.");
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

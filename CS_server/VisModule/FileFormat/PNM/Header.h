@@ -11,15 +11,15 @@
  *  $Id: Header.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__PNM_HEADER_H_INCLUDE
-#define KVS__PNM_HEADER_H_INCLUDE
+#ifndef VIS_MODULE__PNM_HEADER_H_INCLUDE
+#define VIS_MODULE__PNM_HEADER_H_INCLUDE
 
 #include <iostream>
 #include <fstream>
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace pnm
@@ -112,6 +112,6 @@ private:
 
 } // end of namespace pnm
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__PNM_HEADER_H_INCLUDE
+#endif // VIS_MODULE__PNM_HEADER_H_INCLUDE

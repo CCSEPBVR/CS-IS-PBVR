@@ -11,18 +11,18 @@
  *  $Id: FileList.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__FILE_LIST_H_INCLUDE
-#define KVS__FILE_LIST_H_INCLUDE
+#ifndef VIS_MODULE__FILE_LIST_H_INCLUDE
+#define VIS_MODULE__FILE_LIST_H_INCLUDE
 
 #include <vector>
-#include <kvs/File>
+#include <vismodule/File>
 
 
-namespace kvs
+namespace vismodule
 {
 
-typedef std::vector<kvs::File> FileList;
+typedef std::vector<vismodule::File> FileList;
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__FILE_LIST_H_INCLUDE
+#endif // VIS_MODULE__FILE_LIST_H_INCLUDE

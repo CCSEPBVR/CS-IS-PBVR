@@ -11,8 +11,8 @@
  *  $Id: Platform.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__PLATFORM_H_INCLUDE
-#define KVS__PLATFORM_H_INCLUDE
+#ifndef VIS_MODULE__PLATFORM_H_INCLUDE
+#define VIS_MODULE__PLATFORM_H_INCLUDE
 
 /*----------------------------------------------------------------------------
  * Platform name.
@@ -20,143 +20,143 @@
 
 // Linux
 #if defined ( __linux__ ) || defined ( __linux )
-#define KVS_PLATFORM_LINUX
-#define KVS_PLATFORM_NAME "Linux"
+#define VIS_MODULE_PLATFORM_LINUX
+#define VIS_MODULE_PLATFORM_NAME "Linux"
 
 // Mac OS X
 #elif defined ( __APPLE__ ) || defined ( __MACOSX__ ) || defined ( macosx )
-#define KVS_PLATFORM_MACOSX
-#define KVS_PLATFORM_NAME "Mac OS X"
+#define VIS_MODULE_PLATFORM_MACOSX
+#define VIS_MODULE_PLATFORM_NAME "Mac OS X"
 
 // Windows
 #elif defined ( __WIN32__ ) || defined ( _WIN32 ) || defined ( WIN32 ) || \
       defined ( __WIN64__ ) || defined ( _WIN64 ) || defined ( WIN64 )
-#define KVS_PLATFORM_WINDOWS
-#define KVS_PLATFORM_NAME "Windows"
+#define VIS_MODULE_PLATFORM_WINDOWS
+#define VIS_MODULE_PLATFORM_NAME "Windows"
 
 // Cygwin
 #elif defined ( __CYGWIN__ ) || defined ( __CYGWIN32__ )
-#define KVS_PLATFORM_CYGWIN
-#define KVS_PLATFORM_NAME "Cygwin"
+#define VIS_MODULE_PLATFORM_CYGWIN
+#define VIS_MODULE_PLATFORM_NAME "Cygwin"
 
 // FreeBSD
 #elif defined ( __FreeBSD__ )
-#define KVS_PLATFORM_FREEBSD
-#define KVS_PLATFORM_NAME "FreeBSD"
+#define VIS_MODULE_PLATFORM_FREEBSD
+#define VIS_MODULE_PLATFORM_NAME "FreeBSD"
 
 // Solaris
 #elif defined ( __sun__ ) || defined ( __sun ) || defined ( sun ) || \
       defined ( __solaris__ )
-#define KVS_PLATFORM_SOLARIS
-#define KVS_PLATFORM_NAME "Solaris"
+#define VIS_MODULE_PLATFORM_SOLARIS
+#define VIS_MODULE_PLATFORM_NAME "Solaris"
 
 // SGI Irix
 #elif defined ( __sgi__ )
-#define KVS_PLATFORM_IRIX
-#define KVS_PLATFORM_NAME "Irix"
+#define VIS_MODULE_PLATFORM_IRIX
+#define VIS_MODULE_PLATFORM_NAME "Irix"
 
 // HP-UX
 #elif defined ( __hpux__ ) || defined ( __hpux )
-#define KVS_PLATFORM_HPUX
-#define KVS_PLATFORM_NAME "HP-UX"
+#define VIS_MODULE_PLATFORM_HPUX
+#define VIS_MODULE_PLATFORM_NAME "HP-UX"
 
 // AIX
 #elif defined ( __AIX ) || defined ( _AIX )
-#define KVS_PLATFORM_AIX
-#define KVS_PLATFORM_NAME "AIX"
+#define VIS_MODULE_PLATFORM_AIX
+#define VIS_MODULE_PLATFORM_NAME "AIX"
 
 #else
 #pragma message("Platform.h: Unknown platform.")
-#define KVS_PLATFORM_UNKNOWN
-#define KVS_PLATFORM_NAME "Unknown"
+#define VIS_MODULE_PLATFORM_UNKNOWN
+#define VIS_MODULE_PLATFORM_NAME "Unknown"
 #endif
 
 
 /*----------------------------------------------------------------------------
  * CPU architecture.
  *----------------------------------------------------------------------------*/
-#define KVS_PLATFORM_CPU_UNKNOWN
-#define KVS_PLATFORM_CPU_NAME "Unknown"
+#define VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#define VIS_MODULE_PLATFORM_CPU_NAME "Unknown"
 
 // i386
 #if defined ( __i386__ ) || defined ( __i386 ) || defined ( i386 )
-#undef  KVS_PLATFORM_CPU_UNKNOWN
-#undef  KVS_PLATFORM_CPU_NAME
-#define KVS_PLATFORM_CPU_I386
-#define KVS_PLATFORM_CPU_NAME "i386"
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
+#define VIS_MODULE_PLATFORM_CPU_I386
+#define VIS_MODULE_PLATFORM_CPU_NAME "i386"
 #endif
 
 // x86
 #if defined ( __x86__ ) || defined ( _X86_ ) || defined ( _M_IX86 )
-#undef  KVS_PLATFORM_CPU_UNKNOWN
-#undef  KVS_PLATFORM_CPU_NAME
-#define KVS_PLATFORM_CPU_X86
-#define KVS_PLATFORM_CPU_NAME "x86"
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
+#define VIS_MODULE_PLATFORM_CPU_X86
+#define VIS_MODULE_PLATFORM_CPU_NAME "x86"
 #endif
 
 // x86 64
 #if defined ( __x86_64__ )
-#undef  KVS_PLATFORM_CPU_UNKNOWN
-#undef  KVS_PLATFORM_CPU_NAME
-#define KVS_PLATFORM_CPU_X86_64
-#define KVS_PLATFORM_CPU_NAME "x86-64"
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
+#define VIS_MODULE_PLATFORM_CPU_X86_64
+#define VIS_MODULE_PLATFORM_CPU_NAME "x86-64"
 #endif
 
 // AMD64
 #if defined ( __amd64__ ) || defined ( _M_AMD64 )
-#undef  KVS_PLATFORM_CPU_UNKNOWN
-#undef  KVS_PLATFORM_CPU_NAME
-#define KVS_PLATFORM_CPU_AMD64
-#define KVS_PLATFORM_CPU_NAME "AMD64"
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
+#define VIS_MODULE_PLATFORM_CPU_AMD64
+#define VIS_MODULE_PLATFORM_CPU_NAME "AMD64"
 #endif
 
 // Intel IA64
 #if defined ( __ia64__ ) || defined ( __ia64 ) || defined ( _M_IA64 )
-#undef  KVS_PLATFORM_CPU_UNKNOWN
-#undef  KVS_PLATFORM_CPU_NAME
-#define KVS_PLATFORM_CPU_IA64
-#define KVS_PLATFORM_CPU_NAME "IA64"
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
+#define VIS_MODULE_PLATFORM_CPU_IA64
+#define VIS_MODULE_PLATFORM_CPU_NAME "IA64"
 #endif
 
 // PowerPC
 #if defined ( __POWERPC__ ) || defined ( __powerpc__ ) || defined ( _M_MPPC ) || \
     defined ( __powerpc64__ )
-#undef  KVS_PLATFORM_CPU_UNKNOWN
-#undef  KVS_PLATFORM_CPU_NAME
-#define KVS_PLATFORM_CPU_POWERPC
-#define KVS_PLATFORM_CPU_NAME "PowerPC"
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
+#define VIS_MODULE_PLATFORM_CPU_POWERPC
+#define VIS_MODULE_PLATFORM_CPU_NAME "PowerPC"
 #endif
 
 // Sun SPARC
 #if defined ( __sparc__ ) || defined ( __sparc )
-#undef  KVS_PLATFORM_CPU_UNKNOWN
-#undef  KVS_PLATFORM_CPU_NAME
-#define KVS_PLATFORM_CPU_SPARC
-#define KVS_PLATFORM_CPU_NAME "Sun SPARC"
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
+#define VIS_MODULE_PLATFORM_CPU_SPARC
+#define VIS_MODULE_PLATFORM_CPU_NAME "Sun SPARC"
 #endif
 
 // MIPS
 #if defined ( __mips__ ) || defined ( __MIPS__ ) || defined ( _M_MRX000 )
-#undef  KVS_PLATFORM_CPU_UNKNOWN
-#undef  KVS_PLATFORM_CPU_NAME
-#define KVS_PLATFORM_CPU_MIPS
-#define KVS_PLATFORM_CPU_NAME "MIPS"
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
+#define VIS_MODULE_PLATFORM_CPU_MIPS
+#define VIS_MODULE_PLATFORM_CPU_NAME "MIPS"
 #endif
 
 // ARM
 #if defined ( __arm__ ) || defined ( _ARM ) || defined ( _M_ARM ) || defined ( __ARM_ARCH )
-#undef  KVS_PLATFORM_CPU_UNKNOWN
-#undef  KVS_PLATFORM_CPU_NAME
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
 #if defined ( __aarch64__ )
-#define KVS_PLATFORM_CPU_ARM64
-#define KVS_PLATFORM_CPU_NAME "ARM 64"
+#define VIS_MODULE_PLATFORM_CPU_ARM64
+#define VIS_MODULE_PLATFORM_CPU_NAME "ARM 64"
 #else
-#define KVS_PLATFORM_CPU_ARM
-#define KVS_PLATFORM_CPU_NAME "ARM"
+#define VIS_MODULE_PLATFORM_CPU_ARM
+#define VIS_MODULE_PLATFORM_CPU_NAME "ARM"
 #endif
 #endif
 
-#if defined ( KVS_PLATFORM_CPU_UNKNOWN )
+#if defined ( VIS_MODULE_PLATFORM_CPU_UNKNOWN )
 #pragma message("Platform.h: Unknown CPU architecture.")
 #endif
 
@@ -177,9 +177,9 @@
     defined ( __powerpc64__ ) ||                                        \
     defined ( __arch64__ ) ||                                           \
     defined ( __aarch64__ )
-#define KVS_PLATFORM_CPU_64
+#define VIS_MODULE_PLATFORM_CPU_64
 #else
-#define KVS_PLATFORM_CPU_32
+#define VIS_MODULE_PLATFORM_CPU_32
 #endif
 
 /*----------------------------------------------------------------------------
@@ -187,42 +187,42 @@
  *----------------------------------------------------------------------------*/
 
 #if defined ( __LITTLE_ENDIAN__ )
-#define KVS_PLATFORM_LITTLE_ENDIAN
+#define VIS_MODULE_PLATFORM_LITTLE_ENDIAN
 
 #elif defined ( __BIG_ENDIAN__ )
-#define KVS_PLATFORM_BIG_ENDIAN
+#define VIS_MODULE_PLATFORM_BIG_ENDIAN
 
 #else
-#if defined ( KVS_PLATFORM_CPU_I386 )
-#define KVS_PLATFORM_LITTLE_ENDIAN
+#if defined ( VIS_MODULE_PLATFORM_CPU_I386 )
+#define VIS_MODULE_PLATFORM_LITTLE_ENDIAN
 
-#elif defined ( KVS_PLATFORM_CPU_X86 )
-#define KVS_PLATFORM_LITTLE_ENDIAN
+#elif defined ( VIS_MODULE_PLATFORM_CPU_X86 )
+#define VIS_MODULE_PLATFORM_LITTLE_ENDIAN
 
-#elif defined ( KVS_PLATFORM_CPU_X86_64 )
-#define KVS_PLATFORM_LITTLE_ENDIAN
+#elif defined ( VIS_MODULE_PLATFORM_CPU_X86_64 )
+#define VIS_MODULE_PLATFORM_LITTLE_ENDIAN
 
-#elif defined ( KVS_PLATFORM_CPU_AMD64 )
-#define KVS_PLATFORM_LITTLE_ENDIAN
+#elif defined ( VIS_MODULE_PLATFORM_CPU_AMD64 )
+#define VIS_MODULE_PLATFORM_LITTLE_ENDIAN
 
-#elif defined ( KVS_PLATFORM_CPU_IA64 )
-#define KVS_PLATFORM_LITTLE_ENDIAN
-//#define KVS_PLATFORM_BIG_ENDIAN
+#elif defined ( VIS_MODULE_PLATFORM_CPU_IA64 )
+#define VIS_MODULE_PLATFORM_LITTLE_ENDIAN
+//#define VIS_MODULE_PLATFORM_BIG_ENDIAN
 
-#elif defined ( KVS_PLATFORM_CPU_POWERPC )
-#define KVS_PLATFORM_BIG_ENDIAN
+#elif defined ( VIS_MODULE_PLATFORM_CPU_POWERPC )
+#define VIS_MODULE_PLATFORM_BIG_ENDIAN
 
-#elif defined ( KVS_PLATFORM_CPU_SPARC )
-#define KVS_PLATFORM_BIG_ENDIAN
+#elif defined ( VIS_MODULE_PLATFORM_CPU_SPARC )
+#define VIS_MODULE_PLATFORM_BIG_ENDIAN
 
-#elif defined ( KVS_PLATFORM_CPU_MIPS )
-#define KVS_PLATFORM_BIG_ENDIAN
+#elif defined ( VIS_MODULE_PLATFORM_CPU_MIPS )
+#define VIS_MODULE_PLATFORM_BIG_ENDIAN
 
-#elif defined ( KVS_PLATFORM_CPU_ARM64 )
-#define KVS_PLATFORM_LITTLE_ENDIAN
+#elif defined ( VIS_MODULE_PLATFORM_CPU_ARM64 )
+#define VIS_MODULE_PLATFORM_LITTLE_ENDIAN
 
-#elif defined ( KVS_PLATFORM_CPU_ARM )
-#define KVS_PLATFORM_LITTLE_ENDIAN
+#elif defined ( VIS_MODULE_PLATFORM_CPU_ARM )
+#define VIS_MODULE_PLATFORM_LITTLE_ENDIAN
 
 #else
 //#warning Unknown byte-order of the platform.
@@ -232,7 +232,7 @@
 #endif
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace Platform
@@ -246,7 +246,7 @@ namespace Platform
 /*==========================================================================*/
 inline const char* Name( void )
 {
-    return( KVS_PLATFORM_NAME );
+    return( VIS_MODULE_PLATFORM_NAME );
 }
 
 /*==========================================================================*/
@@ -257,11 +257,11 @@ inline const char* Name( void )
 /*==========================================================================*/
 inline const char* CPUName( void )
 {
-    return( KVS_PLATFORM_CPU_NAME );
+    return( VIS_MODULE_PLATFORM_CPU_NAME );
 }
 
 } // end of namespace Platform
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__PLATFORM_H_INCLUDE
+#endif // VIS_MODULE__PLATFORM_H_INCLUDE

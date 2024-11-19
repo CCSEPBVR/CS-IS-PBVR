@@ -17,10 +17,10 @@
 #include <ctime>
 #include <cstdlib>
 #include <cstdio>
-#include <kvs/Tokenizer>
+#include <vismodule/Tokenizer>
 
 
-namespace kvs
+namespace vismodule
 {
 
 Time::Time( void )
@@ -183,7 +183,7 @@ void Time::fromString( const std::string time, const std::string sep )
     else
     {
         // time: HH?MM?SS ('?': separator)
-        kvs::Tokenizer tokenizer( time, sep );
+        vismodule::Tokenizer tokenizer( time, sep );
         const std::string h = tokenizer.token();
         const std::string m = tokenizer.token();
         const std::string s = tokenizer.token();
@@ -265,4 +265,4 @@ const Time Time::convert_from_seconds( const int seconds )
     return( Time( hour, minute, second ) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

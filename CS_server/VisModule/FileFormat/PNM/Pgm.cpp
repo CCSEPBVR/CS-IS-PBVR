@@ -15,10 +15,10 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <kvs/File>
+#include <vismodule/File>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -38,7 +38,7 @@ Pgm::Pgm( void )
  *  @param data   [in] pixel data
  */
 /*==========================================================================*/
-Pgm::Pgm( const size_t width, const size_t height, const kvs::ValueArray<kvs::UInt8>& data ):
+Pgm::Pgm( const size_t width, const size_t height, const vismodule::ValueArray<vismodule::UInt8>& data ):
     m_width( width ),
     m_height( height ),
     m_data( data )
@@ -97,7 +97,7 @@ const size_t Pgm::height( void ) const
  *  @return pixel data
  */
 /*==========================================================================*/
-const kvs::ValueArray<kvs::UInt8>& Pgm::data( void ) const
+const vismodule::ValueArray<vismodule::UInt8>& Pgm::data( void ) const
 {
     return( m_data );
 }
@@ -117,7 +117,7 @@ const bool Pgm::read( const std::string& filename )
     std::ifstream ifs( m_filename.c_str(), std::ios::binary | std::ios::in );
     if( !ifs.is_open() )
     {
-        kvsMessageError( "Cannot open %s.", m_filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", m_filename.c_str() );
         BaseClass::m_is_success = false;
         return( BaseClass::m_is_success );
     }
@@ -141,7 +141,7 @@ const bool Pgm::read( const std::string& filename )
             size_t v;
             ifs >> v;
 
-            m_data[i] = static_cast<kvs::UInt8>( v );
+            m_data[i] = static_cast<vismodule::UInt8>( v );
         }
     }
     // Binary data.
@@ -151,7 +151,7 @@ const bool Pgm::read( const std::string& filename )
     }
     else
     {
-        kvsMessageError( "%s is not PGM format.", m_filename.c_str() );
+        visModuleMessageError( "%s is not PGM format.", m_filename.c_str() );
         ifs.close();
 
         BaseClass::m_is_success = false;
@@ -179,7 +179,7 @@ const bool Pgm::write( const std::string& filename )
     std::ofstream ofs( m_filename.c_str(), std::ios::binary | std::ios::out | std::ios::trunc );
     if( !ofs.is_open() )
     {
-        kvsMessageError( "Cannot open %s.", m_filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", m_filename.c_str() );
         BaseClass::m_is_success = false;
         return( BaseClass::m_is_success );
     }
@@ -208,7 +208,7 @@ void Pgm::set_header( void )
 
 const bool Pgm::CheckFileExtension( const std::string& filename )
 {
-    const kvs::File file( filename );
+    const vismodule::File file( filename );
     if ( file.extension() == "pgm" || file.extension() == "PGM" )
     {
         return( true );
@@ -223,12 +223,12 @@ const bool Pgm::CheckFileFormat( const std::string& filename )
     std::ifstream ifs( filename.c_str(), std::ios::binary | std::ios::in );
     if( !ifs.is_open() )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
     // Read header information.
-    kvs::pnm::Header header( ifs );
+    vismodule::pnm::Header header( ifs );
     return( header.isP2() || header.isP5() );
 }
 
@@ -239,4 +239,4 @@ std::ostream& operator <<( std::ostream& os, const Pgm& rhs )
     return( os );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

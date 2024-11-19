@@ -14,21 +14,21 @@
 /*****************************************************************************/
 #include "RotationMatrix33.h"
 
-namespace kvs
+namespace vismodule
 {
 
-template kvs::Matrix33<float> XRotationMatrix33<float>( const float deg );
-template kvs::Matrix33<float> YRotationMatrix33<float>( const float deg );
-template kvs::Matrix33<float> ZRotationMatrix33<float>( const float deg );
-template kvs::Matrix33<float> EulerRotationMatrix33<float>( const float alpha, const float beta, const float gamma );
-template kvs::Matrix33<float> RPYRotationMatrix33<float>( const float roll, const float pitch, const float yaw );
-template kvs::Matrix33<float> RotationMatrix33<float>( const kvs::Vector3<float>& axis, const float deg );
+template vismodule::Matrix33<float> XRotationMatrix33<float>( const float deg );
+template vismodule::Matrix33<float> YRotationMatrix33<float>( const float deg );
+template vismodule::Matrix33<float> ZRotationMatrix33<float>( const float deg );
+template vismodule::Matrix33<float> EulerRotationMatrix33<float>( const float alpha, const float beta, const float gamma );
+template vismodule::Matrix33<float> RPYRotationMatrix33<float>( const float roll, const float pitch, const float yaw );
+template vismodule::Matrix33<float> RotationMatrix33<float>( const vismodule::Vector3<float>& axis, const float deg );
 
-template kvs::Matrix33<double> XRotationMatrix33<double>( const double deg );
-template kvs::Matrix33<double> YRotationMatrix33<double>( const double deg );
-template kvs::Matrix33<double> ZRotationMatrix33<double>( const double deg );
-template kvs::Matrix33<double> EulerRotationMatrix33<double>( const double alpha, const double beta, const double gamma );
-template kvs::Matrix33<double> RPYRotationMatrix33<double>( const double roll, const double pitch, const double yaw );
-template kvs::Matrix33<double> RotationMatrix33<double>( const kvs::Vector3<double>& axis, const double deg );
+template vismodule::Matrix33<double> XRotationMatrix33<double>( const double deg );
+template vismodule::Matrix33<double> YRotationMatrix33<double>( const double deg );
+template vismodule::Matrix33<double> ZRotationMatrix33<double>( const double deg );
+template vismodule::Matrix33<double> EulerRotationMatrix33<double>( const double alpha, const double beta, const double gamma );
+template vismodule::Matrix33<double> RPYRotationMatrix33<double>( const double roll, const double pitch, const double yaw );
+template vismodule::Matrix33<double> RotationMatrix33<double>( const vismodule::Vector3<double>& axis, const double deg );
 
-} // end of namespace kvs
+} // end of namespace vismodule

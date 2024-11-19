@@ -11,16 +11,16 @@
  *  $Id: ColorMapTag.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__KVSML__COLOR_MAP_TAG_H_INCLUDE
-#define KVS__KVSML__COLOR_MAP_TAG_H_INCLUDE
+#ifndef VIS_MODULE__KVSML__COLOR_MAP_TAG_H_INCLUDE
+#define VIS_MODULE__KVSML__COLOR_MAP_TAG_H_INCLUDE
 
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
-#include <kvs/RGBColor>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
+#include <vismodule/RGBColor>
 #include "TagBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -31,11 +31,11 @@ namespace kvsml
  *  @brief  Tag class for <ColorMap>
  */
 /*===========================================================================*/
-class ColorMapTag : public kvs::kvsml::TagBase
+class ColorMapTag : public vismodule::kvsml::TagBase
 {
 public:
 
-    typedef kvs::kvsml::TagBase BaseClass;
+    typedef vismodule::kvsml::TagBase BaseClass;
 
 public:
 
@@ -45,9 +45,9 @@ public:
 
 public:
 
-    const bool read( const kvs::XMLNode::SuperClass* parent );
+    const bool read( const vismodule::XMLNode::SuperClass* parent );
 
-    const bool write( kvs::XMLNode::SuperClass* parent );
+    const bool write( vismodule::XMLNode::SuperClass* parent );
 };
 
 
@@ -56,16 +56,16 @@ public:
  *  @brief  <ColorMapValue> tag class.
  */
 /*===========================================================================*/
-class ColorMapValueTag : public kvs::kvsml::TagBase
+class ColorMapValueTag : public vismodule::kvsml::TagBase
 {
 public:
 
-    typedef kvs::kvsml::TagBase BaseClass;
+    typedef vismodule::kvsml::TagBase BaseClass;
 
 protected:
 
     float m_scalar; ///< scalr value
-    kvs::RGBColor m_color; ///< color value
+    vismodule::RGBColor m_color; ///< color value
 
 public:
 
@@ -77,23 +77,23 @@ public:
 
     const float scalar( void ) const;
 
-    const kvs::RGBColor color( void ) const;
+    const vismodule::RGBColor color( void ) const;
 
     void setScalar( const float scalar );
 
-    void setColor( const kvs::RGBColor color );
+    void setColor( const vismodule::RGBColor color );
 
 public:
 
-    const bool read( const kvs::XMLNode::SuperClass* parent );
+    const bool read( const vismodule::XMLNode::SuperClass* parent );
 
-    const bool read( const kvs::XMLElement::SuperClass* element );
+    const bool read( const vismodule::XMLElement::SuperClass* element );
 
-    const bool write( kvs::XMLNode::SuperClass* parent );
+    const bool write( vismodule::XMLNode::SuperClass* parent );
 };
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__KVSML__COLOR_MAP_TAG_H_INCLUDE
+#endif // VIS_MODULE__KVSML__COLOR_MAP_TAG_H_INCLUDE

@@ -11,32 +11,32 @@
  *  $Id: Tiff.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__TIFF_H_INCLUDE
-#define KVS__TIFF_H_INCLUDE
+#ifndef VIS_MODULE__TIFF_H_INCLUDE
+#define VIS_MODULE__TIFF_H_INCLUDE
 
-#include <kvs/FileFormatBase>
-#include <kvs/ClassName>
-#include <kvs/Type>
-#include <kvs/Message>
-#include <kvs/AnyValueArray>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ClassName>
+#include <vismodule/Type>
+#include <vismodule/Message>
+#include <vismodule/AnyValueArray>
 #include <iostream>
 #include "Header.h"
 #include "ImageFileDirectory.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
-class Tiff : public kvs::FileFormatBase
+class Tiff : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::Tiff );
+    visModuleClassName( vismodule::Tiff );
 
 public:
 
-    typedef kvs::FileFormatBase BaseClass;
+    typedef vismodule::FileFormatBase BaseClass;
 
-    typedef kvs::tiff::Header             Header;
-    typedef kvs::tiff::ImageFileDirectory IFD;
+    typedef vismodule::tiff::Header             Header;
+    typedef vismodule::tiff::ImageFileDirectory IFD;
 
 public:
 
@@ -57,7 +57,7 @@ private:
     size_t             m_height;          ///< height
     size_t             m_bits_per_sample; ///< bits per channel (sample)
     ColorMode          m_color_mode;      ///< color mode
-    kvs::AnyValueArray m_raw_data;        ///< raw data
+    vismodule::AnyValueArray m_raw_data;        ///< raw data
 
 public:
 
@@ -83,7 +83,7 @@ public:
 
     ColorMode colorMode( void ) const;
 
-    kvs::AnyValueArray rawData( void ) const;
+    vismodule::AnyValueArray rawData( void ) const;
 
     bool isSupported( void ) const;
 
@@ -111,13 +111,13 @@ private:
 
     size_t get_compression_mode( void ) const;
 
-    kvs::AnyValueArray get_strip_offsets( void ) const;
+    vismodule::AnyValueArray get_strip_offsets( void ) const;
 
-    kvs::AnyValueArray get_strip_bytes( void ) const;
+    vismodule::AnyValueArray get_strip_bytes( void ) const;
 
     ColorMode get_color_mode( void ) const;
 
-    kvs::AnyValueArray get_raw_data( std::ifstream& ifs ) const;
+    vismodule::AnyValueArray get_raw_data( std::ifstream& ifs ) const;
 
 public:
 
@@ -128,6 +128,6 @@ public:
     friend std::ostream& operator << ( std::ostream& os, const Tiff& tiff );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS_CORE_TIFF_TIFF_H_INCLUDE
+#endif // VIS_MODULE_CORE_TIFF_TIFF_H_INCLUDE

@@ -75,8 +75,8 @@ int JobDispatcher::initialize( int bstep, int estep, int volumes, double latency
 }
 #else
 int JobDispatcher::initialize( const int bstep, const int estep, const int volumes,
-                               const std::vector<kvs::Vector3f>& volume_min,
-                               const std::vector<kvs::Vector3f>& volume_max,
+                               const std::vector<vismodule::Vector3f>& volume_min,
+                               const std::vector<vismodule::Vector3f>& volume_max,
                                const double latency, const int pack_size )
 {
     m_latency_threshold = latency;
@@ -93,10 +93,10 @@ int JobDispatcher::initialize( const int bstep, const int estep, const int volum
 }
 
 int JobDispatcher::initialize( const int bstep, const int estep, const int volumes,
-                               const std::vector<kvs::Vector3f>& volume_min,
-                               const std::vector<kvs::Vector3f>& volume_max,
+                               const std::vector<vismodule::Vector3f>& volume_min,
+                               const std::vector<vismodule::Vector3f>& volume_max,
                                const double latency, const int pack_size,
-                               const kvs::Vector3f& crop_min, const kvs::Vector3f& crop_max )
+                               const vismodule::Vector3f& crop_min, const vismodule::Vector3f& crop_max )
 {
     m_latency_threshold = latency;
     m_job_id_pack_size = pack_size;

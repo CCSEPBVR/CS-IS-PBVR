@@ -11,15 +11,15 @@
  *  $Id: LineRenderer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__LINE_RENDERER_H_INCLUDE
-#define KVS__LINE_RENDERER_H_INCLUDE
+#ifndef VIS_MODULE__LINE_RENDERER_H_INCLUDE
+#define VIS_MODULE__LINE_RENDERER_H_INCLUDE
 
-#include <kvs/RendererBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/RendererBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class ObjectBase;
@@ -31,14 +31,14 @@ class Light;
  *  Line renderer.
  */
 /*==========================================================================*/
-class LineRenderer : public kvs::RendererBase
+class LineRenderer : public vismodule::RendererBase
 {
     // Class name.
-    kvsClassName( kvs::LineRenderer );
+    visModuleClassName( vismodule::LineRenderer );
 
     // Module information.
-    kvsModuleCategory( Renderer );
-    kvsModuleBaseClass( kvs::RendererBase );
+    visModuleCategory( Renderer );
+    visModuleBaseClass( vismodule::RendererBase );
 
 protected:
 
@@ -59,7 +59,7 @@ public:
 
 public:
 
-    void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
+    void exec( vismodule::ObjectBase* object, vismodule::Camera* camera, vismodule::Light* light );
 
 protected:
 
@@ -68,6 +68,6 @@ protected:
     virtual void initialize_modelview( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS_CORE_LINE_RENDERER_H_INCLUDE
+#endif // VIS_MODULE_CORE_LINE_RENDERER_H_INCLUDE

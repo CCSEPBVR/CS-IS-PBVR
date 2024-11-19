@@ -12,13 +12,13 @@
  */
 /*****************************************************************************/
 #include "StructuredVolumeObjectTag.h"
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
-#include <kvs/Tokenizer>
-#include <kvs/String>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
+#include <vismodule/Tokenizer>
+#include <vismodule/String>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -30,7 +30,7 @@ namespace kvsml
  */
 /*===========================================================================*/
 StructuredVolumeObjectTag::StructuredVolumeObjectTag( void ):
-    kvs::kvsml::TagBase( "StructuredVolumeObject" ),
+    vismodule::kvsml::TagBase( "StructuredVolumeObject" ),
     m_has_grid_type( false ),
     m_grid_type( "" ),
     m_has_resolution( false ),
@@ -86,7 +86,7 @@ const bool StructuredVolumeObjectTag::hasResolution( void ) const
  *  @return grid resolution
  */
 /*===========================================================================*/
-const kvs::Vector3ui& StructuredVolumeObjectTag::resolution( void ) const
+const vismodule::Vector3ui& StructuredVolumeObjectTag::resolution( void ) const
 {
     return( m_resolution );
 }
@@ -109,7 +109,7 @@ void StructuredVolumeObjectTag::setGridType( const std::string& grid_type )
  *  @param  resolution [in] grid resolution
  */
 /*===========================================================================*/
-void StructuredVolumeObjectTag::setResolution( const kvs::Vector3ui& resolution )
+void StructuredVolumeObjectTag::setResolution( const vismodule::Vector3ui& resolution )
 {
     m_has_resolution = true;
     m_resolution = resolution;
@@ -122,22 +122,22 @@ void StructuredVolumeObjectTag::setResolution( const kvs::Vector3ui& resolution 
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool StructuredVolumeObjectTag::read( const kvs::XMLNode::SuperClass* parent )
+const bool StructuredVolumeObjectTag::read( const vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
 
-    BaseClass::m_node = kvs::XMLNode::FindChildNode( parent, tag_name );
+    BaseClass::m_node = vismodule::XMLNode::FindChildNode( parent, tag_name );
     if ( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot find <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot find <%s>.", tag_name.c_str() );
         return( false );
     }
 
     // Element
-    const kvs::XMLElement::SuperClass* element = kvs::XMLNode::ToElement( BaseClass::m_node );
+    const vismodule::XMLElement::SuperClass* element = vismodule::XMLNode::ToElement( BaseClass::m_node );
 
     // grid_type="xxx"
-    const std::string grid_type = kvs::XMLElement::AttributeValue( element, "grid_type" );
+    const std::string grid_type = vismodule::XMLElement::AttributeValue( element, "grid_type" );
     if ( grid_type != "" )
     {
         m_has_grid_type = true;
@@ -145,18 +145,18 @@ const bool StructuredVolumeObjectTag::read( const kvs::XMLNode::SuperClass* pare
     }
 
     // resolution="xxx xxx xxx"
-    const std::string resolution = kvs::XMLElement::AttributeValue( element, "resolution" );
+    const std::string resolution = vismodule::XMLElement::AttributeValue( element, "resolution" );
     if ( resolution != "" )
     {
         const std::string delim(" \n");
-        kvs::Tokenizer t( resolution, delim );
+        vismodule::Tokenizer t( resolution, delim );
 
         unsigned int values[3];
         for ( size_t i = 0; i < 3; i++ )
         {
             if ( t.isLast() )
             {
-                kvsMessageError( "3 components are required for 'resolution' in <%s>", tag_name.c_str() );
+                visModuleMessageError( "3 components are required for 'resolution' in <%s>", tag_name.c_str() );
                 return( false );
             }
 
@@ -164,7 +164,7 @@ const bool StructuredVolumeObjectTag::read( const kvs::XMLNode::SuperClass* pare
         }
 
         m_has_resolution = true;
-        m_resolution = kvs::Vector3ui( values[0], values[1], values[2] );
+        m_resolution = vismodule::Vector3ui( values[0], values[1], values[2] );
     }
 
     return( true );
@@ -177,10 +177,10 @@ const bool StructuredVolumeObjectTag::read( const kvs::XMLNode::SuperClass* pare
  *  @return true, if the writing process is done successfully
  */
 /*===========================================================================*/
-const bool StructuredVolumeObjectTag::write( kvs::XMLNode::SuperClass* parent )
+const bool StructuredVolumeObjectTag::write( vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
-    kvs::XMLElement element( tag_name );
+    vismodule::XMLElement element( tag_name );
 
     if ( m_has_grid_type )
     {
@@ -190,29 +190,29 @@ const bool StructuredVolumeObjectTag::write( kvs::XMLNode::SuperClass* parent )
     }
     else
     {
-        kvsMessageError( "'grid_type' is not specified in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "'grid_type' is not specified in <%s>.", tag_name.c_str() );
         return( false );
     }
 
     if ( m_has_resolution )
     {
         const std::string name( "resolution" );
-        const std::string x( kvs::String( m_resolution.x() ).toStdString() );
-        const std::string y( kvs::String( m_resolution.y() ).toStdString() );
-        const std::string z( kvs::String( m_resolution.z() ).toStdString() );
+        const std::string x( vismodule::String( m_resolution.x() ).toStdString() );
+        const std::string y( vismodule::String( m_resolution.y() ).toStdString() );
+        const std::string z( vismodule::String( m_resolution.z() ).toStdString() );
         const std::string value( x + " " + y + " " + z );
         element.setAttribute( name, value );
     }
     else
     {
-        kvsMessageError( "'resolution' is not specified in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "'resolution' is not specified in <%s>.", tag_name.c_str() );
         return( false );
     }
 
     BaseClass::m_node = parent->InsertEndChild( element );
     if( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot insert <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot insert <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -221,4 +221,4 @@ const bool StructuredVolumeObjectTag::write( kvs::XMLNode::SuperClass* parent )
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

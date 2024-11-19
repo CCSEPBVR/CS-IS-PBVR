@@ -11,17 +11,17 @@
  *  $Id: RGBColor.h 869 2011-07-25 05:11:49Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__RGB_COLOR_H_INCLUDE
-#define KVS__RGB_COLOR_H_INCLUDE
+#ifndef VIS_MODULE__RGB_COLOR_H_INCLUDE
+#define VIS_MODULE__RGB_COLOR_H_INCLUDE
 
 #include <iostream>
 #include <iomanip>
-#include <kvs/Math>
-#include <kvs/Type>
-#include <kvs/ClassName>
+#include <vismodule/Math>
+#include <vismodule/Type>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class HSVColor;
@@ -34,21 +34,21 @@ class RGBAColor;
 /*==========================================================================*/
 class RGBColor
 {
-    kvsClassName_without_virtual( kvs::RGBColor );
+    visModuleClassName_without_virtual( vismodule::RGBColor );
 
 protected:
 
-    kvs::UInt8 m_red;   ///< red   [0-255]
-    kvs::UInt8 m_green; ///< green [0-255]
-    kvs::UInt8 m_blue;  ///< blue  [0-255]
+    vismodule::UInt8 m_red;   ///< red   [0-255]
+    vismodule::UInt8 m_green; ///< green [0-255]
+    vismodule::UInt8 m_blue;  ///< blue  [0-255]
 
 public:
 
     RGBColor( void );
 
-    RGBColor( kvs::UInt8 red, kvs::UInt8 green, kvs::UInt8 blue );
+    RGBColor( vismodule::UInt8 red, vismodule::UInt8 green, vismodule::UInt8 blue );
 
-    RGBColor( const kvs::UInt8 rgb[3] );
+    RGBColor( const vismodule::UInt8 rgb[3] );
 
     RGBColor( const RGBColor& rgb );
 
@@ -90,25 +90,25 @@ public:
     template <typename T>
     friend RGBColor operator * ( const T a, const RGBColor& rgb )
     {
-        return( RGBColor( static_cast<kvs::UInt8>( kvs::Math::Round( a * rgb.r() ) ),
-                          static_cast<kvs::UInt8>( kvs::Math::Round( a * rgb.g() ) ),
-                          static_cast<kvs::UInt8>( kvs::Math::Round( a * rgb.b() ) ) ) );
+        return( RGBColor( static_cast<vismodule::UInt8>( vismodule::Math::Round( a * rgb.r() ) ),
+                          static_cast<vismodule::UInt8>( vismodule::Math::Round( a * rgb.g() ) ),
+                          static_cast<vismodule::UInt8>( vismodule::Math::Round( a * rgb.b() ) ) ) );
     }
 
     template <typename T>
     friend RGBColor operator * ( const RGBColor& rgb, const T a )
     {
-        return( RGBColor( static_cast<kvs::UInt8>( kvs::Math::Round( a * rgb.r() ) ),
-                          static_cast<kvs::UInt8>( kvs::Math::Round( a * rgb.g() ) ),
-                          static_cast<kvs::UInt8>( kvs::Math::Round( a * rgb.b() ) ) ) );
+        return( RGBColor( static_cast<vismodule::UInt8>( vismodule::Math::Round( a * rgb.r() ) ),
+                          static_cast<vismodule::UInt8>( vismodule::Math::Round( a * rgb.g() ) ),
+                          static_cast<vismodule::UInt8>( vismodule::Math::Round( a * rgb.b() ) ) ) );
     }
 
     template <typename T>
     friend RGBColor operator / ( const RGBColor& rgb, const T a )
     {
-        return( RGBColor( static_cast<kvs::UInt8>( kvs::Math::Round( rgb.r() / a ) ),
-                          static_cast<kvs::UInt8>( kvs::Math::Round( rgb.g() / a ) ),
-                          static_cast<kvs::UInt8>( kvs::Math::Round( rgb.b() / a ) ) ) );
+        return( RGBColor( static_cast<vismodule::UInt8>( vismodule::Math::Round( rgb.r() / a ) ),
+                          static_cast<vismodule::UInt8>( vismodule::Math::Round( rgb.g() / a ) ),
+                          static_cast<vismodule::UInt8>( vismodule::Math::Round( rgb.b() / a ) ) ) );
     }
 
     friend std::ostream& operator << ( std::ostream& os, const RGBColor& rgb )
@@ -132,23 +132,23 @@ public:
 
 public:
 
-    void set( kvs::UInt8 red, kvs::UInt8 green, kvs::UInt8 blue );
+    void set( vismodule::UInt8 red, vismodule::UInt8 green, vismodule::UInt8 blue );
 
 public:
 
-    const kvs::UInt8 r( void ) const;
+    const vismodule::UInt8 r( void ) const;
 
-    const kvs::UInt8 red( void ) const;
+    const vismodule::UInt8 red( void ) const;
 
-    const kvs::UInt8 g( void ) const;
+    const vismodule::UInt8 g( void ) const;
 
-    const kvs::UInt8 green( void ) const;
+    const vismodule::UInt8 green( void ) const;
 
-    const kvs::UInt8 b( void ) const;
+    const vismodule::UInt8 b( void ) const;
 
-    const kvs::UInt8 blue( void ) const;
+    const vismodule::UInt8 blue( void ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__RGB_COLOR_H_INCLUDE
+#endif // VIS_MODULE__RGB_COLOR_H_INCLUDE

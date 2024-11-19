@@ -12,15 +12,15 @@
  *  $Id: XYZDef.h 863 2011-07-20 10:40:29Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__GRADS__XYZDEF_H_INCLUDE
-#define KVS__GRADS__XYZDEF_H_INCLUDE
+#ifndef VIS_MODULE__GRADS__XYZDEF_H_INCLUDE
+#define VIS_MODULE__GRADS__XYZDEF_H_INCLUDE
 
 #include <string>
 #include <fstream>
-#include <kvs/ValueArray>
+#include <vismodule/ValueArray>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace grads
@@ -46,13 +46,13 @@ struct XYZDef
 
     size_t num; ///< number of grid points
     MappingMethod mapping; ///< mapping method
-    kvs::ValueArray<kvs::Real32> values; ///< values
+    vismodule::ValueArray<vismodule::Real32> values; ///< values
 
     const bool read( std::string line, std::ifstream& ifs );
 };
 
 } // end of namespace grads
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GRADS__XYZDEF_H_INCLUDE
+#endif // VIS_MODULE__GRADS__XYZDEF_H_INCLUDE

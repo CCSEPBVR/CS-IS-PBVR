@@ -11,17 +11,17 @@
  *  $Id: SphereGlyph.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__SPHERE_GLYPH_H_INCLUDE
-#define KVS__SPHERE_GLYPH_H_INCLUDE
+#ifndef VIS_MODULE__SPHERE_GLYPH_H_INCLUDE
+#define VIS_MODULE__SPHERE_GLYPH_H_INCLUDE
 
 #include "GlyphBase.h"
-#include <kvs/PointObject>
-#include <kvs/MapperBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/PointObject>
+#include <vismodule/MapperBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -29,14 +29,14 @@ namespace kvs
  *  @brief  Sphere glyph class.
  */
 /*===========================================================================*/
-class SphereGlyph : public kvs::GlyphBase
+class SphereGlyph : public vismodule::GlyphBase
 {
     // Class name.
-    kvsClassName( kvs::SphereGlyph );
+    visModuleClassName( vismodule::SphereGlyph );
 
     // Module information.
-    kvsModuleCategory( Mapper );
-    kvsModuleBaseClass( kvs::GlyphBase );
+    visModuleCategory( Mapper );
+    visModuleBaseClass( vismodule::GlyphBase );
 
 protected:
 
@@ -49,14 +49,14 @@ public:
     SphereGlyph( void );
 
     SphereGlyph(
-        const kvs::PointObject* point );
+        const vismodule::PointObject* point );
 
     SphereGlyph(
-        const kvs::VolumeObjectBase* volume );
+        const vismodule::VolumeObjectBase* volume );
 
     SphereGlyph(
-        const kvs::VolumeObjectBase* volume,
-        const kvs::TransferFunction& transfer_function );
+        const vismodule::VolumeObjectBase* volume,
+        const vismodule::TransferFunction& transfer_function );
 
     virtual ~SphereGlyph( void );
 
@@ -74,23 +74,23 @@ public:
 */
 public:
 
-    BaseClass::SuperClass* exec( const kvs::ObjectBase* object );
+    BaseClass::SuperClass* exec( const vismodule::ObjectBase* object );
 
     void draw( void );
 
 protected:
 
-    BaseClass::SuperClass* exec_point_object( const kvs::PointObject* point );
+    BaseClass::SuperClass* exec_point_object( const vismodule::PointObject* point );
 
-    BaseClass::SuperClass* exec_volume_object( const kvs::VolumeObjectBase* volume );
+    BaseClass::SuperClass* exec_volume_object( const vismodule::VolumeObjectBase* volume );
 
-    void draw_element( const kvs::RGBColor& color, const kvs::UInt8 opacity );
+    void draw_element( const vismodule::RGBColor& color, const vismodule::UInt8 opacity );
 
 protected:
 
     void initialize( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__SPHERE_GLYPH_H_INCLUDE
+#endif // VIS_MODULE__SPHERE_GLYPH_H_INCLUDE

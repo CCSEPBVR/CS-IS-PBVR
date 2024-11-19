@@ -12,15 +12,15 @@
  *  $Id: FrustumMatrix44.h 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__FRUSTUM_MATRIX44_H_INCLUDE
-#define KVS__FRUSTUM_MATRIX44_H_INCLUDE
+#ifndef VIS_MODULE__FRUSTUM_MATRIX44_H_INCLUDE
+#define VIS_MODULE__FRUSTUM_MATRIX44_H_INCLUDE
 
 #include <cmath>
-#include <kvs/Matrix44>
-#include <kvs/Math>
+#include <vismodule/Matrix44>
+#include <vismodule/Math>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -36,7 +36,7 @@ namespace kvs
  */
 /*===========================================================================*/
 template <typename T>
-inline kvs::Matrix44<T> FrustumMatrix44(
+inline vismodule::Matrix44<T> FrustumMatrix44(
     const T left,
     const T right,
     const T bottom,
@@ -44,9 +44,9 @@ inline kvs::Matrix44<T> FrustumMatrix44(
     const T near,
     const T far )
 {
-    KVS_ASSERT( !( kvs::Math::IsZero( right - left ) ) );
-    KVS_ASSERT( !( kvs::Math::IsZero( top - bottom ) ) );
-    KVS_ASSERT( !( kvs::Math::IsZero( far - near ) ) );
+    VIS_MODULE_ASSERT( !( vismodule::Math::IsZero( right - left ) ) );
+    VIS_MODULE_ASSERT( !( vismodule::Math::IsZero( top - bottom ) ) );
+    VIS_MODULE_ASSERT( !( vismodule::Math::IsZero( far - near ) ) );
 
     const T elements[16] =
     {
@@ -56,9 +56,9 @@ inline kvs::Matrix44<T> FrustumMatrix44(
                                   0,                           0,                                   -1,                                0
     };
 
-    return( kvs::Matrix44<T>( elements ) );
+    return( vismodule::Matrix44<T>( elements ) );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__FRUSTUM_MATRIX44_H_INCLUDE
+#endif // VIS_MODULE__FRUSTUM_MATRIX44_H_INCLUDE

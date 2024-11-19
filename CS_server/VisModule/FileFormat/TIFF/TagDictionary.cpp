@@ -14,10 +14,10 @@
 #include "TagDictionary.h"
 #include "TagTable.h"
 #include <iostream>
-#include <kvs/String>
+#include <vismodule/String>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace tiff
@@ -28,16 +28,16 @@ TagDictionary::TagDictionary( void )
     this->create_dictionary();
 }
 
-kvs::tiff::Tag TagDictionary::find( const kvs::UInt16 tag_id ) const
+vismodule::tiff::Tag TagDictionary::find( const vismodule::UInt16 tag_id ) const
 {
     Container::const_iterator tag = m_container.find( tag_id );
 
-    kvs::UInt16 id;
+    vismodule::UInt16 id;
     std::string name;
     if ( tag == m_container.end() )
     {
         id   = tag_id;
-        name = "Unknown tag (" + kvs::String( tag_id ).toStdString() + ")";
+        name = "Unknown tag (" + vismodule::String( tag_id ).toStdString() + ")";
     }
     else
     {
@@ -45,19 +45,19 @@ kvs::tiff::Tag TagDictionary::find( const kvs::UInt16 tag_id ) const
         name = tag->second;
     }
 
-    return( kvs::tiff::Tag( id, name ) );
+    return( vismodule::tiff::Tag( id, name ) );
 }
 
 void TagDictionary::create_dictionary( void )
 {
-    for ( size_t i = 0; i < kvs::tiff::TagTableSize; i++ )
+    for ( size_t i = 0; i < vismodule::tiff::TagTableSize; i++ )
     {
-        kvs::UInt16 key   = kvs::tiff::TagTable[i].id();
-        std::string value = kvs::tiff::TagTable[i].name();
+        vismodule::UInt16 key   = vismodule::tiff::TagTable[i].id();
+        std::string value = vismodule::tiff::TagTable[i].name();
         m_container[key] = value;
     }
 }
 
 } // end of namespace tiff
 
-} // end of namespace kvs
+} // end of namespace vismodule

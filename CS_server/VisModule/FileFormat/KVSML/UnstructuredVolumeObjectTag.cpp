@@ -12,13 +12,13 @@
  */
 /*****************************************************************************/
 #include "UnstructuredVolumeObjectTag.h"
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
-#include <kvs/Tokenizer>
-#include <kvs/String>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
+#include <vismodule/Tokenizer>
+#include <vismodule/String>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -30,7 +30,7 @@ namespace kvsml
  */
 /*===========================================================================*/
 UnstructuredVolumeObjectTag::UnstructuredVolumeObjectTag( void ):
-    kvs::kvsml::TagBase( "UnstructuredVolumeObject" ),
+    vismodule::kvsml::TagBase( "UnstructuredVolumeObject" ),
     m_has_cell_type( false ),
     m_cell_type( "" )
 {
@@ -86,22 +86,22 @@ void UnstructuredVolumeObjectTag::setCellType( const std::string& cell_type )
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool UnstructuredVolumeObjectTag::read( const kvs::XMLNode::SuperClass* parent )
+const bool UnstructuredVolumeObjectTag::read( const vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
 
-    BaseClass::m_node = kvs::XMLNode::FindChildNode( parent, tag_name );
+    BaseClass::m_node = vismodule::XMLNode::FindChildNode( parent, tag_name );
     if ( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot find <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot find <%s>.", tag_name.c_str() );
         return( false );
     }
 
     // Element
-    const kvs::XMLElement::SuperClass* element = kvs::XMLNode::ToElement( BaseClass::m_node );
+    const vismodule::XMLElement::SuperClass* element = vismodule::XMLNode::ToElement( BaseClass::m_node );
 
     // cell_type="xxx"
-    const std::string cell_type = kvs::XMLElement::AttributeValue( element, "cell_type" );
+    const std::string cell_type = vismodule::XMLElement::AttributeValue( element, "cell_type" );
     if ( cell_type != "" )
     {
         m_has_cell_type = true;
@@ -118,10 +118,10 @@ const bool UnstructuredVolumeObjectTag::read( const kvs::XMLNode::SuperClass* pa
  *  @return true, if the writing process is done successfully
  */
 /*===========================================================================*/
-const bool UnstructuredVolumeObjectTag::write( kvs::XMLNode::SuperClass* parent )
+const bool UnstructuredVolumeObjectTag::write( vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
-    kvs::XMLElement element( tag_name );
+    vismodule::XMLElement element( tag_name );
 
     if ( m_has_cell_type )
     {
@@ -131,14 +131,14 @@ const bool UnstructuredVolumeObjectTag::write( kvs::XMLNode::SuperClass* parent 
     }
     else
     {
-        kvsMessageError( "'cell_type' is not specified in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "'cell_type' is not specified in <%s>.", tag_name.c_str() );
         return( false );
     }
 
     BaseClass::m_node = parent->InsertEndChild( element );
     if( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot insert <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot insert <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -147,4 +147,4 @@ const bool UnstructuredVolumeObjectTag::write( kvs::XMLNode::SuperClass* parent 
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -14,7 +14,7 @@
 #include "IPAddress.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 const IPAddress::integer_type IPAddress::Any       = INADDR_ANY;
@@ -217,7 +217,7 @@ const IPAddress::address_type& IPAddress::address( void ) const
 /*==========================================================================*/
 IPAddress::integer_type IPAddress::addressAsInteger( void ) const
 {
-#if defined( KVS_PLATFORM_WINDOWS )
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
     return( m_address.S_un.S_addr );
 #else
     return( m_address.s_addr );
@@ -243,7 +243,7 @@ std::string IPAddress::addressAsString( void ) const
 /*==========================================================================*/
 void IPAddress::set_ip_address( const char* hostname )
 {
-#if defined( KVS_PLATFORM_WINDOWS )
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
     if( std::string( hostname ) == "localhost" )
     {
         IPAddress::integer_type address = ::inet_addr( "127.0.0.1" );
@@ -277,7 +277,7 @@ void IPAddress::set_ip_address( const char* hostname )
 /*==========================================================================*/
 void IPAddress::set_ip_address( IPAddress::integer_type address )
 {
-#if defined( KVS_PLATFORM_WINDOWS )
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
     m_address.S_un.S_addr = address;
 #else
     m_address.s_addr = address;
@@ -297,4 +297,4 @@ void IPAddress::copy_address( const IPAddress::address_type& address )
             sizeof( m_address ) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

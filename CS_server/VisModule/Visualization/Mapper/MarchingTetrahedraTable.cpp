@@ -14,7 +14,7 @@
 #include "MarchingTetrahedraTable.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace MarchingTetrahedraTable
@@ -53,4 +53,4 @@ const int VertexID[6][2] =
 
 } // end of namespace MarchingTetrahedraTable
 
-} // end of namespace kvs
+} // end of namespace vismodule

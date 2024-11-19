@@ -12,12 +12,12 @@
  */
 /****************************************************************************/
 #include "FileHeader.h"
-#include <kvs/Endian>
+#include <vismodule/Endian>
 #include <string>
 #include <cstring>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace bmp
@@ -32,7 +32,7 @@ FileHeader::FileHeader( std::ifstream& ifs )
     this->read( ifs );
 }
 
-std::ostream& operator << ( std::ostream& os, const kvs::bmp::FileHeader& fh )
+std::ostream& operator << ( std::ostream& os, const vismodule::bmp::FileHeader& fh )
 {
     const char* tmp = reinterpret_cast<const char*>(&fh.m_type);
     char* num = const_cast<char*>(tmp); num[2] = '\0';
@@ -46,27 +46,27 @@ std::ostream& operator << ( std::ostream& os, const kvs::bmp::FileHeader& fh )
     return( os );
 }
 
-kvs::UInt16 FileHeader::type( void ) const
+vismodule::UInt16 FileHeader::type( void ) const
 {
     return( m_type );
 }
 
-kvs::UInt32 FileHeader::size( void ) const
+vismodule::UInt32 FileHeader::size( void ) const
 {
     return( m_size );
 }
 
-kvs::UInt16 FileHeader::reserved1( void ) const
+vismodule::UInt16 FileHeader::reserved1( void ) const
 {
     return( m_reserved1 );
 }
 
-kvs::UInt16 FileHeader::reserved2( void ) const
+vismodule::UInt16 FileHeader::reserved2( void ) const
 {
     return( m_reserved2 );
 }
 
-kvs::UInt32 FileHeader::offset( void ) const
+vismodule::UInt32 FileHeader::offset( void ) const
 {
     return( m_offset );
 }
@@ -99,12 +99,12 @@ bool FileHeader::isBM( void )
 
 void FileHeader::swap_bytes( void )
 {
-    kvs::Endian::Swap( m_size );
-    kvs::Endian::Swap( m_reserved1 );
-    kvs::Endian::Swap( m_reserved2 );
-    kvs::Endian::Swap( m_offset );
+    vismodule::Endian::Swap( m_size );
+    vismodule::Endian::Swap( m_reserved1 );
+    vismodule::Endian::Swap( m_reserved2 );
+    vismodule::Endian::Swap( m_offset );
 }
 
 } // end of namespace bmp
 
-} // end of namespace kvs
+} // end of namespace vismodule

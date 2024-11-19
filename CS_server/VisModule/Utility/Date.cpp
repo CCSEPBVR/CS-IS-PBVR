@@ -15,7 +15,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <cstdio>
-#include <kvs/Tokenizer>
+#include <vismodule/Tokenizer>
 
 namespace
 {
@@ -77,7 +77,7 @@ const size_t DaysInMonth[] = {
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 Date::Date( void )
@@ -307,7 +307,7 @@ void Date::fromString( const std::string date, const std::string sep )
     else
     {
         // date: YYYY?MM?DD ('?': separator)
-        kvs::Tokenizer tokenizer( date, sep );
+        vismodule::Tokenizer tokenizer( date, sep );
         const std::string y = tokenizer.token();
         const std::string m = tokenizer.token();
         const std::string d = tokenizer.token();
@@ -445,4 +445,4 @@ const Date Date::convert_from_julian_date( const long julian_day ) const
     return( Date( year, month, day ) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

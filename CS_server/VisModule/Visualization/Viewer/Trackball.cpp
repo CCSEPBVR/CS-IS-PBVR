@@ -12,11 +12,11 @@
  */
 /****************************************************************************/
 #include "Trackball.h"
-#include <kvs/GlobalCore>
-#include <kvs/Camera>
-#include <kvs/Matrix33>
-#include <kvs/Quaternion>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/GlobalCore>
+#include <vismodule/Camera>
+#include <vismodule/Matrix33>
+#include <vismodule/Quaternion>
+#include <vismodule/IgnoreUnusedVariable>
 
 
 namespace
@@ -35,13 +35,13 @@ const float HalfOfSqrt2 = 0.7071067811865475244f;
  */
 /*==========================================================================*/
 void XYZScaling(
-    const kvs::Vector2f& start,
-    const kvs::Vector2f& end,
-    kvs::Trackball*      this_class )
+    const vismodule::Vector2f& start,
+    const vismodule::Vector2f& end,
+    vismodule::Trackball*      this_class )
 {
-    kvs::Trackball::x_scaling( start, end, this_class );
-    kvs::Trackball::y_scaling( start, end, this_class );
-    kvs::Trackball::z_scaling( start, end, this_class );
+    vismodule::Trackball::x_scaling( start, end, this_class );
+    vismodule::Trackball::y_scaling( start, end, this_class );
+    vismodule::Trackball::z_scaling( start, end, this_class );
 }
 
 /*==========================================================================*/
@@ -53,11 +53,11 @@ void XYZScaling(
  */
 /*==========================================================================*/
 void XScaling(
-    const kvs::Vector2f& start,
-    const kvs::Vector2f& end,
-    kvs::Trackball*      this_class )
+    const vismodule::Vector2f& start,
+    const vismodule::Vector2f& end,
+    vismodule::Trackball*      this_class )
 {
-    kvs::Trackball::x_scaling( start, end, this_class );
+    vismodule::Trackball::x_scaling( start, end, this_class );
 }
 
 /*==========================================================================*/
@@ -69,11 +69,11 @@ void XScaling(
  */
 /*==========================================================================*/
 void YScaling(
-    const kvs::Vector2f& start,
-    const kvs::Vector2f& end,
-    kvs::Trackball*      this_class )
+    const vismodule::Vector2f& start,
+    const vismodule::Vector2f& end,
+    vismodule::Trackball*      this_class )
 {
-    kvs::Trackball::y_scaling( start, end, this_class );
+    vismodule::Trackball::y_scaling( start, end, this_class );
 }
 
 /*==========================================================================*/
@@ -85,11 +85,11 @@ void YScaling(
  */
 /*==========================================================================*/
 void ZScaling(
-    const kvs::Vector2f& start,
-    const kvs::Vector2f& end,
-    kvs::Trackball*      this_class )
+    const vismodule::Vector2f& start,
+    const vismodule::Vector2f& end,
+    vismodule::Trackball*      this_class )
 {
-    kvs::Trackball::z_scaling( start, end, this_class );
+    vismodule::Trackball::z_scaling( start, end, this_class );
 }
 
 /*==========================================================================*/
@@ -101,12 +101,12 @@ void ZScaling(
  */
 /*==========================================================================*/
 void XYScaling(
-    const kvs::Vector2f& start,
-    const kvs::Vector2f& end,
-    kvs::Trackball*      this_class )
+    const vismodule::Vector2f& start,
+    const vismodule::Vector2f& end,
+    vismodule::Trackball*      this_class )
 {
-    kvs::Trackball::x_scaling( start, end, this_class );
-    kvs::Trackball::y_scaling( start, end, this_class );
+    vismodule::Trackball::x_scaling( start, end, this_class );
+    vismodule::Trackball::y_scaling( start, end, this_class );
 }
 
 /*==========================================================================*/
@@ -118,12 +118,12 @@ void XYScaling(
  */
 /*==========================================================================*/
 void YZScaling(
-    const kvs::Vector2f& start,
-    const kvs::Vector2f& end,
-    kvs::Trackball*      this_class )
+    const vismodule::Vector2f& start,
+    const vismodule::Vector2f& end,
+    vismodule::Trackball*      this_class )
 {
-    kvs::Trackball::y_scaling( start, end, this_class );
-    kvs::Trackball::z_scaling( start, end, this_class );
+    vismodule::Trackball::y_scaling( start, end, this_class );
+    vismodule::Trackball::z_scaling( start, end, this_class );
 }
 
 /*==========================================================================*/
@@ -135,12 +135,12 @@ void YZScaling(
  */
 /*==========================================================================*/
 void ZXScaling(
-    const kvs::Vector2f& start,
-    const kvs::Vector2f& end,
-    kvs::Trackball*      this_class )
+    const vismodule::Vector2f& start,
+    const vismodule::Vector2f& end,
+    vismodule::Trackball*      this_class )
 {
-    kvs::Trackball::x_scaling( start, end, this_class );
-    kvs::Trackball::z_scaling( start, end, this_class );
+    vismodule::Trackball::x_scaling( start, end, this_class );
+    vismodule::Trackball::z_scaling( start, end, this_class );
 }
 
 /*==========================================================================*/
@@ -152,18 +152,18 @@ void ZXScaling(
  */
 /*==========================================================================*/
 void NotScaling(
-    const kvs::Vector2f& start,
-    const kvs::Vector2f& end,
-    kvs::Trackball*      this_class )
+    const vismodule::Vector2f& start,
+    const vismodule::Vector2f& end,
+    vismodule::Trackball*      this_class )
 {
-    kvs::IgnoreUnusedVariable( start );
-    kvs::IgnoreUnusedVariable( end );
-    kvs::IgnoreUnusedVariable( this_class );
+    vismodule::IgnoreUnusedVariable( start );
+    vismodule::IgnoreUnusedVariable( end );
+    vismodule::IgnoreUnusedVariable( this_class );
 }
 
-typedef void (*ScalingFunc)( const kvs::Vector2f&, const kvs::Vector2f&, kvs::Trackball* );
+typedef void (*ScalingFunc)( const vismodule::Vector2f&, const vismodule::Vector2f&, vismodule::Trackball* );
 
-ScalingFunc ScalingFunction[kvs::Trackball::ScalingTypeSize] =
+ScalingFunc ScalingFunction[vismodule::Trackball::ScalingTypeSize] =
 {
     &XYZScaling,
     &XScaling,
@@ -178,7 +178,7 @@ ScalingFunc ScalingFunction[kvs::Trackball::ScalingTypeSize] =
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -207,7 +207,7 @@ Trackball::~Trackball( void )
  *  @param camera [in] pointer to the camera
  */
 /*==========================================================================*/
-void Trackball::attachCamera( kvs::Camera* camera )
+void Trackball::attachCamera( vismodule::Camera* camera )
 {
     m_ref_camera = camera;
 }
@@ -219,7 +219,7 @@ void Trackball::attachCamera( kvs::Camera* camera )
 /*==========================================================================*/
 void Trackball::resetRotationCenter( void )
 {
-    m_rotation_center = kvs::Vector2f( 0.0, 0.0 );
+    m_rotation_center = vismodule::Vector2f( 0.0, 0.0 );
 }
 
 /*==========================================================================*/
@@ -250,22 +250,22 @@ void Trackball::setDepthValue( const float depth )
  *  @param center [in] center of rotation
  */
 /*==========================================================================*/
-void Trackball::setRotationCenter( const kvs::Vector2f& center )
+void Trackball::setRotationCenter( const vismodule::Vector2f& center )
 {
     m_rotation_center = center;
 }
 
-void Trackball::setScaling( const kvs::Vector3f& scaling )
+void Trackball::setScaling( const vismodule::Vector3f& scaling )
 {
     m_scaling = scaling;
 }
 
-void Trackball::setTranslation( const kvs::Vector3f& translation )
+void Trackball::setTranslation( const vismodule::Vector3f& translation )
 {
     m_translation = translation;
 }
 
-void Trackball::setRotation( const kvs::Quaternion<float>& rotation )
+void Trackball::setRotation( const vismodule::Quaternion<float>& rotation )
 {
     m_rotation = rotation;
 }
@@ -308,7 +308,7 @@ const float Trackball::depthValue( void ) const
  *  Get center of rotation.
  */
 /*==========================================================================*/
-const kvs::Vector2f& Trackball::rotationCenter( void ) const
+const vismodule::Vector2f& Trackball::rotationCenter( void ) const
 {
     return( m_rotation_center );
 }
@@ -318,7 +318,7 @@ const kvs::Vector2f& Trackball::rotationCenter( void ) const
  *  Get scaling value.
  */
 /*==========================================================================*/
-const kvs::Vector3f& Trackball::scaling( void ) const
+const vismodule::Vector3f& Trackball::scaling( void ) const
 {
     return( m_scaling );
 }
@@ -328,7 +328,7 @@ const kvs::Vector3f& Trackball::scaling( void ) const
  *  Get translation vector.
  */
 /*==========================================================================*/
-const kvs::Vector3f& Trackball::translation( void ) const
+const vismodule::Vector3f& Trackball::translation( void ) const
 {
     return( m_translation );
 }
@@ -338,7 +338,7 @@ const kvs::Vector3f& Trackball::translation( void ) const
  *  Get roation matrix.
  */
 /*==========================================================================*/
-const kvs::Quaternion<float>& Trackball::rotation( void ) const
+const vismodule::Quaternion<float>& Trackball::rotation( void ) const
 {
     return( m_rotation );
 }
@@ -371,14 +371,14 @@ const int Trackball::windowHeight( void ) const
  */
 /*==========================================================================*/
 void Trackball::scale(
-    const kvs::Vector2i& start,
-    const kvs::Vector2i& end,
+    const vismodule::Vector2i& start,
+    const vismodule::Vector2i& end,
     ScalingType          type )
 {
-    m_scaling = kvs::Vector3f( 1.0, 1.0, 1.0 );
+    m_scaling = vismodule::Vector3f( 1.0, 1.0, 1.0 );
 
-    const kvs::Vector2f n_old = this->get_norm_position( start );
-    const kvs::Vector2f n_new = this->get_norm_position( end );
+    const vismodule::Vector2f n_old = this->get_norm_position( start );
+    const vismodule::Vector2f n_new = this->get_norm_position( end );
 
     ::ScalingFunction[type]( n_old, n_new, this );
 }
@@ -390,24 +390,24 @@ void Trackball::scale(
  *  @param end [in] end dragging point in the widnow coordinate system
  */
 /*==========================================================================*/
-void Trackball::translate( const kvs::Vector2i& start, const kvs::Vector2i& end )
+void Trackball::translate( const vismodule::Vector2i& start, const vismodule::Vector2i& end )
 {
     // Calculate the bias point which is the center in the window coordinate
     // system.
-    const kvs::Vector2f bias( (float)m_window_width / 2, (float)m_window_height / 2 );
+    const vismodule::Vector2f bias( (float)m_window_width / 2, (float)m_window_height / 2 );
 
     // Calculate the drag start point and the end point in the world
     // coordinate system.
-    kvs::Vector2f world_start;
-    kvs::Vector2f world_end;
+    vismodule::Vector2f world_start;
+    vismodule::Vector2f world_end;
     world_start.x() =  ( (float)start.x() - bias.x() ) * 10.0f / m_window_width;
     world_start.y() = -( (float)start.y() - bias.y() ) * 10.0f / m_window_height;
     world_end.x()   =  ( (float)end.x()   - bias.x() ) * 10.0f / m_window_width;
     world_end.y()   = -( (float)end.y()   - bias.y() ) * 10.0f / m_window_height;
 
-    kvs::Vector2f trans = world_end - world_start;
-    kvs::Vector3f vec1  = m_ref_camera->upVector();
-    kvs::Vector3f vec2  = vec1.cross( m_ref_camera->position() - m_ref_camera->lookAt() );
+    vismodule::Vector2f trans = world_end - world_start;
+    vismodule::Vector3f vec1  = m_ref_camera->upVector();
+    vismodule::Vector3f vec2  = vec1.cross( m_ref_camera->position() - m_ref_camera->lookAt() );
 
     vec1.normalize();
     vec2.normalize();
@@ -422,7 +422,7 @@ void Trackball::translate( const kvs::Vector2i& start, const kvs::Vector2i& end 
  *  @param end [in] end dragging point in the window coordinate system
  */
 /*==========================================================================*/
-void Trackball::rotate( const kvs::Vector2i& start, const kvs::Vector2i& end )
+void Trackball::rotate( const vismodule::Vector2i& start, const vismodule::Vector2i& end )
 {
     if( start == end )
     {
@@ -430,28 +430,28 @@ void Trackball::rotate( const kvs::Vector2i& start, const kvs::Vector2i& end )
         return;
     }
 
-    kvs::Vector2f n_old( this->get_norm_position( start ) );
-    kvs::Vector2f n_new( this->get_norm_position( end   ) );
+    vismodule::Vector2f n_old( this->get_norm_position( start ) );
+    vismodule::Vector2f n_new( this->get_norm_position( end   ) );
 
-    kvs::Vector3f p1( n_old.x(), n_old.y(), this->depth_on_sphere( n_old ) );
-    kvs::Vector3f p2( n_new.x(), n_new.y(), this->depth_on_sphere( n_new ) );
+    vismodule::Vector3f p1( n_old.x(), n_old.y(), this->depth_on_sphere( n_old ) );
+    vismodule::Vector3f p2( n_new.x(), n_new.y(), this->depth_on_sphere( n_new ) );
 
-    if( kvs::GlobalCore::target == kvs::GlobalCore::TargetCamera )
+    if( vismodule::GlobalCore::target == vismodule::GlobalCore::TargetCamera )
     {
-        m_rotation = kvs::Quaternion<float>::rotationQuaternion( p1, p2 );
+        m_rotation = vismodule::Quaternion<float>::rotationQuaternion( p1, p2 );
         return;
     }
 
     // Calculate view.
-    const kvs::Vector3f init_vec( 0.0, 0.0, 1.0 );
-    const kvs::Vector3f from_vec( m_ref_camera->position() - m_ref_camera->lookAt() );
-    const kvs::Quaternion<float> rot =
-        kvs::Quaternion<float>::rotationQuaternion( init_vec, from_vec );
+    const vismodule::Vector3f init_vec( 0.0, 0.0, 1.0 );
+    const vismodule::Vector3f from_vec( m_ref_camera->position() - m_ref_camera->lookAt() );
+    const vismodule::Quaternion<float> rot =
+        vismodule::Quaternion<float>::rotationQuaternion( init_vec, from_vec );
 
-    p1 = kvs::Quaternion<float>::rotate( p1, rot );
-    p2 = kvs::Quaternion<float>::rotate( p2, rot );
+    p1 = vismodule::Quaternion<float>::rotate( p1, rot );
+    p2 = vismodule::Quaternion<float>::rotate( p2, rot );
 
-    m_rotation = kvs::Quaternion<float>::rotationQuaternion( p1, p2 );
+    m_rotation = vismodule::Quaternion<float>::rotationQuaternion( p1, p2 );
 }
 
 /*==========================================================================*/
@@ -463,10 +463,10 @@ void Trackball::reset( void )
 {
     m_size            = 0.6f;
     m_depth           = 1.0f;
-    m_rotation_center = kvs::Vector2f( 0.0f, 0.0f );
-    m_scaling         = kvs::Vector3f( 1.0f, 1.0f, 1.0f );
-    m_translation     = kvs::Vector3f( 0.0f, 0.0f, 0.0f );
-    m_rotation        = kvs::Quaternion<float>( 0.0f, 0.0f, 0.0f, 1.0f );
+    m_rotation_center = vismodule::Vector2f( 0.0f, 0.0f );
+    m_scaling         = vismodule::Vector3f( 1.0f, 1.0f, 1.0f );
+    m_translation     = vismodule::Vector3f( 0.0f, 0.0f, 0.0f );
+    m_rotation        = vismodule::Quaternion<float>( 0.0f, 0.0f, 0.0f, 1.0f );
 }
 
 /*==========================================================================*/
@@ -476,7 +476,7 @@ void Trackball::reset( void )
  *  @return distance
  */
 /*==========================================================================*/
-const float Trackball::depth_on_sphere( const kvs::Vector2f& dir ) const
+const float Trackball::depth_on_sphere( const vismodule::Vector2f& dir ) const
 {
     const double r = m_size;
     const double d = dir.length();
@@ -508,12 +508,12 @@ const float Trackball::depth_on_sphere( const kvs::Vector2f& dir ) const
  *  and the rage is [-1,-1].
  */
 /*==========================================================================*/
-const kvs::Vector2f Trackball::get_norm_position( const kvs::Vector2i& pos ) const
+const vismodule::Vector2f Trackball::get_norm_position( const vismodule::Vector2i& pos ) const
 {
     const float x =  2.0f * ( pos.x() - m_rotation_center.x() ) / m_window_width;
     const float y = -2.0f * ( pos.y() - m_rotation_center.y() ) / m_window_height;
 
-    return( kvs::Vector2f( x, y ) );
+    return( vismodule::Vector2f( x, y ) );
 }
 
 /*==========================================================================*/
@@ -525,8 +525,8 @@ const kvs::Vector2f Trackball::get_norm_position( const kvs::Vector2i& pos ) con
  */
 /*==========================================================================*/
 void Trackball::x_scaling(
-    const kvs::Vector2f& start,
-    const kvs::Vector2f& end,
+    const vismodule::Vector2f& start,
+    const vismodule::Vector2f& end,
     Trackball*           trackball )
 {
     const int   h = trackball->m_window_height;
@@ -543,8 +543,8 @@ void Trackball::x_scaling(
  */
 /*==========================================================================*/
 void Trackball::y_scaling(
-    const kvs::Vector2f& start,
-    const kvs::Vector2f& end,
+    const vismodule::Vector2f& start,
+    const vismodule::Vector2f& end,
     Trackball*           trackball )
 {
     const int   h = trackball->m_window_height;
@@ -561,8 +561,8 @@ void Trackball::y_scaling(
  */
 /*==========================================================================*/
 void Trackball::z_scaling(
-    const kvs::Vector2f& start,
-    const kvs::Vector2f& end,
+    const vismodule::Vector2f& start,
+    const vismodule::Vector2f& end,
     Trackball*           trackball )
 {
     const int   h = trackball->m_window_height;
@@ -570,4 +570,4 @@ void Trackball::z_scaling(
     trackball->m_scaling.z() = z;
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

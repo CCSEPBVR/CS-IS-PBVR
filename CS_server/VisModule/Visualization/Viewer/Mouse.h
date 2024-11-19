@@ -11,17 +11,17 @@
  *  $Id: Mouse.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MOUSE_H_INCLUDE
-#define KVS__MOUSE_H_INCLUDE
+#ifndef VIS_MODULE__MOUSE_H_INCLUDE
+#define VIS_MODULE__MOUSE_H_INCLUDE
 
-#include <kvs/Trackball>
-#include <kvs/OpenGL>
-#include <kvs/ClassName>
-#include <kvs/Timer>
-#include <kvs/Vector2>
+#include <vismodule/Trackball>
+#include <vismodule/OpenGL>
+#include <vismodule/ClassName>
+#include <vismodule/Timer>
+#include <vismodule/Vector2>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -29,11 +29,11 @@ namespace kvs
  *  Mouse class
  */
 /*==========================================================================*/
-class Mouse : public kvs::Trackball
+class Mouse : public vismodule::Trackball
 {
-    typedef kvs::Trackball BaseClass;
+    typedef vismodule::Trackball BaseClass;
 
-    kvsClassName( kvs::Mouse );
+    visModuleClassName( vismodule::Mouse );
 
 public:
 
@@ -58,11 +58,11 @@ protected:
 
     TransMode     m_mode;         ///< transform mode
     ScalingType   m_scaling_type; ///< scaling type
-    kvs::Vector2i m_old;          ///< old mouse position on the window coordinate (org: upper-left)
-    kvs::Vector2i m_new;          ///< new mouse position on the window coordinate (org: upper-left)
-    kvs::Vector2i m_start;        ///< position at start of rotation
-    kvs::Vector2i m_stop;         ///< position at stop of rotation
-    kvs::Timer    m_timer;        ///< auto check timer
+    vismodule::Vector2i m_old;          ///< old mouse position on the window coordinate (org: upper-left)
+    vismodule::Vector2i m_new;          ///< new mouse position on the window coordinate (org: upper-left)
+    vismodule::Vector2i m_start;        ///< position at start of rotation
+    vismodule::Vector2i m_stop;         ///< position at stop of rotation
+    vismodule::Timer    m_timer;        ///< auto check timer
     bool          m_is_auto;      ///< auto flag (true: if auto mode)
     bool          m_is_slow;      ///< slow flag (true: if slow mode)
     bool          m_is_use_auto;  ///< auto use flag (true: if user use auto mode )
@@ -110,6 +110,6 @@ public:
     bool isSlow( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MOUSE_H_INCLUDE
+#endif // VIS_MODULE__MOUSE_H_INCLUDE

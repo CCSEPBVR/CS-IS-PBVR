@@ -21,7 +21,7 @@
  * GNU C/C++ compiler
  *----------------------------------------------------------------------------*/
 #if defined ( __GNUC__ )
-#define KVS_COMPILER_GCC
+#define VIS_MODULE_COMPILER_GCC
 
 #define PBVR_COMPILER_NAME "GNU C/C++"
 #define PBVR_COMPILER_VERSION                            \
@@ -44,7 +44,7 @@
  * Microsoft Visual C/C++ compiler
  *----------------------------------------------------------------------------*/
 #elif defined ( _MSC_VER )
-#define KVS_COMPILER_VC
+#define VIS_MODULE_COMPILER_VC
 
 #define PBVR_COMPILER_NAME "Microsoft Visual C/C++"
 
@@ -169,7 +169,7 @@
 #endif
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace Compiler
@@ -199,6 +199,6 @@ inline const char* Version()
 
 } // end of namespace Compiler
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
 #endif // PBVR__COMPILER_H_INCLUDE

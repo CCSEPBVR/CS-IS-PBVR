@@ -25,7 +25,7 @@ const size_t Part10CodeSeek = 128;
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace dcm
@@ -121,4 +121,4 @@ bool Attribute::check( std::ifstream& ifs )
 
 } // end of namespace dcm
 
-} // end of namespace kvs
+} // end of namespace vismodule

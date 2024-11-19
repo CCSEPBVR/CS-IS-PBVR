@@ -11,15 +11,15 @@
  *  $Id: FastTokenizer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__FAST_TOKENIZER_H_INCLUDE
-#define KVS__FAST_TOKENIZER_H_INCLUDE
+#ifndef VIS_MODULE__FAST_TOKENIZER_H_INCLUDE
+#define VIS_MODULE__FAST_TOKENIZER_H_INCLUDE
 
 #include <cstring>
-#include <kvs/ClassName>
-#include <kvs/Assert>
+#include <vismodule/ClassName>
+#include <vismodule/Assert>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -29,7 +29,7 @@ namespace kvs
 /*==========================================================================*/
 class FastTokenizer
 {
-    kvsClassName_without_virtual( kvs::FastTokenizer );
+    visModuleClassName_without_virtual( vismodule::FastTokenizer );
 
 private:
 
@@ -71,7 +71,7 @@ inline void FastTokenizer::set( char* const source, const char* const delimiter 
         m_tokens[ntokens] = p;
         ++ntokens;
 
-        KVS_ASSERT( ntokens < BufferSize );
+        VIS_MODULE_ASSERT( ntokens < BufferSize );
     }
 
     m_ntokens = ntokens;
@@ -79,7 +79,7 @@ inline void FastTokenizer::set( char* const source, const char* const delimiter 
 
 inline const char* const FastTokenizer::get( size_t index ) const
 {
-    KVS_ASSERT( index < m_ntokens );
+    VIS_MODULE_ASSERT( index < m_ntokens );
 
     return( m_tokens[index] );
 }
@@ -89,6 +89,6 @@ inline const size_t FastTokenizer::ntokens( void ) const
     return( m_ntokens );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__FAST_TOKENIZER_H_INCLUDE
+#endif // VIS_MODULE__FAST_TOKENIZER_H_INCLUDE

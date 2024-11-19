@@ -12,10 +12,10 @@
  */
 /****************************************************************************/
 #include "AVSUcd.h"
-#include <kvs/File>
-#include <kvs/Message>
-#include <kvs/ValueArray>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/File>
+#include <vismodule/Message>
+#include <vismodule/ValueArray>
+#include <vismodule/IgnoreUnusedVariable>
 #include <cstdlib>
 #include <cstring>
 
@@ -27,7 +27,7 @@ const size_t MaxLineLength = 512;
 
 const char* const Delimiter = " \n\r";
 
-const std::string CycleTypeToString[ kvs::AVSUcd::CycleTypeSize ] =
+const std::string CycleTypeToString[ vismodule::AVSUcd::CycleTypeSize ] =
 {
     "unknown",
     "data",
@@ -35,7 +35,7 @@ const std::string CycleTypeToString[ kvs::AVSUcd::CycleTypeSize ] =
     "data_geometry"
 };
 
-const std::string ElementTypeToString[ kvs::AVSUcd::ElementTypeSize ] =
+const std::string ElementTypeToString[ vismodule::AVSUcd::ElementTypeSize ] =
 {
     "unknown",
     "point",
@@ -55,11 +55,11 @@ const std::string ElementTypeToString[ kvs::AVSUcd::ElementTypeSize ] =
 namespace
 {
 
-const kvs::AVSUcd::FormatType CheckFormatType( FILE* const ifs )
+const vismodule::AVSUcd::FormatType CheckFormatType( FILE* const ifs )
 {
     char buffer[ ::MaxLineLength ];
 
-    kvs::AVSUcd::FormatType format_type = kvs::AVSUcd::SingleStep;
+    vismodule::AVSUcd::FormatType format_type = vismodule::AVSUcd::SingleStep;
 
     while ( fgets( buffer, ::MaxLineLength, ifs ) != 0 )
     {
@@ -77,11 +77,11 @@ const kvs::AVSUcd::FormatType CheckFormatType( FILE* const ifs )
 
             if ( second_token != 0 )
             {
-                format_type = kvs::AVSUcd::SingleStep;
+                format_type = vismodule::AVSUcd::SingleStep;
             }
             else
             {
-                format_type = kvs::AVSUcd::MultiStep;
+                format_type = vismodule::AVSUcd::MultiStep;
             }
 
             break;
@@ -97,7 +97,7 @@ const kvs::AVSUcd::FormatType CheckFormatType( FILE* const ifs )
 }
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -108,8 +108,8 @@ namespace kvs
 AVSUcd::AVSUcd( void )
     : FileFormatBase()
     , m_nsteps( 0 )
-    , m_cycle_type( kvs::AVSUcd::CycleTypeUnknown )
-    , m_element_type( kvs::AVSUcd::ElementTypeUnknown )
+    , m_cycle_type( vismodule::AVSUcd::CycleTypeUnknown )
+    , m_element_type( vismodule::AVSUcd::ElementTypeUnknown )
     , m_step_id( 0 )
     , m_step_comment( "" )
     , m_nnodes( 0 )
@@ -135,8 +135,8 @@ AVSUcd::AVSUcd(
     const size_t       component_id )
     : FileFormatBase()
     , m_nsteps( 0 )
-    , m_cycle_type( kvs::AVSUcd::CycleTypeUnknown )
-    , m_element_type( kvs::AVSUcd::ElementTypeUnknown )
+    , m_cycle_type( vismodule::AVSUcd::CycleTypeUnknown )
+    , m_element_type( vismodule::AVSUcd::ElementTypeUnknown )
     , m_step_id( step_id )
     , m_step_comment( "" )
     , m_nnodes( 0 )
@@ -355,7 +355,7 @@ const bool AVSUcd::read( const std::string& filename )
 
     if ( !ifs )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         m_is_success = false;
         return( m_is_success );
     }
@@ -376,7 +376,7 @@ const bool AVSUcd::read( const std::string& filename )
     }
     catch ( const char* const error )
     {
-        kvsMessageError( "%s: %s", filename.c_str(), error );
+        visModuleMessageError( "%s: %s", filename.c_str(), error );
 
         m_is_success = false;
     }
@@ -401,7 +401,7 @@ const bool AVSUcd::write( const std::string& filename )
 
     if ( !ofs )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         m_is_success = false;
         return( m_is_success );
     }
@@ -414,7 +414,7 @@ const bool AVSUcd::write( const std::string& filename )
     }
     catch ( const char* const error )
     {
-        kvsMessageError( "%s: %s", filename.c_str(), error );
+        visModuleMessageError( "%s: %s", filename.c_str(), error );
 
         m_is_success = false;
     }
@@ -562,12 +562,12 @@ void AVSUcd::read_multi_step_format( FILE* const ifs )
 
 void AVSUcd::read_multi_step_format_data( FILE* const ifs )
 {
-    kvs::IgnoreUnusedVariable( ifs );
+    vismodule::IgnoreUnusedVariable( ifs );
 }
 
 void AVSUcd::read_multi_step_format_geom( FILE* const ifs )
 {
-    kvs::IgnoreUnusedVariable( ifs );
+    vismodule::IgnoreUnusedVariable( ifs );
 }
 
 void AVSUcd::read_multi_step_format_data_geom( FILE* const ifs )
@@ -637,7 +637,7 @@ void AVSUcd::read_coords( FILE* const ifs )
 
     m_coords.allocate( 3 * m_nnodes );
 
-    kvs::Real32* coord = m_coords.pointer();
+    vismodule::Real32* coord = m_coords.pointer();
 
     for ( size_t i = 0; i < m_nnodes; i++ )
     {
@@ -697,8 +697,8 @@ void AVSUcd::read_connections( FILE* const ifs )
         throw "Unexpected EOF in reading first line of connections.";
     }
 
-    kvs::UInt32*       connection = m_connections.pointer();
-    kvs::UInt32* const end        = connection + m_connections.size();
+    vismodule::UInt32*       connection = m_connections.pointer();
+    vismodule::UInt32* const end        = connection + m_connections.size();
 
     if ( m_element_type == Tetrahedra )
     {
@@ -934,7 +934,7 @@ void AVSUcd::read_values( FILE* const ifs )
     const size_t veclen = m_veclens[ m_component_id ];
     m_values.allocate( veclen * m_nnodes );
 
-    kvs::Real32* value = m_values.pointer();
+    vismodule::Real32* value = m_values.pointer();
 
     size_t nskips = 0;
     for ( size_t i = 0; i < m_component_id; ++i )
@@ -957,7 +957,7 @@ void AVSUcd::read_values( FILE* const ifs )
 
             for ( size_t j = 0; j < veclen; ++j )
             {
-                value[ index * veclen + j ] = static_cast<kvs::Real32>( atof( strtok( 0, ::Delimiter ) ) );
+                value[ index * veclen + j ] = static_cast<vismodule::Real32>( atof( strtok( 0, ::Delimiter ) ) );
             }
         }
     }
@@ -980,14 +980,14 @@ void AVSUcd::write_coords( FILE* const ofs ) const
 {
     size_t node_id = 1;
 
-    const kvs::Real32*       coord = m_coords.pointer();
-    const kvs::Real32* const end   = coord + m_coords.size();
+    const vismodule::Real32*       coord = m_coords.pointer();
+    const vismodule::Real32* const end   = coord + m_coords.size();
 
     while ( coord < end )
     {
-        const kvs::Real32 x = *( coord++ );
-        const kvs::Real32 y = *( coord++ );
-        const kvs::Real32 z = *( coord++ );
+        const vismodule::Real32 x = *( coord++ );
+        const vismodule::Real32 y = *( coord++ );
+        const vismodule::Real32 z = *( coord++ );
 
         fprintf( ofs, "%u %f %f %f\n",
                  static_cast<unsigned int>( node_id++ ),
@@ -1001,17 +1001,17 @@ void AVSUcd::write_connections( FILE* const ofs ) const
 {
     size_t element_id = 1;
 
-    const kvs::UInt32*       connection = m_connections.pointer();
-    const kvs::UInt32* const end        = connection + m_connections.size();
+    const vismodule::UInt32*       connection = m_connections.pointer();
+    const vismodule::UInt32* const end        = connection + m_connections.size();
 
     if ( m_element_type == Tetrahedra )
     {
         while ( connection < end )
         {
-            const kvs::UInt32 node_id0 = *( connection++ );
-            const kvs::UInt32 node_id1 = *( connection++ );
-            const kvs::UInt32 node_id2 = *( connection++ );
-            const kvs::UInt32 node_id3 = *( connection++ );
+            const vismodule::UInt32 node_id0 = *( connection++ );
+            const vismodule::UInt32 node_id1 = *( connection++ );
+            const vismodule::UInt32 node_id2 = *( connection++ );
+            const vismodule::UInt32 node_id3 = *( connection++ );
 
             fprintf( ofs, "%u 0 tet %u %u %u %u\n",
                      static_cast<unsigned int>( element_id++ ),
@@ -1025,16 +1025,16 @@ void AVSUcd::write_connections( FILE* const ofs ) const
     {
         while ( connection < end )
         {
-            const kvs::UInt32 node_id0  = *( connection++ );
-            const kvs::UInt32 node_id1  = *( connection++ );
-            const kvs::UInt32 node_id2  = *( connection++ );
-            const kvs::UInt32 node_id3  = *( connection++ );
-            const kvs::UInt32 node_id4  = *( connection++ );
-            const kvs::UInt32 node_id5  = *( connection++ );
-            const kvs::UInt32 node_id6  = *( connection++ );
-            const kvs::UInt32 node_id7  = *( connection++ );
-            const kvs::UInt32 node_id8  = *( connection++ );
-            const kvs::UInt32 node_id9  = *( connection++ );
+            const vismodule::UInt32 node_id0  = *( connection++ );
+            const vismodule::UInt32 node_id1  = *( connection++ );
+            const vismodule::UInt32 node_id2  = *( connection++ );
+            const vismodule::UInt32 node_id3  = *( connection++ );
+            const vismodule::UInt32 node_id4  = *( connection++ );
+            const vismodule::UInt32 node_id5  = *( connection++ );
+            const vismodule::UInt32 node_id6  = *( connection++ );
+            const vismodule::UInt32 node_id7  = *( connection++ );
+            const vismodule::UInt32 node_id8  = *( connection++ );
+            const vismodule::UInt32 node_id9  = *( connection++ );
 
             fprintf( ofs, "%u 0 tet %u %u %u %u %u %u %u %u %u %u\n",
                      static_cast<unsigned int>( element_id++ ),
@@ -1054,14 +1054,14 @@ void AVSUcd::write_connections( FILE* const ofs ) const
     {
         while ( connection < end )
         {
-            const kvs::UInt32 node_id0 = *( connection++ );
-            const kvs::UInt32 node_id1 = *( connection++ );
-            const kvs::UInt32 node_id2 = *( connection++ );
-            const kvs::UInt32 node_id3 = *( connection++ );
-            const kvs::UInt32 node_id4 = *( connection++ );
-            const kvs::UInt32 node_id5 = *( connection++ );
-            const kvs::UInt32 node_id6 = *( connection++ );
-            const kvs::UInt32 node_id7 = *( connection++ );
+            const vismodule::UInt32 node_id0 = *( connection++ );
+            const vismodule::UInt32 node_id1 = *( connection++ );
+            const vismodule::UInt32 node_id2 = *( connection++ );
+            const vismodule::UInt32 node_id3 = *( connection++ );
+            const vismodule::UInt32 node_id4 = *( connection++ );
+            const vismodule::UInt32 node_id5 = *( connection++ );
+            const vismodule::UInt32 node_id6 = *( connection++ );
+            const vismodule::UInt32 node_id7 = *( connection++ );
 
             fprintf( ofs, "%u 0 hex %u %u %u %u %u %u %u %u\n",
                      static_cast<unsigned int>( element_id++ ),
@@ -1084,7 +1084,7 @@ void AVSUcd::write_connections( FILE* const ofs ) const
             const size_t nnodes = 20;
             for ( size_t i = 0; i < nnodes; i++ )
             {
-                const kvs::UInt32 node_id = *( connection++ );
+                const vismodule::UInt32 node_id = *( connection++ );
                 fprintf( ofs, " %u", node_id );
             }
 
@@ -1116,8 +1116,8 @@ void AVSUcd::write_values( FILE* ofs ) const
 {
     size_t node_id = 1;
 
-    const kvs::Real32*       value = m_values.pointer();
-    const kvs::Real32* const end   = value + m_values.size();
+    const vismodule::Real32*       value = m_values.pointer();
+    const vismodule::Real32* const end   = value + m_values.size();
 
     while ( value < end )
     {
@@ -1127,7 +1127,7 @@ void AVSUcd::write_values( FILE* ofs ) const
 
 const bool AVSUcd::CheckFileExtension( const std::string& filename )
 {
-    const kvs::File file( filename );
+    const vismodule::File file( filename );
     if ( file.extension() == "ucd" || file.extension() == "UCD" ||
          file.extension() == "inp" || file.extension() == "INP" )
     {
@@ -1142,7 +1142,7 @@ const bool AVSUcd::CheckFileFormat( const std::string& filename )
     FILE* ifs = fopen( filename.c_str(), "rb" );
     if( !ifs )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
@@ -1220,4 +1220,4 @@ const bool AVSUcd::CheckFileFormat( const std::string& filename )
     return( false );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

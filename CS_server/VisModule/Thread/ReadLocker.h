@@ -11,13 +11,13 @@
  *  $Id: ReadLocker.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__READ_LOCKER_H_INCLUDE
-#define KVS__READ_LOCKER_H_INCLUDE
+#ifndef VIS_MODULE__READ_LOCKER_H_INCLUDE
+#define VIS_MODULE__READ_LOCKER_H_INCLUDE
 
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class ReadWriteLock;
@@ -29,15 +29,15 @@ class ReadWriteLock;
 /*==========================================================================*/
 class ReadLocker
 {
-    kvsClassName( kvs::ReadLocker );
+    visModuleClassName( vismodule::ReadLocker );
 
 protected:
 
-    kvs::ReadWriteLock* m_rwlock; ///< pointer to read-write lock
+    vismodule::ReadWriteLock* m_rwlock; ///< pointer to read-write lock
 
 public:
 
-    ReadLocker( kvs::ReadWriteLock* rwlock );
+    ReadLocker( vismodule::ReadWriteLock* rwlock );
 
     virtual ~ReadLocker( void );
 
@@ -47,9 +47,9 @@ public:
 
     void unlock( void );
 
-    kvs::ReadWriteLock* readWriteLock( void );
+    vismodule::ReadWriteLock* readWriteLock( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__READ_LOCKER_H_INCLUDE
+#endif // VIS_MODULE__READ_LOCKER_H_INCLUDE

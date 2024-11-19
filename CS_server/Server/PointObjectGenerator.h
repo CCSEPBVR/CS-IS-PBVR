@@ -37,7 +37,7 @@ typedef struct
 } time_parameters;                             
 
 class Argument;
-namespace kvs
+namespace vismodule
 {
 class Camera;
 }
@@ -66,10 +66,10 @@ public:
     }
 
     void createFromFile(
-        const Argument& param, const kvs::Camera& camera, const size_t subpixel_level, const float sampling_step );
+        const Argument& param, const vismodule::Camera& camera, const size_t subpixel_level, const float sampling_step );
 
     void createFromFile(
-        const Argument& param, const kvs::Camera& camera, const size_t subpixel_level, const float sampling_step, const int st, const int vl );
+        const Argument& param, const vismodule::Camera& camera, const size_t subpixel_level, const float sampling_step, const int st, const int vl );
 
     pbvr::PointObject* getPointObject()
     {
@@ -112,7 +112,7 @@ public:
 
 
 private:
-    pbvr::PointObject* sampling( const Argument& param, const kvs::Camera& camera, pbvr::VolumeObjectBase* volume, const size_t subpixel_level, const float sampling_step );
+    pbvr::PointObject* sampling( const Argument& param, const vismodule::Camera& camera, pbvr::VolumeObjectBase* volume, const size_t subpixel_level, const float sampling_step );
 
 };
 

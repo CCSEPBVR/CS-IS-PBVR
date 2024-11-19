@@ -14,48 +14,48 @@
 #include "BitImage.h"
 #include "ColorImage.h"
 #include "GrayImage.h"
-#include <kvs/Matrix44>
-#include <kvs/Math>
-#include <kvs/Binary>
-#include <kvs/File>
-#include <kvs/KVSMLObjectImage>
-#include <kvs/Bmp>
-#include <kvs/Ppm>
-#include <kvs/Pgm>
-#include <kvs/Pbm>
-#include <kvs/Tiff>
+#include <vismodule/Matrix44>
+#include <vismodule/Math>
+#include <vismodule/Binary>
+#include <vismodule/File>
+#include <vismodule/KVSMLObjectImage>
+#include <vismodule/Bmp>
+#include <vismodule/Ppm>
+#include <vismodule/Pgm>
+#include <vismodule/Pbm>
+#include <vismodule/Tiff>
 #ifndef NO_CLIENT
-#include <kvs/Dicom>
+#include <vismodule/Dicom>
 #endif
 
 
 namespace
 {
 
-const kvs::UInt8 SetBitMask[9] =
+const vismodule::UInt8 SetBitMask[9] =
 {
-    kvsBinary8( 1000, 0000 ),
-    kvsBinary8( 0100, 0000 ),
-    kvsBinary8( 0010, 0000 ),
-    kvsBinary8( 0001, 0000 ),
-    kvsBinary8( 0000, 1000 ),
-    kvsBinary8( 0000, 0100 ),
-    kvsBinary8( 0000, 0010 ),
-    kvsBinary8( 0000, 0001 ),
-    kvsBinary8( 0000, 0000 )
+    visModuleBinary8( 1000, 0000 ),
+    visModuleBinary8( 0100, 0000 ),
+    visModuleBinary8( 0010, 0000 ),
+    visModuleBinary8( 0001, 0000 ),
+    visModuleBinary8( 0000, 1000 ),
+    visModuleBinary8( 0000, 0100 ),
+    visModuleBinary8( 0000, 0010 ),
+    visModuleBinary8( 0000, 0001 ),
+    visModuleBinary8( 0000, 0000 )
 };
 
-const kvs::UInt8 ResetBitMask[9] =
+const vismodule::UInt8 ResetBitMask[9] =
 {
-    kvsBinary8( 0111, 1111 ),
-    kvsBinary8( 1011, 1111 ),
-    kvsBinary8( 1101, 1111 ),
-    kvsBinary8( 1110, 1111 ),
-    kvsBinary8( 1111, 0111 ),
-    kvsBinary8( 1111, 1011 ),
-    kvsBinary8( 1111, 1101 ),
-    kvsBinary8( 1111, 1110 ),
-    kvsBinary8( 1111, 1111 )
+    visModuleBinary8( 0111, 1111 ),
+    visModuleBinary8( 1011, 1111 ),
+    visModuleBinary8( 1101, 1111 ),
+    visModuleBinary8( 1110, 1111 ),
+    visModuleBinary8( 1111, 0111 ),
+    visModuleBinary8( 1111, 1011 ),
+    visModuleBinary8( 1111, 1101 ),
+    visModuleBinary8( 1111, 1110 ),
+    visModuleBinary8( 1111, 1111 )
 };
 
 /*===========================================================================*/
@@ -64,9 +64,9 @@ const kvs::UInt8 ResetBitMask[9] =
  */
 /*===========================================================================*/
 inline void Thresholding(
-    const kvs::UInt8 threshold,
-    const kvs::GrayImage& image,
-    kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::UInt8 threshold,
+    const vismodule::GrayImage& image,
+    vismodule::ValueArray<vismodule::UInt8>& data )
 {
     const size_t width = image.width();
     const size_t height = image.height();
@@ -76,7 +76,7 @@ inline void Thresholding(
     {
         for ( size_t i = 0; i < width; i++ )
         {
-            const kvs::UInt8 value = image.pixel( i, j );
+            const vismodule::UInt8 value = image.pixel( i, j );
             if ( value < threshold )
             {
                 data[ j * bpl + ( i >> 3 ) ] &= ResetBitMask[ i & 7 ];
@@ -95,22 +95,22 @@ inline void Thresholding(
  */
 /*===========================================================================*/
 inline void Dithering(
-    const kvs::Matrix44d& mask,
-    const kvs::GrayImage& image,
-    kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::Matrix44d& mask,
+    const vismodule::GrayImage& image,
+    vismodule::ValueArray<vismodule::UInt8>& data )
 {
     const size_t width = image.width();
     const size_t height = image.height();
     const size_t bpl = ( width + 7 ) >> 3;
     const double r = 1.0 / 15.0;
-    const kvs::Matrix44d dmask = ( mask - kvs::Matrix44d( 8.0 ) ) * r;
+    const vismodule::Matrix44d dmask = ( mask - vismodule::Matrix44d( 8.0 ) ) * r;
 
     for ( size_t j = 0; j < width; j++ )
     {
         for ( size_t i = 0; i < height; i++ )
         {
             const double p = image.pixel( i, j ) / 255.0;
-            if ( kvs::Math::Floor( p + dmask[i%4][j%4] + 0.5 ) == 1 )
+            if ( vismodule::Math::Floor( p + dmask[i%4][j%4] + 0.5 ) == 1 )
             {
                 data[ j * bpl + ( i >> 3 ) ] &= ResetBitMask[ i & 7 ];
             }
@@ -129,12 +129,12 @@ inline void Dithering(
  *  @return histogram information
  */
 /*===========================================================================*/
-inline kvs::ValueArray<kvs::UInt32> Histogram( const kvs::GrayImage& image )
+inline vismodule::ValueArray<vismodule::UInt32> Histogram( const vismodule::GrayImage& image )
 {
     const size_t npixels = image.npixels();
-    const kvs::UInt8* data = image.data().pointer();
+    const vismodule::UInt8* data = image.data().pointer();
 
-    kvs::ValueArray<kvs::UInt32> count( 256 );
+    vismodule::ValueArray<vismodule::UInt32> count( 256 );
     count.fill( 0x00 );
     for ( size_t index = 0; index < npixels; index++ )
     {
@@ -148,7 +148,7 @@ inline kvs::ValueArray<kvs::UInt32> Histogram( const kvs::GrayImage& image )
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -159,16 +159,16 @@ namespace kvs
  */
 /*===========================================================================*/
 void BitImage::PTile::operator () (
-    const kvs::GrayImage& image,
-    kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::GrayImage& image,
+    vismodule::ValueArray<vismodule::UInt8>& data )
 {
     const size_t width = image.width();
     const size_t height= image.height();
     const double ratio = 1.0 / static_cast<double>( width * height );
-    const kvs::ValueArray<kvs::UInt32> histogram = ::Histogram( image );
+    const vismodule::ValueArray<vismodule::UInt32> histogram = ::Histogram( image );
 
     // Create the cumulative frequency.
-    kvs::ValueArray<double> cum( 256 );
+    vismodule::ValueArray<double> cum( 256 );
     cum[0] = histogram[0];
     for ( size_t i = 1; i < 256; i++ ) cum[i] = cum[i-1] + static_cast<double>(histogram[i]);
     for ( size_t i = 0; i < 256; i++ ) cum[i] = cum[i] * ratio;
@@ -179,7 +179,7 @@ void BitImage::PTile::operator () (
     size_t threshold = 0;
     for( size_t i = 0; i < 256; i++ )
     {
-        temp = kvs::Math::Abs( p - cum[i] );
+        temp = vismodule::Math::Abs( p - cum[i] );
         if( temp < diff )
         {
             diff      = temp;
@@ -187,7 +187,7 @@ void BitImage::PTile::operator () (
         }
     }
 
-    ::Thresholding( static_cast<kvs::UInt8>(threshold), image, data );
+    ::Thresholding( static_cast<vismodule::UInt8>(threshold), image, data );
 }
 
 /*===========================================================================*/
@@ -198,29 +198,29 @@ void BitImage::PTile::operator () (
  */
 /*===========================================================================*/
 void BitImage::Distinction::operator () (
-    const kvs::GrayImage& image,
-    kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::GrayImage& image,
+    vismodule::ValueArray<vismodule::UInt8>& data )
 {
     const size_t width = image.width();
     const size_t height= image.height();
     const double ratio = 1.0 / static_cast<double>( width * height );
-    const kvs::ValueArray<kvs::UInt32> histogram = ::Histogram( image );
+    const vismodule::ValueArray<vismodule::UInt32> histogram = ::Histogram( image );
 
     // Create the probability distribution.
-    kvs::ValueArray<double> p( 256 );
+    vismodule::ValueArray<double> p( 256 );
     for ( size_t i = 0; i < 256; i++ ) p[i] = static_cast<double>(histogram[i]) * ratio;
 
     // Calculate the sum of the probability distribution for each class.
-    kvs::ValueArray<double> w1( 256 ); w1.fill( 0x00 );
-    kvs::ValueArray<double> w2( 256 ); w2.fill( 0x00 );
+    vismodule::ValueArray<double> w1( 256 ); w1.fill( 0x00 );
+    vismodule::ValueArray<double> w2( 256 ); w2.fill( 0x00 );
     for ( size_t i = 0; i < 256; i++ )
     {
         for ( size_t j = 0; j <   i; j++ ) w1[i] += p[j];
         for ( size_t k = i; k < 256; k++ ) w2[i] += p[k];
     }
     // Calculate the mean for each class.
-    kvs::ValueArray<double> m1( 256 ); m1.fill( 0x00 );
-    kvs::ValueArray<double> m2( 256 ); m2.fill( 0x00 );
+    vismodule::ValueArray<double> m1( 256 ); m1.fill( 0x00 );
+    vismodule::ValueArray<double> m2( 256 ); m2.fill( 0x00 );
     for ( size_t i = 0; i < 256; i++ )
     {
         for ( size_t j = 0; j <   i; j++ ) m1[i] += static_cast<double>(j) * p[j] / w1[i];
@@ -228,8 +228,8 @@ void BitImage::Distinction::operator () (
     }
 
     // Calculate the variance for each class.
-    kvs::ValueArray<double> s2_1( 256 ); s2_1.fill( 0x00 );
-    kvs::ValueArray<double> s2_2( 256 ); s2_2.fill( 0x00 );
+    vismodule::ValueArray<double> s2_1( 256 ); s2_1.fill( 0x00 );
+    vismodule::ValueArray<double> s2_2( 256 ); s2_2.fill( 0x00 );
     for ( size_t i = 0; i < 256; i++ )
     {
         const double v = static_cast<double>(i);
@@ -245,8 +245,8 @@ void BitImage::Distinction::operator () (
 
     // Calculate the variance between the classes and the variance within
     // the classes. And then, calculate the threshold value.
-    kvs::ValueArray<double> s2_b( 256 ); s2_b.fill( 0x00 );
-    kvs::ValueArray<double> s2_w( 256 ); s2_w.fill( 0x00 );
+    vismodule::ValueArray<double> s2_b( 256 ); s2_b.fill( 0x00 );
+    vismodule::ValueArray<double> s2_w( 256 ); s2_w.fill( 0x00 );
     double max_ratio = 0.0;
     size_t threshold = 0;
     for ( size_t i = 0; i < 256; i++ )
@@ -264,7 +264,7 @@ void BitImage::Distinction::operator () (
         }
     }
 
-    ::Thresholding( static_cast<kvs::UInt8>(threshold), image, data );
+    ::Thresholding( static_cast<vismodule::UInt8>(threshold), image, data );
 }
 
 /*===========================================================================*/
@@ -275,10 +275,10 @@ void BitImage::Distinction::operator () (
  */
 /*===========================================================================*/
 void BitImage::Byer::operator () (
-    const kvs::GrayImage& image,
-    kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::GrayImage& image,
+    vismodule::ValueArray<vismodule::UInt8>& data )
 {
-    const kvs::Matrix44d mask(
+    const vismodule::Matrix44d mask(
         0.0,  8.0,  2.0,  10.0,
         12.0, 4.0,  14.0, 6.0,
         3.0,  11.0, 1.0,  9.0,
@@ -295,10 +295,10 @@ void BitImage::Byer::operator () (
  */
 /*===========================================================================*/
 void BitImage::Halftone::operator () (
-    const kvs::GrayImage& image,
-    kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::GrayImage& image,
+    vismodule::ValueArray<vismodule::UInt8>& data )
 {
-    const kvs::Matrix44d mask(
+    const vismodule::Matrix44d mask(
         10.0, 4.0,  6.0,  8.0,
         12.0, 0.0,  2.0,  14.0,
         7.0,  9.0,  11.0, 5.0,
@@ -315,10 +315,10 @@ void BitImage::Halftone::operator () (
  */
 /*===========================================================================*/
 void BitImage::EmphasizedHalftone::operator () (
-    const kvs::GrayImage& image,
-    kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::GrayImage& image,
+    vismodule::ValueArray<vismodule::UInt8>& data )
 {
-    const kvs::Matrix44d mask(
+    const vismodule::Matrix44d mask(
         12.0, 4.0, 8.0, 14.0,
         11.0, 0.0, 2.0, 6.0,
         7.0,  3.0, 1.0, 10.0,
@@ -335,10 +335,10 @@ void BitImage::EmphasizedHalftone::operator () (
  */
 /*===========================================================================*/
 void BitImage::Screw::operator () (
-    const kvs::GrayImage& image,
-    kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::GrayImage& image,
+    vismodule::ValueArray<vismodule::UInt8>& data )
 {
-    const kvs::Matrix44d mask(
+    const vismodule::Matrix44d mask(
         13.0, 7.0,  6.0,  12.0,
         8.0,  1.0,  0.0,  5.0,
         9.0,  2.0,  3.0,  4.0,
@@ -355,10 +355,10 @@ void BitImage::Screw::operator () (
  */
 /*===========================================================================*/
 void BitImage::DeformedScrew::operator () (
-    const kvs::GrayImage& image,
-    kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::GrayImage& image,
+    vismodule::ValueArray<vismodule::UInt8>& data )
 {
-    const kvs::Matrix44d mask(
+    const vismodule::Matrix44d mask(
         15.0, 4.0, 8.0, 12.0,
         11.0, 0.0, 1.0, 5.0,
         7.0,  3.0, 2.0, 9.0,
@@ -375,10 +375,10 @@ void BitImage::DeformedScrew::operator () (
  */
 /*===========================================================================*/
 void BitImage::DotConcentrate::operator () (
-    const kvs::GrayImage& image,
-    kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::GrayImage& image,
+    vismodule::ValueArray<vismodule::UInt8>& data )
 {
-    const kvs::Matrix44d mask(
+    const vismodule::Matrix44d mask(
         13.0, 4.0, 8.0, 14.0,
         10.0, 0.0, 1.0, 7.0,
         6.0,  3.0, 2.0, 11.0,
@@ -405,7 +405,7 @@ BitImage::BitImage( void )
  */
 /*==========================================================================*/
 BitImage::BitImage( const size_t width, const size_t height, const bool bit ):
-    kvs::ImageBase( width, height, kvs::ImageBase::Bit )
+    vismodule::ImageBase( width, height, vismodule::ImageBase::Bit )
 {
     this->set( bit );
 }
@@ -421,8 +421,8 @@ BitImage::BitImage( const size_t width, const size_t height, const bool bit ):
 BitImage::BitImage(
     const size_t width,
     const size_t height,
-    const kvs::UInt8* data ):
-    kvs::ImageBase( width, height, kvs::ImageBase::Bit, data )
+    const vismodule::UInt8* data ):
+    vismodule::ImageBase( width, height, vismodule::ImageBase::Bit, data )
 {
 }
 
@@ -437,8 +437,8 @@ BitImage::BitImage(
 BitImage::BitImage(
     const size_t width,
     const size_t height,
-    const kvs::ValueArray<kvs::UInt8>& data ):
-    kvs::ImageBase( width, height, kvs::ImageBase::Bit, data )
+    const vismodule::ValueArray<vismodule::UInt8>& data ):
+    vismodule::ImageBase( width, height, vismodule::ImageBase::Bit, data )
 {
 }
 
@@ -448,7 +448,7 @@ BitImage::BitImage(
  *  @param  image [in] bit image
  */
 /*===========================================================================*/
-BitImage::BitImage( const kvs::BitImage& image )
+BitImage::BitImage( const vismodule::BitImage& image )
 {
     BaseClass::copy( image );
 }
@@ -459,8 +459,8 @@ BitImage::BitImage( const kvs::BitImage& image )
  *  @param  image [in] gray image
  */
 /*===========================================================================*/
-BitImage::BitImage( const kvs::GrayImage& image ):
-    kvs::ImageBase( image.width(), image.height(), kvs::ImageBase::Bit )
+BitImage::BitImage( const vismodule::GrayImage& image ):
+    vismodule::ImageBase( image.width(), image.height(), vismodule::ImageBase::Bit )
 {
     BitImage::PTile method;
     method( image, m_data );
@@ -492,7 +492,7 @@ BitImage::~BitImage( void )
  *  @param  image [in] bit image
  */
 /*===========================================================================*/
-kvs::BitImage& BitImage::operator = ( const kvs::BitImage& image )
+vismodule::BitImage& BitImage::operator = ( const vismodule::BitImage& image )
 {
     BaseClass::copy( image );
     return( *this );
@@ -587,7 +587,7 @@ void BitImage::flip( const size_t i, const size_t j )
 /*===========================================================================*/
 void BitImage::set( const bool bit )
 {
-    const kvs::UInt8 mask = ( bit ) ? ( ::SetBitMask[8] ) : ( ::ResetBitMask[8] );
+    const vismodule::UInt8 mask = ( bit ) ? ( ::SetBitMask[8] ) : ( ::ResetBitMask[8] );
 
     for( size_t j = 0; j < m_height; j++ )
     {
@@ -659,18 +659,18 @@ const size_t BitImage::count( void ) const
 const bool BitImage::read( const std::string& filename )
 {
     // Color or Gray image.
-    if ( kvs::KVSMLObjectImage::CheckFileExtension( filename ) ||
-         kvs::Bmp::CheckFileExtension( filename ) ||
-         kvs::Ppm::CheckFileExtension( filename ) ||
-         kvs::Pgm::CheckFileExtension( filename ) ||
+    if ( vismodule::KVSMLObjectImage::CheckFileExtension( filename ) ||
+         vismodule::Bmp::CheckFileExtension( filename ) ||
+         vismodule::Ppm::CheckFileExtension( filename ) ||
+         vismodule::Pgm::CheckFileExtension( filename ) ||
 #ifndef NO_CLIENT
-         kvs::Tiff::CheckFileExtension( filename ) ||
-         kvs::Dicom::CheckFileExtension( filename ) )
+         vismodule::Tiff::CheckFileExtension( filename ) ||
+         vismodule::Dicom::CheckFileExtension( filename ) )
 #else
-         kvs::Tiff::CheckFileExtension( filename ) )
+         vismodule::Tiff::CheckFileExtension( filename ) )
 #endif
     {
-        kvs::GrayImage image; image.read( filename );
+        vismodule::GrayImage image; image.read( filename );
         if ( !BaseClass::create( image.width(), image.height(), BaseClass::Bit ) )
         {
             return( false );
@@ -683,14 +683,14 @@ const bool BitImage::read( const std::string& filename )
     }
 
     // Bit image.
-    if ( kvs::Pbm::CheckFileExtension( filename ) )
+    if ( vismodule::Pbm::CheckFileExtension( filename ) )
     {
-        const kvs::Pbm pbm( filename );
-        const kvs::UInt8* data = static_cast<const kvs::UInt8*>(pbm.data().pointer());
+        const vismodule::Pbm pbm( filename );
+        const vismodule::UInt8* data = static_cast<const vismodule::UInt8*>(pbm.data().pointer());
         return( BaseClass::create( pbm.width(), pbm.height(), BaseClass::Bit, data ) );
     }
 
-    kvsMessageError( "Read-method for %s is not implemented.",
+    visModuleMessageError( "Read-method for %s is not implemented.",
                      filename.c_str() );
 
     return( false );
@@ -705,35 +705,35 @@ const bool BitImage::read( const std::string& filename )
 /*==========================================================================*/
 const bool BitImage::write( const std::string& filename )
 {
-    const kvs::File file( filename );
+    const vismodule::File file( filename );
     const std::string extension = file.extension();
 
     // Color image.
-    if ( kvs::KVSMLObjectImage::CheckFileExtension( filename ) ||
-         kvs::Bmp::CheckFileExtension( filename ) ||
-         kvs::Ppm::CheckFileExtension( filename ) )
+    if ( vismodule::KVSMLObjectImage::CheckFileExtension( filename ) ||
+         vismodule::Bmp::CheckFileExtension( filename ) ||
+         vismodule::Ppm::CheckFileExtension( filename ) )
     {
-        kvs::ColorImage image( *this );
+        vismodule::ColorImage image( *this );
         return( image.write( filename ) );
     }
 
     // PGM image.
-    if ( kvs::Pgm::CheckFileExtension( filename ) )
+    if ( vismodule::Pgm::CheckFileExtension( filename ) )
     {
-        kvs::GrayImage image( *this );
+        vismodule::GrayImage image( *this );
         return( image.write( filename ) );
     }
 
     // PBM image.
-    if ( kvs::Pbm::CheckFileExtension( filename ) )
+    if ( vismodule::Pbm::CheckFileExtension( filename ) )
     {
         const size_t nvalues = m_width * m_height;
-        const kvs::UInt8* values = m_data.pointer();
-        kvs::Pbm pbm( m_width, m_height, kvs::BitArray( values, nvalues) );
+        const vismodule::UInt8* values = m_data.pointer();
+        vismodule::Pbm pbm( m_width, m_height, vismodule::BitArray( values, nvalues) );
         return( pbm.write( filename ) );
     }
 
-    kvsMessageError( "Write-method for %s is not implemented.",
+    visModuleMessageError( "Write-method for %s is not implemented.",
                      filename.c_str() );
 
     return( false );
@@ -763,4 +763,4 @@ void BitImage::reset_bit( const size_t i, const size_t j )
     m_data[ j * m_bpl + ( i >> 3 ) ] &= ::ResetBitMask[ i & 7 ];
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

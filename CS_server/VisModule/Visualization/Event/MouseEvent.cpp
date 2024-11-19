@@ -12,10 +12,10 @@
  */
 /****************************************************************************/
 #include "MouseEvent.h"
-#include <kvs/MouseButton>
+#include <vismodule/MouseButton>
 
 
-namespace kvs
+namespace vismodule
 {
 
 MouseEvent::MouseEvent( void )
@@ -43,7 +43,7 @@ MouseEvent::MouseEvent(
     m_x( x ),
     m_y( y ),
     m_modifiers( modifiers ),
-    m_action( kvs::MouseButton::NoAction )
+    m_action( vismodule::MouseButton::NoAction )
 {
 }
 
@@ -127,11 +127,11 @@ const int MouseEvent::action( void ) const
 const int MouseEvent::type( void ) const
 {
     return(
-        m_action == kvs::MouseButton::Pressed ? EventBase::MousePressEvent :
-        m_action == kvs::MouseButton::Moved ? EventBase::MouseMoveEvent :
-        m_action == kvs::MouseButton::Released ? EventBase::MouseReleaseEvent :
-        m_action == kvs::MouseButton::DoubleClicked ? EventBase::MouseDoubleClickEvent :
-        m_action == kvs::MouseButton::Wheeled ? EventBase::WheelEvent : 0 );
+        m_action == vismodule::MouseButton::Pressed ? EventBase::MousePressEvent :
+        m_action == vismodule::MouseButton::Moved ? EventBase::MouseMoveEvent :
+        m_action == vismodule::MouseButton::Released ? EventBase::MouseReleaseEvent :
+        m_action == vismodule::MouseButton::DoubleClicked ? EventBase::MouseDoubleClickEvent :
+        m_action == vismodule::MouseButton::Wheeled ? EventBase::WheelEvent : 0 );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

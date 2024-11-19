@@ -11,16 +11,16 @@
  *  $Id: Assert.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__ASSERT_H_INCLUDE
-#define KVS__ASSERT_H_INCLUDE
+#ifndef VIS_MODULE__ASSERT_H_INCLUDE
+#define VIS_MODULE__ASSERT_H_INCLUDE
 
-#include <kvs/Message>
+#include <vismodule/Message>
 
-#if defined ( KVS_ENABLE_DEBUG )
-#define KVS_ASSERT( exp ) \
-    ( kvs::Message( kvs::Message::Assert, KVS_MACRO_FILE, KVS_MACRO_LINE, KVS_MACRO_FUNC, ( exp ) ) ( # exp ) )
+#if defined ( VIS_MODULE_ENABLE_DEBUG )
+#define VIS_MODULE_ASSERT( exp ) \
+    ( vismodule::Message( vismodule::Message::Assert, VIS_MODULE_MACRO_FILE, VIS_MODULE_MACRO_LINE, VIS_MODULE_MACRO_FUNC, ( exp ) ) ( # exp ) )
 #else
-#define KVS_ASSERT( exp )
+#define VIS_MODULE_ASSERT( exp )
 #endif
 
-#endif // KVS__ASSERT_H_INCLUDE
+#endif // VIS_MODULE__ASSERT_H_INCLUDE

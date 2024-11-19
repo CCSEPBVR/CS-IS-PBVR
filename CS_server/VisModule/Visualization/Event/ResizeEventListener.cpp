@@ -13,10 +13,10 @@
  */
 /*****************************************************************************/
 #include "ResizeEventListener.h"
-#include <kvs/ResizeEvent>
+#include <vismodule/ResizeEvent>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -26,7 +26,7 @@ namespace kvs
 /*===========================================================================*/
 ResizeEventListener::ResizeEventListener( void )
 {
-    kvs::EventListener::setEventType( kvs::EventBase::ResizeEvent );
+    vismodule::EventListener::setEventType( vismodule::EventBase::ResizeEvent );
 }
 
 /*===========================================================================*/
@@ -44,11 +44,11 @@ ResizeEventListener::~ResizeEventListener( void )
  *  @param  event [in] pointer to the event
  */
 /*===========================================================================*/
-void ResizeEventListener::onEvent( kvs::EventBase* event )
+void ResizeEventListener::onEvent( vismodule::EventBase* event )
 {
     this->update(
-        static_cast<kvs::ResizeEvent*>(event)->width(),
-        static_cast<kvs::ResizeEvent*>(event)->height() );
+        static_cast<vismodule::ResizeEvent*>(event)->width(),
+        static_cast<vismodule::ResizeEvent*>(event)->height() );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

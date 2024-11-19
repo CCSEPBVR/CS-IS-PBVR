@@ -11,14 +11,14 @@
  *  $Id: Background.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__BACKGROUND_H_INCLUDE
-#define KVS__BACKGROUND_H_INCLUDE
+#ifndef VIS_MODULE__BACKGROUND_H_INCLUDE
+#define VIS_MODULE__BACKGROUND_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/RGBAColor>
+#include <vismodule/ClassName>
+#include <vismodule/RGBAColor>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -28,7 +28,7 @@ namespace kvs
 /*==========================================================================*/
 class Background
 {
-    kvsClassName( kvs::Background );
+    visModuleClassName( vismodule::Background );
 
 public:
 
@@ -44,18 +44,18 @@ protected:
 
 //    MipmapTexture2D m_mipmap;   ///< mipmap texture
     Type           m_type;     ///< background type
-    kvs::RGBAColor m_color[4]; ///< color on the corners
+    vismodule::RGBAColor m_color[4]; ///< color on the corners
 
 public:
 
     Background( void );
 
-    Background( const kvs::RGBAColor& color );
+    Background( const vismodule::RGBAColor& color );
 
-    Background( const kvs::RGBAColor& color1, const kvs::RGBAColor& color2 );
+    Background( const vismodule::RGBAColor& color1, const vismodule::RGBAColor& color2 );
 
-    Background( const kvs::RGBAColor& color0, const kvs::RGBAColor& color1,
-                const kvs::RGBAColor& color2, const kvs::RGBAColor& color3 );
+    Background( const vismodule::RGBAColor& color0, const vismodule::RGBAColor& color1,
+                const vismodule::RGBAColor& color2, const vismodule::RGBAColor& color3 );
 
     virtual ~Background( void );
 
@@ -65,14 +65,14 @@ public:
 
 public:
 
-    void setColor( const kvs::RGBAColor& color );
+    void setColor( const vismodule::RGBAColor& color );
 
-    void setColor( const kvs::RGBAColor& color0, const kvs::RGBAColor& color1 );
+    void setColor( const vismodule::RGBAColor& color0, const vismodule::RGBAColor& color1 );
 
-    void setColor( const kvs::RGBAColor& color0, const kvs::RGBAColor& color1,
-                   const kvs::RGBAColor& color2, const kvs::RGBAColor& color3 );
+    void setColor( const vismodule::RGBAColor& color0, const vismodule::RGBAColor& color1,
+                   const vismodule::RGBAColor& color2, const vismodule::RGBAColor& color3 );
 
-    const kvs::RGBColor& color( size_t index = 0 ) const;
+    const vismodule::RGBColor& color( size_t index = 0 ) const;
 
 //    void setImage( const ImageObject& image );
 
@@ -89,6 +89,6 @@ private:
 //    void apply_image( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__BACKGROUND_H_INCLUDE
+#endif // VIS_MODULE__BACKGROUND_H_INCLUDE

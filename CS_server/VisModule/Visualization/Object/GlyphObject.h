@@ -13,24 +13,24 @@
  *  $Id: GlyphObject.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__GLYPH_OBJECT_H_INCLUDE
-#define KVS__GLYPH_OBJECT_H_INCLUDE
+#ifndef VIS_MODULE__GLYPH_OBJECT_H_INCLUDE
+#define VIS_MODULE__GLYPH_OBJECT_H_INCLUDE
 
 #include <vector>
 #include <string>
-#include <kvs/ValueArray>
-#include <kvs/Vector3>
-#include <kvs/RGBColor>
-#include <kvs/ObjectBase>
-#include <kvs/VolumeObjectBase>
-#include <kvs/StructuredVolumeObject>
-#include <kvs/UnstructuredVolumeObject>
-#include <kvs/TransferFunction>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/ValueArray>
+#include <vismodule/Vector3>
+#include <vismodule/RGBColor>
+#include <vismodule/ObjectBase>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/TransferFunction>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -38,23 +38,23 @@ namespace kvs
  *  @brief  Glyph base class.
  */
 /*===========================================================================*/
-class GlyphObject : public kvs::ObjectBase
+class GlyphObject : public vismodule::ObjectBase
 {
     // Class name.
-    kvsClassName( kvs::GlyphObject );
+    visModuleClassName( vismodule::GlyphObject );
 
     // Module information.
-    kvsModuleCategory( Object );
-    kvsModuleSuperClass( kvs::ObjectBase );
+    visModuleCategory( Object );
+    visModuleSuperClass( vismodule::ObjectBase );
 
 protected:
 
-    kvs::ValueArray<kvs::Real32> m_coords; ///< coordinate value array
-    kvs::ValueArray<kvs::Real32> m_sizes; ///< size value array
-    kvs::ValueArray<kvs::Real32> m_directions; ///< direction vector array
-    kvs::ValueArray<kvs::UInt8> m_colors; ///< color value array
-    kvs::ValueArray<kvs::UInt8> m_opacities; ///< opacity value array
-    kvs::Vector3f m_scale; ///< scaling vector
+    vismodule::ValueArray<vismodule::Real32> m_coords; ///< coordinate value array
+    vismodule::ValueArray<vismodule::Real32> m_sizes; ///< size value array
+    vismodule::ValueArray<vismodule::Real32> m_directions; ///< direction vector array
+    vismodule::ValueArray<vismodule::UInt8> m_colors; ///< color value array
+    vismodule::ValueArray<vismodule::UInt8> m_opacities; ///< opacity value array
+    vismodule::Vector3f m_scale; ///< scaling vector
 
 public:
 
@@ -70,33 +70,33 @@ public:
 
     const ObjectType objectType( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& coords( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& coords( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& sizes( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& sizes( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& directions( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& directions( void ) const;
 
-    const kvs::ValueArray<kvs::UInt8>& colors( void ) const;
+    const vismodule::ValueArray<vismodule::UInt8>& colors( void ) const;
 
-    const kvs::ValueArray<kvs::UInt8>& opacities( void ) const;
+    const vismodule::ValueArray<vismodule::UInt8>& opacities( void ) const;
 
-    const kvs::Vector3f& scale( void ) const;
+    const vismodule::Vector3f& scale( void ) const;
 
-    void setCoords( const kvs::ValueArray<kvs::Real32>& coords );
+    void setCoords( const vismodule::ValueArray<vismodule::Real32>& coords );
 
-    void setSizes( const kvs::ValueArray<kvs::Real32>& sizes );
+    void setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes );
 
-    void setDirections( const kvs::ValueArray<kvs::Real32>& directions );
+    void setDirections( const vismodule::ValueArray<vismodule::Real32>& directions );
 
-    void setColors( const kvs::ValueArray<kvs::UInt8>& colors );
+    void setColors( const vismodule::ValueArray<vismodule::UInt8>& colors );
 
-    void setOpacities( const kvs::ValueArray<kvs::UInt8>& opacities );
+    void setOpacities( const vismodule::ValueArray<vismodule::UInt8>& opacities );
 
-    void setScale( const kvs::Real32 scale );
+    void setScale( const vismodule::Real32 scale );
 
-    void setScale( const kvs::Vector3f& scale );
+    void setScale( const vismodule::Vector3f& scale );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GLYPH_OBJECT_H_INCLUDE
+#endif // VIS_MODULE__GLYPH_OBJECT_H_INCLUDE

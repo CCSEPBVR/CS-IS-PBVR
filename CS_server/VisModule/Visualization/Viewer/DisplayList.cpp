@@ -12,11 +12,11 @@
  */
 /*****************************************************************************/
 #include "DisplayList.h"
-#include <kvs/OpenGL>
-#include <kvs/Message>
+#include <vismodule/OpenGL>
+#include <vismodule/Message>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -84,7 +84,7 @@ void DisplayList::begin( const GLuint index, const GLenum mode )
 {
     if ( GLsizei( index ) >= m_range )
     {
-        kvsMessageError("Given display-list index is out of range.");
+        visModuleMessageError("Given display-list index is out of range.");
         return;
     }
 
@@ -141,11 +141,11 @@ void DisplayList::render( const GLuint index )
 {
     if ( GLsizei( index ) >= m_range )
     {
-        kvsMessageError("Given display-list index is out of range.");
+        visModuleMessageError("Given display-list index is out of range.");
         return;
     }
 
     glCallList( m_id + index );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

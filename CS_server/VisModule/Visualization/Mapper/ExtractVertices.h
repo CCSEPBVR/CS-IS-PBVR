@@ -11,17 +11,17 @@
  *  $Id: ExtractVertices.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__EXTRACT_VERTICES_H_INCLUDE
-#define KVS__EXTRACT_VERTICES_H_INCLUDE
+#ifndef VIS_MODULE__EXTRACT_VERTICES_H_INCLUDE
+#define VIS_MODULE__EXTRACT_VERTICES_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 #include "MapperBase.h"
-#include <kvs/PointObject>
+#include <vismodule/PointObject>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class VolumeObjectBase;
@@ -32,38 +32,38 @@ class VolumeObjectBase;
  */
 /*==========================================================================*/
 class ExtractVertices
-    : public kvs::MapperBase
-    , public kvs::PointObject
+    : public vismodule::MapperBase
+    , public vismodule::PointObject
 {
     // Class name.
-    kvsClassName( kvs::ExtractVertices );
+    visModuleClassName( vismodule::ExtractVertices );
 
     // Module information.
-    kvsModuleCategory( Mapper );
-    kvsModuleBaseClass( kvs::MapperBase );
-    kvsModuleSuperClass( kvs::PointObject );
+    visModuleCategory( Mapper );
+    visModuleBaseClass( vismodule::MapperBase );
+    visModuleSuperClass( vismodule::PointObject );
 
 public:
 
     ExtractVertices( void );
 
     ExtractVertices(
-        const kvs::VolumeObjectBase* volume );
+        const vismodule::VolumeObjectBase* volume );
 
     ExtractVertices(
-        const kvs::VolumeObjectBase* volume,
-        const kvs::TransferFunction& transfer_function );
+        const vismodule::VolumeObjectBase* volume,
+        const vismodule::TransferFunction& transfer_function );
 
     virtual ~ExtractVertices( void );
 
 public:
 
-//    kvs::ObjectBase* exec( const kvs::ObjectBase* object );
-    SuperClass* exec( const kvs::ObjectBase* object );
+//    vismodule::ObjectBase* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase* object );
 
 private:
 
-    void mapping( const kvs::VolumeObjectBase* volume );
+    void mapping( const vismodule::VolumeObjectBase* volume );
 
 //    void pre_process( void );
 
@@ -79,4 +79,4 @@ private:
 
 }
 
-#endif // KVS__EXTRACT_VERTICES_H_INCLUDE
+#endif // VIS_MODULE__EXTRACT_VERTICES_H_INCLUDE

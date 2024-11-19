@@ -12,18 +12,18 @@
  */
 /****************************************************************************/
 #include "ScreenCore.h"
-#include <kvs/DebugNew>
-#include <kvs/GlobalCore>
-#include <kvs/Camera>
-#include <kvs/Background>
-#include <kvs/Light>
-#include <kvs/Mouse>
-#include <kvs/ObjectManager>
-#include <kvs/RendererManager>
-#include <kvs/IDManager>
+#include <vismodule/DebugNew>
+#include <vismodule/GlobalCore>
+#include <vismodule/Camera>
+#include <vismodule/Background>
+#include <vismodule/Light>
+#include <vismodule/Mouse>
+#include <vismodule/ObjectManager>
+#include <vismodule/RendererManager>
+#include <vismodule/IDManager>
 
 
-namespace kvs
+namespace vismodule
 {
 
 // Instantiation of the additional functions.
@@ -42,7 +42,7 @@ MouseReleaseEventFunc  ScreenCore::m_pfunc_set_mouse_release_event;
 KeyPressEventFunc      ScreenCore::m_pfunc_set_key_press_event;
 
 // Instantiation of the member parameters.
-kvs::DisplayFormat ScreenCore::m_display_format;
+vismodule::DisplayFormat ScreenCore::m_display_format;
 std::string        ScreenCore::m_title;
 int                ScreenCore::m_x;
 int                ScreenCore::m_y;
@@ -51,8 +51,8 @@ int                ScreenCore::m_height;
 int                ScreenCore::m_id;
 bool               ScreenCore::m_is_fullscreen;
 bool               ScreenCore::m_can_move_all;
-kvs::MouseEvent*   ScreenCore::m_mouse_event;
-kvs::KeyEvent*     ScreenCore::m_key_event;
+vismodule::MouseEvent*   ScreenCore::m_mouse_event;
+vismodule::KeyEvent*     ScreenCore::m_key_event;
 
 /*==========================================================================*/
 /**
@@ -69,8 +69,8 @@ ScreenCore::ScreenCore( void )
     m_id            = 0;
     m_is_fullscreen = false;
     m_can_move_all  = true;
-    m_mouse_event   = new kvs::MouseEvent();
-    m_key_event     = new kvs::KeyEvent();
+    m_mouse_event   = new vismodule::MouseEvent();
+    m_key_event     = new vismodule::KeyEvent();
 
     /* Link the pre-defined additional event functions to the event
      * functions in this class.
@@ -186,7 +186,7 @@ void ScreenCore::addKeyPressEvent( KeyPressEventFunc event )
  *  @param display_format [in] display format
  */
 /*==========================================================================*/
-void ScreenCore::setDisplayFormat( const kvs::DisplayFormat& display_format )
+void ScreenCore::setDisplayFormat( const vismodule::DisplayFormat& display_format )
 {
     m_display_format = display_format;
 }
@@ -216,8 +216,8 @@ void ScreenCore::setSize( int width, int height )
     m_width  = width;
     m_height = height;
 
-    if( kvs::GlobalCore::camera ) kvs::GlobalCore::camera->setWindowSize( width, height );
-    if( kvs::GlobalCore::mouse  ) kvs::GlobalCore::mouse->setWindowSize( width, height );
+    if( vismodule::GlobalCore::camera ) vismodule::GlobalCore::camera->setWindowSize( width, height );
+    if( vismodule::GlobalCore::mouse  ) vismodule::GlobalCore::mouse->setWindowSize( width, height );
 }
 
 /*==========================================================================*/
@@ -252,7 +252,7 @@ void ScreenCore::setTitle( const std::string& title )
  *  @return display format
  */
 /*==========================================================================*/
-const kvs::DisplayFormat& ScreenCore::displayFormat( void ) const
+const vismodule::DisplayFormat& ScreenCore::displayFormat( void ) const
 {
     return( m_display_format );
 }
@@ -341,13 +341,13 @@ void ScreenCore::disableAllMove( void )
 void ScreenCore::initialize( void )
 {
     // Set the lighting parameters.
-    kvs::GlobalCore::light->setID( GL_LIGHT0 );
-    kvs::GlobalCore::light->setPosition( 0.0, 0.0, 12.0 );
-    kvs::GlobalCore::light->setColor( 1.0, 1.0, 1.0 );
-    kvs::GlobalCore::light->on();
+    vismodule::GlobalCore::light->setID( GL_LIGHT0 );
+    vismodule::GlobalCore::light->setPosition( 0.0, 0.0, 12.0 );
+    vismodule::GlobalCore::light->setColor( 1.0, 1.0, 1.0 );
+    vismodule::GlobalCore::light->on();
 
     // Attach the Camera to the Mouse
-    kvs::GlobalCore::mouse->attachCamera( kvs::GlobalCore::camera );
+    vismodule::GlobalCore::mouse->attachCamera( vismodule::GlobalCore::camera );
 
     // Call the additional initializing function.
     m_pfunc_add_initialize_func();
@@ -365,18 +365,18 @@ void ScreenCore::paint_event_core( void )
          glLoadIdentity();
 
          // Update the camera and light.
-         kvs::GlobalCore::camera->update();
-         kvs::GlobalCore::light->update( kvs::GlobalCore::camera );
+         vismodule::GlobalCore::camera->update();
+         vismodule::GlobalCore::light->update( vismodule::GlobalCore::camera );
 
          // Set the background color or image.
-         kvs::GlobalCore::background->apply();
+         vismodule::GlobalCore::background->apply();
 
          // Aliases for the object manager and the renderer manager.
-         kvs::ObjectManager*   om = kvs::GlobalCore::object_manager;
-         kvs::RendererManager* rm = kvs::GlobalCore::renderer_manager;
-         kvs::IDManager*       id = kvs::GlobalCore::id_manager;
-         kvs::Camera*          c  = kvs::GlobalCore::camera;
-         kvs::Light*           l  = kvs::GlobalCore::light;
+         vismodule::ObjectManager*   om = vismodule::GlobalCore::object_manager;
+         vismodule::RendererManager* rm = vismodule::GlobalCore::renderer_manager;
+         vismodule::IDManager*       id = vismodule::GlobalCore::id_manager;
+         vismodule::Camera*          c  = vismodule::GlobalCore::camera;
+         vismodule::Light*           l  = vismodule::GlobalCore::light;
 
          // Rendering the resistered object by using the corresponding renderer.
          glPushMatrix();
@@ -385,10 +385,10 @@ void ScreenCore::paint_event_core( void )
              const int size = id->size();
              for( int index = 0; index < size; index++ )
              {
-                 kvs::IDPair id_pair = (*id)[index];
+                 vismodule::IDPair id_pair = (*id)[index];
 
-                 kvs::ObjectBase*   o = om->object( id_pair.first );
-                 kvs::RendererBase* r = rm->renderer( id_pair.second );
+                 vismodule::ObjectBase*   o = om->object( id_pair.first );
+                 vismodule::RendererBase* r = rm->renderer( id_pair.second );
 
                  if( o->isShown() )
                  {
@@ -426,8 +426,8 @@ void ScreenCore::resize_event_core( int width, int height )
     glViewport( 0 , 0 , width , height );
 
     // Update the window size for camera and mouse.
-    kvs::GlobalCore::camera->setWindowSize( width, height );
-    kvs::GlobalCore::mouse->setWindowSize( width, height );
+    vismodule::GlobalCore::camera->setWindowSize( width, height );
+    vismodule::GlobalCore::mouse->setWindowSize( width, height );
 
     // Call the additional resize function.
     m_pfunc_add_resize_event( width, height );
@@ -443,12 +443,12 @@ void ScreenCore::resize_event_core( int width, int height )
 void ScreenCore::mouse_button_release( int x, int y )
 {
     m_can_move_all = true;
-    kvs::GlobalCore::mouse->release( x, y );
+    vismodule::GlobalCore::mouse->release( x, y );
 
-    if( !( kvs::GlobalCore::mouse->isUseAuto() &&
-           kvs::GlobalCore::mouse->isAuto() ) )
+    if( !( vismodule::GlobalCore::mouse->isUseAuto() &&
+           vismodule::GlobalCore::mouse->isAuto() ) )
     {
-        kvs::GlobalCore::object_manager->releaseActiveObject();
+        vismodule::GlobalCore::object_manager->releaseActiveObject();
     }
 }
 
@@ -460,12 +460,12 @@ void ScreenCore::mouse_button_release( int x, int y )
  *  @param mode [in] mouse translation mode
  */
 /*==========================================================================*/
-void ScreenCore::mouse_button_press( int x, int y, kvs::Mouse::TransMode mode )
+void ScreenCore::mouse_button_press( int x, int y, vismodule::Mouse::TransMode mode )
 {
     set_object_manager_params();
 
-    kvs::GlobalCore::mouse->setMode( mode );
-    kvs::GlobalCore::mouse->press( x, y );
+    vismodule::GlobalCore::mouse->setMode( mode );
+    vismodule::GlobalCore::mouse->press( x, y );
 }
 
 /*==========================================================================*/
@@ -478,18 +478,18 @@ void ScreenCore::mouse_button_press( int x, int y, kvs::Mouse::TransMode mode )
 /*==========================================================================*/
 bool ScreenCore::is_active_move( int x, int y )
 {
-    if( !kvs::GlobalCore::object_manager->hasObject() ) return( true );
+    if( !vismodule::GlobalCore::object_manager->hasObject() ) return( true );
 
-    if( kvs::GlobalCore::target == kvs::GlobalCore::TargetObject )
+    if( vismodule::GlobalCore::target == vismodule::GlobalCore::TargetObject )
     {
         if( !m_can_move_all )
         {
             // Collision detection.
-            kvs::ObjectManager* om = kvs::GlobalCore::object_manager;
-            kvs::Camera*        c  = kvs::GlobalCore::camera;
+            vismodule::ObjectManager* om = vismodule::GlobalCore::object_manager;
+            vismodule::Camera*        c  = vismodule::GlobalCore::camera;
             const float px = static_cast<float>(x);
             const float py = static_cast<float>(y);
-            const kvs::Vector2f p  = kvs::Vector2f( px, py );
+            const vismodule::Vector2f p  = vismodule::Vector2f( px, py );
             return( om->detectCollision( p, c ) );
         }
     }
@@ -504,16 +504,16 @@ bool ScreenCore::is_active_move( int x, int y )
 /*==========================================================================*/
 void ScreenCore::set_object_manager_params( void )
 {
-    if( kvs::GlobalCore::target == kvs::GlobalCore::TargetObject )
+    if( vismodule::GlobalCore::target == vismodule::GlobalCore::TargetObject )
     {
         if( m_can_move_all )
         {
-            kvs::GlobalCore::object_manager->enableAllMove();
-            kvs::GlobalCore::object_manager->releaseActiveObject();
+            vismodule::GlobalCore::object_manager->enableAllMove();
+            vismodule::GlobalCore::object_manager->releaseActiveObject();
         }
         else
         {
-            kvs::GlobalCore::object_manager->disableAllMove();
+            vismodule::GlobalCore::object_manager->disableAllMove();
         }
     }
 }
@@ -526,30 +526,30 @@ void ScreenCore::set_object_manager_params( void )
 void ScreenCore::set_center_of_rotation( void )
 {
     // Center of rotation in the device coordinate system.
-    kvs::Vector2f rot_center( 0.0, 0.0 );
+    vismodule::Vector2f rot_center( 0.0, 0.0 );
 
-    switch( kvs::GlobalCore::target )
+    switch( vismodule::GlobalCore::target )
     {
-    case kvs::GlobalCore::TargetCamera:
-    case kvs::GlobalCore::TargetLight:
+    case vismodule::GlobalCore::TargetCamera:
+    case vismodule::GlobalCore::TargetLight:
         /* Get an at-point of the camera, which is the center of rotation,
          * in the device coord.
          */
-        rot_center = kvs::GlobalCore::camera->lookAtInDevice();
+        rot_center = vismodule::GlobalCore::camera->lookAtInDevice();
         break;
-    case kvs::GlobalCore::TargetObject:
-        if( m_can_move_all || !kvs::GlobalCore::object_manager->hasObject() )
+    case vismodule::GlobalCore::TargetObject:
+        if( m_can_move_all || !vismodule::GlobalCore::object_manager->hasObject() )
         {
-            kvs::ObjectManager* om = kvs::GlobalCore::object_manager;
-            rot_center = om->positionInDevice( kvs::GlobalCore::camera );
+            vismodule::ObjectManager* om = vismodule::GlobalCore::object_manager;
+            rot_center = om->positionInDevice( vismodule::GlobalCore::camera );
         }
         else
         {
-            kvs::ObjectManager*  om = kvs::GlobalCore::object_manager;
-            kvs::ObjectBase*     o  = om->activeObject();
-            kvs::Camera*         c  = kvs::GlobalCore::camera;
-            const kvs::Vector3f& t  = om->objectCenter();
-            const kvs::Vector3f& s  = om->normalize();
+            vismodule::ObjectManager*  om = vismodule::GlobalCore::object_manager;
+            vismodule::ObjectBase*     o  = om->activeObject();
+            vismodule::Camera*         c  = vismodule::GlobalCore::camera;
+            const vismodule::Vector3f& t  = om->objectCenter();
+            const vismodule::Vector3f& s  = om->normalize();
             rot_center = o->positionInDevice( c, t, s );
         }
         break;
@@ -557,7 +557,7 @@ void ScreenCore::set_center_of_rotation( void )
         break;
     }
 
-    kvs::GlobalCore::mouse->setRotationCenter( rot_center );
+    vismodule::GlobalCore::mouse->setRotationCenter( rot_center );
 }
 
 /*==========================================================================*/
@@ -567,16 +567,16 @@ void ScreenCore::set_center_of_rotation( void )
 /*==========================================================================*/
 void ScreenCore::update_xform( void )
 {
-    switch( kvs::GlobalCore::target )
+    switch( vismodule::GlobalCore::target )
     {
-    case kvs::GlobalCore::TargetCamera:
-        update_camera_xform( kvs::GlobalCore::camera );
+    case vismodule::GlobalCore::TargetCamera:
+        update_camera_xform( vismodule::GlobalCore::camera );
         break;
-    case kvs::GlobalCore::TargetLight:
-        update_light_xform( kvs::GlobalCore::light );
+    case vismodule::GlobalCore::TargetLight:
+        update_light_xform( vismodule::GlobalCore::light );
         break;
-    case kvs::GlobalCore::TargetObject:
-        update_object_manager_xform( kvs::GlobalCore::object_manager );
+    case vismodule::GlobalCore::TargetObject:
+        update_object_manager_xform( vismodule::GlobalCore::object_manager );
         break;
     default:
         break;
@@ -589,18 +589,18 @@ void ScreenCore::update_xform( void )
  *  @param manager [in] pointer to the object manager
  */
 /*==========================================================================*/
-void ScreenCore::update_object_manager_xform( kvs::ObjectManager* manager )
+void ScreenCore::update_object_manager_xform( vismodule::ObjectManager* manager )
 {
-    switch( kvs::GlobalCore::mouse->mode() )
+    switch( vismodule::GlobalCore::mouse->mode() )
     {
-    case kvs::Mouse::Rotation:
-        manager->rotate( kvs::GlobalCore::mouse->rotation().toMatrix() );
+    case vismodule::Mouse::Rotation:
+        manager->rotate( vismodule::GlobalCore::mouse->rotation().toMatrix() );
         break;
-    case kvs::Mouse::Translation:
-        manager->translate( kvs::GlobalCore::mouse->translation() );
+    case vismodule::Mouse::Translation:
+        manager->translate( vismodule::GlobalCore::mouse->translation() );
         break;
-    case kvs::Mouse::Scaling:
-        manager->scale( kvs::GlobalCore::mouse->scaling() );
+    case vismodule::Mouse::Scaling:
+        manager->scale( vismodule::GlobalCore::mouse->scaling() );
         break;
     default:
         break;
@@ -613,18 +613,18 @@ void ScreenCore::update_object_manager_xform( kvs::ObjectManager* manager )
  *  @param camera [in] pointer to the camera
  */
 /*==========================================================================*/
-void ScreenCore::update_camera_xform( kvs::Camera* camera )
+void ScreenCore::update_camera_xform( vismodule::Camera* camera )
 {
-    switch( kvs::GlobalCore::mouse->mode() )
+    switch( vismodule::GlobalCore::mouse->mode() )
     {
-    case kvs::Mouse::Rotation:
-        camera->rotate( kvs::GlobalCore::mouse->rotation().toMatrix() );
+    case vismodule::Mouse::Rotation:
+        camera->rotate( vismodule::GlobalCore::mouse->rotation().toMatrix() );
         break;
-    case kvs::Mouse::Translation:
-        camera->translate( kvs::GlobalCore::mouse->translation() );
+    case vismodule::Mouse::Translation:
+        camera->translate( vismodule::GlobalCore::mouse->translation() );
         break;
-    case kvs::Mouse::Scaling:
-        camera->scale( kvs::GlobalCore::mouse->scaling() );
+    case vismodule::Mouse::Scaling:
+        camera->scale( vismodule::GlobalCore::mouse->scaling() );
         break;
     default:
         break;
@@ -637,22 +637,22 @@ void ScreenCore::update_camera_xform( kvs::Camera* camera )
  *  @param light [in] pointer to the light
  */
 /*==========================================================================*/
-void ScreenCore::update_light_xform( kvs::Light* light )
+void ScreenCore::update_light_xform( vismodule::Light* light )
 {
-    switch( kvs::GlobalCore::mouse->mode() )
+    switch( vismodule::GlobalCore::mouse->mode() )
     {
-    case kvs::Mouse::Rotation:
-        light->rotate( kvs::GlobalCore::mouse->rotation().toMatrix() );
+    case vismodule::Mouse::Rotation:
+        light->rotate( vismodule::GlobalCore::mouse->rotation().toMatrix() );
         break;
-    case kvs::Mouse::Translation:
-        light->translate( kvs::GlobalCore::mouse->translation() );
+    case vismodule::Mouse::Translation:
+        light->translate( vismodule::GlobalCore::mouse->translation() );
         break;
-    case kvs::Mouse::Scaling:
-        light->scale( kvs::GlobalCore::mouse->scaling() );
+    case vismodule::Mouse::Scaling:
+        light->scale( vismodule::GlobalCore::mouse->scaling() );
         break;
     default:
         break;
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

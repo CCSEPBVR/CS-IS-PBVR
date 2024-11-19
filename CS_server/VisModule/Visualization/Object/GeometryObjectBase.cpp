@@ -13,10 +13,10 @@
  */
 /*****************************************************************************/
 #include "GeometryObjectBase.h"
-#include <kvs/Assert>
+#include <vismodule/Assert>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -37,12 +37,12 @@ GeometryObjectBase::GeometryObjectBase( void )
  */
 /*===========================================================================*/
 GeometryObjectBase::GeometryObjectBase(
-    const kvs::ValueArray<kvs::Real32>& coords,
-    const kvs::ValueArray<kvs::UInt8>&  colors,
-    const kvs::ValueArray<kvs::Real32>& normals )
+    const vismodule::ValueArray<vismodule::Real32>& coords,
+    const vismodule::ValueArray<vismodule::UInt8>&  colors,
+    const vismodule::ValueArray<vismodule::Real32>& normals )
 {
-    KVS_ASSERT( coords.size() == normals.size() );
-    KVS_ASSERT( coords.size() == colors.size() );
+    VIS_MODULE_ASSERT( coords.size() == normals.size() );
+    VIS_MODULE_ASSERT( coords.size() == colors.size() );
 
     this->setCoords( coords );
     this->setColors( colors );
@@ -58,11 +58,11 @@ GeometryObjectBase::GeometryObjectBase(
  */
 /*===========================================================================*/
 GeometryObjectBase::GeometryObjectBase(
-    const kvs::ValueArray<kvs::Real32>& coords,
-    const kvs::RGBColor&                color,
-    const kvs::ValueArray<kvs::Real32>& normals )
+    const vismodule::ValueArray<vismodule::Real32>& coords,
+    const vismodule::RGBColor&                color,
+    const vismodule::ValueArray<vismodule::Real32>& normals )
 {
-    KVS_ASSERT( coords.size() == normals.size() );
+    VIS_MODULE_ASSERT( coords.size() == normals.size() );
 
     this->setCoords( coords );
     this->setColor( color );
@@ -77,10 +77,10 @@ GeometryObjectBase::GeometryObjectBase(
  */
 /*===========================================================================*/
 GeometryObjectBase::GeometryObjectBase(
-    const kvs::ValueArray<kvs::Real32>& coords,
-    const kvs::ValueArray<kvs::Real32>& normals )
+    const vismodule::ValueArray<vismodule::Real32>& coords,
+    const vismodule::ValueArray<vismodule::Real32>& normals )
 {
-    KVS_ASSERT( coords.size() == normals.size() );
+    VIS_MODULE_ASSERT( coords.size() == normals.size() );
 
     this->setCoords( coords );
     this->setNormals( normals );
@@ -94,10 +94,10 @@ GeometryObjectBase::GeometryObjectBase(
  */
 /*===========================================================================*/
 GeometryObjectBase::GeometryObjectBase(
-    const kvs::ValueArray<kvs::Real32>& coords,
-    const kvs::ValueArray<kvs::UInt8>&  colors )
+    const vismodule::ValueArray<vismodule::Real32>& coords,
+    const vismodule::ValueArray<vismodule::UInt8>&  colors )
 {
-    KVS_ASSERT( coords.size() == colors.size() );
+    VIS_MODULE_ASSERT( coords.size() == colors.size() );
 
     this->setCoords( coords );
     this->setColors( colors );
@@ -111,8 +111,8 @@ GeometryObjectBase::GeometryObjectBase(
  */
 /*===========================================================================*/
 GeometryObjectBase::GeometryObjectBase(
-    const kvs::ValueArray<kvs::Real32>& coords,
-    const kvs::RGBColor&                color )
+    const vismodule::ValueArray<vismodule::Real32>& coords,
+    const vismodule::RGBColor&                color )
 {
     this->setCoords( coords );
     this->setColor( color );
@@ -125,10 +125,10 @@ GeometryObjectBase::GeometryObjectBase(
  */
 /*===========================================================================*/
 GeometryObjectBase::GeometryObjectBase(
-    const kvs::ValueArray<kvs::Real32>& coords )
+    const vismodule::ValueArray<vismodule::Real32>& coords )
 {
     this->setCoords( coords );
-    this->setColor( kvs::RGBColor( 255, 255, 255 ) );
+    this->setColor( vismodule::RGBColor( 255, 255, 255 ) );
 }
 
 /*===========================================================================*/
@@ -148,16 +148,16 @@ GeometryObjectBase::~GeometryObjectBase( void )
  *  @return pointer to the geometry object base
  */
 /*===========================================================================*/
-kvs::GeometryObjectBase* GeometryObjectBase::DownCast( kvs::ObjectBase* object )
+vismodule::GeometryObjectBase* GeometryObjectBase::DownCast( vismodule::ObjectBase* object )
 {
-    const kvs::ObjectBase::ObjectType type = object->objectType();
-    if ( type != kvs::ObjectBase::Geometry )
+    const vismodule::ObjectBase::ObjectType type = object->objectType();
+    if ( type != vismodule::ObjectBase::Geometry )
     {
-        kvsMessageError("Input object is not a geometry object.");
+        visModuleMessageError("Input object is not a geometry object.");
         return( NULL );
     }
 
-    kvs::GeometryObjectBase* geometry = static_cast<kvs::GeometryObjectBase*>( object );
+    vismodule::GeometryObjectBase* geometry = static_cast<vismodule::GeometryObjectBase*>( object );
 
     return( geometry );
 }
@@ -169,9 +169,9 @@ kvs::GeometryObjectBase* GeometryObjectBase::DownCast( kvs::ObjectBase* object )
  *  @return pointer to the geometry object base
  */
 /*===========================================================================*/
-const kvs::GeometryObjectBase* GeometryObjectBase::DownCast( const kvs::ObjectBase* object )
+const vismodule::GeometryObjectBase* GeometryObjectBase::DownCast( const vismodule::ObjectBase* object )
 {
-    return( GeometryObjectBase::DownCast( const_cast<kvs::ObjectBase*>( object ) ) );
+    return( GeometryObjectBase::DownCast( const_cast<vismodule::ObjectBase*>( object ) ) );
 }
 
 /*===========================================================================*/
@@ -179,14 +179,14 @@ const kvs::GeometryObjectBase* GeometryObjectBase::DownCast( const kvs::ObjectBa
  *  @brief  '<<' operator.
  */
 /*===========================================================================*/
-std::ostream& operator << ( std::ostream& os, const kvs::GeometryObjectBase& object )
+std::ostream& operator << ( std::ostream& os, const vismodule::GeometryObjectBase& object )
 {
-#ifdef KVS_COMPILER_VC
-#if KVS_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
+#ifdef VIS_MODULE_COMPILER_VC
+#if VIS_MODULE_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
     // @TODO Cannot instance the object that is a abstract class here (error:C2259).
 #endif
 #else
-    os << static_cast<const kvs::ObjectBase&>( object ) << std::endl;
+    os << static_cast<const vismodule::ObjectBase&>( object ) << std::endl;
 #endif
     os << "Number of vertices:  " << object.nvertices() << std::endl;
     os << "Number of colors:  " << object.ncolors() << std::endl;
@@ -241,7 +241,7 @@ void GeometryObjectBase::clear( void )
  *  @param  coords [in] coordinate value array
  */
 /*===========================================================================*/
-void GeometryObjectBase::setCoords( const kvs::ValueArray<kvs::Real32>& coords )
+void GeometryObjectBase::setCoords( const vismodule::ValueArray<vismodule::Real32>& coords )
 {
     m_coords = coords;
 }
@@ -252,7 +252,7 @@ void GeometryObjectBase::setCoords( const kvs::ValueArray<kvs::Real32>& coords )
  *  @param  colors [in] color value array
  */
 /*===========================================================================*/
-void GeometryObjectBase::setColors( const kvs::ValueArray<kvs::UInt8>& colors )
+void GeometryObjectBase::setColors( const vismodule::ValueArray<vismodule::UInt8>& colors )
 {
     m_colors = colors;
 }
@@ -263,7 +263,7 @@ void GeometryObjectBase::setColors( const kvs::ValueArray<kvs::UInt8>& colors )
  *  @param  color [in] color value
  */
 /*===========================================================================*/
-void GeometryObjectBase::setColor( const kvs::RGBColor& color )
+void GeometryObjectBase::setColor( const vismodule::RGBColor& color )
 {
     m_colors.allocate( 3 );
     m_colors[0] = color.r();
@@ -277,7 +277,7 @@ void GeometryObjectBase::setColor( const kvs::RGBColor& color )
  *  @param  normals [in] normal vector array
  */
 /*===========================================================================*/
-void GeometryObjectBase::setNormals( const kvs::ValueArray<kvs::Real32>& normals )
+void GeometryObjectBase::setNormals( const vismodule::ValueArray<vismodule::Real32>& normals )
 {
     m_normals = normals;
 }
@@ -288,9 +288,9 @@ void GeometryObjectBase::setNormals( const kvs::ValueArray<kvs::Real32>& normals
  *  @return object type
  */
 /*===========================================================================*/
-const kvs::ObjectBase::ObjectType GeometryObjectBase::objectType( void ) const
+const vismodule::ObjectBase::ObjectType GeometryObjectBase::objectType( void ) const
 {
-    return( kvs::ObjectBase::Geometry );
+    return( vismodule::ObjectBase::Geometry );
 }
 
 /*===========================================================================*/
@@ -336,10 +336,10 @@ const size_t GeometryObjectBase::nnormals( void ) const
  *  @return coordinate value
  */
 /*===========================================================================*/
-const kvs::Vector3f GeometryObjectBase::coord( const size_t index ) const
+const vismodule::Vector3f GeometryObjectBase::coord( const size_t index ) const
 {
     const size_t dimension = 3;
-    return( kvs::Vector3f( m_coords.pointer() + dimension * index ) );
+    return( vismodule::Vector3f( m_coords.pointer() + dimension * index ) );
 }
 
 /*===========================================================================*/
@@ -349,10 +349,10 @@ const kvs::Vector3f GeometryObjectBase::coord( const size_t index ) const
  *  @return color value
  */
 /*===========================================================================*/
-const kvs::RGBColor GeometryObjectBase::color( const size_t index ) const
+const vismodule::RGBColor GeometryObjectBase::color( const size_t index ) const
 {
     const size_t nchannels = 3;
-    return( kvs::RGBColor( m_colors.pointer() + nchannels * index ) );
+    return( vismodule::RGBColor( m_colors.pointer() + nchannels * index ) );
 }
 
 /*===========================================================================*/
@@ -362,10 +362,10 @@ const kvs::RGBColor GeometryObjectBase::color( const size_t index ) const
  *  @return normal vector
  */
 /*===========================================================================*/
-const kvs::Vector3f GeometryObjectBase::normal( const size_t index ) const
+const vismodule::Vector3f GeometryObjectBase::normal( const size_t index ) const
 {
     const size_t dimension = 3;
-    return( kvs::Vector3f( m_normals.pointer() + dimension * index ) );
+    return( vismodule::Vector3f( m_normals.pointer() + dimension * index ) );
 }
 
 /*===========================================================================*/
@@ -374,7 +374,7 @@ const kvs::Vector3f GeometryObjectBase::normal( const size_t index ) const
  *  @return coordinate value array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& GeometryObjectBase::coords( void ) const
+const vismodule::ValueArray<vismodule::Real32>& GeometryObjectBase::coords( void ) const
 {
     return( m_coords );
 }
@@ -385,7 +385,7 @@ const kvs::ValueArray<kvs::Real32>& GeometryObjectBase::coords( void ) const
  *  @return color value array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt8>& GeometryObjectBase::colors( void ) const
+const vismodule::ValueArray<vismodule::UInt8>& GeometryObjectBase::colors( void ) const
 {
     return( m_colors );
 }
@@ -396,7 +396,7 @@ const kvs::ValueArray<kvs::UInt8>& GeometryObjectBase::colors( void ) const
  *  @return normal vector array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& GeometryObjectBase::normals( void ) const
+const vismodule::ValueArray<vismodule::Real32>& GeometryObjectBase::normals( void ) const
 {
     return( m_normals );
 }
@@ -417,15 +417,15 @@ void GeometryObjectBase::updateMinMaxCoords( void )
 /*==========================================================================*/
 void GeometryObjectBase::calculate_min_max_coords( void )
 {
-    kvs::Vector3f min_coord( 0.0f );
-    kvs::Vector3f max_coord( 0.0f );
+    vismodule::Vector3f min_coord( 0.0f );
+    vismodule::Vector3f max_coord( 0.0f );
 
-    const kvs::Real32* coord = this->coords().pointer();
-    const kvs::Real32* const end = coord + this->coords().size();
+    const vismodule::Real32* coord = this->coords().pointer();
+    const vismodule::Real32* const end = coord + this->coords().size();
 
-    kvs::Real32 x = *( coord++ );
-    kvs::Real32 y = *( coord++ );
-    kvs::Real32 z = *( coord++ );
+    vismodule::Real32 x = *( coord++ );
+    vismodule::Real32 y = *( coord++ );
+    vismodule::Real32 z = *( coord++ );
 
     min_coord.set( x, y, z );
     max_coord.set( x, y, z );
@@ -436,13 +436,13 @@ void GeometryObjectBase::calculate_min_max_coords( void )
         y = *( coord++ );
         z = *( coord++ );
 
-        min_coord.x() = kvs::Math::Min( min_coord.x(), x );
-        min_coord.y() = kvs::Math::Min( min_coord.y(), y );
-        min_coord.z() = kvs::Math::Min( min_coord.z(), z );
+        min_coord.x() = vismodule::Math::Min( min_coord.x(), x );
+        min_coord.y() = vismodule::Math::Min( min_coord.y(), y );
+        min_coord.z() = vismodule::Math::Min( min_coord.z(), z );
 
-        max_coord.x() = kvs::Math::Max( max_coord.x(), x );
-        max_coord.y() = kvs::Math::Max( max_coord.y(), y );
-        max_coord.z() = kvs::Math::Max( max_coord.z(), z );
+        max_coord.x() = vismodule::Math::Max( max_coord.x(), x );
+        max_coord.y() = vismodule::Math::Max( max_coord.y(), y );
+        max_coord.z() = vismodule::Math::Max( max_coord.z(), z );
     }
 
     this->setMinMaxObjectCoords( min_coord, max_coord );
@@ -455,4 +455,4 @@ void GeometryObjectBase::calculate_min_max_coords( void )
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -11,16 +11,16 @@
  *  $Id: GrayImage.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__GRAY_IMAGE_H_INCLUDE
-#define KVS__GRAY_IMAGE_H_INCLUDE
+#ifndef VIS_MODULE__GRAY_IMAGE_H_INCLUDE
+#define VIS_MODULE__GRAY_IMAGE_H_INCLUDE
 
 #include <limits>
 #include "ImageBase.h"
 #include "ColorImage.h"
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class RGBColor;
@@ -31,14 +31,14 @@ class BitImage;
  *  Gray image class.
  */
 /*==========================================================================*/
-class GrayImage : public kvs::ImageBase
+class GrayImage : public vismodule::ImageBase
 {
-    kvsClassName( kvs::GrayImage );
+    visModuleClassName( vismodule::GrayImage );
 
 public:
 
-    typedef kvs::ImageBase BaseClass;
-    typedef kvs::UInt8     PixelType;
+    typedef vismodule::ImageBase BaseClass;
+    typedef vismodule::UInt8     PixelType;
 
     typedef BaseClass::NearestNeighborInterpolatorGray NearestNeighbor;
     typedef BaseClass::BilinearInterpolatorGray        Bilinear;
@@ -49,27 +49,27 @@ public:
 
     struct MeanValue
     {
-        void operator () ( const kvs::ColorImage& image, kvs::ValueArray<kvs::UInt8>& data );
+        void operator () ( const vismodule::ColorImage& image, vismodule::ValueArray<vismodule::UInt8>& data );
     };
 
     struct MiddleValue
     {
-        void operator () ( const kvs::ColorImage& image, kvs::ValueArray<kvs::UInt8>& data );
+        void operator () ( const vismodule::ColorImage& image, vismodule::ValueArray<vismodule::UInt8>& data );
     };
 
     struct MedianValue
     {
-        void operator () ( const kvs::ColorImage& image, kvs::ValueArray<kvs::UInt8>& data );
+        void operator () ( const vismodule::ColorImage& image, vismodule::ValueArray<vismodule::UInt8>& data );
     };
 
     struct NTSCWeightedMeanValue
     {
-        void operator () ( const kvs::ColorImage& image, kvs::ValueArray<kvs::UInt8>& data );
+        void operator () ( const vismodule::ColorImage& image, vismodule::ValueArray<vismodule::UInt8>& data );
     };
 
     struct HDTVWeightedMeanValue
     {
-        void operator () ( const kvs::ColorImage& image, kvs::ValueArray<kvs::UInt8>& data );
+        void operator () ( const vismodule::ColorImage& image, vismodule::ValueArray<vismodule::UInt8>& data );
     };
 
 public:
@@ -78,18 +78,18 @@ public:
 
     GrayImage( const size_t width, const size_t height );
 
-    GrayImage( const size_t width, const size_t height, const kvs::UInt8* data );
+    GrayImage( const size_t width, const size_t height, const vismodule::UInt8* data );
 
-    GrayImage( const size_t width, const size_t height, const kvs::ValueArray<kvs::UInt8>& data );
+    GrayImage( const size_t width, const size_t height, const vismodule::ValueArray<vismodule::UInt8>& data );
 
-    GrayImage( const kvs::GrayImage& image );
+    GrayImage( const vismodule::GrayImage& image );
 
-    explicit GrayImage( const kvs::BitImage& image );
+    explicit GrayImage( const vismodule::BitImage& image );
 
-    explicit GrayImage( const kvs::ColorImage& image );
+    explicit GrayImage( const vismodule::ColorImage& image );
 
     template <typename GrayScalingMethod>
-    GrayImage( const kvs::ColorImage& image, GrayScalingMethod method );
+    GrayImage( const vismodule::ColorImage& image, GrayScalingMethod method );
 
     explicit GrayImage( const std::string& filename );
 
@@ -97,19 +97,19 @@ public:
 
 public:
 
-    kvs::GrayImage& operator = ( const kvs::GrayImage& image );
+    vismodule::GrayImage& operator = ( const vismodule::GrayImage& image );
 
 public:
 
-    const kvs::UInt8 pixel( const size_t index ) const;
+    const vismodule::UInt8 pixel( const size_t index ) const;
 
-    const kvs::UInt8 pixel( const size_t i, const size_t j ) const;
+    const vismodule::UInt8 pixel( const size_t i, const size_t j ) const;
 
 public:
 
-    void set( const size_t index, const kvs::UInt8 pixel );
+    void set( const size_t index, const vismodule::UInt8 pixel );
 
-    void set( const size_t i, const size_t j, const kvs::UInt8 pixel );
+    void set( const size_t i, const size_t j, const vismodule::UInt8 pixel );
 
 public:
 
@@ -131,9 +131,9 @@ public:
 
 private:
 
-    const bool read_image( const kvs::ColorImage& image );
+    const bool read_image( const vismodule::ColorImage& image );
 
-    const bool read_image( const kvs::BitImage& image );
+    const bool read_image( const vismodule::BitImage& image );
 };
 
 /*===========================================================================*/
@@ -144,12 +144,12 @@ private:
  */
 /*===========================================================================*/
 template <typename GrayScalingMethod>
-inline GrayImage::GrayImage( const kvs::ColorImage& image, GrayScalingMethod method ):
-    kvs::ImageBase( image.width(), image.height(), kvs::ImageBase::Gray )
+inline GrayImage::GrayImage( const vismodule::ColorImage& image, GrayScalingMethod method ):
+    vismodule::ImageBase( image.width(), image.height(), vismodule::ImageBase::Gray )
 {
     method( image, m_data );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GRAY_IMAGE_H_INCLUDE
+#endif // VIS_MODULE__GRAY_IMAGE_H_INCLUDE

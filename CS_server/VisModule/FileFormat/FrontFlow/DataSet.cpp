@@ -14,7 +14,7 @@
 /*****************************************************************************/
 #include "DataSet.h"
 
-namespace kvs
+namespace vismodule
 {
 
 namespace gf
@@ -80,7 +80,7 @@ const std::string& DataSet::comment( const size_t index ) const
  *  @return data list
  */
 /*===========================================================================*/
-const std::vector<kvs::gf::Data>& DataSet::dataList( void ) const
+const std::vector<vismodule::gf::Data>& DataSet::dataList( void ) const
 {
     return( m_data_list );
 }
@@ -92,7 +92,7 @@ const std::vector<kvs::gf::Data>& DataSet::dataList( void ) const
  *  @return data
  */
 /*===========================================================================*/
-const kvs::gf::Data& DataSet::data( const size_t index ) const
+const vismodule::gf::Data& DataSet::data( const size_t index ) const
 {
     return( m_data_list.at( index ) );
 }
@@ -112,8 +112,8 @@ void DataSet::deallocate( void )
         comment++;
     }
 
-    std::vector<kvs::gf::Data>::iterator data = m_data_list.begin();
-    std::vector<kvs::gf::Data>::const_iterator last_data = m_data_list.end();
+    std::vector<vismodule::gf::Data>::iterator data = m_data_list.begin();
+    std::vector<vismodule::gf::Data>::const_iterator last_data = m_data_list.end();
     while ( data != last_data )
     {
         data->deallocate();
@@ -135,7 +135,7 @@ const bool DataSet::readAscii( FILE* fp )
     memset( line, 0, line_size );
 
     // Read a number of comments.
-    kvs::Int32 ncomments = 0;
+    vismodule::Int32 ncomments = 0;
     fgets( line, line_size, fp );
     sscanf( line, "%d", &ncomments );
 
@@ -156,7 +156,7 @@ const bool DataSet::readAscii( FILE* fp )
         const std::string tag( line, 8 );
         if ( tag == "#ENDFILE" || tag == "#NEW_SET" ) { break; }
 
-        kvs::gf::Data data;
+        vismodule::gf::Data data;
         if ( !data.readAscii( fp, tag ) ) return( false );
 
         m_data_list.push_back( data );
@@ -175,11 +175,11 @@ const bool DataSet::readAscii( FILE* fp )
 const bool DataSet::readBinary( FILE* fp, const bool swap )
 {
     // Read a number of comments.
-    kvs::Int32 ncomments = 0;
+    vismodule::Int32 ncomments = 0;
     fseek( fp, 4, SEEK_CUR );
     fread( &ncomments, 4, 1, fp );
     fseek( fp, 4, SEEK_CUR );
-    if ( swap ) kvs::Endian::Swap( ncomments );
+    if ( swap ) vismodule::Endian::Swap( ncomments );
 
     // Read commnets.
     char comment[60];
@@ -209,7 +209,7 @@ const bool DataSet::readBinary( FILE* fp, const bool swap )
         if ( strncmp( buffer, "#ENDFILE", 8 ) == 0 ||
              strncmp( buffer, "#NEW_SET", 8 ) == 0 ) { break; }
 
-        kvs::gf::Data data;
+        vismodule::gf::Data data;
         if ( !data.readBinary( fp ) ) return( false );
 
         m_data_list.push_back( data );
@@ -220,4 +220,4 @@ const bool DataSet::readBinary( FILE* fp, const bool swap )
 
 } // end of namespace gf
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -11,34 +11,34 @@
  *  $Id: OpenGL.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__OPEN_GL_H_INCLUDE
-#define KVS__OPEN_GL_H_INCLUDE
+#ifndef VIS_MODULE__OPEN_GL_H_INCLUDE
+#define VIS_MODULE__OPEN_GL_H_INCLUDE
 
 
-#include <kvs/Platform>
-#include <kvs/StringList>
+#include <vismodule/Platform>
+#include <vismodule/StringList>
 
-#if !defined( KVS_PLATFORM_WINDOWS )
+#if !defined( VIS_MODULE_PLATFORM_WINDOWS )
 #define GL_GLEXT_PROTOTYPES
 #endif
 
-#if defined( KVS_PLATFORM_WINDOWS )
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
 #include <windows.h>
 #define GLUT_DISABLE_ATEXIT_HACK
 #endif
 
 /* NOTE: GLEW header file 'glew.h' must be included before the OpenGL header files.
  * The 'glew.h' is formally included in SupportGLEW/GLEW.h. However, the 'glew.h'
- * is included in this header file when 'KVS_SUPPORT_GLEW' is defined since some
- * KVS classes that is compiled into the KVS core library uses the OpenGL functions
+ * is included in this header file when 'VIS_MODULE_SUPPORT_GLEW' is defined since some
+ * VISMODULE classes that is compiled into the KVS core library uses the OpenGL functions
  * by including this header file.
  */
 #ifndef NO_CLIENT
-#if defined( KVS_SUPPORT_GLEW )
+#if defined( VIS_MODULE_SUPPORT_GLEW )
 #include <GL/glew.h>
 #endif
 
-#if defined( KVS_PLATFORM_MACOSX )
+#if defined( VIS_MODULE_PLATFORM_MACOSX )
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #else
@@ -48,7 +48,7 @@
 #endif // NO_CLIENT
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace OpenGL
@@ -144,9 +144,9 @@ inline const std::string Renderer( void )
  *  @return extension name list
  */
 /*===========================================================================*/
-inline const kvs::StringList ExtensionList( void )
+inline const vismodule::StringList ExtensionList( void )
 {
-    kvs::StringList extension_list;
+    vismodule::StringList extension_list;
 
 #ifndef NO_CLIENT
     std::stringstream list( (char*)glGetString( GL_EXTENSIONS ) );
@@ -156,7 +156,7 @@ inline const kvs::StringList ExtensionList( void )
     std::string name;
     while ( list >> name )
     {
-        extension_list.push_back( kvs::String( name ) );
+        extension_list.push_back( vismodule::String( name ) );
     }
 
     return( extension_list );
@@ -184,7 +184,7 @@ inline const GLenum ErrorCode( void )
 inline const bool CheckError( void )
 {
 #ifndef NO_CLIENT
-    const GLenum error_code = kvs::OpenGL::ErrorCode();
+    const GLenum error_code = vismodule::OpenGL::ErrorCode();
     return( error_code == GL_NO_ERROR );
 #else
     return( false );
@@ -208,6 +208,6 @@ inline std::string ErrorString( const GLenum error_code )
 
 } // end of namespace OpenGL
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__OPEN_GL_H_INCLUDE
+#endif // VIS_MODULE__OPEN_GL_H_INCLUDE

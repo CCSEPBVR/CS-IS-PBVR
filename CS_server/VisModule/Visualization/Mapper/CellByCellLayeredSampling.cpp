@@ -14,19 +14,19 @@
 /*****************************************************************************/
 #include "CellByCellLayeredSampling.h"
 #include <vector>
-#include <kvs/DebugNew>
-#include <kvs/GlobalCore>
-#include <kvs/ObjectManager>
-#include <kvs/Camera>
-#include <kvs/ValueArray>
-#include <kvs/CellBase>
-#include <kvs/TetrahedralCell>
-#include <kvs/CellByCellParticleGenerator>
-#include <kvs/MersenneTwister>
+#include <vismodule/DebugNew>
+#include <vismodule/GlobalCore>
+#include <vismodule/ObjectManager>
+#include <vismodule/Camera>
+#include <vismodule/ValueArray>
+#include <vismodule/CellBase>
+#include <vismodule/TetrahedralCell>
+#include <vismodule/CellByCellParticleGenerator>
+#include <vismodule/MersenneTwister>
 
-namespace Generator = kvs::CellByCellParticleGenerator;
+namespace Generator = vismodule::CellByCellParticleGenerator;
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -35,8 +35,8 @@ namespace kvs
  */
 /*===========================================================================*/
 CellByCellLayeredSampling::CellByCellLayeredSampling( void ):
-    kvs::MapperBase(),
-    kvs::PointObject(),
+    vismodule::MapperBase(),
+    vismodule::PointObject(),
     m_camera( 0 ),
     m_pregenerated_particles( 0 )
 {
@@ -53,13 +53,13 @@ CellByCellLayeredSampling::CellByCellLayeredSampling( void ):
  */
 /*===========================================================================*/
 CellByCellLayeredSampling::CellByCellLayeredSampling(
-    const kvs::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase* volume,
     const size_t                 subpixel_level,
     const float                  sampling_step,
-    const kvs::TransferFunction& transfer_function,
+    const vismodule::TransferFunction& transfer_function,
     const float                  object_depth ):
-    kvs::MapperBase( transfer_function ),
-    kvs::PointObject(),
+    vismodule::MapperBase( transfer_function ),
+    vismodule::PointObject(),
     m_camera( 0 ),
     m_pregenerated_particles( 0 )
 {
@@ -81,14 +81,14 @@ CellByCellLayeredSampling::CellByCellLayeredSampling(
  */
 /*===========================================================================*/
 CellByCellLayeredSampling::CellByCellLayeredSampling(
-    const kvs::Camera*           camera,
-    const kvs::VolumeObjectBase* volume,
+    const vismodule::Camera*           camera,
+    const vismodule::VolumeObjectBase* volume,
     const size_t                 subpixel_level,
     const float                  sampling_step,
-    const kvs::TransferFunction& transfer_function,
+    const vismodule::TransferFunction& transfer_function,
     const float                  object_depth ):
-    kvs::MapperBase( transfer_function ),
-    kvs::PointObject(),
+    vismodule::MapperBase( transfer_function ),
+    vismodule::PointObject(),
     m_camera( 0 ),
     m_pregenerated_particles( 0 )
 {
@@ -149,7 +149,7 @@ const float CellByCellLayeredSampling::objectDepth( void ) const
  *  @param  camera [in] pointer to the camera
  */
 /*===========================================================================*/
-void CellByCellLayeredSampling::attachCamera( const kvs::Camera* camera )
+void CellByCellLayeredSampling::attachCamera( const vismodule::Camera* camera )
 {
     m_camera = camera;
 }
@@ -194,45 +194,45 @@ void CellByCellLayeredSampling::setObjectDepth( const float object_depth )
  *  @return pointer to the point object
  */
 /*===========================================================================*/
-CellByCellLayeredSampling::SuperClass* CellByCellLayeredSampling::exec( const kvs::ObjectBase* object )
+CellByCellLayeredSampling::SuperClass* CellByCellLayeredSampling::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase* volume = kvs::VolumeObjectBase::DownCast( object );
+    const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
     if ( !volume )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not volume dat.");
+        visModuleMessageError("Input object is not volume dat.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
-    if ( volume_type == kvs::VolumeObjectBase::Unstructured )
+    const vismodule::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
+    if ( volume_type == vismodule::VolumeObjectBase::Unstructured )
     {
         if ( m_camera )
         {
-            this->mapping( m_camera, reinterpret_cast<const kvs::UnstructuredVolumeObject*>( object ) );
+            this->mapping( m_camera, reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( object ) );
         }
         else
         {
             // Generate particles by using default camera parameters.
-            if ( kvs::GlobalCore::camera )
+            if ( vismodule::GlobalCore::camera )
             {
-                if ( kvs::GlobalCore::camera->windowWidth() != 0 && kvs::GlobalCore::camera->windowHeight() )
+                if ( vismodule::GlobalCore::camera->windowWidth() != 0 && vismodule::GlobalCore::camera->windowHeight() )
                 {
-                    const kvs::Camera* camera = kvs::GlobalCore::camera;
-                    this->mapping( camera, reinterpret_cast<const kvs::UnstructuredVolumeObject*>( object ) );
+                    const vismodule::Camera* camera = vismodule::GlobalCore::camera;
+                    this->mapping( camera, reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( object ) );
                 }
             }
             else
             {
-                kvs::Camera* camera = new kvs::Camera();
-                this->mapping( camera, reinterpret_cast<const kvs::UnstructuredVolumeObject*>( object ) );
+                vismodule::Camera* camera = new vismodule::Camera();
+                this->mapping( camera, reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( object ) );
                 delete camera;
             }
         }
@@ -248,12 +248,12 @@ CellByCellLayeredSampling::SuperClass* CellByCellLayeredSampling::exec( const kv
  *  @param  volume [in] pointer to the input volume object
  */
 /*===========================================================================*/
-void CellByCellLayeredSampling::mapping( const kvs::Camera* camera, const kvs::UnstructuredVolumeObject* volume )
+void CellByCellLayeredSampling::mapping( const vismodule::Camera* camera, const vismodule::UnstructuredVolumeObject* volume )
 {
-    if ( volume->cellType() != kvs::UnstructuredVolumeObject::Tetrahedra )
+    if ( volume->cellType() != vismodule::UnstructuredVolumeObject::Tetrahedra )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError( "Cell type is not tetrahedra." );
+        visModuleMessageError( "Cell type is not tetrahedra." );
         return;
     }
 
@@ -272,18 +272,18 @@ void CellByCellLayeredSampling::mapping( const kvs::Camera* camera, const kvs::U
 
     // Generate the particles.
     const std::type_info& type = volume->values().typeInfo()->type();
-    if (      type == typeid( kvs::Int8   ) ) this->generate_particles<kvs::Int8>( volume );
-    else if ( type == typeid( kvs::Int16  ) ) this->generate_particles<kvs::Int16>( volume );
-    else if ( type == typeid( kvs::Int32  ) ) this->generate_particles<kvs::Int32>( volume );
-    else if ( type == typeid( kvs::UInt8  ) ) this->generate_particles<kvs::UInt8>( volume );
-    else if ( type == typeid( kvs::UInt16 ) ) this->generate_particles<kvs::UInt16>( volume );
-    else if ( type == typeid( kvs::UInt32 ) ) this->generate_particles<kvs::UInt32>( volume );
-    else if ( type == typeid( kvs::Real32 ) ) this->generate_particles<kvs::Real32>( volume );
-    else if ( type == typeid( kvs::Real64 ) ) this->generate_particles<kvs::Real64>( volume );
+    if (      type == typeid( vismodule::Int8   ) ) this->generate_particles<vismodule::Int8>( volume );
+    else if ( type == typeid( vismodule::Int16  ) ) this->generate_particles<vismodule::Int16>( volume );
+    else if ( type == typeid( vismodule::Int32  ) ) this->generate_particles<vismodule::Int32>( volume );
+    else if ( type == typeid( vismodule::UInt8  ) ) this->generate_particles<vismodule::UInt8>( volume );
+    else if ( type == typeid( vismodule::UInt16 ) ) this->generate_particles<vismodule::UInt16>( volume );
+    else if ( type == typeid( vismodule::UInt32 ) ) this->generate_particles<vismodule::UInt32>( volume );
+    else if ( type == typeid( vismodule::Real32 ) ) this->generate_particles<vismodule::Real32>( volume );
+    else if ( type == typeid( vismodule::Real64 ) ) this->generate_particles<vismodule::Real64>( volume );
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
+        visModuleMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
     }
 }
 
@@ -294,7 +294,7 @@ void CellByCellLayeredSampling::mapping( const kvs::Camera* camera, const kvs::U
  */
 /*===========================================================================*/
 template <typename T>
-void CellByCellLayeredSampling::generate_particles( const kvs::UnstructuredVolumeObject* volume )
+void CellByCellLayeredSampling::generate_particles( const vismodule::UnstructuredVolumeObject* volume )
 {
     // Tiny value.
     const size_t resolution = BaseClass::transferFunction().resolution();
@@ -304,12 +304,12 @@ void CellByCellLayeredSampling::generate_particles( const kvs::UnstructuredVolum
     this->pregenerate_particles( 800000 );
 
     // Vertex data arrays. (output)
-    std::vector<kvs::Real32> vertex_coords;
-    std::vector<kvs::UInt8>  vertex_colors;
-    std::vector<kvs::Real32> vertex_normals;
+    std::vector<vismodule::Real32> vertex_coords;
+    std::vector<vismodule::UInt8>  vertex_colors;
+    std::vector<vismodule::Real32> vertex_normals;
 
     // Set a tetrahedral cell interpolator.
-    kvs::TetrahedralCell<T>* cell = new kvs::TetrahedralCell<T>( volume );
+    vismodule::TetrahedralCell<T>* cell = new vismodule::TetrahedralCell<T>( volume );
 
     // Generate particles for each cell.
     const size_t ncells = volume->ncells();
@@ -319,13 +319,13 @@ void CellByCellLayeredSampling::generate_particles( const kvs::UnstructuredVolum
         cell->bindCell( index );
 
         const T* S = cell->scalars();
-        const T S_min = kvs::Math::Min( S[0], S[1], S[2], S[3] );
-        const T S_max = kvs::Math::Max( S[0], S[1], S[2], S[3] );
+        const T S_min = vismodule::Math::Min( S[0], S[1], S[2], S[3] );
+        const T S_max = vismodule::Math::Max( S[0], S[1], S[2], S[3] );
 
         // Uniform sampling.
-        if ( kvs::Math::Equal( S[0], S[1] ) &&
-             kvs::Math::Equal( S[1], S[2] ) &&
-             kvs::Math::Equal( S[2], S[3] ) )
+        if ( vismodule::Math::Equal( S[0], S[1] ) &&
+             vismodule::Math::Equal( S[1], S[2] ) &&
+             vismodule::Math::Equal( S[2], S[3] ) )
         {
             const float scalar = cell->averagedScalar();
             const float density = this->calculate_density( scalar );
@@ -378,9 +378,9 @@ void CellByCellLayeredSampling::generate_particles( const kvs::UnstructuredVolum
 
     delete cell;
 
-    SuperClass::m_coords = kvs::ValueArray<kvs::Real32>( vertex_coords );
-    SuperClass::m_colors = kvs::ValueArray<kvs::UInt8>( vertex_colors );
-    SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( vertex_normals );
+    SuperClass::m_coords = vismodule::ValueArray<vismodule::Real32>( vertex_coords );
+    SuperClass::m_colors = vismodule::ValueArray<vismodule::UInt8>( vertex_colors );
+    SuperClass::m_normals = vismodule::ValueArray<vismodule::Real32>( vertex_normals );
     SuperClass::setSize( 1.0f );
 }
 
@@ -396,7 +396,7 @@ void CellByCellLayeredSampling::pregenerate_particles( const size_t nparticles )
     const size_t nintervals = resolution - 1;
 
     // Integrate the density distribution function as piecewise linear function.
-    kvs::ValueArray<float> m( nintervals ); m.fill( 0x00 );
+    vismodule::ValueArray<float> m( nintervals ); m.fill( 0x00 );
     float M = 0.0f;
     for ( size_t i = 0; i < nintervals; i++ )
     {
@@ -413,14 +413,14 @@ void CellByCellLayeredSampling::pregenerate_particles( const size_t nparticles )
     m_M_value = M;
 
     // Calculate the number of particles in each interval.
-    kvs::MersenneTwister R; R.setSeed();
-    kvs::ValueArray<kvs::UInt32> n( nintervals ); n.fill( 0x00 );
-    kvs::UInt32 N = 0; // total number of particles
+    vismodule::MersenneTwister R; R.setSeed();
+    vismodule::ValueArray<vismodule::UInt32> n( nintervals ); n.fill( 0x00 );
+    vismodule::UInt32 N = 0; // total number of particles
     for ( size_t i = 0; i < nintervals; i++ )
     {
         const float tmp = static_cast<float>( nparticles ) * m[i] / M;
 
-        n[i] = static_cast<kvs::UInt32>( tmp );
+        n[i] = static_cast<vismodule::UInt32>( tmp );
         if ( tmp - n[i] > R() ) n[i] = n[i] + 1;
 
         N += n[i];
@@ -430,8 +430,8 @@ void CellByCellLayeredSampling::pregenerate_particles( const size_t nparticles )
     m_selected_particles.indices.allocate( N );
 
     // Generate particles by using rejection method.
-    kvs::ValueArray<kvs::Real32> coords( N * 3 );
-    kvs::Real32* pcoords = coords.pointer();
+    vismodule::ValueArray<vismodule::Real32> coords( N * 3 );
+    vismodule::Real32* pcoords = coords.pointer();
     for ( size_t i = 0; i < nintervals; i++ )
     {
         const float p0 = m_density_map[i];
@@ -441,7 +441,7 @@ void CellByCellLayeredSampling::pregenerate_particles( const size_t nparticles )
 
         const float a = ( p1 - p0 ) / ( s1 - s0 );
         const float b = ( p0 * s1 - p1 * s0 ) / ( s1 - s0 );
-        const float c = kvs::Math::Max( p0, p1 );
+        const float c = vismodule::Math::Max( p0, p1 );
 
         size_t count = 0;
         while ( count < n[i] )
@@ -468,7 +468,7 @@ void CellByCellLayeredSampling::pregenerate_particles( const size_t nparticles )
     }
 
     if ( m_pregenerated_particles ) delete m_pregenerated_particles;
-    m_pregenerated_particles = new kvs::PointObject( coords );
+    m_pregenerated_particles = new vismodule::PointObject( coords );
 }
 
 /*===========================================================================*/
@@ -484,21 +484,21 @@ void CellByCellLayeredSampling::pregenerate_particles( const size_t nparticles )
 /*===========================================================================*/
 template <typename T>
 void CellByCellLayeredSampling::uniform_sampling(
-    const kvs::TetrahedralCell<T>* cell,
-    const kvs::TransferFunction& tfunc,
+    const vismodule::TetrahedralCell<T>* cell,
+    const vismodule::TransferFunction& tfunc,
     const size_t nparticles,
-    std::vector<kvs::Real32>* coords,
-    std::vector<kvs::UInt8>*  colors,
-    std::vector<kvs::Real32>* normals )
+    std::vector<vismodule::Real32>* coords,
+    std::vector<vismodule::UInt8>*  colors,
+    std::vector<vismodule::Real32>* normals )
 {
     for ( size_t particle = 0; particle < nparticles; ++particle )
     {
         // Calculate a coord.
-        const kvs::Vector3f coord = cell->randomSampling();
+        const vismodule::Vector3f coord = cell->randomSampling();
 
         // Calculate a color.
         const float scalar = cell->scalar();
-        const kvs::RGBColor color( tfunc.colorMap().at( scalar ) );
+        const vismodule::RGBColor color( tfunc.colorMap().at( scalar ) );
 
         // Calculate a normal.
         const Vector3f normal( -cell->gradient() );
@@ -531,22 +531,22 @@ void CellByCellLayeredSampling::uniform_sampling(
 /*===========================================================================*/
 template <typename T>
 void CellByCellLayeredSampling::rejection_sampling(
-    const kvs::TetrahedralCell<T>* cell,
-    const kvs::TransferFunction& tfunc,
+    const vismodule::TetrahedralCell<T>* cell,
+    const vismodule::TransferFunction& tfunc,
     const size_t nparticles,
-    std::vector<kvs::Real32>* coords,
-    std::vector<kvs::UInt8>*  colors,
-    std::vector<kvs::Real32>* normals )
+    std::vector<vismodule::Real32>* coords,
+    std::vector<vismodule::UInt8>*  colors,
+    std::vector<vismodule::Real32>* normals )
 {
     const T* S = cell->scalars();
-    const float S_min = static_cast<float>( kvs::Math::Min( S[0], S[1], S[2], S[3] ) );
-    const float S_max = static_cast<float>( kvs::Math::Max( S[0], S[1], S[2], S[3] ) );
+    const float S_min = static_cast<float>( vismodule::Math::Min( S[0], S[1], S[2], S[3] ) );
+    const float S_max = static_cast<float>( vismodule::Math::Max( S[0], S[1], S[2], S[3] ) );
     const float p_max = this->calculate_maximum_density( S_min, S_max ) / nparticles;
 
     size_t count = 0;
     while ( count < nparticles )
     {
-        const kvs::Vector3f coord = cell->randomSampling();
+        const vismodule::Vector3f coord = cell->randomSampling();
         const float scalar = cell->scalar();
         const float density = this->calculate_density( scalar );
 
@@ -555,7 +555,7 @@ void CellByCellLayeredSampling::rejection_sampling(
         if ( p > p_max * R )
         {
             // Calculate a color.
-            const kvs::RGBColor color( tfunc.colorMap().at( scalar ) );
+            const vismodule::RGBColor color( tfunc.colorMap().at( scalar ) );
 
             // Calculate a normal.
             const Vector3f normal( -cell->gradient() );
@@ -591,12 +591,12 @@ void CellByCellLayeredSampling::rejection_sampling(
 /*===========================================================================*/
 template <typename T>
 void CellByCellLayeredSampling::roulette_selection(
-    const kvs::TetrahedralCell<T>* cell,
-    const kvs::TransferFunction& tfunc,
+    const vismodule::TetrahedralCell<T>* cell,
+    const vismodule::TransferFunction& tfunc,
     const size_t nparticles,
-    std::vector<kvs::Real32>* coords,
-    std::vector<kvs::UInt8>*  colors,
-    std::vector<kvs::Real32>* normals )
+    std::vector<vismodule::Real32>* coords,
+    std::vector<vismodule::UInt8>*  colors,
+    std::vector<vismodule::Real32>* normals )
 {
     const float a1 = m_A_matrix[0][0];
     const float a2 = m_A_matrix[1][1];
@@ -604,34 +604,34 @@ void CellByCellLayeredSampling::roulette_selection(
     const float b1 = m_A_matrix[0][3];
     const float b2 = m_A_matrix[1][3];
     const float b3 = m_A_matrix[2][3];
-    const kvs::Matrix44f A_inv(
+    const vismodule::Matrix44f A_inv(
         1.0f/a1, 0.0f,    0.0f,    -b1/a1,
         0.0f,    1.0f/a2, 0.0f,    -b2/a2,
         0.0f,    0.0f,    1.0f/a3, -b3/a3,
         0.0f,    0.0f,    0.0f,    1.0f       );
 
-    const kvs::Matrix44f L_inv( m_L_matrix.transpose() );
+    const vismodule::Matrix44f L_inv( m_L_matrix.transpose() );
 
-    const kvs::Vector3f g( cell->gradient().normalize() );
+    const vismodule::Vector3f g( cell->gradient().normalize() );
 
-    const kvs::Matrix44f LA_inv = L_inv * A_inv;
+    const vismodule::Matrix44f LA_inv = L_inv * A_inv;
     for ( size_t i = 0; i < nparticles; i++ )
     {
         const float fid = Generator::GetRandomNumber() * m_selected_particles.nparticles;
         const size_t id = static_cast< size_t >( fid );
         const size_t id3 = m_selected_particles.indices[ id ] * 3;
-        const kvs::Vector4f selected_particle(
+        const vismodule::Vector4f selected_particle(
             m_pregenerated_particles->coords()[ id3   ],
             m_pregenerated_particles->coords()[ id3+1 ],
             m_pregenerated_particles->coords()[ id3+2 ],
             1.0f  );
 
-        const kvs::Vector4f coord( LA_inv * selected_particle );
+        const vismodule::Vector4f coord( LA_inv * selected_particle );
 
         const float scalar = selected_particle.z();
         const float max_range = static_cast<float>( tfunc.resolution() - 1 );
         const size_t index = static_cast<size_t>( scalar * max_range );
-        const kvs::RGBColor color( tfunc.colorMap()[index] );
+        const vismodule::RGBColor color( tfunc.colorMap()[index] );
 
         // Set coord, color, and normal to the point object.
         coords->push_back( coord.x() );
@@ -694,7 +694,7 @@ const float CellByCellLayeredSampling::calculate_maximum_density( const float sc
 {
     if ( scalar0 > scalar1 )
     {
-        kvsMessageError("undefined use of calculate_maximum_density.");
+        visModuleMessageError("undefined use of calculate_maximum_density.");
         return 0.0f;
     }
 
@@ -734,7 +734,7 @@ const float CellByCellLayeredSampling::calculate_maximum_density( const float sc
 template <typename T>
 const size_t CellByCellLayeredSampling::calculate_number_of_particles(
     const float density,
-    const kvs::TetrahedralCell<T>* cell )
+    const vismodule::TetrahedralCell<T>* cell )
 {
     const float volume_of_cell = cell->volume();
     const float N = density * volume_of_cell;
@@ -762,7 +762,7 @@ const size_t CellByCellLayeredSampling::calculate_number_of_particles(
     const float a1 = m_A_matrix[0][0];
     const float a2 = m_A_matrix[1][1];
     const float a3 = m_A_matrix[2][2];
-    const float detA_inv = 1.0f / kvs::Math::Abs( a1 * a2 * a3 );
+    const float detA_inv = 1.0f / vismodule::Math::Abs( a1 * a2 * a3 );
     const float N = detA_inv * m_M_value * N_in / N_all;
     const float R = Generator::GetRandomNumber();
 
@@ -780,11 +780,11 @@ const size_t CellByCellLayeredSampling::calculate_number_of_particles(
 /*===========================================================================*/
 template <typename T>
 void CellByCellLayeredSampling::calculate_particles_in_cell(
-    const kvs::TetrahedralCell<T>* cell )
+    const vismodule::TetrahedralCell<T>* cell )
 {
     const T* S = cell->scalars();
-    const T S_min = kvs::Math::Min( S[0], S[1], S[2], S[3] );
-    const T S_max = kvs::Math::Max( S[0], S[1], S[2], S[3] );
+    const T S_min = vismodule::Math::Min( S[0], S[1], S[2], S[3] );
+    const T S_max = vismodule::Math::Max( S[0], S[1], S[2], S[3] );
 
     const float min_value = BaseClass::transferFunction().colorMap().minValue();
     const float max_value = BaseClass::transferFunction().colorMap().maxValue();
@@ -792,39 +792,39 @@ void CellByCellLayeredSampling::calculate_particles_in_cell(
     const float max_cell_scalar = static_cast<float>( S_max - min_value ) / ( max_value - min_value );
 
     // Gradient vector.
-    kvs::Vector3f g = cell->gradient(); g.normalize();
+    vismodule::Vector3f g = cell->gradient(); g.normalize();
 
     // Temporary vector for calculating basis vectors: t1 and t2.
-    kvs::Vector3f u( 0.0f, 0.0f, 0.0f );
+    vismodule::Vector3f u( 0.0f, 0.0f, 0.0f );
     size_t index = 0;
-    index = kvs::Math::Abs( g[0] ) < kvs::Math::Abs( g[1] ) ? 0 : 1;
-    index = kvs::Math::Abs( g[index] ) < kvs::Math::Abs( g[2] ) ? index : 2;
+    index = vismodule::Math::Abs( g[0] ) < vismodule::Math::Abs( g[1] ) ? 0 : 1;
+    index = vismodule::Math::Abs( g[index] ) < vismodule::Math::Abs( g[2] ) ? index : 2;
     u[index] = 1.0f;
 
     // Basis vectors.
-    kvs::Vector3f t1( g.cross( u ) ); t1.normalize();
-    kvs::Vector3f t2( g.cross( t1 ) ); t2.normalize();
+    vismodule::Vector3f t1( g.cross( u ) ); t1.normalize();
+    vismodule::Vector3f t2( g.cross( t1 ) ); t2.normalize();
 
     // Transformation matrix L.
-    m_L_matrix = kvs::Matrix44f(
+    m_L_matrix = vismodule::Matrix44f(
         t1.x(), t1.y(), t1.z(), 0.0f,
         t2.x(), t2.y(), t2.z(), 0.0f,
         g.x(),  g.y(),  g.z(),  0.0f,
         0.0f,   0.0f,   0.0f,   1.0f );
 
     // Transformation matrix A.
-    const kvs::Vector3f* v = cell->vertices();
-    const kvs::Vector4f v0 = m_L_matrix * kvs::Vector4f( v[0].x(), v[0].y(), v[0].z(), 1.0f );
-    const kvs::Vector4f v1 = m_L_matrix * kvs::Vector4f( v[1].x(), v[1].y(), v[1].z(), 1.0f );
-    const kvs::Vector4f v2 = m_L_matrix * kvs::Vector4f( v[2].x(), v[2].y(), v[2].z(), 1.0f );
-    const kvs::Vector4f v3 = m_L_matrix * kvs::Vector4f( v[3].x(), v[3].y(), v[3].z(), 1.0f );
+    const vismodule::Vector3f* v = cell->vertices();
+    const vismodule::Vector4f v0 = m_L_matrix * vismodule::Vector4f( v[0].x(), v[0].y(), v[0].z(), 1.0f );
+    const vismodule::Vector4f v1 = m_L_matrix * vismodule::Vector4f( v[1].x(), v[1].y(), v[1].z(), 1.0f );
+    const vismodule::Vector4f v2 = m_L_matrix * vismodule::Vector4f( v[2].x(), v[2].y(), v[2].z(), 1.0f );
+    const vismodule::Vector4f v3 = m_L_matrix * vismodule::Vector4f( v[3].x(), v[3].y(), v[3].z(), 1.0f );
 
-    const float x_min = kvs::Math::Min( v0.x(), v1.x(), v2.x(), v3.x() );
-    const float x_max = kvs::Math::Max( v0.x(), v1.x(), v2.x(), v3.x() );
-    const float y_min = kvs::Math::Min( v0.y(), v1.y(), v2.y(), v3.y() );
-    const float y_max = kvs::Math::Max( v0.y(), v1.y(), v2.y(), v3.y() );
-    const float z_min = kvs::Math::Min( v0.z(), v1.z(), v2.z(), v3.z() );
-    const float z_max = kvs::Math::Max( v0.z(), v1.z(), v2.z(), v3.z() );
+    const float x_min = vismodule::Math::Min( v0.x(), v1.x(), v2.x(), v3.x() );
+    const float x_max = vismodule::Math::Max( v0.x(), v1.x(), v2.x(), v3.x() );
+    const float y_min = vismodule::Math::Min( v0.y(), v1.y(), v2.y(), v3.y() );
+    const float y_max = vismodule::Math::Max( v0.y(), v1.y(), v2.y(), v3.y() );
+    const float z_min = vismodule::Math::Min( v0.z(), v1.z(), v2.z(), v3.z() );
+    const float z_max = vismodule::Math::Max( v0.z(), v1.z(), v2.z(), v3.z() );
 
     const float a1 = 1.0f / ( x_max - x_min );
     const float a2 = 1.0f / ( y_max - y_min );
@@ -833,39 +833,39 @@ void CellByCellLayeredSampling::calculate_particles_in_cell(
     const float b2 = -a2 * y_min;
     const float b3 = -a3 * z_min + min_cell_scalar;
 
-    m_A_matrix = kvs::Matrix44f(
+    m_A_matrix = vismodule::Matrix44f(
         a1,   0.0f, 0.0f, b1,
         0.0f, a2,   0.0f, b2,
         0.0f, 0.0f, a3,   b3,
         0.0f, 0.0f, 0.0f, 1.0f );
 
     // Select particles in the cell.
-    const kvs::Vector4f g0 = m_A_matrix * v0;
-    const kvs::Vector4f g1 = m_A_matrix * v1;
-    const kvs::Vector4f g2 = m_A_matrix * v2;
-    const kvs::Vector4f g3 = m_A_matrix * v3;
+    const vismodule::Vector4f g0 = m_A_matrix * v0;
+    const vismodule::Vector4f g1 = m_A_matrix * v1;
+    const vismodule::Vector4f g2 = m_A_matrix * v2;
+    const vismodule::Vector4f g3 = m_A_matrix * v3;
 
-    const kvs::Vector4f d1( g1 - g0 );
-    const kvs::Vector4f d2( g3 - g0 );
-    const kvs::Vector4f d3( g2 - g0 );
+    const vismodule::Vector4f d1( g1 - g0 );
+    const vismodule::Vector4f d2( g3 - g0 );
+    const vismodule::Vector4f d3( g2 - g0 );
 
-    const kvs::Matrix33f D(
+    const vismodule::Matrix33f D(
         d1[0], d2[0], d3[0],
         d1[1], d2[1], d3[1],
         d1[2], d2[2], d3[2] );
 
-    const kvs::Matrix33f D_inv( D.inverse() );
+    const vismodule::Matrix33f D_inv( D.inverse() );
 
     size_t counter = 0;
     const size_t nparticles = m_pregenerated_particles->nvertices();
     for ( size_t i = 0, i3 = 0; i < nparticles; i++, i3 += 3 )
     {
-        const kvs::Vector3f located_v(
+        const vismodule::Vector3f located_v(
             m_pregenerated_particles->coords()[i3  ] - g0.x(),
             m_pregenerated_particles->coords()[i3+1] - g0.y(),
             m_pregenerated_particles->coords()[i3+2] - g0.z() );
 
-        const kvs::Vector3f lambda( D_inv * located_v );
+        const vismodule::Vector3f lambda( D_inv * located_v );
         if ( ( lambda[0] >= 0.0f && lambda[1] >= 0.0f ) && lambda[2] >= 0.0f )
         {
             if ( lambda[0] + lambda[1] + lambda[2] <= 1.0f )
@@ -879,4 +879,4 @@ void CellByCellLayeredSampling::calculate_particles_in_cell(
     m_selected_particles.nparticles = counter;
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

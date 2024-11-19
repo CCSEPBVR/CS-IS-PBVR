@@ -7,19 +7,19 @@
 #include "CellByCellRejectionSampling.h"
 #include "CellByCellMetropolisSampling.h"
 //#include "CellByCellLayeredSampling.h"
-#include <kvs/Camera>
+#include <vismodule/Camera>
 #include "CellByCellUniformSampling.h"
 #include "CellByCellRejectionSampling.h"
 #include "CellByCellMetropolisSampling.h"
 #include "CellByCellHistogram.h"
 #if 0 //TEST_DELETE
-#include <kvs/TestVolume>
-#include <kvs/FrontSTRFileReader>
+#include <vismodule/TestVolume>
+#include <vismodule/FrontSTRFileReader>
 #endif
-#include <kvs/AVSUcd>
+#include <vismodule/AVSUcd>
 #include "common.h"
-#include <kvs/ValueArray>
-#include <kvs/File>
+#include <vismodule/ValueArray>
+#include <vismodule/File>
 
 #include "FileChecker.h"
 #include "StructuredVolumeObject.h"
@@ -31,7 +31,7 @@
 
 using namespace pbvr;
 
-void PointObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera, const size_t subpixel_level, const float sampling_step )
+void PointObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const size_t subpixel_level, const float sampling_step )
 {
 //FJ_TIMER_KAWAMURA
     PBVR_TIMER_STA( 260 );
@@ -41,7 +41,7 @@ void PointObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
 
     // add by shimomura 2023/0407
     pbvr::VolumeObjectBase* volume = nullptr;
-    if ( kvsview::FileChecker::ImportableStructuredVolume( param.m_input_data ))
+    if ( vismoduleview::FileChecker::ImportableStructuredVolume( param.m_input_data ))
     {
         std::cout << "Structured !" <<std::endl;
         volume = new pbvr::StructuredVolumeImporter( param.m_input_data ); 
@@ -53,7 +53,7 @@ void PointObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
         volume->setMinMaxExternalCoords( m_fi->m_min_subvolume_coord[id], m_fi->m_max_subvolume_coord[id] );
 
     } 
-    else if ( kvsview::FileChecker::ImportableUnstructuredVolume( param.m_input_data))
+    else if ( vismoduleview::FileChecker::ImportableUnstructuredVolume( param.m_input_data))
     {
         std::cout << "Unstructured !" <<std::endl;
         volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );  
@@ -66,7 +66,7 @@ void PointObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
     }
     else 
     {
-        kvsMessageError("%s is not volume data.", param.m_input_data.c_str());
+        visModuleMessageError("%s is not volume data.", param.m_input_data.c_str());
     }
 
     //pbvr::UnstructuredVolumeObject* volume;
@@ -102,14 +102,14 @@ void PointObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
     delete volume;
 }
 
-void PointObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera, const size_t subpixel_level, const float sampling_step, const int st, const int vl )
+void PointObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const size_t subpixel_level, const float sampling_step, const int st, const int vl )
 {
     PBVR_TIMER_STA( 260 );
     delete m_object;
     pbvr::UnstructuredVolumeObject* volume;
     volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );
 
-    kvs::File ifpx( m_fi->m_file_path );
+    vismodule::File ifpx( m_fi->m_file_path );
     std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
 
     volume = new pbvr::UnstructuredVolumeImporter( path_base, m_fi->m_file_type, st, vl );
@@ -159,7 +159,7 @@ std::string PointObjectGenerator::getErrorMessage( const size_t maxMemory ) cons
     return errorMessage;
 }
 
-pbvr::PointObject* PointObjectGenerator::sampling( const Argument& param, const kvs::Camera& camera, pbvr::VolumeObjectBase* volume, const size_t subpixel_level, const float sampling_step )
+pbvr::PointObject* PointObjectGenerator::sampling( const Argument& param, const vismodule::Camera& camera, pbvr::VolumeObjectBase* volume, const size_t subpixel_level, const float sampling_step )
 {
 #ifndef CPU_VER
     int rank;
@@ -176,7 +176,7 @@ pbvr::PointObject* PointObjectGenerator::sampling( const Argument& param, const 
 #if 0 //TEST_DELETE
     if ( param.m_test_volume )
     {
-        return new kvs::TestVolume( &camera, volume, m_subpixel_level, sampling_step, tf );
+        return new vismodule::TestVolume( &camera, volume, m_subpixel_level, sampling_step, tf );
     }
 #endif
 

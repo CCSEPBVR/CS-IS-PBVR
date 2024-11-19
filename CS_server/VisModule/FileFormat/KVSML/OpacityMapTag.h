@@ -11,15 +11,15 @@
  *  $Id: OpacityMapTag.h 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__KVSML__OPACITY_MAP_TAG_H_INCLUDE
-#define KVS__KVSML__OPACITY_MAP_TAG_H_INCLUDE
+#ifndef VIS_MODULE__KVSML__OPACITY_MAP_TAG_H_INCLUDE
+#define VIS_MODULE__KVSML__OPACITY_MAP_TAG_H_INCLUDE
 
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
 #include "TagBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -30,11 +30,11 @@ namespace kvsml
  *  @brief  Tag class for <OpacityMap>
  */
 /*===========================================================================*/
-class OpacityMapTag : public kvs::kvsml::TagBase
+class OpacityMapTag : public vismodule::kvsml::TagBase
 {
 public:
 
-    typedef kvs::kvsml::TagBase BaseClass;
+    typedef vismodule::kvsml::TagBase BaseClass;
 
 public:
 
@@ -44,9 +44,9 @@ public:
 
 public:
 
-    const bool read( const kvs::XMLNode::SuperClass* parent );
+    const bool read( const vismodule::XMLNode::SuperClass* parent );
 
-    const bool write( kvs::XMLNode::SuperClass* parent );
+    const bool write( vismodule::XMLNode::SuperClass* parent );
 };
 
 
@@ -55,11 +55,11 @@ public:
  *  @brief  <OpacityMapValue> tag class.
  */
 /*===========================================================================*/
-class OpacityMapValueTag : public kvs::kvsml::TagBase
+class OpacityMapValueTag : public vismodule::kvsml::TagBase
 {
 public:
 
-    typedef kvs::kvsml::TagBase BaseClass;
+    typedef vismodule::kvsml::TagBase BaseClass;
 
 protected:
 
@@ -84,15 +84,15 @@ public:
 
 public:
 
-    const bool read( const kvs::XMLNode::SuperClass* parent );
+    const bool read( const vismodule::XMLNode::SuperClass* parent );
 
-    const bool read( const kvs::XMLElement::SuperClass* element );
+    const bool read( const vismodule::XMLElement::SuperClass* element );
 
-    const bool write( kvs::XMLNode::SuperClass* parent );
+    const bool write( vismodule::XMLNode::SuperClass* parent );
 };
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__KVSML__OPACITY_MAP_TAG_H_INCLUDE
+#endif // VIS_MODULE__KVSML__OPACITY_MAP_TAG_H_INCLUDE

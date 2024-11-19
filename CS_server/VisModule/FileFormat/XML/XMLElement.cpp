@@ -16,7 +16,7 @@
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -83,4 +83,4 @@ const std::string XMLElement::AttributeValue( const TiXmlElement* element, const
     return( *value );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

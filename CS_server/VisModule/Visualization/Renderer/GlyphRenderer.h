@@ -11,15 +11,15 @@
  *  $Id: GlyphRenderer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__GLYPH_RENDERER_H_INCLUDE
-#define KVS__GLYPH_RENDERER_H_INCLUDE
+#ifndef VIS_MODULE__GLYPH_RENDERER_H_INCLUDE
+#define VIS_MODULE__GLYPH_RENDERER_H_INCLUDE
 
-#include <kvs/RendererBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/RendererBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class ObjectBase;
@@ -32,14 +32,14 @@ class GlyphObject;
  *  @brief  Glyph renderer class.
  */
 /*===========================================================================*/
-class GlyphRenderer : public kvs::RendererBase
+class GlyphRenderer : public vismodule::RendererBase
 {
     // Class name.
-    kvsClassName( kvs::GlyphRenderer );
+    visModuleClassName( vismodule::GlyphRenderer );
 
     // Module information.
-    kvsModuleCategory( Renderer );
-    kvsModuleBaseClass( kvs::RendererBase );
+    visModuleCategory( Renderer );
+    visModuleBaseClass( vismodule::RendererBase );
 
 public:
 
@@ -49,7 +49,7 @@ public:
 
 public:
 
-    void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
+    void exec( vismodule::ObjectBase* object, vismodule::Camera* camera, vismodule::Light* light );
 
 protected:
 
@@ -58,6 +58,6 @@ protected:
     virtual void initialize_modelview( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GLYPH_RENDERER_H_INCLUDE
+#endif // VIS_MODULE__GLYPH_RENDERER_H_INCLUDE

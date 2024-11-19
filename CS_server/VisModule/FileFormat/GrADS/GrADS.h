@@ -12,16 +12,16 @@
  *  $Id: GrADS.h 863 2011-07-20 10:40:29Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__GRADS_H_INCLUDE
-#define KVS__GRADS_H_INCLUDE
+#ifndef VIS_MODULE__GRADS_H_INCLUDE
+#define VIS_MODULE__GRADS_H_INCLUDE
 
-#include <kvs/FileFormatBase>
-#include <kvs/ClassName>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ClassName>
 #include "DataDescriptorFile.h"
 #include "GriddedBinaryDataFile.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -29,15 +29,15 @@ namespace kvs
  *  @brief  GrADS class.
  */
 /*===========================================================================*/
-class GrADS : public kvs::FileFormatBase
+class GrADS : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::GrADS );
+    visModuleClassName( vismodule::GrADS );
 
 public:
 
-    typedef kvs::FileFormatBase BaseClass;
-    typedef kvs::grads::DataDescriptorFile DataDescriptorFile;
-    typedef kvs::grads::GriddedBinaryDataFile GriddedBinaryDataFile;
+    typedef vismodule::FileFormatBase BaseClass;
+    typedef vismodule::grads::DataDescriptorFile DataDescriptorFile;
+    typedef vismodule::grads::GriddedBinaryDataFile GriddedBinaryDataFile;
     typedef std::vector<GriddedBinaryDataFile> GriddedBinaryDataFileList;
 
 protected:
@@ -68,6 +68,6 @@ private:
     const bool write( const std::string& filename );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GRADS_H_INCLUDE
+#endif // VIS_MODULE__GRADS_H_INCLUDE

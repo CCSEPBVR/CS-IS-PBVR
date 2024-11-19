@@ -13,10 +13,10 @@
  */
 /*****************************************************************************/
 #include "Title.h"
-#include <kvs/Tokenizer>
+#include <vismodule/Tokenizer>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace grads
@@ -32,7 +32,7 @@ namespace grads
 /*===========================================================================*/
 const bool Title::read( std::string line, std::ifstream& ifs )
 {
-    kvs::Tokenizer t( line, " \t\n" );
+    vismodule::Tokenizer t( line, " \t\n" );
     t.token(); // TITLE
 
     this->name = t.token();
@@ -42,4 +42,4 @@ const bool Title::read( std::string line, std::ifstream& ifs )
 
 } // end of namespace grads
 
-} // end of namespace kvs
+} // end of namespace vismodule

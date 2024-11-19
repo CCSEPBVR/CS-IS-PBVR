@@ -11,15 +11,15 @@
  *  $Id: UnstructuredVolumeObject.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE
-#define KVS__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#ifndef VIS_MODULE__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#define VIS_MODULE__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/Module>
-#include <kvs/VolumeObjectBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
+#include <vismodule/VolumeObjectBase>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -28,18 +28,18 @@ namespace kvs
  */
 /*==========================================================================*/
 class UnstructuredVolumeObject
-    : public kvs::VolumeObjectBase
+    : public vismodule::VolumeObjectBase
 {
     // Class name.
-    kvsClassName( kvs::UnstructuredVolumeObject );
+    visModuleClassName( vismodule::UnstructuredVolumeObject );
 
     // Module information.
-    kvsModuleCategory( Object );
-    kvsModuleBaseClass( kvs::VolumeObjectBase );
+    visModuleCategory( Object );
+    visModuleBaseClass( vismodule::VolumeObjectBase );
 
 public:
 
-    typedef kvs::ValueArray<kvs::UInt32> Connections;
+    typedef vismodule::ValueArray<vismodule::UInt32> Connections;
 
 private:
 
@@ -68,9 +68,9 @@ public:
 
 public:
 
-    static kvs::UnstructuredVolumeObject* DownCast( kvs::ObjectBase* object );
+    static vismodule::UnstructuredVolumeObject* DownCast( vismodule::ObjectBase* object );
 
-    static const kvs::UnstructuredVolumeObject* DownCast( const kvs::ObjectBase* object );
+    static const vismodule::UnstructuredVolumeObject* DownCast( const vismodule::ObjectBase* object );
 
 public:
 
@@ -117,6 +117,6 @@ private:
     void calculate_min_max_coords( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#endif // VIS_MODULE__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE

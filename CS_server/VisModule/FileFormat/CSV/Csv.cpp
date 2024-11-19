@@ -15,8 +15,8 @@
 #include "Csv.h"
 #include <fstream>
 #include <sstream>
-#include <kvs/Message>
-#include <kvs/File>
+#include <vismodule/Message>
+#include <vismodule/File>
 
 
 namespace
@@ -43,7 +43,7 @@ bool GetLine( std::istream & in, std::string & str )
 
 }
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -180,7 +180,7 @@ const bool Csv::read( const std::string& filename )
     std::ifstream ifs( filename.c_str() );
     if ( !ifs.is_open() )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
@@ -217,7 +217,7 @@ const bool Csv::write( const std::string& filename )
     std::ofstream ofs( filename.c_str() );
     if ( !ofs.is_open() )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
@@ -243,7 +243,7 @@ const bool Csv::write( const std::string& filename )
 /*===========================================================================*/
 const bool Csv::CheckFileExtension( const std::string& filename )
 {
-    const kvs::File file( filename );
+    const vismodule::File file( filename );
     if ( file.extension() == "csv" )
     {
         return( true );
@@ -264,7 +264,7 @@ const bool Csv::CheckFileFormat( const std::string& filename )
     std::ifstream ifs( filename.c_str() );
     if ( !ifs.is_open() )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
@@ -273,4 +273,4 @@ const bool Csv::CheckFileFormat( const std::string& filename )
     return( true );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

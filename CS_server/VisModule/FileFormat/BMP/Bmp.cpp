@@ -16,11 +16,11 @@
 #include <fstream>
 #include <string>
 #include <cstring>
-#include <kvs/Message>
-#include <kvs/File>
+#include <vismodule/Message>
+#include <vismodule/File>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -40,7 +40,7 @@ Bmp::Bmp( void )
  *  @param data   [in] pixel data
  */
 /*==========================================================================*/
-Bmp::Bmp( const size_t width, const size_t height, const kvs::ValueArray<kvs::UInt8>& data ):
+Bmp::Bmp( const size_t width, const size_t height, const vismodule::ValueArray<vismodule::UInt8>& data ):
     m_width( width ),
     m_height( height ),
     m_bpp( 3 ),
@@ -122,7 +122,7 @@ size_t Bmp::bitsPerPixel( void ) const
  *  @return pixel data
  */
 /*==========================================================================*/
-kvs::ValueArray<kvs::UInt8> Bmp::data( void ) const
+vismodule::ValueArray<vismodule::UInt8> Bmp::data( void ) const
 {
     return( m_data );
 }
@@ -139,7 +139,7 @@ bool Bmp::isSupported( void ) const
 
     if ( m_info_header.bpp() != 24 )
     {
-        kvsMessageError("Color bitmap is only supported.");
+        visModuleMessageError("Color bitmap is only supported.");
         ret = false;
     }
 
@@ -161,7 +161,7 @@ const bool Bmp::read( const std::string& filename )
     std::ifstream ifs( m_filename.c_str(), std::ios::binary | std::ios::in );
     if( !ifs.is_open() )
     {
-        kvsMessageError( "Cannot open %s.", m_filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", m_filename.c_str() );
         BaseClass::m_is_success = false;
         return( BaseClass::m_is_success );
     }
@@ -187,7 +187,7 @@ const bool Bmp::read( const std::string& filename )
     const size_t nchannels = 3; // NOTE: color mode only supported now.
     m_data.allocate( m_width * m_height * nchannels );
 
-    kvs::UInt8* data = m_data.pointer();
+    vismodule::UInt8* data = m_data.pointer();
 
     const size_t bpp = 3;
     const size_t bpl = m_width * bpp;
@@ -230,7 +230,7 @@ const bool Bmp::write( const std::string& filename )
     std::ofstream ofs( filename.c_str(), std::ios::out | std::ios::trunc | std::ios::binary );
     if( !ofs.is_open() )
     {
-        kvsMessageError( "Cannot open %s.", m_filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", m_filename.c_str() );
         BaseClass::m_is_success = false;
         return( BaseClass::m_is_success );
     }
@@ -240,7 +240,7 @@ const bool Bmp::write( const std::string& filename )
     m_file_header.write( ofs );
     m_info_header.write( ofs );
 
-    kvs::UInt8* data = m_data.pointer();
+    vismodule::UInt8* data = m_data.pointer();
 
     const size_t bpp = 3;
     const size_t bpl = m_width * bpp;
@@ -296,26 +296,26 @@ void Bmp::skip_header_and_pallete( std::ifstream& ifs )
 void Bmp::set_header( void )
 {
     const char*  magic_num = "BM";
-    const kvs::UInt32 offset    = 54;
-    const kvs::UInt32 bpp       = 3;
-    const kvs::UInt32 padding   = kvs::UInt32( m_height * ( m_width % 4 ) );
+    const vismodule::UInt32 offset    = 54;
+    const vismodule::UInt32 bpp       = 3;
+    const vismodule::UInt32 padding   = vismodule::UInt32( m_height * ( m_width % 4 ) );
 
     //m_fileh.type          = 0x4d42; // "BM"; '0x424d', if big endian.
     //m_fileh.type          = 0x424d; // "BM"; '0x424d', if big endian.
-    memcpy( &( m_file_header.m_type ), magic_num, sizeof( kvs::UInt16 ) );
-    m_file_header.m_size          = kvs::UInt32( offset + m_width * m_height * bpp + padding );
+    memcpy( &( m_file_header.m_type ), magic_num, sizeof( vismodule::UInt16 ) );
+    m_file_header.m_size          = vismodule::UInt32( offset + m_width * m_height * bpp + padding );
     m_file_header.m_reserved1     = 0;
     m_file_header.m_reserved2     = 0;
     m_file_header.m_offset        = offset;
 
     m_info_header.m_size          = 40;
-    m_info_header.m_width         = kvs::UInt32( m_width );
-    m_info_header.m_height        = kvs::UInt32( m_height );
+    m_info_header.m_width         = vismodule::UInt32( m_width );
+    m_info_header.m_height        = vismodule::UInt32( m_height );
     m_info_header.m_nplanes       = 1;
     m_info_header.m_bpp           = 24;
     m_info_header.m_compression   = 0L; // 0L: no compress,
                                         // 1L: 8-bit run-length encoding, 2L: 4-bit
-    m_info_header.m_bitmapsize    = kvs::UInt32( m_width * m_height * bpp + padding );
+    m_info_header.m_bitmapsize    = vismodule::UInt32( m_width * m_height * bpp + padding );
     m_info_header.m_hresolution   = 0;
     m_info_header.m_vresolution   = 0;
     m_info_header.m_colsused      = 0;
@@ -324,7 +324,7 @@ void Bmp::set_header( void )
 
 const bool Bmp::CheckFileExtension( const std::string& filename )
 {
-    const kvs::File file( filename );
+    const vismodule::File file( filename );
     if ( file.extension() == "bmp" || file.extension() == "BMP" )
     {
         return( true );
@@ -338,7 +338,7 @@ const bool CheckFileFormat( const std::string& filename )
     std::ifstream ifs( filename.c_str(), std::ios::binary | std::ios::in );
     if( !ifs.is_open() )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
@@ -346,4 +346,4 @@ const bool CheckFileFormat( const std::string& filename )
     return( file_header.isBM() );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

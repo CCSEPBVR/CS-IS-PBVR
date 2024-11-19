@@ -11,67 +11,67 @@
  *  $Id: Message.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MESSAGE_H_INCLUDE
-#define KVS__MESSAGE_H_INCLUDE
+#ifndef VIS_MODULE__MESSAGE_H_INCLUDE
+#define VIS_MODULE__MESSAGE_H_INCLUDE
 
 #include <iostream>
 #include <string>
 #include <cstdio>
 #include <cstdarg>
-#include <kvs/ClassName>
-#include <kvs/Macro>
-#include <kvs/Platform>
+#include <vismodule/ClassName>
+#include <vismodule/Macro>
+#include <vismodule/Platform>
 
 // Error message
-#define kvsMessageError \
-    ( kvs::Message( kvs::Message::Error, KVS_MACRO_FILE, KVS_MACRO_LINE, KVS_MACRO_FUNC ) )
+#define visModuleMessageError \
+    ( vismodule::Message( vismodule::Message::Error, VIS_MODULE_MACRO_FILE, VIS_MODULE_MACRO_LINE, VIS_MODULE_MACRO_FUNC ) )
 
 // Debug message
-#if defined ( KVS_ENABLE_DEBUG )
-#define kvsMessageDebug( message ) \
-    ( kvs::Message( kvs::Message::Debug, KVS_MACRO_FILE, KVS_MACRO_LINE, KVS_MACRO_FUNC ) ( message ) )
+#if defined ( VIS_MODULE_ENABLE_DEBUG )
+#define visModuleMessageDebug( message ) \
+    ( vismodule::Message( vismodule::Message::Debug, VIS_MODULE_MACRO_FILE, VIS_MODULE_MACRO_LINE, VIS_MODULE_MACRO_FUNC ) ( message ) )
 #else
-#define kvsMessageDebug( message )
+#define visModuleMessageDebug( message )
 #endif
 
 // Warning message
-#if defined ( KVS_ENABLE_DEBUG )
-#define kvsMessageWarning( expression, message ) \
-    ( kvs::Message( kvs::Message::Warning, KVS_MACRO_FILE, KVS_MACRO_LINE, KVS_MACRO_FUNC, ( expression ) ) ( message ) )
+#if defined ( VIS_MODULE_ENABLE_DEBUG )
+#define visModuleMessageWarning( expression, message ) \
+    ( vismodule::Message( vismodule::Message::Warning, VIS_MODULE_MACRO_FILE, VIS_MODULE_MACRO_LINE, VIS_MODULE_MACRO_FUNC, ( expression ) ) ( message ) )
 #else
-#define kvsMessageWarning( expression, message )
+#define visModuleMessageWarning( expression, message )
 #endif
 
 // Assert message
-#if defined ( KVS_ENABLE_DEBUG )
-#define kvsMessageAssert( expression, message ) \
-    ( kvs::Message( kvs::Message::Assert, KVS_MACRO_FILE, KVS_MACRO_LINE, KVS_MACRO_FUNC, ( expression ) ) ( message ) )
+#if defined ( VIS_MODULE_ENABLE_DEBUG )
+#define visModuleMessageAssert( expression, message ) \
+    ( vismodule::Message( vismodule::Message::Assert, VIS_MODULE_MACRO_FILE, VIS_MODULE_MACRO_LINE, VIS_MODULE_MACRO_FUNC, ( expression ) ) ( message ) )
 #else
-#define kvsMessageAssert( expression, message )
+#define visModuleMessageAssert( expression, message )
 #endif
 
 
-#define KVS_MESSAGE_RED    "31"
-#define KVS_MESSAGE_GREEN  "32"
-#define KVS_MESSAGE_BROWN  "33"
-#define KVS_MESSAGE_BLUE   "34"
-#define KVS_MESSAGE_PURPLE "35"
-#define KVS_MESSAGE_SKY    "36"
-#define KVS_MESSAGE_WHITE  "37"
-#define KVS_MESSAGE_NORMAL "0"
+#define VIS_MODULE_MESSAGE_RED    "31"
+#define VIS_MODULE_MESSAGE_GREEN  "32"
+#define VIS_MODULE_MESSAGE_BROWN  "33"
+#define VIS_MODULE_MESSAGE_BLUE   "34"
+#define VIS_MODULE_MESSAGE_PURPLE "35"
+#define VIS_MODULE_MESSAGE_SKY    "36"
+#define VIS_MODULE_MESSAGE_WHITE  "37"
+#define VIS_MODULE_MESSAGE_NORMAL "0"
 
 
-#if defined ( KVS_PLATFORM_WINDOWS )
-#define KVS_MESSAGE_SET_COLOR( color ) ""
-#define KVS_MESSAGE_RESET_COLOR        ""
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
+#define VIS_MODULE_MESSAGE_SET_COLOR( color ) ""
+#define VIS_MODULE_MESSAGE_RESET_COLOR        ""
 #else
-#define KVS_MESSAGE_CHANGE_COLOR_BEGIN
-#define KVS_MESSAGE_SET_COLOR( color ) "\x1b[" << color << "m"
-#define KVS_MESSAGE_RESET_COLOR        "\x1b[0m"
+#define VIS_MODULE_MESSAGE_CHANGE_COLOR_BEGIN
+#define VIS_MODULE_MESSAGE_SET_COLOR( color ) "\x1b[" << color << "m"
+#define VIS_MODULE_MESSAGE_RESET_COLOR        "\x1b[0m"
 #endif
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -81,7 +81,7 @@ namespace kvs
 /*==========================================================================*/
 class Message
 {
-    kvsClassName_without_virtual( kvs::Message );
+    visModuleClassName_without_virtual( vismodule::Message );
 
 public:
 
@@ -109,6 +109,6 @@ public:
     void operator ()( const char* msg, ... );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MESSAGE_H_INCLUDE
+#endif // VIS_MODULE__MESSAGE_H_INCLUDE

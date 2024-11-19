@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include "Types.h"
-#include <kvs/Vector3>
+#include <vismodule/Vector3>
 #include <float.h>
 
 class FilterInformationFile
@@ -33,10 +33,10 @@ public:
     int32_t m_end_steps;
     int32_t m_number_steps;
     int32_t m_number_subvolumes;
-    kvs::Vector3f m_min_object_coord;
-    kvs::Vector3f m_max_object_coord;
-    std::vector<kvs::Vector3f> m_min_subvolume_coord;
-    std::vector<kvs::Vector3f> m_max_subvolume_coord;
+    vismodule::Vector3f m_min_object_coord;
+    vismodule::Vector3f m_max_object_coord;
+    std::vector<vismodule::Vector3f> m_min_subvolume_coord;
+    std::vector<vismodule::Vector3f> m_max_subvolume_coord;
     float   m_min_value;
     float   m_max_value;
     std::string m_file_path;
@@ -76,10 +76,10 @@ public:
     int32_t m_total_last_step;
     int32_t m_total_number_steps;
     int32_t m_total_number_subvolumes;
-    kvs::Vector3f m_total_min_object_coord;
-    kvs::Vector3f m_total_max_object_coord;
-    std::vector<kvs::Vector3f> m_total_min_subvolume_coord;
-    std::vector<kvs::Vector3f> m_total_max_subvolume_coord;
+    vismodule::Vector3f m_total_min_object_coord;
+    vismodule::Vector3f m_total_max_object_coord;
+    std::vector<vismodule::Vector3f> m_total_min_subvolume_coord;
+    std::vector<vismodule::Vector3f> m_total_max_subvolume_coord;
     float   m_total_min_value;
     float   m_total_max_value;
     int32_t m_total_number_ingredients;

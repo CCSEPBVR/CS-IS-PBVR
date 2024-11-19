@@ -11,15 +11,15 @@
  *  $Id: TagDictionary.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__TIFF__TAG_DICTIONARY_H_INCLUDE
-#define KVS__TIFF__TAG_DICTIONARY_H_INCLUDE
+#ifndef VIS_MODULE__TIFF__TAG_DICTIONARY_H_INCLUDE
+#define VIS_MODULE__TIFF__TAG_DICTIONARY_H_INCLUDE
 
-#include <kvs/Type>
+#include <vismodule/Type>
 #include <map>
 #include "Tag.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace tiff
@@ -29,7 +29,7 @@ class TagDictionary
 {
 public:
 
-    typedef std::map<kvs::UInt16,std::string> Container;
+    typedef std::map<vismodule::UInt16,std::string> Container;
 
 protected:
 
@@ -41,7 +41,7 @@ public:
 
 public:
 
-    kvs::tiff::Tag find( const kvs::UInt16 tag_id ) const;
+    vismodule::tiff::Tag find( const vismodule::UInt16 tag_id ) const;
 
 private:
 
@@ -50,6 +50,6 @@ private:
 
 } // end of namespace tiff
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TIFF__TAG_DICTIONARY_H_INCLUDE
+#endif // VIS_MODULE__TIFF__TAG_DICTIONARY_H_INCLUDE

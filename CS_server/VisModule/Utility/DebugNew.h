@@ -12,20 +12,20 @@
  *  $Id: DebugNew.h 630 2010-10-10 02:05:28Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__DEBUG_NEW_H_INCLUDE
-#define KVS__DEBUG_NEW_H_INCLUDE
+#ifndef VIS_MODULE__DEBUG_NEW_H_INCLUDE
+#define VIS_MODULE__DEBUG_NEW_H_INCLUDE
 
-#if defined ( KVS_ENABLE_MEM_DEBUG )
+#if defined ( VIS_MODULE_ENABLE_MEM_DEBUG )
 
-#include <kvs/MemoryTracer>
+#include <vismodule/MemoryTracer>
 
 #define new new( __FILE__, __LINE__ )
-#define delete kvs::MemoryTracer::DeleteAt( __FILE__, __LINE__ ), delete
-#define malloc(s) kvs::MemoryTracer::Allocate( s, __FILE__, __LINE__, kvs::MemoryTracer::Malloc )
-#define calloc(n,s) kvs::MemoryTracer::Allocate( s*n, __FILE__, __LINE__, kvs::MemoryTracer::Calloc )
-#define realloc(p,s) kvs::MemoryTracer::Allocate( s, __FILE__, __LINE__, kvs::MemoryTracer::Realloc, p )
-#define free(p) kvs::MemoryTracer::Deallocate( p, __FILE__, __LINE__, kvs::MemoryTracer::Free )
+#define delete vismodule::MemoryTracer::DeleteAt( __FILE__, __LINE__ ), delete
+#define malloc(s) vismodule::MemoryTracer::Allocate( s, __FILE__, __LINE__, vismodule::MemoryTracer::Malloc )
+#define calloc(n,s) vismodule::MemoryTracer::Allocate( s*n, __FILE__, __LINE__, vismodule::MemoryTracer::Calloc )
+#define realloc(p,s) vismodule::MemoryTracer::Allocate( s, __FILE__, __LINE__, vismodule::MemoryTracer::Realloc, p )
+#define free(p) vismodule::MemoryTracer::Deallocate( p, __FILE__, __LINE__, vismodule::MemoryTracer::Free )
 
 #endif
 
-#endif // KVS__DEBUG_NEW_H_INCLUDE
+#endif // VIS_MODULE__DEBUG_NEW_H_INCLUDE

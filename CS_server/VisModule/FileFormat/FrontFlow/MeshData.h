@@ -12,14 +12,14 @@
  *  $Id: MeshData.h 865 2011-07-22 01:41:18Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__GF__MESH_DATA_H_INCLUDE
-#define KVS__GF__MESH_DATA_H_INCLUDE
+#ifndef VIS_MODULE__GF__MESH_DATA_H_INCLUDE
+#define VIS_MODULE__GF__MESH_DATA_H_INCLUDE
 
-#include <kvs/ValueArray>
+#include <vismodule/ValueArray>
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace gf
@@ -38,8 +38,8 @@ protected:
     size_t m_nnodes_per_element; ///< number of nodes per a element
     size_t m_nnodes; ///< number of nodes
     size_t m_nelements; ///< number of elements
-    kvs::ValueArray<kvs::Real32> m_coords; ///< coordinate values
-    kvs::ValueArray<kvs::UInt32> m_connections; ///< connection values
+    vismodule::ValueArray<vismodule::Real32> m_coords; ///< coordinate values
+    vismodule::ValueArray<vismodule::UInt32> m_connections; ///< connection values
 
 public:
 
@@ -57,9 +57,9 @@ public:
 
     const size_t nelements( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& coords( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& coords( void ) const;
 
-    const kvs::ValueArray<kvs::UInt32>& connections( void ) const;
+    const vismodule::ValueArray<vismodule::UInt32>& connections( void ) const;
 
 public:
 
@@ -68,6 +68,6 @@ public:
 
 } // end of namespace gf
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GF__MESH_DATA_H_INCLUDE
+#endif // VIS_MODULE__GF__MESH_DATA_H_INCLUDE

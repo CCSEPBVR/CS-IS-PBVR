@@ -26,8 +26,8 @@ ExtendedTransferFunction::ExtendedTransferFunction( const std::string& red_funct
     std::string gfstr = green_function_string;
     std::string bfstr = blue_function_string;
     std::string ofstr = opacity_function_string;
-    kvs::ColorMap*   c = new kvs::ColorMap( resolution, min_value, max_value );
-    kvs::OpacityMap* a = new kvs::OpacityMap( resolution, min_value, max_value );
+    vismodule::ColorMap*   c = new vismodule::ColorMap( resolution, min_value, max_value );
+    vismodule::OpacityMap* a = new vismodule::OpacityMap( resolution, min_value, max_value );
 
     FuncParser::Variables vars;
     FuncParser::Variable var_x;
@@ -49,7 +49,7 @@ ExtendedTransferFunction::ExtendedTransferFunction( const std::string& red_funct
     float x = min_value;
     for ( size_t i = 0; i < resolution; ++i, x += stride )
     {
-        kvs::UInt8 r, g, b;
+        vismodule::UInt8 r, g, b;
         float opacity;
 
         var_x = x;
@@ -58,7 +58,7 @@ ExtendedTransferFunction::ExtendedTransferFunction( const std::string& red_funct
         b = bf.eval();
         opacity = of.eval();
 
-        kvs::RGBColor color( r, g, b );
+        vismodule::RGBColor color( r, g, b );
         c->addPoint( x, color );
         a->addPoint( x, opacity );
     }

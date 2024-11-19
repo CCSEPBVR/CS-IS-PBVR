@@ -14,7 +14,7 @@
 #include "HexahedralCell.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 // template instantiation
@@ -29,4 +29,4 @@ template class HexahedralCell<unsigned long>;
 template class HexahedralCell<float>;
 template class HexahedralCell<double>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

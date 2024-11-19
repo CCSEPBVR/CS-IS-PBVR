@@ -17,15 +17,15 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
-#include <kvs/File>
-#include <kvs/Math>
-#include <kvs/Message>
-#include <kvs/Tokenizer>
-#include <kvs/Type>
-#include <kvs/File>
-#include <kvs/Value>
-#include <kvs/ValueArray>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/File>
+#include <vismodule/Math>
+#include <vismodule/Message>
+#include <vismodule/Tokenizer>
+#include <vismodule/Type>
+#include <vismodule/File>
+#include <vismodule/Value>
+#include <vismodule/ValueArray>
+#include <vismodule/IgnoreUnusedVariable>
 #include "Dicom.h"
 #include "VRType.h"
 #include "Element.h"
@@ -34,11 +34,11 @@
 
 namespace
 {
-kvs::dcm::Tag END_HEADER_TAG = kvs::dcm::Tag( 0x7FE0, 0x0010, kvs::dcm::VR_OW );
+vismodule::dcm::Tag END_HEADER_TAG = vismodule::dcm::Tag( 0x7FE0, 0x0010, vismodule::dcm::VR_OW );
 }
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -107,7 +107,7 @@ void Dicom::initialize( void )
 
     m_row                  = 0;
     m_column               = 0;
-    m_pixel_spacing        = kvs::Vector2f( 0.0f, 0.0f );
+    m_pixel_spacing        = vismodule::Vector2f( 0.0f, 0.0f );
     m_bits_allocated       = 0;
     m_bits_stored          = 0;
     m_high_bit             = 0;
@@ -432,7 +432,7 @@ const int Dicom::maxRawValue( void ) const
 /*===========================================================================*/
 const int Dicom::minValue( void ) const
 {
-    return( kvs::Math::Round( m_min_raw_value * m_rescale_slope + m_rescale_intersept ) );
+    return( vismodule::Math::Round( m_min_raw_value * m_rescale_slope + m_rescale_intersept ) );
 }
 
 /*===========================================================================*/
@@ -443,7 +443,7 @@ const int Dicom::minValue( void ) const
 /*===========================================================================*/
 const int Dicom::maxValue( void ) const
 {
-    return( kvs::Math::Round( m_max_raw_value * m_rescale_slope + m_rescale_intersept ) );
+    return( vismodule::Math::Round( m_max_raw_value * m_rescale_slope + m_rescale_intersept ) );
 }
 
 /*===========================================================================*/
@@ -505,7 +505,7 @@ const std::string& Dicom::modality( void ) const
  *  @return  
  */
 /*===========================================================================*/
-const kvs::Vector2f& Dicom::pixelSpacing( void ) const
+const vismodule::Vector2f& Dicom::pixelSpacing( void ) const
 {
     return( m_pixel_spacing );
 }
@@ -568,7 +568,7 @@ const std::ios::pos_type& Dicom::position( void ) const
  *  @brief  
  */
 /*===========================================================================*/
-const kvs::ValueArray<char>& Dicom::rawData( void ) const
+const vismodule::ValueArray<char>& Dicom::rawData( void ) const
 {
     return( m_raw_data );
 }
@@ -578,7 +578,7 @@ const kvs::ValueArray<char>& Dicom::rawData( void ) const
  *  @brief  
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt8> Dicom::pixelData( void ) const
+const vismodule::ValueArray<vismodule::UInt8> Dicom::pixelData( void ) const
 {
     return( this->get_pixel_data( m_window.level(), m_window.width() ) );
 }
@@ -599,12 +599,12 @@ const int Dicom::rawValue( const size_t index ) const
     {
         if( m_pixel_representation )
         {
-            const kvs::UInt8* raw_data = reinterpret_cast<const kvs::UInt8*>( m_raw_data.pointer() );
+            const vismodule::UInt8* raw_data = reinterpret_cast<const vismodule::UInt8*>( m_raw_data.pointer() );
             ret = raw_data[index];
         }
         else
         {
-            const kvs::Int8* raw_data = reinterpret_cast<const kvs::Int8*>( m_raw_data.pointer() );
+            const vismodule::Int8* raw_data = reinterpret_cast<const vismodule::Int8*>( m_raw_data.pointer() );
             ret = raw_data[index];
         }
     }
@@ -612,12 +612,12 @@ const int Dicom::rawValue( const size_t index ) const
     {
         if( m_pixel_representation )
         {
-            const kvs::UInt16* raw_data = reinterpret_cast<const kvs::UInt16*>( m_raw_data.pointer() );
+            const vismodule::UInt16* raw_data = reinterpret_cast<const vismodule::UInt16*>( m_raw_data.pointer() );
             ret = raw_data[index];
         }
         else
         {
-            const kvs::Int16* raw_data = reinterpret_cast<const kvs::Int16*>( m_raw_data.pointer() );
+            const vismodule::Int16* raw_data = reinterpret_cast<const vismodule::Int16*>( m_raw_data.pointer() );
             ret = raw_data[index];
         }
     }
@@ -650,7 +650,7 @@ const int Dicom::value( const size_t index ) const
 {
     const int raw_value = this->rawValue( index );
 
-    return( kvs::Math::Round( raw_value * m_rescale_slope + m_rescale_intersept ) );
+    return( vismodule::Math::Round( raw_value * m_rescale_slope + m_rescale_intersept ) );
 }
 
 /*===========================================================================*/
@@ -665,7 +665,7 @@ const int Dicom::value( const size_t x, const size_t y ) const
 {
     const size_t raw_value = this->rawValue( x, y );
 
-    return( kvs::Math::Round( raw_value * m_rescale_slope + m_rescale_intersept ) );
+    return( vismodule::Math::Round( raw_value * m_rescale_slope + m_rescale_intersept ) );
 }
 
 /*===========================================================================*/
@@ -695,7 +695,7 @@ void Dicom::resetWindow( void )
  *  @param  raw_data [in] raw data
  */
 /*===========================================================================*/
-void Dicom::setRawData( const kvs::ValueArray<char>& raw_data )
+void Dicom::setRawData( const vismodule::ValueArray<char>& raw_data )
 {
     m_raw_data = raw_data;
 
@@ -730,14 +730,14 @@ const bool Dicom::read( const std::string& filename )
     std::ifstream ifs( filename.c_str(), std::ios_base::binary );
     if( ifs.fail() )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
     // Check attribute.
     if( !m_attribute.check( ifs ) )
     {
-        kvsMessageError("Fail the attribute check of the DICOM file.");
+        visModuleMessageError("Fail the attribute check of the DICOM file.");
 
         ifs.close();
         return( false );
@@ -746,7 +746,7 @@ const bool Dicom::read( const std::string& filename )
     // Read the header information.
     if( !this->read_header( ifs ) )
     {
-        kvsMessageError("Cannot read the header of the DICOM file.");
+        visModuleMessageError("Cannot read the header of the DICOM file.");
 
         ifs.close();
         return( false );
@@ -755,7 +755,7 @@ const bool Dicom::read( const std::string& filename )
     // Read the pixel data.
     if( !this->read_data( ifs ) )
     {
-        kvsMessageError("Cannot read the pixel data of the DICOM file.");
+        visModuleMessageError("Cannot read the pixel data of the DICOM file.");
 
         ifs.close();
         return( false );
@@ -778,11 +778,11 @@ const bool Dicom::write( const std::string& filename )
     std::ofstream ofs( filename.c_str(), std::ios::out | std::ios::binary );
     if( ofs.fail() )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
-    const kvs::File   file( filename );
+    const vismodule::File   file( filename );
     const std::string extension = file.extension();
 
     bool state = false;
@@ -792,7 +792,7 @@ const bool Dicom::write( const std::string& filename )
 
     if( !state )
     {
-        kvsMessageError("Cannot write data.");
+        visModuleMessageError("Cannot write data.");
         return( false );
     }
 
@@ -817,7 +817,7 @@ const bool Dicom::read_header( std::ifstream& ifs )
     {
         if( !element.read( ifs, m_attribute.swap() ) )
         {
-            kvsMessageError("Cannot read the data element.");
+            visModuleMessageError("Cannot read the data element.");
             return( false );
         }
 
@@ -859,7 +859,7 @@ const bool Dicom::read_data( std::ifstream& ifs )
     ifs.read( m_raw_data.pointer(), raw_data_size );
     if( ifs.bad() )
     {
-        kvsMessageError("Cannot read the raw data.");
+        visModuleMessageError("Cannot read the raw data.");
         return( false );
     }
 
@@ -948,13 +948,13 @@ void Dicom::set_windowing_parameter( void )
         {
             if( m_pixel_representation )
             {
-                min_value = kvs::Value<kvs::UInt8>::Min();
-                max_value = kvs::Value<kvs::UInt8>::Max();
+                min_value = vismodule::Value<vismodule::UInt8>::Min();
+                max_value = vismodule::Value<vismodule::UInt8>::Max();
             }
             else
             {
-                min_value = kvs::Value<kvs::Int8>::Min();
-                max_value = kvs::Value<kvs::Int8>::Max();
+                min_value = vismodule::Value<vismodule::Int8>::Min();
+                max_value = vismodule::Value<vismodule::Int8>::Max();
             }
         }
 
@@ -994,25 +994,25 @@ void Dicom::calculate_min_max_raw_value( void )
     for( int index = 1; index < npixels; index++ )
     {
         double raw_value  = raw_data[index];
-        min_raw_value = kvs::Math::Min( min_raw_value, raw_value );
-        max_raw_value = kvs::Math::Max( max_raw_value, raw_value );
+        min_raw_value = vismodule::Math::Min( min_raw_value, raw_value );
+        max_raw_value = vismodule::Math::Max( max_raw_value, raw_value );
     }
 
-    m_min_raw_value = kvs::Math::Round( min_raw_value );
-    m_max_raw_value = kvs::Math::Round( max_raw_value );
+    m_min_raw_value = vismodule::Math::Round( min_raw_value );
+    m_max_raw_value = vismodule::Math::Round( max_raw_value );
 }
 
 template
-void Dicom::calculate_min_max_raw_value<kvs::Int8>( void );
+void Dicom::calculate_min_max_raw_value<vismodule::Int8>( void );
 
 template
-void Dicom::calculate_min_max_raw_value<kvs::UInt8>( void );
+void Dicom::calculate_min_max_raw_value<vismodule::UInt8>( void );
 
 template
-void Dicom::calculate_min_max_raw_value<kvs::Int16>( void );
+void Dicom::calculate_min_max_raw_value<vismodule::Int16>( void );
 
 template
-void Dicom::calculate_min_max_raw_value<kvs::UInt16>( void );
+void Dicom::calculate_min_max_raw_value<vismodule::UInt16>( void );
 
 /*===========================================================================*/
 /**
@@ -1025,22 +1025,22 @@ void Dicom::set_min_max_raw_value( void )
     {
         if( m_pixel_representation )
         {
-            this->calculate_min_max_raw_value<kvs::UInt8>();
+            this->calculate_min_max_raw_value<vismodule::UInt8>();
         }
         else
         {
-            this->calculate_min_max_raw_value<kvs::Int8>();
+            this->calculate_min_max_raw_value<vismodule::Int8>();
         }
     }
     else if( m_bits_allocated == 16 )
     {
         if( m_pixel_representation )
         {
-            this->calculate_min_max_raw_value<kvs::UInt16>();
+            this->calculate_min_max_raw_value<vismodule::UInt16>();
         }
         else
         {
-            this->calculate_min_max_raw_value<kvs::Int16>();
+            this->calculate_min_max_raw_value<vismodule::Int16>();
         }
     }
 }
@@ -1051,9 +1051,9 @@ void Dicom::set_min_max_raw_value( void )
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::ValueArray<kvs::UInt8> Dicom::rescale_pixel_data( const int level, const int width ) const
+const vismodule::ValueArray<vismodule::UInt8> Dicom::rescale_pixel_data( const int level, const int width ) const
 {
-    kvs::ValueArray<kvs::UInt8> pixel_data( m_row * m_column );
+    vismodule::ValueArray<vismodule::UInt8> pixel_data( m_row * m_column );
     pixel_data.fill( 0x00 );
 
     const T* raw_data = reinterpret_cast<const T*>( m_raw_data.pointer() );
@@ -1063,45 +1063,45 @@ const kvs::ValueArray<kvs::UInt8> Dicom::rescale_pixel_data( const int level, co
     {
         double temp_value  = raw_data[index] * m_rescale_slope + m_rescale_intersept;
         double pixel_value = ( ( temp_value - level ) / width + 0.5 ) * 255.0;
-        pixel_value = kvs::Math::Clamp( pixel_value, 0.0, 255.0 );
-        pixel_data[index] = static_cast<kvs::UInt8>( pixel_value );
+        pixel_value = vismodule::Math::Clamp( pixel_value, 0.0, 255.0 );
+        pixel_data[index] = static_cast<vismodule::UInt8>( pixel_value );
     }
 
     return( pixel_data );
 }
 
-// Specialization for 'kvs::Int8' type.
+// Specialization for 'vismodule::Int8' type.
 template <>
-const kvs::ValueArray<kvs::UInt8> Dicom::rescale_pixel_data<kvs::Int8>( const int level, const int width ) const
+const vismodule::ValueArray<vismodule::UInt8> Dicom::rescale_pixel_data<vismodule::Int8>( const int level, const int width ) const
 {
-    kvs::IgnoreUnusedVariable( level );
-    kvs::IgnoreUnusedVariable( width );
+    vismodule::IgnoreUnusedVariable( level );
+    vismodule::IgnoreUnusedVariable( width );
 
-    kvs::ValueArray<kvs::UInt8> pixel_data( m_row * m_column );
+    vismodule::ValueArray<vismodule::UInt8> pixel_data( m_row * m_column );
     pixel_data.fill( 0x00 );
 
-    const kvs::Int8* raw_data = reinterpret_cast<const kvs::Int8*>( m_raw_data.pointer() );
+    const vismodule::Int8* raw_data = reinterpret_cast<const vismodule::Int8*>( m_raw_data.pointer() );
 
     const size_t npixels = m_row * m_column;
     for( size_t index = 0; index < npixels; index++ )
     {
-        pixel_data[index] = static_cast<kvs::UInt8>( raw_data[index] - kvs::Value<kvs::Int8>::Min() );
+        pixel_data[index] = static_cast<vismodule::UInt8>( raw_data[index] - vismodule::Value<vismodule::Int8>::Min() );
     }
 
     return( pixel_data );
 }
 
-// Specialization for 'kvs::UInt8' type.
+// Specialization for 'vismodule::UInt8' type.
 template <>
-const kvs::ValueArray<kvs::UInt8> Dicom::rescale_pixel_data<kvs::UInt8>( const int level, const int width ) const
+const vismodule::ValueArray<vismodule::UInt8> Dicom::rescale_pixel_data<vismodule::UInt8>( const int level, const int width ) const
 {
-    kvs::IgnoreUnusedVariable( level );
-    kvs::IgnoreUnusedVariable( width );
+    vismodule::IgnoreUnusedVariable( level );
+    vismodule::IgnoreUnusedVariable( width );
 
-    kvs::ValueArray<kvs::UInt8> pixel_data( m_row * m_column );
+    vismodule::ValueArray<vismodule::UInt8> pixel_data( m_row * m_column );
     pixel_data.fill( 0x00 );
 
-    const kvs::UInt8* raw_data = reinterpret_cast<const kvs::UInt8*>( m_raw_data.pointer() );
+    const vismodule::UInt8* raw_data = reinterpret_cast<const vismodule::UInt8*>( m_raw_data.pointer() );
 
     const size_t npixels = m_row * m_column;
     for( size_t index = 0; index < npixels; index++ )
@@ -1113,10 +1113,10 @@ const kvs::ValueArray<kvs::UInt8> Dicom::rescale_pixel_data<kvs::UInt8>( const i
 }
 
 template
-const kvs::ValueArray<kvs::UInt8> Dicom::rescale_pixel_data<kvs::Int16>( const int level, const int width ) const;
+const vismodule::ValueArray<vismodule::UInt8> Dicom::rescale_pixel_data<vismodule::Int16>( const int level, const int width ) const;
 
 template
-const kvs::ValueArray<kvs::UInt8> Dicom::rescale_pixel_data<kvs::UInt16>( const int level, const int width ) const;
+const vismodule::ValueArray<vismodule::UInt8> Dicom::rescale_pixel_data<vismodule::UInt16>( const int level, const int width ) const;
 
 /*===========================================================================*/
 /**
@@ -1124,17 +1124,17 @@ const kvs::ValueArray<kvs::UInt8> Dicom::rescale_pixel_data<kvs::UInt16>( const 
  *  @return pixel data array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt8> Dicom::get_pixel_data( const int level, const int width ) const
+const vismodule::ValueArray<vismodule::UInt8> Dicom::get_pixel_data( const int level, const int width ) const
 {
     if( m_bits_allocated == 8 )
     {
         if( m_pixel_representation )
         {
-            return( this->rescale_pixel_data<kvs::UInt8>( level, width ) );
+            return( this->rescale_pixel_data<vismodule::UInt8>( level, width ) );
         }
         else
         {
-            return( this->rescale_pixel_data<kvs::Int8>( level, width ) );
+            return( this->rescale_pixel_data<vismodule::Int8>( level, width ) );
         }
     }
 
@@ -1142,17 +1142,17 @@ const kvs::ValueArray<kvs::UInt8> Dicom::get_pixel_data( const int level, const 
     {
         if( m_pixel_representation )
         {
-            return( this->rescale_pixel_data<kvs::UInt16>( level, width ) );
+            return( this->rescale_pixel_data<vismodule::UInt16>( level, width ) );
         }
         else
         {
-            return( this->rescale_pixel_data<kvs::Int16>( level, width ) );
+            return( this->rescale_pixel_data<vismodule::Int16>( level, width ) );
         }
     }
 
-    kvsMessageError("Cannot read the pixel data from the raw data.");
+    visModuleMessageError("Cannot read the pixel data from the raw data.");
 
-    kvs::ValueArray<kvs::UInt8> pixel_data( m_row * m_column );
+    vismodule::ValueArray<vismodule::UInt8> pixel_data( m_row * m_column );
     pixel_data.fill( 0x00 );
 
     return( pixel_data );
@@ -1277,7 +1277,7 @@ void Dicom::parse_element( dcm::Element& element )
         std::string         delim = "\\";
         std::vector<std::string> tokens;
 
-        kvs::Tokenizer t( temp, delim );
+        vismodule::Tokenizer t( temp, delim );
         while( !t.isLast() )
         {
             tokens.push_back( t.token() );
@@ -1285,7 +1285,7 @@ void Dicom::parse_element( dcm::Element& element )
 
         if( tokens.size() != 2 )
         {
-            kvsMessageError("Wrong string for the \"pixel spacing\" tag. (%s)",temp.c_str());
+            visModuleMessageError("Wrong string for the \"pixel spacing\" tag. (%s)",temp.c_str());
             return;
         }
 
@@ -1334,7 +1334,7 @@ void Dicom::parse_element( dcm::Element& element )
 
 const bool Dicom::CheckFileExtension( const std::string& filename )
 {
-    const kvs::File file( filename );
+    const vismodule::File file( filename );
     if ( file.extension() == "dcm"   || file.extension() == "DCM" ||
          file.extension() == "dicom" || file.extension() == "DICOM" )
     {
@@ -1350,7 +1350,7 @@ const bool Dicom::CheckFileFormat( const std::string& filename )
     std::ifstream ifs( filename.c_str(), std::ios_base::binary );
     if( ifs.fail() )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
@@ -1366,4 +1366,4 @@ const bool Dicom::CheckFileFormat( const std::string& filename )
     return( true );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -11,11 +11,11 @@
 #include <FileFormat/KVSML/CoordTag.h>
 #include <FileFormat/KVSML/ConnectionTag.h>
 #include "DataArrayTag.h"
-#include <kvs/File>
-#include <kvs/AnyValueArray>
-#include <kvs/Type>
+#include <vismodule/File>
+#include <vismodule/AnyValueArray>
+#include <vismodule/Type>
 #include "Types.h"
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/IgnoreUnusedVariable>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -51,7 +51,7 @@ inline const size_t GetNumberOfNodesPerElement( const std::string& cell_type )
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -92,7 +92,7 @@ StepAggregateTypeSubvolume::StepAggregateTypeSubvolume( const std::string& filen
     if ( ( pfi_fp = fopen( pfi_name, "rb" ) ) == NULL )
     {
         m_is_success = false;
-        kvsMessageError( "Cannot read file '%s'.", pfi_name );
+        visModuleMessageError( "Cannot read file '%s'.", pfi_name );
         free( pfi_name );
         return;
     }
@@ -143,7 +143,7 @@ StepAggregateTypeSubvolume::StepAggregateTypeSubvolume( const std::string& filen
         setCellType( "quadratic hexahedra" );
         break;
     default:
-        kvsMessageError( "Unknown cell type '%d'.", cellType );
+        visModuleMessageError( "Unknown cell type '%d'.", cellType );
         break;
     }
     // number of ingredients
@@ -192,13 +192,13 @@ StepAggregateTypeSubvolume::StepAggregateTypeSubvolume( const std::string& filen
     sprintf( fname, "%s_connect.dat", filename.c_str() );
     if ( !( fp = fopen( fname, "rb" ) ) )
     {
-        kvsMessageError( "Cannot open file '%s'.", fname );
+        visModuleMessageError( "Cannot open file '%s'.", fname );
         goto StepAggregateTypeSubvolume_ERROR;
     }
     // connecion data
     if ( !m_connections.allocate( elemNodes * m_number_elements ) )
     {
-        kvsMessageError( "Cannot allocate memory for the connection data." );
+        visModuleMessageError( "Cannot allocate memory for the connection data." );
         goto StepAggregateTypeSubvolume_ERROR;
     }
     offset = numPreElements * elemNodes * 4;
@@ -206,7 +206,7 @@ StepAggregateTypeSubvolume::StepAggregateTypeSubvolume( const std::string& filen
     fseek( fp, offset, SEEK_SET );
     if ( fread( m_connections.pointer(), 4, elemNodes * m_number_elements, fp ) != elemNodes * m_number_elements )
     {
-        kvsMessageError( "File read error: connection data." );
+        visModuleMessageError( "File read error: connection data." );
         goto StepAggregateTypeSubvolume_ERROR;
     }
 #if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
@@ -221,13 +221,13 @@ StepAggregateTypeSubvolume::StepAggregateTypeSubvolume( const std::string& filen
     sprintf( fname, "%s_coord.dat", filename.c_str() );
     if ( !( fp = fopen( fname, "rb" ) ) )
     {
-        kvsMessageError( "Cannot open file '%s'.", fname );
+        visModuleMessageError( "Cannot open file '%s'.", fname );
         goto StepAggregateTypeSubvolume_ERROR;
     }
     // coordinate data
     if ( !m_coords.allocate( numNodes * 3 ) )
     {
-        kvsMessageError( "Cannot allocate memory for the coordinate data." );
+        visModuleMessageError( "Cannot allocate memory for the coordinate data." );
         goto StepAggregateTypeSubvolume_ERROR;
     }
     offset = numPreNodes * 3 * 4;
@@ -235,7 +235,7 @@ StepAggregateTypeSubvolume::StepAggregateTypeSubvolume( const std::string& filen
     fseek( fp, offset, SEEK_SET );
     if ( fread( m_coords.pointer(), 4, numNodes * 3, fp ) != numNodes * 3 )
     {
-        kvsMessageError( "File read error: coordinate data." );
+        visModuleMessageError( "File read error: coordinate data." );
         goto StepAggregateTypeSubvolume_ERROR;
     }
 #if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
@@ -250,13 +250,13 @@ StepAggregateTypeSubvolume::StepAggregateTypeSubvolume( const std::string& filen
     sprintf( fname, "%s_%05d_value.dat", filename.c_str(), st );
     if ( !( fp = fopen( fname, "rb" ) ) )
     {
-        kvsMessageError( "Cannot open file '%s'.", fname );
+        visModuleMessageError( "Cannot open file '%s'.", fname );
         goto StepAggregateTypeSubvolume_ERROR;
     }
     // value data
-    if ( !m_values.allocate<kvs::Real32>( numNodes * m_number_ingredients ) )
+    if ( !m_values.allocate<vismodule::Real32>( numNodes * m_number_ingredients ) )
     {
-        kvsMessageError( "Cannot allocate memory for the value data." );
+        visModuleMessageError( "Cannot allocate memory for the value data." );
         goto StepAggregateTypeSubvolume_ERROR;
     }
     offset = numPreNodes * m_number_ingredients * 4;
@@ -264,7 +264,7 @@ StepAggregateTypeSubvolume::StepAggregateTypeSubvolume( const std::string& filen
     fseek( fp, offset, SEEK_SET );
     if ( fread( m_values.pointer(), 4, numNodes * m_number_ingredients, fp ) != numNodes * m_number_ingredients )
     {
-        kvsMessageError( "File read error: value data." );
+        visModuleMessageError( "File read error: value data." );
         goto StepAggregateTypeSubvolume_ERROR;
     }
 #if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
@@ -352,7 +352,7 @@ const size_t StepAggregateTypeSubvolume::ncells() const
  *  @return value array
  */
 /*===========================================================================*/
-const kvs::AnyValueArray& StepAggregateTypeSubvolume::values() const
+const vismodule::AnyValueArray& StepAggregateTypeSubvolume::values() const
 {
     return m_values;
 }
@@ -363,7 +363,7 @@ const kvs::AnyValueArray& StepAggregateTypeSubvolume::values() const
  *  @return coordinate array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& StepAggregateTypeSubvolume::coords() const
+const vismodule::ValueArray<vismodule::Real32>& StepAggregateTypeSubvolume::coords() const
 {
     return m_coords;
 }
@@ -374,7 +374,7 @@ const kvs::ValueArray<kvs::Real32>& StepAggregateTypeSubvolume::coords() const
  *  @return connection array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt32>& StepAggregateTypeSubvolume::connections() const
+const vismodule::ValueArray<vismodule::UInt32>& StepAggregateTypeSubvolume::connections() const
 {
     return m_connections;
 }
@@ -429,7 +429,7 @@ void StepAggregateTypeSubvolume::setNCells( const size_t ncells )
  *  @param  values [in] value array
  */
 /*===========================================================================*/
-void StepAggregateTypeSubvolume::setValues( const kvs::AnyValueArray& values )
+void StepAggregateTypeSubvolume::setValues( const vismodule::AnyValueArray& values )
 {
     m_values = values;
 }
@@ -440,7 +440,7 @@ void StepAggregateTypeSubvolume::setValues( const kvs::AnyValueArray& values )
  *  @param  coords [in] coordinate array
  */
 /*===========================================================================*/
-void StepAggregateTypeSubvolume::setCoords( const kvs::ValueArray<kvs::Real32>& coords )
+void StepAggregateTypeSubvolume::setCoords( const vismodule::ValueArray<vismodule::Real32>& coords )
 {
     m_coords = coords;
 }
@@ -451,7 +451,7 @@ void StepAggregateTypeSubvolume::setCoords( const kvs::ValueArray<kvs::Real32>& 
  *  @param  connections [in] connection array
  */
 /*===========================================================================*/
-void StepAggregateTypeSubvolume::setConnections( const kvs::ValueArray<kvs::UInt32>& connections )
+void StepAggregateTypeSubvolume::setConnections( const vismodule::ValueArray<vismodule::UInt32>& connections )
 {
     m_connections = connections;
 }
@@ -464,4 +464,4 @@ const bool StepAggregateTypeSubvolume::write( const std::string& filename )
 {
     return false;
 }
-} // end of namespace kvs
+} // end of namespace vismodule

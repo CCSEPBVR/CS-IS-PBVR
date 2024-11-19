@@ -16,7 +16,7 @@
 #include <algorithm>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -43,7 +43,7 @@ EventHandler::~EventHandler( void )
  *  @param  listener [in] pointer to event listener
  */
 /*===========================================================================*/
-void EventHandler::attach( kvs::EventListener* listener )
+void EventHandler::attach( vismodule::EventListener* listener )
 {
     m_listeners.push_back( listener );
 }
@@ -54,9 +54,9 @@ void EventHandler::attach( kvs::EventListener* listener )
  *  @param  listener [in] pointer to the event listener
  */
 /*===========================================================================*/
-void EventHandler::detach( kvs::EventListener* listener )
+void EventHandler::detach( vismodule::EventListener* listener )
 {
-    std::vector<kvs::EventListener*>::iterator p;
+    std::vector<vismodule::EventListener*>::iterator p;
     p = std::find( m_listeners.begin(), m_listeners.end(), listener );
 
     if ( p != m_listeners.end() )
@@ -81,16 +81,16 @@ void EventHandler::clear( void )
  *  @param  event [in] pointer to notified event
  */
 /*===========================================================================*/
-void EventHandler::notify( kvs::EventBase* event )
+void EventHandler::notify( vismodule::EventBase* event )
 {
-    std::vector<kvs::EventListener*>::iterator listener = m_listeners.begin();
-    std::vector<kvs::EventListener*>::iterator end = m_listeners.end();
+    std::vector<vismodule::EventListener*>::iterator listener = m_listeners.begin();
+    std::vector<vismodule::EventListener*>::iterator end = m_listeners.end();
 
     while ( listener != end )
     {
         if ( !event )
         {
-            if ( (*listener)->eventType() & kvs::EventBase::PaintEvent )
+            if ( (*listener)->eventType() & vismodule::EventBase::PaintEvent )
             {
                 (*listener)->onEvent();
             }
@@ -107,4 +107,4 @@ void EventHandler::notify( kvs::EventBase* event )
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

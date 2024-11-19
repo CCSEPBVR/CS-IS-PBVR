@@ -15,21 +15,21 @@
 #include <cfloat>
 
 
-namespace kvs
+namespace vismodule
 {
 
-VolumeRayIntersector::VolumeRayIntersector( const kvs::VolumeObjectBase* volume )
+VolumeRayIntersector::VolumeRayIntersector( const vismodule::VolumeObjectBase* volume )
     : Ray()
     , m_reference_volume( volume )
 {
     const float epsilon = 0.003f; // 1e-3
 
-    const kvs::Vector3f min(
+    const vismodule::Vector3f min(
         volume->minExternalCoord().x() + epsilon,
         volume->minExternalCoord().y() + epsilon,
         volume->minExternalCoord().z() + epsilon );
 
-    const kvs::Vector3f max(
+    const vismodule::Vector3f max(
         volume->maxExternalCoord().x() - epsilon,
         volume->maxExternalCoord().y() - epsilon,
         volume->maxExternalCoord().z() - epsilon );
@@ -44,4 +44,4 @@ VolumeRayIntersector::VolumeRayIntersector( const kvs::VolumeObjectBase* volume 
     m_vertex[7].set( min.x(), max.y(), max.z() );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

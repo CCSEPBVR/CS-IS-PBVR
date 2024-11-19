@@ -16,7 +16,7 @@
 #include "File.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace gf
@@ -178,7 +178,7 @@ const size_t BoundaryData::nnodesTemp( void ) const
  *  @return inlet boundary nodes
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsInlet( void ) const
+const vismodule::ValueArray<vismodule::UInt32>& BoundaryData::connectionsInlet( void ) const
 {
     return( m_connections_inlet );
 }
@@ -189,7 +189,7 @@ const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsInlet( void ) const
  *  @return wall boundary nodes
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsWall( void ) const
+const vismodule::ValueArray<vismodule::UInt32>& BoundaryData::connectionsWall( void ) const
 {
     return( m_connections_wall );
 }
@@ -200,7 +200,7 @@ const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsWall( void ) const
  *  @return symetric boundary nodes
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsSymetric( void ) const
+const vismodule::ValueArray<vismodule::UInt32>& BoundaryData::connectionsSymetric( void ) const
 {
     return( m_connections_symetric );
 }
@@ -211,7 +211,7 @@ const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsSymetric( void ) co
  *  @return cyclic boundary nodes
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsCyclic( void ) const
+const vismodule::ValueArray<vismodule::UInt32>& BoundaryData::connectionsCyclic( void ) const
 {
     return( m_connections_cyclic );
 }
@@ -222,7 +222,7 @@ const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsCyclic( void ) cons
  *  @return body surface boundary nodes
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsBody( void ) const
+const vismodule::ValueArray<vismodule::UInt32>& BoundaryData::connectionsBody( void ) const
 {
     return( m_connections_body );
 }
@@ -233,7 +233,7 @@ const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsBody( void ) const
  *  @return free boundary nodes
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsFree( void ) const
+const vismodule::ValueArray<vismodule::UInt32>& BoundaryData::connectionsFree( void ) const
 {
     return( m_connections_free );
 }
@@ -244,7 +244,7 @@ const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsFree( void ) const
  *  @return moving wall boundary nodes
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsMovingWall( void ) const
+const vismodule::ValueArray<vismodule::UInt32>& BoundaryData::connectionsMovingWall( void ) const
 {
     return( m_connections_moving_wall );
 }
@@ -255,7 +255,7 @@ const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsMovingWall( void ) 
  *  @return temperature boundary nodes
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsTemp( void ) const
+const vismodule::ValueArray<vismodule::UInt32>& BoundaryData::connectionsTemp( void ) const
 {
     return( m_connections_temp );
 }
@@ -266,7 +266,7 @@ const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsTemp( void ) const
  *  @return heat flux boundary nodes
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsHeat( void ) const
+const vismodule::ValueArray<vismodule::UInt32>& BoundaryData::connectionsHeat( void ) const
 {
     return( m_connections_heat );
 }
@@ -277,7 +277,7 @@ const kvs::ValueArray<kvs::UInt32>& BoundaryData::connectionsHeat( void ) const
  *  @return inlet boundary velocity values
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& BoundaryData::velocitiesInlet( void ) const
+const vismodule::ValueArray<vismodule::Real32>& BoundaryData::velocitiesInlet( void ) const
 {
     return( m_velocities_inlet );
 }
@@ -288,7 +288,7 @@ const kvs::ValueArray<kvs::Real32>& BoundaryData::velocitiesInlet( void ) const
  *  @return wall boundary velocity values
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& BoundaryData::velocitiesWall( void ) const
+const vismodule::ValueArray<vismodule::Real32>& BoundaryData::velocitiesWall( void ) const
 {
     return( m_velocities_wall );
 }
@@ -299,7 +299,7 @@ const kvs::ValueArray<kvs::Real32>& BoundaryData::velocitiesWall( void ) const
  *  @return inter connection datasets
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Int32>&  BoundaryData::interConnects( void ) const
+const vismodule::ValueArray<vismodule::Int32>&  BoundaryData::interConnects( void ) const
 {
     return( m_inter_connects );
 }
@@ -310,7 +310,7 @@ const kvs::ValueArray<kvs::Int32>&  BoundaryData::interConnects( void ) const
  *  @return boundary temperature values
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& BoundaryData::temperatures( void ) const
+const vismodule::ValueArray<vismodule::Real32>& BoundaryData::temperatures( void ) const
 {
     return( m_temperatures );
 }
@@ -321,7 +321,7 @@ const kvs::ValueArray<kvs::Real32>& BoundaryData::temperatures( void ) const
  *  @return boundary heat flux values
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& BoundaryData::heatFluxes( void ) const
+const vismodule::ValueArray<vismodule::Real32>& BoundaryData::heatFluxes( void ) const
 {
     return( m_heat_fluxes );
 }
@@ -335,23 +335,23 @@ const kvs::ValueArray<kvs::Real32>& BoundaryData::heatFluxes( void ) const
 /*===========================================================================*/
 const bool BoundaryData::read( const std::string filename )
 {
-    kvs::gf::File file;
+    vismodule::gf::File file;
     if ( !file.read( filename ) )
     {
-        kvsMessageError("Cannot read mesh data file.");
+        visModuleMessageError("Cannot read mesh data file.");
         return( false );
     }
 
     if ( file.dataSetList().size() != 1 )
     {
-        kvsMessageError("Multiple data set is not supported in kvs::gf::BoundaryData.");
+        visModuleMessageError("Multiple data set is not supported in vismodule::gf::BoundaryData.");
         return( false );
     }
 
-    const kvs::gf::DataSet& data_set = file.dataSet(0);
+    const vismodule::gf::DataSet& data_set = file.dataSet(0);
     for ( size_t i = 0; i < data_set.dataList().size(); i++ )
     {
-        const kvs::gf::Data& data = data_set.data(i);
+        const vismodule::gf::Data& data = data_set.data(i);
         const std::string& keyword = data.keyword();
         const std::string& type = data.arrayTypeHeader();
 
@@ -361,10 +361,10 @@ const bool BoundaryData::read( const std::string filename )
             if ( type == "#INT_ARY" )
             {
                 m_nnodes_inlet = data.num2();
-                const kvs::Int32* src = data.intArray().pointer();
+                const vismodule::Int32* src = data.intArray().pointer();
                 const size_t size = data.intArray().size();
-                kvs::UInt32* dst = m_connections_inlet.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
+                vismodule::UInt32* dst = m_connections_inlet.allocate( size );
+                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -374,10 +374,10 @@ const bool BoundaryData::read( const std::string filename )
             if ( type == "#INT_ARY" )
             {
                 m_nnodes_wall = data.num2();
-                const kvs::Int32* src = data.intArray().pointer();
+                const vismodule::Int32* src = data.intArray().pointer();
                 const size_t size = data.intArray().size();
-                kvs::UInt32* dst = m_connections_wall.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
+                vismodule::UInt32* dst = m_connections_wall.allocate( size );
+                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -387,10 +387,10 @@ const bool BoundaryData::read( const std::string filename )
             if ( type == "#INT_ARY" )
             {
                 m_nnodes_symetric = data.num2();
-                const kvs::Int32* src = data.intArray().pointer();
+                const vismodule::Int32* src = data.intArray().pointer();
                 const size_t size = data.intArray().size();
-                kvs::UInt32* dst = m_connections_symetric.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
+                vismodule::UInt32* dst = m_connections_symetric.allocate( size );
+                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -400,10 +400,10 @@ const bool BoundaryData::read( const std::string filename )
             if ( type == "#INT_ARY" )
             {
                 m_nnodes_cyclic = data.num2();
-                const kvs::Int32* src = data.intArray().pointer();
+                const vismodule::Int32* src = data.intArray().pointer();
                 const size_t size = data.intArray().size();
-                kvs::UInt32* dst = m_connections_cyclic.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
+                vismodule::UInt32* dst = m_connections_cyclic.allocate( size );
+                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -413,10 +413,10 @@ const bool BoundaryData::read( const std::string filename )
             if ( type == "#INT_ARY" )
             {
                 m_nnodes_body = data.num2();
-                const kvs::Int32* src = data.intArray().pointer();
+                const vismodule::Int32* src = data.intArray().pointer();
                 const size_t size = data.intArray().size();
-                kvs::UInt32* dst = m_connections_body.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
+                vismodule::UInt32* dst = m_connections_body.allocate( size );
+                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -426,10 +426,10 @@ const bool BoundaryData::read( const std::string filename )
             if ( type == "#INT_ARY" )
             {
                 m_nnodes_free = data.num2();
-                const kvs::Int32* src = data.intArray().pointer();
+                const vismodule::Int32* src = data.intArray().pointer();
                 const size_t size = data.intArray().size();
-                kvs::UInt32* dst = m_connections_free.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
+                vismodule::UInt32* dst = m_connections_free.allocate( size );
+                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -439,10 +439,10 @@ const bool BoundaryData::read( const std::string filename )
             if ( type == "#INT_ARY" )
             {
                 m_nnodes_moving_wall = data.num2();
-                const kvs::Int32* src = data.intArray().pointer();
+                const vismodule::Int32* src = data.intArray().pointer();
                 const size_t size = data.intArray().size();
-                kvs::UInt32* dst = m_connections_moving_wall.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
+                vismodule::UInt32* dst = m_connections_moving_wall.allocate( size );
+                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -452,10 +452,10 @@ const bool BoundaryData::read( const std::string filename )
             if ( type == "#INT_ARY" )
             {
                 m_nnodes_temp = data.num2();
-                const kvs::Int32* src = data.intArray().pointer();
+                const vismodule::Int32* src = data.intArray().pointer();
                 const size_t size = data.intArray().size();
-                kvs::UInt32* dst = m_connections_temp.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
+                vismodule::UInt32* dst = m_connections_temp.allocate( size );
+                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -465,10 +465,10 @@ const bool BoundaryData::read( const std::string filename )
             if ( type == "#INT_ARY" )
             {
                 m_nnodes_temp = data.num2();
-                const kvs::Int32* src = data.intArray().pointer();
+                const vismodule::Int32* src = data.intArray().pointer();
                 const size_t size = data.intArray().size();
-                kvs::UInt32* dst = m_connections_heat.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
+                vismodule::UInt32* dst = m_connections_heat.allocate( size );
+                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -529,4 +529,4 @@ const bool BoundaryData::read( const std::string filename )
 
 } // end of namespace gf
 
-} // end of namespace kvs
+} // end of namespace vismodule

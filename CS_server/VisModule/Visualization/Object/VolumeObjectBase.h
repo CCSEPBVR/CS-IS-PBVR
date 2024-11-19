@@ -11,19 +11,19 @@
  *  $Id: VolumeObjectBase.h 848 2011-06-29 11:35:52Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__VOLUME_OBJECT_BASE_H_INCLUDE
-#define KVS__VOLUME_OBJECT_BASE_H_INCLUDE
+#ifndef VIS_MODULE__VOLUME_OBJECT_BASE_H_INCLUDE
+#define VIS_MODULE__VOLUME_OBJECT_BASE_H_INCLUDE
 
 #include <string>
-#include <kvs/ClassName>
-#include <kvs/ObjectBase>
-#include <kvs/Value>
-#include <kvs/ValueArray>
-#include <kvs/AnyValueArray>
-#include <kvs/Math>
+#include <vismodule/ClassName>
+#include <vismodule/ObjectBase>
+#include <vismodule/Value>
+#include <vismodule/ValueArray>
+#include <vismodule/AnyValueArray>
+#include <vismodule/Math>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -32,16 +32,16 @@ namespace kvs
  */
 /*==========================================================================*/
 class VolumeObjectBase
-    : public kvs::ObjectBase
+    : public vismodule::ObjectBase
 {
-    kvsClassName( kvs::VolumeObjectBase );
+    visModuleClassName( vismodule::VolumeObjectBase );
 
 public:
 
-    typedef kvs::ObjectBase BaseClass;
+    typedef vismodule::ObjectBase BaseClass;
 
-    typedef kvs::ValueArray<float> Coords;
-    typedef kvs::AnyValueArray     Values;
+    typedef vismodule::ValueArray<float> Coords;
+    typedef vismodule::AnyValueArray     Values;
 
 public:
 
@@ -80,8 +80,8 @@ private:
     Values m_values; ///< Value array.
 
     mutable bool        m_has_min_max_values; ///< Whether includes min/max values or not.
-    mutable kvs::Real64 m_min_value;          ///< Minimum field value.
-    mutable kvs::Real64 m_max_value;          ///< Maximum field value.
+    mutable vismodule::Real64 m_min_value;          ///< Minimum field value.
+    mutable vismodule::Real64 m_max_value;          ///< Maximum field value.
 
 public:
 
@@ -98,9 +98,9 @@ public:
 
 public:
 
-    static kvs::VolumeObjectBase* DownCast( kvs::ObjectBase* object );
+    static vismodule::VolumeObjectBase* DownCast( vismodule::ObjectBase* object );
 
-    static const kvs::VolumeObjectBase* DownCast( const kvs::ObjectBase* object );
+    static const vismodule::VolumeObjectBase* DownCast( const vismodule::ObjectBase* object );
 
 public:
 
@@ -117,8 +117,8 @@ public:
     void setValues( const Values& values );
 
     void setMinMaxValues(
-        const kvs::Real64 min_value,
-        const kvs::Real64 max_value ) const;
+        const vismodule::Real64 min_value,
+        const vismodule::Real64 max_value ) const;
 
 public:
 
@@ -132,9 +132,9 @@ public:
 
     const bool hasMinMaxValues( void ) const;
 
-    const kvs::Real64 minValue( void ) const;
+    const vismodule::Real64 minValue( void ) const;
 
-    const kvs::Real64 maxValue( void ) const;
+    const vismodule::Real64 maxValue( void ) const;
 
 public:
 
@@ -175,39 +175,39 @@ void VolumeObjectBase::calculate_min_max_values( void ) const
 
         while ( value < end )
         {
-            min_value = kvs::Math::Min( *value, min_value );
-            max_value = kvs::Math::Max( *value, max_value );
+            min_value = vismodule::Math::Min( *value, min_value );
+            max_value = vismodule::Math::Max( *value, max_value );
             ++value;
         }
 
         this->setMinMaxValues(
-            static_cast<kvs::Real64>( min_value ),
-            static_cast<kvs::Real64>( max_value ) );
+            static_cast<vismodule::Real64>( min_value ),
+            static_cast<vismodule::Real64>( max_value ) );
     }
     else
     {
-        kvs::Real64 min_value = kvs::Value<kvs::Real64>::Max();
-        kvs::Real64 max_value = kvs::Value<kvs::Real64>::Min();
+        vismodule::Real64 min_value = vismodule::Value<vismodule::Real64>::Max();
+        vismodule::Real64 max_value = vismodule::Value<vismodule::Real64>::Min();
 
         const size_t veclen = m_veclen;
 
         while ( value < end )
         {
-            kvs::Real64 magnitude = 0.0;
+            vismodule::Real64 magnitude = 0.0;
             for ( size_t i = 0; i < veclen; ++i )
             {
-                magnitude += static_cast<kvs::Real64>( ( *value ) * ( *value ) );
+                magnitude += static_cast<vismodule::Real64>( ( *value ) * ( *value ) );
                 ++value;
             }
 
-            min_value = kvs::Math::Min( magnitude, min_value );
-            max_value = kvs::Math::Max( magnitude, max_value );
+            min_value = vismodule::Math::Min( magnitude, min_value );
+            max_value = vismodule::Math::Max( magnitude, max_value );
         }
 
         this->setMinMaxValues( std::sqrt( min_value ), std::sqrt( max_value ) );
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__VOLUME_OBJECT_BASE_H_INCLUDE
+#endif // VIS_MODULE__VOLUME_OBJECT_BASE_H_INCLUDE

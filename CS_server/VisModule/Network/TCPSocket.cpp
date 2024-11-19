@@ -18,7 +18,7 @@
 #include "MessageBlock.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -39,7 +39,7 @@ TCPSocket::TCPSocket( void ):
  *  @param timeout [in] timeout value
  */
 /*==========================================================================*/
-TCPSocket::TCPSocket( const kvs::IPAddress& ip, const int port , const kvs::SocketTimer* timeout ):
+TCPSocket::TCPSocket( const vismodule::IPAddress& ip, const int port , const vismodule::SocketTimer* timeout ):
     m_is_connected( false )
 {
     this->open();
@@ -53,7 +53,7 @@ TCPSocket::TCPSocket( const kvs::IPAddress& ip, const int port , const kvs::Sock
  *  @param timeout [in] timeout value
  */
 /*==========================================================================*/
-TCPSocket::TCPSocket( const kvs::SocketAddress& socket_address, const kvs::SocketTimer* timeout ):
+TCPSocket::TCPSocket( const vismodule::SocketAddress& socket_address, const vismodule::SocketTimer* timeout ):
     m_is_connected( false )
 {
     this->open();
@@ -67,8 +67,8 @@ TCPSocket::TCPSocket( const kvs::SocketAddress& socket_address, const kvs::Socke
  *  @param address [in] socket adrees
  */
 /*==========================================================================*/
-TCPSocket::TCPSocket( const kvs::Socket::id_type& id, const kvs::SocketAddress& address ):
-    kvs::Socket( id, address ),
+TCPSocket::TCPSocket( const vismodule::Socket::id_type& id, const vismodule::SocketAddress& address ):
+    vismodule::Socket( id, address ),
     m_is_connected( false )
 {
 }
@@ -100,21 +100,21 @@ bool TCPSocket::isConnected( void )
 /*==========================================================================*/
 void TCPSocket::open( void )
 {
-    kvs::Socket::open( kvs::Socket::TCPType );
-    if( kvs::Socket::isOpen() )
+    vismodule::Socket::open( vismodule::Socket::TCPType );
+    if( vismodule::Socket::isOpen() )
     {
         int nodelay = 0; // 0 = no-buffering, 1 = buffering
-        kvs::Socket::set_option( m_id, IPPROTO_TCP, TCP_NODELAY,
+        vismodule::Socket::set_option( m_id, IPPROTO_TCP, TCP_NODELAY,
                                  &nodelay, sizeof(nodelay) );
 
         int reuse = 1;
-        kvs::Socket::set_option( m_id, SOL_SOCKET, SO_REUSEADDR,
+        vismodule::Socket::set_option( m_id, SOL_SOCKET, SO_REUSEADDR,
                                  &reuse, sizeof(reuse) );
 
         struct linger linger_opt;
         linger_opt.l_onoff  = 1; // 0 = off, 1 = on
         linger_opt.l_linger = 1000;
-        kvs::Socket::set_option( m_id, SOL_SOCKET, SO_LINGER,
+        vismodule::Socket::set_option( m_id, SOL_SOCKET, SO_LINGER,
                                  &linger_opt, sizeof(linger_opt) );
     }
 }
@@ -129,11 +129,11 @@ void TCPSocket::open( void )
  */
 /*==========================================================================*/
 bool TCPSocket::connect(
-    const kvs::IPAddress&   ip,
+    const vismodule::IPAddress&   ip,
     const int               port,
-    const kvs::SocketTimer* timeout )
+    const vismodule::SocketTimer* timeout )
 {
-    return( this->connect( kvs::SocketAddress( ip, port ), timeout ) );
+    return( this->connect( vismodule::SocketAddress( ip, port ), timeout ) );
 }
 
 /*==========================================================================*/
@@ -145,13 +145,13 @@ bool TCPSocket::connect(
  */
 /*==========================================================================*/
 bool TCPSocket::connect(
-    const kvs::SocketAddress& socket_address,
-    const kvs::SocketTimer*   timeout )
+    const vismodule::SocketAddress& socket_address,
+    const vismodule::SocketTimer*   timeout )
 {
-    if( !kvs::Socket::isOpen() ) return( false );
+    if( !vismodule::Socket::isOpen() ) return( false );
 
-//    const kvs::IPAddress none( static_cast<kvs::IPAddress::integer_type>(kvs::IPAddress::None) );
-    const kvs::IPAddress none( kvs::IPAddress::None );
+//    const vismodule::IPAddress none( static_cast<vismodule::IPAddress::integer_type>(vismodule::IPAddress::None) );
+    const vismodule::IPAddress none( vismodule::IPAddress::None );
     if( socket_address.ip() == none )
     {
         return( false );
@@ -159,7 +159,7 @@ bool TCPSocket::connect(
 
     m_is_connected = false;
 
-    if( kvs::Socket::connect_to_host( socket_address, timeout ) != -1 )
+    if( vismodule::Socket::connect_to_host( socket_address, timeout ) != -1 )
     {
         m_is_connected = true;
     }
@@ -174,15 +174,15 @@ bool TCPSocket::connect(
  *  @return true, if it's success.
  */
 /*==========================================================================*/
-bool TCPSocket::complete( const kvs::SocketTimer* timeout )
+bool TCPSocket::complete( const vismodule::SocketTimer* timeout )
 {
     if( m_is_connected ) return( true );
 
-    if( !kvs::Socket::isBlocking() )
+    if( !vismodule::Socket::isBlocking() )
     {
-        if( kvs::Socket::connect_complete( timeout ) > 0 )
+        if( vismodule::Socket::connect_complete( timeout ) > 0 )
         {
-            kvs::Socket::enableBlocking();
+            vismodule::Socket::enableBlocking();
             return( true );
         }
     }
@@ -200,7 +200,7 @@ bool TCPSocket::complete( const kvs::SocketTimer* timeout )
 /*==========================================================================*/
 int TCPSocket::send( const void* message, const int message_size )
 {
-    return( ::send( kvs::Socket::id(), (const char*)message, message_size, 0 ) );
+    return( ::send( vismodule::Socket::id(), (const char*)message, message_size, 0 ) );
 }
 
 /*==========================================================================*/
@@ -210,7 +210,7 @@ int TCPSocket::send( const void* message, const int message_size )
  *  @return size of sent message
  */
 /*==========================================================================*/
-int TCPSocket::send( const kvs::MessageBlock& message )
+int TCPSocket::send( const vismodule::MessageBlock& message )
 {
     return( this->send( message.blockPointer(), message.blockSize() ) );
 }
@@ -225,7 +225,7 @@ int TCPSocket::send( const kvs::MessageBlock& message )
 /*==========================================================================*/
 int TCPSocket::receive( void* message, const int message_size )
 {
-    return( kvs::Socket::receive_exact( kvs::Socket::id(), (char*)message, message_size ) );
+    return( vismodule::Socket::receive_exact( vismodule::Socket::id(), (char*)message, message_size ) );
 }
 
 /*==========================================================================*/
@@ -238,7 +238,7 @@ int TCPSocket::receive( void* message, const int message_size )
 int TCPSocket::receive( MessageBlock* message )
 {
     size_t message_size = 0;
-    int status = kvs::Socket::receive_peek( kvs::Socket::id(),
+    int status = vismodule::Socket::receive_peek( vismodule::Socket::id(),
                                             (char*)&message_size,
                                             sizeof( size_t ) );
     if( status == -1 ) return( status );
@@ -258,7 +258,7 @@ int TCPSocket::receive( MessageBlock* message )
 /*==========================================================================*/
 int TCPSocket::receiveOnce( void* message, const int message_size )
 {
-    return( kvs::Socket::receive_once( kvs::Socket::id(), (char*)message, message_size ) );
+    return( vismodule::Socket::receive_once( vismodule::Socket::id(), (char*)message, message_size ) );
 }
 
 /*==========================================================================*/
@@ -270,7 +270,7 @@ int TCPSocket::receiveOnce( void* message, const int message_size )
 /*==========================================================================*/
 int TCPSocket::receiveLine( std::string& line )
 {
-    return( kvs::Socket::receive_line( kvs::Socket::id(), line ) );
+    return( vismodule::Socket::receive_line( vismodule::Socket::id(), line ) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

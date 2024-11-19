@@ -11,19 +11,19 @@
  *  $Id: PolygonObject.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__POLYGON_OBJECT_H_INCLUDE
-#define KVS__POLYGON_OBJECT_H_INCLUDE
+#ifndef VIS_MODULE__POLYGON_OBJECT_H_INCLUDE
+#define VIS_MODULE__POLYGON_OBJECT_H_INCLUDE
 
-#include <kvs/GeometryObjectBase>
-#include <kvs/ClassName>
-#include <kvs/ValueArray>
-#include <kvs/Type>
-#include <kvs/Vector3>
-#include <kvs/RGBColor>
-#include <kvs/Module>
+#include <vismodule/GeometryObjectBase>
+#include <vismodule/ClassName>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/Vector3>
+#include <vismodule/RGBColor>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -31,14 +31,14 @@ namespace kvs
  *  Polygon object class.
  */
 /*==========================================================================*/
-class PolygonObject : public kvs::GeometryObjectBase
+class PolygonObject : public vismodule::GeometryObjectBase
 {
     // Class name.
-    kvsClassName( kvs::PolygonObject );
+    visModuleClassName( vismodule::PolygonObject );
 
     // Module information.
-    kvsModuleCategory( Object );
-    kvsModuleBaseClass( kvs::GeometryObjectBase );
+    visModuleCategory( Object );
+    visModuleBaseClass( vismodule::GeometryObjectBase );
 
 public:
 
@@ -70,82 +70,82 @@ protected:
     PolygonType                  m_polygon_type; ///< polygon type
     ColorType                    m_color_type;   ///< polygon color type
     NormalType                   m_normal_type;  ///< polygon normal type
-    kvs::ValueArray<kvs::UInt32> m_connections;  ///< connection array
-    kvs::ValueArray<kvs::UInt8>  m_opacities;    ///< opacity array
+    vismodule::ValueArray<vismodule::UInt32> m_connections;  ///< connection array
+    vismodule::ValueArray<vismodule::UInt8>  m_opacities;    ///< opacity array
 
 public:
 
     PolygonObject( void );
 
     PolygonObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::ValueArray<kvs::UInt32>& connections,
-        const kvs::ValueArray<kvs::UInt8>&  colors,
-        const kvs::ValueArray<kvs::UInt8>&  opacities,
-        const kvs::ValueArray<kvs::Real32>& normals,
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::ValueArray<vismodule::UInt32>& connections,
+        const vismodule::ValueArray<vismodule::UInt8>&  colors,
+        const vismodule::ValueArray<vismodule::UInt8>&  opacities,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
         const PolygonType                   polygon_type,
         const ColorType                     color_type,
         const NormalType                    normal_type );
 
     PolygonObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::ValueArray<kvs::UInt32>& connections,
-        const kvs::ValueArray<kvs::UInt8>&  colors,
-        const kvs::UInt8&                   opacity,
-        const kvs::ValueArray<kvs::Real32>& normals,
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::ValueArray<vismodule::UInt32>& connections,
+        const vismodule::ValueArray<vismodule::UInt8>&  colors,
+        const vismodule::UInt8&                   opacity,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
         const PolygonType                   polygon_type,
         const ColorType                     color_type,
         const NormalType                    normal_type );
 
     PolygonObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::ValueArray<kvs::UInt32>& connections,
-        const kvs::RGBColor&                color,
-        const kvs::ValueArray<kvs::UInt8>&  opacity,
-        const kvs::ValueArray<kvs::Real32>& normals,
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::ValueArray<vismodule::UInt32>& connections,
+        const vismodule::RGBColor&                color,
+        const vismodule::ValueArray<vismodule::UInt8>&  opacity,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
         const PolygonType                   polygon_type,
         const NormalType                    normal_type );
 
     PolygonObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::ValueArray<kvs::UInt32>& connections,
-        const kvs::RGBColor&                color,
-        const kvs::UInt8&                   opacity,
-        const kvs::ValueArray<kvs::Real32>& normals,
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::ValueArray<vismodule::UInt32>& connections,
+        const vismodule::RGBColor&                color,
+        const vismodule::UInt8&                   opacity,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
         const PolygonType                   polygon_type,
         const NormalType                    normal_type );
 
     PolygonObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::ValueArray<kvs::UInt8>&  colors,
-        const kvs::ValueArray<kvs::UInt8>&  opacities,
-        const kvs::ValueArray<kvs::Real32>& normals,
-        const PolygonType                   polygon_type,
-        const ColorType                     color_type,
-        const NormalType                    normal_type );
-
-    PolygonObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::ValueArray<kvs::UInt8>&  colors,
-        const kvs::UInt8&                   opacity,
-        const kvs::ValueArray<kvs::Real32>& normals,
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::ValueArray<vismodule::UInt8>&  colors,
+        const vismodule::ValueArray<vismodule::UInt8>&  opacities,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
         const PolygonType                   polygon_type,
         const ColorType                     color_type,
         const NormalType                    normal_type );
 
     PolygonObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::RGBColor&                color,
-        const kvs::ValueArray<kvs::UInt8>&  opacities,
-        const kvs::ValueArray<kvs::Real32>& normals,
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::ValueArray<vismodule::UInt8>&  colors,
+        const vismodule::UInt8&                   opacity,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
+        const PolygonType                   polygon_type,
+        const ColorType                     color_type,
+        const NormalType                    normal_type );
+
+    PolygonObject(
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::RGBColor&                color,
+        const vismodule::ValueArray<vismodule::UInt8>&  opacities,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
         const PolygonType                   polygon_type,
         const NormalType                    normal_type );
 
     PolygonObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::RGBColor&                color,
-        const kvs::UInt8&                   opacity,
-        const kvs::ValueArray<kvs::Real32>& normals,
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::RGBColor&                color,
+        const vismodule::UInt8&                   opacity,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
         const PolygonType                   polygon_type,
         const NormalType                    normal_type );
 
@@ -155,9 +155,9 @@ public:
 
 public:
 
-    static kvs::PolygonObject* DownCast( kvs::ObjectBase* object );
+    static vismodule::PolygonObject* DownCast( vismodule::ObjectBase* object );
 
-    static const kvs::PolygonObject* DownCast( const kvs::ObjectBase* object );
+    static const vismodule::PolygonObject* DownCast( const vismodule::ObjectBase* object );
 
 public:
 
@@ -183,13 +183,13 @@ public:
 
 public:
 
-    void setConnections( const kvs::ValueArray<kvs::UInt32>& connections );
+    void setConnections( const vismodule::ValueArray<vismodule::UInt32>& connections );
 
-    void setColor( const kvs::RGBColor& color );
+    void setColor( const vismodule::RGBColor& color );
 
-    void setOpacities( const kvs::ValueArray<kvs::UInt8>& opacities );
+    void setOpacities( const vismodule::ValueArray<vismodule::UInt8>& opacities );
 
-    void setOpacity( const kvs::UInt8 opacity );
+    void setOpacity( const vismodule::UInt8 opacity );
 
 public:
 
@@ -207,15 +207,15 @@ public:
 
 public:
 
-    const kvs::UInt8 opacity( const size_t index = 0 ) const;
+    const vismodule::UInt8 opacity( const size_t index = 0 ) const;
 
 public:
 
-    const kvs::ValueArray<kvs::UInt32>& connections( void ) const;
+    const vismodule::ValueArray<vismodule::UInt32>& connections( void ) const;
 
-    const kvs::ValueArray<kvs::UInt8>& opacities( void ) const;
+    const vismodule::ValueArray<vismodule::UInt8>& opacities( void ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__POLYGON_OBJECT_H_INCLUDE
+#endif // VIS_MODULE__POLYGON_OBJECT_H_INCLUDE

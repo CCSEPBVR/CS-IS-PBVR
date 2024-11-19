@@ -12,12 +12,12 @@
  */
 /*****************************************************************************/
 #include "ExtractEdges.h"
-#include <kvs/VolumeObjectBase>
-#include <kvs/StructuredVolumeObject>
-#include <kvs/UnstructuredVolumeObject>
-#include <kvs/TransferFunction>
-#include <kvs/IgnoreUnusedVariable>
-#include <kvs/Timer>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/TransferFunction>
+#include <vismodule/IgnoreUnusedVariable>
+#include <vismodule/Timer>
 #include <map>
 
 
@@ -33,8 +33,8 @@ class EdgeMap
 {
 public:
 
-    typedef kvs::UInt32 Key;
-    typedef std::pair<kvs::UInt32,kvs::UInt32> Value;
+    typedef vismodule::UInt32 Key;
+    typedef std::pair<vismodule::UInt32,vismodule::UInt32> Value;
     typedef std::multimap<Key,Value> Bucket;
 
 private:
@@ -48,9 +48,9 @@ public:
 
 public:
 
-    void insert( const kvs::UInt32 v0, const kvs::UInt32 v1 );
+    void insert( const vismodule::UInt32 v0, const vismodule::UInt32 v1 );
 
-    const kvs::ValueArray<kvs::UInt32> serialize( void );
+    const vismodule::ValueArray<vismodule::UInt32> serialize( void );
 };
 
 /*===========================================================================*/
@@ -71,9 +71,9 @@ EdgeMap::EdgeMap( const size_t nvertices ):
  *  @param  v1 [in] vertex id 1
  */
 /*===========================================================================*/
-void EdgeMap::insert( const kvs::UInt32 v0, const kvs::UInt32 v1 )
+void EdgeMap::insert( const vismodule::UInt32 v0, const vismodule::UInt32 v1 )
 {
-    const Key key = ( v0 + v1 ) % kvs::UInt32( m_nvertices );
+    const Key key = ( v0 + v1 ) % vismodule::UInt32( m_nvertices );
 
     Bucket::iterator e = m_bucket.find( key );
     Bucket::const_iterator last = m_bucket.end();
@@ -101,9 +101,9 @@ void EdgeMap::insert( const kvs::UInt32 v0, const kvs::UInt32 v1 )
  *  @return serialized indices of the end vertices of the edges in the edge map
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt32> EdgeMap::serialize( void )
+const vismodule::ValueArray<vismodule::UInt32> EdgeMap::serialize( void )
 {
-    kvs::ValueArray<kvs::UInt32> connections( 2 * m_bucket.size() );
+    vismodule::ValueArray<vismodule::UInt32> connections( 2 * m_bucket.size() );
 
     Bucket::const_iterator e = m_bucket.begin();
     Bucket::const_iterator last = m_bucket.end();
@@ -121,7 +121,7 @@ const kvs::ValueArray<kvs::UInt32> EdgeMap::serialize( void )
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -130,8 +130,8 @@ namespace kvs
  */
 /*===========================================================================*/
 ExtractEdges::ExtractEdges( void ):
-    kvs::MapperBase(),
-    kvs::LineObject()
+    vismodule::MapperBase(),
+    vismodule::LineObject()
 {
 }
 
@@ -141,9 +141,9 @@ ExtractEdges::ExtractEdges( void ):
  *  @param  volume [in] pointer to the volume object
  */
 /*===========================================================================*/
-ExtractEdges::ExtractEdges( const kvs::VolumeObjectBase* volume ):
-    kvs::MapperBase(),
-    kvs::LineObject()
+ExtractEdges::ExtractEdges( const vismodule::VolumeObjectBase* volume ):
+    vismodule::MapperBase(),
+    vismodule::LineObject()
 {
     this->exec( volume );
 }
@@ -156,10 +156,10 @@ ExtractEdges::ExtractEdges( const kvs::VolumeObjectBase* volume ):
  */
 /*===========================================================================*/
 ExtractEdges::ExtractEdges(
-    const kvs::VolumeObjectBase* volume,
-    const kvs::TransferFunction& transfer_function ):
-    kvs::MapperBase( transfer_function ),
-    kvs::LineObject()
+    const vismodule::VolumeObjectBase* volume,
+    const vismodule::TransferFunction& transfer_function ):
+    vismodule::MapperBase( transfer_function ),
+    vismodule::LineObject()
 {
     this->exec( volume );
 }
@@ -180,31 +180,31 @@ ExtractEdges::~ExtractEdges( void )
  *  @return pointer of the line object
  */
 /*===========================================================================*/
-ExtractEdges::SuperClass* ExtractEdges::exec( const kvs::ObjectBase* object )
+ExtractEdges::SuperClass* ExtractEdges::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase* volume = kvs::VolumeObjectBase::DownCast( object );
+    const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
     if ( !volume )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not volume dat.");
+        visModuleMessageError("Input object is not volume dat.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase::VolumeType type = volume->volumeType();
-    if ( type == kvs::VolumeObjectBase::Structured )
+    const vismodule::VolumeObjectBase::VolumeType type = volume->volumeType();
+    if ( type == vismodule::VolumeObjectBase::Structured )
     {
-        this->mapping( kvs::StructuredVolumeObject::DownCast( volume ) );
+        this->mapping( vismodule::StructuredVolumeObject::DownCast( volume ) );
     }
-    else // type == kvs::VolumeObjectBase::Unstructured
+    else // type == vismodule::VolumeObjectBase::Unstructured
     {
-        this->mapping( kvs::UnstructuredVolumeObject::DownCast( volume ) );
+        this->mapping( vismodule::UnstructuredVolumeObject::DownCast( volume ) );
     }
 
     return( this );
@@ -216,7 +216,7 @@ ExtractEdges::SuperClass* ExtractEdges::exec( const kvs::ObjectBase* object )
  *  @param  volume [in] pointer to the strctured volume object
  */
 /*===========================================================================*/
-void ExtractEdges::mapping( const kvs::StructuredVolumeObject* volume )
+void ExtractEdges::mapping( const vismodule::StructuredVolumeObject* volume )
 {
     BaseClass::attach_volume( volume );
     BaseClass::set_range( volume );
@@ -226,19 +226,19 @@ void ExtractEdges::mapping( const kvs::StructuredVolumeObject* volume )
     this->calculate_connections( volume );
 
     const std::type_info& type = volume->values().typeInfo()->type();
-    if (      type == typeid( kvs::Int8   ) ) { this->calculate_colors<kvs::Int8  >( volume ); }
-    else if ( type == typeid( kvs::Int16  ) ) { this->calculate_colors<kvs::Int16 >( volume ); }
-    else if ( type == typeid( kvs::Int32  ) ) { this->calculate_colors<kvs::Int32 >( volume ); }
-    else if ( type == typeid( kvs::Int64  ) ) { this->calculate_colors<kvs::Int64 >( volume ); }
-    else if ( type == typeid( kvs::UInt8  ) ) { this->calculate_colors<kvs::UInt8 >( volume ); }
-    else if ( type == typeid( kvs::UInt16 ) ) { this->calculate_colors<kvs::UInt16>( volume ); }
-    else if ( type == typeid( kvs::UInt32 ) ) { this->calculate_colors<kvs::UInt32>( volume ); }
-    else if ( type == typeid( kvs::UInt64 ) ) { this->calculate_colors<kvs::UInt64>( volume ); }
-    else if ( type == typeid( kvs::Real32 ) ) { this->calculate_colors<kvs::Real32>( volume ); }
-    else if ( type == typeid( kvs::Real64 ) ) { this->calculate_colors<kvs::Real64>( volume ); }
+    if (      type == typeid( vismodule::Int8   ) ) { this->calculate_colors<vismodule::Int8  >( volume ); }
+    else if ( type == typeid( vismodule::Int16  ) ) { this->calculate_colors<vismodule::Int16 >( volume ); }
+    else if ( type == typeid( vismodule::Int32  ) ) { this->calculate_colors<vismodule::Int32 >( volume ); }
+    else if ( type == typeid( vismodule::Int64  ) ) { this->calculate_colors<vismodule::Int64 >( volume ); }
+    else if ( type == typeid( vismodule::UInt8  ) ) { this->calculate_colors<vismodule::UInt8 >( volume ); }
+    else if ( type == typeid( vismodule::UInt16 ) ) { this->calculate_colors<vismodule::UInt16>( volume ); }
+    else if ( type == typeid( vismodule::UInt32 ) ) { this->calculate_colors<vismodule::UInt32>( volume ); }
+    else if ( type == typeid( vismodule::UInt64 ) ) { this->calculate_colors<vismodule::UInt64>( volume ); }
+    else if ( type == typeid( vismodule::Real32 ) ) { this->calculate_colors<vismodule::Real32>( volume ); }
+    else if ( type == typeid( vismodule::Real64 ) ) { this->calculate_colors<vismodule::Real64>( volume ); }
 
-    SuperClass::setLineType( kvs::LineObject::Segment );
-    SuperClass::setColorType( kvs::LineObject::VertexColor );
+    SuperClass::setLineType( vismodule::LineObject::Segment );
+    SuperClass::setColorType( vismodule::LineObject::VertexColor );
     if ( SuperClass::nsizes() == 0 ) SuperClass::setSize( 1.0f );
 }
 
@@ -248,14 +248,14 @@ void ExtractEdges::mapping( const kvs::StructuredVolumeObject* volume )
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExtractEdges::calculate_coords( const kvs::StructuredVolumeObject* volume )
+void ExtractEdges::calculate_coords( const vismodule::StructuredVolumeObject* volume )
 {
-    const kvs::VolumeObjectBase::GridType type = volume->gridType();
-    if ( type == kvs::VolumeObjectBase::Uniform )
+    const vismodule::VolumeObjectBase::GridType type = volume->gridType();
+    if ( type == vismodule::VolumeObjectBase::Uniform )
     {
        this->calculate_uniform_coords( volume );
     }
-    else if ( type == kvs::VolumeObjectBase::Rectilinear )
+    else if ( type == vismodule::VolumeObjectBase::Rectilinear )
     {
         this->calculate_rectilinear_coords( volume );
     }
@@ -271,15 +271,15 @@ void ExtractEdges::calculate_coords( const kvs::StructuredVolumeObject* volume )
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExtractEdges::calculate_uniform_coords( const kvs::StructuredVolumeObject* volume )
+void ExtractEdges::calculate_uniform_coords( const vismodule::StructuredVolumeObject* volume )
 {
-    kvs::ValueArray<kvs::Real32> coords( 3 * volume->nnodes() );
-    kvs::Real32* coord = coords.pointer();
+    vismodule::ValueArray<vismodule::Real32> coords( 3 * volume->nnodes() );
+    vismodule::Real32* coord = coords.pointer();
 
-    const kvs::Vector3ui resolution( volume->resolution() );
-    const kvs::Vector3f  volume_size( volume->maxObjectCoord() - volume->minObjectCoord() );
-    const kvs::Vector3ui ngrids( resolution - kvs::Vector3ui( 1, 1, 1 ) );
-    const kvs::Vector3f  grid_size(
+    const vismodule::Vector3ui resolution( volume->resolution() );
+    const vismodule::Vector3f  volume_size( volume->maxObjectCoord() - volume->minObjectCoord() );
+    const vismodule::Vector3ui ngrids( resolution - vismodule::Vector3ui( 1, 1, 1 ) );
+    const vismodule::Vector3f  grid_size(
         volume_size.x() / static_cast<float>( ngrids.x() ),
         volume_size.y() / static_cast<float>( ngrids.y() ),
         volume_size.z() / static_cast<float>( ngrids.z() ) );
@@ -313,12 +313,12 @@ void ExtractEdges::calculate_uniform_coords( const kvs::StructuredVolumeObject* 
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExtractEdges::calculate_rectilinear_coords( const kvs::StructuredVolumeObject* volume )
+void ExtractEdges::calculate_rectilinear_coords( const vismodule::StructuredVolumeObject* volume )
 {
-    kvs::IgnoreUnusedVariable( volume );
+    vismodule::IgnoreUnusedVariable( volume );
 
     BaseClass::m_is_success = false;
-    kvsMessageError("Rectilinear volume has not yet supportted.");
+    visModuleMessageError("Rectilinear volume has not yet supportted.");
 }
 
 /*===========================================================================*/
@@ -327,7 +327,7 @@ void ExtractEdges::calculate_rectilinear_coords( const kvs::StructuredVolumeObje
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExtractEdges::calculate_connections( const kvs::StructuredVolumeObject* volume )
+void ExtractEdges::calculate_connections( const vismodule::StructuredVolumeObject* volume )
 {
     const size_t line_size = volume->nnodesPerLine();
     const size_t slice_size = volume->nnodesPerSlice();
@@ -339,11 +339,11 @@ void ExtractEdges::calculate_connections( const kvs::StructuredVolumeObject* vol
         2 * ( resolution.z() - 1 ) * ( resolution.x() - 1 ) +
         resolution.x() - 1 + resolution.y() - 1 + resolution.z() - 1;
 
-    kvs::ValueArray<kvs::UInt32> connections( 2 * nedges );
-    kvs::UInt32* connection = connections.pointer();
+    vismodule::ValueArray<vismodule::UInt32> connections( 2 * nedges );
+    vismodule::UInt32* connection = connections.pointer();
 
-    kvs::UInt32 volume_vertex = 0;
-    kvs::UInt32 connection_index = 0;
+    vismodule::UInt32 volume_vertex = 0;
+    vismodule::UInt32 connection_index = 0;
     for ( size_t z = 0; z < resolution.z(); ++z )
     {
         for ( size_t y = 0; y < resolution.y(); ++y )
@@ -382,7 +382,7 @@ void ExtractEdges::calculate_connections( const kvs::StructuredVolumeObject* vol
  *  @param  volume [in] pointer to the unstrctured volume object
  */
 /*===========================================================================*/
-void ExtractEdges::mapping( const kvs::UnstructuredVolumeObject* volume )
+void ExtractEdges::mapping( const vismodule::UnstructuredVolumeObject* volume )
 {
     BaseClass::attach_volume( volume );
     BaseClass::set_range( volume );
@@ -392,19 +392,19 @@ void ExtractEdges::mapping( const kvs::UnstructuredVolumeObject* volume )
     this->calculate_connections( volume );
 
     const std::type_info& type = volume->values().typeInfo()->type();
-    if (      type == typeid( kvs::Int8   ) ) { this->calculate_colors<kvs::Int8  >( volume ); }
-    else if ( type == typeid( kvs::Int16  ) ) { this->calculate_colors<kvs::Int16 >( volume ); }
-    else if ( type == typeid( kvs::Int32  ) ) { this->calculate_colors<kvs::Int32 >( volume ); }
-    else if ( type == typeid( kvs::Int64  ) ) { this->calculate_colors<kvs::Int64 >( volume ); }
-    else if ( type == typeid( kvs::UInt8  ) ) { this->calculate_colors<kvs::UInt8 >( volume ); }
-    else if ( type == typeid( kvs::UInt16 ) ) { this->calculate_colors<kvs::UInt16>( volume ); }
-    else if ( type == typeid( kvs::UInt32 ) ) { this->calculate_colors<kvs::UInt32>( volume ); }
-    else if ( type == typeid( kvs::UInt64 ) ) { this->calculate_colors<kvs::UInt64>( volume ); }
-    else if ( type == typeid( kvs::Real32 ) ) { this->calculate_colors<kvs::Real32>( volume ); }
-    else if ( type == typeid( kvs::Real64 ) ) { this->calculate_colors<kvs::Real64>( volume ); }
+    if (      type == typeid( vismodule::Int8   ) ) { this->calculate_colors<vismodule::Int8  >( volume ); }
+    else if ( type == typeid( vismodule::Int16  ) ) { this->calculate_colors<vismodule::Int16 >( volume ); }
+    else if ( type == typeid( vismodule::Int32  ) ) { this->calculate_colors<vismodule::Int32 >( volume ); }
+    else if ( type == typeid( vismodule::Int64  ) ) { this->calculate_colors<vismodule::Int64 >( volume ); }
+    else if ( type == typeid( vismodule::UInt8  ) ) { this->calculate_colors<vismodule::UInt8 >( volume ); }
+    else if ( type == typeid( vismodule::UInt16 ) ) { this->calculate_colors<vismodule::UInt16>( volume ); }
+    else if ( type == typeid( vismodule::UInt32 ) ) { this->calculate_colors<vismodule::UInt32>( volume ); }
+    else if ( type == typeid( vismodule::UInt64 ) ) { this->calculate_colors<vismodule::UInt64>( volume ); }
+    else if ( type == typeid( vismodule::Real32 ) ) { this->calculate_colors<vismodule::Real32>( volume ); }
+    else if ( type == typeid( vismodule::Real64 ) ) { this->calculate_colors<vismodule::Real64>( volume ); }
 
-    SuperClass::setLineType( kvs::LineObject::Segment );
-    SuperClass::setColorType( kvs::LineObject::VertexColor );
+    SuperClass::setLineType( vismodule::LineObject::Segment );
+    SuperClass::setColorType( vismodule::LineObject::VertexColor );
     if ( SuperClass::nsizes() == 0 ) SuperClass::setSize( 1.0f );
 }
 
@@ -414,7 +414,7 @@ void ExtractEdges::mapping( const kvs::UnstructuredVolumeObject* volume )
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*===========================================================================*/
-void ExtractEdges::calculate_coords( const kvs::UnstructuredVolumeObject* volume )
+void ExtractEdges::calculate_coords( const vismodule::UnstructuredVolumeObject* volume )
 {
     SuperClass::setCoords( volume->coords() );
 }
@@ -425,26 +425,26 @@ void ExtractEdges::calculate_coords( const kvs::UnstructuredVolumeObject* volume
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*===========================================================================*/
-void ExtractEdges::calculate_connections( const kvs::UnstructuredVolumeObject* volume )
+void ExtractEdges::calculate_connections( const vismodule::UnstructuredVolumeObject* volume )
 {
     switch( volume->cellType() )
     {
-    case kvs::VolumeObjectBase::Tetrahedra:
+    case vismodule::VolumeObjectBase::Tetrahedra:
         this->calculate_tetrahedra_connections( volume );
         break;
-    case kvs::VolumeObjectBase::Hexahedra:
+    case vismodule::VolumeObjectBase::Hexahedra:
         this->calculate_hexahedra_connections( volume );
         break;
-    case kvs::VolumeObjectBase::QuadraticTetrahedra:
+    case vismodule::VolumeObjectBase::QuadraticTetrahedra:
         this->calculate_quadratic_tetrahedra_connections( volume );
         break;
-    case kvs::VolumeObjectBase::QuadraticHexahedra:
+    case vismodule::VolumeObjectBase::QuadraticHexahedra:
         this->calculate_quadratic_hexahedra_connections( volume );
         break;
     default:
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Unknown cell type.");
+        visModuleMessageError("Unknown cell type.");
         break;
     }
     }
@@ -457,19 +457,19 @@ void ExtractEdges::calculate_connections( const kvs::UnstructuredVolumeObject* v
  */
 /*===========================================================================*/
 void ExtractEdges::calculate_tetrahedra_connections(
-    const kvs::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject* volume )
 {
-    const kvs::UInt32* connections = volume->connections().pointer();
+    const vismodule::UInt32* connections = volume->connections().pointer();
     const size_t ncells = volume->ncells();
     const size_t nnodes = volume->nnodes();
 
     ::EdgeMap edge_map( nnodes );
     for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
-        const kvs::UInt32 local_vertex0 = connections[ connection_index     ];
-        const kvs::UInt32 local_vertex1 = connections[ connection_index + 1 ];
-        const kvs::UInt32 local_vertex2 = connections[ connection_index + 2 ];
-        const kvs::UInt32 local_vertex3 = connections[ connection_index + 3 ];
+        const vismodule::UInt32 local_vertex0 = connections[ connection_index     ];
+        const vismodule::UInt32 local_vertex1 = connections[ connection_index + 1 ];
+        const vismodule::UInt32 local_vertex2 = connections[ connection_index + 2 ];
+        const vismodule::UInt32 local_vertex3 = connections[ connection_index + 3 ];
         connection_index += 4;
 
         edge_map.insert( local_vertex0, local_vertex1 );
@@ -490,23 +490,23 @@ void ExtractEdges::calculate_tetrahedra_connections(
  */
 /*===========================================================================*/
 void ExtractEdges::calculate_hexahedra_connections(
-    const kvs::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject* volume )
 {
-    const kvs::UInt32* connections = volume->connections().pointer();
+    const vismodule::UInt32* connections = volume->connections().pointer();
     const size_t ncells = volume->ncells();
     const size_t nnodes = volume->nnodes();
 
     ::EdgeMap edge_map( nnodes );
     for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
-        const kvs::UInt32 local_vertex0 = connections[ connection_index     ];
-        const kvs::UInt32 local_vertex1 = connections[ connection_index + 1 ];
-        const kvs::UInt32 local_vertex2 = connections[ connection_index + 2 ];
-        const kvs::UInt32 local_vertex3 = connections[ connection_index + 3 ];
-        const kvs::UInt32 local_vertex4 = connections[ connection_index + 4 ];
-        const kvs::UInt32 local_vertex5 = connections[ connection_index + 5 ];
-        const kvs::UInt32 local_vertex6 = connections[ connection_index + 6 ];
-        const kvs::UInt32 local_vertex7 = connections[ connection_index + 7 ];
+        const vismodule::UInt32 local_vertex0 = connections[ connection_index     ];
+        const vismodule::UInt32 local_vertex1 = connections[ connection_index + 1 ];
+        const vismodule::UInt32 local_vertex2 = connections[ connection_index + 2 ];
+        const vismodule::UInt32 local_vertex3 = connections[ connection_index + 3 ];
+        const vismodule::UInt32 local_vertex4 = connections[ connection_index + 4 ];
+        const vismodule::UInt32 local_vertex5 = connections[ connection_index + 5 ];
+        const vismodule::UInt32 local_vertex6 = connections[ connection_index + 6 ];
+        const vismodule::UInt32 local_vertex7 = connections[ connection_index + 7 ];
         connection_index += 8;
 
         edge_map.insert( local_vertex0, local_vertex1 );
@@ -533,25 +533,25 @@ void ExtractEdges::calculate_hexahedra_connections(
  */
 /*===========================================================================*/
 void ExtractEdges::calculate_quadratic_tetrahedra_connections(
-    const kvs::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject* volume )
 {
-    const kvs::UInt32* connections = volume->connections().pointer();
+    const vismodule::UInt32* connections = volume->connections().pointer();
     const size_t ncells = volume->ncells();
     const size_t nnodes = volume->nnodes();
 
     ::EdgeMap edge_map( nnodes );
     for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
-        const kvs::UInt32 local_vertex0 = connections[ connection_index     ];
-        const kvs::UInt32 local_vertex1 = connections[ connection_index + 1 ];
-        const kvs::UInt32 local_vertex2 = connections[ connection_index + 2 ];
-        const kvs::UInt32 local_vertex3 = connections[ connection_index + 3 ];
-        const kvs::UInt32 local_vertex4 = connections[ connection_index + 4 ];
-        const kvs::UInt32 local_vertex5 = connections[ connection_index + 5 ];
-        const kvs::UInt32 local_vertex6 = connections[ connection_index + 6 ];
-        const kvs::UInt32 local_vertex7 = connections[ connection_index + 7 ];
-        const kvs::UInt32 local_vertex8 = connections[ connection_index + 8 ];
-        const kvs::UInt32 local_vertex9 = connections[ connection_index + 9 ];
+        const vismodule::UInt32 local_vertex0 = connections[ connection_index     ];
+        const vismodule::UInt32 local_vertex1 = connections[ connection_index + 1 ];
+        const vismodule::UInt32 local_vertex2 = connections[ connection_index + 2 ];
+        const vismodule::UInt32 local_vertex3 = connections[ connection_index + 3 ];
+        const vismodule::UInt32 local_vertex4 = connections[ connection_index + 4 ];
+        const vismodule::UInt32 local_vertex5 = connections[ connection_index + 5 ];
+        const vismodule::UInt32 local_vertex6 = connections[ connection_index + 6 ];
+        const vismodule::UInt32 local_vertex7 = connections[ connection_index + 7 ];
+        const vismodule::UInt32 local_vertex8 = connections[ connection_index + 8 ];
+        const vismodule::UInt32 local_vertex9 = connections[ connection_index + 9 ];
         connection_index += 10;
 
         edge_map.insert( local_vertex0, local_vertex4 );
@@ -578,35 +578,35 @@ void ExtractEdges::calculate_quadratic_tetrahedra_connections(
  */
 /*===========================================================================*/
 void ExtractEdges::calculate_quadratic_hexahedra_connections(
-    const kvs::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject* volume )
 {
-    const kvs::UInt32* connections = volume->connections().pointer();
+    const vismodule::UInt32* connections = volume->connections().pointer();
     const size_t ncells = volume->ncells();
     const size_t nnodes = volume->nnodes();
 
     ::EdgeMap edge_map( nnodes );
     for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
-        const kvs::UInt32 local_vertex0  = connections[ connection_index      ];
-        const kvs::UInt32 local_vertex1  = connections[ connection_index +  1 ];
-        const kvs::UInt32 local_vertex2  = connections[ connection_index +  2 ];
-        const kvs::UInt32 local_vertex3  = connections[ connection_index +  3 ];
-        const kvs::UInt32 local_vertex4  = connections[ connection_index +  4 ];
-        const kvs::UInt32 local_vertex5  = connections[ connection_index +  5 ];
-        const kvs::UInt32 local_vertex6  = connections[ connection_index +  6 ];
-        const kvs::UInt32 local_vertex7  = connections[ connection_index +  7 ];
-        const kvs::UInt32 local_vertex8  = connections[ connection_index +  8 ];
-        const kvs::UInt32 local_vertex9  = connections[ connection_index +  9 ];
-        const kvs::UInt32 local_vertex10 = connections[ connection_index + 10 ];
-        const kvs::UInt32 local_vertex11 = connections[ connection_index + 11 ];
-        const kvs::UInt32 local_vertex12 = connections[ connection_index + 12 ];
-        const kvs::UInt32 local_vertex13 = connections[ connection_index + 13 ];
-        const kvs::UInt32 local_vertex14 = connections[ connection_index + 14 ];
-        const kvs::UInt32 local_vertex15 = connections[ connection_index + 15 ];
-        const kvs::UInt32 local_vertex16 = connections[ connection_index + 16 ];
-        const kvs::UInt32 local_vertex17 = connections[ connection_index + 17 ];
-        const kvs::UInt32 local_vertex18 = connections[ connection_index + 18 ];
-        const kvs::UInt32 local_vertex19 = connections[ connection_index + 19 ];
+        const vismodule::UInt32 local_vertex0  = connections[ connection_index      ];
+        const vismodule::UInt32 local_vertex1  = connections[ connection_index +  1 ];
+        const vismodule::UInt32 local_vertex2  = connections[ connection_index +  2 ];
+        const vismodule::UInt32 local_vertex3  = connections[ connection_index +  3 ];
+        const vismodule::UInt32 local_vertex4  = connections[ connection_index +  4 ];
+        const vismodule::UInt32 local_vertex5  = connections[ connection_index +  5 ];
+        const vismodule::UInt32 local_vertex6  = connections[ connection_index +  6 ];
+        const vismodule::UInt32 local_vertex7  = connections[ connection_index +  7 ];
+        const vismodule::UInt32 local_vertex8  = connections[ connection_index +  8 ];
+        const vismodule::UInt32 local_vertex9  = connections[ connection_index +  9 ];
+        const vismodule::UInt32 local_vertex10 = connections[ connection_index + 10 ];
+        const vismodule::UInt32 local_vertex11 = connections[ connection_index + 11 ];
+        const vismodule::UInt32 local_vertex12 = connections[ connection_index + 12 ];
+        const vismodule::UInt32 local_vertex13 = connections[ connection_index + 13 ];
+        const vismodule::UInt32 local_vertex14 = connections[ connection_index + 14 ];
+        const vismodule::UInt32 local_vertex15 = connections[ connection_index + 15 ];
+        const vismodule::UInt32 local_vertex16 = connections[ connection_index + 16 ];
+        const vismodule::UInt32 local_vertex17 = connections[ connection_index + 17 ];
+        const vismodule::UInt32 local_vertex18 = connections[ connection_index + 18 ];
+        const vismodule::UInt32 local_vertex19 = connections[ connection_index + 19 ];
         connection_index += 20;
 
         edge_map.insert( local_vertex0,  local_vertex8  );
@@ -645,30 +645,30 @@ void ExtractEdges::calculate_quadratic_hexahedra_connections(
  */
 /*===========================================================================*/
 template <typename T>
-void ExtractEdges::calculate_colors( const kvs::VolumeObjectBase* volume )
+void ExtractEdges::calculate_colors( const vismodule::VolumeObjectBase* volume )
 {
     const T* value = reinterpret_cast<const T*>( volume->values().pointer() );
     const T* const end = value + volume->values().size();
 
-    kvs::ValueArray<kvs::UInt8> colors( 3 * volume->nnodes() );
-    kvs::UInt8* color = colors.pointer();
+    vismodule::ValueArray<vismodule::UInt8> colors( 3 * volume->nnodes() );
+    vismodule::UInt8* color = colors.pointer();
 
-    kvs::ColorMap cmap( BaseClass::colorMap() );
+    vismodule::ColorMap cmap( BaseClass::colorMap() );
 
     if ( !volume->hasMinMaxValues() ) { volume->updateMinMaxValues(); }
-    const kvs::Real64 min_value = volume->minValue();
-    const kvs::Real64 max_value = volume->maxValue();
+    const vismodule::Real64 min_value = volume->minValue();
+    const vismodule::Real64 max_value = volume->maxValue();
 
-    const kvs::Real64 normalize_factor =
-        static_cast<kvs::Real64>( cmap.resolution() - 1 ) / ( max_value - min_value );
+    const vismodule::Real64 normalize_factor =
+        static_cast<vismodule::Real64>( cmap.resolution() - 1 ) / ( max_value - min_value );
 
     const size_t veclen = m_volume->veclen();
     if ( veclen == 1 )
     {
         while ( value < end )
         {
-            const kvs::UInt32 color_level =
-                static_cast<kvs::UInt32>( normalize_factor * ( static_cast<kvs::Real64>( *( value++ ) ) - min_value ) );
+            const vismodule::UInt32 color_level =
+                static_cast<vismodule::UInt32>( normalize_factor * ( static_cast<vismodule::Real64>( *( value++ ) ) - min_value ) );
 
             *( color++ ) = cmap[ color_level ].red();
             *( color++ ) = cmap[ color_level ].green();
@@ -679,16 +679,16 @@ void ExtractEdges::calculate_colors( const kvs::VolumeObjectBase* volume )
     {
         while( value < end )
         {
-            kvs::Real64 magnitude = 0.0;
+            vismodule::Real64 magnitude = 0.0;
             for ( size_t i = 0; i < veclen; ++i )
             {
-                magnitude += kvs::Math::Square( static_cast<kvs::Real64>( *value ) );
+                magnitude += vismodule::Math::Square( static_cast<vismodule::Real64>( *value ) );
                 ++value;
             }
-            magnitude = kvs::Math::SquareRoot( magnitude );
+            magnitude = vismodule::Math::SquareRoot( magnitude );
 
-            const kvs::UInt32 color_level =
-                static_cast<kvs::UInt32>( normalize_factor * ( magnitude - min_value ) );
+            const vismodule::UInt32 color_level =
+                static_cast<vismodule::UInt32>( normalize_factor * ( magnitude - min_value ) );
 
             *( color++ ) = cmap[ color_level ].red();
             *( color++ ) = cmap[ color_level ].green();
@@ -699,4 +699,4 @@ void ExtractEdges::calculate_colors( const kvs::VolumeObjectBase* volume )
     SuperClass::setColors( colors );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

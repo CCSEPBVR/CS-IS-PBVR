@@ -15,7 +15,7 @@
 #include <ctime>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -29,7 +29,7 @@ Xorshift128::Xorshift128( void )
     , m_z( 0 )
     , m_w( 0 )
 {
-    const kvs::UInt32 seed = static_cast<kvs::UInt32>( time( 0 ) );
+    const vismodule::UInt32 seed = static_cast<vismodule::UInt32>( time( 0 ) );
 
     this->setSeed( seed );
 }
@@ -42,7 +42,7 @@ Xorshift128::Xorshift128( void )
  *  @return TODO
  */
 /*==========================================================================*/
-void Xorshift128::setSeed( kvs::UInt32 seed )
+void Xorshift128::setSeed( vismodule::UInt32 seed )
 {
     m_x = seed = 1812433253UL * ( seed ^ ( seed >> 30 ) ) + 1;
     m_y = seed = 1812433253UL * ( seed ^ ( seed >> 30 ) ) + 2;
@@ -50,4 +50,4 @@ void Xorshift128::setSeed( kvs::UInt32 seed )
     m_w = seed = 1812433253UL * ( seed ^ ( seed >> 30 ) ) + 4;
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

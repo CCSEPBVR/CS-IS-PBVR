@@ -13,15 +13,15 @@
  *  $Id: TimerEventListener.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__TIMER_EVENT_LISTENER_H_INCLUDE
-#define KVS__TIMER_EVENT_LISTENER_H_INCLUDE
+#ifndef VIS_MODULE__TIMER_EVENT_LISTENER_H_INCLUDE
+#define VIS_MODULE__TIMER_EVENT_LISTENER_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/EventListener>
-#include <kvs/TimeEvent>
+#include <vismodule/ClassName>
+#include <vismodule/EventListener>
+#include <vismodule/TimeEvent>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -29,9 +29,9 @@ namespace kvs
  *  @brief  TimerEventListener class.
  */
 /*===========================================================================*/
-class TimerEventListener : public kvs::EventListener
+class TimerEventListener : public vismodule::EventListener
 {
-    kvsClassName( kvs::TimerEventListener );
+    visModuleClassName( vismodule::TimerEventListener );
 
 public:
 
@@ -41,13 +41,13 @@ public:
 
 public:
 
-    virtual void update( kvs::TimeEvent* event ) = 0;
+    virtual void update( vismodule::TimeEvent* event ) = 0;
 
 private:
 
-    void onEvent( kvs::EventBase* event );
+    void onEvent( vismodule::EventBase* event );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TIMER_EVENT_LISTENER_H_INCLUDE
+#endif // VIS_MODULE__TIMER_EVENT_LISTENER_H_INCLUDE

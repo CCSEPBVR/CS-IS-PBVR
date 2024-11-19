@@ -11,20 +11,20 @@
  *  $Id: GlobalCore.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__GLOBAL_CORE_H_INCLUDE
-#define KVS__GLOBAL_CORE_H_INCLUDE
+#ifndef VIS_MODULE__GLOBAL_CORE_H_INCLUDE
+#define VIS_MODULE__GLOBAL_CORE_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/Camera>
-#include <kvs/Light>
-#include <kvs/Mouse>
-#include <kvs/Background>
-#include <kvs/ObjectManager>
-#include <kvs/RendererManager>
-#include <kvs/IDManager>
+#include <vismodule/ClassName>
+#include <vismodule/Camera>
+#include <vismodule/Light>
+#include <vismodule/Mouse>
+#include <vismodule/Background>
+#include <vismodule/ObjectManager>
+#include <vismodule/RendererManager>
+#include <vismodule/IDManager>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -34,7 +34,7 @@ namespace kvs
 /*==========================================================================*/
 class GlobalCore
 {
-    kvsClassName( kvs::GlobalCore );
+    visModuleClassName( vismodule::GlobalCore );
 
 public:
 
@@ -52,16 +52,16 @@ public:
     static char**                argv;             ///< argument value
 
     // Basic components in the viewer.
-    static kvs::Camera*          camera;           ///< camera
-    static kvs::Light*           light;            ///< light
-    static kvs::Mouse*           mouse;            ///< mouse
-    static kvs::Background*      background;       ///< background
+    static vismodule::Camera*          camera;           ///< camera
+    static vismodule::Light*           light;            ///< light
+    static vismodule::Mouse*           mouse;            ///< mouse
+    static vismodule::Background*      background;       ///< background
 
     // Parameters for controlling the viewer.
     static ControlTarget         target;           ///< control target
-    static kvs::ObjectManager*   object_manager;   ///< object manager
-    static kvs::RendererManager* renderer_manager; ///< renderer manager
-    static kvs::IDManager*       id_manager;       ///< ID manager ( object_id, renderer_id )
+    static vismodule::ObjectManager*   object_manager;   ///< object manager
+    static vismodule::RendererManager* renderer_manager; ///< renderer manager
+    static vismodule::IDManager*       id_manager;       ///< ID manager ( object_id, renderer_id )
 
 public:
 
@@ -78,6 +78,6 @@ public:
     static void reset_core( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GLOBAL_CORE_H_INCLUDE
+#endif // VIS_MODULE__GLOBAL_CORE_H_INCLUDE

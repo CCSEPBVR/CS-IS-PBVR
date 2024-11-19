@@ -12,13 +12,13 @@
  */
 /****************************************************************************/
 #include "ImageRenderer.h"
-#include <kvs/Camera>
-#include <kvs/ImageObject>
-#include <kvs/Message>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/Camera>
+#include <vismodule/ImageObject>
+#include <vismodule/Message>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -49,11 +49,11 @@ ImageRenderer::~ImageRenderer( void )
  *  @param light [in] pointer to the light
  */
 /*==========================================================================*/
-void ImageRenderer::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light )
+void ImageRenderer::exec( vismodule::ObjectBase* object, vismodule::Camera* camera, vismodule::Light* light )
 {
-    kvs::IgnoreUnusedVariable( light );
+    vismodule::IgnoreUnusedVariable( light );
 
-    kvs::ImageObject* image = reinterpret_cast<kvs::ImageObject*>( object );
+    vismodule::ImageObject* image = reinterpret_cast<vismodule::ImageObject*>( object );
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -111,7 +111,7 @@ void ImageRenderer::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Lig
  *  @param image [in] pointer to the image object
  */
 /*==========================================================================*/
-void ImageRenderer::create_texture( const kvs::ImageObject* image )
+void ImageRenderer::create_texture( const vismodule::ImageObject* image )
 {
     const double width  = image->width();
     const double height = image->height();
@@ -121,25 +121,25 @@ void ImageRenderer::create_texture( const kvs::ImageObject* image )
     m_bottom = 0.0;
     m_top    = 1.0;
 
-    if ( image->type() == kvs::ImageObject::Gray8 )
+    if ( image->type() == vismodule::ImageObject::Gray8 )
     {
         const size_t nchannels         = 1;
         const size_t bytes_per_channel = 1;
         m_texture.setPixelFormat( nchannels, bytes_per_channel );
     }
-    else if ( image->type() == kvs::ImageObject::Gray16 )
+    else if ( image->type() == vismodule::ImageObject::Gray16 )
     {
         const size_t nchannels         = 1;
         const size_t bytes_per_channel = 2;
         m_texture.setPixelFormat( nchannels, bytes_per_channel );
     }
-    else if ( image->type() == kvs::ImageObject::Color24 )
+    else if ( image->type() == vismodule::ImageObject::Color24 )
     {
         const size_t nchannels         = 3;
         const size_t bytes_per_channel = 1;
         m_texture.setPixelFormat( nchannels, bytes_per_channel );
     }
-    else if ( image->type() == kvs::ImageObject::Color32 )
+    else if ( image->type() == vismodule::ImageObject::Color32 )
     {
         const size_t nchannels         = 4;
         const size_t bytes_per_channel = 1;
@@ -147,7 +147,7 @@ void ImageRenderer::create_texture( const kvs::ImageObject* image )
     }
     else
     {
-        kvsMessageError("Unknown pixel color type.");
+        visModuleMessageError("Unknown pixel color type.");
     }
 
     m_texture.create( image->width(), image->height() );
@@ -182,4 +182,4 @@ void ImageRenderer::centering( double width, double height )
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -11,14 +11,14 @@
  *  $Id: DataWriter.h 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__KVSML__DATA_WRITER_H_INCLUDE
-#define KVS__KVSML__DATA_WRITER_H_INCLUDE
+#ifndef VIS_MODULE__KVSML__DATA_WRITER_H_INCLUDE
+#define VIS_MODULE__KVSML__DATA_WRITER_H_INCLUDE
 
-#include <kvs/ValueArray>
-#include <kvs/XMLNode>
+#include <vismodule/ValueArray>
+#include <vismodule/XMLNode>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -32,43 +32,43 @@ enum WritingDataType
 };
 
 const bool WriteCoordData(
-    kvs::XMLNode::SuperClass* parent,
-    const kvs::kvsml::WritingDataType writing_type,
+    vismodule::XMLNode::SuperClass* parent,
+    const vismodule::kvsml::WritingDataType writing_type,
     const std::string& filename,
-    const kvs::ValueArray<kvs::Real32>& coords );
+    const vismodule::ValueArray<vismodule::Real32>& coords );
 
 const bool WriteColorData(
-    kvs::XMLNode::SuperClass* parent,
-    const kvs::kvsml::WritingDataType writing_type,
+    vismodule::XMLNode::SuperClass* parent,
+    const vismodule::kvsml::WritingDataType writing_type,
     const std::string& filename,
-    const kvs::ValueArray<kvs::UInt8>& colors );
+    const vismodule::ValueArray<vismodule::UInt8>& colors );
 
 const bool WriteNormalData(
-    kvs::XMLNode::SuperClass* parent,
-    const kvs::kvsml::WritingDataType writing_type,
+    vismodule::XMLNode::SuperClass* parent,
+    const vismodule::kvsml::WritingDataType writing_type,
     const std::string& filename,
-    const kvs::ValueArray<kvs::Real32>& normals );
+    const vismodule::ValueArray<vismodule::Real32>& normals );
 
 const bool WriteSizeData(
-    kvs::XMLNode::SuperClass* parent,
-    const kvs::kvsml::WritingDataType writing_type,
+    vismodule::XMLNode::SuperClass* parent,
+    const vismodule::kvsml::WritingDataType writing_type,
     const std::string& filename,
-    const kvs::ValueArray<kvs::Real32>& sizes );
+    const vismodule::ValueArray<vismodule::Real32>& sizes );
 
 const bool WriteConnectionData(
-    kvs::XMLNode::SuperClass* parent,
-    const kvs::kvsml::WritingDataType writing_type,
+    vismodule::XMLNode::SuperClass* parent,
+    const vismodule::kvsml::WritingDataType writing_type,
     const std::string& filename,
-    const kvs::ValueArray<kvs::UInt32>& connections );
+    const vismodule::ValueArray<vismodule::UInt32>& connections );
 
 const bool WriteOpacityData(
-    kvs::XMLNode::SuperClass* parent,
-    const kvs::kvsml::WritingDataType writing_type,
+    vismodule::XMLNode::SuperClass* parent,
+    const vismodule::kvsml::WritingDataType writing_type,
     const std::string& filename,
-    const kvs::ValueArray<kvs::UInt8>& opacities );
+    const vismodule::ValueArray<vismodule::UInt8>& opacities );
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__KVSML__DATA_WRITER_H_INCLUDE
+#endif // VIS_MODULE__KVSML__DATA_WRITER_H_INCLUDE

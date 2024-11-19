@@ -11,11 +11,11 @@
  *  $Id: Key.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__KEY_H_INCLUDE
-#define KVS__KEY_H_INCLUDE
+#ifndef VIS_MODULE__KEY_H_INCLUDE
+#define VIS_MODULE__KEY_H_INCLUDE
 
 
-namespace kvs
+namespace vismodule
 {
 
 struct Key
@@ -165,6 +165,6 @@ struct Key
     };
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__KEY_H_INCLUDE
+#endif // VIS_MODULE__KEY_H_INCLUDE

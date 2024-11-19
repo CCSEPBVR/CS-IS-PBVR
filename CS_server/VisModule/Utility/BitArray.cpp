@@ -15,40 +15,40 @@
 #include <vector>
 #include <cstring>
 #include <cstdlib>
-#include <kvs/DebugNew>
-#include <kvs/Type>
-#include <kvs/ReferenceCounter>
-#include <kvs/Assert>
-#include <kvs/Binary>
+#include <vismodule/DebugNew>
+#include <vismodule/Type>
+#include <vismodule/ReferenceCounter>
+#include <vismodule/Assert>
+#include <vismodule/Binary>
 
 
 namespace
 {
 
-const kvs::UInt8 SetBitMask[9] =
+const vismodule::UInt8 SetBitMask[9] =
 {
-    kvsBinary8( 1000, 0000 ),
-    kvsBinary8( 0100, 0000 ),
-    kvsBinary8( 0010, 0000 ),
-    kvsBinary8( 0001, 0000 ),
-    kvsBinary8( 0000, 1000 ),
-    kvsBinary8( 0000, 0100 ),
-    kvsBinary8( 0000, 0010 ),
-    kvsBinary8( 0000, 0001 ),
-    kvsBinary8( 0000, 0000 )
+    visModuleBinary8( 1000, 0000 ),
+    visModuleBinary8( 0100, 0000 ),
+    visModuleBinary8( 0010, 0000 ),
+    visModuleBinary8( 0001, 0000 ),
+    visModuleBinary8( 0000, 1000 ),
+    visModuleBinary8( 0000, 0100 ),
+    visModuleBinary8( 0000, 0010 ),
+    visModuleBinary8( 0000, 0001 ),
+    visModuleBinary8( 0000, 0000 )
 };
 
-const kvs::UInt8 ResetBitMask[9] =
+const vismodule::UInt8 ResetBitMask[9] =
 {
-    kvsBinary8( 0111, 1111 ),
-    kvsBinary8( 1011, 1111 ),
-    kvsBinary8( 1101, 1111 ),
-    kvsBinary8( 1110, 1111 ),
-    kvsBinary8( 1111, 0111 ),
-    kvsBinary8( 1111, 1011 ),
-    kvsBinary8( 1111, 1101 ),
-    kvsBinary8( 1111, 1110 ),
-    kvsBinary8( 1111, 1111 )
+    visModuleBinary8( 0111, 1111 ),
+    visModuleBinary8( 1011, 1111 ),
+    visModuleBinary8( 1101, 1111 ),
+    visModuleBinary8( 1110, 1111 ),
+    visModuleBinary8( 1111, 0111 ),
+    visModuleBinary8( 1111, 1011 ),
+    visModuleBinary8( 1111, 1101 ),
+    visModuleBinary8( 1111, 1110 ),
+    visModuleBinary8( 1111, 1111 )
 };
 
 inline int BitToByte( int nbits )
@@ -64,7 +64,7 @@ inline int ByteToBit( int nbytes )
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 BitArray::BitArray( void ):
@@ -83,7 +83,7 @@ BitArray::BitArray( size_t nvalues ):
     this->allocate( nvalues );
 }
 
-BitArray::BitArray( const kvs::UInt8* values, const size_t nvalues ):
+BitArray::BitArray( const vismodule::UInt8* values, const size_t nvalues ):
     m_counter( 0 ),
     m_nvalues( 0 ),
     m_values( 0 )
@@ -114,7 +114,7 @@ BitArray::~BitArray( void )
 
 const bool BitArray::operator [] ( size_t index ) const
 {
-    KVS_ASSERT( index < m_nvalues );
+    VIS_MODULE_ASSERT( index < m_nvalues );
 
     return( this->test( index ) );
 }
@@ -287,7 +287,7 @@ void BitArray::deepCopy( const BitArray& other )
             other.byteSize() );
 }
 
-void BitArray::deepCopy( const kvs::UInt8* values, const size_t nvalues )
+void BitArray::deepCopy( const vismodule::UInt8* values, const size_t nvalues )
 {
     memcpy( this->allocate( nvalues ),
             values,
@@ -305,13 +305,13 @@ void BitArray::deepCopy( const bool* values, const size_t nvalues )
     }
 }
 
-kvs::UInt8* BitArray::allocate( size_t nvalues )
+vismodule::UInt8* BitArray::allocate( size_t nvalues )
 {
     this->unref();
     this->create_counter();
 
     m_nvalues = nvalues;
-    m_values  = static_cast<kvs::UInt8*>( malloc( this->byteSize() ) );
+    m_values  = static_cast<vismodule::UInt8*>( malloc( this->byteSize() ) );
 
     return( m_values );
 }
@@ -323,7 +323,7 @@ void BitArray::deallocate( void )
 
 void BitArray::create_counter( void )
 {
-    m_counter = new kvs::ReferenceCounter(1);
+    m_counter = new vismodule::ReferenceCounter(1);
 }
 
 void BitArray::ref( void )
@@ -349,4 +349,4 @@ void BitArray::unref( void )
     m_nvalues = 0;
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

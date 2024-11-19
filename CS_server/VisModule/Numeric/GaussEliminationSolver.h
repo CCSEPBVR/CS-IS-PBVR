@@ -12,13 +12,13 @@
  *  $Id: GaussEliminationSolver.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__GAUSS_ELIMINATION_SOLVER_H_INCLUDE
-#define KVS__GAUSS_ELIMINATION_SOLVER_H_INCLUDE
+#ifndef VIS_MODULE__GAUSS_ELIMINATION_SOLVER_H_INCLUDE
+#define VIS_MODULE__GAUSS_ELIMINATION_SOLVER_H_INCLUDE
 
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 template <typename T> class Vector;
@@ -30,25 +30,25 @@ template <typename T> class Matrix;
  */
 /*===========================================================================*/
 template <typename T>
-class GaussEliminationSolver : public kvs::Vector<T>
+class GaussEliminationSolver : public vismodule::Vector<T>
 {
-    kvsClassName( kvs::GaussEliminationSolver );
+    visModuleClassName( vismodule::GaussEliminationSolver );
 
 public:
 
     GaussEliminationSolver( void );
 
-    GaussEliminationSolver( const kvs::Matrix<T>& A, const kvs::Vector<T>& b );
+    GaussEliminationSolver( const vismodule::Matrix<T>& A, const vismodule::Vector<T>& b );
 
     virtual ~GaussEliminationSolver( void );
 
 public:
 
-    const kvs::Vector<T>& solve( const kvs::Matrix<T>& A, const kvs::Vector<T>& b );
+    const vismodule::Vector<T>& solve( const vismodule::Matrix<T>& A, const vismodule::Vector<T>& b );
 
-    GaussEliminationSolver<T>& operator = ( const kvs::Vector<T>& v );
+    GaussEliminationSolver<T>& operator = ( const vismodule::Vector<T>& v );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GAUSS_ELIMINATION_SOLVER_H_INCLUDE
+#endif // VIS_MODULE__GAUSS_ELIMINATION_SOLVER_H_INCLUDE

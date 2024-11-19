@@ -11,15 +11,15 @@
  *  $Id: Material.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MATERIAL_H_INCLUDE
-#define KVS__MATERIAL_H_INCLUDE
+#ifndef VIS_MODULE__MATERIAL_H_INCLUDE
+#define VIS_MODULE__MATERIAL_H_INCLUDE
 
-#include <kvs/OpenGL>
-#include <kvs/ClassName>
-#include <kvs/Vector4>
+#include <vismodule/OpenGL>
+#include <vismodule/ClassName>
+#include <vismodule/Vector4>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class RGBAColor;
@@ -31,7 +31,7 @@ class RGBAColor;
 /*==========================================================================*/
 class Material
 {
-    kvsClassName( kvs::Material );
+    visModuleClassName( vismodule::Material );
 
 public:
 
@@ -55,9 +55,9 @@ public:
     Material( void );
 
     Material(
-        const kvs::RGBAColor& ambient,
-        const kvs::RGBAColor& diffuse,
-        const kvs::RGBAColor& specular,
+        const vismodule::RGBAColor& ambient,
+        const vismodule::RGBAColor& diffuse,
+        const vismodule::RGBAColor& specular,
         const float shininess,
         const MaterialFace face = FrontAndBack );
 
@@ -91,11 +91,11 @@ public:
 
 public:
 
-    const kvs::Vector4f ambient( void ) const;
+    const vismodule::Vector4f ambient( void ) const;
 
-    const kvs::Vector4f diffuse( void ) const;
+    const vismodule::Vector4f diffuse( void ) const;
 
-    const kvs::Vector4f specular( void ) const;
+    const vismodule::Vector4f specular( void ) const;
 
     const float shininess( void ) const;
 
@@ -107,19 +107,19 @@ public:
 
     void setAmbient( const float ambient[4] );
 
-    void setAmbient( const kvs::RGBAColor& ambient );
+    void setAmbient( const vismodule::RGBAColor& ambient );
 
     void setDiffuse( const float r, const float g, const float b, const float a );
 
     void setDiffuse( const float diffuse[4] );
 
-    void setDiffuse( const kvs::RGBAColor& diffuse );
+    void setDiffuse( const vismodule::RGBAColor& diffuse );
 
     void setSpecular( const float r, const float g, const float b, const float a );
 
     void setSpecular( const float specular[4] );
 
-    void setSpecular( const kvs::RGBAColor& specular );
+    void setSpecular( const vismodule::RGBAColor& specular );
 
     void setShininess( const float shininess );
 
@@ -322,6 +322,6 @@ const Material MATERIAL_YELLOW_RUBBER
 );
 */
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MATERIAL_H_INCLUDE
+#endif // VIS_MODULE__MATERIAL_H_INCLUDE

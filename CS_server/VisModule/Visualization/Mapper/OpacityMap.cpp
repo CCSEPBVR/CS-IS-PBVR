@@ -12,8 +12,8 @@
  */
 /****************************************************************************/
 #include "OpacityMap.h"
-#include <kvs/Assert>
-#include <kvs/Math>
+#include <vismodule/Assert>
+#include <vismodule/Math>
 
 
 namespace
@@ -27,15 +27,15 @@ struct Equal
 
     Equal( const float v ) : value( v ){}
 
-    bool operator() ( const kvs::OpacityMap::Point& point ) const
+    bool operator() ( const vismodule::OpacityMap::Point& point ) const
     {
-        return( kvs::Math::Equal( point.first, value ) );
+        return( vismodule::Math::Equal( point.first, value ) );
     }
 };
 
 struct Less
 {
-    bool operator() ( const kvs::OpacityMap::Point& p1, const kvs::OpacityMap::Point& p2 ) const
+    bool operator() ( const vismodule::OpacityMap::Point& p1, const vismodule::OpacityMap::Point& p2 ) const
     {
         return( p1.first < p2.first );
     }
@@ -44,7 +44,7 @@ struct Less
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -209,7 +209,7 @@ const OpacityMap::Table& OpacityMap::table( void ) const
 
 const bool OpacityMap::hasRange( void ) const
 {
-    return( !kvs::Math::Equal( m_min_value, m_max_value ) );
+    return( !vismodule::Math::Equal( m_min_value, m_max_value ) );
 }
 
 /*===========================================================================*/
@@ -245,7 +245,7 @@ void OpacityMap::setRange( const float min_value, const float max_value )
 /*===========================================================================*/
 void OpacityMap::addPoint( const float value, const float opacity )
 {
-    m_points.push_back( Point( value, kvs::Math::Clamp( opacity, 0.0f, 1.0f ) ) );
+    m_points.push_back( Point( value, vismodule::Math::Clamp( opacity, 0.0f, 1.0f ) ) );
 }
 
 /*===========================================================================*/
@@ -267,13 +267,13 @@ void OpacityMap::removePoint( const float value )
 void OpacityMap::create( void )
 {
 /*
-    if ( kvs::Math::IsZero( m_min_value ) && kvs::Math::IsZero( m_max_value ) )
+    if ( vismodule::Math::IsZero( m_min_value ) && vismodule::Math::IsZero( m_max_value ) )
     {
         this->setRange( 0.0f, static_cast<float>( m_resolution - 1 ) );
     }
 */
-    kvs::Real32 min_value = 0.0f;
-    kvs::Real32 max_value = static_cast<kvs::Real32>( m_resolution - 1 );
+    vismodule::Real32 min_value = 0.0f;
+    vismodule::Real32 max_value = static_cast<vismodule::Real32>( m_resolution - 1 );
     if ( this->hasRange() )
     {
         min_value = this->minValue();
@@ -309,7 +309,7 @@ void OpacityMap::create( void )
             while ( p != last )
             {
                 const float s = p->first;
-                if ( kvs::Math::Equal( f, s ) )
+                if ( vismodule::Math::Equal( f, s ) )
                 {
                     opacity = p->second;
                     break;
@@ -331,7 +331,7 @@ void OpacityMap::create( void )
                     ++p;
                     if ( p == last )
                     {
-                        if ( kvs::Math::Equal( p0.first, max_value ) )
+                        if ( vismodule::Math::Equal( p0.first, max_value ) )
                         {
                             opacity = p0.second;
                         }
@@ -351,9 +351,9 @@ void OpacityMap::create( void )
  *  @return opacity value
  */
 /*==========================================================================*/
-const kvs::Real32 OpacityMap::operator []( const size_t index ) const
+const vismodule::Real32 OpacityMap::operator []( const size_t index ) const
 {
-    KVS_ASSERT( index < this->resolution() );
+    VIS_MODULE_ASSERT( index < this->resolution() );
 
     return( m_table[index] );
 }
@@ -365,7 +365,7 @@ const kvs::Real32 OpacityMap::operator []( const size_t index ) const
  *  @return interpolated opacity value
  */
 /*===========================================================================*/
-const kvs::Real32 OpacityMap::at( const float value ) const
+const vismodule::Real32 OpacityMap::at( const float value ) const
 {
     if ( value <= m_min_value ) return( m_table[ 0 ] );
     else if ( value >= m_max_value ) return( m_table[ m_resolution - 1 ] );
@@ -375,8 +375,8 @@ const kvs::Real32 OpacityMap::at( const float value ) const
     const size_t s0 = static_cast<size_t>( v );
     const size_t s1 = s0 + 1;
 
-    const kvs::Real32 a0 = m_table[ s0 ];
-    const kvs::Real32 a1 = m_table[ s1 ];
+    const vismodule::Real32 a0 = m_table[ s0 ];
+    const vismodule::Real32 a1 = m_table[ s1 ];
 
     return( ( a1 - a0 ) * v + a0 * s1 - a1 * s0 );
 }
@@ -399,4 +399,4 @@ OpacityMap& OpacityMap::operator =( const OpacityMap& rhs )
     return( *this );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

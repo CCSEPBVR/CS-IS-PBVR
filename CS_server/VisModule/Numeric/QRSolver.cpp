@@ -13,10 +13,10 @@
  */
 /*****************************************************************************/
 #include "QRSolver.h"
-#include <kvs/Assert>
+#include <vismodule/Assert>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -27,13 +27,13 @@ namespace kvs
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector<T>& QRSolver<T>::solve( const kvs::Vector<T>& b )
+const vismodule::Vector<T>& QRSolver<T>::solve( const vismodule::Vector<T>& b )
 {
     int column = m_decomposer.R().ncolumns();
-    kvs::Vector<T> x( b.size() );
+    vismodule::Vector<T> x( b.size() );
 
     // From Q^t * b.
-    kvs::Vector<T> v = m_decomposer.Qt() * b;
+    vismodule::Vector<T> v = m_decomposer.Qt() * b;
 
     // Solve R * x = Q^t * b
     for( int i = column - 1; i >= 0; i-- )
@@ -57,9 +57,9 @@ const kvs::Vector<T>& QRSolver<T>::solve( const kvs::Vector<T>& b )
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector<T>& QRSolver<T>::solve( const kvs::Matrix<T>& A, const kvs::Vector<T>& b )
+const vismodule::Vector<T>& QRSolver<T>::solve( const vismodule::Matrix<T>& A, const vismodule::Vector<T>& b )
 {
-    KVS_ASSERT( A.ncolumns() == b.size() );
+    VIS_MODULE_ASSERT( A.ncolumns() == b.size() );
 
     // QR decomposition.
     m_decomposer.setMatrix( A );
@@ -73,4 +73,4 @@ template class QRSolver<int>;
 template class QRSolver<float>;
 template class QRSolver<double>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

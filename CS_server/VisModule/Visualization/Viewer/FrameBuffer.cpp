@@ -14,7 +14,7 @@
 #include "FrameBuffer.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -335,4 +335,4 @@ void FrameBuffer::draw(
     if( buffer != 0 ) glDrawBuffer( current_buffer );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

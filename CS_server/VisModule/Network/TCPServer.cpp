@@ -12,7 +12,7 @@
  */
 /****************************************************************************/
 #include "TCPServer.h"
-#include <kvs/DebugNew>
+#include <vismodule/DebugNew>
 #include "TCPSocket.h"
 #include "SocketAddress.h"
 #include "SocketTimer.h"
@@ -21,7 +21,7 @@
 #include "MessageBlock.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -64,21 +64,21 @@ TCPServer::~TCPServer( void )
 /*==========================================================================*/
 void TCPServer::open( void )
 {
-    kvs::Socket::open( kvs::Socket::TCPType );
-    if( kvs::Socket::isOpen() )
+    vismodule::Socket::open( vismodule::Socket::TCPType );
+    if( vismodule::Socket::isOpen() )
     {
         int nodelay = 0; // 0 = no-buffering, 1 = buffering
-        kvs::Socket::set_option( m_id, IPPROTO_TCP, TCP_NODELAY,
+        vismodule::Socket::set_option( m_id, IPPROTO_TCP, TCP_NODELAY,
                                  &nodelay, sizeof(nodelay) );
 
         int reuse = 1;
-        kvs::Socket::set_option( m_id, SOL_SOCKET, SO_REUSEADDR,
+        vismodule::Socket::set_option( m_id, SOL_SOCKET, SO_REUSEADDR,
                                  &reuse, sizeof(reuse) );
 
         struct linger linger_opt;
         linger_opt.l_onoff  = 1; // 0 = off, 1 = on
         linger_opt.l_linger = 1000;
-        kvs::Socket::set_option( m_id, SOL_SOCKET, SO_LINGER,
+        vismodule::Socket::set_option( m_id, SOL_SOCKET, SO_LINGER,
                                  &linger_opt, sizeof(linger_opt) );
     }
 }
@@ -105,9 +105,9 @@ int TCPServer::bind( const int port )
 /*==========================================================================*/
 bool TCPServer::listen( void )
 {
-    if( ::listen( kvs::Socket::id(), m_max_nconnections ) == -1 )
+    if( ::listen( vismodule::Socket::id(), m_max_nconnections ) == -1 )
     {
-        kvs::Socket::close();
+        vismodule::Socket::close();
         return( false );
     }
 
@@ -121,15 +121,15 @@ bool TCPServer::listen( void )
  *  @return accepted socket ID
  */
 /*==========================================================================*/
-kvs::Socket::id_type TCPServer::accept( kvs::SocketAddress* client_address )
+vismodule::Socket::id_type TCPServer::accept( vismodule::SocketAddress* client_address )
 {
     if( client_address )
     {
-        kvs::SocketAddress::address_type address;
-        kvs::SocketAddress::initialize( &address );
-        kvs::Socket::length_type length = sizeof( address );
+        vismodule::SocketAddress::address_type address;
+        vismodule::SocketAddress::initialize( &address );
+        vismodule::Socket::length_type length = sizeof( address );
 
-        kvs::Socket::id_type id = ::accept( Socket::id(),
+        vismodule::Socket::id_type id = ::accept( Socket::id(),
                                             reinterpret_cast<sockaddr*>( &address ),
                                             &length );
 
@@ -138,7 +138,7 @@ kvs::Socket::id_type TCPServer::accept( kvs::SocketAddress* client_address )
         return( id );
     }
 
-    return( ::accept( kvs::Socket::id(), 0, 0 ) );
+    return( ::accept( vismodule::Socket::id(), 0, 0 ) );
 }
 
 /*===========================================================================*/
@@ -159,35 +159,35 @@ void TCPServer::setMaxConnections( const int max_nconnections )
  *  @return pointer to the connected socket
  */
 /*==========================================================================*/
-kvs::TCPSocket* TCPServer::checkForNewConnection( const kvs::SocketTimer* blocking_time )
+vismodule::TCPSocket* TCPServer::checkForNewConnection( const vismodule::SocketTimer* blocking_time )
 {
     if( blocking_time )
     {
-        kvs::SocketSelector selector;
+        vismodule::SocketSelector selector;
         selector.setReadable( this->id() );
 
         if( selector.select( *blocking_time ) <= 0 ) return( NULL );
         if( !selector.isReadable( this->id() ) ) return( NULL );
     }
 
-    kvs::SocketAddress address;
-    kvs::Socket::id_type id = this->accept( &address );
+    vismodule::SocketAddress address;
+    vismodule::Socket::id_type id = this->accept( &address );
 
-    kvs::TCPSocket* connector = new kvs::TCPSocket( id, address );
+    vismodule::TCPSocket* connector = new vismodule::TCPSocket( id, address );
     if( connector )
     {
         int nodelay = 0; // 0 = no-buffering, 1 = buffering
-        kvs::Socket::set_option( m_id, IPPROTO_TCP, TCP_NODELAY,
+        vismodule::Socket::set_option( m_id, IPPROTO_TCP, TCP_NODELAY,
                                  &nodelay, sizeof(nodelay) );
 
         int reuse = 1;
-        kvs::Socket::set_option( m_id, SOL_SOCKET, SO_REUSEADDR,
+        vismodule::Socket::set_option( m_id, SOL_SOCKET, SO_REUSEADDR,
                                  &reuse, sizeof(reuse) );
 
         struct linger linger_opt;
         linger_opt.l_onoff  = 1; // 0 = off, 1 = on
         linger_opt.l_linger = 1000;
-        kvs::Socket::set_option( m_id, SOL_SOCKET, SO_LINGER,
+        vismodule::Socket::set_option( m_id, SOL_SOCKET, SO_LINGER,
                                  &linger_opt, sizeof(linger_opt) );
     }
 
@@ -203,15 +203,15 @@ kvs::TCPSocket* TCPServer::checkForNewConnection( const kvs::SocketTimer* blocki
  *  @return send message size
  */
 /*==========================================================================*/
-int TCPServer::send( const void* buffer, int byte_size, kvs::SocketAddress* client_address )
+int TCPServer::send( const void* buffer, int byte_size, vismodule::SocketAddress* client_address )
 {
     int size = -1;
 
-    kvs::Socket::id_type id = this->accept( client_address );
-    if( id != kvs::Socket::InvalidID )
+    vismodule::Socket::id_type id = this->accept( client_address );
+    if( id != vismodule::Socket::InvalidID )
     {
         size = ::send( id, (const char*)buffer, byte_size, 0 );
-        kvs::Socket::close_socket( id );
+        vismodule::Socket::close_socket( id );
     }
 
     return( size );
@@ -225,18 +225,18 @@ int TCPServer::send( const void* buffer, int byte_size, kvs::SocketAddress* clie
  *  @return send message size
  */
 /*==========================================================================*/
-int TCPServer::send( const kvs::MessageBlock& message, kvs::SocketAddress* client_address )
+int TCPServer::send( const vismodule::MessageBlock& message, vismodule::SocketAddress* client_address )
 {
     int size = -1;
 
-    kvs::Socket::id_type id = this->accept( client_address );
-    if( id != kvs::Socket::InvalidID )
+    vismodule::Socket::id_type id = this->accept( client_address );
+    if( id != vismodule::Socket::InvalidID )
     {
         size = ::send( id,
                        (const char*)message.blockPointer(),
                        message.blockSize(), 0 );
 
-        kvs::Socket::close_socket( id );
+        vismodule::Socket::close_socket( id );
     }
 
     return( size );
@@ -251,15 +251,15 @@ int TCPServer::send( const kvs::MessageBlock& message, kvs::SocketAddress* clien
  *  @return received message size
  */
 /*==========================================================================*/
-int TCPServer::receive( void* buffer, int byte_size, kvs::SocketAddress* client_address )
+int TCPServer::receive( void* buffer, int byte_size, vismodule::SocketAddress* client_address )
 {
     int size = -1;
 
-    kvs::Socket::id_type id = this->accept( client_address );
-    if( id != kvs::Socket::InvalidID )
+    vismodule::Socket::id_type id = this->accept( client_address );
+    if( id != vismodule::Socket::InvalidID )
     {
-        size = kvs::Socket::receive_exact( id, (char*)buffer, byte_size );
-        kvs::Socket::close_socket( id );
+        size = vismodule::Socket::receive_exact( id, (char*)buffer, byte_size );
+        vismodule::Socket::close_socket( id );
     }
 
     return( size );
@@ -273,27 +273,27 @@ int TCPServer::receive( void* buffer, int byte_size, kvs::SocketAddress* client_
  *  @return received message size
  */
 /*==========================================================================*/
-int TCPServer::receive( kvs::MessageBlock* message, kvs::SocketAddress* client_address )
+int TCPServer::receive( vismodule::MessageBlock* message, vismodule::SocketAddress* client_address )
 {
     int size = -1;
 
-    kvs::Socket::id_type id = this->accept( client_address );
-    if( id != kvs::Socket::InvalidID )
+    vismodule::Socket::id_type id = this->accept( client_address );
+    if( id != vismodule::Socket::InvalidID )
     {
         size_t data_size = 0;
-        int status = kvs::Socket::receive_peek( id, (char*)&data_size, sizeof( size_t ) );
+        int status = vismodule::Socket::receive_peek( id, (char*)&data_size, sizeof( size_t ) );
         if( status == -1 ) return( status );
 
         message->allocate( ntohl( data_size ) );
 
-        size = kvs::Socket::receive_exact( id,
+        size = vismodule::Socket::receive_exact( id,
                                            (char*)message->blockPointer(),
                                            message->blockSize() );
 
-        kvs::Socket::close_socket( id );
+        vismodule::Socket::close_socket( id );
     }
 
     return( size );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -15,12 +15,12 @@
  */
 /*****************************************************************************/
 #include "GlyphRenderer.h"
-#include <kvs/GlyphObject>
-#include <kvs/IgnoreUnusedVariable>
-#include <kvs/OpenGL>
+#include <vismodule/GlyphObject>
+#include <vismodule/IgnoreUnusedVariable>
+#include <vismodule/OpenGL>
 
 
-namespace kvs
+namespace vismodule
 {
 
 GlyphRenderer::GlyphRenderer( void )
@@ -44,12 +44,12 @@ GlyphRenderer::~GlyphRenderer( void )
  *  @param  light [in] pointer to the light
  */
 /*===========================================================================*/
-void GlyphRenderer::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light )
+void GlyphRenderer::exec( vismodule::ObjectBase* object, vismodule::Camera* camera, vismodule::Light* light )
 {
-    kvs::IgnoreUnusedVariable( light );
-    kvs::IgnoreUnusedVariable( camera );
+    vismodule::IgnoreUnusedVariable( light );
+    vismodule::IgnoreUnusedVariable( camera );
 
-    kvs::GlyphObject* glyph = reinterpret_cast<kvs::GlyphObject*>( object );
+    vismodule::GlyphObject* glyph = reinterpret_cast<vismodule::GlyphObject*>( object );
 
     glPushAttrib( GL_CURRENT_BIT | GL_ENABLE_BIT );
 
@@ -97,4 +97,4 @@ void GlyphRenderer::initialize_modelview( void )
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

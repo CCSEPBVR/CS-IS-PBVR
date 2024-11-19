@@ -11,16 +11,16 @@
  *  $Id: Xform.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__XFORM_H_INCLUDE
-#define KVS__XFORM_H_INCLUDE
+#ifndef VIS_MODULE__XFORM_H_INCLUDE
+#define VIS_MODULE__XFORM_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/Vector3>
-#include <kvs/Matrix33>
-#include <kvs/Matrix44>
+#include <vismodule/ClassName>
+#include <vismodule/Vector3>
+#include <vismodule/Matrix33>
+#include <vismodule/Matrix44>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -70,33 +70,33 @@ namespace kvs
  *  \f]
  */
 /*==========================================================================*/
-class Xform : public kvs::Matrix44f
+class Xform : public vismodule::Matrix44f
 {
-    kvsClassName( kvs::Xform );
+    visModuleClassName( vismodule::Xform );
 
 protected:
 
-    kvs::Matrix33f m_rotation; ///< rotation matrix
-    kvs::Vector3f  m_scaling;  ///< scaling vector
+    vismodule::Matrix33f m_rotation; ///< rotation matrix
+    vismodule::Vector3f  m_scaling;  ///< scaling vector
 
 public:
 
     Xform( void );
 
     Xform(
-        const kvs::Vector3f&  translation,
-        const kvs::Vector3f&  scaling,
-        const kvs::Matrix33f& rotation );
+        const vismodule::Vector3f&  translation,
+        const vismodule::Vector3f&  scaling,
+        const vismodule::Matrix33f& rotation );
 
     Xform( const Xform& xform );
 
-    Xform( const kvs::Matrix44f& m );
+    Xform( const vismodule::Matrix44f& m );
 
     virtual ~Xform( void );
 
 public:
 
-    Xform& operator = ( const kvs::Matrix44f& m );
+    Xform& operator = ( const vismodule::Matrix44f& m );
 
     Xform& operator = ( const Xform& xform );
 
@@ -107,35 +107,35 @@ public:
     void clear( void );
 
     void set(
-        const kvs::Vector3f&  translation,
-        const kvs::Vector3f&  scaling,
-        const kvs::Matrix33f& rotation );
+        const vismodule::Vector3f&  translation,
+        const vismodule::Vector3f&  scaling,
+        const vismodule::Matrix33f& rotation );
 
     void set( const Xform& xform );
 
 public:
 
-    void updateRotation( const kvs::Matrix33f& rotation );
+    void updateRotation( const vismodule::Matrix33f& rotation );
 
-    void updateTranslation( const kvs::Vector3f& translation );
+    void updateTranslation( const vismodule::Vector3f& translation );
 
-    void updateScaling( const kvs::Vector3f& scaling );
+    void updateScaling( const vismodule::Vector3f& scaling );
 
     void updateScaling( float scaling );
 
-    const kvs::Vector3f translation( void ) const;
+    const vismodule::Vector3f translation( void ) const;
 
-    const kvs::Matrix33f& rotation( void ) const;
+    const vismodule::Matrix33f& rotation( void ) const;
 
-    const kvs::Matrix33f scaledRotation( void ) const;
+    const vismodule::Matrix33f scaledRotation( void ) const;
 
-    const kvs::Vector3f& scaling( void ) const;
+    const vismodule::Vector3f& scaling( void ) const;
 
     Xform get( void ) const;
 
     void get( float (*array)[16] ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__XFORM_H_INCLUDE
+#endif // VIS_MODULE__XFORM_H_INCLUDE

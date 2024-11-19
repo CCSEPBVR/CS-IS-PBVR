@@ -12,10 +12,10 @@
  */
 /*****************************************************************************/
 #include "PointExporter.h"
-#include <kvs/Message>
+#include <vismodule/Message>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -24,7 +24,7 @@ namespace kvs
  *  @param  object [in] pointer to the input point object
  */
 /*===========================================================================*/
-PointExporter<kvs::KVSMLObjectPoint>::PointExporter( const kvs::PointObject* object )
+PointExporter<vismodule::KVSMLObjectPoint>::PointExporter( const vismodule::PointObject* object )
 {
     this->exec( object );
 }
@@ -36,20 +36,20 @@ PointExporter<kvs::KVSMLObjectPoint>::PointExporter( const kvs::PointObject* obj
  *  @return pointer to the KVSMLObjectPoint format
  */
 /*===========================================================================*/
-kvs::KVSMLObjectPoint* PointExporter<kvs::KVSMLObjectPoint>::exec( const kvs::ObjectBase* object )
+vismodule::KVSMLObjectPoint* PointExporter<vismodule::KVSMLObjectPoint>::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::PointObject* point = kvs::PointObject::DownCast( object );
+    const vismodule::PointObject* point = vismodule::PointObject::DownCast( object );
     if ( !point )
     {
         m_is_success = false;
-        kvsMessageError("Input object is not point object.");
+        visModuleMessageError("Input object is not point object.");
         return( NULL );
     }
 
@@ -61,4 +61,4 @@ kvs::KVSMLObjectPoint* PointExporter<kvs::KVSMLObjectPoint>::exec( const kvs::Ob
     return( this );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

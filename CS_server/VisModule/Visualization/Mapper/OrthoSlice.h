@@ -11,16 +11,16 @@
  *  $Id: OrthoSlice.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__ORTHO_SLICE_H_INCLUDE
-#define KVS__ORTHO_SLICE_H_INCLUDE
+#ifndef VIS_MODULE__ORTHO_SLICE_H_INCLUDE
+#define VIS_MODULE__ORTHO_SLICE_H_INCLUDE
 
-#include <kvs/SlicePlane>
-#include <kvs/VolumeObjectBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/SlicePlane>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -28,14 +28,14 @@ namespace kvs
  *  Axis aligned slice plane class.
  */
 /*==========================================================================*/
-class OrthoSlice : public kvs::SlicePlane
+class OrthoSlice : public vismodule::SlicePlane
 {
     // Class name.
-    kvsClassName( kvs::OrthoSlice );
+    visModuleClassName( vismodule::OrthoSlice );
 
     // Module information.
-    kvsModuleCategory( Mapper );
-    kvsModuleSuperClass( kvs::SlicePlane );
+    visModuleCategory( Mapper );
+    visModuleSuperClass( vismodule::SlicePlane );
 
 public:
 
@@ -55,16 +55,16 @@ public:
     OrthoSlice( void );
 
     OrthoSlice(
-        const kvs::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase* volume,
         const float                  position,
         const AlignedAxis            aligned_axis,
-        const kvs::TransferFunction& transfer_function );
+        const vismodule::TransferFunction& transfer_function );
 
 public:
 
-    void setPlane( const float position, const kvs::OrthoSlice::AlignedAxis axis );
+    void setPlane( const float position, const vismodule::OrthoSlice::AlignedAxis axis );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__ORTHO_SLICE_H_INCLUDE
+#endif // VIS_MODULE__ORTHO_SLICE_H_INCLUDE

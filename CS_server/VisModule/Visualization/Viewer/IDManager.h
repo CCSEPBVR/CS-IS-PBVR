@@ -11,17 +11,17 @@
  *  $Id: IDManager.h 994 2011-10-18 08:33:16Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__ID_MANAGER_H_INCLUDE
-#define KVS__ID_MANAGER_H_INCLUDE
+#ifndef VIS_MODULE__ID_MANAGER_H_INCLUDE
+#define VIS_MODULE__ID_MANAGER_H_INCLUDE
 
 #include <list>
 #include <vector>
 #include <utility>
 #include <cstdlib>
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 typedef std::pair<int,int>                  IDPair;
@@ -36,7 +36,7 @@ typedef std::list<IDPair>::reverse_iterator ID_rptr;
 /*==========================================================================*/
 class IDManager : public IDs
 {
-    kvsClassName( kvs::IDManager );
+    visModuleClassName( vismodule::IDManager );
 
 protected:
 
@@ -95,6 +95,6 @@ private:
     void update_flip_table( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__ID_MANAGER_H_INCLUDE
+#endif // VIS_MODULE__ID_MANAGER_H_INCLUDE

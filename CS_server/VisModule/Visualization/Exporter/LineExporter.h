@@ -11,16 +11,16 @@
  *  $Id: LineExporter.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__LINE_EXPORTER_H_INCLUDE
-#define KVS__LINE_EXPORTER_H_INCLUDE
+#ifndef VIS_MODULE__LINE_EXPORTER_H_INCLUDE
+#define VIS_MODULE__LINE_EXPORTER_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/LineObject>
-#include <kvs/KVSMLObjectLine>
+#include <vismodule/ClassName>
+#include <vismodule/LineObject>
+#include <vismodule/KVSMLObjectLine>
 #include "ExporterBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -29,25 +29,25 @@ namespace kvs
  */
 /*===========================================================================*/
 template <typename FileFormatType>
-class LineExporter : public kvs::ExporterBase<FileFormatType>
+class LineExporter : public vismodule::ExporterBase<FileFormatType>
 {
-    kvsClassName( kvs::LineExporter );
+    visModuleClassName( vismodule::LineExporter );
 
 public:
 
-    LineExporter( const kvs::LineObject* object );
+    LineExporter( const vismodule::LineObject* object );
 
-    FileFormatType* exec( const kvs::ObjectBase* object );
+    FileFormatType* exec( const vismodule::ObjectBase* object );
 };
 
 template <typename FileFormatType>
-LineExporter<FileFormatType>::LineExporter( const kvs::LineObject* object )
+LineExporter<FileFormatType>::LineExporter( const vismodule::LineObject* object )
 {
     this->exec( object );
 }
 
 template <typename FileFormatType>
-FileFormatType* LineExporter<FileFormatType>::exec( const kvs::ObjectBase* base )
+FileFormatType* LineExporter<FileFormatType>::exec( const vismodule::ObjectBase* base )
 {
     return( NULL );
 }
@@ -58,15 +58,15 @@ FileFormatType* LineExporter<FileFormatType>::exec( const kvs::ObjectBase* base 
  */
 /*===========================================================================*/
 template <>
-class LineExporter<kvs::KVSMLObjectLine> : public kvs::ExporterBase<kvs::KVSMLObjectLine>
+class LineExporter<vismodule::KVSMLObjectLine> : public vismodule::ExporterBase<vismodule::KVSMLObjectLine>
 {
 public:
 
-    LineExporter( const kvs::LineObject* object );
+    LineExporter( const vismodule::LineObject* object );
 
-    kvs::KVSMLObjectLine* exec( const kvs::ObjectBase* object );
+    vismodule::KVSMLObjectLine* exec( const vismodule::ObjectBase* object );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__LINE_EXPORTER_H_INCLUDE
+#endif // VIS_MODULE__LINE_EXPORTER_H_INCLUDE

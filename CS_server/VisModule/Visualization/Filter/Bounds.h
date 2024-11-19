@@ -11,21 +11,21 @@
  *  $Id: Bounds.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__BOUNDS_H_INCLUDE
-#define KVS__BOUNDS_H_INCLUDE
+#ifndef VIS_MODULE__BOUNDS_H_INCLUDE
+#define VIS_MODULE__BOUNDS_H_INCLUDE
 
 #include <vector>
-#include <kvs/ClassName>
-#include <kvs/Module>
-#include <kvs/ObjectBase>
-#include <kvs/LineObject>
-#include <kvs/Vector2>
-#include <kvs/Vector3>
-#include <kvs/Type>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
+#include <vismodule/ObjectBase>
+#include <vismodule/LineObject>
+#include <vismodule/Vector2>
+#include <vismodule/Vector3>
+#include <vismodule/Type>
 #include "FilterBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -33,15 +33,15 @@ namespace kvs
  *  Create bounds object from volume data.
  */
 /*==========================================================================*/
-class Bounds : public kvs::FilterBase, public kvs::LineObject
+class Bounds : public vismodule::FilterBase, public vismodule::LineObject
 {
     // Class name.
-    kvsClassName( kvs::Bounds );
+    visModuleClassName( vismodule::Bounds );
 
     // Module information.
-    kvsModuleCategory( Filter );
-    kvsModuleBaseClass( kvs::FilterBase );
-    kvsModuleSuperClass( kvs::LineObject );
+    visModuleCategory( Filter );
+    visModuleBaseClass( vismodule::FilterBase );
+    visModuleSuperClass( vismodule::LineObject );
 
 public:
 
@@ -62,15 +62,15 @@ public:
 
     Bounds( void );
 
-    Bounds( const kvs::ObjectBase* object, const Bounds::Type type = Bounds::Box );
+    Bounds( const vismodule::ObjectBase* object, const Bounds::Type type = Bounds::Box );
 
-    Bounds( const kvs::Vector3f& min_coord, const kvs::Vector3f& max_coord, const Bounds::Type type = Bounds::Box );
+    Bounds( const vismodule::Vector3f& min_coord, const vismodule::Vector3f& max_coord, const Bounds::Type type = Bounds::Box );
 
     virtual ~Bounds( void );
 
 public:
 
-    SuperClass* exec( const kvs::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase* object );
 
 public:
 
@@ -91,12 +91,12 @@ private:
     void create_circle_bounds( void );
 
     void set_corner(
-        const kvs::Vector3f&      pos1,
-        const kvs::Vector3f&      pos2,
-        std::vector<kvs::Real32>* vertex,
-        std::vector<kvs::UInt32>* connect );
+        const vismodule::Vector3f&      pos1,
+        const vismodule::Vector3f&      pos2,
+        std::vector<vismodule::Real32>* vertex,
+        std::vector<vismodule::UInt32>* connect );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__BOUNDS_H_INCLUDE
+#endif // VIS_MODULE__BOUNDS_H_INCLUDE

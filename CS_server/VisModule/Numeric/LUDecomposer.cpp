@@ -13,11 +13,11 @@
  */
 /*****************************************************************************/
 #include "LUDecomposer.h"
-#include <kvs/Macro>
-#include <kvs/Math>
+#include <vismodule/Macro>
+#include <vismodule/Math>
 
 
-namespace kvs
+namespace vismodule
 {
 
 template <typename T> size_t LUDecomposer<T>::m_max_iterations = 30;
@@ -95,7 +95,7 @@ LUDecomposer<T>& LUDecomposer<T>::operator = ( const LUDecomposer<T>& l )
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Matrix<T>& LUDecomposer<T>::L( void ) const
+const vismodule::Matrix<T>& LUDecomposer<T>::L( void ) const
 {
     return( m_l );
 }
@@ -107,7 +107,7 @@ const kvs::Matrix<T>& LUDecomposer<T>::L( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Matrix<T>& LUDecomposer<T>::U( void ) const
+const vismodule::Matrix<T>& LUDecomposer<T>::U( void ) const
 {
     return( m_u );
 }
@@ -119,7 +119,7 @@ const kvs::Matrix<T>& LUDecomposer<T>::U( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Matrix<T>& LUDecomposer<T>::LU( void ) const
+const vismodule::Matrix<T>& LUDecomposer<T>::LU( void ) const
 {
     return( m_lu );
 }
@@ -131,7 +131,7 @@ const kvs::Matrix<T>& LUDecomposer<T>::LU( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector<int>& LUDecomposer<T>::pivots( void ) const
+const vismodule::Vector<int>& LUDecomposer<T>::pivots( void ) const
 {
     return( m_pivots );
 }
@@ -143,7 +143,7 @@ const kvs::Vector<int>& LUDecomposer<T>::pivots( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-void LUDecomposer<T>::setMatrix( const kvs::Matrix33<T>& m )
+void LUDecomposer<T>::setMatrix( const vismodule::Matrix33<T>& m )
 {
     m_l.setSize( 3, 3 );
     m_u.setSize( 3, 3 );
@@ -165,7 +165,7 @@ void LUDecomposer<T>::setMatrix( const kvs::Matrix33<T>& m )
  */
 /*===========================================================================*/
 template <typename T>
-void LUDecomposer<T>::setMatrix( const kvs::Matrix44<T>& m )
+void LUDecomposer<T>::setMatrix( const vismodule::Matrix44<T>& m )
 {
     m_l.setSize( 4, 4 );
     m_u.setSize( 4, 4 );
@@ -203,23 +203,23 @@ void LUDecomposer<T>::setMatrix( const Matrix<T>& m )
 template <typename T>
 void LUDecomposer<T>::decompose( void )
 {
-    KVS_ASSERT( m_lu.nrows() == m_lu.ncolumns() );
+    VIS_MODULE_ASSERT( m_lu.nrows() == m_lu.ncolumns() );
 
     const int row = static_cast<int>(m_lu.nrows());
 
     // Loop over rows for implicit scaling info.
-    kvs::Vector<T> scaling( row );
+    vismodule::Vector<T> scaling( row );
     for ( int i = 0; i < row; i++ )
     {
         T max = T(0);
         for ( int j = 0; j < row; j++ )
         {
-            T temp = kvs::Math::Abs( m_lu[i][j] );
+            T temp = vismodule::Math::Abs( m_lu[i][j] );
             if ( temp > max ) max = temp;
         }
 
         // Singular.
-        KVS_ASSERT( !kvs::Math::IsZero( max ) );
+        VIS_MODULE_ASSERT( !vismodule::Math::IsZero( max ) );
 
         // Save the scaling.
         scaling[i] = T(1) / max;
@@ -251,7 +251,7 @@ void LUDecomposer<T>::decompose( void )
             }
             m_lu[i][j] = sum;
 
-            T temp = scaling[i] * kvs::Math::Abs( sum );
+            T temp = scaling[i] * vismodule::Math::Abs( sum );
             if ( temp >= max )
             {
                 max = temp;
@@ -274,7 +274,7 @@ void LUDecomposer<T>::decompose( void )
         m_pivots[j] = pivot;
 
         // Singular.
-        KVS_ASSERT( !kvs::Math::IsZero( m_lu[j][j] ) );
+        VIS_MODULE_ASSERT( !vismodule::Math::IsZero( m_lu[j][j] ) );
 
         // Now, finally, divide by the pivot element.
         if ( j != row - 1 )
@@ -307,4 +307,4 @@ template class LUDecomposer<int>;
 template class LUDecomposer<float>;
 template class LUDecomposer<double>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

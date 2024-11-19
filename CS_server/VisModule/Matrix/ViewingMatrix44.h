@@ -12,14 +12,14 @@
  *  $Id: ViewingMatrix44.h 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__VIEWING_MATRIX44_H_INCLUDE
-#define KVS__VIEWING_MATRIX44_H_INCLUDE
+#ifndef VIS_MODULE__VIEWING_MATRIX44_H_INCLUDE
+#define VIS_MODULE__VIEWING_MATRIX44_H_INCLUDE
 
 #include <cmath>
-#include <kvs/Matrix44>
-#include <kvs/Vector3>
+#include <vismodule/Matrix44>
+#include <vismodule/Vector3>
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -32,14 +32,14 @@ namespace kvs
  */
 /*===========================================================================*/
 template <typename T>
-inline kvs::Matrix44<T> ViewingMatrix44(
-    const kvs::Vector3<T>& c,
-    const kvs::Vector3<T>& u,
-    const kvs::Vector3<T>& g )
+inline vismodule::Matrix44<T> ViewingMatrix44(
+    const vismodule::Vector3<T>& c,
+    const vismodule::Vector3<T>& u,
+    const vismodule::Vector3<T>& g )
 {
-    kvs::Vector3<T> d( g - c );
-    kvs::Vector3<T> r( d.cross( u ) );
-    kvs::Vector3<T> f( r.cross( d ) );
+    vismodule::Vector3<T> d( g - c );
+    vismodule::Vector3<T> r( d.cross( u ) );
+    vismodule::Vector3<T> f( r.cross( d ) );
 
     d.normalize();
     r.normalize();
@@ -53,9 +53,9 @@ inline kvs::Matrix44<T> ViewingMatrix44(
              0,      0,      0,             1
     };
 
-    return( kvs::Matrix44<T>( elements ) );
+    return( vismodule::Matrix44<T>( elements ) );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__VIEWING_MATRIX44_H_INCLUDE
+#endif // VIS_MODULE__VIEWING_MATRIX44_H_INCLUDE

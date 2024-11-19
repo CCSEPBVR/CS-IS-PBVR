@@ -2,7 +2,7 @@
 #define PBVR__JOB_DISPATCHER_H_INCLUDE
 
 #include <vector>
-#include <kvs/Vector3>
+#include <vismodule/Vector3>
 
 class JobDispatcher
 {
@@ -58,14 +58,14 @@ public:
 #else
     int initialize( const int bstep, const int estep, const std::vector<int>& volume_table );
     int initialize( const int bstep, const int estep, const int volumes,
-                    const std::vector<kvs::Vector3f>& volume_min,
-                    const std::vector<kvs::Vector3f>& volume_max,
+                    const std::vector<vismodule::Vector3f>& volume_min,
+                    const std::vector<vismodule::Vector3f>& volume_max,
                     const double latency, const int pack_size,
-                    const kvs::Vector3f& crop_min,
-                    const kvs::Vector3f& crop_max );
+                    const vismodule::Vector3f& crop_min,
+                    const vismodule::Vector3f& crop_max );
     int initialize( const int bstep, const int estep, const int volumes,
-                    const std::vector<kvs::Vector3f>& volume_min,
-                    const std::vector<kvs::Vector3f>& volume_max,
+                    const std::vector<vismodule::Vector3f>& volume_min,
+                    const std::vector<vismodule::Vector3f>& volume_max,
                     const double latency, const int pack_size );
 #endif
 

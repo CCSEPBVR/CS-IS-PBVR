@@ -11,17 +11,17 @@
  *  $Id: Isosurface.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__ISOSURFACE_H_INCLUDE
-#define KVS__ISOSURFACE_H_INCLUDE
+#ifndef VIS_MODULE__ISOSURFACE_H_INCLUDE
+#define VIS_MODULE__ISOSURFACE_H_INCLUDE
 
-#include <kvs/PolygonObject>
-#include <kvs/VolumeObjectBase>
-#include <kvs/MapperBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/PolygonObject>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/MapperBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -29,15 +29,15 @@ namespace kvs
  *  Isosurface class.
  */
 /*==========================================================================*/
-class Isosurface : public kvs::MapperBase, public kvs::PolygonObject
+class Isosurface : public vismodule::MapperBase, public vismodule::PolygonObject
 {
     // Class name.
-    kvsClassName( kvs::Isosurface );
+    visModuleClassName( vismodule::Isosurface );
 
     // Module information.
-    kvsModuleCategory( Mapper );
-    kvsModuleBaseClass( kvs::MapperBase );
-    kvsModuleSuperClass( kvs::PolygonObject );
+    visModuleCategory( Mapper );
+    visModuleBaseClass( vismodule::MapperBase );
+    visModuleSuperClass( vismodule::PolygonObject );
 
 private:
 
@@ -49,16 +49,16 @@ public:
     Isosurface( void );
 
     Isosurface(
-        const kvs::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase* volume,
         const double                 isolevel,
         const SuperClass::NormalType normal_type = SuperClass::PolygonNormal );
 
     Isosurface(
-        const kvs::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase* volume,
         const double                 isolevel,
         const SuperClass::NormalType normal_type,
         const bool                   duplication,
-        const kvs::TransferFunction& transfer_function );
+        const vismodule::TransferFunction& transfer_function );
 
     virtual ~Isosurface( void );
 
@@ -68,13 +68,13 @@ public:
 
 public:
 
-    SuperClass* exec( const kvs::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase* object );
 
 private:
 
-    void mapping( const kvs::VolumeObjectBase* volume );
+    void mapping( const vismodule::VolumeObjectBase* volume );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__ISOSURFACE_H_INCLUDE
+#endif // VIS_MODULE__ISOSURFACE_H_INCLUDE

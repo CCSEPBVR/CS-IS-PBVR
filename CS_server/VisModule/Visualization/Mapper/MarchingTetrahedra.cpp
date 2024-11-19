@@ -13,10 +13,10 @@
 /****************************************************************************/
 #include "MarchingTetrahedra.h"
 #include "MarchingTetrahedraTable.h"
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -25,8 +25,8 @@ namespace kvs
  */
 /*==========================================================================*/
 MarchingTetrahedra::MarchingTetrahedra( void ):
-    kvs::MapperBase(),
-    kvs::PolygonObject(),
+    vismodule::MapperBase(),
+    vismodule::PolygonObject(),
     m_isolevel( 0 ),
     m_duplication( true )
 {
@@ -43,20 +43,20 @@ MarchingTetrahedra::MarchingTetrahedra( void ):
  */
 /*==========================================================================*/
 MarchingTetrahedra::MarchingTetrahedra(
-    const kvs::UnstructuredVolumeObject* volume,
+    const vismodule::UnstructuredVolumeObject* volume,
     const double                         isolevel,
     const NormalType                     normal_type,
     const bool                           duplication,
-    const kvs::TransferFunction&         transfer_function ):
-    kvs::MapperBase( transfer_function ),
-    kvs::PolygonObject(),
+    const vismodule::TransferFunction&         transfer_function ):
+    vismodule::MapperBase( transfer_function ),
+    vismodule::PolygonObject(),
     m_isolevel( isolevel ),
     m_duplication( duplication )
 {
     SuperClass::m_normal_type = normal_type;
 
     // In the case of VertexNormal-type, the duplicated vertices are forcibly deleted.
-    if ( normal_type == kvs::PolygonObject::VertexNormal )
+    if ( normal_type == vismodule::PolygonObject::VertexNormal )
     {
         m_duplication = false;
     }
@@ -81,20 +81,20 @@ MarchingTetrahedra::~MarchingTetrahedra( void )
  *  @return pointer to the polygon object
  */
 /*===========================================================================*/
-MarchingTetrahedra::SuperClass* MarchingTetrahedra::exec( const kvs::ObjectBase* object )
+MarchingTetrahedra::SuperClass* MarchingTetrahedra::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::UnstructuredVolumeObject* volume = kvs::UnstructuredVolumeObject::DownCast( object );
+    const vismodule::UnstructuredVolumeObject* volume = vismodule::UnstructuredVolumeObject::DownCast( object );
     if ( !volume )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not volume dat.");
+        visModuleMessageError("Input object is not volume dat.");
         return( NULL );
     }
 
@@ -109,20 +109,20 @@ MarchingTetrahedra::SuperClass* MarchingTetrahedra::exec( const kvs::ObjectBase*
  *  @param  volume [in] pointer to the volume object
  */
 /*==========================================================================*/
-void MarchingTetrahedra::mapping( const kvs::UnstructuredVolumeObject* volume )
+void MarchingTetrahedra::mapping( const vismodule::UnstructuredVolumeObject* volume )
 {
     // Check whether the volume can be processed or not.
     if ( volume->veclen() != 1 )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input volume is not sclar field data.");
+        visModuleMessageError("Input volume is not sclar field data.");
         return;
     }
 
-    if ( volume->cellType() != kvs::VolumeObjectBase::Tetrahedra )
+    if ( volume->cellType() != vismodule::VolumeObjectBase::Tetrahedra )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input volume is not tetrahedra cell data.");
+        visModuleMessageError("Input volume is not tetrahedra cell data.");
         return;
     }
 
@@ -133,20 +133,20 @@ void MarchingTetrahedra::mapping( const kvs::UnstructuredVolumeObject* volume )
 
     // Extract surfaces.
     const std::type_info& type = volume->values().typeInfo()->type();
-    if (      type == typeid( kvs::Int8   ) ) this->extract_surfaces<kvs::Int8>( volume );
-    else if ( type == typeid( kvs::Int16  ) ) this->extract_surfaces<kvs::Int16>( volume );
-    else if ( type == typeid( kvs::Int32  ) ) this->extract_surfaces<kvs::Int32>( volume );
-    else if ( type == typeid( kvs::Int64  ) ) this->extract_surfaces<kvs::Int64>( volume );
-    else if ( type == typeid( kvs::UInt8  ) ) this->extract_surfaces<kvs::UInt8>( volume );
-    else if ( type == typeid( kvs::UInt16 ) ) this->extract_surfaces<kvs::UInt16>( volume );
-    else if ( type == typeid( kvs::UInt32 ) ) this->extract_surfaces<kvs::UInt32>( volume );
-    else if ( type == typeid( kvs::UInt64 ) ) this->extract_surfaces<kvs::UInt64>( volume );
-    else if ( type == typeid( kvs::Real32 ) ) this->extract_surfaces<kvs::Real32>( volume );
-    else if ( type == typeid( kvs::Real64 ) ) this->extract_surfaces<kvs::Real64>( volume );
+    if (      type == typeid( vismodule::Int8   ) ) this->extract_surfaces<vismodule::Int8>( volume );
+    else if ( type == typeid( vismodule::Int16  ) ) this->extract_surfaces<vismodule::Int16>( volume );
+    else if ( type == typeid( vismodule::Int32  ) ) this->extract_surfaces<vismodule::Int32>( volume );
+    else if ( type == typeid( vismodule::Int64  ) ) this->extract_surfaces<vismodule::Int64>( volume );
+    else if ( type == typeid( vismodule::UInt8  ) ) this->extract_surfaces<vismodule::UInt8>( volume );
+    else if ( type == typeid( vismodule::UInt16 ) ) this->extract_surfaces<vismodule::UInt16>( volume );
+    else if ( type == typeid( vismodule::UInt32 ) ) this->extract_surfaces<vismodule::UInt32>( volume );
+    else if ( type == typeid( vismodule::UInt64 ) ) this->extract_surfaces<vismodule::UInt64>( volume );
+    else if ( type == typeid( vismodule::Real32 ) ) this->extract_surfaces<vismodule::Real32>( volume );
+    else if ( type == typeid( vismodule::Real64 ) ) this->extract_surfaces<vismodule::Real64>( volume );
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
+        visModuleMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
     }
 }
 
@@ -157,7 +157,7 @@ void MarchingTetrahedra::mapping( const kvs::UnstructuredVolumeObject* volume )
  */
 /*==========================================================================*/
 template <typename T>
-void MarchingTetrahedra::extract_surfaces( const kvs::UnstructuredVolumeObject* volume )
+void MarchingTetrahedra::extract_surfaces( const vismodule::UnstructuredVolumeObject* volume )
 {
     if ( m_duplication ) this->extract_surfaces_with_duplication<T>( volume );
     else                 this->extract_surfaces_without_duplication<T>( volume );
@@ -171,22 +171,22 @@ void MarchingTetrahedra::extract_surfaces( const kvs::UnstructuredVolumeObject* 
 /*==========================================================================*/
 template <typename T>
 void MarchingTetrahedra::extract_surfaces_with_duplication(
-    const kvs::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject* volume )
 {
     // Calculated the coordinate data array and the normal vector array.
-    std::vector<kvs::Real32> coords;
-    std::vector<kvs::Real32> normals;
+    std::vector<vismodule::Real32> coords;
+    std::vector<vismodule::Real32> normals;
 
     // Refer the unstructured volume object.
-    const kvs::UInt32* connections =
-        static_cast<const kvs::UInt32*>( volume->connections().pointer() );
+    const vismodule::UInt32* connections =
+        static_cast<const vismodule::UInt32*>( volume->connections().pointer() );
 
     const size_t ncells = volume->ncells();
 
     // Extract surfaces.
     size_t index = 0;
     size_t local_index[4];
-    for ( kvs::UInt32 cell = 0; cell < ncells; ++cell, index += 4 )
+    for ( vismodule::UInt32 cell = 0; cell < ncells; ++cell, index += 4 )
     {
         // Calculate the indices of the target cell.
         local_index[0] = connections[ index ];
@@ -219,23 +219,23 @@ void MarchingTetrahedra::extract_surfaces_with_duplication(
 
             // Calculate coordinates of the vertices which are composed
             // of the triangle polygon.
-            const kvs::Vector3f vertex0( this->interpolate_vertex<T>( v0, v1 ) );
+            const vismodule::Vector3f vertex0( this->interpolate_vertex<T>( v0, v1 ) );
             coords.push_back( vertex0.x() );
             coords.push_back( vertex0.y() );
             coords.push_back( vertex0.z() );
 
-            const kvs::Vector3f vertex1( this->interpolate_vertex<T>( v2, v3 ) );
+            const vismodule::Vector3f vertex1( this->interpolate_vertex<T>( v2, v3 ) );
             coords.push_back( vertex1.x() );
             coords.push_back( vertex1.y() );
             coords.push_back( vertex1.z() );
 
-            const kvs::Vector3f vertex2( this->interpolate_vertex<T>( v4, v5 ) );
+            const vismodule::Vector3f vertex2( this->interpolate_vertex<T>( v4, v5 ) );
             coords.push_back( vertex2.x() );
             coords.push_back( vertex2.y() );
             coords.push_back( vertex2.z() );
 
             // Calculate a normal vector for the triangle polygon.
-            const kvs::Vector3f normal( ( vertex1 - vertex0 ).cross( vertex2 - vertex0 ) );
+            const vismodule::Vector3f normal( ( vertex1 - vertex0 ).cross( vertex2 - vertex0 ) );
             normals.push_back( normal.x() );
             normals.push_back( normal.y() );
             normals.push_back( normal.z() );
@@ -243,15 +243,15 @@ void MarchingTetrahedra::extract_surfaces_with_duplication(
     } // end of loop-cell
 
     // Calculate the polygon color for the isolevel.
-    const kvs::RGBColor color = this->calculate_color<T>();
+    const vismodule::RGBColor color = this->calculate_color<T>();
 
-    SuperClass::setCoords( kvs::ValueArray<kvs::Real32>( coords ) );
+    SuperClass::setCoords( vismodule::ValueArray<vismodule::Real32>( coords ) );
     SuperClass::setColor( color );
-    SuperClass::setNormals( kvs::ValueArray<kvs::Real32>( normals ) );
+    SuperClass::setNormals( vismodule::ValueArray<vismodule::Real32>( normals ) );
     SuperClass::setOpacity( 255 );
-    SuperClass::setPolygonType( kvs::PolygonObject::Triangle );
-    SuperClass::setColorType( kvs::PolygonObject::PolygonColor );
-    SuperClass::setNormalType( kvs::PolygonObject::PolygonNormal );
+    SuperClass::setPolygonType( vismodule::PolygonObject::Triangle );
+    SuperClass::setColorType( vismodule::PolygonObject::PolygonColor );
+    SuperClass::setNormalType( vismodule::PolygonObject::PolygonNormal );
 }
 
 /*==========================================================================*/
@@ -262,31 +262,31 @@ void MarchingTetrahedra::extract_surfaces_with_duplication(
 /*==========================================================================*/
 template <typename T>
 void MarchingTetrahedra::extract_surfaces_without_duplication(
-    const kvs::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject* volume )
 {
-    kvs::IgnoreUnusedVariable( volume );
+    vismodule::IgnoreUnusedVariable( volume );
 
 #if NOT_YET_IMPLEMENTED
     const size_t nedges     = volume->adjacency()->nedges();
     const size_t byte_size  = sizeof( size_t ) * nedges;
-    kvs::UInt32* vertex_map = static_cast<kvs::UInt32*>( malloc( byte_size ) );
+    vismodule::UInt32* vertex_map = static_cast<vismodule::UInt32*>( malloc( byte_size ) );
     if ( !vertex_map )
     {
-        kvsMessageError("Cannot allocate memory for the vertex map.");
+        visModuleMessageError("Cannot allocate memory for the vertex map.");
         return;
     }
     memset( vertex_map, 0, byte_size );
 
-    std::vector<kvs::Real32> coords;
+    std::vector<vismodule::Real32> coords;
     this->calculate_isopoints<T>( vertex_map, coords );
 
-    std::vector<kvs::UInt32> connections;
+    std::vector<vismodule::UInt32> connections;
     this->connect_isopoints<T>( vertex_map, connections );
 
     free( vertex_map );
 
-    std::vector<kvs::Real32> normals;
-    if ( SuperClass::normalType() == kvs::PolygonObject::PolygonNormal )
+    std::vector<vismodule::Real32> normals;
+    if ( SuperClass::normalType() == vismodule::PolygonObject::PolygonNormal )
     {
         this->calculate_normals_on_polygon( coords, connections, normals );
     }
@@ -296,15 +296,15 @@ void MarchingTetrahedra::extract_surfaces_without_duplication(
     }
 
     // Calculate the polygon color for the isolevel.
-    const kvs::RGBColor color = this->calculate_color<T>();
+    const vismodule::RGBColor color = this->calculate_color<T>();
 
-    SuperClass::setCoords( kvs::ValueArray<kvs::Real32>( coords ) );
-    SuperClass::setConnections( kvs::ValueArray<kvs::UInt32>( connections ) );
+    SuperClass::setCoords( vismodule::ValueArray<vismodule::Real32>( coords ) );
+    SuperClass::setConnections( vismodule::ValueArray<vismodule::UInt32>( connections ) );
     SuperClass::setColor( color );
-    SuperClass::setNormals( kvs::ValueArray<kvs::Real32>( normals ) );
+    SuperClass::setNormals( vismodule::ValueArray<vismodule::Real32>( normals ) );
     SuperClass::setOpacity( 255 );
-    SuperClass::setPolygonType( kvs::PolygonObject::Triangle );
-    SuperClass::setColorType( kvs::PolygonObject::PolygonColor );
+    SuperClass::setPolygonType( vismodule::PolygonObject::Triangle );
+    SuperClass::setColorType( vismodule::PolygonObject::PolygonColor );
 #endif // NOT_YET_IMPLEMENTED
 }
 
@@ -339,25 +339,25 @@ const size_t MarchingTetrahedra::calculate_table_index( const size_t* local_inde
  */
 /*==========================================================================*/
 template <typename T>
-const kvs::Vector3f MarchingTetrahedra::interpolate_vertex(
+const vismodule::Vector3f MarchingTetrahedra::interpolate_vertex(
     const int vertex0,
     const int vertex1 ) const
 {
     const T* const values = static_cast<const T*>( BaseClass::m_volume->values().pointer() );
-    const kvs::Real32* const coords = BaseClass::m_volume->coords().pointer();
+    const vismodule::Real32* const coords = BaseClass::m_volume->coords().pointer();
 
     const size_t coord0_index = 3 * vertex0;
     const size_t coord1_index = 3 * vertex1;
 
     const double v0 = static_cast<double>( values[ vertex0 ] );
     const double v1 = static_cast<double>( values[ vertex1 ] );
-    const float ratio = static_cast<float>( kvs::Math::Abs( ( m_isolevel - v0 ) / ( v1 - v0 ) ) );
+    const float ratio = static_cast<float>( vismodule::Math::Abs( ( m_isolevel - v0 ) / ( v1 - v0 ) ) );
 
     const float x = coords[coord0_index]   + ratio * ( coords[coord1_index]   - coords[coord0_index] );
     const float y = coords[coord0_index+1] + ratio * ( coords[coord1_index+1] - coords[coord0_index+1] );
     const float z = coords[coord0_index+2] + ratio * ( coords[coord1_index+2] - coords[coord0_index+2] );
 
-    return( kvs::Vector3f( x, y, z ) );
+    return( vismodule::Vector3f( x, y, z ) );
 }
 
 /*==========================================================================*/
@@ -367,7 +367,7 @@ const kvs::Vector3f MarchingTetrahedra::interpolate_vertex(
  */
 /*==========================================================================*/
 template <typename T>
-const kvs::RGBColor MarchingTetrahedra::calculate_color( void )
+const vismodule::RGBColor MarchingTetrahedra::calculate_color( void )
 {
     // Calculate the min/max values of the node data.
     if ( !BaseClass::m_volume->hasMinMaxValues() )
@@ -375,10 +375,10 @@ const kvs::RGBColor MarchingTetrahedra::calculate_color( void )
         BaseClass::m_volume->updateMinMaxValues();
     }
 
-    const kvs::Real64 min_value = BaseClass::m_volume->minValue();
-    const kvs::Real64 max_value = BaseClass::m_volume->maxValue();
-    const kvs::Real64 normalize_factor = 255.0 / ( max_value - min_value );
-    const kvs::UInt8  index = static_cast<kvs::UInt8>( normalize_factor * ( m_isolevel - min_value ) );
+    const vismodule::Real64 min_value = BaseClass::m_volume->minValue();
+    const vismodule::Real64 max_value = BaseClass::m_volume->maxValue();
+    const vismodule::Real64 normalize_factor = 255.0 / ( max_value - min_value );
+    const vismodule::UInt8  index = static_cast<vismodule::UInt8>( normalize_factor * ( m_isolevel - min_value ) );
 
     return( BaseClass::transferFunction().colorMap()[ index ] );
 }
@@ -393,14 +393,14 @@ const kvs::RGBColor MarchingTetrahedra::calculate_color( void )
 /*==========================================================================*/
 template <typename T>
 void MarchingTetrahedra::calculate_isopoints(
-    kvs::UInt32*&             vertex_map,
-    std::vector<kvs::Real32>& coords )
+    vismodule::UInt32*&             vertex_map,
+    std::vector<vismodule::Real32>& coords )
 {
-    const kvs::UnstructuredVolumeObject* volume =
-        reinterpret_cast<const kvs::UnstructuredVolumeObject*>( BaseClass::m_volume );
+    const vismodule::UnstructuredVolumeObject* volume =
+        reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( BaseClass::m_volume );
 
     const T* const values = static_cast<const T*>( volume->values().pointer() );
-    const kvs::EdgeConnections* const edge_connections = volume->adjacency()->edgeConnections();
+    const vismodule::EdgeConnections* const edge_connections = volume->adjacency()->edgeConnections();
     const size_t nedges = volume->adjacency()->nedges();
     const double isolevel = m_isolevel;
 
@@ -411,7 +411,7 @@ void MarchingTetrahedra::calculate_isopoints(
 
         if ( ( values[ vertex0 ] > isolevel ) == ( values[ vertex1 ] > isolevel ) ) { continue; }
 
-        const kvs::Vector3f isopoint( this->interpolate_vertex( vertex0, vertex1 ) );
+        const vismodule::Vector3f isopoint( this->interpolate_vertex( vertex0, vertex1 ) );
 
         coords.push_back( isopoint.x() );
         coords.push_back( isopoint.y() );
@@ -432,19 +432,19 @@ void MarchingTetrahedra::calculate_isopoints(
 /*==========================================================================*/
 template <typename T>
 void MarchingTetrahedra::connect_isopoints(
-    kvs::UInt32*&             vertex_map,
-    std::vector<kvs::UInt32>& connections )
+    vismodule::UInt32*&             vertex_map,
+    std::vector<vismodule::UInt32>& connections )
 {
-    const kvs::UnstructuredVolumeObject* volume =
-        reinterpret_cast<const kvs::UnstructuredVolumeObject*>( BaseClass::m_volume );
+    const vismodule::UnstructuredVolumeObject* volume =
+        reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( BaseClass::m_volume );
 
-    const kvs::VertexGraph* const vertex_graph = volume->adjacency()->vertexGraph();
-    const kvs::UInt32* const volume_connections = volum->connections()->pointer();
+    const vismodule::VertexGraph* const vertex_graph = volume->adjacency()->vertexGraph();
+    const vismodule::UInt32* const volume_connections = volum->connections()->pointer();
     const size_t ncells = volume->ncells();
 
     size_t index = 0;
     size_t local_index[4];
-    for ( kvs::UInt32 cell = 0; cell < ncells; ++cell, index += 4 )
+    for ( vismodule::UInt32 cell = 0; cell < ncells; ++cell, index += 4 )
     {
         // Calculate the indices of the target cell.
         local_index[0] = volume_connections[ index     ];
@@ -491,29 +491,29 @@ void MarchingTetrahedra::connect_isopoints(
  */
 /*==========================================================================*/
 void MarchingTetrahedra::calculate_normals_on_polygon(
-    const std::vector<kvs::Real32>& coords,
-    const std::vector<kvs::UInt32>& connections,
-    std::vector<kvs::Real32>&       normals )
+    const std::vector<vismodule::Real32>& coords,
+    const std::vector<vismodule::UInt32>& connections,
+    std::vector<vismodule::Real32>&       normals )
 {
     if ( coords.empty() ) return;
 
     normals.resize( connections.size() );
     std::fill( normals.begin(), normals.end(), 0.0f );
 
-    const kvs::Real32* const coords_ptr = &coords[ 0 ];
+    const vismodule::Real32* const coords_ptr = &coords[ 0 ];
 
     const size_t size = connections.size();
-    for ( kvs::UInt32 index = 0; index < size; index += 3 )
+    for ( vismodule::UInt32 index = 0; index < size; index += 3 )
     {
-        const kvs::UInt32 coord0_index = 3 * connections[ index     ];
-        const kvs::UInt32 coord1_index = 3 * connections[ index + 1 ];
-        const kvs::UInt32 coord2_index = 3 * connections[ index + 2 ];
+        const vismodule::UInt32 coord0_index = 3 * connections[ index     ];
+        const vismodule::UInt32 coord1_index = 3 * connections[ index + 1 ];
+        const vismodule::UInt32 coord2_index = 3 * connections[ index + 2 ];
 
-        const kvs::Vector3f v0( coords_ptr + coord0_index );
-        const kvs::Vector3f v1( coords_ptr + coord1_index );
-        const kvs::Vector3f v2( coords_ptr + coord2_index );
+        const vismodule::Vector3f v0( coords_ptr + coord0_index );
+        const vismodule::Vector3f v1( coords_ptr + coord1_index );
+        const vismodule::Vector3f v2( coords_ptr + coord2_index );
 
-        const kvs::Vector3f normal( ( v1 - v0 ).cross( v2 - v0 ) );
+        const vismodule::Vector3f normal( ( v1 - v0 ).cross( v2 - v0 ) );
 
         normals[ index     ] = normal.x();
         normals[ index + 1 ] = normal.y();
@@ -532,29 +532,29 @@ void MarchingTetrahedra::calculate_normals_on_polygon(
  */
 /*==========================================================================*/
 void MarchingTetrahedra::calculate_normals_on_vertex(
-    const std::vector<kvs::Real32>& coords,
-    const std::vector<kvs::UInt32>& connections,
-    std::vector<kvs::Real32>&       normals )
+    const std::vector<vismodule::Real32>& coords,
+    const std::vector<vismodule::UInt32>& connections,
+    std::vector<vismodule::Real32>&       normals )
 {
     if ( coords.empty() ) return;
 
     normals.resize( coords.size() );
     std::fill( normals.begin(), normals.end(), 0.0f );
 
-    const kvs::Real32* const coords_ptr = &coords[ 0 ];
+    const vismodule::Real32* const coords_ptr = &coords[ 0 ];
 
     const size_t size = connections.size();
-    for ( kvs::UInt32 index = 0; index < size; index += 3 )
+    for ( vismodule::UInt32 index = 0; index < size; index += 3 )
     {
-        const kvs::UInt32 coord0_index = 3 * connections[ index     ];
-        const kvs::UInt32 coord1_index = 3 * connections[ index + 1 ];
-        const kvs::UInt32 coord2_index = 3 * connections[ index + 2 ];
+        const vismodule::UInt32 coord0_index = 3 * connections[ index     ];
+        const vismodule::UInt32 coord1_index = 3 * connections[ index + 1 ];
+        const vismodule::UInt32 coord2_index = 3 * connections[ index + 2 ];
 
-        const kvs::Vector3f v0( coords_ptr + coord0_index );
-        const kvs::Vector3f v1( coords_ptr + coord1_index );
-        const kvs::Vector3f v2( coords_ptr + coord2_index );
+        const vismodule::Vector3f v0( coords_ptr + coord0_index );
+        const vismodule::Vector3f v1( coords_ptr + coord1_index );
+        const vismodule::Vector3f v2( coords_ptr + coord2_index );
 
-        const kvs::Vector3f normal( ( v1 - v0 ).cross( v2 - v0 ) );
+        const vismodule::Vector3f normal( ( v1 - v0 ).cross( v2 - v0 ) );
 
         normals[ coord0_index     ] += normal.x();
         normals[ coord0_index + 1 ] += normal.y();
@@ -571,4 +571,4 @@ void MarchingTetrahedra::calculate_normals_on_vertex(
 }
 #endif // NOT_YET_IMPLEMENTED
 
-} // end of namespace kvs
+} // end of namespace vismodule

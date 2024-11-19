@@ -13,16 +13,16 @@
 /****************************************************************************/
 #include "SocketSelector.h"
 #include "SocketTimer.h"
-#include <kvs/Compiler>
+#include <vismodule/Compiler>
 
 // FD_SET includes a warning C4127: conditional expression is constant.
-#if defined ( KVS_COMPILER_VC )
+#if defined ( VIS_MODULE_COMPILER_VC )
 #pragma warning( push )
 #pragma warning( disable: 4127 )
 #endif
 
 
-namespace kvs
+namespace vismodule
 {
 
 SocketSelector::SocketSelector( void )
@@ -40,32 +40,32 @@ SocketSelector::~SocketSelector( void )
 {
 }
 
-void SocketSelector::setReadable( const kvs::Socket::id_type& socket_id )
+void SocketSelector::setReadable( const vismodule::Socket::id_type& socket_id )
 {
     FD_SET( socket_id, &m_readable );
 }
 
-void SocketSelector::setWritable( const kvs::Socket::id_type& socket_id )
+void SocketSelector::setWritable( const vismodule::Socket::id_type& socket_id )
 {
     FD_SET( socket_id, &m_writable );
 }
 
-bool SocketSelector::isReadable( const kvs::Socket::id_type& socket_id )
+bool SocketSelector::isReadable( const vismodule::Socket::id_type& socket_id )
 {
     return( FD_ISSET( socket_id, &m_readable ) ? true : false );
 }
 
-bool SocketSelector::isWritable( const kvs::Socket::id_type& socket_id )
+bool SocketSelector::isWritable( const vismodule::Socket::id_type& socket_id )
 {
     return( FD_ISSET( socket_id, &m_writable ) ? true : false );
 }
 
-void SocketSelector::clearReadable( const kvs::Socket::id_type& socket_id )
+void SocketSelector::clearReadable( const vismodule::Socket::id_type& socket_id )
 {
     FD_CLR( socket_id, &m_readable );
 }
 
-void SocketSelector::clearWritable( const kvs::Socket::id_type& socket_id )
+void SocketSelector::clearWritable( const vismodule::Socket::id_type& socket_id )
 {
     FD_CLR( socket_id, &m_writable );
 }
@@ -76,9 +76,9 @@ void SocketSelector::clear( void )
     FD_ZERO( &m_writable );
 }
 
-int SocketSelector::select( const kvs::SocketTimer& timeout )
+int SocketSelector::select( const vismodule::SocketTimer& timeout )
 {
-    kvs::SocketTimer temp = timeout;
+    vismodule::SocketTimer temp = timeout;
 
     struct timeval* p_timeout;
     if( timeout.isZero() )
@@ -93,8 +93,8 @@ int SocketSelector::select( const kvs::SocketTimer& timeout )
     return( ::select( FD_SETSIZE, &m_readable, &m_writable, NULL, p_timeout ) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#if defined ( KVS_COMPILER_VC )
+#if defined ( VIS_MODULE_COMPILER_VC )
 #pragma warning( pop )
 #endif

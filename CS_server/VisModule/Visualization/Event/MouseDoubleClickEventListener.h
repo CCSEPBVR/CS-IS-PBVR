@@ -12,15 +12,15 @@
  *  $Id: MouseDoubleClickEventListener.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__MOUSE_DOUBLE_CLICK_EVENT_LISTENER_H_INCLUDE
-#define KVS__MOUSE_DOUBLE_CLICK_EVENT_LISTENER_H_INCLUDE
+#ifndef VIS_MODULE__MOUSE_DOUBLE_CLICK_EVENT_LISTENER_H_INCLUDE
+#define VIS_MODULE__MOUSE_DOUBLE_CLICK_EVENT_LISTENER_H_INCLUDE
 
-#include <kvs/EventListener>
-#include <kvs/MouseEvent>
-#include <kvs/ClassName>
+#include <vismodule/EventListener>
+#include <vismodule/MouseEvent>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -28,9 +28,9 @@ namespace kvs
  *  @brief  MouseDoubleClickEventListener class.
  */
 /*===========================================================================*/
-class MouseDoubleClickEventListener : public kvs::EventListener
+class MouseDoubleClickEventListener : public vismodule::EventListener
 {
-    kvsClassName( kvs::MouseDoubleClickEventListener );
+    visModuleClassName( vismodule::MouseDoubleClickEventListener );
 
 public:
 
@@ -40,13 +40,13 @@ public:
 
 public:
 
-    virtual void update( kvs::MouseEvent* event ) = 0;
+    virtual void update( vismodule::MouseEvent* event ) = 0;
 
 private:
 
-    void onEvent( kvs::EventBase* event );
+    void onEvent( vismodule::EventBase* event );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MOUSE_DOUBLE_CLICK_EVENT_LISTENER_H_INCLUDE
+#endif // VIS_MODULE__MOUSE_DOUBLE_CLICK_EVENT_LISTENER_H_INCLUDE

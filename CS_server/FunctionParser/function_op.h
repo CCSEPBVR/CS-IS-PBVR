@@ -14,8 +14,8 @@
  *  $Revision: 1.6 $
  */
 /*****************************************************************************/
-#ifndef KVS__FUNCTION_OP_H_INCLUDE
-#define KVS__FUNCTION_OP_H_INCLUDE
+#ifndef VIS_MODULE__FUNCTION_OP_H_INCLUDE
+#define VIS_MODULE__FUNCTION_OP_H_INCLUDE
 
 #include <iostream>
 #include <cstdlib>
@@ -1372,4 +1372,4 @@ inline Function Pow( const Function& a, const Function& b )
 
 } // end of namespace FuncParser
 
-#endif // KVS__FUNCTION_OP_H_INCLUDE
+#endif // VIS_MODULE__FUNCTION_OP_H_INCLUDE

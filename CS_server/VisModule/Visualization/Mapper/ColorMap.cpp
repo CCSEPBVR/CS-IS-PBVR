@@ -12,10 +12,10 @@
  */
 /****************************************************************************/
 #include "ColorMap.h"
-#include <kvs/Assert>
-#include <kvs/RGBColor>
-#include <kvs/HSVColor>
-#include <kvs/Math>
+#include <vismodule/Assert>
+#include <vismodule/RGBColor>
+#include <vismodule/HSVColor>
+#include <vismodule/Math>
 
 
 namespace
@@ -30,15 +30,15 @@ struct Equal
 
     Equal( const float v ) : value( v ){}
 
-    bool operator() ( const kvs::ColorMap::Point& point ) const
+    bool operator() ( const vismodule::ColorMap::Point& point ) const
     {
-        return( kvs::Math::Equal( point.first, value ) );
+        return( vismodule::Math::Equal( point.first, value ) );
     }
 };
 
 struct Less
 {
-    bool operator() ( const kvs::ColorMap::Point& p1, const kvs::ColorMap::Point& p2 ) const
+    bool operator() ( const vismodule::ColorMap::Point& p1, const vismodule::ColorMap::Point& p2 ) const
     {
         return( p1.first < p2.first );
     }
@@ -46,7 +46,7 @@ struct Less
 
 }
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -211,7 +211,7 @@ const ColorMap::Table& ColorMap::table( void ) const
 
 const bool ColorMap::hasRange( void ) const
 {
-    return( !kvs::Math::Equal( m_min_value, m_max_value ) );
+    return( !vismodule::Math::Equal( m_min_value, m_max_value ) );
 }
 
 /*===========================================================================*/
@@ -245,7 +245,7 @@ void ColorMap::setRange( const float min_value, const float max_value )
  *  @param  color [in] color value
  */
 /*===========================================================================*/
-void ColorMap::addPoint( const float value, const kvs::RGBColor color )
+void ColorMap::addPoint( const float value, const vismodule::RGBColor color )
 {
     m_points.push_back( Point( value, color ) );
 }
@@ -269,13 +269,13 @@ void ColorMap::removePoint( const float value )
 void ColorMap::create( void )
 {
 /*
-    if ( kvs::Math::IsZero( m_min_value ) && kvs::Math::IsZero( m_max_value ) )
+    if ( vismodule::Math::IsZero( m_min_value ) && vismodule::Math::IsZero( m_max_value ) )
     {
         this->setRange( 0.0f, static_cast<float>( m_resolution - 1 ) );
     }
 */
-    kvs::Real32 min_value = 0.0f;
-    kvs::Real32 max_value = static_cast<kvs::Real32>( m_resolution - 1 );
+    vismodule::Real32 min_value = 0.0f;
+    vismodule::Real32 max_value = static_cast<vismodule::Real32>( m_resolution - 1 );
     if ( this->hasRange() )
     {
         min_value = this->minValue();
@@ -289,15 +289,15 @@ void ColorMap::create( void )
         const float max_hue = 240.0f; // red
         const float increment = ( max_hue - min_hue ) / static_cast<float>( m_resolution - 1 );
 
-        kvs::UInt8* color = m_table.pointer();
+        vismodule::UInt8* color = m_table.pointer();
         for ( size_t i = 0; i < m_resolution; ++i )
         {
             // HSV to RGB
-            const kvs::HSVColor hsv(
+            const vismodule::HSVColor hsv(
                 ( max_hue - increment * static_cast<float>( i ) ) / 360.0f,
                 1.0f,
                 1.0f );
-            const kvs::RGBColor rgb( hsv );
+            const vismodule::RGBColor rgb( hsv );
 
             *( color++ ) = rgb.red();
             *( color++ ) = rgb.green();
@@ -309,8 +309,8 @@ void ColorMap::create( void )
     {
         m_points.sort( ::Less() );
 
-        const kvs::RGBColor black( 0, 0, 0 );
-        const kvs::RGBColor white( 255, 255, 255 );
+        const vismodule::RGBColor black( 0, 0, 0 );
+        const vismodule::RGBColor white( 255, 255, 255 );
         if ( m_points.front().first > min_value ) this->addPoint( min_value, black );
         if ( m_points.back().first < max_value ) this->addPoint( max_value, white );
 
@@ -321,13 +321,13 @@ void ColorMap::create( void )
             Points::iterator p = m_points.begin();
             Points::iterator last = m_points.end();
 
-            kvs::RGBColor color( 0, 0, 0 );
-            Point p0( min_value, kvs::RGBColor(   0,   0,   0 ) );
-            Point p1( max_value, kvs::RGBColor( 255, 255, 255 ) );
+            vismodule::RGBColor color( 0, 0, 0 );
+            Point p0( min_value, vismodule::RGBColor(   0,   0,   0 ) );
+            Point p1( max_value, vismodule::RGBColor( 255, 255, 255 ) );
             while ( p != last )
             {
                 const float s = p->first;
-                if ( kvs::Math::Equal( f, s ) )
+                if ( vismodule::Math::Equal( f, s ) )
                 {
                     color = p->second;
                     break;
@@ -338,15 +338,15 @@ void ColorMap::create( void )
                     // Interpolate.
                     const float s0 = p0.first;
                     const float s1 = p1.first;
-                    const kvs::RGBColor c0 = p0.second;
-                    const kvs::RGBColor c1 = p1.second;
+                    const vismodule::RGBColor c0 = p0.second;
+                    const vismodule::RGBColor c1 = p1.second;
                     const float r = c0.r() + ( c1.r() - c0.r() ) * ( f - s0 ) / ( s1 - s0 );
                     const float g = c0.g() + ( c1.g() - c0.g() ) * ( f - s0 ) / ( s1 - s0 );
                     const float b = c0.b() + ( c1.b() - c0.b() ) * ( f - s0 ) / ( s1 - s0 );
-                    const kvs::UInt8 R = static_cast<kvs::UInt8>( r );
-                    const kvs::UInt8 G = static_cast<kvs::UInt8>( g );
-                    const kvs::UInt8 B = static_cast<kvs::UInt8>( b );
-                    color = kvs::RGBColor( R, G, B );
+                    const vismodule::UInt8 R = static_cast<vismodule::UInt8>( r );
+                    const vismodule::UInt8 G = static_cast<vismodule::UInt8>( g );
+                    const vismodule::UInt8 B = static_cast<vismodule::UInt8>( b );
+                    color = vismodule::RGBColor( R, G, B );
                     break;
                 }
                 else
@@ -355,7 +355,7 @@ void ColorMap::create( void )
                     ++p;
                     if ( p == last )
                     {
-                        if ( kvs::Math::Equal( p0.first, max_value ) )
+                        if ( vismodule::Math::Equal( p0.first, max_value ) )
                         {
                             color = p0.second;
                         }
@@ -377,12 +377,12 @@ void ColorMap::create( void )
  *  @retval RGB color value
  */
 /*==========================================================================*/
-const kvs::RGBColor ColorMap::operator []( const size_t index ) const
+const vismodule::RGBColor ColorMap::operator []( const size_t index ) const
 {
-    KVS_ASSERT( index < this->resolution() );
+    VIS_MODULE_ASSERT( index < this->resolution() );
 
     const size_t offset = ::NumberOfChannels * index;
-    return( kvs::RGBColor( m_table.pointer() + offset ) );
+    return( vismodule::RGBColor( m_table.pointer() + offset ) );
 }
 
 /*===========================================================================*/
@@ -392,16 +392,16 @@ const kvs::RGBColor ColorMap::operator []( const size_t index ) const
  *  @return interpolated RGB color value
  */
 /*===========================================================================*/
-const kvs::RGBColor ColorMap::at( const float value ) const
+const vismodule::RGBColor ColorMap::at( const float value ) const
 {
     if ( value <= m_min_value )
     {
-        const kvs::RGBColor color( m_table.pointer() );
+        const vismodule::RGBColor color( m_table.pointer() );
         return( color );
     }
     else if ( value >= m_max_value )
     {
-        const kvs::RGBColor color( m_table.pointer() + ::NumberOfChannels * ( m_resolution - 1 ) );
+        const vismodule::RGBColor color( m_table.pointer() + ::NumberOfChannels * ( m_resolution - 1 ) );
         return( color );
     }
 
@@ -410,8 +410,8 @@ const kvs::RGBColor ColorMap::at( const float value ) const
     const size_t s0 = static_cast<size_t>( v );
     const size_t s1 = s0 + 1;
 
-    const kvs::RGBColor c0( m_table.pointer() + ::NumberOfChannels * s0 );
-    const kvs::RGBColor c1( m_table.pointer() + ::NumberOfChannels * s1 );
+    const vismodule::RGBColor c0( m_table.pointer() + ::NumberOfChannels * s0 );
+    const vismodule::RGBColor c1( m_table.pointer() + ::NumberOfChannels * s1 );
 
     const int r0 = c0.r();
     const int g0 = c0.g();
@@ -420,11 +420,11 @@ const kvs::RGBColor ColorMap::at( const float value ) const
     const int g1 = c1.g();
     const int b1 = c1.b();
 
-    const kvs::UInt8 R = static_cast<kvs::UInt8>( ( r1 - r0 ) * v + r0 * s1 - r1 * s0 );
-    const kvs::UInt8 G = static_cast<kvs::UInt8>( ( g1 - g0 ) * v + g0 * s1 - g1 * s0 );
-    const kvs::UInt8 B = static_cast<kvs::UInt8>( ( b1 - b0 ) * v + b0 * s1 - b1 * s0 );
+    const vismodule::UInt8 R = static_cast<vismodule::UInt8>( ( r1 - r0 ) * v + r0 * s1 - r1 * s0 );
+    const vismodule::UInt8 G = static_cast<vismodule::UInt8>( ( g1 - g0 ) * v + g0 * s1 - g1 * s0 );
+    const vismodule::UInt8 B = static_cast<vismodule::UInt8>( ( b1 - b0 ) * v + b0 * s1 - b1 * s0 );
 
-    return( kvs::RGBColor( R, G, B ) );
+    return( vismodule::RGBColor( R, G, B ) );
 }
 
 /*==========================================================================*/
@@ -445,4 +445,4 @@ ColorMap& ColorMap::operator =( const ColorMap& rhs )
     return( *this );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

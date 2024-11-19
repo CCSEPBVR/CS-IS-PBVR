@@ -11,18 +11,18 @@
  *  $Id: HttpConnector.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__HTTP_CONNECTOR_H_INCLUDE
-#define KVS__HTTP_CONNECTOR_H_INCLUDE
+#ifndef VIS_MODULE__HTTP_CONNECTOR_H_INCLUDE
+#define VIS_MODULE__HTTP_CONNECTOR_H_INCLUDE
 
 #include "TCPSocket.h"
 #include "Url.h"
 #include "SocketTimer.h"
 #include <iostream>
 #include <fstream>
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -32,11 +32,11 @@ namespace kvs
 /*==========================================================================*/
 class HttpConnector
 {
-    kvsClassName( kvs::HttpConnector );
+    visModuleClassName( vismodule::HttpConnector );
 
 protected:
 
-    kvs::TCPSocket m_connector; ///< TCP socket connector
+    vismodule::TCPSocket m_connector; ///< TCP socket connector
     std::string    m_hostname;  ///< hostname
     int            m_port;      ///< port number
 
@@ -44,13 +44,13 @@ public:
 
     HttpConnector( void );
 
-    HttpConnector( const kvs::Url& url, const kvs::SocketTimer* timeout = 0 );
+    HttpConnector( const vismodule::Url& url, const vismodule::SocketTimer* timeout = 0 );
 
     virtual ~HttpConnector( void );
 
 public:
 
-    bool connect( const kvs::Url& url, const kvs::SocketTimer* timeout = 0 );
+    bool connect( const vismodule::Url& url, const vismodule::SocketTimer* timeout = 0 );
 
     void close( void );
 
@@ -59,6 +59,6 @@ public:
     bool get( const std::string& path, std::ostream& output_stream );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__HTTP_CONNECTOR_H_INCLUDE
+#endif // VIS_MODULE__HTTP_CONNECTOR_H_INCLUDE

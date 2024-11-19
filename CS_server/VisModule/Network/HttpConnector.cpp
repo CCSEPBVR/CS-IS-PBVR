@@ -15,10 +15,10 @@
 #include "Url.h"
 #include "SocketTimer.h"
 #include "HttpRequestHeader.h"
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -38,7 +38,7 @@ HttpConnector::HttpConnector( void ):
  *  @param timeout [in] timeout value
  */
 /*==========================================================================*/
-HttpConnector::HttpConnector( const kvs::Url& url, const kvs::SocketTimer* timeout )
+HttpConnector::HttpConnector( const vismodule::Url& url, const vismodule::SocketTimer* timeout )
 {
     IgnoreUnusedVariable( timeout );
     this->connect( url );
@@ -62,12 +62,12 @@ HttpConnector::~HttpConnector( void )
  *  @return true, if the connection success. false, if not.
  */
 /*==========================================================================*/
-bool HttpConnector::connect( const kvs::Url& url, const kvs::SocketTimer* timeout )
+bool HttpConnector::connect( const vismodule::Url& url, const vismodule::SocketTimer* timeout )
 {
     m_hostname = url.hostname();
     m_port = url.port();
 
-    kvs::SocketAddress host( kvs::IPAddress( m_hostname.c_str() ), url.port() );
+    vismodule::SocketAddress host( vismodule::IPAddress( m_hostname.c_str() ), url.port() );
 
     m_connector.open();
 
@@ -114,7 +114,7 @@ bool HttpConnector::get( const std::string& path, const std::string& filename )
 /*==========================================================================*/
 bool HttpConnector::get( const std::string& path, std::ostream& output_stream )
 {
-    kvs::HttpRequestHeader request( "GET", path, 1, 0 );
+    vismodule::HttpRequestHeader request( "GET", path, 1, 0 );
     request.addField( "HOST", m_hostname );
     request.addField( "Accept", "*/*" );
     request.addField( "Connection", "close" );
@@ -158,4 +158,4 @@ bool HttpConnector::get( const std::string& path, std::ostream& output_stream )
     return( true );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

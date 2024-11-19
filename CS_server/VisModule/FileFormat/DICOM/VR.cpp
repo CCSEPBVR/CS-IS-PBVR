@@ -21,7 +21,7 @@
 #include "StreamReader.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace dcm
@@ -271,7 +271,7 @@ const bool dcm::VR::read( std::ifstream& ifs, const bool swap )
     ifs.read( vr, VR_STRING_WIDTH );
     if( ifs.bad() )
     {
-        kvsMessageError("Cannot read the VR code.");
+        visModuleMessageError("Cannot read the VR code.");
         return( false );
     }
     vr[ VR_STRING_WIDTH ] = '\0';
@@ -316,7 +316,7 @@ const bool dcm::VR::read( std::ifstream& ifs, const bool swap )
     }
     default:
     {
-        kvsMessageError("Unknown element type.");
+        visModuleMessageError("Unknown element type.");
         return( false );
     }
     }
@@ -326,4 +326,4 @@ const bool dcm::VR::read( std::ifstream& ifs, const bool swap )
 
 } // end of namespace dcm
 
-} // end of namespace kvs
+} // end of namespace vismodule

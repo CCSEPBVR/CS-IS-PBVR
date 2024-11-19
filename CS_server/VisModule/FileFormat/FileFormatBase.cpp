@@ -14,7 +14,7 @@
 #include "FileFormatBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -66,4 +66,4 @@ const bool FileFormatBase::isFailure( void ) const
     return( !m_is_success );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

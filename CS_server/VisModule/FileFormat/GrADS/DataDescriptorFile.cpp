@@ -16,8 +16,8 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <kvs/Message>
-#include <kvs/Tokenizer>
+#include <vismodule/Message>
+#include <vismodule/Tokenizer>
 
 
 namespace
@@ -45,7 +45,7 @@ bool GetLine( std::istream & in, std::string & str )
 }
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace grads
@@ -66,7 +66,7 @@ DataDescriptorFile::DataDescriptorFile( void )
  *  @return DSET entry information
  */
 /*===========================================================================*/
-const kvs::grads::DSet& DataDescriptorFile::dset( void ) const
+const vismodule::grads::DSet& DataDescriptorFile::dset( void ) const
 {
     return( m_dset );
 }
@@ -77,7 +77,7 @@ const kvs::grads::DSet& DataDescriptorFile::dset( void ) const
  *  @return UNDEF entry information
  */
 /*===========================================================================*/
-const kvs::grads::Undef& DataDescriptorFile::undef( void ) const
+const vismodule::grads::Undef& DataDescriptorFile::undef( void ) const
 {
     return( m_undef );
 }
@@ -88,7 +88,7 @@ const kvs::grads::Undef& DataDescriptorFile::undef( void ) const
  *  @return TITLE entry information
  */
 /*===========================================================================*/
-const kvs::grads::Title& DataDescriptorFile::title( void ) const
+const vismodule::grads::Title& DataDescriptorFile::title( void ) const
 {
     return( m_title );
 }
@@ -99,7 +99,7 @@ const kvs::grads::Title& DataDescriptorFile::title( void ) const
  *  @return OPTIONS entry information
  */
 /*===========================================================================*/
-const kvs::grads::Options& DataDescriptorFile::options( void ) const
+const vismodule::grads::Options& DataDescriptorFile::options( void ) const
 {
     return( m_options );
 }
@@ -110,7 +110,7 @@ const kvs::grads::Options& DataDescriptorFile::options( void ) const
  *  @return XDEF entry information
  */
 /*===========================================================================*/
-const kvs::grads::XDef& DataDescriptorFile::xdef( void ) const
+const vismodule::grads::XDef& DataDescriptorFile::xdef( void ) const
 {
     return( m_xdef );
 }
@@ -121,7 +121,7 @@ const kvs::grads::XDef& DataDescriptorFile::xdef( void ) const
  *  @return YDEF entry information
  */
 /*===========================================================================*/
-const kvs::grads::YDef& DataDescriptorFile::ydef( void ) const
+const vismodule::grads::YDef& DataDescriptorFile::ydef( void ) const
 {
     return( m_ydef );
 }
@@ -132,7 +132,7 @@ const kvs::grads::YDef& DataDescriptorFile::ydef( void ) const
  *  @return ZDEF entry information
  */
 /*===========================================================================*/
-const kvs::grads::ZDef& DataDescriptorFile::zdef( void ) const
+const vismodule::grads::ZDef& DataDescriptorFile::zdef( void ) const
 {
     return( m_zdef );
 }
@@ -143,7 +143,7 @@ const kvs::grads::ZDef& DataDescriptorFile::zdef( void ) const
  *  @return TDEF entry information
  */
 /*===========================================================================*/
-const kvs::grads::TDef& DataDescriptorFile::tdef( void ) const
+const vismodule::grads::TDef& DataDescriptorFile::tdef( void ) const
 {
     return( m_tdef );
 }
@@ -154,7 +154,7 @@ const kvs::grads::TDef& DataDescriptorFile::tdef( void ) const
  *  @return VARS entry information
  */
 /*===========================================================================*/
-const kvs::grads::Vars& DataDescriptorFile::vars( void ) const
+const vismodule::grads::Vars& DataDescriptorFile::vars( void ) const
 {
     return( m_vars );
 }
@@ -181,52 +181,52 @@ const bool DataDescriptorFile::read( std::ifstream& ifs )
         if ( line[0] == '*' ) continue;
 
         // Check entry.
-        kvs::Tokenizer t( line, " \t\n" );
+        vismodule::Tokenizer t( line, " \t\n" );
         std::string entry = t.token();
 
         if ( entry == "DSET" || entry == "dset" )
         {
-            if ( !m_dset.read( line, ifs ) ) { kvsMessageError("Cannot read DSET."); return( false ); }
+            if ( !m_dset.read( line, ifs ) ) { visModuleMessageError("Cannot read DSET."); return( false ); }
         }
 
         if ( entry == "UNDEF" || entry == "undef" )
         {
-            if ( !m_undef.read( line, ifs ) ) { kvsMessageError("Cannot read UNDEF."); return( false ); }
+            if ( !m_undef.read( line, ifs ) ) { visModuleMessageError("Cannot read UNDEF."); return( false ); }
         }
 
         if ( entry == "TITLE" || entry == "title" )
         {
-            if ( !m_title.read( line, ifs ) ) { kvsMessageError("Cannot read TITLE."); return( false ); }
+            if ( !m_title.read( line, ifs ) ) { visModuleMessageError("Cannot read TITLE."); return( false ); }
         }
 
         if ( entry == "OPTIONS" || entry == "options" )
         {
-            if ( !m_options.read( line, ifs ) ) { kvsMessageError("Cannot read OPTIONS."); return( false ); }
+            if ( !m_options.read( line, ifs ) ) { visModuleMessageError("Cannot read OPTIONS."); return( false ); }
         }
 
         if ( entry == "XDEF" || entry == "xdef" )
         {
-            if ( !m_xdef.read( line, ifs ) ) { kvsMessageError("Cannot read XDEF."); return( false ); }
+            if ( !m_xdef.read( line, ifs ) ) { visModuleMessageError("Cannot read XDEF."); return( false ); }
         }
 
         if ( entry == "YDEF" || entry == "ydef" )
         {
-            if ( !m_ydef.read( line, ifs ) ) { kvsMessageError("Cannot read YDEF."); return( false ); }
+            if ( !m_ydef.read( line, ifs ) ) { visModuleMessageError("Cannot read YDEF."); return( false ); }
         }
 
         if ( entry == "ZDEF" || entry == "zdef" )
         {
-            if ( !m_zdef.read( line, ifs ) ) { kvsMessageError("Cannot read ZDEF."); return( false ); }
+            if ( !m_zdef.read( line, ifs ) ) { visModuleMessageError("Cannot read ZDEF."); return( false ); }
         }
 
         if ( entry == "TDEF" || entry == "tdef" )
         {
-            if ( !m_tdef.read( line, ifs ) ) { kvsMessageError("Cannot read TDEF."); return( false ); }
+            if ( !m_tdef.read( line, ifs ) ) { visModuleMessageError("Cannot read TDEF."); return( false ); }
         }
 
         if ( entry == "VARS" || entry == "vars" )
         {
-            if ( !m_vars.read( line, ifs ) ) { kvsMessageError("Cannot read VARS."); return( false ); }
+            if ( !m_vars.read( line, ifs ) ) { visModuleMessageError("Cannot read VARS."); return( false ); }
         }
     }
 
@@ -235,4 +235,4 @@ const bool DataDescriptorFile::read( std::ifstream& ifs )
 
 } // end of namespace grads
 
-} // end of namespace kvs
+} // end of namespace vismodule

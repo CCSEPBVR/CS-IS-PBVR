@@ -17,18 +17,18 @@
 #include "ValueTag.h"
 #include "DataArrayTag.h"
 #include "CoordTag.h"
-#include <kvs/File>
-#include <kvs/XMLDocument>
-#include <kvs/XMLDeclaration>
-#include <kvs/XMLElement>
-#include <kvs/XMLComment>
-#include <kvs/AnyValueArray>
-#include <kvs/Type>
-#include <kvs/String>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/File>
+#include <vismodule/XMLDocument>
+#include <vismodule/XMLDeclaration>
+#include <vismodule/XMLElement>
+#include <vismodule/XMLComment>
+#include <vismodule/AnyValueArray>
+#include <vismodule/Type>
+#include <vismodule/String>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -37,7 +37,7 @@ namespace kvs
  */
 /*===========================================================================*/
 KVSMLObjectStructuredVolume::KVSMLObjectStructuredVolume( void ):
-    m_writing_type( kvs::KVSMLObjectStructuredVolume::Ascii )
+    m_writing_type( vismodule::KVSMLObjectStructuredVolume::Ascii )
 {
 }
 
@@ -48,7 +48,7 @@ KVSMLObjectStructuredVolume::KVSMLObjectStructuredVolume( void ):
  */
 /*===========================================================================*/
 KVSMLObjectStructuredVolume::KVSMLObjectStructuredVolume( const std::string& filename ):
-    m_writing_type( kvs::KVSMLObjectStructuredVolume::Ascii )
+    m_writing_type( vismodule::KVSMLObjectStructuredVolume::Ascii )
 {
     if( this->read( filename ) ) { m_is_success = true; }
     else { m_is_success = false; }
@@ -69,7 +69,7 @@ KVSMLObjectStructuredVolume::~KVSMLObjectStructuredVolume( void )
  *  @return KVSML tag
  */
 /*===========================================================================*/
-const kvs::kvsml::KVSMLTag& KVSMLObjectStructuredVolume::KVSMLTag( void ) const
+const vismodule::kvsml::KVSMLTag& KVSMLObjectStructuredVolume::KVSMLTag( void ) const
 {
     return( m_kvsml_tag );
 }
@@ -80,7 +80,7 @@ const kvs::kvsml::KVSMLTag& KVSMLObjectStructuredVolume::KVSMLTag( void ) const
  *  @return object tag
  */
 /*===========================================================================*/
-const kvs::kvsml::ObjectTag& KVSMLObjectStructuredVolume::objectTag( void ) const
+const vismodule::kvsml::ObjectTag& KVSMLObjectStructuredVolume::objectTag( void ) const
 {
     return( m_object_tag );
 }
@@ -123,7 +123,7 @@ const size_t KVSMLObjectStructuredVolume::veclen( void ) const
  *  @return grid resolution
  */
 /*===========================================================================*/
-const kvs::Vector3ui& KVSMLObjectStructuredVolume::resolution( void ) const
+const vismodule::Vector3ui& KVSMLObjectStructuredVolume::resolution( void ) const
 {
     return( m_resolution );
 }
@@ -154,12 +154,12 @@ const double KVSMLObjectStructuredVolume::maxValue( void ) const
  *  @return value array
  */
 /*===========================================================================*/
-const kvs::AnyValueArray& KVSMLObjectStructuredVolume::values( void ) const
+const vismodule::AnyValueArray& KVSMLObjectStructuredVolume::values( void ) const
 {
     return( m_values );
 }
 
-const kvs::ValueArray<float>& KVSMLObjectStructuredVolume::coords( void ) const
+const vismodule::ValueArray<float>& KVSMLObjectStructuredVolume::coords( void ) const
 {
     return( m_coords );
 }
@@ -209,7 +209,7 @@ void KVSMLObjectStructuredVolume::setVeclen( const size_t veclen )
  *  @param  resolution [in] grid resolution
  */
 /*===========================================================================*/
-void KVSMLObjectStructuredVolume::setResolution( const kvs::Vector3ui& resolution )
+void KVSMLObjectStructuredVolume::setResolution( const vismodule::Vector3ui& resolution )
 {
     m_resolution = resolution;
 }
@@ -232,12 +232,12 @@ void KVSMLObjectStructuredVolume::setMaxValue( const double max_value )
  *  @param  values [in] value array
  */
 /*===========================================================================*/
-void KVSMLObjectStructuredVolume::setValues( const kvs::AnyValueArray& values )
+void KVSMLObjectStructuredVolume::setValues( const vismodule::AnyValueArray& values )
 {
     m_values = values;
 }
 
-void KVSMLObjectStructuredVolume::setCoords( const kvs::ValueArray<float>& coords )
+void KVSMLObjectStructuredVolume::setCoords( const vismodule::ValueArray<float>& coords )
 {
     m_coords = coords;
 }
@@ -254,62 +254,62 @@ const bool KVSMLObjectStructuredVolume::read( const std::string& filename )
     m_filename = filename;
 
     // XML document
-    kvs::XMLDocument document;
+    vismodule::XMLDocument document;
     if ( !document.read( filename ) )
     {
-        kvsMessageError( "%s", document.ErrorDesc().c_str() );
+        visModuleMessageError( "%s", document.ErrorDesc().c_str() );
         return( false );
     }
 
     // <KVSML>
     if ( !m_kvsml_tag.read( &document ) )
     {
-        kvsMessageError( "Cannot read <%s>.", m_kvsml_tag.name().c_str() );
+        visModuleMessageError( "Cannot read <%s>.", m_kvsml_tag.name().c_str() );
         return( false );
     }
 
     // <Object>
     if ( !m_object_tag.read( m_kvsml_tag.node() ) )
     {
-        kvsMessageError( "Cannot read <%s>.", m_object_tag.name().c_str() );
+        visModuleMessageError( "Cannot read <%s>.", m_object_tag.name().c_str() );
         return( false );
     }
 
     // <StructuredVolumeObject>
-    kvs::kvsml::StructuredVolumeObjectTag volume_tag;
+    vismodule::kvsml::StructuredVolumeObjectTag volume_tag;
     if ( !volume_tag.read( m_object_tag.node() ) )
     {
-        kvsMessageError( "Cannot read <%s>.", volume_tag.name().c_str() );
+        visModuleMessageError( "Cannot read <%s>.", volume_tag.name().c_str() );
         return( false );
     }
 
     if ( !volume_tag.hasResolution() )
     {
-        kvsMessageError( "'resolution' is not specified in <%s>.", volume_tag.name().c_str() );
+        visModuleMessageError( "'resolution' is not specified in <%s>.", volume_tag.name().c_str() );
         return( false );
     }
     m_resolution = volume_tag.resolution();
 
     if ( !volume_tag.hasGridType() )
     {
-        kvsMessageError( "'grid_type' is not specified in <%s>.", volume_tag.name().c_str() );
+        visModuleMessageError( "'grid_type' is not specified in <%s>.", volume_tag.name().c_str() );
         return( false );
     }
     m_grid_type = volume_tag.gridType();
 
     // <Node>
-    kvs::kvsml::NodeTag node_tag;
+    vismodule::kvsml::NodeTag node_tag;
     if ( !node_tag.read( volume_tag.node() ) )
     {
-        kvsMessageError( "Cannot read <%s>.", node_tag.name().c_str() );
+        visModuleMessageError( "Cannot read <%s>.", node_tag.name().c_str() );
         return( false );
     }
 
     // <Value>
-    kvs::kvsml::ValueTag value_tag;
+    vismodule::kvsml::ValueTag value_tag;
     if ( !value_tag.read( node_tag.node() ) )
     {
-        kvsMessageError( "Cannot read <%s>.", value_tag.name().c_str() );
+        visModuleMessageError( "Cannot read <%s>.", value_tag.name().c_str() );
         return( false );
     }
 
@@ -318,7 +318,7 @@ const bool KVSMLObjectStructuredVolume::read( const std::string& filename )
 
     if ( !value_tag.hasVeclen() )
     {
-        kvsMessageError( "'veclen' is not specified in <%s>.", value_tag.name().c_str() );
+        visModuleMessageError( "'veclen' is not specified in <%s>.", value_tag.name().c_str() );
         return( false );
     }
     m_veclen = value_tag.veclen();
@@ -330,14 +330,14 @@ const bool KVSMLObjectStructuredVolume::read( const std::string& filename )
     if ( m_has_max_value ) { m_max_value = value_tag.maxValue(); }
 
     // <DataArray>
-    const kvs::Vector3ui resolution = volume_tag.resolution();
+    const vismodule::Vector3ui resolution = volume_tag.resolution();
     const size_t nnodes = resolution.x() * resolution.y() * resolution.z();
     const size_t veclen = value_tag.veclen();
     const size_t nelements = nnodes * veclen;
-    kvs::kvsml::DataArrayTag values;
+    vismodule::kvsml::DataArrayTag values;
     if ( !values.read( value_tag.node(), nelements, &m_values ) )
     {
-        kvsMessageError( "Cannot read <%s> for <%s>.",
+        visModuleMessageError( "Cannot read <%s> for <%s>.",
                          values.name().c_str(),
                          value_tag.name().c_str() );
         return( false );
@@ -346,21 +346,21 @@ const bool KVSMLObjectStructuredVolume::read( const std::string& filename )
     // <Coord>
     if ( m_grid_type == "rectilinear" )
     {
-        kvs::kvsml::CoordTag coord_tag;
+        vismodule::kvsml::CoordTag coord_tag;
         if ( !coord_tag.read( node_tag.node() ) )
         {
-            kvsMessageError( "Cannot read <%s>.", coord_tag.name().c_str() );
+            visModuleMessageError( "Cannot read <%s>.", coord_tag.name().c_str() );
             return( false );
         }
 
         // <DataArray>
-        kvs::kvsml::DataArrayTag coords;
+        vismodule::kvsml::DataArrayTag coords;
         const size_t dimension = 3;
         size_t coord_nelements = 0;
         for ( size_t i = 0; i < dimension; i++ ) coord_nelements += resolution[i];
         if ( !coords.read( coord_tag.node(), coord_nelements, &m_coords ) )
         {
-            kvsMessageError( "Cannot read <%s> for <%s>.",
+            visModuleMessageError( "Cannot read <%s> for <%s>.",
                              coords.name().c_str(),
                              coord_tag.name().c_str() );
             return( false );
@@ -368,20 +368,20 @@ const bool KVSMLObjectStructuredVolume::read( const std::string& filename )
     }
     else if ( m_grid_type == "curvilinear" )
     {
-        kvs::kvsml::CoordTag coord_tag;
+        vismodule::kvsml::CoordTag coord_tag;
         if ( !coord_tag.read( node_tag.node() ) )
         {
-            kvsMessageError( "Cannot read <%s>.", coord_tag.name().c_str() );
+            visModuleMessageError( "Cannot read <%s>.", coord_tag.name().c_str() );
             return( false );
         }
 
         // <DataArray>
-        kvs::kvsml::DataArrayTag coords;
+        vismodule::kvsml::DataArrayTag coords;
         const size_t dimension = 3;
         const size_t coord_nelements = nnodes * dimension;
         if ( !coords.read( coord_tag.node(), coord_nelements, &m_coords ) )
         {
-            kvsMessageError( "Cannot read <%s> for <%s>.",
+            visModuleMessageError( "Cannot read <%s> for <%s>.",
                              coords.name().c_str(),
                              coord_tag.name().c_str() );
             return( false );
@@ -403,47 +403,47 @@ const bool KVSMLObjectStructuredVolume::write( const std::string& filename )
     m_filename = filename;
 
     // XML document
-    kvs::XMLDocument document;
-    document.InsertEndChild( kvs::XMLDeclaration( "1.0" ) );
-    document.InsertEndChild( kvs::XMLComment(" Generated by kvs::KVSMLObjectStructuredVolume::write() ") );
+    vismodule::XMLDocument document;
+    document.InsertEndChild( vismodule::XMLDeclaration( "1.0" ) );
+    document.InsertEndChild( vismodule::XMLComment(" Generated by vismodule::KVSMLObjectStructuredVolume::write() ") );
 
     // <KVSML>
-    kvs::kvsml::KVSMLTag kvsml_tag;
+    vismodule::kvsml::KVSMLTag kvsml_tag;
     if ( !kvsml_tag.write( &document ) )
     {
-        kvsMessageError( "Cannot write <%s>.", m_kvsml_tag.name().c_str() );
+        visModuleMessageError( "Cannot write <%s>.", m_kvsml_tag.name().c_str() );
         return( false );
     }
 
     // <Object type="StructuredVolumeObject">
-    kvs::kvsml::ObjectTag object_tag;
+    vismodule::kvsml::ObjectTag object_tag;
     object_tag.setType( "StructuredVolumeObject" );
     if ( !object_tag.write( kvsml_tag.node() ) )
     {
-        kvsMessageError( "Cannot write <%s>.", object_tag.name().c_str() );
+        visModuleMessageError( "Cannot write <%s>.", object_tag.name().c_str() );
         return( false );
     }
 
     // <StructuredVolumeObject resolution="xxx xxx xxx" grid_type="xxx">
-    kvs::kvsml::StructuredVolumeObjectTag volume_tag;
+    vismodule::kvsml::StructuredVolumeObjectTag volume_tag;
     volume_tag.setResolution( m_resolution );
     volume_tag.setGridType( m_grid_type );
     if ( !volume_tag.write( object_tag.node() ) )
     {
-        kvsMessageError( "Cannot write <%s>.", volume_tag.name().c_str() );
+        visModuleMessageError( "Cannot write <%s>.", volume_tag.name().c_str() );
         return( false );
     }
 
     // <Node>
-    kvs::kvsml::NodeTag node_tag;
+    vismodule::kvsml::NodeTag node_tag;
     if ( !node_tag.write( volume_tag.node() ) )
     {
-        kvsMessageError( "Cannot write <%s>.", node_tag.name().c_str() );
+        visModuleMessageError( "Cannot write <%s>.", node_tag.name().c_str() );
         return( false );
     }
 
     // <Value label="xxx" veclen="xxx" min_value="xxx" max_value="xxx">
-    kvs::kvsml::ValueTag value_tag;
+    vismodule::kvsml::ValueTag value_tag;
     value_tag.setVeclen( m_veclen );
 
     if ( m_has_label ) { value_tag.setLabel( m_label ); }
@@ -452,27 +452,27 @@ const bool KVSMLObjectStructuredVolume::write( const std::string& filename )
 
     if ( !value_tag.write( node_tag.node() ) )
     {
-        kvsMessageError( "Cannot write <%s>.", value_tag.name().c_str() );
+        visModuleMessageError( "Cannot write <%s>.", value_tag.name().c_str() );
         return( false );
     }
 
     // <DataArray>
-    kvs::kvsml::DataArrayTag values;
+    vismodule::kvsml::DataArrayTag values;
     if ( m_writing_type == ExternalAscii )
     {
-        values.setFile( kvs::kvsml::DataArray::GetDataFilename( m_filename, "value" ) );
+        values.setFile( vismodule::kvsml::DataArray::GetDataFilename( m_filename, "value" ) );
         values.setFormat( "ascii" );
     }
     else if ( m_writing_type == ExternalBinary )
     {
-        values.setFile( kvs::kvsml::DataArray::GetDataFilename( m_filename, "value" ) );
+        values.setFile( vismodule::kvsml::DataArray::GetDataFilename( m_filename, "value" ) );
         values.setFormat( "binary" );
     }
 
-    const std::string pathname = kvs::File( m_filename ).pathName();
+    const std::string pathname = vismodule::File( m_filename ).pathName();
     if ( !values.write( value_tag.node(), m_values, pathname ) )
     {
-        kvsMessageError( "Cannot write <%s> for <%s>.",
+        visModuleMessageError( "Cannot write <%s> for <%s>.",
                          values.name().c_str(),
                          value_tag.name().c_str() );
         return( false );
@@ -481,29 +481,29 @@ const bool KVSMLObjectStructuredVolume::write( const std::string& filename )
     if ( m_grid_type == "rectilinear" || m_grid_type == "curvilinear" )
     {
         // <Coord>
-        kvs::kvsml::CoordTag coord_tag;
+        vismodule::kvsml::CoordTag coord_tag;
         if ( !coord_tag.write( node_tag.node() ) )
         {
-            kvsMessageError( "Cannot write <%s>.", coord_tag.name().c_str() );
+            visModuleMessageError( "Cannot write <%s>.", coord_tag.name().c_str() );
             return( false );
         }
 
         // <DataArray>
-        kvs::kvsml::DataArrayTag coords;
+        vismodule::kvsml::DataArrayTag coords;
         if ( m_writing_type == ExternalAscii )
         {
-            coords.setFile( kvs::kvsml::DataArray::GetDataFilename( m_filename, "coord" ) );
+            coords.setFile( vismodule::kvsml::DataArray::GetDataFilename( m_filename, "coord" ) );
             coords.setFormat( "ascii" );
         }
         else if ( m_writing_type == ExternalBinary )
         {
-            coords.setFile( kvs::kvsml::DataArray::GetDataFilename( m_filename, "coord" ) );
+            coords.setFile( vismodule::kvsml::DataArray::GetDataFilename( m_filename, "coord" ) );
             coords.setFormat( "binary" );
         }
 
         if ( !coords.write( coord_tag.node(), m_coords, pathname ) )
         {
-            kvsMessageError( "Cannot write <%s> for <%s>.",
+            visModuleMessageError( "Cannot write <%s> for <%s>.",
                              coords.name().c_str(),
                              coord_tag.name().c_str() );
             return( false );
@@ -522,7 +522,7 @@ const bool KVSMLObjectStructuredVolume::write( const std::string& filename )
 /*===========================================================================*/
 const bool KVSMLObjectStructuredVolume::CheckFileExtension( const std::string& filename )
 {
-    const kvs::File file( filename );
+    const vismodule::File file( filename );
     if ( file.extension() == "kvsml" ||
          file.extension() == "KVSML" ||
          file.extension() == "xml"   ||
@@ -543,21 +543,21 @@ const bool KVSMLObjectStructuredVolume::CheckFileExtension( const std::string& f
 /*===========================================================================*/
 const bool KVSMLObjectStructuredVolume::CheckFileFormat( const std::string& filename )
 {
-    kvs::XMLDocument document;
+    vismodule::XMLDocument document;
     if ( !document.read( filename ) ) return( false );
 
     // <KVSML>
-    kvs::kvsml::KVSMLTag kvsml_tag;
+    vismodule::kvsml::KVSMLTag kvsml_tag;
     if ( !kvsml_tag.read( &document ) ) return( false );
 
     // <Object>
-    kvs::kvsml::ObjectTag object_tag;
+    vismodule::kvsml::ObjectTag object_tag;
     if ( !object_tag.read( kvsml_tag.node() ) ) return( false );
 
     if ( object_tag.type() != "StructuredVolumeObject" ) return( false );
 
     // <StructuredVolumeObject>
-    kvs::kvsml::StructuredVolumeObjectTag volume_tag;
+    vismodule::kvsml::StructuredVolumeObjectTag volume_tag;
     if ( !volume_tag.read( object_tag.node() ) ) return( false );
 
     return( true );
@@ -580,4 +580,4 @@ std::ostream& operator <<( std::ostream& os, const KVSMLObjectStructuredVolume& 
     return( os );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

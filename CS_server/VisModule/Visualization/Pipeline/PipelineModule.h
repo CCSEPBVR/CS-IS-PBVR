@@ -11,20 +11,20 @@
  *  $Id: PipelineModule.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__PIPELINE_MODULE_H_INCLUDE
-#define KVS__PIPELINE_MODULE_H_INCLUDE
+#ifndef VIS_MODULE__PIPELINE_MODULE_H_INCLUDE
+#define VIS_MODULE__PIPELINE_MODULE_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/FilterBase>
-#include <kvs/MapperBase>
-#include <kvs/ObjectBase>
-#include <kvs/RendererBase>
-#include <kvs/Module>
-#include <kvs/Assert>
-#include <kvs/ReferenceCounter>
+#include <vismodule/ClassName>
+#include <vismodule/FilterBase>
+#include <vismodule/MapperBase>
+#include <vismodule/ObjectBase>
+#include <vismodule/RendererBase>
+#include <vismodule/Module>
+#include <vismodule/Assert>
+#include <vismodule/ReferenceCounter>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class VisualizationPipeline;
@@ -36,9 +36,9 @@ class VisualizationPipeline;
 /*==========================================================================*/
 class PipelineModule
 {
-    kvsClassName_without_virtual( kvs::PipelineModule );
+    visModuleClassName_without_virtual( vismodule::PipelineModule );
 
-    friend class kvs::VisualizationPipeline;
+    friend class vismodule::VisualizationPipeline;
 
 public:
 
@@ -53,16 +53,16 @@ public:
 
     union Module
     {
-        kvs::FilterBase*   filter;   ///< pointer to the KVS filter class
-        kvs::MapperBase*   mapper;   ///< pointer to the KVS mapper class
-        kvs::ObjectBase*   object;   ///< pointer to the KVS object class
-        kvs::RendererBase* renderer; ///< pointer to the KVS renderer class
+        vismodule::FilterBase*   filter;   ///< pointer to the KVS filter class
+        vismodule::MapperBase*   mapper;   ///< pointer to the KVS mapper class
+        vismodule::ObjectBase*   object;   ///< pointer to the KVS object class
+        vismodule::RendererBase* renderer; ///< pointer to the KVS renderer class
     };
 
 protected:
 
     bool m_auto_delete; ///< flag whether the module is deleted or not (usually 'true')
-    kvs::ReferenceCounter* m_counter;  ///< Reference counter.
+    vismodule::ReferenceCounter* m_counter;  ///< Reference counter.
     Category               m_category; ///< module category
     Module                 m_module;   ///< pointer to the module (SHARED)
 
@@ -78,7 +78,7 @@ public:
     {
         memset( &m_module, 0, sizeof( Module ) );
         this->create_counter( 1 );
-        this->read_module( module, typename kvs::ModuleTraits<T>::ModuleCategory() );
+        this->read_module( module, typename vismodule::ModuleTraits<T>::ModuleCategory() );
     }
 
     PipelineModule( const PipelineModule& module );
@@ -90,10 +90,10 @@ public:
     template <typename T>
     T* get( void ) const
     {
-        return( this->get_module<T>( typename kvs::ModuleTraits<T>::ModuleCategory() ) );
+        return( this->get_module<T>( typename vismodule::ModuleTraits<T>::ModuleCategory() ) );
     }
 
-    kvs::ObjectBase* exec( const kvs::ObjectBase* object = NULL );
+    vismodule::ObjectBase* exec( const vismodule::ObjectBase* object = NULL );
 
 public:
 
@@ -105,13 +105,13 @@ public:
 
     const Module module( void ) const;
 
-    const kvs::FilterBase* filter( void ) const;
+    const vismodule::FilterBase* filter( void ) const;
 
-    const kvs::MapperBase* mapper( void ) const;
+    const vismodule::MapperBase* mapper( void ) const;
 
-    const kvs::ObjectBase* object( void ) const;
+    const vismodule::ObjectBase* object( void ) const;
 
-    const kvs::RendererBase* renderer( void ) const;
+    const vismodule::RendererBase* renderer( void ) const;
 
     const char* name( void ) const;
 
@@ -120,28 +120,28 @@ public:
 private:
 
     template <typename T>
-    void read_module( T* module, KVS_MODULE_FILTER )
+    void read_module( T* module, VIS_MODULE_MODULE_FILTER )
     {
         m_category = PipelineModule::Filter;
         m_module.filter = module;
     }
 
     template <typename T>
-    void read_module( T* module, KVS_MODULE_MAPPER )
+    void read_module( T* module, VIS_MODULE_MODULE_MAPPER )
     {
         m_category = PipelineModule::Mapper;
         m_module.mapper = module;
     }
 
     template <typename T>
-    void read_module( T* module, KVS_MODULE_OBJECT )
+    void read_module( T* module, VIS_MODULE_MODULE_OBJECT )
     {
         m_category = PipelineModule::Object;
         m_module.object = module;
     }
 
     template <typename T>
-    void read_module( T* module, KVS_MODULE_RENDERER )
+    void read_module( T* module, VIS_MODULE_MODULE_RENDERER )
     {
         m_category = PipelineModule::Renderer;
         m_module.renderer = module;
@@ -150,25 +150,25 @@ private:
 private:
 
     template <typename T>
-    T* get_module( KVS_MODULE_FILTER ) const
+    T* get_module( VIS_MODULE_MODULE_FILTER ) const
     {
         return( reinterpret_cast<T*>( m_module.filter ) );
     }
 
     template <typename T>
-    T* get_module( KVS_MODULE_MAPPER ) const
+    T* get_module( VIS_MODULE_MODULE_MAPPER ) const
     {
         return( reinterpret_cast<T*>( m_module.mapper ) );
     }
 
     template <typename T>
-    T* get_module( KVS_MODULE_OBJECT ) const
+    T* get_module( VIS_MODULE_MODULE_OBJECT ) const
     {
         return( reinterpret_cast<T*>( m_module.object ) );
     }
 
     template <typename T>
-    T* get_module( KVS_MODULE_RENDERER ) const
+    T* get_module( VIS_MODULE_MODULE_RENDERER ) const
     {
         return( reinterpret_cast<T*>( m_module.renderer ) );
     }
@@ -194,6 +194,6 @@ private:
     void unref( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__PIPELINE_MODULE_H_INCLUDE
+#endif // VIS_MODULE__PIPELINE_MODULE_H_INCLUDE

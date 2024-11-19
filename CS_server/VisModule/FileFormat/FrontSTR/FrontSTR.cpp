@@ -17,13 +17,13 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
-#include <kvs/Tokenizer>
-#include <kvs/IgnoreUnusedVariable>
-#include <kvs/Message>
-#include <kvs/Assert>
+#include <vismodule/Tokenizer>
+#include <vismodule/IgnoreUnusedVariable>
+#include <vismodule/Message>
+#include <vismodule/Assert>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -116,9 +116,9 @@ const size_t FrontSTR::numberOfResultData( void ) const
  *  @return mesh data
  */
 /*===========================================================================*/
-const kvs::fstr::MeshData& FrontSTR::meshData( const size_t index ) const
+const vismodule::fstr::MeshData& FrontSTR::meshData( const size_t index ) const
 {
-    KVS_ASSERT( index < m_nmeshes );
+    VIS_MODULE_ASSERT( index < m_nmeshes );
     return( m_mesh_data[ index ] );
 }
 
@@ -129,9 +129,9 @@ const kvs::fstr::MeshData& FrontSTR::meshData( const size_t index ) const
  *  @return mesh data
  */
 /*===========================================================================*/
-const kvs::fstr::ResultData& FrontSTR::resultData( const size_t index ) const
+const vismodule::fstr::ResultData& FrontSTR::resultData( const size_t index ) const
 {
-    KVS_ASSERT( index < m_nresults );
+    VIS_MODULE_ASSERT( index < m_nresults );
     return( m_result_data[ index ] );
 }
 
@@ -149,7 +149,7 @@ const bool FrontSTR::read( const std::string& filenames )
     std::vector<std::string> msh_filenames; // mesh files
     std::vector<std::string> res_filenames; // result files
 
-    kvs::Tokenizer t( filenames, ";" );
+    vismodule::Tokenizer t( filenames, ";" );
     while ( !t.isLast() )
     {
         const std::string filename = t.token();
@@ -188,7 +188,7 @@ const bool FrontSTR::read( const std::string& msh_filename, const std::string& r
 
     if ( !this->allocate_data() )
     {
-        kvsMessageError("Cannot allocate memory for member parameters.");
+        visModuleMessageError("Cannot allocate memory for member parameters.");
         this->delete_data();
         return( false );
     }
@@ -196,14 +196,14 @@ const bool FrontSTR::read( const std::string& msh_filename, const std::string& r
     // Reading non divided mesh data.
     if ( !m_mesh_data[0].readData( msh_filename ) )
     {
-        kvsMessageError("Cannot read %s.", msh_filename.c_str() );
+        visModuleMessageError("Cannot read %s.", msh_filename.c_str() );
         return( false );
     }
 
     // Reading non divided result data.
     if ( !m_result_data[0].readData( res_filename ) )
     {
-        kvsMessageError("Cannot read %s.", res_filename.c_str() );
+        visModuleMessageError("Cannot read %s.", res_filename.c_str() );
         return( false );
     }
 
@@ -225,7 +225,7 @@ const bool FrontSTR::read( const std::vector<std::string>& msh_filenames, const 
 
     if ( !this->allocate_data() )
     {
-        kvsMessageError("Cannot allocate memory for member parameters.");
+        visModuleMessageError("Cannot allocate memory for member parameters.");
         this->delete_data();
         return( false );
     }
@@ -235,7 +235,7 @@ const bool FrontSTR::read( const std::vector<std::string>& msh_filenames, const 
         // Reading non divided mesh data.
         if ( !m_mesh_data[0].readData( msh_filenames[0] ) )
         {
-            kvsMessageError("Cannot read %s.", msh_filenames[0].c_str() );
+            visModuleMessageError("Cannot read %s.", msh_filenames[0].c_str() );
             return( false );
         }
     }
@@ -246,7 +246,7 @@ const bool FrontSTR::read( const std::vector<std::string>& msh_filenames, const 
         {
             if ( !m_mesh_data[i].readDividedData( msh_filenames[i] ) )
             {
-                kvsMessageError("Cannot read %s.", msh_filenames[i].c_str() );
+                visModuleMessageError("Cannot read %s.", msh_filenames[i].c_str() );
                 return( false );
             }
         }
@@ -257,7 +257,7 @@ const bool FrontSTR::read( const std::vector<std::string>& msh_filenames, const 
         // Reading non divided result data.
         if ( !m_result_data[0].readData( res_filenames[0] ) )
         {
-            kvsMessageError("Cannot read %s.", res_filenames[0].c_str() );
+            visModuleMessageError("Cannot read %s.", res_filenames[0].c_str() );
             return( false );
         }
     }
@@ -268,7 +268,7 @@ const bool FrontSTR::read( const std::vector<std::string>& msh_filenames, const 
         {
             if ( !m_result_data[i].readDividedData( res_filenames[i] ) )
             {
-                kvsMessageError("Cannot read %s.", res_filenames[i].c_str() );
+                visModuleMessageError("Cannot read %s.", res_filenames[i].c_str() );
                 return( false );
             }
         }
@@ -285,10 +285,10 @@ const bool FrontSTR::read( const std::vector<std::string>& msh_filenames, const 
 /*===========================================================================*/
 const bool FrontSTR::allocate_data( void )
 {
-    m_mesh_data = new kvs::fstr::MeshData [ m_nmeshes ];
+    m_mesh_data = new vismodule::fstr::MeshData [ m_nmeshes ];
     if ( !m_mesh_data ) { return( false ); }
 
-    m_result_data = new kvs::fstr::ResultData [ m_nresults ];
+    m_result_data = new vismodule::fstr::ResultData [ m_nresults ];
     if ( !m_result_data ) { if ( m_mesh_data ) delete [] m_mesh_data; return( false ); }
 
     return( true );
@@ -315,8 +315,8 @@ void FrontSTR::delete_data( void )
 const bool FrontSTR::write( const std::string& filename )
 {
     // This method has not been implemented yet.
-    kvs::IgnoreUnusedVariable( filename );
+    vismodule::IgnoreUnusedVariable( filename );
     return( false );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

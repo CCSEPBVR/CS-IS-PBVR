@@ -12,8 +12,8 @@
  */
 /*****************************************************************************/
 #include "Tubeline.h"
-#include <kvs/Quaternion>
-#include <kvs/Math>
+#include <vismodule/Quaternion>
+#include <vismodule/Math>
 
 
 namespace
@@ -26,23 +26,23 @@ namespace
  *  @return vertex array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32> GetVertexArray( const kvs::LineObject* line )
+const vismodule::ValueArray<vismodule::Real32> GetVertexArray( const vismodule::LineObject* line )
 {
-    if ( line->lineType() == kvs::LineObject::Strip )
+    if ( line->lineType() == vismodule::LineObject::Strip )
     {
         return( line->coords() );
     }
-    else if ( line->lineType() == kvs::LineObject::Uniline )
+    else if ( line->lineType() == vismodule::LineObject::Uniline )
     {
-        const kvs::Real32* v = line->coords().pointer();
-        const kvs::UInt32* c = line->connections().pointer();
+        const vismodule::Real32* v = line->coords().pointer();
+        const vismodule::UInt32* c = line->connections().pointer();
 
         const size_t dimension = 3;
         const size_t nvertices = line->nconnections();
-        kvs::ValueArray<kvs::Real32> vertices( nvertices * dimension );
+        vismodule::ValueArray<vismodule::Real32> vertices( nvertices * dimension );
         for ( size_t i = 0, index = 0; i < nvertices; i++, index += dimension )
         {
-            const kvs::UInt32 id = c[i];
+            const vismodule::UInt32 id = c[i];
             vertices[ index + 0 ] = v[ id * dimension + 0 ];
             vertices[ index + 1 ] = v[ id * dimension + 1 ];
             vertices[ index + 2 ] = v[ id * dimension + 2 ];
@@ -52,7 +52,7 @@ const kvs::ValueArray<kvs::Real32> GetVertexArray( const kvs::LineObject* line )
     }
     else
     {
-        const kvs::ValueArray<kvs::Real32> empty;
+        const vismodule::ValueArray<vismodule::Real32> empty;
         return( empty );
     }
 }
@@ -66,18 +66,18 @@ const kvs::ValueArray<kvs::Real32> GetVertexArray( const kvs::LineObject* line )
  *  @return vertex array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32> GetVertexArray(
-    const kvs::LineObject* line,
+const vismodule::ValueArray<vismodule::Real32> GetVertexArray(
+    const vismodule::LineObject* line,
     const size_t id1,
     const size_t id2 )
 {
-    if ( line->lineType() == kvs::LineObject::Polyline )
+    if ( line->lineType() == vismodule::LineObject::Polyline )
     {
-        const kvs::Real32* v = line->coords().pointer();
+        const vismodule::Real32* v = line->coords().pointer();
 
         const size_t dimension = 3;
         const size_t nvertices = id2 - id1 + 1;
-        kvs::ValueArray<kvs::Real32> vertices( nvertices * dimension );
+        vismodule::ValueArray<vismodule::Real32> vertices( nvertices * dimension );
         for ( size_t i = 0, index = 0; i < nvertices; i++, index += dimension )
         {
             const size_t id = id1 + i;
@@ -88,13 +88,13 @@ const kvs::ValueArray<kvs::Real32> GetVertexArray(
 
         return( vertices );
     }
-    else if ( line->lineType() == kvs::LineObject::Segment )
+    else if ( line->lineType() == vismodule::LineObject::Segment )
     {
-        const kvs::Real32* v = line->coords().pointer();
+        const vismodule::Real32* v = line->coords().pointer();
 
         const size_t dimension = 3;
         const size_t nvertices = 2;
-        kvs::ValueArray<kvs::Real32> vertices( nvertices * dimension );
+        vismodule::ValueArray<vismodule::Real32> vertices( nvertices * dimension );
 
         vertices[0] = v[ id1 * dimension + 0 ];
         vertices[1] = v[ id1 * dimension + 1 ];
@@ -108,7 +108,7 @@ const kvs::ValueArray<kvs::Real32> GetVertexArray(
     }
     else
     {
-        const kvs::ValueArray<kvs::Real32> empty;
+        const vismodule::ValueArray<vismodule::Real32> empty;
         return( empty );
     }
 }
@@ -120,15 +120,15 @@ const kvs::ValueArray<kvs::Real32> GetVertexArray(
  *  @return color array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt8> GetColorArray( const kvs::LineObject* line )
+const vismodule::ValueArray<vismodule::UInt8> GetColorArray( const vismodule::LineObject* line )
 {
     if ( line->ncolors() == 1 )
     {
-        const kvs::UInt8* c = line->colors().pointer();
+        const vismodule::UInt8* c = line->colors().pointer();
 
         const size_t ncomponents = 3;
         const size_t ncolors = line->nvertices();
-        kvs::ValueArray<kvs::UInt8> colors( ncolors * ncomponents );
+        vismodule::ValueArray<vismodule::UInt8> colors( ncolors * ncomponents );
         for ( size_t i = 0, index = 0; i < ncolors; i++, index += ncomponents )
         {
             colors[ index + 0 ] = c[0];
@@ -144,7 +144,7 @@ const kvs::ValueArray<kvs::UInt8> GetColorArray( const kvs::LineObject* line )
     }
     else
     {
-        const kvs::ValueArray<kvs::UInt8> empty;
+        const vismodule::ValueArray<vismodule::UInt8> empty;
         return( empty );
     }
 }
@@ -159,14 +159,14 @@ const kvs::ValueArray<kvs::UInt8> GetColorArray( const kvs::LineObject* line )
  *  @return color array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt8> GetColorArray(
-    const kvs::LineObject* line,
+const vismodule::ValueArray<vismodule::UInt8> GetColorArray(
+    const vismodule::LineObject* line,
     const size_t id1,
     const size_t id2,
     const size_t con_id )
 {
     // Ponter to the color array of the line object.
-    const kvs::UInt8* c = line->colors().pointer();
+    const vismodule::UInt8* c = line->colors().pointer();
 
     // Number of components and number of colors.
     const size_t ncomponents = 3;
@@ -174,7 +174,7 @@ const kvs::ValueArray<kvs::UInt8> GetColorArray(
 
     if ( line->ncolors() == 1 )
     {
-        kvs::ValueArray<kvs::UInt8> colors( ncomponents * ncolors );
+        vismodule::ValueArray<vismodule::UInt8> colors( ncomponents * ncolors );
         for ( size_t i = 0, index = 0; i < ncolors; i++, index += ncomponents )
         {
             colors[ index + 0 ] = c[0];
@@ -186,11 +186,11 @@ const kvs::ValueArray<kvs::UInt8> GetColorArray(
     }
     else if ( line->ncolors() > 1 )
     {
-        if ( line->colorType() == kvs::LineObject::LineColor )
+        if ( line->colorType() == vismodule::LineObject::LineColor )
         {
-            kvs::ValueArray<kvs::UInt8> colors( ncomponents * ncolors );
+            vismodule::ValueArray<vismodule::UInt8> colors( ncomponents * ncolors );
 
-            const kvs::UInt32* n = line->connections().pointer();
+            const vismodule::UInt32* n = line->connections().pointer();
 
             size_t counter = 0;
             for ( size_t i = 0, index = 0; i < con_id; i++, index += 2 )
@@ -214,9 +214,9 @@ const kvs::ValueArray<kvs::UInt8> GetColorArray(
 
             return( colors );
         }
-        else // kvs::LineObject::VertexColor
+        else // vismodule::LineObject::VertexColor
         {
-            kvs::ValueArray<kvs::UInt8> colors( ncomponents * ncolors );
+            vismodule::ValueArray<vismodule::UInt8> colors( ncomponents * ncolors );
             for ( size_t i = 0, index = 0; i < ncolors; i++, index += ncomponents )
             {
                 const size_t id = id1 + i;
@@ -230,7 +230,7 @@ const kvs::ValueArray<kvs::UInt8> GetColorArray(
     }
     else
     {
-        const kvs::ValueArray<kvs::UInt8> empty;
+        const vismodule::ValueArray<vismodule::UInt8> empty;
         return( empty );
     }
 }
@@ -242,14 +242,14 @@ const kvs::ValueArray<kvs::UInt8> GetColorArray(
  *  @return size array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32> GetSizeArray( const kvs::LineObject* line )
+const vismodule::ValueArray<vismodule::Real32> GetSizeArray( const vismodule::LineObject* line )
 {
     if ( line->nsizes() == 1 )
     {
-        const kvs::Real32* s = line->sizes().pointer();
+        const vismodule::Real32* s = line->sizes().pointer();
 
         const size_t nsizes = line->nvertices() - 1;
-        kvs::ValueArray<kvs::Real32> sizes( nsizes );
+        vismodule::ValueArray<vismodule::Real32> sizes( nsizes );
         for ( size_t i = 0; i < nsizes; i++ )
         {
             sizes[i] = s[0];
@@ -263,7 +263,7 @@ const kvs::ValueArray<kvs::Real32> GetSizeArray( const kvs::LineObject* line )
     }
     else
     {
-        const kvs::ValueArray<kvs::Real32> empty;
+        const vismodule::ValueArray<vismodule::Real32> empty;
         return( empty );
     }
 }
@@ -278,21 +278,21 @@ const kvs::ValueArray<kvs::Real32> GetSizeArray( const kvs::LineObject* line )
  *  @return size array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32> GetSizeArray(
-    const kvs::LineObject* line,
+const vismodule::ValueArray<vismodule::Real32> GetSizeArray(
+    const vismodule::LineObject* line,
     const size_t id1,
     const size_t id2,
     const size_t con_id )
 {
     // Ponter to the size array of the line object.
-    const kvs::Real32* s = line->sizes().pointer();
+    const vismodule::Real32* s = line->sizes().pointer();
 
     // Number of components of the size array.
     const size_t nsizes = id2 - id1;
 
     if ( line->nsizes() == 1 )
     {
-        kvs::ValueArray<kvs::Real32> sizes( nsizes );
+        vismodule::ValueArray<vismodule::Real32> sizes( nsizes );
         for ( size_t i = 0; i < nsizes; i++ )
         {
             sizes[i] = s[0];
@@ -302,9 +302,9 @@ const kvs::ValueArray<kvs::Real32> GetSizeArray(
     }
     else if ( line->nsizes() > 1 )
     {
-        kvs::ValueArray<kvs::Real32> sizes( nsizes );
+        vismodule::ValueArray<vismodule::Real32> sizes( nsizes );
 
-        const kvs::UInt32* n = line->connections().pointer();
+        const vismodule::UInt32* n = line->connections().pointer();
 
         size_t counter = 0;
         for ( size_t i = 0, index = 0; i < con_id; i++, index += 2 )
@@ -322,7 +322,7 @@ const kvs::ValueArray<kvs::Real32> GetSizeArray(
     }
     else
     {
-        const kvs::ValueArray<kvs::Real32> empty;
+        const vismodule::ValueArray<vismodule::Real32> empty;
         return( empty );
     }
 }
@@ -334,16 +334,16 @@ const kvs::ValueArray<kvs::Real32> GetSizeArray(
  *  @return color array
  */
 /*===========================================================================*/
-const kvs::PolygonObject::ColorType GetColorType( const kvs::LineObject* line )
+const vismodule::PolygonObject::ColorType GetColorType( const vismodule::LineObject* line )
 {
-    kvs::PolygonObject::ColorType type = kvs::PolygonObject::VertexColor;
+    vismodule::PolygonObject::ColorType type = vismodule::PolygonObject::VertexColor;
     switch ( line->colorType() )
     {
-    case kvs::LineObject::VertexColor:
-        type = kvs::PolygonObject::VertexColor;
+    case vismodule::LineObject::VertexColor:
+        type = vismodule::PolygonObject::VertexColor;
         break;
-    case kvs::LineObject::LineColor:
-        type = kvs::PolygonObject::PolygonColor;
+    case vismodule::LineObject::LineColor:
+        type = vismodule::PolygonObject::PolygonColor;
         break;
     default:
         break;
@@ -359,15 +359,15 @@ const kvs::PolygonObject::ColorType GetColorType( const kvs::LineObject* line )
  *  @return number of the vertices
  */
 /*===========================================================================*/
-const size_t GetNumberOfVertices( const kvs::LineObject* line )
+const size_t GetNumberOfVertices( const vismodule::LineObject* line )
 {
     size_t nvertices = 0;
     switch ( line->lineType() )
     {
-    case kvs::LineObject::Strip:
+    case vismodule::LineObject::Strip:
         nvertices = line->nvertices();
         break;
-    case kvs::LineObject::Uniline:
+    case vismodule::LineObject::Uniline:
         nvertices = line->nconnections();
         break;
     default:
@@ -380,7 +380,7 @@ const size_t GetNumberOfVertices( const kvs::LineObject* line )
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -389,7 +389,7 @@ namespace kvs
  */
 /*===========================================================================*/
 Tubeline::Tubeline( void ):
-    kvs::FilterBase(),
+    vismodule::FilterBase(),
     m_ndivisions( 0 )
 {
 }
@@ -402,7 +402,7 @@ Tubeline::Tubeline( void ):
  */
 /*===========================================================================*/
 Tubeline::Tubeline(
-    const kvs::LineObject* line,
+    const vismodule::LineObject* line,
     const size_t ndivisions ):
     m_ndivisions( ndivisions )
 {
@@ -436,20 +436,20 @@ void Tubeline::setNDivisions( const size_t ndivisions )
  *  @return pointer to the filtered object
  */
 /*===========================================================================*/
-Tubeline::SuperClass* Tubeline::exec( const kvs::ObjectBase* object )
+Tubeline::SuperClass* Tubeline::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::LineObject* line = kvs::LineObject::DownCast( object );
+    const vismodule::LineObject* line = vismodule::LineObject::DownCast( object );
     if ( !line )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not supported.");
+        visModuleMessageError("Input object is not supported.");
         return( NULL );
     }
 
@@ -457,27 +457,27 @@ Tubeline::SuperClass* Tubeline::exec( const kvs::ObjectBase* object )
     SuperClass::setMinMaxObjectCoords( line->minObjectCoord(), line->maxObjectCoord() );
     SuperClass::setMinMaxExternalCoords( line->minExternalCoord(), line->maxExternalCoord() );
 
-    const kvs::LineObject::LineType type = line->lineType();
-    if ( type == kvs::LineObject::Strip )
+    const vismodule::LineObject::LineType type = line->lineType();
+    if ( type == vismodule::LineObject::Strip )
     {
         this->filtering_strip( line );
     }
-    else if ( type == kvs::LineObject::Uniline )
+    else if ( type == vismodule::LineObject::Uniline )
     {
         this->filtering_uniline( line );
     }
-    else if ( type == kvs::LineObject::Polyline )
+    else if ( type == vismodule::LineObject::Polyline )
     {
         this->filtering_polyline( line );
     }
-    else if ( type == kvs::LineObject::Segment )
+    else if ( type == vismodule::LineObject::Segment )
     {
         this->filtering_segment( line );
     }
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Unknown line type.");
+        visModuleMessageError("Unknown line type.");
         return( NULL );
     }
 
@@ -490,18 +490,18 @@ Tubeline::SuperClass* Tubeline::exec( const kvs::ObjectBase* object )
  *  @param  line [in] pointer to the line object
  */
 /*===========================================================================*/
-void Tubeline::filtering_strip( const kvs::LineObject* line )
+void Tubeline::filtering_strip( const vismodule::LineObject* line )
 {
-    const kvs::ValueArray<kvs::Real32> line_vertices = ::GetVertexArray( line );
-    const kvs::ValueArray<kvs::Real32> line_sizes = ::GetSizeArray( line );
-    const kvs::ValueArray<kvs::UInt8> line_colors = ::GetColorArray( line );
+    const vismodule::ValueArray<vismodule::Real32> line_vertices = ::GetVertexArray( line );
+    const vismodule::ValueArray<vismodule::Real32> line_sizes = ::GetSizeArray( line );
+    const vismodule::ValueArray<vismodule::UInt8> line_colors = ::GetColorArray( line );
     const size_t nvertices = ::GetNumberOfVertices( line );
-    const kvs::PolygonObject::ColorType color_type = ::GetColorType( line );
+    const vismodule::PolygonObject::ColorType color_type = ::GetColorType( line );
 
-    std::vector<kvs::Real32> vertices;
-    std::vector<kvs::UInt8> colors;
-    std::vector<kvs::UInt32> connections;
-    std::vector<kvs::Real32> normals;
+    std::vector<vismodule::Real32> vertices;
+    std::vector<vismodule::UInt8> colors;
+    std::vector<vismodule::UInt32> connections;
+    std::vector<vismodule::Real32> normals;
     this->calculate_tubes(
         &vertices,
         &colors,
@@ -513,14 +513,14 @@ void Tubeline::filtering_strip( const kvs::LineObject* line )
         nvertices,
         color_type );
 
-    SuperClass::setCoords( kvs::ValueArray<kvs::Real32>( vertices ) );
-    SuperClass::setColors( kvs::ValueArray<kvs::UInt8>( colors ) );
-    SuperClass::setNormals( kvs::ValueArray<kvs::Real32>( normals ) );
-    SuperClass::setConnections( kvs::ValueArray<kvs::UInt32>( connections ) );
+    SuperClass::setCoords( vismodule::ValueArray<vismodule::Real32>( vertices ) );
+    SuperClass::setColors( vismodule::ValueArray<vismodule::UInt8>( colors ) );
+    SuperClass::setNormals( vismodule::ValueArray<vismodule::Real32>( normals ) );
+    SuperClass::setConnections( vismodule::ValueArray<vismodule::UInt32>( connections ) );
     SuperClass::setOpacity( 255 );
-    SuperClass::setPolygonType( kvs::PolygonObject::Quadrangle );
+    SuperClass::setPolygonType( vismodule::PolygonObject::Quadrangle );
     SuperClass::setColorType( color_type );
-    SuperClass::setNormalType( kvs::PolygonObject::PolygonNormal );
+    SuperClass::setNormalType( vismodule::PolygonObject::PolygonNormal );
 }
 
 /*===========================================================================*/
@@ -529,18 +529,18 @@ void Tubeline::filtering_strip( const kvs::LineObject* line )
  *  @param  line [in] pointer to the line object
  */
 /*===========================================================================*/
-void Tubeline::filtering_uniline( const kvs::LineObject* line )
+void Tubeline::filtering_uniline( const vismodule::LineObject* line )
 {
-    const kvs::ValueArray<kvs::Real32> line_vertices = ::GetVertexArray( line );
-    const kvs::ValueArray<kvs::Real32> line_sizes = ::GetSizeArray( line );
-    const kvs::ValueArray<kvs::UInt8> line_colors = ::GetColorArray( line );
+    const vismodule::ValueArray<vismodule::Real32> line_vertices = ::GetVertexArray( line );
+    const vismodule::ValueArray<vismodule::Real32> line_sizes = ::GetSizeArray( line );
+    const vismodule::ValueArray<vismodule::UInt8> line_colors = ::GetColorArray( line );
     const size_t nvertices = ::GetNumberOfVertices( line );
-    const kvs::PolygonObject::ColorType color_type = ::GetColorType( line );
+    const vismodule::PolygonObject::ColorType color_type = ::GetColorType( line );
 
-    std::vector<kvs::Real32> vertices;
-    std::vector<kvs::UInt8> colors;
-    std::vector<kvs::UInt32> connections;
-    std::vector<kvs::Real32> normals;
+    std::vector<vismodule::Real32> vertices;
+    std::vector<vismodule::UInt8> colors;
+    std::vector<vismodule::UInt32> connections;
+    std::vector<vismodule::Real32> normals;
     this->calculate_tubes(
         &vertices,
         &colors,
@@ -552,14 +552,14 @@ void Tubeline::filtering_uniline( const kvs::LineObject* line )
         nvertices,
         color_type );
 
-    SuperClass::setCoords( kvs::ValueArray<kvs::Real32>( vertices ) );
-    SuperClass::setColors( kvs::ValueArray<kvs::UInt8>( colors ) );
-    SuperClass::setNormals( kvs::ValueArray<kvs::Real32>( normals ) );
-    SuperClass::setConnections( kvs::ValueArray<kvs::UInt32>( connections ) );
+    SuperClass::setCoords( vismodule::ValueArray<vismodule::Real32>( vertices ) );
+    SuperClass::setColors( vismodule::ValueArray<vismodule::UInt8>( colors ) );
+    SuperClass::setNormals( vismodule::ValueArray<vismodule::Real32>( normals ) );
+    SuperClass::setConnections( vismodule::ValueArray<vismodule::UInt32>( connections ) );
     SuperClass::setOpacity( 255 );
-    SuperClass::setPolygonType( kvs::PolygonObject::Quadrangle );
+    SuperClass::setPolygonType( vismodule::PolygonObject::Quadrangle );
     SuperClass::setColorType( color_type );
-    SuperClass::setNormalType( kvs::PolygonObject::PolygonNormal );
+    SuperClass::setNormalType( vismodule::PolygonObject::PolygonNormal );
 }
 
 /*===========================================================================*/
@@ -568,42 +568,42 @@ void Tubeline::filtering_uniline( const kvs::LineObject* line )
  *  @param  line [in] pointer to the line object
  */
 /*===========================================================================*/
-void Tubeline::filtering_polyline( const kvs::LineObject* line )
+void Tubeline::filtering_polyline( const vismodule::LineObject* line )
 {
-    std::vector<kvs::Real32> vertices;
-    std::vector<kvs::UInt8> colors;
-    std::vector<kvs::UInt32> connections;
-    std::vector<kvs::Real32> normals;
+    std::vector<vismodule::Real32> vertices;
+    std::vector<vismodule::UInt8> colors;
+    std::vector<vismodule::UInt32> connections;
+    std::vector<vismodule::Real32> normals;
 
-    const kvs::PolygonObject::ColorType color_type = ::GetColorType( line );
+    const vismodule::PolygonObject::ColorType color_type = ::GetColorType( line );
 
-    const kvs::UInt32* line_connections = line->connections().pointer();
+    const vismodule::UInt32* line_connections = line->connections().pointer();
     const size_t line_nconnections = line->nconnections();
     for( size_t i = 0, index = 0; i < line_nconnections; i++, index += 2 )
     {
         const size_t id1 = line_connections[ index + 0 ];
         const size_t id2 = line_connections[ index + 1 ];
 
-        const kvs::ValueArray<kvs::Real32> line_vertices = ::GetVertexArray( line, id1, id2 );
-        const kvs::ValueArray<kvs::Real32> line_sizes = ::GetSizeArray( line, id1, id2, i );
-        const kvs::ValueArray<kvs::UInt8> line_colors = ::GetColorArray( line, id1, id2, i );
+        const vismodule::ValueArray<vismodule::Real32> line_vertices = ::GetVertexArray( line, id1, id2 );
+        const vismodule::ValueArray<vismodule::Real32> line_sizes = ::GetSizeArray( line, id1, id2, i );
+        const vismodule::ValueArray<vismodule::UInt8> line_colors = ::GetColorArray( line, id1, id2, i );
         const size_t nvertices = id2 - id1 + 1;
 
         if ( line_sizes.size() == 0 )
         {
-            kvsMessageError("The size of the line-size array is zero.");
+            visModuleMessageError("The size of the line-size array is zero.");
             return;
         }
         if ( line_colors.size() == 0 )
         {
-            kvsMessageError("The size of the line-color array is zero.");
+            visModuleMessageError("The size of the line-color array is zero.");
             return;
         }
 
-        std::vector<kvs::Real32> tmp_vertices;
-        std::vector<kvs::UInt8> tmp_colors;
-        std::vector<kvs::UInt32> tmp_connections;
-        std::vector<kvs::Real32> tmp_normals;
+        std::vector<vismodule::Real32> tmp_vertices;
+        std::vector<vismodule::UInt8> tmp_colors;
+        std::vector<vismodule::UInt32> tmp_connections;
+        std::vector<vismodule::Real32> tmp_normals;
         this->calculate_tubes(
             &tmp_vertices,
             &tmp_colors,
@@ -615,12 +615,12 @@ void Tubeline::filtering_polyline( const kvs::LineObject* line )
             nvertices,
             color_type );
 
-        const kvs::UInt32 nv = static_cast<kvs::UInt32>( vertices.size() / 3 );
+        const vismodule::UInt32 nv = static_cast<vismodule::UInt32>( vertices.size() / 3 );
 
         vertices.insert( vertices.end(), tmp_vertices.begin(), tmp_vertices.end() );
         normals.insert( normals.end(), tmp_normals.begin(), tmp_normals.end() );
 
-        const size_t tmp_ncolors = ( color_type == kvs::PolygonObject::VertexColor ) ?
+        const size_t tmp_ncolors = ( color_type == vismodule::PolygonObject::VertexColor ) ?
             tmp_colors.size() :
             tmp_colors.size() - m_ndivisions * 3;
         for( size_t j = 0; j < tmp_ncolors; j++ )
@@ -635,14 +635,14 @@ void Tubeline::filtering_polyline( const kvs::LineObject* line )
         }
     }
 
-    SuperClass::setCoords( kvs::ValueArray<kvs::Real32>( vertices ) );
-    SuperClass::setColors( kvs::ValueArray<kvs::UInt8>( colors ) );
-    SuperClass::setNormals( kvs::ValueArray<kvs::Real32>( normals ) );
-    SuperClass::setConnections( kvs::ValueArray<kvs::UInt32>( connections ) );
+    SuperClass::setCoords( vismodule::ValueArray<vismodule::Real32>( vertices ) );
+    SuperClass::setColors( vismodule::ValueArray<vismodule::UInt8>( colors ) );
+    SuperClass::setNormals( vismodule::ValueArray<vismodule::Real32>( normals ) );
+    SuperClass::setConnections( vismodule::ValueArray<vismodule::UInt32>( connections ) );
     SuperClass::setOpacity( 255 );
-    SuperClass::setPolygonType( kvs::PolygonObject::Quadrangle );
+    SuperClass::setPolygonType( vismodule::PolygonObject::Quadrangle );
     SuperClass::setColorType( color_type );
-    SuperClass::setNormalType( kvs::PolygonObject::PolygonNormal );
+    SuperClass::setNormalType( vismodule::PolygonObject::PolygonNormal );
 }
 
 /*===========================================================================*/
@@ -651,16 +651,16 @@ void Tubeline::filtering_polyline( const kvs::LineObject* line )
  *  @param  line [in] pointer to the line object
  */
 /*===========================================================================*/
-void Tubeline::filtering_segment( const kvs::LineObject* line )
+void Tubeline::filtering_segment( const vismodule::LineObject* line )
 {
-    std::vector<kvs::Real32> vertices;
-    std::vector<kvs::UInt8> colors;
-    std::vector<kvs::UInt32> connections;
-    std::vector<kvs::Real32> normals;
+    std::vector<vismodule::Real32> vertices;
+    std::vector<vismodule::UInt8> colors;
+    std::vector<vismodule::UInt32> connections;
+    std::vector<vismodule::Real32> normals;
 
-    const kvs::PolygonObject::ColorType color_type = ::GetColorType( line );
+    const vismodule::PolygonObject::ColorType color_type = ::GetColorType( line );
 
-    const kvs::UInt32* line_connections = line->connections().pointer();
+    const vismodule::UInt32* line_connections = line->connections().pointer();
     const size_t line_nconnections = line->nconnections();
     for( size_t i = 0, index = 0; i < line_nconnections; i++, index += 2 )
     {
@@ -668,13 +668,13 @@ void Tubeline::filtering_segment( const kvs::LineObject* line )
         const size_t id2 = line_connections[ index + 1 ];
 
         const size_t nvertices = 2;
-        const kvs::ValueArray<kvs::Real32> line_vertices = ::GetVertexArray( line, id1, id2 );
-//        const kvs::Real32 line_size = ( line->nsizes() == 1 ) ? line->size(0) : line->size(i);
-        kvs::ValueArray<kvs::Real32> line_sizes(1);
+        const vismodule::ValueArray<vismodule::Real32> line_vertices = ::GetVertexArray( line, id1, id2 );
+//        const vismodule::Real32 line_size = ( line->nsizes() == 1 ) ? line->size(0) : line->size(i);
+        vismodule::ValueArray<vismodule::Real32> line_sizes(1);
         if ( line->nsizes() == 1 ) line_sizes[0] = line->size(0);
         else line_sizes[0] = line->size(i);
 
-        kvs::ValueArray<kvs::UInt8> line_colors(6);
+        vismodule::ValueArray<vismodule::UInt8> line_colors(6);
         if ( line->ncolors() == 1 )
         {
             line_colors[0] = line->color(0).r();
@@ -686,7 +686,7 @@ void Tubeline::filtering_segment( const kvs::LineObject* line )
         }
         else
         {
-            if( color_type == kvs::PolygonObject::VertexColor )
+            if( color_type == vismodule::PolygonObject::VertexColor )
             {
                 line_colors[0] = line->color(id1).r();
                 line_colors[1] = line->color(id1).g();
@@ -706,10 +706,10 @@ void Tubeline::filtering_segment( const kvs::LineObject* line )
             }
         }
 
-        std::vector<kvs::Real32> tmp_vertices;
-        std::vector<kvs::UInt8> tmp_colors;
-        std::vector<kvs::UInt32> tmp_connections;
-        std::vector<kvs::Real32> tmp_normals;
+        std::vector<vismodule::Real32> tmp_vertices;
+        std::vector<vismodule::UInt8> tmp_colors;
+        std::vector<vismodule::UInt32> tmp_connections;
+        std::vector<vismodule::Real32> tmp_normals;
         this->calculate_tubes(
             &tmp_vertices,
             &tmp_colors,
@@ -725,7 +725,7 @@ void Tubeline::filtering_segment( const kvs::LineObject* line )
         normals.insert( normals.end(), tmp_normals.begin(), tmp_normals.end() );
         colors.insert( colors.end(), tmp_colors.begin(), tmp_colors.end() );
 
-        const kvs::UInt32 nv = static_cast<kvs::UInt32>( vertices.size() / 3 );
+        const vismodule::UInt32 nv = static_cast<vismodule::UInt32>( vertices.size() / 3 );
         const size_t tmp_connections_size = tmp_connections.size();
         for ( size_t j = 0; j < tmp_connections_size; j++ )
         {
@@ -733,14 +733,14 @@ void Tubeline::filtering_segment( const kvs::LineObject* line )
         }
     }
 
-    SuperClass::setCoords( kvs::ValueArray<kvs::Real32>( vertices ) );
-    SuperClass::setColors( kvs::ValueArray<kvs::UInt8>( colors ) );
-    SuperClass::setNormals( kvs::ValueArray<kvs::Real32>( normals ) );
-    SuperClass::setConnections( kvs::ValueArray<kvs::UInt32>( connections ) );
+    SuperClass::setCoords( vismodule::ValueArray<vismodule::Real32>( vertices ) );
+    SuperClass::setColors( vismodule::ValueArray<vismodule::UInt8>( colors ) );
+    SuperClass::setNormals( vismodule::ValueArray<vismodule::Real32>( normals ) );
+    SuperClass::setConnections( vismodule::ValueArray<vismodule::UInt32>( connections ) );
     SuperClass::setOpacity( 255 );
-    SuperClass::setPolygonType( kvs::PolygonObject::Quadrangle );
+    SuperClass::setPolygonType( vismodule::PolygonObject::Quadrangle );
     SuperClass::setColorType( ::GetColorType( line ) );
-    SuperClass::setNormalType( kvs::PolygonObject::PolygonNormal );
+    SuperClass::setNormalType( vismodule::PolygonObject::PolygonNormal );
 }
 
 /*===========================================================================*/
@@ -758,28 +758,28 @@ void Tubeline::filtering_segment( const kvs::LineObject* line )
  */
 /*===========================================================================*/
 void Tubeline::calculate_tubes(
-    std::vector<kvs::Real32>* vertices,
-    std::vector<kvs::UInt8>* colors,
-    std::vector<kvs::UInt32>* connections,
-    std::vector<kvs::Real32>* normals,
-    const kvs::ValueArray<kvs::Real32> line_vertices,
-    const kvs::ValueArray<kvs::Real32> line_sizes,
-    const kvs::ValueArray<kvs::UInt8> line_colors,
+    std::vector<vismodule::Real32>* vertices,
+    std::vector<vismodule::UInt8>* colors,
+    std::vector<vismodule::UInt32>* connections,
+    std::vector<vismodule::Real32>* normals,
+    const vismodule::ValueArray<vismodule::Real32> line_vertices,
+    const vismodule::ValueArray<vismodule::Real32> line_sizes,
+    const vismodule::ValueArray<vismodule::UInt8> line_colors,
     const size_t nvertices,
-    const kvs::PolygonObject::ColorType color_type )
+    const vismodule::PolygonObject::ColorType color_type )
 {
     // First tube position.
-    kvs::Vector3f start_position( line_vertices[0], line_vertices[1], line_vertices[2] );
-    kvs::Vector3f end_position( line_vertices[3], line_vertices[4], line_vertices[5] );
+    vismodule::Vector3f start_position( line_vertices[0], line_vertices[1], line_vertices[2] );
+    vismodule::Vector3f end_position( line_vertices[3], line_vertices[4], line_vertices[5] );
 
     // Initiali raduis parameters.
-    kvs::Real32 pre_radius  = 0.0f;
-    kvs::Real32 radius = line_sizes[0];
-    kvs::Real32 post_radius = line_sizes[1];
+    vismodule::Real32 pre_radius  = 0.0f;
+    vismodule::Real32 radius = line_sizes[0];
+    vismodule::Real32 post_radius = line_sizes[1];
 
     // Calculate vertices that are composed of the circles (cross-sections).
-    std::vector<kvs::Vector3f> start_circle;
-    std::vector<kvs::Vector3f> end_circle;
+    std::vector<vismodule::Vector3f> start_circle;
+    std::vector<vismodule::Vector3f> end_circle;
     this->calculate_circles(
         &start_circle,
         &end_circle,
@@ -790,8 +790,8 @@ void Tubeline::calculate_tubes(
         post_radius );
 
     // Calculate colors at the cross-sections.
-    kvs::RGBColor start_color( line_colors[0], line_colors[1], line_colors[2] );
-    kvs::RGBColor end_color( line_colors[3], line_colors[4], line_colors[5] );
+    vismodule::RGBColor start_color( line_colors[0], line_colors[1], line_colors[2] );
+    vismodule::RGBColor end_color( line_colors[3], line_colors[4], line_colors[5] );
 
     size_t vertex_number = 0;
 
@@ -803,14 +803,14 @@ void Tubeline::calculate_tubes(
     for ( size_t i = 1, index = 3; i < nloops; i++, index += 3 )
     {
         // Update the tube position.
-        const kvs::Real32 v0_x = line_vertices[ index + 0 ];
-        const kvs::Real32 v0_y = line_vertices[ index + 1 ];
-        const kvs::Real32 v0_z = line_vertices[ index + 2 ];
-        const kvs::Real32 v1_x = line_vertices[ index + 3 ];
-        const kvs::Real32 v1_y = line_vertices[ index + 4 ];
-        const kvs::Real32 v1_z = line_vertices[ index + 5 ];
-        start_position = kvs::Vector3f( v0_x, v0_y, v0_z );
-        end_position = kvs::Vector3f( v1_x, v1_y, v1_z );
+        const vismodule::Real32 v0_x = line_vertices[ index + 0 ];
+        const vismodule::Real32 v0_y = line_vertices[ index + 1 ];
+        const vismodule::Real32 v0_z = line_vertices[ index + 2 ];
+        const vismodule::Real32 v1_x = line_vertices[ index + 3 ];
+        const vismodule::Real32 v1_y = line_vertices[ index + 4 ];
+        const vismodule::Real32 v1_z = line_vertices[ index + 5 ];
+        start_position = vismodule::Vector3f( v0_x, v0_y, v0_z );
+        end_position = vismodule::Vector3f( v1_x, v1_y, v1_z );
 
         // Update the reduis parameters.
         pre_radius = line_sizes[i-1];
@@ -818,8 +818,8 @@ void Tubeline::calculate_tubes(
         post_radius = ( i == nvertices - 2 ) ? 0.0f : line_sizes[i+1];
 
         // Save parameters for the pre-tube.
-        const std::vector<kvs::Vector3f> pre_end_circle = end_circle;
-        const kvs::RGBColor pre_end_color = end_color;
+        const std::vector<vismodule::Vector3f> pre_end_circle = end_circle;
+        const vismodule::RGBColor pre_end_color = end_color;
 
         // Update the vertices of the tube's circles.
         start_circle.clear();
@@ -837,14 +837,14 @@ void Tubeline::calculate_tubes(
         vertex_number = m_ndivisions * 2 * i + m_ndivisions * 2 * ( i - 1 );
 
         // Update the colors of the circles.
-        const kvs::UInt8 c0_r = line_colors[ index + 0 ];
-        const kvs::UInt8 c0_g = line_colors[ index + 1 ];
-        const kvs::UInt8 c0_b = line_colors[ index + 2 ];
-        const kvs::UInt8 c1_r = line_colors[ index + 3 ];
-        const kvs::UInt8 c1_g = line_colors[ index + 4 ];
-        const kvs::UInt8 c1_b = line_colors[ index + 5 ];
-        start_color = kvs::RGBColor( c0_r, c0_g, c0_b );
-        end_color = ( i == nvertices-1 ) ? start_color : kvs::RGBColor( c1_r, c1_g, c1_b );
+        const vismodule::UInt8 c0_r = line_colors[ index + 0 ];
+        const vismodule::UInt8 c0_g = line_colors[ index + 1 ];
+        const vismodule::UInt8 c0_b = line_colors[ index + 2 ];
+        const vismodule::UInt8 c1_r = line_colors[ index + 3 ];
+        const vismodule::UInt8 c1_g = line_colors[ index + 4 ];
+        const vismodule::UInt8 c1_b = line_colors[ index + 5 ];
+        start_color = vismodule::RGBColor( c0_r, c0_g, c0_b );
+        end_color = ( i == nvertices-1 ) ? start_color : vismodule::RGBColor( c1_r, c1_g, c1_b );
 
         // Set the data of the polygon object.
         this->set_vertices( vertices, start_circle, end_circle );
@@ -872,25 +872,25 @@ void Tubeline::calculate_tubes(
  */
 /*===========================================================================*/
 void Tubeline::calculate_circles(
-    std::vector<kvs::Vector3f>* start_circle,
-    std::vector<kvs::Vector3f>* end_circle,
-    const kvs::Vector3f& start_position,
-    const kvs::Vector3f& end_position,
+    std::vector<vismodule::Vector3f>* start_circle,
+    std::vector<vismodule::Vector3f>* end_circle,
+    const vismodule::Vector3f& start_position,
+    const vismodule::Vector3f& end_position,
     const float radius,
     const float pre_radius,
     const float post_radius )
 {
-    const kvs::Vector3f vec1 = end_position - start_position;
+    const vismodule::Vector3f vec1 = end_position - start_position;
     const float length = static_cast<float>( vec1.length() );
 
-    //static kvs::Vector3f base( 0.0f, 0.0f, 1.0f ); ???
-    const kvs::Vector3f base( 0.0f, 0.0f, 1.0f );
-    const kvs::Vector3f axis = base.cross( vec1 );
+    //static vismodule::Vector3f base( 0.0f, 0.0f, 1.0f ); ???
+    const vismodule::Vector3f base( 0.0f, 0.0f, 1.0f );
+    const vismodule::Vector3f axis = base.cross( vec1 );
     const float radian = static_cast<float>( std::acos( base.dot( vec1 ) / ( base.length() * vec1.length() ) ) );
-    const kvs::Quaternion<float> q( axis, radian );
-    const kvs::Matrix33<float> mat = q.toMatrix();
+    const vismodule::Quaternion<float> q( axis, radian );
+    const vismodule::Matrix33<float> mat = q.toMatrix();
 
-    float diff_rad = static_cast<float>( 2.0f * kvs::Math::pi / m_ndivisions );
+    float diff_rad = static_cast<float>( 2.0f * vismodule::Math::pi / m_ndivisions );
     float min_z = pre_radius - length * 0.5f;
     float max_z = length * 0.5f - post_radius;
     if ( length - post_radius - pre_radius < 0  )
@@ -899,17 +899,17 @@ void Tubeline::calculate_circles(
         max_z = length;
     }
 
-    const kvs::Vector3f pos = start_position + vec1 * 0.5f;
+    const vismodule::Vector3f pos = start_position + vec1 * 0.5f;
     for ( size_t i = 0; i < m_ndivisions; i++ )
     {
         const float rad = diff_rad * i;
         const float x = radius * std::cos( rad );
         const float y = radius * std::sin( rad );
 
-        const kvs::Vector3f s_pos = mat * kvs::Vector3f( x, y, min_z ) + pos;
+        const vismodule::Vector3f s_pos = mat * vismodule::Vector3f( x, y, min_z ) + pos;
         start_circle->push_back( s_pos );
 
-        const kvs::Vector3f e_pos = mat * kvs::Vector3f( x, y, max_z ) + pos;
+        const vismodule::Vector3f e_pos = mat * vismodule::Vector3f( x, y, max_z ) + pos;
         end_circle->push_back( e_pos );
     }
 }
@@ -923,9 +923,9 @@ void Tubeline::calculate_circles(
  */
 /*===========================================================================*/
 void Tubeline::set_vertices(
-    std::vector<kvs::Real32>* vertices,
-    const std::vector<kvs::Vector3f>& start_circle,
-    const std::vector<kvs::Vector3f>& end_circle )
+    std::vector<vismodule::Real32>* vertices,
+    const std::vector<vismodule::Vector3f>& start_circle,
+    const std::vector<vismodule::Vector3f>& end_circle )
 {
     for ( size_t i = 0; i < m_ndivisions; i++ )
     {
@@ -952,10 +952,10 @@ void Tubeline::set_vertices(
  */
 /*===========================================================================*/
 void Tubeline::set_colors(
-    std::vector<kvs::UInt8>* colors,
-    const kvs::RGBColor& start_color,
-    const kvs::RGBColor& end_color,
-    const kvs::PolygonObject::ColorType color_type )
+    std::vector<vismodule::UInt8>* colors,
+    const vismodule::RGBColor& start_color,
+    const vismodule::RGBColor& end_color,
+    const vismodule::PolygonObject::ColorType color_type )
 {
     for ( size_t i = 0; i < m_ndivisions; i++ )
     {
@@ -964,7 +964,7 @@ void Tubeline::set_colors(
         colors->push_back( start_color.b() );
     }
 
-    if( color_type == kvs::PolygonObject::VertexColor )
+    if( color_type == vismodule::PolygonObject::VertexColor )
     {
         for ( size_t i = 0; i < m_ndivisions; i++ )
         {
@@ -986,19 +986,19 @@ void Tubeline::set_colors(
  */
 /*===========================================================================*/
 void Tubeline::set_connections_and_normals(
-    std::vector<kvs::UInt32>* connections,
-    std::vector<kvs::Real32>* normals,
-    const std::vector<kvs::Vector3f>& start_circle,
-    const std::vector<kvs::Vector3f>& end_circle,
+    std::vector<vismodule::UInt32>* connections,
+    std::vector<vismodule::Real32>* normals,
+    const std::vector<vismodule::Vector3f>& start_circle,
+    const std::vector<vismodule::Vector3f>& end_circle,
     const size_t vertex_number )
 {
     // create vertex index list
-    std::vector<kvs::UInt32> v_ids;
-    std::vector<kvs::UInt32> n_ids;
+    std::vector<vismodule::UInt32> v_ids;
+    std::vector<vismodule::UInt32> n_ids;
 
     for ( size_t i = 0; i < m_ndivisions; i++ )
     {
-        const kvs::UInt32 index = static_cast<kvs::UInt32>( i );
+        const vismodule::UInt32 index = static_cast<vismodule::UInt32>( i );
         v_ids.push_back( vertex_number + index );
         n_ids.push_back( index );
     }
@@ -1023,13 +1023,13 @@ void Tubeline::set_connections_and_normals(
         connections->push_back( v_ids[i+1] );
         connections->push_back( v_ids[i]   );
 
-        const kvs::Vector3f v1 = start_circle[n_ids[i+1]] - start_circle[n_ids[i]];
-        const kvs::Vector3f v2 = end_circle[n_ids[i+1]] - start_circle[n_ids[i]];
-        const kvs::Vector3f norm = -v1.cross( v2 );
+        const vismodule::Vector3f v1 = start_circle[n_ids[i+1]] - start_circle[n_ids[i]];
+        const vismodule::Vector3f v2 = end_circle[n_ids[i+1]] - start_circle[n_ids[i]];
+        const vismodule::Vector3f norm = -v1.cross( v2 );
         normals->push_back( norm.x() );
         normals->push_back( norm.y() );
         normals->push_back( norm.z() );
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

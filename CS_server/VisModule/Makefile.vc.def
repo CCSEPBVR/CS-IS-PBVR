@@ -3,10 +3,10 @@
 #*****************************************************************************
 
 #=============================================================================
-#  KVS_DIR.
+#  VIS_MODULE_DIR.
 #=============================================================================
-!IFNDEF KVS_DIR
-!ERROR KVS_DIR is not defined.
+!IFNDEF VIS_MODULE_DIR
+!ERROR VIS_MODULE_DIR is not defined.
 !ENDIF
 
 
@@ -53,16 +53,16 @@ MAKEFILE = Makefile.vc
 
 
 #=============================================================================
-#  KVS library.
+#  VISMODULE library.
 #=============================================================================
-LIB_KVS_CORE = kvsCore.lib
+LIB_VIS_MODULE_CORE = kvsCore.lib
 
-LIB_KVS_SUPPORT_CAVE   = kvsSupportCAVE.lib
-LIB_KVS_SUPPORT_GLEW   = kvsSupportGLEW.lib
-LIB_KVS_SUPPORT_GLUT   = kvsSupportGLUT.lib
-LIB_KVS_SUPPORT_QT     = kvsSupportQt.lib
-LIB_KVS_SUPPORT_SAGE   = kvsSupportSAGE.lib
-LIB_KVS_SUPPORT_OPENCV = kvsSupportOpenCV.lib
+LIB_VIS_MODULE_SUPPORT_CAVE   = kvsSupportCAVE.lib
+LIB_VIS_MODULE_SUPPORT_GLEW   = kvsSupportGLEW.lib
+LIB_VIS_MODULE_SUPPORT_GLUT   = kvsSupportGLUT.lib
+LIB_VIS_MODULE_SUPPORT_QT     = kvsSupportQt.lib
+LIB_VIS_MODULE_SUPPORT_SAGE   = kvsSupportSAGE.lib
+LIB_VIS_MODULE_SUPPORT_OPENCV = kvsSupportOpenCV.lib
 
 
 #=============================================================================
@@ -92,13 +92,13 @@ GL_LINK_LIBRARY = glu32.lib opengl32.lib
 #=============================================================================
 #  GLUT_INCLUDE_PATH, GLUT_LIBRARY_PATH, GLUT_LINK_LIBRARY
 #=============================================================================
-!IF "$(KVS_SUPPORT_GLUT)" == "1"
+!IF "$(VIS_MODULE_SUPPORT_GLUT)" == "1"
 GLUT_INCLUDE_PATH =
 GLUT_LIBRARY_PATH =
 GLUT_LINK_LIBRARY = glut32.lib
-!IFDEF KVS_GLUT_DIR
-GLUT_INCLUDE_PATH = $(GLUT_INCLUDE_PATH) /I"$(KVS_GLUT_DIR)\include"
-GLUT_LIBRARY_PATH = $(GLUT_LIBRARY_PATH) /LIBPATH:"$(KVS_GLUT_DIR)\lib"
+!IFDEF VIS_MODULE_GLUT_DIR
+GLUT_INCLUDE_PATH = $(GLUT_INCLUDE_PATH) /I"$(VIS_MODULE_GLUT_DIR)\include"
+GLUT_LIBRARY_PATH = $(GLUT_LIBRARY_PATH) /LIBPATH:"$(VIS_MODULE_GLUT_DIR)\lib"
 !ENDIF
 !ENDIF
 
@@ -106,13 +106,13 @@ GLUT_LIBRARY_PATH = $(GLUT_LIBRARY_PATH) /LIBPATH:"$(KVS_GLUT_DIR)\lib"
 #=============================================================================
 #  GLEW_INCLUDE_PATH, GLEW_LIBRARY_PATH, GLEW_LINK_LIBRARY
 #=============================================================================
-!IF "$(KVS_SUPPORT_GLEW)" == "1"
+!IF "$(VIS_MODULE_SUPPORT_GLEW)" == "1"
 GLEW_INCLUDE_PATH =
 GLEW_LIBRARY_PATH =
 GLEW_LINK_LIBRARY = glew32.lib
-!IFDEF KVS_GLEW_DIR
-GLEW_INCLUDE_PATH = $(GLEW_INCLUDE_PATH) /I"$(KVS_GLEW_DIR)\include"
-GLEW_LIBRARY_PATH = $(GLEW_LIBRARY_PATH) /LIBPATH:"$(KVS_GLEW_DIR)\lib"
+!IFDEF VIS_MODULE_GLEW_DIR
+GLEW_INCLUDE_PATH = $(GLEW_INCLUDE_PATH) /I"$(VIS_MODULE_GLEW_DIR)\include"
+GLEW_LIBRARY_PATH = $(GLEW_LIBRARY_PATH) /LIBPATH:"$(VIS_MODULE_GLEW_DIR)\lib"
 !ENDIF
 !ENDIF
 
@@ -120,13 +120,13 @@ GLEW_LIBRARY_PATH = $(GLEW_LIBRARY_PATH) /LIBPATH:"$(KVS_GLEW_DIR)\lib"
 #=============================================================================
 #  CAVE_INCLUDE_PATH, CAVE_LIBRARY_PATH, CAVE_LINK_LIBRARY
 #=============================================================================
-!IF "$(KVS_SUPPORT_CAVE)" == "1"
+!IF "$(VIS_MODULE_SUPPORT_CAVE)" == "1"
 CAVE_INCLUDE_PATH =
 CAVE_LIBRARY_PATH =
 CAVE_LINK_LIBRARY = libcave_ogl_mt_MD.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib wsock32.lib
-!IFDEF KVS_CAVE_DIR
-CAVE_INCLUDE_PATH = $(CAVE_INCLUDE_PATH) /I"$(KVS_CAVE_DIR)\include"
-CAVE_LIBRARY_PATH = $(CAVE_LIBRARY_PATH) /LIBPATH:"$(KVS_CAVE_DIR)\lib32"
+!IFDEF VIS_MODULE_CAVE_DIR
+CAVE_INCLUDE_PATH = $(CAVE_INCLUDE_PATH) /I"$(VIS_MODULE_CAVE_DIR)\include"
+CAVE_LIBRARY_PATH = $(CAVE_LIBRARY_PATH) /LIBPATH:"$(VIS_MODULE_CAVE_DIR)\lib32"
 !ENDIF
 !ENDIF
 
@@ -134,32 +134,32 @@ CAVE_LIBRARY_PATH = $(CAVE_LIBRARY_PATH) /LIBPATH:"$(KVS_CAVE_DIR)\lib32"
 #=============================================================================
 #  SAGE_INCLUDE_PATH, SAGE_LIBRARY_PATH, SAGE_LINK_LIBRARY
 #=============================================================================
-!IF "$(KVS_SUPPORT_SAGE)" == "1"
+!IF "$(VIS_MODULE_SUPPORT_SAGE)" == "1"
 SAGE_INCLUDE_PATH =
 SAGE_LIBRARY_PATH =
 SAGE_LINK_LIBRARY = sail.lib
-!IFDEF KVS_SAGE_DIR
-SAGE_INCLUDE_PATH = $(SAGE_INCLUDE_PATH) /I"$(KVS_SAGE_DIR)\include"
-SAGE_LIBRARY_PATH = $(SAGE_LIBRARY_PATH) /LIBPATH:"$(KVS_SAGE_DIR)\lib"
+!IFDEF VIS_MODULE_SAGE_DIR
+SAGE_INCLUDE_PATH = $(SAGE_INCLUDE_PATH) /I"$(VIS_MODULE_SAGE_DIR)\include"
+SAGE_LIBRARY_PATH = $(SAGE_LIBRARY_PATH) /LIBPATH:"$(VIS_MODULE_SAGE_DIR)\lib"
 !ENDIF
 !ENDIF
 
 #=============================================================================
 #  OPENCV_INCLUDE_PATH, OPENCV_LIBRARY_PATH, OPENCV_LINK_LIBRARY
 #=============================================================================
-!IF "$(KVS_SUPPORT_OPENCV)" == "1"
+!IF "$(VIS_MODULE_SUPPORT_OPENCV)" == "1"
 OPENCV_INCLUDE_PATH = /I"C:\Program Files\OpenCV\cv\include"
 OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"C:\Program Files\OpenCV\cvaux\include"
 OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"C:\Program Files\OpenCV\cxcore\include"
 OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"C:\Program Files\OpenCV\otherlibs\highgui"
 OPENCV_LIBRARY_PATH = /LIBPATH:"C:\Program Files\OpenCV\lib"
 OPENCV_LINK_LIBRARY = cv.lib cxcore.lib cvaux.lib highgui.lib cvcam.lib
-!IFDEF KVS_OPENCV_DIR
-OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"$(KVS_OPENCV_DIR)\cv\include"
-OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"$(KVS_OPENCV_DIR)\cvaux\include"
-OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"$(KVS_OPENCV_DIR)\cxcore\include"
-OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"$(KVS_OPENCV_DIR)\otherlibs\hightgui"
-OPENCV_LIBRARY_PATH = $(OPENCV_LIBRARY_PATH) /LIBPATH:"$(KVS_OPENCV_DIR)\lib"
+!IFDEF VIS_MODULE_OPENCV_DIR
+OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"$(VIS_MODULE_OPENCV_DIR)\cv\include"
+OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"$(VIS_MODULE_OPENCV_DIR)\cvaux\include"
+OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"$(VIS_MODULE_OPENCV_DIR)\cxcore\include"
+OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"$(VIS_MODULE_OPENCV_DIR)\otherlibs\hightgui"
+OPENCV_LIBRARY_PATH = $(OPENCV_LIBRARY_PATH) /LIBPATH:"$(VIS_MODULE_OPENCV_DIR)\lib"
 !ENDIF
 !ENDIF
 
@@ -182,45 +182,45 @@ CPPFLAGS = $(CPPFLAGS) /Ox /MT
 DEFINITIONS = /DWIN32 /D_MBCS /DNOMINMAX /D_SCL_SECURE_NO_DEPRECATE /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
 
 !IFDEF DEBUG
-DEFINITIONS = $(DEFINITIONS) /D_DEBUG /DKVS_ENABLE_DEBUG
+DEFINITIONS = $(DEFINITIONS) /D_DEBUG /DVIS_MODULE_ENABLE_DEBUG
 !ELSE
 DEFINITIONS = $(DEFINITIONS) /DNDEBUG
 !ENDIF
 
 !IFDEF MEM_DEBUG
-DEFINITIONS = $(DEFINITIONS) /DKVS_ENABLE_MEM_DEBUG
+DEFINITIONS = $(DEFINITIONS) /DVIS_MODULE_ENABLE_MEM_DEBUG
 !ENDIF
 
 
-!IF "$(KVS_SUPPORT_CAVE)" == "1"
-DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_CAVE
+!IF "$(VIS_MODULE_SUPPORT_CAVE)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DVIS_MODULE_SUPPORT_CAVE
 !ENDIF
 
-!if "$(KVS_SUPPORT_GLEW)" == "1"
-DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_GLEW
+!if "$(VIS_MODULE_SUPPORT_GLEW)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DVIS_MODULE_SUPPORT_GLEW
 # NOTE: Since the GLEW header file that is in SupportGLEW must be included before
 # the OpenGL header files, 'GLEW_INCLUDE_PATH' adds to 'DEFINITIONS' here.
 DEFINITIONS = $(DEFINITIONS) $(GLEW_INCLUDE_PATH)
 !ENDIF
 
-!IF "$(KVS_SUPPORT_GLUT)" == "1"
-DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_GLUT
+!IF "$(VIS_MODULE_SUPPORT_GLUT)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DVIS_MODULE_SUPPORT_GLUT
 !ENDIF
 
-!IF "$(KVS_SUPPORT_QT)" == "1"
-DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_QT
+!IF "$(VIS_MODULE_SUPPORT_QT)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DVIS_MODULE_SUPPORT_QT
 !ENDIF
 
-!IF "$(KVS_SUPPORT_SAGE)" == "1"
-DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_SAGE
+!IF "$(VIS_MODULE_SUPPORT_SAGE)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DVIS_MODULE_SUPPORT_SAGE
 !ENDIF
 
-!IF "$(KVS_SUPPORT_OPENCV)" == "1"
-DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_OPENCV
+!IF "$(VIS_MODULE_SUPPORT_OPENCV)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DVIS_MODULE_SUPPORT_OPENCV
 !ENDIF
 
-!IF "$(KVS_SUPPORT_CUDA)" == "1"
-DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_CUDA
+!IF "$(VIS_MODULE_SUPPORT_CUDA)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DVIS_MODULE_SUPPORT_CUDA
 !ENDIF
 
 

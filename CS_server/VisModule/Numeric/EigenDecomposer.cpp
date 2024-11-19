@@ -19,7 +19,7 @@ namespace
 {
 
 template <typename T>
-inline const bool IsSymmetricMatrix( const kvs::Matrix<T>& m )
+inline const bool IsSymmetricMatrix( const vismodule::Matrix<T>& m )
 {
     const size_t nrows = m.nrows();
     const size_t ncolumns = m.ncolumns();
@@ -29,7 +29,7 @@ inline const bool IsSymmetricMatrix( const kvs::Matrix<T>& m )
     {
         for( size_t j = 0; j < ncolumns; j++ )
         {
-            if ( !kvs::Math::Equal( m[i][j], m[j][i] ) ) return( false );
+            if ( !vismodule::Math::Equal( m[i][j], m[j][i] ) ) return( false );
         }
     }
 
@@ -37,20 +37,20 @@ inline const bool IsSymmetricMatrix( const kvs::Matrix<T>& m )
 }
 
 template <typename T>
-inline const kvs::Vector<T> Normalize( const kvs::Vector<T>& vec )
+inline const vismodule::Vector<T> Normalize( const vismodule::Vector<T>& vec )
 {
-    kvs::Vector<T> result( vec );
+    vismodule::Vector<T> result( vec );
     result.normalize();
 
     return( result );
 }
 
 template <typename T>
-inline const T HouseholderTransform( kvs::Vector<T>& vec )
+inline const T HouseholderTransform( vismodule::Vector<T>& vec )
 {
     T ret = static_cast<T>( vec.length() );
 
-    if( !kvs::Math::IsZero( ret ) )
+    if( !vismodule::Math::IsZero( ret ) )
     {
         if ( vec[0] < T(0) ) ret = -ret;
         vec[0] += ret;
@@ -66,18 +66,18 @@ inline const T HouseholderTransform( kvs::Vector<T>& vec )
 }
 
 template <typename T>
-inline void Tridiagonalize( kvs::Matrix<T>& m, kvs::Vector<T>* d, kvs::Vector<T>* e )
+inline void Tridiagonalize( vismodule::Matrix<T>& m, vismodule::Vector<T>* d, vismodule::Vector<T>* e )
 {
-    KVS_ASSERT( ::IsSymmetricMatrix<T>( m ) );
-    KVS_ASSERT( m.nrows() >= 3 );
-    KVS_ASSERT( d->size() == m.nrows() );
-    KVS_ASSERT( e->size() == m.nrows() );
+    VIS_MODULE_ASSERT( ::IsSymmetricMatrix<T>( m ) );
+    VIS_MODULE_ASSERT( m.nrows() >= 3 );
+    VIS_MODULE_ASSERT( d->size() == m.nrows() );
+    VIS_MODULE_ASSERT( e->size() == m.nrows() );
 
     const int dim = static_cast<int>(m.nrows());
     for ( int k = 0; k < dim - 2; k++ )
     {
         // Copy the k-th row vector of the matrix to 'row_vec' vector.
-        kvs::Vector<T> row_vec( m[k] );
+        vismodule::Vector<T> row_vec( m[k] );
 
         // Copy the k-th element of 'row_vec' vector to the k-th element
         // of the d vector.
@@ -86,14 +86,14 @@ inline void Tridiagonalize( kvs::Matrix<T>& m, kvs::Vector<T>* d, kvs::Vector<T>
         // Generate the vector from under the 'k+1'-th elements
         // of the 'row_vec' vector.
         // vec1 = { row_vec[k+1], row_vec[k+2], ... , row_vec[dim-k-1] }
-        kvs::Vector<T> vec1( dim - k - 1 );
+        vismodule::Vector<T> vec1( dim - k - 1 );
         for ( size_t i = 0; i < vec1.size(); i++ ) vec1[i] = row_vec[ ( k + 1 ) + i ];
 
         // Householder reduction of the 'vec1' vector.
         (*e)[k] = HouseholderTransform<T>( vec1 );
         for ( size_t i = 0; i < vec1.size(); i++ ) row_vec[ ( k + 1 ) + i ]   = vec1[i];
         for ( size_t i = 0; i < vec1.size(); i++ ) m[k][ ( k + 1 ) + i ] = vec1[i];
-        if ( kvs::Math::IsZero( (*e)[k] ) ) continue;
+        if ( vismodule::Math::IsZero( (*e)[k] ) ) continue;
 
         // Calculate the 'd' vector.
         for ( int i = k + 1; i < dim; i++ )
@@ -107,7 +107,7 @@ inline void Tridiagonalize( kvs::Matrix<T>& m, kvs::Vector<T>* d, kvs::Vector<T>
         // Generate the vector from under the 'k+1'-th elements
         // of the 'd' vector.
         // vec2 = { d[k+1], d[k+2], ... , d[dim-k-1] }
-        kvs::Vector<T> vec2( dim - k - 1 );
+        vismodule::Vector<T> vec2( dim - k - 1 );
         for ( size_t i = 0; i < vec2.size(); i++ ) vec2[i] = (*d)[ ( k + 1 ) + i ];
 
         // Update the matrix.
@@ -139,12 +139,12 @@ inline void Tridiagonalize( kvs::Matrix<T>& m, kvs::Vector<T>* d, kvs::Vector<T>
     for ( int k = dim - 1; k >= 0; k-- )
     {
         // Copy the k-th row vector of the matrix to 'row_vec1' vector.
-        kvs::Vector<T> row_vec1( m[k] );
+        vismodule::Vector<T> row_vec1( m[k] );
 
         // Generate the vector from under the k-th elements
         // of the 'row_vec1' vector.
         // vec1 = { row_vec1[k+1], row_vec1[k+2], ... , row_vec1[dim-k-1] }
-        kvs::Vector<T> vec1( dim - k - 1 );
+        vismodule::Vector<T> vec1( dim - k - 1 );
         for ( size_t l = 0; l < vec1.size(); l++ ) vec1[l] = row_vec1[ ( k + 1 ) + l ];
 
         if ( k < dim - 2 )
@@ -152,12 +152,12 @@ inline void Tridiagonalize( kvs::Matrix<T>& m, kvs::Vector<T>* d, kvs::Vector<T>
             for ( int i = k + 1; i < dim; i++ )
             {
                 // Copy the i-th row vector of the matrix to 'row_vec2' vector.
-                kvs::Vector<T> row_vec2( m[i] );
+                vismodule::Vector<T> row_vec2( m[i] );
 
                 // Generate the vector from under the k-th elements
                 // of the 'row_vector2' vector.
                 // vec2 = { row_vec2[k+1], row_vec2[k+2], ... , row_vec2[dim-k-1] }
-                kvs::Vector<T> vec2( dim - k - 1 );
+                vismodule::Vector<T> vec2( dim - k - 1 );
                 for ( size_t l = 0; l < vec2.size(); l++ ) vec2[l] = row_vec2[ ( k + 1 ) + l ];
 
                 const T t = vec1.dot( vec2 );
@@ -173,7 +173,7 @@ inline void Tridiagonalize( kvs::Matrix<T>& m, kvs::Vector<T>* d, kvs::Vector<T>
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 template <typename T> double EigenDecomposer<T>::m_max_tolerance = 1.0e-10; ///< tolerance
@@ -197,7 +197,7 @@ EigenDecomposer<T>::EigenDecomposer( void )
  */
 /*===========================================================================*/
 template <typename T>
-EigenDecomposer<T>::EigenDecomposer( const kvs::Matrix33<T>& m, MatrixType type )
+EigenDecomposer<T>::EigenDecomposer( const vismodule::Matrix33<T>& m, MatrixType type )
 {
     this->setMatrix( m, type );
     this->decompose();
@@ -211,7 +211,7 @@ EigenDecomposer<T>::EigenDecomposer( const kvs::Matrix33<T>& m, MatrixType type 
  */
 /*===========================================================================*/
 template <typename T>
-EigenDecomposer<T>::EigenDecomposer( const kvs::Matrix44<T>& m, MatrixType type )
+EigenDecomposer<T>::EigenDecomposer( const vismodule::Matrix44<T>& m, MatrixType type )
 {
     this->setMatrix( m, type );
     this->decompose();
@@ -225,7 +225,7 @@ EigenDecomposer<T>::EigenDecomposer( const kvs::Matrix44<T>& m, MatrixType type 
  */
 /*===========================================================================*/
 template <typename T>
-EigenDecomposer<T>::EigenDecomposer( const kvs::Matrix<T>& m, MatrixType type )
+EigenDecomposer<T>::EigenDecomposer( const vismodule::Matrix<T>& m, MatrixType type )
 {
     this->setMatrix( m, type );
     this->decompose();
@@ -238,7 +238,7 @@ EigenDecomposer<T>::EigenDecomposer( const kvs::Matrix<T>& m, MatrixType type )
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Matrix<T>& EigenDecomposer<T>::eigenVectors( void ) const
+const vismodule::Matrix<T>& EigenDecomposer<T>::eigenVectors( void ) const
 {
     return( m_eigen_vectors );
 }
@@ -251,7 +251,7 @@ const kvs::Matrix<T>& EigenDecomposer<T>::eigenVectors( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector<T>& EigenDecomposer<T>::eigenVector( const size_t index ) const
+const vismodule::Vector<T>& EigenDecomposer<T>::eigenVector( const size_t index ) const
 {
     return( m_eigen_vectors[index] );
 }
@@ -263,7 +263,7 @@ const kvs::Vector<T>& EigenDecomposer<T>::eigenVector( const size_t index ) cons
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector<T>& EigenDecomposer<T>::eigenValues( void ) const
+const vismodule::Vector<T>& EigenDecomposer<T>::eigenValues( void ) const
 {
     return( m_eigen_values );
 }
@@ -289,7 +289,7 @@ const T EigenDecomposer<T>::eigenValue( const size_t index ) const
  */
 /*===========================================================================*/
 template <typename T>
-void EigenDecomposer<T>::setMatrix( const kvs::Matrix33<T>& m, MatrixType type )
+void EigenDecomposer<T>::setMatrix( const vismodule::Matrix33<T>& m, MatrixType type )
 {
     m_matrix_type = type;
     m_eigen_values.setSize( 3 );
@@ -311,7 +311,7 @@ void EigenDecomposer<T>::setMatrix( const kvs::Matrix33<T>& m, MatrixType type )
  */
 /*===========================================================================*/
 template <typename T>
-void EigenDecomposer<T>::setMatrix( const kvs::Matrix44<T>& m, MatrixType type )
+void EigenDecomposer<T>::setMatrix( const vismodule::Matrix44<T>& m, MatrixType type )
 {
     m_matrix_type = type;
     m_eigen_values.setSize( 4 );
@@ -333,7 +333,7 @@ void EigenDecomposer<T>::setMatrix( const kvs::Matrix44<T>& m, MatrixType type )
  */
 /*===========================================================================*/
 template <typename T>
-void EigenDecomposer<T>::setMatrix( const kvs::Matrix<T>& m, MatrixType type )
+void EigenDecomposer<T>::setMatrix( const vismodule::Matrix<T>& m, MatrixType type )
 {
     m_matrix_type = type;
     m_eigen_values.setSize( m.nrows() );
@@ -377,21 +377,21 @@ void EigenDecomposer<T>::decompose( void )
 template <typename T>
 const bool EigenDecomposer<T>::calculate_by_power( void )
 {
-    KVS_ASSERT( m_eigen_vectors.nrows() == m_eigen_vectors.ncolumns() );
+    VIS_MODULE_ASSERT( m_eigen_vectors.nrows() == m_eigen_vectors.ncolumns() );
 
     const size_t dim = m_eigen_vectors.nrows();
-    kvs::Matrix<T> eigen_vectors( dim, dim );
-    kvs::Matrix<T> m( m_eigen_vectors );
+    vismodule::Matrix<T> eigen_vectors( dim, dim );
+    vismodule::Matrix<T> m( m_eigen_vectors );
 
     // temporary vectors
-    kvs::Vector<T> temp_vec0( dim );
-    kvs::Vector<T> temp_vec1( dim );
-    kvs::Vector<T> temp_vec2( dim );
+    vismodule::Vector<T> temp_vec0( dim );
+    vismodule::Vector<T> temp_vec1( dim );
+    vismodule::Vector<T> temp_vec2( dim );
     for ( size_t i = 0; i < dim; i++ ) temp_vec0[i] = T(1);
 
     // temporary matrices
-    kvs::Matrix<T> temp_mat0( dim, dim );
-    kvs::Matrix<T> temp_mat1( dim, dim );
+    vismodule::Matrix<T> temp_mat0( dim, dim );
+    vismodule::Matrix<T> temp_mat1( dim, dim );
     for ( size_t i = 0; i < dim; i++ ) temp_mat0[i][i] = T(1);
 
     // Calculate the eigen values and the eigen matrices.
@@ -450,10 +450,10 @@ const bool EigenDecomposer<T>::calculate_by_power( void )
                 }
                 else
                 {
-                    kvs::Matrix<T> diag( dim, dim );
+                    vismodule::Matrix<T> diag( dim, dim );
                     for ( size_t i = 0; i < dim; i++ ) diag[i][i] = static_cast<T>( length2 );
 
-                    kvs::Matrix<T> x( m_eigen_vectors - diag );
+                    vismodule::Matrix<T> x( m_eigen_vectors - diag );
                     temp_mat1 = x * temp_mat0;
 
                     temp_mat0 = temp_mat1;
@@ -482,13 +482,13 @@ const bool EigenDecomposer<T>::calculate_by_power( void )
 template <typename T>
 const bool EigenDecomposer<T>::calculate_by_qr( void )
 {
-    KVS_ASSERT( ::IsSymmetricMatrix<T>( m_eigen_vectors ) );
-    KVS_ASSERT( m_eigen_vectors.nrows() >= 3 );
+    VIS_MODULE_ASSERT( ::IsSymmetricMatrix<T>( m_eigen_vectors ) );
+    VIS_MODULE_ASSERT( m_eigen_vectors.nrows() >= 3 );
 
     const size_t dim = m_eigen_vectors.nrows();
 
     // Tridiagonalize the matrix.
-    kvs::Vector<T> e( dim );
+    vismodule::Vector<T> e( dim );
     ::Tridiagonalize<T>( m_eigen_vectors, &m_eigen_values, &e );
     for ( int i = static_cast<int>(dim) - 1; i > 0; i-- ) e[i] = e[i-1]; e[0] = T(0);
 
@@ -514,7 +514,7 @@ const bool EigenDecomposer<T>::calculate_by_qr( void )
             for ( int k = j; k < h; k++ )
             {
                 T c = T(0);
-                if( kvs::Math::Abs(x) >= kvs::Math::Abs(y) )
+                if( vismodule::Math::Abs(x) >= vismodule::Math::Abs(y) )
                 {
                     t = -y / x;
                     c = T(1) / static_cast<T>( std::sqrt( (double)( t * t ) + 1.0 ) );
@@ -606,4 +606,4 @@ template class EigenDecomposer<int>;
 template class EigenDecomposer<float>;
 template class EigenDecomposer<double>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

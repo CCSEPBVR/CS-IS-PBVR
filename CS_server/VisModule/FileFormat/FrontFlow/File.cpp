@@ -14,11 +14,11 @@
 /*****************************************************************************/
 #include "File.h"
 #include <cstdio>
-#include <kvs/Message>
-#include <kvs/Endian>
+#include <vismodule/Message>
+#include <vismodule/Endian>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace gf
@@ -107,7 +107,7 @@ const std::string& File::comment( const size_t index ) const
  *  @return data set list
  */
 /*===========================================================================*/
-const std::vector<kvs::gf::DataSet>& File::dataSetList( void ) const
+const std::vector<vismodule::gf::DataSet>& File::dataSetList( void ) const
 {
     return( m_data_set_list );
 }
@@ -119,7 +119,7 @@ const std::vector<kvs::gf::DataSet>& File::dataSetList( void ) const
  *  @return data set
  */
 /*===========================================================================*/
-const kvs::gf::DataSet& File::dataSet( const size_t index ) const
+const vismodule::gf::DataSet& File::dataSet( const size_t index ) const
 {
     return( m_data_set_list.at( index ) );
 }
@@ -141,8 +141,8 @@ void File::deallocate( void )
         comment++;
     }
 
-    std::vector<kvs::gf::DataSet>::iterator data_set = m_data_set_list.begin();
-    std::vector<kvs::gf::DataSet>::const_iterator last_data_set = m_data_set_list.end();
+    std::vector<vismodule::gf::DataSet>::iterator data_set = m_data_set_list.begin();
+    std::vector<vismodule::gf::DataSet>::const_iterator last_data_set = m_data_set_list.end();
     while ( data_set != last_data_set )
     {
         data_set->deallocate();
@@ -163,7 +163,7 @@ const bool File::read( const std::string filename )
     {
         if ( !this->read_ascii( filename ) )
         {
-            kvsMessageError("Cannot read %s.", filename.c_str());
+            visModuleMessageError("Cannot read %s.", filename.c_str());
             return( false );
         }
     }
@@ -171,13 +171,13 @@ const bool File::read( const std::string filename )
     {
         if ( !this->read_binary( filename ) )
         {
-            kvsMessageError("Cannot read %s.", filename.c_str());
+            visModuleMessageError("Cannot read %s.", filename.c_str());
             return( false );
         }
     }
     else
     {
-        kvsMessageError( "%s is not GF format data." );
+        visModuleMessageError( "%s is not GF format data." );
         return( false );
     }
 
@@ -196,7 +196,7 @@ const bool File::is_ascii( const std::string filename )
     FILE* fp = fopen( filename.c_str(), "rb" );
     if ( !fp )
     {
-        kvsMessageError("Cannot open %s.", filename.c_str());
+        visModuleMessageError("Cannot open %s.", filename.c_str());
         return( false );
     }
 
@@ -221,7 +221,7 @@ const bool File::is_binary( const std::string filename )
     FILE* fp = fopen( filename.c_str(), "rb" );
     if ( !fp )
     {
-        kvsMessageError("Cannot open %s.", filename.c_str());
+        visModuleMessageError("Cannot open %s.", filename.c_str());
         return( false );
     }
 
@@ -247,7 +247,7 @@ const bool File::read_ascii( const std::string filename )
     FILE* fp = fopen( filename.c_str(), "r" );
     if ( !fp )
     {
-        kvsMessageError("Cannot open %s.", filename.c_str());
+        visModuleMessageError("Cannot open %s.", filename.c_str());
         return( false );
     }
 
@@ -260,7 +260,7 @@ const bool File::read_ascii( const std::string filename )
     m_file_type_header = std::string( line, 8 );
 
     // Read a number of comments.
-    kvs::Int32 ncomments = 0;
+    vismodule::Int32 ncomments = 0;
     fgets( line, line_size, fp );
     sscanf( line, "%d", &ncomments );
 
@@ -281,7 +281,7 @@ const bool File::read_ascii( const std::string filename )
         if ( tag == "#ENDFILE" ) break;
         if ( tag == "#NEW_SET" )
         {
-            kvs::gf::DataSet data_set;
+            vismodule::gf::DataSet data_set;
             data_set.readAscii( fp );
 
             m_data_set_list.push_back( data_set );
@@ -306,7 +306,7 @@ const bool File::read_binary( const std::string filename, const bool swap )
     FILE* fp = fopen( filename.c_str(), "rb" );
     if ( !fp )
     {
-        kvsMessageError("Cannot open %s.", filename.c_str());
+        visModuleMessageError("Cannot open %s.", filename.c_str());
         return( false );
     }
 
@@ -318,11 +318,11 @@ const bool File::read_binary( const std::string filename, const bool swap )
     m_file_type_header = std::string( file_type_header, 8 );
 
     // Read a number of comments.
-    kvs::Int32 ncomments = 0;
+    vismodule::Int32 ncomments = 0;
     fseek( fp, 4, SEEK_CUR );
     fread( &ncomments, 4, 1, fp );
     fseek( fp, 4, SEEK_CUR );
-    if ( swap ) kvs::Endian::Swap( ncomments );
+    if ( swap ) vismodule::Endian::Swap( ncomments );
 
     // Read commnets.
     char comment[60];
@@ -349,7 +349,7 @@ const bool File::read_binary( const std::string filename, const bool swap )
 
         if ( strncmp( buffer, "#NEW_SET", 8 ) == 0 )
         {
-            kvs::gf::DataSet data_set;
+            vismodule::gf::DataSet data_set;
             if ( !data_set.readBinary( fp ) ) { fclose( fp ); return( false ); }
 
             m_data_set_list.push_back( data_set );
@@ -363,4 +363,4 @@ const bool File::read_binary( const std::string filename, const bool swap )
 
 } // end of namespace gf
 
-} // end of namespace kvs
+} // end of namespace vismodule

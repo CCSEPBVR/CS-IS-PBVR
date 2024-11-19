@@ -3,7 +3,7 @@
 #include <limits>
 #include "Token.h"
 
-#if (defined(KVS_PLATFORM_LINUX) || defined(KVS_PLATFORM_MACOSX))                                                                                                                   
+#if (defined(VIS_MODULE_PLATFORM_LINUX) || defined(VIS_MODULE_PLATFORM_MACOSX))                                                                                                                   
 #include <execinfo.h>
 #endif
 
@@ -476,7 +476,7 @@ void TransferFunctionSynthesizer::CalculateOpacity(
 
     for( int I=0; I<SIMDW; I++ )
     {
-        kvs::Math::Clamp<float>( opacity[I], 0.0, 1.0 );
+        vismodule::Math::Clamp<float>( opacity[I], 0.0, 1.0 );
     }
 }
 
@@ -486,7 +486,7 @@ void TransferFunctionSynthesizer::CalculateColor(
     std::vector<pbvr::TransferFunction>& tf,
     float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
     float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
-    kvs::UInt8* Red, kvs::UInt8* Green, kvs::UInt8* Blue )//resulting colors[SIMDW]
+    vismodule::UInt8* Red, vismodule::UInt8* Green, vismodule::UInt8* Blue )//resulting colors[SIMDW]
 {
     for( int I=0; I<SIMDW; I++)
     {
@@ -517,11 +517,11 @@ void TransferFunctionSynthesizer::CalculateColor(
         }
     }
 
-    //kvs::RGBColor colors[m_col_var.size()][SIMDW]; //result of t_func.colorMap().at( m_scalars[i] );
-    kvs::RGBColor** colors = new kvs::RGBColor*[m_col_var.size()];
+    //vismodule::RGBColor colors[m_col_var.size()][SIMDW]; //result of t_func.colorMap().at( m_scalars[i] );
+    vismodule::RGBColor** colors = new vismodule::RGBColor*[m_col_var.size()];
     for (size_t i = 0; i < m_col_var.size(); i++)
     {
-        colors[i] = new kvs::RGBColor[SIMDW];
+        colors[i] = new vismodule::RGBColor[SIMDW];
     }
 
     //ボリュームデータ合成式のループ
@@ -621,9 +621,9 @@ void TransferFunctionSynthesizer::CalculateColor(
      
     for( int I=0; I<SIMDW; I++ )
     {
-        Red[I] = (kvs::UInt8)(red[I]*255);
-        Green[I] = (kvs::UInt8)(green[I]*255);
-        Blue[I] = (kvs::UInt8)(blue[I]*255);
+        Red[I] = (vismodule::UInt8)(red[I]*255);
+        Green[I] = (vismodule::UInt8)(green[I]*255);
+        Blue[I] = (vismodule::UInt8)(blue[I]*255);
     }
     for (size_t i = 0; i < m_col_var.size(); i++)
     {
@@ -638,8 +638,8 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
     const int loop_cnt,
     float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
     float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
-    //const kvs::Vector3f *local_coord, 
-    //const kvs::Vector3f *global_coord,
+    //const vismodule::Vector3f *local_coord, 
+    //const vismodule::Vector3f *global_coord,
     std::vector<pbvr::TransferFunction>& tf,
     const pbvr::CoordSynthesizerStrings css,
     float* nx_g, float* ny_g, float* nz_g ) //global coord[SIMDW])
@@ -947,8 +947,8 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
 //------------unstructured------
 //kawamura
 std::vector<float> TransferFunctionSynthesizer::SynthesizedOpacityScalars(
-    std::vector< pbvr::CellBase<Type>* > interp , kvs::Vector3f local_coord, kvs::Vector3f global_coord )
-    //std::vector< pbvr::HexahedralCell<Type>* > interp , kvs::Vector3f local_coord, kvs::Vector3f global_coord )
+    std::vector< pbvr::CellBase<Type>* > interp , vismodule::Vector3f local_coord, vismodule::Vector3f global_coord )
+    //std::vector< pbvr::HexahedralCell<Type>* > interp , vismodule::Vector3f local_coord, vismodule::Vector3f global_coord )
 {
     m_var_value[X] = global_coord.x();
     m_var_value[Y] = global_coord.y();
@@ -968,7 +968,7 @@ std::vector<float> TransferFunctionSynthesizer::SynthesizedOpacityScalars(
         for( size_t j= 0; j < nvar; j++ )
         {
             interp[j]->setLocalPoint( local_coord );
-            const kvs::Vector3f grad = interp[j]->gradient();
+            const vismodule::Vector3f grad = interp[j]->gradient();
             m_var_value[4*(j+1)  ] = interp[j]->scalar();
             m_var_value[4*(j+1)+1] = grad.x();
             m_var_value[4*(j+1)+2] = grad.y();
@@ -1039,8 +1039,8 @@ void TransferFunctionSynthesizer::SynthesizedOpacityScalarsArray(
 //    std::vector< pbvr::HexahedralCell<Type>* > interp ,
     std::vector< pbvr::CellBase<Type>* > interp ,
     const int loop_cnt,
-    const kvs::Vector3f *local_coord,
-    const kvs::Vector3f *global_coord,
+    const vismodule::Vector3f *local_coord,
+    const vismodule::Vector3f *global_coord,
     std::vector<float> *o_scalars_array )
 {
     //配列を追加
@@ -1253,8 +1253,8 @@ void TransferFunctionSynthesizer::SynthesizedColorScalarsArray(
 //    std::vector< pbvr::HexahedralCell<Type>* > interp,
     std::vector< pbvr::CellBase<Type>* > interp ,
     const int loop_cnt,
-    const kvs::Vector3f *local_coord,
-    const kvs::Vector3f *global_coord,
+    const vismodule::Vector3f *local_coord,
+    const vismodule::Vector3f *global_coord,
     std::vector<float> *c_scalars_array )
 {
 
@@ -1414,7 +1414,7 @@ void TransferFunctionSynthesizer::SynthesizedColorScalarsArray(
 
 //kawamura
 float TransferFunctionSynthesizer::CalculateOpacity(
-    std::vector< pbvr::CellBase<Type>* > interp , kvs::Vector3f local_coord, kvs::Vector3f global_coord,
+    std::vector< pbvr::CellBase<Type>* > interp , vismodule::Vector3f local_coord, vismodule::Vector3f global_coord,
     std::vector<pbvr::TransferFunction>& tf)
 {
     m_var_value[X] = global_coord.x();
@@ -1436,7 +1436,7 @@ float TransferFunctionSynthesizer::CalculateOpacity(
         for( size_t j= 0; j < nvar; j++ )
         {
             interp[j]->setLocalPoint( local_coord );
-            const kvs::Vector3f grad = interp[j]->gradient();
+            const vismodule::Vector3f grad = interp[j]->gradient();
             m_var_value[4*(j+1)  ] = interp[j]->scalar();
             m_var_value[4*(j+1)+1] = grad.x();
             m_var_value[4*(j+1)+2] = grad.y();
@@ -1463,7 +1463,7 @@ float TransferFunctionSynthesizer::CalculateOpacity(
 
     //calc. opacity function
     float opacity = m_rpn.eval();
-    return kvs::Math::Clamp<float>( opacity, 0.0, 1.0 );
+    return vismodule::Math::Clamp<float>( opacity, 0.0, 1.0 );
 }
 
 
@@ -1471,13 +1471,13 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
     //std::vector< pbvr::HexahedralCell<Type>* > interp , 
     std::vector< pbvr::CellBase<Type>* > interp , 
     const int loop_cnt,
-    const kvs::Vector3f *local_coord, 
-    const kvs::Vector3f *global_coord,
+    const vismodule::Vector3f *local_coord, 
+    const vismodule::Vector3f *global_coord,
     std::vector<pbvr::TransferFunction>& tf,
 //    const pbvr::CoordSynthesizerTokens cst,
     const pbvr::CoordSynthesizerStrings css,
 //    float *new_coord_array)
-    kvs::Vector3f *new_coord_array)
+    vismodule::Vector3f *new_coord_array)
 {
 
     //配列を追加
@@ -1764,8 +1764,8 @@ void TransferFunctionSynthesizer::CalculateOpacityArrayAverage(
     //std::vector< pbvr::HexahedralCell<Type>* > interp , 
     std::vector< pbvr::CellBase<Type>* > interp , 
     const int loop_cnt,
-    const kvs::Vector3f *local_coord, 
-    const kvs::Vector3f *global_coord,
+    const vismodule::Vector3f *local_coord, 
+    const vismodule::Vector3f *global_coord,
     std::vector<pbvr::TransferFunction>& tf,
     float *opacity_array)
 {
@@ -1916,7 +1916,7 @@ void TransferFunctionSynthesizer::CalculateOpacityArrayAverage(
 
     for( int jx=0; jx<loop_cnt; jx++ )
     {
-        opacity_array[jx] = kvs::Math::Clamp<float>( eval_result[jx], 0.0, 1.0 );
+        opacity_array[jx] = vismodule::Math::Clamp<float>( eval_result[jx], 0.0, 1.0 );
     }
 
     //配列を削除
@@ -1967,8 +1967,8 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
     //std::vector< pbvr::HexahedralCell<Type>* > interp , 
     std::vector< pbvr::CellBase<Type>* > interp , 
     const int loop_cnt,
-    const kvs::Vector3f *local_coord, 
-    const kvs::Vector3f *global_coord,
+    const vismodule::Vector3f *local_coord, 
+    const vismodule::Vector3f *global_coord,
     std::vector<pbvr::TransferFunction>& tf,
     float *opacity_array)
 {
@@ -2119,7 +2119,7 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 
     for( int jx=0; jx<loop_cnt; jx++ )
     {
-        opacity_array[jx] = kvs::Math::Clamp<float>( eval_result[jx], 0.0, 1.0 );
+        opacity_array[jx] = vismodule::Math::Clamp<float>( eval_result[jx], 0.0, 1.0 );
     }
     //配列の削除
     for (int i = 0; i < interp.size(); ++i)
@@ -2170,7 +2170,7 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 //    std::vector<pbvr::TransferFunction>& tf,
 //    float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
 //    float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
-//    kvs::UInt8* Red, kvs::UInt8* Green, kvs::UInt8* Blue )//resulting colors[SIMDW]
+//    vismodule::UInt8* Red, vismodule::UInt8* Green, vismodule::UInt8* Blue )//resulting colors[SIMDW]
 //{
 //    for( int I=0; I<SIMDW; I++)
 //    {
@@ -2201,7 +2201,7 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 //        }
 //    }
 //
-//    kvs::RGBColor colors[m_col_var.size()][SIMDW]; //result of t_func.colorMap().at( m_scalars[i] );
+//    vismodule::RGBColor colors[m_col_var.size()][SIMDW]; //result of t_func.colorMap().at( m_scalars[i] );
 //
 //    //ボリュームデータ合成式のループ
 //    for( size_t i = 0; i < m_col_var.size(); i++ )
@@ -2300,9 +2300,9 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 //     
 //    for( int I=0; I<SIMDW; I++ )
 //    {
-//        Red[I] = (kvs::UInt8)(red[I]*255);
-//        Green[I] = (kvs::UInt8)(green[I]*255);
-//        Blue[I] = (kvs::UInt8)(blue[I]*255);
+//        Red[I] = (vismodule::UInt8)(red[I]*255);
+//        Green[I] = (vismodule::UInt8)(green[I]*255);
+//        Blue[I] = (vismodule::UInt8)(blue[I]*255);
 //    }
 //}
 
@@ -2310,10 +2310,10 @@ void TransferFunctionSynthesizer::CalculateColorArray(
 //    std::vector< pbvr::HexahedralCell<Type>* > interp,
     std::vector< pbvr::CellBase<Type>* > interp , 
     const int loop_cnt,
-    const kvs::Vector3f *local_coord,
-    const kvs::Vector3f *global_coord,
+    const vismodule::Vector3f *local_coord,
+    const vismodule::Vector3f *global_coord,
     std::vector<pbvr::TransferFunction>& tf,
-    kvs::RGBColor *color_seq)
+    vismodule::RGBColor *color_seq)
 {
 
     //配列を追加
@@ -2401,11 +2401,11 @@ void TransferFunctionSynthesizer::CalculateColorArray(
                                    grad_array_z[j] );
     }
 
-    //kvs::RGBColor colors[10][loop_cnt]; //result of t_func.colorMap().at( m_scalars[i] );
-    kvs::RGBColor** colors = new kvs::RGBColor* [m_col_var.size()];
+    //vismodule::RGBColor colors[10][loop_cnt]; //result of t_func.colorMap().at( m_scalars[i] );
+    vismodule::RGBColor** colors = new vismodule::RGBColor* [m_col_var.size()];
     for( size_t i = 0; i < m_col_var.size(); i++ )
     {
-        colors[i] = new kvs::RGBColor[loop_cnt];
+        colors[i] = new vismodule::RGBColor[loop_cnt];
     }
 
     m_var_value_array[X] = global_coord_x;
@@ -2497,9 +2497,9 @@ void TransferFunctionSynthesizer::CalculateColorArray(
     //結果を配列に格納
     for( int jx=0; jx<loop_cnt; jx++ ){
         color_seq[jx].set(
-            (kvs::UInt8)(red_array[jx] * 255),
-            (kvs::UInt8)(green_array[jx] * 255),
-            (kvs::UInt8)(blue_array[jx] * 255) );
+            (vismodule::UInt8)(red_array[jx] * 255),
+            (vismodule::UInt8)(green_array[jx] * 255),
+            (vismodule::UInt8)(blue_array[jx] * 255) );
     }
 
     //配列を削除
@@ -2563,7 +2563,7 @@ void TransferFunctionSynthesizer::AssertValid( const float& v, const char* file,
         std::stringstream ss;
         ss << "Assertion failed: NaN/Inf detected: "
            << file << ":" << line << std::endl;
-#if (defined(KVS_PLATFORM_LINUX) || defined(KVS_PLATFORM_MACOSX))
+#if (defined(VIS_MODULE_PLATFORM_LINUX) || defined(VIS_MODULE_PLATFORM_MACOSX))
         void* stk[128];
         int sz = backtrace( stk, 128 );
         char** sstr = backtrace_symbols( stk, sz );

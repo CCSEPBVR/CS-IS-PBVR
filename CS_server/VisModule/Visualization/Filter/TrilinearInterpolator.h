@@ -11,16 +11,16 @@
  *  $Id: TrilinearInterpolator.h 653 2010-10-29 14:17:13Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__TRILINEAR_INTERPOLATOR_H_INCLUDE
-#define KVS__TRILINEAR_INTERPOLATOR_H_INCLUDE
+#ifndef VIS_MODULE__TRILINEAR_INTERPOLATOR_H_INCLUDE
+#define VIS_MODULE__TRILINEAR_INTERPOLATOR_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/StructuredVolumeObject>
-#include <kvs/Vector3>
-#include <kvs/Assert>
+#include <vismodule/ClassName>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/Vector3>
+#include <vismodule/Assert>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -30,45 +30,45 @@ namespace kvs
 /*==========================================================================*/
 class TrilinearInterpolator
 {
-    kvsClassName_without_virtual( kvs::TrilinearInterpolator );
+    visModuleClassName_without_virtual( vismodule::TrilinearInterpolator );
 
 private:
 
-    kvs::Vector3ui m_grid_index; ///< grid index
-    kvs::UInt32    m_index[8];   ///< neighbouring grid index
-    kvs::Real32    m_weight[8];  ///< weight for the neighbouring grid index
+    vismodule::Vector3ui m_grid_index; ///< grid index
+    vismodule::UInt32    m_index[8];   ///< neighbouring grid index
+    vismodule::Real32    m_weight[8];  ///< weight for the neighbouring grid index
 
-    const kvs::StructuredVolumeObject* m_reference_volume; ///< reference irregular volume data
-
-public:
-
-    TrilinearInterpolator( const kvs::StructuredVolumeObject* volume );
+    const vismodule::StructuredVolumeObject* m_reference_volume; ///< reference irregular volume data
 
 public:
 
-    void attachPoint( const kvs::Vector3f& point );
+    TrilinearInterpolator( const vismodule::StructuredVolumeObject* volume );
 
-    const kvs::UInt32* indices( void ) const;
+public:
+
+    void attachPoint( const vismodule::Vector3f& point );
+
+    const vismodule::UInt32* indices( void ) const;
 
     template <typename T>
-    const kvs::Real32 scalar( void ) const;
+    const vismodule::Real32 scalar( void ) const;
 
     template <typename T>
-    const kvs::Vector3f gradient( void ) const;
+    const vismodule::Vector3f gradient( void ) const;
 };
 
-inline TrilinearInterpolator::TrilinearInterpolator( const kvs::StructuredVolumeObject* volume )
+inline TrilinearInterpolator::TrilinearInterpolator( const vismodule::StructuredVolumeObject* volume )
     : m_grid_index( 0, 0, 0 )
     , m_reference_volume( volume )
 {
 }
 
-inline void TrilinearInterpolator::attachPoint( const kvs::Vector3f& point )
+inline void TrilinearInterpolator::attachPoint( const vismodule::Vector3f& point )
 {
-    const kvs::Vector3ui resolution = m_reference_volume->resolution();
-    KVS_ASSERT( 0.0f <= point.x() && point.x() <= resolution.x() - 1.0f );
-    KVS_ASSERT( 0.0f <= point.y() && point.y() <= resolution.y() - 1.0f );
-    KVS_ASSERT( 0.0f <= point.z() && point.z() <= resolution.z() - 1.0f );
+    const vismodule::Vector3ui resolution = m_reference_volume->resolution();
+    VIS_MODULE_ASSERT( 0.0f <= point.x() && point.x() <= resolution.x() - 1.0f );
+    VIS_MODULE_ASSERT( 0.0f <= point.y() && point.y() <= resolution.y() - 1.0f );
+    VIS_MODULE_ASSERT( 0.0f <= point.z() && point.z() <= resolution.z() - 1.0f );
 
     // Temporary index.
     const size_t ti = static_cast<size_t>( point.x() );
@@ -116,7 +116,7 @@ inline void TrilinearInterpolator::attachPoint( const kvs::Vector3f& point )
     m_weight[7] = yz - xyz;
 }
 
-inline const kvs::UInt32* TrilinearInterpolator::indices( void ) const
+inline const vismodule::UInt32* TrilinearInterpolator::indices( void ) const
 {
     return( m_index );
 }
@@ -139,14 +139,14 @@ inline const float TrilinearInterpolator::scalar( void ) const
 }
 
 template <typename T>
-inline const kvs::Vector3f TrilinearInterpolator::gradient( void ) const
+inline const vismodule::Vector3f TrilinearInterpolator::gradient( void ) const
 {
     // Calculate the point's gradient.
     float dx[8], dy[8], dz[8];
 
     const T* const data = reinterpret_cast<const T*>( m_reference_volume->values().pointer() );
 
-    const kvs::Vector3ui resolution = m_reference_volume->resolution();
+    const vismodule::Vector3ui resolution = m_reference_volume->resolution();
     const size_t line_size  = m_reference_volume->nnodesPerLine();
     const size_t slice_size = m_reference_volume->nnodesPerSlice();
 
@@ -286,10 +286,10 @@ inline const kvs::Vector3f TrilinearInterpolator::gradient( void ) const
         dz[6] * m_weight[6] +
         dz[7] * m_weight[7];
 
-//    return( kvs::Vector3f( x, y, z ) );
-    return( kvs::Vector3f( -x, -y, -z ) );
+//    return( vismodule::Vector3f( x, y, z ) );
+    return( vismodule::Vector3f( -x, -y, -z ) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TRILINEAR_INTERPOLATOR_H_INCLUDE
+#endif // VIS_MODULE__TRILINEAR_INTERPOLATOR_H_INCLUDE

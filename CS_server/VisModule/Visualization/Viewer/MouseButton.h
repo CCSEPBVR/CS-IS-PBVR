@@ -11,11 +11,11 @@
  *  $Id: MouseButton.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MOUSE_BUTTON_H_INCLUDE
-#define KVS__MOUSE_BUTTON_H_INCLUDE
+#ifndef VIS_MODULE__MOUSE_BUTTON_H_INCLUDE
+#define VIS_MODULE__MOUSE_BUTTON_H_INCLUDE
 
 
-namespace kvs
+namespace vismodule
 {
 
 struct MouseButton
@@ -47,6 +47,6 @@ struct MouseButton
     };
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MOUSE_BUTTON_H_INCLUDE
+#endif // VIS_MODULE__MOUSE_BUTTON_H_INCLUDE

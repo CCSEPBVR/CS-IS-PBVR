@@ -14,7 +14,7 @@
 #include "FilterBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -58,4 +58,4 @@ const bool FilterBase::isFailure( void ) const
     return( !m_is_success );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

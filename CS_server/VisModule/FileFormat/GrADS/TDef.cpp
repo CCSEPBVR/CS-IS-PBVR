@@ -13,7 +13,7 @@
  */
 /*****************************************************************************/
 #include "TDef.h"
-#include <kvs/Tokenizer>
+#include <vismodule/Tokenizer>
 #include <string>
 #include <iostream>
 #include <cstdlib>
@@ -55,7 +55,7 @@ const int DaysInMonth[] = {
 
 }
 
-namespace kvs
+namespace vismodule
 {
 
 namespace grads
@@ -71,7 +71,7 @@ namespace grads
 /*===========================================================================*/
 const bool TDef::read( std::string line, std::ifstream& ifs )
 {
-    kvs::Tokenizer t( line, " \t\n" );
+    vismodule::Tokenizer t( line, " \t\n" );
     t.token(); // TDEF
 
     // xnum
@@ -188,4 +188,4 @@ TDef& TDef::operator ++ ( void )
 
 } // end of namespace grads
 
-} // end of namespace kvs
+} // end of namespace vismodule

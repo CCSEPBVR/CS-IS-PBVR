@@ -15,7 +15,7 @@
 #include <cstdio>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -213,4 +213,4 @@ const unsigned long MersenneTwister::hash( std::time_t t, std::clock_t c )
     return( ( h1 + differ++ ) ^ h2 );
 }
 
-} // end of namespace kvs.
+} // end of namespace vismodule.

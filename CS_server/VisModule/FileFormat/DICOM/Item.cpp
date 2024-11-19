@@ -28,7 +28,7 @@ const unsigned int ItemEmptyLength = 4;
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace dcm
@@ -213,4 +213,4 @@ const bool dcm::Item::read_undefined_length_item( std::ifstream& ifs, const bool
 
 } // end of namespace dcm
 
-} // end of namespace kvs
+} // end of namespace vismodule

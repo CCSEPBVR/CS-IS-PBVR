@@ -11,16 +11,16 @@
  *  $Id: RendererBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__RENDERER_BASE_H_INCLUDE
-#define KVS__RENDERER_BASE_H_INCLUDE
+#ifndef VIS_MODULE__RENDERER_BASE_H_INCLUDE
+#define VIS_MODULE__RENDERER_BASE_H_INCLUDE
 
 #include <string>
-#include <kvs/ClassName>
-#include <kvs/Timer>
-#include <kvs/Module>
+#include <vismodule/ClassName>
+#include <vismodule/Timer>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class ObjectBase;
@@ -34,14 +34,14 @@ class Light;
 /*==========================================================================*/
 class RendererBase
 {
-    kvsClassName( kvs::RendererBase );
+    visModuleClassName( vismodule::RendererBase );
 
-    kvsModuleBase;
+    visModuleBase;
 
 protected:
 
     std::string  m_name;         ///< renderer name
-    kvs::Timer   m_timer;        ///< timer
+    vismodule::Timer   m_timer;        ///< timer
     mutable bool m_shading_flag; ///< shading flag
 
 public:
@@ -56,11 +56,11 @@ public:
 
     const std::string& name( void ) const;
 
-    const kvs::Timer& timer( void ) const;
+    const vismodule::Timer& timer( void ) const;
 
 protected:
 
-    kvs::Timer& timer( void );
+    vismodule::Timer& timer( void );
 
 public:
 
@@ -75,9 +75,9 @@ public:
     void initialize( void );
 
     virtual void exec(
-        kvs::ObjectBase* object,
-        kvs::Camera*     camera = NULL,
-        kvs::Light*      light  = NULL ) = 0;
+        vismodule::ObjectBase* object,
+        vismodule::Camera*     camera = NULL,
+        vismodule::Light*      light  = NULL ) = 0;
 
 protected:
 
@@ -87,6 +87,6 @@ protected:
 };
 
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__RENDERER_BASE_H_INCLUDE
+#endif // VIS_MODULE__RENDERER_BASE_H_INCLUDE

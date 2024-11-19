@@ -12,10 +12,10 @@
  */
 /****************************************************************************/
 #include "UnstructuredVolumeImporter.h"
-#include <kvs/DebugNew>
-#include <kvs/AVSUcd>
-#include <kvs/Message>
-#include <kvs/Vector3>
+#include <vismodule/DebugNew>
+#include <vismodule/AVSUcd>
+#include <vismodule/Message>
+#include <vismodule/Vector3>
 
 
 namespace
@@ -28,18 +28,18 @@ namespace
  *  @return cell type
  */
 /*==========================================================================*/
-const kvs::UnstructuredVolumeObject::CellType StringToCellType( const std::string& cell_type )
+const vismodule::UnstructuredVolumeObject::CellType StringToCellType( const std::string& cell_type )
 {
-    if (      cell_type == "tetrahedra" ) { return( kvs::UnstructuredVolumeObject::Tetrahedra ); }
-    else if ( cell_type == "quadratic tetrahedra" ) { return( kvs::UnstructuredVolumeObject::QuadraticTetrahedra ); }
-    else if ( cell_type == "hexahedra"  ) { return( kvs::UnstructuredVolumeObject::Hexahedra );  }
-    else if ( cell_type == "quadratic hexahedra"  ) { return( kvs::UnstructuredVolumeObject::QuadraticHexahedra );  }
-    else if ( cell_type == "pyramid"  ) { return( kvs::UnstructuredVolumeObject::Pyramid );  }
-    else if ( cell_type == "point"  ) { return( kvs::UnstructuredVolumeObject::Point );  }
+    if (      cell_type == "tetrahedra" ) { return( vismodule::UnstructuredVolumeObject::Tetrahedra ); }
+    else if ( cell_type == "quadratic tetrahedra" ) { return( vismodule::UnstructuredVolumeObject::QuadraticTetrahedra ); }
+    else if ( cell_type == "hexahedra"  ) { return( vismodule::UnstructuredVolumeObject::Hexahedra );  }
+    else if ( cell_type == "quadratic hexahedra"  ) { return( vismodule::UnstructuredVolumeObject::QuadraticHexahedra );  }
+    else if ( cell_type == "pyramid"  ) { return( vismodule::UnstructuredVolumeObject::Pyramid );  }
+    else if ( cell_type == "point"  ) { return( vismodule::UnstructuredVolumeObject::Point );  }
     else
     {
-        kvsMessageError( "Unknown cell type '%s'.", cell_type.c_str() );
-        return( kvs::UnstructuredVolumeObject::UnknownCellType );
+        visModuleMessageError( "Unknown cell type '%s'.", cell_type.c_str() );
+        return( vismodule::UnstructuredVolumeObject::UnknownCellType );
     }
 }
 
@@ -50,36 +50,36 @@ const kvs::UnstructuredVolumeObject::CellType StringToCellType( const std::strin
  *  @return cell type
  */
 /*==========================================================================*/
-const kvs::UnstructuredVolumeObject::CellType ElementTypeToCellType(
-    const kvs::AVSUcd::ElementType element_type )
+const vismodule::UnstructuredVolumeObject::CellType ElementTypeToCellType(
+    const vismodule::AVSUcd::ElementType element_type )
 {
-    if ( element_type == kvs::AVSUcd::Tetrahedra  )
+    if ( element_type == vismodule::AVSUcd::Tetrahedra  )
     {
-        return( kvs::UnstructuredVolumeObject::Tetrahedra );
+        return( vismodule::UnstructuredVolumeObject::Tetrahedra );
     }
-    else if ( element_type == kvs::AVSUcd::Tetrahedra2 )
+    else if ( element_type == vismodule::AVSUcd::Tetrahedra2 )
     {
-        return( kvs::UnstructuredVolumeObject::QuadraticTetrahedra );
+        return( vismodule::UnstructuredVolumeObject::QuadraticTetrahedra );
     }
-    else if ( element_type == kvs::AVSUcd::Hexahedra )
+    else if ( element_type == vismodule::AVSUcd::Hexahedra )
     {
-        return( kvs::UnstructuredVolumeObject::Hexahedra );
+        return( vismodule::UnstructuredVolumeObject::Hexahedra );
     }
-    else if ( element_type == kvs::AVSUcd::Hexahedra2 )
+    else if ( element_type == vismodule::AVSUcd::Hexahedra2 )
     {
-        return( kvs::UnstructuredVolumeObject::QuadraticHexahedra );
+        return( vismodule::UnstructuredVolumeObject::QuadraticHexahedra );
     }
     else
     {
-        kvsMessageError( "Unknown element type." );
-        return( kvs::UnstructuredVolumeObject::UnknownCellType );
+        visModuleMessageError( "Unknown element type." );
+        return( vismodule::UnstructuredVolumeObject::UnknownCellType );
     }
 }
 
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -99,20 +99,20 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( void )
 /*===========================================================================*/
 UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filename )
 {
-    if ( kvs::KVSMLObjectUnstructuredVolume::CheckFileExtension( filename ) )
+    if ( vismodule::KVSMLObjectUnstructuredVolume::CheckFileExtension( filename ) )
     {
-        kvs::KVSMLObjectUnstructuredVolume* file_format = new kvs::KVSMLObjectUnstructuredVolume( filename );
+        vismodule::KVSMLObjectUnstructuredVolume* file_format = new vismodule::KVSMLObjectUnstructuredVolume( filename );
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
@@ -120,20 +120,20 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
         this->import( file_format );
         delete file_format;
     }
-    else if ( kvs::AVSUcd::CheckFileExtension( filename ) )
+    else if ( vismodule::AVSUcd::CheckFileExtension( filename ) )
     {
-        kvs::AVSUcd* file_format = new kvs::AVSUcd( filename );
+        vismodule::AVSUcd* file_format = new vismodule::AVSUcd( filename );
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
@@ -141,20 +141,20 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
         this->import( file_format );
         delete file_format;
     }
-    else if ( kvs::AVSField::CheckFileExtension( filename ) )
+    else if ( vismodule::AVSField::CheckFileExtension( filename ) )
     {
-        kvs::AVSField* file_format = new kvs::AVSField( filename );
+        vismodule::AVSField* file_format = new vismodule::AVSField( filename );
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
@@ -165,7 +165,7 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Cannot import '%s'.",filename.c_str());
+        visModuleMessageError("Cannot import '%s'.",filename.c_str());
         return;
     }
 }
@@ -176,7 +176,7 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
  *  @param  file_format [in] pointer to the file format data
  */
 /*==========================================================================*/
-UnstructuredVolumeImporter::UnstructuredVolumeImporter( const kvs::FileFormatBase* file_format )
+UnstructuredVolumeImporter::UnstructuredVolumeImporter( const vismodule::FileFormatBase* file_format )
 {
     this->exec( file_format );
 }
@@ -197,32 +197,32 @@ UnstructuredVolumeImporter::~UnstructuredVolumeImporter( void )
  *  @return pointer to the imported unstructured volume object
  */
 /*===========================================================================*/
-UnstructuredVolumeImporter::SuperClass* UnstructuredVolumeImporter::exec( const kvs::FileFormatBase* file_format )
+UnstructuredVolumeImporter::SuperClass* UnstructuredVolumeImporter::exec( const vismodule::FileFormatBase* file_format )
 {
     if ( !file_format )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input file format is NULL.");
+        visModuleMessageError("Input file format is NULL.");
         return( NULL );
     }
 
     const std::string class_name = file_format->className();
-    if ( class_name == "kvs::KVSMLObjectUnstructuredVolume" )
+    if ( class_name == "vismodule::KVSMLObjectUnstructuredVolume" )
     {
-        this->import( static_cast<const kvs::KVSMLObjectUnstructuredVolume*>( file_format ) );
+        this->import( static_cast<const vismodule::KVSMLObjectUnstructuredVolume*>( file_format ) );
     }
-    else if ( class_name == "kvs::AVSUcd" )
+    else if ( class_name == "vismodule::AVSUcd" )
     {
-        this->import( static_cast<const kvs::AVSUcd*>( file_format ) );
+        this->import( static_cast<const vismodule::AVSUcd*>( file_format ) );
     }
-    else if ( class_name == "kvs::AVSField" )
+    else if ( class_name == "vismodule::AVSField" )
     {
-        this->import( static_cast<const kvs::AVSField*>( file_format ) );
+        this->import( static_cast<const vismodule::AVSField*>( file_format ) );
     }
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input file format is not supported.");
+        visModuleMessageError("Input file format is not supported.");
         return( NULL );
     }
 
@@ -235,19 +235,19 @@ UnstructuredVolumeImporter::SuperClass* UnstructuredVolumeImporter::exec( const 
  *  @param  kvsml [in] pointer to the KVSML format data
  */
 /*==========================================================================*/
-void UnstructuredVolumeImporter::import( const kvs::KVSMLObjectUnstructuredVolume* kvsml )
+void UnstructuredVolumeImporter::import( const vismodule::KVSMLObjectUnstructuredVolume* kvsml )
 {
     if ( kvsml->objectTag().hasExternalCoord() )
     {
-        const kvs::Vector3f min_coord( kvsml->objectTag().minExternalCoord() );
-        const kvs::Vector3f max_coord( kvsml->objectTag().maxExternalCoord() );
+        const vismodule::Vector3f min_coord( kvsml->objectTag().minExternalCoord() );
+        const vismodule::Vector3f max_coord( kvsml->objectTag().maxExternalCoord() );
         SuperClass::setMinMaxExternalCoords( min_coord, max_coord );
     }
 
     if ( kvsml->objectTag().hasObjectCoord() )
     {
-        const kvs::Vector3f min_coord( kvsml->objectTag().minObjectCoord() );
-        const kvs::Vector3f max_coord( kvsml->objectTag().maxObjectCoord() );
+        const vismodule::Vector3f min_coord( kvsml->objectTag().minObjectCoord() );
+        const vismodule::Vector3f max_coord( kvsml->objectTag().maxObjectCoord() );
         SuperClass::setMinMaxObjectCoords( min_coord, max_coord );
     }
 
@@ -281,7 +281,7 @@ void UnstructuredVolumeImporter::import( const kvs::KVSMLObjectUnstructuredVolum
  *  @param  ucd [in] pointer to the AVS UCD format data
  */
 /*==========================================================================*/
-void UnstructuredVolumeImporter::import( const kvs::AVSUcd* ucd )
+void UnstructuredVolumeImporter::import( const vismodule::AVSUcd* ucd )
 {
     SuperClass::setVeclen( ucd->veclens()[ ucd->componentID() ] );
     SuperClass::setNNodes( ucd->nnodes() );
@@ -289,7 +289,7 @@ void UnstructuredVolumeImporter::import( const kvs::AVSUcd* ucd )
     SuperClass::setCellType( ::ElementTypeToCellType( ucd->elementType() ) );
     SuperClass::setCoords( ucd->coords() );
     SuperClass::setConnections( ucd->connections() );
-    SuperClass::setValues( kvs::AnyValueArray( ucd->values() ) );
+    SuperClass::setValues( vismodule::AnyValueArray( ucd->values() ) );
     SuperClass::updateMinMaxCoords();
     SuperClass::updateMinMaxValues();
 }
@@ -300,18 +300,18 @@ void UnstructuredVolumeImporter::import( const kvs::AVSUcd* ucd )
  *  @param  field [in] pointer to the AVS Filed format data
  */
 /*===========================================================================*/
-void UnstructuredVolumeImporter::import( const kvs::AVSField* field )
+void UnstructuredVolumeImporter::import( const vismodule::AVSField* field )
 {
-    if( field->fieldType() != kvs::AVSField::Irregular )
+    if( field->fieldType() != vismodule::AVSField::Irregular )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Cannot import uniform/rectilinear type AVS field data.");
+        visModuleMessageError("Cannot import uniform/rectilinear type AVS field data.");
         return;
     }
 
     const size_t line_size  = field->dim().x();
     const size_t slice_size = field->dim().y();
-    const kvs::Vector3ui ncells( field->dim() - kvs::Vector3ui( 1, 1, 1 ) );
+    const vismodule::Vector3ui ncells( field->dim() - vismodule::Vector3ui( 1, 1, 1 ) );
     SuperClass::Connections connections( ncells.x() * ncells.y() * ncells.z() * 8 );
 
     size_t vertex_index = 0;
@@ -363,4 +363,4 @@ void UnstructuredVolumeImporter::import( const kvs::AVSField* field )
     SuperClass::updateMinMaxValues();
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -12,13 +12,13 @@
  */
 /*****************************************************************************/
 #include "PixelTag.h"
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
-#include <kvs/Tokenizer>
-#include <kvs/String>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
+#include <vismodule/Tokenizer>
+#include <vismodule/String>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -30,7 +30,7 @@ namespace kvsml
  */
 /*===========================================================================*/
 PixelTag::PixelTag( void ):
-    kvs::kvsml::TagBase( "Pixel" ),
+    vismodule::kvsml::TagBase( "Pixel" ),
     m_has_type( false ),
     m_type( "" )
 {
@@ -86,22 +86,22 @@ void PixelTag::setType( const std::string& type )
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool PixelTag::read( const kvs::XMLNode::SuperClass* parent )
+const bool PixelTag::read( const vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
 
-    BaseClass::m_node = kvs::XMLNode::FindChildNode( parent, tag_name );
+    BaseClass::m_node = vismodule::XMLNode::FindChildNode( parent, tag_name );
     if ( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot find <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot find <%s>.", tag_name.c_str() );
         return( false );
     }
 
     // Element
-    const kvs::XMLElement::SuperClass* element = kvs::XMLNode::ToElement( BaseClass::m_node );
+    const vismodule::XMLElement::SuperClass* element = vismodule::XMLNode::ToElement( BaseClass::m_node );
 
     // type="xxx"
-    const std::string type = kvs::XMLElement::AttributeValue( element, "type" );
+    const std::string type = vismodule::XMLElement::AttributeValue( element, "type" );
     if ( type != "" )
     {
         m_has_type = true;
@@ -118,10 +118,10 @@ const bool PixelTag::read( const kvs::XMLNode::SuperClass* parent )
  *  @return true, if the writing process is done successfully
  */
 /*===========================================================================*/
-const bool PixelTag::write( kvs::XMLNode::SuperClass* parent )
+const bool PixelTag::write( vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
-    kvs::XMLElement element( tag_name );
+    vismodule::XMLElement element( tag_name );
 
     if ( m_has_type )
     {
@@ -131,14 +131,14 @@ const bool PixelTag::write( kvs::XMLNode::SuperClass* parent )
     }
     else
     {
-        kvsMessageError( "'type' is not specified in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "'type' is not specified in <%s>.", tag_name.c_str() );
         return( false );
     }
 
     BaseClass::m_node = parent->InsertEndChild( element );
     if( !BaseClass::m_node )
     {
-        kvsMessageError("Cannot insert <%s>.", tag_name.c_str() );
+        visModuleMessageError("Cannot insert <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -147,4 +147,4 @@ const bool PixelTag::write( kvs::XMLNode::SuperClass* parent )
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

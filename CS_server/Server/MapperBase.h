@@ -18,9 +18,9 @@
 #include "ObjectBase.h"
 #include "VolumeObjectBase.h"
 #include "TransferFunction.h"
-#include <kvs/ColorMap>
-#include <kvs/OpacityMap>
-#include <kvs/Module>
+#include <vismodule/ColorMap>
+#include <vismodule/OpacityMap>
+#include <vismodule/Module>
 
 
 namespace pbvr
@@ -35,9 +35,9 @@ class VolumeObjectBase;
 /*==========================================================================*/
 class MapperBase
 {
-    kvsClassName( pbvr::MapperBase );
+    visModuleClassName( pbvr::MapperBase );
 
-    kvsModuleBase;
+    visModuleBase;
 
 protected:
 
@@ -61,9 +61,9 @@ public:
 
     void setTransferFunction( const pbvr::TransferFunction& transfer_function );
 
-    void setColorMap( const kvs::ColorMap& color_map );
+    void setColorMap( const vismodule::ColorMap& color_map );
 
-    void setOpacityMap( const kvs::OpacityMap& opacity_map );
+    void setOpacityMap( const vismodule::OpacityMap& opacity_map );
 
 public:
 
@@ -71,9 +71,9 @@ public:
 
     const pbvr::TransferFunction& transferFunction() const;
 
-    const kvs::ColorMap& colorMap() const;
+    const vismodule::ColorMap& colorMap() const;
 
-    const kvs::OpacityMap& opacityMap() const;
+    const vismodule::OpacityMap& opacityMap() const;
 
     const bool isSuccess() const;
 

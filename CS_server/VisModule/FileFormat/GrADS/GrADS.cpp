@@ -16,10 +16,10 @@
 #include "GrADS.h"
 #include <cstdlib>
 #include <cstdio>
-#include <kvs/IgnoreUnusedVariable>
-#include <kvs/File>
-#include <kvs/Directory>
-#include <kvs/String>
+#include <vismodule/IgnoreUnusedVariable>
+#include <vismodule/File>
+#include <vismodule/Directory>
+#include <vismodule/String>
 
 
 namespace
@@ -38,8 +38,8 @@ std::string ReplaceYear( const std::string& filename, const int year )
     if ( filename.find("%y2",0) != std::string::npos )
     {
         int y = year % 100;
-        kvs::String replace( y );
-        kvs::String file( filename );
+        vismodule::String replace( y );
+        vismodule::String file( filename );
         file.replace( "%y2", replace.toStdString() );
         return( file.toStdString() );
     }
@@ -48,8 +48,8 @@ std::string ReplaceYear( const std::string& filename, const int year )
     {
         int y = year;
         if ( y < 100 ) y = ( 50 <= y ) ? year + 1900 : year + 2000;
-        kvs::String replace( y );
-        kvs::String file( filename );
+        vismodule::String replace( y );
+        vismodule::String file( filename );
         file.replace( "%y4", replace.toStdString() );
         return( file.toStdString() );
     }
@@ -61,8 +61,8 @@ std::string ReplaceMonth( const std::string& filename, const int month )
 {
     if ( filename.find("%m1",0) != std::string::npos )
     {
-        kvs::String replace( month );
-        kvs::String file( filename );
+        vismodule::String replace( month );
+        vismodule::String file( filename );
         file.replace( "%m1", replace.toStdString() );
         return( file.toStdString() );
     }
@@ -70,14 +70,14 @@ std::string ReplaceMonth( const std::string& filename, const int month )
     if ( filename.find("%m2",0) != std::string::npos )
     {
         char replace[3]; sprintf( replace, "%02d", month );
-        kvs::String file( filename );
+        vismodule::String file( filename );
         file.replace( "%m2", std::string( replace ) );
         return( file.toStdString() );
     }
 
     if ( filename.find("%mc",0) != std::string::npos )
     {
-        kvs::String file( filename );
+        vismodule::String file( filename );
         file.replace( "%mc", MonthName[month - 1] );
         return( file.toStdString() );
     }
@@ -89,8 +89,8 @@ std::string ReplaceDay( const std::string& filename, const int day )
 {
     if ( filename.find("%d1",0) != std::string::npos )
     {
-        kvs::String replace( day );
-        kvs::String file( filename );
+        vismodule::String replace( day );
+        vismodule::String file( filename );
         file.replace( "%d1", replace.toStdString() );
         return( file.toStdString() );
     }
@@ -98,7 +98,7 @@ std::string ReplaceDay( const std::string& filename, const int day )
     if ( filename.find("%d2",0) != std::string::npos )
     {
         char replace[3]; sprintf( replace, "%02d", day );
-        kvs::String file( filename );
+        vismodule::String file( filename );
         file.replace( "%d2", std::string( replace ) );
         return( file.toStdString() );
     }
@@ -110,8 +110,8 @@ std::string ReplaceHour( const std::string& filename, const int hour )
 {
     if ( filename.find("%h1",0) != std::string::npos )
     {
-        kvs::String replace( hour );
-        kvs::String file( filename );
+        vismodule::String replace( hour );
+        vismodule::String file( filename );
         file.replace( "%h1", replace.toStdString() );
         return( file.toStdString() );
     }
@@ -119,7 +119,7 @@ std::string ReplaceHour( const std::string& filename, const int hour )
     if ( filename.find("%h2",0) != std::string::npos )
     {
         char replace[3]; sprintf( replace, "%02d", hour );
-        kvs::String file( filename );
+        vismodule::String file( filename );
         file.replace( "%h2", std::string( replace ) );
         return( file.toStdString() );
     }
@@ -127,7 +127,7 @@ std::string ReplaceHour( const std::string& filename, const int hour )
     if ( filename.find("%h3",0) != std::string::npos )
     {
         char replace[4]; sprintf( replace, "%03d", hour );
-        kvs::String file( filename );
+        vismodule::String file( filename );
         file.replace( "%h3", std::string( replace ) );
         return( file.toStdString() );
     }
@@ -140,7 +140,7 @@ std::string ReplaceMinute( const std::string& filename, const int minute )
     if ( filename.find("%n2",0) != std::string::npos )
     {
         char replace[3]; sprintf( replace, "%02d", minute );
-        kvs::String file( filename );
+        vismodule::String file( filename );
         file.replace( "%n2", std::string( replace ) );
         return( file.toStdString() );
     }
@@ -151,7 +151,7 @@ std::string ReplaceMinute( const std::string& filename, const int minute )
 }
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -232,7 +232,7 @@ const bool GrADS::read( const std::string& filename )
     std::ifstream ifs( m_filename.c_str(), std::ios::binary | std::ios::in );
     if( !ifs.is_open() )
     {
-        kvsMessageError( "Cannot open %s.", m_filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", m_filename.c_str() );
         ifs.close();
         BaseClass::m_is_success = false;
         return( BaseClass::m_is_success );
@@ -241,34 +241,34 @@ const bool GrADS::read( const std::string& filename )
     // Read control file.
     if ( !m_data_descriptor.read( ifs ) )
     {
-        kvsMessageError( "Cannot read control file." );
+        visModuleMessageError( "Cannot read control file." );
         ifs.close();
         BaseClass::m_is_success = false;
         return( BaseClass::m_is_success );
     }
 
-    const bool sequential = m_data_descriptor.options().find( kvs::grads::Options::Sequential );
-    const bool big_endian = m_data_descriptor.options().find( kvs::grads::Options::BigEndian );
+    const bool sequential = m_data_descriptor.options().find( vismodule::grads::Options::Sequential );
+    const bool big_endian = m_data_descriptor.options().find( vismodule::grads::Options::BigEndian );
 
     // Read binary file. (The data is not loaded into the memory)
     std::string data_pathname;
     std::string template_data_filename = m_data_descriptor.dset().name;
-    const kvs::File template_data_file( template_data_filename );
+    const vismodule::File template_data_file( template_data_filename );
     if ( template_data_file.pathName() == template_data_file.pathName( true ) ) // absolute path
     {
         data_pathname = template_data_file.pathName();
     }
     else
     {
-        data_pathname = kvs::File( filename ).pathName();
+        data_pathname = vismodule::File( filename ).pathName();
         if ( template_data_filename[0] == '^' ) { template_data_filename.erase( 0, 1 ); }
     }
 
     size_t counter = 0;
-    kvs::Directory directory( data_pathname );
-    kvs::grads::TDef tdef = m_data_descriptor.tdef();
-    kvs::FileList::const_iterator file = directory.fileList().begin();
-    kvs::FileList::const_iterator last = directory.fileList().end();
+    vismodule::Directory directory( data_pathname );
+    vismodule::grads::TDef tdef = m_data_descriptor.tdef();
+    vismodule::FileList::const_iterator file = directory.fileList().begin();
+    vismodule::FileList::const_iterator last = directory.fileList().end();
     while ( file != last )
     {
         std::string data_filename = template_data_filename;
@@ -280,7 +280,7 @@ const bool GrADS::read( const std::string& filename )
 
         if ( file->fileName() == data_filename )
         {
-            const std::string sep = kvs::File::Separator();
+            const std::string sep = vismodule::File::Separator();
             const std::string path = directory.directoryPath( true );
             GriddedBinaryDataFile data;
             data.setFilename( path + sep + data_filename );
@@ -307,9 +307,9 @@ const bool GrADS::read( const std::string& filename )
 /*===========================================================================*/
 const bool GrADS::write( const std::string& filename )
 {
-    kvs::IgnoreUnusedVariable( filename );
+    vismodule::IgnoreUnusedVariable( filename );
 
     return( false );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -11,18 +11,18 @@
  *  $Id: InfoHeader.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__BMP__INFO_HEADER_H_INCLUDE
-#define KVS__BMP__INFO_HEADER_H_INCLUDE
+#ifndef VIS_MODULE__BMP__INFO_HEADER_H_INCLUDE
+#define VIS_MODULE__BMP__INFO_HEADER_H_INCLUDE
 
 #include "HeaderBase.h"
-#include <kvs/Type>
+#include <vismodule/Type>
 #include <iostream>
 #include <fstream>
 
 
-namespace kvs { class Bmp; }
+namespace vismodule { class Bmp; }
 
-namespace kvs
+namespace vismodule
 {
 
 namespace bmp
@@ -33,27 +33,27 @@ namespace bmp
  *  Bitmap info header class
  */
 /*==========================================================================*/
-class InfoHeader : public kvs::bmp::HeaderBase
+class InfoHeader : public vismodule::bmp::HeaderBase
 {
-    friend class kvs::Bmp;
+    friend class vismodule::Bmp;
 
 public:
 
-    typedef kvs::bmp::HeaderBase BaseClass;
+    typedef vismodule::bmp::HeaderBase BaseClass;
 
 private:
 
-    kvs::UInt32 m_size;          ///< size of this structure (40 bytes)
-    kvs::UInt32 m_width;         ///< image width
-    kvs::UInt32 m_height;        ///< image height
-    kvs::UInt16 m_nplanes;       ///< number of color planes (always 1)
-    kvs::UInt16 m_bpp;           ///< bit per pixel (1, 4, 8, 16 or 24)
-    kvs::UInt32 m_compression;   ///< compression type (0, 1, 2 or 3)
-    kvs::UInt32 m_bitmapsize;    ///< size of bitmap in bytes (0 if uncompressed)
-    kvs::UInt32 m_hresolution;   ///< pixels per meter (can be zero)
-    kvs::UInt32 m_vresolution;   ///< pixels per meter (can be zero)
-    kvs::UInt32 m_colsused;      ///< number of colors in pallete (can be zero)
-    kvs::UInt32 m_colsimportant; ///< min number of important colors (can be zero)
+    vismodule::UInt32 m_size;          ///< size of this structure (40 bytes)
+    vismodule::UInt32 m_width;         ///< image width
+    vismodule::UInt32 m_height;        ///< image height
+    vismodule::UInt16 m_nplanes;       ///< number of color planes (always 1)
+    vismodule::UInt16 m_bpp;           ///< bit per pixel (1, 4, 8, 16 or 24)
+    vismodule::UInt32 m_compression;   ///< compression type (0, 1, 2 or 3)
+    vismodule::UInt32 m_bitmapsize;    ///< size of bitmap in bytes (0 if uncompressed)
+    vismodule::UInt32 m_hresolution;   ///< pixels per meter (can be zero)
+    vismodule::UInt32 m_vresolution;   ///< pixels per meter (can be zero)
+    vismodule::UInt32 m_colsused;      ///< number of colors in pallete (can be zero)
+    vismodule::UInt32 m_colsimportant; ///< min number of important colors (can be zero)
 
 public:
 
@@ -67,27 +67,27 @@ public:
 
 public:
 
-    kvs::UInt32 size( void ) const;
+    vismodule::UInt32 size( void ) const;
 
-    kvs::UInt32 width( void ) const;
+    vismodule::UInt32 width( void ) const;
 
-    kvs::UInt32 height( void ) const;
+    vismodule::UInt32 height( void ) const;
 
-    kvs::UInt16 nplanes( void ) const;
+    vismodule::UInt16 nplanes( void ) const;
 
-    kvs::UInt16 bpp( void ) const;
+    vismodule::UInt16 bpp( void ) const;
 
-    kvs::UInt32 compression( void ) const;
+    vismodule::UInt32 compression( void ) const;
 
-    kvs::UInt32 bitmapsize( void ) const;
+    vismodule::UInt32 bitmapsize( void ) const;
 
-    kvs::UInt32 hresolution( void ) const;
+    vismodule::UInt32 hresolution( void ) const;
 
-    kvs::UInt32 vresolution( void ) const;
+    vismodule::UInt32 vresolution( void ) const;
 
-    kvs::UInt32 colsused( void ) const;
+    vismodule::UInt32 colsused( void ) const;
 
-    kvs::UInt32 colsimportant( void ) const;
+    vismodule::UInt32 colsimportant( void ) const;
 
 public:
 
@@ -102,6 +102,6 @@ private:
 
 } // end of namespace bmp
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__BMP__INFO_HEADER_H_INCLUDE
+#endif // VIS_MODULE__BMP__INFO_HEADER_H_INCLUDE

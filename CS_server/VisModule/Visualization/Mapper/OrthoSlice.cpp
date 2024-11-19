@@ -12,20 +12,20 @@
  */
 /****************************************************************************/
 #include "OrthoSlice.h"
-#include <kvs/Matrix33>
+#include <vismodule/Matrix33>
 
 
 namespace
 {
 
-const kvs::Matrix33f Normal(
+const vismodule::Matrix33f Normal(
     1.0f, 0.0f, 0.0f,
     0.0f, 1.0f, 0.0f,
     0.0f, 0.0f, 1.0f );
 
 }
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -48,11 +48,11 @@ OrthoSlice::OrthoSlice( void ):
  */
 /*==========================================================================*/
 OrthoSlice::OrthoSlice(
-    const kvs::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase* volume,
     const float                  position,
     const AlignedAxis            axis,
-    const kvs::TransferFunction& transfer_function ):
-    kvs::SlicePlane(
+    const vismodule::TransferFunction& transfer_function ):
+    vismodule::SlicePlane(
         volume,
         ::Normal[axis] * position,
         ::Normal[axis],
@@ -67,9 +67,9 @@ OrthoSlice::OrthoSlice(
  *  @param  axis [in] slice orientation
  */
 /*===========================================================================*/
-void OrthoSlice::setPlane( const float position, const kvs::OrthoSlice::AlignedAxis axis )
+void OrthoSlice::setPlane( const float position, const vismodule::OrthoSlice::AlignedAxis axis )
 {
     SuperClass::setPlane( ::Normal[axis] * position, ::Normal[axis] );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

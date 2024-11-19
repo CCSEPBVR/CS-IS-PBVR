@@ -12,15 +12,15 @@
  *  $Id: InitializeEventListener.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__INTITALIZE_EVENT_LISTENER_H_INCLUDE
-#define KVS__INTITALIZE_EVENT_LISTENER_H_INCLUDE
+#ifndef VIS_MODULE__INTITALIZE_EVENT_LISTENER_H_INCLUDE
+#define VIS_MODULE__INTITALIZE_EVENT_LISTENER_H_INCLUDE
 
-#include <kvs/EventListener>
-#include <kvs/EventBase>
-#include <kvs/ClassName>
+#include <vismodule/EventListener>
+#include <vismodule/EventBase>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -28,9 +28,9 @@ namespace kvs
  *  @brief  InitializeEventListener class.
  */
 /*===========================================================================*/
-class InitializeEventListener : public kvs::EventListener
+class InitializeEventListener : public vismodule::EventListener
 {
-    kvsClassName( kvs::InitializeEventListener );
+    visModuleClassName( vismodule::InitializeEventListener );
 
 public:
 
@@ -44,9 +44,9 @@ public:
 
 private:
 
-    void onEvent( kvs::EventBase* event = 0 );
+    void onEvent( vismodule::EventBase* event = 0 );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__INTITALIZE_EVENT_LISTENER_H_INCLUDE
+#endif // VIS_MODULE__INTITALIZE_EVENT_LISTENER_H_INCLUDE

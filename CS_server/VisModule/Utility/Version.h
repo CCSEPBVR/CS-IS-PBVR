@@ -11,25 +11,25 @@
  *  $Id: Version.h 1001 2011-12-09 09:19:20Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__VERSION_H_INCLUDE
-#define KVS__VERSION_H_INCLUDE
+#ifndef VIS_MODULE__VERSION_H_INCLUDE
+#define VIS_MODULE__VERSION_H_INCLUDE
 
-// KVS version: <major_version>.<minor_version>.<patch_version>
-#define KVS_VERSION_MAJOR  1
-#define KVS_VERSION_MINOR  1
-#define KVS_VERSION_PATCH  1
+// VISMODULE version: <major_version>.<minor_version>.<patch_version>
+#define VIS_MODULE_VERSION_MAJOR  1
+#define VIS_MODULE_VERSION_MINOR  1
+#define VIS_MODULE_VERSION_PATCH  1
 
-#define KVS_VERSION_NUMBER( x )           # x
-#define KVS_VERSION_NUMBER_TO_STRING( x ) KVS_VERSION_NUMBER( x )
-#define KVS_VERSION                                       \
-    KVS_VERSION_NUMBER_TO_STRING( KVS_VERSION_MAJOR ) "." \
-    KVS_VERSION_NUMBER_TO_STRING( KVS_VERSION_MINOR ) "." \
-    KVS_VERSION_NUMBER_TO_STRING( KVS_VERSION_PATCH )
+#define VIS_MODULE_VERSION_NUMBER( x )           # x
+#define VIS_MODULE_VERSION_NUMBER_TO_STRING( x ) VIS_MODULE_VERSION_NUMBER( x )
+#define VIS_MODULE_VERSION                                       \
+    VIS_MODULE_VERSION_NUMBER_TO_STRING( VIS_MODULE_VERSION_MAJOR ) "." \
+    VIS_MODULE_VERSION_NUMBER_TO_STRING( VIS_MODULE_VERSION_MINOR ) "." \
+    VIS_MODULE_VERSION_NUMBER_TO_STRING( VIS_MODULE_VERSION_PATCH )
 
 #include <cstdio>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace Version
@@ -44,9 +44,9 @@ namespace Version
 inline const size_t Number( void )
 {
     const size_t version_number =
-        100 * KVS_VERSION_MAJOR +
-        10  * KVS_VERSION_MINOR +
-        1   * KVS_VERSION_PATCH;
+        100 * VIS_MODULE_VERSION_MAJOR +
+        10  * VIS_MODULE_VERSION_MINOR +
+        1   * VIS_MODULE_VERSION_PATCH;
 
     return( version_number );
 }
@@ -59,7 +59,7 @@ inline const size_t Number( void )
 /*==========================================================================*/
 inline const size_t MajorNumber( void )
 {
-    return( KVS_VERSION_MAJOR );
+    return( VIS_MODULE_VERSION_MAJOR );
 }
 
 /*==========================================================================*/
@@ -70,7 +70,7 @@ inline const size_t MajorNumber( void )
 /*==========================================================================*/
 inline const size_t MinorNumber( void )
 {
-    return( KVS_VERSION_MINOR );
+    return( VIS_MODULE_VERSION_MINOR );
 }
 
 /*==========================================================================*/
@@ -81,7 +81,7 @@ inline const size_t MinorNumber( void )
 /*==========================================================================*/
 inline const size_t PatchNumber( void )
 {
-    return( KVS_VERSION_PATCH );
+    return( VIS_MODULE_VERSION_PATCH );
 }
 
 /*==========================================================================*/
@@ -92,11 +92,11 @@ inline const size_t PatchNumber( void )
 /*==========================================================================*/
 inline const char* Name( void )
 {
-    return( KVS_VERSION );
+    return( VIS_MODULE_VERSION );
 }
 
 } // end of namespace Version
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__VERSION_H_INCLUDE
+#endif // VIS_MODULE__VERSION_H_INCLUDE

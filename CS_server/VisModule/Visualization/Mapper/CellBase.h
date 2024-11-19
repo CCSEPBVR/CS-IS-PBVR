@@ -11,20 +11,20 @@
  *  $Id: CellBase.h 840 2011-06-07 11:17:16Z naohisa.sakamoto@gmail.com $
  */
 /****************************************************************************/
-#ifndef KVS__CELL_BASE_H_INCLUDE
-#define KVS__CELL_BASE_H_INCLUDE
+#ifndef VIS_MODULE__CELL_BASE_H_INCLUDE
+#define VIS_MODULE__CELL_BASE_H_INCLUDE
 
-#include <kvs/DebugNew>
-#include <kvs/ClassName>
-#include <kvs/Type>
-#include <kvs/Vector4>
-#include <kvs/Matrix44>
-#include <kvs/UnstructuredVolumeObject>
-#include <kvs/IgnoreUnusedVariable>
-#include <kvs/Message>
+#include <vismodule/DebugNew>
+#include <vismodule/ClassName>
+#include <vismodule/Type>
+#include <vismodule/Vector4>
+#include <vismodule/Matrix44>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/IgnoreUnusedVariable>
+#include <vismodule/Message>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -35,67 +35,67 @@ namespace kvs
 template <typename T>
 class CellBase
 {
-    kvsClassName( kvs::CellBase );
+    visModuleClassName( vismodule::CellBase );
 
 protected:
 
     size_t         m_nnodes; ///< number of nodes
-    kvs::Vector3f* m_vertices; ///< coordinates of the nodes
+    vismodule::Vector3f* m_vertices; ///< coordinates of the nodes
     T*             m_scalars; ///< scalar values of the nodes
-    kvs::Real32*   m_interpolation_functions; ///< interpolation functions
-    kvs::Real32*   m_differential_functions; ///< differential functions
-    mutable kvs::Vector3f  m_global_point; ///< sampling point in the global coordinate
-    mutable kvs::Vector3f  m_local_point;  ///< sampling point in the local coordinate
+    vismodule::Real32*   m_interpolation_functions; ///< interpolation functions
+    vismodule::Real32*   m_differential_functions; ///< differential functions
+    mutable vismodule::Vector3f  m_global_point; ///< sampling point in the global coordinate
+    mutable vismodule::Vector3f  m_local_point;  ///< sampling point in the local coordinate
 
-    const kvs::UnstructuredVolumeObject* m_reference_volume; ///< reference unstructured volume
+    const vismodule::UnstructuredVolumeObject* m_reference_volume; ///< reference unstructured volume
 
 public:
 
-    CellBase( const kvs::UnstructuredVolumeObject* volume );
+    CellBase( const vismodule::UnstructuredVolumeObject* volume );
 
     virtual ~CellBase( void );
 
 public:
 
-    virtual const kvs::Real32* interpolationFunctions( const kvs::Vector3f& point ) const = 0;
+    virtual const vismodule::Real32* interpolationFunctions( const vismodule::Vector3f& point ) const = 0;
 
-    virtual const kvs::Real32* differentialFunctions( const kvs::Vector3f& point ) const = 0;
+    virtual const vismodule::Real32* differentialFunctions( const vismodule::Vector3f& point ) const = 0;
 
-    virtual void bindCell( const kvs::UInt32 index );
+    virtual void bindCell( const vismodule::UInt32 index );
 
-    virtual void setGlobalPoint( const kvs::Vector3f& point ) const;
+    virtual void setGlobalPoint( const vismodule::Vector3f& point ) const;
 
-    virtual void setLocalPoint( const kvs::Vector3f& point ) const;
+    virtual void setLocalPoint( const vismodule::Vector3f& point ) const;
 
-    virtual const kvs::Vector3f transformGlobalToLocal( const kvs::Vector3f& point ) const;
+    virtual const vismodule::Vector3f transformGlobalToLocal( const vismodule::Vector3f& point ) const;
 
-    virtual const kvs::Vector3f transformLocalToGlobal( const kvs::Vector3f& point ) const;
-
-public:
-
-    virtual const kvs::Vector3f randomSampling( void ) const;
-
-    virtual const kvs::Real32 volume( void ) const;
-
-    virtual const kvs::Real32 averagedScalar( void ) const;
-
-    virtual const kvs::Real32 scalar( void ) const;
-
-    virtual const kvs::Vector3f gradient( void ) const;
+    virtual const vismodule::Vector3f transformLocalToGlobal( const vismodule::Vector3f& point ) const;
 
 public:
 
-    const kvs::Vector3f* vertices( void ) const;
+    virtual const vismodule::Vector3f randomSampling( void ) const;
+
+    virtual const vismodule::Real32 volume( void ) const;
+
+    virtual const vismodule::Real32 averagedScalar( void ) const;
+
+    virtual const vismodule::Real32 scalar( void ) const;
+
+    virtual const vismodule::Vector3f gradient( void ) const;
+
+public:
+
+    const vismodule::Vector3f* vertices( void ) const;
 
     const T* scalars( void ) const;
 
-    const kvs::Vector3f globalPoint( void ) const;
+    const vismodule::Vector3f globalPoint( void ) const;
 
-    const kvs::Vector3f localPoint( void ) const;
+    const vismodule::Vector3f localPoint( void ) const;
 
-    const kvs::Matrix33f JacobiMatrix( void ) const;
+    const vismodule::Matrix33f JacobiMatrix( void ) const;
 
-    const kvs::Real32 randomNumber( void ) const;
+    const vismodule::Real32 randomNumber( void ) const;
 };
 
 /*===========================================================================*/
@@ -106,7 +106,7 @@ public:
 /*===========================================================================*/
 template <typename T>
 inline CellBase<T>::CellBase(
-    const kvs::UnstructuredVolumeObject* volume ):
+    const vismodule::UnstructuredVolumeObject* volume ):
     m_nnodes( volume->cellType() ),
     m_global_point( 0, 0, 0 ),
     m_local_point( 0, 0, 0 ),
@@ -116,25 +116,25 @@ inline CellBase<T>::CellBase(
     const size_t nnodes = m_nnodes;
     try
     {
-        m_vertices = new kvs::Vector3f [nnodes];
+        m_vertices = new vismodule::Vector3f [nnodes];
         if ( !m_vertices ) throw "Cannot allocate memory for 'm_vertices'";
-        memset( m_vertices, 0, sizeof( kvs::Vector3f ) * nnodes );
+        memset( m_vertices, 0, sizeof( vismodule::Vector3f ) * nnodes );
 
         m_scalars = new T [nnodes];
         if ( !m_scalars ) throw "Cannot allocate memory for 'm_scalars'";
         memset( m_scalars, 0, sizeof( T ) * nnodes );
 
-        m_interpolation_functions = new kvs::Real32 [nnodes];
+        m_interpolation_functions = new vismodule::Real32 [nnodes];
         if ( !m_interpolation_functions ) throw "Cannot allocate memory for 'm_interpolation_functions'";
-        memset( m_interpolation_functions, 0, sizeof( kvs::Real32 ) * nnodes );
+        memset( m_interpolation_functions, 0, sizeof( vismodule::Real32 ) * nnodes );
 
-        m_differential_functions  = new kvs::Real32 [nnodes*dimension];
+        m_differential_functions  = new vismodule::Real32 [nnodes*dimension];
         if ( !m_differential_functions ) throw "Cannot allocate memory for 'm_differential_functions'";
-        memset( m_differential_functions, 0, sizeof( kvs::Real32 ) * nnodes * dimension );
+        memset( m_differential_functions, 0, sizeof( vismodule::Real32 ) * nnodes * dimension );
     }
     catch( char* error_message )
     {
-        kvsMessageError( error_message );
+        visModuleMessageError( error_message );
         return;
     }
 }
@@ -160,22 +160,22 @@ inline CellBase<T>::~CellBase( void )
  */
 /*===========================================================================*/
 template <typename T>
-inline void CellBase<T>::bindCell( const kvs::UInt32 index )
+inline void CellBase<T>::bindCell( const vismodule::UInt32 index )
 {
     // Aliases.
-    const kvs::UnstructuredVolumeObject* volume = m_reference_volume;
-    const kvs::UInt32* const connections = volume->connections().pointer();
-    const kvs::Real32* const coords = volume->coords().pointer();
+    const vismodule::UnstructuredVolumeObject* volume = m_reference_volume;
+    const vismodule::UInt32* const connections = volume->connections().pointer();
+    const vismodule::Real32* const coords = volume->coords().pointer();
     const T* const values = static_cast<const T*>( volume->values().pointer() );
 
     const size_t nnodes = m_nnodes;
-    const kvs::UInt32 connection_index = nnodes * index;
+    const vismodule::UInt32 connection_index = nnodes * index;
     for ( size_t i = 0; i < nnodes; i++ )
     {
-        const kvs::UInt32 node_index = connections[ connection_index + i ];
+        const vismodule::UInt32 node_index = connections[ connection_index + i ];
         m_scalars[i] = values[ node_index ];
 
-        const kvs::UInt32 coord_index = 3 * node_index;
+        const vismodule::UInt32 coord_index = 3 * node_index;
         m_vertices[i].set( coords[ coord_index ],
                            coords[ coord_index + 1 ],
                            coords[ coord_index + 2 ] );
@@ -189,7 +189,7 @@ inline void CellBase<T>::bindCell( const kvs::UInt32 index )
  */
 /*===========================================================================*/
 template <typename T>
-inline void CellBase<T>::setGlobalPoint( const kvs::Vector3f& global ) const
+inline void CellBase<T>::setGlobalPoint( const vismodule::Vector3f& global ) const
 {
     m_global_point = global;
 
@@ -203,7 +203,7 @@ inline void CellBase<T>::setGlobalPoint( const kvs::Vector3f& global ) const
  */
 /*===========================================================================*/
 template <typename T>
-inline void CellBase<T>::setLocalPoint( const kvs::Vector3f& local ) const
+inline void CellBase<T>::setLocalPoint( const vismodule::Vector3f& local ) const
 {
     m_local_point = local;
 
@@ -218,23 +218,23 @@ inline void CellBase<T>::setLocalPoint( const kvs::Vector3f& local ) const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Vector3f CellBase<T>::transformGlobalToLocal( const kvs::Vector3f& global ) const
+inline const vismodule::Vector3f CellBase<T>::transformGlobalToLocal( const vismodule::Vector3f& global ) const
 {
-    const kvs::Vector3f X( global );
+    const vismodule::Vector3f X( global );
 
     // Calculate the coordinate of 'global' in the local coordinate
     // by using Newton-Raphson method.
     const float TinyValue = static_cast<float>( 1.e-6 );
     const size_t MaxLoop = 100;
-    kvs::Vector3f x0( 0.25f, 0.25f, 0.25f ); // Initial point in local coordinate.
+    vismodule::Vector3f x0( 0.25f, 0.25f, 0.25f ); // Initial point in local coordinate.
     for ( size_t i = 0; i < MaxLoop; i++ )
     {
         this->setLocalPoint( x0 );
-        const kvs::Vector3f X0( this->transformLocalToGlobal( x0 ) );
-        const kvs::Vector3f dX( X - X0 );
+        const vismodule::Vector3f X0( this->transformLocalToGlobal( x0 ) );
+        const vismodule::Vector3f dX( X - X0 );
 
-        const kvs::Matrix33f J( this->JacobiMatrix() );
-        const kvs::Vector3f dx = J.transpose().inverse() * dX;
+        const vismodule::Matrix33f J( this->JacobiMatrix() );
+        const vismodule::Vector3f dx = J.transpose().inverse() * dX;
         if ( dx.length() < TinyValue ) break; // Converged.
 
         x0 += dx;
@@ -250,12 +250,12 @@ inline const kvs::Vector3f CellBase<T>::transformGlobalToLocal( const kvs::Vecto
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Vector3f CellBase<T>::transformLocalToGlobal( const kvs::Vector3f& local ) const
+inline const vismodule::Vector3f CellBase<T>::transformLocalToGlobal( const vismodule::Vector3f& local ) const
 {
-    kvs::IgnoreUnusedVariable( local );
+    vismodule::IgnoreUnusedVariable( local );
 
     const float* N = m_interpolation_functions;
-    const kvs::Vector3f* V = m_vertices;
+    const vismodule::Vector3f* V = m_vertices;
     const size_t nnodes = m_nnodes;
 
     float X = 0;
@@ -267,7 +267,7 @@ inline const kvs::Vector3f CellBase<T>::transformLocalToGlobal( const kvs::Vecto
     float Z = 0;
     for ( size_t i = 0; i < nnodes; i++ ) Z += N[i] * V[i].z();
 
-    return( kvs::Vector3f( X, Y, Z ) );
+    return( vismodule::Vector3f( X, Y, Z ) );
 }
 
 /*===========================================================================*/
@@ -277,10 +277,10 @@ inline const kvs::Vector3f CellBase<T>::transformLocalToGlobal( const kvs::Vecto
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Vector3f CellBase<T>::randomSampling( void ) const
+inline const vismodule::Vector3f CellBase<T>::randomSampling( void ) const
 {
-    kvsMessageError("'randomSampling' is not implemented.");
-    return( kvs::Vector3f( 0.0f, 0.0f, 0.0f ) );
+    visModuleMessageError("'randomSampling' is not implemented.");
+    return( vismodule::Vector3f( 0.0f, 0.0f, 0.0f ) );
 }
 
 /*===========================================================================*/
@@ -290,10 +290,10 @@ inline const kvs::Vector3f CellBase<T>::randomSampling( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Real32 CellBase<T>::volume( void ) const
+inline const vismodule::Real32 CellBase<T>::volume( void ) const
 {
-    kvsMessageError("'volume' is not implemented.");
-    return( kvs::Real32( 0.0f ) );
+    visModuleMessageError("'volume' is not implemented.");
+    return( vismodule::Real32( 0.0f ) );
 }
 
 /*===========================================================================*/
@@ -303,15 +303,15 @@ inline const kvs::Real32 CellBase<T>::volume( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Real32 CellBase<T>::averagedScalar( void ) const
+inline const vismodule::Real32 CellBase<T>::averagedScalar( void ) const
 {
     const size_t nnodes = m_nnodes;
-    const kvs::Real32 w = 1.0f / nnodes;
+    const vismodule::Real32 w = 1.0f / nnodes;
 
-    kvs::Real32 S = 0;
+    vismodule::Real32 S = 0;
     for ( size_t i = 0; i < nnodes; i++ )
     {
-        S += static_cast<kvs::Real32>( m_scalars[i] );
+        S += static_cast<vismodule::Real32>( m_scalars[i] );
     }
 
     return( S * w );
@@ -323,16 +323,16 @@ inline const kvs::Real32 CellBase<T>::averagedScalar( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Real32 CellBase<T>::scalar( void ) const
+inline const vismodule::Real32 CellBase<T>::scalar( void ) const
 {
     const size_t nnodes = m_nnodes;
     const float* N = m_interpolation_functions;
     const T* s = m_scalars;
 
-    kvs::Real32 S = 0;
+    vismodule::Real32 S = 0;
     for ( size_t i = 0; i < nnodes; i++ )
     {
-        S += static_cast<kvs::Real32>( N[i] * s[i] );
+        S += static_cast<vismodule::Real32>( N[i] * s[i] );
     }
 
     return( S );
@@ -344,10 +344,10 @@ inline const kvs::Real32 CellBase<T>::scalar( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Vector3f CellBase<T>::gradient( void ) const
+inline const vismodule::Vector3f CellBase<T>::gradient( void ) const
 {
     // Calculate a gradient vector in the local coordinate.
-    const kvs::UInt32 nnodes = m_nnodes;
+    const vismodule::UInt32 nnodes = m_nnodes;
     const float* dNdx = m_differential_functions;
     const float* dNdy = m_differential_functions + nnodes;
     const float* dNdz = m_differential_functions + nnodes * 2;
@@ -363,19 +363,19 @@ inline const kvs::Vector3f CellBase<T>::gradient( void ) const
         dsdz += static_cast<float>( s[i] * dNdz[i] );
     }
 
-    const kvs::Vector3f g( dsdx, dsdy, dsdz );
+    const vismodule::Vector3f g( dsdx, dsdy, dsdz );
 
     // Calculate a gradient vector in the global coordinate.
-    const kvs::Matrix33f J = this->JacobiMatrix();
+    const vismodule::Matrix33f J = this->JacobiMatrix();
 
     float determinant = 0.0f;
-    const kvs::Vector3f G = J.inverse( &determinant ) * g;
+    const vismodule::Vector3f G = J.inverse( &determinant ) * g;
 
-    return( kvs::Math::IsZero( determinant ) ? kvs::Vector3f( 0.0f, 0.0f, 0.0f ) : G );
+    return( vismodule::Math::IsZero( determinant ) ? vismodule::Vector3f( 0.0f, 0.0f, 0.0f ) : G );
 }
 
 template <typename T>
-inline const kvs::Vector3f* CellBase<T>::vertices( void ) const
+inline const vismodule::Vector3f* CellBase<T>::vertices( void ) const
 {
     return( m_vertices );
 }
@@ -393,7 +393,7 @@ inline const T* CellBase<T>::scalars( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Vector3f CellBase<T>::globalPoint( void ) const
+inline const vismodule::Vector3f CellBase<T>::globalPoint( void ) const
 {
     return( m_global_point );
 }
@@ -405,7 +405,7 @@ inline const kvs::Vector3f CellBase<T>::globalPoint( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Vector3f CellBase<T>::localPoint( void ) const
+inline const vismodule::Vector3f CellBase<T>::localPoint( void ) const
 {
     return( m_local_point );
 }
@@ -417,13 +417,13 @@ inline const kvs::Vector3f CellBase<T>::localPoint( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Matrix33f CellBase<T>::JacobiMatrix( void ) const
+inline const vismodule::Matrix33f CellBase<T>::JacobiMatrix( void ) const
 {
-    const kvs::UInt32 nnodes = m_nnodes;
+    const vismodule::UInt32 nnodes = m_nnodes;
     const float* dNdx = m_differential_functions;
     const float* dNdy = m_differential_functions + nnodes;
     const float* dNdz = m_differential_functions + nnodes * 2;
-    const kvs::Vector3f* V = m_vertices;
+    const vismodule::Vector3f* V = m_vertices;
 
     float dXdx = 0;
     for ( size_t i = 0; i < nnodes; i++ ) dXdx += dNdx[i]*V[i].x();
@@ -454,7 +454,7 @@ inline const kvs::Matrix33f CellBase<T>::JacobiMatrix( void ) const
     float dZdz = 0;
     for ( size_t i = 0; i < nnodes; i++ ) dZdz += dNdz[i]*V[i].z();
 
-    return( kvs::Matrix33f( dXdx, dYdx, dZdx, dXdy, dYdy, dZdy, dXdz, dYdz, dZdz ) );
+    return( vismodule::Matrix33f( dXdx, dYdx, dZdx, dXdy, dYdy, dZdy, dXdz, dYdz, dZdz ) );
 }
 
 /*===========================================================================*/
@@ -463,19 +463,19 @@ inline const kvs::Matrix33f CellBase<T>::JacobiMatrix( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Real32 CellBase<T>::randomNumber( void ) const
+inline const vismodule::Real32 CellBase<T>::randomNumber( void ) const
 {
     // xorshift RGNs with period at least 2^128 - 1.
-    static kvs::Real32 t24 = 1.0/16777216.0; /* 0.5**24 */
-    static kvs::UInt32 x=123456789,y=362436069,z=521288629,w=88675123;
-    kvs::UInt32 t;
+    static vismodule::Real32 t24 = 1.0/16777216.0; /* 0.5**24 */
+    static vismodule::UInt32 x=123456789,y=362436069,z=521288629,w=88675123;
+    vismodule::UInt32 t;
     t=(x^(x<<11));
     x=y;y=z;z=w;
     w=(w^(w>>19))^(t^(t>>8));
 
-    return( t24*static_cast<kvs::Real32>(w>>8) );
+    return( t24*static_cast<vismodule::Real32>(w>>8) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__CELL_BASE_H_INCLUDE
+#endif // VIS_MODULE__CELL_BASE_H_INCLUDE

@@ -12,19 +12,19 @@
  *  $Id: ApplicationBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__APPLICATION_BASE_H_INCLUDE
-#define KVS__APPLICATION_BASE_H_INCLUDE
+#ifndef VIS_MODULE__APPLICATION_BASE_H_INCLUDE
+#define VIS_MODULE__APPLICATION_BASE_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/ScreenBase>
-#include <kvs/Compiler>
+#include <vismodule/ClassName>
+#include <vismodule/ScreenBase>
+#include <vismodule/Compiler>
 #include <list>
 
-#if defined( KVS_COMPILER_VC )
+#if defined( VIS_MODULE_COMPILER_VC )
 #pragma warning(disable:4800)
 #endif
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -34,14 +34,14 @@ namespace kvs
 /*===========================================================================*/
 class ApplicationBase
 {
-    kvsClassName( kvs::ApplicationBase );
+    visModuleClassName( vismodule::ApplicationBase );
 
 protected:
 
     int m_argc;    ///< argument count
     char** m_argv; ///< argument values
 
-    std::list<kvs::ScreenBase*> m_screens; ///< list of the pointer to the screen
+    std::list<vismodule::ScreenBase*> m_screens; ///< list of the pointer to the screen
 
 public:
 
@@ -55,15 +55,15 @@ public:
 
     char** argv( void );
 
-    void attach( kvs::ScreenBase* screen );
+    void attach( vismodule::ScreenBase* screen );
 
-    void detach( kvs::ScreenBase* screen );
+    void detach( vismodule::ScreenBase* screen );
 
     virtual int run( void ) = 0;
 
     virtual void quit( void ) = 0;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__APPLICATION_BASE_H_INCLUDE
+#endif // VIS_MODULE__APPLICATION_BASE_H_INCLUDE

@@ -12,13 +12,13 @@
  */
 /*****************************************************************************/
 #include "ValueTag.h"
-#include <kvs/Message>
-#include <kvs/String>
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
+#include <vismodule/Message>
+#include <vismodule/String>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -30,7 +30,7 @@ namespace kvsml
  */
 /*===========================================================================*/
 ValueTag::ValueTag( void ):
-    kvs::kvsml::TagBase( "Value" ),
+    vismodule::kvsml::TagBase( "Value" ),
     m_has_label( false ),
     m_has_veclen( false ),
     m_has_min_value( false ),
@@ -194,22 +194,22 @@ void ValueTag::setMaxValue( const double max_value )
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool ValueTag::read( const kvs::XMLNode::SuperClass* parent )
+const bool ValueTag::read( const vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
 
-    BaseClass::m_node = kvs::XMLNode::FindChildNode( parent, tag_name );
+    BaseClass::m_node = vismodule::XMLNode::FindChildNode( parent, tag_name );
     if ( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot find <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot find <%s>.", tag_name.c_str() );
         return( false );
     }
 
     // Element
-    const kvs::XMLElement::SuperClass* element = kvs::XMLNode::ToElement( BaseClass::m_node );
+    const vismodule::XMLElement::SuperClass* element = vismodule::XMLNode::ToElement( BaseClass::m_node );
 
     // label="xxx"
-    const std::string label = kvs::XMLElement::AttributeValue( element, "label" );
+    const std::string label = vismodule::XMLElement::AttributeValue( element, "label" );
     if ( label != "" )
     {
         m_has_label = true;
@@ -217,7 +217,7 @@ const bool ValueTag::read( const kvs::XMLNode::SuperClass* parent )
     }
 
     // veclen="xxx"
-    const std::string veclen = kvs::XMLElement::AttributeValue( element, "veclen" );
+    const std::string veclen = vismodule::XMLElement::AttributeValue( element, "veclen" );
     if ( veclen != "" )
     {
         m_has_veclen = true;
@@ -225,7 +225,7 @@ const bool ValueTag::read( const kvs::XMLNode::SuperClass* parent )
     }
 
     // min_value="xxx"
-    const std::string min_value = kvs::XMLElement::AttributeValue( element, "min_value" );
+    const std::string min_value = vismodule::XMLElement::AttributeValue( element, "min_value" );
     if ( min_value != "" )
     {
         m_has_min_value = true;
@@ -233,7 +233,7 @@ const bool ValueTag::read( const kvs::XMLNode::SuperClass* parent )
     }
 
     // max_value="xxx"
-    const std::string max_value = kvs::XMLElement::AttributeValue( element, "max_value" );
+    const std::string max_value = vismodule::XMLElement::AttributeValue( element, "max_value" );
     if ( max_value != "" )
     {
         m_has_max_value = true;
@@ -250,10 +250,10 @@ const bool ValueTag::read( const kvs::XMLNode::SuperClass* parent )
  *  @return true, if the writing process is done successfully
  */
 /*===========================================================================*/
-const bool ValueTag::write( kvs::XMLNode::SuperClass* parent )
+const bool ValueTag::write( vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
-    kvs::XMLElement element( tag_name );
+    vismodule::XMLElement element( tag_name );
 
     if ( m_has_label )
     {
@@ -265,33 +265,33 @@ const bool ValueTag::write( kvs::XMLNode::SuperClass* parent )
     if ( m_has_veclen )
     {
         const std::string name( "veclen" );
-        const std::string value( kvs::String( m_veclen ).toStdString() );
+        const std::string value( vismodule::String( m_veclen ).toStdString() );
         element.setAttribute( name, value );
     }
     else
     {
-        kvsMessageError( "'veclen' is not specified in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "'veclen' is not specified in <%s>.", tag_name.c_str() );
         return( false );
     }
 
     if ( m_has_min_value )
     {
         const std::string name( "min_value" );
-        const std::string value( kvs::String( m_min_value ).toStdString() );
+        const std::string value( vismodule::String( m_min_value ).toStdString() );
         element.setAttribute( name, value );
     }
 
     if ( m_has_max_value )
     {
         const std::string name( "max_value" );
-        const std::string value( kvs::String( m_max_value ).toStdString() );
+        const std::string value( vismodule::String( m_max_value ).toStdString() );
         element.setAttribute( name, value );
     }
 
     BaseClass::m_node = parent->InsertEndChild( element );
     if( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot insert <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot insert <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -300,4 +300,4 @@ const bool ValueTag::write( kvs::XMLNode::SuperClass* parent )
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

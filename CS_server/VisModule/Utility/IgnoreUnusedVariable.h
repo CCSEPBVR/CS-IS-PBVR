@@ -11,10 +11,10 @@
  *  $Id: IgnoreUnusedVariable.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__IGNORE_UNUSED_VARIABLE_H_INCLUDE
-#define KVS__IGNORE_UNUSED_VARIABLE_H_INCLUDE
+#ifndef VIS_MODULE__IGNORE_UNUSED_VARIABLE_H_INCLUDE
+#define VIS_MODULE__IGNORE_UNUSED_VARIABLE_H_INCLUDE
 
-namespace kvs
+namespace vismodule
 {
 
 template <typename T>
@@ -22,6 +22,6 @@ inline void IgnoreUnusedVariable( T )
 {
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__IGNORE_UNUSED_VARIABLE_H_INCLUDE
+#endif // VIS_MODULE__IGNORE_UNUSED_VARIABLE_H_INCLUDE

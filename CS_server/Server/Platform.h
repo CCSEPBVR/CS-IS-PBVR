@@ -20,49 +20,49 @@
 
 // Linux
 #if defined ( __linux__ ) || defined ( __linux )
-#define KVS_PLATFORM_LINUX
+#define VIS_MODULE_PLATFORM_LINUX
 #define PBVR_PLATFORM_NAME "Linux"
 
 // Mac OS X
 #elif defined ( __APPLE__ ) || defined ( __MACOSX__ ) || defined ( macosx )
-#define KVS_PLATFORM_MACOSX
+#define VIS_MODULE_PLATFORM_MACOSX
 #define PBVR_PLATFORM_NAME "Mac OS X"
 
 // Windows
 #elif defined ( __WIN32__ ) || defined ( _WIN32 ) || defined ( WIN32 ) || \
       defined ( __WIN64__ ) || defined ( _WIN64 ) || defined ( WIN64 )
-#define KVS_PLATFORM_WINDOWS
+#define VIS_MODULE_PLATFORM_WINDOWS
 #define PBVR_PLATFORM_NAME "Windows"
 
 // Cygwin
 #elif defined ( __CYGWIN__ ) || defined ( __CYGWIN32__ )
-#define KVS_PLATFORM_CYGWIN
+#define VIS_MODULE_PLATFORM_CYGWIN
 #define PBVR_PLATFORM_NAME "Cygwin"
 
 // FreeBSD
 #elif defined ( __FreeBSD__ )
-#define KVS_PLATFORM_FREEBSD
+#define VIS_MODULE_PLATFORM_FREEBSD
 #define PBVR_PLATFORM_NAME "FreeBSD"
 
 // Solaris
 #elif defined ( __sun__ ) || defined ( __sun ) || defined ( sun ) || \
       defined ( __solaris__ )
-#define KVS_PLATFORM_SOLARIS
+#define VIS_MODULE_PLATFORM_SOLARIS
 #define PBVR_PLATFORM_NAME "Solaris"
 
 // SGI Irix
 #elif defined ( __sgi__ )
-#define KVS_PLATFORM_IRIX
+#define VIS_MODULE_PLATFORM_IRIX
 #define PBVR_PLATFORM_NAME "Irix"
 
 // HP-UX
 #elif defined ( __hpux__ ) || defined ( __hpux )
-#define KVS_PLATFORM_HPUX
+#define VIS_MODULE_PLATFORM_HPUX
 #define PBVR_PLATFORM_NAME "HP-UX"
 
 // AIX
 #elif defined ( __AIX ) || defined ( _AIX )
-#define KVS_PLATFORM_AIX
+#define VIS_MODULE_PLATFORM_AIX
 #define PBVR_PLATFORM_NAME "AIX"
 
 
@@ -84,7 +84,7 @@
 #if defined ( __i386__ ) || defined ( __i386 ) || defined ( i386 )
 #undef  PBVR_PLATFORM_CPU_UNKNOWN
 #undef  PBVR_PLATFORM_CPU_NAME
-#define KVS_PLATFORM_CPU_I386
+#define VIS_MODULE_PLATFORM_CPU_I386
 #define PBVR_PLATFORM_CPU_NAME "i386"
 #endif
 
@@ -92,7 +92,7 @@
 #if defined ( __x86__ ) || defined ( _X86_ ) || defined ( _M_IX86 )
 #undef  PBVR_PLATFORM_CPU_UNKNOWN
 #undef  PBVR_PLATFORM_CPU_NAME
-#define KVS_PLATFORM_CPU_X86
+#define VIS_MODULE_PLATFORM_CPU_X86
 #define PBVR_PLATFORM_CPU_NAME "x86"
 #endif
 
@@ -100,7 +100,7 @@
 #if defined ( __x86_64__ )
 #undef  PBVR_PLATFORM_CPU_UNKNOWN
 #undef  PBVR_PLATFORM_CPU_NAME
-#define KVS_PLATFORM_CPU_X86_64
+#define VIS_MODULE_PLATFORM_CPU_X86_64
 #define PBVR_PLATFORM_CPU_NAME "x86-64"
 #endif
 
@@ -108,7 +108,7 @@
 #if defined ( __amd64__ ) || defined ( _M_AMD64 )
 #undef  PBVR_PLATFORM_CPU_UNKNOWN
 #undef  PBVR_PLATFORM_CPU_NAME
-#define KVS_PLATFORM_CPU_AMD64
+#define VIS_MODULE_PLATFORM_CPU_AMD64
 #define PBVR_PLATFORM_CPU_NAME "AMD64"
 #endif
 
@@ -116,7 +116,7 @@
 #if defined ( __ia64__ ) || defined ( __ia64 ) || defined ( _M_IA64 )
 #undef  PBVR_PLATFORM_CPU_UNKNOWN
 #undef  PBVR_PLATFORM_CPU_NAME
-#define KVS_PLATFORM_CPU_IA64
+#define VIS_MODULE_PLATFORM_CPU_IA64
 #define PBVR_PLATFORM_CPU_NAME "IA64"
 #endif
 
@@ -125,7 +125,7 @@
     defined ( __powerpc64__ )
 #undef  PBVR_PLATFORM_CPU_UNKNOWN
 #undef  PBVR_PLATFORM_CPU_NAME
-#define KVS_PLATFORM_CPU_POWERPC
+#define VIS_MODULE_PLATFORM_CPU_POWERPC
 #define PBVR_PLATFORM_CPU_NAME "PowerPC"
 #endif
 
@@ -133,7 +133,7 @@
 #if defined ( __sparc__ ) || defined ( __sparc )
 #undef  PBVR_PLATFORM_CPU_UNKNOWN
 #undef  PBVR_PLATFORM_CPU_NAME
-#define KVS_PLATFORM_CPU_SPARC
+#define VIS_MODULE_PLATFORM_CPU_SPARC
 #define PBVR_PLATFORM_CPU_NAME "Sun SPARC"
 #endif
 
@@ -141,7 +141,7 @@
 #if defined ( __mips__ ) || defined ( __MIPS__ ) || defined ( _M_MRX000 )
 #undef  PBVR_PLATFORM_CPU_UNKNOWN
 #undef  PBVR_PLATFORM_CPU_NAME
-#define KVS_PLATFORM_CPU_MIPS
+#define VIS_MODULE_PLATFORM_CPU_MIPS
 #define PBVR_PLATFORM_CPU_NAME "MIPS"
 #endif
 
@@ -160,7 +160,7 @@
 
 #if defined ( i386 ) || defined ( __i386 ) || defined( __i386__ ) ||       \
     defined ( _x86_ ) || defined( __x86__ ) || defined ( _M_IX86 )
-#define KVS_PLATFORM_CPU_32
+#define VIS_MODULE_PLATFORM_CPU_32
 #else
 #define PBVR_PLATFORM_CPU_64
 #endif
@@ -172,7 +172,7 @@
     defined ( __powerpc64__ )
 #define PBVR_PLATFORM_CPU_64
 #else
-#define KVS_PLATFORM_CPU_32
+#define VIS_MODULE_PLATFORM_CPU_32
 #endif
 */
 /*----------------------------------------------------------------------------
@@ -180,36 +180,36 @@
  *----------------------------------------------------------------------------*/
 
 #if defined ( __LITTLE_ENDIAN__ )
-#define KVS_PLATFORM_LITTLE_ENDIAN
+#define VIS_MODULE_PLATFORM_LITTLE_ENDIAN
 
 #elif defined ( __BIG_ENDIAN__ )
-#define KVS_PLATFORM_BIG_ENDIAN
+#define VIS_MODULE_PLATFORM_BIG_ENDIAN
 
 #else
-#if defined ( KVS_PLATFORM_CPU_I386 )
-#define KVS_PLATFORM_LITTLE_ENDIAN
+#if defined ( VIS_MODULE_PLATFORM_CPU_I386 )
+#define VIS_MODULE_PLATFORM_LITTLE_ENDIAN
 
-#elif defined ( KVS_PLATFORM_CPU_X86 )
-#define KVS_PLATFORM_LITTLE_ENDIAN
+#elif defined ( VIS_MODULE_PLATFORM_CPU_X86 )
+#define VIS_MODULE_PLATFORM_LITTLE_ENDIAN
 
-#elif defined ( KVS_PLATFORM_CPU_X86_64 )
-#define KVS_PLATFORM_LITTLE_ENDIAN
+#elif defined ( VIS_MODULE_PLATFORM_CPU_X86_64 )
+#define VIS_MODULE_PLATFORM_LITTLE_ENDIAN
 
-#elif defined ( KVS_PLATFORM_CPU_AMD64 )
-#define KVS_PLATFORM_LITTLE_ENDIAN
+#elif defined ( VIS_MODULE_PLATFORM_CPU_AMD64 )
+#define VIS_MODULE_PLATFORM_LITTLE_ENDIAN
 
-#elif defined ( KVS_PLATFORM_CPU_IA64 )
-#define KVS_PLATFORM_LITTLE_ENDIAN
-//#define KVS_PLATFORM_BIG_ENDIAN
+#elif defined ( VIS_MODULE_PLATFORM_CPU_IA64 )
+#define VIS_MODULE_PLATFORM_LITTLE_ENDIAN
+//#define VIS_MODULE_PLATFORM_BIG_ENDIAN
 
-#elif defined ( KVS_PLATFORM_CPU_POWERPC )
-#define KVS_PLATFORM_BIG_ENDIAN
+#elif defined ( VIS_MODULE_PLATFORM_CPU_POWERPC )
+#define VIS_MODULE_PLATFORM_BIG_ENDIAN
 
-#elif defined ( KVS_PLATFORM_CPU_SPARC )
-#define KVS_PLATFORM_BIG_ENDIAN
+#elif defined ( VIS_MODULE_PLATFORM_CPU_SPARC )
+#define VIS_MODULE_PLATFORM_BIG_ENDIAN
 
-#elif defined ( KVS_PLATFORM_CPU_MIPS )
-#define KVS_PLATFORM_BIG_ENDIAN
+#elif defined ( VIS_MODULE_PLATFORM_CPU_MIPS )
+#define VIS_MODULE_PLATFORM_BIG_ENDIAN
 
 #else
 //#warning Unknown byte-order of the platform.
@@ -251,4 +251,4 @@ inline const char* CPUName()
 
 } // end of namespace pbvr
 
-#endif // KVS__PLATFORM_H_INCLUDE
+#endif // VIS_MODULE__PLATFORM_H_INCLUDE

@@ -11,19 +11,19 @@
  *  $Id: Math.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MATH_H_INCLUDE
-#define KVS__MATH_H_INCLUDE
+#ifndef VIS_MODULE__MATH_H_INCLUDE
+#define VIS_MODULE__MATH_H_INCLUDE
 
 #include <cmath>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace Math
 {
 
-#define KVS__MATH_TINY_VALUE 1.e-6
+#define VIS_MODULE__MATH_TINY_VALUE 1.e-6
 
 const double sqrt2 = 1.4142135623730950488;
 
@@ -168,7 +168,7 @@ inline T Clamp( T a, T low, T high )
 template <typename T>
 inline bool Equal( T a, T b )
 {
-    return( Abs( a - b ) < KVS__MATH_TINY_VALUE );
+    return( Abs( a - b ) < VIS_MODULE__MATH_TINY_VALUE );
 }
 
 template <typename T>
@@ -303,6 +303,6 @@ inline double Rad2Deg( double a )
 
 } // end of namespace Math
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MATH_H_INCLUDE
+#endif // VIS_MODULE__MATH_H_INCLUDE

@@ -14,7 +14,7 @@
 #include "RendererManager.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -45,7 +45,7 @@ RendererManager::~RendererManager( void )
  *  @return renderer ID
  */
 /*==========================================================================*/
-int RendererManager::insert( kvs::RendererBase* renderer )
+int RendererManager::insert( vismodule::RendererBase* renderer )
 {
     static int renderer_id = 0;
     renderer_id++;
@@ -89,7 +89,7 @@ void RendererManager::erase( int renderer_id, bool delete_flg )
     if ( map_id == m_renderer_map.end() ) return;
 
     RendererIterator renderer_ptr = map_id->second; // pointer to the renderer
-    kvs::RendererBase* renderer = *renderer_ptr;     // renderer
+    vismodule::RendererBase* renderer = *renderer_ptr;     // renderer
 
     if ( delete_flg )
     {
@@ -122,7 +122,7 @@ void RendererManager::erase( std::string renderer_name, bool delete_flg )
     while ( map_id != map_end )
     {
         RendererIterator renderer_ptr = map_id->second;
-        kvs::RendererBase* renderer = *renderer_ptr;
+        vismodule::RendererBase* renderer = *renderer_ptr;
         if ( renderer->name() == renderer_name )
         {
             if ( delete_flg ) { if ( renderer ) delete( renderer ); }
@@ -148,7 +148,7 @@ void RendererManager::erase( std::string renderer_name, bool delete_flg )
  *  @param delete_flg [in] deleting the allocated memory flag
  */
 /*==========================================================================*/
-void RendererManager::change( int renderer_id, kvs::RendererBase* renderer, bool delete_flg )
+void RendererManager::change( int renderer_id, vismodule::RendererBase* renderer, bool delete_flg )
 {
     /* Search the object which is specified by given renderer ID in the
      * renderer pointer map. If it isn't found, this method executes nothing.
@@ -158,7 +158,7 @@ void RendererManager::change( int renderer_id, kvs::RendererBase* renderer, bool
 
     // Change the renderer.
     RendererIterator ptr = map_id->second; // pointer to the renderer
-    kvs::RendererBase* old_renderer = *ptr;
+    vismodule::RendererBase* old_renderer = *ptr;
 
     // Erase the old renderer.
     if ( delete_flg )
@@ -182,7 +182,7 @@ void RendererManager::change( int renderer_id, kvs::RendererBase* renderer, bool
  *  @param delete_flg [in] deleting the allocated memory flag
  */
 /*==========================================================================*/
-void RendererManager::change( std::string renderer_name, kvs::RendererBase* renderer, bool delete_flg )
+void RendererManager::change( std::string renderer_name, vismodule::RendererBase* renderer, bool delete_flg )
 {
     RendererMap::iterator map_id = m_renderer_map.begin();
     RendererMap::iterator map_end = m_renderer_map.end();
@@ -190,7 +190,7 @@ void RendererManager::change( std::string renderer_name, kvs::RendererBase* rend
     while ( map_id != map_end )
     {
         RendererIterator old_renderer_ptr = map_id->second;
-        kvs::RendererBase* old_renderer = *old_renderer_ptr;
+        vismodule::RendererBase* old_renderer = *old_renderer_ptr;
         if ( old_renderer->name() == renderer_name )
         {
             if ( delete_flg ) { if ( old_renderer ) delete( old_renderer ); }
@@ -222,7 +222,7 @@ const int RendererManager::nrenderers( void ) const
  *  @return pointer to the renderer
  */
 /*==========================================================================*/
-kvs::RendererBase* RendererManager::renderer( void )
+vismodule::RendererBase* RendererManager::renderer( void )
 {
     // Pointer to the renderer.
     RendererIterator renderer_ptr = begin();
@@ -238,7 +238,7 @@ kvs::RendererBase* RendererManager::renderer( void )
  *  @return pointer to the renderer
  */
 /*==========================================================================*/
-kvs::RendererBase* RendererManager::renderer( int renderer_id )
+vismodule::RendererBase* RendererManager::renderer( int renderer_id )
 {
     RendererMap::iterator map_id = m_renderer_map.find( renderer_id );
     if( map_id == m_renderer_map.end() )   return( NULL );
@@ -256,7 +256,7 @@ kvs::RendererBase* RendererManager::renderer( int renderer_id )
  *  @return pointer to the renderer
  */
 /*==========================================================================*/
-kvs::RendererBase* RendererManager::renderer( std::string renderer_name )
+vismodule::RendererBase* RendererManager::renderer( std::string renderer_name )
 {
     RendererMap::iterator map_id = m_renderer_map.begin();
     RendererMap::iterator map_end = m_renderer_map.end();
@@ -264,7 +264,7 @@ kvs::RendererBase* RendererManager::renderer( std::string renderer_name )
     while ( map_id != map_end )
     {
         RendererIterator renderer_ptr = map_id->second;
-        kvs::RendererBase* renderer = *renderer_ptr;
+        vismodule::RendererBase* renderer = *renderer_ptr;
         if ( renderer->name() == renderer_name )
         {
             return( renderer );
@@ -287,4 +287,4 @@ const bool RendererManager::hasRenderer( void ) const
     return( RendererManagerBase::size() != 0 );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

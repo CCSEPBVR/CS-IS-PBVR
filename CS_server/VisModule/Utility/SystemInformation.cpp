@@ -15,12 +15,12 @@
 #include <cstdio>
 #include <cerrno>
 #include <cstring>
-#include <kvs/Platform>
-#if   defined ( KVS_PLATFORM_WINDOWS )
+#include <vismodule/Platform>
+#if   defined ( VIS_MODULE_PLATFORM_WINDOWS )
 #include <windows.h>
-#elif defined ( KVS_PLATFORM_LINUX ) || defined ( KVS_PLATFORM_CYGWIN )
+#elif defined ( VIS_MODULE_PLATFORM_LINUX ) || defined ( VIS_MODULE_PLATFORM_CYGWIN )
 #include <unistd.h>
-#elif defined ( KVS_PLATFORM_MACOSX )
+#elif defined ( VIS_MODULE_PLATFORM_MACOSX )
 #include <mach/mach.h>
 #include <mach/machine.h>
 #include <mach/mach_host.h>
@@ -28,7 +28,7 @@
 #include <sys/sysctl.h>
 #include <sys/utsname.h>
 #endif
-#include <kvs/Message>
+#include <vismodule/Message>
 
 namespace
 {
@@ -49,7 +49,7 @@ const char* GetWarningMessage( int number, const char* message )
 }
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -60,26 +60,26 @@ namespace kvs
 /*==========================================================================*/
 const size_t SystemInformation::nprocessors( void )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     SYSTEM_INFO sysinfo;
     GetSystemInfo( &sysinfo );
     return( sysinfo.dwNumberOfProcessors );
 
-#elif defined ( KVS_PLATFORM_LINUX ) || defined ( KVS_PLATFORM_CYGWIN )
+#elif defined ( VIS_MODULE_PLATFORM_LINUX ) || defined ( VIS_MODULE_PLATFORM_CYGWIN )
     int nprocessors = sysconf( _SC_NPROCESSORS_ONLN );
-    kvsMessageWarning( nprocessors != -1,
+    visModuleMessageWarning( nprocessors != -1,
                        ::GetWarningMessage( errno, "_SC_NPROCESSORS_ONLN is not supported." ) );
 
     return( nprocessors );
 
-#elif defined ( KVS_PLATFORM_MACOSX )
+#elif defined ( VIS_MODULE_PLATFORM_MACOSX )
     int nprocessors = 0;
 
     int    mib[2] = { CTL_HW, HW_NCPU };
     size_t length = sizeof( nprocessors );
     int    ret    = 0;
     ret = sysctl( mib, 2, &nprocessors, &length, NULL, 0 );
-    kvsMessageWarning( ret != -1, ::GetWarningMessage( errno, strerror( errno ) ) );
+    visModuleMessageWarning( ret != -1, ::GetWarningMessage( errno, strerror( errno ) ) );
 
     return( nprocessors );
 #endif
@@ -94,8 +94,8 @@ const size_t SystemInformation::nprocessors( void )
 const size_t SystemInformation::totalMemorySize( void )
 {
 // Windows
-#if defined ( KVS_PLATFORM_WINDOWS )
-#if defined ( KVS_PLATFORM_CPU_64 )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_CPU_64 )
     MEMORYSTATUSEX memstat;
     GlobalMemoryStatusEx( &memstat );
     return( memstat.ullTotalPhys );
@@ -106,32 +106,32 @@ const size_t SystemInformation::totalMemorySize( void )
 #endif
 
 // Linux
-#elif defined ( KVS_PLATFORM_LINUX ) || defined ( KVS_PLATFORM_CYGWIN )
+#elif defined ( VIS_MODULE_PLATFORM_LINUX ) || defined ( VIS_MODULE_PLATFORM_CYGWIN )
     long phys_page_size = sysconf( _SC_PHYS_PAGES );
-    kvsMessageWarning( phys_page_size != -1,
+    visModuleMessageWarning( phys_page_size != -1,
                        ::GetWarningMessage( errno, "_SC_PHYS_PAGES is not supported." ) );
 
     long page_size = sysconf( _SC_PAGESIZE );
-    kvsMessageWarning( page_size != -1,
+    visModuleMessageWarning( page_size != -1,
                        ::GetWarningMessage( errno, "_SC_PAGESIZE is not supported." ) );
 
     return( phys_page_size * page_size );
 
 // Mac OS X
-#elif defined ( KVS_PLATFORM_MACOSX )
-#if defined ( KVS_PLATFORM_CPU_64 )
+#elif defined ( VIS_MODULE_PLATFORM_MACOSX )
+#if defined ( VIS_MODULE_PLATFORM_CPU_64 )
     uint64_t memory_size = 0;
     size_t   length      = sizeof( memory_size );
     int      ret         = 0;
     ret = sysctlbyname( "hw.memsize", &memory_size, &length, NULL, 0 );
-    kvsMessageWarning( ret != -1, strerror( errno ) );
+    visModuleMessageWarning( ret != -1, strerror( errno ) );
     return( memory_size );
 #else
     uint32_t memory_size = 0;
     size_t   length      = sizeof( memory_size );
     int      ret         = 0;
     ret = sysctlbyname( "hw.physmem", &memory_size, &length, NULL, 0 );
-    kvsMessageWarning( ret != -1, strerror( errno ) );
+    visModuleMessageWarning( ret != -1, strerror( errno ) );
     return( memory_size );
 #endif
 #endif
@@ -146,8 +146,8 @@ const size_t SystemInformation::totalMemorySize( void )
 const size_t SystemInformation::freeMemorySize( void )
 {
 // Windows
-#if defined ( KVS_PLATFORM_WINDOWS )
-#if defined ( KVS_PLATFORM_CPU_64 )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_CPU_64 )
     MEMORYSTATUSEX memstat;
     GlobalMemoryStatusEx( &memstat );
     return( memstat.ullAvailPhys );
@@ -158,29 +158,29 @@ const size_t SystemInformation::freeMemorySize( void )
 #endif
 
 // Linux
-#elif defined ( KVS_PLATFORM_LINUX ) || defined ( KVS_PLATFORM_CYGWIN )
+#elif defined ( VIS_MODULE_PLATFORM_LINUX ) || defined ( VIS_MODULE_PLATFORM_CYGWIN )
     long avphys_page_size = sysconf( _SC_AVPHYS_PAGES );
-    kvsMessageWarning( avphys_page_size != -1,
+    visModuleMessageWarning( avphys_page_size != -1,
                        ::GetWarningMessage( errno, "_SC_AVPHYS_PAGES is not supported." ) );
 
     long page_size = sysconf( _SC_PAGESIZE );
-    kvsMessageWarning( page_size != -1,
+    visModuleMessageWarning( page_size != -1,
                        ::GetWarningMessage( errno, "_SC_PAGESIZE is not supported." ) );
 
     return( avphys_page_size * page_size );
 
 // Mac OS X
-#elif defined ( KVS_PLATFORM_MACOSX )
+#elif defined ( VIS_MODULE_PLATFORM_MACOSX )
     kern_return_t kr;
 
     vm_size_t page_size = 0;
     kr = host_page_size( mach_host_self(), &page_size );
-    kvsMessageWarning( kr != KERN_SUCCESS, "Failure to get page size." );
+    visModuleMessageWarning( kr != KERN_SUCCESS, "Failure to get page size." );
 
     vm_statistics_data_t   page_info;
     mach_msg_type_number_t count = HOST_VM_INFO_COUNT;
     kr = host_statistics( mach_host_self(), HOST_VM_INFO, (host_info_t)&page_info, &count );
-    kvsMessageWarning( kr != KERN_SUCCESS, "Failure to get page info." );
+    visModuleMessageWarning( kr != KERN_SUCCESS, "Failure to get page info." );
 
     return( page_info.free_count * page_size );
 #endif
@@ -190,4 +190,4 @@ const size_t SystemInformation::freeMemorySize( void )
 
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

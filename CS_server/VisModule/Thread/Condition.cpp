@@ -13,7 +13,7 @@
 /****************************************************************************/
 #include "Condition.h"
 #include "MutexLocker.h"
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
 #include <windows.h>
 #include <errno.h>
 #include <process.h>
@@ -24,7 +24,7 @@
 #endif
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -55,9 +55,9 @@ Condition::~Condition( void )
 /*==========================================================================*/
 void Condition::wakeUpOne( void )
 {
-    kvs::MutexLocker locker( &m_mutex );
+    vismodule::MutexLocker locker( &m_mutex );
 
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     if ( m_nsleepers > 0 ) { SetEvent( m_handler.event[Handler::WakeUpOne] ); }
 #else
     pthread_cond_signal( &m_handler );
@@ -71,9 +71,9 @@ void Condition::wakeUpOne( void )
 /*==========================================================================*/
 void Condition::wakeUpAll( void )
 {
-    kvs::MutexLocker locker( &m_mutex );
+    vismodule::MutexLocker locker( &m_mutex );
 
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     if ( m_nsleepers > 0 ) { SetEvent( m_handler.event[Handler::WakeUpAll] ); }
 #else
     pthread_cond_broadcast( &m_handler );
@@ -87,7 +87,7 @@ void Condition::wakeUpAll( void )
  *  @return true, if the process is done successfully
  */
 /*==========================================================================*/
-bool Condition::wait( kvs::Mutex* mutex )
+bool Condition::wait( vismodule::Mutex* mutex )
 {
     if ( !mutex ) { return( false ); }
 
@@ -96,7 +96,7 @@ bool Condition::wait( kvs::Mutex* mutex )
 
     mutex->unlock();
 
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     m_mutex.unlock();
     int err = WaitForMultipleObjects( 2, m_handler.event, FALSE, INFINITE );
 
@@ -128,7 +128,7 @@ bool Condition::wait( kvs::Mutex* mutex )
  *  @return true, if the process is done successfully
  */
 /*==========================================================================*/
-bool Condition::wait( kvs::Mutex* mutex, int msec )
+bool Condition::wait( vismodule::Mutex* mutex, int msec )
 {
     if ( !mutex ) { return( false ); }
 
@@ -137,7 +137,7 @@ bool Condition::wait( kvs::Mutex* mutex, int msec )
 
     mutex->unlock();
 
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     m_mutex.unlock();
     int err = WaitForMultipleObjects( 2, m_handler.event, FALSE, msec );
 
@@ -176,7 +176,7 @@ bool Condition::wait( kvs::Mutex* mutex, int msec )
 /*==========================================================================*/
 void Condition::create_condition_variable( void )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     m_handler.event[Handler::WakeUpOne] = CreateEvent( NULL, FALSE, FALSE, NULL );
     m_handler.event[Handler::WakeUpAll] = CreateEvent( NULL, TRUE,  FALSE, NULL );
 #else
@@ -191,7 +191,7 @@ void Condition::create_condition_variable( void )
 /*==========================================================================*/
 void Condition::delete_condition_variable( void )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     if ( m_handler.event[Handler::WakeUpOne] )
     {
         CloseHandle( m_handler.event[Handler::WakeUpOne] );
@@ -206,4 +206,4 @@ void Condition::delete_condition_variable( void )
 #endif
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

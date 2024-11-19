@@ -13,24 +13,24 @@
 /****************************************************************************/
 #include "CellByCellMetropolisSampling.h"
 #include <vector>
-#include <kvs/DebugNew>
-#include <kvs/ObjectManager>
-#include <kvs/Camera>
-#include <kvs/TrilinearInterpolator>
-#include <kvs/Value>
+#include <vismodule/DebugNew>
+#include <vismodule/ObjectManager>
+#include <vismodule/Camera>
+#include <vismodule/TrilinearInterpolator>
+#include <vismodule/Value>
 #include "CellBase.h"
 #include "TetrahedralCell.h"
 #include "QuadraticTetrahedralCell.h"
 #include "HexahedralCell.h"
 #include "QuadraticHexahedralCell.h"
 #include "PyramidalCell.h"
-#include <kvs/GlobalCore>
+#include <vismodule/GlobalCore>
 
 
-namespace Generator = kvs::CellByCellParticleGenerator;
+namespace Generator = vismodule::CellByCellParticleGenerator;
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -39,8 +39,8 @@ namespace kvs
  */
 /*===========================================================================*/
 CellByCellMetropolisSampling::CellByCellMetropolisSampling( void ):
-    kvs::MapperBase(),
-    kvs::PointObject(),
+    vismodule::MapperBase(),
+    vismodule::PointObject(),
     m_camera( 0 )
 {
 }
@@ -56,13 +56,13 @@ CellByCellMetropolisSampling::CellByCellMetropolisSampling( void ):
  */
 /*===========================================================================*/
 CellByCellMetropolisSampling::CellByCellMetropolisSampling(
-    const kvs::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase* volume,
     const size_t                 subpixel_level,
     const float                  sampling_step,
-    const kvs::TransferFunction& transfer_function,
+    const vismodule::TransferFunction& transfer_function,
     const float                  object_depth ):
-    kvs::MapperBase( transfer_function ),
-    kvs::PointObject(),
+    vismodule::MapperBase( transfer_function ),
+    vismodule::PointObject(),
     m_camera( 0 )
 {
     this->setSubpixelLevel( subpixel_level );
@@ -83,14 +83,14 @@ CellByCellMetropolisSampling::CellByCellMetropolisSampling(
  */
 /*===========================================================================*/
 CellByCellMetropolisSampling::CellByCellMetropolisSampling(
-    const kvs::Camera*           camera,
-    const kvs::VolumeObjectBase* volume,
+    const vismodule::Camera*           camera,
+    const vismodule::VolumeObjectBase* volume,
     const size_t                 subpixel_level,
     const float                  sampling_step,
-    const kvs::TransferFunction& transfer_function,
+    const vismodule::TransferFunction& transfer_function,
     const float                  object_depth ):
-    kvs::MapperBase( transfer_function ),
-    kvs::PointObject()
+    vismodule::MapperBase( transfer_function ),
+    vismodule::PointObject()
 {
     this->attachCamera( camera );
     this->setSubpixelLevel( subpixel_level );
@@ -148,7 +148,7 @@ const float CellByCellMetropolisSampling::objectDepth( void ) const
  *  @param  camera [in] pointer to the camera
  */
 /*===========================================================================*/
-void CellByCellMetropolisSampling::attachCamera( const kvs::Camera* camera )
+void CellByCellMetropolisSampling::attachCamera( const vismodule::Camera* camera )
 {
     m_camera = camera;
 }
@@ -193,74 +193,74 @@ void CellByCellMetropolisSampling::setObjectDepth( const float object_depth )
  *  @return pointer to the point object
  */
 /*===========================================================================*/
-CellByCellMetropolisSampling::SuperClass* CellByCellMetropolisSampling::exec( const kvs::ObjectBase* object )
+CellByCellMetropolisSampling::SuperClass* CellByCellMetropolisSampling::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase* volume = kvs::VolumeObjectBase::DownCast( object );
+    const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
     if ( !volume )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not volume dat.");
+        visModuleMessageError("Input object is not volume dat.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
-    if ( volume_type == kvs::VolumeObjectBase::Structured )
+    const vismodule::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
+    if ( volume_type == vismodule::VolumeObjectBase::Structured )
     {
-//        const kvs::Camera* camera = ( !m_camera ) ? kvs::GlobalCore::camera : m_camera;
-//        this->mapping( camera, reinterpret_cast<const kvs::StructuredVolumeObject*>( object ) );
+//        const vismodule::Camera* camera = ( !m_camera ) ? vismodule::GlobalCore::camera : m_camera;
+//        this->mapping( camera, reinterpret_cast<const vismodule::StructuredVolumeObject*>( object ) );
         if ( m_camera )
         {
-            this->mapping( m_camera, static_cast<const kvs::StructuredVolumeObject*>( object ) );
+            this->mapping( m_camera, static_cast<const vismodule::StructuredVolumeObject*>( object ) );
         }
         else
         {
             // Generate particles by using default camera parameters.
-            if ( kvs::GlobalCore::camera )
+            if ( vismodule::GlobalCore::camera )
             {
-                if ( kvs::GlobalCore::camera->windowWidth() != 0 && kvs::GlobalCore::camera->windowHeight() )
+                if ( vismodule::GlobalCore::camera->windowWidth() != 0 && vismodule::GlobalCore::camera->windowHeight() )
                 {
-                    const kvs::Camera* camera = kvs::GlobalCore::camera;
-                    this->mapping( camera, static_cast<const kvs::StructuredVolumeObject*>( object ) );
+                    const vismodule::Camera* camera = vismodule::GlobalCore::camera;
+                    this->mapping( camera, static_cast<const vismodule::StructuredVolumeObject*>( object ) );
                 }
             }
             else
             {
-                kvs::Camera* camera = new kvs::Camera();
-                this->mapping( camera, static_cast<const kvs::StructuredVolumeObject*>( object ) );
+                vismodule::Camera* camera = new vismodule::Camera();
+                this->mapping( camera, static_cast<const vismodule::StructuredVolumeObject*>( object ) );
                 delete camera;
             }
         }
     }
-    else // volume_type == kvs::VolumeObjectBase::Unstructured
+    else // volume_type == vismodule::VolumeObjectBase::Unstructured
     {
-//        const kvs::Camera* camera = ( !m_camera ) ? kvs::GlobalCore::camera : m_camera;
-//        this->mapping( camera, reinterpret_cast<const kvs::UnstructuredVolumeObject*>( object ) );
+//        const vismodule::Camera* camera = ( !m_camera ) ? vismodule::GlobalCore::camera : m_camera;
+//        this->mapping( camera, reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( object ) );
         if ( m_camera )
         {
-            this->mapping( m_camera, reinterpret_cast<const kvs::UnstructuredVolumeObject*>( object ) );
+            this->mapping( m_camera, reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( object ) );
         }
         else
         {
             // Generate particles by using default camera parameters.
-            if ( kvs::GlobalCore::camera )
+            if ( vismodule::GlobalCore::camera )
             {
-                if ( kvs::GlobalCore::camera->windowWidth() != 0 && kvs::GlobalCore::camera->windowHeight() )
+                if ( vismodule::GlobalCore::camera->windowWidth() != 0 && vismodule::GlobalCore::camera->windowHeight() )
                 {
-                    const kvs::Camera* camera = kvs::GlobalCore::camera;
-                    this->mapping( camera, reinterpret_cast<const kvs::UnstructuredVolumeObject*>( object ) );
+                    const vismodule::Camera* camera = vismodule::GlobalCore::camera;
+                    this->mapping( camera, reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( object ) );
                 }
             }
             else
             {
-                kvs::Camera* camera = new kvs::Camera();
-                this->mapping( camera, reinterpret_cast<const kvs::UnstructuredVolumeObject*>( object ) );
+                vismodule::Camera* camera = new vismodule::Camera();
+                this->mapping( camera, reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( object ) );
                 delete camera;
             }
         }
@@ -276,7 +276,7 @@ CellByCellMetropolisSampling::SuperClass* CellByCellMetropolisSampling::exec( co
  *  @param  volume [in] pointer to the input volume object
  */
 /*===========================================================================*/
-void CellByCellMetropolisSampling::mapping(const kvs::Camera* camera, const kvs::StructuredVolumeObject* volume )
+void CellByCellMetropolisSampling::mapping(const vismodule::Camera* camera, const vismodule::StructuredVolumeObject* volume )
 {
     // Attach the pointer to the volume object and set the min/max coordinates.
     BaseClass::attach_volume( volume );
@@ -293,18 +293,18 @@ void CellByCellMetropolisSampling::mapping(const kvs::Camera* camera, const kvs:
 
     // Generate the particles.
     const std::type_info& type = volume->values().typeInfo()->type();
-    if (      type == typeid( kvs::UInt8  ) ) this->generate_particles<kvs::UInt8>( volume );
-    else if ( type == typeid( kvs::UInt16 ) ) this->generate_particles<kvs::UInt16>( volume );
-    else if ( type == typeid( kvs::UInt32 ) ) this->generate_particles<kvs::UInt32>( volume );
-    else if ( type == typeid( kvs::Int8   ) ) this->generate_particles<kvs::Int8>( volume );
-    else if ( type == typeid( kvs::Int16  ) ) this->generate_particles<kvs::Int16>( volume );
-    else if ( type == typeid( kvs::Int32  ) ) this->generate_particles<kvs::Int32>( volume );
-    else if ( type == typeid( kvs::Real32 ) ) this->generate_particles<kvs::Real32>( volume );
-    else if ( type == typeid( kvs::Real64 ) ) this->generate_particles<kvs::Real64>( volume );
+    if (      type == typeid( vismodule::UInt8  ) ) this->generate_particles<vismodule::UInt8>( volume );
+    else if ( type == typeid( vismodule::UInt16 ) ) this->generate_particles<vismodule::UInt16>( volume );
+    else if ( type == typeid( vismodule::UInt32 ) ) this->generate_particles<vismodule::UInt32>( volume );
+    else if ( type == typeid( vismodule::Int8   ) ) this->generate_particles<vismodule::Int8>( volume );
+    else if ( type == typeid( vismodule::Int16  ) ) this->generate_particles<vismodule::Int16>( volume );
+    else if ( type == typeid( vismodule::Int32  ) ) this->generate_particles<vismodule::Int32>( volume );
+    else if ( type == typeid( vismodule::Real32 ) ) this->generate_particles<vismodule::Real32>( volume );
+    else if ( type == typeid( vismodule::Real64 ) ) this->generate_particles<vismodule::Real64>( volume );
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
+        visModuleMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
     }
 }
 
@@ -315,7 +315,7 @@ void CellByCellMetropolisSampling::mapping(const kvs::Camera* camera, const kvs:
  *  @param  volume [in] pointer to the input volume object
  */
 /*===========================================================================*/
-void CellByCellMetropolisSampling::mapping( const kvs::Camera* camera, const kvs::UnstructuredVolumeObject* volume )
+void CellByCellMetropolisSampling::mapping( const vismodule::Camera* camera, const vismodule::UnstructuredVolumeObject* volume )
 {
     // Attach the pointer to the volume object and set the min/max coordinates.
     BaseClass::attach_volume( volume );
@@ -335,60 +335,60 @@ void CellByCellMetropolisSampling::mapping( const kvs::Camera* camera, const kvs
 //    const float min_value = static_cast<float>( volume->minValue() );
 //    const float max_value = static_cast<float>( volume->maxValue() );
     const std::type_info& type = volume->values().typeInfo()->type();
-    if (      type == typeid( kvs::Int8   ) )
+    if (      type == typeid( vismodule::Int8   ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( -128, 127 );
-        this->generate_particles<kvs::Int8>( volume );
+        this->generate_particles<vismodule::Int8>( volume );
     }
-    else if ( type == typeid( kvs::Int16  ) )
+    else if ( type == typeid( vismodule::Int16  ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_particles<kvs::Int16>( volume );
+        this->generate_particles<vismodule::Int16>( volume );
     }
-    else if ( type == typeid( kvs::Int32  ) )
+    else if ( type == typeid( vismodule::Int32  ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_particles<kvs::Int32>( volume );
+        this->generate_particles<vismodule::Int32>( volume );
     }
-    else if ( type == typeid( kvs::Int64  ) )
+    else if ( type == typeid( vismodule::Int64  ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_particles<kvs::Int64>( volume );
+        this->generate_particles<vismodule::Int64>( volume );
     }
-    else if ( type == typeid( kvs::UInt8  ) )
+    else if ( type == typeid( vismodule::UInt8  ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( 0, 255 );
-        this->generate_particles<kvs::UInt8>( volume );
+        this->generate_particles<vismodule::UInt8>( volume );
     }
-    else if ( type == typeid( kvs::UInt16 ) )
+    else if ( type == typeid( vismodule::UInt16 ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_particles<kvs::UInt16>( volume );
+        this->generate_particles<vismodule::UInt16>( volume );
     }
-    else if ( type == typeid( kvs::UInt32 ) )
+    else if ( type == typeid( vismodule::UInt32 ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_particles<kvs::UInt32>( volume );
+        this->generate_particles<vismodule::UInt32>( volume );
     }
-    else if ( type == typeid( kvs::UInt64 ) )
+    else if ( type == typeid( vismodule::UInt64 ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_particles<kvs::UInt64>( volume );
+        this->generate_particles<vismodule::UInt64>( volume );
     }
-    else if ( type == typeid( kvs::Real32 ) )
+    else if ( type == typeid( vismodule::Real32 ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_particles<kvs::Real32>( volume );
+        this->generate_particles<vismodule::Real32>( volume );
     }
-    else if ( type == typeid( kvs::Real64 ) )
+    else if ( type == typeid( vismodule::Real64 ) )
     {
 //        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_particles<kvs::Real64>( volume );
+        this->generate_particles<vismodule::Real64>( volume );
     }
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
+        visModuleMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
     }
 }
 
@@ -399,40 +399,40 @@ void CellByCellMetropolisSampling::mapping( const kvs::Camera* camera, const kvs
  */
 /*===========================================================================*/
 template <typename T>
-void CellByCellMetropolisSampling::generate_particles( const kvs::StructuredVolumeObject* volume )
+void CellByCellMetropolisSampling::generate_particles( const vismodule::StructuredVolumeObject* volume )
 {
     // Vertex data arrays. (output)
-    std::vector<kvs::Real32> vertex_coords;
-    std::vector<kvs::UInt8>  vertex_colors;
-    std::vector<kvs::Real32> vertex_normals;
+    std::vector<vismodule::Real32> vertex_coords;
+    std::vector<vismodule::UInt8>  vertex_colors;
+    std::vector<vismodule::Real32> vertex_normals;
 
     // Set a trilinear interpolator.
-    kvs::TrilinearInterpolator interpolator( volume );
+    vismodule::TrilinearInterpolator interpolator( volume );
 
     // Set parameters for normalization of the node values.
-//    const float min_value = ( typeid(T) == typeid( kvs::UInt8 ) ) ? 0.0f : static_cast<float>( volume->minValue() );
-//    const float max_value = ( typeid(T) == typeid( kvs::UInt8 ) ) ? 255.0f : static_cast<float>( volume->maxValue() );
+//    const float min_value = ( typeid(T) == typeid( vismodule::UInt8 ) ) ? 0.0f : static_cast<float>( volume->minValue() );
+//    const float max_value = ( typeid(T) == typeid( vismodule::UInt8 ) ) ? 255.0f : static_cast<float>( volume->maxValue() );
     const float min_value = BaseClass::transferFunction().colorMap().minValue();
     const float max_value = BaseClass::transferFunction().colorMap().maxValue();
     const size_t max_range = BaseClass::transferFunction().resolution() - 1;
     const float normalize_factor = max_range / ( max_value - min_value );
 
     const float* const  density_map = m_density_map.pointer();
-    const kvs::ColorMap color_map( BaseClass::transferFunction().colorMap() );
+    const vismodule::ColorMap color_map( BaseClass::transferFunction().colorMap() );
 
     // Generate particles for each cell.
-    const kvs::Vector3ui ncells( volume->resolution() - kvs::Vector3ui(1) );
-    for ( kvs::UInt32 z = 0; z < ncells.z(); ++z )
+    const vismodule::Vector3ui ncells( volume->resolution() - vismodule::Vector3ui(1) );
+    for ( vismodule::UInt32 z = 0; z < ncells.z(); ++z )
     {
-        for ( kvs::UInt32 y = 0; y < ncells.y(); ++y )
+        for ( vismodule::UInt32 y = 0; y < ncells.y(); ++y )
         {
-            for ( kvs::UInt32 x = 0; x < ncells.x(); ++x )
+            for ( vismodule::UInt32 x = 0; x < ncells.x(); ++x )
             {
                 // Calculate a volume of cell.
                 const float volume_of_cell = 1.0f;
 
                 // Interpolate at the center of gravity of this cell.
-                const kvs::Vector3f cog( x + 0.5f, y + 0.5f, z + 0.5f );
+                const vismodule::Vector3f cog( x + 0.5f, y + 0.5f, z + 0.5f );
                 interpolator.attachPoint( cog );
 
                 // Calculate a density.
@@ -447,24 +447,24 @@ void CellByCellMetropolisSampling::generate_particles( const kvs::StructuredVolu
 
                 if( nparticles_in_cell == 0 ) continue;
 
-                const kvs::Vector3f v( static_cast<float>(x), static_cast<float>(y), static_cast<float>(z) );
+                const vismodule::Vector3f v( static_cast<float>(x), static_cast<float>(y), static_cast<float>(z) );
 
                 // Calculate itnitial value
-                kvs::Vector3f point( Generator::RandomSamplingInCube( v ) );
+                vismodule::Vector3f point( Generator::RandomSamplingInCube( v ) );
                 interpolator.attachPoint( point );
                 float scalar = interpolator.template scalar<T>();
                 size_t degree = static_cast< size_t >( ( scalar - min_value ) * normalize_factor );
-                degree = kvs::Math::Clamp<size_t>( degree, 0, max_range );
+                degree = vismodule::Math::Clamp<size_t>( degree, 0, max_range );
                 float density = density_map[ degree ];
 
-                kvs::Vector3f point_trial( Generator::RandomSamplingInCube( v ) );
+                vismodule::Vector3f point_trial( Generator::RandomSamplingInCube( v ) );
                 interpolator.attachPoint( point_trial );
                 float scalar_trial = interpolator.template scalar<T>();
                 size_t degree_trial = static_cast< size_t >( ( scalar_trial - min_value ) * normalize_factor );
-                degree_trial = kvs::Math::Clamp<size_t>( degree_trial, 0, max_range );
+                degree_trial = vismodule::Math::Clamp<size_t>( degree_trial, 0, max_range );
                 float density_trial = density_map[ degree_trial ];
 
-//                while( kvs::Math::IsZero( density ) )
+//                while( vismodule::Math::IsZero( density ) )
                 const size_t max_loop = nparticles_in_cell * 10;
                 for ( size_t i = 0; i < max_loop; i++ )
                 {
@@ -472,9 +472,9 @@ void CellByCellMetropolisSampling::generate_particles( const kvs::StructuredVolu
                     interpolator.attachPoint( point );
                     scalar = interpolator.template scalar<T>();
                     degree = static_cast< size_t >( ( scalar - min_value ) * normalize_factor );
-                    degree = kvs::Math::Clamp<size_t>( degree, 0, max_range );
+                    degree = vismodule::Math::Clamp<size_t>( degree, 0, max_range );
                     density = density_map[ degree ];
-                    if ( !kvs::Math::IsZero( density ) ) break;
+                    if ( !vismodule::Math::IsZero( density ) ) break;
                 }
 
                 // Generate N particles.
@@ -487,7 +487,7 @@ void CellByCellMetropolisSampling::generate_particles( const kvs::StructuredVolu
                     interpolator.attachPoint( point_trial );
                     scalar_trial = interpolator.template scalar<T>();
                     degree_trial = static_cast< size_t >( ( scalar_trial - min_value ) * normalize_factor );
-                    degree_trial = kvs::Math::Clamp<size_t>( degree_trial, 0, max_range );
+                    degree_trial = vismodule::Math::Clamp<size_t>( degree_trial, 0, max_range );
                     density_trial = density_map[ degree_trial ];
 
                     // Calculate ratio.
@@ -500,8 +500,8 @@ void CellByCellMetropolisSampling::generate_particles( const kvs::StructuredVolu
                         scalar_trial = interpolator.template scalar<T>();
 
                         // Calculate a color and normal vector of the particle.
-                        const kvs::RGBColor color( color_map.at( scalar_trial ) );
-                        const kvs::Vector3f normal( interpolator.template gradient<T>() );
+                        const vismodule::RGBColor color( color_map.at( scalar_trial ) );
+                        const vismodule::Vector3f normal( interpolator.template gradient<T>() );
 
                         vertex_coords.push_back( point_trial.x() );
                         vertex_coords.push_back( point_trial.y() );
@@ -530,8 +530,8 @@ void CellByCellMetropolisSampling::generate_particles( const kvs::StructuredVolu
                             scalar_trial = interpolator.template scalar<T>();
 
                             // Calculate a color and normal vector of the particle.
-                            const kvs::RGBColor color( color_map.at( scalar_trial ) );
-                            const kvs::Vector3f normal( interpolator.template gradient<T>() );
+                            const vismodule::RGBColor color( color_map.at( scalar_trial ) );
+                            const vismodule::Vector3f normal( interpolator.template gradient<T>() );
 
                             vertex_coords.push_back( point_trial.x() );
                             vertex_coords.push_back( point_trial.y() );
@@ -559,8 +559,8 @@ void CellByCellMetropolisSampling::generate_particles( const kvs::StructuredVolu
                             scalar = interpolator.template scalar<T>();
 
                             // Calculate a color and normal vector of the particle.
-                            const kvs::RGBColor color( color_map.at( scalar ) );
-                            const kvs::Vector3f normal( interpolator.template gradient<T>() );
+                            const vismodule::RGBColor color( color_map.at( scalar ) );
+                            const vismodule::Vector3f normal( interpolator.template gradient<T>() );
 
                             vertex_coords.push_back( point_trial.x() );
                             vertex_coords.push_back( point_trial.y() );
@@ -587,9 +587,9 @@ void CellByCellMetropolisSampling::generate_particles( const kvs::StructuredVolu
         } // end of 'y' loop
     } // end of 'z' loop
 
-    SuperClass::m_coords  = kvs::ValueArray<kvs::Real32>( vertex_coords );
-    SuperClass::m_colors  = kvs::ValueArray<kvs::UInt8>( vertex_colors );
-    SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( vertex_normals );
+    SuperClass::m_coords  = vismodule::ValueArray<vismodule::Real32>( vertex_coords );
+    SuperClass::m_colors  = vismodule::ValueArray<vismodule::UInt8>( vertex_colors );
+    SuperClass::m_normals = vismodule::ValueArray<vismodule::Real32>( vertex_normals );
     SuperClass::setSize( 1.0f );
 }
 
@@ -600,46 +600,46 @@ void CellByCellMetropolisSampling::generate_particles( const kvs::StructuredVolu
  */
 /*===========================================================================*/
 template <typename T>
-void CellByCellMetropolisSampling::generate_particles( const kvs::UnstructuredVolumeObject* volume )
+void CellByCellMetropolisSampling::generate_particles( const vismodule::UnstructuredVolumeObject* volume )
 {
     // Vertex data arrays. (output)
-    std::vector<kvs::Real32> vertex_coords;
-    std::vector<kvs::UInt8>  vertex_colors;
-    std::vector<kvs::Real32> vertex_normals;
+    std::vector<vismodule::Real32> vertex_coords;
+    std::vector<vismodule::UInt8>  vertex_colors;
+    std::vector<vismodule::Real32> vertex_normals;
 
     // Set a tetrahedral cell interpolator.
-    kvs::CellBase<T>* cell = NULL;
+    vismodule::CellBase<T>* cell = NULL;
     switch ( volume->cellType() )
     {
-    case kvs::VolumeObjectBase::Tetrahedra:
+    case vismodule::VolumeObjectBase::Tetrahedra:
     {
-        cell = new kvs::TetrahedralCell<T>( volume );
+        cell = new vismodule::TetrahedralCell<T>( volume );
         break;
     }
-    case kvs::VolumeObjectBase::QuadraticTetrahedra:
+    case vismodule::VolumeObjectBase::QuadraticTetrahedra:
     {
-        cell = new kvs::QuadraticTetrahedralCell<T>( volume );
+        cell = new vismodule::QuadraticTetrahedralCell<T>( volume );
         break;
     }
-    case kvs::VolumeObjectBase::Hexahedra:
+    case vismodule::VolumeObjectBase::Hexahedra:
     {
-        cell = new kvs::HexahedralCell<T>( volume );
+        cell = new vismodule::HexahedralCell<T>( volume );
         break;
     }
-    case kvs::VolumeObjectBase::QuadraticHexahedra:
+    case vismodule::VolumeObjectBase::QuadraticHexahedra:
     {
-        cell = new kvs::QuadraticHexahedralCell<T>( volume );
+        cell = new vismodule::QuadraticHexahedralCell<T>( volume );
         break;
     }
-    case kvs::VolumeObjectBase::Pyramid:
+    case vismodule::VolumeObjectBase::Pyramid:
     {
-        cell = new kvs::PyramidalCell<T>( volume );
+        cell = new vismodule::PyramidalCell<T>( volume );
         break;
     }
     default:
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Unsupported cell type.");
+        visModuleMessageError("Unsupported cell type.");
         return;
     }
     }
@@ -650,7 +650,7 @@ void CellByCellMetropolisSampling::generate_particles( const kvs::UnstructuredVo
     const float normalize_factor = max_range / ( max_value - min_value );
 
     const float* const  density_map = m_density_map.pointer();
-    const kvs::ColorMap color_map( BaseClass::transferFunction().colorMap() );
+    const vismodule::ColorMap color_map( BaseClass::transferFunction().colorMap() );
 
     // Generate particles for each cell.
     const size_t ncells = volume->ncells();
@@ -675,29 +675,29 @@ void CellByCellMetropolisSampling::generate_particles( const kvs::UnstructuredVo
         // Calculate itnitial value
         /* NOTE: The gradient vector of the cell is reversed for shading on the rendering process.
          */
-        kvs::Vector3f point = cell->randomSampling();
+        vismodule::Vector3f point = cell->randomSampling();
         float         scalar = cell->scalar();
         size_t        degree = static_cast< size_t >( ( scalar - min_value ) * normalize_factor );
-        degree = kvs::Math::Clamp<size_t>( degree, 0, max_range );
+        degree = vismodule::Math::Clamp<size_t>( degree, 0, max_range );
         float         density = density_map[ degree ];
-        kvs::Vector3f g = -cell->gradient();
+        vismodule::Vector3f g = -cell->gradient();
 
-        kvs::Vector3f point_trial;
+        vismodule::Vector3f point_trial;
         float         scalar_trial;
         size_t        degree_trial;
         float         density_trial;
-        kvs::Vector3f g_trial;
+        vismodule::Vector3f g_trial;
 
-//        while( kvs::Math::IsZero( density ) )
+//        while( vismodule::Math::IsZero( density ) )
         const size_t max_loop = nparticles_in_cell * 10;
         for ( size_t i = 0; i < max_loop; i++ )
         {
             point = cell->randomSampling();
             degree = static_cast< size_t >( ( cell->scalar() - min_value ) * normalize_factor );
-            degree = kvs::Math::Clamp<size_t>( degree, 0, max_range );
+            degree = vismodule::Math::Clamp<size_t>( degree, 0, max_range );
             density = density_map[ degree ];
             g = -cell->gradient();
-            if ( !kvs::Math::IsZero( density ) ) break;
+            if ( !vismodule::Math::IsZero( density ) ) break;
         }
 
         //Generate N particles
@@ -709,7 +709,7 @@ void CellByCellMetropolisSampling::generate_particles( const kvs::UnstructuredVo
             point_trial = cell->randomSampling();
             scalar_trial = cell->scalar();
             degree_trial = static_cast< size_t >( ( scalar_trial - min_value ) * normalize_factor );
-            degree_trial = kvs::Math::Clamp<size_t>( degree_trial, 0, max_range );
+            degree_trial = vismodule::Math::Clamp<size_t>( degree_trial, 0, max_range );
             density_trial = density_map[ degree_trial ];
             g_trial = -cell->gradient();
 
@@ -719,10 +719,10 @@ void CellByCellMetropolisSampling::generate_particles( const kvs::UnstructuredVo
             if( ratio >= 1.0 ) // accept trial point
             {
                 // calculate color
-                const kvs::RGBColor color( color_map.at( scalar_trial ) );
+                const vismodule::RGBColor color( color_map.at( scalar_trial ) );
 
                 // calculate normal
-                const kvs::Vector3f normal( g_trial );
+                const vismodule::Vector3f normal( g_trial );
 
                 vertex_coords.push_back( point_trial.x() );
                 vertex_coords.push_back( point_trial.y() );
@@ -749,10 +749,10 @@ void CellByCellMetropolisSampling::generate_particles( const kvs::UnstructuredVo
                 if( ratio >= Generator::GetRandomNumber() ) // accept point trial
                 {
                     // calculate color
-                    const kvs::RGBColor color( color_map.at( scalar_trial ) );
+                    const vismodule::RGBColor color( color_map.at( scalar_trial ) );
 
                     // calculate normal
-                    const kvs::Vector3f normal( g_trial );
+                    const vismodule::Vector3f normal( g_trial );
 
                     vertex_coords.push_back( point_trial.x() );
                     vertex_coords.push_back( point_trial.y() );
@@ -778,10 +778,10 @@ void CellByCellMetropolisSampling::generate_particles( const kvs::UnstructuredVo
                 {
 #ifdef DUPLICATION
                     // calculate color
-                    const kvs::RGBColor color( color_map.scalar( degree ) );
+                    const vismodule::RGBColor color( color_map.scalar( degree ) );
 
                     //calculate normal
-                    const kvs::Vector3f normal( g );
+                    const vismodule::Vector3f normal( g );
 
                     vertex_coords.push_back( point_trial.x() );
                     vertex_coords.push_back( point_trial.y() );
@@ -806,12 +806,12 @@ void CellByCellMetropolisSampling::generate_particles( const kvs::UnstructuredVo
         } // end of 'paricle' while-loop
     } // end of 'cell' for-loop
 
-    SuperClass::m_coords  = kvs::ValueArray<kvs::Real32>( vertex_coords );
-    SuperClass::m_colors  = kvs::ValueArray<kvs::UInt8>( vertex_colors );
-    SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( vertex_normals );
+    SuperClass::m_coords  = vismodule::ValueArray<vismodule::Real32>( vertex_coords );
+    SuperClass::m_colors  = vismodule::ValueArray<vismodule::UInt8>( vertex_colors );
+    SuperClass::m_normals = vismodule::ValueArray<vismodule::Real32>( vertex_normals );
     SuperClass::setSize( 1.0f );
 
     delete cell;
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -15,7 +15,7 @@
 #include "MouseDoubleClickEventListener.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -25,7 +25,7 @@ namespace kvs
 /*===========================================================================*/
 MouseDoubleClickEventListener::MouseDoubleClickEventListener( void )
 {
-    kvs::EventListener::setEventType( kvs::EventBase::MouseDoubleClickEvent );
+    vismodule::EventListener::setEventType( vismodule::EventBase::MouseDoubleClickEvent );
 }
 
 /*===========================================================================*/
@@ -43,9 +43,9 @@ MouseDoubleClickEventListener::~MouseDoubleClickEventListener( void )
  *  @param  event [in] pointer to the event
  */
 /*===========================================================================*/
-void MouseDoubleClickEventListener::onEvent( kvs::EventBase* event )
+void MouseDoubleClickEventListener::onEvent( vismodule::EventBase* event )
 {
-    this->update( static_cast<kvs::MouseEvent*>(event) );
+    this->update( static_cast<vismodule::MouseEvent*>(event) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

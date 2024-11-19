@@ -11,18 +11,18 @@
  *  $Id: String.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__STRING_H_INCLUDE
-#define KVS__STRING_H_INCLUDE
+#ifndef VIS_MODULE__STRING_H_INCLUDE
+#define VIS_MODULE__STRING_H_INCLUDE
 
 #include <cstdio>
 #include <iostream>
 #include <string>
 #include <cstdarg>
 #include <sstream>
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -32,7 +32,7 @@ namespace kvs
 /*==========================================================================*/
 class String
 {
-    kvsClassName_without_virtual( kvs::String );
+    visModuleClassName_without_virtual( vismodule::String );
 
 private:
 
@@ -139,6 +139,6 @@ const T String::toNumber( const std::string& str, int base )
     return( String( str ).toNumber<T>( base ) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__STRING_H_INCLUDE
+#endif // VIS_MODULE__STRING_H_INCLUDE

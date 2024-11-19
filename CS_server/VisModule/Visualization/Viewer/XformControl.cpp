@@ -12,10 +12,10 @@
  */
 /****************************************************************************/
 #include "XformControl.h"
-#include <kvs/OpenGL>
+#include <vismodule/OpenGL>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -25,7 +25,7 @@ namespace kvs
  */
 /*==========================================================================*/
 XformControl::XformControl( bool collision ) :
-    kvs::Xform(),
+    vismodule::Xform(),
     m_can_collision( collision )
 {
     m_initial_xform.initialize();
@@ -41,11 +41,11 @@ XformControl::XformControl( bool collision ) :
  */
 /*==========================================================================*/
 XformControl::XformControl(
-    const kvs::Vector3f&  translation,
-    const kvs::Vector3f&  scale,
-    const kvs::Matrix33f& rotation,
+    const vismodule::Vector3f&  translation,
+    const vismodule::Vector3f&  scale,
+    const vismodule::Matrix33f& rotation,
     bool                  collision ):
-    kvs::Xform( translation, scale, rotation ),
+    vismodule::Xform( translation, scale, rotation ),
     m_can_collision( collision )
 {
     this->saveXform();
@@ -99,9 +99,9 @@ bool XformControl::canCollision( void )
  */
 /*==========================================================================*/
 void XformControl::setInitialXform(
-    const kvs::Vector3f&  translation,
-    const kvs::Vector3f&  scale,
-    const kvs::Matrix33f& rotation )
+    const vismodule::Vector3f&  translation,
+    const vismodule::Vector3f&  scale,
+    const vismodule::Matrix33f& rotation )
 {
     parent_class::set( translation, scale, rotation );
     this->saveXform();
@@ -133,7 +133,7 @@ void XformControl::resetXform( void )
  *  @param xform [in] xform matrix
  */
 /*==========================================================================*/
-void XformControl::multiplyXform( const kvs::Xform& xform )
+void XformControl::multiplyXform( const vismodule::Xform& xform )
 {
     parent_class::set( xform * (*this) );
 }
@@ -144,7 +144,7 @@ void XformControl::multiplyXform( const kvs::Xform& xform )
  *  @param xform [in] xform matrix.
  */
 /*==========================================================================*/
-void XformControl::setXform( const kvs::Xform& xform )
+void XformControl::setXform( const vismodule::Xform& xform )
 {
     parent_class::set( xform );
 }
@@ -168,7 +168,7 @@ void XformControl::applyXform( void ) const
  *  @return xform matrix
  */
 /*==========================================================================*/
-const kvs::Xform XformControl::xform( void ) const
+const vismodule::Xform XformControl::xform( void ) const
 {
     return( parent_class::get() );
 }
@@ -179,9 +179,9 @@ const kvs::Xform XformControl::xform( void ) const
  *  @param rotation [in] current rotation matrix.
  */
 /*==========================================================================*/
-void XformControl::rotate( const kvs::Matrix33f& rotation )
+void XformControl::rotate( const vismodule::Matrix33f& rotation )
 {
-    kvs::Vector3f position( (*this)[0][3], (*this)[1][3], (*this)[2][3] );
+    vismodule::Vector3f position( (*this)[0][3], (*this)[1][3], (*this)[2][3] );
 
     this->translate( -position );
     parent_class::updateRotation( rotation );
@@ -194,7 +194,7 @@ void XformControl::rotate( const kvs::Matrix33f& rotation )
  *  @param translation [in] current translation vector.
  */
 /*==========================================================================*/
-void XformControl::translate( const kvs::Vector3f& translation )
+void XformControl::translate( const vismodule::Vector3f& translation )
 {
     parent_class::updateTranslation( translation );
 }
@@ -205,13 +205,13 @@ void XformControl::translate( const kvs::Vector3f& translation )
  *  @param scale [in] current scaling value.
  */
 /*==========================================================================*/
-void XformControl::scale( const kvs::Vector3f& scaling )
+void XformControl::scale( const vismodule::Vector3f& scaling )
 {
-    kvs::Vector3f position( (*this)[0][3], (*this)[1][3], (*this)[2][3] );
+    vismodule::Vector3f position( (*this)[0][3], (*this)[1][3], (*this)[2][3] );
 
     this->translate( -position );
     parent_class::updateScaling( scaling );
     this->translate( position );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -24,11 +24,11 @@
 
 namespace
 {
-kvs::dcm::TagDictionary Dictionary;
+vismodule::dcm::TagDictionary Dictionary;
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace dcm
@@ -246,14 +246,14 @@ const std::string& Tag::name( void ) const
 /*===========================================================================*/
 const bool dcm::Tag::read( std::ifstream& ifs, const bool swap )
 {
-    const unsigned short group_id   = kvs::dcm::StreamReader::Get<unsigned short>( ifs, swap );
-    const unsigned short element_id = kvs::dcm::StreamReader::Get<unsigned short>( ifs, swap );
+    const unsigned short group_id   = vismodule::dcm::StreamReader::Get<unsigned short>( ifs, swap );
+    const unsigned short element_id = vismodule::dcm::StreamReader::Get<unsigned short>( ifs, swap );
 
-    *this = ::Dictionary[ kvs::dcm::Tag( group_id, element_id ) ];
+    *this = ::Dictionary[ vismodule::dcm::Tag( group_id, element_id ) ];
 
     return( true );
 }
 
 } // end of namespace dcm
 
-} // end of namespace kvs
+} // end of namespace vismodule

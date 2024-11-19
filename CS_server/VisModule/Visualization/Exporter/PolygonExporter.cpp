@@ -12,19 +12,19 @@
  */
 /*****************************************************************************/
 #include "PolygonExporter.h"
-#include <kvs/Message>
+#include <vismodule/Message>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
 /**
- *  @brief  Constructs a new PolygonExporter class for KVSMLObjectPolygon format.
+ *  @brief  Constructs a new PolygonExporter class for VISMODULE.LObjectPolygon format.
  *  @param  object [in] pointer to the input polygon object
  */
 /*===========================================================================*/
-PolygonExporter<kvs::KVSMLObjectPolygon>::PolygonExporter( const kvs::PolygonObject* object )
+PolygonExporter<vismodule::KVSMLObjectPolygon>::PolygonExporter( const vismodule::PolygonObject* object )
 {
     this->exec( object );
 }
@@ -36,41 +36,41 @@ PolygonExporter<kvs::KVSMLObjectPolygon>::PolygonExporter( const kvs::PolygonObj
  *  @return pointer to the KVSMLObjectPolygon format
  */
 /*===========================================================================*/
-kvs::KVSMLObjectPolygon* PolygonExporter<kvs::KVSMLObjectPolygon>::exec( const kvs::ObjectBase* object )
+vismodule::KVSMLObjectPolygon* PolygonExporter<vismodule::KVSMLObjectPolygon>::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::PolygonObject* polygon = kvs::PolygonObject::DownCast( object );
+    const vismodule::PolygonObject* polygon = vismodule::PolygonObject::DownCast( object );
     if ( !polygon )
     {
         m_is_success = false;
-        kvsMessageError("Input object is not polygon object.");
+        visModuleMessageError("Input object is not polygon object.");
         return( NULL );
     }
 
     switch ( polygon->polygonType() )
     {
-    case kvs::PolygonObject::Triangle: this->setPolygonType( "triangle" ); break;
-    case kvs::PolygonObject::Quadrangle: this->setPolygonType( "quadrangle" ); break;
+    case vismodule::PolygonObject::Triangle: this->setPolygonType( "triangle" ); break;
+    case vismodule::PolygonObject::Quadrangle: this->setPolygonType( "quadrangle" ); break;
     default: break;
     }
 
     switch ( polygon->colorType() )
     {
-    case kvs::PolygonObject::VertexColor: this->setColorType( "vertex" ); break;
-    case kvs::PolygonObject::PolygonColor: this->setColorType( "polygon" ); break;
+    case vismodule::PolygonObject::VertexColor: this->setColorType( "vertex" ); break;
+    case vismodule::PolygonObject::PolygonColor: this->setColorType( "polygon" ); break;
     default: break;
     }
 
     switch ( polygon->normalType() )
     {
-    case kvs::PolygonObject::VertexNormal: this->setNormalType( "vertex" ); break;
-    case kvs::PolygonObject::PolygonNormal: this->setNormalType( "polygon" ); break;
+    case vismodule::PolygonObject::VertexNormal: this->setNormalType( "vertex" ); break;
+    case vismodule::PolygonObject::PolygonNormal: this->setNormalType( "polygon" ); break;
     default: break;
     }
 
@@ -83,54 +83,54 @@ kvs::KVSMLObjectPolygon* PolygonExporter<kvs::KVSMLObjectPolygon>::exec( const k
     return( this );
 }
 
-PolygonExporter<kvs::Stl>::PolygonExporter( const kvs::PolygonObject* object )
+PolygonExporter<vismodule::Stl>::PolygonExporter( const vismodule::PolygonObject* object )
 {
     this->exec( object );
 }
 
-kvs::Stl* PolygonExporter<kvs::Stl>::exec( const kvs::ObjectBase* object )
+vismodule::Stl* PolygonExporter<vismodule::Stl>::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::PolygonObject* polygon = kvs::PolygonObject::DownCast( object );
+    const vismodule::PolygonObject* polygon = vismodule::PolygonObject::DownCast( object );
     if ( !polygon )
     {
         m_is_success = false;
-        kvsMessageError("Input object is not polygon object.");
+        visModuleMessageError("Input object is not polygon object.");
         return( NULL );
     }
 
-    if ( polygon->polygonType() != kvs::PolygonObject::Triangle )
+    if ( polygon->polygonType() != vismodule::PolygonObject::Triangle )
     {
         m_is_success = false;
-        kvsMessageError("Input object is not triangle polygon.");
+        visModuleMessageError("Input object is not triangle polygon.");
         return( NULL );
     }
 
     this->setCoords( polygon->coords() );
 
-    if ( polygon->normalType() == kvs::PolygonObject::VertexNormal )
+    if ( polygon->normalType() == vismodule::PolygonObject::VertexNormal )
     {
-        // Convert to kvs::PolygonObject::PolygonNormal type.
+        // Convert to vismodule::PolygonObject::PolygonNormal type.
         const size_t npolygons = polygon->connections().size() / 3;
-        const kvs::UInt32* pconnections = polygon->connections().pointer();
-        const kvs::Real32* pnormals = polygon->normals().pointer();
-        kvs::ValueArray<kvs::Real32> normals( npolygons * 3 );
+        const vismodule::UInt32* pconnections = polygon->connections().pointer();
+        const vismodule::Real32* pnormals = polygon->normals().pointer();
+        vismodule::ValueArray<vismodule::Real32> normals( npolygons * 3 );
         for ( size_t i = 0; i < npolygons; i++ )
         {
-            const kvs::UInt32 index0 = *(pconnections++);
-            const kvs::UInt32 index1 = *(pconnections++);
-            const kvs::UInt32 index2 = *(pconnections++);
+            const vismodule::UInt32 index0 = *(pconnections++);
+            const vismodule::UInt32 index1 = *(pconnections++);
+            const vismodule::UInt32 index2 = *(pconnections++);
 
-            const kvs::Vector3f normal0( pnormals + 3 * index0 );
-            const kvs::Vector3f normal1( pnormals + 3 * index1 );
-            const kvs::Vector3f normal2( pnormals + 3 * index2 );
-            const kvs::Vector3f normal = ( normal0 + normal1 + normal2 ) / 3;
+            const vismodule::Vector3f normal0( pnormals + 3 * index0 );
+            const vismodule::Vector3f normal1( pnormals + 3 * index1 );
+            const vismodule::Vector3f normal2( pnormals + 3 * index2 );
+            const vismodule::Vector3f normal = ( normal0 + normal1 + normal2 ) / 3;
 
             normals[ 3 * i + 0 ] = normal.x();
             normals[ 3 * i + 1 ] = normal.y();
@@ -138,7 +138,7 @@ kvs::Stl* PolygonExporter<kvs::Stl>::exec( const kvs::ObjectBase* object )
         }
         this->setNormals( normals );
     }
-    else if ( polygon->normalType() == kvs::PolygonObject::PolygonNormal )
+    else if ( polygon->normalType() == vismodule::PolygonObject::PolygonNormal )
     {
         this->setNormals( polygon->normals() );
     }
@@ -146,32 +146,32 @@ kvs::Stl* PolygonExporter<kvs::Stl>::exec( const kvs::ObjectBase* object )
     return( this );
 }
 
-PolygonExporter<kvs::Ply>::PolygonExporter( const kvs::PolygonObject* object )
+PolygonExporter<vismodule::Ply>::PolygonExporter( const vismodule::PolygonObject* object )
 {
     this->exec( object );
 }
 
-kvs::Ply* PolygonExporter<kvs::Ply>::exec( const kvs::ObjectBase* object )
+vismodule::Ply* PolygonExporter<vismodule::Ply>::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::PolygonObject* polygon = kvs::PolygonObject::DownCast( object );
+    const vismodule::PolygonObject* polygon = vismodule::PolygonObject::DownCast( object );
     if ( !polygon )
     {
         m_is_success = false;
-        kvsMessageError("Input object is not polygon object.");
+        visModuleMessageError("Input object is not polygon object.");
         return( NULL );
     }
 
-    if ( polygon->polygonType() != kvs::PolygonObject::Triangle )
+    if ( polygon->polygonType() != vismodule::PolygonObject::Triangle )
     {
         m_is_success = false;
-        kvsMessageError("Input object is not triangle polygon.");
+        visModuleMessageError("Input object is not triangle polygon.");
         return( NULL );
     }
 
@@ -181,9 +181,9 @@ kvs::Ply* PolygonExporter<kvs::Ply>::exec( const kvs::ObjectBase* object )
 
     if ( polygon->colors().size() == 3 )
     {
-        kvs::ValueArray<kvs::UInt8> colors( nvertices * 3 );
+        vismodule::ValueArray<vismodule::UInt8> colors( nvertices * 3 );
 
-        const kvs::RGBColor color = polygon->color();
+        const vismodule::RGBColor color = polygon->color();
         for ( size_t i = 0; i < nvertices; i++ )
         {
             colors[ 3 * i + 0 ] = color.r();
@@ -194,20 +194,20 @@ kvs::Ply* PolygonExporter<kvs::Ply>::exec( const kvs::ObjectBase* object )
     }
     else if ( polygon->colors().size() > 3 )
     {
-        if ( polygon->colorType() == kvs::PolygonObject::PolygonColor )
+        if ( polygon->colorType() == vismodule::PolygonObject::PolygonColor )
         {
-            kvs::ValueArray<kvs::UInt32> temp( nvertices * 3 ); temp.fill( 0x00 );
-            kvs::ValueArray<kvs::UInt32> counter( nvertices ); counter.fill( 0x00 );
+            vismodule::ValueArray<vismodule::UInt32> temp( nvertices * 3 ); temp.fill( 0x00 );
+            vismodule::ValueArray<vismodule::UInt32> counter( nvertices ); counter.fill( 0x00 );
             if ( polygon->nconnections() == 0 )
             {
                 const size_t npolygons = polygon->coords().size() / 3;
                 for ( size_t i = 0; i < npolygons; i++ )
                 {
-                    const kvs::UInt32 index0 = 3 * i + 0;
-                    const kvs::UInt32 index1 = 3 * i + 1;
-                    const kvs::UInt32 index2 = 3 * i + 2;
+                    const vismodule::UInt32 index0 = 3 * i + 0;
+                    const vismodule::UInt32 index1 = 3 * i + 1;
+                    const vismodule::UInt32 index2 = 3 * i + 2;
 
-                    const kvs::RGBColor color = polygon->color(i);
+                    const vismodule::RGBColor color = polygon->color(i);
                     temp[ 3 * index0 + 0 ] += color.r();
                     temp[ 3 * index0 + 1 ] += color.g();
                     temp[ 3 * index0 + 2 ] += color.b();
@@ -224,13 +224,13 @@ kvs::Ply* PolygonExporter<kvs::Ply>::exec( const kvs::ObjectBase* object )
                     counter[ index2 ] += 1;
                 }
 
-                kvs::ValueArray<kvs::UInt8> colors( nvertices * 3 );
+                vismodule::ValueArray<vismodule::UInt8> colors( nvertices * 3 );
                 for ( size_t i = 0; i < nvertices; i++ )
                 {
                     if ( counter[i] == 0 ) continue;
-                    colors[ 3 * i + 0 ] = kvs::UInt8( temp[ 3 * i + 0 ] / counter[i] );
-                    colors[ 3 * i + 0 ] = kvs::UInt8( temp[ 3 * i + 0 ] / counter[i] );
-                    colors[ 3 * i + 0 ] = kvs::UInt8( temp[ 3 * i + 0 ] / counter[i] );
+                    colors[ 3 * i + 0 ] = vismodule::UInt8( temp[ 3 * i + 0 ] / counter[i] );
+                    colors[ 3 * i + 0 ] = vismodule::UInt8( temp[ 3 * i + 0 ] / counter[i] );
+                    colors[ 3 * i + 0 ] = vismodule::UInt8( temp[ 3 * i + 0 ] / counter[i] );
                 }
 
                 this->setColors( colors );
@@ -238,14 +238,14 @@ kvs::Ply* PolygonExporter<kvs::Ply>::exec( const kvs::ObjectBase* object )
             else // polygon->nconnections() > 0
             {
                 const size_t npolygons = polygon->connections().size() / 3;
-                const kvs::UInt32* pconnections = polygon->connections().pointer();
+                const vismodule::UInt32* pconnections = polygon->connections().pointer();
                 for ( size_t i = 0; i < npolygons; i++ )
                 {
-                    const kvs::UInt32 index0 = *(pconnections++);
-                    const kvs::UInt32 index1 = *(pconnections++);
-                    const kvs::UInt32 index2 = *(pconnections++);
+                    const vismodule::UInt32 index0 = *(pconnections++);
+                    const vismodule::UInt32 index1 = *(pconnections++);
+                    const vismodule::UInt32 index2 = *(pconnections++);
 
-                    const kvs::RGBColor color = polygon->color(i);
+                    const vismodule::RGBColor color = polygon->color(i);
                     temp[ 3 * index0 + 0 ] += color.r();
                     temp[ 3 * index0 + 1 ] += color.g();
                     temp[ 3 * index0 + 2 ] += color.b();
@@ -262,19 +262,19 @@ kvs::Ply* PolygonExporter<kvs::Ply>::exec( const kvs::ObjectBase* object )
                     counter[ index2 ] += 1;
                 }
 
-                kvs::ValueArray<kvs::UInt8> colors( nvertices * 3 );
+                vismodule::ValueArray<vismodule::UInt8> colors( nvertices * 3 );
                 for ( size_t i = 0; i < nvertices; i++ )
                 {
                     if ( counter[i] == 0 ) continue;
-                    colors[ 3 * i + 0 ] = kvs::UInt8( temp[ 3 * i + 0 ] / counter[i] );
-                    colors[ 3 * i + 0 ] = kvs::UInt8( temp[ 3 * i + 0 ] / counter[i] );
-                    colors[ 3 * i + 0 ] = kvs::UInt8( temp[ 3 * i + 0 ] / counter[i] );
+                    colors[ 3 * i + 0 ] = vismodule::UInt8( temp[ 3 * i + 0 ] / counter[i] );
+                    colors[ 3 * i + 0 ] = vismodule::UInt8( temp[ 3 * i + 0 ] / counter[i] );
+                    colors[ 3 * i + 0 ] = vismodule::UInt8( temp[ 3 * i + 0 ] / counter[i] );
                 }
 
                 this->setColors( colors );
             }
         }
-        else // kvs::PolygonObject::VertexColor
+        else // vismodule::PolygonObject::VertexColor
         {
             this->setColors( polygon->colors() );
         }
@@ -282,20 +282,20 @@ kvs::Ply* PolygonExporter<kvs::Ply>::exec( const kvs::ObjectBase* object )
 
     if ( polygon->normals().size() > 0 )
     {
-        if ( polygon->normalType() == kvs::PolygonObject::PolygonNormal )
+        if ( polygon->normalType() == vismodule::PolygonObject::PolygonNormal )
         {
-            kvs::ValueArray<kvs::Real32> normals( nvertices * 3 ); normals.fill( 0x00 );
-            kvs::ValueArray<kvs::UInt32> counter( nvertices ); counter.fill( 0x00 );
+            vismodule::ValueArray<vismodule::Real32> normals( nvertices * 3 ); normals.fill( 0x00 );
+            vismodule::ValueArray<vismodule::UInt32> counter( nvertices ); counter.fill( 0x00 );
 
             const size_t npolygons = polygon->connections().size() / 3;
-            const kvs::UInt32* pconnections = m_connections.pointer();
+            const vismodule::UInt32* pconnections = m_connections.pointer();
             for ( size_t i = 0; i < npolygons; i++ )
             {
-                const kvs::UInt32 index0 = *(pconnections++);
-                const kvs::UInt32 index1 = *(pconnections++);
-                const kvs::UInt32 index2 = *(pconnections++);
+                const vismodule::UInt32 index0 = *(pconnections++);
+                const vismodule::UInt32 index1 = *(pconnections++);
+                const vismodule::UInt32 index2 = *(pconnections++);
 
-                const kvs::Vector3f normal = polygon->normal(i);
+                const vismodule::Vector3f normal = polygon->normal(i);
                 normals[ 3 * index0 + 0 ] += normal.x();
                 normals[ 3 * index0 + 1 ] += normal.y();
                 normals[ 3 * index0 + 2 ] += normal.z();
@@ -315,14 +315,14 @@ kvs::Ply* PolygonExporter<kvs::Ply>::exec( const kvs::ObjectBase* object )
             for ( size_t i = 0; i < nvertices; i++ )
             {
                 if ( counter[i] == 0 ) continue;
-                normals[ 3 * i + 0 ] /= static_cast<kvs::Real32>( counter[i] );
-                normals[ 3 * i + 1 ] /= static_cast<kvs::Real32>( counter[i] );
-                normals[ 3 * i + 2 ] /= static_cast<kvs::Real32>( counter[i] );
+                normals[ 3 * i + 0 ] /= static_cast<vismodule::Real32>( counter[i] );
+                normals[ 3 * i + 1 ] /= static_cast<vismodule::Real32>( counter[i] );
+                normals[ 3 * i + 2 ] /= static_cast<vismodule::Real32>( counter[i] );
             }
 
             this->setNormals( normals );
         }
-        else if ( polygon->normalType() == kvs::PolygonObject::VertexNormal )
+        else if ( polygon->normalType() == vismodule::PolygonObject::VertexNormal )
         {
             this->setNormals( polygon->normals() );
         }
@@ -336,4 +336,4 @@ kvs::Ply* PolygonExporter<kvs::Ply>::exec( const kvs::ObjectBase* object )
     return( this );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

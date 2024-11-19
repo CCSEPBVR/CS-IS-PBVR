@@ -11,14 +11,14 @@
  *  $Id: MessageBlock.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MESSAGE_BLOCK_H_INCLUDE
-#define KVS__MESSAGE_BLOCK_H_INCLUDE
+#ifndef VIS_MODULE__MESSAGE_BLOCK_H_INCLUDE
+#define VIS_MODULE__MESSAGE_BLOCK_H_INCLUDE
 
-#include <kvs/ValueArray>
-#include <kvs/ClassName>
+#include <vismodule/ValueArray>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -28,7 +28,7 @@ namespace kvs
 /*==========================================================================*/
 class MessageBlock
 {
-    kvsClassName( kvs::MessageBlock );
+    visModuleClassName( vismodule::MessageBlock );
 
 protected:
 
@@ -45,7 +45,7 @@ protected:
      *    --------------    ---
      */
 
-    kvs::ValueArray<unsigned char> m_block; ///< message block
+    vismodule::ValueArray<unsigned char> m_block; ///< message block
 
 public:
 
@@ -91,6 +91,6 @@ public:
 
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MESSAGE_BLOCK_H_INCLUDE
+#endif // VIS_MODULE__MESSAGE_BLOCK_H_INCLUDE

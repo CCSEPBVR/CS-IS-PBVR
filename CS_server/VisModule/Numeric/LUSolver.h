@@ -12,15 +12,15 @@
  *  $Id: LUSolver.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__LU_SOLVER_H_INCLUDE
-#define KVS__LU_SOLVER_H_INCLUDE
+#ifndef VIS_MODULE__LU_SOLVER_H_INCLUDE
+#define VIS_MODULE__LU_SOLVER_H_INCLUDE
 
 #include "LUDecomposer.h"
-#include <kvs/Vector>
-#include <kvs/ClassName>
+#include <vismodule/Vector>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -29,13 +29,13 @@ namespace kvs
  */
 /*===========================================================================*/
 template <typename T>
-class LUSolver : public kvs::Vector<T>
+class LUSolver : public vismodule::Vector<T>
 {
-    kvsClassName( kvs::LUSolver );
+    visModuleClassName( vismodule::LUSolver );
 
 protected:
 
-    kvs::LUDecomposer<T> m_decomposer;
+    vismodule::LUDecomposer<T> m_decomposer;
 
 public:
 
@@ -43,12 +43,12 @@ public:
     {
     }
 
-    LUSolver( const kvs::LUDecomposer<T>& decomposer )
+    LUSolver( const vismodule::LUDecomposer<T>& decomposer )
     {
         m_decomposer = decomposer;
     }
 
-    LUSolver( const kvs::Matrix<T>& A, const kvs::Vector<T>& b )
+    LUSolver( const vismodule::Matrix<T>& A, const vismodule::Vector<T>& b )
     {
         this->solve( A, b );
     }
@@ -59,7 +59,7 @@ public:
 
 public:
 
-    LUSolver<T>& operator = ( const kvs::Vector<T>& v )
+    LUSolver<T>& operator = ( const vismodule::Vector<T>& v )
     {
         this->setSize( v.size() );
         for( size_t i = 0; i < this->size(); i++ ){ (*this)[i] = v[i]; }
@@ -67,11 +67,11 @@ public:
         return( *this );
     }
 
-    const kvs::Vector<T>& solve( const kvs::Vector<T>& b );
+    const vismodule::Vector<T>& solve( const vismodule::Vector<T>& b );
 
-    const kvs::Vector<T>& solve( const kvs::Matrix<T>& A, const kvs::Vector<T>& b );
+    const vismodule::Vector<T>& solve( const vismodule::Matrix<T>& A, const vismodule::Vector<T>& b );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__LU_SOLVER_H_INCLUDE
+#endif // VIS_MODULE__LU_SOLVER_H_INCLUDE

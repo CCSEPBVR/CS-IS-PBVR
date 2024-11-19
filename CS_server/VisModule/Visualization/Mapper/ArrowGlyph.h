@@ -11,16 +11,16 @@
  *  $Id: ArrowGlyph.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__ARROW_GLYPH_H_INCLUDE
-#define KVS__ARROW_GLYPH_H_INCLUDE
+#ifndef VIS_MODULE__ARROW_GLYPH_H_INCLUDE
+#define VIS_MODULE__ARROW_GLYPH_H_INCLUDE
 
 #include "GlyphBase.h"
-#include <kvs/MapperBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/MapperBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -28,14 +28,14 @@ namespace kvs
  *  @brief  Arrow glyph class.
  */
 /*===========================================================================*/
-class ArrowGlyph : public kvs::GlyphBase
+class ArrowGlyph : public vismodule::GlyphBase
 {
     // Class name.
-    kvsClassName( kvs::ArrowGlyph );
+    visModuleClassName( vismodule::ArrowGlyph );
 
     // Module information.
-    kvsModuleCategory( Mapper );
-    kvsModuleBaseClass( kvs::GlyphBase );
+    visModuleCategory( Mapper );
+    visModuleBaseClass( vismodule::GlyphBase );
 
 public:
 
@@ -55,11 +55,11 @@ public:
     ArrowGlyph( void );
 
     ArrowGlyph(
-        const kvs::VolumeObjectBase* volume );
+        const vismodule::VolumeObjectBase* volume );
 
     ArrowGlyph(
-        const kvs::VolumeObjectBase* volume,
-        const kvs::TransferFunction& transfer_function );
+        const vismodule::VolumeObjectBase* volume,
+        const vismodule::TransferFunction& transfer_function );
 
     virtual ~ArrowGlyph( void );
 
@@ -73,7 +73,7 @@ public:
 */
 public:
 
-    BaseClass::SuperClass* exec( const kvs::ObjectBase* object );
+    BaseClass::SuperClass* exec( const vismodule::ObjectBase* object );
 
     void draw( void );
 
@@ -89,15 +89,15 @@ protected:
 
     void draw_tubes( void );
 
-    void draw_line_element( const kvs::RGBColor& color, const kvs::UInt8 opacity );
+    void draw_line_element( const vismodule::RGBColor& color, const vismodule::UInt8 opacity );
 
-    void draw_tube_element( const kvs::RGBColor& color, const kvs::UInt8 opacity );
+    void draw_tube_element( const vismodule::RGBColor& color, const vismodule::UInt8 opacity );
 
 protected:
 
     void initialize( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__ARROW_GLYPH_H_INCLUDE
+#endif // VIS_MODULE__ARROW_GLYPH_H_INCLUDE

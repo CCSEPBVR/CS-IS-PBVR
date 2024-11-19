@@ -13,12 +13,12 @@
  */
 /*****************************************************************************/
 #include "TCPBarrier.h"
-#include <kvs/DebugNew>
-#include <kvs/TCPSocket>
+#include <vismodule/DebugNew>
+#include <vismodule/TCPSocket>
 
 namespace { const int BARRIER_BUFFER_SIZE = 12; }
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -28,12 +28,12 @@ namespace kvs
  *  @param  port [in] port number
  */
 /*===========================================================================*/
-TCPBarrier::TCPBarrier( const kvs::IPAddress& ip, int port )
+TCPBarrier::TCPBarrier( const vismodule::IPAddress& ip, int port )
 {
-    m_client = new kvs::TCPSocket( ip, port );
+    m_client = new vismodule::TCPSocket( ip, port );
     if( !m_client->isConnected() )
     {
-        kvsMessageError("Cannot connect to the barrier server.");
+        visModuleMessageError("Cannot connect to the barrier server.");
     }
 }
 
@@ -67,4 +67,4 @@ void TCPBarrier::wait( void )
     if( size > 0 ) m_mutex.unlock();
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

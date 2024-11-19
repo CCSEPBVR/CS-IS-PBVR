@@ -15,8 +15,8 @@
 #define PBVR__QUADRATIC_TRIANGLE_CELL_H_INCLUDE
 
 #include "ClassName.h"
-#include <kvs/Type>
-#include <kvs/Vector4>
+#include <vismodule/Type>
+#include <vismodule/Vector4>
 #include "UnstructuredVolumeObject.h"
 #include "CellBase.h"
 
@@ -32,7 +32,7 @@ namespace pbvr
 template <typename T>
 class QuadraticTriangleCell : public pbvr::CellBase<T>
 {
-    kvsClassName( pbvr::QuadraticTriangleCell );
+    visModuleClassName( pbvr::QuadraticTriangleCell );
 
 public:
 
@@ -51,15 +51,15 @@ public:
 
 public:
 
-    const kvs::Real32* interpolationFunctions( const kvs::Vector3f& point ) const;
+    const vismodule::Real32* interpolationFunctions( const vismodule::Vector3f& point ) const;
 
-    const kvs::Real32* differentialFunctions( const kvs::Vector3f& point ) const;
+    const vismodule::Real32* differentialFunctions( const vismodule::Vector3f& point ) const;
 
-    const kvs::Vector3f randomSampling() const;
+    const vismodule::Vector3f randomSampling() const;
 
-    const kvs::Vector3f gradient() const;
+    const vismodule::Vector3f gradient() const;
 
-    const kvs::Real32 volume() const;
+    const vismodule::Real32 volume() const;
 
     void setLocalGravityPoint() const;
 
@@ -98,7 +98,7 @@ inline QuadraticTriangleCell<T>::~QuadraticTriangleCell()
  */
 /*==========================================================================*/
 template <typename T>
-inline const kvs::Real32* QuadraticTriangleCell<T>::interpolationFunctions( const kvs::Vector3f& point ) const
+inline const vismodule::Real32* QuadraticTriangleCell<T>::interpolationFunctions( const vismodule::Vector3f& point ) const
 {
     const float x = point[0];
     const float y = point[1];
@@ -121,7 +121,7 @@ inline const kvs::Real32* QuadraticTriangleCell<T>::interpolationFunctions( cons
  */
 /*==========================================================================*/
 template <typename T>
-inline const kvs::Real32* QuadraticTriangleCell<T>::differentialFunctions( const kvs::Vector3f& point ) const
+inline const vismodule::Real32* QuadraticTriangleCell<T>::differentialFunctions( const vismodule::Vector3f& point ) const
 {
     const float x = point.x();
     const float y = point.y();
@@ -161,14 +161,14 @@ inline const kvs::Real32* QuadraticTriangleCell<T>::differentialFunctions( const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Vector3f QuadraticTriangleCell<T>::randomSampling() const
+inline const vismodule::Vector3f QuadraticTriangleCell<T>::randomSampling() const
 {
     // Generate a point in the local coordinate.
     const float s = BaseClass::randomNumber();
     const float t = BaseClass::randomNumber();
     const float u = 0.0f;
 
-    kvs::Vector3f point;
+    vismodule::Vector3f point;
     if ( s + t <= 1.0f )
     {
         point[0] = s;
@@ -196,20 +196,20 @@ inline const kvs::Vector3f QuadraticTriangleCell<T>::randomSampling() const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Vector3f QuadraticTriangleCell<T>::gradient() const
+inline const vismodule::Vector3f QuadraticTriangleCell<T>::gradient() const
 {
     //Local coord (x,y), Global coord (X,Y,Z)=V.  V=V(x,y).
     //Normal of surface = dV/dx cross dV/dy
     const float* dN = BaseClass::m_differential_functions;
-    const kvs::Vector3f* V = BaseClass::m_vertices;
+    const vismodule::Vector3f* V = BaseClass::m_vertices;
     const size_t nnodes = BaseClass::m_nnodes;
 
     // dV/dx
-    kvs::Vector3f dVdx( 0, 0, 0 );
+    vismodule::Vector3f dVdx( 0, 0, 0 );
     for ( size_t i = 0; i < nnodes; i++ ) dVdx += dN[i] * V[i];
 
     // dV/dy
-    kvs::Vector3f dVdy( 0, 0, 0 );
+    vismodule::Vector3f dVdy( 0, 0, 0 );
     for ( size_t i = 0; i < nnodes; i++ ) dVdy += dN[i + nnodes] * V[i];
 
     return dVdx.cross( dVdy );
@@ -222,11 +222,11 @@ inline const kvs::Vector3f QuadraticTriangleCell<T>::gradient() const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Real32 QuadraticTriangleCell<T>::volume() const
+inline const vismodule::Real32 QuadraticTriangleCell<T>::volume() const
 {
-    const kvs::Vector3f v01( BaseClass::m_vertices[1] - BaseClass::m_vertices[0] );
-    const kvs::Vector3f v02( BaseClass::m_vertices[2] - BaseClass::m_vertices[0] );
-    const kvs::Vector3f V =  v01.cross( v02 );
+    const vismodule::Vector3f v01( BaseClass::m_vertices[1] - BaseClass::m_vertices[0] );
+    const vismodule::Vector3f v02( BaseClass::m_vertices[2] - BaseClass::m_vertices[0] );
+    const vismodule::Vector3f V =  v01.cross( v02 );
 
     return V.length() * 0.5;
 }

@@ -11,15 +11,15 @@
  *  $Id: Semaphore.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__SEMAPHORE_H_INCLUDE
-#define KVS__SEMAPHORE_H_INCLUDE
+#ifndef VIS_MODULE__SEMAPHORE_H_INCLUDE
+#define VIS_MODULE__SEMAPHORE_H_INCLUDE
 
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 #include "Mutex.h"
 #include "Condition.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -29,13 +29,13 @@ namespace kvs
 /*==========================================================================*/
 class Semaphore
 {
-    kvsClassName( kvs::Semaphore );
+    visModuleClassName( vismodule::Semaphore );
 
 protected:
 
     int            m_available; ///< number of available semaphores
-    kvs::Mutex     m_mutex;     ///< mutex for locker
-    kvs::Condition m_condition; ///< condition
+    vismodule::Mutex     m_mutex;     ///< mutex for locker
+    vismodule::Condition m_condition; ///< condition
 
 public:
 
@@ -54,6 +54,6 @@ public:
     int available( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__SEMAPHORE_H_INCLUDE
+#endif // VIS_MODULE__SEMAPHORE_H_INCLUDE

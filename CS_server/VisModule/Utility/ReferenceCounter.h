@@ -11,17 +11,17 @@
  *  $Id: ReferenceCounter.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__REFERENCE_COUNTER_H_INCLUDE
-#define KVS__REFERENCE_COUNTER_H_INCLUDE
+#ifndef VIS_MODULE__REFERENCE_COUNTER_H_INCLUDE
+#define VIS_MODULE__REFERENCE_COUNTER_H_INCLUDE
 
 #include <cstddef>
-#include <kvs/ClassName>
-#if defined ( KVS_ENABLE_THREAD_SAFE )
-#include <kvs/Mutex>
+#include <vismodule/ClassName>
+#if defined ( VIS_MODULE_ENABLE_THREAD_SAFE )
+#include <vismodule/Mutex>
 #endif
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -31,12 +31,12 @@ namespace kvs
 /*==========================================================================*/
 class ReferenceCounter
 {
-    kvsClassName_without_virtual( kvs::ReferenceCounter );
+    visModuleClassName_without_virtual( vismodule::ReferenceCounter );
 
 private:
 
-#if defined ( KVS_ENABLE_THREAD_SAFE )
-    mutable kvs::Mutex m_key;   ///< lock key
+#if defined ( VIS_MODULE_ENABLE_THREAD_SAFE )
+    mutable vismodule::Mutex m_key;   ///< lock key
 #endif
     size_t             m_value; ///< counter
 
@@ -52,8 +52,8 @@ public:
 
     const size_t value( void ) const;
 
-#if defined ( KVS_ENABLE_THREAD_SAFE )
-    kvs::Mutex& key( void ) const;
+#if defined ( VIS_MODULE_ENABLE_THREAD_SAFE )
+    vismodule::Mutex& key( void ) const;
 #endif
 
 public:
@@ -63,6 +63,6 @@ public:
     void decrement( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__REFERENCE_COUNTER_H_INCLUDE
+#endif // VIS_MODULE__REFERENCE_COUNTER_H_INCLUDE

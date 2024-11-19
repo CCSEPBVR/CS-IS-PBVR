@@ -12,14 +12,14 @@
  *  $Id: BoundaryData.h 865 2011-07-22 01:41:18Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__GF__BOUNDARY_H_INCLUDE
-#define KVS__GF__BOUNDARY_H_INCLUDE
+#ifndef VIS_MODULE__GF__BOUNDARY_H_INCLUDE
+#define VIS_MODULE__GF__BOUNDARY_H_INCLUDE
 
 #include <string>
-#include <kvs/ValueArray>
+#include <vismodule/ValueArray>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace gf
@@ -44,20 +44,20 @@ protected:
     size_t m_nnodes_moving_wall; ///< number of moving wall boundary nodes
     size_t m_nnodes_inter_connect; ///< number of inter connect boundary nodes
     size_t m_nnodes_temp; ///< number of temperature boundary nodes
-    kvs::ValueArray<kvs::UInt32> m_connections_inlet; ///< inlet boundary nodes
-    kvs::ValueArray<kvs::UInt32> m_connections_wall; ///< wall boundary nodes
-    kvs::ValueArray<kvs::UInt32> m_connections_symetric; ///< symetric boundary nodes
-    kvs::ValueArray<kvs::UInt32> m_connections_cyclic; ///< cyclic boundary nodes
-    kvs::ValueArray<kvs::UInt32> m_connections_body; ///< body surface boundary nodes
-    kvs::ValueArray<kvs::UInt32> m_connections_free; ///< free boundary nodes
-    kvs::ValueArray<kvs::UInt32> m_connections_moving_wall; ///< moving wall boundary nodes
-    kvs::ValueArray<kvs::UInt32> m_connections_temp; ///< temperature boundary nodes
-    kvs::ValueArray<kvs::UInt32> m_connections_heat; ///< heat flux boundary nodes
-    kvs::ValueArray<kvs::Real32> m_velocities_inlet; ///< inlet boundary velocities
-    kvs::ValueArray<kvs::Real32> m_velocities_wall; ///< wall boundary velocities
-    kvs::ValueArray<kvs::Int32>  m_inter_connects; ///< inter connection datasets
-    kvs::ValueArray<kvs::Real32> m_temperatures; ///< boundary temperatures
-    kvs::ValueArray<kvs::Real32> m_heat_fluxes; ///< boundary heat fluxes
+    vismodule::ValueArray<vismodule::UInt32> m_connections_inlet; ///< inlet boundary nodes
+    vismodule::ValueArray<vismodule::UInt32> m_connections_wall; ///< wall boundary nodes
+    vismodule::ValueArray<vismodule::UInt32> m_connections_symetric; ///< symetric boundary nodes
+    vismodule::ValueArray<vismodule::UInt32> m_connections_cyclic; ///< cyclic boundary nodes
+    vismodule::ValueArray<vismodule::UInt32> m_connections_body; ///< body surface boundary nodes
+    vismodule::ValueArray<vismodule::UInt32> m_connections_free; ///< free boundary nodes
+    vismodule::ValueArray<vismodule::UInt32> m_connections_moving_wall; ///< moving wall boundary nodes
+    vismodule::ValueArray<vismodule::UInt32> m_connections_temp; ///< temperature boundary nodes
+    vismodule::ValueArray<vismodule::UInt32> m_connections_heat; ///< heat flux boundary nodes
+    vismodule::ValueArray<vismodule::Real32> m_velocities_inlet; ///< inlet boundary velocities
+    vismodule::ValueArray<vismodule::Real32> m_velocities_wall; ///< wall boundary velocities
+    vismodule::ValueArray<vismodule::Int32>  m_inter_connects; ///< inter connection datasets
+    vismodule::ValueArray<vismodule::Real32> m_temperatures; ///< boundary temperatures
+    vismodule::ValueArray<vismodule::Real32> m_heat_fluxes; ///< boundary heat fluxes
 
 public:
 
@@ -87,33 +87,33 @@ public:
 
     const size_t nnodesTemp( void ) const;
 
-    const kvs::ValueArray<kvs::UInt32>& connectionsInlet( void ) const;
+    const vismodule::ValueArray<vismodule::UInt32>& connectionsInlet( void ) const;
 
-    const kvs::ValueArray<kvs::UInt32>& connectionsWall( void ) const;
+    const vismodule::ValueArray<vismodule::UInt32>& connectionsWall( void ) const;
 
-    const kvs::ValueArray<kvs::UInt32>& connectionsSymetric( void ) const;
+    const vismodule::ValueArray<vismodule::UInt32>& connectionsSymetric( void ) const;
 
-    const kvs::ValueArray<kvs::UInt32>& connectionsCyclic( void ) const;
+    const vismodule::ValueArray<vismodule::UInt32>& connectionsCyclic( void ) const;
 
-    const kvs::ValueArray<kvs::UInt32>& connectionsBody( void ) const;
+    const vismodule::ValueArray<vismodule::UInt32>& connectionsBody( void ) const;
 
-    const kvs::ValueArray<kvs::UInt32>& connectionsFree( void ) const;
+    const vismodule::ValueArray<vismodule::UInt32>& connectionsFree( void ) const;
 
-    const kvs::ValueArray<kvs::UInt32>& connectionsMovingWall( void ) const;
+    const vismodule::ValueArray<vismodule::UInt32>& connectionsMovingWall( void ) const;
 
-    const kvs::ValueArray<kvs::UInt32>& connectionsTemp( void ) const;
+    const vismodule::ValueArray<vismodule::UInt32>& connectionsTemp( void ) const;
 
-    const kvs::ValueArray<kvs::UInt32>& connectionsHeat( void ) const;
+    const vismodule::ValueArray<vismodule::UInt32>& connectionsHeat( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& velocitiesInlet( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& velocitiesInlet( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& velocitiesWall( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& velocitiesWall( void ) const;
 
-    const kvs::ValueArray<kvs::Int32>&  interConnects( void ) const;
+    const vismodule::ValueArray<vismodule::Int32>&  interConnects( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& temperatures( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& temperatures( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& heatFluxes( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& heatFluxes( void ) const;
 
 public:
 
@@ -122,6 +122,6 @@ public:
 
 } // end of namespace gf
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GF__BOUNDARY_H_INCLUDE
+#endif // VIS_MODULE__GF__BOUNDARY_H_INCLUDE

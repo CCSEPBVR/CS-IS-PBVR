@@ -12,18 +12,18 @@
  *  $Id: ScatterPlotRenderer.h 858 2011-07-16 08:28:11Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__SCATTER_PLOT_RENDERER_H_INCLUDE
-#define KVS__SCATTER_PLOT_RENDERER_H_INCLUDE
+#ifndef VIS_MODULE__SCATTER_PLOT_RENDERER_H_INCLUDE
+#define VIS_MODULE__SCATTER_PLOT_RENDERER_H_INCLUDE
 
-#include <kvs/RendererBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
-#include <kvs/RGBColor>
-#include <kvs/RGBAColor>
-#include <kvs/ColorMap>
+#include <vismodule/RendererBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
+#include <vismodule/RGBColor>
+#include <vismodule/RGBAColor>
+#include <vismodule/ColorMap>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class ObjectBase;
@@ -35,14 +35,14 @@ class Light;
  *  @brief  Scatter plot renderer class.
  */
 /*===========================================================================*/
-class ScatterPlotRenderer : public kvs::RendererBase
+class ScatterPlotRenderer : public vismodule::RendererBase
 {
     // Class name.
-    kvsClassName( kvs::ScatterPlotRenderer );
+    visModuleClassName( vismodule::ScatterPlotRenderer );
 
     // Module information.
-    kvsModuleCategory( Renderer );
-    kvsModuleBaseClass( kvs::RendererBase );
+    visModuleCategory( Renderer );
+    visModuleBaseClass( vismodule::RendererBase );
 
 protected:
 
@@ -51,11 +51,11 @@ protected:
     int m_left_margin; ///< left margin
     int m_right_margin; ///< right margin
     bool m_has_point_color; ///< check flag whether the point color is specified
-    kvs::RGBColor m_point_color; ///< point color
-    kvs::UInt8 m_point_opacity; ///< point opacity
-    kvs::Real32 m_point_size; ///< point size
-    kvs::ColorMap m_color_map; ///< color map
-    kvs::RGBAColor m_background_color; ///< background color
+    vismodule::RGBColor m_point_color; ///< point color
+    vismodule::UInt8 m_point_opacity; ///< point opacity
+    vismodule::Real32 m_point_size; ///< point size
+    vismodule::ColorMap m_color_map; ///< color map
+    vismodule::RGBAColor m_background_color; ///< background color
 
 public:
 
@@ -71,15 +71,15 @@ public:
 
     void setRightMargin( const int right_margin );
 
-    void setPointColor( const kvs::RGBColor point_color );
+    void setPointColor( const vismodule::RGBColor point_color );
 
-    void setPointOpacity( const kvs::UInt8 point_opacity );
+    void setPointOpacity( const vismodule::UInt8 point_opacity );
 
-    void setPointSize( const kvs::Real32 point_size );
+    void setPointSize( const vismodule::Real32 point_size );
 
-    void setColorMap( const kvs::ColorMap& color_map );
+    void setColorMap( const vismodule::ColorMap& color_map );
 
-    void setBackgroundColor( const kvs::RGBAColor background_color );
+    void setBackgroundColor( const vismodule::RGBAColor background_color );
 
     const int topMargin( void ) const;
 
@@ -89,19 +89,19 @@ public:
 
     const int rightMargin( void ) const;
 
-    const kvs::UInt8 pointOpacity( void ) const;
+    const vismodule::UInt8 pointOpacity( void ) const;
 
-    const kvs::Real32 pointSize( void ) const;
+    const vismodule::Real32 pointSize( void ) const;
 
-    const kvs::ColorMap& colorMap( void ) const;
+    const vismodule::ColorMap& colorMap( void ) const;
 
-    const kvs::RGBAColor backgroundColor( void ) const;
+    const vismodule::RGBAColor backgroundColor( void ) const;
 
 public:
 
-    void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
+    void exec( vismodule::ObjectBase* object, vismodule::Camera* camera, vismodule::Light* light );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__SCATTER_PLOT_RENDERER_H_INCLUDE
+#endif // VIS_MODULE__SCATTER_PLOT_RENDERER_H_INCLUDE

@@ -15,7 +15,7 @@
 #include "ApplicationBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -68,7 +68,7 @@ char** ApplicationBase::argv( void )
  *  @param  screen [in] pointer to the screen
  */
 /*===========================================================================*/
-void ApplicationBase::attach( kvs::ScreenBase* screen )
+void ApplicationBase::attach( vismodule::ScreenBase* screen )
 {
     m_screens.push_back( screen );
 }
@@ -79,9 +79,9 @@ void ApplicationBase::attach( kvs::ScreenBase* screen )
  *  @param  screen [in] pointer to the screen
  */
 /*===========================================================================*/
-void ApplicationBase::detach( kvs::ScreenBase* screen )
+void ApplicationBase::detach( vismodule::ScreenBase* screen )
 {
     m_screens.remove( screen );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

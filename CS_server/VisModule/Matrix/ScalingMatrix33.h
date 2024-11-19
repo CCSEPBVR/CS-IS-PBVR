@@ -12,15 +12,15 @@
  *  $Id: ScalingMatrix33.h 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__SCALING_MATRIX33_H_INCLUDE
-#define KVS__SCALING_MATRIX33_H_INCLUDE
+#ifndef VIS_MODULE__SCALING_MATRIX33_H_INCLUDE
+#define VIS_MODULE__SCALING_MATRIX33_H_INCLUDE
 
 #include <cmath>
-#include <kvs/Matrix33>
-#include <kvs/Math>
+#include <vismodule/Matrix33>
+#include <vismodule/Math>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -33,7 +33,7 @@ namespace kvs
  */
 /*===========================================================================*/
 template <typename T>
-inline kvs::Matrix33<T> ScalingMatrix33( const T sx, const T sy, const T sz )
+inline vismodule::Matrix33<T> ScalingMatrix33( const T sx, const T sy, const T sz )
 {
     const T zero = T(0);
     const T elements[ 9 ] =
@@ -43,7 +43,7 @@ inline kvs::Matrix33<T> ScalingMatrix33( const T sx, const T sy, const T sz )
         zero, zero, sz
     };
 
-    return( kvs::Matrix33<T>( elements ) );
+    return( vismodule::Matrix33<T>( elements ) );
 };
 
 /*===========================================================================*/
@@ -54,9 +54,9 @@ inline kvs::Matrix33<T> ScalingMatrix33( const T sx, const T sy, const T sz )
  */
 /*===========================================================================*/
 template <typename T>
-inline kvs::Matrix33<T> ScalingMatrix33( const kvs::Vector3<T>& s )
+inline vismodule::Matrix33<T> ScalingMatrix33( const vismodule::Vector3<T>& s )
 {
-    return( kvs::ScalingMatrix33<T>( s.x(), s.y(), s.z() ) );
+    return( vismodule::ScalingMatrix33<T>( s.x(), s.y(), s.z() ) );
 };
 
 /*===========================================================================*/
@@ -67,11 +67,11 @@ inline kvs::Matrix33<T> ScalingMatrix33( const kvs::Vector3<T>& s )
  */
 /*===========================================================================*/
 template <typename T>
-inline kvs::Matrix33<T> ScalingMatrix33( const T s )
+inline vismodule::Matrix33<T> ScalingMatrix33( const T s )
 {
-    return( kvs::ScalingMatrix33<T>( s, s, s ) );
+    return( vismodule::ScalingMatrix33<T>( s, s, s ) );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__SCALING_MATRIX33_H_INCLUDE
+#endif // VIS_MODULE__SCALING_MATRIX33_H_INCLUDE

@@ -75,7 +75,7 @@ double (*f[])(double) = {
 
 }
 
-namespace kvs
+namespace vismodule
 {
 
 namespace RGBFormulae
@@ -91,7 +91,7 @@ namespace RGBFormulae
  *  @return colormap
  */
 /*===========================================================================*/
-kvs::ColorMap Create( const int index0, const int index1, const int index2, const size_t resolution )
+vismodule::ColorMap Create( const int index0, const int index1, const int index2, const size_t resolution )
 {
     int rindex = index0;
     int gindex = index1;
@@ -104,12 +104,12 @@ kvs::ColorMap Create( const int index0, const int index1, const int index2, cons
     if ( gindex < 0 ) { gnegative = true; gindex *= -1; }
     if ( bindex < 0 ) { bnegative = true; bindex *= -1; }
 
-    rindex = kvs::Math::Clamp( rindex, 0, 42 );
-    gindex = kvs::Math::Clamp( gindex, 0, 42 );
-    bindex = kvs::Math::Clamp( bindex, 0, 42 );
+    rindex = vismodule::Math::Clamp( rindex, 0, 42 );
+    gindex = vismodule::Math::Clamp( gindex, 0, 42 );
+    bindex = vismodule::Math::Clamp( bindex, 0, 42 );
 
-    kvs::ColorMap::Table table( 3 * resolution );
-    kvs::UInt8* color = table.pointer();
+    vismodule::ColorMap::Table table( 3 * resolution );
+    vismodule::UInt8* color = table.pointer();
     for ( size_t i = 0; i < resolution; ++i )
     {
         const double x = static_cast<double>(i) / ( resolution - 1 );
@@ -117,20 +117,20 @@ kvs::ColorMap Create( const int index0, const int index1, const int index2, cons
         const double gx = gnegative ? 1.0 - x : x;
         const double bx = bnegative ? 1.0 - x : x;
 
-        const double r = kvs::Math::Clamp( ::f[rindex]( rx ), 0.0, 1.0 );
-        const double g = kvs::Math::Clamp( ::f[gindex]( gx ), 0.0, 1.0 );
-        const double b = kvs::Math::Clamp( ::f[bindex]( bx ), 0.0, 1.0 );
+        const double r = vismodule::Math::Clamp( ::f[rindex]( rx ), 0.0, 1.0 );
+        const double g = vismodule::Math::Clamp( ::f[gindex]( gx ), 0.0, 1.0 );
+        const double b = vismodule::Math::Clamp( ::f[bindex]( bx ), 0.0, 1.0 );
 
-        *( color++ ) = static_cast<kvs::UInt8>( r * 255.0 + 0.5 );
-        *( color++ ) = static_cast<kvs::UInt8>( g * 255.0 + 0.5 );
-        *( color++ ) = static_cast<kvs::UInt8>( b * 255.0 + 0.5 );
+        *( color++ ) = static_cast<vismodule::UInt8>( r * 255.0 + 0.5 );
+        *( color++ ) = static_cast<vismodule::UInt8>( g * 255.0 + 0.5 );
+        *( color++ ) = static_cast<vismodule::UInt8>( b * 255.0 + 0.5 );
     }
 
-    kvs::Real32 min_value = 0.0f;
-    kvs::Real32 max_value = static_cast<kvs::Real32>( resolution - 1 );
-    return( kvs::ColorMap( table, min_value, max_value ) );
+    vismodule::Real32 min_value = 0.0f;
+    vismodule::Real32 max_value = static_cast<vismodule::Real32>( resolution - 1 );
+    return( vismodule::ColorMap( table, min_value, max_value ) );
 }
 
 } // end of namespace RGBFormulae
 
-} // end of namespace kvs
+} // end of namespace vismodule

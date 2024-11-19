@@ -11,16 +11,16 @@
  *  $Id: ImageBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__IMAGE_BASE_H_INCLUDE
-#define KVS__IMAGE_BASE_H_INCLUDE
+#ifndef VIS_MODULE__IMAGE_BASE_H_INCLUDE
+#define VIS_MODULE__IMAGE_BASE_H_INCLUDE
 
-#include <kvs/ValueArray>
-#include <kvs/Type>
-#include <kvs/Vector2>
-#include <kvs/ClassName>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/Vector2>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class ColorImage;
@@ -33,7 +33,7 @@ class GrayImage;
 /*==========================================================================*/
 class ImageBase
 {
-    kvsClassName( kvs::ImageBase );
+    visModuleClassName( vismodule::ImageBase );
 
 public:
 
@@ -53,11 +53,11 @@ public:
     template <typename ImageDataType>
     class BilinearInterpolator;
 
-    typedef NearestNeighborInterpolator<kvs::GrayImage>  NearestNeighborInterpolatorGray;
-    typedef NearestNeighborInterpolator<kvs::ColorImage> NearestNeighborInterpolatorColor;
+    typedef NearestNeighborInterpolator<vismodule::GrayImage>  NearestNeighborInterpolatorGray;
+    typedef NearestNeighborInterpolator<vismodule::ColorImage> NearestNeighborInterpolatorColor;
 
-    typedef BilinearInterpolator<kvs::GrayImage>  BilinearInterpolatorGray;
-    typedef BilinearInterpolator<kvs::ColorImage> BilinearInterpolatorColor;
+    typedef BilinearInterpolator<vismodule::GrayImage>  BilinearInterpolatorGray;
+    typedef BilinearInterpolator<vismodule::ColorImage> BilinearInterpolatorColor;
 
 protected:
 
@@ -68,7 +68,7 @@ protected:
     size_t m_bpp;     ///< bits per pixel [bit]
     size_t m_bpl;     ///< bytes per line [byte]
     size_t m_size;    ///< data size [byte]
-    kvs::ValueArray<kvs::UInt8> m_data; ///< pixel data array
+    vismodule::ValueArray<vismodule::UInt8> m_data; ///< pixel data array
 
 public:
 
@@ -80,13 +80,13 @@ public:
         const size_t width,
         const size_t height,
         const ImageType type,
-        const kvs::UInt8* data );
+        const vismodule::UInt8* data );
 
     ImageBase(
         const size_t width,
         const size_t height,
         const ImageType type,
-        const kvs::ValueArray<kvs::UInt8>& data );
+        const vismodule::ValueArray<vismodule::UInt8>& data );
 
     virtual ~ImageBase( void );
 
@@ -94,7 +94,7 @@ public:
 
     void clear( void );
 
-    void copy( const kvs::ImageBase& image );
+    void copy( const vismodule::ImageBase& image );
 
     const bool create( const size_t width, const size_t height, const ImageType type );
 
@@ -102,13 +102,13 @@ public:
         const size_t width,
         const size_t height,
         const ImageType type,
-        const kvs::UInt8* data );
+        const vismodule::UInt8* data );
 
     const bool create(
         const size_t width,
         const size_t height,
         const ImageType type,
-        const kvs::ValueArray<kvs::UInt8>& data );
+        const vismodule::ValueArray<vismodule::UInt8>& data );
 
 public:
 
@@ -126,9 +126,9 @@ public:
 
     const size_t size( void ) const;
 
-    const kvs::ValueArray<kvs::UInt8>& data( void ) const;
+    const vismodule::ValueArray<vismodule::UInt8>& data( void ) const;
 
-    kvs::ValueArray<kvs::UInt8>& data( void );
+    vismodule::ValueArray<vismodule::UInt8>& data( void );
 
 public:
 
@@ -146,7 +146,7 @@ class ImageBase::NearestNeighborInterpolator
 protected:
 
     const ImageDataType* m_reference_image;
-    kvs::Vector2d m_p;
+    vismodule::Vector2d m_p;
 
 public:
 
@@ -165,9 +165,9 @@ class ImageBase::BilinearInterpolator
 protected:
 
     const ImageDataType* m_reference_image;
-    kvs::Vector2d m_pmin;
-    kvs::Vector2d m_pmax;
-    kvs::Vector2d m_rate;
+    vismodule::Vector2d m_pmin;
+    vismodule::Vector2d m_pmax;
+    vismodule::Vector2d m_rate;
 
 public:
 
@@ -180,6 +180,6 @@ public:
     const typename ImageDataType::PixelType operator () ( void ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__IMAGE_BASE_H_INCLUDE
+#endif // VIS_MODULE__IMAGE_BASE_H_INCLUDE

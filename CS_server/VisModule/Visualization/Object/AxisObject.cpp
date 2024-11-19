@@ -14,7 +14,7 @@
 #include "AxisObject.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -23,29 +23,29 @@ namespace kvs
  */
 /*===========================================================================*/
 AxisObject::AxisObject( void ):
-    m_nsublines( kvs::Vector3ui( 5, 5, 5 ) ),
-    m_min_value( kvs::Vector3f( -3, -3, -3 ) ),
-    m_max_value( kvs::Vector3f( 3, 3, 3 ) ),
+    m_nsublines( vismodule::Vector3ui( 5, 5, 5 ) ),
+    m_min_value( vismodule::Vector3f( -3, -3, -3 ) ),
+    m_max_value( vismodule::Vector3f( 3, 3, 3 ) ),
     m_x_tag("X"),
     m_y_tag("Y"),
     m_z_tag("Z"),
-    m_line_color( kvs::RGBColor( 255, 255, 255 ) ),
-    m_tag_color( kvs::RGBColor( 255, 255, 255 ) ),
+    m_line_color( vismodule::RGBColor( 255, 255, 255 ) ),
+    m_tag_color( vismodule::RGBColor( 255, 255, 255 ) ),
     m_line_width( 3.0f ),
     m_subline_width( 1.0f )
 {
 }
 
 AxisObject::AxisObject(
-    const kvs::ObjectBase* object,
-    const kvs::Vector3ui& nsublines,
+    const vismodule::ObjectBase* object,
+    const vismodule::Vector3ui& nsublines,
     const std::string x_tag,
     const std::string y_tag,
     const std::string z_tag,
-    const kvs::RGBColor& line_color,
-    const kvs::RGBColor& tag_color,
-    const kvs::Real32 line_width,
-    const kvs::Real32 subline_width )
+    const vismodule::RGBColor& line_color,
+    const vismodule::RGBColor& tag_color,
+    const vismodule::Real32 line_width,
+    const vismodule::Real32 subline_width )
 {
     this->setMinValue( object->minObjectCoord() );
     this->setMaxValue( object->maxObjectCoord() );
@@ -66,7 +66,7 @@ AxisObject::~AxisObject( void )
     clear();
 }
 
-void AxisObject::create( const kvs::ObjectBase* object )
+void AxisObject::create( const vismodule::ObjectBase* object )
 {
     if( object )
     {
@@ -76,19 +76,19 @@ void AxisObject::create( const kvs::ObjectBase* object )
         SuperClass::setMinMaxExternalCoords( object->minExternalCoord(), object->maxExternalCoord() );
     }
 
-    std::vector<kvs::Real32> coords;
-    std::vector<kvs::UInt32> connections;
-    std::vector<kvs::Real32> sizes;
+    std::vector<vismodule::Real32> coords;
+    std::vector<vismodule::UInt32> connections;
+    std::vector<vismodule::Real32> sizes;
 
     this->create_principal_lines( &coords, &connections, &sizes );
     this->create_sublines( &coords, &connections, &sizes );
 
-    SuperClass::setLineType( kvs::LineObject::Segment );
-    SuperClass::setColorType( kvs::LineObject::LineColor );
-    SuperClass::setCoords( kvs::ValueArray<kvs::Real32>( coords ) );
-    SuperClass::setConnections( kvs::ValueArray<kvs::UInt32>( connections ) );
+    SuperClass::setLineType( vismodule::LineObject::Segment );
+    SuperClass::setColorType( vismodule::LineObject::LineColor );
+    SuperClass::setCoords( vismodule::ValueArray<vismodule::Real32>( coords ) );
+    SuperClass::setConnections( vismodule::ValueArray<vismodule::UInt32>( connections ) );
     SuperClass::setColor( m_line_color );
-    SuperClass::setSizes( kvs::ValueArray<kvs::Real32>( sizes ) );
+    SuperClass::setSizes( vismodule::ValueArray<vismodule::Real32>( sizes ) );
 
     SuperClass::disableCollision();
 }
@@ -98,17 +98,17 @@ void AxisObject::clear( void )
     SuperClass::clear();
 }
 
-void AxisObject::setMinValue( const kvs::Vector3f& value )
+void AxisObject::setMinValue( const vismodule::Vector3f& value )
 {
     m_min_value = value;
 }
 
-void AxisObject::setMaxValue( const kvs::Vector3f& value )
+void AxisObject::setMaxValue( const vismodule::Vector3f& value )
 {
     m_max_value = value;
 }
 
-void AxisObject::setNSublines( const kvs::Vector3ui& nsublines )
+void AxisObject::setNSublines( const vismodule::Vector3ui& nsublines )
 {
     m_nsublines = nsublines;
 }
@@ -128,38 +128,38 @@ void AxisObject::setZTag( const std::string& tag )
     m_z_tag = tag;
 }
 
-void AxisObject::setLineColor( const kvs::RGBColor& color )
+void AxisObject::setLineColor( const vismodule::RGBColor& color )
 {
     m_line_color = color;
     SuperClass::setColor( m_line_color );
 }
 
-void AxisObject::setTagColor( const kvs::RGBColor& color )
+void AxisObject::setTagColor( const vismodule::RGBColor& color )
 {
     m_tag_color = color;
 }
 
-void AxisObject::setLineWidth( const kvs::Real32 width )
+void AxisObject::setLineWidth( const vismodule::Real32 width )
 {
     m_line_width = width;
 }
 
-void AxisObject::setSublineWidth( const kvs::Real32 width )
+void AxisObject::setSublineWidth( const vismodule::Real32 width )
 {
     m_subline_width = width;
 }
 
-const kvs::Vector3f& AxisObject::minValue( void ) const
+const vismodule::Vector3f& AxisObject::minValue( void ) const
 {
     return( m_min_value );
 }
 
-const kvs::Vector3f& AxisObject::maxValue( void ) const
+const vismodule::Vector3f& AxisObject::maxValue( void ) const
 {
     return( m_max_value );
 }
 
-const kvs::Vector3ui& AxisObject::nsublines( void ) const
+const vismodule::Vector3ui& AxisObject::nsublines( void ) const
 {
     return( m_nsublines );
 }
@@ -179,37 +179,37 @@ const std::string& AxisObject::zTag( void ) const
     return( m_z_tag );
 }
 
-const kvs::RGBColor& AxisObject::lineColor( void ) const
+const vismodule::RGBColor& AxisObject::lineColor( void ) const
 {
     return( m_tag_color );
 }
 
-const kvs::RGBColor& AxisObject::tagColor( void ) const
+const vismodule::RGBColor& AxisObject::tagColor( void ) const
 {
     return( m_tag_color );
 }
 
-const kvs::Real32 AxisObject::lineWidth( void ) const
+const vismodule::Real32 AxisObject::lineWidth( void ) const
 {
     return( m_line_width );
 }
 
-const kvs::Real32 AxisObject::sublineWidth( void ) const
+const vismodule::Real32 AxisObject::sublineWidth( void ) const
 {
     return( m_subline_width );
 }
 
 void AxisObject::create_principal_lines(
-    std::vector<kvs::Real32>* coords,
-    std::vector<kvs::UInt32>* connections,
-    std::vector<kvs::Real32>* sizes )
+    std::vector<vismodule::Real32>* coords,
+    std::vector<vismodule::UInt32>* connections,
+    std::vector<vismodule::Real32>* sizes )
 {
-    const kvs::Real32 min_x = static_cast<kvs::Real32>(SuperClass::minObjectCoord().x());
-    const kvs::Real32 min_y = static_cast<kvs::Real32>(SuperClass::minObjectCoord().y());
-    const kvs::Real32 min_z = static_cast<kvs::Real32>(SuperClass::minObjectCoord().z());
-    const kvs::Real32 max_x = static_cast<kvs::Real32>(SuperClass::maxObjectCoord().x());
-    const kvs::Real32 max_y = static_cast<kvs::Real32>(SuperClass::maxObjectCoord().y());
-    const kvs::Real32 max_z = static_cast<kvs::Real32>(SuperClass::maxObjectCoord().z());
+    const vismodule::Real32 min_x = static_cast<vismodule::Real32>(SuperClass::minObjectCoord().x());
+    const vismodule::Real32 min_y = static_cast<vismodule::Real32>(SuperClass::minObjectCoord().y());
+    const vismodule::Real32 min_z = static_cast<vismodule::Real32>(SuperClass::minObjectCoord().z());
+    const vismodule::Real32 max_x = static_cast<vismodule::Real32>(SuperClass::maxObjectCoord().x());
+    const vismodule::Real32 max_y = static_cast<vismodule::Real32>(SuperClass::maxObjectCoord().y());
+    const vismodule::Real32 max_z = static_cast<vismodule::Real32>(SuperClass::maxObjectCoord().z());
 
     // main lines
     coords->push_back( min_x ); coords->push_back( min_y ); coords->push_back( max_z ); //0
@@ -243,22 +243,22 @@ void AxisObject::create_principal_lines(
 }
 
 void AxisObject::create_sublines(
-    std::vector<kvs::Real32>* coords,
-    std::vector<kvs::UInt32>* connections,
-    std::vector<kvs::Real32>* sizes )
+    std::vector<vismodule::Real32>* coords,
+    std::vector<vismodule::UInt32>* connections,
+    std::vector<vismodule::Real32>* sizes )
 {
-    const kvs::Real32 min_x = static_cast<kvs::Real32>(SuperClass::minObjectCoord().x());
-    const kvs::Real32 min_y = static_cast<kvs::Real32>(SuperClass::minObjectCoord().y());
-    const kvs::Real32 min_z = static_cast<kvs::Real32>(SuperClass::minObjectCoord().z());
-    const kvs::Real32 max_x = static_cast<kvs::Real32>(SuperClass::maxObjectCoord().x());
-    const kvs::Real32 max_y = static_cast<kvs::Real32>(SuperClass::maxObjectCoord().y());
-    const kvs::Real32 max_z = static_cast<kvs::Real32>(SuperClass::maxObjectCoord().z());
+    const vismodule::Real32 min_x = static_cast<vismodule::Real32>(SuperClass::minObjectCoord().x());
+    const vismodule::Real32 min_y = static_cast<vismodule::Real32>(SuperClass::minObjectCoord().y());
+    const vismodule::Real32 min_z = static_cast<vismodule::Real32>(SuperClass::minObjectCoord().z());
+    const vismodule::Real32 max_x = static_cast<vismodule::Real32>(SuperClass::maxObjectCoord().x());
+    const vismodule::Real32 max_y = static_cast<vismodule::Real32>(SuperClass::maxObjectCoord().y());
+    const vismodule::Real32 max_z = static_cast<vismodule::Real32>(SuperClass::maxObjectCoord().z());
 
-    const kvs::Real32 x_interval = ( max_x - min_x ) / ( m_nsublines.x() + 1 );
-    const kvs::Real32 y_interval = ( max_y - min_y ) / ( m_nsublines.y() + 1 );
-    const kvs::Real32 z_interval = ( max_z - min_z ) / ( m_nsublines.z() + 1 );
+    const vismodule::Real32 x_interval = ( max_x - min_x ) / ( m_nsublines.x() + 1 );
+    const vismodule::Real32 y_interval = ( max_y - min_y ) / ( m_nsublines.y() + 1 );
+    const vismodule::Real32 z_interval = ( max_z - min_z ) / ( m_nsublines.z() + 1 );
 
-    kvs::Real32 x_p = min_x;
+    vismodule::Real32 x_p = min_x;
     for( size_t i = 0; i < m_nsublines.x(); i++ )
     {
         x_p += x_interval;
@@ -270,7 +270,7 @@ void AxisObject::create_sublines(
         coords->push_back( x_p ); coords->push_back( min_y ); coords->push_back( max_z );
     }
 
-    kvs::Real32 y_p = min_y;
+    vismodule::Real32 y_p = min_y;
     for( size_t i = 0; i < m_nsublines.y(); i++ )
     {
         y_p += y_interval;
@@ -283,7 +283,7 @@ void AxisObject::create_sublines(
 
     }
 
-    kvs::Real32 z_p = min_z;
+    vismodule::Real32 z_p = min_z;
     for( size_t i = 0; i < m_nsublines.z(); i++ )
     {
         z_p += z_interval;
@@ -308,4 +308,4 @@ void AxisObject::create_sublines(
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

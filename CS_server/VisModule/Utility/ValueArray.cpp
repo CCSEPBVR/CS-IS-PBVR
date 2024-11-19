@@ -14,20 +14,20 @@
 #include "ValueArray.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 // Template specialization.
-template class ValueArray<kvs::Int8>;
-template class ValueArray<kvs::UInt8>;
-template class ValueArray<kvs::Int16>;
-template class ValueArray<kvs::UInt16>;
-template class ValueArray<kvs::Int32>;
-template class ValueArray<kvs::UInt32>;
-template class ValueArray<kvs::Int64>;
-template class ValueArray<kvs::UInt64>;
-template class ValueArray<kvs::Real32>;
-template class ValueArray<kvs::Real64>;
+template class ValueArray<vismodule::Int8>;
+template class ValueArray<vismodule::UInt8>;
+template class ValueArray<vismodule::Int16>;
+template class ValueArray<vismodule::UInt16>;
+template class ValueArray<vismodule::Int32>;
+template class ValueArray<vismodule::UInt32>;
+template class ValueArray<vismodule::Int64>;
+template class ValueArray<vismodule::UInt64>;
+template class ValueArray<vismodule::Real32>;
+template class ValueArray<vismodule::Real64>;
 template class ValueArray<std::string>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

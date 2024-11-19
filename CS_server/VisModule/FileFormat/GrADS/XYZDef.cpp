@@ -16,10 +16,10 @@
 #include <fstream>
 #include <string>
 #include <cstdlib>
-#include <kvs/Tokenizer>
+#include <vismodule/Tokenizer>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace grads
@@ -35,13 +35,13 @@ namespace grads
 /*===========================================================================*/
 const bool XYZDef::read( std::string line, std::ifstream& ifs )
 {
-    kvs::Tokenizer t( line, " \t\n" );
+    vismodule::Tokenizer t( line, " \t\n" );
     t.token(); // XDEF, YDEF or ZDEF
 
     // xnum
     if ( t.isLast() )
     {
-        kvsMessageError("Cannot read num.");
+        visModuleMessageError("Cannot read num.");
         return( false );
     }
     this->num = static_cast<size_t>( atoi( t.token().c_str() ) );
@@ -49,7 +49,7 @@ const bool XYZDef::read( std::string line, std::ifstream& ifs )
     // mapping
     if ( t.isLast() )
     {
-        kvsMessageError("Cannot read mapping.");
+        visModuleMessageError("Cannot read mapping.");
         return( false );
     }
     const std::string mapping = t.token();
@@ -58,8 +58,8 @@ const bool XYZDef::read( std::string line, std::ifstream& ifs )
     {
         this->mapping = Linear;
         this->values.allocate( 2 );
-        this->values[0] = static_cast<kvs::Real32>( atof( t.token().c_str() ) );
-        this->values[1] = static_cast<kvs::Real32>( atof( t.token().c_str() ) );
+        this->values[0] = static_cast<vismodule::Real32>( atof( t.token().c_str() ) );
+        this->values[1] = static_cast<vismodule::Real32>( atof( t.token().c_str() ) );
     }
     else if ( mapping == "LEVELS" || mapping == "levels" )
     {
@@ -74,7 +74,7 @@ const bool XYZDef::read( std::string line, std::ifstream& ifs )
                 const std::string value = t.token();
                 if ( !value.empty() )
                 {
-                    this->values[counter++] = static_cast<kvs::Real32>( atof( value.c_str() ) );
+                    this->values[counter++] = static_cast<vismodule::Real32>( atof( value.c_str() ) );
                 }
                 if ( counter >= this->num ) break;
             }
@@ -84,13 +84,13 @@ const bool XYZDef::read( std::string line, std::ifstream& ifs )
         {
             while ( std::getline( ifs, line ) )
             {
-                t = kvs::Tokenizer( line, " \t" );
+                t = vismodule::Tokenizer( line, " \t" );
                 while ( !t.isLast() )
                 {
                     const std::string value = t.token();
                     if ( !value.empty() || value != " " )
                     {
-                        this->values[counter++] = static_cast<kvs::Real32>( atof( value.c_str() ) );
+                        this->values[counter++] = static_cast<vismodule::Real32>( atof( value.c_str() ) );
                     }
                     if ( counter >= this->num ) break;
                 }
@@ -104,4 +104,4 @@ const bool XYZDef::read( std::string line, std::ifstream& ifs )
 
 } // end of namespace grads
 
-} // end of namespace kvs
+} // end of namespace vismodule

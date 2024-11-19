@@ -12,11 +12,11 @@
  */
 /****************************************************************************/
 #include "VolumeRendererBase.h"
-#include <kvs/Camera>
-#include <kvs/Math>
+#include <vismodule/Camera>
+#include <vismodule/Math>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -45,7 +45,7 @@ VolumeRendererBase::~VolumeRendererBase( void )
  *  @param tfunc [in] transfer function
  */
 /*==========================================================================*/
-void VolumeRendererBase::setTransferFunction( const kvs::TransferFunction& tfunc )
+void VolumeRendererBase::setTransferFunction( const vismodule::TransferFunction& tfunc )
 {
     m_tfunc = tfunc;
 }
@@ -87,7 +87,7 @@ const bool VolumeRendererBase::isEnabledShading( void ) const
  *  @return transfer function
  */
 /*==========================================================================*/
-const kvs::TransferFunction& VolumeRendererBase::transferFunction( void ) const
+const vismodule::TransferFunction& VolumeRendererBase::transferFunction( void ) const
 {
     return( m_tfunc );
 }
@@ -98,7 +98,7 @@ const kvs::TransferFunction& VolumeRendererBase::transferFunction( void ) const
  *  @return transfer function
  */
 /*==========================================================================*/
-kvs::TransferFunction& VolumeRendererBase::transferFunction( void )
+vismodule::TransferFunction& VolumeRendererBase::transferFunction( void )
 {
     return( m_tfunc );
 }
@@ -194,4 +194,4 @@ void VolumeRendererBase::draw_color_buffer( const int* viewport )
     glEnable( GL_DEPTH_TEST );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

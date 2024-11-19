@@ -11,21 +11,21 @@
  *  $Id: StreamReader.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__DCM__STREAM_READER_H_INCLUDE
-#define KVS__DCM__STREAM_READER_H_INCLUDE
+#ifndef VIS_MODULE__DCM__STREAM_READER_H_INCLUDE
+#define VIS_MODULE__DCM__STREAM_READER_H_INCLUDE
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <typeinfo>
 #include <cstring>
-#include <kvs/DebugNew>
-#include <kvs/Endian>
-#include <kvs/Message>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/DebugNew>
+#include <vismodule/Endian>
+#include <vismodule/Message>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace dcm
@@ -41,25 +41,25 @@ inline T Get( std::ifstream& ifs, const bool swap = false )
     ifs.read( reinterpret_cast<char*>(&value), sizeof(T) );
     if( ifs.bad() )
     {
-        kvsMessageError("Cannot get the value. [type:%s]",typeid(T).name());
+        visModuleMessageError("Cannot get the value. [type:%s]",typeid(T).name());
         return( T(0) );
     }
 
-    if( swap ) kvs::Endian::Swap( value );
+    if( swap ) vismodule::Endian::Swap( value );
 
     return( value );
 }
 
 inline std::string Get( std::ifstream& ifs, const int size, const bool swap = false )
 {
-    kvs::IgnoreUnusedVariable( swap );
+    vismodule::IgnoreUnusedVariable( swap );
 
     std::string ret("");
 
     char* value = new char [ size + 1 ];
     if( !value )
     {
-        kvsMessageError("Cannot allocate memory.");
+        visModuleMessageError("Cannot allocate memory.");
         return( ret );
     }
     memset( value, 0, size + 1 );
@@ -67,7 +67,7 @@ inline std::string Get( std::ifstream& ifs, const int size, const bool swap = fa
     ifs.read( value, size );
     if( ifs.bad() )
     {
-        kvsMessageError("Cannot get the value. [type:%s, size:%d]","string",size);
+        visModuleMessageError("Cannot get the value. [type:%s, size:%d]","string",size);
         return( ret );
     }
     value[size] = '\0';
@@ -83,6 +83,6 @@ inline std::string Get( std::ifstream& ifs, const int size, const bool swap = fa
 
 } // end of namespace dcm
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__DCM__STREAM_READER_H_INCLUDE
+#endif // VIS_MODULE__DCM__STREAM_READER_H_INCLUDE

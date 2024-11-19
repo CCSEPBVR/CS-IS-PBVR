@@ -11,19 +11,19 @@
  *  $Id: CommandLine.h 878 2011-08-01 05:44:17Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__COMMAND_LINE_H_INCLUDE
-#define KVS__COMMAND_LINE_H_INCLUDE
+#ifndef VIS_MODULE__COMMAND_LINE_H_INCLUDE
+#define VIS_MODULE__COMMAND_LINE_H_INCLUDE
 
 #include <string>
 #include <sstream>
 #include <vector>
 #include <typeinfo>
 #include <algorithm>
-#include <kvs/ClassName>
-#include <kvs/Message>
+#include <vismodule/ClassName>
+#include <vismodule/Message>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -33,7 +33,7 @@ namespace kvs
 /*==========================================================================*/
 class CommandLine
 {
-    kvsClassName( kvs::CommandLine );
+    visModuleClassName( vismodule::CommandLine );
 
 public:
 
@@ -327,13 +327,13 @@ inline const T CommandLine::optionValue( const std::string& option_name, size_t 
 
     if ( ( option == m_options.end() ) || ( !option->isGiven() ) )
     {
-        kvsMessageError( "Cannot find '-%s' option.", option->name().c_str() );
+        visModuleMessageError( "Cannot find '-%s' option.", option->name().c_str() );
         return( T( 0 ) );
     }
 
     if ( (size_t)( option->nvalues() ) < index )
     {
-        kvsMessageError( "Cannot get option value by given index." );
+        visModuleMessageError( "Cannot get option value by given index." );
         return( T( 0 ) );
     }
 
@@ -353,7 +353,7 @@ inline const T CommandLine::Option::value( size_t index ) const
 {
     if ( m_nvalues < index )
     {
-        kvsMessageError( "Option '-%s' has only %d values.",
+        visModuleMessageError( "Option '-%s' has only %d values.",
                          m_name.c_str(), m_nvalues );
         return( T( 0 ) );
     }
@@ -377,7 +377,7 @@ inline const std::string CommandLine::Option::value<std::string>( size_t index )
 {
     if ( m_nvalues < index )
     {
-        kvsMessageError( "Option '-%s' has only %d values.",
+        visModuleMessageError( "Option '-%s' has only %d values.",
                          m_name.c_str(), m_nvalues );
         return( "" );
     }
@@ -413,6 +413,6 @@ inline const std::string CommandLine::Value::value<std::string>( void ) const
     return( m_value.data() );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__COMMAND_LINE_H_INCLUDE
+#endif // VIS_MODULE__COMMAND_LINE_H_INCLUDE

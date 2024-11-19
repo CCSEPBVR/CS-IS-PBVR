@@ -11,16 +11,16 @@
  *  $Id$
  */
 /*****************************************************************************/
-#ifndef KVS__CELL_ADJACENCY_GRAPH_H_INCLUDE
-#define KVS__CELL_ADJACENCY_GRAPH_H_INCLUDE
+#ifndef VIS_MODULE__CELL_ADJACENCY_GRAPH_H_INCLUDE
+#define VIS_MODULE__CELL_ADJACENCY_GRAPH_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/UnstructuredVolumeObject>
-#include <kvs/BitArray>
-#include <kvs/ValueArray>
+#include <vismodule/ClassName>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/BitArray>
+#include <vismodule/ValueArray>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,36 +30,36 @@ namespace kvs
 /*===========================================================================*/
 class CellAdjacencyGraph
 {
-    kvsClassName_without_virtual( kvs::CellAdjacencyGraph );
+    visModuleClassName_without_virtual( vismodule::CellAdjacencyGraph );
 
 protected:
 
-    kvs::ValueArray<kvs::UInt32> m_graph; ///< cell adjacency table
-    kvs::BitArray                m_mask;  ///< mask for the external faces
+    vismodule::ValueArray<vismodule::UInt32> m_graph; ///< cell adjacency table
+    vismodule::BitArray                m_mask;  ///< mask for the external faces
 
 public:
 
-    explicit CellAdjacencyGraph( const kvs::UnstructuredVolumeObject* volume );
+    explicit CellAdjacencyGraph( const vismodule::UnstructuredVolumeObject* volume );
 
     ~CellAdjacencyGraph( void );
 
 public:
 
-    void create( const kvs::UnstructuredVolumeObject* volume );
+    void create( const vismodule::UnstructuredVolumeObject* volume );
 
-    const kvs::ValueArray<kvs::UInt32>& graph( void ) const;
+    const vismodule::ValueArray<vismodule::UInt32>& graph( void ) const;
 
-    const kvs::BitArray& mask( void ) const;
+    const vismodule::BitArray& mask( void ) const;
 
 private:
 
-    void create_for_tetrahedral_cell( const kvs::UnstructuredVolumeObject* volume );
+    void create_for_tetrahedral_cell( const vismodule::UnstructuredVolumeObject* volume );
 
-    void create_for_hexahedral_cell( const kvs::UnstructuredVolumeObject* volume );
+    void create_for_hexahedral_cell( const vismodule::UnstructuredVolumeObject* volume );
 
     void set_external_face_number( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__CELL_ADJACENCY_GRAPH_H_INCLUDE
+#endif // VIS_MODULE__CELL_ADJACENCY_GRAPH_H_INCLUDE

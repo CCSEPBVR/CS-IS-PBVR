@@ -35,7 +35,7 @@
 */
 #include "TinyXML.h"
 #include <cctype>
-#include <kvs/DebugNew>
+#include <vismodule/DebugNew>
 
 
 namespace { template <typename T> void Ignore( T ){} }

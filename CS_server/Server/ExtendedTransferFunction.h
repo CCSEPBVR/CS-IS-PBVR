@@ -1,8 +1,8 @@
 #ifndef PBVR__EXTENDED_TRANSFER_FUNCTION_H_INCLUDE
 #define PBVR__EXTENDED_TRANSFER_FUNCTION_H_INCLUDE
 
-#include <kvs/ColorMap>
-#include <kvs/OpacityMap>
+#include <vismodule/ColorMap>
+#include <vismodule/OpacityMap>
 #include "TransferFunction.h"
 #include "function.h"
 #include "function_op.h"

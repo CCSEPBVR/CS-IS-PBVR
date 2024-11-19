@@ -12,14 +12,14 @@
  */
 /****************************************************************************/
 #include "ImageImporter.h"
-#include <kvs/DebugNew>
-#include <kvs/Message>
-#include <kvs/ValueArray>
-#include <kvs/Type>
+#include <vismodule/DebugNew>
+#include <vismodule/Message>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -39,20 +39,20 @@ ImageImporter::ImageImporter( void )
 /*===========================================================================*/
 ImageImporter::ImageImporter( const std::string& filename )
 {
-    if ( kvs::KVSMLObjectImage::CheckFileExtension( filename ) )
+    if ( vismodule::KVSMLObjectImage::CheckFileExtension( filename ) )
     {
-        kvs::KVSMLObjectImage* file_format = new kvs::KVSMLObjectImage( filename );
+        vismodule::KVSMLObjectImage* file_format = new vismodule::KVSMLObjectImage( filename );
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
@@ -60,20 +60,20 @@ ImageImporter::ImageImporter( const std::string& filename )
         this->import( file_format );
         delete file_format;
     }
-    else if ( kvs::Bmp::CheckFileExtension( filename ) )
+    else if ( vismodule::Bmp::CheckFileExtension( filename ) )
     {
-        kvs::Bmp* file_format = new kvs::Bmp( filename );
+        vismodule::Bmp* file_format = new vismodule::Bmp( filename );
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
@@ -81,20 +81,20 @@ ImageImporter::ImageImporter( const std::string& filename )
         this->import( file_format );
         delete file_format;
     }
-    else if ( kvs::Tiff::CheckFileExtension( filename ) )
+    else if ( vismodule::Tiff::CheckFileExtension( filename ) )
     {
-        kvs::Tiff* file_format = new kvs::Tiff( filename );
+        vismodule::Tiff* file_format = new vismodule::Tiff( filename );
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
@@ -102,20 +102,20 @@ ImageImporter::ImageImporter( const std::string& filename )
         this->import( file_format );
         delete file_format;
     }
-    else if ( kvs::Ppm::CheckFileExtension( filename ) )
+    else if ( vismodule::Ppm::CheckFileExtension( filename ) )
     {
-        kvs::Ppm* file_format = new kvs::Ppm( filename );
+        vismodule::Ppm* file_format = new vismodule::Ppm( filename );
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
@@ -123,20 +123,20 @@ ImageImporter::ImageImporter( const std::string& filename )
         this->import( file_format );
         delete file_format;
     }
-    else if ( kvs::Pgm::CheckFileExtension( filename ) )
+    else if ( vismodule::Pgm::CheckFileExtension( filename ) )
     {
-        kvs::Pgm* file_format = new kvs::Pgm( filename );
+        vismodule::Pgm* file_format = new vismodule::Pgm( filename );
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
@@ -144,20 +144,20 @@ ImageImporter::ImageImporter( const std::string& filename )
         this->import( file_format );
         delete file_format;
     }
-    else if ( kvs::Pbm::CheckFileExtension( filename ) )
+    else if ( vismodule::Pbm::CheckFileExtension( filename ) )
     {
-        kvs::Pbm* file_format = new kvs::Pbm( filename );
+        vismodule::Pbm* file_format = new vismodule::Pbm( filename );
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
@@ -165,20 +165,20 @@ ImageImporter::ImageImporter( const std::string& filename )
         this->import( file_format );
         delete file_format;
     }
-    else if ( kvs::Dicom::CheckFileExtension( filename ) )
+    else if ( vismodule::Dicom::CheckFileExtension( filename ) )
     {
-        kvs::Dicom* file_format = new kvs::Dicom( filename );
+        vismodule::Dicom* file_format = new vismodule::Dicom( filename );
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
@@ -190,7 +190,7 @@ ImageImporter::ImageImporter( const std::string& filename )
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Cannot import '%s'.",filename.c_str());
+        visModuleMessageError("Cannot import '%s'.",filename.c_str());
         return;
     }
 }
@@ -201,7 +201,7 @@ ImageImporter::ImageImporter( const std::string& filename )
  *  @param  file_format [in] pointer to the data
  */
 /*===========================================================================*/
-ImageImporter::ImageImporter( const kvs::FileFormatBase* file_format )
+ImageImporter::ImageImporter( const vismodule::FileFormatBase* file_format )
 {
     this->exec( file_format );
 }
@@ -222,48 +222,48 @@ ImageImporter::~ImageImporter( void )
  *  @return pointer to the imported image object
  */
 /*===========================================================================*/
-ImageImporter::SuperClass* ImageImporter::exec( const kvs::FileFormatBase* file_format )
+ImageImporter::SuperClass* ImageImporter::exec( const vismodule::FileFormatBase* file_format )
 {
     if ( !file_format )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input file format is NULL.");
+        visModuleMessageError("Input file format is NULL.");
         return( NULL );
     }
 
     const std::string class_name = file_format->className();
-    if ( class_name == "kvs::KVSMLObjectImage" )
+    if ( class_name == "vismodule::KVSMLObjectImage" )
     {
-        this->import( static_cast<const kvs::KVSMLObjectImage*>( file_format ) );
+        this->import( static_cast<const vismodule::KVSMLObjectImage*>( file_format ) );
     }
-    else if ( class_name == "kvs::Bmp" )
+    else if ( class_name == "vismodule::Bmp" )
     {
-        this->import( static_cast<const kvs::Bmp*>( file_format ) );
+        this->import( static_cast<const vismodule::Bmp*>( file_format ) );
     }
-    else if ( class_name == "kvs::Tiff" )
+    else if ( class_name == "vismodule::Tiff" )
     {
-        this->import( static_cast<const kvs::Tiff*>( file_format ) );
+        this->import( static_cast<const vismodule::Tiff*>( file_format ) );
     }
-    else if ( class_name == "kvs::Ppm" )
+    else if ( class_name == "vismodule::Ppm" )
     {
-        this->import( static_cast<const kvs::Ppm*>( file_format ) );
+        this->import( static_cast<const vismodule::Ppm*>( file_format ) );
     }
-    else if ( class_name == "kvs::Pgm" )
+    else if ( class_name == "vismodule::Pgm" )
     {
-        this->import( static_cast<const kvs::Pgm*>( file_format ) );
+        this->import( static_cast<const vismodule::Pgm*>( file_format ) );
     }
-    else if ( class_name == "kvs::Pbm" )
+    else if ( class_name == "vismodule::Pbm" )
     {
-        this->import( static_cast<const kvs::Pbm*>( file_format ) );
+        this->import( static_cast<const vismodule::Pbm*>( file_format ) );
     }
-    else if ( class_name == "kvs::Dicom" )
+    else if ( class_name == "vismodule::Dicom" )
     {
-        this->import( static_cast<const kvs::Dicom*>( file_format ) );
+        this->import( static_cast<const vismodule::Dicom*>( file_format ) );
     }
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input file format is not supported.");
+        visModuleMessageError("Input file format is not supported.");
         return( NULL );
     }
 
@@ -276,21 +276,21 @@ ImageImporter::SuperClass* ImageImporter::exec( const kvs::FileFormatBase* file_
  *  @param  kvsml [in] pointer to the KVSML image format data
  */
 /*===========================================================================*/
-void ImageImporter::import( const kvs::KVSMLObjectImage* kvsml )
+void ImageImporter::import( const vismodule::KVSMLObjectImage* kvsml )
 {
-    kvs::ImageObject::PixelType pixel_type = kvs::ImageObject::Gray8;
+    vismodule::ImageObject::PixelType pixel_type = vismodule::ImageObject::Gray8;
     if ( kvsml->pixelType() == "gray" )
     {
-        pixel_type = kvs::ImageObject::Gray8;
+        pixel_type = vismodule::ImageObject::Gray8;
     }
     else if ( kvsml->pixelType() == "color" )
     {
-        pixel_type = kvs::ImageObject::Color24;
+        pixel_type = vismodule::ImageObject::Color24;
     }
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Unknown pixel type.");
+        visModuleMessageError("Unknown pixel type.");
         return;
     }
 
@@ -306,7 +306,7 @@ void ImageImporter::import( const kvs::KVSMLObjectImage* kvsml )
  *  @param  bmp [in] pointer to BMP image format data
  */
 /*==========================================================================*/
-void ImageImporter::import( const kvs::Bmp* bmp )
+void ImageImporter::import( const vismodule::Bmp* bmp )
 {
     SuperClass::m_width  = bmp->width();
     SuperClass::m_height = bmp->height();
@@ -320,31 +320,31 @@ void ImageImporter::import( const kvs::Bmp* bmp )
  *  @param  tiff [in] pointer to TIFF image format data
  */
 /*==========================================================================*/
-void ImageImporter::import( const kvs::Tiff* tiff )
+void ImageImporter::import( const vismodule::Tiff* tiff )
 {
-    kvs::ImageObject::PixelType pixel_type = kvs::ImageObject::Gray8;
-    if ( tiff->colorMode() == kvs::Tiff::Gray8 )
+    vismodule::ImageObject::PixelType pixel_type = vismodule::ImageObject::Gray8;
+    if ( tiff->colorMode() == vismodule::Tiff::Gray8 )
     {
-        pixel_type = kvs::ImageObject::Gray8;
+        pixel_type = vismodule::ImageObject::Gray8;
     }
-    else if ( tiff->colorMode() == kvs::Tiff::Gray16 )
+    else if ( tiff->colorMode() == vismodule::Tiff::Gray16 )
     {
-        pixel_type = kvs::ImageObject::Gray16;
+        pixel_type = vismodule::ImageObject::Gray16;
     }
-    else if ( tiff->colorMode() == kvs::Tiff::Color24 )
+    else if ( tiff->colorMode() == vismodule::Tiff::Color24 )
     {
-        pixel_type = kvs::ImageObject::Color24;
+        pixel_type = vismodule::ImageObject::Color24;
     }
-    else //  tiff->colorMode() == kvs::Tiff::UnknownColorMode
+    else //  tiff->colorMode() == vismodule::Tiff::UnknownColorMode
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Unknown TIFF color mode.");
+        visModuleMessageError("Unknown TIFF color mode.");
         return;
     }
 
-    const kvs::UInt8* raw_data = static_cast<const kvs::UInt8*>( tiff->rawData().pointer() );
+    const vismodule::UInt8* raw_data = static_cast<const vismodule::UInt8*>( tiff->rawData().pointer() );
     const size_t      raw_size = tiff->rawData().byteSize();
-    kvs::ValueArray<kvs::UInt8> data( raw_data, raw_size ); // deep copy
+    vismodule::ValueArray<vismodule::UInt8> data( raw_data, raw_size ); // deep copy
 
     SuperClass::m_width  = tiff->width();
     SuperClass::m_height = tiff->height();
@@ -358,12 +358,12 @@ void ImageImporter::import( const kvs::Tiff* tiff )
  *  @param  ppm [in] pointer to PPM image format data
  */
 /*==========================================================================*/
-void ImageImporter::import( const kvs::Ppm* ppm )
+void ImageImporter::import( const vismodule::Ppm* ppm )
 {
     SuperClass::m_width  = ppm->width();
     SuperClass::m_height = ppm->height();
     SuperClass::m_data   = ppm->data();
-    SuperClass::m_type   = kvs::ImageObject::Color24;
+    SuperClass::m_type   = vismodule::ImageObject::Color24;
 }
 
 /*==========================================================================*/
@@ -372,12 +372,12 @@ void ImageImporter::import( const kvs::Ppm* ppm )
  *  @param  pgm [in] pointer to PGM image format data
  */
 /*==========================================================================*/
-void ImageImporter::import( const kvs::Pgm* pgm )
+void ImageImporter::import( const vismodule::Pgm* pgm )
 {
     SuperClass::m_width  = pgm->width();
     SuperClass::m_height = pgm->height();
     SuperClass::m_data   = pgm->data();
-    SuperClass::m_type   = kvs::ImageObject::Gray8;
+    SuperClass::m_type   = vismodule::ImageObject::Gray8;
 }
 
 /*==========================================================================*/
@@ -386,10 +386,10 @@ void ImageImporter::import( const kvs::Pgm* pgm )
  *  @param  pbm [in] pointer to PBM image format data
  */
 /*==========================================================================*/
-void ImageImporter::import( const kvs::Pbm* pbm )
+void ImageImporter::import( const vismodule::Pbm* pbm )
 {
     const size_t npixels = pbm->width() * pbm->height();
-    kvs::ValueArray<kvs::UInt8> data( npixels );
+    vismodule::ValueArray<vismodule::UInt8> data( npixels );
 
     for ( size_t i = 0; i < npixels; i++ )
     {
@@ -399,7 +399,7 @@ void ImageImporter::import( const kvs::Pbm* pbm )
     SuperClass::m_width  = pbm->width();
     SuperClass::m_height = pbm->height();
     SuperClass::m_data   = data;
-    SuperClass::m_type   = kvs::ImageObject::Gray8;
+    SuperClass::m_type   = vismodule::ImageObject::Gray8;
 }
 
 /*==========================================================================*/
@@ -408,12 +408,12 @@ void ImageImporter::import( const kvs::Pbm* pbm )
  *  @param  dicom [in] pointer to DICOM image format data
  */
 /*==========================================================================*/
-void ImageImporter::import( const kvs::Dicom* dicom )
+void ImageImporter::import( const vismodule::Dicom* dicom )
 {
     SuperClass::m_width  = dicom->column();
     SuperClass::m_height = dicom->row();
     SuperClass::m_data   = dicom->pixelData();
-    SuperClass::m_type   = kvs::ImageObject::Gray8;
+    SuperClass::m_type   = vismodule::ImageObject::Gray8;
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

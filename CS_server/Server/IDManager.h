@@ -36,7 +36,7 @@ typedef std::list<IDPair>::reverse_iterator ID_rptr;
 /*==========================================================================*/
 class IDManager : public IDs
 {
-    kvsClassName( pbvr::IDManager );
+    visModuleClassName( pbvr::IDManager );
 
 protected:
 
@@ -97,4 +97,4 @@ private:
 
 } // end of namespace pbvr
 
-#endif // KVS__ID_MANAGER_H_INCLUDE
+#endif // VIS_MODULE__ID_MANAGER_H_INCLUDE

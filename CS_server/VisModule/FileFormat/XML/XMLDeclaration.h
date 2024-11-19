@@ -11,15 +11,15 @@
  *  $Id: XMLDeclaration.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__XML_DECLARATION_H_INCLUDE
-#define KVS__XML_DECLARATION_H_INCLUDE
+#ifndef VIS_MODULE__XML_DECLARATION_H_INCLUDE
+#define VIS_MODULE__XML_DECLARATION_H_INCLUDE
 
 #include "TinyXML.h"
 #include <string>
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -29,7 +29,7 @@ namespace kvs
 /*==========================================================================*/
 class XMLDeclaration : public TiXmlDeclaration
 {
-    kvsClassName( kvs::XMLDeclaration );
+    visModuleClassName( vismodule::XMLDeclaration );
 
 public:
 
@@ -47,6 +47,6 @@ public:
     virtual ~XMLDeclaration( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__XML_DECLARATION_H_INCLUDE
+#endif // VIS_MODULE__XML_DECLARATION_H_INCLUDE

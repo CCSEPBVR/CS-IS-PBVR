@@ -12,13 +12,13 @@
  */
 /****************************************************************************/
 #include "StructuredVolumeImporter.h"
-#include <kvs/DebugNew>
-#include <kvs/AVSField>
-//#include <kvs/DicomList>
-#include <kvs/Message>
-#include <kvs/Vector3>
-#include <kvs/Directory>
-#include <kvs/Value>
+#include <vismodule/DebugNew>
+#include <vismodule/AVSField>
+//#include <vismodule/DicomList>
+#include <vismodule/Message>
+#include <vismodule/Vector3>
+#include <vismodule/Directory>
+#include <vismodule/Value>
 
 
 namespace
@@ -38,7 +38,7 @@ const pbvr::StructuredVolumeObject::GridType StringToGridType( const std::string
     else if ( grid_type == "curvilinear" ) { return( pbvr::StructuredVolumeObject::Curvilinear ); }
     else
     {
-        kvsMessageError( "Unknown grid type '%s'.", grid_type.c_str() );
+        visModuleMessageError( "Unknown grid type '%s'.", grid_type.c_str() );
         return( pbvr::StructuredVolumeObject::UnknownGridType );
     }
 }
@@ -66,20 +66,20 @@ StructuredVolumeImporter::StructuredVolumeImporter( void )
 /*===========================================================================*/
 StructuredVolumeImporter::StructuredVolumeImporter( const std::string& filename )
 {
-    if ( kvs::KVSMLObjectStructuredVolume::CheckFileExtension( filename ) )
+    if ( vismodule::KVSMLObjectStructuredVolume::CheckFileExtension( filename ) )
     {
-        kvs::KVSMLObjectStructuredVolume* file_format = new kvs::KVSMLObjectStructuredVolume( filename );
+        vismodule::KVSMLObjectStructuredVolume* file_format = new vismodule::KVSMLObjectStructuredVolume( filename );
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
@@ -88,20 +88,20 @@ StructuredVolumeImporter::StructuredVolumeImporter( const std::string& filename 
         delete file_format;
  
     }
-    else if ( kvs::AVSField::CheckFileExtension( filename ) )
+    else if ( vismodule::AVSField::CheckFileExtension( filename ) )
     {
-        kvs::AVSField* file_format = new kvs::AVSField( filename );
+        vismodule::AVSField* file_format = new vismodule::AVSField( filename );
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
@@ -109,20 +109,20 @@ StructuredVolumeImporter::StructuredVolumeImporter( const std::string& filename 
         this->import( file_format );
         delete file_format;
     }
-//    else if ( kvs::DicomList::CheckDirectory( filename ) )
+//    else if ( vismodule::DicomList::CheckDirectory( filename ) )
 //    {
-//        kvs::DicomList* file_format = new kvs::DicomList( filename );
+//        vismodule::DicomList* file_format = new vismodule::DicomList( filename );
 //        if( !file_format )
 //        {
 //            BaseClass::m_is_success = false;
-//            kvsMessageError("Cannot read '%s'.",filename.c_str());
+//            visModuleMessageError("Cannot read '%s'.",filename.c_str());
 //            return;
 //        }
 //
 //        if( file_format->isFailure() )
 //        {
 //            BaseClass::m_is_success = false;
-//            kvsMessageError("Cannot read '%s'.",filename.c_str());
+//            visModuleMessageError("Cannot read '%s'.",filename.c_str());
 //            delete file_format;
 //            return;
 //        }
@@ -133,7 +133,7 @@ StructuredVolumeImporter::StructuredVolumeImporter( const std::string& filename 
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Cannot import '%s'.",filename.c_str());
+        visModuleMessageError("Cannot import '%s'.",filename.c_str());
         return;
     }
 }
@@ -143,19 +143,19 @@ StructuredVolumeImporter::StructuredVolumeImporter( const std::string& filename 
 //{
 //    if ( fileType == 1 )  // Gathered Subvolume file
 //    {
-//        kvs::AggregateTypeSubvolume* file_format =
-//            new kvs::AggregateTypeSubvolume( filename, st, vl );
+//        vismodule::AggregateTypeSubvolume* file_format =
+//            new vismodule::AggregateTypeSubvolume( filename, st, vl );
 //        if ( !file_format )
 //        {
 //            BaseClass::m_is_success = false;
-//            kvsMessageError( "Cannot read '%s*'.", filename.c_str() );
+//            visModuleMessageError( "Cannot read '%s*'.", filename.c_str() );
 //            return;
 //        }
 //
 //        if ( file_format->isFailure() )
 //        {
 //            BaseClass::m_is_success = false;
-//            kvsMessageError( "Cannot read '%s*'.", filename.c_str() );
+//            visModuleMessageError( "Cannot read '%s*'.", filename.c_str() );
 //            delete file_format;
 //            return;
 //        }
@@ -165,19 +165,19 @@ StructuredVolumeImporter::StructuredVolumeImporter( const std::string& filename 
 //    }
 //    else if ( fileType == 2 ) // Gathered Timestep file
 //    {
-//        kvs::StepAggregateTypeSubvolume* file_format =
-//            new kvs::StepAggregateTypeSubvolume( filename, st, vl );
+//        vismodule::StepAggregateTypeSubvolume* file_format =
+//            new vismodule::StepAggregateTypeSubvolume( filename, st, vl );
 //        if ( !file_format )
 //        {
 //            BaseClass::m_is_success = false;
-//            kvsMessageError( "Cannot read '%s*'.", filename.c_str() );
+//            visModuleMessageError( "Cannot read '%s*'.", filename.c_str() );
 //            return;
 //        }
 //
 //        if ( file_format->isFailure() )
 //        {
 //            BaseClass::m_is_success = false;
-//            kvsMessageError( "Cannot read '%s*'.", filename.c_str() );
+//            visModuleMessageError( "Cannot read '%s*'.", filename.c_str() );
 //            delete file_format;
 //            return;
 //        }
@@ -188,7 +188,7 @@ StructuredVolumeImporter::StructuredVolumeImporter( const std::string& filename 
 //    else                          // Unsupported filetype
 //    {
 //        BaseClass::m_is_success = false;
-//        kvsMessageError( "Unsupported fileType '%d'.", fileType );
+//        visModuleMessageError( "Unsupported fileType '%d'.", fileType );
 //    }
 //
 //    return;
@@ -201,7 +201,7 @@ StructuredVolumeImporter::StructuredVolumeImporter( const std::string& filename 
  *  @param  file_format [in] pointer to the file format data
  */
 /*==========================================================================*/
-StructuredVolumeImporter::StructuredVolumeImporter( const kvs::FileFormatBase* file_format )
+StructuredVolumeImporter::StructuredVolumeImporter( const vismodule::FileFormatBase* file_format )
 {
     if ( !this->exec( *file_format ) ) BaseClass::m_is_success = true;
 }
@@ -222,40 +222,40 @@ StructuredVolumeImporter::~StructuredVolumeImporter( void )
  *  @return pointer to the imported structured volume object
  */
 /*===========================================================================*/
-//StructuredVolumeImporter::SuperClass* StructuredVolumeImporter::exec( const kvs::FileFormatBase* file_format )
-StructuredVolumeImporter::SuperClass* StructuredVolumeImporter::exec( const kvs::FileFormatBase& file_format )
+//StructuredVolumeImporter::SuperClass* StructuredVolumeImporter::exec( const vismodule::FileFormatBase* file_format )
+StructuredVolumeImporter::SuperClass* StructuredVolumeImporter::exec( const vismodule::FileFormatBase& file_format )
 {
 
     if ( !(&file_format) )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input file format is NULL.");
+        visModuleMessageError("Input file format is NULL.");
         return( NULL );
     }
 
     const std::string class_name( file_format.className() );
-    if ( class_name == "kvs::KVSMLObjectStructuredVolume" )
+    if ( class_name == "vismodule::KVSMLObjectStructuredVolume" )
     {
-//        this->import( static_cast<const kvs::KVSMLObjectStructuredVolume*>( &file_format ) );
-        const kvs::KVSMLObjectStructuredVolume* fformat =static_cast<const kvs::KVSMLObjectStructuredVolume*>( &file_format ); 
+//        this->import( static_cast<const vismodule::KVSMLObjectStructuredVolume*>( &file_format ) );
+        const vismodule::KVSMLObjectStructuredVolume* fformat =static_cast<const vismodule::KVSMLObjectStructuredVolume*>( &file_format ); 
         this->import( fformat );
     }
-    else if ( class_name == "kvs::AVSField" )
+    else if ( class_name == "vismodule::AVSField" )
     {
-        const kvs::AVSField* fformat =static_cast<const kvs::AVSField*>( &file_format ); 
+        const vismodule::AVSField* fformat =static_cast<const vismodule::AVSField*>( &file_format ); 
         this->import( fformat );
-        //this->import( static_cast<const kvs::AVSField*>( &file_format ) );
+        //this->import( static_cast<const vismodule::AVSField*>( &file_format ) );
     }
-//    else if ( class_name == "kvs::DicomList" )
+//    else if ( class_name == "vismodule::DicomList" )
 //    {
-//        const kvs::DicomList* fformat =static_cast<const kvs::DicomList*>( &file_format );
+//        const vismodule::DicomList* fformat =static_cast<const vismodule::DicomList*>( &file_format );
 //        this->import( *fformat );
-//        //this->import( static_cast<const kvs::DicomList*>( &file_format ) );
+//        //this->import( static_cast<const vismodule::DicomList*>( &file_format ) );
 //    }
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input file format is not supported.");
+        visModuleMessageError("Input file format is not supported.");
         return( NULL );
     }
 
@@ -269,19 +269,19 @@ StructuredVolumeImporter::SuperClass* StructuredVolumeImporter::exec( const kvs:
  */
 /*==========================================================================*/
 void StructuredVolumeImporter::import(
-    const kvs::KVSMLObjectStructuredVolume* kvsml )
+    const vismodule::KVSMLObjectStructuredVolume* kvsml )
 {
     if ( kvsml->objectTag().hasExternalCoord() )
     {
-        const kvs::Vector3f min_coord( kvsml->objectTag().minExternalCoord() );
-        const kvs::Vector3f max_coord( kvsml->objectTag().maxExternalCoord() );
+        const vismodule::Vector3f min_coord( kvsml->objectTag().minExternalCoord() );
+        const vismodule::Vector3f max_coord( kvsml->objectTag().maxExternalCoord() );
         SuperClass::setMinMaxExternalCoords( min_coord, max_coord );
     }
 
     if ( kvsml->objectTag().hasObjectCoord() )
     {
-        const kvs::Vector3f min_coord( kvsml->objectTag().minObjectCoord() );
-        const kvs::Vector3f max_coord( kvsml->objectTag().maxObjectCoord() );
+        const vismodule::Vector3f min_coord( kvsml->objectTag().minObjectCoord() );
+        const vismodule::Vector3f max_coord( kvsml->objectTag().maxObjectCoord() );
         SuperClass::setMinMaxObjectCoords( min_coord, max_coord );
     }
 
@@ -318,12 +318,12 @@ void StructuredVolumeImporter::import(
  *  @param  field [in] pointer to the AVS field format data
  */
 /*==========================================================================*/
-void StructuredVolumeImporter::import( const kvs::AVSField* field )
+void StructuredVolumeImporter::import( const vismodule::AVSField* field )
 {
-    if ( field->fieldType() != kvs::AVSField::Uniform )
+    if ( field->fieldType() != vismodule::AVSField::Uniform )
     {
-        kvsMessageWarning( field->fieldType() == kvs::AVSField::Uniform,
-                           "'Uniform' type in kvs::AVSField format is only supported." );
+        visModuleMessageWarning( field->fieldType() == vismodule::AVSField::Uniform,
+                           "'Uniform' type in vismodule::AVSField format is only supported." );
 
         BaseClass::m_is_success = false;
     }
@@ -331,20 +331,20 @@ void StructuredVolumeImporter::import( const kvs::AVSField* field )
     const float dim_x = static_cast<float>( field->dim().x() );
     const float dim_y = static_cast<float>( field->dim().y() );
     const float dim_z = static_cast<float>( field->dim().z() );
-    const kvs::Vector3f  min_obj_coord( 0.0f );
-    const kvs::Vector3f  max_obj_coord( dim_x - 1.0f, dim_y - 1.0f, dim_z - 1.0f );
+    const vismodule::Vector3f  min_obj_coord( 0.0f );
+    const vismodule::Vector3f  max_obj_coord( dim_x - 1.0f, dim_y - 1.0f, dim_z - 1.0f );
     SuperClass::setMinMaxObjectCoords( min_obj_coord, max_obj_coord );
 
     if ( field->hasMinMaxExt() )
     {
-        const kvs::Vector3f min_ext_coord( field->minExt() );
-        const kvs::Vector3f max_ext_coord( field->maxExt() );
+        const vismodule::Vector3f min_ext_coord( field->minExt() );
+        const vismodule::Vector3f max_ext_coord( field->maxExt() );
         SuperClass::setMinMaxExternalCoords( min_ext_coord, max_ext_coord );
     }
     else
     {
-        const kvs::Vector3f min_ext_coord( min_obj_coord );
-        const kvs::Vector3f max_ext_coord( max_obj_coord );
+        const vismodule::Vector3f min_ext_coord( min_obj_coord );
+        const vismodule::Vector3f max_ext_coord( max_obj_coord );
         SuperClass::setMinMaxExternalCoords( min_ext_coord, max_ext_coord );
     }
 
@@ -355,12 +355,12 @@ void StructuredVolumeImporter::import( const kvs::AVSField* field )
     SuperClass::updateMinMaxValues();
 }
 
-//void StructuredVolumeImporter::import( const kvs::DicomList& dicom_list )
+//void StructuredVolumeImporter::import( const vismodule::DicomList& dicom_list )
 //{
 //    if ( dicom_list.size() == 0 )
 //    {
 //        BaseClass::m_is_success = false;
-//        kvsMessageError("Dicom file is not included.");
+//        visModuleMessageError("Dicom file is not included.");
 //        return;
 //    }
 //
@@ -372,27 +372,27 @@ void StructuredVolumeImporter::import( const kvs::AVSField* field )
 //    const size_t z_size = dicom_list.nslices();
 //    const float x_ratio = dicom_list.pixelSpacing()[0];
 //    const float y_ratio = dicom_list.pixelSpacing()[1];
-//    const float z_ratio = kvs::Math::IsZero( spacing ) ? thickness : spacing;
+//    const float z_ratio = vismodule::Math::IsZero( spacing ) ? thickness : spacing;
 //
-//    const kvs::Vector3f min_obj_coord( 0.0f, 0.0f, 0.0f );
-//    const kvs::Vector3f max_obj_coord( x_size - 1.0f, y_size - 1.0f, z_size - 1.0f );
+//    const vismodule::Vector3f min_obj_coord( 0.0f, 0.0f, 0.0f );
+//    const vismodule::Vector3f max_obj_coord( x_size - 1.0f, y_size - 1.0f, z_size - 1.0f );
 //    SuperClass::setMinMaxObjectCoords( min_obj_coord, max_obj_coord );
 //
-//    const kvs::Vector3f min_ext_coord( min_obj_coord );
-//    const kvs::Vector3f max_ext_coord( max_obj_coord.x() * x_ratio,
+//    const vismodule::Vector3f min_ext_coord( min_obj_coord );
+//    const vismodule::Vector3f max_ext_coord( max_obj_coord.x() * x_ratio,
 //                                       max_obj_coord.y() * y_ratio,
 //                                       max_obj_coord.z() * z_ratio );
 //    SuperClass::setMinMaxExternalCoords( min_ext_coord, max_ext_coord );
 //
 //    bool shift = true;
-//    const kvs::Dicom* dicom = (dicom_list)[0];
-//    const kvs::UInt32 bits_allocated = dicom->bitsAllocated();
+//    const vismodule::Dicom* dicom = (dicom_list)[0];
+//    const vismodule::UInt32 bits_allocated = dicom->bitsAllocated();
 //    const bool pixel_representation = dicom->pixelRepresentation();
 //    switch ( bits_allocated )
 //    {
 //    case 8:
 //    {
-//        const kvs::AnyValueArray values = this->get_dicom_data<kvs::UInt8>( &dicom_list, false );
+//        const vismodule::AnyValueArray values = this->get_dicom_data<vismodule::UInt8>( &dicom_list, false );
 //        SuperClass::setValues( values );
 //        break;
 //    }
@@ -400,19 +400,19 @@ void StructuredVolumeImporter::import( const kvs::AVSField* field )
 //    {
 //        if ( pixel_representation )
 //        {
-//            const kvs::AnyValueArray values = this->get_dicom_data<kvs::UInt16>( &dicom_list, false );
+//            const vismodule::AnyValueArray values = this->get_dicom_data<vismodule::UInt16>( &dicom_list, false );
 //            SuperClass::setValues( values );
 //        }
 //        else
 //        {
 //            if ( shift )
 //            {
-//                const kvs::AnyValueArray values = this->get_dicom_data<kvs::UInt16>( &dicom_list, true );
+//                const vismodule::AnyValueArray values = this->get_dicom_data<vismodule::UInt16>( &dicom_list, true );
 //                SuperClass::setValues( values );
 //            }
 //            else
 //            {
-//                const kvs::AnyValueArray values = this->get_dicom_data<kvs::Int16>( &dicom_list, false );
+//                const vismodule::AnyValueArray values = this->get_dicom_data<vismodule::Int16>( &dicom_list, false );
 //                SuperClass::setValues( values );
 //            }
 //        }
@@ -421,7 +421,7 @@ void StructuredVolumeImporter::import( const kvs::AVSField* field )
 //    default: break;
 //    }
 //
-//    const kvs::Vector3ui resolution( x_size, y_size, z_size );
+//    const vismodule::Vector3ui resolution( x_size, y_size, z_size );
 //    SuperClass::setGridType( pbvr::StructuredVolumeObject::Uniform );
 //    SuperClass::setResolution( resolution );
 //    SuperClass::setVeclen( 1 );
@@ -429,8 +429,8 @@ void StructuredVolumeImporter::import( const kvs::AVSField* field )
 //}
 
 //template <typename T>
-//const kvs::AnyValueArray StructuredVolumeImporter::get_dicom_data(
-//    const kvs::DicomList* dicom_list,
+//const vismodule::AnyValueArray StructuredVolumeImporter::get_dicom_data(
+//    const vismodule::DicomList* dicom_list,
 //    const bool shift )
 //{
 //    const size_t width = dicom_list->width();
@@ -438,16 +438,16 @@ void StructuredVolumeImporter::import( const kvs::AVSField* field )
 //    const size_t nslices = dicom_list->nslices();
 //    const size_t nnodes = width * height * nslices;
 //
-//    const double min_range = static_cast<double>( kvs::Value<T>::Min() );
-//    const double max_range = static_cast<double>( kvs::Value<T>::Max() );
+//    const double min_range = static_cast<double>( vismodule::Value<T>::Min() );
+//    const double max_range = static_cast<double>( vismodule::Value<T>::Max() );
 //
-//    kvs::AnyValueArray values;
+//    vismodule::AnyValueArray values;
 //    values.template allocate<T>( nnodes );
 //
 //    T* pvalues = static_cast<T*>( values.pointer() );
 //    for ( size_t k = 0; k < nslices; k++ )
 //    {
-//        const kvs::Dicom* dicom = (*dicom_list)[k];
+//        const vismodule::Dicom* dicom = (*dicom_list)[k];
 //        const T* const raw_data = reinterpret_cast<const T*>( dicom->rawData().pointer() );
 //        const int shift_value = shift ? dicom->minRawValue() : 0;
 //
@@ -458,7 +458,7 @@ void StructuredVolumeImporter::import( const kvs::AVSField* field )
 //                const size_t pixel_index = ( height - j - 1 ) * width + i;
 //                double value = static_cast<double>( raw_data[ pixel_index ] );
 //                value = value - shift_value;
-//                value = kvs::Math::Clamp( value, min_range, max_range );
+//                value = vismodule::Math::Clamp( value, min_range, max_range );
 //
 //                *(pvalues++) = static_cast<T>( value );
 //            }
@@ -470,15 +470,15 @@ void StructuredVolumeImporter::import( const kvs::AVSField* field )
 
 // Instatiation.
 //template
-//const kvs::AnyValueArray StructuredVolumeImporter::get_dicom_data<kvs::UInt8>(
-//    const kvs::DicomList* dicom_list, const bool shift );
+//const vismodule::AnyValueArray StructuredVolumeImporter::get_dicom_data<vismodule::UInt8>(
+//    const vismodule::DicomList* dicom_list, const bool shift );
 //
 //template
-//const kvs::AnyValueArray StructuredVolumeImporter::get_dicom_data<kvs::UInt16>(
-//    const kvs::DicomList* dicom_list, const bool shift );
+//const vismodule::AnyValueArray StructuredVolumeImporter::get_dicom_data<vismodule::UInt16>(
+//    const vismodule::DicomList* dicom_list, const bool shift );
 //
 //template
-//const kvs::AnyValueArray StructuredVolumeImporter::get_dicom_data<kvs::Int16>(
-//    const kvs::DicomList* dicom_list, const bool shift );
+//const vismodule::AnyValueArray StructuredVolumeImporter::get_dicom_data<vismodule::Int16>(
+//    const vismodule::DicomList* dicom_list, const bool shift );
 
-} // end of namespace kvs
+} // end of namespace vismodule

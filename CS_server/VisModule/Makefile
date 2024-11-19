@@ -16,7 +16,7 @@ include ./Makefile.def
 INCLUDE_PATH := -I.
 LIBRARY_PATH :=
 LINK_LIBRARY :=
-INSTALL_DIR  := ../../../$(KVS_DIR_NAME)
+INSTALL_DIR  := ../../../$(VIS_MODULE_DIR_NAME)
 
 
 #=============================================================================
@@ -32,7 +32,7 @@ endif
 #=============================================================================
 #  Project name.
 #=============================================================================
-TARGET_LIB := $(OUTDIR)/$(LIB_KVS_CORE)
+TARGET_LIB := $(OUTDIR)/$(LIB_VIS_MODULE_CORE)
 
 
 #=============================================================================
@@ -65,4 +65,4 @@ all_clean::
 install::
 	$(MKDIR) $(INSTALL_DIR)/lib
 	$(INSTALL) $(TARGET_LIB) $(INSTALL_DIR)/lib
-	$(RANLIB) $(INSTALL_DIR)/lib/$(LIB_KVS_CORE)
+	$(RANLIB) $(INSTALL_DIR)/lib/$(LIB_VIS_MODULE_CORE)

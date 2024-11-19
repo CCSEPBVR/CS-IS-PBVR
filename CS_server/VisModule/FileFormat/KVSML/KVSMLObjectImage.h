@@ -11,18 +11,18 @@
  *  $Id: KVSMLObjectImage.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__KVSML_OBJECT_IMAGE_H_INCLUDE
-#define KVS__KVSML_OBJECT_IMAGE_H_INCLUDE
+#ifndef VIS_MODULE__KVSML_OBJECT_IMAGE_H_INCLUDE
+#define VIS_MODULE__KVSML_OBJECT_IMAGE_H_INCLUDE
 
-#include <kvs/FileFormatBase>
-#include <kvs/ValueArray>
-#include <kvs/Type>
-#include <kvs/Vector3>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/Vector3>
 #include "KVSMLTag.h"
 #include "ObjectTag.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,9 +30,9 @@ namespace kvs
  *  @brief  KVSML image object format.
  */
 /*===========================================================================*/
-class KVSMLObjectImage : public kvs::FileFormatBase
+class KVSMLObjectImage : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::KVSMLObjectImage );
+    visModuleClassName( vismodule::KVSMLObjectImage );
 
 public:
 
@@ -45,13 +45,13 @@ public:
 
 protected:
 
-    kvs::kvsml::KVSMLTag         m_kvsml_tag;    ///< KVSML tag information
-    kvs::kvsml::ObjectTag        m_object_tag;   ///< Object tag information
+    vismodule::kvsml::KVSMLTag         m_kvsml_tag;    ///< KVSML tag information
+    vismodule::kvsml::ObjectTag        m_object_tag;   ///< Object tag information
     size_t                       m_width;        ///< image width
     size_t                       m_height;       ///< image height
     std::string                  m_pixel_type;   ///< pixel type
     WritingDataType              m_writing_type; ///< writing data type
-    kvs::ValueArray<kvs::UInt8>  m_data;         ///< color(r,g,b) array
+    vismodule::ValueArray<vismodule::UInt8>  m_data;         ///< color(r,g,b) array
 
 public:
 
@@ -63,9 +63,9 @@ public:
 
 public:
 
-    const kvs::kvsml::KVSMLTag& KVSMLTag( void ) const;
+    const vismodule::kvsml::KVSMLTag& KVSMLTag( void ) const;
 
-    const kvs::kvsml::ObjectTag& objectTag( void ) const;
+    const vismodule::kvsml::ObjectTag& objectTag( void ) const;
 
 public:
 
@@ -75,7 +75,7 @@ public:
 
     const std::string& pixelType( void ) const;
 
-    const kvs::ValueArray<kvs::UInt8>& data( void ) const;
+    const vismodule::ValueArray<vismodule::UInt8>& data( void ) const;
 
 public:
 
@@ -87,7 +87,7 @@ public:
 
     void setWritingDataType( const WritingDataType writing_type );
 
-    void setData( const kvs::ValueArray<kvs::UInt8>& data );
+    void setData( const vismodule::ValueArray<vismodule::UInt8>& data );
 
 public:
 
@@ -104,6 +104,6 @@ public:
     friend std::ostream& operator <<( std::ostream& os, const KVSMLObjectImage& rhs );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__KVSML_OBJECT_IMAGE_H_INCLUDE
+#endif // VIS_MODULE__KVSML_OBJECT_IMAGE_H_INCLUDE

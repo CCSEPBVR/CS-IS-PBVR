@@ -16,7 +16,7 @@
 #include <cmath>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -36,7 +36,7 @@ QRDecomposer<T>::QRDecomposer( void )
  */
 /*===========================================================================*/
 template <typename T>
-QRDecomposer<T>::QRDecomposer( const kvs::Matrix33<T>& m )
+QRDecomposer<T>::QRDecomposer( const vismodule::Matrix33<T>& m )
 {
     this->setMatrix( m );
     this->decompose();
@@ -49,7 +49,7 @@ QRDecomposer<T>::QRDecomposer( const kvs::Matrix33<T>& m )
  */
 /*===========================================================================*/
 template <typename T>
-QRDecomposer<T>::QRDecomposer( const kvs::Matrix44<T>& m )
+QRDecomposer<T>::QRDecomposer( const vismodule::Matrix44<T>& m )
 {
     this->setMatrix( m );
     this->decompose();
@@ -62,7 +62,7 @@ QRDecomposer<T>::QRDecomposer( const kvs::Matrix44<T>& m )
  */
 /*===========================================================================*/
 template <typename T>
-QRDecomposer<T>::QRDecomposer( const kvs::Matrix<T>& m )
+QRDecomposer<T>::QRDecomposer( const vismodule::Matrix<T>& m )
 {
     this->setMatrix( m );
     this->decompose();
@@ -75,7 +75,7 @@ QRDecomposer<T>::QRDecomposer( const kvs::Matrix<T>& m )
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Matrix<T> QRDecomposer<T>::Q( void ) const
+const vismodule::Matrix<T> QRDecomposer<T>::Q( void ) const
 {
     return( m_qt.transpose() );
 }
@@ -87,7 +87,7 @@ const kvs::Matrix<T> QRDecomposer<T>::Q( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Matrix<T>& QRDecomposer<T>::R( void ) const
+const vismodule::Matrix<T>& QRDecomposer<T>::R( void ) const
 {
     return( m_r );
 }
@@ -99,7 +99,7 @@ const kvs::Matrix<T>& QRDecomposer<T>::R( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Matrix<T>& QRDecomposer<T>::Qt( void ) const
+const vismodule::Matrix<T>& QRDecomposer<T>::Qt( void ) const
 {
     return( m_qt );
 }
@@ -149,7 +149,7 @@ void QRDecomposer<T>::setMatrix( const Matrix33<T>& m )
  */
 /*===========================================================================*/
 template <typename T>
-void QRDecomposer<T>::setMatrix( const kvs::Matrix44<T>& m )
+void QRDecomposer<T>::setMatrix( const vismodule::Matrix44<T>& m )
 {
     m_qt.setSize( 4, 4 ); m_qt.identity();
     m_r.setSize( 4, 4 );
@@ -171,7 +171,7 @@ void QRDecomposer<T>::setMatrix( const kvs::Matrix44<T>& m )
  */
 /*===========================================================================*/
 template <typename T>
-void QRDecomposer<T>::setMatrix( const kvs::Matrix<T>& m )
+void QRDecomposer<T>::setMatrix( const vismodule::Matrix<T>& m )
 {
     m_qt.setSize( m.nrows(), m.ncolumns() ); m_qt.identity();
     m_r = m;
@@ -190,9 +190,9 @@ void QRDecomposer<T>::decompose( void )
     int column = m_m.ncolumns();
     int size = row != column ? column : column - 1;
 
-    kvs::Vector<T> u( row );
-    kvs::Matrix<T> w( row, row );
-    kvs::Matrix<T> q( row, row );
+    vismodule::Vector<T> u( row );
+    vismodule::Matrix<T> w( row, row );
+    vismodule::Matrix<T> q( row, row );
     for( int i = 0; i < size; i++ )
     {
         T sig2 = T(0);
@@ -257,4 +257,4 @@ template class QRDecomposer<int>;
 template class QRDecomposer<float>;
 template class QRDecomposer<double>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

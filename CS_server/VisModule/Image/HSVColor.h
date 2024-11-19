@@ -11,14 +11,14 @@
  *  $Id: HSVColor.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__HSV_COLOR_H_INCLUDE
-#define KVS__HSV_COLOR_H_INCLUDE
+#ifndef VIS_MODULE__HSV_COLOR_H_INCLUDE
+#define VIS_MODULE__HSV_COLOR_H_INCLUDE
 
-#include <kvs/Math>
-#include <kvs/ClassName>
+#include <vismodule/Math>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class RGBColor;
@@ -30,7 +30,7 @@ class RGBColor;
 /*==========================================================================*/
 class HSVColor
 {
-    kvsClassName( kvs::HSVColor );
+    visModuleClassName( vismodule::HSVColor );
 
 protected:
 
@@ -60,9 +60,9 @@ public:
 
     friend bool operator == ( const HSVColor& a, const HSVColor& b )
     {
-        return( kvs::Math::Equal( a.h(), b.h() ) &&
-                kvs::Math::Equal( a.s(), b.s() ) &&
-                kvs::Math::Equal( a.v(), b.v() ) );
+        return( vismodule::Math::Equal( a.h(), b.h() ) &&
+                vismodule::Math::Equal( a.s(), b.s() ) &&
+                vismodule::Math::Equal( a.v(), b.v() ) );
     }
 
     friend HSVColor operator + ( const HSVColor& a, const HSVColor& b )
@@ -92,6 +92,6 @@ public:
     const float intensity( void ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__HSV_COLOR_H_INCLUDE
+#endif // VIS_MODULE__HSV_COLOR_H_INCLUDE

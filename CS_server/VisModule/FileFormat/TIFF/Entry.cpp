@@ -16,13 +16,13 @@
 #include "TagDictionary.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace tiff
 {
 
-Entry::Entry( const kvs::UInt16 tag ):
+Entry::Entry( const vismodule::UInt16 tag ):
     m_tag( tag ),
     m_type( 0 ),
     m_count( 0 )
@@ -44,7 +44,7 @@ std::ostream& operator << ( std::ostream& os, const Entry& entry )
     os << "Tag:   " << entry.tagDescription() << std::endl;
     os << "Type:  " << entry.typeName() << std::endl;
     os << "Count: " << entry.count() << std::endl;
-    if( entry.type() == kvs::tiff::Ascii )
+    if( entry.type() == vismodule::tiff::Ascii )
     {
         std::string value;
         for ( size_t i = 0; i < entry.count(); i++ )
@@ -58,40 +58,40 @@ std::ostream& operator << ( std::ostream& os, const Entry& entry )
         os << "Value: ";
         for ( size_t i = 0; i < entry.count(); i++ )
         {
-            os << entry.values().at<kvs::UInt32>(i) << " ";
+            os << entry.values().at<vismodule::UInt32>(i) << " ";
         }
     }
 
     return( os );
 }
 
-kvs::UInt16 Entry::tag( void ) const
+vismodule::UInt16 Entry::tag( void ) const
 {
     return( m_tag );
 }
 
-kvs::UInt16 Entry::type( void ) const
+vismodule::UInt16 Entry::type( void ) const
 {
     return( m_type );
 }
 
-kvs::UInt32 Entry::count( void ) const
+vismodule::UInt32 Entry::count( void ) const
 {
     return( m_count );
 }
 
 std::string Entry::tagDescription( void ) const
 {
-    static const kvs::tiff::TagDictionary TagDatabase;
+    static const vismodule::tiff::TagDictionary TagDatabase;
     return( TagDatabase.find( m_tag ).name() );
 }
 
 std::string Entry::typeName( void ) const
 {
-    return( kvs::tiff::ValueTypeName[ m_type ] );
+    return( vismodule::tiff::ValueTypeName[ m_type ] );
 }
 
-kvs::AnyValueArray Entry::values( void ) const
+vismodule::AnyValueArray Entry::values( void ) const
 {
     return( m_values );
 }
@@ -111,7 +111,7 @@ bool Entry::read( std::ifstream& ifs )
     // Allocate memory for the value array.
     if ( !this->allocate_values( m_count, m_type ) )
     {
-        kvsMessageError( "Cannot read entry; tag:%d, type:%d, count:%d.",
+        visModuleMessageError( "Cannot read entry; tag:%d, type:%d, count:%d.",
                          m_tag,
                          m_type,
                          m_count );
@@ -119,13 +119,13 @@ bool Entry::read( std::ifstream& ifs )
     }
 
     // Read values.
-    const size_t byte_size = kvs::tiff::ValueTypeSize[m_type] * m_count;
+    const size_t byte_size = vismodule::tiff::ValueTypeSize[m_type] * m_count;
     if ( byte_size > 4 )
     {
         const std::ifstream::pos_type end_of_entry = ifs.tellg();
         {
             // Separate a value as offset.
-            kvs::UInt32 offset;
+            vismodule::UInt32 offset;
             if ( !memcpy( &offset, buffer + 8, 4 ) ) return( false ); // offset 8, byte 4
 
             // Read values of the entry to m_values.
@@ -148,22 +148,22 @@ void* Entry::allocate_values( const size_t nvalues, const size_t value_type )
 {
     switch( value_type )
     {
-    case kvs::tiff::Byte:      return( m_values.allocate<kvs::UInt8>( nvalues ) );
-    case kvs::tiff::Ascii:     return( m_values.allocate<char>( nvalues ) );
-    case kvs::tiff::Short:     return( m_values.allocate<kvs::UInt16>( nvalues ) );
-    case kvs::tiff::Long:      return( m_values.allocate<kvs::UInt32>( nvalues ) );
-    case kvs::tiff::Rational:  return( m_values.allocate<kvs::Real64>( nvalues ) );
-    case kvs::tiff::SByte:     return( m_values.allocate<kvs::Int8>( nvalues ) );
-    case kvs::tiff::Undefined: return( m_values.allocate<char>( nvalues ) );
-    case kvs::tiff::SShort:    return( m_values.allocate<kvs::Int16>( nvalues ) );
-    case kvs::tiff::SLong:     return( m_values.allocate<kvs::Int32>( nvalues ) );
-    case kvs::tiff::SRational: return( m_values.allocate<kvs::Real64>( nvalues ) );
-    case kvs::tiff::Float:     return( m_values.allocate<kvs::Real32>( nvalues ) );
-    case kvs::tiff::Double:    return( m_values.allocate<kvs::Real64>( nvalues ) );
-    default: kvsMessageError("Unknown entry value type."); return( NULL );
+    case vismodule::tiff::Byte:      return( m_values.allocate<vismodule::UInt8>( nvalues ) );
+    case vismodule::tiff::Ascii:     return( m_values.allocate<char>( nvalues ) );
+    case vismodule::tiff::Short:     return( m_values.allocate<vismodule::UInt16>( nvalues ) );
+    case vismodule::tiff::Long:      return( m_values.allocate<vismodule::UInt32>( nvalues ) );
+    case vismodule::tiff::Rational:  return( m_values.allocate<vismodule::Real64>( nvalues ) );
+    case vismodule::tiff::SByte:     return( m_values.allocate<vismodule::Int8>( nvalues ) );
+    case vismodule::tiff::Undefined: return( m_values.allocate<char>( nvalues ) );
+    case vismodule::tiff::SShort:    return( m_values.allocate<vismodule::Int16>( nvalues ) );
+    case vismodule::tiff::SLong:     return( m_values.allocate<vismodule::Int32>( nvalues ) );
+    case vismodule::tiff::SRational: return( m_values.allocate<vismodule::Real64>( nvalues ) );
+    case vismodule::tiff::Float:     return( m_values.allocate<vismodule::Real32>( nvalues ) );
+    case vismodule::tiff::Double:    return( m_values.allocate<vismodule::Real64>( nvalues ) );
+    default: visModuleMessageError("Unknown entry value type."); return( NULL );
     }
 }
 
 } // end of namespace tiff
 
-} // end of namespace kvs
+} // end of namespace vismodule

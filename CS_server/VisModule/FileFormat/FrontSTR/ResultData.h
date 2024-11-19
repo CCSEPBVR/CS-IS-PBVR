@@ -12,17 +12,17 @@
  *  $Id: ResultData.h 870 2011-07-27 00:53:17Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__FSTR__RESULT_DATA_H_INCLUDE
-#define KVS__FSTR__RESULT_DATA_H_INCLUDE
+#ifndef VIS_MODULE__FSTR__RESULT_DATA_H_INCLUDE
+#define VIS_MODULE__FSTR__RESULT_DATA_H_INCLUDE
 
 #include <vector>
 #include <string>
 #include <fstream>
-#include <kvs/ValueArray>
-#include <kvs/Type>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace fstr
@@ -37,7 +37,7 @@ class ResultData
 {
 public:
 
-    typedef kvs::ValueArray<kvs::Real32> Values;
+    typedef vismodule::ValueArray<vismodule::Real32> Values;
 
 protected:
 
@@ -86,6 +86,6 @@ private:
 
 } // end of namespace fstr
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__FSTR__RESULT_DATA_H_INCLUDE
+#endif // VIS_MODULE__FSTR__RESULT_DATA_H_INCLUDE

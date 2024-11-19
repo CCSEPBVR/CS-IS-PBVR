@@ -12,10 +12,10 @@
  */
 /****************************************************************************/
 #include "Background.h"
-#include <kvs/OpenGL>
+#include <vismodule/OpenGL>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -34,7 +34,7 @@ Background::Background( void )
  *  @param color [in] background color
  */
 /*==========================================================================*/
-Background::Background( const kvs::RGBAColor& color )
+Background::Background( const vismodule::RGBAColor& color )
 {
     this->setColor( color );
 }
@@ -46,7 +46,7 @@ Background::Background( const kvs::RGBAColor& color )
  *  @param color1 [in] color on the corner #1 (top side color)
  */
 /*==========================================================================*/
-Background::Background( const kvs::RGBAColor& color1, const kvs::RGBAColor& color2 )
+Background::Background( const vismodule::RGBAColor& color1, const vismodule::RGBAColor& color2 )
 {
     this->setColor( color1, color2 );
 }
@@ -61,10 +61,10 @@ Background::Background( const kvs::RGBAColor& color1, const kvs::RGBAColor& colo
  */
 /*==========================================================================*/
 Background::Background(
-    const kvs::RGBAColor& color0,
-    const kvs::RGBAColor& color1,
-    const kvs::RGBAColor& color2,
-    const kvs::RGBAColor& color3 )
+    const vismodule::RGBAColor& color0,
+    const vismodule::RGBAColor& color1,
+    const vismodule::RGBAColor& color2,
+    const vismodule::RGBAColor& color3 )
 {
     this->setColor( color0, color1, color2, color3 );
 }
@@ -101,7 +101,7 @@ Background& Background::operator = ( const Background& bg )
  *  @param color [in] color
  */
 /*==========================================================================*/
-void Background::setColor( const kvs::RGBAColor& color )
+void Background::setColor( const vismodule::RGBAColor& color )
 {
     m_type     = Background::MonoColor;
     m_color[0] = color;
@@ -133,10 +133,10 @@ void Background::setColor( const RGBAColor& color0, const RGBAColor& color1 )
  */
 /*==========================================================================*/
 void Background::setColor(
-    const kvs::RGBAColor& color0,
-    const kvs::RGBAColor& color1,
-    const kvs::RGBAColor& color2,
-    const kvs::RGBAColor& color3 )
+    const vismodule::RGBAColor& color0,
+    const vismodule::RGBAColor& color1,
+    const vismodule::RGBAColor& color2,
+    const vismodule::RGBAColor& color3 )
 {
     m_type     = Background::FourCornersColor;
     m_color[0] = color0;
@@ -151,7 +151,7 @@ void Background::setColor(
  *  @param index [in] color index (0-3)
  */
 /*==========================================================================*/
-const kvs::RGBColor& Background::color( size_t index ) const
+const vismodule::RGBColor& Background::color( size_t index ) const
 {
     return( m_color[index] );
 }
@@ -308,5 +308,5 @@ void Background::apply_image( void )
 }
 */
 
-} // end of namespace kvs
+} // end of namespace vismodule
 

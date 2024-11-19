@@ -15,14 +15,14 @@
 #define PBVR__CELL_BY_CELL_HISTOGRAM_H_INCLUDE
 
 #include "MapperBase.h"
-#include <kvs/Camera>
+#include <vismodule/Camera>
 #include "PointObject.h"
 #include "VolumeObjectBase.h"
 #include "StructuredVolumeObject.h"
 #include "UnstructuredVolumeObject.h"
 #include "ClassName.h"
-#include <kvs/Module>
-#include <kvs/MersenneTwister> 
+#include <vismodule/Module>
+#include <vismodule/MersenneTwister> 
 #include "CellByCellParticleGenerator.h"
 #include "CropRegion.h"
 #include "TransferFunctionSynthesizer.h"
@@ -47,20 +47,20 @@ namespace pbvr
 class CellByCellHistogram : public pbvr::MapperBase, public pbvr::PointObject
 {
     // Class name.
-    kvsClassName( pbvr::CellByCellHistogram );
+    visModuleClassName( pbvr::CellByCellHistogram );
 
     // Module information.
     typedef pbvr::MapperBase::ModuleTag ModuleCategory;
-    kvsModuleBaseClass( pbvr::MapperBase );
-    kvsModuleSuperClass( pbvr::PointObject );
+    visModuleBaseClass( pbvr::MapperBase );
+    visModuleSuperClass( pbvr::PointObject );
 
 private:
 
-    const kvs::Camera*     m_camera;         ///< camera (reference)
+    const vismodule::Camera*     m_camera;         ///< camera (reference)
     size_t                 m_subpixel_level; ///< subpixel level
     float                  m_sampling_step;  ///< sampling step in the object coordinate
     float                  m_object_depth;   ///< object depth
-    kvs::ValueArray<float> m_density_map;    ///< density map
+    vismodule::ValueArray<float> m_density_map;    ///< density map
     bool                   m_gt5d_full;
     CropRegion             m_crop;
     TransferFunctionSynthesizer* m_transfer_function_synthesizer;
@@ -86,7 +86,7 @@ public:
         const float                  object_depth = 0.0f );
 
     CellByCellHistogram(
-        const kvs::Camera&           camera,
+        const vismodule::Camera&           camera,
         const pbvr::VolumeObjectBase& volume,
         const size_t                 subpixel_level,
         const float                  sampling_step,
@@ -100,7 +100,7 @@ public:
         const float                  object_depth = 0.0f );
 
     CellByCellHistogram(
-        const kvs::Camera&           camera,
+        const vismodule::Camera&           camera,
         const pbvr::VolumeObjectBase& volume,
         const size_t                 subpixel_level,
         const float                  sampling_step,
@@ -125,7 +125,7 @@ public:
 
     const float objectDepth() const;
 
-    void attachCamera( const kvs::Camera& camera );
+    void attachCamera( const vismodule::Camera& camera );
 
     void setSubpixelLevel( const size_t subpixel_level );
 
@@ -135,14 +135,14 @@ public:
 
 private:
 
-    void mapping( const kvs::Camera& camera, const pbvr::StructuredVolumeObject& volume );
+    void mapping( const vismodule::Camera& camera, const pbvr::StructuredVolumeObject& volume );
 
-    void mapping( const kvs::Camera& camera, const pbvr::UnstructuredVolumeObject& volume );
+    void mapping( const vismodule::Camera& camera, const pbvr::UnstructuredVolumeObject& volume );
     
     const size_t calculate_number_of_particles(
     const float density,
     const float volume_of_cell,
-    kvs::MersenneTwister* MT ); 
+    vismodule::MersenneTwister* MT ); 
     
     template <typename T>
     void generate_histogram( const pbvr::StructuredVolumeObject& volume );
@@ -154,18 +154,18 @@ private:
 
     const size_t calculate_number_of_particles( const float density, const float volume_of_cell );
 
-    void calculate_histogram( kvs::ValueArray<int>&   th_o_histogram,
-                          kvs::ValueArray<int>&   th_c_histogram,
-                          kvs::ValueArray<float>& th_O_min,
-                          kvs::ValueArray<float>& th_O_max,
-                          kvs::ValueArray<float>& th_C_min,
-                          kvs::ValueArray<float>& th_C_max,
+    void calculate_histogram( vismodule::ValueArray<int>&   th_o_histogram,
+                          vismodule::ValueArray<int>&   th_c_histogram,
+                          vismodule::ValueArray<float>& th_O_min,
+                          vismodule::ValueArray<float>& th_O_max,
+                          vismodule::ValueArray<float>& th_C_min,
+                          vismodule::ValueArray<float>& th_C_max,
                           // ここまでoutput, 以下input
                           const int nbins, // TFSから読み込む最大最小値
-                          const kvs::ValueArray<float>& o_min,
-                          const kvs::ValueArray<float>& o_max,
-                          const kvs::ValueArray<float>& c_min,
-                          const kvs::ValueArray<float>& c_max,
+                          const vismodule::ValueArray<float>& o_min,
+                          const vismodule::ValueArray<float>& o_max,
+                          const vismodule::ValueArray<float>& c_min,
+                          const vismodule::ValueArray<float>& c_max,
                           //const float o_scalars[][SIMDW], // åæå¤
                           //const float c_scalars[][SIMDW],
                           float** o_scalars, // åæå¤
@@ -173,7 +173,7 @@ private:
                           const int tf_number, 
                           const int ncells  );
     
-    kvs::Vector3f RandomSamplingInCube( const kvs::Vector3f vertex, kvs::MersenneTwister* MT );
+    vismodule::Vector3f RandomSamplingInCube( const vismodule::Vector3f vertex, vismodule::MersenneTwister* MT );
 
    
     const float calculate_maximum_density( const float scalar0, const float scalar1 );

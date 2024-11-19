@@ -12,9 +12,9 @@
  */
 /*****************************************************************************/
 #include "StructuredVolumeExporter.h"
-#include <kvs/ObjectBase>
-#include <kvs/VolumeObjectBase>
-#include <kvs/StructuredVolumeObject>
+#include <vismodule/ObjectBase>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/StructuredVolumeObject>
 
 
 namespace
@@ -27,29 +27,29 @@ namespace
  *  @return pointer to the structured volume object
  */
 /*===========================================================================*/
-const kvs::StructuredVolumeObject* CastToStructuredVolumeObject( const kvs::ObjectBase* object )
+const vismodule::StructuredVolumeObject* CastToStructuredVolumeObject( const vismodule::ObjectBase* object )
 {
-    if ( object->objectType() != kvs::ObjectBase::Volume )
+    if ( object->objectType() != vismodule::ObjectBase::Volume )
     {
-        kvsMessageError("Input object is not a volumetry object.");
+        visModuleMessageError("Input object is not a volumetry object.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase* volume =
-        reinterpret_cast<const kvs::VolumeObjectBase*>( object );
-    if ( volume->volumeType() != kvs::VolumeObjectBase::Structured )
+    const vismodule::VolumeObjectBase* volume =
+        reinterpret_cast<const vismodule::VolumeObjectBase*>( object );
+    if ( volume->volumeType() != vismodule::VolumeObjectBase::Structured )
     {
-        kvsMessageError("Input object is not a structured volume object.");
+        visModuleMessageError("Input object is not a structured volume object.");
         return( NULL );
     }
 
-    return( reinterpret_cast<const kvs::StructuredVolumeObject*>( volume ) );
+    return( reinterpret_cast<const vismodule::StructuredVolumeObject*>( volume ) );
 }
 
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -58,8 +58,8 @@ namespace kvs
  *  @param  object [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-StructuredVolumeExporter<kvs::KVSMLObjectStructuredVolume>::StructuredVolumeExporter(
-    const kvs::StructuredVolumeObject* object )
+StructuredVolumeExporter<vismodule::KVSMLObjectStructuredVolume>::StructuredVolumeExporter(
+    const vismodule::StructuredVolumeObject* object )
 {
     this->exec( object );
 }
@@ -70,50 +70,50 @@ StructuredVolumeExporter<kvs::KVSMLObjectStructuredVolume>::StructuredVolumeExpo
  *  @param  object [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-kvs::KVSMLObjectStructuredVolume* StructuredVolumeExporter<kvs::KVSMLObjectStructuredVolume>::exec(
-    const kvs::ObjectBase* object )
+vismodule::KVSMLObjectStructuredVolume* StructuredVolumeExporter<vismodule::KVSMLObjectStructuredVolume>::exec(
+    const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
     // Cast to the structured volume object.
-    const kvs::StructuredVolumeObject* volume = kvs::StructuredVolumeObject::DownCast( object );
+    const vismodule::StructuredVolumeObject* volume = vismodule::StructuredVolumeObject::DownCast( object );
     if ( !volume )
     {
         m_is_success = false;
-        kvsMessageError("Input object is not structured volume object.");
+        visModuleMessageError("Input object is not structured volume object.");
         return( NULL );
     }
 
     // Check the grid type of the given structured volume object.
     switch ( volume->gridType() )
     {
-    case kvs::StructuredVolumeObject::UnknownGridType:
+    case vismodule::StructuredVolumeObject::UnknownGridType:
     {
-        kvsMessageError("Unknown grid type.");
+        visModuleMessageError("Unknown grid type.");
         break;
     }
-    case kvs::StructuredVolumeObject::Uniform:
+    case vismodule::StructuredVolumeObject::Uniform:
     {
         this->setGridType("uniform");
         break;
     }
 /*
-    case kvs::StructuredVolumeObject::Rectilinear:
+    case vismodule::StructuredVolumeObject::Rectilinear:
         this->setGridType("rectilinear");
         break;
-    case kvs::StructuredVolumeObject::Curvilinear:
+    case vismodule::StructuredVolumeObject::Curvilinear:
         this->setGridType("curvilinear");
         break;
 */
     default:
     {
         m_is_success = false;
-        kvsMessageError("'uniform' grid type is only supported.");
+        visModuleMessageError("'uniform' grid type is only supported.");
         break;
     }
     }
@@ -132,8 +132,8 @@ kvs::KVSMLObjectStructuredVolume* StructuredVolumeExporter<kvs::KVSMLObjectStruc
  *  @param  object [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-StructuredVolumeExporter<kvs::AVSField>::StructuredVolumeExporter(
-    const kvs::StructuredVolumeObject* object )
+StructuredVolumeExporter<vismodule::AVSField>::StructuredVolumeExporter(
+    const vismodule::StructuredVolumeObject* object )
 {
     this->exec( object );
 }
@@ -144,96 +144,96 @@ StructuredVolumeExporter<kvs::AVSField>::StructuredVolumeExporter(
  *  @param  object [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-kvs::AVSField* StructuredVolumeExporter<kvs::AVSField>::exec(
-    const kvs::ObjectBase* object )
+vismodule::AVSField* StructuredVolumeExporter<vismodule::AVSField>::exec(
+    const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
     // Cast to the structured volume object.
-    const kvs::StructuredVolumeObject* volume = kvs::StructuredVolumeObject::DownCast( object );
+    const vismodule::StructuredVolumeObject* volume = vismodule::StructuredVolumeObject::DownCast( object );
     if ( !volume )
     {
         m_is_success = false;
-        kvsMessageError("Input object is not structured volume object.");
+        visModuleMessageError("Input object is not structured volume object.");
         return( NULL );
     }
 
     const std::type_info& type = volume->values().typeInfo()->type();
-    if ( type == typeid( kvs::Int8 ) )
+    if ( type == typeid( vismodule::Int8 ) )
     {
         this->setBits( 8 );
         this->setSigned( true );
-        this->setDataType( kvs::AVSField::Byte );
+        this->setDataType( vismodule::AVSField::Byte );
     }
-    else if ( type == typeid( kvs::UInt8 ) )
+    else if ( type == typeid( vismodule::UInt8 ) )
     {
         this->setBits( 8 );
         this->setSigned( false );
-        this->setDataType( kvs::AVSField::Byte );
+        this->setDataType( vismodule::AVSField::Byte );
     }
-    else if ( type == typeid( kvs::Int16 ) )
+    else if ( type == typeid( vismodule::Int16 ) )
     {
         this->setBits( 16 );
         this->setSigned( true );
-        this->setDataType( kvs::AVSField::Short );
+        this->setDataType( vismodule::AVSField::Short );
     }
-    else if ( type == typeid( kvs::UInt16 ) )
+    else if ( type == typeid( vismodule::UInt16 ) )
     {
         this->setBits( 16 );
         this->setSigned( false );
-        this->setDataType( kvs::AVSField::Short );
+        this->setDataType( vismodule::AVSField::Short );
     }
-    else if ( type == typeid( kvs::Int32 ) )
+    else if ( type == typeid( vismodule::Int32 ) )
     {
         this->setBits( 32 );
         this->setSigned( true );
-        this->setDataType( kvs::AVSField::Integer );
+        this->setDataType( vismodule::AVSField::Integer );
     }
-    else if ( type == typeid( kvs::UInt32 ) )
+    else if ( type == typeid( vismodule::UInt32 ) )
     {
         this->setBits( 32 );
         this->setSigned( false );
-        this->setDataType( kvs::AVSField::Integer );
+        this->setDataType( vismodule::AVSField::Integer );
     }
-    else if ( type == typeid( kvs::Real32 ) )
+    else if ( type == typeid( vismodule::Real32 ) )
     {
         this->setBits( 32 );
         this->setSigned( true );
-        this->setDataType( kvs::AVSField::Float );
+        this->setDataType( vismodule::AVSField::Float );
     }
-    else if ( type == typeid( kvs::Real64 ) )
+    else if ( type == typeid( vismodule::Real64 ) )
     {
         this->setBits( 64 );
         this->setSigned( true );
-        this->setDataType( kvs::AVSField::Double );
+        this->setDataType( vismodule::AVSField::Double );
     }
     else
     {
-        kvsMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
+        visModuleMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
     }
 
     // Check the grid type of the given structured volume object.
     switch ( volume->gridType() )
     {
-    case kvs::StructuredVolumeObject::Uniform:
+    case vismodule::StructuredVolumeObject::Uniform:
     {
-        this->setFieldType( kvs::AVSField::Uniform );
+        this->setFieldType( vismodule::AVSField::Uniform );
         this->setValues( volume->values() );
         break;
     }
 /*
-    case kvs::StructuredVolumeObject::Rectilinear:
-        this->setFieldType( kvs::AVSField::Rectilinear );
+    case vismodule::StructuredVolumeObject::Rectilinear:
+        this->setFieldType( vismodule::AVSField::Rectilinear );
         this->setValues( volume->values() );
         this->setCoords( volume->coords() );
         break;
-    case kvs::StructuredVolumeObject::Curvilinear:
-        this->setFieldType( kvs::AVSField::Irregular );
+    case vismodule::StructuredVolumeObject::Curvilinear:
+        this->setFieldType( vismodule::AVSField::Irregular );
         this->setValues( volume->values() );
         this->setCoords( volume->coords() );
         break;
@@ -241,7 +241,7 @@ kvs::AVSField* StructuredVolumeExporter<kvs::AVSField>::exec(
     default:
     {
         m_is_success = false;
-        kvsMessageError("Unknown grid type.");
+        visModuleMessageError("Unknown grid type.");
         break;
     }
     }
@@ -254,4 +254,4 @@ kvs::AVSField* StructuredVolumeExporter<kvs::AVSField>::exec(
     return( this );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

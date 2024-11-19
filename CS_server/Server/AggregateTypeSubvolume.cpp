@@ -11,11 +11,11 @@
 #include <FileFormat/KVSML/CoordTag.h>
 #include <FileFormat/KVSML/ConnectionTag.h>
 #include "DataArrayTag.h"
-#include <kvs/File>
-#include <kvs/AnyValueArray>
-#include <kvs/Type>
+#include <vismodule/File>
+#include <vismodule/AnyValueArray>
+#include <vismodule/Type>
 #include "Types.h"
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/IgnoreUnusedVariable>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -51,7 +51,7 @@ inline const size_t GetNumberOfNodesPerElement( const std::string& cell_type )
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -95,7 +95,7 @@ AggregateTypeSubvolume::AggregateTypeSubvolume( const std::string& filename,
     if ( ( pfi_fp = fopen( pfi_name, "rb" ) ) == NULL )
     {
         m_is_success = false;
-        kvsMessageError( "Cannot read file '%s'.", pfi_name );
+        visModuleMessageError( "Cannot read file '%s'.", pfi_name );
         free( pfi_name );
         return;
     }
@@ -146,7 +146,7 @@ AggregateTypeSubvolume::AggregateTypeSubvolume( const std::string& filename,
         setCellType( "quadratic hexahedra" );
         break;
     default:
-        kvsMessageError( "Unknown cell type '%d'.", cellType );
+        visModuleMessageError( "Unknown cell type '%d'.", cellType );
         break;
     }
     // number of files
@@ -180,7 +180,7 @@ AggregateTypeSubvolume::AggregateTypeSubvolume( const std::string& filename,
     FILE* fp = NULL;
     char* fname = NULL;
     int32_t flen = filename.size() + 21;
-    kvs::ValueArray<kvs::Int32> range( ( size_t )2 );
+    vismodule::ValueArray<vismodule::Int32> range( ( size_t )2 );
 
     fname = ( char* )malloc( flen );
     if ( numFiles != number_subvolumes )
@@ -297,13 +297,13 @@ AggregateTypeSubvolume::AggregateTypeSubvolume( const std::string& filename,
         // connecion data
         if ( !m_connections.allocate( elemNodes * number_elements ) )
         {
-            kvsMessageError( "Cannot allocate memory for the connection data." );
+            visModuleMessageError( "Cannot allocate memory for the connection data." );
             goto AggregateTypeSubvolume_ERROR;
         }
         fseek( fp, offsetSubvol, SEEK_SET );
         if ( fread( m_connections.pointer(), 4, elemNodes * number_elements, fp ) != elemNodes * number_elements )
         {
-            kvsMessageError( "File read error: connection data." );
+            visModuleMessageError( "File read error: connection data." );
         }
 #if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
         m_connections.swapByte();
@@ -311,26 +311,26 @@ AggregateTypeSubvolume::AggregateTypeSubvolume( const std::string& filename,
         // coordinate data
         if ( !m_coords.allocate( numNodes * 3 ) )
         {
-            kvsMessageError( "Cannot allocate memory for the coordinate data." );
+            visModuleMessageError( "Cannot allocate memory for the coordinate data." );
             goto AggregateTypeSubvolume_ERROR;
         }
         if ( fread( m_coords.pointer(), 4, numNodes * 3, fp ) != numNodes * 3 )
         {
-            kvsMessageError( "File read error: coordinate data." );
+            visModuleMessageError( "File read error: coordinate data." );
         }
 #if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
         m_coords.swapByte();
 #endif
         // value data
-        if ( !m_values.allocate<kvs::Real32>( numNodes * number_ingredients ) )
+        if ( !m_values.allocate<vismodule::Real32>( numNodes * number_ingredients ) )
         {
-            kvsMessageError( "Cannot allocate memory for the value data." );
+            visModuleMessageError( "Cannot allocate memory for the value data." );
             goto AggregateTypeSubvolume_ERROR;
         }
         fseek( fp, offsetTimestep, SEEK_SET );
         if ( fread( m_values.pointer(), 4, numNodes * number_ingredients, fp ) != numNodes * number_ingredients )
         {
-            kvsMessageError( "File read error: value data." );
+            visModuleMessageError( "File read error: value data." );
         }
 #if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
         m_values.swapByte();
@@ -345,7 +345,7 @@ AggregateTypeSubvolume::AggregateTypeSubvolume( const std::string& filename,
     }
     else
     {
-        kvsMessageError( "Cannot open file '%s'.", fname );
+        visModuleMessageError( "Cannot open file '%s'.", fname );
         goto AggregateTypeSubvolume_ERROR;
     }
 
@@ -423,7 +423,7 @@ const size_t AggregateTypeSubvolume::ncells() const
  *  @return value array
  */
 /*===========================================================================*/
-const kvs::AnyValueArray& AggregateTypeSubvolume::values() const
+const vismodule::AnyValueArray& AggregateTypeSubvolume::values() const
 {
     return m_values;
 }
@@ -434,7 +434,7 @@ const kvs::AnyValueArray& AggregateTypeSubvolume::values() const
  *  @return coordinate array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& AggregateTypeSubvolume::coords() const
+const vismodule::ValueArray<vismodule::Real32>& AggregateTypeSubvolume::coords() const
 {
     return m_coords;
 }
@@ -445,7 +445,7 @@ const kvs::ValueArray<kvs::Real32>& AggregateTypeSubvolume::coords() const
  *  @return connection array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt32>& AggregateTypeSubvolume::connections() const
+const vismodule::ValueArray<vismodule::UInt32>& AggregateTypeSubvolume::connections() const
 {
     return m_connections;
 }
@@ -500,7 +500,7 @@ void AggregateTypeSubvolume::setNCells( const size_t ncells )
  *  @param  values [in] value array
  */
 /*===========================================================================*/
-void AggregateTypeSubvolume::setValues( const kvs::AnyValueArray& values )
+void AggregateTypeSubvolume::setValues( const vismodule::AnyValueArray& values )
 {
     m_values = values;
 }
@@ -511,7 +511,7 @@ void AggregateTypeSubvolume::setValues( const kvs::AnyValueArray& values )
  *  @param  coords [in] coordinate array
  */
 /*===========================================================================*/
-void AggregateTypeSubvolume::setCoords( const kvs::ValueArray<kvs::Real32>& coords )
+void AggregateTypeSubvolume::setCoords( const vismodule::ValueArray<vismodule::Real32>& coords )
 {
     m_coords = coords;
 }
@@ -522,7 +522,7 @@ void AggregateTypeSubvolume::setCoords( const kvs::ValueArray<kvs::Real32>& coor
  *  @param  connections [in] connection array
  */
 /*===========================================================================*/
-void AggregateTypeSubvolume::setConnections( const kvs::ValueArray<kvs::UInt32>& connections )
+void AggregateTypeSubvolume::setConnections( const vismodule::ValueArray<vismodule::UInt32>& connections )
 {
     m_connections = connections;
 }
@@ -535,4 +535,4 @@ const bool AggregateTypeSubvolume::write( const std::string& filename )
 {
     return false;
 }
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -11,19 +11,19 @@
  *  $Id: Socket.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__SOCKET_H_INCLUDE
-#define KVS__SOCKET_H_INCLUDE
+#ifndef VIS_MODULE__SOCKET_H_INCLUDE
+#define VIS_MODULE__SOCKET_H_INCLUDE
 
 #include "SocketStandard.h"
 #include "SocketAddress.h"
 #include "SocketTimer.h"
 #include "IPAddress.h"
-#include <kvs/Platform>
-#include <kvs/ClassName>
+#include <vismodule/Platform>
+#include <vismodule/ClassName>
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -33,11 +33,11 @@ namespace kvs
 /*==========================================================================*/
 class Socket
 {
-    kvsClassName( kvs::Socket );
+    visModuleClassName( vismodule::Socket );
 
 public:
 
-#if defined( KVS_PLATFORM_WINDOWS )
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
     typedef SOCKET    id_type;
     typedef int       length_type;
     typedef char FAR  option_type;
@@ -83,13 +83,13 @@ public:
 
     const id_type& id( void ) const;
 
-    const kvs::SocketAddress& address( void ) const;
+    const vismodule::SocketAddress& address( void ) const;
 
-    void setIp( const kvs::IPAddress& ip );
+    void setIp( const vismodule::IPAddress& ip );
 
     void setPort( const int port );
 
-    void setAddress( const kvs::SocketAddress& address );
+    void setAddress( const vismodule::SocketAddress& address );
 
 public:
 
@@ -105,7 +105,7 @@ public:
 
     void close( void );
 
-    int bind( const kvs::SocketAddress& socket_address );
+    int bind( const vismodule::SocketAddress& socket_address );
 
     void enableBlocking( void );
 
@@ -128,10 +128,10 @@ protected:
     int receive_line( id_type id, std::string& line );
 
     int connect_to_host(
-        const kvs::SocketAddress& socket_address,
-        const kvs::SocketTimer*   timeout = 0 );
+        const vismodule::SocketAddress& socket_address,
+        const vismodule::SocketTimer*   timeout = 0 );
 
-    int connect_complete( const kvs::SocketTimer* timeout );
+    int connect_complete( const vismodule::SocketTimer* timeout );
 
 protected:
 
@@ -142,6 +142,6 @@ protected:
     void close_socket( id_type id );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__SOCKET_H_INCLUDE
+#endif // VIS_MODULE__SOCKET_H_INCLUDE

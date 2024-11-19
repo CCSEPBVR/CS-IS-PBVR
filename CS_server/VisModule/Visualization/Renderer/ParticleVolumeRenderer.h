@@ -11,16 +11,16 @@
  *  $Id: ParticleVolumeRenderer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__PARTICLE_VOLUME_RENDERER_H_INCLUDE
-#define KVS__PARTICLE_VOLUME_RENDERER_H_INCLUDE
+#ifndef VIS_MODULE__PARTICLE_VOLUME_RENDERER_H_INCLUDE
+#define VIS_MODULE__PARTICLE_VOLUME_RENDERER_H_INCLUDE
 
-#include <kvs/VolumeRendererBase>
-#include <kvs/ParticleBuffer>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/VolumeRendererBase>
+#include <vismodule/ParticleBuffer>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -28,14 +28,14 @@ namespace kvs
  *  Particle based volume renderer.
  */
 /*==========================================================================*/
-class ParticleVolumeRenderer : public kvs::VolumeRendererBase
+class ParticleVolumeRenderer : public vismodule::VolumeRendererBase
 {
     // Class name.
-    kvsClassName( kvs::ParticleVolumeRenderer );
+    visModuleClassName( vismodule::ParticleVolumeRenderer );
 
     // Module information.
-    kvsModuleCategory( Renderer );
-    kvsModuleBaseClass( kvs::VolumeRendererBase );
+    visModuleCategory( Renderer );
+    visModuleBaseClass( vismodule::VolumeRendererBase );
 
 public:
 
@@ -45,26 +45,26 @@ protected:
 
     bool   m_enable_rendering; ///< rendering flag
     size_t m_subpixel_level;   ///< number of divisions in a pixel
-    kvs::ParticleBuffer* m_buffer; ///< particle buffer
+    vismodule::ParticleBuffer* m_buffer; ///< particle buffer
 
     // Reference data (NOTE: not allocated in thie class).
-    const kvs::PointObject* m_ref_point; ///< pointer to the point data
+    const vismodule::PointObject* m_ref_point; ///< pointer to the point data
 
 public:
 
     ParticleVolumeRenderer( void );
 
-    ParticleVolumeRenderer( const kvs::PointObject* point, const size_t subpixel_level = 1 );
+    ParticleVolumeRenderer( const vismodule::PointObject* point, const size_t subpixel_level = 1 );
 
     virtual ~ParticleVolumeRenderer( void );
 
 public:
 
-    void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
+    void exec( vismodule::ObjectBase* object, vismodule::Camera* camera, vismodule::Light* light );
 
 public:
 
-    void attachPointObject( const kvs::PointObject* point );
+    void attachPointObject( const vismodule::PointObject* point );
 
     void setSubpixelLevel( const size_t subpixel_level );
 
@@ -81,7 +81,7 @@ public:
 
     void initialize( void );
 
-    const kvs::ParticleBuffer* particleBuffer( void ) const;
+    const vismodule::ParticleBuffer* particleBuffer( void ) const;
 
     const size_t subpixelLevel( void ) const;
 
@@ -102,16 +102,16 @@ protected:
 protected:
 
     void create_image(
-        const kvs::PointObject* point,
-        const kvs::Camera*      camera,
-        const kvs::Light*       light );
+        const vismodule::PointObject* point,
+        const vismodule::Camera*      camera,
+        const vismodule::Light*       light );
 
     void project_particle(
-        const kvs::PointObject* point,
-        const kvs::Camera*      camera,
-        const kvs::Light*       light );
+        const vismodule::PointObject* point,
+        const vismodule::Camera*      camera,
+        const vismodule::Light*       light );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__PARTICLE_VOLUME_RENDERER_H_INCLUDE
+#endif // VIS_MODULE__PARTICLE_VOLUME_RENDERER_H_INCLUDE

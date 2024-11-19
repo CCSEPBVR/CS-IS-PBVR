@@ -16,10 +16,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <kvs/File>
-#include <kvs/Macro>
-#include <kvs/Platform>
-#include <kvs/Version>
+#include <vismodule/File>
+#include <vismodule/Macro>
+#include <vismodule/Platform>
+#include <vismodule/Version>
 
 
 namespace
@@ -27,7 +27,7 @@ namespace
 
 const int MaxLineLength = 256;
 
-const std::string FieldTypeToString[kvs::AVSField::NumberOfFieldTypes] =
+const std::string FieldTypeToString[vismodule::AVSField::NumberOfFieldTypes] =
 {
     "unknown",
     "uniform",
@@ -35,7 +35,7 @@ const std::string FieldTypeToString[kvs::AVSField::NumberOfFieldTypes] =
     "irregular"
 };
 
-const std::string DataTypeToString[kvs::AVSField::NumberOfDataTypes] =
+const std::string DataTypeToString[vismodule::AVSField::NumberOfDataTypes] =
 {
     "unknown",
     "byte",
@@ -92,7 +92,7 @@ void SkipHeader( FILE* ifs )
 
 }
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -140,9 +140,9 @@ void AVSField::initialize( void )
     m_veclen            = 1;
     m_nspace            = 0;
     m_ndim              = 0;
-    m_dim               = kvs::Vector3ui( 1, 1, 1 );
-    m_min_ext           = kvs::Vector3f( 0, 0, 0 );
-    m_max_ext           = kvs::Vector3f( 1, 1, 1 );
+    m_dim               = vismodule::Vector3ui( 1, 1, 1 );
+    m_min_ext           = vismodule::Vector3f( 0, 0, 0 );
+    m_max_ext           = vismodule::Vector3f( 1, 1, 1 );
     m_has_min_max_ext   = false;
     m_field             = Uniform;
     m_type              = UnknownDataType;
@@ -277,7 +277,7 @@ const int AVSField::ndim( void ) const
  *  @return dimension
  */
 /*==========================================================================*/
-const kvs::Vector3ui& AVSField::dim( void ) const
+const vismodule::Vector3ui& AVSField::dim( void ) const
 {
     return( m_dim );
 }
@@ -288,7 +288,7 @@ const kvs::Vector3ui& AVSField::dim( void ) const
  *  @return extent min. coordinate value
  */
 /*==========================================================================*/
-const kvs::Vector3f& AVSField::minExt( void ) const
+const vismodule::Vector3f& AVSField::minExt( void ) const
 {
     return( m_min_ext );
 }
@@ -299,7 +299,7 @@ const kvs::Vector3f& AVSField::minExt( void ) const
  *  @return extent max. coordinate value
  */
 /*==========================================================================*/
-const kvs::Vector3f& AVSField::maxExt( void ) const
+const vismodule::Vector3f& AVSField::maxExt( void ) const
 {
     return( m_max_ext );
 }
@@ -376,7 +376,7 @@ const std::vector<std::string>& AVSField::labels( void ) const
  *  @return node array
  */
 /*==========================================================================*/
-const kvs::AnyValueArray& AVSField::values( void ) const
+const vismodule::AnyValueArray& AVSField::values( void ) const
 {
     return( m_values );
 }
@@ -387,8 +387,8 @@ const kvs::AnyValueArray& AVSField::values( void ) const
  *  @return coordinate value array
  */
 /*==========================================================================*/
-//const kvs::AnyValueArray& AVSField::coords( void ) const
-const kvs::ValueArray<float>& AVSField::coords( void ) const
+//const vismodule::AnyValueArray& AVSField::coords( void ) const
+const vismodule::ValueArray<float>& AVSField::coords( void ) const
 {
     return( m_coords );
 }
@@ -526,7 +526,7 @@ void AVSField::setLabels( const std::vector<std::string>& labels )
  *  @param values [in] field value array
  */
 /*==========================================================================*/
-void AVSField::setValues( const kvs::AnyValueArray& values )
+void AVSField::setValues( const vismodule::AnyValueArray& values )
 {
     m_values = values;
 }
@@ -537,7 +537,7 @@ void AVSField::setValues( const kvs::AnyValueArray& values )
  *  @param coord [in] coordinate value array
  */
 /*==========================================================================*/
-void AVSField::setCoords( const kvs::ValueArray<float>& coords )
+void AVSField::setCoords( const vismodule::ValueArray<float>& coords )
 {
     m_coords = coords;
 }
@@ -555,7 +555,7 @@ const bool AVSField::read( const std::string& filename )
     FILE* ifs = fopen( filename.c_str(), "rb" );
     if( !ifs )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
@@ -752,7 +752,7 @@ bool AVSField::read_node( FILE* ifs )
         return( false );
     }
 
-#if defined ( KVS_PLATFORM_BIG_ENDIAN )
+#if defined ( VIS_MODULE_PLATFORM_BIG_ENDIAN )
     m_values.swapByte();
 #endif
 
@@ -783,7 +783,7 @@ bool AVSField::read_coord( FILE* ifs )
     }
     else
     {
-        kvsMessageError("Unknown field type");
+        visModuleMessageError("Unknown field type");
         return false;
     }
 
@@ -834,7 +834,7 @@ const bool AVSField::write( const std::string& filename )
     std::ofstream ofs( filename.c_str(), std::ios::out | std::ios::binary );
     if( !ofs.is_open() )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
@@ -855,11 +855,11 @@ const bool AVSField::write( const std::string& filename )
 bool AVSField::write_header( std::ofstream& ofs ) const
 {
     // Output a necessary line.
-    std::string version = kvs::Version::Name();
-    ofs << "# AVS field generated by KVS (" << version << ")" << std::endl;
+    std::string version = vismodule::Version::Name();
+    ofs << "# AVS field generated by VISMODULE (" << version << ")" << std::endl;
     ofs << "#" << std::endl;
 
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     char* author = getenv( "USERNAME" );
 #else
     char* author = getenv( "USER" );
@@ -924,7 +924,7 @@ bool AVSField::write_node( std::ofstream& ofs ) const
 
 const bool AVSField::CheckFileExtension( const std::string& filename )
 {
-    const kvs::File file( filename );
+    const vismodule::File file( filename );
     if ( file.extension() == "fld" || file.extension() == "FLD" )
     {
         return( true );
@@ -938,7 +938,7 @@ const bool AVSField::CheckFileFormat( const std::string& filename )
     FILE* ifs = fopen( filename.c_str(), "rb" );
     if( !ifs )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
@@ -952,4 +952,4 @@ const bool AVSField::CheckFileFormat( const std::string& filename )
     return( true );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

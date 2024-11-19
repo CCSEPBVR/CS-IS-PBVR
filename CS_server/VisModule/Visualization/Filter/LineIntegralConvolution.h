@@ -11,20 +11,20 @@
  *
  *  $Author: kawamura $
  *  $Date: 2009/01/15 12:52:12 $
- *  $Source: /home/Repository/viz-server2/cvsroot/KVS_RC1/Source/Core/Visualization/Filter/LineIntegralConvolution.h,v $
+ *  $Source: /home/Repository/viz-server2/cvsroot/VIS_MODULE_RC1/Source/Core/Visualization/Filter/LineIntegralConvolution.h,v $
  *  $Revision: 1.2 $
  */
 /*****************************************************************************/
-#ifndef KVS__LINE_INTEGRAL_CONVOLUTION_H_INCLUDE
-#define KVS__LINE_INTEGRAL_CONVOLUTION_H_INCLUDE
+#ifndef VIS_MODULE__LINE_INTEGRAL_CONVOLUTION_H_INCLUDE
+#define VIS_MODULE__LINE_INTEGRAL_CONVOLUTION_H_INCLUDE
 
-#include <kvs/StructuredVolumeObject>
-#include <kvs/FilterBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/FilterBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -32,28 +32,28 @@ namespace kvs
  *  @brief  LIC class.
  */
 /*===========================================================================*/
-class LineIntegralConvolution : public kvs::FilterBase, public kvs::StructuredVolumeObject
+class LineIntegralConvolution : public vismodule::FilterBase, public vismodule::StructuredVolumeObject
 {
     // Class name.
-    kvsClassName( kvs::LineIntegralConvolution );
+    visModuleClassName( vismodule::LineIntegralConvolution );
 
     // Module information.
-    kvsModuleCategory( Filter );
-    kvsModuleBaseClass( kvs::FilterBase );
-    kvsModuleSuperClass( kvs::StructuredVolumeObject );
+    visModuleCategory( Filter );
+    visModuleBaseClass( vismodule::FilterBase );
+    visModuleSuperClass( vismodule::StructuredVolumeObject );
 
 protected:
 
     double                       m_length; ///< stream length
-    kvs::StructuredVolumeObject* m_noise;  ///< white noise volume
+    vismodule::StructuredVolumeObject* m_noise;  ///< white noise volume
 
 public:
 
     LineIntegralConvolution( void );
 
-    LineIntegralConvolution( const kvs::StructuredVolumeObject* volume );
+    LineIntegralConvolution( const vismodule::StructuredVolumeObject* volume );
 
-    LineIntegralConvolution( const kvs::StructuredVolumeObject* volume, const double length );
+    LineIntegralConvolution( const vismodule::StructuredVolumeObject* volume, const double length );
 
     virtual ~LineIntegralConvolution( void );
 
@@ -63,18 +63,18 @@ public:
 
 public:
 
-    SuperClass* exec( const kvs::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase* object );
 
 protected:
 
-    void filtering( const kvs::StructuredVolumeObject* volume );
+    void filtering( const vismodule::StructuredVolumeObject* volume );
 
-    void create_noise_volume( const kvs::StructuredVolumeObject* volume );
+    void create_noise_volume( const vismodule::StructuredVolumeObject* volume );
 
     template <typename T>
-    void convolution( const kvs::StructuredVolumeObject* volume );
+    void convolution( const vismodule::StructuredVolumeObject* volume );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__LINE_INTEGRAL_CONVOLUTION_H_INCLUDE
+#endif // VIS_MODULE__LINE_INTEGRAL_CONVOLUTION_H_INCLUDE

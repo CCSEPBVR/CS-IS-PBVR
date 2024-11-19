@@ -11,19 +11,19 @@
  *  $Id: AVSField.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__AVS_FIELD_H_INCLUDE
-#define KVS__AVS_FIELD_H_INCLUDE
+#ifndef VIS_MODULE__AVS_FIELD_H_INCLUDE
+#define VIS_MODULE__AVS_FIELD_H_INCLUDE
 
 #include <iostream>
 #include <vector>
 #include <fstream>
 #include <string>
-#include <kvs/Vector3>
-#include <kvs/AnyValueArray>
-#include <kvs/FileFormatBase>
+#include <vismodule/Vector3>
+#include <vismodule/AnyValueArray>
+#include <vismodule/FileFormatBase>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -31,9 +31,9 @@ namespace kvs
  *  AVS field data class.
  */
 /*==========================================================================*/
-class AVSField : public kvs::FileFormatBase
+class AVSField : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::AVSField );
+    visModuleClassName( vismodule::AVSField );
 
 public:
 
@@ -64,15 +64,15 @@ protected:
     int                      m_veclen;          ///< vector length
     int                      m_nspace;          ///< number of spaces
     int                      m_ndim;            ///< number of dimensions
-    kvs::Vector3ui           m_dim;             ///< dimention
-    kvs::Vector3f            m_min_ext;         ///< minimum external coordinate value
-    kvs::Vector3f            m_max_ext;         ///< maximum external coordinate value
+    vismodule::Vector3ui           m_dim;             ///< dimention
+    vismodule::Vector3f            m_min_ext;         ///< minimum external coordinate value
+    vismodule::Vector3f            m_max_ext;         ///< maximum external coordinate value
     bool                     m_has_min_max_ext; ///< has min max external coord
     FieldType                m_field;           ///< field data type
     DataType                 m_type;            ///< data type
     std::vector<std::string> m_labels;          ///< label
-    kvs::AnyValueArray       m_values;          ///< field value array (shared array)
-    kvs::ValueArray<float>   m_coords;          ///< coordinate value array (shared array)
+    vismodule::AnyValueArray       m_values;          ///< field value array (shared array)
+    vismodule::ValueArray<float>   m_coords;          ///< coordinate value array (shared array)
 
 public:
 
@@ -106,11 +106,11 @@ public:
 
     const int ndim( void ) const;
 
-    const kvs::Vector3ui& dim( void ) const;
+    const vismodule::Vector3ui& dim( void ) const;
 
-    const kvs::Vector3f& minExt( void ) const;
+    const vismodule::Vector3f& minExt( void ) const;
 
-    const kvs::Vector3f& maxExt( void ) const;
+    const vismodule::Vector3f& maxExt( void ) const;
 
     const bool hasMinMaxExt( void ) const;
 
@@ -124,9 +124,9 @@ public:
 
     const std::vector<std::string>& labels( void ) const;
 
-    const kvs::AnyValueArray& values( void ) const;
+    const vismodule::AnyValueArray& values( void ) const;
 
-    const kvs::ValueArray<float>& coords( void ) const;
+    const vismodule::ValueArray<float>& coords( void ) const;
 
 public:
 
@@ -140,11 +140,11 @@ public:
 
     void setNDim( const int ndim );
 
-    void setDim( const kvs::Vector3ui& dim );
+    void setDim( const vismodule::Vector3ui& dim );
 
-    void setMinExt( const kvs::Vector3f& m );
+    void setMinExt( const vismodule::Vector3f& m );
 
-    void setMaxExt( const kvs::Vector3f& m );
+    void setMaxExt( const vismodule::Vector3f& m );
 
     void setFieldType( const FieldType field );
 
@@ -152,9 +152,9 @@ public:
 
     void setLabels( const std::vector<std::string>& labels );
 
-    void setValues( const kvs::AnyValueArray& values );
+    void setValues( const vismodule::AnyValueArray& values );
 
-    void setCoords( const kvs::ValueArray<float>& coords );
+    void setCoords( const vismodule::ValueArray<float>& coords );
 
 public:
 
@@ -186,6 +186,6 @@ public:
     static const bool CheckFileFormat( const std::string& filename );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__AVS_FIELD_H_INCLUDE
+#endif // VIS_MODULE__AVS_FIELD_H_INCLUDE

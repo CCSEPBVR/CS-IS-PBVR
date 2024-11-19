@@ -12,13 +12,13 @@
  */
 /*****************************************************************************/
 #include "LineObjectTag.h"
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
-#include <kvs/Tokenizer>
-#include <kvs/String>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
+#include <vismodule/Tokenizer>
+#include <vismodule/String>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -30,7 +30,7 @@ namespace kvsml
  */
 /*===========================================================================*/
 LineObjectTag::LineObjectTag( void ):
-    kvs::kvsml::TagBase( "LineObject" ),
+    vismodule::kvsml::TagBase( "LineObject" ),
     m_has_line_type( false ),
     m_line_type( "" ),
     m_has_color_type( false ),
@@ -122,22 +122,22 @@ void LineObjectTag::setColorType( const std::string& color_type )
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool LineObjectTag::read( const kvs::XMLNode::SuperClass* parent )
+const bool LineObjectTag::read( const vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
 
-    BaseClass::m_node = kvs::XMLNode::FindChildNode( parent, tag_name );
+    BaseClass::m_node = vismodule::XMLNode::FindChildNode( parent, tag_name );
     if ( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot find <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot find <%s>.", tag_name.c_str() );
         return( false );
     }
 
     // Element
-    const kvs::XMLElement::SuperClass* element = kvs::XMLNode::ToElement( BaseClass::m_node );
+    const vismodule::XMLElement::SuperClass* element = vismodule::XMLNode::ToElement( BaseClass::m_node );
 
     // line_type="xxx"
-    const std::string line_type = kvs::XMLElement::AttributeValue( element, "line_type" );
+    const std::string line_type = vismodule::XMLElement::AttributeValue( element, "line_type" );
     if ( line_type != "" )
     {
         m_has_line_type = true;
@@ -145,7 +145,7 @@ const bool LineObjectTag::read( const kvs::XMLNode::SuperClass* parent )
     }
 
     // color_type="xxx"
-    const std::string color_type = kvs::XMLElement::AttributeValue( element, "color_type" );
+    const std::string color_type = vismodule::XMLElement::AttributeValue( element, "color_type" );
     if ( color_type != "" )
     {
         m_has_color_type = true;
@@ -162,10 +162,10 @@ const bool LineObjectTag::read( const kvs::XMLNode::SuperClass* parent )
  *  @return true, if the writing process is done successfully
  */
 /*===========================================================================*/
-const bool LineObjectTag::write( kvs::XMLNode::SuperClass* parent )
+const bool LineObjectTag::write( vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
-    kvs::XMLElement element( tag_name );
+    vismodule::XMLElement element( tag_name );
 
     if ( m_has_line_type )
     {
@@ -175,7 +175,7 @@ const bool LineObjectTag::write( kvs::XMLNode::SuperClass* parent )
     }
     else
     {
-        kvsMessageError( "'line_type' is not specified in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "'line_type' is not specified in <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -187,14 +187,14 @@ const bool LineObjectTag::write( kvs::XMLNode::SuperClass* parent )
     }
     else
     {
-        kvsMessageError( "'color_type' is not specified in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "'color_type' is not specified in <%s>.", tag_name.c_str() );
         return( false );
     }
 
     BaseClass::m_node = parent->InsertEndChild( element );
     if( !BaseClass::m_node )
     {
-        kvsMessageError("Cannot insert <%s>.", tag_name.c_str() );
+        visModuleMessageError("Cannot insert <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -203,4 +203,4 @@ const bool LineObjectTag::write( kvs::XMLNode::SuperClass* parent )
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

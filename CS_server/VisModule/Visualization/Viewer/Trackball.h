@@ -11,16 +11,16 @@
  *  $Id: Trackball.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__TRACKBALL_H_INCLUDE
-#define KVS__TRACKBALL_H_INCLUDE
+#ifndef VIS_MODULE__TRACKBALL_H_INCLUDE
+#define VIS_MODULE__TRACKBALL_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/Vector2>
-#include <kvs/Vector3>
-#include <kvs/Quaternion>
+#include <vismodule/ClassName>
+#include <vismodule/Vector2>
+#include <vismodule/Vector3>
+#include <vismodule/Quaternion>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class Camera;
@@ -32,7 +32,7 @@ class Camera;
 /*==========================================================================*/
 class Trackball
 {
-    kvsClassName( kvs::Trackball );
+    visModuleClassName( vismodule::Trackball );
 
 public:
 
@@ -53,13 +53,13 @@ protected:
 
     float                  m_size;            ///< trackball size
     float                  m_depth;           ///< how near from center
-    kvs::Vector2f          m_rotation_center; ///< center of rotation in the devise coordinate system
-    kvs::Vector3f          m_scaling;         ///< current scaling value
-    kvs::Vector3f          m_translation;     ///< current translation vector
-    kvs::Quaternion<float> m_rotation;        ///< current rotation quaternion
+    vismodule::Vector2f          m_rotation_center; ///< center of rotation in the devise coordinate system
+    vismodule::Vector3f          m_scaling;         ///< current scaling value
+    vismodule::Vector3f          m_translation;     ///< current translation vector
+    vismodule::Quaternion<float> m_rotation;        ///< current rotation quaternion
     int                    m_window_width;    ///< window width
     int                    m_window_height;   ///< window height
-    kvs::Camera*           m_ref_camera;      ///< pointer to camera (reference only)
+    vismodule::Camera*           m_ref_camera;      ///< pointer to camera (reference only)
 
 public:
 
@@ -69,7 +69,7 @@ public:
 
 public:
 
-    void attachCamera( kvs::Camera* camera );
+    void attachCamera( vismodule::Camera* camera );
 
     void resetRotationCenter( void );
 
@@ -77,13 +77,13 @@ public:
 
     void setDepthValue( const float depth );
 
-    void setRotationCenter( const kvs::Vector2f& center );
+    void setRotationCenter( const vismodule::Vector2f& center );
 
-    void setScaling( const kvs::Vector3f& scaling );
+    void setScaling( const vismodule::Vector3f& scaling );
 
-    void setTranslation( const kvs::Vector3f& translation );
+    void setTranslation( const vismodule::Vector3f& translation );
 
-    void setRotation( const kvs::Quaternion<float>& rotation );
+    void setRotation( const vismodule::Quaternion<float>& rotation );
 
     void setWindowSize( const int w, const int h );
 
@@ -91,13 +91,13 @@ public:
 
     const float depthValue( void ) const;
 
-    const kvs::Vector2f& rotationCenter( void ) const;
+    const vismodule::Vector2f& rotationCenter( void ) const;
 
-    const kvs::Vector3f& scaling( void ) const;
+    const vismodule::Vector3f& scaling( void ) const;
 
-    const kvs::Vector3f& translation( void ) const;
+    const vismodule::Vector3f& translation( void ) const;
 
-    const kvs::Quaternion<float>& rotation( void ) const;
+    const vismodule::Quaternion<float>& rotation( void ) const;
 
     const int windowWidth( void ) const;
 
@@ -105,11 +105,11 @@ public:
 
 public:
 
-    void scale( const kvs::Vector2i& start, const kvs::Vector2i& end, ScalingType type = ScalingXYZ );
+    void scale( const vismodule::Vector2i& start, const vismodule::Vector2i& end, ScalingType type = ScalingXYZ );
 
-    void rotate( const kvs::Vector2i& start, const kvs::Vector2i& end );
+    void rotate( const vismodule::Vector2i& start, const vismodule::Vector2i& end );
 
-    void translate( const kvs::Vector2i& start, const kvs::Vector2i& end );
+    void translate( const vismodule::Vector2i& start, const vismodule::Vector2i& end );
 
 protected:
 
@@ -117,17 +117,17 @@ protected:
 
 protected:
 
-    const float depth_on_sphere( const kvs::Vector2f& dir ) const;
+    const float depth_on_sphere( const vismodule::Vector2f& dir ) const;
 
-    const kvs::Vector2f get_norm_position( const kvs::Vector2i& pos ) const;
+    const vismodule::Vector2f get_norm_position( const vismodule::Vector2i& pos ) const;
 
 public:
 
-    static void x_scaling( const kvs::Vector2f& start, const kvs::Vector2f& end, Trackball* track );
-    static void y_scaling( const kvs::Vector2f& start, const kvs::Vector2f& end, Trackball* track );
-    static void z_scaling( const kvs::Vector2f& start, const kvs::Vector2f& end, Trackball* track );
+    static void x_scaling( const vismodule::Vector2f& start, const vismodule::Vector2f& end, Trackball* track );
+    static void y_scaling( const vismodule::Vector2f& start, const vismodule::Vector2f& end, Trackball* track );
+    static void z_scaling( const vismodule::Vector2f& start, const vismodule::Vector2f& end, Trackball* track );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TRACKBALL_H_INCLUDE
+#endif // VIS_MODULE__TRACKBALL_H_INCLUDE

@@ -15,7 +15,7 @@
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 AnyValue::TypeInfo::~TypeInfo( void )
@@ -23,48 +23,48 @@ AnyValue::TypeInfo::~TypeInfo( void )
 }
 
 template<>
-const char* AnyValue::SetTypeInfo<kvs::Int8>::typeName( void ) const
+const char* AnyValue::SetTypeInfo<vismodule::Int8>::typeName( void ) const
 {
     return( "char" );
 }
 
 template<>
-const char* AnyValue::SetTypeInfo<kvs::UInt8>::typeName( void ) const
+const char* AnyValue::SetTypeInfo<vismodule::UInt8>::typeName( void ) const
 {
     return( "unsigned char" );
 }
 
 template<>
-const char* AnyValue::SetTypeInfo<kvs::Int16>::typeName( void ) const
+const char* AnyValue::SetTypeInfo<vismodule::Int16>::typeName( void ) const
 {
     return( "short" );
 }
 
 template<>
-const char* AnyValue::SetTypeInfo<kvs::UInt16>::typeName( void ) const
+const char* AnyValue::SetTypeInfo<vismodule::UInt16>::typeName( void ) const
 {
     return( "unsigned short" );
 }
 
 template<>
-const char* AnyValue::SetTypeInfo<kvs::Int32>::typeName( void ) const
+const char* AnyValue::SetTypeInfo<vismodule::Int32>::typeName( void ) const
 {
     return( "int" );
 }
 
 template<>
-const char* AnyValue::SetTypeInfo<kvs::UInt32>::typeName( void ) const
+const char* AnyValue::SetTypeInfo<vismodule::UInt32>::typeName( void ) const
 {
     return( "unsigned int" );
 }
 
 template<>
-const char* AnyValue::SetTypeInfo<kvs::Int64>::typeName( void ) const
+const char* AnyValue::SetTypeInfo<vismodule::Int64>::typeName( void ) const
 {
-#if defined ( KVS_COMPILER_VC )
+#if defined ( VIS_MODULE_COMPILER_VC )
     return( "signed __int64" );
 #else
-#if defined ( KVS_PLATFORM_CPU_64 ) // LP64
+#if defined ( VIS_MODULE_PLATFORM_CPU_64 ) // LP64
     return( "long" );
 #else
     return( "long long" );
@@ -73,12 +73,12 @@ const char* AnyValue::SetTypeInfo<kvs::Int64>::typeName( void ) const
 }
 
 template<>
-const char* AnyValue::SetTypeInfo<kvs::UInt64>::typeName( void ) const
+const char* AnyValue::SetTypeInfo<vismodule::UInt64>::typeName( void ) const
 {
-#if defined ( KVS_COMPILER_VC )
+#if defined ( VIS_MODULE_COMPILER_VC )
     return( "unsigned __int64" );
 #else
-#if defined ( KVS_PLATFORM_CPU_64 ) // LP64
+#if defined ( VIS_MODULE_PLATFORM_CPU_64 ) // LP64
     return( "unsigned long" );
 #else
     return( "unsigned long long" );
@@ -87,13 +87,13 @@ const char* AnyValue::SetTypeInfo<kvs::UInt64>::typeName( void ) const
 }
 
 template<>
-const char* AnyValue::SetTypeInfo<kvs::Real32>::typeName( void ) const
+const char* AnyValue::SetTypeInfo<vismodule::Real32>::typeName( void ) const
 {
     return( "float" );
 }
 
 template<>
-const char* AnyValue::SetTypeInfo<kvs::Real64>::typeName( void ) const
+const char* AnyValue::SetTypeInfo<vismodule::Real64>::typeName( void ) const
 {
     return( "double" );
 }
@@ -134,16 +134,16 @@ AnyValue& AnyValue::operator =( const AnyValue& rhs )
 std::ostream& operator << ( std::ostream& os, const AnyValue& rhs )
 {
     const std::type_info& type = rhs.m_type_info->type();
-    if (      type == typeid( kvs::Int8 ) )   { os << rhs.m_value.i8;   }
-    else if ( type == typeid( kvs::UInt8 ) )  { os << rhs.m_value.ui8;  }
-    else if ( type == typeid( kvs::Int16 ) )  { os << rhs.m_value.i16;  }
-    else if ( type == typeid( kvs::UInt16 ) ) { os << rhs.m_value.ui16; }
-    else if ( type == typeid( kvs::Int32 ) )  { os << rhs.m_value.i32;  }
-    else if ( type == typeid( kvs::UInt32 ) ) { os << rhs.m_value.ui32; }
-    else if ( type == typeid( kvs::Int64 ) )  { os << rhs.m_value.i64;  }
-    else if ( type == typeid( kvs::UInt64 ) ) { os << rhs.m_value.ui64; }
-    else if ( type == typeid( kvs::Real32 ) ) { os << rhs.m_value.r32;  }
-    else if ( type == typeid( kvs::Real64 ) ) { os << rhs.m_value.r64;  }
+    if (      type == typeid( vismodule::Int8 ) )   { os << rhs.m_value.i8;   }
+    else if ( type == typeid( vismodule::UInt8 ) )  { os << rhs.m_value.ui8;  }
+    else if ( type == typeid( vismodule::Int16 ) )  { os << rhs.m_value.i16;  }
+    else if ( type == typeid( vismodule::UInt16 ) ) { os << rhs.m_value.ui16; }
+    else if ( type == typeid( vismodule::Int32 ) )  { os << rhs.m_value.i32;  }
+    else if ( type == typeid( vismodule::UInt32 ) ) { os << rhs.m_value.ui32; }
+    else if ( type == typeid( vismodule::Int64 ) )  { os << rhs.m_value.i64;  }
+    else if ( type == typeid( vismodule::UInt64 ) ) { os << rhs.m_value.ui64; }
+    else if ( type == typeid( vismodule::Real32 ) ) { os << rhs.m_value.r32;  }
+    else if ( type == typeid( vismodule::Real64 ) ) { os << rhs.m_value.r64;  }
 
     return( os );
 }
@@ -153,37 +153,37 @@ const AnyValue::TypeInfo* AnyValue::typeInfo( void ) const
     return( m_type_info );
 }
 
-template<> AnyValue::AnyValue( const kvs::Int8& value );
-template<> AnyValue::AnyValue( const kvs::UInt8& value );
-template<> AnyValue::AnyValue( const kvs::Int16& value );
-template<> AnyValue::AnyValue( const kvs::UInt16& value );
-template<> AnyValue::AnyValue( const kvs::Int32& value );
-template<> AnyValue::AnyValue( const kvs::UInt32& value );
-template<> AnyValue::AnyValue( const kvs::Int64& value );
-template<> AnyValue::AnyValue( const kvs::UInt64& value );
-template<> AnyValue::AnyValue( const kvs::Real32& value );
-template<> AnyValue::AnyValue( const kvs::Real64& value );
+template<> AnyValue::AnyValue( const vismodule::Int8& value );
+template<> AnyValue::AnyValue( const vismodule::UInt8& value );
+template<> AnyValue::AnyValue( const vismodule::Int16& value );
+template<> AnyValue::AnyValue( const vismodule::UInt16& value );
+template<> AnyValue::AnyValue( const vismodule::Int32& value );
+template<> AnyValue::AnyValue( const vismodule::UInt32& value );
+template<> AnyValue::AnyValue( const vismodule::Int64& value );
+template<> AnyValue::AnyValue( const vismodule::UInt64& value );
+template<> AnyValue::AnyValue( const vismodule::Real32& value );
+template<> AnyValue::AnyValue( const vismodule::Real64& value );
 
-template<> AnyValue& AnyValue::operator =( const kvs::Int8& value );
-template<> AnyValue& AnyValue::operator =( const kvs::UInt8& value );
-template<> AnyValue& AnyValue::operator =( const kvs::Int16& value );
-template<> AnyValue& AnyValue::operator =( const kvs::UInt16& value );
-template<> AnyValue& AnyValue::operator =( const kvs::Int32& value );
-template<> AnyValue& AnyValue::operator =( const kvs::UInt32& value );
-template<> AnyValue& AnyValue::operator =( const kvs::Int64& value );
-template<> AnyValue& AnyValue::operator =( const kvs::UInt64& value );
-template<> AnyValue& AnyValue::operator =( const kvs::Real32& value );
-template<> AnyValue& AnyValue::operator =( const kvs::Real64& value );
+template<> AnyValue& AnyValue::operator =( const vismodule::Int8& value );
+template<> AnyValue& AnyValue::operator =( const vismodule::UInt8& value );
+template<> AnyValue& AnyValue::operator =( const vismodule::Int16& value );
+template<> AnyValue& AnyValue::operator =( const vismodule::UInt16& value );
+template<> AnyValue& AnyValue::operator =( const vismodule::Int32& value );
+template<> AnyValue& AnyValue::operator =( const vismodule::UInt32& value );
+template<> AnyValue& AnyValue::operator =( const vismodule::Int64& value );
+template<> AnyValue& AnyValue::operator =( const vismodule::UInt64& value );
+template<> AnyValue& AnyValue::operator =( const vismodule::Real32& value );
+template<> AnyValue& AnyValue::operator =( const vismodule::Real64& value );
 
-template<> AnyValue::operator kvs::Int8 () const;
-template<> AnyValue::operator kvs::UInt8 () const;
-template<> AnyValue::operator kvs::Int16 () const;
-template<> AnyValue::operator kvs::UInt16 () const;
-template<> AnyValue::operator kvs::Int32 () const;
-template<> AnyValue::operator kvs::UInt32 () const;
-template<> AnyValue::operator kvs::Int64 () const;
-template<> AnyValue::operator kvs::UInt64 () const;
-template<> AnyValue::operator kvs::Real32 () const;
-template<> AnyValue::operator kvs::Real64 () const;
+template<> AnyValue::operator vismodule::Int8 () const;
+template<> AnyValue::operator vismodule::UInt8 () const;
+template<> AnyValue::operator vismodule::Int16 () const;
+template<> AnyValue::operator vismodule::UInt16 () const;
+template<> AnyValue::operator vismodule::Int32 () const;
+template<> AnyValue::operator vismodule::UInt32 () const;
+template<> AnyValue::operator vismodule::Int64 () const;
+template<> AnyValue::operator vismodule::UInt64 () const;
+template<> AnyValue::operator vismodule::Real32 () const;
+template<> AnyValue::operator vismodule::Real64 () const;
 
-} // end of namespace kvs
+} // end of namespace vismodule

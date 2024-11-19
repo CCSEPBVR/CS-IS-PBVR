@@ -15,17 +15,17 @@
 #include "LookAtMatrix44.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
-template kvs::Matrix44<float> LookAtMatrix44<float>(
-    const kvs::Vector3<float>& eye,
-    const kvs::Vector3<float>& up,
-    const kvs::Vector3<float>& target );
+template vismodule::Matrix44<float> LookAtMatrix44<float>(
+    const vismodule::Vector3<float>& eye,
+    const vismodule::Vector3<float>& up,
+    const vismodule::Vector3<float>& target );
 
-template kvs::Matrix44<double> LookAtMatrix44<double>(
-    const kvs::Vector3<double>& eye,
-    const kvs::Vector3<double>& up,
-    const kvs::Vector3<double>& target );
+template vismodule::Matrix44<double> LookAtMatrix44<double>(
+    const vismodule::Vector3<double>& eye,
+    const vismodule::Vector3<double>& up,
+    const vismodule::Vector3<double>& target );
 
-} // end of namespace kvs
+} // end of namespace vismodule

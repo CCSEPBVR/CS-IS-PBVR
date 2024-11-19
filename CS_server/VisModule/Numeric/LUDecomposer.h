@@ -12,17 +12,17 @@
  *  $Id: LUDecomposer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__LU_DECOMPOSER_H_INCLUDE
-#define KVS__LU_DECOMPOSER_H_INCLUDE
+#ifndef VIS_MODULE__LU_DECOMPOSER_H_INCLUDE
+#define VIS_MODULE__LU_DECOMPOSER_H_INCLUDE
 
-#include <kvs/Matrix33>
-#include <kvs/Matrix44>
-#include <kvs/Matrix>
-#include <kvs/Vector>
-#include <kvs/ClassName>
+#include <vismodule/Matrix33>
+#include <vismodule/Matrix44>
+#include <vismodule/Matrix>
+#include <vismodule/Vector>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -33,14 +33,14 @@ namespace kvs
 template <typename T>
 class LUDecomposer
 {
-    kvsClassName_without_virtual( kvs::LUDecomposer );
+    visModuleClassName_without_virtual( vismodule::LUDecomposer );
 
 protected:
 
-    kvs::Matrix<T> m_l; ///< L matrix
-    kvs::Matrix<T> m_u; ///< U matrix
-    kvs::Matrix<T> m_lu; ///< LU matrix (marged L and U matrix by Crout's method)
-    kvs::Vector<int> m_pivots; ///< pivot vector
+    vismodule::Matrix<T> m_l; ///< L matrix
+    vismodule::Matrix<T> m_u; ///< U matrix
+    vismodule::Matrix<T> m_lu; ///< LU matrix (marged L and U matrix by Crout's method)
+    vismodule::Vector<int> m_pivots; ///< pivot vector
 
 protected:
 
@@ -50,11 +50,11 @@ public:
 
     LUDecomposer( void );
 
-    LUDecomposer( const kvs::Matrix33<T>& m );
+    LUDecomposer( const vismodule::Matrix33<T>& m );
 
-    LUDecomposer( const kvs::Matrix44<T>& m );
+    LUDecomposer( const vismodule::Matrix44<T>& m );
 
-    LUDecomposer( const kvs::Matrix<T>& m );
+    LUDecomposer( const vismodule::Matrix<T>& m );
 
 public:
 
@@ -62,21 +62,21 @@ public:
 
 public:
 
-    const kvs::Matrix<T>& L( void ) const;
+    const vismodule::Matrix<T>& L( void ) const;
 
-    const kvs::Matrix<T>& U( void ) const;
+    const vismodule::Matrix<T>& U( void ) const;
 
-    const kvs::Matrix<T>& LU( void ) const;
+    const vismodule::Matrix<T>& LU( void ) const;
 
-    const kvs::Vector<int>& pivots( void ) const;
+    const vismodule::Vector<int>& pivots( void ) const;
 
 public:
 
-    void setMatrix( const kvs::Matrix33<T>& m );
+    void setMatrix( const vismodule::Matrix33<T>& m );
 
-    void setMatrix( const kvs::Matrix44<T>& m );
+    void setMatrix( const vismodule::Matrix44<T>& m );
 
-    void setMatrix( const kvs::Matrix<T>& m );
+    void setMatrix( const vismodule::Matrix<T>& m );
 
     void decompose( void );
 
@@ -85,6 +85,6 @@ public:
     static void SetMaxIterations( const size_t max_iterations );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__LU_DECOMPOSER_H_INCLUDE
+#endif // VIS_MODULE__LU_DECOMPOSER_H_INCLUDE

@@ -12,17 +12,17 @@
  *  $Id: QRDecomposer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__QR_DECOMPOSER_H_INCLUDE
-#define KVS__QR_DECOMPOSER_H_INCLUDE
+#ifndef VIS_MODULE__QR_DECOMPOSER_H_INCLUDE
+#define VIS_MODULE__QR_DECOMPOSER_H_INCLUDE
 
-#include <kvs/Matrix33>
-#include <kvs/Matrix44>
-#include <kvs/Matrix>
-#include <kvs/Vector>
-#include <kvs/ClassName>
+#include <vismodule/Matrix33>
+#include <vismodule/Matrix44>
+#include <vismodule/Matrix>
+#include <vismodule/Vector>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -33,31 +33,31 @@ namespace kvs
 template <typename T>
 class QRDecomposer
 {
-    kvsClassName_without_virtual( kvs::QRDecomposer );
+    visModuleClassName_without_virtual( vismodule::QRDecomposer );
 
 protected:
 
-    kvs::Matrix<T> m_m;  ///< original matrix
-    kvs::Matrix<T> m_qt; ///< Transpose matrix of Q matrix
-    kvs::Matrix<T> m_r;  ///< R matrix (upper triangle matrix)
+    vismodule::Matrix<T> m_m;  ///< original matrix
+    vismodule::Matrix<T> m_qt; ///< Transpose matrix of Q matrix
+    vismodule::Matrix<T> m_r;  ///< R matrix (upper triangle matrix)
 
 public:
 
     QRDecomposer( void );
 
-    QRDecomposer( const kvs::Matrix33<T>& m );
+    QRDecomposer( const vismodule::Matrix33<T>& m );
 
-    QRDecomposer( const kvs::Matrix44<T>& m );
+    QRDecomposer( const vismodule::Matrix44<T>& m );
 
-    QRDecomposer( const kvs::Matrix<T>& m );
+    QRDecomposer( const vismodule::Matrix<T>& m );
 
 public:
 
-    const kvs::Matrix<T> Q( void ) const;
+    const vismodule::Matrix<T> Q( void ) const;
 
-    const kvs::Matrix<T>& R( void ) const;
+    const vismodule::Matrix<T>& R( void ) const;
 
-    const kvs::Matrix<T>& Qt( void ) const;
+    const vismodule::Matrix<T>& Qt( void ) const;
 
 public:
 
@@ -65,15 +65,15 @@ public:
 
 public:
 
-    void setMatrix( const kvs::Matrix33<T>& m );
+    void setMatrix( const vismodule::Matrix33<T>& m );
 
-    void setMatrix( const kvs::Matrix44<T>& m );
+    void setMatrix( const vismodule::Matrix44<T>& m );
 
-    void setMatrix( const kvs::Matrix<T>& m );
+    void setMatrix( const vismodule::Matrix<T>& m );
 
     void decompose( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__QR_DECOMPOSER_H_INCLUDE
+#endif // VIS_MODULE__QR_DECOMPOSER_H_INCLUDE

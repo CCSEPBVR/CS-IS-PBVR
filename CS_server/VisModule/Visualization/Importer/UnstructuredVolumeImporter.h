@@ -11,19 +11,19 @@
  *  $Id: UnstructuredVolumeImporter.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__UNSTRUCTURED_VOLUME_IMPORTER_H_INCLUDE
-#define KVS__UNSTRUCTURED_VOLUME_IMPORTER_H_INCLUDE
+#ifndef VIS_MODULE__UNSTRUCTURED_VOLUME_IMPORTER_H_INCLUDE
+#define VIS_MODULE__UNSTRUCTURED_VOLUME_IMPORTER_H_INCLUDE
 
 #include "ImporterBase.h"
-#include <kvs/ClassName>
-#include <kvs/Module>
-#include <kvs/UnstructuredVolumeObject>
-#include <kvs/KVSMLObjectUnstructuredVolume>
-#include <kvs/AVSUcd>
-#include <kvs/AVSField>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/KVSMLObjectUnstructuredVolume>
+#include <vismodule/AVSUcd>
+#include <vismodule/AVSField>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -32,16 +32,16 @@ namespace kvs
  */
 /*==========================================================================*/
 class UnstructuredVolumeImporter
-    : public kvs::ImporterBase
-    , public kvs::UnstructuredVolumeObject
+    : public vismodule::ImporterBase
+    , public vismodule::UnstructuredVolumeObject
 {
     // Class name.
-    kvsClassName( kvs::UnstructuredVolumeImporter );
+    visModuleClassName( vismodule::UnstructuredVolumeImporter );
 
     // Module information.
-    kvsModuleCategory( Importer );
-    kvsModuleBaseClass( kvs::ImporterBase );
-    kvsModuleSuperClass( kvs::UnstructuredVolumeObject );
+    visModuleCategory( Importer );
+    visModuleBaseClass( vismodule::ImporterBase );
+    visModuleSuperClass( vismodule::UnstructuredVolumeObject );
 
 public:
 
@@ -49,24 +49,24 @@ public:
 
     UnstructuredVolumeImporter( const std::string& filename );
 
-    UnstructuredVolumeImporter( const kvs::FileFormatBase* file_format );
+    UnstructuredVolumeImporter( const vismodule::FileFormatBase* file_format );
 
     virtual ~UnstructuredVolumeImporter( void );
 
 public:
 
-    SuperClass* exec( const kvs::FileFormatBase* file_format );
+    SuperClass* exec( const vismodule::FileFormatBase* file_format );
 
 private:
 
-    void import( const kvs::KVSMLObjectUnstructuredVolume* const kvsml );
+    void import( const vismodule::KVSMLObjectUnstructuredVolume* const kvsml );
 
-    void import( const kvs::AVSUcd* const ucd );
+    void import( const vismodule::AVSUcd* const ucd );
 
-    void import( const kvs::AVSField* const field );
+    void import( const vismodule::AVSField* const field );
 
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__UNSTRUCTURED_VOLUME_IMPORTER_H_INCLUDE
+#endif // VIS_MODULE__UNSTRUCTURED_VOLUME_IMPORTER_H_INCLUDE

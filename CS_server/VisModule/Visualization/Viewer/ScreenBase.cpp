@@ -12,16 +12,16 @@
  */
 /****************************************************************************/
 #include "ScreenBase.h"
-#include <kvs/DebugNew>
-#include <kvs/PointRenderer>
-#include <kvs/LineRenderer>
-#include <kvs/PolygonRenderer>
-#include <kvs/RayCastingRenderer>
-#include <kvs/ImageRenderer>
-#include <kvs/EventHandler>
+#include <vismodule/DebugNew>
+#include <vismodule/PointRenderer>
+#include <vismodule/LineRenderer>
+#include <vismodule/PolygonRenderer>
+#include <vismodule/RayCastingRenderer>
+#include <vismodule/ImageRenderer>
+#include <vismodule/EventHandler>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -62,21 +62,21 @@ ScreenBase::~ScreenBase( void )
  *  @return Pair of IDs (object ID and renderer ID)
  */
 /*===========================================================================*/
-const std::pair<int,int> ScreenBase::registerObject( kvs::ObjectBase* object, kvs::RendererBase* renderer )
+const std::pair<int,int> ScreenBase::registerObject( vismodule::ObjectBase* object, vismodule::RendererBase* renderer )
 {
     /* If the given pointer to the renderer is null, a renderer for the given
      * object is automatically created by using visualization pipeline class.
      */
     if ( !renderer )
     {
-        kvs::VisualizationPipeline pipeline( object );
+        vismodule::VisualizationPipeline pipeline( object );
         if ( !pipeline.exec() )
         {
-            kvsMessageError("Cannot create a renderer for the given object.");
+            visModuleMessageError("Cannot create a renderer for the given object.");
             return( std::pair<int,int>( -1, -1 ) );
         }
 
-        renderer = const_cast<kvs::RendererBase*>( pipeline.renderer() );
+        renderer = const_cast<vismodule::RendererBase*>( pipeline.renderer() );
     }
 
     if ( !object->hasMinMaxObjectCoords() )
@@ -115,13 +115,13 @@ const std::pair<int,int> ScreenBase::registerObject( kvs::ObjectBase* object, kv
  *  @return Pair of IDs (object ID and renderer ID)
  */
 /*===========================================================================*/
-const std::pair<int,int> ScreenBase::registerObject( kvs::VisualizationPipeline* pipeline )
+const std::pair<int,int> ScreenBase::registerObject( vismodule::VisualizationPipeline* pipeline )
 {
     /* WARNING: It is necessary to increment the reference counter of the
      * pipeline.object() and the pipeline.renderer().
      */
-    kvs::ObjectBase* object = const_cast<kvs::ObjectBase*>( pipeline->object() );
-    kvs::RendererBase* renderer = const_cast<kvs::RendererBase*>( pipeline->renderer() );
+    vismodule::ObjectBase* object = const_cast<vismodule::ObjectBase*>( pipeline->object() );
+    vismodule::RendererBase* renderer = const_cast<vismodule::RendererBase*>( pipeline->renderer() );
 
     const int object_id = m_object_manager->insert( object );
     const int renderer_id = m_renderer_manager->insert( renderer );
@@ -205,9 +205,9 @@ void ScreenBase::paintFunction( void )
         const int size = m_id_manager->size();
         for ( int index = 0; index < size; index++ )
         {
-            kvs::IDPair id_pair = (*m_id_manager)[index];
-            kvs::ObjectBase* object = m_object_manager->object( id_pair.first );
-            kvs::RendererBase* renderer = m_renderer_manager->renderer( id_pair.second );
+            vismodule::IDPair id_pair = (*m_id_manager)[index];
+            vismodule::ObjectBase* object = m_object_manager->object( id_pair.first );
+            vismodule::RendererBase* renderer = m_renderer_manager->renderer( id_pair.second );
 
             if ( object->isShown() )
             {
@@ -265,7 +265,7 @@ void ScreenBase::mouseReleaseFunction( int x, int y )
  *  @param  mode [in] mouse translation mode
  */
 /*==========================================================================*/
-void ScreenBase::mousePressFunction( int x, int y, kvs::Mouse::TransMode mode )
+void ScreenBase::mousePressFunction( int x, int y, vismodule::Mouse::TransMode mode )
 {
     if ( m_enable_move_all || m_object_manager->hasActiveObject() )
     {
@@ -302,7 +302,7 @@ void ScreenBase::wheelFunction( int value )
     if ( m_enable_move_all || m_object_manager->hasActiveObject() )
     {
         this->updateControllingObject();
-        m_mouse->setMode( kvs::Mouse::Scaling );
+        m_mouse->setMode( vismodule::Mouse::Scaling );
         m_mouse->press( 0, 0 );
         m_mouse->move( 0, value );
     }
@@ -379,7 +379,7 @@ const std::string& ScreenBase::title( void ) const
  *  @brief  Returns the display format.
  */
 /*===========================================================================*/
-const kvs::DisplayFormat& ScreenBase::displayFormat( void ) const
+const vismodule::DisplayFormat& ScreenBase::displayFormat( void ) const
 {
     return( m_display_format );
 }
@@ -401,7 +401,7 @@ const bool ScreenBase::isFullScreen( void ) const
  *  @return pointer to the camera
  */
 /*===========================================================================*/
-kvs::Camera* ScreenBase::camera( void )
+vismodule::Camera* ScreenBase::camera( void )
 {
     return( m_camera );
 }
@@ -412,7 +412,7 @@ kvs::Camera* ScreenBase::camera( void )
  *  @return pointer to the light
  */
 /*===========================================================================*/
-kvs::Light* ScreenBase::light( void )
+vismodule::Light* ScreenBase::light( void )
 {
     return( m_light );
 }
@@ -423,7 +423,7 @@ kvs::Light* ScreenBase::light( void )
  *  @return pointer to the mouse
  */
 /*===========================================================================*/
-kvs::Mouse* ScreenBase::mouse( void )
+vismodule::Mouse* ScreenBase::mouse( void )
 {
     return( m_mouse );
 }
@@ -434,7 +434,7 @@ kvs::Mouse* ScreenBase::mouse( void )
  *  @return pointer to the background class
  */
 /*===========================================================================*/
-kvs::Background* ScreenBase::background( void )
+vismodule::Background* ScreenBase::background( void )
 {
     return( m_background );
 }
@@ -445,7 +445,7 @@ kvs::Background* ScreenBase::background( void )
  *  @return control target
  */
 /*===========================================================================*/
-kvs::ScreenBase::ControlTarget& ScreenBase::controlTarget( void )
+vismodule::ScreenBase::ControlTarget& ScreenBase::controlTarget( void )
 {
     return( m_target );
 }
@@ -456,7 +456,7 @@ kvs::ScreenBase::ControlTarget& ScreenBase::controlTarget( void )
  *  @return pointer to the object manager
  */
 /*===========================================================================*/
-kvs::ObjectManager* ScreenBase::objectManager( void )
+vismodule::ObjectManager* ScreenBase::objectManager( void )
 {
     return( m_object_manager );
 }
@@ -467,7 +467,7 @@ kvs::ObjectManager* ScreenBase::objectManager( void )
  *  @return pointer to the renderer manager
  */
 /*===========================================================================*/
-kvs::RendererManager* ScreenBase::rendererManager( void )
+vismodule::RendererManager* ScreenBase::rendererManager( void )
 {
     return( m_renderer_manager );
 }
@@ -478,7 +478,7 @@ kvs::RendererManager* ScreenBase::rendererManager( void )
  *  @return pointer to the ID manager
  */
 /*===========================================================================*/
-kvs::IDManager* ScreenBase::IDManager( void )
+vismodule::IDManager* ScreenBase::IDManager( void )
 {
     return( m_id_manager );
 }
@@ -489,7 +489,7 @@ kvs::IDManager* ScreenBase::IDManager( void )
  *  @return pointer to the event handler
  */
 /*===========================================================================*/
-kvs::EventHandler* ScreenBase::eventHandler( void )
+vismodule::EventHandler* ScreenBase::eventHandler( void )
 {
     return( m_event_handler );
 }
@@ -500,7 +500,7 @@ kvs::EventHandler* ScreenBase::eventHandler( void )
  *  @param  display_format [in] display format
  */
 /*===========================================================================*/
-void ScreenBase::setDisplayFormat( const kvs::DisplayFormat& display_format )
+void ScreenBase::setDisplayFormat( const vismodule::DisplayFormat& display_format )
 {
     m_display_format = display_format;
 }
@@ -564,80 +564,80 @@ void ScreenBase::setTitle( const std::string& title )
 /*===========================================================================*/
 void ScreenBase::create( void )
 {
-    m_mouse_event = new kvs::MouseEvent();
+    m_mouse_event = new vismodule::MouseEvent();
     if ( !m_mouse_event )
     {
-        kvsMessageError("Cannot allocate memory for the mouse event.");
+        visModuleMessageError("Cannot allocate memory for the mouse event.");
         return;
     }
 
-    m_key_event = new kvs::KeyEvent();
+    m_key_event = new vismodule::KeyEvent();
     if ( !m_key_event )
     {
-        kvsMessageError("Cannot allocate memory for the key event.");
+        visModuleMessageError("Cannot allocate memory for the key event.");
         return;
     }
 
-    m_wheel_event = new kvs::WheelEvent();
+    m_wheel_event = new vismodule::WheelEvent();
     if ( !m_wheel_event )
     {
-        kvsMessageError("Cannot allocate memory for the wheel event.");
+        visModuleMessageError("Cannot allocate memory for the wheel event.");
         return;
     }
 
-    m_camera = new kvs::Camera();
+    m_camera = new vismodule::Camera();
     if ( !m_camera )
     {
-        kvsMessageError("Cannot allocate memory for the camera.");
+        visModuleMessageError("Cannot allocate memory for the camera.");
         return;
     }
 
-    m_light = new kvs::Light();
+    m_light = new vismodule::Light();
     if ( !m_light )
     {
-        kvsMessageError("Cannot allocate memory for the light.");
+        visModuleMessageError("Cannot allocate memory for the light.");
         return;
     }
 
-    m_mouse = new kvs::Mouse();
+    m_mouse = new vismodule::Mouse();
     if ( !m_mouse )
     {
-        kvsMessageError("Cannot allocate memory for the mouse.");
+        visModuleMessageError("Cannot allocate memory for the mouse.");
         return;
     }
 
-    m_background = new kvs::Background( kvs::RGBColor( 212, 221, 229 ) );
+    m_background = new vismodule::Background( vismodule::RGBColor( 212, 221, 229 ) );
     if ( !m_background )
     {
-        kvsMessageError("Cannot allocate memory for the background.");
+        visModuleMessageError("Cannot allocate memory for the background.");
         return;
     }
 
-    m_object_manager = new kvs::ObjectManager();
+    m_object_manager = new vismodule::ObjectManager();
     if ( !m_object_manager )
     {
-        kvsMessageError("Cannot allocate memory for the object manager.");
+        visModuleMessageError("Cannot allocate memory for the object manager.");
         return;
     }
 
-    m_renderer_manager = new kvs::RendererManager();
+    m_renderer_manager = new vismodule::RendererManager();
     if( !m_renderer_manager )
     {
-        kvsMessageError("Cannot allocate memory for the renderer manager.");
+        visModuleMessageError("Cannot allocate memory for the renderer manager.");
         return;
     }
 
-    m_id_manager = new kvs::IDManager();
+    m_id_manager = new vismodule::IDManager();
     if( !m_id_manager )
     {
-        kvsMessageError("Cannot allocate memory for the ID manager.");
+        visModuleMessageError("Cannot allocate memory for the ID manager.");
         return;
     }
 
-    m_event_handler = new kvs::EventHandler();
+    m_event_handler = new vismodule::EventHandler();
     if( !m_event_handler )
     {
-        kvsMessageError("Cannot allocate memory for the event handler.");
+        visModuleMessageError("Cannot allocate memory for the event handler.");
         return;
     }
 }
@@ -707,7 +707,7 @@ bool ScreenBase::isActiveMove( int x, int y )
         {
             const float px = static_cast<float>(x);
             const float py = static_cast<float>(y);
-            const kvs::Vector2f p = kvs::Vector2f( px, py );
+            const vismodule::Vector2f p = vismodule::Vector2f( px, py );
             return( m_object_manager->detectCollision( p, m_camera ) );
         }
     }
@@ -744,7 +744,7 @@ void ScreenBase::updateControllingObject( void )
 void ScreenBase::updateCenterOfRotation( void )
 {
     // Center of rotation in the device coordinate system.
-    kvs::Vector2f center( 0.0, 0.0 );
+    vismodule::Vector2f center( 0.0, 0.0 );
 
     switch( m_target )
     {
@@ -767,9 +767,9 @@ void ScreenBase::updateCenterOfRotation( void )
              */
             if ( !m_object_manager->hasActiveObject() ) return;
 
-            kvs::ObjectBase* object = m_object_manager->activeObject();
-            const kvs::Vector3f& t = m_object_manager->objectCenter();
-            const kvs::Vector3f& s = m_object_manager->normalize();
+            vismodule::ObjectBase* object = m_object_manager->activeObject();
+            const vismodule::Vector3f& t = m_object_manager->objectCenter();
+            const vismodule::Vector3f& s = m_object_manager->normalize();
             center = object->positionInDevice( m_camera, t, s );
         }
         break;
@@ -809,17 +809,17 @@ void ScreenBase::updateXform( void )
  *  @param  manager [in] pointer to the object manager
  */
 /*==========================================================================*/
-void ScreenBase::updateXform( kvs::ObjectManager* manager )
+void ScreenBase::updateXform( vismodule::ObjectManager* manager )
 {
     switch( m_mouse->mode() )
     {
-    case kvs::Mouse::Rotation:
+    case vismodule::Mouse::Rotation:
         manager->rotate( m_mouse->rotation().toMatrix() );
         break;
-    case kvs::Mouse::Translation:
+    case vismodule::Mouse::Translation:
         manager->translate( m_mouse->translation() );
         break;
-    case kvs::Mouse::Scaling:
+    case vismodule::Mouse::Scaling:
         manager->scale( m_mouse->scaling() );
         break;
     default:
@@ -833,17 +833,17 @@ void ScreenBase::updateXform( kvs::ObjectManager* manager )
  *  @param  camera [in] pointer to the camera
  */
 /*==========================================================================*/
-void ScreenBase::updateXform( kvs::Camera* camera )
+void ScreenBase::updateXform( vismodule::Camera* camera )
 {
     switch( m_mouse->mode() )
     {
-    case kvs::Mouse::Rotation:
+    case vismodule::Mouse::Rotation:
         camera->rotate( m_mouse->rotation().toMatrix() );
         break;
-    case kvs::Mouse::Translation:
+    case vismodule::Mouse::Translation:
         camera->translate( m_mouse->translation() );
         break;
-    case kvs::Mouse::Scaling:
+    case vismodule::Mouse::Scaling:
         camera->scale( m_mouse->scaling() );
         break;
     default:
@@ -857,17 +857,17 @@ void ScreenBase::updateXform( kvs::Camera* camera )
  *  @param  light [in] pointer to the light
  */
 /*==========================================================================*/
-void ScreenBase::updateXform( kvs::Light* light )
+void ScreenBase::updateXform( vismodule::Light* light )
 {
     switch( m_mouse->mode() )
     {
-    case kvs::Mouse::Rotation:
+    case vismodule::Mouse::Rotation:
         light->rotate( m_mouse->rotation().toMatrix() );
         break;
-    case kvs::Mouse::Translation:
+    case vismodule::Mouse::Translation:
         light->translate( m_mouse->translation() );
         break;
-    case kvs::Mouse::Scaling:
+    case vismodule::Mouse::Scaling:
         light->scale( m_mouse->scaling() );
         break;
     default:
@@ -956,8 +956,8 @@ void ScreenBase::redraw( void )
 /*===========================================================================*/
 void ScreenBase::resize( int width, int height )
 {
-    kvs::IgnoreUnusedVariable( width );
-    kvs::IgnoreUnusedVariable( height );
+    vismodule::IgnoreUnusedVariable( width );
+    vismodule::IgnoreUnusedVariable( height );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

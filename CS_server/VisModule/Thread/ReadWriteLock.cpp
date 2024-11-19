@@ -15,7 +15,7 @@
 #include "MutexLocker.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -46,7 +46,7 @@ ReadWriteLock::~ReadWriteLock( void )
 /*==========================================================================*/
 void ReadWriteLock::lockRead( void )
 {
-    kvs::MutexLocker locker( &m_mutex );
+    vismodule::MutexLocker locker( &m_mutex );
 
     while ( m_counter < 0 || m_nwriters )
     {
@@ -65,7 +65,7 @@ void ReadWriteLock::lockRead( void )
 /*==========================================================================*/
 void ReadWriteLock::lockWrite( void )
 {
-    kvs::MutexLocker locker( &m_mutex );
+    vismodule::MutexLocker locker( &m_mutex );
 
     while ( m_counter != 0 )
     {
@@ -85,7 +85,7 @@ void ReadWriteLock::lockWrite( void )
 /*==========================================================================*/
 bool ReadWriteLock::tryLockRead( void )
 {
-    kvs::MutexLocker locker( &m_mutex );
+    vismodule::MutexLocker locker( &m_mutex );
 
     if ( m_counter < 0 ) { return( false ); }
 
@@ -102,7 +102,7 @@ bool ReadWriteLock::tryLockRead( void )
 /*==========================================================================*/
 bool ReadWriteLock::tryLockWrite( void )
 {
-    kvs::MutexLocker locker( &m_mutex );
+    vismodule::MutexLocker locker( &m_mutex );
 
     if ( m_counter != 0 ) { return( false ); }
 
@@ -118,7 +118,7 @@ bool ReadWriteLock::tryLockWrite( void )
 /*==========================================================================*/
 void ReadWriteLock::unlock( void )
 {
-    kvs::MutexLocker locker( &m_mutex );
+    vismodule::MutexLocker locker( &m_mutex );
 
     if ( m_counter < 0 ) { m_counter = 0; }
     else { m_counter--; }
@@ -130,4 +130,4 @@ void ReadWriteLock::unlock( void )
     else if ( wr ) { m_reader.wakeUpAll(); }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -15,7 +15,7 @@
 #include "MousePressEventListener.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -25,7 +25,7 @@ namespace kvs
 /*===========================================================================*/
 MousePressEventListener::MousePressEventListener( void )
 {
-    kvs::EventListener::setEventType( kvs::EventBase::MousePressEvent );
+    vismodule::EventListener::setEventType( vismodule::EventBase::MousePressEvent );
 }
 
 /*===========================================================================*/
@@ -43,9 +43,9 @@ MousePressEventListener::~MousePressEventListener( void )
  *  @param  event [in] pointer to the event
  */
 /*===========================================================================*/
-void MousePressEventListener::onEvent( kvs::EventBase* event )
+void MousePressEventListener::onEvent( vismodule::EventBase* event )
 {
-    this->update( static_cast<kvs::MouseEvent*>(event) );
+    this->update( static_cast<vismodule::MouseEvent*>(event) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

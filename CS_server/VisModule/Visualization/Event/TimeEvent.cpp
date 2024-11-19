@@ -15,7 +15,7 @@
 #include "TimeEvent.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -44,7 +44,7 @@ TimeEvent::~TimeEvent( void )
 /*===========================================================================*/
 const int TimeEvent::type( void ) const
 {
-    return( kvs::EventBase::TimerEvent );
+    return( vismodule::EventBase::TimerEvent );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

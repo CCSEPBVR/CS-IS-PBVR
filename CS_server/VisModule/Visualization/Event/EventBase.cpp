@@ -15,7 +15,7 @@
 #include "EventBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -36,4 +36,4 @@ EventBase::~EventBase( void )
 {
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -11,12 +11,12 @@
  *  $Id: DataType.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__DCM__DATA_TYPE_H_INCLUDE
-#define KVS__DCM__DATA_TYPE_H_INCLUDE
+#ifndef VIS_MODULE__DCM__DATA_TYPE_H_INCLUDE
+#define VIS_MODULE__DCM__DATA_TYPE_H_INCLUDE
 
 #include <string>
 
-namespace kvs
+namespace vismodule
 {
 
 namespace dcm
@@ -67,6 +67,6 @@ const unsigned int DATA_TYPE_TO_SIZE[NUMBER_OF_DATA_TYPES] =
 
 } // end of namespace dcm
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__DCM_DATA_TYPE_H_INCLUDE
+#endif // VIS_MODULE__DCM_DATA_TYPE_H_INCLUDE

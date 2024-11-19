@@ -11,15 +11,15 @@
  *  $Id: XMLDocument.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__XML_DOCUMENT_H_INCLUDE
-#define KVS__XML_DOCUMENT_H_INCLUDE
+#ifndef VIS_MODULE__XML_DOCUMENT_H_INCLUDE
+#define VIS_MODULE__XML_DOCUMENT_H_INCLUDE
 
 #include "TinyXML.h"
 #include <string>
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -29,7 +29,7 @@ namespace kvs
 /*==========================================================================*/
 class XMLDocument : public TiXmlDocument
 {
-    kvsClassName( kvs::XMLDocument );
+    visModuleClassName( vismodule::XMLDocument );
 
 public:
 
@@ -67,9 +67,9 @@ public:
 
 public:
 
-    static TiXmlNode* FindNode( const kvs::XMLDocument* document, const std::string& node_name );
+    static TiXmlNode* FindNode( const vismodule::XMLDocument* document, const std::string& node_name );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__XML_DOCUMENT_H_INCLUDE
+#endif // VIS_MODULE__XML_DOCUMENT_H_INCLUDE

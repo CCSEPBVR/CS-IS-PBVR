@@ -11,14 +11,14 @@
  *  $Id: FrameBuffer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__FRAME_BUFFER_H_INCLUDE
-#define KVS__FRAME_BUFFER_H_INCLUDE
+#ifndef VIS_MODULE__FRAME_BUFFER_H_INCLUDE
+#define VIS_MODULE__FRAME_BUFFER_H_INCLUDE
 
-#include <kvs/OpenGL>
-#include <kvs/ClassName>
+#include <vismodule/OpenGL>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -28,7 +28,7 @@ namespace kvs
 /*==========================================================================*/
 class FrameBuffer
 {
-    kvsClassName( kvs::FrameBuffer );
+    visModuleClassName( vismodule::FrameBuffer );
 
 protected:
 
@@ -117,6 +117,6 @@ public:
         const GLenum buffer = 0 );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__FRAME_BUFFER_H_INCLUDE
+#endif // VIS_MODULE__FRAME_BUFFER_H_INCLUDE

@@ -13,10 +13,10 @@
 /****************************************************************************/
 #include "HSVColor.h"
 #include "RGBColor.h"
-#include <kvs/Math>
+#include <vismodule/Math>
 
 
-namespace kvs
+namespace vismodule
 {
 
 HSVColor::HSVColor( float hue, float saturation, float value ):
@@ -75,14 +75,14 @@ HSVColor& HSVColor::operator = ( const RGBColor& rgb )
     float G = float( rgb.g() / 255.0f );
     float B = float( rgb.b() / 255.0f );
 
-    float min_rgb = kvs::Math::Min( R, G, B );
-    float max_rgb = kvs::Math::Max( R, G, B );
+    float min_rgb = vismodule::Math::Min( R, G, B );
+    float max_rgb = vismodule::Math::Max( R, G, B );
 
     float delta = max_rgb - min_rgb;
 
     m_value = max_rgb;
 
-    if( kvs::Math::IsZero( delta ) )
+    if( vismodule::Math::IsZero( delta ) )
     {
         m_hue = 0.0f;
         m_saturation = 0.0f;
@@ -95,9 +95,9 @@ HSVColor& HSVColor::operator = ( const RGBColor& rgb )
         float delta_g = ( ( ( max_rgb - G ) / 6.0f ) + ( delta / 2.0f ) ) / delta;
         float delta_b = ( ( ( max_rgb - B ) / 6.0f ) + ( delta / 2.0f ) ) / delta;
 
-        if(      kvs::Math::Equal( R, max_rgb ) ) m_hue = delta_b - delta_g;
-        else if( kvs::Math::Equal( G, max_rgb ) ) m_hue = ( 1.0f / 3.0f ) + delta_r - delta_b;
-        else if( kvs::Math::Equal( B, max_rgb ) ) m_hue = ( 2.0f / 3.0f ) + delta_g - delta_r;
+        if(      vismodule::Math::Equal( R, max_rgb ) ) m_hue = delta_b - delta_g;
+        else if( vismodule::Math::Equal( G, max_rgb ) ) m_hue = ( 1.0f / 3.0f ) + delta_r - delta_b;
+        else if( vismodule::Math::Equal( B, max_rgb ) ) m_hue = ( 2.0f / 3.0f ) + delta_g - delta_r;
 
         if( m_hue < 0 ) m_hue += 1;
         if( m_hue > 1 ) m_hue -= 1;
@@ -148,4 +148,4 @@ const float HSVColor::intensity( void ) const
     return( m_value );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

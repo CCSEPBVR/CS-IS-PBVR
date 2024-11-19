@@ -11,21 +11,21 @@
  *  $Id: CellByCellMetropolisSampling.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__CELL_BY_CELL_METROPOLIS_SAMPLING_H_INCLUDE
-#define KVS__CELL_BY_CELL_METROPOLIS_SAMPLING_H_INCLUDE
+#ifndef VIS_MODULE__CELL_BY_CELL_METROPOLIS_SAMPLING_H_INCLUDE
+#define VIS_MODULE__CELL_BY_CELL_METROPOLIS_SAMPLING_H_INCLUDE
 
-#include <kvs/MapperBase>
-#include <kvs/Camera>
-#include <kvs/PointObject>
-#include <kvs/VolumeObjectBase>
-#include <kvs/StructuredVolumeObject>
-#include <kvs/UnstructuredVolumeObject>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/MapperBase>
+#include <vismodule/Camera>
+#include <vismodule/PointObject>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 #include "CellByCellParticleGenerator.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -33,48 +33,48 @@ namespace kvs
  *  @brief  Cell-by-cell particle generation class.
  */
 /*===========================================================================*/
-class CellByCellMetropolisSampling : public kvs::MapperBase, public kvs::PointObject
+class CellByCellMetropolisSampling : public vismodule::MapperBase, public vismodule::PointObject
 {
     // Class name.
-    kvsClassName( kvs::CellByCellMetropolisSampling );
+    visModuleClassName( vismodule::CellByCellMetropolisSampling );
 
     // Module information.
-    kvsModuleCategory( Mapper );
-    kvsModuleBaseClass( kvs::MapperBase );
-    kvsModuleSuperClass( kvs::PointObject );
+    visModuleCategory( Mapper );
+    visModuleBaseClass( vismodule::MapperBase );
+    visModuleSuperClass( vismodule::PointObject );
 
 private:
 
-    const kvs::Camera*     m_camera;         ///< camera (reference)
+    const vismodule::Camera*     m_camera;         ///< camera (reference)
     size_t                 m_subpixel_level; ///< subpixel level
     float                  m_sampling_step;  ///< sampling step in the object coordinate
     float                  m_object_depth;   ///< object depth
-    kvs::ValueArray<float> m_density_map;    ///< density map
+    vismodule::ValueArray<float> m_density_map;    ///< density map
 
 public:
 
     CellByCellMetropolisSampling( void );
 
     CellByCellMetropolisSampling(
-        const kvs::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase* volume,
         const size_t                 subpixel_level,
         const float                  sampling_step,
-        const kvs::TransferFunction& transfer_function,
+        const vismodule::TransferFunction& transfer_function,
         const float                  object_depth = 0.0f );
 
     CellByCellMetropolisSampling(
-        const kvs::Camera*           camera,
-        const kvs::VolumeObjectBase* volume,
+        const vismodule::Camera*           camera,
+        const vismodule::VolumeObjectBase* volume,
         const size_t                 subpixel_level,
         const float                  sampling_step,
-        const kvs::TransferFunction& transfer_function,
+        const vismodule::TransferFunction& transfer_function,
         const float                  object_depth = 0.0f );
 
     virtual ~CellByCellMetropolisSampling( void );
 
 public:
 
-    SuperClass* exec( const kvs::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase* object );
 
 public:
 
@@ -84,7 +84,7 @@ public:
 
     const float objectDepth( void ) const;
 
-    void attachCamera( const kvs::Camera* camera );
+    void attachCamera( const vismodule::Camera* camera );
 
     void setSubpixelLevel( const size_t subpixel_level );
 
@@ -94,17 +94,17 @@ public:
 
 private:
 
-    void mapping( const kvs::Camera* camera, const kvs::StructuredVolumeObject* volume );
+    void mapping( const vismodule::Camera* camera, const vismodule::StructuredVolumeObject* volume );
 
-    void mapping( const kvs::Camera* camera, const kvs::UnstructuredVolumeObject* volume );
-
-    template <typename T>
-    void generate_particles( const kvs::StructuredVolumeObject* volume );
+    void mapping( const vismodule::Camera* camera, const vismodule::UnstructuredVolumeObject* volume );
 
     template <typename T>
-    void generate_particles( const kvs::UnstructuredVolumeObject* volume );
+    void generate_particles( const vismodule::StructuredVolumeObject* volume );
+
+    template <typename T>
+    void generate_particles( const vismodule::UnstructuredVolumeObject* volume );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__CELL_BY_CELL_METROPOLIS_SAMPLING_H_INCLUDE
+#endif // VIS_MODULE__CELL_BY_CELL_METROPOLIS_SAMPLING_H_INCLUDE

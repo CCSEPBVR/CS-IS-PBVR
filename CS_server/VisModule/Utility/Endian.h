@@ -11,14 +11,14 @@
  *  $Id: Endian.h 841 2011-06-10 07:28:42Z naohisa.sakamoto@gmail.com $
  */
 /****************************************************************************/
-#ifndef KVS__ENDIAN_H_INCLUDE
-#define KVS__ENDIAN_H_INCLUDE
+#ifndef VIS_MODULE__ENDIAN_H_INCLUDE
+#define VIS_MODULE__ENDIAN_H_INCLUDE
 
-#include <kvs/Type>
+#include <vismodule/Type>
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace Endian
@@ -161,7 +161,7 @@ inline bool IsLittle( void )
  *  @brief  Swaps 8-bit integer value. (inaction)
  */
 /*===========================================================================*/
-inline void Swap( kvs::Int8& )
+inline void Swap( vismodule::Int8& )
 {
 }
 
@@ -170,7 +170,7 @@ inline void Swap( kvs::Int8& )
  *  @brief  Swaps 8-bit unsigned integer value. (inaction)
  */
 /*===========================================================================*/
-inline void Swap( kvs::UInt8& )
+inline void Swap( vismodule::UInt8& )
 {
 }
 
@@ -180,7 +180,7 @@ inline void Swap( kvs::UInt8& )
  *  @param  value [in] 16-bit value
  */
 /*===========================================================================*/
-inline void Swap( kvs::Int16& value )
+inline void Swap( vismodule::Int16& value )
 {
     Swap2Bytes( &value );
 }
@@ -191,7 +191,7 @@ inline void Swap( kvs::Int16& value )
  *  @param  value [in] 16-bit value
  */
 /*===========================================================================*/
-inline void Swap( kvs::UInt16& value )
+inline void Swap( vismodule::UInt16& value )
 {
     Swap2Bytes( &value );
 }
@@ -202,7 +202,7 @@ inline void Swap( kvs::UInt16& value )
  *  @param  value [in] 32-bit value
  */
 /*===========================================================================*/
-inline void Swap( kvs::Int32& value )
+inline void Swap( vismodule::Int32& value )
 {
     Swap4Bytes( &value );
 }
@@ -213,7 +213,7 @@ inline void Swap( kvs::Int32& value )
  *  @param  value [in] 32-bit value
  */
 /*===========================================================================*/
-inline void Swap( kvs::UInt32& value )
+inline void Swap( vismodule::UInt32& value )
 {
     Swap4Bytes( &value );
 }
@@ -224,7 +224,7 @@ inline void Swap( kvs::UInt32& value )
  *  @param  value [in] 64-bit value
  */
 /*===========================================================================*/
-inline void Swap( kvs::Int64& value )
+inline void Swap( vismodule::Int64& value )
 {
     Swap8Bytes( &value );
 }
@@ -235,7 +235,7 @@ inline void Swap( kvs::Int64& value )
  *  @param  value [in] 64-bit value
  */
 /*===========================================================================*/
-inline void Swap( kvs::UInt64& value )
+inline void Swap( vismodule::UInt64& value )
 {
     Swap8Bytes( &value );
 }
@@ -246,7 +246,7 @@ inline void Swap( kvs::UInt64& value )
  *  @param  value [in] 32-bit value
  */
 /*===========================================================================*/
-inline void Swap( kvs::Real32& value )
+inline void Swap( vismodule::Real32& value )
 {
     Swap4Bytes( &value );
 }
@@ -257,7 +257,7 @@ inline void Swap( kvs::Real32& value )
  *  @param  value [in] 64-bit value
  */
 /*===========================================================================*/
-inline void Swap( kvs::Real64& value )
+inline void Swap( vismodule::Real64& value )
 {
     Swap8Bytes( &value );
 }
@@ -276,7 +276,7 @@ inline void Swap( std::string& )
  *  @brief  Swaps the array of 8-bit integer value. (inaction)
  */
 /*===========================================================================*/
-inline void Swap( kvs::Int8*, size_t )
+inline void Swap( vismodule::Int8*, size_t )
 {
 }
 
@@ -285,7 +285,7 @@ inline void Swap( kvs::Int8*, size_t )
  *  @brief  Swaps the array of 8-bit integer value. (inaction)
  */
 /*===========================================================================*/
-inline void Swap( kvs::UInt8*, size_t )
+inline void Swap( vismodule::UInt8*, size_t )
 {
 }
 
@@ -296,7 +296,7 @@ inline void Swap( kvs::UInt8*, size_t )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap( kvs::Int16* value, size_t n )
+inline void Swap( vismodule::Int16* value, size_t n )
 {
     Swap2Bytes( value, n );
 }
@@ -308,7 +308,7 @@ inline void Swap( kvs::Int16* value, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap( kvs::UInt16* value, size_t n )
+inline void Swap( vismodule::UInt16* value, size_t n )
 {
     Swap2Bytes( value, n );
 }
@@ -320,7 +320,7 @@ inline void Swap( kvs::UInt16* value, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap( kvs::Int32* value, size_t n )
+inline void Swap( vismodule::Int32* value, size_t n )
 {
     Swap4Bytes( value, n );
 }
@@ -332,7 +332,7 @@ inline void Swap( kvs::Int32* value, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap( kvs::UInt32* value, size_t n )
+inline void Swap( vismodule::UInt32* value, size_t n )
 {
     Swap4Bytes( value, n );
 }
@@ -344,7 +344,7 @@ inline void Swap( kvs::UInt32* value, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap( kvs::Int64* value, size_t n )
+inline void Swap( vismodule::Int64* value, size_t n )
 {
     Swap8Bytes( value, n );
 }
@@ -356,7 +356,7 @@ inline void Swap( kvs::Int64* value, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap( kvs::UInt64* value, size_t n )
+inline void Swap( vismodule::UInt64* value, size_t n )
 {
     Swap8Bytes( value, n );
 }
@@ -368,7 +368,7 @@ inline void Swap( kvs::UInt64* value, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap( kvs::Real32* value, size_t n )
+inline void Swap( vismodule::Real32* value, size_t n )
 {
     Swap4Bytes( value, n );
 }
@@ -380,7 +380,7 @@ inline void Swap( kvs::Real32* value, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap( kvs::Real64* value, size_t n )
+inline void Swap( vismodule::Real64* value, size_t n )
 {
     Swap8Bytes( value, n );
 }
@@ -396,6 +396,6 @@ inline void Swap( std::string*, size_t )
 
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__ENDIAN_H_INCLUDE
+#endif // VIS_MODULE__ENDIAN_H_INCLUDE

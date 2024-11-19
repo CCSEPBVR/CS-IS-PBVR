@@ -13,13 +13,13 @@
  */
 /*****************************************************************************/
 #include "EventListener.h"
-#include <kvs/ResizeEvent>
-#include <kvs/MouseButton>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/ResizeEvent>
+#include <vismodule/MouseButton>
+#include <vismodule/IgnoreUnusedVariable>
 #include <typeinfo>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -47,7 +47,7 @@ EventListener::~EventListener( void )
  *  @param  event [in] pointer to the event
  */
 /*===========================================================================*/
-void EventListener::onEvent( kvs::EventBase* event )
+void EventListener::onEvent( vismodule::EventBase* event )
 {
     if ( !event )
     {
@@ -55,40 +55,40 @@ void EventListener::onEvent( kvs::EventBase* event )
     }
     else
     {
-        if ( typeid( *event ) == typeid( kvs::MouseEvent ) )
+        if ( typeid( *event ) == typeid( vismodule::MouseEvent ) )
         {
-            kvs::MouseEvent* e = static_cast<kvs::MouseEvent*>( event );
+            vismodule::MouseEvent* e = static_cast<vismodule::MouseEvent*>( event );
             switch ( e->action() )
             {
-            case kvs::MouseButton::Pressed:
+            case vismodule::MouseButton::Pressed:
                 this->mousePressEvent( e ); break;
-            case kvs::MouseButton::Moved:
+            case vismodule::MouseButton::Moved:
                 this->mouseMoveEvent( e ); break;
-            case kvs::MouseButton::Released:
+            case vismodule::MouseButton::Released:
                 this->mouseReleaseEvent( e ); break;
-            case kvs::MouseButton::DoubleClicked:
+            case vismodule::MouseButton::DoubleClicked:
                 this->mouseDoubleClickEvent( e ); break;
             default: break;
             }
         }
-        else if ( typeid( *event ) == typeid( kvs::ResizeEvent ) )
+        else if ( typeid( *event ) == typeid( vismodule::ResizeEvent ) )
         {
-            kvs::ResizeEvent* e = static_cast<kvs::ResizeEvent*>( event );
+            vismodule::ResizeEvent* e = static_cast<vismodule::ResizeEvent*>( event );
             this->resizeEvent( e->width(), e->height() );
         }
-        else if ( typeid( *event ) == typeid( kvs::WheelEvent ) )
+        else if ( typeid( *event ) == typeid( vismodule::WheelEvent ) )
         {
-            kvs::WheelEvent* e = static_cast<kvs::WheelEvent*>( event );
+            vismodule::WheelEvent* e = static_cast<vismodule::WheelEvent*>( event );
             this->wheelEvent( e );
         }
-        else if ( typeid( *event ) == typeid( kvs::KeyEvent ) )
+        else if ( typeid( *event ) == typeid( vismodule::KeyEvent ) )
         {
-            kvs::KeyEvent* e = static_cast<kvs::KeyEvent*>( event );
+            vismodule::KeyEvent* e = static_cast<vismodule::KeyEvent*>( event );
             this->keyPressEvent( e );
         }
-        else if ( typeid( *event ) == typeid( kvs::TimeEvent ) )
+        else if ( typeid( *event ) == typeid( vismodule::TimeEvent ) )
         {
-            kvs::TimeEvent* e = static_cast<kvs::TimeEvent*>( event );
+            vismodule::TimeEvent* e = static_cast<vismodule::TimeEvent*>( event );
             this->timerEvent( e );
         }
     }
@@ -111,7 +111,7 @@ const int EventListener::eventType( void ) const
  *  @return pointer to the screen
  */
 /*===========================================================================*/
-kvs::ScreenBase* EventListener::screen( void )
+vismodule::ScreenBase* EventListener::screen( void )
 {
     return( m_screen );
 }
@@ -133,7 +133,7 @@ void EventListener::setEventType( int event_type )
  *  @param  screen [in] pointer to the screen
  */
 /*===========================================================================*/
-void EventListener::setScreen( kvs::ScreenBase* screen )
+void EventListener::setScreen( vismodule::ScreenBase* screen )
 {
     m_screen = screen;
 }
@@ -156,8 +156,8 @@ void EventListener::paintEvent( void )
 /*===========================================================================*/
 void EventListener::resizeEvent( int width, int height )
 {
-    kvs::IgnoreUnusedVariable( width );
-    kvs::IgnoreUnusedVariable( height );
+    vismodule::IgnoreUnusedVariable( width );
+    vismodule::IgnoreUnusedVariable( height );
 }
 
 /*===========================================================================*/
@@ -166,9 +166,9 @@ void EventListener::resizeEvent( int width, int height )
  *  @param  event [in] pointer to the mouse event
  */
 /*===========================================================================*/
-void EventListener::mousePressEvent( kvs::MouseEvent* event )
+void EventListener::mousePressEvent( vismodule::MouseEvent* event )
 {
-    kvs::IgnoreUnusedVariable( event );
+    vismodule::IgnoreUnusedVariable( event );
 }
 
 /*===========================================================================*/
@@ -177,9 +177,9 @@ void EventListener::mousePressEvent( kvs::MouseEvent* event )
  *  @param  event [in] pointer to the mouse event
  */
 /*===========================================================================*/
-void EventListener::mouseMoveEvent( kvs::MouseEvent* event )
+void EventListener::mouseMoveEvent( vismodule::MouseEvent* event )
 {
-    kvs::IgnoreUnusedVariable( event );
+    vismodule::IgnoreUnusedVariable( event );
 }
 
 /*===========================================================================*/
@@ -188,9 +188,9 @@ void EventListener::mouseMoveEvent( kvs::MouseEvent* event )
  *  @param  event [in] pointer to the mouse event
  */
 /*===========================================================================*/
-void EventListener::mouseReleaseEvent( kvs::MouseEvent* event )
+void EventListener::mouseReleaseEvent( vismodule::MouseEvent* event )
 {
-    kvs::IgnoreUnusedVariable( event );
+    vismodule::IgnoreUnusedVariable( event );
 }
 
 /*===========================================================================*/
@@ -199,9 +199,9 @@ void EventListener::mouseReleaseEvent( kvs::MouseEvent* event )
  *  @param  event [in] pointer to the mouse event
  */
 /*===========================================================================*/
-void EventListener::mouseDoubleClickEvent( kvs::MouseEvent* event )
+void EventListener::mouseDoubleClickEvent( vismodule::MouseEvent* event )
 {
-    kvs::IgnoreUnusedVariable( event );
+    vismodule::IgnoreUnusedVariable( event );
 }
 
 /*===========================================================================*/
@@ -210,9 +210,9 @@ void EventListener::mouseDoubleClickEvent( kvs::MouseEvent* event )
  *  @param  event [in] pointer to the wheel event
  */
 /*===========================================================================*/
-void EventListener::wheelEvent( kvs::WheelEvent* event )
+void EventListener::wheelEvent( vismodule::WheelEvent* event )
 {
-    kvs::IgnoreUnusedVariable( event );
+    vismodule::IgnoreUnusedVariable( event );
 }
 
 /*===========================================================================*/
@@ -221,9 +221,9 @@ void EventListener::wheelEvent( kvs::WheelEvent* event )
  *  @param  event [in] pointer to the key event
  */
 /*===========================================================================*/
-void EventListener::keyPressEvent( kvs::KeyEvent* event )
+void EventListener::keyPressEvent( vismodule::KeyEvent* event )
 {
-    kvs::IgnoreUnusedVariable( event );
+    vismodule::IgnoreUnusedVariable( event );
 }
 
 /*===========================================================================*/
@@ -232,9 +232,9 @@ void EventListener::keyPressEvent( kvs::KeyEvent* event )
  *  @param  event [in] pointer to the timer event
  */
 /*===========================================================================*/
-void EventListener::timerEvent( kvs::TimeEvent* event )
+void EventListener::timerEvent( vismodule::TimeEvent* event )
 {
-    kvs::IgnoreUnusedVariable( event );
+    vismodule::IgnoreUnusedVariable( event );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

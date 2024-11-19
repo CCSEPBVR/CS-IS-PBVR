@@ -12,8 +12,8 @@
  */
 /****************************************************************************/
 #include "Directory.h"
-#include <kvs/Platform>
-#if defined ( KVS_PLATFORM_WINDOWS )
+#include <vismodule/Platform>
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
 #include <windows.h>
 #include <mbstring.h>
 #include <direct.h>
@@ -25,7 +25,7 @@
 #include <cstring>
 #include <cerrno>
 #endif
-#include <kvs/Message>
+#include <vismodule/Message>
 
 
 namespace
@@ -40,14 +40,14 @@ namespace
 /*==========================================================================*/
 inline std::string GetCurrentPath( void )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     char current_path[256];
     _getcwd( current_path, 256 );
 #else
     char current_path[PATH_MAX];
     if ( !getcwd( current_path, PATH_MAX ) )
     {
-        kvsMessageError("%s", strerror( errno ) );
+        visModuleMessageError("%s", strerror( errno ) );
         return(".");
      }
 #endif
@@ -64,12 +64,12 @@ inline std::string GetCurrentPath( void )
 /*==========================================================================*/
 inline std::string GetAbsolutePath( const std::string& path )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     char absolute_path[256];
     _fullpath( absolute_path, const_cast<char*>( path.c_str() ), 256 );
 #else
     char absolute_path[PATH_MAX];
-#if defined ( KVS_PLATFORM_CYGWIN )
+#if defined ( VIS_MODULE_PLATFORM_CYGWIN )
     /* WARNING: In the case of the cygwin environment, the realpath function
      * returns NULL as the absolute path when an error occurs, for example,
      * the directory which is not existed is given. In order to deal with this
@@ -90,7 +90,7 @@ inline std::string GetAbsolutePath( const std::string& path )
 #endif
     if ( !realpath( path.c_str(), absolute_path ) )
     {
-        kvsMessageError("%s", strerror( errno ) );
+        visModuleMessageError("%s", strerror( errno ) );
         return("");
     }
 #endif
@@ -98,7 +98,7 @@ inline std::string GetAbsolutePath( const std::string& path )
     return( absolute_path );
 }
 
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
 enum MBCharType
 {
     MBTypeSB,
@@ -151,7 +151,7 @@ MBCharType GetMBCharType( const char* str, int num )
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -220,7 +220,7 @@ const std::string Directory::directoryName( void ) const
  *  @return file list
  */
 /*==========================================================================*/
-kvs::FileList& Directory::fileList( void )
+vismodule::FileList& Directory::fileList( void )
 {
     return( m_file_list );
 }
@@ -231,7 +231,7 @@ kvs::FileList& Directory::fileList( void )
  *  @return file list
  */
 /*==========================================================================*/
-const kvs::FileList& Directory::fileList( void ) const
+const vismodule::FileList& Directory::fileList( void ) const
 {
     return( m_file_list );
 }
@@ -244,7 +244,7 @@ const kvs::FileList& Directory::fileList( void ) const
 /*==========================================================================*/
 const bool Directory::isDirectory( void ) const
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     WIN32_FIND_DATAA find_data;
     HANDLE hFind = FindFirstFileA( m_directory_path.c_str(), &find_data );
     if ( hFind == INVALID_HANDLE_VALUE ) { return(false); }
@@ -285,7 +285,7 @@ const bool Directory::parse( const std::string& directory_path )
 
     m_directory_name = absolute_directory_path.substr( last_sep_pos + 1 );
 
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     WIN32_FIND_DATAA find_data;
     HANDLE           hFind;
 
@@ -311,7 +311,7 @@ const bool Directory::parse( const std::string& directory_path )
     {
         const std::string path( m_directory_path );
         const std::string filename( find_data.cFileName );
-        const kvs::File   file( path + kvs::Directory::Separator() + filename );
+        const vismodule::File   file( path + vismodule::Directory::Separator() + filename );
 
         if ( file.isFile() )
         {
@@ -328,7 +328,7 @@ const bool Directory::parse( const std::string& directory_path )
 
         if ( !dir )
         {
-            kvsMessageError( "%s is not opened.", m_directory_path.c_str() );
+            visModuleMessageError( "%s is not opened.", m_directory_path.c_str() );
             return( false );
         }
 
@@ -337,7 +337,7 @@ const bool Directory::parse( const std::string& directory_path )
         {
             const std::string path( m_directory_path );
             const std::string filename( ent->d_name );
-            const kvs::File   file( path + kvs::Directory::Separator() + filename );
+            const vismodule::File   file( path + vismodule::Directory::Separator() + filename );
 
             if ( file.isFile() )
             {
@@ -369,10 +369,10 @@ void Directory::sort( void )
  *  @return iterator of the found file
  */
 /*==========================================================================*/
-kvs::FileList::iterator Directory::find( const File& file )
+vismodule::FileList::iterator Directory::find( const File& file )
 {
-    kvs::FileList::iterator begin = m_file_list.begin();
-    kvs::FileList::iterator end   = m_file_list.end();
+    vismodule::FileList::iterator begin = m_file_list.begin();
+    vismodule::FileList::iterator end   = m_file_list.end();
 
     return( std::find( begin, end, file ) );
 }
@@ -384,10 +384,10 @@ kvs::FileList::iterator Directory::find( const File& file )
  *  @return iterator of the found file
  */
 /*==========================================================================*/
-kvs::FileList::const_iterator Directory::find( const File& file ) const
+vismodule::FileList::const_iterator Directory::find( const File& file ) const
 {
-    kvs::FileList::const_iterator begin = m_file_list.begin();
-    kvs::FileList::const_iterator end   = m_file_list.end();
+    vismodule::FileList::const_iterator begin = m_file_list.begin();
+    vismodule::FileList::const_iterator end   = m_file_list.end();
 
     return( std::find( begin, end, file ) );
 }
@@ -412,7 +412,7 @@ const std::string Directory::Separator( void )
 /*==========================================================================*/
 bool Directory::Make( const std::string& directory_path )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     return( _mkdir( ::GetAbsolutePath( directory_path ).c_str() ) == 0 );
 #else
     return( mkdir( ::GetAbsolutePath( directory_path ).c_str(), 0777 ) == 0 );
@@ -428,7 +428,7 @@ bool Directory::Make( const std::string& directory_path )
 /*==========================================================================*/
 bool Directory::Remove( const std::string& directory_path )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     return( _rmdir( ::GetAbsolutePath( directory_path ).c_str() ) == 0 );
 #else
     return( rmdir( ::GetAbsolutePath( directory_path ).c_str() ) == 0 );
@@ -444,7 +444,7 @@ bool Directory::Remove( const std::string& directory_path )
 /*==========================================================================*/
 bool Directory::Change( const std::string& directory_path )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     return( _chdir( ::GetAbsolutePath( directory_path ).c_str() ) == 0 );
 #else
     return( chdir( ::GetAbsolutePath( directory_path ).c_str() ) == 0 );
@@ -462,4 +462,4 @@ Directory Directory::Current( void )
     return( Directory( ::GetCurrentPath() ) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

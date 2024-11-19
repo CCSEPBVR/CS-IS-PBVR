@@ -11,17 +11,17 @@
  *  $Id: ObjectImporter.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__OBJECT_IMPORTER_H_INCLUDE
-#define KVS__OBJECT_IMPORTER_H_INCLUDE
+#ifndef VIS_MODULE__OBJECT_IMPORTER_H_INCLUDE
+#define VIS_MODULE__OBJECT_IMPORTER_H_INCLUDE
 
 #include <string>
-#include <kvs/ClassName>
-#include <kvs/FileFormatBase>
-#include <kvs/ImporterBase>
-#include <kvs/ObjectBase>
+#include <vismodule/ClassName>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ImporterBase>
+#include <vismodule/ObjectBase>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -31,7 +31,7 @@ namespace kvs
 /*==========================================================================*/
 class ObjectImporter
 {
-    kvsClassName_without_virtual( kvs::ObjectImporter );
+    visModuleClassName_without_virtual( vismodule::ObjectImporter );
 
 public:
 
@@ -50,8 +50,8 @@ private:
 
     std::string          m_filename;      ///< input filename
     ImporterType         m_importer_type; ///< importer type
-    kvs::FileFormatBase* m_file_format;   ///< pointer to the estimated file format class
-    kvs::ImporterBase*   m_importer;      ///< pointer to the estimated importer class
+    vismodule::FileFormatBase* m_file_format;   ///< pointer to the estimated file format class
+    vismodule::ImporterBase*   m_importer;      ///< pointer to the estimated importer class
 
 public:
 
@@ -61,7 +61,7 @@ public:
 
 public:
 
-    kvs::ObjectBase* import( void );
+    vismodule::ObjectBase* import( void );
 
 private:
 
@@ -70,6 +70,6 @@ private:
     bool estimate_importer( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__OBJECT_IMPORTER_H_INCLUDE
+#endif // VIS_MODULE__OBJECT_IMPORTER_H_INCLUDE

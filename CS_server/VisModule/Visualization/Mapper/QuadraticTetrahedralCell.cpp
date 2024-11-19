@@ -14,7 +14,7 @@
 #include "QuadraticTetrahedralCell.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 // template instantiation
@@ -29,4 +29,4 @@ template class QuadraticTetrahedralCell<unsigned long>;
 template class QuadraticTetrahedralCell<float>;
 template class QuadraticTetrahedralCell<double>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

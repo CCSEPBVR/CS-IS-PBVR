@@ -11,8 +11,8 @@
  *  $Id: Tree.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__TREE_H_INCLUDE
-#define KVS__TREE_H_INCLUDE
+#ifndef VIS_MODULE__TREE_H_INCLUDE
+#define VIS_MODULE__TREE_H_INCLUDE
 
 #include <cassert>
 #include <memory>
@@ -20,13 +20,13 @@
 #include <iterator>
 #include <set>
 #include <queue>
-#include <kvs/ClassName>
-#include <kvs/Assert>
-#include <kvs/Message>
-#include <kvs/Compiler>
+#include <vismodule/ClassName>
+#include <vismodule/Assert>
+#include <vismodule/Message>
+#include <vismodule/Compiler>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -37,7 +37,7 @@ namespace kvs
 template <typename T>
 class Tree
 {
-    kvsClassName( kvs::Tree );
+    visModuleClassName( vismodule::Tree );
 
 public:
 
@@ -137,8 +137,8 @@ public:
 
     breadth_first_iterator endBreadth( void ) const
     {
-#if defined ( KVS_COMPILER_GCC )
-#if KVS_COMPILER_VERSION_LESS_OR_EQUAL( 3, 3 )
+#if defined ( VIS_MODULE_COMPILER_GCC )
+#if VIS_MODULE_COMPILER_VERSION_LESS_OR_EQUAL( 3, 3 )
         breadth_first_iterator e;
         return( e );
 #else
@@ -184,7 +184,7 @@ public:
     {
         node_type* cur = it.node();
 
-        KVS_ASSERT( cur != m_head );
+        VIS_MODULE_ASSERT( cur != m_head );
 
         Iter ret = it;
         ret.skipChildren();
@@ -240,16 +240,16 @@ public:
     template <typename Iter>
     Iter appendChild( Iter position )
     {
-        KVS_ASSERT( position.node() != m_head );
+        VIS_MODULE_ASSERT( position.node() != m_head );
 
         node_type* tmp = m_allocator.allocate( 1, 0 );
         if ( !tmp )
         {
-            kvsMessageError( "Cannot allocate memory for the appending node." );
+            visModuleMessageError( "Cannot allocate memory for the appending node." );
             return( 0 );
         }
 
-#if !defined( KVS_ENABLE_MEM_DEBUG )
+#if !defined( VIS_MODULE_ENABLE_MEM_DEBUG )
         this->constructor( &tmp->data );
 #endif
         tmp->first_child = 0;
@@ -274,16 +274,16 @@ public:
     template <typename Iter>
     Iter appendChild( Iter position, const T& x )
     {
-        KVS_ASSERT( position.node() != m_head );
+        VIS_MODULE_ASSERT( position.node() != m_head );
 
         node_type* tmp = m_allocator.allocate( 1, 0 );
         if ( !tmp )
         {
-            kvsMessageError( "Cannot allocate memory for the appending node." );
+            visModuleMessageError( "Cannot allocate memory for the appending node." );
             return ( 0 );
         }
 
-#if defined( KVS_ENABLE_MEM_DEBUG )
+#if defined( VIS_MODULE_ENABLE_MEM_DEBUG )
         tmp->data = x;
 #else
         this->constructor( &tmp->data, x );
@@ -318,11 +318,11 @@ public:
         node_type* tmp = m_allocator.allocate( 1, 0 );
         if ( !tmp )
         {
-            kvsMessageError( "Cannot allocate memory for the appending node." );
+            visModuleMessageError( "Cannot allocate memory for the appending node." );
             return ( 0 );
         }
 
-#if defined( KVS_ENABLE_MEM_DEBUG )
+#if defined( VIS_MODULE_ENABLE_MEM_DEBUG )
         tmp->data = x;
 #else
         this->constructor( &tmp->data, x );
@@ -355,11 +355,11 @@ public:
         node_type* tmp = m_allocator.allocate( 1, 0 );
         if ( !tmp )
         {
-            kvsMessageError( "Cannot allocate memory for the appending node." );
+            visModuleMessageError( "Cannot allocate memory for the appending node." );
             return ( 0 );
         }
 
-#if defined( KVS_ENABLE_MEM_DEBUG )
+#if defined( VIS_MODULE_ENABLE_MEM_DEBUG )
         tmp->data = x;
 #else
         this->constructor( &tmp->data, x );
@@ -412,7 +412,7 @@ public:
     {
         node_type* pos = it.node();
 
-        KVS_ASSERT( pos != 0 );
+        VIS_MODULE_ASSERT( pos != 0 );
 
         int ret = 0;
         while( pos->parent != 0 ){ pos = pos->parent; ++ret; }
@@ -454,7 +454,7 @@ protected:
         m_head = m_allocator.allocate( 1, 0 );
         if ( !m_head )
         {
-            kvsMessageError( "Cannot allocate memory for the head node." );
+            visModuleMessageError( "Cannot allocate memory for the head node." );
         }
 
         m_head->parent       = 0;
@@ -466,14 +466,14 @@ protected:
 
     pre_order_iterator set_head( const T& x )
     {
-        KVS_ASSERT( begin() == end() );
+        VIS_MODULE_ASSERT( begin() == end() );
 
         return( insert( begin(), x ) );
     }
 
 private:
 
-#if !defined( KVS_ENABLE_MEM_DEBUG )
+#if !defined( VIS_MODULE_ENABLE_MEM_DEBUG )
     template <typename T1, typename T2>
     inline void constructor( T1* p, T2& val )
     {
@@ -692,7 +692,7 @@ public:
 
     virtual iterator_base& operator ++ ( void )
     {
-        KVS_ASSERT( m_node != 0 );
+        VIS_MODULE_ASSERT( m_node != 0 );
 
         if( !m_skip_current_children &&
             m_node->first_child != 0 )
@@ -716,7 +716,7 @@ public:
 
     virtual iterator_base& operator -- ( void )
     {
-        KVS_ASSERT( m_node != 0 );
+        VIS_MODULE_ASSERT( m_node != 0 );
 
         if( m_node->prev_sibling )
         {
@@ -816,7 +816,7 @@ public:
 
     virtual iterator_base& operator ++ ( void )
     {
-        KVS_ASSERT( m_node != 0 );
+        VIS_MODULE_ASSERT( m_node != 0 );
 
         if( m_node->next_sibling == 0 )
         {
@@ -840,7 +840,7 @@ public:
 
     virtual iterator_base&  operator--()
     {
-        KVS_ASSERT( m_node != 0 );
+        VIS_MODULE_ASSERT( m_node != 0 );
 
         if( m_skip_current_children || m_node->last_child == 0 )
         {
@@ -881,7 +881,7 @@ public:
 
     void descend_all( void )
     {
-        KVS_ASSERT( m_node != 0 );
+        VIS_MODULE_ASSERT( m_node != 0 );
 
         while( m_node->first_child ) m_node = m_node->first_child;
     }
@@ -954,7 +954,7 @@ public:
         }
         else
         {
-            KVS_ASSERT( m_parent != 0 );
+            VIS_MODULE_ASSERT( m_parent != 0 );
 
             m_node = m_parent->last_child;
         }
@@ -1210,6 +1210,6 @@ public:
     }
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TREE_H_INCLUDE
+#endif // VIS_MODULE__TREE_H_INCLUDE

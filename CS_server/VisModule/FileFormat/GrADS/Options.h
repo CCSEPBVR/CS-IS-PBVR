@@ -12,15 +12,15 @@
  *  $Id: Options.h 863 2011-07-20 10:40:29Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__GRADS__OPTIONS_H_INCLUDE
-#define KVS__GRADS__OPTIONS_H_INCLUDE
+#ifndef VIS_MODULE__GRADS__OPTIONS_H_INCLUDE
+#define VIS_MODULE__GRADS__OPTIONS_H_INCLUDE
 
 #include <list>
 #include <string>
 #include <fstream>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace grads
@@ -56,6 +56,6 @@ struct Options
 
 } // end of namespace grads
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GRADS__OPTIONS_H_INCLUDE
+#endif // VIS_MODULE__GRADS__OPTIONS_H_INCLUDE

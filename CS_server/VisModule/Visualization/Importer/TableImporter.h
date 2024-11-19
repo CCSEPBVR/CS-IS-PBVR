@@ -12,17 +12,17 @@
  *  $Id: TableImporter.h 846 2011-06-21 07:04:44Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__TABLE_IMPORTER_H_INCLUDE
-#define KVS__TABLE_IMPORTER_H_INCLUDE
+#ifndef VIS_MODULE__TABLE_IMPORTER_H_INCLUDE
+#define VIS_MODULE__TABLE_IMPORTER_H_INCLUDE
 
-#include <kvs/ImporterBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
-#include <kvs/TableObject>
-#include <kvs/KVSMLObjectTable>
+#include <vismodule/ImporterBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
+#include <vismodule/TableObject>
+#include <vismodule/KVSMLObjectTable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,15 +30,15 @@ namespace kvs
  *  @brief  Importer class for TableObject.
  */
 /*===========================================================================*/
-class TableImporter : public kvs::ImporterBase, public kvs::TableObject
+class TableImporter : public vismodule::ImporterBase, public vismodule::TableObject
 {
     // Class name.
-    kvsClassName( kvs::TableImporter );
+    visModuleClassName( vismodule::TableImporter );
 
     // Module information.
-    kvsModuleCategory( Importer );
-    kvsModuleBaseClass( kvs::ImporterBase );
-    kvsModuleSuperClass( kvs::TableObject );
+    visModuleCategory( Importer );
+    visModuleBaseClass( vismodule::ImporterBase );
+    visModuleSuperClass( vismodule::TableObject );
 
 public:
 
@@ -46,17 +46,17 @@ public:
 
     TableImporter( const std::string& filename );
 
-    TableImporter( const kvs::FileFormatBase* file_format );
+    TableImporter( const vismodule::FileFormatBase* file_format );
 
 public:
 
-    SuperClass* exec( const kvs::FileFormatBase* file_format );
+    SuperClass* exec( const vismodule::FileFormatBase* file_format );
 
 private:
 
-    void import( const kvs::KVSMLObjectTable* kvsml );
+    void import( const vismodule::KVSMLObjectTable* kvsml );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TABLE_IMPORTER_H_INCLUDE
+#endif // VIS_MODULE__TABLE_IMPORTER_H_INCLUDE

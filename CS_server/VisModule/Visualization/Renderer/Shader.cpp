@@ -12,41 +12,41 @@
  */
 /****************************************************************************/
 #include "Shader.h"
-#include <kvs/Math>
-#include <kvs/IgnoreUnusedVariable>
-#include <kvs/RGBColor>
+#include <vismodule/Math>
+#include <vismodule/IgnoreUnusedVariable>
+#include <vismodule/RGBColor>
 
 
-#define kvsShaderAmbientTerm( ka ) \
+#define visModuleShaderAmbientTerm( ka ) \
     ka
 
-#define kvsShaderDiffuseTerm( kd, N, L ) \
-    kd * kvs::Math::Max( N.dot( L ), 0.0f )
+#define visModuleShaderDiffuseTerm( kd, N, L ) \
+    kd * vismodule::Math::Max( N.dot( L ), 0.0f )
 
-#define kvsShaderSpecularTerm( ks, S, R, V ) \
-    Ks * std::pow( kvs::Math::Max( R.dot( V ), 0.0f ), S )
+#define visModuleShaderSpecularTerm( ks, S, R, V ) \
+    Ks * std::pow( vismodule::Math::Max( R.dot( V ), 0.0f ), S )
 
 
 namespace
 {
 
-inline const kvs::RGBColor Shade(
-    const kvs::RGBColor& color,
+inline const vismodule::RGBColor Shade(
+    const vismodule::RGBColor& color,
     const float Ia,
     const float Id,
     const float Is )
 {
     const float I1 = Ia + Id;
     const float I2 = Is * 255.0f;
-    const kvs::UInt8 r = static_cast<kvs::UInt8>( kvs::Math::Min( color.r() * I1 + I2, 255.0f ) + 0.5f );
-    const kvs::UInt8 g = static_cast<kvs::UInt8>( kvs::Math::Min( color.g() * I1 + I2, 255.0f ) + 0.5f );
-    const kvs::UInt8 b = static_cast<kvs::UInt8>( kvs::Math::Min( color.b() * I1 + I2, 255.0f ) + 0.5f );
-    return( kvs::RGBColor( r, g, b ) );
+    const vismodule::UInt8 r = static_cast<vismodule::UInt8>( vismodule::Math::Min( color.r() * I1 + I2, 255.0f ) + 0.5f );
+    const vismodule::UInt8 g = static_cast<vismodule::UInt8>( vismodule::Math::Min( color.g() * I1 + I2, 255.0f ) + 0.5f );
+    const vismodule::UInt8 b = static_cast<vismodule::UInt8>( vismodule::Math::Min( color.b() * I1 + I2, 255.0f ) + 0.5f );
+    return( vismodule::RGBColor( r, g, b ) );
 }
 
 } // end of namespace
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -131,18 +131,18 @@ const Shader::Type Shader::Lambert::type( void ) const
  *  @return shaded color
  */
 /*===========================================================================*/
-const kvs::RGBColor Shader::Lambert::shadedColor(
-    const kvs::RGBColor& color,
-    const kvs::Vector3f& vertex,
-    const kvs::Vector3f& normal ) const
+const vismodule::RGBColor Shader::Lambert::shadedColor(
+    const vismodule::RGBColor& color,
+    const vismodule::Vector3f& vertex,
+    const vismodule::Vector3f& normal ) const
 {
     // Light vector L and normal vector N.
-    const kvs::Vector3f L = ( light_position - vertex ).normalize();
-    const kvs::Vector3f N = normal.normalize();
+    const vismodule::Vector3f L = ( light_position - vertex ).normalize();
+    const vismodule::Vector3f N = normal.normalize();
 
     // Intensity values.
-    const float Ia = kvsShaderAmbientTerm( Ka );
-    const float Id = kvsShaderDiffuseTerm( Kd, N, L );
+    const float Ia = visModuleShaderAmbientTerm( Ka );
+    const float Id = visModuleShaderDiffuseTerm( Kd, N, L );
 
     return( color * ( Ia + Id ) );
 }
@@ -153,13 +153,13 @@ const kvs::RGBColor Shader::Lambert::shadedColor(
  *  @return attenuation value
  */
 /*==========================================================================*/
-inline const float Shader::Lambert::attenuation( const kvs::Vector3f& vertex, const kvs::Vector3f& gradient ) const
+inline const float Shader::Lambert::attenuation( const vismodule::Vector3f& vertex, const vismodule::Vector3f& gradient ) const
 {
     // Light vector L and normal vector N.
-    const kvs::Vector3f L = ( light_position - vertex ).normalize();
-    const kvs::Vector3f N = gradient.normalize();
+    const vismodule::Vector3f L = ( light_position - vertex ).normalize();
+    const vismodule::Vector3f N = gradient.normalize();
 
-    const float dd = kvs::Math::Max( N.dot( L ), 0.0f );
+    const float dd = vismodule::Math::Max( N.dot( L ), 0.0f );
 
     /* I = Ia + Id
      *
@@ -227,7 +227,7 @@ Shader::Phong::Phong( const float ka, const float kd, const float ks, const floa
  *  @param light [in] pointer to the light
  */
 /*==========================================================================*/
-void Shader::Phong::set( const kvs::Camera* camera, const kvs::Light* light )
+void Shader::Phong::set( const vismodule::Camera* camera, const vismodule::Light* light )
 {
     camera_position = camera->projectWorldToObject( camera->position() );
     light_position = camera->projectWorldToObject( light->position() );
@@ -253,21 +253,21 @@ const Shader::Type Shader::Phong::type( void ) const
  *  @return shaded color
  */
 /*===========================================================================*/
-const kvs::RGBColor Shader::Phong::shadedColor(
-    const kvs::RGBColor& color,
-    const kvs::Vector3f& vertex,
-    const kvs::Vector3f& normal ) const
+const vismodule::RGBColor Shader::Phong::shadedColor(
+    const vismodule::RGBColor& color,
+    const vismodule::Vector3f& vertex,
+    const vismodule::Vector3f& normal ) const
 {
     // Light vector L, normal vector N and reflection vector R.
-    const kvs::Vector3f V = ( camera_position - vertex ).normalize();
-    const kvs::Vector3f L = ( light_position - vertex ).normalize();
-    const kvs::Vector3f N = normal.normalize();
-    const kvs::Vector3f R = 2.0f * N.dot( L ) * N - L;
+    const vismodule::Vector3f V = ( camera_position - vertex ).normalize();
+    const vismodule::Vector3f L = ( light_position - vertex ).normalize();
+    const vismodule::Vector3f N = normal.normalize();
+    const vismodule::Vector3f R = 2.0f * N.dot( L ) * N - L;
 
     // Intensity values.
-    const float Ia = kvsShaderAmbientTerm( Ka );
-    const float Id = kvsShaderDiffuseTerm( Kd, N, L );
-    const float Is = kvsShaderSpecularTerm( ks, S, R, V );
+    const float Ia = visModuleShaderAmbientTerm( Ka );
+    const float Id = visModuleShaderDiffuseTerm( Kd, N, L );
+    const float Is = visModuleShaderSpecularTerm( ks, S, R, V );
 
     return( ::Shade( color, Ia, Id, Is ) );
 }
@@ -278,12 +278,12 @@ const kvs::RGBColor Shader::Phong::shadedColor(
  *  @return attenuation value
  */
 /*==========================================================================*/
-inline const float Shader::Phong::attenuation( const kvs::Vector3f& vertex, const kvs::Vector3f& gradient ) const
+inline const float Shader::Phong::attenuation( const vismodule::Vector3f& vertex, const vismodule::Vector3f& gradient ) const
 {
     // Light vector L, normal vector N and reflection vector R.
-    const kvs::Vector3f L = ( light_position - vertex ).normalize();
-    const kvs::Vector3f N = gradient.normalize();
-    const kvs::Vector3f R = 2.0f * N.dot( L ) * N - L;
+    const vismodule::Vector3f L = ( light_position - vertex ).normalize();
+    const vismodule::Vector3f N = gradient.normalize();
+    const vismodule::Vector3f R = 2.0f * N.dot( L ) * N - L;
 
     const float dd = Math::Max( N.dot( L ), 0.0f );
     const float ds = Math::Max( N.dot( R ), 0.0f );
@@ -352,7 +352,7 @@ Shader::BlinnPhong::BlinnPhong( const float ka, const float kd, const float ks, 
  *  @param light [in] pointer to the light
  */
 /*==========================================================================*/
-void Shader::BlinnPhong::set( const kvs::Camera* camera, const kvs::Light* light )
+void Shader::BlinnPhong::set( const vismodule::Camera* camera, const vismodule::Light* light )
 {
     camera_position = camera->projectWorldToObject( camera->position() );
     light_position = camera->projectWorldToObject( light->position() );
@@ -378,21 +378,21 @@ const Shader::Type Shader::BlinnPhong::type( void ) const
  *  @return shaded color
  */
 /*===========================================================================*/
-const kvs::RGBColor Shader::BlinnPhong::shadedColor(
-    const kvs::RGBColor& color,
-    const kvs::Vector3f& vertex,
-    const kvs::Vector3f& normal ) const
+const vismodule::RGBColor Shader::BlinnPhong::shadedColor(
+    const vismodule::RGBColor& color,
+    const vismodule::Vector3f& vertex,
+    const vismodule::Vector3f& normal ) const
 {
     // Camera vector V, light vector L, halfway vector H and normal vector N.
-    const kvs::Vector3f V = ( camera_position - vertex ).normalize();
-    const kvs::Vector3f L = ( light_position - vertex ).normalize();
-    const kvs::Vector3f H = ( V + L ).normalize();
-    const kvs::Vector3f N = normal.normalize();
+    const vismodule::Vector3f V = ( camera_position - vertex ).normalize();
+    const vismodule::Vector3f L = ( light_position - vertex ).normalize();
+    const vismodule::Vector3f H = ( V + L ).normalize();
+    const vismodule::Vector3f N = normal.normalize();
 
     // Intensity values.
-    const float Ia = kvsShaderAmbientTerm( Ka );
-    const float Id = kvsShaderDiffuseTerm( Kd, N, L );
-    const float Is = kvsShaderSpecularTerm( ks, S, H, N );
+    const float Ia = visModuleShaderAmbientTerm( Ka );
+    const float Id = visModuleShaderDiffuseTerm( Kd, N, L );
+    const float Is = visModuleShaderSpecularTerm( ks, S, H, N );
 
     return( ::Shade( color, Ia, Id, Is ) );
 }
@@ -403,16 +403,16 @@ const kvs::RGBColor Shader::BlinnPhong::shadedColor(
  *  @return attenuation value
  */
 /*==========================================================================*/
-inline const float Shader::BlinnPhong::attenuation( const kvs::Vector3f& vertex, const kvs::Vector3f& gradient ) const
+inline const float Shader::BlinnPhong::attenuation( const vismodule::Vector3f& vertex, const vismodule::Vector3f& gradient ) const
 {
     // Camera vector C, light vector L, halfway vector H and normal vector N.
-    const kvs::Vector3f C = ( camera_position - vertex ).normalize();
-    const kvs::Vector3f L = ( light_position - vertex ).normalize();
-    const kvs::Vector3f H = ( C + L ).normalize();
-    const kvs::Vector3f N = gradient.normalize();
+    const vismodule::Vector3f C = ( camera_position - vertex ).normalize();
+    const vismodule::Vector3f L = ( light_position - vertex ).normalize();
+    const vismodule::Vector3f H = ( C + L ).normalize();
+    const vismodule::Vector3f N = gradient.normalize();
 
-    const float dd = kvs::Math::Max( N.dot( L ), 0.0f );
-    const float ds = kvs::Math::Max( N.dot( H ), 0.0f );
+    const float dd = vismodule::Math::Max( N.dot( L ), 0.0f );
+    const float ds = vismodule::Math::Max( N.dot( H ), 0.0f );
 
     /* I = Ia + Id + Is
      *
@@ -425,4 +425,4 @@ inline const float Shader::BlinnPhong::attenuation( const kvs::Vector3f& vertex,
     return( Ia + Id + Is );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

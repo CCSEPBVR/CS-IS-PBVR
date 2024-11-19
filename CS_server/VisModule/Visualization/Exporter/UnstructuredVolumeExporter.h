@@ -11,17 +11,17 @@
  *  $Id: UnstructuredVolumeExporter.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__UNSTRUCTURED_VOLUME_EXPORTER_H_INCLUDE
-#define KVS__UNSTRUCTURED_VOLUME_EXPORTER_H_INCLUDE
+#ifndef VIS_MODULE__UNSTRUCTURED_VOLUME_EXPORTER_H_INCLUDE
+#define VIS_MODULE__UNSTRUCTURED_VOLUME_EXPORTER_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/ObjectBase>
-#include <kvs/UnstructuredVolumeObject>
-#include <kvs/KVSMLObjectUnstructuredVolume>
-#include <kvs/ExporterBase>
+#include <vismodule/ClassName>
+#include <vismodule/ObjectBase>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/KVSMLObjectUnstructuredVolume>
+#include <vismodule/ExporterBase>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,15 +30,15 @@ namespace kvs
  */
 /*===========================================================================*/
 template <typename FileFormatType>
-class UnstructuredVolumeExporter : public kvs::ExporterBase<FileFormatType>
+class UnstructuredVolumeExporter : public vismodule::ExporterBase<FileFormatType>
 {
-    kvsClassName( kvs::UnstructuredVolumeExporter );
+    visModuleClassName( vismodule::UnstructuredVolumeExporter );
 
 public:
 
-    UnstructuredVolumeExporter( const kvs::UnstructuredVolumeObject* object );
+    UnstructuredVolumeExporter( const vismodule::UnstructuredVolumeObject* object );
 
-    FileFormatType* exec( const kvs::ObjectBase* object );
+    FileFormatType* exec( const vismodule::ObjectBase* object );
 };
 
 /*===========================================================================*/
@@ -49,7 +49,7 @@ public:
 /*===========================================================================*/
 template <typename FileFormatType>
 UnstructuredVolumeExporter<FileFormatType>::UnstructuredVolumeExporter(
-    const kvs::UnstructuredVolumeObject* object )
+    const vismodule::UnstructuredVolumeObject* object )
 {
     this->exec( object );
 }
@@ -61,27 +61,27 @@ UnstructuredVolumeExporter<FileFormatType>::UnstructuredVolumeExporter(
  */
 /*===========================================================================*/
 template <typename FileFormatType>
-FileFormatType* UnstructuredVolumeExporter<FileFormatType>::exec( const kvs::ObjectBase* object )
+FileFormatType* UnstructuredVolumeExporter<FileFormatType>::exec( const vismodule::ObjectBase* object )
 {
     return( NULL );
 }
 
 /*===========================================================================*/
 /**
- *  Specialized structured volume exporter class for kvs::KVSMLObjectUnstructuredVolume.
+ *  Specialized structured volume exporter class for vismodule::KVSMLObjectUnstructuredVolume.
  */
 /*===========================================================================*/
 template <>
-class UnstructuredVolumeExporter<kvs::KVSMLObjectUnstructuredVolume> :
-        public kvs::ExporterBase<kvs::KVSMLObjectUnstructuredVolume>
+class UnstructuredVolumeExporter<vismodule::KVSMLObjectUnstructuredVolume> :
+        public vismodule::ExporterBase<vismodule::KVSMLObjectUnstructuredVolume>
 {
 public:
 
-    UnstructuredVolumeExporter( const kvs::UnstructuredVolumeObject* object );
+    UnstructuredVolumeExporter( const vismodule::UnstructuredVolumeObject* object );
 
-    kvs::KVSMLObjectUnstructuredVolume* exec( const kvs::ObjectBase* object );
+    vismodule::KVSMLObjectUnstructuredVolume* exec( const vismodule::ObjectBase* object );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__UNSTRUCTURED_VOLUME_EXPORTER_H_INCLUDE
+#endif // VIS_MODULE__UNSTRUCTURED_VOLUME_EXPORTER_H_INCLUDE

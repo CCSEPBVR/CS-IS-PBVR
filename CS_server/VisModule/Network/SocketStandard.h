@@ -11,11 +11,11 @@
  *  $Id: SocketStandard.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__SOCKET_STANDARD_H_INCLUDE
-#define KVS__SOCKET_STANDARD_H_INCLUDE
+#ifndef VIS_MODULE__SOCKET_STANDARD_H_INCLUDE
+#define VIS_MODULE__SOCKET_STANDARD_H_INCLUDE
 
-#include <kvs/Platform>
-#if defined( KVS_PLATFORM_WINDOWS )
+#include <vismodule/Platform>
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
 #include <winsock.h>
 #pragma comment(lib,"wsock32.lib")
 #else
@@ -31,4 +31,4 @@
 #include <unistd.h>
 #endif
 
-#endif // KVS__SOCKET_STANDARD_H_INCLUDE
+#endif // VIS_MODULE__SOCKET_STANDARD_H_INCLUDE

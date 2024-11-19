@@ -12,17 +12,17 @@
  *  $Id: SVDecomposer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__SV_DECOMPOSER_H_INCLUDE
-#define KVS__SV_DECOMPOSER_H_INCLUDE
+#ifndef VIS_MODULE__SV_DECOMPOSER_H_INCLUDE
+#define VIS_MODULE__SV_DECOMPOSER_H_INCLUDE
 
-#include <kvs/Matrix33>
-#include <kvs/Matrix44>
-#include <kvs/Matrix>
-#include <kvs/Vector>
-#include <kvs/ClassName>
+#include <vismodule/Matrix33>
+#include <vismodule/Matrix44>
+#include <vismodule/Matrix>
+#include <vismodule/Vector>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -33,13 +33,13 @@ namespace kvs
 template <typename T>
 class SVDecomposer
 {
-    kvsClassName_without_virtual( kvs::SVDecomposer );
+    visModuleClassName_without_virtual( vismodule::SVDecomposer );
 
 protected:
 
-    kvs::Matrix<T> m_u; ///< U matrix (left singular matrix)
-    kvs::Vector<T> m_w; ///< diagonal elements of W matrix (singular values)
-    kvs::Matrix<T> m_v; ///< V matrix (right singular matrix)
+    vismodule::Matrix<T> m_u; ///< U matrix (left singular matrix)
+    vismodule::Vector<T> m_w; ///< diagonal elements of W matrix (singular values)
+    vismodule::Matrix<T> m_v; ///< V matrix (right singular matrix)
 
 protected:
 
@@ -49,11 +49,11 @@ public:
 
     SVDecomposer( void );
 
-    SVDecomposer( const kvs::Matrix33<T>& m );
+    SVDecomposer( const vismodule::Matrix33<T>& m );
 
-    SVDecomposer( const kvs::Matrix44<T>& m );
+    SVDecomposer( const vismodule::Matrix44<T>& m );
 
-    SVDecomposer( const kvs::Matrix<T>& m );
+    SVDecomposer( const vismodule::Matrix<T>& m );
 
 public:
 
@@ -61,25 +61,25 @@ public:
 
 public:
 
-    const kvs::Matrix<T>& U( void ) const;
+    const vismodule::Matrix<T>& U( void ) const;
 
-    const kvs::Vector<T>& W( void ) const;
+    const vismodule::Vector<T>& W( void ) const;
 
-    const kvs::Matrix<T>& V( void ) const;
+    const vismodule::Matrix<T>& V( void ) const;
 
-    const kvs::Matrix<T>& leftSingularMatrix( void ) const;
+    const vismodule::Matrix<T>& leftSingularMatrix( void ) const;
 
-    const kvs::Vector<T>& singularValues( void ) const;
+    const vismodule::Vector<T>& singularValues( void ) const;
 
-    const kvs::Matrix<T>& rightSingularMatrix( void ) const;
+    const vismodule::Matrix<T>& rightSingularMatrix( void ) const;
 
 public:
 
-    void setMatrix( const kvs::Matrix33<T>& m );
+    void setMatrix( const vismodule::Matrix33<T>& m );
 
-    void setMatrix( const kvs::Matrix44<T>& m );
+    void setMatrix( const vismodule::Matrix44<T>& m );
 
-    void setMatrix( const kvs::Matrix<T>& m );
+    void setMatrix( const vismodule::Matrix<T>& m );
 
     void decompose( void );
 
@@ -91,9 +91,9 @@ public:
 
 private:
 
-    void sort( kvs::Matrix<T>* umat, kvs::Matrix<T>* vmat, kvs::Vector<T>* wvec );
+    void sort( vismodule::Matrix<T>* umat, vismodule::Matrix<T>* vmat, vismodule::Vector<T>* wvec );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__SV_DECOMPOSER_H_INCLUDE
+#endif // VIS_MODULE__SV_DECOMPOSER_H_INCLUDE

@@ -11,13 +11,13 @@
  *  $Id: SystemInformation.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__SYSTEM_INFORMATION_H_INCLUDE
-#define KVS__SYSTEM_INFORMATION_H_INCLUDE
+#ifndef VIS_MODULE__SYSTEM_INFORMATION_H_INCLUDE
+#define VIS_MODULE__SYSTEM_INFORMATION_H_INCLUDE
 
 #include <cstdio>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -36,6 +36,6 @@ public:
     static const size_t freeMemorySize( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__SYSTEM_INFORMATION_H_INCLUDE
+#endif // VIS_MODULE__SYSTEM_INFORMATION_H_INCLUDE

@@ -15,7 +15,7 @@
 #include <cstdlib>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -24,7 +24,7 @@ namespace kvs
  */
 /*==========================================================================*/
 SocketAddress::SocketAddress( void ):
-    m_ip( kvs::IPAddress() ),
+    m_ip( vismodule::IPAddress() ),
     m_port( 0 )
 {
     this->initialize( &m_address );
@@ -37,7 +37,7 @@ SocketAddress::SocketAddress( void ):
  */
 /*==========================================================================*/
 SocketAddress::SocketAddress( const char* address_name ):
-    m_ip( kvs::IPAddress() ),
+    m_ip( vismodule::IPAddress() ),
     m_port( 0 )
 {
     this->split_ip_and_port( address_name );
@@ -51,7 +51,7 @@ SocketAddress::SocketAddress( const char* address_name ):
  *  @param port [in] port number
  */
 /*==========================================================================*/
-SocketAddress::SocketAddress( const kvs::IPAddress& ip, const int port ):
+SocketAddress::SocketAddress( const vismodule::IPAddress& ip, const int port ):
     m_ip( ip ),
     m_port( port )
 {
@@ -181,7 +181,7 @@ std::ostream& operator << ( std::ostream& os, const SocketAddress& other )
  *  @retval IP address
  */
 /*==========================================================================*/
-const kvs::IPAddress& SocketAddress::ip( void ) const
+const vismodule::IPAddress& SocketAddress::ip( void ) const
 {
     return( m_ip );
 }
@@ -214,7 +214,7 @@ const SocketAddress::address_type& SocketAddress::address( void ) const
  *  @param ip [in] IP address
  */
 /*==========================================================================*/
-void SocketAddress::setIp( const kvs::IPAddress& ip )
+void SocketAddress::setIp( const vismodule::IPAddress& ip )
 {
     m_ip = ip;
 }
@@ -240,7 +240,7 @@ void SocketAddress::setAddress( const address_type& address )
 {
     this->copy_address( address );
 
-    m_ip   = kvs::IPAddress( address.sin_addr );
+    m_ip   = vismodule::IPAddress( address.sin_addr );
     m_port = ntohs( address.sin_port );
 }
 
@@ -262,7 +262,7 @@ void SocketAddress::initialize( address_type* address )
  *  @param port [in] port number
  */
 /*==========================================================================*/
-void SocketAddress::initialize_address( const kvs::IPAddress& ip, const int port )
+void SocketAddress::initialize_address( const vismodule::IPAddress& ip, const int port )
 {
     this->initialize( &m_address );
 
@@ -304,4 +304,4 @@ void SocketAddress::split_ip_and_port( const char* address_name )
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
