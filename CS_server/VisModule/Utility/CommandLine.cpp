@@ -18,13 +18,13 @@
 #include <vector>
 #include <cstring>
 #include <cstdlib>
-#include <kvs/DebugNew>
-#include <kvs/CommandLine>
-#include <kvs/Message>
-#include <kvs/Math>
+#include <vismodule/DebugNew>
+#include <vismodule/CommandLine>
+#include <vismodule/Message>
+#include <vismodule/Math>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -51,7 +51,7 @@ CommandLine::Argument::Argument( const char* data )
     m_data = new char[ m_length + 1 ];
     if ( !m_data )
     {
-        kvsMessageError( "Cannot allocate memory." );
+        visModuleMessageError( "Cannot allocate memory." );
         return;
     }
 
@@ -73,7 +73,7 @@ CommandLine::Argument::Argument( const CommandLine::Argument& other )
     m_data = new char[ m_length + 1 ];
     if ( !m_data )
     {
-        kvsMessageError( "Cannot allocate memory." );
+        visModuleMessageError( "Cannot allocate memory." );
         return;
     }
 
@@ -128,7 +128,7 @@ CommandLine::Argument& CommandLine::Argument::operator =( const char* rhs )
     m_data = new char[ m_length + 1 ];
     if ( !m_data )
     {
-        kvsMessageError( "Cannot allocate memory." );
+        visModuleMessageError( "Cannot allocate memory." );
         return( *this );
     }
 
@@ -153,7 +153,7 @@ CommandLine::Argument& CommandLine::Argument::operator =( const CommandLine::Arg
     m_data = new char[ m_length + 1 ];
     if ( !m_data )
     {
-        kvsMessageError( "Cannot allocate memory." );
+        visModuleMessageError( "Cannot allocate memory." );
         return( *this );
     }
 
@@ -638,7 +638,7 @@ const bool CommandLine::parse( void )
             option = this->find_option( argument );
             if ( option == m_options.end() )
             {
-                kvsMessageError( "Unknown option '%s'", argument->data() );
+                visModuleMessageError( "Unknown option '%s'", argument->data() );
                 this->clear();
                 return( false );
             }
@@ -646,7 +646,7 @@ const bool CommandLine::parse( void )
             // Read the option values.
             if ( !this->read_option_values( argument, option ) )
             {
-                kvsMessageError( "%d values is required for the option '-%s'",
+                visModuleMessageError( "%d values is required for the option '-%s'",
                                  option->nvalues(),
                                  option->name().c_str() );
                 this->clear();
@@ -674,7 +674,7 @@ const bool CommandLine::parse( void )
         {
             if ( !option->isGiven() )
             {
-                kvsMessageError( "Option '-%s' is required.", option->name().c_str() );
+                visModuleMessageError( "Option '-%s' is required.", option->name().c_str() );
                 this->clear();
                 return( false );
             }
@@ -689,7 +689,7 @@ const bool CommandLine::parse( void )
         {
             if ( !value->isGiven() )
             {
-                kvsMessageError("Input value is required.");
+                visModuleMessageError("Input value is required.");
                 this->clear();
                 return( false );
             }
@@ -1097,4 +1097,4 @@ void CommandLine::print_help_message( HelpMessageMode mode ) const
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

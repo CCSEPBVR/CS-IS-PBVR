@@ -11,16 +11,16 @@
  *  $Id: ParticleBuffer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__PARTICLE_BUFFER_H_INCLUDE
-#define KVS__PARTICLE_BUFFER_H_INCLUDE
+#ifndef VIS_MODULE__PARTICLE_BUFFER_H_INCLUDE
+#define VIS_MODULE__PARTICLE_BUFFER_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/ValueArray>
-#include <kvs/Type>
-#include <kvs/Shader>
+#include <vismodule/ClassName>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/Shader>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class PointObject;
@@ -32,7 +32,7 @@ class PointObject;
 /*==========================================================================*/
 class ParticleBuffer
 {
-    kvsClassName( kvs::ParticleBuffer );
+    visModuleClassName( vismodule::ParticleBuffer );
 
 protected:
 
@@ -45,12 +45,12 @@ protected:
     bool    m_enable_shading;             ///< shading flag
     size_t  m_extended_width;             ///< m_width * m_subpixel_level
 
-    kvs::ValueArray<kvs::UInt32> m_index_buffer; ///< index buffer
-    kvs::ValueArray<kvs::Real32> m_depth_buffer; ///< depth buffer
+    vismodule::ValueArray<vismodule::UInt32> m_index_buffer; ///< index buffer
+    vismodule::ValueArray<vismodule::Real32> m_depth_buffer; ///< depth buffer
 
     // Reference shader (NOTE: not allocated in thie class).
-    const kvs::Shader::shader_type* m_ref_shader;
-    const kvs::PointObject*         m_ref_point_object;
+    const vismodule::Shader::shader_type* m_ref_shader;
+    const vismodule::PointObject*         m_ref_point_object;
 
 public:
 
@@ -66,19 +66,19 @@ public:
 
     const size_t height( void ) const;
 
-    const kvs::ValueArray<kvs::UInt32>& indexBuffer( void ) const;
+    const vismodule::ValueArray<vismodule::UInt32>& indexBuffer( void ) const;
 
-    const kvs::UInt32 index( const size_t index ) const;
+    const vismodule::UInt32 index( const size_t index ) const;
 
-    const kvs::ValueArray<kvs::Real32>& depthBuffer( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& depthBuffer( void ) const;
 
-    const kvs::Real32 depth( const size_t index ) const;
+    const vismodule::Real32 depth( const size_t index ) const;
 
     const size_t subpixelLevel( void ) const;
 
-    const kvs::Shader::shader_type* shader( void ) const;
+    const vismodule::Shader::shader_type* shader( void ) const;
 
-    const kvs::PointObject* pointObject( void ) const;
+    const vismodule::PointObject* pointObject( void ) const;
 
     const size_t numOfProjectedParticles( void ) const;
 
@@ -88,9 +88,9 @@ public:
 
     void setSubpixelLevel( const size_t subpixel_level );
 
-    void attachShader( const kvs::Shader::shader_type* shader );
+    void attachShader( const vismodule::Shader::shader_type* shader );
 
-    void attachPointObject( const kvs::PointObject* point_object );
+    void attachPointObject( const vismodule::PointObject* point_object );
 
 public:
 
@@ -100,7 +100,7 @@ public:
 
 public:
 
-    void add( const float x, const float y, const kvs::Real32 depth, const kvs::UInt32 index );
+    void add( const float x, const float y, const vismodule::Real32 depth, const vismodule::UInt32 index );
 
     bool create( const size_t width, const size_t height, const size_t subpixel_level );
 
@@ -111,18 +111,18 @@ public:
 public:
 
     void createImage(
-        kvs::ValueArray<kvs::UInt8>*  color,
-        kvs::ValueArray<kvs::Real32>* depth );
+        vismodule::ValueArray<vismodule::UInt8>*  color,
+        vismodule::ValueArray<vismodule::Real32>* depth );
 
 protected:
 
     void create_image_with_shading(
-        kvs::ValueArray<kvs::UInt8>*  color,
-        kvs::ValueArray<kvs::Real32>* depth );
+        vismodule::ValueArray<vismodule::UInt8>*  color,
+        vismodule::ValueArray<vismodule::Real32>* depth );
 
     void create_image_without_shading(
-        kvs::ValueArray<kvs::UInt8>*  color,
-        kvs::ValueArray<kvs::Real32>* depth );
+        vismodule::ValueArray<vismodule::UInt8>*  color,
+        vismodule::ValueArray<vismodule::Real32>* depth );
 };
 
 /*==========================================================================*/
@@ -137,8 +137,8 @@ protected:
 inline void ParticleBuffer::add(
     const float x,
     const float y,
-    const kvs::Real32 depth,
-    const kvs::UInt32 voxel_index )
+    const vismodule::Real32 depth,
+    const vismodule::UInt32 voxel_index )
 {
     // Buffer coordinate value.
     const size_t bx = static_cast<size_t>( x * m_subpixel_level );
@@ -163,6 +163,6 @@ inline void ParticleBuffer::add(
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__PARTICLE_BUFFER_H_INCLUDE
+#endif // VIS_MODULE__PARTICLE_BUFFER_H_INCLUDE

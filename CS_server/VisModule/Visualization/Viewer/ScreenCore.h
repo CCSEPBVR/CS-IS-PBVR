@@ -11,23 +11,23 @@
  *  $Id: ScreenCore.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__SCREEN_CORE_H_INCLUDE
-#define KVS__SCREEN_CORE_H_INCLUDE
+#ifndef VIS_MODULE__SCREEN_CORE_H_INCLUDE
+#define VIS_MODULE__SCREEN_CORE_H_INCLUDE
 
 #include <string>
-#include <kvs/Camera>
-#include <kvs/Light>
-#include <kvs/Mouse>
-#include <kvs/ObjectManager>
-#include <kvs/RendererManager>
-#include <kvs/DisplayFormat>
-#include <kvs/MouseEvent>
-#include <kvs/KeyEvent>
-#include <kvs/ClassName>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/Camera>
+#include <vismodule/Light>
+#include <vismodule/Mouse>
+#include <vismodule/ObjectManager>
+#include <vismodule/RendererManager>
+#include <vismodule/DisplayFormat>
+#include <vismodule/MouseEvent>
+#include <vismodule/KeyEvent>
+#include <vismodule/ClassName>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 typedef void (*InitializeFunc)( void );
@@ -45,11 +45,11 @@ typedef void (*KeyPressEventFunc)( KeyEvent* );
 /*==========================================================================*/
 class ScreenCore
 {
-    kvsClassName( kvs::ScreenCore );
+    visModuleClassName( vismodule::ScreenCore );
 
 protected:
 
-    static kvs::DisplayFormat m_display_format;///< display format
+    static vismodule::DisplayFormat m_display_format;///< display format
     static std::string        m_title;         ///< window title
     static int                m_x;             ///< window position (y position)
     static int                m_y;             ///< window position (x position)
@@ -58,8 +58,8 @@ protected:
     static int                m_id;            ///< window ID
     static bool               m_is_fullscreen; ///< flag for statement of fullscreen.
     static bool               m_can_move_all;  ///< flag for object movement
-    static kvs::MouseEvent*   m_mouse_event;   ///< mouse event
-    static kvs::KeyEvent*     m_key_event;     ///< key event
+    static vismodule::MouseEvent*   m_mouse_event;   ///< mouse event
+    static vismodule::KeyEvent*     m_key_event;     ///< key event
 
 protected:
 
@@ -102,7 +102,7 @@ public:
 
 public:
 
-    void setDisplayFormat( const kvs::DisplayFormat& display_format );
+    void setDisplayFormat( const vismodule::DisplayFormat& display_format );
 
     void setPosition( int x, int y );
 
@@ -114,7 +114,7 @@ public:
 
 public:
 
-    const kvs::DisplayFormat& displayFormat( void ) const;
+    const vismodule::DisplayFormat& displayFormat( void ) const;
 
     const int x( void ) const;
 
@@ -178,8 +178,8 @@ public:
 
     static void resize( int width, int height )
     {
-        kvs::IgnoreUnusedVariable( width );
-        kvs::IgnoreUnusedVariable( height );
+        vismodule::IgnoreUnusedVariable( width );
+        vismodule::IgnoreUnusedVariable( height );
     };
 
 public:
@@ -196,7 +196,7 @@ protected:
 
     static void mouse_button_release( int x, int y );
 
-    static void mouse_button_press( int x, int y, kvs::Mouse::TransMode mode );
+    static void mouse_button_press( int x, int y, vismodule::Mouse::TransMode mode );
 
     static bool is_active_move( int x, int y );
 
@@ -206,13 +206,13 @@ protected:
 
     static void update_xform( void );
 
-    static void update_object_manager_xform( kvs::ObjectManager* manager );
+    static void update_object_manager_xform( vismodule::ObjectManager* manager );
 
-    static void update_camera_xform( kvs::Camera* camera );
+    static void update_camera_xform( vismodule::Camera* camera );
 
-    static void update_light_xform( kvs::Light* light );
+    static void update_light_xform( vismodule::Light* light );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS_CORE_SCREEN_CORE_H_INCLUDE
+#endif // VIS_MODULE_CORE_SCREEN_CORE_H_INCLUDE

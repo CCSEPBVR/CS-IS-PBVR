@@ -15,11 +15,11 @@
 #define PBVR__CELL_BY_CELL_PARTICLE_GENERATOR_H_INCLUDE
 
 #include "VolumeObjectBase.h"
-#include <kvs/OpacityMap>
-#include <kvs/Vector3>
-#include <kvs/Math>
-#include <kvs/Camera>
-#include <kvs/MersenneTwister> 
+#include <vismodule/OpacityMap>
+#include <vismodule/Vector3>
+#include <vismodule/Math>
+#include <vismodule/Camera>
+#include <vismodule/MersenneTwister> 
 #include "CellBase.h"
 #include "TetrahedralCell.h"
 #include "QuadraticTetrahedralCell.h"
@@ -46,22 +46,22 @@ namespace
 {
 
 template <typename T>
-kvs::Matrix44<T> PerspectiveMatrix( const T& fov_y, const T& aspect, const T& front, const T& back );
+vismodule::Matrix44<T> PerspectiveMatrix( const T& fov_y, const T& aspect, const T& front, const T& back );
 
 template <typename T>
-kvs::Matrix44<T> OrthogonalMatrix( const T& left, const T& right, const T& bottom, const T& top, const T& front, const T& back );
+vismodule::Matrix44<T> OrthogonalMatrix( const T& left, const T& right, const T& bottom, const T& top, const T& front, const T& back );
 
 template <typename T>
-kvs::Matrix44<T> LookAtMatrix(
-    const kvs::Vector3<T>& eye,
-    const kvs::Vector3<T>& up,
-    const kvs::Vector3<T>& target );
+vismodule::Matrix44<T> LookAtMatrix(
+    const vismodule::Vector3<T>& eye,
+    const vismodule::Vector3<T>& up,
+    const vismodule::Vector3<T>& target );
 
 template <typename T>
-kvs::Matrix44<T> ScalingMatrix( const T& x, const T& y, const T& z, const T& w = T( 1 ) );
+vismodule::Matrix44<T> ScalingMatrix( const T& x, const T& y, const T& z, const T& w = T( 1 ) );
 
 template <typename T>
-kvs::Matrix44<T> TranslationMatrix( const T& x, const T& y, const T& z, const T& w = T( 1 ) );
+vismodule::Matrix44<T> TranslationMatrix( const T& x, const T& y, const T& z, const T& w = T( 1 ) );
 
 void GetViewport( int ( *viewport )[4] );
 
@@ -101,8 +101,8 @@ namespace CellByCellParticleGenerator
 
 const float GetRandomNumber();
 
-const kvs::Vector3f RandomSamplingInCube( const kvs::Vector3f& v );
-kvs::Vector3f RandomSamplingInCube( kvs::MersenneTwister* MT  );
+const vismodule::Vector3f RandomSamplingInCube( const vismodule::Vector3f& v );
+vismodule::Vector3f RandomSamplingInCube( vismodule::MersenneTwister* MT  );
 
 const float CalculateObjectDepth(
     const pbvr::ObjectBase& object,
@@ -118,7 +118,7 @@ const float CalculateSubpixelLength(
     const int    viewport[4] );
 
 inline void CalculateDensityConstaint(
-    const kvs::Camera&     camera,
+    const vismodule::Camera&     camera,
     const pbvr::ObjectBase& object,
     const float            subpixel_level,
     const float            sampling_step,
@@ -132,12 +132,12 @@ const float CalculateDensity(
     const float max_opacity,
     const float max_density );
 
-const kvs::ValueArray<float> CalculateDensityMap(
-    const kvs::Camera&     camera,
+const vismodule::ValueArray<float> CalculateDensityMap(
+    const vismodule::Camera&     camera,
     const pbvr::ObjectBase& object,
     const float            subpixel_level,
     const float            sampling_step,
-    const kvs::OpacityMap& opacity_map );
+    const vismodule::OpacityMap& opacity_map );
 
 } // end of namespace CellByCellParticleGenerator
 
@@ -148,15 +148,15 @@ namespace
 {
 
 template <typename T>
-inline kvs::Matrix44<T> PerspectiveMatrix( const T& fov_y, const T& aspect, const T& front, const T& back )
+inline vismodule::Matrix44<T> PerspectiveMatrix( const T& fov_y, const T& aspect, const T& front, const T& back )
 {
-    const T rad  = kvs::Math::Deg2Rad( fov_y / 2 );
+    const T rad  = vismodule::Math::Deg2Rad( fov_y / 2 );
     const T sinA = static_cast<T>( std::sin( rad ) );
     const T cosA = static_cast<T>( std::cos( rad ) );
 
-    KVS_ASSERT( !( kvs::Math::IsZero( sinA ) ) );
-    KVS_ASSERT( !( kvs::Math::IsZero( aspect ) ) );
-    KVS_ASSERT( !( kvs::Math::IsZero( back - front ) ) );
+    VIS_MODULE_ASSERT( !( vismodule::Math::IsZero( sinA ) ) );
+    VIS_MODULE_ASSERT( !( vismodule::Math::IsZero( aspect ) ) );
+    VIS_MODULE_ASSERT( !( vismodule::Math::IsZero( back - front ) ) );
 
     const T cotA = cosA / sinA;
     const T elements[16] =
@@ -167,19 +167,19 @@ inline kvs::Matrix44<T> PerspectiveMatrix( const T& fov_y, const T& aspect, cons
         0,    0, -( back* front * 2 ) / ( back - front ),  0
     };
 
-    return kvs::Matrix44<T>( elements );
+    return vismodule::Matrix44<T>( elements );
 }
 
 template <typename T>
-inline kvs::Matrix44<T> OrthogonalMatrix( const T& left, const T& right, const T& bottom, const T& top, const T& front, const T& back )
+inline vismodule::Matrix44<T> OrthogonalMatrix( const T& left, const T& right, const T& bottom, const T& top, const T& front, const T& back )
 {
     const T width  = right - left;
     const T height = top - bottom;
     const T depth  = back - front;
 
-    KVS_ASSERT( !( kvs::Math::IsZero( width  ) ) );
-    KVS_ASSERT( !( kvs::Math::IsZero( height ) ) );
-    KVS_ASSERT( !( kvs::Math::IsZero( depth  ) ) );
+    VIS_MODULE_ASSERT( !( vismodule::Math::IsZero( width  ) ) );
+    VIS_MODULE_ASSERT( !( vismodule::Math::IsZero( height ) ) );
+    VIS_MODULE_ASSERT( !( vismodule::Math::IsZero( depth  ) ) );
 
     const T elements[ 16 ] =
     {
@@ -189,18 +189,18 @@ inline kvs::Matrix44<T> OrthogonalMatrix( const T& left, const T& right, const T
         -( right + left ) / width, -( top + bottom ) / height, -( back + front ) / depth, 0
     };
 
-    return kvs::Matrix44<T>( elements );
+    return vismodule::Matrix44<T>( elements );
 }
 
 template <typename T>
-inline kvs::Matrix44<T> LookAtMatrix(
-    const kvs::Vector3<T>& eye,
-    const kvs::Vector3<T>& up,
-    const kvs::Vector3<T>& target )
+inline vismodule::Matrix44<T> LookAtMatrix(
+    const vismodule::Vector3<T>& eye,
+    const vismodule::Vector3<T>& up,
+    const vismodule::Vector3<T>& target )
 {
-    kvs::Vector3<T> f( target - eye );
-    kvs::Vector3<T> s( f.cross( up.normalize() ) );
-    kvs::Vector3<T> u( s.cross( f ) );
+    vismodule::Vector3<T> f( target - eye );
+    vismodule::Vector3<T> s( f.cross( up.normalize() ) );
+    vismodule::Vector3<T> u( s.cross( f ) );
 
     f.normalize();
     s.normalize();
@@ -214,11 +214,11 @@ inline kvs::Matrix44<T> LookAtMatrix(
         0,      0,      0,        1
     };
 
-    return kvs::Matrix44<T>( elements );
+    return vismodule::Matrix44<T>( elements );
 }
 
 template <typename T>
-inline kvs::Matrix44<T> ScalingMatrix( const T& x, const T& y, const T& z, const T& w )
+inline vismodule::Matrix44<T> ScalingMatrix( const T& x, const T& y, const T& z, const T& w )
 {
     const T elements[ 16 ] =
     {
@@ -228,11 +228,11 @@ inline kvs::Matrix44<T> ScalingMatrix( const T& x, const T& y, const T& z, const
         0, 0, 0, w
     };
 
-    return kvs::Matrix44<T>( elements );
+    return vismodule::Matrix44<T>( elements );
 }
 
 template <typename T>
-inline kvs::Matrix44<T> TranslationMatrix( const T& x, const T& y, const T& z, const T& w )
+inline vismodule::Matrix44<T> TranslationMatrix( const T& x, const T& y, const T& z, const T& w )
 {
     const T elements[ 16 ] =
     {
@@ -242,10 +242,10 @@ inline kvs::Matrix44<T> TranslationMatrix( const T& x, const T& y, const T& z, c
         0, 0, 0, w
     };
 
-    return kvs::Matrix44<T>( elements );
+    return vismodule::Matrix44<T>( elements );
 }
 
-inline void GetViewport( const kvs::Camera& camera, int ( *viewport )[4] )
+inline void GetViewport( const vismodule::Camera& camera, int ( *viewport )[4] )
 {
     ( *viewport )[0] = 0;
     ( *viewport )[1] = 0;
@@ -253,7 +253,7 @@ inline void GetViewport( const kvs::Camera& camera, int ( *viewport )[4] )
     ( *viewport )[3] = camera.windowHeight();
 }
 
-//inline void GetProjectionMatrix( const kvs::Camera* camera, double (*projection)[16] )
+//inline void GetProjectionMatrix( const vismodule::Camera* camera, double (*projection)[16] )
 inline void GetProjectionMatrix( double ( *projection )[16] )
 {
     const bool  perspective = true;//camera->isPerspective();
@@ -265,7 +265,7 @@ inline void GetProjectionMatrix( double ( *projection )[16] )
     const float right = 5.0;//camera->right();
     const float bottom = -5.0;//camera->bottom();
     const float top = 5.0;//camera->top();
-    const kvs::Matrix44f P = perspective ?
+    const vismodule::Matrix44f P = perspective ?
                              ::PerspectiveMatrix<float>( fov, aspect, front, back ) :
                              ::OrthogonalMatrix<float>( left, right, bottom, top, front, back );
 
@@ -287,22 +287,22 @@ inline void GetProjectionMatrix( double ( *projection )[16] )
     ( *projection )[15] = P[3][3];
 }
 
-//inline void GetModelviewMatrix( const kvs::Camera* camera, const pbvr::ObjectBase* object, double (*modelview)[16] )
+//inline void GetModelviewMatrix( const vismodule::Camera* camera, const pbvr::ObjectBase* object, double (*modelview)[16] )
 inline void GetModelviewMatrix( const pbvr::ObjectBase& object, double ( *modelview )[16] )
 {
-    const kvs::Vector3f  min_external = object.minExternalCoord();
-    const kvs::Vector3f  max_external = object.maxExternalCoord();
-    const kvs::Vector3f  center       = ( max_external + min_external ) * 0.5f;
-    const kvs::Vector3f  diff         = max_external - min_external;
-    const float          normalize    = 6.0f / kvs::Math::Max( diff.x(), diff.y(), diff.z() );
-    const kvs::Vector3f  eye( 0.0, 0.0, 12.0 );//= camera->position();
-    const kvs::Vector3f  up( 0.0, 1.0, 0.0 );//= camera->upVector();
-    const kvs::Vector3f  target( 0.0, 0.0, 0.0 );//= camera->lookAt();
+    const vismodule::Vector3f  min_external = object.minExternalCoord();
+    const vismodule::Vector3f  max_external = object.maxExternalCoord();
+    const vismodule::Vector3f  center       = ( max_external + min_external ) * 0.5f;
+    const vismodule::Vector3f  diff         = max_external - min_external;
+    const float          normalize    = 6.0f / vismodule::Math::Max( diff.x(), diff.y(), diff.z() );
+    const vismodule::Vector3f  eye( 0.0, 0.0, 12.0 );//= camera->position();
+    const vismodule::Vector3f  up( 0.0, 1.0, 0.0 );//= camera->upVector();
+    const vismodule::Vector3f  target( 0.0, 0.0, 0.0 );//= camera->lookAt();
 
-    const kvs::Matrix44f T = ::TranslationMatrix<float>( -center.x(), -center.y(), -center.z() );
-    const kvs::Matrix44f S = ::ScalingMatrix<float>( normalize, normalize, normalize );
-    const kvs::Matrix44f L = ::LookAtMatrix<float>( eye, up, target );
-    const kvs::Matrix44f M = L * S * T;
+    const vismodule::Matrix44f T = ::TranslationMatrix<float>( -center.x(), -center.y(), -center.z() );
+    const vismodule::Matrix44f S = ::ScalingMatrix<float>( normalize, normalize, normalize );
+    const vismodule::Matrix44f L = ::LookAtMatrix<float>( eye, up, target );
+    const vismodule::Matrix44f M = L * S * T;
 
     ( *modelview )[ 0] = M[0][0];
     ( *modelview )[ 1] = M[1][0];
@@ -333,21 +333,21 @@ inline void Project(
     double*      win_y,
     double*      win_z )
 {
-    const kvs::Vector4d I( obj_x, obj_y, obj_z, 1.0 );
+    const vismodule::Vector4d I( obj_x, obj_y, obj_z, 1.0 );
 
-    const kvs::Matrix44d P(
+    const vismodule::Matrix44d P(
         projection[0], projection[4], projection[8],  projection[12],
         projection[1], projection[5], projection[9],  projection[13],
         projection[2], projection[6], projection[10], projection[14],
         projection[3], projection[7], projection[11], projection[15] );
 
-    const kvs::Matrix44d M(
+    const vismodule::Matrix44d M(
         modelview[0], modelview[4], modelview[8],  modelview[12],
         modelview[1], modelview[5], modelview[9],  modelview[13],
         modelview[2], modelview[6], modelview[10], modelview[14],
         modelview[3], modelview[7], modelview[11], modelview[15] );
 
-    const kvs::Vector4d O = P * M * I;
+    const vismodule::Vector4d O = P * M * I;
 
     const double w =  ( O.w() == 0.0f ) ? 1.0f : O.w();
 
@@ -367,25 +367,25 @@ inline void UnProject(
     double*      obj_y,
     double*      obj_z )
 {
-    const kvs::Vector4d I(
+    const vismodule::Vector4d I(
         ( win_x - viewport[0] ) * 2.0 / viewport[2] - 1.0,
         ( win_y - viewport[1] ) * 2.0 / viewport[3] - 1.0,
         2.0 * win_z - 1.0,
         1.0 );
 
-    const kvs::Matrix44d P(
+    const vismodule::Matrix44d P(
         projection[0], projection[4], projection[8],  projection[12],
         projection[1], projection[5], projection[9],  projection[13],
         projection[2], projection[6], projection[10], projection[14],
         projection[3], projection[7], projection[11], projection[15] );
 
-    const kvs::Matrix44d M(
+    const vismodule::Matrix44d M(
         modelview[0], modelview[4], modelview[8],  modelview[12],
         modelview[1], modelview[5], modelview[9],  modelview[13],
         modelview[2], modelview[6], modelview[10], modelview[14],
         modelview[3], modelview[7], modelview[11], modelview[15] );
 
-    const kvs::Vector4d O = ( P * M ).inverse() * I;
+    const vismodule::Vector4d O = ( P * M ).inverse() * I;
 
     const double w =  ( O.w() == 0.0 ) ? 1.0 : O.w();
 
@@ -407,38 +407,38 @@ inline const float GetRandomNumber()
     double rv;
     // xorshift RGNs with period at least 2^128 - 1.
 //    static float t24 = 1.0/16777216.0; /* 0.5**24 */
-    static kvs::UInt32 x = 123456789, y = 362436069, z = 521288629, w = 88675123;
-    kvs::UInt32 t;
+    static vismodule::UInt32 x = 123456789, y = 362436069, z = 521288629, w = 88675123;
+    vismodule::UInt32 t;
     t = ( x ^ ( x << 11 ) );
     x = y;
     y = z;
     z = w;
     w = ( w ^ ( w >> 19 ) ) ^ ( t ^ ( t >> 8 ) );
 
-    return w * ( 1.0f / 4294967296.0f ); // = w * ( 1.0f / kvs::Value<kvs::UInt32>::Max() + 1 )
+    return w * ( 1.0f / 4294967296.0f ); // = w * ( 1.0f / vismodule::Value<vismodule::UInt32>::Max() + 1 )
 //    return t24 * static_cast<float>( w >> 8 );
 }
 
 
-inline const kvs::Vector3f RandomSamplingInCube( const kvs::Vector3f& v )
+inline const vismodule::Vector3f RandomSamplingInCube( const vismodule::Vector3f& v )
 {
-//    float x = GetRandomNumber(); while ( kvs::Math::Equal( x, 1.0f ) ) x = GetRandomNumber();
-//    float y = GetRandomNumber(); while ( kvs::Math::Equal( y, 1.0f ) ) y = GetRandomNumber();
-//    float z = GetRandomNumber(); while ( kvs::Math::Equal( z, 1.0f ) ) z = GetRandomNumber();
+//    float x = GetRandomNumber(); while ( vismodule::Math::Equal( x, 1.0f ) ) x = GetRandomNumber();
+//    float y = GetRandomNumber(); while ( vismodule::Math::Equal( y, 1.0f ) ) y = GetRandomNumber();
+//    float z = GetRandomNumber(); while ( vismodule::Math::Equal( z, 1.0f ) ) z = GetRandomNumber();
     const float x = GetRandomNumber();
     const float y = GetRandomNumber();
     const float z = GetRandomNumber();
-    const kvs::Vector3f d( x, y, z );
+    const vismodule::Vector3f d( x, y, z );
     return v + d;
 }
 
-inline kvs::Vector3f RandomSamplingInCube( kvs::MersenneTwister* MT  )                    
+inline vismodule::Vector3f RandomSamplingInCube( vismodule::MersenneTwister* MT  )                    
 {
     const float x = (float)MT->rand();
     const float y = (float)MT->rand();
     const float z = (float)MT->rand();
 
-    const kvs::Vector3f vertex( x, y, z ); 
+    const vismodule::Vector3f vertex( x, y, z ); 
 
     return vertex;
 }
@@ -491,7 +491,7 @@ inline const float CalculateSubpixelLength(
 }
 
 inline void CalculateDensityConstaint(
-    const kvs::Camera&     camera,
+    const vismodule::Camera&     camera,
     const pbvr::ObjectBase& object,
     const float            subpixel_level,
     const float            sampling_step,
@@ -555,12 +555,12 @@ inline const float CalculateDensity2d(
     return density;
 }
 
-inline const kvs::ValueArray<float> CalculateDensityMap(
-    const kvs::Camera&     camera,
+inline const vismodule::ValueArray<float> CalculateDensityMap(
+    const vismodule::Camera&     camera,
     const pbvr::ObjectBase& object,
     const float            subpixel_level,
     const float            sampling_step,
-    const kvs::OpacityMap& opacity_map )
+    const vismodule::OpacityMap& opacity_map )
 {
     float sampling_volume_inverse;
     float max_opacity;
@@ -577,10 +577,10 @@ inline const kvs::ValueArray<float> CalculateDensityMap(
     const size_t resolution = opacity_map.resolution();
 
     // Create the density map.
-    kvs::ValueArray<float> density_map;
+    vismodule::ValueArray<float> density_map;
     if ( !density_map.allocate( resolution ) )
     {
-        kvsMessageError( "Cannot allocate memory for a density map." );
+        visModuleMessageError( "Cannot allocate memory for a density map." );
         return density_map;
     }
 
@@ -605,7 +605,7 @@ inline const double CalculateTotalVolume( const pbvr::VolumeObjectBase* object )
         const pbvr::StructuredVolumeObject* volume =
             reinterpret_cast<const pbvr::StructuredVolumeObject*>( object );
 
-        kvs::Vector3ui length( volume->resolution() - kvs::Vector3ui( 1, 1, 1 ) );
+        vismodule::Vector3ui length( volume->resolution() - vismodule::Vector3ui( 1, 1, 1 ) );
         return length.x() * length.y() * length.z();
     }
     else
@@ -707,7 +707,7 @@ inline const double CalculateTotalVolume( const pbvr::VolumeObjectBase* object )
 //        }
         default:
         {
-            kvsMessageError( "Unsupported cell type." );
+            visModuleMessageError( "Unsupported cell type." );
             break;
         }
         }
@@ -749,7 +749,7 @@ inline const double CalculateTotalVolume( const pbvr::VolumeObjectBase* object )
 }
 
 inline const float CalculateGreatDensity(
-    const kvs::Camera&           camera,
+    const vismodule::Camera&           camera,
     const pbvr::ObjectBase&       object,
     const float                  subpixel_level,
     const float                  sampling_step )
@@ -781,4 +781,4 @@ inline const float CalculateGreatDensity(
 
 } // end of namespace pbvr
 
-#endif // KVS__CELL_BY_CELL_PARTICLE_GENERATOR_H_INCLUDE
+#endif // VIS_MODULE__CELL_BY_CELL_PARTICLE_GENERATOR_H_INCLUDE

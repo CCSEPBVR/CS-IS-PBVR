@@ -11,16 +11,16 @@
  *  $Id: ExternalFaces.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__EXTERNAL_FACES_H_INCLUDE
-#define KVS__EXTERNAL_FACES_H_INCLUDE
+#ifndef VIS_MODULE__EXTERNAL_FACES_H_INCLUDE
+#define VIS_MODULE__EXTERNAL_FACES_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/Module>
-#include <kvs/MapperBase>
-#include <kvs/PolygonObject>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
+#include <vismodule/MapperBase>
+#include <vismodule/PolygonObject>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class VolumeObjectBase;
@@ -33,77 +33,77 @@ class TransferFunction;
  *  @brief  Extract external faces.
  */
 /*===========================================================================*/
-class ExternalFaces : public kvs::MapperBase, public kvs::PolygonObject
+class ExternalFaces : public vismodule::MapperBase, public vismodule::PolygonObject
 {
     // Class name.
-    kvsClassName( kvs::ExternalFaces );
+    visModuleClassName( vismodule::ExternalFaces );
 
     // Module information.
-    kvsModuleCategory( Mapper );
-    kvsModuleBaseClass( kvs::MapperBase );
-    kvsModuleSuperClass( kvs::PolygonObject );
+    visModuleCategory( Mapper );
+    visModuleBaseClass( vismodule::MapperBase );
+    visModuleSuperClass( vismodule::PolygonObject );
 
 public:
 
     ExternalFaces( void );
 
     ExternalFaces(
-        const kvs::VolumeObjectBase* volume );
+        const vismodule::VolumeObjectBase* volume );
 
     ExternalFaces(
-        const kvs::VolumeObjectBase* volume,
-        const kvs::TransferFunction& transfer_function );
+        const vismodule::VolumeObjectBase* volume,
+        const vismodule::TransferFunction& transfer_function );
 
     virtual ~ExternalFaces( void );
 
 public:
 
-    SuperClass* exec( const kvs::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase* object );
 
 private:
 
-    void mapping( const kvs::StructuredVolumeObject* volume );
+    void mapping( const vismodule::StructuredVolumeObject* volume );
 
     void calculate_coords(
-        const kvs::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject* volume );
 
     void calculate_uniform_coords(
-        const kvs::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject* volume );
 
     void calculate_rectilinear_coords(
-        const kvs::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject* volume );
 
     void calculate_curvilinear_coords(
-        const kvs::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject* volume );
 
     void calculate_irregular_coords(
-        const kvs::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject* volume );
 
     template <typename T>
     void calculate_colors(
-        const kvs::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject* volume );
 
 private:
 
-    void mapping( const kvs::UnstructuredVolumeObject* volume );
+    void mapping( const vismodule::UnstructuredVolumeObject* volume );
 
     template <typename T>
     void calculate_tetrahedral_faces(
-        const kvs::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject* volume );
 
     template <typename T>
     void calculate_quadratic_tetrahedral_faces(
-        const kvs::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject* volume );
 
     template <typename T>
     void calculate_hexahedral_faces(
-        const kvs::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject* volume );
 
     template <typename T>
     void calculate_quadratic_hexahedral_faces(
-        const kvs::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject* volume );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__EXTERNAL_FACES_H_INCLUDE
+#endif // VIS_MODULE__EXTERNAL_FACES_H_INCLUDE

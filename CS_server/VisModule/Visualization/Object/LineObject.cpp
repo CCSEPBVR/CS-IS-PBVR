@@ -13,39 +13,39 @@
  */
 /*****************************************************************************/
 #include "LineObject.h"
-#include <kvs/PolygonObject>
-#include <kvs/Assert>
-#include <kvs/Type>
+#include <vismodule/PolygonObject>
+#include <vismodule/Assert>
+#include <vismodule/Type>
 
 
 namespace
 {
 
-const std::string GetLineTypeName( const kvs::LineObject::LineType type )
+const std::string GetLineTypeName( const vismodule::LineObject::LineType type )
 {
     switch( type )
     {
-    case kvs::LineObject::Strip: return("strip");
-    case kvs::LineObject::Uniline: return("uniline");
-    case kvs::LineObject::Polyline: return("polyline");
-    case kvs::LineObject::Segment: return("segment");
+    case vismodule::LineObject::Strip: return("strip");
+    case vismodule::LineObject::Uniline: return("uniline");
+    case vismodule::LineObject::Polyline: return("polyline");
+    case vismodule::LineObject::Segment: return("segment");
     default: return("unknown line type");
     }
 }
 
-const std::string GetColorTypeName( const kvs::LineObject::ColorType type )
+const std::string GetColorTypeName( const vismodule::LineObject::ColorType type )
 {
     switch( type )
     {
-    case kvs::LineObject::VertexColor: return("vertex color");
-    case kvs::LineObject::LineColor: return("line color");
+    case vismodule::LineObject::VertexColor: return("vertex color");
+    case vismodule::LineObject::LineColor: return("line color");
     default: return("unknown color type");
     }
 }
 
 } // end of namespace
 
-namespace kvs
+namespace vismodule
 {
 
 LineObject::LineObject( void )
@@ -54,13 +54,13 @@ LineObject::LineObject( void )
 }
 
 LineObject::LineObject(
-    const kvs::ValueArray<kvs::Real32>& coords,
-    const kvs::ValueArray<kvs::UInt32>& connections,
-    const kvs::ValueArray<kvs::UInt8>&  colors,
-    const kvs::ValueArray<kvs::Real32>& sizes,
+    const vismodule::ValueArray<vismodule::Real32>& coords,
+    const vismodule::ValueArray<vismodule::UInt32>& connections,
+    const vismodule::ValueArray<vismodule::UInt8>&  colors,
+    const vismodule::ValueArray<vismodule::Real32>& sizes,
     const LineType                      line_type,
     const ColorType                     color_type ):
-    kvs::GeometryObjectBase( coords, colors )
+    vismodule::GeometryObjectBase( coords, colors )
 {
     this->setLineType( line_type );
     this->setColorType( color_type );
@@ -69,13 +69,13 @@ LineObject::LineObject(
 }
 
 LineObject::LineObject(
-    const kvs::ValueArray<kvs::Real32>& coords,
-    const kvs::ValueArray<kvs::UInt32>& connections,
-    const kvs::ValueArray<kvs::UInt8>&  colors,
-    const kvs::Real32                   size,
+    const vismodule::ValueArray<vismodule::Real32>& coords,
+    const vismodule::ValueArray<vismodule::UInt32>& connections,
+    const vismodule::ValueArray<vismodule::UInt8>&  colors,
+    const vismodule::Real32                   size,
     const LineType                      line_type,
     const ColorType                     color_type ):
-    kvs::GeometryObjectBase( coords, colors )
+    vismodule::GeometryObjectBase( coords, colors )
 {
     this->setLineType( line_type );
     this->setColorType( color_type );
@@ -84,12 +84,12 @@ LineObject::LineObject(
 }
 
 LineObject::LineObject(
-    const kvs::ValueArray<kvs::Real32>& coords,
-    const kvs::ValueArray<kvs::UInt32>& connections,
-    const kvs::RGBColor&                color,
-    const kvs::ValueArray<kvs::Real32>& sizes,
+    const vismodule::ValueArray<vismodule::Real32>& coords,
+    const vismodule::ValueArray<vismodule::UInt32>& connections,
+    const vismodule::RGBColor&                color,
+    const vismodule::ValueArray<vismodule::Real32>& sizes,
     const LineType                      line_type ):
-    kvs::GeometryObjectBase( coords, color )
+    vismodule::GeometryObjectBase( coords, color )
 {
     this->setLineType( line_type );
     this->setColorType( LineObject::LineColor );
@@ -98,12 +98,12 @@ LineObject::LineObject(
 }
 
 LineObject::LineObject(
-    const kvs::ValueArray<kvs::Real32>& coords,
-    const kvs::ValueArray<kvs::UInt32>& connections,
-    const kvs::RGBColor&                color,
-    const kvs::Real32                   size,
+    const vismodule::ValueArray<vismodule::Real32>& coords,
+    const vismodule::ValueArray<vismodule::UInt32>& connections,
+    const vismodule::RGBColor&                color,
+    const vismodule::Real32                   size,
     const LineType                      line_type ):
-    kvs::GeometryObjectBase( coords, color )
+    vismodule::GeometryObjectBase( coords, color )
 {
     this->setLineType( line_type );
     this->setColorType( LineObject::LineColor );
@@ -112,11 +112,11 @@ LineObject::LineObject(
 }
 
 LineObject::LineObject(
-    const kvs::ValueArray<kvs::Real32>& coords,
-    const kvs::ValueArray<kvs::UInt8>&  colors,
-    const kvs::ValueArray<kvs::Real32>& sizes,
+    const vismodule::ValueArray<vismodule::Real32>& coords,
+    const vismodule::ValueArray<vismodule::UInt8>&  colors,
+    const vismodule::ValueArray<vismodule::Real32>& sizes,
     const ColorType                     color_type ):
-    kvs::GeometryObjectBase( coords, colors )
+    vismodule::GeometryObjectBase( coords, colors )
 {
     this->setLineType( LineObject::Strip );
     this->setColorType( color_type );
@@ -124,11 +124,11 @@ LineObject::LineObject(
 }
 
 LineObject::LineObject(
-    const kvs::ValueArray<kvs::Real32>& coords,
-    const kvs::ValueArray<kvs::UInt8>&  colors,
-    const kvs::Real32                   size,
+    const vismodule::ValueArray<vismodule::Real32>& coords,
+    const vismodule::ValueArray<vismodule::UInt8>&  colors,
+    const vismodule::Real32                   size,
     const ColorType                     color_type ):
-    kvs::GeometryObjectBase( coords, colors )
+    vismodule::GeometryObjectBase( coords, colors )
 {
     this->setLineType( LineObject::Strip );
     this->setColorType( color_type );
@@ -136,10 +136,10 @@ LineObject::LineObject(
 }
 
 LineObject::LineObject(
-    const kvs::ValueArray<kvs::Real32>& coords,
-    const kvs::RGBColor&                color,
-    const kvs::ValueArray<kvs::Real32>& sizes ):
-    kvs::GeometryObjectBase( coords, color )
+    const vismodule::ValueArray<vismodule::Real32>& coords,
+    const vismodule::RGBColor&                color,
+    const vismodule::ValueArray<vismodule::Real32>& sizes ):
+    vismodule::GeometryObjectBase( coords, color )
 {
     this->setLineType( LineObject::Strip );
     this->setColorType( LineObject::LineColor );
@@ -147,10 +147,10 @@ LineObject::LineObject(
 }
 
 LineObject::LineObject(
-    const kvs::ValueArray<kvs::Real32>& coords,
-    const kvs::RGBColor&                color,
-    const kvs::Real32                   size ):
-    kvs::GeometryObjectBase( coords, color )
+    const vismodule::ValueArray<vismodule::Real32>& coords,
+    const vismodule::RGBColor&                color,
+    const vismodule::Real32                   size ):
+    vismodule::GeometryObjectBase( coords, color )
 {
     this->setLineType( LineObject::Strip );
     this->setColorType( LineObject::LineColor );
@@ -158,24 +158,24 @@ LineObject::LineObject(
 }
 
 LineObject::LineObject(
-    const kvs::ValueArray<kvs::Real32>& coords ):
-    kvs::GeometryObjectBase( coords )
+    const vismodule::ValueArray<vismodule::Real32>& coords ):
+    vismodule::GeometryObjectBase( coords )
 {
     this->setLineType( LineObject::Strip );
     this->setColorType( LineObject::LineColor );
     this->setSize( 1.0f );
 }
 
-LineObject::LineObject( const kvs::LineObject& line )
+LineObject::LineObject( const vismodule::LineObject& line )
 {
     this->shallowCopy( line );
 }
 
-LineObject::LineObject( const kvs::PolygonObject& polygon )
+LineObject::LineObject( const vismodule::PolygonObject& polygon )
 {
     BaseClass::setCoords( polygon.coords() );
 
-    if( polygon.colorType() == kvs::PolygonObject::VertexColor )
+    if( polygon.colorType() == vismodule::PolygonObject::VertexColor )
     {
         this->setColorType( LineObject::VertexColor );
         BaseClass::setColors( polygon.colors() );
@@ -195,7 +195,7 @@ LineObject::LineObject( const kvs::PolygonObject& polygon )
     const size_t npolygons    = ( nconnections == 0 ) ?
         polygon.nvertices() / ncorners : nconnections;
 
-    kvs::ValueArray<kvs::UInt32> connections( npolygons * ncorners * 2 );
+    vismodule::ValueArray<vismodule::UInt32> connections( npolygons * ncorners * 2 );
     size_t p_index = 0;
     size_t l_index = 0;
     for( size_t i = 0; i < npolygons; i++ )
@@ -223,26 +223,26 @@ LineObject::~LineObject( void )
     this->clear();
 }
 
-kvs::LineObject* LineObject::DownCast( kvs::ObjectBase* object )
+vismodule::LineObject* LineObject::DownCast( vismodule::ObjectBase* object )
 {
-    kvs::GeometryObjectBase* geometry = kvs::GeometryObjectBase::DownCast( object );
+    vismodule::GeometryObjectBase* geometry = vismodule::GeometryObjectBase::DownCast( object );
     if ( !geometry ) return( NULL );
 
-    const kvs::GeometryObjectBase::GeometryType type = geometry->geometryType();
-    if ( type != kvs::GeometryObjectBase::Line )
+    const vismodule::GeometryObjectBase::GeometryType type = geometry->geometryType();
+    if ( type != vismodule::GeometryObjectBase::Line )
     {
-        kvsMessageError("Input object is not a line object.");
+        visModuleMessageError("Input object is not a line object.");
         return( NULL );
     }
 
-    kvs::LineObject* line = static_cast<kvs::LineObject*>( geometry );
+    vismodule::LineObject* line = static_cast<vismodule::LineObject*>( geometry );
 
     return( line );
 }
 
-const kvs::LineObject* LineObject::DownCast( const kvs::ObjectBase* object )
+const vismodule::LineObject* LineObject::DownCast( const vismodule::ObjectBase* object )
 {
-    return( LineObject::DownCast( const_cast<kvs::ObjectBase*>( object ) ) );
+    return( LineObject::DownCast( const_cast<vismodule::ObjectBase*>( object ) ) );
 }
 
 LineObject& LineObject::operator = ( const LineObject& object )
@@ -258,12 +258,12 @@ LineObject& LineObject::operator = ( const LineObject& object )
 std::ostream& operator << ( std::ostream& os, const LineObject& object )
 {
     os << "Object type:  " << "line object" << std::endl;
-#ifdef KVS_COMPILER_VC
-#if KVS_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
+#ifdef VIS_MODULE_COMPILER_VC
+#if VIS_MODULE_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
     // @TODO Cannot instance the object that is a abstract class here (error:C2259).
 #endif
 #else
-    os << static_cast<const kvs::GeometryObjectBase&>( object ) << std::endl;
+    os << static_cast<const vismodule::GeometryObjectBase&>( object ) << std::endl;
 #endif
     os << "Number of connections:  " << object.nconnections() << std::endl;
     os << "Number of sizes:  " << object.nsizes() << std::endl;
@@ -308,24 +308,24 @@ void LineObject::setColorType( const ColorType color_type )
     m_color_type = color_type;
 }
 
-void LineObject::setConnections( const kvs::ValueArray<kvs::UInt32>& connections )
+void LineObject::setConnections( const vismodule::ValueArray<vismodule::UInt32>& connections )
 {
     m_connections = connections;
 }
 
-void LineObject::setColor( const kvs::RGBColor& color )
+void LineObject::setColor( const vismodule::RGBColor& color )
 {
     BaseClass::setColor( color );
 
     m_color_type = LineObject::LineColor;
 }
 
-void LineObject::setSizes( const kvs::ValueArray<kvs::Real32>& sizes )
+void LineObject::setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes )
 {
     m_sizes = sizes;
 }
 
-void LineObject::setSize( const kvs::Real32 size )
+void LineObject::setSize( const vismodule::Real32 size )
 {
     m_sizes.allocate( 1 );
     m_sizes[0] = size;
@@ -358,24 +358,24 @@ const size_t LineObject::nsizes( void ) const
     return( m_sizes.size() );
 }
 
-const kvs::Vector2ui LineObject::connection( const size_t index ) const
+const vismodule::Vector2ui LineObject::connection( const size_t index ) const
 {
-    return( kvs::Vector2ui( (unsigned int*)m_connections.pointer() + 2 * index ) );
+    return( vismodule::Vector2ui( (unsigned int*)m_connections.pointer() + 2 * index ) );
 }
 
-const kvs::Real32 LineObject::size( const size_t index ) const
+const vismodule::Real32 LineObject::size( const size_t index ) const
 {
     return( m_sizes[index] );
 }
 
-const kvs::ValueArray<kvs::UInt32>& LineObject::connections( void ) const
+const vismodule::ValueArray<vismodule::UInt32>& LineObject::connections( void ) const
 {
     return( m_connections );
 }
 
-const kvs::ValueArray<kvs::Real32>& LineObject::sizes( void ) const
+const vismodule::ValueArray<vismodule::Real32>& LineObject::sizes( void ) const
 {
     return( m_sizes );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

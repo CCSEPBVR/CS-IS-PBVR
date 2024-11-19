@@ -12,15 +12,15 @@
  *  $Id: Connector.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__CONNECTOR_H_INCLUDE
-#define KVS__CONNECTOR_H_INCLUDE
+#ifndef VIS_MODULE__CONNECTOR_H_INCLUDE
+#define VIS_MODULE__CONNECTOR_H_INCLUDE
 
-#include <kvs/TCPSocket>
-#include <kvs/IPAddress>
-#include <kvs/ClassName>
+#include <vismodule/TCPSocket>
+#include <vismodule/IPAddress>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,12 +30,12 @@ namespace kvs
 /*===========================================================================*/
 class Connector
 {
-    kvsClassName_without_virtual( kvs::Connector );
+    visModuleClassName_without_virtual( vismodule::Connector );
 
 private:
 
-    kvs::TCPSocket*  m_handler; //< handler
-    kvs::IPAddress   m_ip;      //< IP address
+    vismodule::TCPSocket*  m_handler; //< handler
+    vismodule::IPAddress   m_ip;      //< IP address
     int              m_port;    //< port number
     size_t           m_ntrials; //< number of trials
 
@@ -43,9 +43,9 @@ public:
 
     Connector( void );
 
-    Connector( kvs::TCPSocket* handler );
+    Connector( vismodule::TCPSocket* handler );
 
-    Connector( const kvs::IPAddress& ip, const int port, const size_t ntrials );
+    Connector( const vismodule::IPAddress& ip, const int port, const size_t ntrials );
 
     ~Connector( void );
 
@@ -55,11 +55,11 @@ public:
 
     void close( void );
 
-    const bool connect( const kvs::IPAddress& ip, const int port, const size_t ntrials );
+    const bool connect( const vismodule::IPAddress& ip, const int port, const size_t ntrials );
 
     const bool reconnect();
 
-    void send( const kvs::MessageBlock& block );
+    void send( const vismodule::MessageBlock& block );
 
 private:
 
@@ -68,6 +68,6 @@ private:
     void delete_handler( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__CONNECTOR_H_INCLUDE
+#endif // VIS_MODULE__CONNECTOR_H_INCLUDE

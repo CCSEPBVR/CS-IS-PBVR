@@ -17,7 +17,7 @@
 #include <sstream>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace fstr
@@ -125,7 +125,7 @@ const bool ResultData::readData( const std::string& filename )
     std::ifstream ifs( filename.c_str() );
     if ( !ifs.is_open() )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
@@ -144,24 +144,24 @@ const bool ResultData::readData( const std::string& filename )
 
     if ( !this->read_nnodes_and_ncells( line, ifs ) )
     {
-        kvsMessageError("Cannot read nnodes and ncells.");
+        visModuleMessageError("Cannot read nnodes and ncells.");
         return( false );
     }
 
     if ( !this->read_veclens( line, ifs ) )
     {
-        kvsMessageError("Cannot read veclens.");
+        visModuleMessageError("Cannot read veclens.");
         return( false );
     }
 
     if ( !this->read_labels( line, ifs ) )
     {
-        kvsMessageError("Cannot read labels.");
+        visModuleMessageError("Cannot read labels.");
         return( false );
     }
 
     // Reading values for nodes.
-    kvs::ValueArray<kvs::Real32>* values_temp = new kvs::ValueArray<kvs::Real32> [ m_ncomponents_per_node ];
+    vismodule::ValueArray<vismodule::Real32>* values_temp = new vismodule::ValueArray<vismodule::Real32> [ m_ncomponents_per_node ];
     for ( size_t i = 0; i < m_ncomponents_per_node; i++ )
     {
         values_temp[i].allocate( m_nnodes * m_veclens[i] );
@@ -178,7 +178,7 @@ const bool ResultData::readData( const std::string& filename )
             const size_t index = node_index * veclen;
             for ( size_t k = 0; k < veclen; k++ )
             {
-                kvs::Real32 value = 0.0f; ifs >> value;
+                vismodule::Real32 value = 0.0f; ifs >> value;
                 values_temp[j][ index + k ] = value;
             }
         }
@@ -209,7 +209,7 @@ const bool ResultData::readDividedData( const std::string& filename )
     std::ifstream ifs( filename.c_str() );
     if ( !ifs.is_open() )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
@@ -228,24 +228,24 @@ const bool ResultData::readDividedData( const std::string& filename )
 
     if ( !this->read_nnodes_and_ncells( line, ifs ) )
     {
-        kvsMessageError("Cannot read nnodes and ncells.");
+        visModuleMessageError("Cannot read nnodes and ncells.");
         return( false );
     }
 
     if ( !this->read_veclens( line, ifs ) )
     {
-        kvsMessageError("Cannot read veclens.");
+        visModuleMessageError("Cannot read veclens.");
         return( false );
     }
 
     if ( !this->read_labels( line, ifs ) )
     {
-        kvsMessageError("Cannot read labels.");
+        visModuleMessageError("Cannot read labels.");
         return( false );
     }
 
     // Reading values for nodes.
-    kvs::ValueArray<kvs::Real32>* values_temp = new kvs::ValueArray<kvs::Real32> [ m_ncomponents_per_node ];
+    vismodule::ValueArray<vismodule::Real32>* values_temp = new vismodule::ValueArray<vismodule::Real32> [ m_ncomponents_per_node ];
     for ( size_t i = 0; i < m_ncomponents_per_node; i++ )
     {
         values_temp[i].allocate( m_nnodes * m_veclens[i] );
@@ -263,7 +263,7 @@ const bool ResultData::readDividedData( const std::string& filename )
             const size_t index = i * veclen;
             for ( size_t k = 0; k < veclen; k++ )
             {
-                kvs::Real32 value = 0.0f; ifs >> value;
+                vismodule::Real32 value = 0.0f; ifs >> value;
                 values_temp[j][ index + k ] = value;
             }
         }
@@ -349,4 +349,4 @@ const bool ResultData::read_labels( std::string& line, std::ifstream& ifs )
 
 } // end of namespace fstr
 
-} // end of namespace kvs
+} // end of namespace vismodule

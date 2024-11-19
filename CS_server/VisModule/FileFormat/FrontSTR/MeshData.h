@@ -12,17 +12,17 @@
  *  $Id: MeshData.h 870 2011-07-27 00:53:17Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__FSTR__MESH_DATA_H_INCLUDE
-#define KVS__FSTR__MESH_DATA_H_INCLUDE
+#ifndef VIS_MODULE__FSTR__MESH_DATA_H_INCLUDE
+#define VIS_MODULE__FSTR__MESH_DATA_H_INCLUDE
 
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <kvs/ValueArray>
-#include <kvs/Type>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace fstr
@@ -37,8 +37,8 @@ class MeshData
 {
 public:
 
-    typedef kvs::ValueArray<kvs::Real32> Coords;
-    typedef kvs::ValueArray<kvs::UInt32> Connections;
+    typedef vismodule::ValueArray<vismodule::Real32> Coords;
+    typedef vismodule::ValueArray<vismodule::UInt32> Connections;
 
     enum ElementType
     {
@@ -95,12 +95,12 @@ private:
 
     const bool read_element( std::string& line, std::ifstream& ifs );
 
-    void adjust_connection( kvs::UInt32* connection );
+    void adjust_connection( vismodule::UInt32* connection );
 
 };
 
 } // end of namespace fstr
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__FSTR__MESH_DATA_H_INCLUDE
+#endif // VIS_MODULE__FSTR__MESH_DATA_H_INCLUDE

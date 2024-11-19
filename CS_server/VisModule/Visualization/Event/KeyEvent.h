@@ -11,15 +11,15 @@
  *  $Id: KeyEvent.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__KEY_EVENT_H_INCLUDE
-#define KVS__KEY_EVENT_H_INCLUDE
+#ifndef VIS_MODULE__KEY_EVENT_H_INCLUDE
+#define VIS_MODULE__KEY_EVENT_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/EventBase>
-#include <kvs/Key>
+#include <vismodule/ClassName>
+#include <vismodule/EventBase>
+#include <vismodule/Key>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -27,9 +27,9 @@ namespace kvs
  *  Key event class.
  */
 /*==========================================================================*/
-class KeyEvent : public kvs::EventBase
+class KeyEvent : public vismodule::EventBase
 {
-    kvsClassName( kvs::KeyEvent );
+    visModuleClassName( vismodule::KeyEvent );
 
 protected:
 
@@ -66,6 +66,6 @@ public:
     virtual const int type( void ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS_CORE_KEY_EVENT_H_INCLUDE
+#endif // VIS_MODULE_CORE_KEY_EVENT_H_INCLUDE

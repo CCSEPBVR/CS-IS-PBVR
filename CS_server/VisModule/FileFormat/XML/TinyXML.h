@@ -33,8 +33,8 @@
   3. This notice may not be removed or altered from any source
   distribution.
 */
-#ifndef KVS__TINY_XML_H_INCLUDE
-#define KVS__TINY_XML_H_INCLUDE
+#ifndef VIS_MODULE__TINY_XML_H_INCLUDE
+#define VIS_MODULE__TINY_XML_H_INCLUDE
 
 #include <string>
 #include <cstdio>
@@ -657,4 +657,4 @@ private:
     std::string errorDesc;
 };
 
-#endif // KVS__TINY_XML_H_INCLUDE
+#endif // VIS_MODULE__TINY_XML_H_INCLUDE

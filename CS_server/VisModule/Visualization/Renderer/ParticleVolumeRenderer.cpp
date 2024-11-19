@@ -12,13 +12,13 @@
  */
 /****************************************************************************/
 #include "ParticleVolumeRenderer.h"
-#include <kvs/ParticleBuffer>
-#include <kvs/PointObject>
-#include <kvs/Camera>
-#include <kvs/Assert>
+#include <vismodule/ParticleBuffer>
+#include <vismodule/PointObject>
+#include <vismodule/Camera>
+#include <vismodule/Assert>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -29,7 +29,7 @@ namespace kvs
 ParticleVolumeRenderer::ParticleVolumeRenderer( void ):
     m_ref_point( NULL )
 {
-    BaseClass::setShader( kvs::Shader::Lambert() );
+    BaseClass::setShader( vismodule::Shader::Lambert() );
 
     this->initialize();
 }
@@ -42,11 +42,11 @@ ParticleVolumeRenderer::ParticleVolumeRenderer( void ):
  */
 /*==========================================================================*/
 ParticleVolumeRenderer::ParticleVolumeRenderer(
-    const kvs::PointObject* point,
+    const vismodule::PointObject* point,
     const size_t            subpixel_level ):
     m_ref_point( NULL )
 {
-    BaseClass::setShader( kvs::Shader::Lambert() );
+    BaseClass::setShader( vismodule::Shader::Lambert() );
 
     this->initialize();
     this->setSubpixelLevel( subpixel_level );
@@ -72,13 +72,13 @@ ParticleVolumeRenderer::~ParticleVolumeRenderer( void )
  */
 /*==========================================================================*/
 void ParticleVolumeRenderer::exec(
-    kvs::ObjectBase* object,
-    kvs::Camera*     camera,
-    kvs::Light*      light )
+    vismodule::ObjectBase* object,
+    vismodule::Camera*     camera,
+    vismodule::Light*      light )
 {
     if( !m_enable_rendering ) return;
 
-    kvs::PointObject* point = reinterpret_cast<kvs::PointObject*>(object);
+    vismodule::PointObject* point = reinterpret_cast<vismodule::PointObject*>(object);
     if ( !m_ref_point ) this->attachPointObject( point );
 
     if ( point->normals().size() == 0 ) BaseClass::disableShading();
@@ -98,7 +98,7 @@ void ParticleVolumeRenderer::exec(
  *  @param point [in] pointer to the point object
  */
 /*==========================================================================*/
-void ParticleVolumeRenderer::attachPointObject( const kvs::PointObject* point )
+void ParticleVolumeRenderer::attachPointObject( const vismodule::PointObject* point )
 {
     m_ref_point = point;
 }
@@ -131,7 +131,7 @@ void ParticleVolumeRenderer::initialize( void )
  *  Get the pointer to the point buffer.
  */
 /*==========================================================================*/
-const kvs::ParticleBuffer* ParticleVolumeRenderer::particleBuffer( void ) const
+const vismodule::ParticleBuffer* ParticleVolumeRenderer::particleBuffer( void ) const
 {
     return( m_buffer );
 }
@@ -176,7 +176,7 @@ bool ParticleVolumeRenderer::create_particle_buffer(
     const size_t height,
     const size_t subpixel_level )
 {
-    m_buffer = new kvs::ParticleBuffer( width, height, subpixel_level );
+    m_buffer = new vismodule::ParticleBuffer( width, height, subpixel_level );
     if( !m_buffer ) return( false );
 
     return( true );
@@ -211,9 +211,9 @@ void ParticleVolumeRenderer::delete_particle_buffer( void )
  */
 /*==========================================================================*/
 void ParticleVolumeRenderer::create_image(
-    const kvs::PointObject* point,
-    const kvs::Camera*      camera,
-    const kvs::Light*       light )
+    const vismodule::PointObject* point,
+    const vismodule::Camera*      camera,
+    const vismodule::Light*       light )
 {
     // Create memory region for the buffers, if the screen size is changed.
     if( ( BaseClass::m_width  != camera->windowWidth() ) ||
@@ -248,9 +248,9 @@ void ParticleVolumeRenderer::create_image(
  */
 /*==========================================================================*/
 void ParticleVolumeRenderer::project_particle(
-    const kvs::PointObject* point,
-    const kvs::Camera*      camera,
-    const kvs::Light*       light )
+    const vismodule::PointObject* point,
+    const vismodule::Camera*      camera,
+    const vismodule::Light*       light )
 {
     float t[16]; camera->getCombinedMatrix( &t );
     const size_t w = camera->windowWidth() / 2;
@@ -265,7 +265,7 @@ void ParticleVolumeRenderer::project_particle(
 
     // Aliases.
     const size_t       nv = point->nvertices();
-    const kvs::Real32* v  = point->coords().pointer();
+    const vismodule::Real32* v  = point->coords().pointer();
 
     size_t index3 = 0;
     const size_t bounds_width  = m_width  - 1;
@@ -306,4 +306,4 @@ void ParticleVolumeRenderer::project_particle(
     m_buffer->createImage( &m_color_data, &m_depth_data );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

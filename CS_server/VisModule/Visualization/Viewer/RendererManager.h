@@ -11,20 +11,20 @@
  *  $Id: RendererManager.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__RENDERER_MANAGER_H_INCLUDE
-#define KVS__RENDERER_MANAGER_H_INCLUDE
+#ifndef VIS_MODULE__RENDERER_MANAGER_H_INCLUDE
+#define VIS_MODULE__RENDERER_MANAGER_H_INCLUDE
 
 #include <string>
 #include <list>
 #include <map>
-#include <kvs/ClassName>
-#include <kvs/RendererBase>
+#include <vismodule/ClassName>
+#include <vismodule/RendererBase>
 
 
-namespace kvs
+namespace vismodule
 {
 
-typedef std::list<kvs::RendererBase*> RendererManagerBase;
+typedef std::list<vismodule::RendererBase*> RendererManagerBase;
 
 /*==========================================================================*/
 /**
@@ -33,7 +33,7 @@ typedef std::list<kvs::RendererBase*> RendererManagerBase;
 /*==========================================================================*/
 class RendererManager : public RendererManagerBase
 {
-    kvsClassName( kvs::RendererManager );
+    visModuleClassName( vismodule::RendererManager );
 
 public:
 
@@ -52,7 +52,7 @@ public:
 
 public:
 
-    int insert( kvs::RendererBase* renderer );
+    int insert( vismodule::RendererBase* renderer );
 
     void erase( bool delete_flg = true );
 
@@ -60,21 +60,21 @@ public:
 
     void erase( std::string renderer_name, bool delete_flg = true );
 
-    void change( int renderer_id, kvs::RendererBase* renderer, bool delete_flg = true );
+    void change( int renderer_id, vismodule::RendererBase* renderer, bool delete_flg = true );
 
-    void change( std::string renderer_name, kvs::RendererBase* renderer, bool delete_flg = true );
+    void change( std::string renderer_name, vismodule::RendererBase* renderer, bool delete_flg = true );
 
     const int nrenderers( void ) const;
 
-    kvs::RendererBase* renderer( void );
+    vismodule::RendererBase* renderer( void );
 
-    kvs::RendererBase* renderer( int renderer_id );
+    vismodule::RendererBase* renderer( int renderer_id );
 
-    kvs::RendererBase* renderer( std::string renderer_name );
+    vismodule::RendererBase* renderer( std::string renderer_name );
 
     const bool hasRenderer( void ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__RENDERER_MANAGER_H_INCLUDE
+#endif // VIS_MODULE__RENDERER_MANAGER_H_INCLUDE

@@ -11,15 +11,15 @@
  *  $Id: XMLNode.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__XML_NODE_H_INCLUDE
-#define KVS__XML_NODE_H_INCLUDE
+#ifndef VIS_MODULE__XML_NODE_H_INCLUDE
+#define VIS_MODULE__XML_NODE_H_INCLUDE
 
 #include "TinyXML.h"
 #include <string>
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class XMLElement;
@@ -31,7 +31,7 @@ class XMLElement;
 /*==========================================================================*/
 class XMLNode : public TiXmlNode
 {
-    kvsClassName( kvs::XMLNode );
+    visModuleClassName( vismodule::XMLNode );
 
 public:
 
@@ -50,6 +50,6 @@ public:
     static TiXmlText* ToText( const TiXmlNode* node );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__XML_NODE_H_INCLUDE
+#endif // VIS_MODULE__XML_NODE_H_INCLUDE

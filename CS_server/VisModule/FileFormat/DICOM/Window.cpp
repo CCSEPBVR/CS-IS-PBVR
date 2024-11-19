@@ -12,35 +12,35 @@
  */
 /****************************************************************************/
 #include "Window.h"
-#include <kvs/Math>
-#include <kvs/Binary>
+#include <vismodule/Math>
+#include <vismodule/Binary>
 
 
 namespace
 {
 
-const int UInt8Min  =  kvsBinary8( 0000, 0000 );
-const int UInt8Max  =  kvsBinary8( 1111, 1111 );
+const int UInt8Min  =  visModuleBinary8( 0000, 0000 );
+const int UInt8Max  =  visModuleBinary8( 1111, 1111 );
 
-const int UInt12Min =  kvsBinary12( 0000, 0000, 0000 );
-const int UInt12Max =  kvsBinary12( 1111, 1111, 1111 );
+const int UInt12Min =  visModuleBinary12( 0000, 0000, 0000 );
+const int UInt12Max =  visModuleBinary12( 1111, 1111, 1111 );
 
-const int UInt16Min =  kvsBinary16( 0000, 0000, 0000, 0000 );
-const int UInt16Max =  kvsBinary16( 1111, 1111, 1111, 1111 );
+const int UInt16Min =  visModuleBinary16( 0000, 0000, 0000, 0000 );
+const int UInt16Max =  visModuleBinary16( 1111, 1111, 1111, 1111 );
 
-const int Int8Min   = -kvsBinary8( 1000, 0000 );
-const int Int8Max   =  kvsBinary8( 0111, 1111 );
+const int Int8Min   = -visModuleBinary8( 1000, 0000 );
+const int Int8Max   =  visModuleBinary8( 0111, 1111 );
 
-const int Int12Min  = -kvsBinary12( 1000, 0000, 0000 );
-const int Int12Max  =  kvsBinary12( 0111, 1111, 1111 );
+const int Int12Min  = -visModuleBinary12( 1000, 0000, 0000 );
+const int Int12Max  =  visModuleBinary12( 0111, 1111, 1111 );
 
-const int Int16Min  = -kvsBinary16( 1000, 0000, 0000, 0000 );
-const int Int16Max  =  kvsBinary16( 0111, 1111, 1111, 1111 );
+const int Int16Min  = -visModuleBinary16( 1000, 0000, 0000, 0000 );
+const int Int16Max  =  visModuleBinary16( 0111, 1111, 1111, 1111 );
 
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace dcm
@@ -178,7 +178,7 @@ const int Window::width( void ) const
 /*===========================================================================*/
 const int Window::clampLevel( const int level )
 {
-    return( kvs::Math::Clamp( level, m_min_value, m_max_value ) );
+    return( vismodule::Math::Clamp( level, m_min_value, m_max_value ) );
 }
 
 /*===========================================================================*/
@@ -190,7 +190,7 @@ const int Window::clampLevel( const int level )
 /*===========================================================================*/
 const int Window::clampWidth( const int width )
 {
-    return( kvs::Math::Clamp( width, 0, m_range ) );
+    return( vismodule::Math::Clamp( width, 0, m_range ) );
 }
 
 /*===========================================================================*/
@@ -255,6 +255,6 @@ void Window::set_range_16bit( const bool sign )
 
 } // end of namespace dcm
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
 

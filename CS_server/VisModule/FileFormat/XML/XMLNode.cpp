@@ -14,7 +14,7 @@
 #include "XMLNode.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 XMLNode::XMLNode( void ):
@@ -45,4 +45,4 @@ TiXmlText* XMLNode::ToText( const TiXmlNode* node )
     return( node->ToElement()->FirstChild()->ToText() );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

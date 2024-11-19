@@ -12,20 +12,20 @@
  *  $Id: FrontSTR.h 870 2011-07-27 00:53:17Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__FRONT_STR_H_INCLUDE
-#define KVS__FRONT_STR_H_INCLUDE
+#ifndef VIS_MODULE__FRONT_STR_H_INCLUDE
+#define VIS_MODULE__FRONT_STR_H_INCLUDE
 
 #include <string>
 #include <fstream>
-#include <kvs/FileFormatBase>
-#include <kvs/ClassName>
-#include <kvs/Type>
-#include <kvs/ValueArray>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ClassName>
+#include <vismodule/Type>
+#include <vismodule/ValueArray>
 #include "MeshData.h"
 #include "ResultData.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -33,16 +33,16 @@ namespace kvs
  *  @brief  FrontSTR class.
  */
 /*===========================================================================*/
-class FrontSTR : public kvs::FileFormatBase
+class FrontSTR : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::FrontSTR );
+    visModuleClassName( vismodule::FrontSTR );
 
 protected:
 
     size_t m_nmeshes; ///< number of mesh data
     size_t m_nresults; ///< number of result data
-    kvs::fstr::MeshData* m_mesh_data; ///< mesh data
-    kvs::fstr::ResultData* m_result_data; ///< result data
+    vismodule::fstr::MeshData* m_mesh_data; ///< mesh data
+    vismodule::fstr::ResultData* m_result_data; ///< result data
 
 public:
 
@@ -62,9 +62,9 @@ public:
 
     const size_t numberOfResultData( void ) const;
 
-    const kvs::fstr::MeshData& meshData( const size_t index = 0 ) const;
+    const vismodule::fstr::MeshData& meshData( const size_t index = 0 ) const;
 
-    const kvs::fstr::ResultData& resultData( const size_t index = 0 ) const;
+    const vismodule::fstr::ResultData& resultData( const size_t index = 0 ) const;
 
 public:
 
@@ -85,6 +85,6 @@ private:
     const bool write( const std::string& filename );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__FRONT_STR_H_INCLUDE
+#endif // VIS_MODULE__FRONT_STR_H_INCLUDE

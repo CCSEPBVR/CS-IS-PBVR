@@ -12,13 +12,13 @@
  *  $Id: XDef.h 863 2011-07-20 10:40:29Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__GRADS__XDEF_H_INCLUDE
-#define KVS__GRADS__XDEF_H_INCLUDE
+#ifndef VIS_MODULE__GRADS__XDEF_H_INCLUDE
+#define VIS_MODULE__GRADS__XDEF_H_INCLUDE
 
 #include "XYZDef.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace grads
@@ -28,6 +28,6 @@ typedef XYZDef XDef;
 
 } // end of namespace grads
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GRADS__XDEF_H_INCLUDE
+#endif // VIS_MODULE__GRADS__XDEF_H_INCLUDE

@@ -21,12 +21,12 @@
 #include "OpacityTag.h"
 #include "DataArrayTag.h"
 #include "DataValueTag.h"
-#include <kvs/Message>
-#include <kvs/ValueArray>
-#include <kvs/XMLNode>
+#include <vismodule/Message>
+#include <vismodule/ValueArray>
+#include <vismodule/XMLNode>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -42,27 +42,27 @@ namespace kvsml
  */
 /*===========================================================================*/
 const bool ReadCoordData(
-    const kvs::XMLNode::SuperClass* parent,
+    const vismodule::XMLNode::SuperClass* parent,
     const size_t ncoords,
-    kvs::ValueArray<kvs::Real32>* coords )
+    vismodule::ValueArray<vismodule::Real32>* coords )
 {
     // <Coord>
-    kvs::kvsml::CoordTag coord_tag;
+    vismodule::kvsml::CoordTag coord_tag;
     if ( coord_tag.isExisted( parent ) )
     {
         if ( !coord_tag.read( parent ) )
         {
-            kvsMessageError( "Cannot read <%s>.", coord_tag.name().c_str() );
+            visModuleMessageError( "Cannot read <%s>.", coord_tag.name().c_str() );
             return( false );
         }
 
         // <DataArray>
         const size_t dimension = 3;
         const size_t nelements = ncoords * dimension;
-        kvs::kvsml::DataArrayTag data_tag;
+        vismodule::kvsml::DataArrayTag data_tag;
         if ( !data_tag.read( coord_tag.node(), nelements, coords ) )
         {
-            kvsMessageError( "Cannot read <%s> for <%s>.",
+            visModuleMessageError( "Cannot read <%s> for <%s>.",
                              data_tag.name().c_str(),
                              coord_tag.name().c_str() );
             return( false );
@@ -82,30 +82,30 @@ const bool ReadCoordData(
  */
 /*===========================================================================*/
 const bool ReadColorData(
-    const kvs::XMLNode::SuperClass* parent,
+    const vismodule::XMLNode::SuperClass* parent,
     const size_t ncolors,
-    kvs::ValueArray<kvs::UInt8>* colors )
+    vismodule::ValueArray<vismodule::UInt8>* colors )
 {
     // <Color>
-    kvs::kvsml::ColorTag color_tag;
+    vismodule::kvsml::ColorTag color_tag;
     if ( color_tag.isExisted( parent ) )
     {
         if ( !color_tag.read( parent ) )
         {
-            kvsMessageError( "Cannot read <%s>.", color_tag.name().c_str() );
+            visModuleMessageError( "Cannot read <%s>.", color_tag.name().c_str() );
             return( false );
         }
 
         // <DataValue>
-        if ( kvs::XMLNode::FindChildNode( color_tag.node(), "DataValue" ) )
+        if ( vismodule::XMLNode::FindChildNode( color_tag.node(), "DataValue" ) )
         {
             // In this case, 'ncolors' is equal to 1.
             const size_t nchannels = 3; // RGB
             const size_t nelements = nchannels; // = 1 * nchannels
-            kvs::kvsml::DataValueTag data_tag;
+            vismodule::kvsml::DataValueTag data_tag;
             if ( !data_tag.read( color_tag.node(), nelements, colors ) )
             {
-                kvsMessageError( "Cannot read <%s> for <%s>.",
+                visModuleMessageError( "Cannot read <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  color_tag.name().c_str() );
                 return( false );
@@ -116,10 +116,10 @@ const bool ReadColorData(
         {
             const size_t nchannels = 3; // RGB
             const size_t nelements = ncolors * nchannels;
-            kvs::kvsml::DataArrayTag data_tag;
+            vismodule::kvsml::DataArrayTag data_tag;
             if ( !data_tag.read( color_tag.node(), nelements, colors ) )
             {
-                kvsMessageError( "Cannot read <%s> for <%s>.",
+                visModuleMessageError( "Cannot read <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  color_tag.name().c_str() );
                 return( false );
@@ -140,30 +140,30 @@ const bool ReadColorData(
  */
 /*===========================================================================*/
 const bool ReadNormalData(
-    const kvs::XMLNode::SuperClass* parent,
+    const vismodule::XMLNode::SuperClass* parent,
     const size_t nnormals,
-    kvs::ValueArray<kvs::Real32>* normals )
+    vismodule::ValueArray<vismodule::Real32>* normals )
 {
     // <Normal>
-    kvs::kvsml::NormalTag normal_tag;
+    vismodule::kvsml::NormalTag normal_tag;
     if ( normal_tag.isExisted( parent ) )
     {
         if ( !normal_tag.read( parent ) )
         {
-            kvsMessageError( "Cannot read <%s>.", normal_tag.name().c_str() );
+            visModuleMessageError( "Cannot read <%s>.", normal_tag.name().c_str() );
             return( false );
         }
 
         // <DataValue>
-        if ( kvs::XMLNode::FindChildNode( normal_tag.node(), "DataValue" ) )
+        if ( vismodule::XMLNode::FindChildNode( normal_tag.node(), "DataValue" ) )
         {
             // In this case, 'nnormals' is equal to 1.
             const size_t dimension = 3;
             const size_t nelements = dimension; // = 1 * dimension
-            kvs::kvsml::DataValueTag data_tag;
+            vismodule::kvsml::DataValueTag data_tag;
             if ( !data_tag.read( normal_tag.node(), nelements, normals ) )
             {
-                kvsMessageError( "Cannot read <%s> for <%s>.",
+                visModuleMessageError( "Cannot read <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  normal_tag.name().c_str() );
                 return( false );
@@ -174,10 +174,10 @@ const bool ReadNormalData(
         {
             const size_t dimension = 3;
             const size_t nelements = nnormals * dimension;
-            kvs::kvsml::DataArrayTag data_tag;
+            vismodule::kvsml::DataArrayTag data_tag;
             if ( !data_tag.read( normal_tag.node(), nelements, normals ) )
             {
-                kvsMessageError( "Cannot read <%s> for <%s>.",
+                visModuleMessageError( "Cannot read <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  normal_tag.name().c_str() );
                 return( false );
@@ -198,28 +198,28 @@ const bool ReadNormalData(
  */
 /*===========================================================================*/
 const bool ReadSizeData(
-    const kvs::XMLNode::SuperClass* parent,
+    const vismodule::XMLNode::SuperClass* parent,
     const size_t nsizes,
-    kvs::ValueArray<kvs::Real32>* sizes )
+    vismodule::ValueArray<vismodule::Real32>* sizes )
 {
     // <Size>
-    kvs::kvsml::SizeTag size_tag;
+    vismodule::kvsml::SizeTag size_tag;
     if ( size_tag.isExisted( parent ) )
     {
         if ( !size_tag.read( parent ) )
         {
-            kvsMessageError( "Cannot read <%s>.", size_tag.name().c_str() );
+            visModuleMessageError( "Cannot read <%s>.", size_tag.name().c_str() );
             return( false );
         }
 
         // <DataValue>
-        if ( kvs::XMLNode::FindChildNode( size_tag.node(), "DataValue" ) )
+        if ( vismodule::XMLNode::FindChildNode( size_tag.node(), "DataValue" ) )
         {
             const size_t nelements = 1;
-            kvs::kvsml::DataValueTag data_tag;
+            vismodule::kvsml::DataValueTag data_tag;
             if ( !data_tag.read( size_tag.node(), nelements, sizes ) )
             {
-                kvsMessageError( "Cannot read <%s> for <%s>.",
+                visModuleMessageError( "Cannot read <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  size_tag.name().c_str() );
                 return( false );
@@ -229,10 +229,10 @@ const bool ReadSizeData(
         else
         {
             const size_t nelements = nsizes;
-            kvs::kvsml::DataArrayTag data_tag;
+            vismodule::kvsml::DataArrayTag data_tag;
             if ( !data_tag.read( size_tag.node(), nelements, sizes ) )
             {
-                kvsMessageError( "Cannot read <%s> for <%s>.",
+                visModuleMessageError( "Cannot read <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  size_tag.name().c_str() );
                 return( false );
@@ -253,26 +253,26 @@ const bool ReadSizeData(
  */
 /*===========================================================================*/
 const bool ReadConnectionData(
-    const kvs::XMLNode::SuperClass* parent,
+    const vismodule::XMLNode::SuperClass* parent,
     const size_t nconnections,
-    kvs::ValueArray<kvs::UInt32>* connections )
+    vismodule::ValueArray<vismodule::UInt32>* connections )
 {
     // <Connection>
-    kvs::kvsml::ConnectionTag connection_tag;
+    vismodule::kvsml::ConnectionTag connection_tag;
     if ( connection_tag.isExisted( parent ) )
     {
         if ( !connection_tag.read( parent ) )
         {
-            kvsMessageError( "Cannot read <%s>.", connection_tag.name().c_str() );
+            visModuleMessageError( "Cannot read <%s>.", connection_tag.name().c_str() );
             return( false );
         }
 
         // <DataArray>
         const size_t nelements = nconnections;
-        kvs::kvsml::DataArrayTag data_tag;
+        vismodule::kvsml::DataArrayTag data_tag;
         if ( !data_tag.read( connection_tag.node(), nelements, connections ) )
         {
-            kvsMessageError( "Cannot read <%s> for <%s>.",
+            visModuleMessageError( "Cannot read <%s> for <%s>.",
                              data_tag.name().c_str(),
                              connection_tag.name().c_str() );
             return( false );
@@ -292,28 +292,28 @@ const bool ReadConnectionData(
  */
 /*===========================================================================*/
 const bool ReadOpacityData(
-    const kvs::XMLNode::SuperClass* parent,
+    const vismodule::XMLNode::SuperClass* parent,
     const size_t nopacities,
-    kvs::ValueArray<kvs::UInt8>* opacities )
+    vismodule::ValueArray<vismodule::UInt8>* opacities )
 {
     // <Opacity>
-    kvs::kvsml::OpacityTag opacity_tag;
+    vismodule::kvsml::OpacityTag opacity_tag;
     if ( opacity_tag.isExisted( parent ) )
     {
         if ( !opacity_tag.read( parent ) )
         {
-            kvsMessageError( "Cannot read <%s>.", opacity_tag.name().c_str() );
+            visModuleMessageError( "Cannot read <%s>.", opacity_tag.name().c_str() );
             return( false );
         }
 
         // <DataValue>
-        if ( kvs::XMLNode::FindChildNode( opacity_tag.node(), "DataValue" ) )
+        if ( vismodule::XMLNode::FindChildNode( opacity_tag.node(), "DataValue" ) )
         {
             const size_t nelements = 1;
-            kvs::kvsml::DataValueTag data_tag;
+            vismodule::kvsml::DataValueTag data_tag;
             if ( !data_tag.read( opacity_tag.node(), nelements, opacities ) )
             {
-                kvsMessageError( "Cannot read <%s> for <%s>.",
+                visModuleMessageError( "Cannot read <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  opacity_tag.name().c_str() );
                 return( false );
@@ -323,10 +323,10 @@ const bool ReadOpacityData(
         else
         {
             const size_t nelements = nopacities;
-            kvs::kvsml::DataArrayTag data_tag;
+            vismodule::kvsml::DataArrayTag data_tag;
             if ( !data_tag.read( opacity_tag.node(), nelements, opacities ) )
             {
-                kvsMessageError( "Cannot read <%s> for <%s>.",
+                visModuleMessageError( "Cannot read <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  opacity_tag.name().c_str() );
                 return( false );
@@ -339,4 +339,4 @@ const bool ReadOpacityData(
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

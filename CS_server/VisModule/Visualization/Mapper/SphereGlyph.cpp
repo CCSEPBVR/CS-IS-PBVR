@@ -12,10 +12,10 @@
  */
 /*****************************************************************************/
 #include "SphereGlyph.h"
-#include <kvs/OpenGL>
+#include <vismodule/OpenGL>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -24,7 +24,7 @@ namespace kvs
  */
 /*===========================================================================*/
 SphereGlyph::SphereGlyph( void ):
-    kvs::GlyphBase(),
+    vismodule::GlyphBase(),
     m_sphere(NULL),
     m_nslices(10),
     m_nstacks(10)
@@ -37,8 +37,8 @@ SphereGlyph::SphereGlyph( void ):
  *  @param  volume [in] pointer to the volume object
  */
 /*===========================================================================*/
-SphereGlyph::SphereGlyph( const kvs::PointObject* point ):
-    kvs::GlyphBase(),
+SphereGlyph::SphereGlyph( const vismodule::PointObject* point ):
+    vismodule::GlyphBase(),
     m_sphere(NULL),
     m_nslices(10),
     m_nstacks(10)
@@ -52,8 +52,8 @@ SphereGlyph::SphereGlyph( const kvs::PointObject* point ):
  *  @param  volume [in] pointer to the volume object
  */
 /*===========================================================================*/
-SphereGlyph::SphereGlyph( const kvs::VolumeObjectBase* volume ):
-    kvs::GlyphBase(),
+SphereGlyph::SphereGlyph( const vismodule::VolumeObjectBase* volume ):
+    vismodule::GlyphBase(),
     m_sphere(NULL),
     m_nslices(10),
     m_nstacks(10)
@@ -69,9 +69,9 @@ SphereGlyph::SphereGlyph( const kvs::VolumeObjectBase* volume ):
  */
 /*===========================================================================*/
 SphereGlyph::SphereGlyph(
-    const kvs::VolumeObjectBase* volume,
-    const kvs::TransferFunction& transfer_function ):
-    kvs::GlyphBase(),
+    const vismodule::VolumeObjectBase* volume,
+    const vismodule::TransferFunction& transfer_function ):
+    vismodule::GlyphBase(),
     m_sphere(NULL),
     m_nslices(10),
     m_nstacks(10)
@@ -119,32 +119,32 @@ void SphereGlyph::setNStacks( const size_t nstacks )
  *  @return pointer to the created glyph object
  */
 /*===========================================================================*/
-SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec( const kvs::ObjectBase* object )
+SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    if ( object->objectType() == kvs::ObjectBase::Geometry )
+    if ( object->objectType() == vismodule::ObjectBase::Geometry )
     {
-        const kvs::GeometryObjectBase* geometry = kvs::GeometryObjectBase::DownCast( object );
-        if ( geometry->geometryType() == kvs::GeometryObjectBase::Point )
+        const vismodule::GeometryObjectBase* geometry = vismodule::GeometryObjectBase::DownCast( object );
+        if ( geometry->geometryType() == vismodule::GeometryObjectBase::Point )
         {
-            const kvs::PointObject* point = kvs::PointObject::DownCast( geometry );
+            const vismodule::PointObject* point = vismodule::PointObject::DownCast( geometry );
             return( this->exec_point_object( point ) );
         }
     }
-    else if ( object->objectType() == kvs::ObjectBase::Volume )
+    else if ( object->objectType() == vismodule::ObjectBase::Volume )
     {
-        const kvs::VolumeObjectBase* volume = kvs::VolumeObjectBase::DownCast( object );
+        const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
         return( this->exec_volume_object( volume ) );
     }
 
     BaseClass::m_is_success = false;
-    kvsMessageError("Unsupported object.");
+    visModuleMessageError("Unsupported object.");
 
     return( NULL );
 }
@@ -172,10 +172,10 @@ void SphereGlyph::draw( void )
     {
         for ( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
-            const kvs::Vector3f position( BaseClass::m_coords.pointer() + index );
-            const kvs::Real32 size = BaseClass::m_sizes[i];
-            const kvs::RGBColor color( BaseClass::m_colors.pointer() + index );
-            const kvs::UInt8 opacity = BaseClass::m_opacities[i];
+            const vismodule::Vector3f position( BaseClass::m_coords.pointer() + index );
+            const vismodule::Real32 size = BaseClass::m_sizes[i];
+            const vismodule::RGBColor color( BaseClass::m_colors.pointer() + index );
+            const vismodule::UInt8 opacity = BaseClass::m_opacities[i];
             glPushMatrix();
             {
                 BaseClass::transform( position, size );
@@ -188,11 +188,11 @@ void SphereGlyph::draw( void )
     {
         for( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
-            const kvs::Vector3f position( BaseClass::m_coords.pointer() + index );
-            const kvs::Vector3f direction( BaseClass::m_directions.pointer() + index );
-            const kvs::Real32 size = BaseClass::m_sizes[i];
-            const kvs::RGBColor color( BaseClass::m_colors.pointer() + index );
-            const kvs::UInt8 opacity = BaseClass::m_opacities[i];
+            const vismodule::Vector3f position( BaseClass::m_coords.pointer() + index );
+            const vismodule::Vector3f direction( BaseClass::m_directions.pointer() + index );
+            const vismodule::Real32 size = BaseClass::m_sizes[i];
+            const vismodule::RGBColor color( BaseClass::m_colors.pointer() + index );
+            const vismodule::UInt8 opacity = BaseClass::m_opacities[i];
             glPushMatrix();
             {
                 BaseClass::transform( position, direction, size );
@@ -210,21 +210,21 @@ void SphereGlyph::draw( void )
  *  @return glyph object
  */
 /*===========================================================================*/
-SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_point_object( const kvs::PointObject* point )
+SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_point_object( const vismodule::PointObject* point )
 {
     const size_t nvertices = point->nvertices();
 
 //    BaseClass::set_min_max_coords( point, this );
     {
-        kvs::Vector3f min_coord( 0.0f );
-        kvs::Vector3f max_coord( 0.0f );
+        vismodule::Vector3f min_coord( 0.0f );
+        vismodule::Vector3f max_coord( 0.0f );
 
-        const kvs::Real32* coord = point->coords().pointer();
-        const kvs::Real32* const end = coord + point->coords().size();
+        const vismodule::Real32* coord = point->coords().pointer();
+        const vismodule::Real32* const end = coord + point->coords().size();
 
-        kvs::Real32 x = *( coord++ );
-        kvs::Real32 y = *( coord++ );
-        kvs::Real32 z = *( coord++ );
+        vismodule::Real32 x = *( coord++ );
+        vismodule::Real32 y = *( coord++ );
+        vismodule::Real32 z = *( coord++ );
 
         min_coord.set( x, y, z );
         max_coord.set( x, y, z );
@@ -235,13 +235,13 @@ SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_point_object( const kvs::P
             y = *( coord++ );
             z = *( coord++ );
 
-            min_coord.x() = kvs::Math::Min( min_coord.x(), x );
-            min_coord.y() = kvs::Math::Min( min_coord.y(), y );
-            min_coord.z() = kvs::Math::Min( min_coord.z(), z );
+            min_coord.x() = vismodule::Math::Min( min_coord.x(), x );
+            min_coord.y() = vismodule::Math::Min( min_coord.y(), y );
+            min_coord.z() = vismodule::Math::Min( min_coord.z(), z );
 
-            max_coord.x() = kvs::Math::Max( max_coord.x(), x );
-            max_coord.y() = kvs::Math::Max( max_coord.y(), y );
-            max_coord.z() = kvs::Math::Max( max_coord.z(), z );
+            max_coord.x() = vismodule::Math::Max( max_coord.x(), x );
+            max_coord.y() = vismodule::Math::Max( max_coord.y(), y );
+            max_coord.z() = vismodule::Math::Max( max_coord.z(), z );
         }
 
         BaseClass::setMinMaxObjectCoords( min_coord, max_coord );
@@ -272,8 +272,8 @@ SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_point_object( const kvs::P
 
     if ( point->nsizes() == 1 )
     {
-        const kvs::Real32 size = point->size();
-        kvs::ValueArray<kvs::Real32> sizes( nvertices );
+        const vismodule::Real32 size = point->size();
+        vismodule::ValueArray<vismodule::Real32> sizes( nvertices );
         for ( size_t i = 0; i < nvertices; i++ ) sizes[i] = size;
         BaseClass::setSizes( sizes );
     }
@@ -284,8 +284,8 @@ SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_point_object( const kvs::P
 
     if ( point->ncolors() == 1 )
     {
-        const kvs::RGBColor color = point->color();
-        kvs::ValueArray<kvs::UInt8> colors( nvertices * 3 );
+        const vismodule::RGBColor color = point->color();
+        vismodule::ValueArray<vismodule::UInt8> colors( nvertices * 3 );
         for ( size_t i = 0, j = 0; i < nvertices; i++, j += 3 )
         {
             colors[j]   = color.r();
@@ -299,8 +299,8 @@ SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_point_object( const kvs::P
         BaseClass::setColors( point->colors() );
     }
 
-    const kvs::UInt8 opacity = static_cast<kvs::UInt8>( 255 );
-    kvs::ValueArray<kvs::UInt8> opacities( nvertices );
+    const vismodule::UInt8 opacity = static_cast<vismodule::UInt8>( 255 );
+    vismodule::ValueArray<vismodule::UInt8> opacities( nvertices );
     for ( size_t i = 0; i < nvertices; i++ ) opacities[i] = opacity;
     BaseClass::setOpacities( opacities );
 
@@ -314,7 +314,7 @@ SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_point_object( const kvs::P
  *  @return glyph object
  */
 /*===========================================================================*/
-SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_volume_object( const kvs::VolumeObjectBase* volume )
+SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_volume_object( const vismodule::VolumeObjectBase* volume )
 {
     BaseClass::attach_volume( volume );
     BaseClass::set_range( volume );
@@ -322,65 +322,65 @@ SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_volume_object( const kvs::
     BaseClass::calculate_coords( volume );
 
     const std::type_info& type = volume->values().typeInfo()->type();
-    if ( type == typeid( kvs::Int8 ) )
+    if ( type == typeid( vismodule::Int8 ) )
     {
-        BaseClass::calculate_sizes<kvs::Int8>( volume );
-        BaseClass::calculate_colors<kvs::Int8>( volume );
-        BaseClass::calculate_opacities<kvs::Int8>( volume );
+        BaseClass::calculate_sizes<vismodule::Int8>( volume );
+        BaseClass::calculate_colors<vismodule::Int8>( volume );
+        BaseClass::calculate_opacities<vismodule::Int8>( volume );
     }
-    else if ( type == typeid( kvs::Int16 ) )
+    else if ( type == typeid( vismodule::Int16 ) )
     {
-        BaseClass::calculate_sizes<kvs::Int16>( volume );
-        BaseClass::calculate_colors<kvs::Int16>( volume );
-        BaseClass::calculate_opacities<kvs::Int16>( volume );
+        BaseClass::calculate_sizes<vismodule::Int16>( volume );
+        BaseClass::calculate_colors<vismodule::Int16>( volume );
+        BaseClass::calculate_opacities<vismodule::Int16>( volume );
     }
-    else if ( type == typeid( kvs::Int32 ) )
+    else if ( type == typeid( vismodule::Int32 ) )
     {
-        BaseClass::calculate_sizes<kvs::Int32>( volume );
-        BaseClass::calculate_colors<kvs::Int32>( volume );
-        BaseClass::calculate_opacities<kvs::Int32>( volume );
+        BaseClass::calculate_sizes<vismodule::Int32>( volume );
+        BaseClass::calculate_colors<vismodule::Int32>( volume );
+        BaseClass::calculate_opacities<vismodule::Int32>( volume );
     }
-    else if ( type == typeid( kvs::Int64 ) )
+    else if ( type == typeid( vismodule::Int64 ) )
     {
-        BaseClass::calculate_sizes<kvs::Int64>( volume );
-        BaseClass::calculate_colors<kvs::Int64>( volume );
-        BaseClass::calculate_opacities<kvs::Int64>( volume );
+        BaseClass::calculate_sizes<vismodule::Int64>( volume );
+        BaseClass::calculate_colors<vismodule::Int64>( volume );
+        BaseClass::calculate_opacities<vismodule::Int64>( volume );
     }
-    else if ( type == typeid( kvs::UInt8  ) )
+    else if ( type == typeid( vismodule::UInt8  ) )
     {
-        BaseClass::calculate_sizes<kvs::UInt8>( volume );
-        BaseClass::calculate_colors<kvs::UInt8>( volume );
-        BaseClass::calculate_opacities<kvs::UInt8>( volume );
+        BaseClass::calculate_sizes<vismodule::UInt8>( volume );
+        BaseClass::calculate_colors<vismodule::UInt8>( volume );
+        BaseClass::calculate_opacities<vismodule::UInt8>( volume );
     }
-    else if ( type == typeid( kvs::UInt16 ) )
+    else if ( type == typeid( vismodule::UInt16 ) )
     {
-        BaseClass::calculate_sizes<kvs::UInt16>( volume );
-        BaseClass::calculate_colors<kvs::UInt16>( volume );
-        BaseClass::calculate_opacities<kvs::UInt16>( volume );
+        BaseClass::calculate_sizes<vismodule::UInt16>( volume );
+        BaseClass::calculate_colors<vismodule::UInt16>( volume );
+        BaseClass::calculate_opacities<vismodule::UInt16>( volume );
     }
-    else if ( type == typeid( kvs::UInt32 ) )
+    else if ( type == typeid( vismodule::UInt32 ) )
     {
-        BaseClass::calculate_sizes<kvs::UInt32>( volume );
-        BaseClass::calculate_colors<kvs::UInt32>( volume );
-        BaseClass::calculate_opacities<kvs::UInt32>( volume );
+        BaseClass::calculate_sizes<vismodule::UInt32>( volume );
+        BaseClass::calculate_colors<vismodule::UInt32>( volume );
+        BaseClass::calculate_opacities<vismodule::UInt32>( volume );
     }
-    else if ( type == typeid( kvs::UInt64 ) )
+    else if ( type == typeid( vismodule::UInt64 ) )
     {
-        BaseClass::calculate_sizes<kvs::UInt64>( volume );
-        BaseClass::calculate_colors<kvs::UInt64>( volume );
-        BaseClass::calculate_opacities<kvs::UInt64>( volume );
+        BaseClass::calculate_sizes<vismodule::UInt64>( volume );
+        BaseClass::calculate_colors<vismodule::UInt64>( volume );
+        BaseClass::calculate_opacities<vismodule::UInt64>( volume );
     }
-    else if ( type == typeid( kvs::Real32 ) )
+    else if ( type == typeid( vismodule::Real32 ) )
     {
-        BaseClass::calculate_sizes<kvs::Real32>( volume );
-        BaseClass::calculate_colors<kvs::Real32>( volume );
-        BaseClass::calculate_opacities<kvs::Real32>( volume );
+        BaseClass::calculate_sizes<vismodule::Real32>( volume );
+        BaseClass::calculate_colors<vismodule::Real32>( volume );
+        BaseClass::calculate_opacities<vismodule::Real32>( volume );
     }
-    else if ( type == typeid( kvs::Real64 ) )
+    else if ( type == typeid( vismodule::Real64 ) )
     {
-        BaseClass::calculate_sizes<kvs::Real64>( volume );
-        BaseClass::calculate_colors<kvs::Real64>( volume );
-        BaseClass::calculate_opacities<kvs::Real64>( volume );
+        BaseClass::calculate_sizes<vismodule::Real64>( volume );
+        BaseClass::calculate_colors<vismodule::Real64>( volume );
+        BaseClass::calculate_opacities<vismodule::Real64>( volume );
     }
 
     return( this );
@@ -393,7 +393,7 @@ SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_volume_object( const kvs::
  *  @param  opacity [in] opacity value
  */
 /*===========================================================================*/
-void SphereGlyph::draw_element( const kvs::RGBColor& color, const kvs::UInt8 opacity )
+void SphereGlyph::draw_element( const vismodule::RGBColor& color, const vismodule::UInt8 opacity )
 {
     glColor4ub( color.r(), color.g(), color.b(), opacity );
 
@@ -421,4 +421,4 @@ void SphereGlyph::initialize( void )
     glEnable( GL_COLOR_MATERIAL );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

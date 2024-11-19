@@ -12,10 +12,10 @@
  */
 /****************************************************************************/
 #include "PolygonImporter.h"
-#include <kvs/DebugNew>
-#include <kvs/KVSMLObjectPolygon>
-#include <kvs/Math>
-#include <kvs/Vector3>
+#include <vismodule/DebugNew>
+#include <vismodule/KVSMLObjectPolygon>
+#include <vismodule/Math>
+#include <vismodule/Vector3>
 
 
 
@@ -29,14 +29,14 @@ namespace
  *  @return polygon type
  */
 /*==========================================================================*/
-const kvs::PolygonObject::PolygonType StringToPolygonType( const std::string& polygon_type )
+const vismodule::PolygonObject::PolygonType StringToPolygonType( const std::string& polygon_type )
 {
-    if (      polygon_type == "triangle"   ) { return( kvs::PolygonObject::Triangle ); }
-    else if ( polygon_type == "quadrangle" ) { return( kvs::PolygonObject::Quadrangle ); }
+    if (      polygon_type == "triangle"   ) { return( vismodule::PolygonObject::Triangle ); }
+    else if ( polygon_type == "quadrangle" ) { return( vismodule::PolygonObject::Quadrangle ); }
     else
     {
-        kvsMessageError( "Unknown polygon type '%s'.", polygon_type.c_str() );
-        return( kvs::PolygonObject::UnknownPolygonType );
+        visModuleMessageError( "Unknown polygon type '%s'.", polygon_type.c_str() );
+        return( vismodule::PolygonObject::UnknownPolygonType );
     }
 }
 
@@ -47,14 +47,14 @@ const kvs::PolygonObject::PolygonType StringToPolygonType( const std::string& po
  *  @return polygon color type
  */
 /*==========================================================================*/
-const kvs::PolygonObject::ColorType StringToColorType( const std::string& color_type )
+const vismodule::PolygonObject::ColorType StringToColorType( const std::string& color_type )
 {
-    if (      color_type == "vertex"  ) { return( kvs::PolygonObject::VertexColor ); }
-    else if ( color_type == "polygon" ) { return( kvs::PolygonObject::PolygonColor ); }
+    if (      color_type == "vertex"  ) { return( vismodule::PolygonObject::VertexColor ); }
+    else if ( color_type == "polygon" ) { return( vismodule::PolygonObject::PolygonColor ); }
     else
     {
-        kvsMessageError( "Unknown polygon color type '%s'.", color_type.c_str() );
-        return( kvs::PolygonObject::UnknownColorType );
+        visModuleMessageError( "Unknown polygon color type '%s'.", color_type.c_str() );
+        return( vismodule::PolygonObject::UnknownColorType );
     }
 }
 
@@ -65,21 +65,21 @@ const kvs::PolygonObject::ColorType StringToColorType( const std::string& color_
  *  @return polygon normal type
  */
 /*==========================================================================*/
-const kvs::PolygonObject::NormalType StringToNormalType( const std::string& normal_type )
+const vismodule::PolygonObject::NormalType StringToNormalType( const std::string& normal_type )
 {
-    if (      normal_type == "vertex"  ) { return( kvs::PolygonObject::VertexNormal ); }
-    else if ( normal_type == "polygon" ) { return( kvs::PolygonObject::PolygonNormal ); }
+    if (      normal_type == "vertex"  ) { return( vismodule::PolygonObject::VertexNormal ); }
+    else if ( normal_type == "polygon" ) { return( vismodule::PolygonObject::PolygonNormal ); }
     else
     {
-        kvsMessageError( "Unknown polygon normal type '%s'.", normal_type.c_str() );
-        return( kvs::PolygonObject::UnknownNormalType );
+        visModuleMessageError( "Unknown polygon normal type '%s'.", normal_type.c_str() );
+        return( vismodule::PolygonObject::UnknownNormalType );
     }
 }
 
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -99,20 +99,20 @@ PolygonImporter::PolygonImporter( void )
 /*===========================================================================*/
 PolygonImporter::PolygonImporter( const std::string& filename )
 {
-    if ( kvs::KVSMLObjectPolygon::CheckFileExtension( filename ) )
+    if ( vismodule::KVSMLObjectPolygon::CheckFileExtension( filename ) )
     {
-        kvs::KVSMLObjectPolygon* file_format = new kvs::KVSMLObjectPolygon( filename );
+        vismodule::KVSMLObjectPolygon* file_format = new vismodule::KVSMLObjectPolygon( filename );
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
@@ -120,20 +120,20 @@ PolygonImporter::PolygonImporter( const std::string& filename )
         this->import( file_format );
         delete file_format;
     }
-    else if ( kvs::Stl::CheckFileExtension( filename ) )
+    else if ( vismodule::Stl::CheckFileExtension( filename ) )
     {
-        kvs::Stl* file_format = new kvs::Stl( filename );
+        vismodule::Stl* file_format = new vismodule::Stl( filename );
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
@@ -141,20 +141,20 @@ PolygonImporter::PolygonImporter( const std::string& filename )
         this->import( file_format );
         delete file_format;
     }
-    else if ( kvs::Ply::CheckFileExtension( filename ) )
+    else if ( vismodule::Ply::CheckFileExtension( filename ) )
     {
-        kvs::Ply* file_format = new kvs::Ply( filename );
+        vismodule::Ply* file_format = new vismodule::Ply( filename );
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
@@ -165,7 +165,7 @@ PolygonImporter::PolygonImporter( const std::string& filename )
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Cannot import '%s'.",filename.c_str());
+        visModuleMessageError("Cannot import '%s'.",filename.c_str());
         return;
     }
 }
@@ -176,7 +176,7 @@ PolygonImporter::PolygonImporter( const std::string& filename )
  *  @param  file_format [in] pointer to the file format
  */
 /*==========================================================================*/
-PolygonImporter::PolygonImporter( const kvs::FileFormatBase* file_format )
+PolygonImporter::PolygonImporter( const vismodule::FileFormatBase* file_format )
 {
     this->exec( file_format );
 }
@@ -197,32 +197,32 @@ PolygonImporter::~PolygonImporter( void )
  *  @return pointer to the imported polygon object
  */
 /*===========================================================================*/
-PolygonImporter::SuperClass* PolygonImporter::exec( const kvs::FileFormatBase* file_format )
+PolygonImporter::SuperClass* PolygonImporter::exec( const vismodule::FileFormatBase* file_format )
 {
     if ( !file_format )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input file format is NULL.");
+        visModuleMessageError("Input file format is NULL.");
         return( NULL );
     }
 
     const std::string class_name = file_format->className();
-    if ( class_name == "kvs::KVSMLObjectPolygon" )
+    if ( class_name == "vismodule::KVSMLObjectPolygon" )
     {
-        this->import( static_cast<const kvs::KVSMLObjectPolygon*>( file_format ) );
+        this->import( static_cast<const vismodule::KVSMLObjectPolygon*>( file_format ) );
     }
-    else if ( class_name == "kvs::Stl" )
+    else if ( class_name == "vismodule::Stl" )
     {
-        this->import( static_cast<const kvs::Stl*>( file_format ) );
+        this->import( static_cast<const vismodule::Stl*>( file_format ) );
     }
-    else if ( class_name == "kvs::Ply" )
+    else if ( class_name == "vismodule::Ply" )
     {
-        this->import( static_cast<const kvs::Ply*>( file_format ) );
+        this->import( static_cast<const vismodule::Ply*>( file_format ) );
     }
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input file format is not supported.");
+        visModuleMessageError("Input file format is not supported.");
         return( NULL );
     }
 
@@ -235,19 +235,19 @@ PolygonImporter::SuperClass* PolygonImporter::exec( const kvs::FileFormatBase* f
  *  @param  document [in] pointer to the KVSML document
  */
 /*==========================================================================*/
-void PolygonImporter::import( const kvs::KVSMLObjectPolygon* kvsml )
+void PolygonImporter::import( const vismodule::KVSMLObjectPolygon* kvsml )
 {
     if ( kvsml->objectTag().hasExternalCoord() )
     {
-        const kvs::Vector3f min_coord( kvsml->objectTag().minExternalCoord() );
-        const kvs::Vector3f max_coord( kvsml->objectTag().maxExternalCoord() );
+        const vismodule::Vector3f min_coord( kvsml->objectTag().minExternalCoord() );
+        const vismodule::Vector3f max_coord( kvsml->objectTag().maxExternalCoord() );
         SuperClass::setMinMaxExternalCoords( min_coord, max_coord );
     }
 
     if ( kvsml->objectTag().hasObjectCoord() )
     {
-        const kvs::Vector3f min_coord( kvsml->objectTag().minObjectCoord() );
-        const kvs::Vector3f max_coord( kvsml->objectTag().maxObjectCoord() );
+        const vismodule::Vector3f min_coord( kvsml->objectTag().minObjectCoord() );
+        const vismodule::Vector3f max_coord( kvsml->objectTag().maxObjectCoord() );
         SuperClass::setMinMaxObjectCoords( min_coord, max_coord );
     }
 
@@ -269,11 +269,11 @@ void PolygonImporter::import( const kvs::KVSMLObjectPolygon* kvsml )
  *  @param  stl [in] pointer to the STL format file
  */
 /*==========================================================================*/
-void PolygonImporter::import( const kvs::Stl* stl )
+void PolygonImporter::import( const vismodule::Stl* stl )
 {
-    m_polygon_type = kvs::PolygonObject::Triangle;
-    m_color_type = kvs::PolygonObject::PolygonColor;
-    m_normal_type = kvs::PolygonObject::PolygonNormal;
+    m_polygon_type = vismodule::PolygonObject::Triangle;
+    m_color_type = vismodule::PolygonObject::PolygonColor;
+    m_normal_type = vismodule::PolygonObject::PolygonNormal;
 
     m_coords = stl->coords();
     m_normals = stl->normals();
@@ -289,10 +289,10 @@ void PolygonImporter::import( const kvs::Stl* stl )
     this->set_min_max_coord();
 }
 
-void PolygonImporter::import( const kvs::Ply* ply )
+void PolygonImporter::import( const vismodule::Ply* ply )
 {
-    SuperClass::setPolygonType( kvs::PolygonObject::Triangle );
-    SuperClass::setNormalType( kvs::PolygonObject::VertexNormal );
+    SuperClass::setPolygonType( vismodule::PolygonObject::Triangle );
+    SuperClass::setNormalType( vismodule::PolygonObject::VertexNormal );
 
     SuperClass::setCoords( ply->coords() );
     SuperClass::setNormals( ply->normals() );
@@ -300,13 +300,13 @@ void PolygonImporter::import( const kvs::Ply* ply )
 
     if ( ply->hasColors() )
     {
-        SuperClass::setColorType( kvs::PolygonObject::VertexColor );
+        SuperClass::setColorType( vismodule::PolygonObject::VertexColor );
         SuperClass::setColors( ply->colors() );
     }
     else
     {
-        SuperClass::setColorType( kvs::PolygonObject::PolygonColor );
-        SuperClass::setColor( kvs::RGBColor( 255, 255, 255 ) );
+        SuperClass::setColorType( vismodule::PolygonObject::PolygonColor );
+        SuperClass::setColor( vismodule::RGBColor( 255, 255, 255 ) );
     }
 
     if ( ply->hasConnections() )
@@ -314,8 +314,8 @@ void PolygonImporter::import( const kvs::Ply* ply )
         SuperClass::setConnections( ply->connections() );
     }
 
-    const kvs::Vector3f min_coord( ply->minCoord().x(), ply->minCoord().y(), ply->minCoord().z() );
-    const kvs::Vector3f max_coord( ply->maxCoord().x(), ply->maxCoord().y(), ply->maxCoord().z() );
+    const vismodule::Vector3f min_coord( ply->minCoord().x(), ply->minCoord().y(), ply->minCoord().z() );
+    const vismodule::Vector3f max_coord( ply->maxCoord().x(), ply->maxCoord().y(), ply->maxCoord().z() );
     SuperClass::setMinMaxObjectCoords( min_coord, max_coord );
     SuperClass::setMinMaxExternalCoords( min_coord, max_coord );
 }
@@ -327,24 +327,24 @@ void PolygonImporter::import( const kvs::Ply* ply )
 /*==========================================================================*/
 void PolygonImporter::set_min_max_coord( void )
 {
-    kvs::Vector3f min_coord( m_coords[0], m_coords[1], m_coords[2] );
-    kvs::Vector3f max_coord( min_coord );
+    vismodule::Vector3f min_coord( m_coords[0], m_coords[1], m_coords[2] );
+    vismodule::Vector3f max_coord( min_coord );
     const size_t  dimension = 3;
     const size_t  nvertices = m_coords.size() / dimension;
     size_t        index3    = 3;
     for ( size_t i = 1; i < nvertices; i++, index3 += 3 )
     {
-        min_coord.x() = kvs::Math::Min( min_coord.x(), m_coords[index3] );
-        min_coord.y() = kvs::Math::Min( min_coord.y(), m_coords[index3 + 1] );
-        min_coord.z() = kvs::Math::Min( min_coord.z(), m_coords[index3 + 2] );
+        min_coord.x() = vismodule::Math::Min( min_coord.x(), m_coords[index3] );
+        min_coord.y() = vismodule::Math::Min( min_coord.y(), m_coords[index3 + 1] );
+        min_coord.z() = vismodule::Math::Min( min_coord.z(), m_coords[index3 + 2] );
 
-        max_coord.x() = kvs::Math::Max( max_coord.x(), m_coords[index3] );
-        max_coord.y() = kvs::Math::Max( max_coord.y(), m_coords[index3 + 1] );
-        max_coord.z() = kvs::Math::Max( max_coord.z(), m_coords[index3 + 2] );
+        max_coord.x() = vismodule::Math::Max( max_coord.x(), m_coords[index3] );
+        max_coord.y() = vismodule::Math::Max( max_coord.y(), m_coords[index3 + 1] );
+        max_coord.z() = vismodule::Math::Max( max_coord.z(), m_coords[index3 + 2] );
     }
 
     this->setMinMaxObjectCoords( min_coord, max_coord );
     this->setMinMaxExternalCoords( min_coord, max_coord );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -11,15 +11,15 @@
  *  $Id: ReadWriteLock.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__READ_WRITE_LOCK_H_INCLUDE
-#define KVS__READ_WRITE_LOCK_H_INCLUDE
+#ifndef VIS_MODULE__READ_WRITE_LOCK_H_INCLUDE
+#define VIS_MODULE__READ_WRITE_LOCK_H_INCLUDE
 
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 #include "Mutex.h"
 #include "Condition.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -29,16 +29,16 @@ namespace kvs
 /*==========================================================================*/
 class ReadWriteLock
 {
-    kvsClassName( kvs::ReadWriteLock );
+    visModuleClassName( vismodule::ReadWriteLock );
 
 protected:
 
     int            m_counter;  ///< access counter
     int            m_nreaders; ///< number of waiting readers
     int            m_nwriters; ///< number of waiting writers
-    kvs::Mutex     m_mutex;    ///< mutex
-    kvs::Condition m_reader;   ///< condition variable for reader
-    kvs::Condition m_writer;   ///< condition variable for writer
+    vismodule::Mutex     m_mutex;    ///< mutex
+    vismodule::Condition m_reader;   ///< condition variable for reader
+    vismodule::Condition m_writer;   ///< condition variable for writer
 
 public:
 
@@ -59,6 +59,6 @@ public:
     void unlock( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__READ_WRITE_LOCK_H_INCLUDE
+#endif // VIS_MODULE__READ_WRITE_LOCK_H_INCLUDE

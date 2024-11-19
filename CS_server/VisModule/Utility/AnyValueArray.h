@@ -11,8 +11,8 @@
  *  $Id: AnyValueArray.h 838 2011-06-03 00:13:31Z naohisa.sakamoto@gmail.com $
  */
 /****************************************************************************/
-#ifndef KVS__ANY_VALUE_ARRAY_H_INCLUDE
-#define KVS__ANY_VALUE_ARRAY_H_INCLUDE
+#ifndef VIS_MODULE__ANY_VALUE_ARRAY_H_INCLUDE
+#define VIS_MODULE__ANY_VALUE_ARRAY_H_INCLUDE
 
 #include <cstdio>
 #include <cstdlib>
@@ -20,16 +20,16 @@
 #include <typeinfo>
 #include <string>
 #include <sstream>
-#include <kvs/DebugNew>
-#include <kvs/Endian>
-#include <kvs/AnyValue>
-#include <kvs/ReferenceCounter>
-#include <kvs/ValueArray>
-#include <kvs/Macro>
-#include <kvs/ClassName>
+#include <vismodule/DebugNew>
+#include <vismodule/Endian>
+#include <vismodule/AnyValue>
+#include <vismodule/ReferenceCounter>
+#include <vismodule/ValueArray>
+#include <vismodule/Macro>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -39,15 +39,15 @@ namespace kvs
 /*==========================================================================*/
 class AnyValueArray
 {
-    kvsClassName_without_virtual( kvs::AnyValueArray );
+    visModuleClassName_without_virtual( vismodule::AnyValueArray );
 
 public:
 
-    typedef kvs::AnyValue::TypeInfo TypeInfo;
+    typedef vismodule::AnyValue::TypeInfo TypeInfo;
 
 private:
 
-    kvs::ReferenceCounter* m_counter;       ///< reference counter
+    vismodule::ReferenceCounter* m_counter;       ///< reference counter
 
     TypeInfo* m_type_info;     ///< type information
     size_t    m_size_of_value; ///< byte size of a value
@@ -66,7 +66,7 @@ public:
     explicit AnyValueArray( const std::vector<T>& values );
 
     template<typename T>
-    explicit AnyValueArray( const kvs::ValueArray<T>& values );
+    explicit AnyValueArray( const vismodule::ValueArray<T>& values );
 
     AnyValueArray( const AnyValueArray& other );
 
@@ -90,8 +90,8 @@ public:
     template<typename T>
     T& at( const size_t index )
     {
-        KVS_ASSERT( index < m_nvalues );
-        KVS_ASSERT( this->typeInfo()->type() == typeid( T ) );
+        VIS_MODULE_ASSERT( index < m_nvalues );
+        VIS_MODULE_ASSERT( this->typeInfo()->type() == typeid( T ) );
 
         return( reinterpret_cast<T&>( *( static_cast<char*>( m_values ) + m_size_of_value * index ) ) );
     }
@@ -99,8 +99,8 @@ public:
     template<typename T>
     const T& at( const size_t index ) const
     {
-        KVS_ASSERT( index < m_nvalues );
-        KVS_ASSERT( this->typeInfo()->type() == typeid( T ) );
+        VIS_MODULE_ASSERT( index < m_nvalues );
+        VIS_MODULE_ASSERT( this->typeInfo()->type() == typeid( T ) );
 
         return( reinterpret_cast<T&>( *( static_cast<char*>( m_values ) + m_size_of_value * index ) ) );
     }
@@ -110,16 +110,16 @@ public:
     {
         // Value to Value.
         const std::type_info& type = this->typeInfo()->type();
-        if ( type == typeid( kvs::Int8   ) ) return( static_cast<T>( this->at<kvs::Int8>(index) ) );
-        if ( type == typeid( kvs::Int16  ) ) return( static_cast<T>( this->at<kvs::Int16>(index) ) );
-        if ( type == typeid( kvs::Int32  ) ) return( static_cast<T>( this->at<kvs::Int32>(index) ) );
-        if ( type == typeid( kvs::Int64  ) ) return( static_cast<T>( this->at<kvs::Int64>(index) ) );
-        if ( type == typeid( kvs::UInt8  ) ) return( static_cast<T>( this->at<kvs::UInt8>(index) ) );
-        if ( type == typeid( kvs::UInt16 ) ) return( static_cast<T>( this->at<kvs::UInt16>(index) ) );
-        if ( type == typeid( kvs::UInt32 ) ) return( static_cast<T>( this->at<kvs::UInt32>(index) ) );
-        if ( type == typeid( kvs::UInt64 ) ) return( static_cast<T>( this->at<kvs::UInt64>(index) ) );
-        if ( type == typeid( kvs::Real32 ) ) return( static_cast<T>( this->at<kvs::Real32>(index) ) );
-        if ( type == typeid( kvs::Real64 ) ) return( static_cast<T>( this->at<kvs::Real64>(index) ) );
+        if ( type == typeid( vismodule::Int8   ) ) return( static_cast<T>( this->at<vismodule::Int8>(index) ) );
+        if ( type == typeid( vismodule::Int16  ) ) return( static_cast<T>( this->at<vismodule::Int16>(index) ) );
+        if ( type == typeid( vismodule::Int32  ) ) return( static_cast<T>( this->at<vismodule::Int32>(index) ) );
+        if ( type == typeid( vismodule::Int64  ) ) return( static_cast<T>( this->at<vismodule::Int64>(index) ) );
+        if ( type == typeid( vismodule::UInt8  ) ) return( static_cast<T>( this->at<vismodule::UInt8>(index) ) );
+        if ( type == typeid( vismodule::UInt16 ) ) return( static_cast<T>( this->at<vismodule::UInt16>(index) ) );
+        if ( type == typeid( vismodule::UInt32 ) ) return( static_cast<T>( this->at<vismodule::UInt32>(index) ) );
+        if ( type == typeid( vismodule::UInt64 ) ) return( static_cast<T>( this->at<vismodule::UInt64>(index) ) );
+        if ( type == typeid( vismodule::Real32 ) ) return( static_cast<T>( this->at<vismodule::Real32>(index) ) );
+        if ( type == typeid( vismodule::Real64 ) ) return( static_cast<T>( this->at<vismodule::Real64>(index) ) );
 
         // String to Value.
         if ( type == typeid( std::string ) )
@@ -128,7 +128,7 @@ public:
             return( v );
         }
 
-        kvsMessageError("Unsupported data type.");
+        visModuleMessageError("Unsupported data type.");
         return( T(0) );
     }
 
@@ -160,7 +160,7 @@ public:
     template<typename T>
     const T* pointer( void ) const
     {
-        KVS_ASSERT( this->typeInfo()->type() == typeid( T ) );
+        VIS_MODULE_ASSERT( this->typeInfo()->type() == typeid( T ) );
 
         return( reinterpret_cast<T*>( m_values ) );
     }
@@ -168,7 +168,7 @@ public:
     template<typename T>
     T* pointer( void )
     {
-        KVS_ASSERT( this->typeInfo()->type() == typeid( T ) );
+        VIS_MODULE_ASSERT( this->typeInfo()->type() == typeid( T ) );
 
         return( reinterpret_cast<T*>( m_values ) );
     }
@@ -186,26 +186,26 @@ public:
     void swapByte( void )
     {
         const std::type_info& type = m_type_info->type();
-        if (      type == typeid( kvs::Int8 ) )   { kvs::Endian::Swap( static_cast<kvs::Int8*>( m_values ), m_nvalues );   }
-        else if ( type == typeid( kvs::UInt8 ) )  { kvs::Endian::Swap( static_cast<kvs::UInt8*>( m_values ), m_nvalues );  }
-        else if ( type == typeid( kvs::Int16 ) )  { kvs::Endian::Swap( static_cast<kvs::Int16*>( m_values ), m_nvalues );  }
-        else if ( type == typeid( kvs::UInt16 ) ) { kvs::Endian::Swap( static_cast<kvs::UInt16*>( m_values ), m_nvalues ); }
-        else if ( type == typeid( kvs::Int32 ) )  { kvs::Endian::Swap( static_cast<kvs::Int32*>( m_values ), m_nvalues );  }
-        else if ( type == typeid( kvs::UInt32 ) ) { kvs::Endian::Swap( static_cast<kvs::UInt32*>( m_values ), m_nvalues ); }
-        else if ( type == typeid( kvs::Int64 ) )  { kvs::Endian::Swap( static_cast<kvs::Int64*>( m_values ), m_nvalues );  }
-        else if ( type == typeid( kvs::UInt64 ) ) { kvs::Endian::Swap( static_cast<kvs::UInt64*>( m_values ), m_nvalues ); }
-        else if ( type == typeid( kvs::Real32 ) ) { kvs::Endian::Swap( static_cast<kvs::Real32*>( m_values ), m_nvalues ); }
-        else if ( type == typeid( kvs::Real64 ) ) { kvs::Endian::Swap( static_cast<kvs::Real64*>( m_values ), m_nvalues ); }
+        if (      type == typeid( vismodule::Int8 ) )   { vismodule::Endian::Swap( static_cast<vismodule::Int8*>( m_values ), m_nvalues );   }
+        else if ( type == typeid( vismodule::UInt8 ) )  { vismodule::Endian::Swap( static_cast<vismodule::UInt8*>( m_values ), m_nvalues );  }
+        else if ( type == typeid( vismodule::Int16 ) )  { vismodule::Endian::Swap( static_cast<vismodule::Int16*>( m_values ), m_nvalues );  }
+        else if ( type == typeid( vismodule::UInt16 ) ) { vismodule::Endian::Swap( static_cast<vismodule::UInt16*>( m_values ), m_nvalues ); }
+        else if ( type == typeid( vismodule::Int32 ) )  { vismodule::Endian::Swap( static_cast<vismodule::Int32*>( m_values ), m_nvalues );  }
+        else if ( type == typeid( vismodule::UInt32 ) ) { vismodule::Endian::Swap( static_cast<vismodule::UInt32*>( m_values ), m_nvalues ); }
+        else if ( type == typeid( vismodule::Int64 ) )  { vismodule::Endian::Swap( static_cast<vismodule::Int64*>( m_values ), m_nvalues );  }
+        else if ( type == typeid( vismodule::UInt64 ) ) { vismodule::Endian::Swap( static_cast<vismodule::UInt64*>( m_values ), m_nvalues ); }
+        else if ( type == typeid( vismodule::Real32 ) ) { vismodule::Endian::Swap( static_cast<vismodule::Real32*>( m_values ), m_nvalues ); }
+        else if ( type == typeid( vismodule::Real64 ) ) { vismodule::Endian::Swap( static_cast<vismodule::Real64*>( m_values ), m_nvalues ); }
     }
 
     template<typename T>
-    void shallowCopy( const kvs::ValueArray<T>& values )
+    void shallowCopy( const vismodule::ValueArray<T>& values )
     {
         m_counter       = values.counter();
         m_nvalues       = values.size();
         m_values        = const_cast<T*>( values.pointer() );
 
-        m_type_info     = new kvs::AnyValue::SetTypeInfo<T>;
+        m_type_info     = new vismodule::AnyValue::SetTypeInfo<T>;
         m_size_of_value = sizeof( T );
 
         this->ref();
@@ -238,7 +238,7 @@ public:
         this->unref();
         this->create_counter();
 
-        m_type_info     = new kvs::AnyValue::SetTypeInfo<T>;
+        m_type_info     = new vismodule::AnyValue::SetTypeInfo<T>;
         m_size_of_value = sizeof( T );
 
         m_nvalues       = nvalues;
@@ -316,7 +316,7 @@ inline AnyValueArray::AnyValueArray( const std::vector<T>& values )
 }
 
 template<typename T>
-inline AnyValueArray::AnyValueArray( const kvs::ValueArray<T>& values )
+inline AnyValueArray::AnyValueArray( const vismodule::ValueArray<T>& values )
     : m_counter( 0 )
     , m_type_info( 0 )
     , m_size_of_value( 0 )
@@ -329,8 +329,8 @@ inline AnyValueArray::AnyValueArray( const kvs::ValueArray<T>& values )
 template<>
 inline std::string& AnyValueArray::at<std::string>( const size_t index )
 {
-    KVS_ASSERT( index < m_nvalues );
-    KVS_ASSERT( this->typeInfo()->type() == typeid( std::string ) );
+    VIS_MODULE_ASSERT( index < m_nvalues );
+    VIS_MODULE_ASSERT( this->typeInfo()->type() == typeid( std::string ) );
 
     return( reinterpret_cast<std::string&>( *( static_cast<std::string*>( m_values ) + index ) ) );
 }
@@ -338,8 +338,8 @@ inline std::string& AnyValueArray::at<std::string>( const size_t index )
 template<>
 inline const std::string& AnyValueArray::at<std::string>( const size_t index ) const
 {
-    KVS_ASSERT( index < m_nvalues );
-    KVS_ASSERT( this->typeInfo()->type() == typeid( std::string ) );
+    VIS_MODULE_ASSERT( index < m_nvalues );
+    VIS_MODULE_ASSERT( this->typeInfo()->type() == typeid( std::string ) );
 
     return( reinterpret_cast<std::string&>( *( static_cast<std::string*>( m_values ) + index ) ) );
 }
@@ -349,21 +349,21 @@ inline const std::string AnyValueArray::to<std::string>( const size_t index ) co
 {
     // Value to String.
     const std::type_info& type = this->typeInfo()->type();
-    if ( type == typeid( kvs::Int8   ) ) { std::stringstream v; v << *((kvs::Int8*)m_values+index);   return( v.str() ); }
-    if ( type == typeid( kvs::Int16  ) ) { std::stringstream v; v << *((kvs::Int16*)m_values+index);  return( v.str() ); }
-    if ( type == typeid( kvs::Int32  ) ) { std::stringstream v; v << *((kvs::Int32*)m_values+index);  return( v.str() ); }
-    if ( type == typeid( kvs::Int64  ) ) { std::stringstream v; v << *((kvs::Int64*)m_values+index);  return( v.str() ); }
-    if ( type == typeid( kvs::UInt8  ) ) { std::stringstream v; v << *((kvs::UInt8*)m_values+index);  return( v.str() ); }
-    if ( type == typeid( kvs::UInt16 ) ) { std::stringstream v; v << *((kvs::UInt16*)m_values+index); return( v.str() ); }
-    if ( type == typeid( kvs::UInt32 ) ) { std::stringstream v; v << *((kvs::UInt32*)m_values+index); return( v.str() ); }
-    if ( type == typeid( kvs::UInt64 ) ) { std::stringstream v; v << *((kvs::UInt64*)m_values+index); return( v.str() ); }
-    if ( type == typeid( kvs::Real32 ) ) { std::stringstream v; v << *((kvs::Real32*)m_values+index); return( v.str() ); }
-    if ( type == typeid( kvs::Real64 ) ) { std::stringstream v; v << *((kvs::Real64*)m_values+index); return( v.str() ); }
+    if ( type == typeid( vismodule::Int8   ) ) { std::stringstream v; v << *((vismodule::Int8*)m_values+index);   return( v.str() ); }
+    if ( type == typeid( vismodule::Int16  ) ) { std::stringstream v; v << *((vismodule::Int16*)m_values+index);  return( v.str() ); }
+    if ( type == typeid( vismodule::Int32  ) ) { std::stringstream v; v << *((vismodule::Int32*)m_values+index);  return( v.str() ); }
+    if ( type == typeid( vismodule::Int64  ) ) { std::stringstream v; v << *((vismodule::Int64*)m_values+index);  return( v.str() ); }
+    if ( type == typeid( vismodule::UInt8  ) ) { std::stringstream v; v << *((vismodule::UInt8*)m_values+index);  return( v.str() ); }
+    if ( type == typeid( vismodule::UInt16 ) ) { std::stringstream v; v << *((vismodule::UInt16*)m_values+index); return( v.str() ); }
+    if ( type == typeid( vismodule::UInt32 ) ) { std::stringstream v; v << *((vismodule::UInt32*)m_values+index); return( v.str() ); }
+    if ( type == typeid( vismodule::UInt64 ) ) { std::stringstream v; v << *((vismodule::UInt64*)m_values+index); return( v.str() ); }
+    if ( type == typeid( vismodule::Real32 ) ) { std::stringstream v; v << *((vismodule::Real32*)m_values+index); return( v.str() ); }
+    if ( type == typeid( vismodule::Real64 ) ) { std::stringstream v; v << *((vismodule::Real64*)m_values+index); return( v.str() ); }
 
     // String to String.
     if ( type == typeid(std::string) ) return( *( static_cast<std::string*>( m_values ) + index ) );
 
-    kvsMessageError("Unsupported data type.");
+    visModuleMessageError("Unsupported data type.");
     return( "" );
 }
 
@@ -373,7 +373,7 @@ inline void* AnyValueArray::allocate<std::string>( const size_t nvalues )
     this->unref();
     this->create_counter();
 
-    m_type_info = new kvs::AnyValue::SetTypeInfo<std::string>;
+    m_type_info = new vismodule::AnyValue::SetTypeInfo<std::string>;
     m_size_of_value = sizeof( std::string );
 
     m_nvalues = nvalues;
@@ -389,6 +389,6 @@ inline void AnyValueArray::deepCopy<std::string>( const std::string* values, con
     std::copy( values, values + nvalues, pvalues );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__ANY_VALUE_ARRAY_H_INCLUDE
+#endif // VIS_MODULE__ANY_VALUE_ARRAY_H_INCLUDE

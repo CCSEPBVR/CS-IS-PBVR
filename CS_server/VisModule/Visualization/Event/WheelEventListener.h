@@ -12,15 +12,15 @@
  *  $Id: WheelEventListener.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__WHEEL_EVENT_LISTENER_H_INCLUDE
-#define KVS__WHEEL_EVENT_LISTENER_H_INCLUDE
+#ifndef VIS_MODULE__WHEEL_EVENT_LISTENER_H_INCLUDE
+#define VIS_MODULE__WHEEL_EVENT_LISTENER_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/EventListener>
-#include <kvs/WheelEvent>
+#include <vismodule/ClassName>
+#include <vismodule/EventListener>
+#include <vismodule/WheelEvent>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -28,9 +28,9 @@ namespace kvs
  *  @brief  WheelEventListener class.
  */
 /*===========================================================================*/
-class WheelEventListener : public kvs::EventListener
+class WheelEventListener : public vismodule::EventListener
 {
-    kvsClassName( kvs::WheelEventListener );
+    visModuleClassName( vismodule::WheelEventListener );
 
 public:
 
@@ -40,13 +40,13 @@ public:
 
 public:
 
-    virtual void update( kvs::WheelEvent* event ) = 0;
+    virtual void update( vismodule::WheelEvent* event ) = 0;
 
 private:
 
-    void onEvent( kvs::EventBase* event );
+    void onEvent( vismodule::EventBase* event );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__WHEEL_EVENT_LISTENER_H_INCLUDE
+#endif // VIS_MODULE__WHEEL_EVENT_LISTENER_H_INCLUDE

@@ -11,16 +11,16 @@
  *  $Id: ExtractEdges.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__EXTRACT_EDGES_H_INCLUDE
-#define KVS__EXTRACT_EDGES_H_INCLUDE
+#ifndef VIS_MODULE__EXTRACT_EDGES_H_INCLUDE
+#define VIS_MODULE__EXTRACT_EDGES_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/Module>
-#include <kvs/MapperBase>
-#include <kvs/LineObject>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
+#include <vismodule/MapperBase>
+#include <vismodule/LineObject>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class VolumeObjectBase;
@@ -33,77 +33,77 @@ class TransferFunction;
  *  @brief  Extract external faces.
  */
 /*===========================================================================*/
-class ExtractEdges : public kvs::MapperBase, public kvs::LineObject
+class ExtractEdges : public vismodule::MapperBase, public vismodule::LineObject
 {
     // Class name.
-    kvsClassName( kvs::ExtractEdges );
+    visModuleClassName( vismodule::ExtractEdges );
 
     // Module information.
-    kvsModuleCategory( Mapper );
-    kvsModuleBaseClass( kvs::MapperBase );
-    kvsModuleSuperClass( kvs::LineObject );
+    visModuleCategory( Mapper );
+    visModuleBaseClass( vismodule::MapperBase );
+    visModuleSuperClass( vismodule::LineObject );
 
 public:
 
     ExtractEdges( void );
 
     ExtractEdges(
-        const kvs::VolumeObjectBase* volume );
+        const vismodule::VolumeObjectBase* volume );
 
     ExtractEdges(
-        const kvs::VolumeObjectBase* volume,
-        const kvs::TransferFunction& transfer_function );
+        const vismodule::VolumeObjectBase* volume,
+        const vismodule::TransferFunction& transfer_function );
 
     virtual ~ExtractEdges( void );
 
 public:
 
-//    kvs::ObjectBase* exec( const kvs::ObjectBase* object );
-    SuperClass* exec( const kvs::ObjectBase* object );
+//    vismodule::ObjectBase* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase* object );
 
 private:
 
-    void mapping( const kvs::StructuredVolumeObject* volume );
+    void mapping( const vismodule::StructuredVolumeObject* volume );
 
     void calculate_coords(
-        const kvs::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject* volume );
 
     void calculate_uniform_coords(
-        const kvs::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject* volume );
 
     void calculate_rectilinear_coords(
-        const kvs::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject* volume );
 
     void calculate_connections(
-        const kvs::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject* volume );
 
 private:
 
-    void mapping( const kvs::UnstructuredVolumeObject* volume );
+    void mapping( const vismodule::UnstructuredVolumeObject* volume );
 
     void calculate_coords(
-        const kvs::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject* volume );
 
     void calculate_connections(
-        const kvs::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject* volume );
 
     void calculate_tetrahedra_connections(
-        const kvs::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject* volume );
 
     void calculate_hexahedra_connections(
-        const kvs::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject* volume );
 
     void calculate_quadratic_tetrahedra_connections(
-        const kvs::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject* volume );
 
     void calculate_quadratic_hexahedra_connections(
-        const kvs::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject* volume );
 
     template <typename T>
     void calculate_colors(
-        const kvs::VolumeObjectBase* volume );
+        const vismodule::VolumeObjectBase* volume );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__EXTRACT_EDGES_H_INCLUDE
+#endif // VIS_MODULE__EXTRACT_EDGES_H_INCLUDE

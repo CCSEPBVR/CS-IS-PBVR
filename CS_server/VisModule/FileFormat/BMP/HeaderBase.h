@@ -11,22 +11,22 @@
  *  $Id: HeaderBase.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__BMP__HEADER_BASE_H_INCLUDE
-#define KVS__BMP__HEADER_BASE_H_INCLUDE
+#ifndef VIS_MODULE__BMP__HEADER_BASE_H_INCLUDE
+#define VIS_MODULE__BMP__HEADER_BASE_H_INCLUDE
 
 #include <fstream>
-#include <kvs/Platform>
-#include <kvs/Type>
+#include <vismodule/Platform>
+#include <vismodule/Type>
 
 
-#ifdef KVS_PLATFORM_BIG_ENDIAN
+#ifdef VIS_MODULE_PLATFORM_BIG_ENDIAN
 #define BMP_HEADER_SWAP_BYTES (swap_bytes())
 #else
 #define BMP_HEADER_SWAP_BYTES ((void)0)
 #endif
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace bmp
@@ -38,24 +38,24 @@ struct HeaderBase
     {
     }
 
-    void get_value( std::ifstream& ifs, kvs::UInt32* value )
+    void get_value( std::ifstream& ifs, vismodule::UInt32* value )
     {
-        ifs.read( reinterpret_cast<char*>( value ), sizeof( kvs::UInt32 ) );
+        ifs.read( reinterpret_cast<char*>( value ), sizeof( vismodule::UInt32 ) );
     }
 
-    void get_value( std::ifstream& ifs, kvs::UInt16* value )
+    void get_value( std::ifstream& ifs, vismodule::UInt16* value )
     {
-        ifs.read( reinterpret_cast<char*>(value), sizeof( kvs::UInt16 ) );
+        ifs.read( reinterpret_cast<char*>(value), sizeof( vismodule::UInt16 ) );
     }
 
-    void put_value( std::ofstream& ofs, kvs::UInt32 value )
+    void put_value( std::ofstream& ofs, vismodule::UInt32 value )
     {
-        ofs.write( reinterpret_cast<char*>( &value ), sizeof( kvs::UInt32 ) );
+        ofs.write( reinterpret_cast<char*>( &value ), sizeof( vismodule::UInt32 ) );
     }
 
-    void put_value( std::ofstream& ofs, kvs::UInt16 value )
+    void put_value( std::ofstream& ofs, vismodule::UInt16 value )
     {
-        ofs.write( reinterpret_cast<char*>( &value ), sizeof( kvs::UInt16 ) );
+        ofs.write( reinterpret_cast<char*>( &value ), sizeof( vismodule::UInt16 ) );
     }
 
     virtual void swap_bytes( void ) = 0;
@@ -63,6 +63,6 @@ struct HeaderBase
 
 } // end of namespace bmp
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS_CORE_HEADER_BASE_H_INCLUDE
+#endif // VIS_MODULE_CORE_HEADER_BASE_H_INCLUDE

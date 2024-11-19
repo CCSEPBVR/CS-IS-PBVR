@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /**
  *  main.cpp
- *  CPU Server Program without CUDA, without KVS, without OpenGL.
+ *  CPU Server Program without CUDA, without VISMODULE, without OpenGL.
  */
 /*****************************************************************************/
 
@@ -9,11 +9,11 @@
 #include "ParticleTransferProtocol.h"
 
 #include "PointObject.h"
-#include <kvs/CommandLine>
-#include <kvs/Camera>
+#include <vismodule/CommandLine>
+#include <vismodule/Camera>
 #include "TransferFunction.h"
-#include <kvs/Matrix33>
-#include <kvs/RotationMatrix33>
+#include <vismodule/Matrix33>
+#include <vismodule/RotationMatrix33>
 
 #include "common.h"
 
@@ -21,8 +21,8 @@
 
 #include "Argument.h"
 
-#include <kvs/AVSField>
-#include <kvs/Timer>
+#include <vismodule/AVSField>
+#include <vismodule/Timer>
 #include "KVSMLObjectPointWriter.h"
 //#include "KVSMLObjectPointMPIWriter.h"
 #include "JobDispatcher.h"
@@ -38,10 +38,10 @@
 #include <cassert>
 #include <signal.h> /* 140319 for client stop by Ctrl+c */
 #include <sys/stat.h>
-#if (defined(KVS_PLATFORM_LINUX) || defined(KVS_PLATFORM_MACOSX))
+#if (defined(VIS_MODULE_PLATFORM_LINUX) || defined(VIS_MODULE_PLATFORM_MACOSX))
 #include <execinfo.h>
 #endif
-#include <kvs/File>
+#include <vismodule/File>
 
 #include "ExtendedTransferFunction.h"
 #include "TransferFunctionSynthesizerCreator.h"
@@ -50,8 +50,8 @@
 
 #include "timer_simple.h"
 
-#include <kvs/Compiler>
-#ifdef KVS_COMPILER_VC
+#include <vismodule/Compiler>
+#ifdef VIS_MODULE_COMPILER_VC
 #include <direct.h>
 #define mkdir( dir, mode ) _mkdir( dir )
 #endif
@@ -121,17 +121,17 @@ public:
         m_mpi_rank = rank;
         this->read_GT5D_connections_and_values();
 
-        const kvs::Vector3ui resol = m_field->dim();
-        const kvs::UInt32 nnodes = resol.x() * resol.y() * resol.z();
-        const kvs::Vector3ui elem = resol - kvs::Vector3ui( 1 );
-        const kvs::UInt32 nelem = elem.x() * elem.y() * elem.z();
+        const vismodule::Vector3ui resol = m_field->dim();
+        const vismodule::UInt32 nnodes = resol.x() * resol.y() * resol.z();
+        const vismodule::Vector3ui elem = resol - vismodule::Vector3ui( 1 );
+        const vismodule::UInt32 nelem = elem.x() * elem.y() * elem.z();
 
-        kvs::ValueArray<kvs::Real32> coords( nnodes * 3 );
-        kvs::Matrix33f mat( kvs::YRotationMatrix33<float>( ( float )rank * 60.0 ) );
+        vismodule::ValueArray<vismodule::Real32> coords( nnodes * 3 );
+        vismodule::Matrix33f mat( vismodule::YRotationMatrix33<float>( ( float )rank * 60.0 ) );
         size_t i3 = 0;
         for ( size_t i = 0; i < nnodes; i++, i3 += 3 )
         {
-            kvs::Vector3f vec;
+            vismodule::Vector3f vec;
             vec.x() = m_field->coords()[i3];
             vec.y() = m_field->coords()[i3 + 1];
             vec.z() = m_field->coords()[i3 + 2];
@@ -153,7 +153,7 @@ public:
     {
 #if 0 //TEST_DELETE
         m_field->progress();
-        m_volume->setValues( kvs::AnyValueArray( m_field->values( 0 ) ) );
+        m_volume->setValues( vismodule::AnyValueArray( m_field->values( 0 ) ) );
         m_volume->updateMinMaxValues();
 
 #endif
@@ -161,7 +161,7 @@ public:
 
 public:
 
-    pbvr::PointObject* run( const Argument& param, const kvs::Camera& camera, const int timeStep,  const int st = 1 )
+    pbvr::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int timeStep,  const int st = 1 )
     {
         m_generator.setFinlterInfo( m_fi );
         m_generator.setCoordSynthTS( st );
@@ -178,7 +178,7 @@ public:
         return po;
     }
 
-    pbvr::PointObject* run( const Argument& param, const kvs::Camera& camera, const int timeStep, const int st, const int vl)
+    pbvr::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int timeStep, const int st, const int vl)
     {
         m_generator.setFinlterInfo( m_fi );
         m_generator.setCoordSynthTS( st );
@@ -264,8 +264,8 @@ protected:
         synth_vars.push_back( t );
 
         T = t = ( float )timeStep;
-        const kvs::ValueArray<kvs::Real32>& org_coords = po->coords();
-        kvs::ValueArray<kvs::Real32> new_coords;
+        const vismodule::ValueArray<vismodule::Real32>& org_coords = po->coords();
+        vismodule::ValueArray<vismodule::Real32> new_coords;
         new_coords.deepCopy( org_coords );
 
         if ( ! m_xcSynthStr.empty() )
@@ -348,28 +348,28 @@ protected:
         std::string coord = "/home/kawamura/Data/GT5D_large/610x610x128x100-2/co3d.dat";
         std::string variable = "/home/kawamura/Data/GT5D_large/610x610x128x100-2/pd3d.dat";
 
-        m_field = new kvs::AVSField( header, coord, variable );
+        m_field = new vismodule::AVSField( header, coord, variable );
         m_field->progress();
 
         m_volume = new pbvr::UnstructuredVolumeObject;
 
-        const kvs::Vector3ui resol = m_field->dim();
-        const kvs::UInt32 nnodes = resol.x() * resol.y() * resol.z();
-        const kvs::Vector3ui elem = resol - kvs::Vector3ui( 1 );
-        const kvs::UInt32 nelem = elem.x() * elem.y() * elem.z();
+        const vismodule::Vector3ui resol = m_field->dim();
+        const vismodule::UInt32 nnodes = resol.x() * resol.y() * resol.z();
+        const vismodule::Vector3ui elem = resol - vismodule::Vector3ui( 1 );
+        const vismodule::UInt32 nelem = elem.x() * elem.y() * elem.z();
 
         m_volume->setVeclen( 1 );
         m_volume->setNNodes( nnodes );
         m_volume->setNCells( nelem );
         m_volume->setCellType( pbvr::UnstructuredVolumeObject::Hexahedra );
-        m_volume->setValues( kvs::AnyValueArray( m_field->values( 0 ) ) );
+        m_volume->setValues( vismodule::AnyValueArray( m_field->values( 0 ) ) );
 
-        const kvs::UInt32 line_size = resol.x();
-        const kvs::UInt32 slice_size = line_size * resol.y();
-        kvs::ValueArray<kvs::UInt32> connections( nelem * 8 );
+        const vismodule::UInt32 line_size = resol.x();
+        const vismodule::UInt32 slice_size = line_size * resol.y();
+        vismodule::ValueArray<vismodule::UInt32> connections( nelem * 8 );
 
-        kvs::UInt32 m_index[8];
-        kvs::UInt32* connec = connections.pointer();
+        vismodule::UInt32 m_index[8];
+        vismodule::UInt32* connec = connections.pointer();
         std::cout << m_mpi_rank << ":start of gen. conne." << std::endl;
         for ( size_t k = 0; k < elem.z(); k++ )
         {
@@ -435,7 +435,7 @@ inline pbvr::VolumeObjectBase* CreateVolumeData( const Argument& param,
 {
     if ( fi.m_file_type == 1 || fi.m_file_type == 2 )
     {
-        kvs::File ifpx( fi.m_file_path );
+        vismodule::File ifpx( fi.m_file_path );
         std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
         //pbvr::UnstructuredVolumeObject* volume = new pbvr::UnstructuredVolumeImporter( path_base,
         pbvr::VolumeObjectBase* volume = new pbvr::UnstructuredVolumeImporter( path_base, fi.m_file_type, steps, subvols );
@@ -453,26 +453,26 @@ inline pbvr::VolumeObjectBase* CreateVolumeData( const Argument& param,
                << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
 
         //std::string m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
-        kvs::File ifpx( fi.m_file_path );
+        vismodule::File ifpx( fi.m_file_path );
         std::string m_input_data = ifpx.pathName() + ifpx.Separator()
                                    + ifpx.baseName() + suffix.str() + ".kvsml";
         //pbvr::UnstructuredVolumeObject* volume = new pbvr::UnstructuredVolumeImporter( m_input_data );
 
         pbvr::VolumeObjectBase* volume = nullptr;
 
-        if      ( kvsview::FileChecker::ImportableStructuredVolume( m_input_data ))
+        if      ( vismoduleview::FileChecker::ImportableStructuredVolume( m_input_data ))
         {
             std::cout << "Structured !" <<std::endl;
             volume = new pbvr::StructuredVolumeImporter( m_input_data ); 
         } 
-        else if ( kvsview::FileChecker::ImportableUnstructuredVolume( m_input_data))
+        else if ( vismoduleview::FileChecker::ImportableUnstructuredVolume( m_input_data))
         {
             std::cout << "Unstructured !" <<std::endl;
             volume = new pbvr::UnstructuredVolumeImporter( m_input_data );  
         }
         else 
         {
-            kvsMessageError("%s is not volume data.", m_input_data.c_str());
+            visModuleMessageError("%s is not volume data.", m_input_data.c_str());
             //return false;
         }
 
@@ -486,7 +486,7 @@ inline pbvr::VolumeObjectBase* CreateVolumeData( const Argument& param,
 
 inline float CalculateSamplingStep( const FilterInformationList& fil )
 {
-    float max_coord_length = kvs::Math::Max<float>( fil.m_total_max_object_coord.x() - fil.m_total_min_object_coord.x(),
+    float max_coord_length = vismodule::Math::Max<float>( fil.m_total_max_object_coord.x() - fil.m_total_min_object_coord.x(),
                                                     fil.m_total_max_object_coord.y() - fil.m_total_min_object_coord.y(),
                                                     fil.m_total_max_object_coord.z() - fil.m_total_min_object_coord.z() );
     return 0.1 * max_coord_length;
@@ -495,7 +495,7 @@ inline float CalculateSamplingStep( const FilterInformationList& fil )
 //kawamura2: This calculates optimized subpixel level.
 inline size_t CalculateSubpixelLevel( const Argument& param,
                                       const FilterInformationList& fil,
-                                      const kvs::Camera& camera )
+                                      const vismodule::Camera& camera )
 {
     namespace Generator = pbvr::CellByCellParticleGenerator;
     //pbvr::UnstructuredVolumeObject* volume;
@@ -572,8 +572,8 @@ inline VariableRange Calculate_minmax( const Argument& param,
     int steps = fil.m_total_start_steps;
     int subvols = 0;
 
-    kvs::Real64 tmp_min, tmp_max;
-    std::vector<kvs::Real64> min_vec, max_vec;
+    vismodule::Real64 tmp_min, tmp_max;
+    std::vector<vismodule::Real64> min_vec, max_vec;
     int nvariable = fil.m_total_number_ingredients;
     min_vec.resize(nvariable);
     max_vec.resize(nvariable);
@@ -651,7 +651,7 @@ inline VariableRange Calculate_minmax( const Argument& param,
 
 inline float CalculateDensityFactor( const Argument& param,
                                      const FilterInformationFile& fi,
-                                     const kvs::Camera& camera )
+                                     const vismodule::Camera& camera )
 {
     namespace Generator = pbvr::CellByCellParticleGenerator;
     //pbvr::UnstructuredVolumeObject* volume;
@@ -754,8 +754,8 @@ int main( int argc, char** argv )
     FilterInformationList fil;
     TransferFunctionSynthesizerCreator transfunc_creator;
 
-//    kvs::Timer timer( kvs::Timer::Start );
-    kvs::Camera camera;
+//    vismodule::Timer timer( vismodule::Timer::Start );
+    vismodule::Camera camera;
     //Timer_CS test;
 
     //2023/06/01 shimomura 
@@ -793,7 +793,7 @@ int main( int argc, char** argv )
             outdir = "";
         }
 
-        kvs::File outdir_pfx( param.m_output_data_base );
+        vismodule::File outdir_pfx( param.m_output_data_base );
 #if defined ( WIN32 )
         outdir = outdir_pfx.pathName();
 #else
@@ -840,7 +840,7 @@ int main( int argc, char** argv )
         {
             pflfile = param.m_input_data_base;
             param.m_input_data_base = pflfile.substr( 0, pflfile.size() - 4 );
-            kvs::File pfl( pflfile );
+            vismodule::File pfl( pflfile );
             if ( pfl.isExisted() )
             {
                 fil.loadPFL( pflfile );
@@ -850,9 +850,9 @@ int main( int argc, char** argv )
         {
 #if 0
             pfifile = param.m_input_data_base + ".pfi";
-            kvs::File pfi( pfifile );
+            vismodule::File pfi( pfifile );
             pflfile = param.m_input_data_base + ".pfl";
-            kvs::File pfl( pflfile );
+            vismodule::File pfl( pflfile );
             if ( pfl.isExisted() )
             {
                 fil.loadPFL( pflfile );
@@ -863,7 +863,7 @@ int main( int argc, char** argv )
             }
 #else
 			pflfile = param.m_input_data_base;
-			kvs::File pfl( pflfile );
+			vismodule::File pfl( pflfile );
 			if ( pfl.isExisted() )
 			{
 				fil.loadPFL( pflfile );
@@ -978,8 +978,8 @@ int main( int argc, char** argv )
 #if 0
                     pfifile = param.m_input_data_base + ".pfi";
                     pflfile = param.m_input_data_base + ".pfl";
-                    kvs::File pfi_pa( pfifile );
-                    kvs::File pfl_pa( pflfile );
+                    vismodule::File pfi_pa( pfifile );
+                    vismodule::File pfl_pa( pflfile );
                     if ( pfl_pa.isExisted() )
                     {
                         fil.loadPFL( pflfile );
@@ -990,7 +990,7 @@ int main( int argc, char** argv )
                     }
 #else
 					pflfile = param.m_input_data_base;
-					kvs::File pfl( pflfile );
+					vismodule::File pfl( pflfile );
 					if ( pfl.isExisted() )
 					{
 						fil.loadPFL( pflfile );
@@ -1253,7 +1253,7 @@ int main( int argc, char** argv )
                            << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
                            << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
                     //param.m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
-                    kvs::File ifpx( fi.m_file_path );
+                    vismodule::File ifpx( fi.m_file_path );
                     param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                          + ifpx.baseName() + suffix.str() + ".kvsml";
 
@@ -1293,7 +1293,7 @@ int main( int argc, char** argv )
                         << '_' << std::setw( 7 ) << std::setfill( '0' ) << 1
                         << '_' << std::setw( 7 ) << std::setfill( '0' ) << 1;
                 std::string basename = output + suffix2.str();
-                joined_obj.setSize( static_cast<kvs::Real32>( param.m_subpixel_level ) );
+                joined_obj.setSize( static_cast<vismodule::Real32>( param.m_subpixel_level ) );
                 KVSMLObjectPointWriter( joined_obj, basename );
 
             } // end of for(stp)
@@ -1340,7 +1340,7 @@ int main( int argc, char** argv )
                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
                         //param.m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
-                        kvs::File ifpx( fi.m_file_path );
+                        vismodule::File ifpx( fi.m_file_path );
                         param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                              + ifpx.baseName() + suffix.str() + ".kvsml";
 
@@ -1413,7 +1413,7 @@ int main( int argc, char** argv )
                             << '_' << std::setw( 7 ) << std::setfill( '0' ) << 1
                             << '_' << std::setw( 7 ) << std::setfill( '0' ) << 1;
                     std::string basename = output + suffix2.str();
-                    joined_obj.setSize( static_cast<kvs::Real32>( param.m_subpixel_level ) );
+                    joined_obj.setSize( static_cast<vismodule::Real32>( param.m_subpixel_level ) );
                     KVSMLObjectPointWriter( joined_obj, basename );
                 }
             } // end of for(stp)
@@ -1470,7 +1470,7 @@ int main( int argc, char** argv )
                             << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( vl + 1 )
                             << '_' << std::setw( 7 ) << std::setfill( '0' ) << fil.m_total_number_subvolumes;
                     //param.m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
-                    kvs::File ifpx( fi.m_file_path );
+                    vismodule::File ifpx( fi.m_file_path );
                     param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                          + ifpx.baseName() + suffix.str() + ".kvsml";
                     std::string basename = output + suffix2.str();
@@ -1493,7 +1493,7 @@ int main( int argc, char** argv )
                         PBVR_TIMER_STA( 80 );
 						printf("  %  zu perticles generated\n", object->coords().size() / 3);
 						//サイズの代わりにサブピクセルレベルを代入.
-                        object->setSize( static_cast<kvs::Real32>( param.m_subpixel_level ) );
+                        object->setSize( static_cast<vismodule::Real32>( param.m_subpixel_level ) );
                         KVSMLObjectPointWriter( *object, basename );
                         PBVR_TIMER_END( 80 );
                     }
@@ -1556,8 +1556,8 @@ int main( int argc, char** argv )
 
         int c_bins_size = 0;
         int o_bins_size = 0;
-        kvs::UInt64* tmp_c_bins;
-        kvs::UInt64* tmp_o_bins;
+        vismodule::UInt64* tmp_c_bins;
+        vismodule::UInt64* tmp_o_bins;
                         
         //add by shimomura 2023/06/14
         float*  tmp_max;
@@ -1567,7 +1567,7 @@ int main( int argc, char** argv )
         {
             //--------------------- WORKER --------------------
             jpv::ParticleTransferClientMessage clntMes;
-            clntMes.m_camera = new kvs::Camera();
+            clntMes.m_camera = new vismodule::Camera();
 
             bool loop = true;
 
@@ -1616,7 +1616,7 @@ int main( int argc, char** argv )
                     {
                         pflfile = param.m_input_data_base;
                         param.m_input_data_base = pflfile.substr( 0, pflfile.size() - 4 );
-                        kvs::File pfl( pflfile );
+                        vismodule::File pfl( pflfile );
                         if ( pfl.isExisted() )
                         {
                             fil.loadPFL( pflfile );
@@ -1626,9 +1626,9 @@ int main( int argc, char** argv )
                     {
 #if 0
                         pfifile = param.m_input_data_base + ".pfi";
-                        kvs::File pfi( pfifile );
+                        vismodule::File pfi( pfifile );
                         pflfile = param.m_input_data_base + ".pfl";
-                        kvs::File pfl( pflfile );
+                        vismodule::File pfl( pflfile );
                         if ( pfl.isExisted() )
                         {
                             fil.loadPFL( pflfile );
@@ -1639,7 +1639,7 @@ int main( int argc, char** argv )
                         }
 #else
 						pflfile = param.m_input_data_base;
-						kvs::File pfl( pflfile );
+						vismodule::File pfl( pflfile );
 						if ( pfl.isExisted() )
 						{
 							fil.loadPFL( pflfile );
@@ -1719,8 +1719,8 @@ int main( int argc, char** argv )
                         o_bins_size += o_nbins;
                     }
 
-                    tmp_c_bins = new kvs::UInt64[c_bins_size];
-                    tmp_o_bins = new kvs::UInt64[o_bins_size];
+                    tmp_c_bins = new vismodule::UInt64[c_bins_size];
+                    tmp_o_bins = new vismodule::UInt64[o_bins_size];
                     //add by shimomura 2023/06/14
                     int cnt = 2* tf_count ;
                     tmp_max = new float[cnt]; 
@@ -1753,7 +1753,7 @@ int main( int argc, char** argv )
                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
                         //param.m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
-                        kvs::File ifpx( fi.m_file_path );
+                        vismodule::File ifpx( fi.m_file_path );
                         param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                              + ifpx.baseName() + suffix.str() + ".kvsml";
                         int timeStep = 1;
@@ -1863,7 +1863,7 @@ int main( int argc, char** argv )
                     {
                         pflfile = param.m_input_data_base;
                         param.m_input_data_base = pflfile.substr( 0, pflfile.size() - 4 );
-                        kvs::File pfl( pflfile );
+                        vismodule::File pfl( pflfile );
                         if ( pfl.isExisted() )
                         {
                             fil.loadPFL( pflfile );
@@ -1873,9 +1873,9 @@ int main( int argc, char** argv )
                     {
 #if 0
                         pfifile = param.m_input_data_base + ".pfi";
-                        kvs::File pfi( pfifile );
+                        vismodule::File pfi( pfifile );
                         pflfile = param.m_input_data_base + ".pfl";
-                        kvs::File pfl( pflfile );
+                        vismodule::File pfl( pflfile );
                         if ( pfl.isExisted() )
                         {
                             fil.loadPFL( pflfile );
@@ -1886,7 +1886,7 @@ int main( int argc, char** argv )
                         }
 #else
 						pflfile = param.m_input_data_base;
-						kvs::File pfl( pflfile );
+						vismodule::File pfl( pflfile );
 						if ( pfl.isExisted() )
 						{
 							fil.loadPFL( pflfile );
@@ -1955,8 +1955,8 @@ int main( int argc, char** argv )
                         o_bins_size += o_nbins;
                     }
 
-                    tmp_c_bins = new kvs::UInt64[c_bins_size];
-                    tmp_o_bins = new kvs::UInt64[o_bins_size];
+                    tmp_c_bins = new vismodule::UInt64[c_bins_size];
+                    tmp_o_bins = new vismodule::UInt64[o_bins_size];
                     //add by shimomura 2023/06/14
                     int cnt = 2* tf_count ;
                     tmp_max = new float[cnt]; 
@@ -1989,7 +1989,7 @@ int main( int argc, char** argv )
                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
                         //param.m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
-                        kvs::File ifpx( fi.m_file_path );
+                        vismodule::File ifpx( fi.m_file_path );
                         param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                              + ifpx.baseName() + suffix.str() + ".kvsml";
                         int timeStep = 1;
@@ -2097,8 +2097,8 @@ int main( int argc, char** argv )
 
             jpv::ParticleTransferServerMessage servMes;
             jpv::ParticleTransferClientMessage clntMes;
-            clntMes.m_camera = new kvs::Camera();
-            servMes.m_camera = new kvs::Camera();
+            clntMes.m_camera = new vismodule::Camera();
+            servMes.m_camera = new vismodule::Camera();
 
             // クライアント接続待ち
             pts.acceptServer();
@@ -2174,9 +2174,9 @@ int main( int argc, char** argv )
                     
 #if 0
                     std::string pfifile = param.m_input_data_base + ".pfi";
-                    kvs::File pfi( pfifile );
+                    vismodule::File pfi( pfifile );
                     std::string pflfile = param.m_input_data_base + ".pfl";
-                    kvs::File pfl( pflfile );
+                    vismodule::File pfl( pflfile );
                     if ( pfl.isExisted() )
                     {
                         fil.loadPFL( pflfile );
@@ -2187,7 +2187,7 @@ int main( int argc, char** argv )
                     }
 #else
                                        std::string pflfile = param.m_input_data_base;
-                                       kvs::File pfl( pflfile );
+                                       vismodule::File pfl( pflfile );
                                        if ( pfl.isExisted() )
                                        {
                                                fil.loadPFL( pflfile );
@@ -2348,8 +2348,8 @@ int main( int argc, char** argv )
                         o_bins_size += servMes.m_opacity_nbins[tf];
                     }
 
-                    tmp_c_bins = new kvs::UInt64[c_bins_size];
-                    tmp_o_bins = new kvs::UInt64[o_bins_size];
+                    tmp_c_bins = new vismodule::UInt64[c_bins_size];
+                    tmp_o_bins = new vismodule::UInt64[o_bins_size];
 
                     //add by shimomura 2023/06/14
                     int cnt = 2* servMes.m_transfer_function_count ;
@@ -2393,7 +2393,7 @@ int main( int argc, char** argv )
                             suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
                                 << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
                                 << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
-                            kvs::File ifpx( fil.m_list[fidx].m_file_path );
+                            vismodule::File ifpx( fil.m_list[fidx].m_file_path );
                             param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                 + ifpx.baseName() + suffix.str() + ".kvsml";
                             int timeStep = 1;
@@ -2740,8 +2740,8 @@ int main( int argc, char** argv )
                             o_bins_size += servMes.m_opacity_nbins[tf];
                         }
 
-                        tmp_c_bins = new kvs::UInt64[c_bins_size];
-                        tmp_o_bins = new kvs::UInt64[o_bins_size];
+                        tmp_c_bins = new vismodule::UInt64[c_bins_size];
+                        tmp_o_bins = new vismodule::UInt64[o_bins_size];
 
                         //add by shimomura 2023/06/14
                         int cnt = 2* servMes.m_transfer_function_count ;
@@ -2784,7 +2784,7 @@ int main( int argc, char** argv )
                             suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
                                    << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
                                    << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
-                            kvs::File ifpx( fil.m_list[fidx].m_file_path );
+                            vismodule::File ifpx( fil.m_list[fidx].m_file_path );
                             param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                                  + ifpx.baseName() + suffix.str() + ".kvsml";
                             int timeStep = 1;
@@ -2805,9 +2805,9 @@ int main( int argc, char** argv )
                                 }
 
                                 size_t nmemb = tmp_obj->nvertices() * 3;
-                                kvs::ValueArray<kvs::Real32> coords_array ( tmp_obj->coords().pointer(), nmemb );
-                                kvs::ValueArray<kvs::UInt8>  colors_array ( tmp_obj->colors().pointer(), nmemb );
-                                kvs::ValueArray<kvs::Real32> normals_array( tmp_obj->normals().pointer(), nmemb );
+                                vismodule::ValueArray<vismodule::Real32> coords_array ( tmp_obj->coords().pointer(), nmemb );
+                                vismodule::ValueArray<vismodule::UInt8>  colors_array ( tmp_obj->colors().pointer(), nmemb );
+                                vismodule::ValueArray<vismodule::Real32> normals_array( tmp_obj->normals().pointer(), nmemb );
 
                                 originalObject->clear();
                                 originalObject->setCoords( coords_array );

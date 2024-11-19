@@ -12,16 +12,16 @@
  *  $Id: TCPBarrier.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__TCP_BARRIER_H_INCLUDE
-#define KVS__TCP_BARRIER_H_INCLUDE
+#ifndef VIS_MODULE__TCP_BARRIER_H_INCLUDE
+#define VIS_MODULE__TCP_BARRIER_H_INCLUDE
 
-#include <kvs/Mutex>
-#include <kvs/IPAddress>
-#include <kvs/TCPSocket>
-#include <kvs/ClassName>
+#include <vismodule/Mutex>
+#include <vismodule/IPAddress>
+#include <vismodule/TCPSocket>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -31,16 +31,16 @@ namespace kvs
 /*===========================================================================*/
 class TCPBarrier
 {
-    kvsClassName( kvs::TCPBarrier );
+    visModuleClassName( vismodule::TCPBarrier );
 
 protected:
 
-    kvs::TCPSocket* m_client; //< barrier client node
-    kvs::Mutex      m_mutex;  //< mutex
+    vismodule::TCPSocket* m_client; //< barrier client node
+    vismodule::Mutex      m_mutex;  //< mutex
 
 public:
 
-    TCPBarrier( const kvs::IPAddress& ip, int port );
+    TCPBarrier( const vismodule::IPAddress& ip, int port );
 
     virtual ~TCPBarrier( void );
 
@@ -49,6 +49,6 @@ public:
     void wait( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TCP_BARRIER_H_INCLUDE
+#endif // VIS_MODULE__TCP_BARRIER_H_INCLUDE

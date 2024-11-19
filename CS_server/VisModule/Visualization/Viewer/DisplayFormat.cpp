@@ -14,7 +14,7 @@
 #include "DisplayFormat.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 DisplayFormat::DisplayFormat( void ):
@@ -139,4 +139,4 @@ DisplayFormat& DisplayFormat::operator = ( const DisplayFormat& format )
     return( *this );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

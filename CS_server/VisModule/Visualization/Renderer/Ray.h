@@ -11,16 +11,16 @@
  *  $Id: Ray.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__RAY_H_INCLUDE
-#define KVS__RAY_H_INCLUDE
+#ifndef VIS_MODULE__RAY_H_INCLUDE
+#define VIS_MODULE__RAY_H_INCLUDE
 
-#include <kvs/Vector3>
-#include <kvs/Matrix44>
-#include <kvs/OpenGL>
-#include <kvs/ClassName>
+#include <vismodule/Vector3>
+#include <vismodule/Matrix44>
+#include <vismodule/OpenGL>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -38,17 +38,17 @@ namespace kvs
 /*==========================================================================*/
 class Ray
 {
-    kvsClassName( kvs::Ray );
+    visModuleClassName( vismodule::Ray );
 
 private:
 
     float          m_t;         ///< Parameter.
-    kvs::Vector3f  m_from;      ///< From point.
-    kvs::Vector3f  m_direction; ///< Directional vector.
-    kvs::Matrix44f m_combined;  ///< combined matrix
-    kvs::Matrix44f m_inverse;   ///< inverse matrix
-    kvs::Vector2f  m_delta;     ///<
-    kvs::Vector2f  m_constant;  ///<
+    vismodule::Vector3f  m_from;      ///< From point.
+    vismodule::Vector3f  m_direction; ///< Directional vector.
+    vismodule::Matrix44f m_combined;  ///< combined matrix
+    vismodule::Matrix44f m_inverse;   ///< inverse matrix
+    vismodule::Vector2f  m_delta;     ///<
+    vismodule::Vector2f  m_constant;  ///<
 
 public:
 
@@ -74,15 +74,15 @@ public:
 public:
 
     const bool isIntersected(
-        const kvs::Vector3f& v0,
-        const kvs::Vector3f& v1,
-        const kvs::Vector3f& v2 );
+        const vismodule::Vector3f& v0,
+        const vismodule::Vector3f& v1,
+        const vismodule::Vector3f& v2 );
 
     const bool isIntersected(
-        const kvs::Vector3f& v0,
-        const kvs::Vector3f& v1,
-        const kvs::Vector3f& v2,
-        const kvs::Vector3f& v3 );
+        const vismodule::Vector3f& v0,
+        const vismodule::Vector3f& v1,
+        const vismodule::Vector3f& v2,
+        const vismodule::Vector3f& v3 );
 
 public:
 
@@ -97,7 +97,7 @@ public:
      *  @return From-point.
      */
     /*======================================================================*/
-    const kvs::Vector3f& from( void ) const
+    const vismodule::Vector3f& from( void ) const
     {
         return( m_from );
     }
@@ -108,21 +108,21 @@ public:
      *  @return Directional vectort.
      */
     /*======================================================================*/
-    const kvs::Vector3f& direction( void ) const
+    const vismodule::Vector3f& direction( void ) const
     {
         return( m_direction );
     }
 
 public:
 
-    const kvs::Vector3f point( void ) const
+    const vismodule::Vector3f point( void ) const
     {
         return( m_from + m_direction * m_t );
     }
 
     const float depth( void ) const
     {
-        const kvs::Vector3f point( this->point() );
+        const vismodule::Vector3f point( this->point() );
 
         const float view2 =
             point.x() * m_combined[2][0] +
@@ -148,6 +148,6 @@ public:
     friend std::ostream& operator << ( std::ostream& os, const Ray& rhs );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__RAY_H_INCLUDE
+#endif // VIS_MODULE__RAY_H_INCLUDE

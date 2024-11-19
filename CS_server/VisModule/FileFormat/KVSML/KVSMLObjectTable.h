@@ -12,20 +12,20 @@
  *  $Id: KVSMLObjectTable.h 846 2011-06-21 07:04:44Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__KVSML_OBJECT_TABLE_H_INCLUDE
-#define KVS__KVSML_OBJECT_TABLE_H_INCLUDE
+#ifndef VIS_MODULE__KVSML_OBJECT_TABLE_H_INCLUDE
+#define VIS_MODULE__KVSML_OBJECT_TABLE_H_INCLUDE
 
-#include <kvs/FileFormatBase>
-#include <kvs/AnyValueArray>
-#include <kvs/Type>
-#include <kvs/Vector3>
+#include <vismodule/FileFormatBase>
+#include <vismodule/AnyValueArray>
+#include <vismodule/Type>
+#include <vismodule/Vector3>
 #include <string>
 #include <vector>
 #include <FileFormat/KVSML/KVSMLTag.h>
 #include <FileFormat/KVSML/ObjectTag.h>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -33,9 +33,9 @@ namespace kvs
  *  @brief  KVSML table object format.
  */
 /*===========================================================================*/
-class KVSMLObjectTable : public kvs::FileFormatBase
+class KVSMLObjectTable : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::KVSMLObjectTable );
+    visModuleClassName( vismodule::KVSMLObjectTable );
 
 public:
 
@@ -48,13 +48,13 @@ public:
 
 protected:
 
-    kvs::kvsml::KVSMLTag m_kvsml_tag;   ///< KVSML tag information
-    kvs::kvsml::ObjectTag m_object_tag; ///< Object tag information
+    vismodule::kvsml::KVSMLTag m_kvsml_tag;   ///< KVSML tag information
+    vismodule::kvsml::ObjectTag m_object_tag; ///< Object tag information
     WritingDataType m_writing_type; ///< writing data type
     size_t m_nrows; ///< number of rows
     size_t m_ncolumns; ///< number of columns
     std::vector<std::string> m_labels; ///< column label list
-    std::vector<kvs::AnyValueArray> m_columns; ///< column list
+    std::vector<vismodule::AnyValueArray> m_columns; ///< column list
     std::vector<bool> m_has_min_values; ///< min. value flag list
     std::vector<bool> m_has_max_values; ///< max. value flag list
     std::vector<bool> m_has_min_ranges; ///< min. range flag list
@@ -74,9 +74,9 @@ public:
 
 public:
 
-    const kvs::kvsml::KVSMLTag& KVSMLTag( void ) const;
+    const vismodule::kvsml::KVSMLTag& KVSMLTag( void ) const;
 
-    const kvs::kvsml::ObjectTag& objectTag( void ) const;
+    const vismodule::kvsml::ObjectTag& objectTag( void ) const;
 
     const size_t nrows( void ) const;
 
@@ -84,7 +84,7 @@ public:
 
     const std::vector<std::string>& labelList( void ) const;
 
-    const std::vector<kvs::AnyValueArray>& columnList( void ) const;
+    const std::vector<vismodule::AnyValueArray>& columnList( void ) const;
 
     const std::vector<bool>& hasMinValueList( void ) const;
 
@@ -116,7 +116,7 @@ public:
 
     void setMaxRange( const size_t column_index, const double range );
 
-    void addColumn( const kvs::AnyValueArray& column, const std::string& label );
+    void addColumn( const vismodule::AnyValueArray& column, const std::string& label );
 
 public:
 
@@ -133,6 +133,6 @@ public:
     friend std::ostream& operator <<( std::ostream& os, const KVSMLObjectTable& rhs );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__KVSML_OBJECT_TABLE_H_INCLUDE
+#endif // VIS_MODULE__KVSML_OBJECT_TABLE_H_INCLUDE

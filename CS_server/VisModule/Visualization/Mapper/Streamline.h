@@ -11,15 +11,15 @@
  *  $Id: Streamline.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__STREAMLINE_H_INCLUDE
-#define KVS__STREAMLINE_H_INCLUDE
+#ifndef VIS_MODULE__STREAMLINE_H_INCLUDE
+#define VIS_MODULE__STREAMLINE_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 #include "StreamlineBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -27,49 +27,49 @@ namespace kvs
  *  Streamline class.
  */
 /*===========================================================================*/
-class Streamline : public kvs::StreamlineBase
+class Streamline : public vismodule::StreamlineBase
 {
     // Class name.
-    kvsClassName( kvs::Streamline );
+    visModuleClassName( vismodule::Streamline );
 
     // Module information.
-    kvsModuleCategory( Mapper );
-    kvsModuleBaseClass( kvs::StreamlineBase );
+    visModuleCategory( Mapper );
+    visModuleBaseClass( vismodule::StreamlineBase );
 
 public:
 
     Streamline( void );
 
     Streamline(
-        const kvs::StructuredVolumeObject* volume,
-        const kvs::PointObject* seed_points,
-        const kvs::TransferFunction& transfer_function );
+        const vismodule::StructuredVolumeObject* volume,
+        const vismodule::PointObject* seed_points,
+        const vismodule::TransferFunction& transfer_function );
 
     virtual ~Streamline( void );
 
 public:
 
-    BaseClass::SuperClass* exec( const kvs::ObjectBase* object );
+    BaseClass::SuperClass* exec( const vismodule::ObjectBase* object );
 
 protected:
 
-    const bool check_for_acceptance( const std::vector<kvs::Real32>& vertices );
+    const bool check_for_acceptance( const std::vector<vismodule::Real32>& vertices );
 
     const bool check_for_termination(
-        const kvs::Vector3f& current_vertex,
-        const kvs::Vector3f& direction,
+        const vismodule::Vector3f& current_vertex,
+        const vismodule::Vector3f& direction,
         const size_t integration_times,
-        const kvs::Vector3f& next_vertex );
+        const vismodule::Vector3f& next_vertex );
 
-    const kvs::Vector3f interpolate_vector( const kvs::Vector3f& vertex, const kvs::Vector3f& direction );
+    const vismodule::Vector3f interpolate_vector( const vismodule::Vector3f& vertex, const vismodule::Vector3f& direction );
 
-    const kvs::Vector3f calculate_vector( const kvs::Vector3f& vertex );
+    const vismodule::Vector3f calculate_vector( const vismodule::Vector3f& vertex );
 
-    const kvs::RGBColor calculate_color( const kvs::Vector3f& direction );
+    const vismodule::RGBColor calculate_color( const vismodule::Vector3f& direction );
 
-    void set_min_max_vector_length( const kvs::VolumeObjectBase* volume );
+    void set_min_max_vector_length( const vismodule::VolumeObjectBase* volume );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__STREAMLINE_BASE_H_INCLUDE
+#endif // VIS_MODULE__STREAMLINE_BASE_H_INCLUDE

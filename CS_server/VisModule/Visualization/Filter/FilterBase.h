@@ -11,15 +11,15 @@
  *  $Id: FilterBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__FILTER_BASE_H_INCLUDE
-#define KVS__FILTER_BASE_H_INCLUDE
+#ifndef VIS_MODULE__FILTER_BASE_H_INCLUDE
+#define VIS_MODULE__FILTER_BASE_H_INCLUDE
 
-#include <kvs/ObjectBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/ObjectBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -29,9 +29,9 @@ namespace kvs
 /*==========================================================================*/
 class FilterBase
 {
-    kvsClassName( kvs::FilterBase );
+    visModuleClassName( vismodule::FilterBase );
 
-    kvsModuleBase;
+    visModuleBase;
 
 protected:
 
@@ -45,7 +45,7 @@ public:
 
 public:
 
-    virtual kvs::ObjectBase* exec( const kvs::ObjectBase* object ) = 0;
+    virtual vismodule::ObjectBase* exec( const vismodule::ObjectBase* object ) = 0;
 
 public:
 
@@ -54,6 +54,6 @@ public:
     const bool isFailure( void ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__FILTER_BASE_H_INCLUDE
+#endif // VIS_MODULE__FILTER_BASE_H_INCLUDE

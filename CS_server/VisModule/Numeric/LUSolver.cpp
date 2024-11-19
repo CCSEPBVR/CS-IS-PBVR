@@ -13,10 +13,10 @@
  */
 /*****************************************************************************/
 #include "LUSolver.h"
-#include <kvs/Assert>
+#include <vismodule/Assert>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -27,10 +27,10 @@ namespace kvs
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector<T>& LUSolver<T>::solve( const kvs::Vector<T>& b )
+const vismodule::Vector<T>& LUSolver<T>::solve( const vismodule::Vector<T>& b )
 {
     // Solution vector.
-    kvs::Vector<T> x = b;
+    vismodule::Vector<T> x = b;
 
     // Forward substitution.
     int row = m_decomposer.LU().nrows();
@@ -77,10 +77,10 @@ const kvs::Vector<T>& LUSolver<T>::solve( const kvs::Vector<T>& b )
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector<T>& LUSolver<T>::solve( const kvs::Matrix<T>& A, const kvs::Vector<T>& b )
+const vismodule::Vector<T>& LUSolver<T>::solve( const vismodule::Matrix<T>& A, const vismodule::Vector<T>& b )
 {
-    KVS_ASSERT( A.nrows() == A.ncolumns() );
-    KVS_ASSERT( A.ncolumns() == b.size() );
+    VIS_MODULE_ASSERT( A.nrows() == A.ncolumns() );
+    VIS_MODULE_ASSERT( A.ncolumns() == b.size() );
 
     // LU decomposition.
     m_decomposer.setMatrix( A );
@@ -94,4 +94,4 @@ template class LUSolver<int>;
 template class LUSolver<float>;
 template class LUSolver<double>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -14,7 +14,7 @@
 #include "TagBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -58,7 +58,7 @@ const std::string& TagBase::name( void ) const
  *  @return pointer to the node
  */
 /*===========================================================================*/
-kvs::XMLNode::SuperClass* TagBase::node( void )
+vismodule::XMLNode::SuperClass* TagBase::node( void )
 {
     return( m_node );
 }
@@ -69,7 +69,7 @@ kvs::XMLNode::SuperClass* TagBase::node( void )
  *  @return pointer to the node
  */
 /*===========================================================================*/
-const kvs::XMLNode::SuperClass* TagBase::node( void ) const
+const vismodule::XMLNode::SuperClass* TagBase::node( void ) const
 {
     return( m_node );
 }
@@ -81,12 +81,12 @@ const kvs::XMLNode::SuperClass* TagBase::node( void ) const
  *  @return true, if the node is existed
  */
 /*===========================================================================*/
-const bool TagBase::isExisted( const kvs::XMLNode::SuperClass* parent ) const
+const bool TagBase::isExisted( const vismodule::XMLNode::SuperClass* parent ) const
 {
     const std::string tag_name = this->name();
-    return( kvs::XMLNode::FindChildNode( parent, tag_name ) != NULL );
+    return( vismodule::XMLNode::FindChildNode( parent, tag_name ) != NULL );
 }
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

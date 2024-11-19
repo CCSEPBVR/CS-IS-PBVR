@@ -142,7 +142,7 @@ pbvr::UnstructuredVolumeObject* UnstructuredVolumeObject::DownCast( pbvr::Object
     const pbvr::VolumeObjectBase::VolumeType type = volume->volumeType();
     if ( type != pbvr::VolumeObjectBase::Unstructured )
     {
-        kvsMessageError( "Input object is not a unstructured volume object." );
+        visModuleMessageError( "Input object is not a unstructured volume object." );
         return NULL;
     }
 
@@ -161,7 +161,7 @@ std::ostream& operator << ( std::ostream& os, const UnstructuredVolumeObject& ob
     if ( !object.hasMinMaxValues() ) object.updateMinMaxValues();
 
     os << "Object type:  " << "unstructured volume object" << std::endl;
-#ifdef KVS_COMPILER_VC
+#ifdef VIS_MODULE_COMPILER_VC
 //#if PBVR_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
 //    // @TODO Cannot instance the object that is a abstract class here (error:C2259).
 //#endif
@@ -318,8 +318,8 @@ void UnstructuredVolumeObject::updateMinMaxCoords()
 /*==========================================================================*/
 void UnstructuredVolumeObject::calculateMinMaxCoords()
 {
-    kvs::Vector3f min_coord( 0.0f );
-    kvs::Vector3f max_coord( 0.0f );
+    vismodule::Vector3f min_coord( 0.0f );
+    vismodule::Vector3f max_coord( 0.0f );
 
     const float*       coord = this->coords().pointer();
     const float* const end   = coord + this->coords().size();
@@ -337,13 +337,13 @@ void UnstructuredVolumeObject::calculateMinMaxCoords()
         y = *( coord++ );
         z = *( coord++ );
 
-        min_coord.x() = kvs::Math::Min( min_coord.x(), x );
-        min_coord.y() = kvs::Math::Min( min_coord.y(), y );
-        min_coord.z() = kvs::Math::Min( min_coord.z(), z );
+        min_coord.x() = vismodule::Math::Min( min_coord.x(), x );
+        min_coord.y() = vismodule::Math::Min( min_coord.y(), y );
+        min_coord.z() = vismodule::Math::Min( min_coord.z(), z );
 
-        max_coord.x() = kvs::Math::Max( max_coord.x(), x );
-        max_coord.y() = kvs::Math::Max( max_coord.y(), y );
-        max_coord.z() = kvs::Math::Max( max_coord.z(), z );
+        max_coord.x() = vismodule::Math::Max( max_coord.x(), x );
+        max_coord.y() = vismodule::Math::Max( max_coord.y(), y );
+        max_coord.z() = vismodule::Math::Max( max_coord.z(), z );
     }
 
     this->setMinMaxObjectCoords( min_coord, max_coord );

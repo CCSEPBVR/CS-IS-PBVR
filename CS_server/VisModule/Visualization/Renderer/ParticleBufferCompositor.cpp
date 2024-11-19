@@ -12,13 +12,13 @@
  */
 /****************************************************************************/
 #include "ParticleBufferCompositor.h"
-#include <kvs/DebugNew>
-#include <kvs/Vector3>
-#include <kvs/Matrix33>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/DebugNew>
+#include <vismodule/Vector3>
+#include <vismodule/Matrix33>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -30,10 +30,10 @@ namespace kvs
  */
 /*==========================================================================*/
 ParticleBufferCompositor::ParticleBufferCompositor(
-    kvs::ObjectManager*   object_manager,
-    kvs::RendererManager* renderer_manager,
-    kvs::IDManager*       id_manager ):
-    kvs::VolumeRendererBase(),
+    vismodule::ObjectManager*   object_manager,
+    vismodule::RendererManager* renderer_manager,
+    vismodule::IDManager*       id_manager ):
+    vismodule::VolumeRendererBase(),
     m_object_manager( object_manager ),
     m_renderer_manager( renderer_manager ),
     m_id_manager( id_manager ),
@@ -61,11 +61,11 @@ ParticleBufferCompositor::~ParticleBufferCompositor( void )
  */
 /*==========================================================================*/
 void ParticleBufferCompositor::exec(
-    kvs::ObjectBase* object,
-    kvs::Camera*     camera,
-    kvs::Light*      light )
+    vismodule::ObjectBase* object,
+    vismodule::Camera*     camera,
+    vismodule::Light*      light )
 {
-    kvs::IgnoreUnusedVariable( object );
+    vismodule::IgnoreUnusedVariable( object );
 
     if( m_point_object_list.size() == 0 ) return;
 
@@ -92,14 +92,14 @@ void ParticleBufferCompositor::initialize( void )
     m_num_stored_particles = 0;
     m_subpixel_level = 1;
 
-    const kvs::Vector3f  t = m_object_manager->translation();
-    const kvs::Vector3f  s = m_object_manager->scaling();
-    const kvs::Matrix33f r = m_object_manager->rotation();
-    const kvs::Vector3f  obj_min = m_object_manager->minObjectCoord();
-    const kvs::Vector3f  obj_max = m_object_manager->maxObjectCoord();
-    const kvs::Vector3f  ext_min = m_object_manager->minExternalCoord();
-    const kvs::Vector3f  ext_max = m_object_manager->maxExternalCoord();
-    kvs::PointObject* object = new kvs::PointObject(); // Dummy object
+    const vismodule::Vector3f  t = m_object_manager->translation();
+    const vismodule::Vector3f  s = m_object_manager->scaling();
+    const vismodule::Matrix33f r = m_object_manager->rotation();
+    const vismodule::Vector3f  obj_min = m_object_manager->minObjectCoord();
+    const vismodule::Vector3f  obj_max = m_object_manager->maxObjectCoord();
+    const vismodule::Vector3f  ext_min = m_object_manager->minExternalCoord();
+    const vismodule::Vector3f  ext_max = m_object_manager->maxExternalCoord();
+    vismodule::PointObject* object = new vismodule::PointObject(); // Dummy object
     object->setInitialXform( t, s, r );
     object->setMinMaxObjectCoords( obj_min, obj_max );
     object->setMinMaxExternalCoords( ext_min, ext_max );
@@ -117,8 +117,8 @@ void ParticleBufferCompositor::initialize( void )
  */
 /*==========================================================================*/
 void ParticleBufferCompositor::link(
-    kvs::PointObject*            object,
-    kvs::ParticleVolumeRenderer* renderer )
+    vismodule::PointObject*            object,
+    vismodule::ParticleVolumeRenderer* renderer )
 {
     if( m_point_object_list.size() == 0 )
     {
@@ -199,7 +199,7 @@ bool ParticleBufferCompositor::create_accumulator( void )
         m_point_renderer_list[i]->create_particle_buffer( width, height, level );
     }
 
-    m_accumulator = new kvs::ParticleBufferAccumulator( width, height, level );
+    m_accumulator = new vismodule::ParticleBufferAccumulator( width, height, level );
 
     return( m_accumulator ? true : false );
 }
@@ -215,7 +215,7 @@ void ParticleBufferCompositor::clean_accumulator( void )
     const size_t nrenderers = m_point_renderer_list.size();
     for( size_t i = 0; i < nrenderers; i++ )
     {
-        kvs::PointObject* object = m_point_object_list[i];
+        vismodule::PointObject* object = m_point_object_list[i];
         if( m_object_manager->hasActiveObject() )
         {
             if( m_object_manager->activeObject() != object )
@@ -285,18 +285,18 @@ void ParticleBufferCompositor::create_image( Camera* camera, Light* light )
  *  @param light [in] pointer to the light
  */
 /*==========================================================================*/
-void ParticleBufferCompositor::accumulate( kvs::Camera* camera, kvs::Light* light )
+void ParticleBufferCompositor::accumulate( vismodule::Camera* camera, vismodule::Light* light )
 {
 #if TEST__MESUREMENT_ACCUMLATION_TIME
-    kvs::Timer timer;
+    vismodule::Timer timer;
     m_accumulation_time = 0.0;
 #endif
 
     const size_t nobjects = m_point_object_list.size();
     for ( size_t id = 0; id < nobjects; id++ )
     {
-        kvs::PointObject*            object   = m_point_object_list[id];
-        kvs::ParticleVolumeRenderer* renderer = m_point_renderer_list[id];
+        vismodule::PointObject*            object   = m_point_object_list[id];
+        vismodule::ParticleVolumeRenderer* renderer = m_point_renderer_list[id];
 
         if( !object->isShown() ) continue;
 
@@ -347,16 +347,16 @@ void ParticleBufferCompositor::accumulate( kvs::Camera* camera, kvs::Light* ligh
  */
 /*==========================================================================*/
 void ParticleBufferCompositor::update_particle_buffer(
-    kvs::PointObject*            object,
-    kvs::ParticleVolumeRenderer* renderer,
-    kvs::Camera*                 camera,
-    kvs::Light*                  light )
+    vismodule::PointObject*            object,
+    vismodule::ParticleVolumeRenderer* renderer,
+    vismodule::Camera*                 camera,
+    vismodule::Light*                  light )
 {
     glPopMatrix();
     glPushMatrix();
     {
-        const kvs::Vector3f object_center = m_object_manager->objectCenter();
-        const kvs::Vector3f object_scale  = m_object_manager->normalize();
+        const vismodule::Vector3f object_center = m_object_manager->objectCenter();
+        const vismodule::Vector3f object_scale  = m_object_manager->normalize();
 
         object->transform( object_center, object_scale );
         renderer->create_image( object, camera, light );
@@ -365,4 +365,4 @@ void ParticleBufferCompositor::update_particle_buffer(
     glPushMatrix();
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

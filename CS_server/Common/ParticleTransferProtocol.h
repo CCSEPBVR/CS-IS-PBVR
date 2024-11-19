@@ -3,7 +3,7 @@
 
 #include <string>
 #include "Types.h"
-#include <kvs/Vector3>
+#include <vismodule/Vector3>
 #include "ExtendedTransferFunctionParameter.h"
 #include "VariableRange.h"
 
@@ -11,7 +11,7 @@
 #include <sstream>
 #include <vector>
 
-namespace kvs
+namespace vismodule
 {
 class Camera;
 class TransferFunction;
@@ -78,7 +78,7 @@ public:
     char m_node_type;
     float m_sampling_step;
     int32_t m_rendering_id;
-    kvs::Camera* m_camera;
+    vismodule::Camera* m_camera;
 
     int32_t m_time_parameter;
     int32_t m_begin_time;
@@ -181,7 +181,7 @@ public:
     int32_t m_particle_limit;
     float m_particle_density;
     float m_particle_data_size_limit;
-    kvs::Camera* m_camera;
+    vismodule::Camera* m_camera;
     std::vector<NamedTransferFunctionParameter> m_transfer_function;
     std::vector<VolumeEquation> m_volume_equation;
 //    std::vector<ParticleTransferClientMessage::VolumeEquation> voleqn;
@@ -189,10 +189,10 @@ public:
 //#endif
     std::string m_color_transfer_function_synthesis;
     std::string m_opacity_transfer_function_synthesis;
-    kvs::UInt64* m_color_nbins;
-    kvs::UInt64* m_opacity_nbins;
-    std::vector<kvs::UInt64*> m_color_bins;
-    std::vector<kvs::UInt64*> m_opacity_bins;
+    vismodule::UInt64* m_color_nbins;
+    vismodule::UInt64* m_opacity_nbins;
+    std::vector<vismodule::UInt64*> m_color_bins;
+    std::vector<vismodule::UInt64*> m_opacity_bins;
 //    std::vector<std::string> m_color_bin_names;			// add by @hira at 2016/12/01
 //    std::vector<std::string> m_opacity_bin_names;		// add by @hira at 2016/12/01
     // message のサイズを計算
@@ -242,13 +242,13 @@ public:
     void setColorHistogramBins(
         int histogram_size,
         int nbins,
-        const kvs::UInt64* arg_c_bins);/*,
+        const vismodule::UInt64* arg_c_bins);/*,
             const std::vector<std::string> &transfer_function_names,
             const std::vector<std::string> &transfunc_synthesizer_names);*/
     void setOpacityHistogramBins(
         int histogram_size,
         int nbins,
-        const kvs::UInt64* arg_o_bins);/*,
+        const vismodule::UInt64* arg_o_bins);/*,
             const std::vector<std::string> &transfer_function_names,
             const std::vector<std::string> &transfunc_synthesizer_names);*/
 

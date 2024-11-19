@@ -15,7 +15,7 @@
 #define PBVR__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE
 
 #include "ClassName.h"
-#include <kvs/Module>
+#include <vismodule/Module>
 #include "VolumeObjectBase.h"
 
 
@@ -30,15 +30,15 @@ namespace pbvr
 class UnstructuredVolumeObject : public pbvr::VolumeObjectBase
 {
     // Class name.
-    kvsClassName( pbvr::UnstructuredVolumeObject );
+    visModuleClassName( pbvr::UnstructuredVolumeObject );
 
     // Module information.
     typedef pbvr::ObjectBase::ModuleTag ModuleCategory;
-    kvsModuleBaseClass( pbvr::VolumeObjectBase );
+    visModuleBaseClass( pbvr::VolumeObjectBase );
 
 public:
 
-    typedef kvs::ValueArray<kvs::UInt32> Connections;
+    typedef vismodule::ValueArray<vismodule::UInt32> Connections;
 
 private:
 
@@ -118,4 +118,4 @@ private:
 
 } // end of namespace pbvr
 
-#endif // KVS__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#endif // VIS_MODULE__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE

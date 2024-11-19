@@ -16,7 +16,7 @@
 #include <cstdlib>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -228,4 +228,4 @@ void Url::split_hostname( std::string sub_url )
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

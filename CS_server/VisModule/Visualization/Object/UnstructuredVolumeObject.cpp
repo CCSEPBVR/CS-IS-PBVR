@@ -17,22 +17,22 @@
 namespace
 {
 
-const std::string GetCellTypeName( const kvs::UnstructuredVolumeObject::CellType type )
+const std::string GetCellTypeName( const vismodule::UnstructuredVolumeObject::CellType type )
 {
     switch( type )
     {
-    case kvs::UnstructuredVolumeObject::Tetrahedra: return( "tetrahedra" );
-    case kvs::UnstructuredVolumeObject::Hexahedra: return( "hexahedra" );
-    case kvs::UnstructuredVolumeObject::QuadraticTetrahedra: return( "quadratic tetrahedra" );
-    case kvs::UnstructuredVolumeObject::QuadraticHexahedra: return( "quadratic hexahedra" );
-    case kvs::UnstructuredVolumeObject::Pyramid: return( "pyramid" );
+    case vismodule::UnstructuredVolumeObject::Tetrahedra: return( "tetrahedra" );
+    case vismodule::UnstructuredVolumeObject::Hexahedra: return( "hexahedra" );
+    case vismodule::UnstructuredVolumeObject::QuadraticTetrahedra: return( "quadratic tetrahedra" );
+    case vismodule::UnstructuredVolumeObject::QuadraticHexahedra: return( "quadratic hexahedra" );
+    case vismodule::UnstructuredVolumeObject::Pyramid: return( "pyramid" );
     default: return( "unknown cell type" );
     }
 }
 
 } // end of namespace
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -41,7 +41,7 @@ namespace kvs
  */
 /*==========================================================================*/
 UnstructuredVolumeObject::UnstructuredVolumeObject( void )
-    : kvs::VolumeObjectBase()
+    : vismodule::VolumeObjectBase()
     , m_cell_type( UnknownCellType )
     , m_nnodes( 0 )
     , m_ncells( 0 )
@@ -69,7 +69,7 @@ UnstructuredVolumeObject::UnstructuredVolumeObject(
     const Coords&      coords,
     const Connections& connections,
     const Values&      values )
-    : kvs::VolumeObjectBase( veclen, coords, values )
+    : vismodule::VolumeObjectBase( veclen, coords, values )
     , m_cell_type( cell_type )
     , m_nnodes( nnodes )
     , m_ncells( ncells )
@@ -84,7 +84,7 @@ UnstructuredVolumeObject::UnstructuredVolumeObject(
  */
 /*==========================================================================*/
 UnstructuredVolumeObject::UnstructuredVolumeObject( const UnstructuredVolumeObject& other )
-    : kvs::VolumeObjectBase( other )
+    : vismodule::VolumeObjectBase( other )
     , m_cell_type( other.m_cell_type )
     , m_nnodes( other.m_nnodes )
     , m_ncells( other.m_ncells )
@@ -118,26 +118,26 @@ UnstructuredVolumeObject& UnstructuredVolumeObject::operator =( const Unstructur
     return( *this );
 }
 
-kvs::UnstructuredVolumeObject* UnstructuredVolumeObject::DownCast( kvs::ObjectBase* object )
+vismodule::UnstructuredVolumeObject* UnstructuredVolumeObject::DownCast( vismodule::ObjectBase* object )
 {
-    kvs::VolumeObjectBase* volume = kvs::VolumeObjectBase::DownCast( object );
+    vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
     if ( !volume ) return( NULL );
 
-    const kvs::VolumeObjectBase::VolumeType type = volume->volumeType();
-    if ( type != kvs::VolumeObjectBase::Unstructured )
+    const vismodule::VolumeObjectBase::VolumeType type = volume->volumeType();
+    if ( type != vismodule::VolumeObjectBase::Unstructured )
     {
-        kvsMessageError("Input object is not a unstructured volume object.");
+        visModuleMessageError("Input object is not a unstructured volume object.");
         return( NULL );
     }
 
-    kvs::UnstructuredVolumeObject* unstructured = static_cast<kvs::UnstructuredVolumeObject*>( volume );
+    vismodule::UnstructuredVolumeObject* unstructured = static_cast<vismodule::UnstructuredVolumeObject*>( volume );
 
     return( unstructured );
 }
 
-const kvs::UnstructuredVolumeObject* UnstructuredVolumeObject::DownCast( const kvs::ObjectBase* object )
+const vismodule::UnstructuredVolumeObject* UnstructuredVolumeObject::DownCast( const vismodule::ObjectBase* object )
 {
-    return( UnstructuredVolumeObject::DownCast( const_cast<kvs::ObjectBase*>( object ) ) );
+    return( UnstructuredVolumeObject::DownCast( const_cast<vismodule::ObjectBase*>( object ) ) );
 }
 
 std::ostream& operator << ( std::ostream& os, const UnstructuredVolumeObject& object )
@@ -145,12 +145,12 @@ std::ostream& operator << ( std::ostream& os, const UnstructuredVolumeObject& ob
     if ( !object.hasMinMaxValues() ) object.updateMinMaxValues();
 
     os << "Object type:  " << "unstructured volume object" << std::endl;
-#ifdef KVS_COMPILER_VC
-#if KVS_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
+#ifdef VIS_MODULE_COMPILER_VC
+#if VIS_MODULE_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
     // @TODO Cannot instance the object that is a abstract class here (error:C2259).
 #endif
 #else
-    os << static_cast<const kvs::VolumeObjectBase&>( object ) << std::endl;
+    os << static_cast<const vismodule::VolumeObjectBase&>( object ) << std::endl;
 #endif
     os << "Cell type:  " << ::GetCellTypeName( object.cellType() ) << std::endl;
     os << "Number of nodes:  " << object.nnodes() << std::endl;
@@ -302,8 +302,8 @@ void UnstructuredVolumeObject::updateMinMaxCoords( void )
 /*==========================================================================*/
 void UnstructuredVolumeObject::calculate_min_max_coords( void )
 {
-    kvs::Vector3f min_coord( 0.0f );
-    kvs::Vector3f max_coord( 0.0f );
+    vismodule::Vector3f min_coord( 0.0f );
+    vismodule::Vector3f max_coord( 0.0f );
 
     const float*       coord = this->coords().pointer();
     const float* const end   = coord + this->coords().size();
@@ -321,13 +321,13 @@ void UnstructuredVolumeObject::calculate_min_max_coords( void )
         y = *( coord++ );
         z = *( coord++ );
 
-        min_coord.x() = kvs::Math::Min( min_coord.x(), x );
-        min_coord.y() = kvs::Math::Min( min_coord.y(), y );
-        min_coord.z() = kvs::Math::Min( min_coord.z(), z );
+        min_coord.x() = vismodule::Math::Min( min_coord.x(), x );
+        min_coord.y() = vismodule::Math::Min( min_coord.y(), y );
+        min_coord.z() = vismodule::Math::Min( min_coord.z(), z );
 
-        max_coord.x() = kvs::Math::Max( max_coord.x(), x );
-        max_coord.y() = kvs::Math::Max( max_coord.y(), y );
-        max_coord.z() = kvs::Math::Max( max_coord.z(), z );
+        max_coord.x() = vismodule::Math::Max( max_coord.x(), x );
+        max_coord.y() = vismodule::Math::Max( max_coord.y(), y );
+        max_coord.z() = vismodule::Math::Max( max_coord.z(), z );
     }
 
     this->setMinMaxObjectCoords( min_coord, max_coord );
@@ -340,4 +340,4 @@ void UnstructuredVolumeObject::calculate_min_max_coords( void )
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

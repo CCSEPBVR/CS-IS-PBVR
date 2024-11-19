@@ -11,16 +11,16 @@
  *  $Id: TransferFunction.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__TRANSFER_FUNCTION_H_INCLUDE
-#define KVS__TRANSFER_FUNCTION_H_INCLUDE
+#ifndef VIS_MODULE__TRANSFER_FUNCTION_H_INCLUDE
+#define VIS_MODULE__TRANSFER_FUNCTION_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/ColorMap>
-#include <kvs/OpacityMap>
-#include <kvs/VolumeObjectBase>
+#include <vismodule/ClassName>
+#include <vismodule/ColorMap>
+#include <vismodule/OpacityMap>
+#include <vismodule/VolumeObjectBase>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -30,12 +30,12 @@ namespace kvs
 /*==========================================================================*/
 class TransferFunction
 {
-    kvsClassName( kvs::TransferFunction );
+    visModuleClassName( vismodule::TransferFunction );
 
 private:
 
-    kvs::ColorMap   m_color_map;   ///< Color map.
-    kvs::OpacityMap m_opacity_map; ///< Opacity map.
+    vismodule::ColorMap   m_color_map;   ///< Color map.
+    vismodule::OpacityMap m_opacity_map; ///< Opacity map.
 
 public:
 
@@ -44,14 +44,14 @@ public:
     TransferFunction( const std::string& filename );
 
     // 'explicit' is not specified by design.
-    TransferFunction( const kvs::ColorMap& color_map );
+    TransferFunction( const vismodule::ColorMap& color_map );
 
     // 'explicit' is not specified by design.
-    TransferFunction( const kvs::OpacityMap& opacity_map );
+    TransferFunction( const vismodule::OpacityMap& opacity_map );
 
     TransferFunction(
-        const kvs::ColorMap&   color_map,
-        const kvs::OpacityMap& opacity_map );
+        const vismodule::ColorMap&   color_map,
+        const vismodule::OpacityMap& opacity_map );
 
     TransferFunction( const TransferFunction& other );
 
@@ -59,17 +59,17 @@ public:
 
 public:
 
-    void setColorMap( const kvs::ColorMap& color_map );
+    void setColorMap( const vismodule::ColorMap& color_map );
 
-    void setOpacityMap( const kvs::OpacityMap& opacity_map );
+    void setOpacityMap( const vismodule::OpacityMap& opacity_map );
 
     void setRange( const float min_value, const float max_value );
 
-    void setRange( const kvs::VolumeObjectBase* volume );
+    void setRange( const vismodule::VolumeObjectBase* volume );
 
     void adjustRange( const float min_value, const float max_value );
 
-    void adjustRange( const kvs::VolumeObjectBase* volume );
+    void adjustRange( const vismodule::VolumeObjectBase* volume );
 
     const bool hasRange( void ) const;
 
@@ -79,9 +79,9 @@ public:
 
 public:
 
-    const kvs::ColorMap& colorMap( void ) const;
+    const vismodule::ColorMap& colorMap( void ) const;
 
-    const kvs::OpacityMap& opacityMap( void ) const;
+    const vismodule::OpacityMap& opacityMap( void ) const;
 
 public:
 
@@ -100,6 +100,6 @@ public:
     TransferFunction& operator =( const TransferFunction& rhs );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TRANSFER_FUNCTION_H_INCLUDE
+#endif // VIS_MODULE__TRANSFER_FUNCTION_H_INCLUDE

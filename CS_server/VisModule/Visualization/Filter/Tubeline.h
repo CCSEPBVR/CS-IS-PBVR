@@ -11,17 +11,17 @@
  *  $Id: Tubeline.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__TUBELINE_H_INCLUDE
-#define KVS__TUBELINE_H_INCLUDE
+#ifndef VIS_MODULE__TUBELINE_H_INCLUDE
+#define VIS_MODULE__TUBELINE_H_INCLUDE
 
-#include <kvs/LineObject>
-#include <kvs/PolygonObject>
-#include <kvs/ClassName>
-#include <kvs/Module>
-#include <kvs/FilterBase>
+#include <vismodule/LineObject>
+#include <vismodule/PolygonObject>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
+#include <vismodule/FilterBase>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -29,15 +29,15 @@ namespace kvs
  *  @brief  Create tubeline from line object.
  */
 /*===========================================================================*/
-class Tubeline : public kvs::FilterBase, public kvs::PolygonObject
+class Tubeline : public vismodule::FilterBase, public vismodule::PolygonObject
 {
     // Class name.
-    kvsClassName( kvs::Tubeline );
+    visModuleClassName( vismodule::Tubeline );
 
     // Module information.
-    kvsModuleCategory( Filter );
-    kvsModuleBaseClass( kvs::FilterBase );
-    kvsModuleSuperClass( kvs::PolygonObject );
+    visModuleCategory( Filter );
+    visModuleBaseClass( vismodule::FilterBase );
+    visModuleSuperClass( vismodule::PolygonObject );
 
 protected:
 
@@ -48,7 +48,7 @@ public:
     Tubeline( void );
 
     Tubeline(
-        const kvs::LineObject* object,
+        const vismodule::LineObject* object,
         const size_t ndivisions = 6 );
 
     virtual ~Tubeline( void );
@@ -59,59 +59,59 @@ public:
 
 public:
 
-    SuperClass* exec( const kvs::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase* object );
 
 protected:
 
-    void filtering_strip( const kvs::LineObject* line );
+    void filtering_strip( const vismodule::LineObject* line );
 
-    void filtering_uniline( const kvs::LineObject* line );
+    void filtering_uniline( const vismodule::LineObject* line );
 
-    void filtering_polyline( const kvs::LineObject* line );
+    void filtering_polyline( const vismodule::LineObject* line );
 
-    void filtering_segment( const kvs::LineObject* line );
+    void filtering_segment( const vismodule::LineObject* line );
 
 protected:
 
     void calculate_tubes(
-        std::vector<kvs::Real32>* vertices,
-        std::vector<kvs::UInt8>* colors,
-        std::vector<kvs::UInt32>* connections,
-        std::vector<kvs::Real32>* normals,
-        const kvs::ValueArray<kvs::Real32> line_vertices,
-        const kvs::ValueArray<kvs::Real32> line_sizes,
-        const kvs::ValueArray<kvs::UInt8> line_colors,
+        std::vector<vismodule::Real32>* vertices,
+        std::vector<vismodule::UInt8>* colors,
+        std::vector<vismodule::UInt32>* connections,
+        std::vector<vismodule::Real32>* normals,
+        const vismodule::ValueArray<vismodule::Real32> line_vertices,
+        const vismodule::ValueArray<vismodule::Real32> line_sizes,
+        const vismodule::ValueArray<vismodule::UInt8> line_colors,
         const size_t nvertices,
-        const kvs::PolygonObject::ColorType color_type );
+        const vismodule::PolygonObject::ColorType color_type );
 
     void calculate_circles(
-        std::vector<kvs::Vector3f>* start_circle,
-        std::vector<kvs::Vector3f>* end_circle,
-        const kvs::Vector3f& start_postion,
-        const kvs::Vector3f& end_position,
+        std::vector<vismodule::Vector3f>* start_circle,
+        std::vector<vismodule::Vector3f>* end_circle,
+        const vismodule::Vector3f& start_postion,
+        const vismodule::Vector3f& end_position,
         const float radius,
         const float pre_radius,
         const float post_radius );
 
     void set_vertices(
-        std::vector<kvs::Real32>* vertices,
-        const std::vector<kvs::Vector3f>& start_circle,
-        const std::vector<kvs::Vector3f>& end_circle );
+        std::vector<vismodule::Real32>* vertices,
+        const std::vector<vismodule::Vector3f>& start_circle,
+        const std::vector<vismodule::Vector3f>& end_circle );
 
     void set_colors(
-        std::vector<kvs::UInt8>* colors,
-        const kvs::RGBColor& start_color,
-        const kvs::RGBColor& end_color,
-        const kvs::PolygonObject::ColorType color_type );
+        std::vector<vismodule::UInt8>* colors,
+        const vismodule::RGBColor& start_color,
+        const vismodule::RGBColor& end_color,
+        const vismodule::PolygonObject::ColorType color_type );
 
     void set_connections_and_normals(
-        std::vector<kvs::UInt32>* connections,
-        std::vector<kvs::Real32>* normals,
-        const std::vector<kvs::Vector3f>& start_circle,
-        const std::vector<kvs::Vector3f>& end_circle,
+        std::vector<vismodule::UInt32>* connections,
+        std::vector<vismodule::Real32>* normals,
+        const std::vector<vismodule::Vector3f>& start_circle,
+        const std::vector<vismodule::Vector3f>& end_circle,
         const size_t vertex_number );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TUBELINE_H_INCLUDE
+#endif // VIS_MODULE__TUBELINE_H_INCLUDE

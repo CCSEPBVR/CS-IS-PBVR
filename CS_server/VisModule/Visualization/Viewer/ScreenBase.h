@@ -11,28 +11,28 @@
  *  $Id: ScreenBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__SCREEN_BASE_H_INCLUDE
-#define KVS__SCREEN_BASE_H_INCLUDE
+#ifndef VIS_MODULE__SCREEN_BASE_H_INCLUDE
+#define VIS_MODULE__SCREEN_BASE_H_INCLUDE
 
 #include <string>
 #include <map>
-#include <kvs/Camera>
-#include <kvs/Light>
-#include <kvs/Mouse>
-#include <kvs/Background>
-#include <kvs/ObjectManager>
-#include <kvs/RendererManager>
-#include <kvs/IDManager>
-#include <kvs/MouseEvent>
-#include <kvs/KeyEvent>
-#include <kvs/WheelEvent>
-#include <kvs/DisplayFormat>
-#include <kvs/VisualizationPipeline>
-#include <kvs/ClassName>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/Camera>
+#include <vismodule/Light>
+#include <vismodule/Mouse>
+#include <vismodule/Background>
+#include <vismodule/ObjectManager>
+#include <vismodule/RendererManager>
+#include <vismodule/IDManager>
+#include <vismodule/MouseEvent>
+#include <vismodule/KeyEvent>
+#include <vismodule/WheelEvent>
+#include <vismodule/DisplayFormat>
+#include <vismodule/VisualizationPipeline>
+#include <vismodule/ClassName>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class EventHandler;
@@ -44,7 +44,7 @@ class EventHandler;
 /*==========================================================================*/
 class ScreenBase
 {
-    kvsClassName( kvs::ScreenBase );
+    visModuleClassName( vismodule::ScreenBase );
 
 public:
 
@@ -66,30 +66,30 @@ protected:
     int                   m_height;           ///< window size (height)
     int                   m_id;               ///< window ID
     bool                  m_is_fullscreen;    ///< check flag whether the window is fullscreen
-    kvs::DisplayFormat    m_display_format;   ///< display format
+    vismodule::DisplayFormat    m_display_format;   ///< display format
 
     // Screen events.
-    kvs::MouseEvent*      m_mouse_event;      ///< mouse event
-    kvs::KeyEvent*        m_key_event;        ///< key event
-    kvs::WheelEvent*      m_wheel_event;      ///< wheel event
-    kvs::Timer            m_elapse_time_counter; ///< elapse time counter for double click event
+    vismodule::MouseEvent*      m_mouse_event;      ///< mouse event
+    vismodule::KeyEvent*        m_key_event;        ///< key event
+    vismodule::WheelEvent*      m_wheel_event;      ///< wheel event
+    vismodule::Timer            m_elapse_time_counter; ///< elapse time counter for double click event
 
     // Basic components in the viewer.
-    kvs::Camera*          m_camera;           ///< camera
-    kvs::Light*           m_light;            ///< light
-    kvs::Mouse*           m_mouse;            ///< mouse
-    kvs::Background*      m_background;       ///< background
+    vismodule::Camera*          m_camera;           ///< camera
+    vismodule::Light*           m_light;            ///< light
+    vismodule::Mouse*           m_mouse;            ///< mouse
+    vismodule::Background*      m_background;       ///< background
 
     // Parameters for controlling the viewer.
     ControlTarget         m_target;           ///< control target
-    kvs::ObjectManager*   m_object_manager;   ///< object manager
-    kvs::RendererManager* m_renderer_manager; ///< renderer manager
-    kvs::IDManager*       m_id_manager;       ///< ID manager ( object_id, renderer_id )
+    vismodule::ObjectManager*   m_object_manager;   ///< object manager
+    vismodule::RendererManager* m_renderer_manager; ///< renderer manager
+    vismodule::IDManager*       m_id_manager;       ///< ID manager ( object_id, renderer_id )
 
     bool m_enable_move_all;  ///< flag for object movement
     bool m_enable_collision_detection; ///< flag for collision detection
 
-    kvs::EventHandler* m_event_handler; ///< event handler
+    vismodule::EventHandler* m_event_handler; ///< event handler
 
 public:
 
@@ -103,9 +103,9 @@ public:
 
 public:
 
-    const std::pair<int,int> registerObject( kvs::ObjectBase* object, kvs::RendererBase* renderer = 0 );
+    const std::pair<int,int> registerObject( vismodule::ObjectBase* object, vismodule::RendererBase* renderer = 0 );
 
-    const std::pair<int,int> registerObject( kvs::VisualizationPipeline* pipeline );
+    const std::pair<int,int> registerObject( vismodule::VisualizationPipeline* pipeline );
 
 public:
 
@@ -117,7 +117,7 @@ public:
 
     void mouseReleaseFunction( int x, int y );
 
-    void mousePressFunction( int x, int y, kvs::Mouse::TransMode mode );
+    void mousePressFunction( int x, int y, vismodule::Mouse::TransMode mode );
 
     void mouseMoveFunction( int x, int y );
 
@@ -137,31 +137,31 @@ public:
 
     const std::string& title( void ) const;
 
-    const kvs::DisplayFormat& displayFormat( void ) const;
+    const vismodule::DisplayFormat& displayFormat( void ) const;
 
     const bool isFullScreen( void ) const;
 
-    kvs::Camera* camera( void );
+    vismodule::Camera* camera( void );
 
-    kvs::Light* light( void );
+    vismodule::Light* light( void );
 
-    kvs::Mouse* mouse( void );
+    vismodule::Mouse* mouse( void );
 
-    kvs::Background* background( void );
+    vismodule::Background* background( void );
 
-    kvs::ScreenBase::ControlTarget& controlTarget( void );
+    vismodule::ScreenBase::ControlTarget& controlTarget( void );
 
-    kvs::ObjectManager* objectManager( void );
+    vismodule::ObjectManager* objectManager( void );
 
-    kvs::RendererManager* rendererManager( void );
+    vismodule::RendererManager* rendererManager( void );
 
-    kvs::IDManager* IDManager( void );
+    vismodule::IDManager* IDManager( void );
 
-    kvs::EventHandler* eventHandler( void );
+    vismodule::EventHandler* eventHandler( void );
 
 public:
 
-    void setDisplayFormat( const kvs::DisplayFormat& display_format );
+    void setDisplayFormat( const vismodule::DisplayFormat& display_format );
 
     void setPosition( const int x, const int y );
 
@@ -197,11 +197,11 @@ public:
 
     virtual void updateXform( void );
 
-    virtual void updateXform( kvs::ObjectManager* manager );
+    virtual void updateXform( vismodule::ObjectManager* manager );
 
-    virtual void updateXform( kvs::Camera* camera );
+    virtual void updateXform( vismodule::Camera* camera );
 
-    virtual void updateXform( kvs::Light* light );
+    virtual void updateXform( vismodule::Light* light );
 
 public:
 
@@ -224,6 +224,6 @@ public:
     virtual void resize( int width, int height );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__SCREEN_BASE_H_INCLUDE
+#endif // VIS_MODULE__SCREEN_BASE_H_INCLUDE

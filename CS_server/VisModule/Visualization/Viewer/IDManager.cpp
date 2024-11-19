@@ -16,7 +16,7 @@
 #include <functional>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -261,4 +261,4 @@ void IDManager::update_flip_table( void )
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

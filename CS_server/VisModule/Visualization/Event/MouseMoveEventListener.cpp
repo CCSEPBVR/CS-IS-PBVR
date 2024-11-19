@@ -15,7 +15,7 @@
 #include "MouseMoveEventListener.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -25,7 +25,7 @@ namespace kvs
 /*===========================================================================*/
 MouseMoveEventListener::MouseMoveEventListener( void )
 {
-    kvs::EventListener::setEventType( kvs::EventBase::MouseMoveEvent );
+    vismodule::EventListener::setEventType( vismodule::EventBase::MouseMoveEvent );
 }
 
 /*===========================================================================*/
@@ -43,9 +43,9 @@ MouseMoveEventListener::~MouseMoveEventListener( void )
  *  @param  event [in] pointer to the event
  */
 /*===========================================================================*/
-void MouseMoveEventListener::onEvent( kvs::EventBase* event )
+void MouseMoveEventListener::onEvent( vismodule::EventBase* event )
 {
-    this->update( static_cast<kvs::MouseEvent*>(event) );
+    this->update( static_cast<vismodule::MouseEvent*>(event) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

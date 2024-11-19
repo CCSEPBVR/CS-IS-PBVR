@@ -11,14 +11,14 @@
  *  $Id: DisplayFormat.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__DISPLAY_FORMAT_H_INCLUDE
-#define KVS__DISPLAY_FORMAT_H_INCLUDE
+#ifndef VIS_MODULE__DISPLAY_FORMAT_H_INCLUDE
+#define VIS_MODULE__DISPLAY_FORMAT_H_INCLUDE
 
-#include <kvs/OpenGL>
-#include <kvs/ClassName>
+#include <vismodule/OpenGL>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -28,7 +28,7 @@ namespace kvs
 /*===========================================================================*/
 class DisplayFormat
 {
-    kvsClassName( kvs::DisplayFormat );
+    visModuleClassName( vismodule::DisplayFormat );
 
 protected:
 
@@ -90,6 +90,6 @@ public:
     DisplayFormat& operator = ( const DisplayFormat& format );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__DISPLAY_FORMAT_H_INCLUDE
+#endif // VIS_MODULE__DISPLAY_FORMAT_H_INCLUDE

@@ -11,8 +11,8 @@
  *  $Id: ValueArray.h 837 2011-06-02 09:32:56Z naohisa.sakamoto@gmail.com $
  */
 /****************************************************************************/
-#ifndef KVS__VALUE_ARRAY_H_INCLUDE
-#define KVS__VALUE_ARRAY_H_INCLUDE
+#ifndef VIS_MODULE__VALUE_ARRAY_H_INCLUDE
+#define VIS_MODULE__VALUE_ARRAY_H_INCLUDE
 
 #include <cstdio>
 #include <cstdlib>
@@ -21,16 +21,16 @@
 #include <vector>
 #include <cstring>
 #include <typeinfo>
-#include <kvs/DebugNew>
-#include <kvs/Assert>
-#include <kvs/Endian>
-#include <kvs/Message>
-#include <kvs/ReferenceCounter>
-#include <kvs/Macro>
-#include <kvs/ClassName>
+#include <vismodule/DebugNew>
+#include <vismodule/Assert>
+#include <vismodule/Endian>
+#include <vismodule/Message>
+#include <vismodule/ReferenceCounter>
+#include <vismodule/Macro>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -41,7 +41,7 @@ namespace kvs
 template<typename T>
 class ValueArray
 {
-    kvsClassName_without_virtual( kvs::ValueArray );
+    visModuleClassName_without_virtual( vismodule::ValueArray );
 
 public:
 
@@ -58,7 +58,7 @@ public:
 
 private:
 
-    kvs::ReferenceCounter* m_counter; ///< Reference counter.
+    vismodule::ReferenceCounter* m_counter; ///< Reference counter.
     size_t                 m_nvalues; ///< Number of values.
     value_type*            m_values;  ///< Value array.
 
@@ -155,14 +155,14 @@ public:
 
     reference operator []( const size_t index )
     {
-        KVS_ASSERT( index < m_nvalues );
+        VIS_MODULE_ASSERT( index < m_nvalues );
 
         return( m_values[index] );
     }
 
     const_reference operator []( const size_t index ) const
     {
-        KVS_ASSERT( index < m_nvalues );
+        VIS_MODULE_ASSERT( index < m_nvalues );
 
         return( m_values[index] );
     }
@@ -213,14 +213,14 @@ public:
 
     reference at( const size_t index )
     {
-        KVS_ASSERT( index < m_nvalues );
+        VIS_MODULE_ASSERT( index < m_nvalues );
 
         return( m_values[index] );
     }
 
     const_reference at( const size_t index ) const
     {
-        KVS_ASSERT( index < m_nvalues );
+        VIS_MODULE_ASSERT( index < m_nvalues );
 
         return( m_values[index] );
     }
@@ -270,14 +270,14 @@ public:
         return( m_values );
     }
 
-    kvs::ReferenceCounter* counter( void ) const
+    vismodule::ReferenceCounter* counter( void ) const
     {
         return( m_counter );
     }
 
     void swapByte( void )
     {
-        kvs::Endian::Swap( m_values, m_nvalues );
+        vismodule::Endian::Swap( m_values, m_nvalues );
     }
 
     void shallowCopy( const this_type& other )
@@ -315,7 +315,7 @@ public:
 
         m_nvalues = nvalues;
         m_values = new value_type [ nvalues ];
-        KVS_ASSERT( m_values != NULL );
+        VIS_MODULE_ASSERT( m_values != NULL );
 
         return( m_values );
     }
@@ -330,7 +330,7 @@ private:
     void create_counter( void )
     {
         m_counter = new ReferenceCounter( 1 );
-        KVS_ASSERT( m_counter != NULL );
+        VIS_MODULE_ASSERT( m_counter != NULL );
     }
 
     void ref( void )
@@ -371,6 +371,6 @@ inline void ValueArray<std::string>::deepCopy( const std::string* values, const 
     std::copy( values, values + nvalues, pvalues );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__VALUE_ARRAY_H_INCLUDE
+#endif // VIS_MODULE__VALUE_ARRAY_H_INCLUDE

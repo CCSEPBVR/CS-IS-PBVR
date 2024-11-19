@@ -14,7 +14,7 @@
 #include "ImporterBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -58,4 +58,4 @@ const bool ImporterBase::isFailure( void ) const
     return( !m_is_success );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

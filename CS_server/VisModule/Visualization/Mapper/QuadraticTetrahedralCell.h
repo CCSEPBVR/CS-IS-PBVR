@@ -11,18 +11,18 @@
  *  $Id: QuadraticTetrahedralCell.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__QUADRATIC_TETRAHEDRAL_CELL_H_INCLUDE
-#define KVS__QUADRATIC_TETRAHEDRAL_CELL_H_INCLUDE
+#ifndef VIS_MODULE__QUADRATIC_TETRAHEDRAL_CELL_H_INCLUDE
+#define VIS_MODULE__QUADRATIC_TETRAHEDRAL_CELL_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/Type>
-#include <kvs/Vector4>
-#include <kvs/Matrix44>
-#include <kvs/UnstructuredVolumeObject>
+#include <vismodule/ClassName>
+#include <vismodule/Type>
+#include <vismodule/Vector4>
+#include <vismodule/Matrix44>
+#include <vismodule/UnstructuredVolumeObject>
 #include "CellBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -31,33 +31,33 @@ namespace kvs
  */
 /*===========================================================================*/
 template <typename T>
-class QuadraticTetrahedralCell : public kvs::CellBase<T>
+class QuadraticTetrahedralCell : public vismodule::CellBase<T>
 {
-    kvsClassName( kvs::QuadraticTetrahedralCell );
+    visModuleClassName( vismodule::QuadraticTetrahedralCell );
 
 public:
 
-    enum { NumberOfNodes = kvs::UnstructuredVolumeObject::QuadraticTetrahedra };
+    enum { NumberOfNodes = vismodule::UnstructuredVolumeObject::QuadraticTetrahedra };
 
 public:
 
-    typedef kvs::CellBase<T> BaseClass;
+    typedef vismodule::CellBase<T> BaseClass;
 
 public:
 
-    QuadraticTetrahedralCell( const kvs::UnstructuredVolumeObject* volume );
+    QuadraticTetrahedralCell( const vismodule::UnstructuredVolumeObject* volume );
 
     virtual ~QuadraticTetrahedralCell( void );
 
 public:
 
-    const kvs::Real32* interpolationFunctions( const kvs::Vector3f& point ) const;
+    const vismodule::Real32* interpolationFunctions( const vismodule::Vector3f& point ) const;
 
-    const kvs::Real32* differentialFunctions( const kvs::Vector3f& point ) const;
+    const vismodule::Real32* differentialFunctions( const vismodule::Vector3f& point ) const;
 
-    const kvs::Vector3f randomSampling( void ) const;
+    const vismodule::Vector3f randomSampling( void ) const;
 
-    const kvs::Real32 volume( void ) const;
+    const vismodule::Real32 volume( void ) const;
 };
 
 /*===========================================================================*/
@@ -68,8 +68,8 @@ public:
 /*===========================================================================*/
 template <typename T>
 inline QuadraticTetrahedralCell<T>::QuadraticTetrahedralCell(
-    const kvs::UnstructuredVolumeObject* volume ):
-    kvs::CellBase<T>( volume )
+    const vismodule::UnstructuredVolumeObject* volume ):
+    vismodule::CellBase<T>( volume )
 {
     // Set the initial interpolation functions and differential functions.
     this->interpolationFunctions( BaseClass::localPoint() );
@@ -93,7 +93,7 @@ inline QuadraticTetrahedralCell<T>::~QuadraticTetrahedralCell( void )
  */
 /*==========================================================================*/
 template <typename T>
-inline const kvs::Real32* QuadraticTetrahedralCell<T>::interpolationFunctions( const kvs::Vector3f& point ) const
+inline const vismodule::Real32* QuadraticTetrahedralCell<T>::interpolationFunctions( const vismodule::Vector3f& point ) const
 {
     const float x = point[0];
     const float y = point[1];
@@ -124,7 +124,7 @@ inline const kvs::Real32* QuadraticTetrahedralCell<T>::interpolationFunctions( c
  */
 /*==========================================================================*/
 template <typename T>
-inline const kvs::Real32* QuadraticTetrahedralCell<T>::differentialFunctions( const kvs::Vector3f& point ) const
+inline const vismodule::Real32* QuadraticTetrahedralCell<T>::differentialFunctions( const vismodule::Vector3f& point ) const
 {
     const float x = point.x();
     const float y = point.y();
@@ -176,14 +176,14 @@ inline const kvs::Real32* QuadraticTetrahedralCell<T>::differentialFunctions( co
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector3f QuadraticTetrahedralCell<T>::randomSampling( void ) const
+const vismodule::Vector3f QuadraticTetrahedralCell<T>::randomSampling( void ) const
 {
     // Generate a point in the local coordinate.
     const float s = BaseClass::randomNumber();
     const float t = BaseClass::randomNumber();
     const float u = BaseClass::randomNumber();
 
-    kvs::Vector3f point;
+    vismodule::Vector3f point;
     if ( s + t + u <= 1.0f )
     {
         point[0] = s;
@@ -232,20 +232,20 @@ const kvs::Vector3f QuadraticTetrahedralCell<T>::randomSampling( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Real32 QuadraticTetrahedralCell<T>::volume( void ) const
+inline const vismodule::Real32 QuadraticTetrahedralCell<T>::volume( void ) const
 {
-    const kvs::Vector3f v0(   0,  0,  0 );
-    const kvs::Vector3f v1(   1,  0,  0 );
-    const kvs::Vector3f v2(   0,  0,  1 );
-    const kvs::Vector3f v3(   0,  1,  0 );
-    const kvs::Vector3f v4( 0.5,  0,  0 );
-    const kvs::Vector3f v5(   0,  0,0.5 );
-    const kvs::Vector3f v6(   0,0.5,  0 );
-    const kvs::Vector3f v7( 0.5,  0,0.5 );
-    const kvs::Vector3f v8(   0,0.5,0.5 );
-    const kvs::Vector3f v9( 0.5,0.5,  0 );
+    const vismodule::Vector3f v0(   0,  0,  0 );
+    const vismodule::Vector3f v1(   1,  0,  0 );
+    const vismodule::Vector3f v2(   0,  0,  1 );
+    const vismodule::Vector3f v3(   0,  1,  0 );
+    const vismodule::Vector3f v4( 0.5,  0,  0 );
+    const vismodule::Vector3f v5(   0,  0,0.5 );
+    const vismodule::Vector3f v6(   0,0.5,  0 );
+    const vismodule::Vector3f v7( 0.5,  0,0.5 );
+    const vismodule::Vector3f v8(   0,0.5,0.5 );
+    const vismodule::Vector3f v9( 0.5,0.5,  0 );
 
-    const kvs::Vector3f c[8] = {
+    const vismodule::Vector3f c[8] = {
         ( v0 + v4 + v5 + v6 ) * 0.25,
         ( v4 + v1 + v7 + v9 ) * 0.25,
         ( v5 + v7 + v2 + v8 ) * 0.25,
@@ -259,15 +259,15 @@ inline const kvs::Real32 QuadraticTetrahedralCell<T>::volume( void ) const
     for( size_t i = 0 ; i < 8 ; i++ )
     {
         BaseClass::setLocalPoint( c[i] );
-        const kvs::Matrix33f J = BaseClass::JacobiMatrix();
+        const vismodule::Matrix33f J = BaseClass::JacobiMatrix();
         const float metric_element = J.determinant();
 
-        sum_metric += kvs::Math::Abs<float>( metric_element );
+        sum_metric += vismodule::Math::Abs<float>( metric_element );
     }
 
     return( sum_metric / ( 6.0f * 8.0f ) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__QUADRATIC_TETRAHEDRAL_CELL_H_INCLUDE
+#endif // VIS_MODULE__QUADRATIC_TETRAHEDRAL_CELL_H_INCLUDE

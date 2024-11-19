@@ -12,11 +12,11 @@
  */
 /****************************************************************************/
 #include "FrequencyTable.h"
-#include <kvs/Type>
-#include <kvs/Value>
+#include <vismodule/Type>
+#include <vismodule/Value>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -50,7 +50,7 @@ FrequencyTable::~FrequencyTable( void )
  *  @return min. range
  */
 /*==========================================================================*/
-const kvs::Real64 FrequencyTable::minRange( void ) const
+const vismodule::Real64 FrequencyTable::minRange( void ) const
 {
     return( m_min_range );
 }
@@ -61,7 +61,7 @@ const kvs::Real64 FrequencyTable::minRange( void ) const
  *  @return max. range
  */
 /*==========================================================================*/
-const kvs::Real64 FrequencyTable::maxRange( void ) const
+const vismodule::Real64 FrequencyTable::maxRange( void ) const
 {
     return( m_max_range );
 }
@@ -77,17 +77,17 @@ const size_t FrequencyTable::maxCount( void ) const
     return( m_max_count );
 }
 
-const kvs::Real64 FrequencyTable::mean( void ) const
+const vismodule::Real64 FrequencyTable::mean( void ) const
 {
     return( m_mean );
 }
 
-const kvs::Real64 FrequencyTable::variance( void ) const
+const vismodule::Real64 FrequencyTable::variance( void ) const
 {
     return( m_variance );
 }
 
-const kvs::Real64 FrequencyTable::standardDeviation( void ) const
+const vismodule::Real64 FrequencyTable::standardDeviation( void ) const
 {
     return( m_standard_deviation );
 }
@@ -98,7 +98,7 @@ const kvs::Real64 FrequencyTable::standardDeviation( void ) const
  *  @return number of bins
  */
 /*==========================================================================*/
-const kvs::UInt64 FrequencyTable::nbins( void ) const
+const vismodule::UInt64 FrequencyTable::nbins( void ) const
 {
     return( m_nbins );
 }
@@ -109,7 +109,7 @@ const kvs::UInt64 FrequencyTable::nbins( void ) const
  *  @return bin array
  */
 /*==========================================================================*/
-const kvs::ValueArray<size_t>& FrequencyTable::bin( void ) const
+const vismodule::ValueArray<size_t>& FrequencyTable::bin( void ) const
 {
     return( m_bin );
 }
@@ -119,7 +119,7 @@ const kvs::ValueArray<size_t>& FrequencyTable::bin( void ) const
  *  @brief  Sets an ignore value.
  */
 /*==========================================================================*/
-void FrequencyTable::setIgnoreValue( const kvs::Real64 value )
+void FrequencyTable::setIgnoreValue( const vismodule::Real64 value )
 {
     m_ignore_values.push_back( value );
 }
@@ -131,7 +131,7 @@ void FrequencyTable::setIgnoreValue( const kvs::Real64 value )
  *  @param  max_range [in] max value range
  */
 /*===========================================================================*/
-void FrequencyTable::setRange( const kvs::Real64 min_range, const kvs::Real64 max_range )
+void FrequencyTable::setRange( const vismodule::Real64 min_range, const vismodule::Real64 max_range )
 {
     m_min_range = min_range;
     m_max_range = max_range;
@@ -143,7 +143,7 @@ void FrequencyTable::setRange( const kvs::Real64 min_range, const kvs::Real64 ma
  *  @param  nbins [in] number of bins
  */
 /*===========================================================================*/
-void FrequencyTable::setNBins( const kvs::UInt64 nbins )
+void FrequencyTable::setNBins( const vismodule::UInt64 nbins )
 {
     m_nbins = nbins;
 }
@@ -154,7 +154,7 @@ void FrequencyTable::setNBins( const kvs::UInt64 nbins )
  *  @param  volume [in] pointer to the volume object
  */
 /*==========================================================================*/
-void FrequencyTable::create( const kvs::VolumeObjectBase* volume )
+void FrequencyTable::create( const vismodule::VolumeObjectBase* volume )
 {
     // Calculate the min/max range value and the number of bins.
     this->calculate_range( volume );
@@ -174,7 +174,7 @@ void FrequencyTable::create( const kvs::VolumeObjectBase* volume )
  *  @param  channel [in] color element channel (0, 1, 2, 3)
  */
 /*==========================================================================*/
-void FrequencyTable::create( const kvs::ImageObject* image, const size_t channel )
+void FrequencyTable::create( const vismodule::ImageObject* image, const size_t channel )
 {
     // Calculate the min/max range value and the number of bins.
     this->calculate_range( image );
@@ -194,7 +194,7 @@ void FrequencyTable::create( const kvs::ImageObject* image, const size_t channel
  *  @return counts
  */
 /*==========================================================================*/
-const kvs::UInt64 FrequencyTable::operator [] ( const size_t index ) const
+const vismodule::UInt64 FrequencyTable::operator [] ( const size_t index ) const
 {
     return( m_bin[ index ] );
 }
@@ -206,7 +206,7 @@ const kvs::UInt64 FrequencyTable::operator [] ( const size_t index ) const
  *  @return counts
  */
 /*==========================================================================*/
-const kvs::UInt64 FrequencyTable::at( const size_t index ) const
+const vismodule::UInt64 FrequencyTable::at( const size_t index ) const
 {
     return( m_bin.at( index ) );
 }
@@ -217,7 +217,7 @@ const kvs::UInt64 FrequencyTable::at( const size_t index ) const
  *  @param  volume [in] pointer to the volume object
  */
 /*==========================================================================*/
-void FrequencyTable::calculate_range( const kvs::VolumeObjectBase* volume )
+void FrequencyTable::calculate_range( const vismodule::VolumeObjectBase* volume )
 {
     // Number of bins.
     if ( m_nbins == 0 )
@@ -228,81 +228,81 @@ void FrequencyTable::calculate_range( const kvs::VolumeObjectBase* volume )
 
     // Data range.
     const std::type_info& type = volume->values().typeInfo()->type();
-    if ( type == typeid( kvs::Int8 ) )
+    if ( type == typeid( vismodule::Int8 ) )
     {
-        if ( kvs::Math::IsZero( m_min_range ) && kvs::Math::IsZero( m_max_range ) )
+        if ( vismodule::Math::IsZero( m_min_range ) && vismodule::Math::IsZero( m_max_range ) )
         {
-            m_min_range = kvs::Value<kvs::Int8>::Min();
-            m_max_range = kvs::Value<kvs::Int8>::Max();
+            m_min_range = vismodule::Value<vismodule::Int8>::Min();
+            m_max_range = vismodule::Value<vismodule::Int8>::Max();
         }
     }
 
-    else if ( type == typeid( kvs::UInt8 ) )
+    else if ( type == typeid( vismodule::UInt8 ) )
     {
-        if ( kvs::Math::IsZero( m_min_range ) && kvs::Math::IsZero( m_max_range ) )
+        if ( vismodule::Math::IsZero( m_min_range ) && vismodule::Math::IsZero( m_max_range ) )
         {
-            m_min_range = kvs::Value<kvs::UInt8>::Min();
-            m_max_range = kvs::Value<kvs::UInt8>::Max();
+            m_min_range = vismodule::Value<vismodule::UInt8>::Min();
+            m_max_range = vismodule::Value<vismodule::UInt8>::Max();
         }
     }
 
-    else if ( type == typeid( kvs::Int16  ) )
+    else if ( type == typeid( vismodule::Int16  ) )
     {
-        if ( kvs::Math::IsZero( m_min_range ) && kvs::Math::IsZero( m_max_range ) )
+        if ( vismodule::Math::IsZero( m_min_range ) && vismodule::Math::IsZero( m_max_range ) )
         {
-            m_min_range = kvs::Value<kvs::Int16>::Min();
-            m_max_range = kvs::Value<kvs::Int16>::Max();
+            m_min_range = vismodule::Value<vismodule::Int16>::Min();
+            m_max_range = vismodule::Value<vismodule::Int16>::Max();
         }
     }
 
-    else if ( type == typeid( kvs::UInt16 ) )
+    else if ( type == typeid( vismodule::UInt16 ) )
     {
-        if ( kvs::Math::IsZero( m_min_range ) && kvs::Math::IsZero( m_max_range ) )
+        if ( vismodule::Math::IsZero( m_min_range ) && vismodule::Math::IsZero( m_max_range ) )
         {
-            m_min_range = kvs::Value<kvs::UInt16>::Min();
-            m_max_range = kvs::Value<kvs::UInt16>::Max();
+            m_min_range = vismodule::Value<vismodule::UInt16>::Min();
+            m_max_range = vismodule::Value<vismodule::UInt16>::Max();
         }
     }
 
-    else if ( type == typeid( kvs::Int32  ) )
+    else if ( type == typeid( vismodule::Int32  ) )
     {
-        if ( kvs::Math::IsZero( m_min_range ) && kvs::Math::IsZero( m_max_range ) )
+        if ( vismodule::Math::IsZero( m_min_range ) && vismodule::Math::IsZero( m_max_range ) )
         {
-            m_min_range = kvs::Value<kvs::Int32>::Min();
-            m_max_range = kvs::Value<kvs::Int32>::Max();
+            m_min_range = vismodule::Value<vismodule::Int32>::Min();
+            m_max_range = vismodule::Value<vismodule::Int32>::Max();
         }
     }
 
-    else if ( type == typeid( kvs::UInt32 ) )
+    else if ( type == typeid( vismodule::UInt32 ) )
     {
-        if ( kvs::Math::IsZero( m_min_range ) && kvs::Math::IsZero( m_max_range ) )
+        if ( vismodule::Math::IsZero( m_min_range ) && vismodule::Math::IsZero( m_max_range ) )
         {
-            m_min_range = kvs::Value<kvs::UInt32>::Min();
-            m_max_range = kvs::Value<kvs::UInt32>::Max();
+            m_min_range = vismodule::Value<vismodule::UInt32>::Min();
+            m_max_range = vismodule::Value<vismodule::UInt32>::Max();
         }
     }
 
-    else if ( type == typeid( kvs::Int64 ) )
+    else if ( type == typeid( vismodule::Int64 ) )
     {
-        if ( kvs::Math::IsZero( m_min_range ) && kvs::Math::IsZero( m_max_range ) )
+        if ( vismodule::Math::IsZero( m_min_range ) && vismodule::Math::IsZero( m_max_range ) )
         {
-            m_min_range = static_cast<kvs::Real64>( kvs::Value<kvs::Int64>::Min() );
-            m_max_range = static_cast<kvs::Real64>( kvs::Value<kvs::Int64>::Max() );
+            m_min_range = static_cast<vismodule::Real64>( vismodule::Value<vismodule::Int64>::Min() );
+            m_max_range = static_cast<vismodule::Real64>( vismodule::Value<vismodule::Int64>::Max() );
         }
     }
 
-    else if ( type == typeid( kvs::UInt64 ) )
+    else if ( type == typeid( vismodule::UInt64 ) )
     {
-        if ( kvs::Math::IsZero( m_min_range ) && kvs::Math::IsZero( m_max_range ) )
+        if ( vismodule::Math::IsZero( m_min_range ) && vismodule::Math::IsZero( m_max_range ) )
         {
-            m_min_range = static_cast<kvs::Real64>( kvs::Value<kvs::UInt64>::Min() );
-            m_max_range = static_cast<kvs::Real64>( kvs::Value<kvs::UInt64>::Max() );
+            m_min_range = static_cast<vismodule::Real64>( vismodule::Value<vismodule::UInt64>::Min() );
+            m_max_range = static_cast<vismodule::Real64>( vismodule::Value<vismodule::UInt64>::Max() );
         }
     }
 
-    else if ( type == typeid( kvs::Real32 ) || type == typeid( kvs::Real64 ) )
+    else if ( type == typeid( vismodule::Real32 ) || type == typeid( vismodule::Real64 ) )
     {
-        if ( kvs::Math::IsZero( m_min_range ) && kvs::Math::IsZero( m_max_range ) )
+        if ( vismodule::Math::IsZero( m_min_range ) && vismodule::Math::IsZero( m_max_range ) )
         {
             m_min_range = volume->minValue();
             m_max_range = volume->maxValue();
@@ -316,24 +316,24 @@ void FrequencyTable::calculate_range( const kvs::VolumeObjectBase* volume )
  *  @param image [in] pointer to the image object
  */
 /*==========================================================================*/
-void FrequencyTable::calculate_range( const kvs::ImageObject* image )
+void FrequencyTable::calculate_range( const vismodule::ImageObject* image )
 {
     switch ( image->type() )
     {
-    case kvs::ImageObject::Gray8:
-    case kvs::ImageObject::Color24: // RGB
-    case kvs::ImageObject::Color32: // RGBA
+    case vismodule::ImageObject::Gray8:
+    case vismodule::ImageObject::Color24: // RGB
+    case vismodule::ImageObject::Color32: // RGBA
     {
-        m_min_range = kvs::Value<kvs::UInt8>::Min();
-        m_max_range = kvs::Value<kvs::UInt8>::Max();
-        m_nbins     = kvs::UInt64(1) << 8;
+        m_min_range = vismodule::Value<vismodule::UInt8>::Min();
+        m_max_range = vismodule::Value<vismodule::UInt8>::Max();
+        m_nbins     = vismodule::UInt64(1) << 8;
         break;
     }
-    case kvs::ImageObject::Gray16:
+    case vismodule::ImageObject::Gray16:
     {
-        m_min_range = kvs::Value<kvs::UInt16>::Min();
-        m_max_range = kvs::Value<kvs::UInt16>::Max();
-        m_nbins     = kvs::UInt64(1) << 16;
+        m_min_range = vismodule::Value<vismodule::UInt16>::Min();
+        m_max_range = vismodule::Value<vismodule::UInt16>::Max();
+        m_nbins     = vismodule::UInt64(1) << 16;
         break;
     }
     default: break;
@@ -346,17 +346,17 @@ void FrequencyTable::calculate_range( const kvs::ImageObject* image )
  *  @param  volume [in] pointer to the volume object
  */
 /*==========================================================================*/
-void FrequencyTable::count_bin( const kvs::VolumeObjectBase* volume )
+void FrequencyTable::count_bin( const vismodule::VolumeObjectBase* volume )
 {
     const std::type_info& type = volume->values().typeInfo()->type();
-    if (      type == typeid( kvs::Int8 )   ) this->binning<kvs::Int8>( volume );
-    else if ( type == typeid( kvs::UInt8 )  ) this->binning<kvs::UInt8>( volume );
-    else if ( type == typeid( kvs::Int16 )  ) this->binning<kvs::Int16>( volume );
-    else if ( type == typeid( kvs::UInt16 ) ) this->binning<kvs::UInt16>( volume );
-    else if ( type == typeid( kvs::Int32 )  ) this->binning<kvs::Int32>( volume );
-    else if ( type == typeid( kvs::UInt32 ) ) this->binning<kvs::UInt32>( volume );
-    else if ( type == typeid( kvs::Real32 ) ) this->binning<kvs::Real32>( volume );
-    else if ( type == typeid( kvs::Real64 ) ) this->binning<kvs::Real64>( volume );
+    if (      type == typeid( vismodule::Int8 )   ) this->binning<vismodule::Int8>( volume );
+    else if ( type == typeid( vismodule::UInt8 )  ) this->binning<vismodule::UInt8>( volume );
+    else if ( type == typeid( vismodule::Int16 )  ) this->binning<vismodule::Int16>( volume );
+    else if ( type == typeid( vismodule::UInt16 ) ) this->binning<vismodule::UInt16>( volume );
+    else if ( type == typeid( vismodule::Int32 )  ) this->binning<vismodule::Int32>( volume );
+    else if ( type == typeid( vismodule::UInt32 ) ) this->binning<vismodule::UInt32>( volume );
+    else if ( type == typeid( vismodule::Real32 ) ) this->binning<vismodule::Real32>( volume );
+    else if ( type == typeid( vismodule::Real64 ) ) this->binning<vismodule::Real64>( volume );
 }
 
 /*==========================================================================*/
@@ -366,17 +366,17 @@ void FrequencyTable::count_bin( const kvs::VolumeObjectBase* volume )
  *  @param  channel [in] color element channel (0, 1, 2, 3)
  */
 /*==========================================================================*/
-void FrequencyTable::count_bin( const kvs::ImageObject* image, const size_t channel )
+void FrequencyTable::count_bin( const vismodule::ImageObject* image, const size_t channel )
 {
     switch ( image->type() )
     {
-    case kvs::ImageObject::Gray8:
-    case kvs::ImageObject::Color24: // RGB
-    case kvs::ImageObject::Color32: // RGBA
-        this->binning<kvs::UInt8>( image, channel );
+    case vismodule::ImageObject::Gray8:
+    case vismodule::ImageObject::Color24: // RGB
+    case vismodule::ImageObject::Color32: // RGBA
+        this->binning<vismodule::UInt8>( image, channel );
         break;
-    case kvs::ImageObject::Gray16:
-        this->binning<kvs::UInt16>( image, channel );
+    case vismodule::ImageObject::Gray16:
+        this->binning<vismodule::UInt16>( image, channel );
         break;
     default: break;
     }
@@ -389,13 +389,13 @@ void FrequencyTable::count_bin( const kvs::ImageObject* image, const size_t chan
  *  @return true, if the value is the ignore value.
  */
 /*==========================================================================*/
-bool FrequencyTable::is_ignore_value( const kvs::Real64 value )
+bool FrequencyTable::is_ignore_value( const vismodule::Real64 value )
 {
-    std::list<kvs::Real64>::const_iterator ignore_value = m_ignore_values.begin();
-    std::list<kvs::Real64>::const_iterator end = m_ignore_values.end();
+    std::list<vismodule::Real64>::const_iterator ignore_value = m_ignore_values.begin();
+    std::list<vismodule::Real64>::const_iterator end = m_ignore_values.end();
     while ( ignore_value != end )
     {
-        if ( kvs::Math::Equal( value, *ignore_value ) ) return( true );
+        if ( vismodule::Math::Equal( value, *ignore_value ) ) return( true );
 
         ++ignore_value;
     }
@@ -403,4 +403,4 @@ bool FrequencyTable::is_ignore_value( const kvs::Real64 value )
     return( false );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

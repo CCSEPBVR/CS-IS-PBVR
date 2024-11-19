@@ -11,18 +11,18 @@
  *  $Id: Directory.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__DIRECTORY_H_INCLUDE
-#define KVS__DIRECTORY_H_INCLUDE
+#ifndef VIS_MODULE__DIRECTORY_H_INCLUDE
+#define VIS_MODULE__DIRECTORY_H_INCLUDE
 
 #include <string>
 #include <iostream>
 #include <algorithm>
 #include <functional>
-#include <kvs/FileList>
-#include <kvs/ClassName>
+#include <vismodule/FileList>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -32,13 +32,13 @@ namespace kvs
 /*==========================================================================*/
 class Directory
 {
-    kvsClassName( kvs::Direcotry );
+    visModuleClassName( vismodule::Direcotry );
 
 private:
 
     std::string   m_directory_path; ///< directory path (ex. "/tmp/abc/")
     std::string   m_directory_name; ///< directory name (ex. "abc")
-    kvs::FileList m_file_list;      ///< filename list
+    vismodule::FileList m_file_list;      ///< filename list
 
 public:
 
@@ -54,9 +54,9 @@ public:
 
     const std::string directoryName( void ) const;
 
-    kvs::FileList& fileList( void );
+    vismodule::FileList& fileList( void );
 
-    const kvs::FileList& fileList( void ) const;
+    const vismodule::FileList& fileList( void ) const;
 
     const bool isDirectory( void ) const;
 
@@ -66,9 +66,9 @@ public:
 
     void sort( void );
 
-    kvs::FileList::iterator find( const kvs::File& file );
+    vismodule::FileList::iterator find( const vismodule::File& file );
 
-    kvs::FileList::const_iterator find( const kvs::File& file ) const;
+    vismodule::FileList::const_iterator find( const vismodule::File& file ) const;
 
 public:
 
@@ -83,6 +83,6 @@ public:
     static Directory Current( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__DIRECTORY_H_INCLUDE
+#endif // VIS_MODULE__DIRECTORY_H_INCLUDE

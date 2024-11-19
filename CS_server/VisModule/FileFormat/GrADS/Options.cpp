@@ -13,11 +13,11 @@
  */
 /*****************************************************************************/
 #include "Options.h"
-#include <kvs/Tokenizer>
+#include <vismodule/Tokenizer>
 #include <algorithm>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace grads
@@ -33,7 +33,7 @@ namespace grads
 /*===========================================================================*/
 const bool Options::read( std::string line, std::ifstream& ifs )
 {
-    kvs::Tokenizer t( line, " \t\n" );
+    vismodule::Tokenizer t( line, " \t\n" );
     t.token(); // OPTIONS
 
     this->values.clear();
@@ -72,4 +72,4 @@ const bool Options::find( const Options::Keyword keyword ) const
 
 } // end of namespace grads
 
-} // end of namespace kvs
+} // end of namespace vismodule

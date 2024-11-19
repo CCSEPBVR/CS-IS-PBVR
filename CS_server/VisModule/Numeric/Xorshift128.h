@@ -11,14 +11,14 @@
  *  $Id: Xorshift128.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__XORSHIFT_128_H_INCLUDE
-#define KVS__XORSHIFT_128_H_INCLUDE
+#ifndef VIS_MODULE__XORSHIFT_128_H_INCLUDE
+#define VIS_MODULE__XORSHIFT_128_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/Type>
+#include <vismodule/ClassName>
+#include <vismodule/Type>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -28,14 +28,14 @@ namespace kvs
 /*==========================================================================*/
 class Xorshift128
 {
-    kvsClassName_without_virtual( kvs::Xorshift128 );
+    visModuleClassName_without_virtual( vismodule::Xorshift128 );
 
 private:
 
-    kvs::UInt32 m_x;
-    kvs::UInt32 m_y;
-    kvs::UInt32 m_z;
-    kvs::UInt32 m_w;
+    vismodule::UInt32 m_x;
+    vismodule::UInt32 m_y;
+    vismodule::UInt32 m_z;
+    vismodule::UInt32 m_w;
 
 public:
 
@@ -43,7 +43,7 @@ public:
 
 public:
 
-    void setSeed( kvs::UInt32 );
+    void setSeed( vismodule::UInt32 );
 
 public:
 
@@ -65,7 +65,7 @@ inline const float Xorshift128::rand( void )
 {
     const float t24 = 1.0 / 16777216.0; /* 0.5**24 */
 
-    kvs::UInt32 t = ( m_x ^ ( m_x << 11 ) );
+    vismodule::UInt32 t = ( m_x ^ ( m_x << 11 ) );
 
     m_x = m_y;
     m_y = m_z;
@@ -87,6 +87,6 @@ inline const float Xorshift128::operator ()( void )
     return( this->rand() );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__XORSHIFT_128_H_INCLUDE
+#endif // VIS_MODULE__XORSHIFT_128_H_INCLUDE

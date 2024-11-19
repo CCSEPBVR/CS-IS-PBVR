@@ -12,7 +12,7 @@
  */
 /****************************************************************************/
 #include "Message.h"
-#include <kvs/Breakpoint>
+#include <vismodule/Breakpoint>
 
 
 namespace
@@ -20,26 +20,26 @@ namespace
 
 const size_t MaxMessageSize = 512;
 
-const std::string tag[kvs::Message::NumberOfMessageTypes] =
+const std::string tag[vismodule::Message::NumberOfMessageTypes] =
 {
-    "KVS ERROR",
-    "KVS WARNING",
-    "KVS DEBUG",
-    "KVS ASSERT"
+    "VISMODULE ERROR",
+    "VISMODULE WARNING",
+    "VISMODULE DEBUG",
+    "VISMODULE ASSERT"
 };
 
-const std::string color[kvs::Message::NumberOfMessageTypes] =
+const std::string color[vismodule::Message::NumberOfMessageTypes] =
 {
-    KVS_MESSAGE_RED,
-    KVS_MESSAGE_PURPLE,
-    KVS_MESSAGE_BLUE,
-    KVS_MESSAGE_BROWN
+    VIS_MODULE_MESSAGE_RED,
+    VIS_MODULE_MESSAGE_PURPLE,
+    VIS_MODULE_MESSAGE_BLUE,
+    VIS_MODULE_MESSAGE_BROWN
 };
 
 }
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -81,17 +81,17 @@ void Message::operator ()( const char* msg, ... )
         va_end( args );
 
         // Output message tag.
-        std::cerr << KVS_MESSAGE_SET_COLOR( ::color[m_type] );
+        std::cerr << VIS_MODULE_MESSAGE_SET_COLOR( ::color[m_type] );
         std::cerr << ::tag[m_type];
-        std::cerr << KVS_MESSAGE_RESET_COLOR;
+        std::cerr << VIS_MODULE_MESSAGE_RESET_COLOR;
 
         // Output message.
         std::cerr << ": " << std::string( buffer ) << std::endl;
         std::cerr << "\t" << "FILE: " << std::string( m_file ) << " (" << m_line << ")" << std::endl;
         std::cerr << "\t" << "FUNC: " << std::string( m_func ) << std::endl;
 
-        if ( m_type == Message::Assert ) { KVS_BREAKPOINT; }
+        if ( m_type == Message::Assert ) { VIS_MODULE_BREAKPOINT; }
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

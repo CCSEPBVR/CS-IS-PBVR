@@ -69,7 +69,7 @@ void MapperBase::setTransferFunction( const pbvr::TransferFunction& transfer_fun
  *  @param  color_map [in] color map
  */
 /*===========================================================================*/
-void MapperBase::setColorMap( const kvs::ColorMap& color_map )
+void MapperBase::setColorMap( const vismodule::ColorMap& color_map )
 {
     m_transfer_function.setColorMap( color_map );
 }
@@ -80,7 +80,7 @@ void MapperBase::setColorMap( const kvs::ColorMap& color_map )
  *  @param  opacity_map [in] opacity map
  */
 /*===========================================================================*/
-void MapperBase::setOpacityMap( const kvs::OpacityMap& opacity_map )
+void MapperBase::setOpacityMap( const vismodule::OpacityMap& opacity_map )
 {
     m_transfer_function.setOpacityMap( opacity_map );
 }
@@ -111,7 +111,7 @@ const pbvr::TransferFunction& MapperBase::transferFunction() const
  *  @brief  Returns the color map.
  */
 /*===========================================================================*/
-const kvs::ColorMap& MapperBase::colorMap() const
+const vismodule::ColorMap& MapperBase::colorMap() const
 {
     return m_transfer_function.colorMap();
 }
@@ -121,7 +121,7 @@ const kvs::ColorMap& MapperBase::colorMap() const
  *  @brief  Returns the opacity map.
  */
 /*===========================================================================*/
-const kvs::OpacityMap& MapperBase::opacityMap() const
+const vismodule::OpacityMap& MapperBase::opacityMap() const
 {
     return m_transfer_function.opacityMap();
 }
@@ -163,11 +163,11 @@ void MapperBase::set_range( const pbvr::VolumeObjectBase& volume )
 {
     if ( !volume.hasMinMaxValues() ) volume.updateMinMaxValues();
     const std::type_info& type = volume.values().typeInfo()->type();
-    if ( type == typeid( kvs::Int8 ) )
+    if ( type == typeid( vismodule::Int8 ) )
     {
         if ( !m_transfer_function.hasRange() ) m_transfer_function.setRange( -128, 127 );
     }
-    else if ( type == typeid( kvs::UInt8  ) )
+    else if ( type == typeid( vismodule::UInt8  ) )
     {
         if ( !m_transfer_function.hasRange() ) m_transfer_function.setRange( 0, 255 );
     }
@@ -211,10 +211,10 @@ void MapperBase::set_min_max_coords( const pbvr::VolumeObjectBase& volume, pbvr:
         }
     }
 
-    const kvs::Vector3f min_obj_coord( m_volume->minObjectCoord() );
-    const kvs::Vector3f max_obj_coord( m_volume->maxObjectCoord() );
-    const kvs::Vector3f min_ext_coord( m_volume->minExternalCoord() );
-    const kvs::Vector3f max_ext_coord( m_volume->maxExternalCoord() );
+    const vismodule::Vector3f min_obj_coord( m_volume->minObjectCoord() );
+    const vismodule::Vector3f max_obj_coord( m_volume->maxObjectCoord() );
+    const vismodule::Vector3f min_ext_coord( m_volume->minExternalCoord() );
+    const vismodule::Vector3f max_ext_coord( m_volume->maxExternalCoord() );
     object->setMinMaxObjectCoords( min_obj_coord, max_obj_coord );
     object->setMinMaxExternalCoords( min_ext_coord, max_ext_coord );
 }

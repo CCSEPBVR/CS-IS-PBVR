@@ -2,13 +2,13 @@
 #define PBVR__ARGUMENT_H_INCLUDE
 
 #include <climits>
-#include <kvs/CommandLine>
+#include <vismodule/CommandLine>
 #include "CropRegion.h"
 
 #include "TransferFunctionSynthesizer.h"
 #include "ExtendedTransferFunction.h"
 
-class Argument : public kvs::CommandLine
+class Argument : public vismodule::CommandLine
 {
 private:
     bool m_dump;
@@ -63,7 +63,7 @@ public:
 
 public:
     Argument( const int argc, char** argv ):
-        kvs::CommandLine( argc, argv )
+        vismodule::CommandLine( argc, argv )
     {
         // Add help option (generate help message automatically).
         add_help_option();

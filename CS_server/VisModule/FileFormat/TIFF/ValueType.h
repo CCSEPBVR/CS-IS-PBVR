@@ -11,13 +11,13 @@
  *  $Id: ValueType.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__TIFF__VALUE_TYPE_H_INCLUDE
-#define KVS__TIFF__VALUE_TYPE_H_INCLUDE
+#ifndef VIS_MODULE__TIFF__VALUE_TYPE_H_INCLUDE
+#define VIS_MODULE__TIFF__VALUE_TYPE_H_INCLUDE
 
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace tiff
@@ -41,7 +41,7 @@ enum ValueType
     NumberOfValueTypes = 13
 };
 
-const std::string ValueTypeName[ kvs::tiff::NumberOfValueTypes ] =
+const std::string ValueTypeName[ vismodule::tiff::NumberOfValueTypes ] =
 {
     "NoType",
     "Byte",
@@ -58,7 +58,7 @@ const std::string ValueTypeName[ kvs::tiff::NumberOfValueTypes ] =
     "Double"
 };
 
-const size_t ValueTypeSize[ kvs::tiff::NumberOfValueTypes ] =
+const size_t ValueTypeSize[ vismodule::tiff::NumberOfValueTypes ] =
 {
     0,
     1,
@@ -77,6 +77,6 @@ const size_t ValueTypeSize[ kvs::tiff::NumberOfValueTypes ] =
 
 } // end of namespace tiff
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TIFF__VALUE_TYPE_H_INCLUDE
+#endif // VIS_MODULE__TIFF__VALUE_TYPE_H_INCLUDE

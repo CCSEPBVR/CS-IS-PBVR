@@ -11,18 +11,18 @@
  *  $Id: Pbm.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__PBM_H_INCLUDE
-#define KVS__PBM_H_INCLUDE
+#ifndef VIS_MODULE__PBM_H_INCLUDE
+#define VIS_MODULE__PBM_H_INCLUDE
 
-#include <kvs/FileFormatBase>
-#include <kvs/ClassName>
-#include <kvs/BitArray>
-#include <kvs/Type>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ClassName>
+#include <vismodule/BitArray>
+#include <vismodule/Type>
 #include <string>
 #include "Header.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -30,27 +30,27 @@ namespace kvs
  *  PBM image class.
  */
 /*==========================================================================*/
-class Pbm : public kvs::FileFormatBase
+class Pbm : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::Pbm );
+    visModuleClassName( vismodule::Pbm );
 
 public:
 
-    typedef kvs::FileFormatBase BaseClass;
-    typedef kvs::pnm::Header    Header;
+    typedef vismodule::FileFormatBase BaseClass;
+    typedef vismodule::pnm::Header    Header;
 
 private:
 
     Pbm::Header   m_header;  ///< header information
     size_t        m_width;   ///< width
     size_t        m_height;  ///< height
-    kvs::BitArray m_data;    ///< bit pixel data
+    vismodule::BitArray m_data;    ///< bit pixel data
 
 public:
 
     Pbm( void );
 
-    Pbm( const size_t width, const size_t height, const kvs::BitArray& data );
+    Pbm( const size_t width, const size_t height, const vismodule::BitArray& data );
 
     Pbm( const std::string& filename );
 
@@ -64,7 +64,7 @@ public:
 
     const size_t height( void ) const;
 
-    const kvs::BitArray& data( void ) const;
+    const vismodule::BitArray& data( void ) const;
 
 public:
 
@@ -85,6 +85,6 @@ public:
     friend std::ostream& operator <<( std::ostream& os, const Pbm& rhs );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__PBM_H_INCLUDE
+#endif // VIS_MODULE__PBM_H_INCLUDE

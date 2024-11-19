@@ -12,12 +12,12 @@
  */
 /****************************************************************************/
 #include "ParticleBuffer.h"
-#include <kvs/Type>
-#include <kvs/Math>
-#include <kvs/PointObject>
+#include <vismodule/Type>
+#include <vismodule/Math>
+#include <vismodule/PointObject>
 
 
-namespace kvs
+namespace vismodule
 {
 
 ParticleBuffer::ParticleBuffer( void ):
@@ -78,7 +78,7 @@ const size_t ParticleBuffer::height( void ) const
  *  Return the index buffer.
  */
 /*==========================================================================*/
-const kvs::ValueArray<kvs::UInt32>& ParticleBuffer::indexBuffer( void ) const
+const vismodule::ValueArray<vismodule::UInt32>& ParticleBuffer::indexBuffer( void ) const
 {
     return( m_index_buffer );
 }
@@ -90,7 +90,7 @@ const kvs::ValueArray<kvs::UInt32>& ParticleBuffer::indexBuffer( void ) const
  *  @return stored index in the index buffer
  */
 /*==========================================================================*/
-const kvs::UInt32 ParticleBuffer::index( const size_t index ) const
+const vismodule::UInt32 ParticleBuffer::index( const size_t index ) const
 {
     return( m_index_buffer[index] );
 }
@@ -100,7 +100,7 @@ const kvs::UInt32 ParticleBuffer::index( const size_t index ) const
  *  Return the depth buffer.
  */
 /*==========================================================================*/
-const kvs::ValueArray<kvs::Real32>& ParticleBuffer::depthBuffer( void ) const
+const vismodule::ValueArray<vismodule::Real32>& ParticleBuffer::depthBuffer( void ) const
 {
     return( m_depth_buffer );
 }
@@ -112,7 +112,7 @@ const kvs::ValueArray<kvs::Real32>& ParticleBuffer::depthBuffer( void ) const
  *  @return stored depth in the depth buffer
  */
 /*==========================================================================*/
-const kvs::Real32 ParticleBuffer::depth( const size_t index ) const
+const vismodule::Real32 ParticleBuffer::depth( const size_t index ) const
 {
     return( m_depth_buffer[index] );
 }
@@ -122,7 +122,7 @@ const kvs::Real32 ParticleBuffer::depth( const size_t index ) const
  *  Return the pointer to the attached shader.
  */
 /*==========================================================================*/
-const kvs::Shader::shader_type* ParticleBuffer::shader( void ) const
+const vismodule::Shader::shader_type* ParticleBuffer::shader( void ) const
 {
     return( m_ref_shader );
 }
@@ -132,7 +132,7 @@ const kvs::Shader::shader_type* ParticleBuffer::shader( void ) const
  *  Return the pointer to the attached point object.
  */
 /*==========================================================================*/
-const kvs::PointObject* ParticleBuffer::pointObject( void ) const
+const vismodule::PointObject* ParticleBuffer::pointObject( void ) const
 {
     return( m_ref_point_object );
 }
@@ -174,7 +174,7 @@ void ParticleBuffer::setSubpixelLevel( const size_t subpixel_level )
  *  @param shader [in] pointer to the shader
  */
 /*==========================================================================*/
-void ParticleBuffer::attachShader( const kvs::Shader::shader_type* shader )
+void ParticleBuffer::attachShader( const vismodule::Shader::shader_type* shader )
 {
     m_ref_shader = shader;
 }
@@ -185,7 +185,7 @@ void ParticleBuffer::attachShader( const kvs::Shader::shader_type* shader )
  *  @param point_object [in] pointer to the point object
  */
 /*==========================================================================*/
-void ParticleBuffer::attachPointObject( const kvs::PointObject* point_object )
+void ParticleBuffer::attachPointObject( const vismodule::PointObject* point_object )
 {
     m_ref_point_object = NULL;
     m_ref_point_object = point_object;
@@ -238,7 +238,7 @@ bool ParticleBuffer::create(
 
     if( m_width == 0 || m_height == 0 )
     {
-        kvsMessageError("Cannot create the pixel data for the particle buffer.");
+        visModuleMessageError("Cannot create the pixel data for the particle buffer.");
         return( false );
     }
 
@@ -285,20 +285,20 @@ void ParticleBuffer::clear( void )
  */
 /*==========================================================================*/
 void ParticleBuffer::createImage(
-    kvs::ValueArray<kvs::UInt8>*  color,
-    kvs::ValueArray<kvs::Real32>* depth )
+    vismodule::ValueArray<vismodule::UInt8>*  color,
+    vismodule::ValueArray<vismodule::Real32>* depth )
 {
     if( m_enable_shading ) this->create_image_with_shading( color, depth );
     else                   this->create_image_without_shading( color, depth );
 }
 
 void ParticleBuffer::create_image_with_shading(
-    kvs::ValueArray<kvs::UInt8>*  color,
-    kvs::ValueArray<kvs::Real32>* depth )
+    vismodule::ValueArray<vismodule::UInt8>*  color,
+    vismodule::ValueArray<vismodule::Real32>* depth )
 {
-    const kvs::Real32* point_coords = m_ref_point_object->coords().pointer();
-    const kvs::UInt8* point_color = m_ref_point_object->colors().pointer();
-    const kvs::Real32* point_normal = m_ref_point_object->normals().pointer();
+    const vismodule::Real32* point_coords = m_ref_point_object->coords().pointer();
+    const vismodule::UInt8* point_color = m_ref_point_object->colors().pointer();
+    const vismodule::Real32* point_normal = m_ref_point_object->normals().pointer();
 
     const float inv_ssize = 1.0f / ( m_subpixel_level * m_subpixel_level );
     const float normalize_alpha = 255.0f * inv_ssize;
@@ -327,14 +327,14 @@ void ParticleBuffer::create_image_with_shading(
                     {
                         const size_t point_index3 = 3 * m_index_buffer[ bindex ];
 
-                        const kvs::Vector3f vertex( point_coords + point_index3 );
-                        const kvs::Vector3f normal( point_normal + point_index3 );
-                        kvs::RGBColor color( point_color + point_index3 );
+                        const vismodule::Vector3f vertex( point_coords + point_index3 );
+                        const vismodule::Vector3f normal( point_normal + point_index3 );
+                        vismodule::RGBColor color( point_color + point_index3 );
                         color = m_ref_shader->shadedColor( color, vertex, normal );
                         R += color.r();
                         G += color.g();
                         B += color.b();
-                        D = kvs::Math::Max( D, m_depth_buffer[ bindex ] );
+                        D = vismodule::Math::Max( D, m_depth_buffer[ bindex ] );
 
                         npoints++;
                     }
@@ -345,20 +345,20 @@ void ParticleBuffer::create_image_with_shading(
             G *= inv_ssize;
             B *= inv_ssize;
 
-            (*color)[ pindex4 + 0 ] = static_cast<kvs::UInt8>( kvs::Math::Min( R, 255.0f ) + 0.5f );
-            (*color)[ pindex4 + 1 ] = static_cast<kvs::UInt8>( kvs::Math::Min( G, 255.0f ) + 0.5f );
-            (*color)[ pindex4 + 2 ] = static_cast<kvs::UInt8>( kvs::Math::Min( B, 255.0f ) + 0.5f );
-            (*color)[ pindex4 + 3 ] = static_cast<kvs::UInt8>( npoints * normalize_alpha );
+            (*color)[ pindex4 + 0 ] = static_cast<vismodule::UInt8>( vismodule::Math::Min( R, 255.0f ) + 0.5f );
+            (*color)[ pindex4 + 1 ] = static_cast<vismodule::UInt8>( vismodule::Math::Min( G, 255.0f ) + 0.5f );
+            (*color)[ pindex4 + 2 ] = static_cast<vismodule::UInt8>( vismodule::Math::Min( B, 255.0f ) + 0.5f );
+            (*color)[ pindex4 + 3 ] = static_cast<vismodule::UInt8>( npoints * normalize_alpha );
             (*depth)[ pindex ]      = ( npoints == 0 ) ? 1.0f : D;
         }
     }
 }
 
 void ParticleBuffer::create_image_without_shading(
-    kvs::ValueArray<kvs::UInt8>*  color,
-    kvs::ValueArray<kvs::Real32>* depth )
+    vismodule::ValueArray<vismodule::UInt8>*  color,
+    vismodule::ValueArray<vismodule::Real32>* depth )
 {
-    const kvs::UInt8* point_color = m_ref_point_object->colors().pointer();
+    const vismodule::UInt8* point_color = m_ref_point_object->colors().pointer();
 
     const float inv_ssize = 1.0f / ( m_subpixel_level * m_subpixel_level );
     const float normalize_alpha = 255.0f * inv_ssize;
@@ -390,7 +390,7 @@ void ParticleBuffer::create_image_without_shading(
                         R += point_color[ point_index3 + 0 ];
                         G += point_color[ point_index3 + 1 ];
                         B += point_color[ point_index3 + 2 ];
-                        D = kvs::Math::Max( D, m_depth_buffer[ bindex ] );
+                        D = vismodule::Math::Max( D, m_depth_buffer[ bindex ] );
                         npoints++;
                     }
                 }
@@ -400,13 +400,13 @@ void ParticleBuffer::create_image_without_shading(
             G *= inv_ssize;
             B *= inv_ssize;
 
-            (*color)[ pindex4 + 0 ] = static_cast<kvs::UInt8>(R);
-            (*color)[ pindex4 + 1 ] = static_cast<kvs::UInt8>(G);
-            (*color)[ pindex4 + 2 ] = static_cast<kvs::UInt8>(B);
-            (*color)[ pindex4 + 3 ] = static_cast<kvs::UInt8>( npoints * normalize_alpha );
+            (*color)[ pindex4 + 0 ] = static_cast<vismodule::UInt8>(R);
+            (*color)[ pindex4 + 1 ] = static_cast<vismodule::UInt8>(G);
+            (*color)[ pindex4 + 2 ] = static_cast<vismodule::UInt8>(B);
+            (*color)[ pindex4 + 3 ] = static_cast<vismodule::UInt8>( npoints * normalize_alpha );
             (*depth)[ pindex ]      = ( npoints == 0 ) ? 1.0f : D;
         }
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -11,31 +11,31 @@
  *  $Id: Module.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MODULE_H_INCLUDE
-#define KVS__MODULE_H_INCLUDE
+#ifndef VIS_MODULE__MODULE_H_INCLUDE
+#define VIS_MODULE__MODULE_H_INCLUDE
 
-#define KVS_MODULE_IMPORTER kvs::ImporterBase::ModuleTag
-#define KVS_MODULE_FILTER   kvs::FilterBase::ModuleTag
-#define KVS_MODULE_MAPPER   kvs::MapperBase::ModuleTag
-#define KVS_MODULE_OBJECT   kvs::ObjectBase::ModuleTag
-#define KVS_MODULE_RENDERER kvs::RendererBase::ModuleTag
+#define VIS_MODULE_MODULE_IMPORTER vismodule::ImporterBase::ModuleTag
+#define VIS_MODULE_MODULE_FILTER   vismodule::FilterBase::ModuleTag
+#define VIS_MODULE_MODULE_MAPPER   vismodule::MapperBase::ModuleTag
+#define VIS_MODULE_MODULE_OBJECT   vismodule::ObjectBase::ModuleTag
+#define VIS_MODULE_MODULE_RENDERER vismodule::RendererBase::ModuleTag
 
-#define kvsModuleBase                           \
+#define visModuleBase                           \
     public:                                     \
     struct  ModuleTag{};                        \
     typedef ModuleTag ModuleCategory
 
-#define kvsModuleBaseClass( base_class )        \
+#define visModuleBaseClass( base_class )        \
     typedef base_class BaseClass
 
-#define kvsModuleSuperClass( super_class )      \
+#define visModuleSuperClass( super_class )      \
     typedef super_class SuperClass
 
-#define kvsModuleCategory( module_category )                            \
+#define visModuleCategory( module_category )                            \
     public:                                                             \
-    typedef kvs:: module_category##Base::ModuleTag ModuleCategory
+    typedef vismodule:: module_category##Base::ModuleTag ModuleCategory
 
-namespace kvs
+namespace vismodule
 {
 
 template <typename T>
@@ -44,6 +44,6 @@ struct ModuleTraits
     typedef typename T::ModuleCategory ModuleCategory;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MODULE_H_INCLUDE
+#endif // VIS_MODULE__MODULE_H_INCLUDE

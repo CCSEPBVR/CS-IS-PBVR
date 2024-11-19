@@ -15,8 +15,8 @@
 #define PBVR__TRANSFER_FUNCTION_H_INCLUDE
 
 #include "ClassName.h"
-#include <kvs/ColorMap>
-#include <kvs/OpacityMap>
+#include <vismodule/ColorMap>
+#include <vismodule/OpacityMap>
 #include "VolumeObjectBase.h"
 
 
@@ -30,12 +30,12 @@ namespace pbvr
 /*==========================================================================*/
 class TransferFunction
 {
-    kvsClassName( pbvr::TransferFunction );
+    visModuleClassName( pbvr::TransferFunction );
 
 private:
 
-    kvs::ColorMap   m_color_map;   ///< Color map.
-    kvs::OpacityMap m_opacity_map; ///< Opacity map.
+    vismodule::ColorMap   m_color_map;   ///< Color map.
+    vismodule::OpacityMap m_opacity_map; ///< Opacity map.
 
 public:
 
@@ -44,14 +44,14 @@ public:
     //TransferFunction( const std::string& filename );
 
     // 'explicit' is not specified by design.
-    TransferFunction( const kvs::ColorMap& color_map );
+    TransferFunction( const vismodule::ColorMap& color_map );
 
     // 'explicit' is not specified by design.
-    TransferFunction( const kvs::OpacityMap& opacity_map );
+    TransferFunction( const vismodule::OpacityMap& opacity_map );
 
     TransferFunction(
-        const kvs::ColorMap&   color_map,
-        const kvs::OpacityMap& opacity_map );
+        const vismodule::ColorMap&   color_map,
+        const vismodule::OpacityMap& opacity_map );
 
     TransferFunction( const TransferFunction& other );
 
@@ -59,9 +59,9 @@ public:
 
 public:
 
-    void setColorMap( const kvs::ColorMap& color_map );
+    void setColorMap( const vismodule::ColorMap& color_map );
 
-    void setOpacityMap( const kvs::OpacityMap& opacity_map );
+    void setOpacityMap( const vismodule::OpacityMap& opacity_map );
 
     void setRange( const float min_value, const float max_value );
 
@@ -83,9 +83,9 @@ public:
 
 public:
 
-    const kvs::ColorMap& colorMap() const;
+    const vismodule::ColorMap& colorMap() const;
 
-    const kvs::OpacityMap& opacityMap() const;
+    const vismodule::OpacityMap& opacityMap() const;
 
 public:
 
@@ -106,4 +106,4 @@ public:
 
 } // end of namespace pbvr
 
-#endif // KVS__TRANSFER_FUNCTION_H_INCLUDE
+#endif // VIS_MODULE__TRANSFER_FUNCTION_H_INCLUDE

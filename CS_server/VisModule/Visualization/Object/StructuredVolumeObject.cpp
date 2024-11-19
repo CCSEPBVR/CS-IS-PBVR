@@ -17,14 +17,14 @@
 namespace
 {
 
-const std::string GetGridTypeName( const kvs::StructuredVolumeObject::GridType type )
+const std::string GetGridTypeName( const vismodule::StructuredVolumeObject::GridType type )
 {
     switch( type )
     {
-    case kvs::StructuredVolumeObject::Uniform: return("uniform");
-    case kvs::StructuredVolumeObject::Rectilinear: return("rectiliear");
-    case kvs::StructuredVolumeObject::Curvilinear: return( "curvilinear" );
-    case kvs::StructuredVolumeObject::Irregular: return( "irregular" );
+    case vismodule::StructuredVolumeObject::Uniform: return("uniform");
+    case vismodule::StructuredVolumeObject::Rectilinear: return("rectiliear");
+    case vismodule::StructuredVolumeObject::Curvilinear: return( "curvilinear" );
+    case vismodule::StructuredVolumeObject::Irregular: return( "irregular" );
     default: return( "unknown grid type" );
     }
 }
@@ -32,7 +32,7 @@ const std::string GetGridTypeName( const kvs::StructuredVolumeObject::GridType t
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -41,9 +41,9 @@ namespace kvs
  */
 /*==========================================================================*/
 StructuredVolumeObject::StructuredVolumeObject( void )
-    : kvs::VolumeObjectBase()
+    : vismodule::VolumeObjectBase()
     , m_grid_type( UnknownGridType )
-    , m_resolution( kvs::Vector3ui( 0, 0, 0 ) )
+    , m_resolution( vismodule::Vector3ui( 0, 0, 0 ) )
 {
 }
 
@@ -57,10 +57,10 @@ StructuredVolumeObject::StructuredVolumeObject( void )
  */
 /*==========================================================================*/
 StructuredVolumeObject::StructuredVolumeObject(
-    const kvs::Vector3ui& resolution,
+    const vismodule::Vector3ui& resolution,
     const size_t          veclen,
     const Values&         values )
-    : kvs::VolumeObjectBase( veclen, Coords( 0 ), values )
+    : vismodule::VolumeObjectBase( veclen, Coords( 0 ), values )
     , m_grid_type( Uniform )
     , m_resolution( resolution )
 {
@@ -79,11 +79,11 @@ StructuredVolumeObject::StructuredVolumeObject(
 /*==========================================================================*/
 StructuredVolumeObject::StructuredVolumeObject(
     const GridType        grid_type,
-    const kvs::Vector3ui& resolution,
+    const vismodule::Vector3ui& resolution,
     const size_t          veclen,
     const Coords&         coords,
     const Values&         values )
-    : kvs::VolumeObjectBase( veclen, coords, values )
+    : vismodule::VolumeObjectBase( veclen, coords, values )
     , m_grid_type( grid_type )
     , m_resolution( resolution )
 {
@@ -97,7 +97,7 @@ StructuredVolumeObject::StructuredVolumeObject(
  */
 /*==========================================================================*/
 StructuredVolumeObject::StructuredVolumeObject( const StructuredVolumeObject& other )
-    : kvs::VolumeObjectBase( other )
+    : vismodule::VolumeObjectBase( other )
     , m_grid_type( other.m_grid_type )
     , m_resolution( other.m_resolution )
 {
@@ -112,26 +112,26 @@ StructuredVolumeObject::~StructuredVolumeObject( void )
 {
 }
 
-kvs::StructuredVolumeObject* StructuredVolumeObject::DownCast( kvs::ObjectBase* object )
+vismodule::StructuredVolumeObject* StructuredVolumeObject::DownCast( vismodule::ObjectBase* object )
 {
-    kvs::VolumeObjectBase* volume = kvs::VolumeObjectBase::DownCast( object );
+    vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
     if ( !volume ) return( NULL );
 
-    const kvs::VolumeObjectBase::VolumeType type = volume->volumeType();
-    if ( type != kvs::VolumeObjectBase::Structured )
+    const vismodule::VolumeObjectBase::VolumeType type = volume->volumeType();
+    if ( type != vismodule::VolumeObjectBase::Structured )
     {
-        kvsMessageError("Input object is not a structured volume object.");
+        visModuleMessageError("Input object is not a structured volume object.");
         return( NULL );
     }
 
-    kvs::StructuredVolumeObject* structured = static_cast<kvs::StructuredVolumeObject*>( volume );
+    vismodule::StructuredVolumeObject* structured = static_cast<vismodule::StructuredVolumeObject*>( volume );
 
     return( structured );
 }
 
-const kvs::StructuredVolumeObject* StructuredVolumeObject::DownCast( const kvs::ObjectBase* object )
+const vismodule::StructuredVolumeObject* StructuredVolumeObject::DownCast( const vismodule::ObjectBase* object )
 {
-    return( StructuredVolumeObject::DownCast( const_cast<kvs::ObjectBase*>( object ) ) );
+    return( StructuredVolumeObject::DownCast( const_cast<vismodule::ObjectBase*>( object ) ) );
 }
 
 StructuredVolumeObject& StructuredVolumeObject::operator = ( const StructuredVolumeObject& object )
@@ -149,12 +149,12 @@ std::ostream& operator << ( std::ostream& os, const StructuredVolumeObject& obje
     if ( !object.hasMinMaxValues() ) object.updateMinMaxValues();
 
     os << "Object type:  " << "structured volume object" << std::endl;
-#ifdef KVS_COMPILER_VC
-#if KVS_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
+#ifdef VIS_MODULE_COMPILER_VC
+#if VIS_MODULE_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
     // @TODO Cannot instance the object that is a abstract class here (error:C2259).
 #endif
 #else
-    os << static_cast<const kvs::VolumeObjectBase&>( object ) << std::endl;
+    os << static_cast<const vismodule::VolumeObjectBase&>( object ) << std::endl;
 #endif
     os << "Grid type:  " << ::GetGridTypeName( object.gridType() ) << std::endl;
     os << "Resolution:  " << object.resolution() << std::endl;
@@ -194,7 +194,7 @@ void StructuredVolumeObject::setGridType( const GridType grid_type )
  *  Sets the node resolution.
  */
 /*==========================================================================*/
-void StructuredVolumeObject::setResolution( const kvs::Vector3ui& resolution )
+void StructuredVolumeObject::setResolution( const vismodule::Vector3ui& resolution )
 {
     m_resolution = resolution;
 }
@@ -234,7 +234,7 @@ const StructuredVolumeObject::CellType StructuredVolumeObject::cellType( void ) 
  *  Returns the node resolution.
  */
 /*==========================================================================*/
-const kvs::Vector3ui& StructuredVolumeObject::resolution( void ) const
+const vismodule::Vector3ui& StructuredVolumeObject::resolution( void ) const
 {
     return( m_resolution );
 }
@@ -286,8 +286,8 @@ void StructuredVolumeObject::updateMinMaxCoords( void )
 /*==========================================================================*/
 void StructuredVolumeObject::calculate_min_max_coords( void )
 {
-    kvs::Vector3f min_coord( 0.0f, 0.0f, 0.0f );
-    kvs::Vector3f max_coord( 0.0f, 0.0f, 0.0f );
+    vismodule::Vector3f min_coord( 0.0f, 0.0f, 0.0f );
+    vismodule::Vector3f max_coord( 0.0f, 0.0f, 0.0f );
 
     switch ( m_grid_type )
     {
@@ -335,13 +335,13 @@ void StructuredVolumeObject::calculate_min_max_coords( void )
             y = *( coord++ );
             z = *( coord++ );
 
-            min_coord.x() = kvs::Math::Min( min_coord.x(), x );
-            min_coord.y() = kvs::Math::Min( min_coord.y(), y );
-            min_coord.z() = kvs::Math::Min( min_coord.z(), z );
+            min_coord.x() = vismodule::Math::Min( min_coord.x(), x );
+            min_coord.y() = vismodule::Math::Min( min_coord.y(), y );
+            min_coord.z() = vismodule::Math::Min( min_coord.z(), z );
 
-            max_coord.x() = kvs::Math::Max( max_coord.x(), x );
-            max_coord.y() = kvs::Math::Max( max_coord.y(), y );
-            max_coord.z() = kvs::Math::Max( max_coord.z(), z );
+            max_coord.x() = vismodule::Math::Max( max_coord.x(), x );
+            max_coord.y() = vismodule::Math::Max( max_coord.y(), y );
+            max_coord.z() = vismodule::Math::Max( max_coord.z(), z );
         }
 
         break;
@@ -362,4 +362,4 @@ void StructuredVolumeObject::calculate_min_max_coords( void )
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

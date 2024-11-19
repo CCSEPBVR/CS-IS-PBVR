@@ -12,15 +12,15 @@
  *  $Id: HydrogenVolumeData.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__HYDROGEN_VOLUME_DATA_H_INCLUDE
-#define KVS__HYDROGEN_VOLUME_DATA_H_INCLUDE
+#ifndef VIS_MODULE__HYDROGEN_VOLUME_DATA_H_INCLUDE
+#define VIS_MODULE__HYDROGEN_VOLUME_DATA_H_INCLUDE
 
-#include <kvs/StructuredVolumeObject>
-#include <kvs/Vector3>
-#include <kvs/ClassName>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/Vector3>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -28,19 +28,19 @@ namespace kvs
  *  @brief  Hydrogen data generator class.
  */
 /*===========================================================================*/
-class HydrogenVolumeData : public kvs::StructuredVolumeObject
+class HydrogenVolumeData : public vismodule::StructuredVolumeObject
 {
-    kvsClassName( kvs::HydrogenVolumeData );
+    visModuleClassName( vismodule::HydrogenVolumeData );
 
 public:
 
-    typedef kvs::StructuredVolumeObject SuperClass;
+    typedef vismodule::StructuredVolumeObject SuperClass;
 
 public:
 
     HydrogenVolumeData( void );
 
-    HydrogenVolumeData( const kvs::Vector3ui resolution );
+    HydrogenVolumeData( const vismodule::Vector3ui resolution );
 
     virtual ~HydrogenVolumeData( void );
 
@@ -49,6 +49,6 @@ public:
     SuperClass* exec( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__HYDROGEN_VOLUME_DATA_H_INCLUDE
+#endif // VIS_MODULE__HYDROGEN_VOLUME_DATA_H_INCLUDE

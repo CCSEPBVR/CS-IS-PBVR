@@ -11,25 +11,25 @@
  *  $Id: Dicom.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__DICOM_H_INCLUDE
-#define KVS__DICOM_H_INCLUDE
+#ifndef VIS_MODULE__DICOM_H_INCLUDE
+#define VIS_MODULE__DICOM_H_INCLUDE
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <list>
 #include <algorithm>
-#include <kvs/FileFormatBase>
-#include <kvs/ValueArray>
-#include <kvs/Type>
-#include <kvs/Vector2>
-#include <kvs/ClassName>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/Vector2>
+#include <vismodule/ClassName>
 #include "Attribute.h"
 #include "Window.h"
 #include "Element.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -37,9 +37,9 @@ namespace kvs
  *  @brief  DICOM class.
  */
 /*===========================================================================*/
-class Dicom : public kvs::FileFormatBase
+class Dicom : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::Dicom );
+    visModuleClassName( vismodule::Dicom );
 
 public:
 
@@ -66,7 +66,7 @@ protected:
 
     unsigned short          m_row;                  ///< (0028,0010) rows (height)
     unsigned short          m_column;               ///< (0028,0011) columns (width)
-    kvs::Vector2f           m_pixel_spacing;        ///< (0028,0030) pixel spacing
+    vismodule::Vector2f           m_pixel_spacing;        ///< (0028,0030) pixel spacing
     unsigned short          m_bits_allocated;       ///< (0028,0100) bits allocated
     unsigned short          m_bits_stored;          ///< (0028,0101) bits stored
     unsigned short          m_high_bit;             ///< (0028,0102) high bit
@@ -81,7 +81,7 @@ protected:
     int                         m_min_raw_value;    ///< min. value of the raw data
     int                         m_max_raw_value;    ///< max. value of the raw data
     std::ios::pos_type          m_position;         ///< raw data position
-    kvs::ValueArray<char>       m_raw_data;         ///< raw data
+    vismodule::ValueArray<char>       m_raw_data;         ///< raw data
 
 public:
 
@@ -161,7 +161,7 @@ public:
 
     const std::string& modality( void ) const;
 
-    const kvs::Vector2f& pixelSpacing( void ) const;
+    const vismodule::Vector2f& pixelSpacing( void ) const;
 
     const std::string& manufacturer( void ) const;
 
@@ -173,9 +173,9 @@ public:
 
     const std::ios::pos_type& position( void ) const;
 
-    const kvs::ValueArray<char>& rawData( void ) const;
+    const vismodule::ValueArray<char>& rawData( void ) const;
 
-    const kvs::ValueArray<kvs::UInt8> pixelData( void ) const;
+    const vismodule::ValueArray<vismodule::UInt8> pixelData( void ) const;
 
     const int rawValue( const size_t index ) const;
 
@@ -187,7 +187,7 @@ public:
 
 public:
 
-    void setRawData( const kvs::ValueArray<char>& raw_data );
+    void setRawData( const vismodule::ValueArray<char>& raw_data );
 
     void changeWindow( const int level, const int width );
 
@@ -223,9 +223,9 @@ private:
     void set_min_max_raw_value( void );
 
     template <typename T>
-    const kvs::ValueArray<kvs::UInt8> rescale_pixel_data( const int level, const int width ) const;
+    const vismodule::ValueArray<vismodule::UInt8> rescale_pixel_data( const int level, const int width ) const;
 
-    const kvs::ValueArray<kvs::UInt8> get_pixel_data( const int level, const int width ) const;
+    const vismodule::ValueArray<vismodule::UInt8> get_pixel_data( const int level, const int width ) const;
 
     void parse_element( dcm::Element& element );
 
@@ -236,6 +236,6 @@ public:
     static const bool CheckFileFormat( const std::string& filename );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__DICOM_H_INCLUDE
+#endif // VIS_MODULE__DICOM_H_INCLUDE

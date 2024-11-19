@@ -12,19 +12,19 @@
  *  $Id: EventListener.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__EVENT_LISTENER_H_INCLUDE
-#define KVS__EVENT_LISTENER_H_INCLUDE
+#ifndef VIS_MODULE__EVENT_LISTENER_H_INCLUDE
+#define VIS_MODULE__EVENT_LISTENER_H_INCLUDE
 
-#include <kvs/ScreenBase>
-#include <kvs/EventBase>
-#include <kvs/MouseEvent>
-#include <kvs/KeyEvent>
-#include <kvs/WheelEvent>
-#include <kvs/TimeEvent>
-#include <kvs/ClassName>
+#include <vismodule/ScreenBase>
+#include <vismodule/EventBase>
+#include <vismodule/MouseEvent>
+#include <vismodule/KeyEvent>
+#include <vismodule/WheelEvent>
+#include <vismodule/TimeEvent>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -34,12 +34,12 @@ namespace kvs
 /*===========================================================================*/
 class EventListener
 {
-    kvsClassName( kvs::EventListener );
+    visModuleClassName( vismodule::EventListener );
 
 private:
 
     int              m_event_type; ///< event type
-    kvs::ScreenBase* m_screen;     ///< pointer to the screen
+    vismodule::ScreenBase* m_screen;     ///< pointer to the screen
 
 public:
 
@@ -49,17 +49,17 @@ public:
 
 public:
 
-    virtual void onEvent( kvs::EventBase* event = 0 );
+    virtual void onEvent( vismodule::EventBase* event = 0 );
 
 public:
 
     const int eventType( void ) const;
 
-    kvs::ScreenBase* screen( void );
+    vismodule::ScreenBase* screen( void );
 
     void setEventType( int event_type );
 
-    void setScreen( kvs::ScreenBase* screen );
+    void setScreen( vismodule::ScreenBase* screen );
 
 public:
 
@@ -67,21 +67,21 @@ public:
 
     virtual void resizeEvent( int width, int height );
 
-    virtual void mousePressEvent( kvs::MouseEvent* event );
+    virtual void mousePressEvent( vismodule::MouseEvent* event );
 
-    virtual void mouseMoveEvent( kvs::MouseEvent* event );
+    virtual void mouseMoveEvent( vismodule::MouseEvent* event );
 
-    virtual void mouseReleaseEvent( kvs::MouseEvent* event );
+    virtual void mouseReleaseEvent( vismodule::MouseEvent* event );
 
-    virtual void mouseDoubleClickEvent( kvs::MouseEvent* event );
+    virtual void mouseDoubleClickEvent( vismodule::MouseEvent* event );
 
-    virtual void wheelEvent( kvs::WheelEvent* event );
+    virtual void wheelEvent( vismodule::WheelEvent* event );
 
-    virtual void keyPressEvent( kvs::KeyEvent* event );
+    virtual void keyPressEvent( vismodule::KeyEvent* event );
 
-    virtual void timerEvent( kvs::TimeEvent* event );
+    virtual void timerEvent( vismodule::TimeEvent* event );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__EVENT_LISTENER_H_INCLUDE
+#endif // VIS_MODULE__EVENT_LISTENER_H_INCLUDE

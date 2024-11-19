@@ -14,7 +14,7 @@
 #ifndef PBVR__MACRO_H_INCLUDE
 #define PBVR__MACRO_H_INCLUDE
 
-#include <kvs/Compiler>
+#include <vismodule/Compiler>
 
 #define PBVR_MACRO_FILE __FILE__
 
@@ -24,17 +24,17 @@
 
 #define PBVR_MACRO_TIME __TIME__
 
-#if defined ( KVS_COMPILER_VC )
+#if defined ( VIS_MODULE_COMPILER_VC )
 #if PBVR_COMPILER_VERSION_LESS_THAN( 7, 0 )
 #define PBVR_MACRO_FUNC "unknown"
 #else
 #define PBVR_MACRO_FUNC __FUNCSIG__
 #endif
-#elif defined ( KVS_COMPILER_GCC )
+#elif defined ( VIS_MODULE_COMPILER_GCC )
 #define PBVR_MACRO_FUNC __PRETTY_FUNCTION__
 #else
 //#define PBVR_MACRO_FUNC __func__
 #define PBVR_MACRO_FUNC "unknown"
 #endif
 
-#endif // KVS__MACRO_H_INCLUDE
+#endif // VIS_MODULE__MACRO_H_INCLUDE

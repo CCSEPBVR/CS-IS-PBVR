@@ -14,7 +14,7 @@
 #include "Mouse.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 int   Mouse::SpinTime       = 10;
@@ -57,13 +57,13 @@ Mouse::~Mouse( void )
 /*==========================================================================*/
 void Mouse::reset( void )
 {
-    kvs::Trackball::reset();
-    m_mode         = kvs::Mouse::Rotation;
-    m_scaling_type = kvs::Trackball::ScalingXYZ;
-    m_old          = kvs::Vector2i(0,0);
-    m_new          = kvs::Vector2i(0,0);
-    m_start        = kvs::Vector2i(0,0);
-    m_stop         = kvs::Vector2i(0,0);
+    vismodule::Trackball::reset();
+    m_mode         = vismodule::Mouse::Rotation;
+    m_scaling_type = vismodule::Trackball::ScalingXYZ;
+    m_old          = vismodule::Vector2i(0,0);
+    m_new          = vismodule::Vector2i(0,0);
+    m_start        = vismodule::Vector2i(0,0);
+    m_stop         = vismodule::Vector2i(0,0);
     m_is_auto      = false;
     m_is_slow      = false;
 }
@@ -77,9 +77,9 @@ void Mouse::reset( void )
 /*==========================================================================*/
 void Mouse::press( const int x, const int y )
 {
-    m_old   = kvs::Vector2i( x, y );
-    m_new   = kvs::Vector2i( x, y );
-    m_start = kvs::Vector2i( x, y );
+    m_old   = vismodule::Vector2i( x, y );
+    m_new   = vismodule::Vector2i( x, y );
+    m_start = vismodule::Vector2i( x, y );
 
     m_timer.start();
     m_is_auto = false;
@@ -95,7 +95,7 @@ void Mouse::press( const int x, const int y )
 /*==========================================================================*/
 void Mouse::move( const int x, const int y )
 {
-    m_new = kvs::Vector2i( x, y );
+    m_new = vismodule::Vector2i( x, y );
 
     switch( m_mode )
     {
@@ -124,7 +124,7 @@ void Mouse::move( const int x, const int y )
 /*==========================================================================*/
 void Mouse::wheel( const float value )
 {
-    kvs::Vector3f scale( 1.0 );
+    vismodule::Vector3f scale( 1.0 );
 
     switch( scalingType() )
     {
@@ -153,7 +153,7 @@ void Mouse::wheel( const float value )
 void Mouse::release( const int x, const int y )
 {
     m_timer.stop();
-    m_stop = kvs::Vector2i( x, y );
+    m_stop = vismodule::Vector2i( x, y );
 
     const double threshould_time    = 500.0;
     const double tolerance_auto_len = 2.0;
@@ -198,7 +198,7 @@ bool Mouse::idle( void )
                     BaseClass::m_scaling *= big_scale;
                     if( BaseClass::m_scaling.x() > 1.0f )
                     {
-                        BaseClass::m_scaling = kvs::Vector3f( 1.0f );
+                        BaseClass::m_scaling = vismodule::Vector3f( 1.0f );
                         m_is_slow = false;
                     }
                 }
@@ -207,7 +207,7 @@ bool Mouse::idle( void )
                     BaseClass::m_scaling *= small_scale;
                     if( BaseClass::m_scaling.x() < 1.0f )
                     {
-                        BaseClass::m_scaling = kvs::Vector3f( 1.0f );
+                        BaseClass::m_scaling = vismodule::Vector3f( 1.0f );
                         m_is_slow = false;
                     }
                 }
@@ -382,7 +382,7 @@ bool Mouse::idle( void )
             BaseClass::m_translation *= 0.9f;
             if( BaseClass::m_translation.length() < 0.001 )
             {
-                BaseClass::m_translation = kvs::Vector3f( 0.0f );
+                BaseClass::m_translation = vismodule::Vector3f( 0.0f );
                 m_is_slow = false;
             };
             break;
@@ -498,4 +498,4 @@ bool Mouse::isSlow( void )
     return( m_is_slow );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

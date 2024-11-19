@@ -11,18 +11,18 @@
  *  $Id: StringList.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__STRING_LIST_H_INCLUDE
-#define KVS__STRING_LIST_H_INCLUDE
+#ifndef VIS_MODULE__STRING_LIST_H_INCLUDE
+#define VIS_MODULE__STRING_LIST_H_INCLUDE
 
 #include <vector>
-#include <kvs/String>
+#include <vismodule/String>
 
 
-namespace kvs
+namespace vismodule
 {
 
-typedef std::vector<kvs::String> StringList;
+typedef std::vector<vismodule::String> StringList;
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__STRING_LIST_H_INCLUDE
+#endif // VIS_MODULE__STRING_LIST_H_INCLUDE

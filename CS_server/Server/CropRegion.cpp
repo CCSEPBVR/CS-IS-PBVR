@@ -58,7 +58,7 @@ bool CropRegion::isEnabled() const
     return m_enabled;
 }
 
-bool CropRegion::isInner( const kvs::Vector3f& coord ) const
+bool CropRegion::isInner( const vismodule::Vector3f& coord ) const
 {
     const float cx = coord.x();
     const float cy = coord.y();

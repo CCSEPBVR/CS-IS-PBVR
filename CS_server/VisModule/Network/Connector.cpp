@@ -13,10 +13,10 @@
  */
 /*****************************************************************************/
 #include "Connector.h"
-#include <kvs/DebugNew>
-#include <kvs/Message>
+#include <vismodule/DebugNew>
+#include <vismodule/Message>
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -27,7 +27,7 @@ namespace kvs
 Connector::Connector( void )
 {
     if ( this->create_handler() ) this->open();
-    else kvsMessageError("Cannot create handler.");
+    else visModuleMessageError("Cannot create handler.");
 }
 
 /*===========================================================================*/
@@ -36,7 +36,7 @@ Connector::Connector( void )
  *  @param  handler [in] pointer to the socket
  */
 /*===========================================================================*/
-Connector::Connector( kvs::TCPSocket* handler ):
+Connector::Connector( vismodule::TCPSocket* handler ):
     m_handler( handler )
 {
 }
@@ -49,7 +49,7 @@ Connector::Connector( kvs::TCPSocket* handler ):
  *  @param  ntrials [in] number of trials
  */
 /*===========================================================================*/
-Connector::Connector( const kvs::IPAddress& ip, const int port, const size_t ntrials )
+Connector::Connector( const vismodule::IPAddress& ip, const int port, const size_t ntrials )
 {
     if ( this->create_handler() )
     {
@@ -60,7 +60,7 @@ Connector::Connector( const kvs::IPAddress& ip, const int port, const size_t ntr
     }
     else
     {
-        kvsMessageError("Cannot create handler.");
+        visModuleMessageError("Cannot create handler.");
     }
 }
 
@@ -86,7 +86,7 @@ const bool Connector::open( void )
     m_handler->open();
     if ( !m_handler->isOpen() )
     {
-        kvsMessageError("Cannot open socket for connector.");
+        visModuleMessageError("Cannot open socket for connector.");
         return( false );
     }
 
@@ -112,7 +112,7 @@ void Connector::close( void )
  *  @return true if the proce is done successfully
  */
 /*===========================================================================*/
-const bool Connector::connect( const kvs::IPAddress& ip, const int port, const size_t ntrials )
+const bool Connector::connect( const vismodule::IPAddress& ip, const int port, const size_t ntrials )
 {
     m_ip      = ip;
     m_port    = port;
@@ -157,7 +157,7 @@ const bool Connector::reconnect( void )
  *  @param  block [in] message block
  */
 /*===========================================================================*/
-void Connector::send( const kvs::MessageBlock& block )
+void Connector::send( const vismodule::MessageBlock& block )
 {
     m_handler->send( block );
 }
@@ -170,7 +170,7 @@ void Connector::send( const kvs::MessageBlock& block )
 /*===========================================================================*/
 const bool Connector::create_handler( void )
 {
-    m_handler = new kvs::TCPSocket();
+    m_handler = new vismodule::TCPSocket();
 
     return( m_handler != NULL );
 }
@@ -185,4 +185,4 @@ void Connector::delete_handler( void )
     if ( m_handler ) delete m_handler;
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

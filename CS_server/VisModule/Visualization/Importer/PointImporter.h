@@ -11,17 +11,17 @@
  *  $Id: PointImporter.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__POINT_IMPORTER_H_INCLUDE
-#define KVS__POINT_IMPORTER_H_INCLUDE
+#ifndef VIS_MODULE__POINT_IMPORTER_H_INCLUDE
+#define VIS_MODULE__POINT_IMPORTER_H_INCLUDE
 
 #include "ImporterBase.h"
-#include <kvs/ClassName>
-#include <kvs/Module>
-#include <kvs/PointObject>
-#include <kvs/KVSMLObjectPoint>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
+#include <vismodule/PointObject>
+#include <vismodule/KVSMLObjectPoint>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -30,16 +30,16 @@ namespace kvs
  */
 /*==========================================================================*/
 class PointImporter
-    : public kvs::ImporterBase
-    , public kvs::PointObject
+    : public vismodule::ImporterBase
+    , public vismodule::PointObject
 {
     // Class name.
-    kvsClassName( kvs::PointImporter );
+    visModuleClassName( vismodule::PointImporter );
 
     // Module information.
-    kvsModuleCategory( Importer );
-    kvsModuleBaseClass( kvs::ImporterBase );
-    kvsModuleSuperClass( kvs::PointObject );
+    visModuleCategory( Importer );
+    visModuleBaseClass( vismodule::ImporterBase );
+    visModuleSuperClass( vismodule::PointObject );
 
 public:
 
@@ -47,21 +47,21 @@ public:
 
     PointImporter( const std::string& filename );
 
-    PointImporter( const kvs::FileFormatBase* file_format );
+    PointImporter( const vismodule::FileFormatBase* file_format );
 
     virtual ~PointImporter( void );
 
 public:
 
-    SuperClass* exec( const kvs::FileFormatBase* file_format );
+    SuperClass* exec( const vismodule::FileFormatBase* file_format );
 
 private:
 
-    void import( const kvs::KVSMLObjectPoint* kvsml );
+    void import( const vismodule::KVSMLObjectPoint* kvsml );
 
     void set_min_max_coord( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__POINT_IMPORTER_H_INCLUDE
+#endif // VIS_MODULE__POINT_IMPORTER_H_INCLUDE

@@ -12,16 +12,16 @@
  *  $Id: FrontFlow.h 865 2011-07-22 01:41:18Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__FRONT_FLOW_H_INCLUDE
-#define KVS__FRONT_FLOW_H_INCLUDE
+#ifndef VIS_MODULE__FRONT_FLOW_H_INCLUDE
+#define VIS_MODULE__FRONT_FLOW_H_INCLUDE
 
 #include "GFData.h"
 
-namespace kvs
+namespace vismodule
 {
 
 typedef GFData FrontFlow;
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__FRONT_FLOW_H_INCLUDE
+#endif // VIS_MODULE__FRONT_FLOW_H_INCLUDE

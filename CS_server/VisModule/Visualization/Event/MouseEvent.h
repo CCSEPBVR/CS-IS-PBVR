@@ -11,14 +11,14 @@
  *  $Id: MouseEvent.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MOUSE_EVENT_H_INCLUDE
-#define KVS__MOUSE_EVENT_H_INCLUDE
+#ifndef VIS_MODULE__MOUSE_EVENT_H_INCLUDE
+#define VIS_MODULE__MOUSE_EVENT_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/EventBase>
+#include <vismodule/ClassName>
+#include <vismodule/EventBase>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -26,9 +26,9 @@ namespace kvs
  *  Mouse event class.
  */
 /*==========================================================================*/
-class MouseEvent : public kvs::EventBase
+class MouseEvent : public vismodule::EventBase
 {
-    kvsClassName( kvs::MouseEvent );
+    visModuleClassName( vismodule::MouseEvent );
 
 protected:
 
@@ -82,6 +82,6 @@ public:
     virtual const int type( void ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MOUSE_EVENT_H_INCLUDE
+#endif // VIS_MODULE__MOUSE_EVENT_H_INCLUDE

@@ -12,13 +12,13 @@
  */
 /****************************************************************************/
 #include "Light.h"
-#include <kvs/OpenGL>
-#include <kvs/RGBAColor>
-#include <kvs/Vector3>
-#include <kvs/Matrix33>
+#include <vismodule/OpenGL>
+#include <vismodule/RGBAColor>
+#include <vismodule/Vector3>
+#include <vismodule/Matrix33>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -28,7 +28,7 @@ namespace kvs
  */
 /*==========================================================================*/
 Light::Light( bool collision ) :
-    kvs::XformControl( collision )
+    vismodule::XformControl( collision )
 {
     this->initialize();
 }
@@ -88,7 +88,7 @@ void Light::setPosition( const float x, const float y, const float z )
  *  @param position [in] light position
  */
 /*==========================================================================*/
-void Light::setPosition( const kvs::Vector3f& position )
+void Light::setPosition( const vismodule::Vector3f& position )
 {
     m_init_position.set( position.x(), position.y(), position.z() );
     m_position.set( position.x(), position.y(), position.z() );
@@ -113,7 +113,7 @@ void Light::setColor( const float r, const float g, const float b )
  *  @param color [in] diffuse color
  */
 /*==========================================================================*/
-void Light::setColor( const kvs::RGBAColor& color )
+void Light::setColor( const vismodule::RGBAColor& color )
 {
     m_diffuse.set( static_cast<float>(color.r()) / 255.0f,
                    static_cast<float>(color.g()) / 255.0f,
@@ -139,7 +139,7 @@ void Light::setDiffuse( const float r, const float g, const float b )
  *  @param color [in] diffuse color
  */
 /*==========================================================================*/
-void Light::setDiffuse( const kvs::RGBAColor& color )
+void Light::setDiffuse( const vismodule::RGBAColor& color )
 {
     m_diffuse.set( static_cast<float>(color.r()) / 255.0f,
                    static_cast<float>(color.g()) / 255.0f,
@@ -165,7 +165,7 @@ void Light::setAmbient( const float r, const float g, const float b )
  *  @param color [in] ambient color
  */
 /*==========================================================================*/
-void Light::setAmbient( const kvs::RGBAColor& color )
+void Light::setAmbient( const vismodule::RGBAColor& color )
 {
     m_ambient.set( static_cast<float>(color.r()) / 255.0f,
                    static_cast<float>(color.g()) / 255.0f,
@@ -191,7 +191,7 @@ void Light::setSpecular( const float r, const float g, const float b )
  *  @param color [in] specular color
  */
 /*==========================================================================*/
-void Light::setSpecular( const kvs::RGBAColor& color )
+void Light::setSpecular( const vismodule::RGBAColor& color )
 {
     m_specular.set( static_cast<float>(color.r()) / 255.0f,
                     static_cast<float>(color.g()) / 255.0f,
@@ -203,7 +203,7 @@ void Light::setSpecular( const kvs::RGBAColor& color )
  *  Get the light position.
  */
 /*==========================================================================*/
-const kvs::Vector3f& Light::position( void ) const
+const vismodule::Vector3f& Light::position( void ) const
 {
     return( m_position );
 }
@@ -213,7 +213,7 @@ const kvs::Vector3f& Light::position( void ) const
  *  Get the diffuse color of the light.
  */
 /*==========================================================================*/
-const kvs::Vector3f& Light::diffuse( void ) const
+const vismodule::Vector3f& Light::diffuse( void ) const
 {
     return( m_diffuse );
 }
@@ -223,7 +223,7 @@ const kvs::Vector3f& Light::diffuse( void ) const
  *  Get the ambient color of the light.
  */
 /*==========================================================================*/
-const kvs::Vector3f& Light::ambient( void ) const
+const vismodule::Vector3f& Light::ambient( void ) const
 {
     return( m_ambient );
 }
@@ -233,7 +233,7 @@ const kvs::Vector3f& Light::ambient( void ) const
  *  Get the specular color of the light.
  */
 /*==========================================================================*/
-const kvs::Vector3f& Light::specular( void ) const
+const vismodule::Vector3f& Light::specular( void ) const
 {
     return( m_specular );
 }
@@ -243,9 +243,9 @@ const kvs::Vector3f& Light::specular( void ) const
  *  Update the light.
  */
 /*==========================================================================*/
-void Light::update( const kvs::Camera* camera )
+void Light::update( const vismodule::Camera* camera )
 {
-    const kvs::Vector3f p = camera->projectWorldToObject( m_position );
+    const vismodule::Vector3f p = camera->projectWorldToObject( m_position );
 
     float position[] = { p.x(), p.y(), p.z(), 1.0f };
     float diffuse[]  = { m_diffuse.x(), m_diffuse.y(), m_diffuse.z(), 1.0f };
@@ -311,7 +311,7 @@ void Light::resetXform( void )
  *  @param rotation [in] rotation matrix
  */
 /*==========================================================================*/
-void Light::rotate( const kvs::Matrix33f& rotation )
+void Light::rotate( const vismodule::Matrix33f& rotation )
 {
     XformControl::rotate( rotation );
     this->update_position();
@@ -323,9 +323,9 @@ void Light::rotate( const kvs::Matrix33f& rotation )
  *  @param translation [in] translation vector
  */
 /*==========================================================================*/
-void Light::translate( const kvs::Vector3f& translation )
+void Light::translate( const vismodule::Vector3f& translation )
 {
-    kvs::XformControl::translate( translation );
+    vismodule::XformControl::translate( translation );
     this->update_position();
 }
 
@@ -335,9 +335,9 @@ void Light::translate( const kvs::Vector3f& translation )
  *  @param scaling [in] scaling vector.
  */
 /*==========================================================================*/
-void Light::scale( const kvs::Vector3f& scaling )
+void Light::scale( const vismodule::Vector3f& scaling )
 {
-    kvs::XformControl::scale( scaling );
+    vismodule::XformControl::scale( scaling );
     this->update_position();
 }
 
@@ -384,5 +384,5 @@ void Light::setModelAmbient( float ambient[4] )
     glLightModelfv( GL_LIGHT_MODEL_AMBIENT, ambient );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 

@@ -11,16 +11,16 @@
  *  $Id: ImporterBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__KVS__IMPORTER_BASE_H_INCLUDE
-#define PBVR__KVS__IMPORTER_BASE_H_INCLUDE
+#ifndef PBVR__VIS_MODULE__IMPORTER_BASE_H_INCLUDE
+#define PBVR__VIS_MODULE__IMPORTER_BASE_H_INCLUDE
 
-#include <kvs/FileFormatBase>
+#include <vismodule/FileFormatBase>
 #include "ObjectBase.h"
 #include "ClassName.h"
-#include <kvs/Module>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -30,9 +30,9 @@ namespace kvs
 /*==========================================================================*/
 class ImporterBase
 {
-    kvsClassName( kvs::ImporterBase );
+    visModuleClassName( vismodule::ImporterBase );
 
-    kvsModuleBase;
+    visModuleBase;
 
 protected:
 
@@ -46,7 +46,7 @@ public:
 
 public:
 
-    virtual pbvr::ObjectBase* exec( const kvs::FileFormatBase& file_format ) = 0;
+    virtual pbvr::ObjectBase* exec( const vismodule::FileFormatBase& file_format ) = 0;
 
 public:
 
@@ -55,6 +55,6 @@ public:
     const bool isFailure() const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__IMPORTER_BASE_H_INCLUDE
+#endif // VIS_MODULE__IMPORTER_BASE_H_INCLUDE

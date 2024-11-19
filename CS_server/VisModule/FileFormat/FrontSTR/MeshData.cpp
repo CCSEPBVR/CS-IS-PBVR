@@ -16,8 +16,8 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
-#include <kvs/Tokenizer>
-#include <kvs/Message>
+#include <vismodule/Tokenizer>
+#include <vismodule/Message>
 
 
 namespace
@@ -49,25 +49,25 @@ const size_t NumberOfNodes[15] =
  *  @return element type
  */
 /*===========================================================================*/
-const kvs::fstr::MeshData::ElementType GetElementType( const int value )
+const vismodule::fstr::MeshData::ElementType GetElementType( const int value )
 {
-    kvs::fstr::MeshData::ElementType element_type = kvs::fstr::MeshData::ElementTypeUnknown;
+    vismodule::fstr::MeshData::ElementType element_type = vismodule::fstr::MeshData::ElementTypeUnknown;
     switch ( value )
     {
-    case 111: element_type = kvs::fstr::MeshData::Line; break;
-    case 231: element_type = kvs::fstr::MeshData::Tri; break;
-    case 232: element_type = kvs::fstr::MeshData::Tri2; break;
-    case 241: element_type = kvs::fstr::MeshData::Quad; break;
-    case 242: element_type = kvs::fstr::MeshData::Quad2; break;
-    case 341: element_type = kvs::fstr::MeshData::Tet; break;
-    case 342: element_type = kvs::fstr::MeshData::Tet2; break;
-    case 351: element_type = kvs::fstr::MeshData::Penta; break;
-    case 352: element_type = kvs::fstr::MeshData::Penta2; break;
-    case 361: element_type = kvs::fstr::MeshData::Hex; break;
-    case 362: element_type = kvs::fstr::MeshData::Hex2; break;
-    case 541: element_type = kvs::fstr::MeshData::QuadInt; break;
-    case 731: element_type = kvs::fstr::MeshData::TriShell; break;
-    case 741: element_type = kvs::fstr::MeshData::QuadShell; break;
+    case 111: element_type = vismodule::fstr::MeshData::Line; break;
+    case 231: element_type = vismodule::fstr::MeshData::Tri; break;
+    case 232: element_type = vismodule::fstr::MeshData::Tri2; break;
+    case 241: element_type = vismodule::fstr::MeshData::Quad; break;
+    case 242: element_type = vismodule::fstr::MeshData::Quad2; break;
+    case 341: element_type = vismodule::fstr::MeshData::Tet; break;
+    case 342: element_type = vismodule::fstr::MeshData::Tet2; break;
+    case 351: element_type = vismodule::fstr::MeshData::Penta; break;
+    case 352: element_type = vismodule::fstr::MeshData::Penta2; break;
+    case 361: element_type = vismodule::fstr::MeshData::Hex; break;
+    case 362: element_type = vismodule::fstr::MeshData::Hex2; break;
+    case 541: element_type = vismodule::fstr::MeshData::QuadInt; break;
+    case 731: element_type = vismodule::fstr::MeshData::TriShell; break;
+    case 741: element_type = vismodule::fstr::MeshData::QuadShell; break;
     default: break;
     }
 
@@ -77,7 +77,7 @@ const kvs::fstr::MeshData::ElementType GetElementType( const int value )
 }
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace fstr
@@ -162,7 +162,7 @@ const bool MeshData::readData( const std::string& filename )
     std::ifstream ifs( filename.c_str() );
     if ( !ifs.is_open() )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
@@ -177,7 +177,7 @@ const bool MeshData::readData( const std::string& filename )
         if ( line.size() > 2 ) if ( line[0] == '!' && line[1] == '!' ) continue;
 
         // Check header.
-        kvs::Tokenizer t( line, ",\r\n");
+        vismodule::Tokenizer t( line, ",\r\n");
         header = t.token();
 
         // Reading coordinate data.
@@ -185,7 +185,7 @@ const bool MeshData::readData( const std::string& filename )
         {
             if ( !this->read_node( line, ifs ) )
             {
-                kvsMessageError("Cannot read !NODE.");
+                visModuleMessageError("Cannot read !NODE.");
                 return( false );
             }
         }
@@ -195,7 +195,7 @@ const bool MeshData::readData( const std::string& filename )
         {
             if ( !this->read_element( line, ifs ) )
             {
-                kvsMessageError("Cannot read !ELEMENT.");
+                visModuleMessageError("Cannot read !ELEMENT.");
                 return( false );
             }
         }
@@ -221,7 +221,7 @@ const bool MeshData::readDividedData( const std::string& filename )
     std::ifstream ifs( filename.c_str() );
     if ( !ifs.is_open() )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
@@ -257,16 +257,16 @@ const bool MeshData::readDividedData( const std::string& filename )
     for ( size_t i = 0; i < nnodes; i++ ) std::getline( ifs, line );
 
     // Reading index table of global coordinate.
-    kvs::ValueArray<kvs::UInt32> coords_table( nnodes );
+    vismodule::ValueArray<vismodule::UInt32> coords_table( nnodes );
     for ( size_t i = 0; i < nnodes; i++ )
     {
-        kvs::UInt32 temp = 0; ifs >> temp;
+        vismodule::UInt32 temp = 0; ifs >> temp;
         coords_table[i] = temp - 1;
     }
     std::getline( ifs, line );
 
     // Reading global coordinates data.
-    kvs::Real32* coords = m_coords.allocate( nnodes * 3 );
+    vismodule::Real32* coords = m_coords.allocate( nnodes * 3 );
     for ( size_t i = 0; i < nnodes; i++ )
     {
         std::getline( ifs, line );
@@ -275,13 +275,13 @@ const bool MeshData::readDividedData( const std::string& filename )
         std::string svalue;
 
         std::getline( line_stream, svalue, ' ' );
-        *(coords++) = static_cast<kvs::Real32>( atof( svalue.c_str() ) );
+        *(coords++) = static_cast<vismodule::Real32>( atof( svalue.c_str() ) );
 
         std::getline( line_stream, svalue, ' ' );
-        *(coords++) = static_cast<kvs::Real32>( atof( svalue.c_str() ) );
+        *(coords++) = static_cast<vismodule::Real32>( atof( svalue.c_str() ) );
 
         std::getline( line_stream, svalue, ' ' );
-        *(coords++) = static_cast<kvs::Real32>( atof( svalue.c_str() ) );
+        *(coords++) = static_cast<vismodule::Real32>( atof( svalue.c_str() ) );
     }
 
     // Skipping header (4 lines).
@@ -307,10 +307,10 @@ const bool MeshData::readDividedData( const std::string& filename )
     for ( size_t i = 0; i < ncells; i++ ) std::getline( ifs, line );
 
     // Reading global index table. (?)
-    kvs::ValueArray<kvs::UInt32> connections_table( ncells );
+    vismodule::ValueArray<vismodule::UInt32> connections_table( ncells );
     for ( size_t i = 0; i < ncells; i++ )
     {
-        kvs::UInt32 temp = 0; ifs >> temp;
+        vismodule::UInt32 temp = 0; ifs >> temp;
         connections_table[i] = temp - 1;
     }
 
@@ -338,13 +338,13 @@ const bool MeshData::readDividedData( const std::string& filename )
 
     // Reading local connections.
     const size_t nnodes_per_cell = ::NumberOfNodes[m_element_type];
-    kvs::UInt32* connections = m_connections.allocate( nnodes_per_cell * ncells );
+    vismodule::UInt32* connections = m_connections.allocate( nnodes_per_cell * ncells );
     for ( size_t i = 0; i < ncells; i++ )
     {
-        kvs::UInt32* c = connections;
+        vismodule::UInt32* c = connections;
         for ( size_t j = 0; j < nnodes_per_cell; j++ )
         {
-            kvs::UInt32 value = 0; ifs >> value;
+            vismodule::UInt32 value = 0; ifs >> value;
             *(connections++) = value - 1;
         }
 
@@ -367,7 +367,7 @@ const bool MeshData::readDividedData( const std::string& filename )
 const bool MeshData::read_node( std::string& line, std::ifstream& ifs )
 {
     size_t counter = 0;
-    std::vector<kvs::Real32> coords;
+    std::vector<vismodule::Real32> coords;
     while ( std::getline( ifs, line ) )
     {
         if ( line.size() > 2 ) if ( line[0] == '!' && line[1] != '!' ) break;
@@ -381,7 +381,7 @@ const bool MeshData::read_node( std::string& line, std::ifstream& ifs )
         // x, y, z
         while ( std::getline( line_stream, svalue, ',' ) )
         {
-            const kvs::Real32 value = static_cast<kvs::Real32>( atof( svalue.c_str() ) );
+            const vismodule::Real32 value = static_cast<vismodule::Real32>( atof( svalue.c_str() ) );
             coords.push_back( value );
         }
 
@@ -389,7 +389,7 @@ const bool MeshData::read_node( std::string& line, std::ifstream& ifs )
     }
 
     m_nnodes = counter;
-    m_coords = kvs::ValueArray<kvs::Real32>( coords );
+    m_coords = vismodule::ValueArray<vismodule::Real32>( coords );
 
     return( true );
 }
@@ -418,7 +418,7 @@ const bool MeshData::read_element( std::string& line, std::ifstream& ifs )
             // Trim whitespace.
             svalue.erase( 0, svalue.find_first_not_of(" ") );
 
-            kvs::Tokenizer t( svalue, "=");
+            vismodule::Tokenizer t( svalue, "=");
             const std::string name = t.token();
             if ( name == "TYPE" )
             {
@@ -429,7 +429,7 @@ const bool MeshData::read_element( std::string& line, std::ifstream& ifs )
     }
 
     size_t counter = 0;
-    std::vector<kvs::UInt32> connections;
+    std::vector<vismodule::UInt32> connections;
     const size_t nnodes_per_cell = ::NumberOfNodes[m_element_type];
     while ( std::getline( ifs, line ) )
     {
@@ -446,30 +446,30 @@ const bool MeshData::read_element( std::string& line, std::ifstream& ifs )
         {
             std::getline( line_stream, svalue, ',' );
 
-            const kvs::UInt32 value = static_cast<kvs::UInt32>( atoi( svalue.c_str() ) - 1 );
+            const vismodule::UInt32 value = static_cast<vismodule::UInt32>( atoi( svalue.c_str() ) - 1 );
             connections.push_back( value );
         }
 
-        // Adjust connections for KVS.
-        kvs::UInt32* c = &(connections[ nnodes_per_cell * counter ]);
+        // Adjust connections for VISMODULE.
+        vismodule::UInt32* c = &(connections[ nnodes_per_cell * counter ]);
         this->adjust_connection( c );
 
         counter++;
     }
 
     m_ncells = counter;
-    m_connections = kvs::ValueArray<kvs::UInt32>( connections );
+    m_connections = vismodule::ValueArray<vismodule::UInt32>( connections );
 
     return( true );
 }
 
 /*===========================================================================*/
 /**
- *  @brief  Adjust connection for KVS.
+ *  @brief  Adjust connection for VISMODULE.
  *  @param  connection [in] connection in FrontSTR
  */
 /*===========================================================================*/
-void MeshData::adjust_connection( kvs::UInt32* connection )
+void MeshData::adjust_connection( vismodule::UInt32* connection )
 {
     switch ( m_element_type )
     {
@@ -484,20 +484,20 @@ void MeshData::adjust_connection( kvs::UInt32* connection )
     case TriShell:
     case QuadShell:
     {
-        // Not supported in KVS.
+        // Not supported in VISMODULE.
         break;
     }
     case Tet:
     {
         // FSTR: 0 1 2 3
-        // KVS:  0 3 2 1
+        // VISMODULE:  0 3 2 1
         std::swap( connection[1], connection[3] );
         break;
     }
     case Tet2:
     {
         // FSTR: 0 1 2 3 4 5 6 7 8 9
-        // KVS:  0 1 2 3 7 5 4 6 9 8
+        // VISMODULE:  0 1 2 3 7 5 4 6 9 8
         std::swap( connection[4], connection[6] );
         std::swap( connection[6], connection[7] );
         std::swap( connection[8], connection[9] );
@@ -506,7 +506,7 @@ void MeshData::adjust_connection( kvs::UInt32* connection )
     case Hex:
     {
         // FSTR: 0 1 2 3 4 5 6 7
-        // KVS:  4 5 6 7 0 1 2 3
+        // VISMODULE:  4 5 6 7 0 1 2 3
         std::swap( connection[0], connection[4] );
         std::swap( connection[1], connection[5] );
         std::swap( connection[2], connection[6] );
@@ -516,7 +516,7 @@ void MeshData::adjust_connection( kvs::UInt32* connection )
     case Hex2:
     {
         // FSTR: 0 1 2 3 4 5 6 7  8  9 10 11 12 13 14 15 16 17 18 19
-        // KVS:  4 5 6 7 0 1 2 3 12 13 14 15  8  9 10 11 16 17 18 19
+        // VISMODULE:  4 5 6 7 0 1 2 3 12 13 14 15  8  9 10 11 16 17 18 19
         std::swap( connection[0],  connection[4] );
         std::swap( connection[1],  connection[5] );
         std::swap( connection[2],  connection[6] );
@@ -533,4 +533,4 @@ void MeshData::adjust_connection( kvs::UInt32* connection )
 
 } // end of namespace fstr
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -13,9 +13,9 @@
  */
 /*****************************************************************************/
 #include "CellAdjacencyGraph.h"
-#include <kvs/UnstructuredVolumeObject>
-#include <kvs/Message>
-#include <kvs/Assert>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/Message>
+#include <vismodule/Assert>
 #include <map>
 #include <algorithm>
 
@@ -32,32 +32,32 @@ class Face
 {
 private:
 
-    kvs::UInt32 m_id[5]; ///< node ID x 3, cell ID, face ID
+    vismodule::UInt32 m_id[5]; ///< node ID x 3, cell ID, face ID
 
 public:
 
     Face(
-        const kvs::UInt32 node_id0,
-        const kvs::UInt32 node_id1,
-        const kvs::UInt32 node_id2,
-        const kvs::UInt32 cell_id,
-        const kvs::UInt32 face_id );
+        const vismodule::UInt32 node_id0,
+        const vismodule::UInt32 node_id1,
+        const vismodule::UInt32 node_id2,
+        const vismodule::UInt32 cell_id,
+        const vismodule::UInt32 face_id );
 
     Face(
-        const kvs::UInt32 node_id0,
-        const kvs::UInt32 node_id1,
-        const kvs::UInt32 node_id2,
-        const kvs::UInt32 node_id3,
-        const kvs::UInt32 cell_id,
-        const kvs::UInt32 face_id );
+        const vismodule::UInt32 node_id0,
+        const vismodule::UInt32 node_id1,
+        const vismodule::UInt32 node_id2,
+        const vismodule::UInt32 node_id3,
+        const vismodule::UInt32 cell_id,
+        const vismodule::UInt32 face_id );
 
 public:
 
-    const kvs::UInt32 nodeID( const size_t index ) const;
+    const vismodule::UInt32 nodeID( const size_t index ) const;
 
-    const kvs::UInt32 cellID( void ) const;
+    const vismodule::UInt32 cellID( void ) const;
 
-    const kvs::UInt32 faceID( void ) const;
+    const vismodule::UInt32 faceID( void ) const;
 
     friend const bool operator == ( const Face& f0, const Face& f1 );
 };
@@ -73,11 +73,11 @@ public:
  */
 /*===========================================================================*/
 inline Face::Face(
-    const kvs::UInt32 node_id0,
-    const kvs::UInt32 node_id1,
-    const kvs::UInt32 node_id2,
-    const kvs::UInt32 cell_id,
-    const kvs::UInt32 face_id )
+    const vismodule::UInt32 node_id0,
+    const vismodule::UInt32 node_id1,
+    const vismodule::UInt32 node_id2,
+    const vismodule::UInt32 cell_id,
+    const vismodule::UInt32 face_id )
 {
     m_id[0] = node_id0;
     m_id[1] = node_id1;
@@ -98,14 +98,14 @@ inline Face::Face(
  */
 /*===========================================================================*/
 inline Face::Face(
-    const kvs::UInt32 node_id0,
-    const kvs::UInt32 node_id1,
-    const kvs::UInt32 node_id2,
-    const kvs::UInt32 node_id3,
-    const kvs::UInt32 cell_id,
-    const kvs::UInt32 face_id )
+    const vismodule::UInt32 node_id0,
+    const vismodule::UInt32 node_id1,
+    const vismodule::UInt32 node_id2,
+    const vismodule::UInt32 node_id3,
+    const vismodule::UInt32 cell_id,
+    const vismodule::UInt32 face_id )
 {
-    kvs::UInt32 id[4] = { node_id0, node_id1, node_id2, node_id3 };
+    vismodule::UInt32 id[4] = { node_id0, node_id1, node_id2, node_id3 };
     std::sort( id, id + 4 );
 
     m_id[0] = id[0];
@@ -122,9 +122,9 @@ inline Face::Face(
  *  @return node ID
  */
 /*===========================================================================*/
-inline const kvs::UInt32 Face::nodeID( const size_t index ) const
+inline const vismodule::UInt32 Face::nodeID( const size_t index ) const
 {
-    KVS_ASSERT( index < 3 );
+    VIS_MODULE_ASSERT( index < 3 );
 
     return( m_id[ index ] );
 }
@@ -135,7 +135,7 @@ inline const kvs::UInt32 Face::nodeID( const size_t index ) const
  *  @return cell ID
  */
 /*===========================================================================*/
-inline const kvs::UInt32 Face::cellID( void ) const
+inline const vismodule::UInt32 Face::cellID( void ) const
 {
     return( m_id[3] );
 }
@@ -146,7 +146,7 @@ inline const kvs::UInt32 Face::cellID( void ) const
  *  @return face ID
  */
 /*===========================================================================*/
-inline const kvs::UInt32 Face::faceID( void ) const
+inline const vismodule::UInt32 Face::faceID( void ) const
 {
     return( m_id[4] );
 }
@@ -174,16 +174,16 @@ inline const bool operator == ( const Face& f0, const Face& f1 )
     return( true );
 }
 
-typedef std::multimap<kvs::UInt32,Face> FaceMap;
+typedef std::multimap<vismodule::UInt32,Face> FaceMap;
 
-const kvs::UInt32 TetrahedralCellFaces[12] = {
+const vismodule::UInt32 TetrahedralCellFaces[12] = {
     0, 1, 2, // face 0
     0, 2, 3, // face 1
     0, 3, 1, // face 2
     1, 3, 2  // face 3
 };
 
-const kvs::UInt32 HexahedralCellFaces[24] = {
+const vismodule::UInt32 HexahedralCellFaces[24] = {
     0, 1, 2, 3, // face 0
     7, 6, 5, 4, // face 1
     0, 4, 5, 1, // face 2
@@ -195,7 +195,7 @@ const kvs::UInt32 HexahedralCellFaces[24] = {
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -204,7 +204,7 @@ namespace kvs
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*===========================================================================*/
-CellAdjacencyGraph::CellAdjacencyGraph( const kvs::UnstructuredVolumeObject* volume )
+CellAdjacencyGraph::CellAdjacencyGraph( const vismodule::UnstructuredVolumeObject* volume )
 {
     this->create( volume );
 }
@@ -224,18 +224,18 @@ CellAdjacencyGraph::~CellAdjacencyGraph( void )
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*===========================================================================*/
-void CellAdjacencyGraph::create( const kvs::UnstructuredVolumeObject* volume )
+void CellAdjacencyGraph::create( const vismodule::UnstructuredVolumeObject* volume )
 {
-    const kvs::UnstructuredVolumeObject::CellType cell_type = volume->cellType();
+    const vismodule::UnstructuredVolumeObject::CellType cell_type = volume->cellType();
     switch ( cell_type )
     {
-    case kvs::UnstructuredVolumeObject::Tetrahedra:
-    case kvs::UnstructuredVolumeObject::QuadraticTetrahedra:
+    case vismodule::UnstructuredVolumeObject::Tetrahedra:
+    case vismodule::UnstructuredVolumeObject::QuadraticTetrahedra:
         this->create_for_tetrahedral_cell( volume );
         this->set_external_face_number();
         break;
-    case kvs::UnstructuredVolumeObject::Hexahedra:
-    case kvs::UnstructuredVolumeObject::QuadraticHexahedra:
+    case vismodule::UnstructuredVolumeObject::Hexahedra:
+    case vismodule::UnstructuredVolumeObject::QuadraticHexahedra:
         this->create_for_hexahedral_cell( volume );
         this->set_external_face_number();
         break;
@@ -250,7 +250,7 @@ void CellAdjacencyGraph::create( const kvs::UnstructuredVolumeObject* volume )
  *  @return adjacency graph
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt32>& CellAdjacencyGraph::graph( void ) const
+const vismodule::ValueArray<vismodule::UInt32>& CellAdjacencyGraph::graph( void ) const
 {
     return( m_graph );
 }
@@ -261,7 +261,7 @@ const kvs::ValueArray<kvs::UInt32>& CellAdjacencyGraph::graph( void ) const
  *  @return mask for the external faces
  */
 /*===========================================================================*/
-const kvs::BitArray& CellAdjacencyGraph::mask( void ) const
+const vismodule::BitArray& CellAdjacencyGraph::mask( void ) const
 {
     return( m_mask );
 }
@@ -272,23 +272,23 @@ const kvs::BitArray& CellAdjacencyGraph::mask( void ) const
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*===========================================================================*/
-void CellAdjacencyGraph::create_for_tetrahedral_cell( const kvs::UnstructuredVolumeObject* volume )
+void CellAdjacencyGraph::create_for_tetrahedral_cell( const vismodule::UnstructuredVolumeObject* volume )
 {
-    const kvs::UInt32* const connections = volume->connections().pointer();
+    const vismodule::UInt32* const connections = volume->connections().pointer();
     const size_t nnodes = volume->nnodes();
     const size_t ncells = volume->ncells();
     const size_t nnodes_per_cell = static_cast<size_t>( volume->cellType() );
 
     if ( !m_graph.allocate( ncells * 4 ) )
     {
-        kvsMessageError("Cannot allocate memory for the adjacency.");
+        visModuleMessageError("Cannot allocate memory for the adjacency.");
         return;
     }
     m_graph.fill(0x00);
 
     if ( !m_mask.allocate( ncells * 4 ) )
     {
-        kvsMessageError("Cannot allocate memory for the mask.");
+        visModuleMessageError("Cannot allocate memory for the mask.");
         return;
     }
 
@@ -296,7 +296,7 @@ void CellAdjacencyGraph::create_for_tetrahedral_cell( const kvs::UnstructuredVol
     for ( size_t cell_id = 0, index = 0; cell_id < ncells; cell_id++ )
     {
         // IDs of the first-order nodes.
-        const kvs::UInt32 node[4] = {
+        const vismodule::UInt32 node[4] = {
             connections[ cell_id * nnodes_per_cell ],
             connections[ cell_id * nnodes_per_cell + 1 ],
             connections[ cell_id * nnodes_per_cell + 2 ],
@@ -305,13 +305,13 @@ void CellAdjacencyGraph::create_for_tetrahedral_cell( const kvs::UnstructuredVol
 
         for ( size_t face_id = 0; face_id < 4; face_id++, index++ )
         {
-            const kvs::UInt32 n[3] = {
+            const vismodule::UInt32 n[3] = {
                 node[ ::TetrahedralCellFaces[ face_id * 3 ] ],
                 node[ ::TetrahedralCellFaces[ face_id * 3 + 1 ] ],
                 node[ ::TetrahedralCellFaces[ face_id * 3 + 2 ] ]
             };
 
-            const kvs::UInt32 key( ( n[0] + n[1] + n[2] ) % nnodes );
+            const vismodule::UInt32 key( ( n[0] + n[1] + n[2] ) % nnodes );
             const ::Face value( n[0], n[1], n[2], cell_id, face_id );
 
             // Search.
@@ -347,23 +347,23 @@ void CellAdjacencyGraph::create_for_tetrahedral_cell( const kvs::UnstructuredVol
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*===========================================================================*/
-void CellAdjacencyGraph::create_for_hexahedral_cell( const kvs::UnstructuredVolumeObject* volume )
+void CellAdjacencyGraph::create_for_hexahedral_cell( const vismodule::UnstructuredVolumeObject* volume )
 {
-    const kvs::UInt32* const connections = volume->connections().pointer();
+    const vismodule::UInt32* const connections = volume->connections().pointer();
     const size_t nnodes = volume->nnodes();
     const size_t ncells = volume->ncells();
     const size_t nnodes_per_cell = static_cast<size_t>( volume->cellType() );
 
     if ( !m_graph.allocate( ncells * 6 ) )
     {
-        kvsMessageError("Cannot allocate memory for the adjacency.");
+        visModuleMessageError("Cannot allocate memory for the adjacency.");
         return;
     }
     m_graph.fill(0x00);
 
     if ( !m_mask.allocate( ncells * 6 ) )
     {
-        kvsMessageError("Cannot allocate memory for the mask.");
+        visModuleMessageError("Cannot allocate memory for the mask.");
         return;
     }
 
@@ -371,7 +371,7 @@ void CellAdjacencyGraph::create_for_hexahedral_cell( const kvs::UnstructuredVolu
     for ( size_t cell_id = 0, index = 0; cell_id < ncells; cell_id++ )
     {
         // IDs of the first-order nodes.
-        const kvs::UInt32 node[8] = {
+        const vismodule::UInt32 node[8] = {
             connections[ cell_id * nnodes_per_cell ],
             connections[ cell_id * nnodes_per_cell + 1 ],
             connections[ cell_id * nnodes_per_cell + 2 ],
@@ -384,14 +384,14 @@ void CellAdjacencyGraph::create_for_hexahedral_cell( const kvs::UnstructuredVolu
 
         for ( size_t face_id = 0; face_id < 6; face_id++, index++ )
         {
-            const kvs::UInt32 n[4] = {
+            const vismodule::UInt32 n[4] = {
                 node[ ::HexahedralCellFaces[ face_id * 4 ] ],
                 node[ ::HexahedralCellFaces[ face_id * 4 + 1 ] ],
                 node[ ::HexahedralCellFaces[ face_id * 4 + 2 ] ],
                 node[ ::HexahedralCellFaces[ face_id * 4 + 3 ] ]
             };
 
-            const kvs::UInt32 key( ( n[0] + n[1] + n[2] + n[3] ) % nnodes );
+            const vismodule::UInt32 key( ( n[0] + n[1] + n[2] + n[3] ) % nnodes );
             const ::Face value( n[0], n[1], n[2], n[3], cell_id, face_id );
 
             // Search.
@@ -435,4 +435,4 @@ void CellAdjacencyGraph::set_external_face_number( void )
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

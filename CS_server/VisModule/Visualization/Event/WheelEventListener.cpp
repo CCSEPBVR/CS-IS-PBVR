@@ -15,7 +15,7 @@
 #include "WheelEventListener.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -25,7 +25,7 @@ namespace kvs
 /*===========================================================================*/
 WheelEventListener::WheelEventListener( void )
 {
-    kvs::EventListener::setEventType( kvs::EventBase::WheelEvent );
+    vismodule::EventListener::setEventType( vismodule::EventBase::WheelEvent );
 }
 
 /*===========================================================================*/
@@ -43,9 +43,9 @@ WheelEventListener::~WheelEventListener( void )
  *  @param  event [in] pointer to the event
  */
 /*===========================================================================*/
-void WheelEventListener::onEvent( kvs::EventBase* event )
+void WheelEventListener::onEvent( vismodule::EventBase* event )
 {
-    this->update( static_cast<kvs::WheelEvent*>(event) );
+    this->update( static_cast<vismodule::WheelEvent*>(event) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

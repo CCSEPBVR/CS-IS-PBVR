@@ -12,7 +12,7 @@
  */
 /*****************************************************************************/
 #include "Stl.h"
-#include <kvs/File>
+#include <vismodule/File>
 
 
 namespace
@@ -65,7 +65,7 @@ const bool IsAsciiType( FILE* ifs )
 
 } // end of namespace
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -117,7 +117,7 @@ const Stl::FileType Stl::fileType( void ) const
  *  @return noraml vector array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& Stl::normals( void ) const
+const vismodule::ValueArray<vismodule::Real32>& Stl::normals( void ) const
 {
     return( m_normals );
 }
@@ -128,7 +128,7 @@ const kvs::ValueArray<kvs::Real32>& Stl::normals( void ) const
  *  @return coodinate value array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& Stl::coords( void ) const
+const vismodule::ValueArray<vismodule::Real32>& Stl::coords( void ) const
 {
     return( m_coords );
 }
@@ -147,7 +147,7 @@ const size_t Stl::ntriangles( void ) const
 /*===========================================================================*/
 /**
  *  @brief  Sets file type.
- *  @param  file_type [in] file type (kvs::Stl::Ascii or kvs::Stl::Binary)
+ *  @param  file_type [in] file type (vismodule::Stl::Ascii or vismodule::Stl::Binary)
  */
 /*===========================================================================*/
 void Stl::setFileType( const FileType file_type )
@@ -161,7 +161,7 @@ void Stl::setFileType( const FileType file_type )
  *  @param  normals [in] normal vector array
  */
 /*===========================================================================*/
-void Stl::setNormals( const kvs::ValueArray<kvs::Real32>& normals )
+void Stl::setNormals( const vismodule::ValueArray<vismodule::Real32>& normals )
 {
     m_normals = normals;
 }
@@ -172,7 +172,7 @@ void Stl::setNormals( const kvs::ValueArray<kvs::Real32>& normals )
  *  @param  coords [in] coordinate vector array
  */
 /*===========================================================================*/
-void Stl::setCoords( const kvs::ValueArray<kvs::Real32>& coords )
+void Stl::setCoords( const vismodule::ValueArray<vismodule::Real32>& coords )
 {
     m_coords = coords;
 }
@@ -191,7 +191,7 @@ const bool Stl::read( const std::string& filename )
     FILE* ifs = fopen( BaseClass::m_filename.c_str(), "r" );
     if ( !ifs )
     {
-        kvsMessageError( "Cannot open %s.", m_filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", m_filename.c_str() );
         BaseClass::m_is_success = false;
         return( BaseClass::m_is_success );
     }
@@ -228,7 +228,7 @@ const bool Stl::write( const std::string& filename )
     FILE* ofs = fopen( BaseClass::m_filename.c_str(), "w" );
     if ( !ofs )
     {
-        kvsMessageError( "Cannot open %s.", m_filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", m_filename.c_str() );
         BaseClass::m_is_success = false;
         return( BaseClass::m_is_success );
     }
@@ -313,8 +313,8 @@ const bool Stl::read_ascii( FILE* ifs )
         }
     }
 
-    std::vector<kvs::Real32> normals;
-    std::vector<kvs::Real32> coords;
+    std::vector<vismodule::Real32> normals;
+    std::vector<vismodule::Real32> coords;
     while ( fgets( buffer, ::MaxLineLength, ifs ) != 0 )
     {
         if ( buffer[0] == '\n' ) continue;
@@ -325,13 +325,13 @@ const bool Stl::read_ascii( FILE* ifs )
         if ( !strcmp( facet, "facet" ) )
         {
             strtok( 0, ::Delimiter ); // 'normal'
-            normals.push_back( static_cast<kvs::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
-            normals.push_back( static_cast<kvs::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
-            normals.push_back( static_cast<kvs::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
+            normals.push_back( static_cast<vismodule::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
+            normals.push_back( static_cast<vismodule::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
+            normals.push_back( static_cast<vismodule::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
         }
         else
         {
-            kvsMessageError("Cannot find 'facet'.");
+            visModuleMessageError("Cannot find 'facet'.");
             return( false );
         }
 
@@ -341,7 +341,7 @@ const bool Stl::read_ascii( FILE* ifs )
         const char* loop = strtok( 0, ::Delimiter );
         if ( strcmp( outer, "outer" ) || strcmp( loop, "loop" ) )
         {
-            kvsMessageError("Cannot find 'outer loop'.");
+            visModuleMessageError("Cannot find 'outer loop'.");
             return( false );
         }
 
@@ -350,13 +350,13 @@ const bool Stl::read_ascii( FILE* ifs )
         const char* vertex0 = strtok( buffer, ::Delimiter );
         if ( !strcmp( vertex0, "vertex" ) )
         {
-            coords.push_back( static_cast<kvs::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
-            coords.push_back( static_cast<kvs::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
-            coords.push_back( static_cast<kvs::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
+            coords.push_back( static_cast<vismodule::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
+            coords.push_back( static_cast<vismodule::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
+            coords.push_back( static_cast<vismodule::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
         }
         else
         {
-            kvsMessageError("Cannot find 'vertex' (0).");
+            visModuleMessageError("Cannot find 'vertex' (0).");
             return( false );
         }
 
@@ -365,13 +365,13 @@ const bool Stl::read_ascii( FILE* ifs )
         const char* vertex1 = strtok( buffer, ::Delimiter );
         if ( !strcmp( vertex1, "vertex" ) )
         {
-            coords.push_back( static_cast<kvs::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
-            coords.push_back( static_cast<kvs::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
-            coords.push_back( static_cast<kvs::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
+            coords.push_back( static_cast<vismodule::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
+            coords.push_back( static_cast<vismodule::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
+            coords.push_back( static_cast<vismodule::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
         }
         else
         {
-            kvsMessageError("Cannot find 'vertex' (1).");
+            visModuleMessageError("Cannot find 'vertex' (1).");
             return( false );
         }
 
@@ -380,13 +380,13 @@ const bool Stl::read_ascii( FILE* ifs )
         const char* vertex2 = strtok( buffer, ::Delimiter );
         if ( !strcmp( vertex2, "vertex" ) )
         {
-            coords.push_back( static_cast<kvs::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
-            coords.push_back( static_cast<kvs::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
-            coords.push_back( static_cast<kvs::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
+            coords.push_back( static_cast<vismodule::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
+            coords.push_back( static_cast<vismodule::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
+            coords.push_back( static_cast<vismodule::Real32>( atof( strtok( 0, ::Delimiter ) ) ) );
         }
         else
         {
-            kvsMessageError("Cannot find 'vertex' (2).");
+            visModuleMessageError("Cannot find 'vertex' (2).");
             return( false );
         }
 
@@ -395,7 +395,7 @@ const bool Stl::read_ascii( FILE* ifs )
         const char* endloop = strtok( buffer, ::Delimiter );
         if ( strcmp( endloop, "endloop" ) )
         {
-            kvsMessageError("Cannot find 'endloop'.");
+            visModuleMessageError("Cannot find 'endloop'.");
             return( false );
         }
 
@@ -404,13 +404,13 @@ const bool Stl::read_ascii( FILE* ifs )
         const char* endfacet = strtok( buffer, ::Delimiter );
         if ( strcmp( endfacet, "endfacet" ) )
         {
-            kvsMessageError("Cannot find 'endfacet'.");
+            visModuleMessageError("Cannot find 'endfacet'.");
             return( false );
         }
     }
 
-    m_normals = kvs::ValueArray<kvs::Real32>( normals );
-    m_coords = kvs::ValueArray<kvs::Real32>( coords );
+    m_normals = vismodule::ValueArray<vismodule::Real32>( normals );
+    m_coords = vismodule::ValueArray<vismodule::Real32>( coords );
 
     return( true );
 }
@@ -432,49 +432,49 @@ const bool Stl::read_binary( FILE* ifs )
     char buffer[ HeaderLength ];
     if ( fread( buffer, sizeof( char ), HeaderLength, ifs ) != HeaderLength )
     {
-        kvsMessageError("Cannot read a header string (80byets).");
+        visModuleMessageError("Cannot read a header string (80byets).");
         return( false );
     }
 
     // Read a number of triangles (4bytes).
-    kvs::UInt32 ntriangles = 0;
-    if ( fread( &ntriangles, sizeof( kvs::UInt32 ), 1, ifs ) != 1 )
+    vismodule::UInt32 ntriangles = 0;
+    if ( fread( &ntriangles, sizeof( vismodule::UInt32 ), 1, ifs ) != 1 )
     {
-        kvsMessageError("Cannot read a number of triangles.");
+        visModuleMessageError("Cannot read a number of triangles.");
         return( false );
     }
 
     // Memory allocation.
     if ( !m_normals.allocate( ntriangles * 3 ) )
     {
-        kvsMessageError("Cannot allocate memory for the normal vector array.");
+        visModuleMessageError("Cannot allocate memory for the normal vector array.");
         return( false );
     }
     if ( !m_coords.allocate( ntriangles * 9 ) )
     {
-        kvsMessageError("Cannot allocate memory for the coordinate value array.");
+        visModuleMessageError("Cannot allocate memory for the coordinate value array.");
         return( false );
     }
 
     // Read trianbles.
-    kvs::Real32* normals = m_normals.pointer();
-    kvs::Real32* coords = m_coords.pointer();
-    kvs::UInt32 index3 = 0;
-    kvs::UInt32 index9 = 0;
-    for ( kvs::UInt32 i = 0; i < ntriangles; i++, index3 += 3, index9 += 9 )
+    vismodule::Real32* normals = m_normals.pointer();
+    vismodule::Real32* coords = m_coords.pointer();
+    vismodule::UInt32 index3 = 0;
+    vismodule::UInt32 index9 = 0;
+    for ( vismodule::UInt32 i = 0; i < ntriangles; i++, index3 += 3, index9 += 9 )
     {
         // Normal vector (4x3=12byets)
-        if ( fread( normals + index3, sizeof( kvs::Real32 ), 3, ifs ) != 3 )
+        if ( fread( normals + index3, sizeof( vismodule::Real32 ), 3, ifs ) != 3 )
         {
-            kvsMessageError("Cannot read a normal vector.");
+            visModuleMessageError("Cannot read a normal vector.");
             m_normals.deallocate();
             return( false );
         }
 
         // Coordinate value (4x3=12bytes)
-        if ( fread( coords + index9, sizeof( kvs::Real32 ), 9, ifs ) != 9 )
+        if ( fread( coords + index9, sizeof( vismodule::Real32 ), 9, ifs ) != 9 )
         {
-            kvsMessageError("Cannot read a coordinate value.");
+            visModuleMessageError("Cannot read a coordinate value.");
             m_coords.deallocate();
             return( false );
         }
@@ -485,7 +485,7 @@ const bool Stl::read_binary( FILE* ifs )
         char unused[2];
         if ( fread( unused, sizeof( char ), 2, ifs ) != 2 )
         {
-            kvsMessageError("Cannot read unused block (2bytes).");
+            visModuleMessageError("Cannot read unused block (2bytes).");
             m_normals.deallocate();
             m_coords.deallocate();
             return( false );
@@ -504,7 +504,7 @@ const bool Stl::read_binary( FILE* ifs )
 /*===========================================================================*/
 const bool Stl::write_ascii( FILE* ofs )
 {
-    const char* header = "Generated by KVS";
+    const char* header = "Generated by VISMODULE";
     fprintf( ofs, "solid %s\n", header );
 
     const size_t ntriangles = m_normals.size() / 3;
@@ -549,39 +549,39 @@ const bool Stl::write_binary( FILE* ofs )
 {
     // Header string (80bytes).
     char header[80]; memset( header, 0, 80 );
-    sprintf( header, "Generated by KVS" );
+    sprintf( header, "Generated by VISMODULE" );
     if ( fwrite( header, sizeof( char ), 80, ofs ) != 80 )
     {
-        kvsMessageError("Cannot write a header string (80bytes).");
+        visModuleMessageError("Cannot write a header string (80bytes).");
         return( false );
     }
 
     // Number of triangles (4bytes).
-    const kvs::UInt32 ntriangles = static_cast<kvs::UInt32>( m_normals.size() / 3 );
-    if ( fwrite( &ntriangles, sizeof( kvs::UInt32 ), 1, ofs ) != 1 )
+    const vismodule::UInt32 ntriangles = static_cast<vismodule::UInt32>( m_normals.size() / 3 );
+    if ( fwrite( &ntriangles, sizeof( vismodule::UInt32 ), 1, ofs ) != 1 )
     {
-        kvsMessageError("Cannot write a number of triangles.");
+        visModuleMessageError("Cannot write a number of triangles.");
         return( false );
     }
 
     // Triangles (50*ntriangles bytes)
-    const kvs::Real32* normals = m_normals.pointer();
-    const kvs::Real32* coords = m_coords.pointer();
+    const vismodule::Real32* normals = m_normals.pointer();
+    const vismodule::Real32* coords = m_coords.pointer();
     size_t index3 = 0;
     size_t index9 = 0;
     for ( size_t i = 0; i < ntriangles; i++, index3 += 3, index9 += 9 )
     {
         // Normal vector
-        if ( fwrite( normals + index3, sizeof( kvs::Real32 ), 3, ofs ) != 3 )
+        if ( fwrite( normals + index3, sizeof( vismodule::Real32 ), 3, ofs ) != 3 )
         {
-            kvsMessageError("Cannot write a normal vector.");
+            visModuleMessageError("Cannot write a normal vector.");
             return( false );
         }
 
         // Coordinate values
-        if ( fwrite( coords + index9, sizeof( kvs::Real32 ), 9, ofs ) != 9 )
+        if ( fwrite( coords + index9, sizeof( vismodule::Real32 ), 9, ofs ) != 9 )
         {
-            kvsMessageError("Cannot write a coordinate values (3 vertices = 9 elements).");
+            visModuleMessageError("Cannot write a coordinate values (3 vertices = 9 elements).");
             return( false );
         }
 
@@ -589,7 +589,7 @@ const bool Stl::write_binary( FILE* ofs )
         const char unused[2] = {0,0};
         if ( fwrite( unused, sizeof( char ), 2, ofs ) != 2 )
         {
-            kvsMessageError("Cannot write a unused block (2byets).");
+            visModuleMessageError("Cannot write a unused block (2byets).");
             return( false );
         }
     }
@@ -607,7 +607,7 @@ std::ostream& operator << ( std::ostream& os, const Stl& stl )
 
 const bool Stl::CheckFileExtension( const std::string& filename )
 {
-    const kvs::File file( filename );
+    const vismodule::File file( filename );
     if ( file.extension() == "stl" || file.extension() == "STL" ||
          file.extension() == "stla" || file.extension() == "STLA" ||
          file.extension() == "stlb" || file.extension() == "STLB" ||
@@ -625,7 +625,7 @@ const bool Stl::CheckFileFormat( const std::string& filename )
     FILE* ifs = fopen( filename.c_str(), "rb" );
     if( !ifs )
     {
-        kvsMessageError( "Cannot open %s.", filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", filename.c_str() );
         return( false );
     }
 
@@ -635,7 +635,7 @@ const bool Stl::CheckFileFormat( const std::string& filename )
         fseek( ifs, 0, SEEK_SET );
 
         // Check binary STL
-        kvs::File file( filename );
+        vismodule::File file( filename );
         const size_t byte_size = file.byteSize();
 
         // Read header string (80bytes).
@@ -643,16 +643,16 @@ const bool Stl::CheckFileFormat( const std::string& filename )
         char buffer[ HeaderLength ];
         if ( fread( buffer, sizeof( char ), HeaderLength, ifs ) != HeaderLength )
         {
-            kvsMessageError("Cannot read a header string (80byets).");
+            visModuleMessageError("Cannot read a header string (80byets).");
             fclose( ifs );
             return( false );
         }
 
         // Read a number of triangles (4bytes).
-        kvs::UInt32 ntriangles = 0;
-        if ( fread( &ntriangles, sizeof( kvs::UInt32 ), 1, ifs ) != 1 )
+        vismodule::UInt32 ntriangles = 0;
+        if ( fread( &ntriangles, sizeof( vismodule::UInt32 ), 1, ifs ) != 1 )
         {
-            kvsMessageError("Cannot read a number of triangles.");
+            visModuleMessageError("Cannot read a number of triangles.");
             fclose( ifs );
             return( false );
         }
@@ -670,4 +670,4 @@ const bool Stl::CheckFileFormat( const std::string& filename )
     return( true );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

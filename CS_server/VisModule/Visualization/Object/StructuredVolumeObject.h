@@ -11,15 +11,15 @@
  *  $Id: StructuredVolumeObject.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__STRUCTURED_VOLUME_OBJECT_H_INCLUDE
-#define KVS__STRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#ifndef VIS_MODULE__STRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#define VIS_MODULE__STRUCTURED_VOLUME_OBJECT_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/Module>
-#include <kvs/VolumeObjectBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
+#include <vismodule/VolumeObjectBase>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -28,32 +28,32 @@ namespace kvs
  */
 /*==========================================================================*/
 class StructuredVolumeObject
-    : public kvs::VolumeObjectBase
+    : public vismodule::VolumeObjectBase
 {
     // Class name.
-    kvsClassName( kvs::StructuredVolumeObject );
+    visModuleClassName( vismodule::StructuredVolumeObject );
 
     // Module information.
-    kvsModuleCategory( Object );
-    kvsModuleBaseClass( kvs::VolumeObjectBase );
+    visModuleCategory( Object );
+    visModuleBaseClass( vismodule::VolumeObjectBase );
 
 private:
 
     GridType       m_grid_type;  ///< Grid type.
-    kvs::Vector3ui m_resolution; ///< Node resolution.
+    vismodule::Vector3ui m_resolution; ///< Node resolution.
 
 public:
 
     StructuredVolumeObject( void );
 
     StructuredVolumeObject(
-        const kvs::Vector3ui& resolution,
+        const vismodule::Vector3ui& resolution,
         const size_t          veclen,
         const Values&         values );
 
     StructuredVolumeObject(
         const GridType        grid_type,
-        const kvs::Vector3ui& resolution,
+        const vismodule::Vector3ui& resolution,
         const size_t          veclen,
         const Coords&         coords,
         const Values&         values );
@@ -64,9 +64,9 @@ public:
 
 public:
 
-    static kvs::StructuredVolumeObject* DownCast( kvs::ObjectBase* object );
+    static vismodule::StructuredVolumeObject* DownCast( vismodule::ObjectBase* object );
 
-    static const kvs::StructuredVolumeObject* DownCast( const kvs::ObjectBase* object );
+    static const vismodule::StructuredVolumeObject* DownCast( const vismodule::ObjectBase* object );
 
 public:
 
@@ -84,7 +84,7 @@ public:
 
     void setGridType( const GridType grid_type );
 
-    void setResolution( const kvs::Vector3ui& resolution );
+    void setResolution( const vismodule::Vector3ui& resolution );
 
 public:
 
@@ -94,7 +94,7 @@ public:
 
     const CellType cellType( void ) const;
 
-    const kvs::Vector3ui& resolution( void ) const;
+    const vismodule::Vector3ui& resolution( void ) const;
 
     const size_t nnodesPerLine( void ) const;
 
@@ -111,6 +111,6 @@ private:
     void calculate_min_max_coords( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__STRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#endif // VIS_MODULE__STRUCTURED_VOLUME_OBJECT_H_INCLUDE

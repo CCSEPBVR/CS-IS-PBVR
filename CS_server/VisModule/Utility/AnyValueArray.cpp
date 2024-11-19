@@ -14,7 +14,7 @@
 #include "AnyValueArray.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 AnyValueArray::AnyValueArray( void )
@@ -43,136 +43,136 @@ AnyValueArray::~AnyValueArray( void )
 }
 
 
-template<> AnyValueArray::AnyValueArray( const kvs::Int8* values, const size_t nvalues );
-template<> AnyValueArray::AnyValueArray( const kvs::UInt8* values, const size_t nvalues );
-template<> AnyValueArray::AnyValueArray( const kvs::Int16* values, const size_t nvalues );
-template<> AnyValueArray::AnyValueArray( const kvs::UInt16* values, const size_t nvalues );
-template<> AnyValueArray::AnyValueArray( const kvs::Int32* values, const size_t nvalues );
-template<> AnyValueArray::AnyValueArray( const kvs::UInt32* values, const size_t nvalues );
-template<> AnyValueArray::AnyValueArray( const kvs::Int64* values, const size_t nvalues );
-template<> AnyValueArray::AnyValueArray( const kvs::UInt64* values, const size_t nvalues );
-template<> AnyValueArray::AnyValueArray( const kvs::Real32* values, const size_t nvalues );
-template<> AnyValueArray::AnyValueArray( const kvs::Real64* values, const size_t nvalues );
+template<> AnyValueArray::AnyValueArray( const vismodule::Int8* values, const size_t nvalues );
+template<> AnyValueArray::AnyValueArray( const vismodule::UInt8* values, const size_t nvalues );
+template<> AnyValueArray::AnyValueArray( const vismodule::Int16* values, const size_t nvalues );
+template<> AnyValueArray::AnyValueArray( const vismodule::UInt16* values, const size_t nvalues );
+template<> AnyValueArray::AnyValueArray( const vismodule::Int32* values, const size_t nvalues );
+template<> AnyValueArray::AnyValueArray( const vismodule::UInt32* values, const size_t nvalues );
+template<> AnyValueArray::AnyValueArray( const vismodule::Int64* values, const size_t nvalues );
+template<> AnyValueArray::AnyValueArray( const vismodule::UInt64* values, const size_t nvalues );
+template<> AnyValueArray::AnyValueArray( const vismodule::Real32* values, const size_t nvalues );
+template<> AnyValueArray::AnyValueArray( const vismodule::Real64* values, const size_t nvalues );
 template<> AnyValueArray::AnyValueArray( const std::string* values, const size_t nvalues );
 
-template<> AnyValueArray::AnyValueArray( const std::vector<kvs::Int8>& values );
-template<> AnyValueArray::AnyValueArray( const std::vector<kvs::UInt8>& values );
-template<> AnyValueArray::AnyValueArray( const std::vector<kvs::Int16>& values );
-template<> AnyValueArray::AnyValueArray( const std::vector<kvs::UInt16>& values );
-template<> AnyValueArray::AnyValueArray( const std::vector<kvs::Int32>& values );
-template<> AnyValueArray::AnyValueArray( const std::vector<kvs::UInt32>& values );
-template<> AnyValueArray::AnyValueArray( const std::vector<kvs::Int64>& values );
-template<> AnyValueArray::AnyValueArray( const std::vector<kvs::UInt64>& values );
-template<> AnyValueArray::AnyValueArray( const std::vector<kvs::Real32>& values );
-template<> AnyValueArray::AnyValueArray( const std::vector<kvs::Real64>& values );
+template<> AnyValueArray::AnyValueArray( const std::vector<vismodule::Int8>& values );
+template<> AnyValueArray::AnyValueArray( const std::vector<vismodule::UInt8>& values );
+template<> AnyValueArray::AnyValueArray( const std::vector<vismodule::Int16>& values );
+template<> AnyValueArray::AnyValueArray( const std::vector<vismodule::UInt16>& values );
+template<> AnyValueArray::AnyValueArray( const std::vector<vismodule::Int32>& values );
+template<> AnyValueArray::AnyValueArray( const std::vector<vismodule::UInt32>& values );
+template<> AnyValueArray::AnyValueArray( const std::vector<vismodule::Int64>& values );
+template<> AnyValueArray::AnyValueArray( const std::vector<vismodule::UInt64>& values );
+template<> AnyValueArray::AnyValueArray( const std::vector<vismodule::Real32>& values );
+template<> AnyValueArray::AnyValueArray( const std::vector<vismodule::Real64>& values );
 template<> AnyValueArray::AnyValueArray( const std::vector<std::string>& values );
 
-template<> AnyValueArray::AnyValueArray( const kvs::ValueArray<kvs::Int8>& values );
-template<> AnyValueArray::AnyValueArray( const kvs::ValueArray<kvs::UInt8>& values );
-template<> AnyValueArray::AnyValueArray( const kvs::ValueArray<kvs::Int16>& values );
-template<> AnyValueArray::AnyValueArray( const kvs::ValueArray<kvs::UInt16>& values );
-template<> AnyValueArray::AnyValueArray( const kvs::ValueArray<kvs::Int32>& values );
-template<> AnyValueArray::AnyValueArray( const kvs::ValueArray<kvs::UInt32>& values );
-template<> AnyValueArray::AnyValueArray( const kvs::ValueArray<kvs::Int64>& values );
-template<> AnyValueArray::AnyValueArray( const kvs::ValueArray<kvs::UInt64>& values );
-template<> AnyValueArray::AnyValueArray( const kvs::ValueArray<kvs::Real32>& values );
-template<> AnyValueArray::AnyValueArray( const kvs::ValueArray<kvs::Real64>& values );
-template<> AnyValueArray::AnyValueArray( const kvs::ValueArray<std::string>& values );
+template<> AnyValueArray::AnyValueArray( const vismodule::ValueArray<vismodule::Int8>& values );
+template<> AnyValueArray::AnyValueArray( const vismodule::ValueArray<vismodule::UInt8>& values );
+template<> AnyValueArray::AnyValueArray( const vismodule::ValueArray<vismodule::Int16>& values );
+template<> AnyValueArray::AnyValueArray( const vismodule::ValueArray<vismodule::UInt16>& values );
+template<> AnyValueArray::AnyValueArray( const vismodule::ValueArray<vismodule::Int32>& values );
+template<> AnyValueArray::AnyValueArray( const vismodule::ValueArray<vismodule::UInt32>& values );
+template<> AnyValueArray::AnyValueArray( const vismodule::ValueArray<vismodule::Int64>& values );
+template<> AnyValueArray::AnyValueArray( const vismodule::ValueArray<vismodule::UInt64>& values );
+template<> AnyValueArray::AnyValueArray( const vismodule::ValueArray<vismodule::Real32>& values );
+template<> AnyValueArray::AnyValueArray( const vismodule::ValueArray<vismodule::Real64>& values );
+template<> AnyValueArray::AnyValueArray( const vismodule::ValueArray<std::string>& values );
 
-template<> kvs::Int8&   AnyValueArray::at<kvs::Int8>( const size_t index );
-template<> kvs::UInt8&  AnyValueArray::at<kvs::UInt8>( const size_t index );
-template<> kvs::Int16&  AnyValueArray::at<kvs::Int16>( const size_t index );
-template<> kvs::UInt16& AnyValueArray::at<kvs::UInt16>( const size_t index );
-template<> kvs::Int32&  AnyValueArray::at<kvs::Int32>( const size_t index );
-template<> kvs::UInt32& AnyValueArray::at<kvs::UInt32>( const size_t index );
-template<> kvs::Int64&  AnyValueArray::at<kvs::Int64>( const size_t index );
-template<> kvs::UInt64& AnyValueArray::at<kvs::UInt64>( const size_t index );
-template<> kvs::Real32& AnyValueArray::at<kvs::Real32>( const size_t index );
-template<> kvs::Real64& AnyValueArray::at<kvs::Real64>( const size_t index );
+template<> vismodule::Int8&   AnyValueArray::at<vismodule::Int8>( const size_t index );
+template<> vismodule::UInt8&  AnyValueArray::at<vismodule::UInt8>( const size_t index );
+template<> vismodule::Int16&  AnyValueArray::at<vismodule::Int16>( const size_t index );
+template<> vismodule::UInt16& AnyValueArray::at<vismodule::UInt16>( const size_t index );
+template<> vismodule::Int32&  AnyValueArray::at<vismodule::Int32>( const size_t index );
+template<> vismodule::UInt32& AnyValueArray::at<vismodule::UInt32>( const size_t index );
+template<> vismodule::Int64&  AnyValueArray::at<vismodule::Int64>( const size_t index );
+template<> vismodule::UInt64& AnyValueArray::at<vismodule::UInt64>( const size_t index );
+template<> vismodule::Real32& AnyValueArray::at<vismodule::Real32>( const size_t index );
+template<> vismodule::Real64& AnyValueArray::at<vismodule::Real64>( const size_t index );
 template<> std::string& AnyValueArray::at<std::string>( const size_t index );
 
-template<> const kvs::Int8&   AnyValueArray::at<kvs::Int8>( const size_t index ) const;
-template<> const kvs::UInt8&  AnyValueArray::at<kvs::UInt8>( const size_t index ) const;
-template<> const kvs::Int16&  AnyValueArray::at<kvs::Int16>( const size_t index ) const ;
-template<> const kvs::UInt16& AnyValueArray::at<kvs::UInt16>( const size_t index ) const;
-template<> const kvs::Int32&  AnyValueArray::at<kvs::Int32>( const size_t index ) const;
-template<> const kvs::UInt32& AnyValueArray::at<kvs::UInt32>( const size_t index ) const;
-template<> const kvs::Int64&  AnyValueArray::at<kvs::Int64>( const size_t index ) const;
-template<> const kvs::UInt64& AnyValueArray::at<kvs::UInt64>( const size_t index ) const;
-template<> const kvs::Real32& AnyValueArray::at<kvs::Real32>( const size_t index ) const;
-template<> const kvs::Real64& AnyValueArray::at<kvs::Real64>( const size_t index ) const;
+template<> const vismodule::Int8&   AnyValueArray::at<vismodule::Int8>( const size_t index ) const;
+template<> const vismodule::UInt8&  AnyValueArray::at<vismodule::UInt8>( const size_t index ) const;
+template<> const vismodule::Int16&  AnyValueArray::at<vismodule::Int16>( const size_t index ) const ;
+template<> const vismodule::UInt16& AnyValueArray::at<vismodule::UInt16>( const size_t index ) const;
+template<> const vismodule::Int32&  AnyValueArray::at<vismodule::Int32>( const size_t index ) const;
+template<> const vismodule::UInt32& AnyValueArray::at<vismodule::UInt32>( const size_t index ) const;
+template<> const vismodule::Int64&  AnyValueArray::at<vismodule::Int64>( const size_t index ) const;
+template<> const vismodule::UInt64& AnyValueArray::at<vismodule::UInt64>( const size_t index ) const;
+template<> const vismodule::Real32& AnyValueArray::at<vismodule::Real32>( const size_t index ) const;
+template<> const vismodule::Real64& AnyValueArray::at<vismodule::Real64>( const size_t index ) const;
 template<> const std::string& AnyValueArray::at<std::string>( const size_t index ) const;
 
-template<> const kvs::Int8   AnyValueArray::to<kvs::Int8>( const size_t index ) const;
-template<> const kvs::UInt8  AnyValueArray::to<kvs::UInt8>( const size_t index ) const;
-template<> const kvs::Int16  AnyValueArray::to<kvs::Int16>( const size_t index ) const;
-template<> const kvs::UInt16 AnyValueArray::to<kvs::UInt16>( const size_t index ) const;
-template<> const kvs::Int32  AnyValueArray::to<kvs::Int32>( const size_t index ) const;
-template<> const kvs::UInt32 AnyValueArray::to<kvs::UInt32>( const size_t index ) const;
-template<> const kvs::Int64  AnyValueArray::to<kvs::Int64>( const size_t index ) const;
-template<> const kvs::UInt64 AnyValueArray::to<kvs::UInt64>( const size_t index ) const;
-template<> const kvs::Real32 AnyValueArray::to<kvs::Real32>( const size_t index ) const;
-template<> const kvs::Real64 AnyValueArray::to<kvs::Real64>( const size_t index ) const;
+template<> const vismodule::Int8   AnyValueArray::to<vismodule::Int8>( const size_t index ) const;
+template<> const vismodule::UInt8  AnyValueArray::to<vismodule::UInt8>( const size_t index ) const;
+template<> const vismodule::Int16  AnyValueArray::to<vismodule::Int16>( const size_t index ) const;
+template<> const vismodule::UInt16 AnyValueArray::to<vismodule::UInt16>( const size_t index ) const;
+template<> const vismodule::Int32  AnyValueArray::to<vismodule::Int32>( const size_t index ) const;
+template<> const vismodule::UInt32 AnyValueArray::to<vismodule::UInt32>( const size_t index ) const;
+template<> const vismodule::Int64  AnyValueArray::to<vismodule::Int64>( const size_t index ) const;
+template<> const vismodule::UInt64 AnyValueArray::to<vismodule::UInt64>( const size_t index ) const;
+template<> const vismodule::Real32 AnyValueArray::to<vismodule::Real32>( const size_t index ) const;
+template<> const vismodule::Real64 AnyValueArray::to<vismodule::Real64>( const size_t index ) const;
 template<> const std::string AnyValueArray::to<std::string>( const size_t index ) const;
 
-template<> const kvs::Int8*   AnyValueArray::pointer<kvs::Int8>( void ) const;
-template<> const kvs::UInt8*  AnyValueArray::pointer<kvs::UInt8>( void ) const;
-template<> const kvs::Int16*  AnyValueArray::pointer<kvs::Int16>( void ) const;
-template<> const kvs::UInt16* AnyValueArray::pointer<kvs::UInt16>( void ) const;
-template<> const kvs::Int32*  AnyValueArray::pointer<kvs::Int32>( void ) const;
-template<> const kvs::UInt32* AnyValueArray::pointer<kvs::UInt32>( void ) const;
-template<> const kvs::Int64*  AnyValueArray::pointer<kvs::Int64>( void ) const;
-template<> const kvs::UInt64* AnyValueArray::pointer<kvs::UInt64>( void ) const;
-template<> const kvs::Real32* AnyValueArray::pointer<kvs::Real32>( void ) const;
-template<> const kvs::Real64* AnyValueArray::pointer<kvs::Real64>( void ) const;
+template<> const vismodule::Int8*   AnyValueArray::pointer<vismodule::Int8>( void ) const;
+template<> const vismodule::UInt8*  AnyValueArray::pointer<vismodule::UInt8>( void ) const;
+template<> const vismodule::Int16*  AnyValueArray::pointer<vismodule::Int16>( void ) const;
+template<> const vismodule::UInt16* AnyValueArray::pointer<vismodule::UInt16>( void ) const;
+template<> const vismodule::Int32*  AnyValueArray::pointer<vismodule::Int32>( void ) const;
+template<> const vismodule::UInt32* AnyValueArray::pointer<vismodule::UInt32>( void ) const;
+template<> const vismodule::Int64*  AnyValueArray::pointer<vismodule::Int64>( void ) const;
+template<> const vismodule::UInt64* AnyValueArray::pointer<vismodule::UInt64>( void ) const;
+template<> const vismodule::Real32* AnyValueArray::pointer<vismodule::Real32>( void ) const;
+template<> const vismodule::Real64* AnyValueArray::pointer<vismodule::Real64>( void ) const;
 template<> const std::string* AnyValueArray::pointer<std::string>( void ) const;
 
-template<> kvs::Int8*   AnyValueArray::pointer<kvs::Int8>( void );
-template<> kvs::UInt8*  AnyValueArray::pointer<kvs::UInt8>( void );
-template<> kvs::Int16*  AnyValueArray::pointer<kvs::Int16>( void );
-template<> kvs::UInt16* AnyValueArray::pointer<kvs::UInt16>( void );
-template<> kvs::Int32*  AnyValueArray::pointer<kvs::Int32>( void );
-template<> kvs::UInt32* AnyValueArray::pointer<kvs::UInt32>( void );
-template<> kvs::Int64*  AnyValueArray::pointer<kvs::Int64>( void );
-template<> kvs::UInt64* AnyValueArray::pointer<kvs::UInt64>( void );
-template<> kvs::Real32* AnyValueArray::pointer<kvs::Real32>( void );
-template<> kvs::Real64* AnyValueArray::pointer<kvs::Real64>( void );
+template<> vismodule::Int8*   AnyValueArray::pointer<vismodule::Int8>( void );
+template<> vismodule::UInt8*  AnyValueArray::pointer<vismodule::UInt8>( void );
+template<> vismodule::Int16*  AnyValueArray::pointer<vismodule::Int16>( void );
+template<> vismodule::UInt16* AnyValueArray::pointer<vismodule::UInt16>( void );
+template<> vismodule::Int32*  AnyValueArray::pointer<vismodule::Int32>( void );
+template<> vismodule::UInt32* AnyValueArray::pointer<vismodule::UInt32>( void );
+template<> vismodule::Int64*  AnyValueArray::pointer<vismodule::Int64>( void );
+template<> vismodule::UInt64* AnyValueArray::pointer<vismodule::UInt64>( void );
+template<> vismodule::Real32* AnyValueArray::pointer<vismodule::Real32>( void );
+template<> vismodule::Real64* AnyValueArray::pointer<vismodule::Real64>( void );
 template<> std::string* AnyValueArray::pointer<std::string>( void );
 
-template<> void* AnyValueArray::allocate<kvs::Int8>( const size_t nvalues );
-template<> void* AnyValueArray::allocate<kvs::UInt8>( const size_t nvalues );
-template<> void* AnyValueArray::allocate<kvs::Int16>( const size_t nvalues );
-template<> void* AnyValueArray::allocate<kvs::UInt16>( const size_t nvalues );
-template<> void* AnyValueArray::allocate<kvs::Int32>( const size_t nvalues );
-template<> void* AnyValueArray::allocate<kvs::UInt32>( const size_t nvalues );
-template<> void* AnyValueArray::allocate<kvs::Int64>( const size_t nvalues );
-template<> void* AnyValueArray::allocate<kvs::UInt64>( const size_t nvalues );
-template<> void* AnyValueArray::allocate<kvs::Real32>( const size_t nvalues );
-template<> void* AnyValueArray::allocate<kvs::Real64>( const size_t nvalues );
+template<> void* AnyValueArray::allocate<vismodule::Int8>( const size_t nvalues );
+template<> void* AnyValueArray::allocate<vismodule::UInt8>( const size_t nvalues );
+template<> void* AnyValueArray::allocate<vismodule::Int16>( const size_t nvalues );
+template<> void* AnyValueArray::allocate<vismodule::UInt16>( const size_t nvalues );
+template<> void* AnyValueArray::allocate<vismodule::Int32>( const size_t nvalues );
+template<> void* AnyValueArray::allocate<vismodule::UInt32>( const size_t nvalues );
+template<> void* AnyValueArray::allocate<vismodule::Int64>( const size_t nvalues );
+template<> void* AnyValueArray::allocate<vismodule::UInt64>( const size_t nvalues );
+template<> void* AnyValueArray::allocate<vismodule::Real32>( const size_t nvalues );
+template<> void* AnyValueArray::allocate<vismodule::Real64>( const size_t nvalues );
 template<> void* AnyValueArray::allocate<std::string>( const size_t nvalues );
 
-template<> void AnyValueArray::shallowCopy<kvs::Int8>( const kvs::ValueArray<kvs::Int8>& values );
-template<> void AnyValueArray::shallowCopy<kvs::UInt8>( const kvs::ValueArray<kvs::UInt8>& values );
-template<> void AnyValueArray::shallowCopy<kvs::Int16>( const kvs::ValueArray<kvs::Int16>& values );
-template<> void AnyValueArray::shallowCopy<kvs::UInt16>( const kvs::ValueArray<kvs::UInt16>& values );
-template<> void AnyValueArray::shallowCopy<kvs::Int32>( const kvs::ValueArray<kvs::Int32>& values );
-template<> void AnyValueArray::shallowCopy<kvs::UInt32>( const kvs::ValueArray<kvs::UInt32>& values );
-template<> void AnyValueArray::shallowCopy<kvs::Int64>( const kvs::ValueArray<kvs::Int64>& values );
-template<> void AnyValueArray::shallowCopy<kvs::UInt64>( const kvs::ValueArray<kvs::UInt64>& values );
-template<> void AnyValueArray::shallowCopy<kvs::Real32>( const kvs::ValueArray<kvs::Real32>& values );
-template<> void AnyValueArray::shallowCopy<kvs::Real64>( const kvs::ValueArray<kvs::Real64>& values );
-template<> void AnyValueArray::shallowCopy<std::string>( const kvs::ValueArray<std::string>& values );
+template<> void AnyValueArray::shallowCopy<vismodule::Int8>( const vismodule::ValueArray<vismodule::Int8>& values );
+template<> void AnyValueArray::shallowCopy<vismodule::UInt8>( const vismodule::ValueArray<vismodule::UInt8>& values );
+template<> void AnyValueArray::shallowCopy<vismodule::Int16>( const vismodule::ValueArray<vismodule::Int16>& values );
+template<> void AnyValueArray::shallowCopy<vismodule::UInt16>( const vismodule::ValueArray<vismodule::UInt16>& values );
+template<> void AnyValueArray::shallowCopy<vismodule::Int32>( const vismodule::ValueArray<vismodule::Int32>& values );
+template<> void AnyValueArray::shallowCopy<vismodule::UInt32>( const vismodule::ValueArray<vismodule::UInt32>& values );
+template<> void AnyValueArray::shallowCopy<vismodule::Int64>( const vismodule::ValueArray<vismodule::Int64>& values );
+template<> void AnyValueArray::shallowCopy<vismodule::UInt64>( const vismodule::ValueArray<vismodule::UInt64>& values );
+template<> void AnyValueArray::shallowCopy<vismodule::Real32>( const vismodule::ValueArray<vismodule::Real32>& values );
+template<> void AnyValueArray::shallowCopy<vismodule::Real64>( const vismodule::ValueArray<vismodule::Real64>& values );
+template<> void AnyValueArray::shallowCopy<std::string>( const vismodule::ValueArray<std::string>& values );
 
-template<> void AnyValueArray::deepCopy<kvs::Int8>( const kvs::Int8* values, const size_t nvalues );
-template<> void AnyValueArray::deepCopy<kvs::UInt8>( const kvs::UInt8* values, const size_t nvalues );
-template<> void AnyValueArray::deepCopy<kvs::Int16>( const kvs::Int16* values, const size_t nvalues );
-template<> void AnyValueArray::deepCopy<kvs::UInt16>( const kvs::UInt16* values, const size_t nvalues );
-template<> void AnyValueArray::deepCopy<kvs::Int32>( const kvs::Int32* values, const size_t nvalues );
-template<> void AnyValueArray::deepCopy<kvs::UInt32>( const kvs::UInt32* values, const size_t nvalues );
-template<> void AnyValueArray::deepCopy<kvs::Int64>( const kvs::Int64* values, const size_t nvalues );
-template<> void AnyValueArray::deepCopy<kvs::UInt64>( const kvs::UInt64* values, const size_t nvalues );
-template<> void AnyValueArray::deepCopy<kvs::Real32>( const kvs::Real32* values, const size_t nvalues );
-template<> void AnyValueArray::deepCopy<kvs::Real64>( const kvs::Real64* values, const size_t nvalues );
+template<> void AnyValueArray::deepCopy<vismodule::Int8>( const vismodule::Int8* values, const size_t nvalues );
+template<> void AnyValueArray::deepCopy<vismodule::UInt8>( const vismodule::UInt8* values, const size_t nvalues );
+template<> void AnyValueArray::deepCopy<vismodule::Int16>( const vismodule::Int16* values, const size_t nvalues );
+template<> void AnyValueArray::deepCopy<vismodule::UInt16>( const vismodule::UInt16* values, const size_t nvalues );
+template<> void AnyValueArray::deepCopy<vismodule::Int32>( const vismodule::Int32* values, const size_t nvalues );
+template<> void AnyValueArray::deepCopy<vismodule::UInt32>( const vismodule::UInt32* values, const size_t nvalues );
+template<> void AnyValueArray::deepCopy<vismodule::Int64>( const vismodule::Int64* values, const size_t nvalues );
+template<> void AnyValueArray::deepCopy<vismodule::UInt64>( const vismodule::UInt64* values, const size_t nvalues );
+template<> void AnyValueArray::deepCopy<vismodule::Real32>( const vismodule::Real32* values, const size_t nvalues );
+template<> void AnyValueArray::deepCopy<vismodule::Real64>( const vismodule::Real64* values, const size_t nvalues );
 template<> void AnyValueArray::deepCopy<std::string>( const std::string* values, const size_t nvalues );
 
-} // end of namespace kvs
+} // end of namespace vismodule

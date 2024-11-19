@@ -12,11 +12,11 @@
  */
 /****************************************************************************/
 #include "MapperBase.h"
-#include <kvs/StructuredVolumeObject>
-#include <kvs/UnstructuredVolumeObject>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/UnstructuredVolumeObject>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -58,7 +58,7 @@ MapperBase::~MapperBase( void )
  *  @param  transfer_function [in] transfer function
  */
 /*===========================================================================*/
-void MapperBase::setTransferFunction( const kvs::TransferFunction& transfer_function )
+void MapperBase::setTransferFunction( const vismodule::TransferFunction& transfer_function )
 {
     m_transfer_function = transfer_function;
 }
@@ -69,7 +69,7 @@ void MapperBase::setTransferFunction( const kvs::TransferFunction& transfer_func
  *  @param  color_map [in] color map
  */
 /*===========================================================================*/
-void MapperBase::setColorMap( const kvs::ColorMap& color_map )
+void MapperBase::setColorMap( const vismodule::ColorMap& color_map )
 {
     m_transfer_function.setColorMap( color_map );
 }
@@ -80,7 +80,7 @@ void MapperBase::setColorMap( const kvs::ColorMap& color_map )
  *  @param  opacity_map [in] opacity map
  */
 /*===========================================================================*/
-void MapperBase::setOpacityMap( const kvs::OpacityMap& opacity_map )
+void MapperBase::setOpacityMap( const vismodule::OpacityMap& opacity_map )
 {
     m_transfer_function.setOpacityMap( opacity_map );
 }
@@ -91,7 +91,7 @@ void MapperBase::setOpacityMap( const kvs::OpacityMap& opacity_map )
  *  @return pointer to the volume object
  */
 /*===========================================================================*/
-const kvs::VolumeObjectBase* const MapperBase::volume( void ) const
+const vismodule::VolumeObjectBase* const MapperBase::volume( void ) const
 {
     return( m_volume );
 }
@@ -101,7 +101,7 @@ const kvs::VolumeObjectBase* const MapperBase::volume( void ) const
  *  @brief  Returns the transfer function.
  */
 /*===========================================================================*/
-const kvs::TransferFunction& MapperBase::transferFunction( void ) const
+const vismodule::TransferFunction& MapperBase::transferFunction( void ) const
 {
     return( m_transfer_function );
 }
@@ -111,7 +111,7 @@ const kvs::TransferFunction& MapperBase::transferFunction( void ) const
  *  @brief  Returns the color map.
  */
 /*===========================================================================*/
-const kvs::ColorMap& MapperBase::colorMap( void ) const
+const vismodule::ColorMap& MapperBase::colorMap( void ) const
 {
     return( m_transfer_function.colorMap() );
 }
@@ -121,7 +121,7 @@ const kvs::ColorMap& MapperBase::colorMap( void ) const
  *  @brief  Returns the opacity map.
  */
 /*===========================================================================*/
-const kvs::OpacityMap& MapperBase::opacityMap( void ) const
+const vismodule::OpacityMap& MapperBase::opacityMap( void ) const
 {
     return( m_transfer_function.opacityMap() );
 }
@@ -154,20 +154,20 @@ const bool MapperBase::isFailure( void ) const
  *  @param  volume [in] pointer to the volume object
  */
 /*===========================================================================*/
-void MapperBase::attach_volume( const kvs::VolumeObjectBase* volume )
+void MapperBase::attach_volume( const vismodule::VolumeObjectBase* volume )
 {
     m_volume = volume;
 }
 
-void MapperBase::set_range( const kvs::VolumeObjectBase* volume )
+void MapperBase::set_range( const vismodule::VolumeObjectBase* volume )
 {
     if ( !volume->hasMinMaxValues() ) volume->updateMinMaxValues();
     const std::type_info& type = volume->values().typeInfo()->type();
-    if ( type == typeid( kvs::Int8 ) )
+    if ( type == typeid( vismodule::Int8 ) )
     {
         if ( !m_transfer_function.hasRange() ) m_transfer_function.setRange( -128, 127 );
     }
-    else if ( type == typeid( kvs::UInt8  ) )
+    else if ( type == typeid( vismodule::UInt8  ) )
     {
         if ( !m_transfer_function.hasRange() ) m_transfer_function.setRange( 0, 255 );
     }
@@ -186,36 +186,36 @@ void MapperBase::set_range( const kvs::VolumeObjectBase* volume )
  *  @param  object [in] pointer to the object (The calculated coordinates are set to this object)
  */
 /*===========================================================================*/
-void MapperBase::set_min_max_coords( const kvs::VolumeObjectBase* volume, kvs::ObjectBase* object )
+void MapperBase::set_min_max_coords( const vismodule::VolumeObjectBase* volume, vismodule::ObjectBase* object )
 {
     if ( !volume->hasMinMaxObjectCoords() )
     {
         switch ( volume->volumeType() )
         {
-        case kvs::VolumeObjectBase::Structured:
+        case vismodule::VolumeObjectBase::Structured:
         {
             // WARNING: remove constness, but safe in this case.
-            kvs::VolumeObjectBase* b = const_cast<kvs::VolumeObjectBase*>( volume );
-            reinterpret_cast<kvs::StructuredVolumeObject*>( b )->updateMinMaxCoords();
+            vismodule::VolumeObjectBase* b = const_cast<vismodule::VolumeObjectBase*>( volume );
+            reinterpret_cast<vismodule::StructuredVolumeObject*>( b )->updateMinMaxCoords();
             break;
         }
-        case kvs::VolumeObjectBase::Unstructured:
+        case vismodule::VolumeObjectBase::Unstructured:
         {
             // WARNING: remove constness, but safe in this case.
-            kvs::VolumeObjectBase* b = const_cast<kvs::VolumeObjectBase*>( volume );
-            reinterpret_cast<kvs::UnstructuredVolumeObject*>( b )->updateMinMaxCoords();
+            vismodule::VolumeObjectBase* b = const_cast<vismodule::VolumeObjectBase*>( volume );
+            reinterpret_cast<vismodule::UnstructuredVolumeObject*>( b )->updateMinMaxCoords();
             break;
         }
         default: break;
         }
     }
 
-    const kvs::Vector3f min_obj_coord( m_volume->minObjectCoord() );
-    const kvs::Vector3f max_obj_coord( m_volume->maxObjectCoord() );
-    const kvs::Vector3f min_ext_coord( m_volume->minExternalCoord() );
-    const kvs::Vector3f max_ext_coord( m_volume->maxExternalCoord() );
+    const vismodule::Vector3f min_obj_coord( m_volume->minObjectCoord() );
+    const vismodule::Vector3f max_obj_coord( m_volume->maxObjectCoord() );
+    const vismodule::Vector3f min_ext_coord( m_volume->minExternalCoord() );
+    const vismodule::Vector3f max_ext_coord( m_volume->maxExternalCoord() );
     object->setMinMaxObjectCoords( min_obj_coord, max_obj_coord );
     object->setMinMaxExternalCoords( min_ext_coord, max_ext_coord );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

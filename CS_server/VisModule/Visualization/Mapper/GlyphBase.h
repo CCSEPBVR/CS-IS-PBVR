@@ -13,18 +13,18 @@
  *  $Id: GlyphBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__GLYPH_BASE_H_INCLUDE
-#define KVS__GLYPH_BASE_H_INCLUDE
+#ifndef VIS_MODULE__GLYPH_BASE_H_INCLUDE
+#define VIS_MODULE__GLYPH_BASE_H_INCLUDE
 
 #include <vector>
 #include <string>
-#include <kvs/MapperBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
-#include <kvs/GlyphObject>
+#include <vismodule/MapperBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
+#include <vismodule/GlyphObject>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -32,15 +32,15 @@ namespace kvs
  *  @brief  Glyph base class.
  */
 /*===========================================================================*/
-class GlyphBase : public kvs::MapperBase, public kvs::GlyphObject
+class GlyphBase : public vismodule::MapperBase, public vismodule::GlyphObject
 {
     // Class name.
-    kvsClassName( kvs::GlyphBase );
+    visModuleClassName( vismodule::GlyphBase );
 
     // Module information.
-    kvsModuleCategory( Mapper );
-    kvsModuleBaseClass( kvs::MapperBase );
-    kvsModuleSuperClass( kvs::GlyphObject );
+    visModuleCategory( Mapper );
+    visModuleBaseClass( vismodule::MapperBase );
+    visModuleSuperClass( vismodule::GlyphObject );
 
 public:
 
@@ -83,7 +83,7 @@ public:
 
 public:
 
-    virtual kvs::ObjectBase* exec( const kvs::ObjectBase* object ) = 0;
+    virtual vismodule::ObjectBase* exec( const vismodule::ObjectBase* object ) = 0;
 
     virtual void draw( void ) = 0;
 
@@ -99,33 +99,33 @@ public:
 
 protected:
 
-    void transform( const kvs::Vector3f& position, const kvs::Real32 size );
+    void transform( const vismodule::Vector3f& position, const vismodule::Real32 size );
 
-    void transform( const kvs::Vector3f& position, const kvs::Vector3f& direction, const kvs::Real32 size );
+    void transform( const vismodule::Vector3f& position, const vismodule::Vector3f& direction, const vismodule::Real32 size );
 
 protected:
 
-    void calculate_coords( const kvs::VolumeObjectBase* volume );
+    void calculate_coords( const vismodule::VolumeObjectBase* volume );
 
-    void calculate_coords( const kvs::StructuredVolumeObject* volume );
+    void calculate_coords( const vismodule::StructuredVolumeObject* volume );
 
-    void calculate_uniform_coords( const kvs::StructuredVolumeObject* volume );
+    void calculate_uniform_coords( const vismodule::StructuredVolumeObject* volume );
 
-    void calculate_rectilinear_coords( const kvs::StructuredVolumeObject* volume );
-
-    template <typename T>
-    void calculate_sizes( const kvs::VolumeObjectBase* volume );
+    void calculate_rectilinear_coords( const vismodule::StructuredVolumeObject* volume );
 
     template <typename T>
-    void calculate_directions( const kvs::VolumeObjectBase* volume );
+    void calculate_sizes( const vismodule::VolumeObjectBase* volume );
 
     template <typename T>
-    void calculate_colors( const kvs::VolumeObjectBase* volume );
+    void calculate_directions( const vismodule::VolumeObjectBase* volume );
 
     template <typename T>
-    void calculate_opacities( const kvs::VolumeObjectBase* volume );
+    void calculate_colors( const vismodule::VolumeObjectBase* volume );
+
+    template <typename T>
+    void calculate_opacities( const vismodule::VolumeObjectBase* volume );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GLYPH_BASE_H_INCLUDE
+#endif // VIS_MODULE__GLYPH_BASE_H_INCLUDE

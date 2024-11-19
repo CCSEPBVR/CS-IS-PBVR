@@ -11,20 +11,20 @@
  *  $Id: DataValueTag.h 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__KVSML__DATA_VALUE_H_INCLUDE
-#define KVS__KVSML__DATA_VALUE_H_INCLUDE
+#ifndef VIS_MODULE__KVSML__DATA_VALUE_H_INCLUDE
+#define VIS_MODULE__KVSML__DATA_VALUE_H_INCLUDE
 
 #include <string>
-#include <kvs/ValueArray>
-#include <kvs/Tokenizer>
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
-#include <kvs/XMLDocument>
+#include <vismodule/ValueArray>
+#include <vismodule/Tokenizer>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
+#include <vismodule/XMLDocument>
 #include "DataArray.h"
 #include "TagBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -35,11 +35,11 @@ namespace kvsml
  *  @brief  Tag class for <DataValue>.
  */
 /*===========================================================================*/
-class DataValueTag : public kvs::kvsml::TagBase
+class DataValueTag : public vismodule::kvsml::TagBase
 {
 public:
 
-    typedef kvs::kvsml::TagBase BaseClass;
+    typedef vismodule::kvsml::TagBase BaseClass;
 
 public:
 
@@ -50,45 +50,45 @@ public:
 public:
 
     template <typename T>
-    const bool read( const kvs::XMLNode::SuperClass* parent, const size_t nelements, kvs::ValueArray<T>* data );
+    const bool read( const vismodule::XMLNode::SuperClass* parent, const size_t nelements, vismodule::ValueArray<T>* data );
 
     template <typename T>
-    const bool write( kvs::XMLNode::SuperClass* parent, const kvs::ValueArray<T>& data );
+    const bool write( vismodule::XMLNode::SuperClass* parent, const vismodule::ValueArray<T>& data );
 
 private:
 
-    const bool read( const kvs::XMLNode::SuperClass* parent );
+    const bool read( const vismodule::XMLNode::SuperClass* parent );
 
-    const bool write( kvs::XMLNode::SuperClass* parent );
+    const bool write( vismodule::XMLNode::SuperClass* parent );
 };
 
 template <typename T>
 inline const bool DataValueTag::read(
-    const kvs::XMLNode::SuperClass* parent,
+    const vismodule::XMLNode::SuperClass* parent,
     const size_t nelements,
-    kvs::ValueArray<T>* data )
+    vismodule::ValueArray<T>* data )
 {
     const std::string tag_name = BaseClass::name();
 
-    BaseClass::m_node = kvs::XMLNode::FindChildNode( parent, tag_name );
+    BaseClass::m_node = vismodule::XMLNode::FindChildNode( parent, tag_name );
     if ( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot find <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot find <%s>.", tag_name.c_str() );
         return( false );
     }
 
-    const TiXmlText* array_text = kvs::XMLNode::ToText( m_node );
+    const TiXmlText* array_text = vismodule::XMLNode::ToText( m_node );
     if ( !array_text )
     {
-        kvsMessageError( "No value in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "No value in <%s>.", tag_name.c_str() );
         return( false );
     }
 
     const std::string delim(" \n");
-    kvs::Tokenizer tokenizer( array_text->Value(), delim );
-    if ( !kvs::kvsml::DataArray::ReadInternalData<T>( data, nelements, tokenizer ) )
+    vismodule::Tokenizer tokenizer( array_text->Value(), delim );
+    if ( !vismodule::kvsml::DataArray::ReadInternalData<T>( data, nelements, tokenizer ) )
     {
-        kvsMessageError( "Cannot read the data in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot read the data in <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -97,17 +97,17 @@ inline const bool DataValueTag::read(
 
 template <typename T>
 inline const bool DataValueTag::write(
-    kvs::XMLNode::SuperClass* parent,
-    const kvs::ValueArray<T>& data )
+    vismodule::XMLNode::SuperClass* parent,
+    const vismodule::ValueArray<T>& data )
 {
     if ( data.size() == 0 ) return( true );
 
     const std::string tag_name = BaseClass::name();
-    kvs::XMLElement element( tag_name );
+    vismodule::XMLElement element( tag_name );
 
     std::ostringstream oss( std::ostringstream::out );
     const size_t data_size = data.size();
-    if ( typeid(T) == typeid(kvs::Int8) || typeid(T) == typeid(kvs::UInt8) )
+    if ( typeid(T) == typeid(vismodule::Int8) || typeid(T) == typeid(vismodule::UInt8) )
     {
         for ( size_t i = 0; i < data_size; i++ ) oss << int(data.at(i)) << " ";
     }
@@ -120,12 +120,12 @@ inline const bool DataValueTag::write(
     TiXmlText text;
     text.SetValue( oss.str() );
 
-    kvs::XMLNode::SuperClass* node = parent->InsertEndChild( element );
+    vismodule::XMLNode::SuperClass* node = parent->InsertEndChild( element );
     return( node->InsertEndChild( text ) != NULL );
 }
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__KVSML__DATA_VALUE_H_INCLUDE
+#endif // VIS_MODULE__KVSML__DATA_VALUE_H_INCLUDE

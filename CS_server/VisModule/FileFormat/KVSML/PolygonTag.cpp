@@ -12,13 +12,13 @@
  */
 /*****************************************************************************/
 #include "PolygonTag.h"
-#include <kvs/Message>
-#include <kvs/String>
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
+#include <vismodule/Message>
+#include <vismodule/String>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -30,7 +30,7 @@ namespace kvsml
  */
 /*===========================================================================*/
 PolygonTag::PolygonTag( void ):
-    kvs::kvsml::TagBase( "Polygon" ),
+    vismodule::kvsml::TagBase( "Polygon" ),
     m_has_npolygons( false ),
     m_npolygons( 0 )
 {
@@ -86,22 +86,22 @@ void PolygonTag::setNPolygons( const size_t npolygons )
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool PolygonTag::read( const kvs::XMLNode::SuperClass* parent )
+const bool PolygonTag::read( const vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
 
-    BaseClass::m_node = kvs::XMLNode::FindChildNode( parent, tag_name );
+    BaseClass::m_node = vismodule::XMLNode::FindChildNode( parent, tag_name );
     if ( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot find <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot find <%s>.", tag_name.c_str() );
         return( false );
     }
 
     // Element
-    const kvs::XMLElement::SuperClass* element = kvs::XMLNode::ToElement( BaseClass::m_node );
+    const vismodule::XMLElement::SuperClass* element = vismodule::XMLNode::ToElement( BaseClass::m_node );
 
     // npolygons="xxx"
-    const std::string npolygons = kvs::XMLElement::AttributeValue( element, "npolygons" );
+    const std::string npolygons = vismodule::XMLElement::AttributeValue( element, "npolygons" );
     if ( npolygons != "" )
     {
         m_has_npolygons = true;
@@ -118,22 +118,22 @@ const bool PolygonTag::read( const kvs::XMLNode::SuperClass* parent )
  *  @return true, if the writing process is done successfully
  */
 /*===========================================================================*/
-const bool PolygonTag::write( kvs::XMLNode::SuperClass* parent )
+const bool PolygonTag::write( vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
-    kvs::XMLElement element( tag_name );
+    vismodule::XMLElement element( tag_name );
 
     if ( m_has_npolygons )
     {
         const std::string name( "npolygons" );
-        const std::string value( kvs::String( m_npolygons ).toStdString() );
+        const std::string value( vismodule::String( m_npolygons ).toStdString() );
         element.setAttribute( name, value );
     }
 
     BaseClass::m_node = parent->InsertEndChild( element );
     if( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot insert <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot insert <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -142,4 +142,4 @@ const bool PolygonTag::write( kvs::XMLNode::SuperClass* parent )
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

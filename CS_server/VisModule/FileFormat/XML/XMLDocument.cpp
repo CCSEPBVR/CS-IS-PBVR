@@ -15,7 +15,7 @@
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -108,7 +108,7 @@ bool XMLDocument::write( const std::string& filename )
     return( SuperClass::SaveFile( filename ) );
 }
 
-TiXmlNode* XMLDocument::FindNode( const kvs::XMLDocument* document, const std::string& node_name )
+TiXmlNode* XMLDocument::FindNode( const vismodule::XMLDocument* document, const std::string& node_name )
 {
     TiXmlNode* node = document->FirstChild();
     while( node )
@@ -121,4 +121,4 @@ TiXmlNode* XMLDocument::FindNode( const kvs::XMLDocument* document, const std::s
     return( NULL );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

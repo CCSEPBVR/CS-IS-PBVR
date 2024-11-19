@@ -14,7 +14,7 @@
 #include "PipelineModule.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 PipelineModule::PipelineModule( void ):
@@ -39,7 +39,7 @@ PipelineModule::~PipelineModule( void )
     this->unref();
 }
 
-kvs::ObjectBase* PipelineModule::exec( const kvs::ObjectBase* object )
+vismodule::ObjectBase* PipelineModule::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
@@ -83,22 +83,22 @@ const PipelineModule::Module PipelineModule::module( void ) const
     return( m_module );
 }
 
-const kvs::FilterBase* PipelineModule::filter( void ) const
+const vismodule::FilterBase* PipelineModule::filter( void ) const
 {
     return( m_module.filter );
 }
 
-const kvs::MapperBase* PipelineModule::mapper( void ) const
+const vismodule::MapperBase* PipelineModule::mapper( void ) const
 {
     return( m_module.mapper );
 }
 
-const kvs::ObjectBase* PipelineModule::object( void ) const
+const vismodule::ObjectBase* PipelineModule::object( void ) const
 {
     return( m_module.object );
 }
 
-const kvs::RendererBase* PipelineModule::renderer( void ) const
+const vismodule::RendererBase* PipelineModule::renderer( void ) const
 {
     return( m_module.renderer );
 }
@@ -171,8 +171,8 @@ void PipelineModule::deep_copy( const PipelineModule& module )
 
 void PipelineModule::create_counter( const size_t counter )
 {
-    m_counter = new kvs::ReferenceCounter( counter );
-    KVS_ASSERT( m_counter != NULL );
+    m_counter = new vismodule::ReferenceCounter( counter );
+    VIS_MODULE_ASSERT( m_counter != NULL );
 }
 
 void PipelineModule::ref( void )
@@ -197,4 +197,4 @@ void PipelineModule::unref( void )
     m_category = PipelineModule::Empty;
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

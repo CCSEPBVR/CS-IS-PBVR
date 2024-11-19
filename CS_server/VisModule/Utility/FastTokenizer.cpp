@@ -14,7 +14,7 @@
 #include "FastTokenizer.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/

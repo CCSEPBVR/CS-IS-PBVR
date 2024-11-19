@@ -15,29 +15,29 @@
 #include "RGBColor.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 RGBAColor::RGBAColor( float opacity ):
-    kvs::RGBColor( 0, 0, 0 ),
+    vismodule::RGBColor( 0, 0, 0 ),
     m_opacity( opacity )
 {
 }
 
-RGBAColor::RGBAColor( kvs::UInt8 red, kvs::UInt8 green, kvs::UInt8 blue, float opacity ):
-    kvs::RGBColor( red, green, blue ),
+RGBAColor::RGBAColor( vismodule::UInt8 red, vismodule::UInt8 green, vismodule::UInt8 blue, float opacity ):
+    vismodule::RGBColor( red, green, blue ),
     m_opacity( opacity )
 {
 }
 
-RGBAColor::RGBAColor( const kvs::UInt8 rgb[3], float opacity ):
-    kvs::RGBColor( rgb[0], rgb[1], rgb[2] ),
+RGBAColor::RGBAColor( const vismodule::UInt8 rgb[3], float opacity ):
+    vismodule::RGBColor( rgb[0], rgb[1], rgb[2] ),
     m_opacity( opacity )
 {
 }
 
-RGBAColor::RGBAColor( const kvs::RGBColor& rgb, float opacity ):
-    kvs::RGBColor( rgb ),
+RGBAColor::RGBAColor( const vismodule::RGBColor& rgb, float opacity ):
+    vismodule::RGBColor( rgb ),
     m_opacity( opacity )
 {
 }
@@ -77,4 +77,4 @@ const float RGBAColor::opacity( void ) const
     return( m_opacity );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

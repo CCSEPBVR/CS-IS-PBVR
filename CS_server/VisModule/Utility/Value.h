@@ -11,15 +11,15 @@
  *  $Id: Value.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__VALUE_H_INCLUDE
-#define KVS__VALUE_H_INCLUDE
+#ifndef VIS_MODULE__VALUE_H_INCLUDE
+#define VIS_MODULE__VALUE_H_INCLUDE
 
 #include <limits>
-#include <kvs/ClassName>
-#include <kvs/Endian>
+#include <vismodule/ClassName>
+#include <vismodule/Endian>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -30,7 +30,7 @@ namespace kvs
 template<typename T>
 class Value
 {
-    kvsClassName_without_virtual( kvs::Value );
+    visModuleClassName_without_virtual( vismodule::Value );
 
 protected:
 
@@ -142,7 +142,7 @@ Value<T>& Value<T>::operator /= ( const Value<T>& other )
 template<typename T>
 void Value<T>::swapByte( void )
 {
-    kvs::Endian::Swap( m_value );
+    vismodule::Endian::Swap( m_value );
 }
 
 template<typename T>
@@ -233,6 +233,6 @@ Value<T> operator / ( const Value<T>& other1, const Value<T>& other2 )
     return( result );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__VALUE_H_INCLUDE
+#endif // VIS_MODULE__VALUE_H_INCLUDE

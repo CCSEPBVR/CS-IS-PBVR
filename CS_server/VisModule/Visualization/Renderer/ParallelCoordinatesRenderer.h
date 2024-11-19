@@ -12,16 +12,16 @@
  *  $Id$
  */
 /*****************************************************************************/
-#ifndef KVS__PARALLEL_COORDINATES_RENDERER_H_INCLUDE
-#define KVS__PARALLEL_COORDINATES_RENDERER_H_INCLUDE
+#ifndef VIS_MODULE__PARALLEL_COORDINATES_RENDERER_H_INCLUDE
+#define VIS_MODULE__PARALLEL_COORDINATES_RENDERER_H_INCLUDE
 
-#include <kvs/RendererBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
-#include <kvs/ColorMap>
+#include <vismodule/RendererBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
+#include <vismodule/ColorMap>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class ObjectBase;
@@ -33,14 +33,14 @@ class Light;
  *  @brief  Parallel coordinates renderer class.
  */
 /*===========================================================================*/
-class ParallelCoordinatesRenderer : public kvs::RendererBase
+class ParallelCoordinatesRenderer : public vismodule::RendererBase
 {
     // Class name.
-    kvsClassName( kvs::ParallelCoordinatesRenderer );
+    visModuleClassName( vismodule::ParallelCoordinatesRenderer );
 
     // Module information.
-    kvsModuleCategory( Renderer );
-    kvsModuleBaseClass( kvs::RendererBase );
+    visModuleCategory( Renderer );
+    visModuleBaseClass( vismodule::RendererBase );
 
 protected:
 
@@ -53,9 +53,9 @@ protected:
     mutable bool m_enable_multisample_anti_aliasing; ///< flag for multisample anti-aliasing (MSAA)
 
     size_t        m_active_axis;  ///< index of active axis
-    kvs::UInt8    m_line_opacity; ///< line opacity
-    kvs::Real32   m_line_width;   ///< line width
-    kvs::ColorMap m_color_map;    ///< color map
+    vismodule::UInt8    m_line_opacity; ///< line opacity
+    vismodule::Real32   m_line_width;   ///< line width
+    vismodule::ColorMap m_color_map;    ///< color map
 
 public:
 
@@ -75,11 +75,11 @@ public:
 
     void disableAntiAliasing( void ) const;
 
-    void setLineOpacity( const kvs::UInt8 opacity );
+    void setLineOpacity( const vismodule::UInt8 opacity );
 
-    void setLineWidth( const kvs::Real32 width );
+    void setLineWidth( const vismodule::Real32 width );
 
-    void setColorMap( const kvs::ColorMap& color_map );
+    void setColorMap( const vismodule::ColorMap& color_map );
 
     void selectAxis( const size_t index );
 
@@ -93,15 +93,15 @@ public:
 
     size_t activeAxis( void ) const;
 
-    kvs::UInt8 lineOpacity( void ) const;
+    vismodule::UInt8 lineOpacity( void ) const;
 
-    kvs::Real32 lineWidth( void ) const;
+    vismodule::Real32 lineWidth( void ) const;
 
 public:
 
-    void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
+    void exec( vismodule::ObjectBase* object, vismodule::Camera* camera, vismodule::Light* light );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__PARALLEL_COORDINATES_RENDERER_H_INCLUDE
+#endif // VIS_MODULE__PARALLEL_COORDINATES_RENDERER_H_INCLUDE

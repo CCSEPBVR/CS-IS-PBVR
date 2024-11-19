@@ -12,17 +12,17 @@
  *  $Id: ImageObject.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__IMAGE_OBJECT_H_INCLUDE
-#define KVS__IMAGE_OBJECT_H_INCLUDE
+#ifndef VIS_MODULE__IMAGE_OBJECT_H_INCLUDE
+#define VIS_MODULE__IMAGE_OBJECT_H_INCLUDE
 
-#include <kvs/ObjectBase>
-#include <kvs/ClassName>
-#include <kvs/ValueArray>
-#include <kvs/Type>
-#include <kvs/Module>
+#include <vismodule/ObjectBase>
+#include <vismodule/ClassName>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,14 +30,14 @@ namespace kvs
  *  @brief  Image object class.
  */
 /*===========================================================================*/
-class ImageObject : public kvs::ObjectBase
+class ImageObject : public vismodule::ObjectBase
 {
     // Class name.
-    kvsClassName( kvs::ImageObject );
+    visModuleClassName( vismodule::ImageObject );
 
     // Module information.
-    kvsModuleCategory( Object );
-    kvsModuleBaseClass( kvs::ObjectBase );
+    visModuleCategory( Object );
+    visModuleBaseClass( vismodule::ObjectBase );
 
 public:
 
@@ -54,7 +54,7 @@ protected:
     ImageObject::PixelType      m_type;   ///< pixel type
     size_t                      m_width;  ///< image width
     size_t                      m_height; ///< image height
-    kvs::ValueArray<kvs::UInt8> m_data;   ///< pixel data
+    vismodule::ValueArray<vismodule::UInt8> m_data;   ///< pixel data
 
 public:
 
@@ -63,7 +63,7 @@ public:
     ImageObject(
         const size_t                       width,
         const size_t                       height,
-        const kvs::ValueArray<kvs::UInt8>& data,
+        const vismodule::ValueArray<vismodule::UInt8>& data,
         const ImageObject::PixelType       type = ImageObject::Color24 );
 
     ImageObject( const ImageObject& other );
@@ -92,7 +92,7 @@ public:
 
     const size_t height( void ) const;
 
-    const kvs::ValueArray<kvs::UInt8>& data( void ) const;
+    const vismodule::ValueArray<vismodule::UInt8>& data( void ) const;
 
     const size_t bitsPerPixel( void ) const;
 
@@ -105,6 +105,6 @@ protected:
     const size_t get_npixels( void ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__IMAGE_OBJECT_H_INCLUDE
+#endif // VIS_MODULE__IMAGE_OBJECT_H_INCLUDE

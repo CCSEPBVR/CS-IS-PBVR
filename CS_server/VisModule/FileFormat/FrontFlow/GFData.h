@@ -12,17 +12,17 @@
  *  $Id: GFData.h 871 2011-07-27 00:54:23Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__GF_DATA_H_INCLUDE
-#define KVS__GF_DATA_H_INCLUDE
+#ifndef VIS_MODULE__GF_DATA_H_INCLUDE
+#define VIS_MODULE__GF_DATA_H_INCLUDE
 
-#include <kvs/FileFormatBase>
-#include <kvs/ClassName>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ClassName>
 #include "FlowData.h"
 #include "MeshData.h"
 #include "BoundaryData.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,19 +30,19 @@ namespace kvs
  *  @brief  GF file format class.
  */
 /*===========================================================================*/
-class GFData : public kvs::FileFormatBase
+class GFData : public vismodule::FileFormatBase
 {
-    kvsClassName_without_virtual( kvs::GFData );
+    visModuleClassName_without_virtual( vismodule::GFData );
 
 public:
 
-    typedef kvs::FileFormatBase BaseClass;
+    typedef vismodule::FileFormatBase BaseClass;
 
 protected:
 
-    kvs::gf::MeshData m_mesh_data; ///< GF mesh data
-    kvs::gf::FlowData m_flow_data; ///< GF flow data
-    kvs::gf::BoundaryData m_boundary_data; ///< GF doundary condition data
+    vismodule::gf::MeshData m_mesh_data; ///< GF mesh data
+    vismodule::gf::FlowData m_flow_data; ///< GF flow data
+    vismodule::gf::BoundaryData m_boundary_data; ///< GF doundary condition data
 
 public:
 
@@ -54,11 +54,11 @@ public:
 
 public:
 
-    const kvs::gf::FlowData& flowData( void ) const;
+    const vismodule::gf::FlowData& flowData( void ) const;
 
-    const kvs::gf::MeshData& meshData( void ) const;
+    const vismodule::gf::MeshData& meshData( void ) const;
 
-    const kvs::gf::BoundaryData& boundaryData( void ) const;
+    const vismodule::gf::BoundaryData& boundaryData( void ) const;
 
 public:
 
@@ -71,6 +71,6 @@ private:
     const bool write( const std::string& filename );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GF_DATA_H_INCLUDE
+#endif // VIS_MODULE__GF_DATA_H_INCLUDE

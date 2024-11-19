@@ -11,18 +11,18 @@
  *  $Id: ColorMap.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__COLOR_MAP_H_INCLUDE
-#define KVS__COLOR_MAP_H_INCLUDE
+#ifndef VIS_MODULE__COLOR_MAP_H_INCLUDE
+#define VIS_MODULE__COLOR_MAP_H_INCLUDE
 
 #include <list>
 #include <utility>
-#include <kvs/ClassName>
-#include <kvs/ValueArray>
-#include <kvs/Type>
-#include <kvs/RGBColor>
+#include <vismodule/ClassName>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/RGBColor>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -32,12 +32,12 @@ namespace kvs
 /*==========================================================================*/
 class ColorMap
 {
-    kvsClassName( kvs::ColorMap );
+    visModuleClassName( vismodule::ColorMap );
 
 public:
 
-    typedef kvs::ValueArray<kvs::UInt8>    Table;
-    typedef std::pair<float,kvs::RGBColor> Point;
+    typedef vismodule::ValueArray<vismodule::UInt8>    Table;
+    typedef std::pair<float,vismodule::RGBColor> Point;
     typedef std::list<Point>               Points;
 
 private:
@@ -84,7 +84,7 @@ public:
 
     void setResolution( const size_t resolution );
 
-    void addPoint( const float value, const kvs::RGBColor color );
+    void addPoint( const float value, const vismodule::RGBColor color );
 
     void removePoint( const float value );
 
@@ -92,15 +92,15 @@ public:
 
 public:
 
-    const kvs::RGBColor operator []( const size_t index ) const;
+    const vismodule::RGBColor operator []( const size_t index ) const;
 
-    const kvs::RGBColor at( const float value ) const;
+    const vismodule::RGBColor at( const float value ) const;
 
 public:
 
     ColorMap& operator =( const ColorMap& rhs );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__COLOR_MAP_H_INCLUDE
+#endif // VIS_MODULE__COLOR_MAP_H_INCLUDE

@@ -11,14 +11,14 @@
  *  $Id: TrilinearInterpolator.h 653 2010-10-29 14:17:13Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__TRILINEAR_INTERPOLATOR_H_INCLUDE
-#define KVS__TRILINEAR_INTERPOLATOR_H_INCLUDE
+#ifndef VIS_MODULE__TRILINEAR_INTERPOLATOR_H_INCLUDE
+#define VIS_MODULE__TRILINEAR_INTERPOLATOR_H_INCLUDE
 
-#include <kvs/ClassName>
-//#include <kvs/StructuredVolumeObject>
+#include <vismodule/ClassName>
+//#include <vismodule/StructuredVolumeObject>
 #include "StructuredVolumeObject.h"
-#include <kvs/Vector3>
-#include <kvs/Assert>
+#include <vismodule/Vector3>
+#include <vismodule/Assert>
 
 #ifndef SIMDW 
 #define SIMDW 128
@@ -37,31 +37,31 @@ namespace TFS
 /*==========================================================================*/
 class TrilinearInterpolator
 {
-    //kvsClassName_without_virtual( kvs::TrilinearInterpolator );
+    //visModuleClassName_without_virtual( vismodule::TrilinearInterpolator );
 
 private:
 
-    kvs::Vector3ui m_grid_index; ///< grid index
-//    kvs::UInt32    m_index[8];   ///< neighbouring grid index
-//    kvs::Real32    m_weight[8];  ///< weight for the neighbouring grid index
-    kvs::Real32    m_scalars[8]; 
+    vismodule::Vector3ui m_grid_index; ///< grid index
+//    vismodule::UInt32    m_index[8];   ///< neighbouring grid index
+//    vismodule::Real32    m_weight[8];  ///< weight for the neighbouring grid index
+    vismodule::Real32    m_scalars[8]; 
     float*          m_data;
 
-    kvs::UInt32 m_grid_index_i[SIMDW]; ///< grid index
-    kvs::UInt32 m_grid_index_j[SIMDW]; ///< grid index
-    kvs::UInt32 m_grid_index_k[SIMDW]; ///< grid index
-    kvs::UInt32 m_leaf_index;
-    kvs::Real32 m_cell_length;
-    kvs::UInt32 m_index[8][SIMDW];   ///< neighbouring grid index
-    kvs::Real32 m_weight[8][SIMDW];  ///< weight for the neighbouring grid index
-    //kvs::Real32 m_differential_functions[24][SIMDW];
-    kvs::Real32 m_dNdx[8][SIMDW];
-    kvs::Real32 m_dNdy[8][SIMDW];
-    kvs::Real32 m_dNdz[8][SIMDW];
+    vismodule::UInt32 m_grid_index_i[SIMDW]; ///< grid index
+    vismodule::UInt32 m_grid_index_j[SIMDW]; ///< grid index
+    vismodule::UInt32 m_grid_index_k[SIMDW]; ///< grid index
+    vismodule::UInt32 m_leaf_index;
+    vismodule::Real32 m_cell_length;
+    vismodule::UInt32 m_index[8][SIMDW];   ///< neighbouring grid index
+    vismodule::Real32 m_weight[8][SIMDW];  ///< weight for the neighbouring grid index
+    //vismodule::Real32 m_differential_functions[24][SIMDW];
+    vismodule::Real32 m_dNdx[8][SIMDW];
+    vismodule::Real32 m_dNdy[8][SIMDW];
+    vismodule::Real32 m_dNdz[8][SIMDW];
 
     const float*         m_reference_volume;
 //    const pbvr::StructuredVolumeObject& m_reference_volume;
-    const kvs::Vector3ui m_resolution; ///< resolution 3D
+    const vismodule::Vector3ui m_resolution; ///< resolution 3D
     const int m_line_size;
     const int m_slice_size;
     const int m_leaf_size;
@@ -71,7 +71,7 @@ private:
 
 public:
 
-    TrilinearInterpolator( const float* volume, const kvs::Vector3ui resolution );
+    TrilinearInterpolator( const float* volume, const vismodule::Vector3ui resolution );
 //    TrilinearInterpolator( const pbvr::StructuredVolumeObject& volume );
 //    TrilinearInterpolator( T* values,
 //              float* coords, int ncoords, int ncells);
@@ -84,7 +84,7 @@ public:
 
     void attachPoint( const float* p_x, const float* p_y, const float* p_z );
 
-    //const kvs::UInt32* indices( void ) const;
+    //const vismodule::UInt32* indices( void ) const;
 
     //template <typename T>
     void scalar( float* values ) const;
@@ -113,7 +113,7 @@ private:
 //
 //}
 
-inline TrilinearInterpolator::TrilinearInterpolator( const float* volume, const kvs::Vector3ui resolution )
+inline TrilinearInterpolator::TrilinearInterpolator( const float* volume, const vismodule::Vector3ui resolution )
     : m_reference_volume( volume )
     , m_resolution( resolution )
     , m_line_size ( resolution.x() )
@@ -150,11 +150,11 @@ inline const int TrilinearInterpolator::id( const int i, const int j, const int 
 //    return i + j*m_line_size + k*m_slice_size;
 }
 
-//inline void TrilinearInterpolator::attachPoint( const kvs::Vector3f& point )
+//inline void TrilinearInterpolator::attachPoint( const vismodule::Vector3f& point )
 #pragma ivdep
 inline void TrilinearInterpolator::attachPoint( const float* p_x, const float* p_y, const float* p_z )
 {
-    const kvs::Vector3ui resolution = m_resolution;
+    const vismodule::Vector3ui resolution = m_resolution;
 
     for( int I=0; I < SIMDW; I++ )
     {
@@ -234,7 +234,7 @@ inline void TrilinearInterpolator::attachPoint( const float* p_x, const float* p
     }
 }
 /*
-inline const kvs::UInt32* TrilinearInterpolator::indices( void ) const
+inline const vismodule::UInt32* TrilinearInterpolator::indices( void ) const
 {
     return( m_index );
 }
@@ -266,7 +266,7 @@ inline void TrilinearInterpolator::gradient( float* g_x, float* g_y, float* g_z 
 {
     // Calculate a gradient vector in the local coordinate.
     const float* const data = m_reference_volume;
-    const kvs::UInt32 nnodes = 8;
+    const vismodule::UInt32 nnodes = 8;
     const float inv_Jacobi = 1.0 / m_cell_length;
 
     for( int I = 0; I < SIMDW; I++ )
@@ -430,6 +430,6 @@ template <typename T>
     }
 }
 */
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TRILINEAR_INTERPOLATOR_H_INCLUDE
+#endif // VIS_MODULE__TRILINEAR_INTERPOLATOR_H_INCLUDE

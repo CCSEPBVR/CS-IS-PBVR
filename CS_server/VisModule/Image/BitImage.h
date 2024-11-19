@@ -11,16 +11,16 @@
  *  $Id: BitImage.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__BIT_IMAGE_H_INCLUDE
-#define KVS__BIT_IMAGE_H_INCLUDE
+#ifndef VIS_MODULE__BIT_IMAGE_H_INCLUDE
+#define VIS_MODULE__BIT_IMAGE_H_INCLUDE
 
 #include <limits>
 #include "ImageBase.h"
 #include "GrayImage.h"
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class RGBColor;
@@ -31,13 +31,13 @@ class ColorImage;
  *  Bit image class.
  */
 /*==========================================================================*/
-class BitImage : public kvs::ImageBase
+class BitImage : public vismodule::ImageBase
 {
-    kvsClassName( kvs::BitImage );
+    visModuleClassName( vismodule::BitImage );
 
 public:
 
-    typedef kvs::ImageBase BaseClass;
+    typedef vismodule::ImageBase BaseClass;
     typedef bool           PixelType;
 
 public:
@@ -46,42 +46,42 @@ public:
 
     struct PTile
     {
-        void operator () ( const kvs::GrayImage& image, kvs::ValueArray<kvs::UInt8>& data );
+        void operator () ( const vismodule::GrayImage& image, vismodule::ValueArray<vismodule::UInt8>& data );
     };
 
     struct Distinction
     {
-        void operator () ( const kvs::GrayImage& image, kvs::ValueArray<kvs::UInt8>& data );
+        void operator () ( const vismodule::GrayImage& image, vismodule::ValueArray<vismodule::UInt8>& data );
     };
 
     struct Byer
     {
-        void operator () ( const kvs::GrayImage& image, kvs::ValueArray<kvs::UInt8>& data );
+        void operator () ( const vismodule::GrayImage& image, vismodule::ValueArray<vismodule::UInt8>& data );
     };
 
     struct Halftone
     {
-        void operator () ( const kvs::GrayImage& image, kvs::ValueArray<kvs::UInt8>& data );
+        void operator () ( const vismodule::GrayImage& image, vismodule::ValueArray<vismodule::UInt8>& data );
     };
 
     struct EmphasizedHalftone
     {
-        void operator () ( const kvs::GrayImage& image, kvs::ValueArray<kvs::UInt8>& data );
+        void operator () ( const vismodule::GrayImage& image, vismodule::ValueArray<vismodule::UInt8>& data );
     };
 
     struct Screw
     {
-        void operator () ( const kvs::GrayImage& image, kvs::ValueArray<kvs::UInt8>& data );
+        void operator () ( const vismodule::GrayImage& image, vismodule::ValueArray<vismodule::UInt8>& data );
     };
 
     struct DeformedScrew
     {
-        void operator () ( const kvs::GrayImage& image, kvs::ValueArray<kvs::UInt8>& data );
+        void operator () ( const vismodule::GrayImage& image, vismodule::ValueArray<vismodule::UInt8>& data );
     };
 
     struct DotConcentrate
     {
-        void operator () ( const kvs::GrayImage& image, kvs::ValueArray<kvs::UInt8>& data );
+        void operator () ( const vismodule::GrayImage& image, vismodule::ValueArray<vismodule::UInt8>& data );
     };
 
 public:
@@ -90,16 +90,16 @@ public:
 
     BitImage( const size_t width, const size_t height, const bool bit = true );
 
-    BitImage( const size_t width, const size_t height, const kvs::UInt8* data );
+    BitImage( const size_t width, const size_t height, const vismodule::UInt8* data );
 
-    BitImage( const size_t width, const size_t height, const kvs::ValueArray<kvs::UInt8>& data );
+    BitImage( const size_t width, const size_t height, const vismodule::ValueArray<vismodule::UInt8>& data );
 
-    BitImage( const kvs::BitImage& image );
+    BitImage( const vismodule::BitImage& image );
 
-    explicit BitImage( const kvs::GrayImage& image );
+    explicit BitImage( const vismodule::GrayImage& image );
 
     template <typename BinarizationMethod>
-    BitImage( const kvs::GrayImage& image, BinarizationMethod method );
+    BitImage( const vismodule::GrayImage& image, BinarizationMethod method );
 
     explicit BitImage( const std::string& filename );
 
@@ -107,7 +107,7 @@ public:
 
 public:
 
-    kvs::BitImage& operator = ( const kvs::BitImage& image );
+    vismodule::BitImage& operator = ( const vismodule::BitImage& image );
 
 public:
 
@@ -154,12 +154,12 @@ protected:
  */
 /*===========================================================================*/
 template <typename BinarizationMethod>
-inline BitImage::BitImage( const kvs::GrayImage& image, BinarizationMethod method ):
-    kvs::ImageBase( image.width(), image.height(), kvs::ImageBase::Bit )
+inline BitImage::BitImage( const vismodule::GrayImage& image, BinarizationMethod method ):
+    vismodule::ImageBase( image.width(), image.height(), vismodule::ImageBase::Bit )
 {
     method( image, m_data );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__BIT_IMAGE_H_INCLUDE
+#endif // VIS_MODULE__BIT_IMAGE_H_INCLUDE

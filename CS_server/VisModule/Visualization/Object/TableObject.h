@@ -12,17 +12,17 @@
  *  $Id: TableObject.h 853 2011-07-12 07:47:36Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__TABLE_OBJECT_H_INCLUDE
-#define KVS__TABLE_OBJECT_H_INCLUDE
+#ifndef VIS_MODULE__TABLE_OBJECT_H_INCLUDE
+#define VIS_MODULE__TABLE_OBJECT_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/ObjectBase>
-#include <kvs/Type>
-#include <kvs/AnyValueArray>
+#include <vismodule/ClassName>
+#include <vismodule/ObjectBase>
+#include <vismodule/Type>
+#include <vismodule/AnyValueArray>
 #include <vector>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,21 +30,21 @@ namespace kvs
  *  TableObject class.
  */
 /*===========================================================================*/
-class TableObject : public kvs::ObjectBase
+class TableObject : public vismodule::ObjectBase
 {
     // Class name.
-    kvsClassName( kvs::TableObject );
+    visModuleClassName( vismodule::TableObject );
 
     // Module information.
-    kvsModuleCategory( Object );
-    kvsModuleBaseClass( kvs::ObjectBase );
+    visModuleCategory( Object );
+    visModuleBaseClass( vismodule::ObjectBase );
 
 public:
 
     typedef std::vector<std::string> LabelList;
-    typedef std::vector<kvs::AnyValueArray> ColumnList;
-    typedef std::vector<kvs::Real64> ValueList;
-    typedef std::vector<kvs::UInt8> RangeList;
+    typedef std::vector<vismodule::AnyValueArray> ColumnList;
+    typedef std::vector<vismodule::Real64> ValueList;
+    typedef std::vector<vismodule::UInt8> RangeList;
 
 protected:
 
@@ -62,20 +62,20 @@ public:
 
     TableObject( void );
 
-    TableObject( const kvs::TableObject& table );
+    TableObject( const vismodule::TableObject& table );
 
 public:
 
-    static kvs::TableObject* DownCast( kvs::ObjectBase* object );
+    static vismodule::TableObject* DownCast( vismodule::ObjectBase* object );
 
-    static const kvs::TableObject* DownCast( const kvs::ObjectBase* object );
+    static const vismodule::TableObject* DownCast( const vismodule::ObjectBase* object );
 
 public:
 
-    void addColumn( const kvs::AnyValueArray& array, const std::string& label = "" );
+    void addColumn( const vismodule::AnyValueArray& array, const std::string& label = "" );
 
     template <typename T>
-    void addColumn( const kvs::ValueArray<T>& array, const std::string& label = "" );
+    void addColumn( const vismodule::ValueArray<T>& array, const std::string& label = "" );
 
     template <typename T>
     void addColumn( const std::vector<T>& array, const std::string& label = "" );
@@ -90,34 +90,34 @@ public:
 
     const ColumnList columnList( void ) const;
 
-    const kvs::AnyValueArray& column( const size_t index ) const;
+    const vismodule::AnyValueArray& column( const size_t index ) const;
 
     const ValueList minValueList( void ) const;
 
-    const kvs::Real64 minValue( const size_t index ) const;
+    const vismodule::Real64 minValue( const size_t index ) const;
 
     const ValueList maxValueList( void ) const;
 
-    const kvs::Real64 maxValue( const size_t index ) const;
+    const vismodule::Real64 maxValue( const size_t index ) const;
 
     template <typename T>
     const T& at( const size_t row, const size_t column ) const;
 
-    void setMinValue( const size_t column_index, const kvs::Real64 value );
+    void setMinValue( const size_t column_index, const vismodule::Real64 value );
 
-    void setMaxValue( const size_t column_index, const kvs::Real64 value );
+    void setMaxValue( const size_t column_index, const vismodule::Real64 value );
 
-    void setMinRange( const size_t column_index, const kvs::Real64 range );
+    void setMinRange( const size_t column_index, const vismodule::Real64 range );
 
-    void setMaxRange( const size_t column_index, const kvs::Real64 range );
+    void setMaxRange( const size_t column_index, const vismodule::Real64 range );
 
-    void setRange( const size_t column_index, const kvs::Real64 min_range, const kvs::Real64 max_range );
+    void setRange( const size_t column_index, const vismodule::Real64 min_range, const vismodule::Real64 max_range );
 
-    void moveMinRange( const size_t column_index, const kvs::Real64 drange );
+    void moveMinRange( const size_t column_index, const vismodule::Real64 drange );
 
-    void moveMaxRange( const size_t column_index, const kvs::Real64 drange );
+    void moveMaxRange( const size_t column_index, const vismodule::Real64 drange );
 
-    void moveRange( const size_t column_index, const kvs::Real64 drange );
+    void moveRange( const size_t column_index, const vismodule::Real64 drange );
 
     void resetRange( const size_t column_index );
 
@@ -131,9 +131,9 @@ public:
 
     const RangeList& insideRangeList( void ) const;
 
-    const kvs::Real64 minRange( const size_t column_index ) const;
+    const vismodule::Real64 minRange( const size_t column_index ) const;
 
-    const kvs::Real64 maxRange( const size_t column_index ) const;
+    const vismodule::Real64 maxRange( const size_t column_index ) const;
 
     const bool insideRange( const size_t row_index ) const;
 
@@ -148,9 +148,9 @@ public:
  */
 /*===========================================================================*/
 template <typename T>
-inline void TableObject::addColumn( const kvs::ValueArray<T>& array, const std::string& label )
+inline void TableObject::addColumn( const vismodule::ValueArray<T>& array, const std::string& label )
 {
-    this->addColumn( kvs::AnyValueArray( array ), label ); // Shallow copy.
+    this->addColumn( vismodule::AnyValueArray( array ), label ); // Shallow copy.
 }
 
 /*===========================================================================*/
@@ -163,7 +163,7 @@ inline void TableObject::addColumn( const kvs::ValueArray<T>& array, const std::
 template <typename T>
 inline void TableObject::addColumn( const std::vector<T>& array, const std::string& label )
 {
-    this->addColumn( kvs::AnyValueArray( array ), label ); // Deep copy.
+    this->addColumn( vismodule::AnyValueArray( array ), label ); // Deep copy.
 }
 
 /*===========================================================================*/
@@ -179,6 +179,6 @@ inline const T& TableObject::at( const size_t row, const size_t column ) const
     return( this->column( column ).template at<T>( row ) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TABLE_OBJECT_H_INCLUDE
+#endif // VIS_MODULE__TABLE_OBJECT_H_INCLUDE

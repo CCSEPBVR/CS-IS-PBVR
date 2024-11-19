@@ -14,10 +14,10 @@
 #ifndef PBVR__FREQUENCY_TABLE_H_INCLUDE
 #define PBVR__FREQUENCY_TABLE_H_INCLUDE
 
-#include <kvs/ValueArray>
-#include <kvs/Type>
-#include <kvs/Math>
-#include <kvs/Message>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/Math>
+#include <vismodule/Message>
 //#include "VolumeObjectBase.h"
 //#include "ImageObject.h"
 #include "ClassName.h"
@@ -35,19 +35,19 @@ namespace pbvr
 /*==========================================================================*/
 class FrequencyTable
 {
-    kvsClassName( pbvr::FrequencyTable );
+    visModuleClassName( pbvr::FrequencyTable );
 
 protected:
 
-    kvs::Real64             m_min_range;     ///< min. range value
-    kvs::Real64             m_max_range;     ///< max. range value
+    vismodule::Real64             m_min_range;     ///< min. range value
+    vismodule::Real64             m_max_range;     ///< max. range value
     size_t                  m_max_count;     ///< min. count value
-    kvs::Real64             m_mean;          ///< mean value
-    kvs::Real64             m_variance;      ///< variance value
-    kvs::Real64             m_standard_deviation; ///< standard deviation
-    kvs::UInt64             m_nbins;         ///< number of bins
-    kvs::ValueArray<size_t> m_bin;           ///< bin array
-    std::list<kvs::Real64>  m_ignore_values; ///< ignore value list
+    vismodule::Real64             m_mean;          ///< mean value
+    vismodule::Real64             m_variance;      ///< variance value
+    vismodule::Real64             m_standard_deviation; ///< standard deviation
+    vismodule::UInt64             m_nbins;         ///< number of bins
+    vismodule::ValueArray<size_t> m_bin;           ///< bin array
+    std::list<vismodule::Real64>  m_ignore_values; ///< ignore value list
 
 public:
 
@@ -57,29 +57,29 @@ public:
 
 public:
 
-    const kvs::Real64 minRange() const;
+    const vismodule::Real64 minRange() const;
 
-    const kvs::Real64 maxRange() const;
+    const vismodule::Real64 maxRange() const;
 
     const size_t maxCount() const;
 
-    const kvs::Real64 mean() const;
+    const vismodule::Real64 mean() const;
 
-    const kvs::Real64 variance() const;
+    const vismodule::Real64 variance() const;
 
-    const kvs::Real64 standardDeviation() const;
+    const vismodule::Real64 standardDeviation() const;
 
-    const kvs::UInt64 nbins() const;
+    const vismodule::UInt64 nbins() const;
 
-    const kvs::ValueArray<size_t>& bin() const;
+    const vismodule::ValueArray<size_t>& bin() const;
 
 public:
 
-    void setIgnoreValue( const kvs::Real64 value );
+    void setIgnoreValue( const vismodule::Real64 value );
 
-    void setRange( const kvs::Real64 min_range, const kvs::Real64 max_range );
+    void setRange( const vismodule::Real64 min_range, const vismodule::Real64 max_range );
 
-    void setNBins( const kvs::UInt64 nbins );
+    void setNBins( const vismodule::UInt64 nbins );
 
     void allocate();
 
@@ -87,40 +87,40 @@ public:
 
     //void create( const pbvr::VolumeObjectBase* volume );
 
-    //void create( const kvs::ImageObject* image, const size_t channel = 0 );
+    //void create( const vismodule::ImageObject* image, const size_t channel = 0 );
     //
     template <typename T>
-    inline void create( const kvs::ValueArray<T>& vec );
+    inline void create( const vismodule::ValueArray<T>& vec );
 
 public:
 
-    const kvs::UInt64 operator [] ( const size_t index ) const;
+    const vismodule::UInt64 operator [] ( const size_t index ) const;
 
-    const kvs::UInt64 at( const size_t index ) const;
+    const vismodule::UInt64 at( const size_t index ) const;
 
 private:
 
     //void calculate_range( const pbvr::VolumeObjectBase* volume );
 
-    //void calculate_range( const kvs::ImageObject* image );
+    //void calculate_range( const vismodule::ImageObject* image );
 
     //void count_bin( const pbvr::VolumeObjectBase* volume );
 
-    //void count_bin( const kvs::ImageObject* image, const size_t channel );
+    //void count_bin( const vismodule::ImageObject* image, const size_t channel );
 
     template <typename T>
-    inline void count_bin( const kvs::ValueArray<T>& vec );
+    inline void count_bin( const vismodule::ValueArray<T>& vec );
 
     //template <typename T>
     //void binning( const pbvr::VolumeObjectBase* volume );
 
     //template <typename T>
-    //void binning( const kvs::ImageObject* image, const size_t channel );
+    //void binning( const vismodule::ImageObject* image, const size_t channel );
     //
     template <typename T>
-    inline void binning( const  kvs::ValueArray<T>& vec );
+    inline void binning( const  vismodule::ValueArray<T>& vec );
 
-    bool is_ignore_value( const kvs::Real64 value );
+    bool is_ignore_value( const vismodule::Real64 value );
 };
 
 /*==========================================================================*/
@@ -131,13 +131,13 @@ private:
 /*==========================================================================*/
 
 template <typename T>
-inline void FrequencyTable::binning( const kvs::ValueArray<T>& vec )
+inline void FrequencyTable::binning( const vismodule::ValueArray<T>& vec )
 {
     const size_t veclen = 1;
-    typename kvs::ValueArray<T>::const_iterator value = vec.begin();
-    typename kvs::ValueArray<T>::const_iterator end   = vec.end();
-    const kvs::Real64 width = ( m_max_range - m_min_range ) / kvs::Real64( m_nbins - 1 );
-//  const kvs::Real64 width = ( m_max_range - m_min_range + 1 ) / kvs::Real64( m_nbins );
+    typename vismodule::ValueArray<T>::const_iterator value = vec.begin();
+    typename vismodule::ValueArray<T>::const_iterator end   = vec.end();
+    const vismodule::Real64 width = ( m_max_range - m_min_range ) / vismodule::Real64( m_nbins - 1 );
+//  const vismodule::Real64 width = ( m_max_range - m_min_range + 1 ) / vismodule::Real64( m_nbins );
 
     size_t total_count = 0;
 
@@ -151,7 +151,7 @@ inline void FrequencyTable::binning( const kvs::ValueArray<T>& vec )
 //                const size_t index = static_cast<size_t>( ( *value - m_min_range ) / width + 0.5f );
                 const size_t index = static_cast<size_t>( ( *value - m_min_range ) / width );
                 m_bin[index] = m_bin[index] + 1;
-                m_max_count = kvs::Math::Max( m_max_count, m_bin[index] );
+                m_max_count = vismodule::Math::Max( m_max_count, m_bin[index] );
 
                 total_count++;
             }
@@ -162,43 +162,43 @@ inline void FrequencyTable::binning( const kvs::ValueArray<T>& vec )
     {
         while ( value < end )
         {
-            kvs::Real64 magnitude = 0.0;
+            vismodule::Real64 magnitude = 0.0;
             for ( size_t i = 0; i < veclen; ++i )
             {
-                magnitude += static_cast<kvs::Real64>( ( *value ) * ( *value ) );
+                magnitude += static_cast<vismodule::Real64>( ( *value ) * ( *value ) );
                 ++value;
             }
-            magnitude = kvs::Math::SquareRoot( magnitude );
+            magnitude = vismodule::Math::SquareRoot( magnitude );
 
             if ( !this->is_ignore_value( magnitude ) )
             {
                 const size_t index = static_cast<size_t>( ( magnitude - m_min_range ) / width + 0.5f );
 //              const size_t index = static_cast<size_t>( ( magnitude - m_min_range ) / width );
                 m_bin[index] = m_bin[index] + 1;
-                m_max_count = kvs::Math::Max( m_max_count, m_bin[index] );
+                m_max_count = vismodule::Math::Max( m_max_count, m_bin[index] );
 
                 total_count++;
             }
         }
     }
 
-    m_mean = static_cast<kvs::Real64>( total_count ) / m_nbins;
+    m_mean = static_cast<vismodule::Real64>( total_count ) / m_nbins;
 
-    kvs::Real64 sum = 0;
-    for ( size_t i = 0; i < m_nbins; i++ ) sum += kvs::Math::Square( m_bin[i] - m_mean );
+    vismodule::Real64 sum = 0;
+    for ( size_t i = 0; i < m_nbins; i++ ) sum += vismodule::Math::Square( m_bin[i] - m_mean );
     m_variance = sum / m_nbins;
 
     m_standard_deviation = std::sqrt( m_variance );
 }
 
 template <typename T>
-inline void FrequencyTable::count_bin( const kvs::ValueArray<T>& vec )
+inline void FrequencyTable::count_bin( const vismodule::ValueArray<T>& vec )
 {
     this->binning<T>( vec );
 }
 
 template <typename T>
-inline void FrequencyTable::create( const kvs::ValueArray<T>& vec )
+inline void FrequencyTable::create( const vismodule::ValueArray<T>& vec )
 {
     this->count_bin( vec );
 }
@@ -216,8 +216,8 @@ inline void FrequencyTable::binning( const pbvr::VolumeObjectBase* volume )
     const size_t veclen = volume->veclen();
     const T* value = reinterpret_cast<const T*>( volume->values().pointer() );
     const T* const end = value + volume->nnodes() * veclen;
-//    const kvs::Real64 width = ( m_max_range - m_min_range ) / kvs::Real64( m_nbins - 1 );
-    const kvs::Real64 width = ( m_max_range - m_min_range + 1 ) / kvs::Real64( m_nbins );
+//    const vismodule::Real64 width = ( m_max_range - m_min_range ) / vismodule::Real64( m_nbins - 1 );
+    const vismodule::Real64 width = ( m_max_range - m_min_range + 1 ) / vismodule::Real64( m_nbins );
 
     size_t total_count = 0;
 
@@ -231,7 +231,7 @@ inline void FrequencyTable::binning( const pbvr::VolumeObjectBase* volume )
                 const size_t index = static_cast<size_t>( ( *value - m_min_range ) / width + 0.5f );
 //                const size_t index = static_cast<size_t>( ( *value - m_min_range ) / width );
                 m_bin[index] = m_bin[index] + 1;
-                m_max_count = kvs::Math::Max( m_max_count, m_bin[index] );
+                m_max_count = vismodule::Math::Max( m_max_count, m_bin[index] );
 
                 total_count++;
             }
@@ -242,30 +242,30 @@ inline void FrequencyTable::binning( const pbvr::VolumeObjectBase* volume )
     {
         while ( value < end )
         {
-            kvs::Real64 magnitude = 0.0;
+            vismodule::Real64 magnitude = 0.0;
             for ( size_t i = 0; i < veclen; ++i )
             {
-                magnitude += static_cast<kvs::Real64>( ( *value ) * ( *value ) );
+                magnitude += static_cast<vismodule::Real64>( ( *value ) * ( *value ) );
                 ++value;
             }
-            magnitude = kvs::Math::SquareRoot( magnitude );
+            magnitude = vismodule::Math::SquareRoot( magnitude );
 
             if ( !this->is_ignore_value( magnitude ) )
             {
                 const size_t index = static_cast<size_t>( ( magnitude - m_min_range ) / width + 0.5f );
 //                const size_t index = static_cast<size_t>( ( magnitude - m_min_range ) / width );
                 m_bin[index] = m_bin[index] + 1;
-                m_max_count = kvs::Math::Max( m_max_count, m_bin[index] );
+                m_max_count = vismodule::Math::Max( m_max_count, m_bin[index] );
 
                 total_count++;
             }
         }
     }
 
-    m_mean = static_cast<kvs::Real64>( total_count ) / m_nbins;
+    m_mean = static_cast<vismodule::Real64>( total_count ) / m_nbins;
 
-    kvs::Real64 sum = 0;
-    for ( size_t i = 0; i < m_nbins; i++ ) sum += kvs::Math::Square( m_bin[i] - m_mean );
+    vismodule::Real64 sum = 0;
+    for ( size_t i = 0; i < m_nbins; i++ ) sum += vismodule::Math::Square( m_bin[i] - m_mean );
     m_variance = sum / m_nbins;
 
     m_standard_deviation = std::sqrt( m_variance );
@@ -279,17 +279,17 @@ inline void FrequencyTable::binning( const pbvr::VolumeObjectBase* volume )
  */
 /*==========================================================================*/
 /*template <typename T>
-inline void FrequencyTable::binning( const kvs::ImageObject* image, const size_t channel )
+inline void FrequencyTable::binning( const vismodule::ImageObject* image, const size_t channel )
 {
     if ( channel >= image->nchannels() )
     {
-        kvsMessageError("Specified channel is invalid.");
+        visModuleMessageError("Specified channel is invalid.");
         return;
     }
 
     const T* values = reinterpret_cast<const T*>( image->data().pointer() );
-//    const kvs::Real64 width = ( m_max_range - m_min_range ) / kvs::Real64( m_nbins - 1 );
-    const kvs::Real64 width = ( m_max_range - m_min_range + 1 ) / kvs::Real64( m_nbins );
+//    const vismodule::Real64 width = ( m_max_range - m_min_range ) / vismodule::Real64( m_nbins - 1 );
+    const vismodule::Real64 width = ( m_max_range - m_min_range + 1 ) / vismodule::Real64( m_nbins );
     const size_t stride  = image->nchannels();
     const size_t npixels = image->width() * image->height();
 
@@ -305,16 +305,16 @@ inline void FrequencyTable::binning( const kvs::ImageObject* image, const size_t
 //            const size_t index = static_cast<size_t>( ( value - m_min_range ) / width + 0.5f );
             const size_t index = static_cast<size_t>( ( value - m_min_range ) / width );
             m_bin[index] = m_bin[index] + 1;
-            m_max_count = kvs::Math::Max( m_max_count, m_bin[index] );
+            m_max_count = vismodule::Math::Max( m_max_count, m_bin[index] );
 
             total_count++;
         }
     }
 
-    m_mean = static_cast<kvs::Real64>( total_count ) / m_nbins;
+    m_mean = static_cast<vismodule::Real64>( total_count ) / m_nbins;
 
-    kvs::Real64 sum = 0;
-    for ( size_t i = 0; i < m_nbins; i++ ) sum += kvs::Math::Square( m_bin[i] - m_mean );
+    vismodule::Real64 sum = 0;
+    for ( size_t i = 0; i < m_nbins; i++ ) sum += vismodule::Math::Square( m_bin[i] - m_mean );
     m_variance = sum / m_nbins;
 
     m_standard_deviation = std::sqrt( m_variance );
@@ -322,4 +322,4 @@ inline void FrequencyTable::binning( const kvs::ImageObject* image, const size_t
 */
 } // end of namespace pbvr
 
-#endif // KVS__FREQUENCY_TABLE_H_INCLUDE
+#endif // VIS_MODULE__FREQUENCY_TABLE_H_INCLUDE

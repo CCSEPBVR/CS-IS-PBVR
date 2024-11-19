@@ -14,7 +14,7 @@
 #include "SocketTimer.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 const SocketTimer SocketTimer::Zero;
@@ -59,4 +59,4 @@ bool SocketTimer::isZero( void ) const
     return( m_value.tv_sec == 0 && m_value.tv_usec == 0 );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

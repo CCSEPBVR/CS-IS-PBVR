@@ -14,7 +14,7 @@
 #include "Matrix.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 // Template instantiation.
@@ -29,4 +29,4 @@ namespace kvs
 template class Matrix<float>;
 template class Matrix<double>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

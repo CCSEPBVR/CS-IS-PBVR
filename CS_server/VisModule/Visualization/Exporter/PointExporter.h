@@ -11,16 +11,16 @@
  *  $Id: PointExporter.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__POINT_EXPORTER_H_INCLUDE
-#define KVS__POINT_EXPORTER_H_INCLUDE
+#ifndef VIS_MODULE__POINT_EXPORTER_H_INCLUDE
+#define VIS_MODULE__POINT_EXPORTER_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/PointObject>
-#include <kvs/KVSMLObjectPoint>
+#include <vismodule/ClassName>
+#include <vismodule/PointObject>
+#include <vismodule/KVSMLObjectPoint>
 #include "ExporterBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -29,25 +29,25 @@ namespace kvs
  */
 /*===========================================================================*/
 template <typename FileFormatType>
-class PointExporter : public kvs::ExporterBase<FileFormatType>
+class PointExporter : public vismodule::ExporterBase<FileFormatType>
 {
-    kvsClassName( kvs::PointExporter );
+    visModuleClassName( vismodule::PointExporter );
 
 public:
 
-    PointExporter( const kvs::PointObject* object );
+    PointExporter( const vismodule::PointObject* object );
 
-    FileFormatType* exec( const kvs::ObjectBase* object );
+    FileFormatType* exec( const vismodule::ObjectBase* object );
 };
 
 template <typename FileFormatType>
-PointExporter<FileFormatType>::PointExporter( const kvs::PointObject* object )
+PointExporter<FileFormatType>::PointExporter( const vismodule::PointObject* object )
 {
     this->exec( object );
 }
 
 template <typename FileFormatType>
-FileFormatType* PointExporter<FileFormatType>::exec( const kvs::ObjectBase* object )
+FileFormatType* PointExporter<FileFormatType>::exec( const vismodule::ObjectBase* object )
 {
     return( NULL );
 }
@@ -58,15 +58,15 @@ FileFormatType* PointExporter<FileFormatType>::exec( const kvs::ObjectBase* obje
  */
 /*===========================================================================*/
 template <>
-class PointExporter<kvs::KVSMLObjectPoint> : public kvs::ExporterBase<kvs::KVSMLObjectPoint>
+class PointExporter<vismodule::KVSMLObjectPoint> : public vismodule::ExporterBase<vismodule::KVSMLObjectPoint>
 {
 public:
 
-    PointExporter( const kvs::PointObject* object );
+    PointExporter( const vismodule::PointObject* object );
 
-    kvs::KVSMLObjectPoint* exec( const kvs::ObjectBase* object );
+    vismodule::KVSMLObjectPoint* exec( const vismodule::ObjectBase* object );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__POINT_EXPORTER_H_INCLUDE
+#endif // VIS_MODULE__POINT_EXPORTER_H_INCLUDE

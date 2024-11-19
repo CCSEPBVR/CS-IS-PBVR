@@ -21,12 +21,12 @@
 #include "OpacityTag.h"
 #include "DataArrayTag.h"
 #include "DataValueTag.h"
-#include <kvs/Message>
-#include <kvs/ValueArray>
-#include <kvs/XMLNode>
+#include <vismodule/Message>
+#include <vismodule/ValueArray>
+#include <vismodule/XMLNode>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -43,38 +43,38 @@ namespace kvsml
  */
 /*===========================================================================*/
 const bool WriteCoordData(
-    kvs::XMLNode::SuperClass* parent,
-    const kvs::kvsml::WritingDataType writing_type,
+    vismodule::XMLNode::SuperClass* parent,
+    const vismodule::kvsml::WritingDataType writing_type,
     const std::string& filename,
-    const kvs::ValueArray<kvs::Real32>& coords )
+    const vismodule::ValueArray<vismodule::Real32>& coords )
 {
     // <Coord>
     if ( coords.size() > 0 )
     {
-        kvs::kvsml::CoordTag coord_tag;
+        vismodule::kvsml::CoordTag coord_tag;
         if ( !coord_tag.write( parent ) )
         {
-            kvsMessageError( "Cannot write <%s>.", coord_tag.name().c_str() );
+            visModuleMessageError( "Cannot write <%s>.", coord_tag.name().c_str() );
             return( false );
         }
 
         // <DataArray>
-        kvs::kvsml::DataArrayTag data_tag;
-        if ( writing_type == kvs::kvsml::ExternalAscii )
+        vismodule::kvsml::DataArrayTag data_tag;
+        if ( writing_type == vismodule::kvsml::ExternalAscii )
         {
-            data_tag.setFile( kvs::kvsml::DataArray::GetDataFilename( filename, "coord" ) );
+            data_tag.setFile( vismodule::kvsml::DataArray::GetDataFilename( filename, "coord" ) );
             data_tag.setFormat( "ascii" );
         }
-        else if ( writing_type == kvs::kvsml::ExternalBinary )
+        else if ( writing_type == vismodule::kvsml::ExternalBinary )
         {
-            data_tag.setFile( kvs::kvsml::DataArray::GetDataFilename( filename, "coord" ) );
+            data_tag.setFile( vismodule::kvsml::DataArray::GetDataFilename( filename, "coord" ) );
             data_tag.setFormat( "binary" );
         }
 
-        const std::string pathname = kvs::File( filename ).pathName();
+        const std::string pathname = vismodule::File( filename ).pathName();
         if ( !data_tag.write( coord_tag.node(), coords, pathname ) )
         {
-            kvsMessageError( "Cannot write <%s> for <%s>.",
+            visModuleMessageError( "Cannot write <%s> for <%s>.",
                              data_tag.name().c_str(),
                              coord_tag.name().c_str() );
             return( false );
@@ -95,28 +95,28 @@ const bool WriteCoordData(
  */
 /*===========================================================================*/
 const bool WriteColorData(
-    kvs::XMLNode::SuperClass* parent,
-    const kvs::kvsml::WritingDataType writing_type,
+    vismodule::XMLNode::SuperClass* parent,
+    const vismodule::kvsml::WritingDataType writing_type,
     const std::string& filename,
-    const kvs::ValueArray<kvs::UInt8>& colors )
+    const vismodule::ValueArray<vismodule::UInt8>& colors )
 {
     // <Color>
     if ( colors.size() > 0 )
     {
-        kvs::kvsml::ColorTag color_tag;
+        vismodule::kvsml::ColorTag color_tag;
         if ( !color_tag.write( parent ) )
         {
-            kvsMessageError( "Cannot write <%s>.", color_tag.name().c_str() );
+            visModuleMessageError( "Cannot write <%s>.", color_tag.name().c_str() );
             return( false );
         }
 
         // <DataValue>
         if ( colors.size() == 3 )
         {
-            kvs::kvsml::DataValueTag data_tag;
+            vismodule::kvsml::DataValueTag data_tag;
             if ( !data_tag.write( color_tag.node(), colors ) )
             {
-                kvsMessageError( "Cannot write <%s> for <%s>.",
+                visModuleMessageError( "Cannot write <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  color_tag.name().c_str() );
                 return( false );
@@ -125,22 +125,22 @@ const bool WriteColorData(
         // <DataArray>
         else
         {
-            kvs::kvsml::DataArrayTag data_tag;
-            if ( writing_type == kvs::kvsml::ExternalAscii )
+            vismodule::kvsml::DataArrayTag data_tag;
+            if ( writing_type == vismodule::kvsml::ExternalAscii )
             {
-                data_tag.setFile( kvs::kvsml::DataArray::GetDataFilename( filename, "color" ) );
+                data_tag.setFile( vismodule::kvsml::DataArray::GetDataFilename( filename, "color" ) );
                 data_tag.setFormat( "ascii" );
             }
-            else if ( writing_type == kvs::kvsml::ExternalBinary )
+            else if ( writing_type == vismodule::kvsml::ExternalBinary )
             {
-                data_tag.setFile( kvs::kvsml::DataArray::GetDataFilename( filename, "color" ) );
+                data_tag.setFile( vismodule::kvsml::DataArray::GetDataFilename( filename, "color" ) );
                 data_tag.setFormat( "binary" );
             }
 
-            const std::string pathname = kvs::File( filename ).pathName();
+            const std::string pathname = vismodule::File( filename ).pathName();
             if ( !data_tag.write( color_tag.node(), colors, pathname ) )
             {
-                kvsMessageError( "Cannot write <%s> for <%s>.",
+                visModuleMessageError( "Cannot write <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  color_tag.name().c_str() );
                 return( false );
@@ -162,28 +162,28 @@ const bool WriteColorData(
  */
 /*===========================================================================*/
 const bool WriteNormalData(
-    kvs::XMLNode::SuperClass* parent,
-    const kvs::kvsml::WritingDataType writing_type,
+    vismodule::XMLNode::SuperClass* parent,
+    const vismodule::kvsml::WritingDataType writing_type,
     const std::string& filename,
-    const kvs::ValueArray<kvs::Real32>& normals )
+    const vismodule::ValueArray<vismodule::Real32>& normals )
 {
     // <Normal>
     if ( normals.size() > 0 )
     {
-        kvs::kvsml::NormalTag normal_tag;
+        vismodule::kvsml::NormalTag normal_tag;
         if ( !normal_tag.write( parent ) )
         {
-            kvsMessageError( "Cannot write <%s>.", normal_tag.name().c_str() );
+            visModuleMessageError( "Cannot write <%s>.", normal_tag.name().c_str() );
             return( false );
         }
 
         // <DataValue>
         if ( normals.size() == 3 )
         {
-            kvs::kvsml::DataValueTag data_tag;
+            vismodule::kvsml::DataValueTag data_tag;
             if ( !data_tag.write( normal_tag.node(), normals ) )
             {
-                kvsMessageError( "Cannot write <%s> for <%s>.",
+                visModuleMessageError( "Cannot write <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  normal_tag.name().c_str() );
                 return( false );
@@ -192,22 +192,22 @@ const bool WriteNormalData(
         // <DataArray>
         else
         {
-            kvs::kvsml::DataArrayTag data_tag;
-            if ( writing_type == kvs::kvsml::ExternalAscii )
+            vismodule::kvsml::DataArrayTag data_tag;
+            if ( writing_type == vismodule::kvsml::ExternalAscii )
             {
-                data_tag.setFile( kvs::kvsml::DataArray::GetDataFilename( filename, "normal" ) );
+                data_tag.setFile( vismodule::kvsml::DataArray::GetDataFilename( filename, "normal" ) );
                 data_tag.setFormat( "ascii" );
             }
-            else if ( writing_type == kvs::kvsml::ExternalBinary )
+            else if ( writing_type == vismodule::kvsml::ExternalBinary )
             {
-                data_tag.setFile( kvs::kvsml::DataArray::GetDataFilename( filename, "normal" ) );
+                data_tag.setFile( vismodule::kvsml::DataArray::GetDataFilename( filename, "normal" ) );
                 data_tag.setFormat( "binary" );
             }
 
-            const std::string pathname = kvs::File( filename ).pathName();
+            const std::string pathname = vismodule::File( filename ).pathName();
             if ( !data_tag.write( normal_tag.node(), normals, pathname ) )
             {
-                kvsMessageError( "Cannot write <%s> for <%s>.",
+                visModuleMessageError( "Cannot write <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  normal_tag.name().c_str() );
                 return( false );
@@ -229,28 +229,28 @@ const bool WriteNormalData(
  */
 /*===========================================================================*/
 const bool WriteSizeData(
-    kvs::XMLNode::SuperClass* parent,
-    const kvs::kvsml::WritingDataType writing_type,
+    vismodule::XMLNode::SuperClass* parent,
+    const vismodule::kvsml::WritingDataType writing_type,
     const std::string& filename,
-    const kvs::ValueArray<kvs::Real32>& sizes )
+    const vismodule::ValueArray<vismodule::Real32>& sizes )
 {
     // <Size>
     if ( sizes.size() > 0 )
     {
-        kvs::kvsml::SizeTag size_tag;
+        vismodule::kvsml::SizeTag size_tag;
         if ( !size_tag.write( parent ) )
         {
-            kvsMessageError( "Cannot write <%s>.", size_tag.name().c_str() );
+            visModuleMessageError( "Cannot write <%s>.", size_tag.name().c_str() );
             return( false );
         }
 
         // <DataValue>
         if ( sizes.size() == 1 )
         {
-            kvs::kvsml::DataValueTag data_tag;
+            vismodule::kvsml::DataValueTag data_tag;
             if ( !data_tag.write( size_tag.node(), sizes ) )
             {
-                kvsMessageError( "Cannot write <%s> for <%s>.",
+                visModuleMessageError( "Cannot write <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  size_tag.name().c_str() );
                 return( false );
@@ -259,22 +259,22 @@ const bool WriteSizeData(
         // <DataArray>
         else
         {
-            kvs::kvsml::DataArrayTag data_tag;
-            if ( writing_type == kvs::kvsml::ExternalAscii )
+            vismodule::kvsml::DataArrayTag data_tag;
+            if ( writing_type == vismodule::kvsml::ExternalAscii )
             {
-                data_tag.setFile( kvs::kvsml::DataArray::GetDataFilename( filename, "size" ) );
+                data_tag.setFile( vismodule::kvsml::DataArray::GetDataFilename( filename, "size" ) );
                 data_tag.setFormat( "ascii" );
             }
-            else if ( writing_type == kvs::kvsml::ExternalBinary )
+            else if ( writing_type == vismodule::kvsml::ExternalBinary )
             {
-                data_tag.setFile( kvs::kvsml::DataArray::GetDataFilename( filename, "size" ) );
+                data_tag.setFile( vismodule::kvsml::DataArray::GetDataFilename( filename, "size" ) );
                 data_tag.setFormat( "binary" );
             }
 
-            const std::string pathname = kvs::File( filename ).pathName();
+            const std::string pathname = vismodule::File( filename ).pathName();
             if ( !data_tag.write( size_tag.node(), sizes, pathname ) )
             {
-                kvsMessageError( "Cannot write <%s> for <%s>.",
+                visModuleMessageError( "Cannot write <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  size_tag.name().c_str() );
                 return( false );
@@ -296,38 +296,38 @@ const bool WriteSizeData(
  */
 /*===========================================================================*/
 const bool WriteConnectionData(
-    kvs::XMLNode::SuperClass* parent,
-    const kvs::kvsml::WritingDataType writing_type,
+    vismodule::XMLNode::SuperClass* parent,
+    const vismodule::kvsml::WritingDataType writing_type,
     const std::string& filename,
-    const kvs::ValueArray<kvs::UInt32>& connections )
+    const vismodule::ValueArray<vismodule::UInt32>& connections )
 {
     // <Connection>
     if ( connections.size() > 0 )
     {
-        kvs::kvsml::ConnectionTag connection_tag;
+        vismodule::kvsml::ConnectionTag connection_tag;
         if ( !connection_tag.write( parent ) )
         {
-            kvsMessageError( "Cannot write <%s>.", connection_tag.name().c_str() );
+            visModuleMessageError( "Cannot write <%s>.", connection_tag.name().c_str() );
             return( false );
         }
 
         // <DataArray>
-        kvs::kvsml::DataArrayTag data_tag;
-        if ( writing_type == kvs::kvsml::ExternalAscii )
+        vismodule::kvsml::DataArrayTag data_tag;
+        if ( writing_type == vismodule::kvsml::ExternalAscii )
         {
-            data_tag.setFile( kvs::kvsml::DataArray::GetDataFilename( filename, "connect" ) );
+            data_tag.setFile( vismodule::kvsml::DataArray::GetDataFilename( filename, "connect" ) );
             data_tag.setFormat( "ascii" );
         }
-        else if ( writing_type == kvs::kvsml::ExternalBinary )
+        else if ( writing_type == vismodule::kvsml::ExternalBinary )
         {
-            data_tag.setFile( kvs::kvsml::DataArray::GetDataFilename( filename, "connect" ) );
+            data_tag.setFile( vismodule::kvsml::DataArray::GetDataFilename( filename, "connect" ) );
             data_tag.setFormat( "binary" );
         }
 
-        const std::string pathname = kvs::File( filename ).pathName();
+        const std::string pathname = vismodule::File( filename ).pathName();
         if ( !data_tag.write( connection_tag.node(), connections, pathname ) )
         {
-            kvsMessageError( "Cannot write <%s> for <%s>.",
+            visModuleMessageError( "Cannot write <%s> for <%s>.",
                              data_tag.name().c_str(),
                              connection_tag.name().c_str() );
             return( false );
@@ -348,28 +348,28 @@ const bool WriteConnectionData(
  */
 /*===========================================================================*/
 const bool WriteOpacityData(
-    kvs::XMLNode::SuperClass* parent,
-    const kvs::kvsml::WritingDataType writing_type,
+    vismodule::XMLNode::SuperClass* parent,
+    const vismodule::kvsml::WritingDataType writing_type,
     const std::string& filename,
-    const kvs::ValueArray<kvs::UInt8>& opacities )
+    const vismodule::ValueArray<vismodule::UInt8>& opacities )
 {
     // <Opacity>
     if ( opacities.size() > 0 )
     {
-        kvs::kvsml::OpacityTag opacity_tag;
+        vismodule::kvsml::OpacityTag opacity_tag;
         if ( !opacity_tag.write( parent ) )
         {
-            kvsMessageError( "Cannot write <%s>.", opacity_tag.name().c_str() );
+            visModuleMessageError( "Cannot write <%s>.", opacity_tag.name().c_str() );
             return( false );
         }
 
         // <DataValue>
         if ( opacities.size() == 1 )
         {
-            kvs::kvsml::DataValueTag data_tag;
+            vismodule::kvsml::DataValueTag data_tag;
             if ( !data_tag.write( opacity_tag.node(), opacities ) )
             {
-                kvsMessageError( "Cannot write <%s> for <%s>.",
+                visModuleMessageError( "Cannot write <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  opacity_tag.name().c_str() );
                 return( false );
@@ -378,22 +378,22 @@ const bool WriteOpacityData(
         // <DataArray>
         else
         {
-            kvs::kvsml::DataArrayTag data_tag;
-            if ( writing_type == kvs::kvsml::ExternalAscii )
+            vismodule::kvsml::DataArrayTag data_tag;
+            if ( writing_type == vismodule::kvsml::ExternalAscii )
             {
-                data_tag.setFile( kvs::kvsml::DataArray::GetDataFilename( filename, "opacity" ) );
+                data_tag.setFile( vismodule::kvsml::DataArray::GetDataFilename( filename, "opacity" ) );
                 data_tag.setFormat( "ascii" );
             }
-            else if ( writing_type == kvs::kvsml::ExternalBinary )
+            else if ( writing_type == vismodule::kvsml::ExternalBinary )
             {
-                data_tag.setFile( kvs::kvsml::DataArray::GetDataFilename( filename, "opacity" ) );
+                data_tag.setFile( vismodule::kvsml::DataArray::GetDataFilename( filename, "opacity" ) );
                 data_tag.setFormat( "binary" );
             }
 
-            const std::string pathname = kvs::File( filename ).pathName();
+            const std::string pathname = vismodule::File( filename ).pathName();
             if ( !data_tag.write( opacity_tag.node(), opacities, pathname ) )
             {
-                kvsMessageError( "Cannot write <%s> for <%s>.",
+                visModuleMessageError( "Cannot write <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  opacity_tag.name().c_str() );
                 return( false );
@@ -406,4 +406,4 @@ const bool WriteOpacityData(
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

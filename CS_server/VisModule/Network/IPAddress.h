@@ -11,18 +11,18 @@
  *  $Id: IPAddress.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__IP_ADDRESS_H_INCLUDE
-#define KVS__IP_ADDRESS_H_INCLUDE
+#ifndef VIS_MODULE__IP_ADDRESS_H_INCLUDE
+#define VIS_MODULE__IP_ADDRESS_H_INCLUDE
 
 #include "SocketStandard.h"
-#include <kvs/Platform>
-#include <kvs/ClassName>
+#include <vismodule/Platform>
+#include <vismodule/ClassName>
 #include <iostream>
 #include <string>
 #include <cstring>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -32,11 +32,11 @@ namespace kvs
 /*==========================================================================*/
 class IPAddress
 {
-    kvsClassName( kvs::IPAddress );
+    visModuleClassName( vismodule::IPAddress );
 
 public:
 
-#if defined( KVS_PLATFORM_WINDOWS )
+#if defined( VIS_MODULE_PLATFORM_WINDOWS )
     typedef unsigned long  integer_type;
 #else
     typedef u_int32_t      integer_type;
@@ -110,6 +110,6 @@ protected:
     void copy_address( const address_type& address );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__IP_ADDRESS_H_INCLUDE
+#endif // VIS_MODULE__IP_ADDRESS_H_INCLUDE

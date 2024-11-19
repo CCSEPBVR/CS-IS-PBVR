@@ -11,19 +11,19 @@
  *  $Id: DisplayList.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__DISPLAY_LIST_H_INCLUDE
-#define KVS__DISPLAY_LIST_H_INCLUDE
+#ifndef VIS_MODULE__DISPLAY_LIST_H_INCLUDE
+#define VIS_MODULE__DISPLAY_LIST_H_INCLUDE
 
-#include <kvs/OpenGL>
-#include <kvs/ClassName>
+#include <vismodule/OpenGL>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class DisplayList
 {
-    kvsClassName( kvs::DisplayList );
+    visModuleClassName( vismodule::DisplayList );
 
 protected:
 
@@ -57,6 +57,6 @@ public:
     void render( const GLuint index = 0 );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__DISPLAY_LIST_H_INCLUDE
+#endif // VIS_MODULE__DISPLAY_LIST_H_INCLUDE

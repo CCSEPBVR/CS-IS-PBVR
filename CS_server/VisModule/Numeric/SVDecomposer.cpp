@@ -14,11 +14,11 @@
 /*****************************************************************************/
 #include "SVDecomposer.h"
 #include <cmath>
-#include <kvs/Macro>
-#include <kvs/Math>
+#include <vismodule/Macro>
+#include <vismodule/Math>
 
 
-namespace kvs
+namespace vismodule
 {
 
 template <typename T> size_t SVDecomposer<T>::m_max_iterations = 30;
@@ -40,7 +40,7 @@ SVDecomposer<T>::SVDecomposer( void )
  */
 /*===========================================================================*/
 template <typename T>
-SVDecomposer<T>::SVDecomposer( const kvs::Matrix33<T>& m )
+SVDecomposer<T>::SVDecomposer( const vismodule::Matrix33<T>& m )
 {
     this->setMatrix( m );
     this->decompose();
@@ -53,7 +53,7 @@ SVDecomposer<T>::SVDecomposer( const kvs::Matrix33<T>& m )
  */
 /*===========================================================================*/
 template <typename T>
-SVDecomposer<T>::SVDecomposer( const kvs::Matrix44<T>& m )
+SVDecomposer<T>::SVDecomposer( const vismodule::Matrix44<T>& m )
 {
     this->setMatrix( m );
     this->decompose();
@@ -95,7 +95,7 @@ SVDecomposer<T>& SVDecomposer<T>::operator = ( const SVDecomposer<T>& s )
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Matrix<T>& SVDecomposer<T>::U( void ) const
+const vismodule::Matrix<T>& SVDecomposer<T>::U( void ) const
 {
     return( m_u );
 }
@@ -107,7 +107,7 @@ const kvs::Matrix<T>& SVDecomposer<T>::U( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector<T>& SVDecomposer<T>::W( void ) const
+const vismodule::Vector<T>& SVDecomposer<T>::W( void ) const
 {
     return( m_w );
 }
@@ -119,7 +119,7 @@ const kvs::Vector<T>& SVDecomposer<T>::W( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Matrix<T>& SVDecomposer<T>::V( void ) const
+const vismodule::Matrix<T>& SVDecomposer<T>::V( void ) const
 {
     return( m_v );
 }
@@ -131,7 +131,7 @@ const kvs::Matrix<T>& SVDecomposer<T>::V( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Matrix<T>& SVDecomposer<T>::leftSingularMatrix( void ) const
+const vismodule::Matrix<T>& SVDecomposer<T>::leftSingularMatrix( void ) const
 {
     return( m_u );
 }
@@ -143,7 +143,7 @@ const kvs::Matrix<T>& SVDecomposer<T>::leftSingularMatrix( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector<T>& SVDecomposer<T>::singularValues( void ) const
+const vismodule::Vector<T>& SVDecomposer<T>::singularValues( void ) const
 {
     return( m_w );
 }
@@ -155,7 +155,7 @@ const kvs::Vector<T>& SVDecomposer<T>::singularValues( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Matrix<T>& SVDecomposer<T>::rightSingularMatrix( void ) const
+const vismodule::Matrix<T>& SVDecomposer<T>::rightSingularMatrix( void ) const
 {
     return( m_v );
 }
@@ -167,7 +167,7 @@ const kvs::Matrix<T>& SVDecomposer<T>::rightSingularMatrix( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-void SVDecomposer<T>::setMatrix( const kvs::Matrix33<T>& m )
+void SVDecomposer<T>::setMatrix( const vismodule::Matrix33<T>& m )
 {
     m_w.setSize( 3 );
     m_v.setSize( 3, 3 );
@@ -188,7 +188,7 @@ void SVDecomposer<T>::setMatrix( const kvs::Matrix33<T>& m )
  */
 /*===========================================================================*/
 template <typename T>
-void SVDecomposer<T>::setMatrix( const kvs::Matrix44<T>& m )
+void SVDecomposer<T>::setMatrix( const vismodule::Matrix44<T>& m )
 {
     m_w.setSize( 4 );
     m_v.setSize( 4, 4 );
@@ -227,7 +227,7 @@ void SVDecomposer<T>::decompose( void )
     int row    = m_u.nrows();
     int column = m_u.ncolumns();
 
-    kvs::Vector<T> rv1( column );
+    vismodule::Vector<T> rv1( column );
 
     int l  = 0;
     int nm = 0;
@@ -251,9 +251,9 @@ void SVDecomposer<T>::decompose( void )
 
         if( i < row )
         {
-            for( int k = i; k < row; k++ ) scale += kvs::Math::Abs( m_u[k][i] );
+            for( int k = i; k < row; k++ ) scale += vismodule::Math::Abs( m_u[k][i] );
 
-            if( !kvs::Math::IsZero( scale ) )
+            if( !vismodule::Math::IsZero( scale ) )
             {
                 for( int k = i; k < row; k++ )
                 {
@@ -262,7 +262,7 @@ void SVDecomposer<T>::decompose( void )
                 }// end of for-loop 'k'
 
                 f = m_u[i][i];
-                g = -kvs::Math::Sgn( static_cast<T>(std::sqrt((double)s)), f );
+                g = -vismodule::Math::Sgn( static_cast<T>(std::sqrt((double)s)), f );
                 h = f * g - s ;
                 m_u[i][i] = f - g ;
 
@@ -283,9 +283,9 @@ void SVDecomposer<T>::decompose( void )
 
         if( i < row && i != ( column - 1 ) )
         {
-            for( int k = l ; k < column; k++ ) scale += kvs::Math::Abs( m_u[i][k] ) ;
+            for( int k = l ; k < column; k++ ) scale += vismodule::Math::Abs( m_u[i][k] ) ;
 
-            if( !kvs::Math::IsZero( scale ) )
+            if( !vismodule::Math::IsZero( scale ) )
             {
                 for( int k = l; k < column; k++ )
                 {
@@ -294,7 +294,7 @@ void SVDecomposer<T>::decompose( void )
                 } // for k
 
                 f = m_u[i][l];
-                g = -kvs::Math::Sgn( static_cast<T>(std::sqrt((double)s)), f );
+                g = -vismodule::Math::Sgn( static_cast<T>(std::sqrt((double)s)), f );
                 h = f * g - s ;
                 m_u[i][l] = f - g ;
 
@@ -310,7 +310,7 @@ void SVDecomposer<T>::decompose( void )
             } // if scale
         } // if i != m && i != n
 
-        anorm = kvs::Math::Max( anorm, kvs::Math::Abs(m_w[i]) + kvs::Math::Abs(rv1[i]) );
+        anorm = vismodule::Math::Max( anorm, vismodule::Math::Abs(m_w[i]) + vismodule::Math::Abs(rv1[i]) );
     } // for i
 
     // Accumulation of right-hand transformations.
@@ -318,7 +318,7 @@ void SVDecomposer<T>::decompose( void )
     {
         if( i < column )
         {
-            if( !kvs::Math::IsZero( g ) )
+            if( !vismodule::Math::IsZero( g ) )
             {
                 for( int j = l; j < column; j++ )
                     m_v[j][i] = ( m_u[i][j] / m_u[i][l] ) / g ;
@@ -339,13 +339,13 @@ void SVDecomposer<T>::decompose( void )
 
     } // for i
 
-    for( int i = kvs::Math::Min( row, column ) - 1; i >= 0; i-- )
+    for( int i = vismodule::Math::Min( row, column ) - 1; i >= 0; i-- )
     {
         l = i + 1 ;
         g = m_w[i] ;
         for( int j = l; j < column; j++ ) m_u[i][j] = T(0);
 
-        if( !kvs::Math::IsZero( g ) )
+        if( !vismodule::Math::IsZero( g ) )
         {
             g = T(1) / g ;
             for( int j = l; j < column; j++ )
@@ -377,12 +377,12 @@ void SVDecomposer<T>::decompose( void )
             for( l = k; l >= 0; l-- )
             {
                 nm = l - 1 ; // Note that rv1[1] is always zero.
-                if( kvs::Math::Abs( rv1[l] ) + anorm == anorm )
+                if( vismodule::Math::Abs( rv1[l] ) + anorm == anorm )
                 {
                     flag = 0 ;
                     break;
                 }
-                if( kvs::Math::Abs( m_w[nm] ) + anorm == anorm ) break;
+                if( vismodule::Math::Abs( m_w[nm] ) + anorm == anorm ) break;
             } // for l
 
             if( flag )
@@ -394,10 +394,10 @@ void SVDecomposer<T>::decompose( void )
                     f = s * rv1[i];
                     rv1[i] = c * rv1[i];
 
-                    if( kvs::Math::Abs( f ) + anorm == anorm ) break;
+                    if( vismodule::Math::Abs( f ) + anorm == anorm ) break;
 
                     g      = m_w[i];
-                    h      = kvs::Math::Pythag( f, g );
+                    h      = vismodule::Math::Pythag( f, g );
                     m_w[i] = h;
                     h      = T(1) / h ;
                     c      = g * h ;
@@ -427,7 +427,7 @@ void SVDecomposer<T>::decompose( void )
             } // if l == k
 
             // Not converged.
-            KVS_ASSERT( its != static_cast<int>( m_max_iterations - 1 ) );
+            VIS_MODULE_ASSERT( its != static_cast<int>( m_max_iterations - 1 ) );
 
             x  = m_w[l];
             nm = k - 1 ;
@@ -435,8 +435,8 @@ void SVDecomposer<T>::decompose( void )
             g  = rv1[nm] ;
             h  = rv1[k] ;
             f  = ( (y-z)*(y+z) + (g-h)*(g+h) ) / ( T(2) * h * y ) ;
-            g  = kvs::Math::Pythag( f, T(1) );
-            f  = ( (x-z)*(x+z) + h * ( ( y / ( f + kvs::Math::Sgn(g,f) ) ) - h ) ) / x ;
+            g  = vismodule::Math::Pythag( f, T(1) );
+            f  = ( (x-z)*(x+z) + h * ( ( y / ( f + vismodule::Math::Sgn(g,f) ) ) - h ) ) / x ;
             c  = T(1);
             s  = T(1);
 
@@ -449,7 +449,7 @@ void SVDecomposer<T>::decompose( void )
                 y      = m_w[i];
                 h      = s * g;
                 g      = c * g;
-                z      = kvs::Math::Pythag( f, h );
+                z      = vismodule::Math::Pythag( f, h );
                 rv1[j] = z ;
                 c      = f / z ;
                 s      = h / z ;
@@ -466,7 +466,7 @@ void SVDecomposer<T>::decompose( void )
                     m_v[jj][i] = z * c - x * s;
                 } // for jj
 
-                z = kvs::Math::Pythag( f, h );
+                z = vismodule::Math::Pythag( f, h );
                 m_w[j] = z;
 
                 // Rotation can be arbitrary if z =0;
@@ -507,7 +507,7 @@ void SVDecomposer<T>::decompose( void )
  */
 /*===========================================================================*/
 template <typename T>
-void SVDecomposer<T>::sort( kvs::Matrix<T>* umat, kvs::Matrix<T>* vmat, kvs::Vector<T>* wvec )
+void SVDecomposer<T>::sort( vismodule::Matrix<T>* umat, vismodule::Matrix<T>* vmat, vismodule::Vector<T>* wvec )
 {
     int dim = umat->nrows();
 
@@ -551,7 +551,7 @@ void SVDecomposer<T>::correctSingularValues( void )
 
     // Editing of the singular values.
     T w_max = m_w[0];
-    T w_min = w_max * T( KVS__MATH_TINY_VALUE );
+    T w_min = w_max * T( VIS_MODULE__MATH_TINY_VALUE );
     for( int i = 0; i < column; i++ )
     {
         if( m_w[i] < w_min ) m_w[i] = T(0);
@@ -569,4 +569,4 @@ template class SVDecomposer<int>;
 template class SVDecomposer<float>;
 template class SVDecomposer<double>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

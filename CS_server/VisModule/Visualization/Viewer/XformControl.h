@@ -11,14 +11,14 @@
  *  $Id: XformControl.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__XFORM_CONTROL_H_INCLUDE
-#define KVS__XFORM_CONTROL_H_INCLUDE
+#ifndef VIS_MODULE__XFORM_CONTROL_H_INCLUDE
+#define VIS_MODULE__XFORM_CONTROL_H_INCLUDE
 
-#include <kvs/Xform>
-#include <kvs/ClassName>
+#include <vismodule/Xform>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -26,17 +26,17 @@ namespace kvs
  *  Xform control class.
  */
 /*==========================================================================*/
-class XformControl : public kvs::Xform
+class XformControl : public vismodule::Xform
 {
-    kvsClassName( kvs::XformControl );
+    visModuleClassName( vismodule::XformControl );
 
 public:
 
-    typedef kvs::Xform parent_class;
+    typedef vismodule::Xform parent_class;
 
 protected:
 
-    kvs::Xform m_initial_xform; ///< initial transform vector
+    vismodule::Xform m_initial_xform; ///< initial transform vector
     bool       m_can_collision; ///< enable collision detection or not
 
 public:
@@ -44,9 +44,9 @@ public:
     XformControl( bool collision = true );
 
     XformControl(
-        const kvs::Vector3f&  translation,
-        const kvs::Vector3f&  scale,
-        const kvs::Matrix33f& rotation,
+        const vismodule::Vector3f&  translation,
+        const vismodule::Vector3f&  scale,
+        const vismodule::Matrix33f& rotation,
         bool                  collision = true );
 
     virtual ~XformControl( void );
@@ -60,31 +60,31 @@ public:
     bool canCollision( void );
 
     void setInitialXform(
-        const kvs::Vector3f&  translation = kvs::Vector3f(0,0,0),
-        const kvs::Vector3f&  scaling     = kvs::Vector3f(1,1,1),
-        const kvs::Matrix33f& rotation    = kvs::Matrix33f(1,0,0,0,1,0,0,0,1) );
+        const vismodule::Vector3f&  translation = vismodule::Vector3f(0,0,0),
+        const vismodule::Vector3f&  scaling     = vismodule::Vector3f(1,1,1),
+        const vismodule::Matrix33f& rotation    = vismodule::Matrix33f(1,0,0,0,1,0,0,0,1) );
 
     void saveXform( void );
 
     void resetXform( void );
 
-    void multiplyXform( const kvs::Xform& xform );
+    void multiplyXform( const vismodule::Xform& xform );
 
-    void setXform( const kvs::Xform& xform );
+    void setXform( const vismodule::Xform& xform );
 
     void applyXform( void ) const;
 
-    const kvs::Xform xform( void ) const;
+    const vismodule::Xform xform( void ) const;
 
 public:
 
-    void rotate( const kvs::Matrix33f& rotation );
+    void rotate( const vismodule::Matrix33f& rotation );
 
-    void translate( const kvs::Vector3f& translation );
+    void translate( const vismodule::Vector3f& translation );
 
-    void scale( const kvs::Vector3f& scaling );
+    void scale( const vismodule::Vector3f& scaling );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__XFORM_CONTROL_H_INCLUDE
+#endif // VIS_MODULE__XFORM_CONTROL_H_INCLUDE

@@ -15,7 +15,7 @@
 #include "ReadWriteLock.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -24,7 +24,7 @@ namespace kvs
  *  @param rwlock [in] pointer to read/write lock
  */
 /*==========================================================================*/
-WriteLocker::WriteLocker( kvs::ReadWriteLock* rwlock )
+WriteLocker::WriteLocker( vismodule::ReadWriteLock* rwlock )
     : m_rwlock( rwlock )
 {
     this->relock();
@@ -66,9 +66,9 @@ void WriteLocker::unlock( void )
  *  @return pointer to the read/write lock
  */
 /*==========================================================================*/
-kvs::ReadWriteLock* WriteLocker::readWriteLock( void )
+vismodule::ReadWriteLock* WriteLocker::readWriteLock( void )
 {
     return( m_rwlock );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

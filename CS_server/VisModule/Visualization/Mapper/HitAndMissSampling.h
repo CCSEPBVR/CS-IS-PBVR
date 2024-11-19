@@ -11,19 +11,19 @@
  *  $Id: HitAndMissSampling.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__HIT_AND_MISS_SAMPLING_H_INCLUDE
-#define KVS__HIT_AND_MISS_SAMPLING_H_INCLUDE
+#ifndef VIS_MODULE__HIT_AND_MISS_SAMPLING_H_INCLUDE
+#define VIS_MODULE__HIT_AND_MISS_SAMPLING_H_INCLUDE
 
-#include <kvs/PointObject>
-#include <kvs/VolumeObjectBase>
-#include <kvs/StructuredVolumeObject>
-#include <kvs/UnstructuredVolumeObject>
-#include <kvs/MapperBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/PointObject>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/MapperBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -31,46 +31,46 @@ namespace kvs
  *  Hit and Miss sampling class.
  */
 /*==========================================================================*/
-class HitAndMissSampling : public kvs::MapperBase, public kvs::PointObject
+class HitAndMissSampling : public vismodule::MapperBase, public vismodule::PointObject
 {
     // Class name.
-    kvsClassName( kvs::HitAndMissSampling );
+    visModuleClassName( vismodule::HitAndMissSampling );
 
     // Module information.
-    kvsModuleCategory( Mapper );
-    kvsModuleBaseClass( kvs::MapperBase );
-    kvsModuleSuperClass( kvs::PointObject );
+    visModuleCategory( Mapper );
+    visModuleBaseClass( vismodule::MapperBase );
+    visModuleSuperClass( vismodule::PointObject );
 
 public:
 
     HitAndMissSampling( void );
 
     HitAndMissSampling(
-        const kvs::VolumeObjectBase* volume );
+        const vismodule::VolumeObjectBase* volume );
 
     HitAndMissSampling(
-        const kvs::VolumeObjectBase* object,
-        const kvs::TransferFunction& transfer_function );
+        const vismodule::VolumeObjectBase* object,
+        const vismodule::TransferFunction& transfer_function );
 
     virtual ~HitAndMissSampling( void );
 
 public:
 
-    SuperClass* exec( const kvs::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase* object );
 
 private:
 
-    void mapping( const kvs::StructuredVolumeObject* volume );
+    void mapping( const vismodule::StructuredVolumeObject* volume );
 
-    void mapping( const kvs::UnstructuredVolumeObject* volume );
-
-    template <typename T>
-    void generate_particles( const kvs::StructuredVolumeObject* volume );
+    void mapping( const vismodule::UnstructuredVolumeObject* volume );
 
     template <typename T>
-    void generate_particles( const kvs::UnstructuredVolumeObject* volume );
+    void generate_particles( const vismodule::StructuredVolumeObject* volume );
+
+    template <typename T>
+    void generate_particles( const vismodule::UnstructuredVolumeObject* volume );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__HIT_AND_MISS_SAMPLING_H_INCLUDE
+#endif // VIS_MODULE__HIT_AND_MISS_SAMPLING_H_INCLUDE

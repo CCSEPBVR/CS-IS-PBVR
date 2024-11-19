@@ -13,11 +13,11 @@
 /****************************************************************************/
 #include "ObjectManager.h"
 #include <iostream>
-#include <kvs/Camera>
-#include <kvs/Math>
-#include <kvs/Vector2>
-#include <kvs/Vector3>
-#include <kvs/Vector4>
+#include <vismodule/Camera>
+#include <vismodule/Math>
+#include <vismodule/Vector2>
+#include <vismodule/Vector3>
+#include <vismodule/Vector4>
 
 
 namespace pbvr
@@ -32,7 +32,7 @@ ObjectManager::ObjectManager() :
     pbvr::ObjectBase( true )
 {
     ObjectManagerBase::clear();
-    kvs::Xform::initialize();
+    vismodule::Xform::initialize();
     m_has_active_object = false;
     m_enable_all_move   = true;
     m_object_map.clear();
@@ -40,10 +40,10 @@ ObjectManager::ObjectManager() :
     m_current_object_id = 0;
     this->insert_root();
 
-    m_min_object_coord   = kvs::Vector3f(  1000000,  1000000,  1000000 );
-    m_max_object_coord   = kvs::Vector3f( -1000000, -1000000, -1000000 );
-    m_min_external_coord = kvs::Vector3f( -3.0, -3.0, -3.0 );
-    m_max_external_coord = kvs::Vector3f(  3.0,  3.0,  3.0 );
+    m_min_object_coord   = vismodule::Vector3f(  1000000,  1000000,  1000000 );
+    m_max_object_coord   = vismodule::Vector3f( -1000000, -1000000, -1000000 );
+    m_min_external_coord = vismodule::Vector3f( -3.0, -3.0, -3.0 );
+    m_max_external_coord = vismodule::Vector3f(  3.0,  3.0,  3.0 );
 }
 
 /*==========================================================================*/
@@ -65,7 +65,7 @@ ObjectManager::~ObjectManager()
     }
 
     ObjectManagerBase::clear();
-    kvs::Xform::clear();
+    vismodule::Xform::clear();
     m_object_map.clear();
 }
 
@@ -275,7 +275,7 @@ void ObjectManager::change( const int obj_id, ObjectBase* obj, const bool delete
     pbvr::ObjectBase* old_obj = *ptr; // object
 
     // Save the Xform.
-    kvs::Xform xform = old_obj->xform();
+    vismodule::Xform xform = old_obj->xform();
 
     // Erase the old object
     if ( delete_flg )
@@ -316,7 +316,7 @@ void ObjectManager::change( const std::string obj_name, ObjectBase* obj, const b
         if ( old_obj->name() == obj_name )
         {
             // Save the Xform.
-            kvs::Xform xform = old_obj->xform();
+            vismodule::Xform xform = old_obj->xform();
 
             // Erase the old object
             if ( delete_flg )
@@ -442,7 +442,7 @@ void ObjectManager::resetXform()
         ( *first )->resetXform();
     }
 
-    kvs::XformControl::resetXform();
+    vismodule::XformControl::resetXform();
 }
 
 /*==========================================================================*/
@@ -462,8 +462,8 @@ void ObjectManager::resetXform( const int obj_id )
     ObjectIterator first = ObjectManagerBase::begin( obj_ptr );
     ObjectIterator last  = ObjectManagerBase::end( obj_ptr );
 
-    const kvs::Xform obj_form = ( *obj_ptr )->xform();
-    const kvs::Xform trans = Xform( *this ) * obj_form.inverse();
+    const vismodule::Xform obj_form = ( *obj_ptr )->xform();
+    const vismodule::Xform trans = Xform( *this ) * obj_form.inverse();
 
     ( *obj_ptr )->setXform( Xform( *this ) );
 
@@ -478,9 +478,9 @@ void ObjectManager::resetXform( const int obj_id )
  *  Get the xform of the object manager.
  */
 /*==========================================================================*/
-const kvs::Xform ObjectManager::xform() const
+const vismodule::Xform ObjectManager::xform() const
 {
-    return kvs::XformControl::xform();
+    return vismodule::XformControl::xform();
 }
 
 /*==========================================================================*/
@@ -489,7 +489,7 @@ const kvs::Xform ObjectManager::xform() const
  *  @param obj_id [in] object ID
  */
 /*==========================================================================*/
-const kvs::Xform ObjectManager::xform( const int obj_id ) const
+const vismodule::Xform ObjectManager::xform( const int obj_id ) const
 {
     /* Search the object which is specified by given object ID in the
      * object pointer map. If it isn't found, this method retrun initial Xform.
@@ -640,7 +640,7 @@ void ObjectManager::resetActiveObjectXform()
     if ( m_has_active_object )
     {
         ( *m_active_object )->resetXform();
-        ( *m_active_object )->multiplyXform( kvs::Xform( *this ) );
+        ( *m_active_object )->multiplyXform( vismodule::Xform( *this ) );
     }
 }
 
@@ -726,8 +726,8 @@ void ObjectManager::releaseActiveObject()
 /*==========================================================================*/
 /* 131017 removed
 bool ObjectManager::detectCollision(
-    const kvs::Vector2f& p_win,
-    kvs::Camera*         camera )
+    const vismodule::Vector2f& p_win,
+    vismodule::Camera*         camera )
 {
     double min_distance = 100000;
 
@@ -741,7 +741,7 @@ bool ObjectManager::detectCollision(
     {
         if( !(*first)->canCollision() ) continue;
 
-        const kvs::Vector2f diff =
+        const vismodule::Vector2f diff =
             (*first)->positionInDevice( camera, m_object_center, m_normalize ) - p_win;
 
         const double distance = diff.length();
@@ -767,7 +767,7 @@ bool ObjectManager::detectCollision(
  */
 /*==========================================================================*/
 /* 131017 removed
-bool ObjectManager::detectCollision( const kvs::Vector3f& p_world )
+bool ObjectManager::detectCollision( const vismodule::Vector3f& p_world )
 {
     double min_distance = 100000;
 
@@ -781,7 +781,7 @@ bool ObjectManager::detectCollision( const kvs::Vector3f& p_world )
     {
         if( !(*first)->canCollision() ) continue;
 
-        const kvs::Vector3f diff =
+        const vismodule::Vector3f diff =
             (*first)->positionInWorld( m_object_center, m_normalize ) - p_world;
 
         const double distance = diff.length();
@@ -806,14 +806,14 @@ bool ObjectManager::detectCollision( const kvs::Vector3f& p_world )
  */
 /*==========================================================================*/
 /* 131017 removed
-const kvs::Vector2f ObjectManager::positionInDevice( kvs::Camera* camera ) const
+const vismodule::Vector2f ObjectManager::positionInDevice( vismodule::Camera* camera ) const
 {
-    kvs::Vector2f ret;
+    vismodule::Vector2f ret;
     glPushMatrix();
     {
         camera->update();
 
-        ret     = camera->projectObjectToWindow( kvs::Xform::translation() );
+        ret     = camera->projectObjectToWindow( vismodule::Xform::translation() );
         ret.y() = camera->m_window_height() - ret.y();
     }
     glPopMatrix();
@@ -827,10 +827,10 @@ const kvs::Vector2f ObjectManager::positionInDevice( kvs::Camera* camera ) const
  *  @param rotation [in] current rotation matrix.
  */
 /*==========================================================================*/
-void ObjectManager::rotate( const kvs::Matrix33f& rotation )
+void ObjectManager::rotate( const vismodule::Matrix33f& rotation )
 {
     pbvr::ObjectBase* object = this->get_control_target();
-    kvs::Vector3f center = this->get_rotation_center();
+    vismodule::Vector3f center = this->get_rotation_center();
 
     object->rotate( rotation, center );
 
@@ -849,11 +849,11 @@ void ObjectManager::rotate( const kvs::Matrix33f& rotation )
  *  @param translation [in] current translation vector
  */
 /*==========================================================================*/
-void ObjectManager::translate( const kvs::Vector3f& translation )
+void ObjectManager::translate( const vismodule::Vector3f& translation )
 {
     pbvr::ObjectBase* object = this->get_control_target();
 
-    object->kvs::XformControl::translate( translation );
+    object->vismodule::XformControl::translate( translation );
 
     ObjectIterator first = this->get_control_first_pointer();
     ObjectIterator last  = this->get_control_last_pointer();
@@ -870,11 +870,11 @@ void ObjectManager::translate( const kvs::Vector3f& translation )
  *  @param scaling [in] current scaling value.
  */
 /*==========================================================================*/
-void ObjectManager::scale( const kvs::Vector3f& scaling )
+void ObjectManager::scale( const vismodule::Vector3f& scaling )
 {
     pbvr::ObjectBase* object = this->get_control_target();
 
-    kvs::Vector3f center = this->get_rotation_center();
+    vismodule::Vector3f center = this->get_rotation_center();
 
     object->scale( scaling, center );
 
@@ -905,15 +905,15 @@ void ObjectManager::updateExternalCoords()
  */
 /*==========================================================================*/
 void ObjectManager::update_normalize_parameters(
-    const kvs::Vector3f& min_ext,
-    const kvs::Vector3f& max_ext )
+    const vismodule::Vector3f& min_ext,
+    const vismodule::Vector3f& max_ext )
 {
-    if ( kvs::Math::Equal( 0.0f, min_ext.x() ) &&
-            kvs::Math::Equal( 0.0f, min_ext.y() ) &&
-            kvs::Math::Equal( 0.0f, min_ext.z() ) &&
-            kvs::Math::Equal( 0.0f, max_ext.x() ) &&
-            kvs::Math::Equal( 0.0f, max_ext.y() ) &&
-            kvs::Math::Equal( 0.0f, max_ext.z() ) ) return;
+    if ( vismodule::Math::Equal( 0.0f, min_ext.x() ) &&
+            vismodule::Math::Equal( 0.0f, min_ext.y() ) &&
+            vismodule::Math::Equal( 0.0f, min_ext.z() ) &&
+            vismodule::Math::Equal( 0.0f, max_ext.x() ) &&
+            vismodule::Math::Equal( 0.0f, max_ext.y() ) &&
+            vismodule::Math::Equal( 0.0f, max_ext.z() ) ) return;
 
     m_min_object_coord.x() = m_min_object_coord.x() < min_ext.x() ?
                              m_min_object_coord.x() : min_ext.x();
@@ -928,8 +928,8 @@ void ObjectManager::update_normalize_parameters(
     m_max_object_coord.z() = m_max_object_coord.z() > max_ext.z() ?
                              m_max_object_coord.z() : max_ext.z();
 
-    const kvs::Vector3f diff_obj = m_max_object_coord - m_min_object_coord;
-    const float max_diff = kvs::Math::Max( diff_obj.x(), diff_obj.y(), diff_obj.z() );
+    const vismodule::Vector3f diff_obj = m_max_object_coord - m_min_object_coord;
+    const float max_diff = vismodule::Math::Max( diff_obj.x(), diff_obj.y(), diff_obj.z() );
     const float normalize = 6.0f / max_diff;
 
     m_normalize.x() = normalize;
@@ -946,10 +946,10 @@ void ObjectManager::update_normalize_parameters(
 /*==========================================================================*/
 void ObjectManager::update_normalize_parameters()
 {
-    m_min_object_coord   = kvs::Vector3f(  1000000,  1000000,  1000000 );
-    m_max_object_coord   = kvs::Vector3f( -1000000, -1000000, -1000000 );
-    m_min_external_coord = kvs::Vector3f( -3.0, -3.0, -3.0 );
-    m_max_external_coord = kvs::Vector3f(  3.0,  3.0,  3.0 );
+    m_min_object_coord   = vismodule::Vector3f(  1000000,  1000000,  1000000 );
+    m_max_object_coord   = vismodule::Vector3f( -1000000, -1000000, -1000000 );
+    m_min_external_coord = vismodule::Vector3f( -3.0, -3.0, -3.0 );
+    m_max_external_coord = vismodule::Vector3f(  3.0,  3.0,  3.0 );
 
     int ctr = 0;
     if ( ObjectManagerBase::size() > 1 )
@@ -962,12 +962,12 @@ void ObjectManager::update_normalize_parameters()
 
         for ( ; first != last; ++first )
         {
-            if ( kvs::Math::Equal( 0.0f, ( *first )->minExternalCoord().x() ) &&
-                    kvs::Math::Equal( 0.0f, ( *first )->minExternalCoord().y() ) &&
-                    kvs::Math::Equal( 0.0f, ( *first )->minExternalCoord().z() ) &&
-                    kvs::Math::Equal( 0.0f, ( *first )->maxExternalCoord().x() ) &&
-                    kvs::Math::Equal( 0.0f, ( *first )->maxExternalCoord().y() ) &&
-                    kvs::Math::Equal( 0.0f, ( *first )->maxExternalCoord().z() ) ) continue;
+            if ( vismodule::Math::Equal( 0.0f, ( *first )->minExternalCoord().x() ) &&
+                    vismodule::Math::Equal( 0.0f, ( *first )->minExternalCoord().y() ) &&
+                    vismodule::Math::Equal( 0.0f, ( *first )->minExternalCoord().z() ) &&
+                    vismodule::Math::Equal( 0.0f, ( *first )->maxExternalCoord().x() ) &&
+                    vismodule::Math::Equal( 0.0f, ( *first )->maxExternalCoord().y() ) &&
+                    vismodule::Math::Equal( 0.0f, ( *first )->maxExternalCoord().z() ) ) continue;
 
             m_min_object_coord.x() =
                 m_min_object_coord.x() < ( *first )->minExternalCoord().x() ?
@@ -994,14 +994,14 @@ void ObjectManager::update_normalize_parameters()
 
     if ( ctr == 0 )
     {
-        m_normalize     = kvs::Vector3f( 1.0 );
-        m_object_center = kvs::Vector3f( 0.0 );
+        m_normalize     = vismodule::Vector3f( 1.0 );
+        m_object_center = vismodule::Vector3f( 0.0 );
     }
     else
     {
-        const kvs::Vector3f diff_obj = m_max_object_coord - m_min_object_coord;
+        const vismodule::Vector3f diff_obj = m_max_object_coord - m_min_object_coord;
 
-        const float max_diff = kvs::Math::Max( diff_obj.x(), diff_obj.y(), diff_obj.z() );
+        const float max_diff = vismodule::Math::Max( diff_obj.x(), diff_obj.y(), diff_obj.z() );
 
         const float normalize = 6.0f / max_diff;
 
@@ -1038,13 +1038,13 @@ pbvr::ObjectBase* ObjectManager::get_control_target()
  *  @return rotation center
  */
 /*==========================================================================*/
-kvs::Vector3f ObjectManager::get_rotation_center()
+vismodule::Vector3f ObjectManager::get_rotation_center()
 {
     /* 131017 removed
         if( this->isEnableAllMove() )
         {
     */
-    return kvs::Vector3f( ( *this )[0][3], ( *this )[1][3], ( *this )[2][3] );
+    return vismodule::Vector3f( ( *this )[0][3], ( *this )[1][3], ( *this )[2][3] );
     /* 131017 removed
         }
         else

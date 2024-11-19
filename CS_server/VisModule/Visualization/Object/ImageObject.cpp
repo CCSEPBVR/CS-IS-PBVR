@@ -25,14 +25,14 @@ namespace
  *  @return pixel type name
  */
 /*===========================================================================*/
-const std::string GetPixelTypeName( const kvs::ImageObject::PixelType type )
+const std::string GetPixelTypeName( const vismodule::ImageObject::PixelType type )
 {
     switch( type )
     {
-    case kvs::ImageObject::Gray8: return("8 bit gray pixel");
-    case kvs::ImageObject::Gray16: return("16 bit gray pixel");
-    case kvs::ImageObject::Color24: return("24 bit RGB color pixel (8x8x8 bits)");
-    case kvs::ImageObject::Color32: return("32 bit RGBA color pixel (8x8x8x8 bits)");
+    case vismodule::ImageObject::Gray8: return("8 bit gray pixel");
+    case vismodule::ImageObject::Gray16: return("16 bit gray pixel");
+    case vismodule::ImageObject::Color24: return("24 bit RGB color pixel (8x8x8 bits)");
+    case vismodule::ImageObject::Color32: return("32 bit RGBA color pixel (8x8x8x8 bits)");
     default: return("unknown pixel type");
     }
 }
@@ -40,7 +40,7 @@ const std::string GetPixelTypeName( const kvs::ImageObject::PixelType type )
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -64,7 +64,7 @@ ImageObject::ImageObject( void )
 ImageObject::ImageObject(
     const size_t                       width,
     const size_t                       height,
-    const kvs::ValueArray<kvs::UInt8>& data,
+    const vismodule::ValueArray<vismodule::UInt8>& data,
     const ImageObject::PixelType       type ):
     m_type( type ),
     m_width( width ),
@@ -163,9 +163,9 @@ void ImageObject::deepCopy( const ImageObject& other )
  *  @return object type
  */
 /*==========================================================================*/
-const kvs::ObjectBase::ObjectType ImageObject::objectType( void ) const
+const vismodule::ObjectBase::ObjectType ImageObject::objectType( void ) const
 {
-    return( kvs::ObjectBase::Image );
+    return( vismodule::ObjectBase::Image );
 }
 
 /*==========================================================================*/
@@ -207,7 +207,7 @@ const size_t ImageObject::height( void ) const
  *  @return pixel data array
  */
 /*==========================================================================*/
-const kvs::ValueArray<kvs::UInt8>& ImageObject::data( void ) const
+const vismodule::ValueArray<vismodule::UInt8>& ImageObject::data( void ) const
 {
     return( m_data );
 }
@@ -266,4 +266,4 @@ const size_t ImageObject::get_npixels( void ) const
     return( ( m_type >> 3 ) * m_width * m_height );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

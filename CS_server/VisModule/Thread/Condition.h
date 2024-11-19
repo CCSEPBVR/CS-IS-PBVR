@@ -11,19 +11,19 @@
  *  $Id: Condition.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__CONDITION_H_INCLUDE
-#define KVS__CONDITION_H_INCLUDE
+#ifndef VIS_MODULE__CONDITION_H_INCLUDE
+#define VIS_MODULE__CONDITION_H_INCLUDE
 
-#include <kvs/Platform>
-#include <kvs/ClassName>
+#include <vismodule/Platform>
+#include <vismodule/ClassName>
 #include "Mutex.h"
 
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
 #include <windows.h>
 #endif
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -33,11 +33,11 @@ namespace kvs
 /*==========================================================================*/
 class Condition
 {
-    kvsClassName( kvs::Condition );
+    visModuleClassName( vismodule::Condition );
 
 public:
 
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     struct Handler
     {
         enum
@@ -56,7 +56,7 @@ public:
 protected:
 
     int        m_nsleepers; ///< number of sleep threads
-    kvs::Mutex m_mutex;     ///< mutex
+    vismodule::Mutex m_mutex;     ///< mutex
     Handler    m_handler;   ///< handler
 
 public:
@@ -71,9 +71,9 @@ public:
 
     void wakeUpAll( void );
 
-    bool wait( kvs::Mutex* mutex );
+    bool wait( vismodule::Mutex* mutex );
 
-    bool wait( kvs::Mutex* mutex, int msec );
+    bool wait( vismodule::Mutex* mutex, int msec );
 
 protected:
 
@@ -82,6 +82,6 @@ protected:
     void delete_condition_variable( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__CONDITION_H_INCLUDE
+#endif // VIS_MODULE__CONDITION_H_INCLUDE

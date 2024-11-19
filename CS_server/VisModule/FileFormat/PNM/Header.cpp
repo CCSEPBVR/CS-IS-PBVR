@@ -20,7 +20,7 @@ const size_t MaxLineLength = 256;
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace pnm
@@ -195,4 +195,4 @@ void Header::next_line( std::ifstream& ifs )
 
 } // end of namespace pnm
 
-} // end of namespace kvs
+} // end of namespace vismodule

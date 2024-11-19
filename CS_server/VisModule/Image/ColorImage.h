@@ -11,15 +11,15 @@
  *  $Id: ColorImage.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__COLOR_IMAGE_H_INCLUDE
-#define KVS__COLOR_IMAGE_H_INCLUDE
+#ifndef VIS_MODULE__COLOR_IMAGE_H_INCLUDE
+#define VIS_MODULE__COLOR_IMAGE_H_INCLUDE
 
 #include <limits>
 #include "ImageBase.h"
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class RGBColor;
@@ -31,14 +31,14 @@ class BitImage;
  *  Color image class.
  */
 /*==========================================================================*/
-class ColorImage : public kvs::ImageBase
+class ColorImage : public vismodule::ImageBase
 {
-    kvsClassName( kvs::ColorImage );
+    visModuleClassName( vismodule::ColorImage );
 
 public:
 
-    typedef kvs::ImageBase BaseClass;
-    typedef kvs::RGBColor  PixelType;
+    typedef vismodule::ImageBase BaseClass;
+    typedef vismodule::RGBColor  PixelType;
 
     typedef BaseClass::NearestNeighborInterpolatorColor NearestNeighbor;
     typedef BaseClass::BilinearInterpolatorColor        Bilinear;
@@ -49,15 +49,15 @@ public:
 
     ColorImage( const size_t width, const size_t height );
 
-    ColorImage( const size_t width, const size_t height, const kvs::UInt8* data );
+    ColorImage( const size_t width, const size_t height, const vismodule::UInt8* data );
 
-    ColorImage( const size_t width, const size_t height, const kvs::ValueArray<kvs::UInt8>& data );
+    ColorImage( const size_t width, const size_t height, const vismodule::ValueArray<vismodule::UInt8>& data );
 
-    ColorImage( const kvs::ColorImage& image );
+    ColorImage( const vismodule::ColorImage& image );
 
-    explicit ColorImage( const kvs::GrayImage& image );
+    explicit ColorImage( const vismodule::GrayImage& image );
 
-    explicit ColorImage( const kvs::BitImage& image );
+    explicit ColorImage( const vismodule::BitImage& image );
 
     explicit ColorImage( const std::string& filename );
 
@@ -65,31 +65,31 @@ public:
 
 public:
 
-    kvs::ColorImage& operator = ( const kvs::ColorImage& image );
+    vismodule::ColorImage& operator = ( const vismodule::ColorImage& image );
 
 public:
 
-    const kvs::UInt8 r( const size_t index ) const;
+    const vismodule::UInt8 r( const size_t index ) const;
 
-    const kvs::UInt8 r( const size_t i, const size_t j ) const;
+    const vismodule::UInt8 r( const size_t i, const size_t j ) const;
 
-    const kvs::UInt8 g( const size_t index ) const;
+    const vismodule::UInt8 g( const size_t index ) const;
 
-    const kvs::UInt8 g( const size_t i, const size_t j ) const;
+    const vismodule::UInt8 g( const size_t i, const size_t j ) const;
 
-    const kvs::UInt8 b( const size_t index ) const;
+    const vismodule::UInt8 b( const size_t index ) const;
 
-    const kvs::UInt8 b( const size_t i, const size_t j ) const;
+    const vismodule::UInt8 b( const size_t i, const size_t j ) const;
 
-    const kvs::RGBColor pixel( const size_t index ) const;
+    const vismodule::RGBColor pixel( const size_t index ) const;
 
-    const kvs::RGBColor pixel( const size_t i, const size_t j ) const;
+    const vismodule::RGBColor pixel( const size_t i, const size_t j ) const;
 
 public:
 
-    void set( const size_t index, const kvs::RGBColor& pixel );
+    void set( const size_t index, const vismodule::RGBColor& pixel );
 
-    void set( const size_t i, const size_t j, const kvs::RGBColor& pixel );
+    void set( const size_t i, const size_t j, const vismodule::RGBColor& pixel );
 
 public:
 
@@ -111,11 +111,11 @@ public:
 
 private:
 
-    const bool read_image( const kvs::GrayImage& image );
+    const bool read_image( const vismodule::GrayImage& image );
 
-    const bool read_image( const kvs::BitImage& image );
+    const bool read_image( const vismodule::BitImage& image );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__COLOR_IMAGE_H_INCLUDE
+#endif // VIS_MODULE__COLOR_IMAGE_H_INCLUDE

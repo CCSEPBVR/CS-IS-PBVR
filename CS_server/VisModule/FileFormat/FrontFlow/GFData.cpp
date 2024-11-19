@@ -13,11 +13,11 @@
  */
 /*****************************************************************************/
 #include "GFData.h"
-#include <kvs/IgnoreUnusedVariable>
-#include <kvs/Tokenizer>
+#include <vismodule/IgnoreUnusedVariable>
+#include <vismodule/Tokenizer>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -61,7 +61,7 @@ GFData::GFData( const std::string& mesh_file, const std::string& flow_file, cons
  *  @return flow data
  */
 /*===========================================================================*/
-const kvs::gf::FlowData& GFData::flowData( void ) const
+const vismodule::gf::FlowData& GFData::flowData( void ) const
 {
     return( m_flow_data );
 }
@@ -72,7 +72,7 @@ const kvs::gf::FlowData& GFData::flowData( void ) const
  *  @return mesh data
  */
 /*===========================================================================*/
-const kvs::gf::MeshData& GFData::meshData( void ) const
+const vismodule::gf::MeshData& GFData::meshData( void ) const
 {
     return( m_mesh_data );
 }
@@ -83,7 +83,7 @@ const kvs::gf::MeshData& GFData::meshData( void ) const
  *  @return boundary data
  */
 /*===========================================================================*/
-const kvs::gf::BoundaryData& GFData::boundaryData( void ) const
+const vismodule::gf::BoundaryData& GFData::boundaryData( void ) const
 {
     return( m_boundary_data );
 }
@@ -97,7 +97,7 @@ const kvs::gf::BoundaryData& GFData::boundaryData( void ) const
 /*===========================================================================*/
 const bool GFData::read( const std::string& filename )
 {
-    kvs::Tokenizer t( filename, ";" );
+    vismodule::Tokenizer t( filename, ";" );
     const std::string mesh_file = t.isLast() ? "" : t.token();
     const std::string flow_file = t.isLast() ? "" : t.token();
     const std::string boundary_file = t.isLast() ? "" : t.token();
@@ -133,9 +133,9 @@ const bool GFData::read( const std::string& mesh_file, const std::string& flow_f
 /*===========================================================================*/
 const bool GFData::write( const std::string& filename )
 {
-    kvs::IgnoreUnusedVariable( filename );
+    vismodule::IgnoreUnusedVariable( filename );
 
     return( true );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -11,20 +11,20 @@
  *  $Id: Quaternion.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__QUATERNION_H_INCLUDE
-#define KVS__QUATERNION_H_INCLUDE
+#ifndef VIS_MODULE__QUATERNION_H_INCLUDE
+#define VIS_MODULE__QUATERNION_H_INCLUDE
 
 #include <iostream>
 #include <iomanip>
-#include <kvs/ClassName>
-#include <kvs/Math>
-#include <kvs/Assert>
-#include <kvs/Vector3>
-#include <kvs/Matrix33>
-#include <kvs/Matrix44>
+#include <vismodule/ClassName>
+#include <vismodule/Math>
+#include <vismodule/Assert>
+#include <vismodule/Vector3>
+#include <vismodule/Matrix33>
+#include <vismodule/Matrix44>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -35,7 +35,7 @@ namespace kvs
 template <typename T>
 class Quaternion
 {
-    kvsClassName_without_virtual( kvs::Quaternion );
+    visModuleClassName_without_virtual( vismodule::Quaternion );
 
 protected:
 
@@ -142,18 +142,18 @@ public:
 
     friend bool operator == ( const Quaternion<T>& a, const Quaternion<T>& b )
     {
-        return( kvs::Math::Equal( a[0], b[0] ) &&
-                kvs::Math::Equal( a[1], b[1] ) &&
-                kvs::Math::Equal( a[2], b[2] ) &&
-                kvs::Math::Equal( a[3], b[3] ) );
+        return( vismodule::Math::Equal( a[0], b[0] ) &&
+                vismodule::Math::Equal( a[1], b[1] ) &&
+                vismodule::Math::Equal( a[2], b[2] ) &&
+                vismodule::Math::Equal( a[3], b[3] ) );
     }
 
     friend bool operator != ( const Quaternion<T>& a, const Quaternion<T>& b )
     {
-        return( !kvs::Math::Equal( a[0], b[0] ) ||
-                !kvs::Math::Equal( a[1], b[1] ) ||
-                !kvs::Math::Equal( a[2], b[2] ) ||
-                !kvs::Math::Equal( a[3], b[3] ) );
+        return( !vismodule::Math::Equal( a[0], b[0] ) ||
+                !vismodule::Math::Equal( a[1], b[1] ) ||
+                !vismodule::Math::Equal( a[2], b[2] ) ||
+                !vismodule::Math::Equal( a[3], b[3] ) );
     }
 
     friend Quaternion<T> operator - ( const Quaternion<T>& a )
@@ -185,7 +185,7 @@ public:
 
     friend Quaternion<T> operator / ( const Quaternion<T>& q, T s )
     {
-        KVS_ASSERT( !kvs::Math::IsZero(s) );
+        VIS_MODULE_ASSERT( !vismodule::Math::IsZero(s) );
         return( Quaternion<T>( q[0] / s, q[1] / s, q[2] / s, q[3] / s ) );
     }
 
@@ -202,11 +202,11 @@ public:
 
 public:
 
-    kvs::Matrix33<T> toMatrix( void ) const;
+    vismodule::Matrix33<T> toMatrix( void ) const;
 
-    void toMatrix( kvs::Matrix33<T>& m ) const;
+    void toMatrix( vismodule::Matrix33<T>& m ) const;
 
-    void toMatrix( kvs::Matrix44<T>& m ) const;
+    void toMatrix( vismodule::Matrix44<T>& m ) const;
 
     void toMatrix( T m[16] ) const;
 
@@ -311,15 +311,15 @@ Quaternion<T>::Quaternion( const Quaternion<T>& other )
 }
 
 template<typename T>
-Quaternion<T>::Quaternion( const kvs::Vector3<T>& axis, T angle )
+Quaternion<T>::Quaternion( const vismodule::Vector3<T>& axis, T angle )
 {
     T s = static_cast<T>( std::sin( angle * 0.5 ) );
     T w = static_cast<T>( std::cos( angle * 0.5 ) );
 
-    kvs::Vector3<T> n( axis );
+    vismodule::Vector3<T> n( axis );
     n.normalize();
 
-    kvs::Vector3<T> v( s * n );
+    vismodule::Vector3<T> v( s * n );
 
     m_elements[0] = v.x();
     m_elements[1] = v.y();
@@ -328,7 +328,7 @@ Quaternion<T>::Quaternion( const kvs::Vector3<T>& axis, T angle )
 }
 
 template<typename T>
-Quaternion<T>::Quaternion( const kvs::Matrix33<T>& m )
+Quaternion<T>::Quaternion( const vismodule::Matrix33<T>& m )
 {
     double trace = double( m.trace() + 1.0 );
 
@@ -374,7 +374,7 @@ Quaternion<T>::Quaternion( const kvs::Matrix33<T>& m )
 }
 
 template<typename T>
-Quaternion<T>::Quaternion( const kvs::Matrix44<T>& m )
+Quaternion<T>::Quaternion( const vismodule::Matrix44<T>& m )
 {
     double trace = double( m.trace() );
 
@@ -678,7 +678,7 @@ const double Quaternion<T>::length2( void ) const
 template<typename T>
 T& Quaternion<T>::operator [] ( size_t index )
 {
-    KVS_ASSERT( index < 4 );
+    VIS_MODULE_ASSERT( index < 4 );
 
     return( m_elements[index] );
 }
@@ -686,7 +686,7 @@ T& Quaternion<T>::operator [] ( size_t index )
 template<typename T>
 const T Quaternion<T>::operator [] ( size_t index ) const
 {
-    KVS_ASSERT( index < 4 );
+    VIS_MODULE_ASSERT( index < 4 );
 
     return( m_elements[index] );
 }
@@ -737,7 +737,7 @@ Quaternion<T>& Quaternion<T>::operator *= ( T a )
 template<typename T>
 Quaternion<T>& Quaternion<T>::operator /= ( T a )
 {
-    KVS_ASSERT( !kvs::Math::IsZero(a) );
+    VIS_MODULE_ASSERT( !vismodule::Math::IsZero(a) );
 
     m_elements[0] /= a;
     m_elements[1] /= a;
@@ -764,7 +764,7 @@ Quaternion<T>& Quaternion<T>::operator *= ( const Quaternion<T>& q )
 }
 
 template<typename T>
-kvs::Matrix33<T> Quaternion<T>::toMatrix( void ) const
+vismodule::Matrix33<T> Quaternion<T>::toMatrix( void ) const
 {
     T length_2 = static_cast<T>( this->length2() );
     T s = ( length_2 > T(0) ) ? T(2) / length_2 : T(0);
@@ -779,7 +779,7 @@ kvs::Matrix33<T> Quaternion<T>::toMatrix( void ) const
     T wy = this->w() * this->y() * s;
     T wz = this->w() * this->z() * s;
 
-    kvs::Matrix33<T> ret;
+    vismodule::Matrix33<T> ret;
     ret[0][0] = T(1) - ( yy + zz );
     ret[1][0] = xy + wz;
     ret[2][0] = xz - wy;
@@ -796,7 +796,7 @@ kvs::Matrix33<T> Quaternion<T>::toMatrix( void ) const
 }
 
 template<typename T>
-void Quaternion<T>::toMatrix( kvs::Matrix33<T>& m ) const
+void Quaternion<T>::toMatrix( vismodule::Matrix33<T>& m ) const
 {
     T length_2 = static_cast<T>( this->length2() );
     T s = ( length_2 > T(0) ) ? T(2) / length_2 : T(0);
@@ -825,7 +825,7 @@ void Quaternion<T>::toMatrix( kvs::Matrix33<T>& m ) const
 }
 
 template<typename T>
-void Quaternion<T>::toMatrix( kvs::Matrix44<T>& m ) const
+void Quaternion<T>::toMatrix( vismodule::Matrix44<T>& m ) const
 {
     T length_2 = static_cast<T>( this->length2() );
     T s = ( length_2 > T(0) ) ? T(2) / length_2 : T(0);
@@ -899,11 +899,11 @@ void Quaternion<T>::toMatrix( T m[16] ) const
 }
 
 template<typename T>
-kvs::Vector3<T> Quaternion<T>::axis( void )
+vismodule::Vector3<T> Quaternion<T>::axis( void )
 {
     T s = T( std::sin( double( this->angle() ) * 0.5 ) );
 
-    kvs::Vector3<T> ret( this->x(), this->y(), this->z() );
+    vismodule::Vector3<T> ret( this->x(), this->y(), this->z() );
     ret /= s;
 
     return( ret );
@@ -916,24 +916,24 @@ T Quaternion<T>::angle( void )
 }
 
 template<typename T>
-kvs::Vector3<T> Quaternion<T>::rotate( const kvs::Vector3<T>& pos, const kvs::Vector3<T>& axis, T rad )
+vismodule::Vector3<T> Quaternion<T>::rotate( const vismodule::Vector3<T>& pos, const vismodule::Vector3<T>& axis, T rad )
 {
     const Quaternion<T> p( pos.x(), pos.y(), pos.z(), T(0) );
     const Quaternion<T> rotate_quat( axis, rad );
     const Quaternion<T> rotate_conj = rotate_quat.conjunction();
     const Quaternion<T> rotate_pos = rotate_conj * p * rotate_quat;
 
-    return( kvs::Vector3<T>( rotate_pos.x(), rotate_pos.y(), rotate_pos.z() ) );
+    return( vismodule::Vector3<T>( rotate_pos.x(), rotate_pos.y(), rotate_pos.z() ) );
 }
 
 template<typename T>
-kvs::Vector3<T> Quaternion<T>::rotate( const kvs::Vector3<T>& pos, const kvs::Quaternion<T>& q )
+vismodule::Vector3<T> Quaternion<T>::rotate( const vismodule::Vector3<T>& pos, const vismodule::Quaternion<T>& q )
 {
     const Quaternion<T> p( pos.x(), pos.y(), pos.z(), T(0) );
     const Quaternion<T> rotate_conj = q.conjunction();
     const Quaternion<T> rotate_pos = rotate_conj * p * q;
 
-    return( kvs::Vector3<T>( rotate_pos.x(), rotate_pos.y(), rotate_pos.z() ) );
+    return( vismodule::Vector3<T>( rotate_pos.x(), rotate_pos.y(), rotate_pos.z() ) );
 }
 
 template<typename T>
@@ -944,7 +944,7 @@ Quaternion<T> Quaternion<T>::rotationQuaternion( Vector3<T> v0, Vector3<T> v1 )
     v0.normalize();
     v1.normalize();
 
-    kvs::Vector3<T> c = v0.cross( v1 );
+    vismodule::Vector3<T> c = v0.cross( v1 );
     T               d = v0.x() * v1.x() + v0.y() * v1.y() + v0.z() * v1.z();
     double          s = std::sqrt( double( ( 1 + d ) * 2.0 ) );
 
@@ -1060,6 +1060,6 @@ Quaternion<T> Quaternion<T>::spline(
     return( qn * ( ( ( qni * tmpm1 ).log() + ( qni * tmpp1 ).log() ) / -4 ).exp() );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__QUATERNION_H_INCLUDE
+#endif // VIS_MODULE__QUATERNION_H_INCLUDE

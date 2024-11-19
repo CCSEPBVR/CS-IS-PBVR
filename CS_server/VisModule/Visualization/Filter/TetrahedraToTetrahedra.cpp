@@ -15,7 +15,7 @@
 #include "TetrahedraToTetrahedra.h"
 #include <algorithm>
 #include <map>
-#include <kvs/AnyValueArray>
+#include <vismodule/AnyValueArray>
 
 
 namespace
@@ -30,8 +30,8 @@ class IDMap
 {
 public:
 
-    typedef kvs::UInt32 Key;
-    typedef kvs::UInt32 Value;
+    typedef vismodule::UInt32 Key;
+    typedef vismodule::UInt32 Value;
     typedef std::map<Key,Value> Bucket;
 
 private:
@@ -47,7 +47,7 @@ public:
 
     const Bucket& bucket( void ) const;
 
-    void insert( const kvs::UInt32 id );
+    void insert( const vismodule::UInt32 id );
 };
 
 /*===========================================================================*/
@@ -77,7 +77,7 @@ const IDMap::Bucket& IDMap::bucket( void ) const
  *  @param  id [in] ID
  */
 /*===========================================================================*/
-void IDMap::insert( const kvs::UInt32 id )
+void IDMap::insert( const vismodule::UInt32 id )
 {
     const Key key = id;
     const Value value = m_index;
@@ -94,7 +94,7 @@ void IDMap::insert( const kvs::UInt32 id )
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -115,7 +115,7 @@ TetrahedraToTetrahedra::TetrahedraToTetrahedra( void ):
  */
 /*===========================================================================*/
 TetrahedraToTetrahedra::TetrahedraToTetrahedra(
-    const kvs::UnstructuredVolumeObject* volume,
+    const vismodule::UnstructuredVolumeObject* volume,
     const TetrahedraToTetrahedra::Method method )
 {
     this->setMethod( method );
@@ -138,62 +138,62 @@ TetrahedraToTetrahedra::~TetrahedraToTetrahedra( void )
  *  @return pointer to the converted object
  */
 /*===========================================================================*/
-TetrahedraToTetrahedra::SuperClass* TetrahedraToTetrahedra::exec( const kvs::ObjectBase* object )
+TetrahedraToTetrahedra::SuperClass* TetrahedraToTetrahedra::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::UnstructuredVolumeObject* volume = kvs::UnstructuredVolumeObject::DownCast( object );
+    const vismodule::UnstructuredVolumeObject* volume = vismodule::UnstructuredVolumeObject::DownCast( object );
     if ( !volume )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not supported.");
+        visModuleMessageError("Input object is not supported.");
         return( NULL );
     }
 
-    if ( volume->cellType() == kvs::UnstructuredVolumeObject::QuadraticTetrahedra )
+    if ( volume->cellType() == vismodule::UnstructuredVolumeObject::QuadraticTetrahedra )
     {
         if ( m_method == TetrahedraToTetrahedra::Subdivision8 )
         {
             const std::type_info& type = volume->values().typeInfo()->type();
-            if (      type == typeid( kvs::Int8   ) ) this->subdivide_8_tetrahedra<kvs::Int8>(   volume );
-            else if ( type == typeid( kvs::Int16  ) ) this->subdivide_8_tetrahedra<kvs::Int16>(  volume );
-            else if ( type == typeid( kvs::Int32  ) ) this->subdivide_8_tetrahedra<kvs::Int32>(  volume );
-            else if ( type == typeid( kvs::Int64  ) ) this->subdivide_8_tetrahedra<kvs::Int64>(  volume );
-            else if ( type == typeid( kvs::UInt8  ) ) this->subdivide_8_tetrahedra<kvs::UInt8>(  volume );
-            else if ( type == typeid( kvs::UInt16 ) ) this->subdivide_8_tetrahedra<kvs::UInt16>( volume );
-            else if ( type == typeid( kvs::UInt32 ) ) this->subdivide_8_tetrahedra<kvs::UInt32>( volume );
-            else if ( type == typeid( kvs::UInt64 ) ) this->subdivide_8_tetrahedra<kvs::UInt64>( volume );
-            else if ( type == typeid( kvs::Real32 ) ) this->subdivide_8_tetrahedra<kvs::Real32>( volume );
-            else if ( type == typeid( kvs::Real64 ) ) this->subdivide_8_tetrahedra<kvs::Real64>( volume );
+            if (      type == typeid( vismodule::Int8   ) ) this->subdivide_8_tetrahedra<vismodule::Int8>(   volume );
+            else if ( type == typeid( vismodule::Int16  ) ) this->subdivide_8_tetrahedra<vismodule::Int16>(  volume );
+            else if ( type == typeid( vismodule::Int32  ) ) this->subdivide_8_tetrahedra<vismodule::Int32>(  volume );
+            else if ( type == typeid( vismodule::Int64  ) ) this->subdivide_8_tetrahedra<vismodule::Int64>(  volume );
+            else if ( type == typeid( vismodule::UInt8  ) ) this->subdivide_8_tetrahedra<vismodule::UInt8>(  volume );
+            else if ( type == typeid( vismodule::UInt16 ) ) this->subdivide_8_tetrahedra<vismodule::UInt16>( volume );
+            else if ( type == typeid( vismodule::UInt32 ) ) this->subdivide_8_tetrahedra<vismodule::UInt32>( volume );
+            else if ( type == typeid( vismodule::UInt64 ) ) this->subdivide_8_tetrahedra<vismodule::UInt64>( volume );
+            else if ( type == typeid( vismodule::Real32 ) ) this->subdivide_8_tetrahedra<vismodule::Real32>( volume );
+            else if ( type == typeid( vismodule::Real64 ) ) this->subdivide_8_tetrahedra<vismodule::Real64>( volume );
             else
             {
                 BaseClass::m_is_success = false;
-                kvsMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
+                visModuleMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
                 return( NULL );
             }
         }
         else if ( m_method == TetrahedraToTetrahedra::Removal )
         {
             const std::type_info& type = volume->values().typeInfo()->type();
-            if (      type == typeid( kvs::Int8   ) ) this->remove_quadratic_nodes<kvs::Int8>(   volume );
-            else if ( type == typeid( kvs::Int16  ) ) this->remove_quadratic_nodes<kvs::Int16>(  volume );
-            else if ( type == typeid( kvs::Int32  ) ) this->remove_quadratic_nodes<kvs::Int32>(  volume );
-            else if ( type == typeid( kvs::Int64  ) ) this->remove_quadratic_nodes<kvs::Int64>(  volume );
-            else if ( type == typeid( kvs::UInt8  ) ) this->remove_quadratic_nodes<kvs::UInt8>(  volume );
-            else if ( type == typeid( kvs::UInt16 ) ) this->remove_quadratic_nodes<kvs::UInt16>( volume );
-            else if ( type == typeid( kvs::UInt32 ) ) this->remove_quadratic_nodes<kvs::UInt32>( volume );
-            else if ( type == typeid( kvs::UInt64 ) ) this->remove_quadratic_nodes<kvs::UInt64>( volume );
-            else if ( type == typeid( kvs::Real32 ) ) this->remove_quadratic_nodes<kvs::Real32>( volume );
-            else if ( type == typeid( kvs::Real64 ) ) this->remove_quadratic_nodes<kvs::Real64>( volume );
+            if (      type == typeid( vismodule::Int8   ) ) this->remove_quadratic_nodes<vismodule::Int8>(   volume );
+            else if ( type == typeid( vismodule::Int16  ) ) this->remove_quadratic_nodes<vismodule::Int16>(  volume );
+            else if ( type == typeid( vismodule::Int32  ) ) this->remove_quadratic_nodes<vismodule::Int32>(  volume );
+            else if ( type == typeid( vismodule::Int64  ) ) this->remove_quadratic_nodes<vismodule::Int64>(  volume );
+            else if ( type == typeid( vismodule::UInt8  ) ) this->remove_quadratic_nodes<vismodule::UInt8>(  volume );
+            else if ( type == typeid( vismodule::UInt16 ) ) this->remove_quadratic_nodes<vismodule::UInt16>( volume );
+            else if ( type == typeid( vismodule::UInt32 ) ) this->remove_quadratic_nodes<vismodule::UInt32>( volume );
+            else if ( type == typeid( vismodule::UInt64 ) ) this->remove_quadratic_nodes<vismodule::UInt64>( volume );
+            else if ( type == typeid( vismodule::Real32 ) ) this->remove_quadratic_nodes<vismodule::Real32>( volume );
+            else if ( type == typeid( vismodule::Real64 ) ) this->remove_quadratic_nodes<vismodule::Real64>( volume );
             else
             {
                 BaseClass::m_is_success = false;
-                kvsMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
+                visModuleMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
                 return( NULL );
             }
         }
@@ -201,7 +201,7 @@ TetrahedraToTetrahedra::SuperClass* TetrahedraToTetrahedra::exec( const kvs::Obj
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not tetrahedral cells.");
+        visModuleMessageError("Input object is not tetrahedral cells.");
         return( NULL );
     }
 
@@ -226,29 +226,29 @@ void TetrahedraToTetrahedra::setMethod( const TetrahedraToTetrahedra::Method met
  */
 /*===========================================================================*/
 template <typename T>
-void TetrahedraToTetrahedra::subdivide_8_tetrahedra( const kvs::UnstructuredVolumeObject* volume )
+void TetrahedraToTetrahedra::subdivide_8_tetrahedra( const vismodule::UnstructuredVolumeObject* volume )
 {
     // Quadratic tetrahedral cells.
     const size_t tet2_ncells = volume->ncells();
-    const kvs::UInt32* tet2_pconnections = volume->connections().pointer();
+    const vismodule::UInt32* tet2_pconnections = volume->connections().pointer();
 
     // Tetrahedral cells.
     const size_t ndivisions = 8;
     const size_t tet_ncells = tet2_ncells * ndivisions;
-    kvs::ValueArray<kvs::UInt32> tet_connections( tet_ncells * 4 );
-    kvs::UInt32* tet_pconnections = tet_connections.pointer();
+    vismodule::ValueArray<vismodule::UInt32> tet_connections( tet_ncells * 4 );
+    vismodule::UInt32* tet_pconnections = tet_connections.pointer();
     for ( size_t i = 0; i < tet2_ncells; i++ )
     {
-        const kvs::UInt32 id0 = *(tet2_pconnections++);
-        const kvs::UInt32 id1 = *(tet2_pconnections++);
-        const kvs::UInt32 id2 = *(tet2_pconnections++);
-        const kvs::UInt32 id3 = *(tet2_pconnections++);
-        const kvs::UInt32 id4 = *(tet2_pconnections++);
-        const kvs::UInt32 id5 = *(tet2_pconnections++);
-        const kvs::UInt32 id6 = *(tet2_pconnections++);
-        const kvs::UInt32 id7 = *(tet2_pconnections++);
-        const kvs::UInt32 id8 = *(tet2_pconnections++);
-        const kvs::UInt32 id9 = *(tet2_pconnections++);
+        const vismodule::UInt32 id0 = *(tet2_pconnections++);
+        const vismodule::UInt32 id1 = *(tet2_pconnections++);
+        const vismodule::UInt32 id2 = *(tet2_pconnections++);
+        const vismodule::UInt32 id3 = *(tet2_pconnections++);
+        const vismodule::UInt32 id4 = *(tet2_pconnections++);
+        const vismodule::UInt32 id5 = *(tet2_pconnections++);
+        const vismodule::UInt32 id6 = *(tet2_pconnections++);
+        const vismodule::UInt32 id7 = *(tet2_pconnections++);
+        const vismodule::UInt32 id8 = *(tet2_pconnections++);
+        const vismodule::UInt32 id9 = *(tet2_pconnections++);
 
         *(tet_pconnections++) = id0;
         *(tet_pconnections++) = id4;
@@ -293,29 +293,29 @@ void TetrahedraToTetrahedra::subdivide_8_tetrahedra( const kvs::UnstructuredVolu
 
     if ( volume->hasMinMaxExternalCoords() )
     {
-        const kvs::Vector3f min_coord( volume->minExternalCoord() );
-        const kvs::Vector3f max_coord( volume->maxExternalCoord() );
+        const vismodule::Vector3f min_coord( volume->minExternalCoord() );
+        const vismodule::Vector3f max_coord( volume->maxExternalCoord() );
         SuperClass::setMinMaxExternalCoords( min_coord, max_coord );
     }
 
     if ( volume->hasMinMaxObjectCoords() )
     {
-        const kvs::Vector3f min_coord( volume->minObjectCoord() );
-        const kvs::Vector3f max_coord( volume->maxObjectCoord() );
+        const vismodule::Vector3f min_coord( volume->minObjectCoord() );
+        const vismodule::Vector3f max_coord( volume->maxObjectCoord() );
         SuperClass::setMinMaxObjectCoords( min_coord, max_coord );
     }
 
     if ( volume->hasMinMaxValues() )
     {
-        const kvs::Real64 min_value( volume->minValue() );
-        const kvs::Real64 max_value( volume->maxValue() );
+        const vismodule::Real64 min_value( volume->minValue() );
+        const vismodule::Real64 max_value( volume->maxValue() );
         SuperClass::setMinMaxValues( min_value, max_value );
     }
 
     SuperClass::setVeclen( volume->veclen() );
     SuperClass::setNNodes( volume->nnodes() );
     SuperClass::setNCells( tet_ncells );
-    SuperClass::setCellType( kvs::UnstructuredVolumeObject::Tetrahedra );
+    SuperClass::setCellType( vismodule::UnstructuredVolumeObject::Tetrahedra );
     SuperClass::setCoords( volume->coords() );
     SuperClass::setConnections( tet_connections );
     SuperClass::setValues( volume->values() );
@@ -328,20 +328,20 @@ void TetrahedraToTetrahedra::subdivide_8_tetrahedra( const kvs::UnstructuredVolu
  */
 /*===========================================================================*/
 template <typename T>
-void TetrahedraToTetrahedra::remove_quadratic_nodes( const kvs::UnstructuredVolumeObject* volume )
+void TetrahedraToTetrahedra::remove_quadratic_nodes( const vismodule::UnstructuredVolumeObject* volume )
 {
     const size_t tet2_ncells = volume->ncells();
-    const kvs::UInt32* tet2_pconnections = volume->connections().pointer();
+    const vismodule::UInt32* tet2_pconnections = volume->connections().pointer();
     const T* tet2_pvalues = static_cast<const T*>( volume->values().pointer() );
-    const kvs::Real32* tet2_pcoords = volume->coords().pointer();
+    const vismodule::Real32* tet2_pcoords = volume->coords().pointer();
 
     ::IDMap id_map;
     for ( size_t i = 0; i < tet2_ncells; i++ )
     {
-        const kvs::UInt32 id0 = tet2_pconnections[ 10 * i + 0 ];
-        const kvs::UInt32 id1 = tet2_pconnections[ 10 * i + 1 ];
-        const kvs::UInt32 id2 = tet2_pconnections[ 10 * i + 2 ];
-        const kvs::UInt32 id3 = tet2_pconnections[ 10 * i + 3 ];
+        const vismodule::UInt32 id0 = tet2_pconnections[ 10 * i + 0 ];
+        const vismodule::UInt32 id1 = tet2_pconnections[ 10 * i + 1 ];
+        const vismodule::UInt32 id2 = tet2_pconnections[ 10 * i + 2 ];
+        const vismodule::UInt32 id3 = tet2_pconnections[ 10 * i + 3 ];
 
         id_map.insert( id0 );
         id_map.insert( id1 );
@@ -350,14 +350,14 @@ void TetrahedraToTetrahedra::remove_quadratic_nodes( const kvs::UnstructuredVolu
     }
 
     const size_t tet_ncells = tet2_ncells;
-    kvs::ValueArray<kvs::UInt32> tet_connections( tet_ncells * 4 );
-    kvs::UInt32* tet_pconnections = tet_connections.pointer();
+    vismodule::ValueArray<vismodule::UInt32> tet_connections( tet_ncells * 4 );
+    vismodule::UInt32* tet_pconnections = tet_connections.pointer();
     for ( size_t i = 0; i < tet2_ncells; i++ )
     {
-        const kvs::UInt32 id0 = tet2_pconnections[ 10 * i + 0 ];
-        const kvs::UInt32 id1 = tet2_pconnections[ 10 * i + 1 ];
-        const kvs::UInt32 id2 = tet2_pconnections[ 10 * i + 2 ];
-        const kvs::UInt32 id3 = tet2_pconnections[ 10 * i + 3 ];
+        const vismodule::UInt32 id0 = tet2_pconnections[ 10 * i + 0 ];
+        const vismodule::UInt32 id1 = tet2_pconnections[ 10 * i + 1 ];
+        const vismodule::UInt32 id2 = tet2_pconnections[ 10 * i + 2 ];
+        const vismodule::UInt32 id3 = tet2_pconnections[ 10 * i + 3 ];
 
         *(tet_pconnections++) = id_map.bucket().find( id0 )->second;
         *(tet_pconnections++) = id_map.bucket().find( id1 )->second;
@@ -367,10 +367,10 @@ void TetrahedraToTetrahedra::remove_quadratic_nodes( const kvs::UnstructuredVolu
 
     const size_t tet_veclen = volume->veclen();
     const size_t tet_nnodes = id_map.bucket().size();
-    kvs::ValueArray<T> tet_values( tet_nnodes * tet_veclen );
-    kvs::ValueArray<kvs::Real32> tet_coords( tet_nnodes * 3 );
+    vismodule::ValueArray<T> tet_values( tet_nnodes * tet_veclen );
+    vismodule::ValueArray<vismodule::Real32> tet_coords( tet_nnodes * 3 );
     T* tet_pvalues = tet_values.pointer();
-    kvs::Real32* tet_pcoords = tet_coords.pointer();
+    vismodule::Real32* tet_pcoords = tet_coords.pointer();
     ::IDMap::Bucket::const_iterator id = id_map.bucket().begin();
     while ( id != id_map.bucket().end() )
     {
@@ -390,32 +390,32 @@ void TetrahedraToTetrahedra::remove_quadratic_nodes( const kvs::UnstructuredVolu
 
     if ( volume->hasMinMaxExternalCoords() )
     {
-        const kvs::Vector3f min_coord( volume->minExternalCoord() );
-        const kvs::Vector3f max_coord( volume->maxExternalCoord() );
+        const vismodule::Vector3f min_coord( volume->minExternalCoord() );
+        const vismodule::Vector3f max_coord( volume->maxExternalCoord() );
         SuperClass::setMinMaxExternalCoords( min_coord, max_coord );
     }
 
     if ( volume->hasMinMaxObjectCoords() )
     {
-        const kvs::Vector3f min_coord( volume->minObjectCoord() );
-        const kvs::Vector3f max_coord( volume->maxObjectCoord() );
+        const vismodule::Vector3f min_coord( volume->minObjectCoord() );
+        const vismodule::Vector3f max_coord( volume->maxObjectCoord() );
         SuperClass::setMinMaxObjectCoords( min_coord, max_coord );
     }
 
     if ( volume->hasMinMaxValues() )
     {
-        const kvs::Real64 min_value( volume->minValue() );
-        const kvs::Real64 max_value( volume->maxValue() );
+        const vismodule::Real64 min_value( volume->minValue() );
+        const vismodule::Real64 max_value( volume->maxValue() );
         SuperClass::setMinMaxValues( min_value, max_value );
     }
 
     SuperClass::setVeclen( volume->veclen() );
     SuperClass::setNNodes( tet_nnodes );
     SuperClass::setNCells( tet_ncells );
-    SuperClass::setCellType( kvs::UnstructuredVolumeObject::Tetrahedra );
+    SuperClass::setCellType( vismodule::UnstructuredVolumeObject::Tetrahedra );
     SuperClass::setCoords( tet_coords );
     SuperClass::setConnections( tet_connections );
-    SuperClass::setValues( kvs::AnyValueArray( tet_values ) );
+    SuperClass::setValues( vismodule::AnyValueArray( tet_values ) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

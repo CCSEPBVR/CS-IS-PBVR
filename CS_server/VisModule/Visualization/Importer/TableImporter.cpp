@@ -13,12 +13,12 @@
  */
 /*****************************************************************************/
 #include "TableImporter.h"
-#include <kvs/DebugNew>
-#include <kvs/KVSMLObjectTable>
+#include <vismodule/DebugNew>
+#include <vismodule/KVSMLObjectTable>
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -38,20 +38,20 @@ TableImporter::TableImporter( void )
 /*===========================================================================*/
 TableImporter::TableImporter( const std::string& filename )
 {
-    if ( kvs::KVSMLObjectTable::CheckFileExtension( filename ) )
+    if ( vismodule::KVSMLObjectTable::CheckFileExtension( filename ) )
     {
-        kvs::KVSMLObjectTable* file_format = new kvs::KVSMLObjectTable( filename );
+        vismodule::KVSMLObjectTable* file_format = new vismodule::KVSMLObjectTable( filename );
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            visModuleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
@@ -62,7 +62,7 @@ TableImporter::TableImporter( const std::string& filename )
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Cannot import '%s'.",filename.c_str());
+        visModuleMessageError("Cannot import '%s'.",filename.c_str());
         return;
     }
 }
@@ -73,7 +73,7 @@ TableImporter::TableImporter( const std::string& filename )
  *  @param  file_format [in] pointer to the file format
  */
 /*===========================================================================*/
-TableImporter::TableImporter( const kvs::FileFormatBase* file_format )
+TableImporter::TableImporter( const vismodule::FileFormatBase* file_format )
 {
     this->exec( file_format );
 }
@@ -85,24 +85,24 @@ TableImporter::TableImporter( const kvs::FileFormatBase* file_format )
  *  @return pointer to the imported table object
  */
 /*===========================================================================*/
-TableImporter::SuperClass* TableImporter::exec( const kvs::FileFormatBase* file_format )
+TableImporter::SuperClass* TableImporter::exec( const vismodule::FileFormatBase* file_format )
 {
     if ( !file_format )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input file format is NULL.");
+        visModuleMessageError("Input file format is NULL.");
         return( NULL );
     }
 
     const std::string class_name = file_format->className();
-    if ( class_name == "kvs::KVSMLObjectTable" )
+    if ( class_name == "vismodule::KVSMLObjectTable" )
     {
-        this->import( static_cast<const kvs::KVSMLObjectTable*>( file_format ) );
+        this->import( static_cast<const vismodule::KVSMLObjectTable*>( file_format ) );
     }
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input file format is not supported.");
+        visModuleMessageError("Input file format is not supported.");
         return( NULL );
     }
 
@@ -115,13 +115,13 @@ TableImporter::SuperClass* TableImporter::exec( const kvs::FileFormatBase* file_
  *  @param  kvsml [in] pointer to the KVSMLObjectTable
  */
 /*===========================================================================*/
-void TableImporter::import( const kvs::KVSMLObjectTable* kvsml )
+void TableImporter::import( const vismodule::KVSMLObjectTable* kvsml )
 {
     const size_t ncolumns = kvsml->ncolumns();
     for ( size_t i = 0; i < ncolumns; i++ )
     {
         const std::string label = kvsml->labelList().at(i);
-        const kvs::AnyValueArray& column = kvsml->columnList().at(i);
+        const vismodule::AnyValueArray& column = kvsml->columnList().at(i);
         SuperClass::addColumn( column, label );
 
         if ( kvsml->hasMinValueList().at(i) ) SuperClass::setMinValue( i, kvsml->minValueList().at(i) );
@@ -131,4 +131,4 @@ void TableImporter::import( const kvs::KVSMLObjectTable* kvsml )
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

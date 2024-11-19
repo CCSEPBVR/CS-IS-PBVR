@@ -11,14 +11,14 @@
  *  $Id: RGBColor.cpp 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include <kvs/Math>
-#include <kvs/Type>
+#include <vismodule/Math>
+#include <vismodule/Type>
 #include "RGBColor.h"
 #include "HSVColor.h"
 #include "RGBAColor.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 RGBColor::RGBColor( void ):
@@ -28,14 +28,14 @@ RGBColor::RGBColor( void ):
 {
 }
 
-RGBColor::RGBColor( kvs::UInt8 red, kvs::UInt8 green, kvs::UInt8 blue ):
+RGBColor::RGBColor( vismodule::UInt8 red, vismodule::UInt8 green, vismodule::UInt8 blue ):
     m_red( red ),
     m_green( green ),
     m_blue( blue )
 {
 }
 
-RGBColor::RGBColor( const kvs::UInt8 rgb[3] ):
+RGBColor::RGBColor( const vismodule::UInt8 rgb[3] ):
     m_red( rgb[0] ),
     m_green( rgb[1] ),
     m_blue( rgb[2] )
@@ -103,11 +103,11 @@ RGBColor& RGBColor::operator = ( const RGBAColor& rgba )
 /*==========================================================================*/
 RGBColor& RGBColor::operator = ( const HSVColor& hsv )
 {
-    if( kvs::Math::IsZero( hsv.s() ) )
+    if( vismodule::Math::IsZero( hsv.s() ) )
     {
-        m_red   = static_cast<kvs::UInt8>( hsv.v() * 255 );
-        m_green = static_cast<kvs::UInt8>( hsv.v() * 255 );
-        m_blue  = static_cast<kvs::UInt8>( hsv.v() * 255 );
+        m_red   = static_cast<vismodule::UInt8>( hsv.v() * 255 );
+        m_green = static_cast<vismodule::UInt8>( hsv.v() * 255 );
+        m_blue  = static_cast<vismodule::UInt8>( hsv.v() * 255 );
     }
     else
     {
@@ -165,49 +165,49 @@ RGBColor& RGBColor::operator = ( const HSVColor& hsv )
         }
         }
 
-        m_red   = static_cast<kvs::UInt8>( tmp_r * 255.0f + 0.5f );
-        m_green = static_cast<kvs::UInt8>( tmp_g * 255.0f + 0.5f );
-        m_blue  = static_cast<kvs::UInt8>( tmp_b * 255.0f + 0.5f );
+        m_red   = static_cast<vismodule::UInt8>( tmp_r * 255.0f + 0.5f );
+        m_green = static_cast<vismodule::UInt8>( tmp_g * 255.0f + 0.5f );
+        m_blue  = static_cast<vismodule::UInt8>( tmp_b * 255.0f + 0.5f );
     }
 
     return( *this );
 }
 
-void RGBColor::set( kvs::UInt8 red, kvs::UInt8 green, kvs::UInt8 blue )
+void RGBColor::set( vismodule::UInt8 red, vismodule::UInt8 green, vismodule::UInt8 blue )
 {
     m_red   = red;
     m_green = green;
     m_blue  = blue;
 }
 
-const kvs::UInt8 RGBColor::r( void ) const
+const vismodule::UInt8 RGBColor::r( void ) const
 {
     return( m_red );
 }
 
-const kvs::UInt8 RGBColor::red( void ) const
+const vismodule::UInt8 RGBColor::red( void ) const
 {
     return( m_red );
 }
 
-const kvs::UInt8 RGBColor::g( void ) const
+const vismodule::UInt8 RGBColor::g( void ) const
 {
     return( m_green );
 }
 
-const kvs::UInt8 RGBColor::green( void ) const
+const vismodule::UInt8 RGBColor::green( void ) const
 {
     return( m_green );
 }
 
-const kvs::UInt8 RGBColor::b( void ) const
+const vismodule::UInt8 RGBColor::b( void ) const
 {
     return( m_blue );
 }
 
-const kvs::UInt8 RGBColor::blue( void ) const
+const vismodule::UInt8 RGBColor::blue( void ) const
 {
     return( m_blue );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

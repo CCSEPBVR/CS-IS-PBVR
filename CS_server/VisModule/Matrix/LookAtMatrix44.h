@@ -12,15 +12,15 @@
  *  $Id: LookAtMatrix44.h 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__LOOK_AT_MATRIX44_H_INCLUDE
-#define KVS__LOOK_AT_MATRIX44_H_INCLUDE
+#ifndef VIS_MODULE__LOOK_AT_MATRIX44_H_INCLUDE
+#define VIS_MODULE__LOOK_AT_MATRIX44_H_INCLUDE
 
 #include <cmath>
-#include <kvs/Matrix44>
-#include <kvs/Math>
+#include <vismodule/Matrix44>
+#include <vismodule/Math>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -33,14 +33,14 @@ namespace kvs
  */
 /*===========================================================================*/
 template <typename T>
-inline kvs::Matrix44<T> LookAtMatrix44(
-    const kvs::Vector3<T>& eye,
-    const kvs::Vector3<T>& up,
-    const kvs::Vector3<T>& target )
+inline vismodule::Matrix44<T> LookAtMatrix44(
+    const vismodule::Vector3<T>& eye,
+    const vismodule::Vector3<T>& up,
+    const vismodule::Vector3<T>& target )
 {
-    kvs::Vector3<T> f( target - eye );
-    kvs::Vector3<T> s( f.cross( up.normalize() ) );
-    kvs::Vector3<T> u( s.cross( f ) );
+    vismodule::Vector3<T> f( target - eye );
+    vismodule::Vector3<T> s( f.cross( up.normalize() ) );
+    vismodule::Vector3<T> u( s.cross( f ) );
 
     f.normalize();
     s.normalize();
@@ -56,9 +56,9 @@ inline kvs::Matrix44<T> LookAtMatrix44(
           zero,   zero,   zero, one
     };
 
-    return( kvs::Matrix44<T>( elements ) );
+    return( vismodule::Matrix44<T>( elements ) );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TRANSFORMATION_H_INCLUDE
+#endif // VIS_MODULE__TRANSFORMATION_H_INCLUDE

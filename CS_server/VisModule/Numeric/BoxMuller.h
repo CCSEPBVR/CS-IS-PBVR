@@ -20,15 +20,15 @@
  *  http://www.cg.is.ritsumei.ac.jp/index.html
  */
 /*****************************************************************************/
-#ifndef KVS__BOX_MULLER_H_INCLUDE
-#define KVS__BOX_MULLER_H_INCLUDE
+#ifndef VIS_MODULE__BOX_MULLER_H_INCLUDE
+#define VIS_MODULE__BOX_MULLER_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/MersenneTwister>
+#include <vismodule/ClassName>
+#include <vismodule/MersenneTwister>
 #include <cmath>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -38,7 +38,7 @@ namespace kvs
 /*==========================================================================*/
 class BoxMuller
 {
-    kvsClassName_without_virtual( kvs::BoxMuller );
+    visModuleClassName_without_virtual( vismodule::BoxMuller );
 
 public:
 
@@ -65,7 +65,7 @@ public:
 
 private:
 
-    kvs::MersenneTwister m_uniformRandom ; ///< Uniform random number generator
+    vismodule::MersenneTwister m_uniformRandom ; ///< Uniform random number generator
 
 };
 
@@ -166,6 +166,6 @@ inline const double BoxMuller::operator ()( void )
 }
 
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__BOX_MULLER_H_INCLUDE
+#endif // VIS_MODULE__BOX_MULLER_H_INCLUDE

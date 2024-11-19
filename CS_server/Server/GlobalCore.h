@@ -15,14 +15,14 @@
 #define PBVR__GLOBAL_CORE_H_INCLUDE
 
 #include "ClassName.h"
-#include <kvs/Camera>
+#include <vismodule/Camera>
 /* 131018 removed
 #include "Light.h"
 #include "Mouse.h"
 #include "Background.h"
 */
 #include "ObjectManager.h"
-#include <kvs/RendererManager>
+#include <vismodule/RendererManager>
 #include "IDManager.h"
 
 
@@ -36,7 +36,7 @@ namespace pbvr
 /*==========================================================================*/
 class GlobalCore
 {
-    kvsClassName( pbvr::GlobalCore );
+    visModuleClassName( pbvr::GlobalCore );
 
 public:
 
@@ -54,19 +54,19 @@ private:
     static char**                m_argv;             ///< argument value
 
     /* 131018 removed
-        static kvs::Light*           light;            ///< light
-        static kvs::Mouse*           mouse;            ///< mouse
-        static kvs::Background*      background;       ///< background
+        static vismodule::Light*           light;            ///< light
+        static vismodule::Mouse*           mouse;            ///< mouse
+        static vismodule::Background*      background;       ///< background
     */
     // Parameters for controlling the viewer.
     static ControlTarget          m_target;           ///< control target
     static pbvr::ObjectManager*   m_object_manager;   ///< object manager
-    static kvs::RendererManager*  m_renderer_manager; ///< renderer manager
+    static vismodule::RendererManager*  m_renderer_manager; ///< renderer manager
     static pbvr::IDManager*       m_id_manager;       ///< ID manager ( object_id, renderer_id )
 
 public:
     // Basic components in the viewer.
-    static kvs::Camera*           m_camera;           ///< camera
+    static vismodule::Camera*           m_camera;           ///< camera
 
 public:
 
@@ -85,4 +85,4 @@ public:
 
 } // end of namespace pbvr
 
-#endif // KVS__GLOBAL_CORE_H_INCLUDE
+#endif // VIS_MODULE__GLOBAL_CORE_H_INCLUDE

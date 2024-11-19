@@ -11,17 +11,17 @@
  *  $Id: MarchingCubes.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MARCHING_CUBES_H_INCLUDE
-#define KVS__MARCHING_CUBES_H_INCLUDE
+#ifndef VIS_MODULE__MARCHING_CUBES_H_INCLUDE
+#define VIS_MODULE__MARCHING_CUBES_H_INCLUDE
 
-#include <kvs/PolygonObject>
-#include <kvs/StructuredVolumeObject>
-#include <kvs/MapperBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/PolygonObject>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/MapperBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -29,15 +29,15 @@ namespace kvs
  *  Marching cubes class.
  */
 /*==========================================================================*/
-class MarchingCubes : public kvs::MapperBase, public kvs::PolygonObject
+class MarchingCubes : public vismodule::MapperBase, public vismodule::PolygonObject
 {
     // Class name.
-    kvsClassName( kvs::MarchingCubes );
+    visModuleClassName( vismodule::MarchingCubes );
 
     // Module information.
-    kvsModuleCategory( Mapper );
-    kvsModuleBaseClass( kvs::MapperBase );
-    kvsModuleSuperClass( kvs::PolygonObject );
+    visModuleCategory( Mapper );
+    visModuleBaseClass( vismodule::MapperBase );
+    visModuleSuperClass( vismodule::PolygonObject );
 
 private:
 
@@ -49,11 +49,11 @@ public:
     MarchingCubes( void );
 
     MarchingCubes(
-        const kvs::StructuredVolumeObject* volume,
+        const vismodule::StructuredVolumeObject* volume,
         const double                       isolevel,
         const SuperClass::NormalType       normal_type,
         const bool                         duplication,
-        const kvs::TransferFunction&       transfer_function );
+        const vismodule::TransferFunction&       transfer_function );
 
     virtual ~MarchingCubes( void );
 
@@ -63,57 +63,57 @@ public:
 
 public:
 
-    SuperClass* exec( const kvs::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase* object );
 
 private:
 
-    void mapping( const kvs::StructuredVolumeObject* volume );
+    void mapping( const vismodule::StructuredVolumeObject* volume );
 
     template <typename T>
     void extract_surfaces(
-        const kvs::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject* volume );
 
     template <typename T>
     void extract_surfaces_with_duplication(
-        const kvs::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject* volume );
 
     template <typename T>
     void extract_surfaces_without_duplication(
-        const kvs::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject* volume );
 
     template <typename T>
     const size_t calculate_table_index(
         const size_t* local_index ) const;
 
     template <typename T>
-    const kvs::Vector3f interpolate_vertex(
-        const kvs::Vector3f& vertex0,
-        const kvs::Vector3f& vertex1 ) const;
+    const vismodule::Vector3f interpolate_vertex(
+        const vismodule::Vector3f& vertex0,
+        const vismodule::Vector3f& vertex1 ) const;
 
     template <typename T>
-    const kvs::RGBColor calculate_color( void );
+    const vismodule::RGBColor calculate_color( void );
 
     template <typename T>
     void calculate_isopoints(
-        kvs::UInt32*&             vertex_map,
-        std::vector<kvs::Real32>& coords );
+        vismodule::UInt32*&             vertex_map,
+        std::vector<vismodule::Real32>& coords );
 
     template <typename T>
     void connect_isopoints(
-        kvs::UInt32*&             vertex_map,
-        std::vector<kvs::UInt32>& connections );
+        vismodule::UInt32*&             vertex_map,
+        std::vector<vismodule::UInt32>& connections );
 
     void calculate_normals_on_polygon(
-        const std::vector<kvs::Real32>& coords,
-        const std::vector<kvs::UInt32>& connections,
-        std::vector<kvs::Real32>&       normals );
+        const std::vector<vismodule::Real32>& coords,
+        const std::vector<vismodule::UInt32>& connections,
+        std::vector<vismodule::Real32>&       normals );
 
     void calculate_normals_on_vertex(
-        const std::vector<kvs::Real32>& coords,
-        const std::vector<kvs::UInt32>& connections,
-        std::vector<kvs::Real32>&       normals );
+        const std::vector<vismodule::Real32>& coords,
+        const std::vector<vismodule::UInt32>& connections,
+        std::vector<vismodule::Real32>&       normals );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MARCHING_CUBES_H_INCLUDE
+#endif // VIS_MODULE__MARCHING_CUBES_H_INCLUDE

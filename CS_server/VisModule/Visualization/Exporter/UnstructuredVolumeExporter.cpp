@@ -12,12 +12,12 @@
  */
 /*****************************************************************************/
 #include "UnstructuredVolumeExporter.h"
-#include <kvs/ObjectBase>
-#include <kvs/VolumeObjectBase>
-#include <kvs/UnstructuredVolumeObject>
+#include <vismodule/ObjectBase>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/UnstructuredVolumeObject>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -26,8 +26,8 @@ namespace kvs
  *  @param  object [in] pointer to the unstructured volume object
  */
 /*===========================================================================*/
-UnstructuredVolumeExporter<kvs::KVSMLObjectUnstructuredVolume>::UnstructuredVolumeExporter(
-    const kvs::UnstructuredVolumeObject* object )
+UnstructuredVolumeExporter<vismodule::KVSMLObjectUnstructuredVolume>::UnstructuredVolumeExporter(
+    const vismodule::UnstructuredVolumeObject* object )
 {
     this->exec( object );
 }
@@ -38,59 +38,59 @@ UnstructuredVolumeExporter<kvs::KVSMLObjectUnstructuredVolume>::UnstructuredVolu
  *  @param  object [in] pointer to the unstructured volume object
  */
 /*===========================================================================*/
-kvs::KVSMLObjectUnstructuredVolume* UnstructuredVolumeExporter<kvs::KVSMLObjectUnstructuredVolume>::exec(
-    const kvs::ObjectBase* object )
+vismodule::KVSMLObjectUnstructuredVolume* UnstructuredVolumeExporter<vismodule::KVSMLObjectUnstructuredVolume>::exec(
+    const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
     // Cast to the structured volume object.
-    const kvs::UnstructuredVolumeObject* volume = kvs::UnstructuredVolumeObject::DownCast( object );
+    const vismodule::UnstructuredVolumeObject* volume = vismodule::UnstructuredVolumeObject::DownCast( object );
     if ( !volume )
     {
         m_is_success = false;
-        kvsMessageError("Input object is not structured volume object.");
+        visModuleMessageError("Input object is not structured volume object.");
         return( NULL );
     }
 
     // Check the cell type of the given unstructured volume object.
     switch ( volume->cellType() )
     {
-    case kvs::UnstructuredVolumeObject::UnknownCellType:
+    case vismodule::UnstructuredVolumeObject::UnknownCellType:
     {
-        kvsMessageError("Unknown cell type.");
+        visModuleMessageError("Unknown cell type.");
         break;
     }
-    case kvs::UnstructuredVolumeObject::Tetrahedra:
+    case vismodule::UnstructuredVolumeObject::Tetrahedra:
     {
         this->setCellType("tetrahedra");
         break;
     }
-    case kvs::UnstructuredVolumeObject::QuadraticTetrahedra:
+    case vismodule::UnstructuredVolumeObject::QuadraticTetrahedra:
     {
         this->setCellType("quadratic tetrahedra");
         break;
     }
-    case kvs::UnstructuredVolumeObject::Hexahedra:
+    case vismodule::UnstructuredVolumeObject::Hexahedra:
     {
         this->setCellType("hexahedra");
         break;
     }
-    case kvs::UnstructuredVolumeObject::QuadraticHexahedra:
+    case vismodule::UnstructuredVolumeObject::QuadraticHexahedra:
     {
         this->setCellType("quadratic hexahedra");
         break;
     }
-    case kvs::UnstructuredVolumeObject::Pyramid:
+    case vismodule::UnstructuredVolumeObject::Pyramid:
     {
         this->setCellType("pyramid");
         break;
     }
-    case kvs::UnstructuredVolumeObject::Point:
+    case vismodule::UnstructuredVolumeObject::Point:
     {
         this->setCellType("point");
         break;
@@ -98,7 +98,7 @@ kvs::KVSMLObjectUnstructuredVolume* UnstructuredVolumeExporter<kvs::KVSMLObjectU
     default:
     {
         m_is_success = false;
-        kvsMessageError("Not supported cell type.");
+        visModuleMessageError("Not supported cell type.");
         break;
     }
     }
@@ -113,4 +113,4 @@ kvs::KVSMLObjectUnstructuredVolume* UnstructuredVolumeExporter<kvs::KVSMLObjectU
     return( this );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

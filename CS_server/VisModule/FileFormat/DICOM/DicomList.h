@@ -11,19 +11,19 @@
  *  $Id: DicomList.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__DICOM_LIST_H_INCLUDE
-#define KVS__DICOM_LIST_H_INCLUDE
+#ifndef VIS_MODULE__DICOM_LIST_H_INCLUDE
+#define VIS_MODULE__DICOM_LIST_H_INCLUDE
 
 #include <algorithm>
 #include <vector>
 #include <string>
-#include <kvs/Vector2>
-#include <kvs/FileFormatBase>
-#include <kvs/ClassName>
-#include <kvs/Dicom>
+#include <vismodule/Vector2>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ClassName>
+#include <vismodule/Dicom>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -31,35 +31,35 @@ namespace kvs
  *  @brief  DICOM list class.
  */
 /*===========================================================================*/
-class DicomList : public kvs::FileFormatBase
+class DicomList : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::DicomList );
+    visModuleClassName( vismodule::DicomList );
 
 public:
 
     struct SortingByImageNumber
     {
-        bool operator () ( const kvs::Dicom* dicom1, const kvs::Dicom* dicom2 );
+        bool operator () ( const vismodule::Dicom* dicom1, const vismodule::Dicom* dicom2 );
     };
 
     struct SortingBySeriesNumber
     {
-        bool operator () ( const kvs::Dicom* dicom1, const kvs::Dicom* dicom2 );
+        bool operator () ( const vismodule::Dicom* dicom1, const vismodule::Dicom* dicom2 );
     };
 
     struct SortingBySliceLocation
     {
-        bool operator () ( const kvs::Dicom* dicom1, const kvs::Dicom* dicom2 );
+        bool operator () ( const vismodule::Dicom* dicom1, const vismodule::Dicom* dicom2 );
     };
 
 protected:
 
-    std::vector<kvs::Dicom*> m_list;            ///< DICOM list
+    std::vector<vismodule::Dicom*> m_list;            ///< DICOM list
     size_t                   m_row;             ///< row
     size_t                   m_column;          ///< column
     double                   m_slice_thickness; ///< slice thickness
     double                   m_slice_spacing;   ///< slice spacing
-    kvs::Vector2f            m_pixel_spacing;   ///< pixel spacing
+    vismodule::Vector2f            m_pixel_spacing;   ///< pixel spacing
     int                      m_min_raw_value;   ///< min. value of the raw data
     int                      m_max_raw_value;   ///< max. value of the raw data
     bool                     m_extension_check; ///< check the file extension
@@ -74,15 +74,15 @@ public:
 
 public:
 
-    const kvs::Dicom* operator [] ( const size_t index ) const;
+    const vismodule::Dicom* operator [] ( const size_t index ) const;
 
-    kvs::Dicom* operator [] ( const size_t index );
+    vismodule::Dicom* operator [] ( const size_t index );
 
 public:
 
-    void push_back( const kvs::Dicom& dicom );
+    void push_back( const vismodule::Dicom& dicom );
 
-    void push_back( kvs::Dicom* dicom );
+    void push_back( vismodule::Dicom* dicom );
 
     const size_t size( void ) const;
 
@@ -104,7 +104,7 @@ public:
 
     const double sliceSpacing( void ) const;
 
-    const kvs::Vector2f& pixelSpacing( void ) const;
+    const vismodule::Vector2f& pixelSpacing( void ) const;
 
     const int minRawValue( void ) const;
 
@@ -136,6 +136,6 @@ public:
     static const bool CheckDirectory( const std::string& dirname, const bool extension_check = true );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__DICOM_LIST_H_INCLUDE
+#endif // VIS_MODULE__DICOM_LIST_H_INCLUDE

@@ -14,7 +14,7 @@
 #include "MarchingHexahedraTable.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace MarchingHexahedraTable
@@ -298,4 +298,4 @@ const int VertexID[12][2] =
 
 } // end of namespace MarchingHexadraTable
 
-} // end of namespace kvs
+} // end of namespace vismodule

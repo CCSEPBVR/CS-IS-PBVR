@@ -78,16 +78,16 @@ const std::string Comma( const size_t n )
 } // end of namespace
 
 // Static member parameters.
-int kvs::MemoryTracer::ArgumentCount = 0;
-char** kvs::MemoryTracer::ArgumentValues = NULL;
-char* kvs::MemoryTracer::LogFileName = NULL;
-bool kvs::MemoryTracer::IsConstructed = false;
+int vismodule::MemoryTracer::ArgumentCount = 0;
+char** vismodule::MemoryTracer::ArgumentValues = NULL;
+char* vismodule::MemoryTracer::LogFileName = NULL;
+bool vismodule::MemoryTracer::IsConstructed = false;
 
 
-#if defined ( KVS_ENABLE_MEM_DEBUG )
+#if defined ( VIS_MODULE_ENABLE_MEM_DEBUG )
 
 // Memory tracer
-extern kvs::MemoryTracer kvsMemoryTracer;
+extern vismodule::MemoryTracer visModuleMemoryTracer;
 
 /*===========================================================================*/
 /**
@@ -100,8 +100,8 @@ extern kvs::MemoryTracer kvsMemoryTracer;
 /*===========================================================================*/
 void* operator new ( size_t size, char const* file, int line )
 {
-    kvs::MemoryTracer::AllocationType type = kvs::MemoryTracer::New;
-    return( kvs::MemoryTracer::Allocate( size, file, line, type ) );
+    vismodule::MemoryTracer::AllocationType type = vismodule::MemoryTracer::New;
+    return( vismodule::MemoryTracer::Allocate( size, file, line, type ) );
 }
 
 /*===========================================================================*/
@@ -112,8 +112,8 @@ void* operator new ( size_t size, char const* file, int line )
 /*===========================================================================*/
 void operator delete ( void* address )
 {
-    kvs::MemoryTracer::AllocationType type = kvs::MemoryTracer::Delete;
-    kvs::MemoryTracer::Deallocate( address, ::DeleteAtFile, ::DeleteAtLine, type );
+    vismodule::MemoryTracer::AllocationType type = vismodule::MemoryTracer::Delete;
+    vismodule::MemoryTracer::Deallocate( address, ::DeleteAtFile, ::DeleteAtLine, type );
 }
 
 /*===========================================================================*/
@@ -127,8 +127,8 @@ void operator delete ( void* address )
 /*===========================================================================*/
 void* operator new [] ( size_t size, char const* file, int line )
 {
-    kvs::MemoryTracer::AllocationType type = kvs::MemoryTracer::NewArray;
-    return( kvs::MemoryTracer::Allocate( size, file, line, type ) );
+    vismodule::MemoryTracer::AllocationType type = vismodule::MemoryTracer::NewArray;
+    return( vismodule::MemoryTracer::Allocate( size, file, line, type ) );
 }
 
 /*===========================================================================*/
@@ -139,14 +139,14 @@ void* operator new [] ( size_t size, char const* file, int line )
 /*===========================================================================*/
 void operator delete [] ( void* address )
 {
-    kvs::MemoryTracer::AllocationType type = kvs::MemoryTracer::DeleteArray;
-    kvs::MemoryTracer::Deallocate( address, ::DeleteAtFile, ::DeleteAtLine, type );
+    vismodule::MemoryTracer::AllocationType type = vismodule::MemoryTracer::DeleteArray;
+    vismodule::MemoryTracer::Deallocate( address, ::DeleteAtFile, ::DeleteAtLine, type );
 }
 
 #endif
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -162,7 +162,7 @@ MemoryTracer::MemoryTracer( void ):
     m_peak_allocated_memory( 0 ),
     m_lock_counter( 0 )
 {
-    kvs::MemoryTracer::IsConstructed = true;
+    vismodule::MemoryTracer::IsConstructed = true;
 }
 
 /*===========================================================================*/
@@ -179,8 +179,8 @@ MemoryTracer::MemoryTracer( char* filename ):
     m_peak_allocated_memory( 0 ),
     m_lock_counter( 0 )
 {
-    kvs::MemoryTracer::IsConstructed = true;
-    kvs::MemoryTracer::LogFileName = filename;
+    vismodule::MemoryTracer::IsConstructed = true;
+    vismodule::MemoryTracer::LogFileName = filename;
 }
 
 /*===========================================================================*/
@@ -190,10 +190,10 @@ MemoryTracer::MemoryTracer( char* filename ):
 /*===========================================================================*/
 MemoryTracer::~MemoryTracer( void )
 {
-    kvs::MemoryTracer::IsConstructed = false;
-    if ( kvs::MemoryTracer::LogFileName )
+    vismodule::MemoryTracer::IsConstructed = false;
+    if ( vismodule::MemoryTracer::LogFileName )
     {
-        std::ofstream ofs( kvs::MemoryTracer::LogFileName );
+        std::ofstream ofs( vismodule::MemoryTracer::LogFileName );
         this->dump( ofs );
     }
     else
@@ -221,7 +221,7 @@ void MemoryTracer::insert( void* address, size_t size, char const* file, int lin
     m_nallocations++;
     m_total_nallocations++;
     m_allocated_memory += size;
-//    m_peak_allocated_memory = kvs::Math::Max( m_peak_allocated_memory, m_allocated_memory );
+//    m_peak_allocated_memory = vismodule::Math::Max( m_peak_allocated_memory, m_allocated_memory );
     m_peak_allocated_memory = m_peak_allocated_memory > m_allocated_memory ? m_peak_allocated_memory : m_allocated_memory;
 }
 
@@ -269,19 +269,19 @@ void MemoryTracer::dump( std::ostream& os )
 {
     std::string command("");
     std::string args("");
-    if ( kvs::MemoryTracer::ArgumentCount > 0 )
+    if ( vismodule::MemoryTracer::ArgumentCount > 0 )
     {
-        command = std::string( kvs::MemoryTracer::ArgumentValues[0] );
-        for ( int i = 1; i < kvs::MemoryTracer::ArgumentCount; i++ )
+        command = std::string( vismodule::MemoryTracer::ArgumentValues[0] );
+        for ( int i = 1; i < vismodule::MemoryTracer::ArgumentCount; i++ )
         {
-            args += std::string( kvs::MemoryTracer::ArgumentValues[i] ) + " ";
+            args += std::string( vismodule::MemoryTracer::ArgumentValues[i] ) + " ";
         }
     }
 
     os << "K V S  M E M O R Y  D E B U G  R E P O R T" << std::endl;
-//    os << "Time: " << kvs::Time() << std::endl;
+//    os << "Time: " << vismodule::Time() << std::endl;
     os << "Time: " << __TIME__ << std::endl;
-//    os << "Date: " << kvs::Date() << std::endl;
+//    os << "Date: " << vismodule::Date() << std::endl;
     os << "Date: " << __DATE__ << std::endl;
     os << "Command: " << command << std::endl;
     os << "Argument: " << args << std::endl;
@@ -364,7 +364,7 @@ const size_t MemoryTracer::leaked_memory_size( void ) const
     return( bytes );
 }
 
-#if defined ( KVS_ENABLE_MEM_DEBUG )
+#if defined ( VIS_MODULE_ENABLE_MEM_DEBUG )
 
 /*===========================================================================*/
 /**
@@ -381,17 +381,17 @@ void* MemoryTracer::Allocate( size_t size, char const* file, int line, MemoryTra
 {
     if ( type == MemoryTracer::Realloc )
     {
-        if ( kvs::MemoryTracer::IsConstructed )
+        if ( vismodule::MemoryTracer::IsConstructed )
         {
-            kvsMemoryTracer.remove( address, file, line, type );
+            visModuleMemoryTracer.remove( address, file, line, type );
         }
 
         address = realloc( address, size );
         if ( !address ) throw std::bad_alloc();
 
-        if ( kvs::MemoryTracer::IsConstructed )
+        if ( vismodule::MemoryTracer::IsConstructed )
         {
-            kvsMemoryTracer.insert( address, size, file, line, type );
+            visModuleMemoryTracer.insert( address, size, file, line, type );
         }
     }
     else
@@ -399,9 +399,9 @@ void* MemoryTracer::Allocate( size_t size, char const* file, int line, MemoryTra
         address = malloc( size );
         if ( !address ) throw std::bad_alloc();
 
-        if ( kvs::MemoryTracer::IsConstructed )
+        if ( vismodule::MemoryTracer::IsConstructed )
         {
-            kvsMemoryTracer.insert( address, size, file, line, type );
+            visModuleMemoryTracer.insert( address, size, file, line, type );
         }
     }
 
@@ -420,9 +420,9 @@ void MemoryTracer::Deallocate( void* address, char const* file, int line, Memory
 {
     if ( !address ) return;
 
-    if ( kvs::MemoryTracer::IsConstructed )
+    if ( vismodule::MemoryTracer::IsConstructed )
     {
-        kvsMemoryTracer.remove( address, file, line, type );
+        visModuleMemoryTracer.remove( address, file, line, type );
     }
 
     free( address );
@@ -539,4 +539,4 @@ const MemoryTracer::AllocationType MemoryTracer::Node::type( void ) const
     return( m_type );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

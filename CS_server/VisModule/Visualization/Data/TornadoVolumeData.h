@@ -12,15 +12,15 @@
  *  $Id: TornadoVolumeData.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__TORNADO_VOLUME_DATA_H_INCLUDE
-#define KVS__TORNADO_VOLUME_DATA_H_INCLUDE
+#ifndef VIS_MODULE__TORNADO_VOLUME_DATA_H_INCLUDE
+#define VIS_MODULE__TORNADO_VOLUME_DATA_H_INCLUDE
 
-#include <kvs/StructuredVolumeObject>
-#include <kvs/Vector3>
-#include <kvs/ClassName>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/Vector3>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -28,13 +28,13 @@ namespace kvs
  *  @brief  Tornado data generator class.
  */
 /*===========================================================================*/
-class TornadoVolumeData : public kvs::StructuredVolumeObject
+class TornadoVolumeData : public vismodule::StructuredVolumeObject
 {
-    kvsClassName( kvs::TornadoVolumeData );
+    visModuleClassName( vismodule::TornadoVolumeData );
 
 public:
 
-    typedef kvs::StructuredVolumeObject SuperClass;
+    typedef vismodule::StructuredVolumeObject SuperClass;
 
 protected:
 
@@ -44,7 +44,7 @@ public:
 
     TornadoVolumeData( void );
 
-    TornadoVolumeData( const kvs::Vector3ui resolution, const int time = 0 );
+    TornadoVolumeData( const vismodule::Vector3ui resolution, const int time = 0 );
 
     virtual ~TornadoVolumeData( void );
 
@@ -59,6 +59,6 @@ public:
     SuperClass* exec( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TORNADO_VOLUME_DATA_H_INCLUDE
+#endif // VIS_MODULE__TORNADO_VOLUME_DATA_H_INCLUDE

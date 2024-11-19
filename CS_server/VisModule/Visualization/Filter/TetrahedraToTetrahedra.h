@@ -12,16 +12,16 @@
  *  $Id: TetrahedraToTetrahedra.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__TETRAHEDRA_TO_TETRAHEDRA_H_INCLUDE
-#define KVS__TETRAHEDRA_TO_TETRAHEDRA_H_INCLUDE
+#ifndef VIS_MODULE__TETRAHEDRA_TO_TETRAHEDRA_H_INCLUDE
+#define VIS_MODULE__TETRAHEDRA_TO_TETRAHEDRA_H_INCLUDE
 
-#include <kvs/UnstructuredVolumeObject>
-#include <kvs/FilterBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/FilterBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -29,15 +29,15 @@ namespace kvs
  *  @brief  TetrahedraToTetrahedra class.
  */
 /*===========================================================================*/
-class TetrahedraToTetrahedra : public kvs::FilterBase, public kvs::UnstructuredVolumeObject
+class TetrahedraToTetrahedra : public vismodule::FilterBase, public vismodule::UnstructuredVolumeObject
 {
     // Class name.
-    kvsClassName( kvs::TetrahedraToTetrahedra );
+    visModuleClassName( vismodule::TetrahedraToTetrahedra );
 
     // Module information.
-    kvsModuleCategory( Filter );
-    kvsModuleBaseClass( kvs::FilterBase );
-    kvsModuleSuperClass( kvs::UnstructuredVolumeObject );
+    visModuleCategory( Filter );
+    visModuleBaseClass( vismodule::FilterBase );
+    visModuleSuperClass( vismodule::UnstructuredVolumeObject );
 
 public:
 
@@ -55,13 +55,13 @@ public:
 
     TetrahedraToTetrahedra( void );
 
-    TetrahedraToTetrahedra( const kvs::UnstructuredVolumeObject* volume, const Method method = Subdivision8 );
+    TetrahedraToTetrahedra( const vismodule::UnstructuredVolumeObject* volume, const Method method = Subdivision8 );
 
     virtual ~TetrahedraToTetrahedra( void );
 
 public:
 
-    SuperClass* exec( const kvs::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase* object );
 
 public:
 
@@ -70,12 +70,12 @@ public:
 protected:
 
     template <typename T>
-    void remove_quadratic_nodes( const kvs::UnstructuredVolumeObject* volume );
+    void remove_quadratic_nodes( const vismodule::UnstructuredVolumeObject* volume );
 
     template <typename T>
-    void subdivide_8_tetrahedra( const kvs::UnstructuredVolumeObject* volume );
+    void subdivide_8_tetrahedra( const vismodule::UnstructuredVolumeObject* volume );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TETRAHEDRA_TO_TETRAHEDRA_H_INCLUDE
+#endif // VIS_MODULE__TETRAHEDRA_TO_TETRAHEDRA_H_INCLUDE

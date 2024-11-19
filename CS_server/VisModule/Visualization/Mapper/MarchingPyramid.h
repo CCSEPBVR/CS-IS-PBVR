@@ -11,17 +11,17 @@
  *  $Id: MarchingPyramid.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MARCHING_PYRAMID_H_INCLUDE
-#define KVS__MARCHING_PYRAMID_H_INCLUDE
+#ifndef VIS_MODULE__MARCHING_PYRAMID_H_INCLUDE
+#define VIS_MODULE__MARCHING_PYRAMID_H_INCLUDE
 
-#include <kvs/PolygonObject>
-#include <kvs/UnstructuredVolumeObject>
-#include <kvs/MapperBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/PolygonObject>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/MapperBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -29,15 +29,15 @@ namespace kvs
  *  Marching cubes class.
  */
 /*==========================================================================*/
-class MarchingPyramid : public kvs::MapperBase, public kvs::PolygonObject
+class MarchingPyramid : public vismodule::MapperBase, public vismodule::PolygonObject
 {
     // Class name.
-    kvsClassName( kvs::MarchingPyramid );
+    visModuleClassName( vismodule::MarchingPyramid );
 
     // Module information.
-    kvsModuleCategory( Mapper );
-    kvsModuleBaseClass( kvs::MapperBase );
-    kvsModuleSuperClass( kvs::PolygonObject );
+    visModuleCategory( Mapper );
+    visModuleBaseClass( vismodule::MapperBase );
+    visModuleSuperClass( vismodule::PolygonObject );
 
 private:
 
@@ -49,11 +49,11 @@ public:
     MarchingPyramid( void );
 
     MarchingPyramid(
-        const kvs::UnstructuredVolumeObject* volume,
+        const vismodule::UnstructuredVolumeObject* volume,
         const double                       isolevel,
         const SuperClass::NormalType       normal_type,
         const bool                         duplication,
-        const kvs::TransferFunction&       transfer_function );
+        const vismodule::TransferFunction&       transfer_function );
 
     virtual ~MarchingPyramid( void );
 
@@ -63,37 +63,37 @@ public:
 
 public:
 
-    kvs::ObjectBase* exec( const kvs::ObjectBase* object );
+    vismodule::ObjectBase* exec( const vismodule::ObjectBase* object );
 
 private:
 
-    void mapping( const kvs::UnstructuredVolumeObject* volume );
+    void mapping( const vismodule::UnstructuredVolumeObject* volume );
 
     template <typename T>
     void extract_surfaces(
-        const kvs::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject* volume );
 
     template <typename T>
     void extract_surfaces_with_duplication(
-        const kvs::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject* volume );
 
     template <typename T>
     const size_t calculate_table_index(
         const size_t* local_index ) const;
 
     template <typename T>
-    const kvs::Vector3f interpolate_vertex(
+    const vismodule::Vector3f interpolate_vertex(
         const int vertex0,
         const int vertex1 ) const;
 
     template <typename T>
-    const kvs::RGBColor calculate_color( void );
+    const vismodule::RGBColor calculate_color( void );
 
     template <typename T>
     const size_t calculate_special_table_index(
         const size_t* local_index, const size_t index ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MARCHING_PYRAMID_H_INCLUDE
+#endif // VIS_MODULE__MARCHING_PYRAMID_H_INCLUDE

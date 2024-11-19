@@ -11,17 +11,17 @@
  *  $Id: Stl.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__STL_H_INCLUDE
-#define KVS__STL_H_INCLUDE
+#ifndef VIS_MODULE__STL_H_INCLUDE
+#define VIS_MODULE__STL_H_INCLUDE
 
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <kvs/ValueArray>
-#include <kvs/FileFormatBase>
+#include <vismodule/ValueArray>
+#include <vismodule/FileFormatBase>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -29,13 +29,13 @@ namespace kvs
  *  @brief  STL file format class.
  */
 /*===========================================================================*/
-class Stl : public kvs::FileFormatBase
+class Stl : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::Stl );
+    visModuleClassName( vismodule::Stl );
 
 public:
 
-    typedef kvs::FileFormatBase BaseClass;
+    typedef vismodule::FileFormatBase BaseClass;
 
     enum FileType
     {
@@ -46,8 +46,8 @@ public:
 protected:
 
     FileType m_file_type; ///< file type
-    kvs::ValueArray<kvs::Real32> m_normals; /// normal vector array
-    kvs::ValueArray<kvs::Real32> m_coords; /// coordinate value array
+    vismodule::ValueArray<vismodule::Real32> m_normals; /// normal vector array
+    vismodule::ValueArray<vismodule::Real32> m_coords; /// coordinate value array
 
 public:
 
@@ -61,9 +61,9 @@ public:
 
     const FileType fileType( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& normals( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& normals( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& coords( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& coords( void ) const;
 
     const size_t ntriangles( void ) const;
 
@@ -71,9 +71,9 @@ public:
 
     void setFileType( const FileType file_type );
 
-    void setNormals( const kvs::ValueArray<kvs::Real32>& normals );
+    void setNormals( const vismodule::ValueArray<vismodule::Real32>& normals );
 
-    void setCoords( const kvs::ValueArray<kvs::Real32>& coords );
+    void setCoords( const vismodule::ValueArray<vismodule::Real32>& coords );
 
 public:
 
@@ -102,6 +102,6 @@ private:
     const bool write_binary( FILE* ifs );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__STL_H_INCLUDE
+#endif // VIS_MODULE__STL_H_INCLUDE

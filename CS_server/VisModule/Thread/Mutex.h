@@ -11,12 +11,12 @@
  *  $Id: Mutex.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MUTEX_H_INCLUDE
-#define KVS__MUTEX_H_INCLUDE
+#ifndef VIS_MODULE__MUTEX_H_INCLUDE
+#define VIS_MODULE__MUTEX_H_INCLUDE
 
-#include <kvs/Platform>
-#include <kvs/ClassName>
-#if defined ( KVS_PLATFORM_WINDOWS )
+#include <vismodule/Platform>
+#include <vismodule/ClassName>
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
 #include <windows.h>
 #include <errno.h>
 #include <process.h>
@@ -25,7 +25,7 @@
 #endif
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -35,11 +35,11 @@ namespace kvs
 /*==========================================================================*/
 class Mutex
 {
-    kvsClassName( kvs::Mutex );
+    visModuleClassName( vismodule::Mutex );
 
 public:
 
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     typedef HANDLE Handler;
 #else
     typedef pthread_mutex_t Handler;
@@ -76,6 +76,6 @@ protected:
     void delete_mutex( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS_CORE_MUTEX_H_INCLUDE
+#endif // VIS_MODULE_CORE_MUTEX_H_INCLUDE

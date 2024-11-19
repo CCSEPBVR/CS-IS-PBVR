@@ -14,7 +14,7 @@
 #include "GlyphObject.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -41,9 +41,9 @@ GlyphObject::~GlyphObject( void )
     m_opacities.deallocate();
 }
 
-const kvs::ObjectBase::ObjectType GlyphObject::objectType( void ) const
+const vismodule::ObjectBase::ObjectType GlyphObject::objectType( void ) const
 {
-    return( kvs::ObjectBase::Glyph );
+    return( vismodule::ObjectBase::Glyph );
 }
 
 /*===========================================================================*/
@@ -52,7 +52,7 @@ const kvs::ObjectBase::ObjectType GlyphObject::objectType( void ) const
  *  @return coordinate value array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& GlyphObject::coords( void ) const
+const vismodule::ValueArray<vismodule::Real32>& GlyphObject::coords( void ) const
 {
     return( m_coords );
 }
@@ -63,7 +63,7 @@ const kvs::ValueArray<kvs::Real32>& GlyphObject::coords( void ) const
  *  @return size value array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& GlyphObject::sizes( void ) const
+const vismodule::ValueArray<vismodule::Real32>& GlyphObject::sizes( void ) const
 {
     return( m_sizes );
 }
@@ -74,7 +74,7 @@ const kvs::ValueArray<kvs::Real32>& GlyphObject::sizes( void ) const
  *  @return direction vector array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& GlyphObject::directions( void ) const
+const vismodule::ValueArray<vismodule::Real32>& GlyphObject::directions( void ) const
 {
     return( m_directions );
 }
@@ -85,7 +85,7 @@ const kvs::ValueArray<kvs::Real32>& GlyphObject::directions( void ) const
  *  @return color value array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt8>& GlyphObject::colors( void ) const
+const vismodule::ValueArray<vismodule::UInt8>& GlyphObject::colors( void ) const
 {
     return( m_colors );
 }
@@ -96,7 +96,7 @@ const kvs::ValueArray<kvs::UInt8>& GlyphObject::colors( void ) const
  *  @return opacity value array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt8>& GlyphObject::opacities( void ) const
+const vismodule::ValueArray<vismodule::UInt8>& GlyphObject::opacities( void ) const
 {
     return( m_opacities );
 }
@@ -107,7 +107,7 @@ const kvs::ValueArray<kvs::UInt8>& GlyphObject::opacities( void ) const
  *  @return scaling vector
  */
 /*===========================================================================*/
-const kvs::Vector3f& GlyphObject::scale( void ) const
+const vismodule::Vector3f& GlyphObject::scale( void ) const
 {
     return( m_scale );
 }
@@ -118,7 +118,7 @@ const kvs::Vector3f& GlyphObject::scale( void ) const
  *  @param  coords [in] coordinate value array
  */
 /*===========================================================================*/
-void GlyphObject::setCoords( const kvs::ValueArray<kvs::Real32>& coords )
+void GlyphObject::setCoords( const vismodule::ValueArray<vismodule::Real32>& coords )
 {
     m_coords = coords;
 }
@@ -129,7 +129,7 @@ void GlyphObject::setCoords( const kvs::ValueArray<kvs::Real32>& coords )
  *  @param  sizes [in] size value array
  */
 /*===========================================================================*/
-void GlyphObject::setSizes( const kvs::ValueArray<kvs::Real32>& sizes )
+void GlyphObject::setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes )
 {
     m_sizes = sizes;
 }
@@ -140,7 +140,7 @@ void GlyphObject::setSizes( const kvs::ValueArray<kvs::Real32>& sizes )
  *  @param  directions [in] direction vector array
  */
 /*===========================================================================*/
-void GlyphObject::setDirections( const kvs::ValueArray<kvs::Real32>& directions )
+void GlyphObject::setDirections( const vismodule::ValueArray<vismodule::Real32>& directions )
 {
     m_directions = directions;
 }
@@ -151,7 +151,7 @@ void GlyphObject::setDirections( const kvs::ValueArray<kvs::Real32>& directions 
  *  @param  colors [in] color value array
  */
 /*===========================================================================*/
-void GlyphObject::setColors( const kvs::ValueArray<kvs::UInt8>& colors )
+void GlyphObject::setColors( const vismodule::ValueArray<vismodule::UInt8>& colors )
 {
     m_colors = colors;
 }
@@ -162,7 +162,7 @@ void GlyphObject::setColors( const kvs::ValueArray<kvs::UInt8>& colors )
  *  @param  opacities [in] opacity value array
  */
 /*===========================================================================*/
-void GlyphObject::setOpacities( const kvs::ValueArray<kvs::UInt8>& opacities )
+void GlyphObject::setOpacities( const vismodule::ValueArray<vismodule::UInt8>& opacities )
 {
     m_opacities = opacities;
 }
@@ -173,9 +173,9 @@ void GlyphObject::setOpacities( const kvs::ValueArray<kvs::UInt8>& opacities )
  *  @param  scale [in] scaling factor
  */
 /*===========================================================================*/
-void GlyphObject::setScale( const kvs::Real32 scale )
+void GlyphObject::setScale( const vismodule::Real32 scale )
 {
-    m_scale = kvs::Vector3f( scale, scale, scale );
+    m_scale = vismodule::Vector3f( scale, scale, scale );
 }
 
 /*===========================================================================*/
@@ -184,9 +184,9 @@ void GlyphObject::setScale( const kvs::Real32 scale )
  *  @param  scale [in] scaling vector
  */
 /*===========================================================================*/
-void GlyphObject::setScale( const kvs::Vector3f& scale )
+void GlyphObject::setScale( const vismodule::Vector3f& scale )
 {
     m_scale = scale;
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

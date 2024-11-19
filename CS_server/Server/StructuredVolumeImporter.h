@@ -15,14 +15,14 @@
 #define PBVR__STRUCTURED_VOLUME_IMPORTER_H_INCLUDE
 
 #include "ImporterBase.h"
-//#include <kvs/ClassName>
+//#include <vismodule/ClassName>
 #include "ClassName.h"
-#include <kvs/Module>
-//#include <kvs/StructuredVolumeObject>
+#include <vismodule/Module>
+//#include <vismodule/StructuredVolumeObject>
 #include "StructuredVolumeObject.h"
-#include <kvs/KVSMLObjectStructuredVolume>
-#include <kvs/AVSField>
-//#include <kvs/DicomList>
+#include <vismodule/KVSMLObjectStructuredVolume>
+#include <vismodule/AVSField>
+//#include <vismodule/DicomList>
 
 
 namespace pbvr
@@ -34,16 +34,16 @@ namespace pbvr
  */
 /*==========================================================================*/
 class StructuredVolumeImporter :
-    public kvs::ImporterBase ,
+    public vismodule::ImporterBase ,
     public pbvr::StructuredVolumeObject
 {
     // Class name.
-    kvsClassName( pbvr::StructuredVolumeImporter );
+    visModuleClassName( pbvr::StructuredVolumeImporter );
 
     // Module information.
-    kvsModuleCategory( Importer );
-    kvsModuleBaseClass( kvs::ImporterBase );
-    kvsModuleSuperClass( pbvr::StructuredVolumeObject );
+    visModuleCategory( Importer );
+    visModuleBaseClass( vismodule::ImporterBase );
+    visModuleSuperClass( pbvr::StructuredVolumeObject );
 
 public:
 
@@ -51,7 +51,7 @@ public:
 
     StructuredVolumeImporter( const std::string& filename );
 
-    StructuredVolumeImporter( const kvs::FileFormatBase* file_format );
+    StructuredVolumeImporter( const vismodule::FileFormatBase* file_format );
 
 //    StructuredVolumeImporter( const std::string& filename, const int fileType, const int st, const int vl );
     
@@ -59,25 +59,25 @@ public:
 
 public:
 
-    //SuperClass* exec( const kvs::FileFormatBase* file_format );
-    SuperClass* exec( const kvs::FileFormatBase& file_format );
+    //SuperClass* exec( const vismodule::FileFormatBase* file_format );
+    SuperClass* exec( const vismodule::FileFormatBase& file_format );
 
 private:
 
-    void import( const kvs::KVSMLObjectStructuredVolume* kvsml );
-    //void import( const kvs::KVSMLObjectStructuredVolume& kvsml );
+    void import( const vismodule::KVSMLObjectStructuredVolume* kvsml );
+    //void import( const vismodule::KVSMLObjectStructuredVolume& kvsml );
 
-    void import( const kvs::AVSField* field );
-    //void import( const kvs::AVSField& field );
+    void import( const vismodule::AVSField* field );
+    //void import( const vismodule::AVSField& field );
 
-//    void import( const kvs::DicomList& dicom_list );
+//    void import( const vismodule::DicomList& dicom_list );
 
 private:
 
 //    template <typename T>
-//    const kvs::AnyValueArray get_dicom_data( const kvs::DicomList* dicom_list, const bool shift );
+//    const vismodule::AnyValueArray get_dicom_data( const vismodule::DicomList* dicom_list, const bool shift );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
 #endif // PBVR__STRUCTURED_VOLUME_IMPORTER_H_INCLUDE

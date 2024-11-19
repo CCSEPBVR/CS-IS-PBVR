@@ -12,11 +12,11 @@
  */
 /****************************************************************************/
 #include "ExtractVertices.h"
-#include <kvs/VolumeObjectBase>
-#include <kvs/StructuredVolumeObject>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/StructuredVolumeObject>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -37,7 +37,7 @@ ExtractVertices::ExtractVertices( void )
  */
 /*==========================================================================*/
 ExtractVertices::ExtractVertices(
-    const kvs::VolumeObjectBase* volume )
+    const vismodule::VolumeObjectBase* volume )
     : MapperBase()
     , PointObject()
 {
@@ -52,8 +52,8 @@ ExtractVertices::ExtractVertices(
  */
 /*==========================================================================*/
 ExtractVertices::ExtractVertices(
-    const kvs::VolumeObjectBase* volume,
-    const kvs::TransferFunction& transfer_function )
+    const vismodule::VolumeObjectBase* volume,
+    const vismodule::TransferFunction& transfer_function )
     : MapperBase( transfer_function )
     , PointObject()
 {
@@ -76,20 +76,20 @@ ExtractVertices::~ExtractVertices( void )
  *  @return pointer to the point object
  */
 /*===========================================================================*/
-ExtractVertices::SuperClass* ExtractVertices::exec( const kvs::ObjectBase* object )
+ExtractVertices::SuperClass* ExtractVertices::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase* volume = kvs::VolumeObjectBase::DownCast( object );
+    const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
     if ( !volume )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not volume dat.");
+        visModuleMessageError("Input object is not volume dat.");
         return( NULL );
     }
 
@@ -105,7 +105,7 @@ ExtractVertices::SuperClass* ExtractVertices::exec( const kvs::ObjectBase* objec
  */
 /*===========================================================================*/
 void ExtractVertices::mapping(
-    const kvs::VolumeObjectBase* volume )
+    const vismodule::VolumeObjectBase* volume )
 {
     BaseClass::attach_volume( volume );
     BaseClass::set_range( volume );
@@ -114,16 +114,16 @@ void ExtractVertices::mapping(
     this->calculate_coords();
 
     const std::type_info& type = volume->values().typeInfo()->type();
-    if (      type == typeid( kvs::Int8   ) ) { this->calculate_colors<kvs::Int8  >(); }
-    else if ( type == typeid( kvs::Int16  ) ) { this->calculate_colors<kvs::Int16 >(); }
-    else if ( type == typeid( kvs::Int32  ) ) { this->calculate_colors<kvs::Int32 >(); }
-    else if ( type == typeid( kvs::Int64  ) ) { this->calculate_colors<kvs::Int64 >(); }
-    else if ( type == typeid( kvs::UInt8  ) ) { this->calculate_colors<kvs::UInt8 >(); }
-    else if ( type == typeid( kvs::UInt16 ) ) { this->calculate_colors<kvs::UInt16>(); }
-    else if ( type == typeid( kvs::UInt32 ) ) { this->calculate_colors<kvs::UInt32>(); }
-    else if ( type == typeid( kvs::UInt64 ) ) { this->calculate_colors<kvs::UInt64>(); }
-    else if ( type == typeid( kvs::Real32 ) ) { this->calculate_colors<kvs::Real32>(); }
-    else if ( type == typeid( kvs::Real64 ) ) { this->calculate_colors<kvs::Real64>(); }
+    if (      type == typeid( vismodule::Int8   ) ) { this->calculate_colors<vismodule::Int8  >(); }
+    else if ( type == typeid( vismodule::Int16  ) ) { this->calculate_colors<vismodule::Int16 >(); }
+    else if ( type == typeid( vismodule::Int32  ) ) { this->calculate_colors<vismodule::Int32 >(); }
+    else if ( type == typeid( vismodule::Int64  ) ) { this->calculate_colors<vismodule::Int64 >(); }
+    else if ( type == typeid( vismodule::UInt8  ) ) { this->calculate_colors<vismodule::UInt8 >(); }
+    else if ( type == typeid( vismodule::UInt16 ) ) { this->calculate_colors<vismodule::UInt16>(); }
+    else if ( type == typeid( vismodule::UInt32 ) ) { this->calculate_colors<vismodule::UInt32>(); }
+    else if ( type == typeid( vismodule::UInt64 ) ) { this->calculate_colors<vismodule::UInt64>(); }
+    else if ( type == typeid( vismodule::Real32 ) ) { this->calculate_colors<vismodule::Real32>(); }
+    else if ( type == typeid( vismodule::Real64 ) ) { this->calculate_colors<vismodule::Real64>(); }
 }
 
 /*===========================================================================*/
@@ -156,16 +156,16 @@ void ExtractVertices::calculate_coords( void )
 /*===========================================================================*/
 void ExtractVertices::calculate_uniform_coords( void )
 {
-    const kvs::StructuredVolumeObject* volume
-        = dynamic_cast<const kvs::StructuredVolumeObject*>( m_volume );
+    const vismodule::StructuredVolumeObject* volume
+        = dynamic_cast<const vismodule::StructuredVolumeObject*>( m_volume );
 
-    kvs::ValueArray<float> coords( 3 * volume->nnodes() );
+    vismodule::ValueArray<float> coords( 3 * volume->nnodes() );
     float*                 coord = coords.pointer();
 
-    const kvs::Vector3ui resolution( volume->resolution() );
-    const kvs::Vector3f  volume_size( volume->maxObjectCoord() - volume->minObjectCoord() );
-    const kvs::Vector3ui ngrids( resolution - kvs::Vector3ui( 1, 1, 1 ) );
-    const kvs::Vector3f  grid_size(
+    const vismodule::Vector3ui resolution( volume->resolution() );
+    const vismodule::Vector3f  volume_size( volume->maxObjectCoord() - volume->minObjectCoord() );
+    const vismodule::Vector3ui ngrids( resolution - vismodule::Vector3ui( 1, 1, 1 ) );
+    const vismodule::Vector3f  grid_size(
         volume_size.x() / static_cast<float>( ngrids.x() ),
         volume_size.y() / static_cast<float>( ngrids.y() ),
         volume_size.z() / static_cast<float>( ngrids.z() ) );
@@ -201,7 +201,7 @@ void ExtractVertices::calculate_uniform_coords( void )
 void ExtractVertices::calculate_rectiliner_coords( void )
 {
     BaseClass::m_is_success = false;
-    kvsMessageError("Rectilinear volume has not yet supportted.");
+    visModuleMessageError("Rectilinear volume has not yet supportted.");
 }
 
 /*===========================================================================*/
@@ -212,23 +212,23 @@ void ExtractVertices::calculate_rectiliner_coords( void )
 template <typename T>
 void ExtractVertices::calculate_colors( void )
 {
-    const kvs::VolumeObjectBase* volume = m_volume;
+    const vismodule::VolumeObjectBase* volume = m_volume;
 
     const T*       value = reinterpret_cast<const T*>( volume->values().pointer() );
     const T* const end   = value + volume->values().size();
 
-    kvs::ValueArray<kvs::UInt8> colors( 3 * volume->nnodes() );
-    kvs::UInt8*                 color = colors.pointer();
+    vismodule::ValueArray<vismodule::UInt8> colors( 3 * volume->nnodes() );
+    vismodule::UInt8*                 color = colors.pointer();
 
-    kvs::ColorMap cmap( BaseClass::colorMap() );
+    vismodule::ColorMap cmap( BaseClass::colorMap() );
 
     if ( !volume->hasMinMaxValues() ) { volume->updateMinMaxValues(); }
 
-    const kvs::Real64 min_value = volume->minValue();
-    const kvs::Real64 max_value = volume->maxValue();
+    const vismodule::Real64 min_value = volume->minValue();
+    const vismodule::Real64 max_value = volume->maxValue();
 
-    const kvs::Real64 normalize_factor =
-        static_cast<kvs::Real64>( cmap.resolution() - 1 ) / ( max_value - min_value );
+    const vismodule::Real64 normalize_factor =
+        static_cast<vismodule::Real64>( cmap.resolution() - 1 ) / ( max_value - min_value );
 
     const size_t veclen = m_volume->veclen();
 
@@ -236,8 +236,8 @@ void ExtractVertices::calculate_colors( void )
     {
         while( value < end )
         {
-            const kvs::UInt32 color_level =
-                static_cast<kvs::UInt32>( normalize_factor * ( static_cast<kvs::Real64>( *( value++ ) ) - min_value ) );
+            const vismodule::UInt32 color_level =
+                static_cast<vismodule::UInt32>( normalize_factor * ( static_cast<vismodule::Real64>( *( value++ ) ) - min_value ) );
 
             *( color++ ) = cmap[ color_level ].red();
             *( color++ ) = cmap[ color_level ].green();
@@ -248,16 +248,16 @@ void ExtractVertices::calculate_colors( void )
     {
         while( value < end )
         {
-            kvs::Real64 magnitude = 0.0;
+            vismodule::Real64 magnitude = 0.0;
             for ( size_t i = 0; i < veclen; ++i )
             {
-                magnitude += kvs::Math::Square( static_cast<kvs::Real64>( *value ) );
+                magnitude += vismodule::Math::Square( static_cast<vismodule::Real64>( *value ) );
                 ++value;
             }
-            magnitude = kvs::Math::SquareRoot( magnitude );
+            magnitude = vismodule::Math::SquareRoot( magnitude );
 
-            const kvs::UInt32 color_level =
-                static_cast<kvs::UInt32>( normalize_factor * ( magnitude - min_value ) );
+            const vismodule::UInt32 color_level =
+                static_cast<vismodule::UInt32>( normalize_factor * ( magnitude - min_value ) );
 
             *( color++ ) = cmap[ color_level ].red();
             *( color++ ) = cmap[ color_level ].green();
@@ -268,4 +268,4 @@ void ExtractVertices::calculate_colors( void )
     SuperClass::setColors( colors );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

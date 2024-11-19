@@ -12,13 +12,13 @@
  */
 /*****************************************************************************/
 #include "PointObjectTag.h"
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
-#include <kvs/Tokenizer>
-#include <kvs/String>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
+#include <vismodule/Tokenizer>
+#include <vismodule/String>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -30,7 +30,7 @@ namespace kvsml
  */
 /*===========================================================================*/
 PointObjectTag::PointObjectTag( void ):
-    kvs::kvsml::TagBase( "PointObject" )
+    vismodule::kvsml::TagBase( "PointObject" )
 {
 }
 
@@ -50,14 +50,14 @@ PointObjectTag::~PointObjectTag( void )
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool PointObjectTag::read( const kvs::XMLNode::SuperClass* parent )
+const bool PointObjectTag::read( const vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
 
-    BaseClass::m_node = kvs::XMLNode::FindChildNode( parent, tag_name );
+    BaseClass::m_node = vismodule::XMLNode::FindChildNode( parent, tag_name );
     if ( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot find <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot find <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -71,15 +71,15 @@ const bool PointObjectTag::read( const kvs::XMLNode::SuperClass* parent )
  *  @return true, if the writing process is done successfully
  */
 /*===========================================================================*/
-const bool PointObjectTag::write( kvs::XMLNode::SuperClass* parent )
+const bool PointObjectTag::write( vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
-    kvs::XMLElement element( tag_name );
+    vismodule::XMLElement element( tag_name );
 
     BaseClass::m_node = parent->InsertEndChild( element );
     if( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot insert <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot insert <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -88,4 +88,4 @@ const bool PointObjectTag::write( kvs::XMLNode::SuperClass* parent )
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

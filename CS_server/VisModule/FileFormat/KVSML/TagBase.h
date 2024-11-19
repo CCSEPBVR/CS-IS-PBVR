@@ -11,14 +11,14 @@
  *  $Id: TagBase.h 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__KVSML__TAG_BASE_H_INCLUDE
-#define KVS__KVSML__TAG_BASE_H_INCLUDE
+#ifndef VIS_MODULE__KVSML__TAG_BASE_H_INCLUDE
+#define VIS_MODULE__KVSML__TAG_BASE_H_INCLUDE
 
-#include <kvs/XMLNode>
+#include <vismodule/XMLNode>
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -34,7 +34,7 @@ class TagBase
 protected:
 
     std::string m_name; ///< tag name
-    kvs::XMLNode::SuperClass* m_node; ///< pointer to the node of the XML tree
+    vismodule::XMLNode::SuperClass* m_node; ///< pointer to the node of the XML tree
 
 public:
 
@@ -44,19 +44,19 @@ public:
 
 public:
 
-    kvs::XMLNode::SuperClass* node( void );
+    vismodule::XMLNode::SuperClass* node( void );
 
-    const kvs::XMLNode::SuperClass* node( void ) const;
+    const vismodule::XMLNode::SuperClass* node( void ) const;
 
     const std::string& name( void ) const;
 
-    const bool isExisted( const kvs::XMLNode::SuperClass* parent ) const;
+    const bool isExisted( const vismodule::XMLNode::SuperClass* parent ) const;
 
 public:
 
-    virtual const bool read( const kvs::XMLNode::SuperClass* parent ) = 0;
+    virtual const bool read( const vismodule::XMLNode::SuperClass* parent ) = 0;
 
-    virtual const bool write( kvs::XMLNode::SuperClass* parent ) = 0;
+    virtual const bool write( vismodule::XMLNode::SuperClass* parent ) = 0;
 
 private:
 
@@ -65,6 +65,6 @@ private:
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__KVSML__TAG_BASE_H_INCLUDE
+#endif // VIS_MODULE__KVSML__TAG_BASE_H_INCLUDE

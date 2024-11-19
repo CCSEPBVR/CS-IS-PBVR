@@ -11,14 +11,14 @@
  *  $Id: Tokenizer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__TOKENIZER_H_INCLUDE
-#define KVS__TOKENIZER_H_INCLUDE
+#ifndef VIS_MODULE__TOKENIZER_H_INCLUDE
+#define VIS_MODULE__TOKENIZER_H_INCLUDE
 
 #include <string>
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -28,7 +28,7 @@ namespace kvs
 /*==========================================================================*/
 class Tokenizer
 {
-    kvsClassName_without_virtual( kvs::Tokenizer );
+    visModuleClassName_without_virtual( vismodule::Tokenizer );
 
 protected:
 
@@ -63,6 +63,6 @@ protected:
     void get_token( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TOKENIZER_H_INCLUDE
+#endif // VIS_MODULE__TOKENIZER_H_INCLUDE

@@ -11,14 +11,14 @@
  *  $Id: SocketTimer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__SOCKET_TIMER_H_INCLUDE
-#define KVS__SOCKET_TIMER_H_INCLUDE
+#ifndef VIS_MODULE__SOCKET_TIMER_H_INCLUDE
+#define VIS_MODULE__SOCKET_TIMER_H_INCLUDE
 
 #include "SocketStandard.h"
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -28,7 +28,7 @@ namespace kvs
 /*==========================================================================*/
 class SocketTimer
 {
-    kvsClassName_without_virtual( kvs::SocketTimer );
+    visModuleClassName_without_virtual( vismodule::SocketTimer );
 
 public:
 
@@ -59,6 +59,6 @@ public:
     bool isZero( void ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__SOCKET_TIMER_H_INCLUDE
+#endif // VIS_MODULE__SOCKET_TIMER_H_INCLUDE

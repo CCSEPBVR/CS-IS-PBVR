@@ -1,8 +1,8 @@
 #ifndef PBVR__COMMON_H_INCLUDE
 #define PBVR__COMMON_H_INCLUDE
-#include <kvs/Compiler>
+#include <vismodule/Compiler>
 
-#ifdef KVS_COMPILER_VC
+#ifdef VIS_MODULE_COMPILER_VC
 #include <time.h>
 #else
 #include <sys/time.h>
@@ -27,7 +27,7 @@
 
 inline double GetTime()
 {
-#ifdef KVS_COMPILER_VC
+#ifdef VIS_MODULE_COMPILER_VC
     clock_t time;
     time = clock();
     // return msec

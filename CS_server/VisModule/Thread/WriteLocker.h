@@ -11,13 +11,13 @@
  *  $Id: WriteLocker.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__WRITE_LOCKER_H_INCLUDE
-#define KVS__WRITE_LOCKER_H_INCLUDE
+#ifndef VIS_MODULE__WRITE_LOCKER_H_INCLUDE
+#define VIS_MODULE__WRITE_LOCKER_H_INCLUDE
 
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class ReadWriteLock;
@@ -29,15 +29,15 @@ class ReadWriteLock;
 /*==========================================================================*/
 class WriteLocker
 {
-    kvsClassName( kvs::WriteLocker );
+    visModuleClassName( vismodule::WriteLocker );
 
 protected:
 
-    kvs::ReadWriteLock* m_rwlock; ///< pointer to read-write lock
+    vismodule::ReadWriteLock* m_rwlock; ///< pointer to read-write lock
 
 public:
 
-    WriteLocker( kvs::ReadWriteLock* rwlock );
+    WriteLocker( vismodule::ReadWriteLock* rwlock );
 
     virtual ~WriteLocker( void );
 
@@ -47,9 +47,9 @@ public:
 
     void unlock( void );
 
-    kvs::ReadWriteLock* readWriteLock( void );
+    vismodule::ReadWriteLock* readWriteLock( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__WRITE_LOCKER_H_INCLUDE
+#endif // VIS_MODULE__WRITE_LOCKER_H_INCLUDE

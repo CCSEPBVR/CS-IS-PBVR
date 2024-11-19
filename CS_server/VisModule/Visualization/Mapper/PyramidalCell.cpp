@@ -14,7 +14,7 @@
 #include "PyramidalCell.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 // template instantiation
@@ -29,4 +29,4 @@ template class PyramidalCell<unsigned long>;
 template class PyramidalCell<float>;
 template class PyramidalCell<double>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

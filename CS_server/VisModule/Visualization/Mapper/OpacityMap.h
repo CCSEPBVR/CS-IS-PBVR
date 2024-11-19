@@ -11,16 +11,16 @@
  *  $Id: OpacityMap.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__OPACITY_MAP_H_INCLUDE
-#define KVS__OPACITY_MAP_H_INCLUDE
+#ifndef VIS_MODULE__OPACITY_MAP_H_INCLUDE
+#define VIS_MODULE__OPACITY_MAP_H_INCLUDE
 
 #include <list>
 #include <utility>
-#include <kvs/ClassName>
-#include <kvs/ValueArray>
+#include <vismodule/ClassName>
+#include <vismodule/ValueArray>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -30,11 +30,11 @@ namespace kvs
 /*==========================================================================*/
 class OpacityMap
 {
-    kvsClassName( kvs::OpacityMap );
+    visModuleClassName( vismodule::OpacityMap );
 
 public:
 
-    typedef kvs::ValueArray<float> Table;
+    typedef vismodule::ValueArray<float> Table;
     typedef std::pair<float,float> Point;
     typedef std::list<Point>       Points;
 
@@ -90,15 +90,15 @@ public:
 
 public:
 
-    const kvs::Real32 operator []( const size_t index ) const;
+    const vismodule::Real32 operator []( const size_t index ) const;
 
-    const kvs::Real32 at( const float value ) const;
+    const vismodule::Real32 at( const float value ) const;
 
 public:
 
     OpacityMap& operator =( const OpacityMap& rhs );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__OPACITY_MAP_H_INCLUDE
+#endif // VIS_MODULE__OPACITY_MAP_H_INCLUDE

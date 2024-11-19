@@ -12,24 +12,24 @@
  *  $Id: FileChecker.h 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVSVIEW__FILE_CHECKER_H_INCLUDE
-#define KVSVIEW__FILE_CHECKER_H_INCLUDE
+#ifndef VISMODULEVIEW__FILE_CHECKER_H_INCLUDE
+#define VISMODULEVIEW__FILE_CHECKER_H_INCLUDE
 
-#include <kvs/File>
-#include <kvs/AVSField>
-#include <kvs/AVSUcd>
-#include <kvs/Stl>
-#include <kvs/Ply>
-#include <kvs/KVSMLObjectPoint>
-#include <kvs/KVSMLObjectLine>
-#include <kvs/KVSMLObjectPolygon>
-#include <kvs/KVSMLObjectStructuredVolume>
-#include <kvs/KVSMLObjectUnstructuredVolume>
-//#include <kvs/DicomList>
+#include <vismodule/File>
+#include <vismodule/AVSField>
+#include <vismodule/AVSUcd>
+#include <vismodule/Stl>
+#include <vismodule/Ply>
+#include <vismodule/KVSMLObjectPoint>
+#include <vismodule/KVSMLObjectLine>
+#include <vismodule/KVSMLObjectPolygon>
+#include <vismodule/KVSMLObjectStructuredVolume>
+#include <vismodule/KVSMLObjectUnstructuredVolume>
+//#include <vismodule/DicomList>
 //#include "DicomList.h"
 
 
-namespace kvsview
+namespace vismoduleview
 {
 
 namespace FileChecker
@@ -45,9 +45,9 @@ namespace FileChecker
 //inline const bool ImportablePoint( const std::string& filename )
 //{
 //    // KVSML format.
-//    if ( kvs::KVSMLObjectPoint::CheckFileExtension( filename ) )
+//    if ( vismodule::KVSMLObjectPoint::CheckFileExtension( filename ) )
 //    {
-//        if ( kvs::KVSMLObjectPoint::CheckFileFormat( filename ) )
+//        if ( vismodule::KVSMLObjectPoint::CheckFileFormat( filename ) )
 //        {
 //            return( true );
 //        }
@@ -66,9 +66,9 @@ namespace FileChecker
 //inline const bool ImportableLine( const std::string& filename )
 //{
 //    // KVSML format.
-//    if ( kvs::KVSMLObjectLine::CheckFileExtension( filename ) )
+//    if ( vismodule::KVSMLObjectLine::CheckFileExtension( filename ) )
 //    {
-//        if ( kvs::KVSMLObjectLine::CheckFileFormat( filename ) )
+//        if ( vismodule::KVSMLObjectLine::CheckFileFormat( filename ) )
 //        {
 //            return( true );
 //        }
@@ -87,27 +87,27 @@ namespace FileChecker
 //inline const bool ImportablePolygon( const std::string& filename )
 //{
 //    // KVSML format.
-//    if ( kvs::KVSMLObjectPolygon::CheckFileExtension( filename ) )
+//    if ( vismodule::KVSMLObjectPolygon::CheckFileExtension( filename ) )
 //    {
-//        if ( kvs::KVSMLObjectPolygon::CheckFileFormat( filename ) )
+//        if ( vismodule::KVSMLObjectPolygon::CheckFileFormat( filename ) )
 //        {
 //            return( true );
 //        }
 //    }
 //
 //    // STL format.
-//    if ( kvs::Stl::CheckFileExtension( filename ) )
+//    if ( vismodule::Stl::CheckFileExtension( filename ) )
 //    {
-//        if ( kvs::Stl::CheckFileFormat( filename ) )
+//        if ( vismodule::Stl::CheckFileFormat( filename ) )
 //        {
 //            return( true );
 //        }
 //    }
 //
 //    // Ply format.
-//    if ( kvs::Ply::CheckFileExtension( filename ) )
+//    if ( vismodule::Ply::CheckFileExtension( filename ) )
 //    {
-//        if ( kvs::Ply::CheckFileFormat( filename ) )
+//        if ( vismodule::Ply::CheckFileFormat( filename ) )
 //        {
 //            return( true );
 //        }
@@ -125,20 +125,20 @@ namespace FileChecker
 /*===========================================================================*/
 inline const bool ImportableStructuredVolume( const std::string& filename )
 {
-    kvs::File file( filename );
+    vismodule::File file( filename );
     if ( file.isFile() )
     {
         // KVSML format.
-        if ( kvs::KVSMLObjectStructuredVolume::CheckFileExtension( filename ) )
+        if ( vismodule::KVSMLObjectStructuredVolume::CheckFileExtension( filename ) )
         {
-            if ( kvs::KVSMLObjectStructuredVolume::CheckFileFormat( filename ) )
+            if ( vismodule::KVSMLObjectStructuredVolume::CheckFileFormat( filename ) )
             {
                 return( true );
             }
         }
 
         // AVS field format.
-        if ( kvs::AVSField::CheckFileExtension( filename ) )
+        if ( vismodule::AVSField::CheckFileExtension( filename ) )
         {
             return( true );
         }
@@ -146,7 +146,7 @@ inline const bool ImportableStructuredVolume( const std::string& filename )
     else
     {
 //        // DICOM list.
-//        if ( kvs::DicomList::CheckDirectory( filename ) )
+//        if ( vismodule::DicomList::CheckDirectory( filename ) )
 //        {
 //            return( true );
 //        }
@@ -165,16 +165,16 @@ inline const bool ImportableStructuredVolume( const std::string& filename )
 inline const bool ImportableUnstructuredVolume( const std::string& filename )
 {
     // KVSML format.
-    if ( kvs::KVSMLObjectUnstructuredVolume::CheckFileExtension( filename ) )
+    if ( vismodule::KVSMLObjectUnstructuredVolume::CheckFileExtension( filename ) )
     {
-        if ( kvs::KVSMLObjectUnstructuredVolume::CheckFileFormat( filename ) )
+        if ( vismodule::KVSMLObjectUnstructuredVolume::CheckFileFormat( filename ) )
         {
             return( true );
         }
     }
 
     // AVS UCD format.
-    if ( kvs::AVSUcd::CheckFileExtension( filename ) )
+    if ( vismodule::AVSUcd::CheckFileExtension( filename ) )
     {
         return( true );
     }
@@ -184,6 +184,6 @@ inline const bool ImportableUnstructuredVolume( const std::string& filename )
 
 } // end of namespace FileChecker
 
-} // end of namespace kvsview
+} // end of namespace vismoduleview
 
-#endif // KVSVIEW__FILE_CHECKER_H_INCLUDE
+#endif // VISMODULEVIEW__FILE_CHECKER_H_INCLUDE

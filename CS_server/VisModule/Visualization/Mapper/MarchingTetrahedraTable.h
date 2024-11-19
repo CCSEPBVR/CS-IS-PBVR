@@ -11,10 +11,10 @@
  *  $Id: MarchingTetrahedraTable.h 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MARCHING_TETRAHEDRA_TABLE_H_INCLUDE
-#define KVS__MARCHING_TETRAHEDRA_TABLE_H_INCLUDE
+#ifndef VIS_MODULE__MARCHING_TETRAHEDRA_TABLE_H_INCLUDE
+#define VIS_MODULE__MARCHING_TETRAHEDRA_TABLE_H_INCLUDE
 
-namespace kvs
+namespace vismodule
 {
 
 namespace MarchingTetrahedraTable
@@ -26,6 +26,6 @@ extern const int VertexID[6][2];
 
 } // end of namespace MarchingTetrahedraTable
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MARCHING_TETRAHEDRA_TABLE_H_INCLUDE
+#endif // VIS_MODULE__MARCHING_TETRAHEDRA_TABLE_H_INCLUDE

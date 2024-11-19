@@ -11,18 +11,18 @@
  *  $Id: Pgm.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__PGM_H_INCLUDE
-#define KVS__PGM_H_INCLUDE
+#ifndef VIS_MODULE__PGM_H_INCLUDE
+#define VIS_MODULE__PGM_H_INCLUDE
 
-#include <kvs/FileFormatBase>
-#include <kvs/ClassName>
-#include <kvs/ValueArray>
-#include <kvs/Type>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ClassName>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
 #include <string>
 #include "Header.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -30,27 +30,27 @@ namespace kvs
  *  PGM image class.
  */
 /*==========================================================================*/
-class Pgm : public kvs::FileFormatBase
+class Pgm : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::Pgm );
+    visModuleClassName( vismodule::Pgm );
 
 public:
 
-    typedef kvs::FileFormatBase BaseClass;
-    typedef kvs::pnm::Header    Header;
+    typedef vismodule::FileFormatBase BaseClass;
+    typedef vismodule::pnm::Header    Header;
 
 private:
 
     Pgm::Header                 m_header; ///< header information
     size_t                      m_width;  ///< width
     size_t                      m_height; ///< height
-    kvs::ValueArray<kvs::UInt8> m_data;   ///< pixel data
+    vismodule::ValueArray<vismodule::UInt8> m_data;   ///< pixel data
 
 public:
 
     Pgm( void );
 
-    Pgm( const size_t width, const size_t height, const kvs::ValueArray<kvs::UInt8>& data );
+    Pgm( const size_t width, const size_t height, const vismodule::ValueArray<vismodule::UInt8>& data );
 
     Pgm( const std::string& filename );
 
@@ -64,7 +64,7 @@ public:
 
     const size_t height( void ) const;
 
-    const kvs::ValueArray<kvs::UInt8>& data( void ) const;
+    const vismodule::ValueArray<vismodule::UInt8>& data( void ) const;
 
 public:
 
@@ -85,6 +85,6 @@ public:
     friend std::ostream& operator <<( std::ostream& os, const Pgm& rhs );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__PGM_H_INCLUDE
+#endif // VIS_MODULE__PGM_H_INCLUDE

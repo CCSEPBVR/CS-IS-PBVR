@@ -15,34 +15,34 @@
 #include "ColorImage.h"
 #include "GrayImage.h"
 #include "RGBColor.h"
-#include <kvs/Type>
+#include <vismodule/Type>
 
 
 namespace
 {
 
-const kvs::UInt8 BilinearInterpolate(
-    const kvs::UInt8 pixel1,
-    const kvs::UInt8 pixel2,
-    const kvs::UInt8 pixel3,
-    const kvs::UInt8 pixel4,
+const vismodule::UInt8 BilinearInterpolate(
+    const vismodule::UInt8 pixel1,
+    const vismodule::UInt8 pixel2,
+    const vismodule::UInt8 pixel3,
+    const vismodule::UInt8 pixel4,
     const double     xrate,
     const double     yrate )
 {
     const double d = pixel1 * ( 1.0 - xrate ) + pixel3 * xrate;
     const double e = pixel2 * ( 1.0 - xrate ) + pixel4 * xrate;
 
-    int f = kvs::Math::Round( d * ( 1.0 - yrate ) + e * yrate );
-    kvs::Math::Clamp( f, 0, 255 );
+    int f = vismodule::Math::Round( d * ( 1.0 - yrate ) + e * yrate );
+    vismodule::Math::Clamp( f, 0, 255 );
 
-    return( static_cast<kvs::UInt8>( f ) );
+    return( static_cast<vismodule::UInt8>( f ) );
 }
 
-const kvs::RGBColor BilinearInterpolate(
-    const kvs::RGBColor pixel1,
-    const kvs::RGBColor pixel2,
-    const kvs::RGBColor pixel3,
-    const kvs::RGBColor pixel4,
+const vismodule::RGBColor BilinearInterpolate(
+    const vismodule::RGBColor pixel1,
+    const vismodule::RGBColor pixel2,
+    const vismodule::RGBColor pixel3,
+    const vismodule::RGBColor pixel4,
     const double        xrate,
     const double        yrate )
 {
@@ -59,20 +59,20 @@ const kvs::RGBColor BilinearInterpolate(
     };
 
     int f[3] = {
-        kvs::Math::Round( d[0] * ( 1.0 - yrate ) + e[0] * yrate ),
-        kvs::Math::Round( d[1] * ( 1.0 - yrate ) + e[1] * yrate ),
-        kvs::Math::Round( d[2] * ( 1.0 - yrate ) + e[2] * yrate )
+        vismodule::Math::Round( d[0] * ( 1.0 - yrate ) + e[0] * yrate ),
+        vismodule::Math::Round( d[1] * ( 1.0 - yrate ) + e[1] * yrate ),
+        vismodule::Math::Round( d[2] * ( 1.0 - yrate ) + e[2] * yrate )
     };
 
-    kvs::Math::Clamp( f[0], 0, 255 );
-    kvs::Math::Clamp( f[1], 0, 255 );
-    kvs::Math::Clamp( f[2], 0, 255 );
+    vismodule::Math::Clamp( f[0], 0, 255 );
+    vismodule::Math::Clamp( f[1], 0, 255 );
+    vismodule::Math::Clamp( f[2], 0, 255 );
 
-    const kvs::UInt8 r = static_cast<kvs::UInt8>( f[0] );
-    const kvs::UInt8 g = static_cast<kvs::UInt8>( f[1] );
-    const kvs::UInt8 b = static_cast<kvs::UInt8>( f[2] );
+    const vismodule::UInt8 r = static_cast<vismodule::UInt8>( f[0] );
+    const vismodule::UInt8 g = static_cast<vismodule::UInt8>( f[1] );
+    const vismodule::UInt8 b = static_cast<vismodule::UInt8>( f[2] );
 
-    return( kvs::RGBColor( r, g, b ) );
+    return( vismodule::RGBColor( r, g, b ) );
 }
 
 /*==========================================================================*/
@@ -102,7 +102,7 @@ inline size_t ByteToBit( size_t value )
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -147,7 +147,7 @@ ImageBase::ImageBase(
     const size_t width,
     const size_t height,
     const ImageType type,
-    const kvs::UInt8* data )
+    const vismodule::UInt8* data )
 {
     this->create( width, height, type, data );
 }
@@ -165,7 +165,7 @@ ImageBase::ImageBase(
     const size_t width,
     const size_t height,
     const ImageType type,
-    const kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::ValueArray<vismodule::UInt8>& data )
 {
     this->create( width, height, type, data );
 }
@@ -240,7 +240,7 @@ const bool ImageBase::create( const size_t width, const size_t height, const Ima
     {
         const size_t ncomponents = static_cast<size_t>( type );
         m_padding = 0;
-        m_bpp     = ::ByteToBit( sizeof(kvs::UInt8) ) * ncomponents;
+        m_bpp     = ::ByteToBit( sizeof(vismodule::UInt8) ) * ncomponents;
         m_bpl     = width * ::BitToByte( m_bpp );
     }
 
@@ -265,7 +265,7 @@ const bool ImageBase::create(
     const size_t width,
     const size_t height,
     const ImageType type,
-    const kvs::UInt8* data )
+    const vismodule::UInt8* data )
 {
     m_width   = width;
     m_height  = height;
@@ -281,7 +281,7 @@ const bool ImageBase::create(
     {
         const size_t ncomponents = static_cast<size_t>( type );
         m_padding = 0;
-        m_bpp     = ::ByteToBit( sizeof(kvs::UInt8) ) * ncomponents;
+        m_bpp     = ::ByteToBit( sizeof(vismodule::UInt8) ) * ncomponents;
         m_bpl     = width * ::BitToByte( m_bpp );
     }
 
@@ -307,7 +307,7 @@ const bool ImageBase::create(
     const size_t width,
     const size_t height,
     const ImageType type,
-    const kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::ValueArray<vismodule::UInt8>& data )
 {
     m_width   = width;
     m_height  = height;
@@ -323,7 +323,7 @@ const bool ImageBase::create(
     {
         const size_t ncomponents = static_cast<size_t>( type );
         m_padding = 0;
-        m_bpp     = ::ByteToBit( sizeof(kvs::UInt8) ) * ncomponents;
+        m_bpp     = ::ByteToBit( sizeof(vismodule::UInt8) ) * ncomponents;
         m_bpl     = width * ::BitToByte( m_bpp );
     }
 
@@ -410,7 +410,7 @@ const size_t ImageBase::size( void ) const
  *  Get the pointer to the pixel data.
  */
 /*==========================================================================*/
-const kvs::ValueArray<kvs::UInt8>& ImageBase::data( void ) const
+const vismodule::ValueArray<vismodule::UInt8>& ImageBase::data( void ) const
 {
     return( m_data );
 }
@@ -420,7 +420,7 @@ const kvs::ValueArray<kvs::UInt8>& ImageBase::data( void ) const
  *  Get the pointer to the pixel data.
  */
 /*==========================================================================*/
-kvs::ValueArray<kvs::UInt8>& ImageBase::data( void )
+vismodule::ValueArray<vismodule::UInt8>& ImageBase::data( void )
 {
     return( m_data );
 }
@@ -434,15 +434,15 @@ void ImageBase::flip( void )
 {
     const size_t stride = m_width * ::BitToByte( m_bpp );
 
-    kvs::UInt8* pdata = m_data.pointer();
+    vismodule::UInt8* pdata = m_data.pointer();
     const size_t end_line = m_height / 2;
     for ( size_t i = 0; i < end_line; i++ )
     {
-        kvs::UInt8* src = pdata + ( i * stride );
-        kvs::UInt8* dst = pdata + ( ( m_height - i - 1 ) * stride );
+        vismodule::UInt8* src = pdata + ( i * stride );
+        vismodule::UInt8* dst = pdata + ( ( m_height - i - 1 ) * stride );
         for ( size_t j = 0; j < stride; j++ )
         {
-            kvs::UInt8 tmp = *src;
+            vismodule::UInt8 tmp = *src;
             *src = *dst;
             *dst = tmp;
             src++;
@@ -483,28 +483,28 @@ void ImageBase::resize( const size_t width, const size_t height, ImageDataType* 
 
 // Specialization.
 template
-void ImageBase::resize<kvs::GrayImage,ImageBase::NearestNeighborInterpolatorGray>(
+void ImageBase::resize<vismodule::GrayImage,ImageBase::NearestNeighborInterpolatorGray>(
     const size_t width,
     const size_t height,
-    kvs::GrayImage* image );
+    vismodule::GrayImage* image );
 
 template
-void ImageBase::resize<kvs::ColorImage,ImageBase::NearestNeighborInterpolatorColor>(
+void ImageBase::resize<vismodule::ColorImage,ImageBase::NearestNeighborInterpolatorColor>(
     const size_t  width,
     const size_t  height,
-    kvs::ColorImage* image );
+    vismodule::ColorImage* image );
 
 template
-void ImageBase::resize<kvs::GrayImage,ImageBase::BilinearInterpolatorGray>(
+void ImageBase::resize<vismodule::GrayImage,ImageBase::BilinearInterpolatorGray>(
     const size_t width,
     const size_t height,
-    kvs::GrayImage* image );
+    vismodule::GrayImage* image );
 
 template
-void ImageBase::resize<kvs::ColorImage,ImageBase::BilinearInterpolatorColor>(
+void ImageBase::resize<vismodule::ColorImage,ImageBase::BilinearInterpolatorColor>(
     const size_t width,
     const size_t height,
-    kvs::ColorImage* image );
+    vismodule::ColorImage* image );
 
 template <typename ImageDataType>
 void ImageBase::NearestNeighborInterpolator<ImageDataType>::attach( const ImageDataType* image )
@@ -515,13 +515,13 @@ void ImageBase::NearestNeighborInterpolator<ImageDataType>::attach( const ImageD
 template <typename ImageDataType>
 void ImageBase::NearestNeighborInterpolator<ImageDataType>::setU( const double u )
 {
-    m_p.x() = kvs::Math::Floor( u );
+    m_p.x() = vismodule::Math::Floor( u );
 }
 
 template <typename ImageDataType>
 void ImageBase::NearestNeighborInterpolator<ImageDataType>::setV( const double v )
 {
-    m_p.y() = kvs::Math::Floor( v );
+    m_p.y() = vismodule::Math::Floor( v );
 }
 
 template <typename ImageDataType>
@@ -534,8 +534,8 @@ ImageBase::NearestNeighborInterpolator<ImageDataType>::operator () ( void ) cons
 }
 
 // Specialization.
-template class ImageBase::NearestNeighborInterpolator<kvs::GrayImage>;
-template class ImageBase::NearestNeighborInterpolator<kvs::ColorImage>;
+template class ImageBase::NearestNeighborInterpolator<vismodule::GrayImage>;
+template class ImageBase::NearestNeighborInterpolator<vismodule::ColorImage>;
 
 
 template <typename ImageDataType>
@@ -549,7 +549,7 @@ void ImageBase::BilinearInterpolator<ImageDataType>::setU( const double u )
 {
     const double width = static_cast<double>( m_reference_image->width() - 1 );
 
-    m_pmin.x() = kvs::Math::Floor( u );
+    m_pmin.x() = vismodule::Math::Floor( u );
     m_pmax.x() = m_pmin.x() + ( width > m_pmin.x() ? 1.0 : 0.0 );
     m_rate.x() = u - static_cast<double>( m_pmin.x() );
 }
@@ -559,7 +559,7 @@ void ImageBase::BilinearInterpolator<ImageDataType>::setV( const double v )
 {
     const double height = static_cast<double>( m_reference_image->height() - 1 );
 
-    m_pmin.y() = kvs::Math::Floor( v );
+    m_pmin.y() = vismodule::Math::Floor( v );
     m_pmax.y() = m_pmin.y() + ( height > m_pmin.y() ? 1.0 : 0.0 );
     m_rate.y() = v - static_cast<double>( m_pmin.y() );
 }
@@ -582,7 +582,7 @@ ImageBase::BilinearInterpolator<ImageDataType>::operator () ( void ) const
 }
 
 // Instantiation.
-template class ImageBase::BilinearInterpolator<kvs::GrayImage>;
-template class ImageBase::BilinearInterpolator<kvs::ColorImage>;
+template class ImageBase::BilinearInterpolator<vismodule::GrayImage>;
+template class ImageBase::BilinearInterpolator<vismodule::ColorImage>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

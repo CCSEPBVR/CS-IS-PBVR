@@ -11,17 +11,17 @@
  *  $Id: Matrix33.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MATRIX_33_H_INCLUDE
-#define KVS__MATRIX_33_H_INCLUDE
+#ifndef VIS_MODULE__MATRIX_33_H_INCLUDE
+#define VIS_MODULE__MATRIX_33_H_INCLUDE
 
 #include <iostream>
-#include <kvs/ClassName>
-#include <kvs/Assert>
-#include <kvs/Math>
+#include <vismodule/ClassName>
+#include <vismodule/Assert>
+#include <vismodule/Math>
 #include "Vector3.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -32,7 +32,7 @@ namespace kvs
 template<typename T>
 class Matrix33
 {
-    kvsClassName_without_virtual( kvs::Matrix33 );
+    visModuleClassName_without_virtual( vismodule::Matrix33 );
 
 private:
 
@@ -676,7 +676,7 @@ inline const T Matrix33<T>::determinant( void ) const
 template<typename T>
 inline const Vector3<T>& Matrix33<T>::operator []( const size_t index ) const
 {
-    KVS_ASSERT( index < 3 );
+    VIS_MODULE_ASSERT( index < 3 );
 
     return( m_rows[ index ] );
 }
@@ -693,7 +693,7 @@ inline const Vector3<T>& Matrix33<T>::operator []( const size_t index ) const
 template<typename T>
 inline Vector3<T>& Matrix33<T>::operator []( const size_t index )
 {
-    KVS_ASSERT( index < 3 );
+    VIS_MODULE_ASSERT( index < 3 );
 
     return( m_rows[ index ] );
 }
@@ -816,6 +816,6 @@ inline const Matrix33<T> Matrix33<T>::operator -( void ) const
     return( result );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MATRIX_33_H_INCLUDE
+#endif // VIS_MODULE__MATRIX_33_H_INCLUDE

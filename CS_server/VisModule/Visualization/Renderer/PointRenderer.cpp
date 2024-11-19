@@ -13,15 +13,15 @@
 /****************************************************************************/
 #include "PointRenderer.h"
 #include "PointRenderingFunction.h"
-#include <kvs/OpenGL>
-#include <kvs/Camera>
-#include <kvs/Light>
-#include <kvs/ObjectBase>
-#include <kvs/PointObject>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/OpenGL>
+#include <vismodule/Camera>
+#include <vismodule/Light>
+#include <vismodule/ObjectBase>
+#include <vismodule/PointObject>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -55,10 +55,10 @@ PointRenderer::~PointRenderer( void )
 /*==========================================================================*/
 void PointRenderer::exec( ObjectBase* object, Camera* camera, Light* light )
 {
-    kvs::IgnoreUnusedVariable( light );
-    kvs::IgnoreUnusedVariable( camera );
+    vismodule::IgnoreUnusedVariable( light );
+    vismodule::IgnoreUnusedVariable( camera );
 
-    kvs::PointObject* point = reinterpret_cast<kvs::PointObject*>( object );
+    vismodule::PointObject* point = reinterpret_cast<vismodule::PointObject*>( object );
 
     glPushAttrib( GL_CURRENT_BIT | GL_ENABLE_BIT );
 
@@ -172,7 +172,7 @@ void PointRenderer::initialize_modelview( void )
         glEnable( GL_LIGHTING );
     }
 
-    kvs::Light::setModelTwoSide( this->isTwoSideLighting() );
+    vismodule::Light::setModelTwoSide( this->isTwoSideLighting() );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

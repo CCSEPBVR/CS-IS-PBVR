@@ -12,13 +12,13 @@
  */
 /*****************************************************************************/
 #include "ColorMapTag.h"
-#include <kvs/Message>
-#include <kvs/String>
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
+#include <vismodule/Message>
+#include <vismodule/String>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -30,7 +30,7 @@ namespace kvsml
  */
 /*===========================================================================*/
 ColorMapTag::ColorMapTag( void ):
-    kvs::kvsml::TagBase( "ColorMap" )
+    vismodule::kvsml::TagBase( "ColorMap" )
 {
 }
 
@@ -50,14 +50,14 @@ ColorMapTag::~ColorMapTag( void )
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool ColorMapTag::read( const kvs::XMLNode::SuperClass* parent )
+const bool ColorMapTag::read( const vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = this->name();
 
-    m_node = kvs::XMLNode::FindChildNode( parent, tag_name );
+    m_node = vismodule::XMLNode::FindChildNode( parent, tag_name );
     if ( !m_node )
     {
-        kvsMessageError( "Cannot find <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot find <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -71,15 +71,15 @@ const bool ColorMapTag::read( const kvs::XMLNode::SuperClass* parent )
  *  @return true, if the writing process is done successfully
  */
 /*===========================================================================*/
-const bool ColorMapTag::write( kvs::XMLNode::SuperClass* parent )
+const bool ColorMapTag::write( vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = this->name();
-    kvs::XMLElement element( tag_name );
+    vismodule::XMLElement element( tag_name );
 
     m_node = parent->InsertEndChild( element );
     if( !m_node )
     {
-        kvsMessageError( "Cannot insert <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot insert <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -93,7 +93,7 @@ const bool ColorMapTag::write( kvs::XMLNode::SuperClass* parent )
  */
 /*===========================================================================*/
 ColorMapValueTag::ColorMapValueTag( void ):
-    kvs::kvsml::TagBase( "ColorMapValue" )
+    vismodule::kvsml::TagBase( "ColorMapValue" )
 {
 }
 
@@ -123,7 +123,7 @@ const float ColorMapValueTag::scalar( void ) const
  *  @return color value
  */
 /*===========================================================================*/
-const kvs::RGBColor ColorMapValueTag::color( void ) const
+const vismodule::RGBColor ColorMapValueTag::color( void ) const
 {
     return( m_color );
 }
@@ -145,7 +145,7 @@ void ColorMapValueTag::setScalar( const float scalar )
  *  @param  color [in] color value
  */
 /*===========================================================================*/
-void ColorMapValueTag::setColor( const kvs::RGBColor color )
+void ColorMapValueTag::setColor( const vismodule::RGBColor color )
 {
     m_color = color;
 }
@@ -157,19 +157,19 @@ void ColorMapValueTag::setColor( const kvs::RGBColor color )
  *  @return true if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool ColorMapValueTag::read( const kvs::XMLNode::SuperClass* parent )
+const bool ColorMapValueTag::read( const vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
 
-    BaseClass::m_node = kvs::XMLNode::FindChildNode( parent, tag_name );
+    BaseClass::m_node = vismodule::XMLNode::FindChildNode( parent, tag_name );
     if ( !m_node )
     {
-        kvsMessageError( "Cannot find <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot find <%s>.", tag_name.c_str() );
         return( false );
     }
 
     // Element
-    const kvs::XMLElement::SuperClass* element = kvs::XMLNode::ToElement( BaseClass::m_node );
+    const vismodule::XMLElement::SuperClass* element = vismodule::XMLNode::ToElement( BaseClass::m_node );
 
     return( this->read( element ) );
 }
@@ -181,50 +181,50 @@ const bool ColorMapValueTag::read( const kvs::XMLNode::SuperClass* parent )
  *  @return true if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool ColorMapValueTag::read( const kvs::XMLElement::SuperClass* element )
+const bool ColorMapValueTag::read( const vismodule::XMLElement::SuperClass* element )
 {
     const std::string tag_name = BaseClass::name();
 
     // s ="xxx"
-    const std::string s = kvs::XMLElement::AttributeValue( element, "s" );
+    const std::string s = vismodule::XMLElement::AttributeValue( element, "s" );
     if ( s != "" ) m_scalar = static_cast<float>( atof( s.c_str() ) );
     else
     {
-        kvsMessageError( "'s' is not specified in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "'s' is not specified in <%s>.", tag_name.c_str() );
         return( false );
     }
 
     // r ="xxx"
-    kvs::UInt8 red = 0;
-    const std::string r = kvs::XMLElement::AttributeValue( element, "r" );
-    if ( r != "" ) red = static_cast<kvs::UInt8>( atoi( r.c_str() ) );
+    vismodule::UInt8 red = 0;
+    const std::string r = vismodule::XMLElement::AttributeValue( element, "r" );
+    if ( r != "" ) red = static_cast<vismodule::UInt8>( atoi( r.c_str() ) );
     else
     {
-        kvsMessageError( "'r' is not specified in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "'r' is not specified in <%s>.", tag_name.c_str() );
         return( false );
     }
 
     // g ="xxx"
-    kvs::UInt8 green = 0;
-    const std::string g = kvs::XMLElement::AttributeValue( element, "g" );
-    if ( g != "" ) green = static_cast<kvs::UInt8>( atoi( g.c_str() ) );
+    vismodule::UInt8 green = 0;
+    const std::string g = vismodule::XMLElement::AttributeValue( element, "g" );
+    if ( g != "" ) green = static_cast<vismodule::UInt8>( atoi( g.c_str() ) );
     else
     {
-        kvsMessageError( "'g' is not specified in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "'g' is not specified in <%s>.", tag_name.c_str() );
         return( false );
     }
 
     // b ="xxx"
-    kvs::UInt8 blue = 0;
-    const std::string b = kvs::XMLElement::AttributeValue( element, "b" );
-    if ( b != "" ) blue = static_cast<kvs::UInt8>( atoi( b.c_str() ) );
+    vismodule::UInt8 blue = 0;
+    const std::string b = vismodule::XMLElement::AttributeValue( element, "b" );
+    if ( b != "" ) blue = static_cast<vismodule::UInt8>( atoi( b.c_str() ) );
     else
     {
-        kvsMessageError( "'b' is not specified in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "'b' is not specified in <%s>.", tag_name.c_str() );
         return( false );
     }
 
-    m_color = kvs::RGBColor( red, green, blue );
+    m_color = vismodule::RGBColor( red, green, blue );
 
     return( true );
 }
@@ -236,39 +236,39 @@ const bool ColorMapValueTag::read( const kvs::XMLElement::SuperClass* element )
  *  @return true if the writing process is done successfully
  */
 /*===========================================================================*/
-const bool ColorMapValueTag::write( kvs::XMLNode::SuperClass* parent )
+const bool ColorMapValueTag::write( vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
-    kvs::XMLElement element( tag_name );
+    vismodule::XMLElement element( tag_name );
 
     {
         const std::string name( "s" );
-        const std::string value( kvs::String( m_scalar ).toStdString() );
+        const std::string value( vismodule::String( m_scalar ).toStdString() );
         element.setAttribute( name, value );
     }
 
     {
         const std::string name( "r" );
-        const std::string value( kvs::String( m_color.r() ).toStdString() );
+        const std::string value( vismodule::String( m_color.r() ).toStdString() );
         element.setAttribute( name, value );
     }
 
     {
         const std::string name( "g" );
-        const std::string value( kvs::String( m_color.g() ).toStdString() );
+        const std::string value( vismodule::String( m_color.g() ).toStdString() );
         element.setAttribute( name, value );
     }
 
     {
         const std::string name( "b" );
-        const std::string value( kvs::String( m_color.b() ).toStdString() );
+        const std::string value( vismodule::String( m_color.b() ).toStdString() );
         element.setAttribute( name, value );
     }
 
     BaseClass::m_node = parent->InsertEndChild( element );
     if ( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot insert <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot insert <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -277,4 +277,4 @@ const bool ColorMapValueTag::write( kvs::XMLNode::SuperClass* parent )
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

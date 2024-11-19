@@ -11,19 +11,19 @@
  *  $Id: Matrix.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MATRIX_H_INCLUDE
-#define KVS__MATRIX_H_INCLUDE
+#ifndef VIS_MODULE__MATRIX_H_INCLUDE
+#define VIS_MODULE__MATRIX_H_INCLUDE
 
 #include <iostream>
-#include <kvs/DebugNew>
-#include <kvs/ClassName>
-#include <kvs/Assert>
-#include <kvs/Math>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/DebugNew>
+#include <vismodule/ClassName>
+#include <vismodule/Assert>
+#include <vismodule/Math>
+#include <vismodule/IgnoreUnusedVariable>
 #include "Vector.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -34,13 +34,13 @@ namespace kvs
 template<typename T>
 class Matrix
 {
-    kvsClassName_without_virtual( kvs::Matrix );
+    visModuleClassName_without_virtual( vismodule::Matrix );
 
 private:
 
     size_t          m_nrows;    ///< Number of rows.
     size_t          m_ncolumns; ///< Number of columns.
-    kvs::Vector<T>* m_rows;     ///< Row vectors.
+    vismodule::Vector<T>* m_rows;     ///< Row vectors.
 
 public:
 
@@ -93,8 +93,8 @@ public:
 
 public:
 
-    const kvs::Vector<T>& operator []( const size_t index ) const;
-    kvs::Vector<T>&       operator []( const size_t index );
+    const vismodule::Vector<T>& operator []( const size_t index ) const;
+    vismodule::Vector<T>&       operator []( const size_t index );
 
 public:
 
@@ -196,7 +196,7 @@ public:
     /*======================================================================*/
     friend const Matrix operator *( const Matrix& lhs, const Matrix& rhs )
     {
-        KVS_ASSERT( lhs.ncolumns() == rhs.nrows() );
+        VIS_MODULE_ASSERT( lhs.ncolumns() == rhs.nrows() );
 
         // Alias.
         const size_t L = lhs.nrows();
@@ -230,15 +230,15 @@ public:
      *  @return Product of lhs and rhs.
      */
     /*======================================================================*/
-    friend const kvs::Vector<T> operator *( const Matrix& lhs, const kvs::Vector<T>& rhs )
+    friend const vismodule::Vector<T> operator *( const Matrix& lhs, const vismodule::Vector<T>& rhs )
     {
-        KVS_ASSERT( lhs.ncolumns() == rhs.size() );
+        VIS_MODULE_ASSERT( lhs.ncolumns() == rhs.size() );
 
         // Alias.
         const size_t nrows    = lhs.nrows();
         const size_t ncolumns = lhs.ncolumns();
 
-        kvs::Vector<T> result( nrows );
+        vismodule::Vector<T> result( nrows );
 
         for ( size_t r = 0; r < nrows; ++r )
         {
@@ -261,15 +261,15 @@ public:
      *  @return Product of lhs and rhs.
      */
     /*======================================================================*/
-    friend const kvs::Vector<T> operator *( const kvs::Vector<T>& lhs, const Matrix& rhs )
+    friend const vismodule::Vector<T> operator *( const vismodule::Vector<T>& lhs, const Matrix& rhs )
     {
-        KVS_ASSERT( lhs.size() == rhs.nrows() );
+        VIS_MODULE_ASSERT( lhs.size() == rhs.nrows() );
 
         // Alias.
         const size_t nrows    = rhs.nrows();
         const size_t ncolumns = rhs.ncolumns();
 
-        kvs::Vector<T> result( ncolumns );
+        vismodule::Vector<T> result( ncolumns );
 
         for ( size_t c = 0; c < ncolumns; ++c )
         {
@@ -436,7 +436,7 @@ inline Matrix<T>::Matrix( const Matrix& other )
 
     // Alias.
     const size_t          nrows = this->nrows();
-    kvs::Vector<T>* const m     = m_rows;
+    vismodule::Vector<T>* const m     = m_rows;
 
     for ( size_t r = 0; r < nrows; ++r )
     {
@@ -458,7 +458,7 @@ inline Matrix<T>& Matrix<T>::operator =( const Matrix& rhs )
 
     // Alias.
     const size_t          nrows = this->nrows();
-    kvs::Vector<T>* const m     = m_rows;
+    vismodule::Vector<T>* const m     = m_rows;
 
     for ( size_t r = 0; r < nrows; ++r )
     {
@@ -500,7 +500,7 @@ inline void Matrix<T>::setSize( const size_t nrows, const size_t ncolumns )
 
         if ( nrows != 0 && ncolumns != 0 )
         {
-            m_rows = new kvs::Vector<T>[ nrows ];
+            m_rows = new vismodule::Vector<T>[ nrows ];
 
             for ( size_t r = 0; r < nrows; ++r )
             {
@@ -521,7 +521,7 @@ template<typename T>
 inline void Matrix<T>::zero( void )
 {
     const size_t          nrows = this->nrows();
-    kvs::Vector<T>* const m     = m_rows;
+    vismodule::Vector<T>* const m     = m_rows;
 
     for ( size_t r = 0; r < nrows; ++r )
     {
@@ -537,11 +537,11 @@ inline void Matrix<T>::zero( void )
 template<typename T>
 inline void Matrix<T>::identity( void )
 {
-    KVS_ASSERT( this->nrows() == this->ncolumns() );
+    VIS_MODULE_ASSERT( this->nrows() == this->ncolumns() );
 
     // Alias.
     const size_t          nrows = this->nrows();
-    kvs::Vector<T>* const m     = m_rows;
+    vismodule::Vector<T>* const m     = m_rows;
 
     this->zero();
 
@@ -621,7 +621,7 @@ inline Matrix<T>& Matrix<T>::transpose( void )
     // Alias
     const size_t          nrows    = this->nrows();
     const size_t          ncolumns = this->ncolumns();
-    kvs::Vector<T>* const m        = m_rows;
+    vismodule::Vector<T>* const m        = m_rows;
 
     if ( nrows == ncolumns )
     {
@@ -679,14 +679,14 @@ inline const Matrix<T> Matrix<T>::inverse( T* determinant ) const
 template<typename T>
 inline Matrix<T>& Matrix<T>::inverse( T* determinant )
 {
-    KVS_ASSERT( this->nrows() == this->ncolumns() );
-    kvs::IgnoreUnusedVariable( determinant );
+    VIS_MODULE_ASSERT( this->nrows() == this->ncolumns() );
+    vismodule::IgnoreUnusedVariable( determinant );
 
     // Alias.
     const size_t          size     = this->nrows();
     const size_t          nrows    = this->nrows();
     const size_t          ncolumns = this->ncolumns();
-    kvs::Vector<T>* const m     = m_rows;
+    vismodule::Vector<T>* const m     = m_rows;
 
     Matrix<T> result( nrows, nrows );
     result.identity();
@@ -753,11 +753,11 @@ inline void Matrix<T>::print( void ) const
 template<typename T>
 inline const T Matrix<T>::trace( void ) const
 {
-    KVS_ASSERT( this->nrows() == this->ncolumns() );
+    VIS_MODULE_ASSERT( this->nrows() == this->ncolumns() );
 
     // Alias.
     const size_t          nrows = this->nrows();
-    kvs::Vector<T>* const m     = m_rows;
+    vismodule::Vector<T>* const m     = m_rows;
 
     T result = T( 0 );
 
@@ -779,7 +779,7 @@ inline const T Matrix<T>::trace( void ) const
 template<typename T>
 inline const T Matrix<T>::determinant( void ) const
 {
-    KVS_ASSERT( this->nrows() == this->ncolumns() );
+    VIS_MODULE_ASSERT( this->nrows() == this->ncolumns() );
 
     // Alias
     const size_t size     = this->nrows();
@@ -819,7 +819,7 @@ inline const size_t Matrix<T>::pivot( const size_t column ) const
 {
     // Alias
     const size_t          nrows = this->nrows();
-    kvs::Vector<T>* const m     = m_rows;
+    vismodule::Vector<T>* const m     = m_rows;
 
     // Search a max absolute value in the vector of a given row index.
     T      max = T( 0 );
@@ -827,7 +827,7 @@ inline const size_t Matrix<T>::pivot( const size_t column ) const
 
     for ( size_t r = column; r < nrows; r++ )
     {
-        const T abs = kvs::Math::Abs( m[r][column] );
+        const T abs = vismodule::Math::Abs( m[r][column] );
         if( abs > max )
         {
             max = abs;
@@ -848,9 +848,9 @@ inline const size_t Matrix<T>::pivot( const size_t column ) const
  */
 /*==========================================================================*/
 template<typename T>
-inline const kvs::Vector<T>& Matrix<T>::operator []( const size_t index ) const
+inline const vismodule::Vector<T>& Matrix<T>::operator []( const size_t index ) const
 {
-    KVS_ASSERT( index < this->nrows() );
+    VIS_MODULE_ASSERT( index < this->nrows() );
 
     return( m_rows[ index ] );
 }
@@ -865,9 +865,9 @@ inline const kvs::Vector<T>& Matrix<T>::operator []( const size_t index ) const
  */
 /*==========================================================================*/
 template<typename T>
-inline kvs::Vector<T>& Matrix<T>::operator []( const size_t index )
+inline vismodule::Vector<T>& Matrix<T>::operator []( const size_t index )
 {
-    KVS_ASSERT( index < this->nrows() );
+    VIS_MODULE_ASSERT( index < this->nrows() );
 
     return( m_rows[ index ] );
 }
@@ -884,12 +884,12 @@ inline kvs::Vector<T>& Matrix<T>::operator []( const size_t index )
 template<typename T>
 inline Matrix<T>& Matrix<T>::operator +=( const Matrix& rhs )
 {
-    KVS_ASSERT( this->nrows() == rhs.nrows() );
-    KVS_ASSERT( this->ncolumns() == rhs.ncolumns() );
+    VIS_MODULE_ASSERT( this->nrows() == rhs.nrows() );
+    VIS_MODULE_ASSERT( this->ncolumns() == rhs.ncolumns() );
 
     // Alias.
     const size_t          nrows = this->nrows();
-    kvs::Vector<T>* const m     = m_rows;
+    vismodule::Vector<T>* const m     = m_rows;
 
     for ( size_t r = 0; r < nrows; ++r )
     {
@@ -911,12 +911,12 @@ inline Matrix<T>& Matrix<T>::operator +=( const Matrix& rhs )
 template<typename T>
 inline Matrix<T>& Matrix<T>::operator -=( const Matrix& rhs )
 {
-    KVS_ASSERT( this->nrows() == rhs.nrows() );
-    KVS_ASSERT( this->ncolumns() == rhs.ncolumns() );
+    VIS_MODULE_ASSERT( this->nrows() == rhs.nrows() );
+    VIS_MODULE_ASSERT( this->ncolumns() == rhs.ncolumns() );
 
     // Alias.
     const size_t          nrows = this->nrows();
-    kvs::Vector<T>* const m     = m_rows;
+    vismodule::Vector<T>* const m     = m_rows;
 
     for ( size_t r = 0; r < nrows; ++r )
     {
@@ -959,7 +959,7 @@ inline Matrix<T>& Matrix<T>::operator *=( const T rhs )
 {
     // Alias.
     const size_t          nrows = this->nrows();
-    kvs::Vector<T>* const m     = m_rows;
+    vismodule::Vector<T>* const m     = m_rows;
 
     for ( size_t r = 0; r < nrows; ++r )
     {
@@ -983,7 +983,7 @@ inline Matrix<T>& Matrix<T>::operator /=( const T rhs )
 {
     // Alias.
     const size_t          nrows = this->nrows();
-    kvs::Vector<T>* const m     = m_rows;
+    vismodule::Vector<T>* const m     = m_rows;
 
     for ( size_t r = 0; r < nrows; ++r )
     {
@@ -1009,6 +1009,6 @@ inline const Matrix<T> Matrix<T>::operator -( void ) const
     return( result );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MATRIX_H_INCLUDE
+#endif // VIS_MODULE__MATRIX_H_INCLUDE

@@ -13,10 +13,10 @@
  */
 /*****************************************************************************/
 #include "PaintEventListener.h"
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -26,7 +26,7 @@ namespace kvs
 /*===========================================================================*/
 PaintEventListener::PaintEventListener( void )
 {
-    kvs::EventListener::setEventType( kvs::EventBase::PaintEvent );
+    vismodule::EventListener::setEventType( vismodule::EventBase::PaintEvent );
 }
 
 /*===========================================================================*/
@@ -44,11 +44,11 @@ PaintEventListener::~PaintEventListener( void )
  *  @param  event [in] pointer to the event
  */
 /*===========================================================================*/
-void PaintEventListener::onEvent( kvs::EventBase* event )
+void PaintEventListener::onEvent( vismodule::EventBase* event )
 {
-    kvs::IgnoreUnusedVariable( event );
+    vismodule::IgnoreUnusedVariable( event );
 
     this->update();
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

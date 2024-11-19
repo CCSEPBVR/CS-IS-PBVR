@@ -15,7 +15,7 @@
 #include "MarchingPyramidTable.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -24,8 +24,8 @@ namespace kvs
  */
 /*==========================================================================*/
 MarchingPyramid::MarchingPyramid( void ):
-    kvs::MapperBase(),
-    kvs::PolygonObject(),
+    vismodule::MapperBase(),
+    vismodule::PolygonObject(),
     m_isolevel( 0 ),
     m_duplication( true )
 {
@@ -42,13 +42,13 @@ MarchingPyramid::MarchingPyramid( void ):
  */
 /*==========================================================================*/
 MarchingPyramid::MarchingPyramid(
-    const kvs::UnstructuredVolumeObject* volume,
+    const vismodule::UnstructuredVolumeObject* volume,
     const double                       isolevel,
     const NormalType                   normal_type,
     const bool                         duplication,
-    const kvs::TransferFunction&       transfer_function ):
-    kvs::MapperBase( transfer_function ),
-    kvs::PolygonObject(),
+    const vismodule::TransferFunction&       transfer_function ):
+    vismodule::MapperBase( transfer_function ),
+    vismodule::PolygonObject(),
     m_duplication( duplication )
 {
     SuperClass::setNormalType( normal_type );
@@ -86,30 +86,30 @@ void MarchingPyramid::setIsolevel( const double isolevel )
  *  @return pointer to the polygon object
  */
 /*===========================================================================*/
-kvs::ObjectBase* MarchingPyramid::exec( const kvs::ObjectBase* object )
+vismodule::ObjectBase* MarchingPyramid::exec( const vismodule::ObjectBase* object )
 {
-    const kvs::ObjectBase::ObjectType object_type = object->objectType();
-    if ( object_type == kvs::ObjectBase::Geometry )
+    const vismodule::ObjectBase::ObjectType object_type = object->objectType();
+    if ( object_type == vismodule::ObjectBase::Geometry )
     {
-        kvsMessageError("Geometry object is not supported.");
+        visModuleMessageError("Geometry object is not supported.");
         return( NULL );
     }
 
     // In the case of VertexNormal-type, the duplicated vertices are forcibly deleted.
-    if ( SuperClass::normalType() == kvs::PolygonObject::VertexNormal )
+    if ( SuperClass::normalType() == vismodule::PolygonObject::VertexNormal )
     {
         m_duplication = false;
     }
 
-    const kvs::VolumeObjectBase* volume = reinterpret_cast<const kvs::VolumeObjectBase*>( object );
-    const kvs::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
-    if ( volume_type == kvs::VolumeObjectBase::Unstructured )
+    const vismodule::VolumeObjectBase* volume = reinterpret_cast<const vismodule::VolumeObjectBase*>( object );
+    const vismodule::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
+    if ( volume_type == vismodule::VolumeObjectBase::Unstructured )
     {
-        this->mapping( reinterpret_cast<const kvs::UnstructuredVolumeObject*>( object ) );
+        this->mapping( reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( object ) );
     }
-    else // volume_type == kvs::VolumeObjectBase::Unstructured
+    else // volume_type == vismodule::VolumeObjectBase::Unstructured
     {
-        kvsMessageError("Unstructured volume object is not supported.");
+        visModuleMessageError("Unstructured volume object is not supported.");
         return( NULL );
     }
 
@@ -122,12 +122,12 @@ kvs::ObjectBase* MarchingPyramid::exec( const kvs::ObjectBase* object )
  *  @param volume [in] pointer to the volume object
  */
 /*==========================================================================*/
-void MarchingPyramid::mapping( const kvs::UnstructuredVolumeObject* volume )
+void MarchingPyramid::mapping( const vismodule::UnstructuredVolumeObject* volume )
 {
     // Check whether the volume can be processed or not.
     if ( volume->veclen() != 1 )
     {
-        kvsMessageError("The input volume is not a sclar field data.");
+        visModuleMessageError("The input volume is not a sclar field data.");
         return;
     }
 
@@ -138,19 +138,19 @@ void MarchingPyramid::mapping( const kvs::UnstructuredVolumeObject* volume )
 
     // Extract surfaces.
     const std::type_info& type = volume->values().typeInfo()->type();
-    if (      type == typeid( kvs::Int8   ) ) this->extract_surfaces<kvs::Int8>( volume );
-    else if ( type == typeid( kvs::Int16  ) ) this->extract_surfaces<kvs::Int16>( volume );
-    else if ( type == typeid( kvs::Int32  ) ) this->extract_surfaces<kvs::Int32>( volume );
-    else if ( type == typeid( kvs::Int64  ) ) this->extract_surfaces<kvs::Int64>( volume );
-    else if ( type == typeid( kvs::UInt8  ) ) this->extract_surfaces<kvs::UInt8>( volume );
-    else if ( type == typeid( kvs::UInt16 ) ) this->extract_surfaces<kvs::UInt16>( volume );
-    else if ( type == typeid( kvs::UInt32 ) ) this->extract_surfaces<kvs::UInt32>( volume );
-    else if ( type == typeid( kvs::UInt64 ) ) this->extract_surfaces<kvs::UInt64>( volume );
-    else if ( type == typeid( kvs::Real32 ) ) this->extract_surfaces<kvs::Real32>( volume );
-    else if ( type == typeid( kvs::Real64 ) ) this->extract_surfaces<kvs::Real64>( volume );
+    if (      type == typeid( vismodule::Int8   ) ) this->extract_surfaces<vismodule::Int8>( volume );
+    else if ( type == typeid( vismodule::Int16  ) ) this->extract_surfaces<vismodule::Int16>( volume );
+    else if ( type == typeid( vismodule::Int32  ) ) this->extract_surfaces<vismodule::Int32>( volume );
+    else if ( type == typeid( vismodule::Int64  ) ) this->extract_surfaces<vismodule::Int64>( volume );
+    else if ( type == typeid( vismodule::UInt8  ) ) this->extract_surfaces<vismodule::UInt8>( volume );
+    else if ( type == typeid( vismodule::UInt16 ) ) this->extract_surfaces<vismodule::UInt16>( volume );
+    else if ( type == typeid( vismodule::UInt32 ) ) this->extract_surfaces<vismodule::UInt32>( volume );
+    else if ( type == typeid( vismodule::UInt64 ) ) this->extract_surfaces<vismodule::UInt64>( volume );
+    else if ( type == typeid( vismodule::Real32 ) ) this->extract_surfaces<vismodule::Real32>( volume );
+    else if ( type == typeid( vismodule::Real64 ) ) this->extract_surfaces<vismodule::Real64>( volume );
     else
     {
-        kvsMessageError("Unsupported data type '%s' of the volume.",
+        visModuleMessageError("Unsupported data type '%s' of the volume.",
                         volume->values().typeInfo()->typeName() );
     }
 }
@@ -162,7 +162,7 @@ void MarchingPyramid::mapping( const kvs::UnstructuredVolumeObject* volume )
  */
 /*==========================================================================*/
 template <typename T>
-void MarchingPyramid::extract_surfaces( const kvs::UnstructuredVolumeObject* volume )
+void MarchingPyramid::extract_surfaces( const vismodule::UnstructuredVolumeObject* volume )
 {
     if ( m_duplication ) this->extract_surfaces_with_duplication<T>( volume );
 }
@@ -175,20 +175,20 @@ void MarchingPyramid::extract_surfaces( const kvs::UnstructuredVolumeObject* vol
 /*==========================================================================*/
 template <typename T>
 void MarchingPyramid::extract_surfaces_with_duplication(
-    const kvs::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject* volume )
 {
     // Calculated the coordinate data array and the normal vector array.
-    std::vector<kvs::Real32> coords;
-    std::vector<kvs::Real32> normals;
+    std::vector<vismodule::Real32> coords;
+    std::vector<vismodule::Real32> normals;
 
-    const kvs::UInt32 ncells( volume->ncells() );
-    const kvs::UInt32* connections =
-        static_cast<const kvs::UInt32*>( volume->connections().pointer() );
+    const vismodule::UInt32 ncells( volume->ncells() );
+    const vismodule::UInt32* connections =
+        static_cast<const vismodule::UInt32*>( volume->connections().pointer() );
 
     // Extract surfaces.
     size_t index = 0;
     size_t local_index[5];
-    for ( kvs::UInt32 cell = 0; cell < ncells; ++cell, index += 5 )
+    for ( vismodule::UInt32 cell = 0; cell < ncells; ++cell, index += 5 )
     {
         // Calculate the indices of the target cell.
         local_index[0] = connections[ index + 0 ];
@@ -225,23 +225,23 @@ void MarchingPyramid::extract_surfaces_with_duplication(
 
             // Calculate coordinates of the vertices which are composed
             // of the triangle polygon.
-            const kvs::Vector3f vertex0( this->interpolate_vertex<T>( v0, v1 ) );
+            const vismodule::Vector3f vertex0( this->interpolate_vertex<T>( v0, v1 ) );
             coords.push_back( vertex0.x() );
             coords.push_back( vertex0.y() );
             coords.push_back( vertex0.z() );
 
-            const kvs::Vector3f vertex1( this->interpolate_vertex<T>( v2, v3 ) );
+            const vismodule::Vector3f vertex1( this->interpolate_vertex<T>( v2, v3 ) );
             coords.push_back( vertex1.x() );
             coords.push_back( vertex1.y() );
             coords.push_back( vertex1.z() );
 
-            const kvs::Vector3f vertex2( this->interpolate_vertex<T>( v4, v5 ) );
+            const vismodule::Vector3f vertex2( this->interpolate_vertex<T>( v4, v5 ) );
             coords.push_back( vertex2.x() );
             coords.push_back( vertex2.y() );
             coords.push_back( vertex2.z() );
 
             // Calculate a normal vector for the triangle polygon.
-            const kvs::Vector3f normal( ( vertex1 - vertex0 ).cross( vertex2 - vertex0 ) );
+            const vismodule::Vector3f normal( ( vertex1 - vertex0 ).cross( vertex2 - vertex0 ) );
             normals.push_back( normal.x() );
             normals.push_back( normal.y() );
             normals.push_back( normal.z() );
@@ -249,16 +249,16 @@ void MarchingPyramid::extract_surfaces_with_duplication(
     } // end of loop-cell
 
     // Calculate the polygon color for the isolevel.
-    const kvs::RGBColor color = this->calculate_color<T>();
+    const vismodule::RGBColor color = this->calculate_color<T>();
 
     if( coords.size() > 0 ){
-        SuperClass::setCoords( kvs::ValueArray<kvs::Real32>( coords ) );
+        SuperClass::setCoords( vismodule::ValueArray<vismodule::Real32>( coords ) );
         SuperClass::setColor( color );
-        SuperClass::setNormals( kvs::ValueArray<kvs::Real32>( normals ) );
+        SuperClass::setNormals( vismodule::ValueArray<vismodule::Real32>( normals ) );
         SuperClass::setOpacity( 255 );
-        SuperClass::setPolygonType( kvs::PolygonObject::Triangle );
-        SuperClass::setColorType( kvs::PolygonObject::PolygonColor );
-        SuperClass::setNormalType( kvs::PolygonObject::PolygonNormal );
+        SuperClass::setPolygonType( vismodule::PolygonObject::Triangle );
+        SuperClass::setColorType( vismodule::PolygonObject::PolygonColor );
+        SuperClass::setNormalType( vismodule::PolygonObject::PolygonNormal );
     }
 }
 
@@ -294,25 +294,25 @@ const size_t MarchingPyramid::calculate_table_index( const size_t* local_index )
  */
 /*==========================================================================*/
 template <typename T>
-const kvs::Vector3f MarchingPyramid::interpolate_vertex(
+const vismodule::Vector3f MarchingPyramid::interpolate_vertex(
     const int vertex0,
     const int vertex1 ) const
 {
     const T* const values = static_cast<const T*>( BaseClass::m_volume->values().pointer() );
-    const kvs::Real32* const coords = BaseClass::m_volume->coords().pointer();
+    const vismodule::Real32* const coords = BaseClass::m_volume->coords().pointer();
 
     const size_t coord0_index = 3 * vertex0;
     const size_t coord1_index = 3 * vertex1;
 
     const double v0 = static_cast<double>( values[ vertex0 ] );
     const double v1 = static_cast<double>( values[ vertex1 ] );
-    const float ratio = static_cast<float>( kvs::Math::Abs( ( m_isolevel - v0 ) / ( v1 - v0 ) ) );
+    const float ratio = static_cast<float>( vismodule::Math::Abs( ( m_isolevel - v0 ) / ( v1 - v0 ) ) );
 
     const float x = coords[coord0_index]   + ratio * ( coords[coord1_index]   - coords[coord0_index] );
     const float y = coords[coord0_index+1] + ratio * ( coords[coord1_index+1] - coords[coord0_index+1] );
     const float z = coords[coord0_index+2] + ratio * ( coords[coord1_index+2] - coords[coord0_index+2] );
 
-    return( kvs::Vector3f( x, y, z ) );
+    return( vismodule::Vector3f( x, y, z ) );
 }
 
 /*==========================================================================*/
@@ -322,7 +322,7 @@ const kvs::Vector3f MarchingPyramid::interpolate_vertex(
  */
 /*==========================================================================*/
 template <typename T>
-const kvs::RGBColor MarchingPyramid::calculate_color( void )
+const vismodule::RGBColor MarchingPyramid::calculate_color( void )
 {
     // Calculate the min/max values of the node data.
     if ( !BaseClass::m_volume->hasMinMaxValues() )
@@ -330,10 +330,10 @@ const kvs::RGBColor MarchingPyramid::calculate_color( void )
         BaseClass::m_volume->updateMinMaxValues();
     }
 
-    const kvs::Real64 min_value = BaseClass::m_volume->minValue();
-    const kvs::Real64 max_value = BaseClass::m_volume->maxValue();
-    const kvs::Real64 normalize_factor = 255.0 / ( max_value - min_value );
-    const kvs::UInt8  index = static_cast<kvs::UInt8>( normalize_factor * ( m_isolevel - min_value ) );
+    const vismodule::Real64 min_value = BaseClass::m_volume->minValue();
+    const vismodule::Real64 max_value = BaseClass::m_volume->maxValue();
+    const vismodule::Real64 normalize_factor = 255.0 / ( max_value - min_value );
+    const vismodule::UInt8  index = static_cast<vismodule::UInt8>( normalize_factor * ( m_isolevel - min_value ) );
 
     return( BaseClass::transferFunction().colorMap()[ index ] );
 }
@@ -370,4 +370,4 @@ const size_t MarchingPyramid::calculate_special_table_index( const size_t* local
     return( table_index );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

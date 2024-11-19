@@ -12,21 +12,21 @@
  *  $Id: Ply.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__PLY_H_INCLUDE
-#define KVS__PLY_H_INCLUDE
+#ifndef VIS_MODULE__PLY_H_INCLUDE
+#define VIS_MODULE__PLY_H_INCLUDE
 
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <kvs/FileFormatBase>
-#include <kvs/Vector3>
-#include <kvs/ValueArray>
-#include <kvs/ClassName>
-#include <kvs/Platform>
+#include <vismodule/FileFormatBase>
+#include <vismodule/Vector3>
+#include <vismodule/ValueArray>
+#include <vismodule/ClassName>
+#include <vismodule/Platform>
 #include "PlyFile.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -34,16 +34,16 @@ namespace kvs
  *  @brief  PLY class.
  */
 /*===========================================================================*/
-class Ply : public kvs::FileFormatBase
+class Ply : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::Ply );
+    visModuleClassName( vismodule::Ply );
 
 public:
 
     enum FileType
     {
         Ascii = PLY_ASCII, // ascii type
-#if defined( KVS_PLATFORM_LITTLE_ENDIAN )
+#if defined( VIS_MODULE_PLATFORM_LITTLE_ENDIAN )
         Binary = PLY_BINARY_LE // binary type (little endian)
 #else
         Binary = PLY_BINARY_BE // binary type (big endian)
@@ -55,15 +55,15 @@ protected:
     FileType           m_file_type; ///< file type
     size_t             m_nverts; ///< number of vertices
     size_t             m_nfaces; ///< number of faces
-    kvs::ValueArray<kvs::Real32> m_coords; ///< coordinate value array
-    kvs::ValueArray<kvs::UInt8>  m_colors; ///< color value array
-    kvs::ValueArray<kvs::Real32> m_normals; ///< normal value array
-    kvs::ValueArray<kvs::UInt32> m_connections; ///< connection array
+    vismodule::ValueArray<vismodule::Real32> m_coords; ///< coordinate value array
+    vismodule::ValueArray<vismodule::UInt8>  m_colors; ///< color value array
+    vismodule::ValueArray<vismodule::Real32> m_normals; ///< normal value array
+    vismodule::ValueArray<vismodule::UInt32> m_connections; ///< connection array
     bool               m_has_connections; ///< true, if the connections is included
     bool               m_has_colors; ///< true, if the colors is included
     bool               m_has_normals; ///< true, if the normals is included
-    kvs::Vector3f      m_min_coord; ///< min. coordinate
-    kvs::Vector3f      m_max_coord; ///< max. coordinate
+    vismodule::Vector3f      m_min_coord; ///< min. coordinate
+    vismodule::Vector3f      m_max_coord; ///< max. coordinate
 
 public:
 
@@ -103,29 +103,29 @@ public:
 
     const bool hasNormals( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& coords( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& coords( void ) const;
 
-    const kvs::ValueArray<kvs::UInt8>& colors( void ) const;
+    const vismodule::ValueArray<vismodule::UInt8>& colors( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& normals( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& normals( void ) const;
 
-    const kvs::ValueArray<kvs::UInt32>& connections( void ) const;
+    const vismodule::ValueArray<vismodule::UInt32>& connections( void ) const;
 
-    const kvs::Vector3f& minCoord( void ) const;
+    const vismodule::Vector3f& minCoord( void ) const;
 
-    const kvs::Vector3f& maxCoord( void ) const;
+    const vismodule::Vector3f& maxCoord( void ) const;
 
 public:
 
     void setFileType( const FileType file_type );
 
-    void setCoords( const kvs::ValueArray<kvs::Real32>& coords );
+    void setCoords( const vismodule::ValueArray<vismodule::Real32>& coords );
 
-    void setColors( const kvs::ValueArray<kvs::UInt8>& colors );
+    void setColors( const vismodule::ValueArray<vismodule::UInt8>& colors );
 
-    void setNormals( const kvs::ValueArray<kvs::Real32>& normals );
+    void setNormals( const vismodule::ValueArray<vismodule::Real32>& normals );
 
-    void setConnections( const kvs::ValueArray<kvs::UInt32>& connections );
+    void setConnections( const vismodule::ValueArray<vismodule::UInt32>& connections );
 
 public:
 
@@ -134,6 +134,6 @@ public:
     const bool write( const std::string& filename );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__PLY_H_INCLUDE
+#endif // VIS_MODULE__PLY_H_INCLUDE

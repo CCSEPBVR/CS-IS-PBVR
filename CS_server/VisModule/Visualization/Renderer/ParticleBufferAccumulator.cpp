@@ -14,7 +14,7 @@
 #include "ParticleBufferAccumulator.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -29,7 +29,7 @@ ParticleBufferAccumulator::ParticleBufferAccumulator(
     const size_t width,
     const size_t height,
     const size_t subpixel_level ):
-    kvs::ParticleBuffer( width, height, subpixel_level )
+    vismodule::ParticleBuffer( width, height, subpixel_level )
 {
     this->create( width, height, subpixel_level );
 }
@@ -98,15 +98,15 @@ void ParticleBufferAccumulator::clear( void )
 /*==========================================================================*/
 void ParticleBufferAccumulator::accumulate(
     const size_t               id,
-    const kvs::ParticleBuffer* buffer )
+    const vismodule::ParticleBuffer* buffer )
 {
     const size_t nsubpixels = m_width * m_height * m_subpixel_level * m_subpixel_level;
     for( size_t index = 0; index < nsubpixels; index++ )
     {
-        const kvs::Real32 buffer_depth = buffer->depth( index );
+        const vismodule::Real32 buffer_depth = buffer->depth( index );
         if( buffer_depth > 0.0f )
         {
-            const kvs::UInt32 buffer_index = buffer->index( index );
+            const vismodule::UInt32 buffer_index = buffer->index( index );
             this->add( index, id, buffer_depth, buffer_index );
         }
     }
@@ -124,10 +124,10 @@ void ParticleBufferAccumulator::accumulate(
 void ParticleBufferAccumulator::add(
     const size_t      index,
     const size_t      id,
-    const kvs::Real32 depth,
-    const kvs::UInt32 vindex )
+    const vismodule::Real32 depth,
+    const vismodule::UInt32 vindex )
 {
-    const kvs::Real32 buffer_depth = SuperClass::m_depth_buffer[index];
+    const vismodule::Real32 buffer_depth = SuperClass::m_depth_buffer[index];
     if( buffer_depth > 0.0f )
     {
         // Detect collision.
@@ -135,7 +135,7 @@ void ParticleBufferAccumulator::add(
         {
             SuperClass::m_depth_buffer[index] = depth;
             SuperClass::m_index_buffer[index] = vindex;
-            m_id_buffer[index] = static_cast<kvs::UInt8>( id );
+            m_id_buffer[index] = static_cast<vismodule::UInt8>( id );
         }
     }
     else
@@ -143,7 +143,7 @@ void ParticleBufferAccumulator::add(
         // Not collision.
         SuperClass::m_depth_buffer[index] = depth;
         SuperClass::m_index_buffer[index] = vindex;
-        m_id_buffer[index] = static_cast<kvs::UInt8>( id );
+        m_id_buffer[index] = static_cast<vismodule::UInt8>( id );
     }
 }
 
@@ -159,8 +159,8 @@ void ParticleBufferAccumulator::add(
 void ParticleBufferAccumulator::createImage(
     ParticleBufferAccumulator::ObjectList&   object_list,
     ParticleBufferAccumulator::RendererList& renderer_list,
-    kvs::ValueArray<kvs::UInt8>*  color,
-    kvs::ValueArray<kvs::Real32>* depth )
+    vismodule::ValueArray<vismodule::UInt8>*  color,
+    vismodule::ValueArray<vismodule::Real32>* depth )
 {
     const float inv_ssize = 1.0f / ( m_subpixel_level * m_subpixel_level );
     const float normalize_alpha = 255.0f * inv_ssize;
@@ -188,24 +188,24 @@ void ParticleBufferAccumulator::createImage(
                     if( m_depth_buffer[bindex] > 0.0f )
                     {
                         const size_t id = m_id_buffer[ bindex ];
-                        const kvs::PointObject*            object   = object_list[id];
-                        const kvs::ParticleVolumeRenderer* renderer = renderer_list[id];
+                        const vismodule::PointObject*            object   = object_list[id];
+                        const vismodule::ParticleVolumeRenderer* renderer = renderer_list[id];
 
                         const size_t point_index3 = 3 * m_index_buffer[bindex];
 
-                        kvs::RGBColor color( object->colors().pointer() + point_index3 );
+                        vismodule::RGBColor color( object->colors().pointer() + point_index3 );
                         if( renderer->isEnabledShading() )
                         {
-                            const kvs::Shader::shader_type* shader = renderer->particleBuffer()->shader();
-                            const kvs::Vector3f vertex( object->coords().pointer() + point_index3 );
-                            const kvs::Vector3f normal( object->normals().pointer() + point_index3 );
+                            const vismodule::Shader::shader_type* shader = renderer->particleBuffer()->shader();
+                            const vismodule::Vector3f vertex( object->coords().pointer() + point_index3 );
+                            const vismodule::Vector3f normal( object->normals().pointer() + point_index3 );
                             color = shader->shadedColor( color, vertex, normal );
                         }
 
                         R += color.r();
                         G += color.g();
                         B += color.b();
-                        D = kvs::Math::Max( D, m_depth_buffer[ bindex ] );
+                        D = vismodule::Math::Max( D, m_depth_buffer[ bindex ] );
 
                         npoints++;
                     }
@@ -216,13 +216,13 @@ void ParticleBufferAccumulator::createImage(
             G *= inv_ssize;
             B *= inv_ssize;
 
-            (*color)[ pindex4 + 0 ] = static_cast<kvs::UInt8>(R);
-            (*color)[ pindex4 + 1 ] = static_cast<kvs::UInt8>(G);
-            (*color)[ pindex4 + 2 ] = static_cast<kvs::UInt8>(B);
-            (*color)[ pindex4 + 3 ] = static_cast<kvs::UInt8>( npoints * normalize_alpha );
+            (*color)[ pindex4 + 0 ] = static_cast<vismodule::UInt8>(R);
+            (*color)[ pindex4 + 1 ] = static_cast<vismodule::UInt8>(G);
+            (*color)[ pindex4 + 2 ] = static_cast<vismodule::UInt8>(B);
+            (*color)[ pindex4 + 3 ] = static_cast<vismodule::UInt8>( npoints * normalize_alpha );
             (*depth)[ pindex ]      = ( npoints == 0 ) ? 1.0f : D;
         }
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

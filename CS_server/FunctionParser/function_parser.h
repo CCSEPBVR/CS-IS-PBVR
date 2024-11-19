@@ -14,8 +14,8 @@
  *  $Revision: 1.6 $
  */
 /*****************************************************************************/
-#ifndef KVS__FUNCTION_PARSER_H_INCLUDE
-#define KVS__FUNCTION_PARSER_H_INCLUDE
+#ifndef VIS_MODULE__FUNCTION_PARSER_H_INCLUDE
+#define VIS_MODULE__FUNCTION_PARSER_H_INCLUDE
 
 #include <string>
 #include "function.h"
@@ -97,7 +97,7 @@ public:
         m_func = new char [size];
         if ( !m_func )
         {
-            //KVS_MACRO_ERROR_MESSAGE("Cannot allocate memory for the function.");
+            //VIS_MODULE_MACRO_ERROR_MESSAGE("Cannot allocate memory for the function.");
             std::cout << "Cannot allocate memory for the function.\n";
             return;
         }
@@ -153,4 +153,4 @@ private:
 
 } // end of namespace FuncParser
 
-#endif // KVS__FUNCTION_PARSER_H_INCLUDE
+#endif // VIS_MODULE__FUNCTION_PARSER_H_INCLUDE

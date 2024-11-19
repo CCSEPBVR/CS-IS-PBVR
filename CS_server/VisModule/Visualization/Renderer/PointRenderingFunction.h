@@ -11,11 +11,11 @@
  *  $Id: PointRenderingFunction.h 768 2011-05-20 06:45:32Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__POINT_RENDERING_FUNCTION_H_INCLUDE
-#define KVS__POINT_RENDERING_FUNCTION_H_INCLUDE
+#ifndef VIS_MODULE__POINT_RENDERING_FUNCTION_H_INCLUDE
+#define VIS_MODULE__POINT_RENDERING_FUNCTION_H_INCLUDE
 
-#include <kvs/PointObject>
-#include <kvs/RGBColor>
+#include <vismodule/PointObject>
+#include <vismodule/RGBColor>
 
 
 namespace
@@ -33,12 +33,12 @@ namespace
  *  @param point [in] pointer to the point object
  */
 /*==========================================================================*/
-void Rendering_S_C_Ns( const kvs::PointObject* point )
+void Rendering_S_C_Ns( const vismodule::PointObject* point )
 {
     glEnable( GL_NORMALIZE );
 
     const float         size  = point->size();
-    const kvs::RGBColor color = point->color();
+    const vismodule::RGBColor color = point->color();
 
     glPointSize( size );
     glColor3ub( color.r(), color.g(), color.b() );
@@ -65,10 +65,10 @@ void Rendering_S_C_Ns( const kvs::PointObject* point )
  *  @param point [in] pointer to the point object
  */
 /*==========================================================================*/
-void Rendering_S_C( const kvs::PointObject* point )
+void Rendering_S_C( const vismodule::PointObject* point )
 {
     const float         size  = point->size();
-    const kvs::RGBColor color = point->color();
+    const vismodule::RGBColor color = point->color();
 
     glPointSize( size );
     glColor3ub( color.r(), color.g(), color.b() );
@@ -92,7 +92,7 @@ void Rendering_S_C( const kvs::PointObject* point )
  *  @param point [in] pointer to the point object
  */
 /*==========================================================================*/
-void Rendering_S_Cs_Ns( const kvs::PointObject* point )
+void Rendering_S_Cs_Ns( const vismodule::PointObject* point )
 {
     glEnable( GL_NORMALIZE );
 
@@ -122,7 +122,7 @@ void Rendering_S_Cs_Ns( const kvs::PointObject* point )
  *  @param point [in] pointer to the point object
  */
 /*==========================================================================*/
-void Rendering_S_Cs( const kvs::PointObject* point )
+void Rendering_S_Cs( const vismodule::PointObject* point )
 {
     const float size = point->size();
     glPointSize( size );
@@ -148,7 +148,7 @@ void Rendering_S_Cs( const kvs::PointObject* point )
  *  @param point [in] pointer to the point object
  */
 /*==========================================================================*/
-void Rendering_S( const kvs::PointObject* point )
+void Rendering_S( const vismodule::PointObject* point )
 {
     const float size = point->size();
     glPointSize( size );
@@ -172,11 +172,11 @@ void Rendering_S( const kvs::PointObject* point )
  *  @param point [in] pointer to the point object
  */
 /*==========================================================================*/
-void Rendering_Ss_C_Ns( const kvs::PointObject* point )
+void Rendering_Ss_C_Ns( const vismodule::PointObject* point )
 {
     glEnable( GL_NORMALIZE );
 
-    const kvs::RGBColor color = point->color();
+    const vismodule::RGBColor color = point->color();
     glColor3ub( color.r(), color.g(), color.b() );
 
     const float* size   = point->sizes().pointer();
@@ -203,9 +203,9 @@ void Rendering_Ss_C_Ns( const kvs::PointObject* point )
  *  @param point [in] pointer to the point object
  */
 /*==========================================================================*/
-void Rendering_Ss_C( const kvs::PointObject* point )
+void Rendering_Ss_C( const vismodule::PointObject* point )
 {
-    const kvs::RGBColor color = point->color();
+    const vismodule::RGBColor color = point->color();
     glColor3ub( color.r(), color.g(), color.b() );
 
     const float* size   = point->sizes().pointer();
@@ -230,7 +230,7 @@ void Rendering_Ss_C( const kvs::PointObject* point )
  *  @param point [in] pointer to the point object
  */
 /*==========================================================================*/
-void Rendering_Ss_Cs_Ns( const kvs::PointObject* point )
+void Rendering_Ss_Cs_Ns( const vismodule::PointObject* point )
 {
     glEnable( GL_NORMALIZE );
 
@@ -260,7 +260,7 @@ void Rendering_Ss_Cs_Ns( const kvs::PointObject* point )
  *  @param point [in] pointer to the point object
  */
 /*==========================================================================*/
-void Rendering_Ss_Cs( const kvs::PointObject* point )
+void Rendering_Ss_Cs( const vismodule::PointObject* point )
 {
     const float*         size   = point->sizes().pointer();
     const float*         vertex = point->coords().pointer();
@@ -286,7 +286,7 @@ void Rendering_Ss_Cs( const kvs::PointObject* point )
  *  @param point [in] pointer to the point object
  */
 /*==========================================================================*/
-void Rendering_Ss( const kvs::PointObject* point )
+void Rendering_Ss( const vismodule::PointObject* point )
 {
     const float* size   = point->sizes().pointer();
     const float* vertex = point->coords().pointer();
@@ -304,7 +304,7 @@ void Rendering_Ss( const kvs::PointObject* point )
     }
 };
 
-typedef void (*PointRenderingFunctionType)( const kvs::PointObject* point );
+typedef void (*PointRenderingFunctionType)( const vismodule::PointObject* point );
 
 enum PointRenderingType
 {
@@ -335,7 +335,7 @@ PointRenderingFunctionType Rendering[NumberOfRenderingTypes] =
     &Rendering_Ss,
 };
 
-PointRenderingType GetPointRenderingType( const kvs::PointObject* point )
+PointRenderingType GetPointRenderingType( const vismodule::PointObject* point )
 {
     const size_t nsizes    = point->nsizes();
     const size_t ncolors   = point->ncolors();
@@ -361,7 +361,7 @@ PointRenderingType GetPointRenderingType( const kvs::PointObject* point )
     }
 };
 
-void PointRenderingFunction( const kvs::PointObject* point )
+void PointRenderingFunction( const vismodule::PointObject* point )
 {
     if( point->nvertices() > 0 )
     {
@@ -372,4 +372,4 @@ void PointRenderingFunction( const kvs::PointObject* point )
 
 } // end of namespace
 
-#endif // KVS__POINT_RENDERING_FUNCTION_H_INCLUDE
+#endif // VIS_MODULE__POINT_RENDERING_FUNCTION_H_INCLUDE

@@ -12,16 +12,16 @@
  *  $Id: QRSolver.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__QR_SOLVER_H_INCLUDE
-#define KVS__QR_SOLVER_H_INCLUDE
+#ifndef VIS_MODULE__QR_SOLVER_H_INCLUDE
+#define VIS_MODULE__QR_SOLVER_H_INCLUDE
 
-#include <kvs/Vector>
-#include <kvs/Matrix>
-#include <kvs/ClassName>
+#include <vismodule/Vector>
+#include <vismodule/Matrix>
+#include <vismodule/ClassName>
 #include "QRDecomposer.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,9 +30,9 @@ namespace kvs
  */
 /*===========================================================================*/
 template <typename T>
-class QRSolver : public kvs::Vector<T>
+class QRSolver : public vismodule::Vector<T>
 {
-    kvsClassName( kvs::QRSolver );
+    visModuleClassName( vismodule::QRSolver );
 
 protected:
 
@@ -44,12 +44,12 @@ public:
     {
     };
 
-    QRSolver( const kvs::QRDecomposer<T>& decomposer )
+    QRSolver( const vismodule::QRDecomposer<T>& decomposer )
     {
         m_decomposer = decomposer;
     };
 
-    QRSolver( const kvs::Matrix<T>& A, const kvs::Vector<T>& b )
+    QRSolver( const vismodule::Matrix<T>& A, const vismodule::Vector<T>& b )
     {
         this->solve( A, b );
     };
@@ -60,7 +60,7 @@ public:
 
 public:
 
-    QRSolver<T>& operator = ( const kvs::Vector<T>& v )
+    QRSolver<T>& operator = ( const vismodule::Vector<T>& v )
     {
         this->setSize( v.size() );
         for( size_t i = 0; i < this->size(); i++ ){ (*this)[i] = v[i]; }
@@ -68,11 +68,11 @@ public:
         return( *this );
     };
 
-    const kvs::Vector<T>& solve( const kvs::Vector<T>& b );
+    const vismodule::Vector<T>& solve( const vismodule::Vector<T>& b );
 
-    const kvs::Vector<T>& solve( const kvs::Matrix<T>& A, const kvs::Vector<T>& b );
+    const vismodule::Vector<T>& solve( const vismodule::Matrix<T>& A, const vismodule::Vector<T>& b );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__QR_SOLVER_H_INCLUDE
+#endif // VIS_MODULE__QR_SOLVER_H_INCLUDE

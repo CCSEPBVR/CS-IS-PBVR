@@ -12,13 +12,13 @@
  */
 /****************************************************************************/
 #include "Camera.h"
-#include <kvs/DebugNew>
+#include <vismodule/DebugNew>
 #ifndef NO_CLIENT
-#include <kvs/OpenGL>
+#include <vismodule/OpenGL>
 #endif
-#include <kvs/ColorImage>
-#include <kvs/Matrix44>
-#include <kvs/ViewingMatrix44>
+#include <vismodule/ColorImage>
+#include <vismodule/Matrix44>
+#include <vismodule/ViewingMatrix44>
 
 
 namespace
@@ -34,14 +34,14 @@ namespace
  */
 /*==========================================================================*/
 template <typename T>
-inline kvs::Matrix44<T> LookAtMatrix44(
-    const kvs::Vector3<T>& eye,
-    const kvs::Vector3<T>& up,
-    const kvs::Vector3<T>& target )
+inline vismodule::Matrix44<T> LookAtMatrix44(
+    const vismodule::Vector3<T>& eye,
+    const vismodule::Vector3<T>& up,
+    const vismodule::Vector3<T>& target )
 {
-    kvs::Vector3<T> f( target - eye );
-    kvs::Vector3<T> s( f.cross( up.normalize() ) );
-    kvs::Vector3<T> u( s.cross( f ) );
+    vismodule::Vector3<T> f( target - eye );
+    vismodule::Vector3<T> s( f.cross( up.normalize() ) );
+    vismodule::Vector3<T> u( s.cross( f ) );
 
     f.normalize();
     s.normalize();
@@ -63,12 +63,12 @@ inline kvs::Matrix44<T> LookAtMatrix44(
             0,      0,     0, 1
     };
 
-    return( kvs::Matrix44<T>( elements ) );
+    return( vismodule::Matrix44<T>( elements ) );
 }
 
 } // end of namespace
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -78,7 +78,7 @@ namespace kvs
  */
 /*==========================================================================*/
 Camera::Camera( const bool collision ) :
-    kvs::XformControl( collision )
+    vismodule::XformControl( collision )
 {
     this->initialize();
 }
@@ -109,7 +109,7 @@ void Camera::setProjectionType( const Camera::ProjectionType projection_type )
  *  @param position [in] camera position
  */
 /*==========================================================================*/
-void Camera::setPosition( const kvs::Vector3f& position )
+void Camera::setPosition( const vismodule::Vector3f& position )
 {
     m_position = position;
 }
@@ -120,7 +120,7 @@ void Camera::setPosition( const kvs::Vector3f& position )
  *  @param up [in] up vector
  */
 /*==========================================================================*/
-void Camera::setUpVector( const kvs::Vector3f& up_vector )
+void Camera::setUpVector( const vismodule::Vector3f& up_vector )
 {
     m_up_vector = up_vector;
 }
@@ -131,7 +131,7 @@ void Camera::setUpVector( const kvs::Vector3f& up_vector )
  *  @param at [in] look-at point
  */
 /*==========================================================================*/
-void Camera::setLookAt( const kvs::Vector3f& look_at )
+void Camera::setLookAt( const vismodule::Vector3f& look_at )
 {
     m_look_at = look_at;
 }
@@ -254,7 +254,7 @@ const Camera::ProjectionType Camera::projectionType( void ) const
  *  Get the camera position.
  */
 /*==========================================================================*/
-const kvs::Vector3f& Camera::position( void ) const
+const vismodule::Vector3f& Camera::position( void ) const
 {
     return( m_position );
 }
@@ -264,7 +264,7 @@ const kvs::Vector3f& Camera::position( void ) const
  *  Get the up vector.
  */
 /*==========================================================================*/
-const kvs::Vector3f& Camera::upVector( void ) const
+const vismodule::Vector3f& Camera::upVector( void ) const
 {
     return( m_up_vector );
 }
@@ -274,7 +274,7 @@ const kvs::Vector3f& Camera::upVector( void ) const
  *  Get the look-at point.
  */
 /*==========================================================================*/
-const kvs::Vector3f& Camera::lookAt( void ) const
+const vismodule::Vector3f& Camera::lookAt( void ) const
 {
     return( m_look_at );
 }
@@ -285,9 +285,9 @@ const kvs::Vector3f& Camera::lookAt( void ) const
  *  @return look-at point in the device coordinate system
  */
 /*==========================================================================*/
-const kvs::Vector2f Camera::lookAtInDevice( void ) const
+const vismodule::Vector2f Camera::lookAtInDevice( void ) const
 {
-    return( kvs::Vector2f( m_window_width / 2.0f, m_window_height / 2.0f ) );
+    return( vismodule::Vector2f( m_window_width / 2.0f, m_window_height / 2.0f ) );
 }
 
 /*==========================================================================*/
@@ -479,7 +479,7 @@ void Camera::update( void )
  *  @return snapshot image
  */
 /*==========================================================================*/
-kvs::ColorImage Camera::snapshot( void )
+vismodule::ColorImage Camera::snapshot( void )
 {
 #ifndef NO_CLIENT
     GLint viewport[4];
@@ -492,7 +492,7 @@ kvs::ColorImage Camera::snapshot( void )
     unsigned char* data = new unsigned char [ size ];
     if( !data )
     {
-        return( kvs::ColorImage( width, height ) );
+        return( vismodule::ColorImage( width, height ) );
     }
     memset( data, 0, size );
 
@@ -516,16 +516,16 @@ kvs::ColorImage Camera::snapshot( void )
         }
     }
 
-    kvs::ColorImage ret( width, height, data );
+    vismodule::ColorImage ret( width, height, data );
 
     delete [] data;
 #else
-    kvs::ColorImage ret;
+    vismodule::ColorImage ret;
 #endif
     return( ret );
 }
 
-const kvs::Matrix44f Camera::projectionMatrix( void ) const
+const vismodule::Matrix44f Camera::projectionMatrix( void ) const
 {
 #ifndef NO_CLIENT
     GLfloat p[16];
@@ -534,7 +534,7 @@ const kvs::Matrix44f Camera::projectionMatrix( void ) const
 #endif
     this->getProjectionMatrix( &p );
 
-    const kvs::Matrix44f projection_matrix(
+    const vismodule::Matrix44f projection_matrix(
         p[0], p[4], p[8],  p[12],
         p[1], p[5], p[9],  p[13],
         p[2], p[6], p[10], p[14],
@@ -543,7 +543,7 @@ const kvs::Matrix44f Camera::projectionMatrix( void ) const
     return( projection_matrix );
 }
 
-const kvs::Matrix44f Camera::modelViewMatrix( void ) const
+const vismodule::Matrix44f Camera::modelViewMatrix( void ) const
 {
 #ifndef NO_CLIENT
     GLfloat m[16];
@@ -552,7 +552,7 @@ const kvs::Matrix44f Camera::modelViewMatrix( void ) const
 #endif
     this->getModelViewMatrix( &m );
 
-    const kvs::Matrix44f modelview_matrix(
+    const vismodule::Matrix44f modelview_matrix(
         m[0], m[4], m[8],  m[12],
         m[1], m[5], m[9],  m[13],
         m[2], m[6], m[10], m[14],
@@ -561,7 +561,7 @@ const kvs::Matrix44f Camera::modelViewMatrix( void ) const
     return( modelview_matrix );
 }
 
-const kvs::Matrix44f Camera::projectionModelViewMatrix( void ) const
+const vismodule::Matrix44f Camera::projectionModelViewMatrix( void ) const
 {
 #ifndef NO_CLIENT
     GLfloat pm[16];
@@ -570,7 +570,7 @@ const kvs::Matrix44f Camera::projectionModelViewMatrix( void ) const
 #endif
     this->getProjectionModelViewMatrix( &pm );
 
-    const kvs::Matrix44f projection_modelview_matrix(
+    const vismodule::Matrix44f projection_modelview_matrix(
         pm[0], pm[4], pm[8],  pm[12],
         pm[1], pm[5], pm[9],  pm[13],
         pm[2], pm[6], pm[10], pm[14],
@@ -808,7 +808,7 @@ void Camera::getCombinedMatrix(
  *  Same as gluProject() in OpenGL.
  */
 /*==========================================================================*/
-const kvs::Vector2f Camera::projectObjectToWindow(
+const vismodule::Vector2f Camera::projectObjectToWindow(
     float  p_obj_x,
     float  p_obj_y,
     float  p_obj_z,
@@ -831,7 +831,7 @@ const kvs::Vector2f Camera::projectObjectToWindow(
 
     if( depth ) *depth = ( 1.0f + p_tmp[2] * p_tmp[3] ) * 0.5f;
 
-    return( kvs::Vector2f( ( 1.0f + p_tmp[0] ) * m_window_width  * 0.5f,
+    return( vismodule::Vector2f( ( 1.0f + p_tmp[0] ) * m_window_width  * 0.5f,
                            ( 1.0f + p_tmp[1] ) * m_window_height * 0.5f ) );
 }
 
@@ -845,8 +845,8 @@ const kvs::Vector2f Camera::projectObjectToWindow(
  *  Same as gluProject() in OpenGL.
  */
 /*==========================================================================*/
-const kvs::Vector2f Camera::projectObjectToWindow(
-    const kvs::Vector3f& p_obj,
+const vismodule::Vector2f Camera::projectObjectToWindow(
+    const vismodule::Vector3f& p_obj,
     float*               depth ) const
 {
     return( this->projectObjectToWindow( p_obj.x(), p_obj.y(), p_obj.z(), depth ) );
@@ -860,8 +860,8 @@ const kvs::Vector2f Camera::projectObjectToWindow(
  *  @return point in the object coordinate system
  */
 /*==========================================================================*/
-const kvs::Vector3f Camera::projectWindowToObject(
-    const kvs::Vector2f& p_win,
+const vismodule::Vector3f Camera::projectWindowToObject(
+    const vismodule::Vector2f& p_win,
     float                depth ) const
 {
 #ifndef NO_CLIENT
@@ -884,7 +884,7 @@ const kvs::Vector3f Camera::projectWindowToObject(
                   &x, &y, &z );
 #endif
 
-    return( kvs::Vector3f( (float)x, (float)y, (float)z ) );
+    return( vismodule::Vector3f( (float)x, (float)y, (float)z ) );
 }
 
 /*==========================================================================*/
@@ -895,8 +895,8 @@ const kvs::Vector3f Camera::projectWindowToObject(
  *  @return point in the object coordinate system.
  */
 /*==========================================================================*/
-const kvs::Vector3f Camera::projectWindowToCamera(
-    const kvs::Vector2f& p_win,
+const vismodule::Vector3f Camera::projectWindowToCamera(
+    const vismodule::Vector2f& p_win,
     float                depth ) const
 {
 #ifndef NO_CLIENT
@@ -926,7 +926,7 @@ const kvs::Vector3f Camera::projectWindowToCamera(
                   v,
                   &x, &y, &z );
 #endif
-    return( kvs::Vector3f( (float)x, (float)y, (float)z ) );
+    return( vismodule::Vector3f( (float)x, (float)y, (float)z ) );
 }
 
 /*==========================================================================*/
@@ -937,13 +937,13 @@ const kvs::Vector3f Camera::projectWindowToCamera(
  *  @return a point in the world coordinate system
  */
 /*==========================================================================*/
-const kvs::Vector3f Camera::projectWindowToWorld(
-    const kvs::Vector2f& p_win,
+const vismodule::Vector3f Camera::projectWindowToWorld(
+    const vismodule::Vector2f& p_win,
     float                depth ) const
 {
-    kvs::Vector3f p_cam( this->projectWindowToCamera( p_win, depth ) );
+    vismodule::Vector3f p_cam( this->projectWindowToCamera( p_win, depth ) );
 
-    return( kvs::Xform::scaledRotation() * ( p_cam + m_init_position ) + kvs::Xform::translation() );
+    return( vismodule::Xform::scaledRotation() * ( p_cam + m_init_position ) + vismodule::Xform::translation() );
 }
 
 /*==========================================================================*/
@@ -953,17 +953,17 @@ const kvs::Vector3f Camera::projectWindowToWorld(
  *  @return point in the object coordinate system
  */
 /*==========================================================================*/
-const kvs::Vector3f Camera::projectObjectToCamera(
-    const kvs::Vector3f& p_obj ) const
+const vismodule::Vector3f Camera::projectObjectToCamera(
+    const vismodule::Vector3f& p_obj ) const
 {
     float m[16];
 #ifndef NO_CLIENT
     glGetFloatv( GL_MODELVIEW_MATRIX, m );
 #endif
-    const kvs::Matrix44f modelview( m );
-    const kvs::Vector4f p_cam( kvs::Vector4f( p_obj, 1.0f ) * modelview );
+    const vismodule::Matrix44f modelview( m );
+    const vismodule::Vector4f p_cam( vismodule::Vector4f( p_obj, 1.0f ) * modelview );
 
-    return( kvs::Vector3f( p_cam.x(), p_cam.y(), p_cam.z() ) );
+    return( vismodule::Vector3f( p_cam.x(), p_cam.y(), p_cam.z() ) );
 }
 
 /*==========================================================================*/
@@ -973,17 +973,17 @@ const kvs::Vector3f Camera::projectObjectToCamera(
  *  @return point in the object coordinate system
  */
 /*==========================================================================*/
-const kvs::Vector3f Camera::projectCameraToObject(
-    const kvs::Vector3f& p_cam ) const
+const vismodule::Vector3f Camera::projectCameraToObject(
+    const vismodule::Vector3f& p_cam ) const
 {
     float m[16];
 #ifndef NO_CLIENT
     glGetFloatv( GL_MODELVIEW_MATRIX, m );
 #endif
-    const kvs::Matrix44f modelview( m );
-    const kvs::Vector4f p_obj( kvs::Vector4f( p_cam, 1.0 ) * modelview.inverse() );
+    const vismodule::Matrix44f modelview( m );
+    const vismodule::Vector4f p_obj( vismodule::Vector4f( p_cam, 1.0 ) * modelview.inverse() );
 
-    return( kvs::Vector3f( p_obj.x(), p_obj.y(), p_obj.z() ) );
+    return( vismodule::Vector3f( p_obj.x(), p_obj.y(), p_obj.z() ) );
 }
 
 /*==========================================================================*/
@@ -993,16 +993,16 @@ const kvs::Vector3f Camera::projectCameraToObject(
  *  @return point in the camera coordinate system
  */
 /*==========================================================================*/
-const kvs::Vector3f Camera::projectWorldToCamera( const kvs::Vector3f& p_wld ) const
+const vismodule::Vector3f Camera::projectWorldToCamera( const vismodule::Vector3f& p_wld ) const
 {
 /*
-    const kvs::Matrix44f M = ::LookAtMatrix44<float>( m_position, m_up_vector, m_look_at );
-    const kvs::Vector4f p_cam = kvs::Vector4f( p_wld, 1.0 ) * M - kvs::Vector4f( m_position, 1.0 );
+    const vismodule::Matrix44f M = ::LookAtMatrix44<float>( m_position, m_up_vector, m_look_at );
+    const vismodule::Vector4f p_cam = vismodule::Vector4f( p_wld, 1.0 ) * M - vismodule::Vector4f( m_position, 1.0 );
 */
-    const kvs::Matrix44f M = kvs::ViewingMatrix44<float>( m_position, m_up_vector, m_look_at );
-    const kvs::Vector4f p_cam = M * kvs::Vector4f( p_wld, 1.0 );
+    const vismodule::Matrix44f M = vismodule::ViewingMatrix44<float>( m_position, m_up_vector, m_look_at );
+    const vismodule::Vector4f p_cam = M * vismodule::Vector4f( p_wld, 1.0 );
 
-    return( kvs::Vector3f( p_cam.x(), p_cam.y(), p_cam.z() ) );
+    return( vismodule::Vector3f( p_cam.x(), p_cam.y(), p_cam.z() ) );
 }
 
 /*==========================================================================*/
@@ -1012,16 +1012,16 @@ const kvs::Vector3f Camera::projectWorldToCamera( const kvs::Vector3f& p_wld ) c
  *  @return point in the world coordinate system
  */
 /*==========================================================================*/
-const kvs::Vector3f Camera::projectCameraToWorld( const kvs::Vector3f& p_cam ) const
+const vismodule::Vector3f Camera::projectCameraToWorld( const vismodule::Vector3f& p_cam ) const
 {
 /*
-    const kvs::Matrix44f M = ::LookAtMatrix44<float>( m_position, m_up_vector, m_look_at );
-    const kvs::Vector4f p_wld = ( kvs::Vector4f( p_cam + m_position, 1.0 ) ) * M.inverse();
+    const vismodule::Matrix44f M = ::LookAtMatrix44<float>( m_position, m_up_vector, m_look_at );
+    const vismodule::Vector4f p_wld = ( vismodule::Vector4f( p_cam + m_position, 1.0 ) ) * M.inverse();
 */
-    const kvs::Matrix44f M = kvs::ViewingMatrix44<float>( m_position, m_up_vector, m_look_at );
-    const kvs::Vector4f p_wld = M.inverse() * kvs::Vector4f( p_cam, 1.0 );
+    const vismodule::Matrix44f M = vismodule::ViewingMatrix44<float>( m_position, m_up_vector, m_look_at );
+    const vismodule::Vector4f p_wld = M.inverse() * vismodule::Vector4f( p_cam, 1.0 );
 
-    return( kvs::Vector3f( p_wld.x(), p_wld.y(), p_wld.z() ) );
+    return( vismodule::Vector3f( p_wld.x(), p_wld.y(), p_wld.z() ) );
 }
 
 /*==========================================================================*/
@@ -1031,9 +1031,9 @@ const kvs::Vector3f Camera::projectCameraToWorld( const kvs::Vector3f& p_cam ) c
  *  @return point in the object coordinate system
  */
 /*==========================================================================*/
-const kvs::Vector3f Camera::projectWorldToObject( const kvs::Vector3f& p_wld ) const
+const vismodule::Vector3f Camera::projectWorldToObject( const vismodule::Vector3f& p_wld ) const
 {
-    const kvs::Vector3f p_cam = this->projectWorldToCamera( p_wld );
+    const vismodule::Vector3f p_cam = this->projectWorldToCamera( p_wld );
 
     return( this->projectCameraToObject( p_cam ) );
 }
@@ -1045,9 +1045,9 @@ const kvs::Vector3f Camera::projectWorldToObject( const kvs::Vector3f& p_wld ) c
  *  @return point in the world coordinate system
  */
 /*==========================================================================*/
-const kvs::Vector3f Camera::projectObjectToWorld( const kvs::Vector3f& p_obj ) const
+const vismodule::Vector3f Camera::projectObjectToWorld( const vismodule::Vector3f& p_obj ) const
 {
-    const kvs::Vector3f p_cam = this->projectObjectToCamera( p_obj );
+    const vismodule::Vector3f p_cam = this->projectObjectToCamera( p_obj );
 
     return( this->projectCameraToWorld( p_cam ) );
 }
@@ -1059,7 +1059,7 @@ const kvs::Vector3f Camera::projectObjectToWorld( const kvs::Vector3f& p_obj ) c
 /*===========================================================================*/
 void Camera::resetXform( void )
 {
-    kvs::XformControl::resetXform();
+    vismodule::XformControl::resetXform();
     m_position = m_init_position;
     m_up_vector = m_init_up_vector;
     m_look_at = m_init_look_at;
@@ -1071,9 +1071,9 @@ void Camera::resetXform( void )
  *  @param rot [in] rotation matrix.
  */
 /*==========================================================================*/
-void Camera::rotate( const kvs::Matrix33f& rotation )
+void Camera::rotate( const vismodule::Matrix33f& rotation )
 {
-    kvs::XformControl::rotate( rotation );
+    vismodule::XformControl::rotate( rotation );
     this->update_up_at_from();
 }
 
@@ -1083,9 +1083,9 @@ void Camera::rotate( const kvs::Matrix33f& rotation )
  *  @param translation [in] translation vector
  */
 /*==========================================================================*/
-void Camera::translate( const kvs::Vector3f& translation )
+void Camera::translate( const vismodule::Vector3f& translation )
 {
-    kvs::XformControl::translate( translation );
+    vismodule::XformControl::translate( translation );
     this->update_up_at_from();
 }
 
@@ -1095,9 +1095,9 @@ void Camera::translate( const kvs::Vector3f& translation )
  *  @param scaling [in] scaling vector
  */
 /*==========================================================================*/
-void Camera::scale( const kvs::Vector3f& scaling )
+void Camera::scale( const vismodule::Vector3f& scaling )
 {
-    kvs::XformControl::scale( scaling );
+    vismodule::XformControl::scale( scaling );
     this->update_up_at_from();
 }
 
@@ -1108,11 +1108,11 @@ void Camera::scale( const kvs::Vector3f& scaling )
 /*==========================================================================*/
 void Camera::update_up_at_from( void )
 {
-    kvs::Vector3f vec( m_init_position - m_init_look_at );
+    vismodule::Vector3f vec( m_init_position - m_init_look_at );
 
-    m_look_at   = kvs::Xform::translation() + m_init_look_at;
-    m_position  = kvs::Xform::scaledRotation() * vec + m_look_at;
-    m_up_vector = kvs::Xform::scaledRotation() * m_init_up_vector;
+    m_look_at   = vismodule::Xform::translation() + m_init_look_at;
+    m_position  = vismodule::Xform::scaledRotation() * vec + m_look_at;
+    m_up_vector = vismodule::Xform::scaledRotation() * m_init_up_vector;
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

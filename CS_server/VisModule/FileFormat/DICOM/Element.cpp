@@ -24,10 +24,10 @@
 
 namespace
 {
-kvs::dcm::Tag END_HEADER_TAG = kvs::dcm::Tag( 0x7FE0, 0x0010, kvs::dcm::VR_OW );
+vismodule::dcm::Tag END_HEADER_TAG = vismodule::dcm::Tag( 0x7FE0, 0x0010, vismodule::dcm::VR_OW );
 } // end of namesapce
 
-namespace kvs
+namespace vismodule
 {
 
 namespace dcm
@@ -178,4 +178,4 @@ const bool Element::read( std::ifstream& ifs, const bool swap )
 
 } // end of namespace dcm
 
-} // end of namespace kvs
+} // end of namespace vismodule

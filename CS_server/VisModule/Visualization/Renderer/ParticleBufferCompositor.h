@@ -11,25 +11,25 @@
  *  $Id: ParticleBufferCompositor.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__PARTICLE_BUFFER_COMPOSITOR_H_INCLUDE
-#define KVS__PARTICLE_BUFFER_COMPOSITOR_H_INCLUDE
+#ifndef VIS_MODULE__PARTICLE_BUFFER_COMPOSITOR_H_INCLUDE
+#define VIS_MODULE__PARTICLE_BUFFER_COMPOSITOR_H_INCLUDE
 
-#include <kvs/ObjectBase>
-#include <kvs/Camera>
-#include <kvs/Light>
-#include <kvs/ObjectManager>
-#include <kvs/RendererManager>
-#include <kvs/IDManager>
-#include <kvs/VolumeRendererBase>
-#include <kvs/ClassName>
-#include <kvs/ParticleBufferAccumulator>
+#include <vismodule/ObjectBase>
+#include <vismodule/Camera>
+#include <vismodule/Light>
+#include <vismodule/ObjectManager>
+#include <vismodule/RendererManager>
+#include <vismodule/IDManager>
+#include <vismodule/VolumeRendererBase>
+#include <vismodule/ClassName>
+#include <vismodule/ParticleBufferAccumulator>
 
 // Macros for test.
 #define TEST__MESUREMENT_ACCUMLATION_TIME  0
 #define TEST__RENDERING_ACTIVE_OBJECT_ONLY 0
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -37,13 +37,13 @@ namespace kvs
  *  Particle buffer compositor.
  */
 /*==========================================================================*/
-class ParticleBufferCompositor : public kvs::VolumeRendererBase
+class ParticleBufferCompositor : public vismodule::VolumeRendererBase
 {
-    kvsClassName( kvs::ParticleBufferCompositor );
+    visModuleClassName( vismodule::ParticleBufferCompositor );
 
 public:
 
-    typedef kvs::VolumeRendererBase BaseClass;
+    typedef vismodule::VolumeRendererBase BaseClass;
 
     typedef ParticleBufferAccumulator::ObjectList   ObjectList;
     typedef ParticleBufferAccumulator::RendererList RendererList;
@@ -57,31 +57,31 @@ protected:
     size_t                m_num_projected_particles; ///< number of projected points
     size_t                m_num_stored_particles;    ///< number of stored points
     size_t                m_subpixel_level;          ///< subpixel level
-    kvs::ObjectManager*   m_object_manager;          ///< pointer to the object manager
-    kvs::RendererManager* m_renderer_manager;        ///< pointer to the renderer manager
-    kvs::IDManager*       m_id_manager;              ///< pointer to the ID manager
+    vismodule::ObjectManager*   m_object_manager;          ///< pointer to the object manager
+    vismodule::RendererManager* m_renderer_manager;        ///< pointer to the renderer manager
+    vismodule::IDManager*       m_id_manager;              ///< pointer to the ID manager
     ObjectList            m_point_object_list;       ///< object list
     RendererList          m_point_renderer_list;     ///< renderer list
-    kvs::ParticleBufferAccumulator* m_accumulator;   ///< pointer to the accumulator
+    vismodule::ParticleBufferAccumulator* m_accumulator;   ///< pointer to the accumulator
 
 public:
 
     ParticleBufferCompositor(
-        kvs::ObjectManager*   object_manager,
-        kvs::RendererManager* renderer_manager,
-        kvs::IDManager*       id_manager );
+        vismodule::ObjectManager*   object_manager,
+        vismodule::RendererManager* renderer_manager,
+        vismodule::IDManager*       id_manager );
 
     virtual ~ParticleBufferCompositor( void );
 
 public:
 
-    void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
+    void exec( vismodule::ObjectBase* object, vismodule::Camera* camera, vismodule::Light* light );
 
 public:
 
     void initialize( void );
 
-    void link( kvs::PointObject* object, kvs::ParticleVolumeRenderer* renderer );
+    void link( vismodule::PointObject* object, vismodule::ParticleVolumeRenderer* renderer );
 
     const size_t numOfProjectedParticles( void ) const;
 
@@ -101,17 +101,17 @@ protected:
 
     void delete_accumulator( void );
 
-    void create_image( kvs::Camera* camera, kvs::Light* light );
+    void create_image( vismodule::Camera* camera, vismodule::Light* light );
 
-    void accumulate( kvs::Camera* camera, kvs::Light* light );
+    void accumulate( vismodule::Camera* camera, vismodule::Light* light );
 
     void update_particle_buffer(
-        kvs::PointObject*            object,
-        kvs::ParticleVolumeRenderer* renderer,
-        kvs::Camera*                 camera,
-        kvs::Light*                  light );
+        vismodule::PointObject*            object,
+        vismodule::ParticleVolumeRenderer* renderer,
+        vismodule::Camera*                 camera,
+        vismodule::Light*                  light );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__PARTICLE_BUFFER_COMPOSITOR_H_INCLUDE
+#endif // VIS_MODULE__PARTICLE_BUFFER_COMPOSITOR_H_INCLUDE

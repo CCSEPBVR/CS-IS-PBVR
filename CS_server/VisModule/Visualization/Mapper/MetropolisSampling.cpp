@@ -12,13 +12,13 @@
  */
 /****************************************************************************/
 #include "MetropolisSampling.h"
-#include <kvs/MersenneTwister>
-#include <kvs/TrilinearInterpolator>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/MersenneTwister>
+#include <vismodule/TrilinearInterpolator>
+#include <vismodule/IgnoreUnusedVariable>
 #include <vector>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -27,8 +27,8 @@ namespace kvs
  */
 /*==========================================================================*/
 MetropolisSampling::MetropolisSampling( void ):
-    kvs::MapperBase(),
-    kvs::PointObject()
+    vismodule::MapperBase(),
+    vismodule::PointObject()
 {
 }
 
@@ -40,10 +40,10 @@ MetropolisSampling::MetropolisSampling( void ):
  */
 /*==========================================================================*/
 MetropolisSampling::MetropolisSampling(
-    const kvs::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase* volume,
     const size_t                 nparticles ):
-    kvs::MapperBase(),
-    kvs::PointObject(),
+    vismodule::MapperBase(),
+    vismodule::PointObject(),
     m_nparticles( nparticles )
 {
     this->exec( volume );
@@ -58,11 +58,11 @@ MetropolisSampling::MetropolisSampling(
  */
 /*==========================================================================*/
 MetropolisSampling::MetropolisSampling(
-    const kvs::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase* volume,
     const size_t                 nparticles,
-    const kvs::TransferFunction& transfer_function ):
-    kvs::MapperBase( transfer_function ),
-    kvs::PointObject(),
+    const vismodule::TransferFunction& transfer_function ):
+    vismodule::MapperBase( transfer_function ),
+    vismodule::PointObject(),
     m_nparticles( nparticles )
 {
     this->exec( volume );
@@ -105,31 +105,31 @@ void MetropolisSampling::setNParticles( const size_t nparticles )
  *  @return pointer to the point object
  */
 /*===========================================================================*/
-MetropolisSampling::SuperClass* MetropolisSampling::exec( const kvs::ObjectBase* object )
+MetropolisSampling::SuperClass* MetropolisSampling::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase* volume = kvs::VolumeObjectBase::DownCast( object );
+    const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
     if ( !volume )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not volume dat.");
+        visModuleMessageError("Input object is not volume dat.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
-    if ( volume_type == kvs::VolumeObjectBase::Structured )
+    const vismodule::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
+    if ( volume_type == vismodule::VolumeObjectBase::Structured )
     {
-        this->mapping( reinterpret_cast<const kvs::StructuredVolumeObject*>( object ) );
+        this->mapping( reinterpret_cast<const vismodule::StructuredVolumeObject*>( object ) );
     }
-    else // volume_type == kvs::VolumeObjectBase::Unstructured
+    else // volume_type == vismodule::VolumeObjectBase::Unstructured
     {
-        this->mapping( reinterpret_cast<const kvs::UnstructuredVolumeObject*>( object ) );
+        this->mapping( reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( object ) );
     }
 
     return( this );
@@ -141,7 +141,7 @@ MetropolisSampling::SuperClass* MetropolisSampling::exec( const kvs::ObjectBase*
  *  @param  volume [in] pointer to the structured volume object
  */
 /*==========================================================================*/
-void MetropolisSampling::mapping( const kvs::StructuredVolumeObject* volume )
+void MetropolisSampling::mapping( const vismodule::StructuredVolumeObject* volume )
 {
     // Attach the pointer to the volume object.
     BaseClass::attach_volume( volume );
@@ -150,12 +150,12 @@ void MetropolisSampling::mapping( const kvs::StructuredVolumeObject* volume )
 
     // Generate the particles.
     const std::type_info& type = volume->values().typeInfo()->type();
-    if (      type == typeid( kvs::UInt8  ) ) this->generate_particles<kvs::UInt8>( volume );
-    else if ( type == typeid( kvs::UInt16 ) ) this->generate_particles<kvs::UInt16>( volume );
+    if (      type == typeid( vismodule::UInt8  ) ) this->generate_particles<vismodule::UInt8>( volume );
+    else if ( type == typeid( vismodule::UInt16 ) ) this->generate_particles<vismodule::UInt16>( volume );
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
+        visModuleMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
     }
 }
 
@@ -165,12 +165,12 @@ void MetropolisSampling::mapping( const kvs::StructuredVolumeObject* volume )
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*==========================================================================*/
-void MetropolisSampling::mapping( const kvs::UnstructuredVolumeObject* volume )
+void MetropolisSampling::mapping( const vismodule::UnstructuredVolumeObject* volume )
 {
-    kvs::IgnoreUnusedVariable( volume );
+    vismodule::IgnoreUnusedVariable( volume );
 
     BaseClass::m_is_success = false;
-    kvsMessageError("Not yet supported the metropolis method for the unstructured volume");
+    visModuleMessageError("Not yet supported the metropolis method for the unstructured volume");
 }
 
 /*==========================================================================*/
@@ -180,13 +180,13 @@ void MetropolisSampling::mapping( const kvs::UnstructuredVolumeObject* volume )
  */
 /*==========================================================================*/
 template <typename T>
-void MetropolisSampling::generate_particles( const kvs::StructuredVolumeObject* volume  )
+void MetropolisSampling::generate_particles( const vismodule::StructuredVolumeObject* volume  )
 {
     // Set the trilinear interpolator.
-    kvs::TrilinearInterpolator interpolator( volume );
+    vismodule::TrilinearInterpolator interpolator( volume );
 
     // Alias.
-    const kvs::Vector3ui r = volume->resolution() - kvs::Vector3ui(1);
+    const vismodule::Vector3ui r = volume->resolution() - vismodule::Vector3ui(1);
 
     // Allocate memory for generated particles.
     SuperClass::m_coords.allocate( m_nparticles * 3 );
@@ -194,13 +194,13 @@ void MetropolisSampling::generate_particles( const kvs::StructuredVolumeObject* 
     SuperClass::m_normals.allocate( m_nparticles * 3 );
 
     // Random number generator.
-    kvs::MersenneTwister R;
+    vismodule::MersenneTwister R;
 
     // Set a initial particle and a trial particle.
-    kvs::Vector3f particle( static_cast<float>(R() * r.x()),
+    vismodule::Vector3f particle( static_cast<float>(R() * r.x()),
                             static_cast<float>(R() * r.y()),
                             static_cast<float>(R() * r.z()) );
-    kvs::Vector3f trial_particle( 0.0f );
+    vismodule::Vector3f trial_particle( 0.0f );
 
     // Attach the initial particle to the interpolator and get a rho value.
     interpolator.attachPoint( particle );
@@ -224,7 +224,7 @@ void MetropolisSampling::generate_particles( const kvs::StructuredVolumeObject* 
         if( ratio >= 1.0f )
         {
             // Adopt the particle.
-            const kvs::Vector3f gradient = interpolator.template gradient<T>();
+            const vismodule::Vector3f gradient = interpolator.template gradient<T>();
             this->adopt_particle( counter, trial_particle, scalar, gradient );
 
             // Update the particle.
@@ -238,7 +238,7 @@ void MetropolisSampling::generate_particles( const kvs::StructuredVolumeObject* 
             if( ratio >= R() )
             {
                 // Adopt the particle.
-                const kvs::Vector3f gradient = interpolator.template gradient<T>();
+                const vismodule::Vector3f gradient = interpolator.template gradient<T>();
                 this->adopt_particle( counter, trial_particle, scalar, gradient );
 
                 // Update the particle.
@@ -252,7 +252,7 @@ void MetropolisSampling::generate_particles( const kvs::StructuredVolumeObject* 
 #ifdef DUPLICATION
                 interpolator.attachPoint( particle );
                 scalar = interpolator.template scalar<T>();
-                const kvs::Vector3f gradient = interpolator.template gradient<T>();
+                const vismodule::Vector3f gradient = interpolator.template gradient<T>();
                 this->adopt_particle( counter, particle, scalar, gradient );
 
                 counter++;
@@ -267,10 +267,10 @@ void MetropolisSampling::generate_particles( const kvs::StructuredVolumeObject* 
 }
 
 template
-void MetropolisSampling::generate_particles<kvs::UInt8>( const kvs::StructuredVolumeObject* volume );
+void MetropolisSampling::generate_particles<vismodule::UInt8>( const vismodule::StructuredVolumeObject* volume );
 
 template
-void MetropolisSampling::generate_particles<kvs::UInt16>( const kvs::StructuredVolumeObject* volume );
+void MetropolisSampling::generate_particles<vismodule::UInt16>( const vismodule::StructuredVolumeObject* volume );
 
 /*==========================================================================*/
 /**
@@ -283,9 +283,9 @@ void MetropolisSampling::generate_particles<kvs::UInt16>( const kvs::StructuredV
 /*==========================================================================*/
 void MetropolisSampling::adopt_particle(
     const size_t         index,
-    const kvs::Vector3f& coord,
+    const vismodule::Vector3f& coord,
     const size_t         scalar,
-    const kvs::Vector3f& gradient )
+    const vismodule::Vector3f& gradient )
 {
     const size_t index3 = index * 3;
     m_coords[ index3 + 0 ]  = coord.x();
@@ -299,4 +299,4 @@ void MetropolisSampling::adopt_particle(
     m_normals[ index3 + 2 ] = gradient.z();
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

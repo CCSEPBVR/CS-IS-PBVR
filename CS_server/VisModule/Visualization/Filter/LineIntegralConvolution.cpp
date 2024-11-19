@@ -10,17 +10,17 @@
  *
  *  $Author: kawamura $
  *  $Date: 2009/01/15 12:52:12 $
- *  $Source: /home/Repository/viz-server2/cvsroot/KVS_RC1/Source/Core/Visualization/Filter/LineIntegralConvolution.cpp,v $
+ *  $Source: /home/Repository/viz-server2/cvsroot/VIS_MODULE_RC1/Source/Core/Visualization/Filter/LineIntegralConvolution.cpp,v $
  *  $Revision: 1.2 $
  */
 /*****************************************************************************/
 #include "LineIntegralConvolution.h"
-#include <kvs/DebugNew>
-#include <kvs/MersenneTwister>
-#include <kvs/Vector3>
+#include <vismodule/DebugNew>
+#include <vismodule/MersenneTwister>
+#include <vismodule/Vector3>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -41,11 +41,11 @@ LineIntegralConvolution::LineIntegralConvolution( void ):
  *  @param  volume [in] pointer to the input volume data
  */
 /*===========================================================================*/
-LineIntegralConvolution::LineIntegralConvolution( const kvs::StructuredVolumeObject* volume ):
+LineIntegralConvolution::LineIntegralConvolution( const vismodule::StructuredVolumeObject* volume ):
     m_noise( NULL )
 {
-    const kvs::Vector3ui& r = volume->resolution();
-    m_length = kvs::Math::Max<double>( r.x(), r.y(), r.z() ) * 0.1;
+    const vismodule::Vector3ui& r = volume->resolution();
+    m_length = vismodule::Math::Max<double>( r.x(), r.y(), r.z() ) * 0.1;
     this->exec( volume );
 }
 
@@ -56,7 +56,7 @@ LineIntegralConvolution::LineIntegralConvolution( const kvs::StructuredVolumeObj
  *  @param  length [in] strem length
  */
 /*===========================================================================*/
-LineIntegralConvolution::LineIntegralConvolution( const kvs::StructuredVolumeObject* volume, const double length ):
+LineIntegralConvolution::LineIntegralConvolution( const vismodule::StructuredVolumeObject* volume, const double length ):
     m_length( length ),
     m_noise( NULL )
 {
@@ -91,27 +91,27 @@ void LineIntegralConvolution::setLength( const double length )
  *  @return pointer to the filtered structured volume object
  */
 /*===========================================================================*/
-LineIntegralConvolution::SuperClass* LineIntegralConvolution::exec( const kvs::ObjectBase* object )
+LineIntegralConvolution::SuperClass* LineIntegralConvolution::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::StructuredVolumeObject* volume = kvs::StructuredVolumeObject::DownCast( object );
+    const vismodule::StructuredVolumeObject* volume = vismodule::StructuredVolumeObject::DownCast( object );
     if ( !volume )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not supported.");
+        visModuleMessageError("Input object is not supported.");
         return( NULL );
     }
 
     if ( volume->veclen() == 1 )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not vector data.");
+        visModuleMessageError("Input object is not vector data.");
         return( NULL );
     }
 
@@ -127,7 +127,7 @@ LineIntegralConvolution::SuperClass* LineIntegralConvolution::exec( const kvs::O
  *  @param  volume [in] pointer to the input structured volume object
  */
 /*===========================================================================*/
-void LineIntegralConvolution::filtering( const kvs::StructuredVolumeObject* volume )
+void LineIntegralConvolution::filtering( const vismodule::StructuredVolumeObject* volume )
 {
     // Set the min/max coordinates.
     SuperClass::setMinMaxObjectCoords( volume->minObjectCoord(), volume->maxObjectCoord() );
@@ -139,7 +139,7 @@ void LineIntegralConvolution::filtering( const kvs::StructuredVolumeObject* volu
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input volume data type is not float/double.");
+        visModuleMessageError("Input volume data type is not float/double.");
         return;
     }
 }
@@ -150,27 +150,27 @@ void LineIntegralConvolution::filtering( const kvs::StructuredVolumeObject* volu
  *  @param  volume [i] pointer to a uniform volume data
  */
 /*===========================================================================*/
-void LineIntegralConvolution::create_noise_volume( const kvs::StructuredVolumeObject* volume )
+void LineIntegralConvolution::create_noise_volume( const vismodule::StructuredVolumeObject* volume )
 {
-    //kvs::StructuredVolumeObject::Values data;
-    kvs::ValueArray<kvs::UInt8> data( volume->nnodes() );
-    kvs::UInt8* pdata = data.pointer();
+    //vismodule::StructuredVolumeObject::Values data;
+    vismodule::ValueArray<vismodule::UInt8> data( volume->nnodes() );
+    vismodule::UInt8* pdata = data.pointer();
 
     // Random number generator. R = [0,1)
-    kvs::MersenneTwister R;
+    vismodule::MersenneTwister R;
 
     // Create a white noise volume.
     for ( size_t i = 0; i < volume->nnodes(); i++ )
     {
-        *(pdata++) = static_cast<kvs::UInt8>( R() * 255.0 );
+        *(pdata++) = static_cast<vismodule::UInt8>( R() * 255.0 );
     }
 
     // Copy the white noise volume to m_noise.
-    m_noise = new kvs::StructuredVolumeObject( volume->resolution(), 1, kvs::AnyValueArray( data ) );
+    m_noise = new vismodule::StructuredVolumeObject( volume->resolution(), 1, vismodule::AnyValueArray( data ) );
     if ( !m_noise )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Cannot create noise volume.");
+        visModuleMessageError("Cannot create noise volume.");
         return;
     }
 }
@@ -182,19 +182,19 @@ void LineIntegralConvolution::create_noise_volume( const kvs::StructuredVolumeOb
  */
 /*===========================================================================*/
 template <typename T>
-void LineIntegralConvolution::convolution( const kvs::StructuredVolumeObject* volume )
+void LineIntegralConvolution::convolution( const vismodule::StructuredVolumeObject* volume )
 {
-    kvs::Vector3<T> u;         // vector of node
-    kvs::Vector3<T> p;         // position of node
-    kvs::Vector3<T> travel_t;  //
-    kvs::Vector3<T> entry_pos; //
+    vismodule::Vector3<T> u;         // vector of node
+    vismodule::Vector3<T> p;         // position of node
+    vismodule::Vector3<T> travel_t;  //
+    vismodule::Vector3<T> entry_pos; //
 
-    const kvs::UInt8*           noise_data = static_cast<const kvs::UInt8*>( m_noise->values().pointer() );
+    const vismodule::UInt8*           noise_data = static_cast<const vismodule::UInt8*>( m_noise->values().pointer() );
     const T*                    src_data = static_cast<const T*>( volume->values().pointer() );
 
-    kvs::ValueArray<kvs::UInt8> dst_data( volume->nnodes() );
+    vismodule::ValueArray<vismodule::UInt8> dst_data( volume->nnodes() );
 
-    const kvs::Vector3ui resol( volume->resolution() );
+    const vismodule::Vector3ui resol( volume->resolution() );
 
     unsigned int counter = 0;
     for( size_t k = 0; k < resol.z(); k++ )
@@ -232,7 +232,7 @@ void LineIntegralConvolution::convolution( const kvs::StructuredVolumeObject* vo
 
                         int scalar = noise_data[loc_c];
 
-                        u = (T)m * kvs::Vector3<T>( src_data + 3 * loc_c );
+                        u = (T)m * vismodule::Vector3<T>( src_data + 3 * loc_c );
 
                         p[0] = T( i_c );
                         p[1] = T( j_c );
@@ -240,7 +240,7 @@ void LineIntegralConvolution::convolution( const kvs::StructuredVolumeObject* vo
 
                         for( int l = 0; l < 3; l++ )
                         {
-                            if( kvs::Math::IsZero( u[l] ) )
+                            if( vismodule::Math::IsZero( u[l] ) )
                             {
                                 travel_t[l] = T( 1.1e+10 );
                             }
@@ -285,7 +285,7 @@ void LineIntegralConvolution::convolution( const kvs::StructuredVolumeObject* vo
                         T length = t_min * static_cast<T>( u.length() );
 
                         /* For small length (close to 0.0) it enters in a infinite loop */
-                        if( kvs::Math::IsZero( length ) ) length = T( 1.1e+10 );
+                        if( vismodule::Math::IsZero( length ) ) length = T( 1.1e+10 );
 
                         if( acc_length < 1.1e-10 ) acc_length = T(0);
 
@@ -299,7 +299,7 @@ void LineIntegralConvolution::convolution( const kvs::StructuredVolumeObject* vo
                 }
 
                 acc_data /= acc_length;
-                dst_data[counter] = (kvs::UInt8)( (int)(acc_data) % 256 );
+                dst_data[counter] = (vismodule::UInt8)( (int)(acc_data) % 256 );
 
                 counter++;
             }
@@ -309,8 +309,8 @@ void LineIntegralConvolution::convolution( const kvs::StructuredVolumeObject* vo
     SuperClass::setGridType( volume->gridType() );
     SuperClass::setVeclen( 1 );
     SuperClass::setResolution( volume->resolution() );
-    SuperClass::setValues( kvs::AnyValueArray( dst_data ) );
+    SuperClass::setValues( vismodule::AnyValueArray( dst_data ) );
     SuperClass::setMinMaxValues( 0, 255 );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

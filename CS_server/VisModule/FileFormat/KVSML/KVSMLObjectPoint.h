@@ -11,18 +11,18 @@
  *  $Id: KVSMLObjectPoint.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__KVSML_OBJECT_POINT_H_INCLUDE
-#define KVS__KVSML_OBJECT_POINT_H_INCLUDE
+#ifndef VIS_MODULE__KVSML_OBJECT_POINT_H_INCLUDE
+#define VIS_MODULE__KVSML_OBJECT_POINT_H_INCLUDE
 
-#include <kvs/FileFormatBase>
-#include <kvs/ValueArray>
-#include <kvs/Type>
-#include <kvs/Vector3>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/Vector3>
 #include "KVSMLTag.h"
 #include "ObjectTag.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,9 +30,9 @@ namespace kvs
  *  @brief  KVSML point object format.
  */
 /*===========================================================================*/
-class KVSMLObjectPoint : public kvs::FileFormatBase
+class KVSMLObjectPoint : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::KVSMLObjectPoint );
+    visModuleClassName( vismodule::KVSMLObjectPoint );
 
 public:
 
@@ -45,13 +45,13 @@ public:
 
 protected:
 
-    kvs::kvsml::KVSMLTag         m_kvsml_tag;    ///< KVSML tag information
-    kvs::kvsml::ObjectTag        m_object_tag;   ///< Object tag information
+    vismodule::kvsml::KVSMLTag         m_kvsml_tag;    ///< KVSML tag information
+    vismodule::kvsml::ObjectTag        m_object_tag;   ///< Object tag information
     WritingDataType              m_writing_type; ///< writing data type
-    kvs::ValueArray<kvs::Real32> m_coords;       ///< coordinate array
-    kvs::ValueArray<kvs::UInt8>  m_colors;       ///< color(r,g,b) array
-    kvs::ValueArray<kvs::Real32> m_normals;      ///< normal array
-    kvs::ValueArray<kvs::Real32> m_sizes;        ///< size array
+    vismodule::ValueArray<vismodule::Real32> m_coords;       ///< coordinate array
+    vismodule::ValueArray<vismodule::UInt8>  m_colors;       ///< color(r,g,b) array
+    vismodule::ValueArray<vismodule::Real32> m_normals;      ///< normal array
+    vismodule::ValueArray<vismodule::Real32> m_sizes;        ///< size array
 
 public:
 
@@ -63,31 +63,31 @@ public:
 
 public:
 
-    const kvs::kvsml::KVSMLTag& KVSMLTag( void ) const;
+    const vismodule::kvsml::KVSMLTag& KVSMLTag( void ) const;
 
-    const kvs::kvsml::ObjectTag& objectTag( void ) const;
+    const vismodule::kvsml::ObjectTag& objectTag( void ) const;
 
 public:
 
-    const kvs::ValueArray<kvs::Real32>& coords( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& coords( void ) const;
 
-    const kvs::ValueArray<kvs::UInt8>& colors( void ) const;
+    const vismodule::ValueArray<vismodule::UInt8>& colors( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& normals( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& normals( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& sizes( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& sizes( void ) const;
 
 public:
 
     void setWritingDataType( const WritingDataType writing_type );
 
-    void setCoords( const kvs::ValueArray<kvs::Real32>& coords );
+    void setCoords( const vismodule::ValueArray<vismodule::Real32>& coords );
 
-    void setColors( const kvs::ValueArray<kvs::UInt8>& colors );
+    void setColors( const vismodule::ValueArray<vismodule::UInt8>& colors );
 
-    void setNormals( const kvs::ValueArray<kvs::Real32>& normals );
+    void setNormals( const vismodule::ValueArray<vismodule::Real32>& normals );
 
-    void setSizes( const kvs::ValueArray<kvs::Real32>& sizes );
+    void setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes );
 
 public:
 
@@ -104,6 +104,6 @@ public:
     friend std::ostream& operator <<( std::ostream& os, const KVSMLObjectPoint& rhs );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__KVSML_OBJECT_POINT_H_INCLUDE
+#endif // VIS_MODULE__KVSML_OBJECT_POINT_H_INCLUDE

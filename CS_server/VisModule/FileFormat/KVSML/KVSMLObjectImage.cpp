@@ -15,21 +15,21 @@
 #include "ImageObjectTag.h"
 #include "PixelTag.h"
 #include "DataArrayTag.h"
-#include <kvs/XMLDocument>
-#include <kvs/XMLDeclaration>
-#include <kvs/XMLElement>
-#include <kvs/XMLComment>
-#include <kvs/ValueArray>
-#include <kvs/File>
-#include <kvs/Type>
-#include <kvs/File>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/XMLDocument>
+#include <vismodule/XMLDeclaration>
+#include <vismodule/XMLElement>
+#include <vismodule/XMLComment>
+#include <vismodule/ValueArray>
+#include <vismodule/File>
+#include <vismodule/Type>
+#include <vismodule/File>
+#include <vismodule/IgnoreUnusedVariable>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -41,7 +41,7 @@ KVSMLObjectImage::KVSMLObjectImage( void ):
     m_width( 0 ),
     m_height( 0 ),
     m_pixel_type( "" ),
-    m_writing_type( kvs::KVSMLObjectImage::Ascii )
+    m_writing_type( vismodule::KVSMLObjectImage::Ascii )
 {
 }
 
@@ -55,7 +55,7 @@ KVSMLObjectImage::KVSMLObjectImage( const std::string& filename ):
     m_width( 0 ),
     m_height( 0 ),
     m_pixel_type( "" ),
-    m_writing_type( kvs::KVSMLObjectImage::Ascii )
+    m_writing_type( vismodule::KVSMLObjectImage::Ascii )
 {
     if ( this->read( filename ) ) { m_is_success = true; }
     else { m_is_success = false; }
@@ -76,7 +76,7 @@ KVSMLObjectImage::~KVSMLObjectImage( void )
  *  @return KVSML tag
  */
 /*===========================================================================*/
-const kvs::kvsml::KVSMLTag& KVSMLObjectImage::KVSMLTag( void ) const
+const vismodule::kvsml::KVSMLTag& KVSMLObjectImage::KVSMLTag( void ) const
 {
     return( m_kvsml_tag );
 }
@@ -87,7 +87,7 @@ const kvs::kvsml::KVSMLTag& KVSMLObjectImage::KVSMLTag( void ) const
  *  @return object tag
  */
 /*===========================================================================*/
-const kvs::kvsml::ObjectTag& KVSMLObjectImage::objectTag( void ) const
+const vismodule::kvsml::ObjectTag& KVSMLObjectImage::objectTag( void ) const
 {
     return( m_object_tag );
 }
@@ -131,7 +131,7 @@ const std::string& KVSMLObjectImage::pixelType( void ) const
  *  @return pixel data array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt8>& KVSMLObjectImage::data( void ) const
+const vismodule::ValueArray<vismodule::UInt8>& KVSMLObjectImage::data( void ) const
 {
     return( m_data );
 }
@@ -186,7 +186,7 @@ void KVSMLObjectImage::setWritingDataType( const WritingDataType writing_type )
  *  @param  data [in] pixel data
  */
 /*===========================================================================*/
-void KVSMLObjectImage::setData( const kvs::ValueArray<kvs::UInt8>& data )
+void KVSMLObjectImage::setData( const vismodule::ValueArray<vismodule::UInt8>& data )
 {
     m_data = data;
 }
@@ -203,61 +203,61 @@ const bool KVSMLObjectImage::read( const std::string& filename )
     m_filename = filename;
 
     // XML document.
-    kvs::XMLDocument document;
+    vismodule::XMLDocument document;
     if ( !document.read( filename ) )
     {
-        kvsMessageError( "%s", document.ErrorDesc().c_str() );
+        visModuleMessageError( "%s", document.ErrorDesc().c_str() );
         return( false );
     }
 
     // <KVSML>
     if ( !m_kvsml_tag.read( &document ) )
     {
-        kvsMessageError( "Cannot read <%s>.", m_kvsml_tag.name().c_str() );
+        visModuleMessageError( "Cannot read <%s>.", m_kvsml_tag.name().c_str() );
         return( false );
     }
 
     // <Object>
     if ( !m_object_tag.read( m_kvsml_tag.node() ) )
     {
-        kvsMessageError( "Cannot read <%s>.", m_object_tag.name().c_str() );
+        visModuleMessageError( "Cannot read <%s>.", m_object_tag.name().c_str() );
         return( false );
     }
 
     // <ImageObject>
-    kvs::kvsml::ImageObjectTag image_object_tag;
+    vismodule::kvsml::ImageObjectTag image_object_tag;
     if ( !image_object_tag.read( m_object_tag.node() ) )
     {
-        kvsMessageError( "Cannot read <%s>.", image_object_tag.name().c_str() );
+        visModuleMessageError( "Cannot read <%s>.", image_object_tag.name().c_str() );
         return( false );
     }
 
     if ( !image_object_tag.hasWidth() )
     {
-        kvsMessageError( "'width' is not specified in <%s>.", image_object_tag.name().c_str() );
+        visModuleMessageError( "'width' is not specified in <%s>.", image_object_tag.name().c_str() );
         return( false );
     }
     m_width = image_object_tag.width();
 
     if ( !image_object_tag.hasHeight() )
     {
-        kvsMessageError( "'height' is not specified in <%s>.", image_object_tag.name().c_str() );
+        visModuleMessageError( "'height' is not specified in <%s>.", image_object_tag.name().c_str() );
         return( false );
     }
     m_height = image_object_tag.height();
 
     // <Pixel>
-    kvs::kvsml::PixelTag pixel_tag;
+    vismodule::kvsml::PixelTag pixel_tag;
     if ( !pixel_tag.read( image_object_tag.node() ) )
     {
-        kvsMessageError( "Cannot read <%s>.", image_object_tag.name().c_str() );
+        visModuleMessageError( "Cannot read <%s>.", image_object_tag.name().c_str() );
         return( false );
     }
     else
     {
         if ( !pixel_tag.hasType() )
         {
-            kvsMessageError( "'type' is not specified in <%s>.", pixel_tag.name().c_str() );
+            visModuleMessageError( "'type' is not specified in <%s>.", pixel_tag.name().c_str() );
             return( false );
         }
         m_pixel_type = pixel_tag.type();
@@ -268,10 +268,10 @@ const bool KVSMLObjectImage::read( const std::string& filename )
             ( m_pixel_type == "color" ) ? 3 : 0;
         const size_t npixels = m_width * m_height;
         const size_t nelements = npixels * nchannels;
-        kvs::kvsml::DataArrayTag data_tag;
+        vismodule::kvsml::DataArrayTag data_tag;
         if ( !data_tag.read( pixel_tag.node(), nelements, &m_data ) )
         {
-            kvsMessageError( "Cannot read <%s> for <%s>.",
+            visModuleMessageError( "Cannot read <%s> for <%s>.",
                              data_tag.name().c_str(),
                              pixel_tag.name().c_str() );
             return( false );
@@ -292,43 +292,43 @@ const bool KVSMLObjectImage::write( const std::string& filename )
 {
     m_filename = filename;
 
-    kvs::XMLDocument document;
-    document.InsertEndChild( kvs::XMLDeclaration("1.0") );
-    document.InsertEndChild( kvs::XMLComment(" Generated by kvs::KVSMLObjectImage::write() ") );
+    vismodule::XMLDocument document;
+    document.InsertEndChild( vismodule::XMLDeclaration("1.0") );
+    document.InsertEndChild( vismodule::XMLComment(" Generated by vismodule::KVSMLObjectImage::write() ") );
 
     // <KVSML>
-    kvs::kvsml::KVSMLTag kvsml_tag;
+    vismodule::kvsml::KVSMLTag kvsml_tag;
     if ( !kvsml_tag.write( &document ) )
     {
-        kvsMessageError( "Cannot write <%s>.", kvsml_tag.name().c_str() );
+        visModuleMessageError( "Cannot write <%s>.", kvsml_tag.name().c_str() );
         return( false );
     }
 
     // <Object type="ImageObject">
-    kvs::kvsml::ObjectTag object_tag;
+    vismodule::kvsml::ObjectTag object_tag;
     object_tag.setType( "ImageObject" );
     if ( !object_tag.write( kvsml_tag.node() ) )
     {
-        kvsMessageError( "Cannot write <%s>.", object_tag.name().c_str() );
+        visModuleMessageError( "Cannot write <%s>.", object_tag.name().c_str() );
         return( false );
     }
 
     // <ImageObject width="xxx" height="xxx">
-    kvs::kvsml::ImageObjectTag image_object_tag;
+    vismodule::kvsml::ImageObjectTag image_object_tag;
     image_object_tag.setWidth( m_width );
     image_object_tag.setHeight( m_height );
     if ( !image_object_tag.write( object_tag.node() ) )
     {
-        kvsMessageError( "Cannot write <%s>.", image_object_tag.name().c_str() );
+        visModuleMessageError( "Cannot write <%s>.", image_object_tag.name().c_str() );
         return( false );
     }
 
     // <Pixel>
-    kvs::kvsml::PixelTag pixel_tag;
+    vismodule::kvsml::PixelTag pixel_tag;
     pixel_tag.setType( m_pixel_type );
     if ( !pixel_tag.write( image_object_tag.node() ) )
     {
-        kvsMessageError( "Cannot write <%s>.", pixel_tag.name().c_str() );
+        visModuleMessageError( "Cannot write <%s>.", pixel_tag.name().c_str() );
         return( false );
     }
     else
@@ -336,22 +336,22 @@ const bool KVSMLObjectImage::write( const std::string& filename )
         if ( m_data.size() > 0 )
         {
             // <DataArray>
-            kvs::kvsml::DataArrayTag data_tag;
-            if ( m_writing_type == kvs::KVSMLObjectImage::ExternalAscii )
+            vismodule::kvsml::DataArrayTag data_tag;
+            if ( m_writing_type == vismodule::KVSMLObjectImage::ExternalAscii )
             {
-                data_tag.setFile( kvs::kvsml::DataArray::GetDataFilename( m_filename, "pixel" ) );
+                data_tag.setFile( vismodule::kvsml::DataArray::GetDataFilename( m_filename, "pixel" ) );
                 data_tag.setFormat( "ascii" );
             }
-            else if ( m_writing_type == kvs::KVSMLObjectImage::ExternalBinary )
+            else if ( m_writing_type == vismodule::KVSMLObjectImage::ExternalBinary )
             {
-                data_tag.setFile( kvs::kvsml::DataArray::GetDataFilename( m_filename, "pixel" ) );
+                data_tag.setFile( vismodule::kvsml::DataArray::GetDataFilename( m_filename, "pixel" ) );
                 data_tag.setFormat( "binary" );
             }
 
-            const std::string pathname = kvs::File( m_filename ).pathName();
+            const std::string pathname = vismodule::File( m_filename ).pathName();
             if ( !data_tag.write( pixel_tag.node(), m_data, pathname ) )
             {
-                kvsMessageError( "Cannot write <%s> for <%s>.",
+                visModuleMessageError( "Cannot write <%s> for <%s>.",
                                  data_tag.name().c_str(),
                                  pixel_tag.name().c_str() );
                 return( false );
@@ -371,7 +371,7 @@ const bool KVSMLObjectImage::write( const std::string& filename )
 /*===========================================================================*/
 const bool KVSMLObjectImage::CheckFileExtension( const std::string& filename )
 {
-    const kvs::File file( filename );
+    const vismodule::File file( filename );
     if ( file.extension() == "kvsml" ||
          file.extension() == "KVSML" ||
          file.extension() == "xml"   ||
@@ -392,20 +392,20 @@ const bool KVSMLObjectImage::CheckFileExtension( const std::string& filename )
 /*===========================================================================*/
 const bool KVSMLObjectImage::CheckFileFormat( const std::string& filename )
 {
-    kvs::XMLDocument document;
+    vismodule::XMLDocument document;
     if ( !document.read( filename ) ) return( false );
 
     // <KVSML>
-    kvs::kvsml::KVSMLTag kvsml_tag;
+    vismodule::kvsml::KVSMLTag kvsml_tag;
     if ( !kvsml_tag.read( &document ) ) return( false );
 
     // <Object>
-    kvs::kvsml::ObjectTag object_tag;
+    vismodule::kvsml::ObjectTag object_tag;
     if ( !object_tag.read( kvsml_tag.node() ) ) return( false );
     if ( object_tag.type() != "ImageObject" ) return( false );
 
     // <ImageObject>
-    kvs::kvsml::ImageObjectTag image_object_tag;
+    vismodule::kvsml::ImageObjectTag image_object_tag;
     if ( !image_object_tag.read( object_tag.node() ) ) return( false );
 
     return( true );
@@ -427,4 +427,4 @@ std::ostream& operator <<( std::ostream& os, const KVSMLObjectImage& rhs )
     return( os );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

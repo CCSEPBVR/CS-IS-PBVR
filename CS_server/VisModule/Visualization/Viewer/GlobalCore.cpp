@@ -12,32 +12,32 @@
  */
 /****************************************************************************/
 #include "GlobalCore.h"
-#include <kvs/DebugNew>
-#include <kvs/Camera>
-#include <kvs/Background>
-#include <kvs/Light>
-#include <kvs/Mouse>
-#include <kvs/ObjectManager>
-#include <kvs/RendererManager>
-#include <kvs/IDManager>
-#include <kvs/Message>
-#include <kvs/RGBColor>
+#include <vismodule/DebugNew>
+#include <vismodule/Camera>
+#include <vismodule/Background>
+#include <vismodule/Light>
+#include <vismodule/Mouse>
+#include <vismodule/ObjectManager>
+#include <vismodule/RendererManager>
+#include <vismodule/IDManager>
+#include <vismodule/Message>
+#include <vismodule/RGBColor>
 
 
-namespace kvs
+namespace vismodule
 {
 
 // Parameter instantiation.
 int                       GlobalCore::argc;
 char**                    GlobalCore::argv;
-kvs::Camera*              GlobalCore::camera;
-kvs::Light*               GlobalCore::light;
-kvs::Mouse*               GlobalCore::mouse;
-kvs::Background*          GlobalCore::background;
+vismodule::Camera*              GlobalCore::camera;
+vismodule::Light*               GlobalCore::light;
+vismodule::Mouse*               GlobalCore::mouse;
+vismodule::Background*          GlobalCore::background;
 GlobalCore::ControlTarget GlobalCore::target;
-kvs::ObjectManager*       GlobalCore::object_manager;
-kvs::RendererManager*     GlobalCore::renderer_manager;
-kvs::IDManager*           GlobalCore::id_manager;
+vismodule::ObjectManager*       GlobalCore::object_manager;
+vismodule::RendererManager*     GlobalCore::renderer_manager;
+vismodule::IDManager*           GlobalCore::id_manager;
 
 /*==========================================================================*/
 /**
@@ -74,52 +74,52 @@ void GlobalCore::create_core( int count, char** values )
     argv   = values;
     target = TargetObject;
 
-    camera = new kvs::Camera();
+    camera = new vismodule::Camera();
     if( !camera )
     {
-        kvsMessageError("Cannot allocate memory for the camera.");
+        visModuleMessageError("Cannot allocate memory for the camera.");
         return;
     }
 
-    light = new kvs::Light();
+    light = new vismodule::Light();
     if( !light )
     {
-        kvsMessageError("Cannot allocate memory for the light.");
+        visModuleMessageError("Cannot allocate memory for the light.");
         return;
     }
 
-    mouse = new kvs::Mouse();
+    mouse = new vismodule::Mouse();
     if( !mouse )
     {
-        kvsMessageError("Cannot allocate memory for the mouse.");
+        visModuleMessageError("Cannot allocate memory for the mouse.");
         return;
     }
 
-    background = new kvs::Background( kvs::RGBColor( 212, 221, 229 ) );
+    background = new vismodule::Background( vismodule::RGBColor( 212, 221, 229 ) );
     if( !background )
     {
-        kvsMessageError("Cannot allocate memory for the background.");
+        visModuleMessageError("Cannot allocate memory for the background.");
         return;
     }
 
-    object_manager = new kvs::ObjectManager();
+    object_manager = new vismodule::ObjectManager();
     if( !object_manager )
     {
-        kvsMessageError("Cannot allocate memory for the object manager.");
+        visModuleMessageError("Cannot allocate memory for the object manager.");
         return;
     }
 
-    renderer_manager = new kvs::RendererManager();
+    renderer_manager = new vismodule::RendererManager();
     if( !renderer_manager )
     {
-        kvsMessageError("Cannot allocate memory for the renderer manager.");
+        visModuleMessageError("Cannot allocate memory for the renderer manager.");
         return;
     }
 
-    id_manager = new kvs::IDManager();
+    id_manager = new vismodule::IDManager();
     if( !id_manager )
     {
-        kvsMessageError("Cannot allocate memory for the ID manager.");
+        visModuleMessageError("Cannot allocate memory for the ID manager.");
         return;
     }
 }
@@ -167,4 +167,4 @@ void GlobalCore::reset_core( void )
     light->resetXform();
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

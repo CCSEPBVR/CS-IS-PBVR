@@ -15,21 +15,21 @@
 #include "TimerEventListener.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 TimerEventListener::TimerEventListener( void )
 {
-    kvs::EventListener::setEventType( kvs::EventBase::TimerEvent );
+    vismodule::EventListener::setEventType( vismodule::EventBase::TimerEvent );
 }
 
 TimerEventListener::~TimerEventListener( void )
 {
 }
 
-void TimerEventListener::onEvent( kvs::EventBase* event )
+void TimerEventListener::onEvent( vismodule::EventBase* event )
 {
-    this->update( static_cast<kvs::TimeEvent*>(event) );
+    this->update( static_cast<vismodule::TimeEvent*>(event) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -11,16 +11,16 @@
  *  $Id: Light.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__LIGHT_H_INCLUDE
-#define KVS__LIGHT_H_INCLUDE
+#ifndef VIS_MODULE__LIGHT_H_INCLUDE
+#define VIS_MODULE__LIGHT_H_INCLUDE
 
-#include <kvs/XformControl>
-#include <kvs/ClassName>
-#include <kvs/Vector3>
-#include <kvs/Camera>
+#include <vismodule/XformControl>
+#include <vismodule/ClassName>
+#include <vismodule/Vector3>
+#include <vismodule/Camera>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class RGBAColor;
@@ -30,18 +30,18 @@ class RGBAColor;
  *  Light class
  */
 /*==========================================================================*/
-class Light : public kvs::XformControl
+class Light : public vismodule::XformControl
 {
-    kvsClassName( kvs::Light );
+    visModuleClassName( vismodule::Light );
 
 protected:
 
     unsigned int  m_id;            ///< light ID
-    kvs::Vector3f m_init_position; ///< initial light position
-    kvs::Vector3f m_position;      ///< light position
-    kvs::Vector3f m_diffuse;       ///< diffuse color
-    kvs::Vector3f m_ambient;       ///< ambient color
-    kvs::Vector3f m_specular;      ///< specular color
+    vismodule::Vector3f m_init_position; ///< initial light position
+    vismodule::Vector3f m_position;      ///< light position
+    vismodule::Vector3f m_diffuse;       ///< diffuse color
+    vismodule::Vector3f m_ambient;       ///< ambient color
+    vismodule::Vector3f m_specular;      ///< specular color
 
 public:
 
@@ -59,37 +59,37 @@ public:
 
     void setPosition( const float x, const float y, const float z );
 
-    void setPosition( const kvs::Vector3f& position );
+    void setPosition( const vismodule::Vector3f& position );
 
     void setColor( const float r, const float g, const float b );
 
-    void setColor( const kvs::RGBAColor& color );
+    void setColor( const vismodule::RGBAColor& color );
 
     void setDiffuse( const float r, const float g, const float b );
 
-    void setDiffuse( const kvs::RGBAColor& color );
+    void setDiffuse( const vismodule::RGBAColor& color );
 
     void setAmbient( const float r, const float g, const float b );
 
-    void setAmbient( const kvs::RGBAColor& color );
+    void setAmbient( const vismodule::RGBAColor& color );
 
     void setSpecular( const float r, const float g, const float b );
 
-    void setSpecular( const kvs::RGBAColor& color );
+    void setSpecular( const vismodule::RGBAColor& color );
 
 public:
 
-    const kvs::Vector3f& position( void ) const;
+    const vismodule::Vector3f& position( void ) const;
 
-    const kvs::Vector3f& diffuse( void ) const;
+    const vismodule::Vector3f& diffuse( void ) const;
 
-    const kvs::Vector3f& ambient( void ) const;
+    const vismodule::Vector3f& ambient( void ) const;
 
-    const kvs::Vector3f& specular( void ) const;
+    const vismodule::Vector3f& specular( void ) const;
 
 public:
 
-    virtual void update( const kvs::Camera* camera );
+    virtual void update( const vismodule::Camera* camera );
 
     void on( void ) const;
 
@@ -101,11 +101,11 @@ public:
 
     void resetXform( void );
 
-    void rotate( const kvs::Matrix33f& rotation );
+    void rotate( const vismodule::Matrix33f& rotation );
 
-    void translate( const kvs::Vector3f& translation );
+    void translate( const vismodule::Vector3f& translation );
 
-    void scale( const kvs::Vector3f& scaling );
+    void scale( const vismodule::Vector3f& scaling );
 
 private:
 
@@ -120,6 +120,6 @@ public:
     static void setModelAmbient( float ambient[4] );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__LIGHT_H_INCLUDE
+#endif // VIS_MODULE__LIGHT_H_INCLUDE

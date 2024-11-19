@@ -11,18 +11,18 @@
  *  $Id: TCPSocket.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__TCP_SOCKET_H_INCLUDE
-#define KVS__TCP_SOCKET_H_INCLUDE
+#ifndef VIS_MODULE__TCP_SOCKET_H_INCLUDE
+#define VIS_MODULE__TCP_SOCKET_H_INCLUDE
 
 #include "Socket.h"
 #include "IPAddress.h"
 #include "SocketAddress.h"
 #include "SocketTimer.h"
 #include "MessageBlock.h"
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -30,9 +30,9 @@ namespace kvs
  *  TCP socket class.
  */
 /*==========================================================================*/
-class TCPSocket : public kvs::Socket
+class TCPSocket : public vismodule::Socket
 {
-    kvsClassName( kvs::TCPSocket );
+    visModuleClassName( vismodule::TCPSocket );
 
 protected:
 
@@ -42,11 +42,11 @@ public:
 
     TCPSocket( void );
 
-    TCPSocket( const kvs::IPAddress& ip, const int port, const kvs::SocketTimer* timeout = 0 );
+    TCPSocket( const vismodule::IPAddress& ip, const int port, const vismodule::SocketTimer* timeout = 0 );
 
-    TCPSocket( const kvs::SocketAddress& socket_address, const kvs::SocketTimer* timeout = 0 );
+    TCPSocket( const vismodule::SocketAddress& socket_address, const vismodule::SocketTimer* timeout = 0 );
 
-    TCPSocket( const kvs::Socket::id_type& id, const kvs::SocketAddress& address );
+    TCPSocket( const vismodule::Socket::id_type& id, const vismodule::SocketAddress& address );
 
     virtual ~TCPSocket( void );
 
@@ -56,25 +56,25 @@ public:
 
     void open( void );
 
-    bool connect( const kvs::IPAddress& ip, const int port, const kvs::SocketTimer* timeout = 0 );
+    bool connect( const vismodule::IPAddress& ip, const int port, const vismodule::SocketTimer* timeout = 0 );
 
-    bool connect( const kvs::SocketAddress& socket_address, const kvs::SocketTimer* timeout = 0 );
+    bool connect( const vismodule::SocketAddress& socket_address, const vismodule::SocketTimer* timeout = 0 );
 
-    bool complete( const kvs::SocketTimer* timer = 0 );
+    bool complete( const vismodule::SocketTimer* timer = 0 );
 
     int send( const void* message, const int message_size );
 
-    int send( const kvs::MessageBlock& message );
+    int send( const vismodule::MessageBlock& message );
 
     int receive( void* message, const int message_size );
 
-    int receive( kvs::MessageBlock* message );
+    int receive( vismodule::MessageBlock* message );
 
     int receiveOnce( void* message, const int message_size );
 
     int receiveLine( std::string& line );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TCP_SOCKET_H_INCLUDE
+#endif // VIS_MODULE__TCP_SOCKET_H_INCLUDE

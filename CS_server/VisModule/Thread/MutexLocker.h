@@ -11,13 +11,13 @@
  *  $Id: MutexLocker.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MUTEX_LOCKER_H_INCLUDE
-#define KVS__MUTEX_LOCKER_H_INCLUDE
+#ifndef VIS_MODULE__MUTEX_LOCKER_H_INCLUDE
+#define VIS_MODULE__MUTEX_LOCKER_H_INCLUDE
 
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class Mutex;
@@ -29,15 +29,15 @@ class Mutex;
 /*==========================================================================*/
 class MutexLocker
 {
-    kvsClassName( kvs::MutexLocker );
+    visModuleClassName( vismodule::MutexLocker );
 
 protected:
 
-    kvs::Mutex* m_mutex; ///< pointer to mutex
+    vismodule::Mutex* m_mutex; ///< pointer to mutex
 
 public:
 
-    MutexLocker( kvs::Mutex* mutex );
+    MutexLocker( vismodule::Mutex* mutex );
 
     virtual ~MutexLocker( void );
 
@@ -50,6 +50,6 @@ public:
     Mutex* mutex( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MUTEX_LOCKER_H_INCLUDE
+#endif // VIS_MODULE__MUTEX_LOCKER_H_INCLUDE

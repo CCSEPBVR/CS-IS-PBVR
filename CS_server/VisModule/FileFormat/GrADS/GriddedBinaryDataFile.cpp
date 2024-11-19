@@ -14,10 +14,10 @@
 /*****************************************************************************/
 #include "GriddedBinaryDataFile.h"
 #include <fstream>
-#include <kvs/Endian>
+#include <vismodule/Endian>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace grads
@@ -85,7 +85,7 @@ const std::string& GriddedBinaryDataFile::filename( void ) const
  *  @return data values
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& GriddedBinaryDataFile::values( void ) const
+const vismodule::ValueArray<vismodule::Real32>& GriddedBinaryDataFile::values( void ) const
 {
     return( m_values );
 }
@@ -100,14 +100,14 @@ const bool GriddedBinaryDataFile::load( void ) const
 {
     if ( m_filename.length() == 0 )
     {
-        kvsMessageError("Filename of binary data has not been specified.");
+        visModuleMessageError("Filename of binary data has not been specified.");
         return( false );
     }
 
     std::ifstream ifs( m_filename.c_str(), std::ios::binary | std::ios::in );
     if( !ifs.is_open() )
     {
-        kvsMessageError( "Cannot open %s.", m_filename.c_str() );
+        visModuleMessageError( "Cannot open %s.", m_filename.c_str() );
         return( false );
     }
 
@@ -118,20 +118,20 @@ const bool GriddedBinaryDataFile::load( void ) const
     const size_t begin = ifs.tellg();
 
     const size_t file_size = end - begin; // [byte]
-    const size_t nelements = file_size / sizeof( kvs::Real32 );
+    const size_t nelements = file_size / sizeof( vismodule::Real32 );
     m_values.allocate( nelements );
 
     if ( m_sequential )
     {
         for ( size_t i = 0; i < nelements; i++ )
         {
-            kvs::Int16 padding[4];
-            kvs::Real32 value;
-            ifs.read( (char*)( padding + 0 ), sizeof( kvs::Int16 ) );
-            ifs.read( (char*)( padding + 1 ), sizeof( kvs::Int16 ) );
-            ifs.read( (char*)( &value ), sizeof( kvs::Real32 ) );
-            ifs.read( (char*)( padding + 2 ), sizeof( kvs::Int16 ) );
-            ifs.read( (char*)( padding + 3 ), sizeof( kvs::Int16 ) );
+            vismodule::Int16 padding[4];
+            vismodule::Real32 value;
+            ifs.read( (char*)( padding + 0 ), sizeof( vismodule::Int16 ) );
+            ifs.read( (char*)( padding + 1 ), sizeof( vismodule::Int16 ) );
+            ifs.read( (char*)( &value ), sizeof( vismodule::Real32 ) );
+            ifs.read( (char*)( padding + 2 ), sizeof( vismodule::Int16 ) );
+            ifs.read( (char*)( padding + 3 ), sizeof( vismodule::Int16 ) );
             m_values[i] = value;
         }
     }
@@ -142,11 +142,11 @@ const bool GriddedBinaryDataFile::load( void ) const
 
     if ( m_big_endian )
     {
-        if ( kvs::Endian::IsLittle() ) m_values.swapByte();
+        if ( vismodule::Endian::IsLittle() ) m_values.swapByte();
     }
     else
     {
-        if ( kvs::Endian::IsBig() ) m_values.swapByte();
+        if ( vismodule::Endian::IsBig() ) m_values.swapByte();
     }
 
     ifs.close();
@@ -166,4 +166,4 @@ const void GriddedBinaryDataFile::free( void ) const
 
 } // end of namespace grads
 
-} // end of namespace kvs
+} // end of namespace vismodule

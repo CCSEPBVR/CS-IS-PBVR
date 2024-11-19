@@ -11,16 +11,16 @@
  *  $Id: StructuredVolumeObjectTag.h 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__KVSML__STRUCTURED_VOLUME_OBJECT_H_INCLUDE
-#define KVS__KVSML__STRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#ifndef VIS_MODULE__KVSML__STRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#define VIS_MODULE__KVSML__STRUCTURED_VOLUME_OBJECT_H_INCLUDE
 
 #include <string>
-#include <kvs/XMLNode>
-#include <kvs/Vector3>
+#include <vismodule/XMLNode>
+#include <vismodule/Vector3>
 #include "TagBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -31,18 +31,18 @@ namespace kvsml
  *  @brief  Tag class for <StructuredVolumeObject>
  */
 /*===========================================================================*/
-class StructuredVolumeObjectTag : public kvs::kvsml::TagBase
+class StructuredVolumeObjectTag : public vismodule::kvsml::TagBase
 {
 public:
 
-    typedef kvs::kvsml::TagBase BaseClass;
+    typedef vismodule::kvsml::TagBase BaseClass;
 
 protected:
 
     bool m_has_grid_type; ///< flag to check whether 'grid_type' is specified or not
     std::string m_grid_type; ///< grid type
     bool m_has_resolution; ///< flag to check whether 'resolution' is specified or not
-    kvs::Vector3ui m_resolution; ///< grid resolution
+    vismodule::Vector3ui m_resolution; ///< grid resolution
 
 public:
 
@@ -58,23 +58,23 @@ public:
 
     const bool hasResolution( void ) const;
 
-    const kvs::Vector3ui& resolution( void ) const;
+    const vismodule::Vector3ui& resolution( void ) const;
 
 public:
 
     void setGridType( const std::string& grid_type );
 
-    void setResolution( const kvs::Vector3ui& resolution );
+    void setResolution( const vismodule::Vector3ui& resolution );
 
 public:
 
-    const bool read( const kvs::XMLNode::SuperClass* parent );
+    const bool read( const vismodule::XMLNode::SuperClass* parent );
 
-    const bool write( kvs::XMLNode::SuperClass* parent );
+    const bool write( vismodule::XMLNode::SuperClass* parent );
 };
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__KVSML__STRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#endif // VIS_MODULE__KVSML__STRUCTURED_VOLUME_OBJECT_H_INCLUDE

@@ -11,12 +11,12 @@
  *  $Id: LineRenderingFunction.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__LINE_RENDERING_FUNCTION_H_INCLUDE
-#define KVS__LINE_RENDERING_FUNCTION_H_INCLUDE
+#ifndef VIS_MODULE__LINE_RENDERING_FUNCTION_H_INCLUDE
+#define VIS_MODULE__LINE_RENDERING_FUNCTION_H_INCLUDE
 
-#include <kvs/LineObject>
-#include <kvs/RGBColor>
-#include <kvs/Vector3>
+#include <vismodule/LineObject>
+#include <vismodule/RGBColor>
+#include <vismodule/Vector3>
 
 
 namespace
@@ -34,7 +34,7 @@ namespace
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Strip_VCs_S( const kvs::LineObject* line )
+void Rendering_Strip_VCs_S( const vismodule::LineObject* line )
 {
     glLineWidth( line->size( 0 ) );
     glBegin( GL_LINE_STRIP );
@@ -43,8 +43,8 @@ void Rendering_Strip_VCs_S( const kvs::LineObject* line )
 
         for( size_t i = 0; i < nvertices; i++ )
         {
-            const kvs::RGBColor& color    = line->color(i);
-            const kvs::Vector3f& position = line->coord(i);
+            const vismodule::RGBColor& color    = line->color(i);
+            const vismodule::Vector3f& position = line->coord(i);
 
             glColor3ub( color.r(),    color.g(),    color.b()  );
             glVertex3f( position.x(), position.y(), position.z() );
@@ -59,17 +59,17 @@ void Rendering_Strip_VCs_S( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Strip_VCs_Ss( const kvs::LineObject* line )
+void Rendering_Strip_VCs_Ss( const vismodule::LineObject* line )
 {
     const size_t nlines = line->nvertices() - 1;
     for( size_t i = 0; i < nlines; i++ )
     {
         glLineWidth( line->size(i) );
 
-        const kvs::RGBColor& color1    = line->color(i);
-        const kvs::Vector3f& position1 = line->coord(i);
-        const kvs::RGBColor& color2    = line->color(i+1);
-        const kvs::Vector3f& position2 = line->coord(i+1);
+        const vismodule::RGBColor& color1    = line->color(i);
+        const vismodule::Vector3f& position1 = line->coord(i);
+        const vismodule::RGBColor& color2    = line->color(i+1);
+        const vismodule::Vector3f& position2 = line->coord(i+1);
 
         glBegin( GL_LINES );
         {
@@ -88,19 +88,19 @@ void Rendering_Strip_VCs_Ss( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Strip_LC_S( const kvs::LineObject* line )
+void Rendering_Strip_LC_S( const vismodule::LineObject* line )
 {
     glLineWidth( line->size( 0 ) );
 
     const size_t         nvertices = line->nvertices();
-    const kvs::RGBColor& color     = line->color(0);
+    const vismodule::RGBColor& color     = line->color(0);
 
     glBegin( GL_LINE_STRIP );
     {
         glColor3ub( color.r(), color.g(), color.b() );
         for( size_t i = 0; i < nvertices; i++ )
         {
-            const kvs::Vector3f& position = line->coord(i);
+            const vismodule::Vector3f& position = line->coord(i);
             glVertex3f( position.x(), position.y(), position.z() );
         }
     }
@@ -113,7 +113,7 @@ void Rendering_Strip_LC_S( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Strip_LCs_S( const kvs::LineObject* line )
+void Rendering_Strip_LCs_S( const vismodule::LineObject* line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -123,9 +123,9 @@ void Rendering_Strip_LCs_S( const kvs::LineObject* line )
     {
         for( size_t i = 0; i < num; i++ )
         {
-            const kvs::RGBColor& color     = line->color(i);
-            const kvs::Vector3f& position1 = line->coord(i);
-            const kvs::Vector3f& position2 = line->coord(i+1);
+            const vismodule::RGBColor& color     = line->color(i);
+            const vismodule::Vector3f& position1 = line->coord(i);
+            const vismodule::Vector3f& position2 = line->coord(i+1);
 
             glColor3ub( color.r(),    color.g(),    color.b()  );
             glVertex3f( position1.x(), position1.y(), position1.z() );
@@ -141,18 +141,18 @@ void Rendering_Strip_LCs_S( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Strip_LC_Ss( const kvs::LineObject* line )
+void Rendering_Strip_LC_Ss( const vismodule::LineObject* line )
 {
     const size_t         num   = line->nvertices() - 1;
-    const kvs::RGBColor& color = line->color(0);
+    const vismodule::RGBColor& color = line->color(0);
     glColor3ub( color.r(), color.g(), color.b() );
 
     for( size_t i = 0; i < num; i++ )
     {
         glLineWidth( line->size( i ) );
 
-        const kvs::Vector3f& position1 = line->coord(i);
-        const kvs::Vector3f& position2 = line->coord(i+1);
+        const vismodule::Vector3f& position1 = line->coord(i);
+        const vismodule::Vector3f& position2 = line->coord(i+1);
 
         glBegin( GL_LINES );
         {
@@ -169,15 +169,15 @@ void Rendering_Strip_LC_Ss( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Strip_LCs_Ss( const kvs::LineObject* line )
+void Rendering_Strip_LCs_Ss( const vismodule::LineObject* line )
 {
     const size_t num = line->nvertices() - 1;
 
     for( size_t i = 0; i < num; i++ )
     {
-        const kvs::RGBColor& color     = line->color(i);
-        const kvs::Vector3f& position1 = line->coord(i);
-        const kvs::Vector3f& position2 = line->coord(i+1);
+        const vismodule::RGBColor& color     = line->color(i);
+        const vismodule::Vector3f& position1 = line->coord(i);
+        const vismodule::Vector3f& position2 = line->coord(i+1);
 
         glLineWidth( line->size( i ) );
         glColor3ub( color.r(),    color.g(),    color.b()  );
@@ -197,7 +197,7 @@ void Rendering_Strip_LCs_Ss( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Uniline_VCs_S( const kvs::LineObject* line )
+void Rendering_Uniline_VCs_S( const vismodule::LineObject* line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -208,8 +208,8 @@ void Rendering_Uniline_VCs_S( const kvs::LineObject* line )
         {
             size_t id = *( line->connections().pointer() + i );
 
-            const kvs::RGBColor& color    = line->color(id);
-            const kvs::Vector3f& position = line->coord(id);
+            const vismodule::RGBColor& color    = line->color(id);
+            const vismodule::Vector3f& position = line->coord(id);
 
             glColor3ub( color.r(),    color.g(),    color.b()  );
             glVertex3f( position.x(), position.y(), position.z() );
@@ -224,7 +224,7 @@ void Rendering_Uniline_VCs_S( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Uniline_VCs_Ss( const kvs::LineObject* line )
+void Rendering_Uniline_VCs_Ss( const vismodule::LineObject* line )
 {
     const size_t num = line->nconnections() - 1;
     for( size_t i = 0; i < num; i++ )
@@ -232,10 +232,10 @@ void Rendering_Uniline_VCs_Ss( const kvs::LineObject* line )
         size_t id1 = *( line->connections().pointer() + i   );
         size_t id2 = *( line->connections().pointer() + i+1 );
 
-        const kvs::RGBColor& color1    = line->color(id1);
-        const kvs::RGBColor& color2    = line->color(id2);
-        const kvs::Vector3f& position1 = line->coord(id1);
-        const kvs::Vector3f& position2 = line->coord(id2);
+        const vismodule::RGBColor& color1    = line->color(id1);
+        const vismodule::RGBColor& color2    = line->color(id2);
+        const vismodule::Vector3f& position1 = line->coord(id1);
+        const vismodule::Vector3f& position2 = line->coord(id2);
 
         glLineWidth( line->size( i ) );
         glBegin( GL_LINES );
@@ -255,20 +255,20 @@ void Rendering_Uniline_VCs_Ss( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Uniline_LC_S( const kvs::LineObject* line )
+void Rendering_Uniline_LC_S( const vismodule::LineObject* line )
 {
     glLineWidth( line->size( 0 ) );
 
     glBegin( GL_LINE_STRIP );
     {
-        const kvs::RGBColor& color = line->color(0);
+        const vismodule::RGBColor& color = line->color(0);
         glColor3ub( color.r(), color.g(), color.b() );
 
         const size_t nconnections = line->nconnections();
 
         for( size_t i = 0; i < nconnections; i++ )
         {
-            const kvs::Vector3f& position = line->coord(i);
+            const vismodule::Vector3f& position = line->coord(i);
             glVertex3d( position.x(), position.y(), position.z() );
         }
     }
@@ -281,7 +281,7 @@ void Rendering_Uniline_LC_S( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Uniline_LCs_S( const kvs::LineObject* line )
+void Rendering_Uniline_LCs_S( const vismodule::LineObject* line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -290,9 +290,9 @@ void Rendering_Uniline_LCs_S( const kvs::LineObject* line )
         const size_t num = line->nconnections() - 1;
         for( size_t i = 0; i < num; i++ )
         {
-            const kvs::RGBColor& color     = line->color(i);
-            const kvs::Vector3f& position1 = line->coord(i);
-            const kvs::Vector3f& position2 = line->coord(i+1);
+            const vismodule::RGBColor& color     = line->color(i);
+            const vismodule::Vector3f& position1 = line->coord(i);
+            const vismodule::Vector3f& position2 = line->coord(i+1);
 
             glColor3ub( color.r(),    color.g(),    color.b()  );
             glVertex3f( position1.x(), position1.y(), position1.z() );
@@ -308,17 +308,17 @@ void Rendering_Uniline_LCs_S( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Uniline_LC_Ss( const kvs::LineObject* line )
+void Rendering_Uniline_LC_Ss( const vismodule::LineObject* line )
 {
-    const kvs::RGBColor& color = line->color(0);
+    const vismodule::RGBColor& color = line->color(0);
     glColor3ub( color.r(), color.g(), color.b() );
 
     const size_t num = line->nconnections() - 1;
 
     for( size_t i = 0; i < num; i++ )
     {
-        const kvs::Vector3f& position1 = line->coord(i  );
-        const kvs::Vector3f& position2 = line->coord(i+1);
+        const vismodule::Vector3f& position1 = line->coord(i  );
+        const vismodule::Vector3f& position2 = line->coord(i+1);
 
         glLineWidth( line->size( i ) );
         glBegin( GL_LINES );
@@ -336,14 +336,14 @@ void Rendering_Uniline_LC_Ss( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Uniline_LCs_Ss( const kvs::LineObject* line )
+void Rendering_Uniline_LCs_Ss( const vismodule::LineObject* line )
 {
     const size_t num = line->nconnections() - 1;
     for( size_t i = 0; i < num; i++ )
     {
-        const kvs::RGBColor& color     = line->color(i);
-        const kvs::Vector3f& position1 = line->coord(i);
-        const kvs::Vector3f& position2 = line->coord(i+1);
+        const vismodule::RGBColor& color     = line->color(i);
+        const vismodule::Vector3f& position1 = line->coord(i);
+        const vismodule::Vector3f& position2 = line->coord(i+1);
 
         glLineWidth( line->size( i ) );
         glColor3ub( color.r(), color.g(), color.b()  );
@@ -362,7 +362,7 @@ void Rendering_Uniline_LCs_Ss( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Polyline_VCs_S( const kvs::LineObject* line )
+void Rendering_Polyline_VCs_S( const vismodule::LineObject* line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -377,8 +377,8 @@ void Rendering_Polyline_VCs_S( const kvs::LineObject* line )
         {
             for( size_t j = id1; j <= id2; j++ )
             {
-                const kvs::RGBColor& color    = line->color(j);
-                const kvs::Vector3f& position = line->coord(j);
+                const vismodule::RGBColor& color    = line->color(j);
+                const vismodule::Vector3f& position = line->coord(j);
 
                 glColor3ub( color.r(),    color.g(),    color.b()  );
                 glVertex3f( position.x(), position.y(), position.z() );
@@ -394,7 +394,7 @@ void Rendering_Polyline_VCs_S( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Polyline_VCs_Ss( const kvs::LineObject* line )
+void Rendering_Polyline_VCs_Ss( const vismodule::LineObject* line )
 {
     int ctr = 0;
     const size_t nconnections = line->nconnections();
@@ -406,10 +406,10 @@ void Rendering_Polyline_VCs_Ss( const kvs::LineObject* line )
 
         for( size_t j = id1; j < id2; j++ )
         {
-            const kvs::RGBColor& color1    = line->color(j);
-            const kvs::RGBColor& color2    = line->color(j+1);
-            const kvs::Vector3f& position1 = line->coord(j);
-            const kvs::Vector3f& position2 = line->coord(j+1);
+            const vismodule::RGBColor& color1    = line->color(j);
+            const vismodule::RGBColor& color2    = line->color(j+1);
+            const vismodule::Vector3f& position1 = line->coord(j);
+            const vismodule::Vector3f& position2 = line->coord(j+1);
 
             glLineWidth( line->size( ctr ) );
             glBegin( GL_LINES );
@@ -432,7 +432,7 @@ void Rendering_Polyline_VCs_Ss( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Polyline_LC_S( const kvs::LineObject* line )
+void Rendering_Polyline_LC_S( const vismodule::LineObject* line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -445,13 +445,13 @@ void Rendering_Polyline_LC_S( const kvs::LineObject* line )
 
         glBegin( GL_LINE_STRIP );
         {
-            const kvs::RGBColor& color = line->color(0);
+            const vismodule::RGBColor& color = line->color(0);
             glColor3ub( color.r(), color.g(), color.b() );
 
             for( size_t j = id1; j < id2; j++ )
             {
-                const kvs::Vector3f& position1 = line->coord(j);
-                const kvs::Vector3f& position2 = line->coord(j+1);
+                const vismodule::Vector3f& position1 = line->coord(j);
+                const vismodule::Vector3f& position2 = line->coord(j+1);
 
                 glVertex3f( position1.x(), position1.y(), position1.z() );
                 glVertex3f( position2.x(), position2.y(), position2.z() );
@@ -467,7 +467,7 @@ void Rendering_Polyline_LC_S( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Polyline_LCs_S( const kvs::LineObject* line )
+void Rendering_Polyline_LCs_S( const vismodule::LineObject* line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -483,9 +483,9 @@ void Rendering_Polyline_LCs_S( const kvs::LineObject* line )
         {
             for( size_t j = id1; j < id2; j++ )
             {
-                const kvs::Vector3f& position1 = line->coord(j);
-                const kvs::Vector3f& position2 = line->coord(j+1);
-                const kvs::RGBColor& color     = line->color(ctr);
+                const vismodule::Vector3f& position1 = line->coord(j);
+                const vismodule::Vector3f& position2 = line->coord(j+1);
+                const vismodule::RGBColor& color     = line->color(ctr);
 
                 glColor3ub( color.r(), color.g(), color.b() );
                 glVertex3f( position1.x(), position1.y(), position1.z() );
@@ -503,7 +503,7 @@ void Rendering_Polyline_LCs_S( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Polyline_LC_Ss( const kvs::LineObject* line )
+void Rendering_Polyline_LC_Ss( const vismodule::LineObject* line )
 {
     int ctr = 0;
     const size_t nconnections = line->nconnections();
@@ -513,13 +513,13 @@ void Rendering_Polyline_LC_Ss( const kvs::LineObject* line )
         const size_t id1   = *( line->connections().pointer() + index   );
         const size_t id2   = *( line->connections().pointer() + index+1 );
 
-        const kvs::RGBColor& color = line->color(0);
+        const vismodule::RGBColor& color = line->color(0);
         glColor3ub( color.r(), color.g(), color.b() );
 
         for( size_t j = id1; j < id2; j++ )
         {
-            const kvs::Vector3f& position1 = line->coord(j);
-            const kvs::Vector3f& position2 = line->coord(j+1);
+            const vismodule::Vector3f& position1 = line->coord(j);
+            const vismodule::Vector3f& position2 = line->coord(j+1);
 
             glLineWidth( line->size( ctr ) );
             glBegin( GL_LINES );
@@ -540,7 +540,7 @@ void Rendering_Polyline_LC_Ss( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Polyline_LCs_Ss( const kvs::LineObject* line )
+void Rendering_Polyline_LCs_Ss( const vismodule::LineObject* line )
 {
     int ctr = 0;
     const size_t nconnections = line->nconnections();
@@ -552,9 +552,9 @@ void Rendering_Polyline_LCs_Ss( const kvs::LineObject* line )
 
         for( size_t j = id1; j < id2; j++ )
         {
-            const kvs::RGBColor& color     = line->color(ctr);
-            const kvs::Vector3f& position1 = line->coord(j);
-            const kvs::Vector3f& position2 = line->coord(j+1);
+            const vismodule::RGBColor& color     = line->color(ctr);
+            const vismodule::Vector3f& position1 = line->coord(j);
+            const vismodule::Vector3f& position2 = line->coord(j+1);
 
             glLineWidth( line->size( ctr ) );
             glBegin( GL_LINES );
@@ -576,7 +576,7 @@ void Rendering_Polyline_LCs_Ss( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Segment_VCs_S( const kvs::LineObject* line )
+void Rendering_Segment_VCs_S( const vismodule::LineObject* line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -587,8 +587,8 @@ void Rendering_Segment_VCs_S( const kvs::LineObject* line )
         {
             const size_t id = *( line->connections().pointer() + i );
 
-            const kvs::RGBColor& color    = line->color(id);
-            const kvs::Vector3f& position = line->coord(id);
+            const vismodule::RGBColor& color    = line->color(id);
+            const vismodule::Vector3f& position = line->coord(id);
 
             glColor3ub( color.r(),    color.g(),    color.b()  );
             glVertex3f( position.x(), position.y(), position.z() );
@@ -603,7 +603,7 @@ void Rendering_Segment_VCs_S( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Segment_VCs_Ss( const kvs::LineObject* line )
+void Rendering_Segment_VCs_Ss( const vismodule::LineObject* line )
 {
     const size_t nconnections = line->nconnections();
     for( size_t i = 0; i < nconnections; i++ )
@@ -612,10 +612,10 @@ void Rendering_Segment_VCs_Ss( const kvs::LineObject* line )
         const size_t id1   = *( line->connections().pointer() + index   );
         const size_t id2   = *( line->connections().pointer() + index+1 );
 
-        const kvs::RGBColor& color1    = line->color(id1);
-        const kvs::RGBColor& color2    = line->color(id2);
-        const kvs::Vector3f& position1 = line->coord(id1);
-        const kvs::Vector3f& position2 = line->coord(id2);
+        const vismodule::RGBColor& color1    = line->color(id1);
+        const vismodule::RGBColor& color2    = line->color(id2);
+        const vismodule::Vector3f& position1 = line->coord(id1);
+        const vismodule::Vector3f& position2 = line->coord(id2);
 
         glLineWidth( line->size( i ) );
         glBegin( GL_LINES );
@@ -635,11 +635,11 @@ void Rendering_Segment_VCs_Ss( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Segment_LC_S( const kvs::LineObject* line )
+void Rendering_Segment_LC_S( const vismodule::LineObject* line )
 {
     glLineWidth( line->size( 0 ) );
 
-    const kvs::RGBColor& color = line->color(0);
+    const vismodule::RGBColor& color = line->color(0);
     glColor3ub( color.r(), color.g(), color.b() );
 
     glBegin( GL_LINES );
@@ -648,7 +648,7 @@ void Rendering_Segment_LC_S( const kvs::LineObject* line )
         for( size_t i = 0; i < num; i++ )
         {
             const size_t id = *( line->connections().pointer() + i );
-            const kvs::Vector3f& position = line->coord(id);
+            const vismodule::Vector3f& position = line->coord(id);
 
             glVertex3f( position.x(), position.y(), position.z() );
         }
@@ -662,7 +662,7 @@ void Rendering_Segment_LC_S( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Segment_LCs_S( const kvs::LineObject* line )
+void Rendering_Segment_LCs_S( const vismodule::LineObject* line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -671,14 +671,14 @@ void Rendering_Segment_LCs_S( const kvs::LineObject* line )
         const size_t nconnections = line->nconnections();
         for( size_t i = 0; i < nconnections; i++ )
         {
-            const kvs::RGBColor& color = line->color(i);
+            const vismodule::RGBColor& color = line->color(i);
 
             const size_t index = 2 * i;
             const size_t id1 = *( line->connections().pointer() + index   );
             const size_t id2 = *( line->connections().pointer() + index+1 );
 
-            const kvs::Vector3f& position1 = line->coord(id1);
-            const kvs::Vector3f& position2 = line->coord(id2);
+            const vismodule::Vector3f& position1 = line->coord(id1);
+            const vismodule::Vector3f& position2 = line->coord(id2);
 
             glColor3ub( color.r(),    color.g(),    color.b()  );
             glVertex3f( position1.x(), position1.y(), position1.z() );
@@ -694,9 +694,9 @@ void Rendering_Segment_LCs_S( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Segment_LC_Ss( const kvs::LineObject* line )
+void Rendering_Segment_LC_Ss( const vismodule::LineObject* line )
 {
-    const kvs::RGBColor& color = line->color(0);
+    const vismodule::RGBColor& color = line->color(0);
     glColor3ub( color.r(), color.g(), color.b() );
 
     const size_t nconnections = line->nconnections();
@@ -706,8 +706,8 @@ void Rendering_Segment_LC_Ss( const kvs::LineObject* line )
         const size_t id1   = *( line->connections().pointer() + index );
         const size_t id2   = *( line->connections().pointer() + index+1 );
 
-        const kvs::Vector3f& position1 = line->coord(id1);
-        const kvs::Vector3f& position2 = line->coord(id2);
+        const vismodule::Vector3f& position1 = line->coord(id1);
+        const vismodule::Vector3f& position2 = line->coord(id2);
 
         glLineWidth( line->size( i ) );
         glBegin( GL_LINES );
@@ -725,18 +725,18 @@ void Rendering_Segment_LC_Ss( const kvs::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Segment_LCs_Ss( const kvs::LineObject* line )
+void Rendering_Segment_LCs_Ss( const vismodule::LineObject* line )
 {
     const size_t nconnections = line->nconnections();
     for( size_t i = 0; i < nconnections; i++ )
     {
-        const kvs::RGBColor& color = line->color(i);
+        const vismodule::RGBColor& color = line->color(i);
 
         const size_t index = 2 * i;
         const size_t id1 = *( line->connections().pointer() + index   );
         const size_t id2 = *( line->connections().pointer() + index+1 );
-        const kvs::Vector3f& position1 = line->coord(id1);
-        const kvs::Vector3f& position2 = line->coord(id2);
+        const vismodule::Vector3f& position1 = line->coord(id1);
+        const vismodule::Vector3f& position2 = line->coord(id2);
 
         glColor3ub( color.r(), color.g(), color.b() );
         glLineWidth( line->size( i ) );
@@ -750,7 +750,7 @@ void Rendering_Segment_LCs_Ss( const kvs::LineObject* line )
     }
 }
 
-typedef void (*LineRenderingFunctionType)( const kvs::LineObject* line );
+typedef void (*LineRenderingFunctionType)( const vismodule::LineObject* line );
 
 enum LineRenderingType
 {
@@ -819,7 +819,7 @@ LineRenderingFunctionType Rendering[NumberOfRenderingTypes] =
 #define RETURN_RENDERING_TYPE(type) \
     switch( line->colorType() ) \
     { \
-    case kvs::LineObject::VertexColor: \
+    case vismodule::LineObject::VertexColor: \
     { \
         return( ( nsizes == 1 ) ? \
                 Type_ ## type ## _VCs_S : \
@@ -838,24 +838,24 @@ LineRenderingFunctionType Rendering[NumberOfRenderingTypes] =
     } \
     }
 
-LineRenderingType GetLineRenderingType( const kvs::LineObject* line )
+LineRenderingType GetLineRenderingType( const vismodule::LineObject* line )
 {
     const size_t nsizes    = line->nsizes();
     const size_t ncolors   = line->ncolors();
 
     switch( line->lineType() )
     {
-    case kvs::LineObject::Strip:    RETURN_RENDERING_TYPE( Strip );
-    case kvs::LineObject::Uniline:  RETURN_RENDERING_TYPE( Uniline );
-    case kvs::LineObject::Polyline: RETURN_RENDERING_TYPE( Polyline );
-    case kvs::LineObject::Segment:  RETURN_RENDERING_TYPE( Segment );
+    case vismodule::LineObject::Strip:    RETURN_RENDERING_TYPE( Strip );
+    case vismodule::LineObject::Uniline:  RETURN_RENDERING_TYPE( Uniline );
+    case vismodule::LineObject::Polyline: RETURN_RENDERING_TYPE( Polyline );
+    case vismodule::LineObject::Segment:  RETURN_RENDERING_TYPE( Segment );
     default: break;
     }
 
     return( Type_Strip_VCs_S );
 };
 
-void LineRenderingFunction( const kvs::LineObject* line )
+void LineRenderingFunction( const vismodule::LineObject* line )
 {
     if( line->nvertices() > 0 )
     {
@@ -866,4 +866,4 @@ void LineRenderingFunction( const kvs::LineObject* line )
 
 } // end of namespace
 
-#endif // KVS__LINE_RENDERING_FUNCTION_H_INCLUDE
+#endif // VIS_MODULE__LINE_RENDERING_FUNCTION_H_INCLUDE

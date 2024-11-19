@@ -11,17 +11,17 @@
  *  $Id: LineImporter.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__LINE_IMPORTER_H_INCLUDE
-#define KVS__LINE_IMPORTER_H_INCLUDE
+#ifndef VIS_MODULE__LINE_IMPORTER_H_INCLUDE
+#define VIS_MODULE__LINE_IMPORTER_H_INCLUDE
 
 #include "ImporterBase.h"
-#include <kvs/ClassName>
-#include <kvs/Module>
-#include <kvs/LineObject>
-#include <kvs/KVSMLObjectLine>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
+#include <vismodule/LineObject>
+#include <vismodule/KVSMLObjectLine>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -30,16 +30,16 @@ namespace kvs
  */
 /*==========================================================================*/
 class LineImporter
-    : public kvs::ImporterBase
-    , public kvs::LineObject
+    : public vismodule::ImporterBase
+    , public vismodule::LineObject
 {
     // Class name.
-    kvsClassName( kvs::LineImporter );
+    visModuleClassName( vismodule::LineImporter );
 
     // Module information.
-    kvsModuleCategory( Importer );
-    kvsModuleBaseClass( kvs::ImporterBase );
-    kvsModuleSuperClass( kvs::LineObject );
+    visModuleCategory( Importer );
+    visModuleBaseClass( vismodule::ImporterBase );
+    visModuleSuperClass( vismodule::LineObject );
 
 public:
 
@@ -47,21 +47,21 @@ public:
 
     LineImporter( const std::string& filename );
 
-    LineImporter( const kvs::FileFormatBase* file_format );
+    LineImporter( const vismodule::FileFormatBase* file_format );
 
     virtual ~LineImporter( void );
 
 public:
 
-    SuperClass* exec( const kvs::FileFormatBase* file_format );
+    SuperClass* exec( const vismodule::FileFormatBase* file_format );
 
 private:
 
-    void import( const kvs::KVSMLObjectLine* kvsml );
+    void import( const vismodule::KVSMLObjectLine* kvsml );
 
     void set_min_max_coord( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__LINE_IMPORTER_H_INCLUDE
+#endif // VIS_MODULE__LINE_IMPORTER_H_INCLUDE

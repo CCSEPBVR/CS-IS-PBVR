@@ -11,18 +11,18 @@
  *  $Id: Camera.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__CAMERA_H_INCLUDE
-#define KVS__CAMERA_H_INCLUDE
+#ifndef VIS_MODULE__CAMERA_H_INCLUDE
+#define VIS_MODULE__CAMERA_H_INCLUDE
 
-#include <kvs/XformControl>
-#include <kvs/ClassName>
-#include <kvs/Vector2>
-#include <kvs/Vector3>
-#include <kvs/Matrix33>
-#include <kvs/ColorImage>
+#include <vismodule/XformControl>
+#include <vismodule/ClassName>
+#include <vismodule/Vector2>
+#include <vismodule/Vector3>
+#include <vismodule/Matrix33>
+#include <vismodule/ColorImage>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -32,7 +32,7 @@ namespace kvs
 /*==========================================================================*/
 class Camera : public XformControl
 {
-    kvsClassName( kvs::Camera );
+    visModuleClassName( vismodule::Camera );
 
 public:
 
@@ -46,12 +46,12 @@ public:
 protected:
 
     ProjectionType m_projection_type; ///< projection type
-    kvs::Vector3f m_init_position; ///< initial position in the world coordinate system
-    kvs::Vector3f m_init_up_vector; ///< initial up vector in the world coordinate system
-    kvs::Vector3f m_init_look_at; ///< initial look-at point in the world coordinate system
-    kvs::Vector3f m_position; ///< position in the world coordinate system
-    kvs::Vector3f m_up_vector; ///< up vector in the world coordinate system
-    kvs::Vector3f m_look_at; ///< look-at point in the world coordinate system
+    vismodule::Vector3f m_init_position; ///< initial position in the world coordinate system
+    vismodule::Vector3f m_init_up_vector; ///< initial up vector in the world coordinate system
+    vismodule::Vector3f m_init_look_at; ///< initial look-at point in the world coordinate system
+    vismodule::Vector3f m_position; ///< position in the world coordinate system
+    vismodule::Vector3f m_up_vector; ///< up vector in the world coordinate system
+    vismodule::Vector3f m_look_at; ///< look-at point in the world coordinate system
     float m_field_of_view; ///< field of view [deg]
     float m_front; ///< front plane position
     float m_back; ///< back plane position
@@ -72,11 +72,11 @@ public:
 
     void setProjectionType( const ProjectionType projection_type );
 
-    void setPosition( const kvs::Vector3f& position );
+    void setPosition( const vismodule::Vector3f& position );
 
-    void setUpVector( const kvs::Vector3f& up_vector );
+    void setUpVector( const vismodule::Vector3f& up_vector );
 
-    void setLookAt( const kvs::Vector3f& look_at );
+    void setLookAt( const vismodule::Vector3f& look_at );
 
     void setFieldOfView( const float fov );
 
@@ -100,13 +100,13 @@ public:
 
     const ProjectionType projectionType( void ) const;
 
-    const kvs::Vector3f& position( void ) const;
+    const vismodule::Vector3f& position( void ) const;
 
-    const kvs::Vector3f& upVector( void ) const;
+    const vismodule::Vector3f& upVector( void ) const;
 
-    const kvs::Vector3f& lookAt( void ) const;
+    const vismodule::Vector3f& lookAt( void ) const;
 
-    const kvs::Vector2f lookAtInDevice( void ) const;
+    const vismodule::Vector2f lookAtInDevice( void ) const;
 
     const float fieldOfView( void ) const;
 
@@ -132,15 +132,15 @@ public:
 
     virtual void update( void );
 
-    virtual kvs::ColorImage snapshot( void );
+    virtual vismodule::ColorImage snapshot( void );
 
 public:
 
-    const kvs::Matrix44f projectionMatrix( void ) const;
+    const vismodule::Matrix44f projectionMatrix( void ) const;
 
-    const kvs::Matrix44f modelViewMatrix( void ) const;
+    const vismodule::Matrix44f modelViewMatrix( void ) const;
 
-    const kvs::Matrix44f projectionModelViewMatrix( void ) const;
+    const vismodule::Matrix44f projectionModelViewMatrix( void ) const;
 
     void getProjectionMatrix( float (*projection)[16] ) const;
 
@@ -160,57 +160,57 @@ public:
         float modelview[16],
         float (*combined)[16] ) const;
 
-    const kvs::Vector2f projectObjectToWindow(
+    const vismodule::Vector2f projectObjectToWindow(
         float  p_obj_x,
         float  p_obj_y,
         float  p_obj_z,
         float* depth = NULL ) const;
 
-    const kvs::Vector2f projectObjectToWindow(
-        const kvs::Vector3f& p_obj,
+    const vismodule::Vector2f projectObjectToWindow(
+        const vismodule::Vector3f& p_obj,
         float*               depth = NULL ) const;
 
 public:
 
-    const kvs::Vector3f projectWindowToObject(
-        const kvs::Vector2f& p_win,
+    const vismodule::Vector3f projectWindowToObject(
+        const vismodule::Vector2f& p_win,
         float                depth = 0.0 ) const;
 
-    const kvs::Vector3f projectWindowToCamera(
-        const kvs::Vector2f& p_win,
+    const vismodule::Vector3f projectWindowToCamera(
+        const vismodule::Vector2f& p_win,
         float                depth = 0.0 ) const;
 
-    const kvs::Vector3f projectWindowToWorld(
-        const kvs::Vector2f& p_win,
+    const vismodule::Vector3f projectWindowToWorld(
+        const vismodule::Vector2f& p_win,
         float                depth = 0.0 ) const;
 
-    const kvs::Vector3f projectObjectToCamera( const kvs::Vector3f& p_obj ) const;
+    const vismodule::Vector3f projectObjectToCamera( const vismodule::Vector3f& p_obj ) const;
 
-    const kvs::Vector3f projectCameraToObject( const kvs::Vector3f& p_cam ) const;
+    const vismodule::Vector3f projectCameraToObject( const vismodule::Vector3f& p_cam ) const;
 
-    const kvs::Vector3f projectWorldToCamera( const kvs::Vector3f& p_wld ) const;
+    const vismodule::Vector3f projectWorldToCamera( const vismodule::Vector3f& p_wld ) const;
 
-    const kvs::Vector3f projectCameraToWorld( const kvs::Vector3f& p_cam ) const;
+    const vismodule::Vector3f projectCameraToWorld( const vismodule::Vector3f& p_cam ) const;
 
-    const kvs::Vector3f projectWorldToObject( const kvs::Vector3f& p_wld ) const;
+    const vismodule::Vector3f projectWorldToObject( const vismodule::Vector3f& p_wld ) const;
 
-    const kvs::Vector3f projectObjectToWorld( const kvs::Vector3f& p_obj ) const;
+    const vismodule::Vector3f projectObjectToWorld( const vismodule::Vector3f& p_obj ) const;
 
 public:
 
     void resetXform( void );
 
-    void rotate( const kvs::Matrix33f& rotation );
+    void rotate( const vismodule::Matrix33f& rotation );
 
-    void translate( const kvs::Vector3f& translation );
+    void translate( const vismodule::Vector3f& translation );
 
-    void scale( const kvs::Vector3f& scaling );
+    void scale( const vismodule::Vector3f& scaling );
 
 private:
 
     void update_up_at_from( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__CAMERA_H_INCLUDE
+#endif // VIS_MODULE__CAMERA_H_INCLUDE

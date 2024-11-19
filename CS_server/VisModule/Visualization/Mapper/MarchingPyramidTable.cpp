@@ -14,7 +14,7 @@
 #include "MarchingPyramidTable.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace MarchingPyramidTable
@@ -74,4 +74,4 @@ const int VertexID[8][2] =
 
 } // end of namespace MarchingPyramidTable
 
-} // end of namespace kvs
+} // end of namespace vismodule

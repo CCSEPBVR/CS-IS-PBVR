@@ -11,19 +11,19 @@
  *  $Id: PolygonImporter.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__POLYGON_IMPORTER_H_INCLUDE
-#define KVS__POLYGON_IMPORTER_H_INCLUDE
+#ifndef VIS_MODULE__POLYGON_IMPORTER_H_INCLUDE
+#define VIS_MODULE__POLYGON_IMPORTER_H_INCLUDE
 
 #include "ImporterBase.h"
-#include <kvs/ClassName>
-#include <kvs/Module>
-#include <kvs/PolygonObject>
-#include <kvs/KVSMLObjectPolygon>
-#include <kvs/Stl>
-#include <kvs/Ply>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
+#include <vismodule/PolygonObject>
+#include <vismodule/KVSMLObjectPolygon>
+#include <vismodule/Stl>
+#include <vismodule/Ply>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -32,16 +32,16 @@ namespace kvs
  */
 /*==========================================================================*/
 class PolygonImporter
-    : public kvs::ImporterBase
-    , public kvs::PolygonObject
+    : public vismodule::ImporterBase
+    , public vismodule::PolygonObject
 {
     // Class name.
-    kvsClassName( kvs::PolygonImporter );
+    visModuleClassName( vismodule::PolygonImporter );
 
     // Module information.
-    kvsModuleCategory( Importer );
-    kvsModuleBaseClass( kvs::ImporterBase );
-    kvsModuleSuperClass( kvs::PolygonObject );
+    visModuleCategory( Importer );
+    visModuleBaseClass( vismodule::ImporterBase );
+    visModuleSuperClass( vismodule::PolygonObject );
 
 public:
 
@@ -49,25 +49,25 @@ public:
 
     PolygonImporter( const std::string& filename );
 
-    PolygonImporter( const kvs::FileFormatBase* file_format );
+    PolygonImporter( const vismodule::FileFormatBase* file_format );
 
     virtual ~PolygonImporter( void );
 
 public:
 
-    SuperClass* exec( const kvs::FileFormatBase* file_format );
+    SuperClass* exec( const vismodule::FileFormatBase* file_format );
 
 private:
 
-    void import( const kvs::KVSMLObjectPolygon* kvsml );
+    void import( const vismodule::KVSMLObjectPolygon* kvsml );
 
-    void import( const kvs::Stl* stl );
+    void import( const vismodule::Stl* stl );
 
-    void import( const kvs::Ply* ply );
+    void import( const vismodule::Ply* ply );
 
     void set_min_max_coord( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__POLYGON_IMPORTER_H_INCLUDE
+#endif // VIS_MODULE__POLYGON_IMPORTER_H_INCLUDE

@@ -14,7 +14,7 @@
 #include "Quaternion.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 // template instantiation
@@ -22,4 +22,4 @@ template class Quaternion<int>;
 template class Quaternion<float>;
 template class Quaternion<double>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -10,28 +10,28 @@
  *
  *  $Author: naohisa $
  *  $Date: 2009/01/15 16:13:56 $
- *  $Source: /home/Repository/viz-server2/cvsroot/KVS_RC1/Source/Core/Visualization/Mapper/Streamline.cpp,v $
+ *  $Source: /home/Repository/viz-server2/cvsroot/VIS_MODULE_RC1/Source/Core/Visualization/Mapper/Streamline.cpp,v $
  *  $Revision: 1.2 $
  */
 /*****************************************************************************/
 #include "Streamline.h"
-#include <kvs/Type>
-#include <kvs/IgnoreUnusedVariable>
-#include <kvs/Message>
-#include <kvs/RGBColor>
-#include <kvs/Vector3>
-#include <kvs/VolumeObjectBase>
+#include <vismodule/Type>
+#include <vismodule/IgnoreUnusedVariable>
+#include <vismodule/Message>
+#include <vismodule/RGBColor>
+#include <vismodule/Vector3>
+#include <vismodule/VolumeObjectBase>
 
 
 namespace
 {
 
 template <typename T>
-inline const kvs::Vector3f GetInterpolatedVector( const size_t vertex_id[8], const float weight[8], const kvs::VolumeObjectBase* volume )
+inline const vismodule::Vector3f GetInterpolatedVector( const size_t vertex_id[8], const float weight[8], const vismodule::VolumeObjectBase* volume )
 {
     const T* values = reinterpret_cast<const T*>( volume->values().pointer() );
 
-    kvs::Vector3f ret( 0.0f );
+    vismodule::Vector3f ret( 0.0f );
     for ( size_t i = 0; i < 8; i++ )
     {
         const size_t index = 3 * vertex_id[i];
@@ -47,7 +47,7 @@ inline const kvs::Vector3f GetInterpolatedVector( const size_t vertex_id[8], con
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -56,7 +56,7 @@ namespace kvs
  */
 /*===========================================================================*/
 Streamline::Streamline( void ):
-    kvs::StreamlineBase()
+    vismodule::StreamlineBase()
 {
 }
 
@@ -68,10 +68,10 @@ Streamline::Streamline( void ):
  */
 /*===========================================================================*/
 Streamline::Streamline(
-    const kvs::StructuredVolumeObject* volume,
-    const kvs::PointObject* seed_points,
-    const kvs::TransferFunction& transfer_function ):
-    kvs::StreamlineBase()
+    const vismodule::StructuredVolumeObject* volume,
+    const vismodule::PointObject* seed_points,
+    const vismodule::TransferFunction& transfer_function ):
+    vismodule::StreamlineBase()
 {
     BaseClass::setTransferFunction( transfer_function );
     BaseClass::setSeedPoints( seed_points );
@@ -94,20 +94,20 @@ Streamline::~Streamline( void )
  *  @return line object
  */
 /*===========================================================================*/
-Streamline::BaseClass::SuperClass* Streamline::exec( const kvs::ObjectBase* object )
+Streamline::BaseClass::SuperClass* Streamline::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase* volume = kvs::VolumeObjectBase::DownCast( object );
+    const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
     if ( !volume )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not volume dat.");
+        visModuleMessageError("Input object is not volume dat.");
         return( NULL );
     }
 
@@ -115,7 +115,7 @@ Streamline::BaseClass::SuperClass* Streamline::exec( const kvs::ObjectBase* obje
     if ( volume->veclen() != 3 )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input volume is not vector field data.");
+        visModuleMessageError("Input volume is not vector field data.");
         return( NULL );
     }
 
@@ -142,9 +142,9 @@ Streamline::BaseClass::SuperClass* Streamline::exec( const kvs::ObjectBase* obje
  *  @return true if the vertices are accepted
  */
 /*===========================================================================*/
-const bool Streamline::check_for_acceptance( const std::vector<kvs::Real32>& vertices )
+const bool Streamline::check_for_acceptance( const std::vector<vismodule::Real32>& vertices )
 {
-    kvs::IgnoreUnusedVariable( vertices );
+    vismodule::IgnoreUnusedVariable( vertices );
     return( true );
 }
 
@@ -159,12 +159,12 @@ const bool Streamline::check_for_acceptance( const std::vector<kvs::Real32>& ver
  */
 /*===========================================================================*/
 const bool Streamline::check_for_termination(
-    const kvs::Vector3f& current_vertex,
-    const kvs::Vector3f& direction,
+    const vismodule::Vector3f& current_vertex,
+    const vismodule::Vector3f& direction,
     const size_t         integration_times,
-    const kvs::Vector3f& next_vertex )
+    const vismodule::Vector3f& next_vertex )
 {
-    kvs::IgnoreUnusedVariable( current_vertex );
+    vismodule::IgnoreUnusedVariable( current_vertex );
 
     if ( m_enable_boundary_condition )
     {
@@ -191,9 +191,9 @@ const bool Streamline::check_for_termination(
  *  @return interpolated vector
  */
 /*===========================================================================*/
-const kvs::Vector3f Streamline::calculate_vector( const kvs::Vector3f& point )
+const vismodule::Vector3f Streamline::calculate_vector( const vismodule::Vector3f& point )
 {
-    const kvs::Vector3f origin( 0.0f, 0.0f, 0.0f );
+    const vismodule::Vector3f origin( 0.0f, 0.0f, 0.0f );
     return( this->interpolate_vector( point, origin ) );
 }
 
@@ -204,13 +204,13 @@ const kvs::Vector3f Streamline::calculate_vector( const kvs::Vector3f& point )
  *  @return color
  */
 /*===========================================================================*/
-const kvs::RGBColor Streamline::calculate_color( const kvs::Vector3f& direction )
+const vismodule::RGBColor Streamline::calculate_color( const vismodule::Vector3f& direction )
 {
-    const kvs::Real64 min_length = BaseClass::volume()->minValue();
-    const kvs::Real64 max_length = BaseClass::volume()->maxValue();
-    const kvs::Real64 diff = direction.length() - min_length;
-    const kvs::Real64 interval = max_length - min_length;
-    const kvs::UInt8 level = kvs::UInt8( 255.0 * diff / interval );
+    const vismodule::Real64 min_length = BaseClass::volume()->minValue();
+    const vismodule::Real64 max_length = BaseClass::volume()->maxValue();
+    const vismodule::Real64 diff = direction.length() - min_length;
+    const vismodule::Real64 interval = max_length - min_length;
+    const vismodule::UInt8 level = vismodule::UInt8( 255.0 * diff / interval );
 
     return( BaseClass::transferFunction().colorMap()[level] );
 }
@@ -223,17 +223,17 @@ const kvs::RGBColor Streamline::calculate_color( const kvs::Vector3f& direction 
  *  @return interpolated vector
  */
 /*===========================================================================*/
-const kvs::Vector3f Streamline::interpolate_vector(
-    const kvs::Vector3f& vertex,
-    const kvs::Vector3f& previous_vector )
+const vismodule::Vector3f Streamline::interpolate_vector(
+    const vismodule::Vector3f& vertex,
+    const vismodule::Vector3f& previous_vector )
 {
-    kvs::IgnoreUnusedVariable( previous_vector );
+    vismodule::IgnoreUnusedVariable( previous_vector );
 
     const size_t cell_x = static_cast<size_t>( vertex.x() );
     const size_t cell_y = static_cast<size_t>( vertex.y() );
     const size_t cell_z = static_cast<size_t>( vertex.z() );
 
-    const kvs::StructuredVolumeObject* volume = kvs::StructuredVolumeObject::DownCast( BaseClass::volume() );
+    const vismodule::StructuredVolumeObject* volume = vismodule::StructuredVolumeObject::DownCast( BaseClass::volume() );
     const size_t resolution_x = static_cast<size_t>( volume->resolution().x() );
     const size_t resolution_y = static_cast<size_t>( volume->resolution().y() );
 //    const size_t resolution_z = static_cast<size_t>( volume->resolution().z() );
@@ -249,7 +249,7 @@ const kvs::Vector3f Streamline::interpolate_vector(
     vertex_id[7] = vertex_id[6] - 1;
 
     // Weight.
-    const kvs::Vector3f local_coord(
+    const vismodule::Vector3f local_coord(
         2.0f * ( vertex.x() - cell_x ) - 1.0f,
         2.0f * ( vertex.y() - cell_y ) - 1.0f,
         2.0f * ( vertex.z() - cell_z ) - 1.0f );
@@ -273,18 +273,18 @@ const kvs::Vector3f Streamline::interpolate_vector(
 
     // Interpolate.
     const std::type_info& type = BaseClass::volume()->values().typeInfo()->type();
-    if (      type == typeid( kvs::Int8   ) ) return( ::GetInterpolatedVector<kvs::Int8>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( kvs::Int16  ) ) return( ::GetInterpolatedVector<kvs::Int16>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( kvs::Int32  ) ) return( ::GetInterpolatedVector<kvs::Int32>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( kvs::Int64  ) ) return( ::GetInterpolatedVector<kvs::Int64>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( kvs::UInt8  ) ) return( ::GetInterpolatedVector<kvs::UInt8>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( kvs::UInt16 ) ) return( ::GetInterpolatedVector<kvs::UInt16>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( kvs::UInt32 ) ) return( ::GetInterpolatedVector<kvs::UInt32>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( kvs::UInt64 ) ) return( ::GetInterpolatedVector<kvs::UInt64>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( kvs::Real32 ) ) return( ::GetInterpolatedVector<kvs::Real32>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( kvs::Real64 ) ) return( ::GetInterpolatedVector<kvs::Real64>( vertex_id, weight, BaseClass::volume() ) );
+    if (      type == typeid( vismodule::Int8   ) ) return( ::GetInterpolatedVector<vismodule::Int8>( vertex_id, weight, BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::Int16  ) ) return( ::GetInterpolatedVector<vismodule::Int16>( vertex_id, weight, BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::Int32  ) ) return( ::GetInterpolatedVector<vismodule::Int32>( vertex_id, weight, BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::Int64  ) ) return( ::GetInterpolatedVector<vismodule::Int64>( vertex_id, weight, BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::UInt8  ) ) return( ::GetInterpolatedVector<vismodule::UInt8>( vertex_id, weight, BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::UInt16 ) ) return( ::GetInterpolatedVector<vismodule::UInt16>( vertex_id, weight, BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::UInt32 ) ) return( ::GetInterpolatedVector<vismodule::UInt32>( vertex_id, weight, BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::UInt64 ) ) return( ::GetInterpolatedVector<vismodule::UInt64>( vertex_id, weight, BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::Real32 ) ) return( ::GetInterpolatedVector<vismodule::Real32>( vertex_id, weight, BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::Real64 ) ) return( ::GetInterpolatedVector<vismodule::Real64>( vertex_id, weight, BaseClass::volume() ) );
 
-    return( kvs::Vector3f( 0.0f, 0.0f, 0.0f ) );
+    return( vismodule::Vector3f( 0.0f, 0.0f, 0.0f ) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -14,10 +14,10 @@
 /*****************************************************************************/
 #include "FlowData.h"
 #include "File.h"
-#include <kvs/Assert>
+#include <vismodule/Assert>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace gf
@@ -123,9 +123,9 @@ const size_t FlowData::nsteps( void ) const
  *  @return time value
  */
 /*===========================================================================*/
-const kvs::Real32 FlowData::time( const size_t index ) const
+const vismodule::Real32 FlowData::time( const size_t index ) const
 {
-    KVS_ASSERT( index < m_nsteps );
+    VIS_MODULE_ASSERT( index < m_nsteps );
     return( m_times[ index ] );
 }
 
@@ -136,9 +136,9 @@ const kvs::Real32 FlowData::time( const size_t index ) const
  *  @return step value
  */
 /*===========================================================================*/
-const kvs::Int32 FlowData::step( const size_t index ) const
+const vismodule::Int32 FlowData::step( const size_t index ) const
 {
-    KVS_ASSERT( index < m_nsteps );
+    VIS_MODULE_ASSERT( index < m_nsteps );
     return( m_steps[ index ] );
 }
 
@@ -149,9 +149,9 @@ const kvs::Int32 FlowData::step( const size_t index ) const
  *  @return velocity value array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& FlowData::velocities( const size_t index ) const
+const vismodule::ValueArray<vismodule::Real32>& FlowData::velocities( const size_t index ) const
 {
-    KVS_ASSERT( index < m_nsteps );
+    VIS_MODULE_ASSERT( index < m_nsteps );
     return( m_velocities[ index ] );
 }
 
@@ -162,9 +162,9 @@ const kvs::ValueArray<kvs::Real32>& FlowData::velocities( const size_t index ) c
  *  @return pressure value array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& FlowData::pressures( const size_t index ) const
+const vismodule::ValueArray<vismodule::Real32>& FlowData::pressures( const size_t index ) const
 {
-    KVS_ASSERT( index < m_nsteps );
+    VIS_MODULE_ASSERT( index < m_nsteps );
     return( m_pressures[ index ] );
 }
 
@@ -177,10 +177,10 @@ const kvs::ValueArray<kvs::Real32>& FlowData::pressures( const size_t index ) co
 /*===========================================================================*/
 const bool FlowData::read( const std::string filename )
 {
-    kvs::gf::File file;
+    vismodule::gf::File file;
     if ( !file.read( filename ) )
     {
-        kvsMessageError("Cannot read mesh data file.");
+        visModuleMessageError("Cannot read mesh data file.");
         return( false );
     }
 
@@ -190,17 +190,17 @@ const bool FlowData::read( const std::string filename )
     if ( m_pressures ) delete [] m_pressures;
 
     m_nsteps = file.dataSetList().size();
-    m_times = new kvs::Real32 [ m_nsteps ];
-    m_steps = new kvs::Int32 [ m_nsteps ];
-    m_velocities = new kvs::ValueArray<kvs::Real32> [ m_nsteps ];
-    m_pressures = new kvs::ValueArray<kvs::Real32> [ m_nsteps ];
+    m_times = new vismodule::Real32 [ m_nsteps ];
+    m_steps = new vismodule::Int32 [ m_nsteps ];
+    m_velocities = new vismodule::ValueArray<vismodule::Real32> [ m_nsteps ];
+    m_pressures = new vismodule::ValueArray<vismodule::Real32> [ m_nsteps ];
 
     for ( size_t i = 0; i < m_nsteps; i++ )
     {
-        const kvs::gf::DataSet& data_set = file.dataSet(i);
+        const vismodule::gf::DataSet& data_set = file.dataSet(i);
         for ( size_t j = 0; j < data_set.dataList().size(); j++ )
         {
-            const kvs::gf::Data& data = data_set.data(j);
+            const vismodule::gf::Data& data = data_set.data(j);
             const std::string& keyword = data.keyword();
             const std::string& type = data.arrayTypeHeader();
 
@@ -250,4 +250,4 @@ const bool FlowData::read( const std::string filename )
 
 } // end of namespace gf
 
-} // end of namespace kvs
+} // end of namespace vismodule

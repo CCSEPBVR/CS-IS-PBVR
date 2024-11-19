@@ -14,7 +14,7 @@ KVSMLObjectPointWriter::KVSMLObjectPointWriter( const pbvr::PointObject& object,
 
 void KVSMLObjectPointWriter::write_main_tag()
 {
-#ifdef KVS_COMPILER_VC
+#ifdef VIS_MODULE_COMPILER_VC
     const std::string basename_wo_dir = m_basename.substr( m_basename.rfind( "\\" ) + 1 );
 #else
     const std::string basename_wo_dir = m_basename.substr( m_basename.rfind( "/" ) + 1 );
@@ -29,7 +29,7 @@ void KVSMLObjectPointWriter::write_main_tag()
     fprintf( kvsml_file, "<KVSML>\n" );
     fprintf( kvsml_file, "<Object type=\"PointObject\">\n" );
     fprintf( kvsml_file, "<PointObject>\n" );
-#ifdef KVS_COMPILER_VC
+#ifdef VIS_MODULE_COMPILER_VC
     fprintf( kvsml_file, "<Vertex nvertices=\"%Iu\">\n", m_object->nvertices() );
 #else
     fprintf( kvsml_file, "<Vertex nvertices=\"%zu\">\n", m_object->nvertices() );

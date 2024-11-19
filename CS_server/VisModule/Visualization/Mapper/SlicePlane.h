@@ -11,21 +11,21 @@
  *  $Id: SlicePlane.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__SLICE_PLANE_H_INCLUDE
-#define KVS__SLICE_PLANE_H_INCLUDE
+#ifndef VIS_MODULE__SLICE_PLANE_H_INCLUDE
+#define VIS_MODULE__SLICE_PLANE_H_INCLUDE
 
-#include <kvs/PolygonObject>
-#include <kvs/VolumeObjectBase>
-#include <kvs/StructuredVolumeObject>
-#include <kvs/UnstructuredVolumeObject>
-#include <kvs/Vector3>
-#include <kvs/Vector4>
-#include <kvs/MapperBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/PolygonObject>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/Vector3>
+#include <vismodule/Vector4>
+#include <vismodule/MapperBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -33,70 +33,70 @@ namespace kvs
  *  Slice plane class.
  */
 /*==========================================================================*/
-class SlicePlane : public kvs::MapperBase, public kvs::PolygonObject
+class SlicePlane : public vismodule::MapperBase, public vismodule::PolygonObject
 {
     // Class name.
-    kvsClassName( kvs::SlicePlane );
+    visModuleClassName( vismodule::SlicePlane );
 
     // Module information.
-    kvsModuleCategory( Mapper );
-    kvsModuleBaseClass( kvs::MapperBase );
-    kvsModuleSuperClass( kvs::PolygonObject );
+    visModuleCategory( Mapper );
+    visModuleBaseClass( vismodule::MapperBase );
+    visModuleSuperClass( vismodule::PolygonObject );
 
 private:
 
-    kvs::Vector4f m_coefficients; ///< coeficients of a slice plane
+    vismodule::Vector4f m_coefficients; ///< coeficients of a slice plane
 
 public:
 
     SlicePlane( void );
 
     SlicePlane(
-        const kvs::VolumeObjectBase* volume,
-        const kvs::Vector4f&         coefficients,
-        const kvs::TransferFunction& transfer_function );
+        const vismodule::VolumeObjectBase* volume,
+        const vismodule::Vector4f&         coefficients,
+        const vismodule::TransferFunction& transfer_function );
 
     SlicePlane(
-        const kvs::VolumeObjectBase* volume,
-        const kvs::Vector3f&         point,
-        const kvs::Vector3f&         normal,
-        const kvs::TransferFunction& transfer_function );
+        const vismodule::VolumeObjectBase* volume,
+        const vismodule::Vector3f&         point,
+        const vismodule::Vector3f&         normal,
+        const vismodule::TransferFunction& transfer_function );
 
     virtual ~SlicePlane( void );
 
 public:
 
-    void setPlane( const kvs::Vector4f& coefficients );
+    void setPlane( const vismodule::Vector4f& coefficients );
 
-    void setPlane( const kvs::Vector3f& point, const kvs::Vector3f& normal );
+    void setPlane( const vismodule::Vector3f& point, const vismodule::Vector3f& normal );
 
 public:
 
-    SuperClass* exec( const kvs::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase* object );
 
 protected:
 
-    void mapping( const kvs::VolumeObjectBase* volume );
+    void mapping( const vismodule::VolumeObjectBase* volume );
 
     template <typename T>
     void extract_plane(
-        const kvs::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject* volume );
 
     template <typename T>
     void extract_plane(
-        const kvs::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject* volume );
 
     template <typename T>
     void extract_tetrahedra_plane(
-        const kvs::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject* volume );
 
     template <typename T>
     void extract_hexahedra_plane(
-        const kvs::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject* volume );
 
     template <typename T>
     void extract_pyramid_plane(
-        const kvs::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject* volume );
 
     const size_t calculate_table_index(
         const size_t x,
@@ -118,25 +118,25 @@ protected:
         const size_t z ) const;
 
     const float substitute_plane_equation(
-        const kvs::Vector3f& vertex ) const;
+        const vismodule::Vector3f& vertex ) const;
 
-    const kvs::Vector3f interpolate_vertex(
-        const kvs::Vector3f& vertex0,
-        const kvs::Vector3f& vertex1 ) const;
-
-    template <typename T>
-    const double interpolate_value(
-        const kvs::StructuredVolumeObject* volume,
-        const kvs::Vector3f&               vertex0,
-        const kvs::Vector3f&               vertex1 ) const;
+    const vismodule::Vector3f interpolate_vertex(
+        const vismodule::Vector3f& vertex0,
+        const vismodule::Vector3f& vertex1 ) const;
 
     template <typename T>
     const double interpolate_value(
-        const kvs::UnstructuredVolumeObject* volume,
+        const vismodule::StructuredVolumeObject* volume,
+        const vismodule::Vector3f&               vertex0,
+        const vismodule::Vector3f&               vertex1 ) const;
+
+    template <typename T>
+    const double interpolate_value(
+        const vismodule::UnstructuredVolumeObject* volume,
         const size_t                         index0,
         const size_t                         index1 ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__SLICE_PLANE_H_INCLUDE
+#endif // VIS_MODULE__SLICE_PLANE_H_INCLUDE

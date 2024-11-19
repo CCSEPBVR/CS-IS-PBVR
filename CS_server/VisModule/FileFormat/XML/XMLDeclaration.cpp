@@ -14,7 +14,7 @@
 #include "XMLDeclaration.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -51,4 +51,4 @@ XMLDeclaration::~XMLDeclaration( void )
 {
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

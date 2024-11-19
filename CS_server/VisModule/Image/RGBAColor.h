@@ -11,15 +11,15 @@
  *  $Id: RGBAColor.h 869 2011-07-25 05:11:49Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__RGBA_COLOR_H_INCLUDE
-#define KVS__RGBA_COLOR_H_INCLUDE
+#ifndef VIS_MODULE__RGBA_COLOR_H_INCLUDE
+#define VIS_MODULE__RGBA_COLOR_H_INCLUDE
 
 #include "RGBColor.h"
-#include <kvs/Type>
-#include <kvs/ClassName>
+#include <vismodule/Type>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -27,9 +27,9 @@ namespace kvs
  *  RGB-a color class.
  */
 /*==========================================================================*/
-class RGBAColor : public kvs::RGBColor
+class RGBAColor : public vismodule::RGBColor
 {
-    kvsClassName_without_virtual( kvs::RGBAColor );
+    visModuleClassName_without_virtual( vismodule::RGBAColor );
 
 protected:
 
@@ -39,11 +39,11 @@ public:
 
     RGBAColor( float opacity = 1.0f );
 
-    RGBAColor( kvs::UInt8 red, kvs::UInt8 greeb, kvs::UInt8 blue, float opacity = 1.0f );
+    RGBAColor( vismodule::UInt8 red, vismodule::UInt8 greeb, vismodule::UInt8 blue, float opacity = 1.0f );
 
-    RGBAColor( const kvs::UInt8 rgb[3], float opacity = 1.0f );
+    RGBAColor( const vismodule::UInt8 rgb[3], float opacity = 1.0f );
 
-    RGBAColor( const kvs::RGBColor& rgb, float opacity = 1.0f );
+    RGBAColor( const vismodule::RGBColor& rgb, float opacity = 1.0f );
 
 public:
 
@@ -60,6 +60,6 @@ public:
     const float opacity( void ) const;
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__RGBA_COLOR_H_INCLUDE
+#endif // VIS_MODULE__RGBA_COLOR_H_INCLUDE

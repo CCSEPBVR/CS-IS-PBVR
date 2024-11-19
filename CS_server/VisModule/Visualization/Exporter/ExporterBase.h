@@ -11,13 +11,13 @@
  *  $Id: ExporterBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__EXPORTER_BASE_H_INCLUDE
-#define KVS__EXPORTER_BASE_H_INCLUDE
+#ifndef VIS_MODULE__EXPORTER_BASE_H_INCLUDE
+#define VIS_MODULE__EXPORTER_BASE_H_INCLUDE
 
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -28,7 +28,7 @@ namespace kvs
 template <typename FileFormatType>
 class ExporterBase : public FileFormatType
 {
-    kvsClassName( kvs::ExporterBase );
+    visModuleClassName( vismodule::ExporterBase );
 
 protected:
 
@@ -42,7 +42,7 @@ public:
 
 public:
 
-    virtual FileFormatType* exec( const kvs::ObjectBase* object ) = 0;
+    virtual FileFormatType* exec( const vismodule::ObjectBase* object ) = 0;
 
 public:
 
@@ -73,6 +73,6 @@ const bool ExporterBase<FileFormatType>::isFailure( void ) const
     return( !m_is_success );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__EXPORTER_BASE_H_INCLUDE
+#endif // VIS_MODULE__EXPORTER_BASE_H_INCLUDE

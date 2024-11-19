@@ -43,7 +43,7 @@ namespace pbvr
 StructuredVolumeObject::StructuredVolumeObject():
     pbvr::VolumeObjectBase(),
     m_grid_type( UnknownGridType ),
-    m_resolution( kvs::Vector3ui( 0, 0, 0 ) )
+    m_resolution( vismodule::Vector3ui( 0, 0, 0 ) )
 {
 }
 
@@ -57,7 +57,7 @@ StructuredVolumeObject::StructuredVolumeObject():
  */
 /*==========================================================================*/
 StructuredVolumeObject::StructuredVolumeObject(
-    const kvs::Vector3ui& resolution,
+    const vismodule::Vector3ui& resolution,
     const size_t          veclen,
     const Values&         values ):
     pbvr::VolumeObjectBase( veclen, Coords( 0 ), values ),
@@ -79,7 +79,7 @@ StructuredVolumeObject::StructuredVolumeObject(
 /*==========================================================================*/
 StructuredVolumeObject::StructuredVolumeObject(
     const GridType        grid_type,
-    const kvs::Vector3ui& resolution,
+    const vismodule::Vector3ui& resolution,
     const size_t          veclen,
     const Coords&         coords,
     const Values&         values ):
@@ -120,7 +120,7 @@ pbvr::StructuredVolumeObject* StructuredVolumeObject::DownCast( pbvr::ObjectBase
     const pbvr::VolumeObjectBase::VolumeType type = volume->volumeType();
     if ( type != pbvr::VolumeObjectBase::Structured )
     {
-        kvsMessageError( "Input object is not a structured volume object." );
+        visModuleMessageError( "Input object is not a structured volume object." );
         return NULL;
     }
 
@@ -149,7 +149,7 @@ std::ostream& operator << ( std::ostream& os, const StructuredVolumeObject& obje
     if ( !object.hasMinMaxValues() ) object.updateMinMaxValues();
 
     os << "Object type:  " << "structured volume object" << std::endl;
-#ifdef KVS_COMPILER_VC
+#ifdef VIS_MODULE_COMPILER_VC
 //#if PBVR_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
 //    // @TODO Cannot instance the object that is a abstract class here (error:C2259).
 //#endif
@@ -197,8 +197,8 @@ void StructuredVolumeObject::setGridType( const GridType grid_type )
  *  Sets the node resolution.
  */
 /*==========================================================================*/
-//void StructuredVolumeObject::setm_resolution( const kvs::Vector3ui& resolution )
-void StructuredVolumeObject::setResolution( const kvs::Vector3ui& resolution )
+//void StructuredVolumeObject::setm_resolution( const vismodule::Vector3ui& resolution )
+void StructuredVolumeObject::setResolution( const vismodule::Vector3ui& resolution )
 {
     m_resolution = resolution;
 }
@@ -238,7 +238,7 @@ const StructuredVolumeObject::CellType StructuredVolumeObject::cellType() const
  *  Returns the node resolution.
  */
 /*==========================================================================*/
-const kvs::Vector3ui& StructuredVolumeObject::resolution() const
+const vismodule::Vector3ui& StructuredVolumeObject::resolution() const
 {
     return m_resolution;
 }
@@ -290,8 +290,8 @@ void StructuredVolumeObject::updateMinMaxCoords()
 /*==========================================================================*/
 void StructuredVolumeObject::calculateMinMaxCoords()
 {
-    kvs::Vector3f min_coord( 0.0f, 0.0f, 0.0f );
-    kvs::Vector3f max_coord( 0.0f, 0.0f, 0.0f );
+    vismodule::Vector3f min_coord( 0.0f, 0.0f, 0.0f );
+    vismodule::Vector3f max_coord( 0.0f, 0.0f, 0.0f );
 
     switch ( m_grid_type )
     {
@@ -339,13 +339,13 @@ void StructuredVolumeObject::calculateMinMaxCoords()
             y = *( coord++ );
             z = *( coord++ );
 
-            min_coord.x() = kvs::Math::Min( min_coord.x(), x );
-            min_coord.y() = kvs::Math::Min( min_coord.y(), y );
-            min_coord.z() = kvs::Math::Min( min_coord.z(), z );
+            min_coord.x() = vismodule::Math::Min( min_coord.x(), x );
+            min_coord.y() = vismodule::Math::Min( min_coord.y(), y );
+            min_coord.z() = vismodule::Math::Min( min_coord.z(), z );
 
-            max_coord.x() = kvs::Math::Max( max_coord.x(), x );
-            max_coord.y() = kvs::Math::Max( max_coord.y(), y );
-            max_coord.z() = kvs::Math::Max( max_coord.z(), z );
+            max_coord.x() = vismodule::Math::Max( max_coord.x(), x );
+            max_coord.y() = vismodule::Math::Max( max_coord.y(), y );
+            max_coord.z() = vismodule::Math::Max( max_coord.z(), z );
         }
 
         break;

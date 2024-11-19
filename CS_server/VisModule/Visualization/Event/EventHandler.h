@@ -12,15 +12,15 @@
  *  $Id: EventHandler.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__EVENT_HANDLER_H_INCLUDE
-#define KVS__EVENT_HANDLER_H_INCLUDE
+#ifndef VIS_MODULE__EVENT_HANDLER_H_INCLUDE
+#define VIS_MODULE__EVENT_HANDLER_H_INCLUDE
 
 #include <vector>
 #include "EventListener.h"
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,11 +30,11 @@ namespace kvs
 /*===========================================================================*/
 class EventHandler
 {
-    kvsClassName( kvs::EventHandler );
+    visModuleClassName( vismodule::EventHandler );
 
 protected:
 
-    std::vector<kvs::EventListener*> m_listeners; ///< list of the event listener
+    std::vector<vismodule::EventListener*> m_listeners; ///< list of the event listener
 
 public:
 
@@ -44,15 +44,15 @@ public:
 
 public:
 
-    void attach( kvs::EventListener* listener );
+    void attach( vismodule::EventListener* listener );
 
-    void detach( kvs::EventListener* listener );
+    void detach( vismodule::EventListener* listener );
 
     void clear( void );
 
-    void notify( kvs::EventBase* event = NULL );
+    void notify( vismodule::EventBase* event = NULL );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__EVENT_HANDLER_H_INCLUDE
+#endif // VIS_MODULE__EVENT_HANDLER_H_INCLUDE

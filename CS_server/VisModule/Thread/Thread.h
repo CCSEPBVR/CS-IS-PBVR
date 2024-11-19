@@ -11,13 +11,13 @@
  *  $Id: Thread.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__THREAD_H_INCLUDE
-#define KVS__THREAD_H_INCLUDE
+#ifndef VIS_MODULE__THREAD_H_INCLUDE
+#define VIS_MODULE__THREAD_H_INCLUDE
 
-#include <kvs/Platform>
-#include <kvs/ClassName>
+#include <vismodule/Platform>
+#include <vismodule/ClassName>
 
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
 #include <windows.h>
 #include <process.h>
 #else
@@ -25,7 +25,7 @@
 #endif
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -35,11 +35,11 @@ namespace kvs
 /*==========================================================================*/
 class Thread
 {
-    kvsClassName( kvs::Thread );
+    visModuleClassName( vismodule::Thread );
 
 public:
 
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     typedef HANDLE Handler;
     typedef unsigned ( __stdcall * WinRoutine )( void* );
 #else
@@ -97,6 +97,6 @@ protected:
     void delete_thread( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__THREAD_H_INCLUDE
+#endif // VIS_MODULE__THREAD_H_INCLUDE

@@ -12,15 +12,15 @@
  *  $Id: PaintEventListener.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__PAINT_EVENT_LISTENER_H_INCLUDE
-#define KVS__PAINT_EVENT_LISTENER_H_INCLUDE
+#ifndef VIS_MODULE__PAINT_EVENT_LISTENER_H_INCLUDE
+#define VIS_MODULE__PAINT_EVENT_LISTENER_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/EventListener>
-#include <kvs/EventBase>
+#include <vismodule/ClassName>
+#include <vismodule/EventListener>
+#include <vismodule/EventBase>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -28,9 +28,9 @@ namespace kvs
  *  @brief  PaintEventListener class.
  */
 /*===========================================================================*/
-class PaintEventListener : public kvs::EventListener
+class PaintEventListener : public vismodule::EventListener
 {
-    kvsClassName( kvs::PaintEventListener );
+    visModuleClassName( vismodule::PaintEventListener );
 
 public:
 
@@ -44,9 +44,9 @@ public:
 
 private:
 
-    void onEvent( kvs::EventBase* event = 0 );
+    void onEvent( vismodule::EventBase* event = 0 );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__PAINT_EVENT_LISTENER_H_INCLUDE
+#endif // VIS_MODULE__PAINT_EVENT_LISTENER_H_INCLUDE

@@ -12,10 +12,10 @@
  */
 /****************************************************************************/
 #include "Ray.h"
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 Ray::Ray( void )
@@ -95,24 +95,24 @@ void Ray::setOrigin( const int win_x, const int win_y )
 }
 
 const bool Ray::isIntersected(
-    const kvs::Vector3f& v0,
-    const kvs::Vector3f& v1,
-    const kvs::Vector3f& v2 )
+    const vismodule::Vector3f& v0,
+    const vismodule::Vector3f& v1,
+    const vismodule::Vector3f& v2 )
 {
-    const kvs::Vector3f v01( v1 - v0 );
-    const kvs::Vector3f v02( v2 - v0 );
+    const vismodule::Vector3f v01( v1 - v0 );
+    const vismodule::Vector3f v02( v2 - v0 );
 
-    const kvs::Vector3f pvec( this->direction().cross( v02 ) );
+    const vismodule::Vector3f pvec( this->direction().cross( v02 ) );
 
     const float det = v01.dot( pvec );
 
     if ( det > 1e-6 )
     {
-        const kvs::Vector3f tvec( this->from() - v0 );
+        const vismodule::Vector3f tvec( this->from() - v0 );
         const float u = tvec.dot( pvec );
         if ( u < 0.0f || u > det ) { return( false ); }
 
-        const kvs::Vector3f qvec( tvec.cross( v01 ) );
+        const vismodule::Vector3f qvec( tvec.cross( v01 ) );
         const float v = this->direction().dot( qvec );
         if ( v < 0.0f || u + v > det ) { return( false ); }
 
@@ -126,27 +126,27 @@ const bool Ray::isIntersected(
 }
 
 const bool Ray::isIntersected(
-    const kvs::Vector3f& v0,
-    const kvs::Vector3f& v1,
-    const kvs::Vector3f& v2,
-    const kvs::Vector3f& v3 )
+    const vismodule::Vector3f& v0,
+    const vismodule::Vector3f& v1,
+    const vismodule::Vector3f& v2,
+    const vismodule::Vector3f& v3 )
 {
-    kvs::IgnoreUnusedVariable( v2 );
+    vismodule::IgnoreUnusedVariable( v2 );
 
-    const kvs::Vector3f v01( v1 - v0 );
-    const kvs::Vector3f v03( v3 - v0 );
+    const vismodule::Vector3f v01( v1 - v0 );
+    const vismodule::Vector3f v03( v3 - v0 );
 
-    const kvs::Vector3f pvec( this->direction().cross( v03 ) );
+    const vismodule::Vector3f pvec( this->direction().cross( v03 ) );
 
     const float det = v01.dot( pvec );
 
     if ( det > 1e-6 )
     {
-        const kvs::Vector3f tvec( this->from() - v0 );
+        const vismodule::Vector3f tvec( this->from() - v0 );
         const float u = tvec.dot( pvec );
         if ( u < 0.0f || u > det ) { return( false ); }
 
-        const kvs::Vector3f qvec( tvec.cross( v01 ) );
+        const vismodule::Vector3f qvec( tvec.cross( v01 ) );
         const float v = this->direction().dot( qvec );
         if ( v < 0.0f || v > det ) { return( false ); }
 
@@ -256,4 +256,4 @@ std::ostream& operator << ( std::ostream& os, const Ray& rhs )
     return( os );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -13,11 +13,11 @@
  */
 /*****************************************************************************/
 #include "IdleEventListener.h"
-#include <kvs/IgnoreUnusedVariable>
-#include <kvs/Binary>
+#include <vismodule/IgnoreUnusedVariable>
+#include <vismodule/Binary>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -27,7 +27,7 @@ namespace kvs
 /*===========================================================================*/
 IdleEventListener::IdleEventListener( void )
 {
-    kvs::EventListener::setEventType( kvsBinary12(1111,1111,1111) );
+    vismodule::EventListener::setEventType( visModuleBinary12(1111,1111,1111) );
 }
 
 /*===========================================================================*/
@@ -45,11 +45,11 @@ IdleEventListener::~IdleEventListener( void )
  *  @param  event [in] pointer to the event
  */
 /*===========================================================================*/
-void IdleEventListener::onEvent( kvs::EventBase* event )
+void IdleEventListener::onEvent( vismodule::EventBase* event )
 {
-    kvs::IgnoreUnusedVariable( event );
+    vismodule::IgnoreUnusedVariable( event );
 
     this->update();
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -12,8 +12,8 @@
  *  $Id: DataDescriptorFile.h 863 2011-07-20 10:40:29Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__GRADS__DATA_DESCRIPTOR_H_INCLUDE
-#define KVS__GRADS__DATA_DESCRIPTOR_H_INCLUDE
+#ifndef VIS_MODULE__GRADS__DATA_DESCRIPTOR_H_INCLUDE
+#define VIS_MODULE__GRADS__DATA_DESCRIPTOR_H_INCLUDE
 
 #include <fstream>
 #include "DSet.h"
@@ -27,7 +27,7 @@
 #include "Vars.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace grads
@@ -42,15 +42,15 @@ class DataDescriptorFile
 {
 private:
 
-    kvs::grads::DSet m_dset; ///< data filename (DSET)
-    kvs::grads::Undef m_undef; ///< undefined data (UNDEF)
-    kvs::grads::Title m_title; ///< brief description of the data (TITLE)
-    kvs::grads::Options m_options; ///< option list (OPTIONS)
-    kvs::grads::XDef m_xdef; ///< grid point values for the X dimension (XDEF)
-    kvs::grads::YDef m_ydef; ///< grid point values for the Y dimension (YDEF)
-    kvs::grads::ZDef m_zdef; ///< grid point values for the Z dimension (ZDEF)
-    kvs::grads::TDef m_tdef; ///< grid point values for the T dimension (TDEF)
-    kvs::grads::Vars m_vars; ///< all variables in the data set (VARS)
+    vismodule::grads::DSet m_dset; ///< data filename (DSET)
+    vismodule::grads::Undef m_undef; ///< undefined data (UNDEF)
+    vismodule::grads::Title m_title; ///< brief description of the data (TITLE)
+    vismodule::grads::Options m_options; ///< option list (OPTIONS)
+    vismodule::grads::XDef m_xdef; ///< grid point values for the X dimension (XDEF)
+    vismodule::grads::YDef m_ydef; ///< grid point values for the Y dimension (YDEF)
+    vismodule::grads::ZDef m_zdef; ///< grid point values for the Z dimension (ZDEF)
+    vismodule::grads::TDef m_tdef; ///< grid point values for the T dimension (TDEF)
+    vismodule::grads::Vars m_vars; ///< all variables in the data set (VARS)
 
 public:
 
@@ -58,29 +58,29 @@ public:
 
 public:
 
-    const kvs::grads::DSet& dset( void ) const;
+    const vismodule::grads::DSet& dset( void ) const;
 
-    const kvs::grads::Undef& undef( void ) const;
+    const vismodule::grads::Undef& undef( void ) const;
 
-    const kvs::grads::Title& title( void ) const;
+    const vismodule::grads::Title& title( void ) const;
 
-    const kvs::grads::Options& options( void ) const;
+    const vismodule::grads::Options& options( void ) const;
 
-    const kvs::grads::XDef& xdef( void ) const;
+    const vismodule::grads::XDef& xdef( void ) const;
 
-    const kvs::grads::YDef& ydef( void ) const;
+    const vismodule::grads::YDef& ydef( void ) const;
 
-    const kvs::grads::ZDef& zdef( void ) const;
+    const vismodule::grads::ZDef& zdef( void ) const;
 
-    const kvs::grads::TDef& tdef( void ) const;
+    const vismodule::grads::TDef& tdef( void ) const;
 
-    const kvs::grads::Vars& vars( void ) const;
+    const vismodule::grads::Vars& vars( void ) const;
 
     const bool read( std::ifstream& ifs );
 };
 
 } // end of namespace grads
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GRADS__DATA_DESCRIPTOR_H_INCLUDE
+#endif // VIS_MODULE__GRADS__DATA_DESCRIPTOR_H_INCLUDE

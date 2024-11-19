@@ -12,15 +12,15 @@
  *  $Id: KeyPressEventListener.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__KEY_PRESS_EVENT_LISTENER_H_INCLUDE
-#define KVS__KEY_PRESS_EVENT_LISTENER_H_INCLUDE
+#ifndef VIS_MODULE__KEY_PRESS_EVENT_LISTENER_H_INCLUDE
+#define VIS_MODULE__KEY_PRESS_EVENT_LISTENER_H_INCLUDE
 
-#include <kvs/EventListener>
-#include <kvs/KeyEvent>
-#include <kvs/ClassName>
+#include <vismodule/EventListener>
+#include <vismodule/KeyEvent>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -28,9 +28,9 @@ namespace kvs
  *  @brief  KeyPressEventListener class.
  */
 /*===========================================================================*/
-class KeyPressEventListener : public kvs::EventListener
+class KeyPressEventListener : public vismodule::EventListener
 {
-    kvsClassName( kvs::KeyPressEventListener );
+    visModuleClassName( vismodule::KeyPressEventListener );
 
 public:
 
@@ -40,13 +40,13 @@ public:
 
 public:
 
-    virtual void update( kvs::KeyEvent* event ) = 0;
+    virtual void update( vismodule::KeyEvent* event ) = 0;
 
 private:
 
-    void onEvent( kvs::EventBase* event );
+    void onEvent( vismodule::EventBase* event );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__KEY_PRESS_EVENT_LISTENER_H_INCLUDE
+#endif // VIS_MODULE__KEY_PRESS_EVENT_LISTENER_H_INCLUDE

@@ -11,20 +11,20 @@
  *  $Id: MersenneTwister.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MERSENNE_TWISTER_H_INCLUDE
-#define KVS__MERSENNE_TWISTER_H_INCLUDE
+#ifndef VIS_MODULE__MERSENNE_TWISTER_H_INCLUDE
+#define VIS_MODULE__MERSENNE_TWISTER_H_INCLUDE
 
 #include <ctime>
 #include <climits>
 
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 #ifdef _MSC_VER
 #pragma warning (disable : 4146)
 #endif
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -34,7 +34,7 @@ namespace kvs
 /*==========================================================================*/
 class MersenneTwister
 {
-    kvsClassName_without_virtual( kvs::MersenneTwister );
+    visModuleClassName_without_virtual( vismodule::MersenneTwister );
 
 private:
 
@@ -313,6 +313,6 @@ inline const unsigned long MersenneTwister::twist(
     return( m ^ ( mix_bits( s0, s1 ) >> 1 ) ^ ( -low_bit( s1 ) & 0x9908b0dfUL ) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MERSENNE_TWISTER_H_INCLUDE
+#endif // VIS_MODULE__MERSENNE_TWISTER_H_INCLUDE

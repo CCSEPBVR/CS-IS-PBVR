@@ -17,11 +17,11 @@
 #include "GeometryObjectBase.h"
 #include "ObjectBase.h"
 #include "ClassName.h"
-#include <kvs/ValueArray>
-#include <kvs/Type>
-#include <kvs/Vector3>
-#include <kvs/RGBColor>
-#include <kvs/Module>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/Vector3>
+#include <vismodule/RGBColor>
+#include <vismodule/Module>
 #include "FrequencyTable.h"
 
 namespace pbvr
@@ -38,19 +38,19 @@ namespace pbvr
 class PointObject : public pbvr::GeometryObjectBase
 {
     // Class name.
-    kvsClassName( pbvr::PointObject );
+    visModuleClassName( pbvr::PointObject );
 
     // Module information.
     typedef pbvr::ObjectBase::ModuleTag ModuleCategory;
-    kvsModuleBaseClass( pbvr::GeometryObjectBase );
+    visModuleBaseClass( pbvr::GeometryObjectBase );
 
 protected:
 
-    kvs::ValueArray<kvs::Real32> m_sizes; ///< size array
-    kvs::ValueArray<pbvr::FrequencyTable> m_color_histogram;
-    kvs::ValueArray<pbvr::FrequencyTable> m_opacity_histogram;
-    kvs::ValueArray<int> m_c_histogram;
-    kvs::ValueArray<int> m_o_histogram;
+    vismodule::ValueArray<vismodule::Real32> m_sizes; ///< size array
+    vismodule::ValueArray<pbvr::FrequencyTable> m_color_histogram;
+    vismodule::ValueArray<pbvr::FrequencyTable> m_opacity_histogram;
+    vismodule::ValueArray<int> m_c_histogram;
+    vismodule::ValueArray<int> m_o_histogram;
     int m_nbins;
     int m_tf_number;
 
@@ -60,62 +60,62 @@ public:
     PointObject();
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::ValueArray<kvs::UInt8>&  colors,
-        const kvs::ValueArray<kvs::Real32>& normals,
-        const kvs::ValueArray<kvs::Real32>& sizes );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::ValueArray<vismodule::UInt8>&  colors,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
+        const vismodule::ValueArray<vismodule::Real32>& sizes );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::ValueArray<kvs::UInt8>&  colors,
-        const kvs::ValueArray<kvs::Real32>& normals,
-        const kvs::Real32                   size );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::ValueArray<vismodule::UInt8>&  colors,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
+        const vismodule::Real32                   size );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::RGBColor&                color,
-        const kvs::ValueArray<kvs::Real32>& normals,
-        const kvs::ValueArray<kvs::Real32>& sizes );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::RGBColor&                color,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
+        const vismodule::ValueArray<vismodule::Real32>& sizes );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::ValueArray<kvs::Real32>& normals,
-        const kvs::ValueArray<kvs::Real32>& sizes );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
+        const vismodule::ValueArray<vismodule::Real32>& sizes );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::RGBColor&                color,
-        const kvs::ValueArray<kvs::Real32>& normals,
-        const kvs::Real32                   size );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::RGBColor&                color,
+        const vismodule::ValueArray<vismodule::Real32>& normals,
+        const vismodule::Real32                   size );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::ValueArray<kvs::UInt8>&  colors,
-        const kvs::ValueArray<kvs::Real32>& sizes );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::ValueArray<vismodule::UInt8>&  colors,
+        const vismodule::ValueArray<vismodule::Real32>& sizes );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::RGBColor&                color,
-        const kvs::ValueArray<kvs::Real32>& sizes );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::RGBColor&                color,
+        const vismodule::ValueArray<vismodule::Real32>& sizes );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::ValueArray<kvs::UInt8>&  colors,
-        const kvs::Real32                   size );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::ValueArray<vismodule::UInt8>&  colors,
+        const vismodule::Real32                   size );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords,
-        const kvs::RGBColor&                color,
-        const kvs::Real32                   size );
+        const vismodule::ValueArray<vismodule::Real32>& coords,
+        const vismodule::RGBColor&                color,
+        const vismodule::Real32                   size );
 
     PointObject(
-        const kvs::ValueArray<kvs::Real32>& coords );
+        const vismodule::ValueArray<vismodule::Real32>& coords );
 
     PointObject( const pbvr::PointObject& other );
 
-    //PointObject( const kvs::LineObject& line );
+    //PointObject( const vismodule::LineObject& line );
 
-    //PointObject( const kvs::PolygonObject& polygon );
+    //PointObject( const vismodule::PolygonObject& polygon );
 
     virtual ~PointObject();
 
@@ -145,9 +145,9 @@ public:
 
 public:
 
-    void setSizes( const kvs::ValueArray<kvs::Real32>& sizes );
+    void setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes );
 
-    void setSize( const kvs::Real32 size );
+    void setSize( const vismodule::Real32 size );
 
     void setTfnumber( const int tf_number);
 
@@ -161,21 +161,21 @@ public:
 
 public:
 
-    const kvs::Real32 size( const size_t index = 0 ) const;
+    const vismodule::Real32 size( const size_t index = 0 ) const;
 
-    const kvs::ValueArray<kvs::Real32>& sizes() const;
+    const vismodule::ValueArray<vismodule::Real32>& sizes() const;
 
 public:
 
-    const kvs::ValueArray<pbvr::FrequencyTable>& getColorHistogram() const;
-    const kvs::ValueArray<pbvr::FrequencyTable>& getOpacityHistogram() const;
+    const vismodule::ValueArray<pbvr::FrequencyTable>& getColorHistogram() const;
+    const vismodule::ValueArray<pbvr::FrequencyTable>& getOpacityHistogram() const;
     //add shimomura 2023/05/29
-    const kvs::ValueArray<int>& getCHistogram() const;
-    const kvs::ValueArray<int>& getOHistogram() const;
+    const vismodule::ValueArray<int>& getCHistogram() const;
+    const vismodule::ValueArray<int>& getOHistogram() const;
     const int getTfnumber() const; 
     const int getNbins() const; 
 };
 
 } // end of namespace pbvr
 
-#endif // KVS__POINT_OBJECT_H_INCLUDE
+#endif // VIS_MODULE__POINT_OBJECT_H_INCLUDE

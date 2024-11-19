@@ -15,13 +15,13 @@
 #define PBVR__HEXAHEDRAL_CELL_H_INCLUDE
 
 #include "ClassName.h"
-#include <kvs/Type>
-#include <kvs/Vector4>
-#include <kvs/Matrix44>
+#include <vismodule/Type>
+#include <vismodule/Vector4>
+#include <vismodule/Matrix44>
 #include "UnstructuredVolumeObject.h"
 #include "CellBase.h"
 //#include "SFMT/SFMT.h" 
-#include <kvs/Timer>
+#include <vismodule/Timer>
 
 namespace pbvr
 {
@@ -34,7 +34,7 @@ namespace pbvr
 template <typename T>
 class HexahedralCell : public pbvr::CellBase<T>
 {
-    kvsClassName( pbvr::HexahedralCell );
+    visModuleClassName( pbvr::HexahedralCell );
 
 public:
 
@@ -56,22 +56,22 @@ public:
 
 public:
 
-    const kvs::Real32* interpolationFunctions( const kvs::Vector3f& point ) const;
+    const vismodule::Real32* interpolationFunctions( const vismodule::Vector3f& point ) const;
 
-    const kvs::Real32* differentialFunctions( const kvs::Vector3f& point ) const;
+    const vismodule::Real32* differentialFunctions( const vismodule::Vector3f& point ) const;
 
-//    const kvs::Real32** interpolationFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt) const;
-//    const kvs::Real32** differentialFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const;
-    void interpolationFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt) const;
-    void differentialFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const;
+//    const vismodule::Real32** interpolationFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt) const;
+//    const vismodule::Real32** differentialFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const;
+    void interpolationFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt) const;
+    void differentialFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const;
 
     void scalar_ary( float* scalar_array, const int loop_cnt ) const;
     void grad_ary( float* grad_array_x, float* grad_array_y, float* grad_array_z, const int loop_cnt ) const;
-    const kvs::Vector3f randomSampling() const;
-    const kvs::Vector3f randomSampling_MT( kvs::MersenneTwister* MT  ) const;
-    //void  randomSampling_SFMT( sfmt_t *sfmt, kvs::Vector3f *local_array, const int loop_cnt, std::vector<double> track);
+    const vismodule::Vector3f randomSampling() const;
+    const vismodule::Vector3f randomSampling_MT( vismodule::MersenneTwister* MT  ) const;
+    //void  randomSampling_SFMT( sfmt_t *sfmt, vismodule::Vector3f *local_array, const int loop_cnt, std::vector<double> track);
 
-    const kvs::Real32 volume() const;
+    const vismodule::Real32 volume() const;
 
     void setLocalGravityPoint() const;
 };
@@ -127,7 +127,7 @@ inline void HexahedralCell<T>::scalar_ary(float*  scalar_array, const int loop_c
     #pragma ivdep
     for ( size_t i = 0; i < loop_cnt ; i++ )
     {
-        //scalar_array[i]= static_cast<kvs::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
+        //scalar_array[i]= static_cast<vismodule::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
         scalar_array[i] =  BaseClass::m_interpolation_functions_array[0][i] * BaseClass::m_scalars_array[0][i] 
                         +  BaseClass::m_interpolation_functions_array[1][i] * BaseClass::m_scalars_array[1][i]
                         +  BaseClass::m_interpolation_functions_array[2][i] * BaseClass::m_scalars_array[2][i]
@@ -177,7 +177,7 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
                               + ( BaseClass::m_scalars_array[ 6][i] * BaseClass::m_differential_functions_array[22][i]  )
                               + ( BaseClass::m_scalars_array[ 7][i] * BaseClass::m_differential_functions_array[23][i]  );
 
-        const kvs::Vector3f g( dsdx, dsdy, dsdz );
+        const vismodule::Vector3f g( dsdx, dsdy, dsdz );
 
         ///////////////////////// JacobiMatrix /////////////////////////
 
@@ -286,7 +286,7 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
 
         float determinant = (float)det33;
 
-        kvs::Matrix33f J;
+        vismodule::Matrix33f J;
 /*
         J.set( ( dYdy * dZdz - dZdy * dYdz ), ( dYdx * dZdz - dZdx * dYdz ), ( dXdx * dYdz - dYdx * dXdz ),
                ( dXdy * dZdz - dZdy * dXdz ), ( dXdx * dZdz - dZdx * dXdz ), ( dXdx * dZdy - dZdx * dXdy ),
@@ -300,13 +300,13 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
         const T det_inverse = static_cast<T>( 1.0 / det33 );
 
         J *= det_inverse;
-        const kvs::Vector3f G = J * g;
+        const vismodule::Vector3f G = J * g;
 
         /////////////////////////   inverse   /////////////////////////
 
-        grad_array_x[i] =  kvs::Math::IsZero( determinant ) ? 0.0f : G.x();
-        grad_array_y[i] =  kvs::Math::IsZero( determinant ) ? 0.0f : G.y();
-        grad_array_z[i] =  kvs::Math::IsZero( determinant ) ? 0.0f : G.z();
+        grad_array_x[i] =  vismodule::Math::IsZero( determinant ) ? 0.0f : G.x();
+        grad_array_y[i] =  vismodule::Math::IsZero( determinant ) ? 0.0f : G.y();
+        grad_array_z[i] =  vismodule::Math::IsZero( determinant ) ? 0.0f : G.z();
 
         /////////////////////////// gradient ///////////////////////////
 
@@ -320,7 +320,7 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
  */
 /*==========================================================================*/
 template <typename T>
-inline const kvs::Real32* HexahedralCell<T>::interpolationFunctions( const kvs::Vector3f& point ) const
+inline const vismodule::Real32* HexahedralCell<T>::interpolationFunctions( const vismodule::Vector3f& point ) const
 {
     const float x = point.x();
     const float y = point.y();
@@ -351,7 +351,7 @@ inline const kvs::Real32* HexahedralCell<T>::interpolationFunctions( const kvs::
  */
 /*==========================================================================*/
 template <typename T>
-inline const kvs::Real32* HexahedralCell<T>::differentialFunctions( const kvs::Vector3f& point ) const
+inline const vismodule::Real32* HexahedralCell<T>::differentialFunctions( const vismodule::Vector3f& point ) const
 {
     const float x = point.x();
     const float y = point.y();
@@ -400,7 +400,7 @@ inline const kvs::Real32* HexahedralCell<T>::differentialFunctions( const kvs::V
  */
 /*==========================================================================*/
 template <typename T>
-inline void HexahedralCell<T>::interpolationFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const
+inline void HexahedralCell<T>::interpolationFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const
 {
     #pragma ivdep
     for( int i = 0; i < loop_cnt; i++)
@@ -435,7 +435,7 @@ inline void HexahedralCell<T>::interpolationFunctions_array( const kvs::Vector3f
  */
 /*==========================================================================*/
 template <typename T>
-inline void HexahedralCell<T>::differentialFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const
+inline void HexahedralCell<T>::differentialFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const
 {
     #pragma ivdep
     for( int i = 0; i < loop_cnt; i++)
@@ -489,7 +489,7 @@ inline void HexahedralCell<T>::differentialFunctions_array( const kvs::Vector3f*
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector3f HexahedralCell<T>::randomSampling() const
+const vismodule::Vector3f HexahedralCell<T>::randomSampling() const
 {
     // Generate a point in the local coordinate.
     /* const float s = BaseClass::randomNumber(); */
@@ -504,7 +504,7 @@ const kvs::Vector3f HexahedralCell<T>::randomSampling() const
         t = BaseClass::randomNumber();
         u = BaseClass::randomNumber();
     }
-    const kvs::Vector3f point( s, t, u );
+    const vismodule::Vector3f point( s, t, u );
     this->setLocalPoint( point );
     BaseClass::m_global_point = BaseClass::transformLocalToGlobal( point );
 
@@ -512,7 +512,7 @@ const kvs::Vector3f HexahedralCell<T>::randomSampling() const
 }
 
 template <typename T>
-const kvs::Vector3f HexahedralCell<T>::randomSampling_MT(kvs::MersenneTwister* MT) const
+const vismodule::Vector3f HexahedralCell<T>::randomSampling_MT(vismodule::MersenneTwister* MT) const
 {
     // Generate a point in the local coordinate.
     /* const float s = BaseClass::randomNumber(); */
@@ -530,7 +530,7 @@ const kvs::Vector3f HexahedralCell<T>::randomSampling_MT(kvs::MersenneTwister* M
         t = (float)MT->rand();
         u = (float)MT->rand();
     }
-    const kvs::Vector3f point( s, t, u );
+    const vismodule::Vector3f point( s, t, u );
 
     return point; 
 //    this->setLocalPoint( point );
@@ -540,7 +540,7 @@ const kvs::Vector3f HexahedralCell<T>::randomSampling_MT(kvs::MersenneTwister* M
 }
 
 //template <typename T>
-//void HexahedralCell<T>::randomSampling_SFMT(sfmt_t *sfmt, kvs::Vector3f *local_array, const int loop_cnt, std::vector<double> track) 
+//void HexahedralCell<T>::randomSampling_SFMT(sfmt_t *sfmt, vismodule::Vector3f *local_array, const int loop_cnt, std::vector<double> track) 
 //{
 //    // Generate a point in the local coordinate.
 //    /* const float s = BaseClass::randomNumber(); */
@@ -566,7 +566,7 @@ const kvs::Vector3f HexahedralCell<T>::randomSampling_MT(kvs::MersenneTwister* M
 ////        t = (float)MT->rand();
 ////        u = (float)MT->rand();
 //    }
-//    const kvs::Vector3f point( s, t, u );
+//    const vismodule::Vector3f point( s, t, u );
 //    local_array[i] = point;
 //    }
 //
@@ -583,13 +583,13 @@ const kvs::Vector3f HexahedralCell<T>::randomSampling_MT(kvs::MersenneTwister* M
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Real32 HexahedralCell<T>::volume() const
+inline const vismodule::Real32 HexahedralCell<T>::volume() const
 {
     const size_t resolution = 3;
     const float sampling_length = 1.0f / ( float )resolution;
     const float adjustment = sampling_length * 0.5f;
 
-    kvs::Vector3f sampling_position( -adjustment, -adjustment, -adjustment );
+    vismodule::Vector3f sampling_position( -adjustment, -adjustment, -adjustment );
 
     float sum_metric = 0;
 
@@ -604,11 +604,11 @@ inline const kvs::Real32 HexahedralCell<T>::volume() const
                 sampling_position[ 0 ] += sampling_length;
 
                 this->setLocalPoint( sampling_position );
-                //const kvs::Matrix33f J = BaseClass::jacobiMatrix();
-                const kvs::Matrix33f J = BaseClass::JacobiMatrix();
+                //const vismodule::Matrix33f J = BaseClass::jacobiMatrix();
+                const vismodule::Matrix33f J = BaseClass::JacobiMatrix();
                 const float metric_element = J.determinant();
 
-                sum_metric += kvs::Math::Abs<float>( metric_element );
+                sum_metric += vismodule::Math::Abs<float>( metric_element );
             }
             sampling_position[ 0 ] = -adjustment;
         }
@@ -627,9 +627,9 @@ inline const kvs::Real32 HexahedralCell<T>::volume() const
 template <typename T>
 inline void HexahedralCell<T>::setLocalGravityPoint() const
 {
-    this->setLocalPoint( kvs::Vector3f( 0.5, 0.5, 0.5 ) );
+    this->setLocalPoint( vismodule::Vector3f( 0.5, 0.5, 0.5 ) );
 }
 
 } // end of namespace pbvr
 
-#endif // KVS__HEXAHEDRAL_CELL_H_INCLUDE
+#endif // VIS_MODULE__HEXAHEDRAL_CELL_H_INCLUDE

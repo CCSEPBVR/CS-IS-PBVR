@@ -15,7 +15,7 @@
 #include "KeyPressEventListener.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -25,7 +25,7 @@ namespace kvs
 /*===========================================================================*/
 KeyPressEventListener::KeyPressEventListener( void )
 {
-    kvs::EventListener::setEventType( kvs::EventBase::KeyPressEvent );
+    vismodule::EventListener::setEventType( vismodule::EventBase::KeyPressEvent );
 }
 
 /*===========================================================================*/
@@ -43,9 +43,9 @@ KeyPressEventListener::~KeyPressEventListener( void )
  *  @param  event [in] pointer to the event
  */
 /*===========================================================================*/
-void KeyPressEventListener::onEvent( kvs::EventBase* event )
+void KeyPressEventListener::onEvent( vismodule::EventBase* event )
 {
-    this->update( static_cast<kvs::KeyEvent*>(event) );
+    this->update( static_cast<vismodule::KeyEvent*>(event) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

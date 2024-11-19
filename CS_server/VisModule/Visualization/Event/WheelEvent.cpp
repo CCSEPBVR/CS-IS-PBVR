@@ -15,7 +15,7 @@
 #include "WheelEvent.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -101,7 +101,7 @@ const int WheelEvent::direction( void ) const
 /*===========================================================================*/
 const int WheelEvent::type( void ) const
 {
-    return( kvs::EventBase::WheelEvent );
+    return( vismodule::EventBase::WheelEvent );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

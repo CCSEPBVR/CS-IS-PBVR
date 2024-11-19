@@ -12,11 +12,11 @@
  */
 /****************************************************************************/
 #include "Texture1D.h"
-#include <kvs/Math>
+#include <vismodule/Math>
 #include <iostream>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -140,7 +140,7 @@ void Texture1D::download(
 
     if ( !m_is_downloaded )
     {
-//        const size_t ext_width  = 1 << ( kvs::Math::Log2Smallest( width ) );
+//        const size_t ext_width  = 1 << ( vismodule::Math::Log2Smallest( width ) );
 
         const GLint level = 0;  // level-of-detail number
         const GLint border = 0; // border width (0 or 1)
@@ -274,7 +274,7 @@ unsigned int Texture1D::get_texture_memory_size_on_gpu( const GLenum proxy )
     GLfloat bytes = (GLfloat)total_bits / 8.0f;
 
     // Round up to the next whole byte.
-    if( !kvs::Math::Equal( bytes, (GLfloat)( (GLint)bytes) ) )
+    if( !vismodule::Math::Equal( bytes, (GLfloat)( (GLint)bytes) ) )
     {
         bytes = (GLfloat)((GLint)bytes) + 1.0f;
     }
@@ -283,4 +283,4 @@ unsigned int Texture1D::get_texture_memory_size_on_gpu( const GLenum proxy )
     return( texture_size[0] * (GLint)bytes );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

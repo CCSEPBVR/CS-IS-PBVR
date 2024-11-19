@@ -42,14 +42,14 @@ EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
 WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 
 */
-#ifndef KVS__PLY_FILE_H_INCLUDE
-#define KVS__PLY_FILE_H_INCLUDE
+#ifndef VIS_MODULE__PLY_FILE_H_INCLUDE
+#define VIS_MODULE__PLY_FILE_H_INCLUDE
 
 #include <cstdio>
 #include <cstddef>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace ply
@@ -195,6 +195,6 @@ int get_prop_type(char *);
 
 } // end of namespace ply
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__PLY_FILE_H_INCLUDE
+#endif // VIS_MODULE__PLY_FILE_H_INCLUDE

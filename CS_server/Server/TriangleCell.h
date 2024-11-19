@@ -15,11 +15,11 @@
 #define PBVR__TRIANGLE_CELL_H_INCLUDE
 
 #include "ClassName.h"
-#include <kvs/Type>
-#include <kvs/Vector4>
-#include <kvs/Matrix44>
+#include <vismodule/Type>
+#include <vismodule/Vector4>
+#include <vismodule/Matrix44>
 #include "UnstructuredVolumeObject.h"
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/IgnoreUnusedVariable>
 #include "CellBase.h"
 
 
@@ -29,7 +29,7 @@ namespace pbvr
 template <typename T>
 class TriangleCell : public pbvr::CellBase<T>
 {
-    kvsClassName( pbvr::TriangleCell );
+    visModuleClassName( pbvr::TriangleCell );
 
 public:
 
@@ -48,19 +48,19 @@ public:
 
 public:
 
-    const kvs::Real32* interpolationFunctions( const kvs::Vector3f& point ) const;
+    const vismodule::Real32* interpolationFunctions( const vismodule::Vector3f& point ) const;
 
-    const kvs::Real32* differentialFunctions( const kvs::Vector3f& point ) const;
+    const vismodule::Real32* differentialFunctions( const vismodule::Vector3f& point ) const;
 
-    const kvs::Vector3f randomSampling() const;
+    const vismodule::Vector3f randomSampling() const;
 
-    const kvs::Real32 volume() const;
+    const vismodule::Real32 volume() const;
 
-    const kvs::Vector3f transformGlobalToLocal( const kvs::Vector3f& point ) const;
+    const vismodule::Vector3f transformGlobalToLocal( const vismodule::Vector3f& point ) const;
 
-    const kvs::Vector3f transformLocalToGlobal( const kvs::Vector3f& point ) const;
+    const vismodule::Vector3f transformLocalToGlobal( const vismodule::Vector3f& point ) const;
 
-    const kvs::Vector3f gradient() const;
+    const vismodule::Vector3f gradient() const;
 
     void setLocalGravityPoint() const;
 };
@@ -99,7 +99,7 @@ inline TriangleCell<T>::~TriangleCell()
  */
 /*==========================================================================*/
 template <typename T>
-inline const kvs::Real32* TriangleCell<T>::interpolationFunctions( const kvs::Vector3f& point ) const
+inline const vismodule::Real32* TriangleCell<T>::interpolationFunctions( const vismodule::Vector3f& point ) const
 {
     const float x = point.x();
     const float y = point.y();
@@ -117,16 +117,16 @@ inline const kvs::Real32* TriangleCell<T>::interpolationFunctions( const kvs::Ve
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Vector3f TriangleCell<T>::gradient() const
+inline const vismodule::Vector3f TriangleCell<T>::gradient() const
 {
     //Local coord (s,t), Global coord (X,Y,Z)=V.  V=V(s,t).
     //Normal of surface = dV/ds cross dV/dt
-    kvs::Vector3f a = BaseClass::vertices()[0];
-    kvs::Vector3f b = BaseClass::vertices()[1];
-    kvs::Vector3f c = BaseClass::vertices()[2];
+    vismodule::Vector3f a = BaseClass::vertices()[0];
+    vismodule::Vector3f b = BaseClass::vertices()[1];
+    vismodule::Vector3f c = BaseClass::vertices()[2];
 
-    kvs::Vector3f v1 = b - a;
-    kvs::Vector3f v2 = c - a;
+    vismodule::Vector3f v1 = b - a;
+    vismodule::Vector3f v2 = c - a;
 
     return v1.cross( v2 );
 }
@@ -138,9 +138,9 @@ inline const kvs::Vector3f TriangleCell<T>::gradient() const
  */
 /*==========================================================================*/
 template <typename T>
-inline const kvs::Real32* TriangleCell<T>::differentialFunctions( const kvs::Vector3f& point ) const
+inline const vismodule::Real32* TriangleCell<T>::differentialFunctions( const vismodule::Vector3f& point ) const
 {
-    kvs::IgnoreUnusedVariable( point );
+    vismodule::IgnoreUnusedVariable( point );
 
     // dNdx
     BaseClass::m_differential_functions[ 0] =  -1.0f;
@@ -168,14 +168,14 @@ inline const kvs::Real32* TriangleCell<T>::differentialFunctions( const kvs::Vec
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector3f TriangleCell<T>::randomSampling() const
+const vismodule::Vector3f TriangleCell<T>::randomSampling() const
 {
     // Generate a point in the local coordinate.
     const float s = BaseClass::randomNumber();
     const float t = BaseClass::randomNumber();
     const float u = 0.0f;
 
-    kvs::Vector3f point;
+    vismodule::Vector3f point;
     if ( s + t <= 1.0f )
     {
         point[0] = s;
@@ -203,11 +203,11 @@ const kvs::Vector3f TriangleCell<T>::randomSampling() const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Real32 TriangleCell<T>::volume() const
+inline const vismodule::Real32 TriangleCell<T>::volume() const
 {
-    const kvs::Vector3f v01( BaseClass::m_vertices[1] - BaseClass::m_vertices[0] );
-    const kvs::Vector3f v02( BaseClass::m_vertices[2] - BaseClass::m_vertices[0] );
-    const kvs::Vector3f V = v01.cross( v02 );
+    const vismodule::Vector3f v01( BaseClass::m_vertices[1] - BaseClass::m_vertices[0] );
+    const vismodule::Vector3f v02( BaseClass::m_vertices[2] - BaseClass::m_vertices[0] );
+    const vismodule::Vector3f V = v01.cross( v02 );
 
     return V.length() * 0.5;
 }
@@ -219,7 +219,7 @@ inline const kvs::Real32 TriangleCell<T>::volume() const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Vector3f TriangleCell<T>::transformGlobalToLocal( const kvs::Vector3f& point ) const
+inline const vismodule::Vector3f TriangleCell<T>::transformGlobalToLocal( const vismodule::Vector3f& point ) const
 {
     return point;
 }
@@ -231,14 +231,14 @@ inline const kvs::Vector3f TriangleCell<T>::transformGlobalToLocal( const kvs::V
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Vector3f TriangleCell<T>::transformLocalToGlobal( const kvs::Vector3f& point ) const
+inline const vismodule::Vector3f TriangleCell<T>::transformLocalToGlobal( const vismodule::Vector3f& point ) const
 {
-    const kvs::Real32 s = point.x();
-    const kvs::Real32 t = point.y();
+    const vismodule::Real32 s = point.x();
+    const vismodule::Real32 t = point.y();
 
-    const kvs::Vector3f v0( BaseClass::m_vertices[0] );
-    const kvs::Vector3f v01( BaseClass::m_vertices[1] - v0 );
-    const kvs::Vector3f v02( BaseClass::m_vertices[2] - v0 );
+    const vismodule::Vector3f v0( BaseClass::m_vertices[0] );
+    const vismodule::Vector3f v01( BaseClass::m_vertices[1] - v0 );
+    const vismodule::Vector3f v02( BaseClass::m_vertices[2] - v0 );
 
     return s * v01 + t * v02 + v0;
 }
@@ -251,9 +251,9 @@ inline const kvs::Vector3f TriangleCell<T>::transformLocalToGlobal( const kvs::V
 template <typename T>
 inline void TriangleCell<T>::setLocalGravityPoint() const
 {
-//    this->setLocalPoint( kvs::Vector2f( 1/3, 1/3 ) );
+//    this->setLocalPoint( vismodule::Vector2f( 1/3, 1/3 ) );
 }
 
 } // end of namespace pbvr
 
-#endif // KVS__TETRAHEDRAL_CELL_H_INCLUDE
+#endif // VIS_MODULE__TETRAHEDRAL_CELL_H_INCLUDE

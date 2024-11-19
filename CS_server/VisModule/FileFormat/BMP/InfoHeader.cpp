@@ -12,10 +12,10 @@
  */
 /****************************************************************************/
 #include "InfoHeader.h"
-#include <kvs/Endian>
+#include <vismodule/Endian>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace bmp
@@ -30,7 +30,7 @@ InfoHeader::InfoHeader( std::ifstream& ifs )
     this->read( ifs );
 }
 
-std::ostream& operator << ( std::ostream& os, const kvs::bmp::InfoHeader& ih )
+std::ostream& operator << ( std::ostream& os, const vismodule::bmp::InfoHeader& ih )
 {
     os << "BITMAP INFO HEADER:" << std::endl;
     os << "\tstructure size             : " << ih.m_size          << std::endl;
@@ -48,57 +48,57 @@ std::ostream& operator << ( std::ostream& os, const kvs::bmp::InfoHeader& ih )
     return( os );
 }
 
-kvs::UInt32 InfoHeader::size( void ) const
+vismodule::UInt32 InfoHeader::size( void ) const
 {
     return( m_size );
 }
 
-kvs::UInt32 InfoHeader::width( void ) const
+vismodule::UInt32 InfoHeader::width( void ) const
 {
     return( m_width );
 }
 
-kvs::UInt32 InfoHeader::height( void ) const
+vismodule::UInt32 InfoHeader::height( void ) const
 {
     return( m_height );
 }
 
-kvs::UInt16 InfoHeader::nplanes( void ) const
+vismodule::UInt16 InfoHeader::nplanes( void ) const
 {
     return( m_nplanes );
 }
 
-kvs::UInt16 InfoHeader::bpp( void ) const
+vismodule::UInt16 InfoHeader::bpp( void ) const
 {
     return( m_bpp );
 }
 
-kvs::UInt32 InfoHeader::compression( void ) const
+vismodule::UInt32 InfoHeader::compression( void ) const
 {
     return( m_compression );
 }
 
-kvs::UInt32 InfoHeader::bitmapsize( void ) const
+vismodule::UInt32 InfoHeader::bitmapsize( void ) const
 {
     return( m_bitmapsize );
 }
 
-kvs::UInt32 InfoHeader::hresolution( void ) const
+vismodule::UInt32 InfoHeader::hresolution( void ) const
 {
     return( m_hresolution );
 }
 
-kvs::UInt32 InfoHeader::vresolution( void ) const
+vismodule::UInt32 InfoHeader::vresolution( void ) const
 {
     return( m_vresolution );
 }
 
-kvs::UInt32 InfoHeader::colsused( void ) const
+vismodule::UInt32 InfoHeader::colsused( void ) const
 {
     return( m_colsused );
 }
 
-kvs::UInt32 InfoHeader::colsimportant( void ) const
+vismodule::UInt32 InfoHeader::colsimportant( void ) const
 {
     return( m_colsimportant );
 }
@@ -138,19 +138,19 @@ void InfoHeader::write( std::ofstream& ofs )
 
 void InfoHeader::swap_bytes( void )
 {
-    kvs::Endian::Swap( m_size );
-    kvs::Endian::Swap( m_width );
-    kvs::Endian::Swap( m_height );
-    kvs::Endian::Swap( m_nplanes );
-    kvs::Endian::Swap( m_bpp );
-    kvs::Endian::Swap( m_compression );
-    kvs::Endian::Swap( m_bitmapsize );
-    kvs::Endian::Swap( m_hresolution );
-    kvs::Endian::Swap( m_vresolution );
-    kvs::Endian::Swap( m_colsused );
-    kvs::Endian::Swap( m_colsimportant );
+    vismodule::Endian::Swap( m_size );
+    vismodule::Endian::Swap( m_width );
+    vismodule::Endian::Swap( m_height );
+    vismodule::Endian::Swap( m_nplanes );
+    vismodule::Endian::Swap( m_bpp );
+    vismodule::Endian::Swap( m_compression );
+    vismodule::Endian::Swap( m_bitmapsize );
+    vismodule::Endian::Swap( m_hresolution );
+    vismodule::Endian::Swap( m_vresolution );
+    vismodule::Endian::Swap( m_colsused );
+    vismodule::Endian::Swap( m_colsimportant );
 }
 
 } // end of namesapce bmp
 
-} // end of namespace kvs
+} // end of namespace vismodule

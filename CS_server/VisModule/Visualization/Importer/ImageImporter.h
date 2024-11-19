@@ -11,24 +11,24 @@
  *  $Id: ImageImporter.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__IMAGE_IMPORTER_H_INCLUDE
-#define KVS__IMAGE_IMPORTER_H_INCLUDE
+#ifndef VIS_MODULE__IMAGE_IMPORTER_H_INCLUDE
+#define VIS_MODULE__IMAGE_IMPORTER_H_INCLUDE
 
 #include "ImporterBase.h"
 #include <string>
-#include <kvs/ClassName>
-#include <kvs/Module>
-#include <kvs/ImageObject>
-#include <kvs/KVSMLObjectImage>
-#include <kvs/Bmp>
-#include <kvs/Tiff>
-#include <kvs/Ppm>
-#include <kvs/Pgm>
-#include <kvs/Pbm>
-#include <kvs/Dicom>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
+#include <vismodule/ImageObject>
+#include <vismodule/KVSMLObjectImage>
+#include <vismodule/Bmp>
+#include <vismodule/Tiff>
+#include <vismodule/Ppm>
+#include <vismodule/Pgm>
+#include <vismodule/Pbm>
+#include <vismodule/Dicom>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -36,15 +36,15 @@ namespace kvs
  *  Image object importer class.
  */
 /*==========================================================================*/
-class ImageImporter : public kvs::ImporterBase, public kvs::ImageObject
+class ImageImporter : public vismodule::ImporterBase, public vismodule::ImageObject
 {
     // Class name.
-    kvsClassName( kvs::ImageImporter );
+    visModuleClassName( vismodule::ImageImporter );
 
     // Module information.
-    kvsModuleCategory( Importer );
-    kvsModuleBaseClass( kvs::ImporterBase );
-    kvsModuleSuperClass( kvs::ImageObject );
+    visModuleCategory( Importer );
+    visModuleBaseClass( vismodule::ImporterBase );
+    visModuleSuperClass( vismodule::ImageObject );
 
 public:
 
@@ -52,31 +52,31 @@ public:
 
     ImageImporter( const std::string& filename );
 
-    ImageImporter( const kvs::FileFormatBase* file_format );
+    ImageImporter( const vismodule::FileFormatBase* file_format );
 
     virtual ~ImageImporter( void );
 
 public:
 
-    SuperClass* exec( const kvs::FileFormatBase* file_format );
+    SuperClass* exec( const vismodule::FileFormatBase* file_format );
 
 private:
 
-    void import( const kvs::KVSMLObjectImage* kvsml );
+    void import( const vismodule::KVSMLObjectImage* kvsml );
 
-    void import( const kvs::Bmp* bmp );
+    void import( const vismodule::Bmp* bmp );
 
-    void import( const kvs::Tiff* tiff );
+    void import( const vismodule::Tiff* tiff );
 
-    void import( const kvs::Ppm* ppm );
+    void import( const vismodule::Ppm* ppm );
 
-    void import( const kvs::Pgm* pgm );
+    void import( const vismodule::Pgm* pgm );
 
-    void import( const kvs::Pbm* pbm );
+    void import( const vismodule::Pbm* pbm );
 
-    void import( const kvs::Dicom* dicom );
+    void import( const vismodule::Dicom* dicom );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__IMAGE_IMPORTER_H_INCLUDE
+#endif // VIS_MODULE__IMAGE_IMPORTER_H_INCLUDE

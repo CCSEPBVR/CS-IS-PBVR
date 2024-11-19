@@ -11,20 +11,20 @@
  *  $Id: Bmp.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__BMP_H_INCLUDE
-#define KVS__BMP_H_INCLUDE
+#ifndef VIS_MODULE__BMP_H_INCLUDE
+#define VIS_MODULE__BMP_H_INCLUDE
 
-#include <kvs/FileFormatBase>
-#include <kvs/ClassName>
-#include <kvs/Type>
-#include <kvs/ValueArray>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ClassName>
+#include <vismodule/Type>
+#include <vismodule/ValueArray>
 #include <iostream>
 #include <fstream>
 #include "FileHeader.h"
 #include "InfoHeader.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -32,15 +32,15 @@ namespace kvs
  *  Bitmap image class.
  */
 /*==========================================================================*/
-class Bmp : public kvs::FileFormatBase
+class Bmp : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::Bmp );
+    visModuleClassName( vismodule::Bmp );
 
 public:
 
-    typedef kvs::FileFormatBase  BaseClass;
-    typedef kvs::bmp::FileHeader FileHeader;
-    typedef kvs::bmp::InfoHeader InfoHeader;
+    typedef vismodule::FileFormatBase  BaseClass;
+    typedef vismodule::bmp::FileHeader FileHeader;
+    typedef vismodule::bmp::InfoHeader InfoHeader;
 
 protected:
 
@@ -50,13 +50,13 @@ protected:
     size_t                      m_width;  ///< width
     size_t                      m_height; ///< height
     size_t                      m_bpp;    ///< bits per pixel
-    kvs::ValueArray<kvs::UInt8> m_data;   ///< pixel data
+    vismodule::ValueArray<vismodule::UInt8> m_data;   ///< pixel data
 
 public:
 
     Bmp( void );
 
-    Bmp( const size_t width, const size_t height, const kvs::ValueArray<kvs::UInt8>& data );
+    Bmp( const size_t width, const size_t height, const vismodule::ValueArray<vismodule::UInt8>& data );
 
     Bmp( const std::string& filename );
 
@@ -74,7 +74,7 @@ public:
 
     size_t bitsPerPixel( void ) const;
 
-    kvs::ValueArray<kvs::UInt8> data( void ) const;
+    vismodule::ValueArray<vismodule::UInt8> data( void ) const;
 
     bool isSupported( void ) const;
 
@@ -101,6 +101,6 @@ public:
     static const bool CheckFileFormat( const std::string& filename );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__BMP_H_INCLUDE
+#endif // VIS_MODULE__BMP_H_INCLUDE

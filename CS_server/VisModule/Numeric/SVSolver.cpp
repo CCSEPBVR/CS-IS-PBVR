@@ -13,11 +13,11 @@
  */
 /*****************************************************************************/
 #include "SVSolver.h"
-#include <kvs/Macro>
-#include <kvs/Math>
+#include <vismodule/Macro>
+#include <vismodule/Math>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -28,21 +28,21 @@ namespace kvs
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector<T>& SVSolver<T>::solve( const kvs::Vector<T>& b )
+const vismodule::Vector<T>& SVSolver<T>::solve( const vismodule::Vector<T>& b )
 {
     int row = m_decomposer.U().nrows();
     int column = m_decomposer.U().ncolumns();
-    kvs::Vector<T> x( b.size() );
+    vismodule::Vector<T> x( b.size() );
 
     // Editing of the singular values.
     m_decomposer.correctSingularValues();
 
     // Calculate U^t * b.
-    kvs::Vector<T> temp( column );
+    vismodule::Vector<T> temp( column );
     for( int j = 0; j < column; j++ )
     {
         T s = T(0);
-        if( !kvs::Math::IsZero( m_decomposer.W()[j] ) )
+        if( !vismodule::Math::IsZero( m_decomposer.W()[j] ) )
         {
             for( int i = 0; i < row; i++ ) s += m_decomposer.U()[i][j] * b[i];
             s /= m_decomposer.W()[j];
@@ -65,9 +65,9 @@ const kvs::Vector<T>& SVSolver<T>::solve( const kvs::Vector<T>& b )
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector<T>& SVSolver<T>::solve( const kvs::Matrix<T>& A, const kvs::Vector<T>& b )
+const vismodule::Vector<T>& SVSolver<T>::solve( const vismodule::Matrix<T>& A, const vismodule::Vector<T>& b )
 {
-    KVS_ASSERT( A.ncolumns() == b.size() );
+    VIS_MODULE_ASSERT( A.ncolumns() == b.size() );
 
     // Singular value decomposition.
     m_decomposer.setMatrix( A );
@@ -81,4 +81,4 @@ template class SVSolver<int>;
 template class SVSolver<float>;
 template class SVSolver<double>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

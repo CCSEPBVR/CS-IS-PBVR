@@ -11,15 +11,15 @@
  *  $Id: Time.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__TIME_H_INCLUDE
-#define KVS__TIME_H_INCLUDE
+#ifndef VIS_MODULE__TIME_H_INCLUDE
+#define VIS_MODULE__TIME_H_INCLUDE
 
 #include <iostream>
 #include <string>
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -29,7 +29,7 @@ namespace kvs
 /*===========================================================================*/
 class Time
 {
-    kvsClassName( kvs::Time );
+    visModuleClassName( vismodule::Time );
 
 protected:
 
@@ -115,6 +115,6 @@ protected:
     const Time convert_from_seconds( const int seconds );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TIME_H_INCLUDE
+#endif // VIS_MODULE__TIME_H_INCLUDE

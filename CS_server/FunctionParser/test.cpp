@@ -17,7 +17,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
-//#include <kvs/Timer>
+//#include <vismodule/Timer>
 
 #include "function.h"
 #include "function_op.h"
@@ -25,7 +25,7 @@
 
 
 using namespace std;
-using namespace kvs;
+using namespace vismodule;
 
 #define TEST_COUT_INDENT (cout << "\t")
 #define TEST_LOOP_COUNT  100000

@@ -17,13 +17,13 @@
 namespace
 {
 
-const kvs::UInt16 BigEndian    = 0x4d4d;
-const kvs::UInt16 LittleEndian = 0x4949;
+const vismodule::UInt16 BigEndian    = 0x4d4d;
+const vismodule::UInt16 LittleEndian = 0x4949;
 
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace tiff
@@ -55,17 +55,17 @@ std::ostream& operator << ( std::ostream& os, const Header& header )
     return( os );
 }
 
-kvs::UInt16 Header::magic( void ) const
+vismodule::UInt16 Header::magic( void ) const
 {
     return( m_magic );
 }
 
-kvs::UInt16 Header::version( void ) const
+vismodule::UInt16 Header::version( void ) const
 {
     return( m_version );
 }
 
-kvs::UInt32 Header::offset( void ) const
+vismodule::UInt32 Header::offset( void ) const
 {
     return( m_offset );
 }
@@ -91,4 +91,4 @@ bool Header::read( std::ifstream& ifs )
 
 } // end of namespace tiff
 
-} // end of namespace kvs
+} // end of namespace vismodule

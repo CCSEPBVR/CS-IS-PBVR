@@ -15,7 +15,7 @@
 #define PBVR__STRUCTURED_VOLUME_OBJECT_H_INCLUDE
 
 #include "ClassName.h"
-#include <kvs/Module>
+#include <vismodule/Module>
 #include "VolumeObjectBase.h"
 
 namespace pbvr
@@ -29,29 +29,29 @@ namespace pbvr
 class StructuredVolumeObject : public pbvr::VolumeObjectBase
 {
     // Class name.
-    kvsClassName( pbvr::StructuredVolumeObject );
+    visModuleClassName( pbvr::StructuredVolumeObject );
 
     // Module information.
     typedef pbvr::ObjectBase::ModuleTag ModuleCategory;
-    kvsModuleBaseClass( pbvr::VolumeObjectBase );
+    visModuleBaseClass( pbvr::VolumeObjectBase );
 
 private:
 
     GridType       m_grid_type;  ///< Grid type.
-    kvs::Vector3ui m_resolution; ///< Node resolution.
+    vismodule::Vector3ui m_resolution; ///< Node resolution.
 
 public:
 
     StructuredVolumeObject();
 
     StructuredVolumeObject(
-        const kvs::Vector3ui& resolution,
+        const vismodule::Vector3ui& resolution,
         const size_t          veclen,
         const Values&         values );
 
     StructuredVolumeObject(
         const GridType        grid_type,
-        const kvs::Vector3ui& resolution,
+        const vismodule::Vector3ui& resolution,
         const size_t          veclen,
         const Coords&         coords,
         const Values&         values );
@@ -82,8 +82,8 @@ public:
 
     void setGridType( const GridType grid_type );
 
-    //void setm_resolution( const kvs::Vector3ui& resolution );
-    void setResolution( const kvs::Vector3ui& resolution );
+    //void setm_resolution( const vismodule::Vector3ui& resolution );
+    void setResolution( const vismodule::Vector3ui& resolution );
 
 public:
 
@@ -93,7 +93,7 @@ public:
 
     const CellType cellType() const;
 
-    const kvs::Vector3ui& resolution() const;
+    const vismodule::Vector3ui& resolution() const;
 
     const size_t nnodesPerLine() const;
 
@@ -112,4 +112,4 @@ private:
 
 } // end of namespace pbvr
 
-#endif // KVS__STRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#endif // VIS_MODULE__STRUCTURED_VOLUME_OBJECT_H_INCLUDE

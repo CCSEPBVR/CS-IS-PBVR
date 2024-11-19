@@ -13,7 +13,7 @@
 /****************************************************************************/
 #include "XMLComment.h"
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -46,4 +46,4 @@ XMLComment::~XMLComment( void )
 {
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

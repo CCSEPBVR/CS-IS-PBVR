@@ -1,14 +1,14 @@
 #ifndef PBVR__CROP_REGION_H_INCLUDE
 #define PBVR__CROP_REGION_H_INCLUDE
 
-#include <kvs/Vector3>
+#include <vismodule/Vector3>
 
 class CropRegion
 {
-    kvs::Vector3f m_lower, m_upper;
+    vismodule::Vector3f m_lower, m_upper;
     int m_enabled;
-    kvs::Vector3f m_max_coord;
-    kvs::Vector3f m_min_coord;
+    vismodule::Vector3f m_max_coord;
+    vismodule::Vector3f m_min_coord;
     void calculate_max_min();
 
 public:
@@ -26,25 +26,25 @@ public:
     void setEnable( const int enable );
 
     bool isEnabled() const;
-    bool isInner( const kvs::Vector3f& coord )   const;
+    bool isInner( const vismodule::Vector3f& coord )   const;
     CropRegion& operator= ( const CropRegion& src );
 
-    kvs::Vector3f getMaxCoord()
+    vismodule::Vector3f getMaxCoord()
     {
         return m_max_coord;
     };
 
-    kvs::Vector3f getMinCoord()
+    vismodule::Vector3f getMinCoord()
     {
         return m_min_coord;
     };
 
-    kvs::Vector3f getLower()
+    vismodule::Vector3f getLower()
     {
         return m_lower;
     };
 
-    kvs::Vector3f getUpper()
+    vismodule::Vector3f getUpper()
     {
         return m_upper;
     };

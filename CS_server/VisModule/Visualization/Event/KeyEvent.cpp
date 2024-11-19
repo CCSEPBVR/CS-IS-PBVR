@@ -14,7 +14,7 @@
 #include "KeyEvent.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 KeyEvent::KeyEvent( void )
@@ -79,4 +79,4 @@ const int KeyEvent::type( void ) const
     return( EventBase::KeyPressEvent );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -11,17 +11,17 @@
  *  $Id: File.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__FILE_H_INCLUDE
-#define KVS__FILE_H_INCLUDE
+#ifndef VIS_MODULE__FILE_H_INCLUDE
+#define VIS_MODULE__FILE_H_INCLUDE
 
 #include <cstdio>
 #include <cstdlib>
 #include <climits>
 #include <string>
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -31,7 +31,7 @@ namespace kvs
 /*==========================================================================*/
 class File
 {
-    kvsClassName( kvs::File );
+    visModuleClassName( vismodule::File );
 
 protected:
 
@@ -82,6 +82,6 @@ public:
     static const std::string Separator( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__FILE_H_INCLUDE
+#endif // VIS_MODULE__FILE_H_INCLUDE

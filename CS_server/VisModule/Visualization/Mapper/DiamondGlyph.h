@@ -11,16 +11,16 @@
  *  $Id: DiamondGlyph.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__DIAMOND_GLYPH_H_INCLUDE
-#define KVS__DIAMOND_GLYPH_H_INCLUDE
+#ifndef VIS_MODULE__DIAMOND_GLYPH_H_INCLUDE
+#define VIS_MODULE__DIAMOND_GLYPH_H_INCLUDE
 
 #include "GlyphBase.h"
-#include <kvs/MapperBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/MapperBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -28,25 +28,25 @@ namespace kvs
  *  @brief  Diamond glyph class.
  */
 /*===========================================================================*/
-class DiamondGlyph : public kvs::GlyphBase
+class DiamondGlyph : public vismodule::GlyphBase
 {
     // Class name.
-    kvsClassName( kvs::DiamondGlyph );
+    visModuleClassName( vismodule::DiamondGlyph );
 
     // Module information.
-    kvsModuleCategory( Mapper );
-    kvsModuleBaseClass( kvs::GlyphBase );
+    visModuleCategory( Mapper );
+    visModuleBaseClass( vismodule::GlyphBase );
 
 public:
 
     DiamondGlyph( void );
 
     DiamondGlyph(
-        const kvs::VolumeObjectBase* volume );
+        const vismodule::VolumeObjectBase* volume );
 
     DiamondGlyph(
-        const kvs::VolumeObjectBase* volume,
-        const kvs::TransferFunction& transfer_function );
+        const vismodule::VolumeObjectBase* volume,
+        const vismodule::TransferFunction& transfer_function );
 
     virtual ~DiamondGlyph( void );
 
@@ -60,19 +60,19 @@ public:
 */
 public:
 
-    BaseClass::SuperClass* exec( const kvs::ObjectBase* object );
+    BaseClass::SuperClass* exec( const vismodule::ObjectBase* object );
 
     void draw( void );
 
 protected:
 
-    void draw_element( const kvs::RGBColor& color, const kvs::UInt8 opacity );
+    void draw_element( const vismodule::RGBColor& color, const vismodule::UInt8 opacity );
 
 protected:
 
     void initialize( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__DIAMOND_GLYPH_H_INCLUDE
+#endif // VIS_MODULE__DIAMOND_GLYPH_H_INCLUDE

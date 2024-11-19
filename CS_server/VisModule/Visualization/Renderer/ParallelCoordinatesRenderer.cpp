@@ -13,11 +13,11 @@
  */
 /*****************************************************************************/
 #include "ParallelCoordinatesRenderer.h"
-#include <kvs/OpenGL>
-#include <kvs/Camera>
-#include <kvs/Light>
-#include <kvs/ObjectBase>
-#include <kvs/TableObject>
+#include <vismodule/OpenGL>
+#include <vismodule/Camera>
+#include <vismodule/Light>
+#include <vismodule/ObjectBase>
+#include <vismodule/TableObject>
 
 
 namespace
@@ -54,7 +54,7 @@ void EndDraw( void )
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -150,7 +150,7 @@ void ParallelCoordinatesRenderer::disableAntiAliasing( void ) const
  *  @param  opacity [in] opacity
  */
 /*===========================================================================*/
-void ParallelCoordinatesRenderer::setLineOpacity( const kvs::UInt8 opacity )
+void ParallelCoordinatesRenderer::setLineOpacity( const vismodule::UInt8 opacity )
 {
     m_line_opacity = opacity;
 }
@@ -161,7 +161,7 @@ void ParallelCoordinatesRenderer::setLineOpacity( const kvs::UInt8 opacity )
  *  @param  width [in] line width
  */
 /*===========================================================================*/
-void ParallelCoordinatesRenderer::setLineWidth( const kvs::Real32 width )
+void ParallelCoordinatesRenderer::setLineWidth( const vismodule::Real32 width )
 {
     m_line_width = width;
 }
@@ -172,7 +172,7 @@ void ParallelCoordinatesRenderer::setLineWidth( const kvs::Real32 width )
  *  @param  color_map [in] color map
  */
 /*===========================================================================*/
-void ParallelCoordinatesRenderer::setColorMap( const kvs::ColorMap& color_map )
+void ParallelCoordinatesRenderer::setColorMap( const vismodule::ColorMap& color_map )
 {
     m_color_map = color_map;
 }
@@ -249,7 +249,7 @@ size_t ParallelCoordinatesRenderer::activeAxis( void ) const
  *  @return line opacity
  */
 /*===========================================================================*/
-kvs::UInt8 ParallelCoordinatesRenderer::lineOpacity( void ) const
+vismodule::UInt8 ParallelCoordinatesRenderer::lineOpacity( void ) const
 {
     return( m_line_opacity );
 }
@@ -260,7 +260,7 @@ kvs::UInt8 ParallelCoordinatesRenderer::lineOpacity( void ) const
  *  @return line width
  */
 /*===========================================================================*/
-kvs::Real32 ParallelCoordinatesRenderer::lineWidth( void ) const
+vismodule::Real32 ParallelCoordinatesRenderer::lineWidth( void ) const
 {
     return( m_line_width );
 }
@@ -273,11 +273,11 @@ kvs::Real32 ParallelCoordinatesRenderer::lineWidth( void ) const
  *  @param  light [in] pointer to light
  */
 /*===========================================================================*/
-void ParallelCoordinatesRenderer::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light )
+void ParallelCoordinatesRenderer::exec( vismodule::ObjectBase* object, vismodule::Camera* camera, vismodule::Light* light )
 {
-    kvs::IgnoreUnusedVariable( light );
+    vismodule::IgnoreUnusedVariable( light );
 
-    kvs::TableObject* table = kvs::TableObject::DownCast( object );
+    vismodule::TableObject* table = vismodule::TableObject::DownCast( object );
 
     glPushAttrib( GL_CURRENT_BIT | GL_ENABLE_BIT );
 
@@ -308,9 +308,9 @@ void ParallelCoordinatesRenderer::exec( kvs::ObjectBase* object, kvs::Camera* ca
 
     ::BeginDraw();
 
-    const kvs::Real64 color_axis_min_value = table->minValue( m_active_axis );
-    const kvs::Real64 color_axis_max_value = table->maxValue( m_active_axis );
-    const kvs::AnyValueArray& color_axis_values = table->column( m_active_axis );
+    const vismodule::Real64 color_axis_min_value = table->minValue( m_active_axis );
+    const vismodule::Real64 color_axis_max_value = table->maxValue( m_active_axis );
+    const vismodule::AnyValueArray& color_axis_values = table->column( m_active_axis );
     m_color_map.setRange( color_axis_min_value, color_axis_max_value );
 
     const int x0 = m_left_margin;
@@ -328,15 +328,15 @@ void ParallelCoordinatesRenderer::exec( kvs::ObjectBase* object, kvs::Camera* ca
         glLineWidth( m_line_width );
         glBegin( GL_LINE_STRIP );
 
-        const kvs::Real64 color_value = color_axis_values.to<kvs::Real64>( i );
-        const kvs::RGBColor color = m_color_map.at( color_value );
+        const vismodule::Real64 color_value = color_axis_values.to<vismodule::Real64>( i );
+        const vismodule::RGBColor color = m_color_map.at( color_value );
         glColor4ub( color.r(), color.g(), color.b(), m_line_opacity );
 
         for ( size_t j = 0; j < naxes; j++ )
         {
-            const kvs::Real64 min_value = table->minValue(j);
-            const kvs::Real64 max_value = table->maxValue(j);
-            const kvs::Real64 value = table->column(j).to<kvs::Real64>( i );
+            const vismodule::Real64 min_value = table->minValue(j);
+            const vismodule::Real64 max_value = table->maxValue(j);
+            const vismodule::Real64 value = table->column(j).to<vismodule::Real64>( i );
 
             const float x = m_left_margin + stride * j;
             const float y = y1 - ( y1 - y0 ) * ( value - min_value ) / ( max_value - min_value );
@@ -351,4 +351,4 @@ void ParallelCoordinatesRenderer::exec( kvs::ObjectBase* object, kvs::Camera* ca
     glPopAttrib();
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

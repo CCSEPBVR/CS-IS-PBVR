@@ -11,15 +11,15 @@
  *  $Id: ValueTag.h 848 2011-06-29 11:35:52Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__KVSML__VALUE_TAG_H_INCLUDE
-#define KVS__KVSML__VALUE_TAG_H_INCLUDE
+#ifndef VIS_MODULE__KVSML__VALUE_TAG_H_INCLUDE
+#define VIS_MODULE__KVSML__VALUE_TAG_H_INCLUDE
 
 #include <string>
-#include <kvs/XMLNode>
+#include <vismodule/XMLNode>
 #include "TagBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -30,11 +30,11 @@ namespace kvsml
  *  @brief  Tag class for <Value>
  */
 /*===========================================================================*/
-class ValueTag : public kvs::kvsml::TagBase
+class ValueTag : public vismodule::kvsml::TagBase
 {
 public:
 
-    typedef kvs::kvsml::TagBase BaseClass;
+    typedef vismodule::kvsml::TagBase BaseClass;
 
 protected:
 
@@ -83,13 +83,13 @@ public:
 
 public:
 
-    const bool read( const kvs::XMLNode::SuperClass* parent );
+    const bool read( const vismodule::XMLNode::SuperClass* parent );
 
-    const bool write( kvs::XMLNode::SuperClass* parent );
+    const bool write( vismodule::XMLNode::SuperClass* parent );
 };
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__KVSML__VALUE_TAG_H_INCLUDE
+#endif // VIS_MODULE__KVSML__VALUE_TAG_H_INCLUDE

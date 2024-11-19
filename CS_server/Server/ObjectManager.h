@@ -18,13 +18,13 @@
 #include <map>
 #include "ClassName.h"
 #include "ObjectBase.h"
-#include <kvs/Tree>
+#include <vismodule/Tree>
 
 
 namespace pbvr
 {
 
-typedef kvs::Tree<pbvr::ObjectBase*> ObjectManagerBase;
+typedef vismodule::Tree<pbvr::ObjectBase*> ObjectManagerBase;
 
 /*==========================================================================*/
 /**
@@ -33,7 +33,7 @@ typedef kvs::Tree<pbvr::ObjectBase*> ObjectManagerBase;
 /*==========================================================================*/
 class ObjectManager : public ObjectManagerBase, public pbvr::ObjectBase
 {
-    kvsClassName( pbvr::ObjectManager );
+    visModuleClassName( pbvr::ObjectManager );
 
 public:
 
@@ -92,9 +92,9 @@ public:
 
     void resetXform( const int obj_id );
 
-    const kvs::Xform xform() const;
+    const vismodule::Xform xform() const;
 
-    const kvs::Xform xform( const int obj_id ) const;
+    const vismodule::Xform xform( const int obj_id ) const;
 
     const int objectID( const pbvr::ObjectBase& object ) const;
 
@@ -128,33 +128,33 @@ public:
 
     void releaseActiveObject();
     /* 131017 removed
-        bool detectCollision( const kvs::Vector2f& p_win, kvs::Camera* camera );
+        bool detectCollision( const vismodule::Vector2f& p_win, vismodule::Camera* camera );
     */
-    bool detectCollision( const kvs::Vector3f& p_world );
+    bool detectCollision( const vismodule::Vector3f& p_world );
 
 public:
     /* 131017 removed
-        const kvs::Vector2f positionInDevice( kvs::Camera* camera ) const;
+        const vismodule::Vector2f positionInDevice( vismodule::Camera* camera ) const;
     */
-    void rotate( const kvs::Matrix33f& rotation );
+    void rotate( const vismodule::Matrix33f& rotation );
 
-    void translate( const kvs::Vector3f& translation );
+    void translate( const vismodule::Vector3f& translation );
 
-    void scale( const kvs::Vector3f& scaling );
+    void scale( const vismodule::Vector3f& scaling );
 
     void updateExternalCoords();
 
 private:
 
     void update_normalize_parameters(
-        const kvs::Vector3f& min_ext,
-        const kvs::Vector3f& max_ext );
+        const vismodule::Vector3f& min_ext,
+        const vismodule::Vector3f& max_ext );
 
     void update_normalize_parameters();
 
     pbvr::ObjectBase* get_control_target();
 
-    kvs::Vector3f get_rotation_center();
+    vismodule::Vector3f get_rotation_center();
 
     ObjectIterator get_control_first_pointer();
 
@@ -163,4 +163,4 @@ private:
 
 } // end of namespace pbvr
 
-#endif // KVS__OBJECT_MANAGER_H_INCLUDE
+#endif // VIS_MODULE__OBJECT_MANAGER_H_INCLUDE

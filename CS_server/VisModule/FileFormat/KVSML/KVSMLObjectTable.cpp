@@ -16,14 +16,14 @@
 #include "TableObjectTag.h"
 #include "ColumnTag.h"
 #include "DataArrayTag.h"
-#include <kvs/File>
-#include <kvs/XMLDocument>
-#include <kvs/XMLDeclaration>
-#include <kvs/XMLElement>
-#include <kvs/XMLComment>
+#include <vismodule/File>
+#include <vismodule/XMLDocument>
+#include <vismodule/XMLDeclaration>
+#include <vismodule/XMLElement>
+#include <vismodule/XMLComment>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -32,7 +32,7 @@ namespace kvs
  */
 /*===========================================================================*/
 KVSMLObjectTable::KVSMLObjectTable( void ):
-    m_writing_type( kvs::KVSMLObjectTable::Ascii ),
+    m_writing_type( vismodule::KVSMLObjectTable::Ascii ),
     m_nrows(0),
     m_ncolumns(0)
 {
@@ -45,7 +45,7 @@ KVSMLObjectTable::KVSMLObjectTable( void ):
  */
 /*===========================================================================*/
 KVSMLObjectTable::KVSMLObjectTable( const std::string& filename ):
-    m_writing_type( kvs::KVSMLObjectTable::Ascii ),
+    m_writing_type( vismodule::KVSMLObjectTable::Ascii ),
     m_nrows(0),
     m_ncolumns(0)
 {
@@ -68,7 +68,7 @@ KVSMLObjectTable::~KVSMLObjectTable( void )
  *  @return KVSML tag
  */
 /*===========================================================================*/
-const kvs::kvsml::KVSMLTag& KVSMLObjectTable::KVSMLTag( void ) const
+const vismodule::kvsml::KVSMLTag& KVSMLObjectTable::KVSMLTag( void ) const
 {
     return( m_kvsml_tag );
 }
@@ -79,7 +79,7 @@ const kvs::kvsml::KVSMLTag& KVSMLObjectTable::KVSMLTag( void ) const
  *  @return object tag
  */
 /*===========================================================================*/
-const kvs::kvsml::ObjectTag& KVSMLObjectTable::objectTag( void ) const
+const vismodule::kvsml::ObjectTag& KVSMLObjectTable::objectTag( void ) const
 {
     return( m_object_tag );
 }
@@ -123,7 +123,7 @@ const std::vector<std::string>& KVSMLObjectTable::labelList( void ) const
  *  @return column list
  */
 /*===========================================================================*/
-const std::vector<kvs::AnyValueArray>& KVSMLObjectTable::columnList( void ) const
+const std::vector<vismodule::AnyValueArray>& KVSMLObjectTable::columnList( void ) const
 {
     return( m_columns );
 }
@@ -245,7 +245,7 @@ void KVSMLObjectTable::setMaxRange( const size_t column_index, const double rang
  *  @param  label [in] column label
  */
 /*===========================================================================*/
-void KVSMLObjectTable::addColumn( const kvs::AnyValueArray& column, const std::string& label )
+void KVSMLObjectTable::addColumn( const vismodule::AnyValueArray& column, const std::string& label )
 {
     m_columns.push_back( column );
     m_labels.push_back( label );
@@ -266,32 +266,32 @@ const bool KVSMLObjectTable::read( const std::string& filename )
     m_filename = filename;
 
     // XML document
-    kvs::XMLDocument document;
+    vismodule::XMLDocument document;
     if ( !document.read( filename ) )
     {
-        kvsMessageError( "%s", document.ErrorDesc().c_str() );
+        visModuleMessageError( "%s", document.ErrorDesc().c_str() );
         return( false );
     }
 
     // <KVSML>
     if ( !m_kvsml_tag.read( &document ) )
     {
-        kvsMessageError( "Cannot read <%s>.", m_kvsml_tag.name().c_str() );
+        visModuleMessageError( "Cannot read <%s>.", m_kvsml_tag.name().c_str() );
         return( false );
     }
 
     // <Object>
     if ( !m_object_tag.read( m_kvsml_tag.node() ) )
     {
-        kvsMessageError( "Cannot read <%s>.", m_object_tag.name().c_str() );
+        visModuleMessageError( "Cannot read <%s>.", m_object_tag.name().c_str() );
         return( false );
     }
 
     // <TableObject>
-    kvs::kvsml::TableObjectTag table_object_tag;
+    vismodule::kvsml::TableObjectTag table_object_tag;
     if ( !table_object_tag.read( m_object_tag.node() ) )
     {
-        kvsMessageError( "Cannot read <%s>.", table_object_tag.name().c_str() );
+        visModuleMessageError( "Cannot read <%s>.", table_object_tag.name().c_str() );
         return( false );
     }
 
@@ -299,12 +299,12 @@ const bool KVSMLObjectTable::read( const std::string& filename )
     m_ncolumns = table_object_tag.ncolumns();
 
     // <Column>
-    kvs::kvsml::ColumnTag column_tag;
-    kvs::XMLNode::SuperClass* node = kvs::XMLNode::FindChildNode( table_object_tag.node(), column_tag.name() );
+    vismodule::kvsml::ColumnTag column_tag;
+    vismodule::XMLNode::SuperClass* node = vismodule::XMLNode::FindChildNode( table_object_tag.node(), column_tag.name() );
     size_t counter = 0;
     while ( node )
     {
-        column_tag.read( kvs::XMLNode::ToElement( node ) );
+        column_tag.read( vismodule::XMLNode::ToElement( node ) );
 
         if ( counter++ < m_ncolumns )
         {
@@ -318,11 +318,11 @@ const bool KVSMLObjectTable::read( const std::string& filename )
             m_min_ranges.push_back( column_tag.minRange() );
             m_max_ranges.push_back( column_tag.maxRange() );
 
-            kvs::AnyValueArray data_array;
-            kvs::kvsml::DataArrayTag data_array_tag;
+            vismodule::AnyValueArray data_array;
+            vismodule::kvsml::DataArrayTag data_array_tag;
             if ( !data_array_tag.read( node, m_nrows, &data_array ) )
             {
-                kvsMessageError( "Cannot read <%s>.", data_array_tag.name().c_str() );
+                visModuleMessageError( "Cannot read <%s>.", data_array_tag.name().c_str() );
                 return( false );
             }
 
@@ -346,41 +346,41 @@ const bool KVSMLObjectTable::write( const std::string& filename )
 {
     m_filename = filename;
 
-    kvs::XMLDocument document;
-    document.InsertEndChild( kvs::XMLDeclaration("1.0") );
-    document.InsertEndChild( kvs::XMLComment(" Generated by kvs::KVSMLObjectTable::write() ") );
+    vismodule::XMLDocument document;
+    document.InsertEndChild( vismodule::XMLDeclaration("1.0") );
+    document.InsertEndChild( vismodule::XMLComment(" Generated by vismodule::KVSMLObjectTable::write() ") );
 
     // <KVSML>
-    kvs::kvsml::KVSMLTag kvsml_tag;
+    vismodule::kvsml::KVSMLTag kvsml_tag;
     if ( !kvsml_tag.write( &document ) )
     {
-        kvsMessageError( "Cannot write <%s>.", m_kvsml_tag.name().c_str() );
+        visModuleMessageError( "Cannot write <%s>.", m_kvsml_tag.name().c_str() );
         return( false );
     }
 
     // <Object type="TableObject">
-    kvs::kvsml::ObjectTag object_tag;
+    vismodule::kvsml::ObjectTag object_tag;
     object_tag.setType( "TableObject" );
     if ( !object_tag.write( kvsml_tag.node() ) )
     {
-        kvsMessageError( "Cannot write <%s>.", object_tag.name().c_str() );
+        visModuleMessageError( "Cannot write <%s>.", object_tag.name().c_str() );
         return( false );
     }
 
     // <TableObject nrows="xxx", ncolumns="xxx">
-    kvs::kvsml::TableObjectTag table_object_tag;
+    vismodule::kvsml::TableObjectTag table_object_tag;
     table_object_tag.setNRows( m_nrows );
     table_object_tag.setNColumns( m_ncolumns );
     if ( !table_object_tag.write( object_tag.node() ) )
     {
-        kvsMessageError( "Cannot write <%s>.", table_object_tag.name().c_str() );
+        visModuleMessageError( "Cannot write <%s>.", table_object_tag.name().c_str() );
         return( false );
     }
 
     for ( size_t i = 0; i < m_ncolumns; i++ )
     {
         // <Column label="xxx" min_value="xxx" max_value="xxx" min_range="xxx" max_range="xxx">
-        kvs::kvsml::ColumnTag column_tag;
+        vismodule::kvsml::ColumnTag column_tag;
         const std::string label = m_labels.at(i);
         column_tag.setLabel( label );
 
@@ -391,27 +391,27 @@ const bool KVSMLObjectTable::write( const std::string& filename )
 
         if ( !column_tag.write( table_object_tag.node() ) )
         {
-            kvsMessageError( "Cannot write <%s>.", column_tag.name().c_str() );
+            visModuleMessageError( "Cannot write <%s>.", column_tag.name().c_str() );
             return( false );
         }
 
         // <DataArray>
-        kvs::kvsml::DataArrayTag data_array;
+        vismodule::kvsml::DataArrayTag data_array;
         if ( m_writing_type == ExternalAscii )
         {
-            data_array.setFile( kvs::kvsml::DataArray::GetDataFilename( m_filename, label ) );
+            data_array.setFile( vismodule::kvsml::DataArray::GetDataFilename( m_filename, label ) );
             data_array.setFormat( "ascii" );
         }
         else if ( m_writing_type == ExternalBinary )
         {
-            data_array.setFile( kvs::kvsml::DataArray::GetDataFilename( m_filename, label ) );
+            data_array.setFile( vismodule::kvsml::DataArray::GetDataFilename( m_filename, label ) );
             data_array.setFormat( "binary" );
         }
 
-        const std::string pathname = kvs::File( m_filename ).pathName();
+        const std::string pathname = vismodule::File( m_filename ).pathName();
         if ( !data_array.write( column_tag.node(), m_columns.at(i), pathname ) )
         {
-            kvsMessageError( "Cannot write <%s>.", data_array.name().c_str() );
+            visModuleMessageError( "Cannot write <%s>.", data_array.name().c_str() );
             return( false );
         }
     }
@@ -428,7 +428,7 @@ const bool KVSMLObjectTable::write( const std::string& filename )
 /*===========================================================================*/
 const bool KVSMLObjectTable::CheckFileExtension( const std::string& filename )
 {
-    const kvs::File file( filename );
+    const vismodule::File file( filename );
     if ( file.extension() == "kvsml" ||
          file.extension() == "KVSML" ||
          file.extension() == "xml"   ||
@@ -449,21 +449,21 @@ const bool KVSMLObjectTable::CheckFileExtension( const std::string& filename )
 /*===========================================================================*/
 const bool KVSMLObjectTable::CheckFileFormat( const std::string& filename )
 {
-    kvs::XMLDocument document;
+    vismodule::XMLDocument document;
     if ( !document.read( filename ) ) return( false );
 
     // <KVSML>
-    kvs::kvsml::KVSMLTag kvsml_tag;
+    vismodule::kvsml::KVSMLTag kvsml_tag;
     if ( !kvsml_tag.read( &document ) ) return( false );
 
     // <Object>
-    kvs::kvsml::ObjectTag object_tag;
+    vismodule::kvsml::ObjectTag object_tag;
     if ( !object_tag.read( kvsml_tag.node() ) ) return( false );
 
     if ( object_tag.type() != "TableObject" ) return( false );
 
     // <TableObject>
-    kvs::kvsml::TableObjectTag table_tag;
+    vismodule::kvsml::TableObjectTag table_tag;
     if ( !table_tag.read( object_tag.node() ) ) return( false );
 
     return( true );
@@ -490,4 +490,4 @@ std::ostream& operator <<( std::ostream& os, const KVSMLObjectTable& rhs )
     return( os );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -3,19 +3,19 @@
  *  @file AggregateTypeSubvolume.h
  */
 /****************************************************************************/
-#ifndef PBVR__KVS__AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE
-#define PBVR__KVS__AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE
+#ifndef PBVR__VIS_MODULE__AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE
+#define PBVR__VIS_MODULE__AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE
 
-#include <kvs/FileFormatBase>
-#include <kvs/AnyValueArray>
-#include <kvs/ValueArray>
-#include <kvs/Type>
-#include <kvs/Vector3>
+#include <vismodule/FileFormatBase>
+#include <vismodule/AnyValueArray>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/Vector3>
 #include <string>
 #include <FileFormat/KVSML/ObjectTag.h>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -23,9 +23,9 @@ namespace kvs
  *  @brief  GSubvolume unstructured volume object format.
  */
 /*===========================================================================*/
-class AggregateTypeSubvolume : public kvs::FileFormatBase
+class AggregateTypeSubvolume : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::AggregateTypeSubvolume );
+    visModuleClassName( vismodule::AggregateTypeSubvolume );
 
 public:
 
@@ -42,9 +42,9 @@ protected:
     size_t                       m_vector_length; ///< vector length
     size_t                       m_nnodes;        ///< number of nodes
     size_t                       m_ncells;        ///< number of cells
-    kvs::AnyValueArray           m_values;        ///< field value array
-    kvs::ValueArray<kvs::Real32> m_coords;        ///< coordinate value array
-    kvs::ValueArray<kvs::UInt32> m_connections;   ///< connection id array
+    vismodule::AnyValueArray           m_values;        ///< field value array
+    vismodule::ValueArray<vismodule::Real32> m_coords;        ///< coordinate value array
+    vismodule::ValueArray<vismodule::UInt32> m_connections;   ///< connection id array
 
 public:
 
@@ -64,11 +64,11 @@ public:
 
     const size_t ncells() const;
 
-    const kvs::AnyValueArray& values() const;
+    const vismodule::AnyValueArray& values() const;
 
-    const kvs::ValueArray<kvs::Real32>& coords() const;
+    const vismodule::ValueArray<vismodule::Real32>& coords() const;
 
-    const kvs::ValueArray<kvs::UInt32>& connections() const;
+    const vismodule::ValueArray<vismodule::UInt32>& connections() const;
 
 public:
 
@@ -80,11 +80,11 @@ public:
 
     void setNCells( const size_t ncells );
 
-    void setValues( const kvs::AnyValueArray& values );
+    void setValues( const vismodule::AnyValueArray& values );
 
-    void setCoords( const kvs::ValueArray<kvs::Real32>& coords );
+    void setCoords( const vismodule::ValueArray<vismodule::Real32>& coords );
 
-    void setConnections( const kvs::ValueArray<kvs::UInt32>& connections );
+    void setConnections( const vismodule::ValueArray<vismodule::UInt32>& connections );
 
 public:
 
@@ -93,5 +93,5 @@ public:
     const bool write( const std::string& filename );
 
 };
-} // end of namespace kvs
-#endif // PBVR__KVS__AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE
+} // end of namespace vismodule
+#endif // PBVR__VIS_MODULE__AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE

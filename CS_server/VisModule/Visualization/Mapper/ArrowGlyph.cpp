@@ -12,42 +12,42 @@
  */
 /*****************************************************************************/
 #include "ArrowGlyph.h"
-#include <kvs/OpenGL>
+#include <vismodule/OpenGL>
 
 
 namespace
 {
 
-const kvs::Real32 LineVertices[12] =
+const vismodule::Real32 LineVertices[12] =
 {
      0.0f, 1.0f, 0.0f,
      0.0f, 0.0f, 0.0f,
     -0.2f, 0.8f, 0.0f,
      0.2f, 0.8f, 0.0f
 };
-const kvs::UInt32 LineConnections[6] =
+const vismodule::UInt32 LineConnections[6] =
 {
     0, 1,
     0, 2,
     0, 3
 };
 
-const kvs::Vector3f ConeTranslation = kvs::Vector3f( 0.0f, 0.0f, 0.7f );
-const kvs::Real32 ConeHeight = 0.3f;
-const kvs::Real32 ConeRadius = 0.15f;
+const vismodule::Vector3f ConeTranslation = vismodule::Vector3f( 0.0f, 0.0f, 0.7f );
+const vismodule::Real32 ConeHeight = 0.3f;
+const vismodule::Real32 ConeRadius = 0.15f;
 const size_t ConeSlices = 20;
 const size_t ConeStacks = 5;
 
-const kvs::Vector3f CylinderTranslation = kvs::Vector3f( 0.0f, 0.0f, 0.0f );
-const kvs::Real32 CylinderHeight = 0.7f;
-const kvs::Real32 CylinderRadius = 0.07f;
+const vismodule::Vector3f CylinderTranslation = vismodule::Vector3f( 0.0f, 0.0f, 0.0f );
+const vismodule::Real32 CylinderHeight = 0.7f;
+const vismodule::Real32 CylinderRadius = 0.07f;
 const size_t CylinderSlices = 20;
 const size_t CylinderStacks = 2;
 
 }; // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -56,7 +56,7 @@ namespace kvs
  */
 /*===========================================================================*/
 ArrowGlyph::ArrowGlyph( void ):
-    kvs::GlyphBase(),
+    vismodule::GlyphBase(),
     m_cylinder(NULL),
     m_type( ArrowGlyph::LineArrow )
 {
@@ -68,8 +68,8 @@ ArrowGlyph::ArrowGlyph( void ):
  *  @param  volume [in] pointer to the volume object
  */
 /*===========================================================================*/
-ArrowGlyph::ArrowGlyph( const kvs::VolumeObjectBase* volume ):
-    kvs::GlyphBase(),
+ArrowGlyph::ArrowGlyph( const vismodule::VolumeObjectBase* volume ):
+    vismodule::GlyphBase(),
     m_cylinder(NULL),
     m_type( ArrowGlyph::LineArrow )
 {
@@ -84,9 +84,9 @@ ArrowGlyph::ArrowGlyph( const kvs::VolumeObjectBase* volume ):
  */
 /*===========================================================================*/
 ArrowGlyph::ArrowGlyph(
-    const kvs::VolumeObjectBase* volume,
-    const kvs::TransferFunction& transfer_function ):
-    kvs::GlyphBase(),
+    const vismodule::VolumeObjectBase* volume,
+    const vismodule::TransferFunction& transfer_function ):
+    vismodule::GlyphBase(),
     m_cylinder(NULL),
     m_type( ArrowGlyph::LineArrow )
 {
@@ -133,20 +133,20 @@ void ArrowGlyph::setType( const ArrowType type )
  *  @return pointer to the created glyph object
  */
 /*===========================================================================*/
-ArrowGlyph::BaseClass::SuperClass* ArrowGlyph::exec( const kvs::ObjectBase* object )
+ArrowGlyph::BaseClass::SuperClass* ArrowGlyph::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase* volume = kvs::VolumeObjectBase::DownCast( object );
+    const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
     if ( !volume )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not volume dat.");
+        visModuleMessageError("Input object is not volume dat.");
         return( NULL );
     }
 
@@ -155,75 +155,75 @@ ArrowGlyph::BaseClass::SuperClass* ArrowGlyph::exec( const kvs::ObjectBase* obje
     BaseClass::calculate_coords( volume );
 
     const std::type_info& type = volume->values().typeInfo()->type();
-    if ( type == typeid( kvs::Int8 ) )
+    if ( type == typeid( vismodule::Int8 ) )
     {
-        BaseClass::calculate_sizes<kvs::Int8>( volume );
-        BaseClass::calculate_directions<kvs::Int8>( volume );
-        BaseClass::calculate_colors<kvs::Int8>( volume );
-        BaseClass::calculate_opacities<kvs::Int8>( volume );
+        BaseClass::calculate_sizes<vismodule::Int8>( volume );
+        BaseClass::calculate_directions<vismodule::Int8>( volume );
+        BaseClass::calculate_colors<vismodule::Int8>( volume );
+        BaseClass::calculate_opacities<vismodule::Int8>( volume );
     }
-    else if ( type == typeid( kvs::Int16 ) )
+    else if ( type == typeid( vismodule::Int16 ) )
     {
-        BaseClass::calculate_sizes<kvs::Int16>( volume );
-        BaseClass::calculate_directions<kvs::Int16>( volume );
-        BaseClass::calculate_colors<kvs::Int16>( volume );
-        BaseClass::calculate_opacities<kvs::Int16>( volume );
+        BaseClass::calculate_sizes<vismodule::Int16>( volume );
+        BaseClass::calculate_directions<vismodule::Int16>( volume );
+        BaseClass::calculate_colors<vismodule::Int16>( volume );
+        BaseClass::calculate_opacities<vismodule::Int16>( volume );
     }
-    else if ( type == typeid( kvs::Int32 ) )
+    else if ( type == typeid( vismodule::Int32 ) )
     {
-        BaseClass::calculate_sizes<kvs::Int32>( volume );
-        BaseClass::calculate_directions<kvs::Int32>( volume );
-        BaseClass::calculate_colors<kvs::Int32>( volume );
-        BaseClass::calculate_opacities<kvs::Int32>( volume );
+        BaseClass::calculate_sizes<vismodule::Int32>( volume );
+        BaseClass::calculate_directions<vismodule::Int32>( volume );
+        BaseClass::calculate_colors<vismodule::Int32>( volume );
+        BaseClass::calculate_opacities<vismodule::Int32>( volume );
     }
-    else if ( type == typeid( kvs::Int64 ) )
+    else if ( type == typeid( vismodule::Int64 ) )
     {
-        BaseClass::calculate_sizes<kvs::Int64>( volume );
-        BaseClass::calculate_directions<kvs::Int64>( volume );
-        BaseClass::calculate_colors<kvs::Int64>( volume );
-        BaseClass::calculate_opacities<kvs::Int64>( volume );
+        BaseClass::calculate_sizes<vismodule::Int64>( volume );
+        BaseClass::calculate_directions<vismodule::Int64>( volume );
+        BaseClass::calculate_colors<vismodule::Int64>( volume );
+        BaseClass::calculate_opacities<vismodule::Int64>( volume );
     }
-    else if ( type == typeid( kvs::UInt8  ) )
+    else if ( type == typeid( vismodule::UInt8  ) )
     {
-        BaseClass::calculate_sizes<kvs::UInt8>( volume );
-        BaseClass::calculate_directions<kvs::UInt8>( volume );
-        BaseClass::calculate_colors<kvs::UInt8>( volume );
-        BaseClass::calculate_opacities<kvs::UInt8>( volume );
+        BaseClass::calculate_sizes<vismodule::UInt8>( volume );
+        BaseClass::calculate_directions<vismodule::UInt8>( volume );
+        BaseClass::calculate_colors<vismodule::UInt8>( volume );
+        BaseClass::calculate_opacities<vismodule::UInt8>( volume );
     }
-    else if ( type == typeid( kvs::UInt16 ) )
+    else if ( type == typeid( vismodule::UInt16 ) )
     {
-        BaseClass::calculate_sizes<kvs::UInt16>( volume );
-        BaseClass::calculate_directions<kvs::UInt16>( volume );
-        BaseClass::calculate_colors<kvs::UInt16>( volume );
-        BaseClass::calculate_opacities<kvs::UInt16>( volume );
+        BaseClass::calculate_sizes<vismodule::UInt16>( volume );
+        BaseClass::calculate_directions<vismodule::UInt16>( volume );
+        BaseClass::calculate_colors<vismodule::UInt16>( volume );
+        BaseClass::calculate_opacities<vismodule::UInt16>( volume );
     }
-    else if ( type == typeid( kvs::UInt32 ) )
+    else if ( type == typeid( vismodule::UInt32 ) )
     {
-        BaseClass::calculate_sizes<kvs::UInt32>( volume );
-        BaseClass::calculate_directions<kvs::UInt32>( volume );
-        BaseClass::calculate_colors<kvs::UInt32>( volume );
-        BaseClass::calculate_opacities<kvs::UInt32>( volume );
+        BaseClass::calculate_sizes<vismodule::UInt32>( volume );
+        BaseClass::calculate_directions<vismodule::UInt32>( volume );
+        BaseClass::calculate_colors<vismodule::UInt32>( volume );
+        BaseClass::calculate_opacities<vismodule::UInt32>( volume );
     }
-    else if ( type == typeid( kvs::UInt64 ) )
+    else if ( type == typeid( vismodule::UInt64 ) )
     {
-        BaseClass::calculate_sizes<kvs::UInt64>( volume );
-        BaseClass::calculate_directions<kvs::UInt64>( volume );
-        BaseClass::calculate_colors<kvs::UInt64>( volume );
-        BaseClass::calculate_opacities<kvs::UInt64>( volume );
+        BaseClass::calculate_sizes<vismodule::UInt64>( volume );
+        BaseClass::calculate_directions<vismodule::UInt64>( volume );
+        BaseClass::calculate_colors<vismodule::UInt64>( volume );
+        BaseClass::calculate_opacities<vismodule::UInt64>( volume );
     }
-    else if ( type == typeid( kvs::Real32 ) )
+    else if ( type == typeid( vismodule::Real32 ) )
     {
-        BaseClass::calculate_sizes<kvs::Real32>( volume );
-        BaseClass::calculate_directions<kvs::Real32>( volume );
-        BaseClass::calculate_colors<kvs::Real32>( volume );
-        BaseClass::calculate_opacities<kvs::Real32>( volume );
+        BaseClass::calculate_sizes<vismodule::Real32>( volume );
+        BaseClass::calculate_directions<vismodule::Real32>( volume );
+        BaseClass::calculate_colors<vismodule::Real32>( volume );
+        BaseClass::calculate_opacities<vismodule::Real32>( volume );
     }
-    else if ( type == typeid( kvs::Real64 ) )
+    else if ( type == typeid( vismodule::Real64 ) )
     {
-        BaseClass::calculate_sizes<kvs::Real64>( volume );
-        BaseClass::calculate_directions<kvs::Real64>( volume );
-        BaseClass::calculate_colors<kvs::Real64>( volume );
-        BaseClass::calculate_opacities<kvs::Real64>( volume );
+        BaseClass::calculate_sizes<vismodule::Real64>( volume );
+        BaseClass::calculate_directions<vismodule::Real64>( volume );
+        BaseClass::calculate_colors<vismodule::Real64>( volume );
+        BaseClass::calculate_opacities<vismodule::Real64>( volume );
     }
 
     return( this );
@@ -267,10 +267,10 @@ void ArrowGlyph::draw_lines( void )
     {
         for ( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
-            const kvs::Vector3f position( BaseClass::coords().pointer() + index );
-            const kvs::Real32 size = BaseClass::sizes().at(i);
-            const kvs::RGBColor color( BaseClass::colors().pointer() + index );
-            const kvs::UInt8 opacity = BaseClass::opacities().at(i);
+            const vismodule::Vector3f position( BaseClass::coords().pointer() + index );
+            const vismodule::Real32 size = BaseClass::sizes().at(i);
+            const vismodule::RGBColor color( BaseClass::colors().pointer() + index );
+            const vismodule::UInt8 opacity = BaseClass::opacities().at(i);
             glPushMatrix();
             {
                 BaseClass::transform( position, size );
@@ -283,11 +283,11 @@ void ArrowGlyph::draw_lines( void )
     {
         for( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
-            const kvs::Vector3f position( BaseClass::m_coords.pointer() + index );
-            const kvs::Vector3f direction( BaseClass::m_directions.pointer() + index );
-            const kvs::Real32 size = BaseClass::m_sizes[i];
-            const kvs::RGBColor color( BaseClass::m_colors.pointer() + index );
-            const kvs::UInt8 opacity = BaseClass::m_opacities[i];
+            const vismodule::Vector3f position( BaseClass::m_coords.pointer() + index );
+            const vismodule::Vector3f direction( BaseClass::m_directions.pointer() + index );
+            const vismodule::Real32 size = BaseClass::m_sizes[i];
+            const vismodule::RGBColor color( BaseClass::m_colors.pointer() + index );
+            const vismodule::UInt8 opacity = BaseClass::m_opacities[i];
             glPushMatrix();
             {
                 BaseClass::transform( position, direction, size );
@@ -311,10 +311,10 @@ void ArrowGlyph::draw_tubes( void )
     {
         for ( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
-            const kvs::Vector3f position( BaseClass::coords().pointer() + index );
-            const kvs::Real32 size = BaseClass::sizes().at(i);
-            const kvs::RGBColor color( BaseClass::colors().pointer() + index );
-            const kvs::UInt8 opacity = BaseClass::opacities().at(i);
+            const vismodule::Vector3f position( BaseClass::coords().pointer() + index );
+            const vismodule::Real32 size = BaseClass::sizes().at(i);
+            const vismodule::RGBColor color( BaseClass::colors().pointer() + index );
+            const vismodule::UInt8 opacity = BaseClass::opacities().at(i);
             glPushMatrix();
             {
                 BaseClass::transform( position, size );
@@ -327,11 +327,11 @@ void ArrowGlyph::draw_tubes( void )
     {
         for( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
-            const kvs::Vector3f position( BaseClass::m_coords.pointer() + index );
-            const kvs::Vector3f direction( BaseClass::m_directions.pointer() + index );
-            const kvs::Real32 size = BaseClass::m_sizes[i];
-            const kvs::RGBColor color( BaseClass::m_colors.pointer() + index );
-            const kvs::UInt8 opacity = BaseClass::m_opacities[i];
+            const vismodule::Vector3f position( BaseClass::m_coords.pointer() + index );
+            const vismodule::Vector3f direction( BaseClass::m_directions.pointer() + index );
+            const vismodule::Real32 size = BaseClass::m_sizes[i];
+            const vismodule::RGBColor color( BaseClass::m_colors.pointer() + index );
+            const vismodule::UInt8 opacity = BaseClass::m_opacities[i];
             glPushMatrix();
             {
                 BaseClass::transform( position, direction, size );
@@ -349,14 +349,14 @@ void ArrowGlyph::draw_tubes( void )
  *  @param  opacity [in] opacity value
  */
 /*===========================================================================*/
-void ArrowGlyph::draw_line_element( const kvs::RGBColor& color, const kvs::UInt8 opacity )
+void ArrowGlyph::draw_line_element( const vismodule::RGBColor& color, const vismodule::UInt8 opacity )
 {
     glColor4ub( color.r(), color.g(), color.b(), opacity );
 
     glBegin( GL_LINES );
     for ( size_t i = 0; i < 6; i++ )
     {
-        const kvs::Real32* vertex = ::LineVertices + ::LineConnections[i] * 3;
+        const vismodule::Real32* vertex = ::LineVertices + ::LineConnections[i] * 3;
         glVertex3fv( vertex );
     }
     glEnd();
@@ -369,7 +369,7 @@ void ArrowGlyph::draw_line_element( const kvs::RGBColor& color, const kvs::UInt8
  *  @param  opacity [in] opacity value
  */
 /*===========================================================================*/
-void ArrowGlyph::draw_tube_element( const kvs::RGBColor& color, const kvs::UInt8 opacity )
+void ArrowGlyph::draw_tube_element( const vismodule::RGBColor& color, const vismodule::UInt8 opacity )
 {
     glColor4ub( color.r(), color.g(), color.b(), opacity );
 
@@ -438,4 +438,4 @@ void ArrowGlyph::initialize( void )
     glLightModeli( GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

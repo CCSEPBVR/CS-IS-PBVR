@@ -12,14 +12,14 @@
  */
 /****************************************************************************/
 #include "Isosurface.h"
-#include <kvs/DebugNew>
-#include <kvs/MarchingCubes>
-#include <kvs/MarchingTetrahedra>
-#include <kvs/MarchingHexahedra>
-#include <kvs/MarchingPyramid>
+#include <vismodule/DebugNew>
+#include <vismodule/MarchingCubes>
+#include <vismodule/MarchingTetrahedra>
+#include <vismodule/MarchingHexahedra>
+#include <vismodule/MarchingPyramid>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -28,8 +28,8 @@ namespace kvs
  */
 /*==========================================================================*/
 Isosurface::Isosurface( void ):
-    kvs::MapperBase(),
-    kvs::PolygonObject(),
+    vismodule::MapperBase(),
+    vismodule::PolygonObject(),
     m_isolevel( 0 ),
     m_duplication( true )
 {
@@ -44,18 +44,18 @@ Isosurface::Isosurface( void ):
  */
 /*===========================================================================*/
 Isosurface::Isosurface(
-    const kvs::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase* volume,
     const double                 isolevel,
     const NormalType             normal_type ):
-    kvs::MapperBase(),
-    kvs::PolygonObject(),
+    vismodule::MapperBase(),
+    vismodule::PolygonObject(),
     m_isolevel( isolevel ),
     m_duplication( true )
 {
     SuperClass::m_normal_type = normal_type;
 
     // In the case of VertexNormal-type, the duplicated vertices are forcibly deleted.
-    if ( normal_type == kvs::PolygonObject::VertexNormal )
+    if ( normal_type == vismodule::PolygonObject::VertexNormal )
     {
         m_duplication = false;
     }
@@ -75,20 +75,20 @@ Isosurface::Isosurface(
  */
 /*==========================================================================*/
 Isosurface::Isosurface(
-    const kvs::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase* volume,
     const double                 isolevel,
     const NormalType             normal_type,
     const bool                   duplication,
-    const kvs::TransferFunction& transfer_function ):
-    kvs::MapperBase( transfer_function ),
-    kvs::PolygonObject(),
+    const vismodule::TransferFunction& transfer_function ):
+    vismodule::MapperBase( transfer_function ),
+    vismodule::PolygonObject(),
     m_isolevel( isolevel ),
     m_duplication( duplication )
 {
     SuperClass::m_normal_type = normal_type;
 
     // In the case of VertexNormal-type, the duplicated vertices are forcibly deleted.
-    if ( normal_type == kvs::PolygonObject::VertexNormal )
+    if ( normal_type == vismodule::PolygonObject::VertexNormal )
     {
         m_duplication = false;
     }
@@ -124,20 +124,20 @@ void Isosurface::setIsolevel( const double isolevel )
  *  @return pointer to the polygon object
  */
 /*===========================================================================*/
-Isosurface::SuperClass* Isosurface::exec( const kvs::ObjectBase* object )
+Isosurface::SuperClass* Isosurface::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase* volume = kvs::VolumeObjectBase::DownCast( object );
+    const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
     if ( !volume )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not volume dat.");
+        visModuleMessageError("Input object is not volume dat.");
         return( NULL );
     }
 
@@ -152,22 +152,22 @@ Isosurface::SuperClass* Isosurface::exec( const kvs::ObjectBase* object )
  *  @param  volume [in] pointer to the volume object
  */
 /*==========================================================================*/
-void Isosurface::mapping( const kvs::VolumeObjectBase* volume )
+void Isosurface::mapping( const vismodule::VolumeObjectBase* volume )
 {
     // Check whether the volume can be processed or not.
     if ( volume->veclen() != 1 )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not scalar field dat.");
+        visModuleMessageError("Input object is not scalar field dat.");
         return;
     }
 
-    if ( volume->volumeType() == kvs::VolumeObjectBase::Structured )
+    if ( volume->volumeType() == vismodule::VolumeObjectBase::Structured )
     {
-        const kvs::StructuredVolumeObject* structured_volume =
-            kvs::StructuredVolumeObject::DownCast( volume );
+        const vismodule::StructuredVolumeObject* structured_volume =
+            vismodule::StructuredVolumeObject::DownCast( volume );
 
-        kvs::PolygonObject* polygon = new kvs::MarchingCubes(
+        vismodule::PolygonObject* polygon = new vismodule::MarchingCubes(
             structured_volume,
             m_isolevel,
             SuperClass::normalType(),
@@ -176,7 +176,7 @@ void Isosurface::mapping( const kvs::VolumeObjectBase* volume )
         if ( !polygon )
         {
             BaseClass::m_is_success = false;
-            kvsMessageError("Cannot create isosurfaces.");
+            visModuleMessageError("Cannot create isosurfaces.");
             return;
         }
 
@@ -199,16 +199,16 @@ void Isosurface::mapping( const kvs::VolumeObjectBase* volume )
 
         delete polygon;
     }
-    else // volume->volumeType() == kvs::VolumeObjectBase::Unstructured
+    else // volume->volumeType() == vismodule::VolumeObjectBase::Unstructured
     {
-        const kvs::UnstructuredVolumeObject* unstructured_volume =
-            kvs::UnstructuredVolumeObject::DownCast( volume );
+        const vismodule::UnstructuredVolumeObject* unstructured_volume =
+            vismodule::UnstructuredVolumeObject::DownCast( volume );
 
         switch ( unstructured_volume->cellType() )
         {
-        case kvs::VolumeObjectBase::Tetrahedra:
+        case vismodule::VolumeObjectBase::Tetrahedra:
         {
-            kvs::PolygonObject* polygon = new kvs::MarchingTetrahedra(
+            vismodule::PolygonObject* polygon = new vismodule::MarchingTetrahedra(
                 unstructured_volume,
                 m_isolevel,
                 SuperClass::normalType(),
@@ -217,7 +217,7 @@ void Isosurface::mapping( const kvs::VolumeObjectBase* volume )
             if ( !polygon )
             {
                 BaseClass::m_is_success = false;
-                kvsMessageError("Cannot create isosurfaces.");
+                visModuleMessageError("Cannot create isosurfaces.");
                 return;
             }
 
@@ -241,9 +241,9 @@ void Isosurface::mapping( const kvs::VolumeObjectBase* volume )
             delete polygon;
             break;
         }
-        case kvs::VolumeObjectBase::Hexahedra:
+        case vismodule::VolumeObjectBase::Hexahedra:
         {
-            kvs::PolygonObject* polygon = new kvs::MarchingHexahedra(
+            vismodule::PolygonObject* polygon = new vismodule::MarchingHexahedra(
                 unstructured_volume,
                 m_isolevel,
                 SuperClass::normalType(),
@@ -251,7 +251,7 @@ void Isosurface::mapping( const kvs::VolumeObjectBase* volume )
                 BaseClass::transferFunction() );
             if ( !polygon )
             {
-                kvsMessageError("Cannot create isosurfaces.");
+                visModuleMessageError("Cannot create isosurfaces.");
                 return;
             }
 
@@ -276,9 +276,9 @@ void Isosurface::mapping( const kvs::VolumeObjectBase* volume )
 
             break;
         }
-        case kvs::VolumeObjectBase::Pyramid:
+        case vismodule::VolumeObjectBase::Pyramid:
         {
-            kvs::PolygonObject* polygon = new kvs::MarchingPyramid(
+            vismodule::PolygonObject* polygon = new vismodule::MarchingPyramid(
                 unstructured_volume,
                 m_isolevel,
                 SuperClass::normalType(),
@@ -287,7 +287,7 @@ void Isosurface::mapping( const kvs::VolumeObjectBase* volume )
             if ( !polygon )
             {
                 BaseClass::m_is_success = false;
-                kvsMessageError("Cannot create isosurfaces.");
+                visModuleMessageError("Cannot create isosurfaces.");
                 return;
             }
 
@@ -316,4 +316,4 @@ void Isosurface::mapping( const kvs::VolumeObjectBase* volume )
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

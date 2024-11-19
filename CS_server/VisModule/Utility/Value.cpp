@@ -12,22 +12,22 @@
  */
 /****************************************************************************/
 #include "Value.h"
-#include <kvs/Type>
+#include <vismodule/Type>
 
 
-namespace kvs
+namespace vismodule
 {
 
 // Template specialization.
-template class Value<kvs::Int8>;
-template class Value<kvs::UInt8>;
-template class Value<kvs::Int16>;
-template class Value<kvs::UInt16>;
-template class Value<kvs::Int32>;
-template class Value<kvs::UInt32>;
-template class Value<kvs::Int64>;
-template class Value<kvs::UInt64>;
-template class Value<kvs::Real32>;
-template class Value<kvs::Real64>;
+template class Value<vismodule::Int8>;
+template class Value<vismodule::UInt8>;
+template class Value<vismodule::Int16>;
+template class Value<vismodule::UInt16>;
+template class Value<vismodule::Int32>;
+template class Value<vismodule::UInt32>;
+template class Value<vismodule::Int64>;
+template class Value<vismodule::UInt64>;
+template class Value<vismodule::Real32>;
+template class Value<vismodule::Real64>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

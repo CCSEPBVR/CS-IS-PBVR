@@ -12,10 +12,10 @@
  */
 /****************************************************************************/
 #include "Bounds.h"
-#include <kvs/PointObject>
+#include <vismodule/PointObject>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -37,7 +37,7 @@ Bounds::Bounds( void ):
  *  @param  type [in] bounds type
  */
 /*==========================================================================*/
-Bounds::Bounds( const kvs::ObjectBase* object, const Bounds::Type type ):
+Bounds::Bounds( const vismodule::ObjectBase* object, const Bounds::Type type ):
     m_type( type ),
     m_corner_scale( 0.2f ),
     m_division( 50.0f )
@@ -53,12 +53,12 @@ Bounds::Bounds( const kvs::ObjectBase* object, const Bounds::Type type ):
  *  @param  type [in] bounds type
  */
 /*==========================================================================*/
-Bounds::Bounds( const kvs::Vector3f& min_coord, const kvs::Vector3f& max_coord, const Bounds::Type type ):
+Bounds::Bounds( const vismodule::Vector3f& min_coord, const vismodule::Vector3f& max_coord, const Bounds::Type type ):
     m_type( type ),
     m_corner_scale( 0.2f ),
     m_division( 50.0f )
 {
-    kvs::PointObject object;
+    vismodule::PointObject object;
     object.setMinMaxExternalCoords( min_coord, max_coord );
     object.setMinMaxObjectCoords( min_coord, max_coord );
 
@@ -80,36 +80,36 @@ Bounds::~Bounds( void )
  *  @param object [in] pointer to the object
  */
 /*==========================================================================*/
-Bounds::SuperClass* Bounds::exec( const kvs::ObjectBase* object )
+Bounds::SuperClass* Bounds::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
 /*
-    if ( object->objectType() != kvs::ObjectBase::Geometry ||
-         object->objectType() != kvs::ObjectBase::Volume )
+    if ( object->objectType() != vismodule::ObjectBase::Geometry ||
+         object->objectType() != vismodule::ObjectBase::Volume )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not supported.");
+        visModuleMessageError("Input object is not supported.");
         return( NULL );
     }
 */
 
     if ( object->hasMinMaxExternalCoords() )
     {
-        const kvs::Vector3f min_coord( object->minExternalCoord() );
-        const kvs::Vector3f max_coord( object->maxExternalCoord() );
+        const vismodule::Vector3f min_coord( object->minExternalCoord() );
+        const vismodule::Vector3f max_coord( object->maxExternalCoord() );
         SuperClass::setMinMaxExternalCoords( min_coord, max_coord );
     }
 
     if ( object->hasMinMaxObjectCoords() )
     {
-        const kvs::Vector3f min_coord( object->minObjectCoord() );
-        const kvs::Vector3f max_coord( object->maxObjectCoord() );
+        const vismodule::Vector3f min_coord( object->minObjectCoord() );
+        const vismodule::Vector3f max_coord( object->maxObjectCoord() );
         SuperClass::setMinMaxObjectCoords( min_coord, max_coord );
     }
 
@@ -178,15 +178,15 @@ void Bounds::initialize( void )
 /*==========================================================================*/
 void Bounds::create_box_bounds( void )
 {
-    std::vector<kvs::Real32> coords;
-    std::vector<kvs::UInt32> connects;
+    std::vector<vismodule::Real32> coords;
+    std::vector<vismodule::UInt32> connects;
 
-    const kvs::Real32 min_x( SuperClass::minObjectCoord().x() );
-    const kvs::Real32 min_y( SuperClass::minObjectCoord().y() );
-    const kvs::Real32 min_z( SuperClass::minObjectCoord().z() );
-    const kvs::Real32 max_x( SuperClass::maxObjectCoord().x() );
-    const kvs::Real32 max_y( SuperClass::maxObjectCoord().y() );
-    const kvs::Real32 max_z( SuperClass::maxObjectCoord().z() );
+    const vismodule::Real32 min_x( SuperClass::minObjectCoord().x() );
+    const vismodule::Real32 min_y( SuperClass::minObjectCoord().y() );
+    const vismodule::Real32 min_z( SuperClass::minObjectCoord().z() );
+    const vismodule::Real32 max_x( SuperClass::maxObjectCoord().x() );
+    const vismodule::Real32 max_y( SuperClass::maxObjectCoord().y() );
+    const vismodule::Real32 max_z( SuperClass::maxObjectCoord().z() );
 
     coords.push_back( min_x ); coords.push_back( min_y ); coords.push_back( max_z ); //0
     coords.push_back( max_x ); coords.push_back( min_y ); coords.push_back( max_z ); //1
@@ -215,11 +215,11 @@ void Bounds::create_box_bounds( void )
     connects.push_back( 4 ); connects.push_back( 7 );
     connects.push_back( 5 ); connects.push_back( 6 );
 
-    SuperClass::setLineType( kvs::LineObject::Segment );
-    SuperClass::setColorType( kvs::LineObject::LineColor );
-    SuperClass::setCoords( kvs::ValueArray<kvs::Real32>( coords ) );
-    SuperClass::setConnections( kvs::ValueArray<kvs::UInt32>( connects ) );
-    SuperClass::setColor( kvs::RGBColor( 0, 0, 0 ) );
+    SuperClass::setLineType( vismodule::LineObject::Segment );
+    SuperClass::setColorType( vismodule::LineObject::LineColor );
+    SuperClass::setCoords( vismodule::ValueArray<vismodule::Real32>( coords ) );
+    SuperClass::setConnections( vismodule::ValueArray<vismodule::UInt32>( connects ) );
+    SuperClass::setColor( vismodule::RGBColor( 0, 0, 0 ) );
     SuperClass::setSize( 1.0f );
 }
 
@@ -230,56 +230,56 @@ void Bounds::create_box_bounds( void )
 /*==========================================================================*/
 void Bounds::create_corner_bounds( void )
 {
-    std::vector<kvs::Real32> coords;
-    std::vector<kvs::UInt32> connects;
+    std::vector<vismodule::Real32> coords;
+    std::vector<vismodule::UInt32> connects;
 
-    const kvs::Real32 min_x( SuperClass::minObjectCoord().x() );
-    const kvs::Real32 min_y( SuperClass::minObjectCoord().y() );
-    const kvs::Real32 min_z( SuperClass::minObjectCoord().z() );
-    const kvs::Real32 max_x( SuperClass::maxObjectCoord().x() );
-    const kvs::Real32 max_y( SuperClass::maxObjectCoord().y() );
-    const kvs::Real32 max_z( SuperClass::maxObjectCoord().z() );
+    const vismodule::Real32 min_x( SuperClass::minObjectCoord().x() );
+    const vismodule::Real32 min_y( SuperClass::minObjectCoord().y() );
+    const vismodule::Real32 min_z( SuperClass::minObjectCoord().z() );
+    const vismodule::Real32 max_x( SuperClass::maxObjectCoord().x() );
+    const vismodule::Real32 max_y( SuperClass::maxObjectCoord().y() );
+    const vismodule::Real32 max_z( SuperClass::maxObjectCoord().z() );
 
-    const kvs::Real32 corner =
-        kvs::Math::Min( max_x-min_x, max_y-min_y, max_z-min_z ) * m_corner_scale;
+    const vismodule::Real32 corner =
+        vismodule::Math::Min( max_x-min_x, max_y-min_y, max_z-min_z ) * m_corner_scale;
 
-    const kvs::Real32 max_ext_x( max_x - corner );
-    const kvs::Real32 max_ext_y( max_y - corner );
-    const kvs::Real32 max_ext_z( max_z - corner );
-    const kvs::Real32 min_ext_x( min_x + corner );
-    const kvs::Real32 min_ext_y( min_y + corner );
-    const kvs::Real32 min_ext_z( min_z + corner );
+    const vismodule::Real32 max_ext_x( max_x - corner );
+    const vismodule::Real32 max_ext_y( max_y - corner );
+    const vismodule::Real32 max_ext_z( max_z - corner );
+    const vismodule::Real32 min_ext_x( min_x + corner );
+    const vismodule::Real32 min_ext_y( min_y + corner );
+    const vismodule::Real32 min_ext_z( min_z + corner );
 
-    this->set_corner( kvs::Vector3f( min_x,     min_y,     min_z ),
-                      kvs::Vector3f( min_ext_x, min_ext_y, min_ext_z ),
+    this->set_corner( vismodule::Vector3f( min_x,     min_y,     min_z ),
+                      vismodule::Vector3f( min_ext_x, min_ext_y, min_ext_z ),
                       &coords, &connects );
-    this->set_corner( kvs::Vector3f( max_x,     min_y,     min_z ),
-                      kvs::Vector3f( max_ext_x, min_ext_y, min_ext_z ),
+    this->set_corner( vismodule::Vector3f( max_x,     min_y,     min_z ),
+                      vismodule::Vector3f( max_ext_x, min_ext_y, min_ext_z ),
                       &coords, &connects );
-    this->set_corner( kvs::Vector3f( max_x,     min_y,     max_z ),
-                      kvs::Vector3f( max_ext_x, min_ext_y, max_ext_z ),
+    this->set_corner( vismodule::Vector3f( max_x,     min_y,     max_z ),
+                      vismodule::Vector3f( max_ext_x, min_ext_y, max_ext_z ),
                       &coords, &connects );
-    this->set_corner( kvs::Vector3f( min_x,     min_y,     max_z ),
-                      kvs::Vector3f( min_ext_x, min_ext_y, max_ext_z ),
+    this->set_corner( vismodule::Vector3f( min_x,     min_y,     max_z ),
+                      vismodule::Vector3f( min_ext_x, min_ext_y, max_ext_z ),
                       &coords, &connects );
-    this->set_corner( kvs::Vector3f( min_x,     max_y,     min_z ),
-                      kvs::Vector3f( min_ext_x, max_ext_y, min_ext_z ),
+    this->set_corner( vismodule::Vector3f( min_x,     max_y,     min_z ),
+                      vismodule::Vector3f( min_ext_x, max_ext_y, min_ext_z ),
                       &coords, &connects );
-    this->set_corner( kvs::Vector3f( max_x,     max_y,     min_z ),
-                      kvs::Vector3f( max_ext_x, max_ext_y, min_ext_z ),
+    this->set_corner( vismodule::Vector3f( max_x,     max_y,     min_z ),
+                      vismodule::Vector3f( max_ext_x, max_ext_y, min_ext_z ),
                       &coords, &connects );
-    this->set_corner( kvs::Vector3f( max_x,     max_y,     max_z ),
-                      kvs::Vector3f( max_ext_x, max_ext_y, max_ext_z ),
+    this->set_corner( vismodule::Vector3f( max_x,     max_y,     max_z ),
+                      vismodule::Vector3f( max_ext_x, max_ext_y, max_ext_z ),
                       &coords, &connects );
-    this->set_corner( kvs::Vector3f( min_x,     max_y,     max_z ),
-                      kvs::Vector3f( min_ext_x, max_ext_y, max_ext_z ),
+    this->set_corner( vismodule::Vector3f( min_x,     max_y,     max_z ),
+                      vismodule::Vector3f( min_ext_x, max_ext_y, max_ext_z ),
                       &coords, &connects );
 
-    SuperClass::setLineType( kvs::LineObject::Segment );
-    SuperClass::setColorType( kvs::LineObject::LineColor );
-    SuperClass::setCoords( kvs::ValueArray<kvs::Real32>( coords ) );
-    SuperClass::setConnections( kvs::ValueArray<kvs::UInt32>( connects ) );
-    SuperClass::setColor( kvs::RGBColor( 0, 0, 0 ) );
+    SuperClass::setLineType( vismodule::LineObject::Segment );
+    SuperClass::setColorType( vismodule::LineObject::LineColor );
+    SuperClass::setCoords( vismodule::ValueArray<vismodule::Real32>( coords ) );
+    SuperClass::setConnections( vismodule::ValueArray<vismodule::UInt32>( connects ) );
+    SuperClass::setColor( vismodule::RGBColor( 0, 0, 0 ) );
     SuperClass::setSize( 1.0f );
 }
 
@@ -290,27 +290,27 @@ void Bounds::create_corner_bounds( void )
 /*==========================================================================*/
 void Bounds::create_circle_bounds( void )
 {
-    std::vector<kvs::Real32> coords;
-    std::vector<kvs::UInt32> connects;
+    std::vector<vismodule::Real32> coords;
+    std::vector<vismodule::UInt32> connects;
 
-    const kvs::Real32 min_x( SuperClass::minObjectCoord().x() );
-    const kvs::Real32 min_y( SuperClass::minObjectCoord().y() );
-    const kvs::Real32 min_z( SuperClass::minObjectCoord().z() );
-    const kvs::Real32 max_x( SuperClass::maxObjectCoord().x() );
-    const kvs::Real32 max_y( SuperClass::maxObjectCoord().y() );
-    const kvs::Real32 max_z( SuperClass::maxObjectCoord().z() );
+    const vismodule::Real32 min_x( SuperClass::minObjectCoord().x() );
+    const vismodule::Real32 min_y( SuperClass::minObjectCoord().y() );
+    const vismodule::Real32 min_z( SuperClass::minObjectCoord().z() );
+    const vismodule::Real32 max_x( SuperClass::maxObjectCoord().x() );
+    const vismodule::Real32 max_y( SuperClass::maxObjectCoord().y() );
+    const vismodule::Real32 max_z( SuperClass::maxObjectCoord().z() );
 
-    const kvs::Vector3f interval = kvs::Vector3f( max_x-min_x, max_y-min_y, max_z-min_z );
-    const kvs::Vector3f center = kvs::Vector3f( max_x+min_x, max_y+min_y, max_z+min_z ) * 0.5f;
+    const vismodule::Vector3f interval = vismodule::Vector3f( max_x-min_x, max_y-min_y, max_z-min_z );
+    const vismodule::Vector3f center = vismodule::Vector3f( max_x+min_x, max_y+min_y, max_z+min_z ) * 0.5f;
 
-    const float pi = static_cast<float>( kvs::Math::pi );
+    const float pi = static_cast<float>( vismodule::Math::pi );
     const float diff_angle = ( 2.0f * pi ) / m_division;
 
     const float x1 = interval.x() * 0.5f;
     const float y1 = interval.y() * 0.5f;
     const float z1 = interval.z() * 0.5f;
 
-    const float sqrt2 = static_cast<float>( kvs::Math::sqrt2 );
+    const float sqrt2 = static_cast<float>( vismodule::Math::sqrt2 );
     const float a = sqrt2 * x1;  const float a2 = a * a;
     const float b = sqrt2 * y1;  const float b2 = b * b;
     const float c = sqrt2 * z1;  const float c2 = c * c;
@@ -386,11 +386,11 @@ void Bounds::create_circle_bounds( void )
     vertex_id = coords.size() / 3 - 1;
     connects.push_back( vertex_id );
 
-    SuperClass::setLineType( kvs::LineObject::Polyline );
-    SuperClass::setColorType( kvs::LineObject::LineColor );
-    SuperClass::setCoords( kvs::ValueArray<kvs::Real32>( coords ) );
-    SuperClass::setConnections( kvs::ValueArray<kvs::UInt32>( connects ) );
-    SuperClass::setColor( kvs::RGBColor( 0, 0, 0 ) );
+    SuperClass::setLineType( vismodule::LineObject::Polyline );
+    SuperClass::setColorType( vismodule::LineObject::LineColor );
+    SuperClass::setCoords( vismodule::ValueArray<vismodule::Real32>( coords ) );
+    SuperClass::setConnections( vismodule::ValueArray<vismodule::UInt32>( connects ) );
+    SuperClass::setColor( vismodule::RGBColor( 0, 0, 0 ) );
     SuperClass::setSize( 1.0f );
 }
 
@@ -404,10 +404,10 @@ void Bounds::create_circle_bounds( void )
  */
 /*==========================================================================*/
 void Bounds::set_corner(
-    const kvs::Vector3f&      v1,
-    const kvs::Vector3f&      v2,
-    std::vector<kvs::Real32>* coords,
-    std::vector<kvs::UInt32>* connects )
+    const vismodule::Vector3f&      v1,
+    const vismodule::Vector3f&      v2,
+    std::vector<vismodule::Real32>* coords,
+    std::vector<vismodule::UInt32>* connects )
 {
     coords->push_back( v1.x() );
     coords->push_back( v1.y() );
@@ -436,4 +436,4 @@ void Bounds::set_corner(
     connects->push_back( nvertices - 1 );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

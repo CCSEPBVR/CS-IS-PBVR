@@ -13,13 +13,13 @@
  */
 /*****************************************************************************/
 #include "ColumnTag.h"
-#include <kvs/Message>
-#include <kvs/String>
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
+#include <vismodule/Message>
+#include <vismodule/String>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -31,7 +31,7 @@ namespace kvsml
  */
 /*===========================================================================*/
 ColumnTag::ColumnTag( void ):
-    kvs::kvsml::TagBase( "Column" ),
+    vismodule::kvsml::TagBase( "Column" ),
     m_has_label( false ),
     m_has_min_value( false ),
     m_has_max_value( false ),
@@ -222,19 +222,19 @@ void ColumnTag::setMaxRange( const double range )
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool ColumnTag::read( const kvs::XMLNode::SuperClass* parent )
+const bool ColumnTag::read( const vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
 
-    BaseClass::m_node = kvs::XMLNode::FindChildNode( parent, tag_name );
+    BaseClass::m_node = vismodule::XMLNode::FindChildNode( parent, tag_name );
     if ( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot find <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot find <%s>.", tag_name.c_str() );
         return( false );
     }
 
     // Element
-    const kvs::XMLElement::SuperClass* element = kvs::XMLNode::ToElement( BaseClass::m_node );
+    const vismodule::XMLElement::SuperClass* element = vismodule::XMLNode::ToElement( BaseClass::m_node );
 
     return( this->read( element ) );
 }
@@ -246,7 +246,7 @@ const bool ColumnTag::read( const kvs::XMLNode::SuperClass* parent )
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool ColumnTag::read( const kvs::XMLElement::SuperClass* element )
+const bool ColumnTag::read( const vismodule::XMLElement::SuperClass* element )
 {
     m_has_label = false;
     m_has_min_value = false;
@@ -260,23 +260,23 @@ const bool ColumnTag::read( const kvs::XMLElement::SuperClass* element )
     m_max_range = 0.0;
 
     // label="xxx"
-    const std::string label = kvs::XMLElement::AttributeValue( element, "label" );
+    const std::string label = vismodule::XMLElement::AttributeValue( element, "label" );
     if ( label != "" ) { this->setLabel( label ); }
 
     // min_value="xxx"
-    const std::string min_value = kvs::XMLElement::AttributeValue( element, "min_value" );
+    const std::string min_value = vismodule::XMLElement::AttributeValue( element, "min_value" );
     if ( min_value != "" ) { this->setMinValue( atof( min_value.c_str() ) ); }
 
     // max_value="xxx"
-    const std::string max_value = kvs::XMLElement::AttributeValue( element, "max_value" );
+    const std::string max_value = vismodule::XMLElement::AttributeValue( element, "max_value" );
     if ( max_value != "" ) { this->setMaxValue( atof( max_value.c_str() ) ); }
 
     // min_range="xxx"
-    const std::string min_range = kvs::XMLElement::AttributeValue( element, "min_range" );
+    const std::string min_range = vismodule::XMLElement::AttributeValue( element, "min_range" );
     if ( min_range != "" ) { this->setMinRange( atof( min_range.c_str() ) ); }
 
     // max_range="xxx"
-    const std::string max_range = kvs::XMLElement::AttributeValue( element, "max_range" );
+    const std::string max_range = vismodule::XMLElement::AttributeValue( element, "max_range" );
     if ( max_range != "" ) { this->setMaxRange( atof( max_range.c_str() ) ); }
 
     return( true );
@@ -289,10 +289,10 @@ const bool ColumnTag::read( const kvs::XMLElement::SuperClass* element )
  *  @return true, if the writting process is done successfully
  */
 /*===========================================================================*/
-const bool ColumnTag::write( kvs::XMLNode::SuperClass* parent )
+const bool ColumnTag::write( vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
-    kvs::XMLElement element( tag_name );
+    vismodule::XMLElement element( tag_name );
 
     if ( m_has_label )
     {
@@ -304,35 +304,35 @@ const bool ColumnTag::write( kvs::XMLNode::SuperClass* parent )
     if ( m_has_min_value )
     {
         const std::string name( "min_value" );
-        const std::string value( kvs::String( m_min_value ).toStdString() );
+        const std::string value( vismodule::String( m_min_value ).toStdString() );
         element.setAttribute( name, value );
     }
 
     if ( m_has_max_value )
     {
         const std::string name( "max_value" );
-        const std::string value( kvs::String( m_max_value ).toStdString() );
+        const std::string value( vismodule::String( m_max_value ).toStdString() );
         element.setAttribute( name, value );
     }
 
     if ( m_has_min_range )
     {
         const std::string name( "min_range" );
-        const std::string value( kvs::String( m_min_range ).toStdString() );
+        const std::string value( vismodule::String( m_min_range ).toStdString() );
         element.setAttribute( name, value );
     }
 
     if ( m_has_max_range )
     {
         const std::string name( "max_range" );
-        const std::string value( kvs::String( m_max_range ).toStdString() );
+        const std::string value( vismodule::String( m_max_range ).toStdString() );
         element.setAttribute( name, value );
     }
 
     BaseClass::m_node = parent->InsertEndChild( element );
     if( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot insert <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot insert <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -341,4 +341,4 @@ const bool ColumnTag::write( kvs::XMLNode::SuperClass* parent )
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

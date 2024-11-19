@@ -50,11 +50,11 @@ WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 #include <cstdlib>
 #include <cmath>
 #include <cstring>
-#include <kvs/Endian>
-#include <kvs/DebugNew>
+#include <vismodule/Endian>
+#include <vismodule/DebugNew>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace ply
@@ -1902,8 +1902,8 @@ void write_binary_item(PlyFile *plyfile,
     short short_val;
     float float_val;
 
-    bool swap_byte = ( kvs::Endian::IsBig() && plyfile->file_type == PLY_BINARY_LE ) ||
-        ( kvs::Endian::IsLittle() && plyfile->file_type == PLY_BINARY_BE );
+    bool swap_byte = ( vismodule::Endian::IsBig() && plyfile->file_type == PLY_BINARY_LE ) ||
+        ( vismodule::Endian::IsLittle() && plyfile->file_type == PLY_BINARY_BE );
 
     switch (type) {
     case PLY_CHAR:
@@ -1912,11 +1912,11 @@ void write_binary_item(PlyFile *plyfile,
         break;
     case PLY_SHORT:
         short_val = int_val;
-        if( swap_byte ) kvs::Endian::Swap( short_val );
+        if( swap_byte ) vismodule::Endian::Swap( short_val );
         fwrite (&short_val, 2, 1, fp);
         break;
     case PLY_INT:
-        if( swap_byte ) kvs::Endian::Swap( int_val );
+        if( swap_byte ) vismodule::Endian::Swap( int_val );
         fwrite (&int_val, 4, 1, fp);
         break;
     case PLY_UCHAR:
@@ -1924,21 +1924,21 @@ void write_binary_item(PlyFile *plyfile,
         fwrite (&uchar_val, 1, 1, fp);
         break;
     case PLY_USHORT:
-        if( swap_byte ) kvs::Endian::Swap( ushort_val );
+        if( swap_byte ) vismodule::Endian::Swap( ushort_val );
         ushort_val = uint_val;
         fwrite (&ushort_val, 2, 1, fp);
         break;
     case PLY_UINT:
-        if( swap_byte ) kvs::Endian::Swap( uint_val );
+        if( swap_byte ) vismodule::Endian::Swap( uint_val );
         fwrite (&uint_val, 4, 1, fp);
         break;
     case PLY_FLOAT:
         float_val = (float)double_val;
-        if( swap_byte ) kvs::Endian::Swap( float_val );
+        if( swap_byte ) vismodule::Endian::Swap( float_val );
         fwrite (&float_val, 4, 1, fp);
         break;
     case PLY_DOUBLE:
-        if( swap_byte ) kvs::Endian::Swap( double_val );
+        if( swap_byte ) vismodule::Endian::Swap( double_val );
         fwrite (&double_val, 8, 1, fp);
         break;
     default:
@@ -2159,8 +2159,8 @@ void get_binary_item(
 
     ptr = (void *) c;
 
-    bool swap_byte = ( kvs::Endian::IsBig() && plyfile->file_type == PLY_BINARY_LE ) ||
-        ( kvs::Endian::IsLittle() && plyfile->file_type == PLY_BINARY_BE );
+    bool swap_byte = ( vismodule::Endian::IsBig() && plyfile->file_type == PLY_BINARY_LE ) ||
+        ( vismodule::Endian::IsLittle() && plyfile->file_type == PLY_BINARY_BE );
 
     switch (type) {
     case PLY_CHAR:
@@ -2177,42 +2177,42 @@ void get_binary_item(
         break;
     case PLY_SHORT:
         fread (ptr, 2, 1, plyfile->fp);
-        if( swap_byte ) kvs::Endian::Swap( (short*)ptr, 1 );
+        if( swap_byte ) vismodule::Endian::Swap( (short*)ptr, 1 );
         *int_val = *((short int *) ptr);
         *uint_val = *int_val;
         *double_val = *int_val;
         break;
     case PLY_USHORT:
         fread (ptr, 2, 1, plyfile->fp);
-        if( swap_byte ) kvs::Endian::Swap( (unsigned short*)ptr, 1 );
+        if( swap_byte ) vismodule::Endian::Swap( (unsigned short*)ptr, 1 );
         *uint_val = *((unsigned short int *) ptr);
         *int_val = *uint_val;
         *double_val = *uint_val;
         break;
     case PLY_INT:
         fread (ptr, 4, 1, plyfile->fp);
-        if( swap_byte ) kvs::Endian::Swap( (int*)ptr, 1 );
+        if( swap_byte ) vismodule::Endian::Swap( (int*)ptr, 1 );
         *int_val = *((int *) ptr);
         *uint_val = *int_val;
         *double_val = *int_val;
         break;
     case PLY_UINT:
         fread (ptr, 4, 1, plyfile->fp);
-        if( swap_byte ) kvs::Endian::Swap( (unsigned int*)ptr, 1 );
+        if( swap_byte ) vismodule::Endian::Swap( (unsigned int*)ptr, 1 );
         *uint_val = *((unsigned int *) ptr);
         *int_val = *uint_val;
         *double_val = *uint_val;
         break;
     case PLY_FLOAT:
         fread (ptr, 4, 1, plyfile->fp);
-        if( swap_byte ) kvs::Endian::Swap( (float*)ptr, 1 );
+        if( swap_byte ) vismodule::Endian::Swap( (float*)ptr, 1 );
         *double_val = *((float *) ptr);
         *int_val = (int) *double_val;
         *uint_val = (unsigned int) *double_val;
         break;
     case PLY_DOUBLE:
         fread (ptr, 8, 1, plyfile->fp);
-        if( swap_byte ) kvs::Endian::Swap( (double*)ptr, 1 );
+        if( swap_byte ) vismodule::Endian::Swap( (double*)ptr, 1 );
         *double_val = *((double *) ptr);
         *int_val = (int) *double_val;
         *uint_val = (unsigned int) *double_val;
@@ -2531,4 +2531,4 @@ char *my_alloc(int size, int lnum, const char *fname)
 
 } // end of namespace ply
 
-} // end of namespace kvs
+} // end of namespace vismodule

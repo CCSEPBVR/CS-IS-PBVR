@@ -12,10 +12,10 @@
  */
 /*****************************************************************************/
 #include "LineExporter.h"
-#include <kvs/Message>
+#include <vismodule/Message>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -24,7 +24,7 @@ namespace kvs
  *  @param  object [in] pointer to the input line object
  */
 /*===========================================================================*/
-LineExporter<kvs::KVSMLObjectLine>::LineExporter( const kvs::LineObject* object )
+LineExporter<vismodule::KVSMLObjectLine>::LineExporter( const vismodule::LineObject* object )
 {
     this->exec( object );
 }
@@ -36,36 +36,36 @@ LineExporter<kvs::KVSMLObjectLine>::LineExporter( const kvs::LineObject* object 
  *  @return pointer to the KVSMLObjectLine format
  */
 /*===========================================================================*/
-kvs::KVSMLObjectLine* LineExporter<kvs::KVSMLObjectLine>::exec( const kvs::ObjectBase* object )
+vismodule::KVSMLObjectLine* LineExporter<vismodule::KVSMLObjectLine>::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::LineObject* line = kvs::LineObject::DownCast( object );
+    const vismodule::LineObject* line = vismodule::LineObject::DownCast( object );
     if ( !line )
     {
         m_is_success = false;
-        kvsMessageError("Input object is not line object.");
+        visModuleMessageError("Input object is not line object.");
         return( NULL );
     }
 
     switch ( line->lineType() )
     {
-    case kvs::LineObject::Strip: this->setLineType( "strip" ); break;
-    case kvs::LineObject::Uniline: this->setLineType( "uniline" ); break;
-    case kvs::LineObject::Polyline: this->setLineType( "polyline" ); break;
-    case kvs::LineObject::Segment:this->setLineType( "segment" ); break;
+    case vismodule::LineObject::Strip: this->setLineType( "strip" ); break;
+    case vismodule::LineObject::Uniline: this->setLineType( "uniline" ); break;
+    case vismodule::LineObject::Polyline: this->setLineType( "polyline" ); break;
+    case vismodule::LineObject::Segment:this->setLineType( "segment" ); break;
     default: break;
     }
 
     switch ( line->colorType() )
     {
-    case kvs::LineObject::VertexColor: this->setColorType( "vertex" ); break;
-    case kvs::LineObject::LineColor: this->setColorType( "line" ); break;
+    case vismodule::LineObject::VertexColor: this->setColorType( "vertex" ); break;
+    case vismodule::LineObject::LineColor: this->setColorType( "line" ); break;
     default: break;
     }
 
@@ -77,4 +77,4 @@ kvs::KVSMLObjectLine* LineExporter<kvs::KVSMLObjectLine>::exec( const kvs::Objec
     return( this );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

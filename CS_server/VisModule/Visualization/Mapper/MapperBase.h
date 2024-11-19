@@ -11,19 +11,19 @@
  *  $Id: MapperBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MAPPER_BASE_H_INCLUDE
-#define KVS__MAPPER_BASE_H_INCLUDE
+#ifndef VIS_MODULE__MAPPER_BASE_H_INCLUDE
+#define VIS_MODULE__MAPPER_BASE_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/ObjectBase>
-#include <kvs/VolumeObjectBase>
-#include <kvs/TransferFunction>
-#include <kvs/ColorMap>
-#include <kvs/OpacityMap>
-#include <kvs/Module>
+#include <vismodule/ClassName>
+#include <vismodule/ObjectBase>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/TransferFunction>
+#include <vismodule/ColorMap>
+#include <vismodule/OpacityMap>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 class VolumeObjectBase;
@@ -35,45 +35,45 @@ class VolumeObjectBase;
 /*==========================================================================*/
 class MapperBase
 {
-    kvsClassName( kvs::MapperBase );
+    visModuleClassName( vismodule::MapperBase );
 
-    kvsModuleBase;
+    visModuleBase;
 
 protected:
 
-    kvs::TransferFunction m_transfer_function; ///< Transfer function.
-    const kvs::VolumeObjectBase* m_volume; ///< Volume object.
+    vismodule::TransferFunction m_transfer_function; ///< Transfer function.
+    const vismodule::VolumeObjectBase* m_volume; ///< Volume object.
     bool m_is_success; ///< Check flag for mapping.
 
 public:
 
     MapperBase( void );
 
-    explicit MapperBase( const kvs::TransferFunction& transfer_function );
+    explicit MapperBase( const vismodule::TransferFunction& transfer_function );
 
     virtual ~MapperBase( void );
 
 public:
 
-    virtual kvs::ObjectBase* exec( const kvs::ObjectBase* object ) = 0;
+    virtual vismodule::ObjectBase* exec( const vismodule::ObjectBase* object ) = 0;
 
 public:
 
-    void setTransferFunction( const kvs::TransferFunction& transfer_function );
+    void setTransferFunction( const vismodule::TransferFunction& transfer_function );
 
-    void setColorMap( const kvs::ColorMap& color_map );
+    void setColorMap( const vismodule::ColorMap& color_map );
 
-    void setOpacityMap( const kvs::OpacityMap& opacity_map );
+    void setOpacityMap( const vismodule::OpacityMap& opacity_map );
 
 public:
 
-    const kvs::VolumeObjectBase* const volume( void ) const;
+    const vismodule::VolumeObjectBase* const volume( void ) const;
 
-    const kvs::TransferFunction& transferFunction( void ) const;
+    const vismodule::TransferFunction& transferFunction( void ) const;
 
-    const kvs::ColorMap& colorMap( void ) const;
+    const vismodule::ColorMap& colorMap( void ) const;
 
-    const kvs::OpacityMap& opacityMap( void ) const;
+    const vismodule::OpacityMap& opacityMap( void ) const;
 
     const bool isSuccess( void ) const;
 
@@ -81,13 +81,13 @@ public:
 
 protected:
 
-    void attach_volume( const kvs::VolumeObjectBase* volume );
+    void attach_volume( const vismodule::VolumeObjectBase* volume );
 
-    void set_range( const kvs::VolumeObjectBase* volume );
+    void set_range( const vismodule::VolumeObjectBase* volume );
 
-    void set_min_max_coords( const kvs::VolumeObjectBase* volume, kvs::ObjectBase* object );
+    void set_min_max_coords( const vismodule::VolumeObjectBase* volume, vismodule::ObjectBase* object );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MAPPER_BASE_H_INCLUDE
+#endif // VIS_MODULE__MAPPER_BASE_H_INCLUDE

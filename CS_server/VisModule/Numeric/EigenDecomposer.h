@@ -11,17 +11,17 @@
  *  $Id: EigenDecomposer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__EIGEN_DECOMPOSER_H_INCLUDE
-#define KVS__EIGEN_DECOMPOSER_H_INCLUDE
+#ifndef VIS_MODULE__EIGEN_DECOMPOSER_H_INCLUDE
+#define VIS_MODULE__EIGEN_DECOMPOSER_H_INCLUDE
 
-#include <kvs/Matrix33>
-#include <kvs/Matrix44>
-#include <kvs/Matrix>
-#include <kvs/Vector>
-#include <kvs/ClassName>
+#include <vismodule/Matrix33>
+#include <vismodule/Matrix44>
+#include <vismodule/Matrix>
+#include <vismodule/Vector>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -32,7 +32,7 @@ namespace kvs
 template <typename T>
 class EigenDecomposer
 {
-    kvsClassName_without_virtual( kvs::EigenDecomposer );
+    visModuleClassName_without_virtual( vismodule::EigenDecomposer );
 
 public:
 
@@ -46,8 +46,8 @@ public:
 protected:
 
     MatrixType     m_matrix_type;   ///< matrix type (symmetric or unsymmetric)
-    kvs::Matrix<T> m_eigen_vectors; ///< eigen vectors as row vectors
-    kvs::Vector<T> m_eigen_values;  ///< eigen values as vector
+    vismodule::Matrix<T> m_eigen_vectors; ///< eigen vectors as row vectors
+    vismodule::Vector<T> m_eigen_values;  ///< eigen values as vector
 
 protected:
 
@@ -58,29 +58,29 @@ public:
 
     EigenDecomposer( void );
 
-    EigenDecomposer( const kvs::Matrix33<T>& m, MatrixType type = EigenDecomposer::Unknown );
+    EigenDecomposer( const vismodule::Matrix33<T>& m, MatrixType type = EigenDecomposer::Unknown );
 
-    EigenDecomposer( const kvs::Matrix44<T>& m, MatrixType type = EigenDecomposer::Unknown );
+    EigenDecomposer( const vismodule::Matrix44<T>& m, MatrixType type = EigenDecomposer::Unknown );
 
-    EigenDecomposer( const kvs::Matrix<T>& m, MatrixType type = EigenDecomposer::Unknown );
+    EigenDecomposer( const vismodule::Matrix<T>& m, MatrixType type = EigenDecomposer::Unknown );
 
 public:
 
-    const kvs::Matrix<T>& eigenVectors( void ) const;
+    const vismodule::Matrix<T>& eigenVectors( void ) const;
 
-    const kvs::Vector<T>& eigenVector( const size_t index ) const;
+    const vismodule::Vector<T>& eigenVector( const size_t index ) const;
 
-    const kvs::Vector<T>& eigenValues( void ) const;
+    const vismodule::Vector<T>& eigenValues( void ) const;
 
     const T eigenValue( const size_t index ) const;
 
 public:
 
-    void setMatrix( const kvs::Matrix33<T>& m, MatrixType type = EigenDecomposer::Unknown );
+    void setMatrix( const vismodule::Matrix33<T>& m, MatrixType type = EigenDecomposer::Unknown );
 
-    void setMatrix( const kvs::Matrix44<T>& m, MatrixType type = EigenDecomposer::Unknown );
+    void setMatrix( const vismodule::Matrix44<T>& m, MatrixType type = EigenDecomposer::Unknown );
 
-    void setMatrix( const kvs::Matrix<T>& m, MatrixType type = EigenDecomposer::Unknown );
+    void setMatrix( const vismodule::Matrix<T>& m, MatrixType type = EigenDecomposer::Unknown );
 
     void decompose( void );
 
@@ -97,6 +97,6 @@ private:
     const bool calculate_by_power( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__EIGEN_DECOMPOSER_H_INCLUDE
+#endif // VIS_MODULE__EIGEN_DECOMPOSER_H_INCLUDE

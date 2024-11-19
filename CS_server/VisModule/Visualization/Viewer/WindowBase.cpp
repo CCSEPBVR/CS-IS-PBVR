@@ -13,11 +13,11 @@
  */
 /*****************************************************************************/
 #include "WindowBase.h"
-#include <kvs/DebugNew>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/DebugNew>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -33,9 +33,9 @@ WindowBase::WindowBase( void ):
     m_height( 512 ),
     m_id( 0 ),
     m_is_fullscreen( false ),
-    m_mouse_event( new kvs::MouseEvent ),
-    m_key_event( new kvs::KeyEvent ),
-    m_wheel_event( new kvs::WheelEvent )
+    m_mouse_event( new vismodule::MouseEvent ),
+    m_key_event( new vismodule::KeyEvent ),
+    m_wheel_event( new vismodule::WheelEvent )
 {
 }
 
@@ -122,7 +122,7 @@ const std::string& WindowBase::title( void ) const
  *  @brief  Returns the display format.
  */
 /*===========================================================================*/
-const kvs::DisplayFormat& WindowBase::displayFormat( void ) const
+const vismodule::DisplayFormat& WindowBase::displayFormat( void ) const
 {
     return( m_display_format );
 }
@@ -144,7 +144,7 @@ const bool WindowBase::isFullScreen( void ) const
  *  @param  display_format [in] display format
  */
 /*===========================================================================*/
-void WindowBase::setDisplayFormat( const kvs::DisplayFormat& display_format )
+void WindowBase::setDisplayFormat( const vismodule::DisplayFormat& display_format )
 {
     m_display_format = display_format;
 }
@@ -282,8 +282,8 @@ void WindowBase::redraw( void )
 /*===========================================================================*/
 void WindowBase::resize( int width, int height )
 {
-    kvs::IgnoreUnusedVariable( width );
-    kvs::IgnoreUnusedVariable( height );
+    vismodule::IgnoreUnusedVariable( width );
+    vismodule::IgnoreUnusedVariable( height );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

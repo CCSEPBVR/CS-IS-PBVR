@@ -12,8 +12,8 @@
  */
 /****************************************************************************/
 #include "Thread.h"
-#include <kvs/Message>
-#if defined ( KVS_PLATFORM_WINDOWS )
+#include <vismodule/Message>
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
 #include <windows.h>
 #include <errno.h>
 #include <process.h>
@@ -28,18 +28,18 @@ namespace
 
 /*==========================================================================*/
 /**
- *  Entry point for kvs::Thread::run.
+ *  Entry point for vismodule::Thread::run.
  *  @param arg [in] pointer to arguments of thread function
  *  @return <ReturnValue>
  */
 /*==========================================================================*/
 void* EntryPoint( void* arg )
 {
-    ( (kvs::Thread*)arg )->run();
+    ( (vismodule::Thread*)arg )->run();
     return( NULL );
 }
 
-#if !defined ( KVS_PLATFORM_WINDOWS )
+#if !defined ( VIS_MODULE_PLATFORM_WINDOWS )
 /*==========================================================================*/
 /**
  *  Sleep thread.
@@ -64,7 +64,7 @@ void SleepThread( struct timespec* t )
 #endif
 } // end of namesapce
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -149,7 +149,7 @@ bool Thread::start( void )
 
     if ( !this->create_thread( routine, this ) )
     {
-        kvsMessageError( "Cannot create thread." );
+        visModuleMessageError( "Cannot create thread." );
         m_is_running = false;
 
         return( false );
@@ -168,7 +168,7 @@ bool Thread::start( void )
 /*==========================================================================*/
 bool Thread::wait( void )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     int ret = WaitForSingleObject( m_handler, INFINITE );
     return( ret == WAIT_FAILED ? false : true );
 
@@ -200,7 +200,7 @@ void Thread::quit( void )
 /*==========================================================================*/
 void Thread::sleep( int sec )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     Sleep( sec * 1000 );
 #else
     struct timeval tv;
@@ -220,7 +220,7 @@ void Thread::sleep( int sec )
 /*==========================================================================*/
 void Thread::msleep( int msec )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     Sleep( msec );
 #else
     struct timeval tv;
@@ -241,7 +241,7 @@ void Thread::msleep( int msec )
 /*==========================================================================*/
 void Thread::usleep( int usec )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     Sleep( ( usec / 1000 ) + 1 );
 #else
     struct timeval tv;
@@ -264,7 +264,7 @@ void Thread::usleep( int usec )
 /*==========================================================================*/
 bool Thread::create_thread( Routine routine, void* arg )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     WinRoutine rt = (WinRoutine)routine;
     m_handler = (HANDLE)_beginthreadex( NULL, 0, rt, arg, 0, NULL );
     return( m_handler == 0 ? false : true );
@@ -286,10 +286,10 @@ bool Thread::create_thread( Routine routine, void* arg )
 /*==========================================================================*/
 void Thread::delete_thread( void )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     if ( m_handler ) { CloseHandle( m_handler ); }
 #else
 #endif
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

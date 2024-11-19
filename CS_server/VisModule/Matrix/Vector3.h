@@ -11,18 +11,18 @@
  *  $Id: Vector3.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__VECTOR_3_H_INCLUDE
-#define KVS__VECTOR_3_H_INCLUDE
+#ifndef VIS_MODULE__VECTOR_3_H_INCLUDE
+#define VIS_MODULE__VECTOR_3_H_INCLUDE
 
 #include <string.h>
 #include <iostream> // For std::cout.
-#include <kvs/ClassName>
-#include <kvs/Assert>
-#include <kvs/Math>
-#include <kvs/Vector2>
+#include <vismodule/ClassName>
+#include <vismodule/Assert>
+#include <vismodule/Math>
+#include <vismodule/Vector2>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -33,7 +33,7 @@ namespace kvs
 template<typename T>
 class Vector3
 {
-    kvsClassName_without_virtual( kvs::Vector3 );
+    visModuleClassName_without_virtual( vismodule::Vector3 );
 
 private:
 
@@ -138,9 +138,9 @@ public:
     /*======================================================================*/
     friend const bool operator ==( const Vector3& lhs, const Vector3& rhs )
     {
-        return( kvs::Math::Equal( lhs[0], rhs[0] ) &&
-                kvs::Math::Equal( lhs[1], rhs[1] ) &&
-                kvs::Math::Equal( lhs[2], rhs[2] ) );
+        return( vismodule::Math::Equal( lhs[0], rhs[0] ) &&
+                vismodule::Math::Equal( lhs[1], rhs[1] ) &&
+                vismodule::Math::Equal( lhs[2], rhs[2] ) );
     }
 
     /*======================================================================*/
@@ -572,7 +572,7 @@ inline const Vector3<T> Vector3<T>::normalize( void ) const
 template<typename T>
 inline Vector3<T>& Vector3<T>::normalize( void )
 {
-//    KVS_ASSERT( !( kvs::Math::IsZero( this->length() ) ) );
+//    VIS_MODULE_ASSERT( !( vismodule::Math::IsZero( this->length() ) ) );
 
     const double length = this->length();
     const T normalize_factor = length > 0.0 ? static_cast<T>( 1.0 / length ) : T(0);
@@ -602,7 +602,7 @@ inline void Vector3<T>::print( void ) const
 template<typename T>
 inline const double Vector3<T>::length( void ) const
 {
-    return( kvs::Math::SquareRoot( this->length2() ) );
+    return( vismodule::Math::SquareRoot( this->length2() ) );
 }
 
 /*==========================================================================*/
@@ -676,7 +676,7 @@ inline const Vector3<T> Vector3<T>::cross( const Vector3& other ) const
 template<typename T>
 inline const T &Vector3<T>::operator []( const size_t index ) const
 {
-    KVS_ASSERT( index < 3 );
+    VIS_MODULE_ASSERT( index < 3 );
 
     return( m_elements[ index ] );
 }
@@ -693,7 +693,7 @@ inline const T &Vector3<T>::operator []( const size_t index ) const
 template<typename T>
 inline T &Vector3<T>::operator []( const size_t index )
 {
-    KVS_ASSERT( index < 3 );
+    VIS_MODULE_ASSERT( index < 3 );
 
     return( m_elements[ index ] );
 }
@@ -809,6 +809,6 @@ inline const Vector3<T> Vector3<T>::operator -( void ) const
     return( result );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__VECTOR_3_H_INCLUDE
+#endif // VIS_MODULE__VECTOR_3_H_INCLUDE

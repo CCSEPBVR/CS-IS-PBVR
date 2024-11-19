@@ -15,9 +15,9 @@
 #define PBVR__QUADRATIC_TETRAHEDRAL_CELL_H_INCLUDE
 
 #include "ClassName.h"
-#include <kvs/Type>
-#include <kvs/Vector4>
-#include <kvs/Matrix44>
+#include <vismodule/Type>
+#include <vismodule/Vector4>
+#include <vismodule/Matrix44>
 #include "UnstructuredVolumeObject.h"
 #include "CellBase.h"
 
@@ -33,7 +33,7 @@ namespace pbvr
 template <typename T>
 class QuadraticTetrahedralCell : public pbvr::CellBase<T>
 {
-    kvsClassName( pbvr::QuadraticTetrahedralCell );
+    visModuleClassName( pbvr::QuadraticTetrahedralCell );
 
 public:
 
@@ -54,21 +54,21 @@ public:
 
 public:
 
-    const kvs::Real32* interpolationFunctions( const kvs::Vector3f& point ) const;
+    const vismodule::Real32* interpolationFunctions( const vismodule::Vector3f& point ) const;
 
-    const kvs::Real32* differentialFunctions( const kvs::Vector3f& point ) const;
+    const vismodule::Real32* differentialFunctions( const vismodule::Vector3f& point ) const;
 
-//    const kvs::Real32** interpolationFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const;
-//    const kvs::Real32** differentialFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const;
-    void interpolationFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const;
-    void differentialFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const;
+//    const vismodule::Real32** interpolationFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const;
+//    const vismodule::Real32** differentialFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const;
+    void interpolationFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const;
+    void differentialFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const;
     void scalar_ary( float* scalar_array, const int loop_cnt ) const;
     void grad_ary( float* grad_array_x, float* grad_array_y, float* grad_array_z, const int loop_cnt ) const;
 
-    const kvs::Vector3f randomSampling() const;
-    const kvs::Vector3f randomSampling_MT( kvs::MersenneTwister* MT  ) const;
+    const vismodule::Vector3f randomSampling() const;
+    const vismodule::Vector3f randomSampling_MT( vismodule::MersenneTwister* MT  ) const;
 
-    const kvs::Real32 volume() const;
+    const vismodule::Real32 volume() const;
 
     void setLocalGravityPoint() const;
 };
@@ -125,7 +125,7 @@ inline void QuadraticTetrahedralCell<T>::scalar_ary( float*  scalar_array, const
     #pragma ivdep
     for ( size_t i = 0; i < loop_cnt ; i++ )
     {
-        //scalar_array[i]= static_cast<kvs::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
+        //scalar_array[i]= static_cast<vismodule::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
         scalar_array[i] =  BaseClass::m_interpolation_functions_array[ 0][i] * BaseClass::m_scalars_array[ 0][i] 
                         +  BaseClass::m_interpolation_functions_array[ 1][i] * BaseClass::m_scalars_array[ 1][i]
                         +  BaseClass::m_interpolation_functions_array[ 2][i] * BaseClass::m_scalars_array[ 2][i]
@@ -182,7 +182,7 @@ inline void QuadraticTetrahedralCell<T>::grad_ary(float* grad_array_x, float* gr
                               + ( BaseClass::m_scalars_array[ 8][i] * BaseClass::m_differential_functions_array[28][i]  )
                               + ( BaseClass::m_scalars_array[ 9][i] * BaseClass::m_differential_functions_array[29][i]  );
 
-        const kvs::Vector3f g( dsdx, dsdy, dsdz );
+        const vismodule::Vector3f g( dsdx, dsdy, dsdz );
 
         ///////////////////////// JacobiMatrix /////////////////////////
 
@@ -309,7 +309,7 @@ inline void QuadraticTetrahedralCell<T>::grad_ary(float* grad_array_x, float* gr
 
         float determinant = (float)det33;
 
-        kvs::Matrix33f J;
+        vismodule::Matrix33f J;
 /*
         J.set( ( dYdy * dZdz - dZdy * dYdz ), ( dYdx * dZdz - dZdx * dYdz ), ( dXdx * dYdz - dYdx * dXdz ),
                ( dXdy * dZdz - dZdy * dXdz ), ( dXdx * dZdz - dZdx * dXdz ), ( dXdx * dZdy - dZdx * dXdy ),
@@ -323,13 +323,13 @@ inline void QuadraticTetrahedralCell<T>::grad_ary(float* grad_array_x, float* gr
         const T det_inverse = static_cast<T>( 1.0 / det33 );
 
         J *= det_inverse;
-        const kvs::Vector3f G = J * g;
+        const vismodule::Vector3f G = J * g;
 
         /////////////////////////   inverse   /////////////////////////
 
-        grad_array_x[i] =  kvs::Math::IsZero( determinant ) ? 0.0f : G.x();
-        grad_array_y[i] =  kvs::Math::IsZero( determinant ) ? 0.0f : G.y();
-        grad_array_z[i] =  kvs::Math::IsZero( determinant ) ? 0.0f : G.z();
+        grad_array_x[i] =  vismodule::Math::IsZero( determinant ) ? 0.0f : G.x();
+        grad_array_y[i] =  vismodule::Math::IsZero( determinant ) ? 0.0f : G.y();
+        grad_array_z[i] =  vismodule::Math::IsZero( determinant ) ? 0.0f : G.z();
 
         /////////////////////////// gradient ///////////////////////////
 
@@ -347,7 +347,7 @@ inline void QuadraticTetrahedralCell<T>::grad_ary(float* grad_array_x, float* gr
  */
 /*==========================================================================*/
 template <typename T>
-inline const kvs::Real32* QuadraticTetrahedralCell<T>::interpolationFunctions( const kvs::Vector3f& point ) const
+inline const vismodule::Real32* QuadraticTetrahedralCell<T>::interpolationFunctions( const vismodule::Vector3f& point ) const
 {
     const float x = point[0];
     const float y = point[1];
@@ -378,7 +378,7 @@ inline const kvs::Real32* QuadraticTetrahedralCell<T>::interpolationFunctions( c
  */
 /*==========================================================================*/
 template <typename T>
-inline const kvs::Real32* QuadraticTetrahedralCell<T>::differentialFunctions( const kvs::Vector3f& point ) const
+inline const vismodule::Real32* QuadraticTetrahedralCell<T>::differentialFunctions( const vismodule::Vector3f& point ) const
 {
     const float x = point.x();
     const float y = point.y();
@@ -430,8 +430,8 @@ inline const kvs::Real32* QuadraticTetrahedralCell<T>::differentialFunctions( co
  */
 /*==========================================================================*/
 template <typename T>
-//inline const kvs::Real32** QuadraticTetrahedralCell<T>::interpolationFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const
-inline void QuadraticTetrahedralCell<T>::interpolationFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const
+//inline const vismodule::Real32** QuadraticTetrahedralCell<T>::interpolationFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const
+inline void QuadraticTetrahedralCell<T>::interpolationFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const
 {
     #pragma ivdep
     for( int i = 0; i < loop_cnt; i++)
@@ -475,8 +475,8 @@ inline void QuadraticTetrahedralCell<T>::interpolationFunctions_array( const kvs
  */
 /*==========================================================================*/
 template <typename T>
-//inline const kvs::Real32** QuadraticTetrahedralCell<T>::differentialFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const
-inline void QuadraticTetrahedralCell<T>::differentialFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const
+//inline const vismodule::Real32** QuadraticTetrahedralCell<T>::differentialFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const
+inline void QuadraticTetrahedralCell<T>::differentialFunctions_array( const vismodule::Vector3f* local_array, const int loop_cnt ) const
 {
     #pragma ivdep
     for( int i = 0; i < loop_cnt; i++)
@@ -568,7 +568,7 @@ inline void QuadraticTetrahedralCell<T>::differentialFunctions_array( const kvs:
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector3f QuadraticTetrahedralCell<T>::randomSampling() const
+const vismodule::Vector3f QuadraticTetrahedralCell<T>::randomSampling() const
 {
     // Generate a point in the local coordinate.
     /* const float s = BaseClass::randomNumber(); */
@@ -584,7 +584,7 @@ const kvs::Vector3f QuadraticTetrahedralCell<T>::randomSampling() const
         u = BaseClass::randomNumber();
     }
 
-    kvs::Vector3f point;
+    vismodule::Vector3f point;
     if ( s + t + u <= 1.0f )
     {
         point[0] = s;
@@ -627,7 +627,7 @@ const kvs::Vector3f QuadraticTetrahedralCell<T>::randomSampling() const
 }
 
 template <typename T>
-const kvs::Vector3f QuadraticTetrahedralCell<T>::randomSampling_MT(kvs::MersenneTwister* MT) const
+const vismodule::Vector3f QuadraticTetrahedralCell<T>::randomSampling_MT(vismodule::MersenneTwister* MT) const
 {
     // Generate a point in the local coordinate.
     /* const float s = BaseClass::randomNumber(); */
@@ -646,7 +646,7 @@ const kvs::Vector3f QuadraticTetrahedralCell<T>::randomSampling_MT(kvs::Mersenne
         u = (float)MT->rand();
 //    }
 
-    kvs::Vector3f point;
+    vismodule::Vector3f point;
     if ( s + t + u <= 1.0f )
     {
         point[0] = s;
@@ -695,20 +695,20 @@ const kvs::Vector3f QuadraticTetrahedralCell<T>::randomSampling_MT(kvs::Mersenne
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Real32 QuadraticTetrahedralCell<T>::volume() const
+inline const vismodule::Real32 QuadraticTetrahedralCell<T>::volume() const
 {
-    const kvs::Vector3f v0(   0,  0,  0 );
-    const kvs::Vector3f v1(   1,  0,  0 );
-    const kvs::Vector3f v2(   0,  0,  1 );
-    const kvs::Vector3f v3(   0,  1,  0 );
-    const kvs::Vector3f v4( 0.5,  0,  0 );
-    const kvs::Vector3f v5(   0,  0, 0.5 );
-    const kvs::Vector3f v6(   0, 0.5,  0 );
-    const kvs::Vector3f v7( 0.5,  0, 0.5 );
-    const kvs::Vector3f v8(   0, 0.5, 0.5 );
-    const kvs::Vector3f v9( 0.5, 0.5,  0 );
+    const vismodule::Vector3f v0(   0,  0,  0 );
+    const vismodule::Vector3f v1(   1,  0,  0 );
+    const vismodule::Vector3f v2(   0,  0,  1 );
+    const vismodule::Vector3f v3(   0,  1,  0 );
+    const vismodule::Vector3f v4( 0.5,  0,  0 );
+    const vismodule::Vector3f v5(   0,  0, 0.5 );
+    const vismodule::Vector3f v6(   0, 0.5,  0 );
+    const vismodule::Vector3f v7( 0.5,  0, 0.5 );
+    const vismodule::Vector3f v8(   0, 0.5, 0.5 );
+    const vismodule::Vector3f v9( 0.5, 0.5,  0 );
 
-    const kvs::Vector3f c[8] =
+    const vismodule::Vector3f c[8] =
     {
         ( v0 + v4 + v5 + v6 ) * 0.25,
         ( v4 + v1 + v7 + v9 ) * 0.25,
@@ -724,10 +724,10 @@ inline const kvs::Real32 QuadraticTetrahedralCell<T>::volume() const
     for ( size_t i = 0 ; i < 8 ; i++ )
     {
         BaseClass::setLocalPoint( c[i] );
-        const kvs::Matrix33f J = BaseClass::JacobiMatrix();
+        const vismodule::Matrix33f J = BaseClass::JacobiMatrix();
         const float metric_element = J.determinant();
 
-        sum_metric += kvs::Math::Abs<float>( metric_element );
+        sum_metric += vismodule::Math::Abs<float>( metric_element );
     }
 
     return sum_metric / ( 6.0f * 8.0f );
@@ -741,9 +741,9 @@ inline const kvs::Real32 QuadraticTetrahedralCell<T>::volume() const
 template <typename T>
 inline void QuadraticTetrahedralCell<T>::setLocalGravityPoint() const
 {
-    this->setLocalPoint( kvs::Vector3f( 0.25, 0.25, 0.25 ) );
+    this->setLocalPoint( vismodule::Vector3f( 0.25, 0.25, 0.25 ) );
 }
 
 } // end of namespace pbvr
 
-#endif // KVS__QUADRATIC_TETRAHEDRAL_CELL_H_INCLUDE
+#endif // VIS_MODULE__QUADRATIC_TETRAHEDRAL_CELL_H_INCLUDE

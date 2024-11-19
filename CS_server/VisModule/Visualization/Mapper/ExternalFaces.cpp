@@ -12,12 +12,12 @@
  */
 /*****************************************************************************/
 #include "ExternalFaces.h"
-#include <kvs/VolumeObjectBase>
-#include <kvs/StructuredVolumeObject>
-#include <kvs/UnstructuredVolumeObject>
-#include <kvs/TransferFunction>
-#include <kvs/IgnoreUnusedVariable>
-#include <kvs/Timer>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/TransferFunction>
+#include <vismodule/IgnoreUnusedVariable>
+#include <vismodule/Timer>
 #include <map>
 
 
@@ -39,41 +39,41 @@ namespace
 template <const size_t N, typename T>
 inline void GetColorIndices(
     const T* value,
-    const kvs::Real64 min_value,
-    const kvs::Real64 max_value,
+    const vismodule::Real64 min_value,
+    const vismodule::Real64 max_value,
     const size_t veclen,
     const size_t colormap_resolution,
-    const kvs::UInt32 node_index[N],
-    kvs::UInt32 (*color_index)[N] )
+    const vismodule::UInt32 node_index[N],
+    vismodule::UInt32 (*color_index)[N] )
 {
-    const kvs::Real64 normalize =
-        static_cast<kvs::Real64>( colormap_resolution - 1 ) / ( max_value - min_value );
+    const vismodule::Real64 normalize =
+        static_cast<vismodule::Real64>( colormap_resolution - 1 ) / ( max_value - min_value );
 
     // Scalar data.
     if ( veclen == 1 )
     {
         for ( size_t i = 0; i < N; i++ )
         {
-            (*color_index)[i] = kvs::UInt32( normalize * ( kvs::Real64( value[ node_index[i] ] ) - min_value ) );
+            (*color_index)[i] = vismodule::UInt32( normalize * ( vismodule::Real64( value[ node_index[i] ] ) - min_value ) );
         }
     }
     // Vector data.
     else
     {
         // In case of the vector component, the magnitude value is calculated.
-        kvs::Real64 magnitude[N]; memset( magnitude, 0, sizeof( kvs::Real64 ) * N );
+        vismodule::Real64 magnitude[N]; memset( magnitude, 0, sizeof( vismodule::Real64 ) * N );
         for ( size_t i = 0; i < veclen; ++i )
         {
             for ( size_t j = 0; j < N; j++ )
             {
-                magnitude[j] += kvs::Math::Square( kvs::Real64( value[ veclen * node_index[j] + i ] ) );
+                magnitude[j] += vismodule::Math::Square( vismodule::Real64( value[ veclen * node_index[j] + i ] ) );
             }
         }
 
         for ( size_t i = 0; i < N; i++ )
         {
-            magnitude[i] = kvs::Math::SquareRoot( magnitude[i] );
-            (*color_index)[i] = kvs::UInt32( normalize * ( magnitude[i] - min_value ) );
+            magnitude[i] = vismodule::Math::SquareRoot( magnitude[i] );
+            (*color_index)[i] = vismodule::UInt32( normalize * ( magnitude[i] - min_value ) );
         }
     }
 }
@@ -87,17 +87,17 @@ class Face
 {
 private:
 
-    kvs::UInt32 m_id[3]; ///< vertex IDs
+    vismodule::UInt32 m_id[3]; ///< vertex IDs
 
 public:
 
-    Face( const kvs::UInt32 id0, const kvs::UInt32 id1, const kvs::UInt32 id2 );
+    Face( const vismodule::UInt32 id0, const vismodule::UInt32 id1, const vismodule::UInt32 id2 );
 
 public:
 
-    const kvs::UInt32 id( const size_t index ) const;
+    const vismodule::UInt32 id( const size_t index ) const;
 
-    void set( const kvs::UInt32 id0, const kvs::UInt32 id1, const kvs::UInt32 id2 );
+    void set( const vismodule::UInt32 id0, const vismodule::UInt32 id1, const vismodule::UInt32 id2 );
 
     friend const bool operator == ( const Face& f0, const Face& f1 );
 };
@@ -111,7 +111,7 @@ public:
  *  @return <ReturnValue>
  */
 /*===========================================================================*/
-inline Face::Face( const kvs::UInt32 id0, const kvs::UInt32 id1, const kvs::UInt32 id2 )
+inline Face::Face( const vismodule::UInt32 id0, const vismodule::UInt32 id1, const vismodule::UInt32 id2 )
 {
     this->set( id0, id1, id2 );
 }
@@ -123,7 +123,7 @@ inline Face::Face( const kvs::UInt32 id0, const kvs::UInt32 id1, const kvs::UInt
  *  @return vertex ID
  */
 /*===========================================================================*/
-inline const kvs::UInt32 Face::id( const size_t index ) const
+inline const vismodule::UInt32 Face::id( const size_t index ) const
 {
     return( m_id[ index ] );
 }
@@ -136,7 +136,7 @@ inline const kvs::UInt32 Face::id( const size_t index ) const
  *  @param  id2 [in] ID 2
  */
 /*===========================================================================*/
-inline void Face::set( const kvs::UInt32 id0, const kvs::UInt32 id1, const kvs::UInt32 id2 )
+inline void Face::set( const vismodule::UInt32 id0, const vismodule::UInt32 id1, const vismodule::UInt32 id2 )
 {
     m_id[0] = id0;
     m_id[1] = id1;
@@ -175,7 +175,7 @@ class FaceMap
 {
 public:
 
-    typedef kvs::UInt32 Key;
+    typedef vismodule::UInt32 Key;
     typedef Face Value;
     typedef std::multimap<Key,Value> Bucket;
 
@@ -192,11 +192,11 @@ public:
 
     const Bucket& bucket( void ) const;
 
-    void insert( const kvs::UInt32 id0, const kvs::UInt32 id1, const kvs::UInt32 id2 );
+    void insert( const vismodule::UInt32 id0, const vismodule::UInt32 id1, const vismodule::UInt32 id2 );
 
 private:
 
-    const Key get_key( const kvs::UInt32 id0, const kvs::UInt32 id1, const kvs::UInt32 id2 );
+    const Key get_key( const vismodule::UInt32 id0, const vismodule::UInt32 id1, const vismodule::UInt32 id2 );
 };
 
 /*===========================================================================*/
@@ -229,7 +229,7 @@ inline const FaceMap::Bucket& FaceMap::bucket( void ) const
  *  @param  id2 [in] ID 2
  */
 /*===========================================================================*/
-inline void FaceMap::insert( const kvs::UInt32 id0, const kvs::UInt32 id1, const kvs::UInt32 id2 )
+inline void FaceMap::insert( const vismodule::UInt32 id0, const vismodule::UInt32 id1, const vismodule::UInt32 id2 )
 {
     const Key key( this->get_key( id0, id1, id2 ) );
     const Value value( id0, id1, id2 );
@@ -263,10 +263,10 @@ inline void FaceMap::insert( const kvs::UInt32 id0, const kvs::UInt32 id1, const
  *  @return key
  */
 /*===========================================================================*/
-inline const FaceMap::Key FaceMap::get_key( const kvs::UInt32 id0, const kvs::UInt32 id1, const kvs::UInt32 id2 )
+inline const FaceMap::Key FaceMap::get_key( const vismodule::UInt32 id0, const vismodule::UInt32 id1, const vismodule::UInt32 id2 )
 {
-    const kvs::UInt32 sum = id0 + id1 + id2;
-    return( sum % kvs::UInt32( m_nvertices ) );
+    const vismodule::UInt32 sum = id0 + id1 + id2;
+    return( sum % vismodule::UInt32( m_nvertices ) );
 }
 
 /*===========================================================================*/
@@ -277,18 +277,18 @@ inline const FaceMap::Key FaceMap::get_key( const kvs::UInt32 id0, const kvs::UI
  */
 /*===========================================================================*/
 inline void CreateTetrahedraFaceMap(
-    const kvs::UnstructuredVolumeObject* volume,
+    const vismodule::UnstructuredVolumeObject* volume,
     FaceMap* face_map )
 {
-    const kvs::UInt32* connections = volume->connections().pointer();
+    const vismodule::UInt32* connections = volume->connections().pointer();
     const size_t ncells = volume->ncells();
     for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         // Local vertices of the tetrahedral cell.
-        const kvs::UInt32 v0 = connections[ connection_index     ];
-        const kvs::UInt32 v1 = connections[ connection_index + 1 ];
-        const kvs::UInt32 v2 = connections[ connection_index + 2 ];
-        const kvs::UInt32 v3 = connections[ connection_index + 3 ];
+        const vismodule::UInt32 v0 = connections[ connection_index     ];
+        const vismodule::UInt32 v1 = connections[ connection_index + 1 ];
+        const vismodule::UInt32 v2 = connections[ connection_index + 2 ];
+        const vismodule::UInt32 v3 = connections[ connection_index + 3 ];
         connection_index += 4;
 
         // Local faces of the cell (4 triangle meshes).
@@ -307,24 +307,24 @@ inline void CreateTetrahedraFaceMap(
  */
 /*===========================================================================*/
 inline void CreateQuadraticTetrahedraFaceMap(
-    const kvs::UnstructuredVolumeObject* volume,
+    const vismodule::UnstructuredVolumeObject* volume,
     FaceMap* face_map )
 {
-    const kvs::UInt32* connections = volume->connections().pointer();
+    const vismodule::UInt32* connections = volume->connections().pointer();
     const size_t ncells = volume->ncells();
     for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         // Local vertices of the quadratic tetrahedral cell.
-        const kvs::UInt32 v0 = connections[ connection_index     ];
-        const kvs::UInt32 v1 = connections[ connection_index + 1 ];
-        const kvs::UInt32 v2 = connections[ connection_index + 2 ];
-        const kvs::UInt32 v3 = connections[ connection_index + 3 ];
-        const kvs::UInt32 v4 = connections[ connection_index + 4 ];
-        const kvs::UInt32 v5 = connections[ connection_index + 5 ];
-        const kvs::UInt32 v6 = connections[ connection_index + 6 ];
-        const kvs::UInt32 v7 = connections[ connection_index + 7 ];
-        const kvs::UInt32 v8 = connections[ connection_index + 8 ];
-        const kvs::UInt32 v9 = connections[ connection_index + 9 ];
+        const vismodule::UInt32 v0 = connections[ connection_index     ];
+        const vismodule::UInt32 v1 = connections[ connection_index + 1 ];
+        const vismodule::UInt32 v2 = connections[ connection_index + 2 ];
+        const vismodule::UInt32 v3 = connections[ connection_index + 3 ];
+        const vismodule::UInt32 v4 = connections[ connection_index + 4 ];
+        const vismodule::UInt32 v5 = connections[ connection_index + 5 ];
+        const vismodule::UInt32 v6 = connections[ connection_index + 6 ];
+        const vismodule::UInt32 v7 = connections[ connection_index + 7 ];
+        const vismodule::UInt32 v8 = connections[ connection_index + 8 ];
+        const vismodule::UInt32 v9 = connections[ connection_index + 9 ];
         connection_index += 10;
 
         // Local faces of the cell (16 triangle meshes).
@@ -358,22 +358,22 @@ inline void CreateQuadraticTetrahedraFaceMap(
  */
 /*===========================================================================*/
 inline void CreateHexahedraFaceMap(
-    const kvs::UnstructuredVolumeObject* volume,
+    const vismodule::UnstructuredVolumeObject* volume,
     FaceMap* face_map )
 {
-    const kvs::UInt32* connections = volume->connections().pointer();
+    const vismodule::UInt32* connections = volume->connections().pointer();
     const size_t ncells = volume->ncells();
     for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         // Local vertices of the quadratic tetrahedral cell.
-        const kvs::UInt32 v0 = connections[ connection_index     ];
-        const kvs::UInt32 v1 = connections[ connection_index + 1 ];
-        const kvs::UInt32 v2 = connections[ connection_index + 2 ];
-        const kvs::UInt32 v3 = connections[ connection_index + 3 ];
-        const kvs::UInt32 v4 = connections[ connection_index + 4 ];
-        const kvs::UInt32 v5 = connections[ connection_index + 5 ];
-        const kvs::UInt32 v6 = connections[ connection_index + 6 ];
-        const kvs::UInt32 v7 = connections[ connection_index + 7 ];
+        const vismodule::UInt32 v0 = connections[ connection_index     ];
+        const vismodule::UInt32 v1 = connections[ connection_index + 1 ];
+        const vismodule::UInt32 v2 = connections[ connection_index + 2 ];
+        const vismodule::UInt32 v3 = connections[ connection_index + 3 ];
+        const vismodule::UInt32 v4 = connections[ connection_index + 4 ];
+        const vismodule::UInt32 v5 = connections[ connection_index + 5 ];
+        const vismodule::UInt32 v6 = connections[ connection_index + 6 ];
+        const vismodule::UInt32 v7 = connections[ connection_index + 7 ];
         connection_index += 8;
 
         // Local faces of the cell (12 triangle meshes).
@@ -405,34 +405,34 @@ inline void CreateHexahedraFaceMap(
  */
 /*===========================================================================*/
 inline void CreateQuadraticHexahedraFaceMap(
-    const kvs::UnstructuredVolumeObject* volume,
+    const vismodule::UnstructuredVolumeObject* volume,
     FaceMap* face_map )
 {
-    const kvs::UInt32* connections = volume->connections().pointer();
+    const vismodule::UInt32* connections = volume->connections().pointer();
     const size_t ncells = volume->ncells();
     for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         // Local vertices of the quadratic tetrahedral cell.
-        const kvs::UInt32 v0  = connections[ connection_index      ];
-        const kvs::UInt32 v1  = connections[ connection_index +  1 ];
-        const kvs::UInt32 v2  = connections[ connection_index +  2 ];
-        const kvs::UInt32 v3  = connections[ connection_index +  3 ];
-        const kvs::UInt32 v4  = connections[ connection_index +  4 ];
-        const kvs::UInt32 v5  = connections[ connection_index +  5 ];
-        const kvs::UInt32 v6  = connections[ connection_index +  6 ];
-        const kvs::UInt32 v7  = connections[ connection_index +  7 ];
-        const kvs::UInt32 v8  = connections[ connection_index +  8 ];
-        const kvs::UInt32 v9  = connections[ connection_index +  9 ];
-        const kvs::UInt32 v10 = connections[ connection_index + 10 ];
-        const kvs::UInt32 v11 = connections[ connection_index + 11 ];
-        const kvs::UInt32 v12 = connections[ connection_index + 12 ];
-        const kvs::UInt32 v13 = connections[ connection_index + 13 ];
-        const kvs::UInt32 v14 = connections[ connection_index + 14 ];
-        const kvs::UInt32 v15 = connections[ connection_index + 15 ];
-        const kvs::UInt32 v16 = connections[ connection_index + 16 ];
-        const kvs::UInt32 v17 = connections[ connection_index + 17 ];
-        const kvs::UInt32 v18 = connections[ connection_index + 18 ];
-        const kvs::UInt32 v19 = connections[ connection_index + 19 ];
+        const vismodule::UInt32 v0  = connections[ connection_index      ];
+        const vismodule::UInt32 v1  = connections[ connection_index +  1 ];
+        const vismodule::UInt32 v2  = connections[ connection_index +  2 ];
+        const vismodule::UInt32 v3  = connections[ connection_index +  3 ];
+        const vismodule::UInt32 v4  = connections[ connection_index +  4 ];
+        const vismodule::UInt32 v5  = connections[ connection_index +  5 ];
+        const vismodule::UInt32 v6  = connections[ connection_index +  6 ];
+        const vismodule::UInt32 v7  = connections[ connection_index +  7 ];
+        const vismodule::UInt32 v8  = connections[ connection_index +  8 ];
+        const vismodule::UInt32 v9  = connections[ connection_index +  9 ];
+        const vismodule::UInt32 v10 = connections[ connection_index + 10 ];
+        const vismodule::UInt32 v11 = connections[ connection_index + 11 ];
+        const vismodule::UInt32 v12 = connections[ connection_index + 12 ];
+        const vismodule::UInt32 v13 = connections[ connection_index + 13 ];
+        const vismodule::UInt32 v14 = connections[ connection_index + 14 ];
+        const vismodule::UInt32 v15 = connections[ connection_index + 15 ];
+        const vismodule::UInt32 v16 = connections[ connection_index + 16 ];
+        const vismodule::UInt32 v17 = connections[ connection_index + 17 ];
+        const vismodule::UInt32 v18 = connections[ connection_index + 18 ];
+        const vismodule::UInt32 v19 = connections[ connection_index + 19 ];
         connection_index += 20;
 
         // Local faces of the cell (36 triangle meshes).
@@ -493,30 +493,30 @@ inline void CreateQuadraticHexahedraFaceMap(
 /*===========================================================================*/
 template <typename T>
 void CalculateFaces(
-    const kvs::UnstructuredVolumeObject* volume,
-    const kvs::ColorMap cmap,
+    const vismodule::UnstructuredVolumeObject* volume,
+    const vismodule::ColorMap cmap,
     const FaceMap& face_map,
-    kvs::ValueArray<kvs::Real32>* coords,
-    kvs::ValueArray<kvs::UInt8>* colors,
-    kvs::ValueArray<kvs::Real32>* normals )
+    vismodule::ValueArray<vismodule::Real32>* coords,
+    vismodule::ValueArray<vismodule::UInt8>* colors,
+    vismodule::ValueArray<vismodule::Real32>* normals )
 {
     // Parameters of the volume data.
     if ( !volume->hasMinMaxValues() ) { volume->updateMinMaxValues(); }
-    const kvs::Real64 min_value = volume->minValue();
-    const kvs::Real64 max_value = volume->maxValue();
+    const vismodule::Real64 min_value = volume->minValue();
+    const vismodule::Real64 max_value = volume->maxValue();
     const size_t veclen = volume->veclen();
     const T* value = reinterpret_cast<const T*>( volume->values().pointer() );
 
     const size_t nfaces = face_map.bucket().size();
     const size_t nvertices = nfaces * 3;
-    const kvs::Real32* volume_coord = volume->coords().pointer();
+    const vismodule::Real32* volume_coord = volume->coords().pointer();
 
-    kvs::Real32* coord = coords->allocate( nvertices * 3 );
-    kvs::UInt8* color = colors->allocate( nvertices * 3 );
-    kvs::Real32* normal = normals->allocate( nfaces * 3 );
+    vismodule::Real32* coord = coords->allocate( nvertices * 3 );
+    vismodule::UInt8* color = colors->allocate( nvertices * 3 );
+    vismodule::Real32* normal = normals->allocate( nfaces * 3 );
 
-    kvs::UInt32 node_index[3] = { 0, 0, 0 };
-    kvs::UInt32 color_level[3] = { 0, 0, 0 };
+    vismodule::UInt32 node_index[3] = { 0, 0, 0 };
+    vismodule::UInt32 color_level[3] = { 0, 0, 0 };
 
     FaceMap::Bucket::const_iterator f = face_map.bucket().begin();
     FaceMap::Bucket::const_iterator last = face_map.bucket().end();
@@ -526,9 +526,9 @@ void CalculateFaces(
         node_index[1] = f->second.id(1);
         node_index[2] = f->second.id(2);
 
-        const kvs::Vector3f v0( volume_coord + 3 * node_index[0] );
-        const kvs::Vector3f v1( volume_coord + 3 * node_index[1] );
-        const kvs::Vector3f v2( volume_coord + 3 * node_index[2] );
+        const vismodule::Vector3f v0( volume_coord + 3 * node_index[0] );
+        const vismodule::Vector3f v1( volume_coord + 3 * node_index[1] );
+        const vismodule::Vector3f v2( volume_coord + 3 * node_index[2] );
         // v0
         *( coord++ ) = v0.x();
         *( coord++ ) = v0.y();
@@ -556,7 +556,7 @@ void CalculateFaces(
         *( color++ ) = cmap[ color_level[2] ].green();
         *( color++ ) = cmap[ color_level[2] ].blue();
 
-        const kvs::Vector3f n( ( v1 - v0 ).cross( v2 - v0 ) );
+        const vismodule::Vector3f n( ( v1 - v0 ).cross( v2 - v0 ) );
         // n0
         *( normal++ ) = n.x();
         *( normal++ ) = n.y();
@@ -569,7 +569,7 @@ void CalculateFaces(
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -578,8 +578,8 @@ namespace kvs
  */
 /*===========================================================================*/
 ExternalFaces::ExternalFaces( void ):
-    kvs::MapperBase(),
-    kvs::PolygonObject()
+    vismodule::MapperBase(),
+    vismodule::PolygonObject()
 {
 }
 
@@ -589,9 +589,9 @@ ExternalFaces::ExternalFaces( void ):
  *  @param  volume [in] pointer to the volume object
  */
 /*===========================================================================*/
-ExternalFaces::ExternalFaces( const kvs::VolumeObjectBase* volume ):
-    kvs::MapperBase(),
-    kvs::PolygonObject()
+ExternalFaces::ExternalFaces( const vismodule::VolumeObjectBase* volume ):
+    vismodule::MapperBase(),
+    vismodule::PolygonObject()
 {
     this->exec( volume );
 }
@@ -604,10 +604,10 @@ ExternalFaces::ExternalFaces( const kvs::VolumeObjectBase* volume ):
  */
 /*===========================================================================*/
 ExternalFaces::ExternalFaces(
-    const kvs::VolumeObjectBase* volume,
-    const kvs::TransferFunction& transfer_function ):
-    kvs::MapperBase( transfer_function ),
-    kvs::PolygonObject()
+    const vismodule::VolumeObjectBase* volume,
+    const vismodule::TransferFunction& transfer_function ):
+    vismodule::MapperBase( transfer_function ),
+    vismodule::PolygonObject()
 {
     this->exec( volume );
 }
@@ -628,31 +628,31 @@ ExternalFaces::~ExternalFaces( void )
  *  @return pointer of the line object
  */
 /*===========================================================================*/
-ExternalFaces::SuperClass* ExternalFaces::exec( const kvs::ObjectBase* object )
+ExternalFaces::SuperClass* ExternalFaces::exec( const vismodule::ObjectBase* object )
 {
     if ( !object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is NULL.");
+        visModuleMessageError("Input object is NULL.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase* volume = kvs::VolumeObjectBase::DownCast( object );
+    const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
     if ( !volume )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Input object is not volume dat.");
+        visModuleMessageError("Input object is not volume dat.");
         return( NULL );
     }
 
-    const kvs::VolumeObjectBase::VolumeType type = volume->volumeType();
-    if ( type == kvs::VolumeObjectBase::Structured )
+    const vismodule::VolumeObjectBase::VolumeType type = volume->volumeType();
+    if ( type == vismodule::VolumeObjectBase::Structured )
     {
-        this->mapping( kvs::StructuredVolumeObject::DownCast( volume ) );
+        this->mapping( vismodule::StructuredVolumeObject::DownCast( volume ) );
     }
-    else // type == kvs::VolumeObjectBase::Unstructured
+    else // type == vismodule::VolumeObjectBase::Unstructured
     {
-        this->mapping( kvs::UnstructuredVolumeObject::DownCast( volume ) );
+        this->mapping( vismodule::UnstructuredVolumeObject::DownCast( volume ) );
     }
 
     return( this );
@@ -664,7 +664,7 @@ ExternalFaces::SuperClass* ExternalFaces::exec( const kvs::ObjectBase* object )
  *  @param  volume [in] pointer to the strctured volume object
  */
 /*===========================================================================*/
-void ExternalFaces::mapping( const kvs::StructuredVolumeObject* volume )
+void ExternalFaces::mapping( const vismodule::StructuredVolumeObject* volume )
 {
     BaseClass::attach_volume( volume );
     BaseClass::set_range( volume );
@@ -673,20 +673,20 @@ void ExternalFaces::mapping( const kvs::StructuredVolumeObject* volume )
     this->calculate_coords( volume );
 
     const std::type_info& type = volume->values().typeInfo()->type();
-    if (      type == typeid( kvs::Int8   ) ) { this->calculate_colors<kvs::Int8  >( volume ); }
-    else if ( type == typeid( kvs::Int16  ) ) { this->calculate_colors<kvs::Int16 >( volume ); }
-    else if ( type == typeid( kvs::Int32  ) ) { this->calculate_colors<kvs::Int32 >( volume ); }
-    else if ( type == typeid( kvs::Int64  ) ) { this->calculate_colors<kvs::Int64 >( volume ); }
-    else if ( type == typeid( kvs::UInt8  ) ) { this->calculate_colors<kvs::UInt8 >( volume ); }
-    else if ( type == typeid( kvs::UInt16 ) ) { this->calculate_colors<kvs::UInt16>( volume ); }
-    else if ( type == typeid( kvs::UInt32 ) ) { this->calculate_colors<kvs::UInt32>( volume ); }
-    else if ( type == typeid( kvs::UInt64 ) ) { this->calculate_colors<kvs::UInt64>( volume ); }
-    else if ( type == typeid( kvs::Real32 ) ) { this->calculate_colors<kvs::Real32>( volume ); }
-    else if ( type == typeid( kvs::Real64 ) ) { this->calculate_colors<kvs::Real64>( volume ); }
+    if (      type == typeid( vismodule::Int8   ) ) { this->calculate_colors<vismodule::Int8  >( volume ); }
+    else if ( type == typeid( vismodule::Int16  ) ) { this->calculate_colors<vismodule::Int16 >( volume ); }
+    else if ( type == typeid( vismodule::Int32  ) ) { this->calculate_colors<vismodule::Int32 >( volume ); }
+    else if ( type == typeid( vismodule::Int64  ) ) { this->calculate_colors<vismodule::Int64 >( volume ); }
+    else if ( type == typeid( vismodule::UInt8  ) ) { this->calculate_colors<vismodule::UInt8 >( volume ); }
+    else if ( type == typeid( vismodule::UInt16 ) ) { this->calculate_colors<vismodule::UInt16>( volume ); }
+    else if ( type == typeid( vismodule::UInt32 ) ) { this->calculate_colors<vismodule::UInt32>( volume ); }
+    else if ( type == typeid( vismodule::UInt64 ) ) { this->calculate_colors<vismodule::UInt64>( volume ); }
+    else if ( type == typeid( vismodule::Real32 ) ) { this->calculate_colors<vismodule::Real32>( volume ); }
+    else if ( type == typeid( vismodule::Real64 ) ) { this->calculate_colors<vismodule::Real64>( volume ); }
 
-    SuperClass::setPolygonType( kvs::PolygonObject::Quadrangle );
-    SuperClass::setColorType( kvs::PolygonObject::VertexColor );
-    SuperClass::setNormalType( kvs::PolygonObject::PolygonNormal );
+    SuperClass::setPolygonType( vismodule::PolygonObject::Quadrangle );
+    SuperClass::setColorType( vismodule::PolygonObject::VertexColor );
+    SuperClass::setNormalType( vismodule::PolygonObject::PolygonNormal );
     if ( SuperClass::nopacities() == 0 ) SuperClass::setOpacity( 255 );
 }
 
@@ -696,29 +696,29 @@ void ExternalFaces::mapping( const kvs::StructuredVolumeObject* volume )
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExternalFaces::calculate_coords( const kvs::StructuredVolumeObject* volume )
+void ExternalFaces::calculate_coords( const vismodule::StructuredVolumeObject* volume )
 {
-    const kvs::VolumeObjectBase::GridType type = volume->gridType();
-    if ( type == kvs::VolumeObjectBase::Uniform )
+    const vismodule::VolumeObjectBase::GridType type = volume->gridType();
+    if ( type == vismodule::VolumeObjectBase::Uniform )
     {
         this->calculate_uniform_coords( volume );
     }
-    else if ( type == kvs::VolumeObjectBase::Rectilinear )
+    else if ( type == vismodule::VolumeObjectBase::Rectilinear )
     {
         this->calculate_rectilinear_coords( volume );
     }
-    else if ( type == kvs::VolumeObjectBase::Curvilinear )
+    else if ( type == vismodule::VolumeObjectBase::Curvilinear )
     {
         this->calculate_curvilinear_coords( volume );
     }
-    else if ( type == kvs::VolumeObjectBase::Irregular )
+    else if ( type == vismodule::VolumeObjectBase::Irregular )
     {
         this->calculate_irregular_coords( volume );
     }
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Not supported grid type.");
+        visModuleMessageError("Not supported grid type.");
     }
 }
 
@@ -728,12 +728,12 @@ void ExternalFaces::calculate_coords( const kvs::StructuredVolumeObject* volume 
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExternalFaces::calculate_uniform_coords( const kvs::StructuredVolumeObject* volume )
+void ExternalFaces::calculate_uniform_coords( const vismodule::StructuredVolumeObject* volume )
 {
-    const kvs::Vector3ui resolution( volume->resolution() );
-    const kvs::Vector3f  volume_size( volume->maxObjectCoord() - volume->minObjectCoord() );
-    const kvs::Vector3ui ngrids( resolution - kvs::Vector3ui( 1, 1, 1 ) );
-    const kvs::Vector3f  grid_size(
+    const vismodule::Vector3ui resolution( volume->resolution() );
+    const vismodule::Vector3f  volume_size( volume->maxObjectCoord() - volume->minObjectCoord() );
+    const vismodule::Vector3ui ngrids( resolution - vismodule::Vector3ui( 1, 1, 1 ) );
+    const vismodule::Vector3f  grid_size(
         volume_size.x() / static_cast<float>( ngrids.x() ),
         volume_size.y() / static_cast<float>( ngrids.y() ),
         volume_size.z() / static_cast<float>( ngrids.z() ) );
@@ -744,16 +744,16 @@ void ExternalFaces::calculate_uniform_coords( const kvs::StructuredVolumeObject*
         2 * ngrids.z() * ngrids.x();
     const size_t nexternal_vertices = nexternal_faces * 4;
 
-    kvs::ValueArray<kvs::Real32> coords( 3 * nexternal_vertices );
-    kvs::Real32* coord = coords.pointer();
+    vismodule::ValueArray<vismodule::Real32> coords( 3 * nexternal_vertices );
+    vismodule::Real32* coord = coords.pointer();
 
-    kvs::ValueArray<kvs::Real32> normals( 3 * nexternal_faces );
-    kvs::Real32* normal = normals.pointer();
+    vismodule::ValueArray<vismodule::Real32> normals( 3 * nexternal_faces );
+    vismodule::Real32* normal = normals.pointer();
 
     // XY (Z=0) plane.
     {
         const float z = 0.0f;
-        const kvs::Vector3f n( 0.0f, 0.0f, -1.0f );
+        const vismodule::Vector3f n( 0.0f, 0.0f, -1.0f );
         for ( size_t j = 0; j < ngrids.y(); j++ )
         {
             const float y = grid_size.y() * static_cast<float>( j );
@@ -787,7 +787,7 @@ void ExternalFaces::calculate_uniform_coords( const kvs::StructuredVolumeObject*
     // XY (Z=ngrids.z()) plane.
     {
         const float z = grid_size.z() * static_cast<float>( ngrids.z() );
-        const kvs::Vector3f n( 0.0f, 0.0f, 1.0f );
+        const vismodule::Vector3f n( 0.0f, 0.0f, 1.0f );
         for ( size_t j = 0; j < ngrids.y(); j++ )
         {
             const float y = grid_size.y() * static_cast<float>( j );
@@ -821,7 +821,7 @@ void ExternalFaces::calculate_uniform_coords( const kvs::StructuredVolumeObject*
     // YZ (X=0) plane.
     {
         const float x = 0.0f;
-        const kvs::Vector3f n( -1.0f, 0.0f, 0.0f );
+        const vismodule::Vector3f n( -1.0f, 0.0f, 0.0f );
         for ( size_t j = 0; j < ngrids.y(); j++ )
         {
             const float y = grid_size.y() * static_cast<float>( j );
@@ -855,7 +855,7 @@ void ExternalFaces::calculate_uniform_coords( const kvs::StructuredVolumeObject*
     // YZ (X=ngrids.x()) plane.
     {
         const float x = grid_size.y() * static_cast<float>( ngrids.x() );
-        const kvs::Vector3f n( 1.0f, 0.0f, 0.0f );
+        const vismodule::Vector3f n( 1.0f, 0.0f, 0.0f );
         for ( size_t j = 0; j < ngrids.y(); j++ )
         {
             const float y = grid_size.y() * static_cast<float>( j );
@@ -889,7 +889,7 @@ void ExternalFaces::calculate_uniform_coords( const kvs::StructuredVolumeObject*
     // XZ (Y=0) plane.
     {
         const float y = 0.0f;
-        const kvs::Vector3f n( 0.0f, -1.0f, 0.0f );
+        const vismodule::Vector3f n( 0.0f, -1.0f, 0.0f );
         for ( size_t k = 0; k < ngrids.z(); k++ )
         {
             const float z = grid_size.z() * static_cast<float>( k );
@@ -923,7 +923,7 @@ void ExternalFaces::calculate_uniform_coords( const kvs::StructuredVolumeObject*
     // XZ (Y=ngrids.y()) plane.
     {
         const float y = grid_size.y() * static_cast<float>( ngrids.y() );
-        const kvs::Vector3f n( 0.0f, 1.0f, 0.0f );
+        const vismodule::Vector3f n( 0.0f, 1.0f, 0.0f );
         for ( size_t k = 0; k < ngrids.z(); k++ )
         {
             const float z = grid_size.z() * static_cast<float>( k );
@@ -964,12 +964,12 @@ void ExternalFaces::calculate_uniform_coords( const kvs::StructuredVolumeObject*
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExternalFaces::calculate_rectilinear_coords( const kvs::StructuredVolumeObject* volume )
+void ExternalFaces::calculate_rectilinear_coords( const vismodule::StructuredVolumeObject* volume )
 {
-    kvs::IgnoreUnusedVariable( volume );
+    vismodule::IgnoreUnusedVariable( volume );
 
     BaseClass::m_is_success = false;
-    kvsMessageError("Rectilinear volume has not yet support.");
+    visModuleMessageError("Rectilinear volume has not yet support.");
 }
 
 /*===========================================================================*/
@@ -978,12 +978,12 @@ void ExternalFaces::calculate_rectilinear_coords( const kvs::StructuredVolumeObj
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExternalFaces::calculate_curvilinear_coords( const kvs::StructuredVolumeObject* volume )
+void ExternalFaces::calculate_curvilinear_coords( const vismodule::StructuredVolumeObject* volume )
 {
-    kvs::IgnoreUnusedVariable( volume );
+    vismodule::IgnoreUnusedVariable( volume );
 
     BaseClass::m_is_success = false;
-    kvsMessageError("Curvilinear volume has not yet support.");
+    visModuleMessageError("Curvilinear volume has not yet support.");
 }
 
 /*===========================================================================*/
@@ -992,12 +992,12 @@ void ExternalFaces::calculate_curvilinear_coords( const kvs::StructuredVolumeObj
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExternalFaces::calculate_irregular_coords( const kvs::StructuredVolumeObject* volume )
+void ExternalFaces::calculate_irregular_coords( const vismodule::StructuredVolumeObject* volume )
 {
-    kvs::IgnoreUnusedVariable( volume );
+    vismodule::IgnoreUnusedVariable( volume );
 
     BaseClass::m_is_success = false;
-    kvsMessageError("Irregular volume has not yet support.");
+    visModuleMessageError("Irregular volume has not yet support.");
 }
 
 /*===========================================================================*/
@@ -1007,17 +1007,17 @@ void ExternalFaces::calculate_irregular_coords( const kvs::StructuredVolumeObjec
  */
 /*===========================================================================*/
 template <typename T>
-void ExternalFaces::calculate_colors( const kvs::StructuredVolumeObject* volume )
+void ExternalFaces::calculate_colors( const vismodule::StructuredVolumeObject* volume )
 {
     // Parameters of the volume data.
     if ( !volume->hasMinMaxValues() ) { volume->updateMinMaxValues(); }
-    const kvs::Real64 min_value = volume->minValue();
-    const kvs::Real64 max_value = volume->maxValue();
+    const vismodule::Real64 min_value = volume->minValue();
+    const vismodule::Real64 max_value = volume->maxValue();
     const size_t veclen = volume->veclen();
     const size_t nnodes_per_line = volume->nnodesPerLine();
     const size_t nnodes_per_slice = volume->nnodesPerSlice();
-    const kvs::Vector3ui resolution( volume->resolution() );
-    const kvs::Vector3ui ngrids( resolution - kvs::Vector3ui( 1, 1, 1 ) );
+    const vismodule::Vector3ui resolution( volume->resolution() );
+    const vismodule::Vector3ui ngrids( resolution - vismodule::Vector3ui( 1, 1, 1 ) );
     const T* value = reinterpret_cast<const T*>( volume->values().pointer() );
 
     const size_t nexternal_faces =
@@ -1026,13 +1026,13 @@ void ExternalFaces::calculate_colors( const kvs::StructuredVolumeObject* volume 
         2 * ngrids.z() * ngrids.x();
     const size_t nexternal_vertices = nexternal_faces * 4;
 
-    const kvs::ColorMap cmap( BaseClass::colorMap() );
+    const vismodule::ColorMap cmap( BaseClass::colorMap() );
 
-    kvs::ValueArray<kvs::UInt8> colors( 3 * nexternal_vertices );
-    kvs::UInt8* color = colors.pointer();
+    vismodule::ValueArray<vismodule::UInt8> colors( 3 * nexternal_vertices );
+    vismodule::UInt8* color = colors.pointer();
 
-    kvs::UInt32 node_index[4];
-    kvs::UInt32 color_level[4];
+    vismodule::UInt32 node_index[4];
+    vismodule::UInt32 color_level[4];
 
     // XY (Z=0) plane.
     {
@@ -1241,7 +1241,7 @@ void ExternalFaces::calculate_colors( const kvs::StructuredVolumeObject* volume 
  *  @param  volume [in] pointer to the unstrctured volume object
  */
 /*===========================================================================*/
-void ExternalFaces::mapping( const kvs::UnstructuredVolumeObject* volume )
+void ExternalFaces::mapping( const vismodule::UnstructuredVolumeObject* volume )
 {
     BaseClass::attach_volume( volume );
     BaseClass::set_range( volume );
@@ -1249,77 +1249,77 @@ void ExternalFaces::mapping( const kvs::UnstructuredVolumeObject* volume )
 
     switch ( volume->cellType() )
     {
-    case kvs::UnstructuredVolumeObject::Tetrahedra:
+    case vismodule::UnstructuredVolumeObject::Tetrahedra:
     {
         const std::type_info& type = volume->values().typeInfo()->type();
-        if (      type == typeid( kvs::Int8   ) ) { this->calculate_tetrahedral_faces<kvs::Int8  >( volume ); }
-        else if ( type == typeid( kvs::Int16  ) ) { this->calculate_tetrahedral_faces<kvs::Int16 >( volume ); }
-        else if ( type == typeid( kvs::Int32  ) ) { this->calculate_tetrahedral_faces<kvs::Int32 >( volume ); }
-        else if ( type == typeid( kvs::Int64  ) ) { this->calculate_tetrahedral_faces<kvs::Int64 >( volume ); }
-        else if ( type == typeid( kvs::UInt8  ) ) { this->calculate_tetrahedral_faces<kvs::UInt8 >( volume ); }
-        else if ( type == typeid( kvs::UInt16 ) ) { this->calculate_tetrahedral_faces<kvs::UInt16>( volume ); }
-        else if ( type == typeid( kvs::UInt32 ) ) { this->calculate_tetrahedral_faces<kvs::UInt32>( volume ); }
-        else if ( type == typeid( kvs::UInt64 ) ) { this->calculate_tetrahedral_faces<kvs::UInt64>( volume ); }
-        else if ( type == typeid( kvs::Real32 ) ) { this->calculate_tetrahedral_faces<kvs::Real32>( volume ); }
-        else if ( type == typeid( kvs::Real64 ) ) { this->calculate_tetrahedral_faces<kvs::Real64>( volume ); }
+        if (      type == typeid( vismodule::Int8   ) ) { this->calculate_tetrahedral_faces<vismodule::Int8  >( volume ); }
+        else if ( type == typeid( vismodule::Int16  ) ) { this->calculate_tetrahedral_faces<vismodule::Int16 >( volume ); }
+        else if ( type == typeid( vismodule::Int32  ) ) { this->calculate_tetrahedral_faces<vismodule::Int32 >( volume ); }
+        else if ( type == typeid( vismodule::Int64  ) ) { this->calculate_tetrahedral_faces<vismodule::Int64 >( volume ); }
+        else if ( type == typeid( vismodule::UInt8  ) ) { this->calculate_tetrahedral_faces<vismodule::UInt8 >( volume ); }
+        else if ( type == typeid( vismodule::UInt16 ) ) { this->calculate_tetrahedral_faces<vismodule::UInt16>( volume ); }
+        else if ( type == typeid( vismodule::UInt32 ) ) { this->calculate_tetrahedral_faces<vismodule::UInt32>( volume ); }
+        else if ( type == typeid( vismodule::UInt64 ) ) { this->calculate_tetrahedral_faces<vismodule::UInt64>( volume ); }
+        else if ( type == typeid( vismodule::Real32 ) ) { this->calculate_tetrahedral_faces<vismodule::Real32>( volume ); }
+        else if ( type == typeid( vismodule::Real64 ) ) { this->calculate_tetrahedral_faces<vismodule::Real64>( volume ); }
         break;
     }
-    case kvs::UnstructuredVolumeObject::QuadraticTetrahedra:
+    case vismodule::UnstructuredVolumeObject::QuadraticTetrahedra:
     {
         const std::type_info& type = volume->values().typeInfo()->type();
-        if (      type == typeid( kvs::Int8   ) ) { this->calculate_quadratic_tetrahedral_faces<kvs::Int8  >( volume ); }
-        else if ( type == typeid( kvs::Int16  ) ) { this->calculate_quadratic_tetrahedral_faces<kvs::Int16 >( volume ); }
-        else if ( type == typeid( kvs::Int32  ) ) { this->calculate_quadratic_tetrahedral_faces<kvs::Int32 >( volume ); }
-        else if ( type == typeid( kvs::Int64  ) ) { this->calculate_quadratic_tetrahedral_faces<kvs::Int64 >( volume ); }
-        else if ( type == typeid( kvs::UInt8  ) ) { this->calculate_quadratic_tetrahedral_faces<kvs::UInt8 >( volume ); }
-        else if ( type == typeid( kvs::UInt16 ) ) { this->calculate_quadratic_tetrahedral_faces<kvs::UInt16>( volume ); }
-        else if ( type == typeid( kvs::UInt32 ) ) { this->calculate_quadratic_tetrahedral_faces<kvs::UInt32>( volume ); }
-        else if ( type == typeid( kvs::UInt64 ) ) { this->calculate_quadratic_tetrahedral_faces<kvs::UInt64>( volume ); }
-        else if ( type == typeid( kvs::Real32 ) ) { this->calculate_quadratic_tetrahedral_faces<kvs::Real32>( volume ); }
-        else if ( type == typeid( kvs::Real64 ) ) { this->calculate_quadratic_tetrahedral_faces<kvs::Real64>( volume ); }
+        if (      type == typeid( vismodule::Int8   ) ) { this->calculate_quadratic_tetrahedral_faces<vismodule::Int8  >( volume ); }
+        else if ( type == typeid( vismodule::Int16  ) ) { this->calculate_quadratic_tetrahedral_faces<vismodule::Int16 >( volume ); }
+        else if ( type == typeid( vismodule::Int32  ) ) { this->calculate_quadratic_tetrahedral_faces<vismodule::Int32 >( volume ); }
+        else if ( type == typeid( vismodule::Int64  ) ) { this->calculate_quadratic_tetrahedral_faces<vismodule::Int64 >( volume ); }
+        else if ( type == typeid( vismodule::UInt8  ) ) { this->calculate_quadratic_tetrahedral_faces<vismodule::UInt8 >( volume ); }
+        else if ( type == typeid( vismodule::UInt16 ) ) { this->calculate_quadratic_tetrahedral_faces<vismodule::UInt16>( volume ); }
+        else if ( type == typeid( vismodule::UInt32 ) ) { this->calculate_quadratic_tetrahedral_faces<vismodule::UInt32>( volume ); }
+        else if ( type == typeid( vismodule::UInt64 ) ) { this->calculate_quadratic_tetrahedral_faces<vismodule::UInt64>( volume ); }
+        else if ( type == typeid( vismodule::Real32 ) ) { this->calculate_quadratic_tetrahedral_faces<vismodule::Real32>( volume ); }
+        else if ( type == typeid( vismodule::Real64 ) ) { this->calculate_quadratic_tetrahedral_faces<vismodule::Real64>( volume ); }
         break;
     }
-    case kvs::UnstructuredVolumeObject::Hexahedra:
+    case vismodule::UnstructuredVolumeObject::Hexahedra:
     {
         const std::type_info& type = volume->values().typeInfo()->type();
-        if (      type == typeid( kvs::Int8   ) ) { this->calculate_hexahedral_faces<kvs::Int8  >( volume ); }
-        else if ( type == typeid( kvs::Int16  ) ) { this->calculate_hexahedral_faces<kvs::Int16 >( volume ); }
-        else if ( type == typeid( kvs::Int32  ) ) { this->calculate_hexahedral_faces<kvs::Int32 >( volume ); }
-        else if ( type == typeid( kvs::Int64  ) ) { this->calculate_hexahedral_faces<kvs::Int64 >( volume ); }
-        else if ( type == typeid( kvs::UInt8  ) ) { this->calculate_hexahedral_faces<kvs::UInt8 >( volume ); }
-        else if ( type == typeid( kvs::UInt16 ) ) { this->calculate_hexahedral_faces<kvs::UInt16>( volume ); }
-        else if ( type == typeid( kvs::UInt32 ) ) { this->calculate_hexahedral_faces<kvs::UInt32>( volume ); }
-        else if ( type == typeid( kvs::UInt64 ) ) { this->calculate_hexahedral_faces<kvs::UInt64>( volume ); }
-        else if ( type == typeid( kvs::Real32 ) ) { this->calculate_hexahedral_faces<kvs::Real32>( volume ); }
-        else if ( type == typeid( kvs::Real64 ) ) { this->calculate_hexahedral_faces<kvs::Real64>( volume ); }
+        if (      type == typeid( vismodule::Int8   ) ) { this->calculate_hexahedral_faces<vismodule::Int8  >( volume ); }
+        else if ( type == typeid( vismodule::Int16  ) ) { this->calculate_hexahedral_faces<vismodule::Int16 >( volume ); }
+        else if ( type == typeid( vismodule::Int32  ) ) { this->calculate_hexahedral_faces<vismodule::Int32 >( volume ); }
+        else if ( type == typeid( vismodule::Int64  ) ) { this->calculate_hexahedral_faces<vismodule::Int64 >( volume ); }
+        else if ( type == typeid( vismodule::UInt8  ) ) { this->calculate_hexahedral_faces<vismodule::UInt8 >( volume ); }
+        else if ( type == typeid( vismodule::UInt16 ) ) { this->calculate_hexahedral_faces<vismodule::UInt16>( volume ); }
+        else if ( type == typeid( vismodule::UInt32 ) ) { this->calculate_hexahedral_faces<vismodule::UInt32>( volume ); }
+        else if ( type == typeid( vismodule::UInt64 ) ) { this->calculate_hexahedral_faces<vismodule::UInt64>( volume ); }
+        else if ( type == typeid( vismodule::Real32 ) ) { this->calculate_hexahedral_faces<vismodule::Real32>( volume ); }
+        else if ( type == typeid( vismodule::Real64 ) ) { this->calculate_hexahedral_faces<vismodule::Real64>( volume ); }
         break;
     }
-    case kvs::UnstructuredVolumeObject::QuadraticHexahedra:
+    case vismodule::UnstructuredVolumeObject::QuadraticHexahedra:
     {
         const std::type_info& type = volume->values().typeInfo()->type();
-        if (      type == typeid( kvs::Int8   ) ) { this->calculate_quadratic_hexahedral_faces<kvs::Int8  >( volume ); }
-        else if ( type == typeid( kvs::Int16  ) ) { this->calculate_quadratic_hexahedral_faces<kvs::Int16 >( volume ); }
-        else if ( type == typeid( kvs::Int32  ) ) { this->calculate_quadratic_hexahedral_faces<kvs::Int32 >( volume ); }
-        else if ( type == typeid( kvs::Int64  ) ) { this->calculate_quadratic_hexahedral_faces<kvs::Int64 >( volume ); }
-        else if ( type == typeid( kvs::UInt8  ) ) { this->calculate_quadratic_hexahedral_faces<kvs::UInt8 >( volume ); }
-        else if ( type == typeid( kvs::UInt16 ) ) { this->calculate_quadratic_hexahedral_faces<kvs::UInt16>( volume ); }
-        else if ( type == typeid( kvs::UInt32 ) ) { this->calculate_quadratic_hexahedral_faces<kvs::UInt32>( volume ); }
-        else if ( type == typeid( kvs::UInt64 ) ) { this->calculate_quadratic_hexahedral_faces<kvs::UInt64>( volume ); }
-        else if ( type == typeid( kvs::Real32 ) ) { this->calculate_quadratic_hexahedral_faces<kvs::Real32>( volume ); }
-        else if ( type == typeid( kvs::Real64 ) ) { this->calculate_quadratic_hexahedral_faces<kvs::Real64>( volume ); }
+        if (      type == typeid( vismodule::Int8   ) ) { this->calculate_quadratic_hexahedral_faces<vismodule::Int8  >( volume ); }
+        else if ( type == typeid( vismodule::Int16  ) ) { this->calculate_quadratic_hexahedral_faces<vismodule::Int16 >( volume ); }
+        else if ( type == typeid( vismodule::Int32  ) ) { this->calculate_quadratic_hexahedral_faces<vismodule::Int32 >( volume ); }
+        else if ( type == typeid( vismodule::Int64  ) ) { this->calculate_quadratic_hexahedral_faces<vismodule::Int64 >( volume ); }
+        else if ( type == typeid( vismodule::UInt8  ) ) { this->calculate_quadratic_hexahedral_faces<vismodule::UInt8 >( volume ); }
+        else if ( type == typeid( vismodule::UInt16 ) ) { this->calculate_quadratic_hexahedral_faces<vismodule::UInt16>( volume ); }
+        else if ( type == typeid( vismodule::UInt32 ) ) { this->calculate_quadratic_hexahedral_faces<vismodule::UInt32>( volume ); }
+        else if ( type == typeid( vismodule::UInt64 ) ) { this->calculate_quadratic_hexahedral_faces<vismodule::UInt64>( volume ); }
+        else if ( type == typeid( vismodule::Real32 ) ) { this->calculate_quadratic_hexahedral_faces<vismodule::Real32>( volume ); }
+        else if ( type == typeid( vismodule::Real64 ) ) { this->calculate_quadratic_hexahedral_faces<vismodule::Real64>( volume ); }
         break;
     }
     default:
     {
         BaseClass::m_is_success = false;
-        kvsMessageError("Not supported cell type.");
+        visModuleMessageError("Not supported cell type.");
         break;
     }
     }
 
-    SuperClass::setPolygonType( kvs::PolygonObject::Triangle );
-    SuperClass::setColorType( kvs::PolygonObject::VertexColor );
-    SuperClass::setNormalType( kvs::PolygonObject::PolygonNormal );
+    SuperClass::setPolygonType( vismodule::PolygonObject::Triangle );
+    SuperClass::setColorType( vismodule::PolygonObject::VertexColor );
+    SuperClass::setNormalType( vismodule::PolygonObject::PolygonNormal );
     if ( SuperClass::nopacities() == 0 ) SuperClass::setOpacity( 255 );
 }
 
@@ -1330,14 +1330,14 @@ void ExternalFaces::mapping( const kvs::UnstructuredVolumeObject* volume )
  */
 /*===========================================================================*/
 template <typename T>
-void ExternalFaces::calculate_tetrahedral_faces( const kvs::UnstructuredVolumeObject* volume )
+void ExternalFaces::calculate_tetrahedral_faces( const vismodule::UnstructuredVolumeObject* volume )
 {
     ::FaceMap face_map( volume->nnodes() );
     CreateTetrahedraFaceMap( volume, &face_map );
 
-    kvs::ValueArray<kvs::Real32> coords;
-    kvs::ValueArray<kvs::UInt8> colors;
-    kvs::ValueArray<kvs::Real32> normals;
+    vismodule::ValueArray<vismodule::Real32> coords;
+    vismodule::ValueArray<vismodule::UInt8> colors;
+    vismodule::ValueArray<vismodule::Real32> normals;
     ::CalculateFaces<T>( volume, BaseClass::colorMap(), face_map, &coords, &colors, &normals );
 
     SuperClass::setCoords( coords );
@@ -1352,14 +1352,14 @@ void ExternalFaces::calculate_tetrahedral_faces( const kvs::UnstructuredVolumeOb
  */
 /*===========================================================================*/
 template <typename T>
-void ExternalFaces::calculate_quadratic_tetrahedral_faces( const kvs::UnstructuredVolumeObject* volume )
+void ExternalFaces::calculate_quadratic_tetrahedral_faces( const vismodule::UnstructuredVolumeObject* volume )
 {
     ::FaceMap face_map( volume->nnodes() );
     CreateQuadraticTetrahedraFaceMap( volume, &face_map );
 
-    kvs::ValueArray<kvs::Real32> coords;
-    kvs::ValueArray<kvs::UInt8> colors;
-    kvs::ValueArray<kvs::Real32> normals;
+    vismodule::ValueArray<vismodule::Real32> coords;
+    vismodule::ValueArray<vismodule::UInt8> colors;
+    vismodule::ValueArray<vismodule::Real32> normals;
     ::CalculateFaces<T>( volume, BaseClass::colorMap(), face_map, &coords, &colors, &normals );
 
     SuperClass::setCoords( coords );
@@ -1374,14 +1374,14 @@ void ExternalFaces::calculate_quadratic_tetrahedral_faces( const kvs::Unstructur
  */
 /*===========================================================================*/
 template <typename T>
-void ExternalFaces::calculate_hexahedral_faces( const kvs::UnstructuredVolumeObject* volume )
+void ExternalFaces::calculate_hexahedral_faces( const vismodule::UnstructuredVolumeObject* volume )
 {
     ::FaceMap face_map( volume->nnodes() );
     CreateHexahedraFaceMap( volume, &face_map );
 
-    kvs::ValueArray<kvs::Real32> coords;
-    kvs::ValueArray<kvs::UInt8> colors;
-    kvs::ValueArray<kvs::Real32> normals;
+    vismodule::ValueArray<vismodule::Real32> coords;
+    vismodule::ValueArray<vismodule::UInt8> colors;
+    vismodule::ValueArray<vismodule::Real32> normals;
     ::CalculateFaces<T>( volume, BaseClass::colorMap(), face_map, &coords, &colors, &normals );
 
     SuperClass::setCoords( coords );
@@ -1396,14 +1396,14 @@ void ExternalFaces::calculate_hexahedral_faces( const kvs::UnstructuredVolumeObj
  */
 /*===========================================================================*/
 template <typename T>
-void ExternalFaces::calculate_quadratic_hexahedral_faces( const kvs::UnstructuredVolumeObject* volume )
+void ExternalFaces::calculate_quadratic_hexahedral_faces( const vismodule::UnstructuredVolumeObject* volume )
 {
     ::FaceMap face_map( volume->nnodes() );
     CreateQuadraticHexahedraFaceMap( volume, &face_map );
 
-    kvs::ValueArray<kvs::Real32> coords;
-    kvs::ValueArray<kvs::UInt8> colors;
-    kvs::ValueArray<kvs::Real32> normals;
+    vismodule::ValueArray<vismodule::Real32> coords;
+    vismodule::ValueArray<vismodule::UInt8> colors;
+    vismodule::ValueArray<vismodule::Real32> normals;
     ::CalculateFaces<T>( volume, BaseClass::colorMap(), face_map, &coords, &colors, &normals );
 
     SuperClass::setCoords( coords );
@@ -1411,4 +1411,4 @@ void ExternalFaces::calculate_quadratic_hexahedral_faces( const kvs::Unstructure
     SuperClass::setNormals( normals );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -11,29 +11,29 @@
  *  $Id: ObjectManager.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__OBJECT_MANAGER_H_INCLUDE
-#define KVS__OBJECT_MANAGER_H_INCLUDE
+#ifndef VIS_MODULE__OBJECT_MANAGER_H_INCLUDE
+#define VIS_MODULE__OBJECT_MANAGER_H_INCLUDE
 
 #include <string>
 #include <map>
-#include <kvs/ClassName>
-#include <kvs/ObjectBase>
-#include <kvs/Tree>
+#include <vismodule/ClassName>
+#include <vismodule/ObjectBase>
+#include <vismodule/Tree>
 
 
-namespace kvs
+namespace vismodule
 {
 
-typedef kvs::Tree<kvs::ObjectBase*> ObjectManagerBase;
+typedef vismodule::Tree<vismodule::ObjectBase*> ObjectManagerBase;
 
 /*==========================================================================*/
 /**
 *  Object manager class.
 */
 /*==========================================================================*/
-class ObjectManager : public ObjectManagerBase, public kvs::ObjectBase
+class ObjectManager : public ObjectManagerBase, public vismodule::ObjectBase
 {
-    kvsClassName( kvs::ObjectManager );
+    visModuleClassName( vismodule::ObjectManager );
 
 public:
 
@@ -64,9 +64,9 @@ public:
 
     const ObjectType objectType( void ) const;
 
-    int insert( kvs::ObjectBase* obj );
+    int insert( vismodule::ObjectBase* obj );
 
-    int insert( int parent_id, kvs::ObjectBase* obj );
+    int insert( int parent_id, vismodule::ObjectBase* obj );
 
     void erase( bool delete_flg = true );
 
@@ -74,17 +74,17 @@ public:
 
     void erase( std::string obj_name, bool delete_flg = true );
 
-    void change( int obj_id, kvs::ObjectBase* obj, bool delete_flg = true );
+    void change( int obj_id, vismodule::ObjectBase* obj, bool delete_flg = true );
 
-    void change( std::string obj_name, kvs::ObjectBase* obj, bool delete_flg = true );
+    void change( std::string obj_name, vismodule::ObjectBase* obj, bool delete_flg = true );
 
     const int nobjects( void ) const;
 
-    kvs::ObjectBase* object( void );
+    vismodule::ObjectBase* object( void );
 
-    kvs::ObjectBase* object( int obj_id );
+    vismodule::ObjectBase* object( int obj_id );
 
-    kvs::ObjectBase* object( std::string obj_name );
+    vismodule::ObjectBase* object( std::string obj_name );
 
     const bool hasObject( void ) const;
 
@@ -92,15 +92,15 @@ public:
 
     void resetXform( int obj_id );
 
-    const kvs::Xform xform( void ) const;
+    const vismodule::Xform xform( void ) const;
 
-    const kvs::Xform xform( int obj_id ) const;
+    const vismodule::Xform xform( int obj_id ) const;
 
-    const int objectID( const kvs::ObjectBase *object ) const;
+    const int objectID( const vismodule::ObjectBase *object ) const;
 
     const int parentObjectID( const ObjectIterator it ) const;
 
-    const int parentObjectID( const kvs::ObjectBase *object ) const;
+    const int parentObjectID( const vismodule::ObjectBase *object ) const;
 
     const int parentObjectID( int object_id ) const;
 
@@ -108,7 +108,7 @@ public:
 
     bool setActiveObjectID( int obj_id );
 
-    kvs::ObjectBase* activeObject( void );
+    vismodule::ObjectBase* activeObject( void );
 
 public:
 
@@ -128,39 +128,39 @@ public:
 
     void releaseActiveObject( void );
 
-    bool detectCollision( const kvs::Vector2f& p_win, kvs::Camera* camera );
+    bool detectCollision( const vismodule::Vector2f& p_win, vismodule::Camera* camera );
 
-    bool detectCollision( const kvs::Vector3f& p_world );
+    bool detectCollision( const vismodule::Vector3f& p_world );
 
 public:
 
-    const kvs::Vector2f positionInDevice( kvs::Camera* camera ) const;
+    const vismodule::Vector2f positionInDevice( vismodule::Camera* camera ) const;
 
-    void rotate( const kvs::Matrix33f& rotation );
+    void rotate( const vismodule::Matrix33f& rotation );
 
-    void translate( const kvs::Vector3f& translation );
+    void translate( const vismodule::Vector3f& translation );
 
-    void scale( const kvs::Vector3f& scaling );
+    void scale( const vismodule::Vector3f& scaling );
 
     void updateExternalCoords( void );
 
 private:
 
     void update_normalize_parameters(
-        const kvs::Vector3f& min_ext,
-        const kvs::Vector3f& max_ext );
+        const vismodule::Vector3f& min_ext,
+        const vismodule::Vector3f& max_ext );
 
     void update_normalize_parameters( void );
 
-    kvs::ObjectBase* get_control_target( void );
+    vismodule::ObjectBase* get_control_target( void );
 
-    kvs::Vector3f get_rotation_center( kvs::ObjectBase* obj );
+    vismodule::Vector3f get_rotation_center( vismodule::ObjectBase* obj );
 
     ObjectIterator get_control_first_pointer( void );
 
     ObjectIterator get_control_last_pointer( void );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__OBJECT_MANAGER_H_INCLUDE
+#endif // VIS_MODULE__OBJECT_MANAGER_H_INCLUDE

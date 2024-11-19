@@ -12,19 +12,19 @@
  *  $Id: WindowBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__WINDOW_BASE_H_INCLUDE
-#define KVS__WINDOW_BASE_H_INCLUDE
+#ifndef VIS_MODULE__WINDOW_BASE_H_INCLUDE
+#define VIS_MODULE__WINDOW_BASE_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/DisplayFormat>
-#include <kvs/MouseEvent>
-#include <kvs/KeyEvent>
-#include <kvs/WheelEvent>
-#include <kvs/Timer>
+#include <vismodule/ClassName>
+#include <vismodule/DisplayFormat>
+#include <vismodule/MouseEvent>
+#include <vismodule/KeyEvent>
+#include <vismodule/WheelEvent>
+#include <vismodule/Timer>
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -34,7 +34,7 @@ namespace kvs
 /*===========================================================================*/
 class WindowBase
 {
-    kvsClassName( kvs::WindowBase );
+    visModuleClassName( vismodule::WindowBase );
 
 protected:
 
@@ -45,11 +45,11 @@ protected:
     int                m_height;         ///< window size (height)
     int                m_id;             ///< window ID
     bool               m_is_fullscreen;  ///< check flag whether the window is fullscreen
-    kvs::DisplayFormat m_display_format; ///< display format
-    kvs::MouseEvent*   m_mouse_event;    ///< mouse event
-    kvs::KeyEvent*     m_key_event;      ///< key event
-    kvs::WheelEvent*   m_wheel_event;    ///< wheel event
-    kvs::Timer         m_elapse_time_counter; ///< elapse time counter for double click event
+    vismodule::DisplayFormat m_display_format; ///< display format
+    vismodule::MouseEvent*   m_mouse_event;    ///< mouse event
+    vismodule::KeyEvent*     m_key_event;      ///< key event
+    vismodule::WheelEvent*   m_wheel_event;    ///< wheel event
+    vismodule::Timer         m_elapse_time_counter; ///< elapse time counter for double click event
 
 public:
 
@@ -71,13 +71,13 @@ public:
 
     const std::string& title( void ) const;
 
-    const kvs::DisplayFormat& displayFormat( void ) const;
+    const vismodule::DisplayFormat& displayFormat( void ) const;
 
     const bool isFullScreen( void ) const;
 
 public:
 
-    void setDisplayFormat( const kvs::DisplayFormat& display_format );
+    void setDisplayFormat( const vismodule::DisplayFormat& display_format );
 
     void setPosition( const int x, const int y );
 
@@ -108,6 +108,6 @@ public:
     virtual void resize( int width, int height );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__WINDOW_BASE_H_INCLUDE
+#endif // VIS_MODULE__WINDOW_BASE_H_INCLUDE

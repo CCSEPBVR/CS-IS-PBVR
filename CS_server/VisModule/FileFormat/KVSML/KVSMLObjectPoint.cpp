@@ -22,21 +22,21 @@
 #include "DataValueTag.h"
 #include "DataReader.h"
 #include "DataWriter.h"
-#include <kvs/XMLDocument>
-#include <kvs/XMLDeclaration>
-#include <kvs/XMLElement>
-#include <kvs/XMLComment>
-#include <kvs/ValueArray>
-#include <kvs/File>
-#include <kvs/Type>
-#include <kvs/File>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/XMLDocument>
+#include <vismodule/XMLDeclaration>
+#include <vismodule/XMLElement>
+#include <vismodule/XMLComment>
+#include <vismodule/ValueArray>
+#include <vismodule/File>
+#include <vismodule/Type>
+#include <vismodule/File>
+#include <vismodule/IgnoreUnusedVariable>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -45,7 +45,7 @@ namespace kvs
  */
 /*===========================================================================*/
 KVSMLObjectPoint::KVSMLObjectPoint( void ):
-    m_writing_type( kvs::KVSMLObjectPoint::Ascii )
+    m_writing_type( vismodule::KVSMLObjectPoint::Ascii )
 {
 }
 
@@ -56,7 +56,7 @@ KVSMLObjectPoint::KVSMLObjectPoint( void ):
  */
 /*===========================================================================*/
 KVSMLObjectPoint::KVSMLObjectPoint( const std::string& filename ):
-    m_writing_type( kvs::KVSMLObjectPoint::Ascii )
+    m_writing_type( vismodule::KVSMLObjectPoint::Ascii )
 {
     if ( this->read( filename ) ) { m_is_success = true; }
     else { m_is_success = false; }
@@ -77,7 +77,7 @@ KVSMLObjectPoint::~KVSMLObjectPoint( void )
  *  @return KVSML tag
  */
 /*===========================================================================*/
-const kvs::kvsml::KVSMLTag& KVSMLObjectPoint::KVSMLTag( void ) const
+const vismodule::kvsml::KVSMLTag& KVSMLObjectPoint::KVSMLTag( void ) const
 {
     return( m_kvsml_tag );
 }
@@ -88,7 +88,7 @@ const kvs::kvsml::KVSMLTag& KVSMLObjectPoint::KVSMLTag( void ) const
  *  @return object tag
  */
 /*===========================================================================*/
-const kvs::kvsml::ObjectTag& KVSMLObjectPoint::objectTag( void ) const
+const vismodule::kvsml::ObjectTag& KVSMLObjectPoint::objectTag( void ) const
 {
     return( m_object_tag );
 }
@@ -98,7 +98,7 @@ const kvs::kvsml::ObjectTag& KVSMLObjectPoint::objectTag( void ) const
  *  @brief  Returns the coordinate value array.
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& KVSMLObjectPoint::coords( void ) const
+const vismodule::ValueArray<vismodule::Real32>& KVSMLObjectPoint::coords( void ) const
 {
     return( m_coords );
 }
@@ -108,7 +108,7 @@ const kvs::ValueArray<kvs::Real32>& KVSMLObjectPoint::coords( void ) const
  *  @brief  Returns the color value array.
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt8>& KVSMLObjectPoint::colors( void ) const
+const vismodule::ValueArray<vismodule::UInt8>& KVSMLObjectPoint::colors( void ) const
 {
     return( m_colors );
 }
@@ -118,7 +118,7 @@ const kvs::ValueArray<kvs::UInt8>& KVSMLObjectPoint::colors( void ) const
  *  @brief  Returns the normal vector array.
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& KVSMLObjectPoint::normals( void ) const
+const vismodule::ValueArray<vismodule::Real32>& KVSMLObjectPoint::normals( void ) const
 {
     return( m_normals );
 }
@@ -128,7 +128,7 @@ const kvs::ValueArray<kvs::Real32>& KVSMLObjectPoint::normals( void ) const
  *  @brief  Returns the size value array.
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& KVSMLObjectPoint::sizes( void ) const
+const vismodule::ValueArray<vismodule::Real32>& KVSMLObjectPoint::sizes( void ) const
 {
     return( m_sizes );
 }
@@ -150,7 +150,7 @@ void KVSMLObjectPoint::setWritingDataType( const WritingDataType writing_type )
  *  @param  coords [in] coordinate value array
  */
 /*===========================================================================*/
-void KVSMLObjectPoint::setCoords( const kvs::ValueArray<kvs::Real32>& coords )
+void KVSMLObjectPoint::setCoords( const vismodule::ValueArray<vismodule::Real32>& coords )
 {
     m_coords = coords;
 }
@@ -161,7 +161,7 @@ void KVSMLObjectPoint::setCoords( const kvs::ValueArray<kvs::Real32>& coords )
  *  @param  colors [in] color value array
  */
 /*===========================================================================*/
-void KVSMLObjectPoint::setColors( const kvs::ValueArray<kvs::UInt8>& colors )
+void KVSMLObjectPoint::setColors( const vismodule::ValueArray<vismodule::UInt8>& colors )
 {
     m_colors = colors;
 }
@@ -172,7 +172,7 @@ void KVSMLObjectPoint::setColors( const kvs::ValueArray<kvs::UInt8>& colors )
  *  @param  normals [in] normal vector array
  */
 /*===========================================================================*/
-void KVSMLObjectPoint::setNormals( const kvs::ValueArray<kvs::Real32>& normals )
+void KVSMLObjectPoint::setNormals( const vismodule::ValueArray<vismodule::Real32>& normals )
 {
     m_normals = normals;
 }
@@ -183,7 +183,7 @@ void KVSMLObjectPoint::setNormals( const kvs::ValueArray<kvs::Real32>& normals )
  *  @param  sizes [in] size value array
  */
 /*===========================================================================*/
-void KVSMLObjectPoint::setSizes( const kvs::ValueArray<kvs::Real32>& sizes )
+void KVSMLObjectPoint::setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes )
 {
     m_sizes = sizes;
 }
@@ -200,62 +200,62 @@ const bool KVSMLObjectPoint::read( const std::string& filename )
     m_filename = filename;
 
     // XML document.
-    kvs::XMLDocument document;
+    vismodule::XMLDocument document;
     if ( !document.read( filename ) )
     {
-        kvsMessageError( "%s", document.ErrorDesc().c_str() );
+        visModuleMessageError( "%s", document.ErrorDesc().c_str() );
         return( false );
     }
 
     // <KVSML>
     if ( !m_kvsml_tag.read( &document ) )
     {
-        kvsMessageError( "Cannot read <%s>.", m_kvsml_tag.name().c_str() );
+        visModuleMessageError( "Cannot read <%s>.", m_kvsml_tag.name().c_str() );
         return( false );
     }
 
     // <Object>
     if ( !m_object_tag.read( m_kvsml_tag.node() ) )
     {
-        kvsMessageError( "Cannot read <%s>.", m_object_tag.name().c_str() );
+        visModuleMessageError( "Cannot read <%s>.", m_object_tag.name().c_str() );
         return( false );
     }
 
     // <PointObject>
-    kvs::kvsml::PointObjectTag point_tag;
+    vismodule::kvsml::PointObjectTag point_tag;
     if ( !point_tag.read( m_object_tag.node() ) )
     {
-        kvsMessageError( "Cannot read <%s>.", point_tag.name().c_str() );
+        visModuleMessageError( "Cannot read <%s>.", point_tag.name().c_str() );
         return( false );
     }
 
     // <Vertex>
-    kvs::kvsml::VertexTag vertex_tag;
+    vismodule::kvsml::VertexTag vertex_tag;
     if ( !vertex_tag.read( point_tag.node() ) )
     {
-        kvsMessageError( "Cannot read <%s>.", vertex_tag.name().c_str() );
+        visModuleMessageError( "Cannot read <%s>.", vertex_tag.name().c_str() );
         return( false );
     }
     else
     {
         // Parent node.
-        const kvs::XMLNode::SuperClass* parent = vertex_tag.node();
+        const vismodule::XMLNode::SuperClass* parent = vertex_tag.node();
         
         // <Coord>
         const size_t ncoords = vertex_tag.nvertices();
         
         if( vertex_tag.nvertices() == 0 ) return( true );
 
-        if ( !kvs::kvsml::ReadCoordData( parent, ncoords, &m_coords ) ) return( false );
+        if ( !vismodule::kvsml::ReadCoordData( parent, ncoords, &m_coords ) ) return( false );
         if ( m_coords.size() == 0 )
         {
-            kvsMessageError( "Cannot read the coord data." );
+            visModuleMessageError( "Cannot read the coord data." );
             return( false );
         }
 
         // <Color>
         const size_t ncolors = vertex_tag.nvertices();
-        if ( !kvs::kvsml::ReadColorData( parent, ncolors, &m_colors ) ) return( false );
+        if ( !vismodule::kvsml::ReadColorData( parent, ncolors, &m_colors ) ) return( false );
         if ( m_colors.size() == 0 )
         {
             // default value (black).
@@ -267,11 +267,11 @@ const bool KVSMLObjectPoint::read( const std::string& filename )
 
         // <Normal>
         const size_t nnormals = vertex_tag.nvertices();
-        if ( !kvs::kvsml::ReadNormalData( parent, nnormals, &m_normals ) ) return( false );
+        if ( !vismodule::kvsml::ReadNormalData( parent, nnormals, &m_normals ) ) return( false );
 
         // <Size>
         const size_t nsizes = vertex_tag.nvertices();
-        if ( !kvs::kvsml::ReadSizeData( parent, nsizes, &m_sizes ) ) return( false );
+        if ( !vismodule::kvsml::ReadSizeData( parent, nsizes, &m_sizes ) ) return( false );
     }
 
     return( true );
@@ -288,61 +288,61 @@ const bool KVSMLObjectPoint::write( const std::string& filename )
 {
     m_filename = filename;
 
-    kvs::XMLDocument document;
-    document.InsertEndChild( kvs::XMLDeclaration("1.0") );
-    document.InsertEndChild( kvs::XMLComment(" Generated by kvs::KVSMLObjectPoint::write() ") );
+    vismodule::XMLDocument document;
+    document.InsertEndChild( vismodule::XMLDeclaration("1.0") );
+    document.InsertEndChild( vismodule::XMLComment(" Generated by vismodule::KVSMLObjectPoint::write() ") );
 
     // <KVSML>
-    kvs::kvsml::KVSMLTag kvsml_tag;
+    vismodule::kvsml::KVSMLTag kvsml_tag;
     if ( !kvsml_tag.write( &document ) )
     {
-        kvsMessageError( "Cannot write <%s>.", kvsml_tag.name().c_str() );
+        visModuleMessageError( "Cannot write <%s>.", kvsml_tag.name().c_str() );
         return( false );
     }
 
     // <Object type="PointObject">
-    kvs::kvsml::ObjectTag object_tag;
+    vismodule::kvsml::ObjectTag object_tag;
     object_tag.setType( "PointObject" );
     if ( !object_tag.write( kvsml_tag.node() ) )
     {
-        kvsMessageError( "Cannot write <%s>.", object_tag.name().c_str() );
+        visModuleMessageError( "Cannot write <%s>.", object_tag.name().c_str() );
         return( false );
     }
 
     // <PointObject>
-    kvs::kvsml::PointObjectTag point_tag;
+    vismodule::kvsml::PointObjectTag point_tag;
     if ( !point_tag.write( object_tag.node() ) )
     {
-        kvsMessageError( "Cannot write <%s>.", point_tag.name().c_str() );
+        visModuleMessageError( "Cannot write <%s>.", point_tag.name().c_str() );
         return( false );
     }
 
     // <Vertex nvertices="xxx">
     const size_t dimension = 3;
-    kvs::kvsml::VertexTag vertex_tag;
+    vismodule::kvsml::VertexTag vertex_tag;
     vertex_tag.setNVertices( m_coords.size() / dimension );
     if ( !vertex_tag.write( point_tag.node() ) )
     {
-        kvsMessageError( "Cannot write <%s>.", vertex_tag.name().c_str() );
+        visModuleMessageError( "Cannot write <%s>.", vertex_tag.name().c_str() );
         return( false );
     }
     else
     {
         // Parent node and writing data type.
-        kvs::XMLNode::SuperClass* parent = vertex_tag.node();
-        const kvs::kvsml::WritingDataType type = static_cast<kvs::kvsml::WritingDataType>(m_writing_type);
+        vismodule::XMLNode::SuperClass* parent = vertex_tag.node();
+        const vismodule::kvsml::WritingDataType type = static_cast<vismodule::kvsml::WritingDataType>(m_writing_type);
 
         // <Coord>
-        if ( !kvs::kvsml::WriteCoordData( parent, type, m_filename, m_coords ) ) return( false );
+        if ( !vismodule::kvsml::WriteCoordData( parent, type, m_filename, m_coords ) ) return( false );
 
         // <Color>
-        if ( !kvs::kvsml::WriteColorData( parent, type, m_filename, m_colors ) ) return( false );
+        if ( !vismodule::kvsml::WriteColorData( parent, type, m_filename, m_colors ) ) return( false );
 
         // <Normal>
-        if ( !kvs::kvsml::WriteNormalData( parent, type, m_filename, m_normals ) ) return( false );
+        if ( !vismodule::kvsml::WriteNormalData( parent, type, m_filename, m_normals ) ) return( false );
 
         // <Size>
-        if ( !kvs::kvsml::WriteSizeData( parent, type, m_filename, m_sizes ) ) return( false );
+        if ( !vismodule::kvsml::WriteSizeData( parent, type, m_filename, m_sizes ) ) return( false );
     }
 
     return( document.write( m_filename ) );
@@ -357,7 +357,7 @@ const bool KVSMLObjectPoint::write( const std::string& filename )
 /*===========================================================================*/
 const bool KVSMLObjectPoint::CheckFileExtension( const std::string& filename )
 {
-    const kvs::File file( filename );
+    const vismodule::File file( filename );
     if ( file.extension() == "kvsml" ||
          file.extension() == "KVSML" ||
          file.extension() == "xml"   ||
@@ -378,20 +378,20 @@ const bool KVSMLObjectPoint::CheckFileExtension( const std::string& filename )
 /*===========================================================================*/
 const bool KVSMLObjectPoint::CheckFileFormat( const std::string& filename )
 {
-    kvs::XMLDocument document;
+    vismodule::XMLDocument document;
     if ( !document.read( filename ) ) return( false );
 
     // <KVSML>
-    kvs::kvsml::KVSMLTag kvsml_tag;
+    vismodule::kvsml::KVSMLTag kvsml_tag;
     if ( !kvsml_tag.read( &document ) ) return( false );
 
     // <Object>
-    kvs::kvsml::ObjectTag object_tag;
+    vismodule::kvsml::ObjectTag object_tag;
     if ( !object_tag.read( kvsml_tag.node() ) ) return( false );
     if ( object_tag.type() != "PointObject" ) return( false );
 
     // <PointObject>
-    kvs::kvsml::PointObjectTag point_tag;
+    vismodule::kvsml::PointObjectTag point_tag;
     if ( !point_tag.read( object_tag.node() ) ) return( false );
 
     return( true );
@@ -411,4 +411,4 @@ std::ostream& operator <<( std::ostream& os, const KVSMLObjectPoint& rhs )
     return( os );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

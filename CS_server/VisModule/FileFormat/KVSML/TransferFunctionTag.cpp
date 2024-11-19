@@ -12,13 +12,13 @@
  */
 /*****************************************************************************/
 #include "TransferFunctionTag.h"
-#include <kvs/Message>
-#include <kvs/String>
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
+#include <vismodule/Message>
+#include <vismodule/String>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -30,7 +30,7 @@ namespace kvsml
  */
 /*===========================================================================*/
 TransferFunctionTag::TransferFunctionTag( void ):
-    kvs::kvsml::TagBase( "TransferFunction" ),
+    vismodule::kvsml::TagBase( "TransferFunction" ),
     m_has_file( false ),
     m_file( "" ),
     m_has_resolution( false ),
@@ -193,22 +193,22 @@ void TransferFunctionTag::setMaxValue( const float max_value )
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool TransferFunctionTag::read( const kvs::XMLNode::SuperClass* parent )
+const bool TransferFunctionTag::read( const vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
 
-    BaseClass::m_node = kvs::XMLNode::FindChildNode( parent, tag_name );
+    BaseClass::m_node = vismodule::XMLNode::FindChildNode( parent, tag_name );
     if ( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot find <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot find <%s>.", tag_name.c_str() );
         return( false );
     }
 
     // Element
-    const kvs::XMLElement::SuperClass* element = kvs::XMLNode::ToElement( BaseClass::m_node );
+    const vismodule::XMLElement::SuperClass* element = vismodule::XMLNode::ToElement( BaseClass::m_node );
 
     // resolution="xxx"
-    const std::string resolution = kvs::XMLElement::AttributeValue( element, "resolution" );
+    const std::string resolution = vismodule::XMLElement::AttributeValue( element, "resolution" );
     if ( resolution != "" )
     {
         m_has_resolution = true;
@@ -216,7 +216,7 @@ const bool TransferFunctionTag::read( const kvs::XMLNode::SuperClass* parent )
     }
 
     // min_value="xxx"
-    const std::string min_value = kvs::XMLElement::AttributeValue( element, "min_value" );
+    const std::string min_value = vismodule::XMLElement::AttributeValue( element, "min_value" );
     if ( min_value != "" )
     {
         m_has_min_value = true;
@@ -224,7 +224,7 @@ const bool TransferFunctionTag::read( const kvs::XMLNode::SuperClass* parent )
     }
 
     // max_value="xxx"
-    const std::string max_value = kvs::XMLElement::AttributeValue( element, "max_value" );
+    const std::string max_value = vismodule::XMLElement::AttributeValue( element, "max_value" );
     if ( max_value != "" )
     {
         m_has_max_value = true;
@@ -232,7 +232,7 @@ const bool TransferFunctionTag::read( const kvs::XMLNode::SuperClass* parent )
     }
 
     // file="xxx"
-    const std::string file = kvs::XMLElement::AttributeValue( element, "file" );
+    const std::string file = vismodule::XMLElement::AttributeValue( element, "file" );
     if ( file != "" )
     {
         m_has_file = true;
@@ -249,16 +249,16 @@ const bool TransferFunctionTag::read( const kvs::XMLNode::SuperClass* parent )
  *  @return true, if the writing process is done successfully
  */
 /*===========================================================================*/
-const bool TransferFunctionTag::write( kvs::XMLNode::SuperClass* parent )
+const bool TransferFunctionTag::write( vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
-    kvs::XMLElement element( tag_name );
+    vismodule::XMLElement element( tag_name );
 
     // resolution="xxx"
     if ( m_has_resolution )
     {
         const std::string name( "resolution" );
-        const std::string value( kvs::String( m_resolution ).toStdString() );
+        const std::string value( vismodule::String( m_resolution ).toStdString() );
         element.setAttribute( name, value );
     }
 
@@ -266,7 +266,7 @@ const bool TransferFunctionTag::write( kvs::XMLNode::SuperClass* parent )
     if ( m_has_min_value )
     {
         const std::string name( "min_value" );
-        const std::string value( kvs::String( m_min_value ).toStdString() );
+        const std::string value( vismodule::String( m_min_value ).toStdString() );
         element.setAttribute( name, value );
     }
 
@@ -274,7 +274,7 @@ const bool TransferFunctionTag::write( kvs::XMLNode::SuperClass* parent )
     if ( m_has_max_value )
     {
         const std::string name( "max_value" );
-        const std::string value( kvs::String( m_max_value ).toStdString() );
+        const std::string value( vismodule::String( m_max_value ).toStdString() );
         element.setAttribute( name, value );
     }
 
@@ -289,7 +289,7 @@ const bool TransferFunctionTag::write( kvs::XMLNode::SuperClass* parent )
     BaseClass::m_node = parent->InsertEndChild( element );
     if( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot insert <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot insert <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -298,4 +298,4 @@ const bool TransferFunctionTag::write( kvs::XMLNode::SuperClass* parent )
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

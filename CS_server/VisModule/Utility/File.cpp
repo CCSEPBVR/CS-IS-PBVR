@@ -12,8 +12,8 @@
  */
 /****************************************************************************/
 #include "File.h"
-#include <kvs/Platform>
-#if defined ( KVS_PLATFORM_WINDOWS )
+#include <vismodule/Platform>
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
 #include <windows.h>
 #else
 #include <sys/stat.h>
@@ -22,7 +22,7 @@
 #endif
 #include <iostream>
 #include <fstream>
-#include <kvs/Message>
+#include <vismodule/Message>
 
 
 namespace
@@ -48,12 +48,12 @@ std::string GetAbsolutePath( const std::string& path )
 {
     char absolute_path[::MaxPathLength];
 
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     _fullpath( absolute_path, const_cast<char*>( path.c_str() ), ::MaxPathLength );
 #else
     if ( !realpath( path.c_str(), absolute_path ) )
     {
-        kvsMessageError("%s", strerror( errno ) );
+        visModuleMessageError("%s", strerror( errno ) );
         return("");
     }
 #endif
@@ -64,7 +64,7 @@ std::string GetAbsolutePath( const std::string& path )
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -222,7 +222,7 @@ const size_t File::byteSize( void ) const
         std::ifstream file( m_file_path.c_str(), std::ios::in | std::ios::binary );
         if ( file.fail() )
         {
-            kvsMessageError( "Cannot open file: %s.", m_file_path.c_str() );
+            visModuleMessageError( "Cannot open file: %s.", m_file_path.c_str() );
             return( 0 );
         }
 
@@ -250,7 +250,7 @@ const size_t File::byteSize( void ) const
 /*==========================================================================*/
 const bool File::isFile( void ) const
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     WIN32_FIND_DATAA find_data;
     if ( FindFirstFileA( m_file_path.c_str(), &find_data ) == INVALID_HANDLE_VALUE ) { return( false ); };
     return( ( find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) != FILE_ATTRIBUTE_DIRECTORY );
@@ -325,11 +325,11 @@ const bool File::parse( const std::string& file_path )
 /*==========================================================================*/
 const std::string File::Separator( void )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     return( "\\" );
 #else
     return( "/" );
 #endif
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

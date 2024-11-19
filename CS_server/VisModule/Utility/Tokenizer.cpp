@@ -16,7 +16,7 @@
 #include <algorithm>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -145,4 +145,4 @@ void Tokenizer::get_token( void )
     m_token = m_source.substr( m_first, length );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

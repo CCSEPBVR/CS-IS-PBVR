@@ -13,10 +13,10 @@
 /****************************************************************************/
 #include "Texture2D.h"
 #include <iostream>
-#include <kvs/Math>
+#include <vismodule/Math>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -182,8 +182,8 @@ void Texture2D::download(
 
     if ( !m_is_downloaded )
     {
-//        const size_t ext_width  = 1 << ( kvs::Math::Log2Smallest( width ) );
-//        const size_t ext_height = 1 << ( kvs::Math::Log2Smallest( height ) );
+//        const size_t ext_width  = 1 << ( vismodule::Math::Log2Smallest( width ) );
+//        const size_t ext_height = 1 << ( vismodule::Math::Log2Smallest( height ) );
 
         const GLint level = 0;  // level-of-detail number
         const GLint border = 0; // border width (0 or 1)
@@ -321,7 +321,7 @@ unsigned int Texture2D::get_texture_memory_size_on_gpu( const GLenum proxy )
     GLfloat bytes = (GLfloat)total_bits / 8.0f;
 
     // Round up to the next whole byte.
-    if( !kvs::Math::Equal( bytes, (GLfloat)( (GLint)bytes) ) )
+    if( !vismodule::Math::Equal( bytes, (GLfloat)( (GLint)bytes) ) )
     {
         bytes = (GLfloat)((GLint)bytes) + 1.0f;
     }
@@ -330,4 +330,4 @@ unsigned int Texture2D::get_texture_memory_size_on_gpu( const GLenum proxy )
     return( texture_size[0] * texture_size[1] * (GLint)bytes );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

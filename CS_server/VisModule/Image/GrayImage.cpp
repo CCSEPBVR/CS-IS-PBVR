@@ -14,22 +14,22 @@
 #include "GrayImage.h"
 #include "ColorImage.h"
 #include "BitImage.h"
-#include <kvs/IgnoreUnusedVariable>
-#include <kvs/Math>
-#include <kvs/File>
-#include <kvs/KVSMLObjectImage>
-#include <kvs/Bmp>
-#include <kvs/Ppm>
-#include <kvs/Pbm>
-#include <kvs/Pgm>
-#include <kvs/Tiff>
+#include <vismodule/IgnoreUnusedVariable>
+#include <vismodule/Math>
+#include <vismodule/File>
+#include <vismodule/KVSMLObjectImage>
+#include <vismodule/Bmp>
+#include <vismodule/Ppm>
+#include <vismodule/Pbm>
+#include <vismodule/Pgm>
+#include <vismodule/Tiff>
 #ifndef NO_CLIENT
-#include <kvs/Dicom>
+#include <vismodule/Dicom>
 #endif
 #include <algorithm>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -40,12 +40,12 @@ namespace kvs
  */
 /*===========================================================================*/
 void GrayImage::MeanValue::operator () (
-    const kvs::ColorImage& image,
-    kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::ColorImage& image,
+    vismodule::ValueArray<vismodule::UInt8>& data )
 {
     const size_t width = image.width();
     const size_t height = image.height();
-    const kvs::UInt8* image_data = image.data().pointer();
+    const vismodule::UInt8* image_data = image.data().pointer();
     for( size_t j = 0; j < height; j++ )
     {
         const size_t col_line_index = j * image.bytesPerLine();
@@ -60,7 +60,7 @@ void GrayImage::MeanValue::operator () (
             value += image_data[ col_pixel_index + 1 ];
             value += image_data[ col_pixel_index + 2 ];
 
-            data[ gry_pixel_index ] = static_cast<kvs::UInt8>(value / 3);
+            data[ gry_pixel_index ] = static_cast<vismodule::UInt8>(value / 3);
         }
     }
 }
@@ -73,12 +73,12 @@ void GrayImage::MeanValue::operator () (
  */
 /*===========================================================================*/
 void GrayImage::MiddleValue::operator () (
-    const kvs::ColorImage& image,
-    kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::ColorImage& image,
+    vismodule::ValueArray<vismodule::UInt8>& data )
 {
     const size_t width = image.width();
     const size_t height = image.height();
-    const kvs::UInt8* image_data = image.data().pointer();
+    const vismodule::UInt8* image_data = image.data().pointer();
     for( size_t j = 0; j < height; j++ )
     {
         const size_t col_line_index = j * image.bytesPerLine();
@@ -91,11 +91,11 @@ void GrayImage::MiddleValue::operator () (
             const unsigned int r = image_data[ col_pixel_index + 0 ];
             const unsigned int g = image_data[ col_pixel_index + 1 ];
             const unsigned int b = image_data[ col_pixel_index + 2 ];
-            const unsigned int max = kvs::Math::Max( r, g, b );
-            const unsigned int min = kvs::Math::Min( r, g, b );
+            const unsigned int max = vismodule::Math::Max( r, g, b );
+            const unsigned int min = vismodule::Math::Min( r, g, b );
             const unsigned int value = ( max + min ) / 2;
 
-            data[ gry_pixel_index ] = static_cast<kvs::UInt8>(value);
+            data[ gry_pixel_index ] = static_cast<vismodule::UInt8>(value);
         }
     }
 }
@@ -108,12 +108,12 @@ void GrayImage::MiddleValue::operator () (
  */
 /*===========================================================================*/
 void GrayImage::MedianValue::operator () (
-    const kvs::ColorImage& image,
-    kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::ColorImage& image,
+    vismodule::ValueArray<vismodule::UInt8>& data )
 {
     const size_t width = image.width();
     const size_t height = image.height();
-    const kvs::UInt8* image_data = image.data().pointer();
+    const vismodule::UInt8* image_data = image.data().pointer();
     for( size_t j = 0; j < height; j++ )
     {
         const size_t col_line_index = j * image.bytesPerLine();
@@ -129,7 +129,7 @@ void GrayImage::MedianValue::operator () (
             pixel[2] = image_data[ col_pixel_index + 2 ];
             std::sort( pixel, pixel + 3 );
 
-            data[ gry_pixel_index ] = static_cast<kvs::UInt8>(pixel[1]);
+            data[ gry_pixel_index ] = static_cast<vismodule::UInt8>(pixel[1]);
         }
     }
 }
@@ -142,12 +142,12 @@ void GrayImage::MedianValue::operator () (
  */
 /*===========================================================================*/
 void GrayImage::NTSCWeightedMeanValue::operator () (
-    const kvs::ColorImage& image,
-    kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::ColorImage& image,
+    vismodule::ValueArray<vismodule::UInt8>& data )
 {
     const size_t width = image.width();
     const size_t height = image.height();
-    const kvs::UInt8* image_data = image.data().pointer();
+    const vismodule::UInt8* image_data = image.data().pointer();
     for( size_t j = 0; j < height; j++ )
     {
         const size_t col_line_index = j * image.bytesPerLine();
@@ -166,7 +166,7 @@ void GrayImage::NTSCWeightedMeanValue::operator () (
              */
             const unsigned int value = ( 2 * r + 4 * g + b ) / 7;
 
-            data[ gry_pixel_index ] = static_cast<kvs::UInt8>(value);
+            data[ gry_pixel_index ] = static_cast<vismodule::UInt8>(value);
         }
     }
 }
@@ -179,13 +179,13 @@ void GrayImage::NTSCWeightedMeanValue::operator () (
  */
 /*===========================================================================*/
 void GrayImage::HDTVWeightedMeanValue::operator () (
-    const kvs::ColorImage& image,
-    kvs::ValueArray<kvs::UInt8>& data )
+    const vismodule::ColorImage& image,
+    vismodule::ValueArray<vismodule::UInt8>& data )
 {
     const double gamma_value = 2.2;
     const size_t width = image.width();
     const size_t height = image.height();
-    const kvs::UInt8* image_data = image.data().pointer();
+    const vismodule::UInt8* image_data = image.data().pointer();
     for( size_t j = 0; j < height; j++ )
     {
         const size_t col_line_index = j * image.bytesPerLine();
@@ -208,9 +208,9 @@ void GrayImage::HDTVWeightedMeanValue::operator () (
             const double BB = std::pow( B, gamma_value ) * 0.071330;
 
             const double V = std::pow( ( RR + GG + BB ), ( 1.0 / gamma_value ) );
-            const unsigned int value = kvs::Math::Round( V * 255.0 );
+            const unsigned int value = vismodule::Math::Round( V * 255.0 );
 
-            data[ gry_pixel_index ] = static_cast<kvs::UInt8>(value);
+            data[ gry_pixel_index ] = static_cast<vismodule::UInt8>(value);
         }
     }
 }
@@ -232,7 +232,7 @@ GrayImage::GrayImage( void )
  */
 /*==========================================================================*/
 GrayImage::GrayImage( const size_t width, const size_t height ):
-    kvs::ImageBase( width, height, kvs::ImageBase::Gray )
+    vismodule::ImageBase( width, height, vismodule::ImageBase::Gray )
 {
 }
 
@@ -247,8 +247,8 @@ GrayImage::GrayImage( const size_t width, const size_t height ):
 GrayImage::GrayImage(
     const size_t width,
     const size_t height,
-    const kvs::UInt8* data ):
-    kvs::ImageBase( width, height, kvs::ImageBase::Gray, data )
+    const vismodule::UInt8* data ):
+    vismodule::ImageBase( width, height, vismodule::ImageBase::Gray, data )
 {
 }
 
@@ -263,8 +263,8 @@ GrayImage::GrayImage(
 GrayImage::GrayImage(
     const size_t width,
     const size_t height,
-    const kvs::ValueArray<kvs::UInt8>& data ):
-    kvs::ImageBase( width, height, kvs::ImageBase::Gray, data )
+    const vismodule::ValueArray<vismodule::UInt8>& data ):
+    vismodule::ImageBase( width, height, vismodule::ImageBase::Gray, data )
 {
 }
 
@@ -274,7 +274,7 @@ GrayImage::GrayImage(
  *  @param  image [in] gray image
  */
 /*===========================================================================*/
-GrayImage::GrayImage( const kvs::GrayImage& image )
+GrayImage::GrayImage( const vismodule::GrayImage& image )
 {
     BaseClass::copy( image );
 }
@@ -285,7 +285,7 @@ GrayImage::GrayImage( const kvs::GrayImage& image )
  *  @param  image [in] bit image
  */
 /*===========================================================================*/
-GrayImage::GrayImage( const kvs::BitImage& image )
+GrayImage::GrayImage( const vismodule::BitImage& image )
 {
     this->read_image( image );
 }
@@ -296,8 +296,8 @@ GrayImage::GrayImage( const kvs::BitImage& image )
  *  @param  image [in] color image
  */
 /*===========================================================================*/
-GrayImage::GrayImage( const kvs::ColorImage& image ):
-    kvs::ImageBase( image.width(), image.height(), kvs::ImageBase::Gray )
+GrayImage::GrayImage( const vismodule::ColorImage& image ):
+    vismodule::ImageBase( image.width(), image.height(), vismodule::ImageBase::Gray )
 {
     GrayImage::MeanValue method;
     method( image, m_data );
@@ -329,7 +329,7 @@ GrayImage::~GrayImage( void )
  *  @param  image [in] gray image
  */
 /*===========================================================================*/
-kvs::GrayImage& GrayImage::operator = ( const kvs::GrayImage& image )
+vismodule::GrayImage& GrayImage::operator = ( const vismodule::GrayImage& image )
 {
     BaseClass::copy( image );
     return( *this );
@@ -342,7 +342,7 @@ kvs::GrayImage& GrayImage::operator = ( const kvs::GrayImage& image )
  *  @return pixel value
  */
 /*==========================================================================*/
-const kvs::UInt8 GrayImage::pixel( const size_t index ) const
+const vismodule::UInt8 GrayImage::pixel( const size_t index ) const
 {
     return( m_data[ index ] );
 }
@@ -355,7 +355,7 @@ const kvs::UInt8 GrayImage::pixel( const size_t index ) const
  *  @return pixel value
  */
 /*==========================================================================*/
-const kvs::UInt8 GrayImage::pixel( const size_t i, const size_t j ) const
+const vismodule::UInt8 GrayImage::pixel( const size_t i, const size_t j ) const
 {
     return( m_data[ m_width * j + i ] );
 }
@@ -367,7 +367,7 @@ const kvs::UInt8 GrayImage::pixel( const size_t i, const size_t j ) const
  *  @param pixel [in] pixel value
  */
 /*==========================================================================*/
-void GrayImage::set( const size_t index, const kvs::UInt8 pixel )
+void GrayImage::set( const size_t index, const vismodule::UInt8 pixel )
 {
     m_data[ index ] = pixel;
 }
@@ -380,7 +380,7 @@ void GrayImage::set( const size_t index, const kvs::UInt8 pixel )
  *  @param pixel [in] pixel value
  */
 /*==========================================================================*/
-void GrayImage::set( const size_t i, const size_t j, const kvs::UInt8 pixel )
+void GrayImage::set( const size_t i, const size_t j, const vismodule::UInt8 pixel )
 {
     m_data[ m_width * j + i ] = pixel;
 }
@@ -408,7 +408,7 @@ void GrayImage::scale( const double ratio )
 template <typename InterpolationMethod>
 void GrayImage::scale( const double ratio, InterpolationMethod method )
 {
-    kvs::IgnoreUnusedVariable( method );
+    vismodule::IgnoreUnusedVariable( method );
 
     const size_t width = static_cast<size_t>( this->width() * ratio );
     const size_t height = static_cast<size_t>( this->height() * ratio );
@@ -445,7 +445,7 @@ void GrayImage::resize( const size_t width, const size_t height )
 template <typename InterpolationMethod>
 void GrayImage::resize( const size_t width, const size_t height, InterpolationMethod method )
 {
-    kvs::IgnoreUnusedVariable( method );
+    vismodule::IgnoreUnusedVariable( method );
 
     BaseClass::resize<GrayImage,InterpolationMethod>( width, height, this );
 }
@@ -467,12 +467,12 @@ void GrayImage::resize( const size_t width, const size_t height, GrayImage::Bili
 const bool GrayImage::read( const std::string& filename )
 {
     // KVSML image.
-    if ( kvs::KVSMLObjectImage::CheckFileExtension( filename ) )
+    if ( vismodule::KVSMLObjectImage::CheckFileExtension( filename ) )
     {
-        const kvs::KVSMLObjectImage kvsml( filename );
+        const vismodule::KVSMLObjectImage kvsml( filename );
         if ( kvsml.pixelType() == "color" )
         {
-            kvs::ColorImage image( kvsml.width(), kvsml.height(), kvsml.data() );
+            vismodule::ColorImage image( kvsml.width(), kvsml.height(), kvsml.data() );
             return( this->read_image( image ) );
         }
         if ( kvsml.pixelType() == "gray" )
@@ -483,62 +483,62 @@ const bool GrayImage::read( const std::string& filename )
     }
 
     // Bitmap and PPM image.
-    if ( kvs::Bmp::CheckFileExtension( filename ) ||
-         kvs::Ppm::CheckFileExtension( filename ) )
+    if ( vismodule::Bmp::CheckFileExtension( filename ) ||
+         vismodule::Ppm::CheckFileExtension( filename ) )
     {
-        kvs::ColorImage image; image.read( filename );
+        vismodule::ColorImage image; image.read( filename );
         return( this->read_image( image ) );
     }
 
     // PGM image.
-    if ( kvs::Pgm::CheckFileExtension( filename ) )
+    if ( vismodule::Pgm::CheckFileExtension( filename ) )
     {
-        const kvs::Pgm pgm( filename );
+        const vismodule::Pgm pgm( filename );
         const BaseClass::ImageType type = BaseClass::Gray;
         return( BaseClass::create( pgm.width(), pgm.height(), type, pgm.data() ) );
     }
 
     // PBM image.
-    if ( kvs::Pbm::CheckFileExtension( filename ) )
+    if ( vismodule::Pbm::CheckFileExtension( filename ) )
     {
-        kvs::BitImage image; image.read( filename );
+        vismodule::BitImage image; image.read( filename );
         return( this->read_image( image ) );
     }
 
     // TIFF image.
-    if ( kvs::Tiff::CheckFileExtension( filename ) )
+    if ( vismodule::Tiff::CheckFileExtension( filename ) )
     {
-        const kvs::Tiff tiff( filename );
-        if ( tiff.colorMode() == kvs::Tiff::Color24 )
+        const vismodule::Tiff tiff( filename );
+        if ( tiff.colorMode() == vismodule::Tiff::Color24 )
         {
-            const kvs::UInt8* data = static_cast<kvs::UInt8*>(tiff.rawData().pointer());
-            kvs::ColorImage image( tiff.width(), tiff.height(), data );
+            const vismodule::UInt8* data = static_cast<vismodule::UInt8*>(tiff.rawData().pointer());
+            vismodule::ColorImage image( tiff.width(), tiff.height(), data );
             return( this->read_image( image ) );
         }
-        if ( tiff.colorMode() == kvs::Tiff::Gray8 )
+        if ( tiff.colorMode() == vismodule::Tiff::Gray8 )
         {
-            const kvs::UInt8* data = static_cast<kvs::UInt8*>(tiff.rawData().pointer());
+            const vismodule::UInt8* data = static_cast<vismodule::UInt8*>(tiff.rawData().pointer());
             const BaseClass::ImageType type = BaseClass::Gray;
             return( BaseClass::create( tiff.width(), tiff.height(), type, data ) );
         }
-        if ( tiff.colorMode() == kvs::Tiff::Gray16 )
+        if ( tiff.colorMode() == vismodule::Tiff::Gray16 )
         {
-            kvsMessageError( "TIFF image (16bits gray-scale) is not supported." );
+            visModuleMessageError( "TIFF image (16bits gray-scale) is not supported." );
             return( false );
         }
     }
 
     // DICOM image.
 #ifndef NO_CLIENT
-    if ( kvs::Dicom::CheckFileExtension( filename ) )
+    if ( vismodule::Dicom::CheckFileExtension( filename ) )
     {
-        const kvs::Dicom dcm( filename );
+        const vismodule::Dicom dcm( filename );
         const BaseClass::ImageType type = BaseClass::Gray;
         return( BaseClass::create( dcm.width(), dcm.height(), type, dcm.pixelData() ) );
     }
 #endif
 
-    kvsMessageError( "Read-method for %s is not implemented.",
+    visModuleMessageError( "Read-method for %s is not implemented.",
                      filename.c_str() );
 
     return( false );
@@ -554,40 +554,40 @@ const bool GrayImage::read( const std::string& filename )
 const bool GrayImage::write( const std::string& filename )
 {
     // KVSML image.
-    if ( kvs::KVSMLObjectImage::CheckFileExtension( filename ) )
+    if ( vismodule::KVSMLObjectImage::CheckFileExtension( filename ) )
     {
-        kvs::KVSMLObjectImage kvsml;
+        vismodule::KVSMLObjectImage kvsml;
         kvsml.setWidth( m_width );
         kvsml.setHeight( m_height );
         kvsml.setPixelType( "gray" );
-        kvsml.setWritingDataType( kvs::KVSMLObjectImage::Ascii );
+        kvsml.setWritingDataType( vismodule::KVSMLObjectImage::Ascii );
         kvsml.setData( m_data );
         return( kvsml.write( filename ) );
     }
 
     // Bitmap and PPM image.
-    if ( kvs::Bmp::CheckFileExtension( filename ) ||
-         kvs::Ppm::CheckFileExtension( filename ) )
+    if ( vismodule::Bmp::CheckFileExtension( filename ) ||
+         vismodule::Ppm::CheckFileExtension( filename ) )
     {
-        kvs::ColorImage image( *this );
+        vismodule::ColorImage image( *this );
         return( image.write( filename ) );
     }
 
     // PGM image.
-    if ( kvs::Pgm::CheckFileExtension( filename ) )
+    if ( vismodule::Pgm::CheckFileExtension( filename ) )
     {
-        kvs::Pgm pgm( m_width, m_height, m_data );
+        vismodule::Pgm pgm( m_width, m_height, m_data );
         return( pgm.write( filename ) );
     }
 
     // PBM image.
-    if ( kvs::Pbm::CheckFileExtension( filename ) )
+    if ( vismodule::Pbm::CheckFileExtension( filename ) )
     {
-        kvs::BitImage image( *this );
+        vismodule::BitImage image( *this );
         return( image.write( filename ) );
     }
 
-    kvsMessageError( "Write-method for %s is not implemented.",
+    visModuleMessageError( "Write-method for %s is not implemented.",
                      filename.c_str() );
 
     return( false );
@@ -600,7 +600,7 @@ const bool GrayImage::write( const std::string& filename )
  *  @return true, if the reading process is done successfully.
  */
 /*===========================================================================*/
-const bool GrayImage::read_image( const kvs::ColorImage& image )
+const bool GrayImage::read_image( const vismodule::ColorImage& image )
 {
     if ( !BaseClass::create( image.width(), image.height(), BaseClass::Gray ) )
     {
@@ -620,9 +620,9 @@ const bool GrayImage::read_image( const kvs::ColorImage& image )
  *  @return true, if the reading process is done successfully.
  */
 /*===========================================================================*/
-const bool GrayImage::read_image( const kvs::BitImage& image )
+const bool GrayImage::read_image( const vismodule::BitImage& image )
 {
-    if ( !BaseClass::create( image.width(), image.height(), kvs::ImageBase::Gray ) )
+    if ( !BaseClass::create( image.width(), image.height(), vismodule::ImageBase::Gray ) )
     {
         return( false );
     }
@@ -634,7 +634,7 @@ const bool GrayImage::read_image( const kvs::BitImage& image )
     {
         for ( size_t i = 0; i < width; i++, index++ )
         {
-            const kvs::UInt8 pixel = image.pixel( i, j ) ? 255 : 0;
+            const vismodule::UInt8 pixel = image.pixel( i, j ) ? 255 : 0;
             m_data[ index ] = pixel;
         }
     }
@@ -642,4 +642,4 @@ const bool GrayImage::read_image( const kvs::BitImage& image )
     return( true );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

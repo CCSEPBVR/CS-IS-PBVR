@@ -12,17 +12,17 @@
  *  $Id: Csv.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__CSV_H_INCLUDE
-#define KVS__CSV_H_INCLUDE
+#ifndef VIS_MODULE__CSV_H_INCLUDE
+#define VIS_MODULE__CSV_H_INCLUDE
 
 #include <vector>
 #include <string>
 #include <iostream>
-#include <kvs/FileFormatBase>
-#include <kvs/ClassName>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,9 +30,9 @@ namespace kvs
  *  @brief  CSV (Comma Separated Value) class.
  */
 /*===========================================================================*/
-class Csv : public kvs::FileFormatBase
+class Csv : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::Csv );
+    visModuleClassName( vismodule::Csv );
 
 public:
 
@@ -81,6 +81,6 @@ public:
     static const bool CheckFileFormat( const std::string& filename );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__CSV_H_INCLUDE
+#endif // VIS_MODULE__CSV_H_INCLUDE

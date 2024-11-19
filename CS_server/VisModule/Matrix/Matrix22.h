@@ -11,17 +11,17 @@
  *  $Id: Matrix22.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MATRIX_22_H_INCLUDE
-#define KVS__MATRIX_22_H_INCLUDE
+#ifndef VIS_MODULE__MATRIX_22_H_INCLUDE
+#define VIS_MODULE__MATRIX_22_H_INCLUDE
 
 #include <iostream>
-#include <kvs/ClassName>
-#include <kvs/Assert>
-#include <kvs/Math>
+#include <vismodule/ClassName>
+#include <vismodule/Assert>
+#include <vismodule/Math>
 #include "Vector2.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -32,7 +32,7 @@ namespace kvs
 template<typename T>
 class Matrix22
 {
-    kvsClassName_without_virtual( kvs::Matrix22 );
+    visModuleClassName_without_virtual( vismodule::Matrix22 );
 
 private:
 
@@ -624,7 +624,7 @@ inline const T Matrix22<T>::determinant( void ) const
 template<typename T>
 inline const Vector2<T>& Matrix22<T>::operator []( const size_t index ) const
 {
-    KVS_ASSERT( index < 2 );
+    VIS_MODULE_ASSERT( index < 2 );
 
     return( m_rows[ index ] );
 }
@@ -641,7 +641,7 @@ inline const Vector2<T>& Matrix22<T>::operator []( const size_t index ) const
 template<typename T>
 inline Vector2<T>& Matrix22<T>::operator []( const size_t index )
 {
-    KVS_ASSERT( index < 2 );
+    VIS_MODULE_ASSERT( index < 2 );
 
     return( m_rows[ index ] );
 }
@@ -755,6 +755,6 @@ inline const Matrix22<T> Matrix22<T>::operator -( void ) const
     return( result );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MATRIX_22_H_INCLUDE
+#endif // VIS_MODULE__MATRIX_22_H_INCLUDE

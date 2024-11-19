@@ -10,21 +10,21 @@
  *
  *  $Author: naohisa $
  *  $Date: 2008/07/29 07:03:56 $
- *  $Source: /home/Repository/viz-server2/cvsroot/KVS_RC1/Source/Core/FileFormat/DICOM/DicomList.cpp,v $
+ *  $Source: /home/Repository/viz-server2/cvsroot/VIS_MODULE_RC1/Source/Core/FileFormat/DICOM/DicomList.cpp,v $
  *  $Revision: 1.1 $
  */
 /*****************************************************************************/
 #include "DicomList.h"
-#include <kvs/DebugNew>
-#include <kvs/Dicom>
-#include <kvs/File>
-#include <kvs/Directory>
-#include <kvs/Message>
-#include <kvs/Math>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/DebugNew>
+#include <vismodule/Dicom>
+#include <vismodule/File>
+#include <vismodule/Directory>
+#include <vismodule/Message>
+#include <vismodule/Math>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -33,8 +33,8 @@ namespace kvs
  */
 /*===========================================================================*/
 bool DicomList::SortingByImageNumber::operator () (
-    const kvs::Dicom* dicom1,
-    const kvs::Dicom* dicom2 )
+    const vismodule::Dicom* dicom1,
+    const vismodule::Dicom* dicom2 )
 {
     return( dicom1->imageNumber() < dicom2->imageNumber() );
 }
@@ -45,8 +45,8 @@ bool DicomList::SortingByImageNumber::operator () (
  */
 /*===========================================================================*/
 bool DicomList::SortingBySeriesNumber::operator () (
-    const kvs::Dicom* dicom1,
-    const kvs::Dicom* dicom2 )
+    const vismodule::Dicom* dicom1,
+    const vismodule::Dicom* dicom2 )
 {
     return( dicom1->seriesNumber() < dicom2->seriesNumber() );
 }
@@ -57,8 +57,8 @@ bool DicomList::SortingBySeriesNumber::operator () (
  */
 /*===========================================================================*/
 bool DicomList::SortingBySliceLocation::operator () (
-    const kvs::Dicom* dicom1,
-    const kvs::Dicom* dicom2 )
+    const vismodule::Dicom* dicom1,
+    const vismodule::Dicom* dicom2 )
 {
     return( dicom1->sliceLocation() < dicom2->sliceLocation() );
 }
@@ -113,7 +113,7 @@ DicomList::~DicomList( void )
  *  @param  index [in] list index
  */
 /*===========================================================================*/
-const kvs::Dicom* DicomList::operator [] ( const size_t index ) const
+const vismodule::Dicom* DicomList::operator [] ( const size_t index ) const
 {
     return( m_list[index] );
 }
@@ -124,7 +124,7 @@ const kvs::Dicom* DicomList::operator [] ( const size_t index ) const
  *  @param  index [in] list index
  */
 /*===========================================================================*/
-kvs::Dicom* DicomList::operator [] ( const size_t index )
+vismodule::Dicom* DicomList::operator [] ( const size_t index )
 {
     return( m_list[index] );
 }
@@ -135,9 +135,9 @@ kvs::Dicom* DicomList::operator [] ( const size_t index )
  *  @param  dicom [in] DICOM data
  */
 /*===========================================================================*/
-void DicomList::push_back( const kvs::Dicom& dicom )
+void DicomList::push_back( const vismodule::Dicom& dicom )
 {
-    this->push_back( new kvs::Dicom( dicom ) );
+    this->push_back( new vismodule::Dicom( dicom ) );
 }
 
 /*===========================================================================*/
@@ -146,7 +146,7 @@ void DicomList::push_back( const kvs::Dicom& dicom )
  *  @param  dicom [in] pointer to DICOM data.
  */
 /*===========================================================================*/
-void DicomList::push_back( kvs::Dicom* dicom )
+void DicomList::push_back( vismodule::Dicom* dicom )
 {
     if( m_list.size() == 0 )
     {
@@ -162,12 +162,12 @@ void DicomList::push_back( kvs::Dicom* dicom )
     {
         if( m_row != dicom->row() || m_column != dicom->column() )
         {
-            kvsMessageError("Not correspond image size.");
+            visModuleMessageError("Not correspond image size.");
             return;
         }
 
-        m_min_raw_value = kvs::Math::Min( m_min_raw_value, dicom->minRawValue() );
-        m_max_raw_value = kvs::Math::Max( m_max_raw_value, dicom->maxRawValue() );
+        m_min_raw_value = vismodule::Math::Min( m_min_raw_value, dicom->minRawValue() );
+        m_max_raw_value = vismodule::Math::Max( m_max_raw_value, dicom->maxRawValue() );
     }
 
     m_list.push_back( dicom );
@@ -275,7 +275,7 @@ const double DicomList::sliceSpacing( void ) const
  *  @brief  Return the pixel spacing.
  */
 /*===========================================================================*/
-const kvs::Vector2f& DicomList::pixelSpacing( void ) const
+const vismodule::Vector2f& DicomList::pixelSpacing( void ) const
 {
     return( m_pixel_spacing );
 }
@@ -330,30 +330,30 @@ void DicomList::disableExtensionCheck( void )
 /*===========================================================================*/
 const bool DicomList::read( const std::string& dirname )
 {
-    kvs::Directory dir( dirname );
+    vismodule::Directory dir( dirname );
     if( !dir.isExisted() )
     {
-        kvsMessageError( "%s is not existed.", dir.directoryPath().c_str() );
+        visModuleMessageError( "%s is not existed.", dir.directoryPath().c_str() );
         return( false );
     }
 
     if( !dir.isDirectory() )
     {
-        kvsMessageError( "%s is not directory.", dir.directoryPath().c_str() );
+        visModuleMessageError( "%s is not directory.", dir.directoryPath().c_str() );
         return( false );
     }
 
     if( dir.fileList().size() == 0 )
     {
-        kvsMessageError( "File not found in %s.", dir.directoryPath().c_str() );
+        visModuleMessageError( "File not found in %s.", dir.directoryPath().c_str() );
         return( false );
     }
 
     // Read DICOM data file. (".dcm" only, if extension_check is true)
     bool flag = false;
 
-    kvs::FileList::const_iterator file = dir.fileList().begin();
-    kvs::FileList::const_iterator last = dir.fileList().end();
+    vismodule::FileList::const_iterator file = dir.fileList().begin();
+    vismodule::FileList::const_iterator last = dir.fileList().end();
     while ( file != last )
     {
         if( m_extension_check )
@@ -361,7 +361,7 @@ const bool DicomList::read( const std::string& dirname )
             if( file->extension() != "dcm" ) continue;
         }
 
-        kvs::Dicom* dicom = new kvs::Dicom( file->filePath( true ) );
+        vismodule::Dicom* dicom = new vismodule::Dicom( file->filePath( true ) );
         if( !flag )
         {
             m_row             = dicom->row();
@@ -377,12 +377,12 @@ const bool DicomList::read( const std::string& dirname )
         {
             if( m_row != dicom->row() || m_column != dicom->column() )
             {
-                kvsMessageError( "Not correspond image size (%s).", file->filePath().c_str() );
+                visModuleMessageError( "Not correspond image size (%s).", file->filePath().c_str() );
                 continue;
             }
 
-            m_min_raw_value = kvs::Math::Min( m_min_raw_value, dicom->minRawValue() );
-            m_max_raw_value = kvs::Math::Max( m_max_raw_value, dicom->maxRawValue() );
+            m_min_raw_value = vismodule::Math::Min( m_min_raw_value, dicom->minRawValue() );
+            m_max_raw_value = vismodule::Math::Max( m_max_raw_value, dicom->maxRawValue() );
         }
 
         m_list.push_back( dicom );
@@ -404,36 +404,36 @@ const bool DicomList::read( const std::string& dirname )
 /*===========================================================================*/
 const bool DicomList::write( const std::string& dirname )
 {
-    kvs::IgnoreUnusedVariable( dirname );
+    vismodule::IgnoreUnusedVariable( dirname );
 
-    kvsMessageError("Writing method has not been implemented.");
+    visModuleMessageError("Writing method has not been implemented.");
     return( false );
 }
 
 const bool DicomList::CheckDirectory( const std::string& dirname, const bool extension_check )
 {
-    kvs::Directory dir( dirname );
+    vismodule::Directory dir( dirname );
     if( !dir.isExisted() )
     {
-        kvsMessageError( "%s is not existed.", dir.directoryPath().c_str() );
+        visModuleMessageError( "%s is not existed.", dir.directoryPath().c_str() );
         return( false );
     }
 
     if( !dir.isDirectory() )
     {
-        kvsMessageError( "%s is not directory.", dir.directoryPath().c_str() );
+        visModuleMessageError( "%s is not directory.", dir.directoryPath().c_str() );
         return( false );
     }
 
     if( dir.fileList().size() == 0 )
     {
-        kvsMessageError( "File not found in %s.", dir.directoryPath().c_str() );
+        visModuleMessageError( "File not found in %s.", dir.directoryPath().c_str() );
         return( false );
     }
 
     size_t counter = 0;
-    kvs::FileList::const_iterator file = dir.fileList().begin();
-    kvs::FileList::const_iterator last = dir.fileList().end();
+    vismodule::FileList::const_iterator file = dir.fileList().begin();
+    vismodule::FileList::const_iterator last = dir.fileList().end();
     while ( file != last )
     {
         if( extension_check )
@@ -449,7 +449,7 @@ const bool DicomList::CheckDirectory( const std::string& dirname, const bool ext
     {
         if ( counter == 0 )
         {
-            kvsMessageError( "File not found in %s.", dir.directoryPath().c_str() );
+            visModuleMessageError( "File not found in %s.", dir.directoryPath().c_str() );
             return( false );
         }
     }
@@ -457,4 +457,4 @@ const bool DicomList::CheckDirectory( const std::string& dirname, const bool ext
     return( true );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

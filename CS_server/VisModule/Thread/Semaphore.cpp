@@ -16,7 +16,7 @@
 #include "Condition.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -47,7 +47,7 @@ Semaphore::~Semaphore( void )
 /*==========================================================================*/
 void Semaphore::acquire( int nresources )
 {
-    kvs::MutexLocker locker( &m_mutex );
+    vismodule::MutexLocker locker( &m_mutex );
 
     while ( nresources > m_available )
     {
@@ -65,7 +65,7 @@ void Semaphore::acquire( int nresources )
 /*==========================================================================*/
 void Semaphore::release( int nresources )
 {
-    kvs::MutexLocker locker( &m_mutex );
+    vismodule::MutexLocker locker( &m_mutex );
 
     m_condition.wakeUpAll();
     m_available += nresources;
@@ -80,7 +80,7 @@ void Semaphore::release( int nresources )
 /*==========================================================================*/
 bool Semaphore::tryAcquire( int nresources )
 {
-    kvs::MutexLocker locker( &m_mutex );
+    vismodule::MutexLocker locker( &m_mutex );
 
     if ( nresources > m_available ) { return( false ); }
 
@@ -97,9 +97,9 @@ bool Semaphore::tryAcquire( int nresources )
 /*==========================================================================*/
 int Semaphore::available( void )
 {
-    kvs::MutexLocker locker( &m_mutex );
+    vismodule::MutexLocker locker( &m_mutex );
 
     return( m_available );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

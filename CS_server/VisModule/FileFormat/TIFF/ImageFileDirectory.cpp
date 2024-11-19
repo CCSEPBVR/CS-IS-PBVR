@@ -14,7 +14,7 @@
 #include "ImageFileDirectory.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace tiff
@@ -35,20 +35,20 @@ const std::list<tiff::Entry>& ImageFileDirectory::entryList( void ) const
     return( m_entry_list );
 }
 
-kvs::UInt32 ImageFileDirectory::offset( void ) const
+vismodule::UInt32 ImageFileDirectory::offset( void ) const
 {
     return( m_offset );
 }
 
 bool ImageFileDirectory::read( std::ifstream& ifs )
 {
-    kvs::UInt16 nentries = 0;
+    vismodule::UInt16 nentries = 0;
     ifs.read( reinterpret_cast<char*>( &nentries ), 2 );
     if ( ifs.gcount() != 2 ) return( false );
 
     for( size_t i = 0; i < nentries; i++ )
     {
-        m_entry_list.push_back( kvs::tiff::Entry( ifs ) );
+        m_entry_list.push_back( vismodule::tiff::Entry( ifs ) );
     }
 
     ifs.read( reinterpret_cast<char*>( &m_offset ), 4 );
@@ -64,4 +64,4 @@ bool ImageFileDirectory::read( std::ifstream& ifs )
 
 } // end of namesapce tiff
 
-} // end of namespace kvs
+} // end of namespace vismodule

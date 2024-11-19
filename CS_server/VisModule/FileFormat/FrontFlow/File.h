@@ -12,15 +12,15 @@
  *  $Id: File.h 874 2011-07-28 03:06:54Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__GF__FILE_H_INCLUDE
-#define KVS__GF__FILE_H_INCLUDE
+#ifndef VIS_MODULE__GF__FILE_H_INCLUDE
+#define VIS_MODULE__GF__FILE_H_INCLUDE
 
 #include "DataSet.h"
 #include <vector>
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace gf
@@ -37,7 +37,7 @@ protected:
 
     std::string m_file_type_header; ///< file type header
     std::vector<std::string> m_comment_list; ///< comment list
-    std::vector<kvs::gf::DataSet> m_data_set_list; ///< data set list
+    std::vector<vismodule::gf::DataSet> m_data_set_list; ///< data set list
 
 public:
 
@@ -57,9 +57,9 @@ public:
 
     const std::string& comment( const size_t index ) const;
 
-    const std::vector<kvs::gf::DataSet>& dataSetList( void ) const;
+    const std::vector<vismodule::gf::DataSet>& dataSetList( void ) const;
 
-    const kvs::gf::DataSet& dataSet( const size_t index ) const;
+    const vismodule::gf::DataSet& dataSet( const size_t index ) const;
 
     void deallocate( void );
 
@@ -80,6 +80,6 @@ protected:
 
 } // end of namespace gf
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GF__FILE_H_INCLUDE
+#endif // VIS_MODULE__GF__FILE_H_INCLUDE

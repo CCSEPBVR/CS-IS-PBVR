@@ -16,7 +16,7 @@
 #include "File.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace gf
@@ -100,7 +100,7 @@ const size_t MeshData::nelements( void ) const
  *  @return coordinate values
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& MeshData::coords( void ) const
+const vismodule::ValueArray<vismodule::Real32>& MeshData::coords( void ) const
 {
     return( m_coords );
 }
@@ -111,7 +111,7 @@ const kvs::ValueArray<kvs::Real32>& MeshData::coords( void ) const
  *  @return connection values
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt32>& MeshData::connections( void ) const
+const vismodule::ValueArray<vismodule::UInt32>& MeshData::connections( void ) const
 {
     return( m_connections );
 }
@@ -125,23 +125,23 @@ const kvs::ValueArray<kvs::UInt32>& MeshData::connections( void ) const
 /*===========================================================================*/
 const bool MeshData::read( const std::string filename )
 {
-    kvs::gf::File file;
+    vismodule::gf::File file;
     if ( !file.read( filename ) )
     {
-        kvsMessageError("Cannot read mesh data file.");
+        visModuleMessageError("Cannot read mesh data file.");
         return( false );
     }
 
     if ( file.dataSetList().size() != 1 )
     {
-        kvsMessageError("Multiple data set is not supported in kvs::gf::MeshData.");
+        visModuleMessageError("Multiple data set is not supported in vismodule::gf::MeshData.");
         return( false );
     }
 
-    const kvs::gf::DataSet& data_set = file.dataSet(0);
+    const vismodule::gf::DataSet& data_set = file.dataSet(0);
     for ( size_t i = 0; i < data_set.dataList().size(); i++ )
     {
-        const kvs::gf::Data& data = data_set.data(i);
+        const vismodule::gf::Data& data = data_set.data(i);
         const std::string& keyword = data.keyword();
         const std::string& type = data.arrayTypeHeader();
 
@@ -163,10 +163,10 @@ const bool MeshData::read( const std::string filename )
             {
                 m_nnodes_per_element = data.num();
                 m_nelements = data.num2();
-                const kvs::Int32* src = data.intArray().pointer();
+                const vismodule::Int32* src = data.intArray().pointer();
                 const size_t size = data.intArray().size();
-                kvs::UInt32* dst = m_connections.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
+                vismodule::UInt32* dst = m_connections.allocate( size );
+                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
     }
@@ -176,4 +176,4 @@ const bool MeshData::read( const std::string filename )
 
 } // end of namespace gf
 
-} // end of namespace kvs
+} // end of namespace vismodule

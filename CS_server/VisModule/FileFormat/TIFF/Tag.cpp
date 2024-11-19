@@ -12,11 +12,11 @@
  */
 /****************************************************************************/
 #include "Tag.h"
-#include <kvs/Type>
+#include <vismodule/Type>
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace tiff
@@ -28,7 +28,7 @@ Tag::Tag( void ):
 {
 }
 
-Tag::Tag( const kvs::UInt16 id, const std::string& name ):
+Tag::Tag( const vismodule::UInt16 id, const std::string& name ):
     m_id( id ),
     m_name( name )
 {
@@ -48,7 +48,7 @@ Tag& Tag::operator = ( const Tag& tag )
     return( *this );
 }
 
-kvs::UInt16 Tag::id( void ) const
+vismodule::UInt16 Tag::id( void ) const
 {
     return( m_id );
 }
@@ -60,4 +60,4 @@ const std::string& Tag::name( void ) const
 
 } // end of namespace tiff
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -14,11 +14,11 @@
 #include "CellByCellRejectionSampling.h"
 #include <vector>
 #include <stdlib.h>
-#include <kvs/DebugNew>
+#include <vismodule/DebugNew>
 #include "ObjectManager.h"
-#include <kvs/Camera>
-//#include <kvs/TrilinearInterpolator>
-#include <kvs/Value>
+#include <vismodule/Camera>
+//#include <vismodule/TrilinearInterpolator>
+#include <vismodule/Value>
 #include "CellBase.h"
 #include "TrilinearInterpolator.h" 
 #include "TetrahedralCell.h"
@@ -29,7 +29,7 @@
 #include "PyramidalCell.h"
 #include "GlobalCore.h"
 
-#include <kvs/Timer>
+#include <vismodule/Timer>
 #include "common.h"
 
 #include <cmath>
@@ -37,7 +37,7 @@
 #ifdef ENABLE_MPI
 #include <mpi.h>
 #include "mpi_controller.h"
-#include <kvs/DistributedRejectionSampling>
+#include <vismodule/DistributedRejectionSampling>
 #endif
 
 #ifdef _OPENMP
@@ -112,7 +112,7 @@ CellByCellRejectionSampling::CellByCellRejectionSampling(
  */
 /*===========================================================================*/
 CellByCellRejectionSampling::CellByCellRejectionSampling(
-    const kvs::Camera&           camera,
+    const vismodule::Camera&           camera,
     const pbvr::VolumeObjectBase& volume,
     const size_t                 subpixel_level,
     const float                  sampling_step,
@@ -136,7 +136,7 @@ CellByCellRejectionSampling::CellByCellRejectionSampling(
 }
 
 CellByCellRejectionSampling::CellByCellRejectionSampling(
-    const kvs::Camera&           camera,
+    const vismodule::Camera&           camera,
     const pbvr::VolumeObjectBase& volume,
     const size_t                 subpixel_level,
     const float                  sampling_step,
@@ -212,7 +212,7 @@ const float CellByCellRejectionSampling::objectDepth() const
  *  @param  camera [in] pointer to the camera
  */
 /*===========================================================================*/
-void CellByCellRejectionSampling::attachCamera( const kvs::Camera& camera )
+void CellByCellRejectionSampling::attachCamera( const vismodule::Camera& camera )
 {
     m_camera = &camera;
 }
@@ -262,7 +262,7 @@ CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::exec( cons
     if ( !&object )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError( "Input object is NULL." );
+        visModuleMessageError( "Input object is NULL." );
         return NULL;
     }
 
@@ -270,14 +270,14 @@ CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::exec( cons
     if ( !volume )
     {
         BaseClass::m_is_success = false;
-        kvsMessageError( "Input object is not volume dat." );
+        visModuleMessageError( "Input object is not volume dat." );
         return NULL;
     }
 
     const pbvr::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
     if ( volume_type == pbvr::VolumeObjectBase::Structured )
     {
-//        const kvs::Camera* camera = ( !m_camera ) ? pbvr::GlobalCore::camera : m_camera;
+//        const vismodule::Camera* camera = ( !m_camera ) ? pbvr::GlobalCore::camera : m_camera;
 //        this->mapping( camera, reinterpret_cast<const pbvr::StructuredVolumeObject*>( object ) );
         const pbvr::StructuredVolumeObject* svo_p = static_cast<const pbvr::StructuredVolumeObject*>( &object );
         if ( m_camera )
@@ -292,14 +292,14 @@ CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::exec( cons
             {
                 if ( pbvr::GlobalCore::m_camera->windowWidth() != 0 && pbvr::GlobalCore::m_camera->windowHeight() )
                 {
-                    const kvs::Camera* camera = pbvr::GlobalCore::m_camera;
+                    const vismodule::Camera* camera = pbvr::GlobalCore::m_camera;
 //                    this->mapping( camera, reinterpret_cast<const pbvr::StructuredVolumeObject*>( object ) );
                       this->mapping( *camera, *svo_p );
                 }
             }
             else
             {
-                kvs::Camera* camera = new kvs::Camera();
+                vismodule::Camera* camera = new vismodule::Camera();
 //                this->mapping( camera, reinterpret_cast<const pbvr::StructuredVolumeObject*>( object ) );
                 this->mapping( *camera, *svo_p );
                 delete camera;
@@ -320,13 +320,13 @@ CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::exec( cons
             {
                 if ( pbvr::GlobalCore::m_camera->windowWidth() != 0 && pbvr::GlobalCore::m_camera->windowHeight() )
                 {
-                    const kvs::Camera* camera = pbvr::GlobalCore::m_camera;
+                    const vismodule::Camera* camera = pbvr::GlobalCore::m_camera;
                     this->mapping( *camera, *uvo_p );
                 }
             }
             else
             {
-                kvs::Camera* camera = new kvs::Camera();
+                vismodule::Camera* camera = new vismodule::Camera();
                 this->mapping( *camera, *uvo_p );
                 delete camera;
             }
@@ -343,7 +343,7 @@ CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::exec( cons
  *  @param  volume [in] pointer to the input volume object
  */
 /*===========================================================================*/
-void CellByCellRejectionSampling::mapping( const kvs::Camera& camera, const pbvr::StructuredVolumeObject& volume )
+void CellByCellRejectionSampling::mapping( const vismodule::Camera& camera, const pbvr::StructuredVolumeObject& volume )
 {
     // Attach the pointer to the volume object and set the min/max coordinates.
     BaseClass::attach_volume( volume );
@@ -392,20 +392,20 @@ void CellByCellRejectionSampling::mapping( const kvs::Camera& camera, const pbvr
 
     // Generate the particles.
     const std::type_info& type = volume.values().typeInfo()->type();
-    if (      type == typeid( kvs::UInt8  ) ) this->generate_particles<kvs::UInt8>( volume );
-    else if ( type == typeid( kvs::UInt16 ) ) this->generate_particles<kvs::UInt16>( volume );
-    else if ( type == typeid( kvs::Int16  ) ) this->generate_particles<kvs::Int16>( volume );
-    else if ( type == typeid( kvs::Real32 ) ) this->generate_particles<kvs::Real32>( volume );
-    else if ( type == typeid( kvs::Real64 ) ) this->generate_particles<kvs::Real64>( volume );
+    if (      type == typeid( vismodule::UInt8  ) ) this->generate_particles<vismodule::UInt8>( volume );
+    else if ( type == typeid( vismodule::UInt16 ) ) this->generate_particles<vismodule::UInt16>( volume );
+    else if ( type == typeid( vismodule::Int16  ) ) this->generate_particles<vismodule::Int16>( volume );
+    else if ( type == typeid( vismodule::Real32 ) ) this->generate_particles<vismodule::Real32>( volume );
+    else if ( type == typeid( vismodule::Real64 ) ) this->generate_particles<vismodule::Real64>( volume );
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError( "Unsupported data type '%s'.", volume.values().typeInfo()->typeName() );
+        visModuleMessageError( "Unsupported data type '%s'.", volume.values().typeInfo()->typeName() );
     }
 }
 
 template <>
-void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::UnstructuredVolumeObject& volume );
+void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const pbvr::UnstructuredVolumeObject& volume );
 
 /*===========================================================================*/
 /**
@@ -414,7 +414,7 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
  *  @param  volume [in] pointer to the input volume object
  */
 /*===========================================================================*/
-void CellByCellRejectionSampling::mapping( const kvs::Camera& camera, const pbvr::UnstructuredVolumeObject& volume )
+void CellByCellRejectionSampling::mapping( const vismodule::Camera& camera, const pbvr::UnstructuredVolumeObject& volume )
 {
     // Attach the pointer to the volume object and set the min/max coordinates.
     BaseClass::attach_volume( volume );
@@ -455,19 +455,19 @@ void CellByCellRejectionSampling::mapping( const kvs::Camera& camera, const pbvr
 
     // Generate the particles.
     const std::type_info& type = volume.values().typeInfo()->type();
-    if (      type == typeid( kvs::Int8   ) ) this->generate_particles<kvs::Int8>( volume );
-    else if ( type == typeid( kvs::Int16  ) ) this->generate_particles<kvs::Int16>( volume );
-    else if ( type == typeid( kvs::Int32  ) ) this->generate_particles<kvs::Int32>( volume );
-    else if ( type == typeid( kvs::UInt8  ) ) this->generate_particles<kvs::UInt8>( volume );
-    else if ( type == typeid( kvs::UInt16 ) ) this->generate_particles<kvs::UInt16>( volume );
-    else if ( type == typeid( kvs::UInt32 ) ) this->generate_particles<kvs::UInt32>( volume );
-    else if ( type == typeid( kvs::Real32 ) ) this->generate_particles<kvs::Real32>( volume );
-    else if ( type == typeid( kvs::Real64 ) ) this->generate_particles<kvs::Real64>( volume );
-    //else if ( type == typeid( kvs::Real64 ) ) this->generate_particles<kvs::Real32>( volume );
+    if (      type == typeid( vismodule::Int8   ) ) this->generate_particles<vismodule::Int8>( volume );
+    else if ( type == typeid( vismodule::Int16  ) ) this->generate_particles<vismodule::Int16>( volume );
+    else if ( type == typeid( vismodule::Int32  ) ) this->generate_particles<vismodule::Int32>( volume );
+    else if ( type == typeid( vismodule::UInt8  ) ) this->generate_particles<vismodule::UInt8>( volume );
+    else if ( type == typeid( vismodule::UInt16 ) ) this->generate_particles<vismodule::UInt16>( volume );
+    else if ( type == typeid( vismodule::UInt32 ) ) this->generate_particles<vismodule::UInt32>( volume );
+    else if ( type == typeid( vismodule::Real32 ) ) this->generate_particles<vismodule::Real32>( volume );
+    else if ( type == typeid( vismodule::Real64 ) ) this->generate_particles<vismodule::Real64>( volume );
+    //else if ( type == typeid( vismodule::Real64 ) ) this->generate_particles<vismodule::Real32>( volume );
     else
     {
         BaseClass::m_is_success = false;
-        kvsMessageError( "Unsupported data type '%s'.", volume.values().typeInfo()->typeName() );
+        visModuleMessageError( "Unsupported data type '%s'.", volume.values().typeInfo()->typeName() );
     }
 }
 
@@ -482,10 +482,10 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
 {
 #if 1
 
-    kvs::AnyValueArray valueArray = volume.values(); 
+    vismodule::AnyValueArray valueArray = volume.values(); 
     int nnodes = volume.nnodes();
     
-    const kvs::Vector3ui resolution( volume.resolution() );
+    const vismodule::Vector3ui resolution( volume.resolution() );
     const int nvariables = volume.veclen();
     Type** values;
     values = new Type * [nvariables];
@@ -536,13 +536,13 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
 
     //ヒストグラム
     int nbins = 256;
-    kvs::ValueArray<float> o_min( tf_number );//TFSから読み込む最大最小値
-    kvs::ValueArray<float> o_max( tf_number );
-    kvs::ValueArray<float> c_min( tf_number );
-    kvs::ValueArray<float> c_max( tf_number );
+    vismodule::ValueArray<float> o_min( tf_number );//TFSから読み込む最大最小値
+    vismodule::ValueArray<float> o_max( tf_number );
+    vismodule::ValueArray<float> c_min( tf_number );
+    vismodule::ValueArray<float> c_max( tf_number );
 
-    kvs::ValueArray<int> o_histogram( tf_number * nbins );//不透明度ヒストグラムの配列
-    kvs::ValueArray<int> c_histogram( tf_number * nbins );//色ヒストグラムの配列
+    vismodule::ValueArray<int> o_histogram( tf_number * nbins );//不透明度ヒストグラムの配列
+    vismodule::ValueArray<int> c_histogram( tf_number * nbins );//色ヒストグラムの配列
 
     if( parameter_file_opened )
     {
@@ -551,8 +551,8 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
     }
 
     // 2023/07/31 add by shimomura
-    SuperClass::m_c_histogram = kvs::ValueArray<int> (tf_number * nbins);
-    SuperClass::m_o_histogram = kvs::ValueArray<int> (tf_number * nbins);
+    SuperClass::m_c_histogram = vismodule::ValueArray<int> (tf_number * nbins);
+    SuperClass::m_o_histogram = vismodule::ValueArray<int> (tf_number * nbins);
     SuperClass::setTfnumber(tf_number);
     SuperClass::setNbins(nbins);
 
@@ -569,10 +569,10 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
     }
 
     //最大最小値
-    kvs::ValueArray<float> O_min( tf_number );//計算して得る最大最小値
-    kvs::ValueArray<float> O_max( tf_number );
-    kvs::ValueArray<float> C_min( tf_number );
-    kvs::ValueArray<float> C_max( tf_number );
+    vismodule::ValueArray<float> O_min( tf_number );//計算して得る最大最小値
+    vismodule::ValueArray<float> O_max( tf_number );
+    vismodule::ValueArray<float> C_min( tf_number );
+    vismodule::ValueArray<float> C_max( tf_number );
 
     // 動的な粒子データ配列
     std::vector<float> vertex_coords;
@@ -666,7 +666,7 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
 
         int th_total_nparticles = 0;
         //各スレッド番号をシードにした乱数生成器
-        kvs::MersenneTwister MT( thid + mpi_rank * nthreads );
+        vismodule::MersenneTwister MT( thid + mpi_rank * nthreads );
 
         // 動的な粒子データ配列
         std::vector<float> th_vertex_coords;
@@ -686,8 +686,8 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
             c_scalars[i] = new float[SIMDW];
         }
 
-        kvs::ValueArray<int> th_o_histogram( tf_number * nbins );//不透明度
-        kvs::ValueArray<int> th_c_histogram( tf_number * nbins );//色
+        vismodule::ValueArray<int> th_o_histogram( tf_number * nbins );//不透明度
+        vismodule::ValueArray<int> th_c_histogram( tf_number * nbins );//色
 
         if( parameter_file_opened )
         {
@@ -696,10 +696,10 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
         }
 
         //最大最小値
-        kvs::ValueArray<float> th_O_min( tf_number );//計算して得る最大最小値
-        kvs::ValueArray<float> th_O_max( tf_number );
-        kvs::ValueArray<float> th_C_min( tf_number );
-        kvs::ValueArray<float> th_C_max( tf_number );
+        vismodule::ValueArray<float> th_O_min( tf_number );//計算して得る最大最小値
+        vismodule::ValueArray<float> th_O_max( tf_number );
+        vismodule::ValueArray<float> th_C_min( tf_number );
+        vismodule::ValueArray<float> th_C_max( tf_number );
 
         if( parameter_file_opened )
         {
@@ -712,9 +712,9 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
             }
         }
 
-        const kvs::Vector3f min_vec = volume.minObjectCoord(); 
-        const kvs::Vector3f max_vec = volume.maxObjectCoord(); 
-        const kvs::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ nx_1,
+        const vismodule::Vector3f min_vec = volume.minObjectCoord(); 
+        const vismodule::Vector3f max_vec = volume.maxObjectCoord(); 
+        const vismodule::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ nx_1,
                                          (max_vec.y() - min_vec.y() )/ ny_1,
                                          (max_vec.z() - min_vec.z() )/ nz_1) ;
         //-----------------------------------------//
@@ -913,7 +913,7 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
                 float p_x_l[SIMDW], p_y_l[SIMDW], p_z_l[SIMDW];
                 float p_x_g[SIMDW], p_y_g[SIMDW], p_z_g[SIMDW];
                 float grad_x[SIMDW], grad_y[SIMDW], grad_z[SIMDW];
-                kvs::UInt8 red[SIMDW], green[SIMDW], blue[SIMDW];
+                vismodule::UInt8 red[SIMDW], green[SIMDW], blue[SIMDW];
                 float particle_opacity[SIMDW];
                 // the last loop "I==SIMDW" is used for occupy ramained array.
                     for(int I=0; I<SIMDW+1; I++)
@@ -929,9 +929,9 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
                         int nparticles_count =0;  
                         while (nparticles_count < nparticles_I)
                         {
-                            const kvs::Vector3f vertex( (float)i, (float)j, (float)k );
-                            const kvs::Vector3f coord_l( RandomSamplingInCube( vertex, &MT ) );
-                            const kvs::Vector3f coord_g(
+                            const vismodule::Vector3f vertex( (float)i, (float)j, (float)k );
+                            const vismodule::Vector3f coord_l( RandomSamplingInCube( vertex, &MT ) );
+                            const vismodule::Vector3f coord_g(
                                     (coord_l.x()*cell_length.x())+min_vec.x(),
                                     (coord_l.y()*cell_length.y())+min_vec.y(),
                                     (coord_l.z()*cell_length.z())+min_vec.z() );
@@ -1079,9 +1079,9 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
         m_transfer_function_synthesizer->m_c_max[i] = C_max[i];
     }
 
-    SuperClass::m_coords  = kvs::ValueArray<kvs::Real32>( vertex_coords );
-    SuperClass::m_colors  = kvs::ValueArray<kvs::UInt8>( vertex_colors );
-    SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( vertex_normals );
+    SuperClass::m_coords  = vismodule::ValueArray<vismodule::Real32>( vertex_coords );
+    SuperClass::m_colors  = vismodule::ValueArray<vismodule::UInt8>( vertex_colors );
+    SuperClass::m_normals = vismodule::ValueArray<vismodule::Real32>( vertex_normals );
 
 //    timer.stop();
 //    time.sampling = timer.sec();
@@ -1126,9 +1126,9 @@ template <typename T>
 void CellByCellRejectionSampling::generate_particles( const pbvr::UnstructuredVolumeObject& volume )
 {
     // Vertex data arrays. (output)
-    std::vector<kvs::Real32> vertex_coords;
-    std::vector<kvs::UInt8>  vertex_colors;
-    std::vector<kvs::Real32> vertex_normals;
+    std::vector<vismodule::Real32> vertex_coords;
+    std::vector<vismodule::UInt8>  vertex_colors;
+    std::vector<vismodule::Real32> vertex_normals;
 
     // Set a tetrahedral cell interpolator.
     pbvr::CellBase<T>* cell = NULL;
@@ -1167,13 +1167,13 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::UnstructuredVo
     default:
     {
         BaseClass::m_is_success = false;
-        kvsMessageError( "Unsupported cell type." );
+        visModuleMessageError( "Unsupported cell type." );
         return;
     }
     }
 
     const size_t veclen = volume.veclen();
-    const kvs::ColorMap color_map( BaseClass::transferFunction().colorMap() );
+    const vismodule::ColorMap color_map( BaseClass::transferFunction().colorMap() );
 
     const pbvr::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
     CoordSynthesizerStrings css;
@@ -1272,7 +1272,7 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::UnstructuredVo
         // Calculate a number of particles in this cell.
         const float averaged_scalar = cell->averagedScalar();
         float density = this->calculate_density( averaged_scalar );
-#ifdef KVS_PLATFORM_MACOSX
+#ifdef VIS_MODULE_PLATFORM_MACOSX
         if ( std::isnan( density ) )
 #else
 	if ( std::isnan( density ) )
@@ -1288,8 +1288,8 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::UnstructuredVo
         T S_max = S[0];
         for ( size_t i = 1; i < nnodes; i++ )
         {
-            S_min = kvs::Math::Min( S_min, S[i] );
-            S_max = kvs::Math::Max( S_max, S[i] );
+            S_min = vismodule::Math::Min( S_min, S[i] );
+            S_max = vismodule::Math::Max( S_max, S[i] );
         }
         const float s_min = static_cast<float>( S_min );
         const float s_max = static_cast<float>( S_max );
@@ -1299,7 +1299,7 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::UnstructuredVo
         size_t count = 0;
         while ( count < nparticles )
         {
-            const kvs::Vector3f coord = cell->randomSampling();
+            const vismodule::Vector3f coord = cell->randomSampling();
             const float scalar = cell->scalar();
             const float density = this->calculate_density( scalar );
 
@@ -1308,13 +1308,13 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::UnstructuredVo
             if ( p > p_max * R )
             {
                 // Calculate a color.
-                const kvs::RGBColor color( color_map.at( scalar ) );
+                const vismodule::RGBColor color( color_map.at( scalar ) );
 
                 // Calculate a normal.
-                const kvs::Vector3f normal( cell->gradient() );
+                const vismodule::Vector3f normal( cell->gradient() );
 
                 // using coord synthesizer
-                kvs::Vector3f new_coord = coord;
+                vismodule::Vector3f new_coord = coord;
                 if ( pCrdSynthStr )
                 {
                     X = x = coord.x();
@@ -1364,28 +1364,28 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::UnstructuredVo
         } // end of 'paricle' while-loop
     } // end of 'cell' for-loop
 
-    SuperClass::m_coords  = kvs::ValueArray<kvs::Real32>( vertex_coords );
-    SuperClass::m_colors  = kvs::ValueArray<kvs::UInt8>( vertex_colors );
-    SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( vertex_normals );
+    SuperClass::m_coords  = vismodule::ValueArray<vismodule::Real32>( vertex_coords );
+    SuperClass::m_colors  = vismodule::ValueArray<vismodule::UInt8>( vertex_colors );
+    SuperClass::m_normals = vismodule::ValueArray<vismodule::Real32>( vertex_normals );
     SuperClass::setSize( 1.0f );
 
     delete cell;
 }
 
 template <>
-void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::UnstructuredVolumeObject& volume )
+void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const pbvr::UnstructuredVolumeObject& volume )
 {
     double start = GetTime();
     size_t resolution = DEFAULT_NBINS;
-    kvs::ValueArray<float> O_min_recv;
-    kvs::ValueArray<float> O_max_recv;
-    kvs::ValueArray<float> C_min_recv;
-    kvs::ValueArray<float> C_max_recv;
-    kvs::ValueArray<int> o_histogram_recv;
-    kvs::ValueArray<int> c_histogram_recv;
+    vismodule::ValueArray<float> O_min_recv;
+    vismodule::ValueArray<float> O_max_recv;
+    vismodule::ValueArray<float> C_min_recv;
+    vismodule::ValueArray<float> C_max_recv;
+    vismodule::ValueArray<int> o_histogram_recv;
+    vismodule::ValueArray<int> c_histogram_recv;
 
 
-    kvs::AnyValueArray valueArray = volume.values(); 
+    vismodule::AnyValueArray valueArray = volume.values(); 
     Type* coordinates =  (float * )volume.coords().pointer(); 
     int ncoords =  volume.nnodes();
     unsigned int* connections =  (unsigned int*)volume.connections().pointer();
@@ -1563,7 +1563,7 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
         default:
             {
                 BaseClass::m_is_success = false;
-                kvsMessageError( "Unsupported cell type." );
+                visModuleMessageError( "Unsupported cell type." );
                 return;
             }
     }
@@ -1571,8 +1571,8 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
 
     int tf_number = m_transfer_function_array.size();
 
-    SuperClass::m_color_histogram  = kvs::ValueArray<pbvr::FrequencyTable>( tf_number );
-    SuperClass::m_opacity_histogram  = kvs::ValueArray<pbvr::FrequencyTable>( tf_number );
+    SuperClass::m_color_histogram  = vismodule::ValueArray<pbvr::FrequencyTable>( tf_number );
+    SuperClass::m_opacity_histogram  = vismodule::ValueArray<pbvr::FrequencyTable>( tf_number );
 
     const int max_nparticles = (int)m_transfer_function_synthesizer->getMaxDensity() + 1;
 
@@ -1580,14 +1580,14 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
 
     //ヒストグラム
     int nbins = 256;
-    kvs::ValueArray<float> o_min( tf_number );//TFSから読み込む最大最小値
-    kvs::ValueArray<float> o_max( tf_number );
-    kvs::ValueArray<float> c_min( tf_number );
-    kvs::ValueArray<float> c_max( tf_number );
+    vismodule::ValueArray<float> o_min( tf_number );//TFSから読み込む最大最小値
+    vismodule::ValueArray<float> o_max( tf_number );
+    vismodule::ValueArray<float> c_min( tf_number );
+    vismodule::ValueArray<float> c_max( tf_number );
 
     // 2023/07/31 add by shimomura
-    SuperClass::m_c_histogram = kvs::ValueArray<int> (tf_number * nbins);
-    SuperClass::m_o_histogram = kvs::ValueArray<int> (tf_number * nbins);
+    SuperClass::m_c_histogram = vismodule::ValueArray<int> (tf_number * nbins);
+    SuperClass::m_o_histogram = vismodule::ValueArray<int> (tf_number * nbins);
     SuperClass::setTfnumber(tf_number);
     SuperClass::setNbins(nbins);
     
@@ -1612,10 +1612,10 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
     }
 
     //最大最小値
-    kvs::ValueArray<float> O_min( tf_number );//計算して得る最大最小値
-    kvs::ValueArray<float> O_max( tf_number );
-    kvs::ValueArray<float> C_min( tf_number );
-    kvs::ValueArray<float> C_max( tf_number );
+    vismodule::ValueArray<float> O_min( tf_number );//計算して得る最大最小値
+    vismodule::ValueArray<float> O_max( tf_number );
+    vismodule::ValueArray<float> C_min( tf_number );
+    vismodule::ValueArray<float> C_max( tf_number );
 
     // 動的な粒子データ配列
     std::vector<float> vertex_coords;
@@ -1692,7 +1692,7 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
         int thid     = 0;
 #endif
 
-        kvs::MersenneTwister MT( thid + mpi_rank * nthreads );
+        vismodule::MersenneTwister MT( thid + mpi_rank * nthreads );
 
         // 動的な粒子データ配列
         std::vector<float> th_vertex_coords;
@@ -1702,8 +1702,8 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
         //ヒストグラムの配列
         std::vector<float> o_scalars( tf_number );//頂点の不透明度
         std::vector<float> c_scalars( tf_number );//頂点の色
-        kvs::ValueArray<int> th_o_histogram( tf_number * nbins );//不透明度
-        kvs::ValueArray<int> th_c_histogram( tf_number * nbins );//色
+        vismodule::ValueArray<int> th_o_histogram( tf_number * nbins );//不透明度
+        vismodule::ValueArray<int> th_c_histogram( tf_number * nbins );//色
 
         if( parameter_file_opened )
         {
@@ -1712,10 +1712,10 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
         }
 
         //最大最小値
-        kvs::ValueArray<float> th_O_min( tf_number );//計算して得る最大最小値
-        kvs::ValueArray<float> th_O_max( tf_number );
-        kvs::ValueArray<float> th_C_min( tf_number );
-        kvs::ValueArray<float> th_C_max( tf_number );
+        vismodule::ValueArray<float> th_O_min( tf_number );//計算して得る最大最小値
+        vismodule::ValueArray<float> th_O_max( tf_number );
+        vismodule::ValueArray<float> th_C_min( tf_number );
+        vismodule::ValueArray<float> th_C_max( tf_number );
 
         if( parameter_file_opened )
         {
@@ -1730,9 +1730,9 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
 
         // -----------------------------------
         //配列の追加
-        kvs::Vector3f local_center_array[ SIMDW ];
-        kvs::Vector3f global_center_array[ SIMDW ];
-        kvs::UInt32 cell_index[ SIMDW ];
+        vismodule::Vector3f local_center_array[ SIMDW ];
+        vismodule::Vector3f global_center_array[ SIMDW ];
+        vismodule::UInt32 cell_index[ SIMDW ];
 
         float cell_opacity_array[ SIMDW ];
         std::vector<float> o_scalars_array[ SIMDW ];
@@ -1746,21 +1746,21 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
 
         int nparticles_array[ SIMDW ];
 
-        kvs::Vector3f local_coord_array[ SIMDW ];
-        kvs::Vector3f global_coord_array[ SIMDW ];
+        vismodule::Vector3f local_coord_array[ SIMDW ];
+        vismodule::Vector3f global_coord_array[ SIMDW ];
         float density_array[ SIMDW ];
 
-        kvs::Vector3f l_plus_coord[ SIMDW ];
-        kvs::Vector3f l_minus_coord[ SIMDW ];
-        kvs::Vector3f g_plus_coord[ SIMDW ];
-        kvs::Vector3f g_minus_coord[ SIMDW ];
+        vismodule::Vector3f l_plus_coord[ SIMDW ];
+        vismodule::Vector3f l_minus_coord[ SIMDW ];
+        vismodule::Vector3f g_plus_coord[ SIMDW ];
+        vismodule::Vector3f g_minus_coord[ SIMDW ];
         float S_plus_opacity[ SIMDW ];
         float S_minus_opacity[ SIMDW ];
         float dsdx_array[ SIMDW ];
         float dsdy_array[ SIMDW ];
         float dsdz_array[ SIMDW ];
-        kvs::Vector3f grad_array[ SIMDW ];
-        kvs::RGBColor color_array[ SIMDW ];
+        vismodule::Vector3f grad_array[ SIMDW ];
+        vismodule::RGBColor color_array[ SIMDW ];
         // -----------------------------------
 
         //粒子生成ループ開始
@@ -1776,8 +1776,8 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
             //一括でセルをバインドするための配列と、座標の取得
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
-                cell_index[cell_BLK] = (kvs::UInt32)(cell_base + cell_BLK);
-                local_center_array[cell_BLK] = kvs::Vector3f ( 0.5, 0.5, 0.5 );
+                cell_index[cell_BLK] = (vismodule::UInt32)(cell_base + cell_BLK);
+                local_center_array[cell_BLK] = vismodule::Vector3f ( 0.5, 0.5, 0.5 );
             }
 
             //補間器にセルを一括でバインド
@@ -1930,8 +1930,8 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
                     // dsdx ----------------------------------------
                     for( int j = 0; j < nparticles_count; j++ )
                     {
-                        l_plus_coord[j] = local_coord_array[j] + kvs::Vector3f(0.1,0,0);
-                        l_minus_coord[j] = local_coord_array[j] + kvs::Vector3f(-0.1,0,0);
+                        l_plus_coord[j] = local_coord_array[j] + vismodule::Vector3f(0.1,0,0);
+                        l_minus_coord[j] = local_coord_array[j] + vismodule::Vector3f(-0.1,0,0);
                     }
 
                     interp[thid][0]->setLocalPointArray( nparticles_count, l_plus_coord );
@@ -1965,8 +1965,8 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
                     // dsdy ----------------------------------------
                     for( int j = 0; j < nparticles_count; j++ )
                     {
-                        l_plus_coord[j] = local_coord_array[j] + kvs::Vector3f(0,0.1,0);
-                        l_minus_coord[j] = local_coord_array[j] + kvs::Vector3f(0,-0.1,0);
+                        l_plus_coord[j] = local_coord_array[j] + vismodule::Vector3f(0,0.1,0);
+                        l_minus_coord[j] = local_coord_array[j] + vismodule::Vector3f(0,-0.1,0);
                     }
 
                     interp[thid][0]->setLocalPointArray( nparticles_count, l_plus_coord );
@@ -2000,8 +2000,8 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
                     // dsdz ----------------------------------------
                     for( int j = 0; j < nparticles_count; j++ )
                     {
-                        l_plus_coord[j] = local_coord_array[j] + kvs::Vector3f(0,0,0.1);
-                        l_minus_coord[j] = local_coord_array[j] + kvs::Vector3f(0,0,-0.1);
+                        l_plus_coord[j] = local_coord_array[j] + vismodule::Vector3f(0,0,0.1);
+                        l_minus_coord[j] = local_coord_array[j] + vismodule::Vector3f(0,0,-0.1);
                     }
 
                     interp[thid][0]->setLocalPointArray( nparticles_count, l_plus_coord );
@@ -2038,11 +2038,11 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
                         //JacobiMatrixでメンバ変数を使用しているので再度バインド
                         interp[thid][0]->bindCell( cell_index[j] );
 
-                        const kvs::Vector3f g( -dsdx_array[j], -dsdy_array[j], -dsdz_array[j] );
-                        const kvs::Matrix33f J = interp[thid][0]->JacobiMatrix();
+                        const vismodule::Vector3f g( -dsdx_array[j], -dsdy_array[j], -dsdz_array[j] );
+                        const vismodule::Matrix33f J = interp[thid][0]->JacobiMatrix();
                         float determinant = 0.0f;
-                        const kvs::Vector3f G = J.inverse( &determinant ) * g;
-                        grad_array[j] = kvs::Math::IsZero( determinant ) ? kvs::Vector3f( 0.0f, 0.0f, 0.0f ) : G;
+                        const vismodule::Vector3f G = J.inverse( &determinant ) * g;
+                        grad_array[j] = vismodule::Math::IsZero( determinant ) ? vismodule::Vector3f( 0.0f, 0.0f, 0.0f ) : G;
                     }
 
                     //色の計算
@@ -2053,7 +2053,7 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
                             th_tf[thid],
                             color_array );
 
-                    kvs::Vector3f new_coord_array[ SIMDW ];
+                    vismodule::Vector3f new_coord_array[ SIMDW ];
 //                    if ( pCrdSynthStr )
                     if ( !css.m_x_coord_synthesizer_string.empty() || !css.m_y_coord_synthesizer_string.empty() || !css.m_z_coord_synthesizer_string.empty()  ) 
                     {
@@ -2079,7 +2079,7 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
                     for( int j = 0; j < nparticles_count; j++ )
                     {
 //                         std::cout << "debug particle out " << std::endl;
-                        kvs::Vector3f new_coord = new_coord_array[j];
+                        vismodule::Vector3f new_coord = new_coord_array[j];
                         th_vertex_coords.push_back( new_coord.x() );
                         th_vertex_coords.push_back( new_coord.y() );
                         th_vertex_coords.push_back( new_coord.z() );
@@ -2179,9 +2179,9 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
 
     //TIMER_END( 290 );
 
-    SuperClass::m_coords  = kvs::ValueArray<kvs::Real32>( vertex_coords );
-    SuperClass::m_colors  = kvs::ValueArray<kvs::UInt8>( vertex_colors );
-    SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( vertex_normals );
+    SuperClass::m_coords  = vismodule::ValueArray<vismodule::Real32>( vertex_coords );
+    SuperClass::m_colors  = vismodule::ValueArray<vismodule::UInt8>( vertex_colors );
+    SuperClass::m_normals = vismodule::ValueArray<vismodule::Real32>( vertex_normals );
 
 //#endif
     SuperClass::setSize( 1.0f );
@@ -2194,7 +2194,7 @@ void CellByCellRejectionSampling::generate_particles<kvs::Real32>( const pbvr::U
 const size_t CellByCellRejectionSampling::calculate_number_of_particles(
     const float density,
     const float volume_of_cell,
-    kvs::MersenneTwister* MT ) 
+    vismodule::MersenneTwister* MT ) 
 {
     const float N = density * volume_of_cell;
     const float R = MT->rand();
@@ -2233,7 +2233,7 @@ const float CellByCellRejectionSampling::calculate_density( const float scalar )
         index0 = static_cast<size_t>( normalized_scalar );
     }
     size_t index1 = index0 + 1;
-    index1 = kvs::Math::Clamp<size_t>( index1, 0, BaseClass::transferFunction().resolution() - 1 );
+    index1 = vismodule::Math::Clamp<size_t>( index1, 0, BaseClass::transferFunction().resolution() - 1 );
     const float scalar_offset = normalized_scalar - index0;
 
     const float* const density_map = m_density_map.pointer();
@@ -2288,7 +2288,7 @@ const float CellByCellRejectionSampling::calculate_maximum_density( const float 
 {
     if ( scalar0 > scalar1 )
     {
-        kvsMessageError( "undefined use of calculate_maximum_density." );
+        visModuleMessageError( "undefined use of calculate_maximum_density." );
         return 0.0f;
     }
     const float min_value = BaseClass::transferFunction().colorMap().minValue();
@@ -2306,7 +2306,7 @@ const float CellByCellRejectionSampling::calculate_maximum_density( const float 
         index0 = static_cast<size_t>( index0_float );
     }
     index0 += 1;
-    index0 = kvs::Math::Clamp<size_t>( index0, 0, BaseClass::transferFunction().resolution() - 1 );
+    index0 = vismodule::Math::Clamp<size_t>( index0, 0, BaseClass::transferFunction().resolution() - 1 );
 
     const float index1_float = ( scalar1 - min_value ) * normalize_factor;
     size_t index1 = 0;
@@ -2337,18 +2337,18 @@ const float CellByCellRejectionSampling::calculate_maximum_density( const float 
     return maximum_density;
 }
 
-void CellByCellRejectionSampling::calculate_histogram( kvs::ValueArray<int>&   th_o_histogram,
-                          kvs::ValueArray<int>&   th_c_histogram,
-                          kvs::ValueArray<float>& th_O_min,
-                          kvs::ValueArray<float>& th_O_max,
-                          kvs::ValueArray<float>& th_C_min,
-                          kvs::ValueArray<float>& th_C_max,
+void CellByCellRejectionSampling::calculate_histogram( vismodule::ValueArray<int>&   th_o_histogram,
+                          vismodule::ValueArray<int>&   th_c_histogram,
+                          vismodule::ValueArray<float>& th_O_min,
+                          vismodule::ValueArray<float>& th_O_max,
+                          vismodule::ValueArray<float>& th_C_min,
+                          vismodule::ValueArray<float>& th_C_max,
                           // ここまでoutput, 以下input
                           const int nbins, // TFSから読み込む最大最小値
-                          const kvs::ValueArray<float>& o_min,
-                          const kvs::ValueArray<float>& o_max,
-                          const kvs::ValueArray<float>& c_min,
-                          const kvs::ValueArray<float>& c_max,
+                          const vismodule::ValueArray<float>& o_min,
+                          const vismodule::ValueArray<float>& o_max,
+                          const vismodule::ValueArray<float>& c_min,
+                          const vismodule::ValueArray<float>& c_max,
  //                         const float o_scalars[][SIMDW], // åæå¤
  //                         const float c_scalars[][SIMDW],
                           float** o_scalars, // åæå¤
@@ -2389,12 +2389,12 @@ void CellByCellRejectionSampling::calculate_histogram( kvs::ValueArray<int>&   t
     }
 }
 
-kvs::Vector3f CellByCellRejectionSampling::RandomSamplingInCube( const kvs::Vector3f vertex, kvs::MersenneTwister* MT  )
+vismodule::Vector3f CellByCellRejectionSampling::RandomSamplingInCube( const vismodule::Vector3f vertex, vismodule::MersenneTwister* MT  )
 {
     const float x = (float)MT->rand();
     const float y = (float)MT->rand();
     const float z = (float)MT->rand();
-    const kvs::Vector3f d( x, y, z );
+    const vismodule::Vector3f d( x, y, z );
 
     return vertex + d;
 }

@@ -12,13 +12,13 @@
  */
 /*****************************************************************************/
 #include "ImageObjectTag.h"
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
-#include <kvs/Tokenizer>
-#include <kvs/String>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
+#include <vismodule/Tokenizer>
+#include <vismodule/String>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -30,7 +30,7 @@ namespace kvsml
  */
 /*===========================================================================*/
 ImageObjectTag::ImageObjectTag( void ):
-    kvs::kvsml::TagBase( "ImageObject" ),
+    vismodule::kvsml::TagBase( "ImageObject" ),
     m_has_width( false ),
     m_width( 0 ),
     m_has_height( false ),
@@ -122,22 +122,22 @@ void ImageObjectTag::setHeight( const size_t height )
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool ImageObjectTag::read( const kvs::XMLNode::SuperClass* parent )
+const bool ImageObjectTag::read( const vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
 
-    BaseClass::m_node = kvs::XMLNode::FindChildNode( parent, tag_name );
+    BaseClass::m_node = vismodule::XMLNode::FindChildNode( parent, tag_name );
     if ( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot find <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot find <%s>.", tag_name.c_str() );
         return( false );
     }
 
     // Element
-    const kvs::XMLElement::SuperClass* element = kvs::XMLNode::ToElement( BaseClass::m_node );
+    const vismodule::XMLElement::SuperClass* element = vismodule::XMLNode::ToElement( BaseClass::m_node );
 
     // width="xxx"
-    const std::string width = kvs::XMLElement::AttributeValue( element, "width" );
+    const std::string width = vismodule::XMLElement::AttributeValue( element, "width" );
     if ( width != "" )
     {
         m_has_width = true;
@@ -145,7 +145,7 @@ const bool ImageObjectTag::read( const kvs::XMLNode::SuperClass* parent )
     }
 
     // height="xxx"
-    const std::string height = kvs::XMLElement::AttributeValue( element, "height" );
+    const std::string height = vismodule::XMLElement::AttributeValue( element, "height" );
     if ( height != "" )
     {
         m_has_height = true;
@@ -162,29 +162,29 @@ const bool ImageObjectTag::read( const kvs::XMLNode::SuperClass* parent )
  *  @return true, if the writing process is done successfully
  */
 /*===========================================================================*/
-const bool ImageObjectTag::write( kvs::XMLNode::SuperClass* parent )
+const bool ImageObjectTag::write( vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
-    kvs::XMLElement element( tag_name );
+    vismodule::XMLElement element( tag_name );
 
     if ( m_has_width )
     {
         const std::string name( "width" );
-        const std::string value( kvs::String( m_width ).toStdString() );
+        const std::string value( vismodule::String( m_width ).toStdString() );
         element.setAttribute( name, value );
     }
 
     if ( m_has_height )
     {
         const std::string name( "height" );
-        const std::string value( kvs::String( m_height ).toStdString() );
+        const std::string value( vismodule::String( m_height ).toStdString() );
         element.setAttribute( name, value );
     }
 
     BaseClass::m_node = parent->InsertEndChild( element );
     if( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot insert <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot insert <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -193,4 +193,4 @@ const bool ImageObjectTag::write( kvs::XMLNode::SuperClass* parent )
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

@@ -13,10 +13,10 @@
  */
 /*****************************************************************************/
 #include "Data.h"
-#include <kvs/Endian>
+#include <vismodule/Endian>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace gf
@@ -86,7 +86,7 @@ const std::string& Data::comment( void ) const
  *  @return data size of 2D array
  */
 /*===========================================================================*/
-const kvs::Int32 Data::num( void ) const
+const vismodule::Int32 Data::num( void ) const
 {
     return( m_num );
 }
@@ -97,7 +97,7 @@ const kvs::Int32 Data::num( void ) const
  *  @return data size of 2D array
  */
 /*===========================================================================*/
-const kvs::Int32 Data::num2( void ) const
+const vismodule::Int32 Data::num2( void ) const
 {
     return( m_num2 );
 }
@@ -108,7 +108,7 @@ const kvs::Int32 Data::num2( void ) const
  *  @return data array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& Data::fltArray( void ) const
+const vismodule::ValueArray<vismodule::Real32>& Data::fltArray( void ) const
 {
     return( m_flt_array );
 }
@@ -119,7 +119,7 @@ const kvs::ValueArray<kvs::Real32>& Data::fltArray( void ) const
  *  @return data array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Int32>& Data::intArray( void ) const
+const vismodule::ValueArray<vismodule::Int32>& Data::intArray( void ) const
 {
     return( m_int_array );
 }
@@ -159,7 +159,7 @@ const bool Data::readAscii( FILE* fp, const std::string tag )
     if ( !( m_array_type_header == "#FLT_ARY" ||
             m_array_type_header == "#INT_ARY" ) )
     {
-        kvsMessageError("Unknown array type \"%s\".", m_array_type_header.c_str());
+        visModuleMessageError("Unknown array type \"%s\".", m_array_type_header.c_str());
         return( false );
     }
 
@@ -179,7 +179,7 @@ const bool Data::readAscii( FILE* fp, const std::string tag )
     if ( m_array_type_header == "#FLT_ARY" )
     {
         const size_t size = m_num * m_num2;
-        kvs::Real32* data = m_flt_array.allocate( size );
+        vismodule::Real32* data = m_flt_array.allocate( size );
 
         const char* delim = " ,\t\n\r";
         size_t counter = 0;
@@ -191,7 +191,7 @@ const bool Data::readAscii( FILE* fp, const std::string tag )
             {
                 if ( !value ) break;
 
-                *(data++) = static_cast<kvs::Real32>( atof( value ) );
+                *(data++) = static_cast<vismodule::Real32>( atof( value ) );
                 value = strtok( 0, delim );
                 counter++;
             }
@@ -200,7 +200,7 @@ const bool Data::readAscii( FILE* fp, const std::string tag )
     else if ( m_array_type_header == "#INT_ARY" )
     {
         const size_t size = m_num * m_num2;
-        kvs::Int32* data = m_int_array.allocate( size );
+        vismodule::Int32* data = m_int_array.allocate( size );
 
         const char* delim = " ,\t\n\r";
         size_t counter = 0;
@@ -212,7 +212,7 @@ const bool Data::readAscii( FILE* fp, const std::string tag )
             {
                 if ( !value ) break;
 
-                *(data++) = static_cast<kvs::Int32>( atoi( value ) );
+                *(data++) = static_cast<vismodule::Int32>( atoi( value ) );
                 value = strtok( 0, delim );
                 counter++;
             }
@@ -242,7 +242,7 @@ const bool Data::readBinary( FILE* fp, const bool swap )
     if ( !( m_array_type_header == "#FLT_ARY" ||
             m_array_type_header == "#INT_ARY" ) )
     {
-        kvsMessageError("Unknown array type \"%s\".", m_array_type_header.c_str());
+        visModuleMessageError("Unknown array type \"%s\".", m_array_type_header.c_str());
         return( false );
     }
 
@@ -266,27 +266,27 @@ const bool Data::readBinary( FILE* fp, const bool swap )
     fread( &m_num, 4, 1, fp );
     fread( &m_num2, 4, 1, fp );
     fseek( fp, 4, SEEK_CUR );
-    if ( swap ) kvs::Endian::Swap( m_num );
-    if ( swap ) kvs::Endian::Swap( m_num2 );
+    if ( swap ) vismodule::Endian::Swap( m_num );
+    if ( swap ) vismodule::Endian::Swap( m_num2 );
 
     // Read 2D array.
     if ( m_array_type_header == "#FLT_ARY" )
     {
         const size_t size = m_num * m_num2;
-        kvs::Real32* pointer = m_flt_array.allocate( size );
+        vismodule::Real32* pointer = m_flt_array.allocate( size );
         fseek( fp, 4, SEEK_CUR );
-        fread( pointer, sizeof(kvs::Real32), size, fp );
+        fread( pointer, sizeof(vismodule::Real32), size, fp );
         fseek( fp, 4, SEEK_CUR );
-        if ( swap ) kvs::Endian::Swap( pointer, size );
+        if ( swap ) vismodule::Endian::Swap( pointer, size );
     }
     else if ( m_array_type_header == "#INT_ARY" )
     {
         const size_t size = m_num * m_num2;
-        kvs::Int32* pointer = m_int_array.allocate( size );
+        vismodule::Int32* pointer = m_int_array.allocate( size );
         fseek( fp, 4, SEEK_CUR );
-        fread( pointer, sizeof(kvs::Int32), size, fp );
+        fread( pointer, sizeof(vismodule::Int32), size, fp );
         fseek( fp, 4, SEEK_CUR );
-        if ( swap ) kvs::Endian::Swap( pointer, size );
+        if ( swap ) vismodule::Endian::Swap( pointer, size );
     }
 
     return( true );
@@ -294,4 +294,4 @@ const bool Data::readBinary( FILE* fp, const bool swap )
 
 } // end of namespace gf
 
-} // end of namespace kvs
+} // end of namespace vismodule

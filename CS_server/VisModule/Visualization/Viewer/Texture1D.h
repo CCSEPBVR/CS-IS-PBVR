@@ -11,14 +11,14 @@
  *  $Id: Texture1D.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__TEXTURE_1D_H_INCLUDE
-#define KVS__TEXTURE_1D_H_INCLUDE
+#ifndef VIS_MODULE__TEXTURE_1D_H_INCLUDE
+#define VIS_MODULE__TEXTURE_1D_H_INCLUDE
 
-#include <kvs/TextureBase>
-#include <kvs/ClassName>
+#include <vismodule/TextureBase>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -26,13 +26,13 @@ namespace kvs
  *  1D texture class.
  */
 /*==========================================================================*/
-class Texture1D : public kvs::TextureBase
+class Texture1D : public vismodule::TextureBase
 {
-    kvsClassName( kvs::Texture1D );
+    visModuleClassName( vismodule::Texture1D );
 
 public:
 
-    typedef kvs::TextureBase BaseClass;
+    typedef vismodule::TextureBase BaseClass;
 
 protected:
 
@@ -85,6 +85,6 @@ private:
     static unsigned int get_texture_memory_size_on_gpu( const GLenum proxy );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__TEXTURE_1D_H_INCLUDE
+#endif // VIS_MODULE__TEXTURE_1D_H_INCLUDE

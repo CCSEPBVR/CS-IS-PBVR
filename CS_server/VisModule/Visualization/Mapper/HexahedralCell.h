@@ -11,18 +11,18 @@
  *  $Id: HexahedralCell.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__HEXAHEDRAL_CELL_H_INCLUDE
-#define KVS__HEXAHEDRAL_CELL_H_INCLUDE
+#ifndef VIS_MODULE__HEXAHEDRAL_CELL_H_INCLUDE
+#define VIS_MODULE__HEXAHEDRAL_CELL_H_INCLUDE
 
-#include <kvs/ClassName>
-#include <kvs/Type>
-#include <kvs/Vector4>
-#include <kvs/Matrix44>
-#include <kvs/UnstructuredVolumeObject>
+#include <vismodule/ClassName>
+#include <vismodule/Type>
+#include <vismodule/Vector4>
+#include <vismodule/Matrix44>
+#include <vismodule/UnstructuredVolumeObject>
 #include "CellBase.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -31,33 +31,33 @@ namespace kvs
  */
 /*===========================================================================*/
 template <typename T>
-class HexahedralCell : public kvs::CellBase<T>
+class HexahedralCell : public vismodule::CellBase<T>
 {
-    kvsClassName( kvs::HexahedralCell );
+    visModuleClassName( vismodule::HexahedralCell );
 
 public:
 
-    enum { NumberOfNodes = kvs::UnstructuredVolumeObject::Hexahedra };
+    enum { NumberOfNodes = vismodule::UnstructuredVolumeObject::Hexahedra };
 
 public:
 
-    typedef kvs::CellBase<T> BaseClass;
+    typedef vismodule::CellBase<T> BaseClass;
 
 public:
 
-    HexahedralCell( const kvs::UnstructuredVolumeObject* volume );
+    HexahedralCell( const vismodule::UnstructuredVolumeObject* volume );
 
     virtual ~HexahedralCell( void );
 
 public:
 
-    const kvs::Real32* interpolationFunctions( const kvs::Vector3f& point ) const;
+    const vismodule::Real32* interpolationFunctions( const vismodule::Vector3f& point ) const;
 
-    const kvs::Real32* differentialFunctions( const kvs::Vector3f& point ) const;
+    const vismodule::Real32* differentialFunctions( const vismodule::Vector3f& point ) const;
 
-    const kvs::Vector3f randomSampling( void ) const;
+    const vismodule::Vector3f randomSampling( void ) const;
 
-    const kvs::Real32 volume( void ) const;
+    const vismodule::Real32 volume( void ) const;
 };
 
 /*===========================================================================*/
@@ -68,8 +68,8 @@ public:
 /*===========================================================================*/
 template <typename T>
 inline HexahedralCell<T>::HexahedralCell(
-    const kvs::UnstructuredVolumeObject* volume ):
-    kvs::CellBase<T>( volume )
+    const vismodule::UnstructuredVolumeObject* volume ):
+    vismodule::CellBase<T>( volume )
 {
     // Set the initial interpolation functions and differential functions.
     this->interpolationFunctions( BaseClass::localPoint() );
@@ -93,7 +93,7 @@ inline HexahedralCell<T>::~HexahedralCell( void )
  */
 /*==========================================================================*/
 template <typename T>
-inline const kvs::Real32* HexahedralCell<T>::interpolationFunctions( const kvs::Vector3f& point ) const
+inline const vismodule::Real32* HexahedralCell<T>::interpolationFunctions( const vismodule::Vector3f& point ) const
 {
     const float x = point.x();
     const float y = point.y();
@@ -124,7 +124,7 @@ inline const kvs::Real32* HexahedralCell<T>::interpolationFunctions( const kvs::
  */
 /*==========================================================================*/
 template <typename T>
-inline const kvs::Real32* HexahedralCell<T>::differentialFunctions( const kvs::Vector3f& point ) const
+inline const vismodule::Real32* HexahedralCell<T>::differentialFunctions( const vismodule::Vector3f& point ) const
 {
     const float x = point.x();
     const float y = point.y();
@@ -174,14 +174,14 @@ inline const kvs::Real32* HexahedralCell<T>::differentialFunctions( const kvs::V
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector3f HexahedralCell<T>::randomSampling( void ) const
+const vismodule::Vector3f HexahedralCell<T>::randomSampling( void ) const
 {
     // Generate a point in the local coordinate.
     const float s = BaseClass::randomNumber();
     const float t = BaseClass::randomNumber();
     const float u = BaseClass::randomNumber();
 
-    const kvs::Vector3f point( s, t, u );
+    const vismodule::Vector3f point( s, t, u );
     this->setLocalPoint( point );
     BaseClass::m_global_point = BaseClass::transformLocalToGlobal( point );
 
@@ -195,13 +195,13 @@ const kvs::Vector3f HexahedralCell<T>::randomSampling( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-inline const kvs::Real32 HexahedralCell<T>::volume( void ) const
+inline const vismodule::Real32 HexahedralCell<T>::volume( void ) const
 {
     const size_t resolution = 3;
     const float sampling_length = 1.0f / (float)resolution;
     const float adjustment = sampling_length * 0.5f;
 
-    kvs::Vector3f sampling_position( -adjustment, -adjustment, -adjustment );
+    vismodule::Vector3f sampling_position( -adjustment, -adjustment, -adjustment );
 
     float sum_metric = 0;
 
@@ -216,10 +216,10 @@ inline const kvs::Real32 HexahedralCell<T>::volume( void ) const
                 sampling_position[ 0 ] += sampling_length;
 
                 this->setLocalPoint( sampling_position );
-                const kvs::Matrix33f J = BaseClass::JacobiMatrix();
+                const vismodule::Matrix33f J = BaseClass::JacobiMatrix();
                 const float metric_element = J.determinant();
 
-                sum_metric += kvs::Math::Abs<float>( metric_element );
+                sum_metric += vismodule::Math::Abs<float>( metric_element );
             }
             sampling_position[ 0 ] = -adjustment;
         }
@@ -231,6 +231,6 @@ inline const kvs::Real32 HexahedralCell<T>::volume( void ) const
     return( sum_metric / resolution3 );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__HEXAHEDRAL_CELL_H_INCLUDE
+#endif // VIS_MODULE__HEXAHEDRAL_CELL_H_INCLUDE

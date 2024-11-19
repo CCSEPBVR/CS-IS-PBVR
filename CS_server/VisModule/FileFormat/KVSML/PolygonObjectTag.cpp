@@ -12,13 +12,13 @@
  */
 /*****************************************************************************/
 #include "PolygonObjectTag.h"
-#include <kvs/XMLNode>
-#include <kvs/XMLElement>
-#include <kvs/Tokenizer>
-#include <kvs/String>
+#include <vismodule/XMLNode>
+#include <vismodule/XMLElement>
+#include <vismodule/Tokenizer>
+#include <vismodule/String>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace kvsml
@@ -30,7 +30,7 @@ namespace kvsml
  */
 /*===========================================================================*/
 PolygonObjectTag::PolygonObjectTag( void ):
-    kvs::kvsml::TagBase( "PolygonObject" ),
+    vismodule::kvsml::TagBase( "PolygonObject" ),
     m_has_polygon_type( false ),
     m_polygon_type( "" ),
     m_has_color_type( false ),
@@ -158,22 +158,22 @@ void PolygonObjectTag::setNormalType( const std::string& normal_type )
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool PolygonObjectTag::read( const kvs::XMLNode::SuperClass* parent )
+const bool PolygonObjectTag::read( const vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
 
-    BaseClass::m_node = kvs::XMLNode::FindChildNode( parent, tag_name );
+    BaseClass::m_node = vismodule::XMLNode::FindChildNode( parent, tag_name );
     if ( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot find <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot find <%s>.", tag_name.c_str() );
         return( false );
     }
 
     // Element
-    const kvs::XMLElement::SuperClass* element = kvs::XMLNode::ToElement( BaseClass::m_node );
+    const vismodule::XMLElement::SuperClass* element = vismodule::XMLNode::ToElement( BaseClass::m_node );
 
     // polygon_type="xxx"
-    const std::string polygon_type = kvs::XMLElement::AttributeValue( element, "polygon_type" );
+    const std::string polygon_type = vismodule::XMLElement::AttributeValue( element, "polygon_type" );
     if ( polygon_type != "" )
     {
         m_has_polygon_type = true;
@@ -181,7 +181,7 @@ const bool PolygonObjectTag::read( const kvs::XMLNode::SuperClass* parent )
     }
 
     // color_type="xxx"
-    const std::string color_type = kvs::XMLElement::AttributeValue( element, "color_type" );
+    const std::string color_type = vismodule::XMLElement::AttributeValue( element, "color_type" );
     if ( color_type != "" )
     {
         m_has_color_type = true;
@@ -189,7 +189,7 @@ const bool PolygonObjectTag::read( const kvs::XMLNode::SuperClass* parent )
     }
 
     // normal_type="xxx"
-    const std::string normal_type = kvs::XMLElement::AttributeValue( element, "normal_type" );
+    const std::string normal_type = vismodule::XMLElement::AttributeValue( element, "normal_type" );
     if ( normal_type != "" )
     {
         m_has_normal_type = true;
@@ -206,10 +206,10 @@ const bool PolygonObjectTag::read( const kvs::XMLNode::SuperClass* parent )
  *  @return true, if the writing process is done successfully
  */
 /*===========================================================================*/
-const bool PolygonObjectTag::write( kvs::XMLNode::SuperClass* parent )
+const bool PolygonObjectTag::write( vismodule::XMLNode::SuperClass* parent )
 {
     const std::string tag_name = BaseClass::name();
-    kvs::XMLElement element( tag_name );
+    vismodule::XMLElement element( tag_name );
 
     if ( m_has_polygon_type )
     {
@@ -219,7 +219,7 @@ const bool PolygonObjectTag::write( kvs::XMLNode::SuperClass* parent )
     }
     else
     {
-        kvsMessageError( "'polygon_type' is not specified in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "'polygon_type' is not specified in <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -231,7 +231,7 @@ const bool PolygonObjectTag::write( kvs::XMLNode::SuperClass* parent )
     }
     else
     {
-        kvsMessageError( "'color_type' is not specified in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "'color_type' is not specified in <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -243,14 +243,14 @@ const bool PolygonObjectTag::write( kvs::XMLNode::SuperClass* parent )
     }
     else
     {
-        kvsMessageError( "'normal_type' is not specified in <%s>.", tag_name.c_str() );
+        visModuleMessageError( "'normal_type' is not specified in <%s>.", tag_name.c_str() );
         return( false );
     }
 
     BaseClass::m_node = parent->InsertEndChild( element );
     if( !BaseClass::m_node )
     {
-        kvsMessageError( "Cannot insert <%s>.", tag_name.c_str() );
+        visModuleMessageError( "Cannot insert <%s>.", tag_name.c_str() );
         return( false );
     }
 
@@ -259,4 +259,4 @@ const bool PolygonObjectTag::write( kvs::XMLNode::SuperClass* parent )
 
 } // end of namespace kvsml
 
-} // end of namespace kvs
+} // end of namespace vismodule

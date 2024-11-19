@@ -11,10 +11,10 @@
  *  $Id: MarchingPyramidTable.h 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__MARCHING_PYRAMID_TABLE_H_INCLUDE
-#define KVS__MARCHING_PYRAMID_TABLE_H_INCLUDE
+#ifndef VIS_MODULE__MARCHING_PYRAMID_TABLE_H_INCLUDE
+#define VIS_MODULE__MARCHING_PYRAMID_TABLE_H_INCLUDE
 
-namespace kvs
+namespace vismodule
 {
 
 namespace MarchingPyramidTable
@@ -26,6 +26,6 @@ extern const int VertexID[8][2];
 
 } // end of namespace MarchingPyramidTable
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__MARCHING_PYRAMID_TABLE_H_INCLUDE
+#endif // VIS_MODULE__MARCHING_PYRAMID_TABLE_H_INCLUDE

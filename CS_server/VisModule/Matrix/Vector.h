@@ -11,19 +11,19 @@
  *  $Id: Vector.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__VECTOR_H_INCLUDE
-#define KVS__VECTOR_H_INCLUDE
+#ifndef VIS_MODULE__VECTOR_H_INCLUDE
+#define VIS_MODULE__VECTOR_H_INCLUDE
 
 #include <iostream>
 #include <vector>
 #include <cstring>
-#include <kvs/DebugNew>
-#include <kvs/ClassName>
-#include <kvs/Assert>
-#include <kvs/Math>
+#include <vismodule/DebugNew>
+#include <vismodule/ClassName>
+#include <vismodule/Assert>
+#include <vismodule/Math>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -34,7 +34,7 @@ namespace kvs
 template <typename T>
 class Vector
 {
-    kvsClassName_without_virtual( kvs::Vector );
+    visModuleClassName_without_virtual( vismodule::Vector );
 
 private:
 
@@ -119,7 +119,7 @@ public:
 
         for ( size_t i = 0; i < size; ++i )
         {
-            result = result && kvs::Math::Equal( lhs[i], rhs[i] );
+            result = result && vismodule::Math::Equal( lhs[i], rhs[i] );
         }
 
         return( result );
@@ -475,7 +475,7 @@ inline const Vector<T> Vector<T>::normalize( void ) const
 template <typename T>
 inline Vector<T>& Vector<T>::normalize( void )
 {
-    KVS_ASSERT( !( kvs::Math::IsZero( this->length() ) ) );
+    VIS_MODULE_ASSERT( !( vismodule::Math::IsZero( this->length() ) ) );
 
     const T normalize_factor = static_cast<T>( 1.0 / this->length() );
     ( *this ) *= normalize_factor;
@@ -504,7 +504,7 @@ inline void Vector<T>::print( void ) const
 template <typename T>
 inline const double Vector<T>::length( void ) const
 {
-    return( kvs::Math::SquareRoot( this->length2() ) );
+    return( vismodule::Math::SquareRoot( this->length2() ) );
 }
 
 /*==========================================================================*/
@@ -543,7 +543,7 @@ inline const double Vector<T>::length2( void ) const
 template <typename T>
 inline const T Vector<T>::dot( const Vector<T>& other ) const
 {
-    KVS_ASSERT( this->size() == other.size() );
+    VIS_MODULE_ASSERT( this->size() == other.size() );
 
     // Alias.
     const size_t   size     = this->size();
@@ -571,7 +571,7 @@ inline const T Vector<T>::dot( const Vector<T>& other ) const
 template <typename T>
 inline const T Vector<T>::operator []( const size_t index ) const
 {
-    KVS_ASSERT( index < this->size() );
+    VIS_MODULE_ASSERT( index < this->size() );
 
     return( *( m_elements + index ) );
 }
@@ -588,7 +588,7 @@ inline const T Vector<T>::operator []( const size_t index ) const
 template <typename T>
 inline T& Vector<T>::operator []( const size_t index )
 {
-    KVS_ASSERT( index < this->size() );
+    VIS_MODULE_ASSERT( index < this->size() );
 
     return( *( m_elements + index ) );
 }
@@ -605,7 +605,7 @@ inline T& Vector<T>::operator []( const size_t index )
 template <typename T>
 inline Vector<T>& Vector<T>::operator +=( const Vector& rhs )
 {
-    KVS_ASSERT( this->size() == rhs.size() );
+    VIS_MODULE_ASSERT( this->size() == rhs.size() );
 
     // Alias.
     const size_t size = this->size();
@@ -631,7 +631,7 @@ inline Vector<T>& Vector<T>::operator +=( const Vector& rhs )
 template <typename T>
 inline Vector<T>& Vector<T>::operator -=( const Vector& rhs )
 {
-    KVS_ASSERT( this->size() == rhs.size() );
+    VIS_MODULE_ASSERT( this->size() == rhs.size() );
 
     // Alias.
     const size_t size = this->size();
@@ -733,6 +733,6 @@ inline const Vector<T> Vector<T>::operator -( void ) const
     return( result );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__VECTOR_H_INCLUDE
+#endif // VIS_MODULE__VECTOR_H_INCLUDE

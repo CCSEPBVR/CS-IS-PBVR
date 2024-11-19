@@ -13,12 +13,12 @@
  */
 /*****************************************************************************/
 #include "ScatterPlotRenderer.h"
-#include <kvs/OpenGL>
-#include <kvs/Camera>
-#include <kvs/Light>
-#include <kvs/ObjectBase>
-#include <kvs/RGBAColor>
-#include <kvs/TableObject>
+#include <vismodule/OpenGL>
+#include <vismodule/Camera>
+#include <vismodule/Light>
+#include <vismodule/ObjectBase>
+#include <vismodule/RGBAColor>
+#include <vismodule/TableObject>
 
 
 namespace
@@ -48,7 +48,7 @@ void EndDraw( void )
 
 } // end of namespace
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -62,7 +62,7 @@ ScatterPlotRenderer::ScatterPlotRenderer( void ):
     m_left_margin( 30 ),
     m_right_margin( 30 ),
     m_has_point_color( false ),
-    m_point_color( kvs::RGBColor( 0, 0, 0 ) ),
+    m_point_color( vismodule::RGBColor( 0, 0, 0 ) ),
     m_point_opacity( 255 ),
     m_point_size( 1.0f ),
     m_color_map( 256 ),
@@ -121,7 +121,7 @@ void ScatterPlotRenderer::setRightMargin( const int right_margin )
  *  @param  point_color [in] point color
  */
 /*===========================================================================*/
-void ScatterPlotRenderer::setPointColor( const kvs::RGBColor point_color )
+void ScatterPlotRenderer::setPointColor( const vismodule::RGBColor point_color )
 {
     m_has_point_color = true;
     m_point_color = point_color;
@@ -133,7 +133,7 @@ void ScatterPlotRenderer::setPointColor( const kvs::RGBColor point_color )
  *  @param  point_opacity [in] point opacity
  */
 /*===========================================================================*/
-void ScatterPlotRenderer::setPointOpacity( const kvs::UInt8 point_opacity )
+void ScatterPlotRenderer::setPointOpacity( const vismodule::UInt8 point_opacity )
 {
     m_point_opacity = point_opacity;
 }
@@ -144,7 +144,7 @@ void ScatterPlotRenderer::setPointOpacity( const kvs::UInt8 point_opacity )
  *  @param  point_size [in] point size
  */
 /*===========================================================================*/
-void ScatterPlotRenderer::setPointSize( const kvs::Real32 point_size )
+void ScatterPlotRenderer::setPointSize( const vismodule::Real32 point_size )
 {
     m_point_size = point_size;
 }
@@ -155,7 +155,7 @@ void ScatterPlotRenderer::setPointSize( const kvs::Real32 point_size )
  *  @param  color_map [in] colormap
  */
 /*===========================================================================*/
-void ScatterPlotRenderer::setColorMap( const kvs::ColorMap& color_map )
+void ScatterPlotRenderer::setColorMap( const vismodule::ColorMap& color_map )
 {
     m_has_point_color = false;
     m_color_map = color_map;
@@ -167,7 +167,7 @@ void ScatterPlotRenderer::setColorMap( const kvs::ColorMap& color_map )
  *  @param  background_color [in] background color
  */
 /*===========================================================================*/
-void ScatterPlotRenderer::setBackgroundColor( const kvs::RGBAColor background_color )
+void ScatterPlotRenderer::setBackgroundColor( const vismodule::RGBAColor background_color )
 {
     m_background_color = background_color;
 }
@@ -222,7 +222,7 @@ const int ScatterPlotRenderer::rightMargin( void ) const
  *  @return point opaicty
  */
 /*===========================================================================*/
-const kvs::UInt8 ScatterPlotRenderer::pointOpacity( void ) const
+const vismodule::UInt8 ScatterPlotRenderer::pointOpacity( void ) const
 {
     return( m_point_opacity );
 }
@@ -233,7 +233,7 @@ const kvs::UInt8 ScatterPlotRenderer::pointOpacity( void ) const
  *  @return point size
  */
 /*===========================================================================*/
-const kvs::Real32 ScatterPlotRenderer::pointSize( void ) const
+const vismodule::Real32 ScatterPlotRenderer::pointSize( void ) const
 {
     return( m_point_size );
 }
@@ -244,7 +244,7 @@ const kvs::Real32 ScatterPlotRenderer::pointSize( void ) const
  *  @return color map
  */
 /*===========================================================================*/
-const kvs::ColorMap& ScatterPlotRenderer::colorMap( void ) const
+const vismodule::ColorMap& ScatterPlotRenderer::colorMap( void ) const
 {
     return( m_color_map );
 }
@@ -255,7 +255,7 @@ const kvs::ColorMap& ScatterPlotRenderer::colorMap( void ) const
  *  @return background color
  */
 /*===========================================================================*/
-const kvs::RGBAColor ScatterPlotRenderer::backgroundColor( void ) const
+const vismodule::RGBAColor ScatterPlotRenderer::backgroundColor( void ) const
 {
     return( m_background_color );
 }
@@ -268,11 +268,11 @@ const kvs::RGBAColor ScatterPlotRenderer::backgroundColor( void ) const
  *  @param  light [in] pointer ot light
  */
 /*===========================================================================*/
-void ScatterPlotRenderer::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light )
+void ScatterPlotRenderer::exec( vismodule::ObjectBase* object, vismodule::Camera* camera, vismodule::Light* light )
 {
-    kvs::IgnoreUnusedVariable( light );
+    vismodule::IgnoreUnusedVariable( light );
 
-    kvs::TableObject* table = kvs::TableObject::DownCast( object );
+    vismodule::TableObject* table = vismodule::TableObject::DownCast( object );
     if ( !m_has_point_color ) if ( table->ncolumns() < 3 ) m_has_point_color = true;
 
     glPushAttrib( GL_CURRENT_BIT | GL_ENABLE_BIT );
@@ -288,12 +288,12 @@ void ScatterPlotRenderer::exec( kvs::ObjectBase* object, kvs::Camera* camera, kv
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
     // X and Y values.
-    const kvs::AnyValueArray& x_values = table->column(0);
-    const kvs::AnyValueArray& y_values = table->column(1);
-    const kvs::Real64 x_min_value = table->minValue(0);
-    const kvs::Real64 x_max_value = table->maxValue(0);
-    const kvs::Real64 y_min_value = table->minValue(1);
-    const kvs::Real64 y_max_value = table->maxValue(1);
+    const vismodule::AnyValueArray& x_values = table->column(0);
+    const vismodule::AnyValueArray& y_values = table->column(1);
+    const vismodule::Real64 x_min_value = table->minValue(0);
+    const vismodule::Real64 x_max_value = table->maxValue(0);
+    const vismodule::Real64 y_min_value = table->minValue(1);
+    const vismodule::Real64 y_max_value = table->maxValue(1);
 
     const int x0 = m_left_margin;
     const int x1 = camera->windowWidth() - m_right_margin;
@@ -316,24 +316,24 @@ void ScatterPlotRenderer::exec( kvs::ObjectBase* object, kvs::Camera* camera, kv
         glEnd();
     }
 
-    const kvs::UInt8 opacity = m_point_opacity;
-    const kvs::Real32 size = m_point_size;
+    const vismodule::UInt8 opacity = m_point_opacity;
+    const vismodule::Real32 size = m_point_size;
     if ( m_has_point_color )
     {
-        const kvs::RGBColor color = m_point_color;
+        const vismodule::RGBColor color = m_point_color;
 
         glPointSize( size );
         glBegin( GL_POINTS );
         glColor4ub( color.r(), color.g(), color.b(), opacity );
-        const kvs::Real64 x_ratio = kvs::Real64( x1 - x0 ) / ( x_max_value - x_min_value );
-        const kvs::Real64 y_ratio = kvs::Real64( y1 - y0 ) / ( y_max_value - y_min_value );
+        const vismodule::Real64 x_ratio = vismodule::Real64( x1 - x0 ) / ( x_max_value - x_min_value );
+        const vismodule::Real64 y_ratio = vismodule::Real64( y1 - y0 ) / ( y_max_value - y_min_value );
         const size_t nrows = table->nrows();
         for ( size_t i = 0; i < nrows; i++ )
         {
             if ( !table->insideRange( i ) ) continue;
 
-            const kvs::Real64 x_value = x_values.to<kvs::Real64>( i );
-            const kvs::Real64 y_value = y_values.to<kvs::Real64>( i );
+            const vismodule::Real64 x_value = x_values.to<vismodule::Real64>( i );
+            const vismodule::Real64 y_value = y_values.to<vismodule::Real64>( i );
             const float x = x0 + ( x_value - x_min_value ) * x_ratio;
             const float y = y1 - ( y_value - y_min_value ) * y_ratio;
             glVertex2f( x, y );
@@ -342,26 +342,26 @@ void ScatterPlotRenderer::exec( kvs::ObjectBase* object, kvs::Camera* camera, kv
     }
     else
     {
-        const kvs::Real64 color_axis_min_value = table->minValue(2);
-        const kvs::Real64 color_axis_max_value = table->maxValue(2);
-        const kvs::AnyValueArray& color_axis_values = table->column(2);
+        const vismodule::Real64 color_axis_min_value = table->minValue(2);
+        const vismodule::Real64 color_axis_max_value = table->maxValue(2);
+        const vismodule::AnyValueArray& color_axis_values = table->column(2);
         m_color_map.setRange( color_axis_min_value, color_axis_max_value );
 
         glPointSize( size );
         glBegin( GL_POINTS );
-        const kvs::Real64 x_ratio = kvs::Real64( x1 - x0 ) / ( x_max_value - x_min_value );
-        const kvs::Real64 y_ratio = kvs::Real64( y1 - y0 ) / ( y_max_value - y_min_value );
+        const vismodule::Real64 x_ratio = vismodule::Real64( x1 - x0 ) / ( x_max_value - x_min_value );
+        const vismodule::Real64 y_ratio = vismodule::Real64( y1 - y0 ) / ( y_max_value - y_min_value );
         const size_t nrows = table->nrows();
         for ( size_t i = 0; i < nrows; i++ )
         {
             if ( !table->insideRange( i ) ) continue;
 
-            const kvs::Real64 color_value = color_axis_values.to<kvs::Real64>( i );
-            const kvs::RGBColor color = m_color_map.at( color_value );
+            const vismodule::Real64 color_value = color_axis_values.to<vismodule::Real64>( i );
+            const vismodule::RGBColor color = m_color_map.at( color_value );
             glColor4ub( color.r(), color.g(), color.b(), opacity );
 
-            const kvs::Real64 x_value = x_values.to<kvs::Real64>( i );
-            const kvs::Real64 y_value = y_values.to<kvs::Real64>( i );
+            const vismodule::Real64 x_value = x_values.to<vismodule::Real64>( i );
+            const vismodule::Real64 y_value = y_values.to<vismodule::Real64>( i );
             const float x = x0 + ( x_value - x_min_value ) * x_ratio;
             const float y = y1 - ( y_value - y_min_value ) * y_ratio;
             glVertex2f( x, y );
@@ -374,4 +374,4 @@ void ScatterPlotRenderer::exec( kvs::ObjectBase* object, kvs::Camera* camera, kv
     glPopAttrib();
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

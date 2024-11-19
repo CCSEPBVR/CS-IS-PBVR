@@ -15,7 +15,7 @@
  */
 /*****************************************************************************/
 #include "ResponseSurface.h"
-#include <kvs/Math>
+#include <vismodule/Math>
 
 
 namespace
@@ -41,7 +41,7 @@ const size_t GetNumberOfTerms( const size_t nvariables )
  */
 /*===========================================================================*/
 template <typename T>
-const T GetSumOfElements( const kvs::Vector<T>& v )
+const T GetSumOfElements( const vismodule::Vector<T>& v )
 {
     T sum = 0;
     const size_t nelements = v.size();
@@ -53,7 +53,7 @@ const T GetSumOfElements( const kvs::Vector<T>& v )
 } // end of namespace
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -80,8 +80,8 @@ ResponseSurface<T>::ResponseSurface( void ):
 /*===========================================================================*/
 template <typename T>
 ResponseSurface<T>::ResponseSurface(
-    const kvs::Matrix<T>& variables,
-    const kvs::Vector<T>& responses )
+    const vismodule::Matrix<T>& variables,
+    const vismodule::Vector<T>& responses )
 {
     this->solve( variables, responses );
 }
@@ -104,16 +104,16 @@ ResponseSurface<T>::~ResponseSurface( void )
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector<T>& ResponseSurface<T>::solve(
-    const kvs::Matrix<T>& variables,
-    const kvs::Vector<T>& responses )
+const vismodule::Vector<T>& ResponseSurface<T>::solve(
+    const vismodule::Matrix<T>& variables,
+    const vismodule::Vector<T>& responses )
 {
     m_npoints = variables.nrows();
     m_nvariables = variables.ncolumns();
     m_nterms = GetNumberOfTerms( m_nvariables );
     m_responses = responses;
 
-    kvs::Vector<T>::setSize( m_nterms );
+    vismodule::Vector<T>::setSize( m_nterms );
     m_t_values.setSize( m_nterms );
     m_mask.allocate( m_nterms );
     m_mask.set(); // all coefficients are active.
@@ -131,16 +131,16 @@ const kvs::Vector<T>& ResponseSurface<T>::solve(
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector<T>& ResponseSurface<T>::improve( const T threshold )
+const vismodule::Vector<T>& ResponseSurface<T>::improve( const T threshold )
 {
     if ( m_npoints == 0 ) return( *this );
 
     m_nterms = 0;
-    for ( size_t i = 0; i < kvs::Vector<T>::size(); i++ )
+    for ( size_t i = 0; i < vismodule::Vector<T>::size(); i++ )
     {
         if( m_mask.test(i) )
         {
-            if( kvs::Math::Abs( m_t_values[i] ) < threshold ) m_mask.reset(i);
+            if( vismodule::Math::Abs( m_t_values[i] ) < threshold ) m_mask.reset(i);
             else m_nterms++;
         }
     }
@@ -205,7 +205,7 @@ const T ResponseSurface<T>::adjustedRsquare( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-const kvs::Vector<T>& ResponseSurface<T>::Tvalues( void ) const
+const vismodule::Vector<T>& ResponseSurface<T>::Tvalues( void ) const
 {
     return( m_t_values );
 }
@@ -220,15 +220,15 @@ void ResponseSurface<T>::solve_regression_coefficients( void )
 {
     this->update_coefficient_matrix();
 
-    const kvs::Matrix<T> X = m_coefficient_matrix; // variable matrix
-    const kvs::Vector<T> y = m_responses;          // response vector
+    const vismodule::Matrix<T> X = m_coefficient_matrix; // variable matrix
+    const vismodule::Vector<T> y = m_responses;          // response vector
     const size_t n = m_responses.size();           // num. of responses
 
-    const kvs::Matrix<T> Xt = X.transpose();       // X^{t}
-    const kvs::Matrix<T> XtX = Xt * X;             // X^{t} X
-    const kvs::Vector<T> Xty = Xt * y;             // X^{t} y
-    const kvs::Matrix<T> invXtX = XtX.inverse();  // ( X^{t} X )^{-1}
-    const kvs::Vector<T> b = invXtX * Xty;        // ( X^{t} X )^{-1} X^{t} y
+    const vismodule::Matrix<T> Xt = X.transpose();       // X^{t}
+    const vismodule::Matrix<T> XtX = Xt * X;             // X^{t} X
+    const vismodule::Vector<T> Xty = Xt * y;             // X^{t} y
+    const vismodule::Matrix<T> invXtX = XtX.inverse();  // ( X^{t} X )^{-1}
+    const vismodule::Vector<T> b = invXtX * Xty;        // ( X^{t} X )^{-1} X^{t} y
     const T btXty = b.dot( Xty );                  // b^{t} X^{t} y
 
     /* Calculate adjusted coefficient of multiple determination
@@ -238,7 +238,7 @@ void ResponseSurface<T>::solve_regression_coefficients( void )
      *     sigma2 : error covariance
      */
     const T SSE = y.dot( y ) - btXty;
-    const T SSR = btXty - kvs::Math::Square( GetSumOfElements( y ) ) / n;
+    const T SSR = btXty - vismodule::Math::Square( GetSumOfElements( y ) ) / n;
     const T Syy = SSR + SSE;
     const T sigma2 = SSE / ( n - m_nterms );
 
@@ -246,13 +246,13 @@ void ResponseSurface<T>::solve_regression_coefficients( void )
     m_adjusted_r_square = T(1) - SSE / Syy;
 
     // T-test.
-    kvs::Vector<T> t( m_nterms );
+    vismodule::Vector<T> t( m_nterms );
     for ( size_t i = 0; i < m_nterms; i++ )
     {
         t[i] = b[i] / static_cast<T>(sqrt( (double)(sigma2 * invXtX[i][i]) ));
     }
 
-    for ( size_t i = 0, index = 0; i < kvs::Vector<T>::size(); i++ )
+    for ( size_t i = 0, index = 0; i < vismodule::Vector<T>::size(); i++ )
     {
         (*this)[i] = T(0);
         m_t_values[i] = T(0);
@@ -273,7 +273,7 @@ void ResponseSurface<T>::solve_regression_coefficients( void )
 /*===========================================================================*/
 template <typename T>
 void ResponseSurface<T>::create_coefficient_matrix(
-    const kvs::Matrix<T>& variables )
+    const vismodule::Matrix<T>& variables )
 {
     m_coefficient_matrix.setSize( m_responses.size(), m_nterms );
     for ( size_t row = 0; row < m_responses.size(); row++ )
@@ -285,7 +285,7 @@ void ResponseSurface<T>::create_coefficient_matrix(
             m_coefficient_matrix[row][i+1] = variables[row][i];
 
             // Calculate second-order term's value (ex. x^2, y^2, z^2, ...)
-            m_coefficient_matrix[row][i+1+m_nvariables] = kvs::Math::Square( variables[row][i] );
+            m_coefficient_matrix[row][i+1+m_nvariables] = vismodule::Math::Square( variables[row][i] );
         }
 
         // Caluculate another term's value (ex. xy, yz, ...)
@@ -311,7 +311,7 @@ void ResponseSurface<T>::update_coefficient_matrix( void )
     const size_t nrows = m_coefficient_matrix.nrows();
     const size_t ncolumns = m_coefficient_matrix.ncolumns();
 
-    kvs::Matrix<T> temp( m_responses.size(), m_nterms );
+    vismodule::Matrix<T> temp( m_responses.size(), m_nterms );
     for ( size_t j = 0, index = 0; j < ncolumns; j++ )
     {
         if ( m_mask.test(j) )
@@ -332,4 +332,4 @@ template class ResponseSurface<int>;
 template class ResponseSurface<float>;
 template class ResponseSurface<double>;
 
-} // end of namespace kvs
+} // end of namespace vismodule

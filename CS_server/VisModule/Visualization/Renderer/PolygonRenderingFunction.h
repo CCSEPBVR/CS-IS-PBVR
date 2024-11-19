@@ -11,12 +11,12 @@
  *  $Id: PolygonRenderingFunction.h 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS_CORE_POLYGON_RENDERING_FUNCTION_H_INCLUDE
-#define KVS_CORE_POLYGON_RENDERING_FUNCTION_H_INCLUDE
+#ifndef VIS_MODULE_CORE_POLYGON_RENDERING_FUNCTION_H_INCLUDE
+#define VIS_MODULE_CORE_POLYGON_RENDERING_FUNCTION_H_INCLUDE
 
-#include <kvs/PolygonObject>
-#include <kvs/RGBColor>
-#include <kvs/Type>
+#include <vismodule/PolygonObject>
+#include <vismodule/RGBColor>
+#include <vismodule/Type>
 
 /* Function name: Rendering_xxx
  *
@@ -50,13 +50,13 @@ namespace
  *  @param  polygon [in] pointer to the polygon object
  */
 /*===========================================================================*/
-void Rendering_Tri_VCs_O( const kvs::PolygonObject* polygon )
+void Rendering_Tri_VCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::UInt8*  colors  = polygon->colors().pointer();
-        const kvs::Real32* coords  = polygon->coords().pointer();
-        const kvs::UInt8   opacity = polygon->opacity();
+        const vismodule::UInt8*  colors  = polygon->colors().pointer();
+        const vismodule::Real32* coords  = polygon->coords().pointer();
+        const vismodule::UInt8   opacity = polygon->opacity();
 
         const size_t nvertices = polygon->nvertices();
         for ( size_t i = 0, index = 0; i < nvertices; i++, index += 3 )
@@ -74,14 +74,14 @@ void Rendering_Tri_VCs_O( const kvs::PolygonObject* polygon )
  *  @param  polygon [in] pointer to the polygon object
  */
 /*===========================================================================*/
-void Rendering_Tri_VCs_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_VCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::UInt8*  colors      = polygon->colors().pointer();
-        const kvs::Real32* coords      = polygon->coords().pointer();
-        const kvs::UInt32* connections = polygon->connections().pointer();
-        const kvs::UInt8   opacity     = polygon->opacity();
+        const vismodule::UInt8*  colors      = polygon->colors().pointer();
+        const vismodule::Real32* coords      = polygon->coords().pointer();
+        const vismodule::UInt32* connections = polygon->connections().pointer();
+        const vismodule::UInt8   opacity     = polygon->opacity();
 
         const size_t nconnections = polygon->nconnections();
         for ( size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
@@ -109,13 +109,13 @@ void Rendering_Tri_VCs_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon [in] pointer to the polygon object
  */
 /*===========================================================================*/
-void Rendering_Tri_VCs_Os( const kvs::PolygonObject* polygon )
+void Rendering_Tri_VCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::UInt8*  colors    = polygon->colors().pointer();
-        const kvs::Real32* coords    = polygon->coords().pointer();
-        const kvs::UInt8*  opacities = polygon->opacities().pointer();
+        const vismodule::UInt8*  colors    = polygon->colors().pointer();
+        const vismodule::Real32* coords    = polygon->coords().pointer();
+        const vismodule::UInt8*  opacities = polygon->opacities().pointer();
 
         const size_t nvertices = polygon->nvertices();
         for ( size_t i = 0, index = 0; i < nvertices; i++, index += 3 )
@@ -133,14 +133,14 @@ void Rendering_Tri_VCs_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon [in] pointer to the polygon object
  */
 /*===========================================================================*/
-void Rendering_Tri_VCs_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_VCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::UInt8*  colors      = polygon->colors().pointer();
-        const kvs::Real32* coords      = polygon->coords().pointer();
-        const kvs::UInt32* connections = polygon->connections().pointer();
-        const kvs::UInt8*  opacities   = polygon->opacities().pointer();
+        const vismodule::UInt8*  colors      = polygon->colors().pointer();
+        const vismodule::Real32* coords      = polygon->coords().pointer();
+        const vismodule::UInt32* connections = polygon->connections().pointer();
+        const vismodule::UInt8*  opacities   = polygon->opacities().pointer();
 
         const size_t nconnections = polygon->nconnections();
         for ( size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
@@ -168,13 +168,13 @@ void Rendering_Tri_VCs_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon [in] pointer to the polygon object
  */
 /*===========================================================================*/
-void Rendering_Tri_SC_O( const kvs::PolygonObject* polygon )
+void Rendering_Tri_SC_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::Real32*  coords  = polygon->coords().pointer();
-        const kvs::RGBColor color   = polygon->color(0);
-        const kvs::UInt8    opacity = polygon->opacity(0);
+        const vismodule::Real32*  coords  = polygon->coords().pointer();
+        const vismodule::RGBColor color   = polygon->color(0);
+        const vismodule::UInt8    opacity = polygon->opacity(0);
 
         glColor4ub( color.r(), color.g(), color.b(), opacity );
 
@@ -194,14 +194,14 @@ void Rendering_Tri_SC_O( const kvs::PolygonObject* polygon )
  *  @param  polygon [in] pointer to the polygon object
  */
 /*===========================================================================*/
-void Rendering_Tri_SC_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_SC_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::Real32*  coords      = polygon->coords().pointer();
-        const kvs::UInt32*  connections = polygon->connections().pointer();
-        const kvs::RGBColor color       = polygon->color(0);
-        const kvs::UInt8    opacity     = polygon->opacity(0);
+        const vismodule::Real32*  coords      = polygon->coords().pointer();
+        const vismodule::UInt32*  connections = polygon->connections().pointer();
+        const vismodule::RGBColor color       = polygon->color(0);
+        const vismodule::UInt8    opacity     = polygon->opacity(0);
 
         glColor4ub( color.r(), color.g(), color.b(), opacity );
 
@@ -226,13 +226,13 @@ void Rendering_Tri_SC_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon [in] pointer to the polygon object
  */
 /*===========================================================================*/
-void Rendering_Tri_SC_Os( const kvs::PolygonObject* polygon )
+void Rendering_Tri_SC_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::RGBColor color     = polygon->color(0);
-        const kvs::UInt8*   opacities = polygon->opacities().pointer();
-        const kvs::Real32*  coords    = polygon->coords().pointer();
+        const vismodule::RGBColor color     = polygon->color(0);
+        const vismodule::UInt8*   opacities = polygon->opacities().pointer();
+        const vismodule::Real32*  coords    = polygon->coords().pointer();
 
         const size_t nopacities = polygon->nopacities();
         for ( size_t i = 0, index = 0; i < nopacities; i++, index += 9 )
@@ -253,14 +253,14 @@ void Rendering_Tri_SC_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon [in] pointer to the polygon object
  */
 /*===========================================================================*/
-void Rendering_Tri_SC_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_SC_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::RGBColor color       = polygon->color(0);
-        const kvs::UInt32*  connections = polygon->connections().pointer();
-        const kvs::Real32*  coords      = polygon->coords().pointer();
-        const kvs::UInt8*   opacities   = polygon->opacities().pointer();
+        const vismodule::RGBColor color       = polygon->color(0);
+        const vismodule::UInt32*  connections = polygon->connections().pointer();
+        const vismodule::Real32*  coords      = polygon->coords().pointer();
+        const vismodule::UInt8*   opacities   = polygon->opacities().pointer();
 
         const size_t nconnections = polygon->nconnections();
         for ( size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
@@ -284,13 +284,13 @@ void Rendering_Tri_SC_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon [in] pointer to the polygon object
  */
 /*===========================================================================*/
-void Rendering_Tri_PCs_O( const kvs::PolygonObject* polygon )
+void Rendering_Tri_PCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::UInt8   opacity = polygon->opacity(0);
-        const kvs::UInt8*  colors  = polygon->colors().pointer();
-        const kvs::Real32* coords  = polygon->coords().pointer();
+        const vismodule::UInt8   opacity = polygon->opacity(0);
+        const vismodule::UInt8*  colors  = polygon->colors().pointer();
+        const vismodule::Real32* coords  = polygon->coords().pointer();
 
         const size_t ncolors = polygon->ncolors();
         for ( size_t i = 0, index3 = 0, index9 = 0; i < ncolors; i++, index3 += 3, index9 += 9 )
@@ -311,14 +311,14 @@ void Rendering_Tri_PCs_O( const kvs::PolygonObject* polygon )
  *  @param  polygon [in] pointer to the polygon object
  */
 /*===========================================================================*/
-void Rendering_Tri_PCs_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_PCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::UInt32* connections = polygon->connections().pointer();
-        const kvs::UInt8*  colors      = polygon->colors().pointer();
-        const kvs::UInt8   opacity     = polygon->opacity(0);
-        const kvs::Real32* coords      = polygon->coords().pointer();
+        const vismodule::UInt32* connections = polygon->connections().pointer();
+        const vismodule::UInt8*  colors      = polygon->colors().pointer();
+        const vismodule::UInt8   opacity     = polygon->opacity(0);
+        const vismodule::Real32* coords      = polygon->coords().pointer();
 
         const size_t nconnections = polygon->nconnections();
         for ( size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
@@ -342,13 +342,13 @@ void Rendering_Tri_PCs_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon [in] pointer to the polygon object
  */
 /*===========================================================================*/
-void Rendering_Tri_PCs_Os( const kvs::PolygonObject* polygon )
+void Rendering_Tri_PCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::UInt8*  colors    = polygon->colors().pointer();
-        const kvs::UInt8*  opacities = polygon->opacities().pointer();
-        const kvs::Real32* coords    = polygon->coords().pointer();
+        const vismodule::UInt8*  colors    = polygon->colors().pointer();
+        const vismodule::UInt8*  opacities = polygon->opacities().pointer();
+        const vismodule::Real32* coords    = polygon->coords().pointer();
 
         const size_t ncolors = polygon->ncolors();
         for ( size_t i = 0, index3 = 0, index9 = 0; i < ncolors; i++, index3 += 3, index9 += 9 )
@@ -369,14 +369,14 @@ void Rendering_Tri_PCs_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon [in] pointer to the polygon object
  */
 /*===========================================================================*/
-void Rendering_Tri_PCs_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_PCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::UInt32* connections = polygon->connections().pointer();
-        const kvs::UInt8*  colors      = polygon->colors().pointer();
-        const kvs::UInt8*  opacities   = polygon->opacities().pointer();
-        const kvs::Real32* coords      = polygon->coords().pointer();
+        const vismodule::UInt32* connections = polygon->connections().pointer();
+        const vismodule::UInt8*  colors      = polygon->colors().pointer();
+        const vismodule::UInt8*  opacities   = polygon->opacities().pointer();
+        const vismodule::Real32* coords      = polygon->coords().pointer();
 
         const size_t nconnections = polygon->nconnections();
         for ( size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
@@ -400,13 +400,13 @@ void Rendering_Tri_PCs_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon [in] pointer to the polygon object
  */
 /*===========================================================================*/
-void Rendering_Quad_VCs_O( const kvs::PolygonObject* polygon )
+void Rendering_Quad_VCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        const kvs::UInt8*  colors  = polygon->colors().pointer();
-        const kvs::UInt8   opacity = polygon->opacity(0);
-        const kvs::Real32* coords  = polygon->coords().pointer();
+        const vismodule::UInt8*  colors  = polygon->colors().pointer();
+        const vismodule::UInt8   opacity = polygon->opacity(0);
+        const vismodule::Real32* coords  = polygon->coords().pointer();
 
         const size_t nvertices = polygon->nvertices();
         for ( size_t i = 0, index = 0; i < nvertices; i++, index += 3 )
@@ -424,7 +424,7 @@ void Rendering_Quad_VCs_O( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_VCs_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_VCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -475,7 +475,7 @@ void Rendering_Quad_VCs_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_VCs_Os( const kvs::PolygonObject* polygon )
+void Rendering_Quad_VCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -500,7 +500,7 @@ void Rendering_Quad_VCs_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_VCs_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_VCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -551,11 +551,11 @@ void Rendering_Quad_VCs_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_SC_O( const kvs::PolygonObject* polygon )
+void Rendering_Quad_SC_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
@@ -576,11 +576,11 @@ void Rendering_Quad_SC_O( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_SC_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_SC_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
@@ -615,11 +615,11 @@ void Rendering_Quad_SC_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_SC_Os( const kvs::PolygonObject* polygon )
+void Rendering_Quad_SC_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         for( size_t i = 0; i < polygon->nopacities(); i++ )
         {
@@ -649,11 +649,11 @@ void Rendering_Quad_SC_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_SC_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_SC_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         for( size_t i = 0; i < polygon->nconnections(); i++ )
         {
@@ -687,7 +687,7 @@ void Rendering_Quad_SC_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_PCs_O( const kvs::PolygonObject* polygon )
+void Rendering_Quad_PCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -723,7 +723,7 @@ void Rendering_Quad_PCs_O( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_PCs_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_PCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -764,7 +764,7 @@ void Rendering_Quad_PCs_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_PCs_Os( const kvs::PolygonObject* polygon )
+void Rendering_Quad_PCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -800,7 +800,7 @@ void Rendering_Quad_PCs_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_PCs_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_PCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -841,7 +841,7 @@ void Rendering_Quad_PCs_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_VN_VCs_O( const kvs::PolygonObject* polygon )
+void Rendering_Tri_VN_VCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
@@ -869,7 +869,7 @@ void Rendering_Tri_VN_VCs_O( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_VN_VCs_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_VN_VCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
@@ -921,7 +921,7 @@ void Rendering_Tri_VN_VCs_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_VN_VCs_Os( const kvs::PolygonObject* polygon )
+void Rendering_Tri_VN_VCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
@@ -949,7 +949,7 @@ void Rendering_Tri_VN_VCs_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_VN_VCs_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_VN_VCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
@@ -1001,11 +1001,11 @@ void Rendering_Tri_VN_VCs_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_VN_SC_O( const kvs::PolygonObject* polygon )
+void Rendering_Tri_VN_SC_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
@@ -1029,11 +1029,11 @@ void Rendering_Tri_VN_SC_O( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_VN_SC_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_VN_SC_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
@@ -1073,11 +1073,11 @@ void Rendering_Tri_VN_SC_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_VN_SC_Os( const kvs::PolygonObject* polygon )
+void Rendering_Tri_VN_SC_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         for( size_t i = 0; i < polygon->nopacities(); i++ )
         {
@@ -1113,11 +1113,11 @@ void Rendering_Tri_VN_SC_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_VN_SC_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_VN_SC_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         for( size_t i = 0; i < polygon->nconnections(); i++ )
         {
@@ -1156,7 +1156,7 @@ void Rendering_Tri_VN_SC_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_VN_PCs_O( const kvs::PolygonObject* polygon )
+void Rendering_Tri_VN_PCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
@@ -1198,7 +1198,7 @@ void Rendering_Tri_VN_PCs_O( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_VN_PCs_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_VN_PCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
@@ -1242,7 +1242,7 @@ void Rendering_Tri_VN_PCs_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_VN_PCs_Os( const kvs::PolygonObject* polygon )
+void Rendering_Tri_VN_PCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
@@ -1284,7 +1284,7 @@ void Rendering_Tri_VN_PCs_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_VN_PCs_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_VN_PCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
@@ -1328,7 +1328,7 @@ void Rendering_Tri_VN_PCs_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_VN_VCs_O( const kvs::PolygonObject* polygon )
+void Rendering_Quad_VN_VCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -1356,7 +1356,7 @@ void Rendering_Quad_VN_VCs_O( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_VN_VCs_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_VN_VCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -1419,7 +1419,7 @@ void Rendering_Quad_VN_VCs_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_VN_VCs_Os( const kvs::PolygonObject* polygon )
+void Rendering_Quad_VN_VCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -1447,7 +1447,7 @@ void Rendering_Quad_VN_VCs_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_VN_VCs_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_VN_VCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -1510,11 +1510,11 @@ void Rendering_Quad_VN_VCs_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_VN_SC_O( const kvs::PolygonObject* polygon )
+void Rendering_Quad_VN_SC_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
@@ -1538,11 +1538,11 @@ void Rendering_Quad_VN_SC_O( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_VN_SC_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_VN_SC_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
@@ -1589,11 +1589,11 @@ void Rendering_Quad_VN_SC_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_VN_SC_Os( const kvs::PolygonObject* polygon )
+void Rendering_Quad_VN_SC_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         for( size_t i = 0; i < polygon->nopacities(); i++ )
         {
@@ -1635,11 +1635,11 @@ void Rendering_Quad_VN_SC_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_VN_SC_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_VN_SC_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         for( size_t i = 0; i < polygon->nconnections(); i++ )
         {
@@ -1685,7 +1685,7 @@ void Rendering_Quad_VN_SC_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_VN_PCs_O( const kvs::PolygonObject* polygon )
+void Rendering_Quad_VN_PCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -1733,7 +1733,7 @@ void Rendering_Quad_VN_PCs_O( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_VN_PCs_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_VN_PCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -1786,7 +1786,7 @@ void Rendering_Quad_VN_PCs_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_VN_PCs_Os( const kvs::PolygonObject* polygon )
+void Rendering_Quad_VN_PCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -1834,7 +1834,7 @@ void Rendering_Quad_VN_PCs_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_VN_PCs_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_VN_PCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -1887,7 +1887,7 @@ void Rendering_Quad_VN_PCs_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_PN_VCs_O( const kvs::PolygonObject* polygon )
+void Rendering_Tri_PN_VCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
@@ -1931,7 +1931,7 @@ void Rendering_Tri_PN_VCs_O( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_PN_VCs_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_PN_VCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
@@ -1977,7 +1977,7 @@ void Rendering_Tri_PN_VCs_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_PN_VCs_Os( const kvs::PolygonObject* polygon )
+void Rendering_Tri_PN_VCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
@@ -2021,7 +2021,7 @@ void Rendering_Tri_PN_VCs_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_PN_VCs_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_PN_VCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
@@ -2067,11 +2067,11 @@ void Rendering_Tri_PN_VCs_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_PN_SC_O( const kvs::PolygonObject* polygon )
+void Rendering_Tri_PN_SC_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
@@ -2103,11 +2103,11 @@ void Rendering_Tri_PN_SC_O( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_PN_SC_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_PN_SC_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
@@ -2141,11 +2141,11 @@ void Rendering_Tri_PN_SC_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_PN_SC_Os( const kvs::PolygonObject* polygon )
+void Rendering_Tri_PN_SC_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         for( size_t i = 0; i < polygon->nopacities(); i++ )
         {
@@ -2178,11 +2178,11 @@ void Rendering_Tri_PN_SC_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_PN_SC_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_PN_SC_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         for( size_t i = 0; i < polygon->nconnections(); i++ )
         {
@@ -2215,7 +2215,7 @@ void Rendering_Tri_PN_SC_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_PN_PCs_O( const kvs::PolygonObject* polygon )
+void Rendering_Tri_PN_PCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
@@ -2251,7 +2251,7 @@ void Rendering_Tri_PN_PCs_O( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_PN_PCs_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_PN_PCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
@@ -2290,7 +2290,7 @@ void Rendering_Tri_PN_PCs_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_PN_PCs_Os( const kvs::PolygonObject* polygon )
+void Rendering_Tri_PN_PCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
@@ -2326,7 +2326,7 @@ void Rendering_Tri_PN_PCs_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Tri_PN_PCs_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Tri_PN_PCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
@@ -2365,7 +2365,7 @@ void Rendering_Tri_PN_PCs_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_PN_VCs_O( const kvs::PolygonObject* polygon )
+void Rendering_Quad_PN_VCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -2417,7 +2417,7 @@ void Rendering_Quad_PN_VCs_O( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_PN_VCs_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_PN_VCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -2473,7 +2473,7 @@ void Rendering_Quad_PN_VCs_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_PN_VCs_Os( const kvs::PolygonObject* polygon )
+void Rendering_Quad_PN_VCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -2524,7 +2524,7 @@ void Rendering_Quad_PN_VCs_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_PN_VCs_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_PN_VCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -2580,11 +2580,11 @@ void Rendering_Quad_PN_VCs_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_PN_SC_O( const kvs::PolygonObject* polygon )
+void Rendering_Quad_PN_SC_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
@@ -2619,11 +2619,11 @@ void Rendering_Quad_PN_SC_O( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_PN_SC_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_PN_SC_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
@@ -2663,11 +2663,11 @@ void Rendering_Quad_PN_SC_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_PN_SC_Os( const kvs::PolygonObject* polygon )
+void Rendering_Quad_PN_SC_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         for( size_t i = 0; i < polygon->nopacities(); i++ )
         {
@@ -2703,11 +2703,11 @@ void Rendering_Quad_PN_SC_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_PN_SC_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_PN_SC_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        const kvs::RGBColor& col = polygon->color( 0 );
+        const vismodule::RGBColor& col = polygon->color( 0 );
 
         for( size_t i = 0; i < polygon->nconnections(); i++ )
         {
@@ -2747,7 +2747,7 @@ void Rendering_Quad_PN_SC_Os_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_PN_PCs_O( const kvs::PolygonObject* polygon )
+void Rendering_Quad_PN_PCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -2786,7 +2786,7 @@ void Rendering_Quad_PN_PCs_O( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_PN_PCs_O_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_PN_PCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -2830,7 +2830,7 @@ void Rendering_Quad_PN_PCs_O_Cs( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_PN_PCs_Os( const kvs::PolygonObject* polygon )
+void Rendering_Quad_PN_PCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -2869,7 +2869,7 @@ void Rendering_Quad_PN_PCs_Os( const kvs::PolygonObject* polygon )
  *  @param  polygon     
  */
 /*==========================================================================*/
-void Rendering_Quad_PN_PCs_Os_Cs( const kvs::PolygonObject* polygon )
+void Rendering_Quad_PN_PCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
@@ -2907,7 +2907,7 @@ void Rendering_Quad_PN_PCs_Os_Cs( const kvs::PolygonObject* polygon )
     glEnd();
 }
 
-typedef void (*PolygonRenderingFunctionType)( const kvs::PolygonObject* polygon );
+typedef void (*PolygonRenderingFunctionType)( const vismodule::PolygonObject* polygon );
 
 enum PolygonRenderingType
 {
@@ -3073,20 +3073,20 @@ PolygonRenderingFunctionType Rendering[NumberOfRenderingTypes] =
     &Rendering_Quad_PN_PCs_Os_Cs,
 };
 
-PolygonRenderingType GetPolygonRenderingType( const kvs::PolygonObject* polygon )
+PolygonRenderingType GetPolygonRenderingType( const vismodule::PolygonObject* polygon )
 {
     const size_t nopacities = polygon->nopacities();
     const size_t ncolors    = polygon->ncolors();
     const size_t nconnects  = polygon->nconnections();
-    const kvs::PolygonObject::PolygonType polygon_type = polygon->polygonType();
-    const kvs::PolygonObject::NormalType  normal_type  = polygon->normalType();
-    const kvs::PolygonObject::ColorType   color_type   = polygon->colorType();
+    const vismodule::PolygonObject::PolygonType polygon_type = polygon->polygonType();
+    const vismodule::PolygonObject::NormalType  normal_type  = polygon->normalType();
+    const vismodule::PolygonObject::ColorType   color_type   = polygon->colorType();
 
     if( polygon->normals().size() == 0 )
     {
-        if( polygon_type == kvs::PolygonObject::Triangle )
+        if( polygon_type == vismodule::PolygonObject::Triangle )
         {
-            if( color_type == kvs::PolygonObject::VertexColor )
+            if( color_type == vismodule::PolygonObject::VertexColor )
             {
                 if( ncolors == 1 )
                 {
@@ -3103,7 +3103,7 @@ PolygonRenderingType GetPolygonRenderingType( const kvs::PolygonObject* polygon 
                         return( ( nconnects == 0 ) ? Type_Tri_VCs_Os : Type_Tri_VCs_Os_Cs );
                 }
             }
-            else if( color_type == kvs::PolygonObject::PolygonColor )
+            else if( color_type == vismodule::PolygonObject::PolygonColor )
             {
                 if( ncolors == 1 )
                 {
@@ -3121,9 +3121,9 @@ PolygonRenderingType GetPolygonRenderingType( const kvs::PolygonObject* polygon 
                 }
             }
         }
-        else if( polygon_type == kvs::PolygonObject::Quadrangle )
+        else if( polygon_type == vismodule::PolygonObject::Quadrangle )
         {
-            if( color_type == kvs::PolygonObject::VertexColor )
+            if( color_type == vismodule::PolygonObject::VertexColor )
             {
                 if( ncolors == 1 )
                 {
@@ -3140,7 +3140,7 @@ PolygonRenderingType GetPolygonRenderingType( const kvs::PolygonObject* polygon 
                         return( ( nconnects == 0 ) ? Type_Quad_VCs_Os : Type_Quad_VCs_Os_Cs );
                 }
             }
-            else if( color_type == kvs::PolygonObject::PolygonColor )
+            else if( color_type == vismodule::PolygonObject::PolygonColor )
             {
                 if( ncolors == 1 )
                 {
@@ -3162,11 +3162,11 @@ PolygonRenderingType GetPolygonRenderingType( const kvs::PolygonObject* polygon 
 
     else
     {
-        if( normal_type == kvs::PolygonObject::VertexNormal )
+        if( normal_type == vismodule::PolygonObject::VertexNormal )
         {
-            if( polygon_type == kvs::PolygonObject::Triangle )
+            if( polygon_type == vismodule::PolygonObject::Triangle )
             {
-                if( color_type == kvs::PolygonObject::VertexColor )
+                if( color_type == vismodule::PolygonObject::VertexColor )
                 {
                     if( ncolors == 1 )
                     {
@@ -3183,7 +3183,7 @@ PolygonRenderingType GetPolygonRenderingType( const kvs::PolygonObject* polygon 
                             return( ( nconnects == 0 ) ? Type_Tri_VN_VCs_Os : Type_Tri_VN_VCs_Os_Cs );
                     }
                 }
-                else if( color_type == kvs::PolygonObject::PolygonColor )
+                else if( color_type == vismodule::PolygonObject::PolygonColor )
                 {
                     if( ncolors == 1 )
                     {
@@ -3201,9 +3201,9 @@ PolygonRenderingType GetPolygonRenderingType( const kvs::PolygonObject* polygon 
                     }
                 }
             }
-            else if( polygon_type == kvs::PolygonObject::Quadrangle )
+            else if( polygon_type == vismodule::PolygonObject::Quadrangle )
             {
-                if( color_type == kvs::PolygonObject::VertexColor )
+                if( color_type == vismodule::PolygonObject::VertexColor )
                 {
                     if( ncolors == 1 )
                     {
@@ -3220,7 +3220,7 @@ PolygonRenderingType GetPolygonRenderingType( const kvs::PolygonObject* polygon 
                             return( ( nconnects == 0 ) ? Type_Quad_VN_VCs_Os : Type_Quad_VN_VCs_Os_Cs );
                     }
                 }
-                else if( color_type == kvs::PolygonObject::PolygonColor )
+                else if( color_type == vismodule::PolygonObject::PolygonColor )
                 {
                     if( ncolors == 1 )
                     {
@@ -3240,11 +3240,11 @@ PolygonRenderingType GetPolygonRenderingType( const kvs::PolygonObject* polygon 
             }
         }
 
-        else if( normal_type == kvs::PolygonObject::PolygonNormal )
+        else if( normal_type == vismodule::PolygonObject::PolygonNormal )
         {
-            if( polygon_type == kvs::PolygonObject::Triangle )
+            if( polygon_type == vismodule::PolygonObject::Triangle )
             {
-                if( color_type == kvs::PolygonObject::VertexColor )
+                if( color_type == vismodule::PolygonObject::VertexColor )
                 {
                     if( ncolors == 1 )
                     {
@@ -3261,7 +3261,7 @@ PolygonRenderingType GetPolygonRenderingType( const kvs::PolygonObject* polygon 
                             return( ( nconnects == 0 ) ? Type_Tri_PN_VCs_Os : Type_Tri_PN_VCs_Os_Cs );
                     }
                 }
-                else if( color_type == kvs::PolygonObject::PolygonColor )
+                else if( color_type == vismodule::PolygonObject::PolygonColor )
                 {
                     if( ncolors == 1 )
                     {
@@ -3280,9 +3280,9 @@ PolygonRenderingType GetPolygonRenderingType( const kvs::PolygonObject* polygon 
                 }
             }
 
-            else if( polygon_type == kvs::PolygonObject::Quadrangle )
+            else if( polygon_type == vismodule::PolygonObject::Quadrangle )
             {
-                if( color_type == kvs::PolygonObject::VertexColor )
+                if( color_type == vismodule::PolygonObject::VertexColor )
                 {
                     if( ncolors == 1 )
                     {
@@ -3299,7 +3299,7 @@ PolygonRenderingType GetPolygonRenderingType( const kvs::PolygonObject* polygon 
                             return( ( nconnects == 0 ) ? Type_Quad_PN_VCs_Os : Type_Quad_PN_VCs_Os_Cs );
                     }
                 }
-                else if( color_type == kvs::PolygonObject::PolygonColor )
+                else if( color_type == vismodule::PolygonObject::PolygonColor )
                 {
                     if( ncolors == 1 )
                     {
@@ -3323,7 +3323,7 @@ PolygonRenderingType GetPolygonRenderingType( const kvs::PolygonObject* polygon 
     return( Type_Tri_VCs_O );
 };
 
-void PolygonRenderingFunction( const kvs::PolygonObject* polygon )
+void PolygonRenderingFunction( const vismodule::PolygonObject* polygon )
 {
     if( polygon->nvertices() > 0 )
     {
@@ -3334,4 +3334,4 @@ void PolygonRenderingFunction( const kvs::PolygonObject* polygon )
 
 } // end of namespace
 
-#endif // KVS_CORE_POLYGON_RENDERING_FUNCTION_H_INCLUDE
+#endif // VIS_MODULE_CORE_POLYGON_RENDERING_FUNCTION_H_INCLUDE

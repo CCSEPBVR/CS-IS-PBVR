@@ -11,18 +11,18 @@
  *  $Id: ParticleBufferAccumulator.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__PARTICLE_BUFFER_ACCUMULATOR_H_INCLUDE
-#define KVS__PARTICLE_BUFFER_ACCUMULATOR_H_INCLUDE
+#ifndef VIS_MODULE__PARTICLE_BUFFER_ACCUMULATOR_H_INCLUDE
+#define VIS_MODULE__PARTICLE_BUFFER_ACCUMULATOR_H_INCLUDE
 
-#include <kvs/PointObject>
-#include <kvs/ParticleBuffer>
-#include <kvs/ParticleVolumeRenderer>
-#include <kvs/ValueArray>
-#include <kvs/ClassName>
+#include <vismodule/PointObject>
+#include <vismodule/ParticleBuffer>
+#include <vismodule/ParticleVolumeRenderer>
+#include <vismodule/ValueArray>
+#include <vismodule/ClassName>
 #include <vector>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -30,20 +30,20 @@ namespace kvs
  *  Particle buffer accumulator.
  */
 /*==========================================================================*/
-class ParticleBufferAccumulator : public kvs::ParticleBuffer
+class ParticleBufferAccumulator : public vismodule::ParticleBuffer
 {
-    kvsClassName( kvs::ParticleBufferAccumulator );
+    visModuleClassName( vismodule::ParticleBufferAccumulator );
 
 public:
 
-    typedef kvs::ParticleBuffer SuperClass;
+    typedef vismodule::ParticleBuffer SuperClass;
 
-    typedef std::vector<kvs::PointObject*>            ObjectList;
-    typedef std::vector<kvs::ParticleVolumeRenderer*> RendererList;
+    typedef std::vector<vismodule::PointObject*>            ObjectList;
+    typedef std::vector<vismodule::ParticleVolumeRenderer*> RendererList;
 
 protected:
 
-    kvs::ValueArray<kvs::UInt8> m_id_buffer; ///< object ID buffer [0,255]
+    vismodule::ValueArray<vismodule::UInt8> m_id_buffer; ///< object ID buffer [0,255]
 
 public:
 
@@ -67,17 +67,17 @@ public:
 
 public:
 
-    void accumulate( const size_t id, const kvs::ParticleBuffer* buffer );
+    void accumulate( const size_t id, const vismodule::ParticleBuffer* buffer );
 
-    void add( const size_t bindex, const size_t id, const kvs::Real32 depth, const kvs::UInt32 vindex );
+    void add( const size_t bindex, const size_t id, const vismodule::Real32 depth, const vismodule::UInt32 vindex );
 
     void createImage(
         ObjectList&                   object_list,
         RendererList&                 renderer_list,
-        kvs::ValueArray<kvs::UInt8>*  color,
-        kvs::ValueArray<kvs::Real32>* depth );
+        vismodule::ValueArray<vismodule::UInt8>*  color,
+        vismodule::ValueArray<vismodule::Real32>* depth );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__PARTICLE_BUFFER_ACCUMULATOR_H_INCLUDE
+#endif // VIS_MODULE__PARTICLE_BUFFER_ACCUMULATOR_H_INCLUDE

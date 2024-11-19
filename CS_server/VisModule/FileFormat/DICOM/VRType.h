@@ -11,13 +11,13 @@
  *  $Id: VRType.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__DCM__VR_TYPE_H_INCLUDE
-#define KVS__DCM__VR_TYPE_H_INCLUDE
+#ifndef VIS_MODULE__DCM__VR_TYPE_H_INCLUDE
+#define VIS_MODULE__DCM__VR_TYPE_H_INCLUDE
 
 #include <string>
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace dcm
@@ -117,6 +117,6 @@ const std::string VR_TYPE_TO_DESCRIPTION[] =
 
 } // end of namespace dcm
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__DCM__VR_TYPE_H_INCLUDE
+#endif // VIS_MODULE__DCM__VR_TYPE_H_INCLUDE

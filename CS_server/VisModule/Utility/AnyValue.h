@@ -11,18 +11,18 @@
  *  $Id: AnyValue.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__ANY_VALUE_H_INCLUDE
-#define KVS__ANY_VALUE_H_INCLUDE
+#ifndef VIS_MODULE__ANY_VALUE_H_INCLUDE
+#define VIS_MODULE__ANY_VALUE_H_INCLUDE
 
 #include <iostream>
 #include <typeinfo>
 #include <cstring>
-#include <kvs/DebugNew>
-#include <kvs/Type>
-#include <kvs/ClassName>
+#include <vismodule/DebugNew>
+#include <vismodule/Type>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -32,7 +32,7 @@ namespace kvs
 /*==========================================================================*/
 class AnyValue
 {
-    kvsClassName_without_virtual( kvs::AnyValue );
+    visModuleClassName_without_virtual( vismodule::AnyValue );
 
 public:
 
@@ -68,16 +68,16 @@ private:
 
     union value_type
     {
-        kvs::Int8   i8;   ///< 8bit signed integer (char) type
-        kvs::UInt8  ui8;  ///< 8bit unsigned integer (unsigned char) type
-        kvs::Int16  i16;  ///< 16bit signed integer (short) type
-        kvs::UInt16 ui16; ///< 16bit unsigned integer (unsigned short) type
-        kvs::Int32  i32;  ///< 32bit signed interger (int) type
-        kvs::UInt32 ui32; ///< 32bit unsigned integer (unsigned int) type
-        kvs::Int64  i64;  ///< 64bit signed integer (long) type
-        kvs::UInt64 ui64; ///< 64bit unsigned integer (unsigned long) type
-        kvs::Real32 r32;  ///< 32bit real (single precision) type
-        kvs::Real64 r64;  ///< 64bit real (double precision) type
+        vismodule::Int8   i8;   ///< 8bit signed integer (char) type
+        vismodule::UInt8  ui8;  ///< 8bit unsigned integer (unsigned char) type
+        vismodule::Int16  i16;  ///< 16bit signed integer (short) type
+        vismodule::UInt16 ui16; ///< 16bit unsigned integer (unsigned short) type
+        vismodule::Int32  i32;  ///< 32bit signed interger (int) type
+        vismodule::UInt32 ui32; ///< 32bit unsigned integer (unsigned int) type
+        vismodule::Int64  i64;  ///< 64bit signed integer (long) type
+        vismodule::UInt64 ui64; ///< 64bit unsigned integer (unsigned long) type
+        vismodule::Real32 r32;  ///< 32bit real (single precision) type
+        vismodule::Real64 r64;  ///< 64bit real (double precision) type
     };
 
     value_type m_value;     ///< value
@@ -159,36 +159,36 @@ template<typename T>
 void AnyValue::set_value( const T& value )
 {
     const std::type_info& type = typeid(T);
-    if (      type == typeid( kvs::Int8 ) )   { m_value.i8   = value; }
-    else if ( type == typeid( kvs::UInt8 ) )  { m_value.ui8  = value; }
-    else if ( type == typeid( kvs::Int16 ) )  { m_value.i16  = value; }
-    else if ( type == typeid( kvs::UInt16 ) ) { m_value.ui16 = value; }
-    else if ( type == typeid( kvs::Int32 ) )  { m_value.i32  = value; }
-    else if ( type == typeid( kvs::UInt32 ) ) { m_value.ui32 = value; }
-    else if ( type == typeid( kvs::Int64 ) )  { m_value.i64  = value; }
-    else if ( type == typeid( kvs::UInt64 ) ) { m_value.ui64 = value; }
-    else if ( type == typeid( kvs::Real32 ) ) { m_value.r32  = value; }
-    else if ( type == typeid( kvs::Real64 ) ) { m_value.r64  = value; }
+    if (      type == typeid( vismodule::Int8 ) )   { m_value.i8   = value; }
+    else if ( type == typeid( vismodule::UInt8 ) )  { m_value.ui8  = value; }
+    else if ( type == typeid( vismodule::Int16 ) )  { m_value.i16  = value; }
+    else if ( type == typeid( vismodule::UInt16 ) ) { m_value.ui16 = value; }
+    else if ( type == typeid( vismodule::Int32 ) )  { m_value.i32  = value; }
+    else if ( type == typeid( vismodule::UInt32 ) ) { m_value.ui32 = value; }
+    else if ( type == typeid( vismodule::Int64 ) )  { m_value.i64  = value; }
+    else if ( type == typeid( vismodule::UInt64 ) ) { m_value.ui64 = value; }
+    else if ( type == typeid( vismodule::Real32 ) ) { m_value.r32  = value; }
+    else if ( type == typeid( vismodule::Real64 ) ) { m_value.r64  = value; }
 }
 
 template<typename T>
 const T AnyValue::get_value( void ) const
 {
     const std::type_info& type = m_type_info->type();
-    if (      type == typeid( kvs::Int8 ) )   { return( static_cast<T>(m_value.i8) );   }
-    else if ( type == typeid( kvs::UInt8 ) )  { return( static_cast<T>(m_value.ui8) );  }
-    else if ( type == typeid( kvs::Int16 ) )  { return( static_cast<T>(m_value.i16) );  }
-    else if ( type == typeid( kvs::UInt16 ) ) { return( static_cast<T>(m_value.ui16) ); }
-    else if ( type == typeid( kvs::Int32 ) )  { return( static_cast<T>(m_value.i32) );  }
-    else if ( type == typeid( kvs::UInt32 ) ) { return( static_cast<T>(m_value.ui32) ); }
-    else if ( type == typeid( kvs::Int64 ) )  { return( static_cast<T>(m_value.i64) );  }
-    else if ( type == typeid( kvs::UInt64 ) ) { return( static_cast<T>(m_value.ui64) ); }
-    else if ( type == typeid( kvs::Real32 ) ) { return( static_cast<T>(m_value.r32) );  }
-    else if ( type == typeid( kvs::Real64 ) ) { return( static_cast<T>(m_value.r64) );  }
+    if (      type == typeid( vismodule::Int8 ) )   { return( static_cast<T>(m_value.i8) );   }
+    else if ( type == typeid( vismodule::UInt8 ) )  { return( static_cast<T>(m_value.ui8) );  }
+    else if ( type == typeid( vismodule::Int16 ) )  { return( static_cast<T>(m_value.i16) );  }
+    else if ( type == typeid( vismodule::UInt16 ) ) { return( static_cast<T>(m_value.ui16) ); }
+    else if ( type == typeid( vismodule::Int32 ) )  { return( static_cast<T>(m_value.i32) );  }
+    else if ( type == typeid( vismodule::UInt32 ) ) { return( static_cast<T>(m_value.ui32) ); }
+    else if ( type == typeid( vismodule::Int64 ) )  { return( static_cast<T>(m_value.i64) );  }
+    else if ( type == typeid( vismodule::UInt64 ) ) { return( static_cast<T>(m_value.ui64) ); }
+    else if ( type == typeid( vismodule::Real32 ) ) { return( static_cast<T>(m_value.r32) );  }
+    else if ( type == typeid( vismodule::Real64 ) ) { return( static_cast<T>(m_value.r64) );  }
 
     return( T( 0 ) );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__ANY_VALUE_H_INCLUDE
+#endif // VIS_MODULE__ANY_VALUE_H_INCLUDE

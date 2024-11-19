@@ -12,10 +12,10 @@
  */
 /****************************************************************************/
 #include "TextureBase.h"
-#include <kvs/Message>
+#include <vismodule/Message>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -217,7 +217,7 @@ const size_t TextureBase::get_nchannels( const GLenum external_format ) const
         nchannels = 4;
         break;
     default:
-        kvsMessageError("Unsupported OpenGL external pixel format.");
+        visModuleMessageError("Unsupported OpenGL external pixel format.");
         break;
     }
 
@@ -252,7 +252,7 @@ const size_t TextureBase::get_channel_size( const GLenum external_type ) const
         channel_size = sizeof(float);
         break;
     default:
-        kvsMessageError("Unsupported OpenGL external pixel data type.");
+        visModuleMessageError("Unsupported OpenGL external pixel data type.");
         break;
     }
 
@@ -278,7 +278,7 @@ void TextureBase::estimate_pixel_format( const size_t nchannels, const size_t by
     case 3: this->determine_pixel_format_for_3_channel( bytes_per_channel ); break;
     case 4: this->determine_pixel_format_for_4_channel( bytes_per_channel ); break;
     default:
-        kvsMessageError("Invalid the number of channels is specified.");
+        visModuleMessageError("Invalid the number of channels is specified.");
         break;
     }
 }
@@ -297,7 +297,7 @@ void TextureBase::determine_pixel_format_for_1_channel( const size_t bytes_per_c
     case 2: this->setPixelFormat( GL_INTENSITY16, GL_LUMINANCE, GL_UNSIGNED_SHORT ); break;
     case 4: this->setPixelFormat( GL_INTENSITY,   GL_LUMINANCE, GL_FLOAT          ); break;
     default:
-        kvsMessageError("Bytes per channel must be 1, 2 or 4.");
+        visModuleMessageError("Bytes per channel must be 1, 2 or 4.");
         break;
     }
 }
@@ -316,7 +316,7 @@ void TextureBase::determine_pixel_format_for_2_channel( const size_t bytes_per_c
     case 2: this->setPixelFormat( GL_LUMINANCE16_ALPHA16, GL_LUMINANCE_ALPHA, GL_UNSIGNED_SHORT ); break;
     case 4: this->setPixelFormat( GL_LUMINANCE_ALPHA,     GL_LUMINANCE_ALPHA, GL_FLOAT          ); break;
     default:
-        kvsMessageError("Bytes per channel must be 1, 2 or 4.");
+        visModuleMessageError("Bytes per channel must be 1, 2 or 4.");
         break;
     }
 }
@@ -335,7 +335,7 @@ void TextureBase::determine_pixel_format_for_3_channel( const size_t bytes_per_c
     case 2: this->setPixelFormat( GL_RGB16, GL_RGB, GL_UNSIGNED_SHORT ); break;
     case 4: this->setPixelFormat( GL_RGB,   GL_RGB, GL_FLOAT          ); break;
     default:
-        kvsMessageError("Bytes per channel must be 1, 2 or 4.");
+        visModuleMessageError("Bytes per channel must be 1, 2 or 4.");
         break;
     }
 }
@@ -354,9 +354,9 @@ void TextureBase::determine_pixel_format_for_4_channel( const size_t bytes_per_c
     case 2: this->setPixelFormat( GL_RGBA16, GL_RGBA, GL_UNSIGNED_SHORT ); break;
     case 4: this->setPixelFormat( GL_RGBA,   GL_RGBA, GL_FLOAT          ); break;
     default:
-        kvsMessageError("Bytes per channel must be 1, 2 or 4.");
+        visModuleMessageError("Bytes per channel must be 1, 2 or 4.");
         break;
     }
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

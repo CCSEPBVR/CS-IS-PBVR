@@ -11,19 +11,19 @@
  *  $Id: MetropolisSampling.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__METROPOLIS_SAMPLING_H_INCLUDE
-#define KVS__METROPOLIS_SAMPLING_H_INCLUDE
+#ifndef VIS_MODULE__METROPOLIS_SAMPLING_H_INCLUDE
+#define VIS_MODULE__METROPOLIS_SAMPLING_H_INCLUDE
 
-#include <kvs/PointObject>
-#include <kvs/VolumeObjectBase>
-#include <kvs/StructuredVolumeObject>
-#include <kvs/UnstructuredVolumeObject>
-#include <kvs/MapperBase>
-#include <kvs/ClassName>
-#include <kvs/Module>
+#include <vismodule/PointObject>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/MapperBase>
+#include <vismodule/ClassName>
+#include <vismodule/Module>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -34,12 +34,12 @@ namespace kvs
 class MetropolisSampling : public MapperBase, public PointObject
 {
     // Class name.
-    kvsClassName( kvs::MetropolisSampling );
+    visModuleClassName( vismodule::MetropolisSampling );
 
     // Module information.
-    kvsModuleCategory( Mapper );
-    kvsModuleBaseClass( kvs::MapperBase );
-    kvsModuleSuperClass( kvs::PointObject );
+    visModuleCategory( Mapper );
+    visModuleBaseClass( vismodule::MapperBase );
+    visModuleSuperClass( vismodule::PointObject );
 
 protected:
 
@@ -50,13 +50,13 @@ public:
     MetropolisSampling( void );
 
     MetropolisSampling(
-        const kvs::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase* volume,
         const size_t                 nparticles );
 
     MetropolisSampling(
-        const kvs::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase* volume,
         const size_t                 nparticles,
-        const kvs::TransferFunction& transfer_function );
+        const vismodule::TransferFunction& transfer_function );
 
     virtual ~MetropolisSampling( void );
 
@@ -68,25 +68,25 @@ public:
 
 public:
 
-//    kvs::ObjectBase* exec( const kvs::ObjectBase* object );
-    SuperClass* exec( const kvs::ObjectBase* object );
+//    vismodule::ObjectBase* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase* object );
 
 private:
 
-    void mapping( const kvs::StructuredVolumeObject* volume );
+    void mapping( const vismodule::StructuredVolumeObject* volume );
 
-    void mapping( const kvs::UnstructuredVolumeObject* volume );
+    void mapping( const vismodule::UnstructuredVolumeObject* volume );
 
     template <typename T>
-    void generate_particles( const kvs::StructuredVolumeObject* volume );
+    void generate_particles( const vismodule::StructuredVolumeObject* volume );
 
     void adopt_particle(
         const size_t         index,
-        const kvs::Vector3f& coord,
+        const vismodule::Vector3f& coord,
         const size_t         scalar,
-        const kvs::Vector3f& gradient );
+        const vismodule::Vector3f& gradient );
 };
 
 } // end of namespace viz
 
-#endif // KVS__METROPOLIS_SAMPLING_H_INCLUDE
+#endif // VIS_MODULE__METROPOLIS_SAMPLING_H_INCLUDE

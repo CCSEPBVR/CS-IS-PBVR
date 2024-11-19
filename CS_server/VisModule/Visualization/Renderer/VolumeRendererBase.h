@@ -11,19 +11,19 @@
  *  $Id: VolumeRendererBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__VOLUME_RENDERER_BASE_H_INCLUDE
-#define KVS__VOLUME_RENDERER_BASE_H_INCLUDE
+#ifndef VIS_MODULE__VOLUME_RENDERER_BASE_H_INCLUDE
+#define VIS_MODULE__VOLUME_RENDERER_BASE_H_INCLUDE
 
-#include <kvs/DebugNew>
-#include <kvs/RendererBase>
-#include <kvs/TransferFunction>
-#include <kvs/FrameBuffer>
-#include <kvs/ValueArray>
-#include <kvs/Shader>
-#include <kvs/ClassName>
+#include <vismodule/DebugNew>
+#include <vismodule/RendererBase>
+#include <vismodule/TransferFunction>
+#include <vismodule/FrameBuffer>
+#include <vismodule/ValueArray>
+#include <vismodule/Shader>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -31,21 +31,21 @@ namespace kvs
  *  Volume renderer base class.
  */
 /*==========================================================================*/
-class VolumeRendererBase : public kvs::RendererBase
+class VolumeRendererBase : public vismodule::RendererBase
 {
-    kvsClassName( kvs::VolumeRendererBase );
+    visModuleClassName( vismodule::VolumeRendererBase );
 
 protected:
 
     size_t                       m_width;          ///< width of rendering image
     size_t                       m_height;         ///< height of rendering image
-    kvs::FrameBuffer             m_depth_buffer;   ///< depth buffer
-    kvs::ValueArray<kvs::Real32> m_depth_data;     ///< depth data as float type
-    kvs::FrameBuffer             m_color_buffer;   ///< color (RGBA) buffer
-    kvs::ValueArray<kvs::UInt8>  m_color_data;     ///< color (RGBA) data as uchar type
+    vismodule::FrameBuffer             m_depth_buffer;   ///< depth buffer
+    vismodule::ValueArray<vismodule::Real32> m_depth_data;     ///< depth data as float type
+    vismodule::FrameBuffer             m_color_buffer;   ///< color (RGBA) buffer
+    vismodule::ValueArray<vismodule::UInt8>  m_color_data;     ///< color (RGBA) data as uchar type
     bool                         m_enable_shading; ///< shading flag
-    kvs::TransferFunction        m_tfunc;          ///< transfer function
-    kvs::Shader::shader_type*    m_shader;         ///< shading method
+    vismodule::TransferFunction        m_tfunc;          ///< transfer function
+    vismodule::Shader::shader_type*    m_shader;         ///< shading method
 
 public:
 
@@ -56,16 +56,16 @@ public:
 public:
 
     virtual void exec(
-        kvs::ObjectBase* object,
-        kvs::Camera*     camera = NULL,
-        kvs::Light*      light  = NULL ) = 0;
+        vismodule::ObjectBase* object,
+        vismodule::Camera*     camera = NULL,
+        vismodule::Light*      light  = NULL ) = 0;
 
 public:
 
     template <typename ShadingType>
     void setShader( const ShadingType shader );
 
-    void setTransferFunction( const kvs::TransferFunction& tfunc );
+    void setTransferFunction( const vismodule::TransferFunction& tfunc );
 
     void enableShading( void );
 
@@ -75,9 +75,9 @@ public:
 
     const bool isEnabledShading( void ) const;
 
-    const kvs::TransferFunction& transferFunction( void ) const;
+    const vismodule::TransferFunction& transferFunction( void ) const;
 
-    kvs::TransferFunction& transferFunction( void );
+    vismodule::TransferFunction& transferFunction( void );
 
 public:
 
@@ -106,11 +106,11 @@ inline void VolumeRendererBase::setShader( const ShadingType shader )
     m_shader = new ShadingType( shader );
     if ( !m_shader )
     {
-        kvsMessageError("Cannot create a specified shader.");
+        visModuleMessageError("Cannot create a specified shader.");
     }
 };
 
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__VOLUME_RENDERER_BASE_H_INCLUDE
+#endif // VIS_MODULE__VOLUME_RENDERER_BASE_H_INCLUDE

@@ -3,7 +3,7 @@
 #include <algorithm>
 
 #include "FilterInformation.h"
-#include <kvs/File>
+#include <vismodule/File>
 #include "endian2.h"
 #include "NameListFile.h"
 
@@ -252,7 +252,7 @@ int FilterInformationList::loadPFL( const std::string& filename )
     m_total_min_subvolume_coord.clear();
     m_total_max_subvolume_coord.clear();
 
-    kvs::File pfl( filename );
+    vismodule::File pfl( filename );
     if ( filename.size() < 4 || ! pfl.isExisted() ) return -1;
     if ( filename.substr( filename.size() - 3 ) == "pfi" )
     {
@@ -290,13 +290,13 @@ int FilterInformationList::loadPFL( const std::string& filename )
     if ( fbuff != std::string( "#PBVR PFI FILES" ) ) return -1;
     while ( getline( fin, fbuff ) )
     {
-        kvs::File pfi( fbuff );
+        vismodule::File pfi( fbuff );
         if ( fbuff.size() < 4 ) continue;
         if ( fbuff.substr( fbuff.size() - 3 ) != "pfi" ) continue;
         if ( ! pfi.isExisted() )
         {
             std::string xpath = pfl.pathName( true ) + pfl.Separator() + pfi.filePath( false );
-            kvs::File xpfi( xpath );
+            vismodule::File xpfi( xpath );
             if ( ! xpfi.isExisted() ) continue;
             fbuff = xpath;
         }

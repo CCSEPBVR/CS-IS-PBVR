@@ -12,16 +12,16 @@
  *  $Id: DataSet.h 865 2011-07-22 01:41:18Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef KVS__GF__DATA_SET_H_INCLUDE
-#define KVS__GF__DATA_SET_H_INCLUDE
+#ifndef VIS_MODULE__GF__DATA_SET_H_INCLUDE
+#define VIS_MODULE__GF__DATA_SET_H_INCLUDE
 
 #include <vector>
 #include <string>
-#include <kvs/Assert>
+#include <vismodule/Assert>
 #include "Data.h"
 
 
-namespace kvs
+namespace vismodule
 {
 
 namespace gf
@@ -37,7 +37,7 @@ class DataSet
 protected:
 
     std::vector<std::string> m_comment_list; ///< comment list
-    std::vector<kvs::gf::Data> m_data_list; ///< data list
+    std::vector<vismodule::gf::Data> m_data_list; ///< data list
 
 public:
 
@@ -53,9 +53,9 @@ public:
 
     const std::string& comment( const size_t index ) const;
 
-    const std::vector<kvs::gf::Data>& dataList( void ) const;
+    const std::vector<vismodule::gf::Data>& dataList( void ) const;
 
-    const kvs::gf::Data& data( const size_t index ) const;
+    const vismodule::gf::Data& data( const size_t index ) const;
 
     void deallocate( void );
 
@@ -68,6 +68,6 @@ public:
 
 } // end of namespace gf
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__GF__DATA_SET_H_INCLUDE
+#endif // VIS_MODULE__GF__DATA_SET_H_INCLUDE

@@ -12,8 +12,8 @@
  */
 /****************************************************************************/
 #include "Mutex.h"
-#include <kvs/Message>
-#if defined ( KVS_PLATFORM_WINDOWS )
+#include <vismodule/Message>
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
 #include <windows.h>
 #include <errno.h>
 #include <process.h>
@@ -23,7 +23,7 @@
 #endif
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -75,7 +75,7 @@ const Mutex::Handler& Mutex::handler( void ) const
 /*==========================================================================*/
 void Mutex::lock( void )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     WaitForSingleObject( m_handler, INFINITE );
 #else
     pthread_mutex_lock( &m_handler );
@@ -89,7 +89,7 @@ void Mutex::lock( void )
 /*==========================================================================*/
 void Mutex::unlock( void )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     ReleaseMutex( m_handler );
 #else
     pthread_mutex_unlock( &m_handler );
@@ -104,16 +104,16 @@ void Mutex::unlock( void )
 /*==========================================================================*/
 bool Mutex::tryLock( void )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     if ( WaitForSingleObject( m_handler, 0 ) != WAIT_OBJECT_0 )
     {
-        kvsMessageError( "Mutex lock test failure." );
+        visModuleMessageError( "Mutex lock test failure." );
         return( false );
     }
 #else
     if ( pthread_mutex_trylock( &m_handler ) != 0 )
     {
-        kvsMessageError( "Mutex lock test failure." );
+        visModuleMessageError( "Mutex lock test failure." );
         return( false );
     }
 #endif
@@ -127,7 +127,7 @@ bool Mutex::tryLock( void )
 /*==========================================================================*/
 void Mutex::create_mutex( void )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     m_handler = CreateMutex( NULL, FALSE, NULL );
 #else
     pthread_mutex_init( &m_handler, NULL );
@@ -141,11 +141,11 @@ void Mutex::create_mutex( void )
 /*==========================================================================*/
 void Mutex::delete_mutex( void )
 {
-#if defined ( KVS_PLATFORM_WINDOWS )
+#if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     if ( m_handler ) { CloseHandle( m_handler ); }
 #else
     pthread_mutex_destroy( &m_handler );
 #endif
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

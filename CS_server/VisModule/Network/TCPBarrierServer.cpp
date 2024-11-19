@@ -13,14 +13,14 @@
  */
 /*****************************************************************************/
 #include "TCPBarrierServer.h"
-#include <kvs/DebugNew>
-#include <kvs/Message>
-#include <kvs/SocketTimer>
+#include <vismodule/DebugNew>
+#include <vismodule/Message>
+#include <vismodule/SocketTimer>
 
 
 namespace { const int BARRIER_BUFFER_SIZE = 12; }
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -33,10 +33,10 @@ namespace kvs
 TCPBarrierServer::TCPBarrierServer( int port, int block_counter ):
     m_block_counter( block_counter )
 {
-    m_server = new kvs::TCPServer( port );
+    m_server = new vismodule::TCPServer( port );
     if( !m_server->isBound() )
     {
-        kvsMessageError("Cannot bind the port(%d).",port);
+        visModuleMessageError("Cannot bind the port(%d).",port);
         return;
     }
 
@@ -69,14 +69,14 @@ void TCPBarrierServer::run( void )
         char recv_buffer[::BARRIER_BUFFER_SIZE];
         for( int i = 0; i < m_block_counter; i++ )
         {
-            kvs::TCPSocket* node = m_server->checkForNewConnection( &kvs::SocketTimer::Zero );
+            vismodule::TCPSocket* node = m_server->checkForNewConnection( &vismodule::SocketTimer::Zero );
             node->receive( recv_buffer, ::BARRIER_BUFFER_SIZE );
 
             m_nodes.push_back( node );
         }
 
         char send_buffer[::BARRIER_BUFFER_SIZE]; sprintf( send_buffer, "RELEASE" );
-        std::list<kvs::TCPSocket*>::iterator node = m_nodes.begin();
+        std::list<vismodule::TCPSocket*>::iterator node = m_nodes.begin();
         for( int i = 0; i < m_block_counter; i++ )
         {
             (*node)->send( send_buffer, ::BARRIER_BUFFER_SIZE );
@@ -94,7 +94,7 @@ void TCPBarrierServer::run( void )
 /*===========================================================================*/
 void TCPBarrierServer::clear_nodes( void )
 {
-    std::list<kvs::TCPSocket*>::iterator node = m_nodes.begin();
+    std::list<vismodule::TCPSocket*>::iterator node = m_nodes.begin();
     for( int i = 0; i < m_block_counter; i++ )
     {
         if( *node ) delete *node;
@@ -103,4 +103,4 @@ void TCPBarrierServer::clear_nodes( void )
     m_nodes.clear();
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

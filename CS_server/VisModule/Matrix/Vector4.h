@@ -11,18 +11,18 @@
  *  $Id: Vector4.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__VECTOR_4_H_INCLUDE
-#define KVS__VECTOR_4_H_INCLUDE
+#ifndef VIS_MODULE__VECTOR_4_H_INCLUDE
+#define VIS_MODULE__VECTOR_4_H_INCLUDE
 
 #include <iostream>
-#include <kvs/ClassName>
-#include <kvs/Assert>
-#include <kvs/Math>
-#include <kvs/Vector2>
-#include <kvs/Vector3>
+#include <vismodule/ClassName>
+#include <vismodule/Assert>
+#include <vismodule/Math>
+#include <vismodule/Vector2>
+#include <vismodule/Vector3>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -33,7 +33,7 @@ namespace kvs
 template <typename T>
 class Vector4
 {
-    kvsClassName_without_virtual( kvs::Vector4 );
+    visModuleClassName_without_virtual( vismodule::Vector4 );
 
 private:
 
@@ -142,10 +142,10 @@ public:
     /*======================================================================*/
     friend const bool operator ==( const Vector4& lhs, const Vector4& rhs )
     {
-        return( kvs::Math::Equal( lhs[0], rhs[0] ) &&
-                kvs::Math::Equal( lhs[1], rhs[1] ) &&
-                kvs::Math::Equal( lhs[2], rhs[2] ) &&
-                kvs::Math::Equal( lhs[3], rhs[3] ) );
+        return( vismodule::Math::Equal( lhs[0], rhs[0] ) &&
+                vismodule::Math::Equal( lhs[1], rhs[1] ) &&
+                vismodule::Math::Equal( lhs[2], rhs[2] ) &&
+                vismodule::Math::Equal( lhs[3], rhs[3] ) );
     }
 
     /*======================================================================*/
@@ -628,7 +628,7 @@ inline const Vector4<T> Vector4<T>::normalize( void ) const
 template<typename T>
 inline Vector4<T>& Vector4<T>::normalize( void )
 {
-    KVS_ASSERT( !( kvs::Math::IsZero( this->length() ) ) );
+    VIS_MODULE_ASSERT( !( vismodule::Math::IsZero( this->length() ) ) );
 
     const T normalize_factor = static_cast<T>( 1.0 / this->length() );
     ( *this ) *= normalize_factor;
@@ -657,7 +657,7 @@ inline void Vector4<T>::print( void ) const
 template<typename T>
 inline const double Vector4<T>::length( void ) const
 {
-    return( kvs::Math::SquareRoot( this->length2() ) );
+    return( vismodule::Math::SquareRoot( this->length2() ) );
 }
 
 /*==========================================================================*/
@@ -714,7 +714,7 @@ inline const T Vector4<T>::dot( const Vector4& other ) const
 template<typename T>
 inline const T &Vector4<T>::operator []( const size_t index ) const
 {
-    KVS_ASSERT( index < 4 );
+    VIS_MODULE_ASSERT( index < 4 );
 
     return( m_elements[ index ] );
 }
@@ -731,7 +731,7 @@ inline const T &Vector4<T>::operator []( const size_t index ) const
 template<typename T>
 inline T &Vector4<T>::operator []( const size_t index )
 {
-    KVS_ASSERT( index < 4 );
+    VIS_MODULE_ASSERT( index < 4 );
 
     return( m_elements[ index ] );
 }
@@ -852,6 +852,6 @@ inline const Vector4<T> Vector4<T>::operator -( void ) const
     return( result );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__VECTOR_4_H_INCLUDE
+#endif // VIS_MODULE__VECTOR_4_H_INCLUDE

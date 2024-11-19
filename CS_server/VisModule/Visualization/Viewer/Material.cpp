@@ -13,11 +13,11 @@
 /****************************************************************************/
 #include "Material.h"
 #include <cstring>
-#include <kvs/Vector4>
-#include <kvs/RGBAColor>
+#include <vismodule/Vector4>
+#include <vismodule/RGBAColor>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -41,9 +41,9 @@ Material::Material( void )
  */
 /*===========================================================================*/
 Material::Material(
-    const kvs::RGBAColor& ambient,
-    const kvs::RGBAColor& diffuse,
-    const kvs::RGBAColor& specular,
+    const vismodule::RGBAColor& ambient,
+    const vismodule::RGBAColor& diffuse,
+    const vismodule::RGBAColor& specular,
     const float shininess,
     const MaterialFace face )
 {
@@ -184,9 +184,9 @@ Material& Material::operator = ( const Material& material )
  *  @return ambient color
  */
 /*===========================================================================*/
-const kvs::Vector4f Material::ambient( void ) const
+const vismodule::Vector4f Material::ambient( void ) const
 {
-    return( kvs::Vector4f( m_ambient ) );
+    return( vismodule::Vector4f( m_ambient ) );
 }
 
 /*===========================================================================*/
@@ -195,9 +195,9 @@ const kvs::Vector4f Material::ambient( void ) const
  *  @return diffuse color
  */
 /*===========================================================================*/
-const kvs::Vector4f Material::diffuse( void ) const
+const vismodule::Vector4f Material::diffuse( void ) const
 {
-    return( kvs::Vector4f( m_diffuse ) );
+    return( vismodule::Vector4f( m_diffuse ) );
 }
 
 /*===========================================================================*/
@@ -206,9 +206,9 @@ const kvs::Vector4f Material::diffuse( void ) const
  *  @return specular color
  */
 /*===========================================================================*/
-const kvs::Vector4f Material::specular( void ) const
+const vismodule::Vector4f Material::specular( void ) const
 {
-    return( kvs::Vector4f( m_specular ) );
+    return( vismodule::Vector4f( m_specular ) );
 }
 
 /*===========================================================================*/
@@ -267,7 +267,7 @@ void Material::setAmbient( const float ambient[4] )
  *  @param  ambient [in] ambient color
  */
 /*===========================================================================*/
-void Material::setAmbient( const kvs::RGBAColor& ambient )
+void Material::setAmbient( const vismodule::RGBAColor& ambient )
 {
     const float ambi[4] = {
         static_cast<float>(ambient.r()) / 255.0f,
@@ -312,7 +312,7 @@ void Material::setDiffuse( const float diffuse[4] )
  *  @param  diffuse [in] diffuse color
  */
 /*===========================================================================*/
-void Material::setDiffuse( const kvs::RGBAColor& diffuse )
+void Material::setDiffuse( const vismodule::RGBAColor& diffuse )
 {
     const float diff[4] = {
         static_cast<float>(diffuse.r()) / 255.0f,
@@ -357,7 +357,7 @@ void Material::setSpecular( const float specular[4] )
  *  @param  specular [in] specular color
  */
 /*===========================================================================*/
-void Material::setSpecular( const kvs::RGBAColor& specular )
+void Material::setSpecular( const vismodule::RGBAColor& specular )
 {
     float spec[4] = { static_cast<float>(specular.r()) / 255.0f,
                       static_cast<float>(specular.g()) / 255.0f,
@@ -392,4 +392,4 @@ void Material::apply( void )
     glMaterialf(  (GLenum)m_face, GL_SHININESS, m_shininess );
 #endif
 }
-} // end of namespace kvs
+} // end of namespace vismodule

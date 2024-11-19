@@ -13,15 +13,15 @@
 /****************************************************************************/
 #include "PolygonRenderer.h"
 #include "PolygonRenderingFunction.h"
-#include <kvs/OpenGL>
-#include <kvs/Camera>
-#include <kvs/Light>
-#include <kvs/ObjectBase>
-#include <kvs/PolygonObject>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/OpenGL>
+#include <vismodule/Camera>
+#include <vismodule/Light>
+#include <vismodule/ObjectBase>
+#include <vismodule/PolygonObject>
+#include <vismodule/IgnoreUnusedVariable>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -53,12 +53,12 @@ PolygonRenderer::~PolygonRenderer( void )
  *  @param light [in] pointer to the light
  */
 /*==========================================================================*/
-void PolygonRenderer::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light )
+void PolygonRenderer::exec( vismodule::ObjectBase* object, vismodule::Camera* camera, vismodule::Light* light )
 {
-    kvs::IgnoreUnusedVariable( light );
-    kvs::IgnoreUnusedVariable( camera );
+    vismodule::IgnoreUnusedVariable( light );
+    vismodule::IgnoreUnusedVariable( camera );
 
-    kvs::PolygonObject* polygon = reinterpret_cast<kvs::PolygonObject*>( object );
+    vismodule::PolygonObject* polygon = reinterpret_cast<vismodule::PolygonObject*>( object );
 
     glPushAttrib( GL_CURRENT_BIT | GL_ENABLE_BIT );
 
@@ -187,7 +187,7 @@ void PolygonRenderer::initialize_modelview( void )
         glEnable( GL_LIGHTING );
     }
 
-    kvs::Light::setModelTwoSide( this->isTwoSideLighting() );
+    vismodule::Light::setModelTwoSide( this->isTwoSideLighting() );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

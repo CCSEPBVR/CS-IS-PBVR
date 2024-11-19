@@ -11,17 +11,17 @@
  *  $Id: RayCastingRenderer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__RAY_CASTING_RENDERER_H_INCLUDE
-#define KVS__RAY_CASTING_RENDERER_H_INCLUDE
+#ifndef VIS_MODULE__RAY_CASTING_RENDERER_H_INCLUDE
+#define VIS_MODULE__RAY_CASTING_RENDERER_H_INCLUDE
 
-#include <kvs/VolumeRendererBase>
-#include <kvs/TransferFunction>
-#include <kvs/StructuredVolumeObject>
-#include <kvs/Module>
-#include <kvs/ClassName>
+#include <vismodule/VolumeRendererBase>
+#include <vismodule/TransferFunction>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/Module>
+#include <vismodule/ClassName>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -29,14 +29,14 @@ namespace kvs
  *  Ray casting volume renderer.
  */
 /*==========================================================================*/
-class RayCastingRenderer : public kvs::VolumeRendererBase
+class RayCastingRenderer : public vismodule::VolumeRendererBase
 {
     // Class name.
-    kvsClassName( kvs::RayCastingRenderer );
+    visModuleClassName( vismodule::RayCastingRenderer );
 
     // Module information.
-    kvsModuleCategory( Renderer );
-    kvsModuleBaseClass( kvs::VolumeRendererBase );
+    visModuleCategory( Renderer );
+    visModuleBaseClass( vismodule::VolumeRendererBase );
 
 private:
 
@@ -50,7 +50,7 @@ public:
 
     RayCastingRenderer( void );
 
-    RayCastingRenderer( const kvs::TransferFunction& tfunc );
+    RayCastingRenderer( const vismodule::TransferFunction& tfunc );
 
     template <typename ShadingType>
     RayCastingRenderer( const ShadingType shader );
@@ -59,7 +59,7 @@ public:
 
 public:
 
-    void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
+    void exec( vismodule::ObjectBase* object, vismodule::Camera* camera, vismodule::Light* light );
 
 public:
 
@@ -100,17 +100,17 @@ public:
 private:
 
     void create_image(
-        const kvs::StructuredVolumeObject* volume,
-        const kvs::Camera*                 camera,
-        const kvs::Light*                  light );
+        const vismodule::StructuredVolumeObject* volume,
+        const vismodule::Camera*                 camera,
+        const vismodule::Light*                  light );
 
     template <typename T>
     void rasterize(
-        const kvs::StructuredVolumeObject* volume,
-        const kvs::Camera*                 camera,
-        const kvs::Light*                  light );
+        const vismodule::StructuredVolumeObject* volume,
+        const vismodule::Camera*                 camera,
+        const vismodule::Light*                  light );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__RAY_CASTING_RENDERER_H_INCLUDE
+#endif // VIS_MODULE__RAY_CASTING_RENDERER_H_INCLUDE

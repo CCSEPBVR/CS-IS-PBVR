@@ -11,16 +11,16 @@
  *  $Id: SocketAddress.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__SOCKET_ADDRESS_H_INCLUDE
-#define KVS__SOCKET_ADDRESS_H_INCLUDE
+#ifndef VIS_MODULE__SOCKET_ADDRESS_H_INCLUDE
+#define VIS_MODULE__SOCKET_ADDRESS_H_INCLUDE
 
 #include "IPAddress.h"
-#include <kvs/ClassName>
+#include <vismodule/ClassName>
 #include <iostream>
 #include <cstring>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -30,7 +30,7 @@ namespace kvs
 /*==========================================================================*/
 class SocketAddress
 {
-    kvsClassName_without_virtual( kvs::SocketAddress );
+    visModuleClassName_without_virtual( vismodule::SocketAddress );
 
 public:
 
@@ -39,7 +39,7 @@ public:
 private:
 
     address_type   m_address; ///< IP address and port number
-    kvs::IPAddress m_ip;      ///< IP address
+    vismodule::IPAddress m_ip;      ///< IP address
     int            m_port;    ///< port number
 
 public:
@@ -48,7 +48,7 @@ public:
 
     SocketAddress( const char* address_name );
 
-    SocketAddress( const kvs::IPAddress& ip, const int port );
+    SocketAddress( const vismodule::IPAddress& ip, const int port );
 
     SocketAddress( const SocketAddress& other );
 
@@ -72,7 +72,7 @@ public:
 
 public:
 
-    const kvs::IPAddress& ip( void ) const;
+    const vismodule::IPAddress& ip( void ) const;
 
     const int port( void ) const;
 
@@ -80,7 +80,7 @@ public:
 
 public:
 
-    void setIp( const kvs::IPAddress& ip );
+    void setIp( const vismodule::IPAddress& ip );
 
     void setPort( const int port );
 
@@ -99,6 +99,6 @@ protected:
     void split_ip_and_port( const char* address_name );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__SOCKET_ADDRESS_H_INCLUDE
+#endif // VIS_MODULE__SOCKET_ADDRESS_H_INCLUDE

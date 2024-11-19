@@ -11,16 +11,16 @@
  *  $Id: Vector2.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__VECTOR_2_H_INCLUDE
-#define KVS__VECTOR_2_H_INCLUDE
+#ifndef VIS_MODULE__VECTOR_2_H_INCLUDE
+#define VIS_MODULE__VECTOR_2_H_INCLUDE
 
 #include <iostream> // For std::cout.
-#include <kvs/ClassName>
-#include <kvs/Assert>
-#include <kvs/Math>
+#include <vismodule/ClassName>
+#include <vismodule/Assert>
+#include <vismodule/Math>
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -31,7 +31,7 @@ namespace kvs
 template<typename T>
 class Vector2
 {
-    kvsClassName_without_virtual( kvs::Vector2 );
+    visModuleClassName_without_virtual( vismodule::Vector2 );
 
 private:
 
@@ -124,8 +124,8 @@ public:
     /*======================================================================*/
     friend const bool operator ==( const Vector2& lhs, const Vector2& rhs )
     {
-        return( kvs::Math::Equal( lhs[0], rhs[0] ) &&
-                kvs::Math::Equal( lhs[1], rhs[1] ) );
+        return( vismodule::Math::Equal( lhs[0], rhs[0] ) &&
+                vismodule::Math::Equal( lhs[1], rhs[1] ) );
     }
 
     /*======================================================================*/
@@ -479,7 +479,7 @@ inline const Vector2<T> Vector2<T>::normalize( void ) const
 template<typename T>
 inline Vector2<T>& Vector2<T>::normalize( void )
 {
-    KVS_ASSERT( !( kvs::Math::IsZero( this->length() ) ) );
+    VIS_MODULE_ASSERT( !( vismodule::Math::IsZero( this->length() ) ) );
 
     const T normalize_factor = static_cast<T>( 1.0 / this->length() );
     ( *this ) *= normalize_factor;
@@ -508,7 +508,7 @@ inline void Vector2<T>::print( void ) const
 template<typename T>
 inline const double Vector2<T>::length( void ) const
 {
-    return( kvs::Math::SquareRoot( this->length2() ) );
+    return( vismodule::Math::SquareRoot( this->length2() ) );
 }
 
 /*==========================================================================*/
@@ -561,7 +561,7 @@ inline const T Vector2<T>::dot( const Vector2& other ) const
 template<typename T>
 inline const T &Vector2<T>::operator []( const size_t index ) const
 {
-    KVS_ASSERT( index < 2 );
+    VIS_MODULE_ASSERT( index < 2 );
 
     return( m_elements[ index ] );
 }
@@ -578,7 +578,7 @@ inline const T &Vector2<T>::operator []( const size_t index ) const
 template<typename T>
 inline T &Vector2<T>::operator []( const size_t index )
 {
-    KVS_ASSERT( index < 2 );
+    VIS_MODULE_ASSERT( index < 2 );
 
     return( m_elements[ index ] );
 }
@@ -689,6 +689,6 @@ inline const Vector2<T> Vector2<T>::operator -( void ) const
     return( result );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
-#endif // KVS__VECTOR_2_H_INCLUDE
+#endif // VIS_MODULE__VECTOR_2_H_INCLUDE

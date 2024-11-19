@@ -2,7 +2,7 @@
 #define PBVR_TIMER_INCLUDE
 #include <map>
 #include <iostream>
-#include <kvs/Timer>
+#include <vismodule/Timer>
 #ifndef CPU_VER
 #include "mpi.h"
 #endif
@@ -19,8 +19,8 @@ class Timer_CS
 {
 
 private:
-//    std::vector<kvs::Timer> m_timer_array;
-    kvs::Timer m_timer;
+//    std::vector<vismodule::Timer> m_timer_array;
+    vismodule::Timer m_timer;
 //    std::map<std::string,double> m_cp; 
     std::vector<std::string> m_cp; 
 //    std::vector<char*> m_cp; 
