@@ -263,7 +263,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>CPU_VER;JPV_CLIENT;CPU_SAMPLING_TIME;WIN32;NDEBUG;STRICT;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_DEPRECATE;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)\KVS\Source;$(SolutionDir)\Common;$(SolutionDir)\FunctionParser</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\VisModule;$(SolutionDir)\Common;$(SolutionDir)\FunctionParser</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DisableSpecificWarnings>4244;4101;4267;4819;</DisableSpecificWarnings>
       <OpenMPSupport>true</OpenMPSupport>
@@ -274,7 +274,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>kvsCore.lib;pbvrCommon.lib;pbvrFunc.lib;ws2_32.lib;glu32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>visModule.lib;pbvrCommon.lib;pbvrFunc.lib;ws2_32.lib;glu32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
