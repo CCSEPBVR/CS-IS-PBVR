@@ -43,6 +43,7 @@
 #include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
 #include <vtkUnstructuredGrid.h>
 #endif
+#include "TFS/GlyphGenerator.h"
 
 //kvsmlImporter
 #include "CvtTypeTraits.h"
