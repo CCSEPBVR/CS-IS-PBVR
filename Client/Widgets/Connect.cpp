@@ -9,7 +9,7 @@
 #include "Widgets/MergePanel.h"
 #include "Widgets/RenderOptions.h"
 
-Connect::Connect(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, DataProperties* filter_infomation, RenderOptions* render_options, TransferFunctionEditor* transfer_function_editor):
+Connect::Connect(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, DataProperties* filter_infomation, RenderOptions* render_options, TransferFunctionEditor* transfer_function_editor, GlyphEditor* glyph_editor ):
     QDialog(parent),
     ui(new Ui::Connect),
     m_pbvr_gui( pbvr_gui ),
@@ -17,6 +17,7 @@ Connect::Connect(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, DataProp
     m_filter_infomation( filter_infomation ),
     m_render_options( render_options ),
     m_transfer_function_editor( transfer_function_editor ),
+    m_glyph_editor( glyph_editor ),
     m_extended_transfer_function_message(),
     m_client_message(),
     m_server_message(),
@@ -74,10 +75,11 @@ void Connect::connectServer()
 #ifdef Q_OS_WIN
         m_client_message.m_import_flag = m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
 #else
-        m_client_message.m_import_flag = m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
+
+        m_client_message.m_import_flag = m_transfer_function_editor->importTransferFunctionFromFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
 
 #endif
-        m_transfer_function_editor->onApplyButtonClicked();
+        m_transfer_function_editor->apply();
         m_client_message.m_camera ->setWindowSize( m_pbvr_gui->screen()->width() , m_pbvr_gui->screen()->height() );
 
 
@@ -116,13 +118,12 @@ void Connect::connectServer()
         }
     }
 
-    m_transfer_function_editor->applyVariableRange( m_server_message.m_server_side_variable_range );
-    // m_transfer_function_editor->updateRangeView();
-
-
-    m_transfer_function_editor->importFromServer();
+    {
+        m_transfer_function_editor->importTransferFunctionFromServer();
+    }
 
     m_filter_infomation->updateFilterInfomation( ui->volumeDataFilePathLEdit->text(), m_server_message );
+    m_glyph_editor->updateNumberOfVector( m_server_message );
 
     strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
 
@@ -134,18 +135,17 @@ void Connect::connectServer()
     client.termClient();
 
 
-    if( ui-> clientServerRBtn -> isChecked() )
+    if( ui->clientServerRBtn->isChecked() )
     {
         m_merge->serverObjectCS( ui->volumeDataFilePathLEdit->text(), m_server_message.m_start_step, m_server_message.m_last_step );
-        m_transfer_function_editor->applyVariableRange( m_server_message.m_server_side_variable_range );
         if (m_client_message.m_import_flag)
         {
     #ifdef Q_OS_WIN
-        m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
+        m_transfer_function_editor->importTransferFunctionFromFile( ui->transferFunctionFilePathLEdit->text().replace( "/","\\" ).toLocal8Bit().constData() );
     #else
-        m_transfer_function_editor->importFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
+        m_transfer_function_editor->importTransferFunctionFromFile( ui->transferFunctionFilePathLEdit->text().toStdString() );
     #endif
-        m_transfer_function_editor->onApplyButtonClicked();
+        m_transfer_function_editor->apply();
         }
         //    qInfo() << m_server_message.m_variable_range.min( "t1_var_c" );
         //    qInfo() << m_server_message.m_min_value;
@@ -368,9 +368,6 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
             }
         }
 
-    m_transfer_function_editor->applyVariableRange( m_server_message.m_server_side_variable_range );
-//    m_transfer_function_editor->updateRangeView( reply.m_variable_range );
-//    m_transfer_function_editor->updateRangeView( reply );
     m_transfer_function_editor->updateRangeView();
 
 //    pointObject->updateMinMaxCoords();
@@ -412,7 +409,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
         m_server_message.m_opacity_bins.clear();
     }
 
-    if( m_transfer_function_editor->getMode() == TransferFunctionEditor::Mode::IS )
+    if( ui->inSituRBtn->isChecked() == true )
     {
         m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_last_step );
     }
@@ -442,13 +439,11 @@ void Connect::onConnectButtonClicked()
     if( ui->clientServerRBtn->isChecked() )
     {
         qDebug("CS CONNECT!");
-        m_transfer_function_editor->setMode( TransferFunctionEditor::Mode::CS );
         connectServer();
     }
     else if( ui->inSituRBtn->isChecked() )
     {
         qDebug("IS CONNECT!");
-        m_transfer_function_editor->setMode( TransferFunctionEditor::Mode::IS );
         connectServer();
     }
     else

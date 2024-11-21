@@ -2,7 +2,12 @@
 #define GLYPHEDITOR_H
 
 #include <QDockWidget>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QComboBox>
 #include <kvs/ColorMap>
+
+#include "ParticleTransferProtocol.h"
 
 class MergePanel;
 class Connect;
@@ -39,12 +44,25 @@ public:
 
 public:
     explicit GlyphEditor(QWidget *parent = nullptr, MergePanel* merge = nullptr, Connect* connect_panel = nullptr);
+    void updateNumberOfVector( jpv::ParticleTransferServerMessage& server_message );
     ~GlyphEditor();
 
 private:
     Ui::GlyphEditor *ui;
     MergePanel* m_merge;
     Connect* m_connect;
+
+    int m_direction_previus_index[3];
+
+    QStringList* m_vector_list;
+
+    QVBoxLayout* m_size_variable_layout;
+    QVector<QLabel*> m_size_variable_labels;
+    QVector<QComboBox*> m_size_variable_combo_boxes;
+
+    QVBoxLayout* m_color_data_variable_layout;
+    QVector<QLabel*> m_color_data_variable_labels;
+    QVector<QComboBox*> m_color_data_variable_combo_boxes;
 
     GlyphType m_glyph_type;
     std::string m_glyph_direction_1;
@@ -56,7 +74,13 @@ private:
     kvs::ColorMap m_color_map; //need default defined
     DataDefines m_color_data;
 
+private:
+    void directionComboBoxBlockSignals( bool block );
+
 private slots:
+    void onDirectionComboBoxIndexChanged( int index );
+    void onSizeNumberOfVariableChanged( int value );
+    void onColorDataNumberOfVariableChanged( int value );
     void onApplyButtonClicked();
 };
 
