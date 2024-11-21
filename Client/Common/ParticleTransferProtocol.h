@@ -25,7 +25,8 @@ enum class InitializeParameter : int32_t {
      end = -2,
      empty = -1,
      generate_particle = 1,
-     export_TFfile =2
+     export_TFfile =2,
+     generate_glyph = 3
 };
 
 
