@@ -248,7 +248,7 @@ const bool DataArrayTag::write(
         }
 
         // Insert the data array as string-stream to the parent node.
-        TiXmlText text;
+        vismodule::TiXmlText text;
         text.SetValue( oss.str() );
 
         vismodule::XMLNode::SuperClass* node = parent->InsertEndChild( element );
@@ -330,7 +330,7 @@ const bool DataArrayTag::read_data( const size_t nelements, vismodule::AnyValueA
     // Internal data.
     if ( m_file == "" )
     {
-        const TiXmlText* array_text = vismodule::XMLNode::ToText( m_node );
+        const vismodule::TiXmlText* array_text = vismodule::XMLNode::ToText( m_node );
         if ( !array_text )
         {
             visModuleMessageError( "No value in <%s>.", tag_name.c_str() );

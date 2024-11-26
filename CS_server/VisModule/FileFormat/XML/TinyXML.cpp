@@ -40,6 +40,9 @@
 
 namespace { template <typename T> void Ignore( T ){} }
 
+namespace vismodule
+{
+
 const char* TiXmlBase::errorString[ TIXML_ERROR_STRING_COUNT ] =
 {
     "No error.",
@@ -1434,3 +1437,5 @@ TiXmlAttribute* TiXmlAttributeSet::Find( const std::string& name ) const
     }
     return 0;
 }
+
+} // end of namespace vismodule

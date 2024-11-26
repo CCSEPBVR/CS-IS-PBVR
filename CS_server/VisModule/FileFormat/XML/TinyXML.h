@@ -42,6 +42,9 @@
 #include <cstring>
 #include <cstdlib>
 
+namespace vismodule
+{
+
 class TiXmlDocument;
 class TiXmlElement;
 class TiXmlComment;
@@ -656,5 +659,7 @@ private:
     int  errorId;
     std::string errorDesc;
 };
+
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__TINY_XML_H_INCLUDE
