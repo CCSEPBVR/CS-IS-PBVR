@@ -67,6 +67,7 @@
 
 //plot over line
 #include "POLObjectGenerator.h"
+#include "FileFormatReader.h"
 
 using FuncParser::Variable;
 using FuncParser::Variables;
@@ -1980,12 +1981,37 @@ int main( int argc, char** argv )
                         fil.loadPFL( pfifile );
                     }
 #else
-                                       std::string pflfile = param.m_input_data_base;
-                                       vismodule::File pfl( pflfile );
-                                       if ( pfl.isExisted() )
-                                       {
-                                               fil.loadPFL( pflfile );
-                                       }
+                    // filクラスに情報を格納する
+                    // .pflファイルの場合はこれまで通り
+                    // .pfiファイルの場合は中止する
+                    // 変換前ファイルの場合はFileFormatReaderに渡す
+                    size_t found_pfl = param.m_input_data_base.find(".pfl");
+                    size_t found_pfi = param.m_input_data_base.find(".pfi");
+                    if (found_pfl != std::string::npos)
+                    {
+                        std::string pflfile = param.m_input_data_base;
+                        std::cout << "pflファイルが選択されました" << std::endl;
+                        vismodule::File pfl(pflfile);
+                        if (pfl.isExisted())
+                        {
+                            fil.loadPFL(pflfile);
+                        }
+                    }
+                    else if (found_pfi != std::string::npos)
+                    {
+                        std::cout << "pfiファイルが選択されました" << std::endl;
+                        std::cout << "pflファイルもしくは変換前ファイルを選択してください" << std::endl;
+                        return -1;
+                    }
+                    else
+                    {
+                        std::string pre_conversion_file_path = param.m_input_data_base;
+                        std::cout << "変換前ファイルが選択されました" << std::endl;
+                        // 入力は変換前ファイルパス
+                        // 出力はFilterInformationListクラス
+                        FileFormatReader file_format_reader;
+                        fil = file_format_reader.ConvertFilterInformationList(pre_conversion_file_path);
+                    }
 #endif
 
                     if ( fil.m_list.size() > 0 )

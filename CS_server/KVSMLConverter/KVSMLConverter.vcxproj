@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{3bcef6fd-42bc-46ac-857c-c01af17df910}</ProjectGuid>
+    <RootNamespace>KVSMLConverter</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>kvsmlconverter</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)\KVSMLConverter\Source;C:\Users\SAKAMOTO\work\VTK-9.3.1\install\include\vtk-9.3;C:\Users\SAKAMOTO\work\KVS\install\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Converter\ConverterInputs.cpp" />
+    <ClCompile Include="Source\Converter\ConverterTask.cpp" />
+    <ClCompile Include="Source\Converter\ConverterTaskInput.cpp" />
+    <ClCompile Include="Source\Converter\ConverterTaskOutput.cpp" />
+    <ClCompile Include="Source\Exporter\StructuredVolumeObjectExporter.cpp" />
+    <ClCompile Include="Source\Exporter\UnstructuredVolumeObjectExporter.cpp" />
+    <ClCompile Include="Source\FileFormat\VtkCompositeDataSetFileFormat.cpp" />
+    <ClCompile Include="Source\Importer\VtkImport.cpp" />
+    <ClCompile Include="Source\PBVRFileInformation\UnstructuredPfi.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\Converter\ConverterInputs.h" />
+    <ClInclude Include="Source\Converter\ConverterTask.h" />
+    <ClInclude Include="Source\Converter\ConverterTaskInput.h" />
+    <ClInclude Include="Source\Converter\ConverterTaskOutput.h" />
+    <ClInclude Include="Source\Converter\XmlTag.h" />
+    <ClInclude Include="Source\CvtTypeTraits.h" />
+    <ClInclude Include="Source\Exporter\StructuredVolumeObjectExporter.h" />
+    <ClInclude Include="Source\Exporter\UnstructuredVolumeObjectExporter.h" />
+    <ClInclude Include="Source\FileFormat\AVS\AvsUcd.h" />
+    <ClInclude Include="Source\FileFormat\CGNS\Cgns.h" />
+    <ClInclude Include="Source\FileFormat\KVSML\KvsmlStructuredVolumeObject.h" />
+    <ClInclude Include="Source\FileFormat\KVSML\KvsmlUnstructuredVolumeObject.h" />
+    <ClInclude Include="Source\FileFormat\ParallelVtkFileFormat.h" />
+    <ClInclude Include="Source\FileFormat\PLOT3D\Plot3d.h" />
+    <ClInclude Include="Source\FileFormat\STL\Stl.h" />
+    <ClInclude Include="Source\FileFormat\VtkCompositeDataSetFileFormat.h" />
+    <ClInclude Include="Source\FileFormat\VtkFileFormat.h" />
+    <ClInclude Include="Source\FileFormat\VtkUnstructuredFileFormat.h" />
+    <ClInclude Include="Source\FileFormat\VTK\VtkPolyData.h" />
+    <ClInclude Include="Source\FileFormat\VTK\VtkRectilinearGrid.h" />
+    <ClInclude Include="Source\FileFormat\VTK\VtkStructuredGrid.h" />
+    <ClInclude Include="Source\FileFormat\VTK\VtkStructuredPoints.h" />
+    <ClInclude Include="Source\FileFormat\VTK\VtkUnstructuredGrid.h" />
+    <ClInclude Include="Source\FileFormat\VTK\VtkXmlImageData.h" />
+    <ClInclude Include="Source\FileFormat\VTK\VtkXmlMultiBlock.h" />
+    <ClInclude Include="Source\FileFormat\VTK\VtkXmlPImageData.h" />
+    <ClInclude Include="Source\FileFormat\VTK\VtkXmlPolyData.h" />
+    <ClInclude Include="Source\FileFormat\VTK\VtkXmlPStructuredGrid.h" />
+    <ClInclude Include="Source\FileFormat\VTK\VtkXmlPUnstructuredGrid.h" />
+    <ClInclude Include="Source\FileFormat\VTK\VtkXmlRectilinearGrid.h" />
+    <ClInclude Include="Source\FileFormat\VTK\VtkXmlStructuredGrid.h" />
+    <ClInclude Include="Source\FileFormat\VTK\VtkXmlUnstructuredGrid.h" />
+    <ClInclude Include="Source\Filesystem.h" />
+    <ClInclude Include="Source\Importer\VtkImport.h" />
+    <ClInclude Include="Source\Importer\VtkImporter.h" />
+    <ClInclude Include="Source\PBVRFileInformation\Pfl.h" />
+    <ClInclude Include="Source\PBVRFileInformation\UnstructuredPfi.h" />
+    <ClInclude Include="Source\TimeSeriesFiles\EnSight\EnSightGold.h" />
+    <ClInclude Include="Source\TimeSeriesFiles\EnSight\EnSightGoldBinary.h" />
+    <ClInclude Include="Source\TimeSeriesFiles\NumeralSequenceFiles.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -275,7 +275,7 @@ public:
         }
     }
 
-private:
+public:
     int number_of_component;
     int max_sub_volume_id;
     int last_time_step;
