@@ -29,6 +29,20 @@ enum class InitializeParameter : int32_t {
      generate_glyph = 3
 };
 
+enum class DataDefines : int32_t
+{
+    Constant            = 0, //
+    SingleVariable      = 1, //
+    VariableArray       = 2  //
+};
+
+enum class GlyphMode  : int32_t
+{
+    UniformDistribution = 0, //max sampepoints,seed
+    AllPoints           = 1, //No UI
+    EveryNthPoints      = 2  //Stride
+};
+
 class ParticleTransferUtils
 {
 public:
@@ -125,6 +139,23 @@ public:
     EquationToken y_synthesis_token;//y_synthesis; CS ONLY
     EquationToken z_synthesis_token;//z_synthesis; CS ONLY
 
+    //グリフ
+    int32_t m_direction_variable[3];
+
+    DataDefines m_size_sampling_method;
+    std::vector<int32_t> m_size_variable;
+
+    GlyphMode m_distribution_mode;
+    int32_t m_number_of_sampling_point;
+    uint32_t m_seed;
+    int32_t m_stride;
+
+    std::vector<int32_t> m_glyph_color_map_table;
+    // kvs::ColorMap m_glyph_color_map;
+
+    DataDefines m_color_data_sampling_method;
+    std::vector<int32_t> m_color_data_variable;
+
 public:
     // message のサイズを計算
     int32_t byteSize( void ) const;
@@ -209,7 +240,7 @@ private:
     float m_transfer_function_min_value;
     float m_transfer_function_max_value;
 public:
-    VariableRange m_variable_range;
+    VariableRange m_server_side_variable_range;
 
     ParticleTransferServerMessage( void );
 

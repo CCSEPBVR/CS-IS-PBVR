@@ -1754,7 +1754,7 @@ int main( int argc, char** argv )
 #endif
                     //add by shimomura 2023/06/14
                     vr = setVariablerange2( tmp_max,tmp_min, cnt/2 );
-                    servMes.m_variable_range = vr;
+                    servMes.m_server_side_variable_range = vr;
                     // add by shimomura 2022/12/16
                     servMes.setColorHistogramBins(                                                     
                             param.m_transfunc_array.size(),
@@ -2148,7 +2148,7 @@ int main( int argc, char** argv )
                                 servMes.m_colors[3 * i + 1] = object->colors()[3 * i + 1];
                                 servMes.m_colors[3 * i + 2] = object->colors()[3 * i + 2];
                             }
-                            servMes.m_variable_range = vr;
+                            servMes.m_server_side_variable_range = vr;
 
                             if ( timer_count <= PBVR_TIMER_COUNT_NUM )
                             {
@@ -2192,7 +2192,7 @@ int main( int argc, char** argv )
 #endif
                         //add by shimomura 2023/06/14
                         vr = setVariablerange2( tmp_max,tmp_min, cnt/2 );
-                        servMes.m_variable_range = vr;
+                        servMes.m_server_side_variable_range = vr;
                         // add by shimomura 2022/12/16
                         servMes.setColorHistogramBins(                                                     
                                     param.m_transfunc_array.size(),

@@ -113,6 +113,36 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         // add by @hira at 2016/12/01 : 1次伝達関数（色、不透明度）
         s += jpv::Serializer::byteSize( m_color_transfer_function_synthesis );
         s += jpv::Serializer::byteSize( m_opacity_transfer_function_synthesis );
+
+        for( int i = 0; i < 3; i++ )
+        {
+            s += jpv::Serializer::byteSize( m_direction_variable[i] );
+        }
+
+        s += jpv::Serializer::byteSize( m_size_sampling_method );
+        s += jpv::Serializer::byteSize( m_size_variable.size() );
+        for( int i = 0; i < m_size_variable.size(); i++ )
+        {
+            s += jpv::Serializer::byteSize( m_size_variable[i] );
+        }
+
+        s += jpv::Serializer::byteSize( m_distribution_mode );
+        s += jpv::Serializer::byteSize( m_number_of_sampling_point );
+        s += jpv::Serializer::byteSize( m_seed );
+        s += jpv::Serializer::byteSize( m_stride );
+
+        s += jpv::Serializer::byteSize( m_glyph_color_map_table.size() );
+        for( int i = 0; i <  m_glyph_color_map_table.size(); i++ )
+        {
+            s += jpv::Serializer::byteSize(  m_glyph_color_map_table[i] );
+        }
+
+        s += jpv::Serializer::byteSize( m_color_data_sampling_method );
+        s += jpv::Serializer::byteSize( m_color_data_variable.size() );
+        for( int i = 0; i < m_color_data_variable.size(); i++ )
+        {
+            s += jpv::Serializer::byteSize( m_color_data_variable[i] );
+        }
     }
     if ( m_initialize_parameter == InitializeParameter::generate_particle )
     {
@@ -225,6 +255,37 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         // add by @hira at 2016/12/01 : 1次伝達関数（色、不透明度）
         index += jpv::Serializer::write( buf + index, m_color_transfer_function_synthesis );
         index += jpv::Serializer::write( buf + index, m_opacity_transfer_function_synthesis );
+
+        for( int i = 0; i < 3; i++ )
+        {
+            index += jpv::Serializer::write( buf + index, m_direction_variable[i] );
+        }
+
+        index += jpv::Serializer::write( buf + index, m_size_sampling_method );
+        index += jpv::Serializer::write( buf + index, m_size_variable.size() );
+        for( int i = 0; i < m_size_variable.size(); i++ )
+        {
+            index += jpv::Serializer::write( buf + index, m_size_variable[i] );
+        }
+
+
+        index += jpv::Serializer::write( buf + index, m_distribution_mode );
+        index += jpv::Serializer::write( buf + index, m_number_of_sampling_point );
+        index += jpv::Serializer::write( buf + index, m_seed );
+        index += jpv::Serializer::write( buf + index, m_stride );
+
+        index += jpv::Serializer::write( buf + index, m_glyph_color_map_table.size() );
+        for( int i = 0; i < m_glyph_color_map_table.size(); i++ )
+        {
+            index += jpv::Serializer::write( buf + index, m_glyph_color_map_table[i] );
+        }
+
+        index += jpv::Serializer::write( buf + index, m_color_data_sampling_method );
+        index += jpv::Serializer::write( buf + index, m_color_data_variable.size() );
+        for( int i = 0; i < m_color_data_variable.size(); i++ )
+        {
+            index += jpv::Serializer::write( buf + index, m_color_data_variable[i] );
+        }
     }
     if ( m_initialize_parameter == InitializeParameter::generate_particle )
     {
@@ -378,6 +439,45 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         // add by @hira at 2016/12/01 : 1次伝達関数（色、不透明度）
         index += jpv::Serializer::read( buf + index, &m_color_transfer_function_synthesis );
         index += jpv::Serializer::read( buf + index, &m_opacity_transfer_function_synthesis );
+
+        for( int i = 0; i < 3; i++ )
+        {
+            index += jpv::Serializer::read( buf + index, &m_direction_variable[i] );
+        }
+
+        index += jpv::Serializer::read( buf + index, &m_size_sampling_method );
+        index += jpv::Serializer::read( buf + index, &s );
+        m_size_variable.clear();
+        for ( size_t i = 0; i < s; i++ )
+        {
+            int32_t value = 0;
+            index += jpv::Serializer::read(buf + index, &value);
+            m_size_variable.push_back(value);
+        }
+
+        index += jpv::Serializer::read( buf + index, &m_distribution_mode );
+        index += jpv::Serializer::read( buf + index, &m_number_of_sampling_point );
+        index += jpv::Serializer::read( buf + index, &m_seed );
+        index += jpv::Serializer::read( buf + index, &m_stride );
+
+        index += jpv::Serializer::read( buf + index, &s );
+        m_glyph_color_map_table.clear();
+        for ( size_t i = 0; i < s; i++ )
+        {
+            int32_t value = 0;
+            index += jpv::Serializer::read(buf + index, &value);
+            m_glyph_color_map_table.push_back(value);
+        }
+
+        index += jpv::Serializer::read( buf + index, &m_color_data_sampling_method );
+        index += jpv::Serializer::read( buf + index, &s );
+        m_color_data_variable.clear();
+        for ( size_t i = 0; i < s; i++ )
+        {
+            int32_t value = 0;
+            index += jpv::Serializer::read(buf + index, &value);
+            m_color_data_variable.push_back(value);
+        }
     }
     if ( m_initialize_parameter == InitializeParameter::generate_particle )
     {
@@ -439,6 +539,73 @@ void jpv::ParticleTransferClientMessage::show( void ) const
     std::cout << "m_x_synthesis = " << m_x_synthesis << std::endl;
     std::cout << "m_y_synthesis = " << m_y_synthesis << std::endl;
     std::cout << "m_z_synthesis = " << m_z_synthesis << std::endl;
+
+    std::cout << __LINE__ << std::endl;
+    std::cout << "m_direction_variable" << std::endl;
+    std::cout << m_direction_variable[0];
+    std::cout << ",";
+    std::cout << m_direction_variable[1];
+    std::cout << ",";
+    std::cout << m_direction_variable[2];
+    std::cout << std::endl;
+
+    switch( m_size_sampling_method )
+    {
+    case DataDefines::Constant:
+        std::cout << "Constant" << std::endl;
+        break;
+    case DataDefines::SingleVariable:
+        std::cout << "SingleVariable" << std::endl;
+        break;
+    case DataDefines::VariableArray:
+        std::cout << "VariableArray" << std::endl;
+        break;
+    }
+    for( int i = 0; i < m_size_variable.size(); i ++ )
+    {
+        std::cout << "[" << i << "] : " << m_size_variable[i] << std::endl;
+    }
+
+    switch( m_distribution_mode )
+    {
+    case GlyphMode::UniformDistribution:
+        std::cout << "UniformDistribution" << std::endl;
+        std::cout << "m_number_of_sampling_point   : " << m_number_of_sampling_point << std::endl;
+        std::cout << "m_seed                       : " << m_seed << std::endl;
+
+        break;
+    case GlyphMode::AllPoints:
+        std::cout << "AllPoints" << std::endl;
+        break;
+    case GlyphMode::EveryNthPoints:
+        std::cout << "EveryNthPoints" << std::endl;
+        std::cout << "m_stride : " << m_stride << std::endl;
+        break;
+    }
+
+    for( int i = 0; i < m_glyph_color_map_table.size(); i++ )
+    {
+        std::cout << m_glyph_color_map_table[i];
+        std::cout << ",";
+    }
+    std::cout << std::endl;
+
+    switch( m_color_data_sampling_method )
+    {
+    case DataDefines::Constant:
+        std::cout << "Constant" << std::endl;
+        break;
+    case DataDefines::SingleVariable:
+        std::cout << "SingleVariable" << std::endl;
+        break;
+    case DataDefines::VariableArray:
+        std::cout << "VariableArray" << std::endl;
+        break;
+    }
+    for( int i = 0; i < m_color_data_variable.size(); i ++ )
+    {
+        std::cout << "[" << i << "] : " << m_color_data_variable[i] << std::endl;
+    }
 
 #if 0
     // show token

@@ -229,89 +229,114 @@ void GlyphEditor::onColorDataNumberOfVariableChanged(int value)
 
 void GlyphEditor::onApplyButtonClicked()
 {
-    const int numberOfVector = 5;
+    //Direction
+    m_connect->getClientMessage()->m_direction_variable[0] = static_cast<int32_t>( ui->direction1ComboBox->currentText().mid(1).toInt() );
+    m_connect->getClientMessage()->m_direction_variable[1] = static_cast<int32_t>( ui->direction2ComboBox->currentText().mid(1).toInt() );
+    m_connect->getClientMessage()->m_direction_variable[2] = static_cast<int32_t>( ui->direction3ComboBox->currentText().mid(1).toInt() );
 
-    if( numberOfVector < 3 ) //成分数が3未満である場合、このパネルを操作不能にする。
+    //Size
+    if( ui->sizeConstantRadioBox->isChecked() ) //Constant
     {
-        this->setEnabled( false );
+        m_connect->getClientMessage()->m_size_sampling_method = jpv::DataDefines::Constant;
     }
-    else
+    else if( ui->sizeSingleVariableRadioBox->isChecked() ) //singleVariable
     {
-        this->setEnabled( true );
+        m_connect->getClientMessage()->m_size_sampling_method = jpv::DataDefines::SingleVariable;
+        if ( m_size_variable_combo_boxes.isEmpty() ) //もしSizeのNumber of variablesが0の場合
+        {
+            m_connect->getClientMessage()->m_size_variable.clear();
+            m_connect->getClientMessage()->m_size_variable.push_back(1);
+        }
+        else
+        {
+            m_connect->getClientMessage()->m_size_variable.clear();
+            QComboBox *comboBox = m_size_variable_combo_boxes[0];
+            m_connect->getClientMessage()->m_size_variable.push_back( static_cast<int32_t>( comboBox->currentText().mid(1).toInt() ) );
+        }
     }
-
-    ui->sizeNumberOfVariableSpinBox->setMaximum( numberOfVector );
-    ui->colorDataNumberOfVariableSpinBox->setMaximum( numberOfVector );
-
-    m_vector_list->clear();
-    for( int i = 1; i <= numberOfVector; i++ )
+    else if( ui->sizeVariableArrayRadioBox->isChecked() ) //variableArray
     {
-        m_vector_list->append(QString("q%1").arg(i));
+        m_connect->getClientMessage()->m_size_sampling_method = jpv::DataDefines::VariableArray;
+        if ( m_size_variable_combo_boxes.isEmpty() ) //もしSizeのNumber of variablesが0の場合
+        {
+            m_connect->getClientMessage()->m_size_variable.clear();
+            m_connect->getClientMessage()->m_size_variable.push_back(1);
+        }
+        else
+        {
+            m_connect->getClientMessage()->m_size_variable.clear();
+            for (int i = 0; i < m_size_variable_combo_boxes.size(); i++)
+            {
+                QComboBox *comboBox = m_size_variable_combo_boxes[i];
+                m_connect->getClientMessage()->m_size_variable.push_back( comboBox->currentText().mid(1).toInt() );
+            }
+        }
     }
 
+    //Distribution
+    if( ui->uniformDistributionRadioButton->isChecked() )
     {
-        directionComboBoxBlockSignals( true );
-
-        //directionComboBoxにアイテムを登録する。
-        ui->direction1ComboBox->addItems( *m_vector_list );
-        ui->direction2ComboBox->addItems( *m_vector_list );
-        ui->direction3ComboBox->addItems( *m_vector_list );
-        //デフォルトq1,q2,q3となるようにインデックスを設定する。
-        ui->direction1ComboBox->setCurrentIndex( 0 );
-        ui->direction2ComboBox->setCurrentIndex( 1 );
-        ui->direction3ComboBox->setCurrentIndex( 2 );
-
-        m_direction_previus_index[0] = ui->direction1ComboBox->currentIndex();
-        m_direction_previus_index[1] = ui->direction2ComboBox->currentIndex();
-        m_direction_previus_index[2] = ui->direction3ComboBox->currentIndex();
-
-        directionComboBoxBlockSignals( false );
+        m_connect->getClientMessage()->m_distribution_mode = jpv::GlyphMode::UniformDistribution;
+        m_connect->getClientMessage()->m_number_of_sampling_point = ui->numberOfSamplePoints->value();
+        m_connect->getClientMessage()->m_seed = ui->seedSpinBox->value();
+    }
+    else if( ui->allPointsRadioButton->isChecked() )
+    {
+        m_connect->getClientMessage()->m_distribution_mode = jpv::GlyphMode::AllPoints;
+    }
+    else if( ui->everyNthPointsRadioButton->isChecked() )
+    {
+        m_connect->getClientMessage()->m_distribution_mode = jpv::GlyphMode::EveryNthPoints;
+        m_connect->getClientMessage()->m_stride = ui->strideSpinBox->value();
     }
 
-    // ui->direction1ComboBox->addItems()
+    //ColorMap
+    // m_connect->getClientMessage()->m_glyph_color_map = ui->colorMapBar->getColor();
+    m_connect->getClientMessage()->m_glyph_color_map_table.clear();
+    for( int i = 0; i < ui->colorMapBar->getColor().table().size(); i++ )
+    {
+        m_connect->getClientMessage()->m_glyph_color_map_table.push_back( static_cast<int32_t>( ui->colorMapBar->getColor().table().at(i) ) );
+    }
 
-
-    // m_connect->getClientMessage()->m_directions1 = ui->directionLineEdit1->text().toStdString();
-    // m_connect->getClientMessage()->m_directions2 = ui->directionLineEdit2->text().toStdString();
-    // m_connect->getClientMessage()->m_directions3 = ui->directionLineEdit3->text().toStdString();
-
-    // if (ui->sizeConstantRadioButton->isChecked()) {
-    //     m_connect->getClientMessage()->m_size_defines = DataDefines::Constant; //0
-    // }
-    // else if (ui->sizeSingleVariableRadioButton->isChecked()) {
-    //     m_connect->getClientMessage()->m_size_defines = DataDefines::SingleVariable; //1
-    // }
-    // else if (ui->sizeVariablesArrayRadioButton->isChecked()) {
-    //     m_connect->getClientMessage()->m_size_defines = DataDefines::VariableArray; //2
-    // }
-    // m_connect->getClientMessage()->m_size_variable1 = ui->sizeVariable1; //numberに変換する必要がありそう。
-    // m_connect->getClientMessage()->m_size_variable2 = ui->sizeVariable2; //numberに変換する必要がありそう。
-
-    // m_connect->getClientMessage()->m_scale_factor = ui->scaleFactorDoubleSpinBox->value(); //グリフ生成に必要なもの?? 表示に必要なもの??
-
-    // if (ui->uniformDistributionRadioButton->isChecked()) {
-    //     m_connect->getClientMessage()->m_distribution = GlyphMode::UniformDistribution; //0
-    // }
-    // else if (ui->allPointsRadioButton->isChecked()) {
-    //     m_connect->getClientMessage()->m_distribution = GlyphMode::AllPoints; //1
-    // }
-    // else if (ui->everyNthPointsRadioButton->isChecked()) {
-    //     m_connect->getClientMessage()->m_distribution = GlyphMode::EveryNthPoints; //2
-    // }
-
-    // m_connect->getClientMessage()->m_glyph_color_map = ui->openGLWidget->getColor();
-
-    // if (ui->colorConstantRadioButton->isChecked()) {
-    //     m_connect->getClientMessage()->m_color_defines = DataDefines::Constant; //0
-    // }
-    // else if (ui->colorSingleVariableRadioButton->isChecked()) {
-    //     m_connect->getClientMessage()->m_color_defines = DataDefines::SingleVariable; //1
-    // }
-    // else if (ui->colorVariablesArrayRadioButton->isChecked()) {
-    //     m_connect->getClientMessage()->m_color_defines = DataDefines::VariableArray; //2
-    // }
-    // m_connect->getClientMessage()->m_color_variable1 = ui->colorVariable1; //numberに変換する必要がありそう。
-    // m_connect->getClientMessage()->m_color_variable2 = ui->colorVariable2; //numberに変換する必要がありそう。
+    //ColorData
+    if( ui->colorDataConstantRadioBox->isChecked() ) //Constant
+    {
+        m_connect->getClientMessage()->m_color_data_sampling_method = jpv::DataDefines::Constant;
+    }
+    else if( ui->colorDataSingleVariableRadioBox->isChecked() ) //singleVariable
+    {
+        m_connect->getClientMessage()->m_color_data_sampling_method = jpv::DataDefines::SingleVariable;
+        if ( m_color_data_variable_combo_boxes.isEmpty() ) //もしColorDataのNumber of variablesが0の場合
+        {
+            m_connect->getClientMessage()->m_color_data_variable.clear();
+            m_connect->getClientMessage()->m_color_data_variable.push_back(1);
+        }
+        else
+        {
+            m_connect->getClientMessage()->m_color_data_variable.clear();
+            QComboBox *comboBox = m_color_data_variable_combo_boxes[0];
+            m_connect->getClientMessage()->m_color_data_variable.push_back( static_cast<int32_t>( comboBox->currentText().mid(1).toInt() ) );
+        }
+    }
+    else if( ui->colorDataVariableArrayRadioBox->isChecked() ) //variableArray
+    {
+        m_connect->getClientMessage()->m_color_data_sampling_method = jpv::DataDefines::VariableArray;
+        if ( m_color_data_variable_combo_boxes.isEmpty() ) //もしColorDataのNumber of variablesが0の場合
+        {
+            m_connect->getClientMessage()->m_color_data_variable.clear();
+            m_connect->getClientMessage()->m_color_data_variable.push_back(1);
+        }
+        else
+        {
+            m_connect->getClientMessage()->m_color_data_variable.clear();
+            for (int i = 0; i < m_color_data_variable_combo_boxes.size(); i++)
+            {
+                QComboBox *comboBox = m_color_data_variable_combo_boxes[i];
+                m_connect->getClientMessage()->m_color_data_variable.push_back( comboBox->currentText().mid(1).toInt() );
+            }
+        }
+    }
+    m_connect->getClientMessage()->show();
 }
 
 void GlyphEditor::directionComboBoxBlockSignals( bool block )
