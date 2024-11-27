@@ -244,14 +244,14 @@ void GlyphEditor::onApplyButtonClicked()
         m_connect->getClientMessage()->m_size_sampling_method = jpv::DataDefines::SingleVariable;
         if ( m_size_variable_combo_boxes.isEmpty() ) //もしSizeのNumber of variablesが0の場合
         {
-            m_connect->getClientMessage()->m_size_variable.clear();
-            m_connect->getClientMessage()->m_size_variable.push_back(1);
+            m_connect->getClientMessage()->m_size_variables.clear();
+            m_connect->getClientMessage()->m_size_variables.push_back(1);
         }
         else
         {
-            m_connect->getClientMessage()->m_size_variable.clear();
+            m_connect->getClientMessage()->m_size_variables.clear();
             QComboBox *comboBox = m_size_variable_combo_boxes[0];
-            m_connect->getClientMessage()->m_size_variable.push_back( static_cast<int32_t>( comboBox->currentText().mid(1).toInt() ) );
+            m_connect->getClientMessage()->m_size_variables.push_back( static_cast<int32_t>( comboBox->currentText().mid(1).toInt() ) );
         }
     }
     else if( ui->sizeVariableArrayRadioBox->isChecked() ) //variableArray
@@ -259,16 +259,16 @@ void GlyphEditor::onApplyButtonClicked()
         m_connect->getClientMessage()->m_size_sampling_method = jpv::DataDefines::VariableArray;
         if ( m_size_variable_combo_boxes.isEmpty() ) //もしSizeのNumber of variablesが0の場合
         {
-            m_connect->getClientMessage()->m_size_variable.clear();
-            m_connect->getClientMessage()->m_size_variable.push_back(1);
+            m_connect->getClientMessage()->m_size_variables.clear();
+            m_connect->getClientMessage()->m_size_variables.push_back(1);
         }
         else
         {
-            m_connect->getClientMessage()->m_size_variable.clear();
+            m_connect->getClientMessage()->m_size_variables.clear();
             for (int i = 0; i < m_size_variable_combo_boxes.size(); i++)
             {
                 QComboBox *comboBox = m_size_variable_combo_boxes[i];
-                m_connect->getClientMessage()->m_size_variable.push_back( comboBox->currentText().mid(1).toInt() );
+                m_connect->getClientMessage()->m_size_variables.push_back( comboBox->currentText().mid(1).toInt() );
             }
         }
     }
@@ -308,14 +308,14 @@ void GlyphEditor::onApplyButtonClicked()
         m_connect->getClientMessage()->m_color_data_sampling_method = jpv::DataDefines::SingleVariable;
         if ( m_color_data_variable_combo_boxes.isEmpty() ) //もしColorDataのNumber of variablesが0の場合
         {
-            m_connect->getClientMessage()->m_color_data_variable.clear();
-            m_connect->getClientMessage()->m_color_data_variable.push_back(1);
+            m_connect->getClientMessage()->m_color_data_variables.clear();
+            m_connect->getClientMessage()->m_color_data_variables.push_back(1);
         }
         else
         {
-            m_connect->getClientMessage()->m_color_data_variable.clear();
+            m_connect->getClientMessage()->m_color_data_variables.clear();
             QComboBox *comboBox = m_color_data_variable_combo_boxes[0];
-            m_connect->getClientMessage()->m_color_data_variable.push_back( static_cast<int32_t>( comboBox->currentText().mid(1).toInt() ) );
+            m_connect->getClientMessage()->m_color_data_variables.push_back( static_cast<int32_t>( comboBox->currentText().mid(1).toInt() ) );
         }
     }
     else if( ui->colorDataVariableArrayRadioBox->isChecked() ) //variableArray
@@ -323,16 +323,16 @@ void GlyphEditor::onApplyButtonClicked()
         m_connect->getClientMessage()->m_color_data_sampling_method = jpv::DataDefines::VariableArray;
         if ( m_color_data_variable_combo_boxes.isEmpty() ) //もしColorDataのNumber of variablesが0の場合
         {
-            m_connect->getClientMessage()->m_color_data_variable.clear();
-            m_connect->getClientMessage()->m_color_data_variable.push_back(1);
+            m_connect->getClientMessage()->m_color_data_variables.clear();
+            m_connect->getClientMessage()->m_color_data_variables.push_back(1);
         }
         else
         {
-            m_connect->getClientMessage()->m_color_data_variable.clear();
+            m_connect->getClientMessage()->m_color_data_variables.clear();
             for (int i = 0; i < m_color_data_variable_combo_boxes.size(); i++)
             {
                 QComboBox *comboBox = m_color_data_variable_combo_boxes[i];
-                m_connect->getClientMessage()->m_color_data_variable.push_back( comboBox->currentText().mid(1).toInt() );
+                m_connect->getClientMessage()->m_color_data_variables.push_back( comboBox->currentText().mid(1).toInt() );
             }
         }
     }
