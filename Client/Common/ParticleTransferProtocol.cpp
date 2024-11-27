@@ -120,10 +120,10 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         }
 
         s += jpv::Serializer::byteSize( m_size_sampling_method );
-        s += jpv::Serializer::byteSize( m_size_variable.size() );
-        for( int i = 0; i < m_size_variable.size(); i++ )
+        s += jpv::Serializer::byteSize( m_size_variables.size() );
+        for( int i = 0; i < m_size_variables.size(); i++ )
         {
-            s += jpv::Serializer::byteSize( m_size_variable[i] );
+            s += jpv::Serializer::byteSize( m_size_variables[i] );
         }
 
         s += jpv::Serializer::byteSize( m_distribution_mode );
@@ -138,10 +138,10 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         }
 
         s += jpv::Serializer::byteSize( m_color_data_sampling_method );
-        s += jpv::Serializer::byteSize( m_color_data_variable.size() );
-        for( int i = 0; i < m_color_data_variable.size(); i++ )
+        s += jpv::Serializer::byteSize( m_color_data_variables.size() );
+        for( int i = 0; i < m_color_data_variables.size(); i++ )
         {
-            s += jpv::Serializer::byteSize( m_color_data_variable[i] );
+            s += jpv::Serializer::byteSize( m_color_data_variables[i] );
         }
     }
     if ( m_initialize_parameter == InitializeParameter::generate_particle )
@@ -262,10 +262,10 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         }
 
         index += jpv::Serializer::write( buf + index, m_size_sampling_method );
-        index += jpv::Serializer::write( buf + index, m_size_variable.size() );
-        for( int i = 0; i < m_size_variable.size(); i++ )
+        index += jpv::Serializer::write( buf + index, m_size_variables.size() );
+        for( int i = 0; i < m_size_variables.size(); i++ )
         {
-            index += jpv::Serializer::write( buf + index, m_size_variable[i] );
+            index += jpv::Serializer::write( buf + index, m_size_variables[i] );
         }
 
 
@@ -281,10 +281,10 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         }
 
         index += jpv::Serializer::write( buf + index, m_color_data_sampling_method );
-        index += jpv::Serializer::write( buf + index, m_color_data_variable.size() );
-        for( int i = 0; i < m_color_data_variable.size(); i++ )
+        index += jpv::Serializer::write( buf + index, m_color_data_variables.size() );
+        for( int i = 0; i < m_color_data_variables.size(); i++ )
         {
-            index += jpv::Serializer::write( buf + index, m_color_data_variable[i] );
+            index += jpv::Serializer::write( buf + index, m_color_data_variables[i] );
         }
     }
     if ( m_initialize_parameter == InitializeParameter::generate_particle )
@@ -447,12 +447,12 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
 
         index += jpv::Serializer::read( buf + index, &m_size_sampling_method );
         index += jpv::Serializer::read( buf + index, &s );
-        m_size_variable.clear();
+        m_size_variables.clear();
         for ( size_t i = 0; i < s; i++ )
         {
             int32_t value = 0;
             index += jpv::Serializer::read(buf + index, &value);
-            m_size_variable.push_back(value);
+            m_size_variables.push_back(value);
         }
 
         index += jpv::Serializer::read( buf + index, &m_distribution_mode );
@@ -471,12 +471,12 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
 
         index += jpv::Serializer::read( buf + index, &m_color_data_sampling_method );
         index += jpv::Serializer::read( buf + index, &s );
-        m_color_data_variable.clear();
+        m_color_data_variables.clear();
         for ( size_t i = 0; i < s; i++ )
         {
             int32_t value = 0;
             index += jpv::Serializer::read(buf + index, &value);
-            m_color_data_variable.push_back(value);
+            m_color_data_variables.push_back(value);
         }
     }
     if ( m_initialize_parameter == InitializeParameter::generate_particle )
@@ -561,9 +561,9 @@ void jpv::ParticleTransferClientMessage::show( void ) const
         std::cout << "VariableArray" << std::endl;
         break;
     }
-    for( int i = 0; i < m_size_variable.size(); i++ )
+    for( int i = 0; i < m_size_variables.size(); i++ )
     {
-        std::cout << "[" << i << "] : " << m_size_variable[i] << std::endl;
+        std::cout << "[" << i << "] : " << m_size_variables[i] << std::endl;
     }
 
     switch( m_distribution_mode )
@@ -602,9 +602,9 @@ void jpv::ParticleTransferClientMessage::show( void ) const
         std::cout << "VariableArray" << std::endl;
         break;
     }
-    for( int i = 0; i < m_color_data_variable.size(); i ++ )
+    for( int i = 0; i < m_color_data_variables.size(); i ++ )
     {
-        std::cout << "[" << i << "] : " << m_color_data_variable[i] << std::endl;
+        std::cout << "[" << i << "] : " << m_color_data_variables[i] << std::endl;
     }
 
 #if 0

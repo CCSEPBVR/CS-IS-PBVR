@@ -143,7 +143,7 @@ public:
     int32_t m_direction_variable[3];
 
     DataDefines m_size_sampling_method;
-    std::vector<int32_t> m_size_variable;
+    std::vector<int32_t> m_size_variables;
 
     GlyphMode m_distribution_mode;
     int32_t m_number_of_sampling_point;
@@ -153,7 +153,7 @@ public:
     std::vector<int32_t> m_glyph_color_map_table;
 
     DataDefines m_color_data_sampling_method;
-    std::vector<int32_t> m_color_data_variable;
+    std::vector<int32_t> m_color_data_variables;
 
 public:
     // message のサイズを計算
