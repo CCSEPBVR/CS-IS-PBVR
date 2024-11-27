@@ -151,7 +151,6 @@ public:
     int32_t m_stride;
 
     std::vector<int32_t> m_glyph_color_map_table;
-    // kvs::ColorMap m_glyph_color_map;
 
     DataDefines m_color_data_sampling_method;
     std::vector<int32_t> m_color_data_variable;

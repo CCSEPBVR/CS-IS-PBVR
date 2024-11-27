@@ -561,7 +561,7 @@ void jpv::ParticleTransferClientMessage::show( void ) const
         std::cout << "VariableArray" << std::endl;
         break;
     }
-    for( int i = 0; i < m_size_variable.size(); i ++ )
+    for( int i = 0; i < m_size_variable.size(); i++ )
     {
         std::cout << "[" << i << "] : " << m_size_variable[i] << std::endl;
     }
@@ -583,12 +583,12 @@ void jpv::ParticleTransferClientMessage::show( void ) const
         break;
     }
 
-    for( int i = 0; i < m_glyph_color_map_table.size(); i++ )
-    {
-        std::cout << m_glyph_color_map_table[i];
-        std::cout << ",";
-    }
-    std::cout << std::endl;
+    // for( int i = 0; i < m_glyph_color_map_table.size(); i++ )
+    // {
+    //     std::cout << m_glyph_color_map_table[i];
+    //     std::cout << ",";
+    // }
+    // std::cout << std::endl;
 
     switch( m_color_data_sampling_method )
     {
