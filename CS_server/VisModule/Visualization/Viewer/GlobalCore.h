@@ -11,20 +11,22 @@
  *  $Id: GlobalCore.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef VIS_MODULE__GLOBAL_CORE_H_INCLUDE
-#define VIS_MODULE__GLOBAL_CORE_H_INCLUDE
+#ifndef PBVR__GLOBAL_CORE_H_INCLUDE
+#define PBVR__GLOBAL_CORE_H_INCLUDE
 
-#include <vismodule/ClassName>
+#include "ClassName.h"
 #include <vismodule/Camera>
-#include <vismodule/Light>
-#include <vismodule/Mouse>
-#include <vismodule/Background>
-#include <vismodule/ObjectManager>
+/* 131018 removed
+#include "Light.h"
+#include "Mouse.h"
+#include "Background.h"
+*/
+#include "ObjectManager.h"
 #include <vismodule/RendererManager>
-#include <vismodule/IDManager>
+#include "IDManager.h"
 
 
-namespace vismodule
+namespace pbvr
 {
 
 /*==========================================================================*/
@@ -34,7 +36,7 @@ namespace vismodule
 /*==========================================================================*/
 class GlobalCore
 {
-    visModuleClassName( vismodule::GlobalCore );
+    visModuleClassName( pbvr::GlobalCore );
 
 public:
 
@@ -42,42 +44,45 @@ public:
     {
         TargetObject = 0,
         TargetCamera,
-        TargetLight,
+//        TargetLight, /* 131018 removed */
         NumberOfTargets
     };
 
-public:
+private:
 
-    static int                   argc;             ///< argument count
-    static char**                argv;             ///< argument value
+    static int                   m_argc;             ///< argument count
+    static char**                m_argv;             ///< argument value
 
-    // Basic components in the viewer.
-    static vismodule::Camera*          camera;           ///< camera
-    static vismodule::Light*           light;            ///< light
-    static vismodule::Mouse*           mouse;            ///< mouse
-    static vismodule::Background*      background;       ///< background
-
+    /* 131018 removed
+        static vismodule::Light*           light;            ///< light
+        static vismodule::Mouse*           mouse;            ///< mouse
+        static vismodule::Background*      background;       ///< background
+    */
     // Parameters for controlling the viewer.
-    static ControlTarget         target;           ///< control target
-    static vismodule::ObjectManager*   object_manager;   ///< object manager
-    static vismodule::RendererManager* renderer_manager; ///< renderer manager
-    static vismodule::IDManager*       id_manager;       ///< ID manager ( object_id, renderer_id )
+    static ControlTarget          m_target;           ///< control target
+    static pbvr::ObjectManager*   m_object_manager;   ///< object manager
+    static vismodule::RendererManager*  m_renderer_manager; ///< renderer manager
+    static pbvr::IDManager*       m_id_manager;       ///< ID manager ( object_id, renderer_id )
+
+public:
+    // Basic components in the viewer.
+    static vismodule::Camera*           m_camera;           ///< camera
 
 public:
 
-    GlobalCore( int count, char** values );
+    GlobalCore( const int count, const char** values );
 
-    virtual ~GlobalCore( void );
+    virtual ~GlobalCore();
 
 public:
 
-    static void create_core( int count, char** values );
+    static void createCore( const int count, const char** values );
 
-    static void clear_core( void );
+    static void clearCore();
 
-    static void reset_core( void );
+    static void resetCore();
 };
 
-} // end of namespace vismodule
+} // end of namespace pbvr
 
 #endif // VIS_MODULE__GLOBAL_CORE_H_INCLUDE

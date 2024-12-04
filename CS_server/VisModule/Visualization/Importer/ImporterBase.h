@@ -11,12 +11,12 @@
  *  $Id: ImporterBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef VIS_MODULE__IMPORTER_BASE_H_INCLUDE
-#define VIS_MODULE__IMPORTER_BASE_H_INCLUDE
+#ifndef PBVR__VIS_MODULE__IMPORTER_BASE_H_INCLUDE
+#define PBVR__VIS_MODULE__IMPORTER_BASE_H_INCLUDE
 
 #include <vismodule/FileFormatBase>
-#include <vismodule/ObjectBase>
-#include <vismodule/ClassName>
+#include "ObjectBase.h"
+#include "ClassName.h"
 #include <vismodule/Module>
 
 
@@ -40,19 +40,19 @@ protected:
 
 public:
 
-    ImporterBase( void );
+    ImporterBase();
 
-    virtual ~ImporterBase( void );
-
-public:
-
-    virtual vismodule::ObjectBase* exec( const vismodule::FileFormatBase* file_format ) = 0;
+    virtual ~ImporterBase();
 
 public:
 
-    const bool isSuccess( void ) const;
+    virtual pbvr::ObjectBase* exec( const vismodule::FileFormatBase& file_format ) = 0;
 
-    const bool isFailure( void ) const;
+public:
+
+    const bool isSuccess() const;
+
+    const bool isFailure() const;
 };
 
 } // end of namespace vismodule

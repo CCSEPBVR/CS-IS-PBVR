@@ -12,18 +12,18 @@
  *  $Id: ObjectBase.h 847 2011-06-21 07:21:11Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef VIS_MODULE__OBJECT_BASE_H_INCLUDE
-#define VIS_MODULE__OBJECT_BASE_H_INCLUDE
+#ifndef PBVR__OBJECT_BASE_H_INCLUDE
+#define PBVR__OBJECT_BASE_H_INCLUDE
 
 #include <iostream>
-#include <vismodule/ClassName>
+#include "ClassName.h"
 #include <vismodule/XformControl>
 #include <vismodule/Vector2>
 #include <vismodule/Vector3>
 #include <vismodule/Module>
 
 
-namespace vismodule
+namespace pbvr
 {
 
 class Camera;
@@ -35,7 +35,7 @@ class Camera;
 /*==========================================================================*/
 class ObjectBase : public vismodule::XformControl
 {
-    visModuleClassName( vismodule::ObjectBase );
+    visModuleClassName( pbvr::ObjectBase );
 
     visModuleBase;
 
@@ -51,7 +51,6 @@ public:
         ObjectManager, ///< Object manager
         UnknownObject  ///< unknown object (for user defined object data)
     };
-
 protected:
 
     std::string   m_name;               ///< object name
@@ -64,7 +63,7 @@ protected:
     vismodule::Vector3f m_object_center;      ///< center of gravity in object coordinate system
     vismodule::Vector3f m_external_position;  ///< position in external coordinate system
     vismodule::Vector3f m_normalize;          ///< normalize parameter
-    bool          m_show_flg;
+    bool          m_show_flag;
 
 public:
 
@@ -76,7 +75,7 @@ public:
         const vismodule::Matrix33f& rotation,
         const bool collision = true );
 
-    virtual ~ObjectBase( void );
+    virtual ~ObjectBase();
 
 public:
 
@@ -95,73 +94,76 @@ public:
     void setMinMaxExternalCoords(
         const vismodule::Vector3f& min_coord,
         const vismodule::Vector3f& max_coord );
+        
+    //void setFace( const Face face );
 
-    void show( void );
+    void show();
 
-    void hide( void );
-
-public:
-
-    const std::string& name( void ) const;
-
-    virtual const ObjectType objectType( void ) const = 0;
-
-    const vismodule::Vector3f& minObjectCoord( void ) const;
-
-    const vismodule::Vector3f& maxObjectCoord( void ) const;
-
-    const vismodule::Vector3f& minExternalCoord( void ) const;
-
-    const vismodule::Vector3f& maxExternalCoord( void ) const;
-
-    const bool hasMinMaxObjectCoords( void ) const;
-
-    const bool hasMinMaxExternalCoords( void ) const;
-
-    const vismodule::Vector3f& objectCenter( void ) const;
-
-    const vismodule::Vector3f& externalPosition( void ) const;
-
-    const vismodule::Vector3f& normalize( void ) const;
-
-    const bool isShown( void ) const;
+    void hide();
 
 public:
 
-    const vismodule::Vector2f positionInDevice(
-        vismodule::Camera*         camera,
-        const vismodule::Vector3f& global_trans,
-        const vismodule::Vector3f& global_scale ) const;
+    const std::string& name() const;
 
-    const vismodule::Vector3f positionInWorld(
-        const vismodule::Vector3f& global_trans,
-        const vismodule::Vector3f& global_scale ) const;
+    virtual const ObjectType objectType() const = 0;
 
-    const vismodule::Vector3f& positionInExternal( void ) const;
+    const vismodule::Vector3f& minObjectCoord() const;
+
+    const vismodule::Vector3f& maxObjectCoord() const;
+
+    const vismodule::Vector3f& minExternalCoord() const;
+
+    const vismodule::Vector3f& maxExternalCoord() const;
+
+    const bool hasMinMaxObjectCoords() const;
+
+    const bool hasMinMaxExternalCoords() const;
+
+    const vismodule::Vector3f& objectCenter() const;
+
+    const vismodule::Vector3f& externalPosition() const;
+
+    const vismodule::Vector3f& normalize() const;
+
+    const bool isShown() const;
+
 
 public:
+    /*
+        const vismodule::Vector2f positionInDevice(
+            vismodule::Camera*         camera,
+            const vismodule::Vector3f& global_trans,
+            const vismodule::Vector3f& global_scale ) const;
 
-    virtual void updateMinMaxCoords( void ){};
+        const vismodule::Vector3f positionInWorld(
+            const vismodule::Vector3f& global_trans,
+            const vismodule::Vector3f& global_scale ) const;
 
-    void updateNormalizeParameters( void );
+        const vismodule::Vector3f& positionInExternal() const;
+    */
+public:
+
+    virtual void updateMinMaxCoords() {};
+
+    void updateNormalizeParameters();
 
     void transform(
         const vismodule::Vector3f& global_trans,
         const vismodule::Vector3f& global_scale ) const;
 
-    void applyMaterial( void );
+    /*
 
-    bool collision(
-        const vismodule::Vector2f& p_win,
-        vismodule::Camera*         camera,
-        const vismodule::Vector3f& global_trans,
-        const vismodule::Vector3f& global_scale );
+        bool collision(
+            const vismodule::Vector2f& p_win,
+            vismodule::Camera*         camera,
+            const vismodule::Vector3f& global_trans,
+            const vismodule::Vector3f& global_scale );
 
-    bool collision(
-        const vismodule::Vector3f& p_world,
-        const vismodule::Vector3f& global_trans,
-        const vismodule::Vector3f& global_scale );
-
+        bool collision(
+            const vismodule::Vector3f& p_world,
+            const vismodule::Vector3f& global_trans,
+            const vismodule::Vector3f& global_scale );
+    */
     void rotate(
         const vismodule::Matrix33f& rot,
         const vismodule::Vector3f& center );
@@ -178,6 +180,6 @@ private:
         const vismodule::Vector3f& global_scale ) const;
 };
 
-} // end of namespace vismodule
+} // end of namespace pbvr
 
-#endif // VIS_MODULE__OBJECT_BASE_H_INCLUDE
+#endif // PBVR__OBJECT_BASE_H_INCLUDE

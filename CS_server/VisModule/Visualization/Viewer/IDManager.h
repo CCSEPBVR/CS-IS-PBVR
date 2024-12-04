@@ -11,20 +11,20 @@
  *  $Id: IDManager.h 994 2011-10-18 08:33:16Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef VIS_MODULE__ID_MANAGER_H_INCLUDE
-#define VIS_MODULE__ID_MANAGER_H_INCLUDE
+#ifndef PBVR__ID_MANAGER_H_INCLUDE
+#define PBVR__ID_MANAGER_H_INCLUDE
 
 #include <list>
 #include <vector>
 #include <utility>
 #include <cstdlib>
-#include <vismodule/ClassName>
+#include "ClassName.h"
 
 
-namespace vismodule
+namespace pbvr
 {
 
-typedef std::pair<int,int>                  IDPair;
+typedef std::pair<int, int>                  IDPair;
 typedef std::list<IDPair>                   IDs;
 typedef std::list<IDPair>::iterator         ID_ptr;
 typedef std::list<IDPair>::reverse_iterator ID_rptr;
@@ -36,7 +36,7 @@ typedef std::list<IDPair>::reverse_iterator ID_rptr;
 /*==========================================================================*/
 class IDManager : public IDs
 {
-    visModuleClassName( vismodule::IDManager );
+    visModuleClassName( pbvr::IDManager );
 
 protected:
 
@@ -44,57 +44,57 @@ protected:
 
 public:
 
-    IDManager( void );
+    IDManager();
 
-    virtual ~IDManager( void );
+    virtual ~IDManager();
 
 public:
 
-    const IDPair operator [] ( size_t index ) const;
+    const IDPair operator [] ( const size_t index ) const;
 
-    const size_t size( void ) const;
+    const size_t size() const;
 
-    void insert( int object_id, int renderer_id );
+    void insert( const int object_id, const int renderer_id );
 
-    void insertObjectID( int object_id );
+    void insertObjectID( const int object_id );
 
-    void insertRendererID( int renderer_id );
+    void insertRendererID( const int renderer_id );
 
-    const std::vector<int> objectID( int renderer_id ) const;
+    const std::vector<int> objectID( const int renderer_id ) const;
 
-    const int objectID( void ) const;
+    const int objectID() const;
 
-    const std::vector<int> rendererID( int object_id ) const;
+    const std::vector<int> rendererID( const int object_id ) const;
 
-    const int rendererID( void ) const;
+    const int rendererID() const;
 
-    void erase( void );
+    void erase();
 
-    void erase( int object_id, int renderer_id );
+    void erase( const int object_id, const int renderer_id );
 
-    void eraseByObjectID( int object_id );
+    void eraseByObjectID( const int object_id );
 
-    void eraseByRendererID( int renderer_id );
+    void eraseByRendererID( const int renderer_id );
 
-    void changeObject( int object_id );
+    void changeObject( const int object_id );
 
-    void changeObject( int renderer_id, int object_id );
+    void changeObject( const int renderer_id, const int object_id );
 
-    void changeObject( const IDPair& id_pair, int object_id );
+    void changeObject( const IDPair& id_pair, const int object_id );
 
-    void changeRenderer( int renderer_id );
+    void changeRenderer( const int renderer_id );
 
-    void changeRenderer( int object_id, int renderer_id );
+    void changeRenderer( const int object_id, const int renderer_id );
 
-    void changeRenderer( const IDPair& id_pair, int renderer_id );
+    void changeRenderer( const IDPair& id_pair, const int renderer_id );
 
-    void flip( void );
+    void flip();
 
 private:
 
-    void update_flip_table( void );
+    void update_flip_table();
 };
 
-} // end of namespace vismodule
+} // end of namespace pbvr
 
 #endif // VIS_MODULE__ID_MANAGER_H_INCLUDE

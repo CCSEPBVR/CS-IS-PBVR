@@ -16,14 +16,14 @@
 
 #define visModuleClassName( this_class )                \
     public:                                       \
-    virtual const char* className( void ) const { \
-        return ( # this_class );                  \
+    virtual const char* className() const { \
+        return # this_class;                  \
     }
 
 #define visModuleClassName_without_virtual( this_class ) \
     public:                                        \
-    const char* className( void ) const {          \
-        return ( # this_class );                   \
+    const char* className() const {          \
+        return # this_class;                   \
     }
 
-#endif // VIS_MODULE__CLASS_NAME_H_INCLUDE
+#endif // PBVR__VIS_MODULE__CLASS_NAME_H_INCLUDE

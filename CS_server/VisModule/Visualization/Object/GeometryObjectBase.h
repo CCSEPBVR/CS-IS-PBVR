@@ -12,18 +12,18 @@
  *  $Id: GeometryObjectBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef VIS_MODULE__GEOMETRY_OBJECT_BASE_H_INCLUDE
-#define VIS_MODULE__GEOMETRY_OBJECT_BASE_H_INCLUDE
+#ifndef PBVR__GEOMETRY_OBJECT_BASE_H_INCLUDE
+#define PBVR__GEOMETRY_OBJECT_BASE_H_INCLUDE
 
-#include <vismodule/ObjectBase>
-#include <vismodule/ClassName>
+#include "ObjectBase.h"
+#include "ClassName.h"
 #include <vismodule/ValueArray>
 #include <vismodule/Type>
 #include <vismodule/Vector3>
 #include <vismodule/RGBColor>
 
 
-namespace vismodule
+namespace pbvr
 {
 
 /*===========================================================================*/
@@ -31,13 +31,13 @@ namespace vismodule
  *  @brief  Geometric object class.
  */
 /*===========================================================================*/
-class GeometryObjectBase : public vismodule::ObjectBase
+class GeometryObjectBase : public pbvr::ObjectBase
 {
-    visModuleClassName( vismodule::GeometryObjectBase );
+    visModuleClassName( pbvr::GeometryObjectBase );
 
 public:
 
-    typedef vismodule::ObjectBase BaseClass;
+    typedef pbvr::ObjectBase BaseClass;
 
     enum GeometryType
     {
@@ -54,7 +54,7 @@ protected:
 
 public:
 
-    GeometryObjectBase( void );
+    GeometryObjectBase();
 
     GeometryObjectBase(
         const vismodule::ValueArray<vismodule::Real32>& coords,
@@ -81,13 +81,13 @@ public:
     GeometryObjectBase(
         const vismodule::ValueArray<vismodule::Real32>& coords );
 
-    virtual ~GeometryObjectBase( void );
+    virtual ~GeometryObjectBase();
 
 public:
 
-    static vismodule::GeometryObjectBase* DownCast( vismodule::ObjectBase* object );
+    static pbvr::GeometryObjectBase* DownCast( pbvr::ObjectBase* object );
 
-    static const vismodule::GeometryObjectBase* DownCast( const vismodule::ObjectBase* object );
+    static const pbvr::GeometryObjectBase* DownCast( const pbvr::ObjectBase& object );
 
 public:
 
@@ -99,7 +99,7 @@ public:
 
     void deepCopy( const GeometryObjectBase& object );
 
-    void clear( void );
+    void clear();
 
 public:
 
@@ -113,15 +113,15 @@ public:
 
 public:
 
-    const ObjectType objectType( void ) const;
+    const ObjectType objectType() const;
 
-    virtual const GeometryType geometryType( void ) const = 0;
+    virtual const GeometryType geometryType() const = 0;
 
-    const size_t nvertices( void ) const;
+    const size_t nvertices() const;
 
-    const size_t ncolors( void ) const;
+    const size_t ncolors() const;
 
-    const size_t nnormals( void ) const;
+    const size_t nnormals() const;
 
 public:
 
@@ -133,19 +133,19 @@ public:
 
 public:
 
-    const vismodule::ValueArray<vismodule::Real32>& coords( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& coords() const;
 
-    const vismodule::ValueArray<vismodule::UInt8>& colors( void ) const;
+    const vismodule::ValueArray<vismodule::UInt8>& colors() const;
 
-    const vismodule::ValueArray<vismodule::Real32>& normals( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& normals() const;
 
 public:
 
-    void updateMinMaxCoords( void );
+    void updateMinMaxCoords();
 
 private:
 
-    void calculate_min_max_coords( void );
+    void calculate_min_max_coords();
 };
 
 } // end of namespace vismodule

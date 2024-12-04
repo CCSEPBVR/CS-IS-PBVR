@@ -11,16 +11,16 @@
  *  $Id: TransferFunction.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef VIS_MODULE__TRANSFER_FUNCTION_H_INCLUDE
-#define VIS_MODULE__TRANSFER_FUNCTION_H_INCLUDE
+#ifndef PBVR__TRANSFER_FUNCTION_H_INCLUDE
+#define PBVR__TRANSFER_FUNCTION_H_INCLUDE
 
-#include <vismodule/ClassName>
+#include "ClassName.h"
 #include <vismodule/ColorMap>
 #include <vismodule/OpacityMap>
-#include <vismodule/VolumeObjectBase>
+#include "VolumeObjectBase.h"
 
 
-namespace vismodule
+namespace pbvr
 {
 
 /*==========================================================================*/
@@ -30,7 +30,7 @@ namespace vismodule
 /*==========================================================================*/
 class TransferFunction
 {
-    visModuleClassName( vismodule::TransferFunction );
+    visModuleClassName( pbvr::TransferFunction );
 
 private:
 
@@ -41,7 +41,7 @@ public:
 
     explicit TransferFunction( const size_t resolution = 256 );
 
-    TransferFunction( const std::string& filename );
+    //TransferFunction( const std::string& filename );
 
     // 'explicit' is not specified by design.
     TransferFunction( const vismodule::ColorMap& color_map );
@@ -55,7 +55,7 @@ public:
 
     TransferFunction( const TransferFunction& other );
 
-    virtual ~TransferFunction( void );
+    virtual ~TransferFunction();
 
 public:
 
@@ -65,27 +65,31 @@ public:
 
     void setRange( const float min_value, const float max_value );
 
-    void setRange( const vismodule::VolumeObjectBase* volume );
+    void setColorRange( const float min_value, const float max_value );
+  
+    void setOpacityRange( const float min_value, const float max_value );
+
+    void setRange( const pbvr::VolumeObjectBase& volume );
 
     void adjustRange( const float min_value, const float max_value );
 
-    void adjustRange( const vismodule::VolumeObjectBase* volume );
+    void adjustRange( const pbvr::VolumeObjectBase& volume );
 
-    const bool hasRange( void ) const;
+    const bool hasRange() const;
 
-    const float minValue( void ) const;
+    const float minValue() const;
 
-    const float maxValue( void ) const;
-
-public:
-
-    const vismodule::ColorMap& colorMap( void ) const;
-
-    const vismodule::OpacityMap& opacityMap( void ) const;
+    const float maxValue() const;
 
 public:
 
-    const size_t resolution( void ) const;
+    const vismodule::ColorMap& colorMap() const;
+
+    const vismodule::OpacityMap& opacityMap() const;
+
+public:
+
+    const size_t resolution() const;
 
 public:
 
@@ -93,13 +97,13 @@ public:
 
     const bool read( const std::string& filename );
 
-    const bool write( const std::string& filename );
+    //const bool write( const std::string& filename );
 
 public:
 
     TransferFunction& operator =( const TransferFunction& rhs );
 };
 
-} // end of namespace vismodule
+} // end of namespace pbvr
 
 #endif // VIS_MODULE__TRANSFER_FUNCTION_H_INCLUDE

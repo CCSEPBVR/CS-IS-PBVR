@@ -13,12 +13,12 @@
  */
 /*****************************************************************************/
 #include "PointObject.h"
-#include <vismodule/LineObject>
-#include <vismodule/PolygonObject>
+//#include <vismodule/LineObject>
+//#include <vismodule/PolygonObject>
 #include <vismodule/Assert>
 
 
-namespace vismodule
+namespace pbvr
 {
 
 /*===========================================================================*/
@@ -26,7 +26,7 @@ namespace vismodule
  *  @brief  Constructs a new PointObject class.
  */
 /*===========================================================================*/
-PointObject::PointObject( void )
+PointObject::PointObject()
 {
     this->setSize( 1 );
 }
@@ -45,7 +45,7 @@ PointObject::PointObject(
     const vismodule::ValueArray<vismodule::UInt8>&  colors,
     const vismodule::ValueArray<vismodule::Real32>& normals,
     const vismodule::ValueArray<vismodule::Real32>& sizes ):
-    vismodule::GeometryObjectBase( coords, colors, normals )
+    pbvr::GeometryObjectBase( coords, colors, normals )
 {
     this->setSizes( sizes );
 }
@@ -64,7 +64,7 @@ PointObject::PointObject(
     const vismodule::ValueArray<vismodule::UInt8>&  colors,
     const vismodule::ValueArray<vismodule::Real32>& normals,
     const vismodule::Real32                   size ):
-    vismodule::GeometryObjectBase( coords, colors, normals )
+    pbvr::GeometryObjectBase( coords, colors, normals )
 {
     this->setSize( size );
 }
@@ -83,7 +83,7 @@ PointObject::PointObject(
     const vismodule::RGBColor&                color,
     const vismodule::ValueArray<vismodule::Real32>& normals,
     const vismodule::ValueArray<vismodule::Real32>& sizes ):
-    vismodule::GeometryObjectBase( coords, color, normals )
+    pbvr::GeometryObjectBase( coords, color, normals )
 {
     this->setSizes( sizes );
 }
@@ -100,7 +100,7 @@ PointObject::PointObject(
     const vismodule::ValueArray<vismodule::Real32>& coords,
     const vismodule::ValueArray<vismodule::Real32>& normals,
     const vismodule::ValueArray<vismodule::Real32>& sizes ):
-    vismodule::GeometryObjectBase( coords, normals )
+    pbvr::GeometryObjectBase( coords, normals )
 {
     this->setSizes( sizes );
 }
@@ -119,7 +119,7 @@ PointObject::PointObject(
     const vismodule::RGBColor&                color,
     const vismodule::ValueArray<vismodule::Real32>& normals,
     const vismodule::Real32                   size ):
-    vismodule::GeometryObjectBase( coords, color, normals )
+    pbvr::GeometryObjectBase( coords, color, normals )
 {
     this->setSize( size );
 }
@@ -136,7 +136,7 @@ PointObject::PointObject(
     const vismodule::ValueArray<vismodule::Real32>& coords,
     const vismodule::ValueArray<vismodule::UInt8>&  colors,
     const vismodule::ValueArray<vismodule::Real32>& sizes ):
-    vismodule::GeometryObjectBase( coords, colors )
+    pbvr::GeometryObjectBase( coords, colors )
 {
     this->setSizes( sizes );
 }
@@ -153,7 +153,7 @@ PointObject::PointObject(
     const vismodule::ValueArray<vismodule::Real32>& coords,
     const vismodule::RGBColor&                color,
     const vismodule::ValueArray<vismodule::Real32>& sizes ):
-    vismodule::GeometryObjectBase( coords, color )
+    pbvr::GeometryObjectBase( coords, color )
 {
     VIS_MODULE_ASSERT( coords.size() == sizes.size() * 3 );
 
@@ -172,7 +172,7 @@ PointObject::PointObject(
     const vismodule::ValueArray<vismodule::Real32>& coords,
     const vismodule::ValueArray<vismodule::UInt8>&  colors,
     const vismodule::Real32                   size ):
-    vismodule::GeometryObjectBase( coords, colors )
+    pbvr::GeometryObjectBase( coords, colors )
 {
     this->setSize( size );
 }
@@ -189,7 +189,7 @@ PointObject::PointObject(
     const vismodule::ValueArray<vismodule::Real32>& coords,
     const vismodule::RGBColor&                color,
     const vismodule::Real32                   size ):
-    vismodule::GeometryObjectBase( coords, color )
+    pbvr::GeometryObjectBase( coords, color )
 {
     this->setSize( size );
 }
@@ -202,7 +202,7 @@ PointObject::PointObject(
 /*===========================================================================*/
 PointObject::PointObject(
     const vismodule::ValueArray<vismodule::Real32>& coords ):
-    vismodule::GeometryObjectBase( coords )
+    pbvr::GeometryObjectBase( coords )
 {
     this->setSize( 1 );
 }
@@ -213,74 +213,9 @@ PointObject::PointObject(
  *  @param  other [in] point object
  */
 /*===========================================================================*/
-PointObject::PointObject( const vismodule::PointObject& other )
+PointObject::PointObject( const pbvr::PointObject& other )
 {
     this->shallowCopy( other );
-}
-
-/*===========================================================================*/
-/**
- *  @brief  Constructs a new PointObject class.
- *  @param  line [in] line object
- */
-/*===========================================================================*/
-PointObject::PointObject( const vismodule::LineObject& line )
-{
-    BaseClass::setCoords( line.coords() );
-
-    if( line.colorType() == vismodule::LineObject::VertexColor )
-    {
-        BaseClass::setColors( line.colors() );
-    }
-    else
-    {
-        BaseClass::setColor( line.color() );
-    }
-
-    this->setSize( line.size() );
-
-    BaseClass::setMinMaxObjectCoords(
-        line.minObjectCoord(),
-        line.maxObjectCoord() );
-
-    BaseClass::setMinMaxExternalCoords(
-        line.minExternalCoord(),
-        line.maxExternalCoord() );
-}
-
-/*===========================================================================*/
-/**
- *  @brief  Constructs a new PointObject class.
- *  @param  polygon [in] polygon object
- */
-/*===========================================================================*/
-PointObject::PointObject( const vismodule::PolygonObject& polygon )
-{
-    BaseClass::setCoords( polygon.coords() );
-
-    if( polygon.colorType() == vismodule::PolygonObject::VertexColor )
-    {
-        BaseClass::setColors( polygon.colors() );
-    }
-    else
-    {
-        BaseClass::setColor( polygon.color() );
-    }
-
-    if( polygon.normalType() == vismodule::PolygonObject::VertexNormal )
-    {
-        BaseClass::setNormals( polygon.normals() );
-    }
-
-    this->setSize( 1.0f );
-
-    BaseClass::setMinMaxObjectCoords(
-        polygon.minObjectCoord(),
-        polygon.maxObjectCoord() );
-
-    BaseClass::setMinMaxExternalCoords(
-        polygon.minExternalCoord(),
-        polygon.maxExternalCoord() );
 }
 
 /*===========================================================================*/
@@ -288,7 +223,7 @@ PointObject::PointObject( const vismodule::PolygonObject& polygon )
  *  @brief  Destructs the PointObject class.
  */
 /*===========================================================================*/
-PointObject::~PointObject( void )
+PointObject::~PointObject()
 {
     this->clear();
 }
@@ -300,21 +235,21 @@ PointObject::~PointObject( void )
  *  @return pointer to the point object
  */
 /*===========================================================================*/
-vismodule::PointObject* PointObject::DownCast( vismodule::ObjectBase* object )
+pbvr::PointObject* PointObject::DownCast( pbvr::ObjectBase* object )
 {
-    vismodule::GeometryObjectBase* geometry = vismodule::GeometryObjectBase::DownCast( object );
-    if ( !geometry ) return( NULL );
+    pbvr::GeometryObjectBase* geometry = pbvr::GeometryObjectBase::DownCast( object );
+    if ( !geometry ) return NULL;
 
-    const vismodule::GeometryObjectBase::GeometryType type = geometry->geometryType();
-    if ( type != vismodule::GeometryObjectBase::Point )
+    const pbvr::GeometryObjectBase::GeometryType type = geometry->geometryType();
+    if ( type != pbvr::GeometryObjectBase::Point )
     {
-        visModuleMessageError("Input object is not a point object.");
-        return( NULL );
+        visModuleMessageError( "Input object is not a point object." );
+        return NULL;
     }
 
-    vismodule::PointObject* point = static_cast<vismodule::PointObject*>( geometry );
+    pbvr::PointObject* point = static_cast<pbvr::PointObject*>( geometry );
 
-    return( point );
+    return point;
 }
 
 /*===========================================================================*/
@@ -324,9 +259,9 @@ vismodule::PointObject* PointObject::DownCast( vismodule::ObjectBase* object )
  *  @return pointer to the point object
  */
 /*===========================================================================*/
-const vismodule::PointObject* PointObject::DownCast( const vismodule::ObjectBase* object )
+const pbvr::PointObject* PointObject::DownCast( const pbvr::ObjectBase& object )
 {
-    return( PointObject::DownCast( const_cast<vismodule::ObjectBase*>( object ) ) );
+    return PointObject::DownCast( const_cast<pbvr::ObjectBase*>( &object ) );
 }
 
 /*===========================================================================*/
@@ -342,7 +277,7 @@ PointObject& PointObject::operator = ( const PointObject& other )
         this->shallowCopy( other );
     }
 
-    return( *this );
+    return *this;
 }
 
 /*===========================================================================*/
@@ -355,7 +290,7 @@ PointObject& PointObject::operator += ( const PointObject& other )
 {
     this->add( other );
 
-    return( *this );
+    return *this;
 }
 
 /*===========================================================================*/
@@ -367,15 +302,15 @@ std::ostream& operator << ( std::ostream& os, const PointObject& object )
 {
     os << "Object type:  " << "point object" << std::endl;
 #ifdef VIS_MODULE_COMPILER_VC
-#if VIS_MODULE_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
-    // @TODO Cannot instance the object that is a abstract class here (error:C2259).
-#endif
+//#if PBVR_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
+//    // @TODO Cannot instance the object that is a abstract class here (error:C2259).
+//#endif
 #else
-    os << static_cast<const vismodule::GeometryObjectBase&>( object ) << std::endl;
+    os << static_cast<const pbvr::GeometryObjectBase&>( object ) << std::endl;
 #endif
     os << "Number of sizes:  " << object.nsizes();
 
-    return( os );
+    return os;
 }
 
 /*===========================================================================*/
@@ -504,9 +439,9 @@ void PointObject::add( const PointObject& other )
                     const vismodule::RGBColor color = other.color();
                     for ( size_t i = 0; i < other.coords().size(); i += 3 )
                     {
-                        *(pcolors++) = color.r();
-                        *(pcolors++) = color.g();
-                        *(pcolors++) = color.b();
+                        *( pcolors++ ) = color.r();
+                        *( pcolors++ ) = color.g();
+                        *( pcolors++ ) = color.b();
                     }
                 }
             }
@@ -523,9 +458,9 @@ void PointObject::add( const PointObject& other )
                     const vismodule::RGBColor color = this->color();
                     for ( size_t i = 0; i < this->coords().size(); i += 3 )
                     {
-                        *(pcolors++) = color.r();
-                        *(pcolors++) = color.g();
-                        *(pcolors++) = color.b();
+                        *( pcolors++ ) = color.r();
+                        *( pcolors++ ) = color.g();
+                        *( pcolors++ ) = color.b();
                     }
                     memcpy( pcolors, other.colors().pointer(), other.colors().byteSize() );
                 }
@@ -541,9 +476,9 @@ void PointObject::add( const PointObject& other )
                     vismodule::UInt8* pcolors = colors.allocate( ncolors );
                     if ( pcolors != NULL )
                     {
-                        *(pcolors++) = color1.r();
-                        *(pcolors++) = color1.g();
-                        *(pcolors++) = color1.b();
+                        *( pcolors++ ) = color1.r();
+                        *( pcolors++ ) = color1.g();
+                        *( pcolors++ ) = color1.b();
                     }
                 }
                 else
@@ -555,15 +490,15 @@ void PointObject::add( const PointObject& other )
                     {
                         for ( size_t i = 0; i < this->coords().size(); i += 3 )
                         {
-                            *(pcolors++) = color1.r();
-                            *(pcolors++) = color1.g();
-                            *(pcolors++) = color1.b();
+                            *( pcolors++ ) = color1.r();
+                            *( pcolors++ ) = color1.g();
+                            *( pcolors++ ) = color1.b();
                         }
                         for ( size_t i = 0; i < other.coords().size(); i += 3 )
                         {
-                            *(pcolors++) = color2.r();
-                            *(pcolors++) = color2.g();
-                            *(pcolors++) = color2.b();
+                            *( pcolors++ ) = color2.r();
+                            *( pcolors++ ) = color2.g();
+                            *( pcolors++ ) = color2.b();
                         }
                     }
                 }
@@ -594,12 +529,11 @@ void PointObject::add( const PointObject& other )
                 if ( psizes != NULL )
                 {
                     memcpy( psizes, this->sizes().pointer(), this->sizes().byteSize() );
-//                  psizes += this->colors().size();
-                    psizes += this->sizes().size();
+                    psizes += this->colors().size();
                     const vismodule::Real32 size = other.size();
                     for ( size_t i = 0; i < other.coords().size(); i++ )
                     {
-                        *(psizes++) = size;
+                        *( psizes++ ) = size;
                     }
                 }
             }
@@ -616,11 +550,12 @@ void PointObject::add( const PointObject& other )
                     const vismodule::Real32 size = this->size();
                     for ( size_t i = 0; i < this->coords().size(); i++ )
                     {
-                        *(psizes++) = size;
+                        *( psizes++ ) = size;
                     }
                     memcpy( psizes, other.sizes().pointer(), other.sizes().byteSize() );
                 }
             }
+#if 0
             else
             {
                 const vismodule::Real32 size1 = this->size();
@@ -632,7 +567,7 @@ void PointObject::add( const PointObject& other )
                     vismodule::Real32* psizes = sizes.allocate( nsizes );
                     if ( psizes != NULL )
                     {
-                        *(psizes++) = size1;
+                        *( psizes++ ) = size1;
                     }
                 }
                 else
@@ -644,15 +579,16 @@ void PointObject::add( const PointObject& other )
                     {
                         for ( size_t i = 0; i < this->coords().size(); i++ )
                         {
-                            *(psizes++) = size1;
+                            *( psizes++ ) = size1;
                         }
                         for ( size_t i = 0; i < other.coords().size(); i++ )
                         {
-                            *(psizes++) = size2;
+                            *( psizes++ ) = size2;
                         }
                     }
                 }
             }
+#endif
         }
         this->setSizes( sizes );
     }
@@ -687,7 +623,7 @@ void PointObject::deepCopy( const PointObject& other )
  *  @brief  Clear the point object.
  */
 /*===========================================================================*/
-void PointObject::clear( void )
+void PointObject::clear()
 {
     BaseClass::clear();
     m_sizes.deallocate();
@@ -716,15 +652,25 @@ void PointObject::setSize( const vismodule::Real32 size )
     m_sizes[0] = size;
 }
 
+void PointObject::setTfnumber( const int tf_number )
+{
+    m_tf_number = tf_number;
+}
+
+void PointObject::setNbins( const int nbins )
+{
+    m_nbins = nbins;
+}
+
 /*===========================================================================*/
 /**
  *  @brief  Returns the geometry type.
  *  @return geometry type
  */
 /*===========================================================================*/
-const PointObject::BaseClass::GeometryType PointObject::geometryType( void ) const
+const PointObject::BaseClass::GeometryType PointObject::geometryType() const
 {
-    return( BaseClass::Point );
+    return BaseClass::Point;
 }
 
 /*===========================================================================*/
@@ -733,9 +679,9 @@ const PointObject::BaseClass::GeometryType PointObject::geometryType( void ) con
  *  @return number of size values
  */
 /*===========================================================================*/
-const size_t PointObject::nsizes( void ) const
+const size_t PointObject::nsizes() const
 {
-    return( m_sizes.size() );
+    return m_sizes.size();
 }
 
 /*===========================================================================*/
@@ -747,7 +693,7 @@ const size_t PointObject::nsizes( void ) const
 /*===========================================================================*/
 const vismodule::Real32 PointObject::size( const size_t index ) const
 {
-    return( m_sizes[index] );
+    return m_sizes[index];
 }
 
 /*===========================================================================*/
@@ -756,9 +702,53 @@ const vismodule::Real32 PointObject::size( const size_t index ) const
  *  @return size value array
  */
 /*===========================================================================*/
-const vismodule::ValueArray<vismodule::Real32>& PointObject::sizes( void ) const
+const vismodule::ValueArray<vismodule::Real32>& PointObject::sizes() const
 {
-    return( m_sizes );
+    return m_sizes;
 }
 
-} // end of namespace vismodule
+/*===========================================================================*/
+/**
+ *  @brief  Returns the Color Histogram Table.
+ *  @param  index [in] index of FrequencyTable Object array.
+ *  @return FrequencyTable Object
+ */
+/*===========================================================================*/
+const vismodule::ValueArray<pbvr::FrequencyTable>& PointObject::getColorHistogram() const
+{
+    return m_color_histogram;
+}
+/*===========================================================================*/
+/**
+ *  @brief  Returns the Opacity Histogram Table.
+ *  @param  index [in] index of FrequencyTable Object array.
+ *  @return FrequencyTable Object
+ */
+/*===========================================================================*/
+const vismodule::ValueArray<pbvr::FrequencyTable>& PointObject::getOpacityHistogram() const
+{
+    return m_opacity_histogram;
+}
+
+//add by shimomura 2023
+const vismodule::ValueArray<int>& PointObject::getOHistogram() const
+{
+    return m_o_histogram;
+}
+
+const vismodule::ValueArray<int>& PointObject::getCHistogram() const
+{
+    return m_c_histogram;
+}
+
+const int PointObject::getTfnumber() const
+{
+    return m_tf_number;
+}
+
+const int PointObject::getNbins() const
+{
+    return m_nbins;
+}
+
+} // end of namespace pbvr

@@ -11,15 +11,15 @@
  *  $Id: UnstructuredVolumeObject.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef VIS_MODULE__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE
-#define VIS_MODULE__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#ifndef PBVR__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#define PBVR__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE
 
-#include <vismodule/ClassName>
+#include "ClassName.h"
 #include <vismodule/Module>
-#include <vismodule/VolumeObjectBase>
+#include "VolumeObjectBase.h"
 
 
-namespace vismodule
+namespace pbvr
 {
 
 /*==========================================================================*/
@@ -27,15 +27,14 @@ namespace vismodule
  *  Unstructured volume object class.
  */
 /*==========================================================================*/
-class UnstructuredVolumeObject
-    : public vismodule::VolumeObjectBase
+class UnstructuredVolumeObject : public pbvr::VolumeObjectBase
 {
     // Class name.
-    visModuleClassName( vismodule::UnstructuredVolumeObject );
+    visModuleClassName( pbvr::UnstructuredVolumeObject );
 
     // Module information.
-    visModuleCategory( Object );
-    visModuleBaseClass( vismodule::VolumeObjectBase );
+    typedef pbvr::ObjectBase::ModuleTag ModuleCategory;
+    visModuleBaseClass( pbvr::VolumeObjectBase );
 
 public:
 
@@ -51,7 +50,7 @@ private:
 
 public:
 
-    UnstructuredVolumeObject( void );
+    UnstructuredVolumeObject();
 
     UnstructuredVolumeObject(
         const CellType     cell_type,
@@ -64,13 +63,13 @@ public:
 
     UnstructuredVolumeObject( const UnstructuredVolumeObject& other );
 
-    virtual ~UnstructuredVolumeObject( void );
+    virtual ~UnstructuredVolumeObject();
 
 public:
 
-    static vismodule::UnstructuredVolumeObject* DownCast( vismodule::ObjectBase* object );
+    static pbvr::UnstructuredVolumeObject* DownCast( pbvr::ObjectBase* object );
 
-    static const vismodule::UnstructuredVolumeObject* DownCast( const vismodule::ObjectBase* object );
+    static const pbvr::UnstructuredVolumeObject* DownCast( const pbvr::ObjectBase& object );
 
 public:
 
@@ -86,7 +85,7 @@ public:
 
 public:
 
-    void setCellType( const CellType cell_type );
+    void setCellType( const CellType& cell_type );
 
     void setNNodes( const size_t nnodes );
 
@@ -96,27 +95,27 @@ public:
 
 public:
 
-    const VolumeType volumeType( void ) const;
+    const VolumeType volumeType() const;
 
-    const GridType gridType( void ) const;
+    const GridType gridType() const;
 
-    const CellType cellType( void ) const;
+    const CellType cellType() const;
 
-    const size_t nnodes( void ) const;
+    const size_t nnodes() const;
 
-    const size_t ncells( void ) const;
+    const size_t ncells() const;
 
-    const Connections& connections( void ) const;
+    const Connections& connections() const;
 
 public:
 
-    void updateMinMaxCoords( void );
+    void updateMinMaxCoords();
 
 private:
 
-    void calculate_min_max_coords( void );
+    void calculateMinMaxCoords();
 };
 
-} // end of namespace vismodule
+} // end of namespace pbvr
 
 #endif // VIS_MODULE__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE

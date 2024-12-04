@@ -14,7 +14,7 @@
 #include "VolumeObjectBase.h"
 
 
-namespace vismodule
+namespace pbvr
 {
 
 /*==========================================================================*/
@@ -22,15 +22,17 @@ namespace vismodule
  *  Constructs a new empty VolumeObjectBase.
  */
 /*==========================================================================*/
-VolumeObjectBase::VolumeObjectBase( void )
-    : vismodule::ObjectBase()
-    , m_label( "" )
-    , m_veclen( 0 )
-    , m_coords()
-    , m_values()
-    , m_has_min_max_values( false )
-    , m_min_value( 0.0 )
-    , m_max_value( 0.0 )
+VolumeObjectBase::VolumeObjectBase():
+    pbvr::ObjectBase(),
+    m_label( "" ),
+    m_veclen( 0 ),
+    m_coords(),
+    m_values(),
+    m_has_min_max_values( false ),
+    m_min_value( 0.0 ),
+    m_max_value( 0.0 ),
+    m_pCoordSynthStrs( NULL ),
+    m_pCoordSynthTkns( NULL )
 {
 }
 
@@ -46,15 +48,17 @@ VolumeObjectBase::VolumeObjectBase( void )
 VolumeObjectBase::VolumeObjectBase(
     const size_t     veclen,
     const Coords&    coords,
-    const Values&    values )
-    : vismodule::ObjectBase()
-    , m_label( "" )
-    , m_veclen( veclen )
-    , m_coords( coords )
-    , m_values( values )
-    , m_has_min_max_values( false )
-    , m_min_value( 0.0 )
-    , m_max_value( 0.0 )
+    const Values&    values ):
+    pbvr::ObjectBase(),
+    m_label( "" ),
+    m_veclen( veclen ),
+    m_coords( coords ),
+    m_values( values ),
+    m_has_min_max_values( false ),
+    m_min_value( 0.0 ),
+    m_max_value( 0.0 ),
+    m_pCoordSynthStrs( NULL ),
+    m_pCoordSynthTkns( NULL )
 {
 }
 
@@ -65,17 +69,22 @@ VolumeObjectBase::VolumeObjectBase(
  *  @param other [in] Structured volume.
  */
 /*==========================================================================*/
-VolumeObjectBase::VolumeObjectBase( const VolumeObjectBase& other )
-    : vismodule::ObjectBase( other )
-    , m_label( other.label() )
-    , m_veclen( other.veclen() )
-    , m_coords( other.coords() )
-    , m_values( other.values() )
-    , m_has_min_max_values( other.hasMinMaxValues() )
-    , m_min_value( other.minValue() )
-    , m_max_value( other.maxValue() )
+VolumeObjectBase::VolumeObjectBase( const VolumeObjectBase& other ):
+    pbvr::ObjectBase( other ),
+    m_label( other.label() ),
+    m_veclen( other.veclen() ),
+    m_coords( other.coords() ),
+    m_values( other.values() ),
+    m_has_min_max_values( other.hasMinMaxValues() ),
+    m_min_value( other.minValue() ),
+    m_max_value( other.maxValue() ),
+    m_pCoordSynthStrs( NULL ),
+    m_pCoordSynthTkns( NULL )
 {
     // this->shallowCopy( other );
+    setCoordSynthesizerStrings( *other.getCoordSynthesizerStrings() );
+    //2023 shimomura 
+    setCoordSynthesizerTokens(  *other.getCoordSynthesizerTokens() );
 }
 
 /*==========================================================================*/
@@ -83,30 +92,32 @@ VolumeObjectBase::VolumeObjectBase( const VolumeObjectBase& other )
  *  Destroys the VolumeObjectBase.
  */
 /*==========================================================================*/
-VolumeObjectBase::~VolumeObjectBase( void )
+VolumeObjectBase::~VolumeObjectBase()
 {
+    if ( m_pCoordSynthStrs ) delete m_pCoordSynthStrs;
+    if ( m_pCoordSynthTkns )delete m_pCoordSynthTkns; //add by shimomura 2024/0603
 }
 
-vismodule::VolumeObjectBase* VolumeObjectBase::DownCast( vismodule::ObjectBase* object )
+pbvr::VolumeObjectBase* VolumeObjectBase::DownCast( pbvr::ObjectBase* object )
 {
-    const vismodule::ObjectBase::ObjectType type = object->objectType();
-    if ( type != vismodule::ObjectBase::Volume )
+    const pbvr::ObjectBase::ObjectType type = object->objectType();
+    if ( type != pbvr::ObjectBase::Volume )
     {
-        visModuleMessageError("Input object is not a volume object.");
-        return( NULL );
+        visModuleMessageError( "Input object is not a volume object." );
+        return NULL;
     }
 
-    vismodule::VolumeObjectBase* volume = static_cast<vismodule::VolumeObjectBase*>( object );
+    pbvr::VolumeObjectBase* volume = static_cast<pbvr::VolumeObjectBase*>( object );
 
-    return( volume );
+    return volume;
 }
 
-const vismodule::VolumeObjectBase* VolumeObjectBase::DownCast( const vismodule::ObjectBase* object )
+const pbvr::VolumeObjectBase* VolumeObjectBase::DownCast( const pbvr::ObjectBase& object )
 {
-    return( VolumeObjectBase::DownCast( const_cast<vismodule::ObjectBase*>( object ) ) );
+    return VolumeObjectBase::DownCast( const_cast<pbvr::ObjectBase*>( &object ) );
 }
 
-std::ostream& operator << ( std::ostream& os, const vismodule::VolumeObjectBase& object )
+std::ostream& operator << ( std::ostream& os, const pbvr::VolumeObjectBase& object )
 {
 #ifdef VIS_MODULE_COMPILER_VC
 #if VIS_MODULE_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
@@ -123,7 +134,7 @@ std::ostream& operator << ( std::ostream& os, const vismodule::VolumeObjectBase&
     os << "Max value:  " << object.maxValue();
     os.flags( flags );
 
-    return( os );
+    return os;
 }
 
 /*==========================================================================*/
@@ -186,15 +197,44 @@ void VolumeObjectBase::setMinMaxValues(
     m_has_min_max_values = true;
 }
 
-
-const vismodule::ObjectBase::ObjectType VolumeObjectBase::objectType( void ) const
+void VolumeObjectBase::setCoordSynthesizerStrings( const CoordSynthesizerStrings& pcss )
 {
-    return( vismodule::ObjectBase::Volume );
+    if ( m_pCoordSynthStrs )
+    {
+        delete m_pCoordSynthStrs;
+        m_pCoordSynthStrs = NULL;
+    }
+    if ( &pcss == NULL ) return;
+    m_pCoordSynthStrs = new CoordSynthesizerStrings();
+    *m_pCoordSynthStrs = pcss;
 }
 
-const std::string& VolumeObjectBase::label( void ) const
+//2023 shimomura
+void VolumeObjectBase::setCoordSynthesizerTokens( const CoordSynthesizerTokens& pcst )
 {
-    return( m_label );
+//    std::cout << " token   0" << std::endl;
+//    if ( m_pCoordSynthTkns )
+//    {
+//        std::cout << " token  is  not NULL" << std::endl;
+//        delete m_pCoordSynthTkns;
+//        m_pCoordSynthTkns = NULL;
+//    }
+    if ( &pcst == NULL ) return;
+    m_pCoordSynthTkns = new CoordSynthesizerTokens();
+    *m_pCoordSynthTkns = pcst;
+    //m_pCoordSynthTkns.m_x_coord_synthesizer_token = pcst.m_x_coord_synthesizer_token;
+    //m_pCoordSynthTkns.m_y_coord_synthesizer_token = pcst.m_y_coord_synthesizer_token;
+    //m_pCoordSynthTkns.m_z_coord_synthesizer_token = pcst.m_z_coord_synthesizer_token;
+}
+
+const pbvr::ObjectBase::ObjectType VolumeObjectBase::objectType() const
+{
+    return pbvr::ObjectBase::Volume;
+}
+
+const std::string& VolumeObjectBase::label() const
+{
+    return m_label;
 }
 
 /*==========================================================================*/
@@ -202,9 +242,9 @@ const std::string& VolumeObjectBase::label( void ) const
  *  Returns the vector length.
  */
 /*==========================================================================*/
-const size_t VolumeObjectBase::veclen( void ) const
+const size_t VolumeObjectBase::veclen() const
 {
-    return( m_veclen );
+    return m_veclen;
 }
 
 /*==========================================================================*/
@@ -212,9 +252,9 @@ const size_t VolumeObjectBase::veclen( void ) const
  *  Returns the coord array.
  */
 /*==========================================================================*/
-const VolumeObjectBase::Coords& VolumeObjectBase::coords( void ) const
+const VolumeObjectBase::Coords& VolumeObjectBase::coords() const
 {
-    return( m_coords );
+    return m_coords;
 }
 
 /*==========================================================================*/
@@ -222,9 +262,9 @@ const VolumeObjectBase::Coords& VolumeObjectBase::coords( void ) const
  *  Returns the value array.
  */
 /*==========================================================================*/
-const VolumeObjectBase::Values& VolumeObjectBase::values( void ) const
+const VolumeObjectBase::Values& VolumeObjectBase::values() const
 {
-    return( m_values );
+    return m_values;
 }
 
 /*==========================================================================*/
@@ -234,9 +274,9 @@ const VolumeObjectBase::Values& VolumeObjectBase::values( void ) const
  *  @return Whether this class has the min/max values or not.
  */
 /*==========================================================================*/
-const bool VolumeObjectBase::hasMinMaxValues( void ) const
+const bool VolumeObjectBase::hasMinMaxValues() const
 {
-    return( m_has_min_max_values );
+    return m_has_min_max_values;
 }
 
 /*==========================================================================*/
@@ -246,9 +286,9 @@ const bool VolumeObjectBase::hasMinMaxValues( void ) const
  *  @return Minimum value.
  */
 /*==========================================================================*/
-const vismodule::Real64 VolumeObjectBase::minValue( void ) const
+const vismodule::Real64 VolumeObjectBase::minValue() const
 {
-    return( m_min_value );
+    return m_min_value;
 }
 
 /*==========================================================================*/
@@ -258,9 +298,9 @@ const vismodule::Real64 VolumeObjectBase::minValue( void ) const
  *  @return Maximum value.
  */
 /*==========================================================================*/
-const vismodule::Real64 VolumeObjectBase::maxValue( void ) const
+const vismodule::Real64 VolumeObjectBase::maxValue() const
 {
-    return( m_max_value );
+    return m_max_value;
 }
 
 /*==========================================================================*/
@@ -268,19 +308,59 @@ const vismodule::Real64 VolumeObjectBase::maxValue( void ) const
  *  Update the min/max node value.
  */
 /*==========================================================================*/
-void VolumeObjectBase::updateMinMaxValues( void ) const
+void VolumeObjectBase::updateMinMaxValues() const
 {
     const std::type_info& type = m_values.typeInfo()->type();
-    if (      type == typeid( vismodule::Int8   ) ) { this->calculate_min_max_values<vismodule::Int8  >(); }
-    else if ( type == typeid( vismodule::Int16  ) ) { this->calculate_min_max_values<vismodule::Int16 >(); }
-    else if ( type == typeid( vismodule::Int32  ) ) { this->calculate_min_max_values<vismodule::Int32 >(); }
-    else if ( type == typeid( vismodule::Int64  ) ) { this->calculate_min_max_values<vismodule::Int64 >(); }
-    else if ( type == typeid( vismodule::UInt8  ) ) { this->calculate_min_max_values<vismodule::UInt8 >(); }
-    else if ( type == typeid( vismodule::UInt16 ) ) { this->calculate_min_max_values<vismodule::UInt16>(); }
-    else if ( type == typeid( vismodule::UInt32 ) ) { this->calculate_min_max_values<vismodule::UInt32>(); }
-    else if ( type == typeid( vismodule::UInt64 ) ) { this->calculate_min_max_values<vismodule::UInt64>(); }
-    else if ( type == typeid( vismodule::Real32 ) ) { this->calculate_min_max_values<vismodule::Real32>(); }
-    else if ( type == typeid( vismodule::Real64 ) ) { this->calculate_min_max_values<vismodule::Real64>(); }
+    if (      type == typeid( vismodule::Int8   ) )
+    {
+        this->calculate_min_max_values<vismodule::Int8  >();
+    }
+    else if ( type == typeid( vismodule::Int16  ) )
+    {
+        this->calculate_min_max_values<vismodule::Int16 >();
+    }
+    else if ( type == typeid( vismodule::Int32  ) )
+    {
+        this->calculate_min_max_values<vismodule::Int32 >();
+    }
+    else if ( type == typeid( vismodule::Int64  ) )
+    {
+        this->calculate_min_max_values<vismodule::Int64 >();
+    }
+    else if ( type == typeid( vismodule::UInt8  ) )
+    {
+        this->calculate_min_max_values<vismodule::UInt8 >();
+    }
+    else if ( type == typeid( vismodule::UInt16 ) )
+    {
+        this->calculate_min_max_values<vismodule::UInt16>();
+    }
+    else if ( type == typeid( vismodule::UInt32 ) )
+    {
+        this->calculate_min_max_values<vismodule::UInt32>();
+    }
+    else if ( type == typeid( vismodule::UInt64 ) )
+    {
+        this->calculate_min_max_values<vismodule::UInt64>();
+    }
+    else if ( type == typeid( vismodule::Real32 ) )
+    {
+        this->calculate_min_max_values<vismodule::Real32>();
+    }
+    else if ( type == typeid( vismodule::Real64 ) )
+    {
+        this->calculate_min_max_values<vismodule::Real64>();
+    }
+}
+
+const CoordSynthesizerStrings* VolumeObjectBase::getCoordSynthesizerStrings() const
+{
+    return m_pCoordSynthStrs;
+}
+
+const CoordSynthesizerTokens*  VolumeObjectBase::getCoordSynthesizerTokens() const
+{
+    return m_pCoordSynthTkns;
 }
 
 void VolumeObjectBase::shallowCopy( const VolumeObjectBase& object )
@@ -293,6 +373,9 @@ void VolumeObjectBase::shallowCopy( const VolumeObjectBase& object )
     this->m_veclen = object.veclen();
     this->m_coords.shallowCopy( object.coords() );
     this->m_values.shallowCopy( object.values() );
+    this->setCoordSynthesizerStrings( *object.getCoordSynthesizerStrings() );
+    //2023 shimomura
+    this->setCoordSynthesizerTokens( *object.getCoordSynthesizerTokens() );
 }
 
 void VolumeObjectBase::deepCopy( const VolumeObjectBase& object )
@@ -304,19 +387,52 @@ void VolumeObjectBase::deepCopy( const VolumeObjectBase& object )
     this->m_label = object.label();
     this->m_veclen = object.veclen();
     this->m_coords.deepCopy( object.coords() );
+    this->setCoordSynthesizerStrings( *object.getCoordSynthesizerStrings() );
+    //2023 shimomura
+    this->setCoordSynthesizerTokens( *object.getCoordSynthesizerTokens() );
 
     const size_t size = object.values().size();
     const std::type_info& type = object.values().typeInfo()->type();
-    if (      type == typeid( vismodule::Int8 ) )   { this->m_values.deepCopy( object.values().pointer<vismodule::Int8>(), size ); }
-    else if ( type == typeid( vismodule::UInt8 ) )  { this->m_values.deepCopy( object.values().pointer<vismodule::UInt8>(), size ); }
-    else if ( type == typeid( vismodule::Int16 ) )  { this->m_values.deepCopy( object.values().pointer<vismodule::Int16>(), size ); }
-    else if ( type == typeid( vismodule::UInt16 ) ) { this->m_values.deepCopy( object.values().pointer<vismodule::UInt16>(), size ); }
-    else if ( type == typeid( vismodule::Int32 ) )  { this->m_values.deepCopy( object.values().pointer<vismodule::Int32>(), size ); }
-    else if ( type == typeid( vismodule::UInt32 ) ) { this->m_values.deepCopy( object.values().pointer<vismodule::UInt32>(), size ); }
-    else if ( type == typeid( vismodule::Int64 ) )  { this->m_values.deepCopy( object.values().pointer<vismodule::Int64>(), size ); }
-    else if ( type == typeid( vismodule::UInt64 ) ) { this->m_values.deepCopy( object.values().pointer<vismodule::UInt64>(), size ); }
-    else if ( type == typeid( vismodule::Real32 ) ) { this->m_values.deepCopy( object.values().pointer<vismodule::Real32>(), size ); }
-    else if ( type == typeid( vismodule::Real64 ) ) { this->m_values.deepCopy( object.values().pointer<vismodule::Real64>(), size ); }
+    if (      type == typeid( vismodule::Int8 ) )
+    {
+        this->m_values.deepCopy( object.values().pointer<vismodule::Int8>(), size );
+    }
+    else if ( type == typeid( vismodule::UInt8 ) )
+    {
+        this->m_values.deepCopy( object.values().pointer<vismodule::UInt8>(), size );
+    }
+    else if ( type == typeid( vismodule::Int16 ) )
+    {
+        this->m_values.deepCopy( object.values().pointer<vismodule::Int16>(), size );
+    }
+    else if ( type == typeid( vismodule::UInt16 ) )
+    {
+        this->m_values.deepCopy( object.values().pointer<vismodule::UInt16>(), size );
+    }
+    else if ( type == typeid( vismodule::Int32 ) )
+    {
+        this->m_values.deepCopy( object.values().pointer<vismodule::Int32>(), size );
+    }
+    else if ( type == typeid( vismodule::UInt32 ) )
+    {
+        this->m_values.deepCopy( object.values().pointer<vismodule::UInt32>(), size );
+    }
+    else if ( type == typeid( vismodule::Int64 ) )
+    {
+        this->m_values.deepCopy( object.values().pointer<vismodule::Int64>(), size );
+    }
+    else if ( type == typeid( vismodule::UInt64 ) )
+    {
+        this->m_values.deepCopy( object.values().pointer<vismodule::UInt64>(), size );
+    }
+    else if ( type == typeid( vismodule::Real32 ) )
+    {
+        this->m_values.deepCopy( object.values().pointer<vismodule::Real32>(), size );
+    }
+    else if ( type == typeid( vismodule::Real64 ) )
+    {
+        this->m_values.deepCopy( object.values().pointer<vismodule::Real64>(), size );
+    }
 }
 
-} // end of namespace vismodule
+} // end of namespace pbvr

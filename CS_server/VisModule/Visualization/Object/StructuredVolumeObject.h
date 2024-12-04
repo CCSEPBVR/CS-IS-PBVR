@@ -11,15 +11,14 @@
  *  $Id: StructuredVolumeObject.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef VIS_MODULE__STRUCTURED_VOLUME_OBJECT_H_INCLUDE
-#define VIS_MODULE__STRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#ifndef PBVR__STRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#define PBVR__STRUCTURED_VOLUME_OBJECT_H_INCLUDE
 
-#include <vismodule/ClassName>
+#include "ClassName.h"
 #include <vismodule/Module>
-#include <vismodule/VolumeObjectBase>
+#include "VolumeObjectBase.h"
 
-
-namespace vismodule
+namespace pbvr
 {
 
 /*==========================================================================*/
@@ -27,15 +26,14 @@ namespace vismodule
  *  StructuredVolumeObject.
  */
 /*==========================================================================*/
-class StructuredVolumeObject
-    : public vismodule::VolumeObjectBase
+class StructuredVolumeObject : public pbvr::VolumeObjectBase
 {
     // Class name.
-    visModuleClassName( vismodule::StructuredVolumeObject );
+    visModuleClassName( pbvr::StructuredVolumeObject );
 
     // Module information.
-    visModuleCategory( Object );
-    visModuleBaseClass( vismodule::VolumeObjectBase );
+    typedef pbvr::ObjectBase::ModuleTag ModuleCategory;
+    visModuleBaseClass( pbvr::VolumeObjectBase );
 
 private:
 
@@ -44,7 +42,7 @@ private:
 
 public:
 
-    StructuredVolumeObject( void );
+    StructuredVolumeObject();
 
     StructuredVolumeObject(
         const vismodule::Vector3ui& resolution,
@@ -60,13 +58,13 @@ public:
 
     StructuredVolumeObject( const StructuredVolumeObject& other );
 
-    virtual ~StructuredVolumeObject( void );
+    virtual ~StructuredVolumeObject();
 
 public:
 
-    static vismodule::StructuredVolumeObject* DownCast( vismodule::ObjectBase* object );
+    static pbvr::StructuredVolumeObject* DownCast( pbvr::ObjectBase* object );
 
-    static const vismodule::StructuredVolumeObject* DownCast( const vismodule::ObjectBase* object );
+    static const pbvr::StructuredVolumeObject* DownCast( const pbvr::ObjectBase& object );
 
 public:
 
@@ -84,33 +82,34 @@ public:
 
     void setGridType( const GridType grid_type );
 
+    //void setm_resolution( const vismodule::Vector3ui& resolution );
     void setResolution( const vismodule::Vector3ui& resolution );
 
 public:
 
-    const VolumeType volumeType( void ) const;
+    const VolumeType volumeType() const;
 
-    const GridType gridType( void ) const;
+    const GridType gridType() const;
 
-    const CellType cellType( void ) const;
+    const CellType cellType() const;
 
-    const vismodule::Vector3ui& resolution( void ) const;
+    const vismodule::Vector3ui& resolution() const;
 
-    const size_t nnodesPerLine( void ) const;
+    const size_t nnodesPerLine() const;
 
-    const size_t nnodesPerSlice( void ) const;
+    const size_t nnodesPerSlice() const;
 
-    const size_t nnodes( void ) const;
+    const size_t nnodes() const;
 
 public:
 
-    void updateMinMaxCoords( void );
+    void updateMinMaxCoords();
 
 private:
 
-    void calculate_min_max_coords( void );
+    void calculateMinMaxCoords();
 };
 
-} // end of namespace vismodule
+} // end of namespace pbvr
 
 #endif // VIS_MODULE__STRUCTURED_VOLUME_OBJECT_H_INCLUDE

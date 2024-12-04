@@ -11,21 +11,41 @@
  *  $Id: CellByCellMetropolisSampling.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef VIS_MODULE__CELL_BY_CELL_METROPOLIS_SAMPLING_H_INCLUDE
-#define VIS_MODULE__CELL_BY_CELL_METROPOLIS_SAMPLING_H_INCLUDE
+#ifndef PBVR__CELL_BY_CELL_METROPOLIS_SAMPLING_H_INCLUDE
+#define PBVR__CELL_BY_CELL_METROPOLIS_SAMPLING_H_INCLUDE
 
-#include <vismodule/MapperBase>
+#include "MapperBase.h"
 #include <vismodule/Camera>
-#include <vismodule/PointObject>
-#include <vismodule/VolumeObjectBase>
-#include <vismodule/StructuredVolumeObject>
-#include <vismodule/UnstructuredVolumeObject>
-#include <vismodule/ClassName>
+#include "PointObject.h"
+#include "VolumeObjectBase.h"
+#include "StructuredVolumeObject.h"
+#include "UnstructuredVolumeObject.h"
+#include "ClassName.h"
+#include <vismodule/MersenneTwister> 
 #include <vismodule/Module>
 #include "CellByCellParticleGenerator.h"
+#include "CropRegion.h"
+#include "TransferFunctionSynthesizer.h"
+#include "TransferFunctionSynthesizerCreator.h"
+#include "ExtendedTransferFunction.h"
 
+#include "timer.h"
 
-namespace vismodule
+//add by shimomura 2022/12/22
+#define RANK 1
+//   typedef struct 
+//    {   
+//        float x_global_min;
+//        float y_global_min;
+//        float z_global_min;
+//
+//        float x_global_max;
+//        float y_global_max;
+//        float z_global_max;
+//    } domain_parameters;
+    typedef unsigned char Byte;
+
+namespace pbvr
 {
 
 /*===========================================================================*/
@@ -33,15 +53,15 @@ namespace vismodule
  *  @brief  Cell-by-cell particle generation class.
  */
 /*===========================================================================*/
-class CellByCellMetropolisSampling : public vismodule::MapperBase, public vismodule::PointObject
+class CellByCellMetropolisSampling : public pbvr::MapperBase, public pbvr::PointObject
 {
     // Class name.
-    visModuleClassName( vismodule::CellByCellMetropolisSampling );
+    visModuleClassName( pbvr::CellByCellMetropolisSampling );
 
     // Module information.
-    visModuleCategory( Mapper );
-    visModuleBaseClass( vismodule::MapperBase );
-    visModuleSuperClass( vismodule::PointObject );
+    typedef pbvr::MapperBase::ModuleTag ModuleCategory;
+    visModuleBaseClass( pbvr::MapperBase );
+    visModuleSuperClass( pbvr::PointObject );
 
 private:
 
@@ -50,41 +70,59 @@ private:
     float                  m_sampling_step;  ///< sampling step in the object coordinate
     float                  m_object_depth;   ///< object depth
     vismodule::ValueArray<float> m_density_map;    ///< density map
+    CropRegion             m_crop;
+    //add by shimomura 2022/12/19
+    TransferFunctionSynthesizer* m_transfer_function_synthesizer;
+    std::vector<pbvr::TransferFunction> m_transfer_function_array; 
+
+    const size_t m_normal_ingredient;
+
+    float                  m_particle_density;
+    bool                   m_batch;
 
 public:
 
-    CellByCellMetropolisSampling( void );
+    CellByCellMetropolisSampling();
 
     CellByCellMetropolisSampling(
-        const vismodule::VolumeObjectBase* volume,
+        const pbvr::VolumeObjectBase& volume,
         const size_t                 subpixel_level,
         const float                  sampling_step,
-        const vismodule::TransferFunction& transfer_function,
+        const pbvr::TransferFunction& transfer_function,
+        TransferFunctionSynthesizer* transfunc_synthesizer,
+        const size_t                 normal_ingredient,
+        const CropRegion&            crop,
         const float                  object_depth = 0.0f );
 
     CellByCellMetropolisSampling(
-        const vismodule::Camera*           camera,
-        const vismodule::VolumeObjectBase* volume,
+        const vismodule::Camera&           camera,
+        const pbvr::VolumeObjectBase& volume,
         const size_t                 subpixel_level,
         const float                  sampling_step,
-        const vismodule::TransferFunction& transfer_function,
+        const pbvr::TransferFunction& transfer_function,
+        std::vector<pbvr::TransferFunction>& transfer_function_array,
+        TransferFunctionSynthesizer* transfunc_synthesizer,
+        const size_t                 normal_ingredient,
+        const CropRegion&            crop,
+        const float                  particle_density,
+        const bool                   batch,
         const float                  object_depth = 0.0f );
 
-    virtual ~CellByCellMetropolisSampling( void );
+    virtual ~CellByCellMetropolisSampling();
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const pbvr::ObjectBase& object );
 
 public:
 
-    const size_t subpixelLevel( void ) const;
+    const size_t subpixelLevel() const;
 
-    const float samplingStep( void ) const;
+    const float samplingStep() const;
 
-    const float objectDepth( void ) const;
+    const float objectDepth() const;
 
-    void attachCamera( const vismodule::Camera* camera );
+    void attachCamera( const vismodule::Camera& camera );
 
     void setSubpixelLevel( const size_t subpixel_level );
 
@@ -94,17 +132,59 @@ public:
 
 private:
 
-    void mapping( const vismodule::Camera* camera, const vismodule::StructuredVolumeObject* volume );
+    void mapping( const vismodule::Camera& camera, const pbvr::StructuredVolumeObject& volume );
 
-    void mapping( const vismodule::Camera* camera, const vismodule::UnstructuredVolumeObject* volume );
-
-    template <typename T>
-    void generate_particles( const vismodule::StructuredVolumeObject* volume );
+    void mapping( const vismodule::Camera& camera, const pbvr::UnstructuredVolumeObject& volume );
 
     template <typename T>
-    void generate_particles( const vismodule::UnstructuredVolumeObject* volume );
+    void generate_particles( const pbvr::StructuredVolumeObject& volume );
+
+    template <typename T>
+    void generate_particles( const pbvr::UnstructuredVolumeObject& volume );
+
+    const float calculate_density( const float scalar );
+
+    const size_t calculate_number_of_particles( const float density, const float volume_of_cell );
+
+    //add by shimomura  2022/12/19
+    const size_t calculate_number_of_particles(
+    const float density,
+    const float volume_of_cell,
+    vismodule::MersenneTwister* MT ); 
+
+    void calculate_histogram( vismodule::ValueArray<int>&   th_o_histogram,
+                          vismodule::ValueArray<int>&   th_c_histogram,
+                          vismodule::ValueArray<float>& th_O_min,
+                          vismodule::ValueArray<float>& th_O_max,
+                          vismodule::ValueArray<float>& th_C_min,
+                          vismodule::ValueArray<float>& th_C_max,
+                          // ここまでoutput, 以下input
+                          const int nbins, // TFSから読み込む最大最小値
+                          const vismodule::ValueArray<float>& o_min,
+                          const vismodule::ValueArray<float>& o_max,
+                          const vismodule::ValueArray<float>& c_min,
+                          const vismodule::ValueArray<float>& c_max,
+ //                         const float o_scalars[][SIMDW], // åæå¤
+ //                         const float c_scalars[][SIMDW],
+                            float** o_scalars, // åæå¤
+                            float** c_scalars,
+                          const int tf_number,
+                          const int ncells_remain  );
+    
+    vismodule::Vector3f RandomSamplingInCube( const vismodule::Vector3f vertex, vismodule::MersenneTwister* MT );
+
+    /*** added by MHIR on /12/12/12/ ***/
+    /*
+    const float calculate_density( const float scalar );
+    const float calculate_volume ();
+    const size_t calculate_number_of_particles(
+    				       const float density,
+    				       const float volume_of_cell
+    				       );
+    */
+    /***********************************/
 };
 
-} // end of namespace vismodule
+} // end of namespace pbvr
 
-#endif // VIS_MODULE__CELL_BY_CELL_METROPOLIS_SAMPLING_H_INCLUDE
+#endif // PBVR__CELL_BY_CELL_METROPOLIS_SAMPLING_H_INCLUDE

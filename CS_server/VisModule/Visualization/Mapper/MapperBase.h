@@ -11,19 +11,19 @@
  *  $Id: MapperBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef VIS_MODULE__MAPPER_BASE_H_INCLUDE
-#define VIS_MODULE__MAPPER_BASE_H_INCLUDE
+#ifndef PBVR__MAPPER_BASE_H_INCLUDE
+#define PBVR__MAPPER_BASE_H_INCLUDE
 
-#include <vismodule/ClassName>
-#include <vismodule/ObjectBase>
-#include <vismodule/VolumeObjectBase>
-#include <vismodule/TransferFunction>
+#include "ClassName.h"
+#include "ObjectBase.h"
+#include "VolumeObjectBase.h"
+#include "TransferFunction.h"
 #include <vismodule/ColorMap>
 #include <vismodule/OpacityMap>
 #include <vismodule/Module>
 
 
-namespace vismodule
+namespace pbvr
 {
 
 class VolumeObjectBase;
@@ -35,31 +35,31 @@ class VolumeObjectBase;
 /*==========================================================================*/
 class MapperBase
 {
-    visModuleClassName( vismodule::MapperBase );
+    visModuleClassName( pbvr::MapperBase );
 
     visModuleBase;
 
 protected:
 
-    vismodule::TransferFunction m_transfer_function; ///< Transfer function.
-    const vismodule::VolumeObjectBase* m_volume; ///< Volume object.
+    pbvr::TransferFunction m_transfer_function; ///< Transfer function.
+    const pbvr::VolumeObjectBase* m_volume; ///< Volume object.
     bool m_is_success; ///< Check flag for mapping.
 
 public:
 
-    MapperBase( void );
+    MapperBase();
 
-    explicit MapperBase( const vismodule::TransferFunction& transfer_function );
+    explicit MapperBase( const pbvr::TransferFunction& m_transfer_function );
 
-    virtual ~MapperBase( void );
-
-public:
-
-    virtual vismodule::ObjectBase* exec( const vismodule::ObjectBase* object ) = 0;
+    virtual ~MapperBase();
 
 public:
 
-    void setTransferFunction( const vismodule::TransferFunction& transfer_function );
+    virtual pbvr::ObjectBase* exec( const pbvr::ObjectBase& object ) = 0;
+
+public:
+
+    void setTransferFunction( const pbvr::TransferFunction& transfer_function );
 
     void setColorMap( const vismodule::ColorMap& color_map );
 
@@ -67,27 +67,27 @@ public:
 
 public:
 
-    const vismodule::VolumeObjectBase* const volume( void ) const;
+    const pbvr::VolumeObjectBase* const volume() const;
 
-    const vismodule::TransferFunction& transferFunction( void ) const;
+    const pbvr::TransferFunction& transferFunction() const;
 
-    const vismodule::ColorMap& colorMap( void ) const;
+    const vismodule::ColorMap& colorMap() const;
 
-    const vismodule::OpacityMap& opacityMap( void ) const;
+    const vismodule::OpacityMap& opacityMap() const;
 
-    const bool isSuccess( void ) const;
+    const bool isSuccess() const;
 
-    const bool isFailure( void ) const;
+    const bool isFailure() const;
 
 protected:
 
-    void attach_volume( const vismodule::VolumeObjectBase* volume );
+    void attach_volume( const pbvr::VolumeObjectBase& volume );
 
-    void set_range( const vismodule::VolumeObjectBase* volume );
+    void set_range( const pbvr::VolumeObjectBase& volume );
 
-    void set_min_max_coords( const vismodule::VolumeObjectBase* volume, vismodule::ObjectBase* object );
+    void set_min_max_coords( const pbvr::VolumeObjectBase& volume, pbvr::ObjectBase* object );
 };
 
-} // end of namespace vismodule
+} // end of namespace pbvr
 
-#endif // VIS_MODULE__MAPPER_BASE_H_INCLUDE
+#endif // PBVR__MAPPER_BASE_H_INCLUDE

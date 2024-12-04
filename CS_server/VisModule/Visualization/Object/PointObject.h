@@ -11,45 +11,53 @@
  *  $Id: PointObject.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef VIS_MODULE__POINT_OBJECT_H_INCLUDE
-#define VIS_MODULE__POINT_OBJECT_H_INCLUDE
+#ifndef PBVR__POINT_OBJECT_H_INCLUDE
+#define PBVR__POINT_OBJECT_H_INCLUDE
 
-#include <vismodule/GeometryObjectBase>
-#include <vismodule/ClassName>
+#include "GeometryObjectBase.h"
+#include "ObjectBase.h"
+#include "ClassName.h"
 #include <vismodule/ValueArray>
 #include <vismodule/Type>
 #include <vismodule/Vector3>
 #include <vismodule/RGBColor>
 #include <vismodule/Module>
+#include "FrequencyTable.h"
 
-
-namespace vismodule
+namespace pbvr
 {
 
-class LineObject;
-class PolygonObject;
+//class LineObject;
+//class PolygonObject;
 
 /*==========================================================================*/
 /**
  *  Point object class.
  */
 /*==========================================================================*/
-class PointObject : public vismodule::GeometryObjectBase
+class PointObject : public pbvr::GeometryObjectBase
 {
     // Class name.
-    visModuleClassName( vismodule::PointObject );
+    visModuleClassName( pbvr::PointObject );
 
     // Module information.
-    visModuleCategory( Object );
-    visModuleBaseClass( vismodule::GeometryObjectBase );
+    typedef pbvr::ObjectBase::ModuleTag ModuleCategory;
+    visModuleBaseClass( pbvr::GeometryObjectBase );
 
 protected:
 
     vismodule::ValueArray<vismodule::Real32> m_sizes; ///< size array
+    vismodule::ValueArray<pbvr::FrequencyTable> m_color_histogram;
+    vismodule::ValueArray<pbvr::FrequencyTable> m_opacity_histogram;
+    vismodule::ValueArray<int> m_c_histogram;
+    vismodule::ValueArray<int> m_o_histogram;
+    int m_nbins;
+    int m_tf_number;
+
 
 public:
 
-    PointObject( void );
+    PointObject();
 
     PointObject(
         const vismodule::ValueArray<vismodule::Real32>& coords,
@@ -103,19 +111,19 @@ public:
     PointObject(
         const vismodule::ValueArray<vismodule::Real32>& coords );
 
-    PointObject( const vismodule::PointObject& other );
+    PointObject( const pbvr::PointObject& other );
 
-    PointObject( const vismodule::LineObject& line );
+    //PointObject( const vismodule::LineObject& line );
 
-    PointObject( const vismodule::PolygonObject& polygon );
+    //PointObject( const vismodule::PolygonObject& polygon );
 
-    virtual ~PointObject( void );
+    virtual ~PointObject();
 
 public:
 
-    static vismodule::PointObject* DownCast( vismodule::ObjectBase* object );
+    static pbvr::PointObject* DownCast( pbvr::ObjectBase* object );
 
-    static const vismodule::PointObject* DownCast( const vismodule::ObjectBase* object );
+    static const pbvr::PointObject* DownCast( const pbvr::ObjectBase& object );
 
 public:
 
@@ -133,7 +141,7 @@ public:
 
     void deepCopy( const PointObject& other );
 
-    void clear( void );
+    void clear();
 
 public:
 
@@ -141,19 +149,33 @@ public:
 
     void setSize( const vismodule::Real32 size );
 
+    void setTfnumber( const int tf_number);
+
+    void setNbins(const int nbins); 
+
 public:
 
-    const BaseClass::GeometryType geometryType( void ) const;
+    const BaseClass::GeometryType geometryType() const;
 
-    const size_t nsizes( void ) const;
+    const size_t nsizes() const;
 
 public:
 
     const vismodule::Real32 size( const size_t index = 0 ) const;
 
-    const vismodule::ValueArray<vismodule::Real32>& sizes( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& sizes() const;
+
+public:
+
+    const vismodule::ValueArray<pbvr::FrequencyTable>& getColorHistogram() const;
+    const vismodule::ValueArray<pbvr::FrequencyTable>& getOpacityHistogram() const;
+    //add shimomura 2023/05/29
+    const vismodule::ValueArray<int>& getCHistogram() const;
+    const vismodule::ValueArray<int>& getOHistogram() const;
+    const int getTfnumber() const; 
+    const int getNbins() const; 
 };
 
-} // end of namespace vismodule
+} // end of namespace pbvr
 
 #endif // VIS_MODULE__POINT_OBJECT_H_INCLUDE

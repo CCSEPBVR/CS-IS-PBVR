@@ -14,7 +14,7 @@
 #include "HexahedralCell.h"
 
 
-namespace vismodule
+namespace pbvr
 {
 
 // template instantiation
@@ -29,4 +29,4 @@ template class HexahedralCell<unsigned long>;
 template class HexahedralCell<float>;
 template class HexahedralCell<double>;
 
-} // end of namespace vismodule
+} // end of namespace pbvr

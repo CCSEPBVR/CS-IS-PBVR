@@ -17,22 +17,38 @@
 namespace
 {
 
-const std::string GetCellTypeName( const vismodule::UnstructuredVolumeObject::CellType type )
+const std::string GetCellTypeName( const pbvr::UnstructuredVolumeObject::CellType& type )
 {
-    switch( type )
+    switch ( type )
     {
-    case vismodule::UnstructuredVolumeObject::Tetrahedra: return( "tetrahedra" );
-    case vismodule::UnstructuredVolumeObject::Hexahedra: return( "hexahedra" );
-    case vismodule::UnstructuredVolumeObject::QuadraticTetrahedra: return( "quadratic tetrahedra" );
-    case vismodule::UnstructuredVolumeObject::QuadraticHexahedra: return( "quadratic hexahedra" );
-    case vismodule::UnstructuredVolumeObject::Pyramid: return( "pyramid" );
-    default: return( "unknown cell type" );
+    case pbvr::UnstructuredVolumeObject::Tetrahedra:
+        return "tetrahedra";
+    case pbvr::UnstructuredVolumeObject::Hexahedra:
+        return "hexahedra";
+    case pbvr::UnstructuredVolumeObject::QuadraticTetrahedra:
+        return "quadratic tetrahedra";
+    case pbvr::UnstructuredVolumeObject::QuadraticHexahedra:
+        return "quadratic hexahedra";
+    case pbvr::UnstructuredVolumeObject::Prism:
+        return "prism";
+    case pbvr::UnstructuredVolumeObject::Pyramid:
+        return "pyramid";
+    case pbvr::UnstructuredVolumeObject::Triangle:
+        return "triangle";
+    case pbvr::UnstructuredVolumeObject::QuadraticTriangle:
+        return "triangle2";
+    case pbvr::UnstructuredVolumeObject::Square:
+        return "quadratic";
+    case pbvr::UnstructuredVolumeObject::QuadraticSquare:
+        return "quadratic2";
+    default:
+        return "unknown cell type";
     }
 }
 
 } // end of namespace
 
-namespace vismodule
+namespace pbvr
 {
 
 /*==========================================================================*/
@@ -40,12 +56,12 @@ namespace vismodule
  *  Default constructor.
  */
 /*==========================================================================*/
-UnstructuredVolumeObject::UnstructuredVolumeObject( void )
-    : vismodule::VolumeObjectBase()
-    , m_cell_type( UnknownCellType )
-    , m_nnodes( 0 )
-    , m_ncells( 0 )
-    , m_connections()
+UnstructuredVolumeObject::UnstructuredVolumeObject():
+    pbvr::VolumeObjectBase(),
+    m_cell_type( UnknownCellType ),
+    m_nnodes( 0 ),
+    m_ncells( 0 ),
+    m_connections()
 {
 }
 
@@ -68,12 +84,12 @@ UnstructuredVolumeObject::UnstructuredVolumeObject(
     const size_t       veclen,
     const Coords&      coords,
     const Connections& connections,
-    const Values&      values )
-    : vismodule::VolumeObjectBase( veclen, coords, values )
-    , m_cell_type( cell_type )
-    , m_nnodes( nnodes )
-    , m_ncells( ncells )
-    , m_connections( connections )
+    const Values&      values ):
+    pbvr::VolumeObjectBase( veclen, coords, values ),
+    m_cell_type( cell_type ),
+    m_nnodes( nnodes ),
+    m_ncells( ncells ),
+    m_connections( connections )
 {
 }
 
@@ -83,12 +99,12 @@ UnstructuredVolumeObject::UnstructuredVolumeObject(
  *  @param volume [in] volume object
  */
 /*==========================================================================*/
-UnstructuredVolumeObject::UnstructuredVolumeObject( const UnstructuredVolumeObject& other )
-    : vismodule::VolumeObjectBase( other )
-    , m_cell_type( other.m_cell_type )
-    , m_nnodes( other.m_nnodes )
-    , m_ncells( other.m_ncells )
-    , m_connections( other.m_connections )
+UnstructuredVolumeObject::UnstructuredVolumeObject( const UnstructuredVolumeObject& other ):
+    pbvr::VolumeObjectBase( other ),
+    m_cell_type( other.m_cell_type ),
+    m_nnodes( other.m_nnodes ),
+    m_ncells( other.m_ncells ),
+    m_connections( other.m_connections )
 {
     // this->shallowCopy( other );
 }
@@ -98,7 +114,7 @@ UnstructuredVolumeObject::UnstructuredVolumeObject( const UnstructuredVolumeObje
  *  Destructor.
  */
 /*==========================================================================*/
-UnstructuredVolumeObject::~UnstructuredVolumeObject( void )
+UnstructuredVolumeObject::~UnstructuredVolumeObject()
 {
 }
 
@@ -115,29 +131,29 @@ UnstructuredVolumeObject& UnstructuredVolumeObject::operator =( const Unstructur
         this->shallowCopy( object );
     }
 
-    return( *this );
+    return *this;
 }
 
-vismodule::UnstructuredVolumeObject* UnstructuredVolumeObject::DownCast( vismodule::ObjectBase* object )
+pbvr::UnstructuredVolumeObject* UnstructuredVolumeObject::DownCast( pbvr::ObjectBase* object )
 {
-    vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
-    if ( !volume ) return( NULL );
+    pbvr::VolumeObjectBase* volume = pbvr::VolumeObjectBase::DownCast( object );
+    if ( !volume ) return NULL;
 
-    const vismodule::VolumeObjectBase::VolumeType type = volume->volumeType();
-    if ( type != vismodule::VolumeObjectBase::Unstructured )
+    const pbvr::VolumeObjectBase::VolumeType type = volume->volumeType();
+    if ( type != pbvr::VolumeObjectBase::Unstructured )
     {
-        visModuleMessageError("Input object is not a unstructured volume object.");
-        return( NULL );
+        visModuleMessageError( "Input object is not a unstructured volume object." );
+        return NULL;
     }
 
-    vismodule::UnstructuredVolumeObject* unstructured = static_cast<vismodule::UnstructuredVolumeObject*>( volume );
+    pbvr::UnstructuredVolumeObject* unstructured = static_cast<pbvr::UnstructuredVolumeObject*>( volume );
 
-    return( unstructured );
+    return unstructured;
 }
 
-const vismodule::UnstructuredVolumeObject* UnstructuredVolumeObject::DownCast( const vismodule::ObjectBase* object )
+const pbvr::UnstructuredVolumeObject* UnstructuredVolumeObject::DownCast( const pbvr::ObjectBase& object )
 {
-    return( UnstructuredVolumeObject::DownCast( const_cast<vismodule::ObjectBase*>( object ) ) );
+    return UnstructuredVolumeObject::DownCast( const_cast<pbvr::ObjectBase*>( &object ) );
 }
 
 std::ostream& operator << ( std::ostream& os, const UnstructuredVolumeObject& object )
@@ -146,11 +162,11 @@ std::ostream& operator << ( std::ostream& os, const UnstructuredVolumeObject& ob
 
     os << "Object type:  " << "unstructured volume object" << std::endl;
 #ifdef VIS_MODULE_COMPILER_VC
-#if VIS_MODULE_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
-    // @TODO Cannot instance the object that is a abstract class here (error:C2259).
-#endif
+//#if PBVR_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
+//    // @TODO Cannot instance the object that is a abstract class here (error:C2259).
+//#endif
 #else
-    os << static_cast<const vismodule::VolumeObjectBase&>( object ) << std::endl;
+    // os << static_cast<const pbvr::VolumeObjectBase&>( object ) << std::endl;
 #endif
     os << "Cell type:  " << ::GetCellTypeName( object.cellType() ) << std::endl;
     os << "Number of nodes:  " << object.nnodes() << std::endl;
@@ -158,7 +174,7 @@ std::ostream& operator << ( std::ostream& os, const UnstructuredVolumeObject& ob
     os << "Min. value:  " << object.minValue() << std::endl;
     os << "Max. value:  " << object.maxValue();
 
-    return( os );
+    return os;
 }
 
 void UnstructuredVolumeObject::shallowCopy( const UnstructuredVolumeObject& object )
@@ -184,7 +200,7 @@ void UnstructuredVolumeObject::deepCopy( const UnstructuredVolumeObject& object 
  *  Set the cell type.
  */
 /*==========================================================================*/
-void UnstructuredVolumeObject::setCellType( const CellType cell_type )
+void UnstructuredVolumeObject::setCellType( const CellType& cell_type )
 {
     m_cell_type = cell_type;
 }
@@ -227,9 +243,9 @@ void UnstructuredVolumeObject::setConnections( const Connections& connections )
  *  Get the volume type.
  */
 /*==========================================================================*/
-const UnstructuredVolumeObject::VolumeType UnstructuredVolumeObject::volumeType( void ) const
+const UnstructuredVolumeObject::VolumeType UnstructuredVolumeObject::volumeType() const
 {
-    return( Unstructured );
+    return Unstructured;
 }
 
 /*==========================================================================*/
@@ -237,9 +253,9 @@ const UnstructuredVolumeObject::VolumeType UnstructuredVolumeObject::volumeType(
  *  Get the grid type.
  */
 /*==========================================================================*/
-const UnstructuredVolumeObject::GridType UnstructuredVolumeObject::gridType( void ) const
+const UnstructuredVolumeObject::GridType UnstructuredVolumeObject::gridType() const
 {
-    return( Irregular );
+    return Irregular;
 }
 
 /*==========================================================================*/
@@ -247,9 +263,9 @@ const UnstructuredVolumeObject::GridType UnstructuredVolumeObject::gridType( voi
  *  Get the cell type.
  */
 /*==========================================================================*/
-const UnstructuredVolumeObject::CellType UnstructuredVolumeObject::cellType( void ) const
+const UnstructuredVolumeObject::CellType UnstructuredVolumeObject::cellType() const
 {
-    return( m_cell_type );
+    return m_cell_type;
 }
 
 /*==========================================================================*/
@@ -258,9 +274,9 @@ const UnstructuredVolumeObject::CellType UnstructuredVolumeObject::cellType( voi
  *  @return number of nodes
  */
 /*==========================================================================*/
-const size_t UnstructuredVolumeObject::nnodes( void ) const
+const size_t UnstructuredVolumeObject::nnodes() const
 {
-    return( m_nnodes );
+    return m_nnodes;
 }
 
 /*==========================================================================*/
@@ -269,9 +285,9 @@ const size_t UnstructuredVolumeObject::nnodes( void ) const
  *  @return number of cells
  */
 /*==========================================================================*/
-const size_t UnstructuredVolumeObject::ncells( void ) const
+const size_t UnstructuredVolumeObject::ncells() const
 {
-    return( m_ncells );
+    return m_ncells;
 }
 
 /*==========================================================================*/
@@ -280,9 +296,9 @@ const size_t UnstructuredVolumeObject::ncells( void ) const
  *  @return connection id array
  */
 /*==========================================================================*/
-const UnstructuredVolumeObject::Connections& UnstructuredVolumeObject::connections( void ) const
+const UnstructuredVolumeObject::Connections& UnstructuredVolumeObject::connections() const
 {
-    return( m_connections );
+    return m_connections;
 }
 
 /*==========================================================================*/
@@ -290,9 +306,9 @@ const UnstructuredVolumeObject::Connections& UnstructuredVolumeObject::connectio
  *  Update the min/max node coordinates.
  */
 /*==========================================================================*/
-void UnstructuredVolumeObject::updateMinMaxCoords( void )
+void UnstructuredVolumeObject::updateMinMaxCoords()
 {
-    this->calculate_min_max_coords();
+    this->calculateMinMaxCoords();
 }
 
 /*==========================================================================*/
@@ -300,7 +316,7 @@ void UnstructuredVolumeObject::updateMinMaxCoords( void )
  *  Calculate the min/max coordinate values.
  */
 /*==========================================================================*/
-void UnstructuredVolumeObject::calculate_min_max_coords( void )
+void UnstructuredVolumeObject::calculateMinMaxCoords()
 {
     vismodule::Vector3f min_coord( 0.0f );
     vismodule::Vector3f max_coord( 0.0f );
@@ -340,4 +356,4 @@ void UnstructuredVolumeObject::calculate_min_max_coords( void )
     }
 }
 
-} // end of namespace vismodule
+} // end of namespace pbvr

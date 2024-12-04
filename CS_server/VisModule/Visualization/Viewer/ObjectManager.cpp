@@ -20,7 +20,7 @@
 #include <vismodule/Vector4>
 
 
-namespace vismodule
+namespace pbvr
 {
 
 /*==========================================================================*/
@@ -28,8 +28,8 @@ namespace vismodule
  *  Default constructor.
  */
 /*==========================================================================*/
-ObjectManager::ObjectManager( void ) :
-    vismodule::ObjectBase( true )
+ObjectManager::ObjectManager() :
+    pbvr::ObjectBase( true )
 {
     ObjectManagerBase::clear();
     vismodule::Xform::initialize();
@@ -51,7 +51,7 @@ ObjectManager::ObjectManager( void ) :
  *  Destructor.
  */
 /*==========================================================================*/
-ObjectManager::~ObjectManager( void )
+ObjectManager::~ObjectManager()
 {
 //    this->erase();
     ObjectIterator pobject = ObjectManagerBase::begin();
@@ -59,7 +59,7 @@ ObjectManager::~ObjectManager( void )
     ++pobject;
     while ( pobject != last )
     {
-        vismodule::ObjectBase* object = *pobject;
+        pbvr::ObjectBase* object = *pobject;
         if ( object ) delete object;
         ++pobject;
     }
@@ -74,14 +74,14 @@ ObjectManager::~ObjectManager( void )
  *  Insert the root of the objects.
  */
 /*==========================================================================*/
-void ObjectManager::insert_root( void )
+void ObjectManager::insert_root()
 {
     m_root = ObjectManagerBase::insert( ObjectManagerBase::begin(), this );
 }
 
-const vismodule::ObjectBase::ObjectType ObjectManager::objectType( void ) const
+const pbvr::ObjectBase::ObjectType ObjectManager::objectType() const
 {
-    return( vismodule::ObjectBase::ObjectManager );
+    return pbvr::ObjectBase::ObjectManager;
 }
 
 /*==========================================================================*/
@@ -91,7 +91,7 @@ const vismodule::ObjectBase::ObjectType ObjectManager::objectType( void ) const
  *  @return object ID
  */
 /*==========================================================================*/
-int ObjectManager::insert( vismodule::ObjectBase* obj )
+int ObjectManager::insert( pbvr::ObjectBase* obj )
 {
     obj->updateNormalizeParameters();
     this->update_normalize_parameters( obj->minExternalCoord(),
@@ -111,7 +111,7 @@ int ObjectManager::insert( vismodule::ObjectBase* obj )
      */
     m_object_map.insert( ObjectPair( m_current_object_id, obj_ptr ) );
 
-    return( m_current_object_id );
+    return m_current_object_id;
 }
 
 /*==========================================================================*/
@@ -122,7 +122,7 @@ int ObjectManager::insert( vismodule::ObjectBase* obj )
  *  @return object ID
  */
 /*==========================================================================*/
-int ObjectManager::insert( int parent_id, vismodule::ObjectBase* obj )
+int ObjectManager::insert( const int parent_id, pbvr::ObjectBase* obj )
 {
     obj->updateNormalizeParameters();
     this->update_normalize_parameters(
@@ -130,7 +130,7 @@ int ObjectManager::insert( int parent_id, vismodule::ObjectBase* obj )
         obj->maxExternalCoord() );
 
     ObjectMap::iterator map_id = m_object_map.find( parent_id );
-    if( map_id == m_object_map.end() ) return( -1 );
+    if ( map_id == m_object_map.end() ) return -1;
 
     // Append the object.
     m_current_object_id++;
@@ -140,7 +140,7 @@ int ObjectManager::insert( int parent_id, vismodule::ObjectBase* obj )
 
     m_object_map.insert( ObjectPair( m_current_object_id, child_ptr ) );
 
-    return( m_current_object_id );
+    return m_current_object_id;
 }
 
 /*==========================================================================*/
@@ -152,7 +152,7 @@ int ObjectManager::insert( int parent_id, vismodule::ObjectBase* obj )
  *  Simultaniously, the allocated memory region for the all objects is deleted.
  */
 /*==========================================================================*/
-void ObjectManager::erase( bool delete_flg )
+void ObjectManager::erase( const bool delete_flg )
 {
     ObjectIterator first = ObjectManagerBase::begin();
     ObjectIterator last  = ObjectManagerBase::end();
@@ -160,11 +160,11 @@ void ObjectManager::erase( bool delete_flg )
     // Skip the root.
     ++first;
 
-    if( delete_flg )
+    if ( delete_flg )
     {
-        for( ; first != last; ++first )
+        for ( ; first != last; ++first )
         {
-            if( *first )
+            if ( *first )
             {
                 delete *first;
                 *first = NULL;
@@ -186,21 +186,21 @@ void ObjectManager::erase( bool delete_flg )
  *  @param delete_flg [in] deleting the allocated memory flag
  */
 /*==========================================================================*/
-void ObjectManager::erase( int obj_id, bool delete_flg )
+void ObjectManager::erase( const int obj_id, const bool delete_flg )
 {
     /* Search the object which is specified by given object ID in the
      * object pointer map. If it isn't found, this method executes nothing.
      */
     ObjectMap::iterator map_id = m_object_map.find( obj_id );
-    if( map_id == m_object_map.end() ) return;
+    if ( map_id == m_object_map.end() ) return;
 
     // Delete the object.
     ObjectIterator ptr = map_id->second; // pointer to the object
-    vismodule::ObjectBase* obj = *ptr;     // object
+    pbvr::ObjectBase* obj = *ptr;     // object
 
-    if( delete_flg )
+    if ( delete_flg )
     {
-        if( obj )
+        if ( obj )
         {
             delete obj;
             obj = NULL;
@@ -223,18 +223,21 @@ void ObjectManager::erase( int obj_id, bool delete_flg )
  *  @param delete_flg [in] deleting the allocated memory flag
  */
 /*==========================================================================*/
-void ObjectManager::erase( std::string obj_name, bool delete_flg )
+void ObjectManager::erase( const std::string& obj_name, const bool delete_flg )
 {
     ObjectMap::iterator map_id = m_object_map.begin();
     ObjectMap::iterator map_end = m_object_map.end();
 
-    while( map_id != map_end )
+    while ( map_id != map_end )
     {
         ObjectIterator ptr = map_id->second; // pointer to the object
-        vismodule::ObjectBase* obj = *ptr; // object
+        pbvr::ObjectBase* obj = *ptr; // object
         if ( obj->name() == obj_name )
         {
-            if ( delete_flg ) { if ( obj ) delete obj; }
+            if ( delete_flg )
+            {
+                if ( obj ) delete obj;
+            }
 
             // Erase the object in the object master base.
             ObjectManagerBase::erase( ptr );
@@ -259,25 +262,25 @@ void ObjectManager::erase( std::string obj_name, bool delete_flg )
  *  @param delete_flg [in] deleting the allocated memory flag
  */
 /*==========================================================================*/
-void ObjectManager::change( int obj_id, ObjectBase* obj, bool delete_flg )
+void ObjectManager::change( const int obj_id, ObjectBase* obj, const bool delete_flg )
 {
     /* Search the object which is specified by given object ID in the
      * object pointer map. If it isn't found, this method executes nothing.
      */
     ObjectMap::iterator map_id = m_object_map.find( obj_id );
-    if( map_id == m_object_map.end() ) return;
+    if ( map_id == m_object_map.end() ) return;
 
     // Change the object.
     ObjectIterator ptr = map_id->second; // pointer to the object
-    vismodule::ObjectBase* old_obj = *ptr; // object
+    pbvr::ObjectBase* old_obj = *ptr; // object
 
     // Save the Xform.
     vismodule::Xform xform = old_obj->xform();
 
     // Erase the old object
-    if( delete_flg )
+    if ( delete_flg )
     {
-        if( old_obj )
+        if ( old_obj )
         {
             delete old_obj;
             old_obj = NULL;
@@ -290,7 +293,7 @@ void ObjectManager::change( int obj_id, ObjectBase* obj, bool delete_flg )
 
     *ptr = obj;
 
-//    this->update_normalize_parameters();
+    this->update_normalize_parameters();
 }
 
 /*==========================================================================*/
@@ -301,7 +304,7 @@ void ObjectManager::change( int obj_id, ObjectBase* obj, bool delete_flg )
  *  @param delete_flg [in] deleting the allocated memory flag
  */
 /*==========================================================================*/
-void ObjectManager::change( std::string obj_name, ObjectBase* obj, bool delete_flg )
+void ObjectManager::change( const std::string obj_name, ObjectBase* obj, const bool delete_flg )
 {
     ObjectMap::iterator map_id = m_object_map.begin();
     ObjectMap::iterator map_end = m_object_map.end();
@@ -309,14 +312,17 @@ void ObjectManager::change( std::string obj_name, ObjectBase* obj, bool delete_f
     while ( map_id != map_end )
     {
         ObjectIterator ptr = map_id->second; // pointer to the object
-        vismodule::ObjectBase* old_obj = *ptr; // object
+        pbvr::ObjectBase* old_obj = *ptr; // object
         if ( old_obj->name() == obj_name )
         {
             // Save the Xform.
             vismodule::Xform xform = old_obj->xform();
 
             // Erase the old object
-            if ( delete_flg ) { if ( old_obj ) delete old_obj; }
+            if ( delete_flg )
+            {
+                if ( old_obj ) delete old_obj;
+            }
 
             // Insert the new object
             obj->updateNormalizeParameters();
@@ -339,9 +345,9 @@ void ObjectManager::change( std::string obj_name, ObjectBase* obj, bool delete_f
  *  @return number of the stored objects
  */
 /*==========================================================================*/
-const int ObjectManager::nobjects( void ) const
+const int ObjectManager::nobjects() const
 {
-    return( ObjectManagerBase::size() );
+    return ObjectManagerBase::size();
 }
 
 /*==========================================================================*/
@@ -350,7 +356,7 @@ const int ObjectManager::nobjects( void ) const
  *  @return pointer to the top object
  */
 /*==========================================================================*/
-vismodule::ObjectBase* ObjectManager::object( void )
+pbvr::ObjectBase* ObjectManager::object()
 {
     // pointer to the object
     ObjectIterator obj_ptr = ObjectManagerBase::begin();
@@ -358,8 +364,8 @@ vismodule::ObjectBase* ObjectManager::object( void )
     // skip the root
     ++obj_ptr;
 
-    if( !*obj_ptr ) return( NULL );
-    else            return( *obj_ptr );
+    if ( !*obj_ptr ) return NULL;
+    else            return *obj_ptr;
 }
 
 /*==========================================================================*/
@@ -369,18 +375,18 @@ vismodule::ObjectBase* ObjectManager::object( void )
  *  @return pointer to the object
  */
 /*==========================================================================*/
-vismodule::ObjectBase* ObjectManager::object( int obj_id )
+pbvr::ObjectBase* ObjectManager::object( const int obj_id )
 {
     /* Search the object which is specified by given object ID in the
      * object pointer map. If it isn't found, this method executes nothing.
      */
     ObjectMap::iterator map_id = m_object_map.find( obj_id );
-    if( map_id == m_object_map.end() )  return( NULL );
+    if ( map_id == m_object_map.end() )  return NULL;
 
     // pointer to the object
     ObjectIterator obj_ptr = map_id->second;
 
-    return( *obj_ptr );
+    return *obj_ptr;
 }
 
 /*==========================================================================*/
@@ -390,7 +396,7 @@ vismodule::ObjectBase* ObjectManager::object( int obj_id )
  *  @return pointer to the object
  */
 /*==========================================================================*/
-vismodule::ObjectBase* ObjectManager::object( std::string obj_name )
+pbvr::ObjectBase* ObjectManager::object( const std::string& obj_name )
 {
     ObjectMap::iterator map_id = m_object_map.begin();
     ObjectMap::iterator map_end = m_object_map.end();
@@ -398,16 +404,16 @@ vismodule::ObjectBase* ObjectManager::object( std::string obj_name )
     while ( map_id != map_end )
     {
         ObjectIterator ptr = map_id->second; // pointer to the object
-        vismodule::ObjectBase* obj = *ptr; // object
+        pbvr::ObjectBase* obj = *ptr; // object
         if ( obj->name() == obj_name )
         {
-            return( obj );
+            return obj;
         }
 
         ++map_id;
     }
 
-    return( NULL );
+    return NULL;
 }
 
 /*==========================================================================*/
@@ -416,9 +422,9 @@ vismodule::ObjectBase* ObjectManager::object( std::string obj_name )
  *  @return true, if some objects are included.
  */
 /*==========================================================================*/
-const bool ObjectManager::hasObject( void ) const
+const bool ObjectManager::hasObject() const
 {
-    return( ObjectManagerBase::size() > 1 );
+    return ObjectManagerBase::size() > 1;
 }
 
 /*==========================================================================*/
@@ -426,14 +432,14 @@ const bool ObjectManager::hasObject( void ) const
  *  Reset the xforms of the all objects.
  */
 /*==========================================================================*/
-void ObjectManager::resetXform( void )
+void ObjectManager::resetXform()
 {
     ObjectIterator first = ObjectManagerBase::begin();
     ObjectIterator last  = ObjectManagerBase::end();
 
-    for( ; first != last; ++first )
+    for ( ; first != last; ++first )
     {
-        (*first)->resetXform();
+        ( *first )->resetXform();
     }
 
     vismodule::XformControl::resetXform();
@@ -445,10 +451,10 @@ void ObjectManager::resetXform( void )
  *  @param obj_id [in] object ID
  */
 /*==========================================================================*/
-void ObjectManager::resetXform( int obj_id )
+void ObjectManager::resetXform( const int obj_id )
 {
     ObjectMap::iterator map_id = m_object_map.find( obj_id );
-    if( map_id == m_object_map.end() ) return;
+    if ( map_id == m_object_map.end() ) return;
 
     // pointer to the object
     ObjectIterator obj_ptr = map_id->second;
@@ -456,14 +462,14 @@ void ObjectManager::resetXform( int obj_id )
     ObjectIterator first = ObjectManagerBase::begin( obj_ptr );
     ObjectIterator last  = ObjectManagerBase::end( obj_ptr );
 
-    const vismodule::Xform obj_form = (*obj_ptr)->xform();
-    const vismodule::Xform trans = Xform(*this) * obj_form.inverse();
+    const vismodule::Xform obj_form = ( *obj_ptr )->xform();
+    const vismodule::Xform trans = Xform( *this ) * obj_form.inverse();
 
-    (*obj_ptr)->setXform( Xform(*this) );
+    ( *obj_ptr )->setXform( Xform( *this ) );
 
-    for( ; first != last; ++first )
+    for ( ; first != last; ++first )
     {
-        (*first)->setXform( trans * (*first)->xform() );
+        ( *first )->setXform( trans * ( *first )->xform() );
     }
 }
 
@@ -472,9 +478,9 @@ void ObjectManager::resetXform( int obj_id )
  *  Get the xform of the object manager.
  */
 /*==========================================================================*/
-const vismodule::Xform ObjectManager::xform( void ) const
+const vismodule::Xform ObjectManager::xform() const
 {
-    return( vismodule::XformControl::xform() );
+    return vismodule::XformControl::xform();
 }
 
 /*==========================================================================*/
@@ -483,23 +489,23 @@ const vismodule::Xform ObjectManager::xform( void ) const
  *  @param obj_id [in] object ID
  */
 /*==========================================================================*/
-const vismodule::Xform ObjectManager::xform( int obj_id ) const
+const vismodule::Xform ObjectManager::xform( const int obj_id ) const
 {
     /* Search the object which is specified by given object ID in the
      * object pointer map. If it isn't found, this method retrun initial Xform.
      */
     ObjectMap::const_iterator map_id = m_object_map.find( obj_id );
-    if( map_id == m_object_map.end() )
+    if ( map_id == m_object_map.end() )
     {
         Xform xform;
-        return( xform );
+        return xform;
     }
 
     // Delete the object.
     ObjectIterator obj_ptr = map_id->second; // pointer to the object
-    vismodule::ObjectBase* obj = *obj_ptr;     // object
+    pbvr::ObjectBase* obj = *obj_ptr;     // object
 
-    return( obj->xform() );
+    return obj->xform();
 }
 
 /*===========================================================================*/
@@ -509,11 +515,11 @@ const vismodule::Xform ObjectManager::xform( int obj_id ) const
  *  @return object ID
  */
 /*===========================================================================*/
-const int ObjectManager::objectID( const vismodule::ObjectBase *object ) const
+const int ObjectManager::objectID( const pbvr::ObjectBase& object ) const
 {
     for ( ObjectMap::const_iterator i = m_object_map.begin(); i != m_object_map.end(); ++i )
     {
-        if ( *(i->second) == object ) return i->first;
+        if ( *( i->second ) == &object ) return i->first;
     }
 
     return -1;
@@ -526,12 +532,12 @@ const int ObjectManager::objectID( const vismodule::ObjectBase *object ) const
  *  @return parent object ID
  */
 /*===========================================================================*/
-const int ObjectManager::parentObjectID( const ObjectIterator it ) const
+const int ObjectManager::parentObjectID( const ObjectIterator& it ) const
 {
-    if (it == end()) return -1;
-    if (it.node()->parent == NULL) return -1;
+    if ( it == end() ) return -1;
+    if ( it.node()->parent == NULL ) return -1;
 
-    return this->objectID(it.node()->parent->data);
+    return this->objectID( *it.node()->parent->data );
 }
 
 /*===========================================================================*/
@@ -541,13 +547,13 @@ const int ObjectManager::parentObjectID( const ObjectIterator it ) const
  *  @return parent object ID
  */
 /*===========================================================================*/
-const int ObjectManager::parentObjectID( const vismodule::ObjectBase *object ) const
+const int ObjectManager::parentObjectID( const pbvr::ObjectBase& object ) const
 {
-    for (ObjectIterator i = begin(); i != end(); ++i)
+    for ( ObjectIterator i = begin(); i != end(); ++i )
     {
-        if (*i == object)
+        if ( *i == &object )
         {
-            return this->parentObjectID(i);
+            return this->parentObjectID( i );
         }
     }
     return -1;
@@ -560,15 +566,15 @@ const int ObjectManager::parentObjectID( const vismodule::ObjectBase *object ) c
  *  @return parent object ID
  */
 /*===========================================================================*/
-const int ObjectManager::parentObjectID( int object_id ) const
+const int ObjectManager::parentObjectID( const int object_id ) const
 {
     if ( object_id < 0 ) return -1;
 
     // ObjectManager::object is not const function. peel const.
-    const vismodule::ObjectBase *object_ptr = ((ObjectManager*)this)->object( object_id );
+    const pbvr::ObjectBase* object_ptr = ( ( ObjectManager* )this )->object( object_id );
     if ( object_ptr == NULL ) return -1;
 
-    return this->parentObjectID( object_ptr );
+    return this->parentObjectID( *object_ptr );
 }
 
 /*==========================================================================*/
@@ -577,19 +583,19 @@ const int ObjectManager::parentObjectID( int object_id ) const
  *  @return active object ID, if active object is nothing, -1 is returned.
  */
 /*==========================================================================*/
-const int ObjectManager::activeObjectID( void ) const
+const int ObjectManager::activeObjectID() const
 {
-    if( m_has_active_object )
+    if ( m_has_active_object )
     {
-        for( ObjectMap::const_iterator p = m_object_map.begin();
-             p != m_object_map.end();
-             p++ )
+        for ( ObjectMap::const_iterator p = m_object_map.begin();
+                p != m_object_map.end();
+                p++ )
         {
-            if( m_active_object == p->second ) return( p->first );
+            if ( m_active_object == p->second ) return p->first;
         }
     }
 
-    return( -1 );
+    return -1;
 }
 
 /*==========================================================================*/
@@ -599,18 +605,18 @@ const int ObjectManager::activeObjectID( void ) const
  *  @return true, if the object specified by the given ID is found.
  */
 /*==========================================================================*/
-bool ObjectManager::setActiveObjectID( int obj_id )
+bool ObjectManager::setActiveObjectID( const int obj_id )
 {
     ObjectMap::iterator map_id = m_object_map.find( obj_id );
-    if( map_id == m_object_map.end() )
+    if ( map_id == m_object_map.end() )
     {
-        return ( false );
+        return false;
     }
 
     m_active_object = map_id->second;
     m_has_active_object = true;
 
-    return( true );
+    return true;
 }
 
 /*==========================================================================*/
@@ -619,9 +625,9 @@ bool ObjectManager::setActiveObjectID( int obj_id )
  *  @return pointer to the active object
  */
 /*==========================================================================*/
-vismodule::ObjectBase* ObjectManager::activeObject( void )
+pbvr::ObjectBase* ObjectManager::activeObject()
 {
-    return( m_has_active_object ? *m_active_object : NULL );
+    return m_has_active_object ? *m_active_object : NULL;
 }
 
 /*==========================================================================*/
@@ -629,12 +635,12 @@ vismodule::ObjectBase* ObjectManager::activeObject( void )
  *  Release the xform of the active object.
  */
 /*==========================================================================*/
-void ObjectManager::resetActiveObjectXform( void )
+void ObjectManager::resetActiveObjectXform()
 {
-    if( m_has_active_object )
+    if ( m_has_active_object )
     {
-        (*m_active_object)->resetXform();
-        (*m_active_object)->multiplyXform( vismodule::Xform(*this) );
+        ( *m_active_object )->resetXform();
+        ( *m_active_object )->multiplyXform( vismodule::Xform( *this ) );
     }
 }
 
@@ -643,11 +649,11 @@ void ObjectManager::resetActiveObjectXform( void )
  *  Erase the active object.
  */
 /*==========================================================================*/
-void ObjectManager::eraseActiveObject( void )
+void ObjectManager::eraseActiveObject()
 {
-    if( m_has_active_object )
+    if ( m_has_active_object )
     {
-        if( *m_active_object )
+        if ( *m_active_object )
         {
             delete *m_active_object;
             *m_active_object = NULL;
@@ -663,7 +669,7 @@ void ObjectManager::eraseActiveObject( void )
  *  Enable to move all objects.
  */
 /*==========================================================================*/
-void ObjectManager::enableAllMove( void )
+void ObjectManager::enableAllMove()
 {
     m_enable_all_move = true;
 }
@@ -673,7 +679,7 @@ void ObjectManager::enableAllMove( void )
  *  Disable to move all objects.
  */
 /*==========================================================================*/
-void ObjectManager::disableAllMove( void )
+void ObjectManager::disableAllMove()
 {
     m_enable_all_move = false;
 }
@@ -684,9 +690,9 @@ void ObjectManager::disableAllMove( void )
  *  @return true, if the object manager is able to move all objects.
  */
 /*==========================================================================*/
-const bool ObjectManager::isEnableAllMove( void ) const
+const bool ObjectManager::isEnableAllMove() const
 {
-    return( m_enable_all_move );
+    return m_enable_all_move;
 }
 
 /*==========================================================================*/
@@ -695,9 +701,9 @@ const bool ObjectManager::isEnableAllMove( void ) const
  *  @return true, if the object manager has the active object.
  */
 /*==========================================================================*/
-const bool ObjectManager::hasActiveObject( void ) const
+const bool ObjectManager::hasActiveObject() const
 {
-    return( m_has_active_object );
+    return m_has_active_object;
 }
 
 /*==========================================================================*/
@@ -705,7 +711,7 @@ const bool ObjectManager::hasActiveObject( void ) const
  *  Release the active object.
  */
 /*==========================================================================*/
-void ObjectManager::releaseActiveObject( void )
+void ObjectManager::releaseActiveObject()
 {
     m_has_active_object = false;
 }
@@ -718,6 +724,7 @@ void ObjectManager::releaseActiveObject( void )
  *  @return true, if the collision is detected.
  */
 /*==========================================================================*/
+/* 131017 removed
 bool ObjectManager::detectCollision(
     const vismodule::Vector2f& p_win,
     vismodule::Camera*         camera )
@@ -751,7 +758,7 @@ bool ObjectManager::detectCollision(
                                                m_object_center,
                                                m_normalize ) );
 }
-
+*/
 /*==========================================================================*/
 /**
  *  Test the collision detection.
@@ -759,6 +766,7 @@ bool ObjectManager::detectCollision(
  *  @return true, if the collision is detected.
  */
 /*==========================================================================*/
+/* 131017 removed
 bool ObjectManager::detectCollision( const vismodule::Vector3f& p_world )
 {
     double min_distance = 100000;
@@ -790,13 +798,14 @@ bool ObjectManager::detectCollision( const vismodule::Vector3f& p_world )
                                                m_object_center,
                                                m_normalize ) );
 }
-
+*/
 /*==========================================================================*/
 /**
  *  Get the object manager position in the device coordinate.
  *  @param camera [in] pointer to the camera
  */
 /*==========================================================================*/
+/* 131017 removed
 const vismodule::Vector2f ObjectManager::positionInDevice( vismodule::Camera* camera ) const
 {
     vismodule::Vector2f ret;
@@ -805,13 +814,13 @@ const vismodule::Vector2f ObjectManager::positionInDevice( vismodule::Camera* ca
         camera->update();
 
         ret     = camera->projectObjectToWindow( vismodule::Xform::translation() );
-        ret.y() = camera->windowHeight() - ret.y();
+        ret.y() = camera->m_window_height() - ret.y();
     }
     glPopMatrix();
 
-    return( ret );
+    return ret;
 }
-
+*/
 /*==========================================================================*/
 /**
  *  Rotate the all objects.
@@ -820,17 +829,17 @@ const vismodule::Vector2f ObjectManager::positionInDevice( vismodule::Camera* ca
 /*==========================================================================*/
 void ObjectManager::rotate( const vismodule::Matrix33f& rotation )
 {
-    vismodule::ObjectBase* object = this->get_control_target();
-    vismodule::Vector3f center = this->get_rotation_center( object );
+    pbvr::ObjectBase* object = this->get_control_target();
+    vismodule::Vector3f center = this->get_rotation_center();
 
     object->rotate( rotation, center );
 
     ObjectIterator first = this->get_control_first_pointer();
     ObjectIterator last  = this->get_control_last_pointer();
 
-    for( ; first != last; ++first )
+    for ( ; first != last; ++first )
     {
-        (*first)->rotate( rotation, center );
+        ( *first )->rotate( rotation, center );
     }
 }
 
@@ -842,16 +851,16 @@ void ObjectManager::rotate( const vismodule::Matrix33f& rotation )
 /*==========================================================================*/
 void ObjectManager::translate( const vismodule::Vector3f& translation )
 {
-    vismodule::ObjectBase* object = this->get_control_target();
+    pbvr::ObjectBase* object = this->get_control_target();
 
     object->vismodule::XformControl::translate( translation );
 
     ObjectIterator first = this->get_control_first_pointer();
     ObjectIterator last  = this->get_control_last_pointer();
 
-    for( ; first != last; ++first )
+    for ( ; first != last; ++first )
     {
-        (*first)->translate( translation );
+        ( *first )->translate( translation );
     }
 }
 
@@ -863,18 +872,18 @@ void ObjectManager::translate( const vismodule::Vector3f& translation )
 /*==========================================================================*/
 void ObjectManager::scale( const vismodule::Vector3f& scaling )
 {
-    vismodule::ObjectBase* object = this->get_control_target();
+    pbvr::ObjectBase* object = this->get_control_target();
 
-    vismodule::Vector3f center = this->get_rotation_center( object );
+    vismodule::Vector3f center = this->get_rotation_center();
 
     object->scale( scaling, center );
 
     ObjectIterator first = this->get_control_first_pointer();
     ObjectIterator last  = this->get_control_last_pointer();
 
-    for( ; first != last; ++first )
+    for ( ; first != last; ++first )
     {
-        (*first)->scale( scaling, center );
+        ( *first )->scale( scaling, center );
     }
 }
 
@@ -883,7 +892,7 @@ void ObjectManager::scale( const vismodule::Vector3f& scaling )
  *  Update the external coordinate.
  */
 /*==========================================================================*/
-void ObjectManager::updateExternalCoords( void )
+void ObjectManager::updateExternalCoords()
 {
     this->update_normalize_parameters();
 }
@@ -899,25 +908,25 @@ void ObjectManager::update_normalize_parameters(
     const vismodule::Vector3f& min_ext,
     const vismodule::Vector3f& max_ext )
 {
-    if( vismodule::Math::Equal( 0.0f, min_ext.x() ) &&
-        vismodule::Math::Equal( 0.0f, min_ext.y() ) &&
-        vismodule::Math::Equal( 0.0f, min_ext.z() ) &&
-        vismodule::Math::Equal( 0.0f, max_ext.x() ) &&
-        vismodule::Math::Equal( 0.0f, max_ext.y() ) &&
-        vismodule::Math::Equal( 0.0f, max_ext.z() ) ) return;
+    if ( vismodule::Math::Equal( 0.0f, min_ext.x() ) &&
+            vismodule::Math::Equal( 0.0f, min_ext.y() ) &&
+            vismodule::Math::Equal( 0.0f, min_ext.z() ) &&
+            vismodule::Math::Equal( 0.0f, max_ext.x() ) &&
+            vismodule::Math::Equal( 0.0f, max_ext.y() ) &&
+            vismodule::Math::Equal( 0.0f, max_ext.z() ) ) return;
 
     m_min_object_coord.x() = m_min_object_coord.x() < min_ext.x() ?
-        m_min_object_coord.x() : min_ext.x();
+                             m_min_object_coord.x() : min_ext.x();
     m_min_object_coord.y() = m_min_object_coord.y() < min_ext.y() ?
-        m_min_object_coord.y() : min_ext.y();
+                             m_min_object_coord.y() : min_ext.y();
     m_min_object_coord.z() = m_min_object_coord.z() < min_ext.z() ?
-        m_min_object_coord.z() : min_ext.z();
+                             m_min_object_coord.z() : min_ext.z();
     m_max_object_coord.x() = m_max_object_coord.x() > max_ext.x() ?
-        m_max_object_coord.x() : max_ext.x();
+                             m_max_object_coord.x() : max_ext.x();
     m_max_object_coord.y() = m_max_object_coord.y() > max_ext.y() ?
-        m_max_object_coord.y() : max_ext.y();
+                             m_max_object_coord.y() : max_ext.y();
     m_max_object_coord.z() = m_max_object_coord.z() > max_ext.z() ?
-        m_max_object_coord.z() : max_ext.z();
+                             m_max_object_coord.z() : max_ext.z();
 
     const vismodule::Vector3f diff_obj = m_max_object_coord - m_min_object_coord;
     const float max_diff = vismodule::Math::Max( diff_obj.x(), diff_obj.y(), diff_obj.z() );
@@ -935,7 +944,7 @@ void ObjectManager::update_normalize_parameters(
  *  Update normalize parameters.
  */
 /*==========================================================================*/
-void ObjectManager::update_normalize_parameters( void )
+void ObjectManager::update_normalize_parameters()
 {
     m_min_object_coord   = vismodule::Vector3f(  1000000,  1000000,  1000000 );
     m_max_object_coord   = vismodule::Vector3f( -1000000, -1000000, -1000000 );
@@ -943,7 +952,7 @@ void ObjectManager::update_normalize_parameters( void )
     m_max_external_coord = vismodule::Vector3f(  3.0,  3.0,  3.0 );
 
     int ctr = 0;
-    if( ObjectManagerBase::size() > 1 )
+    if ( ObjectManagerBase::size() > 1 )
     {
         ObjectIterator first = ObjectManagerBase::begin();
         ObjectIterator last  = ObjectManagerBase::end();
@@ -951,39 +960,39 @@ void ObjectManager::update_normalize_parameters( void )
         // skip the root
         ++first;
 
-        for( ; first != last; ++first )
+        for ( ; first != last; ++first )
         {
-            if( vismodule::Math::Equal( 0.0f, (*first)->minExternalCoord().x() ) &&
-                vismodule::Math::Equal( 0.0f, (*first)->minExternalCoord().y() ) &&
-                vismodule::Math::Equal( 0.0f, (*first)->minExternalCoord().z() ) &&
-                vismodule::Math::Equal( 0.0f, (*first)->maxExternalCoord().x() ) &&
-                vismodule::Math::Equal( 0.0f, (*first)->maxExternalCoord().y() ) &&
-                vismodule::Math::Equal( 0.0f, (*first)->maxExternalCoord().z() ) ) continue;
+            if ( vismodule::Math::Equal( 0.0f, ( *first )->minExternalCoord().x() ) &&
+                    vismodule::Math::Equal( 0.0f, ( *first )->minExternalCoord().y() ) &&
+                    vismodule::Math::Equal( 0.0f, ( *first )->minExternalCoord().z() ) &&
+                    vismodule::Math::Equal( 0.0f, ( *first )->maxExternalCoord().x() ) &&
+                    vismodule::Math::Equal( 0.0f, ( *first )->maxExternalCoord().y() ) &&
+                    vismodule::Math::Equal( 0.0f, ( *first )->maxExternalCoord().z() ) ) continue;
 
             m_min_object_coord.x() =
-                m_min_object_coord.x() < (*first)->minExternalCoord().x() ?
-                m_min_object_coord.x() : (*first)->minExternalCoord().x();
+                m_min_object_coord.x() < ( *first )->minExternalCoord().x() ?
+                m_min_object_coord.x() : ( *first )->minExternalCoord().x();
             m_min_object_coord.y() =
-                m_min_object_coord.y() < (*first)->minExternalCoord().y() ?
-                m_min_object_coord.y() : (*first)->minExternalCoord().y();
+                m_min_object_coord.y() < ( *first )->minExternalCoord().y() ?
+                m_min_object_coord.y() : ( *first )->minExternalCoord().y();
             m_min_object_coord.z() =
-                m_min_object_coord.z() < (*first)->minExternalCoord().z() ?
-                m_min_object_coord.z() : (*first)->minExternalCoord().z();
+                m_min_object_coord.z() < ( *first )->minExternalCoord().z() ?
+                m_min_object_coord.z() : ( *first )->minExternalCoord().z();
             m_max_object_coord.x() =
-                m_max_object_coord.x() > (*first)->maxExternalCoord().x() ?
-                m_max_object_coord.x() : (*first)->maxExternalCoord().x();
+                m_max_object_coord.x() > ( *first )->maxExternalCoord().x() ?
+                m_max_object_coord.x() : ( *first )->maxExternalCoord().x();
             m_max_object_coord.y() =
-                m_max_object_coord.y() > (*first)->maxExternalCoord().y() ?
-                m_max_object_coord.y() : (*first)->maxExternalCoord().y();
+                m_max_object_coord.y() > ( *first )->maxExternalCoord().y() ?
+                m_max_object_coord.y() : ( *first )->maxExternalCoord().y();
             m_max_object_coord.z() =
-                m_max_object_coord.z() > (*first)->maxExternalCoord().z() ?
-                m_max_object_coord.z() : (*first)->maxExternalCoord().z();
+                m_max_object_coord.z() > ( *first )->maxExternalCoord().z() ?
+                m_max_object_coord.z() : ( *first )->maxExternalCoord().z();
 
             ctr++;
         }
     }
 
-    if( ctr == 0 )
+    if ( ctr == 0 )
     {
         m_normalize     = vismodule::Vector3f( 1.0 );
         m_object_center = vismodule::Vector3f( 0.0 );
@@ -1010,15 +1019,15 @@ void ObjectManager::update_normalize_parameters( void )
  *  @return pointer to the control target object
  */
 /*==========================================================================*/
-vismodule::ObjectBase* ObjectManager::get_control_target( void )
+pbvr::ObjectBase* ObjectManager::get_control_target()
 {
     if ( this->isEnableAllMove() )
     {
-        return( this );
+        return this;
     }
     else
     {
-        return( *m_active_object );
+        return *m_active_object;
     }
 }
 
@@ -1029,16 +1038,20 @@ vismodule::ObjectBase* ObjectManager::get_control_target( void )
  *  @return rotation center
  */
 /*==========================================================================*/
-vismodule::Vector3f ObjectManager::get_rotation_center( vismodule::ObjectBase* obj )
+vismodule::Vector3f ObjectManager::get_rotation_center()
 {
-    if( this->isEnableAllMove() )
-    {
-        return( vismodule::Vector3f( (*this)[0][3], (*this)[1][3], (*this)[2][3] ) );
-    }
-    else
-    {
-        return( obj->positionInWorld( m_object_center, m_normalize ) );
-    }
+    /* 131017 removed
+        if( this->isEnableAllMove() )
+        {
+    */
+    return vismodule::Vector3f( ( *this )[0][3], ( *this )[1][3], ( *this )[2][3] );
+    /* 131017 removed
+        }
+        else
+        {
+            return obj->positionInWorld( m_object_center, m_normalize );
+        }
+    */
 }
 
 /*==========================================================================*/
@@ -1047,11 +1060,11 @@ vismodule::Vector3f ObjectManager::get_rotation_center( vismodule::ObjectBase* o
  *  @return pointer to the top object
  */
 /*==========================================================================*/
-ObjectManager::ObjectIterator ObjectManager::get_control_first_pointer( void )
+ObjectManager::ObjectIterator ObjectManager::get_control_first_pointer()
 {
     ObjectIterator first;
 
-    if( this->isEnableAllMove() )
+    if ( this->isEnableAllMove() )
     {
         first = ObjectManagerBase::begin();
         ++first;
@@ -1061,20 +1074,20 @@ ObjectManager::ObjectIterator ObjectManager::get_control_first_pointer( void )
         first = ObjectManagerBase::begin( m_active_object );
     }
 
-    return( first );
+    return first;
 }
 
 /*==========================================================================*/
 /**
  *  Get the pointer to the last object in the object manager.
- *  @return 
+ *  @return
  */
 /*==========================================================================*/
-ObjectManager::ObjectIterator ObjectManager::get_control_last_pointer( void )
+ObjectManager::ObjectIterator ObjectManager::get_control_last_pointer()
 {
     ObjectIterator last;
 
-    if( this->isEnableAllMove() )
+    if ( this->isEnableAllMove() )
     {
         last = ObjectManagerBase::end();
     }
@@ -1083,7 +1096,7 @@ ObjectManager::ObjectIterator ObjectManager::get_control_last_pointer( void )
         last = ObjectManagerBase::end( m_active_object );
     }
 
-    return( last );
+    return last;
 }
 
-} // end of namespace vismodule
+} // end of namespace pbvr

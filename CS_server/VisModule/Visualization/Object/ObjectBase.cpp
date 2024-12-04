@@ -18,7 +18,7 @@
 #include <vismodule/Math>
 
 
-namespace vismodule
+namespace pbvr
 {
 
 /*===========================================================================*/
@@ -29,14 +29,14 @@ namespace vismodule
 /*===========================================================================*/
 ObjectBase::ObjectBase( const bool collision ) :
     vismodule::XformControl( collision ),
-    m_name("unknown"),
+    m_name( "unknown" ),
     m_min_object_coord( vismodule::Vector3f( -3.0, -3.0, -3.0 ) ),
     m_max_object_coord( vismodule::Vector3f(  3.0,  3.0,  3.0 ) ),
     m_min_external_coord( vismodule::Vector3f( -3.0, -3.0, -3.0 ) ),
     m_max_external_coord( vismodule::Vector3f(  3.0,  3.0,  3.0 ) ),
     m_has_min_max_object_coords( false ),
     m_has_min_max_external_coords( false ),
-    m_show_flg( true )
+    m_show_flag( true )
 {
 }
 
@@ -55,14 +55,14 @@ ObjectBase::ObjectBase(
     const vismodule::Matrix33f& rotation,
     const bool collision ):
     vismodule::XformControl( translation, scaling, rotation, collision ),
-    m_name("unknown"),
+    m_name( "unknown" ),
     m_min_object_coord( vismodule::Vector3f( -3.0, -3.0, -3.0 ) ),
     m_max_object_coord( vismodule::Vector3f(  3.0,  3.0,  3.0 ) ),
     m_min_external_coord( vismodule::Vector3f( -3.0, -3.0, -3.0 ) ),
     m_max_external_coord( vismodule::Vector3f(  3.0,  3.0,  3.0 ) ),
     m_has_min_max_object_coords( false ),
     m_has_min_max_external_coords( false ),
-    m_show_flg( true )
+    m_show_flag( true )
 {
 }
 
@@ -71,7 +71,7 @@ ObjectBase::ObjectBase(
  *  @brief  Destructs the ObjectBase class.
  */
 /*===========================================================================*/
-ObjectBase::~ObjectBase( void )
+ObjectBase::~ObjectBase()
 {
 }
 
@@ -94,9 +94,10 @@ ObjectBase& ObjectBase::operator = ( const ObjectBase& object )
     m_object_center = object.m_object_center;
     m_external_position = object.m_external_position;
     m_normalize = object.m_normalize;
-    m_show_flg = object.m_show_flg;
+    //m_material = object.m_material;
+    m_show_flag = object.m_show_flag;
 
-    return( *this );
+    return *this;
 }
 
 /*===========================================================================*/
@@ -121,7 +122,7 @@ std::ostream& operator << ( std::ostream& os, const ObjectBase& object )
     os << "Normalize parameter:  " << object.normalize();
     os.flags( flags );
 
-    return( os );
+    return os;
 }
 
 /*===========================================================================*/
@@ -175,12 +176,36 @@ void ObjectBase::setMinMaxExternalCoords(
 
 /*===========================================================================*/
 /**
+ *  @breif  Sets the object material.
+ *  @param  material [in] object material
+ */
+/*===========================================================================*/
+/*
+void ObjectBase::setMaterial( const vismodule::Material& material )
+{
+    m_material = material;
+}
+*/
+/*===========================================================================*/
+/**
+ *  @breif  Sets the material face.
+ *  @param  face [in] material face
+ */
+/*===========================================================================*/
+/*
+void ObjectBase::setFace( const Face face )
+{
+   m_material.setFace( vismodule::Material::MaterialFace( face ) );
+}
+*/
+/*===========================================================================*/
+/**
  *  @brief  Shows the object.
  */
 /*===========================================================================*/
-void ObjectBase::show( void )
+void ObjectBase::show()
 {
-    m_show_flg = true;
+    m_show_flag = true;
 }
 
 /*===========================================================================*/
@@ -188,9 +213,9 @@ void ObjectBase::show( void )
  *  @brief  Hides the object.
  */
 /*===========================================================================*/
-void ObjectBase::hide( void )
+void ObjectBase::hide()
 {
-    m_show_flg = false;
+    m_show_flag = false;
 }
 
 /*===========================================================================*/
@@ -199,9 +224,9 @@ void ObjectBase::hide( void )
  *  @return  object name
  */
 /*===========================================================================*/
-const std::string& ObjectBase::name( void ) const
+const std::string& ObjectBase::name() const
 {
-    return( m_name );
+    return m_name;
 }
 
 /*===========================================================================*/
@@ -210,9 +235,9 @@ const std::string& ObjectBase::name( void ) const
  *  @return min object coordinate value
  */
 /*===========================================================================*/
-const vismodule::Vector3f& ObjectBase::minObjectCoord( void ) const
+const vismodule::Vector3f& ObjectBase::minObjectCoord() const
 {
-    return( m_min_object_coord );
+    return m_min_object_coord;
 }
 
 /*===========================================================================*/
@@ -221,9 +246,9 @@ const vismodule::Vector3f& ObjectBase::minObjectCoord( void ) const
  *  @return max object coordinate value
  */
 /*===========================================================================*/
-const vismodule::Vector3f& ObjectBase::maxObjectCoord( void ) const
+const vismodule::Vector3f& ObjectBase::maxObjectCoord() const
 {
-    return( m_max_object_coord );
+    return m_max_object_coord;
 }
 
 /*===========================================================================*/
@@ -232,9 +257,9 @@ const vismodule::Vector3f& ObjectBase::maxObjectCoord( void ) const
  *  @return min external coordinate value
  */
 /*===========================================================================*/
-const vismodule::Vector3f& ObjectBase::minExternalCoord( void ) const
+const vismodule::Vector3f& ObjectBase::minExternalCoord() const
 {
-    return( m_min_external_coord );
+    return m_min_external_coord;
 }
 
 /*===========================================================================*/
@@ -243,9 +268,9 @@ const vismodule::Vector3f& ObjectBase::minExternalCoord( void ) const
  *  @return max external coordinate value
  */
 /*===========================================================================*/
-const vismodule::Vector3f& ObjectBase::maxExternalCoord( void ) const
+const vismodule::Vector3f& ObjectBase::maxExternalCoord() const
 {
-    return( m_max_external_coord );
+    return m_max_external_coord;
 }
 
 /*===========================================================================*/
@@ -254,9 +279,9 @@ const vismodule::Vector3f& ObjectBase::maxExternalCoord( void ) const
  *  @return true, if the object has the min/max object coordinates.
  */
 /*===========================================================================*/
-const bool ObjectBase::hasMinMaxObjectCoords( void ) const
+const bool ObjectBase::hasMinMaxObjectCoords() const
 {
-    return( m_has_min_max_object_coords );
+    return m_has_min_max_object_coords;
 }
 
 /*===========================================================================*/
@@ -265,9 +290,9 @@ const bool ObjectBase::hasMinMaxObjectCoords( void ) const
  *  @return true, if the object has the min/max external coordinates.
  */
 /*===========================================================================*/
-const bool ObjectBase::hasMinMaxExternalCoords( void ) const
+const bool ObjectBase::hasMinMaxExternalCoords() const
 {
-    return( m_has_min_max_external_coords );
+    return m_has_min_max_external_coords;
 }
 
 /*===========================================================================*/
@@ -276,9 +301,9 @@ const bool ObjectBase::hasMinMaxExternalCoords( void ) const
  *  @return coordinate value of the object center
  */
 /*===========================================================================*/
-const vismodule::Vector3f& ObjectBase::objectCenter( void ) const
+const vismodule::Vector3f& ObjectBase::objectCenter() const
 {
-    return( m_object_center );
+    return m_object_center;
 }
 
 /*===========================================================================*/
@@ -287,9 +312,9 @@ const vismodule::Vector3f& ObjectBase::objectCenter( void ) const
  *  @return object position in the external coordinate
  */
 /*===========================================================================*/
-const vismodule::Vector3f& ObjectBase::externalPosition( void ) const
+const vismodule::Vector3f& ObjectBase::externalPosition() const
 {
-    return( m_external_position );
+    return m_external_position;
 }
 
 /*===========================================================================*/
@@ -298,9 +323,9 @@ const vismodule::Vector3f& ObjectBase::externalPosition( void ) const
  *  @return normalize vector
  */
 /*===========================================================================*/
-const vismodule::Vector3f& ObjectBase::normalize( void ) const
+const vismodule::Vector3f& ObjectBase::normalize() const
 {
-    return( m_normalize );
+    return m_normalize;
 }
 
 /*===========================================================================*/
@@ -309,11 +334,23 @@ const vismodule::Vector3f& ObjectBase::normalize( void ) const
  *  @return true, if the object is shown.
  */
 /*===========================================================================*/
-const bool ObjectBase::isShown( void ) const
+const bool ObjectBase::isShown() const
 {
-    return( m_show_flg );
+    return m_show_flag;
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Returns the object material.
+ *  @return object material
+ */
+/*===========================================================================*/
+/*
+const vismodule::Material& ObjectBase::material() const
+{
+    return m_material;
+}
+*/
 /*===========================================================================*/
 /**
  *  @brief  Returns the object position in the device coordinate.
@@ -323,15 +360,27 @@ const bool ObjectBase::isShown( void ) const
  *  @return object position in the device coordinate
  */
 /*===========================================================================*/
+/*
 const vismodule::Vector2f ObjectBase::positionInDevice(
     vismodule::Camera*         camera,
     const vismodule::Vector3f& global_trans,
     const vismodule::Vector3f& global_scale ) const
 {
     vismodule::Vector2f ret;
-    return( ret );
-}
+    glPushMatrix();
+    {
+        camera->update();
 
+        ObjectBase::transform( global_trans, global_scale );
+
+        ret     = camera->projectObjectToWindow( m_object_center );
+        ret.y() = camera->m_window_height() - ret.y();
+    }
+    glPopMatrix();
+
+    return ret;
+}
+*/
 /*===========================================================================*/
 /**
  *  @brief  Returns the object position in the world coordinate.
@@ -340,36 +389,38 @@ const vismodule::Vector2f ObjectBase::positionInDevice(
  *  @return object position in the world coordinate
  */
 /*===========================================================================*/
+/*
 const vismodule::Vector3f ObjectBase::positionInWorld(
-    const vismodule::Vector3f& global_trans,
-    const vismodule::Vector3f& global_scale ) const
+   const vismodule::Vector3f& global_trans,
+   const vismodule::Vector3f& global_scale ) const
 {
-    vismodule::Vector3f init_pos = m_external_position - global_trans;
+   vismodule::Vector3f init_pos = m_external_position - global_trans;
 
-    init_pos.x() *= global_scale.x();
-    init_pos.y() *= global_scale.y();
-    init_pos.z() *= global_scale.z();
+   init_pos.x() *= global_scale.x();
+   init_pos.y() *= global_scale.y();
+   init_pos.z() *= global_scale.z();
 
-    return( vismodule::Xform::translation() + init_pos * vismodule::Xform::scaledRotation() );
+   return vismodule::Xform::translation() + init_pos * vismodule::Xform::scaledRotation();
 }
-
+*/
 /*===========================================================================*/
 /**
  *  @brief  Returns the object position in the external coordinate.
  *  @return object position in the external coordinate
  */
 /*===========================================================================*/
-const vismodule::Vector3f& ObjectBase::positionInExternal( void ) const
+/*
+const vismodule::Vector3f& ObjectBase::positionInExternal() const
 {
-    return( m_external_position );
+  return m_external_position;
 }
-
+*/
 /*===========================================================================*/
 /**
  *  @brief  Updates the normalize parameters.
  */
 /*===========================================================================*/
-void ObjectBase::updateNormalizeParameters( void )
+void ObjectBase::updateNormalizeParameters()
 {
     vismodule::Vector3f diff_obj = m_max_object_coord   - m_min_object_coord;
     vismodule::Vector3f diff_ext = m_max_external_coord - m_min_external_coord;
@@ -378,16 +429,16 @@ void ObjectBase::updateNormalizeParameters( void )
     m_external_position = ( m_max_external_coord + m_min_external_coord ) * 0.5;
 
     m_normalize.x() = ( vismodule::Math::Equal( diff_obj.x(), 0.0f ) ) ?
-        vismodule::Math::Max( diff_ext.y() / diff_obj.y(), diff_ext.z() / diff_obj.z() ):
-        diff_ext.x() / diff_obj.x();
+                      vismodule::Math::Max( diff_ext.y() / diff_obj.y(), diff_ext.z() / diff_obj.z() ) :
+                      diff_ext.x() / diff_obj.x();
 
-    m_normalize.y() = ( Math::Equal( diff_obj.y(), 0.0f ) ) ?
-        vismodule::Math::Max( diff_ext.x() / diff_obj.x(), diff_ext.z() / diff_obj.z() ):
-        diff_ext.y() / diff_obj.y();
+    m_normalize.y() = ( vismodule::Math::Equal( diff_obj.y(), 0.0f ) ) ?
+                      vismodule::Math::Max( diff_ext.x() / diff_obj.x(), diff_ext.z() / diff_obj.z() ) :
+                      diff_ext.y() / diff_obj.y();
 
-    m_normalize.z() = ( Math::Equal( diff_obj.z(), 0.0f ) ) ?
-        vismodule::Math::Max( diff_ext.x() / diff_obj.x(), diff_ext.y() / diff_obj.y() ):
-        diff_ext.z() / diff_obj.z();
+    m_normalize.z() = ( vismodule::Math::Equal( diff_obj.z(), 0.0f ) ) ?
+                      vismodule::Math::Max( diff_ext.x() / diff_obj.x(), diff_ext.y() / diff_obj.y() ) :
+                      diff_ext.z() / diff_obj.z();
 }
 
 /*===========================================================================*/
@@ -401,20 +452,46 @@ void ObjectBase::updateNormalizeParameters( void )
  *  OpenGL rendering engine.
  */
 /*===========================================================================*/
+/*
 void ObjectBase::transform(
     const vismodule::Vector3f& global_trans,
     const vismodule::Vector3f& global_scale ) const
-{
+    {*/
+/* Apply the transformation from the world coordinate system by using
+ * the object's xform. You see also pbvr::XformControl class and vismodule::Xform
+ * class in detail.
+ */
+/*
+    ObjectBase::XformControl::applyXform();
+
+    glScalef( global_scale.x(), global_scale.y(), global_scale.z() );
+
+    glTranslatef( -global_trans.x(),
+                  -global_trans.y(),
+                  -global_trans.z() );
+
+    glTranslatef( m_external_position.x(),
+                  m_external_position.y(),
+                  m_external_position.z() );
+
+    glScalef( m_normalize.x(), m_normalize.y(), m_normalize.z() );
+
+    glTranslatef( -m_object_center.x(),
+                  -m_object_center.y(),
+                  -m_object_center.z() );
 }
+*/
 /*===========================================================================*/
 /**
  *  @brief  Applys the object material.
  */
 /*===========================================================================*/
-void ObjectBase::applyMaterial( void )
+/*
+void ObjectBase::applyMaterial()
 {
+    m_material.apply();
 }
-
+*/
 /*===========================================================================*/
 /**
  *  @brief  Executes collision detection.
@@ -428,15 +505,69 @@ void ObjectBase::applyMaterial( void )
  *  we don't take account of depth from camera position to the object.
  */
 /*===========================================================================*/
+/*
 bool ObjectBase::collision(
     const vismodule::Vector2f& p_win,
     vismodule::Camera* camera,
     const vismodule::Vector3f& global_trans,
     const vismodule::Vector3f& global_scale )
 {
-    return( false );
-}
+    float max_distance = -1.0f;
 
+    // Center of this object in the window coordinate system.
+    vismodule::Vector2f center;
+
+    glPushMatrix();
+    {
+        camera->update();
+
+        ObjectBase::transform( global_trans, global_scale );
+
+        center = camera->projectObjectToWindow( m_object_center );
+
+        // Object's corner points in the object coordinate system.
+        const vismodule::Vector3f corners[8] = {
+            vismodule::Vector3f( m_min_object_coord.x(),
+                           m_min_object_coord.y(),
+                           m_min_object_coord.z() ),
+            vismodule::Vector3f( m_max_object_coord.x(),
+                           m_min_object_coord.y(),
+                           m_min_object_coord.z() ),
+            vismodule::Vector3f( m_min_object_coord.x(),
+                           m_min_object_coord.y(),
+                           m_max_object_coord.z() ),
+            vismodule::Vector3f( m_max_object_coord.x(),
+                           m_min_object_coord.y(),
+                           m_max_object_coord.z() ),
+            vismodule::Vector3f( m_min_object_coord.x(),
+                           m_max_object_coord.y(),
+                           m_min_object_coord.z() ),
+            vismodule::Vector3f( m_max_object_coord.x(),
+                           m_max_object_coord.y(),
+                           m_min_object_coord.z() ),
+            vismodule::Vector3f( m_min_object_coord.x(),
+                           m_max_object_coord.y(),
+                           m_max_object_coord.z() ),
+            vismodule::Vector3f( m_max_object_coord.x(),
+                           m_max_object_coord.y(),
+                           m_max_object_coord.z() ) };
+
+        // Calculate max distance between the center and the corner in
+        // the window coordinate system.
+        for( int i = 0; i < 8; i++ )
+        {
+            const vismodule::Vector2f corner = camera->projectObjectToWindow( corners[i] );
+            const float distance = static_cast<float>( ( corner - center ).length() );
+            max_distance = vismodule::Math::Max( max_distance, distance );
+        }
+    }
+    glPopMatrix();
+
+    vismodule::Vector2f pos_window( p_win.x(), camera->m_window_height() - p_win.y() );
+
+    return ( pos_window - center ).length() < max_distance;
+}
+*/
 /*===========================================================================*/
 /**
  *  @brief  Executes collision detection.
@@ -446,14 +577,65 @@ bool ObjectBase::collision(
  *  @return true, if the collision is detected.
  */
 /*===========================================================================*/
+/*
 bool ObjectBase::collision(
-    const vismodule::Vector3f& p_world,
-    const vismodule::Vector3f& global_trans,
-    const vismodule::Vector3f& global_scale )
+   const vismodule::Vector3f& p_world,
+   const vismodule::Vector3f& global_trans,
+   const vismodule::Vector3f& global_scale )
 {
-    return( false );
-}
+   float max_distance = -1.0f;
+   vismodule::Vector3f center;
 
+   glPushMatrix();
+   {
+       ObjectBase::transform( global_trans, global_scale );
+
+       center = object_to_world_coordinate( m_object_center,
+                                            global_trans,
+                                            global_scale );
+
+       // Object's corner points in the object coordinate system.
+       const vismodule::Vector3f corners[8] = {
+           vismodule::Vector3f( m_min_object_coord.x(),
+                          m_min_object_coord.y(),
+                          m_min_object_coord.z() ),
+           vismodule::Vector3f( m_max_object_coord.x(),
+                          m_min_object_coord.y(),
+                          m_min_object_coord.z() ),
+           vismodule::Vector3f( m_min_object_coord.x(),
+                          m_min_object_coord.y(),
+                          m_max_object_coord.z() ),
+           vismodule::Vector3f( m_max_object_coord.x(),
+                          m_min_object_coord.y(),
+                          m_max_object_coord.z() ),
+           vismodule::Vector3f( m_min_object_coord.x(),
+                          m_max_object_coord.y(),
+                          m_min_object_coord.z() ),
+           vismodule::Vector3f( m_max_object_coord.x(),
+                          m_max_object_coord.y(),
+                          m_min_object_coord.z() ),
+           vismodule::Vector3f( m_min_object_coord.x(),
+                          m_max_object_coord.y(),
+                          m_max_object_coord.z() ),
+           vismodule::Vector3f( m_max_object_coord.x(),
+                          m_max_object_coord.y(),
+                          m_max_object_coord.z() ) };
+
+       // Calculate max distance between the center and the corner in
+       // the world coordinate system.
+       for( int i = 0; i < 8; i++ )
+       {
+           const vismodule::Vector3f corner =
+               object_to_world_coordinate( corners[i], global_trans, global_scale );
+           const float distance = static_cast<float>( ( corner - center ).length() );
+           max_distance = vismodule::Math::Max( max_distance, distance );
+       }
+   }
+   glPopMatrix();
+
+   return ( p_world - center ).length() < max_distance;
+}
+*/
 /*===========================================================================*/
 /**
  *  @brief  Rotates the object.
@@ -518,7 +700,7 @@ const vismodule::Vector3f ObjectBase::object_to_world_coordinate(
 
     p_world += vismodule::Xform::translation();
 
-    return( p_world );
+    return p_world;
 }
 
-} // end of namespace vismodule
+} // end of namespace pbvr

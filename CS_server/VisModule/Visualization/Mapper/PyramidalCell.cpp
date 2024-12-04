@@ -14,7 +14,7 @@
 #include "PyramidalCell.h"
 
 
-namespace vismodule
+namespace pbvr
 {
 
 // template instantiation
@@ -29,4 +29,4 @@ template class PyramidalCell<unsigned long>;
 template class PyramidalCell<float>;
 template class PyramidalCell<double>;
 
-} // end of namespace vismodule
+} // end of namespace pbvr

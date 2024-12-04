@@ -16,7 +16,7 @@
 #include <vismodule/Assert>
 
 
-namespace vismodule
+namespace pbvr
 {
 
 /*===========================================================================*/
@@ -24,7 +24,7 @@ namespace vismodule
  *  @brief  Constructs a new GeometryObjectBase class.
  */
 /*===========================================================================*/
-GeometryObjectBase::GeometryObjectBase( void )
+GeometryObjectBase::GeometryObjectBase()
 {
 }
 
@@ -136,7 +136,7 @@ GeometryObjectBase::GeometryObjectBase(
  *  @brief  Destructs the GeometryObjectBase class.
  */
 /*===========================================================================*/
-GeometryObjectBase::~GeometryObjectBase( void )
+GeometryObjectBase::~GeometryObjectBase()
 {
     this->clear();
 }
@@ -148,18 +148,18 @@ GeometryObjectBase::~GeometryObjectBase( void )
  *  @return pointer to the geometry object base
  */
 /*===========================================================================*/
-vismodule::GeometryObjectBase* GeometryObjectBase::DownCast( vismodule::ObjectBase* object )
+pbvr::GeometryObjectBase* GeometryObjectBase::DownCast( pbvr::ObjectBase* object )
 {
-    const vismodule::ObjectBase::ObjectType type = object->objectType();
-    if ( type != vismodule::ObjectBase::Geometry )
+    const pbvr::ObjectBase::ObjectType type = object->objectType();
+    if ( type != pbvr::ObjectBase::Geometry )
     {
-        visModuleMessageError("Input object is not a geometry object.");
-        return( NULL );
+        visModuleMessageError( "Input object is not a geometry object." );
+        return NULL;
     }
 
-    vismodule::GeometryObjectBase* geometry = static_cast<vismodule::GeometryObjectBase*>( object );
+    pbvr::GeometryObjectBase* geometry = static_cast<pbvr::GeometryObjectBase*>( object );
 
-    return( geometry );
+    return geometry;
 }
 
 /*===========================================================================*/
@@ -169,9 +169,10 @@ vismodule::GeometryObjectBase* GeometryObjectBase::DownCast( vismodule::ObjectBa
  *  @return pointer to the geometry object base
  */
 /*===========================================================================*/
-const vismodule::GeometryObjectBase* GeometryObjectBase::DownCast( const vismodule::ObjectBase* object )
+const pbvr::GeometryObjectBase* GeometryObjectBase::DownCast( const pbvr::ObjectBase& object )
 {
-    return( GeometryObjectBase::DownCast( const_cast<vismodule::ObjectBase*>( object ) ) );
+    pbvr::ObjectBase* obj = const_cast<pbvr::ObjectBase*>( &object );
+    return GeometryObjectBase::DownCast( obj );
 }
 
 /*===========================================================================*/
@@ -179,20 +180,20 @@ const vismodule::GeometryObjectBase* GeometryObjectBase::DownCast( const vismodu
  *  @brief  '<<' operator.
  */
 /*===========================================================================*/
-std::ostream& operator << ( std::ostream& os, const vismodule::GeometryObjectBase& object )
+std::ostream& operator << ( std::ostream& os, const pbvr::GeometryObjectBase& object )
 {
 #ifdef VIS_MODULE_COMPILER_VC
-#if VIS_MODULE_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
-    // @TODO Cannot instance the object that is a abstract class here (error:C2259).
-#endif
+//#if PBVR_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
+//    // @TODO Cannot instance the object that is a abstract class here (error:C2259).
+//#endif
 #else
-    os << static_cast<const vismodule::ObjectBase&>( object ) << std::endl;
+    os << static_cast<const pbvr::ObjectBase&>( object ) << std::endl;
 #endif
     os << "Number of vertices:  " << object.nvertices() << std::endl;
     os << "Number of colors:  " << object.ncolors() << std::endl;
     os << "Number of normal vectors:  " << object.nnormals();
 
-    return( os );
+    return os;
 }
 
 /*===========================================================================*/
@@ -228,7 +229,7 @@ void GeometryObjectBase::deepCopy( const GeometryObjectBase& object )
  *  @brief  Clears the object.
  */
 /*===========================================================================*/
-void GeometryObjectBase::clear( void )
+void GeometryObjectBase::clear()
 {
     m_coords.deallocate();
     m_colors.deallocate();
@@ -288,9 +289,9 @@ void GeometryObjectBase::setNormals( const vismodule::ValueArray<vismodule::Real
  *  @return object type
  */
 /*===========================================================================*/
-const vismodule::ObjectBase::ObjectType GeometryObjectBase::objectType( void ) const
+const pbvr::ObjectBase::ObjectType GeometryObjectBase::objectType() const
 {
-    return( vismodule::ObjectBase::Geometry );
+    return pbvr::ObjectBase::Geometry;
 }
 
 /*===========================================================================*/
@@ -299,10 +300,10 @@ const vismodule::ObjectBase::ObjectType GeometryObjectBase::objectType( void ) c
  *  @return number of the vertices
  */
 /*===========================================================================*/
-const size_t GeometryObjectBase::nvertices( void ) const
+const size_t GeometryObjectBase::nvertices() const
 {
     const size_t dimension = 3;
-    return( m_coords.size() / dimension );
+    return m_coords.size() / dimension;
 }
 
 /*===========================================================================*/
@@ -311,10 +312,10 @@ const size_t GeometryObjectBase::nvertices( void ) const
  *  @return number of the colors
  */
 /*===========================================================================*/
-const size_t GeometryObjectBase::ncolors( void ) const
+const size_t GeometryObjectBase::ncolors() const
 {
     const size_t nchannels = 3;
-    return( m_colors.size() / nchannels );
+    return m_colors.size() / nchannels;
 }
 
 /*===========================================================================*/
@@ -323,10 +324,10 @@ const size_t GeometryObjectBase::ncolors( void ) const
  *  @return number of the normal vectors
  */
 /*===========================================================================*/
-const size_t GeometryObjectBase::nnormals( void ) const
+const size_t GeometryObjectBase::nnormals() const
 {
     const size_t dimension = 3;
-    return( m_normals.size() / dimension );
+    return m_normals.size() / dimension;
 }
 
 /*===========================================================================*/
@@ -339,7 +340,7 @@ const size_t GeometryObjectBase::nnormals( void ) const
 const vismodule::Vector3f GeometryObjectBase::coord( const size_t index ) const
 {
     const size_t dimension = 3;
-    return( vismodule::Vector3f( m_coords.pointer() + dimension * index ) );
+    return vismodule::Vector3f( m_coords.pointer() + dimension * index );
 }
 
 /*===========================================================================*/
@@ -352,7 +353,7 @@ const vismodule::Vector3f GeometryObjectBase::coord( const size_t index ) const
 const vismodule::RGBColor GeometryObjectBase::color( const size_t index ) const
 {
     const size_t nchannels = 3;
-    return( vismodule::RGBColor( m_colors.pointer() + nchannels * index ) );
+    return vismodule::RGBColor( m_colors.pointer() + nchannels * index );
 }
 
 /*===========================================================================*/
@@ -365,7 +366,7 @@ const vismodule::RGBColor GeometryObjectBase::color( const size_t index ) const
 const vismodule::Vector3f GeometryObjectBase::normal( const size_t index ) const
 {
     const size_t dimension = 3;
-    return( vismodule::Vector3f( m_normals.pointer() + dimension * index ) );
+    return vismodule::Vector3f( m_normals.pointer() + dimension * index );
 }
 
 /*===========================================================================*/
@@ -374,9 +375,9 @@ const vismodule::Vector3f GeometryObjectBase::normal( const size_t index ) const
  *  @return coordinate value array
  */
 /*===========================================================================*/
-const vismodule::ValueArray<vismodule::Real32>& GeometryObjectBase::coords( void ) const
+const vismodule::ValueArray<vismodule::Real32>& GeometryObjectBase::coords() const
 {
-    return( m_coords );
+    return m_coords;
 }
 
 /*===========================================================================*/
@@ -385,9 +386,9 @@ const vismodule::ValueArray<vismodule::Real32>& GeometryObjectBase::coords( void
  *  @return color value array
  */
 /*===========================================================================*/
-const vismodule::ValueArray<vismodule::UInt8>& GeometryObjectBase::colors( void ) const
+const vismodule::ValueArray<vismodule::UInt8>& GeometryObjectBase::colors() const
 {
-    return( m_colors );
+    return m_colors;
 }
 
 /*===========================================================================*/
@@ -396,16 +397,16 @@ const vismodule::ValueArray<vismodule::UInt8>& GeometryObjectBase::colors( void 
  *  @return normal vector array
  */
 /*===========================================================================*/
-const vismodule::ValueArray<vismodule::Real32>& GeometryObjectBase::normals( void ) const
+const vismodule::ValueArray<vismodule::Real32>& GeometryObjectBase::normals() const
 {
-    return( m_normals );
+    return m_normals;
 }
 /*==========================================================================*/
 /**
  *  @brief  Updates the min/max coordinates.
  */
 /*==========================================================================*/
-void GeometryObjectBase::updateMinMaxCoords( void )
+void GeometryObjectBase::updateMinMaxCoords()
 {
     this->calculate_min_max_coords();
 }
@@ -415,7 +416,7 @@ void GeometryObjectBase::updateMinMaxCoords( void )
  *  @brief  Calculates the min/max coordinate values.
  */
 /*==========================================================================*/
-void GeometryObjectBase::calculate_min_max_coords( void )
+void GeometryObjectBase::calculate_min_max_coords()
 {
     vismodule::Vector3f min_coord( 0.0f );
     vismodule::Vector3f max_coord( 0.0f );

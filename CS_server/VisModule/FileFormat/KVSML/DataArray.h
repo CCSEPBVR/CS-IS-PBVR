@@ -11,8 +11,8 @@
  *  $Id: DataArray.h 667 2011-02-22 16:07:54Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef VIS_MODULE__KVSML__DATA_ARRAY_H_INCLUDE
-#define VIS_MODULE__KVSML__DATA_ARRAY_H_INCLUDE
+#ifndef PBVR__KVSML__DATA_ARRAY_H_INCLUDE
+#define PBVR__KVSML__DATA_ARRAY_H_INCLUDE
 
 #include <vismodule/File>
 #include <vismodule/Tokenizer>
@@ -23,8 +23,9 @@
 #include <fstream>
 #include <sstream>
 
+#include "endian2.h"
 
-namespace vismodule
+namespace pbvr
 {
 
 namespace kvsml
@@ -48,8 +49,8 @@ inline const std::string GetDataFilename( const std::string& filename, const std
 //    const std::string sep( vismodule::File::Separator() );
     const std::string ext( "dat" );
 
-//    return( pathname + sep + basename + "_" + type + "." + ext );
-    return( basename + "_" + type + "." + ext );
+//    return pathname + sep + basename + "_" + type + "." + ext;
+    return basename + "_" + type + "." + ext;
 }
 
 /*===========================================================================*/
@@ -64,17 +65,17 @@ inline const std::string GetDataType( const vismodule::ValueArray<T>& data_array
 {
     vismodule::IgnoreUnusedVariable( data_array );
 
-    if (      typeid(T) == typeid(vismodule::Int8)   ) return("char");
-    else if ( typeid(T) == typeid(vismodule::UInt8)  ) return("uchar");
-    else if ( typeid(T) == typeid(vismodule::Int16)  ) return("short");
-    else if ( typeid(T) == typeid(vismodule::UInt16) ) return("ushort");
-    else if ( typeid(T) == typeid(vismodule::Int32)  ) return("int");
-    else if ( typeid(T) == typeid(vismodule::UInt32) ) return("uint");
-    else if ( typeid(T) == typeid(vismodule::Int64)  ) return("long");
-    else if ( typeid(T) == typeid(vismodule::UInt64) ) return("ulong");
-    else if ( typeid(T) == typeid(vismodule::Real32) ) return("float");
-    else if ( typeid(T) == typeid(vismodule::Real64) ) return("double");
-    else return("unknown");
+    if (      typeid( T ) == typeid( vismodule::Int8 )   ) return "char";
+    else if ( typeid( T ) == typeid( vismodule::UInt8 )  ) return "uchar";
+    else if ( typeid( T ) == typeid( vismodule::Int16 )  ) return "short";
+    else if ( typeid( T ) == typeid( vismodule::UInt16 ) ) return "ushort";
+    else if ( typeid( T ) == typeid( vismodule::Int32 )  ) return "int";
+    else if ( typeid( T ) == typeid( vismodule::UInt32 ) ) return "uint";
+    else if ( typeid( T ) == typeid( vismodule::Int64 )  ) return "long";
+    else if ( typeid( T ) == typeid( vismodule::UInt64 ) ) return "ulong";
+    else if ( typeid( T ) == typeid( vismodule::Real32 ) ) return "float";
+    else if ( typeid( T ) == typeid( vismodule::Real64 ) ) return "double";
+    else return "unknown";
 }
 
 /*===========================================================================*/
@@ -87,17 +88,17 @@ inline const std::string GetDataType( const vismodule::ValueArray<T>& data_array
 inline const std::string GetDataType( const vismodule::AnyValueArray& data_array )
 {
     const std::type_info& type = data_array.typeInfo()->type();
-    if (      type == typeid(vismodule::Int8)   ) return("char");
-    else if ( type == typeid(vismodule::UInt8)  ) return("uchar");
-    else if ( type == typeid(vismodule::Int16)  ) return("short");
-    else if ( type == typeid(vismodule::UInt16) ) return("ushort");
-    else if ( type == typeid(vismodule::Int32)  ) return("int");
-    else if ( type == typeid(vismodule::UInt32) ) return("uint");
-    else if ( type == typeid(vismodule::Int64)  ) return("long");
-    else if ( type == typeid(vismodule::UInt64) ) return("ulong");
-    else if ( type == typeid(vismodule::Real32) ) return("float");
-    else if ( type == typeid(vismodule::Real64) ) return("double");
-    else return("unknown");
+    if (      type == typeid( vismodule::Int8 )   ) return "char";
+    else if ( type == typeid( vismodule::UInt8 )  ) return "uchar";
+    else if ( type == typeid( vismodule::Int16 )  ) return "short";
+    else if ( type == typeid( vismodule::UInt16 ) ) return "ushort";
+    else if ( type == typeid( vismodule::Int32 )  ) return "int";
+    else if ( type == typeid( vismodule::UInt32 ) ) return "uint";
+    else if ( type == typeid( vismodule::Int64 )  ) return "long";
+    else if ( type == typeid( vismodule::UInt64 ) ) return "ulong";
+    else if ( type == typeid( vismodule::Real32 ) ) return "float";
+    else if ( type == typeid( vismodule::Real64 ) ) return "double";
+    else return "unknown";
 }
 
 /*===========================================================================*/
@@ -119,16 +120,16 @@ inline const bool ReadInternalData(
     if ( !data )
     {
         visModuleMessageError( "Cannot allocate memory for the internal data." );
-        return( false );
+        return false;
     }
 
     const size_t nloops = data_array->size();
-    for( size_t i = 0; i < nloops; i++ )
+    for ( size_t i = 0; i < nloops; i++ )
     {
         data[i] = static_cast<T>( atof( tokenizer.token().c_str() ) );
     }
 
-    return( true );
+    return true;
 }
 
 template <>
@@ -141,16 +142,16 @@ inline const bool ReadInternalData<vismodule::Int8>(
     if ( !data )
     {
         visModuleMessageError( "Cannot allocate memory for the internal data." );
-        return( false );
+        return false;
     }
 
     const size_t nloops = data_array->size();
-    for( size_t i = 0; i < nloops; i++ )
+    for ( size_t i = 0; i < nloops; i++ )
     {
         data[i] = static_cast<vismodule::Int8>( atoi( tokenizer.token().c_str() ) );
     }
 
-    return( true );
+    return true;
 }
 
 template <>
@@ -163,16 +164,16 @@ inline const bool ReadInternalData<vismodule::UInt8>(
     if ( !data )
     {
         visModuleMessageError( "Cannot allocate memory for the internal data." );
-        return( false );
+        return false;
     }
 
     const size_t nloops = data_array->size();
-    for( size_t i = 0; i < nloops; i++ )
+    for ( size_t i = 0; i < nloops; i++ )
     {
         data[i] = static_cast<vismodule::UInt8>( atoi( tokenizer.token().c_str() ) );
     }
 
-    return( true );
+    return true;
 }
 
 /*===========================================================================*/
@@ -194,16 +195,16 @@ inline const bool ReadInternalData(
     if ( !data )
     {
         visModuleMessageError( "Cannot allocate memory for the internal data." );
-        return( false );
+        return false;
     }
 
     const size_t nloops = data_array->size();
-    for( size_t i = 0; i < nloops; i++ )
+    for ( size_t i = 0; i < nloops; i++ )
     {
         data[i] = static_cast<T>( atof( tokenizer.token().c_str() ) );
     }
 
-    return( true );
+    return true;
 }
 
 template <>
@@ -216,16 +217,16 @@ inline const bool ReadInternalData<vismodule::Int8>(
     if ( !data )
     {
         visModuleMessageError( "Cannot allocate memory for the internal data." );
-        return( false );
+        return false;
     }
 
     const size_t nloops = data_array->size();
-    for( size_t i = 0; i < nloops; i++ )
+    for ( size_t i = 0; i < nloops; i++ )
     {
         data[i] = static_cast<vismodule::Int8>( atoi( tokenizer.token().c_str() ) );
     }
 
-    return( true );
+    return true;
 }
 
 template <>
@@ -238,16 +239,16 @@ inline const bool ReadInternalData<vismodule::UInt8>(
     if ( !data )
     {
         visModuleMessageError( "Cannot allocate memory for the internal data." );
-        return( false );
+        return false;
     }
 
     const size_t nloops = data_array->size();
-    for( size_t i = 0; i < nloops; i++ )
+    for ( size_t i = 0; i < nloops; i++ )
     {
         data[i] = static_cast<vismodule::UInt8>( atoi( tokenizer.token().c_str() ) );
     }
 
-    return( true );
+    return true;
 }
 
 /*===========================================================================*/
@@ -270,53 +271,56 @@ inline const bool ReadExternalData(
     if ( !data_array->template allocate<T>( nelements ) )
     {
         visModuleMessageError( "Cannot allocate memory for the external data." );
-        return( false );
+        return false;
     }
 
     if ( format == "binary" )
     {
         FILE* ifs = fopen( filename.c_str(), "rb" );
-        if( !ifs )
+        if ( !ifs )
         {
-            visModuleMessageError("Cannot open '%s'.", filename.c_str());
-            return( false );
+            visModuleMessageError( "Cannot open '%s'.", filename.c_str() );
+            return false;
         }
 
         const size_t data_size = data_array->size();
-        if ( fread( data_array->pointer(), sizeof(T), data_size, ifs ) != data_size )
+        if ( fread( data_array->pointer(), sizeof( T ), data_size, ifs ) != data_size )
         {
-            visModuleMessageError("Cannot read '%s'.", filename.c_str());
+            visModuleMessageError( "Cannot read '%s'.", filename.c_str() );
             fclose( ifs );
-            return( false );
+            return false;
         }
 
         fclose( ifs );
+#if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
+        data_array->swapByte();
+#endif
     }
     else if ( format == "ascii" )
     {
         FILE* ifs = fopen( filename.c_str(), "r" );
-        if( !ifs )
+        if ( !ifs )
         {
-            visModuleMessageError("Cannot open '%s'.", filename.c_str());
-            return( false );
+            visModuleMessageError( "Cannot open '%s'.", filename.c_str() );
+            return false;
         }
 
         fseek( ifs, 0, SEEK_END );
         const size_t size = ftell( ifs );
 
-        char* buffer = static_cast<char*>( malloc( sizeof(char) * size ) );
+        char* buffer = static_cast<char*>( malloc( sizeof( char ) * size ) );
         if ( !buffer )
         {
-            visModuleMessageError("Cannot allocate memory for reading the external data.");
+            visModuleMessageError( "Cannot allocate memory for reading the external data." );
             fclose( ifs );
-            return( false );
+            return false;
         }
 
         fseek( ifs, 0, SEEK_SET );
         if ( size != fread( buffer, 1, size, ifs ) )
         {
             visModuleMessageError( "Cannot read '%s'.", filename.c_str() );
-            return( false );
+            return false;
         }
 
         T* data = static_cast<T*>( data_array->pointer() );
@@ -327,7 +331,7 @@ inline const bool ReadExternalData(
         {
             if ( value )
             {
-                *(data++) = static_cast<T>( atof( value ) );
+                *( data++ ) = static_cast<T>( atof( value ) );
                 value = strtok( 0, delim );
             }
         }
@@ -338,11 +342,11 @@ inline const bool ReadExternalData(
     }
     else
     {
-        visModuleMessageError("Unknown format '%s'.",format.c_str());
-        return( false );
+        visModuleMessageError( "Unknown format '%s'.", format.c_str() );
+        return false;
     }
 
-    return( true );
+    return true;
 }
 
 /*===========================================================================*/
@@ -365,70 +369,73 @@ inline const bool ReadExternalData(
     if ( !data_array->allocate( nelements ) )
     {
         visModuleMessageError( "Cannot allocate memory for the external data." );
-        return( false );
+        return false;
     }
 
-    if( format == "binary" )
+    if ( format == "binary" )
     {
         FILE* ifs = fopen( filename.c_str(), "rb" );
-        if( !ifs )
+        if ( !ifs )
         {
-            visModuleMessageError("Cannot open '%s'.", filename.c_str());
-            return( false );
+            visModuleMessageError( "Cannot open '%s'.", filename.c_str() );
+            return false;
         }
 
-        if( typeid(T1) == typeid(T2) )
+        if ( typeid( T1 ) == typeid( T2 ) )
         {
             const size_t data_size = data_array->size();
-            if ( fread( data_array->pointer(), sizeof(T1), data_size, ifs ) != data_size )
+            if ( fread( data_array->pointer(), sizeof( T1 ), data_size, ifs ) != data_size )
             {
-                visModuleMessageError("Cannot read '%s'.",filename.c_str());
+                visModuleMessageError( "Cannot read '%s'.", filename.c_str() );
                 fclose( ifs );
-                return( false );
+                return false;
             }
         }
         else
         {
             const size_t nloops = data_array->size();
-            for( size_t i = 0; i < nloops; i++ )
+            for ( size_t i = 0; i < nloops; i++ )
             {
-                T2 data = T2(0);
-                if ( fread( &data, sizeof(T2), 1, ifs ) != 1 )
+                T2 data = T2( 0 );
+                if ( fread( &data, sizeof( T2 ), 1, ifs ) != 1 )
                 {
-                    visModuleMessageError("Cannot read '%s'.",filename.c_str());
+                    visModuleMessageError( "Cannot read '%s'.", filename.c_str() );
                     fclose( ifs );
-                    return( false );
+                    return false;
                 }
-                data_array->at(i) = static_cast<T1>( data );
+                data_array->at( i ) = static_cast<T1>( data );
             }
         }
         fclose( ifs );
+#if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
+        data_array->swapByte();
+#endif
     }
-    else if( format == "ascii" )
+    else if ( format == "ascii" )
     {
         FILE* ifs = fopen( filename.c_str(), "r" );
-        if( !ifs )
+        if ( !ifs )
         {
-            visModuleMessageError("Cannot open '%s'.", filename.c_str());
-            return( false );
+            visModuleMessageError( "Cannot open '%s'.", filename.c_str() );
+            return false;
         }
 
         fseek( ifs, 0, SEEK_END );
         const size_t size = ftell( ifs );
 
-        char* buffer = static_cast<char*>( malloc( sizeof(char) * size ) );
+        char* buffer = static_cast<char*>( malloc( sizeof( char ) * size ) );
         if ( !buffer )
         {
-            visModuleMessageError("Cannot allocate memory.");
+            visModuleMessageError( "Cannot allocate memory." );
             fclose( ifs );
-            return( false );
+            return false;
         }
 
         fseek( ifs, 0, SEEK_SET );
         if ( size != fread( buffer, 1, size, ifs ) )
         {
             visModuleMessageError( "Cannot read '%s'.", filename.c_str() );
-            return( false );
+            return false;
         }
 
         T1* data = data_array->pointer();
@@ -439,7 +446,7 @@ inline const bool ReadExternalData(
         {
             if ( value )
             {
-                *(data++) = static_cast<T1>( atof( value ) );
+                *( data++ ) = static_cast<T1>( atof( value ) );
                 value = strtok( 0, delim );
             }
         }
@@ -450,11 +457,11 @@ inline const bool ReadExternalData(
     }
     else
     {
-        visModuleMessageError("Unknown format '%s'.",format.c_str());
-        return( false );
+        visModuleMessageError( "Unknown format '%s'.", format.c_str() );
+        return false;
     }
 
-    return( true );
+    return true;
 }
 
 /*===========================================================================*/
@@ -476,49 +483,49 @@ inline const bool WriteExternalData(
         std::ofstream ofs( filename.c_str() );
         if ( ofs.fail() )
         {
-            visModuleMessageError("Cannot open file '%s'.", filename.c_str() );
-            return( false );
+            visModuleMessageError( "Cannot open file '%s'.", filename.c_str() );
+            return false;
         }
 
-        const std::string delim(", ");
+        const std::string delim( ", " );
         const std::type_info& data_type = data_array.typeInfo()->type();
         const size_t data_size = data_array.size();
-        if ( data_type == typeid(vismodule::Int8) )
+        if ( data_type == typeid( vismodule::Int8 ) )
         {
             const vismodule::Int8* values = data_array.pointer<vismodule::Int8>();
-            for ( size_t i = 0; i < data_size; i++ ) ofs << vismodule::Int16(values[i]) << delim;
+            for ( size_t i = 0; i < data_size; i++ ) ofs << vismodule::Int16( values[i] ) << delim;
         }
-        else if ( data_type == typeid(vismodule::UInt8) )
+        else if ( data_type == typeid( vismodule::UInt8 ) )
         {
             const vismodule::UInt8* values = data_array.pointer<vismodule::UInt8>();
-            for ( size_t i = 0; i < data_size; i++ ) ofs << vismodule::UInt16(values[i]) << delim;
+            for ( size_t i = 0; i < data_size; i++ ) ofs << vismodule::UInt16( values[i] ) << delim;
         }
-        else if ( data_type == typeid(vismodule::Int16) )
+        else if ( data_type == typeid( vismodule::Int16 ) )
         {
             const vismodule::Int16* values = data_array.pointer<vismodule::Int16>();
             for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
-        else if ( data_type == typeid(vismodule::UInt16) )
+        else if ( data_type == typeid( vismodule::UInt16 ) )
         {
             const vismodule::UInt16* values = data_array.pointer<vismodule::UInt16>();
             for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
-        else if ( data_type == typeid(vismodule::Int32) )
+        else if ( data_type == typeid( vismodule::Int32 ) )
         {
             const vismodule::Int32* values = data_array.pointer<vismodule::Int32>();
             for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
-        else if ( data_type == typeid(vismodule::UInt32) )
+        else if ( data_type == typeid( vismodule::UInt32 ) )
         {
             const vismodule::UInt32* values = data_array.pointer<vismodule::UInt32>();
             for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
-        else if ( data_type == typeid(vismodule::Real32) )
+        else if ( data_type == typeid( vismodule::Real32 ) )
         {
             const vismodule::Real32* values = data_array.pointer<vismodule::Real32>();
             for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
-        else if ( data_type == typeid(vismodule::Real64) )
+        else if ( data_type == typeid( vismodule::Real64 ) )
         {
             const vismodule::Real64* values = data_array.pointer<vismodule::Real64>();
             for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
@@ -531,21 +538,21 @@ inline const bool WriteExternalData(
         std::ofstream ofs( filename.c_str(), std::ios::out | std::ios::binary );
         if ( ofs.fail() )
         {
-            visModuleMessageError("Cannot open file '%s'.", filename.c_str() );
-            return( false );
+            visModuleMessageError( "Cannot open file '%s'.", filename.c_str() );
+            return false;
         }
         const void* data_pointer = data_array.pointer();
         const size_t data_byte_size = data_array.byteSize();
-        ofs.write( static_cast<const char*>(data_pointer), data_byte_size );
+        ofs.write( static_cast<const char*>( data_pointer ), data_byte_size );
         ofs.close();
     }
     else
     {
-        visModuleMessageError("Unknown format '%s'.",format.c_str());
-        return( false );
+        visModuleMessageError( "Unknown format '%s'.", format.c_str() );
+        return false;
     }
 
-    return( true );
+    return true;
 }
 
 /*===========================================================================*/
@@ -568,19 +575,19 @@ inline const bool WriteExternalData(
         std::ofstream ofs( filename.c_str() );
         if ( ofs.fail() )
         {
-            visModuleMessageError("Cannot open file '%s'.", filename.c_str() );
-            return( false );
+            visModuleMessageError( "Cannot open file '%s'.", filename.c_str() );
+            return false;
         }
 
-        const std::string delim(", ");
+        const std::string delim( ", " );
         const size_t data_size = data_array.size();
-        if ( typeid(T) == typeid(vismodule::Int8) || typeid(T) == typeid(vismodule::UInt8) )
+        if ( typeid( T ) == typeid( vismodule::Int8 ) || typeid( T ) == typeid( vismodule::UInt8 ) )
         {
-            for ( size_t i = 0; i < data_size; i++ ) ofs << int(data_array.at(i)) << delim;
+            for ( size_t i = 0; i < data_size; i++ ) ofs << int( data_array.at( i ) ) << delim;
         }
         else
         {
-            for ( size_t i = 0; i < data_size; i++ ) ofs << data_array.at(i) << delim;
+            for ( size_t i = 0; i < data_size; i++ ) ofs << data_array.at( i ) << delim;
         }
 
         ofs.close();
@@ -590,8 +597,8 @@ inline const bool WriteExternalData(
         std::ofstream ofs( filename.c_str(), std::ios::out | std::ios::binary );
         if ( ofs.fail() )
         {
-            visModuleMessageError("Cannot open file '%s'.", filename.c_str() );
-            return( false );
+            visModuleMessageError( "Cannot open file '%s'.", filename.c_str() );
+            return false;
         }
         const char* data_pointer = reinterpret_cast<const char*>( data_array.pointer() );
         const size_t data_byte_size = data_array.byteSize();
@@ -599,13 +606,13 @@ inline const bool WriteExternalData(
         ofs.close();
     }
 
-    return( true );
+    return true;
 }
 
 } // end of namespace DataArray
 
-} // end of namespace kvsml
+} // end of namespace pbvrml
 
-} // end of namespace vismodule
+} // end of namespace pbvr
 
 #endif // VIS_MODULE__KVSML__DATA_ARRAY_H_INCLUDE

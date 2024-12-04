@@ -11,35 +11,35 @@
  *  $Id: ObjectManager.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef VIS_MODULE__OBJECT_MANAGER_H_INCLUDE
-#define VIS_MODULE__OBJECT_MANAGER_H_INCLUDE
+#ifndef PBVR__OBJECT_MANAGER_H_INCLUDE
+#define PBVR__OBJECT_MANAGER_H_INCLUDE
 
 #include <string>
 #include <map>
-#include <vismodule/ClassName>
-#include <vismodule/ObjectBase>
+#include "ClassName.h"
+#include "ObjectBase.h"
 #include <vismodule/Tree>
 
 
-namespace vismodule
+namespace pbvr
 {
 
-typedef vismodule::Tree<vismodule::ObjectBase*> ObjectManagerBase;
+typedef vismodule::Tree<pbvr::ObjectBase*> ObjectManagerBase;
 
 /*==========================================================================*/
 /**
 *  Object manager class.
 */
 /*==========================================================================*/
-class ObjectManager : public ObjectManagerBase, public vismodule::ObjectBase
+class ObjectManager : public ObjectManagerBase, public pbvr::ObjectBase
 {
-    visModuleClassName( vismodule::ObjectManager );
+    visModuleClassName( pbvr::ObjectManager );
 
 public:
 
     typedef ObjectManagerBase::iterator   ObjectIterator;
-    typedef std::pair<int,ObjectIterator> ObjectPair;
-    typedef std::map<int,ObjectIterator>  ObjectMap;
+    typedef std::pair<int, ObjectIterator> ObjectPair;
+    typedef std::map<int, ObjectIterator>  ObjectMap;
 
 protected:
 
@@ -52,97 +52,97 @@ protected:
 
 public:
 
-    ObjectManager( void );
+    ObjectManager();
 
-    virtual ~ObjectManager( void );
+    virtual ~ObjectManager();
 
 private:
 
-    void insert_root( void );
+    void insert_root();
 
 public:
 
-    const ObjectType objectType( void ) const;
+    const ObjectType objectType() const;
 
-    int insert( vismodule::ObjectBase* obj );
+    int insert( pbvr::ObjectBase* obj );
 
-    int insert( int parent_id, vismodule::ObjectBase* obj );
+    int insert( const int parent_id, pbvr::ObjectBase* obj );
 
-    void erase( bool delete_flg = true );
+    void erase( const bool delete_flg = true );
 
-    void erase( int obj_id, bool delete_flg = true );
+    void erase( const int obj_id, const bool delete_flg = true );
 
-    void erase( std::string obj_name, bool delete_flg = true );
+    void erase( const std::string& obj_name, const bool delete_flg = true );
 
-    void change( int obj_id, vismodule::ObjectBase* obj, bool delete_flg = true );
+    void change( const int obj_id, pbvr::ObjectBase* obj, const bool delete_flg = true );
 
-    void change( std::string obj_name, vismodule::ObjectBase* obj, bool delete_flg = true );
+    void change( const std::string obj_name, pbvr::ObjectBase* obj, const bool delete_flg = true );
 
-    const int nobjects( void ) const;
+    const int nobjects() const;
 
-    vismodule::ObjectBase* object( void );
+    pbvr::ObjectBase* object();
 
-    vismodule::ObjectBase* object( int obj_id );
+    pbvr::ObjectBase* object( const int obj_id );
 
-    vismodule::ObjectBase* object( std::string obj_name );
+    pbvr::ObjectBase* object( const std::string& obj_name );
 
-    const bool hasObject( void ) const;
+    const bool hasObject() const;
 
-    void resetXform( void );
+    void resetXform();
 
-    void resetXform( int obj_id );
+    void resetXform( const int obj_id );
 
-    const vismodule::Xform xform( void ) const;
+    const vismodule::Xform xform() const;
 
-    const vismodule::Xform xform( int obj_id ) const;
+    const vismodule::Xform xform( const int obj_id ) const;
 
-    const int objectID( const vismodule::ObjectBase *object ) const;
+    const int objectID( const pbvr::ObjectBase& object ) const;
 
-    const int parentObjectID( const ObjectIterator it ) const;
+    const int parentObjectID( const ObjectIterator& it ) const;
 
-    const int parentObjectID( const vismodule::ObjectBase *object ) const;
+    const int parentObjectID( const pbvr::ObjectBase& object ) const;
 
-    const int parentObjectID( int object_id ) const;
+    const int parentObjectID( const int object_id ) const;
 
-    const int activeObjectID( void ) const;
+    const int activeObjectID() const;
 
-    bool setActiveObjectID( int obj_id );
+    bool setActiveObjectID( const int obj_id );
 
-    vismodule::ObjectBase* activeObject( void );
-
-public:
-
-    void resetActiveObjectXform( void );
-
-    void eraseActiveObject( void );
+    pbvr::ObjectBase* activeObject();
 
 public:
 
-    void enableAllMove( void );
+    void resetActiveObjectXform();
 
-    void disableAllMove( void );
+    void eraseActiveObject();
 
-    const bool isEnableAllMove( void ) const;
+public:
 
-    const bool hasActiveObject( void ) const;
+    void enableAllMove();
 
-    void releaseActiveObject( void );
+    void disableAllMove();
 
-    bool detectCollision( const vismodule::Vector2f& p_win, vismodule::Camera* camera );
+    const bool isEnableAllMove() const;
 
+    const bool hasActiveObject() const;
+
+    void releaseActiveObject();
+    /* 131017 removed
+        bool detectCollision( const vismodule::Vector2f& p_win, vismodule::Camera* camera );
+    */
     bool detectCollision( const vismodule::Vector3f& p_world );
 
 public:
-
-    const vismodule::Vector2f positionInDevice( vismodule::Camera* camera ) const;
-
+    /* 131017 removed
+        const vismodule::Vector2f positionInDevice( vismodule::Camera* camera ) const;
+    */
     void rotate( const vismodule::Matrix33f& rotation );
 
     void translate( const vismodule::Vector3f& translation );
 
     void scale( const vismodule::Vector3f& scaling );
 
-    void updateExternalCoords( void );
+    void updateExternalCoords();
 
 private:
 
@@ -150,17 +150,17 @@ private:
         const vismodule::Vector3f& min_ext,
         const vismodule::Vector3f& max_ext );
 
-    void update_normalize_parameters( void );
+    void update_normalize_parameters();
 
-    vismodule::ObjectBase* get_control_target( void );
+    pbvr::ObjectBase* get_control_target();
 
-    vismodule::Vector3f get_rotation_center( vismodule::ObjectBase* obj );
+    vismodule::Vector3f get_rotation_center();
 
-    ObjectIterator get_control_first_pointer( void );
+    ObjectIterator get_control_first_pointer();
 
-    ObjectIterator get_control_last_pointer( void );
+    ObjectIterator get_control_last_pointer();
 };
 
-} // end of namespace vismodule
+} // end of namespace pbvr
 
 #endif // VIS_MODULE__OBJECT_MANAGER_H_INCLUDE

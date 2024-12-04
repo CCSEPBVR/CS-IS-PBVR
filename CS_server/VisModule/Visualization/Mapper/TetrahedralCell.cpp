@@ -14,9 +14,10 @@
 #include "TetrahedralCell.h"
 
 
-namespace vismodule
+namespace pbvr
 {
-
+//namespace test
+//{
 // template instantiation
 template class TetrahedralCell<char>;
 template class TetrahedralCell<unsigned char>;
@@ -45,5 +46,5 @@ template class TetrahedralCell<float>;
 template class TetrahedralCell<double>;
 
 } // end of namespace old
-
-} // end of namespace vismodule
+//} // end of namespace test
+} // end of namespace pbvr

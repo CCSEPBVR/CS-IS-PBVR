@@ -16,7 +16,7 @@
 #include <functional>
 
 
-namespace vismodule
+namespace pbvr
 {
 
 /*==========================================================================*/
@@ -24,7 +24,7 @@ namespace vismodule
  *  Default constructor.
  */
 /*==========================================================================*/
-IDManager::IDManager( void )
+IDManager::IDManager()
 {
     m_flip_table.clear();
     clear();
@@ -35,104 +35,104 @@ IDManager::IDManager( void )
  *  Destructor.
  */
 /*==========================================================================*/
-IDManager::~IDManager( void )
+IDManager::~IDManager()
 {
     m_flip_table.clear();
     clear();
 }
 
-const IDPair IDManager::operator [] ( size_t index ) const
+const IDPair IDManager::operator [] ( const size_t index ) const
 {
     const int id = m_flip_table[index];
 
 //    ID_ptr p = begin();
     IDs::const_iterator p = begin();
-    for( int i = 0; i < id; i++ )
+    for ( int i = 0; i < id; i++ )
     {
         p++;
     }
 
-    return( (*p) );
+    return *p;
 }
 
-const size_t IDManager::size( void ) const
+const size_t IDManager::size() const
 {
-    return( IDs::size() );
+    return IDs::size();
 }
 
-void IDManager::insert( int object_id, int renderer_id )
+void IDManager::insert( const int object_id, const int renderer_id )
 {
     push_back( IDPair( object_id, renderer_id ) );
     update_flip_table();
 }
 
-void IDManager::insertObjectID( int object_id )
+void IDManager::insertObjectID( const int object_id )
 {
     insert( object_id, back().second );
     update_flip_table();
 }
 
-void IDManager::insertRendererID( int renderer_id )
+void IDManager::insertRendererID( const int renderer_id )
 {
     insert( back().first, renderer_id );
     update_flip_table();
 }
 
-const std::vector<int> IDManager::objectID( int renderer_id ) const
+const std::vector<int> IDManager::objectID( const int renderer_id ) const
 {
     std::vector<int> object_ids;
 
 //    for( ID_ptr p = begin(); p != end(); p++ )
-    for( IDs::const_iterator p = begin(); p != end(); p++ )
+    for ( IDs::const_iterator p = begin(); p != end(); p++ )
     {
-        if( renderer_id == p->second ) object_ids.push_back( p->first );
+        if ( renderer_id == p->second ) object_ids.push_back( p->first );
     }
 
-    return( object_ids );
+    return object_ids;
 }
 
-const int IDManager::objectID( void ) const
+const int IDManager::objectID() const
 {
-    return( back().first );
+    return back().first;
 }
 
-const std::vector<int> IDManager::rendererID( int object_id ) const
+const std::vector<int> IDManager::rendererID( const int object_id ) const
 {
     std::vector<int> renderer_ids;
 
 //    for( ID_ptr p = begin(); p != end(); p++ )
-    for( IDs::const_iterator p = begin(); p != end(); p++ )
+    for ( IDs::const_iterator p = begin(); p != end(); p++ )
     {
-        if( object_id == p->first ) renderer_ids.push_back( p->second );
+        if ( object_id == p->first ) renderer_ids.push_back( p->second );
     }
 
-    return( renderer_ids );
+    return renderer_ids;
 }
 
-const int IDManager::rendererID( void ) const
+const int IDManager::rendererID() const
 {
-    return( back().second );
+    return back().second;
 }
 
-void IDManager::erase( void )
+void IDManager::erase()
 {
     IDs::clear();
     m_flip_table.clear();
 }
 
-void IDManager::erase( int object_id, int renderer_id )
+void IDManager::erase( const int object_id, const int renderer_id )
 {
     std::vector<ID_ptr> erase_ptr;
 
-    for( ID_ptr p = begin(); p != end(); p++ )
+    for ( ID_ptr p = begin(); p != end(); p++ )
     {
-        if( object_id == p->first && renderer_id == p->second )
+        if ( object_id == p->first && renderer_id == p->second )
         {
             erase_ptr.push_back( p );
         }
     }
 
-    for( int i = 0; i < (int)erase_ptr.size(); i++ )
+    for ( int i = 0; i < ( int )erase_ptr.size(); i++ )
     {
         IDs::erase( erase_ptr[i] );
     }
@@ -140,19 +140,19 @@ void IDManager::erase( int object_id, int renderer_id )
     update_flip_table();
 }
 
-void IDManager::eraseByObjectID( int object_id )
+void IDManager::eraseByObjectID( const int object_id )
 {
     std::vector<ID_ptr> erase_ptr;
 
-    for( ID_ptr p = begin(); p != end(); p++ )
+    for ( ID_ptr p = begin(); p != end(); p++ )
     {
-        if( object_id == p->first )
+        if ( object_id == p->first )
         {
             erase_ptr.push_back( p );
         }
     }
 
-    for( int i = 0; i < (int)erase_ptr.size(); i++ )
+    for ( int i = 0; i < ( int )erase_ptr.size(); i++ )
     {
         IDs::erase( erase_ptr[i] );
     }
@@ -160,19 +160,19 @@ void IDManager::eraseByObjectID( int object_id )
     update_flip_table();
 }
 
-void IDManager::eraseByRendererID( int renderer_id )
+void IDManager::eraseByRendererID( const int renderer_id )
 {
     std::vector<ID_ptr> erase_ptr;
 
-    for( ID_ptr p = begin(); p != end(); p++ )
+    for ( ID_ptr p = begin(); p != end(); p++ )
     {
-        if( renderer_id == p->second )
+        if ( renderer_id == p->second )
         {
             erase_ptr.push_back( p );
         }
     }
 
-    for( int i = 0; i < (int)erase_ptr.size(); i++ )
+    for ( int i = 0; i < ( int )erase_ptr.size(); i++ )
     {
         IDs::erase( erase_ptr[i] );
     }
@@ -180,16 +180,16 @@ void IDManager::eraseByRendererID( int renderer_id )
     update_flip_table();
 }
 
-void IDManager::changeObject( int object_id )
+void IDManager::changeObject( const int object_id )
 {
     back().first = object_id;
 }
 
-void IDManager::changeObject( int renderer_id, int object_id )
+void IDManager::changeObject( const int renderer_id, const int object_id )
 {
-    for( ID_rptr p = rbegin(); p != rend(); p++ )
+    for ( ID_rptr p = rbegin(); p != rend(); p++ )
     {
-        if( renderer_id == p->second )
+        if ( renderer_id == p->second )
         {
             p->first = object_id;
             return;
@@ -197,11 +197,11 @@ void IDManager::changeObject( int renderer_id, int object_id )
     }
 }
 
-void IDManager::changeObject( const IDPair& id_pair, int object_id )
+void IDManager::changeObject( const IDPair& id_pair, const int object_id )
 {
-    for( ID_rptr p = rbegin(); p != rend(); p++ )
+    for ( ID_rptr p = rbegin(); p != rend(); p++ )
     {
-        if( *p == id_pair )
+        if ( *p == id_pair )
         {
             p->first = object_id;
             return;
@@ -209,16 +209,16 @@ void IDManager::changeObject( const IDPair& id_pair, int object_id )
     }
 }
 
-void IDManager::changeRenderer( int renderer_id )
+void IDManager::changeRenderer( const int renderer_id )
 {
     back().second = renderer_id;
 }
 
-void IDManager::changeRenderer( int object_id, int renderer_id )
+void IDManager::changeRenderer( const int object_id, const int renderer_id )
 {
-    for( ID_rptr p = rbegin(); p != rend(); p++ )
+    for ( ID_rptr p = rbegin(); p != rend(); p++ )
     {
-        if( object_id == p->first )
+        if ( object_id == p->first )
         {
             p->second = renderer_id;
             return;
@@ -226,11 +226,11 @@ void IDManager::changeRenderer( int object_id, int renderer_id )
     }
 }
 
-void IDManager::changeRenderer( const IDPair& id_pair, int renderer_id )
+void IDManager::changeRenderer( const IDPair& id_pair, const int renderer_id )
 {
-    for( ID_rptr p = rbegin(); p != rend(); p++ )
+    for ( ID_rptr p = rbegin(); p != rend(); p++ )
     {
-        if( *p == id_pair )
+        if ( *p == id_pair )
         {
             p->second = renderer_id;
             return;
@@ -238,7 +238,7 @@ void IDManager::changeRenderer( const IDPair& id_pair, int renderer_id )
     }
 }
 
-void IDManager::flip( void )
+void IDManager::flip()
 {
     std::vector<int> next( size() );
 
@@ -249,16 +249,16 @@ void IDManager::flip( void )
     std::copy( next.begin(), next.end(), m_flip_table.begin() );
 }
 
-void IDManager::update_flip_table( void )
+void IDManager::update_flip_table()
 {
     m_flip_table.clear();
 
     const int n = size();
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         m_flip_table.push_back( i );
     }
 }
 
-} // end of namespace vismodule
+} // end of namespace pbvr

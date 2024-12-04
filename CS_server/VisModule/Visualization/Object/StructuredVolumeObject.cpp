@@ -17,14 +17,14 @@
 namespace
 {
 
-const std::string GetGridTypeName( const vismodule::StructuredVolumeObject::GridType type )
+const std::string GetGridTypeName( const pbvr::StructuredVolumeObject::GridType type )
 {
     switch( type )
     {
-    case vismodule::StructuredVolumeObject::Uniform: return("uniform");
-    case vismodule::StructuredVolumeObject::Rectilinear: return("rectiliear");
-    case vismodule::StructuredVolumeObject::Curvilinear: return( "curvilinear" );
-    case vismodule::StructuredVolumeObject::Irregular: return( "irregular" );
+    case pbvr::StructuredVolumeObject::Uniform: return("uniform");
+    case pbvr::StructuredVolumeObject::Rectilinear: return("rectiliear");
+    case pbvr::StructuredVolumeObject::Curvilinear: return( "curvilinear" );
+    case pbvr::StructuredVolumeObject::Irregular: return( "irregular" );
     default: return( "unknown grid type" );
     }
 }
@@ -32,7 +32,7 @@ const std::string GetGridTypeName( const vismodule::StructuredVolumeObject::Grid
 } // end of namespace
 
 
-namespace vismodule
+namespace pbvr
 {
 
 /*==========================================================================*/
@@ -40,10 +40,10 @@ namespace vismodule
  *  Constructs a new empty StructuredVolumeObject.
  */
 /*==========================================================================*/
-StructuredVolumeObject::StructuredVolumeObject( void )
-    : vismodule::VolumeObjectBase()
-    , m_grid_type( UnknownGridType )
-    , m_resolution( vismodule::Vector3ui( 0, 0, 0 ) )
+StructuredVolumeObject::StructuredVolumeObject():
+    pbvr::VolumeObjectBase(),
+    m_grid_type( UnknownGridType ),
+    m_resolution( vismodule::Vector3ui( 0, 0, 0 ) )
 {
 }
 
@@ -59,10 +59,10 @@ StructuredVolumeObject::StructuredVolumeObject( void )
 StructuredVolumeObject::StructuredVolumeObject(
     const vismodule::Vector3ui& resolution,
     const size_t          veclen,
-    const Values&         values )
-    : vismodule::VolumeObjectBase( veclen, Coords( 0 ), values )
-    , m_grid_type( Uniform )
-    , m_resolution( resolution )
+    const Values&         values ):
+    pbvr::VolumeObjectBase( veclen, Coords( 0 ), values ),
+    m_grid_type( Uniform ),
+    m_resolution( resolution )
 {
 }
 
@@ -82,10 +82,10 @@ StructuredVolumeObject::StructuredVolumeObject(
     const vismodule::Vector3ui& resolution,
     const size_t          veclen,
     const Coords&         coords,
-    const Values&         values )
-    : vismodule::VolumeObjectBase( veclen, coords, values )
-    , m_grid_type( grid_type )
-    , m_resolution( resolution )
+    const Values&         values ):
+    pbvr::VolumeObjectBase( veclen, coords, values ),
+    m_grid_type( grid_type ),
+    m_resolution( resolution )
 {
 }
 
@@ -96,10 +96,10 @@ StructuredVolumeObject::StructuredVolumeObject(
  *  @param other [in] Structured volume.
  */
 /*==========================================================================*/
-StructuredVolumeObject::StructuredVolumeObject( const StructuredVolumeObject& other )
-    : vismodule::VolumeObjectBase( other )
-    , m_grid_type( other.m_grid_type )
-    , m_resolution( other.m_resolution )
+StructuredVolumeObject::StructuredVolumeObject( const StructuredVolumeObject& other ):
+    pbvr::VolumeObjectBase( other ),
+    m_grid_type( other.m_grid_type ),
+    m_resolution( other.m_resolution )
 {
 }
 
@@ -108,30 +108,30 @@ StructuredVolumeObject::StructuredVolumeObject( const StructuredVolumeObject& ot
  *  Destroys the StructuredVolumeObject.
  */
 /*==========================================================================*/
-StructuredVolumeObject::~StructuredVolumeObject( void )
+StructuredVolumeObject::~StructuredVolumeObject()
 {
 }
 
-vismodule::StructuredVolumeObject* StructuredVolumeObject::DownCast( vismodule::ObjectBase* object )
+pbvr::StructuredVolumeObject* StructuredVolumeObject::DownCast( pbvr::ObjectBase* object )
 {
-    vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
-    if ( !volume ) return( NULL );
+    pbvr::VolumeObjectBase* volume = pbvr::VolumeObjectBase::DownCast( object );
+    if ( !volume ) return NULL;
 
-    const vismodule::VolumeObjectBase::VolumeType type = volume->volumeType();
-    if ( type != vismodule::VolumeObjectBase::Structured )
+    const pbvr::VolumeObjectBase::VolumeType type = volume->volumeType();
+    if ( type != pbvr::VolumeObjectBase::Structured )
     {
-        visModuleMessageError("Input object is not a structured volume object.");
-        return( NULL );
+        visModuleMessageError( "Input object is not a structured volume object." );
+        return NULL;
     }
 
-    vismodule::StructuredVolumeObject* structured = static_cast<vismodule::StructuredVolumeObject*>( volume );
+    pbvr::StructuredVolumeObject* structured = static_cast<pbvr::StructuredVolumeObject*>( volume );
 
-    return( structured );
+    return structured;
 }
 
-const vismodule::StructuredVolumeObject* StructuredVolumeObject::DownCast( const vismodule::ObjectBase* object )
+const pbvr::StructuredVolumeObject* StructuredVolumeObject::DownCast( const pbvr::ObjectBase& object )
 {
-    return( StructuredVolumeObject::DownCast( const_cast<vismodule::ObjectBase*>( object ) ) );
+    return StructuredVolumeObject::DownCast( const_cast<pbvr::ObjectBase*>( &object ) );
 }
 
 StructuredVolumeObject& StructuredVolumeObject::operator = ( const StructuredVolumeObject& object )
@@ -141,7 +141,7 @@ StructuredVolumeObject& StructuredVolumeObject::operator = ( const StructuredVol
         this->shallowCopy( object );
     }
 
-    return( *this );
+    return *this;
 }
 
 std::ostream& operator << ( std::ostream& os, const StructuredVolumeObject& object )
@@ -150,19 +150,22 @@ std::ostream& operator << ( std::ostream& os, const StructuredVolumeObject& obje
 
     os << "Object type:  " << "structured volume object" << std::endl;
 #ifdef VIS_MODULE_COMPILER_VC
-#if VIS_MODULE_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
-    // @TODO Cannot instance the object that is a abstract class here (error:C2259).
-#endif
+//#if PBVR_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
+//    // @TODO Cannot instance the object that is a abstract class here (error:C2259).
+//#endif
 #else
-    os << static_cast<const vismodule::VolumeObjectBase&>( object ) << std::endl;
+#ifdef __FUJITSU
+#else
+    os << static_cast<const pbvr::VolumeObjectBase&>( object ) << std::endl;
+#endif
 #endif
     os << "Grid type:  " << ::GetGridTypeName( object.gridType() ) << std::endl;
-    os << "Resolution:  " << object.resolution() << std::endl;
+    os << "m_resolution:  " << object.resolution() << std::endl;
     os << "Number of nodes:  " << object.nnodes() << std::endl;
     os << "Min. value:  " << object.minValue() << std::endl;
     os << "Max. value:  " << object.maxValue();
 
-    return( os );
+    return os;
 }
 
 void StructuredVolumeObject::shallowCopy( const StructuredVolumeObject& object )
@@ -194,6 +197,7 @@ void StructuredVolumeObject::setGridType( const GridType grid_type )
  *  Sets the node resolution.
  */
 /*==========================================================================*/
+//void StructuredVolumeObject::setm_resolution( const vismodule::Vector3ui& resolution )
 void StructuredVolumeObject::setResolution( const vismodule::Vector3ui& resolution )
 {
     m_resolution = resolution;
@@ -204,9 +208,9 @@ void StructuredVolumeObject::setResolution( const vismodule::Vector3ui& resoluti
  *  Returns the volume type.
  */
 /*==========================================================================*/
-const StructuredVolumeObject::VolumeType StructuredVolumeObject::volumeType( void ) const
+const StructuredVolumeObject::VolumeType StructuredVolumeObject::volumeType() const
 {
-    return( Structured );
+    return Structured;
 }
 
 /*==========================================================================*/
@@ -214,9 +218,9 @@ const StructuredVolumeObject::VolumeType StructuredVolumeObject::volumeType( voi
  *  Returns the grid type.
  */
 /*==========================================================================*/
-const StructuredVolumeObject::GridType StructuredVolumeObject::gridType( void ) const
+const StructuredVolumeObject::GridType StructuredVolumeObject::gridType() const
 {
-    return( m_grid_type );
+    return m_grid_type;
 }
 
 /*==========================================================================*/
@@ -224,9 +228,9 @@ const StructuredVolumeObject::GridType StructuredVolumeObject::gridType( void ) 
  *  Returns the cell type.
  */
 /*==========================================================================*/
-const StructuredVolumeObject::CellType StructuredVolumeObject::cellType( void ) const
+const StructuredVolumeObject::CellType StructuredVolumeObject::cellType() const
 {
-    return( Hexahedra );
+    return Hexahedra;
 }
 
 /*==========================================================================*/
@@ -234,9 +238,9 @@ const StructuredVolumeObject::CellType StructuredVolumeObject::cellType( void ) 
  *  Returns the node resolution.
  */
 /*==========================================================================*/
-const vismodule::Vector3ui& StructuredVolumeObject::resolution( void ) const
+const vismodule::Vector3ui& StructuredVolumeObject::resolution() const
 {
-    return( m_resolution );
+    return m_resolution;
 }
 
 /*==========================================================================*/
@@ -244,9 +248,9 @@ const vismodule::Vector3ui& StructuredVolumeObject::resolution( void ) const
  *  Returns the number of nodes per line.
  */
 /*==========================================================================*/
-const size_t StructuredVolumeObject::nnodesPerLine( void ) const
+const size_t StructuredVolumeObject::nnodesPerLine() const
 {
-    return( m_resolution.x() );
+    return m_resolution.x();
 }
 
 /*==========================================================================*/
@@ -254,9 +258,9 @@ const size_t StructuredVolumeObject::nnodesPerLine( void ) const
  *  Returns the number of nodes per slice.
  */
 /*==========================================================================*/
-const size_t StructuredVolumeObject::nnodesPerSlice( void ) const
+const size_t StructuredVolumeObject::nnodesPerSlice() const
 {
-    return( this->nnodesPerLine() * m_resolution.y() );
+    return this->nnodesPerLine() * m_resolution.y();
 }
 
 /*==========================================================================*/
@@ -264,9 +268,9 @@ const size_t StructuredVolumeObject::nnodesPerSlice( void ) const
  *  Returns the number of nodes.
  */
 /*==========================================================================*/
-const size_t StructuredVolumeObject::nnodes( void ) const
+const size_t StructuredVolumeObject::nnodes() const
 {
-    return( this->nnodesPerSlice() * m_resolution.z() );
+    return this->nnodesPerSlice() * m_resolution.z();
 }
 
 /*==========================================================================*/
@@ -274,9 +278,9 @@ const size_t StructuredVolumeObject::nnodes( void ) const
  *  Update the min/max node coordinates.
  */
 /*==========================================================================*/
-void StructuredVolumeObject::updateMinMaxCoords( void )
+void StructuredVolumeObject::updateMinMaxCoords()
 {
-    this->calculate_min_max_coords();
+    this->calculateMinMaxCoords();
 }
 
 /*==========================================================================*/
@@ -284,7 +288,7 @@ void StructuredVolumeObject::updateMinMaxCoords( void )
  *  Calculate the min/max coordinate values.
  */
 /*==========================================================================*/
-void StructuredVolumeObject::calculate_min_max_coords( void )
+void StructuredVolumeObject::calculateMinMaxCoords()
 {
     vismodule::Vector3f min_coord( 0.0f, 0.0f, 0.0f );
     vismodule::Vector3f max_coord( 0.0f, 0.0f, 0.0f );
@@ -362,4 +366,4 @@ void StructuredVolumeObject::calculate_min_max_coords( void )
     }
 }
 
-} // end of namespace vismodule
+} // end of namespace pbvr

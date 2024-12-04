@@ -11,34 +11,105 @@
  *  $Id: VolumeObjectBase.h 848 2011-06-29 11:35:52Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef VIS_MODULE__VOLUME_OBJECT_BASE_H_INCLUDE
-#define VIS_MODULE__VOLUME_OBJECT_BASE_H_INCLUDE
+#ifndef PBVR__VOLUME_OBJECT_BASE_H_INCLUDE
+#define PBVR__VOLUME_OBJECT_BASE_H_INCLUDE
 
 #include <string>
-#include <vismodule/ClassName>
-#include <vismodule/ObjectBase>
+#include "ClassName.h"
+#include "ObjectBase.h"
 #include <vismodule/Value>
 #include <vismodule/ValueArray>
 #include <vismodule/AnyValueArray>
 #include <vismodule/Math>
 
 
-namespace vismodule
+namespace pbvr
 {
+
+struct EquationToken
+{
+    int   exp_token[128];//数式のトークン配列
+    int   var_name[128];//数式の変数配列
+    float val_array[128];//数式の値の配列
+};
+
+
+//    2023 shimomura
+struct CoordSynthesizerTokens
+{
+    EquationToken m_x_coord_synthesizer_token;
+    EquationToken m_y_coord_synthesizer_token;
+    EquationToken m_z_coord_synthesizer_token;
+
+    bool x_token_empty=true;
+    bool y_token_empty=true;
+    bool z_token_empty=true;
+
+    CoordSynthesizerTokens()    
+    {
+//        for(int i = 0 ; i<128; i++ )
+//        {
+//            m_x_coord_synthesizer_token.exp_token[i] = 0;
+//            m_x_coord_synthesizer_token.var_name[i] = 0;
+//            m_x_coord_synthesizer_token.val_array[i] = 0;
+//            m_y_coord_synthesizer_token.exp_token[i] = 0;
+//            m_y_coord_synthesizer_token.var_name[i] = 0;
+//            m_y_coord_synthesizer_token.val_array[i] = 0;
+//            m_z_coord_synthesizer_token.exp_token[i] = 0;
+//            m_z_coord_synthesizer_token.var_name[i] = 0;
+//            m_z_coord_synthesizer_token.val_array[i] = 0;
+//        }
+    }
+
+    CoordSynthesizerTokens( const EquationToken& xt, 
+                            const EquationToken& yt,
+                            const EquationToken& zt )    
+    {
+        for(int i = 0 ; i<128; i++ )
+        {
+            m_x_coord_synthesizer_token.exp_token[i] = xt.exp_token[i];
+            m_x_coord_synthesizer_token.var_name[i]  = xt.var_name[i] ;
+            m_x_coord_synthesizer_token.val_array[i] = xt.val_array[i];
+            m_y_coord_synthesizer_token.exp_token[i] = yt.exp_token[i];
+            m_y_coord_synthesizer_token.var_name[i]  = yt.var_name[i] ;
+            m_y_coord_synthesizer_token.val_array[i] = yt.val_array[i];
+            m_z_coord_synthesizer_token.exp_token[i] = zt.exp_token[i];
+            m_z_coord_synthesizer_token.var_name[i]  = zt.var_name[i] ;
+            m_z_coord_synthesizer_token.val_array[i] = zt.val_array[i];
+        }
+    }
+
+};
+
+struct CoordSynthesizerStrings
+{
+    std::string m_x_coord_synthesizer_string;
+    std::string m_y_coord_synthesizer_string;
+    std::string m_z_coord_synthesizer_string;
+    int         m_time_step;
+    CoordSynthesizerStrings( const int ts = 0,
+                             const std::string& xs = std::string(),
+                             const std::string& ys = std::string(),
+                             const std::string& zs = std::string() ) :
+        m_time_step( ts ),
+        m_x_coord_synthesizer_string( xs ),
+        m_y_coord_synthesizer_string( ys ),
+        m_z_coord_synthesizer_string( zs )
+    {}
+};
 
 /*==========================================================================*/
 /**
  *  VolumeObjectBase.
  */
 /*==========================================================================*/
-class VolumeObjectBase
-    : public vismodule::ObjectBase
+class VolumeObjectBase : public pbvr::ObjectBase
 {
-    visModuleClassName( vismodule::VolumeObjectBase );
+    visModuleClassName( pbvr::VolumeObjectBase );
 
 public:
 
-    typedef vismodule::ObjectBase BaseClass;
+    typedef pbvr::ObjectBase BaseClass;
 
     typedef vismodule::ValueArray<float> Coords;
     typedef vismodule::AnyValueArray     Values;
@@ -67,8 +138,13 @@ public:
         Hexahedra           = 8,  ///< Hexahedral cell.
         QuadraticTetrahedra = 10, ///< Quadratic tetrahedral cell.
         QuadraticHexahedra  = 20, ///< Quadratic Hexahedral cell.
+        Prism               = 6,  ///< Prismatic cell.
         Pyramid             = 5,  ///< Pyramidal cell.
-        Point               = 1   ///< Point.
+        Point               = 1,  ///< Point.
+        Triangle            = 3,  ///< Triangle cell.
+        QuadraticTriangle   = 9,  ///< Quadratic Triangle cell.
+        Square              = 11, ///< Square cell.
+        QuadraticSquare     = 12  ///< Quadratic Square cell.
     };
 
 private:
@@ -83,9 +159,15 @@ private:
     mutable vismodule::Real64 m_min_value;          ///< Minimum field value.
     mutable vismodule::Real64 m_max_value;          ///< Maximum field value.
 
+    CoordSynthesizerStrings*     m_pCoordSynthStrs;    ///< String set for coord synthesizer
+    CoordSynthesizerTokens*      m_pCoordSynthTkns;
+
+//    m_min_values;
+
+
 public:
 
-    VolumeObjectBase( void );
+    VolumeObjectBase();
 
     VolumeObjectBase(
         const size_t     veclen,
@@ -94,13 +176,13 @@ public:
 
     VolumeObjectBase( const VolumeObjectBase& other );
 
-    virtual ~VolumeObjectBase( void );
+    virtual ~VolumeObjectBase();
 
 public:
 
-    static vismodule::VolumeObjectBase* DownCast( vismodule::ObjectBase* object );
+    static pbvr::VolumeObjectBase* DownCast( pbvr::ObjectBase* object );
 
-    static const vismodule::VolumeObjectBase* DownCast( const vismodule::ObjectBase* object );
+    static const pbvr::VolumeObjectBase* DownCast( const pbvr::ObjectBase& object );
 
 public:
 
@@ -120,35 +202,41 @@ public:
         const vismodule::Real64 min_value,
         const vismodule::Real64 max_value ) const;
 
-public:
-
-    const std::string& label( void ) const;
-
-    const size_t veclen( void ) const;
-
-    const Coords& coords( void ) const;
-
-    const Values& values( void ) const;
-
-    const bool hasMinMaxValues( void ) const;
-
-    const vismodule::Real64 minValue( void ) const;
-
-    const vismodule::Real64 maxValue( void ) const;
+    void setCoordSynthesizerStrings( const CoordSynthesizerStrings& pcss );
+    void setCoordSynthesizerTokens( const CoordSynthesizerTokens& pcst );
 
 public:
 
-    const ObjectType objectType( void ) const;
+    const std::string& label() const;
 
-    virtual const VolumeType volumeType( void ) const = 0;
+    const size_t veclen() const;
 
-    virtual const GridType gridType( void ) const = 0;
+    const Coords& coords() const;
 
-    virtual const CellType cellType( void ) const = 0;
+    const Values& values() const;
 
-    virtual const size_t nnodes( void ) const = 0;
+    const bool hasMinMaxValues() const;
 
-    void updateMinMaxValues( void ) const;
+    const vismodule::Real64 minValue() const;
+
+    const vismodule::Real64 maxValue() const;
+
+    const CoordSynthesizerStrings* getCoordSynthesizerStrings() const;
+    const CoordSynthesizerTokens*  getCoordSynthesizerTokens() const;
+
+public:
+
+    const ObjectType objectType() const;
+
+    virtual const VolumeType volumeType() const = 0;
+
+    virtual const GridType gridType() const = 0;
+
+    virtual const CellType cellType() const = 0;
+
+    virtual const size_t nnodes() const = 0;
+
+    void updateMinMaxValues() const;
 
 public:
 
@@ -159,11 +247,11 @@ public:
 private:
 
     template<typename T>
-    void calculate_min_max_values( void ) const;
+    void calculate_min_max_values() const;
 };
 
 template<typename T>
-void VolumeObjectBase::calculate_min_max_values( void ) const
+void VolumeObjectBase::calculate_min_max_values() const
 {
     const T*       value = reinterpret_cast<const T*>( m_values.pointer() );
     const T* const end   = value + this->nnodes() * m_veclen;
@@ -208,6 +296,6 @@ void VolumeObjectBase::calculate_min_max_values( void ) const
     }
 }
 
-} // end of namespace vismodule
+} // end of namespace pbvr
 
 #endif // VIS_MODULE__VOLUME_OBJECT_BASE_H_INCLUDE

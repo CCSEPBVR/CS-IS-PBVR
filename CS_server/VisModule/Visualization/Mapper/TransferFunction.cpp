@@ -17,20 +17,23 @@
 #include <vismodule/KVSMLTransferFunction>
 
 
-namespace { const size_t DefaultResolution = 256; }
+namespace
+{
+const size_t Defaultm_resolution = 256;
+}
 
-namespace vismodule
+namespace pbvr
 {
 
 /*==========================================================================*/
 /**
  *  @brief  Constructs a new TransferFunction.
- *  @param  resolution [in] Resolution.
+ *  @param  resolution [in] m_resolution.
  */
 /*==========================================================================*/
-TransferFunction::TransferFunction( const size_t resolution )
-    : m_color_map( resolution )
-    , m_opacity_map( resolution )
+TransferFunction::TransferFunction( const size_t resolution ):
+    m_color_map( resolution ),
+    m_opacity_map( resolution )
 {
     m_color_map.create();
     m_opacity_map.create();
@@ -42,20 +45,21 @@ TransferFunction::TransferFunction( const size_t resolution )
  *  @param  filename [in] filename
  */
 /*===========================================================================*/
+/*
 TransferFunction::TransferFunction( const std::string& filename )
 {
     this->read( filename );
 }
-
+*/
 /*==========================================================================*/
 /**
  *  @brief  Constructs a new TransferFunction.
  *  @param  color_map [in] Color map.
  */
 /*==========================================================================*/
-TransferFunction::TransferFunction( const vismodule::ColorMap& color_map )
-    : m_color_map( color_map )
-    , m_opacity_map( color_map.resolution() )
+TransferFunction::TransferFunction( const vismodule::ColorMap& color_map ):
+    m_color_map( color_map ),
+    m_opacity_map( color_map.resolution() )
 {
 }
 
@@ -65,9 +69,9 @@ TransferFunction::TransferFunction( const vismodule::ColorMap& color_map )
  *  @param  opacity_map [in] Opacity map.
  */
 /*==========================================================================*/
-TransferFunction::TransferFunction( const vismodule::OpacityMap& opacity_map )
-    : m_color_map( opacity_map.resolution() )
-    , m_opacity_map( opacity_map )
+TransferFunction::TransferFunction( const vismodule::OpacityMap& opacity_map ):
+    m_color_map( opacity_map.resolution() ),
+    m_opacity_map( opacity_map )
 {
 }
 
@@ -80,9 +84,9 @@ TransferFunction::TransferFunction( const vismodule::OpacityMap& opacity_map )
 /*==========================================================================*/
 TransferFunction::TransferFunction(
     const vismodule::ColorMap&   color_map,
-    const vismodule::OpacityMap& opacity_map )
-    : m_color_map( color_map )
-    , m_opacity_map( opacity_map )
+    const vismodule::OpacityMap& opacity_map ):
+    m_color_map( color_map ),
+    m_opacity_map( opacity_map )
 {
 }
 
@@ -92,9 +96,9 @@ TransferFunction::TransferFunction(
  *  @param  other [in] Transfer function.
  */
 /*==========================================================================*/
-TransferFunction::TransferFunction( const TransferFunction& other )
-    : m_color_map( other.m_color_map )
-    , m_opacity_map( other.m_opacity_map )
+TransferFunction::TransferFunction( const TransferFunction& other ):
+    m_color_map( other.m_color_map ),
+    m_opacity_map( other.m_opacity_map )
 {
 }
 
@@ -103,7 +107,7 @@ TransferFunction::TransferFunction( const TransferFunction& other )
  *  @brief  Destroys TransferFunction.
  */
 /*==========================================================================*/
-TransferFunction::~TransferFunction( void )
+TransferFunction::~TransferFunction()
 {
 }
 
@@ -142,10 +146,20 @@ void TransferFunction::setRange( const float min_value, const float max_value )
     m_opacity_map.setRange( min_value, max_value );
 }
 
-void TransferFunction::setRange( const vismodule::VolumeObjectBase* volume )
+void TransferFunction::setColorRange( const float min_value, const float max_value )
 {
-    const float min_value = static_cast<float>( volume->minValue() );
-    const float max_value = static_cast<float>( volume->maxValue() );
+    m_color_map.setRange( min_value, max_value );
+}
+  
+void TransferFunction::setOpacityRange( const float min_value, const float max_value )
+{
+    m_opacity_map.setRange( min_value, max_value );
+}
+
+void TransferFunction::setRange( const pbvr::VolumeObjectBase& volume )
+{
+    const float min_value = static_cast<float>( volume.minValue() );
+    const float max_value = static_cast<float>( volume.maxValue() );
     this->setRange( min_value, max_value );
 }
 
@@ -198,28 +212,28 @@ void TransferFunction::adjustRange( const float min_value, const float max_value
     this->setRange( min_value, max_value );
 }
 
-void TransferFunction::adjustRange( const vismodule::VolumeObjectBase* volume )
+void TransferFunction::adjustRange( const pbvr::VolumeObjectBase& volume )
 {
-    const float min_value = static_cast<float>( volume->minValue() );
-    const float max_value = static_cast<float>( volume->maxValue() );
+    const float min_value = static_cast<float>( volume.minValue() );
+    const float max_value = static_cast<float>( volume.maxValue() );
     this->adjustRange( min_value, max_value );
 }
 
-const bool TransferFunction::hasRange( void ) const
+const bool TransferFunction::hasRange() const
 {
-    return( m_color_map.hasRange() && m_opacity_map.hasRange() );
+    return m_color_map.hasRange() && m_opacity_map.hasRange();
 }
 
-const float TransferFunction::minValue( void ) const
+const float TransferFunction::minValue() const
 {
     VIS_MODULE_ASSERT( m_color_map.minValue() == m_opacity_map.minValue() );
-    return( m_color_map.minValue() );
+    return m_color_map.minValue();
 }
 
-const float TransferFunction::maxValue( void ) const
+const float TransferFunction::maxValue() const
 {
     VIS_MODULE_ASSERT( m_color_map.maxValue() == m_opacity_map.maxValue() );
-    return( m_color_map.maxValue() );
+    return m_color_map.maxValue();
 }
 
 /*==========================================================================*/
@@ -227,9 +241,9 @@ const float TransferFunction::maxValue( void ) const
  *  @brief  Returns the color map.
  */
 /*==========================================================================*/
-const vismodule::ColorMap& TransferFunction::colorMap( void ) const
+const vismodule::ColorMap& TransferFunction::colorMap() const
 {
-    return( m_color_map );
+    return m_color_map;
 }
 
 /*==========================================================================*/
@@ -237,9 +251,9 @@ const vismodule::ColorMap& TransferFunction::colorMap( void ) const
  *  @brief  Returns the opacity map.
  */
 /*==========================================================================*/
-const vismodule::OpacityMap& TransferFunction::opacityMap( void ) const
+const vismodule::OpacityMap& TransferFunction::opacityMap() const
 {
-    return( m_opacity_map );
+    return m_opacity_map;
 }
 
 /*==========================================================================*/
@@ -247,10 +261,10 @@ const vismodule::OpacityMap& TransferFunction::opacityMap( void ) const
  *  @brief  Returns the resolution.
  */
 /*==========================================================================*/
-const size_t TransferFunction::resolution( void ) const
+const size_t TransferFunction::resolution() const
 {
     VIS_MODULE_ASSERT( m_opacity_map.resolution() == m_color_map.resolution() );
-    return( m_opacity_map.resolution() );
+    return m_opacity_map.resolution();
 }
 
 /*==========================================================================*/
@@ -275,13 +289,14 @@ void TransferFunction::create( const size_t resolution )
  *  @return true, if the reading process is done successfully
  */
 /*==========================================================================*/
+/* 131017 revivaled */
 const bool TransferFunction::read( const std::string& filename )
 {
-    vismodule::KVSMLTransferFunction transfer_function( filename );
-    if ( transfer_function.isFailure() ) return( false );
+    vismodule::KVSMLTransferFunction m_transfer_function( filename );
+    if ( m_transfer_function.isFailure() ) return false;
 
-    const float min_value = transfer_function.minValue();
-    const float max_value = transfer_function.maxValue();
+    const float min_value = m_transfer_function.minValue();
+    const float max_value = m_transfer_function.maxValue();
     const bool has_range = !( vismodule::Math::Equal( min_value, max_value ) );
     if ( has_range )
     {
@@ -289,13 +304,13 @@ const bool TransferFunction::read( const std::string& filename )
         m_opacity_map.setRange( min_value, max_value );
     }
 
-    m_color_map.setResolution( transfer_function.resolution() );
-    if ( transfer_function.colorPointList().size() > 0 )
+    m_color_map.setResolution( m_transfer_function.resolution() );
+    if ( m_transfer_function.colorPointList().size() > 0 )
     {
         vismodule::KVSMLTransferFunction::ColorPointList::const_iterator point =
-            transfer_function.colorPointList().begin();
+            m_transfer_function.colorPointList().begin();
         vismodule::KVSMLTransferFunction::ColorPointList::const_iterator last =
-            transfer_function.colorPointList().end();
+            m_transfer_function.colorPointList().end();
         while ( point != last )
         {
             const float value = point->first;
@@ -308,16 +323,16 @@ const bool TransferFunction::read( const std::string& filename )
     }
     else
     {
-        m_color_map = vismodule::ColorMap( transfer_function.colors() );
+        m_color_map = vismodule::ColorMap( m_transfer_function.colors() );
     }
 
-    m_opacity_map.setResolution( transfer_function.resolution() );
-    if ( transfer_function.opacityPointList().size() > 0 )
+    m_opacity_map.setResolution( m_transfer_function.resolution() );
+    if ( m_transfer_function.opacityPointList().size() > 0 )
     {
         vismodule::KVSMLTransferFunction::OpacityPointList::const_iterator point =
-            transfer_function.opacityPointList().begin();
+            m_transfer_function.opacityPointList().begin();
         vismodule::KVSMLTransferFunction::OpacityPointList::const_iterator last =
-            transfer_function.opacityPointList().end();
+            m_transfer_function.opacityPointList().end();
         while ( point != last )
         {
             const float value = point->first;
@@ -330,10 +345,10 @@ const bool TransferFunction::read( const std::string& filename )
     }
     else
     {
-        m_opacity_map = vismodule::OpacityMap( transfer_function.opacities() );
+        m_opacity_map = vismodule::OpacityMap( m_transfer_function.opacities() );
     }
 
-    return( true );
+    return true;
 }
 
 /*==========================================================================*/
@@ -343,45 +358,46 @@ const bool TransferFunction::read( const std::string& filename )
  *  @return true, if the reading process is done successfully
  */
 /*==========================================================================*/
+/*
 const bool TransferFunction::write( const std::string& filename )
 {
-    vismodule::KVSMLTransferFunction transfer_function;
-    transfer_function.setResolution( this->resolution() );
-    transfer_function.setWritingDataType( vismodule::KVSMLTransferFunction::Ascii );
+   vismodule::KVSMLTransferFunction m_transfer_function;
+   m_transfer_function.setm_resolution( this->resolution() );
+   m_transfer_function.setWritingDataType( vismodule::KVSMLTransferFunction::Ascii );
 
-    if ( m_color_map.points().size() > 0 )
-    {
-        vismodule::ColorMap::Points::const_iterator point = m_color_map.points().begin();
-        vismodule::ColorMap::Points::const_iterator last = m_color_map.points().end();
-        while ( point != last )
-        {
-            transfer_function.addColorPoint( point->first, point->second );
-            point++;
-        }
-    }
-    else
-    {
-        transfer_function.setColors( m_color_map.table() );
-    }
+   if ( m_color_map.points().size() > 0 )
+   {
+       vismodule::ColorMap::Points::const_iterator point = m_color_map.points().begin();
+       vismodule::ColorMap::Points::const_iterator last = m_color_map.points().end();
+       while ( point != last )
+       {
+           m_transfer_function.addColorPoint( point->first, point->second );
+           point++;
+       }
+   }
+   else
+   {
+       m_transfer_function.setColors( m_color_map.table() );
+   }
 
-    if ( m_opacity_map.points().size() > 0 )
-    {
-        vismodule::OpacityMap::Points::const_iterator point = m_opacity_map.points().begin();
-        vismodule::OpacityMap::Points::const_iterator last = m_opacity_map.points().end();
-        while ( point != last )
-        {
-            transfer_function.addOpacityPoint( point->first, point->second );
-            point++;
-        }
-    }
-    else
-    {
-        transfer_function.setOpacities( m_opacity_map.table() );
-    }
+   if ( m_opacity_map.points().size() > 0 )
+   {
+       vismodule::OpacityMap::Points::const_iterator point = m_opacity_map.points().begin();
+       vismodule::OpacityMap::Points::const_iterator last = m_opacity_map.points().end();
+       while ( point != last )
+       {
+           m_transfer_function.addOpacityPoint( point->first, point->second );
+           point++;
+       }
+   }
+   else
+   {
+       m_transfer_function.setOpacities( m_opacity_map.table() );
+   }
 
-    return( transfer_function.write( filename ) );
+   return m_transfer_function.write( filename );
 }
-
+*/
 /*==========================================================================*/
 /**
  *  @brief  Substitution operator =.
@@ -394,7 +410,7 @@ TransferFunction& TransferFunction::operator =( const TransferFunction& rhs )
     m_color_map   = rhs.m_color_map;
     m_opacity_map = rhs.m_opacity_map;
 
-    return( *this );
+    return *this;
 }
 
-} // end of namespace vismodule
+} // end of namespace pbvr

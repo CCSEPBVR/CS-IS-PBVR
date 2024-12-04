@@ -16,7 +16,7 @@
 #include <vismodule/Value>
 
 
-namespace vismodule
+namespace pbvr
 {
 
 /*==========================================================================*/
@@ -24,7 +24,7 @@ namespace vismodule
  *  @brief  Constructs a new FrequencyTable class.
  */
 /*==========================================================================*/
-FrequencyTable::FrequencyTable( void ):
+FrequencyTable::FrequencyTable():
     m_min_range( 0 ),
     m_max_range( 0 ),
     m_max_count( 0 ),
@@ -40,7 +40,7 @@ FrequencyTable::FrequencyTable( void ):
  *  @brief  Destructs the FrequencyTable class.
  */
 /*===========================================================================*/
-FrequencyTable::~FrequencyTable( void )
+FrequencyTable::~FrequencyTable()
 {
 }
 
@@ -50,9 +50,9 @@ FrequencyTable::~FrequencyTable( void )
  *  @return min. range
  */
 /*==========================================================================*/
-const vismodule::Real64 FrequencyTable::minRange( void ) const
+const vismodule::Real64 FrequencyTable::minRange() const
 {
-    return( m_min_range );
+    return m_min_range;
 }
 
 /*==========================================================================*/
@@ -61,9 +61,9 @@ const vismodule::Real64 FrequencyTable::minRange( void ) const
  *  @return max. range
  */
 /*==========================================================================*/
-const vismodule::Real64 FrequencyTable::maxRange( void ) const
+const vismodule::Real64 FrequencyTable::maxRange() const
 {
-    return( m_max_range );
+    return m_max_range;
 }
 
 /*==========================================================================*/
@@ -72,24 +72,24 @@ const vismodule::Real64 FrequencyTable::maxRange( void ) const
  *  @return max. counts
  */
 /*==========================================================================*/
-const size_t FrequencyTable::maxCount( void ) const
+const size_t FrequencyTable::maxCount() const
 {
-    return( m_max_count );
+    return m_max_count;
 }
 
-const vismodule::Real64 FrequencyTable::mean( void ) const
+const vismodule::Real64 FrequencyTable::mean() const
 {
-    return( m_mean );
+    return m_mean;
 }
 
-const vismodule::Real64 FrequencyTable::variance( void ) const
+const vismodule::Real64 FrequencyTable::variance() const
 {
-    return( m_variance );
+    return m_variance;
 }
 
-const vismodule::Real64 FrequencyTable::standardDeviation( void ) const
+const vismodule::Real64 FrequencyTable::standardDeviation() const
 {
-    return( m_standard_deviation );
+    return m_standard_deviation;
 }
 
 /*==========================================================================*/
@@ -98,9 +98,9 @@ const vismodule::Real64 FrequencyTable::standardDeviation( void ) const
  *  @return number of bins
  */
 /*==========================================================================*/
-const vismodule::UInt64 FrequencyTable::nbins( void ) const
+const vismodule::UInt64 FrequencyTable::nbins() const
 {
-    return( m_nbins );
+    return m_nbins;
 }
 
 /*==========================================================================*/
@@ -109,9 +109,9 @@ const vismodule::UInt64 FrequencyTable::nbins( void ) const
  *  @return bin array
  */
 /*==========================================================================*/
-const vismodule::ValueArray<size_t>& FrequencyTable::bin( void ) const
+const vismodule::ValueArray<size_t>& FrequencyTable::bin() const
 {
-    return( m_bin );
+    return m_bin;
 }
 
 /*==========================================================================*/
@@ -150,23 +150,36 @@ void FrequencyTable::setNBins( const vismodule::UInt64 nbins )
 
 /*==========================================================================*/
 /**
+ *  @brief  Allocation a frequency distribution table
+ *  @param  volume [in] pointer to the volume object
+ */
+/*==========================================================================*/
+void FrequencyTable::allocate()
+{
+    m_bin.allocate( static_cast<size_t>( m_nbins ) );
+    m_bin.fill( 0x00 );
+}
+
+/*==========================================================================*/
+/**
  *  @brief  Creates a frequency distribution table for a structured volume object.
  *  @param  volume [in] pointer to the volume object
  */
 /*==========================================================================*/
-void FrequencyTable::create( const vismodule::VolumeObjectBase* volume )
+/*
+void FrequencyTable::create( const pbvr::VolumeObjectBase* volume )
 {
     // Calculate the min/max range value and the number of bins.
-    this->calculate_range( volume );
+    //this->calculate_range( volume );
 
     // Allocate and initialize the bin array.
-    m_bin.allocate( static_cast<size_t>( m_nbins ) );
-    m_bin.fill( 0x00 );
+    //m_bin.allocate( static_cast<size_t>( m_nbins ) );
+    //m_bin.fill( 0x00 );
 
     // Count the bin.
     this->count_bin( volume );
 }
-
+*/
 /*==========================================================================*/
 /**
  *  @brief  Creates a frequency distribution table for a image object.
@@ -174,6 +187,7 @@ void FrequencyTable::create( const vismodule::VolumeObjectBase* volume )
  *  @param  channel [in] color element channel (0, 1, 2, 3)
  */
 /*==========================================================================*/
+/*
 void FrequencyTable::create( const vismodule::ImageObject* image, const size_t channel )
 {
     // Calculate the min/max range value and the number of bins.
@@ -186,7 +200,7 @@ void FrequencyTable::create( const vismodule::ImageObject* image, const size_t c
     // Count the bin.
     this->count_bin( image, channel );
 }
-
+*/
 /*==========================================================================*/
 /**
  *  @brief  Returns counts of the bin which is specified by the index.
@@ -196,7 +210,7 @@ void FrequencyTable::create( const vismodule::ImageObject* image, const size_t c
 /*==========================================================================*/
 const vismodule::UInt64 FrequencyTable::operator [] ( const size_t index ) const
 {
-    return( m_bin[ index ] );
+    return m_bin[ index ];
 }
 
 /*==========================================================================*/
@@ -208,7 +222,7 @@ const vismodule::UInt64 FrequencyTable::operator [] ( const size_t index ) const
 /*==========================================================================*/
 const vismodule::UInt64 FrequencyTable::at( const size_t index ) const
 {
-    return( m_bin.at( index ) );
+    return m_bin.at( index );
 }
 
 /*==========================================================================*/
@@ -217,7 +231,8 @@ const vismodule::UInt64 FrequencyTable::at( const size_t index ) const
  *  @param  volume [in] pointer to the volume object
  */
 /*==========================================================================*/
-void FrequencyTable::calculate_range( const vismodule::VolumeObjectBase* volume )
+#if 0
+void FrequencyTable::calculate_range( const pbvr::VolumeObjectBase* volume )
 {
     // Number of bins.
     if ( m_nbins == 0 )
@@ -309,14 +324,14 @@ void FrequencyTable::calculate_range( const vismodule::VolumeObjectBase* volume 
         }
     }
 }
-
+#endif
 /*==========================================================================*/
 /**
  *  Calculate a bin range.
  *  @param image [in] pointer to the image object
  */
 /*==========================================================================*/
-void FrequencyTable::calculate_range( const vismodule::ImageObject* image )
+/*void FrequencyTable::calculate_range( const vismodule::ImageObject* image )
 {
     switch ( image->type() )
     {
@@ -339,14 +354,15 @@ void FrequencyTable::calculate_range( const vismodule::ImageObject* image )
     default: break;
     }
 }
-
+*/
 /*==========================================================================*/
 /**
  *  @brief  Counts the bin.
  *  @param  volume [in] pointer to the volume object
  */
 /*==========================================================================*/
-void FrequencyTable::count_bin( const vismodule::VolumeObjectBase* volume )
+/*
+void FrequencyTable::count_bin( const pbvr::VolumeObjectBase* volume )
 {
     const std::type_info& type = volume->values().typeInfo()->type();
     if (      type == typeid( vismodule::Int8 )   ) this->binning<vismodule::Int8>( volume );
@@ -358,7 +374,7 @@ void FrequencyTable::count_bin( const vismodule::VolumeObjectBase* volume )
     else if ( type == typeid( vismodule::Real32 ) ) this->binning<vismodule::Real32>( volume );
     else if ( type == typeid( vismodule::Real64 ) ) this->binning<vismodule::Real64>( volume );
 }
-
+*/
 /*==========================================================================*/
 /**
  *  @brief  Counts the bin.
@@ -366,7 +382,7 @@ void FrequencyTable::count_bin( const vismodule::VolumeObjectBase* volume )
  *  @param  channel [in] color element channel (0, 1, 2, 3)
  */
 /*==========================================================================*/
-void FrequencyTable::count_bin( const vismodule::ImageObject* image, const size_t channel )
+/*void FrequencyTable::count_bin( const vismodule::ImageObject* image, const size_t channel )
 {
     switch ( image->type() )
     {
@@ -381,7 +397,7 @@ void FrequencyTable::count_bin( const vismodule::ImageObject* image, const size_
     default: break;
     }
 }
-
+*/
 /*==========================================================================*/
 /**
  *  @brief  Tests which a value is the ignore value or not.
@@ -395,12 +411,12 @@ bool FrequencyTable::is_ignore_value( const vismodule::Real64 value )
     std::list<vismodule::Real64>::const_iterator end = m_ignore_values.end();
     while ( ignore_value != end )
     {
-        if ( vismodule::Math::Equal( value, *ignore_value ) ) return( true );
+        if ( vismodule::Math::Equal( value, *ignore_value ) ) return true;
 
         ++ignore_value;
     }
 
-    return( false );
+    return false;
 }
 
-} // end of namespace vismodule
+} // end of namespace pbvr

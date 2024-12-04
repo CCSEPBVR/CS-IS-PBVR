@@ -14,30 +14,34 @@
 #include "GlobalCore.h"
 #include <vismodule/DebugNew>
 #include <vismodule/Camera>
-#include <vismodule/Background>
-#include <vismodule/Light>
-#include <vismodule/Mouse>
-#include <vismodule/ObjectManager>
+/* 131018 removed
+#include "Light.h"
+#include "Background.h"
+#include "Mouse.h"
+*/
+#include "ObjectManager.h"
 #include <vismodule/RendererManager>
-#include <vismodule/IDManager>
+#include "IDManager.h"
 #include <vismodule/Message>
 #include <vismodule/RGBColor>
 
 
-namespace vismodule
+namespace pbvr
 {
 
 // Parameter instantiation.
-int                       GlobalCore::argc;
-char**                    GlobalCore::argv;
-vismodule::Camera*              GlobalCore::camera;
+int                       GlobalCore::m_argc;
+char**                    GlobalCore::m_argv;
+vismodule::Camera*              GlobalCore::m_camera;
+/* 131018 removed
 vismodule::Light*               GlobalCore::light;
 vismodule::Mouse*               GlobalCore::mouse;
 vismodule::Background*          GlobalCore::background;
-GlobalCore::ControlTarget GlobalCore::target;
-vismodule::ObjectManager*       GlobalCore::object_manager;
-vismodule::RendererManager*     GlobalCore::renderer_manager;
-vismodule::IDManager*           GlobalCore::id_manager;
+*/
+GlobalCore::ControlTarget GlobalCore::m_target;
+pbvr::ObjectManager*       GlobalCore::m_object_manager;
+vismodule::RendererManager*     GlobalCore::m_renderer_manager;
+pbvr::IDManager*           GlobalCore::m_id_manager;
 
 /*==========================================================================*/
 /**
@@ -46,9 +50,9 @@ vismodule::IDManager*           GlobalCore::id_manager;
  *  @param values [in] argument values
  */
 /*==========================================================================*/
-GlobalCore::GlobalCore( int count, char** values )
+GlobalCore::GlobalCore( const int count, const char** values )
 {
-    create_core( count, values );
+    createCore( count, values );
 }
 
 /*==========================================================================*/
@@ -56,9 +60,9 @@ GlobalCore::GlobalCore( int count, char** values )
  *  Destructor.
  */
 /*==========================================================================*/
-GlobalCore::~GlobalCore( void )
+GlobalCore::~GlobalCore()
 {
-    clear_core();
+    clearCore();
 }
 
 /*==========================================================================*/
@@ -68,58 +72,58 @@ GlobalCore::~GlobalCore( void )
  *  @param values [in] argument values
  */
 /*==========================================================================*/
-void GlobalCore::create_core( int count, char** values )
+void GlobalCore::createCore( const int count, const char** values )
 {
-    argc   = count;
-    argv   = values;
-    target = TargetObject;
+    m_argc   = count;
+    m_argv   = ( char** )values;
+    m_target = TargetObject;
 
-    camera = new vismodule::Camera();
-    if( !camera )
+    m_camera = new vismodule::Camera();
+    if ( !m_camera )
     {
-        visModuleMessageError("Cannot allocate memory for the camera.");
+        visModuleMessageError( "Cannot allocate memory for the camera." );
+        return;
+    }
+    /* 131018 removed
+        light = new vismodule::Light();
+        if( !light )
+        {
+            visModuleMessageError("Cannot allocate memory for the light.");
+            return;
+        }
+
+        mouse = new vismodule::Mouse();
+        if( !mouse )
+        {
+            visModuleMessageError("Cannot allocate memory for the mouse.");
+            return;
+        }
+
+        background = new vismodule::Background( vismodule::RGBColor( 212, 221, 229 ) );
+        if( !background )
+        {
+            visModuleMessageError("Cannot allocate memory for the background.");
+            return;
+        }
+    */
+    m_object_manager = new pbvr::ObjectManager();
+    if ( !m_object_manager )
+    {
+        visModuleMessageError( "Cannot allocate memory for the object manager." );
         return;
     }
 
-    light = new vismodule::Light();
-    if( !light )
+    m_renderer_manager = new vismodule::RendererManager();
+    if ( !m_renderer_manager )
     {
-        visModuleMessageError("Cannot allocate memory for the light.");
+        visModuleMessageError( "Cannot allocate memory for the renderer manager." );
         return;
     }
 
-    mouse = new vismodule::Mouse();
-    if( !mouse )
+    m_id_manager = new pbvr::IDManager();
+    if ( !m_id_manager )
     {
-        visModuleMessageError("Cannot allocate memory for the mouse.");
-        return;
-    }
-
-    background = new vismodule::Background( vismodule::RGBColor( 212, 221, 229 ) );
-    if( !background )
-    {
-        visModuleMessageError("Cannot allocate memory for the background.");
-        return;
-    }
-
-    object_manager = new vismodule::ObjectManager();
-    if( !object_manager )
-    {
-        visModuleMessageError("Cannot allocate memory for the object manager.");
-        return;
-    }
-
-    renderer_manager = new vismodule::RendererManager();
-    if( !renderer_manager )
-    {
-        visModuleMessageError("Cannot allocate memory for the renderer manager.");
-        return;
-    }
-
-    id_manager = new vismodule::IDManager();
-    if( !id_manager )
-    {
-        visModuleMessageError("Cannot allocate memory for the ID manager.");
+        visModuleMessageError( "Cannot allocate memory for the ID manager." );
         return;
     }
 }
@@ -129,15 +133,33 @@ void GlobalCore::create_core( int count, char** values )
  *  Clear the global core class.
  */
 /*==========================================================================*/
-void GlobalCore::clear_core( void )
+void GlobalCore::clearCore()
 {
-    if( camera           ){ delete camera;           camera           = NULL; }
-    if( light            ){ delete light;            light            = NULL; }
-    if( mouse            ){ delete mouse;            mouse            = NULL; }
-    if( background       ){ delete background;       background       = NULL; }
-    if( object_manager   ){ delete object_manager;   object_manager   = NULL; }
-    if( renderer_manager ){ delete renderer_manager; renderer_manager = NULL; }
-    if( id_manager       ){ delete id_manager;       id_manager       = NULL; }
+    if ( m_camera           )
+    {
+        delete m_camera;
+        m_camera           = NULL;
+    }
+    /* 131018 removed
+        if( light            ){ delete light;            light            = NULL; }
+        if( mouse            ){ delete mouse;            mouse            = NULL; }
+        if( background       ){ delete background;       background       = NULL; }
+    */
+    if ( m_object_manager   )
+    {
+        delete m_object_manager;
+        m_object_manager   = NULL;
+    }
+    if ( m_renderer_manager )
+    {
+        delete m_renderer_manager;
+        m_renderer_manager = NULL;
+    }
+    if ( m_id_manager       )
+    {
+        delete m_id_manager;
+        m_id_manager       = NULL;
+    }
 }
 
 /*==========================================================================*/
@@ -145,26 +167,26 @@ void GlobalCore::clear_core( void )
  *  Reset the global core class.
  */
 /*==========================================================================*/
-void GlobalCore::reset_core( void )
+void GlobalCore::resetCore()
 {
     // Reset viewpoint to the initial position.
-    mouse->reset();
+//    mouse->reset(); /* 131018 removed */
 
     // Reset the xform of the object.
-    if( object_manager->hasActiveObject() )
+    if ( m_object_manager->hasActiveObject() )
     {
-        object_manager->resetActiveObjectXform();
+        m_object_manager->resetActiveObjectXform();
     }
     else
     {
-        object_manager->resetXform();
+        m_object_manager->resetXform();
     }
 
     // Reset the xform of the camera.
-    camera->resetXform();
+    m_camera->resetXform();
 
     // Reset the xform of the light.
-    light->resetXform();
+//    light->resetXform(); /* 131018 removed */
 }
 
-} // end of namespace vismodule
+} // end of namespace pbvr
