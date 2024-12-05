@@ -14,7 +14,7 @@
 #ifndef VIS_MODULE__IMAGE_IMPORTER_H_INCLUDE
 #define VIS_MODULE__IMAGE_IMPORTER_H_INCLUDE
 
-#include "ImporterBase.h"
+#include <vismodule/ImporterBase>
 #include <string>
 #include <vismodule/ClassName>
 #include <vismodule/Module>
@@ -52,13 +52,13 @@ public:
 
     ImageImporter( const std::string& filename );
 
-    ImageImporter( const vismodule::FileFormatBase* file_format );
+    ImageImporter( const vismodule::FileFormatBase& file_format );
 
     virtual ~ImageImporter( void );
 
 public:
 
-    SuperClass* exec( const vismodule::FileFormatBase* file_format );
+    SuperClass* exec( const vismodule::FileFormatBase& file_format );
 
 private:
 

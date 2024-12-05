@@ -26,19 +26,19 @@ namespace
  *  @return vertex array
  */
 /*===========================================================================*/
-const vismodule::ValueArray<vismodule::Real32> GetVertexArray( const vismodule::LineObject* line )
+const vismodule::ValueArray<vismodule::Real32> GetVertexArray( const vismodule::LineObject& line )
 {
-    if ( line->lineType() == vismodule::LineObject::Strip )
+    if ( line.lineType() == vismodule::LineObject::Strip )
     {
-        return( line->coords() );
+        return( line.coords() );
     }
-    else if ( line->lineType() == vismodule::LineObject::Uniline )
+    else if ( line.lineType() == vismodule::LineObject::Uniline )
     {
-        const vismodule::Real32* v = line->coords().pointer();
-        const vismodule::UInt32* c = line->connections().pointer();
+        const vismodule::Real32* v = line.coords().pointer();
+        const vismodule::UInt32* c = line.connections().pointer();
 
         const size_t dimension = 3;
-        const size_t nvertices = line->nconnections();
+        const size_t nvertices = line.nconnections();
         vismodule::ValueArray<vismodule::Real32> vertices( nvertices * dimension );
         for ( size_t i = 0, index = 0; i < nvertices; i++, index += dimension )
         {
@@ -67,13 +67,13 @@ const vismodule::ValueArray<vismodule::Real32> GetVertexArray( const vismodule::
  */
 /*===========================================================================*/
 const vismodule::ValueArray<vismodule::Real32> GetVertexArray(
-    const vismodule::LineObject* line,
+    const vismodule::LineObject& line,
     const size_t id1,
     const size_t id2 )
 {
-    if ( line->lineType() == vismodule::LineObject::Polyline )
+    if ( line.lineType() == vismodule::LineObject::Polyline )
     {
-        const vismodule::Real32* v = line->coords().pointer();
+        const vismodule::Real32* v = line.coords().pointer();
 
         const size_t dimension = 3;
         const size_t nvertices = id2 - id1 + 1;
@@ -88,9 +88,9 @@ const vismodule::ValueArray<vismodule::Real32> GetVertexArray(
 
         return( vertices );
     }
-    else if ( line->lineType() == vismodule::LineObject::Segment )
+    else if ( line.lineType() == vismodule::LineObject::Segment )
     {
-        const vismodule::Real32* v = line->coords().pointer();
+        const vismodule::Real32* v = line.coords().pointer();
 
         const size_t dimension = 3;
         const size_t nvertices = 2;
@@ -120,14 +120,14 @@ const vismodule::ValueArray<vismodule::Real32> GetVertexArray(
  *  @return color array
  */
 /*===========================================================================*/
-const vismodule::ValueArray<vismodule::UInt8> GetColorArray( const vismodule::LineObject* line )
+const vismodule::ValueArray<vismodule::UInt8> GetColorArray( const vismodule::LineObject& line )
 {
-    if ( line->ncolors() == 1 )
+    if ( line.ncolors() == 1 )
     {
-        const vismodule::UInt8* c = line->colors().pointer();
+        const vismodule::UInt8* c = line.colors().pointer();
 
         const size_t ncomponents = 3;
-        const size_t ncolors = line->nvertices();
+        const size_t ncolors = line.nvertices();
         vismodule::ValueArray<vismodule::UInt8> colors( ncolors * ncomponents );
         for ( size_t i = 0, index = 0; i < ncolors; i++, index += ncomponents )
         {
@@ -138,9 +138,9 @@ const vismodule::ValueArray<vismodule::UInt8> GetColorArray( const vismodule::Li
 
         return( colors );
     }
-    else if ( line->ncolors() > 1 )
+    else if ( line.ncolors() > 1 )
     {
-        return( line->colors() );
+        return( line.colors() );
     }
     else
     {
@@ -160,19 +160,19 @@ const vismodule::ValueArray<vismodule::UInt8> GetColorArray( const vismodule::Li
  */
 /*===========================================================================*/
 const vismodule::ValueArray<vismodule::UInt8> GetColorArray(
-    const vismodule::LineObject* line,
+    const vismodule::LineObject& line,
     const size_t id1,
     const size_t id2,
     const size_t con_id )
 {
     // Ponter to the color array of the line object.
-    const vismodule::UInt8* c = line->colors().pointer();
+    const vismodule::UInt8* c = line.colors().pointer();
 
     // Number of components and number of colors.
     const size_t ncomponents = 3;
     const size_t ncolors = id2 - id1 + 1;
 
-    if ( line->ncolors() == 1 )
+    if ( line.ncolors() == 1 )
     {
         vismodule::ValueArray<vismodule::UInt8> colors( ncomponents * ncolors );
         for ( size_t i = 0, index = 0; i < ncolors; i++, index += ncomponents )
@@ -184,13 +184,13 @@ const vismodule::ValueArray<vismodule::UInt8> GetColorArray(
 
         return( colors );
     }
-    else if ( line->ncolors() > 1 )
+    else if ( line.ncolors() > 1 )
     {
-        if ( line->colorType() == vismodule::LineObject::LineColor )
+        if ( line.colorType() == vismodule::LineObject::LineColor )
         {
             vismodule::ValueArray<vismodule::UInt8> colors( ncomponents * ncolors );
 
-            const vismodule::UInt32* n = line->connections().pointer();
+            const vismodule::UInt32* n = line.connections().pointer();
 
             size_t counter = 0;
             for ( size_t i = 0, index = 0; i < con_id; i++, index += 2 )
@@ -242,13 +242,13 @@ const vismodule::ValueArray<vismodule::UInt8> GetColorArray(
  *  @return size array
  */
 /*===========================================================================*/
-const vismodule::ValueArray<vismodule::Real32> GetSizeArray( const vismodule::LineObject* line )
+const vismodule::ValueArray<vismodule::Real32> GetSizeArray( const vismodule::LineObject& line )
 {
-    if ( line->nsizes() == 1 )
+    if ( line.nsizes() == 1 )
     {
-        const vismodule::Real32* s = line->sizes().pointer();
+        const vismodule::Real32* s = line.sizes().pointer();
 
-        const size_t nsizes = line->nvertices() - 1;
+        const size_t nsizes = line.nvertices() - 1;
         vismodule::ValueArray<vismodule::Real32> sizes( nsizes );
         for ( size_t i = 0; i < nsizes; i++ )
         {
@@ -257,9 +257,9 @@ const vismodule::ValueArray<vismodule::Real32> GetSizeArray( const vismodule::Li
 
         return( sizes );
     }
-    else if ( line->nsizes() > 1 )
+    else if ( line.nsizes() > 1 )
     {
-        return( line->sizes() );
+        return( line.sizes() );
     }
     else
     {
@@ -279,18 +279,18 @@ const vismodule::ValueArray<vismodule::Real32> GetSizeArray( const vismodule::Li
  */
 /*===========================================================================*/
 const vismodule::ValueArray<vismodule::Real32> GetSizeArray(
-    const vismodule::LineObject* line,
+    const vismodule::LineObject& line,
     const size_t id1,
     const size_t id2,
     const size_t con_id )
 {
     // Ponter to the size array of the line object.
-    const vismodule::Real32* s = line->sizes().pointer();
+    const vismodule::Real32* s = line.sizes().pointer();
 
     // Number of components of the size array.
     const size_t nsizes = id2 - id1;
 
-    if ( line->nsizes() == 1 )
+    if ( line.nsizes() == 1 )
     {
         vismodule::ValueArray<vismodule::Real32> sizes( nsizes );
         for ( size_t i = 0; i < nsizes; i++ )
@@ -300,11 +300,11 @@ const vismodule::ValueArray<vismodule::Real32> GetSizeArray(
 
         return( sizes );
     }
-    else if ( line->nsizes() > 1 )
+    else if ( line.nsizes() > 1 )
     {
         vismodule::ValueArray<vismodule::Real32> sizes( nsizes );
 
-        const vismodule::UInt32* n = line->connections().pointer();
+        const vismodule::UInt32* n = line.connections().pointer();
 
         size_t counter = 0;
         for ( size_t i = 0, index = 0; i < con_id; i++, index += 2 )
@@ -334,10 +334,10 @@ const vismodule::ValueArray<vismodule::Real32> GetSizeArray(
  *  @return color array
  */
 /*===========================================================================*/
-const vismodule::PolygonObject::ColorType GetColorType( const vismodule::LineObject* line )
+const vismodule::PolygonObject::ColorType GetColorType( const vismodule::LineObject& line )
 {
     vismodule::PolygonObject::ColorType type = vismodule::PolygonObject::VertexColor;
-    switch ( line->colorType() )
+    switch ( line.colorType() )
     {
     case vismodule::LineObject::VertexColor:
         type = vismodule::PolygonObject::VertexColor;
@@ -359,16 +359,16 @@ const vismodule::PolygonObject::ColorType GetColorType( const vismodule::LineObj
  *  @return number of the vertices
  */
 /*===========================================================================*/
-const size_t GetNumberOfVertices( const vismodule::LineObject* line )
+const size_t GetNumberOfVertices( const vismodule::LineObject& line )
 {
     size_t nvertices = 0;
-    switch ( line->lineType() )
+    switch ( line.lineType() )
     {
     case vismodule::LineObject::Strip:
-        nvertices = line->nvertices();
+        nvertices = line.nvertices();
         break;
     case vismodule::LineObject::Uniline:
-        nvertices = line->nconnections();
+        nvertices = line.nconnections();
         break;
     default:
         break;
@@ -402,7 +402,7 @@ Tubeline::Tubeline( void ):
  */
 /*===========================================================================*/
 Tubeline::Tubeline(
-    const vismodule::LineObject* line,
+    const vismodule::LineObject& line,
     const size_t ndivisions ):
     m_ndivisions( ndivisions )
 {
@@ -436,9 +436,9 @@ void Tubeline::setNDivisions( const size_t ndivisions )
  *  @return pointer to the filtered object
  */
 /*===========================================================================*/
-Tubeline::SuperClass* Tubeline::exec( const vismodule::ObjectBase* object )
+Tubeline::SuperClass* Tubeline::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -446,7 +446,7 @@ Tubeline::SuperClass* Tubeline::exec( const vismodule::ObjectBase* object )
     }
 
     const vismodule::LineObject* line = vismodule::LineObject::DownCast( object );
-    if ( !line )
+    if ( !&line )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is not supported.");
@@ -460,19 +460,19 @@ Tubeline::SuperClass* Tubeline::exec( const vismodule::ObjectBase* object )
     const vismodule::LineObject::LineType type = line->lineType();
     if ( type == vismodule::LineObject::Strip )
     {
-        this->filtering_strip( line );
+        this->filtering_strip( *line );
     }
     else if ( type == vismodule::LineObject::Uniline )
     {
-        this->filtering_uniline( line );
+        this->filtering_uniline( *line );
     }
     else if ( type == vismodule::LineObject::Polyline )
     {
-        this->filtering_polyline( line );
+        this->filtering_polyline( *line );
     }
     else if ( type == vismodule::LineObject::Segment )
     {
-        this->filtering_segment( line );
+        this->filtering_segment( *line );
     }
     else
     {
@@ -490,7 +490,7 @@ Tubeline::SuperClass* Tubeline::exec( const vismodule::ObjectBase* object )
  *  @param  line [in] pointer to the line object
  */
 /*===========================================================================*/
-void Tubeline::filtering_strip( const vismodule::LineObject* line )
+void Tubeline::filtering_strip( const vismodule::LineObject& line )
 {
     const vismodule::ValueArray<vismodule::Real32> line_vertices = ::GetVertexArray( line );
     const vismodule::ValueArray<vismodule::Real32> line_sizes = ::GetSizeArray( line );
@@ -529,7 +529,7 @@ void Tubeline::filtering_strip( const vismodule::LineObject* line )
  *  @param  line [in] pointer to the line object
  */
 /*===========================================================================*/
-void Tubeline::filtering_uniline( const vismodule::LineObject* line )
+void Tubeline::filtering_uniline( const vismodule::LineObject& line )
 {
     const vismodule::ValueArray<vismodule::Real32> line_vertices = ::GetVertexArray( line );
     const vismodule::ValueArray<vismodule::Real32> line_sizes = ::GetSizeArray( line );
@@ -568,7 +568,7 @@ void Tubeline::filtering_uniline( const vismodule::LineObject* line )
  *  @param  line [in] pointer to the line object
  */
 /*===========================================================================*/
-void Tubeline::filtering_polyline( const vismodule::LineObject* line )
+void Tubeline::filtering_polyline( const vismodule::LineObject& line )
 {
     std::vector<vismodule::Real32> vertices;
     std::vector<vismodule::UInt8> colors;
@@ -577,8 +577,8 @@ void Tubeline::filtering_polyline( const vismodule::LineObject* line )
 
     const vismodule::PolygonObject::ColorType color_type = ::GetColorType( line );
 
-    const vismodule::UInt32* line_connections = line->connections().pointer();
-    const size_t line_nconnections = line->nconnections();
+    const vismodule::UInt32* line_connections = line.connections().pointer();
+    const size_t line_nconnections = line.nconnections();
     for( size_t i = 0, index = 0; i < line_nconnections; i++, index += 2 )
     {
         const size_t id1 = line_connections[ index + 0 ];
@@ -651,7 +651,7 @@ void Tubeline::filtering_polyline( const vismodule::LineObject* line )
  *  @param  line [in] pointer to the line object
  */
 /*===========================================================================*/
-void Tubeline::filtering_segment( const vismodule::LineObject* line )
+void Tubeline::filtering_segment( const vismodule::LineObject& line )
 {
     std::vector<vismodule::Real32> vertices;
     std::vector<vismodule::UInt8> colors;
@@ -660,8 +660,8 @@ void Tubeline::filtering_segment( const vismodule::LineObject* line )
 
     const vismodule::PolygonObject::ColorType color_type = ::GetColorType( line );
 
-    const vismodule::UInt32* line_connections = line->connections().pointer();
-    const size_t line_nconnections = line->nconnections();
+    const vismodule::UInt32* line_connections = line.connections().pointer();
+    const size_t line_nconnections = line.nconnections();
     for( size_t i = 0, index = 0; i < line_nconnections; i++, index += 2 )
     {
         const size_t id1 = line_connections[ index + 0 ];
@@ -669,40 +669,40 @@ void Tubeline::filtering_segment( const vismodule::LineObject* line )
 
         const size_t nvertices = 2;
         const vismodule::ValueArray<vismodule::Real32> line_vertices = ::GetVertexArray( line, id1, id2 );
-//        const vismodule::Real32 line_size = ( line->nsizes() == 1 ) ? line->size(0) : line->size(i);
+//        const vismodule::Real32 line_size = ( line.nsizes() == 1 ) ? line.size(0) : line.size(i);
         vismodule::ValueArray<vismodule::Real32> line_sizes(1);
-        if ( line->nsizes() == 1 ) line_sizes[0] = line->size(0);
-        else line_sizes[0] = line->size(i);
+        if ( line.nsizes() == 1 ) line_sizes[0] = line.size(0);
+        else line_sizes[0] = line.size(i);
 
         vismodule::ValueArray<vismodule::UInt8> line_colors(6);
-        if ( line->ncolors() == 1 )
+        if ( line.ncolors() == 1 )
         {
-            line_colors[0] = line->color(0).r();
-            line_colors[1] = line->color(0).g();
-            line_colors[2] = line->color(0).b();
-            line_colors[3] = line->color(0).r();
-            line_colors[4] = line->color(0).g();
-            line_colors[5] = line->color(0).b();
+            line_colors[0] = line.color(0).r();
+            line_colors[1] = line.color(0).g();
+            line_colors[2] = line.color(0).b();
+            line_colors[3] = line.color(0).r();
+            line_colors[4] = line.color(0).g();
+            line_colors[5] = line.color(0).b();
         }
         else
         {
             if( color_type == vismodule::PolygonObject::VertexColor )
             {
-                line_colors[0] = line->color(id1).r();
-                line_colors[1] = line->color(id1).g();
-                line_colors[2] = line->color(id1).b();
-                line_colors[3] = line->color(id2).r();
-                line_colors[4] = line->color(id2).g();
-                line_colors[5] = line->color(id2).b();
+                line_colors[0] = line.color(id1).r();
+                line_colors[1] = line.color(id1).g();
+                line_colors[2] = line.color(id1).b();
+                line_colors[3] = line.color(id2).r();
+                line_colors[4] = line.color(id2).g();
+                line_colors[5] = line.color(id2).b();
             }
             else
             {
-                line_colors[0] = line->color(i).r();
-                line_colors[1] = line->color(i).g();
-                line_colors[2] = line->color(i).b();
-                line_colors[3] = line->color(i).r();
-                line_colors[4] = line->color(i).g();
-                line_colors[5] = line->color(i).b();
+                line_colors[0] = line.color(i).r();
+                line_colors[1] = line.color(i).g();
+                line_colors[2] = line.color(i).b();
+                line_colors[3] = line.color(i).r();
+                line_colors[4] = line.color(i).g();
+                line_colors[5] = line.color(i).b();
             }
         }
 

@@ -13,10 +13,10 @@
  *  $Id: QuadraticHexahedralCell.cpp 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#include "QuadraticHexahedralCell.h"
+#include <vismodule/QuadraticHexahedralCell>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 // template instantiation
@@ -31,4 +31,4 @@ template class QuadraticHexahedralCell<unsigned long>;
 template class QuadraticHexahedralCell<float>;
 template class QuadraticHexahedralCell<double>;
 
-} // end of namespace pbvr
+} // end of namespace vismodule

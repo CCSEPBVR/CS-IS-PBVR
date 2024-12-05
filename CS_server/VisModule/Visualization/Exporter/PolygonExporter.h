@@ -37,19 +37,19 @@ class PolygonExporter : public vismodule::ExporterBase<FileFormatType>
 
 public:
 
-    PolygonExporter( const vismodule::PolygonObject* object );
+    PolygonExporter( const vismodule::PolygonObject& object );
 
-    FileFormatType* exec( const vismodule::ObjectBase* object );
+    FileFormatType* exec( const vismodule::ObjectBase& object );
 };
 
 template <typename FileFormatType>
-PolygonExporter<FileFormatType>::PolygonExporter( const vismodule::PolygonObject* object )
+PolygonExporter<FileFormatType>::PolygonExporter( const vismodule::PolygonObject& object )
 {
     this->exec( object );
 }
 
 template <typename FileFormatType>
-FileFormatType* PolygonExporter<FileFormatType>::exec( const vismodule::ObjectBase* object )
+FileFormatType* PolygonExporter<FileFormatType>::exec( const vismodule::ObjectBase& object )
 {
     return( NULL );
 }
@@ -64,9 +64,9 @@ class PolygonExporter<vismodule::KVSMLObjectPolygon> : public vismodule::Exporte
 {
 public:
 
-    PolygonExporter( const vismodule::PolygonObject* object );
+    PolygonExporter( const vismodule::PolygonObject& object );
 
-    vismodule::KVSMLObjectPolygon* exec( const vismodule::ObjectBase* object );
+    vismodule::KVSMLObjectPolygon* exec( const vismodule::ObjectBase& object );
 };
 
 /*===========================================================================*/
@@ -79,9 +79,9 @@ class PolygonExporter<vismodule::Stl> : public vismodule::ExporterBase<vismodule
 {
 public:
 
-    PolygonExporter( const vismodule::PolygonObject* object );
+    PolygonExporter( const vismodule::PolygonObject& object );
 
-    vismodule::Stl* exec( const vismodule::ObjectBase* object );
+    vismodule::Stl* exec( const vismodule::ObjectBase& object );
 };
 
 /*===========================================================================*/
@@ -94,9 +94,9 @@ class PolygonExporter<vismodule::Ply> : public vismodule::ExporterBase<vismodule
 {
 public:
 
-    PolygonExporter( const vismodule::PolygonObject* object );
+    PolygonExporter( const vismodule::PolygonObject& object );
 
-    vismodule::Ply* exec( const vismodule::ObjectBase* object );
+    vismodule::Ply* exec( const vismodule::ObjectBase& object );
 };
 
 } // end of namespace vismodule

@@ -53,7 +53,7 @@ CellByCellLayeredSampling::CellByCellLayeredSampling( void ):
  */
 /*===========================================================================*/
 CellByCellLayeredSampling::CellByCellLayeredSampling(
-    const vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase& volume,
     const size_t                 subpixel_level,
     const float                  sampling_step,
     const vismodule::TransferFunction& transfer_function,
@@ -82,7 +82,7 @@ CellByCellLayeredSampling::CellByCellLayeredSampling(
 /*===========================================================================*/
 CellByCellLayeredSampling::CellByCellLayeredSampling(
     const vismodule::Camera*           camera,
-    const vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase& volume,
     const size_t                 subpixel_level,
     const float                  sampling_step,
     const vismodule::TransferFunction& transfer_function,
@@ -194,9 +194,9 @@ void CellByCellLayeredSampling::setObjectDepth( const float object_depth )
  *  @return pointer to the point object
  */
 /*===========================================================================*/
-CellByCellLayeredSampling::SuperClass* CellByCellLayeredSampling::exec( const vismodule::ObjectBase* object )
+CellByCellLayeredSampling::SuperClass* CellByCellLayeredSampling::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -204,7 +204,7 @@ CellByCellLayeredSampling::SuperClass* CellByCellLayeredSampling::exec( const vi
     }
 
     const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
-    if ( !volume )
+    if ( !&volume )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is not volume dat.");
@@ -216,7 +216,7 @@ CellByCellLayeredSampling::SuperClass* CellByCellLayeredSampling::exec( const vi
     {
         if ( m_camera )
         {
-            this->mapping( m_camera, reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( object ) );
+            this->mapping( m_camera, reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( &object ) );
         }
         else
         {
@@ -226,13 +226,13 @@ CellByCellLayeredSampling::SuperClass* CellByCellLayeredSampling::exec( const vi
                 if ( vismodule::GlobalCore::camera->windowWidth() != 0 && vismodule::GlobalCore::camera->windowHeight() )
                 {
                     const vismodule::Camera* camera = vismodule::GlobalCore::camera;
-                    this->mapping( camera, reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( object ) );
+                    this->mapping( camera, reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( &object ) );
                 }
             }
             else
             {
                 vismodule::Camera* camera = new vismodule::Camera();
-                this->mapping( camera, reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( object ) );
+                this->mapping( camera, reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( &object ) );
                 delete camera;
             }
         }
@@ -248,7 +248,7 @@ CellByCellLayeredSampling::SuperClass* CellByCellLayeredSampling::exec( const vi
  *  @param  volume [in] pointer to the input volume object
  */
 /*===========================================================================*/
-void CellByCellLayeredSampling::mapping( const vismodule::Camera* camera, const vismodule::UnstructuredVolumeObject* volume )
+void CellByCellLayeredSampling::mapping( const vismodule::Camera* camera, const vismodule::UnstructuredVolumeObject& volume )
 {
     if ( volume->cellType() != vismodule::UnstructuredVolumeObject::Tetrahedra )
     {
@@ -294,7 +294,7 @@ void CellByCellLayeredSampling::mapping( const vismodule::Camera* camera, const 
  */
 /*===========================================================================*/
 template <typename T>
-void CellByCellLayeredSampling::generate_particles( const vismodule::UnstructuredVolumeObject* volume )
+void CellByCellLayeredSampling::generate_particles( const vismodule::UnstructuredVolumeObject& volume )
 {
     // Tiny value.
     const size_t resolution = BaseClass::transferFunction().resolution();

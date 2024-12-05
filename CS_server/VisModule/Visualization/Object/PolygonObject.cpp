@@ -218,9 +218,9 @@ vismodule::PolygonObject* PolygonObject::DownCast( vismodule::ObjectBase* object
     return( polygon );
 }
 
-const vismodule::PolygonObject* PolygonObject::DownCast( const vismodule::ObjectBase* object )
+const vismodule::PolygonObject* PolygonObject::DownCast( const vismodule::ObjectBase& object )
 {
-    return( PolygonObject::DownCast( const_cast<vismodule::ObjectBase*>( object ) ) );
+    return( PolygonObject::DownCast( const_cast<vismodule::ObjectBase*>( &object ) ) );
 }
 
 PolygonObject& PolygonObject::operator = ( const PolygonObject& object )

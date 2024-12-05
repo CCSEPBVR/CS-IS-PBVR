@@ -14,7 +14,7 @@
 #ifndef VIS_MODULE__POLYGON_IMPORTER_H_INCLUDE
 #define VIS_MODULE__POLYGON_IMPORTER_H_INCLUDE
 
-#include "ImporterBase.h"
+#include <vismodule/ImporterBase>
 #include <vismodule/ClassName>
 #include <vismodule/Module>
 #include <vismodule/PolygonObject>
@@ -49,13 +49,13 @@ public:
 
     PolygonImporter( const std::string& filename );
 
-    PolygonImporter( const vismodule::FileFormatBase* file_format );
+    PolygonImporter( const vismodule::FileFormatBase& file_format );
 
     virtual ~PolygonImporter( void );
 
 public:
 
-    SuperClass* exec( const vismodule::FileFormatBase* file_format );
+    SuperClass* exec( const vismodule::FileFormatBase& file_format );
 
 private:
 

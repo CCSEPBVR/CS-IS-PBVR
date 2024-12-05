@@ -11,15 +11,15 @@
  *  $Id: UnstructuredVolumeObject.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE
-#define PBVR__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#ifndef VIS_MODULE__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE
+#define VIS_MODULE__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE
 
-#include "ClassName.h"
+#include <vismodule/ClassName>
 #include <vismodule/Module>
-#include "VolumeObjectBase.h"
+#include <vismodule/VolumeObjectBase>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -27,14 +27,14 @@ namespace pbvr
  *  Unstructured volume object class.
  */
 /*==========================================================================*/
-class UnstructuredVolumeObject : public pbvr::VolumeObjectBase
+class UnstructuredVolumeObject : public vismodule::VolumeObjectBase
 {
     // Class name.
-    visModuleClassName( pbvr::UnstructuredVolumeObject );
+    visModuleClassName( vismodule::UnstructuredVolumeObject );
 
     // Module information.
-    typedef pbvr::ObjectBase::ModuleTag ModuleCategory;
-    visModuleBaseClass( pbvr::VolumeObjectBase );
+    typedef vismodule::ObjectBase::ModuleTag ModuleCategory;
+    visModuleBaseClass( vismodule::VolumeObjectBase );
 
 public:
 
@@ -67,9 +67,9 @@ public:
 
 public:
 
-    static pbvr::UnstructuredVolumeObject* DownCast( pbvr::ObjectBase* object );
+    static vismodule::UnstructuredVolumeObject* DownCast( vismodule::ObjectBase* object );
 
-    static const pbvr::UnstructuredVolumeObject* DownCast( const pbvr::ObjectBase& object );
+    static const vismodule::UnstructuredVolumeObject* DownCast( const vismodule::ObjectBase& object );
 
 public:
 
@@ -116,6 +116,6 @@ private:
     void calculateMinMaxCoords();
 };
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__UNSTRUCTURED_VOLUME_OBJECT_H_INCLUDE

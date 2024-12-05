@@ -11,13 +11,13 @@
  *  $Id: UnstructuredVolumeImporter.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__UNSTRUCTURED_VOLUME_IMPORTER_H_INCLUDE
-#define PBVR__UNSTRUCTURED_VOLUME_IMPORTER_H_INCLUDE
+#ifndef VIS_MODULE__UNSTRUCTURED_VOLUME_IMPORTER_H_INCLUDE
+#define VIS_MODULE__UNSTRUCTURED_VOLUME_IMPORTER_H_INCLUDE
 
-#include "ImporterBase.h"
-#include "ClassName.h"
+#include <vismodule/ImporterBase>
+#include <vismodule/ClassName>
 #include <vismodule/Module>
-#include "UnstructuredVolumeObject.h"
+#include <vismodule/UnstructuredVolumeObject>
 #include "SPLITTypeSubvolume.h"
 #include "AggregateTypeSubvolume.h"
 #include "StepAggregateTypeSubvolume.h"
@@ -25,7 +25,7 @@
 #include <vismodule/AVSField>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -35,15 +35,15 @@ namespace pbvr
 /*==========================================================================*/
 class UnstructuredVolumeImporter:
     public vismodule::ImporterBase,
-    public pbvr::UnstructuredVolumeObject
+    public vismodule::UnstructuredVolumeObject
 {
     // Class name.
-    visModuleClassName( pbvr::UnstructuredVolumeImporter );
+    visModuleClassName( vismodule::UnstructuredVolumeImporter );
 
     // Module information.
     visModuleCategory( Importer );
     visModuleBaseClass( vismodule::ImporterBase );
-    visModuleSuperClass( pbvr::UnstructuredVolumeObject );
+    visModuleSuperClass( vismodule::UnstructuredVolumeObject );
 
 public:
 
@@ -63,7 +63,7 @@ public:
 
 private:
 
-    void import( const pbvr::SPLITTypeSubvolume& kvsml );
+    void import( const vismodule::SPLITTypeSubvolume& kvsml );
 
     void import( const vismodule::AVSUcd& ucd );
 
@@ -74,6 +74,6 @@ private:
     void import( const vismodule::StepAggregateTypeSubvolume& gt );
 };
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__UNSTRUCTURED_VOLUME_IMPORTER_H_INCLUDE

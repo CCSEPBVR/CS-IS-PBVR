@@ -12,11 +12,11 @@
  *  $Id: GeometryObjectBase.cpp 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#include "GeometryObjectBase.h"
+#include <vismodule/GeometryObjectBase>
 #include <vismodule/Assert>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -148,16 +148,16 @@ GeometryObjectBase::~GeometryObjectBase()
  *  @return pointer to the geometry object base
  */
 /*===========================================================================*/
-pbvr::GeometryObjectBase* GeometryObjectBase::DownCast( pbvr::ObjectBase* object )
+vismodule::GeometryObjectBase* GeometryObjectBase::DownCast( vismodule::ObjectBase* object )
 {
-    const pbvr::ObjectBase::ObjectType type = object->objectType();
-    if ( type != pbvr::ObjectBase::Geometry )
+    const vismodule::ObjectBase::ObjectType type = object->objectType();
+    if ( type != vismodule::ObjectBase::Geometry )
     {
         visModuleMessageError( "Input object is not a geometry object." );
         return NULL;
     }
 
-    pbvr::GeometryObjectBase* geometry = static_cast<pbvr::GeometryObjectBase*>( object );
+    vismodule::GeometryObjectBase* geometry = static_cast<vismodule::GeometryObjectBase*>( object );
 
     return geometry;
 }
@@ -169,9 +169,9 @@ pbvr::GeometryObjectBase* GeometryObjectBase::DownCast( pbvr::ObjectBase* object
  *  @return pointer to the geometry object base
  */
 /*===========================================================================*/
-const pbvr::GeometryObjectBase* GeometryObjectBase::DownCast( const pbvr::ObjectBase& object )
+const vismodule::GeometryObjectBase* GeometryObjectBase::DownCast( const vismodule::ObjectBase& object )
 {
-    pbvr::ObjectBase* obj = const_cast<pbvr::ObjectBase*>( &object );
+    vismodule::ObjectBase* obj = const_cast<vismodule::ObjectBase*>( &object );
     return GeometryObjectBase::DownCast( obj );
 }
 
@@ -180,14 +180,14 @@ const pbvr::GeometryObjectBase* GeometryObjectBase::DownCast( const pbvr::Object
  *  @brief  '<<' operator.
  */
 /*===========================================================================*/
-std::ostream& operator << ( std::ostream& os, const pbvr::GeometryObjectBase& object )
+std::ostream& operator << ( std::ostream& os, const vismodule::GeometryObjectBase& object )
 {
 #ifdef VIS_MODULE_COMPILER_VC
-//#if PBVR_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
+//#if VIS_MODULE_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
 //    // @TODO Cannot instance the object that is a abstract class here (error:C2259).
 //#endif
 #else
-    os << static_cast<const pbvr::ObjectBase&>( object ) << std::endl;
+    os << static_cast<const vismodule::ObjectBase&>( object ) << std::endl;
 #endif
     os << "Number of vertices:  " << object.nvertices() << std::endl;
     os << "Number of colors:  " << object.ncolors() << std::endl;
@@ -289,9 +289,9 @@ void GeometryObjectBase::setNormals( const vismodule::ValueArray<vismodule::Real
  *  @return object type
  */
 /*===========================================================================*/
-const pbvr::ObjectBase::ObjectType GeometryObjectBase::objectType() const
+const vismodule::ObjectBase::ObjectType GeometryObjectBase::objectType() const
 {
-    return pbvr::ObjectBase::Geometry;
+    return vismodule::ObjectBase::Geometry;
 }
 
 /*===========================================================================*/

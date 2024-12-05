@@ -11,21 +11,21 @@
  *  $Id: FrequencyTable.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__FREQUENCY_TABLE_H_INCLUDE
-#define PBVR__FREQUENCY_TABLE_H_INCLUDE
+#ifndef VIS_MODULE__FREQUENCY_TABLE_H_INCLUDE
+#define VIS_MODULE__FREQUENCY_TABLE_H_INCLUDE
 
 #include <vismodule/ValueArray>
 #include <vismodule/Type>
 #include <vismodule/Math>
 #include <vismodule/Message>
-//#include "VolumeObjectBase.h"
+//#include <vismodule/VolumeObjectBase>
 //#include "ImageObject.h"
-#include "ClassName.h"
+#include <vismodule/ClassName>
 #include <list>
 
 const static size_t DEFAULT_NBINS = 256;
 
-namespace pbvr
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -35,7 +35,7 @@ namespace pbvr
 /*==========================================================================*/
 class FrequencyTable
 {
-    visModuleClassName( pbvr::FrequencyTable );
+    visModuleClassName( vismodule::FrequencyTable );
 
 protected:
 
@@ -85,7 +85,7 @@ public:
 
 public:
 
-    //void create( const pbvr::VolumeObjectBase* volume );
+    //void create( const vismodule::VolumeObjectBase& volume );
 
     //void create( const vismodule::ImageObject* image, const size_t channel = 0 );
     //
@@ -100,11 +100,11 @@ public:
 
 private:
 
-    //void calculate_range( const pbvr::VolumeObjectBase* volume );
+    //void calculate_range( const vismodule::VolumeObjectBase& volume );
 
     //void calculate_range( const vismodule::ImageObject* image );
 
-    //void count_bin( const pbvr::VolumeObjectBase* volume );
+    //void count_bin( const vismodule::VolumeObjectBase& volume );
 
     //void count_bin( const vismodule::ImageObject* image, const size_t channel );
 
@@ -112,7 +112,7 @@ private:
     inline void count_bin( const vismodule::ValueArray<T>& vec );
 
     //template <typename T>
-    //void binning( const pbvr::VolumeObjectBase* volume );
+    //void binning( const vismodule::VolumeObjectBase& volume );
 
     //template <typename T>
     //void binning( const vismodule::ImageObject* image, const size_t channel );
@@ -211,7 +211,7 @@ inline void FrequencyTable::create( const vismodule::ValueArray<T>& vec )
 /*==========================================================================*/
 /*
 template <typename T>
-inline void FrequencyTable::binning( const pbvr::VolumeObjectBase* volume )
+inline void FrequencyTable::binning( const vismodule::VolumeObjectBase& volume )
 {
     const size_t veclen = volume->veclen();
     const T* value = reinterpret_cast<const T*>( volume->values().pointer() );
@@ -320,6 +320,6 @@ inline void FrequencyTable::binning( const vismodule::ImageObject* image, const 
     m_standard_deviation = std::sqrt( m_variance );
 }
 */
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__FREQUENCY_TABLE_H_INCLUDE

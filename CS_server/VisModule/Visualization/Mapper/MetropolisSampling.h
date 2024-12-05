@@ -50,11 +50,11 @@ public:
     MetropolisSampling( void );
 
     MetropolisSampling(
-        const vismodule::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase& volume,
         const size_t                 nparticles );
 
     MetropolisSampling(
-        const vismodule::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase& volume,
         const size_t                 nparticles,
         const vismodule::TransferFunction& transfer_function );
 
@@ -68,17 +68,17 @@ public:
 
 public:
 
-//    vismodule::ObjectBase* exec( const vismodule::ObjectBase* object );
-    SuperClass* exec( const vismodule::ObjectBase* object );
+//    vismodule::ObjectBase* exec( const vismodule::ObjectBase& object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 private:
 
-    void mapping( const vismodule::StructuredVolumeObject* volume );
+    void mapping( const vismodule::StructuredVolumeObject& volume );
 
-    void mapping( const vismodule::UnstructuredVolumeObject* volume );
+    void mapping( const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
-    void generate_particles( const vismodule::StructuredVolumeObject* volume );
+    void generate_particles( const vismodule::StructuredVolumeObject& volume );
 
     void adopt_particle(
         const size_t         index,

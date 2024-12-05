@@ -14,7 +14,7 @@
 #ifndef VIS_MODULE__LINE_IMPORTER_H_INCLUDE
 #define VIS_MODULE__LINE_IMPORTER_H_INCLUDE
 
-#include "ImporterBase.h"
+#include <vismodule/ImporterBase>
 #include <vismodule/ClassName>
 #include <vismodule/Module>
 #include <vismodule/LineObject>
@@ -47,13 +47,13 @@ public:
 
     LineImporter( const std::string& filename );
 
-    LineImporter( const vismodule::FileFormatBase* file_format );
+    LineImporter( const vismodule::FileFormatBase& file_format );
 
     virtual ~LineImporter( void );
 
 public:
 
-    SuperClass* exec( const vismodule::FileFormatBase* file_format );
+    SuperClass* exec( const vismodule::FileFormatBase& file_format );
 
 private:
 

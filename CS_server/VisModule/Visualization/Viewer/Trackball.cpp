@@ -436,7 +436,7 @@ void Trackball::rotate( const vismodule::Vector2i& start, const vismodule::Vecto
     vismodule::Vector3f p1( n_old.x(), n_old.y(), this->depth_on_sphere( n_old ) );
     vismodule::Vector3f p2( n_new.x(), n_new.y(), this->depth_on_sphere( n_new ) );
 
-    if( vismodule::GlobalCore::target == vismodule::GlobalCore::TargetCamera )
+    if( vismodule::GlobalCore::m_target == vismodule::GlobalCore::TargetCamera )
     {
         m_rotation = vismodule::Quaternion<float>::rotationQuaternion( p1, p2 );
         return;

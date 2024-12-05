@@ -74,7 +74,7 @@ DiamondGlyph::DiamondGlyph( void ):
  *  @param  volume [in] pointer to the volume object
  */
 /*===========================================================================*/
-DiamondGlyph::DiamondGlyph( const vismodule::VolumeObjectBase* volume ):
+DiamondGlyph::DiamondGlyph( const vismodule::VolumeObjectBase& volume ):
     vismodule::GlyphBase()
 {
     this->exec( volume );
@@ -88,7 +88,7 @@ DiamondGlyph::DiamondGlyph( const vismodule::VolumeObjectBase* volume ):
  */
 /*===========================================================================*/
 DiamondGlyph::DiamondGlyph(
-    const vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase& volume,
     const vismodule::TransferFunction& transfer_function ):
     vismodule::GlyphBase()
 {
@@ -112,9 +112,9 @@ DiamondGlyph::~DiamondGlyph( void )
  *  @return pointer to the created glyph object
  */
 /*===========================================================================*/
-DiamondGlyph::BaseClass::SuperClass* DiamondGlyph::exec( const vismodule::ObjectBase* object )
+DiamondGlyph::BaseClass::SuperClass* DiamondGlyph::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -122,7 +122,7 @@ DiamondGlyph::BaseClass::SuperClass* DiamondGlyph::exec( const vismodule::Object
     }
 
     const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
-    if ( !volume )
+    if ( !&volume )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is not volume dat.");

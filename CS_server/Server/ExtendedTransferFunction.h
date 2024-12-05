@@ -1,15 +1,15 @@
-#ifndef PBVR__EXTENDED_TRANSFER_FUNCTION_H_INCLUDE
-#define PBVR__EXTENDED_TRANSFER_FUNCTION_H_INCLUDE
+#ifndef VIS_MODULE__EXTENDED_TRANSFER_FUNCTION_H_INCLUDE
+#define VIS_MODULE__EXTENDED_TRANSFER_FUNCTION_H_INCLUDE
 
 #include <vismodule/ColorMap>
 #include <vismodule/OpacityMap>
-#include "TransferFunction.h"
+#include <vismodule/TransferFunction>
 #include "function.h"
 #include "function_op.h"
 #include "function_parser.h"
 #include "Types.h"
 
-class ExtendedTransferFunction : public pbvr::TransferFunction
+class ExtendedTransferFunction : public vismodule::TransferFunction
 {
 public:
     int32_t m_resolution;
@@ -70,4 +70,4 @@ public:
 //    NamedTransferFunction& operator =( const NamedTransferFunction& rhs );
 };
 
-#endif // PBVR__EXTENDED_TRANSFER_FUNCTION_H_INCLUDE
+#endif // VIS_MODULE__EXTENDED_TRANSFER_FUNCTION_H_INCLUDE

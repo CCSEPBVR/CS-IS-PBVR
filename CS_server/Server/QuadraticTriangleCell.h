@@ -11,17 +11,17 @@
  *  $Id: QuadraticTriangleCell.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__QUADRATIC_TRIANGLE_CELL_H_INCLUDE
-#define PBVR__QUADRATIC_TRIANGLE_CELL_H_INCLUDE
+#ifndef VIS_MODULE__QUADRATIC_TRIANGLE_CELL_H_INCLUDE
+#define VIS_MODULE__QUADRATIC_TRIANGLE_CELL_H_INCLUDE
 
-#include "ClassName.h"
+#include <vismodule/ClassName>
 #include <vismodule/Type>
 #include <vismodule/Vector4>
-#include "UnstructuredVolumeObject.h"
-#include "CellBase.h"
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/CellBase>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -30,22 +30,22 @@ namespace pbvr
  */
 /*===========================================================================*/
 template <typename T>
-class QuadraticTriangleCell : public pbvr::CellBase<T>
+class QuadraticTriangleCell : public vismodule::CellBase<T>
 {
-    visModuleClassName( pbvr::QuadraticTriangleCell );
+    visModuleClassName( vismodule::QuadraticTriangleCell );
 
 public:
 
-    //enum { NumberOfNodes = pbvr::UnstructuredVolumeObject::QuadraticTriangle };
+    //enum { NumberOfNodes = vismodule::UnstructuredVolumeObject::QuadraticTriangle };
     enum { NumberOfNodes = 6 };
 
 public:
 
-    typedef pbvr::CellBase<T> BaseClass;
+    typedef vismodule::CellBase<T> BaseClass;
 
 public:
 
-    QuadraticTriangleCell( const pbvr::UnstructuredVolumeObject& volume );
+    QuadraticTriangleCell( const vismodule::UnstructuredVolumeObject& volume );
 
     virtual ~QuadraticTriangleCell();
 
@@ -73,8 +73,8 @@ public:
 /*===========================================================================*/
 template <typename T>
 inline QuadraticTriangleCell<T>::QuadraticTriangleCell(
-    const pbvr::UnstructuredVolumeObject& volume ):
-    pbvr::CellBase<T>( volume, 6 )
+    const vismodule::UnstructuredVolumeObject& volume ):
+    vismodule::CellBase<T>( volume, 6 )
 {
     // Set the initial interpolation functions and differential functions.
     this->interpolationFunctions( BaseClass::localPoint() );
@@ -242,6 +242,6 @@ inline void QuadraticTriangleCell<T>::setLocalGravityPoint() const
 }
 
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
-#endif // PBVR__QUADRATIC_TRIANGLE_CELL_H_INCLUDE
+#endif // VIS_MODULE__QUADRATIC_TRIANGLE_CELL_H_INCLUDE

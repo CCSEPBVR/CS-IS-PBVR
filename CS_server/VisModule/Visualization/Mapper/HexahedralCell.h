@@ -11,19 +11,19 @@
  *  $Id: HexahedralCell.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__HEXAHEDRAL_CELL_H_INCLUDE
-#define PBVR__HEXAHEDRAL_CELL_H_INCLUDE
+#ifndef VIS_MODULE__HEXAHEDRAL_CELL_H_INCLUDE
+#define VIS_MODULE__HEXAHEDRAL_CELL_H_INCLUDE
 
-#include "ClassName.h"
+#include <vismodule/ClassName>
 #include <vismodule/Type>
 #include <vismodule/Vector4>
 #include <vismodule/Matrix44>
-#include "UnstructuredVolumeObject.h"
-#include "CellBase.h"
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/CellBase>
 //#include "SFMT/SFMT.h" 
 #include <vismodule/Timer>
 
-namespace pbvr
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -32,21 +32,21 @@ namespace pbvr
  */
 /*===========================================================================*/
 template <typename T>
-class HexahedralCell : public pbvr::CellBase<T>
+class HexahedralCell : public vismodule::CellBase<T>
 {
-    visModuleClassName( pbvr::HexahedralCell );
+    visModuleClassName( vismodule::HexahedralCell );
 
 public:
 
-    enum { NumberOfNodes = pbvr::UnstructuredVolumeObject::Hexahedra };
+    enum { NumberOfNodes = vismodule::UnstructuredVolumeObject::Hexahedra };
 
 public:
 
-    typedef pbvr::CellBase<T> BaseClass;
+    typedef vismodule::CellBase<T> BaseClass;
 
 public:
 
-    HexahedralCell( const pbvr::UnstructuredVolumeObject& volume );
+    HexahedralCell( const vismodule::UnstructuredVolumeObject& volume );
 
     HexahedralCell(     T* values,
         float* coords, int ncoords,
@@ -84,8 +84,8 @@ public:
 /*===========================================================================*/
 template <typename T>
 inline HexahedralCell<T>::HexahedralCell(
-    const pbvr::UnstructuredVolumeObject& volume ):
-    pbvr::CellBase<T>( volume )
+    const vismodule::UnstructuredVolumeObject& volume ):
+    vismodule::CellBase<T>( volume )
 {
     // Set the initial interpolation functions and differential functions.
     this->interpolationFunctions( BaseClass::localPoint() );
@@ -97,7 +97,7 @@ inline HexahedralCell<T>::HexahedralCell(
         T* values,
         float* coords, int ncoords,
         unsigned int* connections, int ncells):
-    pbvr::CellBase<T>(
+    vismodule::CellBase<T>(
         values,
         coords, ncoords,
         connections, ncells, 8)//num of hex vertices
@@ -630,6 +630,6 @@ inline void HexahedralCell<T>::setLocalGravityPoint() const
     this->setLocalPoint( vismodule::Vector3f( 0.5, 0.5, 0.5 ) );
 }
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__HEXAHEDRAL_CELL_H_INCLUDE

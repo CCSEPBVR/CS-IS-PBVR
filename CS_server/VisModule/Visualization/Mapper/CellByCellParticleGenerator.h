@@ -11,28 +11,28 @@
  *  $Id: CellByCellParticleGenerator.h 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__CELL_BY_CELL_PARTICLE_GENERATOR_H_INCLUDE
-#define PBVR__CELL_BY_CELL_PARTICLE_GENERATOR_H_INCLUDE
+#ifndef VIS_MODULE__CELL_BY_CELL_PARTICLE_GENERATOR_H_INCLUDE
+#define VIS_MODULE__CELL_BY_CELL_PARTICLE_GENERATOR_H_INCLUDE
 
-#include "VolumeObjectBase.h"
+#include <vismodule/VolumeObjectBase>
 #include <vismodule/OpacityMap>
 #include <vismodule/Vector3>
 #include <vismodule/Math>
 #include <vismodule/Camera>
 #include <vismodule/MersenneTwister> 
-#include "CellBase.h"
-#include "TetrahedralCell.h"
-#include "QuadraticTetrahedralCell.h"
-#include "HexahedralCell.h"
-#include "QuadraticHexahedralCell.h"
+#include <vismodule/CellBase>
+#include <vismodule/TetrahedralCell>
+#include <vismodule/QuadraticTetrahedralCell>
+#include <vismodule/HexahedralCell>
+#include <vismodule/QuadraticHexahedralCell>
 #include "PrismaticCell.h"
-#include "PyramidalCell.h"
+#include <vismodule/PyramidalCell>
 //#include "TriangleCell.h"
 //#include "SquareCell.h"
 //#include "QuadraticTriangleCell.h"
 //#include "QuadraticSquareCell.h"
-#include "StructuredVolumeObject.h"
-#include "UnstructuredVolumeObject.h"
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/UnstructuredVolumeObject>
 
 #ifdef _OPENMP
 #  include <omp.h>
@@ -67,7 +67,7 @@ void GetViewport( int ( *viewport )[4] );
 
 void GetProjectionMatrix( double ( *projection )[16] );
 
-void GetModelviewMatrix( const pbvr::ObjectBase& object, double ( *modelview )[16] );
+void GetModelviewMatrix( const vismodule::ObjectBase& object, double ( *modelview )[16] );
 
 void Project(
     const double obj_x,
@@ -92,7 +92,7 @@ void UnProject(
     double*      obj_z );
 } // end of namespace
 
-namespace pbvr
+namespace vismodule
 {
 
 namespace CellByCellParticleGenerator
@@ -104,7 +104,7 @@ const vismodule::Vector3f RandomSamplingInCube( const vismodule::Vector3f& v );
 vismodule::Vector3f RandomSamplingInCube( vismodule::MersenneTwister* MT  );
 
 const float CalculateObjectDepth(
-    const pbvr::ObjectBase& object,
+    const vismodule::ObjectBase& object,
     const double         modelview[16],
     const double         projection[16],
     const int            viewport[4] );
@@ -118,7 +118,7 @@ const float CalculateSubpixelLength(
 
 inline void CalculateDensityConstaint(
     const vismodule::Camera&     camera,
-    const pbvr::ObjectBase& object,
+    const vismodule::ObjectBase& object,
     const float            subpixel_level,
     const float            sampling_step,
     float* p_sampling_volume_inverse,
@@ -133,14 +133,14 @@ const float CalculateDensity(
 
 const vismodule::ValueArray<float> CalculateDensityMap(
     const vismodule::Camera&     camera,
-    const pbvr::ObjectBase& object,
+    const vismodule::ObjectBase& object,
     const float            subpixel_level,
     const float            sampling_step,
     const vismodule::OpacityMap& opacity_map );
 
 } // end of namespace CellByCellParticleGenerator
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 
 namespace
@@ -286,8 +286,8 @@ inline void GetProjectionMatrix( double ( *projection )[16] )
     ( *projection )[15] = P[3][3];
 }
 
-//inline void GetModelviewMatrix( const vismodule::Camera* camera, const pbvr::ObjectBase* object, double (*modelview)[16] )
-inline void GetModelviewMatrix( const pbvr::ObjectBase& object, double ( *modelview )[16] )
+//inline void GetModelviewMatrix( const vismodule::Camera* camera, const vismodule::ObjectBase& object, double (*modelview)[16] )
+inline void GetModelviewMatrix( const vismodule::ObjectBase& object, double ( *modelview )[16] )
 {
     const vismodule::Vector3f  min_external = object.minExternalCoord();
     const vismodule::Vector3f  max_external = object.maxExternalCoord();
@@ -395,7 +395,7 @@ inline void UnProject(
 
 } // end of namespace
 
-namespace pbvr
+namespace vismodule
 {
 
 namespace CellByCellParticleGenerator
@@ -444,7 +444,7 @@ inline vismodule::Vector3f RandomSamplingInCube( vismodule::MersenneTwister* MT 
 
 
 inline const float CalculateObjectDepth(
-    const pbvr::ObjectBase& object,
+    const vismodule::ObjectBase& object,
     const double         modelview[16],
     const double         projection[16],
     const int            viewport[4] )
@@ -491,7 +491,7 @@ inline const float CalculateSubpixelLength(
 
 inline void CalculateDensityConstaint(
     const vismodule::Camera&     camera,
-    const pbvr::ObjectBase& object,
+    const vismodule::ObjectBase& object,
     const float            subpixel_level,
     const float            sampling_step,
     float* p_sampling_volume_inverse,
@@ -556,7 +556,7 @@ inline const float CalculateDensity2d(
 
 inline const vismodule::ValueArray<float> CalculateDensityMap(
     const vismodule::Camera&     camera,
-    const pbvr::ObjectBase& object,
+    const vismodule::ObjectBase& object,
     const float            subpixel_level,
     const float            sampling_step,
     const vismodule::OpacityMap& opacity_map )
@@ -596,21 +596,21 @@ inline const vismodule::ValueArray<float> CalculateDensityMap(
     return density_map;
 }
 
-inline const double CalculateTotalVolume( const pbvr::VolumeObjectBase* object )
+inline const double CalculateTotalVolume( const vismodule::VolumeObjectBase* object )
 {
-    const pbvr::VolumeObjectBase::VolumeType volume_type = object->volumeType();
-    if ( volume_type == pbvr::VolumeObjectBase::Structured )
+    const vismodule::VolumeObjectBase::VolumeType volume_type = object->volumeType();
+    if ( volume_type == vismodule::VolumeObjectBase::Structured )
     {
-        const pbvr::StructuredVolumeObject* volume =
-            reinterpret_cast<const pbvr::StructuredVolumeObject*>( object );
+        const vismodule::StructuredVolumeObject* volume =
+            reinterpret_cast<const vismodule::StructuredVolumeObject*>( &object );
 
         vismodule::Vector3ui length( volume->resolution() - vismodule::Vector3ui( 1, 1, 1 ) );
         return length.x() * length.y() * length.z();
     }
     else
     {
-        const pbvr::UnstructuredVolumeObject* volume =
-            reinterpret_cast<const pbvr::UnstructuredVolumeObject*>( object );
+        const vismodule::UnstructuredVolumeObject* volume =
+            reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( &object );
 
         // Set a cell interpolator. Value type is assumed as float.
 #if _OPENMP
@@ -618,89 +618,89 @@ inline const double CalculateTotalVolume( const pbvr::VolumeObjectBase* object )
 #else
         int max_threads = 1;
 #endif
-        pbvr::CellBase<float>** cell = new pbvr::CellBase<float>* [max_threads];;
+        vismodule::CellBase<float>** cell = new vismodule::CellBase<float>* [max_threads];;
         // add by @hira at 2016/12/01
         for ( int n = 0; n < max_threads; n++ ) cell[n] = NULL;
 
         switch ( volume->cellType() )
         {
-        case pbvr::VolumeObjectBase::Tetrahedra:
+        case vismodule::VolumeObjectBase::Tetrahedra:
         {
             for ( int n = 0; n < max_threads; n++ )
             {
-                cell[n] = new pbvr::TetrahedralCell<float>( *volume );
+                cell[n] = new vismodule::TetrahedralCell<float>( *volume );
             }
             break;
         }
-        case pbvr::VolumeObjectBase::QuadraticTetrahedra:
+        case vismodule::VolumeObjectBase::QuadraticTetrahedra:
         {
             for ( int n = 0; n < max_threads; n++ )
             {
-                cell[n] = new pbvr::QuadraticTetrahedralCell<float>( *volume );
+                cell[n] = new vismodule::QuadraticTetrahedralCell<float>( *volume );
             }
             break;
         }
-        case pbvr::VolumeObjectBase::Hexahedra:
+        case vismodule::VolumeObjectBase::Hexahedra:
         {
             for ( int n = 0; n < max_threads; n++ )
             {
-                cell[n] = new pbvr::HexahedralCell<float>( *volume );
+                cell[n] = new vismodule::HexahedralCell<float>( *volume );
             }
             break;
         }
-        case pbvr::VolumeObjectBase::QuadraticHexahedra:
+        case vismodule::VolumeObjectBase::QuadraticHexahedra:
         {
             for ( int n = 0; n < max_threads; n++ )
             {
-                cell[n] = new pbvr::QuadraticHexahedralCell<float>( *volume );
+                cell[n] = new vismodule::QuadraticHexahedralCell<float>( *volume );
             }
             break;
         }
-        case pbvr::VolumeObjectBase::Prism:
+        case vismodule::VolumeObjectBase::Prism:
         {
             for ( int n = 0; n < max_threads; n++ )
             {
-                cell[n] = new pbvr::PrismaticCell<float>( *volume );
+                cell[n] = new vismodule::PrismaticCell<float>( *volume );
             }
             break;
         }
-        case pbvr::VolumeObjectBase::Pyramid:
+        case vismodule::VolumeObjectBase::Pyramid:
         {
             for ( int n = 0; n < max_threads; n++ )
             {
-                cell[n] = new pbvr::PyramidalCell<float>( *volume );
+                cell[n] = new vismodule::PyramidalCell<float>( *volume );
             }
             break;
         }
-//        case pbvr::VolumeObjectBase::Triangle:
+//        case vismodule::VolumeObjectBase::Triangle:
 //        {
 //            for ( int n = 0; n < max_threads; n++ )
 //            {
-//                cell[n] = new pbvr::TriangleCell<float>( *volume );
+//                cell[n] = new vismodule::TriangleCell<float>( *volume );
 //            }
 //            break;
 //        }
-//        case pbvr::VolumeObjectBase::QuadraticTriangle:
+//        case vismodule::VolumeObjectBase::QuadraticTriangle:
 //        {
 //            for ( int n = 0; n < max_threads; n++ )
 //            {
-//                cell[n] = new pbvr::QuadraticTriangleCell<float>( *volume );
+//                cell[n] = new vismodule::QuadraticTriangleCell<float>( *volume );
 //            }
 //            break;
 //        }
-//        case pbvr::VolumeObjectBase::Square:
+//        case vismodule::VolumeObjectBase::Square:
 //        {
 //            for ( int n = 0; n < max_threads; n++ )
 //            {
-//                cell[n] = new pbvr::SquareCell<float>( *volume );
+//                cell[n] = new vismodule::SquareCell<float>( *volume );
 //            }
 //            break;
 //        }
-//        case pbvr::VolumeObjectBase::QuadraticSquare:
+//        case vismodule::VolumeObjectBase::QuadraticSquare:
 //        {
 //            for ( int n = 0; n < max_threads; n++ )
 //            {
-//                cell[n] = new pbvr::QuadraticSquareCell<float>( *volume );
+//                cell[n] = new vismodule::QuadraticSquareCell<float>( *volume );
 //            }
 //            break;
 //        }
@@ -749,7 +749,7 @@ inline const double CalculateTotalVolume( const pbvr::VolumeObjectBase* object )
 
 inline const float CalculateGreatDensity(
     const vismodule::Camera&           camera,
-    const pbvr::ObjectBase&       object,
+    const vismodule::ObjectBase&       object,
     const float                  subpixel_level,
     const float                  sampling_step )
 {
@@ -778,6 +778,6 @@ inline const float CalculateGreatDensity(
 
 } // end of namespace CellByCellParticleGenerator
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__CELL_BY_CELL_PARTICLE_GENERATOR_H_INCLUDE

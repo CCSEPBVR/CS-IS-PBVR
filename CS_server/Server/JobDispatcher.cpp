@@ -156,7 +156,7 @@ int JobDispatcher::dispatchNext( const int worker_id, int* step, int* volume )
 
 int JobDispatcher::dispatchNext( const int worker_id, int* step, int* volume )
 {
-    PBVR_TIMER_STA( 21 );
+    VIS_MODULE_TIMER_STA( 21 );
     int rank, size, count;
     int ret = 0;
     MPI_Comm_size( MPI_COMM_WORLD, &size );
@@ -164,7 +164,7 @@ int JobDispatcher::dispatchNext( const int worker_id, int* step, int* volume )
 
     if ( rank == 0 )
     {
-        PBVR_TIMER_STA( 31 );
+        VIS_MODULE_TIMER_STA( 31 );
         MPI_Request* req    = new MPI_Request[size];
         MPI_Status*  status = new MPI_Status [size];
         MPI_Request* req2    = new MPI_Request[size];
@@ -214,8 +214,8 @@ int JobDispatcher::dispatchNext( const int worker_id, int* step, int* volume )
 
         }
         count = 0;
-        PBVR_TIMER_END( 31 );
-        PBVR_TIMER_STA( 30 );
+        VIS_MODULE_TIMER_END( 31 );
+        VIS_MODULE_TIMER_STA( 30 );
 
         for ( std::vector<WorkerInfomation>::iterator w = m_worker_list.begin();
                 w != m_worker_list.end(); w++ )
@@ -271,31 +271,31 @@ int JobDispatcher::dispatchNext( const int worker_id, int* step, int* volume )
                 count++;
             }
         }
-        PBVR_TIMER_END( 30 );
+        VIS_MODULE_TIMER_END( 30 );
 
-        PBVR_TIMER_STA( 32 );
+        VIS_MODULE_TIMER_STA( 32 );
         ret = 0;
         for ( std::vector<WorkerInfomation>::iterator w = m_worker_list.begin();
                 w != m_worker_list.end(); w++ )
         {
             if ( w->m_status != -1 ) ret++;
         }
-        PBVR_TIMER_END( 32 );
+        VIS_MODULE_TIMER_END( 32 );
 
         if ( count != 0 )
         {
-            PBVR_TIMER_STA( 35 );
+            VIS_MODULE_TIMER_STA( 35 );
             MPI_Waitall( count, req, status );
             MPI_Waitall( count, req2, status2 );
-            PBVR_TIMER_END( 35 );
+            VIS_MODULE_TIMER_END( 35 );
         }
 
-        PBVR_TIMER_STA( 33 );
+        VIS_MODULE_TIMER_STA( 33 );
         delete[] req;
         delete[] status;
         delete[] req2;
         delete[] status2;
-        PBVR_TIMER_END( 33 );
+        VIS_MODULE_TIMER_END( 33 );
 
     }
     else
@@ -306,15 +306,15 @@ int JobDispatcher::dispatchNext( const int worker_id, int* step, int* volume )
 
         if ( m_job_id_count == 0 )
         {
-            PBVR_TIMER_STA( 40 );
+            VIS_MODULE_TIMER_STA( 40 );
             MPI_Recv( &m_job_id_pack_recv_size, 1, MPI_INT, 0, 2, MPI_COMM_WORLD, &stat );
-            PBVR_TIMER_END( 40 );
-            PBVR_TIMER_STA( 41 );
+            VIS_MODULE_TIMER_END( 40 );
+            VIS_MODULE_TIMER_STA( 41 );
             m_job_id_pack_recv.assign( m_job_id_pack_recv_size, 0 );
-            PBVR_TIMER_END( 41 );
-            PBVR_TIMER_STA( 42 );
+            VIS_MODULE_TIMER_END( 41 );
+            VIS_MODULE_TIMER_STA( 42 );
             MPI_Recv( &m_job_id_pack_recv[0], m_job_id_pack_recv_size, MPI_INT, 0, 3, MPI_COMM_WORLD, &stat2 );
-            PBVR_TIMER_END( 42 );
+            VIS_MODULE_TIMER_END( 42 );
             m_collect_send_state = 0;
         }
 
@@ -345,7 +345,7 @@ int JobDispatcher::dispatchNext( const int worker_id, int* step, int* volume )
                       << std::endl;
             std::flush( std::cerr );
 #endif
-            PBVR_TIMER_END( 21 );
+            VIS_MODULE_TIMER_END( 21 );
             return ret;
         }
 
@@ -362,7 +362,7 @@ int JobDispatcher::dispatchNext( const int worker_id, int* step, int* volume )
         }
     }
 
-    PBVR_TIMER_END( 21 );
+    VIS_MODULE_TIMER_END( 21 );
     return ret;
 }
 

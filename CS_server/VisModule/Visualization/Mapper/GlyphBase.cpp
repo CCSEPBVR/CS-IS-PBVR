@@ -142,7 +142,7 @@ void GlyphBase::transform(
  *  @param  volume [in] pointer to the volume object
  */
 /*===========================================================================*/
-void GlyphBase::calculate_coords( const vismodule::VolumeObjectBase* volume )
+void GlyphBase::calculate_coords( const vismodule::VolumeObjectBase& volume )
 {
     const vismodule::VolumeObjectBase::VolumeType type = volume->volumeType();
     if ( type == vismodule::VolumeObjectBase::Structured )
@@ -161,7 +161,7 @@ void GlyphBase::calculate_coords( const vismodule::VolumeObjectBase* volume )
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void GlyphBase::calculate_coords( const vismodule::StructuredVolumeObject* volume )
+void GlyphBase::calculate_coords( const vismodule::StructuredVolumeObject& volume )
 {
     const vismodule::VolumeObjectBase::GridType type = volume->gridType();
     if ( type == vismodule::VolumeObjectBase::Uniform )
@@ -184,7 +184,7 @@ void GlyphBase::calculate_coords( const vismodule::StructuredVolumeObject* volum
  *  @param  volume [in] pointer to the structrued volume object
  */
 /*===========================================================================*/
-void GlyphBase::calculate_uniform_coords( const vismodule::StructuredVolumeObject* volume )
+void GlyphBase::calculate_uniform_coords( const vismodule::StructuredVolumeObject& volume )
 {
     vismodule::ValueArray<vismodule::Real32> coords( 3 * volume->nnodes() );
     vismodule::Real32* coord = coords.pointer();
@@ -226,7 +226,7 @@ void GlyphBase::calculate_uniform_coords( const vismodule::StructuredVolumeObjec
  *  @param  volume [in] pointer to the structrued volume object
  */
 /*===========================================================================*/
-void GlyphBase::calculate_rectilinear_coords( const vismodule::StructuredVolumeObject* volume )
+void GlyphBase::calculate_rectilinear_coords( const vismodule::StructuredVolumeObject& volume )
 {
     vismodule::IgnoreUnusedVariable( volume );
     visModuleMessageError("Rectilinear volume has not yet support.");
@@ -239,7 +239,7 @@ void GlyphBase::calculate_rectilinear_coords( const vismodule::StructuredVolumeO
  */
 /*===========================================================================*/
 template <typename T>
-void GlyphBase::calculate_sizes( const vismodule::VolumeObjectBase* volume )
+void GlyphBase::calculate_sizes( const vismodule::VolumeObjectBase& volume )
 {
     const T* value = reinterpret_cast<const T*>( volume->values().pointer() );
     const size_t veclen = volume->veclen();
@@ -285,16 +285,16 @@ void GlyphBase::calculate_sizes( const vismodule::VolumeObjectBase* volume )
     this->setSizes( sizes );
 }
 
-template void GlyphBase::calculate_sizes<vismodule::Int8>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_sizes<vismodule::Int16>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_sizes<vismodule::Int32>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_sizes<vismodule::Int64>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_sizes<vismodule::UInt8>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_sizes<vismodule::UInt16>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_sizes<vismodule::UInt32>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_sizes<vismodule::UInt64>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_sizes<vismodule::Real32>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_sizes<vismodule::Real64>( const vismodule::VolumeObjectBase* volume );
+template void GlyphBase::calculate_sizes<vismodule::Int8>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_sizes<vismodule::Int16>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_sizes<vismodule::Int32>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_sizes<vismodule::Int64>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_sizes<vismodule::UInt8>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_sizes<vismodule::UInt16>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_sizes<vismodule::UInt32>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_sizes<vismodule::UInt64>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_sizes<vismodule::Real32>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_sizes<vismodule::Real64>( const vismodule::VolumeObjectBase& volume );
 
 /*===========================================================================*/
 /**
@@ -303,7 +303,7 @@ template void GlyphBase::calculate_sizes<vismodule::Real64>( const vismodule::Vo
  */
 /*===========================================================================*/
 template <typename T>
-void GlyphBase::calculate_directions( const vismodule::VolumeObjectBase* volume )
+void GlyphBase::calculate_directions( const vismodule::VolumeObjectBase& volume )
 {
     const T* value = reinterpret_cast<const T*>( volume->values().pointer() );
     const size_t veclen = volume->veclen();
@@ -322,16 +322,16 @@ void GlyphBase::calculate_directions( const vismodule::VolumeObjectBase* volume 
     }
 }
 
-template void GlyphBase::calculate_directions<vismodule::Int8>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_directions<vismodule::Int16>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_directions<vismodule::Int32>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_directions<vismodule::Int64>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_directions<vismodule::UInt8>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_directions<vismodule::UInt16>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_directions<vismodule::UInt32>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_directions<vismodule::UInt64>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_directions<vismodule::Real32>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_directions<vismodule::Real64>( const vismodule::VolumeObjectBase* volume );
+template void GlyphBase::calculate_directions<vismodule::Int8>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_directions<vismodule::Int16>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_directions<vismodule::Int32>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_directions<vismodule::Int64>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_directions<vismodule::UInt8>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_directions<vismodule::UInt16>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_directions<vismodule::UInt32>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_directions<vismodule::UInt64>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_directions<vismodule::Real32>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_directions<vismodule::Real64>( const vismodule::VolumeObjectBase& volume );
 
 /*===========================================================================*/
 /**
@@ -340,7 +340,7 @@ template void GlyphBase::calculate_directions<vismodule::Real64>( const vismodul
  */
 /*===========================================================================*/
 template <typename T>
-void GlyphBase::calculate_colors( const vismodule::VolumeObjectBase* volume )
+void GlyphBase::calculate_colors( const vismodule::VolumeObjectBase& volume )
 {
     const T* value = reinterpret_cast<const T*>( volume->values().pointer() );
     const size_t veclen = volume->veclen();
@@ -404,16 +404,16 @@ void GlyphBase::calculate_colors( const vismodule::VolumeObjectBase* volume )
     this->setColors( colors );
 }
 
-template void GlyphBase::calculate_colors<vismodule::Int8>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_colors<vismodule::Int16>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_colors<vismodule::Int32>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_colors<vismodule::Int64>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_colors<vismodule::UInt8>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_colors<vismodule::UInt16>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_colors<vismodule::UInt32>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_colors<vismodule::UInt64>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_colors<vismodule::Real32>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_colors<vismodule::Real64>( const vismodule::VolumeObjectBase* volume );
+template void GlyphBase::calculate_colors<vismodule::Int8>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_colors<vismodule::Int16>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_colors<vismodule::Int32>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_colors<vismodule::Int64>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_colors<vismodule::UInt8>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_colors<vismodule::UInt16>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_colors<vismodule::UInt32>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_colors<vismodule::UInt64>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_colors<vismodule::Real32>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_colors<vismodule::Real64>( const vismodule::VolumeObjectBase& volume );
 
 /*===========================================================================*/
 /**
@@ -422,7 +422,7 @@ template void GlyphBase::calculate_colors<vismodule::Real64>( const vismodule::V
  */
 /*===========================================================================*/
 template <typename T>
-void GlyphBase::calculate_opacities( const vismodule::VolumeObjectBase* volume )
+void GlyphBase::calculate_opacities( const vismodule::VolumeObjectBase& volume )
 {
     const T* value = reinterpret_cast<const T*>( volume->values().pointer() );
     const size_t veclen = volume->veclen();
@@ -468,15 +468,15 @@ void GlyphBase::calculate_opacities( const vismodule::VolumeObjectBase* volume )
     this->setOpacities( opacities );
 }
 
-template void GlyphBase::calculate_opacities<vismodule::Int8>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_opacities<vismodule::Int16>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_opacities<vismodule::Int32>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_opacities<vismodule::Int64>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_opacities<vismodule::UInt8>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_opacities<vismodule::UInt16>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_opacities<vismodule::UInt32>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_opacities<vismodule::UInt64>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_opacities<vismodule::Real32>( const vismodule::VolumeObjectBase* volume );
-template void GlyphBase::calculate_opacities<vismodule::Real64>( const vismodule::VolumeObjectBase* volume );
+template void GlyphBase::calculate_opacities<vismodule::Int8>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_opacities<vismodule::Int16>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_opacities<vismodule::Int32>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_opacities<vismodule::Int64>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_opacities<vismodule::UInt8>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_opacities<vismodule::UInt16>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_opacities<vismodule::UInt32>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_opacities<vismodule::UInt64>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_opacities<vismodule::Real32>( const vismodule::VolumeObjectBase& volume );
+template void GlyphBase::calculate_opacities<vismodule::Real64>( const vismodule::VolumeObjectBase& volume );
 
 } // end of namespace vismodule

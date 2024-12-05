@@ -204,7 +204,7 @@ namespace vismodule
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*===========================================================================*/
-CellAdjacencyGraph::CellAdjacencyGraph( const vismodule::UnstructuredVolumeObject* volume )
+CellAdjacencyGraph::CellAdjacencyGraph( const vismodule::UnstructuredVolumeObject& volume )
 {
     this->create( volume );
 }
@@ -224,9 +224,9 @@ CellAdjacencyGraph::~CellAdjacencyGraph( void )
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*===========================================================================*/
-void CellAdjacencyGraph::create( const vismodule::UnstructuredVolumeObject* volume )
+void CellAdjacencyGraph::create( const vismodule::UnstructuredVolumeObject& volume )
 {
-    const vismodule::UnstructuredVolumeObject::CellType cell_type = volume->cellType();
+    const vismodule::UnstructuredVolumeObject::CellType cell_type = volume.cellType();
     switch ( cell_type )
     {
     case vismodule::UnstructuredVolumeObject::Tetrahedra:
@@ -272,12 +272,12 @@ const vismodule::BitArray& CellAdjacencyGraph::mask( void ) const
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*===========================================================================*/
-void CellAdjacencyGraph::create_for_tetrahedral_cell( const vismodule::UnstructuredVolumeObject* volume )
+void CellAdjacencyGraph::create_for_tetrahedral_cell( const vismodule::UnstructuredVolumeObject& volume )
 {
-    const vismodule::UInt32* const connections = volume->connections().pointer();
-    const size_t nnodes = volume->nnodes();
-    const size_t ncells = volume->ncells();
-    const size_t nnodes_per_cell = static_cast<size_t>( volume->cellType() );
+    const vismodule::UInt32* const connections = volume.connections().pointer();
+    const size_t nnodes = volume.nnodes();
+    const size_t ncells = volume.ncells();
+    const size_t nnodes_per_cell = static_cast<size_t>( volume.cellType() );
 
     if ( !m_graph.allocate( ncells * 4 ) )
     {
@@ -347,12 +347,12 @@ void CellAdjacencyGraph::create_for_tetrahedral_cell( const vismodule::Unstructu
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*===========================================================================*/
-void CellAdjacencyGraph::create_for_hexahedral_cell( const vismodule::UnstructuredVolumeObject* volume )
+void CellAdjacencyGraph::create_for_hexahedral_cell( const vismodule::UnstructuredVolumeObject& volume )
 {
-    const vismodule::UInt32* const connections = volume->connections().pointer();
-    const size_t nnodes = volume->nnodes();
-    const size_t ncells = volume->ncells();
-    const size_t nnodes_per_cell = static_cast<size_t>( volume->cellType() );
+    const vismodule::UInt32* const connections = volume.connections().pointer();
+    const size_t nnodes = volume.nnodes();
+    const size_t ncells = volume.ncells();
+    const size_t nnodes_per_cell = static_cast<size_t>( volume.cellType() );
 
     if ( !m_graph.allocate( ncells * 6 ) )
     {

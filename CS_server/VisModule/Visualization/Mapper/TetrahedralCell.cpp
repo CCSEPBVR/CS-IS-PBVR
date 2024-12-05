@@ -11,10 +11,10 @@
  *  $Id: TetrahedralCell.cpp 608 2010-09-13 06:55:48Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "TetrahedralCell.h"
+#include <vismodule/TetrahedralCell>
 
 
-namespace pbvr
+namespace vismodule
 {
 //namespace test
 //{
@@ -47,4 +47,4 @@ template class TetrahedralCell<double>;
 
 } // end of namespace old
 //} // end of namespace test
-} // end of namespace pbvr
+} // end of namespace vismodule

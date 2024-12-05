@@ -11,7 +11,7 @@
  *  $Id: GlobalCore.cpp 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "GlobalCore.h"
+#include <vismodule/GlobalCore>
 #include <vismodule/DebugNew>
 #include <vismodule/Camera>
 /* 131018 removed
@@ -19,14 +19,14 @@
 #include "Background.h"
 #include "Mouse.h"
 */
-#include "ObjectManager.h"
+#include <vismodule/ObjectManager>
 #include <vismodule/RendererManager>
-#include "IDManager.h"
+#include <vismodule/IDManager>
 #include <vismodule/Message>
 #include <vismodule/RGBColor>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 // Parameter instantiation.
@@ -39,9 +39,9 @@ vismodule::Mouse*               GlobalCore::mouse;
 vismodule::Background*          GlobalCore::background;
 */
 GlobalCore::ControlTarget GlobalCore::m_target;
-pbvr::ObjectManager*       GlobalCore::m_object_manager;
+vismodule::ObjectManager*       GlobalCore::m_object_manager;
 vismodule::RendererManager*     GlobalCore::m_renderer_manager;
-pbvr::IDManager*           GlobalCore::m_id_manager;
+vismodule::IDManager*           GlobalCore::m_id_manager;
 
 /*==========================================================================*/
 /**
@@ -106,7 +106,7 @@ void GlobalCore::createCore( const int count, const char** values )
             return;
         }
     */
-    m_object_manager = new pbvr::ObjectManager();
+    m_object_manager = new vismodule::ObjectManager();
     if ( !m_object_manager )
     {
         visModuleMessageError( "Cannot allocate memory for the object manager." );
@@ -120,7 +120,7 @@ void GlobalCore::createCore( const int count, const char** values )
         return;
     }
 
-    m_id_manager = new pbvr::IDManager();
+    m_id_manager = new vismodule::IDManager();
     if ( !m_id_manager )
     {
         visModuleMessageError( "Cannot allocate memory for the ID manager." );
@@ -189,4 +189,4 @@ void GlobalCore::resetCore()
 //    light->resetXform(); /* 131018 removed */
 }
 
-} // end of namespace pbvr
+} // end of namespace vismodule

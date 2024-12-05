@@ -1,11 +1,11 @@
-#ifndef  PBVR__PARAMETER_FILE_H_INCLUDE
-#define PBVR__PARAMETER_FILE_H_INCLUDE
+#ifndef  VIS_MODULE__PARAMETER_FILE_H_INCLUDE
+#define VIS_MODULE__PARAMETER_FILE_H_INCLUDE
 
 #include <string>
 #include <vector>
 
 // add by @hira at 2016/12/01
-// #define PBVR_FILTER_PARAMFILENAME    "FILTER_PARAMETER_FILENAME"
+// #define VIS_MODULE_FILTER_PARAMFILENAME    "FILTER_PARAMETER_FILENAME"
 #define MAX_TF_NUMBER		99
 
 class ParameterFile
@@ -46,5 +46,5 @@ private:
     bool isTfnameNvalc(const std::string& item);
 };
 
-#endif // PBVR__PARAMETER_FILE_H_INCLUDE
+#endif // VIS_MODULE__PARAMETER_FILE_H_INCLUDE
 

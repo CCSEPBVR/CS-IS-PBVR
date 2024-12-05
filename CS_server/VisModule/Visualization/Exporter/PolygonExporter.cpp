@@ -24,7 +24,7 @@ namespace vismodule
  *  @param  object [in] pointer to the input polygon object
  */
 /*===========================================================================*/
-PolygonExporter<vismodule::KVSMLObjectPolygon>::PolygonExporter( const vismodule::PolygonObject* object )
+PolygonExporter<vismodule::KVSMLObjectPolygon>::PolygonExporter( const vismodule::PolygonObject& object )
 {
     this->exec( object );
 }
@@ -36,9 +36,9 @@ PolygonExporter<vismodule::KVSMLObjectPolygon>::PolygonExporter( const vismodule
  *  @return pointer to the KVSMLObjectPolygon format
  */
 /*===========================================================================*/
-vismodule::KVSMLObjectPolygon* PolygonExporter<vismodule::KVSMLObjectPolygon>::exec( const vismodule::ObjectBase* object )
+vismodule::KVSMLObjectPolygon* PolygonExporter<vismodule::KVSMLObjectPolygon>::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -83,14 +83,14 @@ vismodule::KVSMLObjectPolygon* PolygonExporter<vismodule::KVSMLObjectPolygon>::e
     return( this );
 }
 
-PolygonExporter<vismodule::Stl>::PolygonExporter( const vismodule::PolygonObject* object )
+PolygonExporter<vismodule::Stl>::PolygonExporter( const vismodule::PolygonObject& object )
 {
     this->exec( object );
 }
 
-vismodule::Stl* PolygonExporter<vismodule::Stl>::exec( const vismodule::ObjectBase* object )
+vismodule::Stl* PolygonExporter<vismodule::Stl>::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -146,14 +146,14 @@ vismodule::Stl* PolygonExporter<vismodule::Stl>::exec( const vismodule::ObjectBa
     return( this );
 }
 
-PolygonExporter<vismodule::Ply>::PolygonExporter( const vismodule::PolygonObject* object )
+PolygonExporter<vismodule::Ply>::PolygonExporter( const vismodule::PolygonObject& object )
 {
     this->exec( object );
 }
 
-vismodule::Ply* PolygonExporter<vismodule::Ply>::exec( const vismodule::ObjectBase* object )
+vismodule::Ply* PolygonExporter<vismodule::Ply>::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         m_is_success = false;
         visModuleMessageError("Input object is NULL.");

@@ -52,10 +52,10 @@ public:
         const vismodule::PointObject* point );
 
     SphereGlyph(
-        const vismodule::VolumeObjectBase* volume );
+        const vismodule::VolumeObjectBase& volume );
 
     SphereGlyph(
-        const vismodule::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase& volume,
         const vismodule::TransferFunction& transfer_function );
 
     virtual ~SphereGlyph( void );
@@ -74,7 +74,7 @@ public:
 */
 public:
 
-    BaseClass::SuperClass* exec( const vismodule::ObjectBase* object );
+    BaseClass::SuperClass* exec( const vismodule::ObjectBase& object );
 
     void draw( void );
 
@@ -82,7 +82,7 @@ protected:
 
     BaseClass::SuperClass* exec_point_object( const vismodule::PointObject* point );
 
-    BaseClass::SuperClass* exec_volume_object( const vismodule::VolumeObjectBase* volume );
+    BaseClass::SuperClass* exec_volume_object( const vismodule::VolumeObjectBase& volume );
 
     void draw_element( const vismodule::RGBColor& color, const vismodule::UInt8 opacity );
 

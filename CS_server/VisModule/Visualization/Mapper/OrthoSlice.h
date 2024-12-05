@@ -55,7 +55,7 @@ public:
     OrthoSlice( void );
 
     OrthoSlice(
-        const vismodule::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase& volume,
         const float                  position,
         const AlignedAxis            aligned_axis,
         const vismodule::TransferFunction& transfer_function );

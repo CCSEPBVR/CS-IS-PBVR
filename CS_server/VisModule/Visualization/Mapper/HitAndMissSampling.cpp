@@ -37,7 +37,7 @@ HitAndMissSampling::HitAndMissSampling( void ):
  *  @param  volume [in] pointer to the volume object
  */
 /*==========================================================================*/
-HitAndMissSampling::HitAndMissSampling( const vismodule::VolumeObjectBase* volume ):
+HitAndMissSampling::HitAndMissSampling( const vismodule::VolumeObjectBase& volume ):
     vismodule::MapperBase(),
     vismodule::PointObject()
 {
@@ -52,7 +52,7 @@ HitAndMissSampling::HitAndMissSampling( const vismodule::VolumeObjectBase* volum
  */
 /*==========================================================================*/
 HitAndMissSampling::HitAndMissSampling(
-    const vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase& volume,
     const vismodule::TransferFunction& transfer_function ):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject()
@@ -76,9 +76,9 @@ HitAndMissSampling::~HitAndMissSampling( void )
  *  @return pointer to the point object
  */
 /*===========================================================================*/
-HitAndMissSampling::SuperClass* HitAndMissSampling::exec( const vismodule::ObjectBase* object )
+HitAndMissSampling::SuperClass* HitAndMissSampling::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -86,7 +86,7 @@ HitAndMissSampling::SuperClass* HitAndMissSampling::exec( const vismodule::Objec
     }
 
     const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
-    if ( !volume )
+    if ( !&volume )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is not volume dat.");
@@ -96,11 +96,11 @@ HitAndMissSampling::SuperClass* HitAndMissSampling::exec( const vismodule::Objec
     const vismodule::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
     if ( volume_type == vismodule::VolumeObjectBase::Structured )
     {
-        this->mapping( reinterpret_cast<const vismodule::StructuredVolumeObject*>( object ) );
+        this->mapping( *reinterpret_cast<const vismodule::StructuredVolumeObject*>( &object ) );
     }
     else // volume_type == vismodule::VolumeObjectBase::Unstructured
     {
-        this->mapping( reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( object ) );
+        this->mapping( *reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( &object ) );
     }
 
     return( this );
@@ -112,7 +112,7 @@ HitAndMissSampling::SuperClass* HitAndMissSampling::exec( const vismodule::Objec
  *  @param  volume [in] pointer to the structured volume object
  */
 /*==========================================================================*/
-void HitAndMissSampling::mapping( const vismodule::StructuredVolumeObject* volume )
+void HitAndMissSampling::mapping( const vismodule::StructuredVolumeObject& volume )
 {
     // Attach the pointer to the volume object.
     BaseClass::attach_volume( volume );
@@ -120,13 +120,13 @@ void HitAndMissSampling::mapping( const vismodule::StructuredVolumeObject* volum
     BaseClass::set_min_max_coords( volume, this );
 
     // Generate the particles.
-    const std::type_info& type = volume->values().typeInfo()->type();
+    const std::type_info& type = volume.values().typeInfo()->type();
     if (      type == typeid( vismodule::UInt8  ) ) this->generate_particles<vismodule::UInt8>( volume );
     else if ( type == typeid( vismodule::UInt16 ) ) this->generate_particles<vismodule::UInt16>( volume );
     else
     {
         BaseClass::m_is_success = false;
-        visModuleMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
+        visModuleMessageError("Unsupported data type '%s'.", volume.values().typeInfo()->typeName() );
     }
 }
 
@@ -136,7 +136,7 @@ void HitAndMissSampling::mapping( const vismodule::StructuredVolumeObject* volum
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*==========================================================================*/
-void HitAndMissSampling::mapping( const vismodule::UnstructuredVolumeObject* volume )
+void HitAndMissSampling::mapping( const vismodule::UnstructuredVolumeObject& volume )
 {
     // Attach the pointer to the volume object.
     BaseClass::attach_volume( volume );
@@ -144,7 +144,7 @@ void HitAndMissSampling::mapping( const vismodule::UnstructuredVolumeObject* vol
     BaseClass::set_min_max_coords( volume, this );
 
     // Generate the particles.
-    const std::type_info& type = volume->values().typeInfo()->type();
+    const std::type_info& type = volume.values().typeInfo()->type();
     if (      type == typeid( vismodule::Int8   ) ) this->generate_particles<vismodule::Int8>( volume );
     else if ( type == typeid( vismodule::Int16  ) ) this->generate_particles<vismodule::Int16>( volume );
     else if ( type == typeid( vismodule::Int32  ) ) this->generate_particles<vismodule::Int32>( volume );
@@ -158,7 +158,7 @@ void HitAndMissSampling::mapping( const vismodule::UnstructuredVolumeObject* vol
     else
     {
         BaseClass::m_is_success = false;
-        visModuleMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
+        visModuleMessageError("Unsupported data type '%s'.", volume.values().typeInfo()->typeName() );
     }
 }
 
@@ -169,19 +169,19 @@ void HitAndMissSampling::mapping( const vismodule::UnstructuredVolumeObject* vol
  */
 /*==========================================================================*/
 template <typename T>
-void HitAndMissSampling::generate_particles( const vismodule::StructuredVolumeObject* volume  )
+void HitAndMissSampling::generate_particles( const vismodule::StructuredVolumeObject& volume  )
 {
     // Set the geometry arrays.
-    const size_t max_nparticles = volume->nnodes();
+    const size_t max_nparticles = volume.nnodes();
     std::vector<vismodule::Real32> coords;  coords.reserve( max_nparticles * 3 );
     std::vector<vismodule::UInt8>  colors;  colors.reserve( max_nparticles * 3 );
     std::vector<vismodule::Real32> normals; normals.reserve( max_nparticles * 3 );
 
     // Aliases.
-    const vismodule::Vector3ui resolution = volume->resolution();
-    const size_t line_size  = volume->nnodesPerLine();
-    const size_t slice_size = volume->nnodesPerSlice();
-    const T* values = reinterpret_cast<const T*>( volume->values().pointer() );
+    const vismodule::Vector3ui resolution = volume.resolution();
+    const size_t line_size  = volume.nnodesPerLine();
+    const size_t slice_size = volume.nnodesPerSlice();
+    const T* values = reinterpret_cast<const T*>( volume.values().pointer() );
 
     vismodule::MersenneTwister R; // Random number generator
     size_t index = 0;     // index of voxel
@@ -237,10 +237,10 @@ void HitAndMissSampling::generate_particles( const vismodule::StructuredVolumeOb
 }
 
 template
-void HitAndMissSampling::generate_particles<vismodule::UInt8>( const vismodule::StructuredVolumeObject* volume );
+void HitAndMissSampling::generate_particles<vismodule::UInt8>( const vismodule::StructuredVolumeObject& volume );
 
 template
-void HitAndMissSampling::generate_particles<vismodule::UInt16>( const vismodule::StructuredVolumeObject* volume );
+void HitAndMissSampling::generate_particles<vismodule::UInt16>( const vismodule::StructuredVolumeObject& volume );
 
 /*==========================================================================*/
 /**
@@ -249,7 +249,7 @@ void HitAndMissSampling::generate_particles<vismodule::UInt16>( const vismodule:
  */
 /*==========================================================================*/
 template <typename T>
-void HitAndMissSampling::generate_particles( const vismodule::UnstructuredVolumeObject* volume  )
+void HitAndMissSampling::generate_particles( const vismodule::UnstructuredVolumeObject& volume  )
 {
     vismodule::IgnoreUnusedVariable( volume );
 

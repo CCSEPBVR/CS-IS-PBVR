@@ -48,7 +48,7 @@ OrthoSlice::OrthoSlice( void ):
  */
 /*==========================================================================*/
 OrthoSlice::OrthoSlice(
-    const vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase& volume,
     const float                  position,
     const AlignedAxis            axis,
     const vismodule::TransferFunction& transfer_function ):

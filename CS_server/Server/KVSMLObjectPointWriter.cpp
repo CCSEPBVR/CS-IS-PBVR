@@ -1,7 +1,7 @@
 #include "KVSMLObjectPointWriter.h"
 #include "endian2.h"
 
-KVSMLObjectPointWriter::KVSMLObjectPointWriter( const pbvr::PointObject& object, const std::string& basename )
+KVSMLObjectPointWriter::KVSMLObjectPointWriter( const vismodule::PointObject& object, const std::string& basename )
 {
     m_object = &object;
     m_basename = basename;

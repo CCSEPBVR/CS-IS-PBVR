@@ -11,8 +11,8 @@
  *  $Id: SPLITTypeSubvolume.h 848 2011-06-29 11:35:52Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__SPLIT_TYPE_SUBVOLUME_H_INCLUDE
-#define PBVR__SPLIT_TYPE_SUBVOLUME_H_INCLUDE
+#ifndef VIS_MODULE__SPLIT_TYPE_SUBVOLUME_H_INCLUDE
+#define VIS_MODULE__SPLIT_TYPE_SUBVOLUME_H_INCLUDE
 
 #include <vismodule/FileFormatBase>
 #include <vismodule/AnyValueArray>
@@ -24,7 +24,7 @@
 #include <FileFormat/KVSML/ObjectTag.h>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -34,7 +34,7 @@ namespace pbvr
 /*===========================================================================*/
 class SPLITTypeSubvolume : public vismodule::FileFormatBase
 {
-    visModuleClassName( pbvr::SPLITTypeSubvolume );
+    visModuleClassName( vismodule::SPLITTypeSubvolume );
 
 public:
 
@@ -146,6 +146,6 @@ public:
     friend std::ostream& operator <<( std::ostream& os, const SPLITTypeSubvolume& rhs );
 };
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__KVSML_OBJECT_UNSTRUCTURED_VOLUME_H_INCLUDE

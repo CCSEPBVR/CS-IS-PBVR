@@ -36,9 +36,9 @@ class UnstructuredVolumeExporter : public vismodule::ExporterBase<FileFormatType
 
 public:
 
-    UnstructuredVolumeExporter( const vismodule::UnstructuredVolumeObject* object );
+    UnstructuredVolumeExporter( const vismodule::UnstructuredVolumeObject& object );
 
-    FileFormatType* exec( const vismodule::ObjectBase* object );
+    FileFormatType* exec( const vismodule::ObjectBase& object );
 };
 
 /*===========================================================================*/
@@ -49,7 +49,7 @@ public:
 /*===========================================================================*/
 template <typename FileFormatType>
 UnstructuredVolumeExporter<FileFormatType>::UnstructuredVolumeExporter(
-    const vismodule::UnstructuredVolumeObject* object )
+    const vismodule::UnstructuredVolumeObject& object )
 {
     this->exec( object );
 }
@@ -61,7 +61,7 @@ UnstructuredVolumeExporter<FileFormatType>::UnstructuredVolumeExporter(
  */
 /*===========================================================================*/
 template <typename FileFormatType>
-FileFormatType* UnstructuredVolumeExporter<FileFormatType>::exec( const vismodule::ObjectBase* object )
+FileFormatType* UnstructuredVolumeExporter<FileFormatType>::exec( const vismodule::ObjectBase& object )
 {
     return( NULL );
 }
@@ -77,9 +77,9 @@ class UnstructuredVolumeExporter<vismodule::KVSMLObjectUnstructuredVolume> :
 {
 public:
 
-    UnstructuredVolumeExporter( const vismodule::UnstructuredVolumeObject* object );
+    UnstructuredVolumeExporter( const vismodule::UnstructuredVolumeObject& object );
 
-    vismodule::KVSMLObjectUnstructuredVolume* exec( const vismodule::ObjectBase* object );
+    vismodule::KVSMLObjectUnstructuredVolume* exec( const vismodule::ObjectBase& object );
 };
 
 } // end of namespace vismodule

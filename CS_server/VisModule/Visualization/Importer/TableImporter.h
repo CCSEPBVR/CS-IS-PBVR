@@ -46,11 +46,11 @@ public:
 
     TableImporter( const std::string& filename );
 
-    TableImporter( const vismodule::FileFormatBase* file_format );
+    TableImporter( const vismodule::FileFormatBase& file_format );
 
 public:
 
-    SuperClass* exec( const vismodule::FileFormatBase* file_format );
+    SuperClass* exec( const vismodule::FileFormatBase& file_format );
 
 private:
 

@@ -18,7 +18,7 @@
 #include <FileFormat/KVSML/ValueTag.h>
 #include <FileFormat/KVSML/CoordTag.h>
 #include <FileFormat/KVSML/ConnectionTag.h>
-#include "DataArrayTag.h"
+#include <vismodule/DataArrayTag>
 #include <vismodule/File>
 #include <vismodule/XMLDocument>
 #include <vismodule/XMLDeclaration>
@@ -60,7 +60,7 @@ inline const size_t GetNumberOfNodesPerElement( const std::string& cell_type )
 } // end of namespace
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -69,7 +69,7 @@ namespace pbvr
  */
 /*===========================================================================*/
 SPLITTypeSubvolume::SPLITTypeSubvolume():
-    m_writing_type( pbvr::SPLITTypeSubvolume::Ascii )
+    m_writing_type( vismodule::SPLITTypeSubvolume::Ascii )
 {
 }
 
@@ -80,7 +80,7 @@ SPLITTypeSubvolume::SPLITTypeSubvolume():
  */
 /*===========================================================================*/
 SPLITTypeSubvolume::SPLITTypeSubvolume( const std::string& filename ):
-    m_writing_type( pbvr::SPLITTypeSubvolume::Ascii )
+    m_writing_type( vismodule::SPLITTypeSubvolume::Ascii )
 {
     if ( this->read( filename ) )
     {
@@ -434,7 +434,7 @@ const bool SPLITTypeSubvolume::read( const std::string& filename )
 
     // <DataArray>
     const size_t value_nelements = m_nnodes * m_vector_length;
-    pbvr::kvsml::DataArrayTag values;
+    vismodule::kvsml::DataArrayTag values;
     if ( !values.read( value_tag.node(), value_nelements, &m_values ) )
     {
         visModuleMessageError( "Cannot read <%s> for <%s>.",
@@ -454,7 +454,7 @@ const bool SPLITTypeSubvolume::read( const std::string& filename )
     // <DataArray>
     const size_t dimension = 3;
     const size_t coord_nelements = m_nnodes * dimension;
-    pbvr::kvsml::DataArrayTag coords;
+    vismodule::kvsml::DataArrayTag coords;
     if ( !coords.read( coord_tag.node(), coord_nelements, &m_coords ) )
     {
         visModuleMessageError( "Cannot read <%s> for <%s>.",
@@ -489,7 +489,7 @@ const bool SPLITTypeSubvolume::read( const std::string& filename )
     // <DataArray>
     const size_t nnodes_per_element = ::GetNumberOfNodesPerElement( m_cell_type );
     const size_t connection_nelements = m_ncells * nnodes_per_element;
-    pbvr::kvsml::DataArrayTag connections;
+    vismodule::kvsml::DataArrayTag connections;
     if ( !connections.read( connection_tag.node(), connection_nelements, &m_connections ) )
     {
         visModuleMessageError( "Cannot read <%s> for <%s>.",
@@ -575,15 +575,15 @@ const bool SPLITTypeSubvolume::write( const std::string& filename )
     }
 
     // <DataArray>
-    pbvr::kvsml::DataArrayTag values;
+    vismodule::kvsml::DataArrayTag values;
     if ( m_writing_type == ExternalAscii )
     {
-        values.setFile( pbvr::kvsml::DataArray::GetDataFilename( m_filename, "value" ) );
+        values.setFile( vismodule::kvsml::DataArray::GetDataFilename( m_filename, "value" ) );
         values.setFormat( "ascii" );
     }
     else if ( m_writing_type == ExternalBinary )
     {
-        values.setFile( pbvr::kvsml::DataArray::GetDataFilename( m_filename, "value" ) );
+        values.setFile( vismodule::kvsml::DataArray::GetDataFilename( m_filename, "value" ) );
         values.setFormat( "binary" );
     }
 
@@ -605,15 +605,15 @@ const bool SPLITTypeSubvolume::write( const std::string& filename )
     }
 
     // <DataArray>
-    pbvr::kvsml::DataArrayTag coords;
+    vismodule::kvsml::DataArrayTag coords;
     if ( m_writing_type == ExternalAscii )
     {
-        coords.setFile( pbvr::kvsml::DataArray::GetDataFilename( m_filename, "coord" ) );
+        coords.setFile( vismodule::kvsml::DataArray::GetDataFilename( m_filename, "coord" ) );
         coords.setFormat( "ascii" );
     }
     else if ( m_writing_type == ExternalBinary )
     {
-        coords.setFile( pbvr::kvsml::DataArray::GetDataFilename( m_filename, "coord" ) );
+        coords.setFile( vismodule::kvsml::DataArray::GetDataFilename( m_filename, "coord" ) );
         coords.setFormat( "binary" );
     }
 
@@ -643,15 +643,15 @@ const bool SPLITTypeSubvolume::write( const std::string& filename )
     }
 
     // <DataArray>
-    pbvr::kvsml::DataArrayTag connections;
+    vismodule::kvsml::DataArrayTag connections;
     if ( m_writing_type == ExternalAscii )
     {
-        connections.setFile( pbvr::kvsml::DataArray::GetDataFilename( m_filename, "connect" ) );
+        connections.setFile( vismodule::kvsml::DataArray::GetDataFilename( m_filename, "connect" ) );
         connections.setFormat( "ascii" );
     }
     else if ( m_writing_type == ExternalBinary )
     {
-        connections.setFile( pbvr::kvsml::DataArray::GetDataFilename( m_filename, "connect" ) );
+        connections.setFile( vismodule::kvsml::DataArray::GetDataFilename( m_filename, "connect" ) );
         connections.setFormat( "binary" );
     }
 
@@ -734,4 +734,4 @@ std::ostream& operator <<( std::ostream& os, const SPLITTypeSubvolume& rhs )
     return os;
 }
 
-} // end of namespace pbvr
+} // end of namespace vismodule

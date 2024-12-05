@@ -42,7 +42,7 @@ MarchingPyramid::MarchingPyramid( void ):
  */
 /*==========================================================================*/
 MarchingPyramid::MarchingPyramid(
-    const vismodule::UnstructuredVolumeObject* volume,
+    const vismodule::UnstructuredVolumeObject& volume,
     const double                       isolevel,
     const NormalType                   normal_type,
     const bool                         duplication,
@@ -86,9 +86,9 @@ void MarchingPyramid::setIsolevel( const double isolevel )
  *  @return pointer to the polygon object
  */
 /*===========================================================================*/
-vismodule::ObjectBase* MarchingPyramid::exec( const vismodule::ObjectBase* object )
+vismodule::ObjectBase* MarchingPyramid::exec( const vismodule::ObjectBase& object )
 {
-    const vismodule::ObjectBase::ObjectType object_type = object->objectType();
+    const vismodule::ObjectBase::ObjectType object_type = object.objectType();
     if ( object_type == vismodule::ObjectBase::Geometry )
     {
         visModuleMessageError("Geometry object is not supported.");
@@ -101,11 +101,11 @@ vismodule::ObjectBase* MarchingPyramid::exec( const vismodule::ObjectBase* objec
         m_duplication = false;
     }
 
-    const vismodule::VolumeObjectBase* volume = reinterpret_cast<const vismodule::VolumeObjectBase*>( object );
+    const vismodule::VolumeObjectBase* volume = reinterpret_cast<const vismodule::VolumeObjectBase*>( &object );
     const vismodule::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
     if ( volume_type == vismodule::VolumeObjectBase::Unstructured )
     {
-        this->mapping( reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( object ) );
+        this->mapping( *reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( &object ) );
     }
     else // volume_type == vismodule::VolumeObjectBase::Unstructured
     {
@@ -122,10 +122,10 @@ vismodule::ObjectBase* MarchingPyramid::exec( const vismodule::ObjectBase* objec
  *  @param volume [in] pointer to the volume object
  */
 /*==========================================================================*/
-void MarchingPyramid::mapping( const vismodule::UnstructuredVolumeObject* volume )
+void MarchingPyramid::mapping( const vismodule::UnstructuredVolumeObject& volume )
 {
     // Check whether the volume can be processed or not.
-    if ( volume->veclen() != 1 )
+    if ( volume.veclen() != 1 )
     {
         visModuleMessageError("The input volume is not a sclar field data.");
         return;
@@ -137,7 +137,7 @@ void MarchingPyramid::mapping( const vismodule::UnstructuredVolumeObject* volume
     BaseClass::set_min_max_coords( volume, this );
 
     // Extract surfaces.
-    const std::type_info& type = volume->values().typeInfo()->type();
+    const std::type_info& type = volume.values().typeInfo()->type();
     if (      type == typeid( vismodule::Int8   ) ) this->extract_surfaces<vismodule::Int8>( volume );
     else if ( type == typeid( vismodule::Int16  ) ) this->extract_surfaces<vismodule::Int16>( volume );
     else if ( type == typeid( vismodule::Int32  ) ) this->extract_surfaces<vismodule::Int32>( volume );
@@ -151,7 +151,7 @@ void MarchingPyramid::mapping( const vismodule::UnstructuredVolumeObject* volume
     else
     {
         visModuleMessageError("Unsupported data type '%s' of the volume.",
-                        volume->values().typeInfo()->typeName() );
+                        volume.values().typeInfo()->typeName() );
     }
 }
 
@@ -162,7 +162,7 @@ void MarchingPyramid::mapping( const vismodule::UnstructuredVolumeObject* volume
  */
 /*==========================================================================*/
 template <typename T>
-void MarchingPyramid::extract_surfaces( const vismodule::UnstructuredVolumeObject* volume )
+void MarchingPyramid::extract_surfaces( const vismodule::UnstructuredVolumeObject& volume )
 {
     if ( m_duplication ) this->extract_surfaces_with_duplication<T>( volume );
 }
@@ -175,15 +175,15 @@ void MarchingPyramid::extract_surfaces( const vismodule::UnstructuredVolumeObjec
 /*==========================================================================*/
 template <typename T>
 void MarchingPyramid::extract_surfaces_with_duplication(
-    const vismodule::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject& volume )
 {
     // Calculated the coordinate data array and the normal vector array.
     std::vector<vismodule::Real32> coords;
     std::vector<vismodule::Real32> normals;
 
-    const vismodule::UInt32 ncells( volume->ncells() );
+    const vismodule::UInt32 ncells( volume.ncells() );
     const vismodule::UInt32* connections =
-        static_cast<const vismodule::UInt32*>( volume->connections().pointer() );
+        static_cast<const vismodule::UInt32*>( volume.connections().pointer() );
 
     // Extract surfaces.
     size_t index = 0;

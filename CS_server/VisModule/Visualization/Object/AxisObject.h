@@ -57,7 +57,7 @@ public:
     AxisObject( void );
 
     AxisObject(
-        const vismodule::ObjectBase* object,
+        const vismodule::ObjectBase& object,
         const vismodule::Vector3ui& nsublines = vismodule::Vector3ui( 5, 5, 5 ),
         const std::string x_tag = std::string("X"),
         const std::string y_tag = std::string("Y"),
@@ -75,7 +75,7 @@ public:
 
 public:
 
-    void create( const vismodule::ObjectBase* object );
+    void create( const vismodule::ObjectBase& object );
 
     void clear( void );
 

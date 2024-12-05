@@ -11,18 +11,18 @@
  *  $Id: PyramidalCell.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__PYRAMIDAL_CELL_H_INCLUDE
-#define PBVR__PYRAMIDAL_CELL_H_INCLUDE
+#ifndef VIS_MODULE__PYRAMIDAL_CELL_H_INCLUDE
+#define VIS_MODULE__PYRAMIDAL_CELL_H_INCLUDE
 
-#include "ClassName.h"
+#include <vismodule/ClassName>
 #include <vismodule/Type>
 #include <vismodule/Vector4>
 #include <vismodule/Matrix44>
-#include "UnstructuredVolumeObject.h"
-#include "CellBase.h"
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/CellBase>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -31,9 +31,9 @@ namespace pbvr
  */
 /*===========================================================================*/
 template <typename T>
-class PyramidalCell : public pbvr::CellBase<T>
+class PyramidalCell : public vismodule::CellBase<T>
 {
-    visModuleClassName( pbvr::PyramidalCell );
+    visModuleClassName( vismodule::PyramidalCell );
 
 public:
 
@@ -41,7 +41,7 @@ public:
 
 public:
 
-    typedef pbvr::CellBase<T> BaseClass;
+    typedef vismodule::CellBase<T> BaseClass;
 
 private:
 
@@ -49,7 +49,7 @@ private:
 
 public:
 
-    PyramidalCell( const pbvr::UnstructuredVolumeObject& volume );
+    PyramidalCell( const vismodule::UnstructuredVolumeObject& volume );
     PyramidalCell(     T* values,
         float* coords, int ncoords,
         unsigned int* connections, int ncells);
@@ -88,8 +88,8 @@ public:
  */
 /*===========================================================================*/
 template <typename T>
-inline PyramidalCell<T>::PyramidalCell( const pbvr::UnstructuredVolumeObject& volume ):
-    pbvr::CellBase<T>( volume ),
+inline PyramidalCell<T>::PyramidalCell( const vismodule::UnstructuredVolumeObject& volume ):
+    vismodule::CellBase<T>( volume ),
     m_pyramid( 0, 0, 0 )
 {
     // Set the initial interpolation functions and differential functions.
@@ -102,7 +102,7 @@ inline PyramidalCell<T>::PyramidalCell(
         T* values,
         float* coords, int ncoords,
         unsigned int* connections, int ncells):
-    pbvr::CellBase<T>(
+    vismodule::CellBase<T>(
         values,
         coords, ncoords,
         connections, ncells, 5)//num of pyramid vertices
@@ -685,6 +685,6 @@ inline void PyramidalCell<T>::setLocalGravityPoint() const
     this->setLocalPoint( vismodule::Vector3f( 0.0f, 0.0f, 0.2f ) );
 }
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__PYRAMIDAL_CELL_H_INCLUDE

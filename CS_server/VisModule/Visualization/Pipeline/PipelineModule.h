@@ -93,7 +93,7 @@ public:
         return( this->get_module<T>( typename vismodule::ModuleTraits<T>::ModuleCategory() ) );
     }
 
-    vismodule::ObjectBase* exec( const vismodule::ObjectBase* object = NULL );
+    vismodule::ObjectBase* exec( const vismodule::ObjectBase& object );
 
 public:
 

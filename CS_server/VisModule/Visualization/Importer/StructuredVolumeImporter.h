@@ -11,21 +11,21 @@
  *  $Id: StructuredVolumeImporter.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__STRUCTURED_VOLUME_IMPORTER_H_INCLUDE
-#define PBVR__STRUCTURED_VOLUME_IMPORTER_H_INCLUDE
+#ifndef VIS_MODULE__STRUCTURED_VOLUME_IMPORTER_H_INCLUDE
+#define VIS_MODULE__STRUCTURED_VOLUME_IMPORTER_H_INCLUDE
 
-#include "ImporterBase.h"
+#include <vismodule/ImporterBase>
 //#include <vismodule/ClassName>
-#include "ClassName.h"
+#include <vismodule/ClassName>
 #include <vismodule/Module>
 //#include <vismodule/StructuredVolumeObject>
-#include "StructuredVolumeObject.h"
+#include <vismodule/StructuredVolumeObject>
 #include <vismodule/KVSMLObjectStructuredVolume>
 #include <vismodule/AVSField>
 //#include <vismodule/DicomList>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -35,15 +35,15 @@ namespace pbvr
 /*==========================================================================*/
 class StructuredVolumeImporter :
     public vismodule::ImporterBase ,
-    public pbvr::StructuredVolumeObject
+    public vismodule::StructuredVolumeObject
 {
     // Class name.
-    visModuleClassName( pbvr::StructuredVolumeImporter );
+    visModuleClassName( vismodule::StructuredVolumeImporter );
 
     // Module information.
     visModuleCategory( Importer );
     visModuleBaseClass( vismodule::ImporterBase );
-    visModuleSuperClass( pbvr::StructuredVolumeObject );
+    visModuleSuperClass( vismodule::StructuredVolumeObject );
 
 public:
 
@@ -51,7 +51,7 @@ public:
 
     StructuredVolumeImporter( const std::string& filename );
 
-    StructuredVolumeImporter( const vismodule::FileFormatBase* file_format );
+    StructuredVolumeImporter( const vismodule::FileFormatBase& file_format );
 
 //    StructuredVolumeImporter( const std::string& filename, const int fileType, const int st, const int vl );
     
@@ -59,7 +59,7 @@ public:
 
 public:
 
-    //SuperClass* exec( const vismodule::FileFormatBase* file_format );
+    //SuperClass* exec( const vismodule::FileFormatBase& file_format );
     SuperClass* exec( const vismodule::FileFormatBase& file_format );
 
 private:
@@ -80,4 +80,4 @@ private:
 
 } // end of namespace vismodule
 
-#endif // PBVR__STRUCTURED_VOLUME_IMPORTER_H_INCLUDE
+#endif // VIS_MODULE__STRUCTURED_VOLUME_IMPORTER_H_INCLUDE

@@ -49,7 +49,7 @@ public:
     MarchingPyramid( void );
 
     MarchingPyramid(
-        const vismodule::UnstructuredVolumeObject* volume,
+        const vismodule::UnstructuredVolumeObject& volume,
         const double                       isolevel,
         const SuperClass::NormalType       normal_type,
         const bool                         duplication,
@@ -63,19 +63,19 @@ public:
 
 public:
 
-    vismodule::ObjectBase* exec( const vismodule::ObjectBase* object );
+    vismodule::ObjectBase* exec( const vismodule::ObjectBase& object );
 
 private:
 
-    void mapping( const vismodule::UnstructuredVolumeObject* volume );
+    void mapping( const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
     void extract_surfaces(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
     void extract_surfaces_with_duplication(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
     const size_t calculate_table_index(

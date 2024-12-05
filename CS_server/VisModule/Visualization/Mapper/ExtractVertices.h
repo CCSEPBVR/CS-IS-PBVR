@@ -17,7 +17,7 @@
 #include <vismodule/ClassName>
 #include <vismodule/Module>
 
-#include "MapperBase.h"
+#include <vismodule/MapperBase>
 #include <vismodule/PointObject>
 
 
@@ -48,22 +48,22 @@ public:
     ExtractVertices( void );
 
     ExtractVertices(
-        const vismodule::VolumeObjectBase* volume );
+        const vismodule::VolumeObjectBase& volume );
 
     ExtractVertices(
-        const vismodule::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase& volume,
         const vismodule::TransferFunction& transfer_function );
 
     virtual ~ExtractVertices( void );
 
 public:
 
-//    vismodule::ObjectBase* exec( const vismodule::ObjectBase* object );
-    SuperClass* exec( const vismodule::ObjectBase* object );
+//    vismodule::ObjectBase* exec( const vismodule::ObjectBase& object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 private:
 
-    void mapping( const vismodule::VolumeObjectBase* volume );
+    void mapping( const vismodule::VolumeObjectBase& volume );
 
 //    void pre_process( void );
 

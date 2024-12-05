@@ -73,7 +73,7 @@ TableImporter::TableImporter( const std::string& filename )
  *  @param  file_format [in] pointer to the file format
  */
 /*===========================================================================*/
-TableImporter::TableImporter( const vismodule::FileFormatBase* file_format )
+TableImporter::TableImporter( const vismodule::FileFormatBase& file_format )
 {
     this->exec( file_format );
 }
@@ -85,19 +85,19 @@ TableImporter::TableImporter( const vismodule::FileFormatBase* file_format )
  *  @return pointer to the imported table object
  */
 /*===========================================================================*/
-TableImporter::SuperClass* TableImporter::exec( const vismodule::FileFormatBase* file_format )
+TableImporter::SuperClass* TableImporter::exec( const vismodule::FileFormatBase& file_format )
 {
-    if ( !file_format )
+    if ( !&file_format )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input file format is NULL.");
         return( NULL );
     }
 
-    const std::string class_name = file_format->className();
+    const std::string class_name = file_format.className();
     if ( class_name == "vismodule::KVSMLObjectTable" )
     {
-        this->import( static_cast<const vismodule::KVSMLObjectTable*>( file_format ) );
+        this->import( static_cast<const vismodule::KVSMLObjectTable*>( &file_format ) );
     }
     else
     {

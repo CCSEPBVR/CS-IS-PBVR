@@ -52,12 +52,12 @@ public:
     SlicePlane( void );
 
     SlicePlane(
-        const vismodule::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase& volume,
         const vismodule::Vector4f&         coefficients,
         const vismodule::TransferFunction& transfer_function );
 
     SlicePlane(
-        const vismodule::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase& volume,
         const vismodule::Vector3f&         point,
         const vismodule::Vector3f&         normal,
         const vismodule::TransferFunction& transfer_function );
@@ -72,31 +72,31 @@ public:
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 protected:
 
-    void mapping( const vismodule::VolumeObjectBase* volume );
+    void mapping( const vismodule::VolumeObjectBase& volume );
 
     template <typename T>
     void extract_plane(
-        const vismodule::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject& volume );
 
     template <typename T>
     void extract_plane(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
     void extract_tetrahedra_plane(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
     void extract_hexahedra_plane(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
     void extract_pyramid_plane(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     const size_t calculate_table_index(
         const size_t x,
@@ -126,13 +126,13 @@ protected:
 
     template <typename T>
     const double interpolate_value(
-        const vismodule::StructuredVolumeObject* volume,
+        const vismodule::StructuredVolumeObject& volume,
         const vismodule::Vector3f&               vertex0,
         const vismodule::Vector3f&               vertex1 ) const;
 
     template <typename T>
     const double interpolate_value(
-        const vismodule::UnstructuredVolumeObject* volume,
+        const vismodule::UnstructuredVolumeObject& volume,
         const size_t                         index0,
         const size_t                         index1 ) const;
 };

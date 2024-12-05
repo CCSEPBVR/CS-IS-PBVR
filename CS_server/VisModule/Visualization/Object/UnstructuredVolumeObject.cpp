@@ -11,35 +11,35 @@
  *  $Id: UnstructuredVolumeObject.cpp 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "UnstructuredVolumeObject.h"
+#include <vismodule/UnstructuredVolumeObject>
 
 
 namespace
 {
 
-const std::string GetCellTypeName( const pbvr::UnstructuredVolumeObject::CellType& type )
+const std::string GetCellTypeName( const vismodule::UnstructuredVolumeObject::CellType& type )
 {
     switch ( type )
     {
-    case pbvr::UnstructuredVolumeObject::Tetrahedra:
+    case vismodule::UnstructuredVolumeObject::Tetrahedra:
         return "tetrahedra";
-    case pbvr::UnstructuredVolumeObject::Hexahedra:
+    case vismodule::UnstructuredVolumeObject::Hexahedra:
         return "hexahedra";
-    case pbvr::UnstructuredVolumeObject::QuadraticTetrahedra:
+    case vismodule::UnstructuredVolumeObject::QuadraticTetrahedra:
         return "quadratic tetrahedra";
-    case pbvr::UnstructuredVolumeObject::QuadraticHexahedra:
+    case vismodule::UnstructuredVolumeObject::QuadraticHexahedra:
         return "quadratic hexahedra";
-    case pbvr::UnstructuredVolumeObject::Prism:
+    case vismodule::UnstructuredVolumeObject::Prism:
         return "prism";
-    case pbvr::UnstructuredVolumeObject::Pyramid:
+    case vismodule::UnstructuredVolumeObject::Pyramid:
         return "pyramid";
-    case pbvr::UnstructuredVolumeObject::Triangle:
+    case vismodule::UnstructuredVolumeObject::Triangle:
         return "triangle";
-    case pbvr::UnstructuredVolumeObject::QuadraticTriangle:
+    case vismodule::UnstructuredVolumeObject::QuadraticTriangle:
         return "triangle2";
-    case pbvr::UnstructuredVolumeObject::Square:
+    case vismodule::UnstructuredVolumeObject::Square:
         return "quadratic";
-    case pbvr::UnstructuredVolumeObject::QuadraticSquare:
+    case vismodule::UnstructuredVolumeObject::QuadraticSquare:
         return "quadratic2";
     default:
         return "unknown cell type";
@@ -48,7 +48,7 @@ const std::string GetCellTypeName( const pbvr::UnstructuredVolumeObject::CellTyp
 
 } // end of namespace
 
-namespace pbvr
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -57,7 +57,7 @@ namespace pbvr
  */
 /*==========================================================================*/
 UnstructuredVolumeObject::UnstructuredVolumeObject():
-    pbvr::VolumeObjectBase(),
+    vismodule::VolumeObjectBase(),
     m_cell_type( UnknownCellType ),
     m_nnodes( 0 ),
     m_ncells( 0 ),
@@ -85,7 +85,7 @@ UnstructuredVolumeObject::UnstructuredVolumeObject(
     const Coords&      coords,
     const Connections& connections,
     const Values&      values ):
-    pbvr::VolumeObjectBase( veclen, coords, values ),
+    vismodule::VolumeObjectBase( veclen, coords, values ),
     m_cell_type( cell_type ),
     m_nnodes( nnodes ),
     m_ncells( ncells ),
@@ -100,7 +100,7 @@ UnstructuredVolumeObject::UnstructuredVolumeObject(
  */
 /*==========================================================================*/
 UnstructuredVolumeObject::UnstructuredVolumeObject( const UnstructuredVolumeObject& other ):
-    pbvr::VolumeObjectBase( other ),
+    vismodule::VolumeObjectBase( other ),
     m_cell_type( other.m_cell_type ),
     m_nnodes( other.m_nnodes ),
     m_ncells( other.m_ncells ),
@@ -134,26 +134,26 @@ UnstructuredVolumeObject& UnstructuredVolumeObject::operator =( const Unstructur
     return *this;
 }
 
-pbvr::UnstructuredVolumeObject* UnstructuredVolumeObject::DownCast( pbvr::ObjectBase* object )
+vismodule::UnstructuredVolumeObject* UnstructuredVolumeObject::DownCast( vismodule::ObjectBase* object )
 {
-    pbvr::VolumeObjectBase* volume = pbvr::VolumeObjectBase::DownCast( object );
-    if ( !volume ) return NULL;
+    vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
+    if ( !&volume ) return NULL;
 
-    const pbvr::VolumeObjectBase::VolumeType type = volume->volumeType();
-    if ( type != pbvr::VolumeObjectBase::Unstructured )
+    const vismodule::VolumeObjectBase::VolumeType type = volume->volumeType();
+    if ( type != vismodule::VolumeObjectBase::Unstructured )
     {
         visModuleMessageError( "Input object is not a unstructured volume object." );
         return NULL;
     }
 
-    pbvr::UnstructuredVolumeObject* unstructured = static_cast<pbvr::UnstructuredVolumeObject*>( volume );
+    vismodule::UnstructuredVolumeObject* unstructured = static_cast<vismodule::UnstructuredVolumeObject*>( volume );
 
     return unstructured;
 }
 
-const pbvr::UnstructuredVolumeObject* UnstructuredVolumeObject::DownCast( const pbvr::ObjectBase& object )
+const vismodule::UnstructuredVolumeObject* UnstructuredVolumeObject::DownCast( const vismodule::ObjectBase& object )
 {
-    return UnstructuredVolumeObject::DownCast( const_cast<pbvr::ObjectBase*>( &object ) );
+    return UnstructuredVolumeObject::DownCast( const_cast<vismodule::ObjectBase*>( &object ) );
 }
 
 std::ostream& operator << ( std::ostream& os, const UnstructuredVolumeObject& object )
@@ -162,11 +162,11 @@ std::ostream& operator << ( std::ostream& os, const UnstructuredVolumeObject& ob
 
     os << "Object type:  " << "unstructured volume object" << std::endl;
 #ifdef VIS_MODULE_COMPILER_VC
-//#if PBVR_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
+//#if VIS_MODULE_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
 //    // @TODO Cannot instance the object that is a abstract class here (error:C2259).
 //#endif
 #else
-    // os << static_cast<const pbvr::VolumeObjectBase&>( object ) << std::endl;
+    // os << static_cast<const vismodule::VolumeObjectBase&>( object ) << std::endl;
 #endif
     os << "Cell type:  " << ::GetCellTypeName( object.cellType() ) << std::endl;
     os << "Number of nodes:  " << object.nnodes() << std::endl;
@@ -356,4 +356,4 @@ void UnstructuredVolumeObject::calculateMinMaxCoords()
     }
 }
 
-} // end of namespace pbvr
+} // end of namespace vismodule

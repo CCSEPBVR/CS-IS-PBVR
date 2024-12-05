@@ -1,16 +1,16 @@
 #include "PointObjectGenerator.h"
 //#include <sys/time.h>
-#include "TransferFunction.h"
-#include "UnstructuredVolumeObject.h"
-#include "UnstructuredVolumeImporter.h"
-#include "CellByCellUniformSampling.h"
-#include "CellByCellRejectionSampling.h"
-#include "CellByCellMetropolisSampling.h"
+#include <vismodule/TransferFunction>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/UnstructuredVolumeImporter>
+#include <vismodule/CellByCellUniformSampling>
+#include <vismodule/CellByCellRejectionSampling>
+#include <vismodule/CellByCellMetropolisSampling>
 //#include "CellByCellLayeredSampling.h"
 #include <vismodule/Camera>
-#include "CellByCellUniformSampling.h"
-#include "CellByCellRejectionSampling.h"
-#include "CellByCellMetropolisSampling.h"
+#include <vismodule/CellByCellUniformSampling>
+#include <vismodule/CellByCellRejectionSampling>
+#include <vismodule/CellByCellMetropolisSampling>
 #include "CellByCellHistogram.h"
 #if 0 //TEST_DELETE
 #include <vismodule/TestVolume>
@@ -22,29 +22,29 @@
 #include <vismodule/File>
 
 #include "FileChecker.h"
-#include "StructuredVolumeObject.h"
-#include "StructuredVolumeImporter.h"
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/StructuredVolumeImporter>
 
 #include "Argument.h"
 
 #include "timer_simple.h"
 
-using namespace pbvr;
+using namespace vismodule;
 
 void PointObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const size_t subpixel_level, const float sampling_step )
 {
 //FJ_TIMER_KAWAMURA
-    PBVR_TIMER_STA( 260 );
+    VIS_MODULE_TIMER_STA( 260 );
 //FJ_TIMER_KAWAMURA
 
     delete m_object;
 
     // add by shimomura 2023/0407
-    pbvr::VolumeObjectBase* volume = nullptr;
+    vismodule::VolumeObjectBase* volume = nullptr;
     if ( vismoduleview::FileChecker::ImportableStructuredVolume( param.m_input_data ))
     {
         std::cout << "Structured !" <<std::endl;
-        volume = new pbvr::StructuredVolumeImporter( param.m_input_data ); 
+        volume = new vismodule::StructuredVolumeImporter( param.m_input_data ); 
         int id = param.m_subvolume_id;
         // change by shimomura 20240730
         volume->updateMinMaxValues();
@@ -56,7 +56,7 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
     else if ( vismoduleview::FileChecker::ImportableUnstructuredVolume( param.m_input_data))
     {
         std::cout << "Unstructured !" <<std::endl;
-        volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );  
+        volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );  
         
         // change by shimomura 20240730
         volume->updateMinMaxValues();
@@ -69,8 +69,8 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
         visModuleMessageError("%s is not volume data.", param.m_input_data.c_str());
     }
 
-    //pbvr::UnstructuredVolumeObject* volume;
-    //volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );
+    //vismodule::UnstructuredVolumeObject* volume;
+    //volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );
     if ( volume )
     {
         volume->setCoordSynthesizerStrings( m_coord_synthesizer_strings );
@@ -78,7 +78,7 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
     }
 
 //FJ_TIMER_KAWAMURA
-    PBVR_TIMER_END( 260 );
+    VIS_MODULE_TIMER_END( 260 );
 //FJ_TIMER_KAWAMURA
     
     std::cout << *volume << std::endl;
@@ -87,7 +87,7 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
 
    try
     {
-        m_object = sampling( param, camera, volume, subpixel_level, sampling_step );
+        m_object = sampling( param, camera, *volume, subpixel_level, sampling_step );
     }
     catch ( const std::runtime_error& e )
     {
@@ -104,22 +104,22 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
 
 void PointObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const size_t subpixel_level, const float sampling_step, const int st, const int vl )
 {
-    PBVR_TIMER_STA( 260 );
+    VIS_MODULE_TIMER_STA( 260 );
     delete m_object;
-    pbvr::UnstructuredVolumeObject* volume;
-    volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );
+    vismodule::UnstructuredVolumeObject* volume;
+    volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );
 
     vismodule::File ifpx( m_fi->m_file_path );
     std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
 
-    volume = new pbvr::UnstructuredVolumeImporter( path_base, m_fi->m_file_type, st, vl );
+    volume = new vismodule::UnstructuredVolumeImporter( path_base, m_fi->m_file_type, st, vl );
     if ( volume )
     {
         volume->setCoordSynthesizerStrings( m_coord_synthesizer_strings );
         volume->setCoordSynthesizerTokens( m_coord_synthesizer_tokens );
     }
 
-    PBVR_TIMER_END( 260 );
+    VIS_MODULE_TIMER_END( 260 );
 
     volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
     volume->setMinMaxObjectCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
@@ -131,7 +131,7 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
 
     try
     {
-        m_object = sampling( param, camera, volume, subpixel_level, sampling_step );
+        m_object = sampling( param, camera, *volume, subpixel_level, sampling_step );
     }
     catch ( const std::runtime_error& e )
     {
@@ -159,7 +159,7 @@ std::string PointObjectGenerator::getErrorMessage( const size_t maxMemory ) cons
     return errorMessage;
 }
 
-pbvr::PointObject* PointObjectGenerator::sampling( const Argument& param, const vismodule::Camera& camera, pbvr::VolumeObjectBase* volume, const size_t subpixel_level, const float sampling_step )
+vismodule::PointObject* PointObjectGenerator::sampling( const Argument& param, const vismodule::Camera& camera, vismodule::VolumeObjectBase& volume, const size_t subpixel_level, const float sampling_step )
 {
 #ifndef CPU_VER
     int rank;
@@ -168,8 +168,8 @@ pbvr::PointObject* PointObjectGenerator::sampling( const Argument& param, const 
     int rank = 0;
 #endif
 
-    pbvr::TransferFunction tf = param.m_transfer_function;
-    std::vector<pbvr::TransferFunction> tf_array = param.m_transfunc_array;
+    vismodule::TransferFunction tf = param.m_transfer_function;
+    std::vector<vismodule::TransferFunction> tf_array = param.m_transfunc_array;
 
 
     // volume calculate test.
@@ -190,22 +190,22 @@ pbvr::PointObject* PointObjectGenerator::sampling( const Argument& param, const 
 // CO by shimomura 2022/12/21
     case 'u':
         std::cout << "Uniform sampling" << std::endl;
-        return new pbvr::CellByCellUniformSampling( camera, *volume, subpixel_level, sampling_step, tf, tf_array,
+        return new vismodule::CellByCellUniformSampling( camera, volume, subpixel_level, sampling_step, tf, tf_array,
                                                     param.m_transfunc_synthesizer, param.m_normal_ingredient, param.m_crop,
                                                     param.m_particle_density, param.m_batch );
     case 'r':
         std::cout << "Rejection sampling" << std::endl;
-        return new pbvr::CellByCellRejectionSampling( camera, *volume, subpixel_level, sampling_step, tf, tf_array,
+        return new vismodule::CellByCellRejectionSampling( camera, volume, subpixel_level, sampling_step, tf, tf_array,
                                                       param.m_transfunc_synthesizer, param.m_crop,
                                                       param.m_particle_density, param.m_batch );
     case 'm':
         std::cout << "Metropolis sampling" << std::endl;
-        return new pbvr::CellByCellMetropolisSampling( camera, *volume, subpixel_level, sampling_step, tf, tf_array,
+        return new vismodule::CellByCellMetropolisSampling( camera, volume, subpixel_level, sampling_step, tf, tf_array,
                                                        param.m_transfunc_synthesizer, param.m_normal_ingredient, param.m_crop,
                                                        param.m_particle_density, param.m_batch );
     case 'h':
         std::cout << "Histogram " << std::endl;
-        return new pbvr::CellByCellHistogram( camera, *volume, subpixel_level, sampling_step, tf, tf_array,
+        return new vismodule::CellByCellHistogram( camera, volume, subpixel_level, sampling_step, tf, tf_array,
                                                        param.m_transfunc_synthesizer, param.m_normal_ingredient, param.m_crop,
                                                        param.m_particle_density, param.m_batch );
 

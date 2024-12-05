@@ -11,8 +11,8 @@
  *  $Id: DataArrayTag.h 667 2011-02-22 16:07:54Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef PBVR__VIS_MODULE__KVSML__DATA_ARRAY_TAG_H_INCLUDE
-#define PBVR__VIS_MODULE__KVSML__DATA_ARRAY_TAG_H_INCLUDE
+#ifndef VIS_MODULE__VIS_MODULE__KVSML__DATA_ARRAY_TAG_H_INCLUDE
+#define VIS_MODULE__VIS_MODULE__KVSML__DATA_ARRAY_TAG_H_INCLUDE
 
 #include <string>
 #include <vismodule/ValueArray>
@@ -25,7 +25,7 @@
 #include <FileFormat/KVSML/TagBase.h>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 namespace kvsml
@@ -153,7 +153,7 @@ inline const bool DataArrayTag::write(
 
     const std::string tag_name = BaseClass::name();
     vismodule::XMLElement element( tag_name );
-    element.setAttribute( "type", pbvr::kvsml::DataArray::GetDataType( data ) );
+    element.setAttribute( "type", vismodule::kvsml::DataArray::GetDataType( data ) );
 
     // Internal data: <DataArray type="xxx">xxx</DataArray>
     if ( !m_has_file )
@@ -193,7 +193,7 @@ inline const bool DataArrayTag::write(
 
         // Set text.
         const std::string filename = pathname + vismodule::File::Separator() + m_file;
-        return pbvr::kvsml::DataArray::WriteExternalData( data, filename, m_format );
+        return vismodule::kvsml::DataArray::WriteExternalData( data, filename, m_format );
     }
 
     return true;
@@ -226,7 +226,7 @@ const bool DataArrayTag::read_data( const size_t nelements, vismodule::ValueArra
         const std::string delim( " \n" );
         vismodule::Tokenizer tokenizer( array_text->Value(), delim );
 
-        if ( !pbvr::kvsml::DataArray::ReadInternalData<T>( data, nelements, tokenizer ) )
+        if ( !vismodule::kvsml::DataArray::ReadInternalData<T>( data, nelements, tokenizer ) )
         {
             visModuleMessageError( "Cannot read the data array in <%s>.", tag_name.c_str() );
             return false;
@@ -250,7 +250,7 @@ const bool DataArrayTag::read_data( const size_t nelements, vismodule::ValueArra
 
         if ( m_type == "char" )
         {
-            if ( !pbvr::kvsml::DataArray::ReadExternalData<T, vismodule::Int8>( data, nelements, filename, m_format ) )
+            if ( !vismodule::kvsml::DataArray::ReadExternalData<T, vismodule::Int8>( data, nelements, filename, m_format ) )
             {
                 visModuleMessageError( "Cannot read the data array in <%s>.", tag_name.c_str() );
                 return false;
@@ -258,7 +258,7 @@ const bool DataArrayTag::read_data( const size_t nelements, vismodule::ValueArra
         }
         else if ( m_type == "unsigned char" || m_type == "uchar" )
         {
-            if ( !pbvr::kvsml::DataArray::ReadExternalData<T, vismodule::UInt8>( data, nelements, filename, m_format ) )
+            if ( !vismodule::kvsml::DataArray::ReadExternalData<T, vismodule::UInt8>( data, nelements, filename, m_format ) )
             {
                 visModuleMessageError( "Cannot read the data array in <%s>.", tag_name.c_str() );
                 return false;
@@ -266,7 +266,7 @@ const bool DataArrayTag::read_data( const size_t nelements, vismodule::ValueArra
         }
         else if ( m_type == "short" )
         {
-            if ( !pbvr::kvsml::DataArray::ReadExternalData<T, vismodule::Int16>( data, nelements, filename, m_format ) )
+            if ( !vismodule::kvsml::DataArray::ReadExternalData<T, vismodule::Int16>( data, nelements, filename, m_format ) )
             {
                 visModuleMessageError( "Cannot read the data array in <%s>.", tag_name.c_str() );
                 return false;
@@ -274,7 +274,7 @@ const bool DataArrayTag::read_data( const size_t nelements, vismodule::ValueArra
         }
         else if ( m_type == "unsigned short" || m_type == "ushort" )
         {
-            if ( !pbvr::kvsml::DataArray::ReadExternalData<T, vismodule::UInt16>( data, nelements, filename, m_format ) )
+            if ( !vismodule::kvsml::DataArray::ReadExternalData<T, vismodule::UInt16>( data, nelements, filename, m_format ) )
             {
                 visModuleMessageError( "Cannot read the data array in <%s>.", tag_name.c_str() );
                 return false;
@@ -282,7 +282,7 @@ const bool DataArrayTag::read_data( const size_t nelements, vismodule::ValueArra
         }
         else if ( m_type == "int" )
         {
-            if ( !pbvr::kvsml::DataArray::ReadExternalData<T, vismodule::Int32>( data, nelements, filename, m_format ) )
+            if ( !vismodule::kvsml::DataArray::ReadExternalData<T, vismodule::Int32>( data, nelements, filename, m_format ) )
             {
                 visModuleMessageError( "Cannot read the data array in <%s>.", tag_name.c_str() );
                 return false;
@@ -290,7 +290,7 @@ const bool DataArrayTag::read_data( const size_t nelements, vismodule::ValueArra
         }
         else if ( m_type == "unsigned int" || m_type == "uint" )
         {
-            if ( !pbvr::kvsml::DataArray::ReadExternalData<T, vismodule::UInt32>( data, nelements, filename, m_format ) )
+            if ( !vismodule::kvsml::DataArray::ReadExternalData<T, vismodule::UInt32>( data, nelements, filename, m_format ) )
             {
                 visModuleMessageError( "Cannot read the data array in <%s>.", tag_name.c_str() );
                 return false;
@@ -298,7 +298,7 @@ const bool DataArrayTag::read_data( const size_t nelements, vismodule::ValueArra
         }
         else if ( m_type == "float" )
         {
-            if ( !pbvr::kvsml::DataArray::ReadExternalData<T, vismodule::Real32>( data, nelements, filename, m_format ) )
+            if ( !vismodule::kvsml::DataArray::ReadExternalData<T, vismodule::Real32>( data, nelements, filename, m_format ) )
             {
                 visModuleMessageError( "Cannot read the data array in <%s>.", tag_name.c_str() );
                 return false;
@@ -306,7 +306,7 @@ const bool DataArrayTag::read_data( const size_t nelements, vismodule::ValueArra
         }
         else if ( m_type == "double" )
         {
-            if ( !pbvr::kvsml::DataArray::ReadExternalData<T, vismodule::Real64>( data, nelements, filename, m_format ) )
+            if ( !vismodule::kvsml::DataArray::ReadExternalData<T, vismodule::Real64>( data, nelements, filename, m_format ) )
             {
                 visModuleMessageError( "Cannot read the data array in <%s>.", tag_name.c_str() );
                 return false;
@@ -326,4 +326,4 @@ const bool DataArrayTag::read_data( const size_t nelements, vismodule::ValueArra
 
 } // end of namespace vismodule
 
-#endif // PBVR__VIS_MODULE__KVSML__DATA_ARRAY_TAG_H_INCLUDE
+#endif // VIS_MODULE__VIS_MODULE__KVSML__DATA_ARRAY_TAG_H_INCLUDE

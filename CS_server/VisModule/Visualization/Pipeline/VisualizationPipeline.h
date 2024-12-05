@@ -84,7 +84,7 @@ public:
 
     bool hasRenderer( void ) const;
 
-    const vismodule::ObjectBase* object( void ) const;
+    const vismodule::ObjectBase& object( void ) const;
 
     const vismodule::RendererBase* renderer( void ) const;
 
@@ -100,11 +100,11 @@ private:
 
     bool create_object_module( const std::string& filename );
 
-    bool create_renderer_module( const vismodule::ObjectBase* object );
+    bool create_renderer_module( const vismodule::ObjectBase& object );
 
     bool create_renderer_module( const vismodule::GeometryObjectBase* geometry );
 
-    bool create_renderer_module( const vismodule::VolumeObjectBase* volume );
+    bool create_renderer_module( const vismodule::VolumeObjectBase& volume );
 
 private:
 

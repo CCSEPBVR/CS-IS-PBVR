@@ -100,13 +100,13 @@ public:
 private:
 
     void create_image(
-        const vismodule::StructuredVolumeObject* volume,
+        const vismodule::StructuredVolumeObject& volume,
         const vismodule::Camera*                 camera,
         const vismodule::Light*                  light );
 
     template <typename T>
     void rasterize(
-        const vismodule::StructuredVolumeObject* volume,
+        const vismodule::StructuredVolumeObject& volume,
         const vismodule::Camera*                 camera,
         const vismodule::Light*                  light );
 };

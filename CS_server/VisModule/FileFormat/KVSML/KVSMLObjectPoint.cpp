@@ -18,7 +18,7 @@
 #include "ColorTag.h"
 #include "NormalTag.h"
 #include "SizeTag.h"
-#include "DataArrayTag.h"
+#include <vismodule/DataArrayTag>
 #include "DataValueTag.h"
 #include "DataReader.h"
 #include "DataWriter.h"

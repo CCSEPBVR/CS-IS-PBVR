@@ -11,10 +11,10 @@
  *  $Id: PyramidalCell.cpp 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "PyramidalCell.h"
+#include <vismodule/PyramidalCell>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 // template instantiation
@@ -29,4 +29,4 @@ template class PyramidalCell<unsigned long>;
 template class PyramidalCell<float>;
 template class PyramidalCell<double>;
 
-} // end of namespace pbvr
+} // end of namespace vismodule

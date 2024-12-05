@@ -49,12 +49,12 @@ public:
     Isosurface( void );
 
     Isosurface(
-        const vismodule::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase& volume,
         const double                 isolevel,
         const SuperClass::NormalType normal_type = SuperClass::PolygonNormal );
 
     Isosurface(
-        const vismodule::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase& volume,
         const double                 isolevel,
         const SuperClass::NormalType normal_type,
         const bool                   duplication,
@@ -68,11 +68,11 @@ public:
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 private:
 
-    void mapping( const vismodule::VolumeObjectBase* volume );
+    void mapping( const vismodule::VolumeObjectBase& volume );
 };
 
 } // end of namespace vismodule

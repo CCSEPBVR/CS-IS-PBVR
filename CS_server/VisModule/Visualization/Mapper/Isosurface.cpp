@@ -44,7 +44,7 @@ Isosurface::Isosurface( void ):
  */
 /*===========================================================================*/
 Isosurface::Isosurface(
-    const vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase& volume,
     const double                 isolevel,
     const NormalType             normal_type ):
     vismodule::MapperBase(),
@@ -75,7 +75,7 @@ Isosurface::Isosurface(
  */
 /*==========================================================================*/
 Isosurface::Isosurface(
-    const vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase& volume,
     const double                 isolevel,
     const NormalType             normal_type,
     const bool                   duplication,
@@ -124,9 +124,9 @@ void Isosurface::setIsolevel( const double isolevel )
  *  @return pointer to the polygon object
  */
 /*===========================================================================*/
-Isosurface::SuperClass* Isosurface::exec( const vismodule::ObjectBase* object )
+Isosurface::SuperClass* Isosurface::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -141,7 +141,7 @@ Isosurface::SuperClass* Isosurface::exec( const vismodule::ObjectBase* object )
         return( NULL );
     }
 
-    this->mapping( volume );
+    this->mapping( *volume );
 
     return( this );
 }
@@ -152,23 +152,23 @@ Isosurface::SuperClass* Isosurface::exec( const vismodule::ObjectBase* object )
  *  @param  volume [in] pointer to the volume object
  */
 /*==========================================================================*/
-void Isosurface::mapping( const vismodule::VolumeObjectBase* volume )
+void Isosurface::mapping( const vismodule::VolumeObjectBase& volume )
 {
     // Check whether the volume can be processed or not.
-    if ( volume->veclen() != 1 )
+    if ( volume.veclen() != 1 )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is not scalar field dat.");
         return;
     }
 
-    if ( volume->volumeType() == vismodule::VolumeObjectBase::Structured )
+    if ( volume.volumeType() == vismodule::VolumeObjectBase::Structured )
     {
         const vismodule::StructuredVolumeObject* structured_volume =
             vismodule::StructuredVolumeObject::DownCast( volume );
 
         vismodule::PolygonObject* polygon = new vismodule::MarchingCubes(
-            structured_volume,
+            *structured_volume,
             m_isolevel,
             SuperClass::normalType(),
             m_duplication,
@@ -199,7 +199,7 @@ void Isosurface::mapping( const vismodule::VolumeObjectBase* volume )
 
         delete polygon;
     }
-    else // volume->volumeType() == vismodule::VolumeObjectBase::Unstructured
+    else // volume.volumeType() == vismodule::VolumeObjectBase::Unstructured
     {
         const vismodule::UnstructuredVolumeObject* unstructured_volume =
             vismodule::UnstructuredVolumeObject::DownCast( volume );
@@ -209,7 +209,7 @@ void Isosurface::mapping( const vismodule::VolumeObjectBase* volume )
         case vismodule::VolumeObjectBase::Tetrahedra:
         {
             vismodule::PolygonObject* polygon = new vismodule::MarchingTetrahedra(
-                unstructured_volume,
+                *unstructured_volume,
                 m_isolevel,
                 SuperClass::normalType(),
                 m_duplication,
@@ -244,7 +244,7 @@ void Isosurface::mapping( const vismodule::VolumeObjectBase* volume )
         case vismodule::VolumeObjectBase::Hexahedra:
         {
             vismodule::PolygonObject* polygon = new vismodule::MarchingHexahedra(
-                unstructured_volume,
+                *unstructured_volume,
                 m_isolevel,
                 SuperClass::normalType(),
                 m_duplication,
@@ -279,7 +279,7 @@ void Isosurface::mapping( const vismodule::VolumeObjectBase* volume )
         case vismodule::VolumeObjectBase::Pyramid:
         {
             vismodule::PolygonObject* polygon = new vismodule::MarchingPyramid(
-                unstructured_volume,
+                *unstructured_volume,
                 m_isolevel,
                 SuperClass::normalType(),
                 m_duplication,

@@ -83,7 +83,7 @@ public:
 
 public:
 
-    virtual vismodule::ObjectBase* exec( const vismodule::ObjectBase* object ) = 0;
+    virtual vismodule::ObjectBase* exec( const vismodule::ObjectBase& object ) = 0;
 
     virtual void draw( void ) = 0;
 
@@ -105,25 +105,25 @@ protected:
 
 protected:
 
-    void calculate_coords( const vismodule::VolumeObjectBase* volume );
+    void calculate_coords( const vismodule::VolumeObjectBase& volume );
 
-    void calculate_coords( const vismodule::StructuredVolumeObject* volume );
+    void calculate_coords( const vismodule::StructuredVolumeObject& volume );
 
-    void calculate_uniform_coords( const vismodule::StructuredVolumeObject* volume );
+    void calculate_uniform_coords( const vismodule::StructuredVolumeObject& volume );
 
-    void calculate_rectilinear_coords( const vismodule::StructuredVolumeObject* volume );
-
-    template <typename T>
-    void calculate_sizes( const vismodule::VolumeObjectBase* volume );
+    void calculate_rectilinear_coords( const vismodule::StructuredVolumeObject& volume );
 
     template <typename T>
-    void calculate_directions( const vismodule::VolumeObjectBase* volume );
+    void calculate_sizes( const vismodule::VolumeObjectBase& volume );
 
     template <typename T>
-    void calculate_colors( const vismodule::VolumeObjectBase* volume );
+    void calculate_directions( const vismodule::VolumeObjectBase& volume );
 
     template <typename T>
-    void calculate_opacities( const vismodule::VolumeObjectBase* volume );
+    void calculate_colors( const vismodule::VolumeObjectBase& volume );
+
+    template <typename T>
+    void calculate_opacities( const vismodule::VolumeObjectBase& volume );
 };
 
 } // end of namespace vismodule

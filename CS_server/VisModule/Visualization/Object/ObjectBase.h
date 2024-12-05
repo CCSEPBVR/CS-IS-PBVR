@@ -12,18 +12,18 @@
  *  $Id: ObjectBase.h 847 2011-06-21 07:21:11Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef PBVR__OBJECT_BASE_H_INCLUDE
-#define PBVR__OBJECT_BASE_H_INCLUDE
+#ifndef VIS_MODULE__OBJECT_BASE_H_INCLUDE
+#define VIS_MODULE__OBJECT_BASE_H_INCLUDE
 
 #include <iostream>
-#include "ClassName.h"
+#include <vismodule/ClassName>
 #include <vismodule/XformControl>
 #include <vismodule/Vector2>
 #include <vismodule/Vector3>
 #include <vismodule/Module>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 class Camera;
@@ -35,7 +35,7 @@ class Camera;
 /*==========================================================================*/
 class ObjectBase : public vismodule::XformControl
 {
-    visModuleClassName( pbvr::ObjectBase );
+    visModuleClassName( vismodule::ObjectBase );
 
     visModuleBase;
 
@@ -180,6 +180,6 @@ private:
         const vismodule::Vector3f& global_scale ) const;
 };
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
-#endif // PBVR__OBJECT_BASE_H_INCLUDE
+#endif // VIS_MODULE__OBJECT_BASE_H_INCLUDE

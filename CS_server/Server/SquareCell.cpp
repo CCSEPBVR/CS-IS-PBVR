@@ -14,7 +14,7 @@
 #include "SquareCell.h"
 
 
-namespace pbvr
+namespace vismodule
 {
 
 // template instantiation
@@ -29,4 +29,4 @@ template class SquareCell<unsigned long>;
 template class SquareCell<float>;
 template class SquareCell<double>;
 
-} // end of namespace pbvr
+} // end of namespace vismodule

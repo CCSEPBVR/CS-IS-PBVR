@@ -11,19 +11,19 @@
  *  $Id: VolumeObjectBase.h 848 2011-06-29 11:35:52Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__VOLUME_OBJECT_BASE_H_INCLUDE
-#define PBVR__VOLUME_OBJECT_BASE_H_INCLUDE
+#ifndef VIS_MODULE__VOLUME_OBJECT_BASE_H_INCLUDE
+#define VIS_MODULE__VOLUME_OBJECT_BASE_H_INCLUDE
 
 #include <string>
-#include "ClassName.h"
-#include "ObjectBase.h"
+#include <vismodule/ClassName>
+#include <vismodule/ObjectBase>
 #include <vismodule/Value>
 #include <vismodule/ValueArray>
 #include <vismodule/AnyValueArray>
 #include <vismodule/Math>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 struct EquationToken
@@ -103,13 +103,13 @@ struct CoordSynthesizerStrings
  *  VolumeObjectBase.
  */
 /*==========================================================================*/
-class VolumeObjectBase : public pbvr::ObjectBase
+class VolumeObjectBase : public vismodule::ObjectBase
 {
-    visModuleClassName( pbvr::VolumeObjectBase );
+    visModuleClassName( vismodule::VolumeObjectBase );
 
 public:
 
-    typedef pbvr::ObjectBase BaseClass;
+    typedef vismodule::ObjectBase BaseClass;
 
     typedef vismodule::ValueArray<float> Coords;
     typedef vismodule::AnyValueArray     Values;
@@ -180,9 +180,9 @@ public:
 
 public:
 
-    static pbvr::VolumeObjectBase* DownCast( pbvr::ObjectBase* object );
+    static vismodule::VolumeObjectBase* DownCast( vismodule::ObjectBase* object );
 
-    static const pbvr::VolumeObjectBase* DownCast( const pbvr::ObjectBase& object );
+    static const vismodule::VolumeObjectBase* DownCast( const vismodule::ObjectBase& object );
 
 public:
 
@@ -296,6 +296,6 @@ void VolumeObjectBase::calculate_min_max_values() const
     }
 }
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__VOLUME_OBJECT_BASE_H_INCLUDE

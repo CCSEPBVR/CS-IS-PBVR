@@ -10,7 +10,7 @@
 #include <FileFormat/KVSML/ValueTag.h>
 #include <FileFormat/KVSML/CoordTag.h>
 #include <FileFormat/KVSML/ConnectionTag.h>
-#include "DataArrayTag.h"
+#include <vismodule/DataArrayTag>
 #include <vismodule/File>
 #include <vismodule/AnyValueArray>
 #include <vismodule/Type>
@@ -209,7 +209,7 @@ StepAggregateTypeSubvolume::StepAggregateTypeSubvolume( const std::string& filen
         visModuleMessageError( "File read error: connection data." );
         goto StepAggregateTypeSubvolume_ERROR;
     }
-#if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_BIG_ENDIAN
     m_connections.swapByte();
 #endif
     fclose( fp );
@@ -238,7 +238,7 @@ StepAggregateTypeSubvolume::StepAggregateTypeSubvolume( const std::string& filen
         visModuleMessageError( "File read error: coordinate data." );
         goto StepAggregateTypeSubvolume_ERROR;
     }
-#if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_BIG_ENDIAN
     m_coords.swapByte();
 #endif
     fclose( fp );
@@ -267,7 +267,7 @@ StepAggregateTypeSubvolume::StepAggregateTypeSubvolume( const std::string& filen
         visModuleMessageError( "File read error: value data." );
         goto StepAggregateTypeSubvolume_ERROR;
     }
-#if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_BIG_ENDIAN
     m_values.swapByte();
 #endif
 

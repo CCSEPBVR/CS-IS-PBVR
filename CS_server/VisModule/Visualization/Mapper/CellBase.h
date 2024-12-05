@@ -11,16 +11,16 @@
  *  $Id: CellBase.h 840 2011-06-07 11:17:16Z naohisa.sakamoto@gmail.com $
  */
 /****************************************************************************/
-#ifndef PBVR__CELL_BASE_H_INCLUDE
-#define PBVR__CELL_BASE_H_INCLUDE
+#ifndef VIS_MODULE__CELL_BASE_H_INCLUDE
+#define VIS_MODULE__CELL_BASE_H_INCLUDE
 
 #include <vismodule/DebugNew>
-#include "ClassName.h"
+#include <vismodule/ClassName>
 #include <vismodule/Type>
 #include <vismodule/Vector4>
 #include <vismodule/Matrix44>
 
-#include "UnstructuredVolumeObject.h"
+#include <vismodule/UnstructuredVolumeObject>
 #include <vismodule/IgnoreUnusedVariable>
 #include <vismodule/Message>
 #include <vismodule/MersenneTwister> 
@@ -31,7 +31,7 @@
 #define SIMD_BLK_SIZE 128
 #endif
 
-namespace pbvr
+namespace vismodule
 {
 /*===========================================================================*/
 /**
@@ -41,7 +41,7 @@ namespace pbvr
 template <typename T>
 class CellBase
 {
-    visModuleClassName( pbvr::CellBase );
+    visModuleClassName( vismodule::CellBase );
 
 protected:
 
@@ -54,7 +54,7 @@ protected:
     mutable vismodule::Vector3f  m_global_point; ///< sampling point in the global coordinate
     mutable vismodule::Vector3f  m_local_point;  ///< sampling point in the local coordinate
 
-    const pbvr::UnstructuredVolumeObject* m_reference_volume; ///< reference unstructured volume
+    const vismodule::UnstructuredVolumeObject* m_reference_volume; ///< reference unstructured volume
 
     T*           m_values;
     float*       m_coords;
@@ -78,8 +78,8 @@ protected:
 
 public:
 
-    CellBase( const pbvr::UnstructuredVolumeObject& volume );
-    CellBase( const pbvr::UnstructuredVolumeObject& volume, const size_t cell_type );
+    CellBase( const vismodule::UnstructuredVolumeObject& volume );
+    CellBase( const vismodule::UnstructuredVolumeObject& volume, const size_t cell_type );
     CellBase( T* values,
               float* coords, int ncoords,
               unsigned int* connections, int ncells, int cell_type);
@@ -280,7 +280,7 @@ inline void CellBase<T>::deallocate()
 /*===========================================================================*/
 template <typename T>
 inline CellBase<T>::CellBase(
-    const pbvr::UnstructuredVolumeObject& volume ):
+    const vismodule::UnstructuredVolumeObject& volume ):
     m_nnodes( volume.cellType() ),
     m_global_point( 0, 0, 0 ),
     m_local_point( 0, 0, 0 ),
@@ -297,7 +297,7 @@ inline CellBase<T>::CellBase(
 /*===========================================================================*/
 template <typename T>
 inline CellBase<T>::CellBase(
-    const pbvr::UnstructuredVolumeObject& volume, const size_t cell_type ):
+    const vismodule::UnstructuredVolumeObject& volume, const size_t cell_type ):
     m_nnodes( cell_type ),
     m_global_point( 0, 0, 0 ),
     m_local_point( 0, 0, 0 ),
@@ -412,7 +412,7 @@ template <typename T>  /// using UnstructuredVolumeObject!!
 inline void CellBase<T>::bindCell_wVolume( const vismodule::UInt32 index, const size_t n )
 {
     // Aliases.
-    const pbvr::UnstructuredVolumeObject* volume = m_reference_volume;
+    const vismodule::UnstructuredVolumeObject* volume = m_reference_volume;
     const vismodule::UInt32* const connections = volume->connections().pointer();
     const vismodule::Real32* const coords = volume->coords().pointer();
     const T* const values = static_cast<const T*>( volume->values().pointer() );
@@ -1014,6 +1014,6 @@ void  CellBase<T>::reset_time()
    cal_time[1] = 0;
 }
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__TEST_CELL_BASE_H_INCLUDE

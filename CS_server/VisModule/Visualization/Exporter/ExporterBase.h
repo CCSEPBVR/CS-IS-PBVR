@@ -42,7 +42,7 @@ public:
 
 public:
 
-    virtual FileFormatType* exec( const vismodule::ObjectBase* object ) = 0;
+    virtual FileFormatType* exec( const vismodule::ObjectBase& object ) = 0;
 
 public:
 

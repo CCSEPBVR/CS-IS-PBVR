@@ -27,7 +27,7 @@ namespace vismodule
  */
 /*===========================================================================*/
 UnstructuredVolumeExporter<vismodule::KVSMLObjectUnstructuredVolume>::UnstructuredVolumeExporter(
-    const vismodule::UnstructuredVolumeObject* object )
+    const vismodule::UnstructuredVolumeObject& object )
 {
     this->exec( object );
 }
@@ -39,9 +39,9 @@ UnstructuredVolumeExporter<vismodule::KVSMLObjectUnstructuredVolume>::Unstructur
  */
 /*===========================================================================*/
 vismodule::KVSMLObjectUnstructuredVolume* UnstructuredVolumeExporter<vismodule::KVSMLObjectUnstructuredVolume>::exec(
-    const vismodule::ObjectBase* object )
+    const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -50,7 +50,7 @@ vismodule::KVSMLObjectUnstructuredVolume* UnstructuredVolumeExporter<vismodule::
 
     // Cast to the structured volume object.
     const vismodule::UnstructuredVolumeObject* volume = vismodule::UnstructuredVolumeObject::DownCast( object );
-    if ( !volume )
+    if ( !&volume )
     {
         m_is_success = false;
         visModuleMessageError("Input object is not structured volume object.");

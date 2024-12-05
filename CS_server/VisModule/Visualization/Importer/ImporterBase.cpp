@@ -11,7 +11,7 @@
  *  $Id: ImporterBase.cpp 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "ImporterBase.h"
+#include <vismodule/ImporterBase>
 
 
 namespace vismodule

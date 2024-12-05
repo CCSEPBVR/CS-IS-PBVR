@@ -68,9 +68,9 @@ vismodule::TableObject* TableObject::DownCast( vismodule::ObjectBase* object )
     return( table );
 }
 
-const vismodule::TableObject* TableObject::DownCast( const vismodule::ObjectBase* object )
+const vismodule::TableObject* TableObject::DownCast( const vismodule::ObjectBase& object )
 {
-    return( TableObject::DownCast( const_cast<vismodule::ObjectBase*>( object ) ) );
+    return( TableObject::DownCast( const_cast<vismodule::ObjectBase*>( &object ) ) );
 }
 
 /*===========================================================================*/

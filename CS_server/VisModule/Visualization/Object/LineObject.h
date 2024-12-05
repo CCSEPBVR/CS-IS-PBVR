@@ -138,7 +138,7 @@ public:
 
     static vismodule::LineObject* DownCast( vismodule::ObjectBase* object );
 
-    static const vismodule::LineObject* DownCast( const vismodule::ObjectBase* object );
+    static const vismodule::LineObject* DownCast( const vismodule::ObjectBase& object );
 
 public:
 

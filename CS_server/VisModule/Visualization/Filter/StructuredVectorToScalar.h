@@ -43,18 +43,18 @@ public:
 
     StructuredVectorToScalar( void );
 
-    StructuredVectorToScalar( const vismodule::StructuredVolumeObject* volume );
+    StructuredVectorToScalar( const vismodule::StructuredVolumeObject& volume );
 
     virtual ~StructuredVectorToScalar( void );
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 protected:
 
     template <typename T>
-    void calculate_magnitude( const vismodule::StructuredVolumeObject* volume );
+    void calculate_magnitude( const vismodule::StructuredVolumeObject& volume );
 };
 
 } // end of namespace vismodule

@@ -11,12 +11,12 @@
  *  $Id: IDManager.cpp 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "IDManager.h"
+#include <vismodule/IDManager>
 #include <algorithm>
 #include <functional>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -261,4 +261,4 @@ void IDManager::update_flip_table()
     }
 }
 
-} // end of namespace pbvr
+} // end of namespace vismodule

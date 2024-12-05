@@ -42,10 +42,10 @@ public:
     DiamondGlyph( void );
 
     DiamondGlyph(
-        const vismodule::VolumeObjectBase* volume );
+        const vismodule::VolumeObjectBase& volume );
 
     DiamondGlyph(
-        const vismodule::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase& volume,
         const vismodule::TransferFunction& transfer_function );
 
     virtual ~DiamondGlyph( void );
@@ -60,7 +60,7 @@ public:
 */
 public:
 
-    BaseClass::SuperClass* exec( const vismodule::ObjectBase* object );
+    BaseClass::SuperClass* exec( const vismodule::ObjectBase& object );
 
     void draw( void );
 

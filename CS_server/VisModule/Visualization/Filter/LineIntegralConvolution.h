@@ -51,9 +51,9 @@ public:
 
     LineIntegralConvolution( void );
 
-    LineIntegralConvolution( const vismodule::StructuredVolumeObject* volume );
+    LineIntegralConvolution( const vismodule::StructuredVolumeObject& volume );
 
-    LineIntegralConvolution( const vismodule::StructuredVolumeObject* volume, const double length );
+    LineIntegralConvolution( const vismodule::StructuredVolumeObject& volume, const double length );
 
     virtual ~LineIntegralConvolution( void );
 
@@ -63,16 +63,16 @@ public:
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 protected:
 
-    void filtering( const vismodule::StructuredVolumeObject* volume );
+    void filtering( const vismodule::StructuredVolumeObject& volume );
 
-    void create_noise_volume( const vismodule::StructuredVolumeObject* volume );
+    void create_noise_volume( const vismodule::StructuredVolumeObject& volume );
 
     template <typename T>
-    void convolution( const vismodule::StructuredVolumeObject* volume );
+    void convolution( const vismodule::StructuredVolumeObject& volume );
 };
 
 } // end of namespace vismodule

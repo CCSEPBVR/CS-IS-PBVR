@@ -34,7 +34,7 @@ StructuredVectorToScalar::StructuredVectorToScalar( void )
  *  @param  volume [in] pointer to the structured volume
  */
 /*===========================================================================*/
-StructuredVectorToScalar::StructuredVectorToScalar( const vismodule::StructuredVolumeObject* volume )
+StructuredVectorToScalar::StructuredVectorToScalar( const vismodule::StructuredVolumeObject& volume )
 {
     this->exec( volume );
 }
@@ -55,9 +55,9 @@ StructuredVectorToScalar::~StructuredVectorToScalar( void )
  *  @return pointer to the converted structured volume object
  */
 /*===========================================================================*/
-StructuredVectorToScalar::SuperClass* StructuredVectorToScalar::exec( const vismodule::ObjectBase* object )
+StructuredVectorToScalar::SuperClass* StructuredVectorToScalar::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -65,7 +65,7 @@ StructuredVectorToScalar::SuperClass* StructuredVectorToScalar::exec( const vism
     }
 
     const vismodule::StructuredVolumeObject* volume = vismodule::StructuredVolumeObject::DownCast( object );
-    if ( !volume )
+    if ( !&volume )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is not supported.");
@@ -73,16 +73,16 @@ StructuredVectorToScalar::SuperClass* StructuredVectorToScalar::exec( const vism
     }
 
     const std::type_info& type = volume->values().typeInfo()->type();
-    if (      type == typeid( vismodule::Int8   ) ) this->calculate_magnitude<vismodule::Int8>(   volume );
-    else if ( type == typeid( vismodule::Int16  ) ) this->calculate_magnitude<vismodule::Int16>(  volume );
-    else if ( type == typeid( vismodule::Int32  ) ) this->calculate_magnitude<vismodule::Int32>(  volume );
-    else if ( type == typeid( vismodule::Int64  ) ) this->calculate_magnitude<vismodule::Int64>(  volume );
-    else if ( type == typeid( vismodule::UInt8  ) ) this->calculate_magnitude<vismodule::UInt8>(  volume );
-    else if ( type == typeid( vismodule::UInt16 ) ) this->calculate_magnitude<vismodule::UInt16>( volume );
-    else if ( type == typeid( vismodule::UInt32 ) ) this->calculate_magnitude<vismodule::UInt32>( volume );
-    else if ( type == typeid( vismodule::UInt64 ) ) this->calculate_magnitude<vismodule::UInt64>( volume );
-    else if ( type == typeid( vismodule::Real32 ) ) this->calculate_magnitude<vismodule::Real32>( volume );
-    else if ( type == typeid( vismodule::Real64 ) ) this->calculate_magnitude<vismodule::Real64>( volume );
+    if (      type == typeid( vismodule::Int8   ) ) this->calculate_magnitude<vismodule::Int8>(   *volume );
+    else if ( type == typeid( vismodule::Int16  ) ) this->calculate_magnitude<vismodule::Int16>(  *volume );
+    else if ( type == typeid( vismodule::Int32  ) ) this->calculate_magnitude<vismodule::Int32>(  *volume );
+    else if ( type == typeid( vismodule::Int64  ) ) this->calculate_magnitude<vismodule::Int64>(  *volume );
+    else if ( type == typeid( vismodule::UInt8  ) ) this->calculate_magnitude<vismodule::UInt8>(  *volume );
+    else if ( type == typeid( vismodule::UInt16 ) ) this->calculate_magnitude<vismodule::UInt16>( *volume );
+    else if ( type == typeid( vismodule::UInt32 ) ) this->calculate_magnitude<vismodule::UInt32>( *volume );
+    else if ( type == typeid( vismodule::UInt64 ) ) this->calculate_magnitude<vismodule::UInt64>( *volume );
+    else if ( type == typeid( vismodule::Real32 ) ) this->calculate_magnitude<vismodule::Real32>( *volume );
+    else if ( type == typeid( vismodule::Real64 ) ) this->calculate_magnitude<vismodule::Real64>( *volume );
     else
     {
         BaseClass::m_is_success = false;
@@ -100,14 +100,14 @@ StructuredVectorToScalar::SuperClass* StructuredVectorToScalar::exec( const vism
  */
 /*===========================================================================*/
 template <typename T>
-void StructuredVectorToScalar::calculate_magnitude( const vismodule::StructuredVolumeObject* volume )
+void StructuredVectorToScalar::calculate_magnitude( const vismodule::StructuredVolumeObject& volume )
 {
-    const size_t veclen = volume->veclen();
-    const size_t nnodes = volume->nnodes();
+    const size_t veclen = volume.veclen();
+    const size_t nnodes = volume.nnodes();
 
     vismodule::AnyValueArray values;
     vismodule::Real32* dst = static_cast<vismodule::Real32*>( values.template allocate<vismodule::Real32>( nnodes ) );
-    const T* src = static_cast<const T*>( volume->values().pointer() );
+    const T* src = static_cast<const T*>( volume.values().pointer() );
 
     for ( size_t i = 0; i < nnodes; i++ )
     {
@@ -120,9 +120,9 @@ void StructuredVectorToScalar::calculate_magnitude( const vismodule::StructuredV
         *(dst++) = vismodule::Math::SquareRoot( magnitude );
     }
 
-    SuperClass::setGridType( volume->gridType() );
+    SuperClass::setGridType( volume.gridType() );
     SuperClass::setVeclen( 1 );
-    SuperClass::setResolution( volume->resolution() );
+    SuperClass::setResolution( volume.resolution() );
     SuperClass::setValues( values );
     SuperClass::updateMinMaxValues();
     SuperClass::updateMinMaxCoords();

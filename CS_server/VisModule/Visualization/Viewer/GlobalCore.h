@@ -11,22 +11,22 @@
  *  $Id: GlobalCore.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__GLOBAL_CORE_H_INCLUDE
-#define PBVR__GLOBAL_CORE_H_INCLUDE
+#ifndef VIS_MODULE__GLOBAL_CORE_H_INCLUDE
+#define VIS_MODULE__GLOBAL_CORE_H_INCLUDE
 
-#include "ClassName.h"
+#include <vismodule/ClassName>
 #include <vismodule/Camera>
 /* 131018 removed
 #include "Light.h"
 #include "Mouse.h"
 #include "Background.h"
 */
-#include "ObjectManager.h"
+#include <vismodule/ObjectManager>
 #include <vismodule/RendererManager>
-#include "IDManager.h"
+#include <vismodule/IDManager>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -36,7 +36,7 @@ namespace pbvr
 /*==========================================================================*/
 class GlobalCore
 {
-    visModuleClassName( pbvr::GlobalCore );
+    visModuleClassName( vismodule::GlobalCore );
 
 public:
 
@@ -59,15 +59,14 @@ private:
         static vismodule::Background*      background;       ///< background
     */
     // Parameters for controlling the viewer.
-    static ControlTarget          m_target;           ///< control target
-    static pbvr::ObjectManager*   m_object_manager;   ///< object manager
+    static vismodule::ObjectManager*   m_object_manager;   ///< object manager
     static vismodule::RendererManager*  m_renderer_manager; ///< renderer manager
-    static pbvr::IDManager*       m_id_manager;       ///< ID manager ( object_id, renderer_id )
+    static vismodule::IDManager*       m_id_manager;       ///< ID manager ( object_id, renderer_id )
 
 public:
     // Basic components in the viewer.
+    static ControlTarget          m_target;           ///< control target
     static vismodule::Camera*           m_camera;           ///< camera
-
 public:
 
     GlobalCore( const int count, const char** values );
@@ -83,6 +82,6 @@ public:
     static void resetCore();
 };
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__GLOBAL_CORE_H_INCLUDE

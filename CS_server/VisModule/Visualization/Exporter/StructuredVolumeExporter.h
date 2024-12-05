@@ -37,9 +37,9 @@ class StructuredVolumeExporter : public vismodule::ExporterBase<FileFormatType>
 
 public:
 
-    StructuredVolumeExporter( const vismodule::StructuredVolumeObject* object );
+    StructuredVolumeExporter( const vismodule::StructuredVolumeObject& object );
 
-    FileFormatType* exec( const vismodule::ObjectBase* object );
+    FileFormatType* exec( const vismodule::ObjectBase& object );
 };
 
 /*===========================================================================*/
@@ -50,7 +50,7 @@ public:
 /*===========================================================================*/
 template <typename FileFormatType>
 StructuredVolumeExporter<FileFormatType>::StructuredVolumeExporter(
-    const vismodule::StructuredVolumeObject* object )
+    const vismodule::StructuredVolumeObject& object )
 {
     this->exec( object );
 }
@@ -62,7 +62,7 @@ StructuredVolumeExporter<FileFormatType>::StructuredVolumeExporter(
  */
 /*===========================================================================*/
 template <typename FileFormatType>
-FileFormatType* StructuredVolumeExporter<FileFormatType>::exec( const vismodule::ObjectBase* object )
+FileFormatType* StructuredVolumeExporter<FileFormatType>::exec( const vismodule::ObjectBase& object )
 {
     return( NULL );
 }
@@ -78,9 +78,9 @@ class StructuredVolumeExporter<vismodule::KVSMLObjectStructuredVolume> :
 {
 public:
 
-    StructuredVolumeExporter( const vismodule::StructuredVolumeObject* object );
+    StructuredVolumeExporter( const vismodule::StructuredVolumeObject& object );
 
-    vismodule::KVSMLObjectStructuredVolume* exec( const vismodule::ObjectBase* object );
+    vismodule::KVSMLObjectStructuredVolume* exec( const vismodule::ObjectBase& object );
 };
 
 /*===========================================================================*/
@@ -94,9 +94,9 @@ class StructuredVolumeExporter<vismodule::AVSField> :
 {
 public:
 
-    StructuredVolumeExporter( const vismodule::StructuredVolumeObject* object );
+    StructuredVolumeExporter( const vismodule::StructuredVolumeObject& object );
 
-    vismodule::AVSField* exec( const vismodule::ObjectBase* object );
+    vismodule::AVSField* exec( const vismodule::ObjectBase& object );
 };
 
 } // end of namespace vismodule

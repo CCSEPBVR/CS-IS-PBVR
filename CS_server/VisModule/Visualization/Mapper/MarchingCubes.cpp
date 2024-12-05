@@ -42,7 +42,7 @@ MarchingCubes::MarchingCubes( void ):
  */
 /*==========================================================================*/
 MarchingCubes::MarchingCubes(
-    const vismodule::StructuredVolumeObject* volume,
+    const vismodule::StructuredVolumeObject& volume,
     const double                       isolevel,
     const NormalType                   normal_type,
     const bool                         duplication,
@@ -86,9 +86,9 @@ void MarchingCubes::setIsolevel( const double isolevel )
  *  @return pointer to the polygon object
  */
 /*===========================================================================*/
-MarchingCubes::SuperClass* MarchingCubes::exec( const vismodule::ObjectBase* object )
+MarchingCubes::SuperClass* MarchingCubes::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -109,7 +109,7 @@ MarchingCubes::SuperClass* MarchingCubes::exec( const vismodule::ObjectBase* obj
         m_duplication = false;
     }
 
-    this->mapping( volume );
+    this->mapping( *volume );
 
     return( this );
 }
@@ -120,10 +120,10 @@ MarchingCubes::SuperClass* MarchingCubes::exec( const vismodule::ObjectBase* obj
  *  @param  volume [in] pointer to the volume object
  */
 /*==========================================================================*/
-void MarchingCubes::mapping( const vismodule::StructuredVolumeObject* volume )
+void MarchingCubes::mapping( const vismodule::StructuredVolumeObject& volume )
 {
     // Check whether the volume can be processed or not.
-    if ( volume->veclen() != 1 )
+    if ( volume.veclen() != 1 )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("The input volume is not a sclar field data.");
@@ -136,7 +136,7 @@ void MarchingCubes::mapping( const vismodule::StructuredVolumeObject* volume )
     BaseClass::set_min_max_coords( volume, this );
 
     // Extract surfaces.
-    const std::type_info& type = volume->values().typeInfo()->type();
+    const std::type_info& type = volume.values().typeInfo()->type();
     if (      type == typeid( vismodule::Int8   ) ) this->extract_surfaces<vismodule::Int8>( volume );
     else if ( type == typeid( vismodule::Int16  ) ) this->extract_surfaces<vismodule::Int16>( volume );
     else if ( type == typeid( vismodule::Int32  ) ) this->extract_surfaces<vismodule::Int32>( volume );
@@ -150,7 +150,7 @@ void MarchingCubes::mapping( const vismodule::StructuredVolumeObject* volume )
     else
     {
         BaseClass::m_is_success = false;
-        visModuleMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
+        visModuleMessageError("Unsupported data type '%s'.", volume.values().typeInfo()->typeName() );
     }
 }
 
@@ -161,7 +161,7 @@ void MarchingCubes::mapping( const vismodule::StructuredVolumeObject* volume )
  */
 /*==========================================================================*/
 template <typename T>
-void MarchingCubes::extract_surfaces( const vismodule::StructuredVolumeObject* volume )
+void MarchingCubes::extract_surfaces( const vismodule::StructuredVolumeObject& volume )
 {
     if ( m_duplication ) this->extract_surfaces_with_duplication<T>( volume );
     else                 this->extract_surfaces_without_duplication<T>( volume );
@@ -175,15 +175,15 @@ void MarchingCubes::extract_surfaces( const vismodule::StructuredVolumeObject* v
 /*==========================================================================*/
 template <typename T>
 void MarchingCubes::extract_surfaces_with_duplication(
-    const vismodule::StructuredVolumeObject* volume )
+    const vismodule::StructuredVolumeObject& volume )
 {
     // Calculated the coordinate data array and the normal vector array.
     std::vector<vismodule::Real32> coords;
     std::vector<vismodule::Real32> normals;
 
-    const vismodule::Vector3ui ncells( volume->resolution() - vismodule::Vector3ui(1) );
-    const vismodule::UInt32    line_size( volume->nnodesPerLine() );
-    const vismodule::UInt32    slice_size( volume->nnodesPerSlice() );
+    const vismodule::Vector3ui ncells( volume.resolution() - vismodule::Vector3ui(1) );
+    const vismodule::UInt32    line_size( volume.nnodesPerLine() );
+    const vismodule::UInt32    slice_size( volume.nnodesPerSlice() );
 
     // Extract surfaces.
     size_t index = 0;
@@ -298,9 +298,9 @@ void MarchingCubes::extract_surfaces_with_duplication(
 /*==========================================================================*/
 template <typename T>
 void MarchingCubes::extract_surfaces_without_duplication(
-    const vismodule::StructuredVolumeObject* volume )
+    const vismodule::StructuredVolumeObject& volume )
 {
-    const size_t volume_size = volume->nnodes();
+    const size_t volume_size = volume.nnodes();
     const size_t byte_size   = sizeof( vismodule::UInt32 ) * 3 * volume_size;
     vismodule::UInt32* vertex_map = static_cast<vismodule::UInt32*>( malloc( byte_size ) );
     if ( !vertex_map )

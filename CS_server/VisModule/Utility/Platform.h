@@ -11,8 +11,8 @@
  *  $Id: Platform.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__PLATFORM_H_INCLUDE
-#define PBVR__PLATFORM_H_INCLUDE
+#ifndef VIS_MODULE__PLATFORM_H_INCLUDE
+#define VIS_MODULE__PLATFORM_H_INCLUDE
 
 /*----------------------------------------------------------------------------
  * Platform name.
@@ -21,136 +21,136 @@
 // Linux
 #if defined ( __linux__ ) || defined ( __linux )
 #define VIS_MODULE_PLATFORM_LINUX
-#define PBVR_PLATFORM_NAME "Linux"
+#define VIS_MODULE_PLATFORM_NAME "Linux"
 
 // Mac OS X
 #elif defined ( __APPLE__ ) || defined ( __MACOSX__ ) || defined ( macosx )
 #define VIS_MODULE_PLATFORM_MACOSX
-#define PBVR_PLATFORM_NAME "Mac OS X"
+#define VIS_MODULE_PLATFORM_NAME "Mac OS X"
 
 // Windows
 #elif defined ( __WIN32__ ) || defined ( _WIN32 ) || defined ( WIN32 ) || \
       defined ( __WIN64__ ) || defined ( _WIN64 ) || defined ( WIN64 )
 #define VIS_MODULE_PLATFORM_WINDOWS
-#define PBVR_PLATFORM_NAME "Windows"
+#define VIS_MODULE_PLATFORM_NAME "Windows"
 
 // Cygwin
 #elif defined ( __CYGWIN__ ) || defined ( __CYGWIN32__ )
 #define VIS_MODULE_PLATFORM_CYGWIN
-#define PBVR_PLATFORM_NAME "Cygwin"
+#define VIS_MODULE_PLATFORM_NAME "Cygwin"
 
 // FreeBSD
 #elif defined ( __FreeBSD__ )
 #define VIS_MODULE_PLATFORM_FREEBSD
-#define PBVR_PLATFORM_NAME "FreeBSD"
+#define VIS_MODULE_PLATFORM_NAME "FreeBSD"
 
 // Solaris
 #elif defined ( __sun__ ) || defined ( __sun ) || defined ( sun ) || \
       defined ( __solaris__ )
 #define VIS_MODULE_PLATFORM_SOLARIS
-#define PBVR_PLATFORM_NAME "Solaris"
+#define VIS_MODULE_PLATFORM_NAME "Solaris"
 
 // SGI Irix
 #elif defined ( __sgi__ )
 #define VIS_MODULE_PLATFORM_IRIX
-#define PBVR_PLATFORM_NAME "Irix"
+#define VIS_MODULE_PLATFORM_NAME "Irix"
 
 // HP-UX
 #elif defined ( __hpux__ ) || defined ( __hpux )
 #define VIS_MODULE_PLATFORM_HPUX
-#define PBVR_PLATFORM_NAME "HP-UX"
+#define VIS_MODULE_PLATFORM_NAME "HP-UX"
 
 // AIX
 #elif defined ( __AIX ) || defined ( _AIX )
 #define VIS_MODULE_PLATFORM_AIX
-#define PBVR_PLATFORM_NAME "AIX"
+#define VIS_MODULE_PLATFORM_NAME "AIX"
 
 
 // Unknown
 #else
 #pragma message("Platform.h: Unknown platform.")
-#define PBVR_PLATFORM_UNKNOWN
-#define PBVR_PLATFORM_NAME "Unknown"
+#define VIS_MODULE_PLATFORM_UNKNOWN
+#define VIS_MODULE_PLATFORM_NAME "Unknown"
 #endif
 
 
 /*----------------------------------------------------------------------------
  * CPU architecture.
  *----------------------------------------------------------------------------*/
-#define PBVR_PLATFORM_CPU_UNKNOWN
-#define PBVR_PLATFORM_CPU_NAME "Unknown"
+#define VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#define VIS_MODULE_PLATFORM_CPU_NAME "Unknown"
 
 // i386
 #if defined ( __i386__ ) || defined ( __i386 ) || defined ( i386 )
-#undef  PBVR_PLATFORM_CPU_UNKNOWN
-#undef  PBVR_PLATFORM_CPU_NAME
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
 #define VIS_MODULE_PLATFORM_CPU_I386
-#define PBVR_PLATFORM_CPU_NAME "i386"
+#define VIS_MODULE_PLATFORM_CPU_NAME "i386"
 #endif
 
 // x86
 #if defined ( __x86__ ) || defined ( _X86_ ) || defined ( _M_IX86 )
-#undef  PBVR_PLATFORM_CPU_UNKNOWN
-#undef  PBVR_PLATFORM_CPU_NAME
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
 #define VIS_MODULE_PLATFORM_CPU_X86
-#define PBVR_PLATFORM_CPU_NAME "x86"
+#define VIS_MODULE_PLATFORM_CPU_NAME "x86"
 #endif
 
 // x86 64
 #if defined ( __x86_64__ )
-#undef  PBVR_PLATFORM_CPU_UNKNOWN
-#undef  PBVR_PLATFORM_CPU_NAME
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
 #define VIS_MODULE_PLATFORM_CPU_X86_64
-#define PBVR_PLATFORM_CPU_NAME "x86-64"
+#define VIS_MODULE_PLATFORM_CPU_NAME "x86-64"
 #endif
 
 // AMD64
 #if defined ( __amd64__ ) || defined ( _M_AMD64 )
-#undef  PBVR_PLATFORM_CPU_UNKNOWN
-#undef  PBVR_PLATFORM_CPU_NAME
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
 #define VIS_MODULE_PLATFORM_CPU_AMD64
-#define PBVR_PLATFORM_CPU_NAME "AMD64"
+#define VIS_MODULE_PLATFORM_CPU_NAME "AMD64"
 #endif
 
 // Intel IA64
 #if defined ( __ia64__ ) || defined ( __ia64 ) || defined ( _M_IA64 )
-#undef  PBVR_PLATFORM_CPU_UNKNOWN
-#undef  PBVR_PLATFORM_CPU_NAME
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
 #define VIS_MODULE_PLATFORM_CPU_IA64
-#define PBVR_PLATFORM_CPU_NAME "IA64"
+#define VIS_MODULE_PLATFORM_CPU_NAME "IA64"
 #endif
 
 // PowerPC
 #if defined ( __POWERPC__ ) || defined ( __powerpc__ ) || defined ( _M_MPPC ) || \
     defined ( __powerpc64__ )
-#undef  PBVR_PLATFORM_CPU_UNKNOWN
-#undef  PBVR_PLATFORM_CPU_NAME
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
 #define VIS_MODULE_PLATFORM_CPU_POWERPC
-#define PBVR_PLATFORM_CPU_NAME "PowerPC"
+#define VIS_MODULE_PLATFORM_CPU_NAME "PowerPC"
 #endif
 
 // Sun SPARC
 #if defined ( __sparc__ ) || defined ( __sparc )
-#undef  PBVR_PLATFORM_CPU_UNKNOWN
-#undef  PBVR_PLATFORM_CPU_NAME
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
 #define VIS_MODULE_PLATFORM_CPU_SPARC
-#define PBVR_PLATFORM_CPU_NAME "Sun SPARC"
+#define VIS_MODULE_PLATFORM_CPU_NAME "Sun SPARC"
 #endif
 
 // MIPS
 #if defined ( __mips__ ) || defined ( __MIPS__ ) || defined ( _M_MRX000 )
-#undef  PBVR_PLATFORM_CPU_UNKNOWN
-#undef  PBVR_PLATFORM_CPU_NAME
+#undef  VIS_MODULE_PLATFORM_CPU_UNKNOWN
+#undef  VIS_MODULE_PLATFORM_CPU_NAME
 #define VIS_MODULE_PLATFORM_CPU_MIPS
-#define PBVR_PLATFORM_CPU_NAME "MIPS"
+#define VIS_MODULE_PLATFORM_CPU_NAME "MIPS"
 #endif
 
 
-#if defined ( PBVR_PLATFORM_CPU_UNKNOWN )
-#define PBVR_PLATFORM_CPU_NAME "Unknown"
+#if defined ( VIS_MODULE_PLATFORM_CPU_UNKNOWN )
+#define VIS_MODULE_PLATFORM_CPU_NAME "Unknown"
 #endif
 /* Replace**
-#if defined ( PBVR_PLATFORM_CPU_UNKNOWN )
+#if defined ( VIS_MODULE_PLATFORM_CPU_UNKNOWN )
 #pragma message("Platform.h: Unknown CPU architecture.")
 #endif
 */
@@ -162,7 +162,7 @@
     defined ( _x86_ ) || defined( __x86__ ) || defined ( _M_IX86 )
 #define VIS_MODULE_PLATFORM_CPU_32
 #else
-#define PBVR_PLATFORM_CPU_64
+#define VIS_MODULE_PLATFORM_CPU_64
 #endif
 /*
 #if defined ( __x86_64__ ) ||                                              \
@@ -170,7 +170,7 @@
     defined ( __amd64__ ) || defined( _M_AMD64 ) ||                        \
     defined ( __ia64__ ) || defined ( __ia64 ) || defined ( _M_IA64 ) ||   \
     defined ( __powerpc64__ )
-#define PBVR_PLATFORM_CPU_64
+#define VIS_MODULE_PLATFORM_CPU_64
 #else
 #define VIS_MODULE_PLATFORM_CPU_32
 #endif
@@ -219,7 +219,7 @@
 #endif
 
 
-namespace pbvr
+namespace vismodule
 {
 
 namespace Platform
@@ -233,7 +233,7 @@ namespace Platform
 /*==========================================================================*/
 inline const char* Name()
 {
-    return PBVR_PLATFORM_NAME;
+    return VIS_MODULE_PLATFORM_NAME;
 }
 
 /*==========================================================================*/
@@ -244,11 +244,11 @@ inline const char* Name()
 /*==========================================================================*/
 inline const char* CPUName()
 {
-    return PBVR_PLATFORM_CPU_NAME;
+    return VIS_MODULE_PLATFORM_CPU_NAME;
 }
 
 } // end of namespace Platform
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__PLATFORM_H_INCLUDE

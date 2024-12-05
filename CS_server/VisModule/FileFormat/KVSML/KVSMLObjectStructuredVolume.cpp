@@ -15,7 +15,7 @@
 #include "StructuredVolumeObjectTag.h"
 #include "NodeTag.h"
 #include "ValueTag.h"
-#include "DataArrayTag.h"
+#include <vismodule/DataArrayTag>
 #include "CoordTag.h"
 #include <vismodule/File>
 #include <vismodule/XMLDocument>

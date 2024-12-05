@@ -24,7 +24,7 @@ namespace vismodule
  *  @param  object [in] pointer to the input line object
  */
 /*===========================================================================*/
-LineExporter<vismodule::KVSMLObjectLine>::LineExporter( const vismodule::LineObject* object )
+LineExporter<vismodule::KVSMLObjectLine>::LineExporter( const vismodule::LineObject& object )
 {
     this->exec( object );
 }
@@ -36,9 +36,9 @@ LineExporter<vismodule::KVSMLObjectLine>::LineExporter( const vismodule::LineObj
  *  @return pointer to the KVSMLObjectLine format
  */
 /*===========================================================================*/
-vismodule::KVSMLObjectLine* LineExporter<vismodule::KVSMLObjectLine>::exec( const vismodule::ObjectBase* object )
+vismodule::KVSMLObjectLine* LineExporter<vismodule::KVSMLObjectLine>::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -46,7 +46,7 @@ vismodule::KVSMLObjectLine* LineExporter<vismodule::KVSMLObjectLine>::exec( cons
     }
 
     const vismodule::LineObject* line = vismodule::LineObject::DownCast( object );
-    if ( !line )
+    if ( !&line )
     {
         m_is_success = false;
         visModuleMessageError("Input object is not line object.");

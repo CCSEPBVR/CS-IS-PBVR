@@ -5,9 +5,9 @@
 #include <string>
 #include <vector>
 #include <vismodule/RGBColor>
-#include "HexahedralCell.h"
-#include "TrilinearInterpolator.h"
-#include "TransferFunction.h"
+#include <vismodule/HexahedralCell>
+#include <vismodule/TrilinearInterpolator>
+#include <vismodule/TransferFunction>
 #include "ReversePolishNotation.h"
 #include "Token.h"
 //add by shimomura  2022/12/20
@@ -157,107 +157,107 @@ public:
 //-----structured---------
 
     void SynthesizedOpacityScalars(
-        std::vector< TFS::TrilinearInterpolator* > interp,
+        std::vector< vismodule::TrilinearInterpolator* > interp,
         float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
         float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
         //float scalars[][SIMDW] );//resulting scalars[TF_COUNT][SIMDW]
         float** scalars);//resulting scalars[TF_COUNT][SIMDW]
 
     void SynthesizedColorScalars(
-        std::vector< TFS::TrilinearInterpolator* > interp,
+        std::vector< vismodule::TrilinearInterpolator* > interp,
         float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
         float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
         //float scalars[][SIMDW] );//resulting scalars[TF_COUNT][SIMDW]
         float** scalars );//resulting scalars[TF_COUNT][SIMDW]
 
     void CalculateOpacity(
-        std::vector< TFS::TrilinearInterpolator* > interp,
-        std::vector<pbvr::TransferFunction>& tf,
+        std::vector< vismodule::TrilinearInterpolator* > interp,
+        std::vector<vismodule::TransferFunction>& tf,
         float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
         float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
         float* opacity );//resulting opacity[SIMDW]
 
     void CalculateColor(
-        std::vector< TFS::TrilinearInterpolator* > interp ,
-        std::vector<pbvr::TransferFunction>& tf,
+        std::vector< vismodule::TrilinearInterpolator* > interp ,
+        std::vector<vismodule::TransferFunction>& tf,
         float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
         float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
         vismodule::UInt8* Red, vismodule::UInt8* Green, vismodule::UInt8* Blue );//resulting colors[SIMDW]
 
     void CalculateCoordArray(
-        std::vector< TFS::TrilinearInterpolator* > interp ,
+        std::vector< vismodule::TrilinearInterpolator* > interp ,
         const int loop_cnt,
         float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
         float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
         //const vismodule::Vector3f *local_coord,
         //const vismodule::Vector3f *global_coord,
-        std::vector<pbvr::TransferFunction>& tf,
-        const pbvr::CoordSynthesizerStrings css,
+        std::vector<vismodule::TransferFunction>& tf,
+        const vismodule::CoordSynthesizerStrings css,
         float* nx_g, float* ny_g, float* nz_g ); //global coord[SIMDW])
         //vismodule::Vector3f *new_coord_array);
 
 
 //-----unstructured-------
     std::vector<float> SynthesizedOpacityScalars(
-        std::vector< pbvr::CellBase<Type>* > interp ,
+        std::vector< vismodule::CellBase<Type>* > interp ,
         vismodule::Vector3f local_coord, vismodule::Vector3f global_coord );
 
     std::vector<float> SynthesizedColorScalars(
-        std::vector< pbvr::CellBase<Type>* > interp ,
+        std::vector< vismodule::CellBase<Type>* > interp ,
         vismodule::Vector3f local_coord, vismodule::Vector3f global_coord );
 
     float CalculateOpacity(
-        std::vector< pbvr::CellBase<Type>* > interp ,
+        std::vector< vismodule::CellBase<Type>* > interp ,
         vismodule::Vector3f local_coord, vismodule::Vector3f global_coord,
-        std::vector<pbvr::TransferFunction>& tf);
+        std::vector<vismodule::TransferFunction>& tf);
 
     vismodule::RGBColor CalculateColor(
-        std::vector< pbvr::CellBase<Type>* > interp ,
+        std::vector< vismodule::CellBase<Type>* > interp ,
         vismodule::Vector3f local_coord, vismodule::Vector3f global_coord,
-        std::vector<pbvr::TransferFunction>& tf);
+        std::vector<vismodule::TransferFunction>& tf);
 
     void CalculateOpacityArrayAverage(
-        std::vector< pbvr::CellBase<Type>* > interp ,
+        std::vector< vismodule::CellBase<Type>* > interp ,
         const int loop_cnt,
         const vismodule::Vector3f *local_coord,
         const vismodule::Vector3f *global_coord,
-        std::vector<pbvr::TransferFunction>& tf,
+        std::vector<vismodule::TransferFunction>& tf,
         float *opacity_array);
 
     void CalculateCoordArray(
-        std::vector< pbvr::CellBase<Type>* > interp ,
+        std::vector< vismodule::CellBase<Type>* > interp ,
         const int loop_cnt,
         const vismodule::Vector3f *local_coord,
         const vismodule::Vector3f *global_coord,
-        std::vector<pbvr::TransferFunction>& tf,
-        const pbvr::CoordSynthesizerStrings css,
+        std::vector<vismodule::TransferFunction>& tf,
+        const vismodule::CoordSynthesizerStrings css,
         vismodule::Vector3f *new_coord_array);
 
    void CalculateOpacityArray(
-        std::vector< pbvr::CellBase<Type>* > interp ,
+        std::vector< vismodule::CellBase<Type>* > interp ,
         const int loop_cnt,
         const vismodule::Vector3f *local_coord,
         const vismodule::Vector3f *global_coord,
-        std::vector<pbvr::TransferFunction>& tf,
+        std::vector<vismodule::TransferFunction>& tf,
         float *opacity_array);
 
     void CalculateColorArray(
-        std::vector< pbvr::CellBase<Type>* > interp ,
+        std::vector< vismodule::CellBase<Type>* > interp ,
         const int loop_cnt,
         const vismodule::Vector3f *local_coord,
         const vismodule::Vector3f *global_coord,
-        std::vector<pbvr::TransferFunction>& tf,
+        std::vector<vismodule::TransferFunction>& tf,
         vismodule::RGBColor *color_seq);
 
     void SynthesizedOpacityScalarsArray(
-        std::vector< pbvr::CellBase<Type>* > interp ,
+        std::vector< vismodule::CellBase<Type>* > interp ,
         const int loop_cnt,
         const vismodule::Vector3f *local_coord,
         const vismodule::Vector3f *global_coord,
         std::vector<float> *o_scalars_array);
 
     void SynthesizedColorScalarsArray(
-        std::vector< pbvr::CellBase<Type>* > interp ,
+        std::vector< vismodule::CellBase<Type>* > interp ,
         const int loop_cnt,
         const vismodule::Vector3f *local_coord,
         const vismodule::Vector3f *global_coord,

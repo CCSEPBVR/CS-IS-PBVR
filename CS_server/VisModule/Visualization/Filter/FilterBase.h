@@ -45,7 +45,7 @@ public:
 
 public:
 
-    virtual vismodule::ObjectBase* exec( const vismodule::ObjectBase* object ) = 0;
+    virtual vismodule::ObjectBase* exec( const vismodule::ObjectBase& object ) = 0;
 
 public:
 

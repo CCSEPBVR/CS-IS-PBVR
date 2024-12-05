@@ -39,13 +39,13 @@ protected:
 
 public:
 
-    explicit CellAdjacencyGraph( const vismodule::UnstructuredVolumeObject* volume );
+    explicit CellAdjacencyGraph( const vismodule::UnstructuredVolumeObject& volume );
 
     ~CellAdjacencyGraph( void );
 
 public:
 
-    void create( const vismodule::UnstructuredVolumeObject* volume );
+    void create( const vismodule::UnstructuredVolumeObject& volume );
 
     const vismodule::ValueArray<vismodule::UInt32>& graph( void ) const;
 
@@ -53,9 +53,9 @@ public:
 
 private:
 
-    void create_for_tetrahedral_cell( const vismodule::UnstructuredVolumeObject* volume );
+    void create_for_tetrahedral_cell( const vismodule::UnstructuredVolumeObject& volume );
 
-    void create_for_hexahedral_cell( const vismodule::UnstructuredVolumeObject* volume );
+    void create_for_hexahedral_cell( const vismodule::UnstructuredVolumeObject& volume );
 
     void set_external_face_number( void );
 };

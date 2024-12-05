@@ -18,7 +18,7 @@
 namespace vismodule
 {
 
-VolumeRayIntersector::VolumeRayIntersector( const vismodule::VolumeObjectBase* volume )
+VolumeRayIntersector::VolumeRayIntersector( const vismodule::VolumeObjectBase& volume )
     : Ray()
     , m_reference_volume( volume )
 {

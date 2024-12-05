@@ -1,7 +1,7 @@
 #include "JobCollector.h"
 #include "JobDispatcher.h"
-#include "GeometryObjectBase.h"
-#include "PointObject.h"
+#include <vismodule/GeometryObjectBase>
+#include <vismodule/PointObject>
 #ifndef CPU_VER
 #include <mpi.h>
 #endif // CPU_VER
@@ -35,7 +35,7 @@ JobCollector::~JobCollector()
     free( m_pack_sizes );
 }
 
-void JobCollector::jobCollect( pbvr::PointObject* object, VariableRange* vr, bool* invalid, int* wid )
+void JobCollector::jobCollect( vismodule::PointObject* object, VariableRange* vr, bool* invalid, int* wid )
 {
     int size;
     int rank;
@@ -50,9 +50,9 @@ void JobCollector::jobCollect( pbvr::PointObject* object, VariableRange* vr, boo
 
         if ( m_batch )
         {
-            PBVR_TIMER_STA( 60 );
+            VIS_MODULE_TIMER_STA( 60 );
             MPI_Recv( &send_time, 1, MPI_DOUBLE_PRECISION, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &stat);
-            PBVR_TIMER_END( 60 );
+            VIS_MODULE_TIMER_END( 60 );
 
             double recv_time = GetTime();
             if ( ( recv_time - send_time ) > 0.0 ) m_jd->setLatency( recv_time - send_time );
@@ -66,9 +66,9 @@ void JobCollector::jobCollect( pbvr::PointObject* object, VariableRange* vr, boo
         {
             if ( m_pack_head >= m_pack_size )
             {
-                PBVR_TIMER_STA( 60 );
+                VIS_MODULE_TIMER_STA( 60 );
                 MPI_Recv( &send_time, 1, MPI_DOUBLE_PRECISION, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &stat );
-                PBVR_TIMER_END( 60 );
+                VIS_MODULE_TIMER_END( 60 );
 
                 double recv_time = GetTime();
                 if ( ( recv_time - send_time ) > 0.0 ) m_jd->setLatency( recv_time - send_time );
@@ -77,29 +77,29 @@ void JobCollector::jobCollect( pbvr::PointObject* object, VariableRange* vr, boo
                 const int src = stat.MPI_SOURCE;
                 if ( wid ) *wid = src - 1;
 
-                PBVR_TIMER_STA( 62 );
+                VIS_MODULE_TIMER_STA( 62 );
                 MPI_Recv( &m_pack_size, sizeof( size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
-                PBVR_TIMER_END( 62 );
-                PBVR_TIMER_STA( 63 );
+                VIS_MODULE_TIMER_END( 62 );
+                VIS_MODULE_TIMER_STA( 63 );
                 MPI_Recv( &m_nvertices_list_size, sizeof( size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
-                PBVR_TIMER_END( 63 );
-                PBVR_TIMER_STA( 64 );
+                VIS_MODULE_TIMER_END( 63 );
+                VIS_MODULE_TIMER_STA( 64 );
                 m_nvertices_list.assign( m_nvertices_list_size, 0 );
-                PBVR_TIMER_END( 64 );
-                PBVR_TIMER_STA( 65 );
+                VIS_MODULE_TIMER_END( 64 );
+                VIS_MODULE_TIMER_STA( 65 );
                 MPI_Recv( &m_nvertices_list[0]  , sizeof( size_t )*m_nvertices_list_size, MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
-                PBVR_TIMER_END( 65 );
-                PBVR_TIMER_STA( 66 );
+                VIS_MODULE_TIMER_END( 65 );
+                VIS_MODULE_TIMER_STA( 66 );
 
                 m_pack_coords  = ( float* )realloc( m_pack_coords , sizeof( float ) * m_pack_size );
                 m_pack_colors  = ( unsigned char* )realloc( m_pack_colors , sizeof( unsigned char ) * m_pack_size );
                 m_pack_normals = ( float* )realloc( m_pack_normals, sizeof( float ) * m_pack_size );
-                PBVR_TIMER_END( 66 );
-                PBVR_TIMER_STA( 67 );
+                VIS_MODULE_TIMER_END( 66 );
+                VIS_MODULE_TIMER_STA( 67 );
                 MPI_Recv( m_pack_coords , m_pack_size, MPI_FLOAT, src, 1, MPI_COMM_WORLD, &stat );
                 MPI_Recv( m_pack_colors , m_pack_size, MPI_UNSIGNED_CHAR, src, 1, MPI_COMM_WORLD, &stat );
                 MPI_Recv( m_pack_normals, m_pack_size, MPI_FLOAT, src, 1, MPI_COMM_WORLD, &stat );
-                PBVR_TIMER_END( 67 );
+                VIS_MODULE_TIMER_END( 67 );
                 m_pack_count = 0;
                 m_pack_head  = 0;
 
@@ -174,25 +174,25 @@ void JobCollector::jobCollect( pbvr::PointObject* object, VariableRange* vr, boo
       {
             double send_time = GetTime();
             size_t nvertices_list_size = m_nvertices_list.size();
-            PBVR_TIMER_STA( 451 );
+            VIS_MODULE_TIMER_STA( 451 );
             MPI_Send( &send_time, 1, MPI_DOUBLE_PRECISION, 0, 1, MPI_COMM_WORLD );
-            PBVR_TIMER_END( 451 );
+            VIS_MODULE_TIMER_END( 451 );
             if ( !m_batch )
             {
-                PBVR_TIMER_STA( 452 );
+                VIS_MODULE_TIMER_STA( 452 );
                 MPI_Send( &m_pack_size, sizeof( size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
-                PBVR_TIMER_END( 452 );
-                PBVR_TIMER_STA( 453 );
+                VIS_MODULE_TIMER_END( 452 );
+                VIS_MODULE_TIMER_STA( 453 );
                 MPI_Send( &nvertices_list_size, sizeof( size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
-                PBVR_TIMER_END( 453 );
-                PBVR_TIMER_STA( 454 );
+                VIS_MODULE_TIMER_END( 453 );
+                VIS_MODULE_TIMER_STA( 454 );
                 MPI_Send( &m_nvertices_list[0], sizeof( size_t )*nvertices_list_size, MPI_BYTE, 0, 1, MPI_COMM_WORLD );
-                PBVR_TIMER_END( 454 );
-                PBVR_TIMER_STA( 456 );
+                VIS_MODULE_TIMER_END( 454 );
+                VIS_MODULE_TIMER_STA( 456 );
                 MPI_Send( m_pack_coords, m_pack_size, MPI_FLOAT, 0, 1, MPI_COMM_WORLD );
                 MPI_Send( m_pack_colors, m_pack_size, MPI_UNSIGNED_CHAR, 0, 1, MPI_COMM_WORLD );
                 MPI_Send( m_pack_normals, m_pack_size, MPI_FLOAT, 0, 1, MPI_COMM_WORLD );
-                PBVR_TIMER_END( 456 );
+                VIS_MODULE_TIMER_END( 456 );
                 m_nvertices_list.clear();
                 m_pack_size = 0;
 

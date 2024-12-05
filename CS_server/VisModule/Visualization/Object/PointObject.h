@@ -11,20 +11,20 @@
  *  $Id: PointObject.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__POINT_OBJECT_H_INCLUDE
-#define PBVR__POINT_OBJECT_H_INCLUDE
+#ifndef VIS_MODULE__POINT_OBJECT_H_INCLUDE
+#define VIS_MODULE__POINT_OBJECT_H_INCLUDE
 
-#include "GeometryObjectBase.h"
-#include "ObjectBase.h"
-#include "ClassName.h"
+#include <vismodule/GeometryObjectBase>
+#include <vismodule/ObjectBase>
+#include <vismodule/ClassName>
 #include <vismodule/ValueArray>
 #include <vismodule/Type>
 #include <vismodule/Vector3>
 #include <vismodule/RGBColor>
 #include <vismodule/Module>
-#include "FrequencyTable.h"
+#include <vismodule/FrequencyTable>
 
-namespace pbvr
+namespace vismodule
 {
 
 //class LineObject;
@@ -35,20 +35,20 @@ namespace pbvr
  *  Point object class.
  */
 /*==========================================================================*/
-class PointObject : public pbvr::GeometryObjectBase
+class PointObject : public vismodule::GeometryObjectBase
 {
     // Class name.
-    visModuleClassName( pbvr::PointObject );
+    visModuleClassName( vismodule::PointObject );
 
     // Module information.
-    typedef pbvr::ObjectBase::ModuleTag ModuleCategory;
-    visModuleBaseClass( pbvr::GeometryObjectBase );
+    typedef vismodule::ObjectBase::ModuleTag ModuleCategory;
+    visModuleBaseClass( vismodule::GeometryObjectBase );
 
 protected:
 
     vismodule::ValueArray<vismodule::Real32> m_sizes; ///< size array
-    vismodule::ValueArray<pbvr::FrequencyTable> m_color_histogram;
-    vismodule::ValueArray<pbvr::FrequencyTable> m_opacity_histogram;
+    vismodule::ValueArray<vismodule::FrequencyTable> m_color_histogram;
+    vismodule::ValueArray<vismodule::FrequencyTable> m_opacity_histogram;
     vismodule::ValueArray<int> m_c_histogram;
     vismodule::ValueArray<int> m_o_histogram;
     int m_nbins;
@@ -111,7 +111,7 @@ public:
     PointObject(
         const vismodule::ValueArray<vismodule::Real32>& coords );
 
-    PointObject( const pbvr::PointObject& other );
+    PointObject( const vismodule::PointObject& other );
 
     //PointObject( const vismodule::LineObject& line );
 
@@ -121,9 +121,9 @@ public:
 
 public:
 
-    static pbvr::PointObject* DownCast( pbvr::ObjectBase* object );
+    static vismodule::PointObject* DownCast( vismodule::ObjectBase* object );
 
-    static const pbvr::PointObject* DownCast( const pbvr::ObjectBase& object );
+    static const vismodule::PointObject* DownCast( const vismodule::ObjectBase& object );
 
 public:
 
@@ -167,8 +167,8 @@ public:
 
 public:
 
-    const vismodule::ValueArray<pbvr::FrequencyTable>& getColorHistogram() const;
-    const vismodule::ValueArray<pbvr::FrequencyTable>& getOpacityHistogram() const;
+    const vismodule::ValueArray<vismodule::FrequencyTable>& getColorHistogram() const;
+    const vismodule::ValueArray<vismodule::FrequencyTable>& getOpacityHistogram() const;
     //add shimomura 2023/05/29
     const vismodule::ValueArray<int>& getCHistogram() const;
     const vismodule::ValueArray<int>& getOHistogram() const;
@@ -176,6 +176,6 @@ public:
     const int getNbins() const; 
 };
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__POINT_OBJECT_H_INCLUDE

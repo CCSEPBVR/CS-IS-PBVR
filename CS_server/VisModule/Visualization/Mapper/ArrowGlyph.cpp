@@ -68,7 +68,7 @@ ArrowGlyph::ArrowGlyph( void ):
  *  @param  volume [in] pointer to the volume object
  */
 /*===========================================================================*/
-ArrowGlyph::ArrowGlyph( const vismodule::VolumeObjectBase* volume ):
+ArrowGlyph::ArrowGlyph( const vismodule::VolumeObjectBase& volume ):
     vismodule::GlyphBase(),
     m_cylinder(NULL),
     m_type( ArrowGlyph::LineArrow )
@@ -84,7 +84,7 @@ ArrowGlyph::ArrowGlyph( const vismodule::VolumeObjectBase* volume ):
  */
 /*===========================================================================*/
 ArrowGlyph::ArrowGlyph(
-    const vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase& volume,
     const vismodule::TransferFunction& transfer_function ):
     vismodule::GlyphBase(),
     m_cylinder(NULL),
@@ -133,9 +133,9 @@ void ArrowGlyph::setType( const ArrowType type )
  *  @return pointer to the created glyph object
  */
 /*===========================================================================*/
-ArrowGlyph::BaseClass::SuperClass* ArrowGlyph::exec( const vismodule::ObjectBase* object )
+ArrowGlyph::BaseClass::SuperClass* ArrowGlyph::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -143,7 +143,7 @@ ArrowGlyph::BaseClass::SuperClass* ArrowGlyph::exec( const vismodule::ObjectBase
     }
 
     const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
-    if ( !volume )
+    if ( !&volume )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is not volume dat.");

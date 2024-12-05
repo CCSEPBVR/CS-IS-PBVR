@@ -27,23 +27,23 @@ namespace
  *  @return pointer to the structured volume object
  */
 /*===========================================================================*/
-const vismodule::StructuredVolumeObject* CastToStructuredVolumeObject( const vismodule::ObjectBase* object )
+const vismodule::StructuredVolumeObject* CastToStructuredVolumeObject( const vismodule::ObjectBase& object )
 {
-    if ( object->objectType() != vismodule::ObjectBase::Volume )
+    if ( object.objectType() != vismodule::ObjectBase::Volume )
     {
         visModuleMessageError("Input object is not a volumetry object.");
         return( NULL );
     }
 
     const vismodule::VolumeObjectBase* volume =
-        reinterpret_cast<const vismodule::VolumeObjectBase*>( object );
+        reinterpret_cast<const vismodule::VolumeObjectBase*>( &object );
     if ( volume->volumeType() != vismodule::VolumeObjectBase::Structured )
     {
         visModuleMessageError("Input object is not a structured volume object.");
         return( NULL );
     }
 
-    return( reinterpret_cast<const vismodule::StructuredVolumeObject*>( volume ) );
+    return( reinterpret_cast<const vismodule::StructuredVolumeObject*>( &volume ) );
 }
 
 } // end of namespace
@@ -59,7 +59,7 @@ namespace vismodule
  */
 /*===========================================================================*/
 StructuredVolumeExporter<vismodule::KVSMLObjectStructuredVolume>::StructuredVolumeExporter(
-    const vismodule::StructuredVolumeObject* object )
+    const vismodule::StructuredVolumeObject& object )
 {
     this->exec( object );
 }
@@ -71,9 +71,9 @@ StructuredVolumeExporter<vismodule::KVSMLObjectStructuredVolume>::StructuredVolu
  */
 /*===========================================================================*/
 vismodule::KVSMLObjectStructuredVolume* StructuredVolumeExporter<vismodule::KVSMLObjectStructuredVolume>::exec(
-    const vismodule::ObjectBase* object )
+    const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -82,7 +82,7 @@ vismodule::KVSMLObjectStructuredVolume* StructuredVolumeExporter<vismodule::KVSM
 
     // Cast to the structured volume object.
     const vismodule::StructuredVolumeObject* volume = vismodule::StructuredVolumeObject::DownCast( object );
-    if ( !volume )
+    if ( !&volume )
     {
         m_is_success = false;
         visModuleMessageError("Input object is not structured volume object.");
@@ -133,7 +133,7 @@ vismodule::KVSMLObjectStructuredVolume* StructuredVolumeExporter<vismodule::KVSM
  */
 /*===========================================================================*/
 StructuredVolumeExporter<vismodule::AVSField>::StructuredVolumeExporter(
-    const vismodule::StructuredVolumeObject* object )
+    const vismodule::StructuredVolumeObject& object )
 {
     this->exec( object );
 }
@@ -145,9 +145,9 @@ StructuredVolumeExporter<vismodule::AVSField>::StructuredVolumeExporter(
  */
 /*===========================================================================*/
 vismodule::AVSField* StructuredVolumeExporter<vismodule::AVSField>::exec(
-    const vismodule::ObjectBase* object )
+    const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -156,7 +156,7 @@ vismodule::AVSField* StructuredVolumeExporter<vismodule::AVSField>::exec(
 
     // Cast to the structured volume object.
     const vismodule::StructuredVolumeObject* volume = vismodule::StructuredVolumeObject::DownCast( object );
-    if ( !volume )
+    if ( !&volume )
     {
         m_is_success = false;
         visModuleMessageError("Input object is not structured volume object.");

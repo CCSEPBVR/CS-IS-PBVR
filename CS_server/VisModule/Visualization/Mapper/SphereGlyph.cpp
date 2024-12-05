@@ -52,7 +52,7 @@ SphereGlyph::SphereGlyph( const vismodule::PointObject* point ):
  *  @param  volume [in] pointer to the volume object
  */
 /*===========================================================================*/
-SphereGlyph::SphereGlyph( const vismodule::VolumeObjectBase* volume ):
+SphereGlyph::SphereGlyph( const vismodule::VolumeObjectBase& volume ):
     vismodule::GlyphBase(),
     m_sphere(NULL),
     m_nslices(10),
@@ -69,7 +69,7 @@ SphereGlyph::SphereGlyph( const vismodule::VolumeObjectBase* volume ):
  */
 /*===========================================================================*/
 SphereGlyph::SphereGlyph(
-    const vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase& volume,
     const vismodule::TransferFunction& transfer_function ):
     vismodule::GlyphBase(),
     m_sphere(NULL),
@@ -119,9 +119,9 @@ void SphereGlyph::setNStacks( const size_t nstacks )
  *  @return pointer to the created glyph object
  */
 /*===========================================================================*/
-SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec( const vismodule::ObjectBase* object )
+SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -314,7 +314,7 @@ SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_point_object( const vismod
  *  @return glyph object
  */
 /*===========================================================================*/
-SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_volume_object( const vismodule::VolumeObjectBase* volume )
+SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_volume_object( const vismodule::VolumeObjectBase& volume )
 {
     BaseClass::attach_volume( volume );
     BaseClass::set_range( volume );

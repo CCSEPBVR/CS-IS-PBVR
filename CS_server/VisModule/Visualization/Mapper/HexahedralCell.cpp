@@ -11,10 +11,10 @@
  *  $Id: HexahedralCell.cpp 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "HexahedralCell.h"
+#include <vismodule/HexahedralCell>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 // template instantiation
@@ -29,4 +29,4 @@ template class HexahedralCell<unsigned long>;
 template class HexahedralCell<float>;
 template class HexahedralCell<double>;
 
-} // end of namespace pbvr
+} // end of namespace vismodule

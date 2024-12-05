@@ -11,12 +11,12 @@
  *  $Id: MapperBase.cpp 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "MapperBase.h"
-#include "StructuredVolumeObject.h"
-#include "UnstructuredVolumeObject.h"
+#include <vismodule/MapperBase>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/UnstructuredVolumeObject>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -58,7 +58,7 @@ MapperBase::~MapperBase()
  *  @param  m_transfer_function [in] transfer function
  */
 /*===========================================================================*/
-void MapperBase::setTransferFunction( const pbvr::TransferFunction& transfer_function )
+void MapperBase::setTransferFunction( const vismodule::TransferFunction& transfer_function )
 {
     m_transfer_function = transfer_function;
 }
@@ -91,7 +91,7 @@ void MapperBase::setOpacityMap( const vismodule::OpacityMap& opacity_map )
  *  @return pointer to the volume object
  */
 /*===========================================================================*/
-const pbvr::VolumeObjectBase* const MapperBase::volume() const
+const vismodule::VolumeObjectBase* const MapperBase::volume() const
 {
     return m_volume;
 }
@@ -101,7 +101,7 @@ const pbvr::VolumeObjectBase* const MapperBase::volume() const
  *  @brief  Returns the transfer function.
  */
 /*===========================================================================*/
-const pbvr::TransferFunction& MapperBase::transferFunction() const
+const vismodule::TransferFunction& MapperBase::transferFunction() const
 {
     return m_transfer_function;
 }
@@ -154,12 +154,12 @@ const bool MapperBase::isFailure() const
  *  @param  volume [in] pointer to the volume object
  */
 /*===========================================================================*/
-void MapperBase::attach_volume( const pbvr::VolumeObjectBase& volume )
+void MapperBase::attach_volume( const vismodule::VolumeObjectBase& volume )
 {
     m_volume = &volume;
 }
 
-void MapperBase::set_range( const pbvr::VolumeObjectBase& volume )
+void MapperBase::set_range( const vismodule::VolumeObjectBase& volume )
 {
     if ( !volume.hasMinMaxValues() ) volume.updateMinMaxValues();
     const std::type_info& type = volume.values().typeInfo()->type();
@@ -186,24 +186,24 @@ void MapperBase::set_range( const pbvr::VolumeObjectBase& volume )
  *  @param  object [in] pointer to the object (The calculated coordinates are set to this object)
  */
 /*===========================================================================*/
-void MapperBase::set_min_max_coords( const pbvr::VolumeObjectBase& volume, pbvr::ObjectBase* object )
+void MapperBase::set_min_max_coords( const vismodule::VolumeObjectBase& volume, vismodule::ObjectBase* object )
 {
     if ( !volume.hasMinMaxObjectCoords() )
     {
         switch ( volume.volumeType() )
         {
-        case pbvr::VolumeObjectBase::Structured:
+        case vismodule::VolumeObjectBase::Structured:
         {
             // WARNING: remove constness, but safe in this case.
-            pbvr::VolumeObjectBase* b = const_cast<pbvr::VolumeObjectBase*>( &volume );
-            //reinterpret_cast<pbvr::StructuredVolumeObject*>( b )->updateMinMaxCoords();
+            vismodule::VolumeObjectBase* b = const_cast<vismodule::VolumeObjectBase*>( &volume );
+            //reinterpret_cast<vismodule::StructuredVolumeObject*>( b )->updateMinMaxCoords();
             break;
         }
-        case pbvr::VolumeObjectBase::Unstructured:
+        case vismodule::VolumeObjectBase::Unstructured:
         {
             // WARNING: remove constness, but safe in this case.
-            pbvr::VolumeObjectBase* b = const_cast<pbvr::VolumeObjectBase*>( &volume );
-            reinterpret_cast<pbvr::UnstructuredVolumeObject*>( b )->updateMinMaxCoords();
+            vismodule::VolumeObjectBase* b = const_cast<vismodule::VolumeObjectBase*>( &volume );
+            reinterpret_cast<vismodule::UnstructuredVolumeObject*>( b )->updateMinMaxCoords();
             break;
         }
         default:
@@ -219,4 +219,4 @@ void MapperBase::set_min_max_coords( const pbvr::VolumeObjectBase& volume, pbvr:
     object->setMinMaxExternalCoords( min_ext_coord, max_ext_coord );
 }
 
-} // end of namespace pbvr
+} // end of namespace vismodule

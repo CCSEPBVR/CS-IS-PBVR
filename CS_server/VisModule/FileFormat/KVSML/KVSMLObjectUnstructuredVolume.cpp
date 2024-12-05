@@ -18,7 +18,7 @@
 #include "ValueTag.h"
 #include "CoordTag.h"
 #include "ConnectionTag.h"
-#include "DataArrayTag.h"
+#include <vismodule/DataArrayTag>
 #include <vismodule/File>
 #include <vismodule/XMLDocument>
 #include <vismodule/XMLDeclaration>

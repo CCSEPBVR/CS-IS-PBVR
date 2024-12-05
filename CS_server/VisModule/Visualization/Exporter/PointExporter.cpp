@@ -24,7 +24,7 @@ namespace vismodule
  *  @param  object [in] pointer to the input point object
  */
 /*===========================================================================*/
-PointExporter<vismodule::KVSMLObjectPoint>::PointExporter( const vismodule::PointObject* object )
+PointExporter<vismodule::KVSMLObjectPoint>::PointExporter( const vismodule::PointObject& object )
 {
     this->exec( object );
 }
@@ -36,9 +36,9 @@ PointExporter<vismodule::KVSMLObjectPoint>::PointExporter( const vismodule::Poin
  *  @return pointer to the KVSMLObjectPoint format
  */
 /*===========================================================================*/
-vismodule::KVSMLObjectPoint* PointExporter<vismodule::KVSMLObjectPoint>::exec( const vismodule::ObjectBase* object )
+vismodule::KVSMLObjectPoint* PointExporter<vismodule::KVSMLObjectPoint>::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         m_is_success = false;
         visModuleMessageError("Input object is NULL.");

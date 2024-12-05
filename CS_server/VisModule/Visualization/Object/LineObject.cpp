@@ -240,9 +240,9 @@ vismodule::LineObject* LineObject::DownCast( vismodule::ObjectBase* object )
     return( line );
 }
 
-const vismodule::LineObject* LineObject::DownCast( const vismodule::ObjectBase* object )
+const vismodule::LineObject* LineObject::DownCast( const vismodule::ObjectBase& object )
 {
-    return( LineObject::DownCast( const_cast<vismodule::ObjectBase*>( object ) ) );
+    return( LineObject::DownCast( const_cast<vismodule::ObjectBase*>( &object ) ) );
 }
 
 LineObject& LineObject::operator = ( const LineObject& object )

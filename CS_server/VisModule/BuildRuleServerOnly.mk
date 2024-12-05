@@ -180,6 +180,9 @@ $(OUTDIR)/./Visualization/Importer/StructuredVolumeImporter.o \
 $(OUTDIR)/./Visualization/Importer/TableImporter.o \
 $(OUTDIR)/./Visualization/Importer/UnstructuredVolumeImporter.o \
 $(OUTDIR)/./Visualization/Mapper/CellAdjacencyGraph.o \
+$(OUTDIR)/./Visualization/Mapper/CellByCellMetropolisSampling.o \
+$(OUTDIR)/./Visualization/Mapper/CellByCellRejectionSampling.o \
+$(OUTDIR)/./Visualization/Mapper/CellByCellUniformSampling.o \
 $(OUTDIR)/./Visualization/Mapper/ColorMap.o \
 $(OUTDIR)/./Visualization/Mapper/ExtractEdges.o \
 $(OUTDIR)/./Visualization/Mapper/ExtractVertices.o \
@@ -231,6 +234,7 @@ $(OUTDIR)/./Visualization/Viewer/DisplayFormat.o \
 $(OUTDIR)/./Visualization/Viewer/GlobalCore.o \
 $(OUTDIR)/./Visualization/Viewer/IDManager.o \
 $(OUTDIR)/./Visualization/Viewer/Mouse.o \
+$(OUTDIR)/./Visualization/Viewer/ObjectManager.o \
 $(OUTDIR)/./Visualization/Viewer/RendererManager.o \
 $(OUTDIR)/./Visualization/Viewer/Trackball.o \
 $(OUTDIR)/./Visualization/Viewer/WindowBase.o \

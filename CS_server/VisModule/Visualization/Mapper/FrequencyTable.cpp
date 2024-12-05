@@ -11,12 +11,12 @@
  *  $Id: FrequencyTable.cpp 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "FrequencyTable.h"
+#include <vismodule/FrequencyTable>
 #include <vismodule/Type>
 #include <vismodule/Value>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -167,7 +167,7 @@ void FrequencyTable::allocate()
  */
 /*==========================================================================*/
 /*
-void FrequencyTable::create( const pbvr::VolumeObjectBase* volume )
+void FrequencyTable::create( const vismodule::VolumeObjectBase& volume )
 {
     // Calculate the min/max range value and the number of bins.
     //this->calculate_range( volume );
@@ -232,7 +232,7 @@ const vismodule::UInt64 FrequencyTable::at( const size_t index ) const
  */
 /*==========================================================================*/
 #if 0
-void FrequencyTable::calculate_range( const pbvr::VolumeObjectBase* volume )
+void FrequencyTable::calculate_range( const vismodule::VolumeObjectBase& volume )
 {
     // Number of bins.
     if ( m_nbins == 0 )
@@ -362,7 +362,7 @@ void FrequencyTable::calculate_range( const pbvr::VolumeObjectBase* volume )
  */
 /*==========================================================================*/
 /*
-void FrequencyTable::count_bin( const pbvr::VolumeObjectBase* volume )
+void FrequencyTable::count_bin( const vismodule::VolumeObjectBase& volume )
 {
     const std::type_info& type = volume->values().typeInfo()->type();
     if (      type == typeid( vismodule::Int8 )   ) this->binning<vismodule::Int8>( volume );
@@ -419,4 +419,4 @@ bool FrequencyTable::is_ignore_value( const vismodule::Real64 value )
     return false;
 }
 
-} // end of namespace pbvr
+} // end of namespace vismodule

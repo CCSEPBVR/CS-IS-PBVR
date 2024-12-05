@@ -1,5 +1,5 @@
-#ifndef PBVR__COMMON_H_INCLUDE
-#define PBVR__COMMON_H_INCLUDE
+#ifndef VIS_MODULE__COMMON_H_INCLUDE
+#define VIS_MODULE__COMMON_H_INCLUDE
 #include <vismodule/Compiler>
 
 #ifdef VIS_MODULE_COMPILER_VC
@@ -8,12 +8,12 @@
 #include <sys/time.h>
 #endif
 
-#define PBVR_TIME_TEST__
+#define VIS_MODULE_TIME_TEST__
 
-#define PBVR_TINYMT_FILE "tinymt32dc.0.65536.txt"
-#define PBVR_TINYMT_NUM_PARAM 65536
+#define VIS_MODULE_TINYMT_FILE "tinymt32dc.0.65536.txt"
+#define VIS_MODULE_TINYMT_NUM_PARAM 65536
 
-#define PBVR_PBVR_CUDA_SAFE_CALL_NO_SYNC(call) {                                       \
+#define VIS_MODULE_VIS_MODULE_CUDA_SAFE_CALL_NO_SYNC(call) {                                       \
     cudaError err = call;                                                    \
     if( cudaSuccess != err) {                                                \
         fprintf(stderr, "Cuda error in file '%s' in line %i : %s.\n",        \
@@ -21,9 +21,9 @@
         exit(EXIT_FAILURE);                                                  \
     } }
 
-#define PBVR_CUDA_SAFE_CALL( call)     PBVR_PBVR_CUDA_SAFE_CALL_NO_SYNC(call);
+#define VIS_MODULE_CUDA_SAFE_CALL( call)     VIS_MODULE_VIS_MODULE_CUDA_SAFE_CALL_NO_SYNC(call);
 
-#define PBVR_MATH_TINY_VALUE (1.e-6f)
+#define VIS_MODULE_MATH_TINY_VALUE (1.e-6f)
 
 inline double GetTime()
 {

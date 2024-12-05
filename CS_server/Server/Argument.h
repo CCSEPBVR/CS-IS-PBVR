@@ -1,5 +1,5 @@
-#ifndef PBVR__ARGUMENT_H_INCLUDE
-#define PBVR__ARGUMENT_H_INCLUDE
+#ifndef VIS_MODULE__ARGUMENT_H_INCLUDE
+#define VIS_MODULE__ARGUMENT_H_INCLUDE
 
 #include <climits>
 #include <vismodule/CommandLine>
@@ -20,9 +20,9 @@ private:
 public:
     std::string m_input_data;
     std::string m_input_data_base;
-    pbvr::TransferFunction m_transfer_function;
+    vismodule::TransferFunction m_transfer_function;
     //std::vector<NamedTransferFunction> m_transfunc_array;
-    std::vector<pbvr::TransferFunction> m_transfunc_array;
+    std::vector<vismodule::TransferFunction> m_transfunc_array;
     TransferFunctionSynthesizer* m_transfunc_synthesizer;
     size_t m_subpixel_level;
     size_t m_repeat_level;

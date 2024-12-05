@@ -46,29 +46,29 @@ public:
     HitAndMissSampling( void );
 
     HitAndMissSampling(
-        const vismodule::VolumeObjectBase* volume );
+        const vismodule::VolumeObjectBase& volume );
 
     HitAndMissSampling(
-        const vismodule::VolumeObjectBase* object,
+        const vismodule::VolumeObjectBase& volume,
         const vismodule::TransferFunction& transfer_function );
 
     virtual ~HitAndMissSampling( void );
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 private:
 
-    void mapping( const vismodule::StructuredVolumeObject* volume );
+    void mapping( const vismodule::StructuredVolumeObject& volume );
 
-    void mapping( const vismodule::UnstructuredVolumeObject* volume );
-
-    template <typename T>
-    void generate_particles( const vismodule::StructuredVolumeObject* volume );
+    void mapping( const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
-    void generate_particles( const vismodule::UnstructuredVolumeObject* volume );
+    void generate_particles( const vismodule::StructuredVolumeObject& volume );
+
+    template <typename T>
+    void generate_particles( const vismodule::UnstructuredVolumeObject& volume );
 };
 
 } // end of namespace vismodule

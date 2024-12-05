@@ -35,19 +35,19 @@ class LineExporter : public vismodule::ExporterBase<FileFormatType>
 
 public:
 
-    LineExporter( const vismodule::LineObject* object );
+    LineExporter( const vismodule::LineObject& object );
 
-    FileFormatType* exec( const vismodule::ObjectBase* object );
+    FileFormatType* exec( const vismodule::ObjectBase& object );
 };
 
 template <typename FileFormatType>
-LineExporter<FileFormatType>::LineExporter( const vismodule::LineObject* object )
+LineExporter<FileFormatType>::LineExporter( const vismodule::LineObject& object )
 {
     this->exec( object );
 }
 
 template <typename FileFormatType>
-FileFormatType* LineExporter<FileFormatType>::exec( const vismodule::ObjectBase* base )
+FileFormatType* LineExporter<FileFormatType>::exec( const vismodule::ObjectBase& base )
 {
     return( NULL );
 }
@@ -62,9 +62,9 @@ class LineExporter<vismodule::KVSMLObjectLine> : public vismodule::ExporterBase<
 {
 public:
 
-    LineExporter( const vismodule::LineObject* object );
+    LineExporter( const vismodule::LineObject& object );
 
-    vismodule::KVSMLObjectLine* exec( const vismodule::ObjectBase* object );
+    vismodule::KVSMLObjectLine* exec( const vismodule::ObjectBase& object );
 };
 
 } // end of namespace vismodule

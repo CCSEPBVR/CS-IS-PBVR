@@ -11,21 +11,21 @@
  *  $Id: TetrahedralCell.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__TETRAHEDRAL_CELL_H_INCLUDE
-#define PBVR__TETRAHEDRAL_CELL_H_INCLUDE
+#ifndef VIS_MODULE__TETRAHEDRAL_CELL_H_INCLUDE
+#define VIS_MODULE__TETRAHEDRAL_CELL_H_INCLUDE
 
-#include "ClassName.h"
+#include <vismodule/ClassName>
 #include <vismodule/Type>
 #include <vismodule/Vector4>
 #include <vismodule/Matrix44>
-#include "UnstructuredVolumeObject.h"
-#include "CellBase.h"
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/CellBase>
 #include <vismodule/IgnoreUnusedVariable>
 #include <vismodule/MersenneTwister> 
 //#include "SFMT/SFMT.h" 
 #include <vismodule/Timer>
 
-namespace pbvr
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -34,27 +34,27 @@ namespace pbvr
  */
 /*===========================================================================*/
 template <typename T>
-class TetrahedralCell : public pbvr::CellBase<T>
+class TetrahedralCell : public vismodule::CellBase<T>
 {
-//namespace pbvr
+//namespace vismodule
 //{
 //
 //template <typename T>
-//class TetrahedralCell : public pbvr::CellBase<T>
+//class TetrahedralCell : public vismodule::CellBase<T>
 //{
-    visModuleClassName( pbvr::TetrahedralCell );
+    visModuleClassName( vismodule::TetrahedralCell );
 
 public:
 
-    enum { NumberOfNodes = pbvr::UnstructuredVolumeObject::Tetrahedra };
+    enum { NumberOfNodes = vismodule::UnstructuredVolumeObject::Tetrahedra };
 
 public:
 
-    typedef pbvr::CellBase<T> BaseClass;
+    typedef vismodule::CellBase<T> BaseClass;
 
 public:
 
-    TetrahedralCell( const pbvr::UnstructuredVolumeObject& volume );
+    TetrahedralCell( const vismodule::UnstructuredVolumeObject& volume );
 
     TetrahedralCell(     T* values,
         float* coords, int ncoords,
@@ -99,8 +99,8 @@ public:
  */
 /*===========================================================================*/
 template <typename T>
-inline TetrahedralCell<T>::TetrahedralCell( const pbvr::UnstructuredVolumeObject& volume ):
-    pbvr::CellBase<T>( volume )
+inline TetrahedralCell<T>::TetrahedralCell( const vismodule::UnstructuredVolumeObject& volume ):
+    vismodule::CellBase<T>( volume )
 {
     // Set the initial interpolation functions and differential functions.
     this->interpolationFunctions( BaseClass::localPoint() );
@@ -112,7 +112,7 @@ inline TetrahedralCell<T>::TetrahedralCell(
         T* values,
         float* coords, int ncoords,
         unsigned int* connections, int ncells):
-    pbvr::CellBase<T>(
+    vismodule::CellBase<T>(
         values,
         coords, ncoords,
         connections, ncells, 4)//num of tetra vertices
@@ -687,15 +687,15 @@ namespace old
  */
 /*===========================================================================*/
 template <typename T>
-class TetrahedralCell : public pbvr::CellBase<T>
+class TetrahedralCell : public vismodule::CellBase<T>
 {
 public:
 
-    enum { NumberOfNodes = pbvr::UnstructuredVolumeObject::Tetrahedra };
+    enum { NumberOfNodes = vismodule::UnstructuredVolumeObject::Tetrahedra };
 
 public:
 
-    typedef pbvr::CellBase<T> BaseClass;
+    typedef vismodule::CellBase<T> BaseClass;
 
 private:
 
@@ -705,7 +705,7 @@ private:
 
 public:
 
-    TetrahedralCell( const pbvr::UnstructuredVolumeObject* volume );
+    TetrahedralCell( const vismodule::UnstructuredVolumeObject& volume );
 
     virtual ~TetrahedralCell();
 
@@ -741,8 +741,8 @@ public:
  */
 /*===========================================================================*/
 template <typename T>
-inline TetrahedralCell<T>::TetrahedralCell( const pbvr::UnstructuredVolumeObject* volume ):
-    pbvr::CellBase<T>( *volume ),
+inline TetrahedralCell<T>::TetrahedralCell( const vismodule::UnstructuredVolumeObject& volume ):
+    vismodule::CellBase<T>( volume ),
     m_coefficients( 0, 0, 0 ),
     m_constant( 0 )
 {
@@ -991,6 +991,6 @@ inline const vismodule::Vector3f TetrahedralCell<T>::transformLocalToGlobal( con
 }
 
 } // end of namespace old
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__TEST_TETRAHEDRAL_CELL_H_INCLUDE

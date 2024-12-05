@@ -159,14 +159,14 @@ void StreamlineBase::setEnableIntegrationTimesCondition( const bool enabled )
  *  @param  volume [in] pointer to the input volume object
  */
 /*===========================================================================*/
-void StreamlineBase::mapping( const vismodule::VolumeObjectBase* volume )
+void StreamlineBase::mapping( const vismodule::VolumeObjectBase& volume )
 {
-    if ( volume->volumeType() == vismodule::VolumeObjectBase::Structured )
+    if ( volume.volumeType() == vismodule::VolumeObjectBase::Structured )
     {
         const vismodule::StructuredVolumeObject* structured_volume =
-            reinterpret_cast<const vismodule::StructuredVolumeObject*>( volume );
+            reinterpret_cast<const vismodule::StructuredVolumeObject*>( &volume );
 
-        this->extract_lines( structured_volume );
+        this->extract_lines( *structured_volume );
     }
     else // volume->volumeType() == vismodule::VolumeObjectBase::Unstructured
     {
@@ -181,7 +181,7 @@ void StreamlineBase::mapping( const vismodule::VolumeObjectBase* volume )
  */
 /*===========================================================================*/
 void StreamlineBase::extract_lines(
-    const vismodule::StructuredVolumeObject* volume )
+    const vismodule::StructuredVolumeObject& volume )
 {
     vismodule::IgnoreUnusedVariable( volume );
 

@@ -11,29 +11,29 @@
  *  $Id: ObjectManager.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__OBJECT_MANAGER_H_INCLUDE
-#define PBVR__OBJECT_MANAGER_H_INCLUDE
+#ifndef VIS_MODULE__OBJECT_MANAGER_H_INCLUDE
+#define VIS_MODULE__OBJECT_MANAGER_H_INCLUDE
 
 #include <string>
 #include <map>
-#include "ClassName.h"
-#include "ObjectBase.h"
+#include <vismodule/ClassName>
+#include <vismodule/ObjectBase>
 #include <vismodule/Tree>
 
 
-namespace pbvr
+namespace vismodule
 {
 
-typedef vismodule::Tree<pbvr::ObjectBase*> ObjectManagerBase;
+typedef vismodule::Tree<vismodule::ObjectBase*> ObjectManagerBase;
 
 /*==========================================================================*/
 /**
 *  Object manager class.
 */
 /*==========================================================================*/
-class ObjectManager : public ObjectManagerBase, public pbvr::ObjectBase
+class ObjectManager : public ObjectManagerBase, public vismodule::ObjectBase
 {
-    visModuleClassName( pbvr::ObjectManager );
+    visModuleClassName( vismodule::ObjectManager );
 
 public:
 
@@ -64,9 +64,9 @@ public:
 
     const ObjectType objectType() const;
 
-    int insert( pbvr::ObjectBase* obj );
+    int insert( vismodule::ObjectBase* obj );
 
-    int insert( const int parent_id, pbvr::ObjectBase* obj );
+    int insert( const int parent_id, vismodule::ObjectBase* obj );
 
     void erase( const bool delete_flg = true );
 
@@ -74,17 +74,17 @@ public:
 
     void erase( const std::string& obj_name, const bool delete_flg = true );
 
-    void change( const int obj_id, pbvr::ObjectBase* obj, const bool delete_flg = true );
+    void change( const int obj_id, vismodule::ObjectBase* obj, const bool delete_flg = true );
 
-    void change( const std::string obj_name, pbvr::ObjectBase* obj, const bool delete_flg = true );
+    void change( const std::string obj_name, vismodule::ObjectBase* obj, const bool delete_flg = true );
 
     const int nobjects() const;
 
-    pbvr::ObjectBase* object();
+    vismodule::ObjectBase* object();
 
-    pbvr::ObjectBase* object( const int obj_id );
+    vismodule::ObjectBase* object( const int obj_id );
 
-    pbvr::ObjectBase* object( const std::string& obj_name );
+    vismodule::ObjectBase* object( const std::string& obj_name );
 
     const bool hasObject() const;
 
@@ -96,11 +96,11 @@ public:
 
     const vismodule::Xform xform( const int obj_id ) const;
 
-    const int objectID( const pbvr::ObjectBase& object ) const;
+    const int objectID( const vismodule::ObjectBase& object ) const;
 
     const int parentObjectID( const ObjectIterator& it ) const;
 
-    const int parentObjectID( const pbvr::ObjectBase& object ) const;
+    const int parentObjectID( const vismodule::ObjectBase& object ) const;
 
     const int parentObjectID( const int object_id ) const;
 
@@ -108,7 +108,7 @@ public:
 
     bool setActiveObjectID( const int obj_id );
 
-    pbvr::ObjectBase* activeObject();
+    vismodule::ObjectBase* activeObject();
 
 public:
 
@@ -152,7 +152,7 @@ private:
 
     void update_normalize_parameters();
 
-    pbvr::ObjectBase* get_control_target();
+    vismodule::ObjectBase* get_control_target();
 
     vismodule::Vector3f get_rotation_center();
 
@@ -161,6 +161,6 @@ private:
     ObjectIterator get_control_last_pointer();
 };
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__OBJECT_MANAGER_H_INCLUDE

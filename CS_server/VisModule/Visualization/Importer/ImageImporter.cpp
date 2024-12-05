@@ -201,7 +201,7 @@ ImageImporter::ImageImporter( const std::string& filename )
  *  @param  file_format [in] pointer to the data
  */
 /*===========================================================================*/
-ImageImporter::ImageImporter( const vismodule::FileFormatBase* file_format )
+ImageImporter::ImageImporter( const vismodule::FileFormatBase& file_format )
 {
     this->exec( file_format );
 }
@@ -222,43 +222,43 @@ ImageImporter::~ImageImporter( void )
  *  @return pointer to the imported image object
  */
 /*===========================================================================*/
-ImageImporter::SuperClass* ImageImporter::exec( const vismodule::FileFormatBase* file_format )
+ImageImporter::SuperClass* ImageImporter::exec( const vismodule::FileFormatBase& file_format )
 {
-    if ( !file_format )
+    if ( !&file_format )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input file format is NULL.");
         return( NULL );
     }
 
-    const std::string class_name = file_format->className();
+    const std::string class_name = file_format.className();
     if ( class_name == "vismodule::KVSMLObjectImage" )
     {
-        this->import( static_cast<const vismodule::KVSMLObjectImage*>( file_format ) );
+        this->import( static_cast<const vismodule::KVSMLObjectImage*>( &file_format ) );
     }
     else if ( class_name == "vismodule::Bmp" )
     {
-        this->import( static_cast<const vismodule::Bmp*>( file_format ) );
+        this->import( static_cast<const vismodule::Bmp*>( &file_format ) );
     }
     else if ( class_name == "vismodule::Tiff" )
     {
-        this->import( static_cast<const vismodule::Tiff*>( file_format ) );
+        this->import( static_cast<const vismodule::Tiff*>( &file_format ) );
     }
     else if ( class_name == "vismodule::Ppm" )
     {
-        this->import( static_cast<const vismodule::Ppm*>( file_format ) );
+        this->import( static_cast<const vismodule::Ppm*>( &file_format ) );
     }
     else if ( class_name == "vismodule::Pgm" )
     {
-        this->import( static_cast<const vismodule::Pgm*>( file_format ) );
+        this->import( static_cast<const vismodule::Pgm*>( &file_format ) );
     }
     else if ( class_name == "vismodule::Pbm" )
     {
-        this->import( static_cast<const vismodule::Pbm*>( file_format ) );
+        this->import( static_cast<const vismodule::Pbm*>( &file_format ) );
     }
     else if ( class_name == "vismodule::Dicom" )
     {
-        this->import( static_cast<const vismodule::Dicom*>( file_format ) );
+        this->import( static_cast<const vismodule::Dicom*>( &file_format ) );
     }
     else
     {

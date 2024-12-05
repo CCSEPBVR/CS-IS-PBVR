@@ -26,4 +26,4 @@
         return # this_class;                   \
     }
 
-#endif // PBVR__VIS_MODULE__CLASS_NAME_H_INCLUDE
+#endif // VIS_MODULE__VIS_MODULE__CLASS_NAME_H_INCLUDE

@@ -1,5 +1,5 @@
-#ifndef PBVR__RANGE_ESTIMATER_H_INCLUDE
-#define PBVR__RANGE_ESTIMATER_H_INCLUDE
+#ifndef VIS_MODULE__RANGE_ESTIMATER_H_INCLUDE
+#define VIS_MODULE__RANGE_ESTIMATER_H_INCLUDE
 
 #include "FilterInformation.h"
 #include "TransferFunctionSynthesizer.h"
@@ -25,5 +25,5 @@ public:
 
 };
 
-#endif // PBVR__RANGE_ESTIMATER_H_INCLUDE
+#endif // VIS_MODULE__RANGE_ESTIMATER_H_INCLUDE
 

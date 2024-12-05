@@ -1,9 +1,9 @@
-#ifndef PBVR__POINT_OBJECT_GENERATOR_H_INCLUDE
-#define PBVR__POINT_OBJECT_GENERATOR_H_INCLUDE
+#ifndef VIS_MODULE__POINT_OBJECT_GENERATOR_H_INCLUDE
+#define VIS_MODULE__POINT_OBJECT_GENERATOR_H_INCLUDE
 
 #include <vector>
 #include <string>
-#include "UnstructuredVolumeObject.h"
+#include <vismodule/UnstructuredVolumeObject>
 #include "FilterInformation.h"
 #include "ExtendedTransferFunction.h"
 #include "timer.h"
@@ -42,7 +42,7 @@ namespace vismodule
 class Camera;
 }
 
-namespace pbvr
+namespace vismodule
 {
 class PointObject;
 class VolumeObjectBase;
@@ -51,11 +51,11 @@ class UnstructuredVolumeObject;
 class PointObjectGenerator
 {
 private:
-    pbvr::PointObject* m_object;
+    vismodule::PointObject* m_object;
     const FilterInformationFile*   m_fi;
 
-    pbvr::CoordSynthesizerStrings m_coord_synthesizer_strings;
-    pbvr::CoordSynthesizerTokens  m_coord_synthesizer_tokens;
+    vismodule::CoordSynthesizerStrings m_coord_synthesizer_strings;
+    vismodule::CoordSynthesizerTokens  m_coord_synthesizer_tokens;
 
 public:
 
@@ -71,7 +71,7 @@ public:
     void createFromFile(
         const Argument& param, const vismodule::Camera& camera, const size_t subpixel_level, const float sampling_step, const int st, const int vl );
 
-    pbvr::PointObject* getPointObject()
+    vismodule::PointObject* getPointObject()
     {
         return m_object;
     }
@@ -83,12 +83,12 @@ public:
         m_fi = fi;
     }
 
-    void setCoordSynthStrs( const pbvr::CoordSynthesizerStrings& css )
+    void setCoordSynthStrs( const vismodule::CoordSynthesizerStrings& css )
     {
         m_coord_synthesizer_strings = css;
     }
 
-    void setCoordSynthTkns( const pbvr::CoordSynthesizerTokens& cst )
+    void setCoordSynthTkns( const vismodule::CoordSynthesizerTokens& cst )
     {
         m_coord_synthesizer_tokens.m_x_coord_synthesizer_token = cst.m_x_coord_synthesizer_token;
         m_coord_synthesizer_tokens.m_y_coord_synthesizer_token = cst.m_y_coord_synthesizer_token;
@@ -100,22 +100,22 @@ public:
         m_coord_synthesizer_strings.m_time_step = ts;
     }
 
-    pbvr::CoordSynthesizerStrings getCoordSynthStrs() const
+    vismodule::CoordSynthesizerStrings getCoordSynthStrs() const
     {
         return m_coord_synthesizer_strings;
     }
 
-    pbvr::CoordSynthesizerTokens  getCoordSynthTkns() const
+    vismodule::CoordSynthesizerTokens  getCoordSynthTkns() const
     {
         return m_coord_synthesizer_tokens;
     }
 
 
 private:
-    pbvr::PointObject* sampling( const Argument& param, const vismodule::Camera& camera, pbvr::VolumeObjectBase* volume, const size_t subpixel_level, const float sampling_step );
+    vismodule::PointObject* sampling( const Argument& param, const vismodule::Camera& camera, vismodule::VolumeObjectBase& volume, const size_t subpixel_level, const float sampling_step );
 
 };
 
 }
 
-#endif    // PBVR__POINT_OBJECT_GENERATOR_H_INCLUDE
+#endif    // VIS_MODULE__POINT_OBJECT_GENERATOR_H_INCLUDE

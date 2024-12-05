@@ -115,7 +115,7 @@ TetrahedraToTetrahedra::TetrahedraToTetrahedra( void ):
  */
 /*===========================================================================*/
 TetrahedraToTetrahedra::TetrahedraToTetrahedra(
-    const vismodule::UnstructuredVolumeObject* volume,
+    const vismodule::UnstructuredVolumeObject& volume,
     const TetrahedraToTetrahedra::Method method )
 {
     this->setMethod( method );
@@ -138,9 +138,9 @@ TetrahedraToTetrahedra::~TetrahedraToTetrahedra( void )
  *  @return pointer to the converted object
  */
 /*===========================================================================*/
-TetrahedraToTetrahedra::SuperClass* TetrahedraToTetrahedra::exec( const vismodule::ObjectBase* object )
+TetrahedraToTetrahedra::SuperClass* TetrahedraToTetrahedra::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -148,7 +148,7 @@ TetrahedraToTetrahedra::SuperClass* TetrahedraToTetrahedra::exec( const vismodul
     }
 
     const vismodule::UnstructuredVolumeObject* volume = vismodule::UnstructuredVolumeObject::DownCast( object );
-    if ( !volume )
+    if ( !&volume )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is not supported.");
@@ -160,16 +160,16 @@ TetrahedraToTetrahedra::SuperClass* TetrahedraToTetrahedra::exec( const vismodul
         if ( m_method == TetrahedraToTetrahedra::Subdivision8 )
         {
             const std::type_info& type = volume->values().typeInfo()->type();
-            if (      type == typeid( vismodule::Int8   ) ) this->subdivide_8_tetrahedra<vismodule::Int8>(   volume );
-            else if ( type == typeid( vismodule::Int16  ) ) this->subdivide_8_tetrahedra<vismodule::Int16>(  volume );
-            else if ( type == typeid( vismodule::Int32  ) ) this->subdivide_8_tetrahedra<vismodule::Int32>(  volume );
-            else if ( type == typeid( vismodule::Int64  ) ) this->subdivide_8_tetrahedra<vismodule::Int64>(  volume );
-            else if ( type == typeid( vismodule::UInt8  ) ) this->subdivide_8_tetrahedra<vismodule::UInt8>(  volume );
-            else if ( type == typeid( vismodule::UInt16 ) ) this->subdivide_8_tetrahedra<vismodule::UInt16>( volume );
-            else if ( type == typeid( vismodule::UInt32 ) ) this->subdivide_8_tetrahedra<vismodule::UInt32>( volume );
-            else if ( type == typeid( vismodule::UInt64 ) ) this->subdivide_8_tetrahedra<vismodule::UInt64>( volume );
-            else if ( type == typeid( vismodule::Real32 ) ) this->subdivide_8_tetrahedra<vismodule::Real32>( volume );
-            else if ( type == typeid( vismodule::Real64 ) ) this->subdivide_8_tetrahedra<vismodule::Real64>( volume );
+            if (      type == typeid( vismodule::Int8   ) ) this->subdivide_8_tetrahedra<vismodule::Int8>(   *volume );
+            else if ( type == typeid( vismodule::Int16  ) ) this->subdivide_8_tetrahedra<vismodule::Int16>(  *volume );
+            else if ( type == typeid( vismodule::Int32  ) ) this->subdivide_8_tetrahedra<vismodule::Int32>(  *volume );
+            else if ( type == typeid( vismodule::Int64  ) ) this->subdivide_8_tetrahedra<vismodule::Int64>(  *volume );
+            else if ( type == typeid( vismodule::UInt8  ) ) this->subdivide_8_tetrahedra<vismodule::UInt8>(  *volume );
+            else if ( type == typeid( vismodule::UInt16 ) ) this->subdivide_8_tetrahedra<vismodule::UInt16>( *volume );
+            else if ( type == typeid( vismodule::UInt32 ) ) this->subdivide_8_tetrahedra<vismodule::UInt32>( *volume );
+            else if ( type == typeid( vismodule::UInt64 ) ) this->subdivide_8_tetrahedra<vismodule::UInt64>( *volume );
+            else if ( type == typeid( vismodule::Real32 ) ) this->subdivide_8_tetrahedra<vismodule::Real32>( *volume );
+            else if ( type == typeid( vismodule::Real64 ) ) this->subdivide_8_tetrahedra<vismodule::Real64>( *volume );
             else
             {
                 BaseClass::m_is_success = false;
@@ -180,16 +180,16 @@ TetrahedraToTetrahedra::SuperClass* TetrahedraToTetrahedra::exec( const vismodul
         else if ( m_method == TetrahedraToTetrahedra::Removal )
         {
             const std::type_info& type = volume->values().typeInfo()->type();
-            if (      type == typeid( vismodule::Int8   ) ) this->remove_quadratic_nodes<vismodule::Int8>(   volume );
-            else if ( type == typeid( vismodule::Int16  ) ) this->remove_quadratic_nodes<vismodule::Int16>(  volume );
-            else if ( type == typeid( vismodule::Int32  ) ) this->remove_quadratic_nodes<vismodule::Int32>(  volume );
-            else if ( type == typeid( vismodule::Int64  ) ) this->remove_quadratic_nodes<vismodule::Int64>(  volume );
-            else if ( type == typeid( vismodule::UInt8  ) ) this->remove_quadratic_nodes<vismodule::UInt8>(  volume );
-            else if ( type == typeid( vismodule::UInt16 ) ) this->remove_quadratic_nodes<vismodule::UInt16>( volume );
-            else if ( type == typeid( vismodule::UInt32 ) ) this->remove_quadratic_nodes<vismodule::UInt32>( volume );
-            else if ( type == typeid( vismodule::UInt64 ) ) this->remove_quadratic_nodes<vismodule::UInt64>( volume );
-            else if ( type == typeid( vismodule::Real32 ) ) this->remove_quadratic_nodes<vismodule::Real32>( volume );
-            else if ( type == typeid( vismodule::Real64 ) ) this->remove_quadratic_nodes<vismodule::Real64>( volume );
+            if (      type == typeid( vismodule::Int8   ) ) this->remove_quadratic_nodes<vismodule::Int8>(   *volume );
+            else if ( type == typeid( vismodule::Int16  ) ) this->remove_quadratic_nodes<vismodule::Int16>(  *volume );
+            else if ( type == typeid( vismodule::Int32  ) ) this->remove_quadratic_nodes<vismodule::Int32>(  *volume );
+            else if ( type == typeid( vismodule::Int64  ) ) this->remove_quadratic_nodes<vismodule::Int64>(  *volume );
+            else if ( type == typeid( vismodule::UInt8  ) ) this->remove_quadratic_nodes<vismodule::UInt8>(  *volume );
+            else if ( type == typeid( vismodule::UInt16 ) ) this->remove_quadratic_nodes<vismodule::UInt16>( *volume );
+            else if ( type == typeid( vismodule::UInt32 ) ) this->remove_quadratic_nodes<vismodule::UInt32>( *volume );
+            else if ( type == typeid( vismodule::UInt64 ) ) this->remove_quadratic_nodes<vismodule::UInt64>( *volume );
+            else if ( type == typeid( vismodule::Real32 ) ) this->remove_quadratic_nodes<vismodule::Real32>( *volume );
+            else if ( type == typeid( vismodule::Real64 ) ) this->remove_quadratic_nodes<vismodule::Real64>( *volume );
             else
             {
                 BaseClass::m_is_success = false;
@@ -226,11 +226,11 @@ void TetrahedraToTetrahedra::setMethod( const TetrahedraToTetrahedra::Method met
  */
 /*===========================================================================*/
 template <typename T>
-void TetrahedraToTetrahedra::subdivide_8_tetrahedra( const vismodule::UnstructuredVolumeObject* volume )
+void TetrahedraToTetrahedra::subdivide_8_tetrahedra( const vismodule::UnstructuredVolumeObject& volume )
 {
     // Quadratic tetrahedral cells.
-    const size_t tet2_ncells = volume->ncells();
-    const vismodule::UInt32* tet2_pconnections = volume->connections().pointer();
+    const size_t tet2_ncells = volume.ncells();
+    const vismodule::UInt32* tet2_pconnections = volume.connections().pointer();
 
     // Tetrahedral cells.
     const size_t ndivisions = 8;
@@ -291,34 +291,34 @@ void TetrahedraToTetrahedra::subdivide_8_tetrahedra( const vismodule::Unstructur
         *(tet_pconnections++) = id8;
     }
 
-    if ( volume->hasMinMaxExternalCoords() )
+    if ( volume.hasMinMaxExternalCoords() )
     {
-        const vismodule::Vector3f min_coord( volume->minExternalCoord() );
-        const vismodule::Vector3f max_coord( volume->maxExternalCoord() );
+        const vismodule::Vector3f min_coord( volume.minExternalCoord() );
+        const vismodule::Vector3f max_coord( volume.maxExternalCoord() );
         SuperClass::setMinMaxExternalCoords( min_coord, max_coord );
     }
 
-    if ( volume->hasMinMaxObjectCoords() )
+    if ( volume.hasMinMaxObjectCoords() )
     {
-        const vismodule::Vector3f min_coord( volume->minObjectCoord() );
-        const vismodule::Vector3f max_coord( volume->maxObjectCoord() );
+        const vismodule::Vector3f min_coord( volume.minObjectCoord() );
+        const vismodule::Vector3f max_coord( volume.maxObjectCoord() );
         SuperClass::setMinMaxObjectCoords( min_coord, max_coord );
     }
 
-    if ( volume->hasMinMaxValues() )
+    if ( volume.hasMinMaxValues() )
     {
-        const vismodule::Real64 min_value( volume->minValue() );
-        const vismodule::Real64 max_value( volume->maxValue() );
+        const vismodule::Real64 min_value( volume.minValue() );
+        const vismodule::Real64 max_value( volume.maxValue() );
         SuperClass::setMinMaxValues( min_value, max_value );
     }
 
-    SuperClass::setVeclen( volume->veclen() );
-    SuperClass::setNNodes( volume->nnodes() );
+    SuperClass::setVeclen( volume.veclen() );
+    SuperClass::setNNodes( volume.nnodes() );
     SuperClass::setNCells( tet_ncells );
     SuperClass::setCellType( vismodule::UnstructuredVolumeObject::Tetrahedra );
-    SuperClass::setCoords( volume->coords() );
+    SuperClass::setCoords( volume.coords() );
     SuperClass::setConnections( tet_connections );
-    SuperClass::setValues( volume->values() );
+    SuperClass::setValues( volume.values() );
 }
 
 /*===========================================================================*/
@@ -328,12 +328,12 @@ void TetrahedraToTetrahedra::subdivide_8_tetrahedra( const vismodule::Unstructur
  */
 /*===========================================================================*/
 template <typename T>
-void TetrahedraToTetrahedra::remove_quadratic_nodes( const vismodule::UnstructuredVolumeObject* volume )
+void TetrahedraToTetrahedra::remove_quadratic_nodes( const vismodule::UnstructuredVolumeObject& volume )
 {
-    const size_t tet2_ncells = volume->ncells();
-    const vismodule::UInt32* tet2_pconnections = volume->connections().pointer();
-    const T* tet2_pvalues = static_cast<const T*>( volume->values().pointer() );
-    const vismodule::Real32* tet2_pcoords = volume->coords().pointer();
+    const size_t tet2_ncells = volume.ncells();
+    const vismodule::UInt32* tet2_pconnections = volume.connections().pointer();
+    const T* tet2_pvalues = static_cast<const T*>( volume.values().pointer() );
+    const vismodule::Real32* tet2_pcoords = volume.coords().pointer();
 
     ::IDMap id_map;
     for ( size_t i = 0; i < tet2_ncells; i++ )
@@ -365,7 +365,7 @@ void TetrahedraToTetrahedra::remove_quadratic_nodes( const vismodule::Unstructur
         *(tet_pconnections++) = id_map.bucket().find( id3 )->second;
     }
 
-    const size_t tet_veclen = volume->veclen();
+    const size_t tet_veclen = volume.veclen();
     const size_t tet_nnodes = id_map.bucket().size();
     vismodule::ValueArray<T> tet_values( tet_nnodes * tet_veclen );
     vismodule::ValueArray<vismodule::Real32> tet_coords( tet_nnodes * 3 );
@@ -388,28 +388,28 @@ void TetrahedraToTetrahedra::remove_quadratic_nodes( const vismodule::Unstructur
         ++id;
     }
 
-    if ( volume->hasMinMaxExternalCoords() )
+    if ( volume.hasMinMaxExternalCoords() )
     {
-        const vismodule::Vector3f min_coord( volume->minExternalCoord() );
-        const vismodule::Vector3f max_coord( volume->maxExternalCoord() );
+        const vismodule::Vector3f min_coord( volume.minExternalCoord() );
+        const vismodule::Vector3f max_coord( volume.maxExternalCoord() );
         SuperClass::setMinMaxExternalCoords( min_coord, max_coord );
     }
 
-    if ( volume->hasMinMaxObjectCoords() )
+    if ( volume.hasMinMaxObjectCoords() )
     {
-        const vismodule::Vector3f min_coord( volume->minObjectCoord() );
-        const vismodule::Vector3f max_coord( volume->maxObjectCoord() );
+        const vismodule::Vector3f min_coord( volume.minObjectCoord() );
+        const vismodule::Vector3f max_coord( volume.maxObjectCoord() );
         SuperClass::setMinMaxObjectCoords( min_coord, max_coord );
     }
 
-    if ( volume->hasMinMaxValues() )
+    if ( volume.hasMinMaxValues() )
     {
-        const vismodule::Real64 min_value( volume->minValue() );
-        const vismodule::Real64 max_value( volume->maxValue() );
+        const vismodule::Real64 min_value( volume.minValue() );
+        const vismodule::Real64 max_value( volume.maxValue() );
         SuperClass::setMinMaxValues( min_value, max_value );
     }
 
-    SuperClass::setVeclen( volume->veclen() );
+    SuperClass::setVeclen( volume.veclen() );
     SuperClass::setNNodes( tet_nnodes );
     SuperClass::setNCells( tet_ncells );
     SuperClass::setCellType( vismodule::UnstructuredVolumeObject::Tetrahedra );

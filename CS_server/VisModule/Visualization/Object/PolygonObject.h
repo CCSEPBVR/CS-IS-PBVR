@@ -157,7 +157,7 @@ public:
 
     static vismodule::PolygonObject* DownCast( vismodule::ObjectBase* object );
 
-    static const vismodule::PolygonObject* DownCast( const vismodule::ObjectBase* object );
+    static const vismodule::PolygonObject* DownCast( const vismodule::ObjectBase& object );
 
 public:
 

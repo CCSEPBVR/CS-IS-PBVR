@@ -27,9 +27,9 @@ namespace
 {
 
 template <typename T>
-inline const vismodule::Vector3f GetInterpolatedVector( const size_t vertex_id[8], const float weight[8], const vismodule::VolumeObjectBase* volume )
+inline const vismodule::Vector3f GetInterpolatedVector( const size_t vertex_id[8], const float weight[8], const vismodule::VolumeObjectBase& volume )
 {
-    const T* values = reinterpret_cast<const T*>( volume->values().pointer() );
+    const T* values = reinterpret_cast<const T*>( volume.values().pointer() );
 
     vismodule::Vector3f ret( 0.0f );
     for ( size_t i = 0; i < 8; i++ )
@@ -68,7 +68,7 @@ Streamline::Streamline( void ):
  */
 /*===========================================================================*/
 Streamline::Streamline(
-    const vismodule::StructuredVolumeObject* volume,
+    const vismodule::StructuredVolumeObject& volume,
     const vismodule::PointObject* seed_points,
     const vismodule::TransferFunction& transfer_function ):
     vismodule::StreamlineBase()
@@ -94,9 +94,9 @@ Streamline::~Streamline( void )
  *  @return line object
  */
 /*===========================================================================*/
-Streamline::BaseClass::SuperClass* Streamline::exec( const vismodule::ObjectBase* object )
+Streamline::BaseClass::SuperClass* Streamline::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -120,9 +120,9 @@ Streamline::BaseClass::SuperClass* Streamline::exec( const vismodule::ObjectBase
     }
 
     // Attach the pointer to the volume object.
-    BaseClass::attach_volume( volume );
-    BaseClass::set_range( volume );
-    BaseClass::set_min_max_coords( volume, this );
+    BaseClass::attach_volume( *volume );
+    BaseClass::set_range( *volume );
+    BaseClass::set_min_max_coords( *volume, this );
 
     // set the min/max vector length.
     if ( !volume->hasMinMaxValues() )
@@ -130,7 +130,7 @@ Streamline::BaseClass::SuperClass* Streamline::exec( const vismodule::ObjectBase
         volume->updateMinMaxValues();
     }
 
-    BaseClass::mapping( volume );
+    BaseClass::mapping( *volume );
 
     return( this );
 }
@@ -233,7 +233,7 @@ const vismodule::Vector3f Streamline::interpolate_vector(
     const size_t cell_y = static_cast<size_t>( vertex.y() );
     const size_t cell_z = static_cast<size_t>( vertex.z() );
 
-    const vismodule::StructuredVolumeObject* volume = vismodule::StructuredVolumeObject::DownCast( BaseClass::volume() );
+    const vismodule::StructuredVolumeObject* volume = vismodule::StructuredVolumeObject::DownCast( *BaseClass::volume() );
     const size_t resolution_x = static_cast<size_t>( volume->resolution().x() );
     const size_t resolution_y = static_cast<size_t>( volume->resolution().y() );
 //    const size_t resolution_z = static_cast<size_t>( volume->resolution().z() );
@@ -273,16 +273,16 @@ const vismodule::Vector3f Streamline::interpolate_vector(
 
     // Interpolate.
     const std::type_info& type = BaseClass::volume()->values().typeInfo()->type();
-    if (      type == typeid( vismodule::Int8   ) ) return( ::GetInterpolatedVector<vismodule::Int8>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( vismodule::Int16  ) ) return( ::GetInterpolatedVector<vismodule::Int16>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( vismodule::Int32  ) ) return( ::GetInterpolatedVector<vismodule::Int32>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( vismodule::Int64  ) ) return( ::GetInterpolatedVector<vismodule::Int64>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( vismodule::UInt8  ) ) return( ::GetInterpolatedVector<vismodule::UInt8>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( vismodule::UInt16 ) ) return( ::GetInterpolatedVector<vismodule::UInt16>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( vismodule::UInt32 ) ) return( ::GetInterpolatedVector<vismodule::UInt32>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( vismodule::UInt64 ) ) return( ::GetInterpolatedVector<vismodule::UInt64>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( vismodule::Real32 ) ) return( ::GetInterpolatedVector<vismodule::Real32>( vertex_id, weight, BaseClass::volume() ) );
-    else if ( type == typeid( vismodule::Real64 ) ) return( ::GetInterpolatedVector<vismodule::Real64>( vertex_id, weight, BaseClass::volume() ) );
+    if (      type == typeid( vismodule::Int8   ) ) return( ::GetInterpolatedVector<vismodule::Int8>( vertex_id, weight, *BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::Int16  ) ) return( ::GetInterpolatedVector<vismodule::Int16>( vertex_id, weight, *BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::Int32  ) ) return( ::GetInterpolatedVector<vismodule::Int32>( vertex_id, weight, *BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::Int64  ) ) return( ::GetInterpolatedVector<vismodule::Int64>( vertex_id, weight, *BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::UInt8  ) ) return( ::GetInterpolatedVector<vismodule::UInt8>( vertex_id, weight, *BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::UInt16 ) ) return( ::GetInterpolatedVector<vismodule::UInt16>( vertex_id, weight, *BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::UInt32 ) ) return( ::GetInterpolatedVector<vismodule::UInt32>( vertex_id, weight, *BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::UInt64 ) ) return( ::GetInterpolatedVector<vismodule::UInt64>( vertex_id, weight, *BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::Real32 ) ) return( ::GetInterpolatedVector<vismodule::Real32>( vertex_id, weight, *BaseClass::volume() ) );
+    else if ( type == typeid( vismodule::Real64 ) ) return( ::GetInterpolatedVector<vismodule::Real64>( vertex_id, weight, *BaseClass::volume() ) );
 
     return( vismodule::Vector3f( 0.0f, 0.0f, 0.0f ) );
 }

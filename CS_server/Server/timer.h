@@ -1,5 +1,5 @@
-#ifndef PBVR_TIMER_INCLUDE
-#define PBVR_TIMER_INCLUDE
+#ifndef VIS_MODULE_TIMER_INCLUDE
+#define VIS_MODULE_TIMER_INCLUDE
 #include <map>
 #include <iostream>
 #include <vismodule/Timer>

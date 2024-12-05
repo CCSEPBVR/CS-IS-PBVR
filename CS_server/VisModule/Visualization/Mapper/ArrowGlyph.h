@@ -55,10 +55,10 @@ public:
     ArrowGlyph( void );
 
     ArrowGlyph(
-        const vismodule::VolumeObjectBase* volume );
+        const vismodule::VolumeObjectBase& volume );
 
     ArrowGlyph(
-        const vismodule::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase& volume,
         const vismodule::TransferFunction& transfer_function );
 
     virtual ~ArrowGlyph( void );
@@ -73,7 +73,7 @@ public:
 */
 public:
 
-    BaseClass::SuperClass* exec( const vismodule::ObjectBase* object );
+    BaseClass::SuperClass* exec( const vismodule::ObjectBase& object );
 
     void draw( void );
 

@@ -13,18 +13,18 @@
  *  $Id: QuadraticHexahedralCell.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef PBVR__QUADRATIC_HEXAHEDRAL_CELL_H_INCLUDE
-#define PBVR__QUADRATIC_HEXAHEDRAL_CELL_H_INCLUDE
+#ifndef VIS_MODULE__QUADRATIC_HEXAHEDRAL_CELL_H_INCLUDE
+#define VIS_MODULE__QUADRATIC_HEXAHEDRAL_CELL_H_INCLUDE
 
-#include "ClassName.h"
+#include <vismodule/ClassName>
 #include <vismodule/Type>
 #include <vismodule/Vector4>
 #include <vismodule/Matrix44>
-#include "UnstructuredVolumeObject.h"
-#include "CellBase.h"
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/CellBase>
 #include <sstream>
 
-namespace pbvr
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -33,21 +33,21 @@ namespace pbvr
  */
 /*===========================================================================*/
 template <typename T>
-class QuadraticHexahedralCell : public pbvr::CellBase<T>
+class QuadraticHexahedralCell : public vismodule::CellBase<T>
 {
-    visModuleClassName( pbvr::QuadraticHexahedralCell );
+    visModuleClassName( vismodule::QuadraticHexahedralCell );
 
 public:
 
-    enum { NumberOfNodes = pbvr::UnstructuredVolumeObject::QuadraticHexahedra };
+    enum { NumberOfNodes = vismodule::UnstructuredVolumeObject::QuadraticHexahedra };
 
 public:
 
-    typedef pbvr::CellBase<T> BaseClass;
+    typedef vismodule::CellBase<T> BaseClass;
 
 public:
 
-    QuadraticHexahedralCell( const pbvr::UnstructuredVolumeObject& volume );
+    QuadraticHexahedralCell( const vismodule::UnstructuredVolumeObject& volume );
 
     QuadraticHexahedralCell(     T* values,
         float* coords, int ncoords,
@@ -83,8 +83,8 @@ public:
 /*===========================================================================*/
 template <typename T>
 inline QuadraticHexahedralCell<T>::QuadraticHexahedralCell(
-    const pbvr::UnstructuredVolumeObject& volume ):
-    pbvr::CellBase<T>( volume )
+    const vismodule::UnstructuredVolumeObject& volume ):
+    vismodule::CellBase<T>( volume )
 {
     // Set the initial interpolation functions and differential functions.
     this->interpolationFunctions( BaseClass::localPoint() );
@@ -96,7 +96,7 @@ inline QuadraticHexahedralCell<T>::QuadraticHexahedralCell(
         T* values,
         float* coords, int ncoords,
         unsigned int* connections, int ncells):
-    pbvr::CellBase<T>(
+    vismodule::CellBase<T>(
         values,
         coords, ncoords,
         connections, ncells, 20)//num of hex vertices
@@ -961,6 +961,6 @@ inline void QuadraticHexahedralCell<T>::setLocalGravityPoint() const
     this->setLocalPoint( vismodule::Vector3f( 0.5, 0.5, 0.5 ) );
 }
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__QUADRATIC_HEXAHEDRAL_CELL_H_INCLUDE

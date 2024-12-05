@@ -34,7 +34,7 @@ UnstructuredVectorToScalar::UnstructuredVectorToScalar( void )
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*===========================================================================*/
-UnstructuredVectorToScalar::UnstructuredVectorToScalar( const vismodule::UnstructuredVolumeObject* volume )
+UnstructuredVectorToScalar::UnstructuredVectorToScalar( const vismodule::UnstructuredVolumeObject& volume )
 {
     this->exec( volume );
 }
@@ -55,9 +55,9 @@ UnstructuredVectorToScalar::~UnstructuredVectorToScalar( void )
  *  @return pointer to the converted unstructured volume object
  */
 /*===========================================================================*/
-UnstructuredVectorToScalar::SuperClass* UnstructuredVectorToScalar::exec( const vismodule::ObjectBase* object )
+UnstructuredVectorToScalar::SuperClass* UnstructuredVectorToScalar::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -65,7 +65,7 @@ UnstructuredVectorToScalar::SuperClass* UnstructuredVectorToScalar::exec( const 
     }
 
     const vismodule::UnstructuredVolumeObject* volume = vismodule::UnstructuredVolumeObject::DownCast( object );
-    if ( !volume )
+    if ( !&volume )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is not supported.");
@@ -73,16 +73,16 @@ UnstructuredVectorToScalar::SuperClass* UnstructuredVectorToScalar::exec( const 
     }
 
     const std::type_info& type = volume->values().typeInfo()->type();
-    if (      type == typeid( vismodule::Int8   ) ) this->calculate_magnitude<vismodule::Int8>(   volume );
-    else if ( type == typeid( vismodule::Int16  ) ) this->calculate_magnitude<vismodule::Int16>(  volume );
-    else if ( type == typeid( vismodule::Int32  ) ) this->calculate_magnitude<vismodule::Int32>(  volume );
-    else if ( type == typeid( vismodule::Int64  ) ) this->calculate_magnitude<vismodule::Int64>(  volume );
-    else if ( type == typeid( vismodule::UInt8  ) ) this->calculate_magnitude<vismodule::UInt8>(  volume );
-    else if ( type == typeid( vismodule::UInt16 ) ) this->calculate_magnitude<vismodule::UInt16>( volume );
-    else if ( type == typeid( vismodule::UInt32 ) ) this->calculate_magnitude<vismodule::UInt32>( volume );
-    else if ( type == typeid( vismodule::UInt64 ) ) this->calculate_magnitude<vismodule::UInt64>( volume );
-    else if ( type == typeid( vismodule::Real32 ) ) this->calculate_magnitude<vismodule::Real32>( volume );
-    else if ( type == typeid( vismodule::Real64 ) ) this->calculate_magnitude<vismodule::Real64>( volume );
+    if (      type == typeid( vismodule::Int8   ) ) this->calculate_magnitude<vismodule::Int8>(   *volume );
+    else if ( type == typeid( vismodule::Int16  ) ) this->calculate_magnitude<vismodule::Int16>(  *volume );
+    else if ( type == typeid( vismodule::Int32  ) ) this->calculate_magnitude<vismodule::Int32>(  *volume );
+    else if ( type == typeid( vismodule::Int64  ) ) this->calculate_magnitude<vismodule::Int64>(  *volume );
+    else if ( type == typeid( vismodule::UInt8  ) ) this->calculate_magnitude<vismodule::UInt8>(  *volume );
+    else if ( type == typeid( vismodule::UInt16 ) ) this->calculate_magnitude<vismodule::UInt16>( *volume );
+    else if ( type == typeid( vismodule::UInt32 ) ) this->calculate_magnitude<vismodule::UInt32>( *volume );
+    else if ( type == typeid( vismodule::UInt64 ) ) this->calculate_magnitude<vismodule::UInt64>( *volume );
+    else if ( type == typeid( vismodule::Real32 ) ) this->calculate_magnitude<vismodule::Real32>( *volume );
+    else if ( type == typeid( vismodule::Real64 ) ) this->calculate_magnitude<vismodule::Real64>( *volume );
     else
     {
         BaseClass::m_is_success = false;
@@ -100,14 +100,14 @@ UnstructuredVectorToScalar::SuperClass* UnstructuredVectorToScalar::exec( const 
  */
 /*===========================================================================*/
 template <typename T>
-void UnstructuredVectorToScalar::calculate_magnitude( const vismodule::UnstructuredVolumeObject* volume )
+void UnstructuredVectorToScalar::calculate_magnitude( const vismodule::UnstructuredVolumeObject& volume )
 {
-    const size_t veclen = volume->veclen();
-    const size_t nnodes = volume->nnodes();
+    const size_t veclen = volume.veclen();
+    const size_t nnodes = volume.nnodes();
 
     vismodule::AnyValueArray values;
     vismodule::Real32* dst = static_cast<vismodule::Real32*>( values.allocate<vismodule::Real32>( nnodes ) );
-    const T* src = static_cast<const T*>( volume->values().pointer() );
+    const T* src = static_cast<const T*>( volume.values().pointer() );
 
     for ( size_t i = 0; i < nnodes; i++ )
     {
@@ -121,12 +121,12 @@ void UnstructuredVectorToScalar::calculate_magnitude( const vismodule::Unstructu
     }
 
     SuperClass::setVeclen( 1 );
-    SuperClass::setNNodes( volume->nnodes() );
-    SuperClass::setNCells( volume->ncells() );
-    SuperClass::setCellType( volume->cellType() );
+    SuperClass::setNNodes( volume.nnodes() );
+    SuperClass::setNCells( volume.ncells() );
+    SuperClass::setCellType( volume.cellType() );
     SuperClass::setValues( values );
-    SuperClass::setCoords( volume->coords() );
-    SuperClass::setConnections( volume->connections() );
+    SuperClass::setCoords( volume.coords() );
+    SuperClass::setConnections( volume.connections() );
     SuperClass::updateMinMaxValues();
     SuperClass::updateMinMaxCoords();
 }

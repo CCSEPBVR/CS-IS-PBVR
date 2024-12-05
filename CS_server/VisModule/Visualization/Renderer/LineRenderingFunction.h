@@ -34,7 +34,7 @@ namespace
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Strip_VCs_S( const vismodule::LineObject* line )
+void Rendering_Strip_VCs_S( const vismodule::LineObject& line )
 {
     glLineWidth( line->size( 0 ) );
     glBegin( GL_LINE_STRIP );
@@ -59,7 +59,7 @@ void Rendering_Strip_VCs_S( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Strip_VCs_Ss( const vismodule::LineObject* line )
+void Rendering_Strip_VCs_Ss( const vismodule::LineObject& line )
 {
     const size_t nlines = line->nvertices() - 1;
     for( size_t i = 0; i < nlines; i++ )
@@ -88,7 +88,7 @@ void Rendering_Strip_VCs_Ss( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Strip_LC_S( const vismodule::LineObject* line )
+void Rendering_Strip_LC_S( const vismodule::LineObject& line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -113,7 +113,7 @@ void Rendering_Strip_LC_S( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Strip_LCs_S( const vismodule::LineObject* line )
+void Rendering_Strip_LCs_S( const vismodule::LineObject& line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -141,7 +141,7 @@ void Rendering_Strip_LCs_S( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Strip_LC_Ss( const vismodule::LineObject* line )
+void Rendering_Strip_LC_Ss( const vismodule::LineObject& line )
 {
     const size_t         num   = line->nvertices() - 1;
     const vismodule::RGBColor& color = line->color(0);
@@ -169,7 +169,7 @@ void Rendering_Strip_LC_Ss( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Strip_LCs_Ss( const vismodule::LineObject* line )
+void Rendering_Strip_LCs_Ss( const vismodule::LineObject& line )
 {
     const size_t num = line->nvertices() - 1;
 
@@ -197,7 +197,7 @@ void Rendering_Strip_LCs_Ss( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Uniline_VCs_S( const vismodule::LineObject* line )
+void Rendering_Uniline_VCs_S( const vismodule::LineObject& line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -224,7 +224,7 @@ void Rendering_Uniline_VCs_S( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Uniline_VCs_Ss( const vismodule::LineObject* line )
+void Rendering_Uniline_VCs_Ss( const vismodule::LineObject& line )
 {
     const size_t num = line->nconnections() - 1;
     for( size_t i = 0; i < num; i++ )
@@ -255,7 +255,7 @@ void Rendering_Uniline_VCs_Ss( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Uniline_LC_S( const vismodule::LineObject* line )
+void Rendering_Uniline_LC_S( const vismodule::LineObject& line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -281,7 +281,7 @@ void Rendering_Uniline_LC_S( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Uniline_LCs_S( const vismodule::LineObject* line )
+void Rendering_Uniline_LCs_S( const vismodule::LineObject& line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -308,7 +308,7 @@ void Rendering_Uniline_LCs_S( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Uniline_LC_Ss( const vismodule::LineObject* line )
+void Rendering_Uniline_LC_Ss( const vismodule::LineObject& line )
 {
     const vismodule::RGBColor& color = line->color(0);
     glColor3ub( color.r(), color.g(), color.b() );
@@ -336,7 +336,7 @@ void Rendering_Uniline_LC_Ss( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Uniline_LCs_Ss( const vismodule::LineObject* line )
+void Rendering_Uniline_LCs_Ss( const vismodule::LineObject& line )
 {
     const size_t num = line->nconnections() - 1;
     for( size_t i = 0; i < num; i++ )
@@ -362,7 +362,7 @@ void Rendering_Uniline_LCs_Ss( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Polyline_VCs_S( const vismodule::LineObject* line )
+void Rendering_Polyline_VCs_S( const vismodule::LineObject& line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -394,7 +394,7 @@ void Rendering_Polyline_VCs_S( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Polyline_VCs_Ss( const vismodule::LineObject* line )
+void Rendering_Polyline_VCs_Ss( const vismodule::LineObject& line )
 {
     int ctr = 0;
     const size_t nconnections = line->nconnections();
@@ -432,7 +432,7 @@ void Rendering_Polyline_VCs_Ss( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Polyline_LC_S( const vismodule::LineObject* line )
+void Rendering_Polyline_LC_S( const vismodule::LineObject& line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -467,7 +467,7 @@ void Rendering_Polyline_LC_S( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Polyline_LCs_S( const vismodule::LineObject* line )
+void Rendering_Polyline_LCs_S( const vismodule::LineObject& line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -503,7 +503,7 @@ void Rendering_Polyline_LCs_S( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Polyline_LC_Ss( const vismodule::LineObject* line )
+void Rendering_Polyline_LC_Ss( const vismodule::LineObject& line )
 {
     int ctr = 0;
     const size_t nconnections = line->nconnections();
@@ -540,7 +540,7 @@ void Rendering_Polyline_LC_Ss( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Polyline_LCs_Ss( const vismodule::LineObject* line )
+void Rendering_Polyline_LCs_Ss( const vismodule::LineObject& line )
 {
     int ctr = 0;
     const size_t nconnections = line->nconnections();
@@ -576,7 +576,7 @@ void Rendering_Polyline_LCs_Ss( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Segment_VCs_S( const vismodule::LineObject* line )
+void Rendering_Segment_VCs_S( const vismodule::LineObject& line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -603,7 +603,7 @@ void Rendering_Segment_VCs_S( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Segment_VCs_Ss( const vismodule::LineObject* line )
+void Rendering_Segment_VCs_Ss( const vismodule::LineObject& line )
 {
     const size_t nconnections = line->nconnections();
     for( size_t i = 0; i < nconnections; i++ )
@@ -635,7 +635,7 @@ void Rendering_Segment_VCs_Ss( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Segment_LC_S( const vismodule::LineObject* line )
+void Rendering_Segment_LC_S( const vismodule::LineObject& line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -662,7 +662,7 @@ void Rendering_Segment_LC_S( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Segment_LCs_S( const vismodule::LineObject* line )
+void Rendering_Segment_LCs_S( const vismodule::LineObject& line )
 {
     glLineWidth( line->size( 0 ) );
 
@@ -694,7 +694,7 @@ void Rendering_Segment_LCs_S( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Segment_LC_Ss( const vismodule::LineObject* line )
+void Rendering_Segment_LC_Ss( const vismodule::LineObject& line )
 {
     const vismodule::RGBColor& color = line->color(0);
     glColor3ub( color.r(), color.g(), color.b() );
@@ -725,7 +725,7 @@ void Rendering_Segment_LC_Ss( const vismodule::LineObject* line )
  *  @param line [in] pointer to the line object
  */
 /*==========================================================================*/
-void Rendering_Segment_LCs_Ss( const vismodule::LineObject* line )
+void Rendering_Segment_LCs_Ss( const vismodule::LineObject& line )
 {
     const size_t nconnections = line->nconnections();
     for( size_t i = 0; i < nconnections; i++ )
@@ -750,7 +750,7 @@ void Rendering_Segment_LCs_Ss( const vismodule::LineObject* line )
     }
 }
 
-typedef void (*LineRenderingFunctionType)( const vismodule::LineObject* line );
+typedef void (*LineRenderingFunctionType)( const vismodule::LineObject& line );
 
 enum LineRenderingType
 {
@@ -838,7 +838,7 @@ LineRenderingFunctionType Rendering[NumberOfRenderingTypes] =
     } \
     }
 
-LineRenderingType GetLineRenderingType( const vismodule::LineObject* line )
+LineRenderingType GetLineRenderingType( const vismodule::LineObject& line )
 {
     const size_t nsizes    = line->nsizes();
     const size_t ncolors   = line->ncolors();
@@ -855,7 +855,7 @@ LineRenderingType GetLineRenderingType( const vismodule::LineObject* line )
     return( Type_Strip_VCs_S );
 };
 
-void LineRenderingFunction( const vismodule::LineObject* line )
+void LineRenderingFunction( const vismodule::LineObject& line )
 {
     if( line->nvertices() > 0 )
     {

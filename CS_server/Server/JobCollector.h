@@ -1,8 +1,8 @@
-#ifndef PBVR__JOB_COLLECTOR_H_INCLUDE
-#define PBVR__JOB_COLLECTOR_H_INCLUDE
+#ifndef VIS_MODULE__JOB_COLLECTOR_H_INCLUDE
+#define VIS_MODULE__JOB_COLLECTOR_H_INCLUDE
 
 #include "JobDispatcher.h"
-#include "PointObject.h"
+#include <vismodule/PointObject>
 #include "VariableRange.h"
 #include "KVSMLObjectGlyph.h"
 #include <vector>
@@ -35,8 +35,8 @@ public:
     JobCollector( JobDispatcher* pjd );
     ~JobCollector();
 
-    void jobCollect( pbvr::PointObject* object, VariableRange* vr, bool* invalid, int* wid = NULL );
-    void jobCollect_glyph( kvs::KVSMLObjectGlyph* object, bool* invalid, int* wid = NULL );
+    void jobCollect( vismodule::PointObject* object, VariableRange* vr, bool* invalid, int* wid = NULL );
+    void jobCollect_glyph( vismodule::KVSMLObjectGlyph* object, bool* invalid, int* wid = NULL );
     void jobCollect_pol( std::vector<float>& axis, std::vector<int>& mask, std::vector<float>& values, bool* invalid, int* wid = NULL );
     void setBatch( const bool stat )
     {
@@ -46,5 +46,5 @@ public:
 
 void TestJobCollector();
 
-#endif //  PBVR__JOB_COLLECTOR_H_INCLUDE
+#endif //  VIS_MODULE__JOB_COLLECTOR_H_INCLUDE
 

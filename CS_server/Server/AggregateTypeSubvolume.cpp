@@ -10,7 +10,7 @@
 #include <FileFormat/KVSML/ValueTag.h>
 #include <FileFormat/KVSML/CoordTag.h>
 #include <FileFormat/KVSML/ConnectionTag.h>
-#include "DataArrayTag.h"
+#include <vismodule/DataArrayTag>
 #include <vismodule/File>
 #include <vismodule/AnyValueArray>
 #include <vismodule/Type>
@@ -191,7 +191,7 @@ AggregateTypeSubvolume::AggregateTypeSubvolume( const std::string& filename,
             if ( fp = fopen( fname, "rb" ) )
             {
                 fread( range.pointer(), 4, 2, fp );
-#if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_BIG_ENDIAN
                 range.swapByte();
 #endif
                 if ( range.at( 0 ) <= vl && range.at( 1 ) >= vl )
@@ -240,7 +240,7 @@ AggregateTypeSubvolume::AggregateTypeSubvolume( const std::string& filename,
         if ( fp = fopen( fname, "rb" ) )
         {
             fread( range.pointer(), 4, 2, fp );
-#if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_BIG_ENDIAN
             range.swapByte();
 #endif
             if ( range.at( 0 ) <= vl && range.at( 1 ) >= vl )
@@ -305,7 +305,7 @@ AggregateTypeSubvolume::AggregateTypeSubvolume( const std::string& filename,
         {
             visModuleMessageError( "File read error: connection data." );
         }
-#if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_BIG_ENDIAN
         m_connections.swapByte();
 #endif
         // coordinate data
@@ -318,7 +318,7 @@ AggregateTypeSubvolume::AggregateTypeSubvolume( const std::string& filename,
         {
             visModuleMessageError( "File read error: coordinate data." );
         }
-#if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_BIG_ENDIAN
         m_coords.swapByte();
 #endif
         // value data
@@ -332,7 +332,7 @@ AggregateTypeSubvolume::AggregateTypeSubvolume( const std::string& filename,
         {
             visModuleMessageError( "File read error: value data." );
         }
-#if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_BIG_ENDIAN
         m_values.swapByte();
 #endif
         // num nodes

@@ -11,19 +11,19 @@
  *  $Id: CellByCellUniformSampling.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__CELL_BY_CELL_UNIFORM_SAMPLING_H_INCLUDE
-#define PBVR__CELL_BY_CELL_UNIFORM_SAMPLING_H_INCLUDE
+#ifndef VIS_MODULE__CELL_BY_CELL_UNIFORM_SAMPLING_H_INCLUDE
+#define VIS_MODULE__CELL_BY_CELL_UNIFORM_SAMPLING_H_INCLUDE
 
-#include "MapperBase.h"
+#include <vismodule/MapperBase>
 #include <vismodule/Camera>
-#include "PointObject.h"
-#include "VolumeObjectBase.h"
-#include "StructuredVolumeObject.h"
-#include "UnstructuredVolumeObject.h"
-#include "ClassName.h"
+#include <vismodule/PointObject>
+#include <vismodule/VolumeObjectBase>
+#include <vismodule/StructuredVolumeObject>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/ClassName>
 #include <vismodule/Module>
 #include <vismodule/MersenneTwister> 
-#include "CellByCellParticleGenerator.h"
+#include <vismodule/CellByCellParticleGenerator>
 #include "CropRegion.h"
 #include "TransferFunctionSynthesizer.h"
 //#include "TransferFunctionSynthesizer_IS.h"
@@ -37,7 +37,7 @@
 
 typedef unsigned char Byte;
 
-namespace pbvr
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -45,15 +45,15 @@ namespace pbvr
  *  @brief  Cell-by-cell particle generation class.
  */
 /*===========================================================================*/
-class CellByCellUniformSampling : public pbvr::MapperBase, public pbvr::PointObject
+class CellByCellUniformSampling : public vismodule::MapperBase, public vismodule::PointObject
 {
     // Class name.
-    visModuleClassName( pbvr::CellByCellUniformSampling );
+    visModuleClassName( vismodule::CellByCellUniformSampling );
 
     // Module information.
-    typedef pbvr::MapperBase::ModuleTag ModuleCategory;
-    visModuleBaseClass( pbvr::MapperBase );
-    visModuleSuperClass( pbvr::PointObject );
+    typedef vismodule::MapperBase::ModuleTag ModuleCategory;
+    visModuleBaseClass( vismodule::MapperBase );
+    visModuleSuperClass( vismodule::PointObject );
 
 private:
 
@@ -65,7 +65,7 @@ private:
     bool                   m_gt5d_full;
     CropRegion             m_crop;
     TransferFunctionSynthesizer* m_transfer_function_synthesizer;
-    std::vector<pbvr::TransferFunction> m_transfer_function_array; 
+    std::vector<vismodule::TransferFunction> m_transfer_function_array; 
 
     const size_t m_normal_ingredient;
 
@@ -77,10 +77,10 @@ public:
     CellByCellUniformSampling();
 
     CellByCellUniformSampling(
-        const pbvr::VolumeObjectBase& volume,
+        const vismodule::VolumeObjectBase& volume,
         const size_t                 subpixel_level,
         const float                  sampling_step,
-        const pbvr::TransferFunction& transfer_function,
+        const vismodule::TransferFunction& transfer_function,
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const size_t                 normal_ingredient,
         const CropRegion&            crop,
@@ -88,11 +88,11 @@ public:
 
     CellByCellUniformSampling(
         const vismodule::Camera&           camera,
-        const pbvr::VolumeObjectBase& volume,
+        const vismodule::VolumeObjectBase& volume,
         const size_t                 subpixel_level,
         const float                  sampling_step,
-        const pbvr::TransferFunction& transfer_function,
-        std::vector<pbvr::TransferFunction>& transfer_function_array,
+        const vismodule::TransferFunction& transfer_function,
+        std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const size_t                 normal_ingredient,
         const CropRegion&            crop,
@@ -102,10 +102,10 @@ public:
 
     CellByCellUniformSampling(
         const vismodule::Camera&           camera,
-        const pbvr::VolumeObjectBase& volume,
+        const vismodule::VolumeObjectBase& volume,
         const size_t                 subpixel_level,
         const float                  sampling_step,
-        const pbvr::TransferFunction& transfer_function,
+        const vismodule::TransferFunction& transfer_function,
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const size_t                 normal_ingredient,
         const CropRegion&            crop,
@@ -116,7 +116,7 @@ public:
 
 public:
 
-    SuperClass* exec( const pbvr::ObjectBase& object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 public:
 
@@ -136,9 +136,9 @@ public:
 
 private:
 
-    void mapping( const vismodule::Camera& camera, const pbvr::StructuredVolumeObject& volume );
+    void mapping( const vismodule::Camera& camera, const vismodule::StructuredVolumeObject& volume );
 
-    void mapping( const vismodule::Camera& camera, const pbvr::UnstructuredVolumeObject& volume );
+    void mapping( const vismodule::Camera& camera, const vismodule::UnstructuredVolumeObject& volume );
     
     const size_t calculate_number_of_particles(
     const float density,
@@ -146,10 +146,10 @@ private:
     vismodule::MersenneTwister* MT ); 
     
     template <typename T>
-    void generate_particles( const pbvr::StructuredVolumeObject& volume );
+    void generate_particles( const vismodule::StructuredVolumeObject& volume );
 
     template <typename T>
-    void generate_particles( const pbvr::UnstructuredVolumeObject& volume );
+    void generate_particles( const vismodule::UnstructuredVolumeObject& volume );
  
     const float calculate_density( const float scalar );
 
@@ -179,10 +179,10 @@ private:
    
     const float calculate_maximum_density( const float scalar0, const float scalar1 );
 #ifdef ENABLE_MPI
-    void generate_particles_gt5d( const pbvr::UnstructuredVolumeObject* volume );
+    void generate_particles_gt5d( const vismodule::UnstructuredVolumeObject& volume );
 #endif
 };
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
-#endif // PBVR__CELL_BY_CELL_UNIFORM_SAMPLING_H_INCLUDE
+#endif // VIS_MODULE__CELL_BY_CELL_UNIFORM_SAMPLING_H_INCLUDE

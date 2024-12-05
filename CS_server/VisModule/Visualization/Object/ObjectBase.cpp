@@ -12,13 +12,13 @@
  *  $Id: ObjectBase.cpp 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#include "ObjectBase.h"
+#include <vismodule/ObjectBase>
 #include <iomanip>
 #include <vismodule/Camera>
 #include <vismodule/Math>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -458,7 +458,7 @@ void ObjectBase::transform(
     const vismodule::Vector3f& global_scale ) const
     {*/
 /* Apply the transformation from the world coordinate system by using
- * the object's xform. You see also pbvr::XformControl class and vismodule::Xform
+ * the object's xform. You see also vismodule::XformControl class and vismodule::Xform
  * class in detail.
  */
 /*
@@ -703,4 +703,4 @@ const vismodule::Vector3f ObjectBase::object_to_world_coordinate(
     return p_world;
 }
 
-} // end of namespace pbvr
+} // end of namespace vismodule

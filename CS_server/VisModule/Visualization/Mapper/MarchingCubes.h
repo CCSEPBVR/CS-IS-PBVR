@@ -49,7 +49,7 @@ public:
     MarchingCubes( void );
 
     MarchingCubes(
-        const vismodule::StructuredVolumeObject* volume,
+        const vismodule::StructuredVolumeObject& volume,
         const double                       isolevel,
         const SuperClass::NormalType       normal_type,
         const bool                         duplication,
@@ -63,23 +63,23 @@ public:
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 private:
 
-    void mapping( const vismodule::StructuredVolumeObject* volume );
+    void mapping( const vismodule::StructuredVolumeObject& volume );
 
     template <typename T>
     void extract_surfaces(
-        const vismodule::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject& volume );
 
     template <typename T>
     void extract_surfaces_with_duplication(
-        const vismodule::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject& volume );
 
     template <typename T>
     void extract_surfaces_without_duplication(
-        const vismodule::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject& volume );
 
     template <typename T>
     const size_t calculate_table_index(

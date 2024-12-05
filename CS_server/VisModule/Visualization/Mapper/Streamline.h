@@ -41,7 +41,7 @@ public:
     Streamline( void );
 
     Streamline(
-        const vismodule::StructuredVolumeObject* volume,
+        const vismodule::StructuredVolumeObject& volume,
         const vismodule::PointObject* seed_points,
         const vismodule::TransferFunction& transfer_function );
 
@@ -49,7 +49,7 @@ public:
 
 public:
 
-    BaseClass::SuperClass* exec( const vismodule::ObjectBase* object );
+    BaseClass::SuperClass* exec( const vismodule::ObjectBase& object );
 
 protected:
 
@@ -67,7 +67,7 @@ protected:
 
     const vismodule::RGBColor calculate_color( const vismodule::Vector3f& direction );
 
-    void set_min_max_vector_length( const vismodule::VolumeObjectBase* volume );
+    void set_min_max_vector_length( const vismodule::VolumeObjectBase& volume );
 };
 
 } // end of namespace vismodule

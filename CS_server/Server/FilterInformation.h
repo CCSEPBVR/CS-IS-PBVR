@@ -1,5 +1,5 @@
-#ifndef PBVR__FILTER_INFOMATION_H_INCLDE
-#define PBVR__FILTER_INFOMATION_H_INCLDE
+#ifndef VIS_MODULE__FILTER_INFOMATION_H_INCLDE
+#define VIS_MODULE__FILTER_INFOMATION_H_INCLDE
 
 #include <string>
 #include <vector>
@@ -86,5 +86,5 @@ public:
     std::vector<FilterInformationFile::IngredientsMinMax> m_total_ingredient;
 };
 
-#endif // PBVR__FILTER_INFO_H_INCLDE
+#endif // VIS_MODULE__FILTER_INFO_H_INCLDE
 

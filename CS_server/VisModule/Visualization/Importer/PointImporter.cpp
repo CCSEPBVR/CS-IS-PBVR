@@ -74,7 +74,7 @@ PointImporter::PointImporter( const std::string& filename )
  *  @param file_format [in] pointer to the file format
  */
 /*==========================================================================*/
-PointImporter::PointImporter( const vismodule::FileFormatBase* file_format )
+PointImporter::PointImporter( const vismodule::FileFormatBase& file_format )
 {
     this->exec( file_format );
 }
@@ -95,19 +95,19 @@ PointImporter::~PointImporter( void )
  *  @return pointer to the imported point object
  */
 /*===========================================================================*/
-PointImporter::SuperClass* PointImporter::exec( const vismodule::FileFormatBase* file_format )
+PointImporter::SuperClass* PointImporter::exec( const vismodule::FileFormatBase& file_format )
 {
-    if ( !file_format )
+    if ( !&file_format )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input file format is NULL.");
         return( NULL );
     }
 
-    const std::string class_name = file_format->className();
+    const std::string class_name = file_format.className();
     if ( class_name == "vismodule::KVSMLObjectPoint" )
     {
-        this->import( static_cast<const vismodule::KVSMLObjectPoint*>( file_format ) );
+        this->import( static_cast<const vismodule::KVSMLObjectPoint*>( &file_format ) );
     }
     else
     {

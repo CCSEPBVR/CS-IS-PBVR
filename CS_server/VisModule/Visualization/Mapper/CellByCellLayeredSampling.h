@@ -69,7 +69,7 @@ public:
     CellByCellLayeredSampling( void );
 
     CellByCellLayeredSampling(
-        const vismodule::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase& volume,
         const size_t                 subpixel_level,
         const float                  sampling_step,
         const vismodule::TransferFunction& transfer_function,
@@ -77,7 +77,7 @@ public:
 
     CellByCellLayeredSampling(
         const vismodule::Camera*           camera,
-        const vismodule::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase& volume,
         const size_t                 subpixel_level,
         const float                  sampling_step,
         const vismodule::TransferFunction& transfer_function,
@@ -87,7 +87,7 @@ public:
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 public:
 
@@ -107,10 +107,10 @@ public:
 
 private:
 
-    void mapping( const vismodule::Camera* camera, const vismodule::UnstructuredVolumeObject* volume );
+    void mapping( const vismodule::Camera* camera, const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
-    void generate_particles( const vismodule::UnstructuredVolumeObject* volume );
+    void generate_particles( const vismodule::UnstructuredVolumeObject& volume );
 
     void pregenerate_particles( const size_t nparticles );
 

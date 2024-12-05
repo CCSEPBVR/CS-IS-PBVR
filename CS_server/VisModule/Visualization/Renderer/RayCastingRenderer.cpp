@@ -83,7 +83,7 @@ void RayCastingRenderer::exec(
  */
 /*==========================================================================*/
 void RayCastingRenderer::create_image(
-    const vismodule::StructuredVolumeObject* volume,
+    const vismodule::StructuredVolumeObject& volume,
     const vismodule::Camera*                 camera,
     const vismodule::Light*                  light )
 {
@@ -150,7 +150,7 @@ void RayCastingRenderer::create_image(
 /*==========================================================================*/
 template <typename T>
 void RayCastingRenderer::rasterize(
-    const vismodule::StructuredVolumeObject* volume,
+    const vismodule::StructuredVolumeObject& volume,
     const vismodule::Camera*                 camera,
     const vismodule::Light*                  light )
 {
@@ -303,31 +303,31 @@ void RayCastingRenderer::rasterize(
 
 template
 void RayCastingRenderer::rasterize<vismodule::UInt8>(
-    const vismodule::StructuredVolumeObject* volume,
+    const vismodule::StructuredVolumeObject& volume,
     const vismodule::Camera*                 camera,
     const vismodule::Light*                  light );
 
 template
 void RayCastingRenderer::rasterize<vismodule::UInt16>(
-    const vismodule::StructuredVolumeObject* volume,
+    const vismodule::StructuredVolumeObject& volume,
     const vismodule::Camera*                 camera,
     const vismodule::Light*                  light );
 
 template
 void RayCastingRenderer::rasterize<vismodule::Int16>(
-    const vismodule::StructuredVolumeObject* volume,
+    const vismodule::StructuredVolumeObject& volume,
     const vismodule::Camera*                 camera,
     const vismodule::Light*                  light );
 
 template
 void RayCastingRenderer::rasterize<vismodule::Real32>(
-    const vismodule::StructuredVolumeObject* volume,
+    const vismodule::StructuredVolumeObject& volume,
     const vismodule::Camera*                 camera,
     const vismodule::Light*                  light );
 
 template
 void RayCastingRenderer::rasterize<vismodule::Real64>(
-    const vismodule::StructuredVolumeObject* volume,
+    const vismodule::StructuredVolumeObject& volume,
     const vismodule::Camera*                 camera,
     const vismodule::Light*                  light );
 

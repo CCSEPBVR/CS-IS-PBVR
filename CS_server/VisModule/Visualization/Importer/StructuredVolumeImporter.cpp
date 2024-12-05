@@ -11,7 +11,7 @@
  *  $Id: StructuredVolumeImporter.cpp 867 2011-07-24 06:12:29Z naohisa.sakamoto@gmail.com $
  */
 /****************************************************************************/
-#include "StructuredVolumeImporter.h"
+#include <vismodule/StructuredVolumeImporter>
 #include <vismodule/DebugNew>
 #include <vismodule/AVSField>
 //#include <vismodule/DicomList>
@@ -31,22 +31,22 @@ namespace
  *  @return grid type
  */
 /*==========================================================================*/
-const pbvr::StructuredVolumeObject::GridType StringToGridType( const std::string& grid_type )
+const vismodule::StructuredVolumeObject::GridType StringToGridType( const std::string& grid_type )
 {
-    if (      grid_type == "uniform"     ) { return( pbvr::StructuredVolumeObject::Uniform );     }
-    else if ( grid_type == "rectilinear" ) { return( pbvr::StructuredVolumeObject::Rectilinear ); }
-    else if ( grid_type == "curvilinear" ) { return( pbvr::StructuredVolumeObject::Curvilinear ); }
+    if (      grid_type == "uniform"     ) { return( vismodule::StructuredVolumeObject::Uniform );     }
+    else if ( grid_type == "rectilinear" ) { return( vismodule::StructuredVolumeObject::Rectilinear ); }
+    else if ( grid_type == "curvilinear" ) { return( vismodule::StructuredVolumeObject::Curvilinear ); }
     else
     {
         visModuleMessageError( "Unknown grid type '%s'.", grid_type.c_str() );
-        return( pbvr::StructuredVolumeObject::UnknownGridType );
+        return( vismodule::StructuredVolumeObject::UnknownGridType );
     }
 }
 
 } // end of namespace
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -145,7 +145,7 @@ StructuredVolumeImporter::StructuredVolumeImporter( const std::string& filename 
 //    {
 //        vismodule::AggregateTypeSubvolume* file_format =
 //            new vismodule::AggregateTypeSubvolume( filename, st, vl );
-//        if ( !file_format )
+//        if ( !&file_format )
 //        {
 //            BaseClass::m_is_success = false;
 //            visModuleMessageError( "Cannot read '%s*'.", filename.c_str() );
@@ -167,7 +167,7 @@ StructuredVolumeImporter::StructuredVolumeImporter( const std::string& filename 
 //    {
 //        vismodule::StepAggregateTypeSubvolume* file_format =
 //            new vismodule::StepAggregateTypeSubvolume( filename, st, vl );
-//        if ( !file_format )
+//        if ( !&file_format )
 //        {
 //            BaseClass::m_is_success = false;
 //            visModuleMessageError( "Cannot read '%s*'.", filename.c_str() );
@@ -201,9 +201,9 @@ StructuredVolumeImporter::StructuredVolumeImporter( const std::string& filename 
  *  @param  file_format [in] pointer to the file format data
  */
 /*==========================================================================*/
-StructuredVolumeImporter::StructuredVolumeImporter( const vismodule::FileFormatBase* file_format )
+StructuredVolumeImporter::StructuredVolumeImporter( const vismodule::FileFormatBase& file_format )
 {
-    if ( !this->exec( *file_format ) ) BaseClass::m_is_success = true;
+    if ( !this->exec( file_format ) ) BaseClass::m_is_success = true;
 }
 
 /*===========================================================================*/
@@ -222,7 +222,7 @@ StructuredVolumeImporter::~StructuredVolumeImporter( void )
  *  @return pointer to the imported structured volume object
  */
 /*===========================================================================*/
-//StructuredVolumeImporter::SuperClass* StructuredVolumeImporter::exec( const vismodule::FileFormatBase* file_format )
+//StructuredVolumeImporter::SuperClass* StructuredVolumeImporter::exec( const vismodule::FileFormatBase& file_format )
 StructuredVolumeImporter::SuperClass* StructuredVolumeImporter::exec( const vismodule::FileFormatBase& file_format )
 {
 
@@ -348,7 +348,7 @@ void StructuredVolumeImporter::import( const vismodule::AVSField* field )
         SuperClass::setMinMaxExternalCoords( min_ext_coord, max_ext_coord );
     }
 
-    SuperClass::setGridType( pbvr::StructuredVolumeObject::Uniform );
+    SuperClass::setGridType( vismodule::StructuredVolumeObject::Uniform );
     SuperClass::setVeclen( field->veclen() );
     SuperClass::setResolution( field->dim() );
     SuperClass::setValues( field->values() );
@@ -422,7 +422,7 @@ void StructuredVolumeImporter::import( const vismodule::AVSField* field )
 //    }
 //
 //    const vismodule::Vector3ui resolution( x_size, y_size, z_size );
-//    SuperClass::setGridType( pbvr::StructuredVolumeObject::Uniform );
+//    SuperClass::setGridType( vismodule::StructuredVolumeObject::Uniform );
 //    SuperClass::setResolution( resolution );
 //    SuperClass::setVeclen( 1 );
 //    SuperClass::updateMinMaxValues();

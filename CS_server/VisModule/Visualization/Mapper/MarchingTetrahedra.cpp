@@ -43,7 +43,7 @@ MarchingTetrahedra::MarchingTetrahedra( void ):
  */
 /*==========================================================================*/
 MarchingTetrahedra::MarchingTetrahedra(
-    const vismodule::UnstructuredVolumeObject* volume,
+    const vismodule::UnstructuredVolumeObject& volume,
     const double                         isolevel,
     const NormalType                     normal_type,
     const bool                           duplication,
@@ -81,9 +81,9 @@ MarchingTetrahedra::~MarchingTetrahedra( void )
  *  @return pointer to the polygon object
  */
 /*===========================================================================*/
-MarchingTetrahedra::SuperClass* MarchingTetrahedra::exec( const vismodule::ObjectBase* object )
+MarchingTetrahedra::SuperClass* MarchingTetrahedra::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -98,7 +98,7 @@ MarchingTetrahedra::SuperClass* MarchingTetrahedra::exec( const vismodule::Objec
         return( NULL );
     }
 
-    this->mapping( volume );
+    this->mapping( *volume );
 
     return( this );
 }
@@ -109,17 +109,17 @@ MarchingTetrahedra::SuperClass* MarchingTetrahedra::exec( const vismodule::Objec
  *  @param  volume [in] pointer to the volume object
  */
 /*==========================================================================*/
-void MarchingTetrahedra::mapping( const vismodule::UnstructuredVolumeObject* volume )
+void MarchingTetrahedra::mapping( const vismodule::UnstructuredVolumeObject& volume )
 {
     // Check whether the volume can be processed or not.
-    if ( volume->veclen() != 1 )
+    if ( volume.veclen() != 1 )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input volume is not sclar field data.");
         return;
     }
 
-    if ( volume->cellType() != vismodule::VolumeObjectBase::Tetrahedra )
+    if ( volume.cellType() != vismodule::VolumeObjectBase::Tetrahedra )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input volume is not tetrahedra cell data.");
@@ -132,7 +132,7 @@ void MarchingTetrahedra::mapping( const vismodule::UnstructuredVolumeObject* vol
     BaseClass::set_min_max_coords( volume, this );
 
     // Extract surfaces.
-    const std::type_info& type = volume->values().typeInfo()->type();
+    const std::type_info& type = volume.values().typeInfo()->type();
     if (      type == typeid( vismodule::Int8   ) ) this->extract_surfaces<vismodule::Int8>( volume );
     else if ( type == typeid( vismodule::Int16  ) ) this->extract_surfaces<vismodule::Int16>( volume );
     else if ( type == typeid( vismodule::Int32  ) ) this->extract_surfaces<vismodule::Int32>( volume );
@@ -146,7 +146,7 @@ void MarchingTetrahedra::mapping( const vismodule::UnstructuredVolumeObject* vol
     else
     {
         BaseClass::m_is_success = false;
-        visModuleMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
+        visModuleMessageError("Unsupported data type '%s'.", volume.values().typeInfo()->typeName() );
     }
 }
 
@@ -157,7 +157,7 @@ void MarchingTetrahedra::mapping( const vismodule::UnstructuredVolumeObject* vol
  */
 /*==========================================================================*/
 template <typename T>
-void MarchingTetrahedra::extract_surfaces( const vismodule::UnstructuredVolumeObject* volume )
+void MarchingTetrahedra::extract_surfaces( const vismodule::UnstructuredVolumeObject& volume )
 {
     if ( m_duplication ) this->extract_surfaces_with_duplication<T>( volume );
     else                 this->extract_surfaces_without_duplication<T>( volume );
@@ -171,7 +171,7 @@ void MarchingTetrahedra::extract_surfaces( const vismodule::UnstructuredVolumeOb
 /*==========================================================================*/
 template <typename T>
 void MarchingTetrahedra::extract_surfaces_with_duplication(
-    const vismodule::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject& volume )
 {
     // Calculated the coordinate data array and the normal vector array.
     std::vector<vismodule::Real32> coords;
@@ -179,9 +179,9 @@ void MarchingTetrahedra::extract_surfaces_with_duplication(
 
     // Refer the unstructured volume object.
     const vismodule::UInt32* connections =
-        static_cast<const vismodule::UInt32*>( volume->connections().pointer() );
+        static_cast<const vismodule::UInt32*>( volume.connections().pointer() );
 
-    const size_t ncells = volume->ncells();
+    const size_t ncells = volume.ncells();
 
     // Extract surfaces.
     size_t index = 0;
@@ -262,7 +262,7 @@ void MarchingTetrahedra::extract_surfaces_with_duplication(
 /*==========================================================================*/
 template <typename T>
 void MarchingTetrahedra::extract_surfaces_without_duplication(
-    const vismodule::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject& volume )
 {
     vismodule::IgnoreUnusedVariable( volume );
 

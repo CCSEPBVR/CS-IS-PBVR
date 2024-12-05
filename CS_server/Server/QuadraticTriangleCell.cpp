@@ -14,7 +14,7 @@
 #include "QuadraticTriangleCell.h"
 
 
-namespace pbvr
+namespace vismodule
 {
 
 // template instantiation
@@ -29,4 +29,4 @@ template class QuadraticTriangleCell<unsigned long>;
 template class QuadraticTriangleCell<float>;
 template class QuadraticTriangleCell<double>;
 
-} // end of namespace pbvr
+} // end of namespace vismodule

@@ -8,10 +8,10 @@
 #include "ParticleTransferServer.h"
 #include "ParticleTransferProtocol.h"
 
-#include "PointObject.h"
+#include <vismodule/PointObject>
 #include <vismodule/CommandLine>
 #include <vismodule/Camera>
-#include "TransferFunction.h"
+#include <vismodule/TransferFunction>
 #include <vismodule/Matrix33>
 #include <vismodule/RotationMatrix33>
 
@@ -57,9 +57,9 @@
 #endif
 
 #include "FileChecker.h"
-#include "UnstructuredVolumeImporter.h"
-#include "StructuredVolumeImporter.h"
-#include "CellByCellParticleGenerator.h"
+#include <vismodule/UnstructuredVolumeImporter>
+#include <vismodule/StructuredVolumeImporter>
+#include <vismodule/CellByCellParticleGenerator>
 #include "timer.h"
 
 #include "GlyphObjectGenerator.h"
@@ -87,9 +87,9 @@ class PointObjectCreator
 {
 private:
 
-    pbvr::UnstructuredVolumeObject* m_volume;
+    vismodule::UnstructuredVolumeObject* m_volume;
 
-    pbvr::PointObjectGenerator m_generator;
+    vismodule::PointObjectGenerator m_generator;
 
     int m_mpi_rank;
 
@@ -168,7 +168,7 @@ public:
 
 public:
 
-    pbvr::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int timeStep,  const int st = 1 )
+    vismodule::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int timeStep,  const int st = 1 )
     {
         m_generator.setFinlterInfo( m_fi );
         m_generator.setCoordSynthTS( st );
@@ -181,16 +181,16 @@ public:
         }
         m_generator.createFromFile( param, camera, param.m_subpixel_level, param.m_sampling_step );
 
-        pbvr::PointObject* po = m_generator.getPointObject();
+        vismodule::PointObject* po = m_generator.getPointObject();
         return po;
     }
 
-    pbvr::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int timeStep, const int st, const int vl)
+    vismodule::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int timeStep, const int st, const int vl)
     {
         m_generator.setFinlterInfo( m_fi );
         m_generator.setCoordSynthTS( st );
         m_generator.createFromFile( param, camera, param.m_subpixel_level, param.m_sampling_step, st, vl );
-        pbvr::PointObject* po = m_generator.getPointObject();
+        vismodule::PointObject* po = m_generator.getPointObject();
         return po;
     }
 
@@ -200,7 +200,7 @@ public:
         m_ycSynthStr = yss;
         m_zcSynthStr = zss;
 
-        pbvr::CoordSynthesizerStrings css( 0, xss, yss, zss );
+        vismodule::CoordSynthesizerStrings css( 0, xss, yss, zss );
         m_generator.setCoordSynthStrs( css );
     }
 
@@ -214,9 +214,9 @@ public:
 //        m_ycSynthStr = yss;
 //        m_zcSynthStr = zss;
 
-        pbvr::EquationToken xst_tmp;
-        pbvr::EquationToken yst_tmp;
-        pbvr::EquationToken zst_tmp;
+        vismodule::EquationToken xst_tmp;
+        vismodule::EquationToken yst_tmp;
+        vismodule::EquationToken zst_tmp;
 
         for(int i=0; i<128; i++ )
         {
@@ -231,13 +231,13 @@ public:
             zst_tmp.val_array[i] = zst.value_array[i];
         }
 
-        pbvr::CoordSynthesizerTokens cst(xst_tmp, yst_tmp, zst_tmp );
+        vismodule::CoordSynthesizerTokens cst(xst_tmp, yst_tmp, zst_tmp );
         m_generator.setCoordSynthTkns( cst );
     }
 
 protected:
 
-    bool apply_coordinate_synthesizer( pbvr::PointObject* po, const int timeStep )
+    bool apply_coordinate_synthesizer( vismodule::PointObject* po, const int timeStep )
     {
         if ( ! po ) return false;
         if ( m_xcSynthStr.empty() && m_ycSynthStr.empty() && m_zcSynthStr.empty() )
@@ -358,7 +358,7 @@ protected:
         m_field = new vismodule::AVSField( header, coord, variable );
         m_field->progress();
 
-        m_volume = new pbvr::UnstructuredVolumeObject;
+        m_volume = new vismodule::UnstructuredVolumeObject;
 
         const vismodule::Vector3ui resol = m_field->dim();
         const vismodule::UInt32 nnodes = resol.x() * resol.y() * resol.z();
@@ -368,7 +368,7 @@ protected:
         m_volume->setVeclen( 1 );
         m_volume->setNNodes( nnodes );
         m_volume->setNCells( nelem );
-        m_volume->setCellType( pbvr::UnstructuredVolumeObject::Hexahedra );
+        m_volume->setCellType( vismodule::UnstructuredVolumeObject::Hexahedra );
         m_volume->setValues( vismodule::AnyValueArray( m_field->values( 0 ) ) );
 
         const vismodule::UInt32 line_size = resol.x();
@@ -435,8 +435,8 @@ bool IsDirectory( const std::string directory_path )
 #endif
 }
 
-//inline pbvr::UnstructuredVolumeObject* CreateVolumeData( const Argument& param,
-inline pbvr::VolumeObjectBase* CreateVolumeData( const Argument& param,
+//inline vismodule::UnstructuredVolumeObject* CreateVolumeData( const Argument& param,
+inline vismodule::VolumeObjectBase* CreateVolumeData( const Argument& param,
                                                          const FilterInformationFile& fi,
                                                          const int& steps, const int& subvols )
 {
@@ -444,8 +444,8 @@ inline pbvr::VolumeObjectBase* CreateVolumeData( const Argument& param,
     {
         vismodule::File ifpx( fi.m_file_path );
         std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
-        //pbvr::UnstructuredVolumeObject* volume = new pbvr::UnstructuredVolumeImporter( path_base,
-        pbvr::VolumeObjectBase* volume = new pbvr::UnstructuredVolumeImporter( path_base, fi.m_file_type, steps, subvols );
+        //vismodule::UnstructuredVolumeObject* volume = new vismodule::UnstructuredVolumeImporter( path_base,
+        vismodule::VolumeObjectBase* volume = new vismodule::UnstructuredVolumeImporter( path_base, fi.m_file_type, steps, subvols );
         volume->setMinMaxValues( fi.m_min_value, fi.m_max_value );
         volume->setMinMaxObjectCoords( fi.m_min_object_coord, fi.m_max_object_coord );
         volume->setMinMaxExternalCoords( fi.m_min_object_coord, fi.m_max_object_coord );
@@ -463,19 +463,19 @@ inline pbvr::VolumeObjectBase* CreateVolumeData( const Argument& param,
         vismodule::File ifpx( fi.m_file_path );
         std::string m_input_data = ifpx.pathName() + ifpx.Separator()
                                    + ifpx.baseName() + suffix.str() + ".kvsml";
-        //pbvr::UnstructuredVolumeObject* volume = new pbvr::UnstructuredVolumeImporter( m_input_data );
+        //vismodule::UnstructuredVolumeObject* volume = new vismodule::UnstructuredVolumeImporter( m_input_data );
 
-        pbvr::VolumeObjectBase* volume = nullptr;
+        vismodule::VolumeObjectBase* volume = nullptr;
 
         if      ( vismoduleview::FileChecker::ImportableStructuredVolume( m_input_data ))
         {
             std::cout << "Structured !" <<std::endl;
-            volume = new pbvr::StructuredVolumeImporter( m_input_data ); 
+            volume = new vismodule::StructuredVolumeImporter( m_input_data ); 
         } 
         else if ( vismoduleview::FileChecker::ImportableUnstructuredVolume( m_input_data))
         {
             std::cout << "Unstructured !" <<std::endl;
-            volume = new pbvr::UnstructuredVolumeImporter( m_input_data );  
+            volume = new vismodule::UnstructuredVolumeImporter( m_input_data );  
         }
         else 
         {
@@ -504,9 +504,9 @@ inline size_t CalculateSubpixelLevel( const Argument& param,
                                       const FilterInformationList& fil,
                                       const vismodule::Camera& camera )
 {
-    namespace Generator = pbvr::CellByCellParticleGenerator;
-    //pbvr::UnstructuredVolumeObject* volume;
-    pbvr::VolumeObjectBase* volume;
+    namespace Generator = vismodule::CellByCellParticleGenerator;
+    //vismodule::UnstructuredVolumeObject* volume;
+    vismodule::VolumeObjectBase* volume;
     double total_volume = 0.0;
     double density_lev1 = 0.0;//kawamura2: particle density for subpixel_level=1
     int steps = fil.m_total_start_steps;
@@ -531,18 +531,18 @@ inline size_t CalculateSubpixelLevel( const Argument& param,
 
         if ( subvols % nprocs == rank )
         {
-            PBVR_TIMER_STA( 16 );
+            VIS_MODULE_TIMER_STA( 16 );
             volume = CreateVolumeData( param, fi, steps, xvl );
-            PBVR_TIMER_END( 16 );
+            VIS_MODULE_TIMER_END( 16 );
 
-            PBVR_TIMER_STA( 17 );
+            VIS_MODULE_TIMER_STA( 17 );
             double local_volume = Generator::CalculateTotalVolume( volume );
-            PBVR_TIMER_END( 17 );
+            VIS_MODULE_TIMER_END( 17 );
 
-            PBVR_TIMER_STA( 18 );
+            VIS_MODULE_TIMER_STA( 18 );
             density_lev1 += Generator::CalculateGreatDensity( camera, *volume, 1,
                                                               param.m_sampling_step ) * local_volume;
-            PBVR_TIMER_END( 18 );
+            VIS_MODULE_TIMER_END( 18 );
 
             total_volume += local_volume;
             delete volume;
@@ -550,10 +550,10 @@ inline size_t CalculateSubpixelLevel( const Argument& param,
     }
 
 #ifndef CPU_VER
-    PBVR_TIMER_STA( 19 );
+    VIS_MODULE_TIMER_STA( 19 );
     MPI_Allreduce( MPI_IN_PLACE, &density_lev1, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
     MPI_Allreduce( MPI_IN_PLACE, &total_volume, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
-    PBVR_TIMER_END( 19 );
+    VIS_MODULE_TIMER_END( 19 );
 #endif
 
     density_lev1 /= total_volume;
@@ -571,11 +571,9 @@ inline size_t CalculateSubpixelLevel( const Argument& param,
 inline VariableRange Calculate_minmax( const Argument& param,
                                       const FilterInformationList& fil)
 {
-
-
-    namespace Generator = pbvr::CellByCellParticleGenerator;
-    //pbvr::UnstructuredVolumeObject* volume;
-    pbvr::VolumeObjectBase* volume;
+    namespace Generator = vismodule::CellByCellParticleGenerator;
+    //vismodule::UnstructuredVolumeObject* volume;
+    vismodule::VolumeObjectBase* volume;
     double total_volume = 0.0;
     double density_lev1 = 0.0;//kawamura2: particle density for subpixel_level=1
     int steps = fil.m_total_start_steps;
@@ -634,10 +632,10 @@ inline VariableRange Calculate_minmax( const Argument& param,
     }
 
 #ifndef CPU_VER
-    PBVR_TIMER_STA( 19 );
+    VIS_MODULE_TIMER_STA( 19 );
     MPI_Allreduce( MPI_IN_PLACE, min_vec.data(), nvariable, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
     MPI_Allreduce( MPI_IN_PLACE, max_vec.data(), nvariable, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
-    PBVR_TIMER_END( 19 );
+    VIS_MODULE_TIMER_END( 19 );
 #endif
 
    VariableRange vr;
@@ -823,9 +821,9 @@ inline float CalculateDensityFactor( const Argument& param,
                                      const FilterInformationFile& fi,
                                      const vismodule::Camera& camera )
 {
-    namespace Generator = pbvr::CellByCellParticleGenerator;
-    //pbvr::UnstructuredVolumeObject* volume;
-    pbvr::VolumeObjectBase* volume;
+    namespace Generator = vismodule::CellByCellParticleGenerator;
+    //vismodule::UnstructuredVolumeObject* volume;
+    vismodule::VolumeObjectBase* volume;
     double total_volume = 0.0;
     float great_density;
     int steps = fi.m_start_step;
@@ -842,23 +840,23 @@ inline float CalculateDensityFactor( const Argument& param,
 
     if ( rank == 0 )
     {
-        PBVR_TIMER_STA( 16 );
+        VIS_MODULE_TIMER_STA( 16 );
         volume = CreateVolumeData( param, fi, steps, subvols );
-        PBVR_TIMER_END( 16 );
-        PBVR_TIMER_STA( 17 );
+        VIS_MODULE_TIMER_END( 16 );
+        VIS_MODULE_TIMER_STA( 17 );
         total_volume += Generator::CalculateTotalVolume( volume );
-        PBVR_TIMER_END( 17 );
-        PBVR_TIMER_STA( 18 );
+        VIS_MODULE_TIMER_END( 17 );
+        VIS_MODULE_TIMER_STA( 18 );
         great_density = Generator::CalculateGreatDensity( camera, *volume, param.m_subpixel_level,
                                                           param.m_sampling_step );
-        PBVR_TIMER_END( 18 );
+        VIS_MODULE_TIMER_END( 18 );
 
         delete volume;
     }
 #ifndef CPU_VER
-    PBVR_TIMER_STA( 19 );
+    VIS_MODULE_TIMER_STA( 19 );
     MPI_Bcast( &great_density, 1, MPI_FLOAT, 0, MPI_COMM_WORLD );
-    PBVR_TIMER_END( 19 );
+    VIS_MODULE_TIMER_END( 19 );
 #endif
 
 
@@ -866,20 +864,20 @@ inline float CalculateDensityFactor( const Argument& param,
     {
         if ( subvols % nprocs == rank )
         {
-            PBVR_TIMER_STA( 16 );
+            VIS_MODULE_TIMER_STA( 16 );
             volume = CreateVolumeData( param, fi, steps, subvols );
-            PBVR_TIMER_END( 16 );
-            PBVR_TIMER_STA( 17 );
+            VIS_MODULE_TIMER_END( 16 );
+            VIS_MODULE_TIMER_STA( 17 );
             total_volume += Generator::CalculateTotalVolume( volume );
-            PBVR_TIMER_END( 17 );
+            VIS_MODULE_TIMER_END( 17 );
 
             delete volume;
         }
     }
 #ifndef CPU_VER
-    PBVR_TIMER_STA( 19 );
+    VIS_MODULE_TIMER_STA( 19 );
     MPI_Allreduce( MPI_IN_PLACE, &total_volume, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
-    PBVR_TIMER_END( 19 );
+    VIS_MODULE_TIMER_END( 19 );
 #endif
 
     float total_nparticles = great_density * static_cast<float>( total_volume );
@@ -918,8 +916,8 @@ int main( int argc, char** argv )
 #ifndef CPU_VER
     MPI_Init( &argc, &argv );
 #endif
-    PBVR_TIMER_INIT();
-    PBVR_TIMER_STA( 1 );
+    VIS_MODULE_TIMER_INIT();
+    VIS_MODULE_TIMER_STA( 1 );
     Argument param( argc, argv );
     FilterInformationList fil;
     TransferFunctionSynthesizerCreator transfunc_creator;
@@ -933,7 +931,7 @@ int main( int argc, char** argv )
     int retval = 0;
     int mpi_rank = 0;
     std::vector<PointObjectCreator> point_creator_lst;
-    pbvr::PointObject* object = NULL;
+    vismodule::PointObject* object = NULL;
     std::string output, outdir;
     std::string pout = "PARTICLE_OUTDIR";
     std::string prfx = "PARTICLE_SERVER_PREFIX";
@@ -1013,7 +1011,7 @@ int main( int argc, char** argv )
                else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
                {
                     timer_count++;
-//                  param.m_transfer_function = pbvr::TransferFunction(); // *( clntMes.m_transfer_function );
+//                  param.m_transfer_function = vismodule::TransferFunction(); // *( clntMes.m_transfer_function );
                     param.m_sampling_method = 'h';
                     param.m_component_Id = clntMes.m_rendering_id;
                     clntMes.m_enable_crop_region = 0;
@@ -1093,7 +1091,7 @@ int main( int argc, char** argv )
 
                     for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
                     {
-                        param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
+                        param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
                     if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                     if ( param.m_crop.isEnabled() )
@@ -1241,10 +1239,10 @@ int main( int argc, char** argv )
                     delete[] tmp_max;
                     delete[] tmp_min;
 #endif
-                    if ( timer_count == PBVR_TIMER_COUNT_NUM )
+                    if ( timer_count == VIS_MODULE_TIMER_COUNT_NUM )
                     {
-                        PBVR_TIMER_END( 1 );
-                        PBVR_TIMER_FIN();
+                        VIS_MODULE_TIMER_END( 1 );
+                        VIS_MODULE_TIMER_FIN();
                     }
                     delete param.m_transfunc_synthesizer;
                 
@@ -1262,7 +1260,7 @@ int main( int argc, char** argv )
                 else
                 {
                     timer_count++;
-//                  param.m_transfer_function = pbvr::TransferFunction(); // *( clntMes.m_transfer_function );
+//                  param.m_transfer_function = vismodule::TransferFunction(); // *( clntMes.m_transfer_function );
                     param.m_sampling_method = clntMes.m_sampling_method;
                     param.m_component_Id = clntMes.m_rendering_id;
                     param.m_crop.setEnable( clntMes.m_enable_crop_region );
@@ -1328,7 +1326,7 @@ int main( int argc, char** argv )
                     param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
                     for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
                     {
-                        param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
+                        param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
 
                     if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
@@ -1481,10 +1479,10 @@ int main( int argc, char** argv )
                     delete[] tmp_max;
                     delete[] tmp_min;
 #endif
-                    if ( timer_count == PBVR_TIMER_COUNT_NUM )
+                    if ( timer_count == VIS_MODULE_TIMER_COUNT_NUM )
                     {
-                        PBVR_TIMER_END( 1 );
-                        PBVR_TIMER_FIN();
+                        VIS_MODULE_TIMER_END( 1 );
+                        VIS_MODULE_TIMER_FIN();
                     }
                     delete param.m_transfunc_synthesizer;
                 }
@@ -1852,8 +1850,8 @@ int main( int argc, char** argv )
 
             assert( jpv::ParticleTransferUtils::isLittleEndian() );
 //            timer.start();
-//            PBVR_TIMER_STA( 10 );
-//            PBVR_TIMER_END( 10 );
+//            VIS_MODULE_TIMER_STA( 10 );
+//            VIS_MODULE_TIMER_END( 10 );
 //            timer.stop();
 //            std::cout << "first reading time[ms]:" << timer.msec() << std::endl;
 
@@ -2096,7 +2094,7 @@ int main( int argc, char** argv )
                     param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
                     for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
                     {
-                        param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
+                        param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
                     
                     // 4 calc histgram
@@ -2145,9 +2143,9 @@ int main( int argc, char** argv )
                         servMes.m_number_volume_divide = fil.m_total_number_subvolumes;
                     }
 
-                    if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                     {
-                        PBVR_TIMER_STA( 470 );
+                        VIS_MODULE_TIMER_STA( 470 );
                     }
 
                     param.m_sampling_step = CalculateSamplingStep( fil );
@@ -2195,12 +2193,12 @@ int main( int argc, char** argv )
 
                     while ( jd.dispatchNext( wid, &st, &vl ) )
                     {
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                         {
-                            PBVR_TIMER_STA( 471 );
+                            VIS_MODULE_TIMER_STA( 471 );
                         }
 
-                        pbvr::PointObject* originalObject = new pbvr::PointObject;
+                        vismodule::PointObject* originalObject = new vismodule::PointObject;
 
                         if (mpi_size == 1) 
                         {
@@ -2208,7 +2206,7 @@ int main( int argc, char** argv )
                             fidx = fil.getFileIndex( vl, &xvl );
                             FilterInformationFile& fi = fil.m_list[fidx];
 
-                            pbvr::PointObject* tmp_obj = NULL;
+                            vismodule::PointObject* tmp_obj = NULL;
                             std::stringstream suffix;
                             suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
                                 << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
@@ -2280,33 +2278,33 @@ int main( int argc, char** argv )
 #endif
                         //int nvertices = originalObject->coords().size() / 3;
 
-                        pbvr::PointObject* object = originalObject;
+                        vismodule::PointObject* object = originalObject;
                         printf(" %zu perticles generated\n", object->coords().size() / 3);
 
                         //                           //add by shimomura 2023/06/14
                         if ( originalObject != object ) delete originalObject;
                         servMes.m_number_particle = object->coords().size() / 3;
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                         {
-                            PBVR_TIMER_END( 471 );
+                            VIS_MODULE_TIMER_END( 471 );
                         }
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                         {
-                            PBVR_TIMER_STA( 472 );
+                            VIS_MODULE_TIMER_STA( 472 );
                         }
 
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                         {
-                            PBVR_TIMER_END( 472 );
+                            VIS_MODULE_TIMER_END( 472 );
                         }
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                         {
-                            PBVR_TIMER_STA( 473 );
+                            VIS_MODULE_TIMER_STA( 473 );
                         }
                         delete object;
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                         {
-                            PBVR_TIMER_END( 473 );
+                            VIS_MODULE_TIMER_END( 473 );
                         }
                     } // end of while(DispatchNext)
 
@@ -2400,18 +2398,18 @@ int main( int argc, char** argv )
                     delete[] tmp_min;
                     delete param.m_transfunc_synthesizer;
 
-                    if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                     {
-                        PBVR_TIMER_END( 470 );
+                        VIS_MODULE_TIMER_END( 470 );
                     }
                 } // end of change PFI
                 //else
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_particle )
                 {
                     timer_count++;
-                    if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                     {
-                        PBVR_TIMER_STA( 461 );
+                        VIS_MODULE_TIMER_STA( 461 );
                     }
 
                     // send cltMes to all worker process >>
@@ -2504,7 +2502,7 @@ int main( int argc, char** argv )
                      param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
                     for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
                     {
-                        param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
+                        param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
 
                         if ( clntMes.m_node_type == 'a' )
@@ -2551,9 +2549,9 @@ int main( int argc, char** argv )
                             servMes.m_number_volume_divide = fil.m_total_number_subvolumes;
                         }
 
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                         {
-                            PBVR_TIMER_STA( 470 );
+                            VIS_MODULE_TIMER_STA( 470 );
                         }
 
                         param.m_sampling_step = CalculateSamplingStep( fil );
@@ -2600,12 +2598,12 @@ int main( int argc, char** argv )
                         
                         while ( jd.dispatchNext( wid, &st, &vl ) )
                         {
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_STA( 471 );
+                                VIS_MODULE_TIMER_STA( 471 );
                             }
 
-                            pbvr::PointObject* originalObject = new pbvr::PointObject;
+                            vismodule::PointObject* originalObject = new vismodule::PointObject;
 
                             if (mpi_size == 1) {
                             int xvl, fidx;
@@ -2613,7 +2611,7 @@ int main( int argc, char** argv )
                             FilterInformationFile& fi = fil.m_list[fidx];
 
                             point_creator_lst[fidx].setFilterInfo( fi );
-                            pbvr::PointObject* tmp_obj = NULL;
+                            vismodule::PointObject* tmp_obj = NULL;
                             std::stringstream suffix;
                             suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
                                    << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
@@ -2698,7 +2696,7 @@ int main( int argc, char** argv )
 #endif
                             //int nvertices = originalObject->coords().size() / 3;
 
-                            pbvr::PointObject* object = originalObject;
+                            vismodule::PointObject* object = originalObject;
 							printf(" %zu perticles generated\n", object->coords().size() / 3);
 
 //                           //add by shimomura 2023/06/14
@@ -2730,33 +2728,33 @@ int main( int argc, char** argv )
                             }
                             servMes.m_server_side_variable_range = vr;
 
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_END( 471 );
+                                VIS_MODULE_TIMER_END( 471 );
                             }
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_STA( 472 );
+                                VIS_MODULE_TIMER_STA( 472 );
                             }
                             servMes.m_flag_send_bins = 0;
                             servMes.m_message_size = servMes.byteSize();
                             servMes.show();
                             pts.sendMessage( servMes );
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_END( 472 );
+                                VIS_MODULE_TIMER_END( 472 );
                             }
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_STA( 473 );
+                                VIS_MODULE_TIMER_STA( 473 );
                             }
 //                            delete[] servMes.m_positions;
 //                            delete[] servMes.m_normals;
 //                            delete[] servMes.m_colors;
                             delete object;
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_END( 473 );
+                                VIS_MODULE_TIMER_END( 473 );
                             }
                         } // end of while(DispatchNext)
 
@@ -2819,23 +2817,23 @@ int main( int argc, char** argv )
                         delete[] tmp_min;
                         delete param.m_transfunc_synthesizer;
 
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                         {
-                            PBVR_TIMER_END( 470 );
+                            VIS_MODULE_TIMER_END( 470 );
                         }
                     } // end of timeParam == 2
                     else
                     {
                         break;
                     }
-                    if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                     {
-                        PBVR_TIMER_END( 461 );
+                        VIS_MODULE_TIMER_END( 461 );
                     }
-                    if ( timer_count == PBVR_TIMER_COUNT_NUM )
+                    if ( timer_count == VIS_MODULE_TIMER_COUNT_NUM )
                     {
-                        PBVR_TIMER_END( 1 );
-                        PBVR_TIMER_FIN();
+                        VIS_MODULE_TIMER_END( 1 );
+                        VIS_MODULE_TIMER_FIN();
                     }
                 } // end of initParam == 1 generate_particle 
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_glyph )
@@ -3521,8 +3519,8 @@ int main( int argc, char** argv )
     }		// client-server mode
     if ( param.m_batch == true )
     {
-        PBVR_TIMER_END( 1 );
-        PBVR_TIMER_FIN();
+        VIS_MODULE_TIMER_END( 1 );
+        VIS_MODULE_TIMER_FIN();
     }
 #ifndef CPU_VER
     MPI_Finalize();

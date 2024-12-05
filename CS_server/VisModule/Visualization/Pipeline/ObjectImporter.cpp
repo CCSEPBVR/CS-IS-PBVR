@@ -82,7 +82,7 @@ vismodule::ObjectBase* ObjectImporter::import( void )
         return( NULL );
     }
 
-    vismodule::ObjectBase* object = m_importer->exec( m_file_format );
+    vismodule::ObjectBase* object = m_importer->exec( *m_file_format );
     if ( !object )
     {
         visModuleMessageError( "Cannot import a object." );

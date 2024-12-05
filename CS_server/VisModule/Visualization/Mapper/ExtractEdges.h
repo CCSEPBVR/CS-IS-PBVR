@@ -48,60 +48,60 @@ public:
     ExtractEdges( void );
 
     ExtractEdges(
-        const vismodule::VolumeObjectBase* volume );
+        const vismodule::VolumeObjectBase& volume );
 
     ExtractEdges(
-        const vismodule::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase& volume,
         const vismodule::TransferFunction& transfer_function );
 
     virtual ~ExtractEdges( void );
 
 public:
 
-//    vismodule::ObjectBase* exec( const vismodule::ObjectBase* object );
-    SuperClass* exec( const vismodule::ObjectBase* object );
+//    vismodule::ObjectBase* exec( const vismodule::ObjectBase& object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 private:
 
-    void mapping( const vismodule::StructuredVolumeObject* volume );
+    void mapping( const vismodule::StructuredVolumeObject& volume );
 
     void calculate_coords(
-        const vismodule::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject& volume );
 
     void calculate_uniform_coords(
-        const vismodule::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject& volume );
 
     void calculate_rectilinear_coords(
-        const vismodule::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject& volume );
 
     void calculate_connections(
-        const vismodule::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject& volume );
 
 private:
 
-    void mapping( const vismodule::UnstructuredVolumeObject* volume );
+    void mapping( const vismodule::UnstructuredVolumeObject& volume );
 
     void calculate_coords(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     void calculate_connections(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     void calculate_tetrahedra_connections(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     void calculate_hexahedra_connections(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     void calculate_quadratic_tetrahedra_connections(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     void calculate_quadratic_hexahedra_connections(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
     void calculate_colors(
-        const vismodule::VolumeObjectBase* volume );
+        const vismodule::VolumeObjectBase& volume );
 };
 
 } // end of namespace vismodule

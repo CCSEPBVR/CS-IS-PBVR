@@ -11,7 +11,7 @@
  *  $Id: TransferFunction.cpp 611 2010-09-15 11:12:12Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "TransferFunction.h"
+#include <vismodule/TransferFunction>
 
 #include <vismodule/Assert>
 #include <vismodule/KVSMLTransferFunction>
@@ -22,7 +22,7 @@ namespace
 const size_t Defaultm_resolution = 256;
 }
 
-namespace pbvr
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -156,7 +156,7 @@ void TransferFunction::setOpacityRange( const float min_value, const float max_v
     m_opacity_map.setRange( min_value, max_value );
 }
 
-void TransferFunction::setRange( const pbvr::VolumeObjectBase& volume )
+void TransferFunction::setRange( const vismodule::VolumeObjectBase& volume )
 {
     const float min_value = static_cast<float>( volume.minValue() );
     const float max_value = static_cast<float>( volume.maxValue() );
@@ -212,7 +212,7 @@ void TransferFunction::adjustRange( const float min_value, const float max_value
     this->setRange( min_value, max_value );
 }
 
-void TransferFunction::adjustRange( const pbvr::VolumeObjectBase& volume )
+void TransferFunction::adjustRange( const vismodule::VolumeObjectBase& volume )
 {
     const float min_value = static_cast<float>( volume.minValue() );
     const float max_value = static_cast<float>( volume.maxValue() );
@@ -413,4 +413,4 @@ TransferFunction& TransferFunction::operator =( const TransferFunction& rhs )
     return *this;
 }
 
-} // end of namespace pbvr
+} // end of namespace vismodule

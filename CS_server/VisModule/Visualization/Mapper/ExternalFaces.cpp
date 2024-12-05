@@ -277,7 +277,7 @@ inline const FaceMap::Key FaceMap::get_key( const vismodule::UInt32 id0, const v
  */
 /*===========================================================================*/
 inline void CreateTetrahedraFaceMap(
-    const vismodule::UnstructuredVolumeObject* volume,
+    const vismodule::UnstructuredVolumeObject& volume,
     FaceMap* face_map )
 {
     const vismodule::UInt32* connections = volume->connections().pointer();
@@ -307,7 +307,7 @@ inline void CreateTetrahedraFaceMap(
  */
 /*===========================================================================*/
 inline void CreateQuadraticTetrahedraFaceMap(
-    const vismodule::UnstructuredVolumeObject* volume,
+    const vismodule::UnstructuredVolumeObject& volume,
     FaceMap* face_map )
 {
     const vismodule::UInt32* connections = volume->connections().pointer();
@@ -358,7 +358,7 @@ inline void CreateQuadraticTetrahedraFaceMap(
  */
 /*===========================================================================*/
 inline void CreateHexahedraFaceMap(
-    const vismodule::UnstructuredVolumeObject* volume,
+    const vismodule::UnstructuredVolumeObject& volume,
     FaceMap* face_map )
 {
     const vismodule::UInt32* connections = volume->connections().pointer();
@@ -405,7 +405,7 @@ inline void CreateHexahedraFaceMap(
  */
 /*===========================================================================*/
 inline void CreateQuadraticHexahedraFaceMap(
-    const vismodule::UnstructuredVolumeObject* volume,
+    const vismodule::UnstructuredVolumeObject& volume,
     FaceMap* face_map )
 {
     const vismodule::UInt32* connections = volume->connections().pointer();
@@ -493,7 +493,7 @@ inline void CreateQuadraticHexahedraFaceMap(
 /*===========================================================================*/
 template <typename T>
 void CalculateFaces(
-    const vismodule::UnstructuredVolumeObject* volume,
+    const vismodule::UnstructuredVolumeObject& volume,
     const vismodule::ColorMap cmap,
     const FaceMap& face_map,
     vismodule::ValueArray<vismodule::Real32>* coords,
@@ -589,7 +589,7 @@ ExternalFaces::ExternalFaces( void ):
  *  @param  volume [in] pointer to the volume object
  */
 /*===========================================================================*/
-ExternalFaces::ExternalFaces( const vismodule::VolumeObjectBase* volume ):
+ExternalFaces::ExternalFaces( const vismodule::VolumeObjectBase& volume ):
     vismodule::MapperBase(),
     vismodule::PolygonObject()
 {
@@ -604,7 +604,7 @@ ExternalFaces::ExternalFaces( const vismodule::VolumeObjectBase* volume ):
  */
 /*===========================================================================*/
 ExternalFaces::ExternalFaces(
-    const vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase& volume,
     const vismodule::TransferFunction& transfer_function ):
     vismodule::MapperBase( transfer_function ),
     vismodule::PolygonObject()
@@ -628,9 +628,9 @@ ExternalFaces::~ExternalFaces( void )
  *  @return pointer of the line object
  */
 /*===========================================================================*/
-ExternalFaces::SuperClass* ExternalFaces::exec( const vismodule::ObjectBase* object )
+ExternalFaces::SuperClass* ExternalFaces::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -638,7 +638,7 @@ ExternalFaces::SuperClass* ExternalFaces::exec( const vismodule::ObjectBase* obj
     }
 
     const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
-    if ( !volume )
+    if ( !&volume )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is not volume dat.");
@@ -664,7 +664,7 @@ ExternalFaces::SuperClass* ExternalFaces::exec( const vismodule::ObjectBase* obj
  *  @param  volume [in] pointer to the strctured volume object
  */
 /*===========================================================================*/
-void ExternalFaces::mapping( const vismodule::StructuredVolumeObject* volume )
+void ExternalFaces::mapping( const vismodule::StructuredVolumeObject& volume )
 {
     BaseClass::attach_volume( volume );
     BaseClass::set_range( volume );
@@ -696,7 +696,7 @@ void ExternalFaces::mapping( const vismodule::StructuredVolumeObject* volume )
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExternalFaces::calculate_coords( const vismodule::StructuredVolumeObject* volume )
+void ExternalFaces::calculate_coords( const vismodule::StructuredVolumeObject& volume )
 {
     const vismodule::VolumeObjectBase::GridType type = volume->gridType();
     if ( type == vismodule::VolumeObjectBase::Uniform )
@@ -728,7 +728,7 @@ void ExternalFaces::calculate_coords( const vismodule::StructuredVolumeObject* v
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExternalFaces::calculate_uniform_coords( const vismodule::StructuredVolumeObject* volume )
+void ExternalFaces::calculate_uniform_coords( const vismodule::StructuredVolumeObject& volume )
 {
     const vismodule::Vector3ui resolution( volume->resolution() );
     const vismodule::Vector3f  volume_size( volume->maxObjectCoord() - volume->minObjectCoord() );
@@ -964,7 +964,7 @@ void ExternalFaces::calculate_uniform_coords( const vismodule::StructuredVolumeO
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExternalFaces::calculate_rectilinear_coords( const vismodule::StructuredVolumeObject* volume )
+void ExternalFaces::calculate_rectilinear_coords( const vismodule::StructuredVolumeObject& volume )
 {
     vismodule::IgnoreUnusedVariable( volume );
 
@@ -978,7 +978,7 @@ void ExternalFaces::calculate_rectilinear_coords( const vismodule::StructuredVol
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExternalFaces::calculate_curvilinear_coords( const vismodule::StructuredVolumeObject* volume )
+void ExternalFaces::calculate_curvilinear_coords( const vismodule::StructuredVolumeObject& volume )
 {
     vismodule::IgnoreUnusedVariable( volume );
 
@@ -992,7 +992,7 @@ void ExternalFaces::calculate_curvilinear_coords( const vismodule::StructuredVol
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExternalFaces::calculate_irregular_coords( const vismodule::StructuredVolumeObject* volume )
+void ExternalFaces::calculate_irregular_coords( const vismodule::StructuredVolumeObject& volume )
 {
     vismodule::IgnoreUnusedVariable( volume );
 
@@ -1007,7 +1007,7 @@ void ExternalFaces::calculate_irregular_coords( const vismodule::StructuredVolum
  */
 /*===========================================================================*/
 template <typename T>
-void ExternalFaces::calculate_colors( const vismodule::StructuredVolumeObject* volume )
+void ExternalFaces::calculate_colors( const vismodule::StructuredVolumeObject& volume )
 {
     // Parameters of the volume data.
     if ( !volume->hasMinMaxValues() ) { volume->updateMinMaxValues(); }
@@ -1241,7 +1241,7 @@ void ExternalFaces::calculate_colors( const vismodule::StructuredVolumeObject* v
  *  @param  volume [in] pointer to the unstrctured volume object
  */
 /*===========================================================================*/
-void ExternalFaces::mapping( const vismodule::UnstructuredVolumeObject* volume )
+void ExternalFaces::mapping( const vismodule::UnstructuredVolumeObject& volume )
 {
     BaseClass::attach_volume( volume );
     BaseClass::set_range( volume );
@@ -1330,7 +1330,7 @@ void ExternalFaces::mapping( const vismodule::UnstructuredVolumeObject* volume )
  */
 /*===========================================================================*/
 template <typename T>
-void ExternalFaces::calculate_tetrahedral_faces( const vismodule::UnstructuredVolumeObject* volume )
+void ExternalFaces::calculate_tetrahedral_faces( const vismodule::UnstructuredVolumeObject& volume )
 {
     ::FaceMap face_map( volume->nnodes() );
     CreateTetrahedraFaceMap( volume, &face_map );
@@ -1352,7 +1352,7 @@ void ExternalFaces::calculate_tetrahedral_faces( const vismodule::UnstructuredVo
  */
 /*===========================================================================*/
 template <typename T>
-void ExternalFaces::calculate_quadratic_tetrahedral_faces( const vismodule::UnstructuredVolumeObject* volume )
+void ExternalFaces::calculate_quadratic_tetrahedral_faces( const vismodule::UnstructuredVolumeObject& volume )
 {
     ::FaceMap face_map( volume->nnodes() );
     CreateQuadraticTetrahedraFaceMap( volume, &face_map );
@@ -1374,7 +1374,7 @@ void ExternalFaces::calculate_quadratic_tetrahedral_faces( const vismodule::Unst
  */
 /*===========================================================================*/
 template <typename T>
-void ExternalFaces::calculate_hexahedral_faces( const vismodule::UnstructuredVolumeObject* volume )
+void ExternalFaces::calculate_hexahedral_faces( const vismodule::UnstructuredVolumeObject& volume )
 {
     ::FaceMap face_map( volume->nnodes() );
     CreateHexahedraFaceMap( volume, &face_map );
@@ -1396,7 +1396,7 @@ void ExternalFaces::calculate_hexahedral_faces( const vismodule::UnstructuredVol
  */
 /*===========================================================================*/
 template <typename T>
-void ExternalFaces::calculate_quadratic_hexahedral_faces( const vismodule::UnstructuredVolumeObject* volume )
+void ExternalFaces::calculate_quadratic_hexahedral_faces( const vismodule::UnstructuredVolumeObject& volume )
 {
     ::FaceMap face_map( volume->nnodes() );
     CreateQuadraticHexahedraFaceMap( volume, &face_map );

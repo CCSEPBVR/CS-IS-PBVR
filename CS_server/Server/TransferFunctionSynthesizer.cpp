@@ -298,7 +298,7 @@ EquationToken TransferFunctionSynthesizer::convert_token(const std::string expre
 //---------structured----------------
 //kawamura
 void TransferFunctionSynthesizer::SynthesizedOpacityScalars(
-    std::vector< TFS::TrilinearInterpolator* > interp ,
+    std::vector< vismodule::TrilinearInterpolator* > interp ,
     float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
     float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
     //float scalars[][SIMDW] )//resulting scalars[TF_COUNT][SIMDW]
@@ -350,7 +350,7 @@ void TransferFunctionSynthesizer::SynthesizedOpacityScalars(
 
 //kawamura
 void TransferFunctionSynthesizer::SynthesizedColorScalars(
-    std::vector< TFS::TrilinearInterpolator* > interp ,
+    std::vector< vismodule::TrilinearInterpolator* > interp ,
     float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
     float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
     //float scalars[][SIMDW] )//resulting scalars[TF_COUNT][SIMDW]
@@ -402,8 +402,8 @@ void TransferFunctionSynthesizer::SynthesizedColorScalars(
 
 //kawamura
 void TransferFunctionSynthesizer::CalculateOpacity(
-    std::vector< TFS::TrilinearInterpolator* > interp,
-    std::vector<pbvr::TransferFunction>& tf,
+    std::vector< vismodule::TrilinearInterpolator* > interp,
+    std::vector<vismodule::TransferFunction>& tf,
     float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
     float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
     float* opacity )//resulting opacity[SIMDW]
@@ -482,8 +482,8 @@ void TransferFunctionSynthesizer::CalculateOpacity(
 
 //kawamura
 void TransferFunctionSynthesizer::CalculateColor(
-    std::vector< TFS::TrilinearInterpolator* > interp,
-    std::vector<pbvr::TransferFunction>& tf,
+    std::vector< vismodule::TrilinearInterpolator* > interp,
+    std::vector<vismodule::TransferFunction>& tf,
     float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
     float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
     vismodule::UInt8* Red, vismodule::UInt8* Green, vismodule::UInt8* Blue )//resulting colors[SIMDW]
@@ -634,14 +634,14 @@ void TransferFunctionSynthesizer::CalculateColor(
 }
 
 void TransferFunctionSynthesizer::CalculateCoordArray(
-    std::vector< TFS::TrilinearInterpolator* > interp,
+    std::vector< vismodule::TrilinearInterpolator* > interp,
     const int loop_cnt,
     float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
     float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
     //const vismodule::Vector3f *local_coord, 
     //const vismodule::Vector3f *global_coord,
-    std::vector<pbvr::TransferFunction>& tf,
-    const pbvr::CoordSynthesizerStrings css,
+    std::vector<vismodule::TransferFunction>& tf,
+    const vismodule::CoordSynthesizerStrings css,
     float* nx_g, float* ny_g, float* nz_g ) //global coord[SIMDW])
 {
         
@@ -947,8 +947,8 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
 //------------unstructured------
 //kawamura
 std::vector<float> TransferFunctionSynthesizer::SynthesizedOpacityScalars(
-    std::vector< pbvr::CellBase<Type>* > interp , vismodule::Vector3f local_coord, vismodule::Vector3f global_coord )
-    //std::vector< pbvr::HexahedralCell<Type>* > interp , vismodule::Vector3f local_coord, vismodule::Vector3f global_coord )
+    std::vector< vismodule::CellBase<Type>* > interp , vismodule::Vector3f local_coord, vismodule::Vector3f global_coord )
+    //std::vector< vismodule::HexahedralCell<Type>* > interp , vismodule::Vector3f local_coord, vismodule::Vector3f global_coord )
 {
     m_var_value[X] = global_coord.x();
     m_var_value[Y] = global_coord.y();
@@ -986,7 +986,7 @@ std::vector<float> TransferFunctionSynthesizer::SynthesizedOpacityScalars(
 
 ////kawamura
 //void TransferFunctionSynthesizer::SynthesizedOpacityScalars(
-//    std::vector< TFS::TrilinearInterpolator* > interp ,
+//    std::vector< vismodule::TrilinearInterpolator* > interp ,
 //    float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
 //    float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
 //    float scalars[][SIMDW] )//resulting scalars[TF_COUNT][SIMDW]
@@ -1036,8 +1036,8 @@ std::vector<float> TransferFunctionSynthesizer::SynthesizedOpacityScalars(
 
 // Fj add
 void TransferFunctionSynthesizer::SynthesizedOpacityScalarsArray(
-//    std::vector< pbvr::HexahedralCell<Type>* > interp ,
-    std::vector< pbvr::CellBase<Type>* > interp ,
+//    std::vector< vismodule::HexahedralCell<Type>* > interp ,
+    std::vector< vismodule::CellBase<Type>* > interp ,
     const int loop_cnt,
     const vismodule::Vector3f *local_coord,
     const vismodule::Vector3f *global_coord,
@@ -1199,7 +1199,7 @@ void TransferFunctionSynthesizer::SynthesizedOpacityScalarsArray(
 
 ////kawamura
 //void TransferFunctionSynthesizer::SynthesizedColorScalars(
-//    std::vector< TFS::TrilinearInterpolator* > interp ,
+//    std::vector< vismodule::TrilinearInterpolator* > interp ,
 //    float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
 //    float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
 //    float scalars[][SIMDW] )//resulting scalars[TF_COUNT][SIMDW]
@@ -1250,8 +1250,8 @@ void TransferFunctionSynthesizer::SynthesizedOpacityScalarsArray(
 
 // Fj add
 void TransferFunctionSynthesizer::SynthesizedColorScalarsArray(
-//    std::vector< pbvr::HexahedralCell<Type>* > interp,
-    std::vector< pbvr::CellBase<Type>* > interp ,
+//    std::vector< vismodule::HexahedralCell<Type>* > interp,
+    std::vector< vismodule::CellBase<Type>* > interp ,
     const int loop_cnt,
     const vismodule::Vector3f *local_coord,
     const vismodule::Vector3f *global_coord,
@@ -1414,8 +1414,8 @@ void TransferFunctionSynthesizer::SynthesizedColorScalarsArray(
 
 //kawamura
 float TransferFunctionSynthesizer::CalculateOpacity(
-    std::vector< pbvr::CellBase<Type>* > interp , vismodule::Vector3f local_coord, vismodule::Vector3f global_coord,
-    std::vector<pbvr::TransferFunction>& tf)
+    std::vector< vismodule::CellBase<Type>* > interp , vismodule::Vector3f local_coord, vismodule::Vector3f global_coord,
+    std::vector<vismodule::TransferFunction>& tf)
 {
     m_var_value[X] = global_coord.x();
     m_var_value[Y] = global_coord.y();
@@ -1468,14 +1468,14 @@ float TransferFunctionSynthesizer::CalculateOpacity(
 
 
 void TransferFunctionSynthesizer::CalculateCoordArray(
-    //std::vector< pbvr::HexahedralCell<Type>* > interp , 
-    std::vector< pbvr::CellBase<Type>* > interp , 
+    //std::vector< vismodule::HexahedralCell<Type>* > interp , 
+    std::vector< vismodule::CellBase<Type>* > interp , 
     const int loop_cnt,
     const vismodule::Vector3f *local_coord, 
     const vismodule::Vector3f *global_coord,
-    std::vector<pbvr::TransferFunction>& tf,
-//    const pbvr::CoordSynthesizerTokens cst,
-    const pbvr::CoordSynthesizerStrings css,
+    std::vector<vismodule::TransferFunction>& tf,
+//    const vismodule::CoordSynthesizerTokens cst,
+    const vismodule::CoordSynthesizerStrings css,
 //    float *new_coord_array)
     vismodule::Vector3f *new_coord_array)
 {
@@ -1761,12 +1761,12 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
 }
 
 void TransferFunctionSynthesizer::CalculateOpacityArrayAverage(
-    //std::vector< pbvr::HexahedralCell<Type>* > interp , 
-    std::vector< pbvr::CellBase<Type>* > interp , 
+    //std::vector< vismodule::HexahedralCell<Type>* > interp , 
+    std::vector< vismodule::CellBase<Type>* > interp , 
     const int loop_cnt,
     const vismodule::Vector3f *local_coord, 
     const vismodule::Vector3f *global_coord,
-    std::vector<pbvr::TransferFunction>& tf,
+    std::vector<vismodule::TransferFunction>& tf,
     float *opacity_array)
 {
 
@@ -1964,12 +1964,12 @@ void TransferFunctionSynthesizer::CalculateOpacityArrayAverage(
 
 
 void TransferFunctionSynthesizer::CalculateOpacityArray(
-    //std::vector< pbvr::HexahedralCell<Type>* > interp , 
-    std::vector< pbvr::CellBase<Type>* > interp , 
+    //std::vector< vismodule::HexahedralCell<Type>* > interp , 
+    std::vector< vismodule::CellBase<Type>* > interp , 
     const int loop_cnt,
     const vismodule::Vector3f *local_coord, 
     const vismodule::Vector3f *global_coord,
-    std::vector<pbvr::TransferFunction>& tf,
+    std::vector<vismodule::TransferFunction>& tf,
     float *opacity_array)
 {
 
@@ -2166,8 +2166,8 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 
 ////kawamura
 //void TransferFunctionSynthesizer::CalculateColor(
-//    std::vector< TFS::TrilinearInterpolator* > interp,
-//    std::vector<pbvr::TransferFunction>& tf,
+//    std::vector< vismodule::TrilinearInterpolator* > interp,
+//    std::vector<vismodule::TransferFunction>& tf,
 //    float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
 //    float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
 //    vismodule::UInt8* Red, vismodule::UInt8* Green, vismodule::UInt8* Blue )//resulting colors[SIMDW]
@@ -2307,12 +2307,12 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 //}
 
 void TransferFunctionSynthesizer::CalculateColorArray(
-//    std::vector< pbvr::HexahedralCell<Type>* > interp,
-    std::vector< pbvr::CellBase<Type>* > interp , 
+//    std::vector< vismodule::HexahedralCell<Type>* > interp,
+    std::vector< vismodule::CellBase<Type>* > interp , 
     const int loop_cnt,
     const vismodule::Vector3f *local_coord,
     const vismodule::Vector3f *global_coord,
-    std::vector<pbvr::TransferFunction>& tf,
+    std::vector<vismodule::TransferFunction>& tf,
     vismodule::RGBColor *color_seq)
 {
 

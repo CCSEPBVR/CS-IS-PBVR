@@ -11,7 +11,7 @@
  *  $Id: MetropolisSampling.cpp 605 2010-08-21 05:08:32Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "MetropolisSampling.h"
+#include <vismodule/MetropolisSampling>
 #include <vismodule/MersenneTwister>
 #include <vismodule/TrilinearInterpolator>
 #include <vismodule/IgnoreUnusedVariable>
@@ -40,7 +40,7 @@ MetropolisSampling::MetropolisSampling( void ):
  */
 /*==========================================================================*/
 MetropolisSampling::MetropolisSampling(
-    const vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase& volume,
     const size_t                 nparticles ):
     vismodule::MapperBase(),
     vismodule::PointObject(),
@@ -58,7 +58,7 @@ MetropolisSampling::MetropolisSampling(
  */
 /*==========================================================================*/
 MetropolisSampling::MetropolisSampling(
-    const vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase& volume,
     const size_t                 nparticles,
     const vismodule::TransferFunction& transfer_function ):
     vismodule::MapperBase( transfer_function ),
@@ -105,9 +105,9 @@ void MetropolisSampling::setNParticles( const size_t nparticles )
  *  @return pointer to the point object
  */
 /*===========================================================================*/
-MetropolisSampling::SuperClass* MetropolisSampling::exec( const vismodule::ObjectBase* object )
+MetropolisSampling::SuperClass* MetropolisSampling::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -125,11 +125,11 @@ MetropolisSampling::SuperClass* MetropolisSampling::exec( const vismodule::Objec
     const vismodule::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
     if ( volume_type == vismodule::VolumeObjectBase::Structured )
     {
-        this->mapping( reinterpret_cast<const vismodule::StructuredVolumeObject*>( object ) );
+        this->mapping( *reinterpret_cast<const vismodule::StructuredVolumeObject*>( &object ) );
     }
     else // volume_type == vismodule::VolumeObjectBase::Unstructured
     {
-        this->mapping( reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( object ) );
+        this->mapping( *reinterpret_cast<const vismodule::UnstructuredVolumeObject*>( &object ) );
     }
 
     return( this );
@@ -141,7 +141,7 @@ MetropolisSampling::SuperClass* MetropolisSampling::exec( const vismodule::Objec
  *  @param  volume [in] pointer to the structured volume object
  */
 /*==========================================================================*/
-void MetropolisSampling::mapping( const vismodule::StructuredVolumeObject* volume )
+void MetropolisSampling::mapping( const vismodule::StructuredVolumeObject& volume )
 {
     // Attach the pointer to the volume object.
     BaseClass::attach_volume( volume );
@@ -149,13 +149,13 @@ void MetropolisSampling::mapping( const vismodule::StructuredVolumeObject* volum
     BaseClass::set_min_max_coords( volume, this );
 
     // Generate the particles.
-    const std::type_info& type = volume->values().typeInfo()->type();
+    const std::type_info& type = volume.values().typeInfo()->type();
     if (      type == typeid( vismodule::UInt8  ) ) this->generate_particles<vismodule::UInt8>( volume );
     else if ( type == typeid( vismodule::UInt16 ) ) this->generate_particles<vismodule::UInt16>( volume );
     else
     {
         BaseClass::m_is_success = false;
-        visModuleMessageError("Unsupported data type '%s'.", volume->values().typeInfo()->typeName() );
+        visModuleMessageError("Unsupported data type '%s'.", volume.values().typeInfo()->typeName() );
     }
 }
 
@@ -165,7 +165,7 @@ void MetropolisSampling::mapping( const vismodule::StructuredVolumeObject* volum
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*==========================================================================*/
-void MetropolisSampling::mapping( const vismodule::UnstructuredVolumeObject* volume )
+void MetropolisSampling::mapping( const vismodule::UnstructuredVolumeObject& volume )
 {
     vismodule::IgnoreUnusedVariable( volume );
 
@@ -180,13 +180,13 @@ void MetropolisSampling::mapping( const vismodule::UnstructuredVolumeObject* vol
  */
 /*==========================================================================*/
 template <typename T>
-void MetropolisSampling::generate_particles( const vismodule::StructuredVolumeObject* volume  )
+void MetropolisSampling::generate_particles( const vismodule::StructuredVolumeObject& volume  )
 {
     // Set the trilinear interpolator.
     vismodule::TrilinearInterpolator interpolator( volume );
 
     // Alias.
-    const vismodule::Vector3ui r = volume->resolution() - vismodule::Vector3ui(1);
+    const vismodule::Vector3ui r = volume.resolution() - vismodule::Vector3ui(1);
 
     // Allocate memory for generated particles.
     SuperClass::m_coords.allocate( m_nparticles * 3 );
@@ -267,10 +267,10 @@ void MetropolisSampling::generate_particles( const vismodule::StructuredVolumeOb
 }
 
 template
-void MetropolisSampling::generate_particles<vismodule::UInt8>( const vismodule::StructuredVolumeObject* volume );
+void MetropolisSampling::generate_particles<vismodule::UInt8>( const vismodule::StructuredVolumeObject& volume );
 
 template
-void MetropolisSampling::generate_particles<vismodule::UInt16>( const vismodule::StructuredVolumeObject* volume );
+void MetropolisSampling::generate_particles<vismodule::UInt16>( const vismodule::StructuredVolumeObject& volume );
 
 /*==========================================================================*/
 /**

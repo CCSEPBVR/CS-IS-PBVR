@@ -176,7 +176,7 @@ PolygonImporter::PolygonImporter( const std::string& filename )
  *  @param  file_format [in] pointer to the file format
  */
 /*==========================================================================*/
-PolygonImporter::PolygonImporter( const vismodule::FileFormatBase* file_format )
+PolygonImporter::PolygonImporter( const vismodule::FileFormatBase& file_format )
 {
     this->exec( file_format );
 }
@@ -197,27 +197,27 @@ PolygonImporter::~PolygonImporter( void )
  *  @return pointer to the imported polygon object
  */
 /*===========================================================================*/
-PolygonImporter::SuperClass* PolygonImporter::exec( const vismodule::FileFormatBase* file_format )
+PolygonImporter::SuperClass* PolygonImporter::exec( const vismodule::FileFormatBase& file_format )
 {
-    if ( !file_format )
+    if ( !&file_format )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input file format is NULL.");
         return( NULL );
     }
 
-    const std::string class_name = file_format->className();
+    const std::string class_name = file_format.className();
     if ( class_name == "vismodule::KVSMLObjectPolygon" )
     {
-        this->import( static_cast<const vismodule::KVSMLObjectPolygon*>( file_format ) );
+        this->import( static_cast<const vismodule::KVSMLObjectPolygon*>( &file_format ) );
     }
     else if ( class_name == "vismodule::Stl" )
     {
-        this->import( static_cast<const vismodule::Stl*>( file_format ) );
+        this->import( static_cast<const vismodule::Stl*>( &file_format ) );
     }
     else if ( class_name == "vismodule::Ply" )
     {
-        this->import( static_cast<const vismodule::Ply*>( file_format ) );
+        this->import( static_cast<const vismodule::Ply*>( &file_format ) );
     }
     else
     {

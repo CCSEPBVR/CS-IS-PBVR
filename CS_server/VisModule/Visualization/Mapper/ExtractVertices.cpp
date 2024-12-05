@@ -37,7 +37,7 @@ ExtractVertices::ExtractVertices( void )
  */
 /*==========================================================================*/
 ExtractVertices::ExtractVertices(
-    const vismodule::VolumeObjectBase* volume )
+    const vismodule::VolumeObjectBase& volume )
     : MapperBase()
     , PointObject()
 {
@@ -52,7 +52,7 @@ ExtractVertices::ExtractVertices(
  */
 /*==========================================================================*/
 ExtractVertices::ExtractVertices(
-    const vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase& volume,
     const vismodule::TransferFunction& transfer_function )
     : MapperBase( transfer_function )
     , PointObject()
@@ -76,9 +76,9 @@ ExtractVertices::~ExtractVertices( void )
  *  @return pointer to the point object
  */
 /*===========================================================================*/
-ExtractVertices::SuperClass* ExtractVertices::exec( const vismodule::ObjectBase* object )
+ExtractVertices::SuperClass* ExtractVertices::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -86,14 +86,14 @@ ExtractVertices::SuperClass* ExtractVertices::exec( const vismodule::ObjectBase*
     }
 
     const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
-    if ( !volume )
+    if ( !&volume )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is not volume dat.");
         return( NULL );
     }
 
-    this->mapping( volume );
+    this->mapping( *volume );
 
     return( this );
 }
@@ -105,7 +105,7 @@ ExtractVertices::SuperClass* ExtractVertices::exec( const vismodule::ObjectBase*
  */
 /*===========================================================================*/
 void ExtractVertices::mapping(
-    const vismodule::VolumeObjectBase* volume )
+    const vismodule::VolumeObjectBase& volume )
 {
     BaseClass::attach_volume( volume );
     BaseClass::set_range( volume );
@@ -113,7 +113,7 @@ void ExtractVertices::mapping(
 
     this->calculate_coords();
 
-    const std::type_info& type = volume->values().typeInfo()->type();
+    const std::type_info& type = volume.values().typeInfo()->type();
     if (      type == typeid( vismodule::Int8   ) ) { this->calculate_colors<vismodule::Int8  >(); }
     else if ( type == typeid( vismodule::Int16  ) ) { this->calculate_colors<vismodule::Int16 >(); }
     else if ( type == typeid( vismodule::Int32  ) ) { this->calculate_colors<vismodule::Int32 >(); }

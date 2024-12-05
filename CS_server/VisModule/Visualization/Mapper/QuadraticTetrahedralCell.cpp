@@ -11,10 +11,10 @@
  *  $Id: QuadraticTetrahedralCell.cpp 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "QuadraticTetrahedralCell.h"
+#include <vismodule/QuadraticTetrahedralCell>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 // template instantiation
@@ -29,4 +29,4 @@ template class QuadraticTetrahedralCell<unsigned long>;
 template class QuadraticTetrahedralCell<float>;
 template class QuadraticTetrahedralCell<double>;
 
-} // end of namespace pbvr
+} // end of namespace vismodule

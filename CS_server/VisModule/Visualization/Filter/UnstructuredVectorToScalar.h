@@ -44,18 +44,18 @@ public:
 
     UnstructuredVectorToScalar( void );
 
-    UnstructuredVectorToScalar( const vismodule::UnstructuredVolumeObject* volume );
+    UnstructuredVectorToScalar( const vismodule::UnstructuredVolumeObject& volume );
 
     virtual ~UnstructuredVectorToScalar( void );
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 protected:
 
     template <typename T>
-    void calculate_magnitude( const vismodule::UnstructuredVolumeObject* volume );
+    void calculate_magnitude( const vismodule::UnstructuredVolumeObject& volume );
 };
 
 } // end of namespace vismodule

@@ -141,7 +141,7 @@ ExtractEdges::ExtractEdges( void ):
  *  @param  volume [in] pointer to the volume object
  */
 /*===========================================================================*/
-ExtractEdges::ExtractEdges( const vismodule::VolumeObjectBase* volume ):
+ExtractEdges::ExtractEdges( const vismodule::VolumeObjectBase& volume ):
     vismodule::MapperBase(),
     vismodule::LineObject()
 {
@@ -156,7 +156,7 @@ ExtractEdges::ExtractEdges( const vismodule::VolumeObjectBase* volume ):
  */
 /*===========================================================================*/
 ExtractEdges::ExtractEdges(
-    const vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase& volume,
     const vismodule::TransferFunction& transfer_function ):
     vismodule::MapperBase( transfer_function ),
     vismodule::LineObject()
@@ -180,9 +180,9 @@ ExtractEdges::~ExtractEdges( void )
  *  @return pointer of the line object
  */
 /*===========================================================================*/
-ExtractEdges::SuperClass* ExtractEdges::exec( const vismodule::ObjectBase* object )
+ExtractEdges::SuperClass* ExtractEdges::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -200,11 +200,11 @@ ExtractEdges::SuperClass* ExtractEdges::exec( const vismodule::ObjectBase* objec
     const vismodule::VolumeObjectBase::VolumeType type = volume->volumeType();
     if ( type == vismodule::VolumeObjectBase::Structured )
     {
-        this->mapping( vismodule::StructuredVolumeObject::DownCast( volume ) );
+        this->mapping( *vismodule::StructuredVolumeObject::DownCast( *volume ) );
     }
     else // type == vismodule::VolumeObjectBase::Unstructured
     {
-        this->mapping( vismodule::UnstructuredVolumeObject::DownCast( volume ) );
+        this->mapping( *vismodule::UnstructuredVolumeObject::DownCast( *volume ) );
     }
 
     return( this );
@@ -216,7 +216,7 @@ ExtractEdges::SuperClass* ExtractEdges::exec( const vismodule::ObjectBase* objec
  *  @param  volume [in] pointer to the strctured volume object
  */
 /*===========================================================================*/
-void ExtractEdges::mapping( const vismodule::StructuredVolumeObject* volume )
+void ExtractEdges::mapping( const vismodule::StructuredVolumeObject& volume )
 {
     BaseClass::attach_volume( volume );
     BaseClass::set_range( volume );
@@ -225,7 +225,7 @@ void ExtractEdges::mapping( const vismodule::StructuredVolumeObject* volume )
     this->calculate_coords( volume );
     this->calculate_connections( volume );
 
-    const std::type_info& type = volume->values().typeInfo()->type();
+    const std::type_info& type = volume.values().typeInfo()->type();
     if (      type == typeid( vismodule::Int8   ) ) { this->calculate_colors<vismodule::Int8  >( volume ); }
     else if ( type == typeid( vismodule::Int16  ) ) { this->calculate_colors<vismodule::Int16 >( volume ); }
     else if ( type == typeid( vismodule::Int32  ) ) { this->calculate_colors<vismodule::Int32 >( volume ); }
@@ -248,9 +248,9 @@ void ExtractEdges::mapping( const vismodule::StructuredVolumeObject* volume )
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExtractEdges::calculate_coords( const vismodule::StructuredVolumeObject* volume )
+void ExtractEdges::calculate_coords( const vismodule::StructuredVolumeObject& volume )
 {
-    const vismodule::VolumeObjectBase::GridType type = volume->gridType();
+    const vismodule::VolumeObjectBase::GridType type = volume.gridType();
     if ( type == vismodule::VolumeObjectBase::Uniform )
     {
        this->calculate_uniform_coords( volume );
@@ -261,7 +261,7 @@ void ExtractEdges::calculate_coords( const vismodule::StructuredVolumeObject* vo
     }
     else
     {
-        SuperClass::setCoords( volume->coords() );
+        SuperClass::setCoords( volume.coords() );
     }
 }
 
@@ -271,13 +271,13 @@ void ExtractEdges::calculate_coords( const vismodule::StructuredVolumeObject* vo
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExtractEdges::calculate_uniform_coords( const vismodule::StructuredVolumeObject* volume )
+void ExtractEdges::calculate_uniform_coords( const vismodule::StructuredVolumeObject& volume )
 {
-    vismodule::ValueArray<vismodule::Real32> coords( 3 * volume->nnodes() );
+    vismodule::ValueArray<vismodule::Real32> coords( 3 * volume.nnodes() );
     vismodule::Real32* coord = coords.pointer();
 
-    const vismodule::Vector3ui resolution( volume->resolution() );
-    const vismodule::Vector3f  volume_size( volume->maxObjectCoord() - volume->minObjectCoord() );
+    const vismodule::Vector3ui resolution( volume.resolution() );
+    const vismodule::Vector3f  volume_size( volume.maxObjectCoord() - volume.minObjectCoord() );
     const vismodule::Vector3ui ngrids( resolution - vismodule::Vector3ui( 1, 1, 1 ) );
     const vismodule::Vector3f  grid_size(
         volume_size.x() / static_cast<float>( ngrids.x() ),
@@ -313,7 +313,7 @@ void ExtractEdges::calculate_uniform_coords( const vismodule::StructuredVolumeOb
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExtractEdges::calculate_rectilinear_coords( const vismodule::StructuredVolumeObject* volume )
+void ExtractEdges::calculate_rectilinear_coords( const vismodule::StructuredVolumeObject& volume )
 {
     vismodule::IgnoreUnusedVariable( volume );
 
@@ -327,11 +327,11 @@ void ExtractEdges::calculate_rectilinear_coords( const vismodule::StructuredVolu
  *  @param  volume [in] pointer to the structured volume object
  */
 /*===========================================================================*/
-void ExtractEdges::calculate_connections( const vismodule::StructuredVolumeObject* volume )
+void ExtractEdges::calculate_connections( const vismodule::StructuredVolumeObject& volume )
 {
-    const size_t line_size = volume->nnodesPerLine();
-    const size_t slice_size = volume->nnodesPerSlice();
-    const Vector3ui resolution( volume->resolution() );
+    const size_t line_size = volume.nnodesPerLine();
+    const size_t slice_size = volume.nnodesPerSlice();
+    const Vector3ui resolution( volume.resolution() );
     const size_t nedges =
         3 * ( resolution.x() - 1 ) * ( resolution.y() - 1 ) * ( resolution.z() - 1 ) +
         2 * ( resolution.x() - 1 ) * ( resolution.y() - 1 ) +
@@ -382,7 +382,7 @@ void ExtractEdges::calculate_connections( const vismodule::StructuredVolumeObjec
  *  @param  volume [in] pointer to the unstrctured volume object
  */
 /*===========================================================================*/
-void ExtractEdges::mapping( const vismodule::UnstructuredVolumeObject* volume )
+void ExtractEdges::mapping( const vismodule::UnstructuredVolumeObject& volume )
 {
     BaseClass::attach_volume( volume );
     BaseClass::set_range( volume );
@@ -391,7 +391,7 @@ void ExtractEdges::mapping( const vismodule::UnstructuredVolumeObject* volume )
     this->calculate_coords( volume );
     this->calculate_connections( volume );
 
-    const std::type_info& type = volume->values().typeInfo()->type();
+    const std::type_info& type = volume.values().typeInfo()->type();
     if (      type == typeid( vismodule::Int8   ) ) { this->calculate_colors<vismodule::Int8  >( volume ); }
     else if ( type == typeid( vismodule::Int16  ) ) { this->calculate_colors<vismodule::Int16 >( volume ); }
     else if ( type == typeid( vismodule::Int32  ) ) { this->calculate_colors<vismodule::Int32 >( volume ); }
@@ -414,9 +414,9 @@ void ExtractEdges::mapping( const vismodule::UnstructuredVolumeObject* volume )
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*===========================================================================*/
-void ExtractEdges::calculate_coords( const vismodule::UnstructuredVolumeObject* volume )
+void ExtractEdges::calculate_coords( const vismodule::UnstructuredVolumeObject& volume )
 {
-    SuperClass::setCoords( volume->coords() );
+    SuperClass::setCoords( volume.coords() );
 }
 
 /*===========================================================================*/
@@ -425,9 +425,9 @@ void ExtractEdges::calculate_coords( const vismodule::UnstructuredVolumeObject* 
  *  @param  volume [in] pointer to the unstructured volume object
  */
 /*===========================================================================*/
-void ExtractEdges::calculate_connections( const vismodule::UnstructuredVolumeObject* volume )
+void ExtractEdges::calculate_connections( const vismodule::UnstructuredVolumeObject& volume )
 {
-    switch( volume->cellType() )
+    switch( volume.cellType() )
     {
     case vismodule::VolumeObjectBase::Tetrahedra:
         this->calculate_tetrahedra_connections( volume );
@@ -457,11 +457,11 @@ void ExtractEdges::calculate_connections( const vismodule::UnstructuredVolumeObj
  */
 /*===========================================================================*/
 void ExtractEdges::calculate_tetrahedra_connections(
-    const vismodule::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject& volume )
 {
-    const vismodule::UInt32* connections = volume->connections().pointer();
-    const size_t ncells = volume->ncells();
-    const size_t nnodes = volume->nnodes();
+    const vismodule::UInt32* connections = volume.connections().pointer();
+    const size_t ncells = volume.ncells();
+    const size_t nnodes = volume.nnodes();
 
     ::EdgeMap edge_map( nnodes );
     for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
@@ -490,11 +490,11 @@ void ExtractEdges::calculate_tetrahedra_connections(
  */
 /*===========================================================================*/
 void ExtractEdges::calculate_hexahedra_connections(
-    const vismodule::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject& volume )
 {
-    const vismodule::UInt32* connections = volume->connections().pointer();
-    const size_t ncells = volume->ncells();
-    const size_t nnodes = volume->nnodes();
+    const vismodule::UInt32* connections = volume.connections().pointer();
+    const size_t ncells = volume.ncells();
+    const size_t nnodes = volume.nnodes();
 
     ::EdgeMap edge_map( nnodes );
     for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
@@ -533,11 +533,11 @@ void ExtractEdges::calculate_hexahedra_connections(
  */
 /*===========================================================================*/
 void ExtractEdges::calculate_quadratic_tetrahedra_connections(
-    const vismodule::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject& volume )
 {
-    const vismodule::UInt32* connections = volume->connections().pointer();
-    const size_t ncells = volume->ncells();
-    const size_t nnodes = volume->nnodes();
+    const vismodule::UInt32* connections = volume.connections().pointer();
+    const size_t ncells = volume.ncells();
+    const size_t nnodes = volume.nnodes();
 
     ::EdgeMap edge_map( nnodes );
     for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
@@ -578,11 +578,11 @@ void ExtractEdges::calculate_quadratic_tetrahedra_connections(
  */
 /*===========================================================================*/
 void ExtractEdges::calculate_quadratic_hexahedra_connections(
-    const vismodule::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject& volume )
 {
-    const vismodule::UInt32* connections = volume->connections().pointer();
-    const size_t ncells = volume->ncells();
-    const size_t nnodes = volume->nnodes();
+    const vismodule::UInt32* connections = volume.connections().pointer();
+    const size_t ncells = volume.ncells();
+    const size_t nnodes = volume.nnodes();
 
     ::EdgeMap edge_map( nnodes );
     for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
@@ -645,19 +645,19 @@ void ExtractEdges::calculate_quadratic_hexahedra_connections(
  */
 /*===========================================================================*/
 template <typename T>
-void ExtractEdges::calculate_colors( const vismodule::VolumeObjectBase* volume )
+void ExtractEdges::calculate_colors( const vismodule::VolumeObjectBase& volume )
 {
-    const T* value = reinterpret_cast<const T*>( volume->values().pointer() );
-    const T* const end = value + volume->values().size();
+    const T* value = reinterpret_cast<const T*>( volume.values().pointer() );
+    const T* const end = value + volume.values().size();
 
-    vismodule::ValueArray<vismodule::UInt8> colors( 3 * volume->nnodes() );
+    vismodule::ValueArray<vismodule::UInt8> colors( 3 * volume.nnodes() );
     vismodule::UInt8* color = colors.pointer();
 
     vismodule::ColorMap cmap( BaseClass::colorMap() );
 
-    if ( !volume->hasMinMaxValues() ) { volume->updateMinMaxValues(); }
-    const vismodule::Real64 min_value = volume->minValue();
-    const vismodule::Real64 max_value = volume->maxValue();
+    if ( !volume.hasMinMaxValues() ) { volume.updateMinMaxValues(); }
+    const vismodule::Real64 min_value = volume.minValue();
+    const vismodule::Real64 max_value = volume.maxValue();
 
     const vismodule::Real64 normalize_factor =
         static_cast<vismodule::Real64>( cmap.resolution() - 1 ) / ( max_value - min_value );

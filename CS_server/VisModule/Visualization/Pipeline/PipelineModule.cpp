@@ -39,9 +39,9 @@ PipelineModule::~PipelineModule( void )
     this->unref();
 }
 
-vismodule::ObjectBase* PipelineModule::exec( const vismodule::ObjectBase* object )
+vismodule::ObjectBase* PipelineModule::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         return( m_category == PipelineModule::Object ? m_module.object : NULL );
     }

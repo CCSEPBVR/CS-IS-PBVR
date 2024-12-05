@@ -48,7 +48,7 @@ public:
     Tubeline( void );
 
     Tubeline(
-        const vismodule::LineObject* object,
+        const vismodule::LineObject& object,
         const size_t ndivisions = 6 );
 
     virtual ~Tubeline( void );
@@ -59,17 +59,17 @@ public:
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 protected:
 
-    void filtering_strip( const vismodule::LineObject* line );
+    void filtering_strip( const vismodule::LineObject& line );
 
-    void filtering_uniline( const vismodule::LineObject* line );
+    void filtering_uniline( const vismodule::LineObject& line );
 
-    void filtering_polyline( const vismodule::LineObject* line );
+    void filtering_polyline( const vismodule::LineObject& line );
 
-    void filtering_segment( const vismodule::LineObject* line );
+    void filtering_segment( const vismodule::LineObject& line );
 
 protected:
 

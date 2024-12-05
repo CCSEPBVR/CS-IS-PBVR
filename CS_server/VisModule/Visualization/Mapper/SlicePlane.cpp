@@ -40,7 +40,7 @@ SlicePlane::SlicePlane( void ):
  */
 /*==========================================================================*/
 SlicePlane::SlicePlane(
-    const vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase& volume,
     const vismodule::Vector4f&         coefficients,
     const vismodule::TransferFunction& transfer_function ):
     vismodule::MapperBase( transfer_function ),
@@ -60,7 +60,7 @@ SlicePlane::SlicePlane(
  */
 /*==========================================================================*/
 SlicePlane::SlicePlane(
-    const vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase& volume,
     const vismodule::Vector3f&         point,
     const vismodule::Vector3f&         normal,
     const vismodule::TransferFunction& transfer_function ):
@@ -110,9 +110,9 @@ void SlicePlane::setPlane( const vismodule::Vector3f& point, const vismodule::Ve
  *  @return pointer to the sliced plane (polygon object)
  */
 /*===========================================================================*/
-SlicePlane::SuperClass* SlicePlane::exec( const vismodule::ObjectBase* object )
+SlicePlane::SuperClass* SlicePlane::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -127,7 +127,7 @@ SlicePlane::SuperClass* SlicePlane::exec( const vismodule::ObjectBase* object )
         return( NULL );
     }
 
-    this->mapping( volume );
+    this->mapping( *volume );
 
     return( this );
 }
@@ -138,10 +138,10 @@ SlicePlane::SuperClass* SlicePlane::exec( const vismodule::ObjectBase* object )
  *  @param  volume [in] pointer to the volume object
  */
 /*==========================================================================*/
-void SlicePlane::mapping( const vismodule::VolumeObjectBase* volume )
+void SlicePlane::mapping( const vismodule::VolumeObjectBase& volume )
 {
     // Check whether the volume can be processed or not.
-    if ( volume->veclen() != 1 )
+    if ( volume.veclen() != 1 )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input volume is not a sclar field data.");
@@ -153,44 +153,44 @@ void SlicePlane::mapping( const vismodule::VolumeObjectBase* volume )
     BaseClass::set_range( volume );
     BaseClass::set_min_max_coords( volume, this );
 
-    if ( volume->volumeType() == vismodule::VolumeObjectBase::Structured )
+    if ( volume.volumeType() == vismodule::VolumeObjectBase::Structured )
     {
         const vismodule::StructuredVolumeObject* structured_volume =
             vismodule::StructuredVolumeObject::DownCast( volume );
 
         const std::type_info& type = structured_volume->values().typeInfo()->type();
-        if (      type == typeid( vismodule::Int8   ) ) this->extract_plane<vismodule::Int8>( structured_volume );
-        else if ( type == typeid( vismodule::Int16  ) ) this->extract_plane<vismodule::Int16>( structured_volume );
-        else if ( type == typeid( vismodule::Int32  ) ) this->extract_plane<vismodule::Int32>( structured_volume );
-        else if ( type == typeid( vismodule::Int64  ) ) this->extract_plane<vismodule::Int64>( structured_volume );
-        else if ( type == typeid( vismodule::UInt8  ) ) this->extract_plane<vismodule::UInt8>( structured_volume );
-        else if ( type == typeid( vismodule::UInt16 ) ) this->extract_plane<vismodule::UInt16>( structured_volume );
-        else if ( type == typeid( vismodule::UInt32 ) ) this->extract_plane<vismodule::UInt32>( structured_volume );
-        else if ( type == typeid( vismodule::UInt64 ) ) this->extract_plane<vismodule::UInt64>( structured_volume );
-        else if ( type == typeid( vismodule::Real32 ) ) this->extract_plane<vismodule::Real32>( structured_volume );
-        else if ( type == typeid( vismodule::Real64 ) ) this->extract_plane<vismodule::Real64>( structured_volume );
+        if (      type == typeid( vismodule::Int8   ) ) this->extract_plane<vismodule::Int8>( *structured_volume );
+        else if ( type == typeid( vismodule::Int16  ) ) this->extract_plane<vismodule::Int16>( *structured_volume );
+        else if ( type == typeid( vismodule::Int32  ) ) this->extract_plane<vismodule::Int32>( *structured_volume );
+        else if ( type == typeid( vismodule::Int64  ) ) this->extract_plane<vismodule::Int64>( *structured_volume );
+        else if ( type == typeid( vismodule::UInt8  ) ) this->extract_plane<vismodule::UInt8>( *structured_volume );
+        else if ( type == typeid( vismodule::UInt16 ) ) this->extract_plane<vismodule::UInt16>( *structured_volume );
+        else if ( type == typeid( vismodule::UInt32 ) ) this->extract_plane<vismodule::UInt32>( *structured_volume );
+        else if ( type == typeid( vismodule::UInt64 ) ) this->extract_plane<vismodule::UInt64>( *structured_volume );
+        else if ( type == typeid( vismodule::Real32 ) ) this->extract_plane<vismodule::Real32>( *structured_volume );
+        else if ( type == typeid( vismodule::Real64 ) ) this->extract_plane<vismodule::Real64>( *structured_volume );
         else
         {
             BaseClass::m_is_success = false;
             visModuleMessageError("Unsupported data type '%s'.", structured_volume->values().typeInfo()->typeName() );
         }
     }
-    else // volume->volumeType() == vismodule::VolumeObjectBase::Unstructured
+    else // volume.volumeType() == vismodule::VolumeObjectBase::Unstructured
     {
         const vismodule::UnstructuredVolumeObject* unstructured_volume =
             vismodule::UnstructuredVolumeObject::DownCast( volume );
 
         const std::type_info& type = unstructured_volume->values().typeInfo()->type();
-        if (      type == typeid( vismodule::Int8   ) ) this->extract_plane<vismodule::Int8>( unstructured_volume );
-        else if ( type == typeid( vismodule::Int16  ) ) this->extract_plane<vismodule::Int16>( unstructured_volume );
-        else if ( type == typeid( vismodule::Int32  ) ) this->extract_plane<vismodule::Int32>( unstructured_volume );
-        else if ( type == typeid( vismodule::Int64  ) ) this->extract_plane<vismodule::Int64>( unstructured_volume );
-        else if ( type == typeid( vismodule::UInt8  ) ) this->extract_plane<vismodule::UInt8>( unstructured_volume );
-        else if ( type == typeid( vismodule::UInt16 ) ) this->extract_plane<vismodule::UInt16>( unstructured_volume );
-        else if ( type == typeid( vismodule::UInt32 ) ) this->extract_plane<vismodule::UInt32>( unstructured_volume );
-        else if ( type == typeid( vismodule::UInt64 ) ) this->extract_plane<vismodule::UInt64>( unstructured_volume );
-        else if ( type == typeid( vismodule::Real32 ) ) this->extract_plane<vismodule::Real32>( unstructured_volume );
-        else if ( type == typeid( vismodule::Real64 ) ) this->extract_plane<vismodule::Real64>( unstructured_volume );
+        if (      type == typeid( vismodule::Int8   ) ) this->extract_plane<vismodule::Int8>( *unstructured_volume );
+        else if ( type == typeid( vismodule::Int16  ) ) this->extract_plane<vismodule::Int16>( *unstructured_volume );
+        else if ( type == typeid( vismodule::Int32  ) ) this->extract_plane<vismodule::Int32>( *unstructured_volume );
+        else if ( type == typeid( vismodule::Int64  ) ) this->extract_plane<vismodule::Int64>( *unstructured_volume );
+        else if ( type == typeid( vismodule::UInt8  ) ) this->extract_plane<vismodule::UInt8>( *unstructured_volume );
+        else if ( type == typeid( vismodule::UInt16 ) ) this->extract_plane<vismodule::UInt16>( *unstructured_volume );
+        else if ( type == typeid( vismodule::UInt32 ) ) this->extract_plane<vismodule::UInt32>( *unstructured_volume );
+        else if ( type == typeid( vismodule::UInt64 ) ) this->extract_plane<vismodule::UInt64>( *unstructured_volume );
+        else if ( type == typeid( vismodule::Real32 ) ) this->extract_plane<vismodule::Real32>( *unstructured_volume );
+        else if ( type == typeid( vismodule::Real64 ) ) this->extract_plane<vismodule::Real64>( *unstructured_volume );
         else
         {
             BaseClass::m_is_success = false;
@@ -207,7 +207,7 @@ void SlicePlane::mapping( const vismodule::VolumeObjectBase* volume )
 /*==========================================================================*/
 template <typename T>
 void SlicePlane::extract_plane(
-    const vismodule::StructuredVolumeObject* volume )
+    const vismodule::StructuredVolumeObject& volume )
 {
     // Calculated the coordinate data array and the normal vector array.
     std::vector<vismodule::Real32> coords;
@@ -215,18 +215,18 @@ void SlicePlane::extract_plane(
     std::vector<vismodule::UInt8>  colors;
 
     // Calculate min/max values of the node data.
-    if ( !volume->hasMinMaxValues() )
+    if ( !volume.hasMinMaxValues() )
     {
-        volume->updateMinMaxValues();
+        volume.updateMinMaxValues();
     }
 
     // Calculate a normalize_factor.
-    const vismodule::Real64 min_value( volume->minValue() );
-    const vismodule::Real64 max_value( volume->maxValue() );
+    const vismodule::Real64 min_value( volume.minValue() );
+    const vismodule::Real64 max_value( volume.maxValue() );
     const vismodule::Real64 normalize_factor( 255.0 / ( max_value - min_value ) );
 
-    const vismodule::Vector3ui ncells( volume->resolution() - vismodule::Vector3ui(1) );
-    const vismodule::UInt32    line_size( volume->nnodesPerLine() );
+    const vismodule::Vector3ui ncells( volume.resolution() - vismodule::Vector3ui(1) );
+    const vismodule::UInt32    line_size( volume.nnodesPerLine() );
     const vismodule::ColorMap& color_map( BaseClass::transferFunction().colorMap() );
 
     // Extract surfaces.
@@ -349,9 +349,9 @@ void SlicePlane::extract_plane(
 /*==========================================================================*/
 template <typename T>
 void SlicePlane::extract_plane(
-    const vismodule::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject& volume )
 {
-    switch ( volume->cellType() )
+    switch ( volume.cellType() )
     {
         case vismodule::VolumeObjectBase::Tetrahedra:
         {
@@ -379,7 +379,7 @@ void SlicePlane::extract_plane(
 /*==========================================================================*/
 template <typename T>
 void SlicePlane::extract_tetrahedra_plane(
-    const vismodule::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject& volume )
 {
     // Calculated the coordinate data array and the normal vector array.
     std::vector<vismodule::Real32> coords;
@@ -387,20 +387,20 @@ void SlicePlane::extract_tetrahedra_plane(
     std::vector<vismodule::UInt8>  colors;
 
     // Calculate min/max values of the node data.
-    if ( !volume->hasMinMaxValues() )
+    if ( !volume.hasMinMaxValues() )
     {
-        volume->updateMinMaxValues();
+        volume.updateMinMaxValues();
     }
 
     // Calculate a normalize factor.
-    const vismodule::Real64 min_value( volume->minValue() );
-    const vismodule::Real64 max_value( volume->maxValue() );
+    const vismodule::Real64 min_value( volume.minValue() );
+    const vismodule::Real64 max_value( volume.maxValue() );
     const vismodule::Real64 normalize_factor( 255.0 / ( max_value - min_value ) );
 
     // Refer the parameters of the unstructured volume object.
-    const vismodule::Real32* volume_coords      = volume->coords().pointer();
-    const vismodule::UInt32* volume_connections = volume->connections().pointer();
-    const size_t       ncells             = volume->ncells();
+    const vismodule::Real32* volume_coords      = volume.coords().pointer();
+    const vismodule::UInt32* volume_connections = volume.connections().pointer();
+    const size_t       ncells             = volume.ncells();
 
     const vismodule::ColorMap& color_map( BaseClass::transferFunction().colorMap() );
 
@@ -510,7 +510,7 @@ void SlicePlane::extract_tetrahedra_plane(
 /*==========================================================================*/
 template <typename T>
 void SlicePlane::extract_hexahedra_plane(
-    const vismodule::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject& volume )
 {
     // Calculated the coordinate data array and the normal vector array.
     std::vector<vismodule::Real32> coords;
@@ -518,20 +518,20 @@ void SlicePlane::extract_hexahedra_plane(
     std::vector<vismodule::UInt8>  colors;
 
     // Calculate min/max values of the node data.
-    if ( !volume->hasMinMaxValues() )
+    if ( !volume.hasMinMaxValues() )
     {
-        volume->updateMinMaxValues();
+        volume.updateMinMaxValues();
     }
 
     // Calculate a normalize factor.
-    const vismodule::Real64 min_value( volume->minValue() );
-    const vismodule::Real64 max_value( volume->maxValue() );
+    const vismodule::Real64 min_value( volume.minValue() );
+    const vismodule::Real64 max_value( volume.maxValue() );
     const vismodule::Real64 normalize_factor( 255.0 / ( max_value - min_value ) );
 
     // Refer the parameters of the unstructured volume object.
-    const vismodule::Real32* volume_coords      = volume->coords().pointer();
-    const vismodule::UInt32* volume_connections = volume->connections().pointer();
-    const size_t       ncells             = volume->ncells();
+    const vismodule::Real32* volume_coords      = volume.coords().pointer();
+    const vismodule::UInt32* volume_connections = volume.connections().pointer();
+    const size_t       ncells             = volume.ncells();
 
     const vismodule::ColorMap& color_map( BaseClass::transferFunction().colorMap() );
 
@@ -645,7 +645,7 @@ void SlicePlane::extract_hexahedra_plane(
 /*==========================================================================*/
 template <typename T>
 void SlicePlane::extract_pyramid_plane(
-    const vismodule::UnstructuredVolumeObject* volume )
+    const vismodule::UnstructuredVolumeObject& volume )
 {
     // Calculated the coordinate data array and the normal vector array.
     std::vector<vismodule::Real32> coords;
@@ -653,20 +653,20 @@ void SlicePlane::extract_pyramid_plane(
     std::vector<vismodule::UInt8>  colors;
 
     // Calculate min/max values of the node data.
-    if ( !volume->hasMinMaxValues() )
+    if ( !volume.hasMinMaxValues() )
     {
-        volume->updateMinMaxValues();
+        volume.updateMinMaxValues();
     }
 
     // Calculate a normalize factor.
-    const vismodule::Real64 min_value( volume->minValue() );
-    const vismodule::Real64 max_value( volume->maxValue() );
+    const vismodule::Real64 min_value( volume.minValue() );
+    const vismodule::Real64 max_value( volume.maxValue() );
     const vismodule::Real64 normalize_factor( 255.0 / ( max_value - min_value ) );
 
     // Refer the parameters of the unstructured volume object.
-    const vismodule::Real32* volume_coords      = volume->coords().pointer();
-    const vismodule::UInt32* volume_connections = volume->connections().pointer();
-    const size_t       ncells             = volume->ncells();
+    const vismodule::Real32* volume_coords      = volume.coords().pointer();
+    const vismodule::UInt32* volume_connections = volume.connections().pointer();
+    const size_t       ncells             = volume.ncells();
 
     const vismodule::ColorMap& color_map( BaseClass::transferFunction().colorMap() );
 
@@ -951,14 +951,14 @@ const vismodule::Vector3f SlicePlane::interpolate_vertex(
 /*==========================================================================*/
 template <typename T>
 const double SlicePlane::interpolate_value(
-    const vismodule::StructuredVolumeObject* volume,
+    const vismodule::StructuredVolumeObject& volume,
     const vismodule::Vector3f&               vertex0,
     const vismodule::Vector3f&               vertex1 ) const
 {
-    const T* const values = static_cast<const T*>( volume->values().pointer() );
+    const T* const values = static_cast<const T*>( volume.values().pointer() );
 
-    const size_t line_size  = volume->nnodesPerLine();
-    const size_t slice_size = volume->nnodesPerSlice();
+    const size_t line_size  = volume.nnodesPerLine();
+    const size_t slice_size = volume.nnodesPerSlice();
 
     const float value0 = this->substitute_plane_equation( vertex0 );
     const float value1 = this->substitute_plane_equation( vertex1 );
@@ -987,12 +987,12 @@ const double SlicePlane::interpolate_value(
 /*==========================================================================*/
 template <typename T>
 const double SlicePlane::interpolate_value(
-    const vismodule::UnstructuredVolumeObject* volume,
+    const vismodule::UnstructuredVolumeObject& volume,
     const size_t                         index0,
     const size_t                         index1 ) const
 {
-    const T* const values = static_cast<const T*>( volume->values().pointer() );
-    const vismodule::Real32* const coords = volume->coords().pointer();
+    const T* const values = static_cast<const T*>( volume.values().pointer() );
+    const vismodule::Real32* const coords = volume.coords().pointer();
 
     const float value0 = this->substitute_plane_equation( vismodule::Vector3f( coords + 3 * index0 ) );
     const float value1 = this->substitute_plane_equation( vismodule::Vector3f( coords + 3 * index1 ) );

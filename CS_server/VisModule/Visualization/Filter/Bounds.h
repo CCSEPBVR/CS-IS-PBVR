@@ -62,7 +62,7 @@ public:
 
     Bounds( void );
 
-    Bounds( const vismodule::ObjectBase* object, const Bounds::Type type = Bounds::Box );
+    Bounds( const vismodule::ObjectBase& object, const Bounds::Type type = Bounds::Box );
 
     Bounds( const vismodule::Vector3f& min_coord, const vismodule::Vector3f& max_coord, const Bounds::Type type = Bounds::Box );
 
@@ -70,7 +70,7 @@ public:
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 public:
 

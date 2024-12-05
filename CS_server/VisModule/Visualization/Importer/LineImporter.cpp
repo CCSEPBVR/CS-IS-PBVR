@@ -118,7 +118,7 @@ LineImporter::LineImporter( const std::string& filename )
  *  @param file_format [in] pointer to the file format
  */
 /*==========================================================================*/
-LineImporter::LineImporter( const vismodule::FileFormatBase* file_format )
+LineImporter::LineImporter( const vismodule::FileFormatBase& file_format )
 {
     this->exec( file_format );
 }
@@ -139,19 +139,19 @@ LineImporter::~LineImporter( void )
  *  @return pointer to the imported line object
  */
 /*===========================================================================*/
-LineImporter::SuperClass* LineImporter::exec( const vismodule::FileFormatBase* file_format )
+LineImporter::SuperClass* LineImporter::exec( const vismodule::FileFormatBase& file_format )
 {
-    if ( !file_format )
+    if ( !&file_format )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input file format is NULL.");
         return( NULL );
     }
 
-    const std::string class_name = file_format->className();
+    const std::string class_name = file_format.className();
     if ( class_name == "vismodule::KVSMLObjectLine" )
     {
-        this->import( static_cast<const vismodule::KVSMLObjectLine*>( file_format ) );
+        this->import( static_cast<const vismodule::KVSMLObjectLine*>( &file_format ) );
     }
     else
     {

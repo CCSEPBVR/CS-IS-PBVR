@@ -12,18 +12,18 @@
  *  $Id: GeometryObjectBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef PBVR__GEOMETRY_OBJECT_BASE_H_INCLUDE
-#define PBVR__GEOMETRY_OBJECT_BASE_H_INCLUDE
+#ifndef VIS_MODULE__GEOMETRY_OBJECT_BASE_H_INCLUDE
+#define VIS_MODULE__GEOMETRY_OBJECT_BASE_H_INCLUDE
 
-#include "ObjectBase.h"
-#include "ClassName.h"
+#include <vismodule/ObjectBase>
+#include <vismodule/ClassName>
 #include <vismodule/ValueArray>
 #include <vismodule/Type>
 #include <vismodule/Vector3>
 #include <vismodule/RGBColor>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -31,13 +31,13 @@ namespace pbvr
  *  @brief  Geometric object class.
  */
 /*===========================================================================*/
-class GeometryObjectBase : public pbvr::ObjectBase
+class GeometryObjectBase : public vismodule::ObjectBase
 {
-    visModuleClassName( pbvr::GeometryObjectBase );
+    visModuleClassName( vismodule::GeometryObjectBase );
 
 public:
 
-    typedef pbvr::ObjectBase BaseClass;
+    typedef vismodule::ObjectBase BaseClass;
 
     enum GeometryType
     {
@@ -85,9 +85,9 @@ public:
 
 public:
 
-    static pbvr::GeometryObjectBase* DownCast( pbvr::ObjectBase* object );
+    static vismodule::GeometryObjectBase* DownCast( vismodule::ObjectBase* object );
 
-    static const pbvr::GeometryObjectBase* DownCast( const pbvr::ObjectBase& object );
+    static const vismodule::GeometryObjectBase* DownCast( const vismodule::ObjectBase& object );
 
 public:
 

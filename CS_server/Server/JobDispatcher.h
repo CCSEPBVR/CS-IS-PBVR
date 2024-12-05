@@ -1,5 +1,5 @@
-#ifndef PBVR__JOB_DISPATCHER_H_INCLUDE
-#define PBVR__JOB_DISPATCHER_H_INCLUDE
+#ifndef VIS_MODULE__JOB_DISPATCHER_H_INCLUDE
+#define VIS_MODULE__JOB_DISPATCHER_H_INCLUDE
 
 #include <vector>
 #include <vismodule/Vector3>
@@ -97,5 +97,5 @@ public:
 
 void TestJobDispatcher();
 
-#endif //  PBVR__JOB_DISPATCHER_H_INCLUDE
+#endif //  VIS_MODULE__JOB_DISPATCHER_H_INCLUDE
 

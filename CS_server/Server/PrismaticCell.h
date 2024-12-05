@@ -12,33 +12,33 @@
  *  $Id$
  */
 /*****************************************************************************/
-#ifndef PBVR__PRISMATIC_CELL_H_INCLUDE
-#define PBVR__PRISMATIC_CELL_H_INCLUDE
+#ifndef VIS_MODULE__PRISMATIC_CELL_H_INCLUDE
+#define VIS_MODULE__PRISMATIC_CELL_H_INCLUDE
 
-#include "ClassName.h"
+#include <vismodule/ClassName>
 #include <vismodule/Type>
 #include <vismodule/Vector4>
 #include <vismodule/Matrix44>
-#include "UnstructuredVolumeObject.h"
-#include "CellBase.h"
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/CellBase>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 template <typename T>
-class PrismaticCell : public pbvr::CellBase<T>
+class PrismaticCell : public vismodule::CellBase<T>
 {
-    visModuleClassName( pbvr::PyramidalCell );
+    visModuleClassName( vismodule::PyramidalCell );
 
 public:
 
     enum { NumberOfNodes = 6 };
-    typedef pbvr::CellBase<T> BaseClass;
+    typedef vismodule::CellBase<T> BaseClass;
 
 public:
 
-    PrismaticCell( const pbvr::UnstructuredVolumeObject& volume );
+    PrismaticCell( const vismodule::UnstructuredVolumeObject& volume );
     PrismaticCell( T* values,
                 float* coords, int ncoords,
                 unsigned int* connections, int ncells);
@@ -68,8 +68,8 @@ public:
 /*===========================================================================*/
 template <typename T>
 PrismaticCell<T>::PrismaticCell(
-    const pbvr::UnstructuredVolumeObject& volume ):
-    pbvr::CellBase<T>( volume )
+    const vismodule::UnstructuredVolumeObject& volume ):
+    vismodule::CellBase<T>( volume )
 {
     // Set the initial interpolation functions and differential functions.
     this->interpolationFunctions( BaseClass::localPoint() );
@@ -81,7 +81,7 @@ inline PrismaticCell<T>::PrismaticCell(
         T* values,
         float* coords, int ncoords,
         unsigned int* connections, int ncells):
-    pbvr::CellBase<T>(
+    vismodule::CellBase<T>(
         values,
         coords, ncoords,
         connections, ncells, 6)//num of prism vertices

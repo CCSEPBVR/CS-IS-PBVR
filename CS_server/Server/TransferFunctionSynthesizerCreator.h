@@ -1,11 +1,11 @@
-#ifndef PBVR__TRANSFER_FUNCTION_SYNTHESIZER_CREATOR_H_INCLUDE
-#define PBVR__TRANSFER_FUNCTION_SYNTHESIZER_CREATOR_H_INCLUDE
+#ifndef VIS_MODULE__TRANSFER_FUNCTION_SYNTHESIZER_CREATOR_H_INCLUDE
+#define VIS_MODULE__TRANSFER_FUNCTION_SYNTHESIZER_CREATOR_H_INCLUDE
 
 #include <map>
 #include <string>
 #include <sstream>
 #include <vector>
-#include "TransferFunction.h"
+#include <vismodule/TransferFunction>
 #include "TransferFunctionSynthesizer.h"
 //#include "TransferFunctionSynthesizer_IS.h"
 #include "ParticleTransferProtocol.h"
@@ -19,9 +19,9 @@
 
 #include "VariableRange.h"
 
-#define TF_COUNT 5 //øøøøøø 
-#define VAR_OFFSET_A 112 //Token.h->VarName-A1øøøøøøø
-#define VAR_OFFSET_C 96 //Token.h->VarName->C1øøøøøøø
+#define TF_COUNT 5 //ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ 
+#define VAR_OFFSET_A 112 //Token.h->VarName-A1ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
+#define VAR_OFFSET_C 96 //Token.h->VarName->C1ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
 
 class TransferFunctionSynthesizerCreator
 {
@@ -39,7 +39,7 @@ public:
     TransferFunctionSynthesizer* create();
 
     std::vector<NamedTransferFunction> transfunc(); 
-    //std::vector<pbvr::TransferFunction> transfunc(); 
+    //std::vector<vismodule::TransferFunction> transfunc(); 
     //std::vector<VolumeEquation>        voleq();
     void setFilterInfo( const FilterInformationFile& fi );
     void initQuantityMap( const int32_t m_number_ingredients );
@@ -51,7 +51,7 @@ public:
     void setProtocol(  const jpv::ParticleTransferClientMessage& clntMes );
     void setInitialProtocol(  const int nvariable, const VariableRange vr );
     void setParameterFile(  const ParameterFile& pa );
-    void setAsisTransferFunction( const pbvr::TransferFunction& tf );
+    void setAsisTransferFunction( const vismodule::TransferFunction& tf );
     void setTransferFunction( jpv::ParticleTransferServerMessage* servMes , const VariableRange vr);
     // add by @hira at 2016/12/01
     void setInitializeRange( const float min_value, const float max_value );
@@ -63,10 +63,10 @@ private:
     // std::string m_transfunc_synthesis;
 
     std::vector<NamedTransferFunction> m_transfunc;
-    //std::vector<pbvr::TransferFunction> m_transfunc;
+    //std::vector<vismodule::TransferFunction> m_transfunc;
     std::vector<VolumeEquation>        m_voleqn;
 
-    // add by @hira at 2016/12/01 : 1éüì`íBä÷êîÅiêFÅAïsìßñæìxÅj
+    // add by @hira at 2016/12/01 : 1ÔøΩÔøΩÔøΩ`ÔøΩBÔøΩ÷êÔøΩÔøΩiÔøΩFÔøΩAÔøΩsÔøΩÔøΩÔøΩÔøΩÔøΩxÔøΩj
     std::string m_color_transfunc_synthesis;
     std::string m_opacity_transfunc_synthesis;
 
@@ -89,4 +89,4 @@ private:
 };
 
 
-#endif //PBVR__TRANSFER_FUNCTION_CONFIGURATOR_H_INCLUDE
+#endif //VIS_MODULE__TRANSFER_FUNCTION_CONFIGURATOR_H_INCLUDE

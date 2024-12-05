@@ -19,7 +19,7 @@
 #include "SizeTag.h"
 #include "ConnectionTag.h"
 #include "OpacityTag.h"
-#include "DataArrayTag.h"
+#include <vismodule/DataArrayTag>
 #include "DataValueTag.h"
 #include <vismodule/Message>
 #include <vismodule/ValueArray>

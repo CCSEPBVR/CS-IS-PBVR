@@ -3,8 +3,8 @@
  *  @file StepAggregateTypeSubvolume.h
  */
 /****************************************************************************/
-#ifndef PBVR__VIS_MODULE__STEP_AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE
-#define PBVR__VIS_MODULE__STEP_AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE
+#ifndef VIS_MODULE__VIS_MODULE__STEP_AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE
+#define VIS_MODULE__VIS_MODULE__STEP_AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE
 
 #include <vismodule/FileFormatBase>
 #include <vismodule/AnyValueArray>
@@ -94,4 +94,4 @@ public:
 
 };
 } // end of namespace vismodule
-#endif // PBVR__VIS_MODULE__STEP_AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE
+#endif // VIS_MODULE__VIS_MODULE__STEP_AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE

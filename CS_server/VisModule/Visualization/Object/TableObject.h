@@ -68,7 +68,7 @@ public:
 
     static vismodule::TableObject* DownCast( vismodule::ObjectBase* object );
 
-    static const vismodule::TableObject* DownCast( const vismodule::ObjectBase* object );
+    static const vismodule::TableObject* DownCast( const vismodule::ObjectBase& object );
 
 public:
 

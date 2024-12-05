@@ -49,7 +49,7 @@ public:
     MarchingTetrahedra( void );
 
     MarchingTetrahedra(
-        const vismodule::UnstructuredVolumeObject* volume,
+        const vismodule::UnstructuredVolumeObject& volume,
         const double                         isolevel,
         const SuperClass::NormalType         normal_type,
         const bool                           duplication,
@@ -59,23 +59,23 @@ public:
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 protected:
 
-    void mapping( const vismodule::UnstructuredVolumeObject* volume );
+    void mapping( const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
     void extract_surfaces(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
     void extract_surfaces_with_duplication(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
     void extract_surfaces_without_duplication(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
     const size_t calculate_table_index(

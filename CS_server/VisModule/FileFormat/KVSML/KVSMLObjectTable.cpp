@@ -15,7 +15,7 @@
 #include "KVSMLObjectTable.h"
 #include "TableObjectTag.h"
 #include "ColumnTag.h"
-#include "DataArrayTag.h"
+#include <vismodule/DataArrayTag>
 #include <vismodule/File>
 #include <vismodule/XMLDocument>
 #include <vismodule/XMLDeclaration>

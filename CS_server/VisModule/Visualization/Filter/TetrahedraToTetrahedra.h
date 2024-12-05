@@ -55,13 +55,13 @@ public:
 
     TetrahedraToTetrahedra( void );
 
-    TetrahedraToTetrahedra( const vismodule::UnstructuredVolumeObject* volume, const Method method = Subdivision8 );
+    TetrahedraToTetrahedra( const vismodule::UnstructuredVolumeObject& volume, const Method method = Subdivision8 );
 
     virtual ~TetrahedraToTetrahedra( void );
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 public:
 
@@ -70,10 +70,10 @@ public:
 protected:
 
     template <typename T>
-    void remove_quadratic_nodes( const vismodule::UnstructuredVolumeObject* volume );
+    void remove_quadratic_nodes( const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
-    void subdivide_8_tetrahedra( const vismodule::UnstructuredVolumeObject* volume );
+    void subdivide_8_tetrahedra( const vismodule::UnstructuredVolumeObject& volume );
 };
 
 } // end of namespace vismodule

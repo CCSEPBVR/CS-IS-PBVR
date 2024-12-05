@@ -22,7 +22,7 @@
 #include "TransferFunctionTag.h"
 #include "ColorMapTag.h"
 #include "OpacityMapTag.h"
-#include "DataArrayTag.h"
+#include <vismodule/DataArrayTag>
 
 
 namespace vismodule

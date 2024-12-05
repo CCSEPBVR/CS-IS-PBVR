@@ -181,7 +181,7 @@ bool VisualizationPipeline::exec( void )
     while( module != last )
     {
         object = module->exec( object );
-        if ( !object )
+        if ( !&object )
         {
             visModuleMessageError("Cannot execute '%s'.", module->name() );
             return( false );
@@ -350,7 +350,7 @@ bool VisualizationPipeline::create_object_module( const std::string& filename )
     // Read a file and import a object.
     vismodule::ObjectImporter importer( filename );
     vismodule::ObjectBase* object = importer.import();
-    if ( !object )
+    if ( !&object )
     {
         visModuleMessageError( "Cannot import a object." );
         return( false );
@@ -373,7 +373,7 @@ bool VisualizationPipeline::create_object_module( const std::string& filename )
  *  @return true, if the renderer is created successfully.
  */
 /*===========================================================================*/
-bool VisualizationPipeline::create_renderer_module( const vismodule::ObjectBase* object )
+bool VisualizationPipeline::create_renderer_module( const vismodule::ObjectBase& object )
 {
     switch ( object->objectType() )
     {
@@ -387,7 +387,7 @@ bool VisualizationPipeline::create_renderer_module( const vismodule::ObjectBase*
     case vismodule::ObjectBase::Volume:
     {
         const vismodule::VolumeObjectBase* volume =
-            reinterpret_cast<const vismodule::VolumeObjectBase*>( object );
+            reinterpret_cast<const vismodule::VolumeObjectBase*>( &object );
 
         return( this->create_renderer_module( volume ) );
     }
@@ -447,7 +447,7 @@ bool VisualizationPipeline::create_renderer_module( const vismodule::GeometryObj
  *  @return true, if the renderer is created successfully.
  */
 /*===========================================================================*/
-bool VisualizationPipeline::create_renderer_module( const vismodule::VolumeObjectBase* volume )
+bool VisualizationPipeline::create_renderer_module( const vismodule::VolumeObjectBase& volume )
 {
     bool ret = true;
 

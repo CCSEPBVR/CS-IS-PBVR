@@ -95,7 +95,7 @@ public:
 
 public:
 
-    virtual vismodule::ObjectBase* exec( const vismodule::ObjectBase* object ) = 0;
+    virtual vismodule::ObjectBase* exec( const vismodule::ObjectBase& object ) = 0;
 
 protected:
 
@@ -115,10 +115,10 @@ protected:
 
 protected:
 
-    void mapping( const vismodule::VolumeObjectBase* volume );
+    void mapping( const vismodule::VolumeObjectBase& volume );
 
     void extract_lines(
-        const vismodule::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject& volume );
 
     const bool calculate_line(
         std::vector<vismodule::Real32>* vertices,

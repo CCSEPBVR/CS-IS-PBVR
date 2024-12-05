@@ -37,7 +37,7 @@ AxisObject::AxisObject( void ):
 }
 
 AxisObject::AxisObject(
-    const vismodule::ObjectBase* object,
+    const vismodule::ObjectBase& object,
     const vismodule::Vector3ui& nsublines,
     const std::string x_tag,
     const std::string y_tag,
@@ -47,8 +47,8 @@ AxisObject::AxisObject(
     const vismodule::Real32 line_width,
     const vismodule::Real32 subline_width )
 {
-    this->setMinValue( object->minObjectCoord() );
-    this->setMaxValue( object->maxObjectCoord() );
+    this->setMinValue( object.minObjectCoord() );
+    this->setMaxValue( object.maxObjectCoord() );
     this->setNSublines( nsublines );
     this->setXTag( x_tag );
     this->setYTag( y_tag );
@@ -66,14 +66,14 @@ AxisObject::~AxisObject( void )
     clear();
 }
 
-void AxisObject::create( const vismodule::ObjectBase* object )
+void AxisObject::create( const vismodule::ObjectBase& object )
 {
-    if( object )
+    if( &object )
     {
-        this->setMinValue( object->minObjectCoord() );
-        this->setMaxValue( object->maxObjectCoord() );
-        SuperClass::setMinMaxObjectCoords( object->minObjectCoord(), object->maxObjectCoord() );
-        SuperClass::setMinMaxExternalCoords( object->minExternalCoord(), object->maxExternalCoord() );
+        this->setMinValue( object.minObjectCoord() );
+        this->setMaxValue( object.maxObjectCoord() );
+        SuperClass::setMinMaxObjectCoords( object.minObjectCoord(), object.maxObjectCoord() );
+        SuperClass::setMinMaxExternalCoords( object.minExternalCoord(), object.maxExternalCoord() );
     }
 
     std::vector<vismodule::Real32> coords;

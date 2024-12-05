@@ -15,7 +15,7 @@
 #include "PrismaticCell.h"
 
 
-namespace pbvr
+namespace vismodule
 {
 // template instantiation
 template class PrismaticCell<char>;

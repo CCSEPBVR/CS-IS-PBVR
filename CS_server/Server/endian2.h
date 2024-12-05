@@ -1,32 +1,32 @@
-#ifndef PBVR__ENDIAN2_H__INCLUDE
-#define PBVR__ENDIAN2_H__INCLUDE
+#ifndef VIS_MODULE__ENDIAN2_H__INCLUDE
+#define VIS_MODULE__ENDIAN2_H__INCLUDE
 
 #include <stddef.h>
 
-#define PBVR_LITTLE_ENDIAN  1234
-#define PBVR_BIG_ENDIAN     4321
-#define PBVR_UNKNOWN_ENDIAN 1111
+#define VIS_MODULE_LITTLE_ENDIAN  1234
+#define VIS_MODULE_BIG_ENDIAN     4321
+#define VIS_MODULE_UNKNOWN_ENDIAN 1111
 
 #ifdef __linux
 #  include <endian.h>
 #  if __BYTE_ORDER == __LITTLE_ENDIAN
-#    define PBVR_BYTE_ORDER PBVR_LITTLE_ENDIAN
+#    define VIS_MODULE_BYTE_ORDER VIS_MODULE_LITTLE_ENDIAN
 #  elif __BYTE_ORDER == __BIG_ENDIAN
-#    define PBVR_BYTE_ORDER PBVR_BIG_ENDIAN
+#    define VIS_MODULE_BYTE_ORDER VIS_MODULE_BIG_ENDIAN
 #  else
 #    error
 #  endif
 #elif WIN32
-#    define PBVR_BYTE_ORDER PBVR_LITTLE_ENDIAN
+#    define VIS_MODULE_BYTE_ORDER VIS_MODULE_LITTLE_ENDIAN
 #else
 #  if defined(__i386) || defined(__x86_64)
-#    define PBVR_BYTE_ORDER PBVR_LITTLE_ENDIAN
+#    define VIS_MODULE_BYTE_ORDER VIS_MODULE_LITTLE_ENDIAN
 #  elif defined(__arm64)
-#    define __PBVR_BYTE_ORDER __PBVR_LITTLE_ENDIAN
+#    define __VIS_MODULE_BYTE_ORDER __VIS_MODULE_LITTLE_ENDIAN
 #  elif defined(__sparc)
-#    define PBVR_BYTE_ORDER PBVR_BIG_ENDIAN
+#    define VIS_MODULE_BYTE_ORDER VIS_MODULE_BIG_ENDIAN
 #  else
-#    define PBVR_BYTE_ORDER PBVR_UNKNOWN_ENDIAN
+#    define VIS_MODULE_BYTE_ORDER VIS_MODULE_UNKNOWN_ENDIAN
 #    error
 #  endif
 #endif
@@ -49,7 +49,7 @@ inline void SwapByteOrder( T* v )
 template <typename T>
 inline void LittleToHost( T* v )
 {
-#if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_BIG_ENDIAN
     SwapByteOrder<T>( v );
 #endif
 };
@@ -57,7 +57,7 @@ inline void LittleToHost( T* v )
 template <typename T>
 inline void HostToLittle( T* v )
 {
-#if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_BIG_ENDIAN
     SwapByteOrder<T>( v );
 #endif
 };
@@ -65,7 +65,7 @@ inline void HostToLittle( T* v )
 template <typename T>
 inline void BigToHost( T* v )
 {
-#if PBVR_BYTE_ORDER == PBVR_LITTLE_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_LITTLE_ENDIAN
     SwapByteOrder<T>( v );
 #endif
 };
@@ -73,7 +73,7 @@ inline void BigToHost( T* v )
 template <typename T>
 inline void HostToBig( T* v )
 {
-#if PBVR_BYTE_ORDER == PBVR_LITTLE_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_LITTLE_ENDIAN
     SwapByteOrder<T>( v );
 #endif
 };
@@ -81,7 +81,7 @@ inline void HostToBig( T* v )
 template <typename T>
 inline void LittleToHost( T* pv, const size_t n )
 {
-#if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_BIG_ENDIAN
     for ( size_t m = 0; m < n; m++ ) SwapByteOrder<T>( &pv[m] );
 #endif
 };
@@ -89,7 +89,7 @@ inline void LittleToHost( T* pv, const size_t n )
 template <typename T>
 inline void HostToLittle( T* pv, const size_t n )
 {
-#if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_BIG_ENDIAN
     for ( size_t m = 0; m < n; m++ ) SwapByteOrder<T>( &pv[m] );
 #endif
 };
@@ -97,7 +97,7 @@ inline void HostToLittle( T* pv, const size_t n )
 template <typename T>
 inline void BigToHost( T* pv, const size_t n )
 {
-#if PBVR_BYTE_ORDER == PBVR_LITTLE_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_LITTLE_ENDIAN
     for ( size_t m = 0; m < n; m++ ) SwapByteOrder<T>( &pv[m] );
 #endif
 };
@@ -105,7 +105,7 @@ inline void BigToHost( T* pv, const size_t n )
 template <typename T>
 inline void HostToBig( T* pv, const size_t n )
 {
-#if PBVR_BYTE_ORDER == PBVR_LITTLE_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_LITTLE_ENDIAN
     for ( size_t m = 0; m < n; m++ ) SwapByteOrder<T>( &pv[m] );
 #endif
 };

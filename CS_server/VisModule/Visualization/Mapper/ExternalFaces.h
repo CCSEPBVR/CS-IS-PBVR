@@ -48,60 +48,60 @@ public:
     ExternalFaces( void );
 
     ExternalFaces(
-        const vismodule::VolumeObjectBase* volume );
+        const vismodule::VolumeObjectBase& volume );
 
     ExternalFaces(
-        const vismodule::VolumeObjectBase* volume,
+        const vismodule::VolumeObjectBase& volume,
         const vismodule::TransferFunction& transfer_function );
 
     virtual ~ExternalFaces( void );
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase* object );
+    SuperClass* exec( const vismodule::ObjectBase& object );
 
 private:
 
-    void mapping( const vismodule::StructuredVolumeObject* volume );
+    void mapping( const vismodule::StructuredVolumeObject& volume );
 
     void calculate_coords(
-        const vismodule::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject& volume );
 
     void calculate_uniform_coords(
-        const vismodule::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject& volume );
 
     void calculate_rectilinear_coords(
-        const vismodule::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject& volume );
 
     void calculate_curvilinear_coords(
-        const vismodule::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject& volume );
 
     void calculate_irregular_coords(
-        const vismodule::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject& volume );
 
     template <typename T>
     void calculate_colors(
-        const vismodule::StructuredVolumeObject* volume );
+        const vismodule::StructuredVolumeObject& volume );
 
 private:
 
-    void mapping( const vismodule::UnstructuredVolumeObject* volume );
+    void mapping( const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
     void calculate_tetrahedral_faces(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
     void calculate_quadratic_tetrahedral_faces(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
     void calculate_hexahedral_faces(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
     void calculate_quadratic_hexahedral_faces(
-        const vismodule::UnstructuredVolumeObject* volume );
+        const vismodule::UnstructuredVolumeObject& volume );
 };
 
 } // end of namespace vismodule

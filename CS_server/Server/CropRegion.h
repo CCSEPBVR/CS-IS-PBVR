@@ -1,5 +1,5 @@
-#ifndef PBVR__CROP_REGION_H_INCLUDE
-#define PBVR__CROP_REGION_H_INCLUDE
+#ifndef VIS_MODULE__CROP_REGION_H_INCLUDE
+#define VIS_MODULE__CROP_REGION_H_INCLUDE
 
 #include <vismodule/Vector3>
 
@@ -50,5 +50,5 @@ public:
     };
 };
 
-#endif // PBVR__CROP_REGION_H_INCLUDE
+#endif // VIS_MODULE__CROP_REGION_H_INCLUDE
 

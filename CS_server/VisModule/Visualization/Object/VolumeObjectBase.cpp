@@ -11,10 +11,10 @@
  *  $Id: VolumeObjectBase.cpp 848 2011-06-29 11:35:52Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "VolumeObjectBase.h"
+#include <vismodule/VolumeObjectBase>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -23,7 +23,7 @@ namespace pbvr
  */
 /*==========================================================================*/
 VolumeObjectBase::VolumeObjectBase():
-    pbvr::ObjectBase(),
+    vismodule::ObjectBase(),
     m_label( "" ),
     m_veclen( 0 ),
     m_coords(),
@@ -49,7 +49,7 @@ VolumeObjectBase::VolumeObjectBase(
     const size_t     veclen,
     const Coords&    coords,
     const Values&    values ):
-    pbvr::ObjectBase(),
+    vismodule::ObjectBase(),
     m_label( "" ),
     m_veclen( veclen ),
     m_coords( coords ),
@@ -70,7 +70,7 @@ VolumeObjectBase::VolumeObjectBase(
  */
 /*==========================================================================*/
 VolumeObjectBase::VolumeObjectBase( const VolumeObjectBase& other ):
-    pbvr::ObjectBase( other ),
+    vismodule::ObjectBase( other ),
     m_label( other.label() ),
     m_veclen( other.veclen() ),
     m_coords( other.coords() ),
@@ -98,31 +98,33 @@ VolumeObjectBase::~VolumeObjectBase()
     if ( m_pCoordSynthTkns )delete m_pCoordSynthTkns; //add by shimomura 2024/0603
 }
 
-pbvr::VolumeObjectBase* VolumeObjectBase::DownCast( pbvr::ObjectBase* object )
+vismodule::VolumeObjectBase* VolumeObjectBase::DownCast( vismodule::ObjectBase* object )
 {
-    const pbvr::ObjectBase::ObjectType type = object->objectType();
-    if ( type != pbvr::ObjectBase::Volume )
+    const vismodule::ObjectBase::ObjectType type = object->objectType();
+    if ( type != vismodule::ObjectBase::Volume )
     {
         visModuleMessageError( "Input object is not a volume object." );
         return NULL;
     }
 
-    pbvr::VolumeObjectBase* volume = static_cast<pbvr::VolumeObjectBase*>( object );
+    vismodule::VolumeObjectBase* volume = static_cast<vismodule::VolumeObjectBase*>( object );
 
     return volume;
 }
 
-const pbvr::VolumeObjectBase* VolumeObjectBase::DownCast( const pbvr::ObjectBase& object )
+const vismodule::VolumeObjectBase* VolumeObjectBase::DownCast( const vismodule::ObjectBase& object )
 {
-    return VolumeObjectBase::DownCast( const_cast<pbvr::ObjectBase*>( &object ) );
+    return VolumeObjectBase::DownCast( const_cast<vismodule::ObjectBase*>( &object ) );
 }
 
-std::ostream& operator << ( std::ostream& os, const pbvr::VolumeObjectBase& object )
+std::ostream& operator << ( std::ostream& os, const vismodule::VolumeObjectBase& object )
 {
 #ifdef VIS_MODULE_COMPILER_VC
-#if VIS_MODULE_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
-    // @TODO Cannot instance the object that is a abstract class here (error:C2259).
-#endif
+//#if VIS_MODULE_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
+//    // @TODO Cannot instance the object that is a abstract class here (error:C2259).
+//#endif
+#else
+    //os << static_cast<const vismodule::ObjectBase&>( object ) << std::endl;
 #endif
 
     const std::ios_base::fmtflags flags( os.flags() );
@@ -227,9 +229,9 @@ void VolumeObjectBase::setCoordSynthesizerTokens( const CoordSynthesizerTokens& 
     //m_pCoordSynthTkns.m_z_coord_synthesizer_token = pcst.m_z_coord_synthesizer_token;
 }
 
-const pbvr::ObjectBase::ObjectType VolumeObjectBase::objectType() const
+const vismodule::ObjectBase::ObjectType VolumeObjectBase::objectType() const
 {
-    return pbvr::ObjectBase::Volume;
+    return vismodule::ObjectBase::Volume;
 }
 
 const std::string& VolumeObjectBase::label() const
@@ -435,4 +437,4 @@ void VolumeObjectBase::deepCopy( const VolumeObjectBase& object )
     }
 }
 
-} // end of namespace pbvr
+} // end of namespace vismodule

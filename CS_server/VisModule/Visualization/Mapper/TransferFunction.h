@@ -11,16 +11,16 @@
  *  $Id: TransferFunction.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__TRANSFER_FUNCTION_H_INCLUDE
-#define PBVR__TRANSFER_FUNCTION_H_INCLUDE
+#ifndef VIS_MODULE__TRANSFER_FUNCTION_H_INCLUDE
+#define VIS_MODULE__TRANSFER_FUNCTION_H_INCLUDE
 
-#include "ClassName.h"
+#include <vismodule/ClassName>
 #include <vismodule/ColorMap>
 #include <vismodule/OpacityMap>
-#include "VolumeObjectBase.h"
+#include <vismodule/VolumeObjectBase>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*==========================================================================*/
@@ -30,7 +30,7 @@ namespace pbvr
 /*==========================================================================*/
 class TransferFunction
 {
-    visModuleClassName( pbvr::TransferFunction );
+    visModuleClassName( vismodule::TransferFunction );
 
 private:
 
@@ -69,11 +69,11 @@ public:
   
     void setOpacityRange( const float min_value, const float max_value );
 
-    void setRange( const pbvr::VolumeObjectBase& volume );
+    void setRange( const vismodule::VolumeObjectBase& volume );
 
     void adjustRange( const float min_value, const float max_value );
 
-    void adjustRange( const pbvr::VolumeObjectBase& volume );
+    void adjustRange( const vismodule::VolumeObjectBase& volume );
 
     const bool hasRange() const;
 
@@ -104,6 +104,6 @@ public:
     TransferFunction& operator =( const TransferFunction& rhs );
 };
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__TRANSFER_FUNCTION_H_INCLUDE

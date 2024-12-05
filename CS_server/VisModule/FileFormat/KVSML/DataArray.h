@@ -11,8 +11,8 @@
  *  $Id: DataArray.h 667 2011-02-22 16:07:54Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef PBVR__KVSML__DATA_ARRAY_H_INCLUDE
-#define PBVR__KVSML__DATA_ARRAY_H_INCLUDE
+#ifndef VIS_MODULE__KVSML__DATA_ARRAY_H_INCLUDE
+#define VIS_MODULE__KVSML__DATA_ARRAY_H_INCLUDE
 
 #include <vismodule/File>
 #include <vismodule/Tokenizer>
@@ -25,7 +25,7 @@
 
 #include "endian2.h"
 
-namespace pbvr
+namespace vismodule
 {
 
 namespace kvsml
@@ -292,7 +292,7 @@ inline const bool ReadExternalData(
         }
 
         fclose( ifs );
-#if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_BIG_ENDIAN
         data_array->swapByte();
 #endif
     }
@@ -407,7 +407,7 @@ inline const bool ReadExternalData(
             }
         }
         fclose( ifs );
-#if PBVR_BYTE_ORDER == PBVR_BIG_ENDIAN
+#if VIS_MODULE_BYTE_ORDER == VIS_MODULE_BIG_ENDIAN
         data_array->swapByte();
 #endif
     }
@@ -611,8 +611,8 @@ inline const bool WriteExternalData(
 
 } // end of namespace DataArray
 
-} // end of namespace pbvrml
+} // end of namespace vismoduleml
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__KVSML__DATA_ARRAY_H_INCLUDE

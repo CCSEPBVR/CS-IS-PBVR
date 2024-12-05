@@ -39,7 +39,7 @@ private:
 
 public:
 
-    VolumeRayIntersector( const vismodule::VolumeObjectBase* volume );
+    VolumeRayIntersector( const vismodule::VolumeObjectBase& volume );
 
 public:
 

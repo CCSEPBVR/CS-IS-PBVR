@@ -11,38 +11,38 @@
  *  $Id: TetrahedralCell.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef PBVR__TRIANGLE_CELL_H_INCLUDE
-#define PBVR__TRIANGLE_CELL_H_INCLUDE
+#ifndef VIS_MODULE__TRIANGLE_CELL_H_INCLUDE
+#define VIS_MODULE__TRIANGLE_CELL_H_INCLUDE
 
-#include "ClassName.h"
+#include <vismodule/ClassName>
 #include <vismodule/Type>
 #include <vismodule/Vector4>
 #include <vismodule/Matrix44>
-#include "UnstructuredVolumeObject.h"
+#include <vismodule/UnstructuredVolumeObject>
 #include <vismodule/IgnoreUnusedVariable>
-#include "CellBase.h"
+#include <vismodule/CellBase>
 
 
-namespace pbvr
+namespace vismodule
 {
 
 template <typename T>
-class TriangleCell : public pbvr::CellBase<T>
+class TriangleCell : public vismodule::CellBase<T>
 {
-    visModuleClassName( pbvr::TriangleCell );
+    visModuleClassName( vismodule::TriangleCell );
 
 public:
 
-    //enum { NumberOfNodes = pbvr::UnstructuredVolumeObject::Triangle };
+    //enum { NumberOfNodes = vismodule::UnstructuredVolumeObject::Triangle };
     enum { NumberOfNodes = 3 };
 
 public:
 
-    typedef pbvr::CellBase<T> BaseClass;
+    typedef vismodule::CellBase<T> BaseClass;
 
 public:
 
-    TriangleCell( const pbvr::UnstructuredVolumeObject& volume );
+    TriangleCell( const vismodule::UnstructuredVolumeObject& volume );
 
     virtual ~TriangleCell();
 
@@ -73,8 +73,8 @@ public:
 /*===========================================================================*/
 template <typename T>
 inline TriangleCell<T>::TriangleCell(
-    const pbvr::UnstructuredVolumeObject& volume ):
-    pbvr::CellBase<T>( volume )
+    const vismodule::UnstructuredVolumeObject& volume ):
+    vismodule::CellBase<T>( volume )
 {
     std::cout << "Triangle AAAA" << std::endl;
     // Set the initial interpolation functions and differential functions.
@@ -254,6 +254,6 @@ inline void TriangleCell<T>::setLocalGravityPoint() const
 //    this->setLocalPoint( vismodule::Vector2f( 1/3, 1/3 ) );
 }
 
-} // end of namespace pbvr
+} // end of namespace vismodule
 
 #endif // VIS_MODULE__TETRAHEDRAL_CELL_H_INCLUDE

@@ -97,7 +97,7 @@ void TransferFunctionSynthesizerCreator::setProtocol( const jpv::ParticleTransfe
     set_protocol( clntMes );
 }
 
-void TransferFunctionSynthesizerCreator::setAsisTransferFunction( const pbvr::TransferFunction& tf )
+void TransferFunctionSynthesizerCreator::setAsisTransferFunction( const vismodule::TransferFunction& tf )
 {
 }
 
@@ -518,7 +518,7 @@ void TransferFunctionSynthesizerCreator::set_param_info( const ParameterFile& pa
 
 //// add by @shimomura 2022/12/05
 ////void readTFfromParamInfo( ParamInfo* param,
-////                          std::vector<pbvr::TransferFunction>& tf,
+////                          std::vector<vismodule::TransferFunction>& tf,
 ////                          TransferFunctionSynthesizer* tfs )
 void TransferFunctionSynthesizerCreator::read_TF_from_ParamInfo( const ParameterFile& pa ) 
 {
@@ -652,7 +652,7 @@ void TransferFunctionSynthesizerCreator::read_TF_from_ParamInfo( const Parameter
         vismodule::ValueArray<float> ff_table( f_table );
         vismodule::OpacityMap opacity_map( ff_table, min, max );
 
-        pbvr::TransferFunction tfBuf;
+        vismodule::TransferFunction tfBuf;
         tfBuf.setColorMap( color_map );
         tfBuf.setOpacityMap( opacity_map );
         m_transfunc.push_back(tfBuf);

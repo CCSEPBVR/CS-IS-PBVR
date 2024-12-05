@@ -14,7 +14,7 @@
 #include "KVSMLObjectImage.h"
 #include "ImageObjectTag.h"
 #include "PixelTag.h"
-#include "DataArrayTag.h"
+#include <vismodule/DataArrayTag>
 #include <vismodule/XMLDocument>
 #include <vismodule/XMLDeclaration>
 #include <vismodule/XMLElement>

@@ -35,19 +35,19 @@ class PointExporter : public vismodule::ExporterBase<FileFormatType>
 
 public:
 
-    PointExporter( const vismodule::PointObject* object );
+    PointExporter( const vismodule::PointObject& object );
 
-    FileFormatType* exec( const vismodule::ObjectBase* object );
+    FileFormatType* exec( const vismodule::ObjectBase& object );
 };
 
 template <typename FileFormatType>
-PointExporter<FileFormatType>::PointExporter( const vismodule::PointObject* object )
+PointExporter<FileFormatType>::PointExporter( const vismodule::PointObject& object )
 {
     this->exec( object );
 }
 
 template <typename FileFormatType>
-FileFormatType* PointExporter<FileFormatType>::exec( const vismodule::ObjectBase* object )
+FileFormatType* PointExporter<FileFormatType>::exec( const vismodule::ObjectBase& object )
 {
     return( NULL );
 }
@@ -62,9 +62,9 @@ class PointExporter<vismodule::KVSMLObjectPoint> : public vismodule::ExporterBas
 {
 public:
 
-    PointExporter( const vismodule::PointObject* object );
+    PointExporter( const vismodule::PointObject& object );
 
-    vismodule::KVSMLObjectPoint* exec( const vismodule::ObjectBase* object );
+    vismodule::KVSMLObjectPoint* exec( const vismodule::ObjectBase& object );
 };
 
 } // end of namespace vismodule

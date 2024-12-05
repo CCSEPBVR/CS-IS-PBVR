@@ -20,7 +20,7 @@
 #include "ConnectionTag.h"
 #include "NormalTag.h"
 #include "OpacityTag.h"
-#include "DataArrayTag.h"
+#include <vismodule/DataArrayTag>
 #include "DataValueTag.h"
 #include "DataReader.h"
 #include "DataWriter.h"

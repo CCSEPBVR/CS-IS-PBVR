@@ -37,7 +37,7 @@ Bounds::Bounds( void ):
  *  @param  type [in] bounds type
  */
 /*==========================================================================*/
-Bounds::Bounds( const vismodule::ObjectBase* object, const Bounds::Type type ):
+Bounds::Bounds( const vismodule::ObjectBase& object, const Bounds::Type type ):
     m_type( type ),
     m_corner_scale( 0.2f ),
     m_division( 50.0f )
@@ -62,7 +62,7 @@ Bounds::Bounds( const vismodule::Vector3f& min_coord, const vismodule::Vector3f&
     object.setMinMaxExternalCoords( min_coord, max_coord );
     object.setMinMaxObjectCoords( min_coord, max_coord );
 
-    this->exec( &object );
+    this->exec( object );
 }
 
 /*===========================================================================*/
@@ -80,9 +80,9 @@ Bounds::~Bounds( void )
  *  @param object [in] pointer to the object
  */
 /*==========================================================================*/
-Bounds::SuperClass* Bounds::exec( const vismodule::ObjectBase* object )
+Bounds::SuperClass* Bounds::exec( const vismodule::ObjectBase& object )
 {
-    if ( !object )
+    if ( !&object )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError("Input object is NULL.");
@@ -99,17 +99,17 @@ Bounds::SuperClass* Bounds::exec( const vismodule::ObjectBase* object )
     }
 */
 
-    if ( object->hasMinMaxExternalCoords() )
+    if ( object.hasMinMaxExternalCoords() )
     {
-        const vismodule::Vector3f min_coord( object->minExternalCoord() );
-        const vismodule::Vector3f max_coord( object->maxExternalCoord() );
+        const vismodule::Vector3f min_coord( object.minExternalCoord() );
+        const vismodule::Vector3f max_coord( object.maxExternalCoord() );
         SuperClass::setMinMaxExternalCoords( min_coord, max_coord );
     }
 
-    if ( object->hasMinMaxObjectCoords() )
+    if ( object.hasMinMaxObjectCoords() )
     {
-        const vismodule::Vector3f min_coord( object->minObjectCoord() );
-        const vismodule::Vector3f max_coord( object->maxObjectCoord() );
+        const vismodule::Vector3f min_coord( object.minObjectCoord() );
+        const vismodule::Vector3f max_coord( object.maxObjectCoord() );
         SuperClass::setMinMaxObjectCoords( min_coord, max_coord );
     }
 

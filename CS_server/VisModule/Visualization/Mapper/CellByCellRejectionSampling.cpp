@@ -11,23 +11,23 @@
  *  $Id: CellByCellRejectionSampling.cpp 633 2010-10-10 05:12:37Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "CellByCellRejectionSampling.h"
+#include <vismodule/CellByCellRejectionSampling>
 #include <vector>
 #include <stdlib.h>
 #include <vismodule/DebugNew>
-#include "ObjectManager.h"
+#include <vismodule/ObjectManager>
 #include <vismodule/Camera>
 //#include <vismodule/TrilinearInterpolator>
 #include <vismodule/Value>
-#include "CellBase.h"
-#include "TrilinearInterpolator.h" 
-#include "TetrahedralCell.h"
-#include "QuadraticTetrahedralCell.h"
-#include "HexahedralCell.h"
-#include "QuadraticHexahedralCell.h"
+#include <vismodule/CellBase>
+#include <vismodule/TrilinearInterpolator> 
+#include <vismodule/TetrahedralCell>
+#include <vismodule/QuadraticTetrahedralCell>
+#include <vismodule/HexahedralCell>
+#include <vismodule/QuadraticHexahedralCell>
 #include "PrismaticCell.h"
-#include "PyramidalCell.h"
-#include "GlobalCore.h"
+#include <vismodule/PyramidalCell>
+#include <vismodule/GlobalCore>
 
 #include <vismodule/Timer>
 #include "common.h"
@@ -46,7 +46,7 @@
 
 #include "timer_simple.h"
 
-namespace Generator = pbvr::CellByCellParticleGenerator;
+namespace Generator = vismodule::CellByCellParticleGenerator;
 
 using FuncParser::Variable;
 using FuncParser::Variables;
@@ -54,7 +54,7 @@ using FuncParser::Function;
 using FuncParser::FunctionParser;
 
 
-namespace pbvr
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -63,8 +63,8 @@ namespace pbvr
  */
 /*===========================================================================*/
 CellByCellRejectionSampling::CellByCellRejectionSampling():
-    pbvr::MapperBase(),
-    pbvr::PointObject(),
+    vismodule::MapperBase(),
+    vismodule::PointObject(),
     m_camera( 0 )
 {
 }
@@ -80,15 +80,15 @@ CellByCellRejectionSampling::CellByCellRejectionSampling():
  */
 /*===========================================================================*/
 CellByCellRejectionSampling::CellByCellRejectionSampling(
-    const pbvr::VolumeObjectBase& volume,
+    const vismodule::VolumeObjectBase& volume,
     const size_t                 subpixel_level,
     const float                  sampling_step,
-    const pbvr::TransferFunction& transfer_function,
+    const vismodule::TransferFunction& transfer_function,
     TransferFunctionSynthesizer* transfunc_synthesizer,
     const CropRegion&            crop,
     const float                  object_depth ):
-    pbvr::MapperBase( transfer_function ),
-    pbvr::PointObject(),
+    vismodule::MapperBase( transfer_function ),
+    vismodule::PointObject(),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_camera( 0 ),
     m_batch( false )
@@ -113,16 +113,16 @@ CellByCellRejectionSampling::CellByCellRejectionSampling(
 /*===========================================================================*/
 CellByCellRejectionSampling::CellByCellRejectionSampling(
     const vismodule::Camera&           camera,
-    const pbvr::VolumeObjectBase& volume,
+    const vismodule::VolumeObjectBase& volume,
     const size_t                 subpixel_level,
     const float                  sampling_step,
-    const pbvr::TransferFunction& transfer_function,
+    const vismodule::TransferFunction& transfer_function,
     TransferFunctionSynthesizer* transfunc_synthesizer,
     const CropRegion&            crop,
     const float                  particle_density,
     const float                  object_depth ):
-    pbvr::MapperBase( transfer_function ),
-    pbvr::PointObject(),
+    vismodule::MapperBase( transfer_function ),
+    vismodule::PointObject(),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_particle_density( particle_density ),
     m_batch( false )
@@ -137,19 +137,19 @@ CellByCellRejectionSampling::CellByCellRejectionSampling(
 
 CellByCellRejectionSampling::CellByCellRejectionSampling(
     const vismodule::Camera&           camera,
-    const pbvr::VolumeObjectBase& volume,
+    const vismodule::VolumeObjectBase& volume,
     const size_t                 subpixel_level,
     const float                  sampling_step,
-    const pbvr::TransferFunction& transfer_function,
-    std::vector<pbvr::TransferFunction>& transfer_function_array, 
+    const vismodule::TransferFunction& transfer_function,
+    std::vector<vismodule::TransferFunction>& transfer_function_array, 
     //std::vector<NamedTransferFunction>& transfer_function_array, 
     TransferFunctionSynthesizer* transfunc_synthesizer,
     const CropRegion&            crop,
     const float                  particle_density,
     const bool                   batch,
     const float                  object_depth ):
-    pbvr::MapperBase( transfer_function ),
-    pbvr::PointObject(),
+    vismodule::MapperBase( transfer_function ),
+    vismodule::PointObject(),
     m_transfer_function_array( transfer_function_array ),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_particle_density( particle_density ),
@@ -257,7 +257,7 @@ void CellByCellRejectionSampling::setObjectDepth( const float object_depth )
  *  @return pointer to the point object
  */
 /*===========================================================================*/
-CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::exec( const pbvr::ObjectBase& object )
+CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::exec( const vismodule::ObjectBase& object )
 {
     if ( !&object )
     {
@@ -266,49 +266,49 @@ CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::exec( cons
         return NULL;
     }
 
-    const pbvr::VolumeObjectBase* volume = pbvr::VolumeObjectBase::DownCast( object );
-    if ( !volume )
+    const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
+    if ( !&volume )
     {
         BaseClass::m_is_success = false;
         visModuleMessageError( "Input object is not volume dat." );
         return NULL;
     }
 
-    const pbvr::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
-    if ( volume_type == pbvr::VolumeObjectBase::Structured )
+    const vismodule::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
+    if ( volume_type == vismodule::VolumeObjectBase::Structured )
     {
-//        const vismodule::Camera* camera = ( !m_camera ) ? pbvr::GlobalCore::camera : m_camera;
-//        this->mapping( camera, reinterpret_cast<const pbvr::StructuredVolumeObject*>( object ) );
-        const pbvr::StructuredVolumeObject* svo_p = static_cast<const pbvr::StructuredVolumeObject*>( &object );
+//        const vismodule::Camera* camera = ( !m_camera ) ? vismodule::GlobalCore::camera : m_camera;
+//        this->mapping( camera, reinterpret_cast<const vismodule::StructuredVolumeObject*>( &object ) );
+        const vismodule::StructuredVolumeObject* svo_p = static_cast<const vismodule::StructuredVolumeObject*>( &object );
         if ( m_camera )
         {
-//            this->mapping( m_camera, reinterpret_cast<const pbvr::StructuredVolumeObject*>( object ) );
+//            this->mapping( m_camera, reinterpret_cast<const vismodule::StructuredVolumeObject*>( &object ) );
             this->mapping( *m_camera, *svo_p );
         }
         else
         {
             // Generate particles by using default camera parameters.
-            if ( pbvr::GlobalCore::m_camera )
+            if ( vismodule::GlobalCore::m_camera )
             {
-                if ( pbvr::GlobalCore::m_camera->windowWidth() != 0 && pbvr::GlobalCore::m_camera->windowHeight() )
+                if ( vismodule::GlobalCore::m_camera->windowWidth() != 0 && vismodule::GlobalCore::m_camera->windowHeight() )
                 {
-                    const vismodule::Camera* camera = pbvr::GlobalCore::m_camera;
-//                    this->mapping( camera, reinterpret_cast<const pbvr::StructuredVolumeObject*>( object ) );
+                    const vismodule::Camera* camera = vismodule::GlobalCore::m_camera;
+//                    this->mapping( camera, reinterpret_cast<const vismodule::StructuredVolumeObject*>( &object ) );
                       this->mapping( *camera, *svo_p );
                 }
             }
             else
             {
                 vismodule::Camera* camera = new vismodule::Camera();
-//                this->mapping( camera, reinterpret_cast<const pbvr::StructuredVolumeObject*>( object ) );
+//                this->mapping( camera, reinterpret_cast<const vismodule::StructuredVolumeObject*>( &object ) );
                 this->mapping( *camera, *svo_p );
                 delete camera;
             }
         }
     }
-    else // volume_type == pbvr::VolumeObjectBase::Unstructured
+    else // volume_type == vismodule::VolumeObjectBase::Unstructured
     {
-        const pbvr::UnstructuredVolumeObject* uvo_p = static_cast<const pbvr::UnstructuredVolumeObject*>( &object );
+        const vismodule::UnstructuredVolumeObject* uvo_p = static_cast<const vismodule::UnstructuredVolumeObject*>( &object );
         if ( m_camera )
         {
             this->mapping( *m_camera, *uvo_p );
@@ -316,11 +316,11 @@ CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::exec( cons
         else
         {
             // Generate particles by using default camera parameters.
-            if ( pbvr::GlobalCore::m_camera )
+            if ( vismodule::GlobalCore::m_camera )
             {
-                if ( pbvr::GlobalCore::m_camera->windowWidth() != 0 && pbvr::GlobalCore::m_camera->windowHeight() )
+                if ( vismodule::GlobalCore::m_camera->windowWidth() != 0 && vismodule::GlobalCore::m_camera->windowHeight() )
                 {
-                    const vismodule::Camera* camera = pbvr::GlobalCore::m_camera;
+                    const vismodule::Camera* camera = vismodule::GlobalCore::m_camera;
                     this->mapping( *camera, *uvo_p );
                 }
             }
@@ -343,14 +343,14 @@ CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::exec( cons
  *  @param  volume [in] pointer to the input volume object
  */
 /*===========================================================================*/
-void CellByCellRejectionSampling::mapping( const vismodule::Camera& camera, const pbvr::StructuredVolumeObject& volume )
+void CellByCellRejectionSampling::mapping( const vismodule::Camera& camera, const vismodule::StructuredVolumeObject& volume )
 {
     // Attach the pointer to the volume object and set the min/max coordinates.
     BaseClass::attach_volume( volume );
     BaseClass::set_range( volume );
     BaseClass::set_min_max_coords( volume, this );
 
-    const pbvr::VolumeObjectBase *object = BaseClass::volume();
+    const vismodule::VolumeObjectBase *object = BaseClass::volume();
     // Calculate the density map.
     // if ( m_transfunc_synthesizer )
     if ( m_transfer_function_synthesizer )
@@ -405,7 +405,7 @@ void CellByCellRejectionSampling::mapping( const vismodule::Camera& camera, cons
 }
 
 template <>
-void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const pbvr::UnstructuredVolumeObject& volume );
+void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const vismodule::UnstructuredVolumeObject& volume );
 
 /*===========================================================================*/
 /**
@@ -414,14 +414,14 @@ void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const p
  *  @param  volume [in] pointer to the input volume object
  */
 /*===========================================================================*/
-void CellByCellRejectionSampling::mapping( const vismodule::Camera& camera, const pbvr::UnstructuredVolumeObject& volume )
+void CellByCellRejectionSampling::mapping( const vismodule::Camera& camera, const vismodule::UnstructuredVolumeObject& volume )
 {
     // Attach the pointer to the volume object and set the min/max coordinates.
     BaseClass::attach_volume( volume );
     BaseClass::set_range( volume );
     BaseClass::set_min_max_coords( volume, this );
 
-    const pbvr::VolumeObjectBase *object = BaseClass::volume();
+    const vismodule::VolumeObjectBase *object = BaseClass::volume();
 
     // Calculate the density map.
     if ( m_transfer_function_synthesizer )
@@ -478,7 +478,7 @@ void CellByCellRejectionSampling::mapping( const vismodule::Camera& camera, cons
  */
 /*===========================================================================*/
 template <typename T>
-void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolumeObject& volume )
+void CellByCellRejectionSampling::generate_particles( const vismodule::StructuredVolumeObject& volume )
 {
 #if 1
 
@@ -519,14 +519,14 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
     int mpi_rank = 0;
 #endif
 
-    std::vector< std::vector< TFS::TrilinearInterpolator* > >  interp;
+    std::vector< std::vector< vismodule::TrilinearInterpolator* > >  interp;
     interp.resize( max_threads );
     for ( int i = 0; i < max_threads; i++ )
     {
         interp[ i ].resize( nvariables );
         for ( int j = 0; j < nvariables; j++ )
         {
-             interp[i][j]  = new TFS::TrilinearInterpolator( values[j], resolution);
+             interp[i][j]  = new vismodule::TrilinearInterpolator( values[j], resolution);
         }
     }
 
@@ -592,14 +592,14 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
 
 
     TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
-    std::vector< std::vector<pbvr::TransferFunction> > th_tf;
+    std::vector< std::vector<vismodule::TransferFunction> > th_tf;
 
     for ( int n = 0; n < max_threads; n++ )
     {
         th_tfs[n] = new TransferFunctionSynthesizer( *m_transfer_function_synthesizer );
     }
 
-    TFS::TrilinearInterpolator** interp_opacity  = new TFS::TrilinearInterpolator*[max_threads] ;
+    vismodule::TrilinearInterpolator** interp_opacity  = new vismodule::TrilinearInterpolator*[max_threads] ;
 
     th_tf.resize( max_threads );
     for ( int i = 0; i < max_threads; i++ )
@@ -630,7 +630,7 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
 
     int total_nparticles = 0;
 
-    const pbvr::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
+    const vismodule::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
     CoordSynthesizerStrings css;
     if ( pCrdSynthStr )
     { 
@@ -836,7 +836,7 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
 
 #pragma omp critical
         {
-            interp_opacity[thid] = new TFS::TrilinearInterpolator( opacity_volume, resolution );
+            interp_opacity[thid] = new vismodule::TrilinearInterpolator( opacity_volume, resolution );
         }
 
         //粒子生成ループ開始
@@ -1123,7 +1123,7 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
  */
 /*===========================================================================*/
 template <typename T>
-void CellByCellRejectionSampling::generate_particles( const pbvr::UnstructuredVolumeObject& volume )
+void CellByCellRejectionSampling::generate_particles( const vismodule::UnstructuredVolumeObject& volume )
 {
     // Vertex data arrays. (output)
     std::vector<vismodule::Real32> vertex_coords;
@@ -1131,37 +1131,37 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::UnstructuredVo
     std::vector<vismodule::Real32> vertex_normals;
 
     // Set a tetrahedral cell interpolator.
-    pbvr::CellBase<T>* cell = NULL;
+    vismodule::CellBase<T>* cell = NULL;
     switch ( volume.cellType() )
     {
-//   case pbvr::VolumeObjectBase::Tetrahedra:
+//   case vismodule::VolumeObjectBase::Tetrahedra:
 //   {
-//       cell = new pbvr::TetrahedralCell<T>( volume );
+//       cell = new vismodule::TetrahedralCell<T>( volume );
 //       break;
 //   }
-//   case pbvr::VolumeObjectBase::QuadraticTetrahedra:
+//   case vismodule::VolumeObjectBase::QuadraticTetrahedra:
 //   {
-//       cell = new pbvr::QuadraticTetrahedralCell<T>( volume );
+//       cell = new vismodule::QuadraticTetrahedralCell<T>( volume );
 //       break;
 //   }
-    case pbvr::VolumeObjectBase::Hexahedra:
+    case vismodule::VolumeObjectBase::Hexahedra:
     {
-        cell = new pbvr::HexahedralCell<T>( volume );
+        cell = new vismodule::HexahedralCell<T>( volume );
         break;
     }
-//    case pbvr::VolumeObjectBase::QuadraticHexahedra:
+//    case vismodule::VolumeObjectBase::QuadraticHexahedra:
 //    {
-//        cell = new pbvr::QuadraticHexahedralCell<T>( volume );
+//        cell = new vismodule::QuadraticHexahedralCell<T>( volume );
 //        break;
 //    }
-//    case pbvr::VolumeObjectBase::Prism:
+//    case vismodule::VolumeObjectBase::Prism:
 //    {
-//        cell = new pbvr::PrismaticCell<T>( volume );
+//        cell = new vismodule::PrismaticCell<T>( volume );
 //        break;
 //    }
-//    case pbvr::VolumeObjectBase::Pyramid:
+//    case vismodule::VolumeObjectBase::Pyramid:
 //    {
-//        cell = new pbvr::PyramidalCell<T>( volume );
+//        cell = new vismodule::PyramidalCell<T>( volume );
 //        break;
 //    }
     default:
@@ -1175,7 +1175,7 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::UnstructuredVo
     const size_t veclen = volume.veclen();
     const vismodule::ColorMap color_map( BaseClass::transferFunction().colorMap() );
 
-    const pbvr::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
+    const vismodule::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
     CoordSynthesizerStrings css;
     if ( pCrdSynthStr ) css = *pCrdSynthStr;
     FuncParser::Variables synth_vars;
@@ -1373,7 +1373,7 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::UnstructuredVo
 }
 
 template <>
-void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const pbvr::UnstructuredVolumeObject& volume )
+void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const vismodule::UnstructuredVolumeObject& volume )
 {
     double start = GetTime();
     size_t resolution = DEFAULT_NBINS;
@@ -1429,12 +1429,12 @@ void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const p
     //static bool parameter_file_opened=false;
     static bool parameter_file_opened=true;
 
-    std::vector< std::vector< pbvr::CellBase<Type>* > >  interp;
+    std::vector< std::vector< vismodule::CellBase<Type>* > >  interp;
 
     interp.resize( max_threads );
     switch ( volume.cellType() )
     {
-        case pbvr::VolumeObjectBase::Tetrahedra:
+        case vismodule::VolumeObjectBase::Tetrahedra:
             {
                 if (mpi_rank == 0) std::cout << "celltype: tetrahedra " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
@@ -1442,12 +1442,12 @@ void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const p
                     interp[ i ].resize( nvariables );
                     for ( int j = 0; j < nvariables; j++ )
                     {
-                        interp[i][j]  = new pbvr::TetrahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
+                        interp[i][j]  = new vismodule::TetrahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
                     }
                 }
                 break;
             }
-        case pbvr::VolumeObjectBase::QuadraticTetrahedra:
+        case vismodule::VolumeObjectBase::QuadraticTetrahedra:
             {
                 if (mpi_rank == 0)std::cout << "Cell type : Quadratic tetrahedra " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
@@ -1455,12 +1455,12 @@ void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const p
                     interp[ i ].resize( nvariables );
                     for ( int j = 0; j < nvariables; j++ )
                     {
-                        interp[i][j]  = new pbvr::QuadraticTetrahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
+                        interp[i][j]  = new vismodule::QuadraticTetrahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
                     }
                 }
                 break;
             }
-        case pbvr::VolumeObjectBase::Hexahedra:
+        case vismodule::VolumeObjectBase::Hexahedra:
             {
                 if (mpi_rank == 0) std::cout << "celltype: hexahedra " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
@@ -1468,12 +1468,12 @@ void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const p
                     interp[ i ].resize( nvariables  );
                     for ( int j = 0; j < nvariables; j++ )
                     {
-                        interp[i][j]  = new pbvr::HexahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
+                        interp[i][j]  = new vismodule::HexahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
                     }
                 }
                 break;
             }
-        case pbvr::VolumeObjectBase::QuadraticHexahedra:
+        case vismodule::VolumeObjectBase::QuadraticHexahedra:
             {
                 if (mpi_rank == 0) std::cout << "celltype: quadratichexahedra " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
@@ -1481,12 +1481,12 @@ void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const p
                     interp[ i ].resize( nvariables );
                     for ( int j = 0; j < nvariables; j++ )
                     {
-                        interp[i][j]  = new pbvr::QuadraticHexahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
+                        interp[i][j]  = new vismodule::QuadraticHexahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
                     }
                 }
                 break;
             }
-        case pbvr::VolumeObjectBase::Prism:
+        case vismodule::VolumeObjectBase::Prism:
             {
                 if (mpi_rank == 0) std::cout << "celltype: prism " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
@@ -1494,12 +1494,12 @@ void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const p
                     interp[ i ].resize( nvariables );
                     for ( int j = 0; j < nvariables; j++ )
                     {
-                        interp[i][j]  = new pbvr::PrismaticCell<Type>( values[j], coordinates, ncoords, connections, ncells );
+                        interp[i][j]  = new vismodule::PrismaticCell<Type>( values[j], coordinates, ncoords, connections, ncells );
                     }
                 }
                 break;
             }
-        case pbvr::VolumeObjectBase::Pyramid:
+        case vismodule::VolumeObjectBase::Pyramid:
             {
                 if (mpi_rank == 0) std::cout << "celltype: pyramid " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
@@ -1507,55 +1507,55 @@ void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const p
                     interp[ i ].resize( nvariables );
                     for ( int j = 0; j < nvariables; j++ )
                     {
-                        interp[i][j]  = new pbvr::PyramidalCell<Type>( values[j], coordinates, ncoords, connections, ncells );
+                        interp[i][j]  = new vismodule::PyramidalCell<Type>( values[j], coordinates, ncoords, connections, ncells );
                     }
                 }
                 break;
             }
-//        case pbvr::VolumeObjectBase::Triangle:
+//        case vismodule::VolumeObjectBase::Triangle:
 //            {
 //                for ( int i = 0; i < max_threads; i++ )
 //                {
 //                    interp[ i ].resize( nvariables );
 //                    for ( int j = 0; j < nvariables; j++ )
 //                    {
-//                        interp[i][j]  = new pbvr::TriangleCell<Type>( values[j], coordinates, ncoords, connections, ncells );
+//                        interp[i][j]  = new vismodule::TriangleCell<Type>( values[j], coordinates, ncoords, connections, ncells );
 //                    }
 //                }
 //                break;
 //            }
-//        case pbvr::VolumeObjectBase::QuadraticTriangle:
+//        case vismodule::VolumeObjectBase::QuadraticTriangle:
 //            {
 //                for ( int i = 0; i < max_threads; i++ )
 //                {
 //                    interp[ i ].resize( nvariables );
 //                    for ( int j = 0; j < nvariables; j++ )
 //                    {
-//                        interp[i][j]  = new pbvr::QuadraticTriangleCell<Type>( values[j], coordinates, ncoords, connections, ncells );
+//                        interp[i][j]  = new vismodule::QuadraticTriangleCell<Type>( values[j], coordinates, ncoords, connections, ncells );
 //                    }
 //                }
 //                break;
 //            }
-//        case pbvr::VolumeObjectBase::Square:
+//        case vismodule::VolumeObjectBase::Square:
 //            {
 //                for ( int i = 0; i < max_threads; i++ )
 //                {
 //                    interp[ i ].resize( nvariables );
 //                    for ( int j = 0; j < nvariables; j++ )
 //                    {
-//                        interp[i][j]  = new pbvr::HexahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
+//                        interp[i][j]  = new vismodule::HexahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
 //                    }
 //                }
 //                break;
 //            }
-//        case pbvr::VolumeObjectBase::QuadraticSquare:
+//        case vismodule::VolumeObjectBase::QuadraticSquare:
 //            {
 //                for ( int i = 0; i < max_threads; i++ )
 //                {
 //                    interp[ i ].resize( nvariables );
 //                    for ( int j = 0; j < nvariables; j++ )
 //                    {
-//                        interp[i][j]  = new pbvr::HexahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
+//                        interp[i][j]  = new vismodule::HexahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
 //                    }
 //                }
 //                break;
@@ -1567,12 +1567,12 @@ void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const p
                 return;
             }
     }
-    //    PBVR_TIMER_END( 270 );
+    //    VIS_MODULE_TIMER_END( 270 );
 
     int tf_number = m_transfer_function_array.size();
 
-    SuperClass::m_color_histogram  = vismodule::ValueArray<pbvr::FrequencyTable>( tf_number );
-    SuperClass::m_opacity_histogram  = vismodule::ValueArray<pbvr::FrequencyTable>( tf_number );
+    SuperClass::m_color_histogram  = vismodule::ValueArray<vismodule::FrequencyTable>( tf_number );
+    SuperClass::m_opacity_histogram  = vismodule::ValueArray<vismodule::FrequencyTable>( tf_number );
 
     const int max_nparticles = (int)m_transfer_function_synthesizer->getMaxDensity() + 1;
 
@@ -1634,7 +1634,7 @@ void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const p
     }
 
     TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
-    std::vector< std::vector<pbvr::TransferFunction> > th_tf;
+    std::vector< std::vector<vismodule::TransferFunction> > th_tf;
 
     for ( int n = 0; n < max_threads; n++ )
     {
@@ -1667,11 +1667,11 @@ void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const p
 
     // coordinate synthesis
     // 2023 shimomura 
-    const pbvr::CoordSynthesizerTokens* pCrdSynthTkn = volume.getCoordSynthesizerTokens();
+    const vismodule::CoordSynthesizerTokens* pCrdSynthTkn = volume.getCoordSynthesizerTokens();
     CoordSynthesizerTokens cst;
     if ( pCrdSynthTkn ) cst = *pCrdSynthTkn;
 
-    const pbvr::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
+    const vismodule::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
     CoordSynthesizerStrings css;
     if ( pCrdSynthStr ) 
     {
@@ -2400,4 +2400,4 @@ vismodule::Vector3f CellByCellRejectionSampling::RandomSamplingInCube( const vis
 }
 
 
-} // end of namespace pbvr
+} // end of namespace vismodule

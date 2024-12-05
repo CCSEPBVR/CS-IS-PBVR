@@ -14,7 +14,7 @@
 #ifndef VIS_MODULE__POINT_IMPORTER_H_INCLUDE
 #define VIS_MODULE__POINT_IMPORTER_H_INCLUDE
 
-#include "ImporterBase.h"
+#include <vismodule/ImporterBase>
 #include <vismodule/ClassName>
 #include <vismodule/Module>
 #include <vismodule/PointObject>
@@ -47,13 +47,13 @@ public:
 
     PointImporter( const std::string& filename );
 
-    PointImporter( const vismodule::FileFormatBase* file_format );
+    PointImporter( const vismodule::FileFormatBase& file_format );
 
     virtual ~PointImporter( void );
 
 public:
 
-    SuperClass* exec( const vismodule::FileFormatBase* file_format );
+    SuperClass* exec( const vismodule::FileFormatBase& file_format );
 
 private:
 
