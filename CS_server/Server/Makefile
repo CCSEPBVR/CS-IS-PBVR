@@ -32,21 +32,13 @@ endif
 CXXFLAGS += -w -DCPU_SAMPLING_TIME -DJPV_CLIENT -I${VIS_MODULE_SOURCE_DIR} -I${COMMON_DIR} -I${FUNC_DIR} -I./
 LDFLAGS  += -L${COMMON_DIR} -lpbvrCommon -L${FUNC_DIR} -lpbvrFunc -L${VIS_MODULE_SOURCE_DIR}/Release -lvisModule
 
-SERVER_SRCS = CellByCellMetropolisSampling.cpp \
-			  CellByCellRejectionSampling.cpp \
-			  CellByCellUniformSampling.cpp \
+SERVER_SRCS =  \
 			  CellByCellHistogram.cpp \
               CropRegion.cpp \
-              DataArrayTag.cpp \
               ExtendedTransferFunction.cpp \
               FilterInformation.cpp \
-              FrequencyTable.cpp \
-              GeometryObjectBase.cpp \
-              GlobalCore.cpp \
               AggregateTypeSubvolume.cpp \
               StepAggregateTypeSubvolume.cpp \
-              HexahedralCell.cpp \
-              IDManager.cpp \
               JobCollector.cpp \
               JobDispatcher.cpp \
               KVSMLObjectPointWriter.cpp \
@@ -54,9 +46,6 @@ SERVER_SRCS = CellByCellMetropolisSampling.cpp \
               KVSMLObjectPlotOverLine.cpp \
               SPLITTypeSubvolume.cpp \
               main.cpp \
-              MapperBase.cpp \
-              ObjectBase.cpp \
-              ObjectManager.cpp \
               ParameterFile.cpp \
 			  PlotOverLine.cpp \
 			  PlotOverLineProperty.cpp \
@@ -64,15 +53,8 @@ SERVER_SRCS = CellByCellMetropolisSampling.cpp \
               PointObject.cpp \
               PointObjectGenerator.cpp \
               PrismaticCell.cpp \
-              PyramidalCell.cpp \
-              QuadraticHexahedralCell.cpp \
-              QuadraticTetrahedralCell.cpp \
               RangeEstimater.cpp \
-              StructuredVolumeImporter.cpp \
-              StructuredVolumeObject.cpp \
-              TetrahedralCell.cpp \
 			  timer.cpp \
-              StructuredVolumeObject.cpp \
 		      SFMT/SFMT.cpp\
               GlyphGenerator.cpp \
               GlyphProperty.cpp \
@@ -80,9 +62,6 @@ SERVER_SRCS = CellByCellMetropolisSampling.cpp \
 		      TransferFunction.cpp \
               TransferFunctionSynthesizer.cpp \
               TransferFunctionSynthesizerCreator.cpp \
-              UnstructuredVolumeImporter.cpp \
-              UnstructuredVolumeObject.cpp \
-              VolumeObjectBase.cpp 
 #              TriangleCell.cpp \
 #              SquareCell.cpp \
 #              QuadraticSquareCell.cpp \
@@ -90,55 +69,29 @@ SERVER_SRCS = CellByCellMetropolisSampling.cpp \
 
 
 SERVER_HEADERS = Argument.h \
-                 CellBase.h \
-                 CellByCellMetropolisSampling.h \
-                 CellByCellParticleGenerator.h \
-                 CellByCellRejectionSampling.h \
-                 CellByCellUniformSampling.h \
                  CellByCellHistogram.h \
                  common.h \
-                 Compiler.h \
                  CropRegion.h \
-                 DataArray.h \
-                 DataArrayTag.h \
-                 endian2.h \
                  ExtendedTransferFunction.h \
+                 endian2.h \
                  FilterInformation.h \
 				 FileChecker.h \
-                 FrequencyTable.h \
-                 GeometryObjectBase.h \
-                 GlobalCore.h \
                  AggregateTypeSubvolume.h \
                  StepAggregateTypeSubvolume.h \
-                 HexahedralCell.h \
-                 IDManager.h \
-                 ImporterBase.h \
                  JobCollector.h \
                  JobDispatcher.h \
                  KVSMLObjectPointWriter.h \
                  KVSMLObjectGlyph.h \
 	             KVSMLObjectPlotOverLine.h \
                  SPLITTypeSubvolume.h \
-                 Macro.h \
-                 MapperBase.h \
-                 ObjectBase.h \
-                 ObjectManager.h \
                  ParameterFile.h \
                  Platform.h \
 			  	 PlotOverLine.h \
 			  	 PlotOverLineProperty.h \
 			  	 POLObjectGenerator.h \
                  PointObjectGenerator.h \
-                 PointObject.h \
                  PrismaticCell.h \
-                 PyramidalCell.h \
-                 QuadraticHexahedralCell.h \
-                 QuadraticTetrahedralCell.h \
                  RangeEstimater.h \
-                 StructuredVolumeObject.h \
-                 StructuredVolumeImporter.h \
-                 TagTable.h \
-                 TetrahedralCell.h \
                  timer_simple.h \
 				 timer.h \
 		         SFMT/SFMT.h\
@@ -149,9 +102,6 @@ SERVER_HEADERS = Argument.h \
                  TransferFunctionSynthesizerCreator.h \
                  TransferFunctionSynthesizer.h \
                  Types.h \
-                 UnstructuredVolumeImporter.h \
-                 UnstructuredVolumeObject.h \
-                 VolumeObjectBase.h 
 #                 SquareCell.h \
 #                 TriangleCell.h \
 #                 QuadraticTriangleCell.h \
