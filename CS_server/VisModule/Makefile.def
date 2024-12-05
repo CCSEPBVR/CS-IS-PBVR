@@ -263,6 +263,10 @@ endif
 #=============================================================================
 DEFINITIONS :=
 
+ifndef MPICXX
+DEFINITIONS += -DCPU_VER
+endif
+
 ifdef DEBUG
 DEFINITIONS += -D_DEBUG -DVIS_MODULE_ENABLE_DEBUG
 else
