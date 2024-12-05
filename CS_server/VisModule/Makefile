@@ -13,7 +13,7 @@ include ./Makefile.def
 #=============================================================================
 #  INCLUDE_PATH, LIBRARY_PATH, LINK_LIBRARY, INSTALL_DIR.
 #=============================================================================
-INCLUDE_PATH := -I.
+INCLUDE_PATH := -I. -I../Server -I../FunctionParser -I../Common
 LIBRARY_PATH :=
 LINK_LIBRARY :=
 INSTALL_DIR  := ../../../$(VIS_MODULE_DIR_NAME)
