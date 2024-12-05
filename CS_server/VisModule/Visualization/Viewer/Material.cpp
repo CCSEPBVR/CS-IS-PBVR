@@ -385,11 +385,5 @@ void Material::setShininess( const float shininess )
 /*===========================================================================*/
 void Material::apply( void )
 {
-#ifndef NO_CLIENT
-    glMaterialfv( (GLenum)m_face, GL_AMBIENT,   m_ambient );
-    glMaterialfv( (GLenum)m_face, GL_DIFFUSE,   m_diffuse );
-    glMaterialfv( (GLenum)m_face, GL_SPECULAR,  m_specular );
-    glMaterialf(  (GLenum)m_face, GL_SHININESS, m_shininess );
-#endif
 }
 } // end of namespace vismodule

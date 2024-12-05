@@ -24,9 +24,6 @@
 #include <vismodule/Pgm>
 #include <vismodule/Pbm>
 #include <vismodule/Tiff>
-#ifndef NO_CLIENT
-#include <vismodule/Dicom>
-#endif
 
 
 namespace
@@ -663,12 +660,7 @@ const bool BitImage::read( const std::string& filename )
          vismodule::Bmp::CheckFileExtension( filename ) ||
          vismodule::Ppm::CheckFileExtension( filename ) ||
          vismodule::Pgm::CheckFileExtension( filename ) ||
-#ifndef NO_CLIENT
-         vismodule::Tiff::CheckFileExtension( filename ) ||
-         vismodule::Dicom::CheckFileExtension( filename ) )
-#else
          vismodule::Tiff::CheckFileExtension( filename ) )
-#endif
     {
         vismodule::GrayImage image; image.read( filename );
         if ( !BaseClass::create( image.width(), image.height(), BaseClass::Bit ) )

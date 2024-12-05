@@ -11,18 +11,6 @@
 #endif
 VIS_MODULE_DIR_NAME := kvs
 
-ifeq "$(PBVR_MAKE_CLIENT)" "1"
-    VIS_MODULE_SUPPORT_GLUT=1
-else
-    VIS_MODULE_SUPPORT_GLUT=0
-    NO_CLIENT=1
-endif
-
-ifeq "$(NO_CLIENT)" "1"
-    VIS_MODULE_SUPPORT_GLUT=0
-    CXXFLAGS+=-DNO_CLIENT
-endif
-
 
 #=============================================================================
 #  Suffix rule.

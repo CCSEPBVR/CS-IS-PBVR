@@ -18,9 +18,6 @@
 #include <iostream>
 #include <vismodule/ClassName>
 #include <vismodule/XformControl>
-#ifndef NO_CLIENT
-#include <vismodule/Material>
-#endif
 #include <vismodule/Vector2>
 #include <vismodule/Vector3>
 #include <vismodule/Module>
@@ -55,15 +52,6 @@ public:
         UnknownObject  ///< unknown object (for user defined object data)
     };
 
-#ifndef NO_CLIENT
-    enum Face
-    {
-        Front        = vismodule::Material::Front,
-        Back         = vismodule::Material::Back,
-        FrontAndBack = vismodule::Material::FrontAndBack
-    };
-#endif
-
 protected:
 
     std::string   m_name;               ///< object name
@@ -76,9 +64,6 @@ protected:
     vismodule::Vector3f m_object_center;      ///< center of gravity in object coordinate system
     vismodule::Vector3f m_external_position;  ///< position in external coordinate system
     vismodule::Vector3f m_normalize;          ///< normalize parameter
-#ifndef NO_CLIENT
-    vismodule::Material m_material;           ///< material
-#endif
     bool          m_show_flg;
 
 public:
@@ -111,12 +96,6 @@ public:
         const vismodule::Vector3f& min_coord,
         const vismodule::Vector3f& max_coord );
 
-#ifndef NO_CLIENT
-    void setMaterial( const vismodule::Material& material );
-
-    void setFace( const Face face );
-#endif
-
     void show( void );
 
     void hide( void );
@@ -146,10 +125,6 @@ public:
     const vismodule::Vector3f& normalize( void ) const;
 
     const bool isShown( void ) const;
-
-#ifndef NO_CLIENT
-    const vismodule::Material& material( void ) const;
-#endif
 
 public:
 

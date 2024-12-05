@@ -94,9 +94,6 @@ ObjectBase& ObjectBase::operator = ( const ObjectBase& object )
     m_object_center = object.m_object_center;
     m_external_position = object.m_external_position;
     m_normalize = object.m_normalize;
-#ifndef NO_CLIENT
-    m_material = object.m_material;
-#endif
     m_show_flg = object.m_show_flg;
 
     return( *this );
@@ -175,32 +172,6 @@ void ObjectBase::setMinMaxExternalCoords(
 
     this->updateNormalizeParameters();
 }
-
-#ifndef NO_CLIENT
-
-/*===========================================================================*/
-/**
- *  @breif  Sets the object material.
- *  @param  material [in] object material
- */
-/*===========================================================================*/
-void ObjectBase::setMaterial( const vismodule::Material& material )
-{
-    m_material = material;
-}
-
-/*===========================================================================*/
-/**
- *  @breif  Sets the material face.
- *  @param  face [in] material face
- */
-/*===========================================================================*/
-void ObjectBase::setFace( const Face face )
-{
-    m_material.setFace( vismodule::Material::MaterialFace( face ) );
-}
-
-#endif
 
 /*===========================================================================*/
 /**
@@ -345,18 +316,6 @@ const bool ObjectBase::isShown( void ) const
 
 /*===========================================================================*/
 /**
- *  @brief  Returns the object material.
- *  @return object material
- */
-/*===========================================================================*/
-#ifndef NO_CLIENT
-const vismodule::Material& ObjectBase::material( void ) const
-{
-    return( m_material );
-}
-#endif
-/*===========================================================================*/
-/**
  *  @brief  Returns the object position in the device coordinate.
  *  @param  camera [in] camera
  *  @param  global_trans [in] translation vector in the global
@@ -370,18 +329,6 @@ const vismodule::Vector2f ObjectBase::positionInDevice(
     const vismodule::Vector3f& global_scale ) const
 {
     vismodule::Vector2f ret;
-#ifndef NO_CLIENT
-    glPushMatrix();
-    {
-        camera->update();
-
-        ObjectBase::transform( global_trans, global_scale );
-
-        ret     = camera->projectObjectToWindow( m_object_center );
-        ret.y() = camera->windowHeight() - ret.y();
-    }
-    glPopMatrix();
-#endif
     return( ret );
 }
 
@@ -458,29 +405,6 @@ void ObjectBase::transform(
     const vismodule::Vector3f& global_trans,
     const vismodule::Vector3f& global_scale ) const
 {
-#ifndef NO_CLIENT
-    /* Apply the transformation from the world coordinate system by using
-     * the object's xform. You see also vismodule::XformControl class and vismodule::Xform
-     * class in detail.
-     */
-    ObjectBase::XformControl::applyXform();
-
-    glScalef( global_scale.x(), global_scale.y(), global_scale.z() );
-
-    glTranslatef( -global_trans.x(),
-                  -global_trans.y(),
-                  -global_trans.z() );
-
-    glTranslatef( m_external_position.x(),
-                  m_external_position.y(),
-                  m_external_position.z() );
-
-    glScalef( m_normalize.x(), m_normalize.y(), m_normalize.z() );
-
-    glTranslatef( -m_object_center.x(),
-                  -m_object_center.y(),
-                  -m_object_center.z() );
-#endif
 }
 /*===========================================================================*/
 /**
@@ -489,9 +413,6 @@ void ObjectBase::transform(
 /*===========================================================================*/
 void ObjectBase::applyMaterial( void )
 {
-#ifndef NO_CLIENT
-    m_material.apply();
-#endif
 }
 
 /*===========================================================================*/
@@ -513,64 +434,7 @@ bool ObjectBase::collision(
     const vismodule::Vector3f& global_trans,
     const vismodule::Vector3f& global_scale )
 {
-#ifndef NO_CLIENT
-    float max_distance = -1.0f;
-
-    // Center of this object in the window coordinate system.
-    vismodule::Vector2f center;
-
-    glPushMatrix();
-    {
-        camera->update();
-
-        ObjectBase::transform( global_trans, global_scale );
-
-        center = camera->projectObjectToWindow( m_object_center );
-
-        // Object's corner points in the object coordinate system.
-        const vismodule::Vector3f corners[8] = {
-            vismodule::Vector3f( m_min_object_coord.x(),
-                           m_min_object_coord.y(),
-                           m_min_object_coord.z() ),
-            vismodule::Vector3f( m_max_object_coord.x(),
-                           m_min_object_coord.y(),
-                           m_min_object_coord.z() ),
-            vismodule::Vector3f( m_min_object_coord.x(),
-                           m_min_object_coord.y(),
-                           m_max_object_coord.z() ),
-            vismodule::Vector3f( m_max_object_coord.x(),
-                           m_min_object_coord.y(),
-                           m_max_object_coord.z() ),
-            vismodule::Vector3f( m_min_object_coord.x(),
-                           m_max_object_coord.y(),
-                           m_min_object_coord.z() ),
-            vismodule::Vector3f( m_max_object_coord.x(),
-                           m_max_object_coord.y(),
-                           m_min_object_coord.z() ),
-            vismodule::Vector3f( m_min_object_coord.x(),
-                           m_max_object_coord.y(),
-                           m_max_object_coord.z() ),
-            vismodule::Vector3f( m_max_object_coord.x(),
-                           m_max_object_coord.y(),
-                           m_max_object_coord.z() ) };
-
-        // Calculate max distance between the center and the corner in
-        // the window coordinate system.
-        for( int i = 0; i < 8; i++ )
-        {
-            const vismodule::Vector2f corner = camera->projectObjectToWindow( corners[i] );
-            const float distance = static_cast<float>( ( corner - center ).length() );
-            max_distance = vismodule::Math::Max( max_distance, distance );
-        }
-    }
-    glPopMatrix();
-
-    vismodule::Vector2f pos_window( p_win.x(), camera->windowHeight() - p_win.y() );
-
-    return( ( pos_window - center ).length() < max_distance );
-#else
     return( false );
-#endif
 }
 
 /*===========================================================================*/
@@ -587,61 +451,7 @@ bool ObjectBase::collision(
     const vismodule::Vector3f& global_trans,
     const vismodule::Vector3f& global_scale )
 {
-#ifndef NO_CLIENT
-    float max_distance = -1.0f;
-    vismodule::Vector3f center;
-
-    glPushMatrix();
-    {
-        ObjectBase::transform( global_trans, global_scale );
-
-        center = object_to_world_coordinate( m_object_center,
-                                             global_trans,
-                                             global_scale );
-
-        // Object's corner points in the object coordinate system.
-        const vismodule::Vector3f corners[8] = {
-            vismodule::Vector3f( m_min_object_coord.x(),
-                           m_min_object_coord.y(),
-                           m_min_object_coord.z() ),
-            vismodule::Vector3f( m_max_object_coord.x(),
-                           m_min_object_coord.y(),
-                           m_min_object_coord.z() ),
-            vismodule::Vector3f( m_min_object_coord.x(),
-                           m_min_object_coord.y(),
-                           m_max_object_coord.z() ),
-            vismodule::Vector3f( m_max_object_coord.x(),
-                           m_min_object_coord.y(),
-                           m_max_object_coord.z() ),
-            vismodule::Vector3f( m_min_object_coord.x(),
-                           m_max_object_coord.y(),
-                           m_min_object_coord.z() ),
-            vismodule::Vector3f( m_max_object_coord.x(),
-                           m_max_object_coord.y(),
-                           m_min_object_coord.z() ),
-            vismodule::Vector3f( m_min_object_coord.x(),
-                           m_max_object_coord.y(),
-                           m_max_object_coord.z() ),
-            vismodule::Vector3f( m_max_object_coord.x(),
-                           m_max_object_coord.y(),
-                           m_max_object_coord.z() ) };
-
-        // Calculate max distance between the center and the corner in
-        // the world coordinate system.
-        for( int i = 0; i < 8; i++ )
-        {
-            const vismodule::Vector3f corner =
-                object_to_world_coordinate( corners[i], global_trans, global_scale );
-            const float distance = static_cast<float>( ( corner - center ).length() );
-            max_distance = vismodule::Math::Max( max_distance, distance );
-        }
-    }
-    glPopMatrix();
-
-    return( ( p_world - center ).length() < max_distance );
-#else
     return( false );
-#endif
 }
 
 /*===========================================================================*/

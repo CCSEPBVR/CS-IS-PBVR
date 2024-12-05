@@ -42,35 +42,6 @@ vismodule::Matrix44<T> ScalingMatrix( T x, T y, T z, T w = T( 1 ) );
 template <typename T>
 vismodule::Matrix44<T> TranslationMatrix( T x, T y, T z, T w = T( 1 ) );
 
-#ifndef NO_CLIENT
-void GetViewport( const vismodule::Camera* camera, GLint (*viewport)[4] );
-
-void GetProjectionMatrix( const vismodule::Camera* camera, GLdouble (*projection)[16] );
-
-void GetModelviewMatrix( const vismodule::Camera* camera, const vismodule::ObjectBase* object, GLdouble (*modelview)[16] );
-
-void Project(
-    const GLdouble obj_x,
-    const GLdouble obj_y,
-    const GLdouble obj_z,
-    const GLdouble modelview[16],
-    const GLdouble projection[16],
-    const GLint    viewport[4],
-    GLdouble*      win_x,
-    GLdouble*      win_y,
-    GLdouble*      win_z );
-
-void UnProject(
-    const GLdouble win_x,
-    const GLdouble win_y,
-    const GLdouble win_z,
-    const GLdouble modelview[16],
-    const GLdouble projection[16],
-    const GLint    viewport[4],
-    GLdouble*      obj_x,
-    GLdouble*      obj_y,
-    GLdouble*      obj_z );
-#else
 void GetViewport( const vismodule::Camera* camera, int (*viewport)[4] );
 
 void GetProjectionMatrix( const vismodule::Camera* camera, double (*projection)[16] );
@@ -98,7 +69,6 @@ void UnProject(
     double*      obj_x,
     double*      obj_y,
     double*      obj_z );
-#endif
 } // end of namespace
 
 namespace vismodule
@@ -111,20 +81,6 @@ const float GetRandomNumber( void );
 
 const vismodule::Vector3f RandomSamplingInCube( const vismodule::Vector3f& v );
 
-#ifndef NO_CLIENT
-const float CalculateObjectDepth(
-    const vismodule::ObjectBase* object,
-    const GLdouble         modelview[16],
-    const GLdouble         projection[16],
-    const GLint            viewport[4] );
-
-const float CalculateSubpixelLength(
-    const float    subpixel_level,
-    const float    object_depth,
-    const GLdouble modelview[16],
-    const GLdouble projection[16],
-    const GLint    viewport[4] );
-#else
 const float CalculateObjectDepth(
     const vismodule::ObjectBase* object,
     const double         modelview[16],
@@ -137,7 +93,6 @@ const float CalculateSubpixelLength(
     const double modelview[16],
     const double projection[16],
     const int    viewport[4] );
-#endif
 const vismodule::ValueArray<float> CalculateDensityMap(
     const vismodule::Camera*     camera,
     const vismodule::ObjectBase* object,
@@ -251,11 +206,7 @@ inline vismodule::Matrix44<T> TranslationMatrix( T x, T y, T z, T w )
     return( vismodule::Matrix44<T>( elements ) );
 }
 
-#ifndef NO_CLIENT
-inline void GetViewport( const vismodule::Camera* camera, GLint (*viewport)[4] )
-#else
 inline void GetViewport( const vismodule::Camera* camera, int (*viewport)[4] )
-#endif
 {
     (*viewport)[0] = 0;
     (*viewport)[1] = 0;
@@ -263,11 +214,7 @@ inline void GetViewport( const vismodule::Camera* camera, int (*viewport)[4] )
     (*viewport)[3] = camera->windowHeight();
 }
 
-#ifndef NO_CLIENT
-inline void GetProjectionMatrix( const vismodule::Camera* camera, GLdouble (*projection)[16] )
-#else
 inline void GetProjectionMatrix( const vismodule::Camera* camera, double (*projection)[16] )
-#endif
 {
     const bool  perspective = camera->isPerspective();
     const float fov = camera->fieldOfView();
@@ -300,11 +247,7 @@ inline void GetProjectionMatrix( const vismodule::Camera* camera, double (*proje
     (*projection)[15] = P[3][3];
 }
 
-#ifndef NO_CLIENT
-inline void GetModelviewMatrix( const vismodule::Camera* camera, const vismodule::ObjectBase* object, GLdouble (*modelview)[16] )
-#else
 inline void GetModelviewMatrix( const vismodule::Camera* camera, const vismodule::ObjectBase* object, double (*modelview)[16] )
-#endif
 {
     const vismodule::Vector3f  min_external = object->minExternalCoord();
     const vismodule::Vector3f  max_external = object->maxExternalCoord();
@@ -338,18 +281,6 @@ inline void GetModelviewMatrix( const vismodule::Camera* camera, const vismodule
     (*modelview)[15] = M[3][3];
 }
 
-#ifndef NO_CLIENT
-inline void Project(
-    const GLdouble obj_x,
-    const GLdouble obj_y,
-    const GLdouble obj_z,
-    const GLdouble modelview[16],
-    const GLdouble projection[16],
-    const GLint    viewport[4],
-    GLdouble*      win_x,
-    GLdouble*      win_y,
-    GLdouble*      win_z )
-#else
 inline void Project(
     const double obj_x,
     const double obj_y,
@@ -360,7 +291,6 @@ inline void Project(
     double*      win_x,
     double*      win_y,
     double*      win_z )
-#endif
 {
     const vismodule::Vector4d I( obj_x, obj_y, obj_z, 1.0 );
 
@@ -385,18 +315,6 @@ inline void Project(
     *win_z = ( 1.0 + O.z() / w ) / 2.0;
 }
 
-#ifndef NO_CLIENT
-inline void UnProject(
-    const GLdouble win_x,
-    const GLdouble win_y,
-    const GLdouble win_z,
-    const GLdouble modelview[16],
-    const GLdouble projection[16],
-    const GLint    viewport[4],
-    GLdouble*      obj_x,
-    GLdouble*      obj_y,
-    GLdouble*      obj_z )
-#else
 inline void UnProject(
     const double win_x,
     const double win_y,
@@ -407,7 +325,6 @@ inline void UnProject(
     double*      obj_x,
     double*      obj_y,
     double*      obj_z )
-#endif
 {
     const vismodule::Vector4d I(
         ( win_x - viewport[0] ) * 2.0 / viewport[2] - 1.0,
@@ -471,26 +388,14 @@ inline const vismodule::Vector3f RandomSamplingInCube( const vismodule::Vector3f
     return( v + d );
 }
 
-#ifndef NO_CLIENT
-inline const float CalculateObjectDepth(
-    const vismodule::ObjectBase* object,
-    const GLdouble         modelview[16],
-    const GLdouble         projection[16],
-    const GLint            viewport[4] )
-#else
 inline const float CalculateObjectDepth(
     const vismodule::ObjectBase* object,
     const double         modelview[16],
     const double         projection[16],
     const int            viewport[4] )
-#endif
 {
     // calculate suitable depth.
-#ifndef NO_CLIENT
-    GLdouble x, y, z;
-#else
     double x, y, z;
-#endif
 
     ::Project(
         object->objectCenter().x(),
@@ -504,36 +409,13 @@ inline const float CalculateObjectDepth(
     return( object_depth );
 }
 
-#ifndef NO_CLIENT
-inline const float CalculateSubpixelLength(
-    const float    subpixel_level,
-    const float    object_depth,
-    const GLdouble modelview[16],
-    const GLdouble projection[16],
-    const GLint    viewport[4] )
-#else
 inline const float CalculateSubpixelLength(
     const float    subpixel_level,
     const float    object_depth,
     const double modelview[16],
     const double projection[16],
     const int    viewport[4] )
-#endif
 {
-#ifndef NO_CLIENT
-    GLdouble wx_min, wy_min, wz_min;
-    GLdouble wx_max, wy_max, wz_max;
-
-    ::UnProject(
-        0.0, 0.0, GLdouble( object_depth ),
-        modelview, projection, viewport,
-        &wx_min, &wy_min, &wz_min);
-
-    ::UnProject(
-        1.0, 1.0 , GLdouble( object_depth ),
-        modelview, projection, viewport,
-        &wx_max, &wy_max, &wz_max);
-#else
     double wx_min, wy_min, wz_min;
     double wx_max, wy_max, wz_max;
 
@@ -546,7 +428,6 @@ inline const float CalculateSubpixelLength(
         1.0, 1.0 , double( object_depth ),
         modelview, projection, viewport,
         &wx_max, &wy_max, &wz_max);
-#endif
     const float subpixel_length = static_cast<float>( ( wx_max - wx_min ) / subpixel_level );
 
     return( subpixel_length );
@@ -560,15 +441,9 @@ inline const vismodule::ValueArray<float> CalculateDensityMap(
     const vismodule::OpacityMap& opacity_map )
 {
     // Calculate a transform matrix.
-#ifndef NO_CLIENT
-    GLdouble modelview[16];  ::GetModelviewMatrix( camera, object, &modelview );
-    GLdouble projection[16]; ::GetProjectionMatrix( camera, &projection );
-    GLint    viewport[4];    ::GetViewport( camera, &viewport );
-#else
     double modelview[16];  ::GetModelviewMatrix( camera, object, &modelview );
     double projection[16]; ::GetProjectionMatrix( camera, &projection );
     int    viewport[4];    ::GetViewport( camera, &viewport );
-#endif
 
     // Calculate a depth of the center of gravity of the object.
     const float object_depth = CalculateObjectDepth( object, modelview, projection, viewport );

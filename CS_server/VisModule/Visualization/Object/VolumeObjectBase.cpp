@@ -112,10 +112,6 @@ std::ostream& operator << ( std::ostream& os, const vismodule::VolumeObjectBase&
 #if VIS_MODULE_COMPILER_VERSION_LESS_OR_EQUAL( 8, 0 )
     // @TODO Cannot instance the object that is a abstract class here (error:C2259).
 #endif
-#else
-#ifndef NO_CLIENT
-    os << static_cast<const vismodule::ObjectBase&>( object ) << std::endl;
-#endif
 #endif
 
     const std::ios_base::fmtflags flags( os.flags() );

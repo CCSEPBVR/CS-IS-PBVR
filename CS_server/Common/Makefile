@@ -5,14 +5,6 @@ FUNC_DIR=../FunctionParser
 VIS_MODULE_SOURCE_DIR= ../VisModule
 CXXFLAGS+=-DDUPLICATION -DCPU_SAMPLING_TIME -DJPV_CLIENT -I${VIS_MODULE_SOURCE_DIR} -I${FUNC_DIR}
 
-ifneq "$(PBVR_MAKE_CLIENT)" "1"
-    NO_CLIENT=1
-endif
-
-ifeq "$(NO_CLIENT)" "1"
-    CXXFLAGS+=-DNO_CLIENT
-endif
-
 COMMON_SRCS = ParticleTransferClient.cpp \
               ParticleTransferProtocol.cpp \
               ParticleTransferServer.cpp \

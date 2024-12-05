@@ -13,9 +13,6 @@
 /****************************************************************************/
 #include "Camera.h"
 #include <vismodule/DebugNew>
-#ifndef NO_CLIENT
-#include <vismodule/OpenGL>
-#endif
 #include <vismodule/ColorImage>
 #include <vismodule/Matrix44>
 #include <vismodule/ViewingMatrix44>
@@ -419,58 +416,6 @@ void Camera::initialize( void )
 /*==========================================================================*/
 void Camera::update( void )
 {
-#ifndef NO_CLIENT
-    const float aspect = static_cast<float>( m_window_width ) / m_window_height;
-
-    glMatrixMode( GL_PROJECTION );
-    {
-        glLoadIdentity();
-        if ( m_projection_type == Camera::Perspective )
-        {
-            // Perspective camera mode
-            gluPerspective( m_field_of_view, aspect, m_front, m_back );
-        }
-        else if ( m_projection_type == Camera::Orthogonal )
-        {
-            // Orthogonal camera mode
-            if( aspect >= 1.0f )
-            {
-                glOrtho( m_left * aspect, m_right * aspect,
-                         m_bottom, m_top,
-                         m_front, m_back );
-            }
-            else
-            {
-                glOrtho( m_left, m_right,
-                         m_bottom / aspect, m_top / aspect,
-                         m_front, m_back );
-            }
-        }
-        else
-        {
-            // Frustum camera mode
-            if( aspect >= 1.0f )
-            {
-                glFrustum( m_left * aspect, m_right * aspect,
-                           m_bottom, m_top,
-                           m_front, m_back );
-            }
-            else
-            {
-                glFrustum( m_left, m_right,
-                           m_bottom / aspect, m_top / aspect,
-                           m_front, m_back );
-            }
-        }
-    }
-
-    glMatrixMode( GL_MODELVIEW );
-    glLoadIdentity();
-
-    gluLookAt( m_position.x(),  m_position.y(),  m_position.z(),
-               m_look_at.x(),   m_look_at.y(),   m_look_at.z(),
-               m_up_vector.x(), m_up_vector.y(), m_up_vector.z() );
-#endif
 }
 
 /*==========================================================================*/
@@ -481,57 +426,13 @@ void Camera::update( void )
 /*==========================================================================*/
 vismodule::ColorImage Camera::snapshot( void )
 {
-#ifndef NO_CLIENT
-    GLint viewport[4];
-    glGetIntegerv( GL_VIEWPORT, viewport );
-
-    const int width  = viewport[2];
-    const int height = viewport[3];
-//    const int size   = height * ( ( ( ( width * 3 ) + 3 ) >> 2 ) << 2 );
-    const int size   = height * width * 3;
-    unsigned char* data = new unsigned char [ size ];
-    if( !data )
-    {
-        return( vismodule::ColorImage( width, height ) );
-    }
-    memset( data, 0, size );
-
-    glPixelStorei( GL_PACK_ALIGNMENT, 1 );
-    glReadPixels( 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data );
-
-    // Flip image data.
-    unsigned char* src;
-    unsigned char* dst;
-    unsigned char  tmp;
-    const size_t stride   = width * 3;
-    const size_t end_line = height / 2;
-    for( size_t i = 0; i < end_line; i++ )
-    {
-        src = data + ( i * stride );
-        dst = data + ( ( height - i - 1 ) * stride );
-        for( size_t j = 0; j < stride; j++ )
-        {
-            tmp  = *src; *src = *dst; *dst = tmp;
-            src++; dst++;
-        }
-    }
-
-    vismodule::ColorImage ret( width, height, data );
-
-    delete [] data;
-#else
     vismodule::ColorImage ret;
-#endif
     return( ret );
 }
 
 const vismodule::Matrix44f Camera::projectionMatrix( void ) const
 {
-#ifndef NO_CLIENT
-    GLfloat p[16];
-#else
     float p[16];
-#endif
     this->getProjectionMatrix( &p );
 
     const vismodule::Matrix44f projection_matrix(
@@ -545,11 +446,7 @@ const vismodule::Matrix44f Camera::projectionMatrix( void ) const
 
 const vismodule::Matrix44f Camera::modelViewMatrix( void ) const
 {
-#ifndef NO_CLIENT
-    GLfloat m[16];
-#else
     float m[16];
-#endif
     this->getModelViewMatrix( &m );
 
     const vismodule::Matrix44f modelview_matrix(
@@ -563,11 +460,7 @@ const vismodule::Matrix44f Camera::modelViewMatrix( void ) const
 
 const vismodule::Matrix44f Camera::projectionModelViewMatrix( void ) const
 {
-#ifndef NO_CLIENT
-    GLfloat pm[16];
-#else
     float pm[16];
-#endif
     this->getProjectionModelViewMatrix( &pm );
 
     const vismodule::Matrix44f projection_modelview_matrix(
@@ -675,9 +568,6 @@ void Camera::getProjectionModelViewMatrix(
 /*==========================================================================*/
 void Camera::getProjectionMatrix( float (*projection)[16] ) const
 {
-#ifndef NO_CLIENT
-    glGetFloatv( GL_PROJECTION_MATRIX, (GLfloat*)*projection );
-#endif
 }
 
 /*==========================================================================*/
@@ -688,9 +578,6 @@ void Camera::getProjectionMatrix( float (*projection)[16] ) const
 /*==========================================================================*/
 void Camera::getModelViewMatrix( float (*modelview)[16] ) const
 {
-#ifndef NO_CLIENT
-    glGetFloatv( GL_MODELVIEW_MATRIX, (GLfloat*)*modelview );
-#endif
 }
 
 /*==========================================================================*/
@@ -864,25 +751,12 @@ const vismodule::Vector3f Camera::projectWindowToObject(
     const vismodule::Vector2f& p_win,
     float                depth ) const
 {
-#ifndef NO_CLIENT
-    GLdouble m[16]; glGetDoublev( GL_MODELVIEW_MATRIX, m );
-    GLdouble p[16]; glGetDoublev( GL_PROJECTION_MATRIX, p );
-    GLint    v[4];  glGetIntegerv( GL_VIEWPORT, v );
-#else
     double m[16];
     double p[16]; 
     int    v[4];  
-#endif
     double x = 0;
     double y = 0;
     double z = 0;
-#ifndef NO_CLIENT
-    gluUnProject( p_win.x(), p_win.y(), depth,
-                  m,
-                  p,
-                  v,
-                  &x, &y, &z );
-#endif
 
     return( vismodule::Vector3f( (float)x, (float)y, (float)z ) );
 }
@@ -899,15 +773,6 @@ const vismodule::Vector3f Camera::projectWindowToCamera(
     const vismodule::Vector2f& p_win,
     float                depth ) const
 {
-#ifndef NO_CLIENT
-    GLdouble m[16] = { 1.0, 0.0, 0.0, 0.0,
-                       0.0, 1.0, 0.0, 0.0,
-                       0.0, 0.0, 1.0, 0.0,
-                       0.0, 0.0, 0.0, 1.0 };
-
-    GLdouble p[16]; glGetDoublev(  GL_PROJECTION_MATRIX, p );
-    GLint    v[4];  glGetIntegerv( GL_VIEWPORT,          v );
-#else
     double m[16] = { 1.0, 0.0, 0.0, 0.0,
                      0.0, 1.0, 0.0, 0.0,
                      0.0, 0.0, 1.0, 0.0,
@@ -915,17 +780,9 @@ const vismodule::Vector3f Camera::projectWindowToCamera(
                    };
     double p[16]; //glGetDoublev(  GL_PROJECTION_MATRIX, p );
     int    v[4];  //glGetIntegerv( GL_VIEWPORT,
-#endif
     double x = 0;
     double y = 0;
     double z = 0;
-#ifndef NO_CLIENT
-    gluUnProject( p_win.x(), p_win.y(), depth,
-                  m,
-                  p,
-                  v,
-                  &x, &y, &z );
-#endif
     return( vismodule::Vector3f( (float)x, (float)y, (float)z ) );
 }
 
@@ -957,9 +814,6 @@ const vismodule::Vector3f Camera::projectObjectToCamera(
     const vismodule::Vector3f& p_obj ) const
 {
     float m[16];
-#ifndef NO_CLIENT
-    glGetFloatv( GL_MODELVIEW_MATRIX, m );
-#endif
     const vismodule::Matrix44f modelview( m );
     const vismodule::Vector4f p_cam( vismodule::Vector4f( p_obj, 1.0f ) * modelview );
 
@@ -977,9 +831,6 @@ const vismodule::Vector3f Camera::projectCameraToObject(
     const vismodule::Vector3f& p_cam ) const
 {
     float m[16];
-#ifndef NO_CLIENT
-    glGetFloatv( GL_MODELVIEW_MATRIX, m );
-#endif
     const vismodule::Matrix44f modelview( m );
     const vismodule::Vector4f p_obj( vismodule::Vector4f( p_cam, 1.0 ) * modelview.inverse() );
 

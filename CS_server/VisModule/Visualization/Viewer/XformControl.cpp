@@ -156,11 +156,6 @@ void XformControl::setXform( const vismodule::Xform& xform )
 /*==========================================================================*/
 void XformControl::applyXform( void ) const
 {
-#ifndef NO_CLIENT
-    float xform[16];
-    parent_class::get( &xform );
-    glMultMatrixf( xform );
-#endif
 }
 /*==========================================================================*/
 /**

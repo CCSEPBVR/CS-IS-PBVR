@@ -22,22 +22,6 @@ ifdef MPILDFLAGS
     LDFLAGS = ${MPILDFLAGS}
 endif
 
-ifneq "$(PBVR_MAKE_CLIENT)" "1"
-    NO_CLIENT=1
-endif
-
-ifeq "$(NO_CLIENT)" "1"
-    CXXFLAGS += -DNO_CLIENT
-else
-    ifeq "$(shell uname -s)" "Darwin"
-        LDFLAGS += -framework glut -framework OpenGL
-    else
-    ifeq "$(shell uname -s)" "Linux"
-        LDFLAGS += -lGLU -lGL -lglut
-    endif
-    endif
-endif
-
 ifndef MPICXX
     CXXFLAGS += -DCPU_VER
 endif

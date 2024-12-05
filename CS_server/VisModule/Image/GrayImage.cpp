@@ -23,9 +23,6 @@
 #include <vismodule/Pbm>
 #include <vismodule/Pgm>
 #include <vismodule/Tiff>
-#ifndef NO_CLIENT
-#include <vismodule/Dicom>
-#endif
 #include <algorithm>
 
 
@@ -527,16 +524,6 @@ const bool GrayImage::read( const std::string& filename )
             return( false );
         }
     }
-
-    // DICOM image.
-#ifndef NO_CLIENT
-    if ( vismodule::Dicom::CheckFileExtension( filename ) )
-    {
-        const vismodule::Dicom dcm( filename );
-        const BaseClass::ImageType type = BaseClass::Gray;
-        return( BaseClass::create( dcm.width(), dcm.height(), type, dcm.pixelData() ) );
-    }
-#endif
 
     visModuleMessageError( "Read-method for %s is not implemented.",
                      filename.c_str() );
