@@ -4,9 +4,9 @@
 include pbvr.conf
 include arch/$(PBVR_MACHINE)
 
-SUBDIR_KVS := KVS
 SUBDIRS := FunctionParser
 SUBDIRS += Common
+SUBDIRS += VisModule
 
 ifeq "$(PBVR_MAKE_CLIENT)" "1"
     SUBDIRS += glui/src
@@ -22,17 +22,14 @@ ifeq "$(PBVR_MAKE_SERVER)" "1"
 endif
 
 all:
-	$(MAKE) -C $(SUBDIR_KVS)
 	for i in $(SUBDIRS); do \
 	$(MAKE) -C $$i; done
 
 clean:
-	$(MAKE) -C $(SUBDIR_KVS) clean
 	for i in $(SUBDIRS); do \
 	$(MAKE) -C $$i clean; done
 
 all_clean:
-	$(MAKE) -C $(SUBDIR_KVS) all_clean
 	for i in $(SUBDIRS); do \
 	$(MAKE) -C $$i all_clean; done
 
