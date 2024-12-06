@@ -2,6 +2,9 @@
 int time_step = 0;
 vtkSmartPointer<vtkUnstructuredGrid> ucd = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
+    int mpi_rank = 0;
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+
 // time_step =0 のみ座標情報を入力する！！
 if(time_step == 0)
 {
@@ -9,7 +12,8 @@ if(time_step == 0)
     vtkSmartPointer<vtkPoints> vpoint = vtkSmartPointer<vtkPoints>::New();
     forAll(mesh.points(),pid)
     {
-        vpoint -> InsertNextPoint( double(mesh.points()[pid][0]),double(mesh.points()[pid][1]),double(mesh.points()[pid][2]));
+        //vpoint -> InsertNextPoint( double(mesh.points()[pid][0]),double(mesh.points()[pid][1]),double(mesh.points()[pid][2]));
+        vpoint -> InsertNextPoint( static_cast<float>(mesh.points()[pid][0]),static_cast<float>(mesh.points()[pid][1]),static_cast<float>(mesh.points()[pid][2]));
     }
     ucd ->SetPoints(vpoint);
 
@@ -20,6 +24,7 @@ if(time_step == 0)
     {
         const  cellShape c = mesh.cellShapes()[cid];
         int index = c.model().index();
+
         switch(index)
         {
             case 3: //hex
@@ -102,6 +107,27 @@ forAll(mesh.cells(),cid)
     scalars_w->InsertNextValue(U[cid].z());
 }
 ucd -> GetCellData() -> AddArray(scalars_w);
+
+// pressuror
+vtkSmartPointer<vtkFloatArray> scalars_p =
+vtkSmartPointer<vtkFloatArray>::New();
+scalars_p->SetName("p");
+forAll(mesh.cells(),cid)
+{
+    scalars_p->InsertNextValue(p[cid]);
+}
+ucd -> GetCellData() -> AddArray(scalars_p);
+
+// Q 
+vtkSmartPointer<vtkFloatArray> scalars_q =
+vtkSmartPointer<vtkFloatArray>::New();
+scalars_q->SetName("q");
+forAll(mesh.cells(),cid)
+{
+    scalars_q->InsertNextValue(p[cid]);
+}
+ucd -> GetCellData() -> AddArray(scalars_q);
+
 
 vtkSmartPointer<vtkCellDataToPointData> cellDataToPointData =
 vtkSmartPointer<vtkCellDataToPointData>::New();

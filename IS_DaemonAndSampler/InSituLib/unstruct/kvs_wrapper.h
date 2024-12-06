@@ -93,6 +93,8 @@ extern "C" {
     kvs::ValueArray<int> m_o_histogram;//不透明度ヒストグラムの配列
     kvs::ValueArray<int> m_c_histogram;//色ヒストグラムの配列
 
+    int con_log[8];
+
     } pbvr_parameters;
 
 

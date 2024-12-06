@@ -1,4 +1,3 @@
-
 // time_step =0 のみ座標情報を入力する！！
 int time_step = 0;
 vtkSmartPointer<vtkUnstructuredGrid> ucd = vtkSmartPointer<vtkUnstructuredGrid>::New();
@@ -70,6 +69,16 @@ forAll(mesh.cells(),cid)
 }
 ucd -> GetCellData() -> AddArray(scalars_w);
 
+// pressuror
+vtkSmartPointer<vtkFloatArray> scalars_p =
+vtkSmartPointer<vtkFloatArray>::New();
+scalars_p->SetName("p");
+forAll(mesh.cells(),cid)
+{
+    scalars_p->InsertNextValue(p[cid]);
+}
+ucd -> GetCellData() -> AddArray(scalars_p);
+
 vtkSmartPointer<vtkCellDataToPointData> cellDataToPointData =
 vtkSmartPointer<vtkCellDataToPointData>::New();
 cellDataToPointData -> SetInputData(ucd);
@@ -77,13 +86,13 @@ cellDataToPointData -> Update();
 vtkPointData* pointData = cellDataToPointData->GetOutput()->GetPointData();
 ucd->GetPointData()->ShallowCopy(pointData);
 
-generate_particles_vtk(time_step, ucd);
-//vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter =
-//vtkSmartPointer<vtkDataSetTriangleFilter>::New();
-//triangleFilter->SetInputData(ucd);
-//triangleFilter->Update();
-//
-//vtkSmartPointer<vtkUnstructuredGrid> ucd_tri = vtkSmartPointer<vtkUnstructuredGrid>::New();
-//ucd_tri = triangleFilter-> GetOutput();
+//generate_particles_vtk(time_step, ucd);
+vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter =
+vtkSmartPointer<vtkDataSetTriangleFilter>::New();
+triangleFilter->SetInputData(ucd);
+triangleFilter->Update();
 
-//generate_particles_vtk(time_step, ucd_tri);
+vtkSmartPointer<vtkUnstructuredGrid> ucd_tri = vtkSmartPointer<vtkUnstructuredGrid>::New();
+ucd_tri = triangleFilter-> GetOutput();
+
+generate_particles_vtk(time_step, ucd_tri);

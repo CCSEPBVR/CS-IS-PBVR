@@ -473,7 +473,6 @@ int main( int argc, char** argv )
                 pm.check();
                 if( pm.stepExisted() )
                 {
-                    //std::cout << "pm.particleStatusFile().getLatestTimeStep() = " << pm.particleStatusFile().getLatestTimeStep() <<std::endl;
                     pm.setTimeStep(pm.particleStatusFile().getLatestTimeStep());
                     //pm.setTimeStep(0);
                 }
@@ -489,7 +488,6 @@ int main( int argc, char** argv )
                 servMes.m_color_nbins   = new kvs::UInt64[tf_number];
                 servMes.m_opacity_nbins = new kvs::UInt64[tf_number];
 
-                std::cout << " clntMes.m_color_transfer_function_synthesis =" << clntMes.m_color_transfer_function_synthesis  << std::endl;
                 servMes.m_color_bins.resize(   tf_number );
                 servMes.m_opacity_bins.resize( tf_number );
 
@@ -510,7 +508,6 @@ int main( int argc, char** argv )
                 }
 
                 servMes.m_transfer_function_count = pm.particleHistoryFile().colorHistogramArray().size();
-                    std::cout << "pm.particleHistoryFile().colorHistogramArray().size() = " << pm.particleHistoryFile().colorHistogramArray().size() <<std::endl;
                 for ( int tf = 0; tf < pm.particleHistoryFile().colorHistogramArray().size() && tf < servMes.m_transfer_function_count; tf++ )
                 {
                     servMes.m_color_nbins[tf] = pm.particleHistoryFile().colorHistogramArray()[ tf ].size();
@@ -608,7 +605,7 @@ int main( int argc, char** argv )
                 //受信したデータをclntMesが読み取る
                 ptss = pts.recvMessage( &clntMes );
                 std::cout<<"main.cpp:L388"<<std::endl;
-//                clntMes.show();
+                clntMes.show();
                 std::cout<<"ptss="<<ptss<<std::endl;
 
                 if ( ptss == -1 ) break;
@@ -913,7 +910,6 @@ int main( int argc, char** argv )
                             NameListFile nm2 = ppw.getNameListFile();
                             if( nm1 != nm2 )
                             {
-                                //ppw.writeParameterFile("jupiter.tf");
                                 ppw.writeParameterFile( tfFilePath.c_str() );
                             }
                             // 20181226 end

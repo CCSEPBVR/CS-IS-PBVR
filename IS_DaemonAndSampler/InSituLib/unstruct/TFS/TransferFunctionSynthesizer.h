@@ -110,7 +110,8 @@ public:
         //std::vector< pbvr::HexahedralCell<Type>* > interp ,
         std::vector< pbvr::CellBase<Type>* > interp ,
         kvs::Vector3f local_coord, kvs::Vector3f global_coord,
-        std::vector<pbvr::TransferFunction>& tf);
+        //std::vector<pbvr::TransferFunction>& tf);
+        std::vector<pbvr::TransferFunction>& tf, int count, kvs::UInt32 cell_index );
 
     kvs::RGBColor CalculateColor(
         //std::vector< pbvr::HexahedralCell<Type>* > interp ,
@@ -160,12 +161,20 @@ public:
 
     void CalculateOpacityArray(
         std::vector< pbvr::CellBase<Type>* > interp ,
-        //std::vector< pbvr::HexahedralCell<Type>* > interp ,
         const int loop_cnt,
         const kvs::Vector3f *local_coord,
         const kvs::Vector3f *global_coord,
         std::vector<pbvr::TransferFunction>& tf,
         float *opacity_array);
+
+    void CalculateOpacityArray_debug(
+        std::vector< pbvr::CellBase<Type>* > interp ,
+        const int loop_cnt,
+        const kvs::Vector3f *local_coord,
+        const kvs::Vector3f *global_coord,
+        std::vector<pbvr::TransferFunction>& tf,
+        float *opacity_array,
+        kvs::UInt32* cell_index );
 
     void CalculateColorArray(
         std::vector< pbvr::CellBase<Type>* > interp ,
