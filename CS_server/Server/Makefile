@@ -33,12 +33,8 @@ CXXFLAGS += -w -DCPU_SAMPLING_TIME -DJPV_CLIENT -I${VIS_MODULE_SOURCE_DIR} -I${C
 LDFLAGS  += -L${COMMON_DIR} -lpbvrCommon -L${FUNC_DIR} -lpbvrFunc -L${VIS_MODULE_SOURCE_DIR}/Release -lvisModule
 
 SERVER_SRCS =  \
-			  CellByCellHistogram.cpp \
               CropRegion.cpp \
-              ExtendedTransferFunction.cpp \
               FilterInformation.cpp \
-              AggregateTypeSubvolume.cpp \
-              StepAggregateTypeSubvolume.cpp \
               JobCollector.cpp \
               JobDispatcher.cpp \
               KVSMLObjectPointWriter.cpp \
@@ -52,7 +48,6 @@ SERVER_SRCS =  \
 			  POLObjectGenerator.cpp \
               PointObject.cpp \
               PointObjectGenerator.cpp \
-              PrismaticCell.cpp \
               RangeEstimater.cpp \
 			  timer.cpp \
 		      SFMT/SFMT.cpp\
@@ -62,22 +57,13 @@ SERVER_SRCS =  \
 		      TransferFunction.cpp \
               TransferFunctionSynthesizer.cpp \
               TransferFunctionSynthesizerCreator.cpp \
-#              TriangleCell.cpp \
-#              SquareCell.cpp \
-#              QuadraticSquareCell.cpp \
-#              QuadraticTriangleCell.cpp \
 
-
-SERVER_HEADERS = Argument.h \
-                 CellByCellHistogram.h \
+SERVER_HEADERS =  \
                  common.h \
                  CropRegion.h \
-                 ExtendedTransferFunction.h \
                  endian2.h \
                  FilterInformation.h \
 				 FileChecker.h \
-                 AggregateTypeSubvolume.h \
-                 StepAggregateTypeSubvolume.h \
                  JobCollector.h \
                  JobDispatcher.h \
                  KVSMLObjectPointWriter.h \
@@ -90,7 +76,6 @@ SERVER_HEADERS = Argument.h \
 			  	 PlotOverLineProperty.h \
 			  	 POLObjectGenerator.h \
                  PointObjectGenerator.h \
-                 PrismaticCell.h \
                  RangeEstimater.h \
                  timer_simple.h \
 				 timer.h \
@@ -102,10 +87,6 @@ SERVER_HEADERS = Argument.h \
                  TransferFunctionSynthesizerCreator.h \
                  TransferFunctionSynthesizer.h \
                  Types.h \
-#                 SquareCell.h \
-#                 TriangleCell.h \
-#                 QuadraticTriangleCell.h \
-#                 QuadraticSquareCell.h 
 
 SERVER_OBJS = $(SERVER_SRCS:%.cpp=%.o)
 FUNC_OBJS   = $(FUNC_SRCS:%.cpp=%.o)
