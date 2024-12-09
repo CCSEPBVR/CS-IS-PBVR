@@ -536,7 +536,7 @@ inline size_t CalculateSubpixelLevel( const Argument& param,
             VIS_MODULE_TIMER_END( 16 );
 
             VIS_MODULE_TIMER_STA( 17 );
-            double local_volume = Generator::CalculateTotalVolume( volume );
+            double local_volume = Generator::CalculateTotalVolume( *volume );
             VIS_MODULE_TIMER_END( 17 );
 
             VIS_MODULE_TIMER_STA( 18 );
@@ -844,7 +844,7 @@ inline float CalculateDensityFactor( const Argument& param,
         volume = CreateVolumeData( param, fi, steps, subvols );
         VIS_MODULE_TIMER_END( 16 );
         VIS_MODULE_TIMER_STA( 17 );
-        total_volume += Generator::CalculateTotalVolume( volume );
+        total_volume += Generator::CalculateTotalVolume( *volume );
         VIS_MODULE_TIMER_END( 17 );
         VIS_MODULE_TIMER_STA( 18 );
         great_density = Generator::CalculateGreatDensity( camera, *volume, param.m_subpixel_level,
@@ -868,7 +868,7 @@ inline float CalculateDensityFactor( const Argument& param,
             volume = CreateVolumeData( param, fi, steps, subvols );
             VIS_MODULE_TIMER_END( 16 );
             VIS_MODULE_TIMER_STA( 17 );
-            total_volume += Generator::CalculateTotalVolume( volume );
+            total_volume += Generator::CalculateTotalVolume( *volume );
             VIS_MODULE_TIMER_END( 17 );
 
             delete volume;

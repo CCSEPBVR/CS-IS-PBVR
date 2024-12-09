@@ -596,9 +596,9 @@ inline const vismodule::ValueArray<float> CalculateDensityMap(
     return density_map;
 }
 
-inline const double CalculateTotalVolume( const vismodule::VolumeObjectBase* object )
+inline const double CalculateTotalVolume( const vismodule::VolumeObjectBase& object )
 {
-    const vismodule::VolumeObjectBase::VolumeType volume_type = object->volumeType();
+    const vismodule::VolumeObjectBase::VolumeType volume_type = object.volumeType();
     if ( volume_type == vismodule::VolumeObjectBase::Structured )
     {
         const vismodule::StructuredVolumeObject* volume =
