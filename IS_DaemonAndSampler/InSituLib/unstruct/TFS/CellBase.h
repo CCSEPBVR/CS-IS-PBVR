@@ -753,8 +753,33 @@ inline const kvs::Vector3f CellBase<T>::gradient() const
     const kvs::Vector3d g( dsdx, dsdy, dsdz );
 
     // Calculate a gradient vector in the global coordinate.
-    double scale_factor =1000;
     kvs::Matrix33d J = this->JacobiMatrix_d();
+
+    // calc scale factor
+    double minValue = std::numeric_limits<double>::max();
+
+    for (int i =0; i< 3; i++) 
+    {
+        for(int k =0; k<3; k++)
+        if (J[i][k] != 0 && kvs::Math::Abs(J[i][k]) < minValue) {
+            minValue = kvs::Math::Abs(J[i][k]);
+        }
+    }
+
+    int order = 0;
+    while (minValue < 1.0) {
+        minValue *= 10.0;
+        --order;
+    }
+    while (minValue >= 10.0) {
+        minValue /= 10.0;
+        ++order;
+    }
+
+    order = -order;
+    //double scale_factor =1000;
+    double scale_factor = std::pow(10.0, order);
+
     J *= scale_factor;
 
     double determinant = 0.0f;

@@ -463,14 +463,33 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
 
         ///////////////////////// JacobiMatrix /////////////////////////
 
-//        double temp_min1 = kvs::Math::Min(kvs::Math::Abs(dXdx),kvs::Math::Abs(dYdx),kvs::Math::Abs(dZdx),kvs::Math::Abs(dXdy));
-//        double temp_min2 = kvs::Math::Min(kvs::Math::Abs(dYdy),kvs::Math::Abs(dZdy),kvs::Math::Abs(dXdz),kvs::Math::Abs(dYdz));
-//        double scale_factor = kvs::Math::Min(temp_min1, temp_min2, kvs::Math::Abs(dZdz) );
-//        double average = (kvs::Math::Abs(dXdx) + kvs::Math::Abs(dYdx) + kvs::Math::Abs(dZdx) 
-//                       + kvs::Math::Abs(dXdy) + kvs::Math::Abs(dYdy) + kvs::Math::Abs(dZdy)
-//                       + kvs::Math::Abs(dXdz) + kvs::Math::Abs(dYdz) + kvs::Math::Abs(dZdz) )/9.f;
-//        scale_factor = (scale_factor == 0) ? average : 1.0/scale_factor;
-        double scale_factor = 1000;
+        // calc scale factor
+        double minValue = std::numeric_limits<double>::max();
+        std::vector<double> values = {kvs::Math::Abs(dXdx),kvs::Math::Abs(dYdx),kvs::Math::Abs(dZdx),
+                                      kvs::Math::Abs(dXdy),kvs::Math::Abs(dYdy),kvs::Math::Abs(dZdy),
+                                      kvs::Math::Abs(dXdz),kvs::Math::Abs(dYdz),kvs::Math::Abs(dZdz)};
+
+        for (double value : values) 
+        {
+            if (value != 0 && value < minValue) {
+                minValue = value;
+            }
+        }
+
+        int order = 0;
+        while (minValue < 1.0) {
+            minValue *= 10.0;
+            --order;
+        }
+        while (minValue >= 10.0) {
+            minValue /= 10.0;
+            ++order;
+        }
+
+        order = -order;
+        double scale_factor = std::pow(10.0, order);
+
+//        double scale_factor = 1000;
 
         dXdx *= scale_factor;
         dXdy *= scale_factor;
