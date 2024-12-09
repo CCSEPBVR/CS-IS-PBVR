@@ -11,8 +11,8 @@
  *  $Id: DataArrayTag.h 667 2011-02-22 16:07:54Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef VIS_MODULE__VIS_MODULE__KVSML__DATA_ARRAY_TAG_H_INCLUDE
-#define VIS_MODULE__VIS_MODULE__KVSML__DATA_ARRAY_TAG_H_INCLUDE
+#ifndef VIS_MODULE__KVSML__DATA_ARRAY_TAG_H_INCLUDE
+#define VIS_MODULE__KVSML__DATA_ARRAY_TAG_H_INCLUDE
 
 #include <string>
 #include <vismodule/ValueArray>
@@ -326,4 +326,4 @@ const bool DataArrayTag::read_data( const size_t nelements, vismodule::ValueArra
 
 } // end of namespace vismodule
 
-#endif // VIS_MODULE__VIS_MODULE__KVSML__DATA_ARRAY_TAG_H_INCLUDE
+#endif // VIS_MODULE__KVSML__DATA_ARRAY_TAG_H_INCLUDE

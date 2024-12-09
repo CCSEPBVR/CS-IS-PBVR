@@ -20,7 +20,7 @@ namespace vismodule
 
 /*===========================================================================*/
 /**
- *  @brief  Constructs a new PolygonExporter class for VISMODULE.LObjectPolygon format.
+ *  @brief  Constructs a new PolygonExporter class for VIS_MODULE.LObjectPolygon format.
  *  @param  object [in] pointer to the input polygon object
  */
 /*===========================================================================*/

@@ -12,8 +12,8 @@
  *  $Id: FileChecker.h 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#ifndef VISMODULEVIEW__FILE_CHECKER_H_INCLUDE
-#define VISMODULEVIEW__FILE_CHECKER_H_INCLUDE
+#ifndef VIS_MODULEVIEW__FILE_CHECKER_H_INCLUDE
+#define VIS_MODULEVIEW__FILE_CHECKER_H_INCLUDE
 
 #include <vismodule/File>
 #include <vismodule/AVSField>
@@ -186,4 +186,4 @@ inline const bool ImportableUnstructuredVolume( const std::string& filename )
 
 } // end of namespace vismoduleview
 
-#endif // VISMODULEVIEW__FILE_CHECKER_H_INCLUDE
+#endif // VIS_MODULEVIEW__FILE_CHECKER_H_INCLUDE

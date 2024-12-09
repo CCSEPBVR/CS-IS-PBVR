@@ -450,7 +450,7 @@ const bool MeshData::read_element( std::string& line, std::ifstream& ifs )
             connections.push_back( value );
         }
 
-        // Adjust connections for VISMODULE.
+        // Adjust connections for VIS_MODULE.
         vismodule::UInt32* c = &(connections[ nnodes_per_cell * counter ]);
         this->adjust_connection( c );
 
@@ -465,7 +465,7 @@ const bool MeshData::read_element( std::string& line, std::ifstream& ifs )
 
 /*===========================================================================*/
 /**
- *  @brief  Adjust connection for VISMODULE.
+ *  @brief  Adjust connection for VIS_MODULE.
  *  @param  connection [in] connection in FrontSTR
  */
 /*===========================================================================*/
@@ -484,20 +484,20 @@ void MeshData::adjust_connection( vismodule::UInt32* connection )
     case TriShell:
     case QuadShell:
     {
-        // Not supported in VISMODULE.
+        // Not supported in VIS_MODULE.
         break;
     }
     case Tet:
     {
         // FSTR: 0 1 2 3
-        // VISMODULE:  0 3 2 1
+        // VIS_MODULE:  0 3 2 1
         std::swap( connection[1], connection[3] );
         break;
     }
     case Tet2:
     {
         // FSTR: 0 1 2 3 4 5 6 7 8 9
-        // VISMODULE:  0 1 2 3 7 5 4 6 9 8
+        // VIS_MODULE:  0 1 2 3 7 5 4 6 9 8
         std::swap( connection[4], connection[6] );
         std::swap( connection[6], connection[7] );
         std::swap( connection[8], connection[9] );
@@ -506,7 +506,7 @@ void MeshData::adjust_connection( vismodule::UInt32* connection )
     case Hex:
     {
         // FSTR: 0 1 2 3 4 5 6 7
-        // VISMODULE:  4 5 6 7 0 1 2 3
+        // VIS_MODULE:  4 5 6 7 0 1 2 3
         std::swap( connection[0], connection[4] );
         std::swap( connection[1], connection[5] );
         std::swap( connection[2], connection[6] );
@@ -516,7 +516,7 @@ void MeshData::adjust_connection( vismodule::UInt32* connection )
     case Hex2:
     {
         // FSTR: 0 1 2 3 4 5 6 7  8  9 10 11 12 13 14 15 16 17 18 19
-        // VISMODULE:  4 5 6 7 0 1 2 3 12 13 14 15  8  9 10 11 16 17 18 19
+        // VIS_MODULE:  4 5 6 7 0 1 2 3 12 13 14 15  8  9 10 11 16 17 18 19
         std::swap( connection[0],  connection[4] );
         std::swap( connection[1],  connection[5] );
         std::swap( connection[2],  connection[6] );

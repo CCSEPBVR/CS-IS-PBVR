@@ -22,10 +22,10 @@ const size_t MaxMessageSize = 512;
 
 const std::string tag[vismodule::Message::NumberOfMessageTypes] =
 {
-    "VISMODULE ERROR",
-    "VISMODULE WARNING",
-    "VISMODULE DEBUG",
-    "VISMODULE ASSERT"
+    "VIS_MODULE ERROR",
+    "VIS_MODULE WARNING",
+    "VIS_MODULE DEBUG",
+    "VIS_MODULE ASSERT"
 };
 
 const std::string color[vismodule::Message::NumberOfMessageTypes] =

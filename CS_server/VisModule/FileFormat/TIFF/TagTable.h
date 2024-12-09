@@ -11,8 +11,8 @@
  *  $Id: TagTable.h 631 2010-10-10 02:15:35Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef VIS_MODULE__VIS_MODULE__TIFF__TAG_TABLE_H_INCLUDE
-#define VIS_MODULE__VIS_MODULE__TIFF__TAG_TABLE_H_INCLUDE
+#ifndef VIS_MODULE__TIFF__TAG_TABLE_H_INCLUDE
+#define VIS_MODULE__TIFF__TAG_TABLE_H_INCLUDE
 
 #include "Tag.h"
 
@@ -98,4 +98,4 @@ const size_t TagTableSize = sizeof( TagTable ) / sizeof( vismodule::tiff::Tag );
 
 } // end of namespace vismodule
 
-#endif // VIS_MODULE__VIS_MODULE__TIFF__TAG_TABLE_H_INCLUDE
+#endif // VIS_MODULE__TIFF__TAG_TABLE_H_INCLUDE

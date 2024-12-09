@@ -65,7 +65,7 @@
 
 // Unknown compiler
 #else
-#error Unknown compiler. VISMODULE supports GNU C++ compiler and
+#error Unknown compiler. VIS_MODULE supports GNU C++ compiler and
 #error Microsoft Visual C++ compiler only.
 #endif
 

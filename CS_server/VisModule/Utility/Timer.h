@@ -93,11 +93,11 @@
 
 // Unknown compiler.
 #else
-#error Unknown compiler. VISMODULE supports GNU C++ compiler and
+#error Unknown compiler. VIS_MODULE supports GNU C++ compiler and
 #error Microsoft Visual C++ compiler only.
 #endif
 #endif
-// end of VIS_MODULE_TIMER_ENABLE_RDTSC for VISMODULE.TIMER_GET_RDTSC()
+// end of VIS_MODULE_TIMER_ENABLE_RDTSC for VIS_MODULE.TIMER_GET_RDTSC()
 
 /*==========================================================================*/
 /*
@@ -116,7 +116,7 @@
 #error Not supported QPC.
 #endif
 #endif
-// end of VIS_MODULE_TIMER_ENABLE_QPC for VISMODULE.TIMER_GET_QPC()
+// end of VIS_MODULE_TIMER_ENABLE_QPC for VIS_MODULE.TIMER_GET_QPC()
 
 
 namespace vismodule

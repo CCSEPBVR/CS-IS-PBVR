@@ -14,7 +14,7 @@
 #ifndef VIS_MODULE__VERSION_H_INCLUDE
 #define VIS_MODULE__VERSION_H_INCLUDE
 
-// VISMODULE version: <major_version>.<minor_version>.<patch_version>
+// VIS_MODULE version: <major_version>.<minor_version>.<patch_version>
 #define VIS_MODULE_VERSION_MAJOR  1
 #define VIS_MODULE_VERSION_MINOR  1
 #define VIS_MODULE_VERSION_PATCH  1

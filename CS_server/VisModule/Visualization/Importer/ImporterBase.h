@@ -11,8 +11,8 @@
  *  $Id: ImporterBase.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef VIS_MODULE__VIS_MODULE__IMPORTER_BASE_H_INCLUDE
-#define VIS_MODULE__VIS_MODULE__IMPORTER_BASE_H_INCLUDE
+#ifndef VIS_MODULE__IMPORTER_BASE_H_INCLUDE
+#define VIS_MODULE__IMPORTER_BASE_H_INCLUDE
 
 #include <vismodule/FileFormatBase>
 #include <vismodule/ObjectBase>

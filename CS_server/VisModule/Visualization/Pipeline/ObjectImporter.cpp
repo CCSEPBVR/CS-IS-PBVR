@@ -15,7 +15,7 @@
 #include <string>
 #include <vismodule/DebugNew>
 #include <vismodule/File>
-// VISMODULE file format classes.
+// VIS_MODULE file format classes.
 #include <vismodule/AVSField>
 #include <vismodule/AVSUcd>
 #include <vismodule/Bmp>
@@ -34,7 +34,7 @@
 #include <vismodule/KVSMLObjectUnstructuredVolume>
 #include <vismodule/XMLDocument>
 #include <vismodule/DicomList>
-// VISMODULE importer classes.
+// VIS_MODULE importer classes.
 #include <vismodule/PointImporter>
 #include <vismodule/LineImporter>
 #include <vismodule/PolygonImporter>

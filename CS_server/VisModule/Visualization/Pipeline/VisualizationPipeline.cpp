@@ -190,10 +190,10 @@ bool VisualizationPipeline::exec( void )
         ++module;
     }
 
-    // WARNING: The object module that is registerd in the VISMODULE's object manager
+    // WARNING: The object module that is registerd in the VIS_MODULE's object manager
     // is disconnected from the pipeline module for the object with the reference counter.
     // The pointer to the disconnected object (m_object) is transfered to the object
-    // manager using the insert method in the VISMODULE's global class. As a result, the ownership
+    // manager using the insert method in the VIS_MODULE's global class. As a result, the ownership
     // of the object is changed to the object manager from the pipeline module.
     if ( module == last )
     {
