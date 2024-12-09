@@ -5,7 +5,7 @@
 #include <string>
 #include <vismodule/UnstructuredVolumeObject>
 #include "FilterInformation.h"
-#include "ExtendedTransferFunction.h"
+#include <vismodule/ExtendedTransferFunction>
 #include "timer.h"
 
 typedef struct

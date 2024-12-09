@@ -11,7 +11,7 @@
  *  $Id: SPLITTypeSubvolume.cpp 848 2011-06-29 11:35:52Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "SPLITTypeSubvolume.h"
+#include <vismodule/SPLITTypeSubvolume>
 #include <FileFormat/KVSML/UnstructuredVolumeObjectTag.h>
 #include <FileFormat/KVSML/NodeTag.h>
 #include <FileFormat/KVSML/CellTag.h>

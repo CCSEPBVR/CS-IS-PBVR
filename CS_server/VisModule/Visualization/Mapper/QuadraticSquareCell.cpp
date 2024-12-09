@@ -13,7 +13,7 @@
  *  $Id: QuadraticSquareCell.cpp 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /*****************************************************************************/
-#include "QuadraticSquareCell.h"
+#include <vismodule/QuadraticSquareCell>
 
 
 namespace vismodule

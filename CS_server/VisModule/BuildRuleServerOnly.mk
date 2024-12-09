@@ -3,6 +3,7 @@
 
 
 OBJECTS := \
+$(OUTDIR)/./FileFormat/AggregateTypeSubvolume.o \
 $(OUTDIR)/./FileFormat/AVSField/AVSField.o \
 $(OUTDIR)/./FileFormat/AVSUCD/AVSUcd.o \
 $(OUTDIR)/./FileFormat/BMP/Bmp.o \
@@ -75,6 +76,8 @@ $(OUTDIR)/./FileFormat/PNM/Header.o \
 $(OUTDIR)/./FileFormat/PNM/Pbm.o \
 $(OUTDIR)/./FileFormat/PNM/Pgm.o \
 $(OUTDIR)/./FileFormat/PNM/Ppm.o \
+$(OUTDIR)/./FileFormat/SPLITTypeSubvolume.o \
+$(OUTDIR)/./FileFormat/StepAggregateTypeSubvolume.o \
 $(OUTDIR)/./FileFormat/STL/Stl.o \
 $(OUTDIR)/./FileFormat/TIFF/Entry.o \
 $(OUTDIR)/./FileFormat/TIFF/Header.o \
@@ -180,12 +183,14 @@ $(OUTDIR)/./Visualization/Importer/StructuredVolumeImporter.o \
 $(OUTDIR)/./Visualization/Importer/TableImporter.o \
 $(OUTDIR)/./Visualization/Importer/UnstructuredVolumeImporter.o \
 $(OUTDIR)/./Visualization/Mapper/CellAdjacencyGraph.o \
+$(OUTDIR)/./Visualization/Mapper/CellByCellHistogram.o \
 $(OUTDIR)/./Visualization/Mapper/CellByCellMetropolisSampling.o \
 $(OUTDIR)/./Visualization/Mapper/CellByCellRejectionSampling.o \
 $(OUTDIR)/./Visualization/Mapper/CellByCellUniformSampling.o \
 $(OUTDIR)/./Visualization/Mapper/ColorMap.o \
 $(OUTDIR)/./Visualization/Mapper/ExtractEdges.o \
 $(OUTDIR)/./Visualization/Mapper/ExtractVertices.o \
+$(OUTDIR)/./Visualization/Mapper/ExtendedTransferFunction.o \
 $(OUTDIR)/./Visualization/Mapper/FrequencyTable.o \
 $(OUTDIR)/./Visualization/Mapper/HexahedralCell.o \
 $(OUTDIR)/./Visualization/Mapper/HitAndMissSampling.o \
@@ -202,15 +207,20 @@ $(OUTDIR)/./Visualization/Mapper/MarchingTetrahedraTable.o \
 $(OUTDIR)/./Visualization/Mapper/MetropolisSampling.o \
 $(OUTDIR)/./Visualization/Mapper/OpacityMap.o \
 $(OUTDIR)/./Visualization/Mapper/OrthoSlice.o \
+$(OUTDIR)/./Visualization/Mapper/PrismaticCell.o \
 $(OUTDIR)/./Visualization/Mapper/PyramidalCell.o \
 $(OUTDIR)/./Visualization/Mapper/QuadraticHexahedralCell.o \
+$(OUTDIR)/./Visualization/Mapper/QuadraticSquareCell.o \
 $(OUTDIR)/./Visualization/Mapper/QuadraticTetrahedralCell.o \
+$(OUTDIR)/./Visualization/Mapper/QuadraticTriangleCell.o \
 $(OUTDIR)/./Visualization/Mapper/RGBFormulae.o \
 $(OUTDIR)/./Visualization/Mapper/SlicePlane.o \
 $(OUTDIR)/./Visualization/Mapper/Streamline.o \
 $(OUTDIR)/./Visualization/Mapper/StreamlineBase.o \
+$(OUTDIR)/./Visualization/Mapper/SquareCell.o \
 $(OUTDIR)/./Visualization/Mapper/TetrahedralCell.o \
 $(OUTDIR)/./Visualization/Mapper/TransferFunction.o \
+$(OUTDIR)/./Visualization/Mapper/TriangleCell.o \
 $(OUTDIR)/./Visualization/Object/AxisObject.o \
 $(OUTDIR)/./Visualization/Object/GeometryObjectBase.o \
 $(OUTDIR)/./Visualization/Object/GlyphObject.o \

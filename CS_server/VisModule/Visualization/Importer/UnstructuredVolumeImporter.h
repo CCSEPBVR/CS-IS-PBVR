@@ -18,9 +18,9 @@
 #include <vismodule/ClassName>
 #include <vismodule/Module>
 #include <vismodule/UnstructuredVolumeObject>
-#include "SPLITTypeSubvolume.h"
-#include "AggregateTypeSubvolume.h"
-#include "StepAggregateTypeSubvolume.h"
+#include <vismodule/SPLITTypeSubvolume>
+#include <vismodule/AggregateTypeSubvolume>
+#include <vismodule/StepAggregateTypeSubvolume>
 #include <vismodule/AVSUcd>
 #include <vismodule/AVSField>
 

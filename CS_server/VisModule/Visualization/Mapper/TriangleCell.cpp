@@ -11,7 +11,7 @@
  *  $Id: TriangleCell.cpp 608 2010-09-13 06:55:48Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "TriangleCell.h"
+#include <vismodule/TriangleCell>
 
 
 namespace vismodule

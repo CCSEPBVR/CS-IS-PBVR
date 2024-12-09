@@ -31,11 +31,11 @@
 #include <vismodule/QuadraticTetrahedralCell>
 #include <vismodule/HexahedralCell>
 #include <vismodule/QuadraticHexahedralCell>
-#include "PrismaticCell.h"
+#include <vismodule/PrismaticCell>
 #include <vismodule/PyramidalCell>
-//#include "TriangleCell.h"
-//#include "QuadraticTriangleCell.h"
-//#include "SquareCell.h"
+//#include <vismodule/TriangleCell>
+//#include <vismodule/QuadraticTriangleCell>
+//#include <vismodule/SquareCell>
 #include <vismodule/GlobalCore>
 #include "CropRegion.h"
 

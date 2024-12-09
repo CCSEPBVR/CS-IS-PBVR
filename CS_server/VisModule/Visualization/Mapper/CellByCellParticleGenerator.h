@@ -25,12 +25,12 @@
 #include <vismodule/QuadraticTetrahedralCell>
 #include <vismodule/HexahedralCell>
 #include <vismodule/QuadraticHexahedralCell>
-#include "PrismaticCell.h"
+#include <vismodule/PrismaticCell>
 #include <vismodule/PyramidalCell>
-//#include "TriangleCell.h"
-//#include "SquareCell.h"
-//#include "QuadraticTriangleCell.h"
-//#include "QuadraticSquareCell.h"
+//#include <vismodule/TriangleCell>
+//#include <vismodule/SquareCell>
+//#include <vismodule/QuadraticTriangleCell>
+//#include <vismodule/QuadraticSquareCell>
 #include <vismodule/StructuredVolumeObject>
 #include <vismodule/UnstructuredVolumeObject>
 

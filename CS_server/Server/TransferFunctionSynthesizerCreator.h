@@ -9,7 +9,7 @@
 #include "TransferFunctionSynthesizer.h"
 //#include "TransferFunctionSynthesizer_IS.h"
 #include "ParticleTransferProtocol.h"
-#include "ExtendedTransferFunction.h"
+#include <vismodule/ExtendedTransferFunction>
 #include "ParameterFile.h"
 #include "FilterInformation.h"
 

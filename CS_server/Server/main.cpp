@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /**
  *  main.cpp
- *  CPU Server Program without CUDA, without VISMODULE, without OpenGL.
+ *  CPU Server Program without CUDA, without VIS_MODULE, without OpenGL.
  */
 /*****************************************************************************/
 
@@ -19,7 +19,7 @@
 
 #include "PointObjectGenerator.h"
 
-#include "Argument.h"
+#include <vismodule/Argument>
 
 #include <vismodule/AVSField>
 #include <vismodule/Timer>
@@ -43,7 +43,7 @@
 #endif
 #include <vismodule/File>
 
-#include "ExtendedTransferFunction.h"
+#include <vismodule/ExtendedTransferFunction>
 #include "TransferFunctionSynthesizerCreator.h"
 #include "VariableRange.h"
 #include "RangeEstimater.h"

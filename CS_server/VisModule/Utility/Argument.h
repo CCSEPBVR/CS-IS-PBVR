@@ -6,7 +6,7 @@
 #include "CropRegion.h"
 
 #include "TransferFunctionSynthesizer.h"
-#include "ExtendedTransferFunction.h"
+#include <vismodule/ExtendedTransferFunction>
 
 class Argument : public vismodule::CommandLine
 {

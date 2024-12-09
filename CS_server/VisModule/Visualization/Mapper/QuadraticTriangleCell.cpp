@@ -11,7 +11,7 @@
  *  $Id: QuadraticTriangleCell.cpp 602 2010-08-19 02:43:34Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#include "QuadraticTriangleCell.h"
+#include <vismodule/QuadraticTriangleCell>
 
 
 namespace vismodule

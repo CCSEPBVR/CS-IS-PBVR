@@ -1,10 +1,10 @@
 /****************************************************************************/
 /**
- *  @file AggregateTypeSubvolume.h
+ *  @file StepAggregateTypeSubvolume.h
  */
 /****************************************************************************/
-#ifndef VIS_MODULE__VIS_MODULE__AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE
-#define VIS_MODULE__VIS_MODULE__AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE
+#ifndef VIS_MODULE__STEP_AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE
+#define VIS_MODULE__STEP_AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE
 
 #include <vismodule/FileFormatBase>
 #include <vismodule/AnyValueArray>
@@ -20,12 +20,12 @@ namespace vismodule
 
 /*===========================================================================*/
 /**
- *  @brief  GSubvolume unstructured volume object format.
+ *  @brief  GTimestep unstructured volume object format.
  */
 /*===========================================================================*/
-class AggregateTypeSubvolume : public vismodule::FileFormatBase
+class StepAggregateTypeSubvolume : public vismodule::FileFormatBase
 {
-    visModuleClassName( vismodule::AggregateTypeSubvolume );
+    visModuleClassName( vismodule::StepAggregateTypeSubvolume );
 
 public:
 
@@ -48,11 +48,11 @@ protected:
 
 public:
 
-    AggregateTypeSubvolume();
+    StepAggregateTypeSubvolume();
 
-    AggregateTypeSubvolume( const std::string& filename, const int st, const int vl );
+    StepAggregateTypeSubvolume( const std::string& filename, const int st, const int vl );
 
-    virtual ~AggregateTypeSubvolume();
+    virtual ~StepAggregateTypeSubvolume();
 
 public:
 
@@ -94,4 +94,4 @@ public:
 
 };
 } // end of namespace vismodule
-#endif // VIS_MODULE__VIS_MODULE__AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE
+#endif // VIS_MODULE__STEP_AGGREGATE_TYPE_SUBVOLUME_H_INCLUDE

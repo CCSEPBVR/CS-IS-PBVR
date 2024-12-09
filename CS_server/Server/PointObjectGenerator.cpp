@@ -11,7 +11,7 @@
 #include <vismodule/CellByCellUniformSampling>
 #include <vismodule/CellByCellRejectionSampling>
 #include <vismodule/CellByCellMetropolisSampling>
-#include "CellByCellHistogram.h"
+#include <vismodule/CellByCellHistogram>
 #if 0 //TEST_DELETE
 #include <vismodule/TestVolume>
 #include <vismodule/FrontSTRFileReader>
@@ -25,7 +25,7 @@
 #include <vismodule/StructuredVolumeObject>
 #include <vismodule/StructuredVolumeImporter>
 
-#include "Argument.h"
+#include <vismodule/Argument>
 
 #include "timer_simple.h"
 

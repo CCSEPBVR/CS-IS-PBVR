@@ -12,7 +12,7 @@
  *  $Id$
  */
 /****************************************************************************/
-#include "PrismaticCell.h"
+#include <vismodule/PrismaticCell>
 
 
 namespace vismodule

@@ -25,7 +25,7 @@
 #include <vismodule/QuadraticTetrahedralCell>
 #include <vismodule/HexahedralCell>
 #include <vismodule/QuadraticHexahedralCell>
-#include "PrismaticCell.h"
+#include <vismodule/PrismaticCell>
 #include <vismodule/PyramidalCell>
 #include <vismodule/GlobalCore>
 
