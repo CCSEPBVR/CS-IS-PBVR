@@ -1,4 +1,4 @@
-#if 1
+#if 0
     // point
     vtkSmartPointer<vtkPoints> vpoint = vtkSmartPointer<vtkPoints>::New();
     forAll(mesh.points(),pid)
@@ -109,15 +109,15 @@ forAll(mesh.cells(),cid)
 }
 ucd -> GetCellData() -> AddArray(scalars_p);
 
-// Q
-vtkSmartPointer<vtkFloatArray> scalars_q =
-vtkSmartPointer<vtkFloatArray>::New();
-scalars_q->SetName("q");
-forAll(mesh.cells(),cid)
-{
-    scalars_q->InsertNextValue(p[cid]);
-}
-ucd -> GetCellData() -> AddArray(scalars_q);
+//// Q
+//vtkSmartPointer<vtkFloatArray> scalars_q =
+//vtkSmartPointer<vtkFloatArray>::New();
+//scalars_q->SetName("q");
+//forAll(mesh.cells(),cid)
+//{
+//    scalars_q->InsertNextValue(p[cid]);
+//}
+//ucd -> GetCellData() -> AddArray(scalars_q);
 
 vtkSmartPointer<vtkCellDataToPointData> cellDataToPointData =
 vtkSmartPointer<vtkCellDataToPointData>::New();
