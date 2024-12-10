@@ -17,13 +17,15 @@ public:
         Unknown                       = 0, // Aka Error
         ServerPointObjectCS           = 1, // Server side Point Object
         ServerPointObjectIS           = 2, // Server side Point Object
-        PointObjectKVSML              = 3, // Point Object(.kvsml)
-        PointObjectLAS                = 4, // Point Object(.las)
-        PointObjectPTS                = 5, // Point Object(.pts)
-        NonTexturedPolygonObjectKVSML = 6, // Non Textured Polygon Object(.kvsml)
-        NonTexturedPolygonObjectSTL   = 7, // Non Textured Polygon Object(.stl)
-        TexturedPolygonObject3DS      = 8, // Textured Polygon Object(.3ds)
-        TexturedPolygonObjectFBX      = 9, // Textured Polygon Object(.fbx)
+        ServerGlyphObjectCS           = 3, // Server side Point Object
+        ServerGlyphObjectIS           = 4, // Server side Point Object
+        PointObjectKVSML              = 5, // Point Object(.kvsml)
+        PointObjectLAS                = 6, // Point Object(.las)
+        PointObjectPTS                = 7, // Point Object(.pts)
+        NonTexturedPolygonObjectKVSML = 8, // Non Textured Polygon Object(.kvsml)
+        NonTexturedPolygonObjectSTL   = 9, // Non Textured Polygon Object(.stl)
+        TexturedPolygonObject3DS      = 10, // Textured Polygon Object(.3ds)
+        TexturedPolygonObjectFBX      = 11, // Textured Polygon Object(.fbx)
     };
 
     QString formatToString( Format format )
@@ -33,9 +35,13 @@ public:
         case Unknown:
             return QStringLiteral( "Unknown" );
         case ServerPointObjectCS:
-            return QStringLiteral( "Server(CS)" );
+            return QStringLiteral( "ServerPointObject(CS)" );
         case ServerPointObjectIS:
-            return QStringLiteral( "Server(IS)" );
+            return QStringLiteral( "ServerPointObject(IS)" );
+        case ServerGlyphObjectCS:
+            return QStringLiteral( "ServerGlyphObject(CS)" );
+        case ServerGlyphObjectIS:
+            return QStringLiteral( "ServerGlyphObject(IS)" );
         case PointObjectKVSML:
             return QStringLiteral( "KVSML(PointObject)" );
         case PointObjectLAS:
@@ -121,8 +127,10 @@ public:
     ~MergePanel();
 
     void mergeObjects( int currentTimeStep, int requestTimeStep );
-    void serverObjectCS( QString volumeDataFilePath, int min, int max );
-    void serverObjectIS( QString volumeDataFilePath, int min, int max );
+    void serverPointObjectCS( QString volumeDataFilePath, int min, int max );
+    void serverPointObjectIS( QString volumeDataFilePath, int min, int max );
+    void serverGlyphObjectCS( QString volumeDataFilePath, int min, int max );
+    // void serverGlyphObjectIS( QString volumeDataFilePath, int min, int max );
     void updateObjectTimeStepIS( int min, int max );
 
     void setIsParticleGenerationNeeded( const bool& is_particle_generation_needed ){ m_is_particle_generation_needed = is_particle_generation_needed; }

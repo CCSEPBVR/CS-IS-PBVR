@@ -137,7 +137,15 @@ void Connect::connectServer()
 
     if( ui->clientServerRBtn->isChecked() )
     {
-        m_merge->serverObjectCS( ui->volumeDataFilePathLEdit->text(), m_server_message.m_start_step, m_server_message.m_last_step );
+        m_merge->serverPointObjectCS( ui->volumeDataFilePathLEdit->text(), m_server_message.m_start_step, m_server_message.m_last_step );
+        if( m_server_message.m_number_ingredients < 3  )
+        {
+        }
+        else
+        {
+            m_merge->serverGlyphObjectCS( ui->volumeDataFilePathLEdit->text(), m_server_message.m_start_step, m_server_message.m_last_step );
+        }
+
         if (m_client_message.m_import_flag)
         {
     #ifdef Q_OS_WIN
@@ -152,7 +160,7 @@ void Connect::connectServer()
     }
     else if ( ui->inSituRBtn->isChecked() )
     {
-        m_merge->serverObjectIS( "IS-Object", 0, 0 );        
+        m_merge->serverPointObjectIS( "IS-Object", 0, 0 );
     }
     delete m_server_message.m_camera;
     ui->connectPBtn->setDisabled( true );

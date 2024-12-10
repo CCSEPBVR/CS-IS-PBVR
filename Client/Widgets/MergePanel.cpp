@@ -111,7 +111,7 @@ void MergePanel::registerFiles( const QString& filePath )
     }
 }
 
-void MergePanel::serverObjectCS( QString volumeDataFilePath, int min, int max )
+void MergePanel::serverPointObjectCS( QString volumeDataFilePath, int min, int max )
 {
     FilesManager *newFile = new FilesManager;
     newFile->setFileInfo( QFileInfo( volumeDataFilePath ) );
@@ -132,7 +132,7 @@ void MergePanel::serverObjectCS( QString volumeDataFilePath, int min, int max )
     calculateTotalMinMaxTimeStep();
 }
 
-void MergePanel::serverObjectIS( QString volumeDataFilePath, int min, int max )
+void MergePanel::serverPointObjectIS( QString volumeDataFilePath, int min, int max )
 {
     FilesManager *newFile = new FilesManager;
     newFile->setFileInfo( QFileInfo( volumeDataFilePath ) );
@@ -153,6 +153,27 @@ void MergePanel::serverObjectIS( QString volumeDataFilePath, int min, int max )
     calculateTotalMinMaxTimeStep();
     IS_OBJ = true;
     IS_OBJ_DONE_INIT = false;
+}
+
+void MergePanel::serverGlyphObjectCS( QString volumeDataFilePath, int min, int max )
+{
+    FilesManager *newFile = new FilesManager;
+    newFile->setFileInfo( QFileInfo( volumeDataFilePath ) );
+    newFile->setFormat( FilesManager::ServerGlyphObjectCS );
+    newFile->setMinTimeStep( min );
+    newFile->setMaxTimeStep( max );
+    newFile->setDisplay( true );
+    newFile->setKeepInital( false );
+    newFile->setKeepFinal( false );
+    newFile->setColor( QColor( 128, 128, 128 ) ); //テクスチャ無しポリゴン用の初期値
+    newFile->setOpacity( 0.5 ); //テクスチャ無しポリゴン用の初期値
+    newFile->setChangePolygonTransferFunction( false );
+    newFile->setIDs( std::pair<int,int>( -1, -1 ) ); //登録時に表示されることはないので-1となる。registerObjectされた際に値が決まる。
+    newFile->setAlreadyImportedTimeStep( -1 ); //登録時に表示されることはないので-1となる。
+    newFile->setObject( nullptr );
+    m_files_manager.append( newFile );
+    addFilesTable( m_files_manager.last() ); //アペンド直後のFilesManagerをテーブルウィジェットに追加する。
+    calculateTotalMinMaxTimeStep();
 }
 
 void MergePanel::updateObjectTimeStepIS( int min, int max )
