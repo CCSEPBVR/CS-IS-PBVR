@@ -797,6 +797,76 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
                     Y_g[I] = y_g;
                     Z_g[I] = z_g;
                 }
+                th_tfs[thid]->SynthesizedOpacityScalars(
+                    interp[thid], X_l, Y_l, Z_l, X_g, Y_g, Z_g, o_scalars );
+                th_tfs[thid]->SynthesizedColorScalars(
+                    interp[thid], X_l, Y_l, Z_l, X_g, Y_g, Z_g, c_scalars );
+
+                for( int i = 0; i < tf_number; i++ )
+                {
+                    for( int I = 0; I < ncells; I++ )
+                    {
+                        //ｿｿｿｿｿｿｿｿｿｿ
+                        th_O_min[i] = th_O_min[i] < o_scalars[i][I] ? th_O_min[i] : o_scalars[i][I];
+                        th_O_max[i] = th_O_max[i] > o_scalars[i][I] ? th_O_max[i] : o_scalars[i][I];
+                        //ｿｿｿｿｿｿｿ
+                        th_C_min[i] = th_C_min[i] < c_scalars[i][I] ? th_C_min[i] : c_scalars[i][I];
+                        th_C_max[i] = th_C_max[i] > c_scalars[i][I] ? th_C_max[i] : c_scalars[i][I];
+                    }
+                }
+
+            }
+
+#pragma omp critical
+            {
+                for( int i = 0; i < tf_number; i++ )
+                {
+                    //ｿｿｿｿ
+                    O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
+                    O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
+                    //ｿ
+                    C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
+                    C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
+                }
+            } // end of omp critical
+
+            for( int i = 0; i < tf_number; i++ )
+            {
+                o_min[i] = O_min[i];
+                o_max[i] = O_max[i];
+                c_min[i] = C_min[i];
+                c_max[i] = C_max[i];
+            }
+
+            #pragma omp for
+            for( int J=0; J<outer_loop; J++ )
+            {
+                int ncells = ((J+1) * SIMDW > nvertices) ? nvertices - J*SIMDW  : SIMDW ;
+                float X_l[SIMDW], Y_l[SIMDW], Z_l[SIMDW];
+                float X_g[SIMDW], Y_g[SIMDW], Z_g[SIMDW];
+                #pragma ivdep
+                for( int I=0; I<SIMDW; I++ )
+                {
+                    const int vertex_id = I + J * SIMDW;
+                    // vertex_id = i + j * nx + k * nx * ny
+                    const int k =  vertex_id / nxy;
+                    const int j = (vertex_id - k * nxy) / nx;
+                    const int i =  vertex_id - k * nxy - j * nx;
+
+                    const float x_l = (float)i;
+                    const float y_l = (float)j;
+                    const float z_l = (float)k;
+                    const float x_g = (x_l * cell_length.x())+min_vec.x();
+                    const float y_g = (y_l * cell_length.y())+min_vec.y();
+                    const float z_g = (z_l * cell_length.z())+min_vec.z();
+
+                    X_l[I] = x_l;
+                    Y_l[I] = y_l;
+                    Z_l[I] = z_l;
+                    X_g[I] = x_g;
+                    Y_g[I] = y_g;
+                    Z_g[I] = z_g;
+                }
 //                timed_section_start(td_SynthOpacityScalars,thid);
                 th_tfs[thid]->SynthesizedOpacityScalars(
                     interp[thid], X_l, Y_l, Z_l, X_g, Y_g, Z_g, o_scalars );
@@ -821,17 +891,6 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
         {
             if( parameter_file_opened )
             {
-                //ｿｿｿｿｿ
-                for( int i = 0; i < tf_number; i++ )
-                {
-                    //ｿｿｿｿ
-                    O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
-                    O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
-                    //ｿ
-                    C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
-                    C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
-
-                }
 
                 for( int n = 0; n < tf_number * nbins; n++ )
                 {
@@ -860,15 +919,6 @@ void CellByCellHistogram::generate_histogram( const pbvr::StructuredVolumeObject
         m_transfer_function_synthesizer->m_c_min[i] = m_transfer_function_synthesizer->m_c_min[i] < C_min[i] ? m_transfer_function_synthesizer->m_c_min[i] : C_min[i];
         m_transfer_function_synthesizer->m_c_max[i] = m_transfer_function_synthesizer->m_c_max[i] > C_max[i] ? m_transfer_function_synthesizer->m_c_max[i] : C_max[i];
     }
-
-//    SuperClass::m_coords  = kvs::ValueArray<kvs::Real32>( vertex_coords );
-//    SuperClass::m_colors  = kvs::ValueArray<kvs::UInt8>( vertex_colors );
-//    SuperClass::m_normals = kvs::ValueArray<kvs::Real32>( vertex_normals );
-
-//    timer.stop();
-//    time.sampling = timer.sec();
-//    time.nparticles = vertex_coords.size()/3;
-//    timer.start();
 
     for(int i=0; i<max_threads; i++)
     {
@@ -1589,6 +1639,86 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
                 {
                     for( int i = 0; i < tf_number; i++ )
                     {
+                        // 20190128 ｿｿ
+                        th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
+                        th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
+                        th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
+                        th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
+                    }
+                }
+            }
+            /////////////////////////////// CalculateOpacity(), CalculateColor() ///////////////////////////////////
+        }// end of for cell
+
+
+#pragma omp critical
+        {
+            for( int i = 0; i < tf_number; i++ )
+            {
+                //ｿｿｿｿ
+                O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
+                O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
+                //ｿ
+                C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
+                C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
+            }
+        }
+
+        for( int i = 0; i < tf_number; i++ )
+        {
+            o_min[i] = O_min[i] ;
+            o_max[i] = O_max[i] ;
+            c_min[i] = C_min[i] ;
+            c_max[i] = C_max[i] ;
+        }
+
+#pragma omp for schedule( dynamic ) nowait  
+        //#pragma omp for schedule( static ) nowait
+        //#pragma omp for schedule( static, 1 ) nowait
+        for( int cell_base = 0; cell_base < ncells; cell_base += SIMDW )
+        {
+            //ｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿ
+            int remain = ( ncells - cell_base > SIMDW )? SIMDW: ncells - cell_base;
+
+            /////////////////////////////// Synthesized~ (), CalculateOpacity() ///////////////////////////////////
+            //ｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿ
+            for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
+            {
+                cell_index[cell_BLK] = (kvs::UInt32)(cell_base + cell_BLK);
+                //local_center_array[cell_BLK] = kvs::Vector3f ( 0.5, 0.5, 0.5 );
+                local_center_array[cell_BLK] = kvs::Vector3f ( 0, 0, 0 );
+            }
+
+            //ｿｿｿｿｿｿｿｿｿｿｿｿｿｿ
+            for(int i = 0; i < nvariables; i++)
+            {
+                interp[thid][i]->bindCellArray(remain, cell_index);
+            }
+
+            interp[thid][0]->setLocalPointArray( remain, local_center_array );
+            interp[thid][0]->transformLocalToGlobalArray( remain,
+                    local_center_array,
+                    global_center_array );
+
+            if( parameter_file_opened )
+            {
+
+                th_tfs[thid]->SynthesizedOpacityScalarsArray( interp[thid],
+                        remain,
+                        local_center_array,
+                        global_center_array,
+                        o_scalars_array );
+
+                th_tfs[thid]->SynthesizedColorScalarsArray( interp[thid],
+                        remain,
+                        local_center_array,
+                        global_center_array,
+                        c_scalars_array );
+
+                for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ ) 
+                {
+                    for( int i = 0; i < tf_number; i++ )
+                    {
                         float h = (o_scalars_array[cell_BLK][i] - o_min[i])/( o_max[i] - o_min[i] )*nbins;
                         int H = (int)h;
                         if( 0 <= H && H <= nbins )
@@ -1604,12 +1734,6 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
                             if( H == nbins ) H--;
                             th_c_histogram[ H + nbins*i]++;
                         }
-                        // 20190128 ｿｿ
-                        th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
-                        th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
-                        th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
-                        th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
-//                        std::cout << "th_O_min[i] = " << o_scalars_array[cell_BLK][i] <<std::endl;
                     }
                 }
             }
@@ -1619,20 +1743,6 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
 
 #pragma omp critical
         {
-            if( parameter_file_opened )
-            {
-                //ｿｿｿｿｿ
-                for( int i = 0; i < tf_number; i++ )
-                {
-                    //ｿｿｿｿ
-                    O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
-                    O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
-                    //ｿ
-                    C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
-                    C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
-                }
-            }   
-
             for( int n = 0; n < tf_number * nbins; n++ )
             {
                 m_o_histogram[n] += th_o_histogram[n];
@@ -1648,6 +1758,7 @@ void CellByCellHistogram::generate_histogram<kvs::Real32>( const pbvr::Unstructu
 //            }
 //            std::cout << debug11.str() << std::endl;
         }
+
 
     } //#pragma omp parallel
 
@@ -1949,12 +2060,12 @@ void CellByCellHistogram::calculate_histogram( kvs::ValueArray<int>&   th_o_hist
                 th_c_histogram[ H + nbins*i]++;
             }
 
-            //ｿｿｿｿｿｿｿｿｿｿ
-            th_O_min[i] = th_O_min[i] < o_scalars[i][I] ? th_O_min[i] : o_scalars[i][I];
-            th_O_max[i] = th_O_max[i] > o_scalars[i][I] ? th_O_max[i] : o_scalars[i][I];
-            //ｿｿｿｿｿｿｿ
-            th_C_min[i] = th_C_min[i] < c_scalars[i][I] ? th_C_min[i] : c_scalars[i][I];
-            th_C_max[i] = th_C_max[i] > c_scalars[i][I] ? th_C_max[i] : c_scalars[i][I];
+//            //ｿｿｿｿｿｿｿｿｿｿ
+//            th_O_min[i] = th_O_min[i] < o_scalars[i][I] ? th_O_min[i] : o_scalars[i][I];
+//            th_O_max[i] = th_O_max[i] > o_scalars[i][I] ? th_O_max[i] : o_scalars[i][I];
+//            //ｿｿｿｿｿｿｿ
+//            th_C_min[i] = th_C_min[i] < c_scalars[i][I] ? th_C_min[i] : c_scalars[i][I];
+//            th_C_max[i] = th_C_max[i] > c_scalars[i][I] ? th_C_max[i] : c_scalars[i][I];
         }
     }
 }

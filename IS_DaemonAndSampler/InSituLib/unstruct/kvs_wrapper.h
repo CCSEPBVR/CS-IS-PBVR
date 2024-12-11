@@ -2,7 +2,14 @@
 #define KVS_WRAPPER_H_INCLUDED
 
 #include "../shared/thread_timer.h"
+#include <kvs/TransferFunction>
 #include "TFS/VolumeObjectBase.h"
+#include "TFS/ParamInfo.h"
+#include "TFS/TransferFunction.h"
+
+#ifdef VTK
+#include <vtkUnstructuredGrid.h>
+#endif
 
 #ifdef DOUBLE_SCHEME
   typedef double Type;
@@ -58,6 +65,40 @@ extern "C" {
     } domain_parameters;
 #endif
 
+    typedef struct
+    {
+    std::vector<float>  m_sample_coords;
+    std::vector<Byte>  m_sample_colors;
+    std::vector<float>  m_sample_normals;
+    int m_subpixel_level;
+    std::string m_ptcFilePath;
+    std::string m_stateFilePath;
+    std::string m_tfFilename;
+    std::string m_visParamDir;
+    //static ParamInfo m_param;
+    kvs::Vector3f m_min_vec, m_max_vec;
+    bool m_parameter_file_opened;
+    float m_max_density;
+    float m_particle_data_size_limit;
+    float m_sampling_volume_inverse;
+    float m_particle_density;
+    float m_max_opacity;
+
+    std::vector<pbvr::TransferFunction> m_tf ;
+    int m_tf_number;
+    kvs::ValueArray<float> m_O_min;//計算して得る最大最小値
+    kvs::ValueArray<float> m_O_max;
+    kvs::ValueArray<float> m_C_min;
+    kvs::ValueArray<float> m_C_max;
+    kvs::ValueArray<int> m_o_histogram;//不透明度ヒストグラムの配列
+    kvs::ValueArray<int> m_c_histogram;//色ヒストグラムの配列
+
+    int con_log[8];
+
+    } pbvr_parameters;
+
+
+
 #if 0
     typedef struct
     {
@@ -94,11 +135,32 @@ extern "C" {
                              mpi_parameters* mpi,
                              time_parameters* time );
 #else
-    void generate_particles( int time_step,
+
+    //void PbvrSampler_single( int time_step, domain_parameters dom,
+    void generate_particles( int time_step, domain_parameters dom,
+                             Type** values, int nvariables,
+                             float* coordinates, int ncoords,
+                             unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltypes );
+
+#ifdef VTK
+    void generate_particles_vtk( int time_step,vtkUnstructuredGrid* ucd ); 
+#endif
+
+    void GenerateHistogram( int time_step,
                              domain_parameters dom,
                              Type** values, int nvariables,
                              float* coordinates, int ncoords,
-                             unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype );
+                             unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase );
+ 
+    void GenerateParticles( int time_step,
+                             domain_parameters dom,
+                             Type** values, int nvariables,
+                             float* coordinates, int ncoords,
+                             unsigned int* connections, int ncells,
+                             const  pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase );
+    void OutputParticles( int time_step, int nvariables, pbvr_parameters& particleBase,  ParamInfo *param_info, bool skip_flag);
+    bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, ParamInfo *param_info, const int time_step);
+
 #endif
 
     void state_txt_writer( void );

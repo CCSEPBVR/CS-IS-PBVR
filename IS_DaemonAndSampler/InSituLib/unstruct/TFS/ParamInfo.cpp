@@ -205,6 +205,7 @@ bool ParamInfo::LoadIN( const std::string& filename )
     if ( param_state["TF_NUMBER"] == true ) {
         int tf_number = getInt("TF_NUMBER");
 
+        std::cout << "load tf = " << tf_number<<std::endl; 
         for (size_t n = tf_number; n < 99; n++) {
             std::stringstream ss;
             ss << "TF_NAME" << n+1 << "_";

@@ -160,7 +160,6 @@ public:
 
     void CalculateOpacityArray(
         std::vector< pbvr::CellBase<Type>* > interp ,
-        //std::vector< pbvr::HexahedralCell<Type>* > interp ,
         const int loop_cnt,
         const kvs::Vector3f *local_coord,
         const kvs::Vector3f *global_coord,

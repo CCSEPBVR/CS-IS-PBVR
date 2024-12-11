@@ -2,6 +2,7 @@
 #include <fstream>
 #include <limits>
 #include "Token.h"
+#include <mpi.h>
 
 TransferFunctionSynthesizer::TransferFunctionSynthesizer():
     m_scalars(TF_COUNT)
@@ -144,12 +145,13 @@ EquationToken TransferFunctionSynthesizer::convert_token(const std::string expre
 std::vector<float> TransferFunctionSynthesizer::SynthesizedOpacityScalars(
     std::vector< pbvr::CellBase<Type>* > interp , kvs::Vector3f local_coord, kvs::Vector3f global_coord )
 {
+
     m_var_value[X] = global_coord.x();
     m_var_value[Y] = global_coord.y();
     m_var_value[Z] = global_coord.z();
 
     m_scalars.clear();
-
+    
     for( size_t i = 0; i < m_opa_var.size(); i++ )
     {
         m_rpn.setExpToken( &(m_opa_var[i].exp_token[0]) );
@@ -226,6 +228,7 @@ void TransferFunctionSynthesizer::SynthesizedOpacityScalarsArray(
     m_var_value_array[X] = global_coord_x;
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
+
 
     for( size_t i = 0; i < m_opa_var.size(); i++ )
     {
@@ -422,6 +425,7 @@ void TransferFunctionSynthesizer::SynthesizedColorScalarsArray(
                                    grad_array_z[j] );
     }
 
+
     m_var_value_array[X] = global_coord_x;
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
@@ -603,6 +607,11 @@ float TransferFunctionSynthesizer::CalculateOpacity(
 
     m_scalars.clear();
 
+    int loop_cnt =1;
+    float grad_array_x[interp.size()][loop_cnt];
+    float grad_array_y[interp.size()][loop_cnt];
+    float grad_array_z[interp.size()][loop_cnt];
+
     for( size_t i = 0; i < m_opa_var.size(); i++ )
     {
         //set variable eq. ex) Q1+Q2/Q3
@@ -621,6 +630,10 @@ float TransferFunctionSynthesizer::CalculateOpacity(
             m_var_value[4*(j+1)+1] = grad.x();
             m_var_value[4*(j+1)+2] = grad.y();
             m_var_value[4*(j+1)+3] = grad.z();
+//            interp[j] -> grad_ary(grad_array_x[j], grad_array_y[j], grad_array_z[j], loop_cnt);
+//            m_var_value[4*(j+1)+1] = grad_array_x[j][0];
+//            m_var_value[4*(j+1)+2] = grad_array_y[j][0];
+//            m_var_value[4*(j+1)+3] = grad_array_z[j][0];
         }
 
         m_rpn.setVariableValue( &m_var_value[0] );
@@ -806,12 +819,11 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
                                    grad_array_z[j] );
     }
 
-
     m_var_value_array[X] = global_coord_x;
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
 
-
+    //std::cout <<"m_opa_var.size() =" <<m_opa_var.size() <<std::endl;
     for( size_t i = 0; i < m_opa_var.size(); i++ )
     {
         //set variable eq. ex) Q1+Q2/Q3
@@ -842,10 +854,8 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
             opacity_map_array[i][jx] = tf[i].opacityMap().at( eval_result[jx] );
         }
         m_var_value_array[ VAR_OFFSET_A+i ] = &opacity_map_array[i][0];
-
+ 
     }
-    //std::cout<<std::endl;
-
     //set opacity function eq. ex) A1*A2+A3
     m_rpn.setExpToken( &(m_opa_func.exp_token[0]) );
     m_rpn.setVariableName( &(m_opa_func.var_name[0]) );
@@ -916,7 +926,6 @@ void TransferFunctionSynthesizer::CalculateOpacityArrayAverage(
                                    grad_array_z[j] );
     }
 
-
     m_var_value_array[X] = global_coord_x;
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
@@ -968,10 +977,11 @@ void TransferFunctionSynthesizer::CalculateOpacityArrayAverage(
     //calc. opacity function
     m_rpn.evalArray(eval_result, loop_cnt);
 
-    for( int jx=0; jx<loop_cnt; jx++ )
-    {
-        opacity_array[jx] = kvs::Math::Clamp<float>( eval_result[jx], 0.0, 1.0 );
-    }
+//    for( int jx=0; jx<loop_cnt; jx++ )
+//    {
+//        opacity_array[jx] = kvs::Math::Clamp<float>( eval_result[jx], 0.0, 1.0 );
+//        std::cout << "eval_result[jx] = " << eval_result[jx] << ", m_var_value_array[5] = " << m_var_value_array[5][jx]  <<std::endl;
+//    }
 
 }
 
