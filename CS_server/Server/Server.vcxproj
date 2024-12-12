@@ -19,14 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AggregateTypeSubvolume.cpp" />
-    <ClCompile Include="CellByCellHistogram.cpp" />
-    <ClCompile Include="CellByCellMetropolisSampling.cpp" />
-    <ClCompile Include="CellByCellRejectionSampling.cpp" />
-    <ClCompile Include="CellByCellUniformSampling.cpp" />
     <ClCompile Include="CropRegion.cpp" />
-    <ClCompile Include="DataArrayTag.cpp" />
-    <ClCompile Include="ExtendedTransferFunction.cpp" />
     <ClCompile Include="FilterInformation.cpp" />
     <ClCompile Include="FrequencyTable.cpp" />
     <ClCompile Include="GeometryObjectBase.cpp" />
@@ -42,9 +35,6 @@
     <ClCompile Include="KVSMLObjectPlotOverLine.cpp" />
     <ClCompile Include="KVSMLObjectPointWriter.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MapperBase.cpp" />
-    <ClCompile Include="ObjectBase.cpp" />
-    <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="ParameterFile.cpp" />
     <ClCompile Include="PlotOverLine.cpp" />
     <ClCompile Include="PlotOverLineProperty.cpp" />
@@ -58,37 +48,13 @@
     <ClCompile Include="QuadraticTetrahedralCell.cpp" />
     <ClCompile Include="QuadraticTriangleCell.cpp" />
     <ClCompile Include="RangeEstimater.cpp" />
-    <ClCompile Include="SPLITTypeSubvolume.cpp" />
-    <ClCompile Include="SquareCell.cpp" />
-    <ClCompile Include="StepAggregateTypeSubvolume.cpp" />
-    <ClCompile Include="StructuredVolumeImporter.cpp" />
-    <ClCompile Include="StructuredVolumeObject.cpp" />
-    <ClCompile Include="TetrahedralCell.cpp" />
-    <ClCompile Include="TransferFunction.cpp" />
     <ClCompile Include="TransferFunctionSynthesizer.cpp" />
     <ClCompile Include="TransferFunctionSynthesizerCreator.cpp" />
-    <ClCompile Include="TriangleCell.cpp" />
-    <ClCompile Include="UnstructuredVolumeImporter.cpp" />
-    <ClCompile Include="UnstructuredVolumeObject.cpp" />
-    <ClCompile Include="VolumeObjectBase.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AggregateTypeSubvolume.h" />
-    <ClInclude Include="Argument.h" />
-    <ClInclude Include="CellBase.h" />
-    <ClInclude Include="CellByCellHistogram.h" />
-    <ClInclude Include="CellByCellMetropolisSampling.h" />
-    <ClInclude Include="CellByCellParticleGenerator.h" />
-    <ClInclude Include="CellByCellRejectionSampling.h" />
-    <ClInclude Include="CellByCellUniformSampling.h" />
-    <ClInclude Include="ClassName.h" />
     <ClInclude Include="common.h" />
-    <ClInclude Include="Compiler.h" />
     <ClInclude Include="CropRegion.h" />
-    <ClInclude Include="DataArray.h" />
-    <ClInclude Include="DataArrayTag.h" />
     <ClInclude Include="endian2.h" />
-    <ClInclude Include="ExtendedTransferFunction.h" />
     <ClInclude Include="FilterInformation.h" />
     <ClInclude Include="FrequencyTable.h" />
     <ClInclude Include="GeometryObjectBase.h" />
@@ -105,10 +71,6 @@
     <ClInclude Include="KVSMLObjectGlyph.h" />
     <ClInclude Include="KVSMLObjectPlotOverLine.h" />
     <ClInclude Include="KVSMLObjectPointWriter.h" />
-    <ClInclude Include="Macro.h" />
-    <ClInclude Include="MapperBase.h" />
-    <ClInclude Include="ObjectBase.h" />
-    <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="ParameterFile.h" />
     <ClInclude Include="Platform.h" />
     <ClInclude Include="PlotOverLine.h" />
@@ -123,22 +85,11 @@
     <ClInclude Include="QuadraticTetrahedralCell.h" />
     <ClInclude Include="QuadraticTriangleCell.h" />
     <ClInclude Include="RangeEstimater.h" />
-    <ClInclude Include="SPLITTypeSubvolume.h" />
-    <ClInclude Include="SquareCell.h" />
-    <ClInclude Include="StepAggregateTypeSubvolume.h" />
-    <ClInclude Include="StructuredVolumeImporter.h" />
-    <ClInclude Include="StructuredVolumeObject.h" />
     <ClInclude Include="TagTable.h" />
-    <ClInclude Include="TetrahedralCell.h" />
     <ClInclude Include="timer_simple.h" />
-    <ClInclude Include="TransferFunction.h" />
     <ClInclude Include="TransferFunctionSynthesizer.h" />
     <ClInclude Include="TransferFunctionSynthesizerCreator.h" />
-    <ClInclude Include="TriangleCell.h" />
     <ClInclude Include="Types.h" />
-    <ClInclude Include="UnstructuredVolumeImporter.h" />
-    <ClInclude Include="UnstructuredVolumeObject.h" />
-    <ClInclude Include="VolumeObjectBase.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F8CE5E7E-DA70-41BC-B21A-B33A033E48B1}</ProjectGuid>

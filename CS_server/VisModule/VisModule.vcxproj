@@ -118,9 +118,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)\VisModule</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>KVS_SUPPORT_GLUT;NDEBUG;WIN32;NOMINMAX;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Common;$(SolutionDir)\FunctionParser;$(SolutionDir)\Server;$(SolutionDir)\VisModule</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>CPU_VER;NDEBUG;WIN32;NOMINMAX;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DisableSpecificWarnings>4244;4101;4267;4819;</DisableSpecificWarnings>
       <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
       <OpenMPSupport>true</OpenMPSupport>
@@ -132,6 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="FileFormat\AggregateTypeSubvolume.cpp" />
     <ClCompile Include="FileFormat\AVSField\AVSField.cpp" />
     <ClCompile Include="FileFormat\AVSUCD\AVSUcd.cpp" />
     <ClCompile Include="FileFormat\BMP\Bmp.cpp" />
@@ -222,6 +223,8 @@
     <ClCompile Include="FileFormat\PNM\Pbm.cpp" />
     <ClCompile Include="FileFormat\PNM\Pgm.cpp" />
     <ClCompile Include="FileFormat\PNM\Ppm.cpp" />
+    <ClCompile Include="FileFormat\SPLITTypeSubvolume.cpp" />
+    <ClCompile Include="FileFormat\StepAggregateTypeSubvolume.cpp" />
     <ClCompile Include="FileFormat\STL\Stl.cpp" />
     <ClCompile Include="FileFormat\TIFF\Entry.cpp" />
     <ClCompile Include="FileFormat\TIFF\Header.cpp">
@@ -359,19 +362,16 @@
     <ClCompile Include="Visualization\Importer\StructuredVolumeImporter.cpp" />
     <ClCompile Include="Visualization\Importer\TableImporter.cpp" />
     <ClCompile Include="Visualization\Importer\UnstructuredVolumeImporter.cpp" />
-    <ClCompile Include="Visualization\Mapper\ArrowGlyph.cpp" />
     <ClCompile Include="Visualization\Mapper\CellAdjacencyGraph.cpp" />
-    <ClCompile Include="Visualization\Mapper\CellByCellLayeredSampling.cpp" />
+    <ClCompile Include="Visualization\Mapper\CellByCellHistogram.cpp" />
     <ClCompile Include="Visualization\Mapper\CellByCellMetropolisSampling.cpp" />
     <ClCompile Include="Visualization\Mapper\CellByCellRejectionSampling.cpp" />
     <ClCompile Include="Visualization\Mapper\CellByCellUniformSampling.cpp" />
     <ClCompile Include="Visualization\Mapper\ColorMap.cpp" />
-    <ClCompile Include="Visualization\Mapper\DiamondGlyph.cpp" />
-    <ClCompile Include="Visualization\Mapper\ExternalFaces.cpp" />
+    <ClCompile Include="Visualization\Mapper\ExtendedTransferFunction.cpp" />
     <ClCompile Include="Visualization\Mapper\ExtractEdges.cpp" />
     <ClCompile Include="Visualization\Mapper\ExtractVertices.cpp" />
     <ClCompile Include="Visualization\Mapper\FrequencyTable.cpp" />
-    <ClCompile Include="Visualization\Mapper\GlyphBase.cpp" />
     <ClCompile Include="Visualization\Mapper\HexahedralCell.cpp" />
     <ClCompile Include="Visualization\Mapper\HitAndMissSampling.cpp" />
     <ClCompile Include="Visualization\Mapper\Isosurface.cpp" />
@@ -387,16 +387,20 @@
     <ClCompile Include="Visualization\Mapper\MetropolisSampling.cpp" />
     <ClCompile Include="Visualization\Mapper\OpacityMap.cpp" />
     <ClCompile Include="Visualization\Mapper\OrthoSlice.cpp" />
+    <ClCompile Include="Visualization\Mapper\PrismaticCell.cpp" />
     <ClCompile Include="Visualization\Mapper\PyramidalCell.cpp" />
     <ClCompile Include="Visualization\Mapper\QuadraticHexahedralCell.cpp" />
+    <ClCompile Include="Visualization\Mapper\QuadraticSquareCell.cpp" />
     <ClCompile Include="Visualization\Mapper\QuadraticTetrahedralCell.cpp" />
+    <ClCompile Include="Visualization\Mapper\QuadraticTriangleCell.cpp" />
     <ClCompile Include="Visualization\Mapper\RGBFormulae.cpp" />
     <ClCompile Include="Visualization\Mapper\SlicePlane.cpp" />
-    <ClCompile Include="Visualization\Mapper\SphereGlyph.cpp" />
+    <ClCompile Include="Visualization\Mapper\SquareCell.cpp" />
     <ClCompile Include="Visualization\Mapper\Streamline.cpp" />
     <ClCompile Include="Visualization\Mapper\StreamlineBase.cpp" />
     <ClCompile Include="Visualization\Mapper\TetrahedralCell.cpp" />
     <ClCompile Include="Visualization\Mapper\TransferFunction.cpp" />
+    <ClCompile Include="Visualization\Mapper\TriangleCell.cpp" />
     <ClCompile Include="Visualization\Object\AxisObject.cpp" />
     <ClCompile Include="Visualization\Object\GeometryObjectBase.cpp" />
     <ClCompile Include="Visualization\Object\GlyphObject.cpp" />
@@ -411,49 +415,24 @@
     <ClCompile Include="Visualization\Object\VolumeObjectBase.cpp" />
     <ClCompile Include="Visualization\Pipeline\ObjectImporter.cpp" />
     <ClCompile Include="Visualization\Pipeline\PipelineModule.cpp" />
-    <ClCompile Include="Visualization\Pipeline\VisualizationPipeline.cpp" />
-    <ClCompile Include="Visualization\Renderer\GlyphRenderer.cpp" />
-    <ClCompile Include="Visualization\Renderer\ImageRenderer.cpp" />
-    <ClCompile Include="Visualization\Renderer\LineRenderer.cpp" />
-    <ClCompile Include="Visualization\Renderer\ParallelCoordinatesRenderer.cpp" />
     <ClCompile Include="Visualization\Renderer\ParticleBuffer.cpp" />
-    <ClCompile Include="Visualization\Renderer\ParticleBufferAccumulator.cpp" />
-    <ClCompile Include="Visualization\Renderer\ParticleBufferCompositor.cpp" />
-    <ClCompile Include="Visualization\Renderer\ParticleVolumeRenderer.cpp" />
-    <ClCompile Include="Visualization\Renderer\PointRenderer.cpp" />
-    <ClCompile Include="Visualization\Renderer\PolygonRenderer.cpp" />
-    <ClCompile Include="Visualization\Renderer\Ray.cpp" />
-    <ClCompile Include="Visualization\Renderer\RayCastingRenderer.cpp" />
     <ClCompile Include="Visualization\Renderer\RendererBase.cpp" />
-    <ClCompile Include="Visualization\Renderer\ScatterPlotMatrixRenderer.cpp" />
-    <ClCompile Include="Visualization\Renderer\ScatterPlotRenderer.cpp" />
     <ClCompile Include="Visualization\Renderer\Shader.cpp" />
-    <ClCompile Include="Visualization\Renderer\VolumeRayIntersector.cpp" />
-    <ClCompile Include="Visualization\Renderer\VolumeRendererBase.cpp" />
     <ClCompile Include="Visualization\Viewer\ApplicationBase.cpp" />
-    <ClCompile Include="Visualization\Viewer\Background.cpp" />
     <ClCompile Include="Visualization\Viewer\Camera.cpp" />
     <ClCompile Include="Visualization\Viewer\DisplayFormat.cpp" />
-    <ClCompile Include="Visualization\Viewer\DisplayList.cpp" />
-    <ClCompile Include="Visualization\Viewer\FrameBuffer.cpp" />
     <ClCompile Include="Visualization\Viewer\GlobalCore.cpp" />
     <ClCompile Include="Visualization\Viewer\IDManager.cpp" />
-    <ClCompile Include="Visualization\Viewer\Light.cpp" />
-    <ClCompile Include="Visualization\Viewer\Material.cpp" />
     <ClCompile Include="Visualization\Viewer\Mouse.cpp" />
     <ClCompile Include="Visualization\Viewer\ObjectManager.cpp" />
     <ClCompile Include="Visualization\Viewer\RendererManager.cpp" />
-    <ClCompile Include="Visualization\Viewer\ScreenBase.cpp" />
-    <ClCompile Include="Visualization\Viewer\ScreenCore.cpp" />
-    <ClCompile Include="Visualization\Viewer\Texture1D.cpp" />
-    <ClCompile Include="Visualization\Viewer\Texture2D.cpp" />
-    <ClCompile Include="Visualization\Viewer\TextureBase.cpp" />
     <ClCompile Include="Visualization\Viewer\Trackball.cpp" />
     <ClCompile Include="Visualization\Viewer\WindowBase.cpp" />
     <ClCompile Include="Visualization\Viewer\Xform.cpp" />
     <ClCompile Include="Visualization\Viewer\XformControl.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FileFormat\AggregateTypeSubvolume.h" />
     <ClInclude Include="FileFormat\AVSField\AVSField.h" />
     <ClInclude Include="FileFormat\AVSUCD\AVSUcd.h" />
     <ClInclude Include="FileFormat\BMP\Bmp.h" />
@@ -549,6 +528,8 @@
     <ClInclude Include="FileFormat\PNM\Pbm.h" />
     <ClInclude Include="FileFormat\PNM\Pgm.h" />
     <ClInclude Include="FileFormat\PNM\Ppm.h" />
+    <ClInclude Include="FileFormat\SPLITTypeSubvolume.h" />
+    <ClInclude Include="FileFormat\StepAggregateTypeSubvolume.h" />
     <ClInclude Include="FileFormat\STL\Stl.h" />
     <ClInclude Include="FileFormat\TIFF\Entry.h" />
     <ClInclude Include="FileFormat\TIFF\Header.h" />
@@ -625,6 +606,7 @@
     <ClInclude Include="Thread\WriteLocker.h" />
     <ClInclude Include="Utility\AnyValue.h" />
     <ClInclude Include="Utility\AnyValueArray.h" />
+    <ClInclude Include="Utility\Argument.h" />
     <ClInclude Include="Utility\Assert.h" />
     <ClInclude Include="Utility\Binary.h" />
     <ClInclude Include="Utility\BitArray.h" />
@@ -701,21 +683,19 @@
     <ClInclude Include="Visualization\Importer\StructuredVolumeImporter.h" />
     <ClInclude Include="Visualization\Importer\TableImporter.h" />
     <ClInclude Include="Visualization\Importer\UnstructuredVolumeImporter.h" />
-    <ClInclude Include="Visualization\Mapper\ArrowGlyph.h" />
     <ClInclude Include="Visualization\Mapper\CellAdjacencyGraph.h" />
     <ClInclude Include="Visualization\Mapper\CellBase.h" />
-    <ClInclude Include="Visualization\Mapper\CellByCellLayeredSampling.h" />
+    <ClInclude Include="Visualization\Mapper\CellByCellHistogram.h" />
     <ClInclude Include="Visualization\Mapper\CellByCellMetropolisSampling.h" />
     <ClInclude Include="Visualization\Mapper\CellByCellParticleGenerator.h" />
     <ClInclude Include="Visualization\Mapper\CellByCellRejectionSampling.h" />
     <ClInclude Include="Visualization\Mapper\CellByCellUniformSampling.h" />
     <ClInclude Include="Visualization\Mapper\ColorMap.h" />
     <ClInclude Include="Visualization\Mapper\DiamondGlyph.h" />
-    <ClInclude Include="Visualization\Mapper\ExternalFaces.h" />
+    <ClInclude Include="Visualization\Mapper\ExtendedTransferFunction.h" />
     <ClInclude Include="Visualization\Mapper\ExtractEdges.h" />
     <ClInclude Include="Visualization\Mapper\ExtractVertices.h" />
     <ClInclude Include="Visualization\Mapper\FrequencyTable.h" />
-    <ClInclude Include="Visualization\Mapper\GlyphBase.h" />
     <ClInclude Include="Visualization\Mapper\HexahedralCell.h" />
     <ClInclude Include="Visualization\Mapper\HitAndMissSampling.h" />
     <ClInclude Include="Visualization\Mapper\Isosurface.h" />
@@ -731,16 +711,20 @@
     <ClInclude Include="Visualization\Mapper\MetropolisSampling.h" />
     <ClInclude Include="Visualization\Mapper\OpacityMap.h" />
     <ClInclude Include="Visualization\Mapper\OrthoSlice.h" />
+    <ClInclude Include="Visualization\Mapper\PrismaticCell.h" />
     <ClInclude Include="Visualization\Mapper\PyramidalCell.h" />
     <ClInclude Include="Visualization\Mapper\QuadraticHexahedralCell.h" />
+    <ClInclude Include="Visualization\Mapper\QuadraticSquareCell.h" />
     <ClInclude Include="Visualization\Mapper\QuadraticTetrahedralCell.h" />
+    <ClInclude Include="Visualization\Mapper\QuadraticTriangleCell.h" />
     <ClInclude Include="Visualization\Mapper\RGBFormulae.h" />
     <ClInclude Include="Visualization\Mapper\SlicePlane.h" />
-    <ClInclude Include="Visualization\Mapper\SphereGlyph.h" />
+    <ClInclude Include="Visualization\Mapper\SquareCell.h" />
     <ClInclude Include="Visualization\Mapper\Streamline.h" />
     <ClInclude Include="Visualization\Mapper\StreamlineBase.h" />
     <ClInclude Include="Visualization\Mapper\TetrahedralCell.h" />
     <ClInclude Include="Visualization\Mapper\TransferFunction.h" />
+    <ClInclude Include="Visualization\Mapper\TriangleCell.h" />
     <ClInclude Include="Visualization\Module.h" />
     <ClInclude Include="Visualization\Object\AxisObject.h" />
     <ClInclude Include="Visualization\Object\GeometryObjectBase.h" />
@@ -756,49 +740,17 @@
     <ClInclude Include="Visualization\Object\VolumeObjectBase.h" />
     <ClInclude Include="Visualization\Pipeline\ObjectImporter.h" />
     <ClInclude Include="Visualization\Pipeline\PipelineModule.h" />
-    <ClInclude Include="Visualization\Pipeline\VisualizationPipeline.h" />
-    <ClInclude Include="Visualization\Renderer\GlyphRenderer.h" />
-    <ClInclude Include="Visualization\Renderer\ImageRenderer.h" />
-    <ClInclude Include="Visualization\Renderer\LineRenderer.h" />
-    <ClInclude Include="Visualization\Renderer\LineRenderingFunction.h" />
-    <ClInclude Include="Visualization\Renderer\ParallelCoordinatesRenderer.h" />
     <ClInclude Include="Visualization\Renderer\ParticleBuffer.h" />
-    <ClInclude Include="Visualization\Renderer\ParticleBufferAccumulator.h" />
-    <ClInclude Include="Visualization\Renderer\ParticleBufferCompositor.h" />
-    <ClInclude Include="Visualization\Renderer\ParticleVolumeRenderer.h" />
-    <ClInclude Include="Visualization\Renderer\PointRenderer.h" />
-    <ClInclude Include="Visualization\Renderer\PointRenderingFunction.h" />
-    <ClInclude Include="Visualization\Renderer\PolygonRenderer.h" />
-    <ClInclude Include="Visualization\Renderer\PolygonRenderingFunction.h" />
-    <ClInclude Include="Visualization\Renderer\Ray.h" />
-    <ClInclude Include="Visualization\Renderer\RayCastingRenderer.h" />
     <ClInclude Include="Visualization\Renderer\RendererBase.h" />
-    <ClInclude Include="Visualization\Renderer\ScatterPlotMatrixRenderer.h" />
-    <ClInclude Include="Visualization\Renderer\ScatterPlotRenderer.h" />
     <ClInclude Include="Visualization\Renderer\Shader.h" />
-    <ClInclude Include="Visualization\Renderer\VolumeRayIntersector.h" />
-    <ClInclude Include="Visualization\Renderer\VolumeRendererBase.h" />
     <ClInclude Include="Visualization\Viewer\ApplicationBase.h" />
-    <ClInclude Include="Visualization\Viewer\Background.h" />
     <ClInclude Include="Visualization\Viewer\Camera.h" />
     <ClInclude Include="Visualization\Viewer\DisplayFormat.h" />
-    <ClInclude Include="Visualization\Viewer\DisplayList.h" />
-    <ClInclude Include="Visualization\Viewer\FrameBuffer.h" />
     <ClInclude Include="Visualization\Viewer\GlobalCore.h" />
     <ClInclude Include="Visualization\Viewer\IDManager.h" />
-    <ClInclude Include="Visualization\Viewer\Key.h" />
-    <ClInclude Include="Visualization\Viewer\Light.h" />
-    <ClInclude Include="Visualization\Viewer\Material.h" />
     <ClInclude Include="Visualization\Viewer\Mouse.h" />
-    <ClInclude Include="Visualization\Viewer\MouseButton.h" />
     <ClInclude Include="Visualization\Viewer\ObjectManager.h" />
-    <ClInclude Include="Visualization\Viewer\OpenGL.h" />
     <ClInclude Include="Visualization\Viewer\RendererManager.h" />
-    <ClInclude Include="Visualization\Viewer\ScreenBase.h" />
-    <ClInclude Include="Visualization\Viewer\ScreenCore.h" />
-    <ClInclude Include="Visualization\Viewer\Texture1D.h" />
-    <ClInclude Include="Visualization\Viewer\Texture2D.h" />
-    <ClInclude Include="Visualization\Viewer\TextureBase.h" />
     <ClInclude Include="Visualization\Viewer\Trackball.h" />
     <ClInclude Include="Visualization\Viewer\WindowBase.h" />
     <ClInclude Include="Visualization\Viewer\Xform.h" />
