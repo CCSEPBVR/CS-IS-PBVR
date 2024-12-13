@@ -1,5 +1,5 @@
 #include "ParticleTransferProtocol.h"
-#include "Serializer.h"
+#include "serializer.h"
 
 #include <kvs/Camera>
 #include <kvs/TransferFunction>
@@ -49,8 +49,8 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         //        s += sizeof( char ) * ( m_filter_parameter_filename.size() + 1 );
         //        // add:end by @hira at 2016/12/01
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step 
-            || m_initialize_parameter == InitializeParameter::export_TFfile )
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step
+         || m_initialize_parameter == InitializeParameter::export_TFfile  )
     {
         s += sizeof( m_sampling_method );
         s += sizeof( m_subpixel_level );
@@ -113,6 +113,36 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         // add by @hira at 2016/12/01 : 1次伝達関数（色、不透明度）
         s += jpv::Serializer::byteSize( m_color_transfer_function_synthesis );
         s += jpv::Serializer::byteSize( m_opacity_transfer_function_synthesis );
+
+        for( int i = 0; i < 3; i++ )
+        {
+            s += jpv::Serializer::byteSize( m_direction_variable[i] );
+        }
+
+        s += jpv::Serializer::byteSize( m_size_sampling_method );
+        s += jpv::Serializer::byteSize( m_size_variable.size() );
+        for( int i = 0; i < m_size_variable.size(); i++ )
+        {
+            s += jpv::Serializer::byteSize( m_size_variable[i] );
+        }
+
+        s += jpv::Serializer::byteSize( m_distribution_mode );
+        s += jpv::Serializer::byteSize( m_number_of_sampling_point );
+        s += jpv::Serializer::byteSize( m_seed );
+        s += jpv::Serializer::byteSize( m_stride );
+
+        s += jpv::Serializer::byteSize( m_glyph_color_map_table.size() );
+        for( int i = 0; i <  m_glyph_color_map_table.size(); i++ )
+        {
+            s += jpv::Serializer::byteSize(  m_glyph_color_map_table[i] );
+        }
+
+        s += jpv::Serializer::byteSize( m_color_data_sampling_method );
+        s += jpv::Serializer::byteSize( m_color_data_variable.size() );
+        for( int i = 0; i < m_color_data_variable.size(); i++ )
+        {
+            s += jpv::Serializer::byteSize( m_color_data_variable[i] );
+        }
     }
     if ( m_initialize_parameter == InitializeParameter::generate_particle )
     {
@@ -134,6 +164,7 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         s += sizeof( m_trans_parameter );
         if ( m_trans_parameter == 1 )
         {
+            s += sizeof( m_level_index );
         }
     }
     return s;
@@ -145,6 +176,7 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
     index += jpv::Serializer::writeArray( buf + index, m_header );
     index += jpv::Serializer::write( buf + index, m_message_size );
     index += jpv::Serializer::write( buf + index, m_initialize_parameter );
+    // index += jpv::Serializer::write( buf + index, m_initialize_parameter );
     if ( m_initialize_parameter == InitializeParameter::initial_step )
     {
         index += jpv::Serializer::write( buf + index, m_import_flag );
@@ -155,8 +187,8 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         //        index += jpv::Serializer::writeArray( buf + index, m_filter_parameter_filename.c_str(), m_filter_parameter_filename.size() + 1 );
         //        // add:end by @hira at 2016/12/01
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step 
-            || m_initialize_parameter == InitializeParameter::export_TFfile )
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step
+         || m_initialize_parameter == InitializeParameter::export_TFfile         )
     {
         index += jpv::Serializer::write( buf + index, m_sampling_method );
         index += jpv::Serializer::write( buf + index, m_subpixel_level );
@@ -223,6 +255,37 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         // add by @hira at 2016/12/01 : 1次伝達関数（色、不透明度）
         index += jpv::Serializer::write( buf + index, m_color_transfer_function_synthesis );
         index += jpv::Serializer::write( buf + index, m_opacity_transfer_function_synthesis );
+
+        for( int i = 0; i < 3; i++ )
+        {
+            index += jpv::Serializer::write( buf + index, m_direction_variable[i] );
+        }
+
+        index += jpv::Serializer::write( buf + index, m_size_sampling_method );
+        index += jpv::Serializer::write( buf + index, m_size_variable.size() );
+        for( int i = 0; i < m_size_variable.size(); i++ )
+        {
+            index += jpv::Serializer::write( buf + index, m_size_variable[i] );
+        }
+
+
+        index += jpv::Serializer::write( buf + index, m_distribution_mode );
+        index += jpv::Serializer::write( buf + index, m_number_of_sampling_point );
+        index += jpv::Serializer::write( buf + index, m_seed );
+        index += jpv::Serializer::write( buf + index, m_stride );
+
+        index += jpv::Serializer::write( buf + index, m_glyph_color_map_table.size() );
+        for( int i = 0; i < m_glyph_color_map_table.size(); i++ )
+        {
+            index += jpv::Serializer::write( buf + index, m_glyph_color_map_table[i] );
+        }
+
+        index += jpv::Serializer::write( buf + index, m_color_data_sampling_method );
+        index += jpv::Serializer::write( buf + index, m_color_data_variable.size() );
+        for( int i = 0; i < m_color_data_variable.size(); i++ )
+        {
+            index += jpv::Serializer::write( buf + index, m_color_data_variable[i] );
+        }
     }
     if ( m_initialize_parameter == InitializeParameter::generate_particle )
     {
@@ -261,7 +324,6 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
     index += jpv::Serializer::readArray( buf + index, m_header );
     if ( strncmp( "JPTP /1.0", m_header, 9 ) != 0 )
     {
-        std::cout << __LINE__ << std::endl;
         return 0;
     }
     index += jpv::Serializer::read( buf + index, &m_message_size );
@@ -284,7 +346,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         //        // add:end by @hira at 2016/12/01
     }
     if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step
-      || m_initialize_parameter == InitializeParameter::export_TFfile )
+         || m_initialize_parameter == InitializeParameter::export_TFfile  )
     {
         index += jpv::Serializer::read( buf + index, &m_sampling_method );
         index += jpv::Serializer::read( buf + index, &m_subpixel_level );
@@ -377,6 +439,45 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         // add by @hira at 2016/12/01 : 1次伝達関数（色、不透明度）
         index += jpv::Serializer::read( buf + index, &m_color_transfer_function_synthesis );
         index += jpv::Serializer::read( buf + index, &m_opacity_transfer_function_synthesis );
+
+        for( int i = 0; i < 3; i++ )
+        {
+            index += jpv::Serializer::read( buf + index, &m_direction_variable[i] );
+        }
+
+        index += jpv::Serializer::read( buf + index, &m_size_sampling_method );
+        index += jpv::Serializer::read( buf + index, &s );
+        m_size_variable.clear();
+        for ( size_t i = 0; i < s; i++ )
+        {
+            int32_t value = 0;
+            index += jpv::Serializer::read(buf + index, &value);
+            m_size_variable.push_back(value);
+        }
+
+        index += jpv::Serializer::read( buf + index, &m_distribution_mode );
+        index += jpv::Serializer::read( buf + index, &m_number_of_sampling_point );
+        index += jpv::Serializer::read( buf + index, &m_seed );
+        index += jpv::Serializer::read( buf + index, &m_stride );
+
+        index += jpv::Serializer::read( buf + index, &s );
+        m_glyph_color_map_table.clear();
+        for ( size_t i = 0; i < s; i++ )
+        {
+            int32_t value = 0;
+            index += jpv::Serializer::read(buf + index, &value);
+            m_glyph_color_map_table.push_back(value);
+        }
+
+        index += jpv::Serializer::read( buf + index, &m_color_data_sampling_method );
+        index += jpv::Serializer::read( buf + index, &s );
+        m_color_data_variable.clear();
+        for ( size_t i = 0; i < s; i++ )
+        {
+            int32_t value = 0;
+            index += jpv::Serializer::read(buf + index, &value);
+            m_color_data_variable.push_back(value);
+        }
     }
     if ( m_initialize_parameter == InitializeParameter::generate_particle )
     {
@@ -412,7 +513,7 @@ void jpv::ParticleTransferClientMessage::show( void ) const
 
     std::cout<<"header="<<m_header<<std::endl;
     std::cout<<"messageSize="<<m_message_size<<std::endl;
-    std::cout<<"importFlag="<<m_import_flag<<std::endl;
+    std::cout<< "importFlag="<< m_import_flag <<std::endl;
     std::cout<<"initParam="<<static_cast<int>(m_initialize_parameter)<<std::endl;
     std::cout<<"timeParam="<<m_time_parameter<<std::endl;
     std::cout<<"transParam="<<m_trans_parameter<<std::endl;
@@ -438,6 +539,73 @@ void jpv::ParticleTransferClientMessage::show( void ) const
     std::cout << "m_x_synthesis = " << m_x_synthesis << std::endl;
     std::cout << "m_y_synthesis = " << m_y_synthesis << std::endl;
     std::cout << "m_z_synthesis = " << m_z_synthesis << std::endl;
+
+    std::cout << __LINE__ << std::endl;
+    std::cout << "m_direction_variable" << std::endl;
+    std::cout << m_direction_variable[0];
+    std::cout << ",";
+    std::cout << m_direction_variable[1];
+    std::cout << ",";
+    std::cout << m_direction_variable[2];
+    std::cout << std::endl;
+
+    switch( m_size_sampling_method )
+    {
+    case DataDefines::Constant:
+        std::cout << "Constant" << std::endl;
+        break;
+    case DataDefines::SingleVariable:
+        std::cout << "SingleVariable" << std::endl;
+        break;
+    case DataDefines::VariableArray:
+        std::cout << "VariableArray" << std::endl;
+        break;
+    }
+    for( int i = 0; i < m_size_variable.size(); i++ )
+    {
+        std::cout << "[" << i << "] : " << m_size_variable[i] << std::endl;
+    }
+
+    switch( m_distribution_mode )
+    {
+    case GlyphMode::UniformDistribution:
+        std::cout << "UniformDistribution" << std::endl;
+        std::cout << "m_number_of_sampling_point   : " << m_number_of_sampling_point << std::endl;
+        std::cout << "m_seed                       : " << m_seed << std::endl;
+
+        break;
+    case GlyphMode::AllPoints:
+        std::cout << "AllPoints" << std::endl;
+        break;
+    case GlyphMode::EveryNthPoints:
+        std::cout << "EveryNthPoints" << std::endl;
+        std::cout << "m_stride : " << m_stride << std::endl;
+        break;
+    }
+
+    // for( int i = 0; i < m_glyph_color_map_table.size(); i++ )
+    // {
+    //     std::cout << m_glyph_color_map_table[i];
+    //     std::cout << ",";
+    // }
+    // std::cout << std::endl;
+
+    switch( m_color_data_sampling_method )
+    {
+    case DataDefines::Constant:
+        std::cout << "Constant" << std::endl;
+        break;
+    case DataDefines::SingleVariable:
+        std::cout << "SingleVariable" << std::endl;
+        break;
+    case DataDefines::VariableArray:
+        std::cout << "VariableArray" << std::endl;
+        break;
+    }
+    for( int i = 0; i < m_color_data_variable.size(); i ++ )
+    {
+        std::cout << "[" << i << "] : " << m_color_data_variable[i] << std::endl;
+    }
 
 #if 0
     // show token
@@ -554,7 +722,7 @@ int32_t jpv::ParticleTransferServerMessage::byteSize( void ) const
     s += sizeof( m_element_type );
     s += sizeof( m_file_type );
     s += sizeof( m_number_ingredients );
-    s += m_variable_range.byteSize();
+    s += m_server_side_variable_range.byteSize();
     s += sizeof( m_flag_send_bins );
     s += sizeof( m_particle_limit );
     s += sizeof( m_particle_density );
@@ -643,7 +811,7 @@ size_t jpv::ParticleTransferServerMessage::pack( char* buf ) const
     index += jpv::Serializer::write( buf + index, m_element_type );
     index += jpv::Serializer::write( buf + index, m_file_type );
     index += jpv::Serializer::write( buf + index, m_number_ingredients );
-    index += m_variable_range.pack( buf + index );
+    index += m_server_side_variable_range.pack( buf + index );
     index += jpv::Serializer::write( buf + index, m_flag_send_bins );
     index += jpv::Serializer::write( buf + index, m_particle_limit );
     index += jpv::Serializer::write( buf + index, m_particle_density );
@@ -695,9 +863,9 @@ size_t jpv::ParticleTransferServerMessage::pack( char* buf ) const
         index += jpv::Serializer::write( buf + index, m_opacity_transfer_function_synthesis );
     }
 //    else// if ( flag_send_bins == 2 )
-    
+
     if ( m_flag_send_bins == 0 || m_flag_send_bins == 2 )
-    {        
+    {
         index += jpv::Serializer::writeArray<float>( buf + index, m_positions.get(), 3 * m_number_particle );
         index += jpv::Serializer::writeArray<float>( buf + index, m_normals.get(), 3 * m_number_particle );
         index += jpv::Serializer::writeArray<unsigned char>( buf + index, m_colors.get(), 3 * m_number_particle );
@@ -743,7 +911,7 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
     index += jpv::Serializer::read( buf + index, &m_element_type );
     index += jpv::Serializer::read( buf + index, &m_file_type );
     index += jpv::Serializer::read( buf + index, &m_number_ingredients );
-    index += m_variable_range.unpack( buf + index );
+    index += m_server_side_variable_range.unpack( buf + index );
     index += jpv::Serializer::read( buf + index, &m_flag_send_bins );
     index += jpv::Serializer::read( buf + index, &m_particle_limit );
     index += jpv::Serializer::read( buf + index, &m_particle_density );
@@ -801,7 +969,6 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
             }
         }
         index += jpv::Serializer::read( buf + index, &s );
-        // 2023/07/20 shimomura
         for ( size_t i = 0; i < s; i++ )
         {
             m_volume_equation.push_back( VolumeEquation() );
@@ -884,10 +1051,10 @@ void jpv::ParticleTransferServerMessage::setOpacityHistogramBins(
         }
     }
 
-//    std::stringstream debug11;
-//    debug11 << "o_bins[0] = {";
-//    for(int i =0; i< nbins; i++) debug11 << m_opacity_bins[0][i] << "," ;
-//    std::cout << debug11.str() << std::endl;
+    //std::stringstream debug11;
+    //debug11 << "o_bins[1] = {";
+    //for(int i =0; i< nbins; i++) debug11 << o_bins[1][i] << "," ;
+    //std::cout << debug11.str() << std::endl;
 
     return;
 }
@@ -949,10 +1116,12 @@ void jpv::ParticleTransferServerMessage::show( void ) const
         std::cout<<m_transfer_function[i].m_name<<","<<m_transfer_function[i].m_color_variable<<","<<m_transfer_function[i].m_opacity_variable<<","<<m_transfer_function[i].m_color_variable_min<<","<<m_transfer_function[i].m_color_variable_max<<std::endl;
     }
 
-//    std::cout << "c_bin = {" << std::endl;
-//    for(int i=0; i<256; i++) std::cout << m_color_bins[0][i] << " " ;
-//    << std::endl;
-
+    // std::cout << "c_bin = {" << std::endl;
+    // for (int n = 0; n < m_transfer_function_count; n++)
+    // {
+    //     for(int i=0; i<256; i++) std::cout << m_color_bins[n][i] << " " ;
+    //     std::cout << std::endl;
+    // }
     std::cout<<"voleqn.size="<<m_volume_equation.size()<<std::endl;
     std::cout<<"voleqn.Name,Equation"<<std::endl;
     for(int i=0; i<m_volume_equation.size(); i++)
@@ -966,5 +1135,4 @@ void jpv::ParticleTransferServerMessage::show( void ) const
 
     std::cout<<std::endl;
 }
-
 
