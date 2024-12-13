@@ -59,7 +59,6 @@
 #include <vismodule/UnstructuredVolumeImporter>
 #include <vismodule/StructuredVolumeImporter>
 #include <vismodule/CellByCellParticleGenerator>
-#include "timer.h"
 
 #include "GlyphObjectGenerator.h"
 #include "GlyphObjectCreator.h"

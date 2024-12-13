@@ -29,8 +29,6 @@
 #include <vismodule/TransferFunctionSynthesizerCreator>
 #include "ExtendedTransferFunction.h"
 
-#include "timer.h"
-
 //add by shimomura 2022/12/22
 #define RANK 1
 //   typedef struct 

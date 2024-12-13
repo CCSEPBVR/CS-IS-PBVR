@@ -31,8 +31,6 @@
 #include "ExtendedTransferFunction.h"
 //#include "SFMT/SFMT.h" 
 
-#include "timer.h"
-
 #define RANK 1
    typedef struct 
     {   

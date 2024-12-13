@@ -6,7 +6,6 @@
 #include <vismodule/UnstructuredVolumeObject>
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/ExtendedTransferFunction>
-#include "timer.h"
 
 typedef struct
 {
