@@ -293,6 +293,8 @@
     <ClCompile Include="Numeric\SVDecomposer.cpp" />
     <ClCompile Include="Numeric\SVSolver.cpp" />
     <ClCompile Include="Numeric\Xorshift128.cpp" />
+    <ClCompile Include="ParallelProcess\JobCollector.cpp" />
+    <ClCompile Include="ParallelProcess\JobDispatcher.cpp" />
     <ClCompile Include="Thread\Condition.cpp" />
     <ClCompile Include="Thread\Mutex.cpp" />
     <ClCompile Include="Thread\MutexLocker.cpp" />
@@ -341,6 +343,7 @@
     <ClCompile Include="Visualization\Event\TimerEventListener.cpp" />
     <ClCompile Include="Visualization\Event\WheelEvent.cpp" />
     <ClCompile Include="Visualization\Event\WheelEventListener.cpp" />
+    <ClCompile Include="Visualization\Exporter\KVSMLObjectPointWriter.cpp" />
     <ClCompile Include="Visualization\Exporter\LineExporter.cpp" />
     <ClCompile Include="Visualization\Exporter\PointExporter.cpp" />
     <ClCompile Include="Visualization\Exporter\PolygonExporter.cpp" />
@@ -368,6 +371,7 @@
     <ClCompile Include="Visualization\Mapper\CellByCellRejectionSampling.cpp" />
     <ClCompile Include="Visualization\Mapper\CellByCellUniformSampling.cpp" />
     <ClCompile Include="Visualization\Mapper\ColorMap.cpp" />
+    <ClCompile Include="Visualization\Mapper\CropRegion.cpp" />
     <ClCompile Include="Visualization\Mapper\ExtendedTransferFunction.cpp" />
     <ClCompile Include="Visualization\Mapper\ExtractEdges.cpp" />
     <ClCompile Include="Visualization\Mapper\ExtractVertices.cpp" />
@@ -400,6 +404,8 @@
     <ClCompile Include="Visualization\Mapper\StreamlineBase.cpp" />
     <ClCompile Include="Visualization\Mapper\TetrahedralCell.cpp" />
     <ClCompile Include="Visualization\Mapper\TransferFunction.cpp" />
+    <ClCompile Include="Visualization\Mapper\TransferFunctionSynthesizer.cpp" />
+    <ClCompile Include="Visualization\Mapper\TransferFunctionSynthesizerCreator.cpp" />
     <ClCompile Include="Visualization\Mapper\TriangleCell.cpp" />
     <ClCompile Include="Visualization\Object\AxisObject.cpp" />
     <ClCompile Include="Visualization\Object\GeometryObjectBase.cpp" />
@@ -408,6 +414,7 @@
     <ClCompile Include="Visualization\Object\LineObject.cpp" />
     <ClCompile Include="Visualization\Object\ObjectBase.cpp" />
     <ClCompile Include="Visualization\Object\PointObject.cpp" />
+    <ClCompile Include="Visualization\Object\PointObjectGenerator.cpp" />
     <ClCompile Include="Visualization\Object\PolygonObject.cpp" />
     <ClCompile Include="Visualization\Object\StructuredVolumeObject.cpp" />
     <ClCompile Include="Visualization\Object\TableObject.cpp" />
@@ -415,6 +422,8 @@
     <ClCompile Include="Visualization\Object\VolumeObjectBase.cpp" />
     <ClCompile Include="Visualization\Pipeline\ObjectImporter.cpp" />
     <ClCompile Include="Visualization\Pipeline\PipelineModule.cpp" />
+    <ClCompile Include="Visualization\Property\MultiVolumeProperty.cpp" />
+    <ClCompile Include="Visualization\Property\TransferFunctionProperty.cpp" />
     <ClCompile Include="Visualization\Renderer\ParticleBuffer.cpp" />
     <ClCompile Include="Visualization\Renderer\RendererBase.cpp" />
     <ClCompile Include="Visualization\Renderer\Shader.cpp" />
@@ -596,6 +605,8 @@
     <ClInclude Include="Numeric\SVDecomposer.h" />
     <ClInclude Include="Numeric\SVSolver.h" />
     <ClInclude Include="Numeric\Xorshift128.h" />
+    <ClInclude Include="ParallelProcess\JobCollector.h" />
+    <ClInclude Include="ParallelProcess\JobDispatcher.h" />
     <ClInclude Include="Thread\Condition.h" />
     <ClInclude Include="Thread\Mutex.h" />
     <ClInclude Include="Thread\MutexLocker.h" />
@@ -637,6 +648,7 @@
     <ClInclude Include="Utility\Tokenizer.h" />
     <ClInclude Include="Utility\Tree.h" />
     <ClInclude Include="Utility\Type.h" />
+    <ClInclude Include="Utility\Types.h" />
     <ClInclude Include="Utility\Value.h" />
     <ClInclude Include="Utility\ValueArray.h" />
     <ClInclude Include="Utility\Version.h" />
@@ -662,6 +674,7 @@
     <ClInclude Include="Visualization\Event\WheelEvent.h" />
     <ClInclude Include="Visualization\Event\WheelEventListener.h" />
     <ClInclude Include="Visualization\Exporter\ExporterBase.h" />
+    <ClInclude Include="Visualization\Exporter\KVSMLObjectPointWriter.h" />
     <ClInclude Include="Visualization\Exporter\LineExporter.h" />
     <ClInclude Include="Visualization\Exporter\PointExporter.h" />
     <ClInclude Include="Visualization\Exporter\PolygonExporter.h" />
@@ -691,6 +704,7 @@
     <ClInclude Include="Visualization\Mapper\CellByCellRejectionSampling.h" />
     <ClInclude Include="Visualization\Mapper\CellByCellUniformSampling.h" />
     <ClInclude Include="Visualization\Mapper\ColorMap.h" />
+    <ClInclude Include="Visualization\Mapper\CropRegion.h" />
     <ClInclude Include="Visualization\Mapper\DiamondGlyph.h" />
     <ClInclude Include="Visualization\Mapper\ExtendedTransferFunction.h" />
     <ClInclude Include="Visualization\Mapper\ExtractEdges.h" />
@@ -724,6 +738,7 @@
     <ClInclude Include="Visualization\Mapper\StreamlineBase.h" />
     <ClInclude Include="Visualization\Mapper\TetrahedralCell.h" />
     <ClInclude Include="Visualization\Mapper\TransferFunction.h" />
+    <ClInclude Include="Visualization\Mapper\TransferFunctionSynthesizer.h" />
     <ClInclude Include="Visualization\Mapper\TriangleCell.h" />
     <ClInclude Include="Visualization\Module.h" />
     <ClInclude Include="Visualization\Object\AxisObject.h" />
@@ -733,6 +748,7 @@
     <ClInclude Include="Visualization\Object\LineObject.h" />
     <ClInclude Include="Visualization\Object\ObjectBase.h" />
     <ClInclude Include="Visualization\Object\PointObject.h" />
+    <ClInclude Include="Visualization\Object\PointObjectGenerator.h" />
     <ClInclude Include="Visualization\Object\PolygonObject.h" />
     <ClInclude Include="Visualization\Object\StructuredVolumeObject.h" />
     <ClInclude Include="Visualization\Object\TableObject.h" />
@@ -740,6 +756,9 @@
     <ClInclude Include="Visualization\Object\VolumeObjectBase.h" />
     <ClInclude Include="Visualization\Pipeline\ObjectImporter.h" />
     <ClInclude Include="Visualization\Pipeline\PipelineModule.h" />
+    <ClInclude Include="Visualization\Property\MultiVolumeProperty.h" />
+    <ClInclude Include="Visualization\Property\NameListFile.h" />
+    <ClInclude Include="Visualization\Property\TransferFunctionProperty.h" />
     <ClInclude Include="Visualization\Renderer\ParticleBuffer.h" />
     <ClInclude Include="Visualization\Renderer\RendererBase.h" />
     <ClInclude Include="Visualization\Renderer\Shader.h" />
