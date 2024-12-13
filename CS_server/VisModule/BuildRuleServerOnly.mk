@@ -134,6 +134,8 @@ $(OUTDIR)/./Numeric/QRSolver.o \
 $(OUTDIR)/./Numeric/Quaternion.o \
 $(OUTDIR)/./Numeric/SVSolver.o \
 $(OUTDIR)/./Numeric/Xorshift128.o \
+$(OUTDIR)/./ParallelProcess/JobCollector.o \
+$(OUTDIR)/./ParallelProcess/JobDispatcher.o \
 $(OUTDIR)/./Thread/Condition.o \
 $(OUTDIR)/./Thread/Mutex.o \
 $(OUTDIR)/./Thread/MutexLocker.o \
@@ -161,6 +163,7 @@ $(OUTDIR)/./Utility/Value.o \
 $(OUTDIR)/./Utility/ValueArray.o \
 $(OUTDIR)/./Visualization/Data/HydrogenVolumeData.o \
 $(OUTDIR)/./Visualization/Data/TornadoVolumeData.o \
+$(OUTDIR)/./Visualization/Exporter/KVSMLObjectPointWriter.o \
 $(OUTDIR)/./Visualization/Exporter/LineExporter.o \
 $(OUTDIR)/./Visualization/Exporter/PointExporter.o \
 $(OUTDIR)/./Visualization/Exporter/PolygonExporter.o \
@@ -188,6 +191,7 @@ $(OUTDIR)/./Visualization/Mapper/CellByCellMetropolisSampling.o \
 $(OUTDIR)/./Visualization/Mapper/CellByCellRejectionSampling.o \
 $(OUTDIR)/./Visualization/Mapper/CellByCellUniformSampling.o \
 $(OUTDIR)/./Visualization/Mapper/ColorMap.o \
+$(OUTDIR)/./Visualization/Mapper/CropRegion.o \
 $(OUTDIR)/./Visualization/Mapper/ExtractEdges.o \
 $(OUTDIR)/./Visualization/Mapper/ExtractVertices.o \
 $(OUTDIR)/./Visualization/Mapper/ExtendedTransferFunction.o \
@@ -220,6 +224,8 @@ $(OUTDIR)/./Visualization/Mapper/StreamlineBase.o \
 $(OUTDIR)/./Visualization/Mapper/SquareCell.o \
 $(OUTDIR)/./Visualization/Mapper/TetrahedralCell.o \
 $(OUTDIR)/./Visualization/Mapper/TransferFunction.o \
+$(OUTDIR)/./Visualization/Mapper/TransferFunctionSynthesizer.o \
+$(OUTDIR)/./Visualization/Mapper/TransferFunctionSynthesizerCreator.o \
 $(OUTDIR)/./Visualization/Mapper/TriangleCell.o \
 $(OUTDIR)/./Visualization/Object/AxisObject.o \
 $(OUTDIR)/./Visualization/Object/GeometryObjectBase.o \
@@ -228,6 +234,7 @@ $(OUTDIR)/./Visualization/Object/ImageObject.o \
 $(OUTDIR)/./Visualization/Object/LineObject.o \
 $(OUTDIR)/./Visualization/Object/ObjectBase.o \
 $(OUTDIR)/./Visualization/Object/PointObject.o \
+$(OUTDIR)/./Visualization/Object/PointObjectGenerator.o \
 $(OUTDIR)/./Visualization/Object/PolygonObject.o \
 $(OUTDIR)/./Visualization/Object/TableObject.o \
 $(OUTDIR)/./Visualization/Object/VolumeObjectBase.o \
@@ -235,6 +242,8 @@ $(OUTDIR)/./Visualization/Object/StructuredVolumeObject.o \
 $(OUTDIR)/./Visualization/Object/UnstructuredVolumeObject.o \
 $(OUTDIR)/./Visualization/Pipeline/ObjectImporter.o \
 $(OUTDIR)/./Visualization/Pipeline/PipelineModule.o \
+$(OUTDIR)/./Visualization/Property/MultiVolumeProperty.o \
+$(OUTDIR)/./Visualization/Property/TransferFunctionProperty.o \
 $(OUTDIR)/./Visualization/Renderer/ParticleBuffer.o \
 $(OUTDIR)/./Visualization/Renderer/RendererBase.o \
 $(OUTDIR)/./Visualization/Renderer/Shader.o \
@@ -263,6 +272,10 @@ $(OUTDIR)/./Visualization/Renderer/%.o: ./Visualization/Renderer/%.cpp ./Visuali
 
 $(OUTDIR)/./Visualization/Pipeline/%.o: ./Visualization/Pipeline/%.cpp ./Visualization/Pipeline/%.h
 	$(MKDIR) $(OUTDIR)/./Visualization/Pipeline
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
+
+$(OUTDIR)/./Visualization/Property/%.o: ./Visualization/Property/%.cpp ./Visualization/Property/%.h
+	$(MKDIR) $(OUTDIR)/./Visualization/Property
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 $(OUTDIR)/./Visualization/Object/%.o: ./Visualization/Object/%.cpp ./Visualization/Object/%.h
@@ -295,6 +308,10 @@ $(OUTDIR)/./Utility/%.o: ./Utility/%.cpp ./Utility/%.h
 
 $(OUTDIR)/./Thread/%.o: ./Thread/%.cpp ./Thread/%.h
 	$(MKDIR) $(OUTDIR)/./Thread
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
+
+$(OUTDIR)/./ParallelProcess/%.o: ./ParallelProcess/%.cpp ./ParallelProcess/%.h
+	$(MKDIR) $(OUTDIR)/./ParallelProcess
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 $(OUTDIR)/./Numeric/%.o: ./Numeric/%.cpp ./Numeric/%.h
