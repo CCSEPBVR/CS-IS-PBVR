@@ -1,5 +1,5 @@
 
-#include "TransferFunctionSynthesizerCreator.h"
+#include <vismodule/TransferFunctionSynthesizerCreator>
 #include <stdio.h>
 #include <string.h>
 

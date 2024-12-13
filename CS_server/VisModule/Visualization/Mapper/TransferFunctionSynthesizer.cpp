@@ -1,4 +1,4 @@
-#include "TransferFunctionSynthesizer.h"
+#include <vismodule/TransferFunctionSynthesizer>
 #include <fstream>
 #include <limits>
 #include "Token.h"

@@ -1,5 +1,5 @@
-#include "KVSMLObjectPointWriter.h"
-#include "endian2.h"
+#include <vismodule/KVSMLObjectPointWriter>
+#include <vismodule/endian2>
 
 KVSMLObjectPointWriter::KVSMLObjectPointWriter( const vismodule::PointObject& object, const std::string& basename )
 {

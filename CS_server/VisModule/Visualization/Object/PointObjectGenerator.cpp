@@ -1,4 +1,4 @@
-#include "PointObjectGenerator.h"
+#include <vismodule/PointObjectGenerator>
 //#include <sys/time.h>
 #include <vismodule/TransferFunction>
 #include <vismodule/UnstructuredVolumeObject>
@@ -17,7 +17,7 @@
 #include <vismodule/FrontSTRFileReader>
 #endif
 #include <vismodule/AVSUcd>
-#include "common.h"
+#include <vismodule/timer_simple>
 #include <vismodule/ValueArray>
 #include <vismodule/File>
 
@@ -27,7 +27,7 @@
 
 #include <vismodule/Argument>
 
-#include "timer_simple.h"
+#include <vismodule/timer_simple>
 
 using namespace vismodule;
 

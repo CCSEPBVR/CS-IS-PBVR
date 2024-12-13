@@ -1,4 +1,4 @@
-#include "CropRegion.h"
+#include <vismodule/CropRegion>
 
 CropRegion::CropRegion() :
     m_enabled( 0 )

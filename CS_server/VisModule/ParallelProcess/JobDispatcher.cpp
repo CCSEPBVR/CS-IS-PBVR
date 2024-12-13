@@ -1,11 +1,11 @@
 
-#include "JobDispatcher.h"
+#include <vismodule/JobDispatcher>
 #include <iostream>
 #ifndef CPU_VER
 #include <mpi.h>
 #endif
 
-#include "timer_simple.h"
+#include <vismodule/timer_simple>
 
 JobDispatcher::JobDispatcher()  {}
 JobDispatcher::~JobDispatcher() {}

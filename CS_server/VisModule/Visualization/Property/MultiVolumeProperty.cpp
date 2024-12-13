@@ -2,10 +2,10 @@
 #include <fstream>
 #include <algorithm>
 
-#include "FilterInformation.h"
+#include <vismodule/MultiVolumeProperty>
 #include <vismodule/File>
-#include "endian2.h"
-#include "NameListFile.h"
+#include <vismodule/endian2>
+#include <vismodule/NameListFile>
 
 //--------------------------------------------------------------------------
 

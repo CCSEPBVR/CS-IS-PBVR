@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <vismodule/UnstructuredVolumeObject>
-#include "FilterInformation.h"
+#include <vismodule/MultiVolumeProperty>
 #include <vismodule/ExtendedTransferFunction>
 #include "timer.h"
 

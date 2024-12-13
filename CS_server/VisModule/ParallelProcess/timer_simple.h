@@ -1,5 +1,22 @@
-#ifndef VIS_MODULE__COMMON_H_INCLUDE
-#define VIS_MODULE__COMMON_H_INCLUDE
+#ifndef _TIMER_SIMPLE_H_INCLUDE
+#define _TIMER_SIMPLE_H_INCLUDE
+
+#define VIS_MODULE_TIMER_COUNT_NUM 9
+
+#ifdef _TIMER_
+#define VIS_MODULE_TIMER_INIT()
+#define VIS_MODULE_TIMER_FIN()
+#define VIS_MODULE_TIMER_STA(id)
+#define VIS_MODULE_TIMER_END(id)
+#define VIS_MODULE_TIMER_BAR(id)
+#else
+#define VIS_MODULE_TIMER_INIT()
+#define VIS_MODULE_TIMER_FIN()
+#define VIS_MODULE_TIMER_STA(id)
+#define VIS_MODULE_TIMER_END(id)
+#define VIS_MODULE_TIMER_BAR(id)
+#endif
+
 #include <vismodule/Compiler>
 
 #ifdef VIS_MODULE_COMPILER_VC
@@ -41,4 +58,3 @@ inline double GetTime()
 }
 
 #endif
-

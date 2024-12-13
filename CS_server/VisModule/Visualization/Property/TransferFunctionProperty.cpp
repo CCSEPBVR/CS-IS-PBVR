@@ -5,7 +5,7 @@
 #include <string.h>
 #include <map>
 
-#include "ParameterFile.h"
+#include <vismodule/TransferFunctionProperty>
 
 bool ParameterFile::LoadIN( const std::string& filename )
 {

@@ -1,13 +1,13 @@
 #include "JobCollector.h"
-#include "JobDispatcher.h"
+#include <vismodule/JobDispatcher>
 #include <vismodule/GeometryObjectBase>
 #include <vismodule/PointObject>
 #ifndef CPU_VER
 #include <mpi.h>
 #endif // CPU_VER
-#include "common.h"
+#include <vismodule/timer_simple>
 #include <stdlib.h>
-#include "timer_simple.h"
+#include <vismodule/timer_simple>
 
 #ifndef CPU_VER
 

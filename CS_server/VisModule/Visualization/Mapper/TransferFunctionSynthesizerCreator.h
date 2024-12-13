@@ -6,12 +6,12 @@
 #include <sstream>
 #include <vector>
 #include <vismodule/TransferFunction>
-#include "TransferFunctionSynthesizer.h"
+#include <vismodule/TransferFunctionSynthesizer>
 //#include "TransferFunctionSynthesizer_IS.h"
 #include "ParticleTransferProtocol.h"
 #include <vismodule/ExtendedTransferFunction>
-#include "ParameterFile.h"
-#include "FilterInformation.h"
+#include <vismodule/TransferFunctionProperty>
+#include <vismodule/MultiVolumeProperty>
 
 // const static size_t TF_COUNT = 5;
 #include "ReversePolishNotation.h"

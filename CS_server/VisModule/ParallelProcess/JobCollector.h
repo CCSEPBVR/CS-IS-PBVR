@@ -1,7 +1,7 @@
 #ifndef VIS_MODULE__JOB_COLLECTOR_H_INCLUDE
 #define VIS_MODULE__JOB_COLLECTOR_H_INCLUDE
 
-#include "JobDispatcher.h"
+#include <vismodule/JobDispatcher>
 #include <vismodule/PointObject>
 #include "VariableRange.h"
 #include "KVSMLObjectGlyph.h"
