@@ -137,6 +137,7 @@ public:
     void setIsExport( const bool& is_export ){ m_is_export = is_export; }
     void setExportFilePath( const QString& export_file_path ){ m_export_file_path = export_file_path; }
 
+    const QVector<FilesManager*>& getFilesManager() const { return m_files_manager; }
     const bool& getIsParticleGenerationNeeded() const { return m_is_particle_generation_needed; }
     const bool& getIsExport() const { return m_is_export; }
     const QString& getExportFilePath() const { return m_export_file_path; }
@@ -203,6 +204,8 @@ private:
 private:
     template <typename Importer, typename ObjectType, typename RendererType>
     void timeStepCheckAndImport( int row );
+    template <typename Importer, typename ObjectType>
+    void process( const int row ,const int timeStep );
 
     std::string updateTimeStepInFileName( QString fileName, int nextTimeStep );
 };

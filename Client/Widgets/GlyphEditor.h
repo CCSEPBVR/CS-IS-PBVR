@@ -9,6 +9,7 @@
 
 #include "ParticleTransferProtocol.h"
 
+class PBVRGUI;
 class MergePanel;
 class Connect;
 
@@ -43,12 +44,15 @@ public:
     };
 
 public:
-    explicit GlyphEditor(QWidget *parent = nullptr, MergePanel* merge = nullptr, Connect* connect_panel = nullptr);
+    explicit GlyphEditor(QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr, MergePanel* merge = nullptr, Connect* connect_panel = nullptr);
     void updateNumberOfVector( jpv::ParticleTransferServerMessage& server_message );
     ~GlyphEditor();
+    int getGlyphType() const { return static_cast<int>(m_glyph_type);}
+    float getScaleFactor() const { return m_scale_factor; }
 
 private:
     Ui::GlyphEditor *ui;
+    PBVRGUI *m_pbvr_gui;
     MergePanel* m_merge;
     Connect* m_connect;
 
@@ -74,6 +78,12 @@ private:
     kvs::ColorMap m_color_map; //need default defined
     DataDefines m_color_data;
 
+public:
+    kvs::ValueArray<kvs::Real32> m_coords;
+    kvs::ValueArray<kvs::Real32> m_directions;
+    kvs::ValueArray<kvs::Real32> m_sizes;
+    kvs::ValueArray<kvs::UInt8>  m_colors;
+
 private:
     void directionComboBoxBlockSignals( bool block );
 
@@ -81,6 +91,7 @@ private slots:
     void onDirectionComboBoxIndexChanged( int index );
     void onSizeNumberOfVariableChanged( int value );
     void onColorDataNumberOfVariableChanged( int value );
+    void onUpdateButtonClicked();
     void onApplyButtonClicked();
 };
 

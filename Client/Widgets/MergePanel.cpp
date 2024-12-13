@@ -761,6 +761,10 @@ void MergePanel::WorkerThread::run()
         case FilesManager::ServerPointObjectIS:
             timeStepCheckAndImport<void, kvs::PointObject, kvs::glsl::ParticleBasedRenderer>( row );
             break;
+        case FilesManager::ServerGlyphObjectCS:
+        case FilesManager::ServerGlyphObjectIS:
+            timeStepCheckAndImport<void, kvs::PolygonObject, kvs::StochasticPolygonRenderer>( row );
+            break;
         case FilesManager::PointObjectKVSML:
         case FilesManager::PointObjectLAS:
         case FilesManager::PointObjectPTS:
@@ -806,209 +810,142 @@ void MergePanel::WorkerThread::run()
  * そうでない場合は、要求されたタイムステップに対応するデータをインポートしオブジェクトを表示します。要求されたタイムステップが範囲外である場合、keepInitialまたはkeepFinalの設定に応じて
  * 最小、または最大タイムステップのデータをインポートします。
  */
+
 template <typename Importer, typename ObjectType, typename RendererType>
 void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
 {
-    const QString filePath = m_merge->m_files_manager[row]->getFileInfo().filePath();
-    const bool display = m_merge->m_files_manager[row]->getDisplay();
-    const bool keepInitial = m_merge->m_files_manager[row]->getKeepInitial();
-    const bool keepFinal = m_merge->m_files_manager[row]->getKeepFinal();
-    const int minTimeStep = m_merge->m_files_manager[row]->getMinTimeStep();
-    const int maxTimeStep = m_merge->m_files_manager[row]->getMaxTimeStep();
-    const std::pair<int,int> ids = m_merge->m_files_manager[row]->getIDs();
+    // const QString            filePath    = m_merge->m_files_manager[row]->getFileInfo().filePath();
+    const bool               display     = m_merge->m_files_manager[row]->getDisplay();
+    const bool               keepInitial = m_merge->m_files_manager[row]->getKeepInitial();
+    const bool               keepFinal   = m_merge->m_files_manager[row]->getKeepFinal();
+    const int                minTimeStep = m_merge->m_files_manager[row]->getMinTimeStep();
+    const int                maxTimeStep = m_merge->m_files_manager[row]->getMaxTimeStep();
+    const std::pair<int,int> ids         = m_merge->m_files_manager[row]->getIDs();
     m_merge->m_files_manager[row]->setObject( nullptr );
 
-    if( ids.first == -1 && ids.second == -1 )
+    if( ids.first == -1 && ids.second == -1 ) // 一度もregisterObjectされたことない場合
     {
-        qDebug() << "対象のデータはシーンに登録されていません。" << "[" << row << "]" << __LINE__;
-        if( display == true )
+        if( display == true ) // 表示の要求がある場合
         {
-            qDebug() << "対象のデータはDisplayにチェックがついています。" << "[" << row << "]" << __LINE__;
-            if( m_request_time_step >= minTimeStep && m_request_time_step <= maxTimeStep )
+            if( m_request_time_step >= minTimeStep && m_request_time_step <= maxTimeStep ) // 要求タイムステップが範囲内の場合
             {
-                qDebug() << "対象のデータは要求されたタイムステップの範囲内です。" << "[" << row << "]" << __LINE__;
-                qDebug() << "要求されたタイムステップのデータをインポートします。" << "[" << row << "]" << __LINE__;
-                if constexpr (!std::is_same_v<Importer, void>)
-                {
-                    m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, m_request_time_step ) ) );
-                }
-                else
-                {
-                    m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( m_request_time_step ) );
-                    m_merge->setIsParticleGenerationNeeded( false );
-                }
-                m_merge->m_files_manager[row]->setAlreadyImportedTimeStep( m_request_time_step );
+                process<Importer, ObjectType>( row, m_request_time_step );
             }
-
-            if( m_request_time_step < minTimeStep )
+            if( m_request_time_step < minTimeStep ) // 要求タイムステップが最小タイムステップよりも小さい場合
             {
-                qDebug() << "要求されたタイムステップが対象のデータの最小タイムステップよりも小さいです。" << "[" << row << "]" << __LINE__;
-                if( keepInitial == true )
+                if( keepInitial == true ) // KeepInitialにチェックがついている。
                 {
-                    qDebug() << "対象のデータはKeepInitialにチェックがついています。" << "[" << row << "]" << __LINE__;
-                    qDebug() << "対象のデータの最小タイムステップのデータをインポートします。" << "[" << row << "]" << __LINE__;
-                    if constexpr (!std::is_same_v<Importer, void>)
-                    {
-                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ) ) );
-                    }
-                    else
-                    {
-                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( minTimeStep ) );
-                        m_merge->setIsParticleGenerationNeeded( false );
-                    }
-                    m_merge->m_files_manager[row]->setAlreadyImportedTimeStep( minTimeStep );
+                    process<Importer, ObjectType>( row, minTimeStep );
                 }
             }
-
-            if( m_request_time_step > maxTimeStep )
+            if( m_request_time_step > maxTimeStep ) // 要求タイムステップが最大タイムステップよりも大きい場合
             {
-                qDebug() << "要求されたタイムステップが対象のデータの最大タイムステップよりも大きいです。" << "[" << row << "]" << __LINE__;
-                if( keepFinal == true )
+                if( keepFinal == true ) // KeepInitialにチェックがついている。
                 {
-                    qDebug() << "対象のデータはKeepFinalにチェックがついています。" << "[" << row << "]" << __LINE__;
-                    qDebug() << "対象のデータの最大タイムステップのデータをインポートします。" << "[" << row << "]" << __LINE__;
-                    if constexpr (!std::is_same_v<Importer, void>)
-                    {
-                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ) ) );
-                    }
-                    else
-                    {
-                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( maxTimeStep ) );
-                        m_merge->setIsParticleGenerationNeeded( false );
-                    }
-                    m_merge->m_files_manager[row]->setAlreadyImportedTimeStep( maxTimeStep );
+                    process<Importer, ObjectType>( row, maxTimeStep );
                 }
             }
         }
     }
-    else
+    else // 既にregisterObjectされたことがある場合
     {
-        qDebug() << "対象のデータはシーンに登録されています。" << "[" << row << "]" << __LINE__;
         auto* object = m_merge->m_pbvr_gui->screen()->scene()->object( m_merge->m_files_manager[row]->getIDs().first );
-
-        if( display == true )
+        if( display == true ) // 表示の要求がある場合
         {
-            qDebug() << "対象のデータはDisplayにチェックがついています。" << "[" << row << "]" << __LINE__;
-            if( m_request_time_step >= minTimeStep && m_request_time_step <= maxTimeStep )
+            if( m_request_time_step >= minTimeStep && m_request_time_step <= maxTimeStep ) // 要求タイムステップが範囲内の場合
             {
-                qDebug() << "対象のデータは要求されたタイムステップの範囲内です。" << "[" << row << "]" << __LINE__;
-                if( m_merge->m_files_manager[row]->getAlreadyImportedTimeStep() == m_request_time_step )
+                if( m_request_time_step == m_merge->m_files_manager[row]->getAlreadyImportedTimeStep() ) // 既に要求タイムステップをインポートしている場合
                 {
-                    qDebug() << "既に要求されたタイムステップのデータをインポートしています。" << "[" << row << "]" << __LINE__;
                     if( ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) ||
-                        ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) )
+                        ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) // 粒子生成の要求がある場合
                     {
-                        qDebug() << "粒子生成の要求があります。" << "[" << row << "]" << __LINE__;
-                                    m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( m_request_time_step ) );
-                        m_merge->setIsParticleGenerationNeeded( false );
+                        process<Importer, ObjectType>( row, m_request_time_step );
                     }
-                    if( object->isVisible() == false ) object->show();
+                    if( object->isVisible() == false ) object->show(); // 不可視状態である場合、可視状態にする。
                 }
-                else
+                else // 要求タイムステップをインポートしていない場合
                 {
-                    qDebug() << "要求されたタイムステップのデータをインポートします。" << "[" << row << "]" << __LINE__;
-                    if constexpr (!std::is_same_v<Importer, void>)
-                    {
-                        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, m_request_time_step ) ) );
-                    }
-                    else
-                    {
-                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( m_request_time_step ) );
-                        m_merge->setIsParticleGenerationNeeded( false );
-                    }
-                    m_merge->m_files_manager[row]->setAlreadyImportedTimeStep( m_request_time_step );
-                    if( object->isVisible() == false ) object->show();
+                    process<Importer, ObjectType>( row, m_request_time_step );
+                    if( object->isVisible() == false ) object->show(); // 不可視状態である場合、可視状態にする。
                 }
             }
-
-            if( m_request_time_step < minTimeStep )
+            if( m_request_time_step < minTimeStep ) // 要求タイムステップが最小タイムステップよりも小さい場合
             {
-                qDebug() << "要求されたタイムステップが対象のデータの最小タイムステップよりも小さいです。" << "[" << row << "]" << __LINE__;
-                if( keepInitial == true ) //KeepInitialが有効
+                if( keepInitial == true ) // KeepInitialにチェックがついている。
                 {
-                    qDebug() << "対象のデータはKeepInitialにチェックがついています。" << "[" << row << "]" << __LINE__;
-                    if( m_merge->m_files_manager[row]->getAlreadyImportedTimeStep() <= minTimeStep )
+                    if( minTimeStep >= m_merge->m_files_manager[row]->getAlreadyImportedTimeStep() ) // 既に最小タイムステップをインポートしている場合
                     {
-                        qDebug() << "既に対象データの最小タイムステップのデータをインポートしています。" << "[" << row << "]" << __LINE__;
                         if( ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) ||
-                            ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) )
+                            ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) // 粒子生成の要求がある場合
                         {
-                            qDebug() << "粒子生成の要求があります。" << "[" << row << "]" << __LINE__;
-                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( minTimeStep ) );
+                            process<Importer, ObjectType>( row, minTimeStep );
                             m_merge->setIsParticleGenerationNeeded( false );
                         }
-                        if( object->isVisible() == false ) object->show();
+                        if( object->isVisible() == false ) object->show(); // 不可視状態である場合、可視状態にする。
                     }
-                    else
+                    else // 要求タイムステップをインポートしていない場合
                     {
-                        qDebug() << "対象のデータの最小タイムステップのデータをインポートします。" << "[" << row << "]" << __LINE__;
-                        if constexpr (!std::is_same_v<Importer, void>)
-                        {
-                            m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, minTimeStep ) ) );
-                        }
-                        else
-                        {
-                            m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( minTimeStep ) );
-                            m_merge->setIsParticleGenerationNeeded( false );
-                        }
-                        m_merge->m_files_manager[row]->setAlreadyImportedTimeStep( minTimeStep );
+                        process<Importer, ObjectType>( row, minTimeStep );
                         if( object->isVisible() == false ) object->show();
                     }
                 }
-                else
+                else // KeepInitialにチェックがついていない場合
                 {
-                    qDebug() << "対象のデータはKeepInitialにチェックがついていないため非表示にします。" << "[" << row << "]" << __LINE__;
                     object->hide();
                 }
             }
-
-            if( m_request_time_step > maxTimeStep )
+            if( m_request_time_step > maxTimeStep ) // 要求タイムステップが最大タイムステップよりも大きい場合
             {
-                qDebug() << "要求されたタイムステップが対象のデータの最大タイムステップよりも大きいです。" << "[" << row << "]" << __LINE__;
-                if( keepFinal == true ) //KeepFinalが有効
+                if( keepFinal == true ) // KeepFinalにチェックがついている。
                 {
-                    qDebug() << "対象のデータはKeepFinalにチェックがついています。" << "[" << row << "]" << __LINE__;
-                    if( m_merge->m_files_manager[row]->getAlreadyImportedTimeStep() >= maxTimeStep )
+                    if( maxTimeStep <= m_merge->m_files_manager[row]->getAlreadyImportedTimeStep() ) // 既に最大タイムステップをインポートしている場合
                     {
-                        qDebug() << "既に対象データの最大タイムステップのデータをインポートしています。" << "[" << row << "]" << __LINE__;
                         if( ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) ||
-                            ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) )
+                            ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) // 粒子生成の要求がある場合
                         {
-                            qDebug() << "粒子生成の要求があります。" << "[" << row << "]" << __LINE__;
-                                        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( maxTimeStep ) );
+                            process<Importer, ObjectType>( row, maxTimeStep );
                             m_merge->setIsParticleGenerationNeeded( false );
                         }
-                        if( object->isVisible() == false ) object->show();
+                        if( object->isVisible() == false ) object->show(); // 不可視状態である場合、可視状態にする。
                     }
-                    else
+                    else // 要求タイムステップをインポートしていない場合
                     {
-                        qDebug() << "対象のデータの最大タイムステップのデータをインポートします。" << "[" << row << "]" << __LINE__;
-                        if constexpr (!std::is_same_v<Importer, void>)
-                        {
-                            m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, maxTimeStep ) ) );
-                        }
-                        else
-                        {
-                            m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( maxTimeStep ) );
-                            m_merge->setIsParticleGenerationNeeded( false );
-                        }
-                        m_merge->m_files_manager[row]->setAlreadyImportedTimeStep( maxTimeStep );
+                        process<Importer, ObjectType>( row, maxTimeStep );
                         if( object->isVisible() == false ) object->show();
                     }
                 }
-                else
+                else // KeepInitialにチェックがついていない場合
                 {
-                    qDebug() << "対象のデータはKeepFinalにチェックがついていないため非表示にします。" << "[" << row << "]" << __LINE__;
                     object->hide();
                 }
             }
         }
         else
         {
-            qDebug() << "対象のデータはDisplayにチェックがついていないため非表示にします。" << "[" << row << "]" << __LINE__;;
             object->hide();
         }
     }
+}
+
+template <typename Importer, typename ObjectType>
+void MergePanel::WorkerThread::process( const int row ,const int timeStep )
+{
+    const QString filePath = m_merge->m_files_manager[row]->getFileInfo().filePath();
+
+    if constexpr ( !std::is_same_v<Importer, void > )
+    {
+        m_merge->m_files_manager[row]->setObject( new Importer( updateTimeStepInFileName( filePath, timeStep ) ) );
+    }
+    else if ( std::is_same_v<ObjectType, kvs::PointObject> )
+    {
+        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( timeStep ) );
+        m_merge->setIsParticleGenerationNeeded( false );
+    }
+    else if (std::is_same_v<ObjectType, kvs::PolygonObject>)
+    {
+        m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateGlyphPolygons( timeStep ) );
+    }
+    m_merge->m_files_manager[row]->setAlreadyImportedTimeStep( timeStep );
 }
 
 std::string MergePanel::WorkerThread::updateTimeStepInFileName(QString fileName, int nextTimeStep)
@@ -1048,31 +985,42 @@ std::string MergePanel::WorkerThread::updateTimeStepInFileName(QString fileName,
 
 void MergePanel::onWorkerThreadFinished()
 {
-    kvs::Xform before_object_manager_xform = m_pbvr_gui->screen()->scene()->objectManager()->xform();
-    for( int row = 0; row < m_files_manager.size(); row++ ) //登録されているアイテム分ループを行う。
+    kvs::Xform beforeObjectManagerXform = m_pbvr_gui->screen()->scene()->objectManager()->xform();
+    for( int row = 0; row < m_files_manager.size(); row++ ) //tableWidgetに登録されているアイテム分ループする。
     {
-        if( m_files_manager[row]->getIDs().first == -1 && m_files_manager[row]->getIDs().second == -1 ) //オブジェクトが登録されていない場合
+        if( m_files_manager[row]->getIDs().first == -1 && m_files_manager[row]->getIDs().second == -1 ) // 一度もregisterObjectされたことない場合
         {
-            if( m_files_manager[row]->getObject() != nullptr ) //オブジェクトがインポートされていれば登録を行う
+            if( m_files_manager[row]->getObject() != nullptr ) // オブジェクトがインポートされている場合は登録を行う。
             {
-                qDebug() << "オブジェクトがインポートされているため登録を行います。";
-                m_files_manager[row]->getObject()->setXform( before_object_manager_xform );
-
-                if( kvs::PointObject* point_object = dynamic_cast<kvs::PointObject*>(m_files_manager[row]->getObject()) )
+                if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectCS ||
+                    m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS ||
+                    m_files_manager[row]->getFormat() == FilesManager::PointObjectKVSML    ||
+                    m_files_manager[row]->getFormat() == FilesManager::PointObjectLAS      ||
+                    m_files_manager[row]->getFormat() == FilesManager::PointObjectPTS ) // ポイントオブジェクト
                 {
+                    kvs::PointObject* point_object = dynamic_cast<kvs::PointObject*>( m_files_manager[row]->getObject() );
                     kvs::RendererBase* particle_based_renderer = new kvs::glsl::ParticleBasedRenderer;
                     kvs::Vec3 translationOffset = m_pbvr_gui->screen()->scene()->camera()->xform().translation() - m_pbvr_gui->getInitializedCameraXform().translation();
                     static_cast<kvs::glsl::ParticleBasedRenderer*>(particle_based_renderer)->setTranslationOffset( translationOffset );
-                    static_cast<kvs::glsl::ParticleBasedRenderer*>(particle_based_renderer)->setObjectDepth(
-                        m_pbvr_gui->screen()->scene()->objectManager()->xform().scaling().z()
-                        / m_pbvr_gui->screen()->scene()->camera()->xform().scaling().z()
-                        );
-
+                    static_cast<kvs::glsl::ParticleBasedRenderer*>(particle_based_renderer)->setObjectDepth( m_pbvr_gui->screen()->scene()->objectManager()->xform().scaling().z() / m_pbvr_gui->screen()->scene()->camera()->xform().scaling().z() );
                     m_shading_controller->applyShading( particle_based_renderer );
                     m_files_manager[row]->setIDs( m_pbvr_gui->screen()->scene()->registerObject( point_object, particle_based_renderer ) );
                 }
-                else if( kvs::PolygonObject* polygon_object = dynamic_cast<kvs::PolygonObject*>(m_files_manager[row]->getObject()) )
+                if( m_files_manager[row]->getFormat() == FilesManager::ServerGlyphObjectCS ||
+                    m_files_manager[row]->getFormat() == FilesManager::ServerGlyphObjectIS ) // テクスチャなしポリゴンオブジェクト
                 {
+                    kvs::PolygonObject* polygon_object = dynamic_cast<kvs::PolygonObject*>( m_files_manager[row]->getObject() );
+                    // polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getColor().red(), m_files_manager[row]->getColor().green(), m_files_manager[row]->getColor().blue() ) );
+                    // polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
+                    kvs::RendererBase* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer;
+                    m_shading_controller->applyShading( stochastic_polygon_renderer );
+                    m_files_manager[row]->setIDs( m_pbvr_gui->screen()->scene()->registerObject( polygon_object, stochastic_polygon_renderer ) );
+                    m_files_manager[row]->setChangePolygonTransferFunction( false );
+                }
+                if( m_files_manager[row]->getFormat() == FilesManager::NonTexturedPolygonObjectKVSML ||
+                    m_files_manager[row]->getFormat() == FilesManager::NonTexturedPolygonObjectSTL ) // テクスチャなしポリゴンオブジェクト
+                {
+                    kvs::PolygonObject* polygon_object = dynamic_cast<kvs::PolygonObject*>( m_files_manager[row]->getObject() );
                     polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getColor().red(), m_files_manager[row]->getColor().green(), m_files_manager[row]->getColor().blue() ) );
                     polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
                     kvs::RendererBase* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer;
@@ -1080,9 +1028,21 @@ void MergePanel::onWorkerThreadFinished()
                     m_files_manager[row]->setIDs( m_pbvr_gui->screen()->scene()->registerObject( polygon_object, stochastic_polygon_renderer ) );
                     m_files_manager[row]->setChangePolygonTransferFunction( false );
                 }
-#if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
-                else if( kvs::TexturedPolygonObject* textured_polygon_object = dynamic_cast<kvs::TexturedPolygonObject*>(m_files_manager[row]->getObject()) )
+#if defined( PBVR_SUPPORT_FBX )
+                if( m_files_manager[row]->getFormat() == FilesManager::TexturedPolygonObjectFBX )
                 {
+                    kvs::TexturedPolygonObject* textured_polygon_object = dynamic_cast<kvs::TexturedPolygonObject*>( m_files_manager[row]->getObject() );
+                    textured_polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getColor().red(), m_files_manager[row]->getColor().green(), m_files_manager[row]->getColor().blue() ) );
+                    textured_polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
+                    kvs::RendererBase* stochastic_textured_polygon_renderer = new kvs::StochasticTexturedPolygonRenderer;
+                    m_shading_controller->applyShading( stochastic_textured_polygon_renderer );
+                    m_files_manager[row]->setIDs( m_pbvr_gui->screen()->scene()->registerObject( textured_polygon_object, stochastic_textured_polygon_renderer ) );
+                }
+#endif
+#if defined( PBVR_SUPPORT_3DS )
+                if( m_files_manager[row]->getFormat() == FilesManager::TexturedPolygonObject3DS )
+                {
+                    kvs::TexturedPolygonObject* textured_polygon_object = dynamic_cast<kvs::TexturedPolygonObject*>( m_files_manager[row]->getObject() );
                     textured_polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getColor().red(), m_files_manager[row]->getColor().green(), m_files_manager[row]->getColor().blue() ) );
                     textured_polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
                     kvs::RendererBase* stochastic_textured_polygon_renderer = new kvs::StochasticTexturedPolygonRenderer;
@@ -1092,42 +1052,52 @@ void MergePanel::onWorkerThreadFinished()
 #endif
             }
         }
-        else
+        else // 既にregisterObjectされたことがある場合
         {
-//            auto* object = m_pbvr_gui->screen()->scene()->object( m_files_manager[row]->getIDs().first );
             if( m_files_manager[row]->getObject() != nullptr ) //オブジェクトがインポートされていれば交換を行う。
             {
-                if( kvs::PointObject* point_object = dynamic_cast<kvs::PointObject*>(m_files_manager[row]->getObject()) )
+                if( kvs::PointObject* point_object = dynamic_cast<kvs::PointObject*>( m_files_manager[row]->getObject() ) ) //ポイントオブジェクトの場合
                 {
+                    if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectCS ||
+                        m_files_manager[row]->getFormat() == FilesManager::PointObjectKVSML    ||
+                        m_files_manager[row]->getFormat() == FilesManager::PointObjectLAS      ||
+                        m_files_manager[row]->getFormat() == FilesManager::PointObjectPTS )
+                    {
+                        m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, point_object );
+                    }
                     if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS )
                     {
                         if( m_time_controller_b->getTimeControllerA()->getCurrentTimeStepLineEdit()->value() == m_time_controller_b->getTimeControllerA()->getJumpTimeStepSpinBox()->value() )
                         {
                         }
                         else
-                        {                            
-                                m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, point_object );                            
+                        {
+                            m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, point_object );
                         }
                     }
-                    else
+                }
+                if( kvs::PolygonObject* polygon_object = dynamic_cast<kvs::PolygonObject*>(m_files_manager[row]->getObject()) )
+                {
+                    if( m_files_manager[row]->getFormat() == FilesManager::NonTexturedPolygonObjectKVSML ||
+                        m_files_manager[row]->getFormat() == FilesManager::NonTexturedPolygonObjectSTL )
                     {
-                        m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, point_object );
+                        polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getColor().red(), m_files_manager[row]->getColor().green(), m_files_manager[row]->getColor().blue() ) );
+                        polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
+                        m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, polygon_object );
+                    }
+                    if( m_files_manager[row]->getFormat() == FilesManager::ServerGlyphObjectCS ||
+                        m_files_manager[row]->getFormat() == FilesManager::ServerGlyphObjectIS )
+                    {
+                        m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, polygon_object );
                     }
                 }
-                else if( kvs::PolygonObject* polygon_object = dynamic_cast<kvs::PolygonObject*>(m_files_manager[row]->getObject()) )
-                {
-                    polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getColor().red(), m_files_manager[row]->getColor().green(), m_files_manager[row]->getColor().blue() ) );
-                    polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
-                    m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, polygon_object );
-                }
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
-                else if( kvs::TexturedPolygonObject* textured_polygon_object = dynamic_cast<kvs::TexturedPolygonObject*>(m_files_manager[row]->getObject()) )
+                if( kvs::TexturedPolygonObject* textured_polygon_object = dynamic_cast<kvs::TexturedPolygonObject*>( m_files_manager[row]->getObject() ) )
                 {
                     m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, textured_polygon_object );
                 }
 #endif
             }
-
             if( m_files_manager[row]->getChangePolygonTransferFunction() == true ) //色不透明度の変更がある場合はポリゴンを作り替える。
             {
                 auto* polygonObject = dynamic_cast<kvs::PolygonObject*>( m_pbvr_gui->screen()->scene()->object( m_files_manager[row]->getIDs().first ) );

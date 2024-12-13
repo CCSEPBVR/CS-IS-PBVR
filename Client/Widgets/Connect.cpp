@@ -4,10 +4,13 @@
 #include <QMessageBox>
 #include <kvs/Camera>
 #include <kvs/PointObject>
+#include <kvs/PolygonObject>
+#include <kvs/PolygonGlyphObject>
 #include <QFileDialog>
 
 #include "Widgets/MergePanel.h"
 #include "Widgets/RenderOptions.h"
+
 
 Connect::Connect(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, DataProperties* filter_infomation, RenderOptions* render_options, TransferFunctionEditor* transfer_function_editor, GlyphEditor* glyph_editor ):
     QDialog(parent),
@@ -426,6 +429,236 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
     return pointObject;
     }
 }
+
+kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
+{
+
+    if(connecting)
+    {
+        qInfo() << "Other conneciton mode working !!";
+        kvs::PolygonObject* object = new kvs::PolygonObject();
+        return  object;
+    }
+    else
+    {
+        connecting = true;
+        std::cout << "********" << std::endl;
+        std::cout << "********" << std::endl;
+        std::cout << "********" << std::endl;
+        std::cout << "********" << std::endl;
+
+        jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
+        //    jpv::ParticleTransferClientMessage m_client_message;
+        //    jpv::ParticleTransferServerMessage reply;
+        m_server_message.m_camera = new kvs::Camera();
+        client.initClient();
+        strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
+        m_client_message.m_initialize_parameter = jpv::InitializeParameter::generate_particle;
+        //m_client_message.m_initialize_parameter = 1;
+        m_client_message.m_rendering_id = 0;
+        if( ui->uniformRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'u'; }
+        if( ui->metropolisRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'm'; }
+        if( ui->rejectionRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'r'; }
+        m_client_message.m_subpixel_level = 2;
+        m_client_message.m_repeat_level = 16;
+        m_client_message.m_shuffle_method = 'r';
+        m_client_message.m_time_parameter = 2;
+        m_client_message.m_trans_parameter = 2;
+        m_client_message.m_node_type = 'a';
+        //    m_client_message.m_particle_limit = 10000000;
+        //    m_client_message.m_particle_density = 1;
+        //    m_client_message.particle_data_size_limit = 20;
+        m_client_message.m_camera = m_pbvr_gui->screen()->scene()->camera();//足りないかも
+        m_client_message.m_step = timeStep;
+        m_client_message.m_message_size = m_client_message.byteSize();
+        m_client_message.m_sampling_step = 1.0f;
+        //    m_client_message.m_x_synthesis = "";
+        //    m_client_message.m_y_synthesis = "";
+        //    m_client_message.m_z_synthesis = "";
+        m_client_message.m_enable_crop_region = 0;
+
+        //paramExTransFunc.applyToClientMessage( &message ); //↓
+
+        //gt5d
+        //    float min = -0.0791849;
+        //    float max = 0.074513;
+
+        //spx
+        //    float min = 0.2;
+        //    float max = 1;
+
+        //    m_extended_transfer_function_message.applyToClientMessage( &m_client_message );
+
+
+        m_client_message.m_message_size = m_client_message.byteSize();
+        client.sendMessage( m_client_message );
+        client.recvMessage( &m_server_message );
+
+        size_t allParticle = 0;
+        kvs::PolygonObject* object = new kvs::PolygonObject();
+        int serve_numvol = m_server_message.m_number_volume_divide;
+
+
+        for ( int n = 0; n < serve_numvol; n++ )
+        {
+            if ( client.recvMessage( &m_server_message ) == 1 ){}
+
+            int nmemb = m_server_message.m_number_particle * 3;
+            if ( nmemb != 0 )
+            {
+                kvs::ValueArray<kvs::Real32> positions ( m_server_message.m_positions.get(), nmemb );
+                kvs::ValueArray<kvs::Real32> normals ( m_server_message.m_normals.get(), nmemb );
+                kvs::ValueArray<kvs::UInt8>  colors ( m_server_message.m_colors.get(), nmemb );
+
+                kvs::PolygonObject obj;
+                obj.setCoords( positions );
+                obj.setNormals( normals );
+                obj.setColors( colors );
+
+                // object->add(obj);
+                obj.clear();
+                std::cout<<" getpolygonObjectFromServer 331"<<std::endl;
+                allParticle = allParticle + m_server_message.m_number_particle;
+                // delete[] m_server_message.m_colors;
+                // delete[] m_server_message.m_normals;
+                // delete[] m_server_message.m_positions;
+            }
+        }
+
+        kvs::PolygonObject* polygonObject = object;
+
+        kvs::Vector3f serverSideMinObjectCoords;
+        kvs::Vector3f serverSideMaxObjectCoords;
+        serverSideMinObjectCoords[0] = m_server_message.m_min_object_coord[0];
+        serverSideMinObjectCoords[1] = m_server_message.m_min_object_coord[1];
+        serverSideMinObjectCoords[2] = m_server_message.m_min_object_coord[2];
+        serverSideMaxObjectCoords[0] = m_server_message.m_max_object_coord[0];
+        serverSideMaxObjectCoords[1] = m_server_message.m_max_object_coord[1];
+        serverSideMaxObjectCoords[2] = m_server_message.m_max_object_coord[2];
+        polygonObject->setMinMaxObjectCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );
+        polygonObject->setMinMaxExternalCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );
+        //    polygonObject->updateMinMaxCoords();
+
+        std::cout << serverSideMinObjectCoords[0] << std::endl;
+        std::cout << serverSideMinObjectCoords[1] << std::endl;
+        std::cout << serverSideMinObjectCoords[2] << std::endl;
+        std::cout << serverSideMaxObjectCoords[0] << std::endl;
+        std::cout << serverSideMaxObjectCoords[1] << std::endl;
+        std::cout << serverSideMaxObjectCoords[2] << std::endl;
+
+        // m_client_message.m_initialize_parameter = -1;
+        m_client_message.m_initialize_parameter = jpv::InitializeParameter::empty;
+        m_client_message.m_message_size = m_client_message.byteSize();
+        client.sendMessage( m_client_message );
+        client.recvMessage( &m_server_message );
+
+        client.termClient();
+
+        //ここでサーバのレンジが手に入る。
+        std::cout << m_server_message.m_server_side_variable_range.min( "t1_var_c" ) << std::endl;
+        std::cout << m_server_message.m_server_side_variable_range.max( "t1_var_c" ) << std::endl;
+        std::cout << m_server_message.m_server_side_variable_range.min( "t1_var_o" ) << std::endl;
+        std::cout << m_server_message.m_server_side_variable_range.max( "t1_var_o" ) << std::endl;
+
+        //ヒストグラム更新用(CS, IS)
+        m_received_message.m_var_range.merge( m_server_message.m_server_side_variable_range );
+        m_received_message.m_color_bins.resize( m_server_message.m_transfer_function_count );
+        m_received_message.m_opacity_bins.resize( m_server_message.m_transfer_function_count );
+        for ( int tf = 0; tf < m_server_message.m_transfer_function_count; tf++ )
+        {
+            char color_function_name[8] = {0x00};
+            char opacity_function_name[8] = {0x00};
+            sprintf(color_function_name, "C%d", tf+1);
+            sprintf(opacity_function_name, "O%d", tf+1);
+            if ( m_server_message.m_color_nbins[tf] > 0 )
+            {
+                m_received_message.m_color_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_color_nbins[tf], (size_t *)m_server_message.m_color_bins[tf], std::string(color_function_name) );
+            }
+            if ( m_server_message.m_opacity_nbins[tf] >0 )
+            {
+                m_received_message.m_opacity_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_opacity_nbins[tf],(size_t *) m_server_message.m_opacity_bins[tf], std::string(opacity_function_name) );
+            }
+        }
+
+        m_transfer_function_editor->updateRangeView();
+
+        //    polygonObject->updateMinMaxCoords();
+
+
+        if ( m_server_message.m_camera )
+        {
+            delete m_server_message.m_camera;
+            m_server_message.m_camera = nullptr;
+        }
+
+        if ( m_server_message.m_color_nbins )
+        {
+            delete[] m_server_message.m_color_nbins;
+            m_server_message.m_color_nbins = nullptr;
+        }
+
+        if ( m_server_message.m_opacity_nbins )
+        {
+            delete[] m_server_message.m_opacity_nbins;
+            m_server_message.m_opacity_nbins = nullptr;
+        }
+
+        if ( !m_server_message.m_color_bins.empty() )
+        {
+            for( auto ptr : m_server_message.m_color_bins )
+            {
+                delete ptr;
+            }
+            m_server_message.m_color_bins.clear();
+        }
+
+        if ( !m_server_message.m_opacity_bins.empty() )
+        {
+            for( auto ptr : m_server_message.m_opacity_bins )
+            {
+                delete ptr;
+            }
+            m_server_message.m_opacity_bins.clear();
+        }
+
+        if( ui->inSituRBtn->isChecked() == true )
+        {
+            m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_last_step );
+        }
+
+        connecting = false;
+
+        kvs::ValueArray<kvs::Real32> coords;
+        coords.allocate(3);
+        coords.at(0) = 0;
+        coords.at(1) = 0;
+        coords.at(2) = 0;
+        kvs::ValueArray<kvs::Real32> directions;
+        directions.allocate(3);
+        directions.at(0) = 1;
+        directions.at(1) = 0;
+        directions.at(2) = 0;
+        kvs::ValueArray<kvs::Real32> sizes;
+        sizes.allocate(1);
+        sizes.at(0) = 1 * m_glyph_editor->getScaleFactor();
+        kvs::ValueArray<kvs::UInt8> colors;
+        colors.allocate(3);
+        colors.at(0) = 128;
+        colors.at(1) = 0;
+        colors.at(2) = 128;
+
+        m_glyph_editor->m_coords = coords;
+        m_glyph_editor->m_directions = directions;
+        m_glyph_editor->m_sizes = sizes;
+        m_glyph_editor->m_colors = colors;
+
+        polygonObject = new kvs::PolygonGlyphObject( coords, directions, sizes, colors, static_cast<kvs::PolygonGlyphObject::GlyphType>(m_glyph_editor->getGlyphType()) );
+
+
+        return polygonObject;
+    }
+}
+
 
 void Connect::deletedServerObject()
 {
