@@ -24,9 +24,9 @@
 #include <vismodule/MersenneTwister> 
 #include <vismodule/Module>
 #include <vismodule/CellByCellParticleGenerator>
-#include "CropRegion.h"
-#include "TransferFunctionSynthesizer.h"
-#include "TransferFunctionSynthesizerCreator.h"
+#include <vismodule/CropRegion>
+#include <vismodule/TransferFunctionSynthesizer>
+#include <vismodule/TransferFunctionSynthesizerCreator>
 #include "ExtendedTransferFunction.h"
 
 #include "timer.h"

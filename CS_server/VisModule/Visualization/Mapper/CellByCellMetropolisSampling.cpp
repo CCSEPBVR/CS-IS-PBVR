@@ -30,7 +30,7 @@
 #include <vismodule/GlobalCore>
 #include <vismodule/FrequencyTable>
 
-#include "common.h"
+#include <vismodule/timer_simple>
 
 //#include "mpi.h"
 #ifdef ENABLE_MPI
@@ -43,7 +43,7 @@
 #  include <omp.h>
 #endif // _OPENMP
 
-#include "timer_simple.h"
+#include <vismodule/timer_simple>
 
 #ifndef SIMDW 
 #define SIMDW 128

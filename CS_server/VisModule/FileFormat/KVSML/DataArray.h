@@ -23,7 +23,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "endian2.h"
+#include <vismodule/endian2>
 
 namespace vismodule
 {

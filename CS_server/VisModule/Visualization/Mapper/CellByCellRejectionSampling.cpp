@@ -30,7 +30,7 @@
 #include <vismodule/GlobalCore>
 
 #include <vismodule/Timer>
-#include "common.h"
+#include <vismodule/timer_simple>
 
 #include <cmath>
 //#include <mpi.h>
@@ -44,7 +44,7 @@
 #  include <omp.h>
 #endif // _OPENMP
 
-#include "timer_simple.h"
+#include <vismodule/timer_simple>
 
 namespace Generator = vismodule::CellByCellParticleGenerator;
 

@@ -16,7 +16,7 @@
 #include <vismodule/AVSUcd>
 #include <vismodule/Message>
 #include <vismodule/Vector3>
-#include "endian2.h"
+#include <vismodule/endian2>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -3,9 +3,9 @@
 
 #include <climits>
 #include <vismodule/CommandLine>
-#include "CropRegion.h"
+#include <vismodule/CropRegion>
 
-#include "TransferFunctionSynthesizer.h"
+#include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/ExtendedTransferFunction>
 
 class Argument : public vismodule::CommandLine

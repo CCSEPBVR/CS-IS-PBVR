@@ -15,22 +15,22 @@
 #include <vismodule/Matrix33>
 #include <vismodule/RotationMatrix33>
 
-#include "common.h"
+#include <vismodule/timer_simple>
 
-#include "PointObjectGenerator.h"
+#include <vismodule/PointObjectGenerator>
 
 #include <vismodule/Argument>
 
 #include <vismodule/AVSField>
 #include <vismodule/Timer>
-#include "KVSMLObjectPointWriter.h"
+#include <vismodule/KVSMLObjectPointWriter>
 //#include "KVSMLObjectPointMPIWriter.h"
-#include "JobDispatcher.h"
+#include <vismodule/JobDispatcher>
 #ifndef CPU_VER
 #include "JobCollector.h"
 #endif
-#include "FilterInformation.h"
-#include "ParameterFile.h"
+#include <vismodule/MultiVolumeProperty>
+#include <vismodule/TransferFunctionProperty>
 #ifndef CPU_VER
 #include "mpi.h"
 #endif
@@ -44,11 +44,10 @@
 #include <vismodule/File>
 
 #include <vismodule/ExtendedTransferFunction>
-#include "TransferFunctionSynthesizerCreator.h"
+#include <vismodule/TransferFunctionSynthesizerCreator>
 #include "VariableRange.h"
-#include "RangeEstimater.h"
 
-#include "timer_simple.h"
+#include <vismodule/timer_simple>
 
 #include <vismodule/Compiler>
 #ifdef VIS_MODULE_COMPILER_VC

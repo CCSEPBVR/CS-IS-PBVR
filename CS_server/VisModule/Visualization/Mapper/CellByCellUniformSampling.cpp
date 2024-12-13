@@ -37,9 +37,9 @@
 //#include <vismodule/QuadraticTriangleCell>
 //#include <vismodule/SquareCell>
 #include <vismodule/GlobalCore>
-#include "CropRegion.h"
+#include <vismodule/CropRegion>
 
-#include "common.h"
+#include <vismodule/timer_simple>
 #include <vismodule/FrequencyTable>
 //#include "SFMT/SFMT.h" 
 
@@ -53,7 +53,7 @@
 #  include <omp.h>
 #endif // _OPENMP
 
-#include "timer_simple.h"
+#include <vismodule/timer_simple>
 
 namespace Generator = vismodule::CellByCellParticleGenerator;
 

@@ -24,10 +24,10 @@
 #include <vismodule/Module>
 #include <vismodule/MersenneTwister> 
 #include <vismodule/CellByCellParticleGenerator>
-#include "CropRegion.h"
-#include "TransferFunctionSynthesizer.h"
+#include <vismodule/CropRegion>
+#include <vismodule/TransferFunctionSynthesizer>
 //#include "TransferFunctionSynthesizer_IS.h"
-#include "TransferFunctionSynthesizerCreator.h"
+#include <vismodule/TransferFunctionSynthesizerCreator>
 #include "ExtendedTransferFunction.h"
 //#include "SFMT/SFMT.h" 
 
