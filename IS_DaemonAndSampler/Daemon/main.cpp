@@ -121,11 +121,11 @@ void setDefalutTransferFunction(jpv::ParticleTransferServerMessage* servMes, con
         tt << "t" << i + 1;  
         servMes->m_transfer_function[i].m_name          = tt.str();
         servMes->m_transfer_function[i].m_color_variable       = qq.str();
-        servMes->m_transfer_function[i].m_color_variable_min   = servMes->m_variable_range.min( tt.str() + "_var_c" );
-        servMes->m_transfer_function[i].m_color_variable_max   = servMes->m_variable_range.max( tt.str() + "_var_c" ); 
+        servMes->m_transfer_function[i].m_color_variable_min   = servMes->m_server_side_variable_range.min( tt.str() + "_var_c" );
+        servMes->m_transfer_function[i].m_color_variable_max   = servMes->m_server_side_variable_range.max( tt.str() + "_var_c" ); 
         servMes->m_transfer_function[i].m_opacity_variable     = qq.str();
-        servMes->m_transfer_function[i].m_opacity_variable_min = servMes->m_variable_range.min( tt.str() + "_var_o" );
-        servMes->m_transfer_function[i].m_opacity_variable_max = servMes->m_variable_range.max( tt.str() + "_var_o" ); 
+        servMes->m_transfer_function[i].m_opacity_variable_min = servMes->m_server_side_variable_range.min( tt.str() + "_var_o" );
+        servMes->m_transfer_function[i].m_opacity_variable_max = servMes->m_server_side_variable_range.max( tt.str() + "_var_o" ); 
         servMes->m_transfer_function[i].m_resolution           = TF_resolution;
         servMes->m_transfer_function[i].m_equation_red         = ""; 
         servMes->m_transfer_function[i].m_equation_green       = ""; 
@@ -133,8 +133,8 @@ void setDefalutTransferFunction(jpv::ParticleTransferServerMessage* servMes, con
         servMes->m_transfer_function[i].m_equation_opacity     = "";
         kvs::ValueArray<kvs::UInt8> cc_table(c_table);
         kvs::ValueArray<float> oo_table(o_table);
-        kvs::ColorMap color_map( cc_table    , servMes->m_variable_range.min( tt.str() + "_var_c" ), servMes->m_variable_range.max( tt.str() + "_var_c" )  );
-        kvs::OpacityMap opacity_map( oo_table, servMes->m_variable_range.min( tt.str() + "_var_o" ), servMes->m_variable_range.max( tt.str() + "_var_o" )  );
+        kvs::ColorMap color_map( cc_table    , servMes->m_server_side_variable_range.min( tt.str() + "_var_c" ), servMes->m_server_side_variable_range.max( tt.str() + "_var_c" )  );
+        kvs::OpacityMap opacity_map( oo_table, servMes->m_server_side_variable_range.min( tt.str() + "_var_o" ), servMes->m_server_side_variable_range.max( tt.str() + "_var_o" )  );
         //kvs::ColorMap color_map( TF_resolution*3, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );
         //kvs::OpacityMap opacity_map( TF_resolution, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );
         //for (int n =0 ; n < TF_resolution*3 ; n++ ) color_map.table.at(n) = 1; // dummy data
@@ -517,7 +517,7 @@ int main( int argc, char** argv )
               //servMes.elemType = fil.m_list[0].elemType;
               //servMes.fileType = fil.m_list[0].fileType;
               //servMes.numIngredients = fil.m_list[0].numIngredients;
-                servMes.m_variable_range = range;
+                servMes.m_server_side_variable_range = range;
                 servMes.m_flag_send_bins = 1;
 
 #if 1
@@ -988,7 +988,7 @@ int main( int argc, char** argv )
                                 servMes.m_colors[3 * i + 1] = originalObject->colors()[3 * i + 1];
                                 servMes.m_colors[3 * i + 2] = originalObject->colors()[3 * i + 2];
                             }
-                            servMes.m_variable_range = vr;
+                            servMes.m_server_side_variable_range = vr;
                             if ( timer_count <= TIMER_COUNT_NUM )
                             {
                                 TIMER_END( 471 );

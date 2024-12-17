@@ -15,6 +15,8 @@ OBJS = Serializer.o \
        ParamInfo.o \
        VolumeObjectBase.o \
 	   VtkImport.o \
+	   GlyphGenerator.o \
+	   GlyphProperty.o \
        kvs_wrapper.o
 
 VPATH=${TRANSFER_FUNCTION_DIR}:${IMPORT_DIR}
