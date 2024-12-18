@@ -55,7 +55,7 @@
 #define mkdir( dir, mode ) _mkdir( dir )
 #endif
 
-#include "FileChecker.h"
+#include <vismodule/FileChecker>
 #include <vismodule/UnstructuredVolumeImporter>
 #include <vismodule/StructuredVolumeImporter>
 #include <vismodule/CellByCellParticleGenerator>
@@ -91,7 +91,7 @@ private:
 
     int m_mpi_rank;
 
-    const FilterInformationFile* m_fi;
+    const MultiVolumeProperty* m_mvp;
 
     std::string m_xcSynthStr;
     std::string m_ycSynthStr;
@@ -100,15 +100,15 @@ private:
 public:
 
     PointObjectCreator()
-        : m_volume(NULL), m_mpi_rank(0), m_fi(NULL) {}
+        : m_volume(NULL), m_mpi_rank(0), m_mvp(NULL) {}
 
     ~PointObjectCreator()
     {
     }
 
-    void setFilterInfo( const FilterInformationFile& fi )
+    void setFilterInfo( const MultiVolumeProperty& mvp )
     {
-        m_fi = &fi;
+        m_mvp = &mvp;
     }
 
     void setGT5D()
@@ -168,7 +168,7 @@ public:
 
     vismodule::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int timeStep,  const int st = 1 )
     {
-        m_generator.setFinlterInfo( m_fi );
+        m_generator.setFinlterInfo( m_mvp );
         m_generator.setCoordSynthTS( st );
 
         struct stat s;
@@ -185,7 +185,7 @@ public:
 
     vismodule::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int timeStep, const int st, const int vl)
     {
-        m_generator.setFinlterInfo( m_fi );
+        m_generator.setFinlterInfo( m_mvp );
         m_generator.setCoordSynthTS( st );
         m_generator.createFromFile( param, camera, param.m_subpixel_level, param.m_sampling_step, st, vl );
         vismodule::PointObject* po = m_generator.getPointObject();
@@ -435,18 +435,18 @@ bool IsDirectory( const std::string directory_path )
 
 //inline vismodule::UnstructuredVolumeObject* CreateVolumeData( const Argument& param,
 inline vismodule::VolumeObjectBase* CreateVolumeData( const Argument& param,
-                                                         const FilterInformationFile& fi,
+                                                         const MultiVolumeProperty& mvp,
                                                          const int& steps, const int& subvols )
 {
-    if ( fi.m_file_type == 1 || fi.m_file_type == 2 )
+    if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 )
     {
-        vismodule::File ifpx( fi.m_file_path );
+        vismodule::File ifpx( mvp.m_file_path );
         std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
         //vismodule::UnstructuredVolumeObject* volume = new vismodule::UnstructuredVolumeImporter( path_base,
-        vismodule::VolumeObjectBase* volume = new vismodule::UnstructuredVolumeImporter( path_base, fi.m_file_type, steps, subvols );
-        volume->setMinMaxValues( fi.m_min_value, fi.m_max_value );
-        volume->setMinMaxObjectCoords( fi.m_min_object_coord, fi.m_max_object_coord );
-        volume->setMinMaxExternalCoords( fi.m_min_object_coord, fi.m_max_object_coord );
+        vismodule::VolumeObjectBase* volume = new vismodule::UnstructuredVolumeImporter( path_base, mvp.m_file_type, steps, subvols );
+        volume->setMinMaxValues( mvp.m_min_value, mvp.m_max_value );
+        volume->setMinMaxObjectCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
+        volume->setMinMaxExternalCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
 
         return volume;
     }
@@ -455,10 +455,10 @@ inline vismodule::VolumeObjectBase* CreateVolumeData( const Argument& param,
         std::stringstream suffix;
         suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( steps )
                << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( subvols + 1 )
-               << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
+               << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
 
         //std::string m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
-        vismodule::File ifpx( fi.m_file_path );
+        vismodule::File ifpx( mvp.m_file_path );
         std::string m_input_data = ifpx.pathName() + ifpx.Separator()
                                    + ifpx.baseName() + suffix.str() + ".kvsml";
         //vismodule::UnstructuredVolumeObject* volume = new vismodule::UnstructuredVolumeImporter( m_input_data );
@@ -481,25 +481,25 @@ inline vismodule::VolumeObjectBase* CreateVolumeData( const Argument& param,
             //return false;
         }
 
-            volume->setMinMaxValues( fi.m_min_value, fi.m_max_value );
-            volume->setMinMaxObjectCoords( fi.m_min_object_coord, fi.m_max_object_coord );
-            volume->setMinMaxExternalCoords( fi.m_min_object_coord, fi.m_max_object_coord );
+            volume->setMinMaxValues( mvp.m_min_value, mvp.m_max_value );
+            volume->setMinMaxObjectCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
+            volume->setMinMaxExternalCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
         return volume;
     }
 }
 
 
-inline float CalculateSamplingStep( const FilterInformationList& fil )
+inline float CalculateSamplingStep( const MultiVolumePropertyList& mvpl )
 {
-    float max_coord_length = vismodule::Math::Max<float>( fil.m_total_max_object_coord.x() - fil.m_total_min_object_coord.x(),
-                                                    fil.m_total_max_object_coord.y() - fil.m_total_min_object_coord.y(),
-                                                    fil.m_total_max_object_coord.z() - fil.m_total_min_object_coord.z() );
+    float max_coord_length = vismodule::Math::Max<float>( mvpl.m_total_max_object_coord.x() - mvpl.m_total_min_object_coord.x(),
+                                                    mvpl.m_total_max_object_coord.y() - mvpl.m_total_min_object_coord.y(),
+                                                    mvpl.m_total_max_object_coord.z() - mvpl.m_total_min_object_coord.z() );
     return 0.1 * max_coord_length;
 }
 
 //kawamura2: This calculates optimized subpixel level.
 inline size_t CalculateSubpixelLevel( const Argument& param,
-                                      const FilterInformationList& fil,
+                                      const MultiVolumePropertyList& mvpl,
                                       const vismodule::Camera& camera )
 {
     namespace Generator = vismodule::CellByCellParticleGenerator;
@@ -507,7 +507,7 @@ inline size_t CalculateSubpixelLevel( const Argument& param,
     vismodule::VolumeObjectBase* volume;
     double total_volume = 0.0;
     double density_lev1 = 0.0;//kawamura2: particle density for subpixel_level=1
-    int steps = fil.m_total_start_steps;
+    int steps = mvpl.m_total_start_steps;
     int subvols = 0;
 
     //Total Volume Calculation
@@ -521,16 +521,16 @@ inline size_t CalculateSubpixelLevel( const Argument& param,
     int nprocs = 1;
 #endif
 
-    for ( subvols = 0; subvols < fil.m_total_number_subvolumes; subvols++ )
+    for ( subvols = 0; subvols < mvpl.m_total_number_subvolumes; subvols++ )
     {
         int xvl, fidx;
-        fidx = fil.getFileIndex( subvols, &xvl );
-        const FilterInformationFile& fi = fil.m_list[fidx];
+        fidx = mvpl.getFileIndex( subvols, &xvl );
+        const MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
         if ( subvols % nprocs == rank )
         {
             VIS_MODULE_TIMER_STA( 16 );
-            volume = CreateVolumeData( param, fi, steps, xvl );
+            volume = CreateVolumeData( param, mvp, steps, xvl );
             VIS_MODULE_TIMER_END( 16 );
 
             VIS_MODULE_TIMER_STA( 17 );
@@ -567,19 +567,19 @@ inline size_t CalculateSubpixelLevel( const Argument& param,
 }
 
 inline VariableRange Calculate_minmax( const Argument& param,
-                                      const FilterInformationList& fil)
+                                      const MultiVolumePropertyList& mvpl)
 {
     namespace Generator = vismodule::CellByCellParticleGenerator;
     //vismodule::UnstructuredVolumeObject* volume;
     vismodule::VolumeObjectBase* volume;
     double total_volume = 0.0;
     double density_lev1 = 0.0;//kawamura2: particle density for subpixel_level=1
-    int steps = fil.m_total_start_steps;
+    int steps = mvpl.m_total_start_steps;
     int subvols = 0;
 
     vismodule::Real64 tmp_min, tmp_max;
     std::vector<vismodule::Real64> min_vec, max_vec;
-    int nvariable = fil.m_total_number_ingredients;
+    int nvariable = mvpl.m_total_number_ingredients;
     min_vec.resize(nvariable);
     max_vec.resize(nvariable);
     for(int i = 0 ;i < nvariable ; i++)
@@ -599,17 +599,17 @@ inline VariableRange Calculate_minmax( const Argument& param,
     int nprocs = 1;
 #endif
 
-    for ( steps = fil.m_total_start_steps; steps <= fil.m_total_last_step; steps++ )
+    for ( steps = mvpl.m_total_start_steps; steps <= mvpl.m_total_last_step; steps++ )
     {
-        for ( subvols = 0; subvols < fil.m_total_number_subvolumes; subvols++ )
+        for ( subvols = 0; subvols < mvpl.m_total_number_subvolumes; subvols++ )
         {
             int xvl, fidx;
-            fidx = fil.getFileIndex( subvols, &xvl );
-            const FilterInformationFile& fi = fil.m_list[fidx];
+            fidx = mvpl.getFileIndex( subvols, &xvl );
+            const MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
             if ( subvols % nprocs == rank )
             {
-                volume = CreateVolumeData( param, fi, steps, xvl );
+                volume = CreateVolumeData( param, mvp, steps, xvl );
                 //volume->updateMinMaxValues();
                 int nnodes = volume->nnodes();
                 for (int n =0; n< nvariable; n++) 
@@ -816,7 +816,7 @@ void Calculate_minmax_glyph(const Argument& param,
 
 
 inline float CalculateDensityFactor( const Argument& param,
-                                     const FilterInformationFile& fi,
+                                     const MultiVolumeProperty& mvp,
                                      const vismodule::Camera& camera )
 {
     namespace Generator = vismodule::CellByCellParticleGenerator;
@@ -824,7 +824,7 @@ inline float CalculateDensityFactor( const Argument& param,
     vismodule::VolumeObjectBase* volume;
     double total_volume = 0.0;
     float great_density;
-    int steps = fi.m_start_step;
+    int steps = mvp.m_start_step;
     int subvols = 0;
 #ifndef CPU_VER
     int rank;
@@ -839,7 +839,7 @@ inline float CalculateDensityFactor( const Argument& param,
     if ( rank == 0 )
     {
         VIS_MODULE_TIMER_STA( 16 );
-        volume = CreateVolumeData( param, fi, steps, subvols );
+        volume = CreateVolumeData( param, mvp, steps, subvols );
         VIS_MODULE_TIMER_END( 16 );
         VIS_MODULE_TIMER_STA( 17 );
         total_volume += Generator::CalculateTotalVolume( *volume );
@@ -858,12 +858,12 @@ inline float CalculateDensityFactor( const Argument& param,
 #endif
 
 
-    for ( subvols = subvols + 1; subvols < fi.m_number_subvolumes; subvols++ )
+    for ( subvols = subvols + 1; subvols < mvp.m_number_subvolumes; subvols++ )
     {
         if ( subvols % nprocs == rank )
         {
             VIS_MODULE_TIMER_STA( 16 );
-            volume = CreateVolumeData( param, fi, steps, subvols );
+            volume = CreateVolumeData( param, mvp, steps, subvols );
             VIS_MODULE_TIMER_END( 16 );
             VIS_MODULE_TIMER_STA( 17 );
             total_volume += Generator::CalculateTotalVolume( *volume );
@@ -917,7 +917,7 @@ int main( int argc, char** argv )
     VIS_MODULE_TIMER_INIT();
     VIS_MODULE_TIMER_STA( 1 );
     Argument param( argc, argv );
-    FilterInformationList fil;
+    MultiVolumePropertyList mvpl;
     TransferFunctionSynthesizerCreator transfunc_creator;
 
 //    vismodule::Timer timer( vismodule::Timer::Start );
@@ -1028,7 +1028,7 @@ int main( int argc, char** argv )
                         vismodule::File pfl( pflfile );
                         if ( pfl.isExisted() )
                         {
-                            fil.loadPFL( pflfile );
+                            mvpl.loadPFL( pflfile );
                         }
                     }
                     else
@@ -1040,28 +1040,28 @@ int main( int argc, char** argv )
                         vismodule::File pfl( pflfile );
                         if ( pfl.isExisted() )
                         {
-                            fil.loadPFL( pflfile );
+                            mvpl.loadPFL( pflfile );
                         }
                         else if ( pfi.isExisted() )
                         {
-                            fil.loadPFL( pfifile );
+                            mvpl.loadPFL( pfifile );
                         }
 #else
 						pflfile = param.m_input_data_base;
 						vismodule::File pfl( pflfile );
 						if ( pfl.isExisted() )
 						{
-							fil.loadPFL( pflfile );
+							mvpl.loadPFL( pflfile );
 						}
 #endif
                     }
 
                     point_creator_lst.clear();
-                    for ( int idx = 0; idx < fil.m_list.size(); idx++ )
+                    for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
                     {
                         PointObjectCreator point_creator;
                         if ( param.m_gt5d == true ) point_creator.setGT5D();
-                        point_creator.setFilterInfo( fil.m_list[idx] );
+                        point_creator.setFilterInfo( mvpl.m_list[idx] );
                         point_creator.setCoordSynthStr( clntMes.m_x_synthesis,
                                                         clntMes.m_y_synthesis, clntMes.m_z_synthesis );
 //                        point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
@@ -1069,13 +1069,13 @@ int main( int argc, char** argv )
                         point_creator_lst.push_back( point_creator );
                     }
 
-                    transfunc_creator.setFilterInfo( fil.m_list[0] );
+                    transfunc_creator.setFilterInfo( mvpl.m_list[0] );
                     int nvariable;
-                    VariableRange range = Calculate_minmax( param, fil); 
+                    VariableRange range = Calculate_minmax( param, mvpl); 
                     if( !clntMes.m_import_flag ) 
                     {
                         std::cout << "defalt parameter " << std::endl;
-                        nvariable = fil.m_total_number_ingredients;
+                        nvariable = mvpl.m_total_number_ingredients;
                         transfunc_creator.setInitialProtocol( nvariable, range );
                     }
                     else
@@ -1094,24 +1094,24 @@ int main( int argc, char** argv )
                     if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                     if ( param.m_crop.isEnabled() )
                     {
-                        jd.initialize( fil.m_total_start_steps, fil.m_total_start_steps, fil.m_total_number_subvolumes,
-                                       fil.m_total_min_subvolume_coord,
-                                       fil.m_total_max_subvolume_coord,
+                        jd.initialize( mvpl.m_total_start_steps, mvpl.m_total_start_steps, mvpl.m_total_number_subvolumes,
+                                       mvpl.m_total_min_subvolume_coord,
+                                       mvpl.m_total_max_subvolume_coord,
                                        param.m_latency_threshold, param.m_job_id_pack_size,
                                        param.m_crop.getMinCoord(),
                                        param.m_crop.getMaxCoord() );
                     }
                     else
                     {
-                        jd.initialize( fil.m_total_start_steps, fil.m_total_start_steps, fil.m_total_number_subvolumes,
-                                       fil.m_total_min_subvolume_coord,
-                                       fil.m_total_max_subvolume_coord,
+                        jd.initialize( mvpl.m_total_start_steps, mvpl.m_total_start_steps, mvpl.m_total_number_subvolumes,
+                                       mvpl.m_total_min_subvolume_coord,
+                                       mvpl.m_total_max_subvolume_coord,
                                        param.m_latency_threshold, param.m_job_id_pack_size );
                     }
 
-                    param.m_sampling_step = CalculateSamplingStep( fil );
+                    param.m_sampling_step = CalculateSamplingStep( mvpl );
                     //param.m_sampling_step = 1;
-                    param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
+                    param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
                     param.m_particle_limit_pre = param.m_particle_limit;
 
                     clntMes.show();
@@ -1154,21 +1154,21 @@ int main( int argc, char** argv )
                     while ( jd.dispatchNext( wid, &st, &vl ) )
                     {
                         int xvl, fidx;
-                        fidx = fil.getFileIndex( vl, &xvl );
-                        FilterInformationFile& fi = fil.m_list[fidx];
+                        fidx = mvpl.getFileIndex( vl, &xvl );
+                        MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
                         std::stringstream suffix;
                         suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
+                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
                         //param.m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
-                        vismodule::File ifpx( fi.m_file_path );
+                        vismodule::File ifpx( mvp.m_file_path );
                         param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                              + ifpx.baseName() + suffix.str() + ".kvsml";
                         int timeStep = 1;
                         try
                         {
-                            if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+                            if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                             {
                                 object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
                             }
@@ -1275,7 +1275,7 @@ int main( int argc, char** argv )
                         vismodule::File pfl( pflfile );
                         if ( pfl.isExisted() )
                         {
-                            fil.loadPFL( pflfile );
+                            mvpl.loadPFL( pflfile );
                         }
                     }
                     else
@@ -1287,28 +1287,28 @@ int main( int argc, char** argv )
                         vismodule::File pfl( pflfile );
                         if ( pfl.isExisted() )
                         {
-                            fil.loadPFL( pflfile );
+                            mvpl.loadPFL( pflfile );
                         }
                         else if ( pfi.isExisted() )
                         {
-                            fil.loadPFL( pfifile );
+                            mvpl.loadPFL( pfifile );
                         }
 #else
 						pflfile = param.m_input_data_base;
 						vismodule::File pfl( pflfile );
 						if ( pfl.isExisted() )
 						{
-							fil.loadPFL( pflfile );
+							mvpl.loadPFL( pflfile );
 						}
 #endif
                     }
 
                     point_creator_lst.clear();
-                    for ( int idx = 0; idx < fil.m_list.size(); idx++ )
+                    for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
                     {
                         PointObjectCreator point_creator;
                         if ( param.m_gt5d == true ) point_creator.setGT5D();
-                        point_creator.setFilterInfo( fil.m_list[idx] );
+                        point_creator.setFilterInfo( mvpl.m_list[idx] );
                         point_creator.setCoordSynthStr( clntMes.m_x_synthesis,
                                                         clntMes.m_y_synthesis, clntMes.m_z_synthesis );
 //                        point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
@@ -1316,7 +1316,7 @@ int main( int argc, char** argv )
                         point_creator_lst.push_back( point_creator );
                     }
 
-                    transfunc_creator.setFilterInfo( fil.m_list[0] );
+                    transfunc_creator.setFilterInfo( mvpl.m_list[0] );
                     transfunc_creator.setProtocol( clntMes );
                     transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
                     param.m_transfunc_synthesizer = transfunc_creator.create();
@@ -1330,24 +1330,24 @@ int main( int argc, char** argv )
                     if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                     if ( param.m_crop.isEnabled() )
                     {
-                        jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
-                                       fil.m_total_min_subvolume_coord,
-                                       fil.m_total_max_subvolume_coord,
+                        jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                       mvpl.m_total_min_subvolume_coord,
+                                       mvpl.m_total_max_subvolume_coord,
                                        param.m_latency_threshold, param.m_job_id_pack_size,
                                        param.m_crop.getMinCoord(),
                                        param.m_crop.getMaxCoord() );
                     }
                     else
                     {
-                        jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
-                                       fil.m_total_min_subvolume_coord,
-                                       fil.m_total_max_subvolume_coord,
+                        jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                       mvpl.m_total_min_subvolume_coord,
+                                       mvpl.m_total_max_subvolume_coord,
                                        param.m_latency_threshold, param.m_job_id_pack_size );
                     }
 
-                    param.m_sampling_step = CalculateSamplingStep( fil );
+                    param.m_sampling_step = CalculateSamplingStep( mvpl );
                     //param.m_sampling_step = 1;
-                    param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
+                    param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
                     param.m_particle_limit_pre = param.m_particle_limit;
 
                     clntMes.show();
@@ -1390,22 +1390,22 @@ int main( int argc, char** argv )
                     while ( jd.dispatchNext( wid, &st, &vl ) )
                     {
                         int xvl, fidx;
-                        fidx = fil.getFileIndex( vl, &xvl );
-                        FilterInformationFile& fi = fil.m_list[fidx];
+                        fidx = mvpl.getFileIndex( vl, &xvl );
+                        MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
                         std::stringstream suffix;
                         suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
+                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
                         //param.m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
-                        vismodule::File ifpx( fi.m_file_path );
+                        vismodule::File ifpx( mvp.m_file_path );
                         param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                              + ifpx.baseName() + suffix.str() + ".kvsml";
                         param.m_subvolume_id = xvl ;
                         int timeStep = 1;
                         try
                         {
-                            if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+                            if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                             {
                                 object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
 
@@ -1907,13 +1907,13 @@ int main( int argc, char** argv )
                 signal( SIGTERM, SignalHandler );
                 signal( SIGINT, SignalHandler ); /* SIGINT is invalid here, because mpiexec uses it. */
 //              signal( SIGSEGV, SignalHandler );
-                if ( clntMes.m_step > fil.m_total_last_step )
+                if ( clntMes.m_step > mvpl.m_total_last_step )
                 {
-                    clntMes.m_step = fil.m_total_last_step;
+                    clntMes.m_step = mvpl.m_total_last_step;
                 }
-                else if ( clntMes.m_step < fil.m_total_start_steps )
+                else if ( clntMes.m_step < mvpl.m_total_start_steps )
                 {
-                    clntMes.m_step = fil.m_total_start_steps;
+                    clntMes.m_step = mvpl.m_total_start_steps;
                 }
 
                 if ( SigServer )
@@ -1970,14 +1970,14 @@ int main( int argc, char** argv )
                     vismodule::File pfl( pflfile );
                     if ( pfl.isExisted() )
                     {
-                        fil.loadPFL( pflfile );
+                        mvpl.loadPFL( pflfile );
                     }
                     else if ( pfi.isExisted() )
                     {
-                        fil.loadPFL( pfifile );
+                        mvpl.loadPFL( pfifile );
                     }
 #else
-                    // filクラスに情報を格納する
+                    // MultiVolumePropertyクラスに情報を格納する
                     // .pflファイルの場合はこれまで通り
                     // .pfiファイルの場合は中止する
                     // 変換前ファイルの場合はFileFormatReaderに渡す
@@ -1990,7 +1990,7 @@ int main( int argc, char** argv )
                         vismodule::File pfl(pflfile);
                         if (pfl.isExisted())
                         {
-                            fil.loadPFL(pflfile);
+                            mvpl.loadPFL(pflfile);
                         }
                     }
                     else if (found_pfi != std::string::npos)
@@ -2004,20 +2004,19 @@ int main( int argc, char** argv )
                         std::string pre_conversion_file_path = param.m_input_data_base;
                         std::cout << "変換前ファイルが選択されました" << std::endl;
                         // 入力は変換前ファイルパス
-                        // 出力はFilterInformationListクラス
-                        FileFormatReader file_format_reader;
-                        fil = file_format_reader.ConvertFilterInformationList(pre_conversion_file_path);
+                        // 出力はMultiVolumePropertyListクラス
+                        
                     }
 #endif
 
-                    if ( fil.m_list.size() > 0 )
+                    if ( mvpl.m_list.size() > 0 )
                     {
                         point_creator_lst.clear();
-                        for ( int idx = 0; idx < fil.m_list.size(); idx++ )
+                        for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
                         {
                             PointObjectCreator point_creator;
                             if ( param.m_gt5d == true ) point_creator.setGT5D();
-                            point_creator.setFilterInfo( fil.m_list[idx] );
+                            point_creator.setFilterInfo( mvpl.m_list[idx] );
                             point_creator.setCoordSynthStr( clntMes.m_x_synthesis,
                                                             clntMes.m_y_synthesis, clntMes.m_z_synthesis );
 //                            point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
@@ -2025,10 +2024,10 @@ int main( int argc, char** argv )
                             point_creator_lst.push_back( point_creator );
                         }
 
-                        transfunc_creator.setFilterInfo( fil.m_list[0] );
+                        transfunc_creator.setFilterInfo( mvpl.m_list[0] );
 
-                        std::cout << " time step = "          << fil.m_total_number_steps
-                                  << " subvolume division = " << fil.m_total_number_subvolumes
+                        std::cout << " time step = "          << mvpl.m_total_number_steps
+                                  << " subvolume division = " << mvpl.m_total_number_subvolumes
                                   << std::endl;
 
                     // send cltMes to all worker process >>
@@ -2059,13 +2058,13 @@ int main( int argc, char** argv )
                     }
 
                     //transfunc_creator.setProtocol( clntMes );
-                    //int nvariable = fil.m_total_number_ingredients;
+                    //int nvariable = mvpl.m_total_number_ingredients;
                     int nvariable;
-                    VariableRange range = Calculate_minmax( param, fil); 
+                    VariableRange range = Calculate_minmax( param, mvpl);
                     if( !clntMes.m_import_flag ) 
                     {
                         std::cout << "defalt parameter " << std::endl;
-                        nvariable = fil.m_total_number_ingredients;
+                        nvariable = mvpl.m_total_number_ingredients;
                         transfunc_creator.setInitialProtocol( nvariable, range );
                     }
                     else
@@ -2124,9 +2123,9 @@ int main( int argc, char** argv )
 
                     if ( param.m_crop.isEnabled() )
                     {
-                        jd.initialize( fil.m_total_start_steps, fil.m_total_start_steps, fil.m_total_number_subvolumes,
-                                fil.m_total_min_subvolume_coord,
-                                fil.m_total_max_subvolume_coord,
+                        jd.initialize( mvpl.m_total_start_steps, mvpl.m_total_start_steps, mvpl.m_total_number_subvolumes,
+                                mvpl.m_total_min_subvolume_coord,
+                                mvpl.m_total_max_subvolume_coord,
                                 param.m_latency_threshold, param.m_job_id_pack_size,
                                 param.m_crop.getMinCoord(),
                                 param.m_crop.getMaxCoord() );
@@ -2134,11 +2133,11 @@ int main( int argc, char** argv )
                     }
                     else
                     {
-                        jd.initialize( fil.m_total_start_steps, fil.m_total_start_steps, fil.m_total_number_subvolumes,
-                                fil.m_total_min_subvolume_coord,
-                                fil.m_total_max_subvolume_coord,
+                        jd.initialize( mvpl.m_total_start_steps, mvpl.m_total_start_steps, mvpl.m_total_number_subvolumes,
+                                mvpl.m_total_min_subvolume_coord,
+                                mvpl.m_total_max_subvolume_coord,
                                 param.m_latency_threshold, param.m_job_id_pack_size );
-                        servMes.m_number_volume_divide = fil.m_total_number_subvolumes;
+                        servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
                     }
 
                     if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
@@ -2146,8 +2145,8 @@ int main( int argc, char** argv )
                         VIS_MODULE_TIMER_STA( 470 );
                     }
 
-                    param.m_sampling_step = CalculateSamplingStep( fil );
-                    param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
+                    param.m_sampling_step = CalculateSamplingStep( mvpl );
+                    param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
 
                     VariableRange vr;
 //                    pts.sendMessage( servMes );
@@ -2201,15 +2200,15 @@ int main( int argc, char** argv )
                         if (mpi_size == 1) 
                         {
                             int xvl, fidx;
-                            fidx = fil.getFileIndex( vl, &xvl );
-                            FilterInformationFile& fi = fil.m_list[fidx];
+                            fidx = mvpl.getFileIndex( vl, &xvl );
+                            MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
                             vismodule::PointObject* tmp_obj = NULL;
                             std::stringstream suffix;
                             suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
                                 << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
-                            vismodule::File ifpx( fil.m_list[fidx].m_file_path );
+                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
+                            vismodule::File ifpx( mvpl.m_list[fidx].m_file_path );
                             param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                 + ifpx.baseName() + suffix.str() + ".kvsml";
                         param.m_subvolume_id = xvl ;
@@ -2218,7 +2217,7 @@ int main( int argc, char** argv )
                             {
                                 point_creator_lst[fidx].setCoordSynthStr( clntMes.m_x_synthesis,
                                         clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-                                if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+                                if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                                 {
                                     tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
                                 }
@@ -2349,7 +2348,7 @@ int main( int argc, char** argv )
 #endif
                     strncpy( servMes.m_header, "JPTP /1.0 000 OK\r\n", 18 );
                     servMes.m_number_particle = 0;
-                        servMes.m_number_glyph = 0 ;
+                    servMes.m_number_glyph = 0 ;
                     servMes.m_number_volume_divide = fil.m_total_number_subvolumes;
                     servMes.m_time_step = fil.m_total_start_steps;
                     servMes.m_start_step = fil.m_total_start_steps;
@@ -2530,9 +2529,9 @@ int main( int argc, char** argv )
 
                         if ( param.m_crop.isEnabled() )
                         {
-                            jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
-                                           fil.m_total_min_subvolume_coord,
-                                           fil.m_total_max_subvolume_coord,
+                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                           mvpl.m_total_min_subvolume_coord,
+                                           mvpl.m_total_max_subvolume_coord,
                                            param.m_latency_threshold, param.m_job_id_pack_size,
                                            param.m_crop.getMinCoord(),
                                            param.m_crop.getMaxCoord() );
@@ -2540,11 +2539,11 @@ int main( int argc, char** argv )
                         }
                         else
                         {
-                            jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
-                                           fil.m_total_min_subvolume_coord,
-                                           fil.m_total_max_subvolume_coord,
+                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                           mvpl.m_total_min_subvolume_coord,
+                                           mvpl.m_total_max_subvolume_coord,
                                            param.m_latency_threshold, param.m_job_id_pack_size );
-                            servMes.m_number_volume_divide = fil.m_total_number_subvolumes;
+                            servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
                         }
 
                         if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
@@ -2552,8 +2551,8 @@ int main( int argc, char** argv )
                             VIS_MODULE_TIMER_STA( 470 );
                         }
 
-                        param.m_sampling_step = CalculateSamplingStep( fil );
-                        param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
+                        param.m_sampling_step = CalculateSamplingStep( mvpl );
+                        param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
 
                         VariableRange vr;
                         pts.sendMessage( servMes );
@@ -2605,16 +2604,16 @@ int main( int argc, char** argv )
 
                             if (mpi_size == 1) {
                             int xvl, fidx;
-                            fidx = fil.getFileIndex( vl, &xvl );
-                            FilterInformationFile& fi = fil.m_list[fidx];
+                            fidx = mvpl.getFileIndex( vl, &xvl );
+                            MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
                             point_creator_lst[fidx].setFilterInfo( fi );
                             vismodule::PointObject* tmp_obj = NULL;
                             std::stringstream suffix;
                             suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
                                    << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
-                            vismodule::File ifpx( fil.m_list[fidx].m_file_path );
+                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
+                            vismodule::File ifpx( mvpl.m_list[fidx].m_file_path );
                             param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                                  + ifpx.baseName() + suffix.str() + ".kvsml";
                             param.m_subvolume_id = xvl ;
@@ -2626,7 +2625,7 @@ int main( int argc, char** argv )
                                                                           clntMes.m_y_synthesis, clntMes.m_z_synthesis );
 //                                point_creator_lst[fidx].setCoordSynthTkn( clntMes.x_synthesis_token,
 //                                                                          clntMes.y_synthesis_token, clntMes.z_synthesis_token );
-                                if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+                                if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                                 {
                                     tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
                                 }
