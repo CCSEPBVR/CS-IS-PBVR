@@ -9,7 +9,7 @@
 
 //--------------------------------------------------------------------------
 
-int FilterInformationFile::loadPFI( const std::string& filename )
+int MultiVolumeProperty::loadPFI( const std::string& filename )
 {
 
     std::ifstream fin( filename, std::ios::in | std::ios::binary );
@@ -235,18 +235,18 @@ int FilterInformationFile::loadPFI( const std::string& filename )
 
 //--------------------------------------------------------------------------
 
-FilterInformationList::FilterInformationList():
+MultiVolumePropertyList::MultiVolumePropertyList():
     m_total_number_nodes( 0 ), m_total_number_elements( 0 ), m_total_number_files( 0 ),
     m_total_start_steps( 0 ), m_total_last_step( 0 ), m_total_number_steps( 0 ),
     m_total_number_subvolumes( 0 ), m_total_min_value( 0.f ), m_total_max_value( 0.f )
 {
 }
 
-FilterInformationList::~FilterInformationList()
+MultiVolumePropertyList::~MultiVolumePropertyList()
 {
 }
 
-int FilterInformationList::loadPFL( const std::string& filename )
+int MultiVolumePropertyList::loadPFL( const std::string& filename )
 {
     m_list.clear();
     m_total_min_subvolume_coord.clear();
@@ -256,24 +256,24 @@ int FilterInformationList::loadPFL( const std::string& filename )
     if ( filename.size() < 4 || ! pfl.isExisted() ) return -1;
     if ( filename.substr( filename.size() - 3 ) == "pfi" )
     {
-        FilterInformationFile fi;
-        if ( fi.loadPFI( filename ) < 0 ) return -1;
-        m_list.push_back( fi );
+        MultiVolumeProperty mvp;
+        if ( mvp.loadPFI( filename ) < 0 ) return -1;
+        m_list.push_back( mvp );
 
-        m_total_number_nodes = fi.m_number_nodes;
-        m_total_number_elements = fi.m_number_elements;
-        m_total_number_files = fi.m_number_files;
-        m_total_start_steps = fi.m_start_step;
-        m_total_last_step = fi.m_end_steps;
-        m_total_number_steps = fi.m_number_steps;
-        m_total_number_subvolumes = fi.m_number_subvolumes;
-        m_total_min_object_coord = fi.m_min_object_coord;
-        m_total_max_object_coord = fi.m_max_object_coord;
-        m_total_min_subvolume_coord = fi.m_min_subvolume_coord;
-        m_total_max_subvolume_coord = fi.m_max_subvolume_coord;
-        m_total_min_value = fi.m_min_value;
-        m_total_max_value = fi.m_max_value;
-        m_total_number_ingredients = fi.m_number_ingredients;
+        m_total_number_nodes = mvp.m_number_nodes;
+        m_total_number_elements = mvp.m_number_elements;
+        m_total_number_files = mvp.m_number_files;
+        m_total_start_steps = mvp.m_start_step;
+        m_total_last_step = mvp.m_end_steps;
+        m_total_number_steps = mvp.m_number_steps;
+        m_total_number_subvolumes = mvp.m_number_subvolumes;
+        m_total_min_object_coord = mvp.m_min_object_coord;
+        m_total_max_object_coord = mvp.m_max_object_coord;
+        m_total_min_subvolume_coord = mvp.m_min_subvolume_coord;
+        m_total_max_subvolume_coord = mvp.m_max_subvolume_coord;
+        m_total_min_value = mvp.m_min_value;
+        m_total_max_value = mvp.m_max_value;
+        m_total_number_ingredients = mvp.m_number_ingredients;
         m_total_ingredient.resize( m_total_number_ingredients );
         for (int32_t i = 0; i < m_total_number_ingredients; i++)
         {
@@ -300,57 +300,57 @@ int FilterInformationList::loadPFL( const std::string& filename )
             if ( ! xpfi.isExisted() ) continue;
             fbuff = xpath;
         }
-        FilterInformationFile fi;
-        fi.loadPFI( fbuff );
+        MultiVolumeProperty mvp;
+        mvp.loadPFI( fbuff );
 
         if ( m_list.empty() )
         {
-            m_total_number_nodes = fi.m_number_nodes;
-            m_total_number_elements = fi.m_number_elements;
-            m_total_number_files = fi.m_number_files;
-            m_total_start_steps = fi.m_start_step;
-            m_total_last_step = fi.m_end_steps;
-            m_total_number_steps = fi.m_number_steps;
-            m_total_number_subvolumes = fi.m_number_subvolumes;
-            m_total_min_object_coord = fi.m_min_object_coord;
-            m_total_max_object_coord = fi.m_max_object_coord;
-            m_total_min_subvolume_coord = fi.m_min_subvolume_coord;
-            m_total_max_subvolume_coord = fi.m_max_subvolume_coord;
-            m_total_min_value = fi.m_min_value;
-            m_total_max_value = fi.m_max_value;
-            m_total_number_ingredients = fi.m_number_ingredients;
+            m_total_number_nodes = mvp.m_number_nodes;
+            m_total_number_elements = mvp.m_number_elements;
+            m_total_number_files = mvp.m_number_files;
+            m_total_start_steps = mvp.m_start_step;
+            m_total_last_step = mvp.m_end_steps;
+            m_total_number_steps = mvp.m_number_steps;
+            m_total_number_subvolumes = mvp.m_number_subvolumes;
+            m_total_min_object_coord = mvp.m_min_object_coord;
+            m_total_max_object_coord = mvp.m_max_object_coord;
+            m_total_min_subvolume_coord = mvp.m_min_subvolume_coord;
+            m_total_max_subvolume_coord = mvp.m_max_subvolume_coord;
+            m_total_min_value = mvp.m_min_value;
+            m_total_max_value = mvp.m_max_value;
+            m_total_number_ingredients = mvp.m_number_ingredients;
         }
         else
         {
-            m_total_number_nodes += fi.m_number_nodes;
-            m_total_number_elements += fi.m_number_elements;
-            m_total_number_files += fi.m_number_files;
-            m_total_start_steps = std::min( m_total_start_steps, fi.m_start_step );
-            m_total_last_step = std::max( m_total_last_step, fi.m_end_steps );
+            m_total_number_nodes += mvp.m_number_nodes;
+            m_total_number_elements += mvp.m_number_elements;
+            m_total_number_files += mvp.m_number_files;
+            m_total_start_steps = std::min( m_total_start_steps, mvp.m_start_step );
+            m_total_last_step = std::max( m_total_last_step, mvp.m_end_steps );
             m_total_number_steps = m_total_last_step - m_total_start_steps + 1;
-            m_total_number_subvolumes += fi.m_number_subvolumes;
+            m_total_number_subvolumes += mvp.m_number_subvolumes;
             m_total_min_object_coord[0]
-                = std::min( m_total_min_object_coord[0], fi.m_min_object_coord[0] );
+                = std::min( m_total_min_object_coord[0], mvp.m_min_object_coord[0] );
             m_total_min_object_coord[1]
-                = std::min( m_total_min_object_coord[1], fi.m_min_object_coord[1] );
+                = std::min( m_total_min_object_coord[1], mvp.m_min_object_coord[1] );
             m_total_min_object_coord[2]
-                = std::min( m_total_min_object_coord[2], fi.m_min_object_coord[2] );
+                = std::min( m_total_min_object_coord[2], mvp.m_min_object_coord[2] );
             m_total_max_object_coord[0]
-                = std::max( m_total_max_object_coord[0], fi.m_max_object_coord[0] );
+                = std::max( m_total_max_object_coord[0], mvp.m_max_object_coord[0] );
             m_total_max_object_coord[1]
-                = std::max( m_total_max_object_coord[1], fi.m_max_object_coord[1] );
+                = std::max( m_total_max_object_coord[1], mvp.m_max_object_coord[1] );
             m_total_max_object_coord[2]
-                = std::max( m_total_max_object_coord[2], fi.m_max_object_coord[2] );
-            std::copy( fi.m_min_subvolume_coord.begin(), fi.m_min_subvolume_coord.end(),
+                = std::max( m_total_max_object_coord[2], mvp.m_max_object_coord[2] );
+            std::copy( mvp.m_min_subvolume_coord.begin(), mvp.m_min_subvolume_coord.end(),
                        std::back_inserter( m_total_min_subvolume_coord ) );
-            std::copy( fi.m_max_subvolume_coord.begin(), fi.m_max_subvolume_coord.end(),
+            std::copy( mvp.m_max_subvolume_coord.begin(), mvp.m_max_subvolume_coord.end(),
                        std::back_inserter( m_total_max_subvolume_coord ) );
-            m_total_min_value = std::min( m_total_min_value, fi.m_min_value );
-            m_total_max_value = std::max( m_total_max_value, fi.m_max_value );
-            m_total_number_ingredients = std::max( m_total_number_ingredients, fi.m_number_ingredients );
+            m_total_min_value = std::min( m_total_min_value, mvp.m_min_value );
+            m_total_max_value = std::max( m_total_max_value, mvp.m_max_value );
+            m_total_number_ingredients = std::max( m_total_number_ingredients, mvp.m_number_ingredients );
         }
 
-        m_list.push_back( fi );
+        m_list.push_back( mvp );
     } // end of while()
     fin.close();
  
@@ -359,19 +359,19 @@ int FilterInformationList::loadPFL( const std::string& filename )
     return m_list.size();
 }
 
-void FilterInformationList::calculate_ingredient_min_max( const FilterInformationFile &fi, 
-                                                         std::vector<FilterInformationFile::IngredientsMinMax> *total_ingredient )
+void MultiVolumePropertyList::calculate_ingredient_min_max( const MultiVolumeProperty &mvp, 
+                                                         std::vector<MultiVolumeProperty::IngredientsMinMax> *total_ingredient )
 {
-    for ( int32_t i = 0; i < fi.m_number_ingredients; i++ )
+    for ( int32_t i = 0; i < mvp.m_number_ingredients; i++ )
     {
-        float min = fi.m_ingredient_step[0].m_ingredient[i].m_min;
-        float max = fi.m_ingredient_step[0].m_ingredient[i].m_max;
+        float min = mvp.m_ingredient_step[0].m_ingredient[i].m_min;
+        float max = mvp.m_ingredient_step[0].m_ingredient[i].m_max;
         (*total_ingredient)[i].m_min = std::min(min, (*total_ingredient)[i].m_min);
         (*total_ingredient)[i].m_max = std::max(max, (*total_ingredient)[i].m_max);
     }
 }
 
-int FilterInformationList::getFileIndex( const int vl, int* xvl ) const
+int MultiVolumePropertyList::getFileIndex( const int vl, int* xvl ) const
 {
     if ( m_list.empty() ) return -1;
     if ( vl >= m_total_number_subvolumes ) return -1;
@@ -387,7 +387,7 @@ int FilterInformationList::getFileIndex( const int vl, int* xvl ) const
     return idx;
 }
 
-void FilterInformationList::cropTimeStep( const int s, const int e )
+void MultiVolumePropertyList::cropTimeStep( const int s, const int e )
 {
     if ( m_list.empty() ) return;
     if ( s > e ) return;

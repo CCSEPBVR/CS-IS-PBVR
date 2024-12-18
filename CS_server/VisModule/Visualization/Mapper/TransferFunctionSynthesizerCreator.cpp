@@ -53,9 +53,9 @@ TransferFunctionSynthesizerCreator::TransferFunctionSynthesizerCreator()
 */
 }
 
-void TransferFunctionSynthesizerCreator::setFilterInfo( const FilterInformationFile& fi )
+void TransferFunctionSynthesizerCreator::setFilterInfo( const MultiVolumeProperty& mvp )
 {
-    this->initQuantityMap( fi.m_number_ingredients );
+    this->initQuantityMap( mvp.m_number_ingredients );
 }
 
 void TransferFunctionSynthesizerCreator::initQuantityMap( const int32_t m_number_ingredients )
@@ -87,9 +87,9 @@ void TransferFunctionSynthesizerCreator::setOpacityRange( const float min_value,
     }
 }
 
-void TransferFunctionSynthesizerCreator::setParameterFile( const ParameterFile& pa )
+void TransferFunctionSynthesizerCreator::setParameterFile( const TransferFunctionProperty& tfp )
 {
-    read_TF_from_ParamInfo( pa ); 
+    read_TF_from_ParamInfo( tfp ); 
 }
 
 void TransferFunctionSynthesizerCreator::setProtocol( const jpv::ParticleTransferClientMessage& clntMes )
@@ -385,24 +385,24 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
     }
 }
 
-void TransferFunctionSynthesizerCreator::set_param_info( const ParameterFile& pa )
+void TransferFunctionSynthesizerCreator::set_param_info( const TransferFunctionProperty& tfp )
 {
     m_transfunc.clear();
     m_voleqn.clear();
 
-    ParameterFile   pa1 = const_cast<ParameterFile&>( pa );
+    TransferFunctionProperty   tfp1 = const_cast<TransferFunctionProperty&>( tfp );
 
     // value check
-    if ( !pa1.getState( "TF_RESOLUTION" ) || !pa1.getState( "TF_SYNTH_C" ) || !pa1.getState( "TF_SYNTH_O" ) )
+    if ( !tfp1.getState( "TF_RESOLUTION" ) || !tfp1.getState( "TF_SYNTH_C" ) || !tfp1.getState( "TF_SYNTH_O" ) )
     {
         return;
     }
 
-    int32_t resolution = static_cast<int32_t>( pa1.getInt( "TF_RESOLUTION" ) );
+    int32_t resolution = static_cast<int32_t>( tfp1.getInt( "TF_RESOLUTION" ) );
     // delete by @hira at 2016/12/01
-    int transfer_function_number = pa1.getInt( "TF_NUMBER" );
-    this->m_color_transfunc_synthesis = pa1.getString( "TF_SYNTH_C" );
-    this->m_opacity_transfunc_synthesis = pa1.getString( "TF_SYNTH_O" );
+    int transfer_function_number = tfp1.getInt( "TF_NUMBER" );
+    this->m_color_transfunc_synthesis = tfp1.getString( "TF_SYNTH_C" );
+    this->m_opacity_transfunc_synthesis = tfp1.getString( "TF_SYNTH_O" );
 
     // 色関数
     for ( size_t n = 0; n < MAX_TF_NUMBER; n++ )
@@ -411,28 +411,28 @@ void TransferFunctionSynthesizerCreator::set_param_info( const ParameterFile& pa
         ss << "TF_NAME" << n + 1 << "_";
         const std::string tag_base = ss.str();
         std::string name = tag_base + "C";
-        if (!pa1.getState(name)) {
+        if (!tfp1.getState(name)) {
             continue;
         }
         NamedTransferFunction tf;
         VolumeEquation        ve_c;
 
         // value check
-        if (	!pa1.getState( tag_base + "C" ) ||
-                !pa1.getState( tag_base + "MIN_C" ) ||
-                !pa1.getState( tag_base + "MAX_C" ) ||
-                !pa1.getState( tag_base + "VAR_C" ) ||
-                !pa1.getState( tag_base + "TABLE_C" ) ) continue;
+        if (	!tfp1.getState( tag_base + "C" ) ||
+                !tfp1.getState( tag_base + "MIN_C" ) ||
+                !tfp1.getState( tag_base + "MAX_C" ) ||
+                !tfp1.getState( tag_base + "VAR_C" ) ||
+                !tfp1.getState( tag_base + "TABLE_C" ) ) continue;
 
         tf.create( ( size_t )resolution );
-        tf.m_name = pa1.getString( tag_base + "C" );
+        tf.m_name = tfp1.getString( tag_base + "C" );
         tf.m_resolution = resolution;
-        tf.m_color_variable_min = pa1.getFloat( tag_base + "MIN_C" );
-        tf.m_color_variable_max = pa1.getFloat( tag_base + "MAX_C" );
-        ve_c.m_equation = pa1.getString( tag_base + "VAR_C" );
+        tf.m_color_variable_min = tfp1.getFloat( tag_base + "MIN_C" );
+        tf.m_color_variable_max = tfp1.getFloat( tag_base + "MAX_C" );
+        ve_c.m_equation = tfp1.getString( tag_base + "VAR_C" );
 
         vismodule::ColorMap::Table colorTable( resolution * 3 );
-        std::string s_color = pa1.getString( tag_base + "TABLE_C" );
+        std::string s_color = tfp1.getString( tag_base + "TABLE_C" );
         char* cp_color = ( char* )s_color.c_str();
         for ( int32_t j = 0; j < resolution * 3; j++ )
         {
@@ -465,28 +465,28 @@ void TransferFunctionSynthesizerCreator::set_param_info( const ParameterFile& pa
         ss << "TF_NAME" << n + 1 << "_";
         const std::string tag_base = ss.str();
         std::string name = tag_base + "O";
-        if (!pa1.getState(name)) {
+        if (!tfp1.getState(name)) {
             continue;
         }
         NamedTransferFunction tf;
         VolumeEquation        ve_o;
 
         // value check
-        if (	!pa1.getState( tag_base + "O" ) ||
-                !pa1.getState( tag_base + "MIN_O" ) ||
-                !pa1.getState( tag_base + "MAX_O" ) ||
-                !pa1.getState( tag_base + "VAR_O" ) ||
-                !pa1.getState( tag_base + "TABLE_O" ) ) continue;
+        if (	!tfp1.getState( tag_base + "O" ) ||
+                !tfp1.getState( tag_base + "MIN_O" ) ||
+                !tfp1.getState( tag_base + "MAX_O" ) ||
+                !tfp1.getState( tag_base + "VAR_O" ) ||
+                !tfp1.getState( tag_base + "TABLE_O" ) ) continue;
 
         tf.create( ( size_t )resolution );
-        tf.m_name = pa1.getString( tag_base + "O" );
+        tf.m_name = tfp1.getString( tag_base + "O" );
         tf.m_resolution = resolution;
-        tf.m_opacity_variable_min = pa1.getFloat( tag_base + "MIN_O" );
-        tf.m_opacity_variable_max = pa1.getFloat( tag_base + "MAX_O" );
-        ve_o.m_equation = pa1.getString( tag_base + "VAR_O" );
+        tf.m_opacity_variable_min = tfp1.getFloat( tag_base + "MIN_O" );
+        tf.m_opacity_variable_max = tfp1.getFloat( tag_base + "MAX_O" );
+        ve_o.m_equation = tfp1.getString( tag_base + "VAR_O" );
 
         vismodule::OpacityMap::Table opacityTable( resolution );
-        std::string s_opacity = pa1.getString( tag_base + "TABLE_O" );
+        std::string s_opacity = tfp1.getString( tag_base + "TABLE_O" );
         char* cp_opacity = ( char* )s_opacity.c_str();
         for ( int32_t j = 0; j < resolution; j++ )
         {
@@ -520,31 +520,31 @@ void TransferFunctionSynthesizerCreator::set_param_info( const ParameterFile& pa
 ////void readTFfromParamInfo( ParamInfo* param,
 ////                          std::vector<vismodule::TransferFunction>& tf,
 ////                          TransferFunctionSynthesizer* tfs )
-void TransferFunctionSynthesizerCreator::read_TF_from_ParamInfo( const ParameterFile& pa ) 
+void TransferFunctionSynthesizerCreator::read_TF_from_ParamInfo( const TransferFunctionProperty& tfp ) 
 {
     m_transfunc.clear();
     m_voleqn.clear();
 
-    ParameterFile   pa1 = const_cast<ParameterFile&>( pa );
+    TransferFunctionProperty   tfp1 = const_cast<TransferFunctionProperty&>( tfp );
 
     // value check
-    if ( !pa1.getState( "TF_RESOLUTION" ) || !pa1.getState( "COLOR_SYNTH" ) || !pa1.getState( "OPACITY_SYNTH" ) )
+    if ( !tfp1.getState( "TF_RESOLUTION" ) || !tfp1.getState( "COLOR_SYNTH" ) || !tfp1.getState( "OPACITY_SYNTH" ) )
     {
         return;
     }
 
     // add by shimomura 2022/12/19
-    float particle_density         = pa1.getFloat( "PARTICLE_DENSITY" );  
-    float particle_data_size_limit = pa1.getFloat( "PARTICLE_DATA_SIZE_LIMIT" );
+    float particle_density         = tfp1.getFloat( "PARTICLE_DENSITY" );  
+    float particle_data_size_limit = tfp1.getFloat( "PARTICLE_DATA_SIZE_LIMIT" );
 
     m_synthesizer -> setParticleDensity(particle_density);
     m_synthesizer -> setParticleDataSizeLimit(particle_data_size_limit);
 
 
-    int32_t resolution = static_cast<int32_t>( pa1.getInt( "TF_RESOLUTION" ) );
-    int transfer_function_number = pa1.getInt( "TF_NUMBER" );
-    this->m_color_transfunc_synthesis = pa1.getString( "COLOR_SYNTH" );
-    this->m_opacity_transfunc_synthesis = pa1.getString( "OPACITY_SYNTH" );
+    int32_t resolution = static_cast<int32_t>( tfp1.getInt( "TF_RESOLUTION" ) );
+    int transfer_function_number = tfp1.getInt( "TF_NUMBER" );
+    this->m_color_transfunc_synthesis = tfp1.getString( "COLOR_SYNTH" );
+    this->m_opacity_transfunc_synthesis = tfp1.getString( "OPACITY_SYNTH" );
 
     //Read TFS
     std::vector<int> i_table;
@@ -553,7 +553,7 @@ void TransferFunctionSynthesizerCreator::read_TF_from_ParamInfo( const Parameter
     std::vector<EquationToken> var; 
     int tf_number;
 
-    i_table = pa1.getTableInt( "OPA_FUNC_EXP_TOKEN" );
+    i_table = tfp1.getTableInt( "OPA_FUNC_EXP_TOKEN" );
     if (i_table.size() < 128){
         std::cerr<<"Error retrieving TF from ParamInfo"<<std::endl<<
         "If you are trying to overwrite an existing job you may need to execute RESET.sh first."<<std::endl;
@@ -562,21 +562,21 @@ void TransferFunctionSynthesizerCreator::read_TF_from_ParamInfo( const Parameter
 
     for(size_t i=0; i<128; i++) eq.exp_token[i] = i_table[i];
 
-    i_table = pa1.getTableInt( "OPA_FUNC_VAR_NAME" );
+    i_table = tfp1.getTableInt( "OPA_FUNC_VAR_NAME" );
     for(size_t i=0; i<128; i++) eq.var_name[i] = i_table[i];
 
-    f_table = pa1.getTableFloat( "OPA_FUNC_VAL_ARRAY" );
+    f_table = tfp1.getTableFloat( "OPA_FUNC_VAL_ARRAY" );
     for(size_t i=0; i<128; i++) eq.val_array[i] = f_table[i];
 
     m_synthesizer ->setOpacityFunction( eq );
 
-    i_table = pa1.getTableInt( "COL_FUNC_EXP_TOKEN" );
+    i_table = tfp1.getTableInt( "COL_FUNC_EXP_TOKEN" );
     for(size_t i=0; i<128; i++) eq.exp_token[i] = i_table[i];
 
-    i_table = pa1.getTableInt( "COL_FUNC_VAR_NAME" );
+    i_table = tfp1.getTableInt( "COL_FUNC_VAR_NAME" );
     for(size_t i=0; i<128; i++) eq.var_name[i] = i_table[i];
 
-    f_table = pa1.getTableFloat( "COL_FUNC_VAL_ARRAY" );
+    f_table = tfp1.getTableFloat( "COL_FUNC_VAL_ARRAY" );
     for(size_t i=0; i<128; i++) eq.val_array[i] = f_table[i];
 
     //tf.m_selection  = NamedTransferFunction::SelectTransferFunction;
@@ -585,7 +585,7 @@ void TransferFunctionSynthesizerCreator::read_TF_from_ParamInfo( const Parameter
     //tfs->setColorFunction( eq );
 
     // get TF_NUMBER
-    tf_number = pa1.getInt( "TF_NUMBER" );
+    tf_number = tfp1.getInt( "TF_NUMBER" );
 
     for ( size_t i = 0; i < tf_number; i++ )
     {
@@ -593,13 +593,13 @@ void TransferFunctionSynthesizerCreator::read_TF_from_ParamInfo( const Parameter
         tss << "TF_NAME" << i + 1 << "_";
         const std::string tag_base = tss.str();
 
-        i_table = pa1.getTableInt( tag_base + "O_EXP_TOKEN" );
+        i_table = tfp1.getTableInt( tag_base + "O_EXP_TOKEN" );
         for(size_t i=0; i<128; i++) eq.exp_token[i] = i_table[i];
 
-        i_table = pa1.getTableInt( tag_base + "O_VAR_NAME" );
+        i_table = tfp1.getTableInt( tag_base + "O_VAR_NAME" );
         for(size_t i=0; i<128; i++) eq.var_name[i] = i_table[i];
 
-        f_table = pa1.getTableFloat( tag_base + "O_VAL_ARRAY" );
+        f_table = tfp1.getTableFloat( tag_base + "O_VAL_ARRAY" );
         for(size_t i=0; i<128; i++) eq.val_array[i] = f_table[i];
 
         var.push_back( eq );
@@ -614,13 +614,13 @@ void TransferFunctionSynthesizerCreator::read_TF_from_ParamInfo( const Parameter
         tss << "TF_NAME" << i + 1 << "_";
         const std::string tag_base = tss.str();
 
-        i_table = pa1.getTableInt( tag_base + "C_EXP_TOKEN" );
+        i_table = tfp1.getTableInt( tag_base + "C_EXP_TOKEN" );
         for(size_t i=0; i<128; i++) eq.exp_token[i] = i_table[i];
 
-        i_table = pa1.getTableInt( tag_base + "C_VAR_NAME" );
+        i_table = tfp1.getTableInt( tag_base + "C_VAR_NAME" );
         for(size_t i=0; i<128; i++) eq.var_name[i] = i_table[i];
 
-        f_table = pa1.getTableFloat( tag_base + "C_VAL_ARRAY" );
+        f_table = tfp1.getTableFloat( tag_base + "C_VAL_ARRAY" );
         for(size_t i=0; i<128; i++) eq.val_array[i] = f_table[i];
 
         var.push_back( eq );
@@ -639,16 +639,16 @@ void TransferFunctionSynthesizerCreator::read_TF_from_ParamInfo( const Parameter
         tss << "TF_NAME" << i + 1 << "_";
         const std::string tag_base = tss.str();
 
-        min = pa1.getFloat( tag_base +"MIN_C" );
-        max = pa1.getFloat( tag_base +"MAX_C" );
-        i_table = pa1.getTableInt( tag_base + "TABLE_C" );
+        min = tfp1.getFloat( tag_base +"MIN_C" );
+        max = tfp1.getFloat( tag_base +"MAX_C" );
+        i_table = tfp1.getTableInt( tag_base + "TABLE_C" );
         vismodule::ValueArray<vismodule::UInt8> u_table( i_table.size() );
         for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (vismodule::UInt8)i_table[j];
         vismodule::ColorMap color_map( u_table, min, max );
 
-        min = pa1.getFloat( tag_base +"MIN_O" );
-        max = pa1.getFloat( tag_base +"MAX_O" );
-        f_table = pa1.getTableFloat( tag_base + "TABLE_O" );
+        min = tfp1.getFloat( tag_base +"MIN_O" );
+        max = tfp1.getFloat( tag_base +"MAX_O" );
+        f_table = tfp1.getTableFloat( tag_base + "TABLE_O" );
         vismodule::ValueArray<float> ff_table( f_table );
         vismodule::OpacityMap opacity_map( ff_table, min, max );
 

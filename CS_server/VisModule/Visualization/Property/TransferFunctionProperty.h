@@ -8,7 +8,7 @@
 // #define VIS_MODULE_FILTER_PARAMFILENAME    "FILTER_PARAMETER_FILENAME"
 #define MAX_TF_NUMBER		99
 
-class ParameterFile
+class TransferFunctionProperty
 {
 
 private:

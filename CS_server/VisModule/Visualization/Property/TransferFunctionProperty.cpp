@@ -7,7 +7,7 @@
 
 #include <vismodule/TransferFunctionProperty>
 
-bool ParameterFile::LoadIN( const std::string& filename )
+bool TransferFunctionProperty::LoadIN( const std::string& filename )
 {
     std::ifstream fin( filename.c_str(), std::ios::in );
     std::string name;
@@ -155,21 +155,21 @@ bool ParameterFile::LoadIN( const std::string& filename )
     return true;
 }
 
-int ParameterFile::getInt( const std::string& name )
+int TransferFunctionProperty::getInt( const std::string& name )
 {
     // return std::atoi( m_parameter[name].c_str() );
     std::string value = m_parameter.at(name);
     return std::atoi( value.c_str());
 }
 
-float ParameterFile::getFloat( const std::string& name )
+float TransferFunctionProperty::getFloat( const std::string& name )
 {
     // return std::atof( m_parameter[name].c_str() );
     std::string value = m_parameter.at(name);
     return std::atof( value.c_str());
 }
 
-std::string ParameterFile::getString( const std::string& name )
+std::string TransferFunctionProperty::getString( const std::string& name )
 {
     if ( m_parameter.find( name ) == m_parameter.end() )
         return "";
@@ -184,7 +184,7 @@ std::string ParameterFile::getString( const std::string& name )
  * 可視化パラメータの項目数を取得する
  * @return		可視化パラメータの項目数
  */
-int ParameterFile::getSize()
+int TransferFunctionProperty::getSize()
 {
     return m_parameter.size();
 }
@@ -194,7 +194,7 @@ int ParameterFile::getSize()
  * TF_NAME[NN]_VAR_Cの項目を検索する
  * @return		TF_NAME[NN]_XXXXの項目数：NNの数
  */
-int ParameterFile::getTfnameSize()
+int TransferFunctionProperty::getTfnameSize()
 {
     int count = 0;
     std::map<std::string, std::string>::const_iterator itr;
@@ -211,7 +211,7 @@ int ParameterFile::getTfnameSize()
  * @param index       インデックス（NNではない）
  * @return		TF_NAME[NN]
  */
-std::string ParameterFile::getTfnamePrefix(int index)
+std::string TransferFunctionProperty::getTfnamePrefix(int index)
 {
     int count = 0;
     std::string prefix = "";
@@ -237,7 +237,7 @@ std::string ParameterFile::getTfnamePrefix(int index)
  * @param index       インデックス（NNではない）
  * @return		NN
  */
-int ParameterFile::getTfnameNumber(int index)
+int TransferFunctionProperty::getTfnameNumber(int index)
 {
     int count = 0;
     std::string str_num = "";
@@ -261,7 +261,7 @@ int ParameterFile::getTfnameNumber(int index)
 }
 
 // add by shimomura 2022/12/06
-std::vector<int> ParameterFile::getTableInt( std::string name )
+std::vector<int> TransferFunctionProperty::getTableInt( std::string name )
 {   
     std::string list = m_parameter[name];
     std::vector<int> table;
@@ -278,7 +278,7 @@ std::vector<int> ParameterFile::getTableInt( std::string name )
     return table;
 }
 
-std::vector<float> ParameterFile::getTableFloat( std::string name )
+std::vector<float> TransferFunctionProperty::getTableFloat( std::string name )
 {   
     std::string list = m_parameter[name];
     std::vector<float> table;
@@ -300,7 +300,7 @@ std::vector<float> ParameterFile::getTableFloat( std::string name )
  * TF_NAME[NN]_VAR_Cの項目であるかチェックする
  * @return		true=TF_NAME[NN]_VAR_C
  */
-bool ParameterFile::isTfnameNvalc(const std::string& item)
+bool TransferFunctionProperty::isTfnameNvalc(const std::string& item)
 {
     if (item.find("TF_NAME") == std::string::npos) return false;
     if (item.find("TF_NAME") != 0) return false;

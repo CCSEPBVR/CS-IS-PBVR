@@ -51,14 +51,14 @@ class PointObjectGenerator
 {
 private:
     vismodule::PointObject* m_object;
-    const FilterInformationFile*   m_fi;
+    const MultiVolumeProperty*   m_mvp;
 
     vismodule::CoordSynthesizerStrings m_coord_synthesizer_strings;
     vismodule::CoordSynthesizerTokens  m_coord_synthesizer_tokens;
 
 public:
 
-    PointObjectGenerator() : m_object( NULL ), m_fi(NULL) {};
+    PointObjectGenerator() : m_object( NULL ), m_mvp(NULL) {};
     ~PointObjectGenerator()
     {
         //delete m_object;
@@ -77,9 +77,9 @@ public:
 
     std::string getErrorMessage( const size_t maxMemory ) const;
 
-    void setFinlterInfo( const FilterInformationFile *fi )
+    void setFinlterInfo( const MultiVolumeProperty *mvp )
     {
-        m_fi = fi;
+        m_mvp = mvp;
     }
 
     void setCoordSynthStrs( const vismodule::CoordSynthesizerStrings& css )

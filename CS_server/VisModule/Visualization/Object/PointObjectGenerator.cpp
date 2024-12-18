@@ -109,10 +109,10 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
     vismodule::UnstructuredVolumeObject* volume;
     volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );
 
-    vismodule::File ifpx( m_fi->m_file_path );
+    vismodule::File ifpx( m_mvp->m_file_path );
     std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
 
-    volume = new vismodule::UnstructuredVolumeImporter( path_base, m_fi->m_file_type, st, vl );
+    volume = new vismodule::UnstructuredVolumeImporter( path_base, m_mvp->m_file_type, st, vl );
     if ( volume )
     {
         volume->setCoordSynthesizerStrings( m_coord_synthesizer_strings );
@@ -121,9 +121,9 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
 
     VIS_MODULE_TIMER_END( 260 );
 
-    volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
-    volume->setMinMaxObjectCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
-    volume->setMinMaxExternalCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
+    volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
+    volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
+    volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
 
     std::cout << *volume << std::endl;
     std::cout << "min:" << volume->minObjectCoord()   << ", max:" << volume->maxObjectCoord() << std::endl;

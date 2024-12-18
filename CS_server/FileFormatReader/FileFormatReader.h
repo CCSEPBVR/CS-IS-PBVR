@@ -1,16 +1,16 @@
-#include "FilterInformation.h"
+#include "MultiVolumeProperty.h"
 #include "PBVRFileInformation/UnstructuredPfi.h"
 
 class FileFormatReader {
 public:
 	/*===========================================================================*/
 	/*
-	*  @brief  変換前のファイルパスを読み込み必要な情報をFilterInformationListクラスに格納する関数
+	*  @brief  変換前のファイルパスを読み込み必要な情報をMultiVolumePropertyListクラスに格納する関数
 	*  @param  std::string file_path 変換前のファイルパス
-	*  @return FilterInformationList 必要な情報が格納されているFilterInformationListクラス
+	*  @return MultiVolumePropertyList 必要な情報が格納されているMultiVolumePropertyListクラス
 	*/
 	/*===========================================================================*/
-	FilterInformationList ConvertFilterInformationList( std::string  file_path );
+	MultiVolumePropertyList ConvertMultiVolumePropertyList( std::string  file_path );
 	/*===========================================================================*/
 	/*
 	*  @brief  変換前のファイルパスを読み込みcvt::UnstructuredPfiクラスの連想配列を作成する関数

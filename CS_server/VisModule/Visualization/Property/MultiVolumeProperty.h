@@ -7,7 +7,7 @@
 #include <vismodule/Vector3>
 #include <float.h>
 
-class FilterInformationFile
+class MultiVolumeProperty
 {
 public:
     class IngredientsMinMax
@@ -50,11 +50,11 @@ public:
 };
 
 
-class FilterInformationList
+class MultiVolumePropertyList
 {
 public:
-    FilterInformationList();
-    ~FilterInformationList();
+    MultiVolumePropertyList();
+    ~MultiVolumePropertyList();
 
     int loadPFL( const std::string& filename );
     int getFileIndex( const int vl, int* xvl ) const;
@@ -62,12 +62,12 @@ public:
 
 private:
 
-    std::vector<FilterInformationFile::IngredientsStep> m_total_ingredient_step;
+    std::vector<MultiVolumeProperty::IngredientsStep> m_total_ingredient_step;
 
-    void calculate_ingredient_min_max( const FilterInformationFile &fi,
-                                       std::vector<FilterInformationFile::IngredientsMinMax> *total_ingredient );
+    void calculate_ingredient_min_max( const MultiVolumeProperty &mvp,
+                                       std::vector<MultiVolumeProperty::IngredientsMinMax> *total_ingredient );
 public:
-    std::vector<FilterInformationFile> m_list;
+    std::vector<MultiVolumeProperty> m_list;
 
     int32_t m_total_number_nodes;
     int32_t m_total_number_elements;
@@ -83,7 +83,7 @@ public:
     float   m_total_min_value;
     float   m_total_max_value;
     int32_t m_total_number_ingredients;
-    std::vector<FilterInformationFile::IngredientsMinMax> m_total_ingredient;
+    std::vector<MultiVolumeProperty::IngredientsMinMax> m_total_ingredient;
 };
 
 #endif // VIS_MODULE__FILTER_INFO_H_INCLDE

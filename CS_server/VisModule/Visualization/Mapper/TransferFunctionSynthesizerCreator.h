@@ -41,7 +41,7 @@ public:
     std::vector<NamedTransferFunction> transfunc(); 
     //std::vector<vismodule::TransferFunction> transfunc(); 
     //std::vector<VolumeEquation>        voleq();
-    void setFilterInfo( const FilterInformationFile& fi );
+    void setFilterInfo( const MultiVolumeProperty& mvp );
     void initQuantityMap( const int32_t m_number_ingredients );
     void setRange( const std::string name, const float min_value, const float max_value );
     //void setColorRange( const std::string& name, const float min_value, const float max_value );
@@ -50,7 +50,7 @@ public:
     void setOpacityRange( const float min_value, const float max_value );
     void setProtocol(  const jpv::ParticleTransferClientMessage& clntMes );
     void setInitialProtocol(  const int nvariable, const VariableRange vr );
-    void setParameterFile(  const ParameterFile& pa );
+    void setParameterFile(  const TransferFunctionProperty& tfp );
     void setAsisTransferFunction( const vismodule::TransferFunction& tf );
     void setTransferFunction( jpv::ParticleTransferServerMessage* servMes , const VariableRange vr);
     // add by @hira at 2016/12/01
@@ -79,8 +79,8 @@ private:
 private:
     void assign();
     void set_protocol(  const jpv::ParticleTransferClientMessage& clntMes );
-    void set_param_info(  const ParameterFile& pa );
-    void read_TF_from_ParamInfo(  const ParameterFile& pa );
+    void set_param_info(  const TransferFunctionProperty& tfp );
+    void read_TF_from_ParamInfo(  const TransferFunctionProperty& tfp );
     
 //    EquationToken convert_token(std::string expression); 
     
