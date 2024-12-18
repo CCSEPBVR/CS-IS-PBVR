@@ -16,7 +16,6 @@ namespace kvs
 class Camera;
 class TransferFunction;
 }
-
 namespace jpv
 {
 
@@ -140,6 +139,7 @@ public:
     EquationToken z_synthesis_token;//z_synthesis; CS ONLY
 
     //グリフ
+    bool glyph_flag;
     int32_t m_direction_variable[3];
 
     DataDefines m_size_sampling_method;
@@ -150,6 +150,7 @@ public:
     uint32_t m_seed;
     int32_t m_stride;
 
+    kvs::ColorMap m_color_map;
     std::vector<int32_t> m_glyph_color_map_table;
 
     DataDefines m_color_data_sampling_method;
