@@ -115,6 +115,8 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         s += jpv::Serializer::byteSize( m_color_transfer_function_synthesis );
         s += jpv::Serializer::byteSize( m_opacity_transfer_function_synthesis );
 
+        // glyph
+        s += sizeof( bool );
         for( int i = 0; i < 3; i++ )
         {
             s += jpv::Serializer::byteSize( m_direction_variable[i] );
@@ -257,6 +259,8 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         index += jpv::Serializer::write( buf + index, m_color_transfer_function_synthesis );
         index += jpv::Serializer::write( buf + index, m_opacity_transfer_function_synthesis );
 
+        // glyph
+        index += jpv::Serializer::write(buf + index, m_glyph_flag);
         for( int i = 0; i < 3; i++ )
         {
             index += jpv::Serializer::write( buf + index, m_direction_variable[i] );
@@ -456,6 +460,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
             m_size_variable.push_back(value);
         }
 
+        index += jpv::Serializer::read( buf + index, &m_glyph_flag );
         index += jpv::Serializer::read( buf + index, &m_distribution_mode );
         index += jpv::Serializer::read( buf + index, &m_number_of_sampling_point );
         index += jpv::Serializer::read( buf + index, &m_seed );

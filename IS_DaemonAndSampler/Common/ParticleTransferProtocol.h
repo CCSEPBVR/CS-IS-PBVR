@@ -139,7 +139,7 @@ public:
     EquationToken z_synthesis_token;//z_synthesis; CS ONLY
 
     //グリフ
-    bool glyph_flag;
+    bool m_glyph_flag; // グリフの生成判定
     int32_t m_direction_variable[3];
 
     DataDefines m_size_sampling_method;
