@@ -196,6 +196,7 @@ public:
         const int loop_cnt,
         const kvs::Vector3f *local_coord,
         const kvs::Vector3f *global_coord,
+        const glyph_parameters& glyphParameter,
         kvs::Vector3f* glypht_vector);
 
  void CalculateGlyphColorArray(
@@ -204,6 +205,8 @@ public:
     const kvs::Vector3f *local_coord,
     const kvs::Vector3f *global_coord,
     std::vector<pbvr::TransferFunction>& tf,
+    const glyph_parameters& glyphParameter,
+    //const kvs::ColorMap color_map,
     kvs::RGBColor *color_seq);
  
  void CalculateGlyphSizeArray(
@@ -212,6 +215,7 @@ public:
     const kvs::Vector3f *local_coord,
     const kvs::Vector3f *global_coord,
     std::vector<pbvr::TransferFunction>& tf,
+    const glyph_parameters& glyphParameter,
     float* size_seq);
        
 

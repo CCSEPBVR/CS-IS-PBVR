@@ -1333,6 +1333,8 @@ void TransferFunctionSynthesizer::CalculateGlyphColorArray(
     const kvs::Vector3f *local_coord,
     const kvs::Vector3f *global_coord,
     std::vector<pbvr::TransferFunction>& tf,
+    const glyph_parameters& glyphParameter,
+//    const kvs::ColorMap color_map,
     kvs::RGBColor *color_seq)
 {
 
@@ -1376,115 +1378,44 @@ void TransferFunctionSynthesizer::CalculateGlyphColorArray(
                                    grad_array_z[j] );
     }
 
+
     //kvs::RGBColor colors[m_col_var.size()][loop_cnt]; //result of t_func.colorMap().at( m_scalars[i] );
     kvs::RGBColor colors[loop_cnt]; //result of t_func.colorMap().at( m_scalars[i] );
 
     m_var_value_array[X] = global_coord_x;
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
+    
+    std::vector<int> color_var = glyphParameter.m_color_data_variables;
+    int n_color_data=color_var.size();
 
-        for( int jx=0; jx<loop_cnt; jx++)
+    for( int jx=0; jx<loop_cnt; jx++)
+    {
+        for( size_t j= 0; j < n_color_data; j++ ) // スタブデータとして　0,1　を選択
         {
-            for( size_t j= 0; j < 2; j++ ) // スタブデータとして　0,1　を選択
-            {
-                eval_result[jx] += scalar_array[j][jx] * scalar_array[j][jx] ; 
-            }
-            eval_result[jx] = std::sqrt(eval_result[jx]) ; 
-
+            eval_result[jx] += scalar_array[color_var[j]][jx] * scalar_array[color_var[j]][jx] ; 
         }
+        eval_result[jx] = std::sqrt(eval_result[jx]) ; 
 
-        for( int jx=0; jx<loop_cnt; jx++)
-        {
-//            colors[jx] = tf[0].colorMap().at( eval_result[jx] );
-            color_seq[jx] = tf[0].colorMap().at( eval_result[jx] );
-        }
+    }
 
-//        //結果を配列に格納
-//    for( int jx=0; jx<loop_cnt; jx++ )
-//    {
-//        color_seq[jx] = colors[jx];
-////        color_seq[jx].set(
-////            (kvs::UInt8)(red_array[jx] * 255),
-////            (kvs::UInt8)(green_array[jx] * 255),
-////            (kvs::UInt8)(blue_array[jx] * 255) );
-//    }
-
-
-//    for( size_t i = 0; i < m_col_var.size(); i++ )
-//    {
-//        //set variable eq. ex) Q1+Q2/Q3
-//        m_rpn.setExpToken( &(m_col_var[i].exp_token[0]) );
-//        m_rpn.setVariableName( &(m_col_var[i].var_name[0]) );
-//        m_rpn.setNumber( &(m_col_var[i].val_array[0]) );
-//
-//        //id of Q1=4, Q2=8,,,,, Qn=4*n
-//        for( size_t j= 0; j < nvar; j++ )
+//        for( int jx=0; jx<loop_cnt; jx++)
 //        {
-//            m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
-//            m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
-//            m_var_value_array[4*(j+1)+2] = &grad_array_y[j][0];
-//            m_var_value_array[4*(j+1)+3] = &grad_array_z[j][0];
-//        }
+//            for( size_t j= 0; j < 2; j++ ) // スタブデータとして　0,1　を選択
+//            {
+//                eval_result[jx] += scalar_array[color_var[j]][jx] * scalar_array[color_var[j]][jx] ; 
+//                eval_result[jx] += scalar_array[j][jx] * scalar_array[j][jx] ; 
+//            }
+//            eval_result[jx] = std::sqrt(eval_result[jx]) ; 
 //
-//       m_rpn.setVariableValueArray( m_var_value_array );
-//       m_rpn.evalArray( eval_result, loop_cnt );
-//
-//        for( int jx=0; jx<loop_cnt; jx++){
-//            colors[i][jx] = tf[i].colorMap().at( eval_result[jx] );
 //        }
-//    }
 
-//    m_rpn.setExpToken( &(m_col_func.exp_token[0]) );
-//    m_rpn.setVariableName( &(m_col_func.var_name[0]) );
-//    m_rpn.setNumber( &(m_col_func.val_array[0]) );
-//
-//    float color_array[m_col_var.size()][loop_cnt];
-//    float red_array[loop_cnt];
-//    float green_array[loop_cnt];
-//    float blue_array[loop_cnt];
-//
-//    //RED
-//    for( size_t i = 0; i < m_col_var.size(); i++ )
-//    {
-//        for( int jx=0; jx<loop_cnt; jx++ ){
-//            color_array[i][jx] = (float)colors[i][jx].r() / 255.0;
-//        }
-//        m_var_value_array[ VAR_OFFSET_C+i ] = &color_array[i][0];
-//    }
-//    m_rpn.setVariableValueArray( m_var_value_array );
-//    m_rpn.evalArray( red_array, loop_cnt );
-//
-//    //GREEN
-//    for( size_t i = 0; i < m_col_var.size(); i++ )
-//    {
-//        for( int jx=0; jx<loop_cnt; jx++ ){
-//            color_array[i][jx] = (float)colors[i][jx].g() / 255.0;
-//        }
-//        m_var_value_array[ VAR_OFFSET_C+i ] = &color_array[i][0];
-//    }
-//    m_rpn.setVariableValueArray( m_var_value_array );
-//    m_rpn.evalArray( green_array, loop_cnt );
-//
-//    //BLUE
-//    for( size_t i = 0; i < m_col_var.size(); i++ )
-//    {
-//        for( int jx=0; jx<loop_cnt; jx++ ){
-//            color_array[i][jx] = (float)colors[i][jx].b() / 255.0;
-//        }
-//        m_var_value_array[ VAR_OFFSET_C+i ] = &color_array[i][0];
-//    }
-//    m_rpn.setVariableValueArray( m_var_value_array );
-//    m_rpn.evalArray( blue_array, loop_cnt );
-//
-//    //結果を配列に格納
-//    for( int jx=0; jx<loop_cnt; jx++ )
-//    {
-//        color_seq[jx].set(
-//            (kvs::UInt8)(red_array[jx] * 255),
-//            (kvs::UInt8)(green_array[jx] * 255),
-//            (kvs::UInt8)(blue_array[jx] * 255) );
-//    }
-
+//        std::cout << " glyphParameter.m_color_map.max() = " <<  glyphParameter.m_color_map.maxValue() << std::endl;
+        for( int jx=0; jx<loop_cnt; jx++)
+        {
+//            colors[jx] = glyphParameter.m_color_map.at( eval_result[jx] );
+            color_seq[jx] = glyphParameter.m_color_map.at( eval_result[jx] );
+        }
 }
 
 void TransferFunctionSynthesizer::CalculateGlyphSizeArray(
@@ -1493,6 +1424,7 @@ void TransferFunctionSynthesizer::CalculateGlyphSizeArray(
     const kvs::Vector3f *local_coord,
     const kvs::Vector3f *global_coord,
     std::vector<pbvr::TransferFunction>& tf,
+    const glyph_parameters& glyphParameter,
     float *size_seq)
 {
 
@@ -1540,14 +1472,16 @@ void TransferFunctionSynthesizer::CalculateGlyphSizeArray(
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
 
+    std::vector<int> size_var = glyphParameter.m_size_variables;
+    int n_size_data=size_var.size();
+
     for( int jx=0; jx<loop_cnt; jx++)
     {
-        for( size_t j= 0; j < 2; j++ ) // スタブデータとして　0,1　を選択
+        for( size_t j= 0; j < n_size_data; j++ ) // スタブデータとして　0,1　を選択
         {
-            eval_result[jx] += scalar_array[j][jx] * scalar_array[j][jx] ; 
+            eval_result[jx] += scalar_array[size_var[j]][jx] * scalar_array[size_var[j]][jx] ; 
         }
         eval_result[jx] = std::sqrt(eval_result[jx]) ; 
-
     }
 
     for( int jx=0; jx<loop_cnt; jx++)
@@ -1558,81 +1492,6 @@ void TransferFunctionSynthesizer::CalculateGlyphSizeArray(
     }
 
 
-//    for( size_t i = 0; i < m_col_var.size(); i++ )
-//    {
-//        //set variable eq. ex) Q1+Q2/Q3
-//        m_rpn.setExpToken( &(m_col_var[i].exp_token[0]) );
-//        m_rpn.setVariableName( &(m_col_var[i].var_name[0]) );
-//        m_rpn.setNumber( &(m_col_var[i].val_array[0]) );
-//
-//        //id of Q1=4, Q2=8,,,,, Qn=4*n
-//        for( size_t j= 0; j < nvar; j++ )
-//        {
-//            m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
-//            m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
-//            m_var_value_array[4*(j+1)+2] = &grad_array_y[j][0];
-//            m_var_value_array[4*(j+1)+3] = &grad_array_z[j][0];
-//        }
-//
-//       m_rpn.setVariableValueArray( m_var_value_array );
-//       m_rpn.evalArray( eval_result, loop_cnt );
-//
-//        for( int jx=0; jx<loop_cnt; jx++)
-//        {
-//            size_seq[jx] = tf[0].colorMap().at( eval_result[jx] );
-//        }
-//    }
-
-//    m_rpn.setExpToken( &(m_col_func.exp_token[0]) );
-//    m_rpn.setVariableName( &(m_col_func.var_name[0]) );
-//    m_rpn.setNumber( &(m_col_func.val_array[0]) );
-//
-//    float color_array[m_col_var.size()][loop_cnt];
-//    float red_array[loop_cnt];
-//    float green_array[loop_cnt];
-//    float blue_array[loop_cnt];
-//
-//    //RED
-//    for( size_t i = 0; i < m_col_var.size(); i++ )
-//    {
-//        for( int jx=0; jx<loop_cnt; jx++ ){
-//            color_array[i][jx] = (float)colors[i][jx].r() / 255.0;
-//        }
-//        m_var_value_array[ VAR_OFFSET_C+i ] = &color_array[i][0];
-//    }
-//    m_rpn.setVariableValueArray( m_var_value_array );
-//    m_rpn.evalArray( red_array, loop_cnt );
-//
-//    //GREEN
-//    for( size_t i = 0; i < m_col_var.size(); i++ )
-//    {
-//        for( int jx=0; jx<loop_cnt; jx++ ){
-//            color_array[i][jx] = (float)colors[i][jx].g() / 255.0;
-//        }
-//        m_var_value_array[ VAR_OFFSET_C+i ] = &color_array[i][0];
-//    }
-//    m_rpn.setVariableValueArray( m_var_value_array );
-//    m_rpn.evalArray( green_array, loop_cnt );
-//
-//    //BLUE
-//    for( size_t i = 0; i < m_col_var.size(); i++ )
-//    {
-//        for( int jx=0; jx<loop_cnt; jx++ ){
-//            color_array[i][jx] = (float)colors[i][jx].b() / 255.0;
-//        }
-//        m_var_value_array[ VAR_OFFSET_C+i ] = &color_array[i][0];
-//    }
-//    m_rpn.setVariableValueArray( m_var_value_array );
-//    m_rpn.evalArray( blue_array, loop_cnt );
-//
-//    //結果を配列に格納
-//    for( int jx=0; jx<loop_cnt; jx++ ){
-//        color_seq[jx].set(
-//            (kvs::UInt8)(red_array[jx] * 255),
-//            (kvs::UInt8)(green_array[jx] * 255),
-//            (kvs::UInt8)(blue_array[jx] * 255) );
-//    }
-
 }
 
 
@@ -1641,6 +1500,7 @@ void TransferFunctionSynthesizer::CalculateGlyphVector(
         const int loop_cnt,
         const kvs::Vector3f *local_coord,
         const kvs::Vector3f *global_coord,
+        const glyph_parameters& glyphParameter,
         kvs::Vector3f* glyph_vector)
 {
 
@@ -1686,35 +1546,16 @@ void TransferFunctionSynthesizer::CalculateGlyphVector(
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
 
-    for( size_t i = 0; i < m_col_var.size(); i++ )
-    {
-        m_rpn.setExpToken( &(m_col_var[i].exp_token[0]) );
-        m_rpn.setVariableName( &(m_col_var[i].var_name[0]) );
-        m_rpn.setNumber( &(m_col_var[i].val_array[0]) );
-
-        //id of Q1=4, Q2=8,,,,, Qn=4*n
-        //id of dxQ1=5, dyQ1=6, dzQ1=7,
-        for( size_t j= 0; j < nvar; j++ )
-        {
-            m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
-            m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
-            m_var_value_array[4*(j+1)+2] = &grad_array_y[j][0];
-            m_var_value_array[4*(j+1)+3] = &grad_array_z[j][0];
-        }
-     
-        m_rpn.setVariableValueArray( m_var_value_array );
-
-        m_rpn.evalArray(&eval_result[i][0], loop_cnt);
-    }
+    std::vector<int> vector_var = glyphParameter.m_direction_variables;
 
     for( size_t i=0; i<loop_cnt; i++)
     {
-        for( size_t j=0; j<3; j++) // j = 0,1,2
-        {
-            glyph_vector[i].x() = eval_result[j][i];
-            glyph_vector[i].y() = eval_result[j][i];
-            glyph_vector[i].z() = eval_result[j][i];
-        }
+//        for( size_t j=0; j<3; j++) // j = 0,1,2
+//        {
+            glyph_vector[i].x() = scalar_array[vector_var[0]][i];
+            glyph_vector[i].y() = scalar_array[vector_var[1]][i];
+            glyph_vector[i].z() = scalar_array[vector_var[2]][i];
+//        }
     }
 
 }

@@ -99,12 +99,13 @@ extern "C" {
 
     typedef struct
     {
+    std::string m_glyphParamPath;
     std::string m_glyphFilePath;
     std::vector<float>  m_glyph_coords;
     std::vector<float>  m_glyph_vectors;
     std::vector<float>  m_glyph_sizes;
     std::vector<Byte>   m_glyph_colors;
-    std::vector<float>  m_glyph_data_colors;
+    std::vector<float>  m_glyph_colors_data;
 
     std::vector<int>  m_direction_variables;
     jpv::DataDefines m_size_sampling_method;

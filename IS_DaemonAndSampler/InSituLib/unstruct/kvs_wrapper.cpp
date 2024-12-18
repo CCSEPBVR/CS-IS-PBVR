@@ -979,10 +979,8 @@ bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, Pa
 
 bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& particleBase, const int time_step )
 {
-    int mpi_rank = 0;
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-    // Set Transfer function synthesizer.
     std::string visParamDir;
+    std::string glyphParamPath;
     std::string glyphFilePath;
 
     const char *envBuf = NULL;
@@ -996,18 +994,28 @@ bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& part
             visParamDir += "/";
         }
     }
-    glyphFilePath = visParamDir + "parameter.gly";
+    envBuf = std::getenv( "PARTICLE_DIR" );
+    if (envBuf == NULL) {
+        glyphFilePath = "./g_";
+    }
+    else {
+        glyphFilePath = envBuf;
+        if (glyphFilePath[glyphFilePath.size() - 1] != '/') {
+            glyphFilePath += "/g_";
+        }
+        else {
+            glyphFilePath += "g_";
+        }
+    }
+
+    glyphParamPath = visParamDir + "parameter.gly";
    
+    glyphParameter.m_glyphParamPath = glyphParamPath;
     glyphParameter.m_glyphFilePath = glyphFilePath;
 
     GlyphProperty glyph_property;
 
-//    bool tmp_parameter_file_opened =
-//        initializeParameters( m_tfs, particleBase->m_tf, m_param, object, &particleBase->m_sampling_volume_inverse, &particleBase->m_max_opacity, &particleBase->m_max_density,
-//                             &particleBase->m_subpixel_level, &particleBase->m_particle_density, &particleBase->m_particle_data_size_limit, visParamDir, tfFilename, time_step );
-//
-
-    glyph_property.LoadIN(glyphFilePath) ;
+    glyph_property.LoadIN(glyphParamPath) ;
 
     bool glyph_flag;
     std::string              g_flag                = glyph_property.getString( "GLYPH_FLAG" );
@@ -1020,25 +1028,20 @@ bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& part
     int number_of_sample_points                    = glyph_property.getInt("NUMBER_OF_SMAPLING_POINT");
     std::string color_sampling_method              = glyph_property.getString("COLOR_DATA_SAMPLING_METHOD");
     std::vector<std::string> color_data_variables  = glyph_property.getTableString( "COLOR_VARIABLES" );
+    
 
-//    glyph_flag                               = glyph_property.getTableInt( "GLYPH_FLAG" );
-//    glyphParameter.m_direction_variables     = glyph_property.getTableInt( "DIRECTION_VARIABLES" );
-//    glyphParameter.m_size_sampling_method    = static_cast<jpv::DataDefines>(glyph_property.getInt("SIZE_SAMPLING_METHOD"));
-//    glyphParameter.m_size_variables          = glyph_property.getTableInt( "SIZE_VARIABLES" );
-//    glyphParameter.m_distribution_modes      = static_cast<jpv::GlyphMode>(glyph_property.getInt("DISTRIBUTION_MODE"));
-//    glyphParameter.m_stride                  = glyph_property.getInt("STRIDE");
-//    glyphParameter.m_seed                    = glyph_property.getInt("SEED");
-//    glyphParameter.m_number_of_sample_points = glyph_property.getInt("NUMBER_OF_SMAPLING_POINT");
-//    glyphParameter.m_color_sampling_method   = static_cast<jpv::DataDefines>(glyph_property.getInt("COLOR_DATA_SAMPLING_METHOD"));
-//    glyphParameter.m_color_data_variables    = glyph_property.getTableInt( "COLOR_VARIABLES" );
-
+    float glyph_min=0; 
+    float glyph_max=0;
+    glyph_min = glyph_property.getFloat("GLYPH_COLOR_MIN");
+    glyph_max = glyph_property.getFloat("GLYPH_COLOR_MAX");
     std::vector<int> i_table;
     i_table = glyph_property.getTableInt( "GLYPH_COLOR_MAP_TABLE" );
     kvs::ValueArray<kvs::UInt8> u_table( i_table.size() );
     for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (kvs::UInt8)i_table[j];
-    kvs::ColorMap color_map( u_table);
+    kvs::ColorMap color_map( u_table, glyph_min, glyph_max);
 
     glyphParameter.m_color_map = color_map;
+    std::cout << "g_flag =" << g_flag <<std::endl;  
 //    std::cout << "glyphParameter.m_direction_variables        = " << direction_variables[0]                       << ", " << direction_variables[1]   << std::endl; 
 //    std::cout << "glyphParameter.m_size_sampling_method       = " << size_sampling_method               << std::endl; 
 //    std::cout << "glyphParameter.m_size_variables             = " << size_variables[0]                  << ", "  << size_variables[1]       << std::endl; 
@@ -1049,24 +1052,25 @@ bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& part
 //    std::cout << "glyphParameter.m_color_sampling_method      = " << color_sampling_method              << std::endl; 
 //    std::cout << "glyphParameter.m_color_data_variables       = " << color_data_variables[0]            << ", " << color_data_variables[1]       << std::endl; 
 
-    if(g_flag.c_str() == "TRUE" ) glyph_flag = true;
+    //if(g_flag.c_str() == "TRUE" ) glyph_flag = true;
+    if(strcmp(g_flag.c_str(), "TRUE") ==0 ) glyph_flag = true;
     else glyph_flag = false;
-    
+   
+    std::cout << __LINE__ << ": glyph_flag = " << glyph_flag << std::endl; 
     if(direction_variables.size() < 3)
     { 
         std::cout << "variables number is less 3 numbers !!! Skip glyph generate process !!!" << std::endl;
         return false;  
     }
     //std::cout << direction_variables[0] << std::endl;
-    std::cout << "debug = " <<  direction_variables[0].substr(1).c_str() << std::endl;
     for (int i = 0; i< 3 ; i++)
     {
-        glyphParameter.m_direction_variables.push_back ( std::atoi(direction_variables[i].substr(1).c_str()));
+        glyphParameter.m_direction_variables.push_back ( std::atoi(direction_variables[i].substr(1).c_str()) - 1);
     }
 
     if     (size_sampling_method == "Constant"       ) glyphParameter.m_size_sampling_method    = jpv::DataDefines::Constant;
     else if(size_sampling_method == "SingleVariable" ) glyphParameter.m_size_sampling_method    = jpv::DataDefines::SingleVariable;
-    else if(size_sampling_method == "VariablesArray" ) glyphParameter.m_size_sampling_method    = jpv::DataDefines::VariableArray;
+    else if(size_sampling_method == "VariableArray" ) glyphParameter.m_size_sampling_method    = jpv::DataDefines::VariableArray;
     else 
     {
        std::cout << "No selecting Sampling method !!! Skip glyph generate process !!!" << std::endl;
@@ -1076,7 +1080,7 @@ bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& part
 #if 1
     for (int i =0 ; i< size_variables.size(); i++)
     {
-        glyphParameter.m_size_variables.push_back( std::atoi(size_variables[i].substr(1).c_str())); 
+        glyphParameter.m_size_variables.push_back( std::atoi(size_variables[i].substr(1).c_str()) -1); 
     }
 
     if     (distribution_modes == "AllPoints"           ) glyphParameter.m_distribution_modes  = jpv::GlyphMode::AllPoints;
@@ -1093,7 +1097,7 @@ bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& part
     glyphParameter.m_number_of_sample_points = number_of_sample_points;
     if     (color_sampling_method == "Constant"       ) glyphParameter.m_color_sampling_method    = jpv::DataDefines::Constant;
     else if(color_sampling_method == "SingleVariable" ) glyphParameter.m_color_sampling_method    = jpv::DataDefines::SingleVariable;
-    else if(color_sampling_method == "VariablesArray" ) glyphParameter.m_color_sampling_method    = jpv::DataDefines::VariableArray;
+    else if(color_sampling_method == "VariableArray" ) glyphParameter.m_color_sampling_method    = jpv::DataDefines::VariableArray;
     else 
     {
        std::cout << "No selecting Sampling method !!! Skip glyph generate process !!!" << std::endl;
@@ -1102,7 +1106,7 @@ bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& part
     
     for (int i =0 ; i< color_data_variables.size(); i++)
     {
-        glyphParameter.m_color_data_variables.push_back( std::atoi(color_data_variables[i].substr(1).c_str())); 
+        glyphParameter.m_color_data_variables.push_back( std::atoi(color_data_variables[i].substr(1).c_str()) - 1); 
     }
 
     std::cout << "glyphParameter.m_direction_variables        = " << glyphParameter.m_direction_variables[0] << ", " << glyphParameter.m_direction_variables[1]   << std::endl; 
@@ -1115,7 +1119,7 @@ bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& part
     std::cout << "glyphParameter.m_color_sampling_method      = " << static_cast<int>(glyphParameter.m_color_sampling_method )    << std::endl; 
     std::cout << "glyphParameter.m_color_data_variables       = " << glyphParameter.m_color_data_variables[0] << ", " << glyphParameter.m_color_data_variables[1]       << std::endl; 
 #endif 
-      glyph_flag =false;
+//      glyph_flag =false;
       return glyph_flag; 
 
 }
@@ -2379,8 +2383,8 @@ void GenerateGlyphs( int time_step,
 
     //SetGlyphParameter( glyph_flag, mode, size_DataDefines, size_variables, color_DataDefines, color_variables, stride, seed, number_of_sampling_point, color_map, particleBase, time_step);
     glyph_flag = SetGlyphParameter( glyphParameter, particleBase, time_step);
- 
-# if 0
+
+# if 1
     if(glyph_flag)
     {
         //GlyphGenerator glyph_generator( glyphParameter.m_distribution_modes, glyphParameter.m_size_sampling_method, glyphParameter.m_color_sampling_method,
@@ -2388,6 +2392,7 @@ void GenerateGlyphs( int time_step,
         GlyphGenerator glyph_generator( glyphParameter, values, nvariables,
                 coordinates, ncoords, connections, ncells, celltype, m_tfs); 
 
+        glyph_generator.OutputGlyph(glyphParameter, particleBase, time_step);
     }
 #endif
     

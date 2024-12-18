@@ -16,7 +16,9 @@
 #include "PrismaticCell.h"
 #include "PyramidalCell.h"
 #include "../kvs_wrapper.h"
-
+#include <kvs/PointObject>
+#include <kvs/KVSMLObjectPoint>
+#include "particle_write_thread.h"
 
 #ifdef _OPENMP
 #  include <omp.h>
@@ -55,15 +57,20 @@ protected:
    int          m_ncells;
    int          m_nvariable;
    int          m_stride; 
-   DataDefines         m_size_DataDefines;
-   DataDefines         m_color_DataDefines;
+   jpv::DataDefines         m_size_DataDefines;
+   jpv::DataDefines         m_color_DataDefines;
+
+   std::vector<float> m_min;
+   std::vector<float> m_max;
 
 private:
-   void  PointSampling(
+   void  PointSampling( glyph_parameters &glyphParameter);
+   void  PointSampling( 
            //Type** values, int nvariables,
            //float* coordinates, int ncoords,
            int stride);
    void  DistributionSampling(int number_of_sampling_point ,int seed, const pbvr::VolumeObjectBase::CellType& celltype);
+   void  DistributionSampling(glyph_parameters &glyphParameter, const pbvr::VolumeObjectBase::CellType& celltype);
 
    const size_t calculate_number_of_particles(
            const float density,
@@ -80,18 +87,23 @@ public:
 
 
     GlyphGenerator();
-    GlyphGenerator(GlyphMode mode, DataDefines size_DataDefines, DataDefines color_DataDefines,
-            int stride, int seed, int number_of_sampling_point,
-           Type** values, int nvariables,
-           float* coordinates, int ncoords,
-           unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype,
-           pbvr::TransferFunction& tf, TransferFunctionSynthesizer* tfs );
+//    GlyphGenerator(GlyphMode mode, jpv::DataDefines size_DataDefines, jpv::DataDefines color_DataDefines,
+//            int stride, int seed, int number_of_sampling_point,
+//           Type** values, int nvariables,
+//           float* coordinates, int ncoords,
+//           unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype,
+//           pbvr::TransferFunction& tf, TransferFunctionSynthesizer* tfs );
 
     GlyphGenerator(glyph_parameters &glyphParameter ,Type** values, int nvariables,
            float* coordinates, int ncoords,
            unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype,
            TransferFunctionSynthesizer* tfs );
 
+    void OutputGlyph( glyph_parameters &glyphParameter,const  pbvr_parameters& particleBase, const int time_step);
+    void CalculateMinMax();
+    void NormalizeValues();
+
+    void show(glyph_parameters &glyphParameter);
 
 };
 
