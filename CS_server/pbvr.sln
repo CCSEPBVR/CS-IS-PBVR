@@ -3,15 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "Server\Server.vcxproj", "{F8CE5E7E-DA70-41BC-B21A-B33A033E48B1}"
-	ProjectSection(ProjectDependencies) = postProject
-		{1995AEBD-A915-4CA6-9816-39CE8C5BC414} = {1995AEBD-A915-4CA6-9816-39CE8C5BC414}
-		{29A2476E-CE35-4061-995C-96F8BCA48CB2} = {29A2476E-CE35-4061-995C-96F8BCA48CB2}
-		{3BCEF6FD-42BC-46AC-857C-C01AF17DF910} = {3BCEF6FD-42BC-46AC-857C-C01AF17DF910}
-		{7F987E38-7A23-4DF3-93F5-635E730FE149} = {7F987E38-7A23-4DF3-93F5-635E730FE149}
-		{B67FDEE2-669B-42A1-890F-F5256482EE5C} = {B67FDEE2-669B-42A1-890F-F5256482EE5C}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxproj", "{29A2476E-CE35-4061-995C-96F8BCA48CB2}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FunctionParser", "FunctionParser\FunctionParser.vcxproj", "{B67FDEE2-669B-42A1-890F-F5256482EE5C}"
@@ -21,10 +12,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Filter_vtk", "Filter\Filter_vtk.vcxproj", "{B2218F17-F6C8-4C1F-A00A-A6052D50F4AB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VisModule", "VisModule\VisModule.vcxproj", "{7F987E38-7A23-4DF3-93F5-635E730FE149}"
+	ProjectSection(ProjectDependencies) = postProject
+		{29A2476E-CE35-4061-995C-96F8BCA48CB2} = {29A2476E-CE35-4061-995C-96F8BCA48CB2}
+		{B67FDEE2-669B-42A1-890F-F5256482EE5C} = {B67FDEE2-669B-42A1-890F-F5256482EE5C}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KVSMLConverter", "KVSMLConverter\KVSMLConverter.vcxproj", "{3BCEF6FD-42BC-46AC-857C-C01AF17DF910}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileFormatReader", "FileFormatReader\FileFormatReader.vcxproj", "{1995AEBD-A915-4CA6-9816-39CE8C5BC414}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,16 +29,6 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F8CE5E7E-DA70-41BC-B21A-B33A033E48B1}.Debug|ARM.ActiveCfg = Debug|Win32
-		{F8CE5E7E-DA70-41BC-B21A-B33A033E48B1}.Debug|Win32.ActiveCfg = Debug|Win32
-		{F8CE5E7E-DA70-41BC-B21A-B33A033E48B1}.Debug|Win32.Build.0 = Debug|Win32
-		{F8CE5E7E-DA70-41BC-B21A-B33A033E48B1}.Debug|x64.ActiveCfg = Debug|x64
-		{F8CE5E7E-DA70-41BC-B21A-B33A033E48B1}.Debug|x64.Build.0 = Debug|x64
-		{F8CE5E7E-DA70-41BC-B21A-B33A033E48B1}.Release|ARM.ActiveCfg = Release|Win32
-		{F8CE5E7E-DA70-41BC-B21A-B33A033E48B1}.Release|Win32.ActiveCfg = Release|Win32
-		{F8CE5E7E-DA70-41BC-B21A-B33A033E48B1}.Release|Win32.Build.0 = Release|Win32
-		{F8CE5E7E-DA70-41BC-B21A-B33A033E48B1}.Release|x64.ActiveCfg = Release|x64
-		{F8CE5E7E-DA70-41BC-B21A-B33A033E48B1}.Release|x64.Build.0 = Release|x64
 		{29A2476E-CE35-4061-995C-96F8BCA48CB2}.Debug|ARM.ActiveCfg = Debug|Win32
 		{29A2476E-CE35-4061-995C-96F8BCA48CB2}.Debug|Win32.ActiveCfg = Debug|Win32
 		{29A2476E-CE35-4061-995C-96F8BCA48CB2}.Debug|Win32.Build.0 = Debug|Win32
@@ -112,18 +95,6 @@ Global
 		{3BCEF6FD-42BC-46AC-857C-C01AF17DF910}.Release|Win32.Build.0 = Release|Win32
 		{3BCEF6FD-42BC-46AC-857C-C01AF17DF910}.Release|x64.ActiveCfg = Release|x64
 		{3BCEF6FD-42BC-46AC-857C-C01AF17DF910}.Release|x64.Build.0 = Release|x64
-		{1995AEBD-A915-4CA6-9816-39CE8C5BC414}.Debug|ARM.ActiveCfg = Debug|x64
-		{1995AEBD-A915-4CA6-9816-39CE8C5BC414}.Debug|ARM.Build.0 = Debug|x64
-		{1995AEBD-A915-4CA6-9816-39CE8C5BC414}.Debug|Win32.ActiveCfg = Debug|Win32
-		{1995AEBD-A915-4CA6-9816-39CE8C5BC414}.Debug|Win32.Build.0 = Debug|Win32
-		{1995AEBD-A915-4CA6-9816-39CE8C5BC414}.Debug|x64.ActiveCfg = Debug|x64
-		{1995AEBD-A915-4CA6-9816-39CE8C5BC414}.Debug|x64.Build.0 = Debug|x64
-		{1995AEBD-A915-4CA6-9816-39CE8C5BC414}.Release|ARM.ActiveCfg = Release|x64
-		{1995AEBD-A915-4CA6-9816-39CE8C5BC414}.Release|ARM.Build.0 = Release|x64
-		{1995AEBD-A915-4CA6-9816-39CE8C5BC414}.Release|Win32.ActiveCfg = Release|Win32
-		{1995AEBD-A915-4CA6-9816-39CE8C5BC414}.Release|Win32.Build.0 = Release|Win32
-		{1995AEBD-A915-4CA6-9816-39CE8C5BC414}.Release|x64.ActiveCfg = Release|x64
-		{1995AEBD-A915-4CA6-9816-39CE8C5BC414}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
