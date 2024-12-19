@@ -21,7 +21,7 @@
 #include <vismodule/ValueArray>
 #include <vismodule/File>
 
-#include "FileChecker.h"
+#include <visModule/FileChecker>
 #include <vismodule/StructuredVolumeObject>
 #include <vismodule/StructuredVolumeImporter>
 
