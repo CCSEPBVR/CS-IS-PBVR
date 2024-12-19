@@ -798,15 +798,16 @@ void GlyphGenerator::OutputGlyph(glyph_parameters &glyphParameter, const  pbvr_p
                  new_sizes.pointer(), recvcounts_size, displs_size, MPI_FLOAT,
                  0, MPI_COMM_WORLD );
 #endif
+
     std::stringstream ss;
     //add by shimomura 20240614
 //    ss << std::setfill('0') << std::setw(2) << static_cast<int>(celltype);
 //    ss << "_";
     ss << std::setfill('0') << std::setw(5) << time_step;
     ss << "_";
-    ss << std::setfill('0') << std::setw(7) << count;
+    ss << std::setfill('0') << std::setw(7) << mpi_rank+1;
     ss << "_";
-    ss << std::setfill('0') << std::setw(7) << mpi_rank;
+    ss << std::setfill('0') << std::setw(7) << mpi_size;
     ss << ".kvsml";
     glyphParameter.m_glyphFilePath += ss.str();
     // 20181226 end
