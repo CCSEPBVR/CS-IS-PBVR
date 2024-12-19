@@ -3,6 +3,7 @@
 
 
 OBJECTS := \
+$(OUTDIR)/./main.o \
 $(OUTDIR)/./FileFormat/AggregateTypeSubvolume.o \
 $(OUTDIR)/./FileFormat/AVSField/AVSField.o \
 $(OUTDIR)/./FileFormat/AVSUCD/AVSUcd.o \
@@ -128,11 +129,8 @@ $(OUTDIR)/./Network/TCPBarrierServer.o \
 $(OUTDIR)/./Network/TCPServer.o \
 $(OUTDIR)/./Network/TCPSocket.o \
 $(OUTDIR)/./Network/Url.o \
-$(OUTDIR)/./Numeric/LUSolver.o \
 $(OUTDIR)/./Numeric/MersenneTwister.o \
-$(OUTDIR)/./Numeric/QRSolver.o \
 $(OUTDIR)/./Numeric/Quaternion.o \
-$(OUTDIR)/./Numeric/SVSolver.o \
 $(OUTDIR)/./Numeric/Xorshift128.o \
 $(OUTDIR)/./ParallelProcess/JobCollector.o \
 $(OUTDIR)/./ParallelProcess/JobDispatcher.o \
@@ -256,7 +254,6 @@ $(OUTDIR)/./Visualization/Viewer/Mouse.o \
 $(OUTDIR)/./Visualization/Viewer/ObjectManager.o \
 $(OUTDIR)/./Visualization/Viewer/RendererManager.o \
 $(OUTDIR)/./Visualization/Viewer/Trackball.o \
-$(OUTDIR)/./Visualization/Viewer/WindowBase.o \
 $(OUTDIR)/./Visualization/Viewer/Xform.o \
 $(OUTDIR)/./Visualization/Viewer/XformControl.o \
 
@@ -385,7 +382,8 @@ $(OUTDIR)/./FileFormat/AVSField/%.o: ./FileFormat/AVSField/%.cpp ./FileFormat/AV
 $(OUTDIR)/./FileFormat/%.o: ./FileFormat/%.cpp ./FileFormat/%.h
 	$(MKDIR) $(OUTDIR)/./FileFormat
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
-
+$(OUTDIR)/./main.o: ./main.cpp
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 install::
 	$(MKDIR) $(INSTALL_DIR)/include/Core/./FileFormat

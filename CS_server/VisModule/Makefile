@@ -13,9 +13,9 @@ include ./Makefile.def
 #=============================================================================
 #  INCLUDE_PATH, LIBRARY_PATH, LINK_LIBRARY, INSTALL_DIR.
 #=============================================================================
-INCLUDE_PATH := -I. -I../Server -I../FunctionParser -I../Common
-LIBRARY_PATH :=
-LINK_LIBRARY :=
+INCLUDE_PATH := -I. -I../FunctionParser -I../Common
+LIBRARY_PATH := -L../Common -L../FunctionParser
+LINK_LIBRARY := -lpthread -lpbvrCommon -lpbvrFunc
 INSTALL_DIR  := ../../../$(VIS_MODULE_DIR_NAME)
 
 
@@ -24,25 +24,41 @@ INSTALL_DIR  := ../../../$(VIS_MODULE_DIR_NAME)
 #=============================================================================
 include BuildRuleServerOnly.mk
 
-
 #=============================================================================
 #  Project name.
 #=============================================================================
-TARGET_LIB := $(OUTDIR)/$(LIB_VIS_MODULE_CORE)
+#TARGET_LIB := $(OUTDIR)/$(LIB_VIS_MODULE_CORE)
+PROJECT_NAME := pbvr_server
 
+ifeq "$(findstring CYGWIN,$(shell uname -s))" "CYGWIN"
+TARGET_EXE := $(OUTDIR)/$(PROJECT_NAME).exe
+else
+TARGET_EXE := $(OUTDIR)/$(PROJECT_NAME)
+endif
 
 #=============================================================================
 #  Build rule.
 #=============================================================================
-$(TARGET_LIB): $(OBJECTS)
-	$(AR) $@ $^
-	$(RANLIB) $@
+#$(TARGET_LIB): $(OBJECTS)
+#	$(AR) $@ $^
+#	$(RANLIB) $@
 
+$(TARGET_EXE): $(OBJECTS)
+	$(LD) $(LDFLAGS) $(LIBRARY_PATH) -o $@ $^ $(LINK_LIBRARY)
+
+$(OUTDIR)/%.o: %.cpp %.h
+	$(MKDIR) $(OUTDIR)
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
+
+$(OUTDIR)/%.o: %.cpp
+	$(MKDIR) $(OUTDIR)
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 #=============================================================================
 #  build.
 #=============================================================================
-build:: $(TARGET_LIB)
+#build:: $(TARGET_LIB)
+build:: $(TARGET_EXE)
 
 
 #=============================================================================
