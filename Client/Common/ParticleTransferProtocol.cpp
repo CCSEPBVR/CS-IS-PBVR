@@ -114,6 +114,7 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         s += jpv::Serializer::byteSize( m_color_transfer_function_synthesis );
         s += jpv::Serializer::byteSize( m_opacity_transfer_function_synthesis );
 
+        s += sizeof( bool );
         for( int i = 0; i < 3; i++ )
         {
             s += jpv::Serializer::byteSize( m_direction_variable[i] );
@@ -256,6 +257,8 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         index += jpv::Serializer::write( buf + index, m_color_transfer_function_synthesis );
         index += jpv::Serializer::write( buf + index, m_opacity_transfer_function_synthesis );
 
+        // glyph
+        index += jpv::Serializer::write(buf + index, m_glyph_flag);
         for( int i = 0; i < 3; i++ )
         {
             index += jpv::Serializer::write( buf + index, m_direction_variable[i] );
@@ -455,6 +458,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
             m_size_variables.push_back(value);
         }
 
+        index += jpv::Serializer::read( buf + index, &m_glyph_flag );
         index += jpv::Serializer::read( buf + index, &m_distribution_mode );
         index += jpv::Serializer::read( buf + index, &m_number_of_sampling_point );
         index += jpv::Serializer::read( buf + index, &m_seed );
@@ -709,6 +713,7 @@ int32_t jpv::ParticleTransferServerMessage::byteSize( void ) const
     s += sizeof( m_repeat_level );
     s += sizeof( m_level_index );
     s += sizeof( m_number_particle );
+    s += sizeof( m_number_glyph );
     s += sizeof( m_number_volume_divide );
     s += sizeof( m_start_step );
     s += sizeof( m_last_step );
@@ -728,7 +733,8 @@ int32_t jpv::ParticleTransferServerMessage::byteSize( void ) const
     s += sizeof( m_particle_density );
     s += sizeof( m_particle_data_size_limit );
     s += jpv::Serializer::byteSize<kvs::Camera>( *m_camera );
-    if ( m_flag_send_bins == 1 || m_flag_send_bins == 2 )
+    // if ( m_flag_send_bins == 1 || m_flag_send_bins == 2 )
+        if ( m_flag_send_bins == 1 )
     {
         s += sizeof( m_transfer_function_count );
         for ( int i = 0; i < m_transfer_function_count; i++ )
@@ -794,6 +800,7 @@ size_t jpv::ParticleTransferServerMessage::pack( char* buf ) const
     index += jpv::Serializer::write( buf + index, m_repeat_level );
     index += jpv::Serializer::write( buf + index, m_level_index );
     index += jpv::Serializer::write( buf + index, m_number_particle );
+    index += jpv::Serializer::write( buf + index, m_number_glyph );
     index += jpv::Serializer::write( buf + index, m_number_volume_divide );
     index += jpv::Serializer::write( buf + index, m_start_step );
     index += jpv::Serializer::write( buf + index, m_last_step );
@@ -817,7 +824,8 @@ size_t jpv::ParticleTransferServerMessage::pack( char* buf ) const
     index += jpv::Serializer::write( buf + index, m_particle_density );
     index += jpv::Serializer::write( buf + index, m_particle_data_size_limit );
     index += jpv::Serializer::pack( buf + index, *m_camera );
-    if ( m_flag_send_bins == 1 || m_flag_send_bins == 2)
+    // if ( m_flag_send_bins == 1 || m_flag_send_bins == 2)
+        if ( m_flag_send_bins == 1 )
     {
         index += jpv::Serializer::write( buf + index, m_transfer_function_count );
         for ( int i = 0; i < m_transfer_function_count; i++ )
@@ -864,11 +872,18 @@ size_t jpv::ParticleTransferServerMessage::pack( char* buf ) const
     }
 //    else// if ( flag_send_bins == 2 )
 
-    if ( m_flag_send_bins == 0 || m_flag_send_bins == 2 )
+    if ( m_flag_send_bins == 0  )
     {
         index += jpv::Serializer::writeArray<float>( buf + index, m_positions.get(), 3 * m_number_particle );
         index += jpv::Serializer::writeArray<float>( buf + index, m_normals.get(), 3 * m_number_particle );
         index += jpv::Serializer::writeArray<unsigned char>( buf + index, m_colors.get(), 3 * m_number_particle );
+    }
+    else if ( m_flag_send_bins == 2 )
+    {
+        index += jpv::Serializer::writeArray<float>( buf + index, m_glyph_coords.get(),    3 * m_number_glyph );
+        index += jpv::Serializer::writeArray<float>( buf + index, m_glyph_vectors.get(),      3 * m_number_glyph );
+        index += jpv::Serializer::writeArray<float>( buf + index, m_glyph_sizes.get(),          m_number_glyph );
+        index += jpv::Serializer::writeArray<unsigned char>( buf + index, m_glyph_colors.get(), 3 * m_number_glyph );
     }
     return index;
 }
@@ -894,6 +909,7 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
     index += jpv::Serializer::read( buf + index, &m_repeat_level );
     index += jpv::Serializer::read( buf + index, &m_level_index );
     index += jpv::Serializer::read( buf + index, &m_number_particle );
+    index += jpv::Serializer::read( buf + index, &m_number_glyph );
     index += jpv::Serializer::read( buf + index, &m_number_volume_divide );
     index += jpv::Serializer::read( buf + index, &m_start_step );
     index += jpv::Serializer::read( buf + index, &m_last_step );
@@ -917,7 +933,8 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
     index += jpv::Serializer::read( buf + index, &m_particle_density );
     index += jpv::Serializer::read( buf + index, &m_particle_data_size_limit );
     index += jpv::Serializer::unpack( buf + index, m_camera );
-    if ( m_flag_send_bins == 1 || m_flag_send_bins == 2)
+    // if ( m_flag_send_bins == 1 || m_flag_send_bins == 2)
+    if ( m_flag_send_bins == 1 )
     {
         index += jpv::Serializer::read( buf + index, &m_transfer_function_count );
         m_color_nbins = new kvs::UInt64[ m_transfer_function_count ];
@@ -996,6 +1013,23 @@ size_t jpv::ParticleTransferServerMessage::unpack_particles( const char* buf )
     index += jpv::Serializer::readArray<float>( buf + index, m_positions.get(), 3 * m_number_particle );
     index += jpv::Serializer::readArray<float>( buf + index, m_normals.get(), 3 * m_number_particle );
     index += jpv::Serializer::readArray<unsigned char>( buf + index, m_colors.get(), 3 * m_number_particle );
+    return index;
+}
+
+size_t jpv::ParticleTransferServerMessage::unpack_glyphs( const char* buf )
+{
+    size_t index = m_message_size;
+    // m_positions = new float[3 * m_number_particle];
+    // m_normals = new float[3 * m_number_particle];
+    // m_colors = new unsigned char[3 * m_number_particle];
+    m_glyph_coords = std::make_unique<float[]>(3 * m_number_glyph);
+    m_glyph_vectors = std::make_unique<float[]>(3 * m_number_glyph);
+    m_glyph_sizes = std::make_unique<float[]>(  m_number_glyph);
+    m_glyph_colors = std::make_unique<unsigned char[]>(3 * m_number_glyph);
+    index += jpv::Serializer::readArray<float>( buf + index, m_glyph_coords.get(), 3 * m_number_glyph );
+    index += jpv::Serializer::readArray<float>( buf + index, m_glyph_vectors.get(), 3 * m_number_glyph );
+    index += jpv::Serializer::readArray<float>( buf + index, m_glyph_sizes.get(),  m_number_glyph );
+    index += jpv::Serializer::readArray<unsigned char>( buf + index, m_glyph_colors.get(), 3 * m_number_glyph );
     return index;
 }
 
@@ -1108,6 +1142,7 @@ void jpv::ParticleTransferServerMessage::show( void ) const
     std::cout<<"messageSize="<<m_message_size<<std::endl;
     std::cout<<"timeStep="<<m_time_step<<std::endl;
     std::cout<<"numParticle="<<m_number_particle<<std::endl;
+    std::cout<<"numGlyph="<<m_number_glyph<<std::endl;
 
     std::cout<<"transfunc.size="<<m_transfer_function.size()<<std::endl;
     std::cout<<"transfunc.Name,ColorVar,OpacityVar,ColorVarMin,ColorVarMax"<<std::endl;
@@ -1132,6 +1167,21 @@ void jpv::ParticleTransferServerMessage::show( void ) const
     //std::cout<<"transferFunctionSynthesis="<<transferFunctionSynthesis<<std::endl;
     std::cout << "color_tf_synthesis=" << m_color_transfer_function_synthesis << std::endl;
     std::cout << "opacity_tf_synthesis=" << m_opacity_transfer_function_synthesis << std::endl;
+
+    for ( int i = 0; i < m_number_glyph; ++i )
+    {
+        std::cout << "servMes.m_glyph_coords[3 * i + 0] = " <<  m_glyph_coords[3 * i + 0] << std::endl;
+        std::cout << "servMes.m_glyph_coords[3 * i + 1] = " <<  m_glyph_coords[3 * i + 1] << std::endl;
+        std::cout << "servMes.m_glyph_coords[3 * i + 2] = " <<  m_glyph_coords[3 * i + 2] << std::endl;
+        std::cout << "servMes.m_glyph_vectors[3 * i + 0] = " <<  m_glyph_vectors[3 * i + 0] << std::endl;
+        std::cout << "servMes.m_glyph_vectors[3 * i + 1] = " <<  m_glyph_vectors[3 * i + 1] << std::endl;
+        std::cout << "servMes.m_glyph_vectors[3 * i + 2] = " <<  m_glyph_vectors[3 * i + 2] << std::endl;
+        std::cout << "servMes.m_glyph_colors[3 * i + 0] = " <<  (int)m_glyph_colors[3 * i + 0] << std::endl;
+        std::cout << "servMes.m_glyph_colors[3 * i + 1] = " <<  (int)m_glyph_colors[3 * i + 1] << std::endl;
+        std::cout << "servMes.m_glyph_colors[3 * i + 2] = " <<  (int)m_glyph_colors[3 * i + 2] << std::endl;
+        std::cout << "servMes.m_glyph_sizes[  i ] = " <<  m_glyph_sizes[ i ] << std::endl;
+    }
+
 
     std::cout<<std::endl;
 }
