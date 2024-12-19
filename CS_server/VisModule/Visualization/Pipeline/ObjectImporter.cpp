@@ -25,7 +25,7 @@
 #include <vismodule/Stl>
 #include <vismodule/Ply>
 #include <vismodule/Tiff>
-#include <vismodule/Dicom>
+//#include <vismodule/Dicom>
 #include <vismodule/KVSMLObjectImage>
 #include <vismodule/KVSMLObjectPoint>
 #include <vismodule/KVSMLObjectLine>
@@ -33,7 +33,7 @@
 #include <vismodule/KVSMLObjectStructuredVolume>
 #include <vismodule/KVSMLObjectUnstructuredVolume>
 #include <vismodule/XMLDocument>
-#include <vismodule/DicomList>
+//#include <vismodule/DicomList>
 // VIS_MODULE importer classes.
 #include <vismodule/PointImporter>
 #include <vismodule/LineImporter>
@@ -154,11 +154,11 @@ bool ObjectImporter::estimate_file_format( void )
         m_file_format = new vismodule::Tiff;
     }
 
-    else if ( vismodule::Dicom::CheckFileExtension( file.filePath() ) )
-    {
-        m_importer_type = ObjectImporter::Image;
-        m_file_format = new vismodule::Dicom;
-    }
+    //else if ( vismodule::Dicom::CheckFileExtension( file.filePath() ) )
+    //{
+    //    m_importer_type = ObjectImporter::Image;
+    //    m_file_format = new vismodule::Dicom;
+    //}
 
     else if ( file.extension() == "kvsml" ||
               file.extension() == "KVSML" ||
@@ -202,11 +202,11 @@ bool ObjectImporter::estimate_file_format( void )
         }
     }
 
-    else if ( vismodule::DicomList::CheckDirectory( file.filePath() ) )
-    {
-        m_importer_type = ObjectImporter::StructuredVolume;
-        m_file_format = new vismodule::DicomList;
-    }
+    //else if ( vismodule::DicomList::CheckDirectory( file.filePath() ) )
+    //{
+    //    m_importer_type = ObjectImporter::StructuredVolume;
+    //    m_file_format = new vismodule::DicomList;
+    //}
 
     return( m_file_format != NULL );
 }

@@ -165,27 +165,27 @@ ImageImporter::ImageImporter( const std::string& filename )
         this->import( file_format );
         delete file_format;
     }
-    else if ( vismodule::Dicom::CheckFileExtension( filename ) )
-    {
-        vismodule::Dicom* file_format = new vismodule::Dicom( filename );
-        if( !file_format )
-        {
-            BaseClass::m_is_success = false;
-            visModuleMessageError("Cannot read '%s'.",filename.c_str());
-            return;
-        }
+    //else if ( vismodule::Dicom::CheckFileExtension( filename ) )
+    //{
+    //    vismodule::Dicom* file_format = new vismodule::Dicom( filename );
+    //    if( !file_format )
+    //    {
+    //        BaseClass::m_is_success = false;
+    //        visModuleMessageError("Cannot read '%s'.",filename.c_str());
+    //        return;
+    //    }
 
-        if( file_format->isFailure() )
-        {
-            BaseClass::m_is_success = false;
-            visModuleMessageError("Cannot read '%s'.",filename.c_str());
-            delete file_format;
-            return;
-        }
+    //    if( file_format->isFailure() )
+    //    {
+    //        BaseClass::m_is_success = false;
+    //        visModuleMessageError("Cannot read '%s'.",filename.c_str());
+    //        delete file_format;
+    //        return;
+    //    }
 
-        this->import( file_format );
-        delete file_format;
-    }
+    //    this->import( file_format );
+    //    delete file_format;
+    //}
 
     else
     {
@@ -256,10 +256,10 @@ ImageImporter::SuperClass* ImageImporter::exec( const vismodule::FileFormatBase&
     {
         this->import( static_cast<const vismodule::Pbm*>( &file_format ) );
     }
-    else if ( class_name == "vismodule::Dicom" )
-    {
-        this->import( static_cast<const vismodule::Dicom*>( &file_format ) );
-    }
+    //else if ( class_name == "vismodule::Dicom" )
+    //{
+    //    this->import( static_cast<const vismodule::Dicom*>( &file_format ) );
+    //}
     else
     {
         BaseClass::m_is_success = false;
@@ -408,12 +408,12 @@ void ImageImporter::import( const vismodule::Pbm* pbm )
  *  @param  dicom [in] pointer to DICOM image format data
  */
 /*==========================================================================*/
-void ImageImporter::import( const vismodule::Dicom* dicom )
-{
-    SuperClass::m_width  = dicom->column();
-    SuperClass::m_height = dicom->row();
-    SuperClass::m_data   = dicom->pixelData();
-    SuperClass::m_type   = vismodule::ImageObject::Gray8;
-}
+//void ImageImporter::import( const vismodule::Dicom* dicom )
+//{
+//    SuperClass::m_width  = dicom->column();
+//    SuperClass::m_height = dicom->row();
+//    SuperClass::m_data   = dicom->pixelData();
+//    SuperClass::m_type   = vismodule::ImageObject::Gray8;
+//}
 
 } // end of namespace vismodule

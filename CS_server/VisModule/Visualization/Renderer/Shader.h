@@ -16,7 +16,7 @@
 
 #include <vismodule/Vector3>
 #include <vismodule/Camera>
-#include <vismodule/Light>
+//#include <vismodule/Light>
 
 
 namespace vismodule
@@ -52,7 +52,7 @@ public:
 
         virtual ~Base( void );
 
-        virtual void set( const vismodule::Camera* camera, const vismodule::Light* light ) = 0;
+        //virtual void set( const vismodule::Camera* camera, const vismodule::Light* light ) = 0;
 
         virtual const Shader::Type type( void ) const = 0;
 
@@ -78,7 +78,7 @@ public:
 
         Lambert( const float ka, const float kd );
 
-        void set( const vismodule::Camera* camera, const vismodule::Light* light );
+        //void set( const vismodule::Camera* camera, const vismodule::Light* light );
 
         const Shader::Type type( void ) const;
 
@@ -98,7 +98,7 @@ public:
 
         Phong( const float ka, const float kd, const float ks, const float s );
 
-        void set( const vismodule::Camera* camera, const vismodule::Light* light );
+        //void set( const vismodule::Camera* camera, const vismodule::Light* light );
 
         const Shader::Type type( void ) const;
 
@@ -118,7 +118,7 @@ public:
 
         BlinnPhong( const float ka, const float kd, const float ks, const float s );
 
-        void set( const vismodule::Camera* camera, const vismodule::Light* light );
+        //void set( const vismodule::Camera* camera, const vismodule::Light* light );
 
         const Shader::Type type( void ) const;
 

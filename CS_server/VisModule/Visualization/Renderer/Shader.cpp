@@ -112,10 +112,10 @@ Shader::Lambert::Lambert( const float ka, const float kd )
  *  @param light [in] pointer to the light
  */
 /*==========================================================================*/
-void Shader::Lambert::set( const Camera* camera, const Light* light )
-{
-    light_position = camera->projectWorldToObject( light->position() );
-}
+//void Shader::Lambert::set( const Camera* camera, const Light* light )
+//{
+//    light_position = camera->projectWorldToObject( light->position() );
+//}
 
 const Shader::Type Shader::Lambert::type( void ) const
 {
@@ -227,11 +227,11 @@ Shader::Phong::Phong( const float ka, const float kd, const float ks, const floa
  *  @param light [in] pointer to the light
  */
 /*==========================================================================*/
-void Shader::Phong::set( const vismodule::Camera* camera, const vismodule::Light* light )
-{
-    camera_position = camera->projectWorldToObject( camera->position() );
-    light_position = camera->projectWorldToObject( light->position() );
-}
+//void Shader::Phong::set( const vismodule::Camera* camera, const vismodule::Light* light )
+//{
+//    camera_position = camera->projectWorldToObject( camera->position() );
+//    light_position = camera->projectWorldToObject( light->position() );
+//}
 
 /*===========================================================================*/
 /**
@@ -352,11 +352,11 @@ Shader::BlinnPhong::BlinnPhong( const float ka, const float kd, const float ks, 
  *  @param light [in] pointer to the light
  */
 /*==========================================================================*/
-void Shader::BlinnPhong::set( const vismodule::Camera* camera, const vismodule::Light* light )
-{
-    camera_position = camera->projectWorldToObject( camera->position() );
-    light_position = camera->projectWorldToObject( light->position() );
-}
+//void Shader::BlinnPhong::set( const vismodule::Camera* camera, const vismodule::Light* light )
+//{
+//    camera_position = camera->projectWorldToObject( camera->position() );
+//    light_position = camera->projectWorldToObject( light->position() );
+//}
 
 /*===========================================================================*/
 /**
