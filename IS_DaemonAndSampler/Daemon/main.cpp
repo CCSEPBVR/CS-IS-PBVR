@@ -531,31 +531,12 @@ int main( int argc, char** argv )
                 servMes.m_server_side_variable_range = range;
                 servMes.m_flag_send_bins = 1;
 
-#if 1
                 // 20181226 start  環境変数で指定したパスおよび名前でファイル参照を行う
                 //初期化 : jupiter_old.tfを読む
                 ParameterFileReader ppr;
                 //ppr.readParameterFile("jupiter_old.tf");
                 ppr.readParameterFile( tfFilePath_old.c_str() );
                 NameListFile nm = ppr.getNameListFile();
-                //nm.setFileName("jupiter.tf");
-//                nm.setFileName( tfFilePath.c_str() );
-//                nm.write();
-//                std::ofstream ofs;
-//                //ofs.open( "jupiter.tf" , std::ios::out | std::ios::app  );
-//                ofs.open( tfFilePath.c_str() , std::ios::out | std::ios::app  );
-//                if(ofs) ofs << "END_PARAMETER_FILE=SUCCESS" << std::endl;
-//                ofs.close();
-                // 20181226 end
-//                ParameterFileWriter ppw;
-//                ppw.inputMessage( clntMes );
-//                std::ifstream file(tfFilePath.c_str());
-//                if(!file)
-//                {
-//                    ppw.writeParameterFile( tfFilePath.c_str() );
-//                }
-//                file.close();
-#endif           
                 //最初の送信(daemon->client)
                 //jupiter_old.tfの内容をクライアントに送信
                 std::ifstream file(tfFilePath_old.c_str());
@@ -568,38 +549,68 @@ int main( int argc, char** argv )
                     setDefalutTransferFunction(&servMes, pm.particleHistoryFile().colorHistogramArray().size() );
                 }
                 file.close();
-                servMes.m_message_size = servMes.byteSize();
 
                 std::cout<<"main.cpp:571"<<std::endl;
-#if 1                
+#if 0                
                 ParameterFileWriter ppw_test;
                 ppw_test.inputGlyphParameterMessage( clntMes );
                 ppw_test.writeParameterFile( glyphParameterPath.c_str() );
 
                 pbvr::PointObject* originalObject_test = new pbvr::PointObject;
                 if( pm.setTimeStep( 0 ) ) servMes.m_flag_send_bins = 2;
+                
                     pm.readGlyphFile();
                     pm.getGlyph( originalObject_test );
-                    for ( int i = 0; i < 10; ++i )
-                    {
-                        std::cout << " originalObject->coords()[3 * i + 0]   =" << originalObject_test->coords()[3 * i + 0] << std::endl;
-                        std::cout << " originalObject->coords()[3 * i + 1]   =" << originalObject_test->coords()[3 * i + 1] << std::endl;
-                        std::cout << " originalObject->coords()[3 * i + 2]   =" << originalObject_test->coords()[3 * i + 2] << std::endl;
-                        std::cout << " originalObject->normals()[3 * i + 0]  =" << originalObject_test->normals()[3 * i + 0]<< std::endl;
-                        std::cout << " originalObject->normals()[3 * i + 1]  =" << originalObject_test->normals()[3 * i + 1]<< std::endl;
-                        std::cout << " originalObject->normals()[3 * i + 2]  =" << originalObject_test->normals()[3 * i + 2]<< std::endl;
-                        std::cout << " originalObject->colors()[3 * i + 0]   =" << (int)originalObject_test->colors()[3 * i + 0] << std::endl;
-                        std::cout << " originalObject->colors()[3 * i + 1]   =" << (int)originalObject_test->colors()[3 * i + 1] << std::endl;
-                        std::cout << " originalObject->colors()[3 * i + 2]   =" << (int)originalObject_test->colors()[3 * i + 2] << std::endl;
-                        std::cout << " originalObject->sizes()[3 * i + 0]    =" << originalObject_test->sizes()[3 * i + 0]  << std::endl;
 
-                    }
+                            servMes.m_number_glyph = originalObject_test->coords().size() / 3;
+                            std::cout << "servMes.m_number_glyph = " << servMes.m_number_glyph << std::endl; 
+                            if ( servMes.m_number_glyph > 0 )
+                            {
+                                servMes.m_glyph_coords = std::make_unique<float[]>(3 * servMes.m_number_glyph);
+                                servMes.m_glyph_vectors = std::make_unique<float[]>(3 * servMes.m_number_glyph);
+                                servMes.m_glyph_sizes = std::make_unique<float[]>(servMes.m_number_glyph);
+                                servMes.m_glyph_colors = std::make_unique<unsigned char[]>(3 * servMes.m_number_glyph);
+                            }
+                            else
+                            {
+                                servMes.m_positions = NULL;
+                                servMes.m_normals   = NULL;
+                                servMes.m_colors    = NULL;
+                            }
+                            for ( int i = 0; i < servMes.m_number_glyph; ++i )
+                            {
+                                servMes.m_glyph_coords[3 * i + 0]  = originalObject_test->coords()[3 * i + 0];
+                                servMes.m_glyph_coords[3 * i + 1]  = originalObject_test->coords()[3 * i + 1];
+                                servMes.m_glyph_coords[3 * i + 2]  = originalObject_test->coords()[3 * i + 2];
+                                servMes.m_glyph_vectors[3 * i + 0] = originalObject_test->normals()[3 * i + 0];
+                                servMes.m_glyph_vectors[3 * i + 1] = originalObject_test->normals()[3 * i + 1];
+                                servMes.m_glyph_vectors[3 * i + 2] = originalObject_test->normals()[3 * i + 2];
+                                servMes.m_glyph_colors[3 * i + 0]  = originalObject_test->colors()[3 * i + 0];
+                                servMes.m_glyph_colors[3 * i + 1]  = originalObject_test->colors()[3 * i + 1];
+                                servMes.m_glyph_colors[3 * i + 2]  = originalObject_test->colors()[3 * i + 2];
+                                servMes.m_glyph_sizes[ i ]         = originalObject_test->sizes()[ i ];
+                            }
+
+                            for ( int i = 0; i < 10; ++i )
+                            {
+                                std::cout << " originalObject->coords()[3 * i + 0]   =" <<servMes.m_glyph_coords[3 * i + 0]  << std::endl;
+                                std::cout << " originalObject->coords()[3 * i + 1]   =" <<servMes.m_glyph_coords[3 * i + 1]  << std::endl;
+                                std::cout << " originalObject->coords()[3 * i + 2]   =" <<servMes.m_glyph_coords[3 * i + 2]  << std::endl;
+                                std::cout << " originalObject->normals()[3 * i + 0]  =" <<servMes.m_glyph_vectors[3 * i + 0] << std::endl;
+                                std::cout << " originalObject->normals()[3 * i + 1]  =" <<servMes.m_glyph_vectors[3 * i + 1] << std::endl;
+                                std::cout << " originalObject->normals()[3 * i + 2]  =" <<servMes.m_glyph_vectors[3 * i + 2] << std::endl;
+                                std::cout << " originalObject->colors()[3 * i + 0]   =" <<(int)servMes.m_glyph_colors[3 * i + 0]  << std::endl;
+                                std::cout << " originalObject->colors()[3 * i + 1]   =" <<(int)servMes.m_glyph_colors[3 * i + 1]  << std::endl;
+                                std::cout << " originalObject->colors()[3 * i + 2]   =" <<(int)servMes.m_glyph_colors[3 * i + 2]  << std::endl;
+                                std::cout << " originalObject->sizes()[3 * i + 0]    =" <<servMes.m_glyph_sizes[ i ]         << std::endl;
+                            }
 
 
+                servMes.m_flag_send_bins = 2;
 #endif
-                std::cout<<"main.cpp:L578"<<std::endl;
                 servMes.show();
 
+                servMes.m_message_size = servMes.byteSize();
                 pts.sendMessage( servMes );
                 delete servMes.m_camera;
                 delete clntMes.m_camera;
@@ -1202,6 +1213,7 @@ int main( int argc, char** argv )
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
                         servMes.m_flag_send_bins = 1;
 
                         servMes.m_message_size = servMes.byteSize();
@@ -1219,6 +1231,7 @@ int main( int argc, char** argv )
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
                         servMes.m_flag_send_bins = 1;
 
                         servMes.m_message_size = servMes.byteSize();
@@ -1448,13 +1461,13 @@ int main( int argc, char** argv )
 //                            TimerStop( 3 );
 //jupiter end
                             //if ( originalObject != object ) delete originalObject;
-                            servMes.m_number_particle = originalObject->coords().size() / 3;
-                            if ( servMes.m_number_particle > 0 )
+                            servMes.m_number_glyph = originalObject->coords().size() / 3;
+                            if ( servMes.m_number_glyph > 0 )
                             {
-                                servMes.m_glyph_coords = std::make_unique<float[]>(3 * servMes.m_number_particle);
-                                servMes.m_glyph_vectors = std::make_unique<float[]>(3 * servMes.m_number_particle);
-                                servMes.m_glyph_colors = std::make_unique<unsigned char[]>(3 * servMes.m_number_particle);
-                                servMes.m_glyph_sizes = std::make_unique<float[]>(servMes.m_number_particle);
+                                servMes.m_glyph_coords = std::make_unique<float[]>(3 * servMes.m_number_glyph);
+                                servMes.m_glyph_vectors = std::make_unique<float[]>(3 * servMes.m_number_glyph);
+                                servMes.m_glyph_colors = std::make_unique<unsigned char[]>(3 * servMes.m_number_glyph);
+                                servMes.m_glyph_sizes = std::make_unique<float[]>(servMes.m_number_glyph);
                             }
                             else
                             {
@@ -1462,7 +1475,7 @@ int main( int argc, char** argv )
                                 servMes.m_normals   = NULL;
                                 servMes.m_colors    = NULL;
                             }
-                            for ( int i = 0; i < servMes.m_number_particle; ++i )
+                            for ( int i = 0; i < servMes.m_number_glyph; ++i )
                             {
                                 servMes.m_glyph_coords[3 * i + 0] = originalObject->coords()[3 * i + 0];
                                 servMes.m_glyph_coords[3 * i + 1] = originalObject->coords()[3 * i + 1];
@@ -1473,7 +1486,7 @@ int main( int argc, char** argv )
                                 servMes.m_glyph_colors[3 * i + 0] = originalObject->colors()[3 * i + 0];
                                 servMes.m_glyph_colors[3 * i + 1] = originalObject->colors()[3 * i + 1];
                                 servMes.m_glyph_colors[3 * i + 2] = originalObject->colors()[3 * i + 2];
-                                servMes.m_glyph_sizes[3 * i + 0] = originalObject->sizes()[3 * i + 0];
+                                servMes.m_glyph_sizes[i ] = originalObject->sizes()[ i ];
                             }
 //                            servMes.m_server_side_variable_range = vr;
                             if ( timer_count <= TIMER_COUNT_NUM )
@@ -1539,6 +1552,7 @@ int main( int argc, char** argv )
                         servMes.m_message_size = servMes.byteSize();
                         //servMes.m_number_particle = 2;
                         servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
                         TimerStart( 11 );
                         pts.sendMessage( servMes );
                         TimerStop( 11 );
