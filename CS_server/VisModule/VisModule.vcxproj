@@ -45,7 +45,7 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -69,7 +69,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetExt>.lib</TargetExt>
-    <TargetName>visModule</TargetName>
+    <TargetName>pbvr_server</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>visModule</TargetName>
@@ -118,9 +118,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Common;$(SolutionDir)\FunctionParser;$(SolutionDir)\Server;$(SolutionDir)\VisModule</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Common;$(SolutionDir)\FunctionParser;$(SolutionDir)\VisModule</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>CPU_VER;NDEBUG;WIN32;NOMINMAX;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableSpecificWarnings>4244;4101;4267;4819;</DisableSpecificWarnings>
       <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
       <OpenMPSupport>true</OpenMPSupport>
@@ -129,6 +129,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>C:\Users\SAKAMOTO\work\KVS\install\lib;C:\Users\SAKAMOTO\work\VTK-9.3.1\install\lib;$(SolutionDir)$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>pbvrCommon.lib;pbvrFunc.lib;ws2_32.lib;glu32.lib;opengl32.lib;vtksys-9.3.lib;vtkCommonCore-9.3.lib;vtkCommonExecutionModel-9.3.lib;vtkCommonDataModel-9.3.lib;vtkFiltersCore-9.3.lib;vtkFiltersExtraction-9.3.lib;vtkFiltersGeneral-9.3.lib;vtkFiltersGeometry-9.3.lib;vtkFiltersParallel-9.3.lib;vtkIOCore-9.3.lib;vtkIOGeometry-9.3.lib;vtkIOCGNSReader-9.3.lib;vtkIOEnSight-9.3.lib;vtkIOLegacy-9.3.lib;vtkIOParallel-9.3.lib;vtkIOXML-9.3.lib;vtkIOXMLParser-9.3.lib;vtkcgns-9.3.lib;vtkCommonMath-9.3.lib;vtkCommonMisc-9.3.lib;vtkCommonSystem-9.3.lib;vtkCommonTransforms-9.3.lib;vtkdoubleconversion-9.3.lib;vtkexpat-9.3.lib;vtkhdf5-9.3.lib;vtkloguru-9.3.lib;vtklz4-9.3.lib;vtklzma-9.3.lib;vtkParallelCore-9.3.lib;vtkpugixml-9.3.lib;vtkzlib-9.3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -251,6 +253,7 @@
     <ClCompile Include="Image\ImageBase.cpp" />
     <ClCompile Include="Image\RGBAColor.cpp" />
     <ClCompile Include="Image\RGBColor.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="Matrix\FrustumMatrix44.cpp" />
     <ClCompile Include="Matrix\LookAtMatrix44.cpp" />
     <ClCompile Include="Matrix\Matrix.cpp" />
@@ -449,6 +452,7 @@
     <ClInclude Include="FileFormat\BMP\HeaderBase.h" />
     <ClInclude Include="FileFormat\BMP\InfoHeader.h" />
     <ClInclude Include="FileFormat\CSV\Csv.h" />
+    <ClInclude Include="FileFormat\FileChecker.h" />
     <ClInclude Include="FileFormat\DICOM\Attribute.h" />
     <ClInclude Include="FileFormat\DICOM\DataType.h" />
     <ClInclude Include="FileFormat\DICOM\Dicom.h" />
