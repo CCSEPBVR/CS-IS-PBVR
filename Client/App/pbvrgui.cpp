@@ -36,7 +36,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_data_properties( this ),
     m_coordinates( this, &m_merge, &m_connect ),
     m_transfer_function_editor( this, &m_merge, &m_connect, &m_color_map_bar_selector ),
-    m_glyph_editor( this, &m_merge, &m_connect  ),
+    m_glyph_editor( this, this, &m_merge, &m_connect  ),
     m_initialize_camera_xform
     (
         kvs::Mat4(

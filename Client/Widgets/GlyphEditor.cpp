@@ -1,15 +1,19 @@
 #include "GlyphEditor.h"
 #include "ui_GlyphEditor.h"
 
+#include "App/pbvrgui.h"
 #include "Widgets/MergePanel.h"
 #include "Widgets/Connect.h"
+#include <kvs/PolygonGlyphObject>
 
-GlyphEditor::GlyphEditor(QWidget *parent, MergePanel* merge, Connect* connect_panel)
+GlyphEditor::GlyphEditor(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, Connect* connect_panel)
     : QDockWidget(parent)
     , ui(new Ui::GlyphEditor),
+    m_pbvr_gui( pbvr_gui ),
     m_merge( merge ),
     m_connect( connect_panel ),
-    m_vector_list( new QStringList() )
+    m_vector_list( new QStringList() ),
+    m_scale_factor(1)
 {
     ui->setupUi(this);
 
@@ -37,6 +41,8 @@ GlyphEditor::GlyphEditor(QWidget *parent, MergePanel* merge, Connect* connect_pa
     m_color_data_variable_layout = new QVBoxLayout(colorDataScrollContentWidget);
     ui->colorDataScrollArea->setWidget(colorDataScrollContentWidget);
     ui->colorDataScrollArea->setWidgetResizable(true);  // スクロールエリアのコンテンツを自動リサイズする
+
+    connect( ui->updatePushButton, &QPushButton::clicked, this, &GlyphEditor::onUpdateButtonClicked );
 
     // // directionComboBox のインデックスが重複しないようにする
     connect(ui->direction1ComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GlyphEditor::onDirectionComboBoxIndexChanged);
@@ -227,8 +233,35 @@ void GlyphEditor::onColorDataNumberOfVariableChanged(int value)
     m_color_data_variable_layout->update();
 }
 
+void GlyphEditor::onUpdateButtonClicked()
+{
+    m_glyph_type = static_cast<GlyphType>(ui->glyphTypeComboBox->currentIndex());
+    // m_scale_factor = ui->scaleFactorDoubleSpinBox->value();
+
+    for( int row = 0; row < m_merge->getFilesManager().size(); row++ )
+    {
+        if( m_merge->getFilesManager().at(row)->getFormat() == FilesManager::ServerGlyphObjectCS ||
+            m_merge->getFilesManager().at(row)->getFormat() == FilesManager::ServerGlyphObjectIS ) // テクスチャなしポリゴンオブジェクト
+        {
+            std::cout << "DET GLYPH" << std::endl;
+            kvs::PolygonObject* polygonObject = new kvs::PolygonGlyphObject( m_coords, m_directions, m_sizes, m_colors, static_cast<kvs::PolygonGlyphObject::GlyphType>(m_glyph_type) );
+            m_pbvr_gui->screen()->scene()->replaceObject( m_merge->getFilesManager().at(row)->getIDs().first, polygonObject );
+
+        }
+    }
+    std::cout << m_coords.size() << std::endl;
+    std::cout << m_directions.size() << std::endl;
+    std::cout << m_sizes.size() << std::endl;
+    std::cout << m_colors.size() << std::endl;
+    m_pbvr_gui->screen()->update();
+}
+
 void GlyphEditor::onApplyButtonClicked()
 {
+    m_glyph_type = static_cast<GlyphType>(ui->glyphTypeComboBox->currentIndex());
+    m_scale_factor = ui->scaleFactorDoubleSpinBox->value();
+
+
     //Direction
     m_connect->getClientMessage()->m_direction_variable[0] = static_cast<int32_t>( ui->direction1ComboBox->currentText().mid(1).toInt() );
     m_connect->getClientMessage()->m_direction_variable[1] = static_cast<int32_t>( ui->direction2ComboBox->currentText().mid(1).toInt() );
