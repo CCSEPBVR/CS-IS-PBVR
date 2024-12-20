@@ -146,7 +146,6 @@ int jpv::ParticleTransferServer::sendMessage( const ParticleTransferServerMessag
     std::cout << "Send Server glyph Size = " << message.m_number_glyph << std::endl;
 
     message.pack( buf );
-    std::cout  << __LINE__ <<std::endl;
     send( m_destination_socket, buf, size, 0 );
 
 #ifdef _DEBUG

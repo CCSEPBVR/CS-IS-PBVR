@@ -84,6 +84,7 @@ extern "C" {
     float m_sampling_volume_inverse;
     float m_particle_density;
     float m_max_opacity;
+    int m_nvariables;
 
     std::vector<pbvr::TransferFunction> m_tf ;
     int m_tf_number;

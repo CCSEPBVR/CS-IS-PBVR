@@ -792,6 +792,7 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
 
         int ncoords = object -> nnodes();
         nvariables  = object -> veclen();
+        particleBase.m_nvariables = nvariables; 
 
         pbvr::VolumeObjectBase::CellType celltype;
         Type** values;
@@ -2669,6 +2670,7 @@ void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBas
             }
             ofs2<<std::endl;
         }
+        ofs2<<"N_VARIABLES="<<particleBase.m_nvariables<<std::endl;
         ofs2 << "END_HISTORY_FILE=SUCCESS" << std::endl;
         ofs2.close();
 

@@ -623,7 +623,8 @@ int main( int argc, char** argv )
 //            std::string historyPath = visParamDir + "history";
             //ParticleMonitor pm( jupiter_prefix,"state.txt", "history" );
             //ParticleMonitor pm( particlePath, statePath.c_str(), historyPath.c_str() );
-            ParticleMonitor pm( particlePath, statePath.c_str(), historyPath.c_str() );
+            //ParticleMonitor pm( particlePath, statePath.c_str(), historyPath.c_str() );
+            ParticleMonitor pm( particlePath, glyphFilePath, statePath.c_str(), historyPath.c_str() );
             // 20181226 end
 
             //ソケットが存在すればgood
@@ -1277,6 +1278,7 @@ int main( int argc, char** argv )
                         }
                         else
                         {
+                            std::cout << __LINE__ <<std::endl;
                             jd.Initialize( clntMes.m_step, clntMes.m_step, fil.total_numSubVolumes,
                                            fil.total_minSubVolumeCoord,
                                            fil.total_maxSubVolumeCoord,
@@ -1316,7 +1318,7 @@ int main( int argc, char** argv )
                             clntMes.m_step = -1;
                         }
 
-                        std::cout<<"main.cpp:L614"<<std::endl;
+                        std::cout<<"main.cpp:L1319"<<std::endl;
                         //clntMes.show();
 
                         pts.sendMessage( servMes );
@@ -1368,6 +1370,7 @@ int main( int argc, char** argv )
 
                         while ( jd.DispatchNext( wid, &st, &vl ) )
                         {
+                            std::cout << __LINE__ <<std::endl;
                             if ( timer_count <= TIMER_COUNT_NUM )
                             {
                                 TIMER_STA( 471 );
@@ -1420,7 +1423,8 @@ int main( int argc, char** argv )
                             }
 
                             TimerStop( 2 );
-                            if( pm.setTimeStep( clntMes.m_step ) ) servMes.m_flag_send_bins = 2;
+                            //if( pm.setTimeStep( clntMes.m_step ) ) servMes.m_flag_send_bins = 2;
+                            if( pm.setTimeStep( clntMes.m_step ) || pm.stepExisted() ) servMes.m_flag_send_bins = 2;
                             else                                 servMes.m_flag_send_bins = 1;
                             if( servMes.m_flag_send_bins == 2)
                             {
@@ -1453,6 +1457,7 @@ int main( int argc, char** argv )
 //                            TimerStop( 3 );
 //jupiter end
                             //if ( originalObject != object ) delete originalObject;
+                            std::cout << "originalObject->coords() = " << originalObject->coords().size() <<std::endl;
                             servMes.m_number_glyph = originalObject->coords().size() / 3;
                             if ( servMes.m_number_glyph > 0 )
                             {
@@ -1492,7 +1497,7 @@ int main( int argc, char** argv )
                             servMes.m_message_size = servMes.byteSize();
                             TimerStart( 4 );
 
-                            std::cout<<"main.cpp:L779"<<std::endl;
+                            std::cout<<"main.cpp:L1497"<<std::endl;
 
                             servMes.show();
                             pts.sendMessage( servMes );

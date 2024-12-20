@@ -150,7 +150,7 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
             s += jpv::Serializer::byteSize( m_color_data_variable[i] );
         }
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle )
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph)
     {
         s += sizeof( m_time_parameter );
         if ( m_time_parameter == 0 )
@@ -297,7 +297,7 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
             index += jpv::Serializer::write( buf + index, m_color_data_variable[i] );
         }
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle )
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph )
     {
         index += jpv::Serializer::write( buf + index, m_time_parameter );
         if ( m_time_parameter == 0 )
@@ -506,7 +506,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
             m_color_data_variable.push_back(value);
         }
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle )
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph)
     {
         index += jpv::Serializer::read( buf + index, &m_time_parameter );
         if ( m_time_parameter == 0 )
@@ -907,7 +907,6 @@ size_t jpv::ParticleTransferServerMessage::pack( char* buf ) const
     }
     else if (m_flag_send_bins == 2 )
     {
-        std::cout  << __LINE__ <<std::endl;
         index += jpv::Serializer::writeArray<float>( buf + index, m_glyph_coords.get(),    3 * m_number_glyph );
         index += jpv::Serializer::writeArray<float>( buf + index, m_glyph_vectors.get(),      3 * m_number_glyph );
         index += jpv::Serializer::writeArray<float>( buf + index, m_glyph_sizes.get(),          m_number_glyph );
@@ -1194,6 +1193,22 @@ void jpv::ParticleTransferServerMessage::show( void ) const
     //std::cout<<"transferFunctionSynthesis="<<transferFunctionSynthesis<<std::endl;
     std::cout << "color_tf_synthesis=" << m_color_transfer_function_synthesis << std::endl;
     std::cout << "opacity_tf_synthesis=" << m_opacity_transfer_function_synthesis << std::endl;
+
+    int num_glyph = m_number_glyph < 10 ? m_number_glyph : 10; 
+    for ( int i = 0; i < num_glyph ; i++ )
+    {
+        std::cout << "servMes.m_glyph_coords[3 * i + 0] = " <<  m_glyph_coords[3 * i + 0] << std::endl;
+        std::cout << "servMes.m_glyph_coords[3 * i + 1] = " <<  m_glyph_coords[3 * i + 1] << std::endl;
+        std::cout << "servMes.m_glyph_coords[3 * i + 2] = " <<  m_glyph_coords[3 * i + 2] << std::endl;
+        std::cout << "servMes.m_glyph_vectors[3 * i + 0] = " <<  m_glyph_vectors[3 * i + 0] << std::endl;
+        std::cout << "servMes.m_glyph_vectors[3 * i + 1] = " <<  m_glyph_vectors[3 * i + 1] << std::endl;
+        std::cout << "servMes.m_glyph_vectors[3 * i + 2] = " <<  m_glyph_vectors[3 * i + 2] << std::endl;
+        std::cout << "servMes.m_glyph_colors[3 * i + 0] = " <<  (int)m_glyph_colors[3 * i + 0] << std::endl;
+        std::cout << "servMes.m_glyph_colors[3 * i + 1] = " <<  (int)m_glyph_colors[3 * i + 1] << std::endl;
+        std::cout << "servMes.m_glyph_colors[3 * i + 2] = " <<  (int)m_glyph_colors[3 * i + 2] << std::endl;
+        std::cout << "servMes.m_glyph_sizes[  i ] = " <<  m_glyph_sizes[ i ] << std::endl;
+    }
+
 
     std::cout<<std::endl;
 }
