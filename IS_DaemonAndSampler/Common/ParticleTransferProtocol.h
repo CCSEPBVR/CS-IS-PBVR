@@ -140,10 +140,13 @@ public:
 
     //グリフ
     bool m_glyph_flag; // グリフの生成判定
-    int32_t m_direction_variable[3];
+    //int32_t m_direction_variable[3];
+    std::string m_direction_variable[3];
+    //std::vector<std::string> m_direction_variable;
 
     DataDefines m_size_sampling_method;
-    std::vector<int32_t> m_size_variable;
+    //std::vector<int32_t> m_size_variable;
+    std::vector<std::string> m_size_variable;
 
     GlyphMode m_distribution_mode;
     int32_t m_number_of_sampling_point;
@@ -152,9 +155,10 @@ public:
 
     kvs::ColorMap m_color_map;
     std::vector<int32_t> m_glyph_color_map_table;
+    //std::vector<std::string> m_glyph_color_map_table;
 
     DataDefines m_color_data_sampling_method;
-    std::vector<int32_t> m_color_data_variable;
+    std::vector<std::string> m_color_data_variable;
 
 public:
     // message のサイズを計算

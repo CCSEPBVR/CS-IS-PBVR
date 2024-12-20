@@ -312,10 +312,13 @@ void ParameterFileWriter::inputGlyphParameterMessage( const jpv::ParticleTransfe
 
     std::stringstream table;
 
-    kvs::ColorMap::Table   color_table   = client_message.m_color_map.table();
-    for ( size_t i = 0; i < color_table.size(); i++ )
+//    kvs::ColorMap::Table   color_table   = client_message.m_glyph_color_map.table();
+//    std::vector<int> color_table  = client_message.m_glyph_color_map;   
+//    std::cout << "color_table.size() = " << color_table.size() <<std::endl;
+    std::cout << "client_message.m_color_map.table() = " << client_message.m_glyph_color_map_table.size() <<std::endl;
+    for ( size_t i = 0; i < client_message.m_glyph_color_map_table.size(); i++ )
     {
-        table << color_table.at( i ) << ",";
+        table << client_message.m_glyph_color_map_table.at( i ) << ",";
     }
     m_name_list_file.setLine( "GLYPH_COLOR_MAP_TABLE"      ,table.str() );
 }

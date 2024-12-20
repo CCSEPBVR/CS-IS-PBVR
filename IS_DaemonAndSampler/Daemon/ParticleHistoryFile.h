@@ -19,6 +19,7 @@ private:
     VariableRange     m_variable_range;
     HistogramArray    m_color_histogram_array;
     HistogramArray    m_opacity_histogram_array;
+    int               m_nvariables;
 
 private:
 
@@ -43,6 +44,7 @@ public:
     VariableRange& variableRange();
     HistogramArray& colorHistogramArray();
     HistogramArray& opacityHistogramArray();
+    int nVariables(){return m_nvariables; };
 };
 
 template<typename T>

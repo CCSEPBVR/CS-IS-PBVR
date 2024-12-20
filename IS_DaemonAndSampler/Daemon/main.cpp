@@ -481,7 +481,6 @@ int main( int argc, char** argv )
                 servMes.m_color_nbins   = new kvs::UInt64[tf_number];
                 servMes.m_opacity_nbins = new kvs::UInt64[tf_number];
 
-                std::cout << " clntMes.m_color_transfer_function_synthesis =" << clntMes.m_color_transfer_function_synthesis  << std::endl;
                 servMes.m_color_bins.resize(   tf_number );
                 servMes.m_opacity_bins.resize( tf_number );
 
@@ -502,7 +501,7 @@ int main( int argc, char** argv )
                 }
 
                 servMes.m_transfer_function_count = pm.particleHistoryFile().colorHistogramArray().size();
-                    std::cout << "pm.particleHistoryFile().colorHistogramArray().size() = " << pm.particleHistoryFile().colorHistogramArray().size() <<std::endl;
+                std::cout << "pm.particleHistoryFile().colorHistogramArray().size() = " << pm.particleHistoryFile().colorHistogramArray().size() <<std::endl;
                 for ( int tf = 0; tf < pm.particleHistoryFile().colorHistogramArray().size() && tf < servMes.m_transfer_function_count; tf++ )
                 {
                     servMes.m_color_nbins[tf] = pm.particleHistoryFile().colorHistogramArray()[ tf ].size();
@@ -525,9 +524,7 @@ int main( int argc, char** argv )
                 servMes.m_max_value = fil.total_maxValue;
                 servMes.m_number_nodes = fil.total_numNodes;
                 servMes.m_number_elements = fil.total_numElements;
-              //servMes.elemType = fil.m_list[0].elemType;
-              //servMes.fileType = fil.m_list[0].fileType;
-              //servMes.numIngredients = fil.m_list[0].numIngredients;
+                servMes.m_number_ingredients = pm.particleHistoryFile().nVariables();
                 servMes.m_server_side_variable_range = range;
                 servMes.m_flag_send_bins = 1;
 
@@ -1152,11 +1149,6 @@ int main( int argc, char** argv )
                 }
                 else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_glyph )
                 {
-//                        ParameterFileWriter ppw;
-//                        ppw.inputMessage( clntMes );
-//                        //ppw.writeParameterFile( tfFilePath.c_str() );
-//                        ppw.writeGlyphParameterFile( tfFilePath.c_str() );
-
 
                         timer_count++;
                     if ( timer_count <= TIMER_COUNT_NUM )
@@ -1360,18 +1352,18 @@ int main( int argc, char** argv )
 //                            }
 //                        }
 
-                        tmp_c_bins = new kvs::UInt64[c_bins_size];
-                        tmp_o_bins = new kvs::UInt64[o_bins_size];
-
-                        for ( int tf = 0; tf < c_bins_size; tf++ )
-                        {
-                            tmp_c_bins[tf] = 0;
-                        }
-
-                        for ( int tf = 0; tf < o_bins_size; tf++ )
-                        {
-                            tmp_o_bins[tf] = 0;
-                        }
+//                        tmp_c_bins = new kvs::UInt64[c_bins_size];
+//                        tmp_o_bins = new kvs::UInt64[o_bins_size];
+//
+//                        for ( int tf = 0; tf < c_bins_size; tf++ )
+//                        {
+//                            tmp_c_bins[tf] = 0;
+//                        }
+//
+//                        for ( int tf = 0; tf < o_bins_size; tf++ )
+//                        {
+//                            tmp_o_bins[tf] = 0;
+//                        }
 
 
                         while ( jd.DispatchNext( wid, &st, &vl ) )
