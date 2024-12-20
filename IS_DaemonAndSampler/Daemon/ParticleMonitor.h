@@ -5,6 +5,7 @@
 #include <kvs/Type>
 #include "PointObject.h"
 #include "ParticleFile.h"
+#include "GlyphFile.h"
 #include "ParticleStatusFile.h"
 #include "ParticleHistoryFile.h"
 
@@ -13,10 +14,12 @@ class ParticleMonitor
 {
 private:
     ParticleFile          m_particle_file; 
+    GlyphFile             m_glyph_file; 
     ParticleStatusFile    m_status_file; 
     ParticleHistoryFile   m_history_file; 
     std::string           m_history_file_prefix;
     pbvr::PointObject     m_particle; 
+    pbvr::PointObject     m_glyph; 
     kvs::Int32            m_time_step;
 
 private:
@@ -28,7 +31,13 @@ public:
     ParticleMonitor( const std::string& particle_file_prefix,
                      const std::string& particle_status_file_name,
                      const std::string& particle_history_file_prefix );
+    ParticleMonitor( const std::string& particle_file_prefix,
+                     const std::string& glyph_file_prefix,
+                     const std::string& particle_status_file_name,
+                     const std::string& particle_history_file_prefix );
+
     void setParticleFilePrefix( const std::string& prefix );
+    void setGlyphFilePrefix( const std::string& prefix );
     void setParticleStatusFileName( const std::string& file_name );
     void setParticleHistoryFileName( const std::string& file_name );
     void setParticleHistoryFilePrefix( const std::string& prefix );
@@ -36,7 +45,9 @@ public:
     void check();
     void readParticleHistoryFile();
     void readParticleFile();
+    void readGlyphFile();
     void getParticle( pbvr::PointObject* object );
+    void getGlyph( pbvr::PointObject* object );
     kvs::Int32 getSubpixelLevel();
     ParticleStatusFile& particleStatusFile();
     ParticleHistoryFile& particleHistoryFile();

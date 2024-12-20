@@ -17,6 +17,17 @@ ParticleMonitor::ParticleMonitor( const std::string& particle_file_prefix,
     this->setParticleStatusFileName( particle_status_file_name );
 }
 
+ParticleMonitor::ParticleMonitor( const std::string& particle_file_prefix,
+                                  const std::string& glyph_file_prefix,
+                                  const std::string& particle_status_file_name,
+                                  const std::string& particle_history_file_prefix ):
+    m_time_step( -1 ),
+    m_history_file_prefix( particle_history_file_prefix )
+{
+    this->setParticleFilePrefix( particle_file_prefix );
+    this->setGlyphFilePrefix( glyph_file_prefix );
+    this->setParticleStatusFileName( particle_status_file_name );
+}
 void ParticleMonitor::check()
 {
     m_status_file.read();
@@ -28,6 +39,18 @@ bool ParticleMonitor::stepExisted()
                 && ( m_status_file.getStatus() != ParticleStatusFile::NO_STEP );
     return existed;
 }
+
+void ParticleMonitor::readGlyphFile()
+{
+    TimerStart( 6 );
+    m_glyph_file.setParameterFromFile();
+    TimerStop( 6 );
+    TimerStart( 7 );
+    m_glyph.clear();
+    m_glyph_file.generatePointObject( m_time_step, &m_glyph );
+    TimerStop( 7 );
+}
+
 
 void ParticleMonitor::readParticleFile()
 {
@@ -54,6 +77,11 @@ void ParticleMonitor::setParticleFilePrefix( const std::string& prefix )
     m_particle_file.setFilePrefix( prefix );
 }
 
+void ParticleMonitor::setGlyphFilePrefix( const std::string& prefix )
+{
+    m_glyph_file.setFilePrefix( prefix );
+}
+
 void ParticleMonitor::setParticleStatusFileName( const std::string& file_name )
 {
     m_status_file.setFileName( file_name );
@@ -74,6 +102,11 @@ bool ParticleMonitor::setTimeStep( const kvs::Int32 time_step )
 void ParticleMonitor::getParticle( pbvr::PointObject* object )
 {
     (*object) = m_particle;
+}
+
+void ParticleMonitor::getGlyph( pbvr::PointObject* object )
+{
+    (*object) = m_glyph;
 }
 
 kvs::Int32 ParticleMonitor::getSubpixelLevel()

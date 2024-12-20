@@ -44,6 +44,7 @@ DAEMON_SRCS = CropRegion.cpp \
               ParameterFileReader.cpp \
               ParameterFileWriter.cpp \
               ParticleFile.cpp \
+              GlyphFile.cpp \
               ParticleMonitor.cpp \
               PointImporter.cpp \
               ParticleStatusFile.cpp \
@@ -79,6 +80,7 @@ DAEMON_HEADERS = Argument.h \
                  ParameterFileReader.h \
                  ParameterFileWriter.h \
                  ParticleFile.h \
+                 GlyphFile.h \
                  ParticleMonitor.h \
                  ParticleStatusFile.h \
                  ParticleHistoryFile.h \

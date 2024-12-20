@@ -6,6 +6,7 @@
 #include "TFS/VolumeObjectBase.h"
 #include "TFS/ParamInfo.h"
 #include "TFS/TransferFunction.h"
+#include "../../Common/ParticleTransferProtocol.h"
 
 #ifdef VTK
 #include <vtkUnstructuredGrid.h>
@@ -83,6 +84,7 @@ extern "C" {
     float m_sampling_volume_inverse;
     float m_particle_density;
     float m_max_opacity;
+    int m_nvariables;
 
     std::vector<pbvr::TransferFunction> m_tf ;
     int m_tf_number;
@@ -96,6 +98,28 @@ extern "C" {
     } pbvr_parameters;
 
 
+    typedef struct
+    {
+    std::string m_glyphParamPath;
+    std::string m_glyphFilePath;
+    std::vector<float>  m_glyph_coords;
+    std::vector<float>  m_glyph_vectors;
+    std::vector<float>  m_glyph_sizes;
+    std::vector<Byte>   m_glyph_colors;
+    std::vector<float>  m_glyph_colors_data;
+
+    std::vector<int>  m_direction_variables;
+    jpv::DataDefines m_size_sampling_method;
+    std::vector<int> m_size_variables;
+    jpv::GlyphMode m_distribution_modes;
+    int m_stride;
+    int m_seed;
+    int m_number_of_sample_points;
+    kvs::ColorMap m_color_map;
+    jpv::DataDefines m_color_sampling_method;
+    std::vector<int> m_color_data_variables;
+
+    } glyph_parameters;
 
 #if 0
     typedef struct
@@ -156,6 +180,14 @@ extern "C" {
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells,
                              const  pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase );
+
+    void GenerateGlyphs( int time_step,
+                             domain_parameters dom,
+                             Type** values, int nvariables,
+                             float* coordinates, int ncoords,
+                             unsigned int* connections, int ncells,
+                             const  pbvr::VolumeObjectBase::CellType& celltype, glyph_parameters &glyphParamter ,pbvr_parameters& particleBase );
+
     void OutputParticles( int time_step, int nvariables, pbvr_parameters& particleBase,  ParamInfo *param_info, bool skip_flag);
     bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, ParamInfo *param_info, const int time_step);
 
