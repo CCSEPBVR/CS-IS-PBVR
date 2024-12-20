@@ -145,7 +145,6 @@ int jpv::ParticleTransferClient::recvMessage( ParticleTransferServerMessage* mes
     size_t mSize, rSize;
     size_t host_particle_limit = 0; //HOST_PARTICLE_LIMIT
 
-    std::cout << __LINE__<< std::endl;
     // tantantan
     //MOVED TO 236)T0603 2020.03.05
     //fprintf( stdout, "message->m_time_step : %d\n",  message->m_time_step );

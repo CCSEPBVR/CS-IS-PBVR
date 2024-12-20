@@ -148,7 +148,7 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
             s += jpv::Serializer::byteSize( m_color_data_variables[i] );
         }
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle )
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph )
     {
         s += sizeof( m_time_parameter );
         if ( m_time_parameter == 0 )
@@ -283,7 +283,6 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         index += jpv::Serializer::write( buf + index, m_stride );
 
         index += jpv::Serializer::write( buf + index, m_glyph_color_map_table.size() );
-        std::cout << "m_glyph_color_map_table.size() = " << m_glyph_color_map_table.size() <<std::endl;
         for( int i = 0; i < m_glyph_color_map_table.size(); i++ )
         {
             index += jpv::Serializer::write( buf + index, m_glyph_color_map_table[i] );
@@ -296,7 +295,7 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
             index += jpv::Serializer::write( buf + index, m_color_data_variables[i] );
         }
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle )
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph )
     {
         index += jpv::Serializer::write( buf + index, m_time_parameter );
         if ( m_time_parameter == 0 )
@@ -502,7 +501,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
             m_color_data_variables.push_back(value);
         }
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle )
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph )
     {
         index += jpv::Serializer::read( buf + index, &m_time_parameter );
         if ( m_time_parameter == 0 )
@@ -539,7 +538,7 @@ void jpv::ParticleTransferClientMessage::show( void ) const
     std::cout<< "importFlag="<< m_import_flag <<std::endl;
     std::cout<<"initParam="<<static_cast<int>(m_initialize_parameter)<<std::endl;
     std::cout<<"timeParam="<<m_time_parameter<<std::endl;
-    std::cout<<"transParam="<<m_trans_parameter<<std::endl;
+    std::cout<<"transParam="<<m_trans_parameter<<std::endl; 
 
     std::cout<<"transfunc.size="<<m_transfer_function.size()<<std::endl;
     std::cout<<"transfunc.Name,ColorVar,OpacityVar,ColorVarMin,ColorVarMax, OpacityVarMin, OpacityVarMax"<<std::endl;

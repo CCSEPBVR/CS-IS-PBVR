@@ -130,7 +130,7 @@ public:
     void serverPointObjectCS( QString volumeDataFilePath, int min, int max );
     void serverPointObjectIS( QString volumeDataFilePath, int min, int max );
     void serverGlyphObjectCS( QString volumeDataFilePath, int min, int max );
-    // void serverGlyphObjectIS( QString volumeDataFilePath, int min, int max );
+    void serverGlyphObjectIS( QString volumeDataFilePath, int min, int max );
     void updateObjectTimeStepIS( int min, int max );
 
     void setIsParticleGenerationNeeded( const bool& is_particle_generation_needed ){ m_is_particle_generation_needed = is_particle_generation_needed; }
