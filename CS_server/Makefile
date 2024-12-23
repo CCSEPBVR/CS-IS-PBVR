@@ -16,6 +16,10 @@ ifeq "$(PBVR_MAKE_SERVER)" "1"
     SUBDIRS += Server
 endif
 
+ifeq "$(PBVR_MAKE_KVSML_COMVERTER)" "1"
+	SUBDIRS += KVSMLConverter
+endif
+
 all:
 	for i in $(SUBDIRS); do \
 	$(MAKE) -C $$i; done
