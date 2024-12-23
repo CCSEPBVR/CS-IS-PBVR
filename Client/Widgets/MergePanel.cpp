@@ -176,6 +176,29 @@ void MergePanel::serverGlyphObjectCS( QString volumeDataFilePath, int min, int m
     calculateTotalMinMaxTimeStep();
 }
 
+void MergePanel::serverGlyphObjectIS( QString volumeDataFilePath, int min, int max )
+{
+    FilesManager *newFile = new FilesManager;
+    newFile->setFileInfo( QFileInfo( volumeDataFilePath ) );
+    newFile->setFormat( FilesManager::ServerGlyphObjectIS );
+    newFile->setMinTimeStep( min );
+    newFile->setMaxTimeStep( max );
+    newFile->setDisplay( true );
+    newFile->setKeepInital( false );
+    newFile->setKeepFinal( false );
+    newFile->setColor( QColor( 128, 128, 128 ) ); //テクスチャ無しポリゴン用の初期値
+    newFile->setOpacity( 0.5 ); //テクスチャ無しポリゴン用の初期値
+    newFile->setChangePolygonTransferFunction( false );
+    newFile->setIDs( std::pair<int,int>( -1, -1 ) ); //登録時に表示されることはないので-1となる。registerObjectされた際に値が決まる。
+    newFile->setAlreadyImportedTimeStep( -1 ); //登録時に表示されることはないので-1となる。
+    newFile->setObject( nullptr );
+    m_files_manager.append( newFile );
+    addFilesTable( m_files_manager.last() ); //アペンド直後のFilesManagerをテーブルウィジェットに追加する。
+    calculateTotalMinMaxTimeStep();
+    IS_OBJ = true;
+    IS_OBJ_DONE_INIT = false;
+}
+
 void MergePanel::updateObjectTimeStepIS( int min, int max )
 {
     for( int row = 0; row < m_files_manager.size(); row++ )
@@ -939,6 +962,7 @@ void MergePanel::WorkerThread::process( const int row ,const int timeStep )
     else if ( std::is_same_v<ObjectType, kvs::PointObject> )
     {
         m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( timeStep ) );
+        //m_merge->m_connect->generateGlyphPolygons( timeStep );
         m_merge->setIsParticleGenerationNeeded( false );
     }
     else if (std::is_same_v<ObjectType, kvs::PolygonObject>)

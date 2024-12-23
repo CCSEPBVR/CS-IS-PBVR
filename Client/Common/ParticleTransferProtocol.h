@@ -140,10 +140,14 @@ public:
     EquationToken z_synthesis_token;//z_synthesis; CS ONLY
 
     //グリフ
-    int32_t m_direction_variable[3];
+    bool m_glyph_flag; // グリフの生成判定
+    //int32_t m_direction_variable[3];
+    //std::vector<std::string> m_direction_variable;
+    std::string m_direction_variable[3];
 
     DataDefines m_size_sampling_method;
-    std::vector<int32_t> m_size_variables;
+    //std::vector<int32_t> m_size_variables;
+    std::vector<std::string> m_size_variables;
 
     GlyphMode m_distribution_mode;
     int32_t m_number_of_sampling_point;
@@ -153,7 +157,7 @@ public:
     std::vector<int32_t> m_glyph_color_map_table;
 
     DataDefines m_color_data_sampling_method;
-    std::vector<int32_t> m_color_data_variables;
+    std::vector<std::string> m_color_data_variables;
 
 public:
     // message のサイズを計算
@@ -227,6 +231,14 @@ public:
     std::vector<kvs::UInt64*> m_opacity_bins;
 //    std::vector<std::string> m_color_bin_names;			// add by @hira at 2016/12/01
 //    std::vector<std::string> m_opacity_bin_names;		// add by @hira at 2016/12/01
+
+        // glyph
+    int32_t m_number_glyph;
+    std::unique_ptr<float[]>  m_glyph_coords;
+    std::unique_ptr<float[]>  m_glyph_vectors;
+    std::unique_ptr<float[]>  m_glyph_sizes;
+    std::unique_ptr<unsigned char[]>   m_glyph_colors;
+
     // message のサイズを計算
     int32_t byteSize( void ) const;
     // メッセージを byte 列に pack
@@ -234,6 +246,7 @@ public:
     // byte 列からメッセージに unpack
     size_t unpack_message( const char* buf );
     size_t unpack_particles( const char* buf );
+    size_t unpack_glyphs( const char* buf );
     size_t unpack_bins( const size_t index, const char* buf );
 private:
     float m_transfer_function_min_value;

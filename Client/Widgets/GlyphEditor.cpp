@@ -278,13 +278,15 @@ void GlyphEditor::onApplyButtonClicked()
         if ( m_size_variable_combo_boxes.isEmpty() ) //もしSizeのNumber of variablesが0の場合
         {
             m_connect->getClientMessage()->m_size_variables.clear();
-            m_connect->getClientMessage()->m_size_variables.push_back(1);
+            m_connect->getClientMessage()->m_size_variables.push_back("q1");
         }
         else
         {
             m_connect->getClientMessage()->m_size_variables.clear();
             QComboBox *comboBox = m_size_variable_combo_boxes[0];
-            m_connect->getClientMessage()->m_size_variables.push_back( static_cast<int32_t>( comboBox->currentText().mid(1).toInt() ) );
+            //
+            //m_connect->getClientMessage()->m_size_variables.push_back( static_cast<int32_t>( comboBox->currentText().mid(1).toInt() ) );
+            //m_connect->getClientMessage()->m_size_variables.push_back( comboBox->currentText() );
         }
     }
     else if( ui->sizeVariableArrayRadioBox->isChecked() ) //variableArray
@@ -293,7 +295,7 @@ void GlyphEditor::onApplyButtonClicked()
         if ( m_size_variable_combo_boxes.isEmpty() ) //もしSizeのNumber of variablesが0の場合
         {
             m_connect->getClientMessage()->m_size_variables.clear();
-            m_connect->getClientMessage()->m_size_variables.push_back(1);
+            m_connect->getClientMessage()->m_size_variables.push_back("q1");
         }
         else
         {
@@ -301,7 +303,7 @@ void GlyphEditor::onApplyButtonClicked()
             for (int i = 0; i < m_size_variable_combo_boxes.size(); i++)
             {
                 QComboBox *comboBox = m_size_variable_combo_boxes[i];
-                m_connect->getClientMessage()->m_size_variables.push_back( comboBox->currentText().mid(1).toInt() );
+                //m_connect->getClientMessage()->m_size_variables.push_back( comboBox->currentText().mid(1).toInt() );
             }
         }
     }
@@ -329,6 +331,7 @@ void GlyphEditor::onApplyButtonClicked()
     for( int i = 0; i < ui->colorMapBar->getColor().table().size(); i++ )
     {
         m_connect->getClientMessage()->m_glyph_color_map_table.push_back( static_cast<int32_t>( ui->colorMapBar->getColor().table().at(i) ) );
+        //m_connect->getClientMessage()->m_glyph_color_map_table.push_back( "q1" );
     }
 
     //ColorData
@@ -342,13 +345,14 @@ void GlyphEditor::onApplyButtonClicked()
         if ( m_color_data_variable_combo_boxes.isEmpty() ) //もしColorDataのNumber of variablesが0の場合
         {
             m_connect->getClientMessage()->m_color_data_variables.clear();
-            m_connect->getClientMessage()->m_color_data_variables.push_back(1);
+            m_connect->getClientMessage()->m_color_data_variables.push_back("q1");
         }
         else
         {
             m_connect->getClientMessage()->m_color_data_variables.clear();
             QComboBox *comboBox = m_color_data_variable_combo_boxes[0];
-            m_connect->getClientMessage()->m_color_data_variables.push_back( static_cast<int32_t>( comboBox->currentText().mid(1).toInt() ) );
+            //->getClientMessage()->m_color_data_variables.push_back( static_cast<int32_t>( comboBox->currentText().mid(1).toInt() ) );
+            m_connect->getClientMessage()->m_color_data_variables.push_back( "q1" );
         }
     }
     else if( ui->colorDataVariableArrayRadioBox->isChecked() ) //variableArray
@@ -357,7 +361,7 @@ void GlyphEditor::onApplyButtonClicked()
         if ( m_color_data_variable_combo_boxes.isEmpty() ) //もしColorDataのNumber of variablesが0の場合
         {
             m_connect->getClientMessage()->m_color_data_variables.clear();
-            m_connect->getClientMessage()->m_color_data_variables.push_back(1);
+            m_connect->getClientMessage()->m_color_data_variables.push_back("q1");
         }
         else
         {
@@ -365,7 +369,8 @@ void GlyphEditor::onApplyButtonClicked()
             for (int i = 0; i < m_color_data_variable_combo_boxes.size(); i++)
             {
                 QComboBox *comboBox = m_color_data_variable_combo_boxes[i];
-                m_connect->getClientMessage()->m_color_data_variables.push_back( comboBox->currentText().mid(1).toInt() );
+                //m_connect->getClientMessage()->m_color_data_variables.push_back( comboBox->currentText().mid(1).toInt() );
+                m_connect->getClientMessage()->m_color_data_variables.push_back( "q1" );
             }
         }
     }
