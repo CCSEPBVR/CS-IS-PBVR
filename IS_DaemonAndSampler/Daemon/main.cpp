@@ -501,7 +501,6 @@ int main( int argc, char** argv )
                 }
 
                 servMes.m_transfer_function_count = pm.particleHistoryFile().colorHistogramArray().size();
-                std::cout << "pm.particleHistoryFile().colorHistogramArray().size() = " << pm.particleHistoryFile().colorHistogramArray().size() <<std::endl;
                 for ( int tf = 0; tf < pm.particleHistoryFile().colorHistogramArray().size() && tf < servMes.m_transfer_function_count; tf++ )
                 {
                     servMes.m_color_nbins[tf] = pm.particleHistoryFile().colorHistogramArray()[ tf ].size();
@@ -527,6 +526,7 @@ int main( int argc, char** argv )
                 servMes.m_number_ingredients = pm.particleHistoryFile().nVariables();
                 servMes.m_server_side_variable_range = range;
                 servMes.m_flag_send_bins = 1;
+                servMes.m_number_glyph = 0;
 
                 // 20181226 start  環境変数で指定したパスおよび名前でファイル参照を行う
                 //初期化 : jupiter_old.tfを読む
