@@ -164,14 +164,14 @@ void Connect::connectServer()
     }
     else if ( ui->inSituRBtn->isChecked() )
     {
-        m_merge->serverPointObjectIS( "IS-Object", 0, 0 );
+        m_merge->serverPointObjectIS( "IS-PointObject", 0, 0 );
         std::cout << "m_server_message.m_number_ingredients = " << m_server_message.m_number_ingredients << std::endl;
         if( m_server_message.m_number_ingredients < 3  )
         {
         }
         else
         {
-            m_merge->serverGlyphObjectIS( ui->volumeDataFilePathLEdit->text(), m_server_message.m_start_step, m_server_message.m_last_step );
+            m_merge->serverGlyphObjectIS( "IS-GlyphObject", 0, 0 );
         }
 
     }
@@ -767,6 +767,10 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         polygonObject->setMinMaxObjectCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );
         polygonObject->setMinMaxExternalCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );
 
+        if( ui->inSituRBtn->isChecked() == true )
+        {
+            m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_last_step );
+        }
 
         return polygonObject;
     }

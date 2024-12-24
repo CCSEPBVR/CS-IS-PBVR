@@ -203,7 +203,8 @@ void MergePanel::updateObjectTimeStepIS( int min, int max )
 {
     for( int row = 0; row < m_files_manager.size(); row++ )
     {
-        if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS )
+        if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS ||
+            m_files_manager[row]->getFormat() == FilesManager::ServerGlyphObjectIS )
         {
             m_files_manager[row]->setMinTimeStep( min );
             m_files_manager[row]->setMaxTimeStep( max );
@@ -1112,7 +1113,10 @@ void MergePanel::onWorkerThreadFinished()
                     if( m_files_manager[row]->getFormat() == FilesManager::ServerGlyphObjectCS ||
                         m_files_manager[row]->getFormat() == FilesManager::ServerGlyphObjectIS )
                     {
+                        kvs::RendererBase* renderer = new kvs::StochasticPolygonRenderer;
+                        m_shading_controller->applyShading( renderer );
                         m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, polygon_object );
+                        m_pbvr_gui->screen()->scene()->replaceRenderer(m_files_manager[row]->getIDs().second, renderer );
                     }
                 }
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )

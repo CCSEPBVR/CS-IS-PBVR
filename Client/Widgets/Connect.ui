@@ -83,7 +83,7 @@
       <string>Settings</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
-      <item row="1" column="0" alignment="">
+      <item row="1" column="0">
        <widget class="QLabel" name="portLbl">
         <property name="text">
          <string>Port :</string>
@@ -120,11 +120,11 @@
          <bool>true</bool>
         </property>
         <property name="text">
-         <string>/Users/to0603/Work/PBVR/SampleData/mej/kvsml/mej_iofiles_downsize4_step0_100/Piece/example.pfl</string>
+         <string/>
         </property>
        </widget>
       </item>
-      <item row="3" column="0" alignment="">
+      <item row="3" column="0">
        <widget class="QLabel" name="transferFunctionFilePathLbl">
         <property name="text">
          <string>TransferFunction File Path:</string>
@@ -144,7 +144,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0" alignment="">
+      <item row="2" column="0">
        <widget class="QLabel" name="volumeDataFilePathLbl">
         <property name="text">
          <string>Volume Data File Path :</string>
