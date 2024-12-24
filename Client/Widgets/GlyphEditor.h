@@ -8,7 +8,7 @@
 #include <kvs/ColorMap>
 
 #include "ParticleTransferProtocol.h"
-
+#include "Widgets/ColorMapEditor.h"
 class PBVRGUI;
 class MergePanel;
 class Connect;
@@ -61,6 +61,7 @@ private:
     MergePanel* m_merge;
     Connect* m_connect;
     ShadingController* m_shading_controller;
+    ColorMapEditor m_color_map_editor;
 
     int m_direction_previus_index[3];
 
@@ -102,6 +103,7 @@ private slots:
     void onSizeNumberOfVariableChanged( int value );
     void onColorDataNumberOfVariableChanged( int value );
     void onUpdateButtonClicked();
+    void onEditColorMapButtonClicked();
     void onApplyButtonClicked();
 };
 

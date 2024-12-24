@@ -54,6 +54,7 @@ GlyphEditor::GlyphEditor(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, 
 
     connect( ui->sizeNumberOfVariableSpinBox, &QSpinBox::valueChanged, this, &GlyphEditor::onSizeNumberOfVariableChanged );
     connect( ui->colorDataNumberOfVariableSpinBox, &QSpinBox::valueChanged, this, &GlyphEditor::onColorDataNumberOfVariableChanged );
+    connect( ui->editColorMapPushButton, &QPushButton::clicked, this, &GlyphEditor::onEditColorMapButtonClicked );
     connect( ui->applyPushButton, &QPushButton::clicked, this, &GlyphEditor::onApplyButtonClicked );
     this->setEnabled( false );
 }
@@ -267,6 +268,22 @@ void GlyphEditor::onUpdateButtonClicked()
     std::cout << m_sizes.size() << std::endl;
     std::cout << m_colors.size() << std::endl;
     m_pbvr_gui->screen()->update();
+}
+
+void GlyphEditor::onEditColorMapButtonClicked()
+{
+    // std::string colorName = ui->colorFunctionComboBox->currentText().toStdString();
+
+    m_color_map_editor.setColorMap( ui->colorMapBar->getColor() );
+    m_color_map_editor.setInitialColorMap( ui->colorMapBar->getColor() );
+    m_color_map_editor.clearUndoStack();
+
+    if( m_color_map_editor.exec() == QDialog::Accepted )
+    {
+        const kvs::ColorMap cmap = m_color_map_editor.getColorMap();
+        ui->colorMapBar->setColorMap( cmap );
+        ui->colorMapBar->setColorMap( cmap );
+    }
 }
 
 void GlyphEditor::onApplyButtonClicked()
