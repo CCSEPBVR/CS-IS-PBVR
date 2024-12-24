@@ -442,7 +442,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
 
 kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
 {
-
+    m_glyph_editor->disableGlyphUpdateButton();
     if(connecting)
     {
         qInfo() << "Other conneciton mode working !!";
@@ -771,7 +771,7 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         {
             m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_last_step );
         }
-
+        m_glyph_editor->enableGlyphUpdateButton();
         return polygonObject;
     }
 }

@@ -4,14 +4,17 @@
 #include "App/pbvrgui.h"
 #include "Widgets/MergePanel.h"
 #include "Widgets/Connect.h"
+#include "Widgets/ShadingController.h"
 #include <kvs/PolygonGlyphObject>
+#include <kvs/StochasticPolygonRenderer>
 
-GlyphEditor::GlyphEditor(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, Connect* connect_panel)
+GlyphEditor::GlyphEditor(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, Connect* connect_panel, ShadingController* shading_controller)
     : QDockWidget(parent)
     , ui(new Ui::GlyphEditor),
     m_pbvr_gui( pbvr_gui ),
     m_merge( merge ),
     m_connect( connect_panel ),
+    m_shading_controller( shading_controller ),
     m_vector_list( new QStringList() ),
     m_scale_factor(1)
 {
@@ -233,6 +236,16 @@ void GlyphEditor::onColorDataNumberOfVariableChanged(int value)
     m_color_data_variable_layout->update();
 }
 
+void GlyphEditor::enableGlyphUpdateButton()
+{
+    ui->updatePushButton->setEnabled( true );
+}
+
+void GlyphEditor::disableGlyphUpdateButton()
+{
+    ui->updatePushButton->setEnabled( false );
+}
+
 void GlyphEditor::onUpdateButtonClicked()
 {
     m_glyph_type = static_cast<GlyphType>(ui->glyphTypeComboBox->currentIndex());
@@ -242,11 +255,11 @@ void GlyphEditor::onUpdateButtonClicked()
     {
         if( m_merge->getFilesManager().at(row)->getFormat() == FilesManager::ServerGlyphObjectCS ||
             m_merge->getFilesManager().at(row)->getFormat() == FilesManager::ServerGlyphObjectIS ) // テクスチャなしポリゴンオブジェクト
-        {
-            std::cout << "DET GLYPH" << std::endl;
+        {            
             kvs::PolygonObject* polygonObject = new kvs::PolygonGlyphObject( m_coords, m_directions, m_sizes, m_colors, static_cast<kvs::PolygonGlyphObject::GlyphType>(m_glyph_type) );
             m_pbvr_gui->screen()->scene()->replaceObject( m_merge->getFilesManager().at(row)->getIDs().first, polygonObject );
-
+            kvs::RendererBase* renderer = new kvs::StochasticPolygonRenderer;
+            m_pbvr_gui->screen()->scene()->replaceRenderer( m_merge->getFilesManager().at(row)->getIDs().second, renderer );
         }
     }
     std::cout << m_coords.size() << std::endl;
