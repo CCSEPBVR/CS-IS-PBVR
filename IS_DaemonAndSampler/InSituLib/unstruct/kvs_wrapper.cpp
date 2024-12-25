@@ -821,9 +821,92 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
                     nvariables, (float*)object->coords().pointer(), ncoords,
                     (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, particleBase);
 
-            GenerateGlyphs(time_step, dom, values,
-                    nvariables, (float*)object->coords().pointer(), ncoords,
-                    (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, glyphParamter, particleBase);
+#if 1
+//              stab data 
+
+            int nvar =5;
+            Type** values_test;
+            values_test = new Type * [5];
+            //Type values_test[5][8];
+            for ( int j = 0; j < 5; j++ )
+            {
+                values_test[j] = new float[8];
+//                for (int i =0; i < 8 ; i++) values_test[j][i] = j+i;
+            }
+   
+            int nco = 8;
+            float coords[nco*3];
+//            for (int i =0; i< nco*3 ;  i++ ) coords[i] = i;
+            coords[ 0 ] = 1;
+            coords[ 1 ] = 1;
+            coords[ 2 ] = 1;
+
+            coords[ 3 ] = 1;
+            coords[ 4 ] = -1;
+            coords[ 5 ] = 1;
+            
+            coords[ 6 ] = -1;
+            coords[ 7 ] = -1;
+            coords[ 8 ] = 1;
+            
+            coords[ 9  ] = -1;
+            coords[ 10 ] = 1;
+            coords[ 11 ] = 1;
+            
+            coords[ 12 ] = 1;
+            coords[ 13 ] = 1;
+            coords[ 14 ] = -1;
+            
+            coords[ 15 ] = 1;
+            coords[ 16 ] = -1;
+            coords[ 17 ] = -1;
+            
+            coords[ 18 ] = -1;
+            coords[ 19 ] = -1;
+            coords[ 20 ] = -1;
+            
+            coords[ 21 ] = -1;
+            coords[ 22 ] = 1;
+            coords[ 23 ] = -1;
+            
+            int ncl = 1;
+            unsigned int con[8];
+            for (int i =0; i < 8 ;  i++ ) con[i] = i;
+
+            float theta[nco];
+            float sin[nco];
+            float cos[nco];
+            for (int i =0; i < 8 ; i++ ) theta[i]  = std::atan(coords[3*i+1]/coords[3*i]);
+            for (int i =0; i < 8 ; i++ ) sin[i]  = std::sin(theta[i]);
+            for (int i =0; i < 8 ; i++ ) cos[i]  = std::cos(theta[i]);
+            for (int i =0; i < 8 ; i++)  values_test[0][i] = -sin[i]; 
+            for (int i =0; i < 8 ; i++)  values_test[1][i] = cos[i]; 
+            for (int i =0; i < 8 ; i++)  values_test[2][i] = i*coords[3*i+2]; 
+            for (int i =0; i < 8 ; i++)  values_test[3][i] = std::sqrt(std::pow(coords[3*i],2) +std::pow(coords[3*i+1],2) +std::pow(coords[3*i+2],2) );
+            for (int i =0; i < 8 ; i++)  values_test[4][i] = coords[3*i] + coords[3*i+1] + coords[3*i+2];
+ 
+            dom.x_global_min = 0;
+            dom.y_global_min = 0;
+            dom.z_global_min = 0;
+            dom.x_global_max = 1;
+            dom.y_global_max = 1;
+            dom.z_global_max = 1;
+
+//            end stab data
+//
+            GenerateGlyphs(time_step, dom, values_test,
+                    nvar, coords, nco,
+                    con , ncl, pbvr::VolumeObjectBase::Hexahedra, glyphParamter, particleBase);
+        for (int i =0; i< 5 ; i++)
+        {
+            delete  values_test[i];
+        }
+        delete[] values_test;
+
+#endif
+//            GenerateGlyphs(time_step, dom, values,
+//                    nvariables, (float*)object->coords().pointer(), ncoords,
+//                    (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, glyphParamter, particleBase);
         }
         timer.stop();
         t_generate_particles += timer.sec();
@@ -984,6 +1067,7 @@ bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& part
     std::string glyphParamPath;
     std::string glyphFilePath;
 
+#if 1
     const char *envBuf = NULL;
     envBuf = std::getenv( "VIS_PARAM_DIR" );
     if (envBuf == NULL) {
@@ -1030,7 +1114,6 @@ bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& part
     std::string color_sampling_method              = glyph_property.getString("COLOR_DATA_SAMPLING_METHOD");
     std::vector<std::string> color_data_variables  = glyph_property.getTableString( "COLOR_VARIABLES" );
     
-
     float glyph_min=0; 
     float glyph_max=0;
     glyph_min = glyph_property.getFloat("GLYPH_COLOR_MIN");
@@ -1039,25 +1122,14 @@ bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& part
     i_table = glyph_property.getTableInt( "GLYPH_COLOR_MAP_TABLE" );
     kvs::ValueArray<kvs::UInt8> u_table( i_table.size() );
     for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (kvs::UInt8)i_table[j];
+    
     kvs::ColorMap color_map( u_table, glyph_min, glyph_max);
 
     glyphParameter.m_color_map = color_map;
-    std::cout << "g_flag =" << g_flag <<std::endl;  
-//    std::cout << "glyphParameter.m_direction_variables        = " << direction_variables[0]                       << ", " << direction_variables[1]   << std::endl; 
-//    std::cout << "glyphParameter.m_size_sampling_method       = " << size_sampling_method               << std::endl; 
-//    std::cout << "glyphParameter.m_size_variables             = " << size_variables[0]                  << ", "  << size_variables[1]       << std::endl; 
-//    std::cout << "glyphParameter.m_distribution_modes         = " << distribution_modes                 << std::endl; 
-//    std::cout << "glyphParameter.m_stride                     = " << stride                             << std::endl; 
-//    std::cout << "glyphParameter.m_seed                       = " << seed                               << std::endl; 
-//    std::cout << "glyphParameter.m_number_of_sample_points    = " << number_of_sample_points            << std::endl; 
-//    std::cout << "glyphParameter.m_color_sampling_method      = " << color_sampling_method              << std::endl; 
-//    std::cout << "glyphParameter.m_color_data_variables       = " << color_data_variables[0]            << ", " << color_data_variables[1]       << std::endl; 
-
-    //if(g_flag.c_str() == "TRUE" ) glyph_flag = true;
+    
     if(strcmp(g_flag.c_str(), "TRUE") ==0 ) glyph_flag = true;
     else glyph_flag = false;
    
-    std::cout << __LINE__ << ": glyph_flag = " << glyph_flag << std::endl; 
     if(direction_variables.size() < 3)
     { 
         std::cout << "variables number is less 3 numbers !!! Skip glyph generate process !!!" << std::endl;
@@ -1078,7 +1150,6 @@ bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& part
        return false;  
     }
 
-#if 1
     for (int i =0 ; i< size_variables.size(); i++)
     {
         glyphParameter.m_size_variables.push_back( std::atoi(size_variables[i].substr(1).c_str()) -1); 
@@ -1110,18 +1181,21 @@ bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& part
         glyphParameter.m_color_data_variables.push_back( std::atoi(color_data_variables[i].substr(1).c_str()) - 1); 
     }
 
+#if 1
     std::cout << "glyphParameter.m_direction_variables        = " << glyphParameter.m_direction_variables[0] << ", " << glyphParameter.m_direction_variables[1]   << std::endl; 
     std::cout << "glyphParameter.m_size_sampling_method       = " << static_cast<int>(glyphParameter.m_size_sampling_method)      << std::endl; 
-    std::cout << "glyphParameter.m_size_variables             = " << glyphParameter.m_size_variables[0]  << ", "  << glyphParameter.m_size_variables[1]       << std::endl; 
+    std::cout << "glyphParameter.m_size_variables             = " << glyphParameter.m_size_variables[0]  << ", "      << std::endl; 
     std::cout << "glyphParameter.m_distribution_modes         = " << static_cast<int>(glyphParameter.m_distribution_modes )       << std::endl; 
     std::cout << "glyphParameter.m_stride                     = " << glyphParameter.m_stride                    << std::endl; 
     std::cout << "glyphParameter.m_seed                       = " << glyphParameter.m_seed                      << std::endl; 
     std::cout << "glyphParameter.m_number_of_sample_points    = " << glyphParameter.m_number_of_sample_points   << std::endl; 
     std::cout << "glyphParameter.m_color_sampling_method      = " << static_cast<int>(glyphParameter.m_color_sampling_method )    << std::endl; 
-    std::cout << "glyphParameter.m_color_data_variables       = " << glyphParameter.m_color_data_variables[0] << ", " << glyphParameter.m_color_data_variables[1]       << std::endl; 
+    std::cout << "glyphParameter.m_color_data_variables       = " << glyphParameter.m_color_data_variables[0] << ", "   << std::endl; 
 #endif 
-//      glyph_flag =false;
+    std::cout << "glyph_flag = " << glyph_flag<<std::endl;
       return glyph_flag; 
+#endif
+      return true; 
 
 }
 
@@ -2368,23 +2442,10 @@ void GenerateGlyphs( int time_step,
 
 
     bool glyph_flag = false;
-//    GlyphMode mode;
-//    DataDefines size_DataDefines;
-//    int size_variables = 0;
-//    DataDefines color_DataDefines;
-//    int color_variables = 0;
-//    int stride = 1;
-//    int seed = 0;
-//    int number_of_sampling_point = 0;
-//    pbvr::TransferFunction tf;
-//    m_tfs;
-//    //particleBase->m_tf;
-//    kvs::ColorMap color_map;
 
-
-    //SetGlyphParameter( glyph_flag, mode, size_DataDefines, size_variables, color_DataDefines, color_variables, stride, seed, number_of_sampling_point, color_map, particleBase, time_step);
     glyph_flag = SetGlyphParameter( glyphParameter, particleBase, time_step);
 
+    std::cout << __LINE__ <<std::endl;
 # if 1
     if(glyph_flag)
     {
@@ -2392,7 +2453,8 @@ void GenerateGlyphs( int time_step,
         //        glyphParameter.m_stride, glyphParameter.m_seed, glyphParameter.number_of_sample_points, values, nvariables,
         GlyphGenerator glyph_generator( glyphParameter, values, nvariables,
                 coordinates, ncoords, connections, ncells, celltype, m_tfs); 
-
+  
+      //if (glyphParameter.m_glyph_coords >0 )  
         glyph_generator.OutputGlyph(glyphParameter, particleBase, time_step);
     }
 #endif

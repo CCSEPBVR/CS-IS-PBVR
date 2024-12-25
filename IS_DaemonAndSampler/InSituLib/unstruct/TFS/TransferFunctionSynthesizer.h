@@ -207,7 +207,8 @@ public:
     std::vector<pbvr::TransferFunction>& tf,
     const glyph_parameters& glyphParameter,
     //const kvs::ColorMap color_map,
-    kvs::RGBColor *color_seq);
+    //kvs::RGBColor *color_seq);
+    float *color_seq);
  
  void CalculateGlyphSizeArray(
     std::vector< pbvr::CellBase<Type>* > interp,

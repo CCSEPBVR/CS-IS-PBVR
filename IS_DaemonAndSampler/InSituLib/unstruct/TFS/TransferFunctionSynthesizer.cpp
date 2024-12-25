@@ -1335,7 +1335,8 @@ void TransferFunctionSynthesizer::CalculateGlyphColorArray(
     std::vector<pbvr::TransferFunction>& tf,
     const glyph_parameters& glyphParameter,
 //    const kvs::ColorMap color_map,
-    kvs::RGBColor *color_seq)
+//    kvs::RGBColor *color_seq)
+    float *color_seq)
 {
 
     //配列を追加
@@ -1396,26 +1397,16 @@ void TransferFunctionSynthesizer::CalculateGlyphColorArray(
             eval_result[jx] += scalar_array[color_var[j]][jx] * scalar_array[color_var[j]][jx] ; 
         }
         eval_result[jx] = std::sqrt(eval_result[jx]) ; 
-
     }
 
+    for( int jx=0; jx<loop_cnt; jx++)
+    {
+        color_seq[jx] = eval_result[jx];
+    }
 //        for( int jx=0; jx<loop_cnt; jx++)
 //        {
-//            for( size_t j= 0; j < 2; j++ ) // スタブデータとして　0,1　を選択
-//            {
-//                eval_result[jx] += scalar_array[color_var[j]][jx] * scalar_array[color_var[j]][jx] ; 
-//                eval_result[jx] += scalar_array[j][jx] * scalar_array[j][jx] ; 
-//            }
-//            eval_result[jx] = std::sqrt(eval_result[jx]) ; 
-//
+//            color_seq[jx] = glyphParameter.m_color_map.at( eval_result[jx] );
 //        }
-
-//        std::cout << " glyphParameter.m_color_map.max() = " <<  glyphParameter.m_color_map.maxValue() << std::endl;
-        for( int jx=0; jx<loop_cnt; jx++)
-        {
-//            colors[jx] = glyphParameter.m_color_map.at( eval_result[jx] );
-            color_seq[jx] = glyphParameter.m_color_map.at( eval_result[jx] );
-        }
 }
 
 void TransferFunctionSynthesizer::CalculateGlyphSizeArray(
@@ -1477,6 +1468,7 @@ void TransferFunctionSynthesizer::CalculateGlyphSizeArray(
 
     for( int jx=0; jx<loop_cnt; jx++)
     {
+        eval_result[jx] =0;
         for( size_t j= 0; j < n_size_data; j++ ) // スタブデータとして　0,1　を選択
         {
             eval_result[jx] += scalar_array[size_var[j]][jx] * scalar_array[size_var[j]][jx] ; 
@@ -1486,8 +1478,6 @@ void TransferFunctionSynthesizer::CalculateGlyphSizeArray(
 
     for( int jx=0; jx<loop_cnt; jx++)
     {
-        //            colors[jx] = tf[0].colorMap().at( eval_result[jx] );
-        //size_seq[jx] = tf[0].opacityMap().at( eval_result[jx] );
         size_seq[jx] = eval_result[jx];
     }
 
