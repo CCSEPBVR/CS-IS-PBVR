@@ -480,6 +480,7 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         m_client_message.m_sampling_step = 1.0f;
         m_client_message.m_enable_crop_region = 0;
 
+#if 0
         // stab data
         m_client_message.m_glyph_flag = true;
 
@@ -503,7 +504,7 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         m_client_message.m_color_data_variables.resize(2);
         m_client_message.m_color_data_variables[0] = "q2";
         m_client_message.m_color_data_variables[1] = "q1";
-
+#endif
         //paramExTransFunc.applyToClientMessage( &message ); //↓
 
         //gt5d
@@ -515,8 +516,6 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         //    float max = 1;
 
         //    m_extended_transfer_function_message.applyToClientMessage( &m_client_message );
-
-
 
         m_client_message.m_message_size = m_client_message.byteSize();
         client.sendMessage( m_client_message );

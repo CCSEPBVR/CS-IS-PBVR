@@ -293,9 +293,10 @@ void GlyphEditor::onApplyButtonClicked()
 
 
     //Direction
-    m_connect->getClientMessage()->m_direction_variable[0] = static_cast<int32_t>( ui->direction1ComboBox->currentText().mid(1).toInt() );
-    m_connect->getClientMessage()->m_direction_variable[1] = static_cast<int32_t>( ui->direction2ComboBox->currentText().mid(1).toInt() );
-    m_connect->getClientMessage()->m_direction_variable[2] = static_cast<int32_t>( ui->direction3ComboBox->currentText().mid(1).toInt() );
+    m_connect->getClientMessage()->m_direction_variable[0] = ui->direction1ComboBox->currentText().toStdString();
+    m_connect->getClientMessage()->m_direction_variable[1] = ui->direction2ComboBox->currentText().toStdString();
+    m_connect->getClientMessage()->m_direction_variable[2] = ui->direction3ComboBox->currentText().toStdString();
+
 
     //Size
     if( ui->sizeConstantRadioBox->isChecked() ) //Constant
@@ -314,9 +315,7 @@ void GlyphEditor::onApplyButtonClicked()
         {
             m_connect->getClientMessage()->m_size_variables.clear();
             QComboBox *comboBox = m_size_variable_combo_boxes[0];
-            //
-            //m_connect->getClientMessage()->m_size_variables.push_back( static_cast<int32_t>( comboBox->currentText().mid(1).toInt() ) );
-            //m_connect->getClientMessage()->m_size_variables.push_back( comboBox->currentText() );
+            m_connect->getClientMessage()->m_size_variables.push_back( comboBox->currentText().toStdString() );
         }
     }
     else if( ui->sizeVariableArrayRadioBox->isChecked() ) //variableArray
@@ -333,7 +332,7 @@ void GlyphEditor::onApplyButtonClicked()
             for (int i = 0; i < m_size_variable_combo_boxes.size(); i++)
             {
                 QComboBox *comboBox = m_size_variable_combo_boxes[i];
-                //m_connect->getClientMessage()->m_size_variables.push_back( comboBox->currentText().mid(1).toInt() );
+                m_connect->getClientMessage()->m_size_variables.push_back( comboBox->currentText().toStdString() );
             }
         }
     }
@@ -356,12 +355,10 @@ void GlyphEditor::onApplyButtonClicked()
     }
 
     //ColorMap
-    // m_connect->getClientMessage()->m_glyph_color_map = ui->colorMapBar->getColor();
     m_connect->getClientMessage()->m_glyph_color_map_table.clear();
     for( int i = 0; i < ui->colorMapBar->getColor().table().size(); i++ )
     {
         m_connect->getClientMessage()->m_glyph_color_map_table.push_back( static_cast<int32_t>( ui->colorMapBar->getColor().table().at(i) ) );
-        //m_connect->getClientMessage()->m_glyph_color_map_table.push_back( "q1" );
     }
 
     //ColorData
@@ -381,8 +378,7 @@ void GlyphEditor::onApplyButtonClicked()
         {
             m_connect->getClientMessage()->m_color_data_variables.clear();
             QComboBox *comboBox = m_color_data_variable_combo_boxes[0];
-            //->getClientMessage()->m_color_data_variables.push_back( static_cast<int32_t>( comboBox->currentText().mid(1).toInt() ) );
-            m_connect->getClientMessage()->m_color_data_variables.push_back( "q1" );
+            m_connect->getClientMessage()->m_color_data_variables.push_back( comboBox->currentText().toStdString() );
         }
     }
     else if( ui->colorDataVariableArrayRadioBox->isChecked() ) //variableArray
@@ -399,8 +395,7 @@ void GlyphEditor::onApplyButtonClicked()
             for (int i = 0; i < m_color_data_variable_combo_boxes.size(); i++)
             {
                 QComboBox *comboBox = m_color_data_variable_combo_boxes[i];
-                //m_connect->getClientMessage()->m_color_data_variables.push_back( comboBox->currentText().mid(1).toInt() );
-                m_connect->getClientMessage()->m_color_data_variables.push_back( "q1" );
+                m_connect->getClientMessage()->m_color_data_variables.push_back( comboBox->currentText().toStdString() );
             }
         }
     }
