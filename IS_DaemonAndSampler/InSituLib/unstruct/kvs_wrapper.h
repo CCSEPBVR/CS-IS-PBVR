@@ -100,14 +100,18 @@ extern "C" {
 
     typedef struct
     {
+    // ファイルパス(デーモン→サーバー)
     std::string m_glyphParamPath;
+    // ファイルパス(サーバー→デーモン)
     std::string m_glyphFilePath;
+    //出力用パラメータ(サーバー→デーモン→クライアント)
     std::vector<float>  m_glyph_coords;
     std::vector<float>  m_glyph_vectors;
     std::vector<float>  m_glyph_sizes;
     std::vector<Byte>   m_glyph_colors;
     std::vector<float>  m_glyph_colors_data;
 
+    //入力パラメータ(デーモン→サーバー)
     std::vector<int>  m_direction_variables;
     jpv::DataDefines m_size_sampling_method;
     std::vector<int> m_size_variables;
@@ -186,7 +190,7 @@ extern "C" {
                              Type** values, int nvariables,
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells,
-                             const  pbvr::VolumeObjectBase::CellType& celltype, glyph_parameters &glyphParamter ,pbvr_parameters& particleBase );
+                             const  pbvr::VolumeObjectBase::CellType& celltype ,pbvr_parameters& particleBase );
 
     void OutputParticles( int time_step, int nvariables, pbvr_parameters& particleBase,  ParamInfo *param_info, bool skip_flag);
     bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, ParamInfo *param_info, const int time_step);

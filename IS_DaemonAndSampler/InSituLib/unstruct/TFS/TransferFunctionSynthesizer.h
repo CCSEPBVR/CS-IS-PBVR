@@ -191,42 +191,6 @@ public:
         std::vector<float> *c_scalars_array);
     //Fj add end
 
-    void CalculateGlyphVector(
-        std::vector< pbvr::CellBase<Type>* > interp ,
-        const int loop_cnt,
-        const kvs::Vector3f *local_coord,
-        const kvs::Vector3f *global_coord,
-        const glyph_parameters& glyphParameter,
-        kvs::Vector3f* glypht_vector);
-
- void CalculateGlyphColorArray(
-    std::vector< pbvr::CellBase<Type>* > interp,
-    const int loop_cnt,
-    const kvs::Vector3f *local_coord,
-    const kvs::Vector3f *global_coord,
-    std::vector<pbvr::TransferFunction>& tf,
-    const glyph_parameters& glyphParameter,
-    //const kvs::ColorMap color_map,
-    //kvs::RGBColor *color_seq);
-    float *color_seq);
- 
- void CalculateGlyphSizeArray(
-    std::vector< pbvr::CellBase<Type>* > interp,
-    const int loop_cnt,
-    const kvs::Vector3f *local_coord,
-    const kvs::Vector3f *global_coord,
-    std::vector<pbvr::TransferFunction>& tf,
-    const glyph_parameters& glyphParameter,
-    float* size_seq);
-       
-
-//    kvs::RGBColor CalculateColor_glyph(
-//        //std::vector< pbvr::HexahedralCell<Type>* > interp ,
-//        std::vector< pbvr::CellBase<Type>* > interp ,
-//        kvs::Vector3f local_coord, kvs::Vector3f global_coord,
-//        std::vector<pbvr::TransferFunction>& tf);
-
-
 };
 
 #endif // __TRANSFER_FUNCTION_SYNTHESIZER_H__

@@ -20,6 +20,10 @@
 #include <kvs/GlyphObject>
 #include <kvs/KVSMLObjectPoint>
 #include "particle_write_thread.h"
+//#include "KVSMLObjectGlyph.h"
+
+#include "GlyphGenerator.h"
+#include "GlyphProperty.h"
 
 #ifdef _OPENMP
 #  include <omp.h>
@@ -51,19 +55,20 @@ protected:
    int          m_ncoords;
    int          m_ncells;
    int          m_nvariable;
-// int          m_stride; 
-   jpv::DataDefines         m_size_DataDefines;
-   jpv::DataDefines         m_color_DataDefines;
 
 //  glyph parameter 
+   // ファイルパス(デーモン→サーバー)
    std::string m_glyphParamPath;
+    // ファイルパス(サーバー→デーモン)
    std::string m_glyphFilePath;
+    //出力用パラメータ(サーバー→デーモン→クライアント)
    std::vector<float> m_glyph_coords; 
    std::vector<float> m_glyph_vectors; 
    std::vector<float> m_glyph_sizes; 
    std::vector<float> m_glyph_colors_data; 
    std::vector<unsigned char>   m_glyph_colors; 
 
+    //入力パラメータ(デーモン→サーバー)
     std::vector<int>  m_direction_variables;
     jpv::DataDefines m_size_sampling_method;
     std::vector<int> m_size_variables;
@@ -76,59 +81,42 @@ protected:
     std::vector<int> m_color_data_variables;
 // glyph paramter end
 
+   
+   //ポイントデータ用minmax
    std::vector<float> m_color_min;
    std::vector<float> m_color_max;
    std::vector<float> m_size_min;
    std::vector<float> m_size_max;
 
 private:
-   void  PointSampling( glyph_parameters &glyphParameter);
+   //void  PointSampling( glyph_parameters &glyphParameter);
+   void  PointSampling( );
    void  PointSampling( 
            //Type** values, int nvariables,
            //float* coordinates, int ncoords,
            int stride);
    void  DistributionSampling(int number_of_sampling_point ,int seed, const pbvr::VolumeObjectBase::CellType& celltype);
-   void  DistributionSampling(glyph_parameters &glyphParameter, const pbvr::VolumeObjectBase::CellType& celltype);
+   //void  DistributionSampling(glyph_parameters &glyphParameter, const pbvr::VolumeObjectBase::CellType& celltype);
+   void  DistributionSampling(const pbvr::VolumeObjectBase::CellType& celltype);
 
    const size_t calculate_number_of_particles(
            const float density,
            const float volume_of_cell,
            kvs::MersenneTwister* MT );
-   // bool SetGlyphParameter(particleBase, time_step);
+    bool SetGlyphParameter(pbvr_parameters& particleBase,const int time_step);
 
 public:
-   //void GlyphSampling();
-//   void GlyphSampling(
-//           Type** values, int nvariables,
-//           float* coordinates, int ncoords,
-//           unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype );
    void GlyphSampling( const pbvr::VolumeObjectBase::CellType& celltype);
 
 
     GlyphGenerator();
-//    GlyphGenerator(GlyphMode mode, jpv::DataDefines size_DataDefines, jpv::DataDefines color_DataDefines,
-//            int stride, int seed, int number_of_sampling_point,
-//           Type** values, int nvariables,
-//           float* coordinates, int ncoords,
-//           unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype,
-//           pbvr::TransferFunction& tf, TransferFunctionSynthesizer* tfs );
-
-    GlyphGenerator(glyph_parameters &glyphParameter ,Type** values, int nvariables,
+    GlyphGenerator(pbvr_parameters& particleBase, const int time_step, Type** values, int nvariables,
            float* coordinates, int ncoords,
-           unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype,
-           TransferFunctionSynthesizer* tfs );
-
-//    GlyphGenerator(pbvr_parameters& particleBase, const int time_step, glyph_parameters &glyphParameter ,Type** values, int nvariables,
-//           float* coordinates, int ncoords,
-//           unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype,
-//           TransferFunctionSynthesizer* tfs );
+           unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype);
 
 
-    void OutputGlyph( glyph_parameters &glyphParameter,const  pbvr_parameters& particleBase, const int time_step);
-    void CalculateMinMax();
-    void NormalizeValues();
-
-    void show(glyph_parameters &glyphParameter);
+    void OutputGlyph( const  pbvr_parameters& particleBase, const int time_step);
+    void show();
 
 };
 

@@ -768,7 +768,6 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
 
     static ParamInfo param;
     pbvr_parameters particleBase;
-    glyph_parameters glyphParamter;
     bool skip_flag;
     skip_flag = SetParameter(dom, &particleBase, &param, time_step);
 
@@ -896,7 +895,7 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
 //
             GenerateGlyphs(time_step, dom, values_test,
                     nvar, coords, nco,
-                    con , ncl, pbvr::VolumeObjectBase::Hexahedra, glyphParamter, particleBase);
+                    con , ncl, pbvr::VolumeObjectBase::Hexahedra, particleBase);
         for (int i =0; i< 5 ; i++)
         {
             delete  values_test[i];
@@ -906,7 +905,7 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
 #endif
 //            GenerateGlyphs(time_step, dom, values,
 //                    nvariables, (float*)object->coords().pointer(), ncoords,
-//                    (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, glyphParamter, particleBase);
+//                    (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, particleBase);
         }
         timer.stop();
         t_generate_particles += timer.sec();
@@ -1061,6 +1060,7 @@ bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, Pa
     return true;
 }
 
+#if 0
 bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& particleBase, const int time_step )
 {
     std::string visParamDir;
@@ -1181,7 +1181,7 @@ bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& part
         glyphParameter.m_color_data_variables.push_back( std::atoi(color_data_variables[i].substr(1).c_str()) - 1); 
     }
 
-#if 1
+#if 0
     std::cout << "glyphParameter.m_direction_variables        = " << glyphParameter.m_direction_variables[0] << ", " << glyphParameter.m_direction_variables[1]   << std::endl; 
     std::cout << "glyphParameter.m_size_sampling_method       = " << static_cast<int>(glyphParameter.m_size_sampling_method)      << std::endl; 
     std::cout << "glyphParameter.m_size_variables             = " << glyphParameter.m_size_variables[0]  << ", "      << std::endl; 
@@ -1191,14 +1191,14 @@ bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& part
     std::cout << "glyphParameter.m_number_of_sample_points    = " << glyphParameter.m_number_of_sample_points   << std::endl; 
     std::cout << "glyphParameter.m_color_sampling_method      = " << static_cast<int>(glyphParameter.m_color_sampling_method )    << std::endl; 
     std::cout << "glyphParameter.m_color_data_variables       = " << glyphParameter.m_color_data_variables[0] << ", "   << std::endl; 
-#endif 
     std::cout << "glyph_flag = " << glyph_flag<<std::endl;
+#endif 
       return glyph_flag; 
 #endif
       return true; 
 
 }
-
+#endif
 
 void GenerateHistogram( int time_step,
                          domain_parameters dom,
@@ -2437,30 +2437,12 @@ void GenerateGlyphs( int time_step,
                          domain_parameters dom,
                          Type** values, int nvariables,
                          float* coordinates, int ncoords,
-                         unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype, glyph_parameters &glyphParameter, pbvr_parameters& particleBase) //celltype  enum 型に変更
+                         unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase) //celltype  enum 型に変更
 {
-
-
-    bool glyph_flag = false;
-
-    glyph_flag = SetGlyphParameter( glyphParameter, particleBase, time_step);
-
-    std::cout << __LINE__ <<std::endl;
-# if 1
-    if(glyph_flag)
-    {
-        //GlyphGenerator glyph_generator( glyphParameter.m_distribution_modes, glyphParameter.m_size_sampling_method, glyphParameter.m_color_sampling_method,
-        //        glyphParameter.m_stride, glyphParameter.m_seed, glyphParameter.number_of_sample_points, values, nvariables,
-        GlyphGenerator glyph_generator( glyphParameter, values, nvariables,
-                coordinates, ncoords, connections, ncells, celltype, m_tfs); 
-  
-      //if (glyphParameter.m_glyph_coords >0 )  
-        glyph_generator.OutputGlyph(glyphParameter, particleBase, time_step);
-    }
-#endif
-    
-
-
+        GlyphGenerator glyph_generator( particleBase, time_step, values, nvariables,
+                coordinates, ncoords, connections, ncells, celltype); 
+        
+        glyph_generator.OutputGlyph(particleBase, time_step);
 }
 
 void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBase, ParamInfo *param, bool skip_flag)
