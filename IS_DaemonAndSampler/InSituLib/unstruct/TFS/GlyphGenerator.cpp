@@ -473,7 +473,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
             for( int i = 0; i < nglyphs; i++ )
             {
                 kvs::Vector3f local_coord = interp[thid][0] -> randomSampling_MT( &MT );
-                if (i ==0) local_coord = kvs::Vector3f(0,0,0);
+                if (i ==0) local_coord = kvs::Vector3f(0.5f,0.5f,0.5f);
 
                 //補間器にセルを一括でバインド
                 for( int k = 0; k < m_nvariable; k++ )
@@ -833,6 +833,7 @@ void GlyphGenerator::OutputGlyph( const  pbvr_parameters& particleBase, const in
     // 20181226 end
 
     /*  分割後コミュニケータのランク0で出力する  */
+#if 0
 //    if( new_rank == 0 )
 //    {
         //kvs::PointObject* point_object = new kvs::PointObject( new_coords, new_colors, new_normals, particleBase.m_subpixel_level );
@@ -855,12 +856,13 @@ void GlyphGenerator::OutputGlyph( const  pbvr_parameters& particleBase, const in
             kvsml_object->write( m_glyphFilePath.c_str() );
             delete kvsml_object;
 
-//            kvs::KVSMLObjectGlyph kvsml_object( coords, colors, vectors, sizes);
-//            kvsmlobject.write(.m_glyphFilePath.c_str());
 //        }
         delete point_object;
 //    }
-    
+    #else
+            kvs::KVSMLObjectGlyph kvsmlobject( coords, colors, vectors, sizes);
+            kvsmlobject.write(m_glyphFilePath.c_str());
+#endif
 
 #if 0
     //static bool parameter_file_opened= particleBase.m_parameter_file_opened;

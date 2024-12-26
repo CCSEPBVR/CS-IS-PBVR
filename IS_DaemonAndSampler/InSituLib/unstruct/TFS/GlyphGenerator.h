@@ -20,7 +20,7 @@
 #include <kvs/GlyphObject>
 #include <kvs/KVSMLObjectPoint>
 #include "particle_write_thread.h"
-//#include "KVSMLObjectGlyph.h"
+#include "KVSMLObjectGlyph.h"
 
 #include "GlyphGenerator.h"
 #include "GlyphProperty.h"
