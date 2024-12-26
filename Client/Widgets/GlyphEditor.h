@@ -8,10 +8,11 @@
 #include <kvs/ColorMap>
 
 #include "ParticleTransferProtocol.h"
-
+#include "Widgets/ColorMapEditor.h"
 class PBVRGUI;
 class MergePanel;
 class Connect;
+class ShadingController;
 
 namespace Ui {
 class GlyphEditor;
@@ -44,7 +45,11 @@ public:
     };
 
 public:
-    explicit GlyphEditor(QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr, MergePanel* merge = nullptr, Connect* connect_panel = nullptr);
+    explicit GlyphEditor(QWidget *parent = nullptr,
+                         PBVRGUI *pbvr_gui = nullptr,
+                         MergePanel* merge = nullptr,
+                         Connect* connect_panel = nullptr,
+                         ShadingController* shading_controller = nullptr);
     void updateNumberOfVector( jpv::ParticleTransferServerMessage& server_message );
     ~GlyphEditor();
     int getGlyphType() const { return static_cast<int>(m_glyph_type);}
@@ -55,6 +60,8 @@ private:
     PBVRGUI *m_pbvr_gui;
     MergePanel* m_merge;
     Connect* m_connect;
+    ShadingController* m_shading_controller;
+    ColorMapEditor m_color_map_editor;
 
     int m_direction_previus_index[3];
 
@@ -84,6 +91,10 @@ public:
     kvs::ValueArray<kvs::Real32> m_sizes;
     kvs::ValueArray<kvs::UInt8>  m_colors;
 
+public:
+    void enableGlyphUpdateButton();
+    void disableGlyphUpdateButton();
+
 private:
     void directionComboBoxBlockSignals( bool block );
 
@@ -92,6 +103,7 @@ private slots:
     void onSizeNumberOfVariableChanged( int value );
     void onColorDataNumberOfVariableChanged( int value );
     void onUpdateButtonClicked();
+    void onEditColorMapButtonClicked();
     void onApplyButtonClicked();
 };
 

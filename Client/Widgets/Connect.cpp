@@ -164,14 +164,14 @@ void Connect::connectServer()
     }
     else if ( ui->inSituRBtn->isChecked() )
     {
-        m_merge->serverPointObjectIS( "IS-Object", 0, 0 );
+        m_merge->serverPointObjectIS( "IS-PointObject", 0, 0 );
         std::cout << "m_server_message.m_number_ingredients = " << m_server_message.m_number_ingredients << std::endl;
         if( m_server_message.m_number_ingredients < 3  )
         {
         }
         else
         {
-            m_merge->serverGlyphObjectIS( ui->volumeDataFilePathLEdit->text(), m_server_message.m_start_step, m_server_message.m_last_step );
+            m_merge->serverGlyphObjectIS( "IS-GlyphObject", 0, 0 );
         }
 
     }
@@ -442,7 +442,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
 
 kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
 {
-
+    m_glyph_editor->disableGlyphUpdateButton();
     if(connecting)
     {
         qInfo() << "Other conneciton mode working !!";
@@ -480,6 +480,7 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         m_client_message.m_sampling_step = 1.0f;
         m_client_message.m_enable_crop_region = 0;
 
+#if 0
         // stab data
         m_client_message.m_glyph_flag = true;
 
@@ -503,7 +504,7 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         m_client_message.m_color_data_variables.resize(2);
         m_client_message.m_color_data_variables[0] = "q2";
         m_client_message.m_color_data_variables[1] = "q1";
-
+#endif
         //paramExTransFunc.applyToClientMessage( &message ); //↓
 
         //gt5d
@@ -515,8 +516,6 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         //    float max = 1;
 
         //    m_extended_transfer_function_message.applyToClientMessage( &m_client_message );
-
-
 
         m_client_message.m_message_size = m_client_message.byteSize();
         client.sendMessage( m_client_message );
@@ -767,7 +766,11 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         polygonObject->setMinMaxObjectCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );
         polygonObject->setMinMaxExternalCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );
 
-
+        if( ui->inSituRBtn->isChecked() == true )
+        {
+            m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_last_step );
+        }
+        m_glyph_editor->enableGlyphUpdateButton();
         return polygonObject;
     }
 }
