@@ -9,7 +9,8 @@
 #include <kvs/Type>
 #include "PointObject.h"
 #include "PointImporter.h"
-
+#include "KVSMLObjectGlyph.h"
+#include <kvs/GlyphObject>
 
 class GlyphFile
 {
@@ -24,6 +25,7 @@ public:
     void setFilePrefix( const std::string& prefix );
     void setParameterFromFile();
     void generatePointObject( const int time_step, pbvr::PointObject* object );
+    void generateGlyphObject( const int time_step, kvs::KVSMLObjectGlyph* object );
 };
 
 #endif

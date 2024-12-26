@@ -8,7 +8,8 @@
 #include "GlyphFile.h"
 #include "ParticleStatusFile.h"
 #include "ParticleHistoryFile.h"
-
+//#include <kvs/GlyphObject>
+#include "KVSMLObjectGlyph.h"
 
 class ParticleMonitor
 {
@@ -19,7 +20,7 @@ private:
     ParticleHistoryFile   m_history_file; 
     std::string           m_history_file_prefix;
     pbvr::PointObject     m_particle; 
-    pbvr::PointObject     m_glyph; 
+    kvs::KVSMLObjectGlyph      m_glyph; 
     kvs::Int32            m_time_step;
 
 private:
@@ -47,7 +48,8 @@ public:
     void readParticleFile();
     void readGlyphFile();
     void getParticle( pbvr::PointObject* object );
-    void getGlyph( pbvr::PointObject* object );
+    void getGlyph( kvs::KVSMLObjectGlyph* object );
+    //void getGlyph( pbvr::PointObject* object );
     kvs::Int32 getSubpixelLevel();
     ParticleStatusFile& particleStatusFile();
     ParticleHistoryFile& particleHistoryFile();

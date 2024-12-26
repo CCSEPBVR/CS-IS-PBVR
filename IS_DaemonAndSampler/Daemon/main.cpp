@@ -48,6 +48,9 @@
 #define mkdir( dir, mode ) _mkdir( dir )
 #endif
 
+//#include <kvs/GlyphObject>
+#include "KVSMLObjectGlyph.h"
+
 #include "ParticleMonitor.h"
 #include "ParameterFileWriter.h" 
 #include "ParameterFileReader.h" 
@@ -1240,7 +1243,6 @@ int main( int argc, char** argv )
                         TimerStart( 10 );
                         strncpy( servMes.m_header, "JPTP /1.0 100 OK\r\n", 18 );
                         servMes.m_message_size = servMes.byteSize();
-                      //servMes.m_time_step = clntMes.m_step;
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         param.sampling_method = clntMes.m_sampling_method;
@@ -1292,7 +1294,6 @@ int main( int argc, char** argv )
                         }
 
                         param.sampling_step = CalculateSamplingStep( fil );
-//                      param.subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
 
                         VariableRange vr;
 
@@ -1326,48 +1327,6 @@ int main( int argc, char** argv )
 
                         timer.start();
 
-//                        servMes.m_transfer_function_count = clntMes.m_transfer_function.size();//TF_COUNT
-//                        servMes.m_color_nbins = new kvs::UInt64[clntMes.m_transfer_function.size()];
-//                        servMes.m_opacity_nbins = new kvs::UInt64[clntMes.m_transfer_function.size()];
-//
-//                        servMes.m_color_bins.resize( clntMes.m_transfer_function.size() );
-//                        servMes.m_opacity_bins.resize( clntMes.m_transfer_function.size() );
-//
-//                        c_bins_size = 0;
-//                        o_bins_size = 0;
-
-//                        for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
-//                        {
-//                            servMes.m_color_nbins[tf] = DEFAULT_NBINS;
-//                            servMes.m_opacity_nbins[tf] = DEFAULT_NBINS;
-//                            servMes.m_color_bins[tf] =  new kvs::UInt64[ servMes.m_color_nbins[tf] ];
-//                            servMes.m_opacity_bins[tf] =  new kvs::UInt64[ servMes.m_opacity_nbins[tf] ];
-//                            c_bins_size += servMes.m_color_nbins[tf];
-//                            o_bins_size += servMes.m_opacity_nbins[tf];
-//                            for ( int res = 0; res < servMes.m_color_nbins[tf]; res++ )
-//                            {
-//                                servMes.m_color_bins[tf][res] = 0;
-//                            }
-//                            for ( int res = 0; res < servMes.m_opacity_nbins[tf]; res++ )
-//                            {
-//                                servMes.m_opacity_bins[tf][res] = 0;
-//                            }
-//                        }
-
-//                        tmp_c_bins = new kvs::UInt64[c_bins_size];
-//                        tmp_o_bins = new kvs::UInt64[o_bins_size];
-//
-//                        for ( int tf = 0; tf < c_bins_size; tf++ )
-//                        {
-//                            tmp_c_bins[tf] = 0;
-//                        }
-//
-//                        for ( int tf = 0; tf < o_bins_size; tf++ )
-//                        {
-//                            tmp_o_bins[tf] = 0;
-//                        }
-
-
                         while ( jd.DispatchNext( wid, &st, &vl ) )
                         {
                             std::cout << __LINE__ <<std::endl;
@@ -1384,24 +1343,14 @@ int main( int argc, char** argv )
 
                             //clntMes.show();
                             // 20181226 start　環境変数で指定したパスおよび名前でファイル参照を行う
-                            //ppw.inputMessage( clntMes );
                             ppw.inputGlyphParameterMessage( clntMes );
-                            //ppr.readParameterFile("jupiter_old.tf");
-//                            ppr.readParameterFile( tfFilePath_old.c_str() );
-//                            NameListFile nm1 = ppr.getNameListFile();
-//                            NameListFile nm2 = ppw.getNameListFile();
-//                            if( nm1 != nm2 )
-//                            {
-//                                //ppw.writeParameterFile("jupiter.tf");
-//                                ppw.writeParameterFile( tfFilePath.c_str() );
                             ppw.writeParameterFile( glyphParameterPath.c_str() );
-//                            }
                             // 20181226 end
 
                             pbvr::PointObject* originalObject = new pbvr::PointObject;
+                            kvs::KVSMLObjectGlyph* originalGlyph = new kvs::KVSMLObjectGlyph;
                             TimerStart( 2 );
                             // 20181226 start　環境変数で指定したパスを使用
-                            //std::string filename( jupiter_prefix );
                             std::string filename( glyphFilePath );
                             // 20181226 end
                             filename.append( "_pfi_coords_minmax.txt" );
@@ -1428,37 +1377,14 @@ int main( int argc, char** argv )
                             else                                 servMes.m_flag_send_bins = 1;
                             if( servMes.m_flag_send_bins == 2)
                             {
-                                //pm.readParticleHistoryFile();
                                 pm.readGlyphFile();
-                                //pm.getParticle( originalObject );
-                                pm.getGlyph( originalObject );
+                                pm.getGlyph( originalGlyph );
                             }
                             servMes.m_time_step = clntMes.m_step;
                             servMes.m_subpixel_level = pm.getSubpixelLevel();
-//                            vr = pm.particleHistoryFile().variableRange();
-//                            TimerStart( 3 );
-//                            for ( int tf = 0; tf < pm.particleHistoryFile().colorHistogramArray().size() && tf < servMes.m_transfer_function_count; tf++ )
-//                            {
-//                                servMes.m_color_nbins[tf] = pm.particleHistoryFile().colorHistogramArray()[ tf ].size();
-//                                for ( int res = 0; res < servMes.m_color_nbins[tf]; res++ )
-//                                {
-//                                    servMes.m_color_bins[tf][res] = pm.particleHistoryFile().colorHistogramArray()[ tf ][res];
-//                                }
-//                            }
-//
-//                            for ( int tf = 0; tf < pm.particleHistoryFile().opacityHistogramArray().size() && tf < servMes.m_transfer_function_count; tf++ )
-//                            {
-//                                servMes.m_opacity_nbins[tf] = pm.particleHistoryFile().opacityHistogramArray()[ tf ].size();
-//                                for ( int res = 0; res < servMes.m_opacity_nbins[tf]; res++ )
-//                                {
-//                                    servMes.m_opacity_bins[tf][res] = pm.particleHistoryFile().opacityHistogramArray()[ tf ][ res ];
-//                                }
-//                            }
-//                            TimerStop( 3 );
-//jupiter end
-                            //if ( originalObject != object ) delete originalObject;
-                            std::cout << "originalObject->coords() = " << originalObject->coords().size() <<std::endl;
-                            servMes.m_number_glyph = originalObject->coords().size() / 3;
+                            
+                            std::cout << "originalGlyph->coords() = " << originalGlyph->coords().size() <<std::endl;
+                            servMes.m_number_glyph = originalGlyph->coords().size() / 3;
                             if ( servMes.m_number_glyph > 0 )
                             {
                                 servMes.m_glyph_coords = std::make_unique<float[]>(3 * servMes.m_number_glyph);
@@ -1474,18 +1400,17 @@ int main( int argc, char** argv )
                             }
                             for ( int i = 0; i < servMes.m_number_glyph; ++i )
                             {
-                                servMes.m_glyph_coords[3 * i + 0] = originalObject->coords()[3 * i + 0];
-                                servMes.m_glyph_coords[3 * i + 1] = originalObject->coords()[3 * i + 1];
-                                servMes.m_glyph_coords[3 * i + 2] = originalObject->coords()[3 * i + 2];
-                                servMes.m_glyph_vectors[3 * i + 0] = originalObject->normals()[3 * i + 0];
-                                servMes.m_glyph_vectors[3 * i + 1] = originalObject->normals()[3 * i + 1];
-                                servMes.m_glyph_vectors[3 * i + 2] = originalObject->normals()[3 * i + 2];
-                                servMes.m_glyph_colors[3 * i + 0] = originalObject->colors()[3 * i + 0];
-                                servMes.m_glyph_colors[3 * i + 1] = originalObject->colors()[3 * i + 1];
-                                servMes.m_glyph_colors[3 * i + 2] = originalObject->colors()[3 * i + 2];
-                                servMes.m_glyph_sizes[i ] = originalObject->sizes()[ i ];
+                                servMes.m_glyph_coords[3 * i + 0] = originalGlyph->coords()[3 * i + 0];
+                                servMes.m_glyph_coords[3 * i + 1] = originalGlyph->coords()[3 * i + 1];
+                                servMes.m_glyph_coords[3 * i + 2] = originalGlyph->coords()[3 * i + 2];
+                                servMes.m_glyph_vectors[3 * i + 0] = originalGlyph->directions()[3 * i + 0];
+                                servMes.m_glyph_vectors[3 * i + 1] = originalGlyph->directions()[3 * i + 1];
+                                servMes.m_glyph_vectors[3 * i + 2] = originalGlyph->directions()[3 * i + 2];
+                                servMes.m_glyph_colors[3 * i + 0] = originalGlyph->colors()[3 * i + 0];
+                                servMes.m_glyph_colors[3 * i + 1] = originalGlyph->colors()[3 * i + 1];
+                                servMes.m_glyph_colors[3 * i + 2] = originalGlyph->colors()[3 * i + 2];
+                                servMes.m_glyph_sizes[i ] = originalGlyph->sizes()[ i ];
                             }
-//                            servMes.m_server_side_variable_range = vr;
                             if ( timer_count <= TIMER_COUNT_NUM )
                             {
                                 TIMER_END( 471 );
@@ -1510,62 +1435,20 @@ int main( int argc, char** argv )
                             {
                                 TIMER_STA( 473 );
                             }
-//                            delete[] servMes.m_positions;
-//                            delete[] servMes.m_normals;
-//                            delete[] servMes.m_colors;
                             delete originalObject;
                             if ( timer_count <= TIMER_COUNT_NUM )
                             {
                                 TIMER_END( 473 );
                             }
-//jupiter
                             TimerStop( 1 );
-//                          TimerFinish( servMes.m_time_step );
-//jupiter
                         } // end of while(DispatchNext)
-//#ifndef CPU_VER
-//                        MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-//                        MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-//
-//                        int c_count = 0;
-//                        int o_count = 0;
-//                        for ( int tf = 0; tf < servMes.m_transfer_function_count ; tf++ )
-//                        {
-//                            for ( int res = 0; res < servMes.m_color_nbins[tf]; res++ )
-//                            {
-//                                servMes.m_color_bins[tf][res] = tmp_c_bins[c_count];
-//                                c_count++;
-//                            }
-//
-//                            for ( int res = 0; res < servMes.m_opacity_nbins[tf]; res++ )
-//                            {
-//                                servMes.m_opacity_bins[tf][res] = tmp_o_bins[o_count];
-//                                o_count++;
-//                            }
-//                        }
-//#endif
                         servMes.m_flag_send_bins = 1;
-//                      servMes.m_subpixel_level = param.subpixel_level;
                         servMes.m_message_size = servMes.byteSize();
-                        //servMes.m_number_particle = 2;
                         servMes.m_number_particle = 0;
                         servMes.m_number_glyph = 0;
                         TimerStart( 11 );
                         pts.sendMessage( servMes );
                         TimerStop( 11 );
-
-//                        for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
-//                        {
-//                            delete[] servMes.m_color_bins[tf];
-//                            delete[] servMes.m_opacity_bins[tf];
-//                        }
-//                        delete[] servMes.m_color_nbins;
-//                        delete[] servMes.m_opacity_nbins;
-//                        servMes.m_transfer_function_count = 0;
-//                        servMes.m_flag_send_bins = 1;
-//                        delete[] tmp_c_bins;
-//                        delete[] tmp_o_bins;
-
                         timer.stop();
                         std::cout << "Particle File: " << timer.sec() << " [sec/step]" << std::endl;
 

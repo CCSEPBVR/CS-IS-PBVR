@@ -82,6 +82,83 @@ void GlyphFile::setParameterFromFile()
     m_kvsml_file_number = num_kvsml;
 }
 
+void GlyphFile::generateGlyphObject( const int time_step, kvs::KVSMLObjectGlyph* object )
+{
+    std::cout << __FUNCTION__  <<__LINE__ <<std::endl;
+    kvs::UInt32 subvolume_num = m_subvolume_number;
+    std::string prefix = m_file_prefix;
+
+    std::cout << "m_subvolume_number = " << m_subvolume_number << std::endl;
+    std::cout << "m_file_prefix = " << m_file_prefix << std::endl;
+
+    std::vector<bool> check_vol( subvolume_num, false );
+
+    std::vector<kvs::Real32> glyph_coord    ;
+    std::vector<kvs::Real32> glyph_direction;
+    std::vector<kvs::Real32> glyph_size     ;
+    std::vector<kvs::UInt8>  glyph_color    ;
+    bool read_success = false;
+    while( !read_success )
+    {
+        for ( int m = 0; m < subvolume_num; m++ )
+        {
+            if( !check_vol[m] )
+            { 
+                std::stringstream suffix;
+                suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << time_step
+                    << '_' << std::setw( 7 ) << std::setfill( '0' ) << m + 1
+                    << '_' << std::setw( 7 ) << std::setfill( '0' ) << subvolume_num;
+                std::string filename = prefix + suffix.str() + ".kvsml";
+                std::cout << "filename = " << filename << std::endl; 
+                kvs::KVSMLObjectGlyph tmpimp(filename);
+
+                if( tmpimp.isSuccess() ) check_vol[m] = true;
+
+                if ( check_vol[m] )
+                {
+                    int num = tmpimp.sizes().size();
+                    for (int i = 0; i < num; i ++  )
+                    {
+                        glyph_coord.push_back( tmpimp.coords()[3*i  ]); 
+                        glyph_coord.push_back( tmpimp.coords()[3*i+1]); 
+                        glyph_coord.push_back( tmpimp.coords()[3*i+2]); 
+                        glyph_direction.push_back( tmpimp.directions()[3*i  ]); 
+                        glyph_direction.push_back( tmpimp.directions()[3*i+1]); 
+                        glyph_direction.push_back( tmpimp.directions()[3*i+2]); 
+                        glyph_size.push_back(   tmpimp.sizes()[i]); 
+                        glyph_color.push_back(  tmpimp.colors()[3*i  ]); 
+                        glyph_color.push_back(  tmpimp.colors()[3*i+1]); 
+                        glyph_color.push_back(  tmpimp.colors()[3*i+2]); 
+                        std::cout << "tmpimp.directions()[3*i  ] = " << tmpimp.directions()[3*i  ] <<std::endl;
+                        std::cout << "tmpimp.directions()[3*i+1  ] = " << tmpimp.directions()[3*i+1 ] <<std::endl;
+                        std::cout << "tmpimp.directions()[3*i+2  ] = " << tmpimp.directions()[3*i+2  ] <<std::endl;
+                    }
+                } 
+            }
+        }
+
+        read_success = true;
+        for( int m = 0; m < subvolume_num; m++ )
+        {
+            if( !check_vol[m] )
+            {
+                read_success = false;
+                break;
+            }
+        }
+    }
+
+    kvs::ValueArray<kvs::Real32> coords(glyph_coord);
+    kvs::ValueArray<kvs::Real32> directions(glyph_direction);
+    kvs::ValueArray<kvs::Real32> sizes(glyph_size);
+    kvs::ValueArray<kvs::UInt8>  colors(glyph_color);
+    object-> setCoords(coords);
+    object-> setDirections(directions);
+    object-> setSizes(sizes);
+    object-> setColors(colors);
+}
+
+
 void GlyphFile::generatePointObject( const int time_step, pbvr::PointObject* object )
 {
     kvs::UInt32 subvolume_num = m_subvolume_number;
