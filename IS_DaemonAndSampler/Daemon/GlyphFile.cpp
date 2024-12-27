@@ -26,7 +26,7 @@ void GlyphFile::setParameterFromFile()
     kvs::UInt32 step_length    = 5;
     kvs::UInt32 div_length     = 7;
     kvs::UInt32 div_num_length = 7;
-    kvs::UInt32 suffix_length = static_cast<kvs::UInt32>( std::string("kvsml").length() );
+    kvs::UInt32 suffix_length = static_cast<kvs::UInt32>( std::string("dat").length() );
     std::string f_prefix = file_prefix.fileName();
 
     kvs::Int32 file_length = f_prefix.length() + 1
@@ -43,7 +43,7 @@ void GlyphFile::setParameterFromFile()
         if (sep == 0 && file_length == f_name.length())
         {
             std::string ext = fi->extension();
-            if ( ext == "kvsml" )
+            if ( ext == "dat" )
             {
                 files.push_back(*fi);
             }
@@ -84,7 +84,6 @@ void GlyphFile::setParameterFromFile()
 
 void GlyphFile::generateGlyphObject( const int time_step, kvs::KVSMLObjectGlyph* object )
 {
-    std::cout << __FUNCTION__  <<__LINE__ <<std::endl;
     kvs::UInt32 subvolume_num = m_subvolume_number;
     std::string prefix = m_file_prefix;
 
@@ -108,8 +107,7 @@ void GlyphFile::generateGlyphObject( const int time_step, kvs::KVSMLObjectGlyph*
                 suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << time_step
                     << '_' << std::setw( 7 ) << std::setfill( '0' ) << m + 1
                     << '_' << std::setw( 7 ) << std::setfill( '0' ) << subvolume_num;
-                std::string filename = prefix + suffix.str() + ".kvsml";
-                std::cout << "filename = " << filename << std::endl; 
+                std::string filename = prefix + suffix.str() + ".dat";
                 kvs::KVSMLObjectGlyph tmpimp(filename);
 
                 if( tmpimp.isSuccess() ) check_vol[m] = true;
@@ -129,9 +127,6 @@ void GlyphFile::generateGlyphObject( const int time_step, kvs::KVSMLObjectGlyph*
                         glyph_color.push_back(  tmpimp.colors()[3*i  ]); 
                         glyph_color.push_back(  tmpimp.colors()[3*i+1]); 
                         glyph_color.push_back(  tmpimp.colors()[3*i+2]); 
-                        std::cout << "tmpimp.directions()[3*i  ] = " << tmpimp.directions()[3*i  ] <<std::endl;
-                        std::cout << "tmpimp.directions()[3*i+1  ] = " << tmpimp.directions()[3*i+1 ] <<std::endl;
-                        std::cout << "tmpimp.directions()[3*i+2  ] = " << tmpimp.directions()[3*i+2  ] <<std::endl;
                     }
                 } 
             }
@@ -158,92 +153,5 @@ void GlyphFile::generateGlyphObject( const int time_step, kvs::KVSMLObjectGlyph*
     object-> setColors(colors);
 }
 
-
-void GlyphFile::generatePointObject( const int time_step, pbvr::PointObject* object )
-{
-    kvs::UInt32 subvolume_num = m_subvolume_number;
-    std::string prefix = m_file_prefix;
-
-    std::cout << "m_subvolume_number = " << m_subvolume_number << std::endl;
-    std::cout << "m_file_prefix = " << m_file_prefix << std::endl;
-
-    std::vector<bool> check_vol( subvolume_num, false );
-    bool read_success = false;
-#if _OPENMP
-    int max_threads = omp_get_max_threads();
-    int thid        = omp_get_thread_num();
-#else
-    int max_threads = 1;
-    int thid        = 0;
-#endif
-    pbvr::PointObject** tmp_obj = new pbvr::PointObject*[ max_threads];
-
-    for ( int i = 0; i < max_threads; i++ )
-    {
-        tmp_obj[i] = new pbvr::PointObject();
-    }
-
-    while( !read_success )
-    {
-        #pragma omp parallel
-        {
-            #if _OPENMP
-            int thid        = omp_get_thread_num();
-            #else
-            int thid        = 0;
-            #endif
-            #pragma omp for
-            for ( int m = 0; m < subvolume_num; m++ )
-            {
-                if( !check_vol[m] )
-                { 
-                    std::stringstream suffix;
-                    suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << time_step
-                           << '_' << std::setw( 7 ) << std::setfill( '0' ) << m + 1
-                           << '_' << std::setw( 7 ) << std::setfill( '0' ) << subvolume_num;
-                    std::string filename = prefix + suffix.str() + ".kvsml";
-                    const kvs::File file( filename );
-                    pbvr::PointImporter* tmpimp = new pbvr::PointImporter( filename );
-
-                    if( tmpimp->isSuccess() ) check_vol[m] = true;
-
-                    if ( check_vol[m] )
-                    {
-                        pbvr::PointObject* impobj = tmpimp;
-
-                        kvs::UInt32 nmemb = impobj->coords().size();
-    
-                        if ( nmemb != 0 )
-                        {
-                            *( tmp_obj[thid] ) += *impobj;
-                        }
-                    } 
-                    delete tmpimp;
-                }
-            }
-        }
-
-        read_success = true;
-        for( int m = 0; m < subvolume_num; m++ )
-        {
-            if( !check_vol[m] )
-            {
-                read_success = false;
-                break;
-            }
-        }
-    }
-
-    for ( int i = 0; i < max_threads; i++ )
-    {
-        kvs::UInt32 nmemb = tmp_obj[i]->coords().size();
-        if ( nmemb != 0 )
-        {
-            ( *object ) += *( tmp_obj[i] );
-        }
-        delete tmp_obj[i];
-    }
-    delete[] tmp_obj;
-}
 
 
