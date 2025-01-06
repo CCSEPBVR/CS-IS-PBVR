@@ -55,6 +55,7 @@ protected:
    int          m_ncoords;
    int          m_ncells;
    int          m_nvariable;
+   bool m_g_flag;
 
 //  glyph parameter 
    // ファイルパス(デーモン→サーバー)

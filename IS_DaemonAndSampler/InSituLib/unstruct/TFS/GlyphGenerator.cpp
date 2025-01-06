@@ -8,15 +8,19 @@ GlyphGenerator::GlyphGenerator(pbvr_parameters& particleBase, const int time_ste
     m_coords( coordinates  ), m_ncoords( ncoords ), 
     m_connections( connections ), m_ncells( ncells ) 
 {
-    
-    this -> SetGlyphParameter( particleBase, time_step ); 
-    if( m_distribution_modes == jpv::GlyphMode:: AllPoints || m_distribution_modes == jpv::GlyphMode:: EveryNthPoints )
-    {
-        this->PointSampling();
-    }
-    else if(m_distribution_modes == jpv::GlyphMode:: UniformDistribution)
-    {
-        this->DistributionSampling( celltype );
+   
+    m_g_flag = false; 
+    m_g_flag = this -> SetGlyphParameter( particleBase, time_step );
+    if (m_g_flag)
+    { 
+        if( m_distribution_modes == jpv::GlyphMode:: AllPoints || m_distribution_modes == jpv::GlyphMode:: EveryNthPoints )
+        {
+            this->PointSampling();
+        }
+        else if(m_distribution_modes == jpv::GlyphMode:: UniformDistribution)
+        {
+            this->DistributionSampling( celltype );
+        }
     }
 }
 
