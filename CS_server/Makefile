@@ -12,10 +12,6 @@ ifeq "$(PBVR_MAKE_FILTER)" "1"
     SUBDIRS += Filter
 endif
 
-ifeq "$(PBVR_MAKE_SERVER)" "1"
-    SUBDIRS += Server
-endif
-
 ifeq "$(PBVR_MAKE_KVSML_COMVERTER)" "1"
 	SUBDIRS += KVSMLConverter
 endif
