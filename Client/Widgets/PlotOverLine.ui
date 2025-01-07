@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>328</width>
-    <height>284</height>
+    <width>409</width>
+    <height>289</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -36,7 +36,7 @@
      </spacer>
     </item>
     <item row="4" column="0" colspan="2">
-     <widget class="QGroupBox" name="groupBox">
+     <widget class="QGroupBox" name="plotGroupBox">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -46,11 +46,30 @@
       <property name="title">
        <string>Plot Over Line</string>
       </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
       <layout class="QGridLayout" name="gridLayout_3">
        <item row="1" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout_2">
          <item row="3" column="3">
-          <widget class="QDoubleSpinBox" name="endPointZDoubleSpinBox"/>
+          <widget class="QDoubleSpinBox" name="endPointZDoubleSpinBox">
+           <property name="minimum">
+            <double>-10000.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>10000.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.010000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.000000000000000</double>
+           </property>
+          </widget>
          </item>
          <item row="0" column="0" colspan="2">
           <widget class="QLabel" name="label_3">
@@ -60,7 +79,20 @@
           </widget>
          </item>
          <item row="2" column="3">
-          <widget class="QDoubleSpinBox" name="startPointZDoubleSpinBox"/>
+          <widget class="QDoubleSpinBox" name="startPointZDoubleSpinBox">
+           <property name="minimum">
+            <double>-10000.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>10000.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.010000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.000000000000000</double>
+           </property>
+          </widget>
          </item>
          <item row="1" column="1">
           <widget class="QLabel" name="label_5">
@@ -70,16 +102,65 @@
           </widget>
          </item>
          <item row="0" column="2" colspan="2">
-          <widget class="QSpinBox" name="resolutionSpinBox"/>
+          <widget class="QSpinBox" name="resolutionSpinBox">
+           <property name="minimum">
+            <number>2</number>
+           </property>
+           <property name="maximum">
+            <number>4096</number>
+           </property>
+           <property name="value">
+            <number>256</number>
+           </property>
+          </widget>
          </item>
          <item row="3" column="2">
-          <widget class="QDoubleSpinBox" name="endPointYDoubleSpinBox"/>
+          <widget class="QDoubleSpinBox" name="endPointYDoubleSpinBox">
+           <property name="minimum">
+            <double>-10000.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>10000.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.010000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.000000000000000</double>
+           </property>
+          </widget>
          </item>
          <item row="3" column="1">
-          <widget class="QDoubleSpinBox" name="endPointXDoubleSpinBox"/>
+          <widget class="QDoubleSpinBox" name="endPointXDoubleSpinBox">
+           <property name="minimum">
+            <double>-10000.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>10000.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.010000000000000</double>
+           </property>
+           <property name="value">
+            <double>1.000000000000000</double>
+           </property>
+          </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QDoubleSpinBox" name="startPointXDoubleSpinBox"/>
+          <widget class="QDoubleSpinBox" name="startPointXDoubleSpinBox">
+           <property name="minimum">
+            <double>-10000.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>10000.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.010000000000000</double>
+           </property>
+           <property name="value">
+            <double>-1.000000000000000</double>
+           </property>
+          </widget>
          </item>
          <item row="3" column="0">
           <widget class="QLabel" name="label_2">
@@ -96,7 +177,20 @@
           </widget>
          </item>
          <item row="2" column="2">
-          <widget class="QDoubleSpinBox" name="startPointYDoubleSpinBox"/>
+          <widget class="QDoubleSpinBox" name="startPointYDoubleSpinBox">
+           <property name="minimum">
+            <double>-10000.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>10000.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.010000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.000000000000000</double>
+           </property>
+          </widget>
          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="label">

@@ -36,7 +36,7 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_data_properties( this ),
     m_coordinates( this, &m_merge, &m_connect ),
     m_transfer_function_editor( this, &m_merge, &m_connect, &m_color_map_bar_selector ),
-    m_plot_over_line( this, &m_connect )
+    m_plot_over_line( this, this, &m_connect )
 {
     ui->setupUi(this);
     setWindowTitle( "pbvr_client v3.1.0" );
