@@ -408,3 +408,8 @@ void GlyphEditor::directionComboBoxBlockSignals( bool block )
     ui->direction2ComboBox->blockSignals( block );
     ui->direction3ComboBox->blockSignals( block );
 }
+
+TFEColorMapBar* GlyphEditor::getColorMapBar() const
+{
+    return ui->colorMapBar;
+}

@@ -22,6 +22,7 @@
 #include "Widgets/Coordinates.h"
 #include "Widgets/ToolBars.h"
 #include "Widgets/GlyphEditor.h"
+#include "Widgets/PlotOverLine.h"
 
 namespace Ui {
 class PBVRGUI;
@@ -69,6 +70,7 @@ private:
     TotalParticles m_total_particles;
     ColorMapBarSelector m_color_map_bar_selector;
     GlyphEditor m_glyph_editor;
+    PlotOverLine m_plot_over_line;
 
     const kvs::Xform m_initialize_camera_xform;
 
