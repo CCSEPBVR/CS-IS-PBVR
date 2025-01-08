@@ -174,6 +174,7 @@ void TransferFunctionEditor::onColorFunctionChanged( int index )
         ui->colorServerSideMaxLineEdit->blockSignals( false );
 
         ui->colorMapBar->setColorMap( func->colorMap() );
+        ui->colorMapBar->startInitialization();
         ui->colorMapBar->update();
 
         ui->colorHistogram->setTable( func->m_color_histogram );
