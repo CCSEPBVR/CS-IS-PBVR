@@ -238,6 +238,64 @@ void Connect::sendTransferFunction()
     }
 }
 
+void Connect::sendGlyphFlagFalse()
+{
+    while(connecting)
+    {
+        //qInfo() << "Other conneciton mode working !! waiting...    ";
+    }
+
+    connecting = true;
+    if( ui-> clientServerRBtn -> isChecked() )
+    {
+        qInfo() <<  "this botton doesn't work in CS_MODE !!!";
+    }
+    else if ( ui->inSituRBtn->isChecked() )
+    {
+
+        std::cout << "********" << std::endl;
+        std::cout << "********" << std::endl;
+        std::cout << "********" << std::endl;
+        std::cout << "********" << std::endl;
+
+        jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
+        //    jpv::ParticleTransferClientMessage m_client_message;
+        //    jpv::ParticleTransferServerMessage reply;
+        m_server_message.m_camera = new kvs::Camera();
+        client.initClient();
+        strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
+        m_client_message.m_initialize_parameter = jpv::InitializeParameter::send_glyph_flag_false; // = 2
+        m_client_message.m_rendering_id = 0;
+        if( ui->uniformRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'u'; }
+        if( ui->metropolisRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'm'; }
+        if( ui->rejectionRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'r'; }
+        m_client_message.m_subpixel_level = 2;
+        m_client_message.m_repeat_level = 16;
+        m_client_message.m_shuffle_method = 'r';
+        m_client_message.m_time_parameter = 2;
+        m_client_message.m_trans_parameter = 2;
+        m_client_message.m_node_type = 'a';
+        m_client_message.m_camera = m_pbvr_gui->screen()->scene()->camera();//足りないかも
+        m_client_message.m_step = 0;
+        m_client_message.m_message_size = m_client_message.byteSize();
+        m_client_message.m_sampling_step = 1.0f;
+        m_client_message.m_enable_crop_region = 0;
+        m_client_message.m_glyph_flag =false;
+
+        m_client_message.m_message_size = m_client_message.byteSize();
+        // TF情報をサーバー側に送信　（サーバーからの受信はしない）
+        client.sendMessage( m_client_message );
+
+        m_client_message.m_initialize_parameter = jpv::InitializeParameter::empty;
+        m_client_message.m_message_size = m_client_message.byteSize();
+        client.sendMessage( m_client_message );
+        client.recvMessage( &m_server_message );
+
+        client.termClient();
+    }
+    connecting = false;
+
+}
 
 kvs::PointObject* Connect::generateParticles( int timeStep )
 {
@@ -479,6 +537,7 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         m_client_message.m_message_size = m_client_message.byteSize();
         m_client_message.m_sampling_step = 1.0f;
         m_client_message.m_enable_crop_region = 0;
+        m_client_message.m_glyph_flag =true;
 
 #if 0
         // stab data
@@ -531,8 +590,10 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
             if ( client.recvMessage( &m_server_message ) == 1 ){}
 
             int nmemb = m_server_message.m_number_glyph * 3;
+            std::cout << __LINE__ <<std::endl;
             if ( nmemb != 0 )
             {
+                std::cout << __LINE__ <<std::endl;
                 kvs::ValueArray<kvs::Real32> positions ( m_server_message.m_glyph_coords.get(), nmemb );
                 kvs::ValueArray<kvs::Real32> vectors ( m_server_message.m_glyph_vectors.get(), nmemb );
                 kvs::ValueArray<kvs::Real32> sizes ( m_server_message.m_glyph_sizes.get(), nmemb );
@@ -569,20 +630,20 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         pointObject->setMinMaxObjectCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );
         pointObject->setMinMaxExternalCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );
         //    polygonObject->updateMinMaxCoords();
-
-        for ( int i = 0; i < 10; ++i )
-        {
-            std::cout << " pointObject->coords()[3 * i + 0]   =" <<pointObject->coords()[3 * i + 0]  << std::endl;
-            std::cout << " pointObject->coords()[3 * i + 1]   =" <<pointObject->coords()[3 * i + 1]  << std::endl;
-            std::cout << " pointObject->coords()[3 * i + 2]   =" <<pointObject->coords()[3 * i + 2]   << std::endl;
-            std::cout << " pointObject->vectors()[3 * i + 0]  =" <<pointObject->normals()[3 * i + 0] << std::endl;
-            std::cout << " pointObject->vectors()[3 * i + 1]  =" <<pointObject->normals()[3 * i + 1] << std::endl;
-            std::cout << " pointObject->normals()[3 * i + 2]  =" <<pointObject->normals()[3 * i + 2] << std::endl;
-            std::cout << " pointObject->colors()[3 * i + 0]   =" <<(int)pointObject->colors()[3 * i + 0]  << std::endl;
-            std::cout << " pointObject->colors()[3 * i + 1]   =" <<(int)pointObject->colors()[3 * i + 1]  << std::endl;
-            std::cout << " pointObject->colors()[3 * i + 2]   =" <<(int)pointObject->colors()[3 * i + 2]  << std::endl;
-            std::cout << " pointObject->sizes()[3 * i + 0]    =" <<pointObject->sizes()[ i ]         << std::endl;
-        }
+        // std::cout << __LINE__ <<std::endl;
+        // for ( int i = 0; i < 10; ++i )
+        // {
+        //     std::cout << " pointObject->coords()[3 * i + 0]   =" <<pointObject->coords()[3 * i + 0]  << std::endl;
+        //     std::cout << " pointObject->coords()[3 * i + 1]   =" <<pointObject->coords()[3 * i + 1]  << std::endl;
+        //     std::cout << " pointObject->coords()[3 * i + 2]   =" <<pointObject->coords()[3 * i + 2]   << std::endl;
+        //     std::cout << " pointObject->vectors()[3 * i + 0]  =" <<pointObject->normals()[3 * i + 0] << std::endl;
+        //     std::cout << " pointObject->vectors()[3 * i + 1]  =" <<pointObject->normals()[3 * i + 1] << std::endl;
+        //     std::cout << " pointObject->normals()[3 * i + 2]  =" <<pointObject->normals()[3 * i + 2] << std::endl;
+        //     std::cout << " pointObject->colors()[3 * i + 0]   =" <<(int)pointObject->colors()[3 * i + 0]  << std::endl;
+        //     std::cout << " pointObject->colors()[3 * i + 1]   =" <<(int)pointObject->colors()[3 * i + 1]  << std::endl;
+        //     std::cout << " pointObject->colors()[3 * i + 2]   =" <<(int)pointObject->colors()[3 * i + 2]  << std::endl;
+        //     std::cout << " pointObject->sizes()[3 * i + 0]    =" <<pointObject->sizes()[ i ]         << std::endl;
+        // }
 
         std::cout << serverSideMinObjectCoords[0] << std::endl;
         std::cout << serverSideMinObjectCoords[1] << std::endl;

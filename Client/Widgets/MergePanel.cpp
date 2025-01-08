@@ -504,6 +504,11 @@ void MergePanel::updateCheckState()
                 IS_OBJ = false;
                 IS_OBJ_DONE_INIT = false;
             }
+
+            if( m_files_manager[row]->getFormat() == FilesManager::ServerGlyphObjectCS || m_files_manager[row]->getFormat() == FilesManager::ServerGlyphObjectIS )
+            {
+                m_connect->sendGlyphFlagFalse();
+            }
             delete m_files_manager[row];
             m_files_manager.removeAt(row);
 
