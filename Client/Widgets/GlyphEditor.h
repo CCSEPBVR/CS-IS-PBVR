@@ -94,6 +94,7 @@ public:
 public:
     void enableGlyphUpdateButton();
     void disableGlyphUpdateButton();
+    void glyphInitialize();
 
 private:
     void directionComboBoxBlockSignals( bool block );

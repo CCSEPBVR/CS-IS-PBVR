@@ -57,6 +57,9 @@ GlyphEditor::GlyphEditor(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, 
     connect( ui->editColorMapPushButton, &QPushButton::clicked, this, &GlyphEditor::onEditColorMapButtonClicked );
     connect( ui->applyPushButton, &QPushButton::clicked, this, &GlyphEditor::onApplyButtonClicked );
     this->setEnabled( false );
+
+    //add by shimomura 2024/12/27
+    glyphInitialize();
 }
 
 GlyphEditor::~GlyphEditor()
@@ -401,6 +404,30 @@ void GlyphEditor::onApplyButtonClicked()
     }
     m_connect->getClientMessage()->show();
 }
+
+
+void GlyphEditor::glyphInitialize()
+{
+    m_connect->getClientMessage()->m_distribution_mode = jpv::GlyphMode::UniformDistribution;
+    m_connect->getClientMessage()->m_color_data_sampling_method=jpv::DataDefines::Constant;
+    m_connect->getClientMessage()->m_size_sampling_method=jpv::DataDefines::Constant;
+    m_connect->getClientMessage()->m_stride = 5;
+    m_connect->getClientMessage()->m_seed = 5;
+    m_connect->getClientMessage()->m_number_of_sampling_point =100;
+    m_connect->getClientMessage()->m_direction_variable[0] = "q1";
+    m_connect->getClientMessage()->m_direction_variable[1] = "q2";
+    m_connect->getClientMessage()->m_direction_variable[2] = "q3";
+    m_connect->getClientMessage()->m_color_data_variables.push_back("q1");
+    m_connect->getClientMessage()->m_size_variables.push_back("q1");
+
+    m_connect->getClientMessage()->m_glyph_color_map_table.clear();
+    for( int i = 0; i < ui->colorMapBar->getColor().table().size(); i++ )
+    {
+        m_connect->getClientMessage()->m_glyph_color_map_table.push_back( 0 );
+    }
+
+}
+
 
 void GlyphEditor::directionComboBoxBlockSignals( bool block )
 {
