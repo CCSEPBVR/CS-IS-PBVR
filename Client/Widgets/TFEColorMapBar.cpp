@@ -2,7 +2,8 @@
 
 TFEColorMapBar::TFEColorMapBar(QWidget *parent)
     :QOpenGLWidget(parent),
-    m_texture_downloaded(false)
+    m_texture_downloaded(false),
+    m_initialized( false )
 {
     m_color_map.setResolution( 256 );
     m_color_map.create();
@@ -106,6 +107,7 @@ void TFEColorMapBar::create_texture()
 
 void TFEColorMapBar::draw_color_bar()
 {
+    if (!m_initialized) return; // 初期化が許可されるまで待機
     kvs::OpenGL::WithPushedAttrib attrib( GL_ALL_ATTRIB_BITS );
     attrib.disable( GL_BLEND );
     attrib.disable( GL_DEPTH_TEST );
@@ -129,5 +131,11 @@ void TFEColorMapBar::draw_color_bar()
     kvs::OpenGL::TexCoordVertex( kvs::Vec2( 1.0f, 0.0f ), p2 );
     kvs::OpenGL::TexCoordVertex( kvs::Vec2( 0.0f, 0.0f ), p3 );
     kvs::OpenGL::End();
+}
+
+void TFEColorMapBar::startInitialization()
+{
+    m_initialized = true;
+    update(); // 初期化後に描画をトリガー
 }
 

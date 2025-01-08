@@ -9,6 +9,7 @@
 
 #include "ParticleTransferProtocol.h"
 #include "Widgets/ColorMapEditor.h"
+#include "Widgets/TFEColorMapBar.h"
 class PBVRGUI;
 class MergePanel;
 class Connect;
@@ -54,6 +55,7 @@ public:
     ~GlyphEditor();
     int getGlyphType() const { return static_cast<int>(m_glyph_type);}
     float getScaleFactor() const { return m_scale_factor; }
+    TFEColorMapBar* getColorMapBar() const;
 
 private:
     Ui::GlyphEditor *ui;

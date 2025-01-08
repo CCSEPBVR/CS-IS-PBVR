@@ -164,6 +164,8 @@ void PBVRGUI::initializePanels()
     // m_glyph_editor.close();
     m_glyph_editor.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
     addDockWidget( Qt::RightDockWidgetArea, &m_glyph_editor );
+    m_glyph_editor.getColorMapBar()->startInitialization();
+    m_glyph_editor.getColorMapBar()->update();
 }
 
 void PBVRGUI::keyPressEvent(QKeyEvent *event)

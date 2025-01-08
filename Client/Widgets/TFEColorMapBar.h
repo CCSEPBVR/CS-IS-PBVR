@@ -15,6 +15,7 @@ public:
     ~TFEColorMapBar();
     kvs::ColorMap getColor(){ return m_color_map; }
     void setColorMap( const kvs::ColorMap& colormap );
+    void startInitialization();
 
 protected:
     void initializeGL() override;
@@ -26,6 +27,7 @@ private:
     kvs::Texture2D m_texture; ///< texture data
     QRect m_palette; ///< palette
     bool m_texture_downloaded; ///< check flag for texture
+    bool m_initialized;
 
 private:
     void create_texture();
