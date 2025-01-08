@@ -115,7 +115,7 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         s += jpv::Serializer::byteSize( m_opacity_transfer_function_synthesis );
 
     }
-    if (m_initialize_parameter == InitializeParameter::generate_glyph)
+    if (m_initialize_parameter == InitializeParameter::generate_glyph || m_initialize_parameter == InitializeParameter::send_glyph_flag_false )
     {
         s += sizeof( bool );
         for( int i = 0; i < 3; i++ )
@@ -260,7 +260,7 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         index += jpv::Serializer::write( buf + index, m_color_transfer_function_synthesis );
         index += jpv::Serializer::write( buf + index, m_opacity_transfer_function_synthesis );
     }
-    if (m_initialize_parameter == InitializeParameter::generate_glyph)
+    if (m_initialize_parameter == InitializeParameter::generate_glyph || m_initialize_parameter == InitializeParameter::send_glyph_flag_false )
     {
         // glyph
         index += jpv::Serializer::write(buf + index, m_glyph_flag);
@@ -448,7 +448,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         index += jpv::Serializer::read( buf + index, &m_color_transfer_function_synthesis );
         index += jpv::Serializer::read( buf + index, &m_opacity_transfer_function_synthesis );
     }
-    if (m_initialize_parameter == InitializeParameter::generate_glyph)
+    if (m_initialize_parameter == InitializeParameter::generate_glyph || m_initialize_parameter == InitializeParameter::send_glyph_flag_false)
     {
         size_t s;
          index += jpv::Serializer::read( buf + index, &m_glyph_flag );
@@ -562,7 +562,6 @@ void jpv::ParticleTransferClientMessage::show( void ) const
     std::cout << "m_y_synthesis = " << m_y_synthesis << std::endl;
     std::cout << "m_z_synthesis = " << m_z_synthesis << std::endl;
 
-    std::cout << __LINE__ << std::endl;
     std::cout << "m_direction_variable" << std::endl;
     std::cout << m_direction_variable[0];
     std::cout << ",";
@@ -1186,19 +1185,19 @@ void jpv::ParticleTransferServerMessage::show( void ) const
     std::cout << "color_tf_synthesis=" << m_color_transfer_function_synthesis << std::endl;
     std::cout << "opacity_tf_synthesis=" << m_opacity_transfer_function_synthesis << std::endl;
 
-    for ( int i = 0; i < m_number_glyph; ++i )
-    {
-        std::cout << "servMes.m_glyph_coords[3 * i + 0] = " <<  m_glyph_coords[3 * i + 0] << std::endl;
-        std::cout << "servMes.m_glyph_coords[3 * i + 1] = " <<  m_glyph_coords[3 * i + 1] << std::endl;
-        std::cout << "servMes.m_glyph_coords[3 * i + 2] = " <<  m_glyph_coords[3 * i + 2] << std::endl;
-        std::cout << "servMes.m_glyph_vectors[3 * i + 0] = " <<  m_glyph_vectors[3 * i + 0] << std::endl;
-        std::cout << "servMes.m_glyph_vectors[3 * i + 1] = " <<  m_glyph_vectors[3 * i + 1] << std::endl;
-        std::cout << "servMes.m_glyph_vectors[3 * i + 2] = " <<  m_glyph_vectors[3 * i + 2] << std::endl;
-        std::cout << "servMes.m_glyph_colors[3 * i + 0] = " <<  (int)m_glyph_colors[3 * i + 0] << std::endl;
-        std::cout << "servMes.m_glyph_colors[3 * i + 1] = " <<  (int)m_glyph_colors[3 * i + 1] << std::endl;
-        std::cout << "servMes.m_glyph_colors[3 * i + 2] = " <<  (int)m_glyph_colors[3 * i + 2] << std::endl;
-        std::cout << "servMes.m_glyph_sizes[  i ] = " <<  m_glyph_sizes[ i ] << std::endl;
-    }
+    // for ( int i = 0; i < m_number_glyph; ++i )
+    // {
+    //     std::cout << "servMes.m_glyph_coords[3 * i + 0] = " <<  m_glyph_coords[3 * i + 0] << std::endl;
+    //     std::cout << "servMes.m_glyph_coords[3 * i + 1] = " <<  m_glyph_coords[3 * i + 1] << std::endl;
+    //     std::cout << "servMes.m_glyph_coords[3 * i + 2] = " <<  m_glyph_coords[3 * i + 2] << std::endl;
+    //     std::cout << "servMes.m_glyph_vectors[3 * i + 0] = " <<  m_glyph_vectors[3 * i + 0] << std::endl;
+    //     std::cout << "servMes.m_glyph_vectors[3 * i + 1] = " <<  m_glyph_vectors[3 * i + 1] << std::endl;
+    //     std::cout << "servMes.m_glyph_vectors[3 * i + 2] = " <<  m_glyph_vectors[3 * i + 2] << std::endl;
+    //     std::cout << "servMes.m_glyph_colors[3 * i + 0] = " <<  (int)m_glyph_colors[3 * i + 0] << std::endl;
+    //     std::cout << "servMes.m_glyph_colors[3 * i + 1] = " <<  (int)m_glyph_colors[3 * i + 1] << std::endl;
+    //     std::cout << "servMes.m_glyph_colors[3 * i + 2] = " <<  (int)m_glyph_colors[3 * i + 2] << std::endl;
+    //     std::cout << "servMes.m_glyph_sizes[  i ] = " <<  m_glyph_sizes[ i ] << std::endl;
+    // }
 
 
     std::cout<<std::endl;

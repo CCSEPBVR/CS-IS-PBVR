@@ -40,6 +40,14 @@ bool ParticleMonitor::stepExisted()
     return existed;
 }
 
+bool ParticleMonitor::findGlyphFile()
+{
+    m_glyph_file.setParameterFromFile();
+    if(m_glyph_file.subVolumeNumber()> 0 ) return true;
+    else return false;
+}
+
+
 void ParticleMonitor::readGlyphFile()
 {
     TimerStart( 6 );
@@ -129,6 +137,12 @@ ParticleHistoryFile& ParticleMonitor::particleHistoryFile()
 {
     return m_history_file;
 }
+
+GlyphFile& ParticleMonitor::glyphFile()
+{
+    return m_glyph_file;
+}
+
 
 bool ParticleMonitor::statusFileChanged()
 {

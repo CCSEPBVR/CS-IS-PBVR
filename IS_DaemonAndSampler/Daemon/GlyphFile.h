@@ -26,6 +26,9 @@ public:
     void setParameterFromFile();
     void generatePointObject( const int time_step, pbvr::PointObject* object );
     void generateGlyphObject( const int time_step, kvs::KVSMLObjectGlyph* object );
+    int subVolumeNumber () {return m_subvolume_number;}
+    int getStartTimeStep () {return m_initial_step;}
+    int getLatestTimeStep () {return m_final_step;}
 };
 
 #endif

@@ -666,6 +666,8 @@ const size_t GlyphGenerator::calculate_number_of_particles(
 
 void GlyphGenerator::OutputGlyph( const  pbvr_parameters& particleBase, const int time_step)
 {
+    if (!m_g_flag) return; 
+
     int mpi_rank;
     int mpi_size;
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );

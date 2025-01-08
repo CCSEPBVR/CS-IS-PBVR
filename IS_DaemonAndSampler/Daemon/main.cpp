@@ -1266,7 +1266,10 @@ int main( int argc, char** argv )
                         }
 
                         if ( !param.hasOption( "L" ) ) param.latency_threshold = -1.0;
-                        
+                       
+                        pm.findGlyphFile();
+//                        if (pm.findGlyphFile()) fil.total_numSubVolumes=1;
+//                        else fil.total_numSubVolumes=0;
                         fil.total_numSubVolumes=1;
                         if ( param.crop.isenabled() )
                         {
@@ -1280,7 +1283,6 @@ int main( int argc, char** argv )
                         }
                         else
                         {
-                            std::cout << __LINE__ <<std::endl;
                             jd.Initialize( clntMes.m_step, clntMes.m_step, fil.total_numSubVolumes,
                                            fil.total_minSubVolumeCoord,
                                            fil.total_maxSubVolumeCoord,
@@ -1298,8 +1300,8 @@ int main( int argc, char** argv )
                         VariableRange vr;
 
                         pm.check();
-                        servMes.m_start_step = pm.particleStatusFile().getStartTimeStep();
-                        servMes.m_last_step = pm.particleStatusFile().getLatestTimeStep();
+                        servMes.m_start_step = pm.glyphFile().getStartTimeStep();
+                        servMes.m_last_step  = pm.glyphFile().getLatestTimeStep();
                         if( pm.stepExisted() )
                         {
                             //if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step && pm.getTimeStep() > -1 )
@@ -1474,6 +1476,13 @@ int main( int argc, char** argv )
                     }
 
                 }  // end loop of generate_glyph
+                else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::send_glyph_flag_false )
+                {
+                        ParameterFileWriter ppw;
+                        ppw.inputGlyphParameterMessage( clntMes );
+                        ppw.writeParameterFile( glyphParameterPath.c_str() );
+ 
+                }
 
             } // end of while (pts.good)
 

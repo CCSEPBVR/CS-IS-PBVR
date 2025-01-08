@@ -46,6 +46,7 @@ public:
     void check();
     void readParticleHistoryFile();
     void readParticleFile();
+    bool findGlyphFile();
     void readGlyphFile();
     void getParticle( pbvr::PointObject* object );
     void getGlyph( kvs::KVSMLObjectGlyph* object );
@@ -53,6 +54,7 @@ public:
     kvs::Int32 getSubpixelLevel();
     ParticleStatusFile& particleStatusFile();
     ParticleHistoryFile& particleHistoryFile();
+    GlyphFile& glyphFile();
     bool statusFileChanged();
     bool stepExisted();
     kvs::Int32 getTimeStep();

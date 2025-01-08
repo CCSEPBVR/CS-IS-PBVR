@@ -37,6 +37,7 @@ public:
     kvs::PointObject* generateParticles( int timeStep );
     kvs::PolygonObject* generateGlyphPolygons( int timeStep );
     void sendTransferFunction();
+    void sendGlyphFlagFalse();
     void deletedServerObject();
 
 private:
