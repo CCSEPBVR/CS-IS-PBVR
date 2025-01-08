@@ -116,7 +116,7 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         s += jpv::Serializer::byteSize( m_opacity_transfer_function_synthesis );
 
     }
-    if (m_initialize_parameter == InitializeParameter::generate_glyph)
+    if (m_initialize_parameter == InitializeParameter::generate_glyph || m_initialize_parameter == InitializeParameter::send_glyph_flag_false )
     {
         // glyph
         s += sizeof( bool );
@@ -263,7 +263,7 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         index += jpv::Serializer::write( buf + index, m_opacity_transfer_function_synthesis );
 
     }
-    if (m_initialize_parameter == InitializeParameter::generate_glyph)
+    if (m_initialize_parameter == InitializeParameter::generate_glyph || m_initialize_parameter == InitializeParameter::send_glyph_flag_false  )
     {
         // glyph
         index += jpv::Serializer::write(buf + index, m_glyph_flag);
@@ -451,7 +451,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         index += jpv::Serializer::read( buf + index, &m_opacity_transfer_function_synthesis );
 
     }
-    if (m_initialize_parameter == InitializeParameter::generate_glyph)
+    if (m_initialize_parameter == InitializeParameter::generate_glyph || m_initialize_parameter == InitializeParameter::send_glyph_flag_false )
     {
 
         size_t s;
