@@ -397,7 +397,7 @@ void TransferFunctionEditor::onImportButtonClicked()
     QString fileName = QFileDialog::getOpenFileName( this, tr("Import Transfer Function File"), ".", tr("Transfer Function Files (*.tfe *.TFE *.tf *.TF )") );
 
 #ifdef Q_OS_WIN
-    importTransferFunctionFile( fileName.toLocal8Bit().constData() );
+    importTransferFunctionFromFile( fileName.toLocal8Bit().constData() );
 #else
     importTransferFunctionFromFile( fileName.toStdString() );
 #endif
