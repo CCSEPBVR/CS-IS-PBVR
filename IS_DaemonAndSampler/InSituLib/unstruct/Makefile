@@ -17,6 +17,7 @@ OBJS = Serializer.o \
 	   VtkImport.o \
 	   GlyphGenerator.o \
 	   GlyphProperty.o \
+	   KVSMLObjectGlyph.o \
        kvs_wrapper.o
 
 VPATH=${TRANSFER_FUNCTION_DIR}:${IMPORT_DIR}

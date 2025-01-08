@@ -40,15 +40,25 @@ bool ParticleMonitor::stepExisted()
     return existed;
 }
 
+bool ParticleMonitor::findGlyphFile()
+{
+    m_glyph_file.setParameterFromFile();
+    if(m_glyph_file.subVolumeNumber()> 0 ) return true;
+    else return false;
+}
+
+
 void ParticleMonitor::readGlyphFile()
 {
     TimerStart( 6 );
     m_glyph_file.setParameterFromFile();
     TimerStop( 6 );
     TimerStart( 7 );
-    m_glyph.clear();
-    m_glyph_file.generatePointObject( m_time_step, &m_glyph );
+    //m_glyph->clear();
+    //m_glyph_file.generatePointObject( m_time_step, &m_glyph );
+    m_glyph_file.generateGlyphObject( m_time_step, &m_glyph );
     TimerStop( 7 );
+    std::cout << __FUNCTION__  <<__LINE__ <<std::endl;
 }
 
 
@@ -104,9 +114,13 @@ void ParticleMonitor::getParticle( pbvr::PointObject* object )
     (*object) = m_particle;
 }
 
-void ParticleMonitor::getGlyph( pbvr::PointObject* object )
+void ParticleMonitor::getGlyph( kvs::KVSMLObjectGlyph* object )
 {
-    (*object) = m_glyph;
+    object -> setCoords( m_glyph.coords() );
+    object -> setColors( m_glyph.colors() );
+    object -> setDirections( m_glyph.directions() );
+    object -> setSizes( m_glyph.sizes() );
+
 }
 
 kvs::Int32 ParticleMonitor::getSubpixelLevel()
@@ -123,6 +137,12 @@ ParticleHistoryFile& ParticleMonitor::particleHistoryFile()
 {
     return m_history_file;
 }
+
+GlyphFile& ParticleMonitor::glyphFile()
+{
+    return m_glyph_file;
+}
+
 
 bool ParticleMonitor::statusFileChanged()
 {

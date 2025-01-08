@@ -37,6 +37,7 @@ DAEMON_SRCS = CropRegion.cpp \
               JobCollector.cpp \
               JobDispatcher.cpp \
               KVSMLObjectPointWriter.cpp \
+              KVSMLObjectGlyph.cpp \
               main.cpp \
               ObjectBase.cpp \
               ObjectManager.cpp \
@@ -53,7 +54,7 @@ DAEMON_SRCS = CropRegion.cpp \
               TransferFunction.cpp \
               Timer.cpp \
               VolumeObjectBase.cpp \
-	      ExtendedTransferFunctionMessage.cpp
+		      ExtendedTransferFunctionMessage.cpp
 
 
 DAEMON_HEADERS = Argument.h \
@@ -72,6 +73,7 @@ DAEMON_HEADERS = Argument.h \
                  JobCollector.h \
                  JobDispatcher.h \
                  KVSMLObjectPointWriter.h \
+                 KVSMLObjectGlyph.h \
                  Macro.h \
                  NameListFile.h \
                  ObjectBase.h \

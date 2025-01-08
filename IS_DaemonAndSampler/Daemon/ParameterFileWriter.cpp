@@ -259,7 +259,10 @@ void ParameterFileWriter::inputTransferFunctionMessage( const jpv::ParticleTrans
 void ParameterFileWriter::inputGlyphParameterMessage( const jpv::ParticleTransferClientMessage& client_message )
 {
 //    bool glyph_flag =true;
-    std::string glyph_flag ="TRUE" ; 
+    
+    std::string glyph_flag ="FALSE" ; 
+    if (client_message.m_glyph_flag) glyph_flag ="TRUE" ; 
+
     //m_name_list_file.setLine( "PARTICLE_LIMIT" , client_message.m_particle_limit );
     m_name_list_file.setLine( "GLYPH_FLAG"             , glyph_flag );
     m_name_list_file.setLine( "STRIDE"                 ,client_message.m_stride );
@@ -315,7 +318,6 @@ void ParameterFileWriter::inputGlyphParameterMessage( const jpv::ParticleTransfe
 //    kvs::ColorMap::Table   color_table   = client_message.m_glyph_color_map.table();
 //    std::vector<int> color_table  = client_message.m_glyph_color_map;   
 //    std::cout << "color_table.size() = " << color_table.size() <<std::endl;
-    std::cout << "client_message.m_color_map.table() = " << client_message.m_glyph_color_map_table.size() <<std::endl;
     for ( size_t i = 0; i < client_message.m_glyph_color_map_table.size(); i++ )
     {
         table << client_message.m_glyph_color_map_table.at( i ) << ",";

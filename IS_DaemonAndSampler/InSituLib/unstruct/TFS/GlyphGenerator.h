@@ -20,7 +20,7 @@
 #include <kvs/GlyphObject>
 #include <kvs/KVSMLObjectPoint>
 #include "particle_write_thread.h"
-//#include "KVSMLObjectGlyph.h"
+#include "KVSMLObjectGlyph.h"
 
 #include "GlyphGenerator.h"
 #include "GlyphProperty.h"
@@ -55,6 +55,7 @@ protected:
    int          m_ncoords;
    int          m_ncells;
    int          m_nvariable;
+   bool m_g_flag;
 
 //  glyph parameter 
    // ファイルパス(デーモン→サーバー)

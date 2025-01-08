@@ -8,15 +8,19 @@ GlyphGenerator::GlyphGenerator(pbvr_parameters& particleBase, const int time_ste
     m_coords( coordinates  ), m_ncoords( ncoords ), 
     m_connections( connections ), m_ncells( ncells ) 
 {
-    
-    this -> SetGlyphParameter( particleBase, time_step ); 
-    if( m_distribution_modes == jpv::GlyphMode:: AllPoints || m_distribution_modes == jpv::GlyphMode:: EveryNthPoints )
-    {
-        this->PointSampling();
-    }
-    else if(m_distribution_modes == jpv::GlyphMode:: UniformDistribution)
-    {
-        this->DistributionSampling( celltype );
+   
+    m_g_flag = false; 
+    m_g_flag = this -> SetGlyphParameter( particleBase, time_step );
+    if (m_g_flag)
+    { 
+        if( m_distribution_modes == jpv::GlyphMode:: AllPoints || m_distribution_modes == jpv::GlyphMode:: EveryNthPoints )
+        {
+            this->PointSampling();
+        }
+        else if(m_distribution_modes == jpv::GlyphMode:: UniformDistribution)
+        {
+            this->DistributionSampling( celltype );
+        }
     }
 }
 
@@ -138,16 +142,16 @@ bool GlyphGenerator::SetGlyphParameter( pbvr_parameters& particleBase, const int
         m_color_data_variables.push_back( std::atoi(color_data_variables[i].substr(1).c_str()) - 1); 
     }
 
-#if 0
+#if 1
     std::cout << "m_direction_variables        = " << m_direction_variables[0] << ", " << m_direction_variables[1]   << std::endl; 
     std::cout << "m_size_sampling_method       = " << static_cast<int>(m_size_sampling_method)      << std::endl; 
-    std::cout << "m_size_variables             = " << m_size_variables[0]    << std::endl; 
+    if(m_size_variables.size() > 0) std::cout << "m_size_variables             = " << m_size_variables[0]    << std::endl; 
     std::cout << "m_distribution_modes         = " << static_cast<int>(m_distribution_modes )       << std::endl; 
     std::cout << "m_stride                     = " << m_stride                    << std::endl; 
     std::cout << "m_seed                       = " << m_seed                      << std::endl; 
     std::cout << "m_number_of_sample_points    = " << m_number_of_sample_points   << std::endl; 
     std::cout << "m_color_sampling_method      = " << static_cast<int>(m_color_sampling_method )    << std::endl; 
-    std::cout << "m_color_data_variables       = " << m_color_data_variables[0] <<  std::endl; 
+    if(m_color_data_variables.size() > 0) std::cout << "m_color_data_variables       = " << m_color_data_variables[0] <<  std::endl; 
 #endif 
       return glyph_flag; 
 
@@ -313,7 +317,7 @@ void GlyphGenerator::PointSampling( )
         m_glyph_colors[3*ii +1 ] = colors.g() ;
         m_glyph_colors[3*ii +2 ] = colors.b() ;
     }
-    this -> show();
+//    this -> show();
 }
 
 void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellType& celltype)
@@ -473,7 +477,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
             for( int i = 0; i < nglyphs; i++ )
             {
                 kvs::Vector3f local_coord = interp[thid][0] -> randomSampling_MT( &MT );
-                if (i ==0) local_coord = kvs::Vector3f(0,0,0);
+                if (i ==0) local_coord = kvs::Vector3f(0.5f,0.5f,0.5f);
 
                 //補間器にセルを一括でバインド
                 for( int k = 0; k < m_nvariable; k++ )
@@ -595,6 +599,15 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
             }
         }
     }
+    else
+    {
+        int n_size_data=m_glyph_sizes.size();
+        for( int j = 0; j < n_size_data; j++ )
+        {
+            m_glyph_sizes[j] = 1.f;
+        }
+    }
+
 
     if (m_color_sampling_method == jpv::DataDefines::SingleVariable || m_color_sampling_method == jpv::DataDefines::VariableArray )
     { 
@@ -631,7 +644,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
         }
     }
 
-       this->show(); 
+//       this->show(); 
 }
 
 const size_t GlyphGenerator::calculate_number_of_particles(
@@ -653,6 +666,8 @@ const size_t GlyphGenerator::calculate_number_of_particles(
 
 void GlyphGenerator::OutputGlyph( const  pbvr_parameters& particleBase, const int time_step)
 {
+    if (!m_g_flag) return; 
+
     int mpi_rank;
     int mpi_size;
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
@@ -771,7 +786,6 @@ void GlyphGenerator::OutputGlyph( const  pbvr_parameters& particleBase, const in
      *  displs:     受信先バッファ上の各ランク毎の受信バッファの位置(オフセット)
      */
 
-    std::cout << __FUNCTION__  << ": " << __LINE__ << std::endl;
     //displs = new int[ new_number_of_process ];
     //recvcounts = new int[ new_number_of_process ];
     //displs_size      = new int[ new_number_of_process ];
@@ -801,7 +815,6 @@ void GlyphGenerator::OutputGlyph( const  pbvr_parameters& particleBase, const in
     kvs::ValueArray<Byte>  new_colors(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
     kvs::ValueArray<float> new_sizes( displs_size[new_number_of_process-1] + recvcounts_size[new_number_of_process-1] );
 
-    std::cout << __FUNCTION__  << ": " << __LINE__ << std::endl;
     MPI_Gatherv( coords.pointer(),   particle_size, MPI_FLOAT,
                  new_coords.pointer(), recvcounts, displs, MPI_FLOAT,
                  0, MPI_COMM_WORLD );
@@ -828,11 +841,13 @@ void GlyphGenerator::OutputGlyph( const  pbvr_parameters& particleBase, const in
     ss << std::setfill('0') << std::setw(7) << mpi_rank+1;
     ss << "_";
     ss << std::setfill('0') << std::setw(7) << mpi_size;
-    ss << ".kvsml";
+//    ss << ".kvsml";
+    ss << ".dat";
     m_glyphFilePath += ss.str();
     // 20181226 end
 
     /*  分割後コミュニケータのランク0で出力する  */
+#if 0
 //    if( new_rank == 0 )
 //    {
         //kvs::PointObject* point_object = new kvs::PointObject( new_coords, new_colors, new_normals, particleBase.m_subpixel_level );
@@ -855,12 +870,13 @@ void GlyphGenerator::OutputGlyph( const  pbvr_parameters& particleBase, const in
             kvsml_object->write( m_glyphFilePath.c_str() );
             delete kvsml_object;
 
-//            kvs::KVSMLObjectGlyph kvsml_object( coords, colors, vectors, sizes);
-//            kvsmlobject.write(.m_glyphFilePath.c_str());
 //        }
         delete point_object;
 //    }
-    
+    #else
+            kvs::KVSMLObjectGlyph kvsmlobject( coords, colors, vectors, sizes);
+            kvsmlobject.write(m_glyphFilePath.c_str());
+#endif
 
 #if 0
     //static bool parameter_file_opened= particleBase.m_parameter_file_opened;

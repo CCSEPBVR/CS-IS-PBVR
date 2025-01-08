@@ -820,7 +820,7 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
                     nvariables, (float*)object->coords().pointer(), ncoords,
                     (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, particleBase);
 
-#if 1
+#if 0
 //              stab data 
 
             int nvar =5;
@@ -901,11 +901,11 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
             delete  values_test[i];
         }
         delete[] values_test;
-
+#else
+            GenerateGlyphs(time_step, dom, values,
+                    nvariables, (float*)object->coords().pointer(), ncoords,
+                    (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, particleBase);
 #endif
-//            GenerateGlyphs(time_step, dom, values,
-//                    nvariables, (float*)object->coords().pointer(), ncoords,
-//                    (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, particleBase);
         }
         timer.stop();
         t_generate_particles += timer.sec();
@@ -1059,146 +1059,6 @@ bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, Pa
 
     return true;
 }
-
-#if 0
-bool SetGlyphParameter( glyph_parameters& glyphParameter , pbvr_parameters& particleBase, const int time_step )
-{
-    std::string visParamDir;
-    std::string glyphParamPath;
-    std::string glyphFilePath;
-
-#if 1
-    const char *envBuf = NULL;
-    envBuf = std::getenv( "VIS_PARAM_DIR" );
-    if (envBuf == NULL) {
-        visParamDir = "./";
-    }
-    else {
-        visParamDir = envBuf;
-        if (visParamDir[visParamDir.size() - 1] != '/') {
-            visParamDir += "/";
-        }
-    }
-    envBuf = std::getenv( "PARTICLE_DIR" );
-    if (envBuf == NULL) {
-        glyphFilePath = "./g_";
-    }
-    else {
-        glyphFilePath = envBuf;
-        if (glyphFilePath[glyphFilePath.size() - 1] != '/') {
-            glyphFilePath += "/g_";
-        }
-        else {
-            glyphFilePath += "g_";
-        }
-    }
-
-    glyphParamPath = visParamDir + "parameter.gly";
-   
-    glyphParameter.m_glyphParamPath = glyphParamPath;
-    glyphParameter.m_glyphFilePath = glyphFilePath;
-
-    GlyphProperty glyph_property;
-
-    glyph_property.LoadIN(glyphParamPath) ;
-
-    bool glyph_flag;
-    std::string              g_flag                = glyph_property.getString( "GLYPH_FLAG" );
-    std::vector<std::string> direction_variables   = glyph_property.getTableString( "DIRECTION_VARIABLES" );
-    std::string              size_sampling_method  = glyph_property.getString("SIZE_SAMPLING_METHOD");
-    std::vector<std::string> size_variables        = glyph_property.getTableString( "SIZE_VARIABLES" );
-    std::string distribution_modes                 = glyph_property.getString("DISTRIBUTION_MODE");
-    int stride                                     = glyph_property.getInt("STRIDE");
-    int seed                                       = glyph_property.getInt("SEED");
-    int number_of_sample_points                    = glyph_property.getInt("NUMBER_OF_SMAPLING_POINT");
-    std::string color_sampling_method              = glyph_property.getString("COLOR_DATA_SAMPLING_METHOD");
-    std::vector<std::string> color_data_variables  = glyph_property.getTableString( "COLOR_VARIABLES" );
-    
-    float glyph_min=0; 
-    float glyph_max=0;
-    glyph_min = glyph_property.getFloat("GLYPH_COLOR_MIN");
-    glyph_max = glyph_property.getFloat("GLYPH_COLOR_MAX");
-    std::vector<int> i_table;
-    i_table = glyph_property.getTableInt( "GLYPH_COLOR_MAP_TABLE" );
-    kvs::ValueArray<kvs::UInt8> u_table( i_table.size() );
-    for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (kvs::UInt8)i_table[j];
-    
-    kvs::ColorMap color_map( u_table, glyph_min, glyph_max);
-
-    glyphParameter.m_color_map = color_map;
-    
-    if(strcmp(g_flag.c_str(), "TRUE") ==0 ) glyph_flag = true;
-    else glyph_flag = false;
-   
-    if(direction_variables.size() < 3)
-    { 
-        std::cout << "variables number is less 3 numbers !!! Skip glyph generate process !!!" << std::endl;
-        return false;  
-    }
-    //std::cout << direction_variables[0] << std::endl;
-    for (int i = 0; i< 3 ; i++)
-    {
-        glyphParameter.m_direction_variables.push_back ( std::atoi(direction_variables[i].substr(1).c_str()) - 1);
-    }
-
-    if     (size_sampling_method == "Constant"       ) glyphParameter.m_size_sampling_method    = jpv::DataDefines::Constant;
-    else if(size_sampling_method == "SingleVariable" ) glyphParameter.m_size_sampling_method    = jpv::DataDefines::SingleVariable;
-    else if(size_sampling_method == "VariableArray" ) glyphParameter.m_size_sampling_method    = jpv::DataDefines::VariableArray;
-    else 
-    {
-       std::cout << "No selecting Sampling method !!! Skip glyph generate process !!!" << std::endl;
-       return false;  
-    }
-
-    for (int i =0 ; i< size_variables.size(); i++)
-    {
-        glyphParameter.m_size_variables.push_back( std::atoi(size_variables[i].substr(1).c_str()) -1); 
-    }
-
-    if     (distribution_modes == "AllPoints"           ) glyphParameter.m_distribution_modes  = jpv::GlyphMode::AllPoints;
-    else if(distribution_modes == "EveryNthPoints"         ) glyphParameter.m_distribution_modes  = jpv::GlyphMode::EveryNthPoints;
-    else if(distribution_modes == "UniformDistribution" ) glyphParameter.m_distribution_modes  = jpv::GlyphMode::UniformDistribution;
-    else 
-    {
-       std::cout << "Not selecting Distribution mode !!! Skip glyph generate process !!!" << std::endl;
-       return false;  
-    }
-
-    glyphParameter.m_stride                  = stride;
-    glyphParameter.m_seed                    = seed;
-    glyphParameter.m_number_of_sample_points = number_of_sample_points;
-    if     (color_sampling_method == "Constant"       ) glyphParameter.m_color_sampling_method    = jpv::DataDefines::Constant;
-    else if(color_sampling_method == "SingleVariable" ) glyphParameter.m_color_sampling_method    = jpv::DataDefines::SingleVariable;
-    else if(color_sampling_method == "VariableArray" ) glyphParameter.m_color_sampling_method    = jpv::DataDefines::VariableArray;
-    else 
-    {
-       std::cout << "No selecting Sampling method !!! Skip glyph generate process !!!" << std::endl;
-       return false;  
-    }
-    
-    for (int i =0 ; i< color_data_variables.size(); i++)
-    {
-        glyphParameter.m_color_data_variables.push_back( std::atoi(color_data_variables[i].substr(1).c_str()) - 1); 
-    }
-
-#if 0
-    std::cout << "glyphParameter.m_direction_variables        = " << glyphParameter.m_direction_variables[0] << ", " << glyphParameter.m_direction_variables[1]   << std::endl; 
-    std::cout << "glyphParameter.m_size_sampling_method       = " << static_cast<int>(glyphParameter.m_size_sampling_method)      << std::endl; 
-    std::cout << "glyphParameter.m_size_variables             = " << glyphParameter.m_size_variables[0]  << ", "      << std::endl; 
-    std::cout << "glyphParameter.m_distribution_modes         = " << static_cast<int>(glyphParameter.m_distribution_modes )       << std::endl; 
-    std::cout << "glyphParameter.m_stride                     = " << glyphParameter.m_stride                    << std::endl; 
-    std::cout << "glyphParameter.m_seed                       = " << glyphParameter.m_seed                      << std::endl; 
-    std::cout << "glyphParameter.m_number_of_sample_points    = " << glyphParameter.m_number_of_sample_points   << std::endl; 
-    std::cout << "glyphParameter.m_color_sampling_method      = " << static_cast<int>(glyphParameter.m_color_sampling_method )    << std::endl; 
-    std::cout << "glyphParameter.m_color_data_variables       = " << glyphParameter.m_color_data_variables[0] << ", "   << std::endl; 
-    std::cout << "glyph_flag = " << glyph_flag<<std::endl;
-#endif 
-      return glyph_flag; 
-#endif
-      return true; 
-
-}
-#endif
 
 void GenerateHistogram( int time_step,
                          domain_parameters dom,
@@ -1818,23 +1678,11 @@ void GenerateParticles( int time_step,
     int   subpixel_level           = particleBase.m_subpixel_level          ;
     float particle_density         = particleBase.m_particle_density        ;
     float particle_data_size_limit = particleBase.m_particle_data_size_limit;
-    //std::vector<pbvr::TransferFunction> tf = particleBase.m_tf;
     parameter_file_opened = particleBase.m_parameter_file_opened;
     const int max_nparticles = (int)max_density + 1;
 
     if(mpi_rank == 0) std::cout<<"******* max_nparticles="<<max_nparticles<<std::endl;
    
-//    // Set Transfer function synthesizer.
-//    int tf_number = tf.size();
-//
-//    if( start_flag ) parameter_file_opened = tmp_parameter_file_opened;
-//
-//    //if(mpi->rank==0)std::cout<<"end initializeTFS()\n";
-//
-//    const int max_nparticles = (int)max_density + 1;
-//
-//    if(mpi_rank == 0) std::cout<<"******* max_nparticles="<<max_nparticles<<std::endl;
-
     //ヒストグラム
     int nbins = 256;
     kvs::ValueArray<float> o_min( tf_number );//TFSから読み込む最大最小値
@@ -1918,6 +1766,7 @@ void GenerateParticles( int time_step,
     time.initialize = timer.sec();
     timer.start();
 
+  
     #pragma omp parallel
     {
 #if _OPENMP
@@ -2033,6 +1882,34 @@ void GenerateParticles( int time_step,
             if( parameter_file_opened )
             {
 
+                std::vector<bool> o_zero_flag(tf_number); 
+                std::vector<bool> c_zero_flag(tf_number); 
+                for( int i = 0; i < tf_number; i++ )
+                {
+                    o_zero_flag[i] = false;
+                    c_zero_flag[i] = false;
+                    if ( kvs::Math::Equal<float>(o_max[i], o_min[i] ))   //0　判定ならば、一様分布にする
+                    {
+                        o_zero_flag[i] = true;
+                        for (int k =0 ; k< nbins; k++)
+                        {
+                            th_o_histogram[ k+nbins*i] ++;
+                        }
+                    }
+
+                    if ( kvs::Math::Equal<float>(c_max[i], c_min[i] ))   //0　判定ならば、一様分布にする
+                    {
+                        c_zero_flag[i] = true;
+
+                        for (int k =0 ; k< nbins; k++)
+                        {
+                            th_c_histogram[ k+nbins*i] ++;
+                        }
+
+                    }
+
+                }
+
                th_tfs[thid]->SynthesizedOpacityScalarsArray( interp[thid],
                                                               remain,
                                                               local_center_array,
@@ -2045,25 +1922,55 @@ void GenerateParticles( int time_step,
                                                            global_center_array,
                                                            c_scalars_array );
 
+
                for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
                {
                    for( int i = 0; i < tf_number; i++ )
                    {
-                        float h = (o_scalars_array[cell_BLK][i] - o_min[i])/( o_max[i] - o_min[i] )*nbins;
-                        int H = (int)h;
-                        if( 0 <= H && H <= nbins )
-                        {
-                            if( H == nbins ) H--;
-                            th_o_histogram[ H + nbins*i]++;
+                       if (!o_zero_flag[i]) 
+                       {
+                           float h = (o_scalars_array[cell_BLK][i] - o_min[i])/( o_max[i] - o_min[i] )*nbins;
+                           int H = (int)h;
+                           if( 0 <= H && H <= nbins )
+                           {
+                               if( H == nbins ) H--;
+                               th_o_histogram[ H + nbins*i]++;
+                           }
+
+
+                       }
+
+                       if (!c_zero_flag[i]) 
+                       {
+                           float h = (c_scalars_array[cell_BLK][i] - c_min[i])/( c_max[i] - c_min[i] )*nbins;
+                           int H = (int)h;
+                           if( 0 <= H && H <= nbins )
+                           {
+                               if( H == nbins ) H--;
+                               th_c_histogram[ H + nbins*i]++;
+                           }
                         }
 
-                        h = (c_scalars_array[cell_BLK][i] - c_min[i])/( c_max[i] - c_min[i] )*nbins;
-                        H = (int)h;
-                        if( 0 <= H && H <= nbins )
-                        {
-                            if( H == nbins ) H--;
-                            th_c_histogram[ H + nbins*i]++;
-                        }
+
+//               for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
+//               {
+//                   for( int i = 0; i < tf_number; i++ )
+//                   {
+//                        float h = (o_scalars_array[cell_BLK][i] - o_min[i])/( o_max[i] - o_min[i] )*nbins;
+//                        int H = (int)h;
+//                        if( 0 <= H && H <= nbins )
+//                        {
+//                            if( H == nbins ) H--;
+//                            th_o_histogram[ H + nbins*i]++;
+//                        }
+//
+//                        h = (c_scalars_array[cell_BLK][i] - c_min[i])/( c_max[i] - c_min[i] )*nbins;
+//                        H = (int)h;
+//                        if( 0 <= H && H <= nbins )
+//                        {
+//                            if( H == nbins ) H--;
+//                            th_c_histogram[ H + nbins*i]++;
+//                        }
 /*
                         if( cell_BLK==0 )
                         {

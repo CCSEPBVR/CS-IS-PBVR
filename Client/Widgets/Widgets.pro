@@ -31,7 +31,8 @@ TARGET = Widgets
 HEADERS += \
     AnimationControls.h \
     ColorMapEditor.h \
-    Coordinates.h \    
+    Coordinates.h \
+    PlotOverLine.h \
     DataProperties.h \
     DisplayPointSizeControl.h \
     ExtendedTransferFunctionMessage.h \
@@ -65,7 +66,8 @@ HEADERS += \
 SOURCES += \
     AnimationControls.cpp \
     ColorMapEditor.cpp \
-    Coordinates.cpp \    
+    Coordinates.cpp \
+    PlotOverLine.cpp \
     DataProperties.cpp \
     DisplayPointSizeControl.cpp \
     ExtendedTransferFunctionMessage.cpp \
@@ -102,6 +104,7 @@ FORMS += \
     GlyphEditor.ui \
     MergePanel.ui \
     OpacityMapEditor.ui \
+    PlotOverLine.ui \
     Preference.ui \
     RenderOptions.ui \
     RepetitionLevelControl.ui \
