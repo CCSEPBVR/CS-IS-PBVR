@@ -52,6 +52,9 @@
 #include "TFS/GlyphGenerator.h"
 #include "TFS/GlyphProperty.h"
 
+//PlotOverLine
+#include "TFS/PlotOverLine.h"
+
 // add FJ start
 #ifndef SIMD_BLK_SIZE
 #define SIMD_BLK_SIZE 128
@@ -662,6 +665,10 @@ void generate_particles( int time_step, domain_parameters dom,
         GenerateParticles(time_step, dom, values,
             nvariables, coordinates, ncoords,
             connections, ncells, celltype, particleBase);
+
+        GenerateGlyphs(time_step, dom, values,
+            nvariables, coordinates, ncoords,
+            connections, ncells, celltype, particleBase);
     }
 
     OutputParticles(time_step, nvariables, particleBase, &param, skip_flag);
@@ -768,12 +775,26 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
 
     static ParamInfo param;
     pbvr_parameters particleBase;
+    
+    
     bool skip_flag;
     skip_flag = SetParameter(dom, &particleBase, &param, time_step);
 
     int mpi_rank = 0;
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
     
+    // plot over line
+    plot_over_line_data pol_data;
+    PlotOverLine plot_over_line;
+    pol_data.m_plot_flag = plot_over_line.SetPOLParameter(time_step);
+    //allocate
+    pol_data.m_values_on_line.allocate(plot_over_line.resolution());
+    pol_data.m_x_axis.allocate(plot_over_line.resolution());
+    pol_data.m_mask.allocate(plot_over_line.resolution());
+    pol_data.m_values_on_line.fill( 0x00 );
+    pol_data.m_x_axis.fill( 0x00 );
+    pol_data.m_mask.fill( false );
+
     timer.stop();
     std::cout << mpi_rank << ", set_parameter = " << timer.sec() <<std::endl;
     timer.start();
@@ -906,6 +927,69 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
                     nvariables, (float*)object->coords().pointer(), ncoords,
                     (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, particleBase);
 #endif
+// stab data
+    //Hexahedra
+    size_t nvert = 8;
+    size_t ncells = 1;
+    kvs::ValueArray<float> coords(nvert*3);
+    kvs::ValueArray<float> scalar(nvert);
+    kvs::ValueArray<kvs::UInt32> connections(ncells*8);
+
+    kvs::Vec3 X[8];
+    X[0].set( 0.0, 0.0, 0.0 );
+    X[1].set( 1.0, 0.0, 0.0 );
+    X[2].set( 1.0, 1.0, 0.0 );
+    X[3].set( 0.0, 1.0, 0.0 );
+    X[4].set( 0.0, 0.0, 1.0 );
+    X[5].set( 1.0, 0.0, 1.0 );
+    X[6].set( 1.0, 1.0, 1.0 );
+    X[7].set( 0.0, 1.0, 1.0 );
+
+    for( int i=0; i<nvert; i++)
+    {
+        coords[ i*3   ] = X[i].x();
+        coords[ i*3+1 ] = X[i].y();
+        coords[ i*3+2 ] = X[i].z();
+    }
+
+    kvs::Vec3 Y(1.0, 2.0, 3.0);
+    scalar[0] = X[0].dot(Y);
+    scalar[1] = X[1].dot(Y);
+    scalar[2] = X[2].dot(Y);
+    scalar[3] = X[3].dot(Y);
+    scalar[4] = X[4].dot(Y);
+    scalar[5] = X[5].dot(Y);
+    scalar[6] = X[6].dot(Y);
+    scalar[7] = X[7].dot(Y);
+    
+    kvs::AnyValueArray scalar2(scalar);
+
+    connections[0] = 0;
+    connections[1] = 1;
+    connections[2] = 2;
+    connections[3] = 3;
+    connections[4] = 4;
+    connections[5] = 5;
+    connections[6] = 6;
+    connections[7] = 7;
+
+    kvs::UnstructuredVolumeObject* volume1 = new kvs::UnstructuredVolumeObject();
+    volume1->setVeclen( 1 );
+    volume1->setCoords( coords );
+    volume1->setValues( scalar2 );
+    volume1->setCellType(kvs::VolumeObjectBase::Hexahedra);
+    volume1->setNNodes( nvert );
+    volume1->setNCells( ncells );
+    volume1->setConnections( connections );
+    volume1->updateMinMaxValues();
+    volume1->updateMinMaxCoords();
+//    volume->print( std::cout );
+
+    const kvs::Vec3 P0( 1.2, 0.3, 0.3 );
+    const kvs::Vec3 P1( -0.1, 0.4, 0.2 );
+
+            GeneratePlotOverLine(time_step, volume1, pol_data, &plot_over_line);
+            delete volume1;
         }
         timer.stop();
         t_generate_particles += timer.sec();
@@ -917,6 +1001,13 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
         }
         delete[] values;
     }
+
+    // plot over line
+    plot_over_line.setValuesOnLine(pol_data.m_values_on_line); 
+    plot_over_line.setXAxis(pol_data.m_x_axis); 
+    plot_over_line.setMask(pol_data.m_mask); 
+    plot_over_line.OutputLine(time_step);
+
 
     timer.stop();
     std::cout << mpi_rank << ", extract() = " << t_extract <<std::endl;
@@ -1051,8 +1142,6 @@ bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, Pa
     if ( generate_flag == false )
     {
         std::cout << "find no .tf!! skipping generate_particle !!!" << std::endl;
-        //delete m_tfs;
-        //return;
         return false;
     }
     // moved by shimomura 20240807
@@ -2348,8 +2437,30 @@ void GenerateGlyphs( int time_step,
 {
         GlyphGenerator glyph_generator( particleBase, time_step, values, nvariables,
                 coordinates, ncoords, connections, ncells, celltype); 
-        
+       
         glyph_generator.OutputGlyph(particleBase, time_step);
+}
+
+void GeneratePlotOverLine( const int time_step,
+                           const kvs::UnstructuredVolumeObject* volume,
+                           plot_over_line_data& polData,
+                           PlotOverLine* plot_over_line  ) 
+{
+       if(polData.m_plot_flag)
+       {
+           plot_over_line->extractPlotLine( volume );
+           //reduce data
+           for (int i =0; i<plot_over_line->resolution(); i++)
+           {
+               if (plot_over_line->mask()[i] )
+               {
+                   polData.m_values_on_line[i] = plot_over_line->values()[i];
+                   polData.m_x_axis       [i]  = plot_over_line->xAxis() [i];
+                   polData.m_mask         [i]  = plot_over_line->mask()  [i];
+               } 
+           }
+       } 
+
 }
 
 void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBase, ParamInfo *param, bool skip_flag)
