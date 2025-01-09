@@ -18,6 +18,9 @@ OBJS = Serializer.o \
 	   GlyphGenerator.o \
 	   GlyphProperty.o \
 	   KVSMLObjectGlyph.o \
+	   KVSMLObjectPOL.o \
+	   PlotOverLine.o \
+	   PlotOverLineProperty.o \
        kvs_wrapper.o
 
 VPATH=${TRANSFER_FUNCTION_DIR}:${IMPORT_DIR}
