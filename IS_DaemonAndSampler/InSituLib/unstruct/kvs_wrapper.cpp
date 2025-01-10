@@ -2452,10 +2452,10 @@ void GeneratePlotOverLine( const int time_step,
            //reduce data
            for (int i =0; i<plot_over_line->resolution(); i++)
            {
+               polData.m_x_axis       [i]  = plot_over_line->xAxis() [i];
                if (plot_over_line->mask()[i] )
                {
                    polData.m_values_on_line[i] = plot_over_line->values()[i];
-                   polData.m_x_axis       [i]  = plot_over_line->xAxis() [i];
                    polData.m_mask         [i]  = plot_over_line->mask()  [i];
                } 
            }

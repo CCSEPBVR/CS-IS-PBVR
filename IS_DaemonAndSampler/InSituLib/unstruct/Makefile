@@ -18,7 +18,7 @@ OBJS = Serializer.o \
 	   GlyphGenerator.o \
 	   GlyphProperty.o \
 	   KVSMLObjectGlyph.o \
-	   KVSMLObjectPOL.o \
+	   KVSMLObjectPlotOverLine.o \
 	   PlotOverLine.o \
 	   PlotOverLineProperty.o \
        kvs_wrapper.o

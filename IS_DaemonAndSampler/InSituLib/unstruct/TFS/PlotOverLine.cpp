@@ -1,5 +1,5 @@
 #include "PlotOverLine.h"
-#include "KVSMLObjectPOL.h"
+#include "KVSMLObjectPlotOverLine.h"
 
 PlotOverLine::PlotOverLine( void ){}
 
@@ -892,7 +892,7 @@ void PlotOverLine::OutputLine( const int time_step)
     m_POLFilePath += ss.str();
     // 20181226 end
 
-    kvs::KVSMLObjectPOL kvsmlobject( values_on_line, m_x_axis, m_mask);
+    kvs::KVSMLObjectPlotOverLine kvsmlobject( values_on_line, m_x_axis, m_mask);
     kvsmlobject.write(m_POLFilePath.c_str());
 
 }
