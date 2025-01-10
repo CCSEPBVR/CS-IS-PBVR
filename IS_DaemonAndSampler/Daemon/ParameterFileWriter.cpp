@@ -4,7 +4,6 @@ void ParameterFileWriter::inputMessage( const jpv::ParticleTransferClientMessage
 {
     this->inputParameterMessage( client_message );
     this->inputTransferFunctionMessage( client_message );
-//    this->inputGlyphParamterMessage( client_message );
 }
 
 void ParameterFileWriter::inputParameterMessage( const jpv::ParticleTransferClientMessage& client_message )
@@ -323,6 +322,32 @@ void ParameterFileWriter::inputGlyphParameterMessage( const jpv::ParticleTransfe
         table << client_message.m_glyph_color_map_table.at( i ) << ",";
     }
     m_name_list_file.setLine( "GLYPH_COLOR_MAP_TABLE"      ,table.str() );
+}
+
+void ParameterFileWriter::inputPlotOverLineParameterMessage( const jpv::ParticleTransferClientMessage& client_message )
+{
+    
+    std::string plot_flag ="FALSE" ; 
+    //if (client_message.m_plot_flag) plot_flag ="TRUE" ; 
+
+    int sam = 256;
+    m_name_list_file.setLine( "PLOT_FLAG"             ,plot_flag );
+//    m_name_list_file.setLine( "SAMPLING_SIZE"         ,client_message.m_sampling_size );
+    m_name_list_file.setLine( "SAMPLING_SIZE"         ,sam );
+
+    // 各成分を文字列に変換
+    std::stringstream  start_point, end_point;
+    for ( size_t i = 0; i < 3; i++ )
+    {
+        //start_point  << client_message.m_start_point[i] << ",";
+        //end_point    << client_message.m_end_point[i] << ",";
+        start_point  << 1.2 << ",";
+        end_point    << 1.2 << ",";
+    }
+
+    m_name_list_file.setLine( "START_POINT"   ,start_point.str() );
+    m_name_list_file.setLine( "END_POINT"     ,end_point.str() );
+
 }
 
 void ParameterFileWriter::writeParameterFile( const char* fname )

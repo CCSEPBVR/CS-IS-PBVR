@@ -24,8 +24,8 @@ public:
     void inputParameterMessage( const jpv::ParticleTransferClientMessage& clntMes );
     void inputTransferFunctionMessage( const jpv::ParticleTransferClientMessage& clntMes );
     void inputGlyphParameterMessage( const jpv::ParticleTransferClientMessage& clntMes );
+    void inputPlotOverLineParameterMessage( const jpv::ParticleTransferClientMessage& clntMes );
     void writeParameterFile( const char* fname );
-    void writeGlyphParameterFile( const char* fname );
     void writeDifferentParameterFile( const char* fname1, const char *fname2 );
     const NameListFile& getNameListFile() const;
 };

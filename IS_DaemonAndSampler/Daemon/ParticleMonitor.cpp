@@ -19,6 +19,7 @@ ParticleMonitor::ParticleMonitor( const std::string& particle_file_prefix,
 
 ParticleMonitor::ParticleMonitor( const std::string& particle_file_prefix,
                                   const std::string& glyph_file_prefix,
+                                  const std::string& plot_over_line_file_prefix,
                                   const std::string& particle_status_file_name,
                                   const std::string& particle_history_file_prefix ):
     m_time_step( -1 ),
@@ -26,6 +27,7 @@ ParticleMonitor::ParticleMonitor( const std::string& particle_file_prefix,
 {
     this->setParticleFilePrefix( particle_file_prefix );
     this->setGlyphFilePrefix( glyph_file_prefix );
+    this->setPlotOverLineFilePrefix( plot_over_line_file_prefix );
     this->setParticleStatusFileName( particle_status_file_name );
 }
 void ParticleMonitor::check()
@@ -47,18 +49,25 @@ bool ParticleMonitor::findGlyphFile()
     else return false;
 }
 
-
 void ParticleMonitor::readGlyphFile()
 {
     TimerStart( 6 );
     m_glyph_file.setParameterFromFile();
     TimerStop( 6 );
     TimerStart( 7 );
-    //m_glyph->clear();
-    //m_glyph_file.generatePointObject( m_time_step, &m_glyph );
     m_glyph_file.generateGlyphObject( m_time_step, &m_glyph );
     TimerStop( 7 );
-    std::cout << __FUNCTION__  <<__LINE__ <<std::endl;
+}
+
+void ParticleMonitor::readPlotOverLineFile()
+{
+    TimerStart( 6 );
+    m_plot_over_line_file.setParameterFromFile();
+    TimerStop( 6 );
+    TimerStart( 7 );
+    m_plot_over_line_file.generatePOLObject( m_time_step, &m_plot_over_line );
+    TimerStop( 7 );
+                    std::cout << __FUNCTION__  << __LINE__ << std::endl; 
 }
 
 
@@ -92,6 +101,11 @@ void ParticleMonitor::setGlyphFilePrefix( const std::string& prefix )
     m_glyph_file.setFilePrefix( prefix );
 }
 
+void ParticleMonitor::setPlotOverLineFilePrefix( const std::string& prefix )
+{
+    m_plot_over_line_file.setFilePrefix( prefix );
+}
+
 void ParticleMonitor::setParticleStatusFileName( const std::string& file_name )
 {
     m_status_file.setFileName( file_name );
@@ -121,6 +135,13 @@ void ParticleMonitor::getGlyph( kvs::KVSMLObjectGlyph* object )
     object -> setDirections( m_glyph.directions() );
     object -> setSizes( m_glyph.sizes() );
 
+}
+
+void ParticleMonitor::getPlotOverLine( kvs::KVSMLObjectPlotOverLine* object )
+{
+    object -> setXAxis(        m_plot_over_line.x_axis() );
+    object -> setMask(        m_plot_over_line.mask() );
+    object -> setValuesOnLine(    m_plot_over_line.values_on_line() );
 }
 
 kvs::Int32 ParticleMonitor::getSubpixelLevel()
