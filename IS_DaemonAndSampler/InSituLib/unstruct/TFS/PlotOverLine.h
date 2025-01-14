@@ -120,9 +120,15 @@ public:
 class PlotOverLine
 {
 private:
+    // セルタイプ別のデータ
     kvs::ValueArray<float> m_values_on_line;
     kvs::ValueArray<float> m_x_axis;
     kvs::ValueArray<bool>  m_mask;
+    
+    // 全セルタイプのデータ
+    kvs::ValueArray<float> m_allcell_values_on_line;
+    //kvs::ValueArray<float> m_allcell_x_axis;
+    kvs::ValueArray<bool>  m_allcell_mask;
     const kvs::UnstructuredVolumeObject* m_volume;
 
     const POL::Polyhedron* m_polyhedron;
@@ -163,9 +169,12 @@ public:
     void extractPlotLinePoly( const kvs::Vec3 P0, const kvs::Vec3 P1 );
 
     bool SetPOLParameter( const int time_step);
+    void CellTypeReduceing();
     void OutputLine(const int time_step);
+    
 
     int resolution() {return m_resolution;}
+    bool plot_flag(){return m_plot_flag;}
     kvs::ValueArray<float> values(){ return m_values_on_line;}
     kvs::ValueArray<float> xAxis(){ return m_x_axis;}
     kvs::ValueArray<bool>  mask(){ return m_mask; }

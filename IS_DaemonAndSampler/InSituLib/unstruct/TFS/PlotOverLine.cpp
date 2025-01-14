@@ -54,6 +54,13 @@ void PlotOverLine::setResolution( const size_t resolution )
 
     m_mask.allocate( resolution );
     m_mask.fill( false );
+
+    m_allcell_values_on_line.allocate(resolution);
+    m_allcell_values_on_line.fill( 0x00 );
+
+    m_allcell_mask.allocate(resolution);
+    m_allcell_values_on_line.fill( 0x00 );
+
 }
 
 bool PlotOverLine::SetPOLParameter( const int time_step )
@@ -99,7 +106,6 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
     bool plot_flag;
     std::string              p_flag                = plot_over_line_property.getString( "PLOT_FLAG" );
     int resolution                                     = plot_over_line_property.getInt("SAMPLING_SIZE");
-    std::cout << "resolution = " << resolution << std::endl;
     std::vector<float> s_table;
     s_table = plot_over_line_property.getTableFloat( "START_POINT" );
     std::vector<float> e_table;
@@ -115,6 +121,8 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
     m_end_point.y() = e_table[1];
     m_end_point.z() = e_table[2];
     if (plot_flag || m_resolution > 0)this->setResolution( m_resolution );
+    m_plot_flag = plot_flag;
+    std::cout << "m_plot_flag = " << m_plot_flag << std::endl;
     return plot_flag; 
 
 }
@@ -125,6 +133,20 @@ void PlotOverLine::extractPlotLine( const kvs::UnstructuredVolumeObject* volume)
     this->extractPlotLine( m_start_point, m_end_point );
 }
 
+void PlotOverLine::CellTypeReduceing()
+{
+    //reduce data
+    for (int i =0; i<m_resolution; i++)
+    {
+        //polData.m_x_axis       [i]  = plot_over_line->xAxis() [i];
+        if (m_mask[i] )
+        {
+            m_allcell_values_on_line[i] = m_values_on_line[i];
+            m_allcell_mask          [i] = m_mask  [i];
+        } 
+    }
+
+}
 
 void PlotOverLine::extractPlotLine( const kvs::Vec3 P0, const kvs::Vec3 P1 )
 {
@@ -871,9 +893,9 @@ void PlotOverLine::OutputLine( const int time_step)
     ///-------------------------------------//
     ///--------粒子配列をファイル出力----------//
     //--------------------------------------//
-    kvs::ValueArray<float> values_on_line( m_values_on_line  );
+    kvs::ValueArray<float> values_on_line( m_allcell_values_on_line  );
     kvs::ValueArray<float> x_axis( m_x_axis );
-    kvs::ValueArray<bool>  mask ( m_mask   );
+    kvs::ValueArray<bool>  mask ( m_allcell_mask   );
 
     static bool first_step = true;
     static MPI_Comm new_comm;

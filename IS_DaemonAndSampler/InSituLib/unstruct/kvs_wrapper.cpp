@@ -784,16 +784,8 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
     
     // plot over line
-    plot_over_line_data pol_data;
     PlotOverLine plot_over_line;
-    pol_data.m_plot_flag = plot_over_line.SetPOLParameter(time_step);
-    //allocate
-    pol_data.m_values_on_line.allocate(plot_over_line.resolution());
-    pol_data.m_x_axis.allocate(plot_over_line.resolution());
-    pol_data.m_mask.allocate(plot_over_line.resolution());
-    pol_data.m_values_on_line.fill( 0x00 );
-    pol_data.m_x_axis.fill( 0x00 );
-    pol_data.m_mask.fill( false );
+    plot_over_line.SetPOLParameter(time_step);
 
     timer.stop();
     std::cout << mpi_rank << ", set_parameter = " << timer.sec() <<std::endl;
@@ -988,7 +980,7 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
     const kvs::Vec3 P0( 1.2, 0.3, 0.3 );
     const kvs::Vec3 P1( -0.1, 0.4, 0.2 );
 
-            GeneratePlotOverLine(time_step, volume1, pol_data, &plot_over_line);
+            GeneratePlotOverLine(time_step, volume1, &plot_over_line);
             delete volume1;
         }
         timer.stop();
@@ -1003,9 +995,6 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
     }
 
     // plot over line
-    plot_over_line.setValuesOnLine(pol_data.m_values_on_line); 
-    plot_over_line.setXAxis(pol_data.m_x_axis); 
-    plot_over_line.setMask(pol_data.m_mask); 
     plot_over_line.OutputLine(time_step);
 
 
@@ -2443,22 +2432,12 @@ void GenerateGlyphs( int time_step,
 
 void GeneratePlotOverLine( const int time_step,
                            const kvs::UnstructuredVolumeObject* volume,
-                           plot_over_line_data& polData,
                            PlotOverLine* plot_over_line  ) 
 {
-       if(polData.m_plot_flag)
+       if(plot_over_line->plot_flag())
        {
            plot_over_line->extractPlotLine( volume );
-           //reduce data
-           for (int i =0; i<plot_over_line->resolution(); i++)
-           {
-               polData.m_x_axis       [i]  = plot_over_line->xAxis() [i];
-               if (plot_over_line->mask()[i] )
-               {
-                   polData.m_values_on_line[i] = plot_over_line->values()[i];
-                   polData.m_mask         [i]  = plot_over_line->mask()  [i];
-               } 
-           }
+           plot_over_line->CellTypeReduceing();
        } 
 
 }

@@ -100,22 +100,22 @@ extern "C" {
 
     } pbvr_parameters;
 
-    typedef struct
-    {
-//        //始点
-//        kvs::Vec3 m_start_point; 
-//        //終点
-//        kvs::Vec3 m_end_point; 
-//        //解像度
-//        int m_resolution;
-
-        bool m_plot_flag; // plot over line データの生成判定
-        //全セルデータ
-        kvs::ValueArray<float> m_values_on_line; //line上の値
-        kvs::ValueArray<float> m_x_axis; // 始点からの距離
-        kvs::ValueArray<bool> m_mask; // マスク判定
-
-    } plot_over_line_data;
+//    typedef struct
+//    {
+////        //始点
+////        kvs::Vec3 m_start_point; 
+////        //終点
+////        kvs::Vec3 m_end_point; 
+////        //解像度
+////        int m_resolution;
+//
+//        bool m_plot_flag; // plot over line データの生成判定
+//        //全セルデータ
+//        kvs::ValueArray<float> m_values_on_line; //line上の値
+//        kvs::ValueArray<float> m_x_axis; // 始点からの距離
+//        kvs::ValueArray<bool> m_mask; // マスク判定
+//
+//    } plot_over_line_data;
 
 
 //    typedef struct
@@ -211,7 +211,7 @@ extern "C" {
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells,
                              const  pbvr::VolumeObjectBase::CellType& celltype ,pbvr_parameters& particleBase );
-    void GeneratePlotOverLine(int time_step, const kvs::UnstructuredVolumeObject* volume,plot_over_line_data& polData, PlotOverLine* plot_over_line);
+    void GeneratePlotOverLine(int time_step, const kvs::UnstructuredVolumeObject* volume, PlotOverLine* plot_over_line);
     //void GeneratePlotOverLine(int time_step, const kvs::UnstructuredVolumeObject* volume,plot_over_line_data& polData );
 
     void OutputParticles( int time_step, int nvariables, pbvr_parameters& particleBase,  ParamInfo *param_info, bool skip_flag);
