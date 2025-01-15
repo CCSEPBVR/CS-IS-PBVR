@@ -234,26 +234,31 @@ int main( int argc, char** argv )
             std::string tfFilePath_old;
             std::string glyphFilePath;
             std::string glyphParameterPath;
+            std::string plotOverLineFilePath;
+            std::string plotOverLineParameterPath;
 
             const char *envBuf = NULL;
             envBuf = std::getenv( "PARTICLE_DIR" );
             if (envBuf == NULL) {
                 particlePath = "./t";
                 glyphFilePath = "./g";
+                plotOverLineFilePath = "./p";
             }
             else {
                 particlePath = envBuf;
                 glyphFilePath = envBuf;
+                plotOverLineFilePath = envBuf;
                 if (particlePath[particlePath.size() - 1] != '/') {
                     particlePath += "/t";
                     glyphFilePath += "/g";
+                    plotOverLineFilePath += "/p";
                 }
                 else {
                     particlePath += "t";
                     glyphFilePath += "g";
+                    plotOverLineFilePath += "p";
                 }
             }
-            std::cout << "glyphFilePath = " << glyphFilePath << std::endl;
             envBuf = std::getenv( "VIS_PARAM_DIR" );
             if (envBuf == NULL) {
                 visParamDir = "./";
@@ -269,10 +274,12 @@ int main( int argc, char** argv )
             tfFilePath = visParamDir;
             tfFilePath_old = visParamDir;
             glyphParameterPath = visParamDir;
+            plotOverLineParameterPath = visParamDir;
             if (envBuf == NULL) {
                 tfFilePath += "default.tf";
                 tfFilePath_old += "default_old.tf";
                 glyphParameterPath += "parameter.gly";
+                plotOverLineParameterPath += "parameter.pol";
             }
             else {
                 tfFilePath += envBuf;
@@ -280,13 +287,12 @@ int main( int argc, char** argv )
                 tfFilePath_old += envBuf;
                 tfFilePath_old += "_old.tf";
                 glyphParameterPath += "parameter.gly";
-
+                plotOverLineParameterPath += "parameter.pol";
             }
             // 20181226 end
             std::string statePath = visParamDir + "state.txt";
             std::string historyPath = visParamDir + "history";
 #endif
-
 
             assert( jpv::ParticleTransferUtils::isLittleEndian() );
 
@@ -464,7 +470,7 @@ int main( int argc, char** argv )
 
 //// read minmax & histrogram 
 
-                ParticleMonitor pm( particlePath, glyphFilePath, statePath.c_str(), historyPath.c_str() );
+                ParticleMonitor pm( particlePath, glyphFilePath, plotOverLineFilePath, statePath.c_str(), historyPath.c_str() );
                 pm.check();
                 if( pm.stepExisted() )
                 {
@@ -553,60 +559,38 @@ int main( int argc, char** argv )
                 std::cout<<"main.cpp:571"<<std::endl;
 #if 0                
                 ParameterFileWriter ppw_test;
-                ppw_test.inputGlyphParameterMessage( clntMes );
-                ppw_test.writeParameterFile( glyphParameterPath.c_str() );
+                ppw_test.inputPlotOverLineParameterMessage( clntMes );
+                ppw_test.writeParameterFile( plotOverLineParameterPath.c_str() );
 
-                pbvr::PointObject* originalObject_test = new pbvr::PointObject;
+                kvs::KVSMLObjectPlotOverLine* originalObject_test = new kvs::KVSMLObjectPlotOverLine;
                 if( pm.setTimeStep( 0 ) ) servMes.m_flag_send_bins = 2;
+                servMes.m_flag_send_bins = 1;
                 
-                    pm.readGlyphFile();
-                    pm.getGlyph( originalObject_test );
+                pm.readPlotOverLineFile();
+                pm.getPlotOverLine( originalObject_test );
 
-                            servMes.m_number_glyph = originalObject_test->coords().size() / 3;
-                            std::cout << "servMes.m_number_glyph = " << servMes.m_number_glyph << std::endl; 
-                            if ( servMes.m_number_glyph > 0 )
-                            {
-                                servMes.m_glyph_coords = std::make_unique<float[]>(3 * servMes.m_number_glyph);
-                                servMes.m_glyph_vectors = std::make_unique<float[]>(3 * servMes.m_number_glyph);
-                                servMes.m_glyph_sizes = std::make_unique<float[]>(servMes.m_number_glyph);
-                                servMes.m_glyph_colors = std::make_unique<unsigned char[]>(3 * servMes.m_number_glyph);
-                            }
-                            else
-                            {
-                                servMes.m_positions = NULL;
-                                servMes.m_normals   = NULL;
-                                servMes.m_colors    = NULL;
-                            }
-                            for ( int i = 0; i < servMes.m_number_glyph; ++i )
-                            {
-                                servMes.m_glyph_coords[3 * i + 0]  = originalObject_test->coords()[3 * i + 0];
-                                servMes.m_glyph_coords[3 * i + 1]  = originalObject_test->coords()[3 * i + 1];
-                                servMes.m_glyph_coords[3 * i + 2]  = originalObject_test->coords()[3 * i + 2];
-                                servMes.m_glyph_vectors[3 * i + 0] = originalObject_test->normals()[3 * i + 0];
-                                servMes.m_glyph_vectors[3 * i + 1] = originalObject_test->normals()[3 * i + 1];
-                                servMes.m_glyph_vectors[3 * i + 2] = originalObject_test->normals()[3 * i + 2];
-                                servMes.m_glyph_colors[3 * i + 0]  = originalObject_test->colors()[3 * i + 0];
-                                servMes.m_glyph_colors[3 * i + 1]  = originalObject_test->colors()[3 * i + 1];
-                                servMes.m_glyph_colors[3 * i + 2]  = originalObject_test->colors()[3 * i + 2];
-                                servMes.m_glyph_sizes[ i ]         = originalObject_test->sizes()[ i ];
-                            }
+                int resolution = originalObject_test->x_axis().size();
+                servMes.m_resolution = resolution;
+                for ( int i = 0; i < resolution; ++i )
+                {
+                    servMes.m_xAxis.push_back(  originalObject_test->x_axis()[i]);
+                    servMes.m_line_values.push_back(  originalObject_test->values_on_line()[i]);
+                    if(originalObject_test->mask()[i]) servMes.m_mask.push_back( 1 );
+                    else servMes.m_mask.push_back( 0 );
+                }
 
-                            for ( int i = 0; i < 10; ++i )
-                            {
-                                std::cout << " originalObject->coords()[3 * i + 0]   =" <<servMes.m_glyph_coords[3 * i + 0]  << std::endl;
-                                std::cout << " originalObject->coords()[3 * i + 1]   =" <<servMes.m_glyph_coords[3 * i + 1]  << std::endl;
-                                std::cout << " originalObject->coords()[3 * i + 2]   =" <<servMes.m_glyph_coords[3 * i + 2]  << std::endl;
-                                std::cout << " originalObject->normals()[3 * i + 0]  =" <<servMes.m_glyph_vectors[3 * i + 0] << std::endl;
-                                std::cout << " originalObject->normals()[3 * i + 1]  =" <<servMes.m_glyph_vectors[3 * i + 1] << std::endl;
-                                std::cout << " originalObject->normals()[3 * i + 2]  =" <<servMes.m_glyph_vectors[3 * i + 2] << std::endl;
-                                std::cout << " originalObject->colors()[3 * i + 0]   =" <<(int)servMes.m_glyph_colors[3 * i + 0]  << std::endl;
-                                std::cout << " originalObject->colors()[3 * i + 1]   =" <<(int)servMes.m_glyph_colors[3 * i + 1]  << std::endl;
-                                std::cout << " originalObject->colors()[3 * i + 2]   =" <<(int)servMes.m_glyph_colors[3 * i + 2]  << std::endl;
-                                std::cout << " originalObject->sizes()[3 * i + 0]    =" <<servMes.m_glyph_sizes[ i ]         << std::endl;
-                            }
+                std::cout << "res = " << servMes.m_resolution <<std::endl;
+                for ( int i = 0; i < 10; ++i )
+                {
+                    std::cout << " originalObject->m_xAxis  ="       << servMes.m_xAxis[ i ]  << std::endl;
+                    std::cout << " originalObject->m_mask   ="       << servMes.m_mask [ i ] << std::endl;
+                    std::cout << " originalObject->m_line_values ="  << servMes.m_line_values[ i ]  << std::endl;
+//                    std::cout << " originalObject_test->m_xAxis  ="         <<originalObject_test->x_axis()[ i ]  << std::endl;
+//                    std::cout << " originalObject_test->m_mask   ="         <<originalObject_test->mask() [ i ] << std::endl;
+//                    std::cout << " originalObject_test->m_line_values  ="   <<originalObject_test->values_on_line()[ i ]  << std::endl;
+                }
 
-
-                servMes.m_flag_send_bins = 2;
+                servMes.m_flag_send_bins = 3;
 #endif
                 servMes.show();
 
@@ -627,7 +611,7 @@ int main( int argc, char** argv )
             //ParticleMonitor pm( jupiter_prefix,"state.txt", "history" );
             //ParticleMonitor pm( particlePath, statePath.c_str(), historyPath.c_str() );
             //ParticleMonitor pm( particlePath, statePath.c_str(), historyPath.c_str() );
-            ParticleMonitor pm( particlePath, glyphFilePath, statePath.c_str(), historyPath.c_str() );
+            ParticleMonitor pm( particlePath, glyphFilePath, plotOverLineFilePath, statePath.c_str(), historyPath.c_str() );
             // 20181226 end
 
             //ソケットが存在すればgood
@@ -1483,6 +1467,310 @@ int main( int argc, char** argv )
                         ppw.writeParameterFile( glyphParameterPath.c_str() );
  
                 }
+                else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::plot_over_line )
+                {
+
+                        timer_count++;
+                    if ( timer_count <= TIMER_COUNT_NUM )
+                    {
+                        TIMER_STA( 461 );
+                    }
+
+                    // send cltMes to all worker process >>
+                    bsz = clntMes.byteSize();
+#ifndef CPU_VER
+                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+                    buf = new char[bsz];
+                    clntMes.pack( buf );
+#ifndef CPU_VER
+                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+#endif
+                    delete[] buf;
+                    // send cltMes to all worker process <<
+
+                    std::cout << "initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+                    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::empty )
+                    {
+
+                        std::cout << "sampling method = " << clntMes.m_sampling_method << std::endl;
+                        std::cout << "subpixel level = " << clntMes.m_subpixel_level << std::endl;
+                        std::cout << "repeat level = " << clntMes.m_repeat_level << std::endl;
+                    }
+                    std::cout << "timeParam = " << clntMes.m_time_parameter << std::endl;
+
+                    if ( clntMes.m_time_parameter == 0 )
+                    {
+                        std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                    }
+                    else if ( clntMes.m_time_parameter == 1 )
+                    {
+                        std::cout << "beginTime = " << clntMes.m_begin_time << std::endl;
+                        std::cout << "endTime = " << clntMes.m_last_time << std::endl;
+                        std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                    }
+                    else if ( clntMes.m_time_parameter == 2 )
+                    {
+                        std::cout << "step = " << clntMes.m_step << std::endl;
+                    }
+                    std::cout << "transParam = " << clntMes.m_trans_parameter << std::endl;
+                    if ( clntMes.m_trans_parameter == 1 )
+                    {
+                        std::cout << "levelIndex = " << clntMes.m_level_index << std::endl;
+                    }
+                    if ( clntMes.m_time_parameter == 0 )
+                    {
+                        strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
+                        servMes.m_time_step = clntMes.m_step;
+                        servMes.m_repeat_level = clntMes.m_repeat_level;
+                        servMes.m_level_index = clntMes.m_level_index;
+                        servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
+                        servMes.m_flag_send_bins = 1;
+
+                        servMes.m_message_size = servMes.byteSize();
+
+                        std::cout<<"main.cpp:L509"<<std::endl;
+                        clntMes.show();
+
+                        pts.sendMessage( servMes );
+                    }
+                    else if ( clntMes.m_time_parameter == 1 )
+                    {
+
+                        strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
+                        servMes.m_time_step = clntMes.m_step;
+                        servMes.m_repeat_level = clntMes.m_repeat_level;
+                        servMes.m_level_index = clntMes.m_level_index;
+                        servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
+                        servMes.m_flag_send_bins = 1;
+
+                        servMes.m_message_size = servMes.byteSize();
+
+                        std::cout<<"main.cpp:L526"<<std::endl;
+                        clntMes.show();
+
+                        pts.sendMessage( servMes );
+                    }
+                    else if ( clntMes.m_time_parameter == 2 )
+                    {
+                        TimerInitialize();
+                        TimerStart( 10 );
+                        strncpy( servMes.m_header, "JPTP /1.0 100 OK\r\n", 18 );
+                        servMes.m_message_size = servMes.byteSize();
+                        servMes.m_level_index = clntMes.m_level_index;
+                        servMes.m_repeat_level = clntMes.m_repeat_level;
+                        param.sampling_method = clntMes.m_sampling_method;
+                        param.component_Id = clntMes.m_rendering_id;
+                        param.crop.set_enable( clntMes.m_enable_crop_region );
+                        param.crop.set( clntMes.m_crop_region );
+                        param.particle_limit = clntMes.m_particle_limit;
+                        param.particle_density = clntMes.m_particle_density;
+
+                        if ( clntMes.m_node_type == 'a' )
+                        {
+                            useAllNodes = true;
+                        }
+                        else if ( clntMes.m_node_type == 's' )
+                        {
+                            useAllNodes = false;
+                        }
+                        else
+                        {
+                            assert( false );
+                        }
+
+                        if ( !param.hasOption( "L" ) ) param.latency_threshold = -1.0;
+                       
+                        fil.total_numSubVolumes=1;
+                        if ( param.crop.isenabled() )
+                        {
+                            jd.Initialize( clntMes.m_step, clntMes.m_step, fil.total_numSubVolumes,
+                                           fil.total_minSubVolumeCoord,
+                                           fil.total_maxSubVolumeCoord,
+                                           param.latency_threshold, param.jid_pack_size,
+                                           param.crop.get_min_coord(),
+                                           param.crop.get_max_coord() );
+                            servMes.m_number_volume_divide = jd.GetCountVolumes();
+                        }
+                        else
+                        {
+                            jd.Initialize( clntMes.m_step, clntMes.m_step, fil.total_numSubVolumes,
+                                           fil.total_minSubVolumeCoord,
+                                           fil.total_maxSubVolumeCoord,
+                                           param.latency_threshold, param.jid_pack_size );
+                            servMes.m_number_volume_divide = fil.total_numSubVolumes;
+                        }
+
+                        if ( timer_count <= TIMER_COUNT_NUM )
+                        {
+                            TIMER_STA( 470 );
+                        }
+
+                        param.sampling_step = CalculateSamplingStep( fil );
+
+                        VariableRange vr;
+
+                        pm.check();
+                        servMes.m_start_step = pm.plotOverLineFile().getStartTimeStep();
+                        servMes.m_last_step  = pm.plotOverLineFile().getLatestTimeStep();
+                        if( pm.stepExisted() )
+                        {
+                            //if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step && pm.getTimeStep() > -1 )
+                            if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step )
+                            {
+                                servMes.m_time_step = clntMes.m_step;
+                            }
+                            else
+                            {
+                                servMes.m_time_step = pm.particleStatusFile().getLatestTimeStep();
+                                clntMes.m_step = servMes.m_time_step;
+                            }
+                        }
+                        else
+                        {
+                            std::cout << " no step !!!!!!!!!!!" << std::endl;
+                            clntMes.m_step = -1;
+                        }
+
+                        std::cout<<"main.cpp:L1319"<<std::endl;
+                        //clntMes.show();
+
+                        pts.sendMessage( servMes );
+
+
+                        timer.start();
+
+                        while ( jd.DispatchNext( wid, &st, &vl ) )
+                        {
+                            if ( timer_count <= TIMER_COUNT_NUM )
+                            {
+                                TIMER_STA( 471 );
+                            }
+
+//jupiter start
+//                          TimerInitialize();
+                            TimerStart( 1 );
+                            ParameterFileWriter ppw;
+                            ParameterFileReader ppr;
+
+                            //clntMes.show();
+                            // 20181226 start　環境変数で指定したパスおよび名前でファイル参照を行う
+                            ppw.inputPlotOverLineParameterMessage( clntMes );
+                            ppw.writeParameterFile( plotOverLineParameterPath.c_str() );
+                            // 20181226 end
+
+                            kvs::KVSMLObjectPlotOverLine* originalObject = new kvs::KVSMLObjectPlotOverLine;
+                            TimerStart( 2 );
+                            // 20181226 start　環境変数で指定したパスを使用
+                            std::string filename( plotOverLineFilePath );
+                            // 20181226 end
+                            filename.append( "_pfi_coords_minmax.txt" );
+                            kvs::File f( filename.c_str()  );
+
+                            if ( f.isExisted() )
+                            {
+                                // ファイルがある
+                                FILE* fp = NULL;
+                                fp = fopen( filename.c_str(), "r" );
+                                fscanf( fp, "%f %f %f %f %f %f",
+                                        &servMes.m_min_object_coord[0],
+                                        &servMes.m_min_object_coord[1],
+                                        &servMes.m_min_object_coord[2],
+                                        &servMes.m_max_object_coord[0],
+                                        &servMes.m_max_object_coord[1],
+                                        &servMes.m_max_object_coord[2]);
+                                if ( fp != NULL ) fclose( fp );
+                            }
+
+                            TimerStop( 2 );
+                            //if( pm.setTimeStep( clntMes.m_step ) ) servMes.m_flag_send_bins = 2;
+                            if( pm.setTimeStep( clntMes.m_step ) || pm.stepExisted() ) servMes.m_flag_send_bins = 3; //plot over line
+                            else                                 servMes.m_flag_send_bins = 1;
+                            if( servMes.m_flag_send_bins == 3)
+                            {
+                                pm.readPlotOverLineFile();
+                                pm.getPlotOverLine( originalObject );
+                            }
+                            servMes.m_time_step = clntMes.m_step;
+                            servMes.m_subpixel_level = pm.getSubpixelLevel();
+                            
+//                            std::cout << "originalObject->coords() = " << originalObejct->coords().size() <<std::endl;
+                            
+                            int resolution = originalObject->x_axis().size();
+                            servMes.m_resolution = resolution;
+                            for ( int i = 0; i < resolution; ++i )
+                            {
+                                servMes.m_xAxis.push_back(  originalObject->x_axis()[i]);
+                                servMes.m_line_values.push_back(  originalObject->values_on_line()[i]);
+                                if(originalObject->mask()[i]) servMes.m_mask.push_back( 1 );
+                                else servMes.m_mask.push_back( 0 );
+                            }
+
+                            if ( timer_count <= TIMER_COUNT_NUM )
+                            {
+                                TIMER_END( 471 );
+                            }
+                            if ( timer_count <= TIMER_COUNT_NUM )
+                            {
+                                TIMER_STA( 472 );
+                            }
+                            servMes.m_message_size = servMes.byteSize();
+                            TimerStart( 4 );
+
+                            std::cout<<"main.cpp:L1497"<<std::endl;
+
+                            servMes.show();
+                            pts.sendMessage( servMes );
+                            TimerStop( 4 );
+                            if ( timer_count <= TIMER_COUNT_NUM )
+                            {
+                                TIMER_END( 472 );
+                            }
+                            if ( timer_count <= TIMER_COUNT_NUM )
+                            {
+                                TIMER_STA( 473 );
+                            }
+                            delete originalObject;
+                            if ( timer_count <= TIMER_COUNT_NUM )
+                            {
+                                TIMER_END( 473 );
+                            }
+                            TimerStop( 1 );
+                        } // end of while(DispatchNext)
+                        servMes.m_flag_send_bins = 1;
+                        servMes.m_message_size = servMes.byteSize();
+                        servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
+                        TimerStart( 11 );
+                        pts.sendMessage( servMes );
+                        TimerStop( 11 );
+                        timer.stop();
+                        std::cout << "Particle File: " << timer.sec() << " [sec/step]" << std::endl;
+
+                        if ( timer_count <= TIMER_COUNT_NUM )
+                        {
+                            TIMER_END( 470 );
+                        }
+                        TimerStop( 10 );
+                        TimerFinish( servMes.m_time_step );
+                    } // end of timeParam == 2
+                    else
+                    {
+                        break;
+                    }
+                    if ( timer_count <= TIMER_COUNT_NUM )
+                    {
+                        TIMER_END( 461 );
+                    }
+                    if ( timer_count == TIMER_COUNT_NUM )
+                    {
+                        TIMER_END( 1 );
+                        TIMER_FIN();
+                    }
+
+                }  // end loop of generate_glyph
 
             } // end of while (pts.good)
 

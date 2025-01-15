@@ -67,7 +67,6 @@ void ParticleMonitor::readPlotOverLineFile()
     TimerStart( 7 );
     m_plot_over_line_file.generatePOLObject( m_time_step, &m_plot_over_line );
     TimerStop( 7 );
-                    std::cout << __FUNCTION__  << __LINE__ << std::endl; 
 }
 
 
@@ -164,6 +163,10 @@ GlyphFile& ParticleMonitor::glyphFile()
     return m_glyph_file;
 }
 
+PlotOverLineFile& ParticleMonitor::plotOverLineFile()
+{
+    return m_plot_over_line_file;
+}
 
 bool ParticleMonitor::statusFileChanged()
 {

@@ -65,6 +65,7 @@ public:
     ParticleStatusFile& particleStatusFile();
     ParticleHistoryFile& particleHistoryFile();
     GlyphFile& glyphFile();
+    PlotOverLineFile& plotOverLineFile();
     bool statusFileChanged();
     bool stepExisted();
     kvs::Int32 getTimeStep();
