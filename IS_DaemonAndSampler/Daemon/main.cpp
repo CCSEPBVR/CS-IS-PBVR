@@ -557,41 +557,6 @@ int main( int argc, char** argv )
                 file.close();
 
                 std::cout<<"main.cpp:571"<<std::endl;
-#if 0                
-                ParameterFileWriter ppw_test;
-                ppw_test.inputPlotOverLineParameterMessage( clntMes );
-                ppw_test.writeParameterFile( plotOverLineParameterPath.c_str() );
-
-                kvs::KVSMLObjectPlotOverLine* originalObject_test = new kvs::KVSMLObjectPlotOverLine;
-                if( pm.setTimeStep( 0 ) ) servMes.m_flag_send_bins = 2;
-                servMes.m_flag_send_bins = 1;
-                
-                pm.readPlotOverLineFile();
-                pm.getPlotOverLine( originalObject_test );
-
-                int resolution = originalObject_test->x_axis().size();
-                servMes.m_resolution = resolution;
-                for ( int i = 0; i < resolution; ++i )
-                {
-                    servMes.m_xAxis.push_back(  originalObject_test->x_axis()[i]);
-                    servMes.m_line_values.push_back(  originalObject_test->values_on_line()[i]);
-                    if(originalObject_test->mask()[i]) servMes.m_mask.push_back( 1 );
-                    else servMes.m_mask.push_back( 0 );
-                }
-
-                std::cout << "res = " << servMes.m_resolution <<std::endl;
-                for ( int i = 0; i < 10; ++i )
-                {
-                    std::cout << " originalObject->m_xAxis  ="       << servMes.m_xAxis[ i ]  << std::endl;
-                    std::cout << " originalObject->m_mask   ="       << servMes.m_mask [ i ] << std::endl;
-                    std::cout << " originalObject->m_line_values ="  << servMes.m_line_values[ i ]  << std::endl;
-//                    std::cout << " originalObject_test->m_xAxis  ="         <<originalObject_test->x_axis()[ i ]  << std::endl;
-//                    std::cout << " originalObject_test->m_mask   ="         <<originalObject_test->mask() [ i ] << std::endl;
-//                    std::cout << " originalObject_test->m_line_values  ="   <<originalObject_test->values_on_line()[ i ]  << std::endl;
-                }
-
-                servMes.m_flag_send_bins = 3;
-#endif
                 servMes.show();
 
                 servMes.m_message_size = servMes.byteSize();
@@ -606,11 +571,6 @@ int main( int argc, char** argv )
             servMes.m_camera = new kvs::Camera();
             // 20181226 start
             // stateおよびhistory用に、環境変数から指定されたパスをもとにファイルパスを作成
-//            std::string statePath = visParamDir + "state.txt";
-//            std::string historyPath = visParamDir + "history";
-            //ParticleMonitor pm( jupiter_prefix,"state.txt", "history" );
-            //ParticleMonitor pm( particlePath, statePath.c_str(), historyPath.c_str() );
-            //ParticleMonitor pm( particlePath, statePath.c_str(), historyPath.c_str() );
             ParticleMonitor pm( particlePath, glyphFilePath, plotOverLineFilePath, statePath.c_str(), historyPath.c_str() );
             // 20181226 end
 
@@ -624,7 +584,7 @@ int main( int argc, char** argv )
                 //受信したデータをclntMesが読み取る
                 ptss = pts.recvMessage( &clntMes );
                 std::cout<<"main.cpp:L388"<<std::endl;
-//                clntMes.show();
+                //clntMes.show();
                 std::cout<<"ptss="<<ptss<<std::endl;
 
                 if ( ptss == -1 ) break;
@@ -992,15 +952,9 @@ int main( int argc, char** argv )
                             }
                             TimerStop( 3 );
 //jupiter end
-                            //pbvr::PointObject* object = originalObject;
-
-                            //if ( originalObject != object ) delete originalObject;
                             servMes.m_number_particle = originalObject->coords().size() / 3;
                             if ( servMes.m_number_particle > 0 )
                             {
-//                                servMes.m_positions = new float[3 * servMes.m_number_particle];
-//                                servMes.m_normals = new float[3 * servMes.m_number_particle];
-//                                servMes.m_colors = new unsigned char[3 * servMes.m_number_particle];
                                 servMes.m_positions = std::make_unique<float[]>(3 * servMes.m_number_particle);
                                 servMes.m_normals = std::make_unique<float[]>(3 * servMes.m_number_particle);
                                 servMes.m_colors = std::make_unique<unsigned char[]>(3 * servMes.m_number_particle);
@@ -1252,8 +1206,6 @@ int main( int argc, char** argv )
                         if ( !param.hasOption( "L" ) ) param.latency_threshold = -1.0;
                        
                         pm.findGlyphFile();
-//                        if (pm.findGlyphFile()) fil.total_numSubVolumes=1;
-//                        else fil.total_numSubVolumes=0;
                         fil.total_numSubVolumes=1;
                         if ( param.crop.isenabled() )
                         {
@@ -1309,7 +1261,6 @@ int main( int argc, char** argv )
                         //clntMes.show();
 
                         pts.sendMessage( servMes );
-
 
                         timer.start();
 
@@ -1369,7 +1320,6 @@ int main( int argc, char** argv )
                             servMes.m_time_step = clntMes.m_step;
                             servMes.m_subpixel_level = pm.getSubpixelLevel();
                             
-                            std::cout << "originalGlyph->coords() = " << originalGlyph->coords().size() <<std::endl;
                             servMes.m_number_glyph = originalGlyph->coords().size() / 3;
                             if ( servMes.m_number_glyph > 0 )
                             {
@@ -1617,7 +1567,6 @@ int main( int argc, char** argv )
                         servMes.m_last_step  = pm.plotOverLineFile().getLatestTimeStep();
                         if( pm.stepExisted() )
                         {
-                            //if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step && pm.getTimeStep() > -1 )
                             if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step )
                             {
                                 servMes.m_time_step = clntMes.m_step;
@@ -1685,7 +1634,6 @@ int main( int argc, char** argv )
                             }
 
                             TimerStop( 2 );
-                            //if( pm.setTimeStep( clntMes.m_step ) ) servMes.m_flag_send_bins = 2;
                             if( pm.setTimeStep( clntMes.m_step ) || pm.stepExisted() ) servMes.m_flag_send_bins = 3; //plot over line
                             else                                 servMes.m_flag_send_bins = 1;
                             if( servMes.m_flag_send_bins == 3)
@@ -1696,10 +1644,11 @@ int main( int argc, char** argv )
                             servMes.m_time_step = clntMes.m_step;
                             servMes.m_subpixel_level = pm.getSubpixelLevel();
                             
-//                            std::cout << "originalObject->coords() = " << originalObejct->coords().size() <<std::endl;
-                            
                             int resolution = originalObject->x_axis().size();
                             servMes.m_resolution = resolution;
+                            servMes.m_xAxis.clear();
+                            servMes.m_line_values.clear();
+                            servMes.m_mask.clear();
                             for ( int i = 0; i < resolution; ++i )
                             {
                                 servMes.m_xAxis.push_back(  originalObject->x_axis()[i]);

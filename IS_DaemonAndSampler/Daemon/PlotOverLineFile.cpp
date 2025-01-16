@@ -87,9 +87,6 @@ void PlotOverLineFile::generatePOLObject( const int time_step, kvs::KVSMLObjectP
     kvs::UInt32 subvolume_num = m_subvolume_number;
     std::string prefix = m_file_prefix;
 
-    std::cout << "m_subvolume_number = " << m_subvolume_number << std::endl;
-    std::cout << "m_file_prefix = " << m_file_prefix << std::endl;
-
     std::vector<bool> check_vol( subvolume_num, false );
 
     std::vector<float> xAxis;
@@ -173,7 +170,6 @@ void PlotOverLineFile::generatePOLObject( const int time_step, kvs::KVSMLObjectP
     object-> setXAxis(x_axis);
     object-> setMask(mask);
     object-> setValuesOnLine(valuesOnLine);
-                    std::cout << __FUNCTION__ <<__LINE__ <<std::endl; 
 }
 
 
