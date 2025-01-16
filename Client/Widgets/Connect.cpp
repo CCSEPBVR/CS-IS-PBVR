@@ -12,7 +12,7 @@
 #include "Widgets/RenderOptions.h"
 
 
-Connect::Connect(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, DataProperties* filter_infomation, RenderOptions* render_options, TransferFunctionEditor* transfer_function_editor, GlyphEditor* glyph_editor ):
+Connect::Connect(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, DataProperties* filter_infomation, RenderOptions* render_options, TransferFunctionEditor* transfer_function_editor, GlyphEditor* glyph_editor, PlotOverLine* plot_over_line ):
     QDialog(parent),
     ui(new Ui::Connect),
     m_pbvr_gui( pbvr_gui ),
@@ -21,6 +21,7 @@ Connect::Connect(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, DataProp
     m_render_options( render_options ),
     m_transfer_function_editor( transfer_function_editor ),
     m_glyph_editor( glyph_editor ),
+    m_plot_over_line( plot_over_line),
     m_extended_transfer_function_message(),
     m_client_message(),
     m_server_message(),
@@ -93,6 +94,7 @@ void Connect::connectServer()
     m_client_message.show();
     m_client_message.m_message_size = m_client_message.byteSize();
     client.sendMessage( m_client_message );
+        std::cout << __func__ << __LINE__ <<std::endl;
     client.recvMessage( &m_server_message );
     m_server_message.show();
 
@@ -101,6 +103,7 @@ void Connect::connectServer()
         m_render_options->updateParticleLimit();
     }
 
+    std::cout << __func__ << __LINE__ <<std::endl;
 
     //ヒストグラム更新用(CS, IS)
     m_received_message.m_var_range.merge( m_server_message.m_server_side_variable_range );
@@ -494,8 +497,15 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
     }
 
     connecting = false;
+
+    // if (enable plot)
+    // {
+    //     send....
+    // }
+
     return pointObject;
     }
+
 }
 
 kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
@@ -516,8 +526,6 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         std::cout << "********" << std::endl;
 
         jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
-        //    jpv::ParticleTransferClientMessage m_client_message;
-        //    jpv::ParticleTransferServerMessage reply;
         m_server_message.m_camera = new kvs::Camera();
         client.initClient();
         strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
@@ -564,17 +572,6 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         m_client_message.m_color_data_variables[0] = "q2";
         m_client_message.m_color_data_variables[1] = "q1";
 #endif
-        //paramExTransFunc.applyToClientMessage( &message ); //↓
-
-        //gt5d
-        //    float min = -0.0791849;
-        //    float max = 0.074513;
-
-        //spx
-        //    float min = 0.2;
-        //    float max = 1;
-
-        //    m_extended_transfer_function_message.applyToClientMessage( &m_client_message );
 
         m_client_message.m_message_size = m_client_message.byteSize();
         client.sendMessage( m_client_message );
@@ -590,16 +587,13 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
             if ( client.recvMessage( &m_server_message ) == 1 ){}
 
             int nmemb = m_server_message.m_number_glyph * 3;
-            std::cout << __LINE__ <<std::endl;
             if ( nmemb != 0 )
             {
-                std::cout << __LINE__ <<std::endl;
                 kvs::ValueArray<kvs::Real32> positions ( m_server_message.m_glyph_coords.get(), nmemb );
                 kvs::ValueArray<kvs::Real32> vectors ( m_server_message.m_glyph_vectors.get(), nmemb );
                 kvs::ValueArray<kvs::Real32> sizes ( m_server_message.m_glyph_sizes.get(), nmemb );
                 kvs::ValueArray<kvs::UInt8>  colors ( m_server_message.m_glyph_colors.get(), nmemb );
-                std::cout << __LINE__ <<std::endl;
-                //kvs::PolygonObject obj;
+
                 kvs::PointObject obj;
                 obj.setCoords( positions );
                 obj.setNormals( vectors );
@@ -645,13 +639,6 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         //     std::cout << " pointObject->sizes()[3 * i + 0]    =" <<pointObject->sizes()[ i ]         << std::endl;
         // }
 
-        std::cout << serverSideMinObjectCoords[0] << std::endl;
-        std::cout << serverSideMinObjectCoords[1] << std::endl;
-        std::cout << serverSideMinObjectCoords[2] << std::endl;
-        std::cout << serverSideMaxObjectCoords[0] << std::endl;
-        std::cout << serverSideMaxObjectCoords[1] << std::endl;
-        std::cout << serverSideMaxObjectCoords[2] << std::endl;
-
         kvs::ValueArray<kvs::Real32> coords;
         coords.allocate(3 * m_server_message.m_number_glyph); // 3 * m_number_glyph
         kvs::ValueArray<kvs::Real32> directions;
@@ -682,8 +669,6 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
             colors[3 * i + 2] = pointObject->colors()[3 * i + 2];
         }
 
-
-
         // m_client_message.m_initialize_parameter = -1;
         m_client_message.m_initialize_parameter = jpv::InitializeParameter::empty;
         m_client_message.m_message_size = m_client_message.byteSize();
@@ -692,131 +677,8 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
 
         m_server_message.show();
         client.termClient();
-#if 0
-        //ここでサーバのレンジが手に入る。
-        std::cout << m_server_message.m_server_side_variable_range.min( "t1_var_c" ) << std::endl;
-        std::cout << m_server_message.m_server_side_variable_range.max( "t1_var_c" ) << std::endl;
-        std::cout << m_server_message.m_server_side_variable_range.min( "t1_var_o" ) << std::endl;
-        std::cout << m_server_message.m_server_side_variable_range.max( "t1_var_o" ) << std::endl;
 
-        //ヒストグラム更新用(CS, IS)
-        m_received_message.m_var_range.merge( m_server_message.m_server_side_variable_range );
-        m_received_message.m_color_bins.resize( m_server_message.m_transfer_function_count );
-        m_received_message.m_opacity_bins.resize( m_server_message.m_transfer_function_count );
-        for ( int tf = 0; tf < m_server_message.m_transfer_function_count; tf++ )
-        {
-            char color_function_name[8] = {0x00};
-            char opacity_function_name[8] = {0x00};
-            sprintf(color_function_name, "C%d", tf+1);
-            sprintf(opacity_function_name, "O%d", tf+1);
-            if ( m_server_message.m_color_nbins[tf] > 0 )
-            {
-                m_received_message.m_color_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_color_nbins[tf], (size_t *)m_server_message.m_color_bins[tf], std::string(color_function_name) );
-            }
-            if ( m_server_message.m_opacity_nbins[tf] >0 )
-            {
-                m_received_message.m_opacity_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_opacity_nbins[tf],(size_t *) m_server_message.m_opacity_bins[tf], std::string(opacity_function_name) );
-            }
-        }
-
-        m_transfer_function_editor->updateRangeView();
-
-        //    polygonObject->updateMinMaxCoords();
-
-
-        if ( m_server_message.m_camera )
-        {
-            delete m_server_message.m_camera;
-            m_server_message.m_camera = nullptr;
-        }
-
-        if ( m_server_message.m_color_nbins )
-        {
-            delete[] m_server_message.m_color_nbins;
-            m_server_message.m_color_nbins = nullptr;
-        }
-
-        if ( m_server_message.m_opacity_nbins )
-        {
-            delete[] m_server_message.m_opacity_nbins;
-            m_server_message.m_opacity_nbins = nullptr;
-        }
-
-        if ( !m_server_message.m_color_bins.empty() )
-        {
-            for( auto ptr : m_server_message.m_color_bins )
-            {
-                delete ptr;
-            }
-            m_server_message.m_color_bins.clear();
-        }
-
-        if ( !m_server_message.m_opacity_bins.empty() )
-        {
-            for( auto ptr : m_server_message.m_opacity_bins )
-            {
-                delete ptr;
-            }
-            m_server_message.m_opacity_bins.clear();
-        }
-
-        if( ui->inSituRBtn->isChecked() == true )
-        {
-            m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_last_step );
-        }
-#endif
         connecting = false;
-
-        // kvs::ValueArray<kvs::Real32> coords;
-        // coords.allocate(3 * m_server_message.m_number_glyph); // 3 * m_number_glyph
-        // kvs::ValueArray<kvs::Real32> directions;
-        // directions.allocate(3 * m_server_message.m_number_glyph);
-        // kvs::ValueArray<kvs::Real32> sizes;
-        // sizes.allocate(m_server_message.m_number_glyph);
-        // kvs::ValueArray<kvs::UInt8> colors;
-        // colors.allocate(3 * m_server_message.m_number_glyph);
-
-        // for (int i = 0; i < m_server_message.m_number_glyph; i++)
-        // {
-        //     // 座標を設定
-        //     coords[3 * i + 0] = pointObject->coords()[3 * i + 0];
-        //     coords[3 * i + 1] = pointObject->coords()[3 * i + 1];
-        //     coords[3 * i + 2] = pointObject->coords()[3 * i + 2];
-
-        //     // 法線を設定
-        //     directions[3 * i + 0] = pointObject->normals()[3 * i + 0];
-        //     directions[3 * i + 1] = pointObject->normals()[3 * i + 1];
-        //     directions[3 * i + 2] = pointObject->normals()[3 * i + 2];
-
-        //     // サイズを設定
-        //     sizes[i] = pointObject->sizes()[i] * m_glyph_editor->getScaleFactor() * 99;
-
-        //     // 色を設定
-        //     colors[3 * i + 0] = pointObject->colors()[3 * i + 0];
-        //     colors[3 * i + 1] = pointObject->colors()[3 * i + 1];
-        //     colors[3 * i + 2] = pointObject->colors()[3 * i + 2];
-        // }
-
-
-        // kvs::ValueArray<kvs::Real32> coords;
-        // std::cout << "m_server_message.m_number_glyph = " << m_server_message.m_number_glyph <<std::endl;
-        // coords.allocate(3 * m_server_message.m_number_glyph); // 3 * m_glyph_num
-        // coords.at(0) = 0;
-        // coords.at(1) = 0;
-        // coords.at(2) = 0;
-        // kvs::ValueArray<kvs::Real32> directions;
-        // directions.allocate(3 * m_server_message.m_number_glyph);
-        // directions.at(0) = 1;
-        // directions.at(1) = 0;
-        // directions.at(2) = 0;
-        // kvs::ValueArray<kvs::Real32> sizes;
-        // sizes.allocate(1* m_server_message.m_number_glyph );
-        // sizes.at(0) = 1 * m_glyph_editor->getScaleFactor();
-        // kvs::ValueArray<kvs::UInt8> colors;
-        // colors.allocate(3* m_server_message.m_number_glyph);
-        // colors.at(0) = 0;
-        // colors.at(1) = 0;
-        // colors.at(2) = 0;
 
         m_glyph_editor->m_coords = coords;
         m_glyph_editor->m_directions = directions;
@@ -835,6 +697,118 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         return polygonObject;
     }
 }
+
+void Connect::sendRecvPlotOverLine( int timeStep )
+{
+    m_glyph_editor->disableGlyphUpdateButton();
+    if(connecting)
+    {
+        qInfo() << "Other conneciton mode working !!";
+        //kvs::PolygonObject* object = new kvs::PolygonObject();
+        //return  object;
+        return ;
+    }
+    else
+    {
+        connecting = true;
+        std::cout << "********" << std::endl;
+        std::cout << "********" << std::endl;
+        std::cout << "********" << std::endl;
+        std::cout << "********" << std::endl;
+        std::cout << "sendRecvPlotOverLine" << std::endl;
+
+        jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
+        m_server_message.m_camera = new kvs::Camera();
+        client.initClient();
+        strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
+        m_client_message.m_initialize_parameter = jpv::InitializeParameter::plot_over_line;
+        m_client_message.m_rendering_id = 0;
+        if( ui->uniformRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'u'; }
+        if( ui->metropolisRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'm'; }
+        if( ui->rejectionRBtn->isChecked() == true ) { m_client_message.m_sampling_method = 'r'; }
+        m_client_message.m_subpixel_level = 2;
+        m_client_message.m_repeat_level = 16;
+        m_client_message.m_shuffle_method = 'r';
+        m_client_message.m_time_parameter = 2;
+        m_client_message.m_trans_parameter = 2;
+        m_client_message.m_node_type = 'a';
+        m_client_message.m_camera = m_pbvr_gui->screen()->scene()->camera();//足りないかも
+        m_client_message.m_step = timeStep;
+        m_client_message.m_message_size = m_client_message.byteSize();
+        m_client_message.m_sampling_step = 1.0f;
+        m_client_message.m_enable_crop_region = 0;
+        m_client_message.m_plot_flag =true;
+
+        m_client_message.m_start_point[0] = 1;
+        m_client_message.m_start_point[1] = 1;
+        m_client_message.m_start_point[2] = 1;
+
+
+        m_client_message.m_message_size = m_client_message.byteSize();
+        client.sendMessage( m_client_message );
+        client.recvMessage( &m_server_message );
+        size_t allParticle = 0;
+        kvs::PointObject* object = new kvs::PointObject();
+        int serve_numvol = m_server_message.m_number_volume_divide;
+
+        for ( int n = 0; n < serve_numvol; n++ )
+        {
+            if ( client.recvMessage( &m_server_message ) == 1 ){}
+
+            int nmemb = m_server_message.m_number_glyph * 3;
+            std::cout << __LINE__ <<std::endl;
+#if 0
+            if ( nmemb != 0 )
+            {
+                std::cout << __LINE__ <<std::endl;
+                kvs::ValueArray<kvs::Real32> positions ( m_server_message.m_glyph_coords.get(), nmemb );
+                kvs::ValueArray<kvs::Real32> vectors ( m_server_message.m_glyph_vectors.get(), nmemb );
+                kvs::ValueArray<kvs::Real32> sizes ( m_server_message.m_glyph_sizes.get(), nmemb );
+                kvs::ValueArray<kvs::UInt8>  colors ( m_server_message.m_glyph_colors.get(), nmemb );
+                std::cout << __LINE__ <<std::endl;
+                //kvs::PolygonObject obj;
+                kvs::PointObject obj;
+                obj.setCoords( positions );
+                obj.setNormals( vectors );
+                obj.setSizes( sizes );
+                obj.setColors( colors );
+                std::cout << __LINE__ <<std::endl;
+                object->add(obj);
+                obj.clear();
+                std::cout<<" getpolygonObjectFromServer 331"<<std::endl;
+                allParticle = allParticle + m_server_message.m_number_particle;
+                // delete[] m_server_message.m_colors;
+                // delete[] m_server_message.m_normals;
+                // delete[] m_server_message.m_positions;
+            }
+#endif
+        }
+
+        std::vector<bool> mask;
+        mask.resize(m_server_message.m_resolution);
+        // xAxis = m_server_message.m_xAxis;
+        // values = m_server_message.m_line_values;
+        for (int i =0; i< m_server_message.m_resolution; i++)
+        {
+            if (m_server_message.m_mask[i] == 1)  mask[i] = true;
+            else mask[i] = false;
+        }
+
+        m_client_message.m_initialize_parameter = jpv::InitializeParameter::empty;
+        m_client_message.m_message_size = m_client_message.byteSize();
+        client.sendMessage( m_client_message );
+        client.recvMessage( &m_server_message );
+
+        m_server_message.show();
+        client.termClient();
+
+        connecting = false;
+        std::cout << __func__ << __LINE__ <<std::endl;
+        m_plot_over_line->setPlotData(m_server_message.m_xAxis, mask, m_server_message.m_line_values );
+        std::cout << __func__ << __LINE__ <<std::endl;
+    }
+}
+
 
 
 void Connect::deletedServerObject()

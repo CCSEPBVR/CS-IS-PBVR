@@ -11,6 +11,7 @@
 #include "Widgets/DataProperties.h"
 #include "Widgets/TransferFunctionEditor.h"
 #include "Widgets/GlyphEditor.h"
+#include "Widgets/PlotOverLine.h"
 
 #include <kvs/PointObject>
 #include "ExtendedKVS/Screen.h"
@@ -29,13 +30,14 @@ class Connect : public QDialog
     Q_OBJECT
 
 public:
-    explicit Connect(QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr, MergePanel* merge = nullptr, DataProperties* filter_infomation = nullptr, RenderOptions* render_options = nullptr, TransferFunctionEditor* transfer_function_editor = nullptr, GlyphEditor* glyph_editor = nullptr );
+    explicit Connect(QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr, MergePanel* merge = nullptr, DataProperties* filter_infomation = nullptr, RenderOptions* render_options = nullptr, TransferFunctionEditor* transfer_function_editor = nullptr, GlyphEditor* glyph_editor = nullptr, PlotOverLine* plot_over_line = nullptr );
     ~Connect();
     jpv::ParticleTransferClientMessage* getClientMessage(){ return &m_client_message; }
     jpv::ParticleTransferServerMessage* getServerMessage(){ return &m_server_message; }
     kvs::visclient::ReceivedMessage* getReceivedMessage(){ return &m_received_message; }
     kvs::PointObject* generateParticles( int timeStep );
     kvs::PolygonObject* generateGlyphPolygons( int timeStep );
+    void sendRecvPlotOverLine(int timeStep);
     void sendTransferFunction();
     void sendGlyphFlagFalse();
     void deletedServerObject();
@@ -48,6 +50,7 @@ private:
     RenderOptions* m_render_options;
     TransferFunctionEditor* m_transfer_function_editor;
     GlyphEditor* m_glyph_editor;
+    PlotOverLine* m_plot_over_line;
     ExtendedTransferFunctionMessage m_extended_transfer_function_message;
     bool connecting = false; //通信状態の判定パラメータ
 

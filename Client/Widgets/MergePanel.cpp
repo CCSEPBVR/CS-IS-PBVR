@@ -969,6 +969,7 @@ void MergePanel::WorkerThread::process( const int row ,const int timeStep )
     {
         m_merge->m_files_manager[row]->setObject( m_merge->m_connect->generateParticles( timeStep ) );
         //m_merge->m_connect->generateGlyphPolygons( timeStep );
+        m_merge->m_connect->sendRecvPlotOverLine( timeStep ); //4 debug
         m_merge->setIsParticleGenerationNeeded( false );
     }
     else if (std::is_same_v<ObjectType, kvs::PolygonObject>)
