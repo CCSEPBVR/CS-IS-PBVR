@@ -257,12 +257,10 @@ void ParameterFileWriter::inputTransferFunctionMessage( const jpv::ParticleTrans
 
 void ParameterFileWriter::inputGlyphParameterMessage( const jpv::ParticleTransferClientMessage& client_message )
 {
-//    bool glyph_flag =true;
     
     std::string glyph_flag ="FALSE" ; 
     if (client_message.m_glyph_flag) glyph_flag ="TRUE" ; 
 
-    //m_name_list_file.setLine( "PARTICLE_LIMIT" , client_message.m_particle_limit );
     m_name_list_file.setLine( "GLYPH_FLAG"             , glyph_flag );
     m_name_list_file.setLine( "STRIDE"                 ,client_message.m_stride );
     m_name_list_file.setLine( "SEED"                   ,client_message.m_seed );
@@ -314,9 +312,6 @@ void ParameterFileWriter::inputGlyphParameterMessage( const jpv::ParticleTransfe
 
     std::stringstream table;
 
-//    kvs::ColorMap::Table   color_table   = client_message.m_glyph_color_map.table();
-//    std::vector<int> color_table  = client_message.m_glyph_color_map;   
-//    std::cout << "color_table.size() = " << color_table.size() <<std::endl;
     for ( size_t i = 0; i < client_message.m_glyph_color_map_table.size(); i++ )
     {
         table << client_message.m_glyph_color_map_table.at( i ) << ",";
@@ -328,21 +323,17 @@ void ParameterFileWriter::inputPlotOverLineParameterMessage( const jpv::Particle
 {
     
     std::string plot_flag ="FALSE" ; 
-    //if (client_message.m_plot_flag) plot_flag ="TRUE" ; 
+    if (client_message.m_plot_flag) plot_flag ="TRUE" ; 
 
-    int sam = 256;
     m_name_list_file.setLine( "PLOT_FLAG"             ,plot_flag );
-//    m_name_list_file.setLine( "SAMPLING_SIZE"         ,client_message.m_sampling_size );
-    m_name_list_file.setLine( "SAMPLING_SIZE"         ,sam );
+    m_name_list_file.setLine( "SAMPLING_SIZE"         ,client_message.m_sampling_size );
 
     // 各成分を文字列に変換
     std::stringstream  start_point, end_point;
     for ( size_t i = 0; i < 3; i++ )
     {
-        //start_point  << client_message.m_start_point[i] << ",";
-        //end_point    << client_message.m_end_point[i] << ",";
-        start_point  << 1.2 << ",";
-        end_point    << 1.2 << ",";
+        start_point  << client_message.m_start_point[i] << ",";
+        end_point    << client_message.m_end_point[i] << ",";
     }
 
     m_name_list_file.setLine( "START_POINT"   ,start_point.str() );
