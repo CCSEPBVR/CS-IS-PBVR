@@ -450,3 +450,7 @@ void PlotOverLine::setPlotData(std::vector<float> xAxis, std::vector<bool> mask,
 
 //     std::cout << m_x_axis.size() << "," << m_mask.size() << "," << m_line_value.size() << std::endl;
 // }
+bool PlotOverLine::enable_flag()
+{
+    return ui->plotGroupBox->isChecked();
+}

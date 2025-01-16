@@ -24,10 +24,13 @@ public:
     ~PlotOverLine();
     void setPlotData( std::vector<float> xAxis, std::vector<bool> mask, std::vector<float> values );
 
+    // bool enable_flag(){return m_plot_enable;}
+    bool enable_flag();
 private:
     Ui::PlotOverLine *ui;
     PBVRGUI *m_pbvr_gui;
     Connect* m_connect; //クライアント/サーバメッセージ呼び出し用。
+    bool m_plot_enable=false;
 
     // kvs::ValueArray<float> xAxis; //for debug
     // kvs::ValueArray<bool>  mask; //for debug
