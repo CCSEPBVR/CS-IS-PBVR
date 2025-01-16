@@ -1086,10 +1086,7 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
     }
     if ( m_flag_send_bins == 3 ) // plot_over_line
     {
-        std::cout << __func__ << __LINE__ <<std::endl;
         index += jpv::Serializer::read(buf + index, &m_resolution);
-        std::cout << __func__ << __LINE__ <<std::endl;
-        std::cout << "res = " <<  m_resolution << std::endl;
         int num = m_resolution;
         m_xAxis.resize(m_resolution);
         m_mask.resize(m_resolution);
@@ -1097,7 +1094,6 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
         index += jpv::Serializer::readArray<float>( buf + index, m_xAxis.data(), num);
         index += jpv::Serializer::readArray<int>( buf + index, m_mask.data(),  num);
         index += jpv::Serializer::readArray<float>( buf + index, m_line_values.data(), num);
-        std::cout << __func__ << __LINE__ <<std::endl;
     }
     return index;
 }
