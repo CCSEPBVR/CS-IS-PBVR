@@ -347,8 +347,6 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
 //    m_client_message.m_z_synthesis = "";
     m_client_message.m_enable_crop_region = 0;
 
-    //paramExTransFunc.applyToClientMessage( &message ); //↓
-
     //gt5d
 //    float min = -0.0791849;
 //    float max = 0.074513;
@@ -389,9 +387,6 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
             obj.clear();
             std::cout<<" getPointObjectFromServer 331"<<std::endl;
             allParticle = allParticle + m_server_message.m_number_particle;
-            // delete[] m_server_message.m_colors;
-            // delete[] m_server_message.m_normals;
-            // delete[] m_server_message.m_positions;
         }
     }
 
@@ -416,7 +411,6 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
     std::cout << serverSideMaxObjectCoords[1] << std::endl;
     std::cout << serverSideMaxObjectCoords[2] << std::endl;
 
-    // m_client_message.m_initialize_parameter = -1;
     m_client_message.m_initialize_parameter = jpv::InitializeParameter::empty;
     m_client_message.m_message_size = m_client_message.byteSize();
     client.sendMessage( m_client_message );
@@ -451,9 +445,6 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
         }
 
     m_transfer_function_editor->updateRangeView();
-
-//    pointObject->updateMinMaxCoords();
-
 
     if ( m_server_message.m_camera )
     {
@@ -498,10 +489,10 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
 
     connecting = false;
 
-    // if (enable plot)
-    // {
-    //     send....
-    // }
+    if (m_plot_over_line->enable_flag())
+    {
+        sendRecvPlotOverLine( timeStep );
+    }
 
     return pointObject;
     }
@@ -577,7 +568,7 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         client.sendMessage( m_client_message );
         client.recvMessage( &m_server_message );
         size_t allParticle = 0;
-        //kvs::PolygonObject* object = new kvs::PolygonObject();
+
         kvs::PointObject* object = new kvs::PointObject();
         int serve_numvol = m_server_message.m_number_volume_divide;
         std::cout << "m_server_message.m_number_volume_divide = " << m_server_message.m_number_volume_divide <<std::endl;
@@ -599,10 +590,8 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
                 obj.setNormals( vectors );
                 obj.setSizes( sizes );
                 obj.setColors( colors );
-                std::cout << __LINE__ <<std::endl;
                 object->add(obj);
                 obj.clear();
-                std::cout<<" getpolygonObjectFromServer 331"<<std::endl;
                 allParticle = allParticle + m_server_message.m_number_particle;
                 // delete[] m_server_message.m_colors;
                 // delete[] m_server_message.m_normals;
@@ -623,8 +612,7 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         serverSideMaxObjectCoords[2] = m_server_message.m_max_object_coord[2];
         pointObject->setMinMaxObjectCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );
         pointObject->setMinMaxExternalCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );
-        //    polygonObject->updateMinMaxCoords();
-        // std::cout << __LINE__ <<std::endl;
+
         // for ( int i = 0; i < 10; ++i )
         // {
         //     std::cout << " pointObject->coords()[3 * i + 0]   =" <<pointObject->coords()[3 * i + 0]  << std::endl;
@@ -704,8 +692,6 @@ void Connect::sendRecvPlotOverLine( int timeStep )
     if(connecting)
     {
         qInfo() << "Other conneciton mode working !!";
-        //kvs::PolygonObject* object = new kvs::PolygonObject();
-        //return  object;
         return ;
     }
     else
@@ -734,15 +720,16 @@ void Connect::sendRecvPlotOverLine( int timeStep )
         m_client_message.m_node_type = 'a';
         m_client_message.m_camera = m_pbvr_gui->screen()->scene()->camera();//足りないかも
         m_client_message.m_step = timeStep;
+        std::cout << "timestep = " <<  timeStep <<std::endl;
         m_client_message.m_message_size = m_client_message.byteSize();
         m_client_message.m_sampling_step = 1.0f;
         m_client_message.m_enable_crop_region = 0;
         m_client_message.m_plot_flag =true;
 
-        m_client_message.m_start_point[0] = 1;
-        m_client_message.m_start_point[1] = 1;
-        m_client_message.m_start_point[2] = 1;
-
+        //stab data
+        // m_client_message.m_start_point[0] = 1;
+        // m_client_message.m_start_point[1] = 1;
+        // m_client_message.m_start_point[2] = 1;
 
         m_client_message.m_message_size = m_client_message.byteSize();
         client.sendMessage( m_client_message );
@@ -754,40 +741,10 @@ void Connect::sendRecvPlotOverLine( int timeStep )
         for ( int n = 0; n < serve_numvol; n++ )
         {
             if ( client.recvMessage( &m_server_message ) == 1 ){}
-
-            int nmemb = m_server_message.m_number_glyph * 3;
-            std::cout << __LINE__ <<std::endl;
-#if 0
-            if ( nmemb != 0 )
-            {
-                std::cout << __LINE__ <<std::endl;
-                kvs::ValueArray<kvs::Real32> positions ( m_server_message.m_glyph_coords.get(), nmemb );
-                kvs::ValueArray<kvs::Real32> vectors ( m_server_message.m_glyph_vectors.get(), nmemb );
-                kvs::ValueArray<kvs::Real32> sizes ( m_server_message.m_glyph_sizes.get(), nmemb );
-                kvs::ValueArray<kvs::UInt8>  colors ( m_server_message.m_glyph_colors.get(), nmemb );
-                std::cout << __LINE__ <<std::endl;
-                //kvs::PolygonObject obj;
-                kvs::PointObject obj;
-                obj.setCoords( positions );
-                obj.setNormals( vectors );
-                obj.setSizes( sizes );
-                obj.setColors( colors );
-                std::cout << __LINE__ <<std::endl;
-                object->add(obj);
-                obj.clear();
-                std::cout<<" getpolygonObjectFromServer 331"<<std::endl;
-                allParticle = allParticle + m_server_message.m_number_particle;
-                // delete[] m_server_message.m_colors;
-                // delete[] m_server_message.m_normals;
-                // delete[] m_server_message.m_positions;
-            }
-#endif
         }
 
         std::vector<bool> mask;
         mask.resize(m_server_message.m_resolution);
-        // xAxis = m_server_message.m_xAxis;
-        // values = m_server_message.m_line_values;
         for (int i =0; i< m_server_message.m_resolution; i++)
         {
             if (m_server_message.m_mask[i] == 1)  mask[i] = true;
@@ -803,9 +760,7 @@ void Connect::sendRecvPlotOverLine( int timeStep )
         client.termClient();
 
         connecting = false;
-        std::cout << __func__ << __LINE__ <<std::endl;
         m_plot_over_line->setPlotData(m_server_message.m_xAxis, mask, m_server_message.m_line_values );
-        std::cout << __func__ << __LINE__ <<std::endl;
     }
 }
 
