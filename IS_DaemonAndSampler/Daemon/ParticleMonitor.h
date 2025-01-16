@@ -11,16 +11,21 @@
 //#include <kvs/GlyphObject>
 #include "KVSMLObjectGlyph.h"
 
+#include "PlotOverLineFile.h"
+#include "KVSMLObjectPlotOverLine.h"
+
 class ParticleMonitor
 {
 private:
     ParticleFile          m_particle_file; 
     GlyphFile             m_glyph_file; 
+    PlotOverLineFile      m_plot_over_line_file; 
     ParticleStatusFile    m_status_file; 
     ParticleHistoryFile   m_history_file; 
     std::string           m_history_file_prefix;
     pbvr::PointObject     m_particle; 
     kvs::KVSMLObjectGlyph      m_glyph; 
+    kvs::KVSMLObjectPlotOverLine    m_plot_over_line; 
     kvs::Int32            m_time_step;
 
 private:
@@ -34,11 +39,13 @@ public:
                      const std::string& particle_history_file_prefix );
     ParticleMonitor( const std::string& particle_file_prefix,
                      const std::string& glyph_file_prefix,
+                     const std::string& plot_over_line_file_prefix,
                      const std::string& particle_status_file_name,
                      const std::string& particle_history_file_prefix );
 
     void setParticleFilePrefix( const std::string& prefix );
     void setGlyphFilePrefix( const std::string& prefix );
+    void setPlotOverLineFilePrefix( const std::string& prefix );
     void setParticleStatusFileName( const std::string& file_name );
     void setParticleHistoryFileName( const std::string& file_name );
     void setParticleHistoryFilePrefix( const std::string& prefix );
@@ -48,13 +55,17 @@ public:
     void readParticleFile();
     bool findGlyphFile();
     void readGlyphFile();
+    bool findPlotOverLineFile();
+    void readPlotOverLineFile();
     void getParticle( pbvr::PointObject* object );
     void getGlyph( kvs::KVSMLObjectGlyph* object );
+    void getPlotOverLine( kvs::KVSMLObjectPlotOverLine* object );
     //void getGlyph( pbvr::PointObject* object );
     kvs::Int32 getSubpixelLevel();
     ParticleStatusFile& particleStatusFile();
     ParticleHistoryFile& particleHistoryFile();
     GlyphFile& glyphFile();
+    PlotOverLineFile& plotOverLineFile();
     bool statusFileChanged();
     bool stepExisted();
     kvs::Int32 getTimeStep();

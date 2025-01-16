@@ -150,7 +150,25 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
             s += jpv::Serializer::byteSize( m_color_data_variable[i] );
         }
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph)
+    if(m_initialize_parameter == InitializeParameter::plot_over_line)
+    {
+        s += sizeof( bool );
+        s += jpv::Serializer::byteSize( m_sampling_size );
+        for (int i =0; i< 3; i++ )
+        {
+            s += jpv::Serializer::byteSize( m_start_point[i] );
+        }
+        for (int i =0; i< 3; i++ )
+        {
+            s += jpv::Serializer::byteSize( m_end_point[i] );
+        }
+//        s += jpv::Serializer::byteSize( m_sampling_size );
+//        s += sizeof( int32_t );
+//        s += sizeof( float )*3;
+//        s += sizeof( float )*3;
+    }
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph
+            || m_initialize_parameter == InitializeParameter::plot_over_line )
     {
         s += sizeof( m_time_parameter );
         if ( m_time_parameter == 0 )
@@ -297,7 +315,20 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
             index += jpv::Serializer::write( buf + index, m_color_data_variable[i] );
         }
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph )
+    if( m_initialize_parameter == InitializeParameter::plot_over_line )
+    {
+        index += jpv::Serializer::write(buf + index, m_plot_flag ); 
+        index += jpv::Serializer::write(buf + index, m_sampling_size ); 
+        for (int i =0; i < 3; i++ )
+        {
+            index += jpv::Serializer::write(buf + index, m_start_point[i] ); 
+        }
+        for (int i =0; i < 3; i++ )
+        {
+            index += jpv::Serializer::write(buf + index, m_end_point[i] ); 
+        }
+    }
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph || m_initialize_parameter == InitializeParameter::plot_over_line)
     {
         index += jpv::Serializer::write( buf + index, m_time_parameter );
         if ( m_time_parameter == 0 )
@@ -506,9 +537,27 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
             m_color_data_variable.push_back(value);
         }
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph)
+    if( m_initialize_parameter == InitializeParameter::plot_over_line )
+    {
+        index += jpv::Serializer::read(buf + index, &m_plot_flag ); 
+        index += jpv::Serializer::read(buf + index, &m_sampling_size ); 
+        std::cout << "m_sampling_size = " << m_sampling_size << std::endl;
+        for (int i =0; i < 3; i++ )
+        {
+            index += jpv::Serializer::read(buf + index, &m_start_point[i] ); 
+            std::cout << "m_start_point[i] = " << m_start_point[i] << std::endl;
+        }
+        for (int i =0; i < 3; i++ )
+        {
+            index += jpv::Serializer::read(buf + index, &m_end_point[i] ); 
+        }
+        
+    }
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph 
+            || m_initialize_parameter == InitializeParameter::plot_over_line)
     {
         index += jpv::Serializer::read( buf + index, &m_time_parameter );
+        std::cout << "&m_time_parameter = " << m_time_parameter << std::endl; 
         if ( m_time_parameter == 0 )
         {
             index += jpv::Serializer::read( buf + index, &m_memory_size );
@@ -757,7 +806,7 @@ int32_t jpv::ParticleTransferServerMessage::byteSize( void ) const
     s += sizeof( m_particle_data_size_limit );
     s += jpv::Serializer::byteSize<kvs::Camera>( *m_camera );
     //if ( m_flag_send_bins == 1 || m_flag_send_bins == 2 )
-    if ( m_flag_send_bins == 1 )
+    if ( m_flag_send_bins == 1 ) // particle
     {
         s += sizeof( m_transfer_function_count );
         for ( int i = 0; i < m_transfer_function_count; i++ )
@@ -802,8 +851,13 @@ int32_t jpv::ParticleTransferServerMessage::byteSize( void ) const
         s += jpv::Serializer::byteSize( m_color_transfer_function_synthesis );
         s += jpv::Serializer::byteSize( m_opacity_transfer_function_synthesis );
     }
-    if ( m_flag_send_bins == 2 )
+    if ( m_flag_send_bins == 3 ) // plot_over_line 
     {
+        s += sizeof(m_resolution);
+        int num = m_resolution; 
+        s += sizeof( m_xAxis[0] )*num;
+        s += sizeof( m_mask[0] )*num;
+        s += sizeof( m_line_values[0] )*num;
     }
 
     return s;
@@ -851,7 +905,7 @@ size_t jpv::ParticleTransferServerMessage::pack( char* buf ) const
     index += jpv::Serializer::write( buf + index, m_particle_data_size_limit );
     index += jpv::Serializer::pack( buf + index, *m_camera );
     //if ( m_flag_send_bins == 1 || m_flag_send_bins == 2)
-    if ( m_flag_send_bins == 1 )
+    if ( m_flag_send_bins == 1 )  //  particle & TF
     {
         index += jpv::Serializer::write( buf + index, m_transfer_function_count );
         for ( int i = 0; i < m_transfer_function_count; i++ )
@@ -897,15 +951,22 @@ size_t jpv::ParticleTransferServerMessage::pack( char* buf ) const
         index += jpv::Serializer::write( buf + index, m_opacity_transfer_function_synthesis );
     }
 //    else// if ( flag_send_bins == 2 )
+    if ( m_flag_send_bins == 3 ) // plot_over_line 
+    {
+        index += jpv::Serializer::write(buf + index, m_resolution);
+        int num = m_resolution;
+        index += jpv::Serializer::writeArray<float>( buf + index, m_xAxis.data(), num);
+        index += jpv::Serializer::writeArray<int>( buf + index, m_mask.data(),  num);
+        index += jpv::Serializer::writeArray<float>( buf + index, m_line_values.data(), num);
+    }
 
-    //if ( m_flag_send_bins == 0 || m_flag_send_bins == 2 )
-    if ( m_flag_send_bins == 0 )
+    if ( m_flag_send_bins == 0 ) //particle only
     {
         index += jpv::Serializer::writeArray<float>( buf + index, m_positions.get(), 3 * m_number_particle );
         index += jpv::Serializer::writeArray<float>( buf + index, m_normals.get(), 3 * m_number_particle );
         index += jpv::Serializer::writeArray<unsigned char>( buf + index, m_colors.get(), 3 * m_number_particle );
     }
-    else if (m_flag_send_bins == 2 )
+    else if (m_flag_send_bins == 2 ) // glyph
     {
         index += jpv::Serializer::writeArray<float>( buf + index, m_glyph_coords.get(),    3 * m_number_glyph );
         index += jpv::Serializer::writeArray<float>( buf + index, m_glyph_vectors.get(),      3 * m_number_glyph );
@@ -961,7 +1022,7 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
     index += jpv::Serializer::read( buf + index, &m_particle_data_size_limit );
     index += jpv::Serializer::unpack( buf + index, m_camera );
     //if ( m_flag_send_bins == 1 || m_flag_send_bins == 2)
-    if ( m_flag_send_bins == 1 )
+    if ( m_flag_send_bins == 1 ) //particle & TF
     {
         index += jpv::Serializer::read( buf + index, &m_transfer_function_count );
         m_color_nbins = new kvs::UInt64[ m_transfer_function_count ];
@@ -1024,6 +1085,18 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
         index += jpv::Serializer::read( buf + index, &m_opacity_transfer_function_synthesis );
 
     }
+    if ( m_flag_send_bins == 3 ) // plot_over_line 
+    {
+        index += jpv::Serializer::read( buf + index, &m_resolution);
+        int num = m_resolution;
+        m_xAxis.resize(m_resolution);
+        m_mask.resize(m_resolution);
+        m_line_values.resize(m_resolution);
+        index += jpv::Serializer::readArray<float>( buf + index, m_xAxis.data(), num);
+        index += jpv::Serializer::readArray<int>( buf + index, m_mask.data(),  num);
+        index += jpv::Serializer::readArray<float>( buf + index, m_line_values.data(), num);
+    }
+
 
     return index;
 }

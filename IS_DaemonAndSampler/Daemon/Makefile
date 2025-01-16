@@ -38,6 +38,7 @@ DAEMON_SRCS = CropRegion.cpp \
               JobDispatcher.cpp \
               KVSMLObjectPointWriter.cpp \
               KVSMLObjectGlyph.cpp \
+              KVSMLObjectPlotOverLine.cpp \
               main.cpp \
               ObjectBase.cpp \
               ObjectManager.cpp \
@@ -46,6 +47,7 @@ DAEMON_SRCS = CropRegion.cpp \
               ParameterFileWriter.cpp \
               ParticleFile.cpp \
               GlyphFile.cpp \
+              PlotOverLineFile.cpp \
               ParticleMonitor.cpp \
               PointImporter.cpp \
               ParticleStatusFile.cpp \
@@ -74,6 +76,7 @@ DAEMON_HEADERS = Argument.h \
                  JobDispatcher.h \
                  KVSMLObjectPointWriter.h \
                  KVSMLObjectGlyph.h \
+                 KVSMLObjectPlotOverLine.h \
                  Macro.h \
                  NameListFile.h \
                  ObjectBase.h \
@@ -83,6 +86,7 @@ DAEMON_HEADERS = Argument.h \
                  ParameterFileWriter.h \
                  ParticleFile.h \
                  GlyphFile.h \
+                 PlotOverLineFile.h \
                  ParticleMonitor.h \
                  ParticleStatusFile.h \
                  ParticleHistoryFile.h \
@@ -95,8 +99,8 @@ DAEMON_HEADERS = Argument.h \
                  TransferFunction.h \
                  Types.h \
                  VolumeObjectBase.h \
-		 PBVRParam.h \
-	         ExtendedTransferFunctionMessage.cpp \
+				 PBVRParam.h \
+	    	     ExtendedTransferFunctionMessage.cpp \
                  CropParam.h \
                  ParticleMergeParam.h
 
