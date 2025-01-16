@@ -31,6 +31,19 @@ PlotOverLine::~PlotOverLine()
     delete ui;
 }
 
+void PlotOverLine::updateNumberOfVector( jpv::ParticleTransferServerMessage& server_message )
+{
+    const int numberOfVector = server_message.m_number_ingredients;
+
+    m_vector_list->clear();
+    for( int i = 1; i <= numberOfVector; i++ )
+    {
+        m_vector_list->append(QString("q%1").arg(i));
+    }
+    ui->comboBox->addItems( *m_vector_list );
+    ui->comboBox->setCurrentIndex( 0 );
+}
+
 void PlotOverLine::onResetButtonClicked()
 {
     ui->customPlot->xAxis->setRange(m_x_min, m_x_max); // x 軸の範囲
