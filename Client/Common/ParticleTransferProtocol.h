@@ -27,7 +27,8 @@ enum class InitializeParameter : int32_t {
      generate_particle = 1,
      export_TFfile =2,
      generate_glyph = 3,
-     send_glyph_flag_false = 4
+     send_glyph_flag_false = 4,
+     plot_over_line=5
 };
 
 enum class DataDefines : int32_t
@@ -160,6 +161,12 @@ public:
     DataDefines m_color_data_sampling_method;
     std::vector<std::string> m_color_data_variables;
 
+    //Plot Over Line
+    bool m_plot_flag;
+    int32_t m_sampling_size;
+    float m_start_point[3];
+    float m_end_point[3];
+
 public:
     // message のサイズを計算
     int32_t byteSize( void ) const;
@@ -239,6 +246,12 @@ public:
     std::unique_ptr<float[]>  m_glyph_vectors;
     std::unique_ptr<float[]>  m_glyph_sizes;
     std::unique_ptr<unsigned char[]>   m_glyph_colors;
+
+    //Plot Over Line
+    int32_t m_resolution;
+    std::vector<float> m_xAxis;
+    std::vector<int>  m_mask;
+    std::vector<float> m_line_values;
 
     // message のサイズを計算
     int32_t byteSize( void ) const;
