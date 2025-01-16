@@ -163,7 +163,7 @@ public:
     std::vector<std::string> m_color_data_variable;
 
     //Plot Over Line
-    bool m_plot_flag;
+    bool m_plot_flag; // plot ober line の生成判定
     int32_t m_sampling_size;
     float m_start_point[3];
     float m_end_point[3];

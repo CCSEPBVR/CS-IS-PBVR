@@ -153,9 +153,19 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
     if(m_initialize_parameter == InitializeParameter::plot_over_line)
     {
         s += sizeof( bool );
-        s += sizeof( int32_t );
-        s += sizeof( float )*3;
-        s += sizeof( float )*3;
+        s += jpv::Serializer::byteSize( m_sampling_size );
+        for (int i =0; i< 3; i++ )
+        {
+            s += jpv::Serializer::byteSize( m_start_point[i] );
+        }
+        for (int i =0; i< 3; i++ )
+        {
+            s += jpv::Serializer::byteSize( m_end_point[i] );
+        }
+//        s += jpv::Serializer::byteSize( m_sampling_size );
+//        s += sizeof( int32_t );
+//        s += sizeof( float )*3;
+//        s += sizeof( float )*3;
     }
     if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph
             || m_initialize_parameter == InitializeParameter::plot_over_line )
@@ -531,18 +541,23 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
     {
         index += jpv::Serializer::read(buf + index, &m_plot_flag ); 
         index += jpv::Serializer::read(buf + index, &m_sampling_size ); 
+        std::cout << "m_sampling_size = " << m_sampling_size << std::endl;
         for (int i =0; i < 3; i++ )
         {
             index += jpv::Serializer::read(buf + index, &m_start_point[i] ); 
+            std::cout << "m_start_point[i] = " << m_start_point[i] << std::endl;
         }
         for (int i =0; i < 3; i++ )
         {
             index += jpv::Serializer::read(buf + index, &m_end_point[i] ); 
         }
+        
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph || m_initialize_parameter == InitializeParameter::plot_over_line)
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph 
+            || m_initialize_parameter == InitializeParameter::plot_over_line)
     {
         index += jpv::Serializer::read( buf + index, &m_time_parameter );
+        std::cout << "&m_time_parameter = " << m_time_parameter << std::endl; 
         if ( m_time_parameter == 0 )
         {
             index += jpv::Serializer::read( buf + index, &m_memory_size );
