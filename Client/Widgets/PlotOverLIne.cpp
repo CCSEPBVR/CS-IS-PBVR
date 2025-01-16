@@ -103,21 +103,33 @@ void PlotOverLine::onApplyButtonClicked()
             static_cast<float>( ui->endPointZDoubleSpinBox->value() )
         };
 
-    // m_connect->getClientMessage()->m_plot_sampling_size = resolution;
-    // m_connect->getClientMessage()->m_plot_start_point = plotStartPoint;
-    // m_connect->getClientMessage()->m_plot_end_point = plotEndPoint;
+    m_connect->getClientMessage()->m_sampling_size = resolution;
+    m_connect->getClientMessage()->m_start_point[0] = plotStartPoint[0];
+    m_connect->getClientMessage()->m_start_point[1] = plotStartPoint[1];
+    m_connect->getClientMessage()->m_start_point[2] = plotStartPoint[2];
+    m_connect->getClientMessage()->m_end_point[0] = plotEndPoint[0];
+    m_connect->getClientMessage()->m_end_point[1] = plotEndPoint[1];
+    m_connect->getClientMessage()->m_end_point[2] = plotEndPoint[2];
 }
 
-void PlotOverLine::setPlotData( std::vector<float> xAxis, std::vector<bool> mask, std::vector<float> values )
+void PlotOverLine::setPlotData(std::vector<float> xAxis, std::vector<bool> mask, std::vector<float> values)
 {
-    // Initializing: Set extremely large/small values
+    // メインスレッドで実行する必要がある場合
+    if (QApplication::instance()->thread() != QThread::currentThread())
+    {
+        QMetaObject::invokeMethod(this, [=]() { setPlotData(xAxis, mask, values); }, Qt::QueuedConnection);
+        return;
+    }
+
+
+    // 初期化：極端に大きい/小さい値を設定
     m_x_min = std::numeric_limits<double>::max();
     m_x_max = std::numeric_limits<double>::lowest();
     m_y_min = std::numeric_limits<double>::max();
     m_y_max = std::numeric_limits<double>::lowest();
 
-    QVector<double> x( xAxis.size() ), y( values.size() );
-    for( size_t i = 0; i < x.size(); i++ )
+    QVector<double> x(xAxis.size()), y(values.size());
+    for (size_t i = 0; i < x.size(); i++)
     {
         x[i] = xAxis[i];
         if (mask[i])
@@ -132,7 +144,7 @@ void PlotOverLine::setPlotData( std::vector<float> xAxis, std::vector<bool> mask
             }
         }
     }
-    for( size_t i = 0; i < x.size(); i++ )
+    for (size_t i = 0; i < x.size(); i++)
     {
         if (mask[i])
         {
@@ -152,26 +164,27 @@ void PlotOverLine::setPlotData( std::vector<float> xAxis, std::vector<bool> mask
         }
     }
 
-    // Add data to the graph
-    ui->customPlot->addGraph(); // Add a new graph
-    ui->customPlot->graph(0)->setData(x, y); // Set data
+    // グラフにデータを追加
+    ui->customPlot->addGraph(); // 新しいグラフを追加
+    ui->customPlot->graph(0)->setData(x, y); // データを設定
 
-    // Set axes labels
+    // 軸ラベルを設定
     ui->customPlot->xAxis->setLabel("xAxis");
     ui->customPlot->yAxis->setLabel("Values");
 
-    // Set axis ranges
-    ui->customPlot->xAxis->setRange(m_x_min, m_x_max); // x-axis range
-    ui->customPlot->yAxis->setRange(m_y_min, m_y_max); // y-axis range
+    // 軸の範囲を設定
+    ui->customPlot->xAxis->setRange(m_x_min, m_x_max); // x軸範囲
+    ui->customPlot->yAxis->setRange(m_y_min, m_y_max); // y軸範囲
     ui->customPlot->xAxis->ticker()->setTickCount(10);
     ui->customPlot->yAxis->ticker()->setTickCount(10);
 
-    // Enable zooming and dragging
+    // ズームとドラッグを有効化
     ui->customPlot->setInteractions(QCP::iRangeZoom | QCP::iRangeDrag);
 
-    // Replot the graph
+    // グラフを再描画
     ui->customPlot->replot();
 }
+
 
 // void PlotOverLine::initData() //for debug
 // {
