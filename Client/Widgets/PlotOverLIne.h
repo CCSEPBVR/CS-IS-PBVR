@@ -5,7 +5,7 @@
 #include <kvs/ValueArray>
 #include <kvs/LineObject>
 
-//#include <Widgets/Connect.h>
+#include <Widgets/Connect.h>
 class PBVRGUI;
 class Connect;
 

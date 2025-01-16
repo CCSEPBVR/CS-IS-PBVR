@@ -7,11 +7,12 @@
 #include "ParticleTransferProtocol.h"
 #include "ExpressionTokenizer.h"
 #include "ExpressionConverter.h"
+// #include "Widgets/PlotOverLine.h"
 #include "Widgets/ExtendedTransferFunctionMessage.h"
 #include "Widgets/DataProperties.h"
 #include "Widgets/TransferFunctionEditor.h"
 #include "Widgets/GlyphEditor.h"
-#include "Widgets/PlotOverLine.h"
+
 
 #include <kvs/PointObject>
 #include "ExtendedKVS/Screen.h"
@@ -20,6 +21,7 @@
 class PBVRGUI;
 class MergePanel;
 class RenderOptions;
+class PlotOverLine;
 
 namespace Ui {
 class Connect;
