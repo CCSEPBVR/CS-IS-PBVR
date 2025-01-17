@@ -152,6 +152,7 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
     {
     // s += sizeof( bool );
     s += jpv::Serializer::byteSize( m_sampling_size );
+    s += jpv::Serializer::byteSize( m_plot_variable );
     for (int i =0; i< 3; i++ )
         {
             s += jpv::Serializer::byteSize( m_start_point[i] );
@@ -318,8 +319,9 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
 
     if( m_initialize_parameter == InitializeParameter::plot_over_line )
     {
-         index += jpv::Serializer::write(buf + index, m_plot_flag );
+        index += jpv::Serializer::write(buf + index, m_plot_flag );
         index += jpv::Serializer::write(buf + index, m_sampling_size );
+        index += jpv::Serializer::write(buf + index, m_plot_variable );
         for (int i =0; i < 3; i++ )
         {
             index += jpv::Serializer::write(buf + index, m_start_point[i] );
@@ -545,6 +547,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
     {
         // index += jpv::Serializer::read(buf + index, &m_plot_flag );
         index += jpv::Serializer::read(buf + index, &m_sampling_size );
+        index += jpv::Serializer::read(buf + index, &m_plot_variable );
         for (int i =0; i < 3; i++ )
             {
                 index += jpv::Serializer::read(buf + index, &m_start_point[i] );
