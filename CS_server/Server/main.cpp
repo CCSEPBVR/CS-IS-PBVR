@@ -849,7 +849,7 @@ int main( int argc, char** argv )
                 delete[] buf;
                 std::cout << "Rank " << rank << ": Recv Client Message" << std::endl;
                 // recv cltMes from process 0 <<
-               if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::empty )
+               if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
                {
                }
                else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::end )
@@ -1398,7 +1398,7 @@ int main( int argc, char** argv )
                 }
 
                 std::cout << "Recieve message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
-                if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::empty )
+                if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
                 {
 
                     strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
@@ -1851,7 +1851,7 @@ int main( int argc, char** argv )
                     // send cltMes to all worker process <<
 
                     std::cout << "Recieve message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
-                    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::empty )
+                    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
                     {
 
                         std::cout << "sampling method = " << clntMes.m_sampling_method << std::endl;

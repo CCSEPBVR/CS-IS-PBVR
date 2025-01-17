@@ -609,7 +609,7 @@ int main( int argc, char** argv )
 
                 std::cout << "Receive message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
                 //initParam -1:空ソケットの送信, -2:daemonを終了, それ以外:粒子データの送信
-                if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::empty )
+                if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
                 {
                     //ほぼ空のソケットを送信する
                     strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
@@ -673,7 +673,7 @@ int main( int argc, char** argv )
                     // send cltMes to all worker process <<
 
                     std::cout << "initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
-                    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::empty )
+                    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
                     {
 
                         std::cout << "sampling method = " << clntMes.m_sampling_method << std::endl;
@@ -1112,7 +1112,7 @@ int main( int argc, char** argv )
                     // send cltMes to all worker process <<
 
                     std::cout << "initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
-                    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::empty )
+                    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
                     {
 
                         std::cout << "sampling method = " << clntMes.m_sampling_method << std::endl;
@@ -1440,7 +1440,7 @@ int main( int argc, char** argv )
                     // send cltMes to all worker process <<
 
                     std::cout << "initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
-                    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::empty )
+                    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
                     {
 
                         std::cout << "sampling method = " << clntMes.m_sampling_method << std::endl;

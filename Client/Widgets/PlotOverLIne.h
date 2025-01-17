@@ -43,7 +43,7 @@ private:
     // std::vector<bool> m_mask; //for debug
     // std::vector<float> m_line_value; //for debug
 
-    // void initData(); //for debug
+    void initData(); //for debug
 
     double m_x_min;
     double m_x_max;

@@ -23,7 +23,7 @@ PlotOverLine::PlotOverLine(QWidget *parent, PBVRGUI *pbvr_gui, Connect* Connect)
     connect( ui->endPointZDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PlotOverLine::updateXYZDoubleSpinBox );
     connect( ui->applyPushButton, &QPushButton::clicked, this, &PlotOverLine::onApplyButtonClicked );
 
-    // initData(); //for debug
+    initData(); //for debug
     // setPlotData( m_x_axis, m_mask, m_line_value ); //for debug
 }
 
@@ -200,6 +200,20 @@ void PlotOverLine::setPlotData(std::vector<float> xAxis, std::vector<bool> mask,
     ui->customPlot->replot();
 }
 
+
+void PlotOverLine::initData() //for debug
+{
+
+    m_connect->getClientMessage()->m_sampling_size = 256;
+    m_connect->getClientMessage()->m_start_point[0] = -1.f;
+    m_connect->getClientMessage()->m_start_point[1] = 0;
+    m_connect->getClientMessage()->m_start_point[2] = 0;
+    m_connect->getClientMessage()->m_end_point[0] = 1.f;
+    m_connect->getClientMessage()->m_end_point[1] = 0;
+    m_connect->getClientMessage()->m_end_point[2] = 0;
+    m_connect->getClientMessage()->m_plot_variable = "q1";
+
+}
 
 // void PlotOverLine::initData() //for debug
 // {

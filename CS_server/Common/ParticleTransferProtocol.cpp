@@ -1,5 +1,5 @@
 #include "ParticleTransferProtocol.h"
-#include "serializer.h"
+#include "Serializer.h"
 
 #include <kvs/Camera>
 #include <kvs/TransferFunction>
