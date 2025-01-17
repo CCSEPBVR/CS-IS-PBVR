@@ -136,7 +136,7 @@ void Connect::connectServer()
     strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
 
     //m_client_message.m_initialize_parameter = -1;
-    m_client_message.m_initialize_parameter = jpv::InitializeParameter::empty;
+    m_client_message.m_initialize_parameter = jpv::InitializeParameter::connection_reset;
     m_client_message.m_message_size = m_client_message.byteSize();
     client.sendMessage( m_client_message );
     client.recvMessage( &m_server_message );
@@ -231,7 +231,7 @@ void Connect::sendTransferFunction()
             // TF情報をサーバー側に送信　（サーバーからの受信はしない）
             client.sendMessage( m_client_message );
 
-            m_client_message.m_initialize_parameter = jpv::InitializeParameter::empty;
+            m_client_message.m_initialize_parameter = jpv::InitializeParameter::connection_reset;
             m_client_message.m_message_size = m_client_message.byteSize();
             client.sendMessage( m_client_message );
             client.recvMessage( &m_server_message );
@@ -290,7 +290,7 @@ void Connect::sendGlyphFlagFalse()
         // TF情報をサーバー側に送信　（サーバーからの受信はしない）
         client.sendMessage( m_client_message );
 
-        m_client_message.m_initialize_parameter = jpv::InitializeParameter::empty;
+        m_client_message.m_initialize_parameter = jpv::InitializeParameter::connection_reset;
         m_client_message.m_message_size = m_client_message.byteSize();
         client.sendMessage( m_client_message );
         client.recvMessage( &m_server_message );
@@ -412,7 +412,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
     std::cout << serverSideMaxObjectCoords[1] << std::endl;
     std::cout << serverSideMaxObjectCoords[2] << std::endl;
 
-    m_client_message.m_initialize_parameter = jpv::InitializeParameter::empty;
+    m_client_message.m_initialize_parameter = jpv::InitializeParameter::connection_reset;
     m_client_message.m_message_size = m_client_message.byteSize();
     client.sendMessage( m_client_message );
     client.recvMessage( &m_server_message );
@@ -659,7 +659,7 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         }
 
         // m_client_message.m_initialize_parameter = -1;
-        m_client_message.m_initialize_parameter = jpv::InitializeParameter::empty;
+        m_client_message.m_initialize_parameter = jpv::InitializeParameter::connection_reset;
         m_client_message.m_message_size = m_client_message.byteSize();
         client.sendMessage( m_client_message );
         client.recvMessage( &m_server_message );
@@ -727,6 +727,7 @@ void Connect::sendRecvPlotOverLine( int timeStep )
         m_client_message.m_enable_crop_region = 0;
         m_client_message.m_plot_flag =true;
 
+        std::cout << "m_plot_variable = " << m_client_message.m_plot_variable <<std::endl;
         //stab data
         // m_client_message.m_start_point[0] = 1;
         // m_client_message.m_start_point[1] = 1;
@@ -752,7 +753,7 @@ void Connect::sendRecvPlotOverLine( int timeStep )
             else mask[i] = false;
         }
 
-        m_client_message.m_initialize_parameter = jpv::InitializeParameter::empty;
+        m_client_message.m_initialize_parameter = jpv::InitializeParameter::connection_reset;
         m_client_message.m_message_size = m_client_message.byteSize();
         client.sendMessage( m_client_message );
         client.recvMessage( &m_server_message );
