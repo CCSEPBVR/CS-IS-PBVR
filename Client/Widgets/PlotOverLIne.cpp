@@ -8,7 +8,8 @@ PlotOverLine::PlotOverLine(QWidget *parent, PBVRGUI *pbvr_gui, Connect* Connect)
     : QDockWidget(parent)
     , ui(new Ui::PlotOverLine)
     , m_pbvr_gui( pbvr_gui )
-    , m_connect( Connect )
+    , m_connect( Connect ),
+    m_vector_list( new QStringList() )
 {
     ui->setupUi(this);
 
@@ -123,6 +124,7 @@ void PlotOverLine::onApplyButtonClicked()
     m_connect->getClientMessage()->m_end_point[0] = plotEndPoint[0];
     m_connect->getClientMessage()->m_end_point[1] = plotEndPoint[1];
     m_connect->getClientMessage()->m_end_point[2] = plotEndPoint[2];
+    m_connect->getClientMessage()->m_plot_variable = ui->comboBox->currentText().toStdString();
 }
 
 void PlotOverLine::setPlotData(std::vector<float> xAxis, std::vector<bool> mask, std::vector<float> values)
