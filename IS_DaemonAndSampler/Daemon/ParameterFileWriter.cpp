@@ -326,6 +326,7 @@ void ParameterFileWriter::inputPlotOverLineParameterMessage( const jpv::Particle
     if (client_message.m_plot_flag) plot_flag ="TRUE" ; 
 
     m_name_list_file.setLine( "PLOT_FLAG"             ,plot_flag );
+    m_name_list_file.setLine( "PLOT_VARIABLE"         ,client_message.m_plot_variable );
     m_name_list_file.setLine( "SAMPLING_SIZE"         ,client_message.m_sampling_size );
 
     // 各成分を文字列に変換
