@@ -101,30 +101,37 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
 
     PlotOverLineProperty plot_over_line_property;
 
-    plot_over_line_property.LoadIN(POLParamPath) ;
+    bool read_flag =  plot_over_line_property.LoadIN(POLParamPath) ;
 
-    bool plot_flag;
-    std::string              p_flag                    = plot_over_line_property.getString( "PLOT_FLAG" );
-    int resolution                                     = plot_over_line_property.getInt("SAMPLING_SIZE");
-    std::string              p_variable                = plot_over_line_property.getString( "PLOT_VARIABLE" );
-    m_plot_variable = std::atoi(p_variable.substr(1).c_str()) -1;
-    std::vector<float> s_table;
-    s_table = plot_over_line_property.getTableFloat( "START_POINT" );
-    std::vector<float> e_table;
-    e_table = plot_over_line_property.getTableFloat( "END_POINT" );
-    
-    if(strcmp(p_flag.c_str(), "TRUE") ==0 ) plot_flag = true;
-    else plot_flag = false;
-    m_resolution = resolution;
-    m_start_point.x() = s_table[0];
-    m_start_point.y() = s_table[1];
-    m_start_point.z() = s_table[2];
-    m_end_point.x() = e_table[0];
-    m_end_point.y() = e_table[1];
-    m_end_point.z() = e_table[2];
-    if (plot_flag || m_resolution > 0)this->setResolution( m_resolution );
-    m_plot_flag = plot_flag;
-    return plot_flag; 
+    if(read_flag)
+    {
+        bool plot_flag;
+        std::string              p_flag                    = plot_over_line_property.getString( "PLOT_FLAG" );
+        int resolution                                     = plot_over_line_property.getInt("SAMPLING_SIZE");
+        std::string              p_variable                = plot_over_line_property.getString( "PLOT_VARIABLE" );
+        m_plot_variable = std::atoi(p_variable.substr(1).c_str()) -1;
+        std::vector<float> s_table;
+        s_table = plot_over_line_property.getTableFloat( "START_POINT" );
+        std::vector<float> e_table;
+        e_table = plot_over_line_property.getTableFloat( "END_POINT" );
+
+        if(strcmp(p_flag.c_str(), "TRUE") ==0 ) plot_flag = true;
+        else plot_flag = false;
+        m_resolution = resolution;
+        m_start_point.x() = s_table[0];
+        m_start_point.y() = s_table[1];
+        m_start_point.z() = s_table[2];
+        m_end_point.x() = e_table[0];
+        m_end_point.y() = e_table[1];
+        m_end_point.z() = e_table[2];
+        if (plot_flag || m_resolution > 0)this->setResolution( m_resolution );
+        m_plot_flag = plot_flag;
+    }
+    else
+    {
+        m_plot_flag = false;
+    }
+    return m_plot_flag; 
 
 }
 

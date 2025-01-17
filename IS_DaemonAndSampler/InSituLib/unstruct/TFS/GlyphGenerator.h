@@ -105,19 +105,21 @@ private:
            const float density,
            const float volume_of_cell,
            kvs::MersenneTwister* MT );
-    bool SetGlyphParameter(pbvr_parameters& particleBase,const int time_step);
+    //bool SetGlyphParameter(pbvr_parameters& particleBase,const int time_step);
+    bool SetGlyphParameter(const int time_step);
 
 public:
    void GlyphSampling( const pbvr::VolumeObjectBase::CellType& celltype);
 
 
     GlyphGenerator();
-    GlyphGenerator(pbvr_parameters& particleBase, const int time_step, Type** values, int nvariables,
+    //GlyphGenerator(pbvr_parameters& particleBase, const int time_step, Type** values, int nvariables,
+    GlyphGenerator( const int time_step, Type** values, int nvariables,
            float* coordinates, int ncoords,
            unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype);
 
 
-    void OutputGlyph( const  pbvr_parameters& particleBase, const int time_step);
+    void OutputGlyph( const int time_step);
     void show();
 
 };

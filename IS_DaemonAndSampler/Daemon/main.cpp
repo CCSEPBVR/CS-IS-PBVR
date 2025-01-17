@@ -474,7 +474,7 @@ int main( int argc, char** argv )
                 pm.check();
                 if( pm.stepExisted() )
                 {
-                    //std::cout << "pm.particleStatusFile().getLatestTimeStep() = " << pm.particleStatusFile().getLatestTimeStep() <<std::endl;
+                    std::cout << "pm.particleStatusFile().getLatestTimeStep() = " << pm.particleStatusFile().getLatestTimeStep() <<std::endl;
                     pm.setTimeStep(pm.particleStatusFile().getLatestTimeStep());
                     //pm.setTimeStep(0);
                 }
@@ -725,6 +725,7 @@ int main( int argc, char** argv )
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
                         servMes.m_flag_send_bins = 1;
 
                         servMes.m_message_size = servMes.byteSize();
@@ -743,6 +744,7 @@ int main( int argc, char** argv )
                       //servMes.m_time_step = clntMes.m_step;
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_repeat_level = clntMes.m_repeat_level;
+                        servMes.m_number_glyph = 0;
                         param.sampling_method = clntMes.m_sampling_method;
                         param.component_Id = clntMes.m_rendering_id;
                         param.crop.set_enable( clntMes.m_enable_crop_region );
@@ -798,6 +800,7 @@ int main( int argc, char** argv )
                         pm.check();
                         servMes.m_start_step = pm.particleStatusFile().getStartTimeStep();
                         servMes.m_last_step = pm.particleStatusFile().getLatestTimeStep();
+                        std::cout << "servMes.m_last_step = " << servMes.m_last_step <<std::endl;
                         if( pm.stepExisted() )
                         {
                             //if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step && pm.getTimeStep() > -1 )
@@ -1041,8 +1044,11 @@ int main( int argc, char** argv )
                         servMes.m_message_size = servMes.byteSize();
                         //servMes.m_number_particle = 2;
                         servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
                         TimerStart( 11 );
+                        std::cout << __LINE__ <<std::endl;
                         pts.sendMessage( servMes );
+                        std::cout << __LINE__ <<std::endl;
                         TimerStop( 11 );
 
                         for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )

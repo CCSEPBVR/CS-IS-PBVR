@@ -1,7 +1,8 @@
 #include "GlyphGenerator.h"
 
 //GlyphGenerator::GlyphGenerator(glyph_parameters &,Type** values, int nvariables,
-GlyphGenerator::GlyphGenerator(pbvr_parameters& particleBase, const int time_step ,Type** values,
+//GlyphGenerator::GlyphGenerator(pbvr_parameters& particleBase, const int time_step ,Type** values,
+GlyphGenerator::GlyphGenerator( const int time_step ,Type** values,
         int nvariables, float* coordinates, int ncoords,
         unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype) :
     m_values( values ), m_nvariable(nvariables),  
@@ -10,7 +11,8 @@ GlyphGenerator::GlyphGenerator(pbvr_parameters& particleBase, const int time_ste
 {
    
     m_g_flag = false; 
-    m_g_flag = this -> SetGlyphParameter( particleBase, time_step );
+    //m_g_flag = this -> SetGlyphParameter( particleBase, time_step );
+    m_g_flag = this -> SetGlyphParameter( time_step );
     if (m_g_flag)
     { 
         if( m_distribution_modes == jpv::GlyphMode:: AllPoints || m_distribution_modes == jpv::GlyphMode:: EveryNthPoints )
@@ -25,7 +27,8 @@ GlyphGenerator::GlyphGenerator(pbvr_parameters& particleBase, const int time_ste
 }
 
 #if 1
-bool GlyphGenerator::SetGlyphParameter( pbvr_parameters& particleBase, const int time_step )
+//bool GlyphGenerator::SetGlyphParameter( pbvr_parameters& particleBase, const int time_step )
+bool GlyphGenerator::SetGlyphParameter( const int time_step )
 {
     std::string visParamDir;
     std::string glyphParamPath;
@@ -664,7 +667,8 @@ const size_t GlyphGenerator::calculate_number_of_particles(
     return ( n );
 }
 
-void GlyphGenerator::OutputGlyph( const  pbvr_parameters& particleBase, const int time_step)
+//void GlyphGenerator::OutputGlyph( const  pbvr_parameters& particleBase, const int time_step)
+void GlyphGenerator::OutputGlyph( const int time_step)
 {
     if (!m_g_flag) return; 
 
