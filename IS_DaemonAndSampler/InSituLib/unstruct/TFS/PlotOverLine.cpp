@@ -104,8 +104,10 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
     plot_over_line_property.LoadIN(POLParamPath) ;
 
     bool plot_flag;
-    std::string              p_flag                = plot_over_line_property.getString( "PLOT_FLAG" );
+    std::string              p_flag                    = plot_over_line_property.getString( "PLOT_FLAG" );
     int resolution                                     = plot_over_line_property.getInt("SAMPLING_SIZE");
+    std::string              p_variable                = plot_over_line_property.getString( "PLOT_VARIABLE" );
+    m_plot_variable = std::atoi(p_variable.substr(1).c_str()) -1;
     std::vector<float> s_table;
     s_table = plot_over_line_property.getTableFloat( "START_POINT" );
     std::vector<float> e_table;
@@ -122,7 +124,6 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
     m_end_point.z() = e_table[2];
     if (plot_flag || m_resolution > 0)this->setResolution( m_resolution );
     m_plot_flag = plot_flag;
-    std::cout << "m_plot_flag = " << m_plot_flag << std::endl;
     return plot_flag; 
 
 }
@@ -207,6 +208,7 @@ void PlotOverLine::for_tetrahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 
     const kvs::Real32* coords = m_volume->coords().pointer();
     const kvs::UInt32* connec = m_volume->connections().pointer();
     const size_t ncells = m_volume->ncells();
+    const size_t ncoord = m_volume->nnodes();
 
     size_t id = 0;
 
@@ -225,10 +227,10 @@ void PlotOverLine::for_tetrahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 
         vertex[3].set( coords[ local_id[3]*3 ], coords[ local_id[3]*3+1 ], coords[ local_id[3]*3+2 ] );
 
         kvs::Vec4 scalar(
-            m_volume->values().to<kvs::Real32>(local_id[0]),
-            m_volume->values().to<kvs::Real32>(local_id[1]),
-            m_volume->values().to<kvs::Real32>(local_id[2]),
-            m_volume->values().to<kvs::Real32>(local_id[3]) );
+            m_volume->values().to<kvs::Real32>(local_id[0] + ncoord*m_plot_variable),
+            m_volume->values().to<kvs::Real32>(local_id[1] + ncoord*m_plot_variable),
+            m_volume->values().to<kvs::Real32>(local_id[2] + ncoord*m_plot_variable),
+            m_volume->values().to<kvs::Real32>(local_id[3] + ncoord*m_plot_variable) );
             //m_volume->values()[ local_id[0] ].to<kvs::Real32>(),
             //m_volume->values()[ local_id[1] ].to<kvs::Real32>(),
             //m_volume->values()[ local_id[2] ].to<kvs::Real32>(),
@@ -243,6 +245,7 @@ void PlotOverLine::for_hexahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
     const kvs::Real32* coords = m_volume->coords().pointer();
     const kvs::UInt32* connec = m_volume->connections().pointer();
     const size_t ncells = m_volume->ncells();
+    const size_t ncoord = m_volume->nnodes();
 
     const kvs::UInt32 face_id[24] = {
         0, 1, 5, 4,
@@ -296,8 +299,7 @@ void PlotOverLine::for_hexahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
         kvs::Real32 scalar[8];
         for( int i=0; i<8; i++ )
         {
-            scalar[i] =  m_volume->values().to<kvs::Real32>( local_id[i] );
-            //scalar[i] =  m_volume->values()[ local_id[i] ].to<kvs::Real32>();
+            scalar[i] =  m_volume->values().to<kvs::Real32>( local_id[i] + ncoord*m_plot_variable);
         }
 
         kvs::Real32 face_center_scalar[6];
@@ -341,6 +343,7 @@ void PlotOverLine::for_pyramidal_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
     const kvs::Real32* coords = m_volume->coords().pointer();
     const kvs::UInt32* connec = m_volume->connections().pointer();
     const size_t ncells = m_volume->ncells();
+    const size_t ncoord = m_volume->nnodes();
 
     // for AVS
     const kvs::UInt32 face_id[24] = { 1, 2, 3, 4 };
@@ -395,8 +398,7 @@ void PlotOverLine::for_pyramidal_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
         kvs::Real32 scalar[5];
         for( int i=0; i<5; i++ )
         {
-            scalar[i] =  m_volume->values().to<kvs::Real32>(local_id[i]);
-            //scalar[i] =  m_volume->values()[ local_id[i] ].to<kvs::Real32>();
+            scalar[i] =  m_volume->values().to<kvs::Real32>(local_id[i] + ncoord*m_plot_variable );
         }
 
         kvs::Real32 face_center_scalar[1];
@@ -442,6 +444,7 @@ void PlotOverLine::for_prismic_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
     const kvs::Real32* coords = m_volume->coords().pointer();
     const kvs::UInt32* connec = m_volume->connections().pointer();
     const size_t ncells = m_volume->ncells();
+    const size_t ncoord = m_volume->nnodes();
 
     const kvs::UInt32 face_id[12] = {
         0, 1, 4, 3,
@@ -493,8 +496,7 @@ void PlotOverLine::for_prismic_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
         kvs::Real32 scalar[6];
         for( int i=0; i<6; i++ )
         {
-            scalar[i] =  m_volume->values().to<kvs::Real32>(local_id[i]);
-            //scalar[i] =  m_volume->values()[ local_id[i] ].to<kvs::Real32>();
+            scalar[i] =  m_volume->values().to<kvs::Real32>(local_id[i] + ncoord*m_plot_variable);
         }
 
         kvs::Real32 face_center_scalar[3];
@@ -909,7 +911,6 @@ void PlotOverLine::OutputLine( const int time_step)
     ss << std::setfill('0') << std::setw(7) << mpi_rank+1;
     ss << "_";
     ss << std::setfill('0') << std::setw(7) << mpi_size;
-//    ss << ".kvsml";
     ss << ".dat";
     m_POLFilePath += ss.str();
     // 20181226 end

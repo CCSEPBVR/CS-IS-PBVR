@@ -28,6 +28,7 @@ bool PlotOverLineProperty::LoadIN( const std::string& filename )
 
     name_list.push_back( "PLOT_FLAG" );
     name_list.push_back( "SAMPLING_SIZE" );
+    name_list.push_back( "PLOT_VARIABLE" );
     name_list.push_back( "START_POINT" );
     name_list.push_back( "END_POINT" );
 

@@ -145,6 +145,8 @@ private:
     kvs::Vec3 m_end_point; 
     //解像度
     int m_resolution;
+    //指定変数
+    int m_plot_variable ;
 
 
 public:
