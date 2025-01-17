@@ -919,6 +919,8 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
                     nvariables, (float*)object->coords().pointer(), ncoords,
                     (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, particleBase);
 #endif
+
+#if 0
 // stab data
     //Hexahedra
     size_t nvert = 8;
@@ -979,9 +981,11 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
 
     const kvs::Vec3 P0( 1.2, 0.3, 0.3 );
     const kvs::Vec3 P1( -0.1, 0.4, 0.2 );
-
             GeneratePlotOverLine(time_step, volume1, &plot_over_line);
             delete volume1;
+#else
+            GeneratePlotOverLine(time_step, object, &plot_over_line);
+#endif
         }
         timer.stop();
         t_generate_particles += timer.sec();
