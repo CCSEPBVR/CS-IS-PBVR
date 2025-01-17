@@ -164,6 +164,7 @@ public:
 
     //Plot Over Line
     bool m_plot_flag; // plot ober line の生成判定
+    std::string m_plot_variable;
     int32_t m_sampling_size;
     float m_start_point[3];
     float m_end_point[3];
