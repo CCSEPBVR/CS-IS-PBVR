@@ -21,6 +21,7 @@ public:
     explicit PlotOverLine(QWidget *parent = nullptr,
                           PBVRGUI *pbvr_gui = nullptr,
                           Connect* Connect = nullptr);
+    void updateNumberOfVector( jpv::ParticleTransferServerMessage& server_message );
     ~PlotOverLine();
     void setPlotData( std::vector<float> xAxis, std::vector<bool> mask, std::vector<float> values );
 
@@ -31,6 +32,8 @@ private:
     PBVRGUI *m_pbvr_gui;
     Connect* m_connect; //クライアント/サーバメッセージ呼び出し用。
     bool m_plot_enable=false;
+
+    QStringList* m_vector_list;
 
     // kvs::ValueArray<float> xAxis; //for debug
     // kvs::ValueArray<bool>  mask; //for debug

@@ -131,6 +131,7 @@ void Connect::connectServer()
 
     m_filter_infomation->updateFilterInfomation( ui->volumeDataFilePathLEdit->text(), m_server_message );
     m_glyph_editor->updateNumberOfVector( m_server_message );
+    m_plot_over_line->updateNumberOfVector( m_server_message );
 
     strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
 
