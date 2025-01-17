@@ -668,7 +668,7 @@ void generate_particles( int time_step, domain_parameters dom,
 
         GenerateGlyphs(time_step, dom, values,
             nvariables, coordinates, ncoords,
-            connections, ncells, celltype, particleBase);
+            connections, ncells, celltype);
     }
 
     OutputParticles(time_step, nvariables, particleBase, &param, skip_flag);
@@ -835,7 +835,8 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
 
             GenerateGlyphs(time_step, dom, values,
                     nvariables, (float*)object->coords().pointer(), ncoords,
-                    (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, particleBase);
+                    (unsigned int*)object->connections().pointer() , object -> ncells(), celltype);
+                    //(unsigned int*)object->connections().pointer() , object -> ncells(), celltype, particleBase);
 
             GeneratePlotOverLine(time_step, object, &plot_over_line);
         }
@@ -2235,12 +2236,15 @@ void GenerateGlyphs( int time_step,
                          domain_parameters dom,
                          Type** values, int nvariables,
                          float* coordinates, int ncoords,
-                         unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase) //celltype  enum 型に変更
+                         unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype) //celltype  enum 型に変更
+                         //unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase) //celltype  enum 型に変更
 {
-        GlyphGenerator glyph_generator( particleBase, time_step, values, nvariables,
+        //GlyphGenerator glyph_generator( particleBase, time_step, values, nvariables,
+        GlyphGenerator glyph_generator(  time_step, values, nvariables,
                 coordinates, ncoords, connections, ncells, celltype); 
        
-        glyph_generator.OutputGlyph(particleBase, time_step);
+        //glyph_generator.OutputGlyph(particleBase, time_step);
+        glyph_generator.OutputGlyph( time_step);
 }
 
 void GeneratePlotOverLine( const int time_step,
