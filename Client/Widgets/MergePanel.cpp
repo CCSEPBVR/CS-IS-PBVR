@@ -1063,7 +1063,7 @@ void MergePanel::onWorkerThreadFinished()
                 }
                 else if( kvs::PolygonObject* polygon_object = dynamic_cast<kvs::PolygonObject*>(m_files_manager[row]->getObject()) )
                 {
-                    polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getColor().red(), m_files_manager[row]->getColor().green(), m_files_manager[row]->getColor().blue() ) );
+                    // polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getColor().red(), m_files_manager[row]->getColor().green(), m_files_manager[row]->getColor().blue() ) );
                     polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
                     kvs::RendererBase* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer;
                     m_shading_controller->applyShading( stochastic_polygon_renderer );
@@ -1115,7 +1115,7 @@ void MergePanel::onWorkerThreadFinished()
                 }
                 else if( kvs::PolygonObject* polygon_object = dynamic_cast<kvs::PolygonObject*>(m_files_manager[row]->getObject()) )
                 {
-                    polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getColor().red(), m_files_manager[row]->getColor().green(), m_files_manager[row]->getColor().blue() ) );
+                    // polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getColor().red(), m_files_manager[row]->getColor().green(), m_files_manager[row]->getColor().blue() ) );
                     polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
                     m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, polygon_object );
                 }
