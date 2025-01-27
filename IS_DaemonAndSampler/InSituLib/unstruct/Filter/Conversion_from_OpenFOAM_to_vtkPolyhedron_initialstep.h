@@ -11,17 +11,125 @@ forAll(mesh.points(),pid)
 ucd ->SetPoints(vpoint);
 
 //cell  
+//for (int cid =0; cid < mesh.nCells(); cid ++)
+//{
+//    std::cout << "cid = " << cid << std::endl; 
+//    const cell &cellVertices = mesh.cells()[cid];
+//    const  cellShape c = mesh.cellShapes()[cid];
+//    int npoints = c.nPoints();
+//    std::cout << " npoints =  " << npoints << std::endl;
+//    std::cout << "  Vertex size: " << cellVertices.size() << std::endl;
+//
+//    if (c.model().index() == 0)
+//    {
+//    // 各頂点の座標を取得
+//    for (label vertI = 0; vertI < cellVertices.size(); ++vertI)
+//    {
+//        label pointIndex = cellVertices[vertI]; // 頂点のインデックス
+//        const point &vertexCoord = mesh.points()[pointIndex]; // 頂点の座標
+//        std::cout << "  Vertex " << int(vertI) << ": " << double(vertexCoord[0]) << ", " <<  double(vertexCoord[1]) << ", " << double(vertexCoord[2])<< std::endl;
+//    }
+//    }
+//
+//}
+
+    int mpi_rank;
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+
+vtkSmartPointer<vtkUnstructuredGrid> tet_data = vtkSmartPointer<vtkUnstructuredGrid>::New();
+
 //#pragma omp parallel  
-for (int cid = 0; cid < mesh.cellShapes().size(); cid ++)
+//for (int cid = 0; cid < mesh.cellShapes().size(); cid ++)
+std::cout << "mesh.nCells() = " << mesh.nCells() << std::endl; 
+for (int cid =0; cid < mesh.nCells(); cid ++)
+//forAll(mesh.cells(),cid)
 {
     const  cellShape c = mesh.cellShapes()[cid];
-    int npoints = c.nPoints();
+    auto vcell = vtkSmartPointer<vtkCellArray>::New();
+    const labelList &cellFaces = mesh.cells()[cid];
+
+    // 4 debug
+//    int nfacesd = c.nFaces();
+//    for (int i = 0; i < nfacesd; i++)
+//    {
+//        auto Fc = c.faces()[i]; // 面iの取得 
+//        int nFcpoints = Fc.size() ;// 面iの頂点数取得
+//        vtkIdType face[nFcpoints] ;
+//        for (int k =0; k< nFcpoints; k++ )
+//        {
+//            face[k] = Fc[k];
+//            std::cout << "Fc[k] = " <<  Fc[k] << std::endl;
+//        }
+//        vcell->InsertNextCell(nFcpoints, face);
+//    }
+
+#if 0
+    // 頂点indexの取得
+    int npoints = c.nPoints();   
+//
+//    const cell &cellVertices = mesh.cells()[cid];
+//    int npoints = cellVertices.size();
+
+//    std::cout << "cid = " << cid << std::endl;
+//    std::cout << " npoints =  " << npoints << std::endl;
     vtkIdType pointIds[npoints]; // = {0, 1, 2, 3, 4, 5, 6, 7};
 
     for (int j =0 ; j< npoints; j++ )  pointIds[j] = c[j];
+//    for (int j =0 ; j< npoints; j++ )  pointIds[j] = cellVertices[j];
 
-    int nfaces = c.nFaces();
+  
+// 面情報の取得
     auto vcell = vtkSmartPointer<vtkCellArray>::New();
+    const labelList &cellFaces = mesh.cells()[cid];
+    int nfaces = c.nFaces();
+
+        // **セルの面情報を取得**
+//        const labelList &cellFaces = mesh.cells()[cid]; // セルが参照する面インデックスリスト
+        Info << "  Number of faces: " << cellFaces.size() << endl;
+
+        // **セルの頂点情報を取得**
+        // 頂点の重複を避けるためにセットを使用
+        std::set<label> vertexSet;
+
+        for (label faceI = 0; faceI < cellFaces.size(); ++faceI)
+        {
+            label faceIndex = cellFaces[faceI]; // 面インデックス
+            const face &f = mesh.faces()[faceIndex]; // 面オブジェクト
+
+            // 面を構成する各頂点をセットに追加
+            for (label vertI = 0; vertI < f.size(); ++vertI)
+            {
+                vertexSet.insert(f[vertI]);
+            }
+        }
+
+        // セットから頂点を出力
+        Info << "  Number of unique vertices: " << vertexSet.size() << endl;
+        for (auto vertIndex : vertexSet)
+        {
+            const point &vertexCoord = mesh.points()[vertIndex]; // 頂点座標
+            Info << "    Vertex index " << vertIndex << ": " << vertexCoord << endl;
+        }
+
+ 
+//    int nfaces = cellFaces.size() ;
+//    std::cout << "nfaces = " << nfaces << std::endl; 
+//    for (int i = 0; i < nfaces; i++)
+//    {
+//        label faceIndex = cellFaces[i]; // 面インデックス
+//        const face &f = mesh.faces()[faceIndex]; // 面オブジェクト
+//
+//        int nFcpoints = f.size();// 面iの頂点数取得
+//        //auto Fc = c.faces()[i]; // 面iの取得 
+//        vtkIdType face[nFcpoints] ;
+////        std::cout << "nFcpoints = " << nFcpoints <<std::endl;
+//        for (int k =0; k< nFcpoints; k++ )
+//        {
+//            face[k] = f[k];
+//        }
+//        vcell->InsertNextCell(nFcpoints, face);
+//    }
+
     for (int i = 0; i < nfaces; i++)
     {
         auto Fc = c.faces()[i]; // 面iの取得 
@@ -33,6 +141,63 @@ for (int cid = 0; cid < mesh.cellShapes().size(); cid ++)
         }
         vcell->InsertNextCell(nFcpoints, face);
     }
+    //if (npoints == 0 ) std::cout << "cid = " << cid  << ", nfaces = " << nfaces << std::endl; 
+    std::cout << "cid = " << cid  << ", npoints = " << npoints  << ", nfaces = " << nfaces << std::endl; 
+#endif 
+
+        // **セルの面情報を取得**
+//        const labelList &cellFaces = mesh.cells()[cid]; // セルが参照する面インデックスリスト
+//        Info << "  Number of faces: " << cellFaces.size() << endl;
+
+        // **セルの頂点情報を取得**
+        // 頂点の重複を避けるためにセットを使用
+        std::set<label> vertexSet;
+
+        for (label faceI = 0; faceI < cellFaces.size(); ++faceI)
+        {
+            label faceIndex = cellFaces[faceI]; // 面インデックス
+            const face &f = mesh.faces()[faceIndex]; // 面オブジェクト
+
+            // 面を構成する各頂点をセットに追加
+            for (label vertI = 0; vertI < f.size(); ++vertI)
+            {
+                vertexSet.insert(f[vertI]);
+            }
+        }
+
+    int npoints = vertexSet.size();
+    vtkIdType pointIds[npoints]; // = {0, 1, 2, 3, 4, 5, 6, 7};
+    label index = 0;
+    for (auto vertIndex : vertexSet)
+    {
+        pointIds[index] = static_cast<vtkIdType>(vertIndex); // vtkIdTypeにキャストして格納
+        ++index;
+    }
+
+
+    int nfaces = cellFaces.size() ;
+    for (int i = 0; i < nfaces; i++)
+    {
+        label faceIndex = cellFaces[i]; // 面インデックス
+        const face &f = mesh.faces()[faceIndex]; // 面オブジェクト
+
+        int nFcpoints = f.size();// 面iの頂点数取得
+        vtkIdType face[nFcpoints] ;
+        for (int k =0; k< nFcpoints; k++ )
+        {
+            face[k] = f[k];
+        }
+        vcell->InsertNextCell(nFcpoints, face);
+    }
+
+//        // セットから頂点を出力
+//        Info << "  Number of unique vertices: " << vertexSet.size() << endl;
+//        for (auto vertIndex : vertexSet)
+//        {
+//            const point &vertexCoord = mesh.points()[vertIndex]; // 頂点座標
+//            Info << "    Vertex index " << vertIndex << ": " << vertexCoord << endl;
+//        }
+
     vtkSmartPointer<vtkIdTypeArray> legacyFaces = vtkSmartPointer<vtkIdTypeArray>::New();
     vcell->ExportLegacyFormat(legacyFaces);
     ucd->InsertNextCell(VTK_POLYHEDRON, npoints, pointIds, nfaces, legacyFaces -> GetPointer(0));
@@ -77,8 +242,6 @@ cellDataToPointData -> Update();
 vtkPointData* pointData = cellDataToPointData->GetOutput()->GetPointData();
 //ucd->GetPointData()->ShallowCopy(pointData);
 //generate_particles_vtk(time_step, ucd);
-
-std::cout << __LINE__ <<std::endl;
 
 vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter =
 vtkSmartPointer<vtkDataSetTriangleFilter>::New();
