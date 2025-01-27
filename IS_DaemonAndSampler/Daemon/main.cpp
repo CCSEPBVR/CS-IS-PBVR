@@ -234,8 +234,10 @@ int main( int argc, char** argv )
             std::string tfFilePath_old;
             std::string glyphFilePath;
             std::string glyphParameterPath;
+            std::string glyphParameterPath_old;
             std::string plotOverLineFilePath;
             std::string plotOverLineParameterPath;
+            std::string plotOverLineParameterPath_old;
 
             const char *envBuf = NULL;
             envBuf = std::getenv( "PARTICLE_DIR" );
@@ -275,11 +277,15 @@ int main( int argc, char** argv )
             tfFilePath_old = visParamDir;
             glyphParameterPath = visParamDir;
             plotOverLineParameterPath = visParamDir;
+            glyphParameterPath_old = visParamDir;
+            plotOverLineParameterPath_old = visParamDir;
             if (envBuf == NULL) {
                 tfFilePath += "default.tf";
                 tfFilePath_old += "default_old.tf";
                 glyphParameterPath += "parameter.gly";
                 plotOverLineParameterPath += "parameter.pol";
+                glyphParameterPath_old += "parameter_old.gly";
+                plotOverLineParameterPath_old += "parameter_old.pol";
             }
             else {
                 tfFilePath += envBuf;
@@ -288,6 +294,8 @@ int main( int argc, char** argv )
                 tfFilePath_old += "_old.tf";
                 glyphParameterPath += "parameter.gly";
                 plotOverLineParameterPath += "parameter.pol";
+                glyphParameterPath_old += "parameter_old.gly";
+                plotOverLineParameterPath_old += "parameter_old.pol";
             }
             // 20181226 end
             std::string statePath = visParamDir + "state.txt";
@@ -420,6 +428,7 @@ int main( int argc, char** argv )
 
                 strncpy( servMes.m_header, "JPTP /1.0 000 OK\r\n", 18 );
                 servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
                 servMes.m_transfer_function_count = 0;
                 servMes.m_number_volume_divide = fil.total_numSubVolumes;
                 servMes.m_time_step = fil.total_staSteps;
@@ -569,6 +578,7 @@ int main( int argc, char** argv )
             jpv::ParticleTransferClientMessage clntMes;
             clntMes.m_camera = new kvs::Camera();
             servMes.m_camera = new kvs::Camera();
+            servMes.m_server_status =0;
             // 20181226 start
             // stateおよびhistory用に、環境変数から指定されたパスをもとにファイルパスを作成
             ParticleMonitor pm( particlePath, glyphFilePath, plotOverLineFilePath, statePath.c_str(), historyPath.c_str() );
@@ -614,6 +624,7 @@ int main( int argc, char** argv )
                     //ほぼ空のソケットを送信する
                     strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
                     servMes.m_number_particle = 0;
+                    servMes.m_number_glyph = 0;
                     servMes.m_flag_send_bins = 1;
                     servMes.m_transfer_function_count = 0;
 
@@ -637,6 +648,7 @@ int main( int argc, char** argv )
                     //終了する
                     strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
                     servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
                     servMes.m_flag_send_bins = 1;
                     servMes.m_transfer_function_count = 0;
 
@@ -708,6 +720,7 @@ int main( int argc, char** argv )
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
                         servMes.m_flag_send_bins = 1;
 
                         servMes.m_message_size = servMes.byteSize();
@@ -934,6 +947,8 @@ int main( int argc, char** argv )
                             servMes.m_time_step = clntMes.m_step;
                             servMes.m_subpixel_level = pm.getSubpixelLevel();
                             vr = pm.particleHistoryFile().variableRange();
+                            
+
 
                             TimerStart( 3 );
                             for ( int tf = 0; tf < pm.particleHistoryFile().colorHistogramArray().size() && tf < servMes.m_transfer_function_count; tf++ )
@@ -1287,9 +1302,15 @@ int main( int argc, char** argv )
                             //clntMes.show();
                             // 20181226 start　環境変数で指定したパスおよび名前でファイル参照を行う
                             ppw.inputGlyphParameterMessage( clntMes );
-                            ppw.writeParameterFile( glyphParameterPath.c_str() );
-                            // 20181226 end
+                            ppr.readParameterFile( glyphParameterPath_old.c_str() );
+                            NameListFile nm1 = ppr.getNameListFile();
+                            NameListFile nm2 = ppw.getNameListFile();
 
+                            if( nm1 != nm2 )
+                            {
+                                ppw.writeParameterFile( glyphParameterPath.c_str() );
+                                // 20181226 end
+                            }
                             pbvr::PointObject* originalObject = new pbvr::PointObject;
                             kvs::KVSMLObjectGlyph* originalGlyph = new kvs::KVSMLObjectGlyph;
                             TimerStart( 2 );
@@ -1613,8 +1634,16 @@ int main( int argc, char** argv )
                             //clntMes.show();
                             // 20181226 start　環境変数で指定したパスおよび名前でファイル参照を行う
                             ppw.inputPlotOverLineParameterMessage( clntMes );
-                            ppw.writeParameterFile( plotOverLineParameterPath.c_str() );
-                            // 20181226 end
+                            std::cout << "plotOverLineParameterPath.c_str() = " << plotOverLineParameterPath.c_str() << std::endl;
+                            ppr.readParameterFile( plotOverLineParameterPath_old.c_str() );
+                            NameListFile nm1 = ppr.getNameListFile();
+                            NameListFile nm2 = ppw.getNameListFile();
+
+                            if( nm1 != nm2 )
+                            {
+                                ppw.writeParameterFile( plotOverLineParameterPath.c_str() );
+                            }
+
 
                             kvs::KVSMLObjectPlotOverLine* originalObject = new kvs::KVSMLObjectPlotOverLine;
                             TimerStart( 2 );
@@ -1725,7 +1754,7 @@ int main( int argc, char** argv )
                         TIMER_FIN();
                     }
 
-                }  // end loop of generate_glyph
+                }  // end loop of plot over line
 
             } // end of while (pts.good)
 
