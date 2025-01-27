@@ -1,5 +1,7 @@
 #include "PlotOverLine.h"
 #include "KVSMLObjectPlotOverLine.h"
+#include <fstream>
+#include <filesystem>
 
 PlotOverLine::PlotOverLine( void ){}
 
@@ -67,6 +69,7 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
 {
     std::string visParamDir;
     std::string POLParamPath;
+    std::string POLParamPath_old;
     std::string POLFilePath;
 
     const char *envBuf = NULL;
@@ -95,7 +98,9 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
     }
 
     POLParamPath = visParamDir + "parameter.pol";
-   
+    POLParamPath_old = visParamDir + "parameter_old.pol";
+    
+
     m_POLParamPath = POLParamPath;
     m_POLFilePath = POLFilePath;
 
@@ -103,8 +108,17 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
 
     bool read_flag =  plot_over_line_property.LoadIN(POLParamPath) ;
 
+    int mpi_rank;
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
     if(read_flag)
     {
+//        if(mpi_rank ==0)
+//        {
+////            std::rename( POLParamPath.c_str(), POLParamPath_old.c_str() );
+//            std::filesystem::copy(POLParamPath.c_str(), POLParamPath_old.c_str(), std::filesystem::copy_options::overwrite_existing);
+//        }
+
+
         bool plot_flag;
         std::string              p_flag                    = plot_over_line_property.getString( "PLOT_FLAG" );
         int resolution                                     = plot_over_line_property.getInt("SAMPLING_SIZE");
@@ -139,6 +153,7 @@ void PlotOverLine::extractPlotLine( const kvs::UnstructuredVolumeObject* volume)
 {
     this->setVolume( volume );
     this->extractPlotLine( m_start_point, m_end_point );
+           std::cout << __FUNCTION__ <<  __LINE__ <<std::endl;
 }
 
 void PlotOverLine::CellTypeReduceing()
@@ -264,6 +279,7 @@ void PlotOverLine::for_hexahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
 
     size_t id = 0;
 
+    std::cout << __FUNCTION__ << __LINE__ <<std::endl;
     for( int cell = 0; cell < ncells; cell++, id+=8 )
     {
         const kvs::UInt32* local_id = &connec[ id ];
@@ -307,6 +323,7 @@ void PlotOverLine::for_hexahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
         for( int i=0; i<8; i++ )
         {
             scalar[i] =  m_volume->values().to<kvs::Real32>( local_id[i] + ncoord*m_plot_variable);
+            if (scalar[i] > 10000000) std::cout << "scalar[i]  = " << scalar[i] << ", cell = " << cell  <<std::endl; 
         }
 
         kvs::Real32 face_center_scalar[6];
@@ -343,6 +360,7 @@ void PlotOverLine::for_hexahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
             }
         }
     }
+    std::cout << __FUNCTION__ << __LINE__ <<std::endl;
 };
 
 void PlotOverLine::for_pyramidal_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )

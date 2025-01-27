@@ -652,6 +652,9 @@ void generate_particles( int time_step, domain_parameters dom,
     pbvr_parameters particleBase;
     bool skip_flag;
     skip_flag = SetParameter(dom, &particleBase, &param, time_step);
+
+    PlotOverLine plot_over_line;
+    plot_over_line.SetPOLParameter(time_step);
     if (skip_flag == false)
     {
         // デフォルト設定を伝達関数に設定
@@ -669,6 +672,13 @@ void generate_particles( int time_step, domain_parameters dom,
         GenerateGlyphs(time_step, dom, values,
             nvariables, coordinates, ncoords,
             connections, ncells, celltype);
+         callPlotOverLine(time_step, dom, values,
+             nvariables, coordinates, ncoords,
+             connections, ncells, celltype, &plot_over_line);                                        
+         plot_over_line.OutputLine(time_step);
+ 
+
+
     }
 
     OutputParticles(time_step, nvariables, particleBase, &param, skip_flag);
@@ -1914,7 +1924,6 @@ void GenerateParticles( int time_step,
                         = calculate_number_of_particles( density, interp[thid][0]->volume(), &MT ) ;
                 nparticles_array[cell_BLK] *= particle_density;
                 nparticles_num += nparticles_array[cell_BLK];
-
             }
         /////////////////////////////// Synthesized~ (), CalculateOpacity() ///////////////////////////////////
         /////////////////////////////// CalculateOpacity(), CalculateColor() ///////////////////////////////////
@@ -2229,7 +2238,7 @@ void GenerateParticles( int time_step,
 
     timer.stop();
     time.writting = timer.sec();
-    show_timer( time );
+    //show_timer( time );
 }
 
 void GenerateGlyphs( int time_step,
@@ -2258,6 +2267,95 @@ void GeneratePlotOverLine( const int time_step,
        } 
 
 }
+
+void callPlotOverLine( int time_step,
+                             domain_parameters dom, 
+                             Type** values, int nvariables,
+                             float* coordinates, int ncoords,
+                             unsigned int* connections, int ncells,
+                             const  pbvr::VolumeObjectBase::CellType& celltype , PlotOverLine* plot_over_line )  
+{
+
+        kvs::UnstructuredVolumeObject* object = new kvs::UnstructuredVolumeObject;
+        object -> setNNodes(ncoords);
+        object -> setNCells(ncells);
+        object -> setVeclen(nvariables);
+        std::vector<float> Values;
+        Values.resize(ncoords * nvariables);
+        for (int i =0; i<nvariables ; i++) 
+        {    
+            for (int k=0; k< ncoords; k++) 
+            {    
+                Values[k+i*ncoords] = values[i][k];
+            }    
+        }    
+
+        kvs::AnyValueArray Var(Values);
+        object -> setValues(Var);
+        kvs::ValueArray<float> Coords(coordinates, ncoords);
+        object -> setCoords(Coords);
+
+        kvs::ValueArray<kvs::UInt32> Connections;
+        switch ( celltype )  // 2次要素は一旦除外
+        {
+            case 4: // pbvr::VolumeObjectBase::Tetrahedra:
+                {
+                    int nconnection = ncells * 4;
+                    Connections.allocate(nconnection); // hexのみ
+                    for (int i =0; i< nconnection ;i ++)
+                    {
+                        Connections[i] = connections[i];
+                    }
+                    object -> setCellType(kvs::VolumeObjectBase::Tetrahedra);
+                    break;
+                }
+            case 8: //  pbvr::VolumeObjectBase::Hexahedra:
+                {
+                    int nconnection = ncells * 8;
+                    Connections.allocate(nconnection); // hexのみ
+                    for (int i =0; i< nconnection ;i ++)
+                    {
+                        Connections[i] = connections[i];
+                    }
+                    object -> setCellType(kvs::VolumeObjectBase::Hexahedra);
+                    break;
+                }
+            case 6: // pbvr::VolumeObjectBase::Prism:
+                {
+                    int nconnection = ncells * 6;
+                    Connections.allocate(nconnection); // hexのみ
+                    for (int i =0; i< nconnection ;i ++)
+                    {
+                        Connections[i] = connections[i];
+                    }
+                    object -> setCellType(kvs::VolumeObjectBase::Prism);
+                    break;
+                }
+            case 5: //pbvr::VolumeObjectBase::Pyramid:
+                {
+                    int nconnection = ncells * 5;
+                    Connections.allocate(nconnection); // hexのみ
+                    for (int i =0; i< nconnection ;i ++)
+                    {
+                        Connections[i] = connections[i];
+                    }
+                    object -> setCellType(kvs::VolumeObjectBase::Pyramid);
+                    break;
+                }
+            default:
+                {
+                    std::cout << "Unsupported cell type." << std::endl;
+                    return;
+                }
+        }
+
+        object -> setConnections(Connections);
+
+        GeneratePlotOverLine(time_step, object, plot_over_line);
+}
+
+
+
 
 void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBase, ParamInfo *param, bool skip_flag)
 {

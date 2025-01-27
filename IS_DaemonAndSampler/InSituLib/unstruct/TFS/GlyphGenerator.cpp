@@ -1,4 +1,5 @@
 #include "GlyphGenerator.h"
+#include <filesystem>
 
 //GlyphGenerator::GlyphGenerator(glyph_parameters &,Type** values, int nvariables,
 //GlyphGenerator::GlyphGenerator(pbvr_parameters& particleBase, const int time_step ,Type** values,
@@ -32,6 +33,7 @@ bool GlyphGenerator::SetGlyphParameter( const int time_step )
 {
     std::string visParamDir;
     std::string glyphParamPath;
+    std::string glyphParamPath_old;
     std::string glyphFilePath;
 
     const char *envBuf = NULL;
@@ -60,13 +62,14 @@ bool GlyphGenerator::SetGlyphParameter( const int time_step )
     }
 
     glyphParamPath = visParamDir + "parameter.gly";
+    glyphParamPath_old = visParamDir + "parameter_old.gly";
    
     m_glyphParamPath = glyphParamPath;
     m_glyphFilePath = glyphFilePath;
 
     GlyphProperty glyph_property;
 
-    glyph_property.LoadIN(glyphParamPath) ;
+    bool read_flag = glyph_property.LoadIN(glyphParamPath) ;
 
     bool glyph_flag;
     std::string              g_flag                = glyph_property.getString( "GLYPH_FLAG" );
@@ -80,6 +83,20 @@ bool GlyphGenerator::SetGlyphParameter( const int time_step )
     std::string color_sampling_method              = glyph_property.getString("COLOR_DATA_SAMPLING_METHOD");
     std::vector<std::string> color_data_variables  = glyph_property.getTableString( "COLOR_VARIABLES" );
     
+
+    int mpi_size = 1;
+    int mpi_rank;
+    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+   
+//    if(read_flag)
+//    {
+////        if(mpi_rank ==0) std::rename( glyphParamPath.c_str(), glyphParamPath_old.c_str() );
+//        if(mpi_rank ==0) std::filesystem::copy(glyphParamPath.c_str(), glyphParamPath_old.c_str(), std::filesystem::copy_options::overwrite_existing);
+//    }
+
+
+    number_of_sample_points /= mpi_size;  
 
     float glyph_min=0; 
     float glyph_max=0;
@@ -145,7 +162,7 @@ bool GlyphGenerator::SetGlyphParameter( const int time_step )
         m_color_data_variables.push_back( std::atoi(color_data_variables[i].substr(1).c_str()) - 1); 
     }
 
-#if 1
+#if 0
     std::cout << "m_direction_variables        = " << m_direction_variables[0] << ", " << m_direction_variables[1]   << std::endl; 
     std::cout << "m_size_sampling_method       = " << static_cast<int>(m_size_sampling_method)      << std::endl; 
     if(m_size_variables.size() > 0) std::cout << "m_size_variables             = " << m_size_variables[0]    << std::endl; 

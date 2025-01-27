@@ -212,6 +212,12 @@ extern "C" {
                              unsigned int* connections, int ncells,
                              //_const  pbvr::VolumeObjectBase::CellType& celltype ,pbvr_parameters& particleBase );
                              const  pbvr::VolumeObjectBase::CellType& celltype );
+ void callPlotOverLine( int time_step,
+                              domain_parameters dom, 
+                              Type** values, int nvariables,
+                              float* coordinates, int ncoords,
+                              unsigned int* connections, int ncells,
+                              const  pbvr::VolumeObjectBase::CellType& celltype , PlotOverLine* plot_over_line );
     void GeneratePlotOverLine(int time_step, const kvs::UnstructuredVolumeObject* volume, PlotOverLine* plot_over_line);
     //void GeneratePlotOverLine(int time_step, const kvs::UnstructuredVolumeObject* volume,plot_over_line_data& polData );
 
