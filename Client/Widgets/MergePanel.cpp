@@ -223,6 +223,11 @@ bool MergePanel::checkFormat( FilesManager* newFile )
                     newFile->setFormat( FilesManager::NonTexturedPolygonObjectKVSML );
                     break;
                 }
+                else if( tagName == "LineObject" )
+                {
+                    newFile->setFormat( FilesManager::LineObjectKVSML );
+                    break;
+                }
             }
         }
 
@@ -292,6 +297,7 @@ bool MergePanel::checkMinMaxTimeStep( FilesManager* newFile )
     {
     case FilesManager::PointObjectKVSML:
     case FilesManager::NonTexturedPolygonObjectKVSML:
+    case FilesManager::LineObjectKVSML:
         regularExpression.setPattern( newFile->getFileInfo().baseName().left( newFile->getFileInfo().baseName().indexOf( '_' )) + "_([0-9]+)\\.*" );
         break;
     default:
@@ -698,6 +704,9 @@ MergePanel::WorkerThread::WorkerThread( MergePanel* gui ) : m_merge( gui )
 #include <kvs/PolygonObject>
 #include <kvs/StochasticPolygonRenderer>
 #include <kvs/PolygonImporter>
+#include <kvs/LineImporter>
+#include <kvs/LineObject>
+#include <kvs/StochasticLineRenderer>
 #if defined( PBVR_SUPPORT_FBX ) || defined( PBVR_SUPPORT_3DS )
 #include <kvs/TexturedPolygonObject>
 #include <kvs/StochasticTexturedPolygonRenderer>
@@ -759,6 +768,8 @@ void MergePanel::WorkerThread::run()
             timeStepCheckAndImport<kvs::TexturedPolygonImporter, kvs::TexturedPolygonObject, kvs::StochasticTexturedPolygonRenderer>( row );
             break;
 #endif
+        case FilesManager::LineObjectKVSML:
+            timeStepCheckAndImport<kvs::LineImporter, kvs::LineObject, kvs::StochasticLineRenderer>( row );
         default:
             break;
         }
@@ -1069,6 +1080,15 @@ void MergePanel::onWorkerThreadFinished()
                     m_files_manager[row]->setIDs( m_pbvr_gui->screen()->scene()->registerObject( textured_polygon_object, stochastic_textured_polygon_renderer ) );
                 }
 #endif
+                else if( kvs::LineObject* line_object = dynamic_cast<kvs::LineObject*>(m_files_manager[row]->getObject()) )
+                {
+                    line_object->setSize( 10 );
+                    line_object->setLineType( kvs::LineObject::Segment );
+                    line_object->setColorType( kvs::LineObject::VertexColor );
+                    kvs::RendererBase* stochastic_line_renderer = new kvs::StochasticLineRenderer;
+                    m_shading_controller->applyShading( stochastic_line_renderer );
+                    m_files_manager[row]->setIDs( m_pbvr_gui->screen()->scene()->registerObject( line_object, stochastic_line_renderer ) );
+                }
             }
         }
         else
@@ -1105,6 +1125,13 @@ void MergePanel::onWorkerThreadFinished()
                     m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, textured_polygon_object );
                 }
 #endif
+                else if( kvs::LineObject* line_object = dynamic_cast<kvs::LineObject*>(m_files_manager[row]->getObject()) )
+                {
+                    line_object->setSize( 10 );
+                    line_object->setLineType( kvs::LineObject::Segment );
+                    line_object->setColorType( kvs::LineObject::VertexColor );
+                    m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, line_object );
+                }
             }
 
             if( m_files_manager[row]->getChangePolygonTransferFunction() == true ) //色不透明度の変更がある場合はポリゴンを作り替える。

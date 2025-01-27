@@ -14,16 +14,17 @@ class FilesManager
 public:
     enum Format
     {
-        Unknown                       = 0, // Aka Error
-        ServerPointObjectCS           = 1, // Server side Point Object
-        ServerPointObjectIS           = 2, // Server side Point Object
-        PointObjectKVSML              = 3, // Point Object(.kvsml)
-        PointObjectLAS                = 4, // Point Object(.las)
-        PointObjectPTS                = 5, // Point Object(.pts)
-        NonTexturedPolygonObjectKVSML = 6, // Non Textured Polygon Object(.kvsml)
-        NonTexturedPolygonObjectSTL   = 7, // Non Textured Polygon Object(.stl)
-        TexturedPolygonObject3DS      = 8, // Textured Polygon Object(.3ds)
-        TexturedPolygonObjectFBX      = 9, // Textured Polygon Object(.fbx)
+        Unknown                       = 0,  // Aka Error
+        ServerPointObjectCS           = 1,  // Server side Point Object
+        ServerPointObjectIS           = 2,  // Server side Point Object
+        PointObjectKVSML              = 3,  // Point Object(.kvsml)
+        PointObjectLAS                = 4,  // Point Object(.las)
+        PointObjectPTS                = 5,  // Point Object(.pts)
+        NonTexturedPolygonObjectKVSML = 6,  // Non Textured Polygon Object(.kvsml)
+        NonTexturedPolygonObjectSTL   = 7,  // Non Textured Polygon Object(.stl)
+        TexturedPolygonObject3DS      = 8,  // Textured Polygon Object(.3ds)
+        TexturedPolygonObjectFBX      = 9,  // Textured Polygon Object(.fbx)
+        LineObjectKVSML               = 10, // Line Object(.kvsml)
     };
 
     QString formatToString( Format format )
@@ -50,6 +51,8 @@ public:
             return QStringLiteral( "3ds" );
         case TexturedPolygonObjectFBX:
             return QStringLiteral( "fbx" );
+        case LineObjectKVSML:
+            return QStringLiteral( "KVSML(LineObject)" );
         default:
             return QStringLiteral( "Unknown" );
         }
