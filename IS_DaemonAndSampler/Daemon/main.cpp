@@ -483,7 +483,6 @@ int main( int argc, char** argv )
                 pm.check();
                 if( pm.stepExisted() )
                 {
-                    std::cout << "pm.particleStatusFile().getLatestTimeStep() = " << pm.particleStatusFile().getLatestTimeStep() <<std::endl;
                     pm.setTimeStep(pm.particleStatusFile().getLatestTimeStep());
                     //pm.setTimeStep(0);
                 }
@@ -594,7 +593,7 @@ int main( int argc, char** argv )
                 //受信したデータをclntMesが読み取る
                 ptss = pts.recvMessage( &clntMes );
                 std::cout<<"main.cpp:L388"<<std::endl;
-                //clntMes.show();
+                clntMes.show();
                 std::cout<<"ptss="<<ptss<<std::endl;
 
                 if ( ptss == -1 ) break;
@@ -905,7 +904,6 @@ int main( int argc, char** argv )
                             NameListFile nm2 = ppw.getNameListFile();
                             if( nm1 != nm2 )
                             {
-                                //ppw.writeParameterFile("jupiter.tf");
                                 ppw.writeParameterFile( tfFilePath.c_str() );
                             }
                             // 20181226 end

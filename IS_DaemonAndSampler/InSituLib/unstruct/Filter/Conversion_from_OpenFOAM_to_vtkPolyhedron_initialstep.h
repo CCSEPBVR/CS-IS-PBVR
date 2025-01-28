@@ -1,4 +1,3 @@
-
 // time_step =0 のみ座標情報を入力する！！
 int time_step = 0;
 vtkSmartPointer<vtkUnstructuredGrid> ucd = vtkSmartPointer<vtkUnstructuredGrid>::New();
@@ -234,6 +233,16 @@ forAll(mesh.cells(),cid)
     scalars_w->InsertNextValue(U[cid].z());
 }
 ucd -> GetCellData() -> AddArray(scalars_w);
+
+// pressuror
+vtkSmartPointer<vtkFloatArray> scalars_p =
+vtkSmartPointer<vtkFloatArray>::New();
+scalars_p->SetName("p");
+forAll(mesh.cells(),cid)
+{
+    scalars_p->InsertNextValue(p[cid]);
+}
+ucd -> GetCellData() -> AddArray(scalars_p);
 
 vtkSmartPointer<vtkCellDataToPointData> cellDataToPointData =
 vtkSmartPointer<vtkCellDataToPointData>::New();

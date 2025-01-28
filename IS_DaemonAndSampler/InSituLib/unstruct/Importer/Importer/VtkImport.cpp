@@ -51,10 +51,13 @@ kvs::ValueArray<kvs::Real32> GetCoordinates( VtkPointSetPointerType data )
 {
     std::vector<kvs::Real32> coords( data->GetNumberOfPoints() * 3 );
 
+
 #pragma omp parallel for
     for ( vtkIdType i = 0; i < data->GetNumberOfPoints(); ++i )
     {
-        auto p = data->GetPoint( i );
+        double p[3];
+        data->GetPoint( i , p); // add by shimomura 2024/11/27
+        //auto p = data->GetPoint( i );
 
         coords[i * 3] = static_cast<kvs::Real32>( p[0] );
         coords[i * 3 + 1] = static_cast<kvs::Real32>( p[1] );

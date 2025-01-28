@@ -48,13 +48,6 @@
 #include "CvtTypeTraits.h"
 #include "Importer/VtkImporter.h"
 
-//Glyph
-#include "TFS/GlyphGenerator.h"
-#include "TFS/GlyphProperty.h"
-
-//PlotOverLine
-#include "TFS/PlotOverLine.h"
-
 // add FJ start
 #ifndef SIMD_BLK_SIZE
 #define SIMD_BLK_SIZE 128
@@ -284,10 +277,6 @@ void SetDefalutParameter( TransferFunctionSynthesizer* tfs,
     particleBase->m_O_min.allocate(particleBase->m_tf_number);
     particleBase->m_C_max.allocate(particleBase->m_tf_number);
     particleBase->m_C_min.allocate(particleBase->m_tf_number);
-    particleBase->m_O_max.fill(0x00);
-    particleBase->m_O_min.fill(0x00);
-    particleBase->m_C_max.fill(0x00);
-    particleBase->m_C_min.fill(0x00);
     particleBase->m_o_histogram.allocate(particleBase->m_tf_number*nbin);
     particleBase->m_c_histogram.allocate(particleBase->m_tf_number*nbin);
     particleBase->m_o_histogram.fill(0x00);
@@ -299,10 +288,6 @@ void readTFfromParamInfo( ParamInfo* param,
                           std::vector<pbvr::TransferFunction>& tf,
                           TransferFunctionSynthesizer* tfs )
 {
-
-    int mpi_rank;
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-
     //Read TFS
     std::vector<int> i_table;
     std::vector<float> f_table;
@@ -421,7 +406,6 @@ void readTFfromParamInfo( ParamInfo* param,
         tfBuf.setOpacityMap( opacity_map );
         tf.push_back(tfBuf);
     }
-    
 
 #if 1
     // add by shimomura 2024/03/25
@@ -433,10 +417,10 @@ void readTFfromParamInfo( ParamInfo* param,
     tfs->setOpacityFunction( eq );
 
     equation = param->getString( "COLOR_SYNTH" );
+    std::cout << "equation =" <<equation <<std::endl;
     std::replace(equation.begin(), equation.end(), 'C', 'c');
     eq = tfs->convert_token(equation);
     tfs->setColorFunction( eq );
-
 
     for ( size_t i = 0; i < tf_number; i++ )
     {
@@ -446,10 +430,7 @@ void readTFfromParamInfo( ParamInfo* param,
 
         equation = param->getString( tag_base +"VAR_C" );
         eq = tfs->convert_token(equation);
-
-
         var.push_back( eq );
-
     }
 
     tfs->setOpacityVariable( var );
@@ -664,9 +645,6 @@ void generate_particles( int time_step, domain_parameters dom,
     pbvr_parameters particleBase;
     bool skip_flag;
     skip_flag = SetParameter(dom, &particleBase, &param, time_step);
-
-    PlotOverLine plot_over_line;
-    plot_over_line.SetPOLParameter(time_step);
     if (skip_flag == false)
     {
         // デフォルト設定を伝達関数に設定
@@ -680,17 +658,6 @@ void generate_particles( int time_step, domain_parameters dom,
         GenerateParticles(time_step, dom, values,
             nvariables, coordinates, ncoords,
             connections, ncells, celltype, particleBase);
-
-        GenerateGlyphs(time_step, dom, values,
-            nvariables, coordinates, ncoords,
-            connections, ncells, celltype);
-         callPlotOverLine(time_step, dom, values,
-             nvariables, coordinates, ncoords,
-             connections, ncells, celltype, &plot_over_line);                                        
-         plot_over_line.OutputLine(time_step);
- 
-
-
     }
 
     OutputParticles(time_step, nvariables, particleBase, &param, skip_flag);
@@ -797,18 +764,12 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
 
     static ParamInfo param;
     pbvr_parameters particleBase;
-    
-    
     bool skip_flag;
     skip_flag = SetParameter(dom, &particleBase, &param, time_step);
 
     int mpi_rank = 0;
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
     
-    // plot over line
-    PlotOverLine plot_over_line;
-    plot_over_line.SetPOLParameter(time_step);
-
     timer.stop();
     std::cout << mpi_rank << ", set_parameter = " << timer.sec() <<std::endl;
     timer.start();
@@ -817,12 +778,6 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
     float t_extract = 0;
     float t_generate_particles = 0;
 
-    for (int i =0; i<8 ;i++)
-    {
-        particleBase.con_log[i] =0; 
-    }        
-    
-    
     cvt::VtkXmlUnstructuredGrid input_vtu( ucd );
     for ( auto vtu : input_vtu.eachCellType() )
     {
@@ -832,7 +787,6 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
 
         int ncoords = object -> nnodes();
         nvariables  = object -> veclen();
-        particleBase.m_nvariables = nvariables; 
 
         pbvr::VolumeObjectBase::CellType celltype;
         Type** values;
@@ -861,12 +815,6 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
                     nvariables, (float*)object->coords().pointer(), ncoords,
                     (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, particleBase);
 
-            GenerateGlyphs(time_step, dom, values,
-                    nvariables, (float*)object->coords().pointer(), ncoords,
-                    (unsigned int*)object->connections().pointer() , object -> ncells(), celltype);
-                    //(unsigned int*)object->connections().pointer() , object -> ncells(), celltype, particleBase);
-
-            GeneratePlotOverLine(time_step, object, &plot_over_line);
         }
         timer.stop();
         t_generate_particles += timer.sec();
@@ -878,10 +826,6 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
         }
         delete[] values;
     }
-
-    // plot over line
-    plot_over_line.OutputLine(time_step);
-
 
     timer.stop();
     std::cout << mpi_rank << ", extract() = " << t_extract <<std::endl;
@@ -994,8 +938,8 @@ bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, Pa
 
     int tf_number = particleBase->m_tf.size();
 
-    
     particleBase->m_tf_number = tf_number;
+    //particleBase->m_parameter_file_opened = tmp_parameter_file_opened;
     particleBase->m_parameter_file_opened = true;
 
     delete object;
@@ -1007,10 +951,6 @@ bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, Pa
     particleBase->m_O_min.allocate(particleBase->m_tf_number);
     particleBase->m_C_max.allocate(particleBase->m_tf_number);
     particleBase->m_C_min.allocate(particleBase->m_tf_number);
-    particleBase->m_O_max.fill(0x00);
-    particleBase->m_O_min.fill(0x00);
-    particleBase->m_C_max.fill(0x00);
-    particleBase->m_C_min.fill(0x00);
     particleBase->m_o_histogram.allocate(particleBase->m_tf_number*nbin);
     particleBase->m_c_histogram.allocate(particleBase->m_tf_number*nbin);
     particleBase->m_o_histogram.fill(0x00);
@@ -1020,6 +960,8 @@ bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, Pa
     if ( generate_flag == false )
     {
         std::cout << "find no .tf!! skipping generate_particle !!!" << std::endl;
+        //delete m_tfs;
+        //return;
         return false;
     }
     // moved by shimomura 20240807
@@ -1196,6 +1138,7 @@ void GenerateHistogram( int time_step,
     int   subpixel_level           = particleBase.m_subpixel_level          ;
     float particle_density         = particleBase.m_particle_density        ;
     float particle_data_size_limit = particleBase.m_particle_data_size_limit;
+    //std::vector<pbvr::TransferFunction> tf = particleBase.m_tf;
     parameter_file_opened = particleBase.m_parameter_file_opened;
     const int max_nparticles = (int)max_density + 1;
 
@@ -1402,6 +1345,7 @@ void GenerateHistogram( int time_step,
                         th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
                         th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
                         th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
+
                     }
                 }
             }
@@ -1491,6 +1435,7 @@ void GenerateParticles( int time_step,
     int mpi_rank = 0;
 
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+
     //if(mpi->rank==0)std::cout<<"start generate_particles\n";
     static bool start_flag = true;
     static bool parameter_file_opened=false;
@@ -1529,6 +1474,7 @@ void GenerateParticles( int time_step,
             }
         case pbvr::VolumeObjectBase::Hexahedra:
             {
+                std::cout << "Cell type : hexahedra " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
                 {
                     interp[ i ].resize( nvariables  );
@@ -1642,11 +1588,23 @@ void GenerateParticles( int time_step,
     int   subpixel_level           = particleBase.m_subpixel_level          ;
     float particle_density         = particleBase.m_particle_density        ;
     float particle_data_size_limit = particleBase.m_particle_data_size_limit;
+    //std::vector<pbvr::TransferFunction> tf = particleBase.m_tf;
     parameter_file_opened = particleBase.m_parameter_file_opened;
     const int max_nparticles = (int)max_density + 1;
 
     if(mpi_rank == 0) std::cout<<"******* max_nparticles="<<max_nparticles<<std::endl;
    
+//    // Set Transfer function synthesizer.
+//    int tf_number = tf.size();
+//
+//    if( start_flag ) parameter_file_opened = tmp_parameter_file_opened;
+//
+//    //if(mpi->rank==0)std::cout<<"end initializeTFS()\n";
+//
+//    const int max_nparticles = (int)max_density + 1;
+//
+//    if(mpi_rank == 0) std::cout<<"******* max_nparticles="<<max_nparticles<<std::endl;
+
     //ヒストグラム
     int nbins = 256;
     kvs::ValueArray<float> o_min( tf_number );//TFSから読み込む最大最小値
@@ -1676,11 +1634,6 @@ void GenerateParticles( int time_step,
         o_max[i] = particleBase.m_tf[i].opacityMap().maxValue();
         c_min[i] = particleBase.m_tf[i].colorMap().minValue();
         c_max[i] = particleBase.m_tf[i].colorMap().maxValue();
-        
-        o_min[i] = o_min[i] < FLT_MIN ? FLT_MIN : o_min[i];  
-        o_max[i] = o_max[i] > FLT_MAX ? FLT_MAX : o_max[i]; 
-        c_min[i] = c_min[i] < FLT_MIN ? FLT_MIN : c_min[i]; 
-        c_max[i] = c_max[i] > FLT_MAX ? FLT_MAX : c_max[i]; 
     }
 
     //最大最小値
@@ -1710,6 +1663,7 @@ void GenerateParticles( int time_step,
 
     for ( int n = 0; n < max_threads; n++ )
     {
+        //th_tfs[n] = new TransferFunctionSynthesizer( *tfs );
         th_tfs[n] = new TransferFunctionSynthesizer( *m_tfs );
     }
 
@@ -1719,6 +1673,7 @@ void GenerateParticles( int time_step,
         th_tf[ i ].resize( tf_number );
         for ( int j = 0; j < tf_number; j++ )
         {
+//            th_tf[i][j] = tf[j];
             th_tf[i][j] = particleBase.m_tf[j];
         }
     }
@@ -1733,7 +1688,6 @@ void GenerateParticles( int time_step,
     time.initialize = timer.sec();
     timer.start();
 
-  
     #pragma omp parallel
     {
 #if _OPENMP
@@ -1831,6 +1785,7 @@ void GenerateParticles( int time_step,
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
                 cell_index[cell_BLK] = (kvs::UInt32)(cell_base + cell_BLK);
+                //local_center_array[cell_BLK] = kvs::Vector3f ( 0.5, 0.5, 0.5 );
                 local_center_array[cell_BLK] = interp[thid][0]->localGravityPoint();
             }
 
@@ -1847,61 +1802,6 @@ void GenerateParticles( int time_step,
 
             if( parameter_file_opened )
             {
-                std::vector<bool> o_zero_flag(tf_number); 
-                std::vector<bool> c_zero_flag(tf_number); 
-                for( int i = 0; i < tf_number; i++ )
-                {
-                    o_zero_flag[i] = false;
-                    c_zero_flag[i] = false;
-                    if ( kvs::Math::Equal<float>(o_max[i], o_min[i] ))   //0　判定ならば、一様分布にする
-                    {
-                        o_zero_flag[i] = true;
-                        for (int k =0 ; k< nbins; k++)
-                        {
-                            th_o_histogram[ k+nbins*i] ++;
-                        }
-                    }
-
-                    if ( kvs::Math::Equal<float>(c_max[i], c_min[i] ))   //0　判定ならば、一様分布にする
-                    {
-                        c_zero_flag[i] = true;
-
-                        for (int k =0 ; k< nbins; k++)
-                        {
-                            th_c_histogram[ k+nbins*i] ++;
-                        }
-
-                    }
-
-                }
-
-                std::vector<bool> o_zero_flag(tf_number); 
-                std::vector<bool> c_zero_flag(tf_number); 
-                for( int i = 0; i < tf_number; i++ )
-                {
-                    o_zero_flag[i] = false;
-                    c_zero_flag[i] = false;
-                    if ( kvs::Math::Equal<float>(o_max[i], o_min[i] ))   //0　判定ならば、一様分布にする
-                    {
-                        o_zero_flag[i] = true;
-                        for (int k =0 ; k< nbins; k++)
-                        {
-                            th_o_histogram[ k+nbins*i] ++;
-                        }
-                    }
-
-                    if ( kvs::Math::Equal<float>(c_max[i], c_min[i] ))   //0　判定ならば、一様分布にする
-                    {
-                        c_zero_flag[i] = true;
-
-                        for (int k =0 ; k< nbins; k++)
-                        {
-                            th_c_histogram[ k+nbins*i] ++;
-                        }
-
-                    }
-
-                }
 
                th_tfs[thid]->SynthesizedOpacityScalarsArray( interp[thid],
                                                               remain,
@@ -1915,35 +1815,41 @@ void GenerateParticles( int time_step,
                                                            global_center_array,
                                                            c_scalars_array );
 
-
                for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
                {
                    for( int i = 0; i < tf_number; i++ )
                    {
-                       if (!o_zero_flag[i]) 
-                       {
-                           float h = (o_scalars_array[cell_BLK][i] - o_min[i])/( o_max[i] - o_min[i] )*nbins;
-                           int H = (int)h;
-                           if( 0 <= H && H <= nbins )
-                           {
-                               if( H == nbins ) H--;
-                               th_o_histogram[ H + nbins*i]++;
-                           }
-
-
-                       }
-
-                       if (!c_zero_flag[i]) 
-                       {
-                           float h = (c_scalars_array[cell_BLK][i] - c_min[i])/( c_max[i] - c_min[i] )*nbins;
-                           int H = (int)h;
-                           if( 0 <= H && H <= nbins )
-                           {
-                               if( H == nbins ) H--;
-                               th_c_histogram[ H + nbins*i]++;
-                           }
+                        float h = (o_scalars_array[cell_BLK][i] - o_min[i])/( o_max[i] - o_min[i] )*nbins;
+                        int H = (int)h;
+                        if( 0 <= H && H <= nbins )
+                        {
+                            if( H == nbins ) H--;
+                            th_o_histogram[ H + nbins*i]++;
                         }
 
+                        h = (c_scalars_array[cell_BLK][i] - c_min[i])/( c_max[i] - c_min[i] )*nbins;
+                        H = (int)h;
+                        if( 0 <= H && H <= nbins )
+                        {
+                            if( H == nbins ) H--;
+                            th_c_histogram[ H + nbins*i]++;
+                        }
+/*
+                        if( cell_BLK==0 )
+                        {
+                            th_O_min[i] = o_scalars_array[cell_BLK][i];
+                            th_O_max[i] = o_scalars_array[cell_BLK][i];
+                            th_C_min[i] = c_scalars_array[cell_BLK][i];
+                            th_C_max[i] = c_scalars_array[cell_BLK][i];
+                        }
+                        else
+                        {
+                            th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
+                            th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
+                            th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
+                            th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
+                        }
+*/
                         // 20190128 修正
                         th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
                         th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
@@ -1951,51 +1857,17 @@ void GenerateParticles( int time_step,
                         th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
 
 
-                       }
-
-                       if (!c_zero_flag[i]) 
-                       {
-                           float h = (c_scalars_array[cell_BLK][i] - c_min[i])/( c_max[i] - c_min[i] )*nbins;
-                           int H = (int)h;
-                           if( 0 <= H && H <= nbins )
-                           {
-                               if( H == nbins ) H--;
-                               th_c_histogram[ H + nbins*i]++;
-                           }
-                        }
-                           /*
-                              if( cell_BLK==0 )
-                              {
-                              th_O_min[i] = o_scalars_array[cell_BLK][i];
-                              th_O_max[i] = o_scalars_array[cell_BLK][i];
-                              th_C_min[i] = c_scalars_array[cell_BLK][i];
-                              th_C_max[i] = c_scalars_array[cell_BLK][i];
-                              }
-                              else
-                              {
-                              th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
-                              th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
-                              th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
-                              th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
-                              }
-                              */
-
-                           // 20190128 修正
-                           th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
-                           th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
-                           th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
-                           th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
                     }
                 }
             }
 
-            //th_tfs[thid]->CalculateOpacityArrayAverage( interp[thid],
-            th_tfs[thid]->CalculateOpacityArray( interp[thid],
+
+            th_tfs[thid]->CalculateOpacityArrayAverage( interp[thid],
                                                  remain,
                                                  local_center_array,
                                                  global_center_array,
                                                  th_tf[thid],
-                                                 cell_opacity_array);
+                                                 cell_opacity_array );
              //生成粒子数を計算
             int nparticles_num = 0;
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
@@ -2006,11 +1878,17 @@ void GenerateParticles( int time_step,
 #ifdef REJECTION
                     density             = cell_opacity_array[cell_BLK] < 0.0039 ? 0.0 : density; //  less than 1/256
 #endif
+//                    const float density = cell_opacity_array[cell_BLK] < 0.003 ? 0.0 : max_density; //  less than 1/256
                     interp[thid][0]->bindCell( cell_index[cell_BLK] );
                     nparticles_array[cell_BLK] 
+//                        = calculate_number_of_particles( density, interp[thid][0]->volume(), &MT );
                         = calculate_number_of_particles( density, interp[thid][0]->volume(), &MT ) ;
                 nparticles_array[cell_BLK] *= particle_density;
+
+//                 if(nparticles_array[cell_BLK] > 0)      std::cout << "mpi_rank =" << mpi_rank <<   ":  nparticles_array =" << nparticles_array[cell_BLK]   <<  ":  density ="  << density <<std::endl;
+//                 if(cell_opacity_array[cell_BLK] > 0)      std::cout << "mpi_rank =" << mpi_rank <<   ":  nparticles_array =" << nparticles_array[cell_BLK]   <<  ":  density ="  << density << ":  cell_opacity_array[cell_BLK] ="  << cell_opacity_array[cell_BLK] << std::endl;
                 nparticles_num += nparticles_array[cell_BLK];
+
             }
         /////////////////////////////// Synthesized~ (), CalculateOpacity() ///////////////////////////////////
         /////////////////////////////// CalculateOpacity(), CalculateColor() ///////////////////////////////////
@@ -2027,14 +1905,15 @@ void GenerateParticles( int time_step,
 #ifdef REJECTION
                     int nparticles_count = 0;
 #endif
-                    for( int j = 0; j < remain_BLK; j++ ) 
+                    //for( int j = 0; j < remain_BLK; j++ ) 
+                    for( int j = 0; j < 1; j++ ) 
                     {
                         cell_index[j] = cell_base + cell_BLK;
+                        kvs::UInt32 cell_id = cell_base + cell_BLK;
                         while(1)
                         {
-                            
                             local_coord_array[j] = interp[thid][0] -> randomSampling_MT( &MT );
-                           
+                            //local_center_array[cell_BLK] = kvs::Vector3f ( 0.5, 0.5, 0.5 );
 
                             //補間器にセルを一括でバインド
                             for( int k = 0; k < nvariables; k++ )
@@ -2048,10 +1927,12 @@ void GenerateParticles( int time_step,
                                     local_coord_array[j],
                                     global_coord_array[j],
                                     th_tf[thid]);
+
                             density_array[j] = Generator::CalculateDensity( cell_opacity_array[j],
                                     sampling_volume_inverse,
                                     max_opacity, max_density );
 
+//                             std::cout << "mpi_rank =" << mpi_rank <<   ":  density_array = " << density_array[j]   <<  ":  cell_opacity_array ="  << cell_opacity_array[j] <<std::endl;
 #ifdef REJECTION
                           if( density_array[j] > max_density * (float)MT.rand() )
                           {
@@ -2064,9 +1945,14 @@ void GenerateParticles( int time_step,
 #else
                           if(density_array[j] > 0)
                           {
-//                          std::cout << "break!!!!!" <<std::endl; 
+//                         std::cout << "break!!!!!" <<std::endl; 
                               break;
                           }
+                          else
+                          {
+                              std::cout << "mpi_rank =" << mpi_rank <<   ":  density_array = " << density_array[j]   <<  ":  cell_opacity_array ="  << cell_opacity_array[j] << ": global_coord_array[j] = " << global_coord_array[j]  << std::endl;
+                          }
+
 #endif                          
                         }  //while loop 
                     }
@@ -2281,6 +2167,7 @@ void GenerateParticles( int time_step,
 //                timer.stop();
     } //#pragma omp parallel
 
+
     timer.stop();
     time.sampling = timer.sec();
     time.nparticles = vertex_coords.size()/3;
@@ -2316,10 +2203,9 @@ void GenerateParticles( int time_step,
         //色
         particleBase.m_C_min[i] = particleBase.m_C_min[i] < C_min[i] ? particleBase.m_C_min[i] : C_min[i];
         particleBase.m_C_max[i] = particleBase.m_C_max[i] > C_max[i] ? particleBase.m_C_max[i] : C_max[i];
-        std::cout << mpi_rank <<" : particleBase.m_C_min["<< i << "] = " << particleBase.m_C_min[i] << std::endl;
-        std::cout << mpi_rank <<" : particleBase.m_C_max["<< i << "] = " << particleBase.m_C_max[i] << std::endl;
     }
 
+    std::cout << "mpi_rank =" << mpi_rank <<   ": " <<   __LINE__ <<std::endl; 
     std::cout << "nparticles = " <<  vertex_coords.size()/3   << std::endl;
     particleBase.m_sample_coords.insert(particleBase.m_sample_coords.end(), vertex_coords.begin(), vertex_coords.end());
     particleBase.m_sample_colors.insert(particleBase.m_sample_colors.end(), vertex_colors.begin(), vertex_colors.end());
@@ -2327,124 +2213,8 @@ void GenerateParticles( int time_step,
 
     timer.stop();
     time.writting = timer.sec();
-//    show_timer( time );
+    show_timer( time );
 }
-
-void GenerateGlyphs( int time_step,
-                         domain_parameters dom,
-                         Type** values, int nvariables,
-                         float* coordinates, int ncoords,
-                         unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype) //celltype  enum 型に変更
-                         //unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase) //celltype  enum 型に変更
-{
-        //GlyphGenerator glyph_generator( particleBase, time_step, values, nvariables,
-        GlyphGenerator glyph_generator(  time_step, values, nvariables,
-                coordinates, ncoords, connections, ncells, celltype); 
-       
-        //glyph_generator.OutputGlyph(particleBase, time_step);
-        glyph_generator.OutputGlyph( time_step);
-}
-
-void GeneratePlotOverLine( const int time_step,
-                           const kvs::UnstructuredVolumeObject* volume,
-                           PlotOverLine* plot_over_line  ) 
-{
-       if(plot_over_line->plot_flag())
-       {
-           plot_over_line->extractPlotLine( volume );
-           plot_over_line->CellTypeReduceing();
-       } 
-
-}
-
-void callPlotOverLine( int time_step,
-                             domain_parameters dom, 
-                             Type** values, int nvariables,
-                             float* coordinates, int ncoords,
-                             unsigned int* connections, int ncells,
-                             const  pbvr::VolumeObjectBase::CellType& celltype , PlotOverLine* plot_over_line )  
-{
-
-        kvs::UnstructuredVolumeObject* object = new kvs::UnstructuredVolumeObject;
-        object -> setNNodes(ncoords);
-        object -> setNCells(ncells);
-        object -> setVeclen(nvariables);
-        std::vector<float> Values;
-        Values.resize(ncoords * nvariables);
-        for (int i =0; i<nvariables ; i++) 
-        {    
-            for (int k=0; k< ncoords; k++) 
-            {    
-                Values[k+i*ncoords] = values[i][k];
-            }    
-        }    
-
-        kvs::AnyValueArray Var(Values);
-        object -> setValues(Var);
-        kvs::ValueArray<float> Coords(coordinates, ncoords);
-        object -> setCoords(Coords);
-
-        kvs::ValueArray<kvs::UInt32> Connections;
-        switch ( celltype )  // 2次要素は一旦除外
-        {
-            case 4: // pbvr::VolumeObjectBase::Tetrahedra:
-                {
-                    int nconnection = ncells * 4;
-                    Connections.allocate(nconnection); // hexのみ
-                    for (int i =0; i< nconnection ;i ++)
-                    {
-                        Connections[i] = connections[i];
-                    }
-                    object -> setCellType(kvs::VolumeObjectBase::Tetrahedra);
-                    break;
-                }
-            case 8: //  pbvr::VolumeObjectBase::Hexahedra:
-                {
-                    int nconnection = ncells * 8;
-                    Connections.allocate(nconnection); // hexのみ
-                    for (int i =0; i< nconnection ;i ++)
-                    {
-                        Connections[i] = connections[i];
-                    }
-                    object -> setCellType(kvs::VolumeObjectBase::Hexahedra);
-                    break;
-                }
-            case 6: // pbvr::VolumeObjectBase::Prism:
-                {
-                    int nconnection = ncells * 6;
-                    Connections.allocate(nconnection); // hexのみ
-                    for (int i =0; i< nconnection ;i ++)
-                    {
-                        Connections[i] = connections[i];
-                    }
-                    object -> setCellType(kvs::VolumeObjectBase::Prism);
-                    break;
-                }
-            case 5: //pbvr::VolumeObjectBase::Pyramid:
-                {
-                    int nconnection = ncells * 5;
-                    Connections.allocate(nconnection); // hexのみ
-                    for (int i =0; i< nconnection ;i ++)
-                    {
-                        Connections[i] = connections[i];
-                    }
-                    object -> setCellType(kvs::VolumeObjectBase::Pyramid);
-                    break;
-                }
-            default:
-                {
-                    std::cout << "Unsupported cell type." << std::endl;
-                    return;
-                }
-        }
-
-        object -> setConnections(Connections);
-
-        GeneratePlotOverLine(time_step, object, plot_over_line);
-}
-
-
-
 
 void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBase, ParamInfo *param, bool skip_flag)
 {
@@ -2685,10 +2455,14 @@ void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBas
         step << '_' << std::setw( 5 ) << std::setfill( '0' ) << time_step;
 
         // 20181226 start 環境変数で指定したファイルパスを使用
+        //std::string history_file_name = "history" + step.str() + ".txt";
         std::string history_file_name = particleBase.m_visParamDir + "history" + step.str() + ".txt";
         // 20181226 end
         std::ofstream ofs2( history_file_name.c_str(), std::ios::out);
 
+
+//        std::cout << "tf_number = " << tf_number <<std::endl;
+//        std::cout << "O_min_recv[0] = " << O_min_recv[0] <<std::endl;
         ofs2<<"TF_NUMBER="<<tf_number<<std::endl;
         for( int i = 0; i < tf_number; i++ )
         {
@@ -2711,13 +2485,13 @@ void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBas
             }
             ofs2<<std::endl;
         }
-        ofs2<<"N_VARIABLES="<<particleBase.m_nvariables<<std::endl;
         ofs2 << "END_HISTORY_FILE=SUCCESS" << std::endl;
         ofs2.close();
 
         if (skip_flag)
         {
             // 20181226 start 環境変数で指定したファイルパスを使用
+            //std::string jupiter_file_name = "jupiter" + step.str() + ".tf";
             std::string jupiter_file_name = particleBase.m_visParamDir + particleBase.m_tfFilename + step.str() + ".tf";
             // 20181226 end
             param->write( jupiter_file_name );

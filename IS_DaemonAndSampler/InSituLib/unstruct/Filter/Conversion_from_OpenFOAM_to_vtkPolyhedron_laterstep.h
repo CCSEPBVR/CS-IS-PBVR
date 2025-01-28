@@ -31,6 +31,17 @@ forAll(mesh.cells(),cid)
 }
 ucd -> GetCellData() -> AddArray(scalars_w);
 
+// pressuror
+vtkSmartPointer<vtkFloatArray> scalars_p =
+vtkSmartPointer<vtkFloatArray>::New();
+scalars_p->SetName("p");
+forAll(mesh.cells(),cid)
+{
+    scalars_p->InsertNextValue(p[cid]);
+}
+ucd -> GetCellData() -> AddArray(scalars_p);
+
+
 vtkSmartPointer<vtkCellDataToPointData> cellDataToPointData =
 vtkSmartPointer<vtkCellDataToPointData>::New();
 cellDataToPointData -> SetInputData(ucd);
@@ -38,11 +49,11 @@ cellDataToPointData -> Update();
 vtkPointData* pointData = cellDataToPointData->GetOutput()->GetPointData();
 //ucd->GetPointData()->ShallowCopy(pointData);
 //generate_particles_vtk(time_step, ucd);
-
 //vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter =
 //vtkSmartPointer<vtkDataSetTriangleFilter>::New();
 //triangleFilter->SetInputData(ucd);
 //triangleFilter->Update();
 //ucd_tri = triangleFilter-> GetOutput();
+
 ucd_tri->GetPointData()->ShallowCopy(pointData);
 generate_particles_vtk(time_step, ucd_tri);
