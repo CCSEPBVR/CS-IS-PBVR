@@ -1357,9 +1357,10 @@ int main( int argc, char** argv )
                             }
                             else
                             {
-                                servMes.m_positions = NULL;
-                                servMes.m_normals   = NULL;
-                                servMes.m_colors    = NULL;
+                                servMes.m_glyph_coords  = NULL;
+                                servMes.m_glyph_vectors = NULL;
+                                servMes.m_glyph_colors  = NULL;
+                                servMes.m_glyph_sizes   = NULL;
                             }
                             for ( int i = 0; i < servMes.m_number_glyph; ++i )
                             {
@@ -1634,7 +1635,6 @@ int main( int argc, char** argv )
                             //clntMes.show();
                             // 20181226 start　環境変数で指定したパスおよび名前でファイル参照を行う
                             ppw.inputPlotOverLineParameterMessage( clntMes );
-                            std::cout << "plotOverLineParameterPath.c_str() = " << plotOverLineParameterPath.c_str() << std::endl;
                             ppr.readParameterFile( plotOverLineParameterPath_old.c_str() );
                             NameListFile nm1 = ppr.getNameListFile();
                             NameListFile nm2 = ppw.getNameListFile();
