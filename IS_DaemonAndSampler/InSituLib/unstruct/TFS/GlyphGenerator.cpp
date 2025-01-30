@@ -54,7 +54,7 @@ bool GlyphGenerator::SetGlyphParameter( const int time_step )
     else {
         glyphFilePath = envBuf;
         if (glyphFilePath[glyphFilePath.size() - 1] != '/') {
-            glyphFilePath += "/g_";
+             glyphFilePath += "/g_";
         }
         else {
             glyphFilePath += "g_";
@@ -96,7 +96,14 @@ bool GlyphGenerator::SetGlyphParameter( const int time_step )
 //    }
 
 
+#if _OPENMP
+    int max_threads = omp_get_max_threads();
+#else
+    int max_threads = 1;
+#endif
+
     number_of_sample_points /= mpi_size;  
+    number_of_sample_points /= max_threads;  
 
     float glyph_min=0; 
     float glyph_max=0;
@@ -461,7 +468,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
 #endif
 
         timer.start();
-
+        //nglyphs /= nthreads;
         kvs::MersenneTwister MT( seed );
 
     float TotalVolume = 0;
@@ -473,17 +480,20 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
         std::vector<float> th_glyph_sizes;
 
        
-#pragma omp for schedule( dynamic ) nowait
+//#pragma omp for schedule( dynamic ) nowait
+#pragma omp parallel for
         for( int cell_base = 0; cell_base < m_ncells; cell_base ++ )
         {
                 interp[thid][0]->bindCell( cell_base );
                 TotalVolume += interp[thid][0]->volume();
         }
 
+        //density = m_number_of_sample_points/TotalVolume;
         density = m_number_of_sample_points/TotalVolume;
 
         //粒子生成ループ開始
-#pragma omp for schedule( dynamic ) nowait
+//#pragma omp for schedule( dynamic ) nowait
+#pragma omp parallel for
         for( int cell_base = 0; cell_base < m_ncells; cell_base ++ )
         {
 
@@ -497,7 +507,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
             for( int i = 0; i < nglyphs; i++ )
             {
                 kvs::Vector3f local_coord = interp[thid][0] -> randomSampling_MT( &MT );
-                if (i ==0) local_coord = kvs::Vector3f(0.5f,0.5f,0.5f);
+                //if (i ==0) local_coord = kvs::Vector3f(0.5f,0.5f,0.5f);
 
                 //補間器にセルを一括でバインド
                 for( int k = 0; k < m_nvariable; k++ )
@@ -528,11 +538,12 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
                     }
                     size = std::sqrt(eval_result) ; 
                 }
+                else size = 1.f;
 
                 //色の計算
                 float color_data =0; 
 
-                if (m_color_sampling_method ==  jpv::DataDefines::SingleVariable || m_size_sampling_method == jpv::DataDefines::VariableArray )
+                if (m_color_sampling_method ==  jpv::DataDefines::SingleVariable || m_color_sampling_method == jpv::DataDefines::VariableArray )
                 { 
                     float scalar_array[interp[thid].size()];
                     float eval_result =0;
@@ -550,6 +561,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
                     }
                     color_data = std::sqrt(eval_result) ; 
                 }
+                else color_data = 0; 
 
                 // glyph_vectorの計算
                 float scalar_array[interp[thid].size()];
@@ -588,6 +600,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
 
      } //#pragma omp parallel
 
+    std::cout << __LINE__ << std::endl;
     if (m_size_sampling_method == jpv::DataDefines::SingleVariable || m_size_sampling_method == jpv::DataDefines::VariableArray )
     { 
         int n_size_data=m_glyph_sizes.size();
@@ -628,7 +641,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
         }
     }
 
-
+    std::cout << __LINE__ << std::endl;
     if (m_color_sampling_method == jpv::DataDefines::SingleVariable || m_color_sampling_method == jpv::DataDefines::VariableArray )
     { 
         int n_color_data=m_glyph_colors_data.size();
@@ -642,6 +655,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
 
         MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
         MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        std::cout << __LINE__ << std::endl;
 
         m_color_map.setRange(min,max);
         for( int jx=0; jx<n_color_data; jx++)
