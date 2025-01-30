@@ -1875,34 +1875,6 @@ void GenerateParticles( int time_step,
 
                 }
 
-                std::vector<bool> o_zero_flag(tf_number); 
-                std::vector<bool> c_zero_flag(tf_number); 
-                for( int i = 0; i < tf_number; i++ )
-                {
-                    o_zero_flag[i] = false;
-                    c_zero_flag[i] = false;
-                    if ( kvs::Math::Equal<float>(o_max[i], o_min[i] ))   //0　判定ならば、一様分布にする
-                    {
-                        o_zero_flag[i] = true;
-                        for (int k =0 ; k< nbins; k++)
-                        {
-                            th_o_histogram[ k+nbins*i] ++;
-                        }
-                    }
-
-                    if ( kvs::Math::Equal<float>(c_max[i], c_min[i] ))   //0　判定ならば、一様分布にする
-                    {
-                        c_zero_flag[i] = true;
-
-                        for (int k =0 ; k< nbins; k++)
-                        {
-                            th_c_histogram[ k+nbins*i] ++;
-                        }
-
-                    }
-
-                }
-
                th_tfs[thid]->SynthesizedOpacityScalarsArray( interp[thid],
                                                               remain,
                                                               local_center_array,
@@ -1950,42 +1922,8 @@ void GenerateParticles( int time_step,
                         th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
                         th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
 
+                   }
 
-                       }
-
-                       if (!c_zero_flag[i]) 
-                       {
-                           float h = (c_scalars_array[cell_BLK][i] - c_min[i])/( c_max[i] - c_min[i] )*nbins;
-                           int H = (int)h;
-                           if( 0 <= H && H <= nbins )
-                           {
-                               if( H == nbins ) H--;
-                               th_c_histogram[ H + nbins*i]++;
-                           }
-                        }
-                           /*
-                              if( cell_BLK==0 )
-                              {
-                              th_O_min[i] = o_scalars_array[cell_BLK][i];
-                              th_O_max[i] = o_scalars_array[cell_BLK][i];
-                              th_C_min[i] = c_scalars_array[cell_BLK][i];
-                              th_C_max[i] = c_scalars_array[cell_BLK][i];
-                              }
-                              else
-                              {
-                              th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
-                              th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
-                              th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
-                              th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
-                              }
-                              */
-
-                           // 20190128 修正
-                           th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
-                           th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
-                           th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
-                           th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
-                    }
                 }
             }
 
