@@ -1,4 +1,5 @@
 #include "ParticleTransferProtocol.h"
+//#include "serializer.h"
 #include "Serializer.h"
 
 #include <kvs/Camera>
@@ -44,10 +45,6 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         s += sizeof( bool );
         s += sizeof( int64_t );
         s += sizeof( char ) * ( m_input_directory.size() + 1 );
-        //        // add:start by @hira at 2016/12/01
-        //        s += sizeof( int64_t );
-        //        s += sizeof( char ) * ( m_filter_parameter_filename.size() + 1 );
-        //        // add:end by @hira at 2016/12/01
     }
     if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step
          || m_initialize_parameter == InitializeParameter::export_TFfile  )
@@ -66,10 +63,6 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         s += sizeof( m_particle_data_size_limit ); //add by shimomura 0308
         s += sizeof( int64_t );
         s += sizeof( char ) * ( m_input_directory.size() + 1 );
-        //        // add:start by @hira at 2016/12/01
-        //        s += sizeof( int64_t );
-        //        s += sizeof( char ) * ( m_filter_parameter_filename.size() + 1 );
-        //        // add:end by @hira at 2016/12/01
         s += sizeof( size_t );
         s += sizeof( char ) * ( m_x_synthesis.size() + 1 );
         s += sizeof( size_t );
@@ -109,11 +102,15 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
             s += jpv::Serializer::byteSize( m_volume_equation[i].m_name );
             s += jpv::Serializer::byteSize( m_volume_equation[i].m_equation );
         }
-        //s += jpv::Serializer::byteSize( m_transfer_function_synthesis );
         // add by @hira at 2016/12/01 : 1次伝達関数（色、不透明度）
         s += jpv::Serializer::byteSize( m_color_transfer_function_synthesis );
         s += jpv::Serializer::byteSize( m_opacity_transfer_function_synthesis );
 
+    }
+    if (m_initialize_parameter == InitializeParameter::generate_glyph || m_initialize_parameter == InitializeParameter::send_glyph_flag_false )
+    {
+        // glyph
+        s += sizeof( bool );
         for( int i = 0; i < 3; i++ )
         {
             s += jpv::Serializer::byteSize( m_direction_variable[i] );
@@ -144,7 +141,22 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
             s += jpv::Serializer::byteSize( m_color_data_variable[i] );
         }
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle )
+    if(m_initialize_parameter == InitializeParameter::plot_over_line)
+    {
+        s += sizeof( bool );
+        s += jpv::Serializer::byteSize( m_sampling_size );
+        s += jpv::Serializer::byteSize( m_plot_variable );
+        for (int i =0; i< 3; i++ )
+        {
+            s += jpv::Serializer::byteSize( m_start_point[i] );
+        }
+        for (int i =0; i< 3; i++ )
+        {
+            s += jpv::Serializer::byteSize( m_end_point[i] );
+        }
+    }
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph
+            || m_initialize_parameter == InitializeParameter::plot_over_line )
     {
         s += sizeof( m_time_parameter );
         if ( m_time_parameter == 0 )
@@ -176,16 +188,11 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
     index += jpv::Serializer::writeArray( buf + index, m_header );
     index += jpv::Serializer::write( buf + index, m_message_size );
     index += jpv::Serializer::write( buf + index, m_initialize_parameter );
-    // index += jpv::Serializer::write( buf + index, m_initialize_parameter );
     if ( m_initialize_parameter == InitializeParameter::initial_step )
     {
         index += jpv::Serializer::write( buf + index, m_import_flag );
         index += jpv::Serializer::write( buf + index, m_input_directory.size() );
         index += jpv::Serializer::writeArray( buf + index, m_input_directory.c_str(), m_input_directory.size() + 1 );
-        //        // add:start by @hira at 2016/12/01
-        //        index += jpv::Serializer::write( buf + index, m_filter_parameter_filename.size() );
-        //        index += jpv::Serializer::writeArray( buf + index, m_filter_parameter_filename.c_str(), m_filter_parameter_filename.size() + 1 );
-        //        // add:end by @hira at 2016/12/01
     }
     if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step
          || m_initialize_parameter == InitializeParameter::export_TFfile         )
@@ -207,10 +214,6 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         index += jpv::Serializer::write( buf + index, m_particle_data_size_limit );
         index += jpv::Serializer::write( buf + index, m_input_directory.size() );
         index += jpv::Serializer::writeArray( buf + index, m_input_directory.c_str(), m_input_directory.size() + 1 );
-        //        // add:start by @hira at 2016/12/01
-        //        index += jpv::Serializer::write( buf + index, m_filter_parameter_filename.size() );
-        //        index += jpv::Serializer::writeArray( buf + index, m_filter_parameter_filename.c_str(), m_filter_parameter_filename.size() + 1 );
-        //        // add:end by @hira at 2016/12/01
         index += jpv::Serializer::write( buf + index, m_x_synthesis.size() );
         index += jpv::Serializer::writeArray( buf + index, m_x_synthesis.c_str(), m_x_synthesis.size() + 1 );
         index += jpv::Serializer::write( buf + index, m_y_synthesis.size() );
@@ -251,11 +254,15 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
             index += jpv::Serializer::write( buf + index, m_volume_equation[i].m_name );
             index += jpv::Serializer::write( buf + index, m_volume_equation[i].m_equation );
         }
-        //index += jpv::Serializer::write( buf + index, m_transfer_function_synthesis );
         // add by @hira at 2016/12/01 : 1次伝達関数（色、不透明度）
         index += jpv::Serializer::write( buf + index, m_color_transfer_function_synthesis );
         index += jpv::Serializer::write( buf + index, m_opacity_transfer_function_synthesis );
 
+    }
+    if (m_initialize_parameter == InitializeParameter::generate_glyph || m_initialize_parameter == InitializeParameter::send_glyph_flag_false  )
+    {
+        // glyph
+        index += jpv::Serializer::write(buf + index, m_glyph_flag);
         for( int i = 0; i < 3; i++ )
         {
             index += jpv::Serializer::write( buf + index, m_direction_variable[i] );
@@ -267,7 +274,6 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         {
             index += jpv::Serializer::write( buf + index, m_size_variable[i] );
         }
-
 
         index += jpv::Serializer::write( buf + index, m_distribution_mode );
         index += jpv::Serializer::write( buf + index, m_number_of_sampling_point );
@@ -287,7 +293,21 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
             index += jpv::Serializer::write( buf + index, m_color_data_variable[i] );
         }
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle )
+    if( m_initialize_parameter == InitializeParameter::plot_over_line )
+    {
+        index += jpv::Serializer::write(buf + index, m_plot_flag ); 
+        index += jpv::Serializer::write(buf + index, m_sampling_size ); 
+        index += jpv::Serializer::write(buf + index, m_plot_variable ); 
+        for (int i =0; i < 3; i++ )
+        {
+            index += jpv::Serializer::write(buf + index, m_start_point[i] ); 
+        }
+        for (int i =0; i < 3; i++ )
+        {
+            index += jpv::Serializer::write(buf + index, m_end_point[i] ); 
+        }
+    }
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph || m_initialize_parameter == InitializeParameter::plot_over_line)
     {
         index += jpv::Serializer::write( buf + index, m_time_parameter );
         if ( m_time_parameter == 0 )
@@ -337,13 +357,6 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         m_input_directory = std::string( tmp_char );
         delete[] tmp_char;
 
-        //        // add:start by @hira at 2016/12/01
-        //        index += jpv::Serializer::read( buf + index, &tmp_char_size );
-        //        tmp_char = new char[tmp_char_size + 1];
-        //        index += jpv::Serializer::readArray( buf + index, tmp_char, tmp_char_size + 1 );
-        //        m_filter_parameter_filename = std::string( tmp_char );
-        //        delete[] tmp_char;
-        //        // add:end by @hira at 2016/12/01
     }
     if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::initial_step
          || m_initialize_parameter == InitializeParameter::export_TFfile  )
@@ -368,14 +381,6 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         index += jpv::Serializer::readArray( buf + index, tmp_char, tmp_char_size + 1 );
         m_input_directory = std::string( tmp_char );
         delete[] tmp_char;
-
-        //        // add:start by @hira at 2016/12/01
-        //        index += jpv::Serializer::read( buf + index, &tmp_char_size );
-        //        tmp_char = new char[tmp_char_size + 1];
-        //        index += jpv::Serializer::readArray( buf + index, tmp_char, tmp_char_size + 1 );
-        //        m_filter_parameter_filename = std::string( tmp_char );
-        //        delete[] tmp_char;
-        //        // add:end by @hira at 2016/12/01
 
         // X-Z coodrinate Synthesis
         index += jpv::Serializer::read( buf + index, &tmp_char_size );
@@ -435,22 +440,27 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
             index += jpv::Serializer::read( buf + index, &m_volume_equation[i].m_name );
             index += jpv::Serializer::read( buf + index, &m_volume_equation[i].m_equation );
         }
-        //index += jpv::Serializer::read( buf + index, &m_transfer_function_synthesis );
         // add by @hira at 2016/12/01 : 1次伝達関数（色、不透明度）
         index += jpv::Serializer::read( buf + index, &m_color_transfer_function_synthesis );
         index += jpv::Serializer::read( buf + index, &m_opacity_transfer_function_synthesis );
 
+    }
+    if (m_initialize_parameter == InitializeParameter::generate_glyph || m_initialize_parameter == InitializeParameter::send_glyph_flag_false )
+    {
+
+        size_t s;
+        index += jpv::Serializer::read( buf + index, &m_glyph_flag );
         for( int i = 0; i < 3; i++ )
         {
             index += jpv::Serializer::read( buf + index, &m_direction_variable[i] );
         }
-
         index += jpv::Serializer::read( buf + index, &m_size_sampling_method );
         index += jpv::Serializer::read( buf + index, &s );
         m_size_variable.clear();
         for ( size_t i = 0; i < s; i++ )
         {
-            int32_t value = 0;
+            //int32_t value = 0;
+            std::string value = "";
             index += jpv::Serializer::read(buf + index, &value);
             m_size_variable.push_back(value);
         }
@@ -462,6 +472,7 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
 
         index += jpv::Serializer::read( buf + index, &s );
         m_glyph_color_map_table.clear();
+        std::cout << "s = " << s << std::endl;
         for ( size_t i = 0; i < s; i++ )
         {
             int32_t value = 0;
@@ -474,14 +485,34 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         m_color_data_variable.clear();
         for ( size_t i = 0; i < s; i++ )
         {
-            int32_t value = 0;
+            std::string value = "";
             index += jpv::Serializer::read(buf + index, &value);
             m_color_data_variable.push_back(value);
         }
     }
-    if ( m_initialize_parameter == InitializeParameter::generate_particle )
+    if( m_initialize_parameter == InitializeParameter::plot_over_line )
+    {
+        index += jpv::Serializer::read(buf + index, &m_plot_flag ); 
+        index += jpv::Serializer::read(buf + index, &m_sampling_size ); 
+        index += jpv::Serializer::read(buf + index, &m_plot_variable ); 
+        
+        std::cout << "m_sampling_size = " << m_sampling_size << std::endl;
+        for (int i =0; i < 3; i++ )
+        {
+            index += jpv::Serializer::read(buf + index, &m_start_point[i] ); 
+            std::cout << "m_start_point[i] = " << m_start_point[i] << std::endl;
+        }
+        for (int i =0; i < 3; i++ )
+        {
+            index += jpv::Serializer::read(buf + index, &m_end_point[i] ); 
+        }
+        
+    }
+    if ( m_initialize_parameter == InitializeParameter::generate_particle || m_initialize_parameter == InitializeParameter::generate_glyph 
+            || m_initialize_parameter == InitializeParameter::plot_over_line)
     {
         index += jpv::Serializer::read( buf + index, &m_time_parameter );
+        std::cout << "&m_time_parameter = " << m_time_parameter << std::endl; 
         if ( m_time_parameter == 0 )
         {
             index += jpv::Serializer::read( buf + index, &m_memory_size );
@@ -532,7 +563,6 @@ void jpv::ParticleTransferClientMessage::show( void ) const
         std::cout<<m_volume_equation[i].m_name<<","<<m_volume_equation[i].m_equation<<std::endl;
     }
 
-    //std::cout<<"transferFunctionSynthesis="<<transferFunctionSynthesis<<std::endl;
     std::cout << "color_tf_synthesis=" << m_color_transfer_function_synthesis << std::endl;
     std::cout << "opacity_tf_synthesis=" << m_opacity_transfer_function_synthesis << std::endl;
 
@@ -709,6 +739,7 @@ int32_t jpv::ParticleTransferServerMessage::byteSize( void ) const
     s += sizeof( m_repeat_level );
     s += sizeof( m_level_index );
     s += sizeof( m_number_particle );
+    s += sizeof( m_number_glyph );
     s += sizeof( m_number_volume_divide );
     s += sizeof( m_start_step );
     s += sizeof( m_last_step );
@@ -728,7 +759,8 @@ int32_t jpv::ParticleTransferServerMessage::byteSize( void ) const
     s += sizeof( m_particle_density );
     s += sizeof( m_particle_data_size_limit );
     s += jpv::Serializer::byteSize<kvs::Camera>( *m_camera );
-    if ( m_flag_send_bins == 1 || m_flag_send_bins == 2 )
+    //if ( m_flag_send_bins == 1 || m_flag_send_bins == 2 )
+    if ( m_flag_send_bins == 1 ) // particle
     {
         s += sizeof( m_transfer_function_count );
         for ( int i = 0; i < m_transfer_function_count; i++ )
@@ -769,9 +801,16 @@ int32_t jpv::ParticleTransferServerMessage::byteSize( void ) const
             s += jpv::Serializer::byteSize( m_volume_equation[i].m_name );
             s += jpv::Serializer::byteSize( m_volume_equation[i].m_equation );
         }
-        //s += jpv::Serializer::byteSize( transferFunctionSynthesis );
         s += jpv::Serializer::byteSize( m_color_transfer_function_synthesis );
         s += jpv::Serializer::byteSize( m_opacity_transfer_function_synthesis );
+    }
+    if ( m_flag_send_bins == 3 ) // plot_over_line 
+    {
+        s += sizeof(m_resolution);
+        int num = m_resolution; 
+        s += sizeof( m_xAxis[0] )*num;
+        s += sizeof( m_mask[0] )*num;
+        s += sizeof( m_line_values[0] )*num;
     }
 
     return s;
@@ -794,6 +833,7 @@ size_t jpv::ParticleTransferServerMessage::pack( char* buf ) const
     index += jpv::Serializer::write( buf + index, m_repeat_level );
     index += jpv::Serializer::write( buf + index, m_level_index );
     index += jpv::Serializer::write( buf + index, m_number_particle );
+    index += jpv::Serializer::write( buf + index, m_number_glyph );
     index += jpv::Serializer::write( buf + index, m_number_volume_divide );
     index += jpv::Serializer::write( buf + index, m_start_step );
     index += jpv::Serializer::write( buf + index, m_last_step );
@@ -817,7 +857,7 @@ size_t jpv::ParticleTransferServerMessage::pack( char* buf ) const
     index += jpv::Serializer::write( buf + index, m_particle_density );
     index += jpv::Serializer::write( buf + index, m_particle_data_size_limit );
     index += jpv::Serializer::pack( buf + index, *m_camera );
-    if ( m_flag_send_bins == 1 || m_flag_send_bins == 2)
+    if ( m_flag_send_bins == 1 )  //  particle & TF
     {
         index += jpv::Serializer::write( buf + index, m_transfer_function_count );
         for ( int i = 0; i < m_transfer_function_count; i++ )
@@ -858,17 +898,31 @@ size_t jpv::ParticleTransferServerMessage::pack( char* buf ) const
             index += jpv::Serializer::write( buf + index, m_volume_equation[i].m_name );
             index += jpv::Serializer::write( buf + index, m_volume_equation[i].m_equation );
         }
-        //index += jpv::Serializer::write( buf + index, transferFunctionSynthesis );
         index += jpv::Serializer::write( buf + index, m_color_transfer_function_synthesis );
         index += jpv::Serializer::write( buf + index, m_opacity_transfer_function_synthesis );
     }
 //    else// if ( flag_send_bins == 2 )
+    if ( m_flag_send_bins == 3 ) // plot_over_line 
+    {
+        index += jpv::Serializer::write(buf + index, m_resolution);
+        int num = m_resolution;
+        index += jpv::Serializer::writeArray<float>( buf + index, m_xAxis.data(), num);
+        index += jpv::Serializer::writeArray<int>( buf + index, m_mask.data(),  num);
+        index += jpv::Serializer::writeArray<float>( buf + index, m_line_values.data(), num);
+    }
 
-    if ( m_flag_send_bins == 0 || m_flag_send_bins == 2 )
+    if ( m_flag_send_bins == 0 ) //particle only
     {
         index += jpv::Serializer::writeArray<float>( buf + index, m_positions.get(), 3 * m_number_particle );
         index += jpv::Serializer::writeArray<float>( buf + index, m_normals.get(), 3 * m_number_particle );
         index += jpv::Serializer::writeArray<unsigned char>( buf + index, m_colors.get(), 3 * m_number_particle );
+    }
+    else if (m_flag_send_bins == 2 ) // glyph
+    {
+        index += jpv::Serializer::writeArray<float>( buf + index, m_glyph_coords.get(),    3 * m_number_glyph );
+        index += jpv::Serializer::writeArray<float>( buf + index, m_glyph_vectors.get(),      3 * m_number_glyph );
+        index += jpv::Serializer::writeArray<float>( buf + index, m_glyph_sizes.get(),          m_number_glyph );
+        index += jpv::Serializer::writeArray<unsigned char>( buf + index, m_glyph_colors.get(), 3 * m_number_glyph );
     }
     return index;
 }
@@ -894,6 +948,7 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
     index += jpv::Serializer::read( buf + index, &m_repeat_level );
     index += jpv::Serializer::read( buf + index, &m_level_index );
     index += jpv::Serializer::read( buf + index, &m_number_particle );
+    index += jpv::Serializer::read( buf + index, &m_number_glyph );
     index += jpv::Serializer::read( buf + index, &m_number_volume_divide );
     index += jpv::Serializer::read( buf + index, &m_start_step );
     index += jpv::Serializer::read( buf + index, &m_last_step );
@@ -917,7 +972,8 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
     index += jpv::Serializer::read( buf + index, &m_particle_density );
     index += jpv::Serializer::read( buf + index, &m_particle_data_size_limit );
     index += jpv::Serializer::unpack( buf + index, m_camera );
-    if ( m_flag_send_bins == 1 || m_flag_send_bins == 2)
+    //if ( m_flag_send_bins == 1 || m_flag_send_bins == 2)
+    if ( m_flag_send_bins == 1 ) //particle & TF
     {
         index += jpv::Serializer::read( buf + index, &m_transfer_function_count );
         m_color_nbins = new kvs::UInt64[ m_transfer_function_count ];
@@ -980,6 +1036,18 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
         index += jpv::Serializer::read( buf + index, &m_opacity_transfer_function_synthesis );
 
     }
+    if ( m_flag_send_bins == 3 ) // plot_over_line 
+    {
+        index += jpv::Serializer::read( buf + index, &m_resolution);
+        int num = m_resolution;
+        m_xAxis.resize(m_resolution);
+        m_mask.resize(m_resolution);
+        m_line_values.resize(m_resolution);
+        index += jpv::Serializer::readArray<float>( buf + index, m_xAxis.data(), num);
+        index += jpv::Serializer::readArray<int>( buf + index, m_mask.data(),  num);
+        index += jpv::Serializer::readArray<float>( buf + index, m_line_values.data(), num);
+    }
+
 
     return index;
 }
@@ -996,6 +1064,23 @@ size_t jpv::ParticleTransferServerMessage::unpack_particles( const char* buf )
     index += jpv::Serializer::readArray<float>( buf + index, m_positions.get(), 3 * m_number_particle );
     index += jpv::Serializer::readArray<float>( buf + index, m_normals.get(), 3 * m_number_particle );
     index += jpv::Serializer::readArray<unsigned char>( buf + index, m_colors.get(), 3 * m_number_particle );
+    return index;
+}
+
+size_t jpv::ParticleTransferServerMessage::unpack_glyphs( const char* buf )
+{
+    size_t index = m_message_size;
+    // m_positions = new float[3 * m_number_particle];
+    // m_normals = new float[3 * m_number_particle];
+    // m_colors = new unsigned char[3 * m_number_particle];
+    m_glyph_coords = std::make_unique<float[]>(3 * m_number_glyph);
+    m_glyph_vectors = std::make_unique<float[]>(3 * m_number_glyph);
+    m_glyph_sizes = std::make_unique<float[]>(  m_number_glyph);
+    m_glyph_colors = std::make_unique<unsigned char[]>(3 * m_number_glyph);
+    index += jpv::Serializer::readArray<float>( buf + index, m_glyph_coords.get(), 3 * m_number_glyph );
+    index += jpv::Serializer::readArray<float>( buf + index, m_glyph_vectors.get(), 3 * m_number_glyph );
+    index += jpv::Serializer::readArray<float>( buf + index, m_glyph_sizes.get(),  m_number_glyph );
+    index += jpv::Serializer::readArray<unsigned char>( buf + index, m_glyph_colors.get(), 3 * m_number_glyph );
     return index;
 }
 
@@ -1133,6 +1218,27 @@ void jpv::ParticleTransferServerMessage::show( void ) const
     std::cout << "color_tf_synthesis=" << m_color_transfer_function_synthesis << std::endl;
     std::cout << "opacity_tf_synthesis=" << m_opacity_transfer_function_synthesis << std::endl;
 
+//    for (int i = 0; i < m_resolution; i++  ) 
+//    {
+//        std::cout << "m_axis = " << m_xAxis[i] <<std::endl; 
+//        std::cout << "m_mask = " << m_mask[i] <<std::endl; 
+//        std::cout << "m_line_values = " << m_line_values[i] <<std::endl; 
+//    }
+
+//    int num_glyph = m_number_glyph < 10 ? m_number_glyph : 10; 
+//    for ( int i = 0; i < num_glyph ; i++ )
+//    {
+//        std::cout << "servMes.m_glyph_coords[3 * i + 0] = " <<  m_glyph_coords[3 * i + 0] << std::endl;
+//        std::cout << "servMes.m_glyph_coords[3 * i + 1] = " <<  m_glyph_coords[3 * i + 1] << std::endl;
+//        std::cout << "servMes.m_glyph_coords[3 * i + 2] = " <<  m_glyph_coords[3 * i + 2] << std::endl;
+//        std::cout << "servMes.m_glyph_vectors[3 * i + 0] = " <<  m_glyph_vectors[3 * i + 0] << std::endl;
+//        std::cout << "servMes.m_glyph_vectors[3 * i + 1] = " <<  m_glyph_vectors[3 * i + 1] << std::endl;
+//        std::cout << "servMes.m_glyph_vectors[3 * i + 2] = " <<  m_glyph_vectors[3 * i + 2] << std::endl;
+//        std::cout << "servMes.m_glyph_colors[3 * i + 0] = " <<  (int)m_glyph_colors[3 * i + 0] << std::endl;
+//        std::cout << "servMes.m_glyph_colors[3 * i + 1] = " <<  (int)m_glyph_colors[3 * i + 1] << std::endl;
+//        std::cout << "servMes.m_glyph_colors[3 * i + 2] = " <<  (int)m_glyph_colors[3 * i + 2] << std::endl;
+//        std::cout << "servMes.m_glyph_sizes[  i ] = " <<  m_glyph_sizes[ i ] << std::endl;
+//    }
     std::cout<<std::endl;
 }
 

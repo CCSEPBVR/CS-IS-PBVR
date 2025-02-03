@@ -66,6 +66,7 @@ SERVER_SRCS = CellByCellMetropolisSampling.cpp \
               JobCollector.cpp \
               JobDispatcher.cpp \
               KVSMLObjectPointWriter.cpp \
+              KVSMLObjectGlyph.cpp \
               SPLITTypeSubvolume.cpp \
               main.cpp \
               MapperBase.cpp \
@@ -85,6 +86,9 @@ SERVER_SRCS = CellByCellMetropolisSampling.cpp \
 			  timer.cpp \
               StructuredVolumeObject.cpp \
 		      SFMT/SFMT.cpp\
+              GlyphGenerator.cpp \
+              GlyphProperty.cpp \
+			  GlyphObjectGenerator.cpp \
 		      TransferFunction.cpp \
               TransferFunctionSynthesizer.cpp \
               TransferFunctionSynthesizerCreator.cpp \
@@ -124,6 +128,7 @@ SERVER_HEADERS = Argument.h \
                  JobCollector.h \
                  JobDispatcher.h \
                  KVSMLObjectPointWriter.h \
+                 KVSMLObjectGlyph.h \
                  SPLITTypeSubvolume.h \
                  Macro.h \
                  MapperBase.h \
@@ -145,6 +150,9 @@ SERVER_HEADERS = Argument.h \
                  timer_simple.h \
 				 timer.h \
 		         SFMT/SFMT.h\
+                 GlyphGenerator.h \
+                 GlyphProperty.h \
+				 GlyphObjectGenerator.h \
                  TransferFunction.h \
                  TransferFunctionSynthesizerCreator.h \
                  TransferFunctionSynthesizer.h \

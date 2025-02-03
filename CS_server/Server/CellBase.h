@@ -153,6 +153,8 @@ public:
 
     virtual const kvs::Real32 localGravityPointValue() const;
 
+    virtual const kvs::Vector3f localGravityPoint() const;
+
 public:
 
     const kvs::Vector3f* vertices() const;
@@ -768,6 +770,14 @@ inline const kvs::Real32 CellBase<T>::localGravityPointValue() const
     this->setLocalGravityPoint();
     return this->scalar();
 }
+
+template <typename T>
+inline const kvs::Vector3f CellBase<T>::localGravityPoint() const
+{
+    this->setLocalGravityPoint();
+    return m_local_point;
+}
+
 
 template <typename T>
 inline const kvs::Vector3f* CellBase<T>::vertices() const
