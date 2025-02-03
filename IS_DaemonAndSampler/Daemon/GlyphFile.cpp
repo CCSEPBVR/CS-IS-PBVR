@@ -87,9 +87,6 @@ void GlyphFile::generateGlyphObject( const int time_step, kvs::KVSMLObjectGlyph*
     kvs::UInt32 subvolume_num = m_subvolume_number;
     std::string prefix = m_file_prefix;
 
-    std::cout << "m_subvolume_number = " << m_subvolume_number << std::endl;
-    std::cout << "m_file_prefix = " << m_file_prefix << std::endl;
-
     std::vector<bool> check_vol( subvolume_num, false );
 
     std::vector<kvs::Real32> glyph_coord    ;

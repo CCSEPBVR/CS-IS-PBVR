@@ -216,12 +216,10 @@ const bool KVSMLObjectGlyph::read( const std::string& filename )
     std::string line_buffer;
     
     std::getline(file, line_buffer);
-    std::cout << line_buffer << std::endl; 
     int nPoints = std::stoi( line_buffer ); 
 
     // coord
     std::getline(file, line_buffer);
-    std::cout << line_buffer << std::endl; 
     std::vector<std::string> data;
     data = this->split( line_buffer, ' ' );
     m_coords.allocate(data.size());
@@ -232,7 +230,6 @@ const bool KVSMLObjectGlyph::read( const std::string& filename )
 
     //color
     std::getline(file, line_buffer);
-    std::cout << line_buffer << std::endl; 
     data.clear();
     data = this->split( line_buffer, ' ' );
     m_colors.allocate(data.size());
@@ -243,7 +240,6 @@ const bool KVSMLObjectGlyph::read( const std::string& filename )
 
     //diresctions
     std::getline(file, line_buffer);
-    std::cout << line_buffer << std::endl; 
     data.clear();
     data = this->split( line_buffer, ' ' );
     m_directions.allocate(data.size());
@@ -254,7 +250,6 @@ const bool KVSMLObjectGlyph::read( const std::string& filename )
 
     //sizes
     std::getline(file, line_buffer);
-    std::cout << line_buffer << std::endl; 
     data.clear();
     data = this->split( line_buffer, ' ' );
     m_sizes.allocate(data.size());

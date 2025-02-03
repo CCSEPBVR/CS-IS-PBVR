@@ -812,7 +812,6 @@ int main( int argc, char** argv )
                         pm.check();
                         servMes.m_start_step = pm.particleStatusFile().getStartTimeStep();
                         servMes.m_last_step = pm.particleStatusFile().getLatestTimeStep();
-                        std::cout << "servMes.m_last_step = " << servMes.m_last_step <<std::endl;
                         if( pm.stepExisted() )
                         {
                             //if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step && pm.getTimeStep() > -1 )
@@ -1059,9 +1058,7 @@ int main( int argc, char** argv )
                         servMes.m_number_particle = 0;
                         servMes.m_number_glyph = 0;
                         TimerStart( 11 );
-                        std::cout << __LINE__ <<std::endl;
                         pts.sendMessage( servMes );
-                        std::cout << __LINE__ <<std::endl;
                         TimerStop( 11 );
 
                         for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
@@ -1285,7 +1282,6 @@ int main( int argc, char** argv )
 
                         while ( jd.DispatchNext( wid, &st, &vl ) )
                         {
-                            std::cout << __LINE__ <<std::endl;
                             if ( timer_count <= TIMER_COUNT_NUM )
                             {
                                 TIMER_STA( 471 );

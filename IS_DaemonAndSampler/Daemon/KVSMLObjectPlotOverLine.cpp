@@ -112,7 +112,6 @@ const bool KVSMLObjectPlotOverLine::read( const std::string& filename )
     std::vector<std::string> data;
     // xaxis 
     std::getline(file, line_buffer);
-    std::cout << line_buffer << std::endl; 
     data.clear();
     data = this->split( line_buffer, ' ' );
     m_x_axis.allocate(data.size());
@@ -123,7 +122,6 @@ const bool KVSMLObjectPlotOverLine::read( const std::string& filename )
 
     // mask 
     std::getline(file, line_buffer);
-    std::cout << line_buffer << std::endl; 
     data.clear();
     data = this->split( line_buffer, ' ' );
     m_mask.allocate(data.size());
@@ -135,7 +133,6 @@ const bool KVSMLObjectPlotOverLine::read( const std::string& filename )
 
     // values on line 
     std::getline(file, line_buffer);
-    std::cout << line_buffer << std::endl; 
     data.clear();
     data = this->split( line_buffer, ' ' );
     m_values_on_line.allocate(data.size());
