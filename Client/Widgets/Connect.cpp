@@ -303,7 +303,6 @@ void Connect::sendGlyphFlagFalse()
 
 kvs::PointObject* Connect::generateParticles( int timeStep )
 {
-
     if(connecting)
     {
         qInfo() << "Other conneciton mode working !!";
@@ -312,11 +311,13 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
     }
     else
     {
+
         connecting = true;
     std::cout << "********" << std::endl;
     std::cout << "********" << std::endl;
     std::cout << "********" << std::endl;
     std::cout << "********" << std::endl;
+    std::cout << "generateParticles" << std::endl;
 
     jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
 //    jpv::ParticleTransferClientMessage m_client_message;
@@ -516,6 +517,7 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         std::cout << "********" << std::endl;
         std::cout << "********" << std::endl;
         std::cout << "********" << std::endl;
+        std::cout << "generateGlyphPolygons" << std::endl;
 
         jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
         m_server_message.m_camera = new kvs::Camera();
@@ -628,16 +630,17 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         //     std::cout << " pointObject->sizes()[3 * i + 0]    =" <<pointObject->sizes()[ i ]         << std::endl;
         // }
 
+        int nvetices = pointObject->numberOfVertices();
         kvs::ValueArray<kvs::Real32> coords;
-        coords.allocate(3 * m_server_message.m_number_glyph); // 3 * m_number_glyph
+        coords.allocate(3 * nvetices);        // 3 * m_number_glyph
         kvs::ValueArray<kvs::Real32> directions;
-        directions.allocate(3 * m_server_message.m_number_glyph);
+        directions.allocate(3 * nvetices);
         kvs::ValueArray<kvs::Real32> sizes;
-        sizes.allocate(m_server_message.m_number_glyph);
+        sizes.allocate(nvetices);
         kvs::ValueArray<kvs::UInt8> colors;
-        colors.allocate(3 * m_server_message.m_number_glyph);
+        colors.allocate(3 * nvetices);
 
-        for (int i = 0; i < m_server_message.m_number_glyph; i++)
+        for (int i = 0; i < nvetices; i++)
         {
             // 座標を設定
             coords[3 * i + 0] = pointObject->coords()[3 * i + 0];
@@ -689,7 +692,7 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
 
 void Connect::sendRecvPlotOverLine( int timeStep )
 {
-    m_glyph_editor->disableGlyphUpdateButton();
+
     if(connecting)
     {
         qInfo() << "Other conneciton mode working !!";
@@ -703,6 +706,10 @@ void Connect::sendRecvPlotOverLine( int timeStep )
         std::cout << "********" << std::endl;
         std::cout << "********" << std::endl;
         std::cout << "sendRecvPlotOverLine" << std::endl;
+        // jpv::ParticleTransferClientMessage client_message;
+        // jpv::ParticleTransferServerMessage server_message;
+
+#if 1
 
         jpv::ParticleTransferClient client( "localhost", ui->portSBox->value() );
         m_server_message.m_camera = new kvs::Camera();
@@ -726,18 +733,25 @@ void Connect::sendRecvPlotOverLine( int timeStep )
         m_client_message.m_sampling_step = 1.0f;
         m_client_message.m_enable_crop_region = 0;
         m_client_message.m_plot_flag =true;
+        // m_client_message.m_sampling_size = m_client_message.m_sampling_size;
+        // m_client_message.m_plot_variable = m_client_message.m_plot_variable;
+        // m_client_message.m_start_point[0] = m_client_message.m_start_point[0];
+        // m_client_message.m_start_point[1] = m_client_message.m_start_point[1];
+        // m_client_message.m_start_point[2] = m_client_message.m_start_point[2];
+        // m_client_message.m_end_point[0] = m_client_message.m_end_point[0];
+        // m_client_message.m_end_point[1] = m_client_message.m_end_point[1];
+        // m_client_message.m_end_point[2] = m_client_message.m_end_point[2];
 
         std::cout << "m_plot_variable = " << m_client_message.m_plot_variable <<std::endl;
         //stab data
         // m_client_message.m_start_point[0] = 1;
         // m_client_message.m_start_point[1] = 1;
         // m_client_message.m_start_point[2] = 1;
+         std::vector<bool> mask;
 
         m_client_message.m_message_size = m_client_message.byteSize();
         client.sendMessage( m_client_message );
         client.recvMessage( &m_server_message );
-        size_t allParticle = 0;
-        kvs::PointObject* object = new kvs::PointObject();
         int serve_numvol = m_server_message.m_number_volume_divide;
 
         for ( int n = 0; n < serve_numvol; n++ )
@@ -745,7 +759,7 @@ void Connect::sendRecvPlotOverLine( int timeStep )
             if ( client.recvMessage( &m_server_message ) == 1 ){}
         }
 
-        std::vector<bool> mask;
+
         mask.resize(m_server_message.m_resolution);
         for (int i =0; i< m_server_message.m_resolution; i++)
         {
@@ -763,6 +777,7 @@ void Connect::sendRecvPlotOverLine( int timeStep )
 
         connecting = false;
         m_plot_over_line->setPlotData(m_server_message.m_xAxis, mask, m_server_message.m_line_values );
+#endif
     }
 }
 
