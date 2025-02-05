@@ -45,7 +45,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QDoubleSpinBox" name="scaleFactorDoubleSpinBox"/>
+          <widget class="QDoubleSpinBox" name="scaleFactorDoubleSpinBox">
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -202,7 +206,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="numberOfSamplePoints"/>
+          <widget class="QSpinBox" name="numberOfSamplePoints">
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>

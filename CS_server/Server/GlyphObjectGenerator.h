@@ -36,8 +36,14 @@ namespace pbvr
 class GlyphObjectGenerator
 {
 private:
-    //pbvr::KVSMLObjectGlyph* m_object;
-    kvs::KVSMLObjectGlyph* m_object;
+    //kvs::KVSMLObjectGlyph* m_object;
+    
+    kvs::ValueArray<kvs::Real32> m_coords;       ///< coordinate array
+    kvs::ValueArray<kvs::UInt8>  m_colors;       ///< color(r,g,b) array
+    kvs::ValueArray<kvs::Real32> m_directions;   ///< directions array
+    kvs::ValueArray<kvs::Real32> m_sizes;        ///< size array
+
+
     const FilterInformationFile*   m_fi;
 
     pbvr::CoordSynthesizerStrings m_coord_synthesizer_strings;
@@ -45,27 +51,26 @@ private:
 
 public:
 
-    GlyphObjectGenerator() : m_object( NULL ), m_fi(NULL) {};
+    kvs::KVSMLObjectGlyph m_object;
+
+    //GlyphObjectGenerator() : m_object( NULL ), m_fi(NULL) {m_object = new kvs::KVSMLObjectGlyph;}
+    //GlyphObjectGenerator() :  m_fi(NULL) {m_object = new kvs::KVSMLObjectGlyph;}
+    GlyphObjectGenerator() :  m_fi(NULL) {}
     ~GlyphObjectGenerator()
     {
-        std::cout << "test_deallocate !" <<std::endl;
-        //delete m_object;
+//        if(m_object) delete m_object;
     }
 
     void createFromFile(
-        const Argument& param, const kvs::Camera& camera);
+        const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes);
+        //const Argument& param, const kvs::Camera& camera);
 
     void createFromFile(
-        const Argument& param, const kvs::Camera& camera, const int st, const int vl );
+        const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int st, const int vl );
 
-//    pbvr::KVSMLObjectGlyph* getKVSMLObjectGlyph()
-//    {
-//        return m_object;
-//    }
-//    pbvr::KVSMLObjectGlyph* getKVSMLObjectGlyph()
     kvs::KVSMLObjectGlyph* getKVSMLObjectGlyph()
     {
-        return m_object;
+        return &m_object;
     }
 
     std::string getErrorMessage( const size_t maxMemory ) const;
@@ -102,9 +107,30 @@ public:
         return m_coord_synthesizer_tokens;
     }
 
+public:
+
+    const kvs::ValueArray<kvs::Real32>& coords( void ) const;
+
+    const kvs::ValueArray<kvs::UInt8>& colors( void ) const;
+
+    const kvs::ValueArray<kvs::Real32>& directions( void ) const;
+
+    const kvs::ValueArray<kvs::Real32>& sizes( void ) const;
+
+public:
+
+    void setCoords( const kvs::ValueArray<kvs::Real32>& coords );
+
+    void setColors( const kvs::ValueArray<kvs::UInt8>& colors );
+
+    void setDirections( const kvs::ValueArray<kvs::Real32>& deirections );
+    
+    void setSizes( const kvs::ValueArray<kvs::Real32>& sizes );
+
+    void clear();
 private:
-    //kvs::KVSMLObjectGlyph* sampling( const Argument& param, const kvs::Camera& camera, pbvr::VolumeObjectBase* volume, const size_t subpixel_level, const float sampling_step );
-    kvs::KVSMLObjectGlyph* sampling( pbvr::VolumeObjectBase* volume);
+    //kvs::KVSMLObjectGlyph* sampling( pbvr::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes);
+    void sampling( pbvr::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes);
 
 };
 

@@ -62,7 +62,6 @@ public:
     PointObjectGenerator() : m_object( NULL ), m_fi(NULL) {};
     ~PointObjectGenerator()
     {
-        std::cout << "test_deallocate !" <<std::endl;
         //delete m_object;
     }
 
