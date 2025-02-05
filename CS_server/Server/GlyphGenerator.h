@@ -112,6 +112,7 @@ private:
     //bool SetGlyphParameter(pbvr_parameters& particleBase,const int time_step);
     //bool SetGlyphParameter(const int time_step);
     bool SetGlyphParameter();
+    bool InputParameter(const jpv::ParticleTransferClientMessage& clntMes);
 
 public:
    void GlyphSampling( const pbvr::VolumeObjectBase::CellType& celltype);
@@ -124,8 +125,22 @@ public:
            float* coordinates, int ncoords,
            unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype);
 
+    GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, Type** values, int nvariables,
+           float* coordinates, int ncoords,
+           unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype);
+    ~GlyphGenerator()
+    {
+       //if() delete m_object;
+    }
+
+   std::vector<float> glyph_coords(){return m_glyph_coords;} 
+   std::vector<float> glyph_directions(){return m_glyph_vectors;} 
+   std::vector<float> glyph_sizes(){return m_glyph_sizes;} 
+   std::vector<unsigned char>  glyph_colors(){return m_glyph_colors;}
+
     //KVSMLObjectGlyph* getGlyphData();
-    kvs::KVSMLObjectGlyph* getGlyphData();
+//    kvs::KVSMLObjectGlyph* getGlyphData();
+    void getGlyphData(kvs::KVSMLObjectGlyph* other);
     void OutputGlyph( const int time_step);
     void show();
 

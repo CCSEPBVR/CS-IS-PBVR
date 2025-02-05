@@ -31,13 +31,14 @@
 
 using namespace pbvr;
 
-void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera )
+//void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera )
+void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes )
 {
 //FJ_TIMER_KAWAMURA
     PBVR_TIMER_STA( 260 );
 //FJ_TIMER_KAWAMURA
 
-    delete m_object;
+    //delete m_object;
 
     // add by shimomura 2023/0407
     pbvr::VolumeObjectBase* volume = nullptr;
@@ -60,37 +61,34 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
 
     //pbvr::UnstructuredVolumeObject* volume;
     //volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );
-    if ( volume )
-    {
-        volume->setCoordSynthesizerStrings( m_coord_synthesizer_strings );
-        volume->setCoordSynthesizerTokens( m_coord_synthesizer_tokens );
-    }
+//    if ( volume )
+//    {
+//        volume->setCoordSynthesizerStrings( m_coord_synthesizer_strings );
+//        volume->setCoordSynthesizerTokens( m_coord_synthesizer_tokens );
+//    }
 
 //FJ_TIMER_KAWAMURA
     PBVR_TIMER_END( 260 );
 //FJ_TIMER_KAWAMURA
     
-    // change by shimomura 20240730
-    volume->updateMinMaxValues();
-    //volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
-    volume->setMinMaxObjectCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
-    volume->setMinMaxExternalCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
-
     std::cout << *volume << std::endl;
     std::cout << "min:" << volume->minObjectCoord() << ", max:" << volume->maxObjectCoord() << std::endl;
     std::cout << "min:" << volume->minExternalCoord() << ", max:" << volume->maxExternalCoord() << std::endl;
 
    try
     {
-        //m_object = sampling( param, camera, volume, subpixel_level, sampling_step );
-        m_object = sampling( volume );
+        std::cout << __FUNCTION__ << __LINE__ <<std::endl;
+        sampling( volume , clntMes);
+ 
+        //sampling( volume , clntMes);
+        std::cout << __FUNCTION__ << __LINE__ <<std::endl;
     }
     catch ( const std::runtime_error& e )
     {
 #ifdef _DEBUG		// debug by @hira
         printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
 #endif
-        m_object = NULL;
+//        m_object = NULL;
         delete volume;
         throw e;
     }
@@ -98,10 +96,10 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
     delete volume;
 }
 
-void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera, const int st, const int vl )
+void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int st, const int vl )
 {
     PBVR_TIMER_STA( 260 );
-    delete m_object;
+//    delete m_object;
     pbvr::UnstructuredVolumeObject* volume;
     volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );
 
@@ -109,11 +107,11 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
     std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
 
     volume = new pbvr::UnstructuredVolumeImporter( path_base, m_fi->m_file_type, st, vl );
-    if ( volume )
-    {
-        volume->setCoordSynthesizerStrings( m_coord_synthesizer_strings );
-        volume->setCoordSynthesizerTokens( m_coord_synthesizer_tokens );
-    }
+//    if ( volume )
+//    {
+//        volume->setCoordSynthesizerStrings( m_coord_synthesizer_strings );
+//        volume->setCoordSynthesizerTokens( m_coord_synthesizer_tokens );
+//    }
 
     PBVR_TIMER_END( 260 );
 
@@ -128,14 +126,14 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
     try
     {
         //m_object = sampling( param, camera, volume, subpixel_level, sampling_step );
-        m_object = sampling( volume );
+        sampling( volume ,clntMes);
     }
     catch ( const std::runtime_error& e )
     {
 #ifdef _DEBUG		// debug by @hira
         printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
 #endif
-        m_object = NULL;
+//        m_object = NULL;
         delete volume;
         throw e;
     }
@@ -146,7 +144,8 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
 std::string GlyphObjectGenerator::getErrorMessage( const size_t maxMemory ) const
 {
     std::string errorMessage( "" );
-    const size_t totalMemory = sizeof( float ) * m_object->sizes().size() + sizeof( float ) * m_object->sizes().size()*3 + sizeof( char ) * m_object->sizes().size()*3+ sizeof( float ) * m_object->sizes().size()*3 ;
+//    const size_t totalMemory = sizeof( float ) * m_object->sizes().size() + sizeof( float ) * m_object->sizes().size()*3 + sizeof( char ) * m_object->sizes().size()*3+ sizeof( float ) * m_object->sizes().size()*3 ;
+    const size_t totalMemory = sizeof( float ) * m_object.sizes().size() + sizeof( float ) * m_object.sizes().size()*3 + sizeof( char ) * m_object.sizes().size()*3+ sizeof( float ) * m_object.sizes().size()*3 ;
     if ( totalMemory > maxMemory )
     {
         char ms[512];
@@ -157,7 +156,8 @@ std::string GlyphObjectGenerator::getErrorMessage( const size_t maxMemory ) cons
 }
 
 //pbvr::KVSMLObjectGlyph* GlyphObjectGenerator::sampling( const Argument& param, const kvs::Camera& camera, pbvr::VolumeObjectBase* volume, const size_t subpixel_level, const float sampling_step )
-kvs::KVSMLObjectGlyph* GlyphObjectGenerator::sampling( pbvr::VolumeObjectBase* volume )
+//kvs::KVSMLObjectGlyph* GlyphObjectGenerator::sampling( pbvr::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes )
+void GlyphObjectGenerator::sampling( pbvr::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes )
 {
 #ifndef CPU_VER
     int rank;
@@ -193,8 +193,77 @@ kvs::KVSMLObjectGlyph* GlyphObjectGenerator::sampling( pbvr::VolumeObjectBase* v
         }
     } 
         
-    GlyphGenerator glyph_generator( values, nvariables,
+    GlyphGenerator glyph_generator( clntMes, values, nvariables,
             coordinates, ncoords, connections, ncells, celltype);
- 
-    return glyph_generator.getGlyphData();
+    glyph_generator.getGlyphData(&m_object);
+    std::cout << __FUNCTION__ << __LINE__ <<std::endl;
+
+//    kvs::ValueArray<float> coords(glyph_generator.glyph_coords());
+//    kvs::ValueArray<float> sizes(glyph_generator.glyph_sizes());
+//    kvs::ValueArray<unsigned char> colors(glyph_generator.glyph_colors());
+//    kvs::ValueArray<float> directions(glyph_generator.glyph_directions());
+//    std::cout << __FUNCTION__ << __LINE__ <<std::endl;
+//    clear();
+//    std::cout << __FUNCTION__ << __LINE__ <<std::endl;
+//    setCoords(coords);
+//    setSizes(sizes);
+//    setColors(colors);
+//    setDirections(directions);
+//    std::cout << __FUNCTION__ << __LINE__ <<std::endl;
+//    m_object.setCoords(coords);
+//    std::cout << __FUNCTION__ << __LINE__ <<std::endl;
+//    //m_object = new kvs::KVSMLObjectGlyph; 
+//    //m_object = *test2;
+//    //glyph_generator.getGlyphData(m_object);
+    //m_object = &test;
 }
+
+const kvs::ValueArray<kvs::Real32>& GlyphObjectGenerator::coords( void ) const
+{
+    return( m_coords );
+}
+
+const kvs::ValueArray<kvs::UInt8>& GlyphObjectGenerator::colors( void ) const
+{
+    return( m_colors );
+}
+
+const kvs::ValueArray<kvs::Real32>& GlyphObjectGenerator::directions( void ) const
+{
+    return( m_directions );
+}
+
+const kvs::ValueArray<kvs::Real32>& GlyphObjectGenerator::sizes( void ) const
+{
+    return( m_sizes );
+}
+
+void GlyphObjectGenerator::setCoords( const kvs::ValueArray<kvs::Real32>& coords )
+{
+    m_coords = coords;
+}
+
+void GlyphObjectGenerator::setColors( const kvs::ValueArray<kvs::UInt8>& colors )
+{
+    m_colors = colors;
+}
+
+void GlyphObjectGenerator::setDirections( const kvs::ValueArray<kvs::Real32>& directions )
+{
+    m_directions = directions;
+}
+
+void GlyphObjectGenerator::setSizes( const kvs::ValueArray<kvs::Real32>& sizes )
+{
+    m_sizes = sizes;
+}
+
+void GlyphObjectGenerator::clear()
+{
+    m_sizes.deallocate();
+    m_directions.deallocate();
+    m_coords.deallocate();
+    m_colors.deallocate();
+}
+
+

@@ -1368,7 +1368,6 @@ int main( int argc, char** argv )
 
                 ptss = pts.recvMessage( &clntMes );
                 //debug add by shimomura 2023/1/18
-                //std::cout << __FUNCTION__ << ", l. " << __LINE__ <<std::endl;
                 clntMes.show();
 
                 if ( ptss == -1 ) break;
@@ -1406,6 +1405,7 @@ int main( int argc, char** argv )
 
                     strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
                     servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0 ;
                     servMes.m_flag_send_bins = 1;
                     servMes.m_message_size = servMes.byteSize();
                     pts.sendMessage( servMes );
@@ -1421,6 +1421,7 @@ int main( int argc, char** argv )
                     //servMes.m_server_status = 0;
                     // ADD END 2015.12.24
                     servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0 ;
                     servMes.m_flag_send_bins = 1;
 
                     servMes.m_message_size = servMes.byteSize();
@@ -1774,6 +1775,7 @@ int main( int argc, char** argv )
                         strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
                         servMes.m_server_status = 1;
                         servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0 ;
                         servMes.m_flag_send_bins = 1;
                         std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
                         nan_error = false;
@@ -1781,6 +1783,7 @@ int main( int argc, char** argv )
 #endif
                     strncpy( servMes.m_header, "JPTP /1.0 000 OK\r\n", 18 );
                     servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0 ;
                     servMes.m_number_volume_divide = fil.m_total_number_subvolumes;
                     servMes.m_time_step = fil.m_total_start_steps;
                     servMes.m_start_step = fil.m_total_start_steps;
@@ -1890,6 +1893,7 @@ int main( int argc, char** argv )
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0 ;
                         servMes.m_flag_send_bins = 1;
 
                         servMes.m_message_size = servMes.byteSize();
@@ -1903,6 +1907,7 @@ int main( int argc, char** argv )
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0 ;
                         servMes.m_flag_send_bins = 1;
 
                         servMes.m_message_size = servMes.byteSize();
@@ -2214,6 +2219,7 @@ int main( int argc, char** argv )
                             strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
                             servMes.m_server_status = 1;
                             servMes.m_number_particle = 0;
+                            servMes.m_number_glyph = 0 ;
                             servMes.m_flag_send_bins = 1;
                             std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
                             nan_error = false;
@@ -2319,6 +2325,7 @@ int main( int argc, char** argv )
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0 ;
                         servMes.m_flag_send_bins = 1;
 
                         servMes.m_message_size = servMes.byteSize();
@@ -2332,6 +2339,7 @@ int main( int argc, char** argv )
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
                         servMes.m_flag_send_bins = 1;
 
                         servMes.m_message_size = servMes.byteSize();
@@ -2406,9 +2414,9 @@ int main( int argc, char** argv )
                         VariableRange vr;
                         pts.sendMessage( servMes );
 
-#if 0
                         // 関数の領域確保、初期化を行う : by @hira 2016/12/01
                         servMes.initializeTransferFunction(clntMes.m_transfer_function.size(), DEFAULT_NBINS);
+#if 0
 
                         c_bins_size = 0;
                         o_bins_size = 0;
@@ -2459,7 +2467,8 @@ int main( int argc, char** argv )
                             FilterInformationFile& fi = fil.m_list[fidx];
 
 //                            pbvr::PointObject* tmp_obj = NULL;
-                            kvs::KVSMLObjectGlyph* tmp_obj = NULL;
+                            //kvs::KVSMLObjectGlyph* tmp_obj = NULL;
+                            kvs::KVSMLObjectGlyph* tmp_obj = new kvs::KVSMLObjectGlyph;
                             std::stringstream suffix;
                             suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
                                    << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
@@ -2471,35 +2480,52 @@ int main( int argc, char** argv )
                             servMes.m_flag_send_bins = 2;
                             try
                             {
-                                glyph_creator_lst[fidx].setCoordSynthStr( clntMes.m_x_synthesis,
-                                                                          clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-//                                point_creator_lst[fidx].setCoordSynthTkn( clntMes.x_synthesis_token,
-//                                                                          clntMes.y_synthesis_token, clntMes.z_synthesis_token );
+                        std::cout << __FUNCTION__ << __LINE__ <<std::endl;
+//                                glyph_creator_lst[fidx].setCoordSynthStr( clntMes.m_x_synthesis,
+//                                                                          clntMes.m_y_synthesis, clntMes.m_z_synthesis );
+                        std::cout << __FUNCTION__ << __LINE__ <<std::endl;
                                 if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                                 {
-                                    tmp_obj = glyph_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
+                                    *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep, st, xvl); 
+//                                    glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep, st, xvl, tmp_obj); 
+                                    // run()で得られるKVSMLObjectglyphとtmp_objは異なるメモリ領域を指しているため,ポインタコピーではなくオペレータを呼び出す必要がある
                                 }
                                 else     // filetype: kvsml
                                 {
-                                    tmp_obj = glyph_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
+                                    std::cout << __FUNCTION__ << __LINE__ <<std::endl;
+                                    //tmp_obj = glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep, st );
+                                    //*tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep, st );
+                                    glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep, tmp_obj, st );
                                 }
 
+                                std::cout << __FUNCTION__ << __LINE__ <<std::endl;
                                 size_t nmemb = tmp_obj->sizes().size();
-                                kvs::ValueArray<kvs::Real32> coords_array ( tmp_obj->coords().pointer(), nmemb );
-                                kvs::ValueArray<kvs::UInt8>  colors_array ( tmp_obj->colors().pointer(), nmemb );
-                                kvs::ValueArray<kvs::Real32> normals_array( tmp_obj->directions().pointer(), nmemb );
-                                kvs::ValueArray<kvs::Real32> sizes_array( tmp_obj->sizes().pointer(), nmemb );
+                                std::cout << "nmemb = " << nmemb << ", " << tmp_obj->coords().size()  << std::endl; 
+                                for(int i=0; i<10; i++)
+                                {
+                                    std::cout << tmp_obj->coords()[i] <<std::endl;
+                                }
 
+
+                                std::cout << __FUNCTION__ << __LINE__ <<std::endl;
+//                                kvs::ValueArray<kvs::Real32> coords_array ( tmp_obj->coords().pointer(), nmemb );
+//                                kvs::ValueArray<kvs::UInt8>  colors_array ( tmp_obj->colors().pointer(), nmemb );
+//                                kvs::ValueArray<kvs::Real32> normals_array( tmp_obj->directions().pointer(), nmemb );
+//                                kvs::ValueArray<kvs::Real32> sizes_array( tmp_obj->sizes().pointer(), nmemb );
+
+                                std::cout << __FUNCTION__ << __LINE__ <<std::endl;
 //                                originalObject->clear();
 //                                originalObject->setCoords( coords_array );
 //                                originalObject->setColors( colors_array );
 //                                originalObject->setNormals( normals_array );
 
-//                                originalGlyph->clear();
-                                originalGlyph->setCoords( coords_array );
-                                originalGlyph->setColors( colors_array );
-                                originalGlyph->setDirections( normals_array );
-                                originalGlyph->setSizes( sizes_array );
+                                originalGlyph->clear();
+                                originalGlyph = tmp_obj;
+//                                originalGlyph->setCoords( coords_array );
+//                                originalGlyph->setColors( colors_array );
+//                                originalGlyph->setDirections( normals_array );
+//                                originalGlyph->setSizes( sizes_array );
+                                std::cout << __FUNCTION__ << __LINE__ <<std::endl;
 #if 0
                                 // modify by @hira at 2016/12/01  
                                 int c_count = 0;
@@ -2549,6 +2575,7 @@ int main( int argc, char** argv )
 #endif
                             //int nvertices = originalObject->coords().size() / 3;
 
+//                            delete tmp_obj;
                             //pbvr::PointObject* object = originalObject;
                             kvs::KVSMLObjectGlyph* object = originalGlyph;
 							printf(" %zu glyphs generated\n", object->coords().size() / 3);
@@ -2556,6 +2583,7 @@ int main( int argc, char** argv )
 //                           //add by shimomura 2023/06/14
                             if ( originalGlyph != object ) delete originalGlyph;
 
+                            std::cout << __FUNCTION__ << __LINE__ <<std::endl;
                             servMes.m_number_glyph = originalGlyph->coords().size() / 3;
                             if ( servMes.m_number_glyph > 0 )
                             {
@@ -2584,6 +2612,7 @@ int main( int argc, char** argv )
                                 servMes.m_glyph_colors[3 * i + 2]  = object->colors()[3 * i + 2];
                                 servMes.m_glyph_sizes[i ] = object->sizes()[ i ];
                             }
+                            std::cout << __FUNCTION__ << __LINE__ <<std::endl;
 
 #if 0
                             servMes.m_number_particle = object->coords().size() / 3;
@@ -2672,23 +2701,28 @@ int main( int argc, char** argv )
                                     tmp_o_bins); // change by shimomura 2022/12/26
 #endif
                         // TEST START 2015.1.14
+                            std::cout << __FUNCTION__ << __LINE__ <<std::endl;
                         if ( nan_error )
                         {
                             strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
                             servMes.m_server_status = 1;
                             servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0 ;
                             servMes.m_flag_send_bins = 1;
                             std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
                             nan_error = false;
                         }
+                            std::cout << __FUNCTION__ << __LINE__ <<std::endl;
                         servMes.m_flag_send_bins = 1;
                         servMes.m_subpixel_level = param.m_subpixel_level;
                         servMes.m_message_size = servMes.byteSize();
+                            std::cout << __FUNCTION__ << __LINE__ <<std::endl;
                         pts.sendMessage( servMes );
                         // TEST START 2015.1.14
                         servMes.m_server_status = 0;
                         // TEST END 2015.1.14
 
+                            std::cout << __FUNCTION__ << __LINE__ <<std::endl;
                         for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
                         {
                             delete[] servMes.m_color_bins[tf];

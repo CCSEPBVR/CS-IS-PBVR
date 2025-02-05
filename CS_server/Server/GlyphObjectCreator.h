@@ -25,6 +25,7 @@
 #include "PointObject.h"
 #include "GlyphObjectGenerator.h"
 #include "KVSMLObjectGlyph.h"
+#include "../Common/ParticleTransferProtocol.h"
 
 class GlyphObjectCreator
 {
@@ -59,10 +60,14 @@ public:
 
 public:
 
-    kvs::KVSMLObjectGlyph* run( const Argument& param, const kvs::Camera& camera, const int timeStep,  const int st = 1 )
+    //kvs::KVSMLObjectGlyph* run( const Argument& param, const kvs::Camera& camera, const int timeStep,  const int st = 1 )
+    //kvs::KVSMLObjectGlyph* run( const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes  ,const int timeStep,  const int st = 1 )
+    void run( const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes  ,const int timeStep, kvs::KVSMLObjectGlyph* object, const int st = 1 )
     {
-        m_generator.setFinlterInfo( m_fi );
-        m_generator.setCoordSynthTS( st );
+        pbvr::GlyphObjectGenerator generator;
+
+//        m_generator.setFinlterInfo( m_fi );
+//        m_generator.setCoordSynthTS( st );
 
         struct stat s;
         if ( stat( param.m_input_data.c_str(), &s ) )
@@ -70,17 +75,27 @@ public:
             std::cout << "Error. read failed:" << param.m_input_data << std::endl;
             exit( 1 );
         }
-        m_generator.createFromFile( param, camera);
+            generator.createFromFile( param, camera, clntMes);
 
-        kvs::KVSMLObjectGlyph* po = m_generator.getKVSMLObjectGlyph();
-        return po;
+        kvs::KVSMLObjectGlyph* po = generator.getKVSMLObjectGlyph();
+        std::cout << "po.coords().size() = " << po->coords().size() << ", " << po->sizes().size()<< std::endl;
+        for(int i=0; i<6; i++)
+        {
+            std::cout << po->coords()[i] <<std::endl;
+        }
+
+        object->setCoords(po->coords());
+        object->setColors(po->colors());
+        object->setDirections(po->directions());
+        object->setSizes(po->sizes());
+        //return po;
     }
 
-    kvs::KVSMLObjectGlyph* run( const Argument& param, const kvs::Camera& camera, const int timeStep, const int st, const int vl)
+    kvs::KVSMLObjectGlyph* run( const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes  , const int timeStep, const int st, const int vl)
     {
         m_generator.setFinlterInfo( m_fi );
         m_generator.setCoordSynthTS( st );
-        m_generator.createFromFile( param, camera, st, vl );
+        m_generator.createFromFile( param, camera, clntMes, st, vl );
         kvs::KVSMLObjectGlyph* po = m_generator.getKVSMLObjectGlyph();
         return po;
     }
