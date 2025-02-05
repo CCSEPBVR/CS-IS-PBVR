@@ -2132,9 +2132,6 @@ int main( int argc, char** argv )
                             servMes.m_number_particle = object->coords().size() / 3;
                             if ( servMes.m_number_particle > 0 )
                             {
-//                                servMes.m_positions = new float[3 * servMes.m_number_particle];
-//                                servMes.m_normals = new float[3 * servMes.m_number_particle];
-//                                servMes.m_colors = new unsigned char[3 * servMes.m_number_particle];
                                 servMes.m_positions = std::make_unique<float[]>(3 * servMes.m_number_particle);
                                 servMes.m_normals = std::make_unique<float[]>(3 * servMes.m_number_particle);
                                 servMes.m_colors = std::make_unique<unsigned char[]>(3 * servMes.m_number_particle);
@@ -2359,11 +2356,6 @@ int main( int argc, char** argv )
                         param.m_particle_limit = clntMes.m_particle_limit;
                         param.m_particle_density = clntMes.m_particle_density;
 
-//                        transfunc_creator.setProtocol( clntMes );
-//                        transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
-//                        param.m_transfunc_synthesizer = transfunc_creator.create();
-//                          clntMes からglyphParameterを取り出す。
-//
                      param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
                     for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
                     {
@@ -2416,41 +2408,7 @@ int main( int argc, char** argv )
 
                         // 関数の領域確保、初期化を行う : by @hira 2016/12/01
                         servMes.initializeTransferFunction(clntMes.m_transfer_function.size(), DEFAULT_NBINS);
-#if 0
-
-                        c_bins_size = 0;
-                        o_bins_size = 0;
-                        for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
-                        {
-                            c_bins_size += servMes.m_color_nbins[tf];
-                            o_bins_size += servMes.m_opacity_nbins[tf];
-                        }
-
-                        tmp_c_bins = new kvs::UInt64[c_bins_size];
-                        tmp_o_bins = new kvs::UInt64[o_bins_size];
-
-                        //add by shimomura 2023/06/14
-                        int cnt = 2* servMes.m_transfer_function_count ;
-                        tmp_max = new float[cnt]; 
-                        tmp_min = new float[cnt];
-
-                        for ( int tf = 0; tf < cnt; tf++ )
-                        {
-                            tmp_max[tf] = FLT_MIN;
-                            tmp_min[tf] = FLT_MAX;
-                        }
-
-
-                        for ( int tf = 0; tf < c_bins_size; tf++ )
-                        {
-                            tmp_c_bins[tf] = 0;
-                        }
-
-                        for ( int tf = 0; tf < o_bins_size; tf++ )
-                        {
-                            tmp_o_bins[tf] = 0;
-                        }
-#endif                   
+ 
                         while ( jd.dispatchNext( wid, &st, &vl ) )
                         {
                             if ( timer_count <= PBVR_TIMER_COUNT_NUM )
@@ -2466,8 +2424,6 @@ int main( int argc, char** argv )
                             fidx = fil.getFileIndex( vl, &xvl );
                             FilterInformationFile& fi = fil.m_list[fidx];
 
-//                            pbvr::PointObject* tmp_obj = NULL;
-                            //kvs::KVSMLObjectGlyph* tmp_obj = NULL;
                             kvs::KVSMLObjectGlyph* tmp_obj = new kvs::KVSMLObjectGlyph;
                             std::stringstream suffix;
                             suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
@@ -2480,81 +2436,19 @@ int main( int argc, char** argv )
                             servMes.m_flag_send_bins = 2;
                             try
                             {
-                        std::cout << __FUNCTION__ << __LINE__ <<std::endl;
-//                                glyph_creator_lst[fidx].setCoordSynthStr( clntMes.m_x_synthesis,
-//                                                                          clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-                        std::cout << __FUNCTION__ << __LINE__ <<std::endl;
                                 if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                                 {
                                     *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep, st, xvl); 
-//                                    glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep, st, xvl, tmp_obj); 
                                     // run()で得られるKVSMLObjectglyphとtmp_objは異なるメモリ領域を指しているため,ポインタコピーではなくオペレータを呼び出す必要がある
                                 }
                                 else     // filetype: kvsml
                                 {
-                                    std::cout << __FUNCTION__ << __LINE__ <<std::endl;
-                                    //tmp_obj = glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep, st );
-                                    //*tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep, st );
                                     glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep, tmp_obj, st );
                                 }
 
-                                std::cout << __FUNCTION__ << __LINE__ <<std::endl;
-                                size_t nmemb = tmp_obj->sizes().size();
-                                std::cout << "nmemb = " << nmemb << ", " << tmp_obj->coords().size()  << std::endl; 
-                                for(int i=0; i<10; i++)
-                                {
-                                    std::cout << tmp_obj->coords()[i] <<std::endl;
-                                }
-
-
-                                std::cout << __FUNCTION__ << __LINE__ <<std::endl;
-//                                kvs::ValueArray<kvs::Real32> coords_array ( tmp_obj->coords().pointer(), nmemb );
-//                                kvs::ValueArray<kvs::UInt8>  colors_array ( tmp_obj->colors().pointer(), nmemb );
-//                                kvs::ValueArray<kvs::Real32> normals_array( tmp_obj->directions().pointer(), nmemb );
-//                                kvs::ValueArray<kvs::Real32> sizes_array( tmp_obj->sizes().pointer(), nmemb );
-
-                                std::cout << __FUNCTION__ << __LINE__ <<std::endl;
-//                                originalObject->clear();
-//                                originalObject->setCoords( coords_array );
-//                                originalObject->setColors( colors_array );
-//                                originalObject->setNormals( normals_array );
-
+//                                size_t nmemb = tmp_obj->sizes().size();
                                 originalGlyph->clear();
                                 originalGlyph = tmp_obj;
-//                                originalGlyph->setCoords( coords_array );
-//                                originalGlyph->setColors( colors_array );
-//                                originalGlyph->setDirections( normals_array );
-//                                originalGlyph->setSizes( sizes_array );
-                                std::cout << __FUNCTION__ << __LINE__ <<std::endl;
-#if 0
-                                // modify by @hira at 2016/12/01  
-                                int c_count = 0;
-                                for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
-                                {
-                                    int c_nbins = tmp_obj->getNbins();
-                                    //changed by shimomura 2023/07/24
-                                    tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
-                                    tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
-                                    for ( int res = 0; res < c_nbins; res++ )
-                                    {
-                                        tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ] ;
-                                        c_count++;
-                                    }
-                                }
-                                int o_count = 0;
-                                for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
-                                {
-                                    int o_nbins = tmp_obj->getNbins();
-                                    //changed by shimomura 2023/07/24
-                                    tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_o_max[tf];
-                                    tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_o_min[tf];
-                                    for ( int res = 0; res < o_nbins; res++ )
-                                    {
-                                        tmp_o_bins[o_count] += tmp_obj->getOHistogram()[ o_count ] ;
-                                        o_count++;
-                                    }
-                                }
-#endif                             
                             }
                             catch ( const std::runtime_error& e )
                             {
@@ -2573,17 +2467,12 @@ int main( int argc, char** argv )
                             }
 #endif
 #endif
-                            //int nvertices = originalObject->coords().size() / 3;
-
-//                            delete tmp_obj;
-                            //pbvr::PointObject* object = originalObject;
                             kvs::KVSMLObjectGlyph* object = originalGlyph;
 							printf(" %zu glyphs generated\n", object->coords().size() / 3);
 
 //                           //add by shimomura 2023/06/14
                             if ( originalGlyph != object ) delete originalGlyph;
 
-                            std::cout << __FUNCTION__ << __LINE__ <<std::endl;
                             servMes.m_number_glyph = originalGlyph->coords().size() / 3;
                             if ( servMes.m_number_glyph > 0 )
                             {
@@ -2612,40 +2501,7 @@ int main( int argc, char** argv )
                                 servMes.m_glyph_colors[3 * i + 2]  = object->colors()[3 * i + 2];
                                 servMes.m_glyph_sizes[i ] = object->sizes()[ i ];
                             }
-                            std::cout << __FUNCTION__ << __LINE__ <<std::endl;
 
-#if 0
-                            servMes.m_number_particle = object->coords().size() / 3;
-                            if ( servMes.m_number_particle > 0 )
-                            {
-//                                servMes.m_positions = new float[3 * servMes.m_number_particle];
-//                                servMes.m_normals = new float[3 * servMes.m_number_particle];
-//                                servMes.m_colors = new unsigned char[3 * servMes.m_number_particle];
-                                servMes.m_positions = std::make_unique<float[]>(3 * servMes.m_number_particle);
-                                servMes.m_normals = std::make_unique<float[]>(3 * servMes.m_number_particle);
-                                servMes.m_colors = std::make_unique<unsigned char[]>(3 * servMes.m_number_particle);
-                            }
-                            else
-                            {
-                                servMes.m_positions = NULL;
-                                servMes.m_normals   = NULL;
-                                servMes.m_colors    = NULL;
-                            }
-
-                            for ( int i = 0; i < servMes.m_number_particle; ++i )
-                            {
-                                servMes.m_positions[3 * i + 0] = object->coords()[3 * i + 0];
-                                servMes.m_positions[3 * i + 1] = object->coords()[3 * i + 1];
-                                servMes.m_positions[3 * i + 2] = object->coords()[3 * i + 2];
-                                servMes.m_normals[3 * i + 0] = object->normals()[3 * i + 0];
-                                servMes.m_normals[3 * i + 1] = object->normals()[3 * i + 1];
-                                servMes.m_normals[3 * i + 2] = object->normals()[3 * i + 2];
-                                servMes.m_colors[3 * i + 0] = object->colors()[3 * i + 0];
-                                servMes.m_colors[3 * i + 1] = object->colors()[3 * i + 1];
-                                servMes.m_colors[3 * i + 2] = object->colors()[3 * i + 2];
-                            }
-                            servMes.m_server_side_variable_range = vr;
-#endif
                             if ( timer_count <= PBVR_TIMER_COUNT_NUM )
                             {
                                 PBVR_TIMER_END( 471 );
@@ -2666,42 +2522,13 @@ int main( int argc, char** argv )
                             {
                                 PBVR_TIMER_STA( 473 );
                             }
-//                            delete[] servMes.m_positions;
-//                            delete[] servMes.m_normals;
-//                            delete[] servMes.m_colors;
                             delete object;
                             if ( timer_count <= PBVR_TIMER_COUNT_NUM )
                             {
                                 PBVR_TIMER_END( 473 );
                             }
                         } // end of while(DispatchNext)
-#if 0
-#ifndef CPU_VER
-
-                        if (mpi_size > 1) {
-                            MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-                            MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-                            MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
-                            MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
-
-                        }
-#endif
-                        //add by shimomura 2023/06/14
-                        vr = setVariablerange2( tmp_max,tmp_min, cnt/2 );
-                        servMes.m_server_side_variable_range = vr;
-                        // add by shimomura 2022/12/16
-                        servMes.setColorHistogramBins(                                                     
-                                    param.m_transfunc_array.size(),
-                                    DEFAULT_NBINS,
-                                    tmp_c_bins);//,
-
-                        servMes.setOpacityHistogramBins(
-                                    param.m_transfunc_array.size(),
-                                    DEFAULT_NBINS,
-                                    tmp_o_bins); // change by shimomura 2022/12/26
-#endif
                         // TEST START 2015.1.14
-                            std::cout << __FUNCTION__ << __LINE__ <<std::endl;
                         if ( nan_error )
                         {
                             strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
@@ -2712,17 +2539,14 @@ int main( int argc, char** argv )
                             std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
                             nan_error = false;
                         }
-                            std::cout << __FUNCTION__ << __LINE__ <<std::endl;
                         servMes.m_flag_send_bins = 1;
                         servMes.m_subpixel_level = param.m_subpixel_level;
                         servMes.m_message_size = servMes.byteSize();
-                            std::cout << __FUNCTION__ << __LINE__ <<std::endl;
                         pts.sendMessage( servMes );
                         // TEST START 2015.1.14
                         servMes.m_server_status = 0;
                         // TEST END 2015.1.14
 
-                            std::cout << __FUNCTION__ << __LINE__ <<std::endl;
                         for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
                         {
                             delete[] servMes.m_color_bins[tf];
@@ -2732,12 +2556,6 @@ int main( int argc, char** argv )
                         delete[] servMes.m_opacity_nbins;
                         servMes.m_transfer_function_count = 0;
                         servMes.m_flag_send_bins = 1;
-//                        delete[] tmp_c_bins;
-//                        delete[] tmp_o_bins;
-//                        //add by shimomura 20240603
-//                        delete[] tmp_max;
-//                        delete[] tmp_min;
-//                        delete param.m_transfunc_synthesizer;
 
                         if ( timer_count <= PBVR_TIMER_COUNT_NUM )
                         {

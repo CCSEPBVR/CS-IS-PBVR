@@ -38,8 +38,6 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
     PBVR_TIMER_STA( 260 );
 //FJ_TIMER_KAWAMURA
 
-    //delete m_object;
-
     // add by shimomura 2023/0407
     pbvr::VolumeObjectBase* volume = nullptr;
     if ( kvsview::FileChecker::ImportableStructuredVolume( param.m_input_data ))
@@ -59,14 +57,6 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
         kvsMessageError("%s is not volume data.", param.m_input_data.c_str());
     }
 
-    //pbvr::UnstructuredVolumeObject* volume;
-    //volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );
-//    if ( volume )
-//    {
-//        volume->setCoordSynthesizerStrings( m_coord_synthesizer_strings );
-//        volume->setCoordSynthesizerTokens( m_coord_synthesizer_tokens );
-//    }
-
 //FJ_TIMER_KAWAMURA
     PBVR_TIMER_END( 260 );
 //FJ_TIMER_KAWAMURA
@@ -77,11 +67,7 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
 
    try
     {
-        std::cout << __FUNCTION__ << __LINE__ <<std::endl;
         sampling( volume , clntMes);
- 
-        //sampling( volume , clntMes);
-        std::cout << __FUNCTION__ << __LINE__ <<std::endl;
     }
     catch ( const std::runtime_error& e )
     {
@@ -107,11 +93,6 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
     std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
 
     volume = new pbvr::UnstructuredVolumeImporter( path_base, m_fi->m_file_type, st, vl );
-//    if ( volume )
-//    {
-//        volume->setCoordSynthesizerStrings( m_coord_synthesizer_strings );
-//        volume->setCoordSynthesizerTokens( m_coord_synthesizer_tokens );
-//    }
 
     PBVR_TIMER_END( 260 );
 
@@ -192,30 +173,11 @@ void GlyphObjectGenerator::sampling( pbvr::VolumeObjectBase* volume, const jpv::
             values[j][i] = valueArray.at<Type>(it);  
         }
     } 
-        
+
     GlyphGenerator glyph_generator( clntMes, values, nvariables,
             coordinates, ncoords, connections, ncells, celltype);
     glyph_generator.getGlyphData(&m_object);
-    std::cout << __FUNCTION__ << __LINE__ <<std::endl;
 
-//    kvs::ValueArray<float> coords(glyph_generator.glyph_coords());
-//    kvs::ValueArray<float> sizes(glyph_generator.glyph_sizes());
-//    kvs::ValueArray<unsigned char> colors(glyph_generator.glyph_colors());
-//    kvs::ValueArray<float> directions(glyph_generator.glyph_directions());
-//    std::cout << __FUNCTION__ << __LINE__ <<std::endl;
-//    clear();
-//    std::cout << __FUNCTION__ << __LINE__ <<std::endl;
-//    setCoords(coords);
-//    setSizes(sizes);
-//    setColors(colors);
-//    setDirections(directions);
-//    std::cout << __FUNCTION__ << __LINE__ <<std::endl;
-//    m_object.setCoords(coords);
-//    std::cout << __FUNCTION__ << __LINE__ <<std::endl;
-//    //m_object = new kvs::KVSMLObjectGlyph; 
-//    //m_object = *test2;
-//    //glyph_generator.getGlyphData(m_object);
-    //m_object = &test;
 }
 
 const kvs::ValueArray<kvs::Real32>& GlyphObjectGenerator::coords( void ) const

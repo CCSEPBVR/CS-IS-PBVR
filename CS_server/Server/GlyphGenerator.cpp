@@ -50,30 +50,11 @@ GlyphGenerator::GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes
 bool GlyphGenerator::InputParameter(const jpv::ParticleTransferClientMessage& clntMes )
 {
 
-//    bool glyph_flag;
-//    std::string              g_flag                = glyph_property.getString( "GLYPH_FLAG" );
-//    std::vector<std::string> direction_variables   = glyph_property.getTableString( "DIRECTION_VARIABLES" );
-//    std::string              size_sampling_method  = glyph_property.getString("SIZE_SAMPLING_METHOD");
-//    std::vector<std::string> size_variables        = glyph_property.getTableString( "SIZE_VARIABLES" );
-//    std::string distribution_modes                 = glyph_property.getString("DISTRIBUTION_MODE");
-//    int stride                                     = glyph_property.getInt("STRIDE");
-//    int seed                                       = glyph_property.getInt("SEED");
-//    int number_of_sample_points                    = glyph_property.getInt("NUMBER_OF_SMAPLING_POINT");
-//    std::string color_sampling_method              = glyph_property.getString("COLOR_DATA_SAMPLING_METHOD");
-//    std::vector<std::string> color_data_variables  = glyph_property.getTableString( "COLOR_VARIABLES" );
-
 
     bool glyph_flag;
-//    std::string              g_flag                = clntMes.m_glyph_flag; 
-//    std::vector<std::string> direction_variables   = clntMes. 
-//    std::string              size_sampling_method  = clntMes. 
-//    std::vector<std::string> size_variables        = clntMes. 
-//    std::string distribution_modes                 = clntMes. 
     int stride                                     = clntMes.m_stride;
     int seed                                       = clntMes.m_seed; 
     int number_of_sample_points                    = clntMes.m_number_of_sampling_point ;
-//    std::string color_sampling_method              = clntMes. 
-//    std::vector<std::string> color_data_variables  = clntMes. 
     
 
     int mpi_size = 1;
@@ -82,12 +63,6 @@ bool GlyphGenerator::InputParameter(const jpv::ParticleTransferClientMessage& cl
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
 #endif
-//    if(read_flag)
-//    {
-////        if(mpi_rank ==0) std::rename( glyphParamPath.c_str(), glyphParamPath_old.c_str() );
-//        if(mpi_rank ==0) std::filesystem::copy(glyphParamPath.c_str(), glyphParamPath_old.c_str(), std::filesystem::copy_options::overwrite_existing);
-//    }
-
 
 #if _OPENMP
     int max_threads = omp_get_max_threads();
@@ -98,43 +73,22 @@ bool GlyphGenerator::InputParameter(const jpv::ParticleTransferClientMessage& cl
     number_of_sample_points /= mpi_size;  
     number_of_sample_points /= max_threads;  
 
+    m_number_of_sample_points = number_of_sample_points;
     float glyph_min=0; 
     float glyph_max=0;
-//    glyph_min = glyph_property.getFloat("GLYPH_COLOR_MIN");
-//    glyph_max = glyph_property.getFloat("GLYPH_COLOR_MAX");
-//    std::vector<int> i_table;
-//    i_table = glyph_property.getTableInt( "GLYPH_COLOR_MAP_TABLE" );
+
     int table_size = clntMes.m_glyph_color_map_table.size();    
     kvs::ValueArray<kvs::UInt8> u_table( table_size );
-    //for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (kvs::UInt8)i_table[j];
     for( size_t j = 0; j< table_size ; j++ ) u_table[j] = (kvs::UInt8)clntMes.m_glyph_color_map_table[j];
     kvs::ColorMap color_map( u_table, glyph_min, glyph_max);
     m_color_map = color_map;
 
-//    m_color_map = clntMes.m_color_map;
-//    if(strcmp(g_flag.c_str(), "TRUE") ==0 ) glyph_flag = true;
-//    else glyph_flag = false;
     glyph_flag = clntMes.m_glyph_flag;
    
-//    if(clntMes.m_direction_variable.size() < 3)
-//    { 
-//        std::cout << "variables number is less 3 numbers !!! Skip glyph generate process !!!" << std::endl;
-//        return false;  
-//    }
     for (int i = 0; i< 3 ; i++)
     {
-//        m_direction_variables.push_back ( std::atoi(direction_variables[i].substr(1).c_str()) - 1);
         m_direction_variables.push_back ( std::atoi(clntMes.m_direction_variable[i].substr(1).c_str()) - 1);
     }
-
-//    if     (size_sampling_method == "Constant"       ) m_size_sampling_method    = jpv::DataDefines::Constant;
-//    else if(size_sampling_method == "SingleVariable" ) m_size_sampling_method    = jpv::DataDefines::SingleVariable;
-//    else if(size_sampling_method == "VariableArray" )  m_size_sampling_method    = jpv::DataDefines::VariableArray;
-//    else 
-//    {
-//       std::cout << "No selecting Sampling method !!! Skip glyph generate process !!!" << std::endl;
-//       return false;  
-//    }
 
     m_size_sampling_method    =clntMes.m_size_sampling_method;
 
@@ -143,32 +97,11 @@ bool GlyphGenerator::InputParameter(const jpv::ParticleTransferClientMessage& cl
         m_size_variables.push_back( std::atoi(clntMes.m_size_variable[i].substr(1).c_str()) -1); 
     }
 
-//    if     (distribution_modes == "AllPoints"           ) m_distribution_modes  = jpv::GlyphMode::AllPoints;
-//    else if(distribution_modes == "EveryNthPoints"         ) m_distribution_modes  = jpv::GlyphMode::EveryNthPoints;
-//    else if(distribution_modes == "UniformDistribution" ) m_distribution_modes  = jpv::GlyphMode::UniformDistribution;
-//    else 
-//    {
-//       std::cout << "Not selecting Distribution mode !!! Skip glyph generate process !!!" << std::endl;
-//       return false;  
-//    }
     m_distribution_modes = clntMes.m_distribution_mode; 
 
-//    m_stride                  = stride;
-//    m_seed                    = seed;
-//    m_number_of_sample_points = number_of_sample_points;
-//    if     (color_sampling_method == "Constant"       ) m_color_sampling_method    = jpv::DataDefines::Constant;
-//    else if(color_sampling_method == "SingleVariable" ) m_color_sampling_method    = jpv::DataDefines::SingleVariable;
-//    else if(color_sampling_method == "VariableArray" ) m_color_sampling_method    = jpv::DataDefines::VariableArray;
-//    else 
-//    {
-//       std::cout << "No selecting Sampling method !!! Skip glyph generate process !!!" << std::endl;
-//       return false;  
-//    }
-    
     m_color_sampling_method    = clntMes.m_color_data_sampling_method;
     for (int i =0 ; i< clntMes.m_color_data_variable.size(); i++)
     {
-//        m_color_data_variables.push_back( std::atoi(color_data_variables[i].substr(1).c_str()) - 1); 
         m_color_data_variables.push_back( std::atoi(clntMes.m_color_data_variable[i].substr(1).c_str()) - 1); 
     }
 
@@ -632,7 +565,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
 
         timer.start();
         //nglyphs /= nthreads;
-        kvs::MersenneTwister MT( seed );
+        kvs::MersenneTwister MT( seed + (mpi_rank+1)*thid );
 
     float TotalVolume = 0;
     float density = 0;
@@ -860,7 +793,6 @@ const size_t GlyphGenerator::calculate_number_of_particles(
     return ( n );
 }
 
-//kvs::KVSMLObjectGlyph* GlyphGenerator::getGlyphData()
 void GlyphGenerator::getGlyphData(kvs::KVSMLObjectGlyph* other)
 {
     kvs::ValueArray<float> coords( m_glyph_coords  );
@@ -1102,7 +1034,7 @@ void GlyphGenerator::OutputGlyph( const int time_step)
         C_min_recv.fill(0x00);
         C_max_recv.fill(0x00);
 
-//        if(mpi_rank==0)std::cout<<"MPI_Reduce"<<std::endl;
+//        if(mpi_rank==0)std::
         MPI_Reduce( particleBase.m_O_min.pointer(), O_min_recv.pointer(),
                     tf_number, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
         MPI_Reduce( particleBase.m_O_max.pointer(), O_max_recv.pointer(),

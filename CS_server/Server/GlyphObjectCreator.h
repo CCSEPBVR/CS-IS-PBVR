@@ -78,7 +78,6 @@ public:
             generator.createFromFile( param, camera, clntMes);
 
         kvs::KVSMLObjectGlyph* po = generator.getKVSMLObjectGlyph();
-        std::cout << "po.coords().size() = " << po->coords().size() << ", " << po->sizes().size()<< std::endl;
         for(int i=0; i<6; i++)
         {
             std::cout << po->coords()[i] <<std::endl;
