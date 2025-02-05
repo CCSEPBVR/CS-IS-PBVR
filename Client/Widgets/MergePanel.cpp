@@ -1023,6 +1023,7 @@ void MergePanel::onWorkerThreadFinished()
         {
             if( m_files_manager[row]->getObject() != nullptr ) // オブジェクトがインポートされている場合は登録を行う。
             {
+                m_files_manager[row]->getObject()->setXform( beforeObjectManagerXform );
                 if( m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectCS ||
                     m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS ||
                     m_files_manager[row]->getFormat() == FilesManager::PointObjectKVSML    ||
