@@ -1224,8 +1224,8 @@ int main( int argc, char** argv )
 
                     for ( int tf = 0; tf < cnt; tf++ )
                     {
-                        tmp_max[tf] = 0;
-                        tmp_min[tf] = 0;
+                        tmp_max[tf] = FLT_MIN;
+                        tmp_min[tf] = FLT_MAX;
                     }
                         
                     for ( int tf = 0; tf < c_bins_size; tf++ )
@@ -1290,8 +1290,8 @@ int main( int argc, char** argv )
                         {
                             c_nbins = object->getNbins();
                             //add by shimomura 2023/06/14
-                            tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
-                            tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
+                            tmp_max[2*tf+1] = kvs::Math::Max( tmp_max[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
+                            tmp_min[2*tf+1] = kvs::Math::Min( tmp_min[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
                             for ( int res = 0; res < c_nbins; res++ )
                             {
                                 tmp_c_bins[c_count] += object->getCHistogram()[ c_count ] ;
@@ -1303,8 +1303,10 @@ int main( int argc, char** argv )
                         {
                             o_nbins = object->getNbins();
                             //add by shimomura 2023/06/14
-                            tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_c_max[tf];
-                            tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_c_min[tf];
+                            tmp_max[2*tf] = kvs::Math::Max( tmp_max[2*tf] ,param.m_transfunc_synthesizer-> m_o_max[tf]);
+                            tmp_min[2*tf] = kvs::Math::Min( tmp_min[2*tf] ,param.m_transfunc_synthesizer-> m_o_min[tf]);
+                            //tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_o_max[tf];
+                            //tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_o_min[tf];
                             for ( int res = 0; res < o_nbins; res++ )
                             {
                                 tmp_o_bins[o_count] += object->getOHistogram()[ o_count ] ;
@@ -1437,44 +1439,6 @@ int main( int argc, char** argv )
                     //param.m_sampling_step = 1;
                     param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
                     param.m_particle_limit_pre = param.m_particle_limit;
-#if 0
-                    clntMes.show();
-                    int tf_count = clntMes.m_transfer_function.size();
-                    int c_nbins = DEFAULT_NBINS;
-                    int o_nbins = DEFAULT_NBINS;
-
-                    c_bins_size = 0;
-                    o_bins_size = 0;
-
-                    for ( int tf = 0; tf < tf_count; tf++ )
-                    {
-                        c_bins_size += c_nbins;
-                        o_bins_size += o_nbins;
-                    }
-
-                    tmp_c_bins = new kvs::UInt64[c_bins_size];
-                    tmp_o_bins = new kvs::UInt64[o_bins_size];
-                    //add by shimomura 2023/06/14
-                    int cnt = 2* tf_count ;
-                    tmp_max = new float[cnt]; 
-                    tmp_min = new float[cnt]; 
-
-                    for ( int tf = 0; tf < cnt; tf++ )
-                    {
-                        tmp_max[tf] = 0;
-                        tmp_min[tf] = 0;
-                    }
-                        
-                    for ( int tf = 0; tf < c_bins_size; tf++ )
-                    {
-                        tmp_c_bins[tf] = 0;
-                    }
-
-                    for ( int tf = 0; tf < o_bins_size; tf++ )
-                    {
-                        tmp_o_bins[tf] = 0;
-                    }
-#endif
                     while ( jd.dispatchNext( wid, &st, &vl ) )
                     {
                         int xvl, fidx;
@@ -1524,48 +1488,7 @@ int main( int argc, char** argv )
                             continue;
                         }
 
-//                        int c_count = 0;
-//                        int o_count = 0;
-//
-//                        for ( int tf = 0; tf < object->getTfnumber(); tf++ )
-//                        {
-//                            c_nbins = object->getNbins();
-//                            //add by shimomura 2023/06/14
-//                            tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
-//                            tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
-//                            for ( int res = 0; res < c_nbins; res++ )
-//                            {
-//                                tmp_c_bins[c_count] += object->getCHistogram()[ c_count ] ;
-//                                c_count++;
-//                            }
-//                        }
-//
-//                        for ( int tf = 0; tf < object->getTfnumber(); tf++ )
-//                        {
-//                            o_nbins = object->getNbins();
-//                            //add by shimomura 2023/06/14
-//                            tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_c_max[tf];
-//                            tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_c_min[tf];
-//                            for ( int res = 0; res < o_nbins; res++ )
-//                            {
-//                                tmp_o_bins[o_count] += object->getOHistogram()[ o_count ] ;
-//                                o_count++;
-//                            }
-//                        }
-//
                     } // end of while(DispatchNext)
-//#ifndef CPU_VER
-//
-//                    MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-//                    MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-//                    MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
-//                    MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
-//                    delete[] tmp_c_bins;
-//                    delete[] tmp_o_bins;
-//                    //add by shimomura 20240603
-//                    delete[] tmp_max;
-//                    delete[] tmp_min;
-//#endif
                     if ( timer_count == PBVR_TIMER_COUNT_NUM )
                     {
                         PBVR_TIMER_END( 1 );
@@ -1859,7 +1782,6 @@ int main( int argc, char** argv )
                         tmp_min[tf] = FLT_MAX;
                     }
 
-
                     for ( int tf = 0; tf < c_bins_size; tf++ )
                     {
                         tmp_c_bins[tf] = 0;
@@ -1914,8 +1836,8 @@ int main( int argc, char** argv )
                                 {
                                     int c_nbins = tmp_obj->getNbins();
                                     //changed by shimomura 2023/07/24
-                                    tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
-                                    tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
+                                    tmp_max[2*tf+1] = kvs::Math::Max(tmp_max[2*tf+1],Param.m_transfunc_synthesizer-> m_c_max[tf]);
+                                    tmp_min[2*tf+1] = kvs::Math::Min(tmp_min[2*tf+1],Param.m_transfunc_synthesizer-> m_c_min[tf]);
                                     for ( int res = 0; res < c_nbins; res++ )
                                     {
                                         tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ] ;
@@ -1928,8 +1850,10 @@ int main( int argc, char** argv )
                                 {
                                     int o_nbins = tmp_obj->getNbins();
                                     //changed by shimomura 2023/07/24
-                                    tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_o_max[tf];
-                                    tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_o_min[tf];
+                                    tmp_max[2*tf] = kvs::Math::Max(tmp_max[2*tf],Param.m_transfunc_synthesizer-> m_c_max[tf]);
+                                    tmp_min[2*tf] = kvs::Math::Min(tmp_min[2*tf],Param.m_transfunc_synthesizer-> m_c_min[tf]);
+//                                    tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_o_max[tf];
+//                                    tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_o_min[tf];
                                     for ( int res = 0; res < o_nbins; res++ )
                                     {
                                         tmp_o_bins[o_count] += tmp_obj->getOHistogram()[ o_count ] ;
@@ -2702,7 +2626,7 @@ int main( int argc, char** argv )
 #ifndef CPU_VER          // MPI並列については一旦保留, collectorの内容がわかるまで
                             if (mpi_size > 1) {
                                 //jc.jobCollect( originalObject, &vr, &nan_error, &wid );
-                                jc.jobCollect_glyph( originalObject, &nan_error, &wid );
+                                jc.jobCollect_glyph( originalGlyph, &nan_error, &wid );
                             }
 #endif
 #endif
