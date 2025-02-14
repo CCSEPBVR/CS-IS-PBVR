@@ -69,6 +69,11 @@ protected:
     kvs::ValueArray<kvs::Real32> m_normals;      ///< normal array
     kvs::ValueArray<kvs::Real32> m_sizes;        ///< size array
 
+   float m_color_min;
+   float m_color_max;
+   float m_size_min;
+   float m_size_max;
+
 public:
 
     KVSMLObjectGlyph( );
@@ -93,6 +98,10 @@ public:
 
     const kvs::ValueArray<kvs::Real32>& sizes( void ) const;
 
+    const float colorMin() const;
+    const float colorMax() const;
+    const float sizeMin() const;
+    const float sizeMax() const;
 public:
 
     void setCoords( const kvs::ValueArray<kvs::Real32>& coords );
@@ -105,6 +114,10 @@ public:
     
     void setSizes( const kvs::ValueArray<kvs::Real32>& sizes );
 
+    void setColorMin(const float color_min);
+    void setColorMax(const float color_max);
+    void setSizeMin(const float size_min);
+    void setSizeMax(const float size_max);
 public:
 
     void clear();

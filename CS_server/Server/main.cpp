@@ -1053,8 +1053,8 @@ int main( int argc, char** argv )
                         {
                             c_nbins = object->getNbins();
                             //add by shimomura 2023/06/14
-                            tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
-                            tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
+                            tmp_max[2*tf+1] = kvs::Math::Max( tmp_max[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
+                            tmp_min[2*tf+1] = kvs::Math::Min( tmp_min[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
                             for ( int res = 0; res < c_nbins; res++ )
                             {
                                 tmp_c_bins[c_count] += object->getCHistogram()[ c_count ] ;
@@ -1066,8 +1066,8 @@ int main( int argc, char** argv )
                         {
                             o_nbins = object->getNbins();
                             //add by shimomura 2023/06/14
-                            tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_c_max[tf];
-                            tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_c_min[tf];
+                            tmp_max[2*tf] = kvs::Math::Max( tmp_max[2*tf] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
+                            tmp_min[2*tf] = kvs::Math::Min( tmp_min[2*tf] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
                             for ( int res = 0; res < o_nbins; res++ )
                             {
                                 tmp_o_bins[o_count] += object->getOHistogram()[ o_count ] ;
@@ -1224,8 +1224,8 @@ int main( int argc, char** argv )
 
                     for ( int tf = 0; tf < cnt; tf++ )
                     {
-                        tmp_max[tf] = 0;
-                        tmp_min[tf] = 0;
+                        tmp_max[tf] = FLT_MIN;
+                        tmp_min[tf] = FLT_MAX;
                     }
                         
                     for ( int tf = 0; tf < c_bins_size; tf++ )
@@ -1290,8 +1290,8 @@ int main( int argc, char** argv )
                         {
                             c_nbins = object->getNbins();
                             //add by shimomura 2023/06/14
-                            tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
-                            tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
+                            tmp_max[2*tf+1] = kvs::Math::Max( tmp_max[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
+                            tmp_min[2*tf+1] = kvs::Math::Min( tmp_min[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
                             for ( int res = 0; res < c_nbins; res++ )
                             {
                                 tmp_c_bins[c_count] += object->getCHistogram()[ c_count ] ;
@@ -1303,8 +1303,10 @@ int main( int argc, char** argv )
                         {
                             o_nbins = object->getNbins();
                             //add by shimomura 2023/06/14
-                            tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_c_max[tf];
-                            tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_c_min[tf];
+                            tmp_max[2*tf] = kvs::Math::Max( tmp_max[2*tf] ,param.m_transfunc_synthesizer-> m_o_max[tf]);
+                            tmp_min[2*tf] = kvs::Math::Min( tmp_min[2*tf] ,param.m_transfunc_synthesizer-> m_o_min[tf]);
+                            //tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_o_max[tf];
+                            //tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_o_min[tf];
                             for ( int res = 0; res < o_nbins; res++ )
                             {
                                 tmp_o_bins[o_count] += object->getOHistogram()[ o_count ] ;
@@ -1437,44 +1439,17 @@ int main( int argc, char** argv )
                     //param.m_sampling_step = 1;
                     param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
                     param.m_particle_limit_pre = param.m_particle_limit;
-#if 0
-                    clntMes.show();
-                    int tf_count = clntMes.m_transfer_function.size();
-                    int c_nbins = DEFAULT_NBINS;
-                    int o_nbins = DEFAULT_NBINS;
-
-                    c_bins_size = 0;
-                    o_bins_size = 0;
-
-                    for ( int tf = 0; tf < tf_count; tf++ )
-                    {
-                        c_bins_size += c_nbins;
-                        o_bins_size += o_nbins;
-                    }
-
-                    tmp_c_bins = new kvs::UInt64[c_bins_size];
-                    tmp_o_bins = new kvs::UInt64[o_bins_size];
-                    //add by shimomura 2023/06/14
-                    int cnt = 2* tf_count ;
+                    
+                    int cnt = 2 ;
                     tmp_max = new float[cnt]; 
                     tmp_min = new float[cnt]; 
 
                     for ( int tf = 0; tf < cnt; tf++ )
                     {
-                        tmp_max[tf] = 0;
-                        tmp_min[tf] = 0;
+                        tmp_max[tf] = FLT_MIN;
+                        tmp_min[tf] = FLT_MAX;
                     }
-                        
-                    for ( int tf = 0; tf < c_bins_size; tf++ )
-                    {
-                        tmp_c_bins[tf] = 0;
-                    }
-
-                    for ( int tf = 0; tf < o_bins_size; tf++ )
-                    {
-                        tmp_o_bins[tf] = 0;
-                    }
-#endif
+ 
                     while ( jd.dispatchNext( wid, &st, &vl ) )
                     {
                         int xvl, fidx;
@@ -1496,13 +1471,13 @@ int main( int argc, char** argv )
                             if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                             {
                                 //object = glyph_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
-                                *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep, st, xvl); 
+                                *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, fil.m_total_number_subvolumes, timeStep, st, xvl); 
 
                             }
                             else     // filetype: kvsml
                             {
                                 //tmp_obj = glyph_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep,clntMes, st);
-                                glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep, tmp_obj, st );
+                                glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, fil.m_total_number_subvolumes, timeStep, tmp_obj, st );
                             }
                         }
                         catch ( const std::runtime_error& e )
@@ -1523,49 +1498,27 @@ int main( int argc, char** argv )
                             nan_error = false;
                             continue;
                         }
+                        for ( int tf = 0; tf < cnt/2; tf++ )
+                        {
+                            //add by shimomura 2023/06/14
+                            tmp_max[2*tf+1] = kvs::Math::Max( tmp_max[2*tf+1] ,tmp_obj->colorMax());
+                            tmp_min[2*tf+1] = kvs::Math::Min( tmp_min[2*tf+1] ,tmp_obj->colorMin());
+                            tmp_max[2*tf]   = kvs::Math::Max( tmp_max[2*tf]   ,tmp_obj->sizeMax());
+                            tmp_min[2*tf]   = kvs::Math::Min( tmp_min[2*tf]   ,tmp_obj->sizeMin());
+                        }
 
-//                        int c_count = 0;
-//                        int o_count = 0;
-//
-//                        for ( int tf = 0; tf < object->getTfnumber(); tf++ )
-//                        {
-//                            c_nbins = object->getNbins();
-//                            //add by shimomura 2023/06/14
-//                            tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
-//                            tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
-//                            for ( int res = 0; res < c_nbins; res++ )
-//                            {
-//                                tmp_c_bins[c_count] += object->getCHistogram()[ c_count ] ;
-//                                c_count++;
-//                            }
-//                        }
-//
-//                        for ( int tf = 0; tf < object->getTfnumber(); tf++ )
-//                        {
-//                            o_nbins = object->getNbins();
-//                            //add by shimomura 2023/06/14
-//                            tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_c_max[tf];
-//                            tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_c_min[tf];
-//                            for ( int res = 0; res < o_nbins; res++ )
-//                            {
-//                                tmp_o_bins[o_count] += object->getOHistogram()[ o_count ] ;
-//                                o_count++;
-//                            }
-//                        }
-//
+
+
                     } // end of while(DispatchNext)
-//#ifndef CPU_VER
-//
-//                    MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-//                    MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-//                    MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
-//                    MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
-//                    delete[] tmp_c_bins;
-//                    delete[] tmp_o_bins;
-//                    //add by shimomura 20240603
-//                    delete[] tmp_max;
-//                    delete[] tmp_min;
-//#endif
+#ifndef CPU_VER
+
+                    MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
+                    MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
+#endif
+                    //add by shimomura 20250213
+                    delete[] tmp_max;
+                    delete[] tmp_min;
+
                     if ( timer_count == PBVR_TIMER_COUNT_NUM )
                     {
                         PBVR_TIMER_END( 1 );
@@ -1574,7 +1527,7 @@ int main( int argc, char** argv )
                     delete param.m_transfunc_synthesizer;
                 }
                
-               }
+               } // end of generate_glyph
             } // end of while
         }
         else                    // rank == 0
@@ -1757,6 +1710,13 @@ int main( int argc, char** argv )
                         transfunc_creator.setProtocol(clntMes);
                     }
 #if 1
+                        std::stringstream tt;
+                        tt << "t1";  
+                        servMes.m_glyph_color_min   = range.min( tt.str() + "_var_c" );
+                        servMes.m_glyph_color_max   = range.max( tt.str() + "_var_c" ); 
+                        servMes.m_glyph_size_min   = range.min( tt.str() + "_var_c" );
+                        servMes.m_glyph_size_max   = range.max( tt.str() + "_var_c" ); 
+
                     // generate_histogram
                     param.m_sampling_method = 'h';
                     param.m_component_Id = clntMes.m_rendering_id;
@@ -1773,8 +1733,6 @@ int main( int argc, char** argv )
                         param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
                     
-                    std::cout << "param.m_transfunc_array[0].minValue() = " << param.m_transfunc_array[0].opacityMap().minValue() << std::endl;
-
                     // 4 calc histgram
                     clntMes.m_node_type = 'a';  
                     if ( clntMes.m_node_type == 'a' )
@@ -1859,7 +1817,6 @@ int main( int argc, char** argv )
                         tmp_min[tf] = FLT_MAX;
                     }
 
-
                     for ( int tf = 0; tf < c_bins_size; tf++ )
                     {
                         tmp_c_bins[tf] = 0;
@@ -1914,8 +1871,8 @@ int main( int argc, char** argv )
                                 {
                                     int c_nbins = tmp_obj->getNbins();
                                     //changed by shimomura 2023/07/24
-                                    tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
-                                    tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
+                                    tmp_max[2*tf+1] = kvs::Math::Max(tmp_max[2*tf+1],param.m_transfunc_synthesizer-> m_c_max[tf]);
+                                    tmp_min[2*tf+1] = kvs::Math::Min(tmp_min[2*tf+1],param.m_transfunc_synthesizer-> m_c_min[tf]);
                                     for ( int res = 0; res < c_nbins; res++ )
                                     {
                                         tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ] ;
@@ -1928,8 +1885,8 @@ int main( int argc, char** argv )
                                 {
                                     int o_nbins = tmp_obj->getNbins();
                                     //changed by shimomura 2023/07/24
-                                    tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_o_max[tf];
-                                    tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_o_min[tf];
+                                    tmp_max[2*tf] = kvs::Math::Max(tmp_max[2*tf],param.m_transfunc_synthesizer-> m_c_max[tf]);
+                                    tmp_min[2*tf] = kvs::Math::Min(tmp_min[2*tf],param.m_transfunc_synthesizer-> m_c_min[tf]);
                                     for ( int res = 0; res < o_nbins; res++ )
                                     {
                                         tmp_o_bins[o_count] += tmp_obj->getOHistogram()[ o_count ] ;
@@ -2321,8 +2278,10 @@ int main( int argc, char** argv )
                                 {
                                     int c_nbins = tmp_obj->getNbins();
                                     //changed by shimomura 2023/07/24
-                                    tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
-                                    tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
+//                                    tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
+//                                    tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
+                                    tmp_max[2*tf+1] = kvs::Math::Max( tmp_max[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
+                                    tmp_min[2*tf+1] = kvs::Math::Min( tmp_min[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
                                     for ( int res = 0; res < c_nbins; res++ )
                                     {
                                         tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ] ;
@@ -2334,8 +2293,8 @@ int main( int argc, char** argv )
                                 {
                                     int o_nbins = tmp_obj->getNbins();
                                     //changed by shimomura 2023/07/24
-                                    tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_o_max[tf];
-                                    tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_o_min[tf];
+                                    tmp_max[2*tf] = kvs::Math::Max( tmp_max[2*tf] ,param.m_transfunc_synthesizer-> m_o_max[tf]);
+                                    tmp_min[2*tf] = kvs::Math::Min( tmp_min[2*tf] ,param.m_transfunc_synthesizer-> m_o_min[tf]);
                                     for ( int res = 0; res < o_nbins; res++ )
                                     {
                                         tmp_o_bins[o_count] += tmp_obj->getOHistogram()[ o_count ] ;
@@ -2644,6 +2603,17 @@ int main( int argc, char** argv )
                         VariableRange vr;
                         pts.sendMessage( servMes );
 
+                        //add by shimomura 2023/06/14
+                        int cnt = 2;
+                        tmp_max = new float[cnt]; 
+                        tmp_min = new float[cnt];
+
+                        for ( int tf = 0; tf < cnt; tf++ )
+                        {
+                            tmp_max[tf] = FLT_MIN;
+                            tmp_min[tf] = FLT_MAX;
+                        }
+
                         // 関数の領域確保、初期化を行う : by @hira 2016/12/01
                         servMes.initializeTransferFunction(clntMes.m_transfer_function.size(), DEFAULT_NBINS);
  
@@ -2676,17 +2646,27 @@ int main( int argc, char** argv )
                             {
                                 if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                                 {
-                                    *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep, st, xvl); 
+                                    *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, fil.m_total_number_subvolumes, timeStep, st, xvl); 
                                     // run()で得られるKVSMLObjectglyphとtmp_objは異なるメモリ領域を指しているため,ポインタコピーではなくオペレータを呼び出す必要がある
                                 }
                                 else     // filetype: kvsml
                                 {
-                                    glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep, tmp_obj, st );
+                                    glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep,servMes.m_number_volume_divide , tmp_obj, st );
                                 }
 
 //                                size_t nmemb = tmp_obj->sizes().size();
                                 originalGlyph->clear();
                                 originalGlyph = tmp_obj;
+
+                                for ( int tf = 0; tf < cnt/2; tf++ )
+                                {
+                                    //changed by shimomura 2023/07/24
+                                    tmp_max[2*tf+1] = kvs::Math::Max(tmp_max[2*tf+1],tmp_obj->colorMax());
+                                    tmp_min[2*tf+1] = kvs::Math::Min(tmp_min[2*tf+1],tmp_obj->colorMin());
+                                    tmp_max[2*tf  ] = kvs::Math::Max(tmp_max[2*tf  ],tmp_obj->sizeMax());
+                                    tmp_min[2*tf  ] = kvs::Math::Min(tmp_min[2*tf  ],tmp_obj->sizeMin());
+                                }
+
                             }
                             catch ( const std::runtime_error& e )
                             {
@@ -2702,7 +2682,7 @@ int main( int argc, char** argv )
 #ifndef CPU_VER          // MPI並列については一旦保留, collectorの内容がわかるまで
                             if (mpi_size > 1) {
                                 //jc.jobCollect( originalObject, &vr, &nan_error, &wid );
-                                jc.jobCollect_glyph( originalObject, &nan_error, &wid );
+                                jc.jobCollect_glyph( originalGlyph, &nan_error, &wid );
                             }
 #endif
 #endif
@@ -2767,6 +2747,15 @@ int main( int argc, char** argv )
                                 PBVR_TIMER_END( 473 );
                             }
                         } // end of while(DispatchNext)
+#ifndef CPU_VER
+
+                        if (mpi_size > 1) 
+                        {
+                            MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
+                            MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
+                        }
+#endif
+
                         // TEST START 2015.1.14
                         if ( nan_error )
                         {
@@ -2778,6 +2767,13 @@ int main( int argc, char** argv )
                             std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
                             nan_error = false;
                         }
+
+                        servMes.m_glyph_color_min = tmp_min[1];
+                        servMes.m_glyph_color_max = tmp_max[1];
+                        servMes.m_glyph_size_min = tmp_min[0];
+                        servMes.m_glyph_size_max = tmp_max[0];
+                        std::cout << "m_glyph_min   = " << servMes.m_glyph_color_min << std::endl;
+                        std::cout << "m_glyph_max   = " << servMes.m_glyph_color_max << std::endl;
                         servMes.m_flag_send_bins = 1;
                         servMes.m_subpixel_level = param.m_subpixel_level;
                         servMes.m_message_size = servMes.byteSize();
@@ -2793,6 +2789,8 @@ int main( int argc, char** argv )
                         }
                         delete[] servMes.m_color_nbins;
                         delete[] servMes.m_opacity_nbins;
+                        delete[] tmp_max;
+                        delete[] tmp_min;
                         servMes.m_transfer_function_count = 0;
                         servMes.m_flag_send_bins = 1;
 

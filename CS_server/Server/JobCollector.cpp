@@ -17,7 +17,10 @@ JobCollector::JobCollector( JobDispatcher* pjd )
     m_pack_coords  = NULL;
     m_pack_colors  = NULL;
     m_pack_normals = NULL;
+    m_pack_directions = NULL;
+    m_pack_sizes = NULL;
     m_pack_size    = 0;
+    m_pack_size_div3    = 0;
     m_pack_count = 0;
     m_pack_head  = 0;
     m_batch      = false;
@@ -28,6 +31,8 @@ JobCollector::~JobCollector()
     free( m_pack_coords );
     free( m_pack_colors );
     free( m_pack_normals );
+    free( m_pack_directions );
+    free( m_pack_sizes );
 }
 
 void JobCollector::jobCollect( pbvr::PointObject* object, VariableRange* vr, bool* invalid, int* wid )
@@ -239,6 +244,7 @@ void JobCollector::jobCollect_glyph( kvs::KVSMLObjectGlyph* object, bool* invali
 
                 PBVR_TIMER_STA( 62 );
                 MPI_Recv( &m_pack_size, sizeof( size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
+                m_pack_size_div3 = int(m_pack_size/3);
                 PBVR_TIMER_END( 62 );
                 PBVR_TIMER_STA( 63 );
                 MPI_Recv( &m_nvertices_list_size, sizeof( size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
@@ -254,26 +260,16 @@ void JobCollector::jobCollect_glyph( kvs::KVSMLObjectGlyph* object, bool* invali
                 m_pack_coords  = ( float* )realloc( m_pack_coords , sizeof( float ) * m_pack_size );
                 m_pack_colors  = ( unsigned char* )realloc( m_pack_colors , sizeof( unsigned char ) * m_pack_size );
                 m_pack_directions = ( float* )realloc( m_pack_directions, sizeof( float ) * m_pack_size );
-                m_pack_sizes = ( float* )realloc( m_pack_sizes, sizeof( float ) * m_pack_size/3 );
+                m_pack_sizes = ( float* )realloc( m_pack_sizes, sizeof( float ) * m_pack_size_div3 );
                 PBVR_TIMER_END( 66 );
                 PBVR_TIMER_STA( 67 );
                 MPI_Recv( m_pack_coords , m_pack_size, MPI_FLOAT, src, 1, MPI_COMM_WORLD, &stat );
                 MPI_Recv( m_pack_colors , m_pack_size, MPI_UNSIGNED_CHAR, src, 1, MPI_COMM_WORLD, &stat );
-                MPI_Recv( m_pack_direction, m_pack_size, MPI_FLOAT, src, 1, MPI_COMM_WORLD, &stat );
-                MPI_Recv( m_pack_sizes, m_pack_size/3, MPI_FLOAT, src, 1, MPI_COMM_WORLD, &stat );
+                MPI_Recv( m_pack_directions, m_pack_size, MPI_FLOAT, src, 1, MPI_COMM_WORLD, &stat );
+                MPI_Recv( m_pack_sizes, m_pack_size_div3, MPI_FLOAT, src, 1, MPI_COMM_WORLD, &stat );
                 PBVR_TIMER_END( 67 );
                 m_pack_count = 0;
                 m_pack_head  = 0;
-
-                // Recive and Merge Variable Range
-//                unsigned int vr_s;
-//                MPI_Recv( &vr_s, 1, MPI_UNSIGNED, src, 1, MPI_COMM_WORLD, &stat );
-//                char* vr_buf = new char[vr_s];
-//                MPI_Recv( vr_buf, vr_s, MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat  );
-//                VariableRange vr_t;
-//                vr_t.unpack( vr_buf );
-//                vr->merge( vr_t );
-//                delete[] vr_buf;
 
                 // Recive Validation
                 bool sub_invalid;
@@ -310,8 +306,7 @@ void JobCollector::jobCollect_glyph( kvs::KVSMLObjectGlyph* object, bool* invali
   {
       const size_t nvertices = object->sizes().size();
       const size_t nmemb = nvertices * 3;
-
-      std::cerr << "*nvertices: " << nvertices << std::endl;
+      const size_t nmemb_size = nvertices;
 
       if ( !m_batch )
       {
@@ -322,6 +317,7 @@ void JobCollector::jobCollect_glyph( kvs::KVSMLObjectGlyph* object, bool* invali
 
             m_nvertices_list.push_back( nvertices );
             m_pack_size += nmemb;
+            m_pack_size_div3+= nmemb_size;
             float*         tmp_coords;
             unsigned char* tmp_colors;
             float*         tmp_directions;
@@ -329,15 +325,15 @@ void JobCollector::jobCollect_glyph( kvs::KVSMLObjectGlyph* object, bool* invali
             tmp_coords  = ( float* )realloc( m_pack_coords , sizeof( float ) * m_pack_size );
             tmp_colors  = ( unsigned char* )realloc( m_pack_colors , sizeof( unsigned char ) * m_pack_size );
             tmp_directions = ( float* )realloc( m_pack_directions, sizeof( float ) * m_pack_size );
-            tmp_sizes = ( float* )realloc( m_pack_sizes/3, sizeof( float ) * m_pack_size/3 );
+            tmp_sizes = ( float* )realloc( m_pack_sizes, sizeof( float ) * m_pack_size_div3 );
             m_pack_coords  = tmp_coords;
             m_pack_colors  = tmp_colors;
-            m_pack_directioins = tmp_directions;
+            m_pack_directions = tmp_directions;
             m_pack_sizes = tmp_sizes;
             memcpy( &m_pack_coords[m_pack_size - nmemb], coords, sizeof( float )*nmemb );
             memcpy( &m_pack_colors[m_pack_size - nmemb], colors, sizeof( unsigned char )*nmemb );
             memcpy( &m_pack_directions[m_pack_size - nmemb], directions, sizeof( float )*nmemb );
-            memcpy( &m_pack_sizes[m_pack_size - nmemb/3], sizes, sizeof( float )*nmemb/3 );
+            memcpy( &m_pack_sizes[m_pack_size_div3 - nmemb_size], sizes, sizeof( float )*nmemb_size );
       }
 
       if ( m_jd->getCollectSendState() )
@@ -362,18 +358,11 @@ void JobCollector::jobCollect_glyph( kvs::KVSMLObjectGlyph* object, bool* invali
                 MPI_Send( m_pack_coords, m_pack_size, MPI_FLOAT, 0, 1, MPI_COMM_WORLD );
                 MPI_Send( m_pack_colors, m_pack_size, MPI_UNSIGNED_CHAR, 0, 1, MPI_COMM_WORLD );
                 MPI_Send( m_pack_directions, m_pack_size, MPI_FLOAT, 0, 1, MPI_COMM_WORLD );
-                MPI_Send( m_pack_sizes, m_pack_size/3, MPI_FLOAT, 0, 1, MPI_COMM_WORLD );
+                MPI_Send( m_pack_sizes, m_pack_size_div3, MPI_FLOAT, 0, 1, MPI_COMM_WORLD );
                 PBVR_TIMER_END( 456 );
                 m_nvertices_list.clear();
                 m_pack_size = 0;
-
-//                // Send Variable Range
-//                unsigned int vr_s = vr->byteSize();
-//                char* vr_buf = new char[vr_s];
-//                vr->pack( vr_buf );
-//                MPI_Send( &vr_s, 1, MPI_UNSIGNED, 0, 1, MPI_COMM_WORLD );
-//                MPI_Send( vr_buf, vr_s, MPI_BYTE, 0, 1, MPI_COMM_WORLD );
-//                delete[] vr_buf;
+                m_pack_size_div3 = 0;
 
                 // Send Validation
                 MPI_Send( invalid, sizeof( bool ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );

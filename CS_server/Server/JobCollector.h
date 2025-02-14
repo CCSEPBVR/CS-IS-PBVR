@@ -13,6 +13,7 @@ private:
 
     bool           m_batch;
     size_t         m_pack_size;
+    size_t         m_pack_size_div3;
     float*         m_pack_coords;
     unsigned char* m_pack_colors;
     float*         m_pack_normals;
