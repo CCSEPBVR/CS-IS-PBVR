@@ -585,7 +585,7 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
             {
                 kvs::ValueArray<kvs::Real32> positions ( m_server_message.m_glyph_coords.get(), nmemb );
                 kvs::ValueArray<kvs::Real32> vectors ( m_server_message.m_glyph_vectors.get(), nmemb );
-                kvs::ValueArray<kvs::Real32> sizes ( m_server_message.m_glyph_sizes.get(), nmemb );
+                kvs::ValueArray<kvs::Real32> sizes ( m_server_message.m_glyph_sizes.get(), m_server_message.m_number_glyph );
                 kvs::ValueArray<kvs::UInt8>  colors ( m_server_message.m_glyph_colors.get(), nmemb );
 
                 kvs::PointObject obj;
