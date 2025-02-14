@@ -62,11 +62,11 @@ public:
     }
 
     void createFromFile(
-        const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes);
+        const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
         //const Argument& param, const kvs::Camera& camera);
 
     void createFromFile(
-        const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int st, const int vl );
+        const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const int st, const int vl );
 
     kvs::KVSMLObjectGlyph* getKVSMLObjectGlyph()
     {
@@ -130,7 +130,7 @@ public:
     void clear();
 private:
     //kvs::KVSMLObjectGlyph* sampling( pbvr::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes);
-    void sampling( pbvr::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes);
+    void sampling( pbvr::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
 
 };
 

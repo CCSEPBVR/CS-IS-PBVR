@@ -137,6 +137,33 @@ const kvs::ValueArray<kvs::Real32>& KVSMLObjectGlyph::sizes( void ) const
 
 /*===========================================================================*/
 /**
+ *  @brief  Returns the size value array.
+ */
+/*===========================================================================*/
+const float KVSMLObjectGlyph::colorMin() const
+{
+    return(m_color_min);
+}
+
+const float KVSMLObjectGlyph::colorMax() const
+{
+    return(m_color_max);
+}
+
+const float KVSMLObjectGlyph::sizeMin() const
+{
+    return(m_size_min);
+}
+
+const float KVSMLObjectGlyph::sizeMax() const
+{
+    return(m_size_max);
+}
+
+
+
+/*===========================================================================*/
+/**
  *  @brief  Set a writing type.
  *  @param  writing_type [in] writing type
  */
@@ -199,6 +226,32 @@ void KVSMLObjectGlyph::setDirections( const kvs::ValueArray<kvs::Real32>& direct
 void KVSMLObjectGlyph::setSizes( const kvs::ValueArray<kvs::Real32>& sizes )
 {
     m_sizes = sizes;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  Set a size value array.
+ *  @param  sizes [in] size value array
+ */
+/*===========================================================================*/
+void KVSMLObjectGlyph::setColorMin( const float color_min )
+{
+    m_color_min = color_min;
+}
+
+void KVSMLObjectGlyph::setColorMax( const float color_max )
+{
+    m_color_max = color_max;
+}
+
+void KVSMLObjectGlyph::setSizeMin( const float size_min )
+{
+    m_size_min = size_min;
+}
+
+void KVSMLObjectGlyph::setSizeMax( const float size_max )
+{
+    m_size_max = size_max;
 }
 
 void KVSMLObjectGlyph::clear()

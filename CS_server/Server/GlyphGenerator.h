@@ -88,10 +88,10 @@ protected:
 
    
    //ポイントデータ用minmax
-   std::vector<float> m_color_min;
-   std::vector<float> m_color_max;
-   std::vector<float> m_size_min;
-   std::vector<float> m_size_max;
+   float m_color_min;
+   float m_color_max;
+   float m_size_min;
+   float m_size_max;
 
 private:
    void  PointSampling( );
@@ -104,7 +104,7 @@ private:
            const float volume_of_cell,
            kvs::MersenneTwister* MT );
     bool SetGlyphParameter();
-    bool InputParameter(const jpv::ParticleTransferClientMessage& clntMes);
+    bool InputParameter(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
 
 public:
    void GlyphSampling( const pbvr::VolumeObjectBase::CellType& celltype);
@@ -115,7 +115,7 @@ public:
            float* coordinates, int ncoords,
            unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype);
 
-    GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, Type** values, int nvariables,
+    GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, Type** values, int nvariables,
            float* coordinates, int ncoords,
            unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype);
     ~GlyphGenerator()

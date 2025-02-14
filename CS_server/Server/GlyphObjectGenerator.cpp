@@ -32,7 +32,7 @@
 using namespace pbvr;
 
 //void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera )
-void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes )
+void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide )
 {
 //FJ_TIMER_KAWAMURA
     PBVR_TIMER_STA( 260 );
@@ -67,7 +67,7 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
 
    try
     {
-        sampling( volume , clntMes);
+        sampling( volume , clntMes, number_of_divide);
     }
     catch ( const std::runtime_error& e )
     {
@@ -82,7 +82,7 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
     delete volume;
 }
 
-void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int st, const int vl )
+void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera,const jpv::ParticleTransferClientMessage& clntMes,const int number_of_divide, const int st, const int vl )
 {
     PBVR_TIMER_STA( 260 );
 //    delete m_object;
@@ -107,7 +107,7 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
     try
     {
         //m_object = sampling( param, camera, volume, subpixel_level, sampling_step );
-        sampling( volume ,clntMes);
+        sampling( volume ,clntMes, number_of_divide);
     }
     catch ( const std::runtime_error& e )
     {
@@ -136,9 +136,8 @@ std::string GlyphObjectGenerator::getErrorMessage( const size_t maxMemory ) cons
     return errorMessage;
 }
 
-//pbvr::KVSMLObjectGlyph* GlyphObjectGenerator::sampling( const Argument& param, const kvs::Camera& camera, pbvr::VolumeObjectBase* volume, const size_t subpixel_level, const float sampling_step )
-//kvs::KVSMLObjectGlyph* GlyphObjectGenerator::sampling( pbvr::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes )
-void GlyphObjectGenerator::sampling( pbvr::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes )
+//void GlyphObjectGenerator::sampling( pbvr::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes )
+void GlyphObjectGenerator::sampling( pbvr::VolumeObjectBase* volume,const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide )
 {
 #ifndef CPU_VER
     int rank;
@@ -174,7 +173,7 @@ void GlyphObjectGenerator::sampling( pbvr::VolumeObjectBase* volume, const jpv::
         }
     } 
 
-    GlyphGenerator glyph_generator( clntMes, values, nvariables,
+    GlyphGenerator glyph_generator( clntMes, number_of_divide, values, nvariables,
             coordinates, ncoords, connections, ncells, celltype);
     glyph_generator.getGlyphData(&m_object);
 

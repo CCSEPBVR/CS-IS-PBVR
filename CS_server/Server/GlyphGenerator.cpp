@@ -24,7 +24,7 @@ GlyphGenerator::GlyphGenerator(Type** values,
     }
 }
 // CS用 constructor
-GlyphGenerator::GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, Type** values,
+GlyphGenerator::GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, Type** values,
         int nvariables, float* coordinates, int ncoords,
         unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype) :
     m_values( values ), m_nvariable(nvariables),  
@@ -33,7 +33,7 @@ GlyphGenerator::GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes
 {
    
     m_g_flag = false; 
-    m_g_flag = this -> InputParameter(clntMes);
+    m_g_flag = this -> InputParameter(clntMes, number_of_divide);
     if (m_g_flag)
     { 
         if( m_distribution_modes == jpv::GlyphMode:: AllPoints || m_distribution_modes == jpv::GlyphMode:: EveryNthPoints )
@@ -45,9 +45,10 @@ GlyphGenerator::GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes
             this->DistributionSampling( celltype );
         }
     }
+
 }
 
-bool GlyphGenerator::InputParameter(const jpv::ParticleTransferClientMessage& clntMes )
+bool GlyphGenerator::InputParameter(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide )
 {
 
 
@@ -70,12 +71,17 @@ bool GlyphGenerator::InputParameter(const jpv::ParticleTransferClientMessage& cl
     int max_threads = 1;
 #endif
 
-    number_of_sample_points /= mpi_size;  
-    number_of_sample_points /= max_threads;  
+    number_of_sample_points /= (mpi_size-1);  
+    number_of_sample_points /= max_threads;
+    number_of_sample_points /= number_of_divide; // ファイル分割数 
 
     m_number_of_sample_points = number_of_sample_points;
     float glyph_min=0; 
     float glyph_max=0;
+    m_color_min = clntMes.m_glyph_color_min;
+    m_color_max = clntMes.m_glyph_color_max;
+    m_size_min = clntMes.m_glyph_size_min;
+    m_size_max = clntMes.m_glyph_size_max;
 
     int table_size = clntMes.m_glyph_color_map_table.size();    
     kvs::ValueArray<kvs::UInt8> u_table( table_size );
@@ -349,15 +355,25 @@ void GlyphGenerator::PointSampling( )
         int n_size_data=m_glyph_sizes.size();
         float max=FLT_MIN;
         float min=FLT_MAX;
+        float tmp_max=FLT_MIN;
+        float tmp_min=FLT_MAX;
         for(int k = 0; k< n_size_data; k++)
         {
             max = kvs::Math::Max(m_glyph_sizes[k], max ); 
             min = kvs::Math::Min(m_glyph_sizes[k], min ); 
         }
 
+        tmp_max = max;
+        tmp_min = min;
+
+#if 0 //ISPBVR
 #ifndef CPU_VER
         MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
         MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+#endif
+#else
+        max = m_size_max;
+        min = m_size_min;
 #endif
         float factor =0;
         if (max - min > 1e-6 ) 
@@ -369,9 +385,12 @@ void GlyphGenerator::PointSampling( )
             factor = 1;
         }
 
+        m_size_min = tmp_min;
+        m_size_max = tmp_max;
        for (int i = 0; i < nPoints; i++)
        {
            m_glyph_sizes[ i] = (m_glyph_sizes[ i ] - min )*factor;
+           m_glyph_sizes[ i] = kvs::Math::Clamp<float>( m_glyph_sizes[ i], 0.0, 1.0 );
        }
 
    }
@@ -383,21 +402,9 @@ void GlyphGenerator::PointSampling( )
    {
        std::fill(m_glyph_colors.begin(), m_glyph_colors.begin(), 0);
        m_color_map.setRange(0, 1);
+       m_color_min = 0;
+       m_color_max = 1;
    }
-//   else if (m_color_sampling_method == jpv::DataDefines::SingleVariable) 
-//   {
-//
-//       std::vector<int> color_var = m_color_data_variables;
-//       glyph_color_data_max =  m_color_max[color_var[0]] ;
-//       glyph_color_data_min =  m_color_min[color_var[0]] ;
-//       int glyph_count =0;
-//       for (int i = 0; i < m_ncoords; i+= stride)
-//       {
-//           m_glyph_colors_data[ glyph_count ] = m_values[ color_var[0] ][ i ];
-//           glyph_count++;
-//            
-//       }
-//   }
    else if (m_color_sampling_method == jpv::DataDefines::VariableArray || m_color_sampling_method == jpv::DataDefines::SingleVariable ) 
    {
        std::vector<int> color_var = m_color_data_variables;
@@ -424,11 +431,18 @@ void GlyphGenerator::PointSampling( )
            min = kvs::Math::Min(m_glyph_colors_data[k], min ); 
        }
 
+#if 0 // IS
 #ifndef CPU_VER
        MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
        MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
 #endif
        m_color_map.setRange(min, max);
+#else 
+       m_color_map.setRange(m_color_min, m_color_max);
+#endif
+
+        m_color_min = min;
+        m_color_max = max;
    }
 
     for (int ii=0;ii < nPoints; ii++)
@@ -453,8 +467,10 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
 #endif
 
     int mpi_rank = 0;
+    int mpi_size = 1;
 #ifndef CPU_VER
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
 #endif
 
     static bool start_flag = true;
@@ -481,7 +497,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
             }
         case pbvr::VolumeObjectBase::QuadraticTetrahedra:
             {
-                std::cout << "Cell type : Quadratic tetrahedra " << std::endl; 
+                if (mpi_rank == 0) std::cout << "Cell type : Quadratic tetrahedra " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
                 {
                     interp[ i ].resize( m_nvariable );
@@ -494,7 +510,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
             }
         case pbvr::VolumeObjectBase::Hexahedra:
             {
-                std::cout << "Cell type : Hexahedra " << std::endl; 
+                if (mpi_rank == 0) std::cout << "Cell type : Hexahedra " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
                 {
                     interp[ i ].resize( m_nvariable  );
@@ -507,7 +523,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
             }
         case pbvr::VolumeObjectBase::QuadraticHexahedra:
             {
-                std::cout << "Cell type : Quadratic hexahedra " << std::endl; 
+                if (mpi_rank == 0) std::cout << "Cell type : Quadratic hexahedra " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
                 {
                     interp[ i ].resize( m_nvariable );
@@ -696,20 +712,34 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
 
      } //#pragma omp parallel
 
+        std::cout << __FUNCTION__ << __LINE__ << std::endl;
     if (m_size_sampling_method == jpv::DataDefines::SingleVariable || m_size_sampling_method == jpv::DataDefines::VariableArray )
     { 
         int n_size_data=m_glyph_sizes.size();
         float max=FLT_MIN;
         float min=FLT_MAX;
+        float tmp_max=FLT_MIN;
+        float tmp_min=FLT_MAX;
         for(int k = 0; k< n_size_data; k++)
         {
             max = kvs::Math::Max(m_glyph_sizes[k], max ); 
             min = kvs::Math::Min(m_glyph_sizes[k], min ); 
         }
 
+        tmp_max = max;
+        tmp_min = min;
+#if 0 //IS
 #ifndef CPU_VER
         MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
         MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+#endif
+#else
+        max = m_size_max;
+        min = m_size_min;
+        std::cout << "tmp_min = " << tmp_min << std::endl;
+        std::cout << "tmp_max = " << tmp_max << std::endl;
+        std::cout << "m_size_min = " << m_size_min << std::endl;
+        std::cout << "m_size_max = " << m_size_max << std::endl;
 #endif
         float factor = 0;
         if (max - min > 1e-6)
@@ -718,6 +748,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
             for( int j = 0; j < n_size_data; j++ )
             {
                 m_glyph_sizes[j] = (m_glyph_sizes[j] - min)*factor;
+                m_glyph_sizes[j] = kvs::Math::Clamp<float>( m_glyph_sizes[j], 0.0, 1.0 );
             }
         }
         else
@@ -727,6 +758,9 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
                m_glyph_sizes[j] = 1.f;
             }
         }
+        m_size_min = tmp_min;
+        m_size_max = tmp_max;
+
     }
     else
     {
@@ -735,6 +769,8 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
         {
             m_glyph_sizes[j] = 1.f;
         }
+        m_size_min = 1.000000;
+        m_size_max = 1.000001;
     }
 
     if (m_color_sampling_method == jpv::DataDefines::SingleVariable || m_color_sampling_method == jpv::DataDefines::VariableArray )
@@ -748,11 +784,44 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
             min = kvs::Math::Min(m_glyph_colors_data[k], min ); 
         }
 
-#ifndef CPU_VER
-        MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        std::cout << __FUNCTION__ << __LINE__ << std::endl;
+#if 0 // IS
+#ifndef CPU_VER  // CS用処理
+        float max_recv=FLT_MIN;
+        float min_recv=FLT_MAX;
+        //        MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+        //        MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        std::cout << __FUNCTION__ << __LINE__ << std::endl;
+        if (mpi_size > 2 )
+        {
+            if (mpi_rank != 0 )  // masterプロセスは除外
+            {
+                MPI_Reduce( &min , &min_recv, 1, MPI_FLOAT, MPI_MIN, 1, MPI_COMM_WORLD);
+                MPI_Reduce( &max , &max_recv, 1, MPI_FLOAT, MPI_MAX, 1, MPI_COMM_WORLD);
+            }
+
+            std::cout << __FUNCTION__ << __LINE__ << std::endl;
+            if (mpi_rank != 0) 
+            {
+                MPI_Bcast(&min_recv, 1, MPI_FLOAT, 1, MPI_COMM_WORLD);
+                MPI_Bcast(&max_recv, 1, MPI_FLOAT, 1, MPI_COMM_WORLD);
+            } 
+        }
+            else
+            {
+                min_recv = min;
+                max_recv = max;
+            }
+            std::cout << __FUNCTION__ << __LINE__ << std::endl;
+            m_color_map.setRange(min_recv,max_recv);
+#else
+        m_color_map.setRange(m_color_min,m_color_max);
 #endif
-        m_color_map.setRange(min,max);
+#else 
+        m_color_map.setRange(m_color_min,m_color_max);
+        std::cout << "m_color_min = " << m_color_min << std::endl;
+        std::cout << "m_color_max = " << m_color_max << std::endl;
+#endif
         for( int jx=0; jx<n_color_data; jx++)
         {
             kvs::RGBColor color;
@@ -761,6 +830,8 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
             m_glyph_colors.push_back( color.g());
             m_glyph_colors.push_back( color.b());
         }
+        m_color_min = min;
+        m_color_max = max;
     }
     else
     {
@@ -771,6 +842,8 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
             m_glyph_colors.push_back( 255 );
             m_glyph_colors.push_back( 255 );
         }
+        m_color_min = 1.00000;
+        m_color_max = 1.00001;
     }
 
 //       this->show(); 
@@ -803,6 +876,10 @@ void GlyphGenerator::getGlyphData(kvs::KVSMLObjectGlyph* other)
     other -> setColors( colors );
     other -> setDirections( directions );
     other -> setSizes( sizes );
+    other -> setColorMin(m_color_min);
+    other -> setColorMax(m_color_max);
+    other -> setSizeMin(m_size_min);
+    other -> setSizeMax(m_size_max);
 }
 
 
