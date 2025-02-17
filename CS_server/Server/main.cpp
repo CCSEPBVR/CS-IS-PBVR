@@ -867,6 +867,7 @@ int main( int argc, char** argv )
                     clntMes.m_enable_crop_region = 0;
                     param.m_crop.setEnable( clntMes.m_enable_crop_region );
                     param.m_crop.set( clntMes.m_crop_region );
+
                     param.m_input_data_base = clntMes.m_input_directory;
                     param.m_particle_limit = clntMes.m_particle_limit;
                     param.m_particle_density = clntMes.m_particle_density;
@@ -1561,6 +1562,18 @@ int main( int argc, char** argv )
                 //debug add by shimomura 2023/1/18
                 clntMes.show();
 
+#ifdef _WIN32 
+                    std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '/', '\\');
+#elif defined(_WIN64)
+                    std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '/', '\\');
+#endif
+#ifdef __APPLE__
+                    std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '\\', '/');
+#elif defined(__linux__)
+                    std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '\\', '/');
+#endif
+                std::cout << "input_directory = " << clntMes.m_input_directory << std::endl;
+                     
                 if ( ptss == -1 ) break;
                 /* 140319 for client stop by Ctrl+c */
                 signal( SIGABRT, SignalHandler );
