@@ -71,7 +71,7 @@ bool GlyphGenerator::InputParameter(const jpv::ParticleTransferClientMessage& cl
     int max_threads = 1;
 #endif
 
-    number_of_sample_points /= (mpi_size-1);  
+    //number_of_sample_points /= (mpi_size-1);  
     number_of_sample_points /= max_threads;
     number_of_sample_points /= number_of_divide; // ファイル分割数 
 
