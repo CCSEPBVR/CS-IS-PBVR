@@ -92,6 +92,10 @@ public:
     kvs::ValueArray<kvs::Real32> m_directions;
     kvs::ValueArray<kvs::Real32> m_sizes;
     kvs::ValueArray<kvs::UInt8>  m_colors;
+    float m_glyph_color_max;
+    float m_glyph_color_min;
+    float m_glyph_size_max;
+    float m_glyph_size_min;
 
 public:
     void enableGlyphUpdateButton();

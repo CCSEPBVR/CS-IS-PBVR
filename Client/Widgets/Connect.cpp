@@ -540,6 +540,10 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         m_client_message.m_sampling_step = 1.0f;
         m_client_message.m_enable_crop_region = 0;
         m_client_message.m_glyph_flag =true;
+        m_client_message.m_glyph_color_min = m_glyph_editor->m_glyph_color_min;
+        m_client_message.m_glyph_color_max = m_glyph_editor->m_glyph_color_max;
+        m_client_message.m_glyph_size_min = m_glyph_editor->m_glyph_size_min;
+        m_client_message.m_glyph_size_max = m_glyph_editor->m_glyph_size_max;
 
 #if 0
         // stab data
@@ -595,7 +599,7 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
                 obj.setColors( colors );
                 object->add(obj);
                 obj.clear();
-                allParticle = allParticle + m_server_message.m_number_particle;
+                allParticle = allParticle + m_server_message.m_number_glyph;
                 // delete[] m_server_message.m_colors;
                 // delete[] m_server_message.m_normals;
                 // delete[] m_server_message.m_positions;
@@ -676,6 +680,10 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
         m_glyph_editor->m_directions = directions;
         m_glyph_editor->m_sizes = sizes;
         m_glyph_editor->m_colors = colors;
+        m_glyph_editor->m_glyph_color_min =  m_server_message.m_glyph_color_min;
+        m_glyph_editor->m_glyph_color_max =  m_server_message.m_glyph_color_max;
+        m_glyph_editor->m_glyph_size_min =  m_server_message.m_glyph_size_min;
+        m_glyph_editor->m_glyph_size_max =  m_server_message.m_glyph_size_max;
 
         polygonObject = new kvs::PolygonGlyphObject( coords, directions, sizes, colors, static_cast<kvs::PolygonGlyphObject::GlyphType>(m_glyph_editor->getGlyphType()) );
         polygonObject->setMinMaxObjectCoords( serverSideMinObjectCoords, serverSideMaxObjectCoords );

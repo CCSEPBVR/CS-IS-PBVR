@@ -64,6 +64,8 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         s += sizeof( m_particle_limit );
         s += sizeof( m_particle_density );
         s += sizeof( m_particle_data_size_limit ); //add by shimomura 0308
+        // s += sizeof( m_glyph_min);  //glyph_min
+        // s += sizeof( m_glyph_max);  //glyph_max
         s += sizeof( int64_t );
         s += sizeof( char ) * ( m_input_directory.size() + 1 );
         //        // add:start by @hira at 2016/12/01
@@ -147,6 +149,10 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         {
             s += jpv::Serializer::byteSize( m_color_data_variables[i] );
         }
+        s += sizeof( m_glyph_color_max);  //glyph_max
+        s += sizeof( m_glyph_color_min);  //glyph_min
+        s += sizeof( m_glyph_size_max);  //glyph_max
+        s += sizeof( m_glyph_size_min);  //glyph_min
     }
     if( m_initialize_parameter == InitializeParameter::plot_over_line )
     {
@@ -229,6 +235,8 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         index += jpv::Serializer::write( buf + index, m_particle_limit );
         index += jpv::Serializer::write( buf + index, m_particle_density );
         index += jpv::Serializer::write( buf + index, m_particle_data_size_limit );
+        // index += jpv::Serializer::write( buf + index, m_glyph_min );
+        // index += jpv::Serializer::write( buf + index, m_glyph_max );
         index += jpv::Serializer::write( buf + index, m_input_directory.size() );
         index += jpv::Serializer::writeArray( buf + index, m_input_directory.c_str(), m_input_directory.size() + 1 );
         //        // add:start by @hira at 2016/12/01
@@ -315,6 +323,10 @@ size_t jpv::ParticleTransferClientMessage::pack( char* buf ) const
         {
             index += jpv::Serializer::write( buf + index, m_color_data_variables[i] );
         }
+        index += jpv::Serializer::write( buf + index, m_glyph_color_max );
+        index += jpv::Serializer::write( buf + index, m_glyph_color_min );
+        index += jpv::Serializer::write( buf + index, m_glyph_size_max );
+        index += jpv::Serializer::write( buf + index, m_glyph_size_min );
     }
 
     if( m_initialize_parameter == InitializeParameter::plot_over_line )
@@ -411,6 +423,8 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
         index += jpv::Serializer::read( buf + index, &m_particle_limit );
         index += jpv::Serializer::read( buf + index, &m_particle_density );
         index += jpv::Serializer::read( buf + index, &m_particle_data_size_limit );
+        // index += jpv::Serializer::read( buf + index, &m_glyph_min );
+        // index += jpv::Serializer::read( buf + index, &m_glyph_max );
         index += jpv::Serializer::read( buf + index, &tmp_char_size );
         tmp_char = new char[tmp_char_size + 1];
         index += jpv::Serializer::readArray( buf + index, tmp_char, tmp_char_size + 1 );
@@ -541,6 +555,10 @@ size_t jpv::ParticleTransferClientMessage::unpack( const char* buf )
             index += jpv::Serializer::read(buf + index, &value);
             m_color_data_variables.push_back(value);
         }
+        index += jpv::Serializer::read( buf + index, &m_glyph_color_max );
+        index += jpv::Serializer::read( buf + index, &m_glyph_color_min );
+        index += jpv::Serializer::read( buf + index, &m_glyph_size_max );
+        index += jpv::Serializer::read( buf + index, &m_glyph_size_min );
     }
 
     if( m_initialize_parameter == InitializeParameter::plot_over_line )
@@ -661,6 +679,20 @@ void jpv::ParticleTransferClientMessage::show( void ) const
         std::cout << "m_stride : " << m_stride << std::endl;
         break;
     }
+
+    std::cout << "m_plot_variable = " << m_plot_variable << std::endl;
+    // std::cout << "m_sampling_size = " << m_sampling_size << std::endl;
+    // if (m_start_point == NULL) {}
+    // else
+    // {
+    //     std::cout << "m_start_point[3] = " << m_start_point[0] << std::endl;
+    //     std::cout << "m_start_point[3] = " << m_start_point[1] << std::endl;
+    //     std::cout << "m_start_point[3] = " << m_start_point[2] << std::endl;
+    //     std::cout << "m_end_point[3] = " << m_end_point[0] << std::endl;
+    //     std::cout << "m_end_point[3] = " << m_end_point[1] << std::endl;
+    //     std::cout << "m_end_point[3] = " << m_end_point[2] << std::endl;
+    // }
+
 
     // for( int i = 0; i < m_glyph_color_map_table.size(); i++ )
     // {
@@ -853,6 +885,10 @@ int32_t jpv::ParticleTransferServerMessage::byteSize( void ) const
         //s += jpv::Serializer::byteSize( transferFunctionSynthesis );
         s += jpv::Serializer::byteSize( m_color_transfer_function_synthesis );
         s += jpv::Serializer::byteSize( m_opacity_transfer_function_synthesis );
+        s += sizeof(m_glyph_color_max);
+        s += sizeof(m_glyph_color_min);
+        s += sizeof(m_glyph_size_max);
+        s += sizeof(m_glyph_size_min);
     }
     if ( m_flag_send_bins == 3 ) // plot_over_line
     {
@@ -952,6 +988,10 @@ size_t jpv::ParticleTransferServerMessage::pack( char* buf ) const
         //index += jpv::Serializer::write( buf + index, transferFunctionSynthesis );
         index += jpv::Serializer::write( buf + index, m_color_transfer_function_synthesis );
         index += jpv::Serializer::write( buf + index, m_opacity_transfer_function_synthesis );
+        index += jpv::Serializer::write( buf + index, m_glyph_color_max );
+        index += jpv::Serializer::write( buf + index, m_glyph_color_min );
+        index += jpv::Serializer::write( buf + index, m_glyph_size_max );
+        index += jpv::Serializer::write( buf + index, m_glyph_size_min );
     }
 //    else// if ( flag_send_bins == 2 )
     if ( m_flag_send_bins == 3 ) // plot_over_line
@@ -1085,6 +1125,10 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
         //        index += jpv::Serializer::read( buf + index, transferFunctionSynthesis );
         index += jpv::Serializer::read( buf + index, &m_color_transfer_function_synthesis );
         index += jpv::Serializer::read( buf + index, &m_opacity_transfer_function_synthesis );
+        index += jpv::Serializer::read( buf + index, &m_glyph_color_max );
+        index += jpv::Serializer::read( buf + index, &m_glyph_color_min );
+        index += jpv::Serializer::read( buf + index, &m_glyph_size_max );
+        index += jpv::Serializer::read( buf + index, &m_glyph_size_min );
 
     }
     if ( m_flag_send_bins == 3 ) // plot_over_line

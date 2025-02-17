@@ -157,6 +157,10 @@ public:
     int32_t m_stride;
 
     std::vector<int32_t> m_glyph_color_map_table;
+    float m_glyph_color_max;
+    float m_glyph_color_min;
+    float m_glyph_size_max;
+    float m_glyph_size_min;
 
     DataDefines m_color_data_sampling_method;
     std::vector<std::string> m_color_data_variables;
@@ -253,6 +257,10 @@ public:
     std::vector<float> m_xAxis;
     std::vector<int>  m_mask;
     std::vector<float> m_line_values;
+    float m_glyph_color_max;
+    float m_glyph_color_min;
+    float m_glyph_size_max;
+    float m_glyph_size_min;
 
     // message のサイズを計算
     int32_t byteSize( void ) const;
