@@ -6,7 +6,7 @@
 //#include "ParamInfo.h"
 #include "float.h"
 #include "UnstructuredVolumeObject.h"
-#include <mpi.h>
+// #include <mpi.h>
 #include "CellBase.h"
 //#include "CellBase_hex.h"
 #include "TetrahedralCell.h"

@@ -634,7 +634,8 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
                 float size = 0;
                 if (m_size_sampling_method == jpv::DataDefines::SingleVariable || m_size_sampling_method == jpv::DataDefines::VariableArray )
                 { 
-                    float scalar_array[interp[thid].size()];
+                    // float scalar_array[interp[thid].size()];
+                    std::vector<float> scalar_array(interp[thid].size());
                     float eval_result =0;
 
                     for( size_t j= 0; j < m_nvariable; j++ )
@@ -657,7 +658,8 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
 
                 if (m_color_sampling_method ==  jpv::DataDefines::SingleVariable || m_color_sampling_method == jpv::DataDefines::VariableArray )
                 { 
-                    float scalar_array[interp[thid].size()];
+                    // float scalar_array[interp[thid].size()];
+                    std::vector<float> scalar_array(interp[thid].size());
                     float eval_result =0;
 
                     for( size_t j= 0; j < m_nvariable; j++ )
@@ -676,7 +678,8 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
                 else color_data = 0; 
 
                 // glyph_vectorの計算
-                float scalar_array[interp[thid].size()];
+                // float scalar_array[interp[thid].size()];
+                std::vector<float> scalar_array(interp[thid].size());
                 float eval_result =0;
 
                 for( size_t j= 0; j < m_nvariable; j++ )
@@ -908,7 +911,7 @@ void GlyphGenerator::OutputGlyph( const int time_step)
     kvs::ValueArray<float> sizes(  m_glyph_sizes  );
 
     static bool first_step = true;
-    static MPI_Comm new_comm;
+    // static MPI_Comm new_comm;
     static int count;
     static int num_nodes;
 
