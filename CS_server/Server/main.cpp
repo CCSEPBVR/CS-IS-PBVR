@@ -1568,9 +1568,26 @@ int main( int argc, char** argv )
                     std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '/', '\\');
 #endif
 #ifdef __APPLE__
-                    std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '\\', '/');
+//                    std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(),"¥"[0], '/');
+//                    std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(),'\\', '/');
+                    std::string target = "¥";
+                    std::string replacement = "/";
+
+                    size_t pos = 0;
+                    while ((pos = clntMes.m_input_directory.find(target, pos)) != std::string::npos) {
+                        clntMes.m_input_directory.replace(pos, target.length(), replacement);
+                        pos += replacement.length();
+                    }
 #elif defined(__linux__)
-                    std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '\\', '/');
+                    std::string target = "¥";
+                    std::string replacement = "/";
+
+                    size_t pos = 0;
+                    while ((pos = clntMes.m_input_directory.find(target, pos)) != std::string::npos) {
+                        clntMes.m_input_directory.replace(pos, target.length(), replacement);
+                        pos += replacement.length();
+                    }
+
 #endif
                 std::cout << "input_directory = " << clntMes.m_input_directory << std::endl;
                      
