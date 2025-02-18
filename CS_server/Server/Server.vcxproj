@@ -31,10 +31,14 @@
     <ClCompile Include="FrequencyTable.cpp" />
     <ClCompile Include="GeometryObjectBase.cpp" />
     <ClCompile Include="GlobalCore.cpp" />
+    <ClCompile Include="GlyphGenerator.cpp" />
+    <ClCompile Include="GlyphObjectGenerator.cpp" />
+    <ClCompile Include="GlyphProperty.cpp" />
     <ClCompile Include="HexahedralCell.cpp" />
     <ClCompile Include="IDManager.cpp" />
     <ClCompile Include="JobCollector.cpp" />
     <ClCompile Include="JobDispatcher.cpp" />
+    <ClCompile Include="KVSMLObjectGlyph.cpp" />
     <ClCompile Include="KVSMLObjectPointWriter.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MapperBase.cpp" />
@@ -85,11 +89,16 @@
     <ClInclude Include="FrequencyTable.h" />
     <ClInclude Include="GeometryObjectBase.h" />
     <ClInclude Include="GlobalCore.h" />
+    <ClInclude Include="GlyphGenerator.h" />
+    <ClInclude Include="GlyphObjectCreator.h" />
+    <ClInclude Include="GlyphObjectGenerator.h" />
+    <ClInclude Include="GlyphProperty.h" />
     <ClInclude Include="HexahedralCell.h" />
     <ClInclude Include="IDManager.h" />
     <ClInclude Include="ImporterBase.h" />
     <ClInclude Include="JobCollector.h" />
     <ClInclude Include="JobDispatcher.h" />
+    <ClInclude Include="KVSMLObjectGlyph.h" />
     <ClInclude Include="KVSMLObjectPointWriter.h" />
     <ClInclude Include="Macro.h" />
     <ClInclude Include="MapperBase.h" />
@@ -209,6 +218,7 @@
       <PreprocessorDefinitions>CPU_VER;JPV_CLIENT;CPU_SAMPLING_TIME;WIN32;NDEBUG;STRICT;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)\KVS\Source;$(SolutionDir)\Common;$(SolutionDir)\FunctionParser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>2131;3863</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
