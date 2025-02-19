@@ -94,7 +94,6 @@ void Connect::connectServer()
     m_client_message.show();
     m_client_message.m_message_size = m_client_message.byteSize();
     client.sendMessage( m_client_message );
-        std::cout << __func__ << __LINE__ <<std::endl;
     client.recvMessage( &m_server_message );
     m_server_message.show();
 
@@ -103,7 +102,7 @@ void Connect::connectServer()
         m_render_options->updateParticleLimit();
     }
 
-    std::cout << __func__ << __LINE__ <<std::endl;
+    int number_variable =m_server_message.m_number_ingredients ;
 
     //ヒストグラム更新用(CS, IS)
     m_received_message.m_var_range.merge( m_server_message.m_server_side_variable_range );
@@ -142,11 +141,10 @@ void Connect::connectServer()
     client.recvMessage( &m_server_message );
     client.termClient();
 
-
     if( ui->clientServerRBtn->isChecked() )
     {
         m_merge->serverPointObjectCS( ui->volumeDataFilePathLEdit->text(), m_server_message.m_start_step, m_server_message.m_last_step );
-        if( m_server_message.m_number_ingredients < 3  )
+        if( number_variable < 3  )
         {
         }
         else
@@ -169,8 +167,8 @@ void Connect::connectServer()
     else if ( ui->inSituRBtn->isChecked() )
     {
         m_merge->serverPointObjectIS( "IS-PointObject", 0, 0 );
-        std::cout << "m_server_message.m_number_ingredients = " << m_server_message.m_number_ingredients << std::endl;
-        if( m_server_message.m_number_ingredients < 3  )
+        std::cout << "number_variable ="  << number_variable << std::endl;
+        if( number_variable < 3  )
         {
         }
         else
