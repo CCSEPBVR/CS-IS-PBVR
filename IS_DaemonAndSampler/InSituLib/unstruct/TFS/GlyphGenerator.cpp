@@ -3,7 +3,7 @@
 
 //GlyphGenerator::GlyphGenerator(glyph_parameters &,Type** values, int nvariables,
 //GlyphGenerator::GlyphGenerator(pbvr_parameters& particleBase, const int time_step ,Type** values,
-GlyphGenerator::GlyphGenerator( const int time_step ,Type** values,
+GlyphGenerator::GlyphGenerator(Type** values,
         int nvariables, float* coordinates, int ncoords,
         unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype) :
     m_values( values ), m_nvariable(nvariables),  
@@ -13,7 +13,7 @@ GlyphGenerator::GlyphGenerator( const int time_step ,Type** values,
    
     m_g_flag = false; 
     //m_g_flag = this -> SetGlyphParameter( particleBase, time_step );
-    m_g_flag = this -> SetGlyphParameter( time_step );
+    m_g_flag = this -> SetGlyphParameter( );
     if (m_g_flag)
     { 
         if( m_distribution_modes == jpv::GlyphMode:: AllPoints || m_distribution_modes == jpv::GlyphMode:: EveryNthPoints )
@@ -29,7 +29,7 @@ GlyphGenerator::GlyphGenerator( const int time_step ,Type** values,
 
 #if 1
 //bool GlyphGenerator::SetGlyphParameter( pbvr_parameters& particleBase, const int time_step )
-bool GlyphGenerator::SetGlyphParameter( const int time_step )
+bool GlyphGenerator::SetGlyphParameter( )
 {
     std::string visParamDir;
     std::string glyphParamPath;
@@ -469,7 +469,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
 
         timer.start();
         //nglyphs /= nthreads;
-        kvs::MersenneTwister MT( seed );
+        kvs::MersenneTwister MT( seed+(mpi_rank+1)*(thid+1) );
 
     float TotalVolume = 0;
     float density = 0;
@@ -600,7 +600,6 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
 
      } //#pragma omp parallel
 
-    std::cout << __LINE__ << std::endl;
     if (m_size_sampling_method == jpv::DataDefines::SingleVariable || m_size_sampling_method == jpv::DataDefines::VariableArray )
     { 
         int n_size_data=m_glyph_sizes.size();
@@ -641,7 +640,6 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
         }
     }
 
-    std::cout << __LINE__ << std::endl;
     if (m_color_sampling_method == jpv::DataDefines::SingleVariable || m_color_sampling_method == jpv::DataDefines::VariableArray )
     { 
         int n_color_data=m_glyph_colors_data.size();
@@ -655,7 +653,6 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
 
         MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
         MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
-        std::cout << __LINE__ << std::endl;
 
         m_color_map.setRange(min,max);
         for( int jx=0; jx<n_color_data; jx++)
@@ -678,6 +675,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
         }
     }
 
+        std::cout  << "mpi_rank = " << mpi_rank << ", "  <<  m_glyph_sizes.size()  <<  "glyphs generated. " << std::endl;
 //       this->show(); 
 }
 

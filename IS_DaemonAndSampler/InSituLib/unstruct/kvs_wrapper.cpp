@@ -42,11 +42,11 @@
 #include "FileFormat/VtkUnstructuredFileFormat.h"
 #include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
 #include <vtkUnstructuredGrid.h>
-#endif
 
 //kvsmlImporter
 #include "CvtTypeTraits.h"
 #include "Importer/VtkImporter.h"
+#endif
 
 //Glyph
 #include "TFS/GlyphGenerator.h"
@@ -309,87 +309,8 @@ void readTFfromParamInfo( ParamInfo* param,
     EquationToken eq;
     std::vector<EquationToken> var;
     int tf_number;
-#if 0 
-    i_table = param->getTableInt( "OPA_FUNC_EXP_TOKEN" );
-    if (i_table.size() < 128){
-        std::cerr<<"Error retrieving TF from ParamInfo"<<std::endl<<
-        "If you are trying to overwrite an existing job you may need to execute RESET.sh first."<<std::endl;
-        exit(1);
-    }
-    for(size_t i=0; i<128; i++) eq.exp_token[i] = i_table[i];
-    //for(size_t i=0; i<128; i++) std::cout << "eq.exp_token[i] =" << eq.exp_token[i] << std::endl;
-    
-
-    i_table = param->getTableInt( "OPA_FUNC_VAR_NAME" );
-    for(size_t i=0; i<128; i++) eq.var_name[i] = i_table[i];
-    //for(size_t i=0; i<128; i++) std::cout << "eq.var_name[i] =" << eq.var_name[i] << std::endl;
-
-    f_table = param->getTableFloat( "OPA_FUNC_VAL_ARRAY" );
-    for(size_t i=0; i<128; i++) eq.val_array[i] = f_table[i];
-    //for(size_t i=0; i<128; i++) std::cout << "eq.val_array[i] =" << eq.val_array[i] << std::endl;
-
-    tfs->setOpacityFunction( eq );
-//
-//    i_table = param->getTableInt( "COL_FUNC_EXP_TOKEN" );
-//    for(size_t i=0; i<128; i++) eq.exp_token[i] = i_table[i];
-//    for(size_t i=0; i<10; i++) std::cout << "eq.exp_token[i] =" << eq.exp_token[i] << std::endl;
-//
-//    i_table = param->getTableInt( "COL_FUNC_VAR_NAME" );
-//    for(size_t i=0; i<128; i++) eq.var_name[i] = i_table[i];
-//
-//    f_table = param->getTableFloat( "COL_FUNC_VAL_ARRAY" );
-//    for(size_t i=0; i<128; i++) eq.val_array[i] = f_table[i];
-//
-//    tfs->setColorFunction( eq );
-#endif 
-
     // get TF_NUMBER
     tf_number = param->getInt( "TF_NUMBER" );
-
-
-#if 0
-    for ( size_t i = 0; i < tf_number; i++ )
-    {
-        std::stringstream tss;
-        tss << "TF_NAME" << i + 1 << "_";
-        const std::string tag_base = tss.str();
-
-        i_table = param->getTableInt( tag_base + "O_EXP_TOKEN" );
-        for(size_t i=0; i<128; i++) eq.exp_token[i] = i_table[i];
-
-        i_table = param->getTableInt( tag_base + "O_VAR_NAME" );
-        for(size_t i=0; i<128; i++) eq.var_name[i] = i_table[i];
-
-        f_table = param->getTableFloat( tag_base + "O_VAL_ARRAY" );
-        for(size_t i=0; i<128; i++) eq.val_array[i] = f_table[i];
-
-        var.push_back( eq );
-    }
-
-    tfs->setOpacityVariable( var );
-
-    var.clear();
-    for ( size_t i = 0; i < tf_number; i++ )
-    {
-        std::stringstream tss;
-        tss << "TF_NAME" << i + 1 << "_";
-        const std::string tag_base = tss.str();
-
-        i_table = param->getTableInt( tag_base + "C_EXP_TOKEN" );
-        for(size_t i=0; i<128; i++) eq.exp_token[i] = i_table[i];
-
-        i_table = param->getTableInt( tag_base + "C_VAR_NAME" );
-        for(size_t i=0; i<128; i++) eq.var_name[i] = i_table[i];
-
-        f_table = param->getTableFloat( tag_base + "C_VAL_ARRAY" );
-        for(size_t i=0; i<128; i++) eq.val_array[i] = f_table[i];
-
-        var.push_back( eq );
-    }
-
-    tfs->setColorVariable( var );
-    var.clear();
-#endif
 
     //Read 1D tf
     int resolution = param->getInt( "TF_RESOLUTION" );
@@ -697,44 +618,6 @@ void generate_particles( int time_step, domain_parameters dom,
     delete m_tfs;
 }
 
-#ifdef VTK
-void SetDomain( vtkUnstructuredGrid* ucd, domain_parameters* dom)
-{
-    double bounds[6];
-    ucd -> GetPoints() -> GetBounds(bounds); 
-    float recv_Xmin, recv_Xmax;
-    float recv_Ymin, recv_Ymax;
-    float recv_Zmin, recv_Zmax;
-
-    float Xmin = bounds[0];
-    float Xmax = bounds[1];
-    float Ymin = bounds[2];
-    float Ymax = bounds[3];
-    float Zmin = bounds[4];
-    float Zmax = bounds[5];
-    MPI_Allreduce(&Xmin, &recv_Xmin, 1 , MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD);
-    MPI_Allreduce(&Ymin, &recv_Ymin, 1 , MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD);
-    MPI_Allreduce(&Zmin, &recv_Zmin, 1 , MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD);
-    MPI_Allreduce(&Xmax, &recv_Xmax, 1 , MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD);
-    MPI_Allreduce(&Ymax, &recv_Ymax, 1 , MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD);
-    MPI_Allreduce(&Zmax, &recv_Zmax, 1 , MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD);
-
-//    std:: cout << "maxX = "<< recv_Xmax << std::endl;
-//    std:: cout << "minX = "<< recv_Xmin << std::endl;
-//    std:: cout << "maxY = "<< recv_Ymax << std::endl;
-//    std:: cout << "minY = "<< recv_Ymin << std::endl;
-//    std:: cout << "maxZ = "<< recv_Zmax << std::endl;
-//    std:: cout << "minZ = "<< recv_Zmin << std::endl;
-
-    dom->x_global_min = recv_Xmin;
-    dom->y_global_min = recv_Ymin;
-    dom->z_global_min = recv_Zmin;
-    dom->x_global_max = recv_Xmax;
-    dom->y_global_max = recv_Ymax;
-    dom->z_global_max = recv_Zmax;
-
-}
-
 void SetVariables(kvs::UnstructuredVolumeObject* object, Type** values, pbvr::VolumeObjectBase::CellType* celltype )
 {
 
@@ -787,7 +670,46 @@ void SetVariables(kvs::UnstructuredVolumeObject* object, Type** values, pbvr::Vo
             }
         }
 }
+#ifdef VTK
+void SetDomain( vtkUnstructuredGrid* ucd, domain_parameters* dom)
+{
+    double bounds[6];
+    ucd -> GetPoints() -> GetBounds(bounds); 
+    float recv_Xmin, recv_Xmax;
+    float recv_Ymin, recv_Ymax;
+    float recv_Zmin, recv_Zmax;
 
+    float Xmin = bounds[0];
+    float Xmax = bounds[1];
+    float Ymin = bounds[2];
+    float Ymax = bounds[3];
+    float Zmin = bounds[4];
+    float Zmax = bounds[5];
+    MPI_Allreduce(&Xmin, &recv_Xmin, 1 , MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD);
+    MPI_Allreduce(&Ymin, &recv_Ymin, 1 , MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD);
+    MPI_Allreduce(&Zmin, &recv_Zmin, 1 , MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD);
+    MPI_Allreduce(&Xmax, &recv_Xmax, 1 , MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(&Ymax, &recv_Ymax, 1 , MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(&Zmax, &recv_Zmax, 1 , MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD);
+
+//    std:: cout << "maxX = "<< recv_Xmax << std::endl;
+//    std:: cout << "minX = "<< recv_Xmin << std::endl;
+//    std:: cout << "maxY = "<< recv_Ymax << std::endl;
+//    std:: cout << "minY = "<< recv_Ymin << std::endl;
+//    std:: cout << "maxZ = "<< recv_Zmax << std::endl;
+//    std:: cout << "minZ = "<< recv_Zmin << std::endl;
+
+    dom->x_global_min = recv_Xmin;
+    dom->y_global_min = recv_Ymin;
+    dom->z_global_min = recv_Zmin;
+    dom->x_global_max = recv_Xmax;
+    dom->y_global_max = recv_Ymax;
+    dom->z_global_max = recv_Zmax;
+
+}
+
+
+//#ifdef VTK
 void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd ) 
 {
     kvs::Timer timer( kvs::Timer::Start );
@@ -864,7 +786,6 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
             GenerateGlyphs(time_step, dom, values,
                     nvariables, (float*)object->coords().pointer(), ncoords,
                     (unsigned int*)object->connections().pointer() , object -> ncells(), celltype);
-                    //(unsigned int*)object->connections().pointer() , object -> ncells(), celltype, particleBase);
 
             GeneratePlotOverLine(time_step, object, &plot_over_line);
         }
@@ -2273,13 +2194,10 @@ void GenerateGlyphs( int time_step,
                          Type** values, int nvariables,
                          float* coordinates, int ncoords,
                          unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype) //celltype  enum 型に変更
-                         //unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase) //celltype  enum 型に変更
 {
-        //GlyphGenerator glyph_generator( particleBase, time_step, values, nvariables,
-        GlyphGenerator glyph_generator(  time_step, values, nvariables,
+        GlyphGenerator glyph_generator( values, nvariables,
                 coordinates, ncoords, connections, ncells, celltype); 
-       
-        //glyph_generator.OutputGlyph(particleBase, time_step);
+     
         glyph_generator.OutputGlyph( time_step);
 }
 

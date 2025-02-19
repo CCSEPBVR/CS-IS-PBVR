@@ -153,7 +153,6 @@ void PlotOverLine::extractPlotLine( const kvs::UnstructuredVolumeObject* volume)
 {
     this->setVolume( volume );
     this->extractPlotLine( m_start_point, m_end_point );
-           std::cout << __FUNCTION__ <<  __LINE__ <<std::endl;
 }
 
 void PlotOverLine::CellTypeReduceing()
@@ -279,7 +278,6 @@ void PlotOverLine::for_hexahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
 
     size_t id = 0;
 
-    std::cout << __FUNCTION__ << __LINE__ <<std::endl;
     for( int cell = 0; cell < ncells; cell++, id+=8 )
     {
         const kvs::UInt32* local_id = &connec[ id ];
@@ -360,7 +358,6 @@ void PlotOverLine::for_hexahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
             }
         }
     }
-    std::cout << __FUNCTION__ << __LINE__ <<std::endl;
 };
 
 void PlotOverLine::for_pyramidal_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
