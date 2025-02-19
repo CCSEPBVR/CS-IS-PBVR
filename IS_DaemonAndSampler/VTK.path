@@ -1,0 +1,2 @@
+VTK_INC_PATH=/home/center/viztools/VTK-9.2.2/include/vtk-9.2
+VTK_LIB_PATH=/home/center/viztools/VTK-9.2.2/lib64
