@@ -94,7 +94,6 @@ void Connect::connectServer()
     m_client_message.show();
     m_client_message.m_message_size = m_client_message.byteSize();
     client.sendMessage( m_client_message );
-        std::cout << __func__ << __LINE__ <<std::endl;
     client.recvMessage( &m_server_message );
     m_server_message.show();
 
@@ -102,8 +101,6 @@ void Connect::connectServer()
     {
         m_render_options->updateParticleLimit();
     }
-
-    std::cout << __func__ << __LINE__ <<std::endl;
 
     //ヒストグラム更新用(CS, IS)
     m_received_message.m_var_range.merge( m_server_message.m_server_side_variable_range );
@@ -606,6 +603,7 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
             }
         }
 
+        std::cout << "allGlyph = " <<  allParticle << std::endl;
         kvs::PolygonObject* polygonObject;
         kvs::PointObject* pointObject = object;
 
