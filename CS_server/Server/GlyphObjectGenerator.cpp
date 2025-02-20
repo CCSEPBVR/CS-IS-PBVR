@@ -43,8 +43,8 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
     if ( kvsview::FileChecker::ImportableStructuredVolume( param.m_input_data ))
     {
         std::cout << "Structured !" <<std::endl;
-        //volume = new pbvr::StructuredVolumeImporter( param.m_input_data ); 
-        kvsMessageError("structured data does not apply." );
+        volume = new pbvr::StructuredVolumeImporter( param.m_input_data ); 
+//        kvsMessageError("structured data does not apply." );
 
     } 
     else if ( kvsview::FileChecker::ImportableUnstructuredVolume( param.m_input_data))
@@ -60,7 +60,12 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
 //FJ_TIMER_KAWAMURA
     PBVR_TIMER_END( 260 );
 //FJ_TIMER_KAWAMURA
-    
+
+    volume->updateMinMaxValues();
+    //volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
+//    volume->setMinMaxObjectCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
+//    volume->setMinMaxExternalCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
+
     std::cout << *volume << std::endl;
     std::cout << "min:" << volume->minObjectCoord() << ", max:" << volume->maxObjectCoord() << std::endl;
     std::cout << "min:" << volume->minExternalCoord() << ", max:" << volume->maxExternalCoord() << std::endl;
@@ -148,34 +153,161 @@ void GlyphObjectGenerator::sampling( pbvr::VolumeObjectBase* volume,const jpv::P
 
     std::cout << "Glyph Generating start " << std::endl;
 
-    const pbvr::UnstructuredVolumeObject* uvo_p = static_cast<const pbvr::UnstructuredVolumeObject*>( volume );
-    kvs::AnyValueArray valueArray = volume->values(); 
-    float* coordinates =  (float * )volume->coords().pointer(); 
-    int ncoords =  volume->nnodes();
-    unsigned int* connections =  (unsigned int*)uvo_p->connections().pointer();
-    int ncells = uvo_p->ncells();
-    int nnodes = volume->nnodes();
-   
-    pbvr::VolumeObjectBase::CellType celltype = uvo_p->cellType();
+    pbvr::VolumeObjectBase::VolumeType voltype = volume->volumeType();
 
-    const int nvariables = volume->veclen();
-    //Type*  values[nvariables];
+
     Type** values;
-    values = new Type * [nvariables];
+    kvs::AnyValueArray valueArray; 
+    std::vector<float> coordinates; 
+    int ncoords;
+    std::vector<unsigned int> connections ;
+    int ncells; 
+    int nnodes;
+    int nvariables;
+    pbvr::VolumeObjectBase::CellType celltype;
 
-    for ( int j = 0; j < nvariables; j++ )
+    if(voltype ==  pbvr::VolumeObjectBase::VolumeType::Unstructured)
     {
-        values[j] = new float[nnodes];
-        for ( int i = 0; i < nnodes; i++ )
+        const pbvr::UnstructuredVolumeObject* uvo_p = static_cast<const pbvr::UnstructuredVolumeObject*>( volume );
+       
+        valueArray = volume->values(); 
+        coordinates.assign( (float * )volume->coords().begin(),(float * )volume->coords().end()); 
+        ncoords =  volume->nnodes();
+        connections.assign((unsigned int*)uvo_p->connections().begin(), (unsigned int*)uvo_p->connections().end());
+        ncells = uvo_p->ncells();
+        nnodes = volume->nnodes();
+        celltype = uvo_p->cellType();
+
+        nvariables = volume->veclen();
+        //Type*  values[nvariables];
+        values = new Type * [nvariables];
+
+        for ( int j = 0; j < nvariables; j++ )
         {
-            int  it = j * nnodes  + i;
-            values[j][i] = valueArray.at<Type>(it);  
+            values[j] = new float[nnodes];
+            for ( int i = 0; i < nnodes; i++ )
+            {
+                int  it = j * nnodes  + i;
+                values[j][i] = valueArray.at<Type>(it);  
+            }
+        } 
+    }
+    else if(voltype ==  pbvr::VolumeObjectBase::VolumeType::Structured)
+    {
+        celltype = pbvr::VolumeObjectBase::CellType::Hexahedra;
+        const pbvr::StructuredVolumeObject* vo_p = static_cast<const pbvr::StructuredVolumeObject*>( volume );
+        nnodes = vo_p->nnodes();
+        ncoords = nnodes;
+        nvariables = volume->veclen();
+        kvs::AnyValueArray valueArray = volume->values(); 
+        values = new Type * [nvariables];
+
+        for ( int j = 0; j < nvariables; j++ )
+        {
+            values[j] = new float[nnodes];
+            for ( int i = 0; i < nnodes; i++ )
+            {
+                int  it = j * nnodes  + i;
+                values[j][i] = valueArray.at<Type>(it);
+            }
+        } 
+
+        const kvs::Vector3ui resolution( vo_p->resolution() );
+        const int nx = resolution.x();
+        const int ny = resolution.y();
+        const int nz = resolution.z();
+        const int nxy = nx * ny;
+        const int nx_1 = nx-1;
+        const int ny_1 = ny-1;
+        const int nz_1 = nz-1;
+        const int nxy_1 = nx_1 * ny_1;
+
+        ncells = nxy_1*nz_1;
+
+        const kvs::Vector3f min_vec = vo_p->minObjectCoord(); 
+        const kvs::Vector3f max_vec = vo_p->maxObjectCoord(); 
+        const kvs::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ nx_1,
+                (max_vec.y() - min_vec.y() )/ ny_1,
+                (max_vec.z() - min_vec.z() )/ nz_1) ;
+
+//        coordinates 
+        kvs::ValueArray<float> coords(3*nnodes);
+
+//#pragma omp for
+        for ( kvs::UInt32 z = 0; z < nz; ++z )
+        {
+            for ( kvs::UInt32 y = 0; y < ny; ++y )
+            {
+                for ( kvs::UInt32 x = 0; x < nx; ++x )
+                {
+                    const int index = x + y*nx + z*nx*ny;
+                    const float x_g = ((float)x * cell_length.x())+min_vec.x();
+                    const float y_g = ((float)y * cell_length.y())+min_vec.y();
+                    const float z_g = ((float)z * cell_length.z())+min_vec.z();
+                    coords[3*index + 0] = x_g ;
+                    coords[3*index + 1] = y_g ;
+                    coords[3*index + 2] = z_g ;
+                }
+            }
         }
-    } 
+       coordinates.assign( coords.begin(),coords.end()); 
+
+
+//        connections
+        kvs::ValueArray<kvs::UInt32> con(8*ncells);
+
+        kvs::UInt64 line_size  = static_cast<kvs::UInt32>( nx ); 
+        kvs::UInt64 slice_size = static_cast<kvs::UInt32>( nx * ny ); 
+        kvs::UInt64 vertex_index = 0; 
+        kvs::UInt64 connection_index = 0;
+//#pragma omp for
+        for ( size_t z = 0; z < nz_1; ++z )
+        {
+            for ( size_t y = 0; y < ny-1; ++y )
+            {
+                for ( size_t x = 0; x < nx-1; ++x )
+                {
+                    const kvs::UInt64 local_vertex_index[8] =
+                    {
+                        vertex_index,
+                        vertex_index + 1,
+                        vertex_index + line_size,
+                        vertex_index + line_size + 1,
+                        vertex_index + slice_size,
+                        vertex_index + slice_size + 1,
+                        vertex_index + slice_size + line_size,
+                        vertex_index + slice_size + line_size + 1
+                    };
+
+                    con[ connection_index++ ] = ( local_vertex_index[ 0 ] );
+                    con[ connection_index++ ] = ( local_vertex_index[ 1 ] );
+                    con[ connection_index++ ] = ( local_vertex_index[ 3 ] );
+                    con[ connection_index++ ] = ( local_vertex_index[ 2 ] );
+                    con[ connection_index++ ] = ( local_vertex_index[ 4 ] );
+                    con[ connection_index++ ] = ( local_vertex_index[ 5 ] );
+                    con[ connection_index++ ] = ( local_vertex_index[ 7 ] );
+                    con[ connection_index++ ] = ( local_vertex_index[ 6 ] );
+                    vertex_index++;
+                }
+                vertex_index++;
+            }
+            vertex_index += line_size;
+        }
+
+//        connections = con.pointer();
+        connections.assign(con.begin(), con.end());
+    }
 
     GlyphGenerator glyph_generator( clntMes, number_of_divide, values, nvariables,
-            coordinates, ncoords, connections, ncells, celltype);
+            coordinates.data(), ncoords, connections.data(), ncells, celltype);
     glyph_generator.getGlyphData(&m_object);
+
+    for (int i = 0; i < nvariables; i++)
+    {
+        delete[] values[i];
+    }
+    delete[] values;
+
 
 }
 
