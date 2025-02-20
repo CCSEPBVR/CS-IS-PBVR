@@ -15,14 +15,11 @@
 #include "QuadraticHexahedralCell.h"
 #include "PrismaticCell.h"
 #include "PyramidalCell.h"
-#include "../kvs_wrapper.h"
 #include <kvs/PointObject>
 #include <kvs/GlyphObject>
 #include <kvs/KVSMLObjectPoint>
-#include "particle_write_thread.h"
 
 #include "KVSMLObjectGlyph.h"
-#include "GlyphGenerator.h"
 #include "GlyphProperty.h"
 
 #ifdef _OPENMP
@@ -91,30 +88,26 @@ protected:
    std::vector<float> m_size_max;
 
 private:
-   //void  PointSampling( glyph_parameters &glyphParameter);
    void  PointSampling( );
    void  PointSampling( 
            //Type** values, int nvariables,
            //float* coordinates, int ncoords,
            int stride);
    void  DistributionSampling(int number_of_sampling_point ,int seed, const pbvr::VolumeObjectBase::CellType& celltype);
-   //void  DistributionSampling(glyph_parameters &glyphParameter, const pbvr::VolumeObjectBase::CellType& celltype);
    void  DistributionSampling(const pbvr::VolumeObjectBase::CellType& celltype);
 
    const size_t calculate_number_of_particles(
            const float density,
            const float volume_of_cell,
            kvs::MersenneTwister* MT );
-    //bool SetGlyphParameter(pbvr_parameters& particleBase,const int time_step);
-    bool SetGlyphParameter(const int time_step);
+    bool SetGlyphParameter();
 
 public:
    void GlyphSampling( const pbvr::VolumeObjectBase::CellType& celltype);
 
 
     GlyphGenerator();
-    //GlyphGenerator(pbvr_parameters& particleBase, const int time_step, Type** values, int nvariables,
-    GlyphGenerator( const int time_step, Type** values, int nvariables,
+    GlyphGenerator(  Type** values, int nvariables,
            float* coordinates, int ncoords,
            unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype);
 

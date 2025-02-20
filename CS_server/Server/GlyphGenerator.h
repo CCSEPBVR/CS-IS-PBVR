@@ -6,9 +6,9 @@
 //#include "ParamInfo.h"
 #include "float.h"
 #include "UnstructuredVolumeObject.h"
-// #include <mpi.h>
 #include "CellBase.h"
 //#include "CellBase_hex.h"
+#include "TrilinearInterpolator.h"
 #include "TetrahedralCell.h"
 #include "QuadraticTetrahedralCell.h"
 #include "HexahedralCell.h"
@@ -28,7 +28,9 @@
 #ifdef _OPENMP
 #  include <omp.h>
 #endif // _OPENMP
-
+#ifndef CPU_VER
+#include <mpi.h>
+#endif
 /*
    enum class DataDefines : int32_t {
        Constant = 0,  // 値の設定
@@ -54,7 +56,8 @@ protected:
    
    float**           m_values;
    float*       m_coords;
-   kvs::UInt32* m_connections;
+   //kvs::UInt32* m_connections;
+   unsigned int* m_connections;
    int          m_ncoords;
    int          m_ncells;
    int          m_nvariable;
@@ -97,7 +100,8 @@ private:
    void  PointSampling( );
    void  PointSampling( int stride);
    void  DistributionSampling(int number_of_sampling_point ,int seed, const pbvr::VolumeObjectBase::CellType& celltype);
-   void  DistributionSampling(const pbvr::VolumeObjectBase::CellType& celltype);
+   void  DistributionSampling_struct();
+   void  DistributionSampling_unstruct(const pbvr::VolumeObjectBase::CellType& celltype);
 
    const size_t calculate_number_of_particles(
            const float density,
@@ -113,11 +117,12 @@ public:
     GlyphGenerator();
     GlyphGenerator( Type** values, int nvariables,
            float* coordinates, int ncoords,
-           unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype);
+           unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype); //ISPBVR
 
     GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, Type** values, int nvariables,
            float* coordinates, int ncoords,
-           unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype);
+           unsigned int* connections, int ncells,
+           const  pbvr::VolumeObjectBase::CellType& celltype ); // CSPBVR
     ~GlyphGenerator()
     {
     }

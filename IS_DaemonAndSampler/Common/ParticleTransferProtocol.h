@@ -162,6 +162,11 @@ public:
     DataDefines m_color_data_sampling_method;
     std::vector<std::string> m_color_data_variable;
 
+    float m_glyph_color_max;
+    float m_glyph_color_min;
+    float m_glyph_size_max;
+    float m_glyph_size_min;
+
     //Plot Over Line
     bool m_plot_flag; // plot ober line の生成判定
     std::string m_plot_variable;
@@ -249,6 +254,11 @@ public:
     std::unique_ptr<float[]>  m_glyph_sizes;
     std::unique_ptr<unsigned char[]>   m_glyph_colors;
     
+    float m_glyph_color_max;
+    float m_glyph_color_min;
+    float m_glyph_size_max;
+    float m_glyph_size_min;
+
     //Plot Over Line
     int32_t m_resolution;
     std::vector<float> m_xAxis;

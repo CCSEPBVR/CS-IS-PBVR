@@ -102,51 +102,6 @@ extern "C" {
 
     } pbvr_parameters;
 
-//    typedef struct
-//    {
-////        //始点
-////        kvs::Vec3 m_start_point; 
-////        //終点
-////        kvs::Vec3 m_end_point; 
-////        //解像度
-////        int m_resolution;
-//
-//        bool m_plot_flag; // plot over line データの生成判定
-//        //全セルデータ
-//        kvs::ValueArray<float> m_values_on_line; //line上の値
-//        kvs::ValueArray<float> m_x_axis; // 始点からの距離
-//        kvs::ValueArray<bool> m_mask; // マスク判定
-//
-//    } plot_over_line_data;
-
-
-//    typedef struct
-//    {
-//    // ファイルパス(デーモン→サーバー)
-//    std::string m_glyphParamPath;
-//    // ファイルパス(サーバー→デーモン)
-//    std::string m_glyphFilePath;
-//    //出力用パラメータ(サーバー→デーモン→クライアント)
-//    std::vector<float>  m_glyph_coords;
-//    std::vector<float>  m_glyph_vectors;
-//    std::vector<float>  m_glyph_sizes;
-//    std::vector<Byte>   m_glyph_colors;
-//    std::vector<float>  m_glyph_colors_data;
-//
-//    //入力パラメータ(デーモン→サーバー)
-//    std::vector<int>  m_direction_variables;
-//    jpv::DataDefines m_size_sampling_method;
-//    std::vector<int> m_size_variables;
-//    jpv::GlyphMode m_distribution_modes;
-//    int m_stride;
-//    int m_seed;
-//    int m_number_of_sample_points;
-//    kvs::ColorMap m_color_map;
-//    jpv::DataDefines m_color_sampling_method;
-//    std::vector<int> m_color_data_variables;
-//
-//    } glyph_parameters;
-
 #if 0
     typedef struct
     {

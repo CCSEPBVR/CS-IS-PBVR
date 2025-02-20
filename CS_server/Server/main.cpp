@@ -1738,15 +1738,12 @@ int main( int argc, char** argv )
                         std::cout << "user define parameter " << std::endl;
                         nvariable = clntMes.m_transfer_function.size();
                         transfunc_creator.setProtocol(clntMes);
+                        servMes.m_glyph_color_min  =  clntMes.m_transfer_function[0].m_color_variable_min;
+                        servMes.m_glyph_color_max  =  clntMes.m_transfer_function[0].m_color_variable_max; 
+                        servMes.m_glyph_size_min   =  clntMes.m_transfer_function[0].m_color_variable_min;
+                        servMes.m_glyph_size_max   =  clntMes.m_transfer_function[0].m_color_variable_max; 
                     }
 #if 1
-                        std::stringstream tt;
-                        tt << "t1";  
-                        servMes.m_glyph_color_min   = range.min( tt.str() + "_var_c" );
-                        servMes.m_glyph_color_max   = range.max( tt.str() + "_var_c" ); 
-                        servMes.m_glyph_size_min   = range.min( tt.str() + "_var_c" );
-                        servMes.m_glyph_size_max   = range.max( tt.str() + "_var_c" ); 
-
                     // generate_histogram
                     param.m_sampling_method = 'h';
                     param.m_component_Id = clntMes.m_rendering_id;
@@ -1984,6 +1981,14 @@ int main( int argc, char** argv )
                     //add by shimomura 2023/06/14
                     vr = setVariablerange2( tmp_max,tmp_min, cnt/2 );
                     servMes.m_server_side_variable_range = vr;
+
+                    std::stringstream tt;
+                    tt << "t1";  
+                    servMes.m_glyph_color_min  = vr.min( tt.str() + "_var_c" );
+                    servMes.m_glyph_color_max  = vr.max( tt.str() + "_var_c" ); 
+                    servMes.m_glyph_size_min   = vr.min( tt.str() + "_var_c" );
+                    servMes.m_glyph_size_max   = vr.max( tt.str() + "_var_c" ); 
+
                     // add by shimomura 2022/12/16
                     servMes.setColorHistogramBins(                                                     
                             param.m_transfunc_array.size(),
@@ -2842,7 +2847,355 @@ int main( int argc, char** argv )
                         PBVR_TIMER_END( 1 );
                         PBVR_TIMER_FIN();
                     }
+                } // end of initParam = 3 // generateglyph
+                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
+                {
+#if 0
+                    timer_count++;
+                    std::vector<GlyphObjectCreator> glyph_creator_lst;
+                    if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                    {
+                        PBVR_TIMER_STA( 461 );
+                    }
+
+                    // send cltMes to all worker process >>
+                    bsz = clntMes.byteSize();
+#ifndef CPU_VER
+                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+                    buf = new char[bsz];
+                    clntMes.pack( buf );
+#ifndef CPU_VER
+                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+#endif
+                    delete[] buf;
+                    // send cltMes to all worker process <<
+
+                    std::cout << "Recieve message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+                    std::cout << "timeParam = " << clntMes.m_time_parameter << std::endl;
+
+                    if ( clntMes.m_time_parameter == 0 )
+                    {
+                        std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                    }
+                    else if ( clntMes.m_time_parameter == 1 )
+                    {
+                        std::cout << "beginTime = " << clntMes.m_begin_time << std::endl;
+                        std::cout << "endTime = " << clntMes.m_last_time << std::endl;
+                        std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                    }
+                    else if ( clntMes.m_time_parameter == 2 )
+                    {
+                        std::cout << "step = " << clntMes.m_step << std::endl;
+                    }
+                    std::cout << "transParam = " << clntMes.m_trans_parameter << std::endl;
+                    if ( clntMes.m_trans_parameter == 1 )
+                    {
+                        std::cout << "levelIndex = " << clntMes.m_level_index << std::endl;
+                    }
+                    if ( clntMes.m_time_parameter == 0 )
+                    {
+                        strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
+                        servMes.m_time_step = clntMes.m_step;
+                        servMes.m_repeat_level = clntMes.m_repeat_level;
+                        servMes.m_level_index = clntMes.m_level_index;
+                        servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0 ;
+                        servMes.m_flag_send_bins = 1;
+
+                        servMes.m_message_size = servMes.byteSize();
+                        pts.sendMessage( servMes );
+                    }
+                    else if ( clntMes.m_time_parameter == 1 )
+                    {
+
+                        strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
+                        servMes.m_time_step = clntMes.m_step;
+                        servMes.m_repeat_level = clntMes.m_repeat_level;
+                        servMes.m_level_index = clntMes.m_level_index;
+                        servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
+                        servMes.m_flag_send_bins = 1;
+
+                        servMes.m_message_size = servMes.byteSize();
+                        pts.sendMessage( servMes );
+                    }
+                    else if ( clntMes.m_time_parameter == 2 )
+                    {
+                        strncpy( servMes.m_header, "JPTP /1.0 100 OK\r\n", 18 );
+                        servMes.m_message_size = servMes.byteSize();
+                        servMes.m_time_step = clntMes.m_step;
+                        servMes.m_level_index = clntMes.m_level_index;
+                        servMes.m_repeat_level = clntMes.m_repeat_level;
+                        param.m_sampling_method = clntMes.m_sampling_method;
+                        param.m_component_Id = clntMes.m_rendering_id;
+                        param.m_crop.setEnable( clntMes.m_enable_crop_region );
+                        param.m_crop.set( clntMes.m_crop_region );
+                        param.m_particle_limit = clntMes.m_particle_limit;
+                        param.m_particle_density = clntMes.m_particle_density;
+
+                     param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+                    for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
+                    {
+                        param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
+                    }
+
+                        if ( clntMes.m_node_type == 'a' )
+                        {
+                            useAllNodes = true;
+                        }
+                        else if ( clntMes.m_node_type == 's' )
+                        {
+                            useAllNodes = false;
+                        }
+                        else
+                        {
+                            assert( false );
+                        }
+                        if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+
+                        if ( param.m_crop.isEnabled() )
+                        {
+                            jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
+                                           fil.m_total_min_subvolume_coord,
+                                           fil.m_total_max_subvolume_coord,
+                                           param.m_latency_threshold, param.m_job_id_pack_size,
+                                           param.m_crop.getMinCoord(),
+                                           param.m_crop.getMaxCoord() );
+                            servMes.m_number_volume_divide = jd.getCountVolumes();
+                        }
+                        else
+                        {
+                            jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
+                                           fil.m_total_min_subvolume_coord,
+                                           fil.m_total_max_subvolume_coord,
+                                           param.m_latency_threshold, param.m_job_id_pack_size );
+                            servMes.m_number_volume_divide = fil.m_total_number_subvolumes;
+                        }
+
+                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        {
+                            PBVR_TIMER_STA( 470 );
+                        }
+
+                        param.m_sampling_step = CalculateSamplingStep( fil );
+                        param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
+
+                        VariableRange vr;
+                        pts.sendMessage( servMes );
+
+                        //add by shimomura 2023/06/14
+                        int cnt = 2;
+                        tmp_max = new float[cnt]; 
+                        tmp_min = new float[cnt];
+
+                        for ( int tf = 0; tf < cnt; tf++ )
+                        {
+                            tmp_max[tf] = FLT_MIN;
+                            tmp_min[tf] = FLT_MAX;
+                        }
+
+                        // 関数の領域確保、初期化を行う : by @hira 2016/12/01
+                        servMes.initializeTransferFunction(clntMes.m_transfer_function.size(), DEFAULT_NBINS);
+ 
+                        while ( jd.dispatchNext( wid, &st, &vl ) )
+                        {
+                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            {
+                                PBVR_TIMER_STA( 471 );
+                            }
+
+//                            pbvr::PointObject* originalObject = new pbvr::PointObject;
+                            kvs::KVSMLObjectGlyph* originalGlyph = new kvs::KVSMLObjectGlyph;
+
+                            if (mpi_size == 1) {
+                            int xvl, fidx;
+                            fidx = fil.getFileIndex( vl, &xvl );
+                            FilterInformationFile& fi = fil.m_list[fidx];
+
+                            kvs::KVSMLObjectGlyph* tmp_obj = new kvs::KVSMLObjectGlyph;
+                            std::stringstream suffix;
+                            suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
+                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
+                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
+                            kvs::File ifpx( fil.m_list[fidx].m_file_path );
+                            param.m_input_data = ifpx.pathName() + ifpx.Separator()
+                                                 + ifpx.baseName() + suffix.str() + ".kvsml";
+                            int timeStep = 1;
+                            servMes.m_flag_send_bins = 2;
+                            try
+                            {
+                                if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+                                {
+                                    *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, fil.m_total_number_subvolumes, timeStep, st, xvl); 
+                                    // run()で得られるKVSMLObjectglyphとtmp_objは異なるメモリ領域を指しているため,ポインタコピーではなくオペレータを呼び出す必要がある
+                                }
+                                else     // filetype: kvsml
+                                {
+                                    glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep,servMes.m_number_volume_divide , tmp_obj, st );
+                                }
+
+//                                size_t nmemb = tmp_obj->sizes().size();
+                                originalGlyph->clear();
+                                originalGlyph = tmp_obj;
+
+                                for ( int tf = 0; tf < cnt/2; tf++ )
+                                {
+                                    //changed by shimomura 2023/07/24
+                                    tmp_max[2*tf+1] = kvs::Math::Max(tmp_max[2*tf+1],tmp_obj->colorMax());
+                                    tmp_min[2*tf+1] = kvs::Math::Min(tmp_min[2*tf+1],tmp_obj->colorMin());
+                                    tmp_max[2*tf  ] = kvs::Math::Max(tmp_max[2*tf  ],tmp_obj->sizeMax());
+                                    tmp_min[2*tf  ] = kvs::Math::Min(tmp_min[2*tf  ],tmp_obj->sizeMin());
+                                }
+
+                            }
+                            catch ( const std::runtime_error& e )
+                            {
+#ifdef _DEBUG		// debug by @hira
+                                    printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
+#endif
+                                std::cerr << e.what();
+                                nan_error = true;
+                            }
+
+                            }
+#if 1
+#ifndef CPU_VER          // MPI並列については一旦保留, collectorの内容がわかるまで
+                            if (mpi_size > 1) {
+                                //jc.jobCollect( originalObject, &vr, &nan_error, &wid );
+                                jc.jobCollect_glyph( originalGlyph, &nan_error, &wid );
+                            }
+#endif
+#endif
+                            kvs::KVSMLObjectGlyph* object = originalGlyph;
+							printf(" %zu glyphs generated\n", object->coords().size() / 3);
+
+//                           //add by shimomura 2023/06/14
+                            if ( originalGlyph != object ) delete originalGlyph;
+
+                            servMes.m_number_glyph = originalGlyph->coords().size() / 3;
+                            if ( servMes.m_number_glyph > 0 )
+                            {
+                                servMes.m_glyph_coords = std::make_unique<float[]>(3 * servMes.m_number_glyph);
+                                servMes.m_glyph_vectors = std::make_unique<float[]>(3 * servMes.m_number_glyph);
+                                servMes.m_glyph_colors = std::make_unique<unsigned char[]>(3 * servMes.m_number_glyph);
+                                servMes.m_glyph_sizes = std::make_unique<float[]>(servMes.m_number_glyph);
+                            }
+                            else
+                            {
+                                servMes.m_glyph_coords  = NULL;
+                                servMes.m_glyph_vectors = NULL;
+                                servMes.m_glyph_colors  = NULL;
+                                servMes.m_glyph_sizes   = NULL;
+                            }
+                            for ( int i = 0; i < servMes.m_number_glyph; ++i )
+                            {
+                                servMes.m_glyph_coords[3 * i + 0]  = object->coords()[3 * i + 0];
+                                servMes.m_glyph_coords[3 * i + 1]  = object->coords()[3 * i + 1];
+                                servMes.m_glyph_coords[3 * i + 2]  = object->coords()[3 * i + 2];
+                                servMes.m_glyph_vectors[3 * i + 0] = object->directions()[3 * i + 0];
+                                servMes.m_glyph_vectors[3 * i + 1] = object->directions()[3 * i + 1];
+                                servMes.m_glyph_vectors[3 * i + 2] = object->directions()[3 * i + 2];
+                                servMes.m_glyph_colors[3 * i + 0]  = object->colors()[3 * i + 0];
+                                servMes.m_glyph_colors[3 * i + 1]  = object->colors()[3 * i + 1];
+                                servMes.m_glyph_colors[3 * i + 2]  = object->colors()[3 * i + 2];
+                                servMes.m_glyph_sizes[i ] = object->sizes()[ i ];
+                            }
+
+                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            {
+                                PBVR_TIMER_END( 471 );
+                            }
+                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            {
+                                PBVR_TIMER_STA( 472 );
+                            }
+                            servMes.m_flag_send_bins = 2;
+                            servMes.m_message_size = servMes.byteSize();
+                            servMes.show();
+                            pts.sendMessage( servMes );
+                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            {
+                                PBVR_TIMER_END( 472 );
+                            }
+                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            {
+                                PBVR_TIMER_STA( 473 );
+                            }
+                            delete object;
+                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            {
+                                PBVR_TIMER_END( 473 );
+                            }
+                        } // end of while(DispatchNext)
+#ifndef CPU_VER
+
+                        if (mpi_size > 1) 
+                        {
+                            MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
+                            MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
+                        }
+#endif
+
+                        // TEST START 2015.1.14
+                        if ( nan_error )
+                        {
+                            strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
+                            servMes.m_server_status = 1;
+                            servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0 ;
+                            servMes.m_flag_send_bins = 1;
+                            std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
+                            nan_error = false;
+                        }
+
+                        servMes.m_glyph_color_min = tmp_min[1];
+                        servMes.m_glyph_color_max = tmp_max[1];
+                        servMes.m_glyph_size_min = tmp_min[0];
+                        servMes.m_glyph_size_max = tmp_max[0];
+                        std::cout << "m_glyph_min   = " << servMes.m_glyph_color_min << std::endl;
+                        std::cout << "m_glyph_max   = " << servMes.m_glyph_color_max << std::endl;
+                        servMes.m_flag_send_bins = 1;
+                        servMes.m_subpixel_level = param.m_subpixel_level;
+                        servMes.m_message_size = servMes.byteSize();
+                        pts.sendMessage( servMes );
+                        // TEST START 2015.1.14
+                        servMes.m_server_status = 0;
+                        // TEST END 2015.1.14
+
+                        for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
+                        {
+                            delete[] servMes.m_color_bins[tf];
+                            delete[] servMes.m_opacity_bins[tf];
+                        }
+                        delete[] servMes.m_color_nbins;
+                        delete[] servMes.m_opacity_nbins;
+                        delete[] tmp_max;
+                        delete[] tmp_min;
+                        servMes.m_transfer_function_count = 0;
+                        servMes.m_flag_send_bins = 1;
+
+                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        {
+                            PBVR_TIMER_END( 470 );
+                        }
+                    } // end of timeParam == 2
+                    else
+                    {
+                        break;
+                    }
+                    if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                    {
+                        PBVR_TIMER_END( 461 );
+                    }
+                    if ( timer_count == PBVR_TIMER_COUNT_NUM )
+                    {
+                        PBVR_TIMER_END( 1 );
+                        PBVR_TIMER_FIN();
+                    }
+#endif
                 } // end of initParam >= 0
+
 
             } // end of while (pts.good)
 

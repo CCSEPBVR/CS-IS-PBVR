@@ -326,6 +326,7 @@ inline CellBase<T>::CellBase(
 {
     const size_t dimension = 3;
     const size_t nnodes = m_nnodes;
+
     try
     {
         m_vertices = new kvs::Vector3f [nnodes];
@@ -360,7 +361,6 @@ inline CellBase<T>::CellBase(
 //        m_interpolation_functions_array[i] = new kvs::Real32[nnodes] ;
 //        m_differential_functions_array[i]  = new kvs::Real32[nnodes*dimension] ;
 //        } 
-
         m_vertices_array  = new kvs::Vector3f* [nnodes]; //[nnodes];
         m_scalars_array   = new T* [nnodes]; //[nnodes];  
         m_interpolation_functions_array = new kvs::Real32* [nnodes]; // [nnodes];
@@ -375,7 +375,6 @@ inline CellBase<T>::CellBase(
         m_differential_functions_array[3*i+1]  = new kvs::Real32[SIMD_BLK_SIZE] ;
         m_differential_functions_array[3*i+2]  = new kvs::Real32[SIMD_BLK_SIZE] ;
         } 
-
     }
     catch( char* error_message )
     {
@@ -389,6 +388,8 @@ inline CellBase<T>::CellBase(
     cal_time[3] =  0; 
     cal_time[4] =  0; 
     cal_time[5] =  0; 
+
+
 }
 
 /*===========================================================================*/
@@ -717,7 +718,6 @@ inline const kvs::Real32 CellBase<T>::scalar() const
     for ( size_t i = 0; i < nnodes; i++ )
     {
         S += static_cast<kvs::Real32>( N[i] * s[i] );
-        //std::cout << "m_interpolation_functions[" << i <<"] =" << N[i] << ", m_scalars["<< i <<"] = " << s[i] <<std::endl;
     }
 
     return S;
