@@ -1054,8 +1054,8 @@ void MergePanel::onWorkerThreadFinished()
                 {
                     kvs::PolygonObject* polygon_object = dynamic_cast<kvs::PolygonObject*>( m_files_manager[row]->getObject() );
                     // polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getColor().red(), m_files_manager[row]->getColor().green(), m_files_manager[row]->getColor().blue() ) );
-                    polygon_object->setMinMaxExternalCoords(kvs::Vec3(polygon_object->minExternalCoord().x(),polygon_object->minExternalCoord().y(),polygon_object->minExternalCoord().z() * 25),
-                                                            kvs::Vec3(polygon_object->maxExternalCoord().x(),polygon_object->maxExternalCoord().y(),polygon_object->maxExternalCoord().z() * 25));
+                    polygon_object->setMinMaxExternalCoords(kvs::Vec3(polygon_object->minExternalCoord().x(),polygon_object->minExternalCoord().y(),polygon_object->minExternalCoord().z() ),
+                                                            kvs::Vec3(polygon_object->maxExternalCoord().x(),polygon_object->maxExternalCoord().y(),polygon_object->maxExternalCoord().z() ));
                     polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
                     kvs::RendererBase* stochastic_polygon_renderer = new kvs::StochasticPolygonRenderer;
                     m_shading_controller->applyShading( stochastic_polygon_renderer );
@@ -1116,8 +1116,8 @@ void MergePanel::onWorkerThreadFinished()
                         m_files_manager[row]->getFormat() == FilesManager::NonTexturedPolygonObjectSTL )
                     {
                         // polygon_object->setColor( kvs::RGBColor( m_files_manager[row]->getColor().red(), m_files_manager[row]->getColor().green(), m_files_manager[row]->getColor().blue() ) );
-                        polygon_object->setMinMaxExternalCoords(kvs::Vec3(polygon_object->minExternalCoord().x(),polygon_object->minExternalCoord().y(),polygon_object->minExternalCoord().z() * 25),
-                                                                kvs::Vec3(polygon_object->maxExternalCoord().x(),polygon_object->maxExternalCoord().y(),polygon_object->maxExternalCoord().z() * 25));
+                        polygon_object->setMinMaxExternalCoords(kvs::Vec3(polygon_object->minExternalCoord().x(),polygon_object->minExternalCoord().y(),polygon_object->minExternalCoord().z() ),
+                                                                kvs::Vec3(polygon_object->maxExternalCoord().x(),polygon_object->maxExternalCoord().y(),polygon_object->maxExternalCoord().z() ));
                         polygon_object->setOpacity( m_files_manager[row]->getOpacity() * 255 );
                         m_pbvr_gui->screen()->scene()->replaceObject(m_files_manager[row]->getIDs().first, polygon_object );
                     }
