@@ -542,7 +542,6 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
                     interp[ i ].resize( m_nvariable  );
                     for ( int j = 0; j < m_nvariable; j++ )
                     {
-                    std::cout << "j = " << j << std::endl; 
                         interp[i][j]  = new pbvr::HexahedralCell<Type>( m_values[j], m_coords, m_ncoords, m_connections, m_ncells );
                     }
                 }
@@ -764,8 +763,6 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
 #else
         max = m_size_max;
         min = m_size_min;
-        std::cout << "tmp_max = " << tmp_max << std::endl;
-        std::cout << "m_size_max = " << m_size_max << std::endl;
 #endif
         float factor = 0;
         if (max - min > 1e-6)

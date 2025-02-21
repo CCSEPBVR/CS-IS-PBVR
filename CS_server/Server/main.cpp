@@ -65,6 +65,9 @@
 #include "GlyphObjectGenerator.h"
 #include "GlyphObjectCreator.h"
 
+//plot over line
+#include "POLObjectGenerator.h"
+
 using FuncParser::Variable;
 using FuncParser::Variables;
 using FuncParser::Function;
@@ -2659,7 +2662,6 @@ int main( int argc, char** argv )
                                 PBVR_TIMER_STA( 471 );
                             }
 
-//                            pbvr::PointObject* originalObject = new pbvr::PointObject;
                             kvs::KVSMLObjectGlyph* originalGlyph = new kvs::KVSMLObjectGlyph;
 
                             if (mpi_size == 1) {
@@ -2850,9 +2852,9 @@ int main( int argc, char** argv )
                 } // end of initParam = 3 // generateglyph
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
                 {
-#if 0
+#if 1
                     timer_count++;
-                    std::vector<GlyphObjectCreator> glyph_creator_lst;
+//                    std::vector<POLObjectGenerator> pol_generator_lst;
                     if ( timer_count <= PBVR_TIMER_COUNT_NUM )
                     {
                         PBVR_TIMER_STA( 461 );
@@ -2998,22 +3000,37 @@ int main( int argc, char** argv )
                         // 関数の領域確保、初期化を行う : by @hira 2016/12/01
                         servMes.initializeTransferFunction(clntMes.m_transfer_function.size(), DEFAULT_NBINS);
  
+                        const int resolution = clntMes.m_sampling_size;
+                        kvs::KVSMLObjectPlotOverLine* originalGlyph = new kvs::KVSMLObjectPlotOverLine;
+                        servMes.m_resolution = resolution;
+                        servMes.m_xAxis.resize(resolution);
+                        servMes.m_mask.resize(resolution);
+                        servMes.m_line_values.resize(resolution);
+                        std::vector<float> tmp_values(resolution); 
+                        std::vector<int> tmp_mask(resolution,0); 
+                        std::vector<float> tmp_axis(resolution); 
+                         for (int i =0; i < resolution; ++i)
+                         {
+                             servMes.m_mask[i] = 0;
+                         } 
+
+                        originalGlyph -> setResolution(resolution);
+                        originalGlyph ->mask().fill(false);
                         while ( jd.dispatchNext( wid, &st, &vl ) )
                         {
+                            POLObjectGenerator pol_generator;
                             if ( timer_count <= PBVR_TIMER_COUNT_NUM )
                             {
                                 PBVR_TIMER_STA( 471 );
                             }
 
-//                            pbvr::PointObject* originalObject = new pbvr::PointObject;
-                            kvs::KVSMLObjectGlyph* originalGlyph = new kvs::KVSMLObjectGlyph;
-
-                            if (mpi_size == 1) {
+                            if (mpi_size == 1) 
+                            {
                             int xvl, fidx;
                             fidx = fil.getFileIndex( vl, &xvl );
                             FilterInformationFile& fi = fil.m_list[fidx];
 
-                            kvs::KVSMLObjectGlyph* tmp_obj = new kvs::KVSMLObjectGlyph;
+                            kvs::KVSMLObjectPlotOverLine* tmp_obj = new kvs::KVSMLObjectPlotOverLine;
                             std::stringstream suffix;
                             suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
                                    << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
@@ -3027,27 +3044,28 @@ int main( int argc, char** argv )
                             {
                                 if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                                 {
-                                    *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, fil.m_total_number_subvolumes, timeStep, st, xvl); 
+//                                    *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, fil.m_total_number_subvolumes, timeStep, st, xvl); 
                                     // run()で得られるKVSMLObjectglyphとtmp_objは異なるメモリ領域を指しているため,ポインタコピーではなくオペレータを呼び出す必要がある
                                 }
                                 else     // filetype: kvsml
                                 {
-                                    glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep,servMes.m_number_volume_divide , tmp_obj, st );
+                                    pol_generator.run( param, *clntMes.m_camera, clntMes, timeStep,servMes.m_number_volume_divide , tmp_obj, st );
                                 }
 
-//                                size_t nmemb = tmp_obj->sizes().size();
-                                originalGlyph->clear();
-                                originalGlyph = tmp_obj;
+                                //集約処理
+                                
+                                for(int i =0; i < resolution; i++)
+                                { 
+                                    tmp_axis[i] = tmp_obj->x_axis()[i];
+                                    if (tmp_obj->mask()[i]) 
+                                    {
+                                        //tmp_mask[i] = tmp_obj ->mask()[i];
+                                        tmp_mask[i] = 1;
+                                        tmp_values[i] = tmp_obj->values_on_line()[i];
+                                    }
 
-                                for ( int tf = 0; tf < cnt/2; tf++ )
-                                {
-                                    //changed by shimomura 2023/07/24
-                                    tmp_max[2*tf+1] = kvs::Math::Max(tmp_max[2*tf+1],tmp_obj->colorMax());
-                                    tmp_min[2*tf+1] = kvs::Math::Min(tmp_min[2*tf+1],tmp_obj->colorMin());
-                                    tmp_max[2*tf  ] = kvs::Math::Max(tmp_max[2*tf  ],tmp_obj->sizeMax());
-                                    tmp_min[2*tf  ] = kvs::Math::Min(tmp_min[2*tf  ],tmp_obj->sizeMin());
-                                }
-
+                                } 
+                                
                             }
                             catch ( const std::runtime_error& e )
                             {
@@ -3058,7 +3076,7 @@ int main( int argc, char** argv )
                                 nan_error = true;
                             }
 
-                            }
+                            } //end if mpi_size == 1
 #if 1
 #ifndef CPU_VER          // MPI並列については一旦保留, collectorの内容がわかるまで
                             if (mpi_size > 1) {
@@ -3067,40 +3085,21 @@ int main( int argc, char** argv )
                             }
 #endif
 #endif
-                            kvs::KVSMLObjectGlyph* object = originalGlyph;
-							printf(" %zu glyphs generated\n", object->coords().size() / 3);
+//                            kvs::KVSMLObjectPlotOverLine* object = originalGlyph;
+//							printf(" %zu glyphs generated\n", object->coords().size() / 3);
+
+                            for (int i =0; i < resolution; ++i)
+                            {
+                                servMes.m_xAxis[i] = tmp_axis[i];   
+                                servMes.m_line_values[i] = tmp_values[i];   
+                                servMes.m_mask[i]  = tmp_mask[i];
+
+                                //if(object->mask()[i]) tmp_mask[i]  = 1;   
+                                //else servMes.m_mask[i]  = 0;
+                            }
 
 //                           //add by shimomura 2023/06/14
-                            if ( originalGlyph != object ) delete originalGlyph;
-
-                            servMes.m_number_glyph = originalGlyph->coords().size() / 3;
-                            if ( servMes.m_number_glyph > 0 )
-                            {
-                                servMes.m_glyph_coords = std::make_unique<float[]>(3 * servMes.m_number_glyph);
-                                servMes.m_glyph_vectors = std::make_unique<float[]>(3 * servMes.m_number_glyph);
-                                servMes.m_glyph_colors = std::make_unique<unsigned char[]>(3 * servMes.m_number_glyph);
-                                servMes.m_glyph_sizes = std::make_unique<float[]>(servMes.m_number_glyph);
-                            }
-                            else
-                            {
-                                servMes.m_glyph_coords  = NULL;
-                                servMes.m_glyph_vectors = NULL;
-                                servMes.m_glyph_colors  = NULL;
-                                servMes.m_glyph_sizes   = NULL;
-                            }
-                            for ( int i = 0; i < servMes.m_number_glyph; ++i )
-                            {
-                                servMes.m_glyph_coords[3 * i + 0]  = object->coords()[3 * i + 0];
-                                servMes.m_glyph_coords[3 * i + 1]  = object->coords()[3 * i + 1];
-                                servMes.m_glyph_coords[3 * i + 2]  = object->coords()[3 * i + 2];
-                                servMes.m_glyph_vectors[3 * i + 0] = object->directions()[3 * i + 0];
-                                servMes.m_glyph_vectors[3 * i + 1] = object->directions()[3 * i + 1];
-                                servMes.m_glyph_vectors[3 * i + 2] = object->directions()[3 * i + 2];
-                                servMes.m_glyph_colors[3 * i + 0]  = object->colors()[3 * i + 0];
-                                servMes.m_glyph_colors[3 * i + 1]  = object->colors()[3 * i + 1];
-                                servMes.m_glyph_colors[3 * i + 2]  = object->colors()[3 * i + 2];
-                                servMes.m_glyph_sizes[i ] = object->sizes()[ i ];
-                            }
+                            //if ( originalGlyph != object ) delete originalGlyph;
 
                             if ( timer_count <= PBVR_TIMER_COUNT_NUM )
                             {
@@ -3110,10 +3109,6 @@ int main( int argc, char** argv )
                             {
                                 PBVR_TIMER_STA( 472 );
                             }
-                            servMes.m_flag_send_bins = 2;
-                            servMes.m_message_size = servMes.byteSize();
-                            servMes.show();
-                            pts.sendMessage( servMes );
                             if ( timer_count <= PBVR_TIMER_COUNT_NUM )
                             {
                                 PBVR_TIMER_END( 472 );
@@ -3128,34 +3123,20 @@ int main( int argc, char** argv )
                                 PBVR_TIMER_END( 473 );
                             }
                         } // end of while(DispatchNext)
-#ifndef CPU_VER
-
-                        if (mpi_size > 1) 
-                        {
-                            MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
-                            MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
-                        }
-#endif
-
+                           
                         // TEST START 2015.1.14
                         if ( nan_error )
                         {
                             strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
                             servMes.m_server_status = 1;
                             servMes.m_number_particle = 0;
-                        servMes.m_number_glyph = 0 ;
+                            servMes.m_number_glyph = 0 ;
                             servMes.m_flag_send_bins = 1;
                             std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
                             nan_error = false;
                         }
 
-                        servMes.m_glyph_color_min = tmp_min[1];
-                        servMes.m_glyph_color_max = tmp_max[1];
-                        servMes.m_glyph_size_min = tmp_min[0];
-                        servMes.m_glyph_size_max = tmp_max[0];
-                        std::cout << "m_glyph_min   = " << servMes.m_glyph_color_min << std::endl;
-                        std::cout << "m_glyph_max   = " << servMes.m_glyph_color_max << std::endl;
-                        servMes.m_flag_send_bins = 1;
+                        servMes.m_flag_send_bins = 3;
                         servMes.m_subpixel_level = param.m_subpixel_level;
                         servMes.m_message_size = servMes.byteSize();
                         pts.sendMessage( servMes );

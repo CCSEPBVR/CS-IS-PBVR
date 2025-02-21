@@ -67,12 +67,16 @@ SERVER_SRCS = CellByCellMetropolisSampling.cpp \
               JobDispatcher.cpp \
               KVSMLObjectPointWriter.cpp \
               KVSMLObjectGlyph.cpp \
+              KVSMLObjectPlotOverLine.cpp \
               SPLITTypeSubvolume.cpp \
               main.cpp \
               MapperBase.cpp \
               ObjectBase.cpp \
               ObjectManager.cpp \
               ParameterFile.cpp \
+			  PlotOverLine.cpp \
+			  PlotOverLineProperty.cpp \
+			  POLObjectGenerator.cpp \
               PointObject.cpp \
               PointObjectGenerator.cpp \
               PrismaticCell.cpp \
@@ -129,6 +133,7 @@ SERVER_HEADERS = Argument.h \
                  JobDispatcher.h \
                  KVSMLObjectPointWriter.h \
                  KVSMLObjectGlyph.h \
+	             KVSMLObjectPlotOverLine.h \
                  SPLITTypeSubvolume.h \
                  Macro.h \
                  MapperBase.h \
@@ -136,6 +141,9 @@ SERVER_HEADERS = Argument.h \
                  ObjectManager.h \
                  ParameterFile.h \
                  Platform.h \
+			  	 PlotOverLine.h \
+			  	 PlotOverLineProperty.h \
+			  	 POLObjectGenerator.h \
                  PointObjectGenerator.h \
                  PointObject.h \
                  PrismaticCell.h \
