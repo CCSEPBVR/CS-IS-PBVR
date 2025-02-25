@@ -1,3 +1,3 @@
 icoFoam.C
 
-EXE = bin/icoFoam
+EXE = $(FOAM_APPBIN)/icoFoam
