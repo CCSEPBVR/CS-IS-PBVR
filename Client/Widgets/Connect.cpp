@@ -103,7 +103,6 @@ void Connect::connectServer()
     }
 
     int number_variable =m_server_message.m_number_ingredients ;
-
     //ヒストグラム更新用(CS, IS)
     m_received_message.m_var_range.merge( m_server_message.m_server_side_variable_range );
     m_received_message.m_color_bins.resize( m_server_message.m_transfer_function_count );
@@ -604,6 +603,7 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
             }
         }
 
+        std::cout << "allGlyph = " <<  allParticle << std::endl;
         kvs::PolygonObject* polygonObject;
         kvs::PointObject* pointObject = object;
 
