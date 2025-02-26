@@ -687,7 +687,7 @@ inline VariableRange Calculate_minmax_glyph( const Argument& param,
     int subvols = 0;
 
     kvs::Real64 tmp_min, tmp_max;
-    std::vector<kvs::Real64> min_vec, max_vec;
+    std::vector<float> min_vec, max_vec;
     int nvariable = fil.m_total_number_ingredients;
     int nvariablep2 = 2;
     min_vec.resize(nvariablep2);
@@ -769,13 +769,11 @@ inline VariableRange Calculate_minmax_glyph( const Argument& param,
                     min_vec[0]=min_vec[0] < tmp_min ? min_vec[0] : tmp_min;
                     max_vec[0]=max_vec[0] > tmp_max ? max_vec[0] : tmp_max;
             }
-                        std::cout << __FUNCTION__ << __LINE__ << std::endl; 
             // size
             if( clntMes.m_size_sampling_method == jpv::DataDefines::VariableArray || clntMes.m_size_sampling_method == jpv::DataDefines::SingleVariable  )
             {
                 tmp_min = FLT_MAX;
                 tmp_max = FLT_MIN;
-                        std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                 for (int i = 0; i< nnodes; i++)
                 {
                     float tmp = 0;
@@ -787,7 +785,6 @@ inline VariableRange Calculate_minmax_glyph( const Argument& param,
                     tmp_min = tmp_min < tmp ? tmp_min : tmp ; 
                     tmp_max = tmp_max > tmp ? tmp_max : tmp ; 
                 }
-                        std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                 min_vec[1]=min_vec[1] < tmp_min ? min_vec[1] : tmp_min;
                 max_vec[1]=max_vec[1] > tmp_max ? max_vec[1] : tmp_max;
 
@@ -798,8 +795,8 @@ inline VariableRange Calculate_minmax_glyph( const Argument& param,
 //    }
 #ifndef CPU_VER
     PBVR_TIMER_STA( 19 );
-    MPI_Allreduce( MPI_IN_PLACE, min_vec.data(), nvariablep2, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
-    MPI_Allreduce( MPI_IN_PLACE, max_vec.data(), nvariablep2, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
+    MPI_Allreduce( MPI_IN_PLACE, min_vec.data(), nvariablep2, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+    MPI_Allreduce( MPI_IN_PLACE, max_vec.data(), nvariablep2, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
     PBVR_TIMER_END( 19 );
 #endif
       }
@@ -818,7 +815,6 @@ inline VariableRange Calculate_minmax_glyph( const Argument& param,
   clntMes.m_glyph_color_min = min_vec[0] ;
   clntMes.m_glyph_size_max  = max_vec[1] ;
   clntMes.m_glyph_size_min  = min_vec[1] ;
-                        std::cout << __FUNCTION__ << __LINE__ << std::endl; 
 #endif
 
    VariableRange vr;
@@ -1581,6 +1577,7 @@ int main( int argc, char** argv )
                     }
 
                    transfunc_creator.setFilterInfo( fil.m_list[0] );
+                    VariableRange range = Calculate_minmax_glyph( param, fil, clntMes); 
                    transfunc_creator.setProtocol( clntMes );
                     transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
                     param.m_transfunc_synthesizer = transfunc_creator.create();
@@ -1747,8 +1744,6 @@ int main( int argc, char** argv )
 						}
                     }
 
-                    VariableRange range = Calculate_minmax_glyph( param, fil, clntMes); 
-                        std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                    transfunc_creator.setFilterInfo( fil.m_list[0] );
                    transfunc_creator.setProtocol( clntMes );
                     transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
@@ -2927,23 +2922,6 @@ int main( int argc, char** argv )
 
                     VariableRange range = Calculate_minmax_glyph( param, fil, clntMes); 
                     
-                    //std::stringstream ss_c; 
-                    ////ss_c << (fil.m_total_number_ingredients + 1 ); 
-                    ////ss_c << 1 ; 
-                    //const std::string idxbuf_c = ss_c.str();
-
-                    //std::stringstream ss_s; 
-                    //ss_s << (fil.m_total_number_ingredients + 2); 
-                    //const std::string idxbuf_s = ss_s.str();
-
-                    ////clntMes.m_glyph_color_max = range.max( "t" + idxbuf_c + "_var" );
-                    ////clntMes.m_glyph_color_min = range.min( "t" + idxbuf_c + "_var" );
-                    ////clntMes.m_glyph_size_max  = range.max( "t" + idxbuf_s + "_var" );
-                    ////clntMes.m_glyph_size_min  = range.min( "t" + idxbuf_s + "_var" );
-                    //clntMes.m_glyph_color_max = range.max( "t1_var" );
-                    //clntMes.m_glyph_color_min = range.min( "t1_var" );
-                    //clntMes.m_glyph_size_max  = range.max( "t2_var" );
-                    //clntMes.m_glyph_size_min  = range.min( "t2_var" );
                     std::cout << "clntMes.m_glyph_size_max = " << clntMes.m_glyph_size_max << std::endl;
                      param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
                     for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
