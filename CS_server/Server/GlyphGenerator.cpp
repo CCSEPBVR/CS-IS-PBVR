@@ -132,6 +132,10 @@ bool GlyphGenerator::InputParameter(const jpv::ParticleTransferClientMessage& cl
 
     m_distribution_modes = clntMes.m_distribution_mode; 
 
+    m_stride = stride;
+    if (m_distribution_modes == jpv::GlyphMode:: AllPoints) m_stride = 1;
+    m_seed = seed; 
+
     m_color_sampling_method    = clntMes.m_color_data_sampling_method;
     for (int i =0 ; i< clntMes.m_color_data_variable.size(); i++)
     {
@@ -280,6 +284,7 @@ bool GlyphGenerator::SetGlyphParameter( )
 
     m_stride                  = stride;
     m_seed                    = seed;
+    if (m_distribution_modes  == jpv::GlyphMode::AllPoints )m_stride = 1;
     m_number_of_sample_points = number_of_sample_points;
     if     (color_sampling_method == "Constant"       ) m_color_sampling_method    = jpv::DataDefines::Constant;
     else if(color_sampling_method == "SingleVariable" ) m_color_sampling_method    = jpv::DataDefines::SingleVariable;
