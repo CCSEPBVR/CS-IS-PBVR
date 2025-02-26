@@ -351,7 +351,7 @@ void GlyphGenerator::PointSampling( )
    //size
    if (m_size_sampling_method == jpv::DataDefines::Constant)
    {
-       std::fill(m_glyph_sizes.begin(), m_glyph_sizes.begin() ,1);
+       std::fill(m_glyph_sizes.begin(), m_glyph_sizes.end() ,1);
    }
 //   else if (m_size_sampling_method == jpv::DataDefines::SingleVariable) 
 //   {
@@ -768,6 +768,8 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
 #else
         max = m_size_max;
         min = m_size_min;
+        std::cout << "m_size_max = " << m_size_max << std::endl;
+        std::cout << "m_size_min = " << m_size_min << std::endl;
 #endif
         float factor = 0;
         if (max - min > 1e-6)
@@ -1422,37 +1424,6 @@ void GlyphGenerator::DistributionSampling_struct()
 
         std::cout << __FUNCTION__ << __LINE__ << std::endl;
 #if 0 // IS
-#ifndef CPU_VER  // CS用処理
-        float max_recv=FLT_MIN;
-        float min_recv=FLT_MAX;
-        //        MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
-        //        MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
-        std::cout << __FUNCTION__ << __LINE__ << std::endl;
-        if (mpi_size > 2 )
-        {
-            if (mpi_rank != 0 )  // masterプロセスは除外
-            {
-                MPI_Reduce( &min , &min_recv, 1, MPI_FLOAT, MPI_MIN, 1, MPI_COMM_WORLD);
-                MPI_Reduce( &max , &max_recv, 1, MPI_FLOAT, MPI_MAX, 1, MPI_COMM_WORLD);
-            }
-
-            std::cout << __FUNCTION__ << __LINE__ << std::endl;
-            if (mpi_rank != 0) 
-            {
-                MPI_Bcast(&min_recv, 1, MPI_FLOAT, 1, MPI_COMM_WORLD);
-                MPI_Bcast(&max_recv, 1, MPI_FLOAT, 1, MPI_COMM_WORLD);
-            } 
-        }
-            else
-            {
-                min_recv = min;
-                max_recv = max;
-            }
-            std::cout << __FUNCTION__ << __LINE__ << std::endl;
-            m_color_map.setRange(min_recv,max_recv);
-#else
-        m_color_map.setRange(m_color_min,m_color_max);
-#endif
 #else 
         m_color_map.setRange(m_color_min,m_color_max);
         std::cout << "m_color_min = " << m_color_min << std::endl;

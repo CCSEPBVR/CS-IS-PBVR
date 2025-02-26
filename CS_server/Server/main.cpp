@@ -671,6 +671,175 @@ inline VariableRange Calculate_minmax( const Argument& param,
 }
 
 
+inline VariableRange Calculate_minmax_glyph( const Argument& param,
+                                      const FilterInformationList& fil,
+                                      jpv::ParticleTransferClientMessage& clntMes)
+{
+
+
+    namespace Generator = pbvr::CellByCellParticleGenerator;
+    //pbvr::UnstructuredVolumeObject* volume;
+    pbvr::VolumeObjectBase* volume;
+    double total_volume = 0.0;
+    double density_lev1 = 0.0;//kawamura2: particle density for subpixel_level=1
+    //int steps = fil.m_total_start_steps;
+    int steps = clntMes.m_step;
+    int subvols = 0;
+
+    kvs::Real64 tmp_min, tmp_max;
+    std::vector<kvs::Real64> min_vec, max_vec;
+    int nvariable = fil.m_total_number_ingredients;
+    int nvariablep2 = 2;
+    min_vec.resize(nvariablep2);
+    max_vec.resize(nvariablep2);
+    for(int i = 0 ;i < nvariable ; i++)
+    {
+        min_vec[i] = FLT_MAX; 
+        max_vec[i] = FLT_MIN; 
+    } 
+# if 1
+    //Total Volume Calculation
+#ifndef CPU_VER
+    int rank;
+    int nprocs;
+    MPI_Comm_size( MPI_COMM_WORLD, &nprocs );
+    MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+#else
+    int rank = 0;
+    int nprocs = 1;
+#endif
+
+    // color
+    min_vec[0] = 0;
+    max_vec[0] = 0;
+    std::vector<int> color_data_variables;
+    if( clntMes.m_color_data_sampling_method == jpv::DataDefines::VariableArray || clntMes.m_color_data_sampling_method == jpv::DataDefines::SingleVariable  )
+    {
+        for (int i =0 ; i< clntMes.m_color_data_variable.size(); i++)
+        {
+            color_data_variables.push_back( std::atoi(clntMes.m_color_data_variable[i].substr(1).c_str()) - 1); 
+        }
+
+    }
+  // size
+    min_vec[1] = 0;
+    max_vec[1] = 0;
+    std::vector<int> size_variables;
+    if( clntMes.m_size_sampling_method == jpv::DataDefines::VariableArray || clntMes.m_size_sampling_method == jpv::DataDefines::SingleVariable  )
+    {
+        for (int i =0 ; i< clntMes.m_size_variable.size(); i++)
+        {
+            size_variables.push_back( std::atoi(clntMes.m_size_variable[i].substr(1).c_str()) - 1); 
+        }
+
+    }
+
+      if( clntMes.m_color_data_sampling_method == jpv::DataDefines::VariableArray || clntMes.m_color_data_sampling_method == jpv::DataDefines::SingleVariable 
+          || clntMes.m_color_data_sampling_method == jpv::DataDefines::VariableArray || clntMes.m_color_data_sampling_method == jpv::DataDefines::SingleVariable  )
+      {
+//    for ( steps = fil.m_total_start_steps; steps <= fil.m_total_start_step; steps++ ) //初回ステップのみ
+//    {
+        for ( subvols = 0; subvols < fil.m_total_number_subvolumes; subvols++ )
+        {
+            int xvl, fidx;
+            fidx = fil.getFileIndex( subvols, &xvl );
+            const FilterInformationFile& fi = fil.m_list[fidx];
+
+            if ( subvols % nprocs == rank )
+            {
+                volume = CreateVolumeData( param, fi, steps, xvl );
+                int nnodes = volume->nnodes();
+                // color
+                if( clntMes.m_color_data_sampling_method == jpv::DataDefines::VariableArray || clntMes.m_color_data_sampling_method == jpv::DataDefines::SingleVariable  )
+                {
+                    tmp_min = FLT_MAX;
+                    tmp_max = FLT_MIN;
+                    for (int i = 0; i< nnodes; i++)
+                    {
+                        float tmp = 0;
+                        for(int k = 0 ; k< clntMes.m_color_data_variable.size() ; k++)
+                        {
+                            tmp += kvs::Math::Square(volume->values().at<float>( i+ color_data_variables[k]*nnodes)) ;
+                        }
+
+                        tmp = std::sqrt(tmp);
+                        tmp_min = tmp_min < tmp ? tmp_min : tmp ; 
+                        tmp_max = tmp_max > tmp ? tmp_max : tmp ; 
+                    }
+                    min_vec[0]=min_vec[0] < tmp_min ? min_vec[0] : tmp_min;
+                    max_vec[0]=max_vec[0] > tmp_max ? max_vec[0] : tmp_max;
+            }
+                        std::cout << __FUNCTION__ << __LINE__ << std::endl; 
+            // size
+            if( clntMes.m_size_sampling_method == jpv::DataDefines::VariableArray || clntMes.m_size_sampling_method == jpv::DataDefines::SingleVariable  )
+            {
+                tmp_min = FLT_MAX;
+                tmp_max = FLT_MIN;
+                        std::cout << __FUNCTION__ << __LINE__ << std::endl; 
+                for (int i = 0; i< nnodes; i++)
+                {
+                    float tmp = 0;
+                    for(int k = 0 ; k< clntMes.m_size_variable.size() ; k++)
+                    {
+                        tmp += kvs::Math::Square(volume->values().at<float>( i+ size_variables[k]*nnodes)) ;
+                    }
+                    tmp = std::sqrt(tmp);
+                    tmp_min = tmp_min < tmp ? tmp_min : tmp ; 
+                    tmp_max = tmp_max > tmp ? tmp_max : tmp ; 
+                }
+                        std::cout << __FUNCTION__ << __LINE__ << std::endl; 
+                min_vec[1]=min_vec[1] < tmp_min ? min_vec[1] : tmp_min;
+                max_vec[1]=max_vec[1] > tmp_max ? max_vec[1] : tmp_max;
+
+            }
+            delete volume;
+            }
+        }
+//    }
+#ifndef CPU_VER
+    PBVR_TIMER_STA( 19 );
+    MPI_Allreduce( MPI_IN_PLACE, min_vec.data(), nvariablep2, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD );
+    MPI_Allreduce( MPI_IN_PLACE, max_vec.data(), nvariablep2, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
+    PBVR_TIMER_END( 19 );
+#endif
+      }
+      if( clntMes.m_color_data_sampling_method == jpv::DataDefines::Constant )
+      {
+                min_vec[0]=0;
+                max_vec[0]=1;
+      }
+      if( clntMes.m_size_sampling_method == jpv::DataDefines::Constant )
+      {
+                min_vec[1]=0;
+                max_vec[1]=1;
+      }
+
+  clntMes.m_glyph_color_max = max_vec[0] ;
+  clntMes.m_glyph_color_min = min_vec[0] ;
+  clntMes.m_glyph_size_max  = max_vec[1] ;
+  clntMes.m_glyph_size_min  = min_vec[1] ;
+                        std::cout << __FUNCTION__ << __LINE__ << std::endl; 
+#endif
+
+   VariableRange vr;
+   for (int n =0; n< nvariable; n++) 
+   {
+        std::stringstream ss; 
+        ss << (n + 1); 
+        const std::string idxbuf = ss.str();
+        vr.setValue( "t" + idxbuf + "_var_o", 1);
+        vr.setValue( "t" + idxbuf + "_var_o", 0);
+        vr.setValue( "t" + idxbuf + "_var_c", 1);
+        vr.setValue( "t" + idxbuf + "_var_c", 0);
+   }
+
+//   std::cout << "vr_max = " << vr.max( "t1_var_c" ) << std::endl;     
+//   std::cout << "vr_min = " << vr.min( "t1_var_c" ) << std::endl;     
+
+   return vr;
+}
+
+
 inline float CalculateDensityFactor( const Argument& param,
                                      const FilterInformationFile& fi,
                                      const kvs::Camera& camera )
@@ -854,6 +1023,7 @@ int main( int argc, char** argv )
                 clntMes.unpack( buf );
                 delete[] buf;
                 std::cout << "Rank " << rank << ": Recv Client Message" << std::endl;
+                std::cout << "clntMes.m_initialize_parameter = " << (int)clntMes.m_initialize_parameter << std::endl;
                 // recv cltMes from process 0 <<
                if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
                {
@@ -1532,6 +1702,170 @@ int main( int argc, char** argv )
                 }
                
                } // end of generate_glyph
+               else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
+               {
+#if 1
+//                    std::vector<GlyphObjectCreator> glyph_creator_lst;
+
+                if ( clntMes.m_time_parameter == 0 )
+                {
+                }
+                else if ( clntMes.m_time_parameter == 1 )
+                {
+                }
+                else
+                {
+                            std::cout << __FUNCTION__ << __LINE__ << std::endl; 
+                    timer_count++;
+//                  param.m_transfer_function = pbvr::TransferFunction(); // *( clntMes.m_transfer_function );
+                    param.m_sampling_method = clntMes.m_sampling_method;
+                    param.m_component_Id = clntMes.m_rendering_id;
+                    param.m_crop.setEnable( clntMes.m_enable_crop_region );
+                    param.m_crop.set( clntMes.m_crop_region );
+                    param.m_input_data_base = clntMes.m_input_directory;
+                    param.m_particle_limit = clntMes.m_particle_limit;
+                    param.m_particle_density = clntMes.m_particle_density;
+
+                    std::string pfifile, pflfile;
+                    if ( param.m_input_data_base.substr( param.m_input_data_base.size() - 3 ) == "pfl" )
+                    {
+                        pflfile = param.m_input_data_base;
+                        param.m_input_data_base = pflfile.substr( 0, pflfile.size() - 4 );
+                        kvs::File pfl( pflfile );
+                        if ( pfl.isExisted() )
+                        {
+                            fil.loadPFL( pflfile );
+                        }
+                    }
+                    else
+                    {
+						pflfile = param.m_input_data_base;
+						kvs::File pfl( pflfile );
+						if ( pfl.isExisted() )
+						{
+							fil.loadPFL( pflfile );
+						}
+                    }
+
+                    VariableRange range = Calculate_minmax_glyph( param, fil, clntMes); 
+                        std::cout << __FUNCTION__ << __LINE__ << std::endl; 
+                   transfunc_creator.setFilterInfo( fil.m_list[0] );
+                   transfunc_creator.setProtocol( clntMes );
+                    transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
+                    param.m_transfunc_synthesizer = transfunc_creator.create();
+//
+                    param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+                    for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
+                    {
+                        param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
+                    }
+
+//                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+                    if ( param.m_crop.isEnabled() )
+                    {
+                        jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
+                                       fil.m_total_min_subvolume_coord,
+                                       fil.m_total_max_subvolume_coord,
+                                       param.m_latency_threshold, param.m_job_id_pack_size,
+                                       param.m_crop.getMinCoord(),
+                                       param.m_crop.getMaxCoord() );
+                    }
+                    else
+                    {
+                        jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
+                                       fil.m_total_min_subvolume_coord,
+                                       fil.m_total_max_subvolume_coord,
+                                       param.m_latency_threshold, param.m_job_id_pack_size );
+                    }
+
+                    param.m_sampling_step = CalculateSamplingStep( fil );
+                    param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
+                    param.m_particle_limit_pre = param.m_particle_limit;
+                    
+                    int cnt = 2 ;
+
+                    const int resolution = clntMes.m_sampling_size;
+                    std::vector<float> tmp_values(resolution); 
+                    std::vector<int> tmp_mask(resolution,0); 
+                    std::vector<float> tmp_axis(resolution); 
+
+                            std::cout << __FUNCTION__ << __LINE__ << std::endl; 
+                    while ( jd.dispatchNext( wid, &st, &vl ) )
+                    {
+                            std::cout << __FUNCTION__ << __LINE__ << std::endl; 
+                        POLObjectGenerator pol_generator;
+                        int xvl, fidx;
+                        fidx = fil.getFileIndex( vl, &xvl );
+                        FilterInformationFile& fi = fil.m_list[fidx];
+
+                        //kvs::KVSMLObjectGlyph* tmp_obj = new kvs::KVSMLObjectGlyph;
+                        kvs::KVSMLObjectPlotOverLine* tmp_obj = new kvs::KVSMLObjectPlotOverLine;
+                        std::stringstream suffix;
+                        suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
+                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
+                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
+                        //param.m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
+                        kvs::File ifpx( fi.m_file_path );
+                        param.m_input_data = ifpx.pathName() + ifpx.Separator()
+                                             + ifpx.baseName() + suffix.str() + ".kvsml";
+                        int timeStep = 1;
+                            std::cout << __FUNCTION__ << __LINE__ << std::endl; 
+                        try
+                        {
+                            if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+                            {
+//                                //object = glyph_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
+//                                *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, fil.m_total_number_subvolumes, timeStep, st, xvl); 
+                            }
+                            else     // filetype: kvsml
+                            {
+//                                glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, fil.m_total_number_subvolumes, timeStep, tmp_obj, st );
+                            std::cout << __FUNCTION__ << __LINE__ << std::endl; 
+                                pol_generator.run( param, *clntMes.m_camera, clntMes, timeStep, fil.m_total_number_subvolumes , tmp_obj, st );
+                            }
+                           
+                            std::cout << __FUNCTION__ << __LINE__ << std::endl; 
+                            for(int i =0; i < resolution; i++)
+                            { 
+                                tmp_axis[i] = tmp_obj->x_axis()[i];
+                                if (tmp_obj->mask()[i]) 
+                                {
+                                    //tmp_mask[i] = tmp_obj ->mask()[i];
+                                    tmp_mask[i] = 1;
+                                    tmp_values[i] = tmp_obj->values_on_line()[i];
+                                }
+                            } 
+
+                        }
+                        catch ( const std::runtime_error& e )
+                        {
+#ifdef _DEBUG		// debug by @hira
+                            printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
+#endif
+                            std::cerr << e.what();
+                            nan_error = true;
+                        }
+#ifndef CPU_VER
+                        //jc.jobCollect_pol( tmp_obj, &nan_error, &wid );
+                        jc.jobCollect_pol( tmp_axis, tmp_mask, tmp_values, &nan_error, &wid );
+#endif
+                        if ( nan_error )
+                        {
+                            nan_error = false;
+                            continue;
+                        }
+
+                    } // end of while(DispatchNext)
+
+                    if ( timer_count == PBVR_TIMER_COUNT_NUM )
+                    {
+                        PBVR_TIMER_END( 1 );
+                        PBVR_TIMER_FIN();
+                    }
+                    delete param.m_transfunc_synthesizer;
+                }
+#endif
+               } // end of plot_over_line
             } // end of while
         }
         else                    // rank == 0
@@ -2591,6 +2925,26 @@ int main( int argc, char** argv )
                         param.m_particle_limit = clntMes.m_particle_limit;
                         param.m_particle_density = clntMes.m_particle_density;
 
+                    VariableRange range = Calculate_minmax_glyph( param, fil, clntMes); 
+                    
+                    //std::stringstream ss_c; 
+                    ////ss_c << (fil.m_total_number_ingredients + 1 ); 
+                    ////ss_c << 1 ; 
+                    //const std::string idxbuf_c = ss_c.str();
+
+                    //std::stringstream ss_s; 
+                    //ss_s << (fil.m_total_number_ingredients + 2); 
+                    //const std::string idxbuf_s = ss_s.str();
+
+                    ////clntMes.m_glyph_color_max = range.max( "t" + idxbuf_c + "_var" );
+                    ////clntMes.m_glyph_color_min = range.min( "t" + idxbuf_c + "_var" );
+                    ////clntMes.m_glyph_size_max  = range.max( "t" + idxbuf_s + "_var" );
+                    ////clntMes.m_glyph_size_min  = range.min( "t" + idxbuf_s + "_var" );
+                    //clntMes.m_glyph_color_max = range.max( "t1_var" );
+                    //clntMes.m_glyph_color_min = range.min( "t1_var" );
+                    //clntMes.m_glyph_size_max  = range.max( "t2_var" );
+                    //clntMes.m_glyph_size_min  = range.min( "t2_var" );
+                    std::cout << "clntMes.m_glyph_size_max = " << clntMes.m_glyph_size_max << std::endl;
                      param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
                     for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
                     {
@@ -2980,22 +3334,17 @@ int main( int argc, char** argv )
                             PBVR_TIMER_STA( 470 );
                         }
 
+                        std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                         param.m_sampling_step = CalculateSamplingStep( fil );
+                        std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                         param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
 
+                        std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                         VariableRange vr;
                         pts.sendMessage( servMes );
 
                         //add by shimomura 2023/06/14
                         int cnt = 2;
-                        tmp_max = new float[cnt]; 
-                        tmp_min = new float[cnt];
-
-                        for ( int tf = 0; tf < cnt; tf++ )
-                        {
-                            tmp_max[tf] = FLT_MIN;
-                            tmp_min[tf] = FLT_MAX;
-                        }
 
                         // 関数の領域確保、初期化を行う : by @hira 2016/12/01
                         servMes.initializeTransferFunction(clntMes.m_transfer_function.size(), DEFAULT_NBINS);
@@ -3024,8 +3373,10 @@ int main( int argc, char** argv )
                                 PBVR_TIMER_STA( 471 );
                             }
 
+                            std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                             if (mpi_size == 1) 
                             {
+                            std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                             int xvl, fidx;
                             fidx = fil.getFileIndex( vl, &xvl );
                             FilterInformationFile& fi = fil.m_list[fidx];
@@ -3063,7 +3414,6 @@ int main( int argc, char** argv )
                                         tmp_mask[i] = 1;
                                         tmp_values[i] = tmp_obj->values_on_line()[i];
                                     }
-
                                 } 
                                 
                             }
@@ -3081,11 +3431,10 @@ int main( int argc, char** argv )
 #ifndef CPU_VER          // MPI並列については一旦保留, collectorの内容がわかるまで
                             if (mpi_size > 1) {
                                 //jc.jobCollect( originalObject, &vr, &nan_error, &wid );
-                                jc.jobCollect_glyph( originalGlyph, &nan_error, &wid );
+                                jc.jobCollect_pol( tmp_axis, tmp_mask, tmp_values, &nan_error, &wid );
                             }
 #endif
 #endif
-//                            kvs::KVSMLObjectPlotOverLine* object = originalGlyph;
 //							printf(" %zu glyphs generated\n", object->coords().size() / 3);
 
                             for (int i =0; i < resolution; ++i)
@@ -3093,9 +3442,6 @@ int main( int argc, char** argv )
                                 servMes.m_xAxis[i] = tmp_axis[i];   
                                 servMes.m_line_values[i] = tmp_values[i];   
                                 servMes.m_mask[i]  = tmp_mask[i];
-
-                                //if(object->mask()[i]) tmp_mask[i]  = 1;   
-                                //else servMes.m_mask[i]  = 0;
                             }
 
 //                           //add by shimomura 2023/06/14
@@ -3151,8 +3497,6 @@ int main( int argc, char** argv )
                         }
                         delete[] servMes.m_color_nbins;
                         delete[] servMes.m_opacity_nbins;
-                        delete[] tmp_max;
-                        delete[] tmp_min;
                         servMes.m_transfer_function_count = 0;
                         servMes.m_flag_send_bins = 1;
 
@@ -3175,7 +3519,7 @@ int main( int argc, char** argv )
                         PBVR_TIMER_FIN();
                     }
 #endif
-                } // end of initParam >= 0
+                } // end of initParam = 5 plot_over_line
 
 
             } // end of while (pts.good)
