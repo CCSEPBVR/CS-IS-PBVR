@@ -371,6 +371,158 @@ void JobCollector::jobCollect_glyph( kvs::KVSMLObjectGlyph* object, bool* invali
     }
 }
 
+void JobCollector::jobCollect_pol( std::vector<float>& axis, std::vector<int>& mask, std::vector<float>& values, bool* invalid, int* wid )
+{
+    int size;
+    int rank;
+
+     MPI_Comm_size( MPI_COMM_WORLD, &size );
+     MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+
+    if ( rank == 0 )
+    {
+        MPI_Status stat;
+        double send_time;
+
+        if ( m_batch ){}
+        else
+        {
+            if ( m_pack_head >= m_pack_size )
+            {
+                PBVR_TIMER_STA( 60 );
+                MPI_Recv( &send_time, 1, MPI_DOUBLE_PRECISION, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &stat );
+                PBVR_TIMER_END( 60 );
+
+                double recv_time = GetTime();
+                if ( ( recv_time - send_time ) > 0.0 ) m_jd->setLatency( recv_time - send_time );
+                else                              m_jd->setLatency( 0.0 );
+
+                const int src = stat.MPI_SOURCE;
+                if ( wid ) *wid = src - 1;
+
+                PBVR_TIMER_STA( 62 );
+                MPI_Recv( &m_pack_size, sizeof( size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
+                PBVR_TIMER_END( 62 );
+                PBVR_TIMER_STA( 63 );
+                MPI_Recv( &m_nvertices_list_size, sizeof( size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
+                PBVR_TIMER_END( 63 );
+                PBVR_TIMER_STA( 64 );
+                m_nvertices_list.assign( m_nvertices_list_size, 0 );
+                PBVR_TIMER_END( 64 );
+                PBVR_TIMER_STA( 65 );
+                MPI_Recv( &m_nvertices_list[0]  , sizeof( size_t )*m_nvertices_list_size, MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
+                PBVR_TIMER_END( 65 );
+                PBVR_TIMER_STA( 66 );
+
+                float         axis_array  [m_pack_size];
+                float         values_array[m_pack_size];
+                int           mask_array  [m_pack_size];
+//                m_pack_coords  = ( float* )realloc( m_pack_coords , sizeof( float ) * m_pack_size );
+//                m_pack_colors  = ( unsigned char* )realloc( m_pack_colors , sizeof( unsigned char ) * m_pack_size );
+//                m_pack_directions = ( float* )realloc( m_pack_directions, sizeof( float ) * m_pack_size );
+                PBVR_TIMER_END( 66 );
+                PBVR_TIMER_STA( 67 );
+                MPI_Recv( axis_array   , m_pack_size, MPI_FLOAT, src, 1, MPI_COMM_WORLD, &stat );
+                MPI_Recv( values_array , m_pack_size, MPI_FLOAT, src, 1, MPI_COMM_WORLD, &stat );
+                MPI_Recv( mask_array  , m_pack_size, MPI_INT  , src, 1, MPI_COMM_WORLD, &stat );
+                PBVR_TIMER_END( 67 );
+                m_pack_count = 0;
+                m_pack_head  = 0;
+
+                // Recive Validation
+                bool sub_invalid;
+                MPI_Recv( &sub_invalid, sizeof( bool ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
+                *invalid |= sub_invalid;
+               
+                   //集約処理 
+                for (int i = 0 ; i < m_pack_size; ++i)
+                {
+                    axis[i] = axis_array[i];
+                    if (mask_array[i] == 1) 
+                    {
+                        mask[i] = mask_array[i];
+                        values[i] = values_array[i];
+                    }
+                }
+
+
+          }
+
+            for (int i = 0 ; i < m_pack_size; ++i)
+            {
+                std::cout << " mask[i] = " << mask[i] << std::endl;  
+                std::cout << " values[i] = " << values[i] << std::endl;  
+            }
+
+            size_t nvertices = axis.size();
+            size_t nmemb = nvertices;
+            m_pack_head += nmemb;
+            m_pack_count++;
+
+      }
+
+  }
+  else
+  {
+      const size_t nvertices = axis.size();
+      const size_t nmemb = nvertices;
+
+      if ( !m_batch )
+      {
+//            float*         axis     = axis.pointer();
+//            float*         values   = values.pointer();
+//            int*           mask     = mask.pointer();
+
+            //add 処理（plot over line にはいらない）
+            m_nvertices_list.push_back( nvertices );
+            m_pack_size = nmemb;
+//            float*         tmp_axis;
+//            float*         tmp_values;
+//            int*           tmp_mask;
+//            tmp_coords  = ( float* )realloc( m_pack_coords , sizeof( float ) * m_pack_size );
+//            tmp_colors  = ( * )realloc( m_pack_colors , sizeof( unsigned char ) * m_pack_size );
+//            tmp_directions = ( float* )realloc( m_pack_directions, sizeof( float ) * m_pack_size );
+//            m_pack_coords  = tmp_coords;
+//            m_pack_colors  = tmp_colors;
+//            m_pack_directions = tmp_directions;
+//            memcpy( &m_pack_coords[m_pack_size - nmemb], coords, sizeof( float )*nmemb );
+//            memcpy( &m_pack_colors[m_pack_size - nmemb], colors, sizeof( unsigned char )*nmemb );
+//            memcpy( &m_pack_directions[m_pack_size - nmemb], directions, sizeof( float )*nmemb );
+      }
+
+      if ( m_jd->getCollectSendState() )
+      {
+            double send_time = GetTime();
+            size_t nvertices_list_size = m_nvertices_list.size();
+            PBVR_TIMER_STA( 451 );
+            MPI_Send( &send_time, 1, MPI_DOUBLE_PRECISION, 0, 1, MPI_COMM_WORLD );
+            PBVR_TIMER_END( 451 );
+            if ( !m_batch )
+            {
+                PBVR_TIMER_STA( 452 );
+                MPI_Send( &m_pack_size, sizeof( size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
+                PBVR_TIMER_END( 452 );
+                PBVR_TIMER_STA( 453 );
+                MPI_Send( &nvertices_list_size, sizeof( size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
+                PBVR_TIMER_END( 453 );
+                PBVR_TIMER_STA( 454 );
+                MPI_Send( &m_nvertices_list[0], sizeof( size_t )*nvertices_list_size, MPI_BYTE, 0, 1, MPI_COMM_WORLD );
+                PBVR_TIMER_END( 454 );
+                PBVR_TIMER_STA( 456 );
+                MPI_Send( axis.data()  , m_pack_size, MPI_FLOAT, 0, 1, MPI_COMM_WORLD );
+                MPI_Send( values.data(), m_pack_size, MPI_FLOAT, 0, 1, MPI_COMM_WORLD );
+                MPI_Send( mask.data()  , m_pack_size, MPI_INT, 0, 1, MPI_COMM_WORLD );
+                PBVR_TIMER_END( 456 );
+                m_nvertices_list.clear();
+                m_pack_size = 0;
+
+                // Send Validation
+                MPI_Send( invalid, sizeof( bool ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
+            }
+        }
+    }
+}
+
 void TestJobCollector()
 {
 }

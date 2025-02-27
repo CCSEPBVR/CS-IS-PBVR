@@ -5,6 +5,7 @@
 #include "PointObject.h"
 #include "VariableRange.h"
 #include "KVSMLObjectGlyph.h"
+#include <vector>
 
 class JobCollector
 {
@@ -20,6 +21,10 @@ private:
     float*         m_pack_directions;
     float*         m_pack_sizes;
 
+    float*         m_pack_axis;
+    float*         m_pack_values;
+    int*           m_pack_mask;
+
     size_t              m_nvertices_list_size;
     std::vector<size_t> m_nvertices_list;
 
@@ -32,6 +37,7 @@ public:
 
     void jobCollect( pbvr::PointObject* object, VariableRange* vr, bool* invalid, int* wid = NULL );
     void jobCollect_glyph( kvs::KVSMLObjectGlyph* object, bool* invalid, int* wid = NULL );
+    void jobCollect_pol( std::vector<float>& axis, std::vector<int>& mask, std::vector<float>& values, bool* invalid, int* wid = NULL );
     void setBatch( const bool stat )
     {
         m_batch = stat;
