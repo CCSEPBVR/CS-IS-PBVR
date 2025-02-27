@@ -96,6 +96,8 @@ protected:
 private:
    void  PointSampling( );
    void  PointSampling( int stride);
+   void  PointSampling_struct(const pbvr::StructuredVolumeObject* object );
+   void  PointSampling_unstruct( );
    void  DistributionSampling(int number_of_sampling_point ,int seed, const pbvr::VolumeObjectBase::CellType& celltype);
    void  DistributionSampling_struct(const pbvr::StructuredVolumeObject* object);
    void  DistributionSampling_unstruct(const pbvr::VolumeObjectBase::CellType& celltype);

@@ -15,7 +15,7 @@ GlyphGenerator::GlyphGenerator(Type** values,
     { 
         if( m_distribution_modes == jpv::GlyphMode:: AllPoints || m_distribution_modes == jpv::GlyphMode:: EveryNthPoints )
         {
-            this->PointSampling();
+            this->PointSampling_unstruct();
         }
         else if(m_distribution_modes == jpv::GlyphMode:: UniformDistribution)
         {
@@ -39,12 +39,11 @@ GlyphGenerator::GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes
     { 
         if( m_distribution_modes == jpv::GlyphMode:: AllPoints || m_distribution_modes == jpv::GlyphMode:: EveryNthPoints )
         {
-            this->PointSampling();
+            this->PointSampling_unstruct();
         }
         else if(m_distribution_modes == jpv::GlyphMode:: UniformDistribution)
         {
             this->DistributionSampling_unstruct( celltype );
-            //if(volumetype == pbvr::VolumeObjectBase::Structured) this->DistributionSampling_struct();
         }
     }
 }
@@ -79,50 +78,7 @@ GlyphGenerator::GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes
 
             m_values = values;
 
-            const kvs::Vector3ui resolution( object.resolution() );
-            const int nx = resolution.x();
-            const int ny = resolution.y();
-            const int nz = resolution.z();
-            const int nxy = nx * ny;
-            const int nx_1 = nx-1;
-            const int ny_1 = ny-1;
-            const int nz_1 = nz-1;
-            const int nxy_1 = nx_1 * ny_1;
-
-            m_ncells = nxy_1*nz_1;
-
-            const kvs::Vector3f min_vec = object.minObjectCoord(); 
-            const kvs::Vector3f max_vec = object.maxObjectCoord(); 
-            const kvs::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ nx_1,
-                    (max_vec.y() - min_vec.y() )/ ny_1,
-                    (max_vec.z() - min_vec.z() )/ nz_1) ;
-
-            //        coordinates 
-            std::vector<float> coordinates; 
-            kvs::ValueArray<float> coords(3*nnodes);
-
-            //#pragma omp for
-            for ( kvs::UInt32 z = 0; z < nz; ++z )
-            {
-                for ( kvs::UInt32 y = 0; y < ny; ++y )
-                {
-                    for ( kvs::UInt32 x = 0; x < nx; ++x )
-                    {
-                        const int index = x + y*nx + z*nx*ny;
-                        const float x_g = ((float)x * cell_length.x())+min_vec.x();
-                        const float y_g = ((float)y * cell_length.y())+min_vec.y();
-                        const float z_g = ((float)z * cell_length.z())+min_vec.z();
-                        coords[3*index + 0] = x_g ;
-                        coords[3*index + 1] = y_g ;
-                        coords[3*index + 2] = z_g ;
-                    }
-                }
-            }
-
-            coordinates.assign( coords.begin(),coords.end()); 
-            m_coords = coordinates.data();
-
-            this->PointSampling();
+            this->PointSampling_struct(& object);
             
             for (int i = 0; i < m_nvariable; i++)
             {
@@ -379,8 +335,7 @@ bool GlyphGenerator::SetGlyphParameter( )
 }
 #endif
 
-//void GlyphGenerator::PointSampling( glyph_parameters &glyphParameter)
-void GlyphGenerator::PointSampling( )
+void GlyphGenerator::PointSampling_unstruct( )
 {
     const int stride = m_stride;
     int nPoints = m_ncoords/stride ;
@@ -395,6 +350,7 @@ void GlyphGenerator::PointSampling( )
     m_glyph_sizes.resize(nPoints);
     m_glyph_colors_data.resize( nPoints );
     m_glyph_colors.resize( nPoints * 3); 
+
 
     // size 
    std::vector<int> vector_var = m_direction_variables;
@@ -416,21 +372,6 @@ void GlyphGenerator::PointSampling( )
    {
        std::fill(m_glyph_sizes.begin(), m_glyph_sizes.end() ,1);
    }
-//   else if (m_size_sampling_method == jpv::DataDefines::SingleVariable) 
-//   {
-//       int glyph_count =0;
-//       //float size_min = m_size_min[m_size_variables[0]] < 0 ? 0 : m_size_min[m_size_variables[0]];
-//       //float size_max = m_size_max[m_size_variables[0]] < 0 ? 0 : m_size_max[m_size_variables[0]];
-//
-//       for (int i = 0 ; i < m_ncoords; i+= stride)
-//       {
-//           float ss = ( kvs::Math::Abs(m_values[m_size_variables[0]][ i ]) - m_size_min[m_size_variables[0]])/( m_size_max[m_size_variables[0]] - m_size_min[m_size_variables[0]] );
-//           //float ss = kvs::Math::Abs(m_values[m_size_variables[0]][ i ]) /( m_size_max[m_size_variables[0]] );
-//           m_glyph_sizes[ glyph_count]       = ss;
-//           //.m_glyph_sizes[ glyph_count]       = kvs::Math::Abs(m_values[m_size_variables[0]][ i ]);
-//           glyph_count++;
-//       }
-//   }
    else if (  m_size_sampling_method == jpv::DataDefines::VariableArray || m_size_sampling_method == jpv::DataDefines::SingleVariable ) 
    {
        std::vector<float> tmp_size(nPoints);
@@ -447,19 +388,19 @@ void GlyphGenerator::PointSampling( )
            glyph_count++;
        }
 
-        int n_size_data=m_glyph_sizes.size();
+//        int n_size_data=m_glyph_sizes.size();
         float max=FLT_MIN;
         float min=FLT_MAX;
-        float tmp_max=FLT_MIN;
-        float tmp_min=FLT_MAX;
-        for(int k = 0; k< n_size_data; k++)
-        {
-            max = kvs::Math::Max(m_glyph_sizes[k], max ); 
-            min = kvs::Math::Min(m_glyph_sizes[k], min ); 
-        }
-
-        tmp_max = max;
-        tmp_min = min;
+//        float tmp_max=FLT_MIN;
+//        float tmp_min=FLT_MAX;
+//        for(int k = 0; k< n_size_data; k++)
+//        {
+//            max = kvs::Math::Max(m_glyph_sizes[k], max ); 
+//            min = kvs::Math::Min(m_glyph_sizes[k], min ); 
+//        }
+//
+//        tmp_max = max;
+//        tmp_min = min;
 
 #if 0 //ISPBVR
 #ifndef CPU_VER
@@ -480,8 +421,8 @@ void GlyphGenerator::PointSampling( )
             factor = 1;
         }
 
-        m_size_min = tmp_min;
-        m_size_max = tmp_max;
+//        m_size_min = tmp_min;
+//        m_size_max = tmp_max;
        for (int i = 0; i < nPoints; i++)
        {
            m_glyph_sizes[ i] = (m_glyph_sizes[ i ] - min )*factor;
@@ -517,14 +458,14 @@ void GlyphGenerator::PointSampling( )
            glyph_count++;
        }
 
-       int n_color_data=m_glyph_colors_data.size();
-       float max=FLT_MIN;
-       float min=FLT_MAX;
-       for(int k = 0; k< n_color_data; k++)
-       {
-           max = kvs::Math::Max(m_glyph_colors_data[k], max ); 
-           min = kvs::Math::Min(m_glyph_colors_data[k], min ); 
-       }
+//       int n_color_data=m_glyph_colors_data.size();
+//       float max=FLT_MIN;
+//       float min=FLT_MAX;
+//       for(int k = 0; k< n_color_data; k++)
+//       {
+//           max = kvs::Math::Max(m_glyph_colors_data[k], max ); 
+//           min = kvs::Math::Min(m_glyph_colors_data[k], min ); 
+//       }
 
 #if 0 // IS
 #ifndef CPU_VER
@@ -536,8 +477,222 @@ void GlyphGenerator::PointSampling( )
        m_color_map.setRange(m_color_min, m_color_max);
 #endif
 
-        m_color_min = min;
-        m_color_max = max;
+//        m_color_min = min;
+//        m_color_max = max;
+   }
+
+    for (int ii=0;ii < nPoints; ii++)
+    {
+        kvs::RGBColor colors; 
+        colors = m_color_map.at(m_glyph_colors_data[ ii ]);
+        m_glyph_colors[3*ii    ] = colors.r() ;
+        m_glyph_colors[3*ii +1 ] = colors.g() ;
+        m_glyph_colors[3*ii +2 ] = colors.b() ;
+    }
+//    this -> show();
+}
+
+
+void GlyphGenerator::PointSampling_struct(const pbvr::StructuredVolumeObject* object )
+{
+    const int stride = m_stride;
+    int nPoints = m_ncoords/stride ;
+    m_glyph_coords.resize(nPoints * 3);
+    m_glyph_vectors.resize(nPoints * 3);
+    m_glyph_sizes.resize(nPoints);
+    m_glyph_colors_data.resize( nPoints );
+    m_glyph_colors.resize( nPoints * 3); 
+
+    const kvs::Vector3ui resolution( object->resolution() );
+    const int nx = resolution.x();
+    const int ny = resolution.y();
+    const int nz = resolution.z();
+    const int nxy = nx * ny;
+    const int nx_1 = nx-1;
+    const int ny_1 = ny-1;
+    const int nz_1 = nz-1;
+    const int nxy_1 = nx_1 * ny_1;
+
+    m_ncells = nxy_1*nz_1;
+
+    const kvs::Vector3f min_vec = object->minObjectCoord(); 
+    const kvs::Vector3f max_vec = object->maxObjectCoord(); 
+    const kvs::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ nx_1,
+            (max_vec.y() - min_vec.y() )/ ny_1,
+            (max_vec.z() - min_vec.z() )/ nz_1) ;
+
+    // coord & vector 
+   std::vector<int> vector_var = m_direction_variables;
+   int glyph_count =0;
+    //#pragma omp for
+    for ( kvs::UInt32 z = 0; z < nz; ++z )
+    {
+        for ( kvs::UInt32 y = 0; y < ny; ++y )
+        {
+            for ( kvs::UInt32 x = 0; x < nx; ++x )
+            {
+                const int index = x + y*nx + z*nx*ny;
+                if (index % stride == 0)
+                {
+                    const float x_g = ((float)x * cell_length.x())+min_vec.x();
+                    const float y_g = ((float)y * cell_length.y())+min_vec.y();
+                    const float z_g = ((float)z * cell_length.z())+min_vec.z();
+
+                    m_glyph_coords[3*glyph_count    ] = x_g;
+                    m_glyph_coords[3*glyph_count +1 ] = y_g;
+                    m_glyph_coords[3*glyph_count +2 ] = z_g;
+                    m_glyph_vectors[3*glyph_count    ] = m_values[vector_var[0]][index ];
+                    m_glyph_vectors[3*glyph_count +1 ] = m_values[vector_var[1]][index ];
+                    m_glyph_vectors[3*glyph_count +2 ] = m_values[vector_var[2]][index ];
+                    glyph_count++;
+                }
+            }
+        }
+    }
+
+   //size
+   if (m_size_sampling_method == jpv::DataDefines::Constant)
+   {
+       std::fill(m_glyph_sizes.begin(), m_glyph_sizes.end() ,1);
+   }
+   else if (  m_size_sampling_method == jpv::DataDefines::VariableArray || m_size_sampling_method == jpv::DataDefines::SingleVariable ) 
+   {
+       std::vector<float> tmp_size(nPoints);
+       std::vector<int> size_var = m_size_variables;
+       int n_size_variables=m_size_variables.size();
+       int glyph_count =0;
+       for ( kvs::UInt32 z = 0; z < nz; ++z )
+       {
+           for ( kvs::UInt32 y = 0; y < ny; ++y )
+           {
+               for ( kvs::UInt32 x = 0; x < nx; ++x )
+               {
+                   const int index = x + y*nx + z*nx*ny;
+                   if (index % stride == 0)
+                   {
+                       for(int k = 0 ; k< n_size_variables ; k++)
+                       {
+                           tmp_size[ glyph_count ] += kvs::Math::Square( m_values[ size_var[k] ][index] ); 
+                       }
+                       m_glyph_sizes[ glyph_count ] = std::sqrt(tmp_size[ glyph_count ]) ;
+                       glyph_count++;
+                   }
+               }
+           }
+       }
+
+        float max=FLT_MIN;
+        float min=FLT_MAX;
+//        int n_size_data=m_glyph_sizes.size();
+//        float tmp_max=FLT_MIN;
+//        float tmp_min=FLT_MAX;
+//        for(int k = 0; k< n_size_data; k++)
+//        {
+//            max = kvs::Math::Max(m_glyph_sizes[k], max ); 
+//            min = kvs::Math::Min(m_glyph_sizes[k], min ); 
+//        }
+//        tmp_max = max;
+//        tmp_min = min;
+
+#if 0 //ISPBVR
+#ifndef CPU_VER
+        MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+#endif
+#else
+        max = m_size_max;
+        min = m_size_min;
+#endif
+        float factor =0;
+        if (max - min > 1e-6 ) 
+        {
+            factor = 1/ (max - min) ;
+        }
+        else  
+        {
+            factor = 1;
+        }
+
+//        m_size_min = tmp_min;
+//        m_size_max = tmp_max;
+       for (int i = 0; i < nPoints; i++)
+       {
+           m_glyph_sizes[ i] = (m_glyph_sizes[ i ] - min )*factor;
+           m_glyph_sizes[ i] = kvs::Math::Clamp<float>( m_glyph_sizes[ i], 0.0, 1.0 );
+       }
+
+   }
+
+   //color 
+   float glyph_color_data_max = FLT_MIN;
+   float glyph_color_data_min = FLT_MAX;
+   if (m_color_sampling_method == jpv::DataDefines::Constant)
+   {
+       std::fill(m_glyph_colors.begin(), m_glyph_colors.begin(), 0);
+       m_color_map.setRange(0, 1);
+       m_color_min = 0;
+       m_color_max = 1;
+   }
+   else if (m_color_sampling_method == jpv::DataDefines::VariableArray || m_color_sampling_method == jpv::DataDefines::SingleVariable ) 
+   {
+       std::vector<int> color_var = m_color_data_variables;
+       int n_color_variables=color_var.size();
+
+       int glyph_count =0;
+       std::vector<float> tmp_size(nPoints);
+       for ( kvs::UInt32 z = 0; z < nz; ++z )
+       {
+           for ( kvs::UInt32 y = 0; y < ny; ++y )
+           {
+               for ( kvs::UInt32 x = 0; x < nx; ++x )
+               {
+                   const int index = x + y*nx + z*nx*ny;
+                   if (index % stride == 0)
+                   {
+                       for(int k = 0 ; k< n_color_variables ; k++)
+                       {
+                           tmp_size[ glyph_count ] += kvs::Math::Square(m_values[color_var[k]][ index ]) ;
+                       }
+                       m_glyph_colors_data[ glyph_count ] = std::sqrt(tmp_size[ glyph_count ]);
+                       glyph_count++;
+                   }
+               }
+           }
+       }
+
+//       int glyph_count =0;
+//       std::vector<float> tmp_size(nPoints);
+//       for (int i = 0; i < m_ncoords; i+= stride)
+//       {
+//           for(int k = 0 ; k< n_color_variables ; k++)
+//           {
+//            tmp_size[ glyph_count ] += kvs::Math::Square(m_values[color_var[k]][ i ]) ;
+//           }
+//           m_glyph_colors_data[ glyph_count ] = std::sqrt(tmp_size[ glyph_count ]);
+//           glyph_count++;
+//       }
+
+//       int n_color_data=m_glyph_colors_data.size();
+//       float max=FLT_MIN;
+//       float min=FLT_MAX;
+//       for(int k = 0; k< n_color_data; k++)
+//       {
+//           max = kvs::Math::Max(m_glyph_colors_data[k], max ); 
+//           min = kvs::Math::Min(m_glyph_colors_data[k], min ); 
+//       }
+
+#if 0 // IS
+#ifndef CPU_VER
+       MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+       MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+#endif
+       m_color_map.setRange(min, max);
+#else 
+       m_color_map.setRange(m_color_min, m_color_max);
+#endif
+
+//        m_color_min = min;
+//        m_color_max = max;
    }
 
     for (int ii=0;ii < nPoints; ii++)
