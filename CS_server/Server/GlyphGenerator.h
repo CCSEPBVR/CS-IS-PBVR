@@ -7,19 +7,16 @@
 #include "float.h"
 #include "UnstructuredVolumeObject.h"
 #include "CellBase.h"
-//#include "CellBase_hex.h"
-#include "TrilinearInterpolator.h"
+#include <kvs/TrilinearInterpolator>
 #include "TetrahedralCell.h"
 #include "QuadraticTetrahedralCell.h"
 #include "HexahedralCell.h"
 #include "QuadraticHexahedralCell.h"
 #include "PrismaticCell.h"
 #include "PyramidalCell.h"
-//#include "../kvs_wrapper.h"
 #include <kvs/PointObject>
 #include <kvs/GlyphObject>
 #include <kvs/KVSMLObjectPoint>
-//#include "particle_write_thread.h"
 
 #include "KVSMLObjectGlyph.h"
 #include "GlyphProperty.h"
@@ -100,7 +97,7 @@ private:
    void  PointSampling( );
    void  PointSampling( int stride);
    void  DistributionSampling(int number_of_sampling_point ,int seed, const pbvr::VolumeObjectBase::CellType& celltype);
-   void  DistributionSampling_struct();
+   void  DistributionSampling_struct(const pbvr::StructuredVolumeObject* object);
    void  DistributionSampling_unstruct(const pbvr::VolumeObjectBase::CellType& celltype);
 
    const size_t calculate_number_of_particles(
@@ -123,6 +120,7 @@ public:
            float* coordinates, int ncoords,
            unsigned int* connections, int ncells,
            const  pbvr::VolumeObjectBase::CellType& celltype ); // CSPBVR
+    GlyphGenerator::GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide,const pbvr::StructuredVolumeObject& object ); 
     ~GlyphGenerator()
     {
     }

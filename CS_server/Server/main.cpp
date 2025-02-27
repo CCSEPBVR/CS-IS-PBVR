@@ -1804,7 +1804,6 @@ int main( int argc, char** argv )
                         param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                              + ifpx.baseName() + suffix.str() + ".kvsml";
                         int timeStep = 1;
-                            std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                         try
                         {
                             if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
@@ -2922,7 +2921,6 @@ int main( int argc, char** argv )
 
                     VariableRange range = Calculate_minmax_glyph( param, fil, clntMes); 
                     
-                    std::cout << "clntMes.m_glyph_size_max = " << clntMes.m_glyph_size_max << std::endl;
                      param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
                     for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
                     {
@@ -3020,7 +3018,7 @@ int main( int argc, char** argv )
                                 }
                                 else     // filetype: kvsml
                                 {
-                                    glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, timeStep,servMes.m_number_volume_divide , tmp_obj, st );
+                                    glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, servMes.m_number_volume_divide, timeStep , tmp_obj, st );
                                 }
 
 //                                size_t nmemb = tmp_obj->sizes().size();

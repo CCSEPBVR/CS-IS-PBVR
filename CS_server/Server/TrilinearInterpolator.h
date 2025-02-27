@@ -11,8 +11,8 @@
  *  $Id: TrilinearInterpolator.h 653 2010-10-29 14:17:13Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__TRILINEAR_INTERPOLATOR_H_INCLUDE
-#define KVS__TRILINEAR_INTERPOLATOR_H_INCLUDE
+#ifndef PBVR__TRILINEAR_INTERPOLATOR_H_INCLUDE
+#define PBVR__TRILINEAR_INTERPOLATOR_H_INCLUDE
 
 #include <kvs/ClassName>
 //#include <kvs/StructuredVolumeObject>
@@ -43,8 +43,8 @@ class TrilinearInterpolator
 private:
 
     kvs::Vector3ui m_grid_index; ///< grid index
-//    kvs::UInt32    m_index[8];   ///< neighbouring grid index
-//    kvs::Real32    m_weight[8];  ///< weight for the neighbouring grid index
+    kvs::UInt32    m_index_woSIMD[8];   ///< neighbouring grid index
+    kvs::Real32    m_weight_woSIMD[8];  ///< weight for the neighbouring grid index
     kvs::Real32    m_scalars[8]; 
     float*          m_data;
 
@@ -62,6 +62,7 @@ private:
 
     const float*         m_reference_volume;
 //    const pbvr::StructuredVolumeObject& m_reference_volume;
+//    const pbvr::StructuredVolumeObject& m_reference_object;
     const kvs::Vector3ui m_resolution; ///< resolution 3D
     const int m_line_size;
     const int m_slice_size;
@@ -85,10 +86,17 @@ public:
 
     void attachPoint( const float* p_x, const float* p_y, const float* p_z );
 
+    void attachPoint_woSIMD( const kvs::Vector3f& point );
+
     //const kvs::UInt32* indices( void ) const;
 
     //template <typename T>
     void scalar( float* values ) const;
+
+    template <typename T>
+    const kvs::Real32 scalar_woSIMD( void ) const;
+    
+
 
     //template <typename T>
     void gradient( float* g_x, float* g_y, float* g_z ) const;
@@ -113,6 +121,13 @@ private:
 //    }
 //
 //}
+
+//inline TrilinearInterpolator::TrilinearInterpolator( const pbvr::StructuredVolumeObject* volume )
+//    : m_grid_index( 0, 0, 0 )
+//    , m_reference_object( volume )
+//{
+//}
+
 
 inline TrilinearInterpolator::TrilinearInterpolator( const float* volume, const kvs::Vector3ui resolution )
     : m_reference_volume( volume )
@@ -150,6 +165,64 @@ inline const int TrilinearInterpolator::id( const int i, const int j, const int 
 
 //    return i + j*m_line_size + k*m_slice_size;
 }
+
+inline void TrilinearInterpolator::attachPoint_woSIMD( const kvs::Vector3f& point )
+{
+    //const kvs::Vector3ui resolution = m_reference_volume->resolution();
+    const kvs::Vector3ui resolution = m_resolution;
+    KVS_ASSERT( 0.0f <= point.x() && point.x() <= resolution.x() - 1.0f );
+    KVS_ASSERT( 0.0f <= point.y() && point.y() <= resolution.y() - 1.0f );
+    KVS_ASSERT( 0.0f <= point.z() && point.z() <= resolution.z() - 1.0f );
+
+    // Temporary index.
+    const size_t ti = static_cast<size_t>( point.x() );
+    const size_t tj = static_cast<size_t>( point.y() );
+    const size_t tk = static_cast<size_t>( point.z() );
+
+    // Addjustment index for boundary.
+    const size_t i = ( ti >= resolution.x() - 1 ) ? resolution.x() - 2 : ti;
+    const size_t j = ( tj >= resolution.y() - 1 ) ? resolution.y() - 2 : tj;
+    const size_t k = ( tk >= resolution.z() - 1 ) ? resolution.z() - 2 : tk;
+
+    //const size_t line_size  = m_reference_volume->nnodesPerLine();
+    //const size_t slice_size = m_reference_volume->nnodesPerSlice();
+    const size_t line_size  = m_line_size ;
+    const size_t slice_size = m_slice_size;
+
+    // Calculate index.
+    m_grid_index.set( i, j, k );
+
+    m_index_woSIMD[0] = i + j * line_size + k * slice_size;
+    m_index_woSIMD[1] = m_index_woSIMD[0] + 1;
+    m_index_woSIMD[2] = m_index_woSIMD[1] + line_size;
+    m_index_woSIMD[3] = m_index_woSIMD[0] + line_size;
+    m_index_woSIMD[4] = m_index_woSIMD[0] + slice_size;
+    m_index_woSIMD[5] = m_index_woSIMD[1] + slice_size;
+    m_index_woSIMD[6] = m_index_woSIMD[2] + slice_size;
+    m_index_woSIMD[7] = m_index_woSIMD[3] + slice_size;
+
+    // Calculate local coordinate.
+    const float x = point.x() - i;
+    const float y = point.y() - j;
+    const float z = point.z() - k;
+
+    const float xy = x * y;
+    const float yz = y * z;
+    const float zx = z * x;
+
+    const float xyz = xy * z;
+
+    m_weight_woSIMD[0] = 1.0f - x - y - z + xy + yz + zx - xyz;
+    m_weight_woSIMD[1] = x - xy - zx + xyz;
+    m_weight_woSIMD[2] = xy - xyz;
+    m_weight_woSIMD[3] = y - xy - yz + xyz;
+    m_weight_woSIMD[4] = z - zx - yz + xyz;
+    m_weight_woSIMD[5] = zx - xyz;
+    m_weight_woSIMD[6] = xyz;
+    m_weight_woSIMD[7] = yz - xyz;
+}
+
+
 
 //inline void TrilinearInterpolator::attachPoint( const kvs::Vector3f& point )
 #pragma ivdep
@@ -261,6 +334,26 @@ inline void TrilinearInterpolator::scalar( float* values ) const
                 data[ m_index[7][I] ] * m_weight[7][I] );
     }
 }
+
+template <typename T>
+inline const float TrilinearInterpolator::scalar_woSIMD( void ) const
+{
+    //const T* const data = reinterpret_cast<const T*>( m_reference_object->values().pointer() );
+    const float* const data = m_reference_volume;
+
+    return(
+        static_cast<float>(
+            data[ m_index_woSIMD[0] ] * m_weight_woSIMD[0] +
+            data[ m_index_woSIMD[1] ] * m_weight_woSIMD[1] +
+            data[ m_index_woSIMD[2] ] * m_weight_woSIMD[2] +
+            data[ m_index_woSIMD[3] ] * m_weight_woSIMD[3] +
+            data[ m_index_woSIMD[4] ] * m_weight_woSIMD[4] +
+            data[ m_index_woSIMD[5] ] * m_weight_woSIMD[5] +
+            data[ m_index_woSIMD[6] ] * m_weight_woSIMD[6] +
+            data[ m_index_woSIMD[7] ] * m_weight_woSIMD[7] ) );
+}
+
+
 
 #pragma ivdep
 inline void TrilinearInterpolator::gradient( float* g_x, float* g_y, float* g_z ) const
