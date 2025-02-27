@@ -1,9 +1,9 @@
 include ../../pbvr.conf
 include ../../arch/${PBVR_MACHINE}
 
-ifeq ($(VTK_PATH), true)
-include ../../VTK.path	
-endif
+#ifeq ($(VTK_PATH), true)
+#include ../../VTK.path	
+#endif
 
 #$(info [DEBUG] VTK_PATH = $(VTK_PATH))
 #$(info [DEBUG] VTK_INC_PATH = $(VTK_INC_PATH))
@@ -21,7 +21,7 @@ OBJS = Serializer.o \
        ParamInfo.o \
        VolumeObjectBase.o 
 
-ifdef VTK_INC_PATH	
+ifeq ($(VTK_PATH), true)
 OBJS +=	   VtkImport.o 
 endif
 
@@ -48,7 +48,7 @@ CXXFLAGS += -I${KVS_SOURCE_DIR}
 CXXFLAGS += -I${FUNCTION_PARSER_DIR}
 CXXFLAGS += -w -DNO_CLIENT
 
-ifdef VTK_INC_PATH
+ifeq ($(VTK_PATH), true)
 CXXFLAGS += -DVTK
 CXXFLAGS += -I${VTK_INC_PATH} -I./VTK -I./Importer -I./Filter
 CXXFLAGS += -L${VTK_LIB_PATH} -lvtkFiltersExtraction-9.2 -lvtkIOXML-9.2 -lvtkIOXMLParser-9.2 -lvtkexpat-9.2 -lvtkParallelCore-9.2 -lvtkIOLegacy-9.2 -lvtkIOCore-9.2 \

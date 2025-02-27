@@ -2,6 +2,7 @@
 #define PARTICLE_WRITE_THREAD_H
 
 #include <iostream>
+#include <fstream>
 #include <thread>
 #include <kvs/PointObject>
 #include <kvs/PointExporter>
