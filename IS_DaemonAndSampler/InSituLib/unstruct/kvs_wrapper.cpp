@@ -2108,7 +2108,7 @@ void GenerateParticles( int time_step,
         /////////////////////////////// CalculateOpacity(), CalculateColor() ///////////////////////////////////
         }// end of for cell
 //            std::cout << __FUNCTION__  << ": " << __LINE__ << std::endl;
-//        #pragma omp barrier
+        #pragma omp barrier
         #pragma omp critical
         {
             if( parameter_file_opened )

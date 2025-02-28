@@ -68,8 +68,16 @@ bool GlyphGenerator::SetGlyphParameter( )
     m_glyphFilePath = glyphFilePath;
 
     GlyphProperty glyph_property;
+    
+    
+    bool read_flag;
+    while( glyph_property.getString( "END_PARAMETER_FILE" ) != "SUCCESS" )
+    {
+        //param.LoadIN( filename );
+        read_flag = glyph_property.LoadIN(glyphParamPath) ;
+    }
 
-    bool read_flag = glyph_property.LoadIN(glyphParamPath) ;
+//    bool read_flag = glyph_property.LoadIN(glyphParamPath) ;
 
     bool glyph_flag;
     std::string              g_flag                = glyph_property.getString( "GLYPH_FLAG" );

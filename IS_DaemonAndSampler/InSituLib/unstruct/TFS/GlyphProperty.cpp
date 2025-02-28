@@ -39,6 +39,7 @@ bool GlyphProperty::LoadIN( const std::string& filename )
     name_list.push_back( "COLOR_VARIABLES" );
     name_list.push_back( "GLYPH_COLOR_MAX" );
     name_list.push_back( "GLYPH_COLOR_MIN" );
+    name_list.push_back( "END_PARAMETER_FILE" );
 
     for ( std::vector<std::string>::iterator i = name_list.begin(); i != name_list.end(); i++ )
     {
