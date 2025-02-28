@@ -122,7 +122,7 @@ public:
            float* coordinates, int ncoords,
            unsigned int* connections, int ncells,
            const  pbvr::VolumeObjectBase::CellType& celltype ); // CSPBVR
-    GlyphGenerator::GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide,const pbvr::StructuredVolumeObject& object ); 
+    GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide,const pbvr::StructuredVolumeObject& object ); 
     ~GlyphGenerator()
     {
     }
