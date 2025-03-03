@@ -939,8 +939,8 @@ const bool PlotOverLine::intersection_of_boundingbox(
 
             if( t1 > t2 ) std::swap( t1, t2 );
 
-            t_min = std::max( t_min, t1 );
-            t_max = std::min( t_max, t2 );
+            t_min = (std::max)( t_min, t1 );
+            t_max = (std::min)( t_max, t2 );
 
             if( t_min > t_max )
             {
@@ -1087,11 +1087,12 @@ void PlotOverLine::OutputLine( const int time_step)
     kvs::ValueArray<float> values_on_line( m_allcell_values_on_line  );
     kvs::ValueArray<float> x_axis( m_x_axis );
     kvs::ValueArray<bool>  mask ( m_allcell_mask   );
-
+#if 0
     static bool first_step = true;
     static MPI_Comm new_comm;
     static int count;
     static int num_nodes;
+#endif
 
     std::stringstream ss;
     //add by shimomura 20240614

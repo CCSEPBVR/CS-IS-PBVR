@@ -7,8 +7,11 @@
 #include <kvs/UnstructuredVolumeObject>
 #include <kvs/StructuredVolumeObject>
 #include "StructuredVolumeObject.h"
-
+#ifndef CPU_VER
 #include <mpi.h>
+#endif
+
+
 #include <iomanip>
 #include "PlotOverLineProperty.h"
 namespace kvs
@@ -76,8 +79,8 @@ public:
     // AND ( intersect )
     const Range intersect( const Range& other ) const
         {
-            const float new_lower = std::max( m_lower, other.lower() );
-            const float new_upper = std::min( m_upper, other.upper() );
+            const float new_lower = (std::max)( m_lower, other.lower() );
+            const float new_upper = (std::min)( m_upper, other.upper() );
 
             if( new_lower <= new_upper )
             {
@@ -95,8 +98,8 @@ public:
         {
             if( other.lower() <= m_upper && m_lower <= other.upper() )
             {
-                const float new_lower = std::min( m_lower, other.lower() );
-                const float new_upper = std::max( m_upper, other.upper() );
+                const float new_lower = (std::min)( m_lower, other.lower() ); // ( (std::min), (std::max)) はwindowsのビルド対応
+                const float new_upper = (std::max)( m_upper, other.upper() );
                 return Range( new_lower, new_upper );
             }
             else

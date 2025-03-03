@@ -1172,7 +1172,7 @@ void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObj
     std::cout << "m_number_of_sample_points = " << m_number_of_sample_points << std::endl;
 
 #pragma omp parallel for
-    for ( kvs::UInt32 z = 0; z < ncells.z(); ++z )
+    for ( kvs::Int32 z = 0; z < ncells.z(); ++z )
     {
         for ( kvs::UInt32 y = 0; y < ncells.y(); ++y )
         {

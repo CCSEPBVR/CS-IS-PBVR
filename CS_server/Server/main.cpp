@@ -3310,12 +3310,10 @@ int main( int argc, char** argv )
                             PBVR_TIMER_STA( 470 );
                         }
 
-                        std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                         param.m_sampling_step = CalculateSamplingStep( fil );
-                        std::cout << __FUNCTION__ << __LINE__ << std::endl; 
+
                         param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
 
-                        std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                         VariableRange vr;
                         pts.sendMessage( servMes );
 
@@ -3349,10 +3347,8 @@ int main( int argc, char** argv )
                                 PBVR_TIMER_STA( 471 );
                             }
 
-                            std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                             if (mpi_size == 1) 
                             {
-                            std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                             int xvl, fidx;
                             fidx = fil.getFileIndex( vl, &xvl );
                             FilterInformationFile& fi = fil.m_list[fidx];
