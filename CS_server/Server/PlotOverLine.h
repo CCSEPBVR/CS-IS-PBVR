@@ -5,6 +5,8 @@
 #include <kvs/Vector>
 #include <kvs/Math>
 #include <kvs/UnstructuredVolumeObject>
+#include <kvs/StructuredVolumeObject>
+#include "StructuredVolumeObject.h"
 
 #include <mpi.h>
 #include <iomanip>
@@ -128,8 +130,10 @@ private:
     kvs::ValueArray<float> m_allcell_values_on_line;
     //kvs::ValueArray<float> m_allcell_x_axis;
     kvs::ValueArray<bool>  m_allcell_mask;
+    
+//    const kvs::StructuredVolumeObject* m_structured_volume;
+    const pbvr::StructuredVolumeObject* m_structured_volume;
     const kvs::UnstructuredVolumeObject* m_volume;
-
     const POL::Polyhedron* m_polyhedron;
 
     // 生成判定フラグ
@@ -151,6 +155,11 @@ private:
 public:
     PlotOverLine( void );
 
+    //PlotOverLine( const kvs::StructuredVolumeObject* volume,
+    PlotOverLine( const pbvr::StructuredVolumeObject* volume,
+                            const size_t resolution,
+                            const kvs::Vec3 P0, const kvs::Vec3 P1 );
+
     PlotOverLine( const kvs::UnstructuredVolumeObject* volume,
                   const size_t resolution,
                   const kvs::Vec3 P0, const kvs::Vec3 P1 );
@@ -160,6 +169,12 @@ public:
                   const size_t resolution,
                   const kvs::Vec3 P0, const kvs::Vec3 P1 , const int plot_variable);
 
+    // CS用
+    PlotOverLine( const pbvr::StructuredVolumeObject* volume,
+                  const size_t resolution,
+                  const kvs::Vec3 P0, const kvs::Vec3 P1 , const int plot_variable);
+
+
 
     PlotOverLine( const POL::Polyhedron* volume,
                   const size_t resolution,
@@ -167,10 +182,13 @@ public:
 
     ~PlotOverLine();
 
+//    void setVolume( const kvs::StructuredVolumeObject* volume );
+    void setVolume( const pbvr::StructuredVolumeObject* volume );
     void setVolume( const kvs::UnstructuredVolumeObject* volume );
     void setVolume( const POL::Polyhedron* volume );
 
     void setResolution( const size_t resolution );
+    void extractPlotLineStructured( const kvs::Vec3 P0, const kvs::Vec3 P1 );
     void extractPlotLine( const kvs::UnstructuredVolumeObject* volume );
     void extractPlotLine( const kvs::Vec3 P0, const kvs::Vec3 P1 );
     void extractPlotLinePoly( const kvs::Vec3 P0, const kvs::Vec3 P1 );
@@ -194,6 +212,7 @@ public:
 protected:
     void calculate_x_axis( const kvs::Vec3 P0, const kvs::Vec3 P1 );
 
+    void for_structured_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 );
     void for_tetrahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 );
     void for_hexahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 );
     void for_pyramidal_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 );

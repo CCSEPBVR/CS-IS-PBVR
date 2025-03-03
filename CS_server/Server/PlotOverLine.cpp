@@ -5,6 +5,17 @@
 
 PlotOverLine::PlotOverLine( void ){}
 
+PlotOverLine::PlotOverLine( const pbvr::StructuredVolumeObject* volume,
+                            const size_t resolution,
+                            const kvs::Vec3 P0, const kvs::Vec3 P1 )
+{
+    this->setVolume( volume );
+
+    this->setResolution( resolution );
+
+    this->extractPlotLineStructured( P0, P1 );
+}
+
 PlotOverLine::PlotOverLine( const kvs::UnstructuredVolumeObject* volume,
                             const size_t resolution,
                             const kvs::Vec3 P0, const kvs::Vec3 P1 )
@@ -30,6 +41,20 @@ PlotOverLine::PlotOverLine( const kvs::UnstructuredVolumeObject* volume,
     this->extractPlotLine( P0, P1 );
 }
 
+// CS用コンストラクター
+PlotOverLine::PlotOverLine( const pbvr::StructuredVolumeObject* volume,
+                            const size_t resolution,
+                            const kvs::Vec3 P0, const kvs::Vec3 P1, const int plot_variable ):
+    m_plot_variable(plot_variable)
+{
+    
+    this->setVolume( volume );
+
+    this->setResolution( resolution );
+
+    this->extractPlotLineStructured( P0, P1 );
+}
+
 PlotOverLine::PlotOverLine( const POL::Polyhedron* volume,
                             const size_t resolution,
                             const kvs::Vec3 P0, const kvs::Vec3 P1 )
@@ -47,6 +72,13 @@ PlotOverLine::~PlotOverLine()
 //    m_x_axis.deallocate();
 //    m_mask.deallocate();
 }
+
+//void PlotOverLine::setVolume( const kvs::StructuredVolumeObject* volume )
+void PlotOverLine::setVolume( const pbvr::StructuredVolumeObject* volume )
+{
+    m_structured_volume = volume;
+}
+
 
 void PlotOverLine::setVolume( const kvs::UnstructuredVolumeObject* volume )
 {
@@ -75,6 +107,13 @@ void PlotOverLine::setResolution( const size_t resolution )
     m_allcell_mask.allocate(resolution);
     m_allcell_values_on_line.fill( 0x00 );
 
+}
+
+void PlotOverLine::extractPlotLineStructured( const kvs::Vec3 P0, const kvs::Vec3 P1 )
+{
+    this->calculate_x_axis( P0, P1 );
+
+    this->for_structured_mesh( P0, P1 );
 }
 
 bool PlotOverLine::SetPOLParameter( const int time_step )
@@ -233,6 +272,120 @@ void PlotOverLine::calculate_x_axis( const kvs::Vec3 P0, const kvs::Vec3 P1 )
         sampling_length += offset;
     }
 }
+
+void PlotOverLine::for_structured_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
+{
+    const size_t res_x = m_structured_volume->resolution().x();
+    const size_t res_y = m_structured_volume->resolution().y();
+    const size_t res_z = m_structured_volume->resolution().z();
+    const size_t nx = res_x-1;
+    const size_t ny = res_y-1;
+    const size_t nz = res_z-1;
+    const size_t ncoord = res_x*res_y*res_z;
+
+
+    auto index = [res_x, res_y]( size_t I, size_t J, size_t K ){ return I + J*res_x + K*res_x*res_y; };
+
+    const kvs::UInt32 face_id[24] = {
+        0, 1, 5, 4,
+        1, 2, 6, 5,
+        2, 3, 7, 6,
+        3, 0, 4, 7,
+        4, 5, 6, 7,
+        3, 2, 1, 0 };
+
+    for( size_t K = 0; K < nz; K++ )
+    {
+        for( size_t J = 0; J < ny; J++ )
+        {
+            for( size_t I = 0; I < nx; I++ )
+            {
+
+                kvs::Vec3 vertex[8];
+                vertex[0].set( I  , J+1, K+1 );
+                vertex[1].set( I  , J  , K+1 );
+                vertex[2].set( I+1, J  , K+1 );
+                vertex[3].set( I+1, J+1, K+1 );
+                vertex[4].set( I  , J+1, K   );
+                vertex[5].set( I  , J  , K   );
+                vertex[6].set( I+1, J  , K   );
+                vertex[7].set( I+1, J+1, K   );
+        
+
+                // Bounding Box
+                kvs::Vec3 MinCoord( vertex[5] );
+                kvs::Vec3 MaxCoord( vertex[3] );
+                if( this->intersection_of_boundingbox( MinCoord, MaxCoord, P0, P1 ) == false )
+                {
+                    continue;
+                }
+
+                kvs::Vec3 face_center_vertex[6];
+                size_t fid = 0;
+                for( int i=0; i<6; i++, fid+=4 )
+                {
+                    face_center_vertex[i] = (
+                        vertex[ face_id[fid  ] ] + vertex[ face_id[fid+1] ] +
+                        vertex[ face_id[fid+2] ] + vertex[ face_id[fid+3] ]  ) * 0.25;
+                }
+                kvs::Vec3 cell_center_vertex( I+0.5f, J+0.5f, K+0.5f );
+
+                kvs::Real32 scalar[8];
+//                scalar[0] = m_structured_volume->values()[ index( I  , J+1, K+1 ) ].to<kvs::Real32>();
+//                scalar[1] = m_structured_volume->values()[ index( I  , J  , K+1 ) ].to<kvs::Real32>();
+//                scalar[2] = m_structured_volume->values()[ index( I+1, J  , K+1 ) ].to<kvs::Real32>();
+//                scalar[3] = m_structured_volume->values()[ index( I+1, J+1, K+1 ) ].to<kvs::Real32>();
+//                scalar[4] = m_structured_volume->values()[ index( I  , J+1, K   ) ].to<kvs::Real32>();
+//                scalar[5] = m_structured_volume->values()[ index( I  , J  , K   ) ].to<kvs::Real32>();
+//                scalar[6] = m_structured_volume->values()[ index( I+1, J  , K   ) ].to<kvs::Real32>();
+//                scalar[7] = m_structured_volume->values()[ index( I+1, J+1, K   ) ].to<kvs::Real32>();   
+
+                scalar[0] = m_structured_volume->values().to<kvs::Real32>(index( I  , J+1, K+1 ) + ncoord*m_plot_variable);
+                scalar[1] = m_structured_volume->values().to<kvs::Real32>(index( I  , J  , K+1 ) + ncoord*m_plot_variable);
+                scalar[2] = m_structured_volume->values().to<kvs::Real32>(index( I+1, J  , K+1 ) + ncoord*m_plot_variable);
+                scalar[3] = m_structured_volume->values().to<kvs::Real32>(index( I+1, J+1, K+1 ) + ncoord*m_plot_variable);
+                scalar[4] = m_structured_volume->values().to<kvs::Real32>(index( I  , J+1, K   ) + ncoord*m_plot_variable);
+                scalar[5] = m_structured_volume->values().to<kvs::Real32>(index( I  , J  , K   ) + ncoord*m_plot_variable);
+                scalar[6] = m_structured_volume->values().to<kvs::Real32>(index( I+1, J  , K   ) + ncoord*m_plot_variable);
+                scalar[7] = m_structured_volume->values().to<kvs::Real32>(index( I+1, J+1, K   ) + ncoord*m_plot_variable);   
+
+                kvs::Real32 face_center_scalar[6];
+                fid = 0;
+                for( int i=0; i<6; i++, fid+=4 )
+                {
+                    face_center_scalar[i] = (
+                        scalar[ face_id[fid  ] ] + scalar[ face_id[fid+1] ] +
+                        scalar[ face_id[fid+2] ] + scalar[ face_id[fid+3] ]  ) * 0.25;
+                }
+
+                kvs::Real32 cell_center_scalar = ((scalar[0]+scalar[1]+scalar[2]+scalar[3]+
+                                                   scalar[4]+scalar[5]+scalar[6]+scalar[7] )*0.125 ); 
+
+                kvs::Vec3 vert[4];
+                kvs::Vec4 s;
+
+                for( int face=0; face<6; face++ )
+                {
+                    for( int i=0; i<4; i++ )
+                    {
+                        //Face  0, 1, 5, 4
+                        vert[0] = cell_center_vertex;
+                        vert[1] = face_center_vertex[ face ];
+                        vert[2] = vertex[ face_id[ face*4 + i ] ];
+                        vert[3] = vertex[ face_id[ face*4 + ((i+1) % 4) ]];
+
+                        s[0] = cell_center_scalar;
+                        s[1] = face_center_scalar[ face ];
+                        s[2] = scalar[ face_id[ face*4 + i ] ];
+                        s[3] = scalar[ face_id[ face*4 + ((i+1) % 4) ] ];
+
+                        this->sampling_in_tetrahedra( P0, P1, vert, s );
+                    }
+                }
+            }
+        }
+    }
+};
 
 void PlotOverLine::for_tetrahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
 {

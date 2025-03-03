@@ -36,8 +36,8 @@ void POLObjectGenerator::createFromFile( const Argument& param, const kvs::Camer
     if ( kvsview::FileChecker::ImportableStructuredVolume( param.m_input_data ))
     {
         std::cout << "Structured !" <<std::endl;
-//        volume = new pbvr::StructuredVolumeImporter( param.m_input_data ); 
-        kvsMessageError("structured data does not apply." );
+        volume = new pbvr::StructuredVolumeImporter( param.m_input_data ); 
+//        kvsMessageError("structured data does not apply." );
 
     } 
     else if ( kvsview::FileChecker::ImportableUnstructuredVolume( param.m_input_data))
@@ -63,74 +63,117 @@ void POLObjectGenerator::createFromFile( const Argument& param, const kvs::Camer
     std::cout << "min:" << volume->minObjectCoord() << ", max:" << volume->maxObjectCoord() << std::endl;
     std::cout << "min:" << volume->minExternalCoord() << ", max:" << volume->maxExternalCoord() << std::endl;
 
-    const pbvr::UnstructuredVolumeObject* uvo_p = static_cast<const pbvr::UnstructuredVolumeObject*>( volume );
-    kvs::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
-    kvs::Vec3 end_point( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
-    kvs::UnstructuredVolumeObject* vo_p = new kvs::UnstructuredVolumeObject();
-    switch(volume -> cellType())
-    {
-        case pbvr::VolumeObjectBase::Tetrahedra:
-            {
-                vo_p -> setCellType(kvs::VolumeObjectBase::Tetrahedra); 
-                break;
-            }
-        case pbvr::VolumeObjectBase::QuadraticTetrahedra:
-            {
-                vo_p -> setCellType(kvs::VolumeObjectBase::QuadraticTetrahedra); 
-                break;
-            }
-        case pbvr::VolumeObjectBase::Hexahedra:
-            {
-                vo_p -> setCellType(kvs::VolumeObjectBase::Hexahedra); 
-                break;
-            }
-        case pbvr::VolumeObjectBase::QuadraticHexahedra:
-            {
-                vo_p -> setCellType(kvs::VolumeObjectBase::QuadraticHexahedra); 
-                break;
-            }
-        case pbvr::VolumeObjectBase::Prism:
-            {
-                vo_p -> setCellType(kvs::VolumeObjectBase::Prism); 
-                break;
-            }
-        case pbvr::VolumeObjectBase::Pyramid:
-            {
-                vo_p -> setCellType(kvs::VolumeObjectBase::Pyramid); 
-                break;
-            }
-        default:
-            {
-                kvsMessageError( "Unsupported cell type." );
-                return;
-            }
-    }
+    pbvr::VolumeObjectBase::VolumeType voltype = volume->volumeType();
 
-    vo_p -> setNNodes( uvo_p->nnodes()); 
-    vo_p -> setNCells( uvo_p->ncells()); 
-    vo_p -> setCoords( uvo_p->coords()); 
-    vo_p -> setVeclen( uvo_p->veclen()); 
-    vo_p -> setValues( uvo_p->values()); 
-    vo_p -> setConnections( uvo_p->connections()); 
-
-    int plot_variable =  std::atoi(clntMes.m_plot_variable.substr(1).c_str()) -1;
-
-    try
+    if(voltype ==  pbvr::VolumeObjectBase::VolumeType::Unstructured)
     {
-        PlotOverLine plot_over_line(vo_p, clntMes.m_sampling_size, start_point, end_point, plot_variable);
-        
-        m_object->setValuesOnLine(plot_over_line.values()); 
-        m_object->setXAxis(plot_over_line.xAxis()); 
-        m_object->setMask(plot_over_line.mask()); 
-    }
-    catch ( const std::runtime_error& e )
-    {
+        const pbvr::UnstructuredVolumeObject* uvo_p = static_cast<const pbvr::UnstructuredVolumeObject*>( volume );
+        kvs::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
+        kvs::Vec3 end_point( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
+        kvs::UnstructuredVolumeObject* vo_p = new kvs::UnstructuredVolumeObject();
+        switch(volume -> cellType())
+        {
+            case pbvr::VolumeObjectBase::Tetrahedra:
+                {
+                    vo_p -> setCellType(kvs::VolumeObjectBase::Tetrahedra); 
+                    break;
+                }
+            case pbvr::VolumeObjectBase::QuadraticTetrahedra:
+                {
+                    vo_p -> setCellType(kvs::VolumeObjectBase::QuadraticTetrahedra); 
+                    break;
+                }
+            case pbvr::VolumeObjectBase::Hexahedra:
+                {
+                    vo_p -> setCellType(kvs::VolumeObjectBase::Hexahedra); 
+                    break;
+                }
+            case pbvr::VolumeObjectBase::QuadraticHexahedra:
+                {
+                    vo_p -> setCellType(kvs::VolumeObjectBase::QuadraticHexahedra); 
+                    break;
+                }
+            case pbvr::VolumeObjectBase::Prism:
+                {
+                    vo_p -> setCellType(kvs::VolumeObjectBase::Prism); 
+                    break;
+                }
+            case pbvr::VolumeObjectBase::Pyramid:
+                {
+                    vo_p -> setCellType(kvs::VolumeObjectBase::Pyramid); 
+                    break;
+                }
+            default:
+                {
+                    kvsMessageError( "Unsupported cell type." );
+                    return;
+                }
+        }
+
+        vo_p -> setNNodes( uvo_p->nnodes()); 
+        vo_p -> setNCells( uvo_p->ncells()); 
+        vo_p -> setCoords( uvo_p->coords()); 
+        vo_p -> setVeclen( uvo_p->veclen()); 
+        vo_p -> setValues( uvo_p->values()); 
+        vo_p -> setConnections( uvo_p->connections()); 
+
+        int plot_variable =  std::atoi(clntMes.m_plot_variable.substr(1).c_str()) -1;
+
+        try
+        {
+            PlotOverLine plot_over_line(vo_p, clntMes.m_sampling_size, start_point, end_point, plot_variable);
+
+            m_object->setValuesOnLine(plot_over_line.values()); 
+            m_object->setXAxis(plot_over_line.xAxis()); 
+            m_object->setMask(plot_over_line.mask()); 
+        }
+        catch ( const std::runtime_error& e )
+        {
 #ifdef _DEBUG		// debug by @hira
-        printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
+            printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
 #endif
-//        m_object = NULL;
-        delete volume;
-        throw e;
+            //        m_object = NULL;
+            delete volume;
+            throw e;
+        }
+        delete vo_p;
+    }
+    else if(voltype ==  pbvr::VolumeObjectBase::VolumeType::Structured)
+    {
+#if 1
+        const pbvr::StructuredVolumeObject* object = static_cast<const pbvr::StructuredVolumeObject*>( volume );
+        kvs::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
+        kvs::Vec3 end_point( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
+//        kvs::StructuredVolumeObject* vo_p = new kvs::StructuredVolumeObject();
+//        vo_p -> setNNodes( vo_p->nnodes()); 
+//        vo_p -> setNCells( vo_p->ncells()); 
+//        vo_p -> setCoords( vo_p->coords()); 
+//        vo_p -> setVeclen( vo_p->veclen()); 
+//        vo_p -> setResolution( vo_p->resolution()); 
+//        vo_p -> setGridType( vo_p->gridType()); 
+//        vo_p -> setValues( vo_p->values()); 
+//        vo_p -> setConnections( uvo_p->connections()); 
+
+        int plot_variable =  std::atoi(clntMes.m_plot_variable.substr(1).c_str()) -1;
+
+        try
+        {
+            PlotOverLine plot_over_line(object, clntMes.m_sampling_size, start_point, end_point, plot_variable);
+
+            m_object->setValuesOnLine(plot_over_line.values()); 
+            m_object->setXAxis(plot_over_line.xAxis()); 
+            m_object->setMask(plot_over_line.mask()); 
+        }
+        catch ( const std::runtime_error& e )
+        {
+#ifdef _DEBUG		// debug by @hira
+            printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
+#endif
+            //        m_object = NULL;
+            delete volume;
+            throw e;
+        }
+#endif
     }
 
     delete volume;
