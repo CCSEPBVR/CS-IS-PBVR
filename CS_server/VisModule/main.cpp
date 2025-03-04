@@ -240,7 +240,7 @@ protected:
         if ( ! po ) return false;
         if ( m_xcSynthStr.empty() && m_ycSynthStr.empty() && m_zcSynthStr.empty() )
             return true;
-        register size_t i, j, nv = po->nvertices();
+        size_t i, j, nv = po->nvertices();
         if ( nv < 1 ) return true;
         FuncParser::Variables synth_vars;
         FuncParser::Variable X;
