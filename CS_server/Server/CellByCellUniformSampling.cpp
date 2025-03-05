@@ -778,6 +778,7 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
         const kvs::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ nx_1,
                                          (max_vec.y() - min_vec.y() )/ ny_1,
                                          (max_vec.z() - min_vec.z() )/ nz_1) ;
+        std::cout << "cell_length = " << cell_length << std::endl;
         //-----------------------------------------//
         //----------------Histogram----------------//
         //-----------------------------------------//
@@ -966,6 +967,7 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
                     nparticles[I] = cell_id < ncells ? np : 0;
 //                    nparticles[I] = cell_id < ncells ? 10 : 0;
                     th_total_nparticles += nparticles[I] ;
+//                    if (nparticles[I] > 0 )std::cout << "nparticles[I] = " << nparticles[I] << std::endl;
                 }
 
                 // ｿｿｿｿｿSIMDｿｿｿｿｿ
@@ -989,6 +991,7 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
                         int nparticles_count =0;  
                        for(int p=0; p < nparticles_I; p++)
                         {
+//                                std::cout << __FUNCTION__ << __LINE__ << std::endl;
                             int  finish_flag = 0;
                             const kvs::Vector3f vertex( (float)i, (float)j, (float)k );
                             const kvs::Vector3f coord_l( RandomSamplingInCube( vertex, &MT ) );
@@ -1079,6 +1082,7 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
                                         th_vertex_normals.push_back( grad_y[pp] );
                                         th_vertex_normals.push_back( grad_z[pp] );
                                        //                                    timed_section_end(td_VectorPush,thid);
+                                       //
                                 } // end of for pp
                             } // end of if p_id
                         } // end of for p
@@ -1110,6 +1114,7 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
                 }
             }
 
+ //           std::cout << "coords = " <<  th_vertex_coords.size() << std::endl;
             total_nparticles += th_total_nparticles;
             vertex_coords.insert ( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
             vertex_colors.insert ( vertex_colors.end(), th_vertex_colors.begin(), th_vertex_colors.end() );

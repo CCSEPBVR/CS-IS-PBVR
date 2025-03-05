@@ -1,7 +1,6 @@
 #ifndef PLOT_OVER_LINE 
 #define PLOT_OVER_LINE
 #include <kvs/Matrix>
-
 #include <kvs/Vector>
 #include <kvs/Math>
 #include <kvs/UnstructuredVolumeObject>
@@ -16,9 +15,12 @@
 #include "PlotOverLineProperty.h"
 namespace kvs
 {
-    using Vec3 = Vector3<float>;
-    using Vec4 = Vector4<float>;
-    using Mat3 = Matrix33<float>;
+//    using Vec3 = Vector3<float>;
+//    using Vec4 = Vector4<float>;
+//    using Mat3 =Matrix33<float>;
+    using Vec3 = Vector3<double>;
+    using Vec4 = Vector4<double>;
+    using Mat3 =Matrix33<double>;
 }
 namespace POL
 {

@@ -105,7 +105,7 @@ void PlotOverLine::setResolution( const size_t resolution )
     m_allcell_values_on_line.fill( 0x00 );
 
     m_allcell_mask.allocate(resolution);
-    m_allcell_values_on_line.fill( 0x00 );
+    m_allcell_mask.fill( false );
 
 }
 
@@ -483,7 +483,10 @@ void PlotOverLine::for_hexahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
         kvs::Real32 scalar[8];
         for( int i=0; i<8; i++ )
         {
-            scalar[i] =  m_volume->values().to<kvs::Real32>( local_id[i] + ncoord*m_plot_variable);
+            scalar[i] =  m_volume->values().at<kvs::Real32>( local_id[i] + ncoord*m_plot_variable);
+            //scalar[i] =  m_volume->values().to<kvs::Real32>( local_id[i] + ncoord*m_plot_variable);
+            //scalar[i] =  m_volume->values().oto<kvs::Real32>( local_id[i] );
+            //std::cout << "scalar[i] = " << scalar[i] << ", local_id[i] = " << local_id[i] << std::endl;
         }
 
         kvs::Real32 face_center_scalar[6];
@@ -865,7 +868,7 @@ void PlotOverLine::sampling_in_tetrahedra( const kvs::Vec3 P0, const kvs::Vec3 P
     const kvs::Vec3 X2 = vertices[2];
     const kvs::Vec3 X3 = vertices[3];
     const kvs::Vec4 S( scalars );
-    
+
     // Bounding Box
     kvs::Vec3 MinCoord( kvs::Math::Min<float>( X0.x(), X1.x(), X2.x(), X3.x() ),
                         kvs::Math::Min<float>( X0.y(), X1.y(), X2.y(), X3.y() ),
@@ -908,6 +911,7 @@ void PlotOverLine::sampling_in_tetrahedra( const kvs::Vec3 P0, const kvs::Vec3 P
         const kvs::Vec4 bc_P = bc_P0 + t * (bc_P1 - bc_P0);
         m_values_on_line[i] = bc_P.dot(S);
         m_mask[i] = true;
+ 
     }
 
     return;
@@ -943,7 +947,7 @@ const bool PlotOverLine::intersection_of_boundingbox(
             t_max = (std::min)( t_max, t2 );
 
             if( t_min > t_max )
-            {
+            {          
                 return false;
             }
         }
@@ -1001,8 +1005,10 @@ POL::Range PlotOverLine::t_range_in_tet( const kvs::Vec4 bc_P0, const kvs::Vec4 
     {
         POL::Range tmp_range;
 
-        const float a0 = bc_P0[i];
-        const float a1 = bc_P1[i];
+        float a0 =  (float)bc_P0[i];
+        float a1 =  (float)bc_P1[i];
+        if(kvs::Math::Abs(a0) < 1e-6) a0 = 0.f;
+        if(kvs::Math::Abs(a1) < 1e-6) a1 = 0.f;
 
         if( kvs::Math::Equal( a0, a1 ) )
         {
