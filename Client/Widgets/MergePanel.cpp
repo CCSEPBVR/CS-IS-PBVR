@@ -886,7 +886,9 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                 if( m_request_time_step == m_merge->m_files_manager[row]->getAlreadyImportedTimeStep() ) // 既に要求タイムステップをインポートしている場合
                 {
                     if( ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) ||
-                        ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) // 粒子生成の要求がある場合
+                        ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ||
+                        ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerGlyphObjectCS && m_merge->getIsGlyphGenerationNeeded() ) ||
+                        ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerGlyphObjectIS && m_merge->getIsGlyphGenerationNeeded() ) ) // 粒子生成の要求がある場合
                     {
                         process<Importer, ObjectType>( row, m_request_time_step );
                     }
@@ -905,7 +907,9 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                     if( minTimeStep >= m_merge->m_files_manager[row]->getAlreadyImportedTimeStep() ) // 既に最小タイムステップをインポートしている場合
                     {
                         if( ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) ||
-                            ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) // 粒子生成の要求がある場合
+                            ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ||
+                            ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerGlyphObjectCS && m_merge->getIsGlyphGenerationNeeded() ) ||
+                            ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerGlyphObjectIS && m_merge->getIsGlyphGenerationNeeded() ) ) // 粒子生成の要求がある場合
                         {
                             process<Importer, ObjectType>( row, minTimeStep );
                             m_merge->setIsParticleGenerationNeeded( false );
@@ -930,7 +934,9 @@ void MergePanel::WorkerThread::timeStepCheckAndImport( int row )
                     if( maxTimeStep <= m_merge->m_files_manager[row]->getAlreadyImportedTimeStep() ) // 既に最大タイムステップをインポートしている場合
                     {
                         if( ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectCS && m_merge->getIsParticleGenerationNeeded() ) ||
-                            ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ) // 粒子生成の要求がある場合
+                            ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerPointObjectIS && m_merge->getIsParticleGenerationNeeded() ) ||
+                            ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerGlyphObjectCS && m_merge->getIsGlyphGenerationNeeded() ) ||
+                            ( m_merge->m_files_manager[row]->getFormat() == FilesManager::ServerGlyphObjectIS && m_merge->getIsGlyphGenerationNeeded() ) ) // 粒子生成の要求がある場合
                         {
                             process<Importer, ObjectType>( row, maxTimeStep );
                             m_merge->setIsParticleGenerationNeeded( false );

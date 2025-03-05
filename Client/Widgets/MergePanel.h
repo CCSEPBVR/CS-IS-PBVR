@@ -134,11 +134,13 @@ public:
     void updateObjectTimeStepIS( int min, int max );
 
     void setIsParticleGenerationNeeded( const bool& is_particle_generation_needed ){ m_is_particle_generation_needed = is_particle_generation_needed; }
+    void setIsGlyphGenerationNeeded( const bool& is_glyph_generation_needed ){ m_is_glyph_generation_needed = is_glyph_generation_needed; }
     void setIsExport( const bool& is_export ){ m_is_export = is_export; }
     void setExportFilePath( const QString& export_file_path ){ m_export_file_path = export_file_path; }
 
     const QVector<FilesManager*>& getFilesManager() const { return m_files_manager; }
     const bool& getIsParticleGenerationNeeded() const { return m_is_particle_generation_needed; }
+    const bool& getIsGlyphGenerationNeeded() const { return m_is_glyph_generation_needed; }
     const bool& getIsExport() const { return m_is_export; }
     const QString& getExportFilePath() const { return m_export_file_path; }
 
@@ -154,6 +156,7 @@ private:
     class WorkerThread;
     bool m_is_worker_thread_running;
     bool m_is_particle_generation_needed;
+    bool m_is_glyph_generation_needed;
     bool m_is_export;
     QString m_export_file_path;
     bool IS_OBJ;

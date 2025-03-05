@@ -414,6 +414,7 @@ void GlyphEditor::onApplyButtonClicked()
             }
         }
     }
+    m_merge->setIsGlyphGenerationNeeded( true );
     m_connect->getClientMessage()->show();
 }
 
