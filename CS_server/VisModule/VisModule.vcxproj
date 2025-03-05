@@ -135,6 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\main.cpp" />
     <ClCompile Include="FileFormat\AggregateTypeSubvolume.cpp" />
     <ClCompile Include="FileFormat\AVSField\AVSField.cpp" />
     <ClCompile Include="FileFormat\AVSUCD\AVSUcd.cpp" />
@@ -181,6 +182,8 @@
     <ClCompile Include="FileFormat\GrADS\Undef.cpp" />
     <ClCompile Include="FileFormat\GrADS\Vars.cpp" />
     <ClCompile Include="FileFormat\GrADS\XYZDef.cpp" />
+    <ClCompile Include="FileFormat\KVSMLObjectGlyph.cpp" />
+    <ClCompile Include="FileFormat\KVSMLObjectPlotOverLine.cpp" />
     <ClCompile Include="FileFormat\KVSML\CellTag.cpp" />
     <ClCompile Include="FileFormat\KVSML\ColorMapTag.cpp" />
     <ClCompile Include="FileFormat\KVSML\ColorTag.cpp" />
@@ -254,7 +257,6 @@
     <ClCompile Include="Image\ImageBase.cpp" />
     <ClCompile Include="Image\RGBAColor.cpp" />
     <ClCompile Include="Image\RGBColor.cpp" />
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="Matrix\FrustumMatrix44.cpp" />
     <ClCompile Include="Matrix\LookAtMatrix44.cpp" />
     <ClCompile Include="Matrix\Matrix.cpp" />
@@ -380,6 +382,7 @@
     <ClCompile Include="Visualization\Mapper\ExtractEdges.cpp" />
     <ClCompile Include="Visualization\Mapper\ExtractVertices.cpp" />
     <ClCompile Include="Visualization\Mapper\FrequencyTable.cpp" />
+    <ClCompile Include="Visualization\Mapper\GlyphGenerator.cpp" />
     <ClCompile Include="Visualization\Mapper\HexahedralCell.cpp" />
     <ClCompile Include="Visualization\Mapper\HitAndMissSampling.cpp" />
     <ClCompile Include="Visualization\Mapper\Isosurface.cpp" />
@@ -395,6 +398,7 @@
     <ClCompile Include="Visualization\Mapper\MetropolisSampling.cpp" />
     <ClCompile Include="Visualization\Mapper\OpacityMap.cpp" />
     <ClCompile Include="Visualization\Mapper\OrthoSlice.cpp" />
+    <ClCompile Include="Visualization\Mapper\PlotOverLine.cpp" />
     <ClCompile Include="Visualization\Mapper\PrismaticCell.cpp" />
     <ClCompile Include="Visualization\Mapper\PyramidalCell.cpp" />
     <ClCompile Include="Visualization\Mapper\QuadraticHexahedralCell.cpp" />
@@ -414,11 +418,13 @@
     <ClCompile Include="Visualization\Object\AxisObject.cpp" />
     <ClCompile Include="Visualization\Object\GeometryObjectBase.cpp" />
     <ClCompile Include="Visualization\Object\GlyphObject.cpp" />
+    <ClCompile Include="Visualization\Object\GlyphObjectGenerator.cpp" />
     <ClCompile Include="Visualization\Object\ImageObject.cpp" />
     <ClCompile Include="Visualization\Object\LineObject.cpp" />
     <ClCompile Include="Visualization\Object\ObjectBase.cpp" />
     <ClCompile Include="Visualization\Object\PointObject.cpp" />
     <ClCompile Include="Visualization\Object\PointObjectGenerator.cpp" />
+    <ClCompile Include="Visualization\Object\POLObjectGenerator.cpp" />
     <ClCompile Include="Visualization\Object\PolygonObject.cpp" />
     <ClCompile Include="Visualization\Object\StructuredVolumeObject.cpp" />
     <ClCompile Include="Visualization\Object\TableObject.cpp" />
@@ -426,7 +432,9 @@
     <ClCompile Include="Visualization\Object\VolumeObjectBase.cpp" />
     <ClCompile Include="Visualization\Pipeline\ObjectImporter.cpp" />
     <ClCompile Include="Visualization\Pipeline\PipelineModule.cpp" />
+    <ClCompile Include="Visualization\Property\GlyphProperty.cpp" />
     <ClCompile Include="Visualization\Property\MultiVolumeProperty.cpp" />
+    <ClCompile Include="Visualization\Property\PlotOverLineProperty.cpp" />
     <ClCompile Include="Visualization\Property\TransferFunctionProperty.cpp" />
     <ClCompile Include="Visualization\Renderer\ParticleBuffer.cpp" />
     <ClCompile Include="Visualization\Renderer\RendererBase.cpp" />
@@ -487,6 +495,8 @@
     <ClInclude Include="FileFormat\GrADS\XYZDef.h" />
     <ClInclude Include="FileFormat\GrADS\YDef.h" />
     <ClInclude Include="FileFormat\GrADS\ZDef.h" />
+    <ClInclude Include="FileFormat\KVSMLObjectGlyph.h" />
+    <ClInclude Include="FileFormat\KVSMLObjectPlotOverLine.h" />
     <ClInclude Include="FileFormat\KVSML\CellTag.h" />
     <ClInclude Include="FileFormat\KVSML\ColorMapTag.h" />
     <ClInclude Include="FileFormat\KVSML\ColorTag.h" />
@@ -706,6 +716,7 @@
     <ClInclude Include="Visualization\Mapper\ExtractEdges.h" />
     <ClInclude Include="Visualization\Mapper\ExtractVertices.h" />
     <ClInclude Include="Visualization\Mapper\FrequencyTable.h" />
+    <ClInclude Include="Visualization\Mapper\GlyphGenerator.h" />
     <ClInclude Include="Visualization\Mapper\HexahedralCell.h" />
     <ClInclude Include="Visualization\Mapper\HitAndMissSampling.h" />
     <ClInclude Include="Visualization\Mapper\Isosurface.h" />
@@ -721,6 +732,7 @@
     <ClInclude Include="Visualization\Mapper\MetropolisSampling.h" />
     <ClInclude Include="Visualization\Mapper\OpacityMap.h" />
     <ClInclude Include="Visualization\Mapper\OrthoSlice.h" />
+    <ClInclude Include="Visualization\Mapper\PlotOverLine.h" />
     <ClInclude Include="Visualization\Mapper\PrismaticCell.h" />
     <ClInclude Include="Visualization\Mapper\PyramidalCell.h" />
     <ClInclude Include="Visualization\Mapper\QuadraticHexahedralCell.h" />
@@ -740,11 +752,14 @@
     <ClInclude Include="Visualization\Object\AxisObject.h" />
     <ClInclude Include="Visualization\Object\GeometryObjectBase.h" />
     <ClInclude Include="Visualization\Object\GlyphObject.h" />
+    <ClInclude Include="Visualization\Object\GlyphObjectCreator.h" />
+    <ClInclude Include="Visualization\Object\GlyphObjectGenerator.h" />
     <ClInclude Include="Visualization\Object\ImageObject.h" />
     <ClInclude Include="Visualization\Object\LineObject.h" />
     <ClInclude Include="Visualization\Object\ObjectBase.h" />
     <ClInclude Include="Visualization\Object\PointObject.h" />
     <ClInclude Include="Visualization\Object\PointObjectGenerator.h" />
+    <ClInclude Include="Visualization\Object\POLObjectGenerator.h" />
     <ClInclude Include="Visualization\Object\PolygonObject.h" />
     <ClInclude Include="Visualization\Object\StructuredVolumeObject.h" />
     <ClInclude Include="Visualization\Object\TableObject.h" />
@@ -752,8 +767,10 @@
     <ClInclude Include="Visualization\Object\VolumeObjectBase.h" />
     <ClInclude Include="Visualization\Pipeline\ObjectImporter.h" />
     <ClInclude Include="Visualization\Pipeline\PipelineModule.h" />
+    <ClInclude Include="Visualization\Property\GlyphProperty.h" />
     <ClInclude Include="Visualization\Property\MultiVolumeProperty.h" />
     <ClInclude Include="Visualization\Property\NameListFile.h" />
+    <ClInclude Include="Visualization\Property\PlotOverLineProperty.h" />
     <ClInclude Include="Visualization\Property\TransferFunctionProperty.h" />
     <ClInclude Include="Visualization\Renderer\ParticleBuffer.h" />
     <ClInclude Include="Visualization\Renderer\RendererBase.h" />
