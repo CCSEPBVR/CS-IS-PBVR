@@ -12,22 +12,22 @@
  */
 /****************************************************************************/
 
-#ifndef KVS__GLYPH_OBJECT_GENERATOR_H_INCLUDE
-#define KVS__GLYPH_OBJECT_GENERATOR_H_INCLUDE
+#ifndef VIS_MODULE__GLYPH_OBJECT_GENERATOR_H_INCLUDE
+#define VIS_MODULE__GLYPH_OBJECT_GENERATOR_H_INCLUDE
 
 #include <vector>
 #include <string>
 
-#include <kvs/Camera>
-#include "Argument.h"
+#include <vismodule/Camera>
+#include <vismodule/Argument>
 #include "UnstructuredVolumeObject.h"
-#include "FilterInformation.h"
-#include "ExtendedTransferFunction.h"
+#include <vismodule/MultiVolumeProperty>
+#include <vismodule/ExtendedTransferFunction>
 #include "timer.h"
-#include "GlyphGenerator.h"
-#include "KVSMLObjectGlyph.h"
+#include <vismodule/GlyphGenerator>
+#include <vismodule/KVSMLObjectGlyph>
 
-namespace pbvr
+namespace vismodule
 {
 //class KVSMLObjectGlyph;
 //class VolumeObjectBase;
@@ -36,56 +36,56 @@ namespace pbvr
 class GlyphObjectGenerator
 {
 private:
-    //kvs::KVSMLObjectGlyph* m_object;
+    //vismodule::KVSMLObjectGlyph* m_object;
     
-    kvs::ValueArray<kvs::Real32> m_coords;       ///< coordinate array
-    kvs::ValueArray<kvs::UInt8>  m_colors;       ///< color(r,g,b) array
-    kvs::ValueArray<kvs::Real32> m_directions;   ///< directions array
-    kvs::ValueArray<kvs::Real32> m_sizes;        ///< size array
+    vismodule::ValueArray<vismodule::Real32> m_coords;       ///< coordinate array
+    vismodule::ValueArray<vismodule::UInt8>  m_colors;       ///< color(r,g,b) array
+    vismodule::ValueArray<vismodule::Real32> m_directions;   ///< directions array
+    vismodule::ValueArray<vismodule::Real32> m_sizes;        ///< size array
 
 
-    const FilterInformationFile*   m_fi;
+    const MultiVolumeProperty*   m_mvp;
 
-    pbvr::CoordSynthesizerStrings m_coord_synthesizer_strings;
-    pbvr::CoordSynthesizerTokens  m_coord_synthesizer_tokens;
+    vismodule::CoordSynthesizerStrings m_coord_synthesizer_strings;
+    vismodule::CoordSynthesizerTokens  m_coord_synthesizer_tokens;
 
 public:
 
-    kvs::KVSMLObjectGlyph m_object;
+    vismodule::KVSMLObjectGlyph m_object;
 
-    //GlyphObjectGenerator() : m_object( NULL ), m_fi(NULL) {m_object = new kvs::KVSMLObjectGlyph;}
-    //GlyphObjectGenerator() :  m_fi(NULL) {m_object = new kvs::KVSMLObjectGlyph;}
-    GlyphObjectGenerator() :  m_fi(NULL) {}
+    //GlyphObjectGenerator() : m_object( NULL ), m_mvp(NULL) {m_object = new vismodule::KVSMLObjectGlyph;}
+    //GlyphObjectGenerator() :  m_mvp(NULL) {m_object = new vismodule::KVSMLObjectGlyph;}
+    GlyphObjectGenerator() :  m_mvp(NULL) {}
     ~GlyphObjectGenerator()
     {
 //        if(m_object) delete m_object;
     }
 
     void createFromFile(
-        const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
-        //const Argument& param, const kvs::Camera& camera);
+        const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
+        //const Argument& param, const vismodule::Camera& camera);
 
     void createFromFile(
-        const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const int st, const int vl );
+        const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const int st, const int vl );
 
-    kvs::KVSMLObjectGlyph* getKVSMLObjectGlyph()
+    vismodule::KVSMLObjectGlyph* getKVSMLObjectGlyph()
     {
         return &m_object;
     }
 
     std::string getErrorMessage( const size_t maxMemory ) const;
 
-    void setFinlterInfo( const FilterInformationFile *fi )
+    void setFinlterInfo( const MultiVolumeProperty *mvp )
     {
-        m_fi = fi;
+        m_mvp = mvp;
     }
 
-    void setCoordSynthStrs( const pbvr::CoordSynthesizerStrings& css )
+    void setCoordSynthStrs( const vismodule::CoordSynthesizerStrings& css )
     {
         m_coord_synthesizer_strings = css;
     }
 
-    void setCoordSynthTkns( const pbvr::CoordSynthesizerTokens& cst )
+    void setCoordSynthTkns( const vismodule::CoordSynthesizerTokens& cst )
     {
         m_coord_synthesizer_tokens.m_x_coord_synthesizer_token = cst.m_x_coord_synthesizer_token;
         m_coord_synthesizer_tokens.m_y_coord_synthesizer_token = cst.m_y_coord_synthesizer_token;
@@ -97,40 +97,40 @@ public:
         m_coord_synthesizer_strings.m_time_step = ts;
     }
 
-    pbvr::CoordSynthesizerStrings getCoordSynthStrs() const
+    vismodule::CoordSynthesizerStrings getCoordSynthStrs() const
     {
         return m_coord_synthesizer_strings;
     }
 
-    pbvr::CoordSynthesizerTokens  getCoordSynthTkns() const
+    vismodule::CoordSynthesizerTokens  getCoordSynthTkns() const
     {
         return m_coord_synthesizer_tokens;
     }
 
 public:
 
-    const kvs::ValueArray<kvs::Real32>& coords( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& coords( void ) const;
 
-    const kvs::ValueArray<kvs::UInt8>& colors( void ) const;
+    const vismodule::ValueArray<vismodule::UInt8>& colors( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& directions( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& directions( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& sizes( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& sizes( void ) const;
 
 public:
 
-    void setCoords( const kvs::ValueArray<kvs::Real32>& coords );
+    void setCoords( const vismodule::ValueArray<vismodule::Real32>& coords );
 
-    void setColors( const kvs::ValueArray<kvs::UInt8>& colors );
+    void setColors( const vismodule::ValueArray<vismodule::UInt8>& colors );
 
-    void setDirections( const kvs::ValueArray<kvs::Real32>& deirections );
+    void setDirections( const vismodule::ValueArray<vismodule::Real32>& deirections );
     
-    void setSizes( const kvs::ValueArray<kvs::Real32>& sizes );
+    void setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes );
 
     void clear();
 private:
-    //kvs::KVSMLObjectGlyph* sampling( pbvr::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes);
-    void sampling( pbvr::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
+    //vismodule::KVSMLObjectGlyph* sampling( vismodule::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes);
+    void sampling( vismodule::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
 
 };
 

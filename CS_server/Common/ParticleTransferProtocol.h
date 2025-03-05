@@ -155,7 +155,7 @@ public:
     uint32_t m_seed;
     int32_t m_stride;
 
-    kvs::ColorMap m_color_map;
+    vismodule::ColorMap m_color_map;
     std::vector<int32_t> m_glyph_color_map_table;
     //std::vector<std::string> m_glyph_color_map_table;
 

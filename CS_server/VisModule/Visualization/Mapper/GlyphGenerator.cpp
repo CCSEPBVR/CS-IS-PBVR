@@ -4,7 +4,7 @@
 // IS用 constructor
 GlyphGenerator::GlyphGenerator(Type** values,
         int nvariables, float* coordinates, int ncoords,
-        unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype) :
+        unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltype) :
     m_values( values ), m_nvariable(nvariables),  
     m_coords( coordinates  ), m_ncoords( ncoords ), 
     m_connections( connections ), m_ncells( ncells ) 
@@ -26,8 +26,8 @@ GlyphGenerator::GlyphGenerator(Type** values,
 // CS用 constructor unstruct 
 GlyphGenerator::GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, Type** values,
         int nvariables, float* coordinates, int ncoords,
-        unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype) :
-        //unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype, const  pbvr::VolumeObjectBase::VolumeType& volumetype ) :
+        unsigned int* connections, int ncells, const vismodule::VolumeObjectBase::CellType& celltype) :
+        //unsigned int* connections, int ncells, const vismodule::VolumeObjectBase::CellType& celltype, const  vismodule::VolumeObjectBase::VolumeType& volumetype ) :
     m_values( values ), m_nvariable(nvariables),  
     m_coords( coordinates  ), m_ncoords( ncoords ), 
     m_connections( connections ), m_ncells( ncells ) 
@@ -49,7 +49,7 @@ GlyphGenerator::GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes
 }
 
 // CS用 constructor struct 
-GlyphGenerator::GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const pbvr::StructuredVolumeObject& object ) 
+GlyphGenerator::GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const vismodule::StructuredVolumeObject& object ) 
 {
    
     m_g_flag = false; 
@@ -62,7 +62,7 @@ GlyphGenerator::GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes
             int nnodes = object.nnodes();
             m_ncoords = nnodes;
             m_nvariable = object.veclen();
-            kvs::AnyValueArray valueArray = object.values(); 
+            vismodule::AnyValueArray valueArray = object.values(); 
             float ** values;
             values = new Type * [m_nvariable];
 
@@ -130,9 +130,9 @@ bool GlyphGenerator::InputParameter(const jpv::ParticleTransferClientMessage& cl
     m_size_max = clntMes.m_glyph_size_max;
 
     int table_size = clntMes.m_glyph_color_map_table.size();    
-    kvs::ValueArray<kvs::UInt8> u_table( table_size );
-    for( size_t j = 0; j< table_size ; j++ ) u_table[j] = (kvs::UInt8)clntMes.m_glyph_color_map_table[j];
-    kvs::ColorMap color_map( u_table, glyph_min, glyph_max);
+    vismodule::ValueArray<vismodule::UInt8> u_table( table_size );
+    for( size_t j = 0; j< table_size ; j++ ) u_table[j] = (vismodule::UInt8)clntMes.m_glyph_color_map_table[j];
+    vismodule::ColorMap color_map( u_table, glyph_min, glyph_max);
     m_color_map = color_map;
 
     glyph_flag = clntMes.m_glyph_flag;
@@ -260,9 +260,9 @@ bool GlyphGenerator::SetGlyphParameter( )
     glyph_max = glyph_property.getFloat("GLYPH_COLOR_MAX");
     std::vector<int> i_table;
     i_table = glyph_property.getTableInt( "GLYPH_COLOR_MAP_TABLE" );
-    kvs::ValueArray<kvs::UInt8> u_table( i_table.size() );
-    for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (kvs::UInt8)i_table[j];
-    kvs::ColorMap color_map( u_table, glyph_min, glyph_max);
+    vismodule::ValueArray<vismodule::UInt8> u_table( i_table.size() );
+    for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (vismodule::UInt8)i_table[j];
+    vismodule::ColorMap color_map( u_table, glyph_min, glyph_max);
 
     m_color_map = color_map;
     if(strcmp(g_flag.c_str(), "TRUE") ==0 ) glyph_flag = true;
@@ -376,7 +376,7 @@ void GlyphGenerator::PointSampling_unstruct( )
        {
            for(int k = 0 ; k< n_size_variables ; k++)
            {
-               tmp_size[ glyph_count ] += kvs::Math::Square( m_values[ size_var[k] ][i] ); 
+               tmp_size[ glyph_count ] += vismodule::Math::Square( m_values[ size_var[k] ][i] ); 
            }
            m_glyph_sizes[ glyph_count ] = std::sqrt(tmp_size[ glyph_count ]) ;
            glyph_count++;
@@ -389,8 +389,8 @@ void GlyphGenerator::PointSampling_unstruct( )
 //        float tmp_min=FLT_MAX;
 //        for(int k = 0; k< n_size_data; k++)
 //        {
-//            max = kvs::Math::Max(m_glyph_sizes[k], max ); 
-//            min = kvs::Math::Min(m_glyph_sizes[k], min ); 
+//            max = vismodule::Math::Max(m_glyph_sizes[k], max ); 
+//            min = vismodule::Math::Min(m_glyph_sizes[k], min ); 
 //        }
 //
 //        tmp_max = max;
@@ -420,7 +420,7 @@ void GlyphGenerator::PointSampling_unstruct( )
        for (int i = 0; i < nPoints; i++)
        {
            m_glyph_sizes[ i] = (m_glyph_sizes[ i ] - min )*factor;
-           m_glyph_sizes[ i] = kvs::Math::Clamp<float>( m_glyph_sizes[ i], 0.0, 1.0 );
+           m_glyph_sizes[ i] = vismodule::Math::Clamp<float>( m_glyph_sizes[ i], 0.0, 1.0 );
        }
 
    }
@@ -454,7 +454,7 @@ void GlyphGenerator::PointSampling_unstruct( )
        {
            for(int k = 0 ; k< n_color_variables ; k++)
            {
-            tmp_size[ glyph_count ] += kvs::Math::Square(m_values[color_var[k]][ i ]) ;
+            tmp_size[ glyph_count ] += vismodule::Math::Square(m_values[color_var[k]][ i ]) ;
            }
            m_glyph_colors_data[ glyph_count ] = std::sqrt(tmp_size[ glyph_count ]);
            glyph_count++;
@@ -465,8 +465,8 @@ void GlyphGenerator::PointSampling_unstruct( )
 //       float min=FLT_MAX;
 //       for(int k = 0; k< n_color_data; k++)
 //       {
-//           max = kvs::Math::Max(m_glyph_colors_data[k], max ); 
-//           min = kvs::Math::Min(m_glyph_colors_data[k], min ); 
+//           max = vismodule::Math::Max(m_glyph_colors_data[k], max ); 
+//           min = vismodule::Math::Min(m_glyph_colors_data[k], min ); 
 //       }
 
 #if 0 // IS
@@ -483,7 +483,7 @@ void GlyphGenerator::PointSampling_unstruct( )
 //        m_color_max = max;
     for (int ii=0;ii < nPoints; ii++)
     {
-        kvs::RGBColor colors; 
+        vismodule::RGBColor colors; 
         colors = m_color_map.at(m_glyph_colors_data[ ii ]);
         m_glyph_colors[3*ii    ] = colors.r() ;
         m_glyph_colors[3*ii +1 ] = colors.g() ;
@@ -496,7 +496,7 @@ void GlyphGenerator::PointSampling_unstruct( )
 }
 
 
-void GlyphGenerator::PointSampling_struct(const pbvr::StructuredVolumeObject* object )
+void GlyphGenerator::PointSampling_struct(const vismodule::StructuredVolumeObject* object )
 {
     const int stride = m_stride;
     int nPoints = m_ncoords/stride ;
@@ -508,7 +508,7 @@ void GlyphGenerator::PointSampling_struct(const pbvr::StructuredVolumeObject* ob
     m_glyph_colors_data.resize( nPoints );
     m_glyph_colors.resize( nPoints * 3); 
 
-    const kvs::Vector3ui resolution( object->resolution() );
+    const vismodule::Vector3ui resolution( object->resolution() );
     const int nx = resolution.x();
     const int ny = resolution.y();
     const int nz = resolution.z();
@@ -520,9 +520,9 @@ void GlyphGenerator::PointSampling_struct(const pbvr::StructuredVolumeObject* ob
 
     m_ncells = nxy_1*nz_1;
 
-    const kvs::Vector3f min_vec = object->minObjectCoord(); 
-    const kvs::Vector3f max_vec = object->maxObjectCoord(); 
-    const kvs::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ nx_1,
+    const vismodule::Vector3f min_vec = object->minObjectCoord(); 
+    const vismodule::Vector3f max_vec = object->maxObjectCoord(); 
+    const vismodule::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ nx_1,
             (max_vec.y() - min_vec.y() )/ ny_1,
             (max_vec.z() - min_vec.z() )/ nz_1) ;
 
@@ -530,11 +530,11 @@ void GlyphGenerator::PointSampling_struct(const pbvr::StructuredVolumeObject* ob
    std::vector<int> vector_var = m_direction_variables;
    int glyph_count =0;
     //#pragma omp for
-    for ( kvs::UInt32 z = 0; z < nz; ++z )
+    for ( vismodule::UInt32 z = 0; z < nz; ++z )
     {
-        for ( kvs::UInt32 y = 0; y < ny; ++y )
+        for ( vismodule::UInt32 y = 0; y < ny; ++y )
         {
-            for ( kvs::UInt32 x = 0; x < nx; ++x )
+            for ( vismodule::UInt32 x = 0; x < nx; ++x )
             {
                 const int index = x + y*nx + z*nx*ny;
                 if (index % stride == 0)
@@ -566,18 +566,18 @@ void GlyphGenerator::PointSampling_struct(const pbvr::StructuredVolumeObject* ob
        std::vector<int> size_var = m_size_variables;
        int n_size_variables=m_size_variables.size();
        int glyph_count =0;
-       for ( kvs::UInt32 z = 0; z < nz; ++z )
+       for ( vismodule::UInt32 z = 0; z < nz; ++z )
        {
-           for ( kvs::UInt32 y = 0; y < ny; ++y )
+           for ( vismodule::UInt32 y = 0; y < ny; ++y )
            {
-               for ( kvs::UInt32 x = 0; x < nx; ++x )
+               for ( vismodule::UInt32 x = 0; x < nx; ++x )
                {
                    const int index = x + y*nx + z*nx*ny;
                    if (index % stride == 0)
                    {
                        for(int k = 0 ; k< n_size_variables ; k++)
                        {
-                           tmp_size[ glyph_count ] += kvs::Math::Square( m_values[ size_var[k] ][index] ); 
+                           tmp_size[ glyph_count ] += vismodule::Math::Square( m_values[ size_var[k] ][index] ); 
                        }
                        m_glyph_sizes[ glyph_count ] = std::sqrt(tmp_size[ glyph_count ]) ;
                        glyph_count++;
@@ -593,8 +593,8 @@ void GlyphGenerator::PointSampling_struct(const pbvr::StructuredVolumeObject* ob
 //        float tmp_min=FLT_MAX;
 //        for(int k = 0; k< n_size_data; k++)
 //        {
-//            max = kvs::Math::Max(m_glyph_sizes[k], max ); 
-//            min = kvs::Math::Min(m_glyph_sizes[k], min ); 
+//            max = vismodule::Math::Max(m_glyph_sizes[k], max ); 
+//            min = vismodule::Math::Min(m_glyph_sizes[k], min ); 
 //        }
 //        tmp_max = max;
 //        tmp_min = min;
@@ -623,7 +623,7 @@ void GlyphGenerator::PointSampling_struct(const pbvr::StructuredVolumeObject* ob
        for (int i = 0; i < nPoints; i++)
        {
            m_glyph_sizes[ i] = (m_glyph_sizes[ i ] - min )*factor;
-           m_glyph_sizes[ i] = kvs::Math::Clamp<float>( m_glyph_sizes[ i], 0.0, 1.0 );
+           m_glyph_sizes[ i] = vismodule::Math::Clamp<float>( m_glyph_sizes[ i], 0.0, 1.0 );
        }
 
    }
@@ -652,18 +652,18 @@ void GlyphGenerator::PointSampling_struct(const pbvr::StructuredVolumeObject* ob
 
        int glyph_count =0;
        std::vector<float> tmp_size(nPoints);
-       for ( kvs::UInt32 z = 0; z < nz; ++z )
+       for ( vismodule::UInt32 z = 0; z < nz; ++z )
        {
-           for ( kvs::UInt32 y = 0; y < ny; ++y )
+           for ( vismodule::UInt32 y = 0; y < ny; ++y )
            {
-               for ( kvs::UInt32 x = 0; x < nx; ++x )
+               for ( vismodule::UInt32 x = 0; x < nx; ++x )
                {
                    const int index = x + y*nx + z*nx*ny;
                    if (index % stride == 0)
                    {
                        for(int k = 0 ; k< n_color_variables ; k++)
                        {
-                           tmp_size[ glyph_count ] += kvs::Math::Square(m_values[color_var[k]][ index ]) ;
+                           tmp_size[ glyph_count ] += vismodule::Math::Square(m_values[color_var[k]][ index ]) ;
                        }
                        m_glyph_colors_data[ glyph_count ] = std::sqrt(tmp_size[ glyph_count ]);
                        glyph_count++;
@@ -678,7 +678,7 @@ void GlyphGenerator::PointSampling_struct(const pbvr::StructuredVolumeObject* ob
 //       {
 //           for(int k = 0 ; k< n_color_variables ; k++)
 //           {
-//            tmp_size[ glyph_count ] += kvs::Math::Square(m_values[color_var[k]][ i ]) ;
+//            tmp_size[ glyph_count ] += vismodule::Math::Square(m_values[color_var[k]][ i ]) ;
 //           }
 //           m_glyph_colors_data[ glyph_count ] = std::sqrt(tmp_size[ glyph_count ]);
 //           glyph_count++;
@@ -689,8 +689,8 @@ void GlyphGenerator::PointSampling_struct(const pbvr::StructuredVolumeObject* ob
 //       float min=FLT_MAX;
 //       for(int k = 0; k< n_color_data; k++)
 //       {
-//           max = kvs::Math::Max(m_glyph_colors_data[k], max ); 
-//           min = kvs::Math::Min(m_glyph_colors_data[k], min ); 
+//           max = vismodule::Math::Max(m_glyph_colors_data[k], max ); 
+//           min = vismodule::Math::Min(m_glyph_colors_data[k], min ); 
 //       }
 
 #if 0 // IS
@@ -705,21 +705,20 @@ void GlyphGenerator::PointSampling_struct(const pbvr::StructuredVolumeObject* ob
 
 //        m_color_min = min;
 //        m_color_max = max;
-       for (int ii=0;ii < nPoints; ii++)
-       {
-           kvs::RGBColor colors; 
-           colors = m_color_map.at(m_glyph_colors_data[ ii ]);
-           m_glyph_colors[3*ii    ] = colors.r() ;
-           m_glyph_colors[3*ii +1 ] = colors.g() ;
-           m_glyph_colors[3*ii +2 ] = colors.b() ;
-       }
-
+        for (int ii=0;ii < nPoints; ii++)
+        {
+            vismodule::RGBColor colors; 
+            colors = m_color_map.at(m_glyph_colors_data[ ii ]);
+            m_glyph_colors[3*ii    ] = colors.r() ;
+            m_glyph_colors[3*ii +1 ] = colors.g() ;
+            m_glyph_colors[3*ii +2 ] = colors.b() ;
+        }
    }
 
 //    this -> show();
 }
 
-void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase::CellType& celltype)
+void GlyphGenerator::DistributionSampling_unstruct( const vismodule::VolumeObjectBase::CellType& celltype)
 {
     const int seed          = m_seed;
 
@@ -737,14 +736,14 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
 #endif
     static bool start_flag = true;
     static bool parameter_file_opened=false;
-    kvs::Timer timer( kvs::Timer::Start );
+    vismodule::Timer timer( vismodule::Timer::Start );
 
-    std::vector< std::vector< pbvr::CellBase<Type>* > >  interp;
+    std::vector< std::vector< vismodule::CellBase<Type>* > >  interp;
     interp.resize( max_threads );
 
     switch ( celltype )
     {
-        case pbvr::VolumeObjectBase::Tetrahedra:
+        case vismodule::VolumeObjectBase::Tetrahedra:
             {
                 if (mpi_rank == 0) std::cout << "celltype: tetrahedra " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
@@ -752,12 +751,12 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
                     interp[ i ].resize( m_nvariable );
                     for ( int j = 0; j < m_nvariable; j++ )
                     {
-                        interp[i][j]  = new pbvr::TetrahedralCell<Type>( m_values[j], m_coords, m_ncoords, m_connections, m_ncells );
+                        interp[i][j]  = new vismodule::TetrahedralCell<Type>( m_values[j], m_coords, m_ncoords, m_connections, m_ncells );
                     }
                 }
                 break;
             }
-        case pbvr::VolumeObjectBase::QuadraticTetrahedra:
+        case vismodule::VolumeObjectBase::QuadraticTetrahedra:
             {
                 if (mpi_rank == 0) std::cout << "Cell type : Quadratic tetrahedra " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
@@ -765,12 +764,12 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
                     interp[ i ].resize( m_nvariable );
                     for ( int j = 0; j < m_nvariable; j++ )
                     {
-                        interp[i][j]  = new pbvr::QuadraticTetrahedralCell<Type>( m_values[j], m_coords, m_ncoords, m_connections, m_ncells );
+                        interp[i][j]  = new vismodule::QuadraticTetrahedralCell<Type>( m_values[j], m_coords, m_ncoords, m_connections, m_ncells );
                     }
                 }
                 break;
             }
-        case pbvr::VolumeObjectBase::Hexahedra:
+        case vismodule::VolumeObjectBase::Hexahedra:
             {
                 if (mpi_rank == 0) std::cout << "Cell type : Hexahedra " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
@@ -778,12 +777,12 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
                     interp[ i ].resize( m_nvariable  );
                     for ( int j = 0; j < m_nvariable; j++ )
                     {
-                        interp[i][j]  = new pbvr::HexahedralCell<Type>( m_values[j], m_coords, m_ncoords, m_connections, m_ncells );
+                        interp[i][j]  = new vismodule::HexahedralCell<Type>( m_values[j], m_coords, m_ncoords, m_connections, m_ncells );
                     }
                 }
                 break;
             }
-        case pbvr::VolumeObjectBase::QuadraticHexahedra:
+        case vismodule::VolumeObjectBase::QuadraticHexahedra:
             {
                 if (mpi_rank == 0) std::cout << "Cell type : Quadratic hexahedra " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
@@ -791,12 +790,12 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
                     interp[ i ].resize( m_nvariable );
                     for ( int j = 0; j < m_nvariable; j++ )
                     {
-                        interp[i][j]  = new pbvr::QuadraticHexahedralCell<Type>( m_values[j], m_coords, m_ncoords, m_connections, m_ncells );
+                        interp[i][j]  = new vismodule::QuadraticHexahedralCell<Type>( m_values[j], m_coords, m_ncoords, m_connections, m_ncells );
                     }
                 }
                 break;
             }
-        case pbvr::VolumeObjectBase::Prism:
+        case vismodule::VolumeObjectBase::Prism:
             {
                 if (mpi_rank == 0) std::cout << "celltype: Prism " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
@@ -804,12 +803,12 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
                     interp[ i ].resize( m_nvariable );
                     for ( int j = 0; j < m_nvariable; j++ )
                     {
-                        interp[i][j]  = new pbvr::PrismaticCell<Type>( m_values[j], m_coords, m_ncoords, m_connections, m_ncells );
+                        interp[i][j]  = new vismodule::PrismaticCell<Type>( m_values[j], m_coords, m_ncoords, m_connections, m_ncells );
                     }
                 }
                 break;
             }
-        case pbvr::VolumeObjectBase::Pyramid:
+        case vismodule::VolumeObjectBase::Pyramid:
             {
                 if (mpi_rank == 0) std::cout << "celltype: Pyramid" << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
@@ -817,7 +816,7 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
                     interp[ i ].resize( m_nvariable );
                     for ( int j = 0; j < m_nvariable; j++ )
                     {
-                        interp[i][j]  = new pbvr::PyramidalCell<Type>( m_values[j], m_coords, m_ncoords, m_connections, m_ncells );
+                        interp[i][j]  = new vismodule::PyramidalCell<Type>( m_values[j], m_coords, m_ncoords, m_connections, m_ncells );
                     }
                 }
                 break;
@@ -825,7 +824,7 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
         default:
             {
                 //BaseClass::m_is_success = false;
-                //kvsMessageError( "Unsupported cell type." );
+                //visModuleMessageError( "Unsupported cell type." );
                 std::cout << "Unsupported cell type." << std::endl; 
                 return;
             }
@@ -843,7 +842,7 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
 
         timer.start();
         //nglyphs /= nthreads;
-        kvs::MersenneTwister MT( seed*mpi_size*nthreads + (mpi_rank+1)*thid );
+        vismodule::MersenneTwister MT( seed*mpi_size*nthreads + (mpi_rank+1)*thid );
 
     float TotalVolume = 0;
     float density = 0;
@@ -870,7 +869,7 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
         for( int cell_base = 0; cell_base < m_ncells; cell_base ++ )
         {
 
-            kvs::Vector3f coord = interp[thid][0]->localGravityPoint();
+            vismodule::Vector3f coord = interp[thid][0]->localGravityPoint();
             interp[thid][0]->bindCell( cell_base);
             interp[thid][0]->setLocalPoint( coord );
 
@@ -879,7 +878,7 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
                 
             for( int i = 0; i < nglyphs; i++ )
             {
-                kvs::Vector3f local_coord = interp[thid][0] -> randomSampling_MT( &MT );
+                vismodule::Vector3f local_coord = interp[thid][0] -> randomSampling_MT( &MT );
 
                 //補間器にセルを一括でバインド
                 for( int k = 0; k < m_nvariable; k++ )
@@ -888,7 +887,7 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
                     interp[thid][k]->setLocalPoint( local_coord );
                 }
 
-                kvs::Vector3f global_coord = interp[thid][0]->transformLocalToGlobal( local_coord );
+                vismodule::Vector3f global_coord = interp[thid][0]->transformLocalToGlobal( local_coord );
 
                 // glyph_vectorの計算
                 // float scalar_array[interp[thid].size()];
@@ -978,8 +977,8 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
         float tmp_min=FLT_MAX;
         for(int k = 0; k< n_size_data; k++)
         {
-            max = kvs::Math::Max(m_glyph_sizes[k], max ); 
-            min = kvs::Math::Min(m_glyph_sizes[k], min ); 
+            max = vismodule::Math::Max(m_glyph_sizes[k], max ); 
+            min = vismodule::Math::Min(m_glyph_sizes[k], min ); 
         }
 
         tmp_max = max;
@@ -1002,7 +1001,7 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
             for( int j = 0; j < n_size_data; j++ )
             {
                 m_glyph_sizes[j] = (m_glyph_sizes[j] - min)*factor;
-                m_glyph_sizes[j] = kvs::Math::Clamp<float>( m_glyph_sizes[j], 0.0, 1.0 );
+                m_glyph_sizes[j] = vismodule::Math::Clamp<float>( m_glyph_sizes[j], 0.0, 1.0 );
             }
         }
         else
@@ -1034,8 +1033,8 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
         float min=FLT_MAX;
         for(int k = 0; k< n_color_data; k++)
         {
-            max = kvs::Math::Max(m_glyph_colors_data[k], max ); 
-            min = kvs::Math::Min(m_glyph_colors_data[k], min ); 
+            max = vismodule::Math::Max(m_glyph_colors_data[k], max ); 
+            min = vismodule::Math::Min(m_glyph_colors_data[k], min ); 
         }
 
 #if 0 // IS
@@ -1074,7 +1073,7 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
 #endif
         for( int jx=0; jx<n_color_data; jx++)
         {
-            kvs::RGBColor color;
+            vismodule::RGBColor color;
             color = m_color_map.at( m_glyph_colors_data[jx] );
             m_glyph_colors.push_back( color.r());
             m_glyph_colors.push_back( color.g());
@@ -1099,14 +1098,14 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
 //       this->show(); 
 }
 
-void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObject* object)
+void GlyphGenerator::DistributionSampling_struct(const vismodule::StructuredVolumeObject* object)
 {
 #if 1
     m_nvariable = object-> veclen();
     m_ncoords = object->nnodes();
     float** values;
     values = new float * [m_nvariable];
-    kvs::AnyValueArray valueArray = object->values(); 
+    vismodule::AnyValueArray valueArray = object->values(); 
 
     for ( int j = 0; j < m_nvariable; j++ )
     {
@@ -1132,15 +1131,15 @@ void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObj
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
 #endif
 
-    const kvs::Vector3ui resolution( object->resolution() );
-    std::vector< std::vector< TFS::TrilinearInterpolator* > >  interp;
+    const vismodule::Vector3ui resolution( object->resolution() );
+    std::vector< std::vector< vismodule::TrilinearInterpolator* > >  interp;
     interp.resize( max_threads );
     for ( int i = 0; i < max_threads; i++ )
     {
         interp[ i ].resize( m_nvariable );
         for ( int j = 0; j < m_nvariable; j++ )
         {
-             interp[i][j]  = new TFS::TrilinearInterpolator( values[j], resolution);
+             interp[i][j]  = new vismodule::TrilinearInterpolator( values[j], resolution);
         }
     }
 
@@ -1160,8 +1159,8 @@ void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObj
 
 //    timer.start();
     //nglyphs /= nthreads;
-    kvs::MersenneTwister MT( seed*mpi_size*nthreads + (mpi_rank+1)*thid );
-    //kvs::MersenneTwister MT( seed + (mpi_rank+1) );
+    vismodule::MersenneTwister MT( seed*mpi_size*nthreads + (mpi_rank+1)*thid );
+    //vismodule::MersenneTwister MT( seed + (mpi_rank+1) );
 
     float TotalVolume = 0;
     float density = 0;
@@ -1170,10 +1169,10 @@ void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObj
     std::vector<float> th_glyph_colors_data;
     std::vector<float> th_glyph_vectors;
     std::vector<float> th_glyph_sizes;
-    const kvs::Vector3ui ncells( object->resolution() - kvs::Vector3ui(1) );
-    const kvs::Vector3f min_vec = object->minObjectCoord(); 
-    const kvs::Vector3f max_vec = object->maxObjectCoord(); 
-    const kvs::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ ncells.x(),
+    const vismodule::Vector3ui ncells( object->resolution() - vismodule::Vector3ui(1) );
+    const vismodule::Vector3f min_vec = object->minObjectCoord(); 
+    const vismodule::Vector3f max_vec = object->maxObjectCoord(); 
+    const vismodule::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ ncells.x(),
             (max_vec.y() - min_vec.y() )/ ncells.y(),
             (max_vec.z() - min_vec.z() )/ ncells.z()) ;
 
@@ -1183,11 +1182,11 @@ void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObj
     density = m_number_of_sample_points/TotalVolume;
 
 #pragma omp parallel for
-    for ( kvs::Int32 z = 0; z < ncells.z(); ++z )
+    for ( vismodule::Int32 z = 0; z < ncells.z(); ++z )
     {
-        for ( kvs::UInt32 y = 0; y < ncells.y(); ++y )
+        for ( vismodule::UInt32 y = 0; y < ncells.y(); ++y )
         {
-            for ( kvs::UInt32 x = 0; x < ncells.x(); ++x )
+            for ( vismodule::UInt32 x = 0; x < ncells.x(); ++x )
             {
 
                 const float x_l = (float)x;
@@ -1199,16 +1198,16 @@ void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObj
                 const float z_g = (z_l * cell_length.z())+min_vec.z();
                 // Calculate a density.
                 int  nglyphs = calculate_number_of_particles( density, volume_of_cell, &MT ) ;
-                const kvs::Vector3f v( static_cast<float>(x_g), static_cast<float>(y_g), static_cast<float>(z_g) );
+                const vismodule::Vector3f v( static_cast<float>(x_g), static_cast<float>(y_g), static_cast<float>(z_g) );
 
                 for( int i = 0; i < nglyphs; i++ )
                 {
                     const float x = (float)MT.rand();
                     const float y = (float)MT.rand();
                     const float z = (float)MT.rand();
-                    const kvs::Vector3f d( x, y, z );
+                    const vismodule::Vector3f d( x, y, z );
 
-                    const kvs::Vector3f coord = v + d;
+                    const vismodule::Vector3f coord = v + d;
 
                     std::vector<float> scalar_array(interp[thid].size());
                     for( size_t j= 0; j < m_nvariable; j++ )
@@ -1287,8 +1286,8 @@ void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObj
 //        float tmp_min=FLT_MAX;
         for(int k = 0; k< n_size_data; k++)
         {
-            max = kvs::Math::Max(m_glyph_sizes[k], max ); 
-            min = kvs::Math::Min(m_glyph_sizes[k], min ); 
+            max = vismodule::Math::Max(m_glyph_sizes[k], max ); 
+            min = vismodule::Math::Min(m_glyph_sizes[k], min ); 
         }
 
 //        tmp_max = max;
@@ -1309,7 +1308,7 @@ void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObj
             for( int j = 0; j < n_size_data; j++ )
             {
                 m_glyph_sizes[j] = (m_glyph_sizes[j] - min)*factor;
-                m_glyph_sizes[j] = kvs::Math::Clamp<float>( m_glyph_sizes[j], 0.0, 1.0 );
+                m_glyph_sizes[j] = vismodule::Math::Clamp<float>( m_glyph_sizes[j], 0.0, 1.0 );
             }
         }
         else
@@ -1341,8 +1340,8 @@ void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObj
         float min=FLT_MAX;
         for(int k = 0; k< n_color_data; k++)
         {
-            max = kvs::Math::Max(m_glyph_colors_data[k], max ); 
-            min = kvs::Math::Min(m_glyph_colors_data[k], min ); 
+            max = vismodule::Math::Max(m_glyph_colors_data[k], max ); 
+            min = vismodule::Math::Min(m_glyph_colors_data[k], min ); 
         }
 
 #if 0 // IS
@@ -1353,7 +1352,7 @@ void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObj
 #endif
         for( int jx=0; jx<n_color_data; jx++)
         {
-            kvs::RGBColor color;
+            vismodule::RGBColor color;
             color = m_color_map.at( m_glyph_colors_data[jx] );
             m_glyph_colors.push_back( color.r());
             m_glyph_colors.push_back( color.g());
@@ -1381,7 +1380,7 @@ void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObj
 const size_t GlyphGenerator::calculate_number_of_particles(
     const float density,
     const float volume_of_cell,
-    kvs::MersenneTwister* MT )
+    vismodule::MersenneTwister* MT )
 {
     const float N = density * volume_of_cell;
     const float R = MT->rand();
@@ -1395,12 +1394,12 @@ const size_t GlyphGenerator::calculate_number_of_particles(
     return ( n );
 }
 
-void GlyphGenerator::getGlyphData(kvs::KVSMLObjectGlyph* other)
+void GlyphGenerator::getGlyphData(vismodule::KVSMLObjectGlyph* other)
 {
-    kvs::ValueArray<float> coords( m_glyph_coords  );
-    kvs::ValueArray<float> directions(m_glyph_vectors );
-    kvs::ValueArray<Byte>  colors( m_glyph_colors   );
-    kvs::ValueArray<float> sizes(  m_glyph_sizes  );
+    vismodule::ValueArray<float> coords( m_glyph_coords  );
+    vismodule::ValueArray<float> directions(m_glyph_vectors );
+    vismodule::ValueArray<Byte>  colors( m_glyph_colors   );
+    vismodule::ValueArray<float> sizes(  m_glyph_sizes  );
     other -> setCoords( coords );
     other -> setColors( colors );
     other -> setDirections( directions );
@@ -1428,13 +1427,13 @@ void GlyphGenerator::OutputGlyph( const int time_step)
     ///-------------------------------------//
     ///--------粒子配列をファイル出力----------//
     //--------------------------------------//
-    //kvs::ValueArray<float> coords( particleBase.m_sample_coords );
-    //kvs::ValueArray<Byte>  colors( particleBase.m_sample_colors );
-    //kvs::ValueArray<float> normals(particleBase.m_sample_normals );
-    kvs::ValueArray<float> coords( m_glyph_coords  );
-    kvs::ValueArray<float> vectors(m_glyph_vectors );
-    kvs::ValueArray<Byte>  colors( m_glyph_colors   );
-    kvs::ValueArray<float> sizes(  m_glyph_sizes  );
+    //vismodule::ValueArray<float> coords( particleBase.m_sample_coords );
+    //vismodule::ValueArray<Byte>  colors( particleBase.m_sample_colors );
+    //vismodule::ValueArray<float> normals(particleBase.m_sample_normals );
+    vismodule::ValueArray<float> coords( m_glyph_coords  );
+    vismodule::ValueArray<float> vectors(m_glyph_vectors );
+    vismodule::ValueArray<Byte>  colors( m_glyph_colors   );
+    vismodule::ValueArray<float> sizes(  m_glyph_sizes  );
 
     static bool first_step = true;
     // static MPI_Comm new_comm;
@@ -1561,10 +1560,10 @@ void GlyphGenerator::OutputGlyph( const int time_step)
     }
 
 
-    kvs::ValueArray<float> new_coords(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
-    kvs::ValueArray<float> new_vectors( displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
-    kvs::ValueArray<Byte>  new_colors(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
-    kvs::ValueArray<float> new_sizes( displs_size[new_number_of_process-1] + recvcounts_size[new_number_of_process-1] );
+    vismodule::ValueArray<float> new_coords(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+    vismodule::ValueArray<float> new_vectors( displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+    vismodule::ValueArray<Byte>  new_colors(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+    vismodule::ValueArray<float> new_sizes( displs_size[new_number_of_process-1] + recvcounts_size[new_number_of_process-1] );
 
     MPI_Gatherv( coords.pointer(),   particle_size, MPI_FLOAT,
                  new_coords.pointer(), recvcounts, displs, MPI_FLOAT,
@@ -1601,23 +1600,23 @@ void GlyphGenerator::OutputGlyph( const int time_step)
 #if 0
 //    if( new_rank == 0 )
 //    {
-        //kvs::PointObject* point_object = new kvs::PointObject( new_coords, new_colors, new_normals, particleBase.m_subpixel_level );
-        kvs::PointObject* point_object = new kvs::PointObject( coords, colors, vectors, sizes );
+        //vismodule::PointObject* point_object = new vismodule::PointObject( new_coords, new_colors, new_normals, particleBase.m_subpixel_level );
+        vismodule::PointObject* point_object = new vismodule::PointObject( coords, colors, vectors, sizes );
         point_object->setMinMaxObjectCoords( particleBase.m_min_vec, particleBase.m_max_vec );
         // If async_io is enabled, use worker thread to write kvsml data and state.txt
 //        if (async_io_enabled){
-//            pbvr::ParticleWriteThread* particle_write_thread =  &pwt;
+//            vismodule::ParticleWriteThread* particle_write_thread =  &pwt;
 //            particle_write_thread->join(true);
 //            particle_write_thread->setPointObject( point_object );
 //            particle_write_thread->setFilename(particleBase.m_ptcFilePath.c_str());
 //            particle_write_thread->setTimestep(time_step ,particleBase.m_stateFilePath.c_str());
 //            particle_write_thread->setStartTimestep(st_time_step); //add by shimomura 20240808
 //            particle_write_thread->work(true);
-//        }// If async_io is disabled, use kvs::PointExporter here in main thread.
+//        }// If async_io is disabled, use vismodule::PointExporter here in main thread.
 //        else{
-            kvs::KVSMLObjectPoint* kvsml_object = new kvs::PointExporter<kvs::KVSMLObjectPoint>( point_object );
-            //kvsml_object->setWritingDataType( kvs::KVSMLObjectPoint::ExternalBinary );
-            kvsml_object->setWritingDataType( kvs::KVSMLObjectPoint::ExternalAscii );
+            vismodule::KVSMLObjectPoint* kvsml_object = new vismodule::PointExporter<vismodule::KVSMLObjectPoint>( point_object );
+            //kvsml_object->setWritingDataType( vismodule::KVSMLObjectPoint::ExternalBinary );
+            kvsml_object->setWritingDataType( vismodule::KVSMLObjectPoint::ExternalAscii );
             kvsml_object->write( m_glyphFilePath.c_str() );
             delete kvsml_object;
 
@@ -1625,7 +1624,7 @@ void GlyphGenerator::OutputGlyph( const int time_step)
         delete point_object;
 //    }
     #else
-            kvs::KVSMLObjectGlyph kvsmlobject( coords, colors, vectors, sizes);
+            vismodule::KVSMLObjectGlyph kvsmlobject( coords, colors, vectors, sizes);
             kvsmlobject.write(m_glyphFilePath.c_str());
 #endif
 

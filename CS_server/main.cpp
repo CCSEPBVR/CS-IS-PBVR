@@ -60,12 +60,11 @@
 #include <vismodule/StructuredVolumeImporter>
 #include <vismodule/CellByCellParticleGenerator>
 
-#include "GlyphObjectGenerator.h"
-#include "GlyphObjectCreator.h"
+#include <vismodule/GlyphObjectGenerator>
+#include <vismodule/GlyphObjectCreator>
 
 //plot over line
-#include "POLObjectGenerator.h"
-#include "FileFormatReader.h"
+#include <vismodule/POLObjectGenerator>
 
 using FuncParser::Variable;
 using FuncParser::Variables;
@@ -668,23 +667,23 @@ inline VariableRange Calculate_minmax( const Argument& param,
 }
 
 
-void Calculate_minmax_glyph(const Argument& param,
-                                      const FilterInformationList& fil,
+void Calculate_minmax_glyph( const Argument& param,
+                                      const MultiVolumePropertyList& mvpl,
                                       jpv::ParticleTransferClientMessage& clntMes)
 {
 
 
-    namespace Generator = pbvr::CellByCellParticleGenerator;
-    pbvr::VolumeObjectBase* volume = nullptr;
+    namespace Generator = vismodule::CellByCellParticleGenerator;
+    vismodule::VolumeObjectBase* volume = nullptr;
     double total_volume = 0.0;
     double density_lev1 = 0.0;//kawamura2: particle density for subpixel_level=1
-    //int steps = fil.m_total_start_steps;
+    //int steps = mvpl.m_total_start_steps;
     int steps = clntMes.m_step;
     int subvols = 0;
 
-    kvs::Real64 tmp_min, tmp_max;
+    vismodule::Real64 tmp_min, tmp_max;
     std::vector<float> min_vec, max_vec;
-    int nvariable = fil.m_total_number_ingredients;
+    int nvariable = mvpl.m_total_number_ingredients;
     int nvariablep2 = 2;
     min_vec.resize(nvariablep2);
     max_vec.resize(nvariablep2);
@@ -733,13 +732,13 @@ void Calculate_minmax_glyph(const Argument& param,
       if( clntMes.m_color_data_sampling_method == jpv::DataDefines::VariableArray || clntMes.m_color_data_sampling_method == jpv::DataDefines::SingleVariable 
           || clntMes.m_color_data_sampling_method == jpv::DataDefines::VariableArray || clntMes.m_color_data_sampling_method == jpv::DataDefines::SingleVariable  )
       {
-//    for ( steps = fil.m_total_start_steps; steps <= fil.m_total_start_step; steps++ ) //初回ステップのみ
+//    for ( steps = mvpl.m_total_start_steps; steps <= mvpl.m_total_start_step; steps++ ) //初回ステップのみ
 //    {
-        for ( subvols = 0; subvols < fil.m_total_number_subvolumes; subvols++ )
+        for ( subvols = 0; subvols < mvpl.m_total_number_subvolumes; subvols++ )
         {
             int xvl, fidx;
-            fidx = fil.getFileIndex( subvols, &xvl );
-            const FilterInformationFile& fi = fil.m_list[fidx];
+            fidx = mvpl.getFileIndex( subvols, &xvl );
+            const MultiVolumeProperty& fi = mvpl.m_list[fidx];
 
             if ( subvols % nprocs == rank )
             {
@@ -755,7 +754,7 @@ void Calculate_minmax_glyph(const Argument& param,
                         float tmp = 0;
                         for(int k = 0 ; k< clntMes.m_color_data_variable.size() ; k++)
                         {
-                            tmp += kvs::Math::Square(volume->values().at<float>( i+ color_data_variables[k]*nnodes)) ;
+                            tmp += vismodule::Math::Square(volume->values().at<float>( i+ color_data_variables[k]*nnodes)) ;
                         }
 
                         tmp = std::sqrt(tmp);
@@ -775,7 +774,7 @@ void Calculate_minmax_glyph(const Argument& param,
                     float tmp = 0;
                     for(int k = 0 ; k< clntMes.m_size_variable.size() ; k++)
                     {
-                        tmp += kvs::Math::Square(volume->values().at<float>( i+ size_variables[k]*nnodes)) ;
+                        tmp += vismodule::Math::Square(volume->values().at<float>( i+ size_variables[k]*nnodes)) ;
                     }
                     tmp = std::sqrt(tmp);
                     tmp_min = tmp_min < tmp ? tmp_min : tmp ; 
@@ -790,10 +789,10 @@ void Calculate_minmax_glyph(const Argument& param,
         }
 //    }
 #ifndef CPU_VER
-    PBVR_TIMER_STA( 19 );
+    VIS_MODULE_TIMER_STA( 19 );
     MPI_Allreduce( MPI_IN_PLACE, min_vec.data(), nvariablep2, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
     MPI_Allreduce( MPI_IN_PLACE, max_vec.data(), nvariablep2, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
-    PBVR_TIMER_END( 19 );
+    VIS_MODULE_TIMER_END( 19 );
 #endif
       }
       if( clntMes.m_color_data_sampling_method == jpv::DataDefines::Constant )
@@ -1202,8 +1201,8 @@ int main( int argc, char** argv )
                         {
                             c_nbins = object->getNbins();
                             //add by shimomura 2023/06/14
-                            tmp_max[2*tf+1] = kvs::Math::Max( tmp_max[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
-                            tmp_min[2*tf+1] = kvs::Math::Min( tmp_min[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
+                            tmp_max[2*tf+1] = vismodule::Math::Max( tmp_max[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
+                            tmp_min[2*tf+1] = vismodule::Math::Min( tmp_min[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
                             for ( int res = 0; res < c_nbins; res++ )
                             {
                                 tmp_c_bins[c_count] += object->getCHistogram()[ c_count ] ;
@@ -1215,8 +1214,8 @@ int main( int argc, char** argv )
                         {
                             o_nbins = object->getNbins();
                             //add by shimomura 2023/06/14
-                            tmp_max[2*tf] = kvs::Math::Max( tmp_max[2*tf] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
-                            tmp_min[2*tf] = kvs::Math::Min( tmp_min[2*tf] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
+                            tmp_max[2*tf] = vismodule::Math::Max( tmp_max[2*tf] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
+                            tmp_min[2*tf] = vismodule::Math::Min( tmp_min[2*tf] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
                             for ( int res = 0; res < o_nbins; res++ )
                             {
                                 tmp_o_bins[o_count] += object->getOHistogram()[ o_count ] ;
@@ -1440,8 +1439,8 @@ int main( int argc, char** argv )
                         {
                             c_nbins = object->getNbins();
                             //add by shimomura 2023/06/14
-                            tmp_max[2*tf+1] = kvs::Math::Max( tmp_max[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
-                            tmp_min[2*tf+1] = kvs::Math::Min( tmp_min[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
+                            tmp_max[2*tf+1] = vismodule::Math::Max( tmp_max[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
+                            tmp_min[2*tf+1] = vismodule::Math::Min( tmp_min[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
                             for ( int res = 0; res < c_nbins; res++ )
                             {
                                 tmp_c_bins[c_count] += object->getCHistogram()[ c_count ] ;
@@ -1453,8 +1452,8 @@ int main( int argc, char** argv )
                         {
                             o_nbins = object->getNbins();
                             //add by shimomura 2023/06/14
-                            tmp_max[2*tf] = kvs::Math::Max( tmp_max[2*tf] ,param.m_transfunc_synthesizer-> m_o_max[tf]);
-                            tmp_min[2*tf] = kvs::Math::Min( tmp_min[2*tf] ,param.m_transfunc_synthesizer-> m_o_min[tf]);
+                            tmp_max[2*tf] = vismodule::Math::Max( tmp_max[2*tf] ,param.m_transfunc_synthesizer-> m_o_max[tf]);
+                            tmp_min[2*tf] = vismodule::Math::Min( tmp_min[2*tf] ,param.m_transfunc_synthesizer-> m_o_min[tf]);
                             //tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_o_max[tf];
                             //tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_o_min[tf];
                             for ( int res = 0; res < o_nbins; res++ )
@@ -1499,7 +1498,7 @@ int main( int argc, char** argv )
                 else
                 {
                     timer_count++;
-//                  param.m_transfer_function = pbvr::TransferFunction(); // *( clntMes.m_transfer_function );
+//                  param.m_transfer_function = vismodule::TransferFunction(); // *( clntMes.m_transfer_function );
                     param.m_sampling_method = clntMes.m_sampling_method;
                     param.m_component_Id = clntMes.m_rendering_id;
                     param.m_crop.setEnable( clntMes.m_enable_crop_region );
@@ -1513,44 +1512,44 @@ int main( int argc, char** argv )
                     {
                         pflfile = param.m_input_data_base;
                         param.m_input_data_base = pflfile.substr( 0, pflfile.size() - 4 );
-                        kvs::File pfl( pflfile );
+                        vismodule::File pfl( pflfile );
                         if ( pfl.isExisted() )
                         {
-                            fil.loadPFL( pflfile );
+                            mvpl.loadPFL( pflfile );
                         }
                     }
                     else
                     {
 #if 0
                         pfifile = param.m_input_data_base + ".pfi";
-                        kvs::File pfi( pfifile );
+                        vismodule::File pfi( pfifile );
                         pflfile = param.m_input_data_base + ".pfl";
-                        kvs::File pfl( pflfile );
+                        vismodule::File pfl( pflfile );
                         if ( pfl.isExisted() )
                         {
-                            fil.loadPFL( pflfile );
+                            mvpl.loadPFL( pflfile );
                         }
                         else if ( pfi.isExisted() )
                         {
-                            fil.loadPFL( pfifile );
+                            mvpl.loadPFL( pfifile );
                         }
 #else
 						pflfile = param.m_input_data_base;
-						kvs::File pfl( pflfile );
+						vismodule::File pfl( pflfile );
 						if ( pfl.isExisted() )
 						{
-							fil.loadPFL( pflfile );
+							mvpl.loadPFL( pflfile );
 						}
 #endif
                     }
 
                     glyph_creator_lst.clear();
-                    for ( int idx = 0; idx < fil.m_list.size(); idx++ )
+                    for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
                     {
                         GlyphObjectCreator glyph_creator;
-                        glyph_creator.setFilterInfo( fil.m_list[idx] );
+                        glyph_creator.setFilterInfo( mvpl.m_list[idx] );
 
-//                        point_creator.setFilterInfo( fil.m_list[idx] );
+//                        point_creator.setFilterInfo( mvpl.m_list[idx] );
 //                        glyph_creator.setCoordSynthStr( clntMes.m_x_synthesis,
 //                                                        clntMes.m_y_synthesis, clntMes.m_z_synthesis );
 //                        point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
@@ -1558,39 +1557,39 @@ int main( int argc, char** argv )
                         glyph_creator_lst.push_back( glyph_creator );
                     }
 
-                   transfunc_creator.setFilterInfo( fil.m_list[0] );
-                   Calculate_minmax_glyph( param, fil, clntMes); 
-                   transfunc_creator.setProtocol( clntMes );
+                    transfunc_creator.setFilterInfo( mvpl.m_list[0] );
+                    Calculate_minmax_glyph( param, mvpl, clntMes);
+                    transfunc_creator.setProtocol( clntMes );
                     transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
                     param.m_transfunc_synthesizer = transfunc_creator.create();
 //
                     param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
                     for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
                     {
-                        param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
+                        param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
 
 //                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                     if ( param.m_crop.isEnabled() )
                     {
-                        jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
-                                       fil.m_total_min_subvolume_coord,
-                                       fil.m_total_max_subvolume_coord,
+                        jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                       mvpl.m_total_min_subvolume_coord,
+                                       mvpl.m_total_max_subvolume_coord,
                                        param.m_latency_threshold, param.m_job_id_pack_size,
                                        param.m_crop.getMinCoord(),
                                        param.m_crop.getMaxCoord() );
                     }
                     else
                     {
-                        jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
-                                       fil.m_total_min_subvolume_coord,
-                                       fil.m_total_max_subvolume_coord,
+                        jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                       mvpl.m_total_min_subvolume_coord,
+                                       mvpl.m_total_max_subvolume_coord,
                                        param.m_latency_threshold, param.m_job_id_pack_size );
                     }
 
-                    param.m_sampling_step = CalculateSamplingStep( fil );
+                    param.m_sampling_step = CalculateSamplingStep( mvpl );
                     //param.m_sampling_step = 1;
-                    param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
+                    param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
                     param.m_particle_limit_pre = param.m_particle_limit;
                     
                     int cnt = 2 ;
@@ -1606,30 +1605,30 @@ int main( int argc, char** argv )
                     while ( jd.dispatchNext( wid, &st, &vl ) )
                     {
                         int xvl, fidx;
-                        fidx = fil.getFileIndex( vl, &xvl );
-                        FilterInformationFile& fi = fil.m_list[fidx];
+                        fidx = mvpl.getFileIndex( vl, &xvl );
+                        MultiVolumeProperty&mvp = mvpl.m_list[fidx];
 
-                        kvs::KVSMLObjectGlyph* tmp_obj = new kvs::KVSMLObjectGlyph;
+                        vismodule::KVSMLObjectGlyph* tmp_obj = new vismodule::KVSMLObjectGlyph;
                         std::stringstream suffix;
                         suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
+                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
                         //param.m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
-                        kvs::File ifpx( fi.m_file_path );
+                        vismodule::File ifpx( mvp.m_file_path );
                         param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                              + ifpx.baseName() + suffix.str() + ".kvsml";
                         param.m_subvolume_id = xvl ;
                         int timeStep = 1;
                         try
                         {
-                            if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+                            if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                             {
-                                *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, fil.m_total_number_subvolumes, timeStep, st, xvl); 
+                                *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, mvpl.m_total_number_subvolumes, timeStep, st, xvl); 
 
                             }
                             else     // filetype: kvsml
                             {
-                                glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, fil.m_total_number_subvolumes, timeStep, tmp_obj, st );
+                                glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, mvpl.m_total_number_subvolumes, timeStep, tmp_obj, st );
                             }
                         }
                         catch ( const std::runtime_error& e )
@@ -1653,10 +1652,10 @@ int main( int argc, char** argv )
                         for ( int tf = 0; tf < cnt/2; tf++ )
                         {
                             //add by shimomura 2023/06/14
-                            tmp_max[2*tf+1] = kvs::Math::Max( tmp_max[2*tf+1] ,tmp_obj->colorMax());
-                            tmp_min[2*tf+1] = kvs::Math::Min( tmp_min[2*tf+1] ,tmp_obj->colorMin());
-                            tmp_max[2*tf]   = kvs::Math::Max( tmp_max[2*tf]   ,tmp_obj->sizeMax());
-                            tmp_min[2*tf]   = kvs::Math::Min( tmp_min[2*tf]   ,tmp_obj->sizeMin());
+                            tmp_max[2*tf+1] = vismodule::Math::Max( tmp_max[2*tf+1] ,tmp_obj->colorMax());
+                            tmp_min[2*tf+1] = vismodule::Math::Min( tmp_min[2*tf+1] ,tmp_obj->colorMin());
+                            tmp_max[2*tf]   = vismodule::Math::Max( tmp_max[2*tf]   ,tmp_obj->sizeMax());
+                            tmp_min[2*tf]   = vismodule::Math::Min( tmp_min[2*tf]   ,tmp_obj->sizeMin());
                         }
 
 
@@ -1671,10 +1670,10 @@ int main( int argc, char** argv )
                     delete[] tmp_max;
                     delete[] tmp_min;
 
-                    if ( timer_count == PBVR_TIMER_COUNT_NUM )
+                    if ( timer_count == VIS_MODULE_TIMER_COUNT_NUM )
                     {
-                        PBVR_TIMER_END( 1 );
-                        PBVR_TIMER_FIN();
+                        VIS_MODULE_TIMER_END( 1 );
+                        VIS_MODULE_TIMER_FIN();
                     }
                     delete param.m_transfunc_synthesizer;
                 }
@@ -1693,7 +1692,7 @@ int main( int argc, char** argv )
                 else
                 {
                     timer_count++;
-//                  param.m_transfer_function = pbvr::TransferFunction(); // *( clntMes.m_transfer_function );
+//                  param.m_transfer_function = vismodule::TransferFunction(); // *( clntMes.m_transfer_function );
                     param.m_sampling_method = clntMes.m_sampling_method;
                     param.m_component_Id = clntMes.m_rendering_id;
                     param.m_crop.setEnable( clntMes.m_enable_crop_region );
@@ -1707,26 +1706,25 @@ int main( int argc, char** argv )
                     {
                         pflfile = param.m_input_data_base;
                         param.m_input_data_base = pflfile.substr( 0, pflfile.size() - 4 );
-                        kvs::File pfl( pflfile );
+                        vismodule::File pfl( pflfile );
                         if ( pfl.isExisted() )
                         {
-                            fil.loadPFL( pflfile );
+                            mvpl.loadPFL( pflfile );
                         }
                     }
                     else
                     {
 						pflfile = param.m_input_data_base;
-						kvs::File pfl( pflfile );
+						vismodule::File pfl( pflfile );
 						if ( pfl.isExisted() )
 						{
-							fil.loadPFL( pflfile );
+							mvpl.loadPFL( pflfile );
 						}
                     }
 
-
-                    //VariableRange range = Calculate_minmax_glyph( param, fil, clntMes); 
-                    Calculate_minmax_glyph(param, fil, clntMes);
-                   transfunc_creator.setFilterInfo( fil.m_list[0] );
+                    //VariableRange range = Calculate_minmax_glyph( param, mvpl, clntMes); 
+                    Calculate_minmax_glyph(param, mvpl, clntMes);
+                    transfunc_creator.setFilterInfo( mvpl.m_list[0] );
                    transfunc_creator.setProtocol( clntMes );
                     transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
                     param.m_transfunc_synthesizer = transfunc_creator.create();
@@ -1734,29 +1732,29 @@ int main( int argc, char** argv )
                     param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
                     for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
                     {
-                        param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
+                        param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
 
 //                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                     if ( param.m_crop.isEnabled() )
                     {
-                        jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
-                                       fil.m_total_min_subvolume_coord,
-                                       fil.m_total_max_subvolume_coord,
+                        jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                       mvpl.m_total_min_subvolume_coord,
+                                       mvpl.m_total_max_subvolume_coord,
                                        param.m_latency_threshold, param.m_job_id_pack_size,
                                        param.m_crop.getMinCoord(),
                                        param.m_crop.getMaxCoord() );
                     }
                     else
                     {
-                        jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
-                                       fil.m_total_min_subvolume_coord,
-                                       fil.m_total_max_subvolume_coord,
+                        jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                       mvpl.m_total_min_subvolume_coord,
+                                       mvpl.m_total_max_subvolume_coord,
                                        param.m_latency_threshold, param.m_job_id_pack_size );
                     }
 
-                    param.m_sampling_step = CalculateSamplingStep( fil );
-                    param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
+                    param.m_sampling_step = CalculateSamplingStep( mvpl );
+                    param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
                     param.m_particle_limit_pre = param.m_particle_limit;
                     
                     int cnt = 2 ;
@@ -1770,32 +1768,32 @@ int main( int argc, char** argv )
                     {
                         POLObjectGenerator pol_generator;
                         int xvl, fidx;
-                        fidx = fil.getFileIndex( vl, &xvl );
-                        FilterInformationFile& fi = fil.m_list[fidx];
-                        pol_generator.setFinlterInfo(&fil.m_list[fidx]);
+                        fidx = mvpl.getFileIndex( vl, &xvl );
+                        MultiVolumeProperty& mvp = mvpl.m_list[fidx];
+                        pol_generator.setFinlterInfo( &mvpl.m_list[fidx] );
 
-                        //kvs::KVSMLObjectGlyph* tmp_obj = new kvs::KVSMLObjectGlyph;
-                        kvs::KVSMLObjectPlotOverLine* tmp_obj = new kvs::KVSMLObjectPlotOverLine;
+                        //vismodule::KVSMLObjectGlyph* tmp_obj = new vismodule::KVSMLObjectGlyph;
+                        vismodule::KVSMLObjectPlotOverLine* tmp_obj = new vismodule::KVSMLObjectPlotOverLine;
                         std::stringstream suffix;
                         suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
+                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
                         //param.m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
-                        kvs::File ifpx( fi.m_file_path );
+                        vismodule::File ifpx( mvp.m_file_path );
                         param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                              + ifpx.baseName() + suffix.str() + ".kvsml";
                         param.m_subvolume_id = xvl ;
                         int timeStep = 1;
                         try
                         {
-                            if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+                            if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                             {
 //                                //object = glyph_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
-//                                *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, fil.m_total_number_subvolumes, timeStep, st, xvl); 
+//                                *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, mvpl.m_total_number_subvolumes, timeStep, st, xvl); 
                             }
                             else     // filetype: kvsml
                             {
-                                pol_generator.run( param, *clntMes.m_camera, clntMes, timeStep, fil.m_total_number_subvolumes , tmp_obj, st );
+                                pol_generator.run( param, *clntMes.m_camera, clntMes, timeStep, mvpl.m_total_number_subvolumes , tmp_obj, st );
                             }
                            
                             for(int i =0; i < resolution; i++)
@@ -1830,10 +1828,10 @@ int main( int argc, char** argv )
 
                     } // end of while(DispatchNext)
 
-                    if ( timer_count == PBVR_TIMER_COUNT_NUM )
+                    if ( timer_count == VIS_MODULE_TIMER_COUNT_NUM )
                     {
-                        PBVR_TIMER_END( 1 );
-                        PBVR_TIMER_FIN();
+                        VIS_MODULE_TIMER_END( 1 );
+                        VIS_MODULE_TIMER_FIN();
                     }
                     delete param.m_transfunc_synthesizer;
                 }
@@ -1983,29 +1981,32 @@ int main( int argc, char** argv )
                     // 変換前ファイルの場合はFileFormatReaderに渡す
                     size_t found_pfl = param.m_input_data_base.find(".pfl");
                     size_t found_pfi = param.m_input_data_base.find(".pfi");
-                    if (found_pfl != std::string::npos)
+                    if ( found_pfl != std::string::npos )
                     {
                         std::string pflfile = param.m_input_data_base;
                         std::cout << "pflファイルが選択されました" << std::endl;
-                        vismodule::File pfl(pflfile);
-                        if (pfl.isExisted())
+                        vismodule::File pfl( pflfile );
+                        if ( pfl.isExisted() )
                         {
-                            mvpl.loadPFL(pflfile);
+                            mvpl.loadPFL( pflfile );
                         }
                     }
-                    else if (found_pfi != std::string::npos)
+                    else if ( found_pfi != std::string::npos )
                     {
+                        std::string pfifile = param.m_input_data_base;
                         std::cout << "pfiファイルが選択されました" << std::endl;
-                        std::cout << "pflファイルもしくは変換前ファイルを選択してください" << std::endl;
-                        return -1;
+                        vismodule::File pfi( pfifile );
+                        if ( pfi.isExisted() )
+                        {
+                            mvpl.loadPFL( pfifile );
+                        }
                     }
                     else
                     {
                         std::string pre_conversion_file_path = param.m_input_data_base;
                         std::cout << "変換前ファイルが選択されました" << std::endl;
                         // 入力は変換前ファイルパス
-                        // 出力はMultiVolumePropertyListクラス
-                        
+                        // 出力はMultiVolumePropertyListクラス   
                     }
 #endif
 
@@ -2233,8 +2234,8 @@ int main( int argc, char** argv )
                                 {
                                     int c_nbins = tmp_obj->getNbins();
                                     //changed by shimomura 2023/07/24
-                                    tmp_max[2*tf+1] = kvs::Math::Max(tmp_max[2*tf+1],param.m_transfunc_synthesizer-> m_c_max[tf]);
-                                    tmp_min[2*tf+1] = kvs::Math::Min(tmp_min[2*tf+1],param.m_transfunc_synthesizer-> m_c_min[tf]);
+                                    tmp_max[2*tf+1] = vismodule::Math::Max(tmp_max[2*tf+1],param.m_transfunc_synthesizer-> m_c_max[tf]);
+                                    tmp_min[2*tf+1] = vismodule::Math::Min(tmp_min[2*tf+1],param.m_transfunc_synthesizer-> m_c_min[tf]);
                                     for ( int res = 0; res < c_nbins; res++ )
                                     {
                                         tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ] ;
@@ -2247,8 +2248,8 @@ int main( int argc, char** argv )
                                 {
                                     int o_nbins = tmp_obj->getNbins();
                                     //changed by shimomura 2023/07/24
-                                    tmp_max[2*tf] = kvs::Math::Max(tmp_max[2*tf],param.m_transfunc_synthesizer-> m_c_max[tf]);
-                                    tmp_min[2*tf] = kvs::Math::Min(tmp_min[2*tf],param.m_transfunc_synthesizer-> m_c_min[tf]);
+                                    tmp_max[2*tf] = vismodule::Math::Max(tmp_max[2*tf],param.m_transfunc_synthesizer-> m_c_max[tf]);
+                                    tmp_min[2*tf] = vismodule::Math::Min(tmp_min[2*tf],param.m_transfunc_synthesizer-> m_c_min[tf]);
                                     for ( int res = 0; res < o_nbins; res++ )
                                     {
                                         tmp_o_bins[o_count] += tmp_obj->getOHistogram()[ o_count ] ;
@@ -2349,24 +2350,24 @@ int main( int argc, char** argv )
                     strncpy( servMes.m_header, "JPTP /1.0 000 OK\r\n", 18 );
                     servMes.m_number_particle = 0;
                     servMes.m_number_glyph = 0 ;
-                    servMes.m_number_volume_divide = fil.m_total_number_subvolumes;
-                    servMes.m_time_step = fil.m_total_start_steps;
-                    servMes.m_start_step = fil.m_total_start_steps;
-                    servMes.m_last_step = fil.m_total_last_step;
-                    servMes.m_number_step = fil.m_total_number_steps;
-                    servMes.m_min_object_coord[0] = fil.m_total_min_object_coord[0];
-                    servMes.m_min_object_coord[1] = fil.m_total_min_object_coord[1];
-                    servMes.m_min_object_coord[2] = fil.m_total_min_object_coord[2];
-                    servMes.m_max_object_coord[0] = fil.m_total_max_object_coord[0];
-                    servMes.m_max_object_coord[1] = fil.m_total_max_object_coord[1];
-                    servMes.m_max_object_coord[2] = fil.m_total_max_object_coord[2];
-                    servMes.m_min_value = fil.m_total_min_value;
-                    servMes.m_max_value = fil.m_total_max_value;
-                    servMes.m_number_nodes = fil.m_total_number_nodes;
-                    servMes.m_number_elements = fil.m_total_number_elements;
-                    servMes.m_element_type = fil.m_list[0].m_elem_type;
-                    servMes.m_file_type = fil.m_list[0].m_file_type;
-                    servMes.m_number_ingredients = fil.m_list[0].m_number_ingredients;
+                    servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
+                    servMes.m_time_step = mvpl.m_total_start_steps;
+                    servMes.m_start_step = mvpl.m_total_start_steps;
+                    servMes.m_last_step = mvpl.m_total_last_step;
+                    servMes.m_number_step = mvpl.m_total_number_steps;
+                    servMes.m_min_object_coord[0] = mvpl.m_total_min_object_coord[0];
+                    servMes.m_min_object_coord[1] = mvpl.m_total_min_object_coord[1];
+                    servMes.m_min_object_coord[2] = mvpl.m_total_min_object_coord[2];
+                    servMes.m_max_object_coord[0] = mvpl.m_total_max_object_coord[0];
+                    servMes.m_max_object_coord[1] = mvpl.m_total_max_object_coord[1];
+                    servMes.m_max_object_coord[2] = mvpl.m_total_max_object_coord[2];
+                    servMes.m_min_value = mvpl.m_total_min_value;
+                    servMes.m_max_value = mvpl.m_total_max_value;
+                    servMes.m_number_nodes = mvpl.m_total_number_nodes;
+                    servMes.m_number_elements = mvpl.m_total_number_elements;
+                    servMes.m_element_type = mvpl.m_list[0].m_elem_type;
+                    servMes.m_file_type = mvpl.m_list[0].m_file_type;
+                    servMes.m_number_ingredients = mvpl.m_list[0].m_number_ingredients;
                     servMes.m_opacity_transfer_function_synthesis = "O1";
                     servMes.m_color_transfer_function_synthesis = "C1";
                     transfunc_creator.setTransferFunction(&servMes, vr); 
@@ -2652,8 +2653,8 @@ int main( int argc, char** argv )
                                     //changed by shimomura 2023/07/24
 //                                    tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
 //                                    tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
-                                    tmp_max[2*tf+1] = kvs::Math::Max( tmp_max[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
-                                    tmp_min[2*tf+1] = kvs::Math::Min( tmp_min[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
+                                    tmp_max[2*tf+1] = vismodule::Math::Max( tmp_max[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
+                                    tmp_min[2*tf+1] = vismodule::Math::Min( tmp_min[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
                                     for ( int res = 0; res < c_nbins; res++ )
                                     {
                                         tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ] ;
@@ -2665,8 +2666,8 @@ int main( int argc, char** argv )
                                 {
                                     int o_nbins = tmp_obj->getNbins();
                                     //changed by shimomura 2023/07/24
-                                    tmp_max[2*tf] = kvs::Math::Max( tmp_max[2*tf] ,param.m_transfunc_synthesizer-> m_o_max[tf]);
-                                    tmp_min[2*tf] = kvs::Math::Min( tmp_min[2*tf] ,param.m_transfunc_synthesizer-> m_o_min[tf]);
+                                    tmp_max[2*tf] = vismodule::Math::Max( tmp_max[2*tf] ,param.m_transfunc_synthesizer-> m_o_max[tf]);
+                                    tmp_min[2*tf] = vismodule::Math::Min( tmp_min[2*tf] ,param.m_transfunc_synthesizer-> m_o_min[tf]);
                                     for ( int res = 0; res < o_nbins; res++ )
                                     {
                                         tmp_o_bins[o_count] += tmp_obj->getOHistogram()[ o_count ] ;
@@ -2837,9 +2838,9 @@ int main( int argc, char** argv )
                 {
                     timer_count++;
                     std::vector<GlyphObjectCreator> glyph_creator_lst;
-                    if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                     {
-                        PBVR_TIMER_STA( 461 );
+                        VIS_MODULE_TIMER_STA( 461 );
                     }
 
                     // send cltMes to all worker process >>
@@ -2925,15 +2926,15 @@ int main( int argc, char** argv )
                         param.m_particle_limit = clntMes.m_particle_limit;
                         param.m_particle_density = clntMes.m_particle_density;
 
-//                        transfunc_creator.setProtocol(clntMes);
-//                        transfunc_creator.setAsisTransferFunction(param.m_transfer_function);
+//                        transfunc_creator.setProtocol( clntMes );
+//                        transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
 //                        param.m_transfunc_synthesizer = transfunc_creator.create();
-                        
-                    Calculate_minmax_glyph(param, fil, clntMes);
-                    param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+
+                    Calculate_minmax_glyph( param, mvpl, clntMes );
+                    param.m_transfunc_array.resize( transfunc_creator.transfunc().size() );
                     for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
                     {
-                        param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
+                        param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
                         if ( clntMes.m_node_type == 'a' )
                         {
@@ -2951,9 +2952,9 @@ int main( int argc, char** argv )
 
                         if ( param.m_crop.isEnabled() )
                         {
-                            jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
-                                           fil.m_total_min_subvolume_coord,
-                                           fil.m_total_max_subvolume_coord,
+                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                           mvpl.m_total_min_subvolume_coord,
+                                           mvpl.m_total_max_subvolume_coord,
                                            param.m_latency_threshold, param.m_job_id_pack_size,
                                            param.m_crop.getMinCoord(),
                                            param.m_crop.getMaxCoord() );
@@ -2961,19 +2962,21 @@ int main( int argc, char** argv )
                         }
                         else
                         {
-                            jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
-                                           fil.m_total_min_subvolume_coord,
-                                           fil.m_total_max_subvolume_coord,
+                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                           mvpl.m_total_min_subvolume_coord,
+                                           mvpl.m_total_max_subvolume_coord,
                                            param.m_latency_threshold, param.m_job_id_pack_size );
-                            servMes.m_number_volume_divide = fil.m_total_number_subvolumes;
+                            servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
                         }
 
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                         {
-                            PBVR_TIMER_STA( 470 );
+                            VIS_MODULE_TIMER_STA( 470 );
                         }
-                        param.m_sampling_step = CalculateSamplingStep( fil );
-                        param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
+
+                        param.m_sampling_step = CalculateSamplingStep( mvpl );
+                        param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
+
                         VariableRange vr;
                         pts.sendMessage( servMes );
 
@@ -2993,25 +2996,25 @@ int main( int argc, char** argv )
  
                         while ( jd.dispatchNext( wid, &st, &vl ) )
                         {
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_STA( 471 );
+                                VIS_MODULE_TIMER_STA( 471 );
                             }
 
-                            kvs::KVSMLObjectGlyph* originalGlyph = new kvs::KVSMLObjectGlyph;
+                            vismodule::KVSMLObjectGlyph* originalGlyph = new vismodule::KVSMLObjectGlyph;
 
                             if (mpi_size == 1) {
                             int xvl, fidx;
-                            fidx = fil.getFileIndex( vl, &xvl );
-                            FilterInformationFile& fi = fil.m_list[fidx];
-                            //glyph_creator_lst[fidx].setFilterInfo(fil.m_list[fidx]);
+                            fidx = mvpl.getFileIndex( vl, &xvl );
+                            MultiVolumeProperty& mvp = mvpl.m_list[fidx];
+                            //glyph_creator_lst[fidx].setFilterInfo(mvpl.m_list[fidx]);
 
-                            kvs::KVSMLObjectGlyph* tmp_obj = new kvs::KVSMLObjectGlyph;
+                            vismodule::KVSMLObjectGlyph* tmp_obj = new vismodule::KVSMLObjectGlyph;
                             std::stringstream suffix;
                             suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
                                    << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
-                            kvs::File ifpx( fil.m_list[fidx].m_file_path );
+                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
+                            vismodule::File ifpx( mvpl.m_list[fidx].m_file_path );
                             param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                                  + ifpx.baseName() + suffix.str() + ".kvsml";
                             param.m_subvolume_id = xvl;
@@ -3019,9 +3022,9 @@ int main( int argc, char** argv )
                             servMes.m_flag_send_bins = 2;
                             try
                             {
-                                if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+                                if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                                 {
-                                    *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, fil.m_total_number_subvolumes, timeStep, st, xvl); 
+                                    *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, mvpl.m_total_number_subvolumes, timeStep, st, xvl); 
                                     // run()で得られるKVSMLObjectglyphとtmp_objは異なるメモリ領域を指しているため,ポインタコピーではなくオペレータを呼び出す必要がある
                                 }
                                 else     // filetype: kvsml
@@ -3036,10 +3039,10 @@ int main( int argc, char** argv )
                                 for ( int tf = 0; tf < cnt/2; tf++ )
                                 {
                                     //changed by shimomura 2023/07/24
-                                    tmp_max[2*tf+1] = kvs::Math::Max(tmp_max[2*tf+1],tmp_obj->colorMax());
-                                    tmp_min[2*tf+1] = kvs::Math::Min(tmp_min[2*tf+1],tmp_obj->colorMin());
-                                    tmp_max[2*tf  ] = kvs::Math::Max(tmp_max[2*tf  ],tmp_obj->sizeMax());
-                                    tmp_min[2*tf  ] = kvs::Math::Min(tmp_min[2*tf  ],tmp_obj->sizeMin());
+                                    tmp_max[2*tf+1] = vismodule::Math::Max(tmp_max[2*tf+1],tmp_obj->colorMax());
+                                    tmp_min[2*tf+1] = vismodule::Math::Min(tmp_min[2*tf+1],tmp_obj->colorMin());
+                                    tmp_max[2*tf  ] = vismodule::Math::Max(tmp_max[2*tf  ],tmp_obj->sizeMax());
+                                    tmp_min[2*tf  ] = vismodule::Math::Min(tmp_min[2*tf  ],tmp_obj->sizeMin());
                                 }
 
                             }
@@ -3061,7 +3064,7 @@ int main( int argc, char** argv )
                             }
 #endif
 #endif
-                            kvs::KVSMLObjectGlyph* object = originalGlyph;
+                            vismodule::KVSMLObjectGlyph* object = originalGlyph;
 							printf(" %zu glyphs generated\n", object->coords().size() / 3);
 
 //                           //add by shimomura 2023/06/14
@@ -3096,30 +3099,30 @@ int main( int argc, char** argv )
                                 servMes.m_glyph_sizes[i ] = object->sizes()[ i ];
                             }
 
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_END( 471 );
+                                VIS_MODULE_TIMER_END( 471 );
                             }
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_STA( 472 );
+                                VIS_MODULE_TIMER_STA( 472 );
                             }
                             servMes.m_flag_send_bins = 2;
                             servMes.m_message_size = servMes.byteSize();
                             servMes.show();
                             pts.sendMessage( servMes );
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_END( 472 );
+                                VIS_MODULE_TIMER_END( 472 );
                             }
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_STA( 473 );
+                                VIS_MODULE_TIMER_STA( 473 );
                             }
                             delete object;
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_END( 473 );
+                                VIS_MODULE_TIMER_END( 473 );
                             }
                         } // end of while(DispatchNext)
 #ifndef CPU_VER
@@ -3169,23 +3172,23 @@ int main( int argc, char** argv )
                         servMes.m_transfer_function_count = 0;
                         servMes.m_flag_send_bins = 1;
 
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                         {
-                            PBVR_TIMER_END( 470 );
+                            VIS_MODULE_TIMER_END( 470 );
                         }
                     } // end of timeParam == 2
                     else
                     {
                         break;
                     }
-                    if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                     {
-                        PBVR_TIMER_END( 461 );
+                        VIS_MODULE_TIMER_END( 461 );
                     }
-                    if ( timer_count == PBVR_TIMER_COUNT_NUM )
+                    if ( timer_count == VIS_MODULE_TIMER_COUNT_NUM )
                     {
-                        PBVR_TIMER_END( 1 );
-                        PBVR_TIMER_FIN();
+                        VIS_MODULE_TIMER_END( 1 );
+                        VIS_MODULE_TIMER_FIN();
                     }
                 } // end of initParam = 3 // generateglyph
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
@@ -3193,9 +3196,9 @@ int main( int argc, char** argv )
 #if 1
                     timer_count++;
 //                    std::vector<POLObjectGenerator> pol_generator_lst;
-                    if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                     {
-                        PBVR_TIMER_STA( 461 );
+                        VIS_MODULE_TIMER_STA( 461 );
                     }
 
                     // send cltMes to all worker process >>
@@ -3277,7 +3280,7 @@ int main( int argc, char** argv )
                      param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
                     for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
                     {
-                        param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
+                        param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
 
                         if ( clntMes.m_node_type == 'a' )
@@ -3296,9 +3299,9 @@ int main( int argc, char** argv )
 
                         if ( param.m_crop.isEnabled() )
                         {
-                            jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
-                                           fil.m_total_min_subvolume_coord,
-                                           fil.m_total_max_subvolume_coord,
+                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                           mvpl.m_total_min_subvolume_coord,
+                                           mvpl.m_total_max_subvolume_coord,
                                            param.m_latency_threshold, param.m_job_id_pack_size,
                                            param.m_crop.getMinCoord(),
                                            param.m_crop.getMaxCoord() );
@@ -3306,21 +3309,21 @@ int main( int argc, char** argv )
                         }
                         else
                         {
-                            jd.initialize( clntMes.m_step, clntMes.m_step, fil.m_total_number_subvolumes,
-                                           fil.m_total_min_subvolume_coord,
-                                           fil.m_total_max_subvolume_coord,
+                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                           mvpl.m_total_min_subvolume_coord,
+                                           mvpl.m_total_max_subvolume_coord,
                                            param.m_latency_threshold, param.m_job_id_pack_size );
-                            servMes.m_number_volume_divide = fil.m_total_number_subvolumes;
+                            servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
                         }
 
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                         {
-                            PBVR_TIMER_STA( 470 );
+                            VIS_MODULE_TIMER_STA( 470 );
                         }
 
-                        param.m_sampling_step = CalculateSamplingStep( fil );
+                        param.m_sampling_step = CalculateSamplingStep( mvpl );
 
-                        param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
+                        param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
 
                         VariableRange vr;
                         pts.sendMessage( servMes );
@@ -3332,7 +3335,7 @@ int main( int argc, char** argv )
                         servMes.initializeTransferFunction(clntMes.m_transfer_function.size(), DEFAULT_NBINS);
  
                         const int resolution = clntMes.m_sampling_size;
-                        kvs::KVSMLObjectPlotOverLine* originalGlyph = new kvs::KVSMLObjectPlotOverLine;
+                        vismodule::KVSMLObjectPlotOverLine* originalGlyph = new vismodule::KVSMLObjectPlotOverLine;
                         servMes.m_resolution = resolution;
                         servMes.m_xAxis.resize(resolution);
                         servMes.m_mask.resize(resolution);
@@ -3350,23 +3353,23 @@ int main( int argc, char** argv )
                         while ( jd.dispatchNext( wid, &st, &vl ) )
                         {
                             POLObjectGenerator pol_generator;
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_STA( 471 );
+                                VIS_MODULE_TIMER_STA( 471 );
                             }
 
                             if (mpi_size == 1) 
                             {
                             int xvl, fidx;
-                            fidx = fil.getFileIndex( vl, &xvl );
-                            FilterInformationFile& fi = fil.m_list[fidx];
+                            fidx = mvpl.getFileIndex( vl, &xvl );
+                            MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
-                            kvs::KVSMLObjectPlotOverLine* tmp_obj = new kvs::KVSMLObjectPlotOverLine;
+                            vismodule::KVSMLObjectPlotOverLine* tmp_obj = new vismodule::KVSMLObjectPlotOverLine;
                             std::stringstream suffix;
                             suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
                                    << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << fi.m_number_subvolumes;
-                            kvs::File ifpx( fil.m_list[fidx].m_file_path );
+                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
+                            vismodule::File ifpx( mvpl.m_list[fidx].m_file_path );
                             param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                                  + ifpx.baseName() + suffix.str() + ".kvsml";
                             param.m_subvolume_id = xvl ;
@@ -3374,7 +3377,7 @@ int main( int argc, char** argv )
                             servMes.m_flag_send_bins = 2;
                             try
                             {
-                                if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+                                if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                                 {
                                     // run()で得られるKVSMLObjectglyphとtmp_objは異なるメモリ領域を指しているため,ポインタコピーではなくオペレータを呼び出す必要がある
                                 }
@@ -3427,26 +3430,26 @@ int main( int argc, char** argv )
 //                           //add by shimomura 2023/06/14
                             //if ( originalGlyph != object ) delete originalGlyph;
 
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_END( 471 );
+                                VIS_MODULE_TIMER_END( 471 );
                             }
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_STA( 472 );
+                                VIS_MODULE_TIMER_STA( 472 );
                             }
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_END( 472 );
+                                VIS_MODULE_TIMER_END( 472 );
                             }
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_STA( 473 );
+                                VIS_MODULE_TIMER_STA( 473 );
                             }
                             delete object;
-                            if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
-                                PBVR_TIMER_END( 473 );
+                                VIS_MODULE_TIMER_END( 473 );
                             }
                         } // end of while(DispatchNext)
                            
@@ -3480,23 +3483,23 @@ int main( int argc, char** argv )
                         servMes.m_transfer_function_count = 0;
                         servMes.m_flag_send_bins = 1;
 
-                        if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                         {
-                            PBVR_TIMER_END( 470 );
+                            VIS_MODULE_TIMER_END( 470 );
                         }
                     } // end of timeParam == 2
                     else
                     {
                         break;
                     }
-                    if ( timer_count <= PBVR_TIMER_COUNT_NUM )
+                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                     {
-                        PBVR_TIMER_END( 461 );
+                        VIS_MODULE_TIMER_END( 461 );
                     }
-                    if ( timer_count == PBVR_TIMER_COUNT_NUM )
+                    if ( timer_count == VIS_MODULE_TIMER_COUNT_NUM )
                     {
-                        PBVR_TIMER_END( 1 );
-                        PBVR_TIMER_FIN();
+                        VIS_MODULE_TIMER_END( 1 );
+                        VIS_MODULE_TIMER_FIN();
                     }
 #endif
                 } // end of initParam = 5 plot_over_line

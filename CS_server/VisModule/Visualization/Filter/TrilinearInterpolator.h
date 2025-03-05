@@ -41,10 +41,12 @@ class TrilinearInterpolator
 private:
 
     vismodule::Vector3ui m_grid_index; ///< grid index
+    vismodule::UInt32    m_neighbouring_grid_index[8];   ///< neighbouring grid index
+    vismodule::Real32    m_neighbouring_grid_weight[8];  ///< weight for the neighbouring grid index
     vismodule::UInt32    m_index_woSIMD[8];   ///< neighbouring grid index
     vismodule::Real32    m_weight_woSIMD[8];  ///< weight for the neighbouring grid index
     vismodule::Real32    m_scalars[8]; 
-    float*          m_data;
+    float*               m_data;
 
     vismodule::UInt32 m_grid_index_i[SIMDW]; ///< grid index
     vismodule::UInt32 m_grid_index_j[SIMDW]; ///< grid index
@@ -58,8 +60,8 @@ private:
     vismodule::Real32 m_dNdy[8][SIMDW];
     vismodule::Real32 m_dNdz[8][SIMDW];
 
-    const float*         m_reference_volume;
-//    const vismodule::StructuredVolumeObject& m_reference_volume;
+    const float*         m_reference_value;
+    const vismodule::StructuredVolumeObject* m_reference_volume;
 //    const vismodule::StructuredVolumeObject& m_reference_object;
     const vismodule::Vector3ui m_resolution; ///< resolution 3D
     const int m_line_size;
@@ -96,8 +98,6 @@ public:
 
     void attachPoint_woSIMD( const vismodule::Vector3f& point );
 
-    //const vismodule::UInt32* indices( void ) const;
-
     //template <typename T>
     void scalar( float* values ) const;
 
@@ -128,27 +128,21 @@ private:
 //
 //}
 
-//inline TrilinearInterpolator::TrilinearInterpolator( const vismodule::StructuredVolumeObject* volume )
-//    : m_grid_index( 0, 0, 0 )
-//    , m_reference_object( volume )
-//{
-//}
-
-inline TrilinearInterpolator::TrilinearInterpolator( const vismodule::StructuredVolumeObject& volume ) 
+inline TrilinearInterpolator::TrilinearInterpolator( const vismodule::StructuredVolumeObject& volume )
     : m_grid_index( 0, 0, 0 )
     , m_reference_volume( &volume )
-    , m_resolution( volume.resolution() )
-    , m_line_size ( m_resolution.x() )
-    , m_slice_size( m_resolution.x() * m_resolution.y() )
-    , m_leaf_size ( m_resolution.x() * m_resolution.y() * m_resolution.z() )
-    , m_imax( m_resolution.x() - 1 )
-    , m_jmax( m_resolution.y() - 1 )
-    , m_kmax( m_resolution.z() - 1 )
+    , m_resolution( 0, 0, 0 )
+    , m_line_size( 0 )
+    , m_slice_size( 0 )
+    , m_leaf_size( 0 )
+    , m_imax( 0 )
+    , m_jmax( 0 )
+    , m_kmax( 0 )
 {
 }
 
-inline TrilinearInterpolator::TrilinearInterpolator( const float* volume, const vismodule::Vector3ui resolution )
-    : m_reference_volume( volume )
+inline TrilinearInterpolator::TrilinearInterpolator( const float* value, const vismodule::Vector3ui resolution )
+    : m_reference_value( value )
     , m_resolution( resolution )
     , m_line_size ( resolution.x() )
     , m_slice_size( resolution.x() * resolution.y() )
@@ -182,6 +176,59 @@ inline const int TrilinearInterpolator::id( const int i, const int j, const int 
     return I + J*m_line_size + K*m_slice_size;
 
 //    return i + j*m_line_size + k*m_slice_size;
+}
+
+inline void TrilinearInterpolator::attachPoint( const Vector3f& point )
+{
+    const Vector3ui resolution = m_reference_volume->resolution();
+    VIS_MODULE_ASSERT( 0.0f <= point.x() && point.x() <= resolution.x() - 1.0f );
+    VIS_MODULE_ASSERT( 0.0f <= point.y() && point.y() <= resolution.y() - 1.0f );
+    VIS_MODULE_ASSERT( 0.0f <= point.z() && point.z() <= resolution.z() - 1.0f );
+
+    // Temporary index.
+    const size_t ti = static_cast<size_t>( point.x() );
+    const size_t tj = static_cast<size_t>( point.y() );
+    const size_t tk = static_cast<size_t>( point.z() );
+
+    // Addjustment index for boundary.
+    const size_t i = ( ti >= resolution.x() - 1 ) ? resolution.x() - 2 : ti;
+    const size_t j = ( tj >= resolution.y() - 1 ) ? resolution.y() - 2 : tj;
+    const size_t k = ( tk >= resolution.z() - 1 ) ? resolution.z() - 2 : tk;
+
+    const size_t line_size  = m_reference_volume->nnodesPerLine();
+    const size_t slice_size = m_reference_volume->nnodesPerSlice();
+
+    // Calculate index.
+    m_grid_index.set( i, j, k );
+
+    m_neighbouring_grid_index[0] = i + j * line_size + k * slice_size;
+    m_neighbouring_grid_index[1] = m_neighbouring_grid_index[0] + 1;
+    m_neighbouring_grid_index[2] = m_neighbouring_grid_index[1] + line_size;
+    m_neighbouring_grid_index[3] = m_neighbouring_grid_index[0] + line_size;
+    m_neighbouring_grid_index[4] = m_neighbouring_grid_index[0] + slice_size;
+    m_neighbouring_grid_index[5] = m_neighbouring_grid_index[1] + slice_size;
+    m_neighbouring_grid_index[6] = m_neighbouring_grid_index[2] + slice_size;
+    m_neighbouring_grid_index[7] = m_neighbouring_grid_index[3] + slice_size;
+
+    // Calculate local coordinate.
+    const float x = point.x() - i;
+    const float y = point.y() - j;
+    const float z = point.z() - k;
+
+    const float xy = x * y;
+    const float yz = y * z;
+    const float zx = z * x;
+
+    const float xyz = xy * z;
+
+    m_neighbouring_grid_weight[0] = 1.0f - x - y - z + xy + yz + zx - xyz;
+    m_neighbouring_grid_weight[1] = x - xy - zx + xyz;
+    m_neighbouring_grid_weight[2] = xy - xyz;
+    m_neighbouring_grid_weight[3] = y - xy - yz + xyz;
+    m_neighbouring_grid_weight[4] = z - zx - yz + xyz;
+    m_neighbouring_grid_weight[5] = zx - xyz;
+    m_neighbouring_grid_weight[6] = xyz;
+    m_neighbouring_grid_weight[7] = yz - xyz;
 }
 
 inline void TrilinearInterpolator::attachPoint_woSIMD( const vismodule::Vector3f& point )
@@ -240,7 +287,6 @@ inline void TrilinearInterpolator::attachPoint_woSIMD( const vismodule::Vector3f
     m_weight_woSIMD[7] = yz - xyz;
 }
 
-//inline void TrilinearInterpolator::attachPoint( const vismodule::Vector3f& point )
 #pragma ivdep
 inline void TrilinearInterpolator::attachPoint( const float* p_x, const float* p_y, const float* p_z )
 {
@@ -371,7 +417,7 @@ template <typename T>
 inline const float TrilinearInterpolator::scalar_woSIMD( void ) const
 {
     //const T* const data = reinterpret_cast<const T*>( m_reference_object->values().pointer() );
-    const float* const data = m_reference_volume;
+    const float* const data = m_reference_value;
 
     return(
         static_cast<float>(
@@ -565,6 +611,149 @@ inline const vismodule::Vector3f TrilinearInterpolator::gradient( void ) const
     return( vismodule::Vector3f( -x, -y, -z ) );
 }
 
+/*
+template <typename T>
+    inline void TrilinearInterpolator::gradient( float* g_x, float* g_y, float* g_z ) const
+{
+    const T* const s = reinterpret_cast<const T*>( m_reference_volume->values().pointer() );
+
+    float dsdx[8][SIMDW], dsdy[8][SIMDW], dsdz[8][SIMDW];
+
+    #pragma ivdep
+    for( int I=0; I<SIMDW; I++ )
+    {
+        //m_index[0]
+        const int i = m_grid_index_i[I];
+        const int j = m_grid_index_j[I];
+        const int k = m_grid_index_k[I];
+
+        dsdx[0][I] = (float)s[id(i+1,j,k)] - (float)s[id(i-1,j,k)];
+        dsdy[0][I] = (float)s[id(i,j+1,k)] - (float)s[id(i,j-1,k)];
+        dsdz[0][I] = (float)s[id(i,j,k+1)] - (float)s[id(i,j,k-1)];
+    }
+
+    #pragma ivdep
+    for( int I=0; I<SIMDW; I++ )
+    {
+        //m_index[1]
+        const int i = m_grid_index_i[I]+1;
+        const int j = m_grid_index_j[I];
+        const int k = m_grid_index_k[I];
+
+        dsdx[1][I] = (float)s[id(i+1,j,k)] - (float)s[id(i-1,j,k)];
+        dsdy[1][I] = (float)s[id(i,j+1,k)] - (float)s[id(i,j-1,k)];
+        dsdz[1][I] = (float)s[id(i,j,k+1)] - (float)s[id(i,j,k-1)];
+    }
+
+    #pragma ivdep
+    for( int I=0; I<SIMDW; I++ )
+    {
+        //m_index[2]
+        const int i = m_grid_index_i[I]+1;
+        const int j = m_grid_index_j[I]+1;
+        const int k = m_grid_index_k[I];
+
+        dsdx[2][I] = (float)s[id(i+1,j,k)] - (float)s[id(i-1,j,k)];
+        dsdy[2][I] = (float)s[id(i,j+1,k)] - (float)s[id(i,j-1,k)];
+        dsdz[2][I] = (float)s[id(i,j,k+1)] - (float)s[id(i,j,k-1)];
+    }
+
+    #pragma ivdep
+    for( int I=0; I<SIMDW; I++ )
+    {
+        //m_index[3]
+        const int i = m_grid_index_i[I];
+        const int j = m_grid_index_j[I]+1;
+        const int k = m_grid_index_k[I];
+
+        dsdx[3][I] = (float)s[id(i+1,j,k)] - (float)s[id(i-1,j,k)];
+        dsdy[3][I] = (float)s[id(i,j+1,k)] - (float)s[id(i,j-1,k)];
+        dsdz[3][I] = (float)s[id(i,j,k+1)] - (float)s[id(i,j,k-1)];
+    }
+
+    #pragma ivdep
+    for( int I=0; I<SIMDW; I++ )
+    {
+        //m_index[4]
+        const int i = m_grid_index_i[I];
+        const int j = m_grid_index_j[I];
+        const int k = m_grid_index_k[I]+1;
+
+        dsdx[4][I] = (float)s[id(i+1,j,k)] - (float)s[id(i-1,j,k)];
+        dsdy[4][I] = (float)s[id(i,j+1,k)] - (float)s[id(i,j-1,k)];
+        dsdz[4][I] = (float)s[id(i,j,k+1)] - (float)s[id(i,j,k-1)];
+    }
+
+    #pragma ivdep
+    for( int I=0; I<SIMDW; I++ )
+    {
+        //m_index[5]
+        const int i = m_grid_index_i[I]+1;
+        const int j = m_grid_index_j[I];
+        const int k = m_grid_index_k[I]+1;
+
+        dsdx[5][I] = (float)s[id(i+1,j,k)] - (float)s[id(i-1,j,k)];
+        dsdy[5][I] = (float)s[id(i,j+1,k)] - (float)s[id(i,j-1,k)];
+        dsdz[5][I] = (float)s[id(i,j,k+1)] - (float)s[id(i,j,k-1)];
+    }
+
+    #pragma ivdep
+    for( int I=0; I<SIMDW; I++ )
+    {
+        //m_index[6]
+        const int i = m_grid_index_i[I]+1;
+        const int j = m_grid_index_j[I]+1;
+        const int k = m_grid_index_k[I]+1;
+
+        dsdx[6][I] = (float)s[id(i+1,j,k)] - (float)s[id(i-1,j,k)];
+        dsdy[6][I] = (float)s[id(i,j+1,k)] - (float)s[id(i,j-1,k)];
+        dsdz[6][I] = (float)s[id(i,j,k+1)] - (float)s[id(i,j,k-1)];
+    }
+
+    #pragma ivdep
+    for( int I=0; I<SIMDW; I++ )
+    {
+        //m_index[7]
+        const int i = m_grid_index_i[I];
+        const int j = m_grid_index_j[I]+1;
+        const int k = m_grid_index_k[I]+1;
+
+        dsdx[7][I] = (float)s[id(i+1,j,k)] - (float)s[id(i-1,j,k)];
+        dsdy[7][I] = (float)s[id(i,j+1,k)] - (float)s[id(i,j-1,k)];
+        dsdz[7][I] = (float)s[id(i,j,k+1)] - (float)s[id(i,j,k-1)];
+    }
+
+    #pragma ivdep
+    for( int I = 0; I < SIMDW; I++ )
+    {
+        g_x[I] =
+            - m_weight[0][I] * dsdx[0][I] - m_weight[1][I] * dsdx[1][I]
+            - m_weight[2][I] * dsdx[2][I] - m_weight[3][I] * dsdx[3][I] 
+            - m_weight[4][I] * dsdx[4][I] - m_weight[5][I] * dsdx[5][I] 
+            - m_weight[6][I] * dsdx[6][I] - m_weight[7][I] * dsdx[7][I];
+    }
+
+    #pragma ivdep
+    for( int I = 0; I < SIMDW; I++ )
+    {
+        g_y[I] = 
+            - m_weight[0][I] * dsdy[0][I] - m_weight[1][I] * dsdy[1][I]
+            - m_weight[2][I] * dsdy[2][I] - m_weight[3][I] * dsdy[3][I]
+            - m_weight[4][I] * dsdy[4][I] - m_weight[5][I] * dsdy[5][I]
+            - m_weight[6][I] * dsdy[6][I] - m_weight[7][I] * dsdy[7][I];
+    }
+
+    #pragma ivdep
+    for( int I = 0; I < SIMDW; I++ )
+    {
+        g_z[I] =
+            - m_weight[0][I] * dsdz[0][I] - m_weight[1][I] * dsdz[1][I]
+            - m_weight[2][I] * dsdz[2][I] - m_weight[3][I] * dsdz[3][I]
+            - m_weight[4][I] * dsdz[4][I] - m_weight[5][I] * dsdz[5][I]
+            - m_weight[6][I] * dsdz[6][I] - m_weight[7][I] * dsdz[7][I];
+    }
+}
+*/
 } // end of namespace vismodule
 
 #endif // VIS_MODULE__TRILINEAR_INTERPOLATOR_H_INCLUDE

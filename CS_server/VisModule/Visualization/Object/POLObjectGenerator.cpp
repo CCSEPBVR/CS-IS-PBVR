@@ -1,115 +1,114 @@
 #include "POLObjectGenerator.h"
 //#include <sys/time.h>
-#include "TransferFunction.h"
+#include <vismodule/TransferFunction>
 #include "UnstructuredVolumeObject.h"
-#include "UnstructuredVolumeImporter.h"
+#include <vismodule/UnstructuredVolumeImporter>
 //#include "CellByCellLayeredSampling.h"
-#include <kvs/Camera>
+#include <vismodule/Camera>
 #if 0 //TEST_DELETE
-#include <kvs/TestVolume>
-#include <kvs/FrontSTRFileReader>
+#include <vismodule/TestVolume>
+#include <vismodule/FrontSTRFileReader>
 #endif
-#include <kvs/AVSUcd>
-#include "common.h"
-#include <kvs/ValueArray>
-#include <kvs/File>
+#include <vismodule/AVSUcd>
+#include <vismodule/ValueArray>
+#include <vismodule/File>
 
-#include "FileChecker.h"
+#include <vismodule/FileChecker>
 #include "StructuredVolumeObject.h"
-#include "StructuredVolumeImporter.h"
+#include <vismodule/StructuredVolumeImporter>
 
-#include "Argument.h"
+#include <vismodule/Argument>
 
-#include "timer_simple.h"
+#include <vismodule/timer_simple>
 
-using namespace pbvr;
+using namespace vismodule;
 
-//void POLObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera )
-void POLObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide )
+//void POLObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera )
+void POLObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide )
 {
 //FJ_TIMER_KAWAMURA
-    PBVR_TIMER_STA( 260 );
+    VIS_MODULE_TIMER_STA( 260 );
 //FJ_TIMER_KAWAMURA
 
     // add by shimomura 2023/0407
-    pbvr::VolumeObjectBase* volume = nullptr;
-    if ( kvsview::FileChecker::ImportableStructuredVolume( param.m_input_data ))
+    vismodule::VolumeObjectBase* volume = nullptr;
+    if ( vismoduleview::FileChecker::ImportableStructuredVolume( param.m_input_data ))
     {
         std::cout << "Structured !" <<std::endl;
-        volume = new pbvr::StructuredVolumeImporter( param.m_input_data ); 
-//        kvsMessageError("structured data does not apply." );
+        volume = new vismodule::StructuredVolumeImporter( param.m_input_data ); 
+//        visModuleMessageError("structured data does not apply." );
         int id = param.m_subvolume_id;
         volume->updateMinMaxValues();
-        //volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
-        volume->setMinMaxObjectCoords( m_fi->m_min_subvolume_coord[id], m_fi->m_max_subvolume_coord[id] );
-        //volume->setMinMaxExternalCoords( m_fi->m_min_subvolume_coord[id], m_fi->m_max_subvolume_coord[id] );
+        //volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
+        volume->setMinMaxObjectCoords( m_mvp->m_min_subvolume_coord[id], m_mvp->m_max_subvolume_coord[id] );
+        //volume->setMinMaxExternalCoords( m_mvp->m_min_subvolume_coord[id], m_mvp->m_max_subvolume_coord[id] );
     } 
-    else if ( kvsview::FileChecker::ImportableUnstructuredVolume( param.m_input_data))
+    else if ( vismoduleview::FileChecker::ImportableUnstructuredVolume( param.m_input_data))
     {
         std::cout << "Unstructured !" <<std::endl;
-        volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );  
+        volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );  
     }
     else 
     {
-        kvsMessageError("%s is not volume data.", param.m_input_data.c_str());
+        visModuleMessageError("%s is not volume data.", param.m_input_data.c_str());
     }
 
 //FJ_TIMER_KAWAMURA
-    PBVR_TIMER_END( 260 );
+    VIS_MODULE_TIMER_END( 260 );
 //FJ_TIMER_KAWAMURA
 
     volume->updateMinMaxValues();
-    //volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
-//    volume->setMinMaxObjectCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
-//    volume->setMinMaxExternalCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
+    //volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
+//    volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
+//    volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
 
     std::cout << *volume << std::endl;
     std::cout << "min:" << volume->minObjectCoord() << ", max:" << volume->maxObjectCoord() << std::endl;
     std::cout << "min:" << volume->minExternalCoord() << ", max:" << volume->maxExternalCoord() << std::endl;
 
-    pbvr::VolumeObjectBase::VolumeType voltype = volume->volumeType();
+    vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();
 
-    if(voltype ==  pbvr::VolumeObjectBase::VolumeType::Unstructured)
+    if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Unstructured)
     {
-        const pbvr::UnstructuredVolumeObject* uvo_p = static_cast<const pbvr::UnstructuredVolumeObject*>( volume );
-        kvs::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
-        kvs::Vec3 end_point( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
-        kvs::UnstructuredVolumeObject* vo_p = new kvs::UnstructuredVolumeObject();
+        const vismodule::UnstructuredVolumeObject* uvo_p = static_cast<const vismodule::UnstructuredVolumeObject*>( volume );
+        vismodule::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
+        vismodule::Vec3 end_point( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
+        vismodule::UnstructuredVolumeObject* vo_p = new vismodule::UnstructuredVolumeObject();
         switch(volume -> cellType())
         {
-            case pbvr::VolumeObjectBase::Tetrahedra:
+            case vismodule::VolumeObjectBase::Tetrahedra:
                 {
-                    vo_p -> setCellType(kvs::VolumeObjectBase::Tetrahedra); 
+                    vo_p -> setCellType(vismodule::VolumeObjectBase::Tetrahedra); 
                     break;
                 }
-            case pbvr::VolumeObjectBase::QuadraticTetrahedra:
+            case vismodule::VolumeObjectBase::QuadraticTetrahedra:
                 {
-                    vo_p -> setCellType(kvs::VolumeObjectBase::QuadraticTetrahedra); 
+                    vo_p -> setCellType(vismodule::VolumeObjectBase::QuadraticTetrahedra); 
                     break;
                 }
-            case pbvr::VolumeObjectBase::Hexahedra:
+            case vismodule::VolumeObjectBase::Hexahedra:
                 {
-                    vo_p -> setCellType(kvs::VolumeObjectBase::Hexahedra); 
+                    vo_p -> setCellType(vismodule::VolumeObjectBase::Hexahedra); 
                     break;
                 }
-            case pbvr::VolumeObjectBase::QuadraticHexahedra:
+            case vismodule::VolumeObjectBase::QuadraticHexahedra:
                 {
-                    vo_p -> setCellType(kvs::VolumeObjectBase::QuadraticHexahedra); 
+                    vo_p -> setCellType(vismodule::VolumeObjectBase::QuadraticHexahedra); 
                     break;
                 }
-            case pbvr::VolumeObjectBase::Prism:
+            case vismodule::VolumeObjectBase::Prism:
                 {
-                    vo_p -> setCellType(kvs::VolumeObjectBase::Prism); 
+                    vo_p -> setCellType(vismodule::VolumeObjectBase::Prism); 
                     break;
                 }
-            case pbvr::VolumeObjectBase::Pyramid:
+            case vismodule::VolumeObjectBase::Pyramid:
                 {
-                    vo_p -> setCellType(kvs::VolumeObjectBase::Pyramid); 
+                    vo_p -> setCellType(vismodule::VolumeObjectBase::Pyramid); 
                     break;
                 }
             default:
                 {
-                    kvsMessageError( "Unsupported cell type." );
+                    visModuleMessageError( "Unsupported cell type." );
                     return;
                 }
         }
@@ -142,13 +141,13 @@ void POLObjectGenerator::createFromFile( const Argument& param, const kvs::Camer
         }
         delete vo_p;
     }
-    else if(voltype ==  pbvr::VolumeObjectBase::VolumeType::Structured)
+    else if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Structured)
     {
 #if 1
-        const pbvr::StructuredVolumeObject* object = static_cast<const pbvr::StructuredVolumeObject*>( volume );
-        kvs::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
-        kvs::Vec3 end_point( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
-//        kvs::StructuredVolumeObject* vo_p = new kvs::StructuredVolumeObject();
+        const vismodule::StructuredVolumeObject* object = static_cast<const vismodule::StructuredVolumeObject*>( volume );
+        vismodule::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
+        vismodule::Vec3 end_point( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
+//        vismodule::StructuredVolumeObject* vo_p = new vismodule::StructuredVolumeObject();
 //        vo_p -> setNNodes( vo_p->nnodes()); 
 //        vo_p -> setNCells( vo_p->ncells()); 
 //        vo_p -> setCoords( vo_p->coords()); 
@@ -185,23 +184,23 @@ void POLObjectGenerator::createFromFile( const Argument& param, const kvs::Camer
 }
 
 #if 0
-void POLObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera,const jpv::ParticleTransferClientMessage& clntMes,const int number_of_divide, const int st, const int vl )
+void POLObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage& clntMes,const int number_of_divide, const int st, const int vl )
 {
-    PBVR_TIMER_STA( 260 );
+    VIS_MODULE_TIMER_STA( 260 );
 //    delete m_object;
-    pbvr::UnstructuredVolumeObject* volume;
-    volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );
+    vismodule::UnstructuredVolumeObject* volume;
+    volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );
 
-    kvs::File ifpx( m_fi->m_file_path );
+    vismodule::File ifpx( m_mvp->m_file_path );
     std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
 
-    volume = new pbvr::UnstructuredVolumeImporter( path_base, m_fi->m_file_type, st, vl );
+    volume = new vismodule::UnstructuredVolumeImporter( path_base, m_mvp->m_file_type, st, vl );
 
-    PBVR_TIMER_END( 260 );
+    VIS_MODULE_TIMER_END( 260 );
 
-    volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
-    volume->setMinMaxObjectCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
-    volume->setMinMaxExternalCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
+    volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
+    volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
+    volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
 
     std::cout << *volume << std::endl;
     std::cout << "min:" << volume->minObjectCoord()   << ", max:" << volume->maxObjectCoord() << std::endl;
@@ -240,42 +239,42 @@ std::string POLObjectGenerator::getErrorMessage( const size_t maxMemory ) const
     return errorMessage;
 }
 
-const kvs::ValueArray<kvs::Real32>& POLObjectGenerator::coords( void ) const
+const vismodule::ValueArray<vismodule::Real32>& POLObjectGenerator::coords( void ) const
 {
     return( m_coords );
 }
 
-const kvs::ValueArray<kvs::UInt8>& POLObjectGenerator::colors( void ) const
+const vismodule::ValueArray<vismodule::UInt8>& POLObjectGenerator::colors( void ) const
 {
     return( m_colors );
 }
 
-const kvs::ValueArray<kvs::Real32>& POLObjectGenerator::directions( void ) const
+const vismodule::ValueArray<vismodule::Real32>& POLObjectGenerator::directions( void ) const
 {
     return( m_directions );
 }
 
-const kvs::ValueArray<kvs::Real32>& POLObjectGenerator::sizes( void ) const
+const vismodule::ValueArray<vismodule::Real32>& POLObjectGenerator::sizes( void ) const
 {
     return( m_sizes );
 }
 
-void POLObjectGenerator::setCoords( const kvs::ValueArray<kvs::Real32>& coords )
+void POLObjectGenerator::setCoords( const vismodule::ValueArray<vismodule::Real32>& coords )
 {
     m_coords = coords;
 }
 
-void POLObjectGenerator::setColors( const kvs::ValueArray<kvs::UInt8>& colors )
+void POLObjectGenerator::setColors( const vismodule::ValueArray<vismodule::UInt8>& colors )
 {
     m_colors = colors;
 }
 
-void POLObjectGenerator::setDirections( const kvs::ValueArray<kvs::Real32>& directions )
+void POLObjectGenerator::setDirections( const vismodule::ValueArray<vismodule::Real32>& directions )
 {
     m_directions = directions;
 }
 
-void POLObjectGenerator::setSizes( const kvs::ValueArray<kvs::Real32>& sizes )
+void POLObjectGenerator::setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes )
 {
     m_sizes = sizes;
 }

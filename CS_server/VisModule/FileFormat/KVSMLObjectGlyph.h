@@ -11,36 +11,36 @@
  *  $Id: KVSMLObjectGlyph.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__KVSML_OBJECT_GLYPH_H_INCLUDE
-#define KVS__KVSML_OBJECT_GLYPH_H_INCLUDE
+#ifndef VIS_MODULE__KVSML_OBJECT_GLYPH_H_INCLUDE
+#define VIS_MODULE__KVSML_OBJECT_GLYPH_H_INCLUDE
 
 #include <fstream>
 #include <iostream>
 #include <string>
 
-#include <kvs/FileFormatBase>
-#include <kvs/ValueArray>
-#include <kvs/Type>
-#include <kvs/Vector3>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/Vector3>
 #include <sstream>
 //#include "KVSMLTag.h"
 //#include "ObjectTag.h"
-#include <kvs/XMLDocument>
-#include <kvs/XMLDeclaration>
-#include <kvs/XMLElement>
-#include <kvs/XMLComment>
-#include <kvs/ValueArray>
-#include <kvs/File>
-#include <kvs/Type>
-#include <kvs/File>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/XMLDocument>
+#include <vismodule/XMLDeclaration>
+#include <vismodule/XMLElement>
+#include <vismodule/XMLComment>
+#include <vismodule/ValueArray>
+#include <vismodule/File>
+#include <vismodule/Type>
+#include <vismodule/File>
+#include <vismodule/IgnoreUnusedVariable>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -48,9 +48,9 @@ namespace kvs
  *  @brief  KVSML point object format.
  */
 /*===========================================================================*/
-class KVSMLObjectGlyph : public kvs::FileFormatBase
+class KVSMLObjectGlyph : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::KVSMLObjectGlyph );
+    visModuleClassName( vismodule::KVSMLObjectGlyph );
 
 public:
 
@@ -63,11 +63,11 @@ public:
 
 protected:
 
-    kvs::ValueArray<kvs::Real32> m_coords;       ///< coordinate array
-    kvs::ValueArray<kvs::UInt8>  m_colors;       ///< color(r,g,b) array
-    kvs::ValueArray<kvs::Real32> m_directions;
-    kvs::ValueArray<kvs::Real32> m_normals;      ///< normal array
-    kvs::ValueArray<kvs::Real32> m_sizes;        ///< size array
+    vismodule::ValueArray<vismodule::Real32> m_coords;       ///< coordinate array
+    vismodule::ValueArray<vismodule::UInt8>  m_colors;       ///< color(r,g,b) array
+    vismodule::ValueArray<vismodule::Real32> m_directions;
+    vismodule::ValueArray<vismodule::Real32> m_normals;      ///< normal array
+    vismodule::ValueArray<vismodule::Real32> m_sizes;        ///< size array
 
    float m_color_min;
    float m_color_max;
@@ -80,23 +80,23 @@ public:
 
     KVSMLObjectGlyph( const std::string& filename );
 
-    KVSMLObjectGlyph( const kvs::ValueArray<kvs::Real32> coords, const kvs::ValueArray<kvs::UInt8>  colors,
-                      const kvs::ValueArray<kvs::Real32> directions, const kvs::ValueArray<kvs::Real32> sizes   );
+    KVSMLObjectGlyph( const vismodule::ValueArray<vismodule::Real32> coords, const vismodule::ValueArray<vismodule::UInt8>  colors,
+                      const vismodule::ValueArray<vismodule::Real32> directions, const vismodule::ValueArray<vismodule::Real32> sizes   );
     
     
     virtual ~KVSMLObjectGlyph( void );
 
 public:
 
-    const kvs::ValueArray<kvs::Real32>& coords( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& coords( void ) const;
 
-    const kvs::ValueArray<kvs::UInt8>& colors( void ) const;
+    const vismodule::ValueArray<vismodule::UInt8>& colors( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& normals( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& normals( void ) const;
     
-    const kvs::ValueArray<kvs::Real32>& directions( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& directions( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& sizes( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& sizes( void ) const;
 
     const float colorMin() const;
     const float colorMax() const;
@@ -104,15 +104,15 @@ public:
     const float sizeMax() const;
 public:
 
-    void setCoords( const kvs::ValueArray<kvs::Real32>& coords );
+    void setCoords( const vismodule::ValueArray<vismodule::Real32>& coords );
 
-    void setColors( const kvs::ValueArray<kvs::UInt8>& colors );
+    void setColors( const vismodule::ValueArray<vismodule::UInt8>& colors );
 
-    void setNormals( const kvs::ValueArray<kvs::Real32>& normals );
+    void setNormals( const vismodule::ValueArray<vismodule::Real32>& normals );
 
-    void setDirections( const kvs::ValueArray<kvs::Real32>& deirections );
+    void setDirections( const vismodule::ValueArray<vismodule::Real32>& deirections );
     
-    void setSizes( const kvs::ValueArray<kvs::Real32>& sizes );
+    void setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes );
 
     void setColorMin(const float color_min);
     void setColorMax(const float color_max);
@@ -146,6 +146,6 @@ public:
     friend std::ostream& operator <<( std::ostream& os, const KVSMLObjectGlyph& rhs );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
 #endif // KVS__KVSML_OBJECT_POINT_H_INCLUDE

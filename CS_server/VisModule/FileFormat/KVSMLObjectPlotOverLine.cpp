@@ -13,7 +13,7 @@
 /****************************************************************************/
 #include "KVSMLObjectPlotOverLine.h"
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -45,8 +45,8 @@ KVSMLObjectPlotOverLine::KVSMLObjectPlotOverLine( const std::string& filename )
  */
 /*===========================================================================*/
 
-KVSMLObjectPlotOverLine::KVSMLObjectPlotOverLine( const kvs::ValueArray<float> values_on_line, const kvs::ValueArray<float> x_axis,
-                                    const kvs::ValueArray<bool> mask ) 
+KVSMLObjectPlotOverLine::KVSMLObjectPlotOverLine( const vismodule::ValueArray<float> values_on_line, const vismodule::ValueArray<float> x_axis,
+                                    const vismodule::ValueArray<bool> mask ) 
 {
     setValuesOnLine(values_on_line);
     setXAxis(x_axis);
@@ -62,33 +62,33 @@ KVSMLObjectPlotOverLine::~KVSMLObjectPlotOverLine( void )
 {
 }
 
-const kvs::ValueArray<float>& KVSMLObjectPlotOverLine:: values_on_line( void ) const
+const vismodule::ValueArray<float>& KVSMLObjectPlotOverLine:: values_on_line( void ) const
 {
     return( m_values_on_line );
 }
 
-const kvs::ValueArray<float>& KVSMLObjectPlotOverLine::x_axis( void ) const
+const vismodule::ValueArray<float>& KVSMLObjectPlotOverLine::x_axis( void ) const
 {
     return( m_x_axis );
 }
 
-const kvs::ValueArray<bool>& KVSMLObjectPlotOverLine::mask( void ) const
+const vismodule::ValueArray<bool>& KVSMLObjectPlotOverLine::mask( void ) const
 {
     return( m_mask );
 }
 
 
-void KVSMLObjectPlotOverLine::setValuesOnLine( const kvs::ValueArray<float>& values_on_line )
+void KVSMLObjectPlotOverLine::setValuesOnLine( const vismodule::ValueArray<float>& values_on_line )
 {
     m_values_on_line = values_on_line;
 }
 
-void KVSMLObjectPlotOverLine::setXAxis( const kvs::ValueArray<float>& x_axis )
+void KVSMLObjectPlotOverLine::setXAxis( const vismodule::ValueArray<float>& x_axis )
 {
     m_x_axis = x_axis;
 }
 
-void KVSMLObjectPlotOverLine::setMask( const kvs::ValueArray<bool>& mask )
+void KVSMLObjectPlotOverLine::setMask( const vismodule::ValueArray<bool>& mask )
 {
     m_mask = mask;
 }
@@ -201,4 +201,4 @@ std::ostream& operator <<( std::ostream& os, const KVSMLObjectPlotOverLine& rhs 
     return( os );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

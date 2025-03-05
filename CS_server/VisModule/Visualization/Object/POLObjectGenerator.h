@@ -12,34 +12,34 @@
  */
 /****************************************************************************/
 
-#ifndef KVS__POL_OBJECT_GENERATOR_H_INCLUDE
-#define KVS__POL_OBJECT_GENERATOR_H_INCLUDE
+#ifndef VIS_MODULE__POL_OBJECT_GENERATOR_H_INCLUDE
+#define VIS_MODULE__POL_OBJECT_GENERATOR_H_INCLUDE
 
 #include <vector>
 #include <string>
 #include "UnstructuredVolumeObject.h"
-#include "FilterInformation.h"
-#include "ExtendedTransferFunction.h"
+#include <vismodule/MultiVolumeProperty>
+#include <vismodule/ExtendedTransferFunction>
 #include "timer.h"
-#include "GlyphObjectGenerator.h"
-#include "KVSMLObjectGlyph.h"
+#include <vismodule/GlyphObjectGenerator>
+#include <vismodule/KVSMLObjectGlyph>
 #include "../Common/ParticleTransferProtocol.h"
-#include "PlotOverLine.h"
-#include "KVSMLObjectPlotOverLine.h"
+#include <vismodule/PlotOverLine>
+#include <vismodule/KVSMLObjectPlotOverLine>
 
 #include <sys/stat.h>
-#include <kvs/Camera>
-#include "Argument.h"
+#include <vismodule/Camera>
+#include <vismodule/Argument>
 
 
 class POLObjectGenerator
 {
 private:
 
-    pbvr::UnstructuredVolumeObject* m_volume;
-    kvs::KVSMLObjectPlotOverLine* m_object;
+    vismodule::UnstructuredVolumeObject* m_volume;
+    vismodule::KVSMLObjectPlotOverLine* m_object;
 
-//    kvs::KVSMLPlotOverLine m_generator;
+//    vismodule::KVSMLPlotOverLine m_generator;
 
     int m_mpi_rank;
 
@@ -47,7 +47,7 @@ private:
 public:
 
     POLObjectGenerator()
-        : m_volume(NULL), m_mpi_rank(0), m_fi(NULL), m_object(NULL) {}
+        : m_volume(NULL), m_mpi_rank(0), m_mvp(NULL), m_object(NULL) {}
 
     ~POLObjectGenerator()
     {
@@ -55,7 +55,7 @@ public:
 
 public:
 
-    void run( const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide ,const int timeStep, kvs::KVSMLObjectPlotOverLine* object, const int st = 1 )
+    void run( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide ,const int timeStep, vismodule::KVSMLObjectPlotOverLine* object, const int st = 1 )
     {
 
         delete  m_object;
@@ -65,49 +65,49 @@ public:
             std::cout << "Error. read failed:" << param.m_input_data << std::endl;
             exit( 1 );
         }
-            m_object = new kvs::KVSMLObjectPlotOverLine();
+            m_object = new vismodule::KVSMLObjectPlotOverLine();
             this -> createFromFile( param, camera, clntMes, number_of_divide);
 
-        kvs::KVSMLObjectPlotOverLine* po = getKVSMLObjectPOL();
+        vismodule::KVSMLObjectPlotOverLine* po = getKVSMLObjectPOL();
 
         object->setValuesOnLine(po->values_on_line()); 
         object->setXAxis(po->x_axis()); 
         object->setMask(po->mask()); 
     }
 
-//    kvs::KVSMLObjectGlyph* run( const Argument& param, const kvs::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, const int st, const int vl)
+//    vismodule::KVSMLObjectGlyph* run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, const int st, const int vl)
 //    {
-//        m_generator.setFinlterInfo( m_fi );
+//        m_generator.setFinlterInfo( m_mvp );
 //        m_generator.setCoordSynthTS( st );
 //        m_generator.createFromFile( param, camera, clntMes, number_of_divide, st, vl );
-//        kvs::KVSMLObjectGlyph* po = m_generator.getKVSMLObjectGlyph();
+//        vismodule::KVSMLObjectGlyph* po = m_generator.getKVSMLObjectGlyph();
 //        return po;
 //    }
 
 protected:
 
 private:
-    //kvs::KVSMLObjectGlyph* m_object;
+    //vismodule::KVSMLObjectGlyph* m_object;
     
-    kvs::ValueArray<kvs::Real32> m_coords;       ///< coordinate array
-    kvs::ValueArray<kvs::UInt8>  m_colors;       ///< color(r,g,b) array
-    kvs::ValueArray<kvs::Real32> m_directions;   ///< directions array
-    kvs::ValueArray<kvs::Real32> m_sizes;        ///< size array
+    vismodule::ValueArray<vismodule::Real32> m_coords;       ///< coordinate array
+    vismodule::ValueArray<vismodule::UInt8>  m_colors;       ///< color(r,g,b) array
+    vismodule::ValueArray<vismodule::Real32> m_directions;   ///< directions array
+    vismodule::ValueArray<vismodule::Real32> m_sizes;        ///< size array
 
 
-    const FilterInformationFile*   m_fi;
+    const MultiVolumeProperty*   m_mvp;
 
 public:
 
 
     void createFromFile(
-        const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
-        //const Argument& param, const kvs::Camera& camera);
+        const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
+        //const Argument& param, const vismodule::Camera& camera);
 
 //    void createFromFile(
-//        const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const int st, const int vl );
+//        const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const int st, const int vl );
 
-    kvs::KVSMLObjectPlotOverLine* getKVSMLObjectPOL()
+    vismodule::KVSMLObjectPlotOverLine* getKVSMLObjectPOL()
     {
         //return &m_object;
         return m_object;
@@ -115,34 +115,34 @@ public:
 
     std::string getErrorMessage( const size_t maxMemory ) const;
 
-    void setFinlterInfo( const FilterInformationFile *fi )
+    void setFinlterInfo( const MultiVolumeProperty *mvp )
     {
-        m_fi = fi;
+        m_mvp = mvp;
     }
 
 public:
 
-    const kvs::ValueArray<kvs::Real32>& coords( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& coords( void ) const;
 
-    const kvs::ValueArray<kvs::UInt8>& colors( void ) const;
+    const vismodule::ValueArray<vismodule::UInt8>& colors( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& directions( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& directions( void ) const;
 
-    const kvs::ValueArray<kvs::Real32>& sizes( void ) const;
+    const vismodule::ValueArray<vismodule::Real32>& sizes( void ) const;
 
 public:
 
-    void setCoords( const kvs::ValueArray<kvs::Real32>& coords );
+    void setCoords( const vismodule::ValueArray<vismodule::Real32>& coords );
 
-    void setColors( const kvs::ValueArray<kvs::UInt8>& colors );
+    void setColors( const vismodule::ValueArray<vismodule::UInt8>& colors );
 
-    void setDirections( const kvs::ValueArray<kvs::Real32>& deirections );
+    void setDirections( const vismodule::ValueArray<vismodule::Real32>& deirections );
     
-    void setSizes( const kvs::ValueArray<kvs::Real32>& sizes );
+    void setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes );
 
     void clear();
 private:
-//    void sampling( pbvr::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
+//    void sampling( vismodule::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
 
 };
 

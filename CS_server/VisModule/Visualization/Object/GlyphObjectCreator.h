@@ -12,33 +12,33 @@
  */
 /****************************************************************************/
 
-#ifndef KVS__GLYPH_OBJECT_CREATOR_H_INCLUDE
-#define KVS__GLYPH_OBJECT_CREATOR_H_INCLUDE
+#ifndef VIS_MODULE__GLYPH_OBJECT_CREATOR_H_INCLUDE
+#define VIS_MODULE__GLYPH_OBJECT_CREATOR_H_INCLUDE
 
 #include <vector>
 #include <string>
 #include "UnstructuredVolumeObject.h"
-#include "FilterInformation.h"
-#include "ExtendedTransferFunction.h"
+#include <vismodule/MultiVolumeProperty>
+#include <vismodule/ExtendedTransferFunction>
 #include "timer.h"
 #include "PointObjectGenerator.h"
 #include "PointObject.h"
-#include "GlyphObjectGenerator.h"
-#include "KVSMLObjectGlyph.h"
+#include <vismodule/GlyphObjectGenerator>
+#include <vismodule/KVSMLObjectGlyph>
 #include "../Common/ParticleTransferProtocol.h"
 
 class GlyphObjectCreator
 {
 private:
 
-    pbvr::UnstructuredVolumeObject* m_volume;
+    vismodule::UnstructuredVolumeObject* m_volume;
 
-    //pbvr::PointObjectGenerator m_generator;
-    pbvr::GlyphObjectGenerator m_generator;
+    //vismodule::PointObjectGenerator m_generator;
+    vismodule::GlyphObjectGenerator m_generator;
 
     int m_mpi_rank;
 
-    const FilterInformationFile* m_fi;
+    const MultiVolumeProperty* m_mvp;
 
     std::string m_xcSynthStr;
     std::string m_ycSynthStr;
@@ -47,24 +47,24 @@ private:
 public:
 
     GlyphObjectCreator()
-        : m_volume(NULL), m_mpi_rank(0), m_fi(NULL) {}
+        : m_volume(NULL), m_mpi_rank(0), m_mvp(NULL) {}
 
     ~GlyphObjectCreator()
     {
     }
 
-    void setFilterInfo( const FilterInformationFile& fi )
+    void setFilterInfo( const MultiVolumeProperty& mvp )
     {
-        m_fi = &fi;
+        m_mvp = &mvp;
     }
 
 public:
 
-    void run( const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide ,const int timeStep, kvs::KVSMLObjectGlyph* object, const int st = 1 )
-//    void run( const Argument& param, const kvs::Camera& camera, jpv::ParticleTransferClientMessage &clntMes , const int number_of_divide ,const int timeStep, kvs::KVSMLObjectGlyph* object, const int st = 1 )
+    void run( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide ,const int timeStep, vismodule::KVSMLObjectGlyph* object, const int st = 1 )
+//    void run( const Argument& param, const vismodule::Camera& camera, jpv::ParticleTransferClientMessage &clntMes , const int number_of_divide ,const int timeStep, vismodule::KVSMLObjectGlyph* object, const int st = 1 )
     {
-        pbvr::GlyphObjectGenerator generator;
-        //generator.setFinlterInfo(m_fi);
+        vismodule::GlyphObjectGenerator generator;
+        //generator.setFinlterInfo(m_mvp);
 
         struct stat s;
         if ( stat( param.m_input_data.c_str(), &s ) )
@@ -74,7 +74,7 @@ public:
         }
             generator.createFromFile( param, camera, clntMes, number_of_divide);
 
-        kvs::KVSMLObjectGlyph* po = generator.getKVSMLObjectGlyph();
+        vismodule::KVSMLObjectGlyph* po = generator.getKVSMLObjectGlyph();
 
         object -> setCoords(po->coords());
         object -> setColors(po->colors());
@@ -87,12 +87,12 @@ public:
         //return po;
     }
 
-    kvs::KVSMLObjectGlyph* run( const Argument& param, const kvs::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, const int st, const int vl)
+    vismodule::KVSMLObjectGlyph* run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, const int st, const int vl)
     {
         m_generator.setFinlterInfo( m_fi );
         m_generator.setCoordSynthTS( st );
         m_generator.createFromFile( param, camera, clntMes, number_of_divide, st, vl );
-        kvs::KVSMLObjectGlyph* po = m_generator.getKVSMLObjectGlyph();
+        vismodule::KVSMLObjectGlyph* po = m_generator.getKVSMLObjectGlyph();
         return po;
     }
 
@@ -102,7 +102,7 @@ public:
         m_ycSynthStr = yss;
         m_zcSynthStr = zss;
 
-        pbvr::CoordSynthesizerStrings css( 0, xss, yss, zss );
+        vismodule::CoordSynthesizerStrings css( 0, xss, yss, zss );
         m_generator.setCoordSynthStrs( css );
     }
 
@@ -116,9 +116,9 @@ public:
 //        m_ycSynthStr = yss;
 //        m_zcSynthStr = zss;
 
-        pbvr::EquationToken xst_tmp;
-        pbvr::EquationToken yst_tmp;
-        pbvr::EquationToken zst_tmp;
+        vismodule::EquationToken xst_tmp;
+        vismodule::EquationToken yst_tmp;
+        vismodule::EquationToken zst_tmp;
 
         for(int i=0; i<128; i++ )
         {
@@ -133,7 +133,7 @@ public:
             zst_tmp.val_array[i] = zst.value_array[i];
         }
 
-        pbvr::CoordSynthesizerTokens cst(xst_tmp, yst_tmp, zst_tmp );
+        vismodule::CoordSynthesizerTokens cst(xst_tmp, yst_tmp, zst_tmp );
         m_generator.setCoordSynthTkns( cst );
     }
 

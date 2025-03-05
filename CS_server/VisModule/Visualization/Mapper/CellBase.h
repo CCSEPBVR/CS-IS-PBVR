@@ -153,7 +153,7 @@ public:
 
     virtual const vismodule::Real32 localGravityPointValue() const;
 
-    virtual const kvs::Vector3f localGravityPoint() const;
+    virtual const vismodule::Vector3f localGravityPoint() const;
 
 public:
 

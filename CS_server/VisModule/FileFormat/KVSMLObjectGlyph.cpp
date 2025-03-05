@@ -13,7 +13,7 @@
 /****************************************************************************/
 #include "KVSMLObjectGlyph.h"
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -45,8 +45,8 @@ KVSMLObjectGlyph::KVSMLObjectGlyph( const std::string& filename )
  */
 /*===========================================================================*/
 
-KVSMLObjectGlyph::KVSMLObjectGlyph( const kvs::ValueArray<kvs::Real32> coords, const kvs::ValueArray<kvs::UInt8>  colors,      
-                                    const kvs::ValueArray<kvs::Real32> directions, const kvs::ValueArray<kvs::Real32> sizes ) 
+KVSMLObjectGlyph::KVSMLObjectGlyph( const vismodule::ValueArray<vismodule::Real32> coords, const vismodule::ValueArray<vismodule::UInt8>  colors,      
+                                    const vismodule::ValueArray<vismodule::Real32> directions, const vismodule::ValueArray<vismodule::Real32> sizes ) 
 {
     setCoords(coords);
     setColors(colors);
@@ -69,7 +69,7 @@ KVSMLObjectGlyph::~KVSMLObjectGlyph( void )
 // *  @return KVSML tag
 // */
 ///*===========================================================================*/
-//const kvs::kvsml::KVSMLTag& KVSMLObjectGlyph::KVSMLTag( void ) const
+//const vismodule::kvsml::KVSMLTag& KVSMLObjectGlyph::KVSMLTag( void ) const
 //{
 //    return( m_kvsml_tag );
 //}
@@ -80,7 +80,7 @@ KVSMLObjectGlyph::~KVSMLObjectGlyph( void )
 // *  @return object tag
 // */
 ///*===========================================================================*/
-//const kvs::kvsml::ObjectTag& KVSMLObjectGlyph::objectTag( void ) const
+//const vismodule::kvsml::ObjectTag& KVSMLObjectGlyph::objectTag( void ) const
 //{
 //    return( m_object_tag );
 //}
@@ -90,7 +90,7 @@ KVSMLObjectGlyph::~KVSMLObjectGlyph( void )
  *  @brief  Returns the coordinate value array.
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& KVSMLObjectGlyph::coords( void ) const
+const vismodule::ValueArray<vismodule::Real32>& KVSMLObjectGlyph::coords( void ) const
 {
     return( m_coords );
 }
@@ -100,7 +100,7 @@ const kvs::ValueArray<kvs::Real32>& KVSMLObjectGlyph::coords( void ) const
  *  @brief  Returns the color value array.
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::UInt8>& KVSMLObjectGlyph::colors( void ) const
+const vismodule::ValueArray<vismodule::UInt8>& KVSMLObjectGlyph::colors( void ) const
 {
     return( m_colors );
 }
@@ -110,7 +110,7 @@ const kvs::ValueArray<kvs::UInt8>& KVSMLObjectGlyph::colors( void ) const
  *  @brief  Returns the normal vector array.
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& KVSMLObjectGlyph::normals( void ) const
+const vismodule::ValueArray<vismodule::Real32>& KVSMLObjectGlyph::normals( void ) const
 {
     return( m_normals );
 }
@@ -120,7 +120,7 @@ const kvs::ValueArray<kvs::Real32>& KVSMLObjectGlyph::normals( void ) const
  *  @brief  Returns the direction vector array.
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& KVSMLObjectGlyph::directions( void ) const
+const vismodule::ValueArray<vismodule::Real32>& KVSMLObjectGlyph::directions( void ) const
 {
     return( m_directions );
 }
@@ -130,7 +130,7 @@ const kvs::ValueArray<kvs::Real32>& KVSMLObjectGlyph::directions( void ) const
  *  @brief  Returns the size value array.
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& KVSMLObjectGlyph::sizes( void ) const
+const vismodule::ValueArray<vismodule::Real32>& KVSMLObjectGlyph::sizes( void ) const
 {
     return( m_sizes );
 }
@@ -179,7 +179,7 @@ const float KVSMLObjectGlyph::sizeMax() const
  *  @param  coords [in] coordinate value array
  */
 /*===========================================================================*/
-void KVSMLObjectGlyph::setCoords( const kvs::ValueArray<kvs::Real32>& coords )
+void KVSMLObjectGlyph::setCoords( const vismodule::ValueArray<vismodule::Real32>& coords )
 {
     m_coords = coords;
 }
@@ -190,7 +190,7 @@ void KVSMLObjectGlyph::setCoords( const kvs::ValueArray<kvs::Real32>& coords )
  *  @param  colors [in] color value array
  */
 /*===========================================================================*/
-void KVSMLObjectGlyph::setColors( const kvs::ValueArray<kvs::UInt8>& colors )
+void KVSMLObjectGlyph::setColors( const vismodule::ValueArray<vismodule::UInt8>& colors )
 {
     m_colors = colors;
 }
@@ -201,7 +201,7 @@ void KVSMLObjectGlyph::setColors( const kvs::ValueArray<kvs::UInt8>& colors )
  *  @param  normals [in] normal vector array
  */
 /*===========================================================================*/
-void KVSMLObjectGlyph::setNormals( const kvs::ValueArray<kvs::Real32>& normals )
+void KVSMLObjectGlyph::setNormals( const vismodule::ValueArray<vismodule::Real32>& normals )
 {
     m_normals = normals;
 }
@@ -212,7 +212,7 @@ void KVSMLObjectGlyph::setNormals( const kvs::ValueArray<kvs::Real32>& normals )
  *  @param  directions [in] normal vector array
  */
 /*===========================================================================*/
-void KVSMLObjectGlyph::setDirections( const kvs::ValueArray<kvs::Real32>& directions )
+void KVSMLObjectGlyph::setDirections( const vismodule::ValueArray<vismodule::Real32>& directions )
 {
     m_directions = directions;
 }
@@ -223,7 +223,7 @@ void KVSMLObjectGlyph::setDirections( const kvs::ValueArray<kvs::Real32>& direct
  *  @param  sizes [in] size value array
  */
 /*===========================================================================*/
-void KVSMLObjectGlyph::setSizes( const kvs::ValueArray<kvs::Real32>& sizes )
+void KVSMLObjectGlyph::setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes )
 {
     m_sizes = sizes;
 }
@@ -299,7 +299,7 @@ const bool KVSMLObjectGlyph::read( const std::string& filename )
     m_colors.allocate(data.size());
     for (int i =0; i< nPoints*3; i ++ )
     {
-        m_colors[i] = (kvs::UInt8)std::stoi( data[i] );
+        m_colors[i] = (vismodule::UInt8)std::stoi( data[i] );
     }
 
     //diresctions
@@ -402,4 +402,4 @@ std::ostream& operator <<( std::ostream& os, const KVSMLObjectGlyph& rhs )
     return( os );
 }
 
-} // end of namespace kvs
+} // end of namespace vismodule

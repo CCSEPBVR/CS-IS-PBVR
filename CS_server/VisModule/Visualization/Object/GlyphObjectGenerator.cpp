@@ -1,76 +1,75 @@
 #include "GlyphObjectGenerator.h"
 //#include <sys/time.h>
-#include "TransferFunction.h"
+#include <vismodule/TransferFunction>
 #include "UnstructuredVolumeObject.h"
-#include "UnstructuredVolumeImporter.h"
-#include "CellByCellUniformSampling.h"
-#include "CellByCellRejectionSampling.h"
-#include "CellByCellMetropolisSampling.h"
+#include <vismodule/UnstructuredVolumeImporter>
+#include <vismodule/CellByCellUniformSampling>
+#include <vismodule/CellByCellRejectionSampling>
+#include <vismodule/CellByCellMetropolisSampling>
 //#include "CellByCellLayeredSampling.h"
-#include <kvs/Camera>
-#include "CellByCellUniformSampling.h"
-#include "CellByCellRejectionSampling.h"
-#include "CellByCellMetropolisSampling.h"
-#include "CellByCellHistogram.h"
+#include <vismodule/Camera>
+#include <vismodule/CellByCellUniformSampling>
+#include <vismodule/CellByCellRejectionSampling>
+#include <vismodule/CellByCellMetropolisSampling>
+#include <vismodule/CellByCellHistogram>
 #if 0 //TEST_DELETE
-#include <kvs/TestVolume>
-#include <kvs/FrontSTRFileReader>
+#include <vismodule/TestVolume>
+#include <vismodule/FrontSTRFileReader>
 #endif
-#include <kvs/AVSUcd>
-#include "common.h"
-#include <kvs/ValueArray>
-#include <kvs/File>
+#include <vismodule/AVSUcd>
+#include <vismodule/ValueArray>
+#include <vismodule/File>
 
-#include "FileChecker.h"
+#include <vismodule/FileChecker>
 #include "StructuredVolumeObject.h"
-#include "StructuredVolumeImporter.h"
+#include <vismodule/StructuredVolumeImporter>
 
-#include "Argument.h"
+#include <vismodule/Argument>
 
-#include "timer_simple.h"
+#include <vismodule/timer_simple>
 
-using namespace pbvr;
+using namespace vismodule;
 
-//void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera )
-void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide )
+//void GlyphObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera )
+void GlyphObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide )
 {
 //FJ_TIMER_KAWAMURA
-    PBVR_TIMER_STA( 260 );
+    VIS_MODULE_TIMER_STA( 260 );
 //FJ_TIMER_KAWAMURA
 
     // add by shimomura 2023/0407
-    pbvr::VolumeObjectBase* volume = nullptr;
-    if ( kvsview::FileChecker::ImportableStructuredVolume( param.m_input_data ))
+    vismodule::VolumeObjectBase* volume = nullptr;
+    if ( vismoduleview::FileChecker::ImportableStructuredVolume( param.m_input_data ))
     {
         std::cout << "Structured !" <<std::endl;
-        volume = new pbvr::StructuredVolumeImporter( param.m_input_data ); 
-//        kvsMessageError("structured data does not apply." );
+        volume = new vismodule::StructuredVolumeImporter( param.m_input_data ); 
+//        visModuleMessageError("structured data does not apply." );
         // change by shimomura 20240730
         int id = param.m_subvolume_id;
         //volume->updateMinMaxValues();
-        //volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
-//        volume->setMinMaxObjectCoords( m_fi->m_min_subvolume_coord[id], m_fi->m_max_subvolume_coord[id] );
-//        volume->setMinMaxExternalCoords( m_fi->m_min_subvolume_coord[id], m_fi->m_max_subvolume_coord[id] );
+        //volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
+//        volume->setMinMaxObjectCoords( m_mvp->m_min_subvolume_coord[id], m_mvp->m_max_subvolume_coord[id] );
+//        volume->setMinMaxExternalCoords( m_mvp->m_min_subvolume_coord[id], m_mvp->m_max_subvolume_coord[id] );
 
     } 
-    else if ( kvsview::FileChecker::ImportableUnstructuredVolume( param.m_input_data))
+    else if ( vismoduleview::FileChecker::ImportableUnstructuredVolume( param.m_input_data))
     {
         std::cout << "Unstructured !" <<std::endl;
-        volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );  
+        volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );  
         
         volume->updateMinMaxValues();
-        //volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
-        //volume->setMinMaxObjectCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
-        //volume->setMinMaxExternalCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
+        //volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
+        //volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
+        //volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
 
     }
     else 
     {
-        kvsMessageError("%s is not volume data.", param.m_input_data.c_str());
+        visModuleMessageError("%s is not volume data.", param.m_input_data.c_str());
     }
 
 //FJ_TIMER_KAWAMURA
-    PBVR_TIMER_END( 260 );
+    VIS_MODULE_TIMER_END( 260 );
 //FJ_TIMER_KAWAMURA
 
     std::cout << *volume << std::endl;
@@ -94,23 +93,23 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
     delete volume;
 }
 
-void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Camera& camera,const jpv::ParticleTransferClientMessage& clntMes,const int number_of_divide, const int st, const int vl )
+void GlyphObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage& clntMes,const int number_of_divide, const int st, const int vl )
 {
-    PBVR_TIMER_STA( 260 );
+    VIS_MODULE_TIMER_STA( 260 );
 //    delete m_object;
-    pbvr::UnstructuredVolumeObject* volume;
-    volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );
+    vismodule::UnstructuredVolumeObject* volume;
+    volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );
 
-    kvs::File ifpx( m_fi->m_file_path );
+    vismodule::File ifpx( m_mvp->m_file_path );
     std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
 
-    volume = new pbvr::UnstructuredVolumeImporter( path_base, m_fi->m_file_type, st, vl );
+    volume = new vismodule::UnstructuredVolumeImporter( path_base, m_mvp->m_file_type, st, vl );
 
-    PBVR_TIMER_END( 260 );
+    VIS_MODULE_TIMER_END( 260 );
 
-    volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
-    volume->setMinMaxObjectCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
-    volume->setMinMaxExternalCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
+    volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
+    volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
+    volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
 
     std::cout << *volume << std::endl;
     std::cout << "min:" << volume->minObjectCoord()   << ", max:" << volume->maxObjectCoord() << std::endl;
@@ -147,8 +146,8 @@ std::string GlyphObjectGenerator::getErrorMessage( const size_t maxMemory ) cons
     return errorMessage;
 }
 
-//void GlyphObjectGenerator::sampling( pbvr::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes )
-void GlyphObjectGenerator::sampling( pbvr::VolumeObjectBase* volume,const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide )
+//void GlyphObjectGenerator::sampling( vismodule::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes )
+void GlyphObjectGenerator::sampling( vismodule::VolumeObjectBase* volume,const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide )
 {
 #ifndef CPU_VER
     int rank;
@@ -159,22 +158,22 @@ void GlyphObjectGenerator::sampling( pbvr::VolumeObjectBase* volume,const jpv::P
 
     std::cout << "Glyph Generating start " << std::endl;
 
-    pbvr::VolumeObjectBase::VolumeType voltype = volume->volumeType();
+    vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();
 
 
     Type** values;
-    kvs::AnyValueArray valueArray; 
+    vismodule::AnyValueArray valueArray; 
     std::vector<float> coordinates; 
     int ncoords;
     std::vector<unsigned int> connections ;
     int ncells; 
     int nnodes;
     int nvariables;
-    pbvr::VolumeObjectBase::CellType celltype;
+    vismodule::VolumeObjectBase::CellType celltype;
 
-    if(voltype ==  pbvr::VolumeObjectBase::VolumeType::Unstructured)
+    if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Unstructured)
     {
-        const pbvr::UnstructuredVolumeObject* uvo_p = static_cast<const pbvr::UnstructuredVolumeObject*>( volume );
+        const vismodule::UnstructuredVolumeObject* uvo_p = static_cast<const vismodule::UnstructuredVolumeObject*>( volume );
        
         valueArray = volume->values(); 
         coordinates.assign( (float * )volume->coords().begin(),(float * )volume->coords().end()); 
@@ -208,51 +207,51 @@ void GlyphObjectGenerator::sampling( pbvr::VolumeObjectBase* volume,const jpv::P
 
 
     }
-    else if(voltype ==  pbvr::VolumeObjectBase::VolumeType::Structured)
+    else if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Structured)
     {
-        const pbvr::StructuredVolumeObject* vo_p = static_cast<const pbvr::StructuredVolumeObject*>( volume );
+        const vismodule::StructuredVolumeObject* vo_p = static_cast<const vismodule::StructuredVolumeObject*>( volume );
             GlyphGenerator glyph_generator( clntMes, number_of_divide, *vo_p);
             glyph_generator.getGlyphData(&m_object);
     }
 
 }
 
-const kvs::ValueArray<kvs::Real32>& GlyphObjectGenerator::coords( void ) const
+const vismodule::ValueArray<vismodule::Real32>& GlyphObjectGenerator::coords( void ) const
 {
     return( m_coords );
 }
 
-const kvs::ValueArray<kvs::UInt8>& GlyphObjectGenerator::colors( void ) const
+const vismodule::ValueArray<vismodule::UInt8>& GlyphObjectGenerator::colors( void ) const
 {
     return( m_colors );
 }
 
-const kvs::ValueArray<kvs::Real32>& GlyphObjectGenerator::directions( void ) const
+const vismodule::ValueArray<vismodule::Real32>& GlyphObjectGenerator::directions( void ) const
 {
     return( m_directions );
 }
 
-const kvs::ValueArray<kvs::Real32>& GlyphObjectGenerator::sizes( void ) const
+const vismodule::ValueArray<vismodule::Real32>& GlyphObjectGenerator::sizes( void ) const
 {
     return( m_sizes );
 }
 
-void GlyphObjectGenerator::setCoords( const kvs::ValueArray<kvs::Real32>& coords )
+void GlyphObjectGenerator::setCoords( const vismodule::ValueArray<vismodule::Real32>& coords )
 {
     m_coords = coords;
 }
 
-void GlyphObjectGenerator::setColors( const kvs::ValueArray<kvs::UInt8>& colors )
+void GlyphObjectGenerator::setColors( const vismodule::ValueArray<vismodule::UInt8>& colors )
 {
     m_colors = colors;
 }
 
-void GlyphObjectGenerator::setDirections( const kvs::ValueArray<kvs::Real32>& directions )
+void GlyphObjectGenerator::setDirections( const vismodule::ValueArray<vismodule::Real32>& directions )
 {
     m_directions = directions;
 }
 
-void GlyphObjectGenerator::setSizes( const kvs::ValueArray<kvs::Real32>& sizes )
+void GlyphObjectGenerator::setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes )
 {
     m_sizes = sizes;
 }

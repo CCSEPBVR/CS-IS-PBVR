@@ -11,34 +11,34 @@
  *  $Id: KVSMLObjectPlotOverLine.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
-#ifndef KVS__KVSML_OBJECT_PLOT_OVER_LINE_H_INCLUDE
-#define KVS__KVSML_OBJECT_PLOT_OVER_LINE_H_INCLUDE
+#ifndef VIS_MODULE__KVSML_OBJECT_PLOT_OVER_LINE_H_INCLUDE
+#define VIS_MODULE__KVSML_OBJECT_PLOT_OVER_LINE_H_INCLUDE
 
 #include <fstream>
 #include <iostream>
 #include <string>
 
-#include <kvs/FileFormatBase>
-#include <kvs/ValueArray>
-#include <kvs/Type>
-#include <kvs/Vector3>
+#include <vismodule/FileFormatBase>
+#include <vismodule/ValueArray>
+#include <vismodule/Type>
+#include <vismodule/Vector3>
 #include <sstream>
-#include <kvs/XMLDocument>
-#include <kvs/XMLDeclaration>
-#include <kvs/XMLElement>
-#include <kvs/XMLComment>
-#include <kvs/ValueArray>
-#include <kvs/File>
-#include <kvs/Type>
-#include <kvs/File>
-#include <kvs/IgnoreUnusedVariable>
+#include <vismodule/XMLDocument>
+#include <vismodule/XMLDeclaration>
+#include <vismodule/XMLElement>
+#include <vismodule/XMLComment>
+#include <vismodule/ValueArray>
+#include <vismodule/File>
+#include <vismodule/Type>
+#include <vismodule/File>
+#include <vismodule/IgnoreUnusedVariable>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
 
 
-namespace kvs
+namespace vismodule
 {
 
 /*===========================================================================*/
@@ -46,9 +46,9 @@ namespace kvs
  *  @brief  KVSML point object format.
  */
 /*===========================================================================*/
-class KVSMLObjectPlotOverLine : public kvs::FileFormatBase
+class KVSMLObjectPlotOverLine : public vismodule::FileFormatBase
 {
-    kvsClassName( kvs::KVSMLObjectPlotOverLine );
+    visModuleClassName( vismodule::KVSMLObjectPlotOverLine );
 
 public:
 
@@ -61,9 +61,9 @@ public:
 
 protected:
 
-     kvs::ValueArray<float> m_values_on_line;
-     kvs::ValueArray<float> m_x_axis;
-     kvs::ValueArray<bool>  m_mask;
+     vismodule::ValueArray<float> m_values_on_line;
+     vismodule::ValueArray<float> m_x_axis;
+     vismodule::ValueArray<bool>  m_mask;
 public:
 
     KVSMLObjectPlotOverLine();
@@ -71,24 +71,24 @@ public:
     KVSMLObjectPlotOverLine(const int resolution) {setResolution(resolution);};
     KVSMLObjectPlotOverLine( const std::string& filename );
 
-    KVSMLObjectPlotOverLine( const kvs::ValueArray<float> values_on_line, const kvs::ValueArray<float>  x_axis,
-                      const kvs::ValueArray<bool> mask );
+    KVSMLObjectPlotOverLine( const vismodule::ValueArray<float> values_on_line, const vismodule::ValueArray<float>  x_axis,
+                      const vismodule::ValueArray<bool> mask );
     
     virtual ~KVSMLObjectPlotOverLine( void );
 
 public:
 
-    kvs::ValueArray<float>& values_on_line(){return m_values_on_line;}
-    kvs::ValueArray<float>& x_axis(){return m_x_axis;}
-    kvs::ValueArray<bool>&  mask(){return m_mask;}
-    const kvs::ValueArray<float>& values_on_line() const;
-    const kvs::ValueArray<float>& x_axis() const;
-    const kvs::ValueArray<bool>&  mask() const;
+    vismodule::ValueArray<float>& values_on_line(){return m_values_on_line;}
+    vismodule::ValueArray<float>& x_axis(){return m_x_axis;}
+    vismodule::ValueArray<bool>&  mask(){return m_mask;}
+    const vismodule::ValueArray<float>& values_on_line() const;
+    const vismodule::ValueArray<float>& x_axis() const;
+    const vismodule::ValueArray<bool>&  mask() const;
 public:
 
-    void setValuesOnLine( const kvs::ValueArray<float>& values_on_line );
-    void setXAxis( const kvs::ValueArray<float>& x_axis );
-    void setMask( const kvs::ValueArray<bool>& mask );
+    void setValuesOnLine( const vismodule::ValueArray<float>& values_on_line );
+    void setXAxis( const vismodule::ValueArray<float>& x_axis );
+    void setMask( const vismodule::ValueArray<bool>& mask );
 
     void setResolution(const int resolution);
 public:
@@ -115,6 +115,6 @@ public:
     friend std::ostream& operator <<( std::ostream& os, const KVSMLObjectPlotOverLine& rhs );
 };
 
-} // end of namespace kvs
+} // end of namespace vismodule
 
 #endif // KVS__KVSML_OBJECT_POINT_H_INCLUDE

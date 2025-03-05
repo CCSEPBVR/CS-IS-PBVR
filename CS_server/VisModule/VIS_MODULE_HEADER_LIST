@@ -8,6 +8,8 @@ FileFormat/FileFormatBase
 FileFormat/FrontFlow/FrontFlow
 FileFormat/FrontSTR/FrontSTR
 FileFormat/GrADS/GrADS
+FileFormat/KVSMLObjectGlyph
+FileFormat/KVSMLObjectPlotOverLine
 FileFormat/KVSML/KVSMLObjectImage
 FileFormat/KVSML/KVSMLObjectLine
 FileFormat/KVSML/KVSMLObjectPoint
@@ -178,6 +180,7 @@ Visualization/Mapper/ExtractEdges
 Visualization/Mapper/ExtractVertices
 Visualization/Mapper/FrequencyTable
 Visualization/Mapper/GlyphBase
+Visualization/Mapper/GlyphGenerator
 Visualization/Mapper/HexahedralCell
 Visualization/Mapper/HitAndMissSampling
 Visualization/Mapper/Isosurface
@@ -193,6 +196,7 @@ Visualization/Mapper/MarchingTetrahedraTable
 Visualization/Mapper/MetropolisSampling
 Visualization/Mapper/OpacityMap
 Visualization/Mapper/OrthoSlice
+Visualization/Mapper/PlotOverLine
 Visualization/Mapper/PyramidalCell
 Visualization/Mapper/QuadraticHexahedralCell
 Visualization/Mapper/QuadraticTetrahedralCell
@@ -207,10 +211,13 @@ Visualization/Module
 Visualization/Object/AxisObject
 Visualization/Object/GeometryObjectBase
 Visualization/Object/GlyphObject
+Visualization/Object/GlyphObjectCreator
+Visualization/Object/GlyphObjectGenerator
 Visualization/Object/ImageObject
 Visualization/Object/LineObject
 Visualization/Object/ObjectBase
 Visualization/Object/PointObject
+Visualization/Object/POLObjectGenerator
 Visualization/Object/PolygonObject
 Visualization/Object/StructuredVolumeObject
 Visualization/Object/TableObject
@@ -219,6 +226,8 @@ Visualization/Object/VolumeObjectBase
 Visualization/Pipeline/ObjectImporter
 Visualization/Pipeline/PipelineModule
 Visualization/Pipeline/VisualizationPipeline
+Visualization/Property/GlyphProperty
+Visualization/Property/PlotOverLineProperty
 Visualization/Renderer/GlyphRenderer
 Visualization/Renderer/ImageRenderer
 Visualization/Renderer/LineRenderer

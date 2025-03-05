@@ -5,21 +5,21 @@
 #include "TransferFunctionSynthesizer.h"
 //#include "ParamInfo.h"
 #include "float.h"
-#include "UnstructuredVolumeObject.h"
+#include <vismodule/UnstructuredVolumeObject>
 #include "CellBase.h"
-#include <kvs/TrilinearInterpolator>
+#include <vismodule/TrilinearInterpolator>
 #include "TetrahedralCell.h"
 #include "QuadraticTetrahedralCell.h"
 #include "HexahedralCell.h"
 #include "QuadraticHexahedralCell.h"
 #include "PrismaticCell.h"
 #include "PyramidalCell.h"
-#include <kvs/PointObject>
-#include <kvs/GlyphObject>
-#include <kvs/KVSMLObjectPoint>
+#include <vismodule/PointObject>
+#include <vismodule/GlyphObject>
+#include <vismodule/KVSMLObjectPoint>
 
-#include "KVSMLObjectGlyph.h"
-#include "GlyphProperty.h"
+#include <vismodule/KVSMLObjectGlyph>
+#include <vismodule/GlyphProperty>
 #include "../Common/ParticleTransferProtocol.h"
 
 #ifdef _OPENMP
@@ -46,14 +46,14 @@ typedef unsigned char Byte;
 
 class GlyphGenerator 
 {
-//    kvsClassName( pbvr::CellBase );
+//    visModuleClassName( vismodule::CellBase );
 protected:
-   pbvr::TransferFunction m_tf;
+   vismodule::TransferFunction m_tf;
    TransferFunctionSynthesizer* m_tfs;
    
    float**           m_values;
    float*       m_coords;
-   //kvs::UInt32* m_connections;
+   //vismodule::UInt32* m_connections;
    unsigned int* m_connections;
    int          m_ncoords;
    int          m_ncells;
@@ -81,7 +81,7 @@ protected:
     int m_stride;
     int m_seed;
     int m_number_of_sample_points;
-    kvs::ColorMap m_color_map;
+    vismodule::ColorMap m_color_map;
     jpv::DataDefines m_color_sampling_method;
     std::vector<int> m_color_data_variables;
 // glyph paramter end
@@ -96,33 +96,33 @@ protected:
 private:
    void  PointSampling( );
    void  PointSampling( int stride);
-   void  PointSampling_struct(const pbvr::StructuredVolumeObject* object );
+   void  PointSampling_struct(const vismodule::StructuredVolumeObject* object );
    void  PointSampling_unstruct( );
-   void  DistributionSampling(int number_of_sampling_point ,int seed, const pbvr::VolumeObjectBase::CellType& celltype);
-   void  DistributionSampling_struct(const pbvr::StructuredVolumeObject* object);
-   void  DistributionSampling_unstruct(const pbvr::VolumeObjectBase::CellType& celltype);
+   void  DistributionSampling(int number_of_sampling_point ,int seed, const vismodule::VolumeObjectBase::CellType& celltype);
+   void  DistributionSampling_struct(const vismodule::StructuredVolumeObject* object);
+   void  DistributionSampling_unstruct(const vismodule::VolumeObjectBase::CellType& celltype);
 
    const size_t calculate_number_of_particles(
            const float density,
            const float volume_of_cell,
-           kvs::MersenneTwister* MT );
+           vismodule::MersenneTwister* MT );
     bool SetGlyphParameter();
     bool InputParameter(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
 
 public:
-   void GlyphSampling( const pbvr::VolumeObjectBase::CellType& celltype);
+   void GlyphSampling( const vismodule::VolumeObjectBase::CellType& celltype);
 
 
     GlyphGenerator();
     GlyphGenerator( Type** values, int nvariables,
            float* coordinates, int ncoords,
-           unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype); //ISPBVR
+           unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltype); //ISPBVR
 
     GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, Type** values, int nvariables,
            float* coordinates, int ncoords,
            unsigned int* connections, int ncells,
-           const  pbvr::VolumeObjectBase::CellType& celltype ); // CSPBVR
-    GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide,const pbvr::StructuredVolumeObject& object ); 
+           const  vismodule::VolumeObjectBase::CellType& celltype ); // CSPBVR
+    GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide,const vismodule::StructuredVolumeObject& object ); 
     ~GlyphGenerator()
     {
     }
@@ -132,7 +132,7 @@ public:
    std::vector<float> glyph_sizes(){return m_glyph_sizes;} 
    std::vector<unsigned char>  glyph_colors(){return m_glyph_colors;}
 
-    void getGlyphData(kvs::KVSMLObjectGlyph* other);
+    void getGlyphData(vismodule::KVSMLObjectGlyph* other);
     void OutputGlyph( const int time_step);
     void show();
 

@@ -4,7 +4,7 @@
 #include <vismodule/JobDispatcher>
 #include <vismodule/PointObject>
 #include "VariableRange.h"
-#include "KVSMLObjectGlyph.h"
+#include <vismodule/KVSMLObjectGlyph>
 #include <vector>
 
 class JobCollector

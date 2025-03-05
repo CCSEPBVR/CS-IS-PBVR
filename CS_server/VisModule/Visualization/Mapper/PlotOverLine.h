@@ -1,19 +1,19 @@
 #ifndef PLOT_OVER_LINE 
 #define PLOT_OVER_LINE
-#include <kvs/Matrix>
-#include <kvs/Vector>
-#include <kvs/Math>
-#include <kvs/UnstructuredVolumeObject>
-#include <kvs/StructuredVolumeObject>
-#include "StructuredVolumeObject.h"
+#include <vismodule/Matrix>
+
+#include <vismodule/Vector>
+#include <vismodule/Math>
+#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/StructuredVolumeObject>
 #ifndef CPU_VER
 #include <mpi.h>
 #endif
 
 
 #include <iomanip>
-#include "PlotOverLineProperty.h"
-namespace kvs
+#include <vismodule/PlotOverLineProperty>
+namespace vismodule
 {
 //    using Vec3 = Vector3<float>;
 //    using Vec4 = Vector4<float>;
@@ -30,12 +30,12 @@ class Polyhedron
 public:
     size_t nvertices;
     size_t ncells;
-    kvs::ValueArray<kvs::Real32> coords;
-    kvs::ValueArray<kvs::Real32> scalars;
-    kvs::ValueArray<kvs::UInt32> connections;
-    kvs::ValueArray<kvs::UInt32> connection_offsets;
-    kvs::ValueArray<kvs::UInt32> faces;
-    kvs::ValueArray<kvs::UInt32> face_offsets;
+    vismodule::ValueArray<vismodule::Real32> coords;
+    vismodule::ValueArray<vismodule::Real32> scalars;
+    vismodule::ValueArray<vismodule::UInt32> connections;
+    vismodule::ValueArray<vismodule::UInt32> connection_offsets;
+    vismodule::ValueArray<vismodule::UInt32> faces;
+    vismodule::ValueArray<vismodule::UInt32> face_offsets;
 };
 
 class Range
@@ -127,18 +127,18 @@ class PlotOverLine
 {
 private:
     // セルタイプ別のデータ
-    kvs::ValueArray<float> m_values_on_line;
-    kvs::ValueArray<float> m_x_axis;
-    kvs::ValueArray<bool>  m_mask;
+    vismodule::ValueArray<float> m_values_on_line;
+    vismodule::ValueArray<float> m_x_axis;
+    vismodule::ValueArray<bool>  m_mask;
     
     // 全セルタイプのデータ
-    kvs::ValueArray<float> m_allcell_values_on_line;
-    //kvs::ValueArray<float> m_allcell_x_axis;
-    kvs::ValueArray<bool>  m_allcell_mask;
+    vismodule::ValueArray<float> m_allcell_values_on_line;
+    //vismodule::ValueArray<float> m_allcell_x_axis;
+    vismodule::ValueArray<bool>  m_allcell_mask;
     
-//    const kvs::StructuredVolumeObject* m_structured_volume;
-    const pbvr::StructuredVolumeObject* m_structured_volume;
-    const kvs::UnstructuredVolumeObject* m_volume;
+//    const vismodule::StructuredVolumeObject* m_structured_volume;
+    const vismodule::StructuredVolumeObject* m_structured_volume;
+    const vismodule::UnstructuredVolumeObject* m_volume;
     const POL::Polyhedron* m_polyhedron;
 
     // 生成判定フラグ
@@ -148,9 +148,9 @@ private:
     // ファイルパス(サーバー→デーモン)
     std::string m_POLFilePath;
     //始点
-    kvs::Vec3 m_start_point; 
+    vismodule::Vec3 m_start_point; 
     //終点
-    kvs::Vec3 m_end_point; 
+    vismodule::Vec3 m_end_point; 
     //解像度
     int m_resolution;
     //指定変数
@@ -160,43 +160,43 @@ private:
 public:
     PlotOverLine( void );
 
-    //PlotOverLine( const kvs::StructuredVolumeObject* volume,
-    PlotOverLine( const pbvr::StructuredVolumeObject* volume,
+    //PlotOverLine( const vismodule::StructuredVolumeObject* volume,
+    PlotOverLine( const vismodule::StructuredVolumeObject* volume,
                             const size_t resolution,
-                            const kvs::Vec3 P0, const kvs::Vec3 P1 );
+                            const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
 
-    PlotOverLine( const kvs::UnstructuredVolumeObject* volume,
+    PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
                   const size_t resolution,
-                  const kvs::Vec3 P0, const kvs::Vec3 P1 );
-
-    // CS用
-    PlotOverLine( const kvs::UnstructuredVolumeObject* volume,
-                  const size_t resolution,
-                  const kvs::Vec3 P0, const kvs::Vec3 P1 , const int plot_variable);
+                  const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
 
     // CS用
-    PlotOverLine( const pbvr::StructuredVolumeObject* volume,
+    PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
                   const size_t resolution,
-                  const kvs::Vec3 P0, const kvs::Vec3 P1 , const int plot_variable);
+                  const vismodule::Vec3 P0, const vismodule::Vec3 P1 , const int plot_variable);
+
+    // CS用
+    PlotOverLine( const vismodule::StructuredVolumeObject* volume,
+                  const size_t resolution,
+                  const vismodule::Vec3 P0, const vismodule::Vec3 P1 , const int plot_variable);
 
 
 
     PlotOverLine( const POL::Polyhedron* volume,
                   const size_t resolution,
-                  const kvs::Vec3 P0, const kvs::Vec3 P1 );
+                  const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
 
     ~PlotOverLine();
 
-//    void setVolume( const kvs::StructuredVolumeObject* volume );
-    void setVolume( const pbvr::StructuredVolumeObject* volume );
-    void setVolume( const kvs::UnstructuredVolumeObject* volume );
+//    void setVolume( const vismodule::StructuredVolumeObject* volume );
+    void setVolume( const vismodule::StructuredVolumeObject* volume );
+    void setVolume( const vismodule::UnstructuredVolumeObject* volume );
     void setVolume( const POL::Polyhedron* volume );
 
     void setResolution( const size_t resolution );
-    void extractPlotLineStructured( const kvs::Vec3 P0, const kvs::Vec3 P1 );
-    void extractPlotLine( const kvs::UnstructuredVolumeObject* volume );
-    void extractPlotLine( const kvs::Vec3 P0, const kvs::Vec3 P1 );
-    void extractPlotLinePoly( const kvs::Vec3 P0, const kvs::Vec3 P1 );
+    void extractPlotLineStructured( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
+    void extractPlotLine( const vismodule::UnstructuredVolumeObject* volume );
+    void extractPlotLine( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
+    void extractPlotLinePoly( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
 
     bool SetPOLParameter( const int time_step);
     void CellTypeReduceing();
@@ -205,41 +205,41 @@ public:
 
     int resolution() {return m_resolution;}
     bool plot_flag(){return m_plot_flag;}
-    kvs::ValueArray<float> values(){ return m_values_on_line;}
-    kvs::ValueArray<float> xAxis(){ return m_x_axis;}
-    kvs::ValueArray<bool>  mask(){ return m_mask; }
-    kvs::Vec3 startPoint(){return m_start_point; }
-    kvs::Vec3 endPoint(){return m_end_point; }
+    vismodule::ValueArray<float> values(){ return m_values_on_line;}
+    vismodule::ValueArray<float> xAxis(){ return m_x_axis;}
+    vismodule::ValueArray<bool>  mask(){ return m_mask; }
+    vismodule::Vec3 startPoint(){return m_start_point; }
+    vismodule::Vec3 endPoint(){return m_end_point; }
 
-    void setValuesOnLine( const kvs::ValueArray<float>& values_on_line ) { m_values_on_line = values_on_line; }
-    void setXAxis( const kvs::ValueArray<float>& x_axis ){ m_x_axis = x_axis; }
-    void setMask( const kvs::ValueArray<bool>& mask ){ m_mask = mask; }
+    void setValuesOnLine( const vismodule::ValueArray<float>& values_on_line ) { m_values_on_line = values_on_line; }
+    void setXAxis( const vismodule::ValueArray<float>& x_axis ){ m_x_axis = x_axis; }
+    void setMask( const vismodule::ValueArray<bool>& mask ){ m_mask = mask; }
 protected:
-    void calculate_x_axis( const kvs::Vec3 P0, const kvs::Vec3 P1 );
+    void calculate_x_axis( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
 
-    void for_structured_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 );
-    void for_tetrahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 );
-    void for_hexahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 );
-    void for_pyramidal_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 );
-    void for_prismic_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 );
-    void for_polyhedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 );
+    void for_structured_mesh( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
+    void for_tetrahedral_mesh( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
+    void for_hexahedral_mesh( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
+    void for_pyramidal_mesh( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
+    void for_prismic_mesh( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
+    void for_polyhedral_mesh( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
  
-    void sampling_in_tetrahedra( const kvs::Vec3 P0, const kvs::Vec3 P1,
-                                 const kvs::Vec3* vertices,
-                                 const kvs::Vec4 scalars );
+    void sampling_in_tetrahedra( const vismodule::Vec3 P0, const vismodule::Vec3 P1,
+                                 const vismodule::Vec3* vertices,
+                                 const vismodule::Vec4 scalars );
 
-    const bool intersection_of_boundingbox( const kvs::Vec3 MinCoord,
-                                            const kvs::Vec3 MaxCoord,
-                                            const kvs::Vec3 P0,
-                                            const kvs::Vec3 P1 );
+    const bool intersection_of_boundingbox( const vismodule::Vec3 MinCoord,
+                                            const vismodule::Vec3 MaxCoord,
+                                            const vismodule::Vec3 P0,
+                                            const vismodule::Vec3 P1 );
 
     const float tetrahedra_signed_volume_X6(
-        const kvs::Vec3 X0, const kvs::Vec3 X1, const kvs::Vec3 X2, const kvs::Vec3 X3 );
+        const vismodule::Vec3 X0, const vismodule::Vec3 X1, const vismodule::Vec3 X2, const vismodule::Vec3 X3 );
 
-    const kvs::Vec4 barycentric_coordinates(
-        const kvs::Vec3 X0, const kvs::Vec3 X1, const kvs::Vec3 X2, const kvs::Vec3 X3,
-        const kvs::Vec3 P );
+    const vismodule::Vec4 barycentric_coordinates(
+        const vismodule::Vec3 X0, const vismodule::Vec3 X1, const vismodule::Vec3 X2, const vismodule::Vec3 X3,
+        const vismodule::Vec3 P );
 
-    POL::Range t_range_in_tet( const kvs::Vec4 bc_P0, const kvs::Vec4 bc_P1 );
+    POL::Range t_range_in_tet( const vismodule::Vec4 bc_P0, const vismodule::Vec4 bc_P1 );
 };
 #endif

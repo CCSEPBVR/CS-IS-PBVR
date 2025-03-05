@@ -1684,9 +1684,9 @@ void CellByCellHistogram::generate_histogram<vismodule::Real32>( const vismodule
             //ｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿ
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
-                cell_index[cell_BLK] = (kvs::UInt32)(cell_base + cell_BLK);
-                //local_center_array[cell_BLK] = kvs::Vector3f ( 0.5, 0.5, 0.5 );
-                local_center_array[cell_BLK] = kvs::Vector3f ( 0, 0, 0 );
+                cell_index[cell_BLK] = (vismodule::UInt32)(cell_base + cell_BLK);
+                //local_center_array[cell_BLK] = vismodule::Vector3f ( 0.5, 0.5, 0.5 );
+                local_center_array[cell_BLK] = vismodule::Vector3f ( 0, 0, 0 );
             }
 
             //ｿｿｿｿｿｿｿｿｿｿｿｿｿｿ

@@ -611,7 +611,7 @@ inline const bool WriteExternalData(
 
 } // end of namespace DataArray
 
-} // end of namespace vismoduleml
+} // end of namespace kvsml
 
 } // end of namespace vismodule
 
