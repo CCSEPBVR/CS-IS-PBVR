@@ -31,9 +31,9 @@ include BuildRuleServerOnly.mk
 PROJECT_NAME := pbvr_server
 
 ifeq "$(findstring CYGWIN,$(shell uname -s))" "CYGWIN"
-TARGET_EXE := $(OUTDIR)/$(PROJECT_NAME).exe
+TARGET_EXE := ../$(PROJECT_NAME).exe
 else
-TARGET_EXE := $(OUTDIR)/$(PROJECT_NAME)
+TARGET_EXE := ../$(PROJECT_NAME)
 endif
 
 #=============================================================================

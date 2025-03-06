@@ -32,6 +32,8 @@ $(OUTDIR)/./FileFormat/GrADS/Title.o \
 $(OUTDIR)/./FileFormat/GrADS/Undef.o \
 $(OUTDIR)/./FileFormat/GrADS/Vars.o \
 $(OUTDIR)/./FileFormat/GrADS/XYZDef.o \
+$(OUTDIR)/./FileFormat/KVSMLObjectGlyph.o \
+$(OUTDIR)/./FileFormat/KVSMLObjectPlotOverLine.o \
 $(OUTDIR)/./FileFormat/KVSML/CellTag.o \
 $(OUTDIR)/./FileFormat/KVSML/ColorMapTag.o \
 $(OUTDIR)/./FileFormat/KVSML/ColorTag.o \
@@ -194,6 +196,7 @@ $(OUTDIR)/./Visualization/Mapper/ExtractEdges.o \
 $(OUTDIR)/./Visualization/Mapper/ExtractVertices.o \
 $(OUTDIR)/./Visualization/Mapper/ExtendedTransferFunction.o \
 $(OUTDIR)/./Visualization/Mapper/FrequencyTable.o \
+$(OUTDIR)/./Visualization/Mapper/GlyphGenerator.o \
 $(OUTDIR)/./Visualization/Mapper/HexahedralCell.o \
 $(OUTDIR)/./Visualization/Mapper/HitAndMissSampling.o \
 $(OUTDIR)/./Visualization/Mapper/Isosurface.o \
@@ -209,6 +212,7 @@ $(OUTDIR)/./Visualization/Mapper/MarchingTetrahedraTable.o \
 $(OUTDIR)/./Visualization/Mapper/MetropolisSampling.o \
 $(OUTDIR)/./Visualization/Mapper/OpacityMap.o \
 $(OUTDIR)/./Visualization/Mapper/OrthoSlice.o \
+$(OUTDIR)/./Visualization/Mapper/PlotOverLine.o \
 $(OUTDIR)/./Visualization/Mapper/PrismaticCell.o \
 $(OUTDIR)/./Visualization/Mapper/PyramidalCell.o \
 $(OUTDIR)/./Visualization/Mapper/QuadraticHexahedralCell.o \
@@ -228,11 +232,13 @@ $(OUTDIR)/./Visualization/Mapper/TriangleCell.o \
 $(OUTDIR)/./Visualization/Object/AxisObject.o \
 $(OUTDIR)/./Visualization/Object/GeometryObjectBase.o \
 $(OUTDIR)/./Visualization/Object/GlyphObject.o \
+$(OUTDIR)/./Visualization/Object/GlyphObjectGenerator.o \
 $(OUTDIR)/./Visualization/Object/ImageObject.o \
 $(OUTDIR)/./Visualization/Object/LineObject.o \
 $(OUTDIR)/./Visualization/Object/ObjectBase.o \
 $(OUTDIR)/./Visualization/Object/PointObject.o \
 $(OUTDIR)/./Visualization/Object/PointObjectGenerator.o \
+$(OUTDIR)/./Visualization/Object/POLObjectGenerator.o \
 $(OUTDIR)/./Visualization/Object/PolygonObject.o \
 $(OUTDIR)/./Visualization/Object/TableObject.o \
 $(OUTDIR)/./Visualization/Object/VolumeObjectBase.o \
@@ -240,7 +246,9 @@ $(OUTDIR)/./Visualization/Object/StructuredVolumeObject.o \
 $(OUTDIR)/./Visualization/Object/UnstructuredVolumeObject.o \
 $(OUTDIR)/./Visualization/Pipeline/ObjectImporter.o \
 $(OUTDIR)/./Visualization/Pipeline/PipelineModule.o \
+$(OUTDIR)/./Visualization/Property/GlyphProperty.o \
 $(OUTDIR)/./Visualization/Property/MultiVolumeProperty.o \
+$(OUTDIR)/./Visualization/Property/PlotOverLineProperty.o \
 $(OUTDIR)/./Visualization/Property/TransferFunctionProperty.o \
 $(OUTDIR)/./Visualization/Renderer/ParticleBuffer.o \
 $(OUTDIR)/./Visualization/Renderer/RendererBase.o \
@@ -382,7 +390,7 @@ $(OUTDIR)/./FileFormat/AVSField/%.o: ./FileFormat/AVSField/%.cpp ./FileFormat/AV
 $(OUTDIR)/./FileFormat/%.o: ./FileFormat/%.cpp ./FileFormat/%.h
 	$(MKDIR) $(OUTDIR)/./FileFormat
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
-$(OUTDIR)/./main.o: ./main.cpp
+$(OUTDIR)/./main.o: ../main.cpp
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 install::
