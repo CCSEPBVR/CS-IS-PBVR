@@ -318,21 +318,6 @@ void GlyphEditor::onApplyButtonClicked()
     {
         m_connect->getClientMessage()->m_size_sampling_method = jpv::DataDefines::Constant;
     }
-    else if( ui->sizeSingleVariableRadioBox->isChecked() ) //singleVariable
-    {
-        m_connect->getClientMessage()->m_size_sampling_method = jpv::DataDefines::SingleVariable;
-        if ( m_size_variable_combo_boxes.isEmpty() ) //もしSizeのNumber of variablesが0の場合
-        {
-            m_connect->getClientMessage()->m_size_variables.clear();
-            m_connect->getClientMessage()->m_size_variables.push_back("q1");
-        }
-        else
-        {
-            m_connect->getClientMessage()->m_size_variables.clear();
-            QComboBox *comboBox = m_size_variable_combo_boxes[0];
-            m_connect->getClientMessage()->m_size_variables.push_back( comboBox->currentText().toStdString() );
-        }
-    }
     else if( ui->sizeVariableArrayRadioBox->isChecked() ) //variableArray
     {
         m_connect->getClientMessage()->m_size_sampling_method = jpv::DataDefines::VariableArray;
@@ -380,21 +365,6 @@ void GlyphEditor::onApplyButtonClicked()
     if( ui->colorDataConstantRadioBox->isChecked() ) //Constant
     {
         m_connect->getClientMessage()->m_color_data_sampling_method = jpv::DataDefines::Constant;
-    }
-    else if( ui->colorDataSingleVariableRadioBox->isChecked() ) //singleVariable
-    {
-        m_connect->getClientMessage()->m_color_data_sampling_method = jpv::DataDefines::SingleVariable;
-        if ( m_color_data_variable_combo_boxes.isEmpty() ) //もしColorDataのNumber of variablesが0の場合
-        {
-            m_connect->getClientMessage()->m_color_data_variables.clear();
-            m_connect->getClientMessage()->m_color_data_variables.push_back("q1");
-        }
-        else
-        {
-            m_connect->getClientMessage()->m_color_data_variables.clear();
-            QComboBox *comboBox = m_color_data_variable_combo_boxes[0];
-            m_connect->getClientMessage()->m_color_data_variables.push_back( comboBox->currentText().toStdString() );
-        }
     }
     else if( ui->colorDataVariableArrayRadioBox->isChecked() ) //variableArray
     {
