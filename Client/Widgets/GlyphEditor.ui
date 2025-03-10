@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>523</width>
-    <height>210</height>
+    <width>558</width>
+    <height>537</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>497</width>
+         <width>532</width>
          <height>974</height>
         </rect>
        </property>
@@ -98,7 +98,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>441</width>
+                <width>476</width>
                 <height>72</height>
                </rect>
               </property>
@@ -151,7 +151,7 @@
              <item>
               <widget class="QSpinBox" name="numberOfSamplePoints">
                <property name="maximum">
-                <number>1000</number>
+                <number>100000</number>
                </property>
               </widget>
              </item>
@@ -236,7 +236,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>441</width>
+                <width>476</width>
                 <height>72</height>
                </rect>
               </property>
