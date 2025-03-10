@@ -1004,8 +1004,8 @@ POL::Range PlotOverLine::t_range_in_tet( const vismodule::Vec4 bc_P0, const vism
 
         float a0 =  (float)bc_P0[i];
         float a1 =  (float)bc_P1[i];
-        if(kvs::Math::Abs(a0) < 1e-6) a0 = 0.f;
-        if(kvs::Math::Abs(a1) < 1e-6) a1 = 0.f;
+        if( vismodule::Math::Abs(a0) < 1e-6 ) a0 = 0.f;
+        if( vismodule::Math::Abs(a1) < 1e-6 ) a1 = 0.f;
 
         if( vismodule::Math::Equal( a0, a1 ) )
         {
