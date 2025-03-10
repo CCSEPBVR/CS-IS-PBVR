@@ -60,6 +60,15 @@ void PlotOverLine::updateXYZDoubleSpinBox()
             static_cast<kvs::Real32>(ui->endPointXDoubleSpinBox->value()), static_cast<kvs::Real32>(ui->endPointYDoubleSpinBox->value()), static_cast<kvs::Real32>(ui->endPointZDoubleSpinBox->value())
         };
 
+    // start の XYZ と end の XYZ を比較して、一致するなら何もしない
+    if (pointer_coords[0] == pointer_coords[3] &&
+        pointer_coords[1] == pointer_coords[4] &&
+        pointer_coords[2] == pointer_coords[5])
+    {
+        return; // 何もしない
+    }
+
+
     kvs::Xform before_object_manager_xform = m_pbvr_gui->screen()->scene()->objectManager()->xform();
     if( m_pointer == nullptr )
     {

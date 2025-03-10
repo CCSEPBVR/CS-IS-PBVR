@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>377</width>
-    <height>362</height>
+    <width>558</width>
+    <height>537</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,8 +25,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>353</width>
-         <height>735</height>
+         <width>532</width>
+         <height>974</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout">
@@ -66,13 +66,6 @@
               </widget>
              </item>
              <item>
-              <widget class="QRadioButton" name="colorDataSingleVariableRadioBox">
-               <property name="text">
-                <string>Single Variable</string>
-               </property>
-              </widget>
-             </item>
-             <item>
               <widget class="QRadioButton" name="colorDataVariableArrayRadioBox">
                <property name="text">
                 <string>Variables Array</string>
@@ -105,8 +98,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>321</width>
-                <height>49</height>
+                <width>476</width>
+                <height>72</height>
                </rect>
               </property>
              </widget>
@@ -158,7 +151,7 @@
              <item>
               <widget class="QSpinBox" name="numberOfSamplePoints">
                <property name="maximum">
-                <number>1000</number>
+                <number>100000</number>
                </property>
               </widget>
              </item>
@@ -211,13 +204,6 @@
               </widget>
              </item>
              <item>
-              <widget class="QRadioButton" name="sizeSingleVariableRadioBox">
-               <property name="text">
-                <string>Single Variable</string>
-               </property>
-              </widget>
-             </item>
-             <item>
               <widget class="QRadioButton" name="sizeVariableArrayRadioBox">
                <property name="text">
                 <string>Variables Array</string>
@@ -250,8 +236,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>321</width>
-                <height>49</height>
+                <width>476</width>
+                <height>72</height>
                </rect>
               </property>
              </widget>
