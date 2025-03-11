@@ -825,7 +825,7 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
 
         timer.start();
         //nglyphs /= nthreads;
-        kvs::MersenneTwister MT( seed + (mpi_rank+1)*thid );
+        kvs::MersenneTwister MT( seed*mpi_size*nthreads + (mpi_rank+1)*thid );
 
     float TotalVolume = 0;
     float density = 0;
@@ -1142,7 +1142,7 @@ void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObj
 
 //    timer.start();
     //nglyphs /= nthreads;
-    kvs::MersenneTwister MT( seed + (mpi_rank+1)*thid );
+    kvs::MersenneTwister MT( seed*mpi_size*nthreads + (mpi_rank+1)*thid );
     //kvs::MersenneTwister MT( seed + (mpi_rank+1) );
 
     float TotalVolume = 0;
