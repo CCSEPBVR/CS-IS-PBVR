@@ -20,7 +20,6 @@
 #include "UnstructuredVolumeObject.h"
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/ExtendedTransferFunction>
-#include "timer.h"
 #include "PointObjectGenerator.h"
 #include "PointObject.h"
 #include <vismodule/GlyphObjectGenerator>

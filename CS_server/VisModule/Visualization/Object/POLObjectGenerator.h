@@ -20,7 +20,6 @@
 #include "UnstructuredVolumeObject.h"
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/ExtendedTransferFunction>
-#include "timer.h"
 #include <vismodule/GlyphObjectGenerator>
 #include <vismodule/KVSMLObjectGlyph>
 #include "../Common/ParticleTransferProtocol.h"

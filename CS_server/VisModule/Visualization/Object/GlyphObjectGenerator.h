@@ -23,7 +23,6 @@
 #include "UnstructuredVolumeObject.h"
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/ExtendedTransferFunction>
-#include "timer.h"
 #include <vismodule/GlyphGenerator>
 #include <vismodule/KVSMLObjectGlyph>
 
