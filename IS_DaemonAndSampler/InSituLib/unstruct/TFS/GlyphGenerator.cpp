@@ -477,7 +477,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
 
         timer.start();
         //nglyphs /= nthreads;
-        kvs::MersenneTwister MT( seed+(mpi_rank+1)*(thid+1) );
+        kvs::MersenneTwister MT( seed*mpi_size*nthreads+(mpi_rank+1)*(thid+1) );
 
     float TotalVolume = 0;
     float density = 0;

@@ -345,13 +345,6 @@ void GlyphGenerator::PointSampling_unstruct( )
     m_glyph_colors_data.resize( nPoints );
     m_glyph_colors.resize( nPoints * 3); 
 
-    m_glyph_coords.resize(nPoints * 3);
-    m_glyph_vectors.resize(nPoints * 3);
-    m_glyph_sizes.resize(nPoints);
-    m_glyph_colors_data.resize( nPoints );
-    m_glyph_colors.resize( nPoints * 3); 
-
-
     // size 
    std::vector<int> vector_var = m_direction_variables;
    int glyph_count =0;
@@ -497,6 +490,8 @@ void GlyphGenerator::PointSampling_struct(const pbvr::StructuredVolumeObject* ob
 {
     const int stride = m_stride;
     int nPoints = m_ncoords/stride ;
+    if( m_ncoords%stride >0 ) nPoints += 1;
+    
     m_glyph_coords.resize(nPoints * 3);
     m_glyph_vectors.resize(nPoints * 3);
     m_glyph_sizes.resize(nPoints);
@@ -830,7 +825,7 @@ void GlyphGenerator::DistributionSampling_unstruct( const pbvr::VolumeObjectBase
 
         timer.start();
         //nglyphs /= nthreads;
-        kvs::MersenneTwister MT( seed + (mpi_rank+1)*thid );
+        kvs::MersenneTwister MT( seed*mpi_size*nthreads + (mpi_rank+1)*thid );
 
     float TotalVolume = 0;
     float density = 0;
@@ -1147,7 +1142,7 @@ void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObj
 
 //    timer.start();
     //nglyphs /= nthreads;
-    kvs::MersenneTwister MT( seed + (mpi_rank+1)*thid );
+    kvs::MersenneTwister MT( seed*mpi_size*nthreads + (mpi_rank+1)*thid );
     //kvs::MersenneTwister MT( seed + (mpi_rank+1) );
 
     float TotalVolume = 0;

@@ -671,15 +671,14 @@ inline VariableRange Calculate_minmax( const Argument& param,
 }
 
 
-inline VariableRange Calculate_minmax_glyph( const Argument& param,
+void Calculate_minmax_glyph(const Argument& param,
                                       const FilterInformationList& fil,
                                       jpv::ParticleTransferClientMessage& clntMes)
 {
 
 
     namespace Generator = pbvr::CellByCellParticleGenerator;
-    //pbvr::UnstructuredVolumeObject* volume;
-    pbvr::VolumeObjectBase* volume;
+    pbvr::VolumeObjectBase* volume = nullptr;
     double total_volume = 0.0;
     double density_lev1 = 0.0;//kawamura2: particle density for subpixel_level=1
     //int steps = fil.m_total_start_steps;
@@ -692,7 +691,7 @@ inline VariableRange Calculate_minmax_glyph( const Argument& param,
     int nvariablep2 = 2;
     min_vec.resize(nvariablep2);
     max_vec.resize(nvariablep2);
-    for(int i = 0 ;i < nvariable ; i++)
+    for(int i = 0 ;i < nvariablep2 ; i++)
     {
         min_vec[i] = FLT_MAX; 
         max_vec[i] = FLT_MIN; 
@@ -816,23 +815,6 @@ inline VariableRange Calculate_minmax_glyph( const Argument& param,
   clntMes.m_glyph_size_max  = max_vec[1] ;
   clntMes.m_glyph_size_min  = min_vec[1] ;
 #endif
-
-   VariableRange vr;
-   for (int n =0; n< nvariable; n++) 
-   {
-        std::stringstream ss; 
-        ss << (n + 1); 
-        const std::string idxbuf = ss.str();
-        vr.setValue( "t" + idxbuf + "_var_o", 1);
-        vr.setValue( "t" + idxbuf + "_var_o", 0);
-        vr.setValue( "t" + idxbuf + "_var_c", 1);
-        vr.setValue( "t" + idxbuf + "_var_c", 0);
-   }
-
-//   std::cout << "vr_max = " << vr.max( "t1_var_c" ) << std::endl;     
-//   std::cout << "vr_min = " << vr.min( "t1_var_c" ) << std::endl;     
-
-   return vr;
 }
 
 
@@ -1577,7 +1559,7 @@ int main( int argc, char** argv )
                     }
 
                    transfunc_creator.setFilterInfo( fil.m_list[0] );
-                    VariableRange range = Calculate_minmax_glyph( param, fil, clntMes); 
+                   Calculate_minmax_glyph( param, fil, clntMes); 
                    transfunc_creator.setProtocol( clntMes );
                     transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
                     param.m_transfunc_synthesizer = transfunc_creator.create();
@@ -1744,6 +1726,9 @@ int main( int argc, char** argv )
 						}
                     }
 
+
+                    //VariableRange range = Calculate_minmax_glyph( param, fil, clntMes); 
+                    Calculate_minmax_glyph(param, fil, clntMes);
                    transfunc_creator.setFilterInfo( fil.m_list[0] );
                    transfunc_creator.setProtocol( clntMes );
                     transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
@@ -1957,7 +1942,7 @@ int main( int argc, char** argv )
 
                     strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
                     servMes.m_number_particle = 0;
-                        servMes.m_number_glyph = 0 ;
+                    servMes.m_number_glyph = 0 ;
                     servMes.m_flag_send_bins = 1;
                     servMes.m_message_size = servMes.byteSize();
                     pts.sendMessage( servMes );
@@ -2919,14 +2904,16 @@ int main( int argc, char** argv )
                         param.m_particle_limit = clntMes.m_particle_limit;
                         param.m_particle_density = clntMes.m_particle_density;
 
-                    VariableRange range = Calculate_minmax_glyph( param, fil, clntMes); 
-                    
-                     param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+//                        transfunc_creator.setProtocol(clntMes);
+//                        transfunc_creator.setAsisTransferFunction(param.m_transfer_function);
+//                        param.m_transfunc_synthesizer = transfunc_creator.create();
+                        
+                    Calculate_minmax_glyph(param, fil, clntMes);
+                    param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
                     for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
                     {
                         param.m_transfunc_array[i]       = static_cast<pbvr::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
-
                         if ( clntMes.m_node_type == 'a' )
                         {
                             useAllNodes = true;
@@ -2964,10 +2951,8 @@ int main( int argc, char** argv )
                         {
                             PBVR_TIMER_STA( 470 );
                         }
-
                         param.m_sampling_step = CalculateSamplingStep( fil );
                         param.m_subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
-
                         VariableRange vr;
                         pts.sendMessage( servMes );
 
