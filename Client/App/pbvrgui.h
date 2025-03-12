@@ -87,6 +87,8 @@ private:
     void onShadingControl() { m_shading_controller.show(); }
     void onTransferFunctionEditor() { m_transfer_function_editor.show(); }
     void onCoordinates() { m_coordinates.show(); }
+    void onGlyph() { m_glyph_editor.show(); }
+    void onPlot() { m_plot_over_line.show(); }
 
     void keyPressEvent( QKeyEvent *event );
 };

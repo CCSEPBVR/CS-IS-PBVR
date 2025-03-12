@@ -80,6 +80,8 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     connect( ui->actionShadingControll, &QAction::triggered, this, &PBVRGUI::onShadingControl );
     connect( ui->actionCoordinates, &QAction::triggered, this, &PBVRGUI::onCoordinates );
     connect( ui->actionTransferFunctionEditor, &QAction::triggered, this, &PBVRGUI::onTransferFunctionEditor );
+    connect( ui->actionGlyph, &QAction::triggered, this, &PBVRGUI::onGlyph );
+    connect( ui->actionPlot, &QAction::triggered, this, &PBVRGUI::onPlot );
     setFocusPolicy(Qt::StrongFocus);    
 }
 
