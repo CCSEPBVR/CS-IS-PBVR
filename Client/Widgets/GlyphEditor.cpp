@@ -56,7 +56,7 @@ GlyphEditor::GlyphEditor(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, 
     connect( ui->colorDataNumberOfVariableSpinBox, &QSpinBox::valueChanged, this, &GlyphEditor::onColorDataNumberOfVariableChanged );
     connect( ui->editColorMapPushButton, &QPushButton::clicked, this, &GlyphEditor::onEditColorMapButtonClicked );
     connect( ui->applyPushButton, &QPushButton::clicked, this, &GlyphEditor::onApplyButtonClicked );
-    this->setEnabled( false );
+    widgetDisable();
 
     //add by shimomura 2024/12/27
     glyphInitialize();
@@ -74,11 +74,11 @@ void GlyphEditor::updateNumberOfVector( jpv::ParticleTransferServerMessage& serv
 
     if( numberOfVector < 3 ) //成分数が3未満である場合、このパネルを操作不能にする。
     {
-        this->setEnabled( false );
+        widgetDisable();
     }
     else
     {
-        this->setEnabled( true );
+        widgetEnable();
     }
 
     ui->sizeNumberOfVariableSpinBox->setMaximum( numberOfVector );
@@ -423,3 +423,53 @@ TFEColorMapBar* GlyphEditor::getColorMapBar() const
 {
     return ui->colorMapBar;
 }
+
+void GlyphEditor::widgetDisable()
+{
+    ui->glyphTypeComboBox->setDisabled(true);
+    ui->scaleFactorDoubleSpinBox->setDisabled(true);
+    ui->updatePushButton->setDisabled(true);
+    ui->direction1ComboBox->setDisabled(true);
+    ui->direction2ComboBox->setDisabled(true);
+    ui->direction3ComboBox->setDisabled(true);
+    ui->sizeConstantRadioBox->setDisabled(true);
+    ui->sizeVariableArrayRadioBox->setDisabled(true);
+    ui->sizeNumberOfVariableSpinBox->setDisabled(true);
+    ui->uniformDistributionRadioButton->setDisabled(true);
+    ui->allPointsRadioButton->setDisabled(true);
+    ui->everyNthPointsRadioButton->setDisabled(true);
+    ui->numberOfSamplePoints->setDisabled(true);
+    ui->seedSpinBox->setDisabled(true);
+    ui->strideSpinBox->setDisabled(true);
+    ui->editColorMapPushButton->setDisabled(true);
+    ui->colorDataConstantRadioBox->setDisabled(true);
+    ui->colorDataVariableArrayRadioBox->setDisabled(true);
+    ui->colorDataNumberOfVariableSpinBox->setDisabled(true);
+    ui->applyPushButton->setDisabled(true);
+}
+
+
+void GlyphEditor::widgetEnable()
+{
+    ui->glyphTypeComboBox->setDisabled(false);
+    ui->scaleFactorDoubleSpinBox->setDisabled(false);
+    ui->updatePushButton->setDisabled(false);
+    ui->direction1ComboBox->setDisabled(false);
+    ui->direction2ComboBox->setDisabled(false);
+    ui->direction3ComboBox->setDisabled(false);
+    ui->sizeConstantRadioBox->setDisabled(false);
+    ui->sizeVariableArrayRadioBox->setDisabled(false);
+    ui->sizeNumberOfVariableSpinBox->setDisabled(false);
+    ui->uniformDistributionRadioButton->setDisabled(false);
+    ui->allPointsRadioButton->setDisabled(false);
+    ui->everyNthPointsRadioButton->setDisabled(false);
+    ui->numberOfSamplePoints->setDisabled(false);
+    ui->seedSpinBox->setDisabled(false);
+    ui->strideSpinBox->setDisabled(false);
+    ui->editColorMapPushButton->setDisabled(false);
+    ui->colorDataConstantRadioBox->setDisabled(false);
+    ui->colorDataVariableArrayRadioBox->setDisabled(false);
+    ui->colorDataNumberOfVariableSpinBox->setDisabled(false);
+    ui->applyPushButton->setDisabled(false);
+}
+
