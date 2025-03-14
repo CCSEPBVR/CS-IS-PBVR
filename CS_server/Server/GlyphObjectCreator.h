@@ -64,6 +64,7 @@ public:
 //    void run( const Argument& param, const kvs::Camera& camera, jpv::ParticleTransferClientMessage &clntMes , const int number_of_divide ,const int timeStep, kvs::KVSMLObjectGlyph* object, const int st = 1 )
     {
         pbvr::GlyphObjectGenerator generator;
+        //generator.setFinlterInfo(m_fi);
 
         struct stat s;
         if ( stat( param.m_input_data.c_str(), &s ) )

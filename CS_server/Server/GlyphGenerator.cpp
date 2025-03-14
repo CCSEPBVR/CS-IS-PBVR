@@ -429,10 +429,18 @@ void GlyphGenerator::PointSampling_unstruct( )
    float glyph_color_data_min = FLT_MAX;
    if (m_color_sampling_method == jpv::DataDefines::Constant)
    {
-       std::fill(m_glyph_colors.begin(), m_glyph_colors.begin(), 0);
-       m_color_map.setRange(0, 1);
-       m_color_min = 0;
-       m_color_max = 1;
+//       std::fill(m_glyph_colors.begin(), m_glyph_colors.begin(), 0);
+//       m_color_map.setRange(0, 1);
+//       m_color_min = 0;
+//       m_color_max = 1;
+       // 色が白になるよう設定コーデイング
+       for (int ii=0;ii < nPoints; ii++)
+       {
+           m_glyph_colors[3*ii    ] = 255 ;
+           m_glyph_colors[3*ii +1 ] = 255 ;
+           m_glyph_colors[3*ii +2 ] = 255 ;
+       }
+
    }
    else if (m_color_sampling_method == jpv::DataDefines::VariableArray || m_color_sampling_method == jpv::DataDefines::SingleVariable ) 
    {
@@ -472,8 +480,6 @@ void GlyphGenerator::PointSampling_unstruct( )
 
 //        m_color_min = min;
 //        m_color_max = max;
-   }
-
     for (int ii=0;ii < nPoints; ii++)
     {
         kvs::RGBColor colors; 
@@ -482,6 +488,9 @@ void GlyphGenerator::PointSampling_unstruct( )
         m_glyph_colors[3*ii +1 ] = colors.g() ;
         m_glyph_colors[3*ii +2 ] = colors.b() ;
     }
+
+   }
+
 //    this -> show();
 }
 
@@ -623,10 +632,17 @@ void GlyphGenerator::PointSampling_struct(const pbvr::StructuredVolumeObject* ob
    float glyph_color_data_min = FLT_MAX;
    if (m_color_sampling_method == jpv::DataDefines::Constant)
    {
-       std::fill(m_glyph_colors.begin(), m_glyph_colors.begin(), 0);
-       m_color_map.setRange(0, 1);
-       m_color_min = 0;
-       m_color_max = 1;
+//       std::fill(m_glyph_colors.begin(), m_glyph_colors.begin(), 0);
+//       m_color_map.setRange(0, 1);
+//       m_color_min = 0;
+//       m_color_max = 1;
+       for (int ii=0;ii < nPoints; ii++)
+       {
+           m_glyph_colors[3*ii    ] = 255 ;
+           m_glyph_colors[3*ii +1 ] = 255 ;
+           m_glyph_colors[3*ii +2 ] = 255 ;
+       }
+
    }
    else if (m_color_sampling_method == jpv::DataDefines::VariableArray || m_color_sampling_method == jpv::DataDefines::SingleVariable ) 
    {
@@ -688,16 +704,17 @@ void GlyphGenerator::PointSampling_struct(const pbvr::StructuredVolumeObject* ob
 
 //        m_color_min = min;
 //        m_color_max = max;
+       for (int ii=0;ii < nPoints; ii++)
+       {
+           kvs::RGBColor colors; 
+           colors = m_color_map.at(m_glyph_colors_data[ ii ]);
+           m_glyph_colors[3*ii    ] = colors.r() ;
+           m_glyph_colors[3*ii +1 ] = colors.g() ;
+           m_glyph_colors[3*ii +2 ] = colors.b() ;
+       }
+
    }
 
-    for (int ii=0;ii < nPoints; ii++)
-    {
-        kvs::RGBColor colors; 
-        colors = m_color_map.at(m_glyph_colors_data[ ii ]);
-        m_glyph_colors[3*ii    ] = colors.r() ;
-        m_glyph_colors[3*ii +1 ] = colors.g() ;
-        m_glyph_colors[3*ii +2 ] = colors.b() ;
-    }
 //    this -> show();
 }
 
@@ -1163,8 +1180,6 @@ void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObj
     const float volume_of_cell = cell_length.x()*cell_length.y()*cell_length.z();
     TotalVolume = volume_of_cell*ncells.x()*ncells.y()*ncells.z();
     density = m_number_of_sample_points/TotalVolume;
-    std::cout << "TotalVolume = " << TotalVolume << std::endl;
-    std::cout << "m_number_of_sample_points = " << m_number_of_sample_points << std::endl;
 
 #pragma omp parallel for
     for ( kvs::Int32 z = 0; z < ncells.z(); ++z )
@@ -1267,24 +1282,24 @@ void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObj
         int n_size_data=m_glyph_sizes.size();
         float max=FLT_MIN;
         float min=FLT_MAX;
-        float tmp_max=FLT_MIN;
-        float tmp_min=FLT_MAX;
+//        float tmp_max=FLT_MIN;
+//        float tmp_min=FLT_MAX;
         for(int k = 0; k< n_size_data; k++)
         {
             max = kvs::Math::Max(m_glyph_sizes[k], max ); 
             min = kvs::Math::Min(m_glyph_sizes[k], min ); 
         }
 
-        tmp_max = max;
-        tmp_min = min;
+//        tmp_max = max;
+//        tmp_min = min;
 #if 0 //IS
 #ifndef CPU_VER
         MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
         MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
 #endif
 #else
-        max = m_size_max;
-        min = m_size_min;
+//        max = m_size_max;
+//        min = m_size_min;
 #endif
         float factor = 0;
         if (max - min > 1e-6)
@@ -1303,8 +1318,8 @@ void GlyphGenerator::DistributionSampling_struct(const pbvr::StructuredVolumeObj
                m_glyph_sizes[j] = 1.f;
             }
         }
-        m_size_min = tmp_min;
-        m_size_max = tmp_max;
+        m_size_min = 0;
+        m_size_max = 1;
 
     }
     else
