@@ -1404,6 +1404,7 @@ int main( int argc, char** argv )
                         kvs::File ifpx( fi.m_file_path );
                         param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                              + ifpx.baseName() + suffix.str() + ".kvsml";
+                        param.m_subvolume_id = xvl ;
                         int timeStep = 1;
                         try
                         {
@@ -1550,6 +1551,8 @@ int main( int argc, char** argv )
                     for ( int idx = 0; idx < fil.m_list.size(); idx++ )
                     {
                         GlyphObjectCreator glyph_creator;
+                        glyph_creator.setFilterInfo( fil.m_list[idx] );
+
 //                        point_creator.setFilterInfo( fil.m_list[idx] );
 //                        glyph_creator.setCoordSynthStr( clntMes.m_x_synthesis,
 //                                                        clntMes.m_y_synthesis, clntMes.m_z_synthesis );
@@ -1618,18 +1621,17 @@ int main( int argc, char** argv )
                         kvs::File ifpx( fi.m_file_path );
                         param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                              + ifpx.baseName() + suffix.str() + ".kvsml";
+                        param.m_subvolume_id = xvl ;
                         int timeStep = 1;
                         try
                         {
                             if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                             {
-                                //object = glyph_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
                                 *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, fil.m_total_number_subvolumes, timeStep, st, xvl); 
 
                             }
                             else     // filetype: kvsml
                             {
-                                //tmp_obj = glyph_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep,clntMes, st);
                                 glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, fil.m_total_number_subvolumes, timeStep, tmp_obj, st );
                             }
                         }
@@ -1684,7 +1686,6 @@ int main( int argc, char** argv )
                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
                {
 #if 1
-//                    std::vector<GlyphObjectCreator> glyph_creator_lst;
 
                 if ( clntMes.m_time_parameter == 0 )
                 {
@@ -1694,7 +1695,6 @@ int main( int argc, char** argv )
                 }
                 else
                 {
-                            std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                     timer_count++;
 //                  param.m_transfer_function = pbvr::TransferFunction(); // *( clntMes.m_transfer_function );
                     param.m_sampling_method = clntMes.m_sampling_method;
@@ -1769,14 +1769,13 @@ int main( int argc, char** argv )
                     std::vector<int> tmp_mask(resolution,0); 
                     std::vector<float> tmp_axis(resolution); 
 
-                            std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                     while ( jd.dispatchNext( wid, &st, &vl ) )
                     {
-                            std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                         POLObjectGenerator pol_generator;
                         int xvl, fidx;
                         fidx = fil.getFileIndex( vl, &xvl );
                         FilterInformationFile& fi = fil.m_list[fidx];
+                        pol_generator.setFinlterInfo(&fil.m_list[fidx]);
 
                         //kvs::KVSMLObjectGlyph* tmp_obj = new kvs::KVSMLObjectGlyph;
                         kvs::KVSMLObjectPlotOverLine* tmp_obj = new kvs::KVSMLObjectPlotOverLine;
@@ -1788,6 +1787,7 @@ int main( int argc, char** argv )
                         kvs::File ifpx( fi.m_file_path );
                         param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                              + ifpx.baseName() + suffix.str() + ".kvsml";
+                        param.m_subvolume_id = xvl ;
                         int timeStep = 1;
                         try
                         {
@@ -1798,12 +1798,9 @@ int main( int argc, char** argv )
                             }
                             else     // filetype: kvsml
                             {
-//                                glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, fil.m_total_number_subvolumes, timeStep, tmp_obj, st );
-                            std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                                 pol_generator.run( param, *clntMes.m_camera, clntMes, timeStep, fil.m_total_number_subvolumes , tmp_obj, st );
                             }
                            
-                            std::cout << __FUNCTION__ << __LINE__ << std::endl; 
                             for(int i =0; i < resolution; i++)
                             { 
                                 tmp_axis[i] = tmp_obj->x_axis()[i];
@@ -2193,6 +2190,7 @@ int main( int argc, char** argv )
                             kvs::File ifpx( fil.m_list[fidx].m_file_path );
                             param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                 + ifpx.baseName() + suffix.str() + ".kvsml";
+                        param.m_subvolume_id = xvl ;
                             int timeStep = 1;
                             try
                             {
@@ -2588,6 +2586,7 @@ int main( int argc, char** argv )
                             fidx = fil.getFileIndex( vl, &xvl );
                             FilterInformationFile& fi = fil.m_list[fidx];
 
+                            point_creator_lst[fidx].setFilterInfo( fi );
                             pbvr::PointObject* tmp_obj = NULL;
                             std::stringstream suffix;
                             suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
@@ -2596,6 +2595,7 @@ int main( int argc, char** argv )
                             kvs::File ifpx( fil.m_list[fidx].m_file_path );
                             param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                                  + ifpx.baseName() + suffix.str() + ".kvsml";
+                            param.m_subvolume_id = xvl ;
                             int timeStep = 1;
                             servMes.m_flag_send_bins = 0;
                             try
@@ -2983,6 +2983,7 @@ int main( int argc, char** argv )
                             int xvl, fidx;
                             fidx = fil.getFileIndex( vl, &xvl );
                             FilterInformationFile& fi = fil.m_list[fidx];
+                            //glyph_creator_lst[fidx].setFilterInfo(fil.m_list[fidx]);
 
                             kvs::KVSMLObjectGlyph* tmp_obj = new kvs::KVSMLObjectGlyph;
                             std::stringstream suffix;
@@ -2992,6 +2993,7 @@ int main( int argc, char** argv )
                             kvs::File ifpx( fil.m_list[fidx].m_file_path );
                             param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                                  + ifpx.baseName() + suffix.str() + ".kvsml";
+                            param.m_subvolume_id = xvl;
                             int timeStep = 1;
                             servMes.m_flag_send_bins = 2;
                             try
@@ -3346,13 +3348,13 @@ int main( int argc, char** argv )
                             kvs::File ifpx( fil.m_list[fidx].m_file_path );
                             param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                                  + ifpx.baseName() + suffix.str() + ".kvsml";
+                            param.m_subvolume_id = xvl ;
                             int timeStep = 1;
                             servMes.m_flag_send_bins = 2;
                             try
                             {
                                 if ( fi.m_file_type == 1 || fi.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                                 {
-//                                    *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, fil.m_total_number_subvolumes, timeStep, st, xvl); 
                                     // run()で得られるKVSMLObjectglyphとtmp_objは異なるメモリ領域を指しているため,ポインタコピーではなくオペレータを呼び出す必要がある
                                 }
                                 else     // filetype: kvsml

@@ -51,6 +51,8 @@ public:
     std::string m_y_synthesis;
     std::string m_z_synthesis;
 
+    int m_subvolume_id;
+
     class VolumeEquation
     {
     public:
@@ -136,6 +138,7 @@ public:
         m_output_data_base = "./";
         m_window_width  = 620;
         m_window_height = 620;
+        m_subvolume_id = 1;
 
         if ( this->hasOption( "t" ) ) m_transfer_function.read( this->optionValue<std::string>( "t" ) );
         //if( this->hasOption("t") ) ; /* 131017 removed */

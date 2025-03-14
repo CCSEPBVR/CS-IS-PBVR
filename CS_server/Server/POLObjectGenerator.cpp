@@ -38,7 +38,11 @@ void POLObjectGenerator::createFromFile( const Argument& param, const kvs::Camer
         std::cout << "Structured !" <<std::endl;
         volume = new pbvr::StructuredVolumeImporter( param.m_input_data ); 
 //        kvsMessageError("structured data does not apply." );
-
+        int id = param.m_subvolume_id;
+        volume->updateMinMaxValues();
+        //volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
+        volume->setMinMaxObjectCoords( m_fi->m_min_subvolume_coord[id], m_fi->m_max_subvolume_coord[id] );
+        //volume->setMinMaxExternalCoords( m_fi->m_min_subvolume_coord[id], m_fi->m_max_subvolume_coord[id] );
     } 
     else if ( kvsview::FileChecker::ImportableUnstructuredVolume( param.m_input_data))
     {

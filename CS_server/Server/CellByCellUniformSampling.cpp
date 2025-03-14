@@ -778,7 +778,6 @@ void CellByCellUniformSampling::generate_particles( const pbvr::StructuredVolume
         const kvs::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ nx_1,
                                          (max_vec.y() - min_vec.y() )/ ny_1,
                                          (max_vec.z() - min_vec.z() )/ nz_1) ;
-        std::cout << "cell_length = " << cell_length << std::endl;
         //-----------------------------------------//
         //----------------Histogram----------------//
         //-----------------------------------------//
