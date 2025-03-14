@@ -45,12 +45,24 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
         std::cout << "Structured !" <<std::endl;
         volume = new pbvr::StructuredVolumeImporter( param.m_input_data ); 
 //        kvsMessageError("structured data does not apply." );
+        // change by shimomura 20240730
+        int id = param.m_subvolume_id;
+        //volume->updateMinMaxValues();
+        //volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
+//        volume->setMinMaxObjectCoords( m_fi->m_min_subvolume_coord[id], m_fi->m_max_subvolume_coord[id] );
+//        volume->setMinMaxExternalCoords( m_fi->m_min_subvolume_coord[id], m_fi->m_max_subvolume_coord[id] );
 
     } 
     else if ( kvsview::FileChecker::ImportableUnstructuredVolume( param.m_input_data))
     {
         std::cout << "Unstructured !" <<std::endl;
         volume = new pbvr::UnstructuredVolumeImporter( param.m_input_data );  
+        
+        volume->updateMinMaxValues();
+        //volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
+        volume->setMinMaxObjectCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
+        volume->setMinMaxExternalCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
+
     }
     else 
     {
@@ -60,11 +72,6 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
 //FJ_TIMER_KAWAMURA
     PBVR_TIMER_END( 260 );
 //FJ_TIMER_KAWAMURA
-
-    volume->updateMinMaxValues();
-    //volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
-//    volume->setMinMaxObjectCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
-//    volume->setMinMaxExternalCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
 
     std::cout << *volume << std::endl;
     std::cout << "min:" << volume->minObjectCoord() << ", max:" << volume->maxObjectCoord() << std::endl;
