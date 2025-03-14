@@ -1261,6 +1261,7 @@ void MergePanel::totalParticles()
             m_files_manager[row]->getFormat() == FilesManager::PointObjectLAS ||
             m_files_manager[row]->getFormat() == FilesManager::PointObjectPTS )
         {
+            if( m_pbvr_gui->screen()->scene()->object( m_files_manager[row]->getIDs().first ) ) continue;
             auto* object = m_pbvr_gui->screen()->scene()->object( m_files_manager[row]->getIDs().first );
             if( object && object->isVisible() )
             {
