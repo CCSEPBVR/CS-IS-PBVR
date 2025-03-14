@@ -86,6 +86,8 @@ private:
     GlyphMode m_glyph_mode;
     kvs::ColorMap m_color_map; //need default defined
     DataDefines m_color_data;
+    void widgetDisable();
+    void widgetEnable();
 
 public:
     kvs::ValueArray<kvs::Real32> m_coords;

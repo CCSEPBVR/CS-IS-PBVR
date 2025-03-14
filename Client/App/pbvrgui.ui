@@ -27,7 +27,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>17</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuPanels">
@@ -46,6 +46,8 @@
     <addaction name="actionDisplayPointSizeControl"/>
     <addaction name="actionShadingControll"/>
     <addaction name="actionCoordinates"/>
+    <addaction name="actionGlyph"/>
+    <addaction name="actionPlot"/>
    </widget>
    <widget class="QMenu" name="menupbvr_client">
     <property name="title">
@@ -117,6 +119,22 @@
   <action name="actionShadingControll">
    <property name="text">
     <string>ShadingControll</string>
+   </property>
+  </action>
+  <action name="actionGlyph">
+   <property name="text">
+    <string>Glyph</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::TextHeuristicRole</enum>
+   </property>
+  </action>
+  <action name="actionPlot">
+   <property name="text">
+    <string>Plot</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::TextHeuristicRole</enum>
    </property>
   </action>
  </widget>
