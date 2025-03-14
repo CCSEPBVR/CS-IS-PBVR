@@ -49,8 +49,8 @@ void PointObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
         // change by shimomura 20240730
         volume->updateMinMaxValues();
         //volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
-        volume->setMinMaxObjectCoords( m_fi->m_max_subvolume_coord[id], m_fi->m_min_subvolume_coord[id] );
-        volume->setMinMaxExternalCoords( m_fi->m_max_subvolume_coord[id], m_fi->m_min_subvolume_coord[id] );
+        volume->setMinMaxObjectCoords( m_fi->m_min_subvolume_coord[id], m_fi->m_max_subvolume_coord[id] );
+        volume->setMinMaxExternalCoords( m_fi->m_min_subvolume_coord[id], m_fi->m_max_subvolume_coord[id] );
 
     } 
     else if ( kvsview::FileChecker::ImportableUnstructuredVolume( param.m_input_data))
