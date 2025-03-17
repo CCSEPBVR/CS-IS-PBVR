@@ -339,6 +339,7 @@ void GlyphGenerator::PointSampling_unstruct( )
 {
     const int stride = m_stride;
     int nPoints = m_ncoords/stride ;
+    if( m_ncoords%stride >0 ) nPoints += 1;
     m_glyph_coords.resize(nPoints * 3);
     m_glyph_vectors.resize(nPoints * 3);
     m_glyph_sizes.resize(nPoints);

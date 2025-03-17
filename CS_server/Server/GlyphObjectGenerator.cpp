@@ -60,8 +60,8 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const kvs::Cam
         
         volume->updateMinMaxValues();
         //volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
-        volume->setMinMaxObjectCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
-        volume->setMinMaxExternalCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
+        //volume->setMinMaxObjectCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
+        //volume->setMinMaxExternalCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
 
     }
     else 
