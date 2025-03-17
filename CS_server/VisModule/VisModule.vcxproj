@@ -130,8 +130,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\Users\SAKAMOTO\work\KVS\install\lib;C:\Users\SAKAMOTO\work\VTK-9.3.1\install\lib;$(SolutionDir)$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>pbvrCommon.lib;pbvrFunc.lib;ws2_32.lib;glu32.lib;opengl32.lib;vtksys-9.3.lib;vtkCommonCore-9.3.lib;vtkCommonExecutionModel-9.3.lib;vtkCommonDataModel-9.3.lib;vtkFiltersCore-9.3.lib;vtkFiltersExtraction-9.3.lib;vtkFiltersGeneral-9.3.lib;vtkFiltersGeometry-9.3.lib;vtkFiltersParallel-9.3.lib;vtkIOCore-9.3.lib;vtkIOGeometry-9.3.lib;vtkIOCGNSReader-9.3.lib;vtkIOEnSight-9.3.lib;vtkIOLegacy-9.3.lib;vtkIOParallel-9.3.lib;vtkIOXML-9.3.lib;vtkIOXMLParser-9.3.lib;vtkcgns-9.3.lib;vtkCommonMath-9.3.lib;vtkCommonMisc-9.3.lib;vtkCommonSystem-9.3.lib;vtkCommonTransforms-9.3.lib;vtkdoubleconversion-9.3.lib;vtkexpat-9.3.lib;vtkhdf5-9.3.lib;vtkloguru-9.3.lib;vtklz4-9.3.lib;vtklzma-9.3.lib;vtkParallelCore-9.3.lib;vtkpugixml-9.3.lib;vtkzlib-9.3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>pbvrCommon.lib;pbvrFunc.lib;ws2_32.lib;glu32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
