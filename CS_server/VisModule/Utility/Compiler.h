@@ -132,7 +132,7 @@
 #define VIS_MODULE_COMPILER_VERSION_GREATER_OR_EQUAL( major, minor ) \
     ( 11 > ( major ) || ( 11 == ( major ) && 0 >= ( minor ) ) )
 
-#elif ( _MSC_VER == 1800 )
+#elif ( _MSC_VER >= 1800 )
 #define VIS_MODULE_COMPILER_VERSION "12.00"
 #define VIS_MODULE_COMPILER_VERSION_IS( major, minor ) ( 12 == ( major ) && 0 == ( minor ) )
 #define VIS_MODULE_COMPILER_VERSION_LESS_THAN( major, minor ) \
