@@ -366,8 +366,9 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
 #endif
 
     int mpi_rank = 0;
-
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+    int mpi_size = 1;
+    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
 
     static bool start_flag = true;
     static bool parameter_file_opened=false;
@@ -464,7 +465,7 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
                 return;
             }
        }
-
+ 
     #pragma omp parallel
     {
 #if _OPENMP
