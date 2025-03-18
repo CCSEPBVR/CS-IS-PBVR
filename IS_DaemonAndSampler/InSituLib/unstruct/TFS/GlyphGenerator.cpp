@@ -1,7 +1,6 @@
 #include "GlyphGenerator.h"
 #include <filesystem>
 
-//GlyphGenerator::GlyphGenerator(glyph_parameters &,Type** values, int nvariables,
 //GlyphGenerator::GlyphGenerator(pbvr_parameters& particleBase, const int time_step ,Type** values,
 GlyphGenerator::GlyphGenerator(Type** values,
         int nvariables, float* coordinates, int ncoords,
@@ -620,9 +619,11 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
             min = kvs::Math::Min(m_glyph_sizes[k], min ); 
         }
 
-        MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
-
+        if(mpi_size > 1 )
+        {
+            MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+            MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        }
         float factor = 0;
         if (max - min > 1e-6)
         {
@@ -660,8 +661,11 @@ void GlyphGenerator::DistributionSampling( const pbvr::VolumeObjectBase::CellTyp
             min = kvs::Math::Min(m_glyph_colors_data[k], min ); 
         }
 
-        MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        if(mpi_size > 1 )
+        {
+            MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+            MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        }
 
         m_color_map.setRange(min,max);
         for( int jx=0; jx<n_color_data; jx++)
