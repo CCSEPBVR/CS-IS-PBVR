@@ -2608,7 +2608,7 @@ int main( int argc, char** argv )
                             fidx = mvpl.getFileIndex( vl, &xvl );
                             MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
-                            point_creator_lst[fidx].setFilterInfo( fi );
+                            point_creator_lst[fidx].setFilterInfo( mvp );
                             vismodule::PointObject* tmp_obj = NULL;
                             std::stringstream suffix;
                             suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )

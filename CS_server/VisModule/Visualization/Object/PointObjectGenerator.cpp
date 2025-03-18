@@ -48,9 +48,9 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
         int id = param.m_subvolume_id;
         // change by shimomura 20240730
         volume->updateMinMaxValues();
-        //volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
-        volume->setMinMaxObjectCoords( m_fi->m_min_subvolume_coord[id], m_fi->m_max_subvolume_coord[id] );
-        volume->setMinMaxExternalCoords( m_fi->m_min_subvolume_coord[id], m_fi->m_max_subvolume_coord[id] );
+        //volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
+        volume->setMinMaxObjectCoords( m_mvp->m_min_subvolume_coord[id], m_mvp->m_max_subvolume_coord[id] );
+        volume->setMinMaxExternalCoords( m_mvp->m_min_subvolume_coord[id], m_mvp->m_max_subvolume_coord[id] );
 
     } 
     else if ( vismoduleview::FileChecker::ImportableUnstructuredVolume( param.m_input_data))
@@ -60,9 +60,9 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
         
         // change by shimomura 20240730
         volume->updateMinMaxValues();
-        //volume->setMinMaxValues( m_fi->m_min_value, m_fi->m_max_value );
-        volume->setMinMaxObjectCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
-        volume->setMinMaxExternalCoords( m_fi->m_min_object_coord, m_fi->m_max_object_coord );
+        //volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
+        volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
+        volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
     }
     else 
     {
