@@ -107,16 +107,16 @@ void GlyphEditor::updateNumberOfVector( jpv::ParticleTransferServerMessage& serv
         m_direction_previus_index[2] = ui->direction3ComboBox->currentIndex();
 
         //グリフminmax更新
-        m_glyph_color_max = server_message.m_glyph_color_max;
-        m_glyph_color_min = server_message.m_glyph_color_min;
-        m_glyph_size_max  = server_message.m_glyph_size_max;
-        m_glyph_size_min  = server_message.m_glyph_size_min;
-        m_connect->getClientMessage()->m_glyph_color_max = server_message.m_glyph_color_max;
-        m_connect->getClientMessage()->m_glyph_color_min = server_message.m_glyph_color_min;
-        m_connect->getClientMessage()->m_glyph_size_max = server_message.m_glyph_size_max;
-        m_connect->getClientMessage()->m_glyph_size_min = server_message.m_glyph_size_min;
-        std::cout << "m_server_message.m_glyph_color_max = " << server_message.m_glyph_color_max << std::endl;
-        std::cout << "m_server_message.m_glyph_size_max = " << server_message.m_glyph_size_max << std::endl;
+        // m_glyph_color_max = server_message.m_glyph_color_max;
+        // m_glyph_color_min = server_message.m_glyph_color_min;
+        // m_glyph_size_max  = server_message.m_glyph_size_max;
+        // m_glyph_size_min  = server_message.m_glyph_size_min;
+        // m_connect->getClientMessage()->m_glyph_color_max = server_message.m_glyph_color_max;
+        // m_connect->getClientMessage()->m_glyph_color_min = server_message.m_glyph_color_min;
+        // m_connect->getClientMessage()->m_glyph_size_max = server_message.m_glyph_size_max;
+        // m_connect->getClientMessage()->m_glyph_size_min = server_message.m_glyph_size_min;
+        // std::cout << "m_server_message.m_glyph_color_max = " << server_message.m_glyph_color_max << std::endl;
+        // std::cout << "m_server_message.m_glyph_size_max = " << server_message.m_glyph_size_max << std::endl;
 
         directionComboBoxBlockSignals( false );
     }

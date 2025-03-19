@@ -661,8 +661,7 @@ void TransferFunctionEditor::importTransferFunctionFromServer()
         m_parameter.m_transfer_functions[i].m_color_server_side_min = m_connect->getServerMessage()->m_server_side_variable_range.min( tag_c );
         m_parameter.m_transfer_functions[i].m_color_server_side_max = m_connect->getServerMessage()->m_server_side_variable_range.max( tag_c );
         m_parameter.m_transfer_functions[i].setColorMap( m_connect->getServerMessage()->m_transfer_function[i].colorMap() );
-        m_parameter.m_transfer_functions[i].m_color_histogram = *m_connect->getReceivedMessage()->findColorFrequencyTable( m_parameter.m_transfer_functions[i].m_color_function_name );
-
+        //m_parameter.m_transfer_functions[i].m_color_histogram = *m_connect->getReceivedMessage()->findColorFrequencyTable( m_parameter.m_transfer_functions[i].m_color_function_name );
         char tag_o[16] = {0x00};
         sprintf(tag_o, "t%d_var_o", i + 1);
         m_parameter.m_transfer_functions[i].m_opacity_variable = m_connect->getServerMessage()->m_transfer_function[i].m_opacity_variable;
@@ -670,6 +669,12 @@ void TransferFunctionEditor::importTransferFunctionFromServer()
         m_parameter.m_transfer_functions[i].m_opacity_server_side_min = m_connect->getServerMessage()->m_server_side_variable_range.min( tag_o );
         m_parameter.m_transfer_functions[i].m_opacity_server_side_max = m_connect->getServerMessage()->m_server_side_variable_range.max( tag_o );
         m_parameter.m_transfer_functions[i].setOpacityMap( m_connect->getServerMessage()->m_transfer_function[i].opacityMap() );
+        //m_parameter.m_transfer_functions[i].m_opacity_histogram = *m_connect->getReceivedMessage()->findOpacityFrequencyTable( m_parameter.m_transfer_functions[i].m_opacity_function_name );
+    }
+
+    for( size_t i = 0; i < m_connect->getServerMessage()->m_transfer_function_count; i++ )
+    {
+        m_parameter.m_transfer_functions[i].m_color_histogram = *m_connect->getReceivedMessage()->findColorFrequencyTable( m_parameter.m_transfer_functions[i].m_color_function_name );
         m_parameter.m_transfer_functions[i].m_opacity_histogram = *m_connect->getReceivedMessage()->findOpacityFrequencyTable( m_parameter.m_transfer_functions[i].m_opacity_function_name );
     }
 

@@ -1326,13 +1326,13 @@ void jpv::ParticleTransferServerMessage::show( void ) const
     //     std::cout << "servMes.m_glyph_sizes[  i ] = " <<  m_glyph_sizes[ i ] << std::endl;
     // }
 
-    std::cout << "pol_res = " << m_xAxis.size() << std::endl;
-    for ( int i = 0; i < m_xAxis.size(); ++i )
-    {
-        std::cout << "servMes.m_xAxis[  i ] = " <<  m_xAxis[ i ] << std::endl;
-        std::cout << "servMes.m_mask[  i ] = " <<  m_mask[ i ] << std::endl;
-        std::cout << "servMes.m_line_values[  i ] = " <<  m_line_values[ i ] << std::endl;
-    }
+    // std::cout << "pol_res = " << m_xAxis.size() << std::endl;
+    // for ( int i = 0; i < m_xAxis.size(); ++i )
+    // {
+    //     std::cout << "servMes.m_xAxis[  i ] = " <<  m_xAxis[ i ] << std::endl;
+    //     std::cout << "servMes.m_mask[  i ] = " <<  m_mask[ i ] << std::endl;
+    //     std::cout << "servMes.m_line_values[  i ] = " <<  m_line_values[ i ] << std::endl;
+    // }
 
     std::cout<<std::endl;
 }

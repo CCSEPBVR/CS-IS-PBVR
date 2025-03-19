@@ -68,7 +68,7 @@ void Connect::connectServer()
         return;
     }
 
-    strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 ); 
+    strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
 
 #ifdef Q_OS_WIN
     m_client_message.m_input_directory = ( ui->volumeDataFilePathLEdit->text().replace( "/","\\" ) ).toLocal8Bit().constData();
@@ -122,7 +122,6 @@ void Connect::connectServer()
             m_received_message.m_opacity_bins[tf] = kvs::visclient::FrequencyTable( 0.0, 1.0, m_server_message.m_opacity_nbins[tf],(size_t *) m_server_message.m_opacity_bins[tf], std::string(opacity_function_name) );
         }
     }
-
     {
         m_transfer_function_editor->importTransferFunctionFromServer();
     }
@@ -336,7 +335,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
     m_client_message.m_node_type = 'a';
 //    m_client_message.m_particle_limit = 10000000;
 //    m_client_message.m_particle_density = 1;
-//    m_client_message.particle_data_size_limit = 20;    
+//    m_client_message.particle_data_size_limit = 20;
     m_client_message.m_camera = m_pbvr_gui->screen()->scene()->camera();//足りないかも
     m_client_message.m_step = timeStep;
     m_client_message.m_message_size = m_client_message.byteSize();
