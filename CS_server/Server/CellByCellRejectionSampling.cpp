@@ -847,6 +847,7 @@ void CellByCellRejectionSampling::generate_particles( const pbvr::StructuredVolu
             const int outer_loop = (ncells % SIMDW == 0) ?
                 ncells / SIMDW : ncells / SIMDW + 1;
 
+                interp_opacity[thid] -> setCellLength(1);
             #pragma omp for schedule(dynamic)
             for( int J=0; J<outer_loop; J++ )
             {
