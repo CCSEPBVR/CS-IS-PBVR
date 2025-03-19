@@ -193,7 +193,7 @@ void KVSMLObjectImage::setData( const kvs::ValueArray<kvs::UInt8>& data )
 
 /*===========================================================================*/
 /**
- *  @brief  Read a KVSMl point object file.
+ *  @brief  Read a KVSML point object file.
  *  @param  filename [in] filename
  *  @return true, if the reading process is successfully
  */

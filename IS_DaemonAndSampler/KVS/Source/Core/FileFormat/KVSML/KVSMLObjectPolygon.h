@@ -124,6 +124,6 @@ public:
     friend std::ostream& operator <<( std::ostream& os, const KVSMLObjectPolygon& rhs );
 };
 
-} // end of namesapce kvs
+} // end of namespace kvs
 
 #endif // KVS__KVSML_OBJECT_POLYGON_H_INCLUDE
