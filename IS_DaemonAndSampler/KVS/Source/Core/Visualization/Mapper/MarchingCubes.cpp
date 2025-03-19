@@ -680,4 +680,4 @@ void MarchingCubes::calculate_normals_on_vertex(
     }
 }
 
-} // end of namesapce kvs
+} // end of namespace kvs

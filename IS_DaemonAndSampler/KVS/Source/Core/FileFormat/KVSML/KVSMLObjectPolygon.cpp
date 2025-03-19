@@ -280,7 +280,7 @@ void KVSMLObjectPolygon::setNormals( const kvs::ValueArray<kvs::Real32>& normals
 
 /*===========================================================================*/
 /**
- *  @brief  Read a KVSMl polygon object file.
+ *  @brief  Read a KVSML polygon object file.
  *  @param  filename [in] filename
  *  @return true, if the reading process is successfully
  */
@@ -659,4 +659,4 @@ std::ostream& operator <<( std::ostream& os, const KVSMLObjectPolygon& rhs )
     return( os );
 }
 
-} // end of namesapce kvs
+} // end of namespace kvs

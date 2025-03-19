@@ -6,9 +6,9 @@
 #include "Serializer.h"
 //#include "serializer.h"
 
-#include <kvs/Camera>
-#include <kvs/Xform>
-#include <kvs/TransferFunction>
+#include <vismodule/Camera>
+#include <vismodule/Xform>
+#include <vismodule/TransferFunction>
 
 // namespace define for g++
 namespace jpv
@@ -47,13 +47,13 @@ size_t Serializer::read<std::string>( const char* buf, std::string* object )
 }
 
 template<>
-size_t Serializer::byteSize<kvs::Camera>( const kvs::Camera& object )
+size_t Serializer::byteSize<vismodule::Camera>( const vismodule::Camera& object )
 {
     size_t size = 0;
     size += sizeof( float ) * 9; // rotation
     size += sizeof( float ) * 3; // transition
     size += sizeof( float ) * 3; // scaling
-    size += sizeof( kvs::Camera::ProjectionType );
+    size += sizeof( vismodule::Camera::ProjectionType );
     size += sizeof( float ) * 3; // position
     size += sizeof( float ) * 3; // upvector
     size += sizeof( float ) * 3; // lookat
@@ -70,7 +70,7 @@ size_t Serializer::byteSize<kvs::Camera>( const kvs::Camera& object )
 }
 
 template<>
-size_t Serializer::pack<kvs::Camera>( char* buf, const kvs::Camera& object )
+size_t Serializer::pack<vismodule::Camera>( char* buf, const vismodule::Camera& object )
 {
     float r[9];
     for ( int i = 0; i < 9; ++i )
@@ -123,7 +123,7 @@ size_t Serializer::pack<kvs::Camera>( char* buf, const kvs::Camera& object )
 }
 
 template<>
-size_t Serializer::unpack<kvs::Camera>( const char* buf, kvs::Camera* object )
+size_t Serializer::unpack<vismodule::Camera>( const char* buf, vismodule::Camera* object )
 {
     float r[9];
     float t[3];
@@ -133,28 +133,28 @@ size_t Serializer::unpack<kvs::Camera>( const char* buf, kvs::Camera* object )
     index += readArray( buf + index, r );
     index += readArray( buf + index, t );
     index += readArray( buf + index, s );
-    kvs::Matrix33f rotation( r );
-    kvs::Vector3f translation( t );
-    kvs::Vector3f scaling( s );
+    vismodule::Matrix33f rotation( r );
+    vismodule::Vector3f translation( t );
+    vismodule::Vector3f scaling( s );
     //KVS2.7.0
     //MOD BY)T0603 2020.05.28
     //object->set( translation, scaling, rotation );
-    object->setXform( kvs::Xform( translation, scaling, rotation ) );
-    kvs::Camera::ProjectionType pType;
+    object->setXform( vismodule::Xform( translation, scaling, rotation ) );
+    vismodule::Camera::ProjectionType pType;
     index += read( buf + index, &pType );
     object->setProjectionType( pType );
     index += read( buf + index, &x );
     index += read( buf + index, &y );
     index += read( buf + index, &z );
-    object->setPosition( kvs::Vector3f( x, y, z ) );
+    object->setPosition( vismodule::Vector3f( x, y, z ) );
     index += read( buf + index, &x );
     index += read( buf + index, &y );
     index += read( buf + index, &z );
-    object->setUpVector( kvs::Vector3f( x, y, z ) );
+    object->setUpVector( vismodule::Vector3f( x, y, z ) );
     index += read( buf + index, &x );
     index += read( buf + index, &y );
     index += read( buf + index, &z );
-    object->setLookAt( kvs::Vector3f( x, y, z ) );
+    object->setLookAt( vismodule::Vector3f( x, y, z ) );
     index += read( buf + index, &v );
     object->setFieldOfView( v );
     index += read( buf + index, &v );
@@ -177,35 +177,35 @@ size_t Serializer::unpack<kvs::Camera>( const char* buf, kvs::Camera* object )
 }
 
 template<>
-size_t jpv::Serializer::byteSize<kvs::TransferFunction>( const kvs::TransferFunction& object )
+size_t jpv::Serializer::byteSize<vismodule::TransferFunction>( const vismodule::TransferFunction& object )
 {
     size_t size = 0;
     size += sizeof( object.resolution() );
     size += sizeof( object.maxValue() );
     size += sizeof( object.minValue() );
-    size += object.resolution() * 3 * sizeof( kvs::UInt8 );
+    size += object.resolution() * 3 * sizeof( vismodule::UInt8 );
     size += object.resolution() * sizeof( float );
-//	size += object.colorMap().table().size() * 3 * sizeof(kvs::UInt8);
+//	size += object.colorMap().table().size() * 3 * sizeof(vismodule::UInt8);
 //	size += object.opacityMap().table().size() * sizeof(float);
     return size;
 }
 
 template<>
-size_t jpv::Serializer::pack<kvs::TransferFunction>( char* buf, const kvs::TransferFunction& object )
+size_t jpv::Serializer::pack<vismodule::TransferFunction>( char* buf, const vismodule::TransferFunction& object )
 {
     size_t index = 0;
     const size_t resolution = object.resolution();
     index += write( buf + index, resolution );
     index += write( buf + index, object.maxValue() );
     index += write( buf + index, object.minValue() );
-    const kvs::ColorMap::Table& colorTable = object.colorMap().table();
+    const vismodule::ColorMap::Table& colorTable = object.colorMap().table();
     for ( size_t i = 0; i < resolution; ++i )
     {
         index += write( buf + index, colorTable[3 * i + 0] );
         index += write( buf + index, colorTable[3 * i + 1] );
         index += write( buf + index, colorTable[3 * i + 2] );
     }
-    const kvs::OpacityMap::Table& opacityTable = object.opacityMap().table();
+    const vismodule::OpacityMap::Table& opacityTable = object.opacityMap().table();
     for ( size_t i = 0; i < resolution; ++i )
     {
         index += write( buf + index, opacityTable[i] );
@@ -214,7 +214,7 @@ size_t jpv::Serializer::pack<kvs::TransferFunction>( char* buf, const kvs::Trans
 }
 
 template<>
-size_t jpv::Serializer::unpack<kvs::TransferFunction>( const char* buf, kvs::TransferFunction* object )
+size_t jpv::Serializer::unpack<vismodule::TransferFunction>( const char* buf, vismodule::TransferFunction* object )
 {
     size_t index = 0;
     size_t resolution;
@@ -223,20 +223,20 @@ size_t jpv::Serializer::unpack<kvs::TransferFunction>( const char* buf, kvs::Tra
     index += read( buf + index, &max_value );
     index += read( buf + index, &min_value );
 
-    kvs::ColorMap::Table colorTable( resolution * 3 );
+    vismodule::ColorMap::Table colorTable( resolution * 3 );
     for ( size_t i = 0; i < resolution; ++i )
     {
         index += read( buf + index, &colorTable[3 * i + 0] );
         index += read( buf + index, &colorTable[3 * i + 1] );
         index += read( buf + index, &colorTable[3 * i + 2] );
     }
-    kvs::OpacityMap::Table opacityTable( resolution );
+    vismodule::OpacityMap::Table opacityTable( resolution );
     for ( size_t i = 0; i < resolution; ++i )
     {
         index += read( buf + index, &opacityTable[i] );
     }
-    kvs::ColorMap colorMap( colorTable );
-    kvs::OpacityMap opacityMap( opacityTable );
+    vismodule::ColorMap colorMap( colorTable );
+    vismodule::OpacityMap opacityMap( opacityTable );
     object->create( resolution );
     colorMap.setResolution( resolution );
     colorMap.setRange( min_value, max_value );
