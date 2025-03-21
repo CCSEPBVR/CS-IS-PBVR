@@ -68,7 +68,7 @@ void Connect::connectServer()
         return;
     }
 
-    strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 ); 
+    strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
 
 #ifdef Q_OS_WIN
     m_client_message.m_input_directory = ( ui->volumeDataFilePathLEdit->text().replace( "/","\\" ) ).toLocal8Bit().constData();
@@ -107,6 +107,7 @@ void Connect::connectServer()
     m_received_message.m_var_range.merge( m_server_message.m_server_side_variable_range );
     m_received_message.m_color_bins.resize( m_server_message.m_transfer_function_count );
     m_received_message.m_opacity_bins.resize( m_server_message.m_transfer_function_count );
+
     for ( int tf = 0; tf < m_server_message.m_transfer_function_count; tf++ )
     {
         char color_function_name[8] = {0x00};
@@ -132,6 +133,7 @@ void Connect::connectServer()
     m_plot_over_line->updateNumberOfVector( m_server_message );
 
     strncpy( m_client_message.m_header, "JPTP /1.0\r\n", 11 );
+
 
     //m_client_message.m_initialize_parameter = -1;
     m_client_message.m_initialize_parameter = jpv::InitializeParameter::connection_reset;
@@ -336,7 +338,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
     m_client_message.m_node_type = 'a';
 //    m_client_message.m_particle_limit = 10000000;
 //    m_client_message.m_particle_density = 1;
-//    m_client_message.particle_data_size_limit = 20;    
+//    m_client_message.particle_data_size_limit = 20;
     m_client_message.m_camera = m_pbvr_gui->screen()->scene()->camera();//足りないかも
     m_client_message.m_step = timeStep;
     m_client_message.m_message_size = m_client_message.byteSize();
@@ -409,6 +411,13 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
     std::cout << serverSideMaxObjectCoords[0] << std::endl;
     std::cout << serverSideMaxObjectCoords[1] << std::endl;
     std::cout << serverSideMaxObjectCoords[2] << std::endl;
+
+    bool flag = false;
+
+    if(m_server_message.m_flag_send_bins == 1  && ui->inSituRBtn->isChecked() == true)
+    {
+        flag = true;
+    }
 
     m_client_message.m_initialize_parameter = jpv::InitializeParameter::connection_reset;
     m_client_message.m_message_size = m_client_message.byteSize();
@@ -491,6 +500,11 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
     if (m_plot_over_line->enable_flag())
     {
         sendRecvPlotOverLine( timeStep );
+    }
+
+    if(flag &&  ui->inSituRBtn->isChecked() == true )
+    {
+        return nullptr;
     }
 
     return pointObject;
@@ -662,6 +676,12 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
             colors[3 * i + 1] = pointObject->colors()[3 * i + 1];
             colors[3 * i + 2] = pointObject->colors()[3 * i + 2];
         }
+        bool flag = false;
+
+        if(m_server_message.m_flag_send_bins == 1 && ui->inSituRBtn->isChecked() == true)
+        {
+            flag = true;
+        }
 
         // m_client_message.m_initialize_parameter = -1;
         m_client_message.m_initialize_parameter = jpv::InitializeParameter::connection_reset;
@@ -692,6 +712,12 @@ kvs::PolygonObject* Connect::generateGlyphPolygons( int timeStep )
             m_merge->updateObjectTimeStepIS( m_server_message.m_start_step, m_server_message.m_last_step );
         }
         m_glyph_editor->enableGlyphUpdateButton();
+
+        if(flag && ui->inSituRBtn->isChecked() == true)
+        {
+            return nullptr;
+        }
+
         return polygonObject;
     }
 }

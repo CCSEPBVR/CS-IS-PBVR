@@ -18,6 +18,7 @@
 #include "kvs/PolygonExporter"
 #include "kvs/PolygonObject"
 
+#include "Exporter/StructuredVolumeObjectExporter.h"
 #include "Exporter/UnstructuredVolumeObjectExporter.h"
 #include "FileFormat/STL/Stl.h"
 #include "FileFormat/VTK/VtkXmlImageData.h"
@@ -85,6 +86,8 @@ void Vtm2Kvsml( const std::string& directory, const std::string& base,
 {
     std::cout << "Reading " << src << " ..." << std::endl;
     std::unordered_map<int, cvt::UnstructuredPfi> pfi_map;
+    bool is_unstructured = false;
+    bool is_structured = false;
 
     cvt::VtkXmlMultiBlock input_vtm( src );
     int last_time_step = 0;
@@ -98,6 +101,7 @@ void Vtm2Kvsml( const std::string& directory, const std::string& base,
     {
         if ( auto input_vtu = dynamic_cast<cvt::VtkXmlUnstructuredGrid*>( format.get() ) )
         {
+            is_unstructured = true;
             for ( auto vtu : input_vtu->eachCellType() )
             {
                 cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( input_vtu );
@@ -110,6 +114,24 @@ void Vtm2Kvsml( const std::string& directory, const std::string& base,
                 veclens[cell_type] = object->veclen();
             }
         }
+        else if ( auto input_vti = dynamic_cast<cvt::VtkXmlImageData*>( format.get() ) )
+        {
+            is_structured = true;
+            cvt::VtkImporter<cvt::VtkXmlImageData> importer( input_vti );
+            kvs::StructuredVolumeObject* object = &importer;
+            
+            int cell_type = 7;
+            sub_volume_counts[cell_type] = ( sub_volume_counts.count( cell_type ) == 0 )
+                                                   ? 1
+                                                   : ( sub_volume_counts[cell_type] + 1 );
+            veclens[cell_type] = object->veclen();
+        }
+    }
+
+    if ( is_structured && is_unstructured )
+    {
+        std::cout << "Mixed StructuredGrid and UnstructuredGrid files are not supported." << std::endl;
+        return;
     }
 
     for ( auto& e : sub_volume_counts )
@@ -152,6 +174,26 @@ void Vtm2Kvsml( const std::string& directory, const std::string& base,
                 ++sub_volume_ids[object->cellType()];
             }
         }
+        else if ( auto input_vti = dynamic_cast<cvt::VtkXmlImageData*>( format.get() ) )
+        {
+            cvt::VtkImporter<cvt::VtkXmlImageData> importer( input_vti );
+            kvs::StructuredVolumeObject* object = &importer;
+            object->print( std::cout, kvs::Indent( 2 ) );
+
+            int cell_type = 7;
+
+            std::cout << "  Writing ..." << std::endl;
+            cvt::StructuredVolumeObjectExporter exporter( &importer );
+            exporter.setWritingDataTypeToExternalBinary();
+            exporter.write( directory, base, time_step,
+                        sub_volume_ids[cell_type],
+                        sub_volume_counts[cell_type] );
+
+            pfi_map.at( cell_type )
+                .registerObject( &exporter, time_step, sub_volume_ids[cell_type] );
+
+            ++sub_volume_ids[cell_type];
+        }
         else
         {
             std::cout << "An unsupported vtk data type" << std::endl;
@@ -161,7 +203,15 @@ void Vtm2Kvsml( const std::string& directory, const std::string& base,
     cvt::Pfl pfl;
     for ( auto& e : pfi_map )
     {
-        std::string local_base = std::string( base ) + "_" + std::to_string( e.first );
+        std::string local_base;
+        if ( is_unstructured )
+        {
+            local_base = std::string( base ) + "_" + std::to_string( e.first );
+        }
+        else if ( is_structured )
+        {
+            local_base = std::string( base );
+        }
         e.second.write( directory, local_base );
         e.second.print( std::cout );
 
@@ -176,6 +226,8 @@ void SeriesVtm2Kvsml( const std::string& directory, const std::string& base,
     std::cout << "Reading " << src << " ..." << std::endl;
 
     std::unordered_map<int, cvt::UnstructuredPfi> pfi_map;
+    bool is_unstructured = false;
+    bool is_structured = false;
 
     cvt::NumeralSequenceFiles<cvt::VtkXmlMultiBlock> time_series( src );
     int last_time_step = time_series.numberOfFiles() - 1;
@@ -195,6 +247,7 @@ void SeriesVtm2Kvsml( const std::string& directory, const std::string& base,
             {
                 if ( auto input_vtu = dynamic_cast<cvt::VtkXmlUnstructuredGrid*>( format.get() ) )
                 {
+                    is_unstructured = true;
                     for ( auto vtu : input_vtu->eachCellType() )
                     {
                         cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( input_vtu );
@@ -207,6 +260,24 @@ void SeriesVtm2Kvsml( const std::string& directory, const std::string& base,
                         veclens[cell_type] = object->veclen();
                     }
                 }
+                else if ( auto input_vti = dynamic_cast<cvt::VtkXmlImageData*>( format.get() ) )
+                {
+                    is_structured = true;
+                    cvt::VtkImporter<cvt::VtkXmlImageData> importer( input_vti );
+                    kvs::StructuredVolumeObject* object = &importer;
+                    
+                    int cell_type = 7;
+                    sub_volume_counts[cell_type] = ( sub_volume_counts.count( cell_type ) == 0 )
+                                                           ? 1
+                                                           : ( sub_volume_counts[cell_type] + 1 );
+                    veclens[cell_type] = object->veclen();
+                }
+            }
+
+            if ( is_structured && is_unstructured )
+            {
+                std::cout << "Mixed StructuredGrid and UnstructuredGrid files are not supported." << std::endl;
+                return;
             }
 
             for ( auto& e : sub_volume_counts )
@@ -251,6 +322,26 @@ void SeriesVtm2Kvsml( const std::string& directory, const std::string& base,
                     ++sub_volume_ids[object->cellType()];
                 }
             }
+            else if ( auto input_vti = dynamic_cast<cvt::VtkXmlImageData*>( format.get() ) )
+            {
+                cvt::VtkImporter<cvt::VtkXmlImageData> importer( input_vti );
+                kvs::StructuredVolumeObject* object = &importer;
+                object->print( std::cout, kvs::Indent( 2 ) );
+
+                int cell_type = 7;
+
+                std::cout << "  Writing ..." << std::endl;
+                cvt::StructuredVolumeObjectExporter exporter( &importer );
+                exporter.setWritingDataTypeToExternalBinary();
+                exporter.write( directory, base, time_step,
+                            sub_volume_ids[cell_type],
+                            sub_volume_counts[cell_type] );
+
+                pfi_map.at( cell_type )
+                    .registerObject( &exporter, time_step, sub_volume_ids[cell_type] );
+
+                ++sub_volume_ids[cell_type];
+            }
             else
             {
                 std::cout << "An unsupported vtk data type" << std::endl;
@@ -263,11 +354,18 @@ void SeriesVtm2Kvsml( const std::string& directory, const std::string& base,
     cvt::Pfl pfl;
     for ( auto& e : pfi_map )
     {
-        std::string local_base = std::string( base ) + "_" + std::to_string( e.first );
+        std::string local_base;
+        if ( is_unstructured )
+        {
+            local_base = std::string( base ) + "_" + std::to_string( e.first );
+        }
+        else if ( is_structured )
+        {
+            local_base = std::string( base );
+        }
         e.second.write( directory, local_base );
         e.second.print( std::cout );
-
-        pfl.registerPfi( directory, local_base );
+        pfl.registerPfi( directory, local_base );        
     }
     pfl.write( directory, base );
 }
