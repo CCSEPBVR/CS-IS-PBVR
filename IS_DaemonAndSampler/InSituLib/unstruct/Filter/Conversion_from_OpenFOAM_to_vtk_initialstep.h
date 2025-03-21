@@ -1,10 +1,6 @@
 
 int time_step = 0;
 vtkSmartPointer<vtkUnstructuredGrid> ucd = vtkSmartPointer<vtkUnstructuredGrid>::New();
-
-    int mpi_rank = 0;
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-
 // time_step =0 のみ座標情報を入力する！！
 if(time_step == 0)
 {

@@ -586,6 +586,7 @@ void generate_particles( int time_step, domain_parameters dom,
     bool skip_flag;
     skip_flag = SetParameter(dom, &particleBase, &param, time_step);
 
+    particleBase.m_nvariables = nvariables; 
     PlotOverLine plot_over_line;
     plot_over_line.SetPOLParameter(time_step);
     if (skip_flag == false)

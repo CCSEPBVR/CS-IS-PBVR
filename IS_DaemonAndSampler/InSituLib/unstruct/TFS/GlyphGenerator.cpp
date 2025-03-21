@@ -160,6 +160,7 @@ bool GlyphGenerator::SetGlyphParameter( )
     }
 
     m_stride                  = stride;
+    if     (distribution_modes == "AllPoints"           ) m_stride = 1;
     m_seed                    = seed;
     m_number_of_sample_points = number_of_sample_points;
     if     (color_sampling_method == "Constant"       ) m_color_sampling_method    = jpv::DataDefines::Constant;
@@ -222,7 +223,7 @@ void GlyphGenerator::PointSampling( )
    //size
    if (m_size_sampling_method == jpv::DataDefines::Constant)
    {
-       std::fill(m_glyph_sizes.begin(), m_glyph_sizes.begin() ,1);
+       std::fill(m_glyph_sizes.begin(), m_glyph_sizes.end() ,1);
    }
 //   else if (m_size_sampling_method == jpv::DataDefines::SingleVariable) 
 //   {
@@ -289,23 +290,8 @@ void GlyphGenerator::PointSampling( )
    float glyph_color_data_min = FLT_MAX;
    if (m_color_sampling_method == jpv::DataDefines::Constant)
    {
-       std::fill(m_glyph_colors.begin(), m_glyph_colors.begin(), 0);
-       m_color_map.setRange(0, 1);
+       std::fill(m_glyph_colors.begin(), m_glyph_colors.end(), 255);
    }
-//   else if (m_color_sampling_method == jpv::DataDefines::SingleVariable) 
-//   {
-//
-//       std::vector<int> color_var = m_color_data_variables;
-//       glyph_color_data_max =  m_color_max[color_var[0]] ;
-//       glyph_color_data_min =  m_color_min[color_var[0]] ;
-//       int glyph_count =0;
-//       for (int i = 0; i < m_ncoords; i+= stride)
-//       {
-//           m_glyph_colors_data[ glyph_count ] = m_values[ color_var[0] ][ i ];
-//           glyph_count++;
-//            
-//       }
-//   }
    else if (m_color_sampling_method == jpv::DataDefines::VariableArray || m_color_sampling_method == jpv::DataDefines::SingleVariable ) 
    {
        std::vector<int> color_var = m_color_data_variables;
@@ -336,16 +322,17 @@ void GlyphGenerator::PointSampling( )
        MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
 
        m_color_map.setRange(min, max);
+       for (int ii=0;ii < nPoints; ii++)
+       {
+           kvs::RGBColor colors; 
+           colors = m_color_map.at(m_glyph_colors_data[ ii ]);
+           m_glyph_colors[3*ii    ] = colors.r() ;
+           m_glyph_colors[3*ii +1 ] = colors.g() ;
+           m_glyph_colors[3*ii +2 ] = colors.b() ;
+       }
+
    }
 
-    for (int ii=0;ii < nPoints; ii++)
-    {
-        kvs::RGBColor colors; 
-        colors = m_color_map.at(m_glyph_colors_data[ ii ]);
-        m_glyph_colors[3*ii    ] = colors.r() ;
-        m_glyph_colors[3*ii +1 ] = colors.g() ;
-        m_glyph_colors[3*ii +2 ] = colors.b() ;
-    }
 //    this -> show();
 }
 

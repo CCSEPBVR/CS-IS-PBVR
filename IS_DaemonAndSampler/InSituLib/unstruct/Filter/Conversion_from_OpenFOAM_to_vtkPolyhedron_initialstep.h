@@ -9,32 +9,6 @@ forAll(mesh.points(),pid)
 }
 ucd ->SetPoints(vpoint);
 
-//cell  
-//for (int cid =0; cid < mesh.nCells(); cid ++)
-//{
-//    std::cout << "cid = " << cid << std::endl; 
-//    const cell &cellVertices = mesh.cells()[cid];
-//    const  cellShape c = mesh.cellShapes()[cid];
-//    int npoints = c.nPoints();
-//    std::cout << " npoints =  " << npoints << std::endl;
-//    std::cout << "  Vertex size: " << cellVertices.size() << std::endl;
-//
-//    if (c.model().index() == 0)
-//    {
-//    // 各頂点の座標を取得
-//    for (label vertI = 0; vertI < cellVertices.size(); ++vertI)
-//    {
-//        label pointIndex = cellVertices[vertI]; // 頂点のインデックス
-//        const point &vertexCoord = mesh.points()[pointIndex]; // 頂点の座標
-//        std::cout << "  Vertex " << int(vertI) << ": " << double(vertexCoord[0]) << ", " <<  double(vertexCoord[1]) << ", " << double(vertexCoord[2])<< std::endl;
-//    }
-//    }
-//
-//}
-
-    int mpi_rank;
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-
 vtkSmartPointer<vtkUnstructuredGrid> tet_data = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
 //#pragma omp parallel  
@@ -46,21 +20,6 @@ for (int cid =0; cid < mesh.nCells(); cid ++)
     const  cellShape c = mesh.cellShapes()[cid];
     auto vcell = vtkSmartPointer<vtkCellArray>::New();
     const labelList &cellFaces = mesh.cells()[cid];
-
-    // 4 debug
-//    int nfacesd = c.nFaces();
-//    for (int i = 0; i < nfacesd; i++)
-//    {
-//        auto Fc = c.faces()[i]; // 面iの取得 
-//        int nFcpoints = Fc.size() ;// 面iの頂点数取得
-//        vtkIdType face[nFcpoints] ;
-//        for (int k =0; k< nFcpoints; k++ )
-//        {
-//            face[k] = Fc[k];
-//            std::cout << "Fc[k] = " <<  Fc[k] << std::endl;
-//        }
-//        vcell->InsertNextCell(nFcpoints, face);
-//    }
 
 #if 0
     // 頂点indexの取得
