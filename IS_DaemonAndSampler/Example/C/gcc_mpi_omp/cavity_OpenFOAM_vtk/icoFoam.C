@@ -68,20 +68,6 @@ int main(int argc, char *argv[])
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
-
-//    // add init flow 
-   
-//    int mpi_rank;
-//    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-
-    //デバッグ用条件
-//    for (int i = 0; i< U.size(); i++)
-//    {    
-//         Foam::vector newValue(0.3, 0.0, 0.0);
-//        if (mpi_rank == 0 ) newValue.x() = newValue.x()*2;
-//        U[i] = newValue;
-//    }
-
     // PBVRの関数を呼び出す初回ステップはこちらのヘッダーを必ず指定する。
     #include "Filter/Conversion_from_OpenFOAM_to_vtk_initialstep.h"   
     
