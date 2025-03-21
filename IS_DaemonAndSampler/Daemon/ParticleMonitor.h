@@ -26,7 +26,9 @@ private:
     pbvr::PointObject     m_particle; 
     kvs::KVSMLObjectGlyph      m_glyph; 
     kvs::KVSMLObjectPlotOverLine    m_plot_over_line; 
-    kvs::Int32            m_time_step;
+    kvs::Int32            m_time_step_particle;
+    kvs::Int32            m_time_step_glyph;
+    kvs::Int32            m_time_step_pol;
 
 private:
     inline bool checking_status_file();
@@ -49,7 +51,9 @@ public:
     void setParticleStatusFileName( const std::string& file_name );
     void setParticleHistoryFileName( const std::string& file_name );
     void setParticleHistoryFilePrefix( const std::string& prefix );
-    bool setTimeStep( const kvs::Int32 time_step );
+    bool setTimeStep_particle( const kvs::Int32 time_step );
+    bool setTimeStep_glyph( const kvs::Int32 time_step );
+    bool setTimeStep_pol( const kvs::Int32 time_step );
     void check();
     void readParticleHistoryFile();
     void readParticleFile();
@@ -68,7 +72,9 @@ public:
     PlotOverLineFile& plotOverLineFile();
     bool statusFileChanged();
     bool stepExisted();
-    kvs::Int32 getTimeStep();
+    kvs::Int32 getTimeStep_particle();
+    kvs::Int32 getTimeStep_glyph();
+    kvs::Int32 getTimeStep_pol();
 };
 
 inline bool ParticleMonitor::checking_status_file()

@@ -10,7 +10,9 @@ ParticleMonitor::ParticleMonitor():
 ParticleMonitor::ParticleMonitor( const std::string& particle_file_prefix,
                                   const std::string& particle_status_file_name,
                                   const std::string& particle_history_file_prefix ):
-    m_time_step( -1 ),
+    m_time_step_particle( -1 ),
+    m_time_step_glyph( -1 ),
+    m_time_step_pol( -1 ),
     m_history_file_prefix( particle_history_file_prefix )
 {
     this->setParticleFilePrefix( particle_file_prefix );
@@ -22,7 +24,9 @@ ParticleMonitor::ParticleMonitor( const std::string& particle_file_prefix,
                                   const std::string& plot_over_line_file_prefix,
                                   const std::string& particle_status_file_name,
                                   const std::string& particle_history_file_prefix ):
-    m_time_step( -1 ),
+    m_time_step_particle( -1 ),
+    m_time_step_glyph( -1 ),
+    m_time_step_pol( -1 ),
     m_history_file_prefix( particle_history_file_prefix )
 {
     this->setParticleFilePrefix( particle_file_prefix );
@@ -55,7 +59,7 @@ void ParticleMonitor::readGlyphFile()
     m_glyph_file.setParameterFromFile();
     TimerStop( 6 );
     TimerStart( 7 );
-    m_glyph_file.generateGlyphObject( m_time_step, &m_glyph );
+    m_glyph_file.generateGlyphObject( m_time_step_glyph, &m_glyph );
     TimerStop( 7 );
 }
 
@@ -65,7 +69,7 @@ void ParticleMonitor::readPlotOverLineFile()
     m_plot_over_line_file.setParameterFromFile();
     TimerStop( 6 );
     TimerStart( 7 );
-    m_plot_over_line_file.generatePOLObject( m_time_step, &m_plot_over_line );
+    m_plot_over_line_file.generatePOLObject( m_time_step_pol, &m_plot_over_line );
     TimerStop( 7 );
 }
 
@@ -77,14 +81,14 @@ void ParticleMonitor::readParticleFile()
     TimerStop( 6 );
     TimerStart( 7 );
     m_particle.clear();
-    m_particle_file.generatePointObject( m_time_step, &m_particle );
+    m_particle_file.generatePointObject( m_time_step_particle, &m_particle );
     TimerStop( 7 );
 }
 
 void ParticleMonitor::readParticleHistoryFile()
 {
     std::stringstream step;
-    step << '_' << std::setw( 5 ) << std::setfill( '0' ) << m_time_step;
+    step << '_' << std::setw( 5 ) << std::setfill( '0' ) << m_time_step_particle;
     std::string history_file_name = m_history_file_prefix + step.str() + ".txt";
     this->setParticleHistoryFileName( history_file_name );
     m_history_file.read();
@@ -115,12 +119,28 @@ void ParticleMonitor::setParticleHistoryFileName( const std::string& file_name )
     m_history_file.setFileName( file_name );
 }
 
-bool ParticleMonitor::setTimeStep( const kvs::Int32 time_step )
+bool ParticleMonitor::setTimeStep_particle( const kvs::Int32 time_step )
 {
-    bool changed = ( m_time_step != time_step ) && this->stepExisted();
-    m_time_step = time_step;
+    bool changed = ( m_time_step_particle != time_step ) && this->stepExisted();
+    m_time_step_particle = time_step;
     return changed;
 }
+
+bool ParticleMonitor::setTimeStep_glyph( const kvs::Int32 time_step )
+{
+    bool changed = ( m_time_step_glyph != time_step ) && this->stepExisted();
+    m_time_step_glyph = time_step;
+    return changed;
+}
+
+bool ParticleMonitor::setTimeStep_pol( const kvs::Int32 time_step )
+{
+    bool changed = ( m_time_step_pol != time_step ) && this->stepExisted();
+    m_time_step_pol = time_step;
+    return changed;
+}
+
+
 
 void ParticleMonitor::getParticle( pbvr::PointObject* object )
 {
@@ -173,9 +193,21 @@ bool ParticleMonitor::statusFileChanged()
     return !this->checking_status_file();
 }
 
-kvs::Int32 ParticleMonitor::getTimeStep()
+kvs::Int32 ParticleMonitor::getTimeStep_particle()
 {
-    return m_time_step;
+    return m_time_step_particle;
+}
+
+
+kvs::Int32 ParticleMonitor::getTimeStep_glyph()
+{
+    return m_time_step_glyph;
+}
+
+
+kvs::Int32 ParticleMonitor::getTimeStep_pol()
+{
+    return m_time_step_pol;
 }
 
 ParticleMonitor::~ParticleMonitor()

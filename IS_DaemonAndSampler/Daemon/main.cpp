@@ -481,14 +481,17 @@ int main( int argc, char** argv )
 
                 ParticleMonitor pm( particlePath, glyphFilePath, plotOverLineFilePath, statePath.c_str(), historyPath.c_str() );
                 pm.check();
+
+                servMes.m_start_step = pm.particleStatusFile().getStartTimeStep();
+                servMes.m_last_step = pm.particleStatusFile().getLatestTimeStep();
                 if( pm.stepExisted() )
                 {
-                    pm.setTimeStep(pm.particleStatusFile().getLatestTimeStep());
+                    pm.setTimeStep_particle(pm.particleStatusFile().getLatestTimeStep());
                     //pm.setTimeStep(0);
                 }
                 else
                 {
-                    pm.setTimeStep(0);
+                    pm.setTimeStep_particle(0);
                 }
                 pm.readParticleHistoryFile();
                 range = pm.particleHistoryFile().variableRange();
@@ -933,8 +936,9 @@ int main( int argc, char** argv )
                             }
 
                             TimerStop( 2 );
-                            if( pm.setTimeStep( clntMes.m_step ) ) servMes.m_flag_send_bins = 0;
+                            if( pm.setTimeStep_particle( clntMes.m_step ) ) servMes.m_flag_send_bins = 0;
                             else                                 servMes.m_flag_send_bins = 1;
+//                            else                                 servMes.m_flag_send_bins = 0;
                             if( servMes.m_flag_send_bins == 0)
                             {
                                 pm.readParticleHistoryFile();
@@ -1252,8 +1256,8 @@ int main( int argc, char** argv )
                         VariableRange vr;
 
                         pm.check();
-                        servMes.m_start_step = pm.glyphFile().getStartTimeStep();
-                        servMes.m_last_step  = pm.glyphFile().getLatestTimeStep();
+                        servMes.m_start_step = pm.particleStatusFile().getStartTimeStep();
+                        servMes.m_last_step = pm.particleStatusFile().getLatestTimeStep();
                         if( pm.stepExisted() )
                         {
                             //if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step && pm.getTimeStep() > -1 )
@@ -1330,8 +1334,7 @@ int main( int argc, char** argv )
                             }
 
                             TimerStop( 2 );
-                            //if( pm.setTimeStep( clntMes.m_step ) ) servMes.m_flag_send_bins = 2;
-                            if( pm.setTimeStep( clntMes.m_step ) || pm.stepExisted() ) servMes.m_flag_send_bins = 2;
+                            if( pm.setTimeStep_glyph( clntMes.m_step ) || pm.stepExisted() ) servMes.m_flag_send_bins = 2;
                             else                                 servMes.m_flag_send_bins = 1;
                             if( servMes.m_flag_send_bins == 2)
                             {
@@ -1585,8 +1588,8 @@ int main( int argc, char** argv )
                         VariableRange vr;
 
                         pm.check();
-                        servMes.m_start_step = pm.plotOverLineFile().getStartTimeStep();
-                        servMes.m_last_step  = pm.plotOverLineFile().getLatestTimeStep();
+                        servMes.m_start_step = pm.particleStatusFile().getStartTimeStep();
+                        servMes.m_last_step = pm.particleStatusFile().getLatestTimeStep();
                         if( pm.stepExisted() )
                         {
                             if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step )
@@ -1663,7 +1666,7 @@ int main( int argc, char** argv )
                             }
 
                             TimerStop( 2 );
-                            if( pm.setTimeStep( clntMes.m_step ) || pm.stepExisted() ) servMes.m_flag_send_bins = 3; //plot over line
+                            if( pm.setTimeStep_pol( clntMes.m_step ) || pm.stepExisted() ) servMes.m_flag_send_bins = 3; //plot over line
                             else                                 servMes.m_flag_send_bins = 1;
                             if( servMes.m_flag_send_bins == 3)
                             {
