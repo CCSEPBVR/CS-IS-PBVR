@@ -54,6 +54,7 @@ Description
 #include <chrono>
 #include <thread>
 #include <vtkXMLUnstructuredGridWriter.h>
+#include <set>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

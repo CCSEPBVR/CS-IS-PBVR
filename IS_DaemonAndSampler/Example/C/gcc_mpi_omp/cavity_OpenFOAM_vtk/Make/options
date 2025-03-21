@@ -1,4 +1,4 @@
-include ../../../../VTK.path
+include ../../../../pbvr.conf
 EXE_INC = \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \

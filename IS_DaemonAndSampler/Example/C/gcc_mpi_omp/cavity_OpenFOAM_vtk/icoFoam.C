@@ -71,8 +71,8 @@ int main(int argc, char *argv[])
 
 //    // add init flow 
    
-    int mpi_rank;
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+//    int mpi_rank;
+//    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
 
     //デバッグ用条件
 //    for (int i = 0; i< U.size(); i++)
