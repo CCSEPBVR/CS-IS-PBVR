@@ -1,4 +1,4 @@
-PBVR_DIR = ../../..
+PBVR_DIR = ../../../../
 
 include ${PBVR_DIR}/pbvr.conf
 include ${PBVR_DIR}/arch/${PBVR_MACHINE}
