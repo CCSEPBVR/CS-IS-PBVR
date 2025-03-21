@@ -1334,6 +1334,8 @@ void jpv::ParticleTransferServerMessage::show( void ) const
     //     std::cout << "servMes.m_line_values[  i ] = " <<  m_line_values[ i ] << std::endl;
     // }
 
+    std::cout << "m_last_step = " <<  m_last_step << ", "   << __LINE__ << std::endl;
+
     std::cout<<std::endl;
 }
 
