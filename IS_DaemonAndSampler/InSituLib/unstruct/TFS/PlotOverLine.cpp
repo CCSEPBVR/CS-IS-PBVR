@@ -61,7 +61,7 @@ void PlotOverLine::setResolution( const size_t resolution )
     m_allcell_values_on_line.fill( 0x00 );
 
     m_allcell_mask.allocate(resolution);
-    m_allcell_values_on_line.fill( 0x00 );
+    m_allcell_mask.fill( false );
 
 }
 
@@ -321,7 +321,6 @@ void PlotOverLine::for_hexahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
         for( int i=0; i<8; i++ )
         {
             scalar[i] =  m_volume->values().to<kvs::Real32>( local_id[i] + ncoord*m_plot_variable);
-            if (scalar[i] > 10000000) std::cout << "scalar[i]  = " << scalar[i] << ", cell = " << cell  <<std::endl; 
         }
 
         kvs::Real32 face_center_scalar[6];
@@ -839,8 +838,11 @@ POL::Range PlotOverLine::t_range_in_tet( const kvs::Vec4 bc_P0, const kvs::Vec4 
     {
         POL::Range tmp_range;
 
-        const float a0 = bc_P0[i];
-        const float a1 = bc_P1[i];
+        float a0 = bc_P0[i];
+        float a1 = bc_P1[i];
+        if( kvs::Math::Abs(a0) < 1e-6 ) a0 = 0.f;
+        if( kvs::Math::Abs(a1) < 1e-6 ) a1 = 0.f;
+
 
         if( kvs::Math::Equal( a0, a1 ) )
         {

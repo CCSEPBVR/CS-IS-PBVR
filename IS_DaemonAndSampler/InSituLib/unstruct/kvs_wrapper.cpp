@@ -603,9 +603,11 @@ void generate_particles( int time_step, domain_parameters dom,
             nvariables, coordinates, ncoords,
             connections, ncells, celltype, particleBase);
 
+        std::cout << __FUNCTION__ << __LINE__ <<std::endl;
         GenerateGlyphs(time_step, dom, values,
             nvariables, coordinates, ncoords,
             connections, ncells, celltype);
+        std::cout << __FUNCTION__ << __LINE__ <<std::endl;
          callPlotOverLine(time_step, dom, values,
              nvariables, coordinates, ncoords,
              connections, ncells, celltype, &plot_over_line);                                        
@@ -2238,7 +2240,7 @@ void callPlotOverLine( int time_step,
 
         kvs::AnyValueArray Var(Values);
         object -> setValues(Var);
-        kvs::ValueArray<float> Coords(coordinates, ncoords);
+        kvs::ValueArray<float> Coords(coordinates, ncoords*3);
         object -> setCoords(Coords);
 
         kvs::ValueArray<kvs::UInt32> Connections;

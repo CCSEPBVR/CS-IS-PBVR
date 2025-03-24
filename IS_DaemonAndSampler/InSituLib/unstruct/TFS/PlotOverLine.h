@@ -12,9 +12,12 @@
 //#include "../kvs_wrapper.h"
 namespace kvs
 {
-    using Vec3 = Vector3<float>;
-    using Vec4 = Vector4<float>;
-    using Mat3 = Matrix33<float>;
+    //using Vec3 = Vector3<float>;
+    //using Vec4 = Vector4<float>;
+    //using Mat3 = Matrix33<float>;
+    using Vec3 = Vector3<double>;
+    using Vec4 = Vector4<double>;
+    using Mat3 = Matrix33<double>;
 }
 namespace POL
 {
