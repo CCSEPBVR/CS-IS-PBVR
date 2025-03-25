@@ -23,10 +23,12 @@
 
 #include "kvs/File"
 #include "kvs/FileFormatBase"
+#include <vtkAVSucdReader.h>
 #include <vtkCompositeDataSet.h>
 #include <vtkExtractGhostCells.h>
 #include <vtkNew.h>
 #include <vtkPCellDataToPointData.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRemoveGhosts.h>
 #include <vtkSmartPointer.h>
@@ -134,6 +136,17 @@ public:
                     ghost_remover->Update();
 
                     vtk_data = dynamic_cast<VtkDataType*>( ghost_remover->GetOutput() );
+
+                    // If vtkAVSucdReader is used, A cell-based fielddata stores the material id.
+                    // Remove the material id because it is not needed for visualization.
+                    if ( std::is_base_of_v<vtkAVSucdReader, VtkReaderType> )
+                    {
+                        // vtkCompositeDataSet cannot call GetPointData method
+                        if constexpr ( !std::is_base_of_v<vtkCompositeDataSet, VtkDataType> )
+                        {
+                            vtk_data->GetPointData()->RemoveArray( "Material Id" );
+                        }
+                    }                    
                 }
                 else
                 {
