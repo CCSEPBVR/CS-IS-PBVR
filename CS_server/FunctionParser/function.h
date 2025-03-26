@@ -14,8 +14,8 @@
  *  $Revision: 1.7 $
  */
 /*****************************************************************************/
-#ifndef KVS__FUNCTION_H_INCLUDE
-#define KVS__FUNCTION_H_INCLUDE
+#ifndef VIS_MODULE__FUNCTION_H_INCLUDE
+#define VIS_MODULE__FUNCTION_H_INCLUDE
 
 #include <iostream>
 #include <cstdio>
@@ -142,14 +142,14 @@ public:
 
     inline double& operator () ( const int index )
     {
-        //KVS_MACRO_ASSERT( index < m_n );
+        //VIS_MODULE_MACRO_ASSERT( index < m_n );
         if ( index >= m_n ) std::cout << "Error: index exceed array size\n";
         return ( m_v[index] );
     };
 
     inline double& operator [] ( const int index )
     {
-        //KVS_MACRO_ASSERT( index < m_n );
+        //VIS_MODULE_MACRO_ASSERT( index < m_n );
         if ( index >= m_n ) std::cout << "Error: index exceed array size\n";
         return ( m_v[index] );
     };
@@ -529,4 +529,4 @@ typedef std::vector<Parameter> Parameters;
 
 } // end of namespace FuncParser
 
-#endif // KVS__FUNCTION_H_INCLUDE
+#endif // VIS_MODULE__FUNCTION_H_INCLUDE

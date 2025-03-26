@@ -63,6 +63,7 @@ void ParticleHistoryFile::set_name()
         m_name.push_back( "HISTOGRAM_C" + ss.str() );
         m_name.push_back( "HISTOGRAM_O" + ss.str() );
     }
+    m_name.push_back( "N_VARIABLES" );
     m_name.push_back( "END_HISTORY_FILE" );
 
 }
@@ -124,6 +125,7 @@ void ParticleHistoryFile::assign_name_list( const NameListFile& name_list_file )
     else {
         cur_tf_number = 0;
     }
+    m_nvariables = nml.getValue<int>( "N_VARIABLES" );;
 
     for (int i = 0; i < cur_tf_number; i++) {
         std::stringstream ss;
@@ -165,6 +167,8 @@ void ParticleHistoryFile::read()
 {
     this->read_name_list_file();
 }
+
+
 
 VariableRange& ParticleHistoryFile::variableRange()
 {

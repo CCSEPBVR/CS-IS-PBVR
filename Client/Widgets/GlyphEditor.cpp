@@ -1,0 +1,487 @@
+#include "GlyphEditor.h"
+#include "ui_GlyphEditor.h"
+
+#include "App/pbvrgui.h"
+#include "Widgets/MergePanel.h"
+#include "Widgets/Connect.h"
+#include "Widgets/ShadingController.h"
+#include <kvs/PolygonGlyphObject>
+#include <kvs/StochasticPolygonRenderer>
+
+GlyphEditor::GlyphEditor(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, Connect* connect_panel, ShadingController* shading_controller)
+    : QDockWidget(parent)
+    , ui(new Ui::GlyphEditor),
+    m_pbvr_gui( pbvr_gui ),
+    m_merge( merge ),
+    m_connect( connect_panel ),
+    m_shading_controller( shading_controller ),
+    m_vector_list( new QStringList() ),
+    m_scale_factor(1)
+{
+    ui->setupUi(this);
+
+    //初期値設定
+    QStringList types;
+    types << "Arrow" << "Diamond" << "Sphere";
+    ui->glyphTypeComboBox->addItems( types );
+
+    ui->scaleFactorDoubleSpinBox->setValue( 1.0 );
+
+    ui->sizeConstantRadioBox->setChecked( true );
+    ui->uniformDistributionRadioButton->setChecked( true );
+    ui->numberOfSamplePoints->setValue( 1000 );
+    ui->seedSpinBox->setValue( 1 );
+    ui->strideSpinBox->setValue( 3 );
+    ui->colorDataConstantRadioBox->setChecked( true );
+
+    // スクロールエリア用のウィジェットを作成
+    QWidget *sizeScrollContentWidget = new QWidget(this);
+    m_size_variable_layout = new QVBoxLayout(sizeScrollContentWidget);
+    ui->sizeScrollArea->setWidget(sizeScrollContentWidget);
+    ui->sizeScrollArea->setWidgetResizable(true);  // スクロールエリアのコンテンツを自動リサイズする
+
+    QWidget *colorDataScrollContentWidget = new QWidget(this);
+    m_color_data_variable_layout = new QVBoxLayout(colorDataScrollContentWidget);
+    ui->colorDataScrollArea->setWidget(colorDataScrollContentWidget);
+    ui->colorDataScrollArea->setWidgetResizable(true);  // スクロールエリアのコンテンツを自動リサイズする
+
+    connect( ui->updatePushButton, &QPushButton::clicked, this, &GlyphEditor::onUpdateButtonClicked );
+
+    // // directionComboBox のインデックスが重複しないようにする
+    connect(ui->direction1ComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GlyphEditor::onDirectionComboBoxIndexChanged);
+    connect(ui->direction2ComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GlyphEditor::onDirectionComboBoxIndexChanged);
+    connect(ui->direction3ComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GlyphEditor::onDirectionComboBoxIndexChanged);
+
+    connect( ui->sizeNumberOfVariableSpinBox, &QSpinBox::valueChanged, this, &GlyphEditor::onSizeNumberOfVariableChanged );
+    connect( ui->colorDataNumberOfVariableSpinBox, &QSpinBox::valueChanged, this, &GlyphEditor::onColorDataNumberOfVariableChanged );
+    // connect( ui->editColorMapPushButton, &QPushButton::clicked, this, &GlyphEditor::onEditColorMapButtonClicked );
+    connect( ui->applyPushButton, &QPushButton::clicked, this, &GlyphEditor::onApplyButtonClicked );
+    widgetDisable();
+
+    //add by shimomura 2024/12/27
+    glyphInitialize();
+}
+
+GlyphEditor::~GlyphEditor()
+{
+    delete m_vector_list;
+    delete ui;
+}
+
+void GlyphEditor::updateNumberOfVector( jpv::ParticleTransferServerMessage& server_message )
+{
+    const int numberOfVector = server_message.m_number_ingredients;
+
+    if( numberOfVector < 3 ) //成分数が3未満である場合、このパネルを操作不能にする。
+    {
+        widgetDisable();
+    }
+    else
+    {
+        widgetEnable();
+    }
+
+    ui->sizeNumberOfVariableSpinBox->setMaximum( numberOfVector );
+    ui->colorDataNumberOfVariableSpinBox->setMaximum( numberOfVector );
+
+    m_vector_list->clear();
+    for( int i = 1; i <= numberOfVector; i++ )
+    {
+        m_vector_list->append(QString("q%1").arg(i));
+    }
+
+    {
+        directionComboBoxBlockSignals( true );
+
+        //directionComboBoxにアイテムを登録する。
+        ui->direction1ComboBox->addItems( *m_vector_list );
+        ui->direction2ComboBox->addItems( *m_vector_list );
+        ui->direction3ComboBox->addItems( *m_vector_list );
+        //デフォルトq1,q2,q3となるようにインデックスを設定する。
+        ui->direction1ComboBox->setCurrentIndex( 0 );
+        ui->direction2ComboBox->setCurrentIndex( 1 );
+        ui->direction3ComboBox->setCurrentIndex( 2 );
+
+        m_direction_previus_index[0] = ui->direction1ComboBox->currentIndex();
+        m_direction_previus_index[1] = ui->direction2ComboBox->currentIndex();
+        m_direction_previus_index[2] = ui->direction3ComboBox->currentIndex();
+
+        //グリフminmax更新
+        // m_glyph_color_max = server_message.m_glyph_color_max;
+        // m_glyph_color_min = server_message.m_glyph_color_min;
+        // m_glyph_size_max  = server_message.m_glyph_size_max;
+        // m_glyph_size_min  = server_message.m_glyph_size_min;
+        // m_connect->getClientMessage()->m_glyph_color_max = server_message.m_glyph_color_max;
+        // m_connect->getClientMessage()->m_glyph_color_min = server_message.m_glyph_color_min;
+        // m_connect->getClientMessage()->m_glyph_size_max = server_message.m_glyph_size_max;
+        // m_connect->getClientMessage()->m_glyph_size_min = server_message.m_glyph_size_min;
+        // std::cout << "m_server_message.m_glyph_color_max = " << server_message.m_glyph_color_max << std::endl;
+        // std::cout << "m_server_message.m_glyph_size_max = " << server_message.m_glyph_size_max << std::endl;
+
+        directionComboBoxBlockSignals( false );
+    }
+}
+
+//Directionコンボボックスの重複防止用メソッド
+void GlyphEditor::onDirectionComboBoxIndexChanged(int index)
+{
+    int selectedIndex[3];
+    selectedIndex[0] = ui->direction1ComboBox->currentIndex();
+    selectedIndex[1] = ui->direction2ComboBox->currentIndex();
+    selectedIndex[2] = ui->direction3ComboBox->currentIndex();
+
+    // インデックスが被っていないか確認
+    if ( selectedIndex[0] == selectedIndex[1] ||
+         selectedIndex[0] == selectedIndex[2] ||
+         selectedIndex[1] == selectedIndex[2] ) { // 被っている場合の処理
+        directionComboBoxBlockSignals( true );
+        if( m_direction_previus_index[0] != selectedIndex[0] )
+        {
+            ui->direction1ComboBox->setCurrentIndex( m_direction_previus_index[0] );
+        }
+        if( m_direction_previus_index[1] != selectedIndex[1] )
+        {
+            ui->direction2ComboBox->setCurrentIndex( m_direction_previus_index[1] );
+        }
+        if( m_direction_previus_index[2] != selectedIndex[2] )
+        {
+            ui->direction3ComboBox->setCurrentIndex( m_direction_previus_index[2] );
+        }
+        directionComboBoxBlockSignals( false );
+    } else { // 被っていない場合の処理
+        if( m_direction_previus_index[0] != selectedIndex[0] )
+        {
+            m_direction_previus_index[0] = selectedIndex[0];
+        }
+        if( m_direction_previus_index[1] != selectedIndex[1] )
+        {
+            m_direction_previus_index[1] = selectedIndex[1];
+        }
+        if( m_direction_previus_index[2] != selectedIndex[2] )
+        {
+            m_direction_previus_index[2] = selectedIndex[2];
+        }
+    }
+}
+
+void GlyphEditor::onSizeNumberOfVariableChanged(int value)
+{
+    int currentCount = m_size_variable_labels.size();
+
+    if (value > currentCount) {
+        // 必要な分だけラベルとコンボボックスを追加
+        for (int i = currentCount; i < value; ++i) {
+            // 水平レイアウトを作成
+            QHBoxLayout *hLayout = new QHBoxLayout();
+
+            // QLabelの作成とレイアウトへの追加
+            QLabel *label = new QLabel(tr("Variable %1").arg(i + 1), this);
+            m_size_variable_labels.append(label);
+            hLayout->addWidget(label);
+
+            // QComboBoxの作成とレイアウトへの追加
+            QComboBox *comboBox = new QComboBox(this);
+            m_size_variable_combo_boxes.append(comboBox);
+            hLayout->addWidget(comboBox);
+
+            // // コンボボックスにアイテムを追加
+            comboBox->addItems( *m_vector_list );
+            comboBox->setCurrentIndex( i );
+
+            // 水平レイアウトをメインの垂直レイアウトに追加
+            m_size_variable_layout->addLayout(hLayout);
+        }
+    } else if (value < currentCount) {
+        // 余分なラベルとコンボボックスを削除
+        for (int i = currentCount - 1; i >= value; --i) {
+            QLabel *label = m_size_variable_labels.takeLast();
+            m_size_variable_layout->removeWidget(label);
+            delete label;
+
+            QComboBox *comboBox = m_size_variable_combo_boxes.takeLast();
+            m_size_variable_layout->removeWidget(comboBox);
+            delete comboBox;
+        }
+    }
+
+    // レイアウトを再調整
+    m_size_variable_layout->update();
+}
+
+void GlyphEditor::onColorDataNumberOfVariableChanged(int value)
+{
+    int currentCount = m_color_data_variable_labels.size();
+
+    if (value > currentCount) {
+        // 必要な分だけラベルとコンボボックスを追加
+        for (int i = currentCount; i < value; ++i) {
+            // 水平レイアウトを作成
+            QHBoxLayout *hLayout = new QHBoxLayout();
+
+            // QLabelの作成とレイアウトへの追加
+            QLabel *label = new QLabel(tr("Variable %1").arg(i + 1), this);
+            m_color_data_variable_labels.append(label);
+            hLayout->addWidget(label);
+
+            // QComboBoxの作成とレイアウトへの追加
+            QComboBox *comboBox = new QComboBox(this);
+            m_color_data_variable_combo_boxes.append(comboBox);
+            hLayout->addWidget(comboBox);
+
+            // // コンボボックスにアイテムを追加
+            comboBox->addItems( *m_vector_list );
+            comboBox->setCurrentIndex( i );
+
+            // 水平レイアウトをメインの垂直レイアウトに追加
+            m_color_data_variable_layout->addLayout(hLayout);
+        }
+    } else if (value < currentCount) {
+        // 余分なラベルとコンボボックスを削除
+        for (int i = currentCount - 1; i >= value; --i) {
+            QLabel *label = m_color_data_variable_labels.takeLast();
+            m_color_data_variable_layout->removeWidget(label);
+            delete label;
+
+            QComboBox *comboBox = m_color_data_variable_combo_boxes.takeLast();
+            m_color_data_variable_layout->removeWidget(comboBox);
+            delete comboBox;
+        }
+    }
+
+    // レイアウトを再調整
+    m_color_data_variable_layout->update();
+}
+
+void GlyphEditor::enableGlyphUpdateButton()
+{
+    QMetaObject::invokeMethod(this, [this]() {
+        ui->updatePushButton->setEnabled( true );
+    }, Qt::QueuedConnection);
+}
+
+void GlyphEditor::disableGlyphUpdateButton()
+{
+    QMetaObject::invokeMethod(this, [this]() {
+        ui->updatePushButton->setEnabled( false );
+    }, Qt::QueuedConnection);
+}
+
+void GlyphEditor::onUpdateButtonClicked()
+{
+    m_glyph_type = static_cast<GlyphType>(ui->glyphTypeComboBox->currentIndex());
+    // m_scale_factor = ui->scaleFactorDoubleSpinBox->value();
+
+    for( int row = 0; row < m_merge->getFilesManager().size(); row++ )
+    {
+        if( m_merge->getFilesManager().at(row)->getFormat() == FilesManager::ServerGlyphObjectCS ||
+            m_merge->getFilesManager().at(row)->getFormat() == FilesManager::ServerGlyphObjectIS ) // テクスチャなしポリゴンオブジェクト
+        {            
+            kvs::PolygonObject* polygonObject = new kvs::PolygonGlyphObject( m_coords, m_directions, m_sizes, m_colors, static_cast<kvs::PolygonGlyphObject::GlyphType>(m_glyph_type) );
+            m_pbvr_gui->screen()->scene()->replaceObject( m_merge->getFilesManager().at(row)->getIDs().first, polygonObject );
+            kvs::RendererBase* renderer = new kvs::StochasticPolygonRenderer;
+            m_pbvr_gui->screen()->scene()->replaceRenderer( m_merge->getFilesManager().at(row)->getIDs().second, renderer );
+        }
+    }
+    std::cout << m_coords.size() << std::endl;
+    std::cout << m_directions.size() << std::endl;
+    std::cout << m_sizes.size() << std::endl;
+    std::cout << m_colors.size() << std::endl;
+    m_pbvr_gui->screen()->update();
+}
+
+void GlyphEditor::onEditColorMapButtonClicked()
+{
+    // // std::string colorName = ui->colorFunctionComboBox->currentText().toStdString();
+
+    // m_color_map_editor.setColorMap( ui->colorMapBar->getColor() );
+    // m_color_map_editor.setInitialColorMap( ui->colorMapBar->getColor() );
+    // m_color_map_editor.clearUndoStack();
+
+    // if( m_color_map_editor.exec() == QDialog::Accepted )
+    // {
+    //     const kvs::ColorMap cmap = m_color_map_editor.getColorMap();
+    //     ui->colorMapBar->setColorMap( cmap );
+    //     ui->colorMapBar->setColorMap( cmap );
+    // }
+}
+
+void GlyphEditor::onApplyButtonClicked()
+{
+    m_glyph_type = static_cast<GlyphType>(ui->glyphTypeComboBox->currentIndex());
+    m_scale_factor = ui->scaleFactorDoubleSpinBox->value();
+
+
+    //Direction
+    m_connect->getClientMessage()->m_direction_variable[0] = ui->direction1ComboBox->currentText().toStdString();
+    m_connect->getClientMessage()->m_direction_variable[1] = ui->direction2ComboBox->currentText().toStdString();
+    m_connect->getClientMessage()->m_direction_variable[2] = ui->direction3ComboBox->currentText().toStdString();
+
+
+    //Size
+    if( ui->sizeConstantRadioBox->isChecked() ) //Constant
+    {
+        m_connect->getClientMessage()->m_size_sampling_method = jpv::DataDefines::Constant;
+    }
+    else if( ui->sizeVariableArrayRadioBox->isChecked() ) //variableArray
+    {
+        m_connect->getClientMessage()->m_size_sampling_method = jpv::DataDefines::VariableArray;
+        if ( m_size_variable_combo_boxes.isEmpty() ) //もしSizeのNumber of variablesが0の場合
+        {
+            m_connect->getClientMessage()->m_size_variables.clear();
+            m_connect->getClientMessage()->m_size_variables.push_back("q1");
+        }
+        else
+        {
+            m_connect->getClientMessage()->m_size_variables.clear();
+            for (int i = 0; i < m_size_variable_combo_boxes.size(); i++)
+            {
+                QComboBox *comboBox = m_size_variable_combo_boxes[i];
+                m_connect->getClientMessage()->m_size_variables.push_back( comboBox->currentText().toStdString() );
+            }
+        }
+    }
+
+    //Distribution
+    if( ui->uniformDistributionRadioButton->isChecked() )
+    {
+        m_connect->getClientMessage()->m_distribution_mode = jpv::GlyphMode::UniformDistribution;
+        m_connect->getClientMessage()->m_number_of_sampling_point = ui->numberOfSamplePoints->value();
+        m_connect->getClientMessage()->m_seed = ui->seedSpinBox->value();
+    }
+    else if( ui->allPointsRadioButton->isChecked() )
+    {
+        m_connect->getClientMessage()->m_distribution_mode = jpv::GlyphMode::AllPoints;
+    }
+    else if( ui->everyNthPointsRadioButton->isChecked() )
+    {
+        m_connect->getClientMessage()->m_distribution_mode = jpv::GlyphMode::EveryNthPoints;
+        m_connect->getClientMessage()->m_stride = ui->strideSpinBox->value();
+    }
+
+    //ColorMap
+    // m_connect->getClientMessage()->m_glyph_color_map_table.clear();
+    // for( int i = 0; i < ui->colorMapBar->getColor().table().size(); i++ )
+    // {
+    //     m_connect->getClientMessage()->m_glyph_color_map_table.push_back( static_cast<int32_t>( ui->colorMapBar->getColor().table().at(i) ) );
+    // }
+
+    //ColorData
+    if( ui->colorDataConstantRadioBox->isChecked() ) //Constant
+    {
+        m_connect->getClientMessage()->m_color_data_sampling_method = jpv::DataDefines::Constant;
+    }
+    else if( ui->colorDataVariableArrayRadioBox->isChecked() ) //variableArray
+    {
+        m_connect->getClientMessage()->m_color_data_sampling_method = jpv::DataDefines::VariableArray;
+        if ( m_color_data_variable_combo_boxes.isEmpty() ) //もしColorDataのNumber of variablesが0の場合
+        {
+            m_connect->getClientMessage()->m_color_data_variables.clear();
+            m_connect->getClientMessage()->m_color_data_variables.push_back("q1");
+        }
+        else
+        {
+            m_connect->getClientMessage()->m_color_data_variables.clear();
+            for (int i = 0; i < m_color_data_variable_combo_boxes.size(); i++)
+            {
+                QComboBox *comboBox = m_color_data_variable_combo_boxes[i];
+                m_connect->getClientMessage()->m_color_data_variables.push_back( comboBox->currentText().toStdString() );
+            }
+        }
+    }
+    m_merge->setIsGlyphGenerationNeeded( true );
+    m_connect->getClientMessage()->show();
+}
+
+
+void GlyphEditor::glyphInitialize()
+{
+    m_connect->getClientMessage()->m_distribution_mode = jpv::GlyphMode::UniformDistribution;
+    m_connect->getClientMessage()->m_color_data_sampling_method=jpv::DataDefines::Constant;
+    m_connect->getClientMessage()->m_size_sampling_method=jpv::DataDefines::Constant;
+    m_connect->getClientMessage()->m_stride = 5;
+    m_connect->getClientMessage()->m_seed = 5;
+    m_connect->getClientMessage()->m_number_of_sampling_point =100;
+    m_connect->getClientMessage()->m_direction_variable[0] = "q1";
+    m_connect->getClientMessage()->m_direction_variable[1] = "q2";
+    m_connect->getClientMessage()->m_direction_variable[2] = "q3";
+    m_connect->getClientMessage()->m_color_data_variables.push_back("q1");
+    m_connect->getClientMessage()->m_size_variables.push_back("q1");
+
+    kvs::ColorMap cmap;
+    cmap.create();
+    m_connect->getClientMessage()->m_glyph_color_map_table.clear();
+
+    for( int i = 0; i < cmap.table().size(); i++ )
+    {
+        m_connect->getClientMessage()->m_glyph_color_map_table.push_back( cmap.table().at(i) );
+    }
+    // for( int i = 0; i < ui->colorMapBar->getColor().table().size(); i++ )
+    // {
+    //     m_connect->getClientMessage()->m_glyph_color_map_table.push_back( 0 );
+    // }
+
+}
+
+
+void GlyphEditor::directionComboBoxBlockSignals( bool block )
+{
+    ui->direction1ComboBox->blockSignals( block );
+    ui->direction2ComboBox->blockSignals( block );
+    ui->direction3ComboBox->blockSignals( block );
+}
+
+TFEColorMapBar* GlyphEditor::getColorMapBar() const
+{
+    // return ui->colorMapBar;
+    return nullptr;
+}
+
+void GlyphEditor::widgetDisable()
+{
+    ui->glyphTypeComboBox->setDisabled(true);
+    ui->scaleFactorDoubleSpinBox->setDisabled(true);
+    ui->updatePushButton->setDisabled(true);
+    ui->direction1ComboBox->setDisabled(true);
+    ui->direction2ComboBox->setDisabled(true);
+    ui->direction3ComboBox->setDisabled(true);
+    ui->sizeConstantRadioBox->setDisabled(true);
+    ui->sizeVariableArrayRadioBox->setDisabled(true);
+    ui->sizeNumberOfVariableSpinBox->setDisabled(true);
+    ui->uniformDistributionRadioButton->setDisabled(true);
+    ui->allPointsRadioButton->setDisabled(true);
+    ui->everyNthPointsRadioButton->setDisabled(true);
+    ui->numberOfSamplePoints->setDisabled(true);
+    ui->seedSpinBox->setDisabled(true);
+    ui->strideSpinBox->setDisabled(true);
+    // ui->editColorMapPushButton->setDisabled(true);
+    ui->colorDataConstantRadioBox->setDisabled(true);
+    ui->colorDataVariableArrayRadioBox->setDisabled(true);
+    ui->colorDataNumberOfVariableSpinBox->setDisabled(true);
+    ui->applyPushButton->setDisabled(true);
+}
+
+
+void GlyphEditor::widgetEnable()
+{
+    ui->glyphTypeComboBox->setDisabled(false);
+    ui->scaleFactorDoubleSpinBox->setDisabled(false);
+    ui->updatePushButton->setDisabled(false);
+    ui->direction1ComboBox->setDisabled(false);
+    ui->direction2ComboBox->setDisabled(false);
+    ui->direction3ComboBox->setDisabled(false);
+    ui->sizeConstantRadioBox->setDisabled(false);
+    ui->sizeVariableArrayRadioBox->setDisabled(false);
+    ui->sizeNumberOfVariableSpinBox->setDisabled(false);
+    ui->uniformDistributionRadioButton->setDisabled(false);
+    ui->allPointsRadioButton->setDisabled(false);
+    ui->everyNthPointsRadioButton->setDisabled(false);
+    ui->numberOfSamplePoints->setDisabled(false);
+    ui->seedSpinBox->setDisabled(false);
+    ui->strideSpinBox->setDisabled(false);
+    // ui->editColorMapPushButton->setDisabled(false);
+    ui->colorDataConstantRadioBox->setDisabled(false);
+    ui->colorDataVariableArrayRadioBox->setDisabled(false);
+    ui->colorDataNumberOfVariableSpinBox->setDisabled(false);
+    ui->applyPushButton->setDisabled(false);
+}
+

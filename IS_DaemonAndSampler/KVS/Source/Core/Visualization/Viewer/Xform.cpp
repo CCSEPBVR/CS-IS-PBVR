@@ -345,4 +345,4 @@ void Xform::get( float (*array)[16] ) const
     (*array)[15] = (*this)[3][3];
 }
 
-} // end of namepsace kvs
+} // end of namespace kvs

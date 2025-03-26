@@ -24,9 +24,9 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_time_controller_A( this ),
     m_time_controller_B( this, &m_time_controller_A, &m_merge ),
     m_total_particles( this ),
-    m_color_map_bar_selector( this, this ),
+    m_color_map_bar_selector( this, this, &m_connect, &m_transfer_function_editor ),
     m_merge( this, this, &m_preference ,&m_time_controller_B, &m_total_particles, &m_connect, &m_shading_controller ),
-    m_connect( this, this, &m_merge, &m_data_properties, &m_render_options, &m_transfer_function_editor ),
+    m_connect( this, this, &m_merge, &m_data_properties, &m_render_options, &m_transfer_function_editor, &m_glyph_editor, &m_plot_over_line ),
     m_volumeTransform( this, this ),
     m_animation_controls( this, this ),
     m_repetition_level_control( this, this, &m_shading_controller ),
@@ -35,7 +35,9 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     m_render_options( this, &m_merge, &m_connect ),
     m_data_properties( this ),
     m_coordinates( this, &m_merge, &m_connect ),
-    m_transfer_function_editor( this, &m_color_map_bar_selector ,&m_merge, &m_connect ),
+    m_transfer_function_editor( this, &m_merge, &m_connect, &m_color_map_bar_selector ),
+    m_glyph_editor( this, this, &m_merge, &m_connect  ),
+    m_plot_over_line( this, this, &m_connect ),
     m_initialize_camera_xform
     (
         kvs::Mat4(
@@ -78,6 +80,8 @@ PBVRGUI::PBVRGUI(kvs::qt::Application& app, QWidget *parent) :
     connect( ui->actionShadingControll, &QAction::triggered, this, &PBVRGUI::onShadingControl );
     connect( ui->actionCoordinates, &QAction::triggered, this, &PBVRGUI::onCoordinates );
     connect( ui->actionTransferFunctionEditor, &QAction::triggered, this, &PBVRGUI::onTransferFunctionEditor );
+    connect( ui->actionGlyph, &QAction::triggered, this, &PBVRGUI::onGlyph );
+    connect( ui->actionPlot, &QAction::triggered, this, &PBVRGUI::onPlot );
     setFocusPolicy(Qt::StrongFocus);    
 }
 
@@ -112,8 +116,8 @@ void PBVRGUI::initializePanels()
     this->addToolBarBreak(Qt::TopToolBarArea);
     this->addToolBar(Qt::TopToolBarArea, &m_total_particles);
     this->addToolBar(Qt::TopToolBarArea, &m_color_map_bar_selector);
-    m_color_map_bar_selector.setExtendedTransferFunctionMessage( m_transfer_function_editor.getExtendedTransferFunctionMessage() );
-    m_color_map_bar_selector.populateColorFunctionLists( m_color_map_bar_selector.getExtendedTransferFunctionMessage()->m_transfer_function_number );
+    // m_color_map_bar_selector.setExtendedTransferFunctionMessage( m_transfer_function_editor.getExtendedTransferFunctionMessage() );
+    // m_color_map_bar_selector.populateColorFunctionLists( m_color_map_bar_selector.getExtendedTransferFunctionMessage()->m_transfer_function_number );
     this->addToolBarBreak(Qt::TopToolBarArea);
     this->addToolBar(Qt::TopToolBarArea, &m_time_controller_B);    
 
@@ -159,6 +163,16 @@ void PBVRGUI::initializePanels()
     //コーディネートパネルの初期化
 
     //伝達関数パネルの初期化
+
+    // m_glyph_editor.close();
+    m_glyph_editor.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    addDockWidget( Qt::RightDockWidgetArea, &m_glyph_editor );
+    // m_glyph_editor.getColorMapBar()->startInitialization();
+    // m_glyph_editor.getColorMapBar()->update();
+
+    m_plot_over_line.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    addDockWidget( Qt::LeftDockWidgetArea, &m_plot_over_line );
+    m_plot_over_line.show();
 }
 
 void PBVRGUI::keyPressEvent(QKeyEvent *event)

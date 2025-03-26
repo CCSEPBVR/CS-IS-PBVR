@@ -534,58 +534,105 @@ void TotalParticles::setTotalParticles( int totalParticles )
 }
 
 #include "App/pbvrgui.h"
-ColorMapBarSelector::ColorMapBarSelector( QWidget *parent, PBVRGUI *pbvr_gui) :
+ColorMapBarSelector::ColorMapBarSelector( QWidget *parent, PBVRGUI *pbvr_gui, Connect* Connect, TransferFunctionEditor* transfer_function_editor ) :
     QToolBar( parent ),
-    m_pbvr_gui( pbvr_gui )
+    m_pbvr_gui( pbvr_gui ),
+    m_transfer_function_editor( transfer_function_editor ),
+    m_connect( Connect )
 {
-    m_color_map_bar_selector_label = new QLabel( "Color Function : ", this );
+    m_color_function_label = new QLabel( "Color Function : ", this );
     QWidgetAction *colorMapBarSelectorLableAction = new QWidgetAction( this );
-    colorMapBarSelectorLableAction->setDefaultWidget( m_color_map_bar_selector_label );
+    colorMapBarSelectorLableAction->setDefaultWidget( m_color_function_label );
     this->addAction( colorMapBarSelectorLableAction );
 
-    m_color_map_bar_selector_combo_box = new QComboBox( this );
-    m_color_map_bar_selector_combo_box->setFixedWidth( 100 );
+    m_color_function_combo_box = new QComboBox( this );
+    m_color_function_combo_box->setFixedWidth( 100 );
     QWidgetAction *colorMapBarSelectorComboBox = new QWidgetAction( this );
-    colorMapBarSelectorComboBox->setDefaultWidget( m_color_map_bar_selector_combo_box );
+    colorMapBarSelectorComboBox->setDefaultWidget( m_color_function_combo_box );
     this->addAction( colorMapBarSelectorComboBox );
 
-    connect( m_color_map_bar_selector_combo_box, &QComboBox::currentIndexChanged, this, &ColorMapBarSelector::onColorFunctionChanged );
+    connect( m_color_function_combo_box, &QComboBox::currentIndexChanged, this, &ColorMapBarSelector::onColorFunctionChanged );
 }
 
 ColorMapBarSelector::~ColorMapBarSelector()
 {
 }
 
-void ColorMapBarSelector::populateColorFunctionLists(int n){
-    QStringList itemList;
-    for (int i=1;i <=n;i++ )
+void ColorMapBarSelector::updateFunctionLists()
+{
+    bool zero = false;
+    if( m_color_function_combo_box->count() == 0 )
     {
-        itemList.append(QString("C%1").arg(i));
+        zero = true;
     }
-    m_color_map_bar_selector_combo_box->clear();
-    m_color_map_bar_selector_combo_box->addItems( itemList );
+
+    QString colorCurrentText = m_color_function_combo_box->currentText();
+    QStringList colorItemList;
+
+    const TransferFunctionParameter transferFunctionParameter = m_transfer_function_editor->getTransferFunctionParameter();
+
+    for( size_t i = 1; i <= transferFunctionParameter.m_transfer_functions.size(); i++ )
+    {
+        colorItemList.append( QString("C%1").arg(i) );
+    }
+    m_color_function_combo_box->blockSignals( true );
+    m_color_function_combo_box->clear();
+    m_color_function_combo_box->blockSignals( false );
+    m_color_function_combo_box->addItems( colorItemList );
+
+    // 以前の選択項目を再度選択
+    int colorIndex = m_color_function_combo_box->findText( colorCurrentText );
+    if( colorIndex != -1 )
+    {
+        m_color_function_combo_box->setCurrentIndex( colorIndex );
+    }
+    else if( zero )
+    {
+        m_color_function_combo_box->setCurrentIndex( 0 );
+    }
+    else
+    {
+        // 見つからなかった場合は最後の項目を選択
+        m_color_function_combo_box->setCurrentIndex( m_color_function_combo_box->count() -1 );
+    }
+}
+
+void ColorMapBarSelector::updateRangeView()
+{
+    QString colorCurrentText = m_color_function_combo_box->currentText();
+
+    // 以前の選択項目を再度選択
+    int colorIndex = m_color_function_combo_box->findText( colorCurrentText );
+    if( colorIndex != -1 )
+    {
+        m_color_function_combo_box->setCurrentIndex( colorIndex );
+        onColorFunctionChanged( colorIndex );
+    }
+    else
+    {
+        // 見つからなかった場合は最後の項目を選択
+        m_color_function_combo_box->setCurrentIndex( m_color_function_combo_box->count() -1 );
+    }
 }
 
 void ColorMapBarSelector::onColorFunctionChanged( int index )
 {
-    const NamedTransferFunctionParameter *transfer_function_color = m_extended_transfer_function_message->getColorTransferFunction( index + 1 );
-    if( transfer_function_color != NULL )
+    const TransferFunctionParameter transferFunctionParameter =  m_transfer_function_editor->getTransferFunctionParameter();
+    const algebricTransferFunction* func = m_transfer_function_editor->getTransferFunctionParameter().getTransferFunction( index );
+    if( func != nullptr )
     {
-        kvs::ColorMap color_map = transfer_function_color->colorMap();        
-        m_pbvr_gui->colorMapBar()->setColorMap( color_map );
-        m_pbvr_gui->colorMapBar()->setRange( m_extended_transfer_function_message->getColorTransferFunction(index + 1)->m_color_variable_min, m_extended_transfer_function_message->getColorTransferFunction(index + 1)->m_color_variable_max );
-        m_pbvr_gui->screen()->update();
-    }
-}
-
-void ColorMapBarSelector::updateColorMap()
-{
-    const NamedTransferFunctionParameter *transfer_function_color = m_extended_transfer_function_message->getColorTransferFunction( m_color_map_bar_selector_combo_box->currentIndex() + 1  );
-    if( transfer_function_color != NULL )
-    {
-        kvs::ColorMap color_map = transfer_function_color->colorMap();
-        m_pbvr_gui->colorMapBar()->setColorMap( color_map );
-        m_pbvr_gui->colorMapBar()->setRange( m_extended_transfer_function_message->getColorTransferFunction( m_color_map_bar_selector_combo_box->currentIndex() + 1)->m_color_variable_min, m_extended_transfer_function_message->getColorTransferFunction( m_color_map_bar_selector_combo_box->currentIndex() + 1)->m_color_variable_max );
+        m_pbvr_gui->colorMapBar()->setColorMap( func->colorMap() );
+        switch ( func->m_color_confirmed_select_range )
+        {
+        case algebricTransferFunction::UserDefinedRange:
+            m_pbvr_gui->colorMapBar()->setRange( m_connect->getClientMessage()->m_transfer_function[index].m_color_variable_min, m_connect->getClientMessage()->m_transfer_function[index].m_color_variable_max );
+            break;
+        case algebricTransferFunction::ServerSideRange:
+            m_pbvr_gui->colorMapBar()->setRange( transferFunctionParameter.m_transfer_functions[index].m_color_generated_server_side_min, transferFunctionParameter.m_transfer_functions[index].m_color_generated_server_side_max );
+            break;
+        default:
+            break;
+        }
         m_pbvr_gui->screen()->update();
     }
 }

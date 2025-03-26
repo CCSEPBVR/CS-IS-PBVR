@@ -20,8 +20,8 @@ bool ExtendedTransferFunctionParameter::operator==( const ExtendedTransferFuncti
     {
         for ( size_t n = 0; n < n_color; n++ )
         {
-            const kvs::UInt8 r0 = this->colorMap().table().at( n );
-            const kvs::UInt8 r1 = s.colorMap().table().at( n );
+            const vismodule::UInt8 r0 = this->colorMap().table().at( n );
+            const vismodule::UInt8 r1 = s.colorMap().table().at( n );
             v0 &= ( r0 == r1 );
         }
         for ( size_t n = 0; n < n_opacity; n++ )

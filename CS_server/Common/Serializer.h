@@ -10,7 +10,7 @@
 #include <cstdlib>
 #include <cstring>
 
-namespace kvs
+namespace vismodule
 {
 class Camera;
 class TransferFunction;
@@ -85,18 +85,18 @@ template<>
 size_t Serializer::read<std::string>( const char* buf, std::string* object );
 
 template<>
-size_t Serializer::byteSize<kvs::Camera>( const kvs::Camera& object );
+size_t Serializer::byteSize<vismodule::Camera>( const vismodule::Camera& object );
 template<>
-size_t Serializer::pack<kvs::Camera>( char* buf, const kvs::Camera& object );
+size_t Serializer::pack<vismodule::Camera>( char* buf, const vismodule::Camera& object );
 template<>
-size_t Serializer::unpack<kvs::Camera>( const char* buf, kvs::Camera* object );
+size_t Serializer::unpack<vismodule::Camera>( const char* buf, vismodule::Camera* object );
 
 template<>
-size_t Serializer::byteSize<kvs::TransferFunction>( const kvs::TransferFunction& object );
+size_t Serializer::byteSize<vismodule::TransferFunction>( const vismodule::TransferFunction& object );
 template<>
-size_t Serializer::pack<kvs::TransferFunction>( char* buf, const kvs::TransferFunction& object );
+size_t Serializer::pack<vismodule::TransferFunction>( char* buf, const vismodule::TransferFunction& object );
 template<>
-size_t Serializer::unpack<kvs::TransferFunction>( const char* buf, kvs::TransferFunction* object );
+size_t Serializer::unpack<vismodule::TransferFunction>( const char* buf, vismodule::TransferFunction* object );
 
 }
 

@@ -20,6 +20,8 @@
 #include <kvs/Vector4>
 #include <kvs/Matrix44>
 
+#include <mpi.h>
+
 #include "UnstructuredVolumeObject.h"
 #include <kvs/IgnoreUnusedVariable>
 #include <kvs/Message>
@@ -159,6 +161,10 @@ public:
 public:
 
     const kvs::Vector3f* vertices() const;
+    
+    const kvs::UInt32* connections() const;
+    
+    const float* coordinates() const;
 
     const T* scalars() const;
 
@@ -171,6 +177,7 @@ public:
     const size_t numberOfNodes() const;
 
     const kvs::Matrix33f JacobiMatrix() const;
+    const kvs::Matrix33d JacobiMatrix_d() const;
 
     const kvs::Real32 randomNumber() const;
 
@@ -675,7 +682,6 @@ inline const kvs::Real32 CellBase<T>::scalar() const
     for ( size_t i = 0; i < nnodes; i++ )
     {
         S += static_cast<kvs::Real32>( N[i] * s[i] );
-        //std::cout << "m_interpolation_functions[" << i <<"] =" << N[i] << ", m_scalars["<< i <<"] = " << s[i] <<std::endl;
     }
 
     return S;
@@ -686,6 +692,7 @@ inline const kvs::Real32 CellBase<T>::scalar() const
  *  @brief  Returns the gradient vector at the attached point.
  */
 /*===========================================================================*/
+#if 0
 template <typename T>
 inline const kvs::Vector3f CellBase<T>::gradient() const
 {
@@ -717,6 +724,69 @@ inline const kvs::Vector3f CellBase<T>::gradient() const
     return kvs::Math::IsZero( determinant ) ? kvs::Vector3f( 0.0f, 0.0f, 0.0f ) : G;
 }
 
+#else
+template <typename T>
+inline const kvs::Vector3f CellBase<T>::gradient() const
+{
+    // Calculate a gradient vector in the local coordinate.
+    const kvs::UInt32 nnodes = m_nnodes;
+    const float* dNdx = m_differential_functions;
+    const float* dNdy = m_differential_functions + nnodes;
+    const float* dNdz = m_differential_functions + nnodes * 2;
+    const T* s = m_scalars;
+
+    double dsdx = 0.0f;
+    double dsdy = 0.0f;
+    double dsdz = 0.0f;
+    for ( size_t i = 0; i < nnodes; i++ )
+    {
+        dsdx += static_cast<double>( s[i] * dNdx[i] );
+        dsdy += static_cast<double>( s[i] * dNdy[i] );
+        dsdz += static_cast<double>( s[i] * dNdz[i] );
+    }
+
+    const kvs::Vector3d g( dsdx, dsdy, dsdz );
+
+    // Calculate a gradient vector in the global coordinate.
+    kvs::Matrix33d J = this->JacobiMatrix_d();
+
+    // calc scale factor
+    double minValue = std::numeric_limits<double>::max();
+
+    for (int i =0; i< 3; i++) 
+    {
+        for(int k =0; k<3; k++)
+        if (J[i][k] != 0 && kvs::Math::Abs(J[i][k]) < minValue) {
+            minValue = kvs::Math::Abs(J[i][k]);
+        }
+    }
+
+    int order = 0;
+    while (minValue < 1.0) {
+        minValue *= 10.0;
+        --order;
+    }
+    while (minValue >= 10.0) {
+        minValue /= 10.0;
+        ++order;
+    }
+
+    order = -order;
+    //double scale_factor =1000;
+    double scale_factor = std::pow(10.0, order);
+
+    J *= scale_factor;
+
+    double determinant = 0.0f;
+    const kvs::Vector3d G = J.inverse( &determinant ) * g * scale_factor;
+    kvs::Vector3f F;
+    F.x() = G.x();
+    F.y() = G.y();
+    F.z() = G.z();
+
+    return kvs::Math::IsZero( determinant ) ? kvs::Vector3f( 0.0f, 0.0f, 0.0f ) : F;
+}
+#endif
 /*===========================================================================*/
 /**
  *  @brief  Returns the glavity point value.
@@ -746,6 +816,18 @@ template <typename T>
 inline const kvs::Vector3f* CellBase<T>::vertices() const
 {
     return m_vertices;
+}
+
+template <typename T>
+inline const kvs::UInt32* CellBase<T>::connections() const
+{
+    return m_connections;
+}
+
+template <typename T>
+inline const float* CellBase<T>::coordinates() const
+{
+    return m_coords;
 }
 
 template <typename T>
@@ -801,6 +883,42 @@ inline const size_t CellBase<T>::numberOfNodes() const
  *  @return Jacobi matrix
  */
 /*===========================================================================*/
+template <typename T>
+inline const kvs::Matrix33d CellBase<T>::JacobiMatrix_d() const
+{
+    const kvs::UInt32 nnodes = m_nnodes;
+    const float* dNdx = m_differential_functions;
+    const float* dNdy = m_differential_functions + nnodes;
+    const float* dNdz = m_differential_functions + nnodes * 2;
+    const float* vec  = m_vertices_vec;
+    const kvs::Vector3f* V = m_vertices;
+
+    double dXdx = 0;
+    double dYdx = 0;
+    double dZdx = 0;
+    double dXdy = 0;
+    double dYdy = 0;
+    double dZdy = 0;
+    double dXdz = 0;
+    double dYdz = 0;
+    double dZdz = 0;
+    for ( size_t i = 0, j = 0; i < nnodes; i++, j+=3 )
+    {
+        dXdx += dNdx[i] * V[i].x();
+        dYdx += dNdx[i] * V[i].y();
+        dZdx += dNdx[i] * V[i].z();
+        dXdy += dNdy[i] * V[i].x();
+        dYdy += dNdy[i] * V[i].y();
+        dZdy += dNdy[i] * V[i].z();
+        dXdz += dNdz[i] * V[i].x();
+        dYdz += dNdz[i] * V[i].y();
+        dZdz += dNdz[i] * V[i].z();
+    }
+    
+    return kvs::Matrix33d( dXdx, dYdx, dZdx, dXdy, dYdy, dZdy, dXdz, dYdz, dZdz );
+}
+
+
 template <typename T>
 inline const kvs::Matrix33f CellBase<T>::JacobiMatrix() const
 {

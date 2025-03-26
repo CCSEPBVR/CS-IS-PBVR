@@ -5,6 +5,7 @@ include(../SETTINGS.pri)
 #CONFIG += release warn_off opengl
 CONFIG += warn_off opengl
 QT += opengl
+QT += printsupport
 
 greaterThan( QT_MAJOR_VERSION, 5 ) {
 QT += openglwidgets

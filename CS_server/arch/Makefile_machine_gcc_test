@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-O3 -march=native -std=c++14
+CXXFLAGS=-O3 -march=native -std=c++17
 CC=gcc
 CCFLAGS=-O3 -march=native
 LD=g++

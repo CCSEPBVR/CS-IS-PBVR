@@ -4,10 +4,10 @@
 #include <iostream>
 #include <string>
 #include <typeinfo>
-#include <kvs/TransferFunction>
+#include <vismodule/TransferFunction>
 #include "Types.h"
 
-class ExtendedTransferFunctionParameter : public kvs::TransferFunction
+class ExtendedTransferFunctionParameter : public vismodule::TransferFunction
 {
 
 public:
@@ -36,7 +36,7 @@ public:
      * @param other		コピー元
      */
     ExtendedTransferFunctionParameter(const ExtendedTransferFunctionParameter &other) :
-        kvs::TransferFunction(other),
+        vismodule::TransferFunction(other),
         m_resolution(other.m_resolution),
         m_equation_red( other.m_equation_red ), m_equation_green(other.m_equation_green ),
         m_equation_blue( other.m_equation_blue ), m_equation_opacity( other.m_equation_opacity ),
@@ -49,11 +49,11 @@ public:
     {
         m_resolution = resolution;
 
-        kvs::ColorMap color_map( resolution, 0.0, 1.0 );
-        kvs::OpacityMap opacity_map( resolution, 0.0, 1.0 );
+        vismodule::ColorMap color_map( resolution, 0.0, 1.0 );
+        vismodule::OpacityMap opacity_map( resolution, 0.0, 1.0 );
 
-        const kvs::ColorMap::Table color_table = this->colorMap().table();
-        const kvs::OpacityMap::Table opacity_table = this->opacityMap().table();
+        const vismodule::ColorMap::Table color_table = this->colorMap().table();
+        const vismodule::OpacityMap::Table opacity_table = this->opacityMap().table();
 
         const size_t n_color   = color_table.size() / 3;
         const size_t n_opacity = opacity_table.size();
@@ -64,10 +64,10 @@ public:
         for ( size_t n = 0; n < n_color; n++ )
         {
             const float x = color_stride * n;
-            const kvs::UInt8 r = color_table.at( 3 * n + 0 );
-            const kvs::UInt8 g = color_table.at( 3 * n + 1 );
-            const kvs::UInt8 b = color_table.at( 3 * n + 2 );
-            const kvs::RGBColor color( r, g, b );
+            const vismodule::UInt8 r = color_table.at( 3 * n + 0 );
+            const vismodule::UInt8 g = color_table.at( 3 * n + 1 );
+            const vismodule::UInt8 b = color_table.at( 3 * n + 2 );
+            const vismodule::RGBColor color( r, g, b );
             color_map.addPoint( x, color );
         }
 
@@ -81,8 +81,8 @@ public:
         color_map.create();
         opacity_map.create();
 
-        kvs::TransferFunction tf( color_map, opacity_map );
-        *( static_cast<kvs::TransferFunction*>( this ) ) = tf;
+        vismodule::TransferFunction tf( color_map, opacity_map );
+        *( static_cast<vismodule::TransferFunction*>( this ) ) = tf;
     }
 
     virtual bool operator==( const ExtendedTransferFunctionParameter& s ) const;

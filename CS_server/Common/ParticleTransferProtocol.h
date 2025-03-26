@@ -3,7 +3,7 @@
 
 #include <string>
 #include "Types.h"
-#include <kvs/Vector3>
+#include <vismodule/Vector3>
 #include "ExtendedTransferFunctionParameter.h"
 #include "VariableRange.h"
 
@@ -11,20 +11,37 @@
 #include <sstream>
 #include <vector>
 
-namespace kvs
+namespace vismodule
 {
 class Camera;
 class TransferFunction;
 }
-
 namespace jpv
 {
 
 enum class InitializeParameter : int32_t {
      initial_step = -3,  // 値の設定
      end = -2,
-     empty = -1,
-     generate_particle = 1
+     connection_reset = -1,
+     generate_particle = 1,
+     export_TFfile =2,
+     generate_glyph = 3,
+     send_glyph_flag_false = 4,
+     plot_over_line = 5
+};
+
+enum class DataDefines : int32_t
+{
+    Constant            = 0, //
+    SingleVariable      = 1, //
+    VariableArray       = 2  //
+};
+
+enum class GlyphMode  : int32_t
+{
+    UniformDistribution = 0, //max sampepoints,seed
+    AllPoints           = 1, //No UI
+    EveryNthPoints      = 2  //Stride
 };
 
 class ParticleTransferUtils
@@ -78,7 +95,7 @@ public:
     char m_node_type;
     float m_sampling_step;
     int32_t m_rendering_id;
-    kvs::Camera* m_camera;
+    vismodule::Camera* m_camera;
 
     int32_t m_time_parameter;
     int32_t m_begin_time;
@@ -122,6 +139,40 @@ public:
     EquationToken x_synthesis_token;//x_synthesis; CS ONLY
     EquationToken y_synthesis_token;//y_synthesis; CS ONLY
     EquationToken z_synthesis_token;//z_synthesis; CS ONLY
+
+    //グリフ
+    bool m_glyph_flag; // グリフの生成判定
+    //int32_t m_direction_variable[3];
+    std::string m_direction_variable[3];
+    //std::vector<std::string> m_direction_variable;
+
+    DataDefines m_size_sampling_method;
+    //std::vector<int32_t> m_size_variable;
+    std::vector<std::string> m_size_variable;
+
+    GlyphMode m_distribution_mode;
+    int32_t m_number_of_sampling_point;
+    uint32_t m_seed;
+    int32_t m_stride;
+
+    vismodule::ColorMap m_color_map;
+    std::vector<int32_t> m_glyph_color_map_table;
+    //std::vector<std::string> m_glyph_color_map_table;
+
+    DataDefines m_color_data_sampling_method;
+    std::vector<std::string> m_color_data_variable;
+
+    float m_glyph_color_max;
+    float m_glyph_color_min;
+    float m_glyph_size_max;
+    float m_glyph_size_min;
+
+    //Plot Over Line
+    bool m_plot_flag; // plot ober line の生成判定
+    std::string m_plot_variable;
+    int32_t m_sampling_size;
+    float m_start_point[3];
+    float m_end_point[3];
 
 public:
     // message のサイズを計算
@@ -181,7 +232,7 @@ public:
     int32_t m_particle_limit;
     float m_particle_density;
     float m_particle_data_size_limit;
-    kvs::Camera* m_camera;
+    vismodule::Camera* m_camera;
     std::vector<NamedTransferFunctionParameter> m_transfer_function;
     std::vector<VolumeEquation> m_volume_equation;
 //    std::vector<ParticleTransferClientMessage::VolumeEquation> voleqn;
@@ -189,12 +240,31 @@ public:
 //#endif
     std::string m_color_transfer_function_synthesis;
     std::string m_opacity_transfer_function_synthesis;
-    kvs::UInt64* m_color_nbins;
-    kvs::UInt64* m_opacity_nbins;
-    std::vector<kvs::UInt64*> m_color_bins;
-    std::vector<kvs::UInt64*> m_opacity_bins;
+    vismodule::UInt64* m_color_nbins;
+    vismodule::UInt64* m_opacity_nbins;
+    std::vector<vismodule::UInt64*> m_color_bins;
+    std::vector<vismodule::UInt64*> m_opacity_bins;
 //    std::vector<std::string> m_color_bin_names;			// add by @hira at 2016/12/01
 //    std::vector<std::string> m_opacity_bin_names;		// add by @hira at 2016/12/01
+
+    // glyph
+    int32_t m_number_glyph; 
+    std::unique_ptr<float[]>  m_glyph_coords;
+    std::unique_ptr<float[]>  m_glyph_vectors;
+    std::unique_ptr<float[]>  m_glyph_sizes;
+    std::unique_ptr<unsigned char[]>   m_glyph_colors;
+    
+    float m_glyph_color_max;
+    float m_glyph_color_min;
+    float m_glyph_size_max;
+    float m_glyph_size_min;
+
+    //Plot Over Line
+    int32_t m_resolution;
+    std::vector<float> m_xAxis;
+    std::vector<int>  m_mask;
+    std::vector<float> m_line_values;
+
     // message のサイズを計算
     int32_t byteSize( void ) const;
     // メッセージを byte 列に pack
@@ -202,12 +272,13 @@ public:
     // byte 列からメッセージに unpack
     size_t unpack_message( const char* buf );
     size_t unpack_particles( const char* buf );
+    size_t unpack_glyphs( const char* buf );
     size_t unpack_bins( const size_t index, const char* buf );
 private:
     float m_transfer_function_min_value;
     float m_transfer_function_max_value;
 public:
-    VariableRange m_variable_range;
+    VariableRange m_server_side_variable_range;
 
     ParticleTransferServerMessage( void );
 
@@ -242,13 +313,13 @@ public:
     void setColorHistogramBins(
         int histogram_size,
         int nbins,
-        const kvs::UInt64* arg_c_bins);/*,
+        const vismodule::UInt64* arg_c_bins);/*,
             const std::vector<std::string> &transfer_function_names,
             const std::vector<std::string> &transfunc_synthesizer_names);*/
     void setOpacityHistogramBins(
         int histogram_size,
         int nbins,
-        const kvs::UInt64* arg_o_bins);/*,
+        const vismodule::UInt64* arg_o_bins);/*,
             const std::vector<std::string> &transfer_function_names,
             const std::vector<std::string> &transfunc_synthesizer_names);*/
 

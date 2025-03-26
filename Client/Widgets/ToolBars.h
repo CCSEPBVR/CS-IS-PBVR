@@ -14,7 +14,9 @@
 #include "ExtendedTransferFunctionMessage.h"
 #include <kvs/ColorMapBar>
 
+class Connect;
 class MergePanel;
+class TransferFunctionEditor;
 
 /* A */
 class TimeControllerA : public QToolBar
@@ -125,19 +127,20 @@ class ColorMapBarSelector :public QToolBar
     Q_OBJECT
 
 public:
-    explicit ColorMapBarSelector( QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr );
+    explicit ColorMapBarSelector( QWidget *parent = nullptr, PBVRGUI *pbvr_gui = nullptr, Connect* Connect = nullptr ,TransferFunctionEditor* transfer_function_editor = nullptr );
     ~ColorMapBarSelector();
-    void setExtendedTransferFunctionMessage( ExtendedTransferFunctionMessage* extended_transfer_function_message ){ m_extended_transfer_function_message = extended_transfer_function_message; }    
-    ExtendedTransferFunctionMessage* getExtendedTransferFunctionMessage() { return m_extended_transfer_function_message; }
-    void populateColorFunctionLists(int n);
+    void updateFunctionLists();
+    void updateRangeView();
+
+private slots:
     void onColorFunctionChanged( int index );
-    void updateColorMap();
 
 private:
     PBVRGUI *m_pbvr_gui;
-    QLabel* m_color_map_bar_selector_label;
-    QComboBox* m_color_map_bar_selector_combo_box;
-    ExtendedTransferFunctionMessage* m_extended_transfer_function_message;
+    Connect* m_connect;
+    TransferFunctionEditor* m_transfer_function_editor;
+    QLabel* m_color_function_label;
+    QComboBox* m_color_function_combo_box;
 };
 
 #endif // TOOLBARS_H

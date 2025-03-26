@@ -244,6 +244,7 @@ void ColorMapEditor::readJsonFile()
             colorMapBar->setColorMap( color_map );
             colorMapBar->setFixedWidth( 200 );
             colorMapBar->setMaximumHeight( 25 );
+            colorMapBar->startInitialization();
 
             QLabel* label = new QLabel( name );
             label->setWordWrap( true );

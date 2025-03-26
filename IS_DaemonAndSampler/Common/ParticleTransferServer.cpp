@@ -134,7 +134,8 @@ int jpv::ParticleTransferServer::termServer()
 int jpv::ParticleTransferServer::sendMessage( const ParticleTransferServerMessage& message )
 {
     int m_message_size = message.byteSize();
-    int size = m_message_size + ( 12 + 12 + 3 ) * message.m_number_particle;
+    //int size = m_message_size + ( 12 + 12 + 3 ) * message.m_number_particle;
+    int size = m_message_size + ( 12 + 12 + 3 ) * message.m_number_particle +  ( 12 + 12 + 4 + 3 ) * message.m_number_glyph;
     char* buf = new char[size];
     memset(buf, 0x00, sizeof(char)*size);
 
@@ -142,6 +143,7 @@ int jpv::ParticleTransferServer::sendMessage( const ParticleTransferServerMessag
 
     std::cout << "Send Server Message Size = " << m_message_size << std::endl;
     std::cout << "Send Server Particle Size = " << message.m_number_particle << std::endl;
+    std::cout << "Send Server glyph Size = " << message.m_number_glyph << std::endl;
 
     message.pack( buf );
     send( m_destination_socket, buf, size, 0 );

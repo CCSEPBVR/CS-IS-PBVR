@@ -22,6 +22,9 @@
      <layout class="QGridLayout" name="gridLayout_4">
       <item row="0" column="0">
        <widget class="QRadioButton" name="uniformRBtn">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Uniform</string>
         </property>
@@ -83,7 +86,7 @@
       <string>Settings</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
-      <item row="1" column="0" alignment="Qt::AlignRight">
+      <item row="1" column="0">
        <widget class="QLabel" name="portLbl">
         <property name="text">
          <string>Port :</string>
@@ -124,7 +127,7 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0" alignment="Qt::AlignRight">
+      <item row="3" column="0">
        <widget class="QLabel" name="transferFunctionFilePathLbl">
         <property name="text">
          <string>TransferFunction File Path:</string>
@@ -144,7 +147,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0" alignment="Qt::AlignRight">
+      <item row="2" column="0">
        <widget class="QLabel" name="volumeDataFilePathLbl">
         <property name="text">
          <string>Volume Data File Path :</string>

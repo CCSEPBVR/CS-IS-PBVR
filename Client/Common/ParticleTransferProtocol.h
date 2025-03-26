@@ -23,10 +23,27 @@ namespace jpv
 enum class InitializeParameter : int32_t {
      initial_step = -3,  // 値の設定
      end = -2,
-     empty = -1,
-     generate_particle = 1
+     connection_reset = -1,
+     generate_particle = 1,
+     export_TFfile =2,
+     generate_glyph = 3,
+     send_glyph_flag_false = 4,
+     plot_over_line=5
 };
 
+enum class DataDefines : int32_t
+{
+    Constant            = 0, //
+    SingleVariable      = 1, //
+    VariableArray       = 2  //
+};
+
+enum class GlyphMode  : int32_t
+{
+    UniformDistribution = 0, //max sampepoints,seed
+    AllPoints           = 1, //No UI
+    EveryNthPoints      = 2  //Stride
+};
 
 class ParticleTransferUtils
 {
@@ -124,6 +141,37 @@ public:
     EquationToken y_synthesis_token;//y_synthesis; CS ONLY
     EquationToken z_synthesis_token;//z_synthesis; CS ONLY
 
+    //グリフ
+    bool m_glyph_flag; // グリフの生成判定
+    //int32_t m_direction_variable[3];
+    //std::vector<std::string> m_direction_variable;
+    std::string m_direction_variable[3];
+
+    DataDefines m_size_sampling_method;
+    //std::vector<int32_t> m_size_variables;
+    std::vector<std::string> m_size_variables;
+
+    GlyphMode m_distribution_mode;
+    int32_t m_number_of_sampling_point;
+    uint32_t m_seed;
+    int32_t m_stride;
+
+    std::vector<int32_t> m_glyph_color_map_table;
+    float m_glyph_color_max;
+    float m_glyph_color_min;
+    float m_glyph_size_max;
+    float m_glyph_size_min;
+
+    DataDefines m_color_data_sampling_method;
+    std::vector<std::string> m_color_data_variables;
+
+    //Plot Over Line
+    bool m_plot_flag;
+    std::string m_plot_variable;
+    int32_t m_sampling_size;
+    float m_start_point[3];
+    float m_end_point[3];
+
 public:
     // message のサイズを計算
     int32_t byteSize( void ) const;
@@ -196,6 +244,24 @@ public:
     std::vector<kvs::UInt64*> m_opacity_bins;
 //    std::vector<std::string> m_color_bin_names;			// add by @hira at 2016/12/01
 //    std::vector<std::string> m_opacity_bin_names;		// add by @hira at 2016/12/01
+
+        // glyph
+    int32_t m_number_glyph;
+    std::unique_ptr<float[]>  m_glyph_coords;
+    std::unique_ptr<float[]>  m_glyph_vectors;
+    std::unique_ptr<float[]>  m_glyph_sizes;
+    std::unique_ptr<unsigned char[]>   m_glyph_colors;
+
+    //Plot Over Line
+    int32_t m_resolution;
+    std::vector<float> m_xAxis;
+    std::vector<int>  m_mask;
+    std::vector<float> m_line_values;
+    float m_glyph_color_max;
+    float m_glyph_color_min;
+    float m_glyph_size_max;
+    float m_glyph_size_min;
+
     // message のサイズを計算
     int32_t byteSize( void ) const;
     // メッセージを byte 列に pack
@@ -203,6 +269,7 @@ public:
     // byte 列からメッセージに unpack
     size_t unpack_message( const char* buf );
     size_t unpack_particles( const char* buf );
+    size_t unpack_glyphs( const char* buf );
     size_t unpack_bins( const size_t index, const char* buf );
 private:
     float m_transfer_function_min_value;

@@ -221,7 +221,7 @@ int jpv::ParticleTransferClient::recvMessage( ParticleTransferServerMessage* mes
     //    host_particle_limit = ( c_smemory * 1024 * 1024 ) / ( 12 + 12 + 3 );
     //    std::cout << "host_particle_limit0 = " << host_particle_limit << std::endl;
     host_particle_limit = host_particle_limit * MEMORY_USE_RATE;
-    //    std::cout << "host_particle_limit1 = " << host_particle_limit << std::endl;
+        std::cout << "host_particle_limit1 = " << host_particle_limit << std::endl;
     //    std::cout << "c_smemory = " << c_smemory << std::endl;
     //    std::cout << "m_number_particle=" << m_number_particle << "  host_particle_limit=" << host_particle_limit << std::endl;
     //  fprintf(stdout, "***** message->m_number_particle : %d\n", message->m_number_particle);
@@ -321,7 +321,6 @@ int jpv::ParticleTransferClient::recvMessage( ParticleTransferServerMessage* mes
     }
     else
     {
-
         // orignal cording if m_number_particle <= plimitlevel
 
         if ( message->m_number_particle > 0 )
@@ -347,7 +346,20 @@ int jpv::ParticleTransferClient::recvMessage( ParticleTransferServerMessage* mes
             //                output.flush();
             //                output.close();
             //            }
+        }
+        std::cout << "message->m_number_glyph= " <<  message->m_number_glyph << std::endl;
+        if ( message->m_number_glyph > 0 )
+        {
 
+            const size_t pSize = ( 12 + 12 + 4 + 3 ) * message->m_number_glyph;
+            buf = new char[pSize];
+            for ( rSize = 0; rSize < pSize; rSize += recvSize )
+            {
+                recvSize = recv( m_sock, buf, pSize - rSize, 0 );
+                ss.write( buf, recvSize );
+            }
+            message->unpack_glyphs( ss.str().c_str() );
+            delete[] buf;
         }
     }
 

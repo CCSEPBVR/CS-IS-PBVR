@@ -348,6 +348,19 @@ int jpv::ParticleTransferClient::recvMessage( ParticleTransferServerMessage* mes
             //            }
 
         }
+
+        if ( message->m_number_glyph > 0 )
+        {
+            const size_t pSize = ( 12 + 12 + 4 + 3 ) * message->m_number_glyph;
+            buf = new char[pSize];
+            for ( rSize = 0; rSize < pSize; rSize += recvSize )
+            {
+                recvSize = recv( m_sock, buf, pSize - rSize, 0 );
+                ss.write( buf, recvSize );
+            }
+            message->unpack_glyphs( ss.str().c_str() );
+            delete[] buf;
+        }
     }
 
 // MODIFIED END   fp)m.tanaka 2014.03.11

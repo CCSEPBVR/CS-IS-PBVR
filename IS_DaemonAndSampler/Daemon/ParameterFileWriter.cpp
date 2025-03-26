@@ -255,6 +255,93 @@ void ParameterFileWriter::inputTransferFunctionMessage( const jpv::ParticleTrans
     }
 }
 
+void ParameterFileWriter::inputGlyphParameterMessage( const jpv::ParticleTransferClientMessage& client_message )
+{
+    
+    std::string glyph_flag ="FALSE" ; 
+    if (client_message.m_glyph_flag) glyph_flag ="TRUE" ; 
+
+    m_name_list_file.setLine( "GLYPH_FLAG"             , glyph_flag );
+    m_name_list_file.setLine( "STRIDE"                 ,client_message.m_stride );
+    m_name_list_file.setLine( "SEED"                   ,client_message.m_seed );
+    m_name_list_file.setLine( "NUMBER_OF_SMAPLING_POINT"   ,client_message.m_number_of_sampling_point );
+    m_name_list_file.setLine( "GLYPH_COLOR_MAX"            ,1 );
+    m_name_list_file.setLine( "GLYPH_COLOR_MIN"            ,0 );
+
+    // 各成分を文字列に変換
+    std::stringstream  size_variable, color_data_variable;
+    for ( size_t i = 0; i < client_message.m_size_variable.size(); i++ )
+    {
+        size_variable  << client_message.m_size_variable.at( i ) << ",";
+    }
+
+    for ( size_t i = 0; i < client_message.m_color_data_variable.size(); i++ )
+    {
+        color_data_variable  << client_message.m_color_data_variable.at( i ) << ",";
+    }
+
+    std::stringstream  direction_variable;
+    for ( size_t i = 0; i < 3; i++ )
+    {
+        direction_variable  << client_message.m_direction_variable[ i ] << ",";
+    }
+
+
+    m_name_list_file.setLine( "SIZE_VARIABLES"         ,size_variable.str() );
+    m_name_list_file.setLine( "COLOR_VARIABLES"        ,color_data_variable.str() );
+    m_name_list_file.setLine( "DIRECTION_VARIABLES"    ,direction_variable.str());
+
+    std::string distribution_mode;
+    if      (client_message.m_distribution_mode == jpv::GlyphMode::AllPoints ) distribution_mode = "AllPoints"; 
+    else if (client_message.m_distribution_mode == jpv::GlyphMode::EveryNthPoints ) distribution_mode = "EveryNthPoints"; 
+    else if (client_message.m_distribution_mode == jpv::GlyphMode::UniformDistribution ) distribution_mode  = "UniformDistribution"; 
+
+    std::string size_sampling_method;
+    if(client_message. m_size_sampling_method == jpv::DataDefines::Constant ) size_sampling_method = "Constant"; 
+    else if(client_message. m_size_sampling_method == jpv::DataDefines::SingleVariable ) size_sampling_method = "SingleVariable"; 
+    else if(client_message. m_size_sampling_method == jpv::DataDefines::VariableArray ) size_sampling_method  = "VariableArray"; 
+
+    std::string color_sampling_method;
+    if(client_message. m_color_data_sampling_method == jpv::DataDefines::Constant ) color_sampling_method = "Constant"; 
+    else if(client_message. m_color_data_sampling_method == jpv::DataDefines::SingleVariable ) color_sampling_method = "SingleVariable"; 
+    else if(client_message. m_color_data_sampling_method == jpv::DataDefines::VariableArray ) color_sampling_method  = "VariableArray"; 
+
+    m_name_list_file.setLine( "DISTRIBUTION_MODE"      ,distribution_mode );
+    m_name_list_file.setLine( "SIZE_SAMPLING_METHOD"   ,size_sampling_method );
+    m_name_list_file.setLine( "COLOR_DATA_SAMPLING_METHOD" ,color_sampling_method );
+
+    std::stringstream table;
+
+    for ( size_t i = 0; i < client_message.m_glyph_color_map_table.size(); i++ )
+    {
+        table << client_message.m_glyph_color_map_table.at( i ) << ",";
+    }
+    m_name_list_file.setLine( "GLYPH_COLOR_MAP_TABLE"      ,table.str() );
+}
+
+void ParameterFileWriter::inputPlotOverLineParameterMessage( const jpv::ParticleTransferClientMessage& client_message )
+{
+    
+    std::string plot_flag ="FALSE" ; 
+    if (client_message.m_plot_flag) plot_flag ="TRUE" ; 
+
+    m_name_list_file.setLine( "PLOT_FLAG"             ,plot_flag );
+    m_name_list_file.setLine( "PLOT_VARIABLE"         ,client_message.m_plot_variable );
+    m_name_list_file.setLine( "SAMPLING_SIZE"         ,client_message.m_sampling_size );
+
+    // 各成分を文字列に変換
+    std::stringstream  start_point, end_point;
+    for ( size_t i = 0; i < 3; i++ )
+    {
+        start_point  << client_message.m_start_point[i] << ",";
+        end_point    << client_message.m_end_point[i] << ",";
+    }
+
+    m_name_list_file.setLine( "START_POINT"   ,start_point.str() );
+    m_name_list_file.setLine( "END_POINT"     ,end_point.str() );
+
+}
+
 void ParameterFileWriter::writeParameterFile( const char* fname )
 {
     m_name_list_file.setFileName( std::string( fname ) );
@@ -267,6 +354,7 @@ void ParameterFileWriter::writeParameterFile( const char* fname )
 
     ofs.close();
 }
+
 
 const NameListFile& ParameterFileWriter::getNameListFile() const
 {

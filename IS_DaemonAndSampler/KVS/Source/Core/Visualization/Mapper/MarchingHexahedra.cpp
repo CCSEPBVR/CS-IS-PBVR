@@ -341,4 +341,4 @@ const kvs::RGBColor MarchingHexahedra::calculate_color( void )
     return( BaseClass::transferFunction().colorMap()[ index ] );
 }
 
-} // end of namesapce kvs
+} // end of namespace kvs
