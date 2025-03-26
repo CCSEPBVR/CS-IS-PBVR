@@ -28,7 +28,8 @@ Connect::Connect(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, DataProp
     m_received_message()
 {
     ui->setupUi(this);
-    ui->uniformRBtn->setChecked( true );
+    // ui->uniformRBtn->setChecked( true );
+    ui->metropolisRBtn->setChecked( true );
 
     //Init particle limit, particle density, data size limit
     m_client_message.m_particle_limit = 10000000;
