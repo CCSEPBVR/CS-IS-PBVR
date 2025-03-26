@@ -1,4 +1,5 @@
 #include "TexturedPolygonImporter.h"
+#include <filesystem>
 #include <kvs/DebugNew>
 #include <kvs/KVSMLPolygonObject>
 #include <kvs/Math>
@@ -12,59 +13,73 @@ TexturedPolygonImporter::TexturedPolygonImporter()
 
 TexturedPolygonImporter::TexturedPolygonImporter( const std::string& filename )
 {
+    std::filesystem::path filepath( filename );
+    std::string ext = filepath.extension().string();
+    if( ext == ".fbx" )
+    {
 #ifdef PBVR_SUPPORT_FBX
-    if( kvs::FBX::CheckExtension( filename ) )
-    {
-        kvs::FBX* file_format = new kvs::FBX( filename );
-        if ( !file_format )
+        if( kvs::FBX::CheckExtension( filename ) )
         {
-            BaseClass::setSuccess( false );
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
-            return;
-        }
+            kvs::FBX* file_format = new kvs::FBX( filename );
+            if ( !file_format )
+            {
+                BaseClass::setSuccess( false );
+                kvsMessageError("Cannot read '%s'.",filename.c_str());
+                return;
+            }
 
-        if ( file_format->isFailure() )
-        {
-            BaseClass::setSuccess( false );
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            if ( file_format->isFailure() )
+            {
+                BaseClass::setSuccess( false );
+                kvsMessageError("Cannot read '%s'.",filename.c_str());
+                delete file_format;
+                return;
+            }
+
+            this->import( file_format );
             delete file_format;
+        }
+        else
+        {
+            BaseClass::setSuccess( false );
+            kvsMessageError("Cannot import '%s'.",filename.c_str());
             return;
         }
-
-        this->import( file_format );
-        delete file_format;
-    }
 #endif
+    }
+
+    if( ext == ".3ds" )
+    {
 #ifdef PBVR_SUPPORT_3DS
-    if( kvs::ThreeDS::CheckExtension( filename ) )
-    {
-        kvs::ThreeDS* file_format = new kvs::ThreeDS( filename );
-        if ( !file_format )
+        if( kvs::ThreeDS::CheckExtension( filename ) )
         {
-            BaseClass::setSuccess( false );
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
-            return;
-        }
+            kvs::ThreeDS* file_format = new kvs::ThreeDS( filename );
+            if ( !file_format )
+            {
+                BaseClass::setSuccess( false );
+                kvsMessageError("Cannot read '%s'.",filename.c_str());
+                return;
+            }
 
-        if ( file_format->isFailure() )
-        {
-            BaseClass::setSuccess( false );
-            kvsMessageError("Cannot read '%s'.",filename.c_str());
+            if ( file_format->isFailure() )
+            {
+                BaseClass::setSuccess( false );
+                kvsMessageError("Cannot read '%s'.",filename.c_str());
+                delete file_format;
+                return;
+            }
+
+            this->import( file_format );
             delete file_format;
+        }
+        else
+        {
+            BaseClass::setSuccess( false );
+            kvsMessageError("Cannot import '%s'.",filename.c_str());
             return;
         }
-
-        this->import( file_format );
-        delete file_format;
-    }
 #endif
-    else
-    {
-        BaseClass::setSuccess( false );
-        kvsMessageError("Cannot import '%s'.",filename.c_str());
-        return;
     }
-
 }
 
 TexturedPolygonImporter::TexturedPolygonImporter( const kvs::FileFormatBase* file_format )

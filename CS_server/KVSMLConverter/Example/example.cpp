@@ -207,6 +207,17 @@ int main( int argc, char** argv )
             Vtm2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
         }
     }
+    else if ( input_file_extension == ".case" )
+    {
+        if ( contains_wildcard( input_file_path.string() ) )
+        {
+            std::cout << ".case does not yet support a wildcard." << std::endl;
+        }
+        else
+        {
+            Case2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
+        }
+    }
     else
     {
         std::cout << "This file extension is not yet supported" << std::endl;
