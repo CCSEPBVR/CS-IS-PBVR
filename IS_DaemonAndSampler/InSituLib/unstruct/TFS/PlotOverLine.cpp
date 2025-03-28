@@ -106,7 +106,13 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
 
     PlotOverLineProperty plot_over_line_property;
 
-    bool read_flag =  plot_over_line_property.LoadIN(POLParamPath) ;
+
+    bool read_flag;
+    while( plot_over_line_property.getString( "END_PARAMETER_FILE" ) != "SUCCESS" )
+    {
+        read_flag =  plot_over_line_property.LoadIN(POLParamPath) ;
+    }
+    //bool read_flag =  plot_over_line_property.LoadIN(POLParamPath) ;
 
     int mpi_rank;
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
