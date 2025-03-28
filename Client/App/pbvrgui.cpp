@@ -166,13 +166,14 @@ void PBVRGUI::initializePanels()
 
     // m_glyph_editor.close();
     m_glyph_editor.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    m_glyph_editor.setFocusProxy( nullptr );
     addDockWidget( Qt::RightDockWidgetArea, &m_glyph_editor );
     // m_glyph_editor.getColorMapBar()->startInitialization();
     // m_glyph_editor.getColorMapBar()->update();
 
     m_plot_over_line.setAllowedAreas( Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea );
+    m_plot_over_line.setFocusProxy( nullptr );
     addDockWidget( Qt::LeftDockWidgetArea, &m_plot_over_line );
-    m_plot_over_line.show();
 }
 
 void PBVRGUI::keyPressEvent(QKeyEvent *event)
