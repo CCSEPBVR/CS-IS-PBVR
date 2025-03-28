@@ -20,7 +20,13 @@
 #include <kvs/Assert>
 #include "../kvs_wrapper.h"
 
-namespace TFS
+
+#ifndef SIMDW 
+#define SIMDW 128
+#endif
+
+
+namespace TFS 
 {
 
 /*==========================================================================*/
@@ -30,65 +36,139 @@ namespace TFS
  *補間関数のアクセス範囲は呼び出し側で制御すること
  */
 /*==========================================================================*/
-
 class TrilinearInterpolator
 {
-    //kvsClassName_without_virtual( kvs::TrilinearInterpolator );
+//    visModuleClassName_without_virtual( kvs::TrilinearInterpolator );
 
 private:
+
+    kvs::Vector3ui m_grid_index; ///< grid index
+    kvs::UInt32    m_neighbouring_grid_index[8];   ///< neighbouring grid index
+    kvs::Real32    m_neighbouring_grid_weight[8];  ///< weight for the neighbouring grid index
+    kvs::UInt32    m_index_woSIMD[8];   ///< neighbouring grid index
+    kvs::Real32    m_weight_woSIMD[8];  ///< weight for the neighbouring grid index
+    kvs::Real32    m_scalars[8]; 
+    float*               m_data;
 
     kvs::UInt32 m_grid_index_i[SIMDW]; ///< grid index
     kvs::UInt32 m_grid_index_j[SIMDW]; ///< grid index
     kvs::UInt32 m_grid_index_k[SIMDW]; ///< grid index
+    kvs::UInt32 m_leaf_index;
+    kvs::Real32 m_cell_length;
     kvs::UInt32 m_index[8][SIMDW];   ///< neighbouring grid index
     kvs::Real32 m_weight[8][SIMDW];  ///< weight for the neighbouring grid index
+    //kvs::Real32 m_differential_functions[24][SIMDW];
+    kvs::Real32 m_dNdx[8][SIMDW];
+    kvs::Real32 m_dNdy[8][SIMDW];
+    kvs::Real32 m_dNdz[8][SIMDW];
 
-    const float* m_reference_volume;
-    const kvs::Vector3ui m_resolution;
+    const float*         m_reference_value;
+    const kvs::StructuredVolumeObject* m_reference_volume;
+//    const kvs::StructuredVolumeObject& m_reference_object;
+    const kvs::Vector3ui m_resolution; ///< resolution 3D
+    const int m_line_size;
+    const int m_slice_size;
+    const int m_leaf_size;
+    const int m_imax;
+    const int m_jmax;
+    const int m_kmax;
 
 public:
 
-    //template <typename T>
-    TrilinearInterpolator( const float* volume, const kvs::Vector3ui resolution );
+    TrilinearInterpolator( const kvs::StructuredVolumeObject& volume );
+    TrilinearInterpolator( const float* value, const kvs::Vector3ui resolution );
+//    TrilinearInterpolator( T* values,
+//              float* coords, int ncoords, int ncells);
 
 public:
+
+    void attachPoint( const kvs::Vector3f& point );
+
+    const kvs::UInt32* indices( void ) const;
+    
+    template <typename T>
+    const kvs::Real32 scalar( void ) const;
+
+    template <typename T>
+    const kvs::Vector3f gradient( void ) const;
+
+    void setLeafIndex( const int leaf_index );
+
+    void setCellLength( const float cell_length );
 
     void attachPoint( const float* p_x, const float* p_y, const float* p_z );
 
-    //const kvs::UInt32* indices( void ) const;
+    void attachPoint_woSIMD( const kvs::Vector3f& point );
 
     //template <typename T>
     void scalar( float* values ) const;
+
+    template <typename T>
+    const kvs::Real32 scalar_woSIMD( void ) const;
 
     //template <typename T>
     void gradient( float* g_x, float* g_y, float* g_z ) const;
 
 private:
 
-    const int m_line_size;
-    const int m_slice_size;
-    const int m_imax;
-    const int m_jmax;
-    const int m_kmax;
-    const int id( int i, int j, int k ) const;
+    const int id( const int i, const int j, const int k ) const;
 };
 
-inline TrilinearInterpolator::TrilinearInterpolator( const float* volume, const kvs::Vector3ui resolution )
-    : m_reference_volume( volume )
+//inline TrilinearInterpolator::TrilinearInterpolator( const kvs::StructuredVolumeObject& volume ) 
+//    : m_grid_index( 0, 0, 0 )
+//    , m_reference_volume( volume )
+//{
+//    m_data = new float[m_reference_volume.nnodes()* m_reference_volume.veclen()];
+//    for ( int j = 0; j < m_reference_volume.veclen(); j++ )
+//    {
+//        for ( int i = 0; i < m_reference_volume.nnodes(); i++ )
+//        {
+//            int  it = j * m_reference_volume.nnodes() + i;
+//            m_data[it] = (float)(m_reference_volume.values().at<double>(it));  
+//        }
+//    }
+//
+//}
+
+inline TrilinearInterpolator::TrilinearInterpolator( const kvs::StructuredVolumeObject& volume )
+    : m_grid_index( 0, 0, 0 )
+    , m_reference_volume( &volume )
+    , m_resolution( 0, 0, 0 )
+    , m_line_size( 0 )
+    , m_slice_size( 0 )
+    , m_leaf_size( 0 )
+    , m_imax( 0 )
+    , m_jmax( 0 )
+    , m_kmax( 0 )
+{
+}
+
+inline TrilinearInterpolator::TrilinearInterpolator( const float* value, const kvs::Vector3ui resolution )
+    : m_reference_value( value )
     , m_resolution( resolution )
-    , m_line_size(  resolution.x() )
-    , m_slice_size( resolution.x()*resolution.y() )
+    , m_line_size ( resolution.x() )
+    , m_slice_size( resolution.x() * resolution.y() )
+    , m_leaf_size ( resolution.x() * resolution.y() * resolution.z() )
     , m_imax( resolution.x() - 1 )
     , m_jmax( resolution.y() - 1 )
     , m_kmax( resolution.z() - 1 )
-
 {
+}
+
+inline void TrilinearInterpolator::setLeafIndex( const int leaf_index )
+{
+    m_leaf_index = leaf_index;
+}
+
+inline void TrilinearInterpolator::setCellLength( const float cell_length )
+{
+    m_cell_length = cell_length;
 }
 
 //高速化のためアクセス範囲のクランプ処理を削除
 //補間関数のアクセス範囲は呼び出し側で制御すること
-//#pragma ivdep
-inline const int TrilinearInterpolator::id( int i, int j, int k ) const
+#pragma ivdep
+inline const int TrilinearInterpolator::id( const int i, const int j, const int k ) const
 {
 
     const int I = i<0 ? 0 : i>m_imax ? m_imax : i;
@@ -100,12 +180,120 @@ inline const int TrilinearInterpolator::id( int i, int j, int k ) const
 //    return i + j*m_line_size + k*m_slice_size;
 }
 
-//inline void TrilinearInterpolator::attachPoint( const kvs::Vector3f& point )
+inline void TrilinearInterpolator::attachPoint( const kvs::Vector3f& point )
+{
+    const kvs::Vector3ui resolution = m_reference_volume->resolution();
+    KVS_ASSERT( 0.0f <= point.x() && point.x() <= resolution.x() - 1.0f );
+    KVS_ASSERT( 0.0f <= point.y() && point.y() <= resolution.y() - 1.0f );
+    KVS_ASSERT( 0.0f <= point.z() && point.z() <= resolution.z() - 1.0f );
+
+    // Temporary index.
+    const size_t ti = static_cast<size_t>( point.x() );
+    const size_t tj = static_cast<size_t>( point.y() );
+    const size_t tk = static_cast<size_t>( point.z() );
+
+    // Addjustment index for boundary.
+    const size_t i = ( ti >= resolution.x() - 1 ) ? resolution.x() - 2 : ti;
+    const size_t j = ( tj >= resolution.y() - 1 ) ? resolution.y() - 2 : tj;
+    const size_t k = ( tk >= resolution.z() - 1 ) ? resolution.z() - 2 : tk;
+
+    const size_t line_size  = m_reference_volume->nnodesPerLine();
+    const size_t slice_size = m_reference_volume->nnodesPerSlice();
+
+    // Calculate index.
+    m_grid_index.set( i, j, k );
+
+    m_neighbouring_grid_index[0] = i + j * line_size + k * slice_size;
+    m_neighbouring_grid_index[1] = m_neighbouring_grid_index[0] + 1;
+    m_neighbouring_grid_index[2] = m_neighbouring_grid_index[1] + line_size;
+    m_neighbouring_grid_index[3] = m_neighbouring_grid_index[0] + line_size;
+    m_neighbouring_grid_index[4] = m_neighbouring_grid_index[0] + slice_size;
+    m_neighbouring_grid_index[5] = m_neighbouring_grid_index[1] + slice_size;
+    m_neighbouring_grid_index[6] = m_neighbouring_grid_index[2] + slice_size;
+    m_neighbouring_grid_index[7] = m_neighbouring_grid_index[3] + slice_size;
+
+    // Calculate local coordinate.
+    const float x = point.x() - i;
+    const float y = point.y() - j;
+    const float z = point.z() - k;
+
+    const float xy = x * y;
+    const float yz = y * z;
+    const float zx = z * x;
+
+    const float xyz = xy * z;
+
+    m_neighbouring_grid_weight[0] = 1.0f - x - y - z + xy + yz + zx - xyz;
+    m_neighbouring_grid_weight[1] = x - xy - zx + xyz;
+    m_neighbouring_grid_weight[2] = xy - xyz;
+    m_neighbouring_grid_weight[3] = y - xy - yz + xyz;
+    m_neighbouring_grid_weight[4] = z - zx - yz + xyz;
+    m_neighbouring_grid_weight[5] = zx - xyz;
+    m_neighbouring_grid_weight[6] = xyz;
+    m_neighbouring_grid_weight[7] = yz - xyz;
+}
+
+inline void TrilinearInterpolator::attachPoint_woSIMD( const kvs::Vector3f& point )
+{
+    //const kvs::Vector3ui resolution = m_reference_volume->resolution();
+    const kvs::Vector3ui resolution = m_resolution;
+    KVS_ASSERT( 0.0f <= point.x() && point.x() <= resolution.x() - 1.0f );
+    KVS_ASSERT( 0.0f <= point.y() && point.y() <= resolution.y() - 1.0f );
+    KVS_ASSERT( 0.0f <= point.z() && point.z() <= resolution.z() - 1.0f );
+
+    // Temporary index.
+    const size_t ti = static_cast<size_t>( point.x() );
+    const size_t tj = static_cast<size_t>( point.y() );
+    const size_t tk = static_cast<size_t>( point.z() );
+
+    // Addjustment index for boundary.
+    const size_t i = ( ti >= resolution.x() - 1 ) ? resolution.x() - 2 : ti;
+    const size_t j = ( tj >= resolution.y() - 1 ) ? resolution.y() - 2 : tj;
+    const size_t k = ( tk >= resolution.z() - 1 ) ? resolution.z() - 2 : tk;
+
+    //const size_t line_size  = m_reference_volume->nnodesPerLine();
+    //const size_t slice_size = m_reference_volume->nnodesPerSlice();
+    const size_t line_size  = m_line_size ;
+    const size_t slice_size = m_slice_size;
+
+    // Calculate index.
+    m_grid_index.set( i, j, k );
+
+    m_index_woSIMD[0] = i + j * line_size + k * slice_size;
+    m_index_woSIMD[1] = m_index_woSIMD[0] + 1;
+    m_index_woSIMD[2] = m_index_woSIMD[1] + line_size;
+    m_index_woSIMD[3] = m_index_woSIMD[0] + line_size;
+    m_index_woSIMD[4] = m_index_woSIMD[0] + slice_size;
+    m_index_woSIMD[5] = m_index_woSIMD[1] + slice_size;
+    m_index_woSIMD[6] = m_index_woSIMD[2] + slice_size;
+    m_index_woSIMD[7] = m_index_woSIMD[3] + slice_size;
+
+    // Calculate local coordinate.
+    const float x = point.x() - i;
+    const float y = point.y() - j;
+    const float z = point.z() - k;
+
+    const float xy = x * y;
+    const float yz = y * z;
+    const float zx = z * x;
+
+    const float xyz = xy * z;
+
+    m_weight_woSIMD[0] = 1.0f - x - y - z + xy + yz + zx - xyz;
+    m_weight_woSIMD[1] = x - xy - zx + xyz;
+    m_weight_woSIMD[2] = xy - xyz;
+    m_weight_woSIMD[3] = y - xy - yz + xyz;
+    m_weight_woSIMD[4] = z - zx - yz + xyz;
+    m_weight_woSIMD[5] = zx - xyz;
+    m_weight_woSIMD[6] = xyz;
+    m_weight_woSIMD[7] = yz - xyz;
+}
+
+#pragma ivdep
 inline void TrilinearInterpolator::attachPoint( const float* p_x, const float* p_y, const float* p_z )
 {
     const kvs::Vector3ui resolution = m_resolution;
 
-    #pragma ivdep
     for( int I=0; I < SIMDW; I++ )
     {
         // Temporary index.
@@ -123,7 +311,7 @@ inline void TrilinearInterpolator::attachPoint( const float* p_x, const float* p
         m_grid_index_j[I] = j;
         m_grid_index_k[I] = k;
 
-        m_index[0][I] = i + j * m_line_size + k * m_slice_size;
+        m_index[0][I] = i + j * m_line_size + k * m_slice_size; //+ m_leaf_index * m_leaf_size;
         m_index[1][I] = m_index[0][I] + 1;
         m_index[2][I] = m_index[1][I] + m_line_size;
         m_index[3][I] = m_index[0][I] + m_line_size;
@@ -143,29 +331,75 @@ inline void TrilinearInterpolator::attachPoint( const float* p_x, const float* p
 
         const float xyz = xy * z;
 
-        m_weight[0][I] = 1.0f - x - y - z + xy + yz + zx - xyz;
-        m_weight[1][I] = x - xy - zx + xyz;
-        m_weight[2][I] = xy - xyz;
-        m_weight[3][I] = y - xy - yz + xyz;
-        m_weight[4][I] = z - zx - yz + xyz;
-        m_weight[5][I] = zx - xyz;
-        m_weight[6][I] = xyz;
-        m_weight[7][I] = yz - xyz;
+        m_weight[0][I] = 1 - x - y - z + xy + yz + zx - xyz;
+        m_weight[1][I] =     x         - xy      - zx + xyz;
+        m_weight[2][I] =                 xy           - xyz;
+        m_weight[3][I] =         y     - xy - yz      + xyz;
+        m_weight[4][I] =             z      - yz - zx + xyz;
+        m_weight[5][I] =                           zx - xyz;
+        m_weight[6][I] =                                xyz;
+        m_weight[7][I] =                      yz      - xyz;
 
+        // dNdx
+        m_dNdx[ 0][I] = - 1 + y + z - yz;
+        m_dNdx[ 1][I] =   1 - y - z + yz;
+        m_dNdx[ 2][I] =       y     - yz;
+        m_dNdx[ 3][I] =     - y     + yz;
+        m_dNdx[ 4][I] =         - z + yz;
+        m_dNdx[ 5][I] =           z - yz;
+        m_dNdx[ 6][I] =               yz;
+        m_dNdx[ 7][I] =             - yz;
+
+        // dNdy
+        m_dNdy[ 0][I] = - 1 + x + z - zx;
+        m_dNdy[ 1][I] =     - x     + zx;
+        m_dNdy[ 2][I] =       x     - zx;
+        m_dNdy[ 3][I] =   1 - x - z + zx;
+        m_dNdy[ 4][I] =         - z + zx;
+        m_dNdy[ 5][I] =             - zx;
+        m_dNdy[ 6][I] =               zx;
+        m_dNdy[ 7][I] =           z - zx;
+
+        // dNdz
+        m_dNdz[ 0][I] = - 1 + y + x - xy;
+        m_dNdz[ 1][I] =         - x + xy;
+        m_dNdz[ 2][I] =             - xy;
+        m_dNdz[ 3][I] =     - y     + xy;
+        m_dNdz[ 4][I] =   1 - y - x + xy;
+        m_dNdz[ 5][I] =           x - xy;
+        m_dNdz[ 6][I] =               xy;
+        m_dNdz[ 7][I] =       y     - xy;
     }
 }
-/*
+
 inline const kvs::UInt32* TrilinearInterpolator::indices( void ) const
 {
-    return( m_index );
+    return( m_neighbouring_grid_index );
 }
-*/
 
+template <typename T>
+inline const float TrilinearInterpolator::scalar( void ) const
+{
+    const T* const data = reinterpret_cast<const T*>( m_reference_volume->values().pointer() );
+
+    return(
+        static_cast<float>(
+            data[ m_neighbouring_grid_index[0] ] * m_neighbouring_grid_weight[0] +
+            data[ m_neighbouring_grid_index[1] ] * m_neighbouring_grid_weight[1] +
+            data[ m_neighbouring_grid_index[2] ] * m_neighbouring_grid_weight[2] +
+            data[ m_neighbouring_grid_index[3] ] * m_neighbouring_grid_weight[3] +
+            data[ m_neighbouring_grid_index[4] ] * m_neighbouring_grid_weight[4] +
+            data[ m_neighbouring_grid_index[5] ] * m_neighbouring_grid_weight[5] +
+            data[ m_neighbouring_grid_index[6] ] * m_neighbouring_grid_weight[6] +
+            data[ m_neighbouring_grid_index[7] ] * m_neighbouring_grid_weight[7] ) );
+}
+
+#pragma ivdep
 inline void TrilinearInterpolator::scalar( float* values ) const
 {
-    const float* const data = m_reference_volume;
+    //const T* const data = reinterpret_cast<const T*>( m_reference_volume->values().pointer() );
+    const float* const data = m_reference_value;
 
-    #pragma ivdep
     for( int I = 0; I < SIMDW; I++ )
     {
         values[I] =
@@ -181,10 +415,209 @@ inline void TrilinearInterpolator::scalar( float* values ) const
     }
 }
 
+template <typename T>
+inline const float TrilinearInterpolator::scalar_woSIMD( void ) const
+{
+    //const T* const data = reinterpret_cast<const T*>( m_reference_object->values().pointer() );
+    const float* const data = m_reference_value;
 
+    return(
+        static_cast<float>(
+            data[ m_index_woSIMD[0] ] * m_weight_woSIMD[0] +
+            data[ m_index_woSIMD[1] ] * m_weight_woSIMD[1] +
+            data[ m_index_woSIMD[2] ] * m_weight_woSIMD[2] +
+            data[ m_index_woSIMD[3] ] * m_weight_woSIMD[3] +
+            data[ m_index_woSIMD[4] ] * m_weight_woSIMD[4] +
+            data[ m_index_woSIMD[5] ] * m_weight_woSIMD[5] +
+            data[ m_index_woSIMD[6] ] * m_weight_woSIMD[6] +
+            data[ m_index_woSIMD[7] ] * m_weight_woSIMD[7] ) );
+}
+
+
+#pragma ivdep
 inline void TrilinearInterpolator::gradient( float* g_x, float* g_y, float* g_z ) const
 {
-    const float* const s =  m_reference_volume;
+    // Calculate a gradient vector in the local coordinate.
+    const float* const data = m_reference_value;
+    const kvs::UInt32 nnodes = 8;
+    const float inv_Jacobi = 1.0 / m_cell_length;
+
+    for( int I = 0; I < SIMDW; I++ )
+    {
+        float dsdx = 0.0f;
+        float dsdy = 0.0f;
+        float dsdz = 0.0f;
+
+        for ( size_t i = 0; i < nnodes; i++ )
+        {
+            dsdx += data[ m_index[i][I] ] * m_dNdx[i][I];
+            dsdy += data[ m_index[i][I] ] * m_dNdy[i][I];
+            dsdz += data[ m_index[i][I] ] * m_dNdz[i][I];
+        }
+
+        g_x[I] = inv_Jacobi * dsdx;
+        g_y[I] = inv_Jacobi * dsdy;
+        g_z[I] = inv_Jacobi * dsdz;
+    }
+}
+
+template <typename T>
+inline const kvs::Vector3f TrilinearInterpolator::gradient( void ) const
+{
+    // Calculate the point's gradient.
+    float dx[8], dy[8], dz[8];
+
+    const T* const data = reinterpret_cast<const T*>( m_reference_volume->values().pointer() );
+
+    const kvs::Vector3ui resolution = m_reference_volume->resolution();
+    const size_t line_size  = m_reference_volume->nnodesPerLine();
+    const size_t slice_size = m_reference_volume->nnodesPerSlice();
+
+    const size_t i = m_grid_index.x();
+    const size_t j = m_grid_index.y();
+    const size_t k = m_grid_index.z();
+
+    if ( i == 0 )
+    {
+        dx[0] = static_cast<float>( data[ m_neighbouring_grid_index[1]     ] );
+        dx[1] = static_cast<float>( data[ m_neighbouring_grid_index[1] + 1 ] ) - static_cast<float>( data[ m_neighbouring_grid_index[0]     ] );
+        dx[2] = static_cast<float>( data[ m_neighbouring_grid_index[2] + 1 ] ) - static_cast<float>( data[ m_neighbouring_grid_index[3]     ] );
+        dx[3] = static_cast<float>( data[ m_neighbouring_grid_index[2]     ] );
+        dx[4] = static_cast<float>( data[ m_neighbouring_grid_index[5]     ] );
+        dx[5] = static_cast<float>( data[ m_neighbouring_grid_index[5] + 1 ] ) - static_cast<float>( data[ m_neighbouring_grid_index[4]     ] );
+        dx[6] = static_cast<float>( data[ m_neighbouring_grid_index[6] + 1 ] ) - static_cast<float>( data[ m_neighbouring_grid_index[7]     ] );
+        dx[7] = static_cast<float>( data[ m_neighbouring_grid_index[6]     ] );
+    }
+    else if ( i == resolution.x() - 2 )
+    {
+        dx[0] = static_cast<float>( data[ m_neighbouring_grid_index[1]     ] ) - static_cast<float>( data[ m_neighbouring_grid_index[0] - 1 ] );
+        dx[1] =                                              - static_cast<float>( data[ m_neighbouring_grid_index[0]     ] );
+        dx[2] =                                              - static_cast<float>( data[ m_neighbouring_grid_index[3]     ] );
+        dx[3] = static_cast<float>( data[ m_neighbouring_grid_index[2]     ] ) - static_cast<float>( data[ m_neighbouring_grid_index[3] - 1 ] );
+        dx[4] = static_cast<float>( data[ m_neighbouring_grid_index[5]     ] ) - static_cast<float>( data[ m_neighbouring_grid_index[4] - 1 ] );
+        dx[5] =                                              - static_cast<float>( data[ m_neighbouring_grid_index[4]     ] );
+        dx[6] =                                              - static_cast<float>( data[ m_neighbouring_grid_index[7]     ] );
+        dx[7] = static_cast<float>( data[ m_neighbouring_grid_index[6]     ] ) - static_cast<float>( data[ m_neighbouring_grid_index[7] - 1 ] );
+    }
+    else
+    {
+        dx[0] = static_cast<float>( data[ m_neighbouring_grid_index[1]     ] ) - static_cast<float>( data[ m_neighbouring_grid_index[0] - 1 ] );
+        dx[1] = static_cast<float>( data[ m_neighbouring_grid_index[1] + 1 ] ) - static_cast<float>( data[ m_neighbouring_grid_index[0]     ] );
+        dx[2] = static_cast<float>( data[ m_neighbouring_grid_index[2] + 1 ] ) - static_cast<float>( data[ m_neighbouring_grid_index[3]     ] );
+        dx[3] = static_cast<float>( data[ m_neighbouring_grid_index[2]     ] ) - static_cast<float>( data[ m_neighbouring_grid_index[3] - 1 ] );
+        dx[4] = static_cast<float>( data[ m_neighbouring_grid_index[5]     ] ) - static_cast<float>( data[ m_neighbouring_grid_index[4] - 1 ] );
+        dx[5] = static_cast<float>( data[ m_neighbouring_grid_index[5] + 1 ] ) - static_cast<float>( data[ m_neighbouring_grid_index[4]     ] );
+        dx[6] = static_cast<float>( data[ m_neighbouring_grid_index[6] + 1 ] ) - static_cast<float>( data[ m_neighbouring_grid_index[7]     ] );
+        dx[7] = static_cast<float>( data[ m_neighbouring_grid_index[6]     ] ) - static_cast<float>( data[ m_neighbouring_grid_index[7] - 1 ] );
+    }
+
+    if ( j == 0 )
+    {
+        dy[0] = static_cast<float>( data[ m_neighbouring_grid_index[3]             ] );
+        dy[1] = static_cast<float>( data[ m_neighbouring_grid_index[2]             ] );
+        dy[2] = static_cast<float>( data[ m_neighbouring_grid_index[2] + line_size ] ) - static_cast<float>( data[ m_neighbouring_grid_index[1]             ] );
+        dy[3] = static_cast<float>( data[ m_neighbouring_grid_index[3] + line_size ] ) - static_cast<float>( data[ m_neighbouring_grid_index[0]             ] );
+        dy[4] = static_cast<float>( data[ m_neighbouring_grid_index[7]             ] );
+        dy[5] = static_cast<float>( data[ m_neighbouring_grid_index[6]             ] );
+        dy[6] = static_cast<float>( data[ m_neighbouring_grid_index[6] + line_size ] ) - static_cast<float>( data[ m_neighbouring_grid_index[5]             ] );
+        dy[7] = static_cast<float>( data[ m_neighbouring_grid_index[7] + line_size ] ) - static_cast<float>( data[ m_neighbouring_grid_index[4]             ] );
+    }
+    else if ( j == resolution.y() - 2 )
+    {
+        dy[0] = static_cast<float>( data[ m_neighbouring_grid_index[3]             ] ) - static_cast<float>( data[ m_neighbouring_grid_index[0] - line_size ] );
+        dy[1] = static_cast<float>( data[ m_neighbouring_grid_index[2]             ] ) - static_cast<float>( data[ m_neighbouring_grid_index[1] - line_size ] );
+        dy[2] =                                                      - static_cast<float>( data[ m_neighbouring_grid_index[1]             ] );
+        dy[3] =                                                      - static_cast<float>( data[ m_neighbouring_grid_index[0]             ] );
+        dy[4] = static_cast<float>( data[ m_neighbouring_grid_index[7]             ] ) - static_cast<float>( data[ m_neighbouring_grid_index[4] - line_size ] );
+        dy[5] = static_cast<float>( data[ m_neighbouring_grid_index[6]             ] ) - static_cast<float>( data[ m_neighbouring_grid_index[5] - line_size ] );
+        dy[6] =                                                      - static_cast<float>( data[ m_neighbouring_grid_index[5]             ] );
+        dy[7] =                                                      - static_cast<float>( data[ m_neighbouring_grid_index[4]             ] );
+    }
+    else
+    {
+        dy[0] = static_cast<float>( data[ m_neighbouring_grid_index[3]             ] ) - static_cast<float>( data[ m_neighbouring_grid_index[0] - line_size ] );
+        dy[1] = static_cast<float>( data[ m_neighbouring_grid_index[2]             ] ) - static_cast<float>( data[ m_neighbouring_grid_index[1] - line_size ] );
+        dy[2] = static_cast<float>( data[ m_neighbouring_grid_index[2] + line_size ] ) - static_cast<float>( data[ m_neighbouring_grid_index[1]             ] );
+        dy[3] = static_cast<float>( data[ m_neighbouring_grid_index[3] + line_size ] ) - static_cast<float>( data[ m_neighbouring_grid_index[0]             ] );
+        dy[4] = static_cast<float>( data[ m_neighbouring_grid_index[7]             ] ) - static_cast<float>( data[ m_neighbouring_grid_index[4] - line_size ] );
+        dy[5] = static_cast<float>( data[ m_neighbouring_grid_index[6]             ] ) - static_cast<float>( data[ m_neighbouring_grid_index[5] - line_size ] );
+        dy[6] = static_cast<float>( data[ m_neighbouring_grid_index[6] + line_size ] ) - static_cast<float>( data[ m_neighbouring_grid_index[5]             ] );
+        dy[7] = static_cast<float>( data[ m_neighbouring_grid_index[7] + line_size ] ) - static_cast<float>( data[ m_neighbouring_grid_index[4]             ] );
+    }
+
+    if ( k == 0 )
+    {
+        dz[0] = static_cast<float>( data[ m_neighbouring_grid_index[4]              ] );
+        dz[1] = static_cast<float>( data[ m_neighbouring_grid_index[5]              ] );
+        dz[2] = static_cast<float>( data[ m_neighbouring_grid_index[6]              ] );
+        dz[3] = static_cast<float>( data[ m_neighbouring_grid_index[7]              ] );
+        dz[4] = static_cast<float>( data[ m_neighbouring_grid_index[4] + slice_size ] ) - static_cast<float>( data[ m_neighbouring_grid_index[0]              ] );
+        dz[5] = static_cast<float>( data[ m_neighbouring_grid_index[5] + slice_size ] ) - static_cast<float>( data[ m_neighbouring_grid_index[1]              ] );
+        dz[6] = static_cast<float>( data[ m_neighbouring_grid_index[6] + slice_size ] ) - static_cast<float>( data[ m_neighbouring_grid_index[2]              ] );
+        dz[7] = static_cast<float>( data[ m_neighbouring_grid_index[7] + slice_size ] ) - static_cast<float>( data[ m_neighbouring_grid_index[3]              ] );
+    }
+    else if ( k == resolution.z() - 2 )
+    {
+        dz[0] = static_cast<float>( data[ m_neighbouring_grid_index[4]              ] ) - static_cast<float>( data[ m_neighbouring_grid_index[0] - slice_size ] );
+        dz[1] = static_cast<float>( data[ m_neighbouring_grid_index[5]              ] ) - static_cast<float>( data[ m_neighbouring_grid_index[1] - slice_size ] );
+        dz[2] = static_cast<float>( data[ m_neighbouring_grid_index[6]              ] ) - static_cast<float>( data[ m_neighbouring_grid_index[2] - slice_size ] );
+        dz[3] = static_cast<float>( data[ m_neighbouring_grid_index[7]              ] ) - static_cast<float>( data[ m_neighbouring_grid_index[3] - slice_size ] );
+        dz[4] =                                                       - static_cast<float>( data[ m_neighbouring_grid_index[0]              ] );
+        dz[5] =                                                       - static_cast<float>( data[ m_neighbouring_grid_index[1]              ] );
+        dz[6] =                                                       - static_cast<float>( data[ m_neighbouring_grid_index[2]              ] );
+        dz[7] =                                                       - static_cast<float>( data[ m_neighbouring_grid_index[3]              ] );
+    }
+    else
+    {
+        dz[0] = static_cast<float>( data[ m_neighbouring_grid_index[4]              ] ) - static_cast<float>( data[ m_neighbouring_grid_index[0] - slice_size ] );
+        dz[1] = static_cast<float>( data[ m_neighbouring_grid_index[5]              ] ) - static_cast<float>( data[ m_neighbouring_grid_index[1] - slice_size ] );
+        dz[2] = static_cast<float>( data[ m_neighbouring_grid_index[6]              ] ) - static_cast<float>( data[ m_neighbouring_grid_index[2] - slice_size ] );
+        dz[3] = static_cast<float>( data[ m_neighbouring_grid_index[7]              ] ) - static_cast<float>( data[ m_neighbouring_grid_index[3] - slice_size ] );
+        dz[4] = static_cast<float>( data[ m_neighbouring_grid_index[4] + slice_size ] ) - static_cast<float>( data[ m_neighbouring_grid_index[0]              ] );
+        dz[5] = static_cast<float>( data[ m_neighbouring_grid_index[5] + slice_size ] ) - static_cast<float>( data[ m_neighbouring_grid_index[1]              ] );
+        dz[6] = static_cast<float>( data[ m_neighbouring_grid_index[6] + slice_size ] ) - static_cast<float>( data[ m_neighbouring_grid_index[2]              ] );
+        dz[7] = static_cast<float>( data[ m_neighbouring_grid_index[7] + slice_size ] ) - static_cast<float>( data[ m_neighbouring_grid_index[3]              ] );
+    }
+
+    const float x =
+        dx[0] * m_neighbouring_grid_weight[0] +
+        dx[1] * m_neighbouring_grid_weight[1] +
+        dx[2] * m_neighbouring_grid_weight[2] +
+        dx[3] * m_neighbouring_grid_weight[3] +
+        dx[4] * m_neighbouring_grid_weight[4] +
+        dx[5] * m_neighbouring_grid_weight[5] +
+        dx[6] * m_neighbouring_grid_weight[6] +
+        dx[7] * m_neighbouring_grid_weight[7];
+
+    const float y =
+        dy[0] * m_neighbouring_grid_weight[0] +
+        dy[1] * m_neighbouring_grid_weight[1] +
+        dy[2] * m_neighbouring_grid_weight[2] +
+        dy[3] * m_neighbouring_grid_weight[3] +
+        dy[4] * m_neighbouring_grid_weight[4] +
+        dy[5] * m_neighbouring_grid_weight[5] +
+        dy[6] * m_neighbouring_grid_weight[6] +
+        dy[7] * m_neighbouring_grid_weight[7];
+
+    const float z =
+        dz[0] * m_neighbouring_grid_weight[0] +
+        dz[1] * m_neighbouring_grid_weight[1] +
+        dz[2] * m_neighbouring_grid_weight[2] +
+        dz[3] * m_neighbouring_grid_weight[3] +
+        dz[4] * m_neighbouring_grid_weight[4] +
+        dz[5] * m_neighbouring_grid_weight[5] +
+        dz[6] * m_neighbouring_grid_weight[6] +
+        dz[7] * m_neighbouring_grid_weight[7];
+
+//    return( kvs::Vector3f( x, y, z ) );
+    return( kvs::Vector3f( -x, -y, -z ) );
+}
+
+/*
+template <typename T>
+    inline void TrilinearInterpolator::gradient( float* g_x, float* g_y, float* g_z ) const
+{
+    const T* const s = reinterpret_cast<const T*>( m_reference_volume->values().pointer() );
 
     float dsdx[8][SIMDW], dsdy[8][SIMDW], dsdz[8][SIMDW];
 
@@ -322,7 +755,7 @@ inline void TrilinearInterpolator::gradient( float* g_x, float* g_y, float* g_z 
             - m_weight[6][I] * dsdz[6][I] - m_weight[7][I] * dsdz[7][I];
     }
 }
-
+*/
 } // end of namespace kvs
 
 #endif // KVS__TRILINEAR_INTERPOLATOR_H_INCLUDE
