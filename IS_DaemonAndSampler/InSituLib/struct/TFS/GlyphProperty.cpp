@@ -5,9 +5,9 @@
 #include <string.h>
 #include <map>
 
-#include "PlotOverLineProperty.h"
+#include "GlyphProperty.h"
 
-bool PlotOverLineProperty::LoadIN( const std::string& filename )
+bool GlyphProperty::LoadIN( const std::string& filename )
 {
     name_list.clear();
     param.clear();
@@ -26,11 +26,19 @@ bool PlotOverLineProperty::LoadIN( const std::string& filename )
 
     std::string line;
 
-    name_list.push_back( "PLOT_FLAG" );
-    name_list.push_back( "SAMPLING_SIZE" );
-    name_list.push_back( "PLOT_VARIABLE" );
-    name_list.push_back( "START_POINT" );
-    name_list.push_back( "END_POINT" );
+    name_list.push_back( "GLYPH_FLAG" );
+    name_list.push_back( "DIRECTION_VARIABLES" );
+    name_list.push_back( "SIZE_SAMPLING_METHOD" );
+    name_list.push_back( "SIZE_VARIABLES" );
+    name_list.push_back( "DISTRIBUTION_MODE" );
+    name_list.push_back( "STRIDE" );
+    name_list.push_back( "SEED" );
+    name_list.push_back( "NUMBER_OF_SMAPLING_POINT" );
+    name_list.push_back( "GLYPH_COLOR_MAP_TABLE" );
+    name_list.push_back( "COLOR_DATA_SAMPLING_METHOD" );
+    name_list.push_back( "COLOR_VARIABLES" );
+    name_list.push_back( "GLYPH_COLOR_MAX" );
+    name_list.push_back( "GLYPH_COLOR_MIN" );
     name_list.push_back( "END_PARAMETER_FILE" );
 
     for ( std::vector<std::string>::iterator i = name_list.begin(); i != name_list.end(); i++ )
@@ -73,17 +81,17 @@ bool PlotOverLineProperty::LoadIN( const std::string& filename )
     return true;
 }
 
-int PlotOverLineProperty::getInt( std::string name )
+int GlyphProperty::getInt( std::string name )
 {
     return std::atoi( param[name].c_str() );
 }
 
-float PlotOverLineProperty::getFloat( std::string name )
+float GlyphProperty::getFloat( std::string name )
 {
     return std::atof( param[name].c_str() );
 }
 
-std::string PlotOverLineProperty::getString( std::string name )
+std::string GlyphProperty::getString( std::string name )
 {
     if ( param.find( name ) == param.end() )
         return "";
@@ -91,7 +99,7 @@ std::string PlotOverLineProperty::getString( std::string name )
         return param[name];
 }
 
-std::vector<std::string> PlotOverLineProperty::getTableString( std::string name )
+std::vector<std::string> GlyphProperty::getTableString( std::string name )
 {
     std::string list = param[name];
     std::vector<std::string> table;
@@ -108,7 +116,7 @@ std::vector<std::string> PlotOverLineProperty::getTableString( std::string name 
     return table;
 }
 
-std::vector<int> PlotOverLineProperty::getTableInt( std::string name )
+std::vector<int> GlyphProperty::getTableInt( std::string name )
 {
     std::string list = param[name];
     std::vector<int> table;
@@ -125,7 +133,7 @@ std::vector<int> PlotOverLineProperty::getTableInt( std::string name )
     return table;
 }
 
-std::vector<float> PlotOverLineProperty::getTableFloat( std::string name )
+std::vector<float> GlyphProperty::getTableFloat( std::string name )
 {
     std::string list = param[name];
     std::vector<float> table;
@@ -142,7 +150,7 @@ std::vector<float> PlotOverLineProperty::getTableFloat( std::string name )
     return table;
 }
 
-void PlotOverLineProperty::write( const std::string name )
+void GlyphProperty::write( const std::string name )
 {
     std::ofstream ofs;
     ofs.open( name.c_str(), std::ios::out | std::ios::trunc  );
@@ -155,7 +163,8 @@ void PlotOverLineProperty::write( const std::string name )
     ofs.close();
 }
 
-size_t PlotOverLineProperty::byteSize() const
+#if 0
+size_t GlyphProperty::byteSize() const
 {
     size_t index = 0;
    
@@ -169,7 +178,7 @@ size_t PlotOverLineProperty::byteSize() const
     return index;
 }
 
-size_t PlotOverLineProperty::pack( char* buf ) const
+size_t GlyphProperty::pack( char* buf ) const
 {
     size_t index = 0;
    
@@ -183,7 +192,7 @@ size_t PlotOverLineProperty::pack( char* buf ) const
     return index;
 }
 
-size_t PlotOverLineProperty::unpack( const char* buf )
+size_t GlyphProperty::unpack( const char* buf )
 {
     std::string nm;
     std::string val;
@@ -206,4 +215,4 @@ size_t PlotOverLineProperty::unpack( const char* buf )
 
     return index;
 }
-
+#endif

@@ -16,6 +16,9 @@
 #include <kvs/RGBColor>
 #include <kvs/Timer>
 #include <kvs/MersenneTwister>
+
+#include "TFS/GlyphGenerator.h"
+#include "TFS/PlotOverLine.h"
 #include "kvs_wrapper.h"
 #include "TFS/CellByCellParticleGenerator.h"
 #include "TFS/TransferFunctionSynthesizer.h"
@@ -554,6 +557,149 @@ void show_timer( time_parameters time )
 
 
 void generate_particles( int time_step,
+        domain_parameters dom,
+        Type** volume_data, 
+        int num_volume_data )
+{
+    
+    GenerateGlyphs_PlotOverLine(time_step, dom, volume_data, num_volume_data);
+  
+    //CallPlotOverLine(time_step, dom, volume_data, num_volume_data); 
+    GenerateParticles( time_step, dom, volume_data, num_volume_data );
+
+}
+
+void GenerateGlyphs_PlotOverLine( int time_step, domain_parameters dom, Type** values, int num_volume_data )
+{
+
+//  SetStructuredVolumeObject(
+    const kvs::Vector3ui resolution( dom.resolution[0], dom.resolution[1], dom.resolution[2]);  
+    int nnodes = resolution.x()*resolution.y()*resolution.z();
+
+    kvs::ValueArray<float> tmp_Values(nnodes * num_volume_data);
+
+    for(int i = 0; i < num_volume_data; ++i )
+    {
+        for(int k = 0; k < nnodes; ++k)
+        {
+           tmp_Values[k+i*nnodes] = values[i][k] ;
+        } 
+    }
+
+    const int nx = resolution.x();
+    const int ny = resolution.y();
+    const int nz = resolution.z();
+    const int nxy = nx * ny;
+    const int nx_1 = nx-1;
+    const int ny_1 = ny-1;
+    const int nz_1 = nz-1;
+    const int nxy_1 = nx_1 * ny_1;
+
+    const kvs::Vector3f min_vec(dom.x_min, dom.y_min, dom.z_min); 
+    const kvs::Vector3f max_vec(((float)nx * dom.cell_length)+min_vec.x(),
+            ((float)ny * dom.cell_length)+min_vec.y(),
+            ((float)nz * dom.cell_length)+min_vec.z() ); 
+    const kvs::Vector3f cell_length( dom.cell_length,
+            dom.cell_length ,
+            dom.cell_length );
+
+    // coord & vector 
+    kvs::ValueArray<float> Coord(nnodes*3);
+    int glyph_count =0;
+    //#pragma omp for
+    for ( kvs::UInt32 z = 0; z < nz; ++z )
+    {
+        for ( kvs::UInt32 y = 0; y < ny; ++y )
+        {
+            for ( kvs::UInt32 x = 0; x < nx; ++x )
+            {
+                const int index = x + y*nx + z*nx*ny;
+                    const float x_g = ((float)x * cell_length.x())+min_vec.x();
+                    const float y_g = ((float)y * cell_length.y())+min_vec.y();
+                    const float z_g = ((float)z * cell_length.z())+min_vec.z();
+
+                    Coord[3*glyph_count    ] = x_g;
+                    Coord[3*glyph_count +1 ] = y_g;
+                    Coord[3*glyph_count +2 ] = z_g;
+                    glyph_count++;
+            }
+        }
+    }
+
+    kvs::AnyValueArray Values(tmp_Values);
+
+//    kvs::StructuredVolumeObject object(resolution, num_volume_data, Values ); 
+    
+    kvs::StructuredVolumeObject object(kvs::VolumeObjectBase::Curvilinear, resolution, num_volume_data, Coord, Values ); 
+    
+    //object.updateMinMaxCoords();
+
+    object.setMinMaxObjectCoords( min_vec, max_vec );
+    object.setMinMaxExternalCoords( min_vec, max_vec );
+
+    // Generate glyph
+    GlyphGenerator glyph_generator( object ); 
+    glyph_generator.OutputGlyph( time_step);
+
+    // Generate plot over line
+    PlotOverLine plot_over_line;
+
+    plot_over_line.SetPOLParameter(time_step);
+    plot_over_line.SetCellLength(dom.cell_length);
+//    std::cout << "min_vec = " << min_vec << std::endl;
+    plot_over_line.SetOffset(min_vec);
+        
+    if(plot_over_line.plot_flag())
+    {
+        plot_over_line.extractPlotLine( &object );
+        plot_over_line.CellTypeReduceing();
+    } 
+    plot_over_line.OutputLine(time_step);
+
+}
+
+#if 0
+void CallPlotOverLine( int time_step, domain_parameters dom,
+        Type** values, int num_volume_data)
+{
+
+#if 0
+    const kvs::Vector3ui resolution( dom.resolution[0], dom.resolution[1], dom.resolution[2]);  
+    int nnodes = resolution.x()*resolution.y()*resolution.z();
+
+    kvs::ValueArray<float> tmp_Values(nnodes * num_volume_data);
+
+    for(int i = 0; i < num_volume_data; ++i )
+    {
+        for(int k = 0; k < nnodes; ++k)
+        {
+           tmp_Values[k+i*nnodes] = values[i][k] ;
+        } 
+    }
+
+    kvs::AnyValueArray Values(tmp_Values);
+
+
+    //kvs::StructuredVolumeObject* object = new kvs::StructuredVolumeObject(resolution, num_volume_data, Values ); 
+    kvs::StructuredVolumeObject object(resolution, num_volume_data, Values ); 
+    object.updateMinMaxCoords();
+#endif
+
+        PlotOverLine plot_over_line;
+
+        plot_over_line.SetPOLParameter(time_step);
+        if(plot_over_line->plot_flag())
+        {
+            plot_over_line->extractPlotLine( object );
+            plot_over_line->CellTypeReduceing();
+        } 
+        plot_over_line.OutputLine(time_step);
+
+}
+#endif
+
+//void generate_particles( int time_step,
+void GenerateParticles( int time_step,
                          domain_parameters dom,
                          Type** volume_data,
                          int num_volume_data )
@@ -1493,6 +1639,7 @@ void generate_particles( int time_step,
             }
             ofs2<<std::endl;
         }
+        ofs2<<"N_VARIABLES="<<nvariables<<std::endl;
         ofs2 << "END_HISTORY_FILE=SUCCESS" << std::endl;
         ofs2.close();
 

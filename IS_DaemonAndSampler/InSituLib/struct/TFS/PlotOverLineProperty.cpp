@@ -195,11 +195,14 @@ size_t PlotOverLineProperty::unpack( const char* buf )
         param_state[*i] = false;
     }
 
+    //index += jpv::Serializer::read( buf + index, &s );
     index += jpv::Serializer::read( buf + index, s );
     for ( size_t i = 0; i != s; i++ )
     {
         index += jpv::Serializer::read( buf + index, nm );
         index += jpv::Serializer::read( buf + index, val );
+        //index += jpv::Serializer::read( buf + index, &nm );
+        //index += jpv::Serializer::read( buf + index, &val );
         param[nm] = val;
         param_state[nm] = true;
     }
