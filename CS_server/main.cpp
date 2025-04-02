@@ -1960,7 +1960,49 @@ int main( int argc, char** argv )
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::initial_step ) // change PFI file.
                 {
                     param.m_input_data_base = clntMes.m_input_directory;
-                    
+       
+                    int warning_flag = 0;
+
+#ifndef EXTEND_VTK            
+                        warning_flag = 1;
+#endif
+                    std::ifstream fin( param.m_input_data_base, std::ios::in);
+                    if (!fin.is_open()) 
+                    {
+                        std::cout << "ファイルを開けませんでした: " << param.m_input_data_base << std::endl;
+                        warning_flag = 2;
+                    }
+                    strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
+                    // ADD by FEAST 2015.12.24
+                    //servMes.m_server_status = 0;
+                    // ADD END 2015.12.24
+                    servMes.m_number_particle = 0;
+                    servMes.m_number_glyph = 0 ;
+                    servMes.m_flag_send_bins = 1;
+                    servMes.m_message_size = servMes.byteSize();
+                    if (warning_flag == 0) servMes.m_file_enable_flag = jpv::FileEnableFlag::Enable_VTK ;
+                    if (warning_flag == 1) servMes.m_file_enable_flag = jpv::FileEnableFlag::NotEnable_VTK;
+                    if (warning_flag == 2) servMes.m_file_enable_flag = jpv::FileEnableFlag::NoFile ;
+                    pts.sendMessage( servMes );
+ 
+                    //if(warning_flag == 1 || warning_flag == 2) 
+                    if( warning_flag == 2) 
+                    {
+                        if ( rank == 0 ) std::cerr << "Error: pfifile doesn't exist" << std::endl;
+                        bsz = -1;
+#ifndef CPU_VER
+                        MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
+#endif
+ 
+#ifndef CPU_VER               // 開けなくても停止しないよう変更  予定 
+                        MPI_Finalize();
+#endif
+                        return 0;
+                     
+//                        continue;
+                    }
+                   
+
 #if 0
                     std::string pfifile = param.m_input_data_base + ".pfi";
                     vismodule::File pfi( pfifile );
@@ -2009,7 +2051,6 @@ int main( int argc, char** argv )
                         // 出力はMultiVolumePropertyListクラス   
                     }
 #endif
-
                     if ( mvpl.m_list.size() > 0 )
                     {
                         point_creator_lst.clear();
@@ -2052,10 +2093,23 @@ int main( int argc, char** argv )
 #ifndef CPU_VER
                         MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
 #endif
-#ifndef CPU_VER
+
+                        
+#ifndef CPU_VER               // 開けなくても停止しないよう変更  予定 
                         MPI_Finalize();
 #endif
                         return 0;
+                        strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
+                        // ADD by FEAST 2015.12.24
+                        //servMes.m_server_status = 0;
+                        // ADD END 2015.12.24
+                        servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0 ;
+                        servMes.m_flag_send_bins = 1;
+                        servMes.m_message_size = servMes.byteSize();
+                        pts.sendMessage( servMes );
+                       
+                        continue;
                     }
 
                     //transfunc_creator.setProtocol( clntMes );
