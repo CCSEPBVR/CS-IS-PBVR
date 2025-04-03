@@ -53,11 +53,26 @@ void Connect::connectServer()
     m_server_message.m_camera = new kvs::Camera();
     m_client_message.m_camera = m_pbvr_gui->screen()->scene()->camera();
 
-    if( ui-> clientServerRBtn -> isChecked() )
+    if( ui->clientServerRBtn ->isChecked() )
     {
-        if( !ui->volumeDataFilePathLEdit->text().endsWith( ".pfi" ) && !ui->volumeDataFilePathLEdit->text().endsWith( ".pfl" ) )
+        QString filePath = ui->volumeDataFilePathLEdit->text();
+        QStringList validExtensions = {".pfi", ".pfl", ".stl", ".vtp", ".xyz", ".vtr",
+                                       ".vtk", ".vti", ".vts", ".pvts", ".inp", ".vtu",
+                                       ".pvtu", ".vtm", ".case"};
+
+        bool isValid = false;
+        for (const QString &ext : validExtensions)
         {
-            QMessageBox::information( this, tr( "Connection Error" ), tr( "The file path does not end with .pfi or pfl" ) );
+            if (filePath.endsWith(ext, Qt::CaseInsensitive)) {
+                isValid = true;
+                break;
+            }
+        }
+
+        if ( !isValid )
+        {
+            QMessageBox::information(this, tr("Connection Error"),
+                                     tr("The file path does not have a valid extension."));
             return;
         }
     }
@@ -840,7 +855,14 @@ void Connect::deletedServerObject()
 
 void Connect::onVolumeDataBrowseButtonClicked()
 {
-    ui->volumeDataFilePathLEdit->setText( QFileDialog::getOpenFileName( this, tr("Select Volume Data File"), ".", tr("Volume Data Files (*.pfi *.pfl)") ) );
+    ui->volumeDataFilePathLEdit->setText(
+        QFileDialog::getOpenFileName(
+            this,
+            tr( "Select Volume Data File" ),
+            ".",
+            tr( "Volume Data Files (*.pfi *.pfl *.stl *.vtp *.xyz *.vtr *.vtk *.vti *.vts *.pvts *.inp *.vtu *.pvtu *.vtm *.case)" )
+            )
+        );
 }
 
 void Connect::onTransferFunctionFileBrowseButtonClicked()
