@@ -28,8 +28,8 @@ Connect::Connect(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, DataProp
     m_received_message()
 {
     ui->setupUi(this);
-    // ui->uniformRBtn->setChecked( true );
-    ui->metropolisRBtn->setChecked( true );
+    ui->uniformRBtn->setChecked( true );
+    //ui->metropolisRBtn->setChecked( true );
 
     //Init particle limit, particle density, data size limit
     m_client_message.m_particle_limit = 10000000;
@@ -95,6 +95,23 @@ void Connect::connectServer()
     m_client_message.show();
     m_client_message.m_message_size = m_client_message.byteSize();
     client.sendMessage( m_client_message );
+
+    if (ui->clientServerRBtn->isChecked())
+    {
+        client.recvMessage( &m_server_message );
+        std::cout << "file_enable_flag =" << static_cast<int>(m_server_message.m_file_enable_flag) << std::endl;
+        if (m_server_message.m_file_enable_flag == jpv::FileEnableFlag::NotEnable_VTK /* && 拡張子が.pfi,pfl以外 */ )
+        {
+            std::cout << "reset !!" << std::endl;
+        }
+
+        if (m_server_message.m_file_enable_flag == jpv::FileEnableFlag::NoFile)
+        {
+            std::cout << "reset !!" << std::endl;
+        }
+
+    }
+
     client.recvMessage( &m_server_message );
     m_server_message.show();
 

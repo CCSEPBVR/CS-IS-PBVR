@@ -31,6 +31,13 @@ enum class InitializeParameter : int32_t {
      plot_over_line=5
 };
 
+enum class FileEnableFlag : int32_t
+{
+    Enable_VTK          = 0, //
+    NotEnable_VTK       = 1, //
+    NoFile              = 2  //
+};
+
 enum class DataDefines : int32_t
 {
     Constant            = 0, //
@@ -244,6 +251,8 @@ public:
     std::vector<kvs::UInt64*> m_opacity_bins;
 //    std::vector<std::string> m_color_bin_names;			// add by @hira at 2016/12/01
 //    std::vector<std::string> m_opacity_bin_names;		// add by @hira at 2016/12/01
+
+    FileEnableFlag m_file_enable_flag;
 
         // glyph
     int32_t m_number_glyph;
