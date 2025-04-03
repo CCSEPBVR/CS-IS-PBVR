@@ -1963,8 +1963,14 @@ int main( int argc, char** argv )
        
                     int warning_flag = 0;
 
-#ifndef EXTEND_VTK            
-                        warning_flag = 1;
+#ifndef EXTEND_FILE_FORMAT 
+                    warning_flag = 1;
+                    {          
+                        size_t found_pfl = param.m_input_data_base.find(".pfl");
+                        size_t found_pfi = param.m_input_data_base.find(".pfi");
+                        if (found_pfl != std::string::npos) warning_flag = 0;
+                        if (found_pfi != std::string::npos) warning_flag = 0;
+                    }
 #endif
                     std::ifstream fin( param.m_input_data_base, std::ios::in);
                     if (!fin.is_open()) 
@@ -1985,8 +1991,8 @@ int main( int argc, char** argv )
                     if (warning_flag == 2) servMes.m_file_enable_flag = jpv::FileEnableFlag::NoFile ;
                     pts.sendMessage( servMes );
  
-                    //if(warning_flag == 1 || warning_flag == 2) 
-                    if( warning_flag == 2) 
+                    if(warning_flag == 1 || warning_flag == 2) 
+                    //if( warning_flag == 2) 
                     {
                         if ( rank == 0 ) std::cerr << "Error: pfifile doesn't exist" << std::endl;
                         bsz = -1;
@@ -1994,12 +2000,12 @@ int main( int argc, char** argv )
                         MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
 #endif
  
-#ifndef CPU_VER               // 開けなくても停止しないよう変更  予定 
-                        MPI_Finalize();
-#endif
-                        return 0;
+//#ifndef CPU_VER               // 開けなくても停止しないよう変更  予定 
+//                        MPI_Finalize();
+//#endif
+//                        return 0;
                      
-//                        continue;
+                        continue;
                     }
                    
 

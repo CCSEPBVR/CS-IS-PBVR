@@ -115,16 +115,20 @@ void Connect::connectServer()
     {
         client.recvMessage( &m_server_message );
         std::cout << "file_enable_flag =" << static_cast<int>(m_server_message.m_file_enable_flag) << std::endl;
-        if (m_server_message.m_file_enable_flag == jpv::FileEnableFlag::NotEnable_VTK /* && 拡張子が.pfi,pfl以外 */ )
-        {
-            std::cout << "reset !!" << std::endl;
-        }
+        bool file_flag = false;
+        if (m_server_message.m_file_enable_flag == jpv::FileEnableFlag::NotEnable_VTK
+            || m_server_message.m_file_enable_flag == jpv::FileEnableFlag::NoFile ) file_flag = true;
 
-        if (m_server_message.m_file_enable_flag == jpv::FileEnableFlag::NoFile)
+        if (file_flag)
         {
-            std::cout << "reset !!" << std::endl;
+            std::cout << "Find No File!!" << std::endl;
+            m_client_message.m_initialize_parameter = jpv::InitializeParameter::connection_reset;
+            m_client_message.m_message_size = m_client_message.byteSize();
+            client.sendMessage( m_client_message );
+            client.recvMessage( &m_server_message );
+            client.termClient();
+            return;
         }
-
     }
 
     client.recvMessage( &m_server_message );
@@ -886,4 +890,13 @@ void Connect::onConnectButtonClicked()
     {
         qDebug("No option selected!");
     }
+}
+
+void Connect::connection_reset(jpv::ParticleTransferClient& client)
+{
+    m_client_message.m_initialize_parameter = jpv::InitializeParameter::connection_reset;
+    m_client_message.m_message_size = m_client_message.byteSize();
+    client.sendMessage( m_client_message );
+    client.recvMessage( &m_server_message );
+    client.termClient();
 }

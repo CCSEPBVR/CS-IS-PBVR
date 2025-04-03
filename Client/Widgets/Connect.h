@@ -65,6 +65,7 @@ private:
     void onVolumeDataBrowseButtonClicked();
     void onTransferFunctionFileBrowseButtonClicked();
     void onConnectButtonClicked();
+    void connection_reset(jpv::ParticleTransferClient& client );
 };
 
 #endif // CONNECT_H
