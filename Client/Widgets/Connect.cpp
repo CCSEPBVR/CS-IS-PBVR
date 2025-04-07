@@ -116,8 +116,22 @@ void Connect::connectServer()
         client.recvMessage( &m_server_message );
         std::cout << "file_enable_flag =" << static_cast<int>(m_server_message.m_file_enable_flag) << std::endl;
         bool file_flag = false;
-        if (m_server_message.m_file_enable_flag == jpv::FileEnableFlag::NotEnable_VTK
-            || m_server_message.m_file_enable_flag == jpv::FileEnableFlag::NoFile ) file_flag = true;
+        if (m_server_message.m_file_enable_flag == jpv::FileEnableFlag::NotEnable_VTK )
+        {
+            file_flag = true;
+            std::cout << "Not available VTK file. Please check Server setting" << std::endl;
+            QMessageBox::information(this, tr("Not available VTK file."),
+                                     tr("Not available VTK file. Please check Server setting"));
+            //　サーバー側のコンパイル設定を変更するよう促すホップアップが欲しい
+        }
+        if( m_server_message.m_file_enable_flag == jpv::FileEnableFlag::NoFile )
+        {
+            file_flag = true;
+            std::cout << "Not find file. Please check file path" << std::endl;
+            //　パス名を変更するよう促すホップアップが欲しい
+            QMessageBox::information(this, tr("Not available VTK file."),
+                                     tr("Not find file. Please check file path"));
+        }
 
         if (file_flag)
         {
