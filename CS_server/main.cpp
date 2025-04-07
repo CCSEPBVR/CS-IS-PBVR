@@ -1960,24 +1960,28 @@ int main( int argc, char** argv )
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::initial_step ) // change PFI file.
                 {
                     param.m_input_data_base = clntMes.m_input_directory;
-       
-                    int warning_flag = 0;
 
-#ifndef EXTEND_FILE_FORMAT 
-                    warning_flag = 1;
-                    {          
-                        size_t found_pfl = param.m_input_data_base.find(".pfl");
-                        size_t found_pfi = param.m_input_data_base.find(".pfi");
-                        if (found_pfl != std::string::npos) warning_flag = 0;
-                        if (found_pfi != std::string::npos) warning_flag = 0;
-                    }
-#endif
+                    bool open_flag = true; 
                     std::ifstream fin( param.m_input_data_base, std::ios::in);
                     if (!fin.is_open()) 
                     {
                         std::cout << "ファイルを開けませんでした: " << param.m_input_data_base << std::endl;
-                        warning_flag = 2;
+                        open_flag = false;
                     }
+      
+                    bool ExtendFileFormat_flag = true;
+                    bool pfi_flag = true;
+#ifndef EXTEND_FILE_FORMAT 
+                    ExtendFileFormat_flag = false;
+                    
+                    {          
+                        pfi_flag = false;
+                        size_t found_pfl = param.m_input_data_base.find(".pfl");
+                        size_t found_pfi = param.m_input_data_base.find(".pfi");
+                        if (found_pfl != std::string::npos) pfi_flag = true;
+                        if (found_pfi != std::string::npos) pfi_flag = true;
+                    }
+#endif
                     strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
                     // ADD by FEAST 2015.12.24
                     //servMes.m_server_status = 0;
@@ -1986,12 +1990,13 @@ int main( int argc, char** argv )
                     servMes.m_number_glyph = 0 ;
                     servMes.m_flag_send_bins = 1;
                     servMes.m_message_size = servMes.byteSize();
-                    if (warning_flag == 0) servMes.m_file_enable_flag = jpv::FileEnableFlag::Enable_VTK ;
-                    if (warning_flag == 1) servMes.m_file_enable_flag = jpv::FileEnableFlag::NotEnable_VTK;
-                    if (warning_flag == 2) servMes.m_file_enable_flag = jpv::FileEnableFlag::NoFile ;
+                    std::cout << "open_flag = " << open_flag << ", ExtendFileFormat_flag = " << ExtendFileFormat_flag << ", pfi_flag = " << pfi_flag << std::endl; 
+                    if (open_flag == true && pfi_flag == true) servMes.m_file_enable_flag = jpv::FileEnableFlag::Enable_VTK ;
+                    if (open_flag == true && ExtendFileFormat_flag == false && pfi_flag == false) servMes.m_file_enable_flag = jpv::FileEnableFlag::NotEnable_VTK;
+                    if (open_flag == false) servMes.m_file_enable_flag = jpv::FileEnableFlag::NoFile ;
                     pts.sendMessage( servMes );
  
-                    if(warning_flag == 1 || warning_flag == 2) 
+                    if(servMes.m_file_enable_flag == jpv::FileEnableFlag::NotEnable_VTK || servMes.m_file_enable_flag == jpv::FileEnableFlag::NoFile) 
                     //if( warning_flag == 2) 
                     {
                         if ( rank == 0 ) std::cerr << "Error: pfifile doesn't exist" << std::endl;
