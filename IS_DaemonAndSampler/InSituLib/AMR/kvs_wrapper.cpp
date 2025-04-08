@@ -429,12 +429,15 @@ void calculate_histogram( kvs::ValueArray<int>&   th_o_histogram,
                           const kvs::ValueArray<float>& c_max,
                           const float o_scalars[][SIMDW], // 合成値
                           const float c_scalars[][SIMDW],
-                          const int tf_number )
+                          const int tf_number,
+                          const int loop_num )
 {
+   
     //ヒストグラムと最大最小値
     for( int i = 0; i < tf_number; i++ )
     {
-        for( int I = 0; I < SIMDW; I++ )
+        //for( int I = 0; I < SIMDW; I++ )
+        for( int I = 0; I < loop_num; I++ )
         {
             //不透明度のヒストグラム
             float h = (o_scalars[i][I] - o_min[i])/( o_max[i] - o_min[i] )*nbins;
@@ -460,6 +463,7 @@ void calculate_histogram( kvs::ValueArray<int>&   th_o_histogram,
             //色の最大最小値
             th_C_min[i] = th_C_min[i] < c_scalars[i][I] ? th_C_min[i] : c_scalars[i][I];
             th_C_max[i] = th_C_max[i] > c_scalars[i][I] ? th_C_max[i] : c_scalars[i][I];
+
         }
     }
 }
@@ -863,9 +867,11 @@ void generate_particles( const int time_step,
             // "+ 1" means remained loop
             const int outer_loop = (nvertices % SIMDW == 0) ?
                 nvertices / SIMDW : nvertices / SIMDW + 1;
+            const int last_loop_num = nvertices % SIMDW;
 
             for( int J=0; J<outer_loop; J++ )
             {
+                const int loop_num = (J == outer_loop-1) ? last_loop_num : SIMDW; 
                 float X_l[SIMDW], Y_l[SIMDW], Z_l[SIMDW];
                 float X_g[SIMDW], Y_g[SIMDW], Z_g[SIMDW];
                 #pragma ivdep
@@ -894,6 +900,7 @@ void generate_particles( const int time_step,
                     Z_g[I] = z_g;
                 }
 
+
                 th_tfs[thid]->SynthesizedOpacityScalars(
                     interp[thid], X_l, Y_l, Z_l, X_g, Y_g, Z_g, o_scalars );
 
@@ -905,7 +912,7 @@ void generate_particles( const int time_step,
                                      nbins,
                                      o_min, o_max, c_min, c_max,
                                      o_scalars, c_scalars,
-                                     tf_number );
+                                     tf_number, loop_num );
             }
         } // end of Histogram
 
