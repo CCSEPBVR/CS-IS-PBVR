@@ -20,6 +20,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <kvs/extendedfileformat/VtkXmlMultiBlock>
+#include <kvs/extendedfileformat/NumeralSequenceFiles>
+#include <kvs/extendedfileformat/VtkImporter>
 
 namespace
 {
@@ -267,6 +270,125 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
     }
 
     return;
+}
+
+UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filename, const int fileType, const int targetCellType, const int st, const int vl )
+{
+    kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlMultiBlock> time_series( filename );
+
+    int last_time_step = time_series.numberOfFiles() - 1;
+    int time_step = 0;
+    std::unordered_map<int, int> sub_volume_ids;
+
+    for ( auto input_vtm : time_series.eachTimeStep() )
+    {
+        // One-pass to collect information.	
+        if ( time_step == 0 )
+        {
+            for ( auto format : input_vtm.eachBlock() )
+            {
+                if ( auto input_vtu = dynamic_cast<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid*>( format.get() ) )
+                {
+                    for ( auto vtu : input_vtu->eachCellType() )
+                    {
+                        kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> importer( input_vtu );
+                        kvs::UnstructuredVolumeObject* object = &importer;
+                        auto cell_type = object->cellType();
+                        if ( sub_volume_ids.count(cell_type) == 0 ) sub_volume_ids[cell_type] = 0;
+                    }
+                }
+            }
+        }
+
+        if ( time_step != st ) 
+        {
+            ++time_step;
+            continue;
+        }
+
+        for ( auto format : input_vtm.eachBlock() )
+        {
+            if ( auto input_vtu = dynamic_cast<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid*>( format.get() ) )
+            {
+                for ( auto vtu : input_vtu->eachCellType() )
+                {
+                    kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> importer( input_vtu );
+                    kvs::UnstructuredVolumeObject* object = &importer;
+                    auto cell_type = object->cellType();
+
+                    if ( sub_volume_ids[cell_type] != vl ) 
+                    {
+                        ++sub_volume_ids[cell_type];
+                        continue;
+                    }
+
+                    if ( cell_type != targetCellType ) continue;
+
+                    if ( cell_type == kvs::UnstructuredVolumeObject::Tetrahedra  )
+                    {
+                        SuperClass::setCellType(vismodule::UnstructuredVolumeObject::Tetrahedra);
+                    }
+                    else if ( cell_type == kvs::UnstructuredVolumeObject::QuadraticTetrahedra )
+                    {
+                        SuperClass::setCellType(vismodule::UnstructuredVolumeObject::QuadraticTetrahedra);
+                    }
+                    else if ( cell_type == kvs::UnstructuredVolumeObject::Hexahedra )
+                    {
+                        SuperClass::setCellType(vismodule::UnstructuredVolumeObject::Hexahedra);
+                    }
+                    else if ( cell_type == kvs::UnstructuredVolumeObject::QuadraticHexahedra )
+                    {
+                        SuperClass::setCellType(vismodule::UnstructuredVolumeObject::QuadraticHexahedra);
+                    }
+                    else if ( cell_type == kvs::UnstructuredVolumeObject::Pyramid )
+                    {
+                        SuperClass::setCellType(vismodule::UnstructuredVolumeObject::Pyramid);
+                    }
+                    else if ( cell_type == kvs::UnstructuredVolumeObject::Prism )
+                    {
+                        SuperClass::setCellType(vismodule::UnstructuredVolumeObject::Prism);
+                    }
+                    else
+                    {
+                        visModuleMessageError( "Unknown element type." );
+                        SuperClass::setCellType(vismodule::UnstructuredVolumeObject::UnknownCellType);
+                    }
+                    
+                    vismodule::ValueArray<vismodule::UInt32> tmp_connections_array( object->ncells() * SuperClass::cellType() );
+                    for (int i = 0; i < (object->ncells() * SuperClass::cellType()); i++)
+                    {
+                        tmp_connections_array[i] = object->connections()[i];
+                    }
+                    
+                    vismodule::ValueArray<float> tmp_coords_array( object->coords().size() );
+                    for (int i = 0; i < object->coords().size(); i++)
+                    {
+                        tmp_coords_array[i] = object->coords()[i];
+                    }
+                    
+                    vismodule::ValueArray<float> tmp_values_array( object->values().size() );
+                    for (int i = 0; i < object->nnodes(); i++)
+                    {
+                        tmp_values_array[i] = object->values().asValueArray<float>()[i];
+                    }
+                    vismodule::AnyValueArray tmp_any_value_array( tmp_values_array );
+                    
+                    SuperClass::setVeclen( object->veclen() );
+                    SuperClass::setNNodes( object->nnodes() );
+                    SuperClass::setNCells( object->ncells() );
+                    SuperClass::setCoords( tmp_coords_array );
+                    SuperClass::setConnections( tmp_connections_array );
+                    SuperClass::setValues( tmp_any_value_array );
+                    SuperClass::updateMinMaxCoords();
+                    const double min_value = SuperClass::minValue();
+                    const double max_value = SuperClass::maxValue();
+                    SuperClass::setMinMaxValues( min_value, max_value );
+                    return;
+                }
+            }
+        }
+        ++time_step;
+    }
 }
 
 /*==========================================================================*/

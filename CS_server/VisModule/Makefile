@@ -13,9 +13,27 @@ include ./Makefile.def
 #=============================================================================
 #  INCLUDE_PATH, LIBRARY_PATH, LINK_LIBRARY, INSTALL_DIR.
 #=============================================================================
-INCLUDE_PATH := -I. -I../FunctionParser -I../Common
-LIBRARY_PATH := -L../Common -L../FunctionParser
-LINK_LIBRARY := -lpthread -lpbvrCommon -lpbvrFunc
+INCLUDE_PATH := -I. -I../FunctionParser -I../Common -I$(KVS_DIR)/include -I$(VTK_INCLUDE_PATH)
+LIBRARY_PATH := -L../Common -L../FunctionParser -L$(KVS_DIR)/lib -L$(VTK_LIB_PATH)
+LINK_LIBRARY := -lpthread -lpbvrCommon -lpbvrFunc -lkvsCore -lkvsSupportExtendedFileFormat -ldl -lpthread \
+-lvtksys-$(VTK_VERSION) \
+-lvtkCommonCore-$(VTK_VERSION) \
+-lvtkCommonExecutionModel-$(VTK_VERSION) \
+-lvtkCommonDataModel-$(VTK_VERSION) \
+-lvtkFiltersCore-$(VTK_VERSION) \
+-lvtkFiltersExtraction-$(VTK_VERSION) \
+-lvtkFiltersGeneral-$(VTK_VERSION) \
+-lvtkFiltersGeometry-$(VTK_VERSION) \
+-lvtkFiltersParallel-$(VTK_VERSION) \
+-lvtkIOCore-$(VTK_VERSION) \
+-lvtkIOGeometry-$(VTK_VERSION) \
+-lvtkIOCGNSReader-$(VTK_VERSION) \
+-lvtkIOEnSight-$(VTK_VERSION) \
+-lvtkIOParallel-$(VTK_VERSION) \
+-lvtkIOLegacy-$(VTK_VERSION) \
+-lvtkIOXML-$(VTK_VERSION) \
+-lvtkIOXMLParser-$(VTK_VERSION) \
+
 INSTALL_DIR  := ../../../$(VIS_MODULE_DIR_NAME)
 
 

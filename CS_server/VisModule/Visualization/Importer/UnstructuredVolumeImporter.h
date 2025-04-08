@@ -55,6 +55,8 @@ public:
 
     UnstructuredVolumeImporter( const std::string& filename, const int fileType, const int st, const int vl );
 
+    UnstructuredVolumeImporter( const std::string& filename, const int fileType, const int targetCellType, const int st, const int vl );
+
     virtual ~UnstructuredVolumeImporter();
 
 public:

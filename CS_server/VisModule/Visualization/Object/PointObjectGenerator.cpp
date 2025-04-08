@@ -106,13 +106,29 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
 {
     VIS_MODULE_TIMER_STA( 260 );
     delete m_object;
+
+    size_t found_kvsml = param.m_input_data_base.find(".kvsml");
+    size_t found_vtm = param.m_input_data_base.find(".vtm");
+
     vismodule::UnstructuredVolumeObject* volume;
-    volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );
 
-    vismodule::File ifpx( m_mvp->m_file_path );
-    std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
+    if ( found_kvsml != std::string::npos )
+    {
+        volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );
+    
+        vismodule::File ifpx( m_mvp->m_file_path );
+        std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
+    
+        volume = new vismodule::UnstructuredVolumeImporter( path_base, m_mvp->m_file_type, st, vl );
+    }
+    else if ( found_vtm != std::string::npos )
+    {
+        std::string path_base = m_mvp->m_file_path;
+        int file_type = m_mvp->m_file_type;
+        int cell_type = m_mvp->m_elem_type;
+        volume = new vismodule::UnstructuredVolumeImporter( path_base, file_type, cell_type, st, vl );
+    }
 
-    volume = new vismodule::UnstructuredVolumeImporter( path_base, m_mvp->m_file_type, st, vl );
     if ( volume )
     {
         volume->setCoordSynthesizerStrings( m_coord_synthesizer_strings );

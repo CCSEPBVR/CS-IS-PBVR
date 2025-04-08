@@ -449,6 +449,17 @@ inline vismodule::VolumeObjectBase* CreateVolumeData( const Argument& param,
 
         return volume;
     }
+    else if ( mvp.m_file_type == 3 )
+    {
+        std::string path_base = mvp.m_file_path;
+        int file_type = mvp.m_file_type;
+        int cell_type = mvp.m_elem_type;
+        vismodule::VolumeObjectBase* volume = new vismodule::UnstructuredVolumeImporter( path_base, file_type, cell_type, steps, subvols );
+        volume->setMinMaxValues( mvp.m_min_value, mvp.m_max_value );
+        volume->setMinMaxObjectCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
+        volume->setMinMaxExternalCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
+        return volume;
+    }
     else
     {
         std::stringstream suffix;
@@ -1963,11 +1974,13 @@ int main( int argc, char** argv )
 
                     bool open_flag = true; 
                     std::ifstream fin( param.m_input_data_base, std::ios::in);
+                    /*
                     if (!fin.is_open()) 
                     {
                         std::cout << "ファイルを開けませんでした: " << param.m_input_data_base << std::endl;
                         open_flag = false;
                     }
+                    */
       
                     bool ExtendFileFormat_flag = true;
                     bool pfi_flag = true;
@@ -1990,6 +2003,7 @@ int main( int argc, char** argv )
                     servMes.m_number_glyph = 0 ;
                     servMes.m_flag_send_bins = 1;
                     servMes.m_message_size = servMes.byteSize();
+                    servMes.m_transfer_function_count = 0;
                     std::cout << "open_flag = " << open_flag << ", ExtendFileFormat_flag = " << ExtendFileFormat_flag << ", pfi_flag = " << pfi_flag << std::endl; 
                     if (open_flag == true && pfi_flag == true) servMes.m_file_enable_flag = jpv::FileEnableFlag::Enable_VTK ;
                     if (open_flag == true && ExtendFileFormat_flag == false && pfi_flag == false) servMes.m_file_enable_flag = jpv::FileEnableFlag::NotEnable_VTK;
@@ -2029,12 +2043,12 @@ int main( int argc, char** argv )
                     }
 #else
                     // MultiVolumePropertyクラスに情報を格納する
-                    // .pflファイルの場合はこれまで通り
-                    // .pfiファイルの場合は中止する
-                    // 変換前ファイルの場合はFileFormatReaderに渡す
+                    // .pflファイル,.pfiファイルはこれまで通り
+                    // 変換前ファイルの場合にも対応できるように拡張する
                     size_t found_pfl = param.m_input_data_base.find(".pfl");
                     size_t found_pfi = param.m_input_data_base.find(".pfi");
-                    if ( found_pfl != std::string::npos )
+                    size_t found_vtm = param.m_input_data_base.find(".vtm");
+		            if ( found_pfl != std::string::npos )
                     {
                         std::string pflfile = param.m_input_data_base;
                         std::cout << "pflファイルが選択されました" << std::endl;
@@ -2054,12 +2068,16 @@ int main( int argc, char** argv )
                             mvpl.loadPFL( pfifile );
                         }
                     }
+                    else if ( found_vtm != std::string::npos )
+                    {
+                        std::string vtmfile = param.m_input_data_base;
+                        std::cout << ".vtmファイルが選択されました" << std::endl;
+			            mvpl.loadVtm( vtmfile );
+                    }		    
                     else
                     {
                         std::string pre_conversion_file_path = param.m_input_data_base;
-                        std::cout << "変換前ファイルが選択されました" << std::endl;
-                        // 入力は変換前ファイルパス
-                        // 出力はMultiVolumePropertyListクラス   
+                        std::cout << "このファイルは現在対応していません" << std::endl;
                     }
 #endif
                     if ( mvpl.m_list.size() > 0 )
@@ -2269,21 +2287,40 @@ int main( int argc, char** argv )
                             fidx = mvpl.getFileIndex( vl, &xvl );
                             MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
+                            size_t found_pfi = mvp.m_file_path.find(".pfi");
+                            size_t found_vtm = mvp.m_file_path.find(".vtm");
+                            
+                            if ( found_pfi != std::string::npos )
+                            {
+                                std::stringstream suffix;
+                                suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
+                                       << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
+                                       << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
+                                vismodule::File ifpx( mvp.m_file_path );
+                                param.m_input_data = ifpx.pathName() + ifpx.Separator()
+                                    + ifpx.baseName() + suffix.str() + ".kvsml";
+                            }
+                            else if ( found_vtm != std::string::npos )
+                            {
+                                param.m_input_data = mvp.m_file_path;
+                            }
+                            else
+                            {
+                                std::cout << "このファイルは現在対応していません" << std::endl;
+                            }
+
                             vismodule::PointObject* tmp_obj = NULL;
-                            std::stringstream suffix;
-                            suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
-                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
-                            vismodule::File ifpx( mvpl.m_list[fidx].m_file_path );
-                            param.m_input_data = ifpx.pathName() + ifpx.Separator()
-                                + ifpx.baseName() + suffix.str() + ".kvsml";
-                        param.m_subvolume_id = xvl ;
+                            param.m_subvolume_id = xvl;
                             int timeStep = 1;
                             try
                             {
                                 point_creator_lst[fidx].setCoordSynthStr( clntMes.m_x_synthesis,
                                         clntMes.m_y_synthesis, clntMes.m_z_synthesis );
                                 if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+                                {
+                                    tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
+                                }
+                                else if ( mvp.m_file_type == 3 )
                                 {
                                     tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
                                 }
@@ -2437,6 +2474,33 @@ int main( int argc, char** argv )
                     servMes.m_color_transfer_function_synthesis = "C1";
                     transfunc_creator.setTransferFunction(&servMes, vr); 
 
+#if 1
+                    std::cout << "\n================== client parameter start ==================" << std::endl;
+                    std::cout << "servMes.m_number_particle:" << servMes.m_number_particle << std::endl;
+                    std::cout << "servMes.m_number_glyph:" << servMes.m_number_glyph << std::endl;
+                    std::cout << "servMes.m_number_volume_divide:" << servMes.m_number_volume_divide << std::endl;
+                    std::cout << "servMes.m_time_step:" << servMes.m_time_step << std::endl;
+                    std::cout << "servMes.m_start_step:" << servMes.m_start_step << std::endl;
+                    std::cout << "servMes.m_last_step:" << servMes.m_last_step << std::endl;
+                    std::cout << "servMes.m_number_step:" << servMes.m_number_step << std::endl;
+                    std::cout << "servMes.m_min_object_coord[0]:" << servMes.m_min_object_coord[0] << std::endl;
+                    std::cout << "servMes.m_min_object_coord[1]:" << servMes.m_min_object_coord[1] << std::endl;
+                    std::cout << "servMes.m_min_object_coord[2]:" << servMes.m_min_object_coord[2] << std::endl;
+                    std::cout << "servMes.m_max_object_coord[0]:" << servMes.m_max_object_coord[0] << std::endl;
+                    std::cout << "servMes.m_max_object_coord[1]:" << servMes.m_max_object_coord[1] << std::endl;
+                    std::cout << "servMes.m_max_object_coord[2]:" << servMes.m_max_object_coord[2] << std::endl;
+                    std::cout << "servMes.m_min_value:" << servMes.m_min_value << std::endl;
+                    std::cout << "servMes.m_max_value:" << servMes.m_max_value << std::endl;
+                    std::cout << "servMes.m_number_nodes:" << servMes.m_number_nodes << std::endl;
+                    std::cout << "servMes.m_number_elements:" << servMes.m_number_elements << std::endl;
+                    std::cout << "servMes.m_element_type:" << servMes.m_element_type << std::endl;
+                    std::cout << "servMes.m_file_type:" << servMes.m_file_type << std::endl;
+                    std::cout << "servMes.m_number_ingredients:" << servMes.m_number_ingredients << std::endl;
+                    std::cout << "servMes.m_opacity_transfer_function_synthesis:" << servMes.m_opacity_transfer_function_synthesis << std::endl;
+                    std::cout << "servMes.m_color_transfer_function_synthesis:" << servMes.m_color_transfer_function_synthesis << std::endl;
+                    std::cout << "servMes.m_transfer_function.size():" << servMes.m_transfer_function.size() << std::endl;
+                    std::cout << "================== client parameter end ==================\n" << std::endl;
+#endif
 
                     servMes.m_flag_send_bins = 1;
                     servMes.m_subpixel_level = param.m_subpixel_level;
@@ -2673,15 +2737,30 @@ int main( int argc, char** argv )
                             fidx = mvpl.getFileIndex( vl, &xvl );
                             MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
-                            point_creator_lst[fidx].setFilterInfo( mvp );
+                            size_t found_pfi = mvp.m_file_path.find(".pfi");
+                            size_t found_vtm = mvp.m_file_path.find(".vtm");
+                            
+                            if ( found_pfi != std::string::npos )
+                            {
+                                std::stringstream suffix;
+                                suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
+                                       << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
+                                       << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
+                                vismodule::File ifpx( mvp.m_file_path );
+                                param.m_input_data = ifpx.pathName() + ifpx.Separator()
+                                    + ifpx.baseName() + suffix.str() + ".kvsml";
+                            }
+                            else if ( found_vtm != std::string::npos )
+                            {
+                                param.m_input_data = mvp.m_file_path;
+                            }
+                            else
+                            {
+                                std::cout << "このファイルは現在対応していません" << std::endl;
+                            }
+
                             vismodule::PointObject* tmp_obj = NULL;
-                            std::stringstream suffix;
-                            suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
-                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
-                            vismodule::File ifpx( mvpl.m_list[fidx].m_file_path );
-                            param.m_input_data = ifpx.pathName() + ifpx.Separator()
-                                                 + ifpx.baseName() + suffix.str() + ".kvsml";
+                            point_creator_lst[fidx].setFilterInfo( mvp );
                             param.m_subvolume_id = xvl ;
                             int timeStep = 1;
                             servMes.m_flag_send_bins = 0;
@@ -2692,6 +2771,10 @@ int main( int argc, char** argv )
 //                                point_creator_lst[fidx].setCoordSynthTkn( clntMes.x_synthesis_token,
 //                                                                          clntMes.y_synthesis_token, clntMes.z_synthesis_token );
                                 if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+                                {
+                                    tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
+                                }
+                                else if ( mvp.m_file_type == 3 )
                                 {
                                     tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
                                 }
