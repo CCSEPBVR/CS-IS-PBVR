@@ -449,6 +449,7 @@ inline vismodule::VolumeObjectBase* CreateVolumeData( const Argument& param,
 
         return volume;
     }
+#ifdef EXTEND_FILE_FORMAT 
     else if ( mvp.m_file_type == 3 )
     {
         std::string path_base = mvp.m_file_path;
@@ -460,6 +461,7 @@ inline vismodule::VolumeObjectBase* CreateVolumeData( const Argument& param,
         volume->setMinMaxExternalCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
         return volume;
     }
+#endif
     else
     {
         std::stringstream suffix;
@@ -2068,12 +2070,14 @@ int main( int argc, char** argv )
                             mvpl.loadPFL( pfifile );
                         }
                     }
+#ifdef EXTEND_FILE_FORMAT 
                     else if ( found_vtm != std::string::npos )
                     {
                         std::string vtmfile = param.m_input_data_base;
                         std::cout << ".vtmファイルが選択されました" << std::endl;
 			            mvpl.loadVtm( vtmfile );
                     }		    
+#endif    
                     else
                     {
                         std::string pre_conversion_file_path = param.m_input_data_base;
@@ -2300,10 +2304,12 @@ int main( int argc, char** argv )
                                 param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                     + ifpx.baseName() + suffix.str() + ".kvsml";
                             }
+#ifdef EXTEND_FILE_FORMAT 
                             else if ( found_vtm != std::string::npos )
                             {
                                 param.m_input_data = mvp.m_file_path;
                             }
+#endif
                             else
                             {
                                 std::cout << "このファイルは現在対応していません" << std::endl;
@@ -2750,10 +2756,12 @@ int main( int argc, char** argv )
                                 param.m_input_data = ifpx.pathName() + ifpx.Separator()
                                     + ifpx.baseName() + suffix.str() + ".kvsml";
                             }
+#ifdef EXTEND_FILE_FORMAT 
                             else if ( found_vtm != std::string::npos )
                             {
                                 param.m_input_data = mvp.m_file_path;
                             }
+#endif
                             else
                             {
                                 std::cout << "このファイルは現在対応していません" << std::endl;

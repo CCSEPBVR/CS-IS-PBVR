@@ -57,7 +57,9 @@ public:
     ~MultiVolumePropertyList();
 
     int loadPFL( const std::string& filename );
+#ifdef EXTEND_FILE_FORMAT 
     int loadVtm( const std::string& filename );
+#endif
     int getFileIndex( const int vl, int* xvl ) const;
     void cropTimeStep( const int s, const int e );
 

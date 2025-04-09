@@ -2,15 +2,17 @@
 #include <fstream>
 #include <algorithm>
 
-#include <kvs/extendedfileformat/VtkXmlMultiBlock>
-#include <kvs/extendedfileformat/NumeralSequenceFiles>
-#include <kvs/extendedfileformat/VtkXmlUnstructuredGrid>
-#include <kvs/extendedfileformat/VtkImporter>
-
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/File>
 #include <vismodule/endian2>
 #include <vismodule/NameListFile>
+
+#ifdef EXTEND_FILE_FORMAT 
+#include <kvs/extendedfileformat/VtkXmlMultiBlock>
+#include <kvs/extendedfileformat/NumeralSequenceFiles>
+#include <kvs/extendedfileformat/VtkXmlUnstructuredGrid>
+#include <kvs/extendedfileformat/VtkImporter>
+#endif
 
 //--------------------------------------------------------------------------
 
@@ -364,6 +366,7 @@ int MultiVolumePropertyList::loadPFL( const std::string& filename )
     return m_list.size();
 }
 
+#ifdef EXTEND_FILE_FORMAT
 int MultiVolumePropertyList::loadVtm( const std::string& filename )
 {
     kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlMultiBlock> time_series( filename );
@@ -592,6 +595,7 @@ int MultiVolumePropertyList::loadVtm( const std::string& filename )
 
     return m_list.size();
 }
+#endif
 
 void MultiVolumePropertyList::calculate_ingredient_min_max( const MultiVolumeProperty &mvp, 
                                                          std::vector<MultiVolumeProperty::IngredientsMinMax> *total_ingredient )

@@ -20,9 +20,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef EXTEND_FILE_FORMAT 
 #include <kvs/extendedfileformat/VtkXmlMultiBlock>
 #include <kvs/extendedfileformat/NumeralSequenceFiles>
 #include <kvs/extendedfileformat/VtkImporter>
+#endif
 
 namespace
 {
@@ -272,6 +275,7 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
     return;
 }
 
+#ifdef EXTEND_FILE_FORMAT 
 UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filename, const int fileType, const int targetCellType, const int st, const int vl )
 {
     kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlMultiBlock> time_series( filename );
@@ -390,6 +394,7 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
         ++time_step;
     }
 }
+#endif
 
 /*==========================================================================*/
 /**

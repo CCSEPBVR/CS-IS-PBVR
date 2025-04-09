@@ -121,6 +121,7 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
     
         volume = new vismodule::UnstructuredVolumeImporter( path_base, m_mvp->m_file_type, st, vl );
     }
+#ifdef EXTEND_FILE_FORMAT
     else if ( found_vtm != std::string::npos )
     {
         std::string path_base = m_mvp->m_file_path;
@@ -128,6 +129,7 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
         int cell_type = m_mvp->m_elem_type;
         volume = new vismodule::UnstructuredVolumeImporter( path_base, file_type, cell_type, st, vl );
     }
+#endif
 
     if ( volume )
     {

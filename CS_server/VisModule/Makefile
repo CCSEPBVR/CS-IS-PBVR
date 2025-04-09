@@ -13,9 +13,16 @@ include ./Makefile.def
 #=============================================================================
 #  INCLUDE_PATH, LIBRARY_PATH, LINK_LIBRARY, INSTALL_DIR.
 #=============================================================================
-INCLUDE_PATH := -I. -I../FunctionParser -I../Common -I$(KVS_DIR)/include -I$(VTK_INCLUDE_PATH)
-LIBRARY_PATH := -L../Common -L../FunctionParser -L$(KVS_DIR)/lib -L$(VTK_LIB_PATH)
-LINK_LIBRARY := -lpthread -lpbvrCommon -lpbvrFunc -lkvsCore -lkvsSupportExtendedFileFormat -ldl -lpthread \
+INCLUDE_PATH := -I. -I../FunctionParser -I../Common
+LIBRARY_PATH := -L../Common -L../FunctionParser
+LINK_LIBRARY := -lpthread -lpbvrCommon -lpbvrFunc
+
+ifdef KVS_DIR
+include $(KVS_DIR)/kvs.conf
+ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
+INCLUDE_PATH += -I$(KVS_DIR)/include -I$(VTK_INCLUDE_PATH)
+LIBRARY_PATH += -L$(KVS_DIR)/lib -L$(VTK_LIB_PATH)
+LINK_LIBRARY += -lkvsCore -lkvsSupportExtendedFileFormat \
 -lvtksys-$(VTK_VERSION) \
 -lvtkCommonCore-$(VTK_VERSION) \
 -lvtkCommonExecutionModel-$(VTK_VERSION) \
@@ -32,7 +39,9 @@ LINK_LIBRARY := -lpthread -lpbvrCommon -lpbvrFunc -lkvsCore -lkvsSupportExtended
 -lvtkIOParallel-$(VTK_VERSION) \
 -lvtkIOLegacy-$(VTK_VERSION) \
 -lvtkIOXML-$(VTK_VERSION) \
--lvtkIOXMLParser-$(VTK_VERSION) \
+-lvtkIOXMLParser-$(VTK_VERSION)
+endif
+endif
 
 INSTALL_DIR  := ../../../$(VIS_MODULE_DIR_NAME)
 
