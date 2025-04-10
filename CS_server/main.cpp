@@ -449,13 +449,21 @@ inline vismodule::VolumeObjectBase* CreateVolumeData( const Argument& param,
 
         return volume;
     }
-#ifdef EXTEND_FILE_FORMAT 
+#ifdef EXTEND_FILE_FORMAT
+    // structured
     else if ( mvp.m_file_type == 3 )
     {
-        std::string path_base = mvp.m_file_path;
-        int file_type = mvp.m_file_type;
-        int cell_type = mvp.m_elem_type;
-        vismodule::VolumeObjectBase* volume = new vismodule::UnstructuredVolumeImporter( path_base, file_type, cell_type, steps, subvols );
+        std::cout << "subvols:" << subvols << std::endl;
+        vismodule::VolumeObjectBase* volume = new vismodule::StructuredVolumeImporter( mvp.m_file_path, steps, subvols );
+        volume->setMinMaxValues( mvp.m_min_value, mvp.m_max_value );
+        volume->setMinMaxObjectCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
+        volume->setMinMaxExternalCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
+        return volume;
+    }
+    // unstructured
+    else if ( mvp.m_file_type == 4 )
+    {
+        vismodule::VolumeObjectBase* volume = new vismodule::UnstructuredVolumeImporter( mvp.m_file_path, mvp.m_file_type, mvp.m_elem_type, steps, subvols );
         volume->setMinMaxValues( mvp.m_min_value, mvp.m_max_value );
         volume->setMinMaxObjectCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
         volume->setMinMaxExternalCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
@@ -1075,7 +1083,7 @@ int main( int argc, char** argv )
                     {
                         std::string vtmfile = param.m_input_data_base;
                         std::cout << ".vtmファイルが選択されました" << std::endl;
-                        mvpl.loadVtm( vtmfile );
+                        mvpl.loadSeriesVtm( vtmfile );
                     }
 #endif
                     else
@@ -1217,7 +1225,7 @@ int main( int argc, char** argv )
                             {
                                 object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
                             }
-                            else if ( mvp.m_file_type == 3 )
+                            else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                             {
                                 object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
                             }
@@ -1359,7 +1367,7 @@ int main( int argc, char** argv )
                     {
                         std::string vtmfile = param.m_input_data_base;
                         std::cout << ".vtmファイルが選択されました" << std::endl;
-                        mvpl.loadVtm( vtmfile );
+                        mvpl.loadSeriesVtm( vtmfile );
                     }
                     #endif
                     else
@@ -1492,7 +1500,7 @@ int main( int argc, char** argv )
                                 object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
 
                             }
-                            else if ( mvp.m_file_type == 3 )
+                            else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                             {
                                 object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
                             }                            
@@ -2149,7 +2157,7 @@ int main( int argc, char** argv )
                     {
                         std::string vtmfile = param.m_input_data_base;
                         std::cout << ".vtmファイルが選択されました" << std::endl;
-			            mvpl.loadVtm( vtmfile );
+			            mvpl.loadSeriesVtm( vtmfile );
                     }		    
 #endif    
                     else
@@ -2400,7 +2408,7 @@ int main( int argc, char** argv )
                                 {
                                     tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
                                 }
-                                else if ( mvp.m_file_type == 3 )
+                                else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                                 {
                                     tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
                                 }
@@ -2856,7 +2864,7 @@ int main( int argc, char** argv )
                                 {
                                     tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
                                 }
-                                else if ( mvp.m_file_type == 3 )
+                                else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                                 {
                                     tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
                                 }

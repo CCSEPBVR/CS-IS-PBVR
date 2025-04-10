@@ -12,6 +12,7 @@
 #include <kvs/extendedfileformat/NumeralSequenceFiles>
 #include <kvs/extendedfileformat/VtkXmlUnstructuredGrid>
 #include <kvs/extendedfileformat/VtkImporter>
+#include <kvs/extendedfileformat/VtkXmlImageData>
 #endif
 
 //--------------------------------------------------------------------------
@@ -367,7 +368,7 @@ int MultiVolumePropertyList::loadPFL( const std::string& filename )
 }
 
 #ifdef EXTEND_FILE_FORMAT
-int MultiVolumePropertyList::loadVtm( const std::string& filename )
+int MultiVolumePropertyList::loadSeriesVtm( const std::string& filename )
 {
     kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlMultiBlock> time_series( filename );
     int last_time_step = time_series.numberOfFiles() - 1;
@@ -383,6 +384,8 @@ int MultiVolumePropertyList::loadVtm( const std::string& filename )
     std::unordered_map<int, std::unordered_map<int, kvs::Vec3>> max_object_coords;
     std::unordered_map<int, float> min_values;
     std::unordered_map<int, float> max_values;
+    bool is_unstructured = false;
+    bool is_structured = false;
     
     m_list.clear();
     m_total_min_subvolume_coord.clear();
@@ -396,6 +399,7 @@ int MultiVolumePropertyList::loadVtm( const std::string& filename )
             {
                 if ( auto input_vtu = dynamic_cast<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid*>( format.get() ) )
                 {
+                    is_unstructured = true;
                     for ( auto vtu : input_vtu->eachCellType() )
                     {
                         kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> importer( input_vtu );
@@ -406,7 +410,22 @@ int MultiVolumePropertyList::loadVtm( const std::string& filename )
                         : ( sub_volume_counts[cell_type] + 1 );
                     }
                 }
+                else if ( auto input_vti = dynamic_cast<kvs::ExtendedFileFormat::VtkXmlImageData*>( format.get() ) )
+                {
+                    is_structured = true;
+                    kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlImageData> importer( input_vti );
+                    kvs::StructuredVolumeObject* object = &importer;
+                    auto cell_type = 7;
+                    sub_volume_counts[cell_type] = ( sub_volume_counts.count( cell_type ) == 0 )
+                    ? 1
+                    : ( sub_volume_counts[cell_type] + 1 );                    
+                }
             }
+        }
+
+        if ( is_structured && is_unstructured )
+        {
+            std::cout << "ERROR:Mixed StructuredGrid and UnstructuredGrid files are not supported." << std::endl;
         }
         
         // Two-pass
@@ -473,6 +492,58 @@ int MultiVolumePropertyList::loadVtm( const std::string& filename )
 		            ++sub_volume_ids[cell_type];
                 }
             }
+            else if ( auto input_vti = dynamic_cast<kvs::ExtendedFileFormat::VtkXmlImageData*>( format.get() ) )
+            {
+                int sub_volume_id;
+                kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlImageData> importer( input_vti );
+                kvs::StructuredVolumeObject* object = &importer;
+
+                auto cell_type = 7;
+
+                if ( number_of_nodes.count(cell_type) == 0 )
+                {
+                    number_of_nodes[cell_type] = object->nnodes();
+                    number_of_elements[cell_type] = 0;
+                    number_of_ingredients[cell_type] = object->veclen();
+                    min_external_coords[cell_type] = object->minExternalCoord();
+                    max_external_coords[cell_type] = object->maxExternalCoord();
+                    min_values[cell_type] = object->minValue();
+                    max_values[cell_type] = object->maxValue();
+                }
+                else
+                {
+                    min_external_coords[cell_type][0] = std::min(min_external_coords[cell_type][0], object->minExternalCoord()[0]);
+                    min_external_coords[cell_type][1] = std::min(min_external_coords[cell_type][1], object->minExternalCoord()[1]);
+                    min_external_coords[cell_type][2] = std::min(min_external_coords[cell_type][2], object->minExternalCoord()[2]);
+                    max_external_coords[cell_type][0] = std::max(max_external_coords[cell_type][0], object->maxExternalCoord()[0]);
+                    max_external_coords[cell_type][1] = std::max(max_external_coords[cell_type][1], object->maxExternalCoord()[1]);
+                    max_external_coords[cell_type][2] = std::max(max_external_coords[cell_type][2], object->maxExternalCoord()[2]);
+                    min_values[cell_type] = std::min(min_values[cell_type], float(object->minValue()));
+                    max_values[cell_type] = std::max(max_values[cell_type], float(object->maxValue()));
+                }
+
+                sub_volume_id = sub_volume_ids[cell_type];
+
+                if ( min_object_coords[cell_type].count(sub_volume_ids[cell_type]) == 0 )
+                {
+                    min_object_coords[cell_type][sub_volume_id][0] = object->minObjectCoord()[0];
+                    min_object_coords[cell_type][sub_volume_id][1] = object->minObjectCoord()[1];
+                    min_object_coords[cell_type][sub_volume_id][2] = object->minObjectCoord()[2];
+                    max_object_coords[cell_type][sub_volume_id][0] = object->maxObjectCoord()[0];
+                    max_object_coords[cell_type][sub_volume_id][1] = object->maxObjectCoord()[1];
+                    max_object_coords[cell_type][sub_volume_id][2] = object->maxObjectCoord()[2];
+                }
+                else
+                {
+                    min_object_coords[cell_type][sub_volume_id][0] = std::min(min_object_coords[cell_type][sub_volume_id][0], object->minObjectCoord()[0]);
+                    min_object_coords[cell_type][sub_volume_id][1] = std::min(min_object_coords[cell_type][sub_volume_id][1], object->minObjectCoord()[1]);
+                    min_object_coords[cell_type][sub_volume_id][2] = std::min(min_object_coords[cell_type][sub_volume_id][2], object->minObjectCoord()[2]);
+                    max_object_coords[cell_type][sub_volume_id][0] = std::max(max_object_coords[cell_type][sub_volume_id][0], object->maxObjectCoord()[0]);
+                    max_object_coords[cell_type][sub_volume_id][1] = std::max(max_object_coords[cell_type][sub_volume_id][1], object->maxObjectCoord()[1]);
+                    max_object_coords[cell_type][sub_volume_id][2] = std::max(max_object_coords[cell_type][sub_volume_id][2], object->maxObjectCoord()[2]);
+                }
+                ++sub_volume_ids[cell_type];
+            }
         }
         ++time_step;
     }
@@ -481,11 +552,15 @@ int MultiVolumePropertyList::loadVtm( const std::string& filename )
     {
         MultiVolumeProperty mvp;
         auto cell_type = e.first;
+        int file_type = 0;
+
+        if ( is_structured ) file_type = 3; 
+        if ( is_unstructured ) file_type = 4;
 
         mvp.m_number_nodes = number_of_nodes[cell_type];
         mvp.m_number_elements = number_of_elements[cell_type];
         mvp.m_elem_type = cell_type;
-        mvp.m_file_type = 3;
+        mvp.m_file_type = file_type;
         mvp.m_number_files = sub_volume_counts[cell_type] * (last_time_step + 1);
         mvp.m_number_ingredients = number_of_ingredients[cell_type];
         mvp.m_start_step = 0;

@@ -110,7 +110,7 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
     size_t found_kvsml = param.m_input_data_base.find(".kvsml");
     size_t found_vtm = param.m_input_data_base.find(".vtm");
 
-    vismodule::UnstructuredVolumeObject* volume;
+    vismodule::VolumeObjectBase* volume = nullptr;
 
     if ( found_kvsml != std::string::npos )
     {
@@ -127,7 +127,17 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
         std::string path_base = m_mvp->m_file_path;
         int file_type = m_mvp->m_file_type;
         int cell_type = m_mvp->m_elem_type;
-        volume = new vismodule::UnstructuredVolumeImporter( path_base, file_type, cell_type, st, vl );
+
+        // structured
+        if( file_type == 3 )
+        {
+            volume = new vismodule::StructuredVolumeImporter( path_base, st, vl );
+        }
+        // unstructured
+        if( file_type == 4 )
+        {
+            volume = new vismodule::UnstructuredVolumeImporter( path_base, file_type, cell_type, st, vl );
+        }
     }
 #endif
 

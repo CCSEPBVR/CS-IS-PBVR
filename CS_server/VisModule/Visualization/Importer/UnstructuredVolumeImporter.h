@@ -24,6 +24,9 @@
 #include <vismodule/AVSUcd>
 #include <vismodule/AVSField>
 
+#ifdef EXTEND_FILE_FORMAT 
+#include <kvs/extendedfileformat/VtkXmlMultiBlock>
+#endif
 
 namespace vismodule
 {
@@ -76,6 +79,9 @@ private:
     void import( const vismodule::AggregateTypeSubvolume& gs );
 
     void import( const vismodule::StepAggregateTypeSubvolume& gt );
+#ifdef EXTEND_FILE_FORMAT 
+    void import( const kvs::ExtendedFileFormat::VtkXmlMultiBlock& vtm , const int targetCellType, const int vl );
+#endif
 };
 
 } // end of namespace vismodule
