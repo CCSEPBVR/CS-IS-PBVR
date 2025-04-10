@@ -27,7 +27,7 @@
 //#include "KVSMLObjectPointMPIWriter.h"
 #include <vismodule/JobDispatcher>
 #ifndef CPU_VER
-#include "JobCollector.h"
+#include <vismodule/JobCollector>
 #endif
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/TransferFunctionProperty>
@@ -1032,41 +1032,58 @@ int main( int argc, char** argv )
                     param.m_particle_limit = clntMes.m_particle_limit;
                     param.m_particle_density = clntMes.m_particle_density;
 
-                    std::string pfifile, pflfile;
-                    if ( param.m_input_data_base.substr( param.m_input_data_base.size() - 3 ) == "pfl" )
-                    {
-                        pflfile = param.m_input_data_base;
-                        param.m_input_data_base = pflfile.substr( 0, pflfile.size() - 4 );
-                        vismodule::File pfl( pflfile );
-                        if ( pfl.isExisted() )
-                        {
-                            mvpl.loadPFL( pflfile );
-                        }
-                    }
-                    else
-                    {
 #if 0
-                        pfifile = param.m_input_data_base + ".pfi";
-                        vismodule::File pfi( pfifile );
-                        pflfile = param.m_input_data_base + ".pfl";
+                    std::string pfifile, pflfile;
+                    pfifile = param.m_input_data_base + ".pfi";
+                    vismodule::File pfi( pfifile );
+                    pflfile = param.m_input_data_base + ".pfl";
+                    vismodule::File pfl( pflfile );
+                    if ( pfl.isExisted() )
+                    {
+                        mvpl.loadPFL( pflfile );
+                    }
+                    else if ( pfi.isExisted() )
+                    {
+                        mvpl.loadPFL( pfifile );
+                    }
+#else
+                    size_t found_pfl = param.m_input_data_base.find(".pfl");
+                    size_t found_pfi = param.m_input_data_base.find(".pfi");
+                    size_t found_vtm = param.m_input_data_base.find(".vtm");
+                    if ( found_pfl != std::string::npos )
+                    {
+                        std::string pflfile = param.m_input_data_base;
+                        std::cout << "pflファイルが選択されました" << std::endl;
                         vismodule::File pfl( pflfile );
                         if ( pfl.isExisted() )
                         {
                             mvpl.loadPFL( pflfile );
                         }
-                        else if ( pfi.isExisted() )
+                     }
+                    else if ( found_pfi != std::string::npos )
+                    {
+                        std::string pfifile = param.m_input_data_base;
+                        std::cout << "pfiファイルが選択されました" << std::endl;
+                        vismodule::File pfi( pfifile );
+                        if ( pfi.isExisted() )
                         {
                             mvpl.loadPFL( pfifile );
-                        }
-#else
-						pflfile = param.m_input_data_base;
-						vismodule::File pfl( pflfile );
-						if ( pfl.isExisted() )
-						{
-							mvpl.loadPFL( pflfile );
-						}
-#endif
+                        }                        
                     }
+#ifdef EXTEND_FILE_FORMAT
+                    else if ( found_vtm != std::string::npos )
+                    {
+                        std::string vtmfile = param.m_input_data_base;
+                        std::cout << ".vtmファイルが選択されました" << std::endl;
+                        mvpl.loadVtm( vtmfile );
+                    }
+#endif
+                    else
+                    {
+                        std::string pre_conversion_file_path = param.m_input_data_base;
+                        std::cout << "このファイルは現在対応していません" << std::endl;
+                    }
+#endif
 
                     point_creator_lst.clear();
                     for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
@@ -1169,20 +1186,40 @@ int main( int argc, char** argv )
                         fidx = mvpl.getFileIndex( vl, &xvl );
                         MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
-                        std::stringstream suffix;
-                        suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
-                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
-                        //param.m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
-                        vismodule::File ifpx( mvp.m_file_path );
-                        param.m_input_data = ifpx.pathName() + ifpx.Separator()
-                                             + ifpx.baseName() + suffix.str() + ".kvsml";
+                        size_t found_pfi = mvp.m_file_path.find(".pfi");
+                        size_t found_vtm = mvp.m_file_path.find(".vtm");
+
+                        if ( found_pfi != std::string::npos )
+                        {
+                            std::stringstream suffix;
+                            suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
+                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
+                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
+                            vismodule::File ifpx( mvp.m_file_path );
+                            param.m_input_data = ifpx.pathName() + ifpx.Separator()
+                                               + ifpx.baseName() + suffix.str() + ".kvsml";
+                        }
+#ifdef EXTEND_FILE_FORMAT
+                        else if ( found_vtm != std::string::npos )
+                        {
+                            param.m_input_data = mvp.m_file_path;
+                        }
+#endif
+                        else
+                        {
+                            std::cout << "このファイルは現在対応していません" << std::endl;
+                        }
+
                         int timeStep = 1;
                         try
                         {
                             if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                             {
                                 object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
+                            }
+                            else if ( mvp.m_file_type == 3 )
+                            {
+                                object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
                             }
                             else     // filetype: kvsml
                             {
@@ -1279,41 +1316,58 @@ int main( int argc, char** argv )
                     param.m_particle_limit = clntMes.m_particle_limit;
                     param.m_particle_density = clntMes.m_particle_density;
 
+#if 0
                     std::string pfifile, pflfile;
-                    if ( param.m_input_data_base.substr( param.m_input_data_base.size() - 3 ) == "pfl" )
+                    pfifile = param.m_input_data_base + ".pfi";
+                    vismodule::File pfi( pfifile );
+                    pflfile = param.m_input_data_base + ".pfl";
+                    vismodule::File pfl( pflfile );
+                    if ( pfl.isExisted() )
                     {
-                        pflfile = param.m_input_data_base;
-                        param.m_input_data_base = pflfile.substr( 0, pflfile.size() - 4 );
+                        mvpl.loadPFL( pflfile );
+                    }
+                    else if ( pfi.isExisted() )
+                    {
+                        mvpl.loadPFL( pfifile );
+                    }
+#else
+                    size_t found_pfl = param.m_input_data_base.find(".pfl");
+                    size_t found_pfi = param.m_input_data_base.find(".pfi");
+                    size_t found_vtm = param.m_input_data_base.find(".vtm");
+                    if ( found_pfl != std::string::npos )
+                    {
+                        std::string pflfile = param.m_input_data_base;
+                        std::cout << "pflファイルが選択されました" << std::endl;
                         vismodule::File pfl( pflfile );
                         if ( pfl.isExisted() )
                         {
                             mvpl.loadPFL( pflfile );
                         }
                     }
-                    else
+                    else if ( found_pfi != std::string::npos )
                     {
-#if 0
-                        pfifile = param.m_input_data_base + ".pfi";
+                        std::string pfifile = param.m_input_data_base;
+                        std::cout << "pfiファイルが選択されました" << std::endl;
                         vismodule::File pfi( pfifile );
-                        pflfile = param.m_input_data_base + ".pfl";
-                        vismodule::File pfl( pflfile );
-                        if ( pfl.isExisted() )
-                        {
-                            mvpl.loadPFL( pflfile );
-                        }
-                        else if ( pfi.isExisted() )
+                        if ( pfi.isExisted() )
                         {
                             mvpl.loadPFL( pfifile );
-                        }
-#else
-						pflfile = param.m_input_data_base;
-						vismodule::File pfl( pflfile );
-						if ( pfl.isExisted() )
-						{
-							mvpl.loadPFL( pflfile );
-						}
-#endif
+                        }                        
                     }
+                    #ifdef EXTEND_FILE_FORMAT
+                    else if ( found_vtm != std::string::npos )
+                    {
+                        std::string vtmfile = param.m_input_data_base;
+                        std::cout << ".vtmファイルが選択されました" << std::endl;
+                        mvpl.loadVtm( vtmfile );
+                    }
+                    #endif
+                    else
+                    {
+                        std::string pre_conversion_file_path = param.m_input_data_base;
+                        std::cout << "このファイルは現在対応していません" << std::endl;
+                    }
+#endif
 
                     point_creator_lst.clear();
                     for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
@@ -1405,14 +1459,30 @@ int main( int argc, char** argv )
                         fidx = mvpl.getFileIndex( vl, &xvl );
                         MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
-                        std::stringstream suffix;
-                        suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
-                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-                               << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
-                        //param.m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
-                        vismodule::File ifpx( mvp.m_file_path );
-                        param.m_input_data = ifpx.pathName() + ifpx.Separator()
-                                             + ifpx.baseName() + suffix.str() + ".kvsml";
+                        size_t found_pfi = mvp.m_file_path.find(".pfi");
+                        size_t found_vtm = mvp.m_file_path.find(".vtm");
+
+                        if ( found_pfi != std::string::npos )
+                        {
+                            std::stringstream suffix;
+                            suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
+                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
+                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
+                            vismodule::File ifpx( mvp.m_file_path );
+                            param.m_input_data = ifpx.pathName() + ifpx.Separator()
+                                               + ifpx.baseName() + suffix.str() + ".kvsml";
+                        }
+#ifdef EXTEND_FILE_FORMAT
+                        else if ( found_vtm != std::string::npos )
+                        {
+                            param.m_input_data = mvp.m_file_path;
+                        }
+#endif
+                        else
+                        {
+                            std::cout << "このファイルは現在対応していません" << std::endl;
+                        }
+
                         param.m_subvolume_id = xvl ;
                         int timeStep = 1;
                         try
@@ -1422,6 +1492,10 @@ int main( int argc, char** argv )
                                 object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
 
                             }
+                            else if ( mvp.m_file_type == 3 )
+                            {
+                                object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
+                            }                            
                             else     // filetype: kvsml
                             {
                                 object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );

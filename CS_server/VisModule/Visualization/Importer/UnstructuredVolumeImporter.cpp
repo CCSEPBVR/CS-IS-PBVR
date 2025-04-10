@@ -286,24 +286,6 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
 
     for ( auto input_vtm : time_series.eachTimeStep() )
     {
-        // One-pass to collect information.	
-        if ( time_step == 0 )
-        {
-            for ( auto format : input_vtm.eachBlock() )
-            {
-                if ( auto input_vtu = dynamic_cast<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid*>( format.get() ) )
-                {
-                    for ( auto vtu : input_vtu->eachCellType() )
-                    {
-                        kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> importer( input_vtu );
-                        kvs::UnstructuredVolumeObject* object = &importer;
-                        auto cell_type = object->cellType();
-                        if ( sub_volume_ids.count(cell_type) == 0 ) sub_volume_ids[cell_type] = 0;
-                    }
-                }
-            }
-        }
-
         if ( time_step != st ) 
         {
             ++time_step;
@@ -320,42 +302,44 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
                     kvs::UnstructuredVolumeObject* object = &importer;
                     auto cell_type = object->cellType();
 
+                    if ( cell_type != targetCellType ) continue;
+
+                    if ( sub_volume_ids.count(cell_type) == 0 ) sub_volume_ids[cell_type] = 0;
+
                     if ( sub_volume_ids[cell_type] != vl ) 
                     {
                         ++sub_volume_ids[cell_type];
                         continue;
                     }
 
-                    if ( cell_type != targetCellType ) continue;
-
-                    if ( cell_type == kvs::UnstructuredVolumeObject::Tetrahedra  )
+                    if ( cell_type == kvs::UnstructuredVolumeObject::Tetrahedra )
                     {
-                        SuperClass::setCellType(vismodule::UnstructuredVolumeObject::Tetrahedra);
+                        SuperClass::setCellType( vismodule::UnstructuredVolumeObject::Tetrahedra );
                     }
                     else if ( cell_type == kvs::UnstructuredVolumeObject::QuadraticTetrahedra )
                     {
-                        SuperClass::setCellType(vismodule::UnstructuredVolumeObject::QuadraticTetrahedra);
+                        SuperClass::setCellType( vismodule::UnstructuredVolumeObject::QuadraticTetrahedra );
                     }
                     else if ( cell_type == kvs::UnstructuredVolumeObject::Hexahedra )
                     {
-                        SuperClass::setCellType(vismodule::UnstructuredVolumeObject::Hexahedra);
+                        SuperClass::setCellType( vismodule::UnstructuredVolumeObject::Hexahedra );
                     }
                     else if ( cell_type == kvs::UnstructuredVolumeObject::QuadraticHexahedra )
                     {
-                        SuperClass::setCellType(vismodule::UnstructuredVolumeObject::QuadraticHexahedra);
+                        SuperClass::setCellType( vismodule::UnstructuredVolumeObject::QuadraticHexahedra );
                     }
                     else if ( cell_type == kvs::UnstructuredVolumeObject::Pyramid )
                     {
-                        SuperClass::setCellType(vismodule::UnstructuredVolumeObject::Pyramid);
+                        SuperClass::setCellType( vismodule::UnstructuredVolumeObject::Pyramid );
                     }
                     else if ( cell_type == kvs::UnstructuredVolumeObject::Prism )
                     {
-                        SuperClass::setCellType(vismodule::UnstructuredVolumeObject::Prism);
+                        SuperClass::setCellType( vismodule::UnstructuredVolumeObject::Prism );
                     }
                     else
                     {
                         visModuleMessageError( "Unknown element type." );
-                        SuperClass::setCellType(vismodule::UnstructuredVolumeObject::UnknownCellType);
+                        SuperClass::setCellType( vismodule::UnstructuredVolumeObject::UnknownCellType );
                     }
                     
                     vismodule::ValueArray<vismodule::UInt32> tmp_connections_array( object->ncells() * SuperClass::cellType() );

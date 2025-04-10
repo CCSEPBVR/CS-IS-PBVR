@@ -1,13 +1,6 @@
 #*****************************************************************************
 #  $Id: Makefile.def 879 2011-08-05 00:56:17Z naohisa.sakamoto@gmail.com $
 #*****************************************************************************
-ifdef KVS_DIR
-include $(KVS_DIR)/kvs.conf
-ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
-CXXFLAGS += -DEXTEND_FILE_FORMAT
-endif
-endif
-
 #=============================================================================
 #  VIS_MODULE_DIR.
 #=============================================================================
@@ -48,6 +41,13 @@ RMDIR := @rm -Rfv
 INSTALL     := @install -v -m 644
 INSTALL_EXE := @install -v -m 755
 
+ifdef MPICXX
+CPP    := $(MPICXX)
+endif
+
+ifdef MPILD
+LD     := $(MPILD)
+endif
 
 #=============================================================================
 #  all.
@@ -263,6 +263,9 @@ ifeq "$(VIS_MODULE_SUPPORT_OPENCABIN)" "1"
 CPPFLAGS += -fPIC
 endif
 
+ifdef MPICXXFLAGS
+CPPFLAGS += $(MPICXXFLAGS)
+endif
 
 #=============================================================================
 #  Definition.
@@ -319,8 +322,18 @@ ifeq "$(VIS_MODULE_SUPPORT_OPENCABIN)" "1"
 DEFINITIONS += -DVIS_MODULE_SUPPORT_OPENCABIN
 endif
 
+ifdef KVS_DIR
+include $(KVS_DIR)/kvs.conf
+ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
+CXXFLAGS += -DEXTEND_FILE_FORMAT
+endif
+endif
 
 #=============================================================================
 #  Linker option.
 #=============================================================================
 LDFLAGS +=
+
+ifdef MPILDFLAGS
+LDFLAGS += $(MPILDFLAGS)
+endif

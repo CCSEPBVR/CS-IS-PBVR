@@ -523,7 +523,7 @@ int MultiVolumePropertyList::loadVtm( const std::string& filename )
         }
 
 // for debug
-#if 1 
+#if 0
         std::cout << "==================== cell type:" << cell_type << " start =========================" << std::endl;
         std::cout << "m_number_nodes:" << mvp.m_number_nodes << std::endl;
         std::cout << "m_number_elements:" << mvp.m_number_elements << std::endl;
