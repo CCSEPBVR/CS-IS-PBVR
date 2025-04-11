@@ -1083,7 +1083,20 @@ int main( int argc, char** argv )
                     {
                         std::string vtmfile = param.m_input_data_base;
                         std::cout << ".vtmファイルが選択されました" << std::endl;
-                        mvpl.loadSeriesVtm( vtmfile );
+                        size_t found_asterisk = vtmfile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            std::cout << "単一ファイル" << std::endl;
+                            mvpl.loadVtm( vtmfile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            std::cout << "連番ファイル" << std::endl;
+                            mvpl.loadSeriesVtm( vtmfile );
+                        }
                     }
 #endif
                     else
@@ -1362,14 +1375,27 @@ int main( int argc, char** argv )
                             mvpl.loadPFL( pfifile );
                         }                        
                     }
-                    #ifdef EXTEND_FILE_FORMAT
+#ifdef EXTEND_FILE_FORMAT
                     else if ( found_vtm != std::string::npos )
                     {
                         std::string vtmfile = param.m_input_data_base;
                         std::cout << ".vtmファイルが選択されました" << std::endl;
-                        mvpl.loadSeriesVtm( vtmfile );
+                        size_t found_asterisk = vtmfile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            std::cout << "単一ファイル" << std::endl;
+                            mvpl.loadVtm( vtmfile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            std::cout << "連番ファイル" << std::endl;
+                            mvpl.loadSeriesVtm( vtmfile );
+                        }
                     }
-                    #endif
+#endif
                     else
                     {
                         std::string pre_conversion_file_path = param.m_input_data_base;
@@ -2086,8 +2112,8 @@ int main( int argc, char** argv )
                     servMes.m_number_particle = 0;
                     servMes.m_number_glyph = 0 ;
                     servMes.m_flag_send_bins = 1;
-                    servMes.m_message_size = servMes.byteSize();
                     servMes.m_transfer_function_count = 0;
+                    servMes.m_message_size = servMes.byteSize();
                     std::cout << "open_flag = " << open_flag << ", ExtendFileFormat_flag = " << ExtendFileFormat_flag << ", pfi_flag = " << pfi_flag << std::endl; 
                     if (open_flag == true && pfi_flag == true) servMes.m_file_enable_flag = jpv::FileEnableFlag::Enable_VTK ;
                     if (open_flag == true && ExtendFileFormat_flag == false && pfi_flag == false) servMes.m_file_enable_flag = jpv::FileEnableFlag::NotEnable_VTK;
@@ -2157,7 +2183,20 @@ int main( int argc, char** argv )
                     {
                         std::string vtmfile = param.m_input_data_base;
                         std::cout << ".vtmファイルが選択されました" << std::endl;
-			            mvpl.loadSeriesVtm( vtmfile );
+                        size_t found_asterisk = vtmfile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            std::cout << "単一ファイル" << std::endl;
+                            mvpl.loadVtm( vtmfile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            std::cout << "連番ファイル" << std::endl;
+                            mvpl.loadSeriesVtm( vtmfile );
+                        }
                     }		    
 #endif    
                     else
