@@ -60,6 +60,8 @@ public:
 #ifdef EXTEND_FILE_FORMAT 
     int loadVtm( const std::string& filename );
     int loadSeriesVtm( const std::string& filename );
+    int loadVtu( const std::string& filename );
+    int loadSeriesVtu( const std::string& filename );
 #endif
     int getFileIndex( const int vl, int* xvl ) const;
     void cropTimeStep( const int s, const int e );

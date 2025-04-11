@@ -109,6 +109,7 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
 
     size_t found_kvsml = param.m_input_data_base.find(".kvsml");
     size_t found_vtm = param.m_input_data_base.find(".vtm");
+    size_t found_vtu = param.m_input_data_base.find(".vtu");
 
     vismodule::VolumeObjectBase* volume = nullptr;
 
@@ -124,20 +125,20 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
 #ifdef EXTEND_FILE_FORMAT
     else if ( found_vtm != std::string::npos )
     {
-        std::string path_base = m_mvp->m_file_path;
-        int file_type = m_mvp->m_file_type;
-        int cell_type = m_mvp->m_elem_type;
-
         // structured
-        if( file_type == 3 )
+        if( m_mvp->m_file_type == 3 )
         {
-            volume = new vismodule::StructuredVolumeImporter( path_base, st, vl );
+            volume = new vismodule::StructuredVolumeImporter( m_mvp->m_file_path, st, vl );
         }
         // unstructured
-        if( file_type == 4 )
+        if( m_mvp->m_file_type == 4 )
         {
-            volume = new vismodule::UnstructuredVolumeImporter( path_base, file_type, cell_type, st, vl );
+            volume = new vismodule::UnstructuredVolumeImporter( m_mvp->m_file_path, m_mvp->m_file_type, m_mvp->m_elem_type, st, vl );
         }
+    }
+    else if ( found_vtu != std::string::npos )
+    {
+        volume = new vismodule::UnstructuredVolumeImporter( m_mvp->m_file_path, m_mvp->m_file_type, m_mvp->m_elem_type, st, vl );
     }
 #endif
 

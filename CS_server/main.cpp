@@ -1058,6 +1058,7 @@ int main( int argc, char** argv )
                     size_t found_pfl = param.m_input_data_base.find(".pfl");
                     size_t found_pfi = param.m_input_data_base.find(".pfi");
                     size_t found_vtm = param.m_input_data_base.find(".vtm");
+                    size_t found_vtu = param.m_input_data_base.find(".vtu");
                     if ( found_pfl != std::string::npos )
                     {
                         std::string pflfile = param.m_input_data_base;
@@ -1096,6 +1097,23 @@ int main( int argc, char** argv )
                         {
                             std::cout << "連番ファイル" << std::endl;
                             mvpl.loadSeriesVtm( vtmfile );
+                        }
+                    }
+                    else if ( found_vtu != std::string::npos )
+                    {
+                        std::string vtufile = param.m_input_data_base;
+                        std::cout << ".vtuファイルが選択されました" << std::endl;
+                        size_t found_asterisk = vtufile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            mvpl.loadVtu( vtufile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            mvpl.loadSeriesVtu( vtufile );
                         }
                     }
 #endif
@@ -1355,6 +1373,7 @@ int main( int argc, char** argv )
                     size_t found_pfl = param.m_input_data_base.find(".pfl");
                     size_t found_pfi = param.m_input_data_base.find(".pfi");
                     size_t found_vtm = param.m_input_data_base.find(".vtm");
+                    size_t found_vtu = param.m_input_data_base.find(".vtu");
                     if ( found_pfl != std::string::npos )
                     {
                         std::string pflfile = param.m_input_data_base;
@@ -1395,6 +1414,23 @@ int main( int argc, char** argv )
                             mvpl.loadSeriesVtm( vtmfile );
                         }
                     }
+                    else if ( found_vtu != std::string::npos )
+                    {
+                        std::string vtufile = param.m_input_data_base;
+                        std::cout << ".vtuファイルが選択されました" << std::endl;
+                        size_t found_asterisk = vtufile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            mvpl.loadVtu( vtufile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            mvpl.loadSeriesVtu( vtufile );
+                        }
+                    }                    
 #endif
                     else
                     {
@@ -2158,6 +2194,7 @@ int main( int argc, char** argv )
                     size_t found_pfl = param.m_input_data_base.find(".pfl");
                     size_t found_pfi = param.m_input_data_base.find(".pfi");
                     size_t found_vtm = param.m_input_data_base.find(".vtm");
+                    size_t found_vtu = param.m_input_data_base.find(".vtu");
 		            if ( found_pfl != std::string::npos )
                     {
                         std::string pflfile = param.m_input_data_base;
@@ -2197,7 +2234,24 @@ int main( int argc, char** argv )
                             std::cout << "連番ファイル" << std::endl;
                             mvpl.loadSeriesVtm( vtmfile );
                         }
-                    }		    
+                    }
+                    else if ( found_vtu != std::string::npos )
+                    {
+                        std::string vtufile = param.m_input_data_base;
+                        std::cout << ".vtuファイルが選択されました" << std::endl;
+                        size_t found_asterisk = vtufile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            mvpl.loadVtu( vtufile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            mvpl.loadSeriesVtu( vtufile );
+                        }
+                    } 
 #endif    
                     else
                     {

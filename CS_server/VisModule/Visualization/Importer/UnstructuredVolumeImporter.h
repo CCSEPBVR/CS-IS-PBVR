@@ -26,6 +26,7 @@
 
 #ifdef EXTEND_FILE_FORMAT 
 #include <kvs/extendedfileformat/VtkXmlMultiBlock>
+#include <kvs/extendedfileformat/VtkXmlUnstructuredGrid>
 #endif
 
 namespace vismodule
@@ -81,6 +82,7 @@ private:
     void import( const vismodule::StepAggregateTypeSubvolume& gt );
 #ifdef EXTEND_FILE_FORMAT 
     void import( const kvs::ExtendedFileFormat::VtkXmlMultiBlock& vtm , const int targetCellType, const int vl );
+    void import( const kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid& vtu , const int targetCellType );
 #endif
 };
 

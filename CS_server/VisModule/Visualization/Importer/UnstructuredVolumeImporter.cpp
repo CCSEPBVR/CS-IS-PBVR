@@ -316,19 +316,24 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
 
     // ファイルの拡張子を確認
     size_t found_vtm = edit_filename.find( ".vtm" );
+    size_t found_vtu = edit_filename.find( ".vtu" );
 
     // 時系列ファイルの場合、アスタリスクをタイムステップに置換
     if ( found_asterisk != std::string::npos )
     {
         edit_filename.replace( found_asterisk, 1, time_step_str );
     }
-    
-    std::cout << "edit_filename:" << edit_filename << std::endl;
 
     if ( found_vtm != std::string::npos )
     {
         kvs::ExtendedFileFormat::VtkXmlMultiBlock* file_format = new kvs::ExtendedFileFormat::VtkXmlMultiBlock( edit_filename );
         this->import( *file_format, targetCellType, vl );
+        delete file_format;
+    }
+    else if ( found_vtu != std::string::npos )
+    {
+        kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid* file_format = new kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid( edit_filename );
+        this->import( *file_format, targetCellType );
         delete file_format;
     }
 }
@@ -571,6 +576,7 @@ void UnstructuredVolumeImporter::import( const vismodule::StepAggregateTypeSubvo
     SuperClass::updateMinMaxValues();
 }
 
+#ifdef EXTEND_FILE_FORMAT 
 /*==========================================================================*/
 /**
 *  @brief  Imports the VTK MultiBlock format data.
@@ -579,7 +585,6 @@ void UnstructuredVolumeImporter::import( const vismodule::StepAggregateTypeSubvo
 *  @param  vl [in] sub volume id
 */
 /*==========================================================================*/
-#ifdef EXTEND_FILE_FORMAT 
 void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlMultiBlock& vtm , const int targetCellType, const int vl )
 {
     std::unordered_map<int, int> sub_volume_ids;
@@ -641,6 +646,60 @@ void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlMu
             }
         }
     }
+}
+
+/*==========================================================================*/
+/**
+*  @brief  Imports the VTK Unstructured Grid format data.
+*  @param  vtm [in] pointer to the VTK Unstructured Grid format data
+*  @param  targetCellType [in] cell type in KVS
+*/
+/*==========================================================================*/
+void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid& vtu , const int targetCellType )
+{
+        for ( auto vtu_cell : vtu.eachCellType() )
+        {
+            kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> importer( &vtu_cell );
+            kvs::UnstructuredVolumeObject* object = &importer;
+            auto kvs_cell_type = object->cellType();
+
+            if ( kvs_cell_type != targetCellType ) continue;
+
+            auto vismodule_cell_type = ::ConvertCellTypeKVS2VisModule( kvs_cell_type );
+            SuperClass::setCellType( vismodule_cell_type );
+            
+            vismodule::ValueArray<vismodule::UInt32> tmp_connections_array( object->ncells() * SuperClass::cellType() );
+            for (int i = 0; i < (object->ncells() * SuperClass::cellType()); i++)
+            {
+                tmp_connections_array[i] = object->connections()[i];
+            }
+            
+            vismodule::ValueArray<float> tmp_coords_array( object->coords().size() );
+            for (int i = 0; i < object->coords().size(); i++)
+            {
+                tmp_coords_array[i] = object->coords()[i];
+            }
+            
+            vismodule::ValueArray<float> tmp_values_array( object->values().size() );
+            for (int i = 0; i < object->nnodes(); i++)
+            {
+                tmp_values_array[i] = object->values().asValueArray<float>()[i];
+            }
+            vismodule::AnyValueArray tmp_any_value_array( tmp_values_array );
+            
+            const double min_value = SuperClass::minValue();
+            const double max_value = SuperClass::maxValue();
+
+            SuperClass::setVeclen( object->veclen() );
+            SuperClass::setNNodes( object->nnodes() );
+            SuperClass::setNCells( object->ncells() );
+            SuperClass::setCoords( tmp_coords_array );
+            SuperClass::setConnections( tmp_connections_array );
+            SuperClass::setValues( tmp_any_value_array );
+            SuperClass::updateMinMaxCoords();
+            SuperClass::setMinMaxValues( min_value, max_value );
+            return;
+        }
 }
 #endif
 
