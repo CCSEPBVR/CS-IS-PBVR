@@ -1309,6 +1309,229 @@ int MultiVolumePropertyList::loadSeriesVtu( const std::string& filename )
 
     return m_list.size();
 }
+
+int MultiVolumePropertyList::loadVti( const std::string& filename )
+{
+    int cell_type = 7;
+    int sub_volume_id = 0;
+    float x_min, y_min, z_min;
+    float x_max, y_max, z_max;
+    float sub_x_min, sub_y_min, sub_z_min;
+    float sub_x_max, sub_y_max, sub_z_max;
+    MultiVolumeProperty mvp;
+
+    m_list.clear();
+    m_total_min_subvolume_coord.clear();
+    m_total_max_subvolume_coord.clear();
+
+    kvs::ExtendedFileFormat::VtkXmlImageData input_vti( filename );
+    kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlImageData> importer( &input_vti );
+    kvs::StructuredVolumeObject* object = &importer;
+    object->setMinMaxExternalCoords( object->minObjectCoord(), object->maxObjectCoord() );
+
+    mvp.m_number_nodes = object->nnodes();
+    mvp.m_number_elements = 0;
+    mvp.m_elem_type = cell_type;
+    mvp.m_file_type = 3; // Structured
+    mvp.m_number_files = 1;
+    mvp.m_number_ingredients = object->veclen();
+    mvp.m_start_step = 0;
+    mvp.m_end_steps = 0;
+    mvp.m_number_subvolumes = 1;
+    x_min = object->minExternalCoord()[0];
+    y_min = object->minExternalCoord()[1];
+    z_min = object->minExternalCoord()[2];
+    x_max = object->maxExternalCoord()[0];
+    y_max = object->maxExternalCoord()[1];
+    z_max = object->maxExternalCoord()[2];
+    mvp.m_min_object_coord.set(x_min, y_min, z_min);
+    mvp.m_max_object_coord.set(x_max, y_max, z_max);
+    mvp.m_number_steps = 1;
+    mvp.m_min_subvolume_coord.resize(mvp.m_number_subvolumes);
+    mvp.m_max_subvolume_coord.resize(mvp.m_number_subvolumes);   
+    mvp.m_file_path = filename;
+    mvp.m_min_value = object->minValue();
+    mvp.m_max_value = object->maxValue();
+    sub_x_min = object->minObjectCoord()[0];
+    sub_y_min = object->minObjectCoord()[1];
+    sub_z_min = object->minObjectCoord()[2];
+    sub_x_max = object->maxObjectCoord()[0];
+    sub_y_max = object->maxObjectCoord()[1];
+    sub_z_max = object->maxObjectCoord()[2];
+    mvp.m_min_subvolume_coord[sub_volume_id].set(sub_x_min, sub_y_min, sub_z_min);
+    mvp.m_max_subvolume_coord[sub_volume_id].set(sub_x_max, sub_y_max, sub_z_max);
+
+    this->m_total_number_nodes = mvp.m_number_nodes;
+    this->m_total_number_elements = mvp.m_number_elements;
+    this->m_total_number_files = mvp.m_number_files;
+    this->m_total_start_steps = mvp.m_start_step;
+    this->m_total_last_step = mvp.m_end_steps;
+    this->m_total_number_steps = mvp.m_number_steps;
+    this->m_total_number_subvolumes = mvp.m_number_subvolumes;
+    this->m_total_min_object_coord = mvp.m_min_object_coord;
+    this->m_total_max_object_coord = mvp.m_max_object_coord;
+    this->m_total_min_subvolume_coord = mvp.m_min_subvolume_coord;
+    this->m_total_max_subvolume_coord = mvp.m_max_subvolume_coord;
+    this->m_total_min_value = mvp.m_min_value;
+    this->m_total_max_value = mvp.m_max_value;
+    this->m_total_number_ingredients = mvp.m_number_ingredients;
+
+    this->m_list.push_back(mvp);
+    m_total_ingredient.resize( m_total_number_ingredients );
+    return m_list.size();
+}
+
+int MultiVolumePropertyList::loadSeriesVti( const std::string& filename )
+{
+    kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlImageData> time_series( filename );
+    int last_time_step = time_series.numberOfFiles() - 1;
+    int time_step = 0;
+    int sub_volume_id = 0;
+    int sub_volume_count = 1;
+    int cell_type = 7;
+    int number_of_nodes;
+    int number_of_elements;
+    int number_of_ingredients;
+    kvs::Vec3 min_external_coords;
+    kvs::Vec3 max_external_coords;
+    kvs::Vec3 min_object_coords;
+    kvs::Vec3 max_object_coords;
+    float min_values;
+    float max_values;
+    MultiVolumeProperty mvp;
+    float x_min, y_min, z_min;
+    float x_max, y_max, z_max;
+    float sub_x_min, sub_y_min, sub_z_min;
+    float sub_x_max, sub_y_max, sub_z_max;
+
+    m_list.clear();
+    m_total_min_subvolume_coord.clear();
+    m_total_max_subvolume_coord.clear();
+
+    for ( auto vti : time_series.eachTimeStep() )
+    {
+        kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlImageData> importer( &vti );
+        kvs::StructuredVolumeObject* object = &importer;
+        object->setMinMaxExternalCoords( object->minObjectCoord(), object->maxObjectCoord() );
+
+        if ( time_step == 0 )
+        {
+            number_of_nodes = object->nnodes();
+            number_of_elements = 0;
+            number_of_ingredients = object->veclen();
+            min_external_coords[0] = object->minExternalCoord()[0];
+            min_external_coords[1] = object->minExternalCoord()[1];
+            min_external_coords[2] = object->minExternalCoord()[2];
+            max_external_coords[0] = object->maxExternalCoord()[0];
+            max_external_coords[1] = object->maxExternalCoord()[1];
+            max_external_coords[2] = object->maxExternalCoord()[2];
+            min_object_coords[0] = object->minObjectCoord()[0];
+            min_object_coords[1] = object->minObjectCoord()[1];
+            min_object_coords[2] = object->minObjectCoord()[2];
+            max_object_coords[0] = object->maxObjectCoord()[0];
+            max_object_coords[1] = object->maxObjectCoord()[1];
+            max_object_coords[2] = object->maxObjectCoord()[2];
+            min_values = object->minValue();
+            max_values = object->maxValue();
+        }
+        else
+        {
+            min_external_coords[0] = std::min(min_external_coords[0], object->minExternalCoord()[0]);
+            min_external_coords[1] = std::min(min_external_coords[1], object->minExternalCoord()[1]);
+            min_external_coords[2] = std::min(min_external_coords[2], object->minExternalCoord()[2]);
+            max_external_coords[0] = std::max(max_external_coords[0], object->maxExternalCoord()[0]);
+            max_external_coords[1] = std::max(max_external_coords[1], object->maxExternalCoord()[1]);
+            max_external_coords[2] = std::max(max_external_coords[2], object->maxExternalCoord()[2]);
+            min_object_coords[0] = std::min(min_object_coords[0], object->minObjectCoord()[0]);
+            min_object_coords[1] = std::min(min_object_coords[1], object->minObjectCoord()[1]);
+            min_object_coords[2] = std::min(min_object_coords[2], object->minObjectCoord()[2]);
+            max_object_coords[0] = std::max(max_object_coords[0], object->maxObjectCoord()[0]);
+            max_object_coords[1] = std::max(max_object_coords[1], object->maxObjectCoord()[1]);
+            max_object_coords[2] = std::max(max_object_coords[2], object->maxObjectCoord()[2]);
+            min_values = std::min(min_values, float(object->minValue()));
+            max_values = std::max(max_values, float(object->maxValue()));
+        }
+    }
+
+    mvp.m_number_nodes = number_of_nodes;
+    mvp.m_number_elements = number_of_elements;
+    mvp.m_elem_type = cell_type;
+    mvp.m_file_type = 3; // Structured
+    mvp.m_number_files = last_time_step + 1;
+    mvp.m_number_ingredients = number_of_ingredients;
+    mvp.m_start_step = 0;
+    mvp.m_end_steps = last_time_step;
+    mvp.m_number_subvolumes = 1;
+    x_min = min_external_coords[0];
+    y_min = min_external_coords[1];
+    z_min = min_external_coords[2];
+    x_max = max_external_coords[0];
+    y_max = max_external_coords[1];
+    z_max = max_external_coords[2];
+    mvp.m_min_object_coord.set(x_min, y_min, z_min);
+    mvp.m_max_object_coord.set(x_max, y_max, z_max);
+    mvp.m_number_steps = mvp.m_end_steps - mvp.m_start_step + 1;
+    mvp.m_min_subvolume_coord.resize(mvp.m_number_subvolumes);
+    mvp.m_max_subvolume_coord.resize(mvp.m_number_subvolumes);
+    mvp.m_file_path = filename;
+    mvp.m_min_value = min_values;
+    mvp.m_max_value = max_values;
+    sub_x_min = min_object_coords[0];
+    sub_y_min = min_object_coords[1];
+    sub_z_min = min_object_coords[2];
+    sub_x_max = max_object_coords[0];
+    sub_y_max = max_object_coords[1];
+    sub_z_max = max_object_coords[2];
+    mvp.m_min_subvolume_coord[sub_volume_id].set(sub_x_min, sub_y_min, sub_z_min);
+    mvp.m_max_subvolume_coord[sub_volume_id].set(sub_x_max, sub_y_max, sub_z_max);
+
+// for debug
+#if 0
+        std::cout << "==================== cell type:" << cell_type << " start =========================" << std::endl;
+        std::cout << "m_number_nodes:" << mvp.m_number_nodes << std::endl;
+        std::cout << "m_number_elements:" << mvp.m_number_elements << std::endl;
+        std::cout << "m_number_files:" << mvp.m_number_files << std::endl;
+        std::cout << "m_start_step:" << mvp.m_start_step << std::endl;
+        std::cout << "m_end_steps:" << mvp.m_end_steps << std::endl;
+        std::cout << "m_number_steps:" << mvp.m_number_steps << std::endl;
+        std::cout << "m_number_subvolumes:" << mvp.m_number_subvolumes << std::endl;
+        std::cout << "m_min_object_coord[0]:" << mvp.m_min_object_coord[0] << std::endl;
+        std::cout << "m_min_object_coord[1]:" << mvp.m_min_object_coord[1] << std::endl;
+        std::cout << "m_min_object_coord[2]:" << mvp.m_min_object_coord[2] << std::endl;
+        std::cout << "m_max_object_coord[0]:" << mvp.m_max_object_coord[0] << std::endl;
+        std::cout << "m_max_object_coord[1]:" << mvp.m_max_object_coord[1] << std::endl;
+        std::cout << "m_max_object_coord[2]:" << mvp.m_max_object_coord[2] << std::endl;
+        std::cout << "m_min_subvolume_coord[0]:" << mvp.m_min_subvolume_coord[0][0] << std::endl;
+        std::cout << "m_min_subvolume_coord[1]:" << mvp.m_min_subvolume_coord[0][1] << std::endl;
+        std::cout << "m_min_subvolume_coord[2]:" << mvp.m_min_subvolume_coord[0][2] << std::endl;
+        std::cout << "m_max_subvolume_coord[0]:" << mvp.m_max_subvolume_coord[0][0] << std::endl;
+        std::cout << "m_max_subvolume_coord[1]:" << mvp.m_max_subvolume_coord[0][1] << std::endl;
+        std::cout << "m_max_subvolume_coord[2]:" << mvp.m_max_subvolume_coord[0][2] << std::endl;
+        std::cout << "m_min_value:" << mvp.m_min_value << std::endl;
+        std::cout << "m_max_value:" << mvp.m_max_value << std::endl;
+        std::cout << "m_number_ingredients:" << mvp.m_number_ingredients << std::endl;
+        std::cout << "==================== cell type:" << cell_type << " end =========================" << std::endl;
+#endif
+
+    this->m_total_number_nodes = mvp.m_number_nodes;
+    this->m_total_number_elements = mvp.m_number_elements;
+    this->m_total_number_files = mvp.m_number_files;
+    this->m_total_start_steps = mvp.m_start_step;
+    this->m_total_last_step = mvp.m_end_steps;
+    this->m_total_number_steps = mvp.m_number_steps;
+    this->m_total_number_subvolumes = mvp.m_number_subvolumes;
+    this->m_total_min_object_coord = mvp.m_min_object_coord;
+    this->m_total_max_object_coord = mvp.m_max_object_coord;
+    this->m_total_min_subvolume_coord = mvp.m_min_subvolume_coord;
+    this->m_total_max_subvolume_coord = mvp.m_max_subvolume_coord;
+    this->m_total_min_value = mvp.m_min_value;
+    this->m_total_max_value = mvp.m_max_value;
+    this->m_total_number_ingredients = mvp.m_number_ingredients;
+
+    this->m_list.push_back(mvp);
+    m_total_ingredient.resize( m_total_number_ingredients );
+    return m_list.size();
+}
 #endif
 
 void MultiVolumePropertyList::calculate_ingredient_min_max( const MultiVolumeProperty &mvp, 

@@ -26,6 +26,7 @@
 
 #ifdef EXTEND_FILE_FORMAT 
 #include <kvs/extendedfileformat/VtkXmlMultiBlock>
+#include <kvs/extendedfileformat/VtkXmlImageData>
 #endif
 
 namespace vismodule
@@ -81,6 +82,7 @@ private:
 
 #ifdef EXTEND_FILE_FORMAT 
     void import( const kvs::ExtendedFileFormat::VtkXmlMultiBlock& vtm , const int vl );
+    void import( const kvs::ExtendedFileFormat::VtkXmlImageData& vti , const int vl );
 #endif
 
 private:

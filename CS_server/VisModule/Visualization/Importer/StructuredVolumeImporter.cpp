@@ -22,7 +22,6 @@
 
 #ifdef EXTEND_FILE_FORMAT 
 #include <kvs/extendedfileformat/VtkImporter>
-#include <kvs/extendedfileformat/VtkXmlImageData>
 #endif
 
 namespace
@@ -207,6 +206,7 @@ StructuredVolumeImporter::StructuredVolumeImporter( const std::string& filename,
 
     // ファイルの拡張子を確認
     size_t found_vtm = edit_filename.find( ".vtm" );
+    size_t found_vti = edit_filename.find( ".vti" );
 
     // 時系列ファイルの場合、アスタリスクをタイムステップに置換
     if ( found_asterisk != std::string::npos )
@@ -219,6 +219,12 @@ StructuredVolumeImporter::StructuredVolumeImporter( const std::string& filename,
     if ( found_vtm != std::string::npos )
     {
         kvs::ExtendedFileFormat::VtkXmlMultiBlock* file_format = new kvs::ExtendedFileFormat::VtkXmlMultiBlock( edit_filename );
+        this->import( *file_format, vl );
+        delete file_format;
+    }
+    else if ( found_vti != std::string::npos )
+    {
+        kvs::ExtendedFileFormat::VtkXmlImageData* file_format = new kvs::ExtendedFileFormat::VtkXmlImageData( edit_filename );
         this->import( *file_format, vl );
         delete file_format;
     }
@@ -573,6 +579,61 @@ void StructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlMult
             SuperClass::setMinMaxValues( min_value, max_value );
         }
     }
+}
+
+void StructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlImageData& vti , const int vl )
+{
+    kvs::ExtendedFileFormat::VtkXmlImageData* non_const_vti = const_cast<kvs::ExtendedFileFormat::VtkXmlImageData*>( &vti );
+    kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlImageData> importer( non_const_vti );
+    kvs::StructuredVolumeObject* object = &importer;
+    auto cell_type = 7;
+
+    vismodule::Vector3f min_external_coord;
+    vismodule::Vector3f max_external_coord;
+    float min_external_coord_x = object->minExternalCoord()[0];
+    float min_external_coord_y = object->minExternalCoord()[1];
+    float min_external_coord_z = object->minExternalCoord()[2];
+    float max_external_coord_x = object->maxExternalCoord()[0];
+    float max_external_coord_y = object->maxExternalCoord()[1];
+    float max_external_coord_z = object->maxExternalCoord()[2];
+    min_external_coord.set( min_external_coord_x, min_external_coord_y, min_external_coord_z );
+    max_external_coord.set( max_external_coord_x, max_external_coord_y, max_external_coord_z );
+    
+    vismodule::Vector3f min_object_coord;
+    vismodule::Vector3f max_object_coord;
+    float min_object_coord_x = object->minObjectCoord()[0];
+    float min_object_coord_y = object->minObjectCoord()[1];
+    float min_object_coord_z = object->minObjectCoord()[2];
+    float max_object_coord_x = object->maxObjectCoord()[0];
+    float max_object_coord_y = object->maxObjectCoord()[1];
+    float max_object_coord_z = object->maxObjectCoord()[2];
+    min_object_coord.set( min_object_coord_x, min_object_coord_y, min_object_coord_z );
+    max_object_coord.set( max_object_coord_x, max_object_coord_y, max_object_coord_z );
+    
+    vismodule::Vector3ui resolution;
+    unsigned int resolution_x = object->resolution()[0];
+    unsigned int resolution_y = object->resolution()[1];
+    unsigned int resolution_z = object->resolution()[2];
+    resolution.set( resolution_x, resolution_y, resolution_z );
+
+    vismodule::ValueArray<float> tmp_values_array( object->values().size() );
+    for (int i = 0; i < object->nnodes(); i++)
+    {
+        tmp_values_array[i] = object->values().asValueArray<float>()[i];
+    }
+    vismodule::AnyValueArray tmp_any_value_array( tmp_values_array );
+    
+    const double min_value = SuperClass::minValue();
+    const double max_value = SuperClass::maxValue();
+
+    SuperClass::setMinMaxExternalCoords( min_external_coord, max_external_coord );
+    SuperClass::setMinMaxObjectCoords( min_object_coord, max_object_coord );
+    SuperClass::setGridType( vismodule::StructuredVolumeObject::Uniform );
+    SuperClass::setResolution( resolution );
+    SuperClass::setVeclen( object->veclen() );
+    SuperClass::setValues( tmp_any_value_array );
+    // SuperClass::updateMinMaxCoords();
+    SuperClass::setMinMaxValues( min_value, max_value );    
 }
 #endif
 
