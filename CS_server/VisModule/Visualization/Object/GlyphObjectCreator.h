@@ -86,6 +86,33 @@ public:
         //return po;
     }
 
+#ifdef EXTEND_FILE_FORMAT
+    void run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, vismodule::KVSMLObjectGlyph* object, const int st, const int vl)
+    {
+        vismodule::GlyphObjectGenerator generator;
+        generator.setFinlterInfo( m_mvp );
+
+        struct stat s;
+        if ( stat( param.m_input_data.c_str(), &s ) )
+        {
+            std::cout << "Error. read failed:" << param.m_input_data << std::endl;
+            exit( 1 );
+        }
+        
+        generator.createFromFile( param, camera, clntMes, number_of_divide, st, vl );
+        vismodule::KVSMLObjectGlyph* po = generator.getKVSMLObjectGlyph();
+        
+        object -> setCoords(po->coords());
+        object -> setColors(po->colors());
+        object -> setDirections(po->directions());
+        object -> setSizes(po->sizes());
+        object -> setColorMin(po->colorMin());
+        object -> setColorMax(po->colorMax());
+        object -> setSizeMin(po->sizeMin());
+        object -> setSizeMax(po->sizeMax());
+    }
+#endif
+
     vismodule::KVSMLObjectGlyph* run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, const int st, const int vl)
     {
         m_generator.setFinlterInfo( m_mvp );

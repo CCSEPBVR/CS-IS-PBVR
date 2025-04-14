@@ -1227,6 +1227,7 @@ int main( int argc, char** argv )
 
                         size_t found_pfi = mvp.m_file_path.find(".pfi");
                         size_t found_vtm = mvp.m_file_path.find(".vtm");
+                        size_t found_vtu = mvp.m_file_path.find(".vtu");
 
                         if ( found_pfi != std::string::npos )
                         {
@@ -1240,6 +1241,10 @@ int main( int argc, char** argv )
                         }
 #ifdef EXTEND_FILE_FORMAT
                         else if ( found_vtm != std::string::npos )
+                        {
+                            param.m_input_data = mvp.m_file_path;
+                        }
+                        else if ( found_vtu != std::string::npos )
                         {
                             param.m_input_data = mvp.m_file_path;
                         }
@@ -1531,6 +1536,7 @@ int main( int argc, char** argv )
 
                         size_t found_pfi = mvp.m_file_path.find(".pfi");
                         size_t found_vtm = mvp.m_file_path.find(".vtm");
+                        size_t found_vtu = mvp.m_file_path.find(".vtm");
 
                         if ( found_pfi != std::string::npos )
                         {
@@ -1544,6 +1550,10 @@ int main( int argc, char** argv )
                         }
 #ifdef EXTEND_FILE_FORMAT
                         else if ( found_vtm != std::string::npos )
+                        {
+                            param.m_input_data = mvp.m_file_path;
+                        }
+                        else if ( found_vtu != std::string::npos )
                         {
                             param.m_input_data = mvp.m_file_path;
                         }
@@ -2468,6 +2478,7 @@ int main( int argc, char** argv )
 
                             size_t found_pfi = mvp.m_file_path.find(".pfi");
                             size_t found_vtm = mvp.m_file_path.find(".vtm");
+                            size_t found_vtu = mvp.m_file_path.find(".vtu");
                             
                             if ( found_pfi != std::string::npos )
                             {
@@ -2481,6 +2492,10 @@ int main( int argc, char** argv )
                             }
 #ifdef EXTEND_FILE_FORMAT 
                             else if ( found_vtm != std::string::npos )
+                            {
+                                param.m_input_data = mvp.m_file_path;
+                            }
+                            else if ( found_vtu != std::string::npos )
                             {
                                 param.m_input_data = mvp.m_file_path;
                             }
@@ -2920,6 +2935,7 @@ int main( int argc, char** argv )
 
                             size_t found_pfi = mvp.m_file_path.find(".pfi");
                             size_t found_vtm = mvp.m_file_path.find(".vtm");
+                            size_t found_vtu = mvp.m_file_path.find(".vtu");
                             
                             if ( found_pfi != std::string::npos )
                             {
@@ -2933,6 +2949,10 @@ int main( int argc, char** argv )
                             }
 #ifdef EXTEND_FILE_FORMAT 
                             else if ( found_vtm != std::string::npos )
+                            {
+                                param.m_input_data = mvp.m_file_path;
+                            }
+                            else if ( found_vtu != std::string::npos )
                             {
                                 param.m_input_data = mvp.m_file_path;
                             }
@@ -3338,19 +3358,52 @@ int main( int argc, char** argv )
                             int xvl, fidx;
                             fidx = mvpl.getFileIndex( vl, &xvl );
                             MultiVolumeProperty& mvp = mvpl.m_list[fidx];
-                            //glyph_creator_lst[fidx].setFilterInfo(mvpl.m_list[fidx]);
+
+                            size_t found_pfi = mvp.m_file_path.find(".pfi");
+                            size_t found_vtm = mvp.m_file_path.find(".vtm");
+                            size_t found_vtu = mvp.m_file_path.find(".vtu");
+
+                            if ( found_pfi != std::string::npos )
+                            {
+                                std::stringstream suffix;
+                                suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
+                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
+                                << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
+                                vismodule::File ifpx( mvp.m_file_path );
+                                param.m_input_data = ifpx.pathName() + ifpx.Separator()
+                                + ifpx.baseName() + suffix.str() + ".kvsml";
+                            }
+#ifdef EXTEND_FILE_FORMAT 
+                            else if ( found_vtm != std::string::npos )
+                            {
+                                param.m_input_data = mvp.m_file_path;
+                            }
+                            else if ( found_vtu != std::string::npos )
+                            {
+                                param.m_input_data = mvp.m_file_path;
+                            }
+#endif
+                            else
+                            {
+                                std::cout << "このファイルは現在対応していません" << std::endl;
+                            }
 
                             vismodule::KVSMLObjectGlyph* tmp_obj = new vismodule::KVSMLObjectGlyph;
-                            std::stringstream suffix;
-                            suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
-                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
-                            vismodule::File ifpx( mvpl.m_list[fidx].m_file_path );
-                            param.m_input_data = ifpx.pathName() + ifpx.Separator()
-                                                 + ifpx.baseName() + suffix.str() + ".kvsml";
                             param.m_subvolume_id = xvl;
                             int timeStep = 1;
                             servMes.m_flag_send_bins = 2;
+
+                            // glyph_creator_lstの初期化
+                            glyph_creator_lst.clear();
+                            for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
+                            {
+                                GlyphObjectCreator glyph_creator;
+                                glyph_creator.setFilterInfo( mvpl.m_list[idx] );
+                                glyph_creator_lst.push_back( glyph_creator );
+                            }
+                            
+                            glyph_creator_lst[fidx].setFilterInfo(mvp);
+
                             try
                             {
                                 if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
@@ -3358,11 +3411,16 @@ int main( int argc, char** argv )
                                     *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, mvpl.m_total_number_subvolumes, timeStep, st, xvl); 
                                     // run()で得られるKVSMLObjectglyphとtmp_objは異なるメモリ領域を指しているため,ポインタコピーではなくオペレータを呼び出す必要がある
                                 }
+#ifdef EXTEND_FILE_FORMAT
+                                else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
+                                {
+                                    glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, servMes.m_number_volume_divide, timeStep , tmp_obj, st, xvl );
+                                }                                
+#endif
                                 else     // filetype: kvsml
                                 {
                                     glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, servMes.m_number_volume_divide, timeStep , tmp_obj, st );
                                 }
-
 //                                size_t nmemb = tmp_obj->sizes().size();
                                 originalGlyph->clear();
                                 originalGlyph = tmp_obj;

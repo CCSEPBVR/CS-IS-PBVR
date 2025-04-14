@@ -93,17 +93,45 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const vismodul
     delete volume;
 }
 
-void GlyphObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage& clntMes,const int number_of_divide, const int st, const int vl )
+void GlyphObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes,const int number_of_divide, const int st, const int vl )
 {
     VIS_MODULE_TIMER_STA( 260 );
 //    delete m_object;
-    vismodule::UnstructuredVolumeObject* volume;
-    volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );
 
-    vismodule::File ifpx( m_mvp->m_file_path );
-    std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
+    size_t found_kvsml = param.m_input_data_base.find(".kvsml");
+    size_t found_vtm = param.m_input_data_base.find(".vtm");
+    size_t found_vtu = param.m_input_data_base.find(".vtu");
 
-    volume = new vismodule::UnstructuredVolumeImporter( path_base, m_mvp->m_file_type, st, vl );
+    vismodule::VolumeObjectBase* volume = nullptr;
+
+    if ( found_kvsml != std::string::npos )
+    {
+        volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );
+    
+        vismodule::File ifpx( m_mvp->m_file_path );
+        std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
+    
+        volume = new vismodule::UnstructuredVolumeImporter( path_base, m_mvp->m_file_type, st, vl );
+    }
+#ifdef EXTEND_FILE_FORMAT
+    else if ( found_vtm != std::string::npos )
+    {
+        // structured
+        if( m_mvp->m_file_type == 3 )
+        {
+            volume = new vismodule::StructuredVolumeImporter( m_mvp->m_file_path, st, vl );
+        }
+        // unstructured
+        if( m_mvp->m_file_type == 4 )
+        {
+            volume = new vismodule::UnstructuredVolumeImporter( m_mvp->m_file_path, m_mvp->m_file_type, m_mvp->m_elem_type, st, vl );
+        }
+    }
+    else if ( found_vtu != std::string::npos )
+    {
+        volume = new vismodule::UnstructuredVolumeImporter( m_mvp->m_file_path, m_mvp->m_file_type, m_mvp->m_elem_type, st, vl );
+    }
+#endif
 
     VIS_MODULE_TIMER_END( 260 );
 
