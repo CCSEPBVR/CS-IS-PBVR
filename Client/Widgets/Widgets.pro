@@ -30,8 +30,13 @@ TARGET = Widgets
 #=============================================================================
 HEADERS += \
     AnimationControls.h \
+    ColorMap.h \
     ColorMapEditor.h \
+    ColorMapPalette.h \
     Coordinates.h \
+    Histogram.h \
+    OpacityMap.h \
+    OpacityMapPalette.h \
     PlotOverLine.h \
     DataProperties.h \
     DisplayPointSizeControl.h \
@@ -65,8 +70,13 @@ HEADERS += \
 #=============================================================================
 SOURCES += \
     AnimationControls.cpp \
+    ColorMap.cpp \
     ColorMapEditor.cpp \
+    ColorMapPalette.cpp \
     Coordinates.cpp \
+    Histogram.cpp \
+    OpacityMap.cpp \
+    OpacityMapPalette.cpp \
     PlotOverLine.cpp \
     DataProperties.cpp \
     DisplayPointSizeControl.cpp \
