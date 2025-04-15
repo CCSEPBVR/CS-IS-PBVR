@@ -495,6 +495,7 @@ int MultiVolumePropertyList::loadVtm( const std::string& filename )
             int sub_volume_id;
             kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlImageData> importer( input_vti );
             kvs::StructuredVolumeObject* object = &importer;
+            object->setMinMaxExternalCoords( object->minObjectCoord(), object->maxObjectCoord() );
 
             auto cell_type = 7;
 
@@ -796,6 +797,7 @@ int MultiVolumePropertyList::loadSeriesVtm( const std::string& filename )
                 int sub_volume_id;
                 kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlImageData> importer( input_vti );
                 kvs::StructuredVolumeObject* object = &importer;
+                object->setMinMaxExternalCoords( object->minObjectCoord(), object->maxObjectCoord() );
 
                 auto cell_type = 7;
 
