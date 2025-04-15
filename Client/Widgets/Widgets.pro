@@ -37,6 +37,7 @@ HEADERS += \
     Coordinates.h \
     Histogram.h \
     OpacityMap.h \
+    OpacityMapEditorV2.h \
     OpacityMapPalette.h \
     PlotOverLine.h \
     DataProperties.h \
@@ -78,6 +79,7 @@ SOURCES += \
     Coordinates.cpp \
     Histogram.cpp \
     OpacityMap.cpp \
+    OpacityMapEditorV2.cpp \
     OpacityMapPalette.cpp \
     PlotOverLine.cpp \
     DataProperties.cpp \
@@ -117,6 +119,7 @@ FORMS += \
     GlyphEditor.ui \
     MergePanel.ui \
     OpacityMapEditor.ui \
+    OpacityMapEditorV2.ui \
     PlotOverLine.ui \
     Preference.ui \
     RenderOptions.ui \

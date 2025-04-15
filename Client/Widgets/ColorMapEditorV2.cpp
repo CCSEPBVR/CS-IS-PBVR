@@ -65,7 +65,7 @@ void ColorMapEditorV2::initializePreset()
     ui->colorMapTableWidget->verticalHeader()->setVisible( false );   // 縦（行）のヘッダーを非表示
     ui->colorMapTableWidget->horizontalHeader()->setSectionResizeMode( QHeaderView::Stretch );
 
-    QList<QPair<QString, QVector<QColor>>> colorList = loadDefaultColorMap( ":DefaultColorMap.json" );
+    QList<QPair<QString, QVector<QColor>>> colorList = loadDefaultColorMap( ":/Resources/json/DefaultColorMap.json" );
     if( colorList.isEmpty() )
     {
         qWarning() << "No color maps loaded!";
