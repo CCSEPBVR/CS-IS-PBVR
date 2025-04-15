@@ -3,6 +3,8 @@
 
 
 #include "../shared/thread_timer.h"
+#include <kvs/StructuredVolumeObject>
+
 
 #ifndef SIMDW
 #define SIMDW 128
@@ -61,6 +63,21 @@ extern "C" {
                              domain_parameters dom,
                              Type** volume_data, 
                              int num_volume_data );
+    
+    void GenerateParticles( int time_step,
+                             domain_parameters dom,
+                             Type** volume_data, 
+                             int num_volume_data );
+
+    void GenerateGlyphs_PlotOverLine( int time_step,
+                             domain_parameters dom,
+                             Type** values, int num_volume_data);
+
+    void CallPlotOverLine( int time_step,
+                             domain_parameters dom,
+                             Type** values, int num_volume_data);
+
+
 
     void state_txt_writer( void );
 

@@ -14,8 +14,21 @@ OBJS = Serializer.o \
        TransferFunctionSynthesizer.o \
        TrilinearInterpolator.o \
        ParamInfo.o \
-       VolumeObjectBase.o \
+       VolumeObjectBase.o # \
+#       kvs_wrapper.o
+
+#ifeq ($(VTK_PATH), true)
+#OBJS +=	   VtkImport.o 
+#endif
+
+OBJS +=GlyphGenerator.o \
+	   GlyphProperty.o \
+	   KVSMLObjectGlyph.o \
+	   KVSMLObjectPlotOverLine.o \
+	   PlotOverLine.o \
+	   PlotOverLineProperty.o \
        kvs_wrapper.o
+
 
 VPATH=${TRANSFER_FUNCTION_DIR}
 

@@ -3,6 +3,8 @@
 // serialize するときのバイト列の大きさは、必要なメンバをインスタンス化するために改めて計算する
 // std::string で受け渡すと '\0' を途中で含むバイト列の時に、.c_str() で得られるバイト列から再構築できなくなる
 //
+#ifndef TFS_PBVR__JPV__SERIALIZER_H_INCLUDE
+#define TFS_PBVR__JPV__SERIALIZER_H_INCLUDE
 #pragma once
 
 #include <string>
@@ -103,3 +105,4 @@ size_t Serializer::unpack<kvs::TransferFunction>( const char* buf, kvs::Transfer
 #include "Serializer.cpp"
 #endif
 
+#endif

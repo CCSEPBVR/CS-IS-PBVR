@@ -985,12 +985,13 @@ void CellByCellUniformSampling::generate_particles( const vismodule::StructuredV
                         const int j = (cell_id - k * nxy_1) / nx_1;
                         const int i =  cell_id - k * nxy_1 - j * nx_1;
 
-                        const int nparticles_I  = I<SIMDW ? nparticles[I] : 0;
+                        const int nparticles_I  = I<SIMDW ? nparticles[I] : 1;
                         const int zero_id = I<SIMDW ? SIMDW : p_id;
-                        int nparticles_count =0;  
+                        int nparticles_count =0; 
                        for(int p=0; p < nparticles_I; p++)
                         {
-                            int  finish_flag = 0;
+                            if (I < SIMDW)
+                            {
                             const vismodule::Vector3f vertex( (float)i, (float)j, (float)k );
                             const vismodule::Vector3f coord_l( RandomSamplingInCube( vertex, &MT ) );
                             const vismodule::Vector3f coord_g(
@@ -1004,10 +1005,11 @@ void CellByCellUniformSampling::generate_particles( const vismodule::StructuredV
                             p_y_g[ p_id ] = coord_g.y();
                             p_z_g[ p_id ] = coord_g.z();
                             p_id++;
+                            }
 
-                            if( p_id == SIMDW )
+                            if( p_id == SIMDW || I == SIMDW)
                             {
-                                p_id = 0;
+                                //p_id = 0;
 
                                 //                            timed_section_start(td_CalculateOpacity,thid);
                                 th_tfs[thid]->CalculateOpacity( interp[thid], th_tf[thid],
@@ -1053,7 +1055,8 @@ void CellByCellUniformSampling::generate_particles( const vismodule::StructuredV
 #endif
 
                                 //SIMDｿｿｿ
-                                for( int pp=0; pp<SIMDW; pp++)
+                                //for( int pp=0; pp<SIMDW; pp++)
+                                for( int pp=0; pp<p_id; pp++)
                                 {
                                     //                                timed_section_start(td_CalculateDensity,thid);
 //                                    const float density =
@@ -1081,7 +1084,10 @@ void CellByCellUniformSampling::generate_particles( const vismodule::StructuredV
                                         th_vertex_normals.push_back( grad_z[pp] );
                                        //                                    timed_section_end(td_VectorPush,thid);
                                 } // end of for pp
+                                p_id = 0;
                             } // end of if p_id
+                            
+
                         } // end of for p
                     } // end of for I ｿｿｿｿｿｿｿｿｿ
                 } // end of omp for J outer_loop

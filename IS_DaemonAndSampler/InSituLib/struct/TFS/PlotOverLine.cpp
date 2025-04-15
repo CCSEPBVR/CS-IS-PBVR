@@ -5,11 +5,22 @@
 
 PlotOverLine::PlotOverLine( void ){}
 
+PlotOverLine::PlotOverLine( const kvs::StructuredVolumeObject* volume,
+//PlotOverLine::PlotOverLine( const pbvr::StructuredVolumeObject* volume,
+                            const size_t resolution,
+                            const kvs::Vec3 P0, const kvs::Vec3 P1 )
+{
+    this->setVolume( volume );
+
+    this->setResolution( resolution );
+
+    this->extractPlotLineStructured( P0, P1 );
+}
+
 PlotOverLine::PlotOverLine( const kvs::UnstructuredVolumeObject* volume,
                             const size_t resolution,
                             const kvs::Vec3 P0, const kvs::Vec3 P1 )
 {
-//    m_plot_flag = this -> SetPOLParameter( );
     
     this->setVolume( volume );
 
@@ -17,6 +28,33 @@ PlotOverLine::PlotOverLine( const kvs::UnstructuredVolumeObject* volume,
 
     this->extractPlotLine( P0, P1 );
 }
+// CS用コンストラクター
+PlotOverLine::PlotOverLine( const kvs::UnstructuredVolumeObject* volume,
+                            const size_t resolution,
+                            const kvs::Vec3 P0, const kvs::Vec3 P1, const int plot_variable ):
+    m_plot_variable(plot_variable)
+{
+    
+    this->setVolume( volume );
+
+    this->setResolution( resolution );
+
+    this->extractPlotLine( P0, P1 );
+}
+
+// CS用コンストラクター
+//PlotOverLine::PlotOverLine( const pbvr::StructuredVolumeObject* volume,
+//                            const size_t resolution,
+//                            const kvs::Vec3 P0, const kvs::Vec3 P1, const int plot_variable ):
+//    m_plot_variable(plot_variable)
+//{
+//    
+//    this->setVolume( volume );
+//
+//    this->setResolution( resolution );
+//
+//    this->extractPlotLineStructured( P0, P1 );
+//}
 
 PlotOverLine::PlotOverLine( const POL::Polyhedron* volume,
                             const size_t resolution,
@@ -35,6 +73,13 @@ PlotOverLine::~PlotOverLine()
 //    m_x_axis.deallocate();
 //    m_mask.deallocate();
 }
+
+void PlotOverLine::setVolume( const kvs::StructuredVolumeObject* volume )
+//void PlotOverLine::setVolume( const pbvr::StructuredVolumeObject* volume )
+{
+    m_structured_volume = volume;
+}
+
 
 void PlotOverLine::setVolume( const kvs::UnstructuredVolumeObject* volume )
 {
@@ -63,6 +108,13 @@ void PlotOverLine::setResolution( const size_t resolution )
     m_allcell_mask.allocate(resolution);
     m_allcell_mask.fill( false );
 
+}
+
+void PlotOverLine::extractPlotLineStructured( const kvs::Vec3 P0, const kvs::Vec3 P1 )
+{
+    this->calculate_x_axis( P0, P1 );
+
+    this->for_structured_mesh( P0, P1 );
 }
 
 bool PlotOverLine::SetPOLParameter( const int time_step )
@@ -106,24 +158,22 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
 
     PlotOverLineProperty plot_over_line_property;
 
-
     bool read_flag;
     while( plot_over_line_property.getString( "END_PARAMETER_FILE" ) != "SUCCESS" )
     {
         read_flag =  plot_over_line_property.LoadIN(POLParamPath) ;
+        //read_flag = glyph_property.LoadIN(glyphParamPath) ;
     }
-    //bool read_flag =  plot_over_line_property.LoadIN(POLParamPath) ;
+
 
     int mpi_rank;
+#ifndef CPU_VER 
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+#endif
     if(read_flag)
     {
-//        if(mpi_rank ==0)
-//        {
-////            std::rename( POLParamPath.c_str(), POLParamPath_old.c_str() );
-//            std::filesystem::copy(POLParamPath.c_str(), POLParamPath_old.c_str(), std::filesystem::copy_options::overwrite_existing);
-//        }
-
 
         bool plot_flag;
         std::string              p_flag                    = plot_over_line_property.getString( "PLOT_FLAG" );
@@ -154,6 +204,14 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
     return m_plot_flag; 
 
 }
+
+void PlotOverLine::extractPlotLine( const kvs::StructuredVolumeObject* volume)
+{
+    this->setVolume( volume );
+//    this->extractPlotLine( m_start_point, m_end_point );
+    this->extractPlotLineStructured( m_start_point, m_end_point );
+}
+
 
 void PlotOverLine::extractPlotLine( const kvs::UnstructuredVolumeObject* volume)
 {
@@ -229,6 +287,130 @@ void PlotOverLine::calculate_x_axis( const kvs::Vec3 P0, const kvs::Vec3 P1 )
         sampling_length += offset;
     }
 }
+
+void PlotOverLine::for_structured_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
+{
+
+    kvs::Vec3 P0d, P1d; 
+    P0d.x() = (P0.x() - m_offset.x())/m_cell_length;
+    P0d.y() = (P0.y() - m_offset.y())/m_cell_length;
+    P0d.z() = (P0.z() - m_offset.z())/m_cell_length;
+    
+    P1d.x() = (P1.x() - m_offset.x())/m_cell_length;
+    P1d.y() = (P1.y() - m_offset.y())/m_cell_length;
+    P1d.z() = (P1.z() - m_offset.z())/m_cell_length;
+
+    const size_t res_x = m_structured_volume->resolution().x();
+    const size_t res_y = m_structured_volume->resolution().y();
+    const size_t res_z = m_structured_volume->resolution().z();
+    const size_t nx = res_x-1;
+    const size_t ny = res_y-1;
+    const size_t nz = res_z-1;
+    const size_t ncoord = res_x*res_y*res_z;
+
+    auto index = [res_x, res_y]( size_t I, size_t J, size_t K ){ return I + J*res_x + K*res_x*res_y; };
+
+    const kvs::UInt32 face_id[24] = {
+        0, 1, 5, 4,
+        1, 2, 6, 5,
+        2, 3, 7, 6,
+        3, 0, 4, 7,
+        4, 5, 6, 7,
+        3, 2, 1, 0 };
+
+    for( size_t K = 0; K < nz; K++ )
+    {
+        for( size_t J = 0; J < ny; J++ )
+        {
+            for( size_t I = 0; I < nx; I++ )
+            {
+
+                kvs::Vec3 vertex[8];
+                vertex[0].set( I  , J+1, K+1 );
+                vertex[1].set( I  , J  , K+1 );
+                vertex[2].set( I+1, J  , K+1 );
+                vertex[3].set( I+1, J+1, K+1 );
+                vertex[4].set( I  , J+1, K   );
+                vertex[5].set( I  , J  , K   );
+                vertex[6].set( I+1, J  , K   );
+                vertex[7].set( I+1, J+1, K   );
+        
+
+                // Bounding Box
+                kvs::Vec3 MinCoord( vertex[5] );
+                kvs::Vec3 MaxCoord( vertex[3] );
+                if( this->intersection_of_boundingbox( MinCoord, MaxCoord, P0, P1 ) == false )
+                {
+                    continue;
+                }
+
+                kvs::Vec3 face_center_vertex[6];
+                size_t fid = 0;
+                for( int i=0; i<6; i++, fid+=4 )
+                {
+                    face_center_vertex[i] = (
+                        vertex[ face_id[fid  ] ] + vertex[ face_id[fid+1] ] +
+                        vertex[ face_id[fid+2] ] + vertex[ face_id[fid+3] ]  ) * 0.25;
+                }
+                kvs::Vec3 cell_center_vertex( I+0.5f, J+0.5f, K+0.5f );
+
+                kvs::Real32 scalar[8];
+//                scalar[0] = m_structured_volume->values()[ index( I  , J+1, K+1 ) ].to<kvs::Real32>();
+//                scalar[1] = m_structured_volume->values()[ index( I  , J  , K+1 ) ].to<kvs::Real32>();
+//                scalar[2] = m_structured_volume->values()[ index( I+1, J  , K+1 ) ].to<kvs::Real32>();
+//                scalar[3] = m_structured_volume->values()[ index( I+1, J+1, K+1 ) ].to<kvs::Real32>();
+//                scalar[4] = m_structured_volume->values()[ index( I  , J+1, K   ) ].to<kvs::Real32>();
+//                scalar[5] = m_structured_volume->values()[ index( I  , J  , K   ) ].to<kvs::Real32>();
+//                scalar[6] = m_structured_volume->values()[ index( I+1, J  , K   ) ].to<kvs::Real32>();
+//                scalar[7] = m_structured_volume->values()[ index( I+1, J+1, K   ) ].to<kvs::Real32>();   
+
+                scalar[0] = m_structured_volume->values().to<kvs::Real32>(index( I  , J+1, K+1 ) + ncoord*m_plot_variable);
+                scalar[1] = m_structured_volume->values().to<kvs::Real32>(index( I  , J  , K+1 ) + ncoord*m_plot_variable);
+                scalar[2] = m_structured_volume->values().to<kvs::Real32>(index( I+1, J  , K+1 ) + ncoord*m_plot_variable);
+                scalar[3] = m_structured_volume->values().to<kvs::Real32>(index( I+1, J+1, K+1 ) + ncoord*m_plot_variable);
+                scalar[4] = m_structured_volume->values().to<kvs::Real32>(index( I  , J+1, K   ) + ncoord*m_plot_variable);
+                scalar[5] = m_structured_volume->values().to<kvs::Real32>(index( I  , J  , K   ) + ncoord*m_plot_variable);
+                scalar[6] = m_structured_volume->values().to<kvs::Real32>(index( I+1, J  , K   ) + ncoord*m_plot_variable);
+                scalar[7] = m_structured_volume->values().to<kvs::Real32>(index( I+1, J+1, K   ) + ncoord*m_plot_variable);   
+
+                kvs::Real32 face_center_scalar[6];
+                fid = 0;
+                for( int i=0; i<6; i++, fid+=4 )
+                {
+                    face_center_scalar[i] = (
+                        scalar[ face_id[fid  ] ] + scalar[ face_id[fid+1] ] +
+                        scalar[ face_id[fid+2] ] + scalar[ face_id[fid+3] ]  ) * 0.25;
+                }
+
+                kvs::Real32 cell_center_scalar = ((scalar[0]+scalar[1]+scalar[2]+scalar[3]+
+                                                   scalar[4]+scalar[5]+scalar[6]+scalar[7] )*0.125 ); 
+
+                kvs::Vec3 vert[4];
+                kvs::Vec4 s;
+
+                for( int face=0; face<6; face++ )
+                {
+                    for( int i=0; i<4; i++ )
+                    {
+                        //Face  0, 1, 5, 4
+                        vert[0] = cell_center_vertex;
+                        vert[1] = face_center_vertex[ face ];
+                        vert[2] = vertex[ face_id[ face*4 + i ] ];
+                        vert[3] = vertex[ face_id[ face*4 + ((i+1) % 4) ]];
+
+                        s[0] = cell_center_scalar;
+                        s[1] = face_center_scalar[ face ];
+                        s[2] = scalar[ face_id[ face*4 + i ] ];
+                        s[3] = scalar[ face_id[ face*4 + ((i+1) % 4) ] ];
+
+                        //this->sampling_in_tetrahedra( P0, P1, vert, s );
+                        this->sampling_in_tetrahedra( P0d, P1d, vert, s );
+                    }
+                }
+            }
+        }
+    }
+};
 
 void PlotOverLine::for_tetrahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
 {
@@ -326,7 +508,10 @@ void PlotOverLine::for_hexahedral_mesh( const kvs::Vec3 P0, const kvs::Vec3 P1 )
         kvs::Real32 scalar[8];
         for( int i=0; i<8; i++ )
         {
-            scalar[i] =  m_volume->values().to<kvs::Real32>( local_id[i] + ncoord*m_plot_variable);
+            scalar[i] =  m_volume->values().at<kvs::Real32>( local_id[i] + ncoord*m_plot_variable);
+            //scalar[i] =  m_volume->values().to<kvs::Real32>( local_id[i] + ncoord*m_plot_variable);
+            //scalar[i] =  m_volume->values().oto<kvs::Real32>( local_id[i] );
+            //std::cout << "scalar[i] = " << scalar[i] << ", local_id[i] = " << local_id[i] << std::endl;
         }
 
         kvs::Real32 face_center_scalar[6];
@@ -708,7 +893,7 @@ void PlotOverLine::sampling_in_tetrahedra( const kvs::Vec3 P0, const kvs::Vec3 P
     const kvs::Vec3 X2 = vertices[2];
     const kvs::Vec3 X3 = vertices[3];
     const kvs::Vec4 S( scalars );
-    
+
     // Bounding Box
     kvs::Vec3 MinCoord( kvs::Math::Min<float>( X0.x(), X1.x(), X2.x(), X3.x() ),
                         kvs::Math::Min<float>( X0.y(), X1.y(), X2.y(), X3.y() ),
@@ -751,6 +936,7 @@ void PlotOverLine::sampling_in_tetrahedra( const kvs::Vec3 P0, const kvs::Vec3 P
         const kvs::Vec4 bc_P = bc_P0 + t * (bc_P1 - bc_P0);
         m_values_on_line[i] = bc_P.dot(S);
         m_mask[i] = true;
+ 
     }
 
     return;
@@ -782,11 +968,11 @@ const bool PlotOverLine::intersection_of_boundingbox(
 
             if( t1 > t2 ) std::swap( t1, t2 );
 
-            t_min = std::max( t_min, t1 );
-            t_max = std::min( t_max, t2 );
+            t_min = (std::max)( t_min, t1 );
+            t_max = (std::min)( t_max, t2 );
 
             if( t_min > t_max )
-            {
+            {          
                 return false;
             }
         }
@@ -844,11 +1030,10 @@ POL::Range PlotOverLine::t_range_in_tet( const kvs::Vec4 bc_P0, const kvs::Vec4 
     {
         POL::Range tmp_range;
 
-        float a0 = bc_P0[i];
-        float a1 = bc_P1[i];
-        if( kvs::Math::Abs(a0) < 1e-6 ) a0 = 0.f;
-        if( kvs::Math::Abs(a1) < 1e-6 ) a1 = 0.f;
-
+        float a0 =  (float)bc_P0[i];
+        float a1 =  (float)bc_P1[i];
+        if(kvs::Math::Abs(a0) < 1e-6) a0 = 0.f;
+        if(kvs::Math::Abs(a1) < 1e-6) a1 = 0.f;
 
         if( kvs::Math::Equal( a0, a1 ) )
         {
@@ -918,8 +1103,13 @@ void PlotOverLine::OutputLine( const int time_step)
 
     int mpi_rank;
     int mpi_size;
+#ifndef CPU_VER
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+#else
+    mpi_rank=0;
+    mpi_size=1;
+#endif
     int nbins = 256;
 
     ///-------------------------------------//
@@ -928,11 +1118,12 @@ void PlotOverLine::OutputLine( const int time_step)
     kvs::ValueArray<float> values_on_line( m_allcell_values_on_line  );
     kvs::ValueArray<float> x_axis( m_x_axis );
     kvs::ValueArray<bool>  mask ( m_allcell_mask   );
-
+#if 0
     static bool first_step = true;
     static MPI_Comm new_comm;
     static int count;
     static int num_nodes;
+#endif
 
     std::stringstream ss;
     //add by shimomura 20240614
