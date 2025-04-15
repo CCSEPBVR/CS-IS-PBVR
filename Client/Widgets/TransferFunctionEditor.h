@@ -38,8 +38,8 @@ private:
     ColorMapBarSelector* m_color_map_bar_selector;
 
     VariableEditor m_variable_editor;
-    ColorMapEditor m_color_map_editor;
-    OpacityMapEditor m_opacity_map_editor;
+    // ColorMapEditor m_color_map_editor;
+    // OpacityMapEditor m_opacity_map_editor;
 
     void updateFunctionLists();
 

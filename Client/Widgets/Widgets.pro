@@ -32,6 +32,7 @@ HEADERS += \
     AnimationControls.h \
     ColorMap.h \
     ColorMapEditor.h \
+    ColorMapEditorV2.h \
     ColorMapPalette.h \
     Coordinates.h \
     Histogram.h \
@@ -72,6 +73,7 @@ SOURCES += \
     AnimationControls.cpp \
     ColorMap.cpp \
     ColorMapEditor.cpp \
+    ColorMapEditorV2.cpp \
     ColorMapPalette.cpp \
     Coordinates.cpp \
     Histogram.cpp \
@@ -108,6 +110,7 @@ SOURCES += \
 FORMS += \
     AnimationControls.ui \
     ColorMapEditor.ui \
+    ColorMapEditorV2.ui \
     Coordinates.ui \
     DataProperties.ui \
     DisplayPointSizeControl.ui \

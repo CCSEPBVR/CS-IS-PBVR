@@ -238,20 +238,30 @@ void TransferFunctionEditor::onColorUserDefinedChanged()
     m_parameter.setColorFunctionRange( colorName, ui->colorUserDefinedMinDoubleSpinBox->value(), ui->colorUserDefinedMaxDoubleSpinBox->value() );
 }
 
+#include "Widgets/ColorMapEditorV2.h"
 void TransferFunctionEditor::onEditColorMapPushButtonClicked()
 {
-    std::string colorName = ui->colorFunctionComboBox->currentText().toStdString();
+    ColorMapEditorV2 colorMapEditor;
+    colorMapEditor.adjustSize();
+    // colorMapEditor.setDefaultColorMap( ui->colorMap->getColors() );
 
-    m_color_map_editor.setColorMap( m_parameter.getTransferFunction( colorName )->colorMap() );
-    m_color_map_editor.setInitialColorMap( m_parameter.getTransferFunction( colorName )->colorMap() );
-    m_color_map_editor.clearUndoStack();
-
-    if( m_color_map_editor.exec() == QDialog::Accepted )
+    if( colorMapEditor.exec() == QDialog::Accepted )
     {
-        const kvs::ColorMap cmap = m_color_map_editor.getColorMap();
-        ui->colorMapBar->setColorMap( cmap );
-        m_parameter.getTransferFunction( colorName )->setColorMap( cmap );
+        // ui->colorMap->setColors( colorMapEditor.getColorMap() );
     }
+
+    // std::string colorName = ui->colorFunctionComboBox->currentText().toStdString();
+
+    // m_color_map_editor.setColorMap( m_parameter.getTransferFunction( colorName )->colorMap() );
+    // m_color_map_editor.setInitialColorMap( m_parameter.getTransferFunction( colorName )->colorMap() );
+    // m_color_map_editor.clearUndoStack();
+
+    // if( m_color_map_editor.exec() == QDialog::Accepted )
+    // {
+    //     const kvs::ColorMap cmap = m_color_map_editor.getColorMap();
+    //     ui->colorMapBar->setColorMap( cmap );
+    //     m_parameter.getTransferFunction( colorName )->setColorMap( cmap );
+    // }
 }
 
 void TransferFunctionEditor::onOpacitySynthesizerEdited( const QString &arg1 )
@@ -364,18 +374,18 @@ void TransferFunctionEditor::onOpacityUserDefinedChanged()
 
 void TransferFunctionEditor::onEditOpacityMapPushButtonClicked()
 {
-    std::string opacityName = ui->opacityFunctionComboBox->currentText().toStdString();
+    // std::string opacityName = ui->opacityFunctionComboBox->currentText().toStdString();
 
-    m_opacity_map_editor.setOpacityMap( m_parameter.getTransferFunction( opacityName )->opacityMap() );
-    m_opacity_map_editor.setInitialOpacityMap( m_parameter.getTransferFunction( opacityName )->opacityMap() );
-    m_opacity_map_editor.clearUndoStack();
+    // m_opacity_map_editor.setOpacityMap( m_parameter.getTransferFunction( opacityName )->opacityMap() );
+    // m_opacity_map_editor.setInitialOpacityMap( m_parameter.getTransferFunction( opacityName )->opacityMap() );
+    // m_opacity_map_editor.clearUndoStack();
 
-    if( m_opacity_map_editor.exec() == QDialog::Accepted )
-    {
-        const kvs::OpacityMap cmap = m_opacity_map_editor.getOpacityMap();
-        ui->opacityMapBar->setOpacityMap( cmap );
-        m_parameter.getTransferFunction( opacityName )->setOpacityMap( cmap );
-    }
+    // if( m_opacity_map_editor.exec() == QDialog::Accepted )
+    // {
+    //     const kvs::OpacityMap cmap = m_opacity_map_editor.getOpacityMap();
+    //     ui->opacityMapBar->setOpacityMap( cmap );
+    //     m_parameter.getTransferFunction( opacityName )->setOpacityMap( cmap );
+    // }
 }
 
 void TransferFunctionEditor::onExportButtonClicked()
