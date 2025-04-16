@@ -8,6 +8,7 @@
 #include <vismodule/NameListFile>
 
 #ifdef EXTEND_FILE_FORMAT 
+#include <filesystem>
 #include <kvs/extendedfileformat/VtkXmlMultiBlock>
 #include <kvs/extendedfileformat/NumeralSequenceFiles>
 #include <kvs/extendedfileformat/VtkXmlUnstructuredGrid>
@@ -670,7 +671,9 @@ int MultiVolumePropertyList::loadVtm( const std::string& filename )
 
 int MultiVolumePropertyList::loadSeriesVtm( const std::string& filename )
 {
-    kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlMultiBlock> time_series( filename );
+    namespace fs = std::filesystem;
+    fs::path filepath = filename;
+    kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlMultiBlock> time_series( filepath.generic_string() );
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
     std::unordered_map<int, int> sub_volume_ids;
@@ -1132,7 +1135,9 @@ int MultiVolumePropertyList::loadVtu( const std::string& filename )
 
 int MultiVolumePropertyList::loadSeriesVtu( const std::string& filename )
 {
-    kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> time_series( filename );
+    namespace fs = std::filesystem;
+    fs::path filepath = filename;
+    kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> time_series( filepath.generic_string() );
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
     int sub_volume_id = 0;
@@ -1385,7 +1390,9 @@ int MultiVolumePropertyList::loadVti( const std::string& filename )
 
 int MultiVolumePropertyList::loadSeriesVti( const std::string& filename )
 {
-    kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlImageData> time_series( filename );
+    namespace fs = std::filesystem;
+    fs::path filepath = filename;
+    kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlImageData> time_series( filepath.generic_string() );
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
     int sub_volume_id = 0;
