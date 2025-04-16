@@ -14,6 +14,7 @@
 #include <kvs/extendedfileformat/VtkXmlUnstructuredGrid>
 #include <kvs/extendedfileformat/VtkImporter>
 #include <kvs/extendedfileformat/VtkXmlImageData>
+#include <kvs/extendedfileformat/AvsUcd>
 #endif
 
 //--------------------------------------------------------------------------
@@ -1539,6 +1540,164 @@ int MultiVolumePropertyList::loadSeriesVti( const std::string& filename )
 
     this->m_list.push_back(mvp);
     m_total_ingredient.resize( m_total_number_ingredients );
+    return m_list.size();
+}
+
+int MultiVolumePropertyList::loadInp( const std::string& filename )
+{
+    kvs::ExtendedFileFormat::AvsUcd input_inp( filename );
+    int last_time_step = 0;
+    int time_step = 0;
+    std::unordered_map<int, int> sub_volume_ids;
+    std::unordered_map<int, int> sub_volume_counts;
+    std::unordered_map<int, int> number_of_nodes;
+    std::unordered_map<int, int> number_of_elements;
+    std::unordered_map<int, int> number_of_ingredients;
+    std::unordered_map<int, kvs::Vec3> min_external_coords;
+    std::unordered_map<int, kvs::Vec3> max_external_coords;
+    std::unordered_map<int, kvs::Vec3> min_object_coords;
+    std::unordered_map<int, kvs::Vec3> max_object_coords;
+    std::unordered_map<int, float> min_values;
+    std::unordered_map<int, float> max_values;
+    
+    m_list.clear();
+    m_total_min_subvolume_coord.clear();
+    m_total_max_subvolume_coord.clear();
+
+    for ( auto inp : input_inp.eachCellType() )
+    {
+        kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::AvsUcd> importer( &inp );
+        kvs::UnstructuredVolumeObject* object = &importer;
+        
+        auto cell_type = object->cellType();
+
+        number_of_nodes[cell_type] = object->nnodes();
+        number_of_elements[cell_type] = object->ncells();
+        number_of_ingredients[cell_type] = object->veclen();
+        min_external_coords[cell_type] = object->minExternalCoord();
+        max_external_coords[cell_type] = object->maxExternalCoord();
+        min_object_coords[cell_type][0] = object->minObjectCoord()[0];
+        min_object_coords[cell_type][1] = object->minObjectCoord()[1];
+        min_object_coords[cell_type][2] = object->minObjectCoord()[2];
+        max_object_coords[cell_type][0] = object->maxObjectCoord()[0];
+        max_object_coords[cell_type][1] = object->maxObjectCoord()[1];
+        max_object_coords[cell_type][2] = object->maxObjectCoord()[2];
+        min_values[cell_type] = object->minValue();
+        max_values[cell_type] = object->maxValue();
+    }
+
+    for (auto& e: number_of_nodes)
+    {
+        MultiVolumeProperty mvp;
+        auto cell_type = e.first;
+
+        mvp.m_number_nodes = number_of_nodes[cell_type];
+        mvp.m_number_elements = number_of_elements[cell_type];
+        mvp.m_elem_type = cell_type;
+        mvp.m_file_type = 4; // unstructured
+        mvp.m_number_files = last_time_step + 1;
+        mvp.m_number_ingredients = number_of_ingredients[cell_type];
+        mvp.m_start_step = 0;
+        mvp.m_end_steps = last_time_step;
+        mvp.m_number_subvolumes = 1;
+        float x_min, y_min, z_min;
+        float x_max, y_max, z_max;
+        x_min = min_external_coords[cell_type][0];
+        y_min = min_external_coords[cell_type][1];
+        z_min = min_external_coords[cell_type][2];
+        x_max = max_external_coords[cell_type][0];
+        y_max = max_external_coords[cell_type][1];
+        z_max = max_external_coords[cell_type][2];
+        mvp.m_min_object_coord.set(x_min, y_min, z_min);
+        mvp.m_max_object_coord.set(x_max, y_max, z_max);
+        mvp.m_number_steps = mvp.m_end_steps - mvp.m_start_step + 1;
+        mvp.m_min_subvolume_coord.resize(mvp.m_number_subvolumes);
+        mvp.m_max_subvolume_coord.resize(mvp.m_number_subvolumes);
+        mvp.m_file_path = filename;
+        mvp.m_min_value = min_values[cell_type];
+        mvp.m_max_value = max_values[cell_type];
+        float sub_x_min, sub_y_min, sub_z_min;
+        float sub_x_max, sub_y_max, sub_z_max;
+        sub_x_min = min_object_coords[cell_type][0];
+        sub_y_min = min_object_coords[cell_type][1];
+        sub_z_min = min_object_coords[cell_type][2];
+        sub_x_max = max_object_coords[cell_type][0];
+        sub_y_max = max_object_coords[cell_type][1];
+        sub_z_max = max_object_coords[cell_type][2];
+        mvp.m_min_subvolume_coord[0].set(sub_x_min, sub_y_min, sub_z_min);
+        mvp.m_max_subvolume_coord[0].set(sub_x_max, sub_y_max, sub_z_max);
+
+// for debug
+#if 0
+        std::cout << "==================== cell type:" << cell_type << " start =========================" << std::endl;
+        std::cout << "m_number_nodes:" << mvp.m_number_nodes << std::endl;
+        std::cout << "m_number_elements:" << mvp.m_number_elements << std::endl;
+        std::cout << "m_number_files:" << mvp.m_number_files << std::endl;
+        std::cout << "m_start_step:" << mvp.m_start_step << std::endl;
+        std::cout << "m_end_steps:" << mvp.m_end_steps << std::endl;
+        std::cout << "m_number_steps:" << mvp.m_number_steps << std::endl;
+        std::cout << "m_number_subvolumes:" << mvp.m_number_subvolumes << std::endl;
+        std::cout << "m_min_object_coord[0]:" << mvp.m_min_object_coord[0] << std::endl;
+        std::cout << "m_min_object_coord[1]:" << mvp.m_min_object_coord[1] << std::endl;
+        std::cout << "m_min_object_coord[2]:" << mvp.m_min_object_coord[2] << std::endl;
+        std::cout << "m_max_object_coord[0]:" << mvp.m_max_object_coord[0] << std::endl;
+        std::cout << "m_max_object_coord[1]:" << mvp.m_max_object_coord[1] << std::endl;
+        std::cout << "m_max_object_coord[2]:" << mvp.m_max_object_coord[2] << std::endl;
+        std::cout << "m_min_subvolume_coord[0]:" << mvp.m_min_subvolume_coord[0][0] << std::endl;
+        std::cout << "m_min_subvolume_coord[1]:" << mvp.m_min_subvolume_coord[0][1] << std::endl;
+        std::cout << "m_min_subvolume_coord[2]:" << mvp.m_min_subvolume_coord[0][2] << std::endl;
+        std::cout << "m_max_subvolume_coord[0]:" << mvp.m_max_subvolume_coord[0][0] << std::endl;
+        std::cout << "m_max_subvolume_coord[1]:" << mvp.m_max_subvolume_coord[0][1] << std::endl;
+        std::cout << "m_max_subvolume_coord[2]:" << mvp.m_max_subvolume_coord[0][2] << std::endl;
+        std::cout << "m_min_value:" << mvp.m_min_value << std::endl;
+        std::cout << "m_max_value:" << mvp.m_max_value << std::endl;
+        std::cout << "m_number_ingredients:" << mvp.m_number_ingredients << std::endl;
+        std::cout << "==================== cell type:" << cell_type << " end =========================" << std::endl;
+#endif
+
+        if ( this->m_list.empty() )
+        {
+            this->m_total_number_nodes = mvp.m_number_nodes;
+            this->m_total_number_elements = mvp.m_number_elements;
+            this->m_total_number_files = mvp.m_number_files;
+            this->m_total_start_steps = mvp.m_start_step;
+            this->m_total_last_step = mvp.m_end_steps;
+            this->m_total_number_steps = mvp.m_number_steps;
+            this->m_total_number_subvolumes = mvp.m_number_subvolumes;
+            this->m_total_min_object_coord = mvp.m_min_object_coord;
+            this->m_total_max_object_coord = mvp.m_max_object_coord;
+            this->m_total_min_subvolume_coord = mvp.m_min_subvolume_coord;
+            this->m_total_max_subvolume_coord = mvp.m_max_subvolume_coord;
+            this->m_total_min_value = mvp.m_min_value;
+            this->m_total_max_value = mvp.m_max_value;
+            this->m_total_number_ingredients = mvp.m_number_ingredients;
+        }
+        else
+        {
+            this->m_total_number_nodes += mvp.m_number_nodes;
+            this->m_total_number_elements += mvp.m_number_elements;
+            this->m_total_number_files += mvp.m_number_files;
+            this->m_total_start_steps = std::min(this->m_total_start_steps, mvp.m_start_step);
+            this->m_total_last_step = std::max(this->m_total_last_step, mvp.m_end_steps);
+            this->m_total_number_steps = this->m_total_last_step - this->m_total_start_steps + 1;
+            this->m_total_number_subvolumes += mvp.m_number_subvolumes;
+            this->m_total_min_object_coord[0] = std::min(this->m_total_min_object_coord[0], mvp.m_min_object_coord[0]);
+            this->m_total_min_object_coord[1] = std::min(this->m_total_min_object_coord[1], mvp.m_min_object_coord[1]);
+            this->m_total_min_object_coord[2] = std::min(this->m_total_min_object_coord[2], mvp.m_min_object_coord[2]);
+            this->m_total_max_object_coord[0] = std::max(this->m_total_max_object_coord[0], mvp.m_max_object_coord[0]);
+            this->m_total_max_object_coord[1] = std::max(this->m_total_max_object_coord[1], mvp.m_max_object_coord[1]);
+            this->m_total_max_object_coord[2] = std::max(this->m_total_max_object_coord[2], mvp.m_max_object_coord[2]);
+            std::copy(mvp.m_min_subvolume_coord.begin(), mvp.m_min_subvolume_coord.end(), std::back_inserter(this->m_total_min_subvolume_coord));
+            std::copy(mvp.m_max_subvolume_coord.begin(), mvp.m_max_subvolume_coord.end(), std::back_inserter(this->m_total_max_subvolume_coord));
+            this->m_total_min_value = std::min(this->m_total_min_value, mvp.m_min_value);
+            this->m_total_max_value = std::max(this->m_total_max_value, mvp.m_max_value);
+            this->m_total_number_ingredients = std::max(this->m_total_number_ingredients, mvp.m_number_ingredients);
+        }
+        this->m_list.push_back(mvp);
+    }
+
+    m_total_ingredient.resize( m_total_number_ingredients );
+
     return m_list.size();
 }
 #endif
