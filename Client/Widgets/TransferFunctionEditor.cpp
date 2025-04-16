@@ -255,7 +255,6 @@ void TransferFunctionEditor::onColorUserDefinedChanged()
     m_parameter.setColorFunctionRange( colorName, ui->colorUserDefinedMinDoubleSpinBox->value(), ui->colorUserDefinedMaxDoubleSpinBox->value() );
 }
 
-#include "Widgets/ColorMapEditor.h"
 void TransferFunctionEditor::onEditColorMapPushButtonClicked()
 {
     std::string colorName = ui->colorFunctionComboBox->currentText().toStdString();
@@ -428,7 +427,6 @@ void TransferFunctionEditor::onOpacityUserDefinedChanged()
     m_parameter.setOpacityFunctionRange( opacityName, ui->opacityUserDefinedMinDoubleSpinBox->value(), ui->opacityUserDefinedMaxDoubleSpinBox->value() );
 }
 
-#include "Widgets/OpacityMapEditor.h"
 void TransferFunctionEditor::onEditOpacityMapPushButtonClicked()
 {
     std::string opacityName = ui->opacityFunctionComboBox->currentText().toStdString();

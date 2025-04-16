@@ -1,5 +1,5 @@
-#ifndef ColorMapEditorV2_H
-#define ColorMapEditorV2_H
+#ifndef COLORMAPEDITOR_H
+#define COLORMAPEDITOR_H
 
 #include <QDialog>
 #include <QFile>
@@ -50,4 +50,4 @@ private slots:
     void onControlPointChanged();
 };
 
-#endif // ColorMapEditorV2_H
+#endif // COLORMAPEDITOR_H

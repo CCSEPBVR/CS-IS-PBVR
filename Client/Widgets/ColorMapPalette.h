@@ -1,5 +1,5 @@
-#ifndef ColorMapPalette3_H
-#define ColorMapPalette3_H
+#ifndef COLORMAPPALETTE_H
+#define COLORMAPPALETTE_H
 
 #include "ColorMap.h"
 
@@ -55,4 +55,4 @@ private:
     QVector<QColor> m_new_colors;
 };
 
-#endif // ColorMapPalette3_H
+#endif // COLORMAPPALETTE_H

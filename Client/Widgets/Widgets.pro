@@ -51,11 +51,6 @@ HEADERS += \
     RenderOptions.h \
     RepetitionLevelControl.h \
     ShadingController.h \
-    TFEColorMapBar.h \
-    TFEColorMapPalette.h \
-    TFEHistogramBar.h \
-    TFEOpacityMapBar.h \
-    TFEOpacityMapPalette.h \
     ToolBars.h \
     TransferFunctionEditor.h \
     TransferFunctionParameter.h \
@@ -89,11 +84,6 @@ SOURCES += \
     RenderOptions.cpp \
     RepetitionLevelControl.cpp \
     ShadingController.cpp \
-    TFEColorMapBar.cpp \
-    TFEColorMapPalette.cpp \
-    TFEHistogramBar.cpp \
-    TFEOpacityMapBar.cpp \
-    TFEOpacityMapPalette.cpp \
     ToolBars.cpp \
     TransferFunctionEditor.cpp \
     VariableEditor.cpp \

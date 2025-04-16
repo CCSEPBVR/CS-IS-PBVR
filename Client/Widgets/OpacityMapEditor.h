@@ -1,5 +1,5 @@
-#ifndef OpacityMapEditor_H
-#define OpacityMapEditor_H
+#ifndef OPACITYMAPEDITOR_H
+#define OPACITYMAPEDITOR_H
 
 #include <QDialog>
 
@@ -38,4 +38,4 @@ private slots:
     void onControlPointChanged();
 };
 
-#endif // OpacityMapEditor_H
+#endif // OPACITYMAPEDITOR_H
