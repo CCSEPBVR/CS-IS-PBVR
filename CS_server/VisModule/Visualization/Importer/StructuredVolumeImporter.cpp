@@ -560,7 +560,7 @@ void StructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlMult
             resolution.set( resolution_x, resolution_y, resolution_z );
 
             vismodule::ValueArray<float> tmp_values_array( object->values().size() );
-            for (int i = 0; i < object->nnodes(); i++)
+            for (int i = 0; i < object->values().size(); i++)
             {
                 tmp_values_array[i] = object->values().asValueArray<float>()[i];
             }
@@ -617,7 +617,7 @@ void StructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlImag
     resolution.set( resolution_x, resolution_y, resolution_z );
 
     vismodule::ValueArray<float> tmp_values_array( object->values().size() );
-    for (int i = 0; i < object->nnodes(); i++)
+    for (int i = 0; i < object->values().size(); i++)
     {
         tmp_values_array[i] = object->values().asValueArray<float>()[i];
     }

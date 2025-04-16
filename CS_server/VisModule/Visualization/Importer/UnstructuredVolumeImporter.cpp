@@ -625,7 +625,7 @@ void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlMu
                 }
                 
                 vismodule::ValueArray<float> tmp_values_array( object->values().size() );
-                for (int i = 0; i < object->nnodes(); i++)
+                for (int i = 0; i < object->values().size(); i++)
                 {
                     tmp_values_array[i] = object->values().asValueArray<float>()[i];
                 }
@@ -681,7 +681,7 @@ void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlUn
             }
             
             vismodule::ValueArray<float> tmp_values_array( object->values().size() );
-            for (int i = 0; i < object->nnodes(); i++)
+            for (int i = 0; i < object->values().size(); i++)
             {
                 tmp_values_array[i] = object->values().asValueArray<float>()[i];
             }
