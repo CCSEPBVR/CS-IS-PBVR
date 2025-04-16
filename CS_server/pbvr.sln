@@ -19,6 +19,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VisModule", "VisModule\VisM
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KVSMLConverter", "KVSMLConverter\KVSMLConverter.vcxproj", "{3BCEF6FD-42BC-46AC-857C-C01AF17DF910}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VisModule_vtk", "VisModule\VisModule_vtk.vcxproj", "{2D5AE4CF-1846-4FEC-8D21-7FBCCE2448E8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{29A2476E-CE35-4061-995C-96F8BCA48CB2} = {29A2476E-CE35-4061-995C-96F8BCA48CB2}
+		{B67FDEE2-669B-42A1-890F-F5256482EE5C} = {B67FDEE2-669B-42A1-890F-F5256482EE5C}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -94,6 +100,17 @@ Global
 		{3BCEF6FD-42BC-46AC-857C-C01AF17DF910}.Release|Win32.ActiveCfg = Release|Win32
 		{3BCEF6FD-42BC-46AC-857C-C01AF17DF910}.Release|Win32.Build.0 = Release|Win32
 		{3BCEF6FD-42BC-46AC-857C-C01AF17DF910}.Release|x64.ActiveCfg = Release|x64
+		{2D5AE4CF-1846-4FEC-8D21-7FBCCE2448E8}.Debug|ARM.ActiveCfg = Debug|x64
+		{2D5AE4CF-1846-4FEC-8D21-7FBCCE2448E8}.Debug|ARM.Build.0 = Debug|x64
+		{2D5AE4CF-1846-4FEC-8D21-7FBCCE2448E8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2D5AE4CF-1846-4FEC-8D21-7FBCCE2448E8}.Debug|Win32.Build.0 = Debug|Win32
+		{2D5AE4CF-1846-4FEC-8D21-7FBCCE2448E8}.Debug|x64.ActiveCfg = Debug|x64
+		{2D5AE4CF-1846-4FEC-8D21-7FBCCE2448E8}.Debug|x64.Build.0 = Debug|x64
+		{2D5AE4CF-1846-4FEC-8D21-7FBCCE2448E8}.Release|ARM.ActiveCfg = Release|x64
+		{2D5AE4CF-1846-4FEC-8D21-7FBCCE2448E8}.Release|ARM.Build.0 = Release|x64
+		{2D5AE4CF-1846-4FEC-8D21-7FBCCE2448E8}.Release|Win32.ActiveCfg = Release|Win32
+		{2D5AE4CF-1846-4FEC-8D21-7FBCCE2448E8}.Release|Win32.Build.0 = Release|Win32
+		{2D5AE4CF-1846-4FEC-8D21-7FBCCE2448E8}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
