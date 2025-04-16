@@ -1,12 +1,17 @@
-#ifndef COLORMAPEDITOR_H
-#define COLORMAPEDITOR_H
+#ifndef ColorMapEditorV2_H
+#define ColorMapEditorV2_H
 
 #include <QDialog>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QLabel>
+#include <QColorDialog>
 
-#include <kvs/RGBColor>
-#include <kvs/ColorMap>
-
-#include <QUndoStack>
+#include "function.h"
+#include "function_parser.h"
+#include "ColorMap.h"
 
 namespace Ui {
 class ColorMapEditor;
@@ -17,30 +22,32 @@ class ColorMapEditor : public QDialog
     Q_OBJECT
 
 public:
-    explicit ColorMapEditor(QWidget *parent = nullptr);
+    explicit ColorMapEditor( QWidget *parent = nullptr );
     ~ColorMapEditor();
-    void setColorMap( kvs::ColorMap colorMap );
-    void setInitialColorMap( kvs::ColorMap colorMap );
-    kvs::ColorMap getColorMap();
-    void clearUndoStack() { m_undo_stack->clear(); }
+    void setDefaultColorMap( const QVector<QColor>& colors );
+    QVector<QColor> getColorMap();
 
 private:
     Ui::ColorMapEditor *ui;
-    void readJsonFile();//Load Presets ColorMapBar
-    QUndoStack *m_undo_stack;
-    bool m_is_dark_mode;
+    void initialize();
+    void initializePreset();
+    void initializeFreeformCurve();
+    void initializeExpression();
+    void initializeControlPoints();
+    QList<QPair<QString, QVector<QColor>>> loadDefaultColorMap( const QString& filePath );
 
-protected:
-    void showEvent( QShowEvent* event ) override;
+private:
+    QVector<QColor> m_default_colors;
+
 
 private slots:
-    void onCurrentTabChanged( int index );
+    void onReset();
+    void onTabChanged( int index );
+    void onPresetColorMapDoubleClicked( int row, int column );
     void onDrawingColorDoubleClicked();
-    void onResetButtonClicked();
-    void onColorMapBarTableWidgetCellDoubleClicked( int row, int column );
     void onExpressionChanged();
-    void onNumberOfControlPointsChabged( int value );
+    void onNumberOfControlPointsChanged( int value );
     void onControlPointChanged();
 };
 
-#endif // COLORMAPEDITOR_H
+#endif // ColorMapEditorV2_H

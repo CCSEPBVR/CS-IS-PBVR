@@ -173,15 +173,32 @@ void TransferFunctionEditor::onColorFunctionChanged( int index )
         ui->colorServerSideMinLineEdit->blockSignals( false );
         ui->colorServerSideMaxLineEdit->blockSignals( false );
 
-        ui->colorMapBar->setColorMap( func->colorMap() );
-        ui->colorMapBar->startInitialization();
+        const kvs::ColorMap::Table table = func->colorMap().table();
+        QList<QColor> color_list;
+
+        for (size_t i = 0; i + 2 < table.size(); i += 3)
+        {
+            QColor color(table[i], table[i + 1], table[i + 2]);
+            color_list.append(color);
+        }
+
+        ui->colorMapBar->setColors(color_list);
+        // ui->colorMapBar->startInitialization();
         ui->colorMapBar->update();
 
-        ui->colorHistogram->setTable( func->m_color_histogram );
+        std::vector<int> ch;
+        ch.reserve( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_histogram.bin().size() );
+        for( int i = 0; i< m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_histogram.bin().size(); i++ )
+        {
+            ch.push_back( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_histogram.bin().at(i) );
+        }
+
+        ui->colorHistogram->setDatas( ch );
+
         switch ( func->m_color_confirmed_select_range ) //confirmd
         {
         case algebricTransferFunction::UserDefinedRange:
-            ui->colorHistogram->setRange( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_user_defined_min, m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_user_defined_max );
+            // ui->colorHistogram->setRange( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_user_defined_min, m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_user_defined_max );
             if (index < m_connect->getClientMessage()->m_transfer_function.size())
             {
                 ui->colorMapMinLabel->setNum( m_connect->getClientMessage()->m_transfer_function[ui->colorFunctionComboBox->currentIndex()].m_color_variable_min );
@@ -189,7 +206,7 @@ void TransferFunctionEditor::onColorFunctionChanged( int index )
             }
             break;
         case algebricTransferFunction::ServerSideRange:
-            ui->colorHistogram->setRange( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_min, m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_max );
+            // ui->colorHistogram->setRange( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_min, m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_max );
             ui->colorMapMinLabel->setNum( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_min );
             ui->colorMapMaxLabel->setNum( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_max );
             break;
@@ -238,20 +255,48 @@ void TransferFunctionEditor::onColorUserDefinedChanged()
     m_parameter.setColorFunctionRange( colorName, ui->colorUserDefinedMinDoubleSpinBox->value(), ui->colorUserDefinedMaxDoubleSpinBox->value() );
 }
 
+#include "Widgets/ColorMapEditor.h"
 void TransferFunctionEditor::onEditColorMapPushButtonClicked()
 {
     std::string colorName = ui->colorFunctionComboBox->currentText().toStdString();
+    ColorMapEditor colorMapEditor;
+    colorMapEditor.adjustSize();
+    colorMapEditor.setDefaultColorMap( ui->colorMapBar->getColors() );
 
-    m_color_map_editor.setColorMap( m_parameter.getTransferFunction( colorName )->colorMap() );
-    m_color_map_editor.setInitialColorMap( m_parameter.getTransferFunction( colorName )->colorMap() );
-    m_color_map_editor.clearUndoStack();
-
-    if( m_color_map_editor.exec() == QDialog::Accepted )
+    if( colorMapEditor.exec() == QDialog::Accepted )
     {
-        const kvs::ColorMap cmap = m_color_map_editor.getColorMap();
-        ui->colorMapBar->setColorMap( cmap );
+        // カラーパレットの色を取得してウィジェットに反映
+        ui->colorMapBar->setColors( colorMapEditor.getColorMap() );
+
+        // QList<QColor> → kvs::ColorMap に変換
+        QVector<QColor> qcolors = ui->colorMapBar->getColors();
+        kvs::ValueArray<kvs::UInt8> table;
+        table.allocate( qcolors.size() * 3 );
+
+        for ( int i = 0; i < qcolors.size(); ++i )
+        {
+            const QColor& c = qcolors[i];
+            table[3*i]     = static_cast<kvs::UInt8>( c.red() );
+            table[3*i + 1] = static_cast<kvs::UInt8>( c.green() );
+            table[3*i + 2] = static_cast<kvs::UInt8>( c.blue() );
+        }
+
+        kvs::ColorMap cmap( table );
         m_parameter.getTransferFunction( colorName )->setColorMap( cmap );
     }
+
+    // std::string colorName = ui->colorFunctionComboBox->currentText().toStdString();
+
+    // m_color_map_editor.setColorMap( m_parameter.getTransferFunction( colorName )->colorMap() );
+    // m_color_map_editor.setInitialColorMap( m_parameter.getTransferFunction( colorName )->colorMap() );
+    // m_color_map_editor.clearUndoStack();
+
+    // if( m_color_map_editor.exec() == QDialog::Accepted )
+    // {
+    //     const kvs::ColorMap cmap = m_color_map_editor.getColorMap();
+    //     ui->colorMapBar->setColorMap( cmap );
+    //     m_parameter.getTransferFunction( colorName )->setColorMap( cmap );
+    // }
 }
 
 void TransferFunctionEditor::onOpacitySynthesizerEdited( const QString &arg1 )
@@ -298,14 +343,35 @@ void TransferFunctionEditor::onOpacityFunctionChanged( int index )
         ui->opacityServerSideMinLineEdit->blockSignals( false );
         ui->opacityServerSideMaxLineEdit->blockSignals( false );
 
-        ui->opacityMapBar->setOpacityMap( func->opacityMap() );
+        const kvs::OpacityMap& omap = func->opacityMap();
+        const kvs::ValueArray<float>& values = omap.table(); // もしくは omap.getTable() に読み替え
+
+        QVector<float> opacities;
+        opacities.reserve(values.size());
+        for (size_t i = 0; i < values.size(); ++i)
+        {
+            opacities.append(values[i]);
+        }
+
+        ui->opacityMapBar->setOpacities(opacities);
         ui->opacityMapBar->update();
 
-        ui->opacityHistogram->setTable( func->m_opacity_histogram );
+        // ui->opacityHistogram->setTable( func->m_opacity_histogram );
+
+        std::vector<int> oh;
+        oh.reserve( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_histogram.bin().size() );
+        for( int i = 0; i< m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_histogram.bin().size(); i++ )
+        {
+            oh.push_back( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_histogram.bin().at(i) );
+        }
+
+        ui->opacityHistogram->setDatas( oh );
+
+
         switch ( func->m_opacity_confirmed_select_range ) //confirmd
         {
         case algebricTransferFunction::UserDefinedRange:
-            ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_user_defined_min, m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_user_defined_max );
+            // ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_user_defined_min, m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_user_defined_max );
             if (index < m_connect->getClientMessage()->m_transfer_function.size())
             {
                 ui->opacityMapMinLabel->setNum( m_connect->getClientMessage()->m_transfer_function[ui->opacityFunctionComboBox->currentIndex()].m_opacity_variable_min );
@@ -313,7 +379,7 @@ void TransferFunctionEditor::onOpacityFunctionChanged( int index )
             }
             break;
         case algebricTransferFunction::ServerSideRange:
-            ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_min, m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_max );
+            // ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_min, m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_max );
             ui->opacityMapMinLabel->setNum( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_min );
             ui->opacityMapMaxLabel->setNum( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_max );
             break;
@@ -362,19 +428,30 @@ void TransferFunctionEditor::onOpacityUserDefinedChanged()
     m_parameter.setOpacityFunctionRange( opacityName, ui->opacityUserDefinedMinDoubleSpinBox->value(), ui->opacityUserDefinedMaxDoubleSpinBox->value() );
 }
 
+#include "Widgets/OpacityMapEditor.h"
 void TransferFunctionEditor::onEditOpacityMapPushButtonClicked()
 {
     std::string opacityName = ui->opacityFunctionComboBox->currentText().toStdString();
+    OpacityMapEditor opacityMapEditor;
+    opacityMapEditor.adjustSize();
+    opacityMapEditor.setDefaultOpacityMap( ui->opacityMapBar->getOpacities() );
 
-    m_opacity_map_editor.setOpacityMap( m_parameter.getTransferFunction( opacityName )->opacityMap() );
-    m_opacity_map_editor.setInitialOpacityMap( m_parameter.getTransferFunction( opacityName )->opacityMap() );
-    m_opacity_map_editor.clearUndoStack();
-
-    if( m_opacity_map_editor.exec() == QDialog::Accepted )
+    if( opacityMapEditor.exec() == QDialog::Accepted )
     {
-        const kvs::OpacityMap cmap = m_opacity_map_editor.getOpacityMap();
-        ui->opacityMapBar->setOpacityMap( cmap );
-        m_parameter.getTransferFunction( opacityName )->setOpacityMap( cmap );
+        // UI側に反映
+        ui->opacityMapBar->setOpacities( opacityMapEditor.getOpacityMap() );
+
+        // QVector<float> → kvs::OpacityMap に変換
+        QVector<float> opacities = ui->opacityMapBar->getOpacities();
+        kvs::ValueArray<float> values( opacities.size() );
+
+        for (int i = 0; i < opacities.size(); ++i)
+        {
+            values[i] = opacities[i];
+        }
+
+        kvs::OpacityMap omap( values );
+        m_parameter.getTransferFunction( opacityName )->setOpacityMap( omap );
     }
 }
 
@@ -609,7 +686,16 @@ bool TransferFunctionEditor::importTransferFunctionFromFile( const std::string& 
         ui->colorUserDefinedMinMaxRadioButton->setChecked( true );
         ui->colorUserDefinedMinDoubleSpinBox->setValue( m_parameter.m_transfer_functions[0].m_color_user_defined_min );
         ui->colorUserDefinedMaxDoubleSpinBox->setValue( m_parameter.m_transfer_functions[0].m_color_user_defined_max );
-        ui->colorMapBar->setColorMap( m_parameter.m_transfer_functions[0].colorMap() );
+
+        const kvs::ValueArray<kvs::UInt8>& table = m_parameter.m_transfer_functions[0].colorMap().table();
+        QVector<QColor> colors;
+        for ( size_t i = 0; i < table.size(); i += 3 )
+        {
+            if ( i + 2 >= table.size() ) break; // 範囲チェック
+            QColor color( table[i], table[i + 1], table[i + 2] );
+            colors.push_back( color );
+        }
+        ui->colorMapBar->setColors( colors );
 
         ui->colorFunctionComboBox->blockSignals( false );
         ui->colorFunctionVariableLineEdit->blockSignals( false );
@@ -631,7 +717,17 @@ bool TransferFunctionEditor::importTransferFunctionFromFile( const std::string& 
         ui->opacityUserDefinedMinMaxRadioButton->setChecked( true );
         ui->opacityUserDefinedMinDoubleSpinBox->setValue( m_parameter.m_transfer_functions[0].m_opacity_user_defined_min );
         ui->opacityUserDefinedMaxDoubleSpinBox->setValue( m_parameter.m_transfer_functions[0].m_opacity_user_defined_max );
-        ui->opacityMapBar->setOpacityMap( m_parameter.m_transfer_functions[0].opacityMap() );
+        const kvs::OpacityMap& omap = m_parameter.m_transfer_functions[0].opacityMap();
+        const kvs::ValueArray<float>& values = omap.table(); // または omap.getTable()
+
+        QVector<float> opacities;
+        opacities.reserve(values.size());
+        for (size_t i = 0; i < values.size(); ++i)
+        {
+            opacities.append(values[i]);
+        }
+
+        ui->opacityMapBar->setOpacities(opacities);
 
         ui->opacityFunctionComboBox->blockSignals( false );
         ui->opacityFunctionVariableLineEdit->blockSignals( false );
@@ -693,9 +789,25 @@ void TransferFunctionEditor::importTransferFunctionFromServer()
         ui->colorServerSideMaxLineEdit->setText( QString::number( m_parameter.m_transfer_functions[0].m_color_server_side_max ) );
         ui->colorMapMinLabel->setNum( m_parameter.m_transfer_functions[0].m_color_server_side_min );
         ui->colorMapMaxLabel->setNum( m_parameter.m_transfer_functions[0].m_color_server_side_max );
-        ui->colorMapBar->setColorMap( m_parameter.m_transfer_functions[0].colorMap() );
-        ui->colorHistogram->setTable( m_parameter.m_transfer_functions[0].m_color_histogram );
-        ui->colorHistogram->setRange( m_parameter.m_transfer_functions[0].m_color_server_side_min, m_parameter.m_transfer_functions[0].m_color_server_side_max );
+
+        const kvs::ValueArray<kvs::UInt8>& table = m_parameter.m_transfer_functions[0].colorMap().table();
+        QVector<QColor> colors;
+        for ( size_t i = 0; i < table.size(); i += 3 )
+        {
+            if ( i + 2 >= table.size() ) break; // 範囲チェック
+            QColor color( table[i], table[i + 1], table[i + 2] );
+            colors.push_back( color );
+        }
+        ui->colorMapBar->setColors( colors );
+
+        std::vector<int> ch;
+        ch.reserve( m_parameter.m_transfer_functions[0].m_color_histogram.bin().size() );
+        for( int i = 0; i< m_parameter.m_transfer_functions[0].m_color_histogram.bin().size(); i++ )
+        {
+            ch.push_back( m_parameter.m_transfer_functions[0].m_color_histogram.bin().at(i) );
+        }
+
+        ui->colorHistogram->setDatas( ch );
 
         ui->colorFunctionComboBox->blockSignals( false );
         ui->colorFunctionVariableLineEdit->blockSignals( false );
@@ -720,9 +832,30 @@ void TransferFunctionEditor::importTransferFunctionFromServer()
         ui->opacityServerSideMaxLineEdit->setText( QString::number( m_parameter.m_transfer_functions[0].m_opacity_server_side_max ) );
         ui->opacityMapMinLabel->setNum( m_parameter.m_transfer_functions[0].m_opacity_server_side_min );
         ui->opacityMapMaxLabel->setNum( m_parameter.m_transfer_functions[0].m_opacity_server_side_max );
-        ui->opacityMapBar->setOpacityMap( m_parameter.m_transfer_functions[0].opacityMap() );
-        ui->opacityHistogram->setTable( m_parameter.m_transfer_functions[0].m_opacity_histogram );
-        ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[0].m_opacity_server_side_min, m_parameter.m_transfer_functions[0].m_opacity_server_side_max );
+
+        const kvs::OpacityMap& omap = m_parameter.m_transfer_functions[0].opacityMap();
+        const kvs::ValueArray<float>& values = omap.table(); // または omap.getTable()
+
+        QVector<float> opacities;
+        opacities.reserve(values.size());
+        for (size_t i = 0; i < values.size(); ++i)
+        {
+            opacities.append(values[i]);
+        }
+
+        ui->opacityMapBar->setOpacities(opacities);
+
+        // ui->opacityHistogram->setTable( m_parameter.m_transfer_functions[0].m_opacity_histogram );
+        std::vector<int> oh;
+        oh.reserve( m_parameter.m_transfer_functions[0].m_opacity_histogram.bin().size() );
+        for( int i = 0; i< m_parameter.m_transfer_functions[0].m_opacity_histogram.bin().size(); i++ )
+        {
+            oh.push_back( m_parameter.m_transfer_functions[0].m_opacity_histogram.bin().at(i) );
+        }
+
+        ui->opacityHistogram->setDatas( oh );
+
+        // ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[0].m_opacity_server_side_min, m_parameter.m_transfer_functions[0].m_opacity_server_side_max );
 
         ui->opacityFunctionComboBox->blockSignals( false );
         ui->opacityFunctionVariableLineEdit->blockSignals( false );
@@ -831,19 +964,36 @@ void TransferFunctionEditor::updateRangeView()
             ui->colorFunctionVariableLineEdit->setText( QString::fromStdString( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_variable ) );
             ui->colorServerSideMinLineEdit->setText( QString::number( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_min ) );
             ui->colorServerSideMaxLineEdit->setText( QString::number( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_max ) );
-            ui->colorMapBar->setColorMap( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].colorMap() );
-            ui->colorHistogram->setTable( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_histogram );
+            // ui->colorMapBar->setColorMap( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].colorMap() );
+            const kvs::ValueArray<kvs::UInt8>& table = m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].colorMap().table();
+            QVector<QColor> colors;
+            for ( size_t i = 0; i < table.size(); i += 3 )
+            {
+                if ( i + 2 >= table.size() ) break; // 範囲チェック
+                QColor color( table[i], table[i + 1], table[i + 2] );
+                colors.push_back( color );
+            }
+            ui->colorMapBar->setColors( colors );
+
+            std::vector<int> ch;
+            ch.reserve( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_histogram.bin().size() );
+            for( int i = 0; i< m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_histogram.bin().size(); i++ )
+            {
+                ch.push_back( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_histogram.bin().at(i) );
+            }
+
+            ui->colorHistogram->setDatas( ch );
 
             switch ( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_confirmed_select_range ) //confirmd
             {
             case algebricTransferFunction::UserDefinedRange:
-                ui->colorHistogram->setRange( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_user_defined_min, m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_user_defined_max );
+                // ui->colorHistogram->setRange( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_user_defined_min, m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_user_defined_max );
                 ui->colorHistogram->update();
                 ui->colorMapMinLabel->setNum( m_connect->getClientMessage()->m_transfer_function[ui->colorFunctionComboBox->currentIndex()].m_color_variable_min );
                 ui->colorMapMaxLabel->setNum( m_connect->getClientMessage()->m_transfer_function[ui->colorFunctionComboBox->currentIndex()].m_color_variable_max );
                 break;
             case algebricTransferFunction::ServerSideRange:
-                ui->colorHistogram->setRange( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_min, m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_max );
+                // ui->colorHistogram->setRange( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_min, m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_max );
                 ui->colorHistogram->update();
                 ui->colorMapMinLabel->setNum( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_min );
                 ui->colorMapMaxLabel->setNum( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_max );
@@ -870,19 +1020,39 @@ void TransferFunctionEditor::updateRangeView()
             ui->opacityFunctionVariableLineEdit->setText( QString::fromStdString( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_variable ) );
             ui->opacityServerSideMinLineEdit->setText( QString::number( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_min ) );
             ui->opacityServerSideMaxLineEdit->setText( QString::number( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_max ) );
-            ui->opacityMapBar->setOpacityMap( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].opacityMap() );
-            ui->opacityHistogram->setTable( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_histogram );
+
+            const kvs::OpacityMap& omap = m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].opacityMap();
+            const kvs::ValueArray<float>& values = omap.table(); // または omap.getTable()
+
+            QVector<float> opacities;
+            opacities.reserve(values.size());
+            for (size_t i = 0; i < values.size(); ++i)
+            {
+                opacities.append(values[i]);
+            }
+
+            ui->opacityMapBar->setOpacities(opacities);
+
+            // ui->opacityHistogram->setTable( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_histogram );
+            std::vector<int> oh;
+            oh.reserve( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_histogram.bin().size() );
+            for( int i = 0; i< m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_histogram.bin().size(); i++ )
+            {
+                oh.push_back( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_histogram.bin().at(i) );
+            }
+
+            ui->opacityHistogram->setDatas( oh );
 
             switch ( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_confirmed_select_range ) //confirmd
             {
             case algebricTransferFunction::UserDefinedRange:
-                ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_user_defined_min, m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_user_defined_max );
+                // ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_user_defined_min, m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_user_defined_max );
                 ui->opacityHistogram->update();
                 ui->opacityMapMinLabel->setNum( m_connect->getClientMessage()->m_transfer_function[ui->opacityFunctionComboBox->currentIndex()].m_opacity_variable_min );
                 ui->opacityMapMaxLabel->setNum( m_connect->getClientMessage()->m_transfer_function[ui->opacityFunctionComboBox->currentIndex()].m_opacity_variable_max );
                 break;
             case algebricTransferFunction::ServerSideRange:
-                ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_min, m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_max );
+                // ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_min, m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_max );
                 ui->opacityHistogram->update();
                 ui->opacityMapMinLabel->setNum( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_min );
                 ui->opacityMapMaxLabel->setNum( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_max );
@@ -931,7 +1101,7 @@ void TransferFunctionEditor::updateRangeView()
     }
     if( isParticleGenerationNeeded )
     {
-        m_merge->setIsParticleGenerationNeeded( true );        
+        m_merge->setIsParticleGenerationNeeded( true );
     }
     m_color_map_bar_selector->updateRangeView();
 }

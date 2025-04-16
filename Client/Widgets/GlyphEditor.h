@@ -8,8 +8,8 @@
 #include <kvs/ColorMap>
 
 #include "ParticleTransferProtocol.h"
-#include "Widgets/ColorMapEditor.h"
-#include "Widgets/TFEColorMapBar.h"
+// #include "Widgets/ColorMapEditor.h"
+// #include "Widgets/TFEColorMapBar.h"
 class PBVRGUI;
 class MergePanel;
 class Connect;
@@ -55,7 +55,7 @@ public:
     ~GlyphEditor();
     int getGlyphType() const { return static_cast<int>(m_glyph_type);}
     float getScaleFactor() const { return m_scale_factor; }
-    TFEColorMapBar* getColorMapBar() const;
+    // TFEColorMapBar* getColorMapBar() const;
 
 private:
     Ui::GlyphEditor *ui;
@@ -63,7 +63,7 @@ private:
     MergePanel* m_merge;
     Connect* m_connect;
     ShadingController* m_shading_controller;
-    ColorMapEditor m_color_map_editor;
+    // ColorMapEditor m_color_map_editor;
 
     int m_direction_previus_index[3];
 

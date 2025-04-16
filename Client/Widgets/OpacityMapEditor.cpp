@@ -1,40 +1,13 @@
 #include "OpacityMapEditor.h"
 #include "ui_OpacityMapEditor.h"
-#include "FunctionParser/function_parser.h"
-OpacityMapEditor::OpacityMapEditor(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::OpacityMapEditor)
+
+OpacityMapEditor::OpacityMapEditor(QWidget *parent)
+    : QDialog(parent)
+    , ui(new Ui::OpacityMapEditor)
+    ,m_default_opacities( QVector<float> {0.0, 0.5, 1.0} )
 {
     ui->setupUi(this);
-    m_undo_stack = new QUndoStack;
-    m_undo_stack->setUndoLimit( 50 );
-    ui->opacityMapPalette->setUndoStack( m_undo_stack );
-
-    ui->controlPointsTWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->opacityMapBarTabWidget->setCurrentIndex( 0 );
-
-    connect( ui->resetPBtn, &QPushButton::clicked, this, &OpacityMapEditor::onResetButtonClicked );
-    connect( ui->undoPBtn, &QPushButton::clicked, m_undo_stack, &QUndoStack::undo );
-    connect( ui->redoPBtn, &QPushButton::clicked, m_undo_stack, &QUndoStack::redo );
-    connect( ui->opacityMapBarTabWidget, &QTabWidget::currentChanged, this, &OpacityMapEditor::onCurrentTabChanged );
-    connect( ui->numberOfControlPointsSBox, &QSpinBox::valueChanged, this, &OpacityMapEditor::onNumberOfControlPointsChabged );
-    ui->controlPointsTWidget->setRowCount( ui->numberOfControlPointsSBox->value() );
-
-    connect( ui->oLEdit, &QLineEdit::textChanged, this, &OpacityMapEditor::onExpressionChanged );
-    connect( ui->controlPointsTWidget, &QTableWidget::cellChanged, this, &OpacityMapEditor::onControlPointChanged );
-    connect( ui->cancelPBtn, &QPushButton::clicked, this, &OpacityMapEditor::close );
-    connect( ui->applyPBtn, &QPushButton::clicked, this, &OpacityMapEditor::accept );
-
-    QPalette app_palette = QApplication::palette();
-    QColor backgroundColor = app_palette.color(QPalette::Window);
-    if( backgroundColor.value() < 128 )
-    {
-        m_is_dark_mode = true;
-    }
-    else
-    {
-        m_is_dark_mode = false;
-    }
+    initialize();
 }
 
 OpacityMapEditor::~OpacityMapEditor()
@@ -42,93 +15,105 @@ OpacityMapEditor::~OpacityMapEditor()
     delete ui;
 }
 
-void OpacityMapEditor::setOpacityMap( kvs::OpacityMap OpacityMap )
+void OpacityMapEditor::setDefaultOpacityMap( const QVector<float>& opacities )
 {
-    ui->opacityMapPalette->setOpacityMap( OpacityMap );
+    m_default_opacities = opacities;
+    ui->opacityMapPalette->setOpacities( opacities );
 }
 
-void OpacityMapEditor::setInitialOpacityMap( kvs::OpacityMap OpacityMap )
+QVector<float> OpacityMapEditor::getOpacityMap()
 {
-    ui->opacityMapPalette->setInitialOpacityMap( OpacityMap );
+    return ui->opacityMapPalette->getOpacities();
 }
 
-kvs::OpacityMap OpacityMapEditor::getOpacityMap()
+void OpacityMapEditor::initialize()
 {
-    return ui->opacityMapPalette->getOpacity();
+    ui->tabWidget->setCurrentIndex( 0 );
+    resize( width(), minimumHeight() );
+
+    initializeExpression();
+    initializeControlPoints();
+
+    connect( ui->resetPushButton, &QPushButton::clicked, this, &OpacityMapEditor::onReset );
+    connect( ui->undoPushButton, &QPushButton::clicked, ui->opacityMapPalette, &OpacityMapPalette::undo );
+    connect( ui->redoPushButton, &QPushButton::clicked,ui->opacityMapPalette, &OpacityMapPalette::redo );
+
+    connect( ui->tabWidget, &QTabWidget::currentChanged, this, &OpacityMapEditor::onTabChanged );
+
+    connect( ui->opacityLineEdit, &QLineEdit::textEdited, this, &OpacityMapEditor::onExpressionChanged );
+
+    connect( ui->numberOfControlPointsSpinBox, &QSpinBox::valueChanged, this, &OpacityMapEditor::onNumberOfControlPointsChanged );
+    connect( ui->controlPointsTableWidget, &QTableWidget::cellChanged, this, &OpacityMapEditor::onControlPointChanged );
+
+    connect( ui->cancelPushButton, &QPushButton::clicked, this, &OpacityMapEditor::close );
+    connect( ui->applyPushButton, &QPushButton::clicked, this, &OpacityMapEditor::accept );
 }
 
-/*===========================================================================*/
-/**
- *  @brief  showEvent function.
- *  @note   This is to address the problem that the OpacityMap of the Function selected in TransferFunctionEditor
- *  @note   is not immediately reflected when OpacityMapEditor is opened in a linux environment.
- */
-/*===========================================================================*/
-void OpacityMapEditor::showEvent(QShowEvent *event)
+void OpacityMapEditor::initializeExpression()
 {
-    Q_UNUSED( event );
-    ui->opacityMapPalette->update();
+    ui->opacityLineEdit->setText( "x * 1" );
 }
 
-//Freeform curve 0
-//Expression     1
-//Control Point  2
-void OpacityMapEditor::onCurrentTabChanged( int index )
+void OpacityMapEditor::initializeControlPoints()
 {
+    ui->controlPointsTableWidget->horizontalHeader()->setSectionResizeMode( QHeaderView::Stretch );
+    ui->controlPointsTableWidget->setRowCount( ui->numberOfControlPointsSpinBox->value() );
+}
+
+void OpacityMapEditor::onReset()
+{
+    ui->opacityMapPalette->setOpacities( m_default_opacities );
+}
+
+void OpacityMapEditor::onTabChanged( int index )
+{
+    /*
+     // * 0: Preset
+     // * 1: Freeform Curve
+     * 0: Expression
+     * 1: Control Points
+     */
     if( index == 0 )
     {
+        onExpressionChanged();
         resize( width(), minimumHeight() );
     }
     else if( index == 1 )
     {
-        resize( width(), minimumHeight() );
-        onExpressionChanged();
-    }
-    else if( index == 2 )
-    {
+        onControlPointChanged();
         resize( width(), 500 );
     }
 }
 
-void OpacityMapEditor::onResetButtonClicked()
-{
-    ui->opacityMapPalette->reset();
-}
-
 void OpacityMapEditor::onExpressionChanged()
 {
+    std::string opacityFunctionExpression;
+
 #ifdef Q_OS_WIN
-    std::string ofe = ui->oLEdit->text().toLocal8Bit().constData();
+    opacityFunctionExpression = ui->opacityLineEdit->text().toLocal8Bit().constData();
 #else
-    std::string ofe = ui->oLEdit->text().toStdString();
+    opacityFunctionExpression = ui->opacityLineEdit->text().toStdString();
 #endif
 
     const float min_value = 0.0;
     const float max_value = 1.0;
 
-    FuncParser::Variables vars;
-    FuncParser::Variable var_x;
-    FuncParser::Function of;
+    FuncParser::Variables variables;
+    FuncParser::Variable variable_x;
+    FuncParser::Function opacityFunction;
 
     char charx1[2] = "x";
-    var_x.tag(charx1);
-    vars.push_back(var_x);
+    variable_x.tag(charx1);
+    variables.push_back(variable_x);
 
-    FuncParser::FunctionParser of_parse( ofe, ofe.size() + 1 );
-    FuncParser::FunctionParser::Error err_o = of_parse.express( of, vars );
+    FuncParser::FunctionParser opacityFunctionParse( opacityFunctionExpression, opacityFunctionExpression.size() + 1 );
+    FuncParser::FunctionParser::Error errorOpacity = opacityFunctionParse.express( opacityFunction, variables );
 
-    if ( err_o != FuncParser::FunctionParser::ERR_NONE )
-    {
-        ui->oLEdit->setStyleSheet("background-color: red;");
-    }
-    else
-    {
-        ui->oLEdit->setStyleSheet("");
-    }
+    ui->opacityLineEdit->setStyleSheet( errorOpacity != FuncParser::FunctionParser::ERR_NONE ? "background-color: red;" : "" );
 
-    if( err_o == FuncParser::FunctionParser::ERR_NONE )
+    if( errorOpacity == FuncParser::FunctionParser::ERR_NONE )
     {
-        kvs::OpacityMap omap( 256, min_value, max_value );
+        QVector<float> opacityMap;
 
         const float stride = ( max_value - min_value ) / ( 256 - 1 );
         float x = min_value;
@@ -136,73 +121,124 @@ void OpacityMapEditor::onExpressionChanged()
         {
             float opacity;
 
-            var_x = x;
-            opacity = of.eval();
+            variable_x = x;
+            opacity = opacityFunction.eval();
             opacity = ( opacity > 1.0 ) ? 1.0 : ( opacity < 0 ) ? 0 : opacity;
 
-            omap.addPoint( x, opacity );
+            opacityMap.append( opacity );
         }
-        omap.create();
 
-        ui->opacityMapPalette->setOpacityMap( omap );
+        ui->opacityMapPalette->setOpacities( opacityMap );
         ui->opacityMapPalette->update();
     }
 }
 
-void OpacityMapEditor::onNumberOfControlPointsChabged( int value )
+void OpacityMapEditor::onNumberOfControlPointsChanged( int value )
 {
-    ui->controlPointsTWidget->setRowCount( value );
+    ui->controlPointsTableWidget->setRowCount( value );
     onControlPointChanged();
 }
 
 void OpacityMapEditor::onControlPointChanged()
 {
-    const float max_value = 1.0;
-    const float min_value = 0.0;
+    const float max_value = 1.0f;
+    const float min_value = 0.0f;
 
-    kvs::OpacityMap omap( 256, min_value, max_value );
-    omap.addPoint( 0.0, 0.0 );
-    omap.addPoint( 1.0, 0.0 );
-
-    bool valid_float;
+    QVector<QPair<float, float>> controlPoints;
     bool valid_row;
 
-    for ( int n = 0; n < ui->controlPointsTWidget->rowCount(); n++ )
+    const int row_count = ui->controlPointsTableWidget->rowCount();
+
+    for (int row = 0; row < row_count; ++row)
     {
-        valid_row=true;
-        float row_values[2]={0.0,0.0};
-        for (int c=0; c < 2; c++)
+        valid_row = true;
+        float x = 0.0f;
+        float alpha = 0.0f;
+
+        for (int col = 0; col < 2; ++col)
         {
-            if (    ui->controlPointsTWidget->item(n,c) )
+            QTableWidgetItem* item = ui->controlPointsTableWidget->item(row, col);
+            if (!item)
             {
-                QString text= ui->controlPointsTWidget->item(n,c)->text();
-                row_values[c]=text.toFloat(&valid_float);
-                valid_row=valid_row&valid_float;
-                if( m_is_dark_mode )
-                {
-                    ui->controlPointsTWidget->item(n,c)->setForeground(valid_float?Qt::white:Qt::red);
-                }
-                else
-                {
-                    ui->controlPointsTWidget->item(n,c)->setForeground(valid_float?Qt::black:Qt::red);
-                }
+                valid_row = false;
+                continue;
             }
-            else
+
+            bool ok = false;
+            float value = item->text().toFloat(&ok);
+
+            if (!ok)
             {
-                valid_row=false;
+                valid_row = false;
             }
+
+            // フォアグラウンド色を適切に更新（ダークモード対応）
+            // QColor fg_color = ok ? (m_is_dark_mode ? Qt::white : Qt::black) : Qt::red;
+            // item->setForeground(fg_color);
+
+            if (col == 0) x = value;
+            if (col == 1) alpha = value;
         }
 
         if (valid_row)
         {
-            float x      = row_values[0];
-            float alpha  = row_values[1];
-            omap.removePoint(x);
-            omap.addPoint(x,alpha);
+            controlPoints.append({x, alpha});
         }
     }
 
-    omap.create();
-    ui->opacityMapPalette->setOpacityMap( omap );
+    // 256分割で線形補間による不透明度マップを生成
+    QVector<float> opacityMap(256, 0.0f);
+
+    std::sort(controlPoints.begin(), controlPoints.end(),
+              [](const QPair<float, float>& a, const QPair<float, float>& b)
+              {
+                  return a.first < b.first;
+              });
+
+    if (controlPoints.isEmpty())
+    {
+        ui->opacityMapPalette->setOpacities(opacityMap);
+        ui->opacityMapPalette->update();
+        return;
+    }
+
+    const float stride = (max_value - min_value) / (256 - 1);
+    for (int i = 0; i < 256; ++i)
+    {
+        float x = min_value + i * stride;
+
+        // 線形補間で値を決定
+        float alpha = 0.0f;
+        if (x <= controlPoints.first().first)
+        {
+            alpha = controlPoints.first().second;
+        }
+        else if (x >= controlPoints.last().first)
+        {
+            alpha = controlPoints.last().second;
+        }
+        else
+        {
+            for (int j = 0; j < controlPoints.size() - 1; ++j)
+            {
+                float x0 = controlPoints[j].first;
+                float a0 = controlPoints[j].second;
+                float x1 = controlPoints[j + 1].first;
+                float a1 = controlPoints[j + 1].second;
+
+                if (x >= x0 && x <= x1)
+                {
+                    float t = (x - x0) / (x1 - x0);
+                    alpha = (1.0f - t) * a0 + t * a1;
+                    break;
+                }
+            }
+        }
+
+        // 値のクリップ（0〜1）
+        opacityMap[i] = std::clamp(alpha, 0.0f, 1.0f);
+    }
+
+    ui->opacityMapPalette->setOpacities(opacityMap);
     ui->opacityMapPalette->update();
 }

@@ -1,11 +1,11 @@
-#ifndef OPACITYMAPEDITOR_H
-#define OPACITYMAPEDITOR_H
+#ifndef OpacityMapEditor_H
+#define OpacityMapEditor_H
 
 #include <QDialog>
 
-#include <kvs/OpacityMap>
-
-#include <QUndoStack>
+#include "function.h"
+#include "function_parser.h"
+#include "ColorMap.h"
 
 namespace Ui {
 class OpacityMapEditor;
@@ -18,25 +18,24 @@ class OpacityMapEditor : public QDialog
 public:
     explicit OpacityMapEditor(QWidget *parent = nullptr);
     ~OpacityMapEditor();
-    void setOpacityMap( kvs::OpacityMap opacityMap );
-    void setInitialOpacityMap( kvs::OpacityMap opacityMap );
-    kvs::OpacityMap getOpacityMap();
-    void clearUndoStack() { m_undo_stack->clear(); }
+    void setDefaultOpacityMap( const QVector<float>& colors );
+    QVector<float> getOpacityMap();
 
 private:
     Ui::OpacityMapEditor *ui;
-    QUndoStack *m_undo_stack;
-    bool m_is_dark_mode;
+    void initialize();
+    void initializeExpression();
+    void initializeControlPoints();
 
-protected:
-    void showEvent( QShowEvent* event ) override;
+private:
+    QVector<float> m_default_opacities;
 
 private slots:
-    void onCurrentTabChanged( int index );
-    void onResetButtonClicked();
+    void onReset();
+    void onTabChanged( int index );
     void onExpressionChanged();
-    void onNumberOfControlPointsChabged( int value );
+    void onNumberOfControlPointsChanged( int value );
     void onControlPointChanged();
 };
 
-#endif // OPACITYMAPEDITOR_H
+#endif // OpacityMapEditor_H

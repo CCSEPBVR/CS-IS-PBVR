@@ -1,70 +1,13 @@
 #include "ColorMapEditor.h"
-#include "TFEColorMapBar.h"
 #include "ui_ColorMapEditor.h"
 
-#include <QLabel>
-#include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QColor>
-#include <QColorDialog>
-
-#include <kvs/DivergingColorMap>
-#include "FunctionParser/function_parser.h"
-
-ColorMapEditor::ColorMapEditor(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::ColorMapEditor)
-{    
-    ui->setupUi(this);
-    m_undo_stack = new QUndoStack;
-    m_undo_stack->setUndoLimit( 50 );
-    ui->colorMapPalette->setUndoStack( m_undo_stack );
-
-    ui->colorMapBarTWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->colorMapBarTWidget->verticalHeader()->setDefaultSectionSize(60);
-
-    ui->controlPointsTWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    readJsonFile();
-
-    ui->colorMapBarTabWidget->setCurrentIndex( 0 );
-    resize( width(), 500 );
-
-    ui->colorMapPalette->setDrawingColor( kvs::RGBColor::Black() );
-    QPalette palette = ui->drawingColorCLbl->palette();
-    palette.setColor( QPalette::Window, Qt::black );
-    ui->drawingColorCLbl->setAutoFillBackground( true );
-    ui->drawingColorCLbl->setPalette( palette );
-
-    connect( ui->colorMapBarTabWidget, &QTabWidget::currentChanged, this, &ColorMapEditor::onCurrentTabChanged );
-    connect( ui->drawingColorCLbl, &ClickableLabel::doubleClicked, this, &ColorMapEditor::onDrawingColorDoubleClicked );
-    connect( ui->resetPBtn, &QPushButton::clicked, this, &ColorMapEditor::onResetButtonClicked );
-    connect( ui->undoPBtn, &QPushButton::clicked, m_undo_stack, &QUndoStack::undo );
-    connect( ui->redoPBtn, &QPushButton::clicked, m_undo_stack, &QUndoStack::redo );
-    connect( ui->colorMapBarTWidget, &QTableWidget::cellDoubleClicked, this, &ColorMapEditor::onColorMapBarTableWidgetCellDoubleClicked );
-
-    connect( ui->redLEdit, &QLineEdit::textChanged, this, &ColorMapEditor::onExpressionChanged );
-    connect( ui->greenLEdit, &QLineEdit::textChanged, this, &ColorMapEditor::onExpressionChanged );
-    connect( ui->blueLEdit, &QLineEdit::textChanged, this, &ColorMapEditor::onExpressionChanged );
-
-    connect( ui->numberOfControlPointsSBox, &QSpinBox::valueChanged, this, &ColorMapEditor::onNumberOfControlPointsChabged );
-    ui->controlPointsTWidget->setRowCount( ui->numberOfControlPointsSBox->value() );
-
-    connect( ui->controlPointsTWidget, &QTableWidget::cellChanged, this, &ColorMapEditor::onControlPointChanged );
-    connect( ui->cancelPBtn, &QPushButton::clicked, this, &ColorMapEditor::close );
-    connect( ui->applyPBtn, &QPushButton::clicked, this, &ColorMapEditor::accept );
-
-    QPalette app_palette = QApplication::palette();
-    QColor backgroundColor = app_palette.color(QPalette::Window);
-    if( backgroundColor.value() < 128 )
-    {
-        m_is_dark_mode = true;
-    }
-    else
-    {
-        m_is_dark_mode = false;
-    }
+ColorMapEditor::ColorMapEditor( QWidget *parent )
+    : QDialog( parent )
+    , ui( new Ui::ColorMapEditor )
+    , m_default_colors( QVector<QColor>{ QColor( 255, 0, 0 ), QColor( 0, 255, 0 ), QColor( 0, 0, 255 ) } )
+{
+    ui->setupUi( this );
+    initialize();
 }
 
 ColorMapEditor::~ColorMapEditor()
@@ -72,218 +15,183 @@ ColorMapEditor::~ColorMapEditor()
     delete ui;
 }
 
-void ColorMapEditor::setColorMap( kvs::ColorMap colorMap )
+void ColorMapEditor::setDefaultColorMap( const QVector<QColor>& colors )
 {
-    ui->colorMapPalette->setColorMap( colorMap );
+    m_default_colors = colors;
+    ui->colorMapPalette->setColors( colors );
 }
 
-void ColorMapEditor::setInitialColorMap( kvs::ColorMap colorMap )
+QVector<QColor> ColorMapEditor::getColorMap()
 {
-    ui->colorMapPalette->setInitialColorMap( colorMap );
+    return ui->colorMapPalette->getColors();
 }
 
-kvs::ColorMap ColorMapEditor::getColorMap()
+void ColorMapEditor::initialize()
 {
-    return ui->colorMapPalette->getColor();
+    ui->tabWidget->setCurrentIndex( 0 );
+    resize( 800, 500 );
+
+    initializePreset();
+    initializeFreeformCurve();
+    initializeExpression();
+    initializeControlPoints();
+
+    connect( ui->resetPushButton, &QPushButton::clicked, this, &ColorMapEditor::onReset );
+    connect( ui->undoPushButton, &QPushButton::clicked, ui->colorMapPalette, &ColorMapPalette::undo );
+    connect( ui->redoPushButton, &QPushButton::clicked,ui->colorMapPalette, &ColorMapPalette::redo );
+
+    connect( ui->tabWidget, &QTabWidget::currentChanged, this, &ColorMapEditor::onTabChanged );
+    connect( ui->colorMapTableWidget, &QTableWidget::cellDoubleClicked, this, &ColorMapEditor::onPresetColorMapDoubleClicked );
+    connect( ui->drawingColorClickableLabel, &ClickableLabel::doubleClicked, this, &ColorMapEditor::onDrawingColorDoubleClicked );
+
+    connect( ui->redLineEdit, &QLineEdit::textEdited, this, &ColorMapEditor::onExpressionChanged );
+    connect( ui->greenLineEdit, &QLineEdit::textEdited, this, &ColorMapEditor::onExpressionChanged );
+    connect( ui->blueLineEdit, &QLineEdit::textEdited, this, &ColorMapEditor::onExpressionChanged );
+
+    connect( ui->numberOfControlPointsSpinBox, &QSpinBox::valueChanged, this, &ColorMapEditor::onNumberOfControlPointsChanged );
+    connect( ui->controlPointsTableWidget, &QTableWidget::cellChanged, this, &ColorMapEditor::onControlPointChanged );
+
+    connect( ui->cancelPushButton, &QPushButton::clicked, this, &ColorMapEditor::close );
+    connect( ui->applyPushButton, &QPushButton::clicked, this, &ColorMapEditor::accept );
 }
 
-void ColorMapEditor::readJsonFile()
+void ColorMapEditor::initializePreset()
 {
-    QString filePath = ":/Resources/json/preset_color_map.json";
-    QFile file(filePath);
-    if ( !file.open(QIODevice::ReadOnly | QIODevice::Text) )
+    ui->colorMapTableWidget->setSelectionMode( QAbstractItemView::SingleSelection );
+    ui->colorMapTableWidget->setSelectionBehavior( QAbstractItemView::SelectItems );
+
+    ui->colorMapTableWidget->setColumnCount( 2 );
+    ui->colorMapTableWidget->horizontalHeader()->setVisible( false ); // 横（列）のヘッダーを非表示
+    ui->colorMapTableWidget->verticalHeader()->setVisible( false );   // 縦（行）のヘッダーを非表示
+    ui->colorMapTableWidget->horizontalHeader()->setSectionResizeMode( QHeaderView::Stretch );
+
+    QList<QPair<QString, QVector<QColor>>> colorList = loadDefaultColorMap( ":/Resources/json/DefaultColorMap.json" );
+    if( colorList.isEmpty() )
     {
-        qDebug() << "Failed to open preset.json.";
+        qWarning() << "No color maps loaded!";
+        return;
+    }
+
+    // テーブルの行数を設定
+    int rows = ( colorList.size() + 1 ) / 2;
+    ui->colorMapTableWidget->setRowCount( rows );
+
+    int minRowHeight = 70;
+    int maxRowHeight = 100;
+    ui->colorMapTableWidget->verticalHeader()->setMinimumSectionSize( minRowHeight );
+    ui->colorMapTableWidget->verticalHeader()->setMaximumSectionSize( maxRowHeight );
+
+    // 色マップをテーブルに設定
+    for( int i = 0; i < colorList.size(); i++ )
+    {
+        int row = i / 2;
+        int col = i % 2;
+
+        QWidget* cellWidget = new QWidget;
+        QVBoxLayout* layout = new QVBoxLayout( cellWidget );
+        layout->setAlignment( Qt::AlignCenter );  // 中央寄せ
+        layout->setSpacing( 5 );  // 適宜スペース調整
+        layout->setContentsMargins( 5, 5, 5, 5 ); // 必要に応じてマージン
+
+        QLabel* nameLabel = new QLabel( colorList[i].first );
+        nameLabel->setAlignment( Qt::AlignCenter );
+        QFont font = nameLabel->font();
+        font.setBold( true );
+        nameLabel->setFont( font );
+
+        ColorMap* ccolorMap = new ColorMap( this, colorList[i].second, 256 );
+        ccolorMap->setFixedSize( 256, 20 );  // サイズ固定
+
+        cellWidget->setMinimumHeight( minRowHeight );
+        cellWidget->setMaximumHeight( maxRowHeight );
+
+        layout->addWidget( nameLabel );
+        layout->addWidget( ccolorMap, 0, Qt::AlignCenter );  // 中央配置
+
+        ui->colorMapTableWidget->setCellWidget( row, col, cellWidget );
+    }
+}
+
+void ColorMapEditor::initializeFreeformCurve()
+{
+    QPalette palette = ui->drawingColorClickableLabel->palette();
+    palette.setColor( QPalette::Window, Qt::black );
+    ui->drawingColorClickableLabel->setAutoFillBackground( true );
+    ui->drawingColorClickableLabel->setPalette( palette );
+}
+
+void ColorMapEditor::initializeExpression()
+{
+    ui->redLineEdit->setText( "1.0" );
+    ui->greenLineEdit->setText( "1.4*sin(3.14*x)" );
+    ui->blueLineEdit->setText( "-3*x+1.5" );
+}
+
+void ColorMapEditor::initializeControlPoints()
+{
+    ui->controlPointsTableWidget->horizontalHeader()->setSectionResizeMode( QHeaderView::Stretch );
+    ui->controlPointsTableWidget->setRowCount( ui->numberOfControlPointsSpinBox->value() );
+}
+
+QList<QPair<QString, QVector<QColor>>> ColorMapEditor::loadDefaultColorMap( const QString& filePath )
+{
+    QList<QPair<QString, QVector<QColor>>> colorList;
+
+    QFile file( filePath );
+    if( !file.open( QIODevice::ReadOnly ) )
+    {
+        qWarning() << "Failed to open file:" << filePath;
+        return colorList;
     }
 
     QByteArray jsonData = file.readAll();
     file.close();
 
-    // JSON Document
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
-
-    // Root JSON Array
-    QJsonArray rootArray = jsonDoc.array();
-
-    int count = 0;
-    for (const QJsonValue &value : rootArray)
+    QJsonDocument doc = QJsonDocument::fromJson( jsonData );
+    if( !doc.isArray() )
     {
-        {
-            kvs::ColorMap color_map;
-
-            int row_position = ui->colorMapBarTWidget->rowCount();
-            if( count % 2 == 0)
-            {
-                ui->colorMapBarTWidget->insertRow( row_position );
-                count = 0;
-            }
-            // Convert value to object
-            QJsonObject jsonObject = value.toObject();
-            QString colorSpace = jsonObject.value("ColorSpace").toString();
-            QString name = jsonObject.value("Name").toString();
-            QJsonArray rgbPointsArray = jsonObject.value("RGBPoints").toArray();
-
-            float min_value = rgbPointsArray.at(0).toDouble();
-            float max_value = rgbPointsArray.at(rgbPointsArray.size() - 4).toDouble();
-
-            if( colorSpace == "Diverging" )
-            {
-                if( rgbPointsArray.size() / 4 == 3 )
-                {
-                    int r1 = rgbPointsArray.at( 1 ).toDouble() * 255;
-                    int g1 = rgbPointsArray.at( 2 ).toDouble() * 255;
-                    int b1 = rgbPointsArray.at( 3 ).toDouble() * 255;
-
-                    int r2 = rgbPointsArray.at( rgbPointsArray.size() - 3 ).toDouble() * 255;
-                    int g2 = rgbPointsArray.at( rgbPointsArray.size() - 2 ).toDouble() * 255;
-                    int b2 = rgbPointsArray.at( rgbPointsArray.size() - 1 ).toDouble() * 255;
-
-                    color_map = kvs::DivergingColorMap::Create( kvs::RGBColor( r1, g1, b1 ), kvs::RGBColor( r2, g2, b2 ), 256 );
-                }
-                else
-                {
-                    color_map = kvs::ColorMap( 256, min_value, max_value );
-                    for (int i = 0; i < rgbPointsArray.size(); i += 4)
-                    {
-                        float value = rgbPointsArray.at(i).toDouble();
-                        int r = rgbPointsArray.at(i + 1).toDouble() * 255;
-                        int g = rgbPointsArray.at(i + 2).toDouble() * 255;
-                        int b = rgbPointsArray.at(i + 3).toDouble() * 255;
-                        color_map.addPoint( value, kvs::RGBColor( r, g, b ) );
-                    }
-                    color_map.create();
-                }
-            }
-            else if( colorSpace == "Lab" )
-            {
-                color_map = kvs::ColorMap( 256, min_value, max_value );
-                for (int i = 0; i < rgbPointsArray.size(); i += 4)
-                {
-                    float value = rgbPointsArray.at(i).toDouble();
-                    int r = rgbPointsArray.at(i + 1).toDouble() * 255;
-                    int g = rgbPointsArray.at(i + 2).toDouble() * 255;
-                    int b = rgbPointsArray.at(i + 3).toDouble() * 255;
-                    color_map.addPoint( value, kvs::RGBColor( r, g, b ) );
-                }
-                color_map.create();
-            }
-            else if( colorSpace == "RGB" )
-            {
-                color_map = kvs::ColorMap( 256, min_value, max_value );
-                for (int i = 0; i < rgbPointsArray.size(); i += 4)
-                {
-                    float value = rgbPointsArray.at(i).toDouble();
-                    int r = rgbPointsArray.at(i + 1).toDouble() * 255;
-                    int g = rgbPointsArray.at(i + 2).toDouble() * 255;
-                    int b = rgbPointsArray.at(i + 3).toDouble() * 255;
-                    color_map.addPoint( value, kvs::RGBColor( r, g, b ) );
-                }
-                color_map.create();
-            }
-            else if( colorSpace == "CIELAB" )
-            {
-                color_map = kvs::ColorMap( 256, min_value, max_value );
-                for (int i = 0; i < rgbPointsArray.size(); i += 4)
-                {
-                    float value = rgbPointsArray.at(i).toDouble();
-                    int r = rgbPointsArray.at(i + 1).toDouble() * 255;
-                    int g = rgbPointsArray.at(i + 2).toDouble() * 255;
-                    int b = rgbPointsArray.at(i + 3).toDouble() * 255;
-                    color_map.addPoint( value, kvs::RGBColor( r, g, b ) );
-                }
-                color_map.create();
-            }
-            else if( colorSpace == "HSV" )
-            {
-                color_map = kvs::ColorMap( 256, min_value, max_value );
-                if( name == "Blue to Red Rainbow" )
-                {
-                    color_map.addPoint(0/4.0, kvs::RGBColor( 0, 0, 255 ));
-                    color_map.addPoint(1/4.0, kvs::RGBColor( 0, 255, 255 ));
-                    color_map.addPoint(2/4.0, kvs::RGBColor( 0, 255, 0 ));
-                    color_map.addPoint(3/4.0, kvs::RGBColor( 255, 255, 0 ));
-                    color_map.addPoint(4/4.0, kvs::RGBColor( 255, 0, 0 ));
-                }
-                else
-                {
-                    for (int i = 0; i < rgbPointsArray.size(); i += 4)
-                    {
-                        float value = rgbPointsArray.at(i).toDouble();
-                        int r = rgbPointsArray.at(i + 1).toDouble() * 255;
-                        int g = rgbPointsArray.at(i + 2).toDouble() * 255;
-                        int b = rgbPointsArray.at(i + 3).toDouble() * 255;
-                        color_map.addPoint( value, kvs::RGBColor( r, g, b ) );
-                    }
-                }
-                color_map.create();
-            }
-            else if( colorSpace == "Step" )
-            {
-                color_map = kvs::ColorMap( 256, min_value, max_value );
-                for ( int i = 0; i < rgbPointsArray.size(); i += 4 )
-                {
-                    float value1 = rgbPointsArray.at(i).toDouble();
-                    int r = rgbPointsArray.at(i + 1).toDouble() * 255;
-                    int g = rgbPointsArray.at(i + 2).toDouble() * 255;
-                    int b = rgbPointsArray.at(i + 3).toDouble() * 255;
-                    if( i < 8 )
-                    {
-                        color_map.addPoint( value1, kvs::RGBColor( r, g, b ) );
-                    }
-                    else
-                    {
-                        float value2 = rgbPointsArray.at(i - 4).toDouble();
-                        color_map.addPoint( value2, kvs::RGBColor( r, g, b ) );
-                        color_map.addPoint( value1, kvs::RGBColor( r, g, b ) );
-                    }
-                }
-                color_map.create();
-            }
-
-            TFEColorMapBar* colorMapBar = new TFEColorMapBar();
-            colorMapBar->setColorMap( color_map );
-            colorMapBar->setFixedWidth( 200 );
-            colorMapBar->setMaximumHeight( 25 );
-            colorMapBar->startInitialization();
-
-            QLabel* label = new QLabel( name );
-            label->setWordWrap( true );
-            label->setMinimumWidth( 10 );
-            label->setMargin( 0 );
-
-            QHBoxLayout* layout = new QHBoxLayout();
-            layout->addWidget( colorMapBar );
-            layout->addWidget( label );
-
-            QWidget* containerWidget = new QWidget();
-            containerWidget->setLayout(layout);
-            ui->colorMapBarTWidget->setCellWidget(ui->colorMapBarTWidget->rowCount() - 1, count, containerWidget);
-            count++;
-
-        }
+        qWarning() << "Invalid JSON format!";
+        return colorList;
     }
+
+    QJsonArray jsonArray = doc.array();
+    for( const QJsonValue& value : jsonArray )
+    {
+        if( !value.isObject() ) continue;
+        QJsonObject obj = value.toObject();
+
+        QString name = obj["name"].toString();
+        QJsonArray colorsArray = obj["colors"].toArray();
+
+        QVector<QColor> colors;
+        for( int i = 0; i + 2 < colorsArray.size(); i += 3 )
+        {
+            int r = colorsArray[i].toInt();
+            int g = colorsArray[i + 1].toInt();
+            int b = colorsArray[i + 2].toInt();
+            colors.append( QColor( r, g, b ) );
+        }
+
+        colorList.append( qMakePair( name, colors ) );
+    }
+
+    return colorList;
 }
 
-/*===========================================================================*/
-/**
- *  @brief  showEvent function.
- *  @note   This is to address the problem that the ColorMap of the Function selected in TransferFunctionEditor
- *  @note   is not immediately reflected when ColorMapEditor is opened in a linux environment.
- */
-/*===========================================================================*/
-void ColorMapEditor::showEvent(QShowEvent *event)
+void ColorMapEditor::onReset()
 {
-    Q_UNUSED( event );
-    ui->colorMapPalette->update();
+    ui->colorMapPalette->setColors( m_default_colors );
 }
 
-//Presets        0
-//Freeform curve 1
-//Expression     2
-//Control Point  3
-void ColorMapEditor::onCurrentTabChanged( int index )
-{    
-    if( index == 0 || index == 3)
+void ColorMapEditor::onTabChanged( int index )
+{
+    /*
+     * 0: Preset
+     * 1: Freeform Curve
+     * 2: Expression
+     * 3: Control Points
+     */
+    if( index == 0 )
     {
         resize( width(), 500 );
     }
@@ -293,193 +201,233 @@ void ColorMapEditor::onCurrentTabChanged( int index )
     }
     else if( index == 2 )
     {
-        resize( width(), minimumHeight() );
         onExpressionChanged();
+        resize( width(), minimumHeight() );
+    }
+    else if( index == 3 )
+    {
+        onControlPointChanged();
+        resize( width(), 500 );
+    }
+}
+
+void ColorMapEditor::onPresetColorMapDoubleClicked( int row, int column )
+{
+    // セル内のウィジェット（cellWidget）を取得
+    QWidget* cellWidget = ui->colorMapTableWidget->cellWidget( row, column );
+    if( !cellWidget ) return;
+
+    // cellWidget の子ウィジェットの中から ColorMap を探す
+    ColorMap* colorMap = cellWidget->findChild<ColorMap*>();
+    if( colorMap )
+    {
+        // cm3 が取得できたら、必要な処理を書く
+        // 例: カラーマップのデータを取得
+        auto colors = colorMap->getColors();  // getColorMap() が必要に応じて実装されていること
+        ui->colorMapPalette->setColors( colors );
     }
 }
 
 void ColorMapEditor::onDrawingColorDoubleClicked()
 {
-    QColor color = QColorDialog::getColor(Qt::white, this, tr("Select Color"));
+    QColorDialog colorDialog;
+    colorDialog.adjustSize();
 
-    QPalette palette = ui->drawingColorCLbl->palette();
-    palette.setColor( QPalette::Window, color );
+    if( colorDialog.exec() == QDialog::Accepted )
+    {  // カラーダイアログがOKされた場合
+        QColor color = colorDialog.selectedColor();
 
-    ui->drawingColorCLbl->setPalette( palette );
+        QPalette palette = ui->drawingColorClickableLabel->palette();
+        palette.setColor( QPalette::Window, color );
 
-    ui->colorMapPalette->setDrawingColor( kvs::RGBColor( color.red(), color.green(), color.blue() ) );
+        ui->drawingColorClickableLabel->setPalette( palette );
+        ui->colorMapPalette->setDrawingColor( color );
+    }
+
     raise();
 }
 
-void ColorMapEditor::onResetButtonClicked()
-{
-    ui->colorMapPalette->reset();
-}
-
-void ColorMapEditor::onColorMapBarTableWidgetCellDoubleClicked( int row, int column )
-{
-    //警告:nullptrの処理を追記すること。
-    QWidget* cellWidget = ui->colorMapBarTWidget->cellWidget( row, column );
-    TFEColorMapBar* colorMapBar2 = qobject_cast<TFEColorMapBar*>(cellWidget->layout()->itemAt(0)->widget());
-    ui->colorMapPalette->setColorMap( colorMapBar2->getColor() );
-    ui->colorMapPalette->update();
-}
-
-//IMPORT FROM OLD PBVR(colormappalette.cpp setColorMapEquation)
 void ColorMapEditor::onExpressionChanged()
 {
+    // RGB関数の式を取得
+    std::string redFunctionExpression;
+    std::string greenFunctionExpression;
+    std::string blueFunctionExpression;
 
 #ifdef Q_OS_WIN
-    std::string rfe = ui->redLEdit->text().toLocal8Bit().constData();
-    std::string gfe = ui->greenLEdit->text().toLocal8Bit().constData();
-    std::string bfe = ui->blueLEdit->text().toLocal8Bit().constData();
+    redFunctionExpression = ui->redLineEdit->text().toLocal8Bit().constData();
+    greenFunctionExpression = ui->greenLineEdit->text().toLocal8Bit().constData();
+    blueFunctionExpression = ui->blueLineEdit->text().toLocal8Bit().constData();
 #else
-    std::string rfe = ui->redLEdit->text().toStdString();
-    std::string gfe = ui->greenLEdit->text().toStdString();
-    std::string bfe = ui->blueLEdit->text().toStdString();
+    redFunctionExpression = ui->redLineEdit->text().toStdString();
+    greenFunctionExpression = ui->greenLineEdit->text().toStdString();
+    blueFunctionExpression = ui->blueLineEdit->text().toStdString();
 #endif
 
     const float min_value = 0.0;
     const float max_value = 1.0;
 
-    FuncParser::Variables vars;
-    FuncParser::Variable var_x;
-    FuncParser::Function rf, gf, bf;
+    // 変数と関数の準備
+    FuncParser::Variables variables;
+    FuncParser::Variable variable_x;
+    FuncParser::Function redFunction, greenFunction, blueFunction;
 
     char charx1[2] = "x";
-    var_x.tag(charx1);
-    vars.push_back(var_x);
+    variable_x.tag( charx1 );
+    variables.push_back( variable_x );
 
-    FuncParser::FunctionParser rf_parse(rfe, (int)rfe.size() + 1);
-    FuncParser::FunctionParser gf_parse(gfe, (int)gfe.size() + 1);
-    FuncParser::FunctionParser bf_parse(bfe, (int)bfe.size() + 1);
-    FuncParser::FunctionParser::Error err_r = rf_parse.express(rf, vars);
-    FuncParser::FunctionParser::Error err_g = gf_parse.express(gf, vars);
-    FuncParser::FunctionParser::Error err_b = bf_parse.express(bf, vars);
+    // 数式パーサーの初期化
+    FuncParser::FunctionParser redFunctionParse(redFunctionExpression, (int)redFunctionExpression.size() + 1 );
+    FuncParser::FunctionParser greenFunctionParse(greenFunctionExpression, (int)greenFunctionExpression.size() + 1 );
+    FuncParser::FunctionParser blueFunctionParse(blueFunctionExpression, (int)blueFunctionExpression.size() + 1 );
 
-    if (err_r != FuncParser::FunctionParser::ERR_NONE)
+    FuncParser::FunctionParser::Error errorRed = redFunctionParse.express( redFunction, variables );
+    FuncParser::FunctionParser::Error errorGreen = greenFunctionParse.express( greenFunction, variables );
+    FuncParser::FunctionParser::Error errorBlue = blueFunctionParse.express( blueFunction, variables );
+
+    // 入力エラーがある場合、エディットボックスの背景を赤にする
+    ui->redLineEdit->setStyleSheet( errorRed != FuncParser::FunctionParser::ERR_NONE ? "background-color: red;" : "" );
+    ui->greenLineEdit->setStyleSheet( errorGreen != FuncParser::FunctionParser::ERR_NONE ? "background-color: red;" : "" );
+    ui->blueLineEdit->setStyleSheet( errorBlue != FuncParser::FunctionParser::ERR_NONE ? "background-color: red;" : "" );
+
+    // すべての関数が正常に解釈された場合、カラーマップを作成
+    if( errorRed == FuncParser::FunctionParser::ERR_NONE &&
+        errorGreen == FuncParser::FunctionParser::ERR_NONE &&
+        errorBlue == FuncParser::FunctionParser::ERR_NONE )
     {
-        ui->redLEdit->setStyleSheet("background-color: red;");
-    }
-    else
-    {
-        ui->redLEdit->setStyleSheet("");
-    }
-
-    if (err_g != FuncParser::FunctionParser::ERR_NONE)
-    {        
-        ui->greenLEdit->setStyleSheet("background-color: red;");
-    }
-    else
-    {
-        ui->greenLEdit->setStyleSheet("");
-    }
-
-    if (err_b != FuncParser::FunctionParser::ERR_NONE)
-    {        
-        ui->blueLEdit->setStyleSheet("background-color: red;");
-    }
-    else
-    {
-        ui->blueLEdit->setStyleSheet("");
-    }
-
-    //RGBの式にエラーがなければカラーマップを生成
-    if (err_r == FuncParser::FunctionParser::ERR_NONE &&
-        err_g == FuncParser::FunctionParser::ERR_NONE &&
-        err_b == FuncParser::FunctionParser::ERR_NONE)
-    {        
-        kvs::ColorMap cmap( 256, min_value, max_value);
-
-        const float stride = (max_value - min_value) / ( 256 - 1 );
+        QVector<QColor> colorMap;
+        const float stride = ( max_value - min_value ) / ( 256 - 1 );
         float x = min_value;
-        for (size_t i = 0; i < 256; ++i, x += stride)
+
+        for( int i = 0; i < 256; i++, x += stride )
         {
-            // int r,g,b;
-            float r, g, b; // kawamura
+            variable_x = x;
+            float r = redFunction.eval();
+            float g = greenFunction.eval();
+            float b = blueFunction.eval();
 
-            var_x = x;
-            r = rf.eval();
-            g = gf.eval();
-            b = bf.eval();
+            r = std::clamp( r, 0.0f, 1.0f );
+            g = std::clamp( g, 0.0f, 1.0f );
+            b = std::clamp( b, 0.0f, 1.0f );
 
-            /*
-            r = ( r > 255 )? 255: ( r < 0 )? 0: r;
-            g = ( g > 255 )? 255: ( g < 0 )? 0: g;
-            b = ( b > 255 )? 255: ( b < 0 )? 0: b;
-            */
-            // kawamura
-            r = (r > 1.0) ? 1.0 : (r < 0) ? 0 : r;
-            g = (g > 1.0) ? 1.0 : (g < 0) ? 0 : g;
-            b = (b > 1.0) ? 1.0 : (b < 0) ? 0 : b;
+            int red = static_cast<int>( r * 255 );
+            int green = static_cast<int>( g * 255 );
+            int blue = static_cast<int>( b * 255 );
 
-            r *= 255;
-            g *= 255;
-            b *= 255;
-
-            kvs::RGBColor color((int)r, (int)g, (int)b);
-            cmap.addPoint(x, color);
+            colorMap.append( QColor( red, green, blue ) );
         }
-        cmap.create();
 
-        ui->colorMapPalette->setColorMap( cmap );
-        ui->colorMapPalette->update();
+        // 作成したカラーマップを UI に反映
+        ui->colorMapPalette->setColors( colorMap );
     }
 }
 
-void ColorMapEditor::onNumberOfControlPointsChabged( int value )
+void ColorMapEditor::onNumberOfControlPointsChanged( int value )
 {
-    ui->controlPointsTWidget->setRowCount( value );
+    ui->controlPointsTableWidget->setRowCount( value );
     onControlPointChanged();
 }
 
 void ColorMapEditor::onControlPointChanged()
 {
-    const float max_value = 1.0;
-    const float min_value = 0.0;
+    const int width = 256;
+    QVector<QPair<float, QColor>> colorPoints;
 
-    kvs::ColorMap cmap( 256, min_value, max_value );
-
-    bool valid_float;
-    bool valid_row;
-
-    for ( int n = 0; n < ui->controlPointsTWidget->rowCount(); n++ )
+    for( int i = 0; i < ui->controlPointsTableWidget->rowCount(); i++ )
     {
-        valid_row=true;
-        float row_values[4]={0.0,0.0,0.0,0.0};
-        for (int c=0; c < 4; c++)
+        bool validRow = true;
+        float rowValues[4] = { 0.0, 0.0, 0.0, 0.0 };
+
+        for( int c = 0; c < 4; c++ )
         {
-            if ( ui->controlPointsTWidget->item(n,c) )
+            QTableWidgetItem* item = ui->controlPointsTableWidget->item( i, c );
+            if( item )
             {
-                QString text= ui->controlPointsTWidget->item(n,c)->text();
-                row_values[c]=text.toFloat(&valid_float);
-                valid_row=valid_row&valid_float;
-                if( m_is_dark_mode )
+                bool validFloat;
+                QString text = item->text();
+                rowValues[c] = text.toFloat( &validFloat );
+
+                if( !validFloat || rowValues[c] < 0.0 || rowValues[c] > 1.0 )
                 {
-                    ui->controlPointsTWidget->item(n,c)->setForeground(valid_float?Qt::white:Qt::red);
+                    validRow = false;
+                    item->setForeground( QBrush( Qt::red ) );
                 }
                 else
                 {
-                    ui->controlPointsTWidget->item(n,c)->setForeground(valid_float?Qt::black:Qt::red);
+                    item->setForeground( QBrush( Qt::black ) );
                 }
             }
             else
             {
-                valid_row=false;
+                validRow = false;
             }
         }
 
-        if (valid_row)
+        if( validRow )
         {
-            float x = row_values[0];
-            int   r = row_values[1] *255.0;
-            int   g = row_values[2] *255.0;
-            int   b = row_values[3] *255.0;
-            kvs::RGBColor color(r,g,b);
-            cmap.addPoint( x, color );
+            float x = rowValues[0]; // 0.0 〜 1.0
+            int r = static_cast<int>(rowValues[1] * 255.0);
+            int g = static_cast<int>(rowValues[2] * 255.0);
+            int b = static_cast<int>(rowValues[3] * 255.0);
+
+            QColor color( r, g, b );
+            colorPoints.append( qMakePair( x, color ) );
         }
     }
-    cmap.create();
-    ui->colorMapPalette->setColorMap( cmap );
-    ui->colorMapPalette->update();
+
+    // 色の補間を行って QVector<QColor> に変換
+    if( !colorPoints.isEmpty() )
+    {
+        QVector<QColor> colorMap;
+        colorMap.reserve( width );
+
+        // 先にX軸でソート（念のため）
+        std::sort( colorPoints.begin(), colorPoints.end(), []( const QPair<float, QColor>& a, const QPair<float, QColor>& b )
+                  {
+                      return a.first < b.first;
+                  } );
+
+        for( int i = 0; i < width; i++ )
+        {
+            float pos = static_cast<float>( i ) / ( width - 1 );
+
+            // 補間対象の区間を探す
+            QColor interpolatedColor;
+            if( pos <= colorPoints.first().first )
+            {
+                interpolatedColor = colorPoints.first().second;
+            }
+            else if( pos >= colorPoints.last().first )
+            {
+                interpolatedColor = colorPoints.last().second;
+            }
+            else
+            {
+                for( int j = 0; j < colorPoints.size() - 1; j++ )
+                {
+                    float x0 = colorPoints[j].first;
+                    float x1 = colorPoints[j + 1].first;
+
+                    if( pos >= x0 && pos <= x1 )
+                    {
+                        QColor c0 = colorPoints[j].second;
+                        QColor c1 = colorPoints[j + 1].second;
+                        float t = ( pos - x0 ) / ( x1 - x0 );
+
+                        int r = static_cast<int>( ( 1 - t ) * c0.red() + t * c1.red() );
+                        int g = static_cast<int>( ( 1 - t ) * c0.green() + t * c1.green() );
+                        int b = static_cast<int>( ( 1 - t ) * c0.blue() + t * c1.blue() );
+
+                        interpolatedColor = QColor( r, g, b );
+                        break;
+                    }
+                }
+            }
+
+            colorMap.append( interpolatedColor );
+        }
+
+        // カラーマップをUIやColorMapWidgetに反映
+        ui->colorMapPalette->setColors( colorMap );
+    }
 }
