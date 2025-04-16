@@ -186,11 +186,19 @@ void TransferFunctionEditor::onColorFunctionChanged( int index )
         // ui->colorMapBar->startInitialization();
         ui->colorMapBar->update();
 
-        ui->colorHistogram->setTable( func->m_color_histogram );
+        std::vector<int> ch;
+        ch.reserve( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_histogram.bin().size() );
+        for( int i = 0; i< m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_histogram.bin().size(); i++ )
+        {
+            ch.push_back( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_histogram.bin().at(i) );
+        }
+
+        ui->colorHistogram->setDatas( ch );
+
         switch ( func->m_color_confirmed_select_range ) //confirmd
         {
         case algebricTransferFunction::UserDefinedRange:
-            ui->colorHistogram->setRange( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_user_defined_min, m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_user_defined_max );
+            // ui->colorHistogram->setRange( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_user_defined_min, m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_user_defined_max );
             if (index < m_connect->getClientMessage()->m_transfer_function.size())
             {
                 ui->colorMapMinLabel->setNum( m_connect->getClientMessage()->m_transfer_function[ui->colorFunctionComboBox->currentIndex()].m_color_variable_min );
@@ -198,7 +206,7 @@ void TransferFunctionEditor::onColorFunctionChanged( int index )
             }
             break;
         case algebricTransferFunction::ServerSideRange:
-            ui->colorHistogram->setRange( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_min, m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_max );
+            // ui->colorHistogram->setRange( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_min, m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_max );
             ui->colorMapMinLabel->setNum( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_min );
             ui->colorMapMaxLabel->setNum( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_max );
             break;
@@ -348,11 +356,22 @@ void TransferFunctionEditor::onOpacityFunctionChanged( int index )
         ui->opacityMapBar->setOpacities(opacities);
         ui->opacityMapBar->update();
 
-        ui->opacityHistogram->setTable( func->m_opacity_histogram );
+        // ui->opacityHistogram->setTable( func->m_opacity_histogram );
+
+        std::vector<int> oh;
+        oh.reserve( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_histogram.bin().size() );
+        for( int i = 0; i< m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_histogram.bin().size(); i++ )
+        {
+            oh.push_back( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_histogram.bin().at(i) );
+        }
+
+        ui->opacityHistogram->setDatas( oh );
+
+
         switch ( func->m_opacity_confirmed_select_range ) //confirmd
         {
         case algebricTransferFunction::UserDefinedRange:
-            ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_user_defined_min, m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_user_defined_max );
+            // ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_user_defined_min, m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_user_defined_max );
             if (index < m_connect->getClientMessage()->m_transfer_function.size())
             {
                 ui->opacityMapMinLabel->setNum( m_connect->getClientMessage()->m_transfer_function[ui->opacityFunctionComboBox->currentIndex()].m_opacity_variable_min );
@@ -360,7 +379,7 @@ void TransferFunctionEditor::onOpacityFunctionChanged( int index )
             }
             break;
         case algebricTransferFunction::ServerSideRange:
-            ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_min, m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_max );
+            // ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_min, m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_max );
             ui->opacityMapMinLabel->setNum( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_min );
             ui->opacityMapMaxLabel->setNum( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_max );
             break;
@@ -781,8 +800,14 @@ void TransferFunctionEditor::importTransferFunctionFromServer()
         }
         ui->colorMapBar->setColors( colors );
 
-        ui->colorHistogram->setTable( m_parameter.m_transfer_functions[0].m_color_histogram );
-        ui->colorHistogram->setRange( m_parameter.m_transfer_functions[0].m_color_server_side_min, m_parameter.m_transfer_functions[0].m_color_server_side_max );
+        std::vector<int> ch;
+        ch.reserve( m_parameter.m_transfer_functions[0].m_color_histogram.bin().size() );
+        for( int i = 0; i< m_parameter.m_transfer_functions[0].m_color_histogram.bin().size(); i++ )
+        {
+            ch.push_back( m_parameter.m_transfer_functions[0].m_color_histogram.bin().at(i) );
+        }
+
+        ui->colorHistogram->setDatas( ch );
 
         ui->colorFunctionComboBox->blockSignals( false );
         ui->colorFunctionVariableLineEdit->blockSignals( false );
@@ -820,8 +845,17 @@ void TransferFunctionEditor::importTransferFunctionFromServer()
 
         ui->opacityMapBar->setOpacities(opacities);
 
-        ui->opacityHistogram->setTable( m_parameter.m_transfer_functions[0].m_opacity_histogram );
-        ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[0].m_opacity_server_side_min, m_parameter.m_transfer_functions[0].m_opacity_server_side_max );
+        // ui->opacityHistogram->setTable( m_parameter.m_transfer_functions[0].m_opacity_histogram );
+        std::vector<int> oh;
+        oh.reserve( m_parameter.m_transfer_functions[0].m_opacity_histogram.bin().size() );
+        for( int i = 0; i< m_parameter.m_transfer_functions[0].m_opacity_histogram.bin().size(); i++ )
+        {
+            oh.push_back( m_parameter.m_transfer_functions[0].m_opacity_histogram.bin().at(i) );
+        }
+
+        ui->opacityHistogram->setDatas( oh );
+
+        // ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[0].m_opacity_server_side_min, m_parameter.m_transfer_functions[0].m_opacity_server_side_max );
 
         ui->opacityFunctionComboBox->blockSignals( false );
         ui->opacityFunctionVariableLineEdit->blockSignals( false );
@@ -940,18 +974,26 @@ void TransferFunctionEditor::updateRangeView()
                 colors.push_back( color );
             }
             ui->colorMapBar->setColors( colors );
-            ui->colorHistogram->setTable( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_histogram );
+
+            std::vector<int> ch;
+            ch.reserve( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_histogram.bin().size() );
+            for( int i = 0; i< m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_histogram.bin().size(); i++ )
+            {
+                ch.push_back( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_histogram.bin().at(i) );
+            }
+
+            ui->colorHistogram->setDatas( ch );
 
             switch ( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_confirmed_select_range ) //confirmd
             {
             case algebricTransferFunction::UserDefinedRange:
-                ui->colorHistogram->setRange( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_user_defined_min, m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_user_defined_max );
+                // ui->colorHistogram->setRange( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_user_defined_min, m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_user_defined_max );
                 ui->colorHistogram->update();
                 ui->colorMapMinLabel->setNum( m_connect->getClientMessage()->m_transfer_function[ui->colorFunctionComboBox->currentIndex()].m_color_variable_min );
                 ui->colorMapMaxLabel->setNum( m_connect->getClientMessage()->m_transfer_function[ui->colorFunctionComboBox->currentIndex()].m_color_variable_max );
                 break;
             case algebricTransferFunction::ServerSideRange:
-                ui->colorHistogram->setRange( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_min, m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_max );
+                // ui->colorHistogram->setRange( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_min, m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_max );
                 ui->colorHistogram->update();
                 ui->colorMapMinLabel->setNum( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_min );
                 ui->colorMapMaxLabel->setNum( m_parameter.m_transfer_functions[ui->colorFunctionComboBox->currentIndex()].m_color_server_side_max );
@@ -991,18 +1033,26 @@ void TransferFunctionEditor::updateRangeView()
 
             ui->opacityMapBar->setOpacities(opacities);
 
-            ui->opacityHistogram->setTable( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_histogram );
+            // ui->opacityHistogram->setTable( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_histogram );
+            std::vector<int> oh;
+            oh.reserve( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_histogram.bin().size() );
+            for( int i = 0; i< m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_histogram.bin().size(); i++ )
+            {
+                oh.push_back( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_histogram.bin().at(i) );
+            }
+
+            ui->opacityHistogram->setDatas( oh );
 
             switch ( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_confirmed_select_range ) //confirmd
             {
             case algebricTransferFunction::UserDefinedRange:
-                ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_user_defined_min, m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_user_defined_max );
+                // ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_user_defined_min, m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_user_defined_max );
                 ui->opacityHistogram->update();
                 ui->opacityMapMinLabel->setNum( m_connect->getClientMessage()->m_transfer_function[ui->opacityFunctionComboBox->currentIndex()].m_opacity_variable_min );
                 ui->opacityMapMaxLabel->setNum( m_connect->getClientMessage()->m_transfer_function[ui->opacityFunctionComboBox->currentIndex()].m_opacity_variable_max );
                 break;
             case algebricTransferFunction::ServerSideRange:
-                ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_min, m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_max );
+                // ui->opacityHistogram->setRange( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_min, m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_max );
                 ui->opacityHistogram->update();
                 ui->opacityMapMinLabel->setNum( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_min );
                 ui->opacityMapMaxLabel->setNum( m_parameter.m_transfer_functions[ui->opacityFunctionComboBox->currentIndex()].m_opacity_server_side_max );

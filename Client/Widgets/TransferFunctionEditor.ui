@@ -33,13 +33,6 @@
          <string>Color Map</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
-         <item row="4" column="4">
-          <widget class="QLabel" name="colorMapMaxLabel">
-           <property name="text">
-            <string> : Max</string>
-           </property>
-          </widget>
-         </item>
          <item row="4" column="3">
           <widget class="QLabel" name="colorMapMinLabel">
            <property name="text">
@@ -51,16 +44,6 @@
           <widget class="QPushButton" name="editColorMapPushButton">
            <property name="text">
             <string>Edit Color Map</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="3" colspan="2">
-          <widget class="TFEHistogramBar" name="colorHistogram">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>80</height>
-            </size>
            </property>
           </widget>
          </item>
@@ -124,6 +107,23 @@
          </item>
          <item row="2" column="3" colspan="2">
           <widget class="ColorMap" name="colorMapBar" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>80</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="4">
+          <widget class="QLabel" name="colorMapMaxLabel">
+           <property name="text">
+            <string> : Max</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="3" colspan="2">
+          <widget class="Histogram" name="colorHistogram" native="true">
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -240,6 +240,13 @@
          <string>Opacity Map</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_3">
+         <item row="1" column="0" colspan="2">
+          <widget class="QPushButton" name="editOpacityMapPushButton">
+           <property name="text">
+            <string>Edit Opacity Map</string>
+           </property>
+          </widget>
+         </item>
          <item row="4" column="0">
           <widget class="QLabel" name="opacityMapMinLabel">
            <property name="text">
@@ -308,10 +315,13 @@
            </item>
           </layout>
          </item>
-         <item row="1" column="0" colspan="2">
-          <widget class="QPushButton" name="editOpacityMapPushButton">
-           <property name="text">
-            <string>Edit Opacity Map</string>
+         <item row="2" column="0" colspan="2">
+          <widget class="OpacityMap" name="opacityMapBar" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>80</height>
+            </size>
            </property>
           </widget>
          </item>
@@ -323,17 +333,7 @@
           </widget>
          </item>
          <item row="3" column="0" colspan="2">
-          <widget class="TFEHistogramBar" name="opacityHistogram">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>80</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0" colspan="2">
-          <widget class="OpacityMap" name="opacityMapBar" native="true">
+          <widget class="Histogram" name="opacityHistogram" native="true">
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -434,11 +434,6 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>TFEHistogramBar</class>
-   <extends>QOpenGLWidget</extends>
-   <header>Widgets/TFEHistogramBar.h</header>
-  </customwidget>
-  <customwidget>
    <class>ColorMap</class>
    <extends>QWidget</extends>
    <header>Widgets/ColorMap.h</header>
@@ -448,6 +443,12 @@
    <class>OpacityMap</class>
    <extends>QWidget</extends>
    <header>Widgets/OpacityMap.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Histogram</class>
+   <extends>QWidget</extends>
+   <header>Widgets/Histogram.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
