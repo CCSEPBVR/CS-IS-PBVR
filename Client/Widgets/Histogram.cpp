@@ -19,6 +19,11 @@ Histogram::~Histogram()
 
 }
 
+void Histogram::setDatas( std::vector<int>& data )
+{
+    m_data = data;
+}
+
 void Histogram::paintEvent( QPaintEvent* event )
 {
     QPainter painter( this );

@@ -11,6 +11,7 @@ class Histogram : public QWidget
 public:
     Histogram(QWidget* parent = nullptr);
     ~Histogram();
+    void setDatas( std::vector<int>& data );
 
 protected:
     void paintEvent( QPaintEvent* event ) override;
