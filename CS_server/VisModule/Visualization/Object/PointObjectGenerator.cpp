@@ -160,9 +160,18 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
 
     VIS_MODULE_TIMER_END( 260 );
 
-    volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
-    volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
-    volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
+    // .vtm file format and Structured Volume Data
+    if ( found_vtm != std::string::npos && m_mvp->m_file_type == 3 )
+    {
+        volume->setMinMaxObjectCoords( m_mvp->m_min_subvolume_coord[vl], m_mvp->m_max_subvolume_coord[vl] );
+        volume->setMinMaxExternalCoords( m_mvp->m_min_subvolume_coord[vl], m_mvp->m_max_subvolume_coord[vl] );
+    }
+    else
+    {
+        volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
+        volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
+        volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
+    }
 
     std::cout << *volume << std::endl;
     std::cout << "min:" << volume->minObjectCoord()   << ", max:" << volume->maxObjectCoord() << std::endl;

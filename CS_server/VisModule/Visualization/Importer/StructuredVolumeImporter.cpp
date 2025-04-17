@@ -577,6 +577,7 @@ void StructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlMult
             SuperClass::setValues( tmp_any_value_array );
             // SuperClass::updateMinMaxCoords();
             SuperClass::setMinMaxValues( min_value, max_value );
+            return;
         }
     }
 }
