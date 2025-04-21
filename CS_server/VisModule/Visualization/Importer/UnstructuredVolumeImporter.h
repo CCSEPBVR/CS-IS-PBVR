@@ -28,6 +28,7 @@
 #include <kvs/extendedfileformat/VtkXmlMultiBlock>
 #include <kvs/extendedfileformat/VtkXmlUnstructuredGrid>
 #include <kvs/extendedfileformat/AvsUcd>
+#include <kvs/extendedfileformat/VtkXmlPUnstructuredGrid>
 #endif
 
 namespace vismodule
@@ -85,6 +86,7 @@ private:
     void import( const kvs::ExtendedFileFormat::VtkXmlMultiBlock& vtm , const int targetCellType, const int vl );
     void import( const kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid& vtu , const int targetCellType );
     void import( const kvs::ExtendedFileFormat::AvsUcd& inp , const int targetCellType );
+    void import( const kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid& pvtu , const int targetCellType, const int vl);
 #endif
 };
 

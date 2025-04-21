@@ -453,7 +453,6 @@ inline vismodule::VolumeObjectBase* CreateVolumeData( const Argument& param,
     // structured
     else if ( mvp.m_file_type == 3 )
     {
-        std::cout << "subvols:" << subvols << std::endl;
         vismodule::VolumeObjectBase* volume = new vismodule::StructuredVolumeImporter( mvp.m_file_path, steps, subvols );
         volume->setMinMaxValues( mvp.m_min_value, mvp.m_max_value );
         volume->setMinMaxObjectCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
@@ -1055,12 +1054,13 @@ int main( int argc, char** argv )
                         mvpl.loadPFL( pfifile );
                     }
 #else
-                    size_t found_pfl = param.m_input_data_base.find(".pfl");
-                    size_t found_pfi = param.m_input_data_base.find(".pfi");
-                    size_t found_vtm = param.m_input_data_base.find(".vtm");
-                    size_t found_vtu = param.m_input_data_base.find(".vtu");
-                    size_t found_vti = param.m_input_data_base.find(".vti");
-                    size_t found_inp = param.m_input_data_base.find(".inp");
+                    size_t found_pfl  = param.m_input_data_base.find(".pfl");
+                    size_t found_pfi  = param.m_input_data_base.find(".pfi");
+                    size_t found_vtm  = param.m_input_data_base.find(".vtm");
+                    size_t found_vtu  = param.m_input_data_base.find(".vtu");
+                    size_t found_vti  = param.m_input_data_base.find(".vti");
+                    size_t found_inp  = param.m_input_data_base.find(".inp");
+                    size_t found_pvtu = param.m_input_data_base.find(".pvtu");
                     if ( found_pfl != std::string::npos )
                     {
                         std::string pflfile = param.m_input_data_base;
@@ -1150,6 +1150,23 @@ int main( int argc, char** argv )
                         else
                         {
                             std::cout << ".inpファイルは連番ファイルに対応していません" << std::endl;
+                        }
+                    }
+                    else if ( found_pvtu != std::string::npos )
+                    {
+                        std::string pvtufile = param.m_input_data_base;
+                        std::cout << ".pvtuファイルが選択されました" << std::endl;
+                        size_t found_asterisk = pvtufile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            mvpl.loadPvtu( pvtufile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            mvpl.loadSeriesPvtu( pvtufile );
                         }
                     }
 #endif
@@ -1260,11 +1277,12 @@ int main( int argc, char** argv )
                         fidx = mvpl.getFileIndex( vl, &xvl );
                         MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
-                        size_t found_pfi = mvp.m_file_path.find(".pfi");
-                        size_t found_vtm = mvp.m_file_path.find(".vtm");
-                        size_t found_vtu = mvp.m_file_path.find(".vtu");
-                        size_t found_vti = mvp.m_file_path.find(".vti");
-                        size_t found_inp = mvp.m_file_path.find(".inp");
+                        size_t found_pfi  = mvp.m_file_path.find(".pfi");
+                        size_t found_vtm  = mvp.m_file_path.find(".vtm");
+                        size_t found_vtu  = mvp.m_file_path.find(".vtu");
+                        size_t found_vti  = mvp.m_file_path.find(".vti");
+                        size_t found_inp  = mvp.m_file_path.find(".inp");
+                        size_t found_pvtu = mvp.m_file_path.find(".pvtu");
 
                         if ( found_pfi != std::string::npos )
                         {
@@ -1277,19 +1295,12 @@ int main( int argc, char** argv )
                                                + ifpx.baseName() + suffix.str() + ".kvsml";
                         }
 #ifdef EXTEND_FILE_FORMAT
-                        else if ( found_vtm != std::string::npos )
-                        {
-                            param.m_input_data = mvp.m_file_path;
-                        }
-                        else if ( found_vtu != std::string::npos )
-                        {
-                            param.m_input_data = mvp.m_file_path;
-                        }
-                        else if ( found_vti != std::string::npos )
-                        {
-                            param.m_input_data = mvp.m_file_path;
-                        }
-                        else if ( found_inp != std::string::npos )
+                        else if ( found_vtm  != std::string::npos ||
+                                  found_vtu  != std::string::npos ||
+                                  found_vti  != std::string::npos ||
+                                  found_inp  != std::string::npos ||
+                                  found_pvtu != std::string::npos 
+                                )
                         {
                             param.m_input_data = mvp.m_file_path;
                         }
@@ -1420,12 +1431,13 @@ int main( int argc, char** argv )
                         mvpl.loadPFL( pfifile );
                     }
 #else
-                    size_t found_pfl = param.m_input_data_base.find(".pfl");
-                    size_t found_pfi = param.m_input_data_base.find(".pfi");
-                    size_t found_vtm = param.m_input_data_base.find(".vtm");
-                    size_t found_vtu = param.m_input_data_base.find(".vtu");
-                    size_t found_vti = param.m_input_data_base.find(".vti");
-                    size_t found_inp = param.m_input_data_base.find(".inp");
+                    size_t found_pfl  = param.m_input_data_base.find(".pfl");
+                    size_t found_pfi  = param.m_input_data_base.find(".pfi");
+                    size_t found_vtm  = param.m_input_data_base.find(".vtm");
+                    size_t found_vtu  = param.m_input_data_base.find(".vtu");
+                    size_t found_vti  = param.m_input_data_base.find(".vti");
+                    size_t found_inp  = param.m_input_data_base.find(".inp");
+                    size_t found_pvtu = param.m_input_data_base.find(".pvtu");
                     if ( found_pfl != std::string::npos )
                     {
                         std::string pflfile = param.m_input_data_base;
@@ -1456,13 +1468,11 @@ int main( int argc, char** argv )
                         // 単一ファイルの場合
                         if ( found_asterisk == std::string::npos )
                         {
-                            std::cout << "単一ファイル" << std::endl;
                             mvpl.loadVtm( vtmfile );
                         }
                         // 連番ファイルの場合
                         else
                         {
-                            std::cout << "連番ファイル" << std::endl;
                             mvpl.loadSeriesVtm( vtmfile );
                         }
                     }
@@ -1516,7 +1526,24 @@ int main( int argc, char** argv )
                         {
                             std::cout << ".inpファイルは連番ファイルに対応していません" << std::endl;
                         }
-                    }                    
+                    }   
+                    else if ( found_pvtu != std::string::npos )
+                    {
+                        std::string pvtufile = param.m_input_data_base;
+                        std::cout << ".pvtuファイルが選択されました" << std::endl;
+                        size_t found_asterisk = pvtufile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            mvpl.loadPvtu( pvtufile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            mvpl.loadSeriesPvtu( pvtufile );
+                        }
+                    }
 #endif
                     else
                     {
@@ -1614,11 +1641,12 @@ int main( int argc, char** argv )
                         fidx = mvpl.getFileIndex( vl, &xvl );
                         MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
-                        size_t found_pfi = mvp.m_file_path.find(".pfi");
-                        size_t found_vtm = mvp.m_file_path.find(".vtm");
-                        size_t found_vtu = mvp.m_file_path.find(".vtm");
-                        size_t found_vti = mvp.m_file_path.find(".vti");
-                        size_t found_inp = mvp.m_file_path.find(".inp");
+                        size_t found_pfi  = mvp.m_file_path.find(".pfi");
+                        size_t found_vtm  = mvp.m_file_path.find(".vtm");
+                        size_t found_vtu  = mvp.m_file_path.find(".vtm");
+                        size_t found_vti  = mvp.m_file_path.find(".vti");
+                        size_t found_inp  = mvp.m_file_path.find(".inp");
+                        size_t found_pvtu = mvp.m_file_path.find(".pvtu");
 
                         if ( found_pfi != std::string::npos )
                         {
@@ -1631,19 +1659,12 @@ int main( int argc, char** argv )
                                                + ifpx.baseName() + suffix.str() + ".kvsml";
                         }
 #ifdef EXTEND_FILE_FORMAT
-                        else if ( found_vtm != std::string::npos )
-                        {
-                            param.m_input_data = mvp.m_file_path;
-                        }
-                        else if ( found_vtu != std::string::npos )
-                        {
-                            param.m_input_data = mvp.m_file_path;
-                        }
-                        else if ( found_vti != std::string::npos )
-                        {
-                            param.m_input_data = mvp.m_file_path;
-                        }
-                        else if ( found_inp != std::string::npos )
+                        else if ( found_vtm  != std::string::npos ||
+                                  found_vtu  != std::string::npos ||
+                                  found_vti  != std::string::npos ||
+                                  found_inp  != std::string::npos ||
+                                  found_pvtu != std::string::npos 
+                                )
                         {
                             param.m_input_data = mvp.m_file_path;
                         }
@@ -1779,12 +1800,13 @@ int main( int argc, char** argv )
                         mvpl.loadPFL( pfifile );
                     }
 #else
-                    size_t found_pfl = param.m_input_data_base.find(".pfl");
-                    size_t found_pfi = param.m_input_data_base.find(".pfi");
-                    size_t found_vtm = param.m_input_data_base.find(".vtm");
-                    size_t found_vtu = param.m_input_data_base.find(".vtu");
-                    size_t found_vti = param.m_input_data_base.find(".vti");
-                    size_t found_inp = param.m_input_data_base.find(".inp");
+                    size_t found_pfl  = param.m_input_data_base.find(".pfl");
+                    size_t found_pfi  = param.m_input_data_base.find(".pfi");
+                    size_t found_vtm  = param.m_input_data_base.find(".vtm");
+                    size_t found_vtu  = param.m_input_data_base.find(".vtu");
+                    size_t found_vti  = param.m_input_data_base.find(".vti");
+                    size_t found_inp  = param.m_input_data_base.find(".inp");
+                    size_t found_pvtu = param.m_input_data_base.find(".pvtu");
 		            if ( found_pfl != std::string::npos )
                     {
                         std::string pflfile = param.m_input_data_base;
@@ -1815,13 +1837,11 @@ int main( int argc, char** argv )
                         // 単一ファイルの場合
                         if ( found_asterisk == std::string::npos )
                         {
-                            std::cout << "単一ファイル" << std::endl;
                             mvpl.loadVtm( vtmfile );
                         }
                         // 連番ファイルの場合
                         else
                         {
-                            std::cout << "連番ファイル" << std::endl;
                             mvpl.loadSeriesVtm( vtmfile );
                         }
                     }
@@ -1875,7 +1895,24 @@ int main( int argc, char** argv )
                         {
                             std::cout << ".inpファイルは連番ファイルに対応していません" << std::endl;
                         }
-                    }                                     
+                    }        
+                    else if ( found_pvtu != std::string::npos )
+                    {
+                        std::string pvtufile = param.m_input_data_base;
+                        std::cout << ".pvtuファイルが選択されました" << std::endl;
+                        size_t found_asterisk = pvtufile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            mvpl.loadPvtu( pvtufile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            mvpl.loadSeriesPvtu( pvtufile );
+                        }
+                    }
 #endif
                     else
                     {
@@ -1948,11 +1985,12 @@ int main( int argc, char** argv )
                         fidx = mvpl.getFileIndex( vl, &xvl );
                         MultiVolumeProperty&mvp = mvpl.m_list[fidx];
 
-                        size_t found_pfi = mvp.m_file_path.find(".pfi");
-                        size_t found_vtm = mvp.m_file_path.find(".vtm");
-                        size_t found_vtu = mvp.m_file_path.find(".vtu");
-                        size_t found_vti = mvp.m_file_path.find(".vti");
-                        size_t found_inp = mvp.m_file_path.find(".inp");
+                        size_t found_pfi  = mvp.m_file_path.find(".pfi");
+                        size_t found_vtm  = mvp.m_file_path.find(".vtm");
+                        size_t found_vtu  = mvp.m_file_path.find(".vtu");
+                        size_t found_vti  = mvp.m_file_path.find(".vti");
+                        size_t found_inp  = mvp.m_file_path.find(".inp");
+                        size_t found_pvtu = mvp.m_file_path.find(".pvtu");
 
                         if ( found_pfi != std::string::npos )
                         {
@@ -1965,19 +2003,12 @@ int main( int argc, char** argv )
                             + ifpx.baseName() + suffix.str() + ".kvsml";
                         }
 #ifdef EXTEND_FILE_FORMAT 
-                        else if ( found_vtm != std::string::npos )
-                        {
-                            param.m_input_data = mvp.m_file_path;
-                        }
-                        else if ( found_vtu != std::string::npos )
-                        {
-                            param.m_input_data = mvp.m_file_path;
-                        }
-                        else if ( found_vti != std::string::npos )
-                        {
-                            param.m_input_data = mvp.m_file_path;
-                        }
-                        else if ( found_inp != std::string::npos )
+                        else if ( found_vtm  != std::string::npos ||
+                                  found_vtu  != std::string::npos ||
+                                  found_vti  != std::string::npos ||
+                                  found_inp  != std::string::npos ||
+                                  found_pvtu != std::string::npos 
+                                )
                         {
                             param.m_input_data = mvp.m_file_path;
                         }
@@ -2078,12 +2109,13 @@ int main( int argc, char** argv )
                     param.m_particle_limit = clntMes.m_particle_limit;
                     param.m_particle_density = clntMes.m_particle_density;
 
-                    size_t found_pfl = param.m_input_data_base.find(".pfl");
-                    size_t found_pfi = param.m_input_data_base.find(".pfi");
-                    size_t found_vtm = param.m_input_data_base.find(".vtm");
-                    size_t found_vtu = param.m_input_data_base.find(".vtu");
-                    size_t found_vti = param.m_input_data_base.find(".vti");
-                    size_t found_inp = param.m_input_data_base.find(".inp");
+                    size_t found_pfl  = param.m_input_data_base.find(".pfl");
+                    size_t found_pfi  = param.m_input_data_base.find(".pfi");
+                    size_t found_vtm  = param.m_input_data_base.find(".vtm");
+                    size_t found_vtu  = param.m_input_data_base.find(".vtu");
+                    size_t found_vti  = param.m_input_data_base.find(".vti");
+                    size_t found_inp  = param.m_input_data_base.find(".inp");
+                    size_t found_pvtu = param.m_input_data_base.find(".pvtu");
 
                     if ( found_pfl != std::string::npos )
                     {
@@ -2115,13 +2147,11 @@ int main( int argc, char** argv )
                         // 単一ファイルの場合
                         if ( found_asterisk == std::string::npos )
                         {
-                            std::cout << "単一ファイル" << std::endl;
                             mvpl.loadVtm( vtmfile );
                         }
                         // 連番ファイルの場合
                         else
                         {
-                            std::cout << "連番ファイル" << std::endl;
                             mvpl.loadSeriesVtm( vtmfile );
                         }
                     }
@@ -2174,6 +2204,23 @@ int main( int argc, char** argv )
                         else
                         {
                             std::cout << ".inpファイルは連番ファイルに対応していません" << std::endl;
+                        }
+                    }
+                    else if ( found_pvtu != std::string::npos )
+                    {
+                        std::string pvtufile = param.m_input_data_base;
+                        std::cout << ".pvtuファイルが選択されました" << std::endl;
+                        size_t found_asterisk = pvtufile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            mvpl.loadPvtu( pvtufile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            mvpl.loadSeriesPvtu( pvtufile );
                         }
                     }
 #endif
@@ -2232,11 +2279,12 @@ int main( int argc, char** argv )
                         MultiVolumeProperty& mvp = mvpl.m_list[fidx];
                         pol_generator.setFinlterInfo( &mvpl.m_list[fidx] );
 
-                        size_t found_pfi = mvp.m_file_path.find(".pfi");
-                        size_t found_vtm = mvp.m_file_path.find(".vtm");
-                        size_t found_vtu = mvp.m_file_path.find(".vtu");
-                        size_t found_vti = mvp.m_file_path.find(".vti");
-                        size_t found_inp = mvp.m_file_path.find(".inp");
+                        size_t found_pfi  = mvp.m_file_path.find(".pfi");
+                        size_t found_vtm  = mvp.m_file_path.find(".vtm");
+                        size_t found_vtu  = mvp.m_file_path.find(".vtu");
+                        size_t found_vti  = mvp.m_file_path.find(".vti");
+                        size_t found_inp  = mvp.m_file_path.find(".inp");
+                        size_t found_pvtu = mvp.m_file_path.find(".pvtu");
                         
                         if ( found_pfi != std::string::npos )
                         {
@@ -2249,19 +2297,12 @@ int main( int argc, char** argv )
                             + ifpx.baseName() + suffix.str() + ".kvsml";
                         }
 #ifdef EXTEND_FILE_FORMAT
-                        else if ( found_vtm != std::string::npos )
-                        {
-                            param.m_input_data = mvp.m_file_path;
-                        }
-                        else if ( found_vtu != std::string::npos )
-                        {
-                            param.m_input_data = mvp.m_file_path;
-                        }
-                        else if ( found_vti != std::string::npos )
-                        {
-                            param.m_input_data = mvp.m_file_path;
-                        }
-                        else if ( found_inp != std::string::npos )
+                        else if ( found_vtm  != std::string::npos ||
+                                  found_vtu  != std::string::npos ||
+                                  found_vti  != std::string::npos ||
+                                  found_inp  != std::string::npos ||
+                                  found_pvtu != std::string::npos 
+                                )
                         {
                             param.m_input_data = mvp.m_file_path;
                         }
@@ -2527,15 +2568,14 @@ int main( int argc, char** argv )
                         mvpl.loadPFL( pfifile );
                     }
 #else
-                    // MultiVolumePropertyクラスに情報を格納する
-                    // .pflファイル,.pfiファイルはこれまで通り
-                    // 変換前ファイルの場合にも対応できるように拡張する
-                    size_t found_pfl = param.m_input_data_base.find(".pfl");
-                    size_t found_pfi = param.m_input_data_base.find(".pfi");
-                    size_t found_vtm = param.m_input_data_base.find(".vtm");
-                    size_t found_vtu = param.m_input_data_base.find(".vtu");
-                    size_t found_vti = param.m_input_data_base.find(".vti");
-                    size_t found_inp = param.m_input_data_base.find(".inp");
+                    // MultiVolumePropertyListクラスに情報を格納する
+                    size_t found_pfl  = param.m_input_data_base.find(".pfl");
+                    size_t found_pfi  = param.m_input_data_base.find(".pfi");
+                    size_t found_vtm  = param.m_input_data_base.find(".vtm");
+                    size_t found_vtu  = param.m_input_data_base.find(".vtu");
+                    size_t found_vti  = param.m_input_data_base.find(".vti");
+                    size_t found_inp  = param.m_input_data_base.find(".inp");
+                    size_t found_pvtu = param.m_input_data_base.find(".pvtu");
 		            if ( found_pfl != std::string::npos )
                     {
                         std::string pflfile = param.m_input_data_base;
@@ -2625,6 +2665,23 @@ int main( int argc, char** argv )
                         else
                         {
                             std::cout << ".inpファイルは連番ファイルに対応していません" << std::endl;
+                        }
+                    }
+                    else if ( found_pvtu != std::string::npos )
+                    {
+                        std::string pvtufile = param.m_input_data_base;
+                        std::cout << ".pvtuファイルが選択されました" << std::endl;
+                        size_t found_asterisk = pvtufile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            mvpl.loadPvtu( pvtufile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            mvpl.loadSeriesPvtu( pvtufile );
                         }
                     }
 #endif    
@@ -2840,11 +2897,12 @@ int main( int argc, char** argv )
                             fidx = mvpl.getFileIndex( vl, &xvl );
                             MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
-                            size_t found_pfi = mvp.m_file_path.find(".pfi");
-                            size_t found_vtm = mvp.m_file_path.find(".vtm");
-                            size_t found_vtu = mvp.m_file_path.find(".vtu");
-                            size_t found_vti = mvp.m_file_path.find(".vti");
-                            size_t found_inp = mvp.m_file_path.find(".inp");
+                            size_t found_pfi  = mvp.m_file_path.find(".pfi");
+                            size_t found_vtm  = mvp.m_file_path.find(".vtm");
+                            size_t found_vtu  = mvp.m_file_path.find(".vtu");
+                            size_t found_vti  = mvp.m_file_path.find(".vti");
+                            size_t found_inp  = mvp.m_file_path.find(".inp");
+                            size_t found_pvtu = mvp.m_file_path.find(".pvtu");
                             
                             if ( found_pfi != std::string::npos )
                             {
@@ -2857,19 +2915,12 @@ int main( int argc, char** argv )
                                     + ifpx.baseName() + suffix.str() + ".kvsml";
                             }
 #ifdef EXTEND_FILE_FORMAT 
-                            else if ( found_vtm != std::string::npos )
-                            {
-                                param.m_input_data = mvp.m_file_path;
-                            }
-                            else if ( found_vtu != std::string::npos )
-                            {
-                                param.m_input_data = mvp.m_file_path;
-                            }
-                            else if ( found_vti != std::string::npos )
-                            {
-                                param.m_input_data = mvp.m_file_path;
-                            }
-                            else if ( found_inp != std::string::npos )
+                            else if ( found_vtm  != std::string::npos ||
+                                      found_vtu  != std::string::npos ||
+                                      found_vti  != std::string::npos ||
+                                      found_inp  != std::string::npos ||
+                                      found_pvtu != std::string::npos 
+                                    )
                             {
                                 param.m_input_data = mvp.m_file_path;
                             }
@@ -3307,11 +3358,12 @@ int main( int argc, char** argv )
                             fidx = mvpl.getFileIndex( vl, &xvl );
                             MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
-                            size_t found_pfi = mvp.m_file_path.find(".pfi");
-                            size_t found_vtm = mvp.m_file_path.find(".vtm");
-                            size_t found_vtu = mvp.m_file_path.find(".vtu");
-                            size_t found_vti = mvp.m_file_path.find(".vti");
-                            size_t found_inp = mvp.m_file_path.find(".inp");
+                            size_t found_pfi  = mvp.m_file_path.find(".pfi");
+                            size_t found_vtm  = mvp.m_file_path.find(".vtm");
+                            size_t found_vtu  = mvp.m_file_path.find(".vtu");
+                            size_t found_vti  = mvp.m_file_path.find(".vti");
+                            size_t found_inp  = mvp.m_file_path.find(".inp");
+                            size_t found_pvtu = mvp.m_file_path.find(".pvtu");
                             
                             if ( found_pfi != std::string::npos )
                             {
@@ -3324,19 +3376,12 @@ int main( int argc, char** argv )
                                     + ifpx.baseName() + suffix.str() + ".kvsml";
                             }
 #ifdef EXTEND_FILE_FORMAT 
-                            else if ( found_vtm != std::string::npos )
-                            {
-                                param.m_input_data = mvp.m_file_path;
-                            }
-                            else if ( found_vtu != std::string::npos )
-                            {
-                                param.m_input_data = mvp.m_file_path;
-                            }
-                            else if ( found_vti != std::string::npos )
-                            {
-                                param.m_input_data = mvp.m_file_path;
-                            }
-                            else if ( found_inp != std::string::npos )
+                            else if ( found_vtm  != std::string::npos ||
+                                      found_vtu  != std::string::npos ||
+                                      found_vti  != std::string::npos ||
+                                      found_inp  != std::string::npos ||
+                                      found_pvtu != std::string::npos 
+                                    )
                             {
                                 param.m_input_data = mvp.m_file_path;
                             }
@@ -3743,11 +3788,12 @@ int main( int argc, char** argv )
                             fidx = mvpl.getFileIndex( vl, &xvl );
                             MultiVolumeProperty& mvp = mvpl.m_list[fidx];
 
-                            size_t found_pfi = mvp.m_file_path.find(".pfi");
-                            size_t found_vtm = mvp.m_file_path.find(".vtm");
-                            size_t found_vtu = mvp.m_file_path.find(".vtu");
-                            size_t found_vti = mvp.m_file_path.find(".vti");
-                            size_t found_inp = mvp.m_file_path.find(".inp");
+                            size_t found_pfi  = mvp.m_file_path.find(".pfi");
+                            size_t found_vtm  = mvp.m_file_path.find(".vtm");
+                            size_t found_vtu  = mvp.m_file_path.find(".vtu");
+                            size_t found_vti  = mvp.m_file_path.find(".vti");
+                            size_t found_inp  = mvp.m_file_path.find(".inp");
+                            size_t found_pvtu = mvp.m_file_path.find(".pvtu");
 
                             if ( found_pfi != std::string::npos )
                             {
@@ -3760,19 +3806,12 @@ int main( int argc, char** argv )
                                 + ifpx.baseName() + suffix.str() + ".kvsml";
                             }
 #ifdef EXTEND_FILE_FORMAT 
-                            else if ( found_vtm != std::string::npos )
-                            {
-                                param.m_input_data = mvp.m_file_path;
-                            }
-                            else if ( found_vtu != std::string::npos )
-                            {
-                                param.m_input_data = mvp.m_file_path;
-                            }
-                            else if ( found_vti != std::string::npos )
-                            {
-                                param.m_input_data = mvp.m_file_path;
-                            }
-                            else if ( found_inp != std::string::npos )
+                            else if ( found_vtm  != std::string::npos ||
+                                      found_vtu  != std::string::npos ||
+                                      found_vti  != std::string::npos ||
+                                      found_inp  != std::string::npos ||
+                                      found_pvtu != std::string::npos 
+                                    )
                             {
                                 param.m_input_data = mvp.m_file_path;
                             }
@@ -4146,11 +4185,12 @@ int main( int argc, char** argv )
                             MultiVolumeProperty& mvp = mvpl.m_list[fidx];
                             pol_generator.setFinlterInfo( &mvpl.m_list[fidx] );
 
-                            size_t found_pfi = mvp.m_file_path.find(".pfi");
-                            size_t found_vtm = mvp.m_file_path.find(".vtm");
-                            size_t found_vtu = mvp.m_file_path.find(".vtu");
-                            size_t found_vti = mvp.m_file_path.find(".vti");
-                            size_t found_inp = mvp.m_file_path.find(".inp");
+                            size_t found_pfi  = mvp.m_file_path.find(".pfi");
+                            size_t found_vtm  = mvp.m_file_path.find(".vtm");
+                            size_t found_vtu  = mvp.m_file_path.find(".vtu");
+                            size_t found_vti  = mvp.m_file_path.find(".vti");
+                            size_t found_inp  = mvp.m_file_path.find(".inp");
+                            size_t found_pvtu = mvp.m_file_path.find(".pvtu");
 
                             if ( found_pfi != std::string::npos )
                             {
@@ -4163,19 +4203,12 @@ int main( int argc, char** argv )
                                 + ifpx.baseName() + suffix.str() + ".kvsml";
                             }
 #ifdef EXTEND_FILE_FORMAT 
-                            else if ( found_vtm != std::string::npos )
-                            {
-                                param.m_input_data = mvp.m_file_path;
-                            }
-                            else if ( found_vtu != std::string::npos )
-                            {
-                                param.m_input_data = mvp.m_file_path;
-                            }
-                            else if ( found_vti != std::string::npos )
-                            {
-                                param.m_input_data = mvp.m_file_path;
-                            }
-                            else if ( found_inp != std::string::npos )
+                            else if ( found_vtm  != std::string::npos ||
+                                      found_vtu  != std::string::npos ||
+                                      found_vti  != std::string::npos ||
+                                      found_inp  != std::string::npos ||
+                                      found_pvtu != std::string::npos 
+                                    )
                             {
                                 param.m_input_data = mvp.m_file_path;
                             }

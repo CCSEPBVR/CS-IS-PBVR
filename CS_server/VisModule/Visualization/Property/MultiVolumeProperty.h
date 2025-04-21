@@ -65,6 +65,8 @@ public:
     int loadVti( const std::string& filename );
     int loadSeriesVti( const std::string& filename );
     int loadInp( const std::string& filename );
+    int loadPvtu( const std::string& filename );
+    int loadSeriesPvtu( const std::string& filename );
 #endif
     int getFileIndex( const int vl, int* xvl ) const;
     void cropTimeStep( const int s, const int e );

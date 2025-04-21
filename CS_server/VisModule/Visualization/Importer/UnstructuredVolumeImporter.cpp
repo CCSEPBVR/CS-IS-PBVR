@@ -315,9 +315,10 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
     size_t found_asterisk = edit_filename.find( '*' ); // ファイル名に時系列ファイルのアスタリスクが含まれているか確認
 
     // ファイルの拡張子を確認
-    size_t found_vtm = edit_filename.find( ".vtm" );
-    size_t found_vtu = edit_filename.find( ".vtu" );
-    size_t found_inp = edit_filename.find( ".inp" );
+    size_t found_vtm  = edit_filename.find( ".vtm" );
+    size_t found_vtu  = edit_filename.find( ".vtu" );
+    size_t found_inp  = edit_filename.find( ".inp" );
+    size_t found_pvtu = edit_filename.find( ".pvtu" );
 
     // 時系列ファイルの場合、アスタリスクをタイムステップに置換
     if ( found_asterisk != std::string::npos )
@@ -341,6 +342,12 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
     {
         kvs::ExtendedFileFormat::AvsUcd* file_format = new kvs::ExtendedFileFormat::AvsUcd( edit_filename );
         this->import( *file_format, targetCellType );
+        delete file_format;
+    }
+    else if ( found_pvtu != std::string::npos )
+    {
+        kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid* file_format = new kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid( edit_filename );
+        this->import( *file_format, targetCellType, vl );
         delete file_format;
     }
 }
@@ -596,13 +603,13 @@ void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlMu
 {
     std::unordered_map<int, int> sub_volume_ids;
 
-    for ( auto target_block_object : vtm.eachBlock() )
+    for ( auto format : vtm.eachBlock() )
     {
-        if ( auto input_vtu = dynamic_cast<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid*>( target_block_object.get() ) )
+        if ( auto vtu = dynamic_cast<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid*>( format.get() ) )
         {
-            for ( auto target_cell_type_object : input_vtu->eachCellType() )
+            for ( auto file_format : vtu->eachCellType() )
             {
-                kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> importer( &target_cell_type_object );
+                kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> importer( &file_format );
                 kvs::UnstructuredVolumeObject* object = &importer;
                 auto kvs_cell_type = object->cellType();
 
@@ -637,9 +644,6 @@ void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlMu
                     tmp_values_array[i] = object->values().asValueArray<float>()[i];
                 }
                 vismodule::AnyValueArray tmp_any_value_array( tmp_values_array );
-                
-                const double min_value = SuperClass::minValue();
-                const double max_value = SuperClass::maxValue();
 
                 SuperClass::setVeclen( object->veclen() );
                 SuperClass::setNNodes( object->nnodes() );
@@ -647,8 +651,8 @@ void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlMu
                 SuperClass::setCoords( tmp_coords_array );
                 SuperClass::setConnections( tmp_connections_array );
                 SuperClass::setValues( tmp_any_value_array );
-                SuperClass::updateMinMaxCoords();
-                SuperClass::setMinMaxValues( min_value, max_value );
+                // SuperClass::updateMinMaxCoords();
+                SuperClass::setMinMaxValues( object->minValue(), object->maxValue() );
                 return;
             }
         }
@@ -664,9 +668,9 @@ void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlMu
 /*==========================================================================*/
 void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid& vtu , const int targetCellType )
 {
-    for ( auto target_cell_type_object : vtu.eachCellType() )
+    for ( auto file_format : vtu.eachCellType() )
     {
-        kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> importer( &target_cell_type_object );
+        kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> importer( &file_format );
         kvs::UnstructuredVolumeObject* object = &importer;
         auto kvs_cell_type = object->cellType();
 
@@ -693,9 +697,6 @@ void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlUn
             tmp_values_array[i] = object->values().asValueArray<float>()[i];
         }
         vismodule::AnyValueArray tmp_any_value_array( tmp_values_array );
-            
-        const double min_value = SuperClass::minValue();
-        const double max_value = SuperClass::maxValue();
 
         SuperClass::setVeclen( object->veclen() );
         SuperClass::setNNodes( object->nnodes() );
@@ -704,7 +705,7 @@ void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlUn
         SuperClass::setConnections( tmp_connections_array );
         SuperClass::setValues( tmp_any_value_array );
         SuperClass::updateMinMaxCoords();
-        SuperClass::setMinMaxValues( min_value, max_value );
+        SuperClass::setMinMaxValues( object->minValue(), object->maxValue() );
         return;
     }
 }
@@ -717,9 +718,9 @@ void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlUn
 /*==========================================================================*/
 void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::AvsUcd& inp , const int targetCellType )
 {
-    for ( auto target_cell_type_object : inp.eachCellType() )
+    for ( auto file_format : inp.eachCellType() )
     {
-        kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::AvsUcd> importer( &target_cell_type_object );
+        kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::AvsUcd> importer( &file_format );
         kvs::UnstructuredVolumeObject* object = &importer;
         auto kvs_cell_type = object->cellType();
 
@@ -746,9 +747,6 @@ void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::AvsUcd& 
             tmp_values_array[i] = object->values().asValueArray<float>()[i];
         }
         vismodule::AnyValueArray tmp_any_value_array( tmp_values_array );
-            
-        const double min_value = SuperClass::minValue();
-        const double max_value = SuperClass::maxValue();
 
         SuperClass::setVeclen( object->veclen() );
         SuperClass::setNNodes( object->nnodes() );
@@ -757,8 +755,70 @@ void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::AvsUcd& 
         SuperClass::setConnections( tmp_connections_array );
         SuperClass::setValues( tmp_any_value_array );
         SuperClass::updateMinMaxCoords();
-        SuperClass::setMinMaxValues( min_value, max_value );
+        SuperClass::setMinMaxValues( object->minValue(), object->maxValue() );
         return;
+    }
+}
+/*==========================================================================*/
+/**
+*  @brief  Imports the VTK Parallel Unstructured Grid format data.
+*  @param  vtm [in] pointer to the VTK Parallel Unstructured Grid format data
+*  @param  targetCellType [in] cell type in KVS
+*/
+/*==========================================================================*/
+void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid& pvtu , const int targetCellType, const int vl )
+{
+    std::unordered_map<int, int> sub_volume_ids;
+
+    for ( auto vtu : pvtu.eachPiece() )
+    {
+        for ( auto file_format : vtu.eachCellType() )
+        {
+            kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> importer( &file_format );
+            kvs::UnstructuredVolumeObject* object = &importer;
+            auto kvs_cell_type = object->cellType();
+
+            if ( kvs_cell_type != targetCellType ) continue;
+
+            if ( sub_volume_ids.count(kvs_cell_type) == 0 ) sub_volume_ids[kvs_cell_type] = 0;
+
+            if ( sub_volume_ids[kvs_cell_type] != vl ) 
+            {
+                ++sub_volume_ids[kvs_cell_type];
+                continue;
+            }
+
+            auto vismodule_cell_type = ::ConvertCellTypeKVS2VisModule( kvs_cell_type );
+            SuperClass::setCellType( vismodule_cell_type );
+                
+            vismodule::ValueArray<vismodule::UInt32> tmp_connections_array( object->ncells() * SuperClass::cellType() );
+            for (int i = 0; i < (object->ncells() * SuperClass::cellType()); i++)
+            {
+                tmp_connections_array[i] = object->connections()[i];
+            }
+                
+            vismodule::ValueArray<float> tmp_coords_array( object->coords().size() );
+            for (int i = 0; i < object->coords().size(); i++)
+            {
+                tmp_coords_array[i] = object->coords()[i];
+            }
+                
+            vismodule::ValueArray<float> tmp_values_array( object->values().size() );
+            for (int i = 0; i < object->values().size(); i++)
+            {
+                tmp_values_array[i] = object->values().asValueArray<float>()[i];
+            }
+            vismodule::AnyValueArray tmp_any_value_array( tmp_values_array );
+
+            SuperClass::setVeclen( object->veclen() );
+            SuperClass::setNNodes( object->nnodes() );
+            SuperClass::setNCells( object->ncells() );
+            SuperClass::setCoords( tmp_coords_array );
+            SuperClass::setConnections( tmp_connections_array );
+            SuperClass::setValues( tmp_any_value_array );
+            SuperClass::setMinMaxValues( object->minValue(), object->maxValue() );
+            return;
+        }
     }
 }
 #endif

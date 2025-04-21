@@ -91,14 +91,6 @@ public:
     {
         vismodule::GlyphObjectGenerator generator;
         generator.setFinlterInfo( m_mvp );
-
-        struct stat s;
-        if ( stat( param.m_input_data.c_str(), &s ) )
-        {
-            std::cout << "Error. read failed:" << param.m_input_data << std::endl;
-            exit( 1 );
-        }
-        
         generator.createFromFile( param, camera, clntMes, number_of_divide, st, vl );
         vismodule::KVSMLObjectGlyph* po = generator.getKVSMLObjectGlyph();
         

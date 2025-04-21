@@ -188,10 +188,11 @@ void POLObjectGenerator::createFromFile( const Argument& param, const vismodule:
 {
     bool is_structured = false;
     bool is_unstructured = false;
-    size_t found_vtm = param.m_input_data_base.find(".vtm");
-    size_t found_vtu = param.m_input_data_base.find(".vtu");
-    size_t found_vti = param.m_input_data_base.find(".vti");
-    size_t found_inp = param.m_input_data_base.find(".inp");
+    size_t found_vtm  = param.m_input_data_base.find(".vtm");
+    size_t found_vtu  = param.m_input_data_base.find(".vtu");
+    size_t found_vti  = param.m_input_data_base.find(".vti");
+    size_t found_inp  = param.m_input_data_base.find(".inp");
+    size_t found_pvtu = param.m_input_data_base.find(".pvtu");
     vismodule::VolumeObjectBase* volume = nullptr;
     vismodule::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
     vismodule::Vec3 end_point( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
@@ -212,7 +213,10 @@ void POLObjectGenerator::createFromFile( const Argument& param, const vismodule:
             volume = new vismodule::UnstructuredVolumeImporter( m_mvp->m_file_path, m_mvp->m_file_type, m_mvp->m_elem_type, st, vl );
         }
     }
-    else if ( found_vtu != std::string::npos )
+    else if ( found_vtu  != std::string::npos ||
+              found_inp  != std::string::npos ||
+              found_pvtu != std::string::npos 
+            )
     {
         is_unstructured = true;
         volume = new vismodule::UnstructuredVolumeImporter( m_mvp->m_file_path, m_mvp->m_file_type, m_mvp->m_elem_type, st, vl );
@@ -221,11 +225,6 @@ void POLObjectGenerator::createFromFile( const Argument& param, const vismodule:
     {
         is_structured = true;
         volume = new vismodule::StructuredVolumeImporter( m_mvp->m_file_path, st, vl );
-    }
-    else if ( found_inp != std::string::npos )
-    {
-        is_unstructured = true;
-        volume = new vismodule::UnstructuredVolumeImporter( m_mvp->m_file_path, m_mvp->m_file_type, m_mvp->m_elem_type, st, vl );
     }
 
     if ( is_structured )

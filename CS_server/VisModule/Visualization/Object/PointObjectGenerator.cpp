@@ -108,10 +108,11 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
     delete m_object;
 
     size_t found_kvsml = param.m_input_data_base.find(".kvsml");
-    size_t found_vtm = param.m_input_data_base.find(".vtm");
-    size_t found_vtu = param.m_input_data_base.find(".vtu");
-    size_t found_vti = param.m_input_data_base.find(".vti");
-    size_t found_inp = param.m_input_data_base.find(".inp");
+    size_t found_vtm   = param.m_input_data_base.find(".vtm");
+    size_t found_vtu   = param.m_input_data_base.find(".vtu");
+    size_t found_vti   = param.m_input_data_base.find(".vti");
+    size_t found_inp   = param.m_input_data_base.find(".inp");
+    size_t found_pvtu  = param.m_input_data_base.find(".pvtu");
 
     vismodule::VolumeObjectBase* volume = nullptr;
 
@@ -138,17 +139,16 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
             volume = new vismodule::UnstructuredVolumeImporter( m_mvp->m_file_path, m_mvp->m_file_type, m_mvp->m_elem_type, st, vl );
         }
     }
-    else if ( found_vtu != std::string::npos )
+    else if ( found_vtu  != std::string::npos ||
+              found_inp  != std::string::npos ||
+              found_pvtu != std::string::npos 
+            )
     {
         volume = new vismodule::UnstructuredVolumeImporter( m_mvp->m_file_path, m_mvp->m_file_type, m_mvp->m_elem_type, st, vl );
     }
     else if ( found_vti != std::string::npos )
     {
         volume = new vismodule::StructuredVolumeImporter( m_mvp->m_file_path, st, vl );
-    }
-    else if ( found_inp != std::string::npos )
-    {
-        volume = new vismodule::UnstructuredVolumeImporter( m_mvp->m_file_path, m_mvp->m_file_type, m_mvp->m_elem_type, st, vl );
     }
 #endif
 
@@ -160,11 +160,24 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
 
     VIS_MODULE_TIMER_END( 260 );
 
-    // .vtm file format and Structured Volume Data
-    if ( found_vtm != std::string::npos && m_mvp->m_file_type == 3 )
+    // .vtm .pvtu file format
+    if ( ( found_vtm != std::string::npos ) || ( found_pvtu != std::string::npos ) )
     {
-        volume->setMinMaxObjectCoords( m_mvp->m_min_subvolume_coord[vl], m_mvp->m_max_subvolume_coord[vl] );
-        volume->setMinMaxExternalCoords( m_mvp->m_min_subvolume_coord[vl], m_mvp->m_max_subvolume_coord[vl] );
+        // Structured Volume Data
+        if ( m_mvp->m_file_type == 3 )
+        {
+            volume->updateMinMaxValues();
+            volume->setMinMaxObjectCoords( m_mvp->m_min_subvolume_coord[vl], m_mvp->m_max_subvolume_coord[vl] );
+            volume->setMinMaxExternalCoords( m_mvp->m_min_subvolume_coord[vl], m_mvp->m_max_subvolume_coord[vl] );
+        }
+
+        // Unstructured Volume Data
+        else if ( m_mvp->m_file_type == 4 )
+        {
+            volume->updateMinMaxValues();
+            volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
+            volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
+        }
     }
     else
     {

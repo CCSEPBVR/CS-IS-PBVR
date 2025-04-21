@@ -565,9 +565,6 @@ void StructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlMult
                 tmp_values_array[i] = object->values().asValueArray<float>()[i];
             }
             vismodule::AnyValueArray tmp_any_value_array( tmp_values_array );
-            
-            const double min_value = SuperClass::minValue();
-            const double max_value = SuperClass::maxValue();
 
             SuperClass::setMinMaxExternalCoords( min_external_coord, max_external_coord );
             SuperClass::setMinMaxObjectCoords( min_object_coord, max_object_coord );
@@ -575,8 +572,7 @@ void StructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlMult
             SuperClass::setResolution( resolution );
             SuperClass::setVeclen( object->veclen() );
             SuperClass::setValues( tmp_any_value_array );
-            // SuperClass::updateMinMaxCoords();
-            SuperClass::setMinMaxValues( min_value, max_value );
+            SuperClass::setMinMaxValues( object->minValue(), object->maxValue() );
             return;
         }
     }
@@ -623,9 +619,6 @@ void StructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlImag
         tmp_values_array[i] = object->values().asValueArray<float>()[i];
     }
     vismodule::AnyValueArray tmp_any_value_array( tmp_values_array );
-    
-    const double min_value = SuperClass::minValue();
-    const double max_value = SuperClass::maxValue();
 
     SuperClass::setMinMaxExternalCoords( min_external_coord, max_external_coord );
     SuperClass::setMinMaxObjectCoords( min_object_coord, max_object_coord );
@@ -633,8 +626,7 @@ void StructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlImag
     SuperClass::setResolution( resolution );
     SuperClass::setVeclen( object->veclen() );
     SuperClass::setValues( tmp_any_value_array );
-    // SuperClass::updateMinMaxCoords();
-    SuperClass::setMinMaxValues( min_value, max_value );    
+    SuperClass::setMinMaxValues( object->minValue(), object->maxValue() );  
 }
 #endif
 
