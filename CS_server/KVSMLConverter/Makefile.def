@@ -193,8 +193,8 @@ KVS_LINK_LIBRARY := -lkvsCore
 #=============================================================================
 #  VTK_INCLUDE_PATH, VTK_LIBRARY_PATH, VTK_LINK_LIBRARY
 #=============================================================================
-VTK_INCLUDE_PATH := $(VTK_DIR)/include/vtk-$(VTK_VERSION)
-VTK_LIBRARY_PATH := $(VTK_DIR)/lib
+VTK_INCLUDE_OPTION := $(VTK_INCLUDE_PATH)
+VTK_LIBRARY_OPTION := $(VTK_LIB_PATH)
 VTK_LINK_LIBRARY := \
 -lvtksys-$(VTK_VERSION) \
 -lvtkCommonCore-$(VTK_VERSION) \
