@@ -104,6 +104,7 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const vismodul
     size_t found_vti   = param.m_input_data_base.find(".vti");
     size_t found_inp   = param.m_input_data_base.find(".inp");
     size_t found_pvtu  = param.m_input_data_base.find(".pvtu");
+    size_t found_case  = param.m_input_data_base.find(".case");
 
     vismodule::VolumeObjectBase* volume = nullptr;
 
@@ -132,7 +133,8 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const vismodul
     }
     else if ( found_vtu  != std::string::npos ||
               found_inp  != std::string::npos ||
-              found_pvtu != std::string::npos 
+              found_pvtu != std::string::npos ||
+              found_case != std::string::npos 
             )
     {
         volume = new vismodule::UnstructuredVolumeImporter( m_mvp->m_file_path, m_mvp->m_file_type, m_mvp->m_elem_type, st, vl );

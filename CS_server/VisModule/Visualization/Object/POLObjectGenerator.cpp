@@ -193,6 +193,7 @@ void POLObjectGenerator::createFromFile( const Argument& param, const vismodule:
     size_t found_vti  = param.m_input_data_base.find(".vti");
     size_t found_inp  = param.m_input_data_base.find(".inp");
     size_t found_pvtu = param.m_input_data_base.find(".pvtu");
+    size_t found_case = param.m_input_data_base.find(".case");
     vismodule::VolumeObjectBase* volume = nullptr;
     vismodule::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
     vismodule::Vec3 end_point( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
@@ -215,7 +216,8 @@ void POLObjectGenerator::createFromFile( const Argument& param, const vismodule:
     }
     else if ( found_vtu  != std::string::npos ||
               found_inp  != std::string::npos ||
-              found_pvtu != std::string::npos 
+              found_pvtu != std::string::npos ||
+              found_case != std::string::npos 
             )
     {
         is_unstructured = true;

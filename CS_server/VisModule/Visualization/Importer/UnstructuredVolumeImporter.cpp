@@ -319,6 +319,7 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
     size_t found_vtu  = edit_filename.find( ".vtu" );
     size_t found_inp  = edit_filename.find( ".inp" );
     size_t found_pvtu = edit_filename.find( ".pvtu" );
+    size_t found_case = edit_filename.find( ".case" );
 
     // 時系列ファイルの場合、アスタリスクをタイムステップに置換
     if ( found_asterisk != std::string::npos )
@@ -348,6 +349,12 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
     {
         kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid* file_format = new kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid( edit_filename );
         this->import( *file_format, targetCellType, vl );
+        delete file_format;
+    }
+    else if ( found_case != std::string::npos )
+    {
+        kvs::ExtendedFileFormat::EnSightGoldBinary* file_format = new kvs::ExtendedFileFormat::EnSightGoldBinary( edit_filename );
+        this->import( *file_format, st, vl );
         delete file_format;
     }
 }
@@ -764,6 +771,7 @@ void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::AvsUcd& 
 *  @brief  Imports the VTK Parallel Unstructured Grid format data.
 *  @param  vtm [in] pointer to the VTK Parallel Unstructured Grid format data
 *  @param  targetCellType [in] cell type in KVS
+*  @param  vl [in] sub volume id
 */
 /*==========================================================================*/
 void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid& pvtu , const int targetCellType, const int vl )
@@ -820,6 +828,97 @@ void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::VtkXmlPU
             return;
         }
     }
+}
+/*==========================================================================*/
+/**
+*  @brief  Imports the Ensight Gold format data.
+*  @param  vtm [in] pointer to the Ensight Gold format data
+*  @param  st [in] time step
+*  @param  vl [in] sub volume id
+*/
+/*==========================================================================*/
+void UnstructuredVolumeImporter::import( const kvs::ExtendedFileFormat::EnSightGoldBinary& ensightGold , const int st, const int vl )
+{
+    std::cout << "time step:" << st << ", sub_volume_id:" << vl << std::endl;
+    int time_step = 0;
+
+    for ( auto time_and_format : ensightGold.eachTimeStep() )
+    {
+        int sub_volume_id = 0;
+        auto time = time_and_format.first;
+        auto &multi_block_format = time_and_format.second;
+
+        std::cout << "time_step:" << time_step << std::endl;
+
+        if ( time_step != st )
+        {
+            ++time_step;
+            continue;
+        }
+
+        for ( auto format : multi_block_format.eachBlock() )
+        {
+            std::cout << "sub_volume_id:" << sub_volume_id << std::endl;
+
+            if ( sub_volume_id != vl )
+            {
+                ++sub_volume_id;
+                continue;
+            }
+
+            if ( !format )
+            {
+                std::cout << "Unsupported VTK data type" << std::endl;
+            }
+            else if ( auto unstructured_volume_format = dynamic_cast<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid*>( format.get() ) )
+            {
+                kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> importer( unstructured_volume_format );
+                kvs::UnstructuredVolumeObject* object = &importer;
+                auto kvs_cell_type = object->cellType();
+
+                if ( object->cellType() == kvs::UnstructuredVolumeObject::CellType::UnknownCellType ) continue;
+                auto vismodule_cell_type = ::ConvertCellTypeKVS2VisModule( kvs_cell_type );
+                SuperClass::setCellType( vismodule_cell_type );
+
+                vismodule::ValueArray<vismodule::UInt32> tmp_connections_array( object->ncells() * SuperClass::cellType() );
+                for (int i = 0; i < (object->ncells() * SuperClass::cellType()); i++)
+                {
+                    tmp_connections_array[i] = object->connections()[i];
+                }
+                
+                vismodule::ValueArray<float> tmp_coords_array( object->coords().size() );
+                for (int i = 0; i < object->coords().size(); i++)
+                {
+                    tmp_coords_array[i] = object->coords()[i];
+                }
+                
+                vismodule::ValueArray<float> tmp_values_array( object->values().size() );
+                for (int i = 0; i < object->values().size(); i++)
+                {
+                    tmp_values_array[i] = object->values().asValueArray<float>()[i];
+                }
+                vismodule::AnyValueArray tmp_any_value_array( tmp_values_array );
+
+                SuperClass::setVeclen( object->veclen() );
+                SuperClass::setNNodes( object->nnodes() );
+                SuperClass::setNCells( object->ncells() );
+                SuperClass::setCoords( tmp_coords_array );
+                SuperClass::setConnections( tmp_connections_array );
+                SuperClass::setValues( tmp_any_value_array );
+                SuperClass::setMinMaxValues( object->minValue(), object->maxValue() );
+                return;
+            }
+            else
+            {
+                std::cout << "Supported, but non-unstructured grid" << std::endl;
+            }
+
+            ++sub_volume_id;
+        }
+
+        ++time_step;
+    }
+
 }
 #endif
 

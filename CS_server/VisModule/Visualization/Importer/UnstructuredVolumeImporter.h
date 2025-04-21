@@ -29,6 +29,7 @@
 #include <kvs/extendedfileformat/VtkXmlUnstructuredGrid>
 #include <kvs/extendedfileformat/AvsUcd>
 #include <kvs/extendedfileformat/VtkXmlPUnstructuredGrid>
+#include <kvs/extendedfileformat/EnSightGoldBinary>
 #endif
 
 namespace vismodule
@@ -87,6 +88,7 @@ private:
     void import( const kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid& vtu , const int targetCellType );
     void import( const kvs::ExtendedFileFormat::AvsUcd& inp , const int targetCellType );
     void import( const kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid& pvtu , const int targetCellType, const int vl);
+    void import( const kvs::ExtendedFileFormat::EnSightGoldBinary& ensightGold , const int targetCellType, const int vl);
 #endif
 };
 

@@ -1061,6 +1061,7 @@ int main( int argc, char** argv )
                     size_t found_vti  = param.m_input_data_base.find(".vti");
                     size_t found_inp  = param.m_input_data_base.find(".inp");
                     size_t found_pvtu = param.m_input_data_base.find(".pvtu");
+                    size_t found_case = param.m_input_data_base.find(".case");
                     if ( found_pfl != std::string::npos )
                     {
                         std::string pflfile = param.m_input_data_base;
@@ -1167,6 +1168,23 @@ int main( int argc, char** argv )
                         else
                         {
                             mvpl.loadSeriesPvtu( pvtufile );
+                        }
+                    }
+                    else if ( found_case != std::string::npos )
+                    {
+                        std::string casefile = param.m_input_data_base;
+                        std::cout << ".caseファイルが選択されました" << std::endl;
+                        size_t found_asterisk = casefile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            mvpl.loadEnsightGold( casefile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            std::cout << ".caseファイルは連番ファイルに対応していません" << std::endl;
                         }
                     }
 #endif
@@ -1283,6 +1301,7 @@ int main( int argc, char** argv )
                         size_t found_vti  = mvp.m_file_path.find(".vti");
                         size_t found_inp  = mvp.m_file_path.find(".inp");
                         size_t found_pvtu = mvp.m_file_path.find(".pvtu");
+                        size_t found_case = mvp.m_file_path.find(".case");
 
                         if ( found_pfi != std::string::npos )
                         {
@@ -1299,7 +1318,8 @@ int main( int argc, char** argv )
                                   found_vtu  != std::string::npos ||
                                   found_vti  != std::string::npos ||
                                   found_inp  != std::string::npos ||
-                                  found_pvtu != std::string::npos 
+                                  found_pvtu != std::string::npos ||
+                                  found_case != std::string::npos 
                                 )
                         {
                             param.m_input_data = mvp.m_file_path;
@@ -1438,6 +1458,7 @@ int main( int argc, char** argv )
                     size_t found_vti  = param.m_input_data_base.find(".vti");
                     size_t found_inp  = param.m_input_data_base.find(".inp");
                     size_t found_pvtu = param.m_input_data_base.find(".pvtu");
+                    size_t found_case = param.m_input_data_base.find(".case");
                     if ( found_pfl != std::string::npos )
                     {
                         std::string pflfile = param.m_input_data_base;
@@ -1544,6 +1565,23 @@ int main( int argc, char** argv )
                             mvpl.loadSeriesPvtu( pvtufile );
                         }
                     }
+                    else if ( found_case != std::string::npos )
+                    {
+                        std::string casefile = param.m_input_data_base;
+                        std::cout << ".caseファイルが選択されました" << std::endl;
+                        size_t found_asterisk = casefile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            mvpl.loadEnsightGold( casefile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            std::cout << ".caseファイルは連番ファイルに対応していません" << std::endl;
+                        }
+                    }                
 #endif
                     else
                     {
@@ -1647,6 +1685,7 @@ int main( int argc, char** argv )
                         size_t found_vti  = mvp.m_file_path.find(".vti");
                         size_t found_inp  = mvp.m_file_path.find(".inp");
                         size_t found_pvtu = mvp.m_file_path.find(".pvtu");
+                        size_t found_case = mvp.m_file_path.find(".case");
 
                         if ( found_pfi != std::string::npos )
                         {
@@ -1663,7 +1702,8 @@ int main( int argc, char** argv )
                                   found_vtu  != std::string::npos ||
                                   found_vti  != std::string::npos ||
                                   found_inp  != std::string::npos ||
-                                  found_pvtu != std::string::npos 
+                                  found_pvtu != std::string::npos ||
+                                  found_case != std::string::npos 
                                 )
                         {
                             param.m_input_data = mvp.m_file_path;
@@ -1807,6 +1847,7 @@ int main( int argc, char** argv )
                     size_t found_vti  = param.m_input_data_base.find(".vti");
                     size_t found_inp  = param.m_input_data_base.find(".inp");
                     size_t found_pvtu = param.m_input_data_base.find(".pvtu");
+                    size_t found_case = param.m_input_data_base.find(".case");
 		            if ( found_pfl != std::string::npos )
                     {
                         std::string pflfile = param.m_input_data_base;
@@ -1913,6 +1954,23 @@ int main( int argc, char** argv )
                             mvpl.loadSeriesPvtu( pvtufile );
                         }
                     }
+                    else if ( found_case != std::string::npos )
+                    {
+                        std::string casefile = param.m_input_data_base;
+                        std::cout << ".caseファイルが選択されました" << std::endl;
+                        size_t found_asterisk = casefile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            mvpl.loadEnsightGold( casefile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            std::cout << ".caseファイルは連番ファイルに対応していません" << std::endl;
+                        }
+                    }                    
 #endif
                     else
                     {
@@ -1991,6 +2049,7 @@ int main( int argc, char** argv )
                         size_t found_vti  = mvp.m_file_path.find(".vti");
                         size_t found_inp  = mvp.m_file_path.find(".inp");
                         size_t found_pvtu = mvp.m_file_path.find(".pvtu");
+                        size_t found_case = mvp.m_file_path.find(".case");
 
                         if ( found_pfi != std::string::npos )
                         {
@@ -2007,7 +2066,8 @@ int main( int argc, char** argv )
                                   found_vtu  != std::string::npos ||
                                   found_vti  != std::string::npos ||
                                   found_inp  != std::string::npos ||
-                                  found_pvtu != std::string::npos 
+                                  found_pvtu != std::string::npos ||
+                                  found_case != std::string::npos 
                                 )
                         {
                             param.m_input_data = mvp.m_file_path;
@@ -2116,6 +2176,7 @@ int main( int argc, char** argv )
                     size_t found_vti  = param.m_input_data_base.find(".vti");
                     size_t found_inp  = param.m_input_data_base.find(".inp");
                     size_t found_pvtu = param.m_input_data_base.find(".pvtu");
+                    size_t found_case = param.m_input_data_base.find(".case");
 
                     if ( found_pfl != std::string::npos )
                     {
@@ -2223,6 +2284,23 @@ int main( int argc, char** argv )
                             mvpl.loadSeriesPvtu( pvtufile );
                         }
                     }
+                    else if ( found_case != std::string::npos )
+                    {
+                        std::string casefile = param.m_input_data_base;
+                        std::cout << ".caseファイルが選択されました" << std::endl;
+                        size_t found_asterisk = casefile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            mvpl.loadEnsightGold( casefile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            std::cout << ".caseファイルは連番ファイルに対応していません" << std::endl;
+                        }
+                    }                    
 #endif
                     else
                     {
@@ -2285,6 +2363,7 @@ int main( int argc, char** argv )
                         size_t found_vti  = mvp.m_file_path.find(".vti");
                         size_t found_inp  = mvp.m_file_path.find(".inp");
                         size_t found_pvtu = mvp.m_file_path.find(".pvtu");
+                        size_t found_case = mvp.m_file_path.find(".case");
                         
                         if ( found_pfi != std::string::npos )
                         {
@@ -2301,7 +2380,8 @@ int main( int argc, char** argv )
                                   found_vtu  != std::string::npos ||
                                   found_vti  != std::string::npos ||
                                   found_inp  != std::string::npos ||
-                                  found_pvtu != std::string::npos 
+                                  found_pvtu != std::string::npos ||
+                                  found_case != std::string::npos 
                                 )
                         {
                             param.m_input_data = mvp.m_file_path;
@@ -2576,6 +2656,7 @@ int main( int argc, char** argv )
                     size_t found_vti  = param.m_input_data_base.find(".vti");
                     size_t found_inp  = param.m_input_data_base.find(".inp");
                     size_t found_pvtu = param.m_input_data_base.find(".pvtu");
+                    size_t found_case = param.m_input_data_base.find(".case");
 		            if ( found_pfl != std::string::npos )
                     {
                         std::string pflfile = param.m_input_data_base;
@@ -2684,6 +2765,23 @@ int main( int argc, char** argv )
                             mvpl.loadSeriesPvtu( pvtufile );
                         }
                     }
+                    else if ( found_case != std::string::npos )
+                    {
+                        std::string casefile = param.m_input_data_base;
+                        std::cout << ".caseファイルが選択されました" << std::endl;
+                        size_t found_asterisk = casefile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            mvpl.loadEnsightGold( casefile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            std::cout << ".caseファイルは連番ファイルに対応していません" << std::endl;
+                        }
+                    }                    
 #endif    
                     else
                     {
@@ -2903,6 +3001,7 @@ int main( int argc, char** argv )
                             size_t found_vti  = mvp.m_file_path.find(".vti");
                             size_t found_inp  = mvp.m_file_path.find(".inp");
                             size_t found_pvtu = mvp.m_file_path.find(".pvtu");
+                            size_t found_case = mvp.m_file_path.find(".case");
                             
                             if ( found_pfi != std::string::npos )
                             {
@@ -2919,7 +3018,8 @@ int main( int argc, char** argv )
                                       found_vtu  != std::string::npos ||
                                       found_vti  != std::string::npos ||
                                       found_inp  != std::string::npos ||
-                                      found_pvtu != std::string::npos 
+                                      found_pvtu != std::string::npos || 
+                                      found_case != std::string::npos 
                                     )
                             {
                                 param.m_input_data = mvp.m_file_path;
@@ -3364,6 +3464,7 @@ int main( int argc, char** argv )
                             size_t found_vti  = mvp.m_file_path.find(".vti");
                             size_t found_inp  = mvp.m_file_path.find(".inp");
                             size_t found_pvtu = mvp.m_file_path.find(".pvtu");
+                            size_t found_case = mvp.m_file_path.find(".case");
                             
                             if ( found_pfi != std::string::npos )
                             {
@@ -3380,7 +3481,8 @@ int main( int argc, char** argv )
                                       found_vtu  != std::string::npos ||
                                       found_vti  != std::string::npos ||
                                       found_inp  != std::string::npos ||
-                                      found_pvtu != std::string::npos 
+                                      found_pvtu != std::string::npos ||
+                                      found_case != std::string::npos 
                                     )
                             {
                                 param.m_input_data = mvp.m_file_path;
@@ -3794,6 +3896,7 @@ int main( int argc, char** argv )
                             size_t found_vti  = mvp.m_file_path.find(".vti");
                             size_t found_inp  = mvp.m_file_path.find(".inp");
                             size_t found_pvtu = mvp.m_file_path.find(".pvtu");
+                            size_t found_case = mvp.m_file_path.find(".case");
 
                             if ( found_pfi != std::string::npos )
                             {
@@ -3810,7 +3913,8 @@ int main( int argc, char** argv )
                                       found_vtu  != std::string::npos ||
                                       found_vti  != std::string::npos ||
                                       found_inp  != std::string::npos ||
-                                      found_pvtu != std::string::npos 
+                                      found_pvtu != std::string::npos ||
+                                      found_case != std::string::npos 
                                     )
                             {
                                 param.m_input_data = mvp.m_file_path;
@@ -4013,6 +4117,7 @@ int main( int argc, char** argv )
                 } // end of initParam = 3 // generateglyph
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
                 {
+                    std::cout << "jpv::InitializeParameter::plot_over_line" << std::endl;
 #if 1
                     timer_count++;
 //                    std::vector<POLObjectGenerator> pol_generator_lst;
@@ -4191,6 +4296,7 @@ int main( int argc, char** argv )
                             size_t found_vti  = mvp.m_file_path.find(".vti");
                             size_t found_inp  = mvp.m_file_path.find(".inp");
                             size_t found_pvtu = mvp.m_file_path.find(".pvtu");
+                            size_t found_case = mvp.m_file_path.find(".case");
 
                             if ( found_pfi != std::string::npos )
                             {
@@ -4207,7 +4313,8 @@ int main( int argc, char** argv )
                                       found_vtu  != std::string::npos ||
                                       found_vti  != std::string::npos ||
                                       found_inp  != std::string::npos ||
-                                      found_pvtu != std::string::npos 
+                                      found_pvtu != std::string::npos ||
+                                      found_case != std::string::npos 
                                     )
                             {
                                 param.m_input_data = mvp.m_file_path;
