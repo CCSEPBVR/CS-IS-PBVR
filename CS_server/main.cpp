@@ -3195,7 +3195,7 @@ int main( int argc, char** argv )
                     servMes.m_color_transfer_function_synthesis = "C1";
                     transfunc_creator.setTransferFunction(&servMes, vr); 
 
-#if 1
+#if 0
                     std::cout << "\n================== client parameter start ==================" << std::endl;
                     std::cout << "servMes.m_number_particle:" << servMes.m_number_particle << std::endl;
                     std::cout << "servMes.m_number_glyph:" << servMes.m_number_glyph << std::endl;
