@@ -30,8 +30,13 @@ TARGET = Widgets
 #=============================================================================
 HEADERS += \
     AnimationControls.h \
+    ColorMap.h \
     ColorMapEditor.h \
+    ColorMapPalette.h \
     Coordinates.h \
+    Histogram.h \
+    OpacityMap.h \
+    OpacityMapPalette.h \
     PlotOverLine.h \
     DataProperties.h \
     DisplayPointSizeControl.h \
@@ -46,11 +51,6 @@ HEADERS += \
     RenderOptions.h \
     RepetitionLevelControl.h \
     ShadingController.h \
-    TFEColorMapBar.h \
-    TFEColorMapPalette.h \
-    TFEHistogramBar.h \
-    TFEOpacityMapBar.h \
-    TFEOpacityMapPalette.h \
     ToolBars.h \
     TransferFunctionEditor.h \
     TransferFunctionParameter.h \
@@ -65,8 +65,13 @@ HEADERS += \
 #=============================================================================
 SOURCES += \
     AnimationControls.cpp \
+    ColorMap.cpp \
     ColorMapEditor.cpp \
+    ColorMapPalette.cpp \
     Coordinates.cpp \
+    Histogram.cpp \
+    OpacityMap.cpp \
+    OpacityMapPalette.cpp \
     PlotOverLine.cpp \
     DataProperties.cpp \
     DisplayPointSizeControl.cpp \
@@ -79,11 +84,6 @@ SOURCES += \
     RenderOptions.cpp \
     RepetitionLevelControl.cpp \
     ShadingController.cpp \
-    TFEColorMapBar.cpp \
-    TFEColorMapPalette.cpp \
-    TFEHistogramBar.cpp \
-    TFEOpacityMapBar.cpp \
-    TFEOpacityMapPalette.cpp \
     ToolBars.cpp \
     TransferFunctionEditor.cpp \
     VariableEditor.cpp \

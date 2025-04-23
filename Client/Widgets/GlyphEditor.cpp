@@ -54,7 +54,7 @@ GlyphEditor::GlyphEditor(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, 
 
     connect( ui->sizeNumberOfVariableSpinBox, &QSpinBox::valueChanged, this, &GlyphEditor::onSizeNumberOfVariableChanged );
     connect( ui->colorDataNumberOfVariableSpinBox, &QSpinBox::valueChanged, this, &GlyphEditor::onColorDataNumberOfVariableChanged );
-    // connect( ui->editColorMapPushButton, &QPushButton::clicked, this, &GlyphEditor::onEditColorMapButtonClicked );
+    connect( ui->editColorMapPushButton, &QPushButton::clicked, this, &GlyphEditor::onEditColorMapButtonClicked );
     connect( ui->applyPushButton, &QPushButton::clicked, this, &GlyphEditor::onApplyButtonClicked );
     widgetDisable();
 
@@ -132,8 +132,8 @@ void GlyphEditor::onDirectionComboBoxIndexChanged(int index)
 
     // インデックスが被っていないか確認
     if ( selectedIndex[0] == selectedIndex[1] ||
-         selectedIndex[0] == selectedIndex[2] ||
-         selectedIndex[1] == selectedIndex[2] ) { // 被っている場合の処理
+        selectedIndex[0] == selectedIndex[2] ||
+        selectedIndex[1] == selectedIndex[2] ) { // 被っている場合の処理
         directionComboBoxBlockSignals( true );
         if( m_direction_previus_index[0] != selectedIndex[0] )
         {
@@ -254,16 +254,12 @@ void GlyphEditor::onColorDataNumberOfVariableChanged(int value)
 
 void GlyphEditor::enableGlyphUpdateButton()
 {
-    QMetaObject::invokeMethod(this, [this]() {
-        ui->updatePushButton->setEnabled( true );
-    }, Qt::QueuedConnection);
+    ui->updatePushButton->setEnabled( true );
 }
 
 void GlyphEditor::disableGlyphUpdateButton()
 {
-    QMetaObject::invokeMethod(this, [this]() {
-        ui->updatePushButton->setEnabled( false );
-    }, Qt::QueuedConnection);
+    ui->updatePushButton->setEnabled( false );
 }
 
 void GlyphEditor::onUpdateButtonClicked()
@@ -275,7 +271,7 @@ void GlyphEditor::onUpdateButtonClicked()
     {
         if( m_merge->getFilesManager().at(row)->getFormat() == FilesManager::ServerGlyphObjectCS ||
             m_merge->getFilesManager().at(row)->getFormat() == FilesManager::ServerGlyphObjectIS ) // テクスチャなしポリゴンオブジェクト
-        {            
+        {
             kvs::PolygonObject* polygonObject = new kvs::PolygonGlyphObject( m_coords, m_directions, m_sizes, m_colors, static_cast<kvs::PolygonGlyphObject::GlyphType>(m_glyph_type) );
             m_pbvr_gui->screen()->scene()->replaceObject( m_merge->getFilesManager().at(row)->getIDs().first, polygonObject );
             kvs::RendererBase* renderer = new kvs::StochasticPolygonRenderer;
@@ -289,20 +285,18 @@ void GlyphEditor::onUpdateButtonClicked()
     m_pbvr_gui->screen()->update();
 }
 
+#include "Widgets/ColorMapEditor.h"
 void GlyphEditor::onEditColorMapButtonClicked()
 {
-    // // std::string colorName = ui->colorFunctionComboBox->currentText().toStdString();
+    ColorMapEditor colorMapEditor;
+    colorMapEditor.adjustSize();
+    colorMapEditor.setDefaultColorMap( ui->colorMapBar->getColors() );
 
-    // m_color_map_editor.setColorMap( ui->colorMapBar->getColor() );
-    // m_color_map_editor.setInitialColorMap( ui->colorMapBar->getColor() );
-    // m_color_map_editor.clearUndoStack();
-
-    // if( m_color_map_editor.exec() == QDialog::Accepted )
-    // {
-    //     const kvs::ColorMap cmap = m_color_map_editor.getColorMap();
-    //     ui->colorMapBar->setColorMap( cmap );
-    //     ui->colorMapBar->setColorMap( cmap );
-    // }
+    if( colorMapEditor.exec() == QDialog::Accepted )
+    {
+        // カラーパレットの色を取得してウィジェットに反映
+        ui->colorMapBar->setColors( colorMapEditor.getColorMap() );
+    }
 }
 
 void GlyphEditor::onApplyButtonClicked()
@@ -359,11 +353,25 @@ void GlyphEditor::onApplyButtonClicked()
     }
 
     //ColorMap
-    // m_connect->getClientMessage()->m_glyph_color_map_table.clear();
+    m_connect->getClientMessage()->m_glyph_color_map_table.clear();
     // for( int i = 0; i < ui->colorMapBar->getColor().table().size(); i++ )
     // {
     //     m_connect->getClientMessage()->m_glyph_color_map_table.push_back( static_cast<int32_t>( ui->colorMapBar->getColor().table().at(i) ) );
     // }
+
+    QList<QColor> color_list = ui->colorMapBar->getColors();
+    std::vector<int32_t> table;
+    table.reserve(color_list.size() * 3);
+
+    for (const QColor& color : color_list)
+    {
+        table.push_back( static_cast<kvs::UInt8>(color.red()) );
+        table.push_back( static_cast<kvs::UInt8>(color.green()) );
+        table.push_back( static_cast<kvs::UInt8>(color.blue()) );
+    }
+
+    m_connect->getClientMessage()->m_glyph_color_map_table = table;
+
 
     //ColorData
     if( ui->colorDataConstantRadioBox->isChecked() ) //Constant
@@ -407,19 +415,20 @@ void GlyphEditor::glyphInitialize()
     m_connect->getClientMessage()->m_color_data_variables.push_back("q1");
     m_connect->getClientMessage()->m_size_variables.push_back("q1");
 
-    kvs::ColorMap cmap;
-    cmap.create();
     m_connect->getClientMessage()->m_glyph_color_map_table.clear();
 
-    for( int i = 0; i < cmap.table().size(); i++ )
-    {
-        m_connect->getClientMessage()->m_glyph_color_map_table.push_back( cmap.table().at(i) );
-    }
-    // for( int i = 0; i < ui->colorMapBar->getColor().table().size(); i++ )
-    // {
-    //     m_connect->getClientMessage()->m_glyph_color_map_table.push_back( 0 );
-    // }
+    QList<QColor> color_list = ui->colorMapBar->getColors();
+    std::vector<int32_t> table;
+    table.reserve(color_list.size() * 3);
 
+    for (const QColor& color : color_list)
+    {
+        table.push_back( static_cast<kvs::UInt8>(color.red()) );
+        table.push_back( static_cast<kvs::UInt8>(color.green()) );
+        table.push_back( static_cast<kvs::UInt8>(color.blue()) );
+    }
+
+    m_connect->getClientMessage()->m_glyph_color_map_table = table;
 }
 
 
@@ -430,11 +439,10 @@ void GlyphEditor::directionComboBoxBlockSignals( bool block )
     ui->direction3ComboBox->blockSignals( block );
 }
 
-TFEColorMapBar* GlyphEditor::getColorMapBar() const
-{
-    // return ui->colorMapBar;
-    return nullptr;
-}
+// TFEColorMapBar* GlyphEditor::getColorMapBar() const
+// {
+//     return ui->colorMapBar;
+// }
 
 void GlyphEditor::widgetDisable()
 {
@@ -453,7 +461,7 @@ void GlyphEditor::widgetDisable()
     ui->numberOfSamplePoints->setDisabled(true);
     ui->seedSpinBox->setDisabled(true);
     ui->strideSpinBox->setDisabled(true);
-    // ui->editColorMapPushButton->setDisabled(true);
+    ui->editColorMapPushButton->setDisabled(true);
     ui->colorDataConstantRadioBox->setDisabled(true);
     ui->colorDataVariableArrayRadioBox->setDisabled(true);
     ui->colorDataNumberOfVariableSpinBox->setDisabled(true);
@@ -478,10 +486,9 @@ void GlyphEditor::widgetEnable()
     ui->numberOfSamplePoints->setDisabled(false);
     ui->seedSpinBox->setDisabled(false);
     ui->strideSpinBox->setDisabled(false);
-    // ui->editColorMapPushButton->setDisabled(false);
+    ui->editColorMapPushButton->setDisabled(false);
     ui->colorDataConstantRadioBox->setDisabled(false);
     ui->colorDataVariableArrayRadioBox->setDisabled(false);
     ui->colorDataNumberOfVariableSpinBox->setDisabled(false);
     ui->applyPushButton->setDisabled(false);
 }
-
