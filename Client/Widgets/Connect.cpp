@@ -837,11 +837,7 @@ void Connect::sendRecvPlotOverLine( int timeStep )
         client.recvMessage( &m_server_message );
         int serve_numvol = m_server_message.m_number_volume_divide;
 
-        for ( int n = 0; n < serve_numvol; n++ )
-        {
-            if ( client.recvMessage( &m_server_message ) == 1 ){}
-        }
-
+        client.recvMessage( &m_server_message );
 
         mask.resize(m_server_message.m_resolution);
         for (int i =0; i< m_server_message.m_resolution; i++)
