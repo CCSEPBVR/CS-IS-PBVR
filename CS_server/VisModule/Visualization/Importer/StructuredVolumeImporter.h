@@ -24,6 +24,10 @@
 #include <vismodule/AVSField>
 //#include <vismodule/DicomList>
 
+#ifdef EXTEND_FILE_FORMAT 
+#include <kvs/extendedfileformat/VtkXmlMultiBlock>
+#include <kvs/extendedfileformat/VtkXmlImageData>
+#endif
 
 namespace vismodule
 {
@@ -54,6 +58,10 @@ public:
     StructuredVolumeImporter( const vismodule::FileFormatBase& file_format );
 
 //    StructuredVolumeImporter( const std::string& filename, const int fileType, const int st, const int vl );
+
+#ifdef EXTEND_FILE_FORMAT 
+    StructuredVolumeImporter( const std::string& filename, const int st, const int vl );
+#endif
     
     virtual ~StructuredVolumeImporter( void );
 
@@ -71,6 +79,11 @@ private:
     //void import( const vismodule::AVSField& field );
 
 //    void import( const vismodule::DicomList& dicom_list );
+
+#ifdef EXTEND_FILE_FORMAT 
+    void import( const kvs::ExtendedFileFormat::VtkXmlMultiBlock& vtm , const int vl );
+    void import( const kvs::ExtendedFileFormat::VtkXmlImageData& vti , const int vl );
+#endif
 
 private:
 

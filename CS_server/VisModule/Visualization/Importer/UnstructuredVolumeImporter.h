@@ -24,6 +24,13 @@
 #include <vismodule/AVSUcd>
 #include <vismodule/AVSField>
 
+#ifdef EXTEND_FILE_FORMAT 
+#include <kvs/extendedfileformat/VtkXmlMultiBlock>
+#include <kvs/extendedfileformat/VtkXmlUnstructuredGrid>
+#include <kvs/extendedfileformat/AvsUcd>
+#include <kvs/extendedfileformat/VtkXmlPUnstructuredGrid>
+#include <kvs/extendedfileformat/EnSightGoldBinary>
+#endif
 
 namespace vismodule
 {
@@ -55,6 +62,10 @@ public:
 
     UnstructuredVolumeImporter( const std::string& filename, const int fileType, const int st, const int vl );
 
+#ifdef EXTEND_FILE_FORMAT 
+    UnstructuredVolumeImporter( const std::string& filename, const int fileType, const int targetCellType, const int st, const int vl );
+#endif
+
     virtual ~UnstructuredVolumeImporter();
 
 public:
@@ -72,6 +83,13 @@ private:
     void import( const vismodule::AggregateTypeSubvolume& gs );
 
     void import( const vismodule::StepAggregateTypeSubvolume& gt );
+#ifdef EXTEND_FILE_FORMAT 
+    void import( const kvs::ExtendedFileFormat::VtkXmlMultiBlock& vtm , const int targetCellType, const int vl );
+    void import( const kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid& vtu , const int targetCellType );
+    void import( const kvs::ExtendedFileFormat::AvsUcd& inp , const int targetCellType );
+    void import( const kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid& pvtu , const int targetCellType, const int vl);
+    void import( const kvs::ExtendedFileFormat::EnSightGoldBinary& ensightGold , const int targetCellType, const int vl);
+#endif
 };
 
 } // end of namespace vismodule

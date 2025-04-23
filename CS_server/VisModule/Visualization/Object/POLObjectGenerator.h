@@ -74,6 +74,22 @@ public:
         object->setMask(po->mask()); 
     }
 
+#ifdef EXTEND_FILE_FORMAT
+    void run( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, vismodule::KVSMLObjectPlotOverLine* object, const int st,  const int vl )
+    {
+        delete  m_object;
+
+        m_object = new vismodule::KVSMLObjectPlotOverLine();
+        this->createFromFile( param, camera, clntMes, number_of_divide, st, vl );
+
+        vismodule::KVSMLObjectPlotOverLine* po = getKVSMLObjectPOL();
+
+        object->setValuesOnLine(po->values_on_line());
+        object->setXAxis(po->x_axis());
+        object->setMask(po->mask());
+    }
+#endif
+
 //    vismodule::KVSMLObjectGlyph* run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, const int st, const int vl)
 //    {
 //        m_generator.setFinlterInfo( m_mvp );
@@ -102,6 +118,11 @@ public:
     void createFromFile(
         const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
         //const Argument& param, const vismodule::Camera& camera);
+
+#ifdef EXTEND_FILE_FORMAT
+    void createFromFile(
+        const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const int st, const int vl);
+#endif
 
 //    void createFromFile(
 //        const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const int st, const int vl );

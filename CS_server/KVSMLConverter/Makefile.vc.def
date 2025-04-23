@@ -143,9 +143,9 @@ KVS_LINK_LIBRARY = kvsCore.lib
 #  VTK_INCLUDE_PATH, VTK_LIBRARY_PATH, VTK_LINK_LIBRARY
 #=============================================================================
 # /I<PATH>
-VTK_INCLUDE_OPTION = /I"$(VTK_DIR)\include\vtk-$(VTK_VERSION)"
+VTK_INCLUDE_OPTION = /I"$(VTK_INCLUDE_PATH)"
 # /LIBPATH:<PATH>
-VTK_LIBRARY_OPTION = /LIBPATH:"$(VTK_DIR)\lib"
+VTK_LIBRARY_OPTION = /LIBPATH:"$(VTK_LIB_PATH)"
 
 !IFDEF DEBUG
 VTK_LINK_LIBRARY = \

@@ -889,6 +889,7 @@ int32_t jpv::ParticleTransferServerMessage::byteSize( void ) const
         s += sizeof(m_glyph_color_min);
         s += sizeof(m_glyph_size_max);
         s += sizeof(m_glyph_size_min);
+        s += jpv::Serializer::byteSize( m_file_enable_flag );
     }
     if ( m_flag_send_bins == 3 ) // plot_over_line
     {
@@ -992,6 +993,7 @@ size_t jpv::ParticleTransferServerMessage::pack( char* buf ) const
         index += jpv::Serializer::write( buf + index, m_glyph_color_min );
         index += jpv::Serializer::write( buf + index, m_glyph_size_max );
         index += jpv::Serializer::write( buf + index, m_glyph_size_min );
+        index += jpv::Serializer::write( buf + index, m_file_enable_flag );
     }
 //    else// if ( flag_send_bins == 2 )
     if ( m_flag_send_bins == 3 ) // plot_over_line
@@ -1129,6 +1131,7 @@ size_t jpv::ParticleTransferServerMessage::unpack_message( const char* buf )
         index += jpv::Serializer::read( buf + index, &m_glyph_color_min );
         index += jpv::Serializer::read( buf + index, &m_glyph_size_max );
         index += jpv::Serializer::read( buf + index, &m_glyph_size_min );
+        index += jpv::Serializer::read( buf + index, &m_file_enable_flag );
 
     }
     if ( m_flag_send_bins == 3 ) // plot_over_line

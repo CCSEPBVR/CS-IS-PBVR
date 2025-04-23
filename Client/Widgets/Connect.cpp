@@ -28,8 +28,8 @@ Connect::Connect(QWidget *parent, PBVRGUI *pbvr_gui, MergePanel* merge, DataProp
     m_received_message()
 {
     ui->setupUi(this);
-    // ui->uniformRBtn->setChecked( true );
-    ui->metropolisRBtn->setChecked( true );
+    ui->uniformRBtn->setChecked( true );
+    //ui->metropolisRBtn->setChecked( true );
 
     //Init particle limit, particle density, data size limit
     m_client_message.m_particle_limit = 10000000;
@@ -53,11 +53,26 @@ void Connect::connectServer()
     m_server_message.m_camera = new kvs::Camera();
     m_client_message.m_camera = m_pbvr_gui->screen()->scene()->camera();
 
-    if( ui-> clientServerRBtn -> isChecked() )
+    if( ui->clientServerRBtn ->isChecked() )
     {
-        if( !ui->volumeDataFilePathLEdit->text().endsWith( ".pfi" ) && !ui->volumeDataFilePathLEdit->text().endsWith( ".pfl" ) )
+        QString filePath = ui->volumeDataFilePathLEdit->text();
+        QStringList validExtensions = {".pfi", ".pfl", ".stl", ".vtp", ".xyz", ".vtr",
+                                       ".vtk", ".vti", ".vts", ".pvts", ".inp", ".vtu",
+                                       ".pvtu", ".vtm", ".case"};
+
+        bool isValid = false;
+        for (const QString &ext : validExtensions)
         {
-            QMessageBox::information( this, tr( "Connection Error" ), tr( "The file path does not end with .pfi or pfl" ) );
+            if (filePath.endsWith(ext, Qt::CaseInsensitive)) {
+                isValid = true;
+                break;
+            }
+        }
+
+        if ( !isValid )
+        {
+            QMessageBox::information(this, tr("Connection Error"),
+                                     tr("The file path does not have a valid extension."));
             return;
         }
     }
@@ -95,6 +110,41 @@ void Connect::connectServer()
     m_client_message.show();
     m_client_message.m_message_size = m_client_message.byteSize();
     client.sendMessage( m_client_message );
+
+    if (ui->clientServerRBtn->isChecked())
+    {
+        client.recvMessage( &m_server_message );
+        std::cout << "file_enable_flag =" << static_cast<int>(m_server_message.m_file_enable_flag) << std::endl;
+        bool file_flag = false;
+        if (m_server_message.m_file_enable_flag == jpv::FileEnableFlag::NotEnable_VTK )
+        {
+            file_flag = true;
+            std::cout << "Not available VTK file. Please check Server setting" << std::endl;
+            QMessageBox::information(this, tr("Not available VTK file."),
+                                     tr("Not available VTK file. Please check Server setting"));
+            //　サーバー側のコンパイル設定を変更するよう促すホップアップが欲しい
+        }
+        if( m_server_message.m_file_enable_flag == jpv::FileEnableFlag::NoFile )
+        {
+            file_flag = true;
+            std::cout << "Not find file. Please check file path" << std::endl;
+            //　パス名を変更するよう促すホップアップが欲しい
+            QMessageBox::information(this, tr("Not available VTK file."),
+                                     tr("Not find file. Please check file path"));
+        }
+
+        if (file_flag)
+        {
+            std::cout << "Find No File!!" << std::endl;
+            m_client_message.m_initialize_parameter = jpv::InitializeParameter::connection_reset;
+            m_client_message.m_message_size = m_client_message.byteSize();
+            client.sendMessage( m_client_message );
+            client.recvMessage( &m_server_message );
+            client.termClient();
+            return;
+        }
+    }
+
     client.recvMessage( &m_server_message );
     m_server_message.show();
 
@@ -787,11 +837,7 @@ void Connect::sendRecvPlotOverLine( int timeStep )
         client.recvMessage( &m_server_message );
         int serve_numvol = m_server_message.m_number_volume_divide;
 
-        for ( int n = 0; n < serve_numvol; n++ )
-        {
-            if ( client.recvMessage( &m_server_message ) == 1 ){}
-        }
-
+        client.recvMessage( &m_server_message );
 
         mask.resize(m_server_message.m_resolution);
         for (int i =0; i< m_server_message.m_resolution; i++)
@@ -823,7 +869,14 @@ void Connect::deletedServerObject()
 
 void Connect::onVolumeDataBrowseButtonClicked()
 {
-    ui->volumeDataFilePathLEdit->setText( QFileDialog::getOpenFileName( this, tr("Select Volume Data File"), ".", tr("Volume Data Files (*.pfi *.pfl)") ) );
+    ui->volumeDataFilePathLEdit->setText(
+        QFileDialog::getOpenFileName(
+            this,
+            tr( "Select Volume Data File" ),
+            ".",
+            tr( "Volume Data Files (*.pfi *.pfl *.stl *.vtp *.xyz *.vtr *.vtk *.vti *.vts *.pvts *.inp *.vtu *.pvtu *.vtm *.case)" )
+            )
+        );
 }
 
 void Connect::onTransferFunctionFileBrowseButtonClicked()
@@ -847,4 +900,13 @@ void Connect::onConnectButtonClicked()
     {
         qDebug("No option selected!");
     }
+}
+
+void Connect::connection_reset(jpv::ParticleTransferClient& client)
+{
+    m_client_message.m_initialize_parameter = jpv::InitializeParameter::connection_reset;
+    m_client_message.m_message_size = m_client_message.byteSize();
+    client.sendMessage( m_client_message );
+    client.recvMessage( &m_server_message );
+    client.termClient();
 }
