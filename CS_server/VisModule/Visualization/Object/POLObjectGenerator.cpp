@@ -206,12 +206,18 @@ void POLObjectGenerator::createFromFile( const Argument& param, const vismodule:
         {
             is_structured = true;
             volume = new vismodule::StructuredVolumeImporter( m_mvp->m_file_path, st, vl );
+            volume->updateMinMaxValues();
+            volume->setMinMaxObjectCoords( m_mvp->m_min_subvolume_coord[vl], m_mvp->m_max_subvolume_coord[vl] );
+            volume->setMinMaxExternalCoords( m_mvp->m_min_subvolume_coord[vl], m_mvp->m_max_subvolume_coord[vl] );            
         }
         // Unstructured
         if( m_mvp->m_file_type == 4 )
         {
             is_unstructured = true;
             volume = new vismodule::UnstructuredVolumeImporter( m_mvp->m_file_path, m_mvp->m_file_type, m_mvp->m_elem_type, st, vl );
+            volume->updateMinMaxValues();
+            volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
+            volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );            
         }
     }
     else if ( found_vtu  != std::string::npos ||
@@ -222,12 +228,22 @@ void POLObjectGenerator::createFromFile( const Argument& param, const vismodule:
     {
         is_unstructured = true;
         volume = new vismodule::UnstructuredVolumeImporter( m_mvp->m_file_path, m_mvp->m_file_type, m_mvp->m_elem_type, st, vl );
+        volume->updateMinMaxValues();
+        volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
+        volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );        
     }
     else if ( found_vti != std::string::npos )
     {
         is_structured = true;
         volume = new vismodule::StructuredVolumeImporter( m_mvp->m_file_path, st, vl );
+        volume->updateMinMaxValues();
+        volume->setMinMaxObjectCoords( m_mvp->m_min_subvolume_coord[vl], m_mvp->m_max_subvolume_coord[vl] );
+        volume->setMinMaxExternalCoords( m_mvp->m_min_subvolume_coord[vl], m_mvp->m_max_subvolume_coord[vl] );        
     }
+
+    std::cout << *volume << std::endl;
+    std::cout << "min:" << volume->minObjectCoord() << ", max:" << volume->maxObjectCoord() << std::endl;
+    std::cout << "min:" << volume->minExternalCoord() << ", max:" << volume->maxExternalCoord() << std::endl;
 
     if ( is_structured )
     {

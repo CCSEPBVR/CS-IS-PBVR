@@ -79,13 +79,6 @@ public:
     {
         delete  m_object;
 
-        struct stat s;
-        if ( stat( param.m_input_data.c_str(), &s ) )
-        {
-            std::cout << "Error. read failed:" << param.m_input_data << std::endl;
-            exit( 1 );
-        }
-
         m_object = new vismodule::KVSMLObjectPlotOverLine();
         this->createFromFile( param, camera, clntMes, number_of_divide, st, vl );
 
