@@ -232,7 +232,6 @@ void SeriesVtm2Kvsml( const std::string& directory, const std::string& base,
     cvt::NumeralSequenceFiles<cvt::VtkXmlMultiBlock> time_series( src );
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
-    int sub_volume_id = 1;
     std::unordered_map<int, int> sub_volume_counts;
 
     for ( auto input_vtm : time_series.eachTimeStep() )
@@ -317,7 +316,7 @@ void SeriesVtm2Kvsml( const std::string& directory, const std::string& base,
                                     sub_volume_counts[object->cellType()] );
 
                     pfi_map.at( static_cast<int>( object->cellType() ) )
-                        .registerObject( &exporter, time_step, sub_volume_id );
+                        .registerObject( &exporter, time_step, sub_volume_ids[object->cellType()] );
 
                     ++sub_volume_ids[object->cellType()];
                 }
