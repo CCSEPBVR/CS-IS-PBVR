@@ -2504,7 +2504,7 @@ int main( int argc, char** argv )
                         pos += replacement.length();
                     }
 #elif defined(__linux__)
-                    std::string target = "¥";
+                    std::string target = "\\";
                     std::string replacement = "/";
 
                     size_t pos = 0;
