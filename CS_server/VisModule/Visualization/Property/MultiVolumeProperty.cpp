@@ -31,9 +31,9 @@ std::string ConvertToUnixPath( const std::string& win_path )
     return unix_path;
 }
 #else
-std::string ConvertToUnixPath( const std::string& filename )
+std::string ConvertToUnixPath( const std::string& unix_path )
 {
-    return path;
+    return unix_path;
 }
 #endif
 
