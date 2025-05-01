@@ -8,7 +8,6 @@
 #include <vismodule/NameListFile>
 
 #ifdef EXTEND_FILE_FORMAT 
-#include <filesystem>
 #include <kvs/extendedfileformat/VtkXmlMultiBlock>
 #include <kvs/extendedfileformat/NumeralSequenceFiles>
 #include <kvs/extendedfileformat/VtkXmlUnstructuredGrid>
@@ -20,6 +19,23 @@
 #endif
 
 //--------------------------------------------------------------------------
+#ifdef _WIN32
+std::string ConvertToUnixPath( const std::string& win_path )
+{
+    std::string unix_path = win_path;
+    for (char& c : unix_path) {
+        if (c == '\\') {
+            c = '/';
+        }
+    }
+    return unix_path;
+}
+#else
+std::string ConvertToUnixPath( const std::string& filename )
+{
+    return path;
+}
+#endif
 
 int MultiVolumeProperty::loadPFI( const std::string& filename )
 {
@@ -698,9 +714,8 @@ int MultiVolumePropertyList::loadVtm( const std::string& filename )
 
 int MultiVolumePropertyList::loadSeriesVtm( const std::string& filename )
 {
-    namespace fs = std::filesystem;
-    fs::path filepath = filename;
-    kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlMultiBlock> time_series( filepath.generic_string() );
+    std::string filepath = ConvertToUnixPath(filename);
+    kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlMultiBlock> time_series( filepath );
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
     std::unordered_map<int, int> sub_volume_ids;
@@ -1191,9 +1206,8 @@ int MultiVolumePropertyList::loadVtu( const std::string& filename )
 
 int MultiVolumePropertyList::loadSeriesVtu( const std::string& filename )
 {
-    namespace fs = std::filesystem;
-    fs::path filepath = filename;
-    kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> time_series( filepath.generic_string() );
+    std::string filepath = ConvertToUnixPath(filename);
+    kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> time_series( filepath );
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
     int sub_volume_id = 0;
@@ -1451,9 +1465,8 @@ int MultiVolumePropertyList::loadVti( const std::string& filename )
 
 int MultiVolumePropertyList::loadSeriesVti( const std::string& filename )
 {
-    namespace fs = std::filesystem;
-    fs::path filepath = filename;
-    kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlImageData> time_series( filepath.generic_string() );
+    std::string filepath = ConvertToUnixPath(filename);
+    kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlImageData> time_series( filepath );
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
     int sub_volume_id = 0;
@@ -1993,9 +2006,8 @@ int MultiVolumePropertyList::loadPvtu( const std::string& filename )
 }
 int MultiVolumePropertyList::loadSeriesPvtu( const std::string& filename )
 {
-    namespace fs = std::filesystem;
-    fs::path filepath = filename;
-    kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid> time_series( filepath.generic_string() );
+    std::string filepath = ConvertToUnixPath(filename);
+    kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid> time_series( filepath );
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
     std::unordered_map<int, int> sub_volume_ids;
