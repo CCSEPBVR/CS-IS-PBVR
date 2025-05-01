@@ -1,7 +1,6 @@
 #include "PlotOverLine.h"
 #include <vismodule/KVSMLObjectPlotOverLine>
 #include <fstream>
-#include <filesystem>
 
 PlotOverLine::PlotOverLine( void ){}
 
@@ -120,7 +119,6 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
 {
     std::string visParamDir;
     std::string POLParamPath;
-    std::string POLParamPath_old;
     std::string POLFilePath;
 
     const char *envBuf = NULL;
@@ -149,8 +147,6 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
     }
 
     POLParamPath = visParamDir + "parameter.pol";
-    POLParamPath_old = visParamDir + "parameter_old.pol";
-    
 
     m_POLParamPath = POLParamPath;
     m_POLFilePath = POLFilePath;
