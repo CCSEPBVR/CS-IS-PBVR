@@ -51,7 +51,7 @@ public:
     template <typename PathLike0, typename PathLike1>
     void registerPfi( PathLike0&& directory, PathLike1&& base )
     {
-        std::filesystem::path path = std::string( base ) + ".pfi";
+        cvt::filesystem::path path = std::string( base ) + ".pfi";
         pfi_list.push_front( path.string() );
     }
     /**
@@ -80,11 +80,11 @@ public:
     {
         try
         {
-            std::filesystem::path path = directory;
+            cvt::filesystem::path path = directory;
             path.make_preferred();
-            if ( !std::filesystem::exists( path ) )
+            if ( !cvt::filesystem::exists( path ) )
             {
-                if ( !std::filesystem::create_directories( path ) )
+                if ( !cvt::filesystem::create_directories( path ) )
                 {
                     kvsMessageError( "Failed to create the directory" );
                     return false;

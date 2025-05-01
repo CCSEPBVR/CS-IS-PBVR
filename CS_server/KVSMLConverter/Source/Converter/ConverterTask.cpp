@@ -594,7 +594,7 @@ std::optional<cvt::ConverterTaskOutput> OutputConvertProfile(
 {
     if ( output_profile > 0 )
     {
-        std::filesystem::path dst( destination_directory );
+        cvt::filesystem::path dst( destination_directory );
         dst /= destination_prefix + "_" + std::to_string( output->time_step ) + ".xml";
         std::ofstream ostream( dst );
 
@@ -783,7 +783,7 @@ std::optional<cvt::ConverterTaskOutput> Stl2Kvsml( const std::string& directory,
         kvs::PolygonExporter<kvs::KVSMLPolygonObject> exporter( &importer );
         exporter.setWritingDataTypeToExternalBinary();
 
-        std::filesystem::path dst = directory + base + std::to_string( sub );
+        cvt::filesystem::path dst = directory + base + std::to_string( sub );
         exporter.write( dst.u8string().c_str() );
 
         ++sub;
@@ -798,22 +798,22 @@ std::optional<cvt::ConverterTaskOutput> cvt::Convert( cvt::ConverterTaskInput in
 {
     try
     {
-        std::filesystem::path path( input.source_file_paths[0] );
+        cvt::filesystem::path path( input.source_file_paths[0] );
 
         // Create a destination directory
-        std::filesystem::path directory( input.destination_directory );
+        cvt::filesystem::path directory( input.destination_directory );
 
-        if ( !std::filesystem::exists( directory ) )
+        if ( !cvt::filesystem::exists( directory ) )
         {
             try
             {
-                std::filesystem::create_directories( directory );
+                cvt::filesystem::create_directories( directory );
             }
             catch ( ... )
             {
             }
         }
-        if ( !std::filesystem::exists( directory ) )
+        if ( !cvt::filesystem::exists( directory ) )
         {
             return std::nullopt;
         }

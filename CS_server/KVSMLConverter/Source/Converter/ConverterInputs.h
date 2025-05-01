@@ -50,7 +50,7 @@ namespace cvt
  * \param[in] arg An element of argv.
  * \return A XML file or std::nullopt.
  */
-std::optional<std::filesystem::path> CheckConfigFile( const char* arg ) noexcept;
+std::optional<cvt::filesystem::path> CheckConfigFile( const char* arg ) noexcept;
 /**
  * Parse a XML file and list target files to convert.
  *

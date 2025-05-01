@@ -55,7 +55,7 @@ void Cgns2Kvsml( const std::string& directory, const std::string& base, const st
 
 int main( int argc, char** argv )
 {
-    namespace fs = std::filesystem;
+    using fs = cvt::filesystem;
 
     if ( argc != 3 )
     {

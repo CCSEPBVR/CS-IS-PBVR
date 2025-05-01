@@ -13,7 +13,7 @@
 namespace
 {
 
-int MainImpl( std::filesystem::path input_xml_path )
+int MainImpl( cvt::filesystem::path input_xml_path )
 {
     auto targets = cvt::ListInputFilesFromConfigFile( input_xml_path.u8string().c_str() );
     std::unordered_map<int, std::list<cvt::ConverterTaskOutput>> outputs;
@@ -76,7 +76,7 @@ int MainImpl( std::filesystem::path input_xml_path )
 
 int main( int argc, char* argv[] )
 {
-    std::optional<std::filesystem::path> input;
+    std::optional<cvt::filesystem::path> input;
 
     if ( argc >= 2 && ( input = cvt::CheckConfigFile( argv[1] ) ) )
     {

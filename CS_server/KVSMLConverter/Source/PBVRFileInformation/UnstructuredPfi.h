@@ -194,11 +194,11 @@ public:
     {
         try
         {
-            std::filesystem::path path = directory;
+            cvt::filesystem::path path = directory;
             path.make_preferred();
-            if ( !std::filesystem::exists( path ) )
+            if ( !cvt::filesystem::exists( path ) )
             {
-                if ( !std::filesystem::create_directories( path ) )
+                if ( !cvt::filesystem::create_directories( path ) )
                 {
                     kvsMessageError( "Failed to create the directory" );
                     return false;

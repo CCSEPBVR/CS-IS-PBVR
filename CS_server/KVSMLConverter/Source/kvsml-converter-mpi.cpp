@@ -15,7 +15,7 @@ int main( int argc, char* argv[] )
     int my_rank;
     MPI_Comm_rank( MPI_COMM_WORLD, &my_rank );
 
-    std::optional<std::filesystem::path> input;
+    std::optional<cvt::filesystem::path> input;
     int code = EXIT_SUCCESS;
 
     int main_process_id = 0;

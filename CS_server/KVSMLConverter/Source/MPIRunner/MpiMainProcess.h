@@ -58,7 +58,7 @@ public:
 
 private:
     vtkSmartPointer<vtkMPIController> controller;
-    std::filesystem::path input_xml_path;
+    cvt::filesystem::path input_xml_path;
 };
 } // namespace cvt
 

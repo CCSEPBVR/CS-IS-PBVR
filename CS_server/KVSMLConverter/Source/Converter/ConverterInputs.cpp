@@ -87,9 +87,9 @@ bool AddInputFiles( std::list<cvt::ConverterTaskInput>& sub, int target_index,
         if ( cvt::IsTheXmlTag( n->GetName(), cvt::xml::SINGLE_TAG ) )
         {
             std::string s = n->GetCharacterData();
-            std::filesystem::path path( cvt::Trim( s ) );
+            cvt::filesystem::path path( cvt::Trim( s ) );
 
-            if ( std::filesystem::exists( path ) )
+            if ( cvt::filesystem::exists( path ) )
             {
                 cvt::ConverterTaskInput file;
 
@@ -115,7 +115,7 @@ bool AddInputFiles( std::list<cvt::ConverterTaskInput>& sub, int target_index,
         {
             auto grid_type = ::GetGridType( n );
 
-            std::filesystem::path src_dir = ".";
+            cvt::filesystem::path src_dir = ".";
             std::string prefix = "";
             std::string extension = "*";
             std::string file_pattern = "";
@@ -155,7 +155,7 @@ bool AddInputFiles( std::list<cvt::ConverterTaskInput>& sub, int target_index,
             {
                 file_pattern = prefix + "*." + extension;
             }
-            std::filesystem::path pattern = src_dir;
+            cvt::filesystem::path pattern = src_dir;
             pattern /= file_pattern;
             pattern.make_preferred();
             auto p = pattern.u8string();
@@ -194,7 +194,7 @@ bool AddInputFiles( std::list<cvt::ConverterTaskInput>& sub, int target_index,
                 file.destination_directory = src_dir.string();
                 if ( prefix == "" )
                 {
-                    std::filesystem::path p = std::string( target_files->GetValue( 0 ) );
+                    cvt::filesystem::path p = std::string( target_files->GetValue( 0 ) );
                     file.destination_prefix = p.stem().string();
                     kvsMessageWarning( ( std::string( "The output prefix is set to " ) +
                                          file.destination_prefix +
@@ -218,7 +218,7 @@ bool AddInputFiles( std::list<cvt::ConverterTaskInput>& sub, int target_index,
         {
             auto grid_type = ::GetGridType( n );
 
-            std::filesystem::path src_dir = ".";
+            cvt::filesystem::path src_dir = ".";
             std::string prefix = "";
             std::string extension = "*";
             std::string file_pattern = "";
@@ -258,7 +258,7 @@ bool AddInputFiles( std::list<cvt::ConverterTaskInput>& sub, int target_index,
             {
                 file_pattern = prefix + "*." + extension;
             }
-            std::filesystem::path pattern = src_dir;
+            cvt::filesystem::path pattern = src_dir;
             pattern /= file_pattern;
             pattern.make_preferred();
             auto p = pattern.u8string();
@@ -296,7 +296,7 @@ bool AddInputFiles( std::list<cvt::ConverterTaskInput>& sub, int target_index,
                     file.destination_directory = src_dir.string();
                     if ( prefix == "" )
                     {
-                        std::filesystem::path p = std::string( target_files->GetValue( 0 ) );
+                        cvt::filesystem::path p = std::string( target_files->GetValue( 0 ) );
                         file.destination_prefix = p.stem().string();
                         kvsMessageWarning( ( std::string( "The output prefix is set to " ) +
                                              file.destination_prefix +
@@ -365,14 +365,14 @@ int GetVersion( vtkSmartPointer<vtkXMLDataElement> root )
 }
 } // namespace
 
-std::optional<std::filesystem::path> cvt::CheckConfigFile( const char* arg ) noexcept
+std::optional<cvt::filesystem::path> cvt::CheckConfigFile( const char* arg ) noexcept
 {
     try
     {
-        std::filesystem::path f = arg;
+        cvt::filesystem::path f = arg;
         f.make_preferred();
 
-        if ( std::filesystem::exists( f ) && f.extension() == ".xml" )
+        if ( cvt::filesystem::exists( f ) && f.extension() == ".xml" )
         {
             return f;
         }
