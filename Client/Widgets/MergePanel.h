@@ -210,6 +210,6 @@ private:
     template <typename Importer, typename ObjectType>
     void process( const int row ,const int timeStep );
 
-    std::string updateTimeStepInFileName( QString fileName, int nextTimeStep );
+    std::string updateTimeStepInFileName( QString filePath, int nextTimeStep );
 };
 #endif // MERGEPANEL_H

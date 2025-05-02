@@ -985,35 +985,36 @@ void MergePanel::WorkerThread::process( const int row ,const int timeStep )
     m_merge->m_files_manager[row]->setAlreadyImportedTimeStep( timeStep );
 }
 
-std::string MergePanel::WorkerThread::updateTimeStepInFileName(QString fileName, int nextTimeStep)
+std::string MergePanel::WorkerThread::updateTimeStepInFileName( QString filePath, int nextTimeStep )
 {
-    // 正規表現パターン: 5桁の数字
-    QRegularExpression regex(R"(\d{5})");
-    QRegularExpressionMatch match = regex.match(fileName);
+    QFileInfo fileInfo( filePath );
+    QString dir = fileInfo.path();
+    QString fileName = fileInfo.fileName(); // 例: prefix_XXXXXX_YYYYYYY_ZZZZZZZ.kvsml
 
-    if (match.hasMatch())
+    // ファイル名部分から最初の5桁数字を探す
+    QRegularExpression regex( R"(\d{5})" );
+    QRegularExpressionMatch match = regex.match( fileName );
+
+    if( match.hasMatch() )
     {
-        // futureTimeの値を考慮して新しい5桁の数字を生成
-        int newNumber = nextTimeStep;
+        QString newStep = QString::number( nextTimeStep ).rightJustified( 5, '0' );
 
-        // 新しい5桁の数字をQStringに変換し、0埋めして格納
-        QString extractedNumber = QString::number(newNumber).rightJustified(5, '0');
-
-        // 5桁の数字を含む前後の文字列を抜き取り
         int startPos = match.capturedStart();
         int endPos = match.capturedEnd();
+        QString updatedFileName = fileName.left( startPos ) + newStep + fileName.mid( endPos );
+
+        QString fullPath = QDir( dir ).filePath( updatedFileName );
+
 #ifdef Q_OS_WIN
-        return ( fileName.left(startPos).replace( "/", "\\" ) + extractedNumber + fileName.mid(endPos) ).toLocal8Bit().constData();
+        return fullPath.replace( "/", "\\" ).toLocal8Bit().constData();
 #else
-        return ( fileName.left(startPos) + extractedNumber + fileName.mid(endPos) ).toStdString();
+        return fullPath.toStdString();
 #endif
-    }
-    else
-    {
+    } else {
 #ifdef Q_OS_WIN
-        return ( fileName.replace( "/", "\\" ) ).toLocal8Bit().constData();
+        return filePath.replace( "/", "\\" ).toLocal8Bit().constData();
 #else
-        return ( fileName ).toStdString();
+        return filePath.toStdString();
 #endif
     }
 }
