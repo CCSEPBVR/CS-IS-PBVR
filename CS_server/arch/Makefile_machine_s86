@@ -1,5 +1,5 @@
 CXX = icpc
-CXXFLAGS = -O3 -xCORE-AVX2
+CXXFLAGS = -O3 -xCORE-AVX2 -std=c++17
 CC  = icc
 CCFLAGS = -O3 -xCORE-AVX2
 LD = icpc

@@ -223,7 +223,7 @@ endif
 #=============================================================================
 #  Compiler option.
 #=============================================================================
-CPPFLAGS := --std=c++17
+CPPFLAGS := -std=c++17
 
 # For Fujitsu C++ compiler (FCCpx/mpiFCCpx)
 ifeq ($(KVS_CPP),$(findstring $(KVS_CPP),FCCpx mpiFCCpx))
