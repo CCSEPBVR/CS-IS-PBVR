@@ -27,12 +27,11 @@ void Case2Kvsml( const std::string& directory, const std::string& base, const st
 
     std::unordered_map<int, cvt::UnstructuredPfi> pfi_map;
 
-    auto time_steps_container = input_case.eachTimeStep();
-    int last_time_step = time_steps_container.lastTimeStep();
+    int last_time_step = input_case.eachTimeStep().lastTimeStep();
     int time_step = 0;
     int sub_volume_count = 0;
 
-    for ( auto time_and_format : time_steps_container )
+    for ( std::pair<double, cvt::VtkXmlMultiBlock> time_and_format : input_case.eachTimeStep() )
     {
         auto time = time_and_format.first;
         auto& multi_block_format = time_and_format.second;
