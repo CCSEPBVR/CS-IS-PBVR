@@ -570,6 +570,7 @@ int main( int argc, char** argv )
                 std::cout<<"main.cpp:571"<<std::endl;
                 servMes.show();
 
+                servMes.m_server_status =0;
                 servMes.m_message_size = servMes.byteSize();
                 pts.sendMessage( servMes );
                 delete servMes.m_camera;
