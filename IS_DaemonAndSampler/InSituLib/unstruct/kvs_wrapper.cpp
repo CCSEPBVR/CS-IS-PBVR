@@ -400,7 +400,7 @@ bool initializeParameters(
     ParamInfo *param_info,
     const kvs::ObjectBase* object,
     float* sampling_volume_inverse,
-    float* max_opacity, float* max_density, int* subpixel_level, float* particle_density,
+    float* max_opacity, float* max_density, int* subpixel_level, float* particle_density, int* particle_limit,
     float* particle_data_size_limit,
     const std::string &visParamDir,
     const std::string &tfFilename, 
@@ -455,7 +455,7 @@ bool initializeParameters(
                                 object->maxObjectCoord().y(),
                                 object->maxObjectCoord().z() );
     const float sampling_step = (max - min) / 1E1;
-    int particle_limit = param.getInt( "PARTICLE_LIMIT" );
+    *particle_limit = param.getInt( "PARTICLE_LIMIT" );
 #if 0
     double total_volume = static_cast<double>( cdo->gnx )
                         * static_cast<double>( cdo->gny )
@@ -466,7 +466,7 @@ bool initializeParameters(
                         * ( object->maxObjectCoord().z() - object->minObjectCoord().z() );
 #endif
     *max_opacity = 0.98;
-    *subpixel_level = CalculateSubpixelLevel( particle_limit , camera, sampling_step, total_volume, object );
+    *subpixel_level = CalculateSubpixelLevel( *particle_limit , camera, sampling_step, total_volume, object );
 
     //std::cout<<"Generator::\n";
     Generator::CalculateDensityParameters(
@@ -485,7 +485,7 @@ bool initializeParameters(
     if( mpi_rank == 0 )
     {
         fprintf( stdout , "---------initialize Parameters-------------\n" );
-        fprintf( stdout , "particle_limit    = %20d\n", particle_limit );
+        fprintf( stdout , "particle_limit    = %20d\n", *particle_limit );
         fprintf( stdout , "particle_density  = %20f\n", *particle_density );
         fprintf( stdout , "resolutin_height  = %20d\n", height );
         fprintf( stdout , "resolutin_width   = %20d\n", width );
@@ -603,11 +603,9 @@ void generate_particles( int time_step, domain_parameters dom,
             nvariables, coordinates, ncoords,
             connections, ncells, celltype, particleBase);
 
-        std::cout << __FUNCTION__ << __LINE__ <<std::endl;
         GenerateGlyphs(time_step, dom, values,
             nvariables, coordinates, ncoords,
             connections, ncells, celltype);
-        std::cout << __FUNCTION__ << __LINE__ <<std::endl;
          callPlotOverLine(time_step, dom, values,
              nvariables, coordinates, ncoords,
              connections, ncells, celltype, &plot_over_line);                                        
@@ -914,7 +912,7 @@ bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, Pa
     if(mpi_rank==RANK) std::cout<<"max_vec:"<<max_vec<<std::endl;
     bool tmp_parameter_file_opened =
         initializeParameters( m_tfs, particleBase->m_tf, m_param, object, &particleBase->m_sampling_volume_inverse, &particleBase->m_max_opacity, &particleBase->m_max_density,
-                             &particleBase->m_subpixel_level, &particleBase->m_particle_density, &particleBase->m_particle_data_size_limit, visParamDir, tfFilename, time_step );
+                             &particleBase->m_subpixel_level, &particleBase->m_particle_density, &particleBase->m_particle_limit, &particleBase->m_particle_data_size_limit, visParamDir, tfFilename, time_step );
 
     int tf_number = particleBase->m_tf.size();
 
@@ -2571,6 +2569,8 @@ void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBas
             ofs2<<std::endl;
         }
         ofs2<<"N_VARIABLES="<<particleBase.m_nvariables<<std::endl;
+        ofs2<<"PARTICLE_DENSITY="<<particleBase.m_particle_density<<std::endl;
+        ofs2<<"PARTICLE_LIMIT="<<particleBase.m_particle_limit<<std::endl;
         ofs2 << "END_HISTORY_FILE=SUCCESS" << std::endl;
         ofs2.close();
 

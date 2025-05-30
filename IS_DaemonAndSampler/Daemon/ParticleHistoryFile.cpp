@@ -64,6 +64,8 @@ void ParticleHistoryFile::set_name()
         m_name.push_back( "HISTOGRAM_O" + ss.str() );
     }
     m_name.push_back( "N_VARIABLES" );
+    m_name.push_back( "PARTICLE_DENSITY" );
+    m_name.push_back( "PARTICLE_LIMIT" );
     m_name.push_back( "END_HISTORY_FILE" );
 
 }
@@ -126,6 +128,8 @@ void ParticleHistoryFile::assign_name_list( const NameListFile& name_list_file )
         cur_tf_number = 0;
     }
     m_nvariables = nml.getValue<int>( "N_VARIABLES" );;
+    m_particle_limit   = nml.getValue<int>( "PARTICLE_LIMIT" );;
+    m_particle_density = nml.getValue<float>( "PARTICLE_DENSITY" );;
 
     for (int i = 0; i < cur_tf_number; i++) {
         std::stringstream ss;

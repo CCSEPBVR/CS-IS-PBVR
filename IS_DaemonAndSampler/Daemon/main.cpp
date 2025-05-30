@@ -949,11 +949,14 @@ int main( int argc, char** argv )
                             servMes.m_time_step = clntMes.m_step;
                             servMes.m_subpixel_level = pm.getSubpixelLevel();
                             vr = pm.particleHistoryFile().variableRange();
-                            
-                            //　粒子生成時に変数の数も取得するよう変更
+                           
+                            //　粒子生成時に変数の数も取得するよう変更, paerticle_limit,particle_densityを取得するよう変更 2025/05/30
                             //servMes.m_number_elements = fil.total_numElements;
                             servMes.m_number_ingredients = pm.particleHistoryFile().nVariables();
+                            servMes.m_particle_limit = pm.particleHistoryFile().ParticleLimit();
+                            servMes.m_particle_density = pm.particleHistoryFile().ParticleDensity();
 
+                            std::cout << "m_particle_density =" << servMes.m_particle_density << std::endl;
 
                             TimerStart( 3 );
                             for ( int tf = 0; tf < pm.particleHistoryFile().colorHistogramArray().size() && tf < servMes.m_transfer_function_count; tf++ )
@@ -1015,6 +1018,7 @@ int main( int argc, char** argv )
                             std::cout<<"main.cpp:L779"<<std::endl;
 
                             servMes.show();
+
                             pts.sendMessage( servMes );
                             TimerStop( 4 );
                             if ( timer_count <= TIMER_COUNT_NUM )
