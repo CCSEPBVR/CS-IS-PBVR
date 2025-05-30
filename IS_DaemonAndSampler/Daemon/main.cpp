@@ -950,6 +950,9 @@ int main( int argc, char** argv )
                             servMes.m_subpixel_level = pm.getSubpixelLevel();
                             vr = pm.particleHistoryFile().variableRange();
                             
+                            //　粒子生成時に変数の数も取得するよう変更
+                            //servMes.m_number_elements = fil.total_numElements;
+                            servMes.m_number_ingredients = pm.particleHistoryFile().nVariables();
 
 
                             TimerStart( 3 );
