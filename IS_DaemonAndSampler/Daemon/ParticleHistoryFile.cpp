@@ -3,12 +3,18 @@
 ParticleHistoryFile::ParticleHistoryFile()
 {
     this->set_name();
+    m_nvariables =0;
+    m_particle_limit   = 0;
+    m_particle_density = 0;
 }
 
 ParticleHistoryFile::ParticleHistoryFile( const std::string& file ):
     m_file_name( file )
 {
     this->set_name();
+    m_nvariables =0;
+    m_particle_limit   = 0;
+    m_particle_density = 0;
 }
 
 void ParticleHistoryFile::set_name()

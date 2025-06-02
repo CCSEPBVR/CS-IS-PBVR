@@ -474,6 +474,16 @@ int main( int argc, char** argv )
                             &servMes.m_max_object_coord[2]);
                     if ( fp != NULL ) fclose( fp );
                 }
+                else
+                {
+                    servMes.m_min_object_coord[0]=0.f;
+                    servMes.m_min_object_coord[1]=0.f;
+                    servMes.m_min_object_coord[2]=0.f;
+                    servMes.m_max_object_coord[0]=0.1;
+                    servMes.m_max_object_coord[1]=0.1;
+                    servMes.m_max_object_coord[2]=0.1;
+                }
+
 #endif
 //jupiter end
 
@@ -937,6 +947,15 @@ int main( int argc, char** argv )
                                         &servMes.m_max_object_coord[2]);
                                 if ( fp != NULL ) fclose( fp );
                             }
+                            else
+                            {
+                                servMes.m_min_object_coord[0]=0.f;
+                                servMes.m_min_object_coord[1]=0.f;
+                                servMes.m_min_object_coord[2]=0.f;
+                                servMes.m_max_object_coord[0]=0.f;
+                                servMes.m_max_object_coord[1]=0.f;
+                                servMes.m_max_object_coord[2]=0.f;
+                            }
 
                             TimerStop( 2 );
                             if( pm.setTimeStep_particle( clntMes.m_step ) ) servMes.m_flag_send_bins = 0;
@@ -1340,6 +1359,16 @@ int main( int argc, char** argv )
                                         &servMes.m_max_object_coord[2]);
                                 if ( fp != NULL ) fclose( fp );
                             }
+                            else
+                            {
+                                servMes.m_min_object_coord[0]=0.f;
+                                servMes.m_min_object_coord[1]=0.f;
+                                servMes.m_min_object_coord[2]=0.f;
+                                servMes.m_max_object_coord[0]=0.f;
+                                servMes.m_max_object_coord[1]=0.f;
+                                servMes.m_max_object_coord[2]=0.f;
+                            }
+
 
                             TimerStop( 2 );
                             if( pm.setTimeStep_glyph( clntMes.m_step ) || pm.stepExisted() ) servMes.m_flag_send_bins = 2;
@@ -1671,6 +1700,15 @@ int main( int argc, char** argv )
                                         &servMes.m_max_object_coord[1],
                                         &servMes.m_max_object_coord[2]);
                                 if ( fp != NULL ) fclose( fp );
+                            }
+                            else
+                            {
+                                servMes.m_min_object_coord[0]=0.f;
+                                servMes.m_min_object_coord[1]=0.f;
+                                servMes.m_min_object_coord[2]=0.f;
+                                servMes.m_max_object_coord[0]=0.f;
+                                servMes.m_max_object_coord[1]=0.f;
+                                servMes.m_max_object_coord[2]=0.f;
                             }
 
                             TimerStop( 2 );
