@@ -66,6 +66,10 @@
 //plot over line
 #include <vismodule/POLObjectGenerator>
 
+#include <vismodule/Calculate>
+#include <vismodule/PointObjectCreator>
+#include <vismodule/SignalHandler>
+
 using FuncParser::Variable;
 using FuncParser::Variables;
 using FuncParser::Function;
@@ -73,13 +77,13 @@ using FuncParser::FunctionParser;
 
 bool useAllNodes = true;
 
+#if 0
 inline const size_t GetRevisedSubpixelLevel(
     const size_t subPixelLevel,
     const size_t repetition_level )
 {
     return static_cast<size_t>( subPixelLevel * std::sqrt( ( double )repetition_level ) + 0.5f );
 }
-
 class PointObjectCreator
 {
 private:
@@ -411,7 +415,9 @@ void SignalHandler( const int sig )
     SigServer = true;
 }
 /* 140319 for client stop by Ctrl+c */
+#endif
 
+#if 0
 bool IsDirectory( const std::string directory_path )
 {
 #if defined ( WIN32 )
@@ -431,7 +437,6 @@ bool IsDirectory( const std::string directory_path )
     return filestat.st_mode & S_IFDIR;
 #endif
 }
-
 //inline vismodule::UnstructuredVolumeObject* CreateVolumeData( const Argument& param,
 inline vismodule::VolumeObjectBase* CreateVolumeData( const Argument& param,
                                                          const MultiVolumeProperty& mvp,
@@ -921,7 +926,7 @@ VariableRange  setVariablerange2(const float* tmp_max, const float* tmp_min, con
     }   
     return vr;
 }
-
+#endif
 /**
  * ???C??????:
  * @param argc

@@ -263,6 +263,7 @@ $(OUTDIR)/./Visualization/Viewer/RendererManager.o \
 $(OUTDIR)/./Visualization/Viewer/Trackball.o \
 $(OUTDIR)/./Visualization/Viewer/Xform.o \
 $(OUTDIR)/./Visualization/Viewer/XformControl.o \
+$(OUTDIR)/./test/PointObjectCreator.o \
 
 
 

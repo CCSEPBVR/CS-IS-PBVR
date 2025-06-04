@@ -56,23 +56,18 @@
 #include "ParameterFileReader.h" 
 #include "Timer.h" 
 
-bool useAllNodes = true;
+#include "SigHandler.h"
+#include "Calculate.h"
+#include "SetDefaultTransferFunction.h"
 
+bool useAllNodes = true;
+#if 0
 inline const size_t GetRevisedSubpixelLevel(
     const size_t subpixel_level,
     const size_t repetition_level )
 {
     return ( static_cast<size_t>( subpixel_level * std::sqrt( ( double )repetition_level ) + 0.5f ) );
 }
-
-/* 140319 for client stop by Ctrl+c */
-bool SigServer = false;
-void sig_handler( int sig )
-{
-    SigServer = true;
-}
-/* 140319 for client stop by Ctrl+c */
-
 bool isDirectory( std::string directory_path )
 {
 #if defined ( WIN32 )
@@ -152,6 +147,7 @@ void setDefalutTransferFunction(jpv::ParticleTransferServerMessage* servMes, con
 
 }
 
+#endif
 
 int main( int argc, char** argv )
 {

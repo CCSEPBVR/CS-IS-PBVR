@@ -60,6 +60,7 @@ DAEMON_SRCS = CropRegion.cpp \
 
 
 DAEMON_HEADERS = Argument.h \
+                 Calculate.h \
                  common.h \
                  Compiler.h \
                  CropRegion.h \
@@ -93,6 +94,8 @@ DAEMON_HEADERS = Argument.h \
                  Platform.h \
                  PointImporter.h \
                  PointObject.h \
+				 SigHandler.h \
+				 SetDefaultTransferFunction.h \
                  TagTable.h \
                  timer_simple.h \
                  Timer.h \
