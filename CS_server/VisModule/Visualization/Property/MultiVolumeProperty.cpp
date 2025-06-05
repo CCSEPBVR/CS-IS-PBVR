@@ -261,6 +261,49 @@ int MultiVolumeProperty::loadPFI( const std::string& filename )
     return 0;
 }
 
+
+void MultiVolumeProperty::setFilePath(std::string& filename ,const int st , const int xvl)
+{
+    
+    size_t found_pfi  = m_file_path.find(".pfi");
+    size_t found_vtm  = m_file_path.find(".vtm");
+    size_t found_vtu  = m_file_path.find(".vtu");
+    size_t found_vti  = m_file_path.find(".vti");
+    size_t found_inp  = m_file_path.find(".inp");
+    size_t found_pvtu = m_file_path.find(".pvtu");
+    size_t found_case = m_file_path.find(".case");
+
+    if ( found_pfi != std::string::npos )
+    {
+        std::stringstream suffix;
+        suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
+            << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
+            << '_' << std::setw( 7 ) << std::setfill( '0' ) << m_number_subvolumes;
+        vismodule::File ifpx( m_file_path );
+        //param.m_input_data = ifpx.pathName() + ifpx.Separator()
+        filename = ifpx.pathName() + ifpx.Separator()
+            + ifpx.baseName() + suffix.str() + ".kvsml";
+    }
+#ifdef EXTEND_FILE_FORMAT 
+    else if ( found_vtm  != std::string::npos ||
+            found_vtu  != std::string::npos ||
+            found_vti  != std::string::npos ||
+            found_inp  != std::string::npos ||
+            found_pvtu != std::string::npos || 
+            found_case != std::string::npos 
+            )
+    {
+        //param.m_input_data = mvp.m_file_path;
+        filename = m_file_path;
+    }
+#endif
+    else
+    {
+        std::cout << "このファイルは現在対応していません" << std::endl;
+    }
+
+}
+
 //--------------------------------------------------------------------------
 
 MultiVolumePropertyList::MultiVolumePropertyList():
@@ -2523,3 +2566,148 @@ void MultiVolumePropertyList::cropTimeStep( const int s, const int e )
 
     m_total_number_steps = m_total_last_step - m_total_start_steps + 1;
 }
+
+void MultiVolumePropertyList::searchFile(const Argument param )
+{
+                    size_t found_pfl  = param.m_input_data_base.find(".pfl");
+                    size_t found_pfi  = param.m_input_data_base.find(".pfi");
+                    size_t found_vtm  = param.m_input_data_base.find(".vtm");
+                    size_t found_vtu  = param.m_input_data_base.find(".vtu");
+                    size_t found_vti  = param.m_input_data_base.find(".vti");
+                    size_t found_inp  = param.m_input_data_base.find(".inp");
+                    size_t found_pvtu = param.m_input_data_base.find(".pvtu");
+                    size_t found_case = param.m_input_data_base.find(".case");
+                    if ( found_pfl != std::string::npos )
+                    {
+                        std::string pflfile = param.m_input_data_base;
+                        std::cout << "pflファイルが選択されました" << std::endl;
+                        vismodule::File pfl( pflfile );
+                        if ( pfl.isExisted() )
+                        {
+                            this->loadPFL( pflfile );
+                        }
+                     }
+                    else if ( found_pfi != std::string::npos )
+                    {
+                        std::string pfifile = param.m_input_data_base;
+                        std::cout << "pfiファイルが選択されました" << std::endl;
+                        vismodule::File pfi( pfifile );
+                        if ( pfi.isExisted() )
+                        {
+                            this->loadPFL( pfifile );
+                        }                        
+                    }
+#ifdef EXTEND_FILE_FORMAT
+                    else if ( found_vtm != std::string::npos )
+                    {
+                        std::string vtmfile = param.m_input_data_base;
+                        std::cout << ".vtmファイルが選択されました" << std::endl;
+                        size_t found_asterisk = vtmfile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            std::cout << "単一ファイル" << std::endl;
+                            this->loadVtm( vtmfile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            std::cout << "連番ファイル" << std::endl;
+                            this->loadSeriesVtm( vtmfile );
+                        }
+                    }
+                    else if ( found_vtu != std::string::npos )
+                    {
+                        std::string vtufile = param.m_input_data_base;
+                        std::cout << ".vtuファイルが選択されました" << std::endl;
+                        size_t found_asterisk = vtufile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            this->loadVtu( vtufile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            this->loadSeriesVtu( vtufile );
+                        }
+                    }
+                    else if ( found_vti != std::string::npos )
+                    {
+                        std::string vtifile = param.m_input_data_base;
+                        std::cout << ".vtiファイルが選択されました" << std::endl;
+                        size_t found_asterisk = vtifile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            this->loadVti( vtifile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            this->loadSeriesVti( vtifile );
+                        }
+                    }
+                    else if ( found_inp != std::string::npos )
+                    {
+                        std::string inpfile = param.m_input_data_base;
+                        std::cout << ".inpファイルが選択されました" << std::endl;
+                        size_t found_asterisk = inpfile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            this->loadInp( inpfile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            std::cout << ".inpファイルは連番ファイルに対応していません" << std::endl;
+                        }
+                    }
+                    else if ( found_pvtu != std::string::npos )
+                    {
+                        std::string pvtufile = param.m_input_data_base;
+                        std::cout << ".pvtuファイルが選択されました" << std::endl;
+                        size_t found_asterisk = pvtufile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            this->loadPvtu( pvtufile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            this->loadSeriesPvtu( pvtufile );
+                        }
+                    }
+                    else if ( found_case != std::string::npos )
+                    {
+                        std::string casefile = param.m_input_data_base;
+                        std::cout << ".caseファイルが選択されました" << std::endl;
+                        size_t found_asterisk = casefile.find( '*' );
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            this->loadEnsightGold( casefile );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            std::cout << ".caseファイルは連番ファイルに対応していません" << std::endl;
+                        }
+                    }
+#endif
+                    else
+                    {
+                        std::cout << "このファイルは現在対応していません" << std::endl;
+                    }
+                    
+
+}
+

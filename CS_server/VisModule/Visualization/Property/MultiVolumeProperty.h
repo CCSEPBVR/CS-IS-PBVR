@@ -6,6 +6,7 @@
 #include "Types.h"
 #include <vismodule/Vector3>
 #include <float.h>
+#include <vismodule/Argument>
 
 class MultiVolumeProperty
 {
@@ -47,6 +48,7 @@ public:
 
 public:
     int loadPFI( const std::string& filename );
+    void setFilePath( std::string& filename, const int st, const int xvl );
 };
 
 
@@ -96,6 +98,9 @@ public:
     float   m_total_max_value;
     int32_t m_total_number_ingredients;
     std::vector<MultiVolumeProperty::IngredientsMinMax> m_total_ingredient;
+
+    void searchFile(const Argument param);
+
 };
 
 #endif // VIS_MODULE__FILTER_INFO_H_INCLDE
