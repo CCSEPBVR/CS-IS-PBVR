@@ -1,3 +1,6 @@
+#ifndef VIS_MODULE_CALCULATE_H_INCLDE
+#define VIS_MODULE_CALCULATE_H_INCLDE
+
 //inline vismodule::UnstructuredVolumeObject* CreateVolumeData( const Argument& param,
 inline vismodule::VolumeObjectBase* CreateVolumeData( const Argument& param,
                                                          const MultiVolumeProperty& mvp,
@@ -488,4 +491,4 @@ VariableRange  setVariablerange2(const float* tmp_max, const float* tmp_min, con
     return vr;
 }
 
-
+#endif

@@ -1,3 +1,6 @@
+#ifndef VIS_MODULE_POINT_OBJECT_CREATOR_H_INCLDE
+#define VIS_MODULE_POINT_OBJECT_CREATOR_H_INCLDE
+
 #include "ParticleTransferServer.h"
 #include "ParticleTransferProtocol.h"
 
@@ -392,4 +395,4 @@ protected:
     }
 };
 
-
+#endif
