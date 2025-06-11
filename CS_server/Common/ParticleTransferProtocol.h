@@ -52,6 +52,12 @@ enum class GlyphMode  : int32_t
     EveryNthPoints      = 2  //Stride
 };
 
+enum class ServerMode  : int32_t
+{
+   CS = 0, //max sampepoints,seed
+   IS = 1, //No UI
+};
+
 class ParticleTransferUtils
 {
 public:
@@ -121,6 +127,8 @@ public:
 // #ifdef COMM_MODE_IS
     float m_particle_data_size_limit;
 // #endif
+
+    ServerMode m_server_mode;
     std::string m_input_directory;
     std::string m_filter_parameter_filename;         // add by @hira at 2016/12/01 //CS ONLY
 

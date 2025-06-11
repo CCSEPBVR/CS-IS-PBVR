@@ -264,6 +264,11 @@ $(OUTDIR)/./Visualization/Viewer/Trackball.o \
 $(OUTDIR)/./Visualization/Viewer/Xform.o \
 $(OUTDIR)/./Visualization/Viewer/XformControl.o \
 $(OUTDIR)/./test/PointObjectCreator.o \
+$(OUTDIR)/./test/Connect.o \
+$(OUTDIR)/./test/GenerateGlyph.o \
+$(OUTDIR)/./test/GenerateParticle.o \
+$(OUTDIR)/./test/GeneratePOL.o \
+$(OUTDIR)/./test/InitialStep.o \
 
 
 

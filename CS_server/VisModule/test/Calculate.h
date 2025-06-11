@@ -256,7 +256,7 @@ inline VariableRange Calculate_minmax( const Argument& param,
 }
 
 
-void Calculate_minmax_glyph( const Argument& param,
+inline void Calculate_minmax_glyph( const Argument& param,
                                       const MultiVolumePropertyList& mvpl,
                                       jpv::ParticleTransferClientMessage& clntMes)
 {
@@ -474,7 +474,7 @@ inline float CalculateDensityFactor( const Argument& param,
     return m_density_factor;
 }
 
-VariableRange  setVariablerange2(const float* tmp_max, const float* tmp_min, const int cnt )
+inline VariableRange  setVariablerange2(const float* tmp_max, const float* tmp_min, const int cnt )
 {
     VariableRange vr;
     
