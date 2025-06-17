@@ -784,3 +784,189 @@ void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& cl
     delete param.m_transfunc_synthesizer;
 
 }
+
+void initial_step_IS(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
+                         std::string particlePath, std::string glyphFilePath, std::string plotOverLineFilePath, std::string statePath, std::string  historyPath, std::string tfFilePath_old,
+                         JobDispatcher& jd,  jpv::ParticleTransferServer pts, bool& useAllNodes, int& timer_count )
+{
+ 
+    //jupiter start
+//              param.input_data_base = clntMes.m_input_directory;
+                param.m_input_data_base = "dummy";
+
+                std::cout<<"main.cpp:L221"<<std::endl;
+                //clntMes.show();
+//jupiter end
+                VariableRange range;
+
+                strncpy( servMes.m_header, "JPTP /1.0 000 OK\r\n", 18 );
+                servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
+                servMes.m_transfer_function_count = 0;
+                servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
+                servMes.m_time_step = mvpl.m_total_start_steps;
+                servMes.m_start_step = mvpl.m_total_start_steps;
+                servMes.m_last_step = mvpl.m_total_last_step;
+                servMes.m_number_step = mvpl.m_total_last_step;
+                //servMes.m_number_volume_divide = mvpl.m_total_numSubVolumes;
+                //servMes.m_time_step = mvpl.m_total_staSteps;
+                //servMes.m_start_step = mvpl.m_total_staSteps;
+                //servMes.m_last_step = mvpl.m_total_endSteps;
+                //servMes.m_number_step = mvpl.m_total_numSteps;
+//jupiter start
+#if 0
+                servMes.minObjectCoord[0] = mvpl.total_minObjectCoord[0];
+                servMes.minObjectCoord[1] = mvpl.total_minObjectCoord[1];
+                servMes.minObjectCoord[2] = mvpl.total_minObjectCoord[2];
+                servMes.maxObjectCoord[0] = mvpl.total_maxObjectCoord[0];
+                servMes.maxObjectCoord[1] = mvpl.total_maxObjectCoord[1];
+                servMes.maxObjectCoord[2] = mvpl.total_maxObjectCoord[2];
+#else
+
+#if 0
+                //clntMesに含まれる-vinオプションで指定されたパスを使用
+                //デーモン(pbvr_server)をサンプラと同じディレクトリに配置
+                //相対パスでOK  ./jupiter_particle_out/t
+                jupiter_prefix = clntMes.m_input_directory;
+                // 存在領域設定ファイルがあるか確認をする
+                std::string filename( jupiter_prefix );
+#else
+                // 20181226 start
+                // 環境変数の値を直接使用する
+                std::string filename( particlePath );
+                // 20181226 end
+#endif
+                filename.append( "_pfi_coords_minmax.txt" );
+                vismodule::File f( filename.c_str()  );
+                if ( f.isExisted() )
+                {
+                    // ファイルがある
+                    FILE* fp = NULL;
+                    fp = fopen( filename.c_str(), "r" );
+                    fscanf( fp, "%f %f %f %f %f %f",
+                            &servMes.m_min_object_coord[0],
+                            &servMes.m_min_object_coord[1],
+                            &servMes.m_min_object_coord[2],
+                            &servMes.m_max_object_coord[0],
+                            &servMes.m_max_object_coord[1],
+                            &servMes.m_max_object_coord[2]);
+                    if ( fp != NULL ) fclose( fp );
+                }
+                else
+                {
+                    servMes.m_min_object_coord[0]=0.f;
+                    servMes.m_min_object_coord[1]=0.f;
+                    servMes.m_min_object_coord[2]=0.f;
+                    servMes.m_max_object_coord[0]=0.1;
+                    servMes.m_max_object_coord[1]=0.1;
+                    servMes.m_max_object_coord[2]=0.1;
+                }
+
+#endif
+
+//jupiter end
+
+//// read minmax & histrogram 
+
+                ParticleMonitor pm( particlePath, glyphFilePath, plotOverLineFilePath, statePath.c_str(), historyPath.c_str() );
+                pm.check();
+
+                servMes.m_start_step = pm.particleStatusFile().getStartTimeStep();
+                servMes.m_last_step = pm.particleStatusFile().getLatestTimeStep();
+                if( pm.stepExisted() )
+                {
+                    pm.setTimeStep_particle(pm.particleStatusFile().getLatestTimeStep());
+                    //pm.setTimeStep(0);
+                }
+                else
+                {
+                    pm.setTimeStep_particle(0);
+                }
+                pm.readParticleHistoryFile();
+                range = pm.particleHistoryFile().variableRange();
+
+                const int tf_number = pm.particleHistoryFile().colorHistogramArray().size();
+                servMes.m_transfer_function_count =       tf_number;//TF_COUNT
+                servMes.m_color_nbins   = new vismodule::UInt64[tf_number];
+                servMes.m_opacity_nbins = new vismodule::UInt64[tf_number];
+
+                servMes.m_color_bins.resize(   tf_number );
+                servMes.m_opacity_bins.resize( tf_number );
+
+                for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
+                {
+                    servMes.m_color_nbins[tf] = DEFAULT_NBINS;
+                    servMes.m_opacity_nbins[tf] = DEFAULT_NBINS;
+                    servMes.m_color_bins[tf]   =  new vismodule::UInt64[ servMes.m_color_nbins[tf] ];
+                    servMes.m_opacity_bins[tf] =  new vismodule::UInt64[ servMes.m_opacity_nbins[tf] ];
+                    for ( int res = 0; res < servMes.m_color_nbins[tf]; res++ )
+                    {
+                        servMes.m_color_bins[tf][res] = 0;
+                    }
+                    for ( int res = 0; res < servMes.m_opacity_nbins[tf]; res++ )
+                    {
+                        servMes.m_opacity_bins[tf][res] = 0;
+                    }
+                }
+
+                servMes.m_transfer_function_count = pm.particleHistoryFile().colorHistogramArray().size();
+                for ( int tf = 0; tf < pm.particleHistoryFile().colorHistogramArray().size() && tf < servMes.m_transfer_function_count; tf++ )
+                {
+                    servMes.m_color_nbins[tf] = pm.particleHistoryFile().colorHistogramArray()[ tf ].size();
+                    for ( int res = 0; res < servMes.m_color_nbins[tf]; res++ )
+                    {
+                        servMes.m_color_bins[tf][res] = pm.particleHistoryFile().colorHistogramArray()[ tf ][res];
+                    }
+                }
+
+                for ( int tf = 0; tf < pm.particleHistoryFile().opacityHistogramArray().size() && tf < servMes.m_transfer_function_count; tf++ )
+                {
+                    servMes.m_opacity_nbins[tf] = pm.particleHistoryFile().opacityHistogramArray()[ tf ].size();
+                    for ( int res = 0; res < servMes.m_opacity_nbins[tf]; res++ )
+                    {
+                        servMes.m_opacity_bins[tf][res] = pm.particleHistoryFile().opacityHistogramArray()[ tf ][ res ];
+                    }
+                }
+
+                servMes.m_min_value = mvpl.m_total_min_value;
+                servMes.m_max_value = mvpl.m_total_max_value;
+                servMes.m_number_nodes = mvpl.m_total_number_nodes;
+                servMes.m_number_elements = mvpl.m_total_number_elements;
+                servMes.m_number_ingredients = pm.particleHistoryFile().nVariables();
+                servMes.m_server_side_variable_range = range;
+                servMes.m_flag_send_bins = 1;
+                servMes.m_number_glyph = 0;
+                servMes.m_particle_limit = pm.particleHistoryFile().ParticleLimit();
+                servMes.m_particle_density = pm.particleHistoryFile().ParticleDensity();
+
+                // 20181226 start  環境変数で指定したパスおよび名前でファイル参照を行う
+                //初期化 : jupiter_old.tfを読む
+                ParameterFileReader ppr;
+                //ppr.readParameterFile("jupiter_old.tf");
+                ppr.readParameterFile( tfFilePath_old.c_str() );
+                NameListFile nm = ppr.getNameListFile();
+                //最初の送信(daemon->client)
+                //jupiter_old.tfの内容をクライアントに送信
+                std::ifstream file(tfFilePath_old.c_str());
+                if(file)
+                {
+                    ppr.outputMessage( &servMes );
+                }
+                else
+                { 
+                    setDefalutTransferFunction(&servMes, pm.particleHistoryFile().colorHistogramArray().size() );
+                }
+                file.close();
+
+                std::cout<<"main.cpp:571"<<std::endl;
+                servMes.show();
+
+//                servMes.m_server_status =0;
+                servMes.m_message_size = servMes.byteSize();
+                pts.sendMessage( servMes );
+                delete servMes.m_camera;
+                delete clntMes.m_camera;
+   
+
+
+}

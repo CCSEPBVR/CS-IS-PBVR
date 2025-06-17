@@ -273,6 +273,7 @@ $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleStatusFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/PlotOverLineFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleMonitor.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/SetDefaultTransferFunction.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/Timer.o \
 $(OUTDIR)/./test/PointObjectCreator.o \
 $(OUTDIR)/./test/Connect.o \

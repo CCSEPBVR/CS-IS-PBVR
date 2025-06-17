@@ -60,6 +60,13 @@
 #include <vismodule/PointObjectCreator>
 #include <vismodule/SignalHandler>
 #include <vismodule/Math>
+//IS
+#include <vismodule/ParticleMonitor>
+#include <vismodule/ParameterFileWriter>
+#include <vismodule/ParameterFileReader>
+#include <vismodule/SetDefaultTransferFunction>
+#include <DaemonAndSampler/Daemon/Timer.h>
+
 
 void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
                          bool &nan_error, std::vector<PointObjectCreator>& point_creator_lst, 
@@ -74,5 +81,11 @@ void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& cl
                          JobCollector& jc, 
 #endif
                          JobDispatcher& jd, bool& useAllNodes, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count );
+
+
+void initial_step_IS(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
+                         std::string particlePath, std::string glyphFilePath, std::string plotOverLineFilePath, std::string statePath, std::string  historyPath, std::string tfFilePath_old,
+                         JobDispatcher& jd,  jpv::ParticleTransferServer pts, bool& useAllNodes , int& timer_count );
+
 
 #endif

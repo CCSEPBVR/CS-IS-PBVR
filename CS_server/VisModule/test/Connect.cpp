@@ -618,6 +618,12 @@ void  IS_Connect( int argc, char** argv )
                 //最初の受信(client->daemon)
                 //受信内容clntMesにはデフォルト伝達関数が含まれるが
                 //jupiter_old.tfを反映するため無視する
+                 int timerTmp = 0; 
+                 initial_step_IS(param, clntMes, servMes, mvpl, 
+                         particlePath, glyphFilePath, plotOverLineFilePath, statePath, historyPath, tfFilePath_old,
+                         jd, pts, useAllNodes, timerTmp);
+
+#if 0
 //jupiter start
 //              param.input_data_base = clntMes.m_input_directory;
                 param.m_input_data_base = "dummy";
@@ -794,6 +800,7 @@ void  IS_Connect( int argc, char** argv )
                 pts.sendMessage( servMes );
                 delete servMes.m_camera;
                 delete clntMes.m_camera;
+#endif
             }// end of init process 初期化終了
 
             jpv::ParticleTransferServerMessage servMes;
