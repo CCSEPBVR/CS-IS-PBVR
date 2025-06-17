@@ -952,9 +952,9 @@ int main( int argc, char** argv )
                                 servMes.m_min_object_coord[0]=0.f;
                                 servMes.m_min_object_coord[1]=0.f;
                                 servMes.m_min_object_coord[2]=0.f;
-                                servMes.m_max_object_coord[0]=0.f;
-                                servMes.m_max_object_coord[1]=0.f;
-                                servMes.m_max_object_coord[2]=0.f;
+                                servMes.m_max_object_coord[0]=0.1;
+                                servMes.m_max_object_coord[1]=0.1;
+                                servMes.m_max_object_coord[2]=0.1;
                             }
 
                             TimerStop( 2 );
@@ -1340,7 +1340,8 @@ int main( int argc, char** argv )
                             kvs::KVSMLObjectGlyph* originalGlyph = new kvs::KVSMLObjectGlyph;
                             TimerStart( 2 );
                             // 20181226 start　環境変数で指定したパスを使用
-                            std::string filename( glyphFilePath );
+                            //std::string filename( glyphFilePath );
+                            std::string filename( particlePath );
                             // 20181226 end
                             filename.append( "_pfi_coords_minmax.txt" );
                             kvs::File f( filename.c_str()  );
@@ -1364,9 +1365,9 @@ int main( int argc, char** argv )
                                 servMes.m_min_object_coord[0]=0.f;
                                 servMes.m_min_object_coord[1]=0.f;
                                 servMes.m_min_object_coord[2]=0.f;
-                                servMes.m_max_object_coord[0]=0.f;
-                                servMes.m_max_object_coord[1]=0.f;
-                                servMes.m_max_object_coord[2]=0.f;
+                                servMes.m_max_object_coord[0]=0.1;
+                                servMes.m_max_object_coord[1]=0.1;
+                                servMes.m_max_object_coord[2]=0.1;
                             }
 
 
@@ -1682,7 +1683,8 @@ int main( int argc, char** argv )
                             kvs::KVSMLObjectPlotOverLine* originalObject = new kvs::KVSMLObjectPlotOverLine;
                             TimerStart( 2 );
                             // 20181226 start　環境変数で指定したパスを使用
-                            std::string filename( plotOverLineFilePath );
+                            //std::string filename( plotOverLineFilePath );
+                            std::string filename( particlePath );
                             // 20181226 end
                             filename.append( "_pfi_coords_minmax.txt" );
                             kvs::File f( filename.c_str()  );
@@ -1706,9 +1708,9 @@ int main( int argc, char** argv )
                                 servMes.m_min_object_coord[0]=0.f;
                                 servMes.m_min_object_coord[1]=0.f;
                                 servMes.m_min_object_coord[2]=0.f;
-                                servMes.m_max_object_coord[0]=0.f;
-                                servMes.m_max_object_coord[1]=0.f;
-                                servMes.m_max_object_coord[2]=0.f;
+                                servMes.m_max_object_coord[0]=0.1;
+                                servMes.m_max_object_coord[1]=0.1;
+                                servMes.m_max_object_coord[2]=0.1;
                             }
 
                             TimerStop( 2 );
