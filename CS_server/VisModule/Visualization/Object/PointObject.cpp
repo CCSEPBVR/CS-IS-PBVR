@@ -555,7 +555,7 @@ void PointObject::add( const PointObject& other )
                     memcpy( psizes, other.sizes().pointer(), other.sizes().byteSize() );
                 }
             }
-#if 0
+#if 1
             else
             {
                 const vismodule::Real32 size1 = this->size();

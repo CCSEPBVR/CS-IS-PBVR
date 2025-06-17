@@ -263,6 +263,17 @@ $(OUTDIR)/./Visualization/Viewer/RendererManager.o \
 $(OUTDIR)/./Visualization/Viewer/Trackball.o \
 $(OUTDIR)/./Visualization/Viewer/Xform.o \
 $(OUTDIR)/./Visualization/Viewer/XformControl.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/ExtendedTransferFunctionMessage.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/GlyphFile.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/ParamInfo.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/ParameterFileReader.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/ParameterFileWriter.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/ParticleHistoryFile.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/ParticleFile.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/ParticleStatusFile.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/PlotOverLineFile.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/ParticleMonitor.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/Timer.o \
 $(OUTDIR)/./test/PointObjectCreator.o \
 $(OUTDIR)/./test/Connect.o \
 $(OUTDIR)/./test/GenerateGlyph.o \
@@ -394,6 +405,17 @@ $(OUTDIR)/./FileFormat/AVSField/%.o: ./FileFormat/AVSField/%.cpp ./FileFormat/AV
 
 $(OUTDIR)/./FileFormat/%.o: ./FileFormat/%.cpp ./FileFormat/%.h
 	$(MKDIR) $(OUTDIR)/./FileFormat
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
+
+$(OUTDIR)/./DaemonAndServer/Daemon/%.o: ./DaemonAndServer/Daemon/%.cpp ./DaemonAndServer/Daemon/%.h
+	$(MKDIR) $(OUTDIR)/./DaemonAndServer/Daemon
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
+
+$(OUTDIR)/./test/%.o: ./test/%.cpp ./test/%.h
+	$(MKDIR) $(OUTDIR)/./test
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
+
+$(OUTDIR)/./main.o: ../main.cpp
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 install::

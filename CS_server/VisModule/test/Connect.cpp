@@ -75,6 +75,9 @@
 #include <vismodule/GenerateParticle>
 #include <vismodule/GenerateGlyph>
 #include <vismodule/GeneratePOL>
+#include <signal.h>
+
+
 
 using FuncParser::Variable;
 using FuncParser::Variables;
@@ -416,24 +419,31 @@ void  CS_Connect( int argc, char** argv )
     return ;
 }
 
+//IS
+#include <vismodule/ParticleMonitor>
+#include <vismodule/ParameterFileWriter>
+#include <vismodule/ParameterFileReader>
+#include <vismodule/SetDefaultTransferFunction>
+#include <DaemonAndSampler/Daemon/Timer.h>
+
+
 void  IS_Connect( int argc, char** argv )
 {
 
-#if 0
 //#ifndef CPU_VER
 //    MPI::Init( argc, argv );
 //#endif
     VIS_MODULE_TIMER_INIT();
     VIS_MODULE_TIMER_STA( 1 );
 
-    kvs::Timer timer( kvs::Timer::Start );
-
+    vismodule::Timer timer( vismodule::Timer::Start );
 
     Argument param( argc, argv );
-    FilterInfoLst fil;
+//    FilterInfoLst mvpl;
+    MultiVolumePropertyList mvpl;
     //2018 kawamura comment out
     //TransferFunctionSynthesizerCreator transfunc_creator;
-    kvs::Camera camera;
+    vismodule::Camera camera;
     int retval = 0;
     int mpi_rank = 0;
 
@@ -446,31 +456,32 @@ void  IS_Connect( int argc, char** argv )
     std::string prfx = "PARTICLE_SERVER_PREFIX";
 
 
-#ifndef CPU_VER
-    int rank = MPI::COMM_WORLD.Get_rank();
-#else
+//#ifndef CPU_VER
+//    int rank = MPI::COMM_WORLD.Get_rank();
+//#else
     int rank = 0;
-#endif
+//#endif
 
-    if ( param.batch == true )
+    if ( param.m_batch == true )
     {
-        //デーモンツールでは param.batch == false
+        //デーモンツールでは param.m_batch == false
     } // end of batch mode
+
     else  //=================== client-server mode ===================
     {
 
         char* buf;
         int bsz = 0;
         JobDispatcher jd;
-#ifndef CPU_VER
-        JobCollector  jc( &jd );
-#endif
+//#ifndef CPU_VER
+//        JobCollector  jc( &jd );
+//#endif
         int st, vl, wid = 0;
 
         int c_bins_size = 0;
         int o_bins_size = 0;
-        kvs::UInt64* tmp_c_bins;
-        kvs::UInt64* tmp_o_bins;
+        vismodule::UInt64* tmp_c_bins;
+        vismodule::UInt64* tmp_o_bins;
 
         if ( rank > 0 )
         {
@@ -481,11 +492,6 @@ void  IS_Connect( int argc, char** argv )
             //--------------------- MASTER --------------------
             int ptss;
 
-#if 0
-//jupiter start
-            std::string jupiter_prefix;
-//jupiter end
-#else
             // 20181226 start
             // 環境変数からパスを指定する
             // 粒子データ：$PARTICLE_DIR　粒子データの接頭辞はInSituLib内で固定のため、t_で固定する
@@ -563,7 +569,6 @@ void  IS_Connect( int argc, char** argv )
             // 20181226 end
             std::string statePath = visParamDir + "state.txt";
             std::string historyPath = visParamDir + "history";
-#endif
 
             assert( jpv::ParticleTransferUtils::isLittleEndian() );
 
@@ -576,7 +581,7 @@ void  IS_Connect( int argc, char** argv )
             //(6)ソケット切断 close()
             jpv::ParticleTransferServer pts;
             //ソケット通信手順(1)~(3)
-            ptss = pts.initializeServer( param.port );//デフォルトparam.port:60000
+            ptss = pts.initializeServer( param.m_port );//デフォルトparam.port:60000
 
 
             timer.stop();
@@ -586,9 +591,9 @@ void  IS_Connect( int argc, char** argv )
             if ( ptss == -1 )
             {
                 bsz = -1;
-#ifndef CPU_VER
-                MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
-#endif
+//#ifndef CPU_VER
+//                MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
+//#endif
             }
             else //start init process 初期化処理開始
             {
@@ -603,8 +608,8 @@ void  IS_Connect( int argc, char** argv )
 
                 pts.good();
 
-                servMes.m_camera = new kvs::Camera();
-                clntMes.m_camera = new kvs::Camera();
+                servMes.m_camera = new vismodule::Camera();
+                clntMes.m_camera = new vismodule::Camera();
                 //ソケット通信手順(5)
                 //受信したデータをclntMesが読み取る
                 int ptss = 0;
@@ -615,97 +620,35 @@ void  IS_Connect( int argc, char** argv )
                 //jupiter_old.tfを反映するため無視する
 //jupiter start
 //              param.input_data_base = clntMes.m_input_directory;
-                param.input_data_base = "dummy";
+                param.m_input_data_base = "dummy";
 
                 std::cout<<"main.cpp:L221"<<std::endl;
                 //clntMes.show();
 //jupiter end
-
-/* 2018 kawamura comment out
-                std::string pflfile, pfifile;
-                if ( param.input_data_base.substr( param.input_data_base.size() - 3 ) == "pfl" )
-                {
-                    pflfile = param.input_data_base;
-                    kvs::File pfl( pflfile );
-                    if ( pfl.isExisted() )
-                    {
-                        fil.LoadPFL( pflfile );
-                    }
-                }
-                else
-                {
-                    pfifile = param.input_data_base + ".pfi";
-                    kvs::File pfi( pfifile );
-                    pflfile = param.input_data_base + ".pfl";
-                    kvs::File pfl( pflfile );
-                    if ( pfl.isExisted() )
-                    {
-                        fil.LoadPFL( pflfile );
-                    }
-                    else if ( pfi.isExisted() )
-                    {
-                        fil.LoadPFL( pfifile );
-                    }
-                }
-
-                if ( fil.m_list.size() > 0 )
-                {
-                    point_creator_lst.clear();
-                    for ( int idx = 0; idx < fil.m_list.size(); idx++ )
-                    {
-                        PointObjectCreator point_creator;
-                        if ( param.GT5D == true ) point_creator.setGT5D();
-                        point_creator.setFilterInfo( fil.m_list[idx] );
-                        point_creator_lst.push_back( point_creator );
-                    }
-
-                    transfunc_creator.setFilterInfo( fil.m_list[0] );
-
-                    std::cout << " start step = "         << fil.total_staSteps
-                              << " end step = "           << fil.total_endSteps
-                              << " time step = "          << fil.total_numSteps
-                              << " subvolume division = " << fil.total_numSubVolumes
-                              << std::endl;
-
-                }
-*/
-//              else
-//              {
-//                  std::cerr << "Error: pfifile (" << pfifile << ") nor pflfile ("
-//                            << pflfile << ") doesn't exist" << std::endl;
-//                  bsz = -1;
-//#ifndef CPU_VER
-//                  MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
-//                  MPI::Finalize();
-//#endif
-//                  return 0;
-//              }
-
-/* 2018 kawamura comment out
-                transfunc_creator.setProtocol( clntMes );
-                TransferFunctionSynthesizer* tfs = transfunc_creator.create();
-              //VariableRange range = RangeEstimater::Estimation( 0, fil.m_list[0], *tfs );
-                delete tfs;
-*/
                 VariableRange range;
 
                 strncpy( servMes.m_header, "JPTP /1.0 000 OK\r\n", 18 );
                 servMes.m_number_particle = 0;
                         servMes.m_number_glyph = 0;
                 servMes.m_transfer_function_count = 0;
-                servMes.m_number_volume_divide = fil.total_numSubVolumes;
-                servMes.m_time_step = fil.total_staSteps;
-                servMes.m_start_step = fil.total_staSteps;
-                servMes.m_last_step = fil.total_endSteps;
-                servMes.m_number_step = fil.total_numSteps;
+                servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
+                servMes.m_time_step = mvpl.m_total_start_steps;
+                servMes.m_start_step = mvpl.m_total_start_steps;
+                servMes.m_last_step = mvpl.m_total_last_step;
+                servMes.m_number_step = mvpl.m_total_last_step;
+                //servMes.m_number_volume_divide = mvpl.m_total_numSubVolumes;
+                //servMes.m_time_step = mvpl.m_total_staSteps;
+                //servMes.m_start_step = mvpl.m_total_staSteps;
+                //servMes.m_last_step = mvpl.m_total_endSteps;
+                //servMes.m_number_step = mvpl.m_total_numSteps;
 //jupiter start
 #if 0
-                servMes.minObjectCoord[0] = fil.total_minObjectCoord[0];
-                servMes.minObjectCoord[1] = fil.total_minObjectCoord[1];
-                servMes.minObjectCoord[2] = fil.total_minObjectCoord[2];
-                servMes.maxObjectCoord[0] = fil.total_maxObjectCoord[0];
-                servMes.maxObjectCoord[1] = fil.total_maxObjectCoord[1];
-                servMes.maxObjectCoord[2] = fil.total_maxObjectCoord[2];
+                servMes.minObjectCoord[0] = mvpl.total_minObjectCoord[0];
+                servMes.minObjectCoord[1] = mvpl.total_minObjectCoord[1];
+                servMes.minObjectCoord[2] = mvpl.total_minObjectCoord[2];
+                servMes.maxObjectCoord[0] = mvpl.total_maxObjectCoord[0];
+                servMes.maxObjectCoord[1] = mvpl.total_maxObjectCoord[1];
+                servMes.maxObjectCoord[2] = mvpl.total_maxObjectCoord[2];
 #else
 
 #if 0
@@ -722,7 +665,7 @@ void  IS_Connect( int argc, char** argv )
                 // 20181226 end
 #endif
                 filename.append( "_pfi_coords_minmax.txt" );
-                kvs::File f( filename.c_str()  );
+                vismodule::File f( filename.c_str()  );
                 if ( f.isExisted() )
                 {
                     // ファイルがある
@@ -748,6 +691,7 @@ void  IS_Connect( int argc, char** argv )
                 }
 
 #endif
+
 //jupiter end
 
 //// read minmax & histrogram 
@@ -771,8 +715,8 @@ void  IS_Connect( int argc, char** argv )
 
                 const int tf_number = pm.particleHistoryFile().colorHistogramArray().size();
                 servMes.m_transfer_function_count =       tf_number;//TF_COUNT
-                servMes.m_color_nbins   = new kvs::UInt64[tf_number];
-                servMes.m_opacity_nbins = new kvs::UInt64[tf_number];
+                servMes.m_color_nbins   = new vismodule::UInt64[tf_number];
+                servMes.m_opacity_nbins = new vismodule::UInt64[tf_number];
 
                 servMes.m_color_bins.resize(   tf_number );
                 servMes.m_opacity_bins.resize( tf_number );
@@ -781,8 +725,8 @@ void  IS_Connect( int argc, char** argv )
                 {
                     servMes.m_color_nbins[tf] = DEFAULT_NBINS;
                     servMes.m_opacity_nbins[tf] = DEFAULT_NBINS;
-                    servMes.m_color_bins[tf]   =  new kvs::UInt64[ servMes.m_color_nbins[tf] ];
-                    servMes.m_opacity_bins[tf] =  new kvs::UInt64[ servMes.m_opacity_nbins[tf] ];
+                    servMes.m_color_bins[tf]   =  new vismodule::UInt64[ servMes.m_color_nbins[tf] ];
+                    servMes.m_opacity_bins[tf] =  new vismodule::UInt64[ servMes.m_opacity_nbins[tf] ];
                     for ( int res = 0; res < servMes.m_color_nbins[tf]; res++ )
                     {
                         servMes.m_color_bins[tf][res] = 0;
@@ -812,10 +756,10 @@ void  IS_Connect( int argc, char** argv )
                     }
                 }
 
-                servMes.m_min_value = fil.total_minValue;
-                servMes.m_max_value = fil.total_maxValue;
-                servMes.m_number_nodes = fil.total_numNodes;
-                servMes.m_number_elements = fil.total_numElements;
+                servMes.m_min_value = mvpl.m_total_min_value;
+                servMes.m_max_value = mvpl.m_total_max_value;
+                servMes.m_number_nodes = mvpl.m_total_number_nodes;
+                servMes.m_number_elements = mvpl.m_total_number_elements;
                 servMes.m_number_ingredients = pm.particleHistoryFile().nVariables();
                 servMes.m_server_side_variable_range = range;
                 servMes.m_flag_send_bins = 1;
@@ -845,7 +789,7 @@ void  IS_Connect( int argc, char** argv )
                 std::cout<<"main.cpp:571"<<std::endl;
                 servMes.show();
 
-                servMes.m_server_status =0;
+//                servMes.m_server_status =0;
                 servMes.m_message_size = servMes.byteSize();
                 pts.sendMessage( servMes );
                 delete servMes.m_camera;
@@ -854,8 +798,8 @@ void  IS_Connect( int argc, char** argv )
 
             jpv::ParticleTransferServerMessage servMes;
             jpv::ParticleTransferClientMessage clntMes;
-            clntMes.m_camera = new kvs::Camera();
-            servMes.m_camera = new kvs::Camera();
+            clntMes.m_camera = new vismodule::Camera();
+            servMes.m_camera = new vismodule::Camera();
             servMes.m_server_status =0;
             // 20181226 start
             // stateおよびhistory用に、環境変数から指定されたパスをもとにファイルパスを作成
@@ -877,9 +821,9 @@ void  IS_Connect( int argc, char** argv )
 
                 if ( ptss == -1 ) break;
                 /* 140319 for client stop by Ctrl+c */
-                signal( SIGABRT, sig_handler );
-                signal( SIGTERM, sig_handler );
-                signal( SIGINT, sig_handler ); /* SIGINT is invalid here, because mpiexec uses it. */
+                signal( SIGABRT, SignalHandler );
+                signal( SIGTERM, SignalHandler );
+                signal( SIGINT, SignalHandler ); /* SIGINT is invalid here, because mpiexec uses it. */
 
                 if ( SigServer )
                 {
@@ -891,7 +835,7 @@ void  IS_Connect( int argc, char** argv )
                     /* 140319 for client stop by Ctrl+c */
                     if ( clntMes.m_initialize_parameter != jpv::InitializeParameter::initial_step )
                     {
-                        clntMes.m_input_directory = param.input_data_base;
+                        clntMes.m_input_directory = param.m_input_data_base;
                     }
                 }
 
@@ -949,18 +893,18 @@ void  IS_Connect( int argc, char** argv )
                         VIS_MODULE_TIMER_STA( 461 );
                     }
 
-                    // send cltMes to all worker process >>
-                    bsz = clntMes.byteSize();
-#ifndef CPU_VER
-                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-                    buf = new char[bsz];
-                    clntMes.pack( buf );
-#ifndef CPU_VER
-                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
-#endif
-                    delete[] buf;
-                    // send cltMes to all worker process <<
+//                    // send cltMes to all worker process >>
+//                    bsz = clntMes.byteSize();
+//#ifndef CPU_VER
+//                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+//#endif
+//                    buf = new char[bsz];
+//                    clntMes.pack( buf );
+//#ifndef CPU_VER
+//                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+//#endif
+//                    delete[] buf;
+//                    // send cltMes to all worker process <<
 
                     std::cout << "initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
                     if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
@@ -1036,12 +980,12 @@ void  IS_Connect( int argc, char** argv )
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         servMes.m_number_glyph = 0;
-                        param.sampling_method = clntMes.m_sampling_method;
-                        param.component_Id = clntMes.m_rendering_id;
-                        param.crop.set_enable( clntMes.m_enable_crop_region );
-                        param.crop.set( clntMes.m_crop_region );
-                        param.particle_limit = clntMes.m_particle_limit;
-                        param.particle_density = clntMes.m_particle_density;
+                        param.m_sampling_method = clntMes.m_sampling_method;
+                        param.m_component_Id = clntMes.m_rendering_id;
+                        param.m_crop.setEnable( clntMes.m_enable_crop_region );
+                        param.m_crop.set( clntMes.m_crop_region );
+                        param.m_particle_limit = clntMes.m_particle_limit;
+                        param.m_particle_density = clntMes.m_particle_density;
 
                         if ( clntMes.m_node_type == 'a' )
                         {
@@ -1056,26 +1000,26 @@ void  IS_Connect( int argc, char** argv )
                             assert( false );
                         }
 
-                        if ( !param.hasOption( "L" ) ) param.latency_threshold = -1.0;
+                        if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                         
-                        fil.total_numSubVolumes=1;
-                        if ( param.crop.isenabled() )
+                        mvpl.m_total_number_subvolumes=1;
+                        if ( param.m_crop.isEnabled() )
                         {
-                            jd.Initialize( clntMes.m_step, clntMes.m_step, fil.total_numSubVolumes,
-                                           fil.total_minSubVolumeCoord,
-                                           fil.total_maxSubVolumeCoord,
-                                           param.latency_threshold, param.jid_pack_size,
-                                           param.crop.get_min_coord(),
-                                           param.crop.get_max_coord() );
-                            servMes.m_number_volume_divide = jd.GetCountVolumes();
+                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                           mvpl.m_total_min_subvolume_coord,
+                                           mvpl.m_total_max_subvolume_coord,
+                                           param.m_latency_threshold, param.m_job_id_pack_size,
+                                           param.m_crop.getMinCoord(),
+                                           param.m_crop.getMaxCoord() );
+                            servMes.m_number_volume_divide = jd.getCountVolumes();
                         }
                         else
                         {
-                            jd.Initialize( clntMes.m_step, clntMes.m_step, fil.total_numSubVolumes,
-                                           fil.total_minSubVolumeCoord,
-                                           fil.total_maxSubVolumeCoord,
-                                           param.latency_threshold, param.jid_pack_size );
-                            servMes.m_number_volume_divide = fil.total_numSubVolumes;
+                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                           mvpl.m_total_min_subvolume_coord,
+                                           mvpl.m_total_max_subvolume_coord,
+                                           param.m_latency_threshold, param.m_job_id_pack_size );
+                            servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
                         }
 
                         if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
@@ -1083,7 +1027,7 @@ void  IS_Connect( int argc, char** argv )
                             VIS_MODULE_TIMER_STA( 470 );
                         }
 
-                        param.sampling_step = CalculateSamplingStep( fil );
+                        param.m_sampling_step = CalculateSamplingStep( mvpl );
 //                      param.subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
 
                         VariableRange vr;
@@ -1114,13 +1058,14 @@ void  IS_Connect( int argc, char** argv )
                         //clntMes.show();
 
                         pts.sendMessage( servMes );
+                        std::cout<< __LINE__ << __FUNCTION__ <<std::endl;
 
 
                         timer.start();
 
                         servMes.m_transfer_function_count = clntMes.m_transfer_function.size();//TF_COUNT
-                        servMes.m_color_nbins = new kvs::UInt64[clntMes.m_transfer_function.size()];
-                        servMes.m_opacity_nbins = new kvs::UInt64[clntMes.m_transfer_function.size()];
+                        servMes.m_color_nbins = new vismodule::UInt64[clntMes.m_transfer_function.size()];
+                        servMes.m_opacity_nbins = new vismodule::UInt64[clntMes.m_transfer_function.size()];
 
                         servMes.m_color_bins.resize( clntMes.m_transfer_function.size() );
                         servMes.m_opacity_bins.resize( clntMes.m_transfer_function.size() );
@@ -1132,8 +1077,8 @@ void  IS_Connect( int argc, char** argv )
                         {
                             servMes.m_color_nbins[tf] = DEFAULT_NBINS;
                             servMes.m_opacity_nbins[tf] = DEFAULT_NBINS;
-                            servMes.m_color_bins[tf] =  new kvs::UInt64[ servMes.m_color_nbins[tf] ];
-                            servMes.m_opacity_bins[tf] =  new kvs::UInt64[ servMes.m_opacity_nbins[tf] ];
+                            servMes.m_color_bins[tf] =  new vismodule::UInt64[ servMes.m_color_nbins[tf] ];
+                            servMes.m_opacity_bins[tf] =  new vismodule::UInt64[ servMes.m_opacity_nbins[tf] ];
                             c_bins_size += servMes.m_color_nbins[tf];
                             o_bins_size += servMes.m_opacity_nbins[tf];
                             for ( int res = 0; res < servMes.m_color_nbins[tf]; res++ )
@@ -1146,8 +1091,9 @@ void  IS_Connect( int argc, char** argv )
                             }
                         }
 
-                        tmp_c_bins = new kvs::UInt64[c_bins_size];
-                        tmp_o_bins = new kvs::UInt64[o_bins_size];
+                        std::cout<< __LINE__ << __FUNCTION__ <<std::endl;
+                        tmp_c_bins = new vismodule::UInt64[c_bins_size];
+                        tmp_o_bins = new vismodule::UInt64[o_bins_size];
 
                         for ( int tf = 0; tf < c_bins_size; tf++ )
                         {
@@ -1160,7 +1106,7 @@ void  IS_Connect( int argc, char** argv )
                         }
 
 
-                        while ( jd.DispatchNext( wid, &st, &vl ) )
+                        while ( jd.dispatchNext( wid, &st, &vl ) )
                         {
                             if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
@@ -1186,7 +1132,7 @@ void  IS_Connect( int argc, char** argv )
                             }
                             // 20181226 end
 
-                            pbvr::PointObject* originalObject = new pbvr::PointObject;
+                            vismodule::PointObject* originalObject = new vismodule::PointObject;
 //                          ParticleMonitor pm( "/Users/admin/Work_noda/2015_PBVR/03_testrun/v1.08_test/pout/case","" );
                             TimerStart( 2 );
                             // 20181226 start　環境変数で指定したパスを使用
@@ -1194,7 +1140,7 @@ void  IS_Connect( int argc, char** argv )
                             std::string filename( particlePath );
                             // 20181226 end
                             filename.append( "_pfi_coords_minmax.txt" );
-                            kvs::File f( filename.c_str()  );
+                            vismodule::File f( filename.c_str()  );
 
                             if ( f.isExisted() )
                             {
@@ -1215,9 +1161,9 @@ void  IS_Connect( int argc, char** argv )
                                 servMes.m_min_object_coord[0]=0.f;
                                 servMes.m_min_object_coord[1]=0.f;
                                 servMes.m_min_object_coord[2]=0.f;
-                                servMes.m_max_object_coord[0]=0.f;
-                                servMes.m_max_object_coord[1]=0.f;
-                                servMes.m_max_object_coord[2]=0.f;
+                                servMes.m_max_object_coord[0]=0.1;
+                                servMes.m_max_object_coord[1]=0.1;
+                                servMes.m_max_object_coord[2]=0.1;
                             }
 
                             TimerStop( 2 );
@@ -1273,6 +1219,7 @@ void  IS_Connect( int argc, char** argv )
                                 servMes.m_normals   = NULL;
                                 servMes.m_colors    = NULL;
                             }
+                        std::cout<< __LINE__ << __FUNCTION__ <<std::endl;
                             for ( int i = 0; i < servMes.m_number_particle; ++i )
                             {
                                 servMes.m_positions[3 * i + 0] = originalObject->coords()[3 * i + 0];
@@ -1324,27 +1271,27 @@ void  IS_Connect( int argc, char** argv )
 //                          TimerFinish( servMes.m_time_step );
 //jupiter
                         } // end of while(DispatchNext)
-#ifndef CPU_VER
-                        MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-                        MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-
-                        int c_count = 0;
-                        int o_count = 0;
-                        for ( int tf = 0; tf < servMes.m_transfer_function_count ; tf++ )
-                        {
-                            for ( int res = 0; res < servMes.m_color_nbins[tf]; res++ )
-                            {
-                                servMes.m_color_bins[tf][res] = tmp_c_bins[c_count];
-                                c_count++;
-                            }
-
-                            for ( int res = 0; res < servMes.m_opacity_nbins[tf]; res++ )
-                            {
-                                servMes.m_opacity_bins[tf][res] = tmp_o_bins[o_count];
-                                o_count++;
-                            }
-                        }
-#endif
+//#ifndef CPU_VER
+//                        MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
+//                        MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
+//
+//                        int c_count = 0;
+//                        int o_count = 0;
+//                        for ( int tf = 0; tf < servMes.m_transfer_function_count ; tf++ )
+//                        {
+//                            for ( int res = 0; res < servMes.m_color_nbins[tf]; res++ )
+//                            {
+//                                servMes.m_color_bins[tf][res] = tmp_c_bins[c_count];
+//                                c_count++;
+//                            }
+//
+//                            for ( int res = 0; res < servMes.m_opacity_nbins[tf]; res++ )
+//                            {
+//                                servMes.m_opacity_bins[tf][res] = tmp_o_bins[o_count];
+//                                o_count++;
+//                            }
+//                        }
+//#endif
                         servMes.m_flag_send_bins = 1;
 //                      servMes.m_subpixel_level = param.subpixel_level;
                         servMes.m_message_size = servMes.byteSize();
@@ -1409,16 +1356,16 @@ void  IS_Connect( int argc, char** argv )
                     }
 
                     // send cltMes to all worker process >>
-                    bsz = clntMes.byteSize();
-#ifndef CPU_VER
-                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-                    buf = new char[bsz];
-                    clntMes.pack( buf );
-#ifndef CPU_VER
-                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
-#endif
-                    delete[] buf;
+//                    bsz = clntMes.byteSize();
+//#ifndef CPU_VER
+//                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+//#endif
+//                    buf = new char[bsz];
+//                    clntMes.pack( buf );
+//#ifndef CPU_VER
+//                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+//#endif
+//                    delete[] buf;
                     // send cltMes to all worker process <<
 
                     std::cout << "initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
@@ -1493,12 +1440,12 @@ void  IS_Connect( int argc, char** argv )
                         servMes.m_message_size = servMes.byteSize();
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_repeat_level = clntMes.m_repeat_level;
-                        param.sampling_method = clntMes.m_sampling_method;
-                        param.component_Id = clntMes.m_rendering_id;
-                        param.crop.set_enable( clntMes.m_enable_crop_region );
-                        param.crop.set( clntMes.m_crop_region );
-                        param.particle_limit = clntMes.m_particle_limit;
-                        param.particle_density = clntMes.m_particle_density;
+                        param.m_sampling_method = clntMes.m_sampling_method;
+                        param.m_component_Id = clntMes.m_rendering_id;
+                        param.m_crop.setEnable( clntMes.m_enable_crop_region );
+                        param.m_crop.set( clntMes.m_crop_region );
+                        param.m_particle_limit = clntMes.m_particle_limit;
+                        param.m_particle_density = clntMes.m_particle_density;
 
                         if ( clntMes.m_node_type == 'a' )
                         {
@@ -1513,27 +1460,27 @@ void  IS_Connect( int argc, char** argv )
                             assert( false );
                         }
 
-                        if ( !param.hasOption( "L" ) ) param.latency_threshold = -1.0;
+                        if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                        
                         pm.findGlyphFile();
-                        fil.total_numSubVolumes=1;
-                        if ( param.crop.isenabled() )
+                        mvpl.m_total_number_subvolumes=1;
+                        if ( param.m_crop.isEnabled() )
                         {
-                            jd.Initialize( clntMes.m_step, clntMes.m_step, fil.total_numSubVolumes,
-                                           fil.total_minSubVolumeCoord,
-                                           fil.total_maxSubVolumeCoord,
-                                           param.latency_threshold, param.jid_pack_size,
-                                           param.crop.get_min_coord(),
-                                           param.crop.get_max_coord() );
-                            servMes.m_number_volume_divide = jd.GetCountVolumes();
+                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                           mvpl.m_total_min_subvolume_coord,
+                                           mvpl.m_total_max_subvolume_coord,
+                                           param.m_latency_threshold, param.m_job_id_pack_size,
+                                           param.m_crop.getMinCoord(),
+                                           param.m_crop.getMaxCoord() );
+                            servMes.m_number_volume_divide = jd.getCountVolumes();
                         }
                         else
                         {
-                            jd.Initialize( clntMes.m_step, clntMes.m_step, fil.total_numSubVolumes,
-                                           fil.total_minSubVolumeCoord,
-                                           fil.total_maxSubVolumeCoord,
-                                           param.latency_threshold, param.jid_pack_size );
-                            servMes.m_number_volume_divide = fil.total_numSubVolumes;
+                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                           mvpl.m_total_min_subvolume_coord,
+                                           mvpl.m_total_max_subvolume_coord,
+                                           param.m_latency_threshold, param.m_job_id_pack_size );
+                            servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
                         }
 
                         if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
@@ -1541,7 +1488,7 @@ void  IS_Connect( int argc, char** argv )
                             VIS_MODULE_TIMER_STA( 470 );
                         }
 
-                        param.sampling_step = CalculateSamplingStep( fil );
+                        param.m_sampling_step = CalculateSamplingStep( mvpl );
 
                         VariableRange vr;
 
@@ -1573,8 +1520,8 @@ void  IS_Connect( int argc, char** argv )
                         pts.sendMessage( servMes );
 
                         timer.start();
-
-                        while ( jd.DispatchNext( wid, &st, &vl ) )
+               
+                        while ( jd.dispatchNext( wid, &st, &vl ) )
                         {
                             if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
@@ -1599,14 +1546,15 @@ void  IS_Connect( int argc, char** argv )
                                 ppw.writeParameterFile( glyphParameterPath.c_str() );
                                 // 20181226 end
                             }
-                            pbvr::PointObject* originalObject = new pbvr::PointObject;
-                            kvs::KVSMLObjectGlyph* originalGlyph = new kvs::KVSMLObjectGlyph;
+                            vismodule::PointObject* originalObject = new vismodule::PointObject;
+                            vismodule::KVSMLObjectGlyph* originalGlyph = new vismodule::KVSMLObjectGlyph;
                             TimerStart( 2 );
                             // 20181226 start　環境変数で指定したパスを使用
-                            std::string filename( glyphFilePath );
+//                            std::string filename( glyphFilePath );
+                            std::string filename( particlePath );
                             // 20181226 end
                             filename.append( "_pfi_coords_minmax.txt" );
-                            kvs::File f( filename.c_str()  );
+                            vismodule::File f( filename.c_str()  );
 
                             if ( f.isExisted() )
                             {
@@ -1627,10 +1575,11 @@ void  IS_Connect( int argc, char** argv )
                                 servMes.m_min_object_coord[0]=0.f;
                                 servMes.m_min_object_coord[1]=0.f;
                                 servMes.m_min_object_coord[2]=0.f;
-                                servMes.m_max_object_coord[0]=0.f;
-                                servMes.m_max_object_coord[1]=0.f;
-                                servMes.m_max_object_coord[2]=0.f;
+                                servMes.m_max_object_coord[0]=0.1;
+                                servMes.m_max_object_coord[1]=0.1;
+                                servMes.m_max_object_coord[2]=0.1;
                             }
+
 
 
                             TimerStop( 2 );
@@ -1719,6 +1668,7 @@ void  IS_Connect( int argc, char** argv )
                         }
                         TimerStop( 10 );
                         TimerFinish( servMes.m_time_step );
+
                     } // end of timeParam == 2
                     else
                     {
@@ -1748,21 +1698,21 @@ void  IS_Connect( int argc, char** argv )
                         timer_count++;
                     if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                     {
-                       VIS_MODULE_ TIMER_STA( 461 );
+                       VIS_MODULE_TIMER_STA( 461 );
                     }
 
-                    // send cltMes to all worker process >>
-                    bsz = clntMes.byteSize();
-#ifndef CPU_VER
-                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-                    buf = new char[bsz];
-                    clntMes.pack( buf );
-#ifndef CPU_VER
-                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
-#endif
-                    delete[] buf;
-                    // send cltMes to all worker process <<
+//                    // send cltMes to all worker process >>
+//                    bsz = clntMes.byteSize();
+//#ifndef CPU_VER
+//                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+//#endif
+//                    buf = new char[bsz];
+//                    clntMes.pack( buf );
+//#ifndef CPU_VER
+//                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+//#endif
+//                    delete[] buf;
+//                    // send cltMes to all worker process <<
 
                     std::cout << "initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
                     if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
@@ -1836,12 +1786,12 @@ void  IS_Connect( int argc, char** argv )
                         servMes.m_message_size = servMes.byteSize();
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_repeat_level = clntMes.m_repeat_level;
-                        param.sampling_method = clntMes.m_sampling_method;
-                        param.component_Id = clntMes.m_rendering_id;
-                        param.crop.set_enable( clntMes.m_enable_crop_region );
-                        param.crop.set( clntMes.m_crop_region );
-                        param.particle_limit = clntMes.m_particle_limit;
-                        param.particle_density = clntMes.m_particle_density;
+                        param.m_sampling_method = clntMes.m_sampling_method;
+                        param.m_component_Id = clntMes.m_rendering_id;
+                        param.m_crop.setEnable( clntMes.m_enable_crop_region );
+                        param.m_crop.set( clntMes.m_crop_region );
+                        param.m_particle_limit = clntMes.m_particle_limit;
+                        param.m_particle_density = clntMes.m_particle_density;
 
                         if ( clntMes.m_node_type == 'a' )
                         {
@@ -1856,26 +1806,26 @@ void  IS_Connect( int argc, char** argv )
                             assert( false );
                         }
 
-                        if ( !param.hasOption( "L" ) ) param.latency_threshold = -1.0;
+                        if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                        
-                        fil.total_numSubVolumes=1;
-                        if ( param.crop.isenabled() )
+                        mvpl.m_total_number_subvolumes=1;
+                        if ( param.m_crop.isEnabled() )
                         {
-                            jd.Initialize( clntMes.m_step, clntMes.m_step, fil.total_numSubVolumes,
-                                           fil.total_minSubVolumeCoord,
-                                           fil.total_maxSubVolumeCoord,
-                                           param.latency_threshold, param.jid_pack_size,
-                                           param.crop.get_min_coord(),
-                                           param.crop.get_max_coord() );
-                            servMes.m_number_volume_divide = jd.GetCountVolumes();
+                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                           mvpl.m_total_min_subvolume_coord,
+                                           mvpl.m_total_max_subvolume_coord,
+                                           param.m_latency_threshold, param.m_job_id_pack_size,
+                                           param.m_crop.getMinCoord(),
+                                           param.m_crop.getMaxCoord() );
+                            servMes.m_number_volume_divide = jd.getCountVolumes();
                         }
                         else
                         {
-                            jd.Initialize( clntMes.m_step, clntMes.m_step, fil.total_numSubVolumes,
-                                           fil.total_minSubVolumeCoord,
-                                           fil.total_maxSubVolumeCoord,
-                                           param.latency_threshold, param.jid_pack_size );
-                            servMes.m_number_volume_divide = fil.total_numSubVolumes;
+                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                           mvpl.m_total_min_subvolume_coord,
+                                           mvpl.m_total_max_subvolume_coord,
+                                           param.m_latency_threshold, param.m_job_id_pack_size );
+                            servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
                         }
 
                         if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
@@ -1883,7 +1833,7 @@ void  IS_Connect( int argc, char** argv )
                             VIS_MODULE_TIMER_STA( 470 );
                         }
 
-                        param.sampling_step = CalculateSamplingStep( fil );
+                        param.m_sampling_step = CalculateSamplingStep( mvpl );
 
                         VariableRange vr;
 
@@ -1915,8 +1865,9 @@ void  IS_Connect( int argc, char** argv )
 
 
                         timer.start();
+                        std::cout << __LINE__ << __FUNCTION__ << std::endl;
 
-                        while ( jd.DispatchNext( wid, &st, &vl ) )
+                        while ( jd.dispatchNext( wid, &st, &vl ) )
                         {
                             if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
@@ -1942,13 +1893,14 @@ void  IS_Connect( int argc, char** argv )
                             }
 
 
-                            kvs::KVSMLObjectPlotOverLine* originalObject = new kvs::KVSMLObjectPlotOverLine;
+                            vismodule::KVSMLObjectPlotOverLine* originalObject = new vismodule::KVSMLObjectPlotOverLine;
                             TimerStart( 2 );
                             // 20181226 start　環境変数で指定したパスを使用
-                            std::string filename( plotOverLineFilePath );
+//                            std::string filename( plotOverLineFilePath );
+                            std::string filename( particlePath );
                             // 20181226 end
                             filename.append( "_pfi_coords_minmax.txt" );
-                            kvs::File f( filename.c_str()  );
+                            vismodule::File f( filename.c_str()  );
 
                             if ( f.isExisted() )
                             {
@@ -1969,9 +1921,9 @@ void  IS_Connect( int argc, char** argv )
                                 servMes.m_min_object_coord[0]=0.f;
                                 servMes.m_min_object_coord[1]=0.f;
                                 servMes.m_min_object_coord[2]=0.f;
-                                servMes.m_max_object_coord[0]=0.f;
-                                servMes.m_max_object_coord[1]=0.f;
-                                servMes.m_max_object_coord[2]=0.f;
+                                servMes.m_max_object_coord[0]=0.1;
+                                servMes.m_max_object_coord[1]=0.1;
+                                servMes.m_max_object_coord[2]=0.1;
                             }
 
                             TimerStop( 2 );
@@ -2059,6 +2011,7 @@ void  IS_Connect( int argc, char** argv )
                         VIS_MODULE_TIMER_END( 1 );
                         VIS_MODULE_TIMER_FIN();
                     }
+                    
 
                 }  // end loop of plot over line
 
@@ -2067,22 +2020,23 @@ void  IS_Connect( int argc, char** argv )
             delete servMes.m_camera;
             delete clntMes.m_camera;
 
-            bsz = -1;
-#ifndef CPU_VER
-            MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
-#endif
+//            bsz = -1;
+//#ifndef CPU_VER
+//            MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
+//#endif
 
             pts.termServer();
         }
     }
-    if ( param.batch == true )
+    if ( param.m_batch == true )
     {
         VIS_MODULE_TIMER_END( 1 );
         VIS_MODULE_TIMER_FIN();
     }
-#ifndef CPU_VER
-    MPI::Finalize();
-#endif
-    return retval;
-#endif
+//#ifndef CPU_VER
+//    MPI::Finalize();
+//#endif
+//    return retval;
+//#endif
+return ;
 }

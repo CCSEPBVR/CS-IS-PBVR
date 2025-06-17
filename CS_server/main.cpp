@@ -113,6 +113,7 @@ int main( int argc, char** argv )
     MPI_Comm_rank( MPI_COMM_WORLD, &rank );
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
 #else
+    int rank = 0;
 	int mpi_size = 1;
 #endif
             jpv::ParticleTransferServerMessage servMes;
@@ -167,12 +168,13 @@ else //rank == 0以外の処理
 }
 #endif
 //debug 
-clntMes.m_server_mode = jpv::ServerMode::CS; 
+//clntMes.m_server_mode = jpv::ServerMode::CS; 
+clntMes.m_server_mode = jpv::ServerMode::IS; 
 
 if( clntMes.m_server_mode == jpv::ServerMode::IS )
 {
-//    if (mpi_rank ==0) IS_Connect(&argc, &argv);
-//    else std::cout << "warning !!! daemon does not work in MPI !!!  only rank 0 process is working!!!"
+    if (rank ==0) IS_Connect(argc, argv);
+    else std::cout << "warning !!! daemon does not work in MPI !!!  only rank 0 process is working!!!" << std::endl;
 }
 else if( clntMes.m_server_mode == jpv::ServerMode::CS )
 {

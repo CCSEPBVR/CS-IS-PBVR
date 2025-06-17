@@ -6,7 +6,7 @@
  *
  *  Copyright (c) Visualization Laboratory, Kyoto University.
  *  All rights reserved.
- *  See http://www.viz.media.kyoto-u.ac.jp/kvs/copyright/ for details.
+ *  See http://www.viz.media.kyoto-u.ac.jp/vismodule/copyright/ for details.
  *
  *  $Id: PointImporter.cpp 634 2010-10-13 07:04:05Z naohisa.sakamoto $
  */
@@ -19,7 +19,7 @@
 #include <string>
 
 
-namespace vismodule
+namespace pbvr
 {
 
 /*==========================================================================*/
@@ -45,37 +45,38 @@ PointImporter::PointImporter( const std::string& filename )
         if( !file_format )
         {
             BaseClass::m_is_success = false;
-            visModuleMessageError("Cannot read '%s'.",filename.c_str());
+            vismoduleMessageError("Cannot read '%s'.",filename.c_str());
             return;
         }
 
         if( file_format->isFailure() )
         {
             BaseClass::m_is_success = false;
-            visModuleMessageError("Cannot read '%s'.",filename.c_str());
+            vismoduleMessageError("Cannot read '%s'.",filename.c_str());
             delete file_format;
             return;
         }
 
         if (file_format->coords().size() > 0 ) 
-        this->import( file_format );
+            this->import( file_format );
+
         delete file_format;
     }
     else
     {
         BaseClass::m_is_success = false;
-        visModuleMessageError("Cannot import '%'.",filename.c_str());
+        vismoduleMessageError("Cannot import '%'.",filename.c_str());
         return;
     }
 }
 
 /*==========================================================================*/
 /**
- *  @brief  Constructs a new PointImporter class.
+ *  @brief  CvismoduleMessageErroronstructs a new PointImporter class.
  *  @param file_format [in] pointer to the file format
  */
 /*==========================================================================*/
-PointImporter::PointImporter( const vismodule::FileFormatBase& file_format )
+PointImporter::PointImporter( const vismodule::FileFormatBase* file_format )
 {
     this->exec( file_format );
 }
@@ -96,24 +97,24 @@ PointImporter::~PointImporter( void )
  *  @return pointer to the imported point object
  */
 /*===========================================================================*/
-PointImporter::SuperClass* PointImporter::exec( const vismodule::FileFormatBase& file_format )
+PointImporter::SuperClass* PointImporter::exec( const vismodule::FileFormatBase* file_format )
 {
-    if ( !&file_format )
+    if ( !file_format )
     {
         BaseClass::m_is_success = false;
-        visModuleMessageError("Input file format is NULL.");
+        vismoduleMessageError("Input file format is NULL.");
         return( NULL );
     }
 
-    const std::string class_name = file_format.className();
+    const std::string class_name = file_format->className();
     if ( class_name == "vismodule::KVSMLObjectPoint" )
     {
-        this->import( static_cast<const vismodule::KVSMLObjectPoint*>( &file_format ) );
+        this->import( static_cast<const vismodule::KVSMLObjectPoint*>( file_format ) );
     }
     else
     {
         BaseClass::m_is_success = false;
-        visModuleMessageError("Input file format is not supported.");
+        vismoduleMessageError("Input file format is not supported.");
         return( NULL );
     }
 
@@ -123,7 +124,7 @@ PointImporter::SuperClass* PointImporter::exec( const vismodule::FileFormatBase&
 /*==========================================================================*/
 /**
  *  @brief  Imports KVSML format data.
- *  @param  kvsml [in] pointer to the KVSML format data
+ *  @param  vismoduleml [in] pointer to the KVSML format data
  */
 /*==========================================================================*/
 void PointImporter::import( const vismodule::KVSMLObjectPoint* kvsml )
