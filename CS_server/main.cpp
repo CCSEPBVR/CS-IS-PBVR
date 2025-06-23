@@ -1275,8 +1275,8 @@ int main( int argc, char** argv )
 
                     for ( int tf = 0; tf < cnt; tf++ )
                     {
-                        tmp_max[tf] = 0;
-                        tmp_min[tf] = 0;
+                        tmp_max[tf] = FLT_MAX;
+                        tmp_min[tf] = FLT_MIN;
                     }
                         
                     for ( int tf = 0; tf < c_bins_size; tf++ )
