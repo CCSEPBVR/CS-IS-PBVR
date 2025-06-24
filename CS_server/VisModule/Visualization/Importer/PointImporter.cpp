@@ -58,7 +58,9 @@ PointImporter::PointImporter( const std::string& filename )
         }
 
         if (file_format->coords().size() > 0 ) 
-        this->import( file_format );
+        {
+            this->import( file_format );
+        }
         delete file_format;
     }
     else

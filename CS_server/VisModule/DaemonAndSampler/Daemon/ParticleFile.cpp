@@ -154,6 +154,7 @@ void ParticleFile::generatePointObject( const int time_step, vismodule::PointObj
         }
     }
 
+    object -> setSize(1); 
     for ( int i = 0; i < max_threads; i++ )
     {
         vismodule::UInt32 nmemb = tmp_obj[i]->coords().size();
