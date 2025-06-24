@@ -61,6 +61,13 @@
 #include <vismodule/SignalHandler>
 #include <vismodule/Math>
 #include <vismodule/POLObjectGenerator>
+//IS
+#include <vismodule/ParticleMonitor>
+#include <vismodule/ParameterFileWriter>
+#include <vismodule/ParameterFileReader>
+#include <vismodule/SetDefaultTransferFunction>
+#include <DaemonAndSampler/Daemon/Timer.h>
+
 
 
 void generate_plot_over_line_master(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
@@ -76,5 +83,11 @@ void generate_plot_over_line_worker(Argument &param, jpv::ParticleTransferClient
                          JobCollector& jc,
 #endif
                          JobDispatcher& jd, bool& useAllNodes, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param);
+
+void generate_plot_over_line_IS(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
+                         JobDispatcher& jd,  jpv::ParticleTransferServer pts, ParticleMonitor& pm, vismodule::Timer& timer,
+                         std::string particlePath, std::string tfFilePath, std::string tfFilePath_old,
+                         bool& useAllNodes, int& timer_count , const jpv::InitializeParameter init_param );
+
 
 #endif
