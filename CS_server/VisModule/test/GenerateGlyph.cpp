@@ -575,3 +575,354 @@ void generate_glyph_worker(Argument &param, jpv::ParticleTransferClientMessage& 
                 }
                
 }
+
+void generate_glyph_IS(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
+                         JobDispatcher& jd,  jpv::ParticleTransferServer pts, ParticleMonitor& pm, vismodule::Timer& timer,
+                         std::string particlePath, std::string glyphParameterPath, std::string glyphParameterPath_old,
+                         bool& useAllNodes, int& timer_count , const jpv::InitializeParameter init_param )
+{
+	int mpi_size = 1;
+    
+    char* buf;
+    int bsz = 0;
+    int st, vl, wid = 0;
+
+
+                        timer_count++;
+                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+                    {
+                        VIS_MODULE_TIMER_STA( 461 );
+                    }
+
+                    // send cltMes to all worker process >>
+//                    bsz = clntMes.byteSize();
+//#ifndef CPU_VER
+//                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+//#endif
+//                    buf = new char[bsz];
+//                    clntMes.pack( buf );
+//#ifndef CPU_VER
+//                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+//#endif
+//                    delete[] buf;
+                    // send cltMes to all worker process <<
+
+                    std::cout << "initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+                    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
+                    {
+
+                        std::cout << "sampling method = " << clntMes.m_sampling_method << std::endl;
+                        std::cout << "subpixel level = " << clntMes.m_subpixel_level << std::endl;
+                        std::cout << "repeat level = " << clntMes.m_repeat_level << std::endl;
+                    }
+                    std::cout << "timeParam = " << clntMes.m_time_parameter << std::endl;
+
+                    if ( clntMes.m_time_parameter == 0 )
+                    {
+                        std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                    }
+                    else if ( clntMes.m_time_parameter == 1 )
+                    {
+                        std::cout << "beginTime = " << clntMes.m_begin_time << std::endl;
+                        std::cout << "endTime = " << clntMes.m_last_time << std::endl;
+                        std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                    }
+                    else if ( clntMes.m_time_parameter == 2 )
+                    {
+                        std::cout << "step = " << clntMes.m_step << std::endl;
+                    }
+                    std::cout << "transParam = " << clntMes.m_trans_parameter << std::endl;
+                    if ( clntMes.m_trans_parameter == 1 )
+                    {
+                        std::cout << "levelIndex = " << clntMes.m_level_index << std::endl;
+                    }
+                    if ( clntMes.m_time_parameter == 0 )
+                    {
+                        strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
+                        servMes.m_time_step = clntMes.m_step;
+                        servMes.m_repeat_level = clntMes.m_repeat_level;
+                        servMes.m_level_index = clntMes.m_level_index;
+                        servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
+                        servMes.m_flag_send_bins = 1;
+
+                        servMes.m_message_size = servMes.byteSize();
+
+                        std::cout<<"main.cpp:L509"<<std::endl;
+                        clntMes.show();
+
+                        pts.sendMessage( servMes );
+                    }
+                    else if ( clntMes.m_time_parameter == 1 )
+                    {
+
+                        strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
+                        servMes.m_time_step = clntMes.m_step;
+                        servMes.m_repeat_level = clntMes.m_repeat_level;
+                        servMes.m_level_index = clntMes.m_level_index;
+                        servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
+                        servMes.m_flag_send_bins = 1;
+
+                        servMes.m_message_size = servMes.byteSize();
+
+                        std::cout<<"main.cpp:L526"<<std::endl;
+                        clntMes.show();
+
+                        pts.sendMessage( servMes );
+                    }
+                    else if ( clntMes.m_time_parameter == 2 )
+                    {
+                        TimerInitialize();
+                        TimerStart( 10 );
+                        strncpy( servMes.m_header, "JPTP /1.0 100 OK\r\n", 18 );
+                        servMes.m_message_size = servMes.byteSize();
+                        servMes.m_level_index = clntMes.m_level_index;
+                        servMes.m_repeat_level = clntMes.m_repeat_level;
+                        param.m_sampling_method = clntMes.m_sampling_method;
+                        param.m_component_Id = clntMes.m_rendering_id;
+                        param.m_crop.setEnable( clntMes.m_enable_crop_region );
+                        param.m_crop.set( clntMes.m_crop_region );
+                        param.m_particle_limit = clntMes.m_particle_limit;
+                        param.m_particle_density = clntMes.m_particle_density;
+
+                        if ( clntMes.m_node_type == 'a' )
+                        {
+                            useAllNodes = true;
+                        }
+                        else if ( clntMes.m_node_type == 's' )
+                        {
+                            useAllNodes = false;
+                        }
+                        else
+                        {
+                            assert( false );
+                        }
+
+                        if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+                       
+                        pm.findGlyphFile();
+                        mvpl.m_total_number_subvolumes=1;
+                        if ( param.m_crop.isEnabled() )
+                        {
+                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                           mvpl.m_total_min_subvolume_coord,
+                                           mvpl.m_total_max_subvolume_coord,
+                                           param.m_latency_threshold, param.m_job_id_pack_size,
+                                           param.m_crop.getMinCoord(),
+                                           param.m_crop.getMaxCoord() );
+                            servMes.m_number_volume_divide = jd.getCountVolumes();
+                        }
+                        else
+                        {
+                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
+                                           mvpl.m_total_min_subvolume_coord,
+                                           mvpl.m_total_max_subvolume_coord,
+                                           param.m_latency_threshold, param.m_job_id_pack_size );
+                            servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
+                        }
+
+                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+                        {
+                            VIS_MODULE_TIMER_STA( 470 );
+                        }
+
+                        param.m_sampling_step = CalculateSamplingStep( mvpl );
+
+                        VariableRange vr;
+
+                        pm.check();
+                        servMes.m_start_step = pm.particleStatusFile().getStartTimeStep();
+                        servMes.m_last_step = pm.particleStatusFile().getLatestTimeStep();
+                        if( pm.stepExisted() )
+                        {
+                            //if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step && pm.getTimeStep() > -1 )
+                            if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step )
+                            {
+                                servMes.m_time_step = clntMes.m_step;
+                            }
+                            else
+                            {
+                                servMes.m_time_step = pm.particleStatusFile().getLatestTimeStep();
+                                clntMes.m_step = servMes.m_time_step;
+                            }
+                        }
+                        else
+                        {
+                            std::cout << " no step !!!!!!!!!!!" << std::endl;
+                            clntMes.m_step = -1;
+                        }
+
+                        std::cout<<"main.cpp:L1319"<<std::endl;
+                        //clntMes.show();
+
+                        pts.sendMessage( servMes );
+
+                        timer.start();
+               
+                        while ( jd.dispatchNext( wid, &st, &vl ) )
+                        {
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+                            {
+                                VIS_MODULE_TIMER_STA( 471 );
+                            }
+
+//jupiter start
+//                          TimerInitialize();
+                            TimerStart( 1 );
+                            ParameterFileWriter ppw;
+                            ParameterFileReader ppr;
+
+                            //clntMes.show();
+                            // 20181226 start　環境変数で指定したパスおよび名前でファイル参照を行う
+                            ppw.inputGlyphParameterMessage( clntMes );
+                            ppr.readParameterFile( glyphParameterPath_old.c_str() );
+                            NameListFile nm1 = ppr.getNameListFile();
+                            NameListFile nm2 = ppw.getNameListFile();
+
+                            if( nm1 != nm2 )
+                            {
+                                ppw.writeParameterFile( glyphParameterPath.c_str() );
+                                // 20181226 end
+                            }
+                            vismodule::PointObject* originalObject = new vismodule::PointObject;
+                            vismodule::KVSMLObjectGlyph* originalGlyph = new vismodule::KVSMLObjectGlyph;
+                            TimerStart( 2 );
+                            // 20181226 start　環境変数で指定したパスを使用
+//                            std::string filename( glyphFilePath );
+                            std::string filename( particlePath );
+                            // 20181226 end
+                            filename.append( "_pfi_coords_minmax.txt" );
+                            vismodule::File f( filename.c_str()  );
+
+                            if ( f.isExisted() )
+                            {
+                                // ファイルがある
+                                FILE* fp = NULL;
+                                fp = fopen( filename.c_str(), "r" );
+                                fscanf( fp, "%f %f %f %f %f %f",
+                                        &servMes.m_min_object_coord[0],
+                                        &servMes.m_min_object_coord[1],
+                                        &servMes.m_min_object_coord[2],
+                                        &servMes.m_max_object_coord[0],
+                                        &servMes.m_max_object_coord[1],
+                                        &servMes.m_max_object_coord[2]);
+                                if ( fp != NULL ) fclose( fp );
+                            }
+                            else
+                            {
+                                servMes.m_min_object_coord[0]=0.f;
+                                servMes.m_min_object_coord[1]=0.f;
+                                servMes.m_min_object_coord[2]=0.f;
+                                servMes.m_max_object_coord[0]=0.1;
+                                servMes.m_max_object_coord[1]=0.1;
+                                servMes.m_max_object_coord[2]=0.1;
+                            }
+
+
+
+                            TimerStop( 2 );
+                            if( pm.setTimeStep_glyph( clntMes.m_step ) || pm.stepExisted() ) servMes.m_flag_send_bins = 2;
+                            else                                 servMes.m_flag_send_bins = 1;
+                            if( servMes.m_flag_send_bins == 2)
+                            {
+                                pm.readGlyphFile();
+                                pm.getGlyph( originalGlyph );
+                            }
+                            servMes.m_time_step = clntMes.m_step;
+                            //servMes.m_subpixel_level = pm.getSubpixelLevel();
+//                            servMes.m_subpixel_level = 1;
+                            
+                            servMes.m_number_glyph = originalGlyph->coords().size() / 3;
+                            if ( servMes.m_number_glyph > 0 )
+                            {
+                                servMes.m_glyph_coords = std::make_unique<float[]>(3 * servMes.m_number_glyph);
+                                servMes.m_glyph_vectors = std::make_unique<float[]>(3 * servMes.m_number_glyph);
+                                servMes.m_glyph_colors = std::make_unique<unsigned char[]>(3 * servMes.m_number_glyph);
+                                servMes.m_glyph_sizes = std::make_unique<float[]>(servMes.m_number_glyph);
+                            }
+                            else
+                            {
+                                servMes.m_glyph_coords  = NULL;
+                                servMes.m_glyph_vectors = NULL;
+                                servMes.m_glyph_colors  = NULL;
+                                servMes.m_glyph_sizes   = NULL;
+                            }
+                            for ( int i = 0; i < servMes.m_number_glyph; ++i )
+                            {
+                                servMes.m_glyph_coords[3 * i + 0] = originalGlyph->coords()[3 * i + 0];
+                                servMes.m_glyph_coords[3 * i + 1] = originalGlyph->coords()[3 * i + 1];
+                                servMes.m_glyph_coords[3 * i + 2] = originalGlyph->coords()[3 * i + 2];
+                                servMes.m_glyph_vectors[3 * i + 0] = originalGlyph->directions()[3 * i + 0];
+                                servMes.m_glyph_vectors[3 * i + 1] = originalGlyph->directions()[3 * i + 1];
+                                servMes.m_glyph_vectors[3 * i + 2] = originalGlyph->directions()[3 * i + 2];
+                                servMes.m_glyph_colors[3 * i + 0] = originalGlyph->colors()[3 * i + 0];
+                                servMes.m_glyph_colors[3 * i + 1] = originalGlyph->colors()[3 * i + 1];
+                                servMes.m_glyph_colors[3 * i + 2] = originalGlyph->colors()[3 * i + 2];
+                                servMes.m_glyph_sizes[i ] = originalGlyph->sizes()[ i ];
+                            }
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+                            {
+                                VIS_MODULE_TIMER_END( 471 );
+                            }
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+                            {
+                                VIS_MODULE_TIMER_STA( 472 );
+                            }
+                            servMes.m_message_size = servMes.byteSize();
+                            TimerStart( 4 );
+
+                            std::cout<<"main.cpp:L1497"<<std::endl;
+
+                            servMes.show();
+                            pts.sendMessage( servMes );
+                            TimerStop( 4 );
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+                            {
+                                VIS_MODULE_TIMER_END( 472 );
+                            }
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+                            {
+                                VIS_MODULE_TIMER_STA( 473 );
+                            }
+                            delete originalObject;
+                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+                            {
+                                VIS_MODULE_TIMER_END( 473 );
+                            }
+                            TimerStop( 1 );
+                        } // end of while(DispatchNext)
+                        servMes.m_flag_send_bins = 1;
+                        servMes.m_message_size = servMes.byteSize();
+                        servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
+                        TimerStart( 11 );
+                        pts.sendMessage( servMes );
+                        TimerStop( 11 );
+                        timer.stop();
+                        std::cout << "Particle File: " << timer.sec() << " [sec/step]" << std::endl;
+
+                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+                        {
+                            VIS_MODULE_TIMER_END( 470 );
+                        }
+                        TimerStop( 10 );
+                        TimerFinish( servMes.m_time_step );
+
+                    } // end of timeParam == 2
+                    else
+                    {
+                        //break;
+                        return;
+                    }
+                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+                    {
+                        VIS_MODULE_TIMER_END( 461 );
+                    }
+                    if ( timer_count == VIS_MODULE_TIMER_COUNT_NUM )
+                    {
+                        VIS_MODULE_TIMER_END( 1 );
+                        VIS_MODULE_TIMER_FIN();
+                    }
+
+}

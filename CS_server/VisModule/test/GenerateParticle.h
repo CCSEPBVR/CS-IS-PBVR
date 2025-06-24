@@ -66,6 +66,13 @@
 #include <vismodule/PointObjectCreator>
 #include <vismodule/SignalHandler>
 #include <vismodule/Math>
+//IS
+#include <vismodule/ParticleMonitor>
+#include <vismodule/ParameterFileWriter>
+#include <vismodule/ParameterFileReader>
+#include <vismodule/SetDefaultTransferFunction>
+#include <DaemonAndSampler/Daemon/Timer.h>
+
 
 
 void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
@@ -83,3 +90,9 @@ void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessag
 #endif
                          JobDispatcher& jd,  bool& useAllNodes, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param);
 #endif
+
+void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
+                         JobDispatcher& jd,  jpv::ParticleTransferServer pts, ParticleMonitor& pm, vismodule::Timer& timer,
+                         std::string particlePath, std::string tfFilePath, std::string tfFilePath_old,
+                         bool& useAllNodes, int& timer_count , const jpv::InitializeParameter init_param );
+
