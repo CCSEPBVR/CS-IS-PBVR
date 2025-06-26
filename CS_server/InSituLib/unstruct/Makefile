@@ -18,7 +18,6 @@ IMPORT_DIR            = Importer/Importer
 
 EXTERNAL_OBJS = ${VISMODULE_SOURCE_DIR}/../Common/Serializer.o
 
-#OBJS = ${VISMODULE_SOURCE_DIR}/../Common/Serializer.o 
 LOCAL_OBJS = TransferFunction.o \
        ObjectBase.o \
        TransferFunctionSynthesizer.o \
@@ -41,7 +40,6 @@ OBJS = ${LOCAL_OBJS} ${EXTERNAL_OBJS}
 #${VISMODULE_SOURCE_DIR}/../Common/Serializer.o:
 #	@echo "Using prebuilt Serializer.o"
 
-#VPATH=${TRANSFER_FUNCTION_DIR}:${IMPORT_DIR}:${VISMODULE_SOURCE_DIR}
 VPATH=${TRANSFER_FUNCTION_DIR}:${IMPORT_DIR}:${VISMODULE_SOURCE_DIR}: \
 	${VISMODULE_SOURCE_DIR}/Visualization/Mapper: \
 	${VISMODULE_SOURCE_DIR}/Visualization/Object: \
