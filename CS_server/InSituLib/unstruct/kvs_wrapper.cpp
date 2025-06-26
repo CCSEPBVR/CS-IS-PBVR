@@ -22,30 +22,16 @@
 #include <vismodule/CellByCellParticleGenerator>
 #include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/ParamInfo>
-//#include "TFS/CellByCellParticleGenerator.h"
-//#include "TFS/TransferFunctionSynthesizer.h"
-//#include "TFS/ParamInfo.h"
 #include "float.h"
-//#include "TFS/UnstructuredVolumeObject.h"
 #include <vismodule/UnstructuredVolumeObject>
 #include <mpi.h>
 #include <vismodule/CellBase>
-//#include <vismodule/CellBase_hex>
 #include <vismodule/TetrahedralCell>
 #include <vismodule/QuadraticTetrahedralCell>
 #include <vismodule/HexahedralCell>
 #include <vismodule/QuadraticHexahedralCell>
 #include <vismodule/PrismaticCell>
 #include <vismodule/PyramidalCell>
-
-//#include "TFS/CellBase.h"
-//#include "TFS/CellBase_hex.h"
-//#include "TFS/TetrahedralCell.h"
-//#include "TFS/QuadraticTetrahedralCell.h"
-//#include "TFS/HexahedralCell.h"
-//#include "TFS/QuadraticHexahedralCell.h"
-//#include "TFS/PrismaticCell.h"
-//#include "TFS/PyramidalCell.h"
 
 #ifdef VTK
 //VTK
@@ -62,13 +48,10 @@
 #endif
 
 //Glyph
-//#include "TFS/GlyphGenerator.h"
-//#include "TFS/GlyphProperty.h"
 #include <vismodule/GlyphGenerator>
 #include <vismodule/GlyphProperty>
 
 //PlotOverLine
-//#include "TFS/PlotOverLine.h"
 #include <vismodule/PlotOverLine>
 
 // add FJ start
