@@ -275,12 +275,12 @@ $(OUTDIR)/./DaemonAndSampler/Daemon/PlotOverLineFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleMonitor.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/SetDefaultTransferFunction.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/Timer.o \
-$(OUTDIR)/./test/PointObjectCreator.o \
-$(OUTDIR)/./test/Connect.o \
-$(OUTDIR)/./test/GenerateGlyph.o \
-$(OUTDIR)/./test/GenerateParticle.o \
-$(OUTDIR)/./test/GeneratePOL.o \
-$(OUTDIR)/./test/InitialStep.o \
+$(OUTDIR)/./Visualization/Object/PointObjectCreator.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/Connect.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/GenerateGlyph.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/GenerateParticle.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/GeneratePOL.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/InitialStep.o \
 
 
 
@@ -408,16 +408,10 @@ $(OUTDIR)/./FileFormat/%.o: ./FileFormat/%.cpp ./FileFormat/%.h
 	$(MKDIR) $(OUTDIR)/./FileFormat
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
-$(OUTDIR)/./DaemonAndServer/Daemon/%.o: ./DaemonAndServer/Daemon/%.cpp ./DaemonAndServer/Daemon/%.h
-	$(MKDIR) $(OUTDIR)/./DaemonAndServer/Daemon
+$(OUTDIR)/./DaemonAndServer/Daemon/%.o: ./DaemonAndSampler/Daemon/%.cpp ./DaemonAndSampler/Daemon/%.h
+	$(MKDIR) $(OUTDIR)/./DaemonAndSampler/Daemon
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
-$(OUTDIR)/./test/%.o: ./test/%.cpp ./test/%.h
-	$(MKDIR) $(OUTDIR)/./test
-	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
-
-$(OUTDIR)/./main.o: ../main.cpp
-	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 install::
 	$(MKDIR) $(INSTALL_DIR)/include/Core/./FileFormat
