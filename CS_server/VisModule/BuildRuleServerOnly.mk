@@ -3,7 +3,6 @@
 
 
 OBJECTS := \
-$(OUTDIR)/./main.o \
 $(OUTDIR)/./FileFormat/AggregateTypeSubvolume.o \
 $(OUTDIR)/./FileFormat/AVSField/AVSField.o \
 $(OUTDIR)/./FileFormat/AVSUCD/AVSUcd.o \
@@ -389,8 +388,6 @@ $(OUTDIR)/./FileFormat/AVSField/%.o: ./FileFormat/AVSField/%.cpp ./FileFormat/AV
 
 $(OUTDIR)/./FileFormat/%.o: ./FileFormat/%.cpp ./FileFormat/%.h
 	$(MKDIR) $(OUTDIR)/./FileFormat
-	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
-$(OUTDIR)/./main.o: ../main.cpp
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 install::
