@@ -1,12 +1,13 @@
-#ifndef  __GLYPH_PROPERTY__
-#define  __GLYPH_PROPERTY__
+#ifndef  __PLOT_OVER_LINE_PROPERTY__
+#define  __PLOT_OVER_LINE_PROPERTY__
 
 #include <string>
 #include <vector>
-#include "../../../Common/Serializer.h"
+//#include "../Common/Serializer.h"
+#include "Serializer.h"
 #include <map>
 
-class  GlyphProperty 
+class  PlotOverLineProperty 
 {
 
 private:

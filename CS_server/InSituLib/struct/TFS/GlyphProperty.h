@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include "../../../Common/Serializer.h"
+#include "Serializer.h"
 #include <map>
 
 class  GlyphProperty 

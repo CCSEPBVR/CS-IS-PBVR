@@ -1,12 +1,11 @@
-#ifndef  __GLYPH_PROPERTY__
-#define  __GLYPH_PROPERTY__
+#ifndef  __PARAM_INFO_H__
+#define __PARAM_INFO_H__
 
 #include <string>
 #include <vector>
-#include "../../../Common/Serializer.h"
-#include <map>
+#include "Serializer.h"
 
-class  GlyphProperty 
+class ParamInfo
 {
 
 private:
@@ -25,7 +24,6 @@ public:
     std::string        getString( std::string name );
     std::vector<int>   getTableInt( std::string name );
     std::vector<float> getTableFloat( std::string name );
-    std::vector<std::string> getTableString( std::string name );
     void        write( const std::string name );
 
 public:

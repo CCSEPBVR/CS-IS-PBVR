@@ -3,6 +3,8 @@
 
 #include <string>
 #include <vector>
+#include "../../../Common/Serializer.h"
+#include <map>
 
 class ParamInfo
 {
@@ -18,12 +20,18 @@ public:
         return ( param_state[key] );
     };
 
-    int         getInt( std::string name );
-    float       getFloat( std::string name );
-    std::string getString( std::string name );
+    int                getInt( std::string name );
+    float              getFloat( std::string name );
+    std::string        getString( std::string name );
+    std::vector<int>   getTableInt( std::string name );
+    std::vector<float> getTableFloat( std::string name );
+    void        write( const std::string name );
 
 public:
     bool   LoadIN( const std::string& filename );
+    size_t byteSize() const;
+    size_t pack( char* buf ) const;
+    size_t unpack( const char* buf );
 };
 
 #endif // __PARAM_INFO_H__
