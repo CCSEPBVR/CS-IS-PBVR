@@ -3,7 +3,7 @@
 
 
 #include "../shared/thread_timer.h"
-#include <kvs/StructuredVolumeObject>
+#include <vismodule/StructuredVolumeObject>
 
 
 #ifndef SIMDW

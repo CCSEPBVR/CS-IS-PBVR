@@ -13,6 +13,7 @@ KVS_SOURCE_DIR        = ../../KVS/Source
 TRANSFER_FUNCTION_DIR = ./TFS
 FUNCTION_PARSER_DIR   = ../../FunctionParser
 IMPORT_DIR            = Importer/Importer
+VISMODULE_SOURCE_DIR  = ../../../CS_server/VisModule 
 
 OBJS = Serializer.o \
        TransferFunction.o \
@@ -45,6 +46,7 @@ endif
 
 CXXFLAGS += -I../shared
 CXXFLAGS += -I${KVS_SOURCE_DIR}
+CXXFLAGS += -I${VISMODULE_SOURCE_DIR}
 CXXFLAGS += -I${FUNCTION_PARSER_DIR}
 CXXFLAGS += -w -DNO_CLIENT
 

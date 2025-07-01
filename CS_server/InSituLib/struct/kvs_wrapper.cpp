@@ -3,27 +3,27 @@
 #include <vector>
 #include <sstream>
 #include <iomanip>
-#include <kvs/Vector3>
-#include <kvs/AnyValueArray>
-#include <kvs/ValueArray>
-#include <kvs/StructuredVolumeObject>
-//#include <kvs/TrilinearInterpolator>
-#include <kvs/PointObject>
-#include <kvs/PointExporter>
-#include <kvs/KVSMLObjectPoint>
-//#include <kvs/CellByCellParticleGenerator>
-#include <kvs/TransferFunction>
-#include <kvs/RGBColor>
-#include <kvs/Timer>
-#include <kvs/MersenneTwister>
+#include <vismodule/Vector3>
+#include <vismodule/AnyValueArray>
+#include <vismodule/ValueArray>
+#include <vismodule/StructuredVolumeObject>
+//#include <vismodule/TrilinearInterpolator>
+#include <vismodule/PointObject>
+#include <vismodule/PointExporter>
+#include <vismodule/KVSMLObjectPoint>
+//#include <vismodule/CellByCellParticleGenerator>
+#include <vismodule/TransferFunction>
+#include <vismodule/RGBColor>
+#include <vismodule/Timer>
+#include <vismodule/MersenneTwister>
 
-#include "TFS/GlyphGenerator.h"
-#include "TFS/PlotOverLine.h"
+#include <vismodule/GlyphGenerator>
+#include <vismodule/PlotOverLine>
 #include "kvs_wrapper.h"
-#include "TFS/CellByCellParticleGenerator.h"
-#include "TFS/TransferFunctionSynthesizer.h"
-#include "TFS/ParamInfo.h"
-#include "TFS/TrilinearInterpolator.h"
+#include <vismodule/CellByCellParticleGenerator>
+#include <vismodule/TransferFunctionSynthesizer>
+#include <vismodule/ParamInfo>
+#include <vismodule/TrilinearInterpolator>
 //#include "TFS/TransferFunctionSynthesizerCreator.h"
 #include "float.h"
 
@@ -38,12 +38,12 @@
 // Asynchronous io, using worker thread pwt.
 #include "particle_write_thread.h"
 bool async_io_enabled=false;
-kvs::ValueArray<float> O_min_recv;
-kvs::ValueArray<float> O_max_recv;
-kvs::ValueArray<float> C_min_recv;
-kvs::ValueArray<float> C_max_recv;
-kvs::ValueArray<int> o_histogram_recv;
-kvs::ValueArray<int> c_histogram_recv;
+vismodule::ValueArray<float> O_min_recv;
+vismodule::ValueArray<float> O_max_recv;
+vismodule::ValueArray<float> C_min_recv;
+vismodule::ValueArray<float> C_max_recv;
+vismodule::ValueArray<int> o_histogram_recv;
+vismodule::ValueArray<int> c_histogram_recv;
 
 pbvr::ParticleWriteThread pwt;
 /**
@@ -66,17 +66,17 @@ void end_wrapper_async_io()
 }
 
 
-namespace Generator = pbvr::CellByCellParticleGenerator;
+namespace Generator = vismodule::CellByCellParticleGenerator;
 
 
-//***** kvs::CellByCellParticleGenerator *****//
+//***** vismodule::CellByCellParticleGenerator *****//
 float GetRandomNumber()
 {
 
     // xorshift RGNs with period at least 2^128 - 1.
 //    static float t24 = 1.0/16777216.0; /* 0.5**24 */
-    static kvs::UInt32 x = 123456789, y = 362436069, z = 521288629, w = 88675123;
-    kvs::UInt32 t;
+    static vismodule::UInt32 x = 123456789, y = 362436069, z = 521288629, w = 88675123;
+    vismodule::UInt32 t;
     t = ( x ^ ( x << 11 ) );
     x = y;
     y = z;
@@ -84,42 +84,42 @@ float GetRandomNumber()
     w = ( w ^ ( w >> 19 ) ) ^ ( t ^ ( t >> 8 ) );
 
     //return 0;
-    return w * ( 1.0f / 4294967296.0f ); // = w * ( 1.0f / kvs::Value<kvs::UInt32>::Max() + 1 )
+    return w * ( 1.0f / 4294967296.0f ); // = w * ( 1.0f / vismodule::Value<vismodule::UInt32>::Max() + 1 )
 //    return t24 * static_cast<float>( w >> 8 );
 }
 
 namespace
 {
 
-kvs::Vector3f RandomSamplingInCubeKMATH( const kvs::Vector3f vertex )
+vismodule::Vector3f RandomSamplingInCubeKMATH( const vismodule::Vector3f vertex )
 {
     const float x = GetRandomNumber();
     const float y = GetRandomNumber();
     const float z = GetRandomNumber();
-    const kvs::Vector3f d( x, y, z );
+    const vismodule::Vector3f d( x, y, z );
 
     return vertex + d;
 }
 
-kvs::Vector3f RandomSamplingInCube( const kvs::Vector3f vertex, kvs::MersenneTwister* MT  )
+vismodule::Vector3f RandomSamplingInCube( const vismodule::Vector3f vertex, vismodule::MersenneTwister* MT  )
 {
     const float x = (float)MT->rand();
     const float y = (float)MT->rand();
     const float z = (float)MT->rand();
-    const kvs::Vector3f d( x, y, z );
+    const vismodule::Vector3f d( x, y, z );
 
     return vertex + d;
 }
 
 inline size_t CalculateSubpixelLevel( const int particle_limit,
-                                      const kvs::Camera& camera,
+                                      const vismodule::Camera& camera,
                                       const float sampling_step,
                                       const double total_volume,
-                                      const kvs::ObjectBase* volume )
+                                      const vismodule::ObjectBase* volume )
 {
-    namespace Generator = pbvr::CellByCellParticleGenerator;
+    namespace Generator = vismodule::CellByCellParticleGenerator;
     double d_nparticles = 0.0;//particle density for subpixel_level=1
-    d_nparticles = Generator::CalculateGreatDensity( &camera, volume, 1,
+    d_nparticles = Generator::CalculateGreatDensity( &camera, *volume, 1,
                                                       sampling_step ) * total_volume;
 
     //Calculation of optimized subpixel level
@@ -197,7 +197,7 @@ bool LoadParameterFile( ParamInfo*  param_info,
 }
 
 void readTFfromParamInfo( ParamInfo* param,
-                          std::vector<pbvr::TransferFunction>& tf,
+                          std::vector<vismodule::TransferFunction>& tf,
                           TransferFunctionSynthesizer* tfs )
 {
     //Read TFS
@@ -295,17 +295,17 @@ void readTFfromParamInfo( ParamInfo* param,
         min = param->getFloat( tag_base +"MIN_C" );
         max = param->getFloat( tag_base +"MAX_C" );
         i_table = param->getTableInt( tag_base + "TABLE_C" );
-        kvs::ValueArray<kvs::UInt8> u_table( i_table.size() );
-        for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (kvs::UInt8)i_table[j];
-        kvs::ColorMap color_map( u_table, min, max );
+        vismodule::ValueArray<vismodule::UInt8> u_table( i_table.size() );
+        for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (vismodule::UInt8)i_table[j];
+        vismodule::ColorMap color_map( u_table, min, max );
 
         min = param->getFloat( tag_base +"MIN_O" );
         max = param->getFloat( tag_base +"MAX_O" );
         f_table = param->getTableFloat( tag_base + "TABLE_O" );
-        kvs::ValueArray<float> ff_table( f_table );
-        kvs::OpacityMap opacity_map( ff_table, min, max );
+        vismodule::ValueArray<float> ff_table( f_table );
+        vismodule::OpacityMap opacity_map( ff_table, min, max );
 
-        pbvr::TransferFunction tfBuf;
+        vismodule::TransferFunction tfBuf;
         tfBuf.setColorMap( color_map );
         tfBuf.setOpacityMap( opacity_map );
         tf.push_back(tfBuf);
@@ -362,9 +362,9 @@ void readTFfromParamInfo( ParamInfo* param,
 
 bool initializeParameters(
     TransferFunctionSynthesizer* tfs,
-    std::vector<pbvr::TransferFunction>& tf,
+    std::vector<vismodule::TransferFunction>& tf,
     ParamInfo *param_info,
-    const kvs::ObjectBase* object,
+    const vismodule::ObjectBase* object,
     float* sampling_volume_inverse,
     float* max_opacity, float* max_density, int* subpixel_level, float* particle_density,
     float* particle_data_size_limit,
@@ -397,12 +397,12 @@ bool initializeParameters(
 
 
     //std::cout<<"camera\n";
-    kvs::Camera camera;
+    vismodule::Camera camera;
     int height = param.getInt( "RESOLUTION_HEIGHT" );
     int width  = param.getInt( "RESOLUTION_WIDTH" );
     camera.setWindowSize( height,width );
     float min = 0;
-    float max = kvs::Math::Max( object->maxObjectCoord().x(),
+    float max = vismodule::Math::Max( object->maxObjectCoord().x(),
                                 object->maxObjectCoord().y(),
                                 object->maxObjectCoord().z() );
     const float sampling_step = (max - min) / 1E1;
@@ -451,20 +451,22 @@ bool initializeParameters(
     return opend;
 }
 
-void calculate_histogram( kvs::ValueArray<int>&   th_o_histogram,
-                          kvs::ValueArray<int>&   th_c_histogram,
-                          kvs::ValueArray<float>& th_O_min,
-                          kvs::ValueArray<float>& th_O_max,
-                          kvs::ValueArray<float>& th_C_min,
-                          kvs::ValueArray<float>& th_C_max,
+void calculate_histogram( vismodule::ValueArray<int>&   th_o_histogram,
+                          vismodule::ValueArray<int>&   th_c_histogram,
+                          vismodule::ValueArray<float>& th_O_min,
+                          vismodule::ValueArray<float>& th_O_max,
+                          vismodule::ValueArray<float>& th_C_min,
+                          vismodule::ValueArray<float>& th_C_max,
                           // ここまでoutput, 以下input
                           const int nbins, // TFSから読み込む最大最小値
-                          const kvs::ValueArray<float>& o_min,
-                          const kvs::ValueArray<float>& o_max,
-                          const kvs::ValueArray<float>& c_min,
-                          const kvs::ValueArray<float>& c_max,
-                          const float o_scalars[][SIMDW], // åæå¤
-                          const float c_scalars[][SIMDW],
+                          const vismodule::ValueArray<float>& o_min,
+                          const vismodule::ValueArray<float>& o_max,
+                          const vismodule::ValueArray<float>& c_min,
+                          const vismodule::ValueArray<float>& c_max,
+                          //const float o_scalars[][SIMDW], // åæå¤
+                          //const float c_scalars[][SIMDW],
+                          const float** o_scalars, // åæå¤
+                          const float** c_scalars,
                           const int tf_number  )
 {
     //ヒストグラムと最大最小値
@@ -503,7 +505,7 @@ void calculate_histogram( kvs::ValueArray<int>&   th_o_histogram,
 const size_t calculate_number_of_particles(
     const float density,
     const float volume_of_cell,
-    kvs::MersenneTwister* MT )
+    vismodule::MersenneTwister* MT )
 {
     const float N = density * volume_of_cell;
     const float R = (float)MT->rand();
@@ -573,10 +575,10 @@ void GenerateGlyphs_PlotOverLine( int time_step, domain_parameters dom, Type** v
 {
 
 //  SetStructuredVolumeObject(
-    const kvs::Vector3ui resolution( dom.resolution[0], dom.resolution[1], dom.resolution[2]);  
+    const vismodule::Vector3ui resolution( dom.resolution[0], dom.resolution[1], dom.resolution[2]);  
     int nnodes = resolution.x()*resolution.y()*resolution.z();
 
-    kvs::ValueArray<float> tmp_Values(nnodes * num_volume_data);
+    vismodule::ValueArray<float> tmp_Values(nnodes * num_volume_data);
 
     for(int i = 0; i < num_volume_data; ++i )
     {
@@ -595,23 +597,23 @@ void GenerateGlyphs_PlotOverLine( int time_step, domain_parameters dom, Type** v
     const int nz_1 = nz-1;
     const int nxy_1 = nx_1 * ny_1;
 
-    const kvs::Vector3f min_vec(dom.x_min, dom.y_min, dom.z_min); 
-    const kvs::Vector3f max_vec(((float)nx * dom.cell_length)+min_vec.x(),
+    const vismodule::Vector3f min_vec(dom.x_min, dom.y_min, dom.z_min); 
+    const vismodule::Vector3f max_vec(((float)nx * dom.cell_length)+min_vec.x(),
             ((float)ny * dom.cell_length)+min_vec.y(),
             ((float)nz * dom.cell_length)+min_vec.z() ); 
-    const kvs::Vector3f cell_length( dom.cell_length,
+    const vismodule::Vector3f cell_length( dom.cell_length,
             dom.cell_length ,
             dom.cell_length );
 
     // coord & vector 
-    kvs::ValueArray<float> Coord(nnodes*3);
+    vismodule::ValueArray<float> Coord(nnodes*3);
     int glyph_count =0;
     //#pragma omp for
-    for ( kvs::UInt32 z = 0; z < nz; ++z )
+    for ( vismodule::UInt32 z = 0; z < nz; ++z )
     {
-        for ( kvs::UInt32 y = 0; y < ny; ++y )
+        for ( vismodule::UInt32 y = 0; y < ny; ++y )
         {
-            for ( kvs::UInt32 x = 0; x < nx; ++x )
+            for ( vismodule::UInt32 x = 0; x < nx; ++x )
             {
                 const int index = x + y*nx + z*nx*ny;
                     const float x_g = ((float)x * cell_length.x())+min_vec.x();
@@ -626,11 +628,11 @@ void GenerateGlyphs_PlotOverLine( int time_step, domain_parameters dom, Type** v
         }
     }
 
-    kvs::AnyValueArray Values(tmp_Values);
+    vismodule::AnyValueArray Values(tmp_Values);
 
-//    kvs::StructuredVolumeObject object(resolution, num_volume_data, Values ); 
+//    vismodule::StructuredVolumeObject object(resolution, num_volume_data, Values ); 
     
-    kvs::StructuredVolumeObject object(kvs::VolumeObjectBase::Curvilinear, resolution, num_volume_data, Coord, Values ); 
+    vismodule::StructuredVolumeObject object(vismodule::VolumeObjectBase::Curvilinear, resolution, num_volume_data, Coord, Values ); 
     
     //object.updateMinMaxCoords();
 
@@ -664,10 +666,10 @@ void CallPlotOverLine( int time_step, domain_parameters dom,
 {
 
 #if 0
-    const kvs::Vector3ui resolution( dom.resolution[0], dom.resolution[1], dom.resolution[2]);  
+    const vismodule::Vector3ui resolution( dom.resolution[0], dom.resolution[1], dom.resolution[2]);  
     int nnodes = resolution.x()*resolution.y()*resolution.z();
 
-    kvs::ValueArray<float> tmp_Values(nnodes * num_volume_data);
+    vismodule::ValueArray<float> tmp_Values(nnodes * num_volume_data);
 
     for(int i = 0; i < num_volume_data; ++i )
     {
@@ -677,11 +679,11 @@ void CallPlotOverLine( int time_step, domain_parameters dom,
         } 
     }
 
-    kvs::AnyValueArray Values(tmp_Values);
+    vismodule::AnyValueArray Values(tmp_Values);
 
 
-    //kvs::StructuredVolumeObject* object = new kvs::StructuredVolumeObject(resolution, num_volume_data, Values ); 
-    kvs::StructuredVolumeObject object(resolution, num_volume_data, Values ); 
+    //vismodule::StructuredVolumeObject* object = new vismodule::StructuredVolumeObject(resolution, num_volume_data, Values ); 
+    vismodule::StructuredVolumeObject object(resolution, num_volume_data, Values ); 
     object.updateMinMaxCoords();
 #endif
 
@@ -720,22 +722,22 @@ void GenerateParticles( int time_step,
     //if(mpi->rank==0)std::cout<<"start generate_particles\n";
     static bool start_flag = true;
     static bool parameter_file_opened=false;
-    kvs::Timer timer( kvs::Timer::Start );
+    vismodule::Timer timer( vismodule::Timer::Start );
 
 
     const int nvariables = num_volume_data;
 
-    const kvs::Vector3ui resolution( dom.resolution[0], dom.resolution[1], dom.resolution[2] );
+    const vismodule::Vector3ui resolution( dom.resolution[0], dom.resolution[1], dom.resolution[2] );
 
-    //std::vector< kvs::StructuredVolumeObject* > vol_obj;
-    std::vector< std::vector< TFS::TrilinearInterpolator* > >  interp;
+    //std::vector< vismodule::StructuredVolumeObject* > vol_obj;
+    std::vector< std::vector< vismodule::TrilinearInterpolator* > >  interp;
 /*
     vol_obj.resize( num_volume_data );
     for ( int i = 0; i < num_volume_data; i++ )
     {
-         const kvs::ValueArray<Type> v( volume_data[i], resolution.x()*resolution.y()*resolution.z() );
-         const kvs::AnyValueArray av( v );
-         vol_obj[i] = new kvs::StructuredVolumeObject( resolution, 1, av );
+         const vismodule::ValueArray<Type> v( volume_data[i], resolution.x()*resolution.y()*resolution.z() );
+         const vismodule::AnyValueArray av( v );
+         vol_obj[i] = new vismodule::StructuredVolumeObject( resolution, 1, av );
     }
 */
     interp.resize( max_threads );
@@ -744,12 +746,12 @@ void GenerateParticles( int time_step,
         interp[ i ].resize( num_volume_data );
         for ( int j = 0; j < num_volume_data; j++ )
         {
-             interp[i][j]  = new TFS::TrilinearInterpolator( volume_data[j], resolution );
+             interp[i][j]  = new vismodule::TrilinearInterpolator( volume_data[j], resolution );
         }
     }
     // Set Transfer function synthesizer.
     TransferFunctionSynthesizer* tfs = new TransferFunctionSynthesizer();
-    std::vector<pbvr::TransferFunction> tf;
+    std::vector<vismodule::TransferFunction> tf;
     static ParamInfo param;
     float sampling_volume_inverse;
     float max_opacity;
@@ -825,12 +827,12 @@ void GenerateParticles( int time_step,
     // 20190318 end
 
     //粒子サイズを決めるためのGlobal Min Max volume object
-    kvs::StructuredVolumeObject* object = new kvs::StructuredVolumeObject();
-    kvs::Vector3f min_vec(
+    vismodule::StructuredVolumeObject* object = new vismodule::StructuredVolumeObject();
+    vismodule::Vector3f min_vec(
         dom.x_global_min,
         dom.y_global_min,
         dom.z_global_min);
-    kvs::Vector3f max_vec(
+    vismodule::Vector3f max_vec(
         dom.x_global_max,
         dom.y_global_max,
         dom.z_global_max );
@@ -868,13 +870,13 @@ void GenerateParticles( int time_step,
 
     //ヒストグラム
     int nbins = 256;
-    kvs::ValueArray<float> o_min( tf_number );//TFSから読み込む最大最小値
-    kvs::ValueArray<float> o_max( tf_number );
-    kvs::ValueArray<float> c_min( tf_number );
-    kvs::ValueArray<float> c_max( tf_number );
+    vismodule::ValueArray<float> o_min( tf_number );//TFSから読み込む最大最小値
+    vismodule::ValueArray<float> o_max( tf_number );
+    vismodule::ValueArray<float> c_min( tf_number );
+    vismodule::ValueArray<float> c_max( tf_number );
 
-    kvs::ValueArray<int> o_histogram( tf_number * nbins );//不透明度ヒストグラムの配列
-    kvs::ValueArray<int> c_histogram( tf_number * nbins );//色ヒストグラムの配列
+    vismodule::ValueArray<int> o_histogram( tf_number * nbins );//不透明度ヒストグラムの配列
+    vismodule::ValueArray<int> c_histogram( tf_number * nbins );//色ヒストグラムの配列
 
     if( parameter_file_opened )
     {
@@ -898,10 +900,10 @@ void GenerateParticles( int time_step,
     }
 
     //最大最小値
-    kvs::ValueArray<float> O_min( tf_number );//計算して得る最大最小値
-    kvs::ValueArray<float> O_max( tf_number );
-    kvs::ValueArray<float> C_min( tf_number );
-    kvs::ValueArray<float> C_max( tf_number );
+    vismodule::ValueArray<float> O_min( tf_number );//計算して得る最大最小値
+    vismodule::ValueArray<float> O_max( tf_number );
+    vismodule::ValueArray<float> C_min( tf_number );
+    vismodule::ValueArray<float> C_max( tf_number );
 
     // 動的な粒子データ配列
     std::vector<float> vertex_coords;
@@ -920,8 +922,8 @@ void GenerateParticles( int time_step,
     }
 
     TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
-    std::vector< std::vector<pbvr::TransferFunction> > th_tf;
-    TFS::TrilinearInterpolator** interp_opacity  = new TFS::TrilinearInterpolator*[max_threads] ;
+    std::vector< std::vector<vismodule::TransferFunction> > th_tf;
+    vismodule::TrilinearInterpolator** interp_opacity  = new vismodule::TrilinearInterpolator*[max_threads] ;
 
     for ( int n = 0; n < max_threads; n++ )
     {
@@ -951,9 +953,9 @@ void GenerateParticles( int time_step,
     bool particle_limit_over = false;
 */
     float* opacity_volume = new float[ resolution.x()*resolution.y()*resolution.z() ];
-    //kvs::ValueArray<Type> ov( resolution.x()*resolution.y()*resolution.z() );
-    //const kvs::AnyValueArray aov( ov );
-    //kvs::StructuredVolumeObject* volume_opacity = new kvs::StructuredVolumeObject( resolution, 1, aov );
+    //vismodule::ValueArray<Type> ov( resolution.x()*resolution.y()*resolution.z() );
+    //const vismodule::AnyValueArray aov( ov );
+    //vismodule::StructuredVolumeObject* volume_opacity = new vismodule::StructuredVolumeObject( resolution, 1, aov );
 
     time_parameters time;
     timer.stop();
@@ -1000,19 +1002,28 @@ void GenerateParticles( int time_step,
 
         int th_total_nparticles = 0;
         //各スレッド番号をシードにした乱数生成器
-        kvs::MersenneTwister MT( thid + mpi_rank * nthreads );
+        vismodule::MersenneTwister MT( thid + mpi_rank * nthreads );
 
         // 動的な粒子データ配列
         std::vector<float> th_vertex_coords;
         std::vector<Byte>  th_vertex_colors;
         std::vector<float> th_vertex_normals;
 
-        //ヒストグラムの配列
-        float o_scalars[tf_number][SIMDW];//頂点の不透明度
-        float c_scalars[tf_number][SIMDW];//頂点の色
+//        //ヒストグラムの配列
+//        float o_scalars[tf_number][SIMDW];//頂点の不透明度
+//        float c_scalars[tf_number][SIMDW];//頂点の色
 
-        kvs::ValueArray<int> th_o_histogram( tf_number * nbins );//不透明度
-        kvs::ValueArray<int> th_c_histogram( tf_number * nbins );//色
+        float** o_scalars = new float* [tf_number];
+        float** c_scalars = new float* [tf_number];
+
+        for (int i = 0; i < tf_number; i++)
+        {
+            o_scalars[i] = new float[SIMDW];
+            c_scalars[i] = new float[SIMDW];
+        }
+
+        vismodule::ValueArray<int> th_o_histogram( tf_number * nbins );//不透明度
+        vismodule::ValueArray<int> th_c_histogram( tf_number * nbins );//色
 
         if( parameter_file_opened )
         {
@@ -1021,10 +1032,10 @@ void GenerateParticles( int time_step,
         }
 
         //最大最小値
-        kvs::ValueArray<float> th_O_min( tf_number );//計算して得る最大最小値
-        kvs::ValueArray<float> th_O_max( tf_number );
-        kvs::ValueArray<float> th_C_min( tf_number );
-        kvs::ValueArray<float> th_C_max( tf_number );
+        vismodule::ValueArray<float> th_O_min( tf_number );//計算して得る最大最小値
+        vismodule::ValueArray<float> th_O_max( tf_number );
+        vismodule::ValueArray<float> th_C_min( tf_number );
+        vismodule::ValueArray<float> th_C_max( tf_number );
 
         if( parameter_file_opened )
         {
@@ -1157,7 +1168,7 @@ void GenerateParticles( int time_step,
 
 #pragma omp critical
         {
-            interp_opacity[thid] = new TFS::TrilinearInterpolator( opacity_volume, resolution );
+            interp_opacity[thid] = new vismodule::TrilinearInterpolator( opacity_volume, resolution );
         }
 
         //粒子生成ループ開始
@@ -1230,7 +1241,7 @@ void GenerateParticles( int time_step,
                 float p_x_l[SIMDW], p_y_l[SIMDW], p_z_l[SIMDW];
                 float p_x_g[SIMDW], p_y_g[SIMDW], p_z_g[SIMDW];
                 float grad_x[SIMDW], grad_y[SIMDW], grad_z[SIMDW];
-                kvs::UInt8 red[SIMDW], green[SIMDW], blue[SIMDW];
+                vismodule::UInt8 red[SIMDW], green[SIMDW], blue[SIMDW];
                 float particle_opacity[SIMDW];
                 // the last loop "I==SIMDW" is used for occupy ramained array.
                 for(int I=0; I<SIMDW+1; I++)
@@ -1244,9 +1255,9 @@ void GenerateParticles( int time_step,
                     const int zero_id = I<SIMDW ? SIMDW : p_id;
                     for(int p=0; p < nparticles_I; p++)
                     {
-                        const kvs::Vector3f vertex( (float)i, (float)j, (float)k );
-                        const kvs::Vector3f coord_l( RandomSamplingInCube( vertex, &MT ) );
-                        const kvs::Vector3f coord_g(
+                        const vismodule::Vector3f vertex( (float)i, (float)j, (float)k );
+                        const vismodule::Vector3f coord_l( RandomSamplingInCube( vertex, &MT ) );
+                        const vismodule::Vector3f coord_g(
                             (coord_l.x()*dom.cell_length)+dom.x_min,
                             (coord_l.y()*dom.cell_length)+dom.y_min,
                             (coord_l.z()*dom.cell_length)+dom.z_min );
@@ -1345,6 +1356,15 @@ void GenerateParticles( int time_step,
 
         } // end of omp critical
         timed_section_end(td_VectorIns,thid);
+        
+        for(int i=0; i<tf_number; i++)
+        {
+            delete o_scalars[i];
+            delete c_scalars[i];
+        }
+        delete[] o_scalars;
+        delete[] c_scalars;
+
     } // end of omp parallel
 
 
@@ -1390,9 +1410,9 @@ void GenerateParticles( int time_step,
     ///-------------------------------------//
     ///--------粒子配列をファイル出力----------//
     //--------------------------------------//
-    kvs::ValueArray<float> coords( vertex_coords );
-    kvs::ValueArray<Byte>  colors( vertex_colors );
-    kvs::ValueArray<float> normals( vertex_normals );
+    vismodule::ValueArray<float> coords( vertex_coords );
+    vismodule::ValueArray<Byte>  colors( vertex_colors );
+    vismodule::ValueArray<float> normals( vertex_normals );
 
     timed_section_start(td_gatherf);
 
@@ -1502,9 +1522,9 @@ void GenerateParticles( int time_step,
     for( int i =1; i< new_number_of_process; i++ )
         displs[i] = displs[i-1] + recvcounts[i-1];
 
-    kvs::ValueArray<float> new_coords(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
-    kvs::ValueArray<Byte>  new_colors(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
-    kvs::ValueArray<float> new_normals( displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+    vismodule::ValueArray<float> new_coords(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+    vismodule::ValueArray<Byte>  new_colors(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+    vismodule::ValueArray<float> new_normals( displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
 
     MPI_Gatherv( coords.pointer(),   particle_size, MPI_FLOAT,
                  new_coords.pointer(), recvcounts, displs, MPI_FLOAT,
@@ -1523,7 +1543,7 @@ void GenerateParticles( int time_step,
     timed_section_start(td_kvsml);
     if( new_rank == 0 )
     {
-        kvs::PointObject* point_object = new kvs::PointObject( new_coords, new_colors, new_normals, subpixel_level );
+        vismodule::PointObject* point_object = new vismodule::PointObject( new_coords, new_colors, new_normals, subpixel_level );
         point_object->setMinMaxObjectCoords( min_vec, max_vec );
         // If async_io is enabled, use worker thread to write kvsml data and state.txt
         if (async_io_enabled){
@@ -1535,8 +1555,8 @@ void GenerateParticles( int time_step,
             particle_write_thread->work(true);
         }// If async_io is disabled, use kvs::PointExporter here in main thread.
         else{
-            kvs::KVSMLObjectPoint* kvsml_object = new kvs::PointExporter<kvs::KVSMLObjectPoint>( point_object );
-            kvsml_object->setWritingDataType( kvs::KVSMLObjectPoint::ExternalBinary );
+            vismodule::KVSMLObjectPoint* kvsml_object = new vismodule::PointExporter<vismodule::KVSMLObjectPoint>( *point_object );
+            kvsml_object->setWritingDataType( vismodule::KVSMLObjectPoint::ExternalBinary );
             kvsml_object->write( ptcFilePath.c_str() );
             delete kvsml_object;
         }
@@ -1548,12 +1568,12 @@ void GenerateParticles( int time_step,
     time.writting = timer.sec();
     timer.start();
     /*
-    kvs::ValueArray<float> O_min_recv( tf_number );
-    kvs::ValueArray<float> O_max_recv( tf_number );
-    kvs::ValueArray<float> C_min_recv( tf_number );
-    kvs::ValueArray<float> C_max_recv( tf_number );
-    kvs::ValueArray<int> o_histogram_recv( tf_number * nbins );
-    kvs::ValueArray<int> c_histogram_recv( tf_number * nbins );
+    vismodule::ValueArray<float> O_min_recv( tf_number );
+    vismodule::ValueArray<float> O_max_recv( tf_number );
+    vismodule::ValueArray<float> C_min_recv( tf_number );
+    vismodule::ValueArray<float> C_max_recv( tf_number );
+    vismodule::ValueArray<int> o_histogram_recv( tf_number * nbins );
+    vismodule::ValueArray<int> c_histogram_recv( tf_number * nbins );
     */
     //最大最小値の集計
     if( parameter_file_opened )

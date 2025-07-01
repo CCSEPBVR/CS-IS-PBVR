@@ -13,6 +13,7 @@
 #include <kvs/TransferFunction>
 #include <kvs/RGBColor>
 #include <kvs/Timer>
+#include <vismodule/StructuredVolumeObject>
 
 #include <sstream>
 #include <iomanip>
@@ -26,7 +27,7 @@
 #include "TFS/UnstructuredVolumeObject.h"
 #include <mpi.h>
 #include "TFS/CellBase.h"
-#include "TFS/CellBase_hex.h"
+//#include "TFS/CellBase_hex.h"
 #include "TFS/TetrahedralCell.h"
 #include "TFS/QuadraticTetrahedralCell.h"
 #include "TFS/HexahedralCell.h"

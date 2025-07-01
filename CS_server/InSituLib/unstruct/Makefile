@@ -16,13 +16,15 @@ FUNCTION_PARSER_DIR   = ../../FunctionParser
 IMPORT_DIR            = Importer/Importer
 
 
-EXTERNAL_OBJS = ${VISMODULE_SOURCE_DIR}/../Common/Serializer.o
+EXTERNAL_OBJS = ${VISMODULE_SOURCE_DIR}/../Common/Serializer.o \
+				${VISMODULE_SOURCE_DIR}/../Common/VariableRange.o
 
 LOCAL_OBJS = TransferFunction.o \
        ObjectBase.o \
        TransferFunctionSynthesizer.o \
        ParamInfo.o \
        VolumeObjectBase.o 
+	
 
 ifeq ($(VTK_PATH), true)
 LOCAL_OBJS +=	   VtkImport.o 
