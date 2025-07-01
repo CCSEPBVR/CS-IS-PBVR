@@ -1,10 +1,12 @@
 #include "PlotOverLine.h"
 #include <vismodule/KVSMLObjectPlotOverLine>
 #include <fstream>
+#include <filesystem>
 
 PlotOverLine::PlotOverLine( void ){}
 
 PlotOverLine::PlotOverLine( const vismodule::StructuredVolumeObject* volume,
+//PlotOverLine::PlotOverLine( const pbvr::StructuredVolumeObject* volume,
                             const size_t resolution,
                             const vismodule::Vec3 P0, const vismodule::Vec3 P1 )
 {
@@ -72,8 +74,8 @@ PlotOverLine::~PlotOverLine()
 //    m_mask.deallocate();
 }
 
-//void PlotOverLine::setVolume( const vismodule::StructuredVolumeObject* volume )
 void PlotOverLine::setVolume( const vismodule::StructuredVolumeObject* volume )
+//void PlotOverLine::setVolume( const pbvr::StructuredVolumeObject* volume )
 {
     m_structured_volume = volume;
 }
@@ -119,6 +121,7 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
 {
     std::string visParamDir;
     std::string POLParamPath;
+    std::string POLParamPath_old;
     std::string POLFilePath;
 
     const char *envBuf = NULL;
@@ -147,13 +150,21 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
     }
 
     POLParamPath = visParamDir + "parameter.pol";
+    POLParamPath_old = visParamDir + "parameter_old.pol";
+    
 
     m_POLParamPath = POLParamPath;
     m_POLFilePath = POLFilePath;
 
     PlotOverLineProperty plot_over_line_property;
 
-    bool read_flag =  plot_over_line_property.LoadIN(POLParamPath) ;
+    bool read_flag;
+    while( plot_over_line_property.getString( "END_PARAMETER_FILE" ) != "SUCCESS" )
+    {
+        read_flag =  plot_over_line_property.LoadIN(POLParamPath) ;
+        //read_flag = glyph_property.LoadIN(glyphParamPath) ;
+    }
+
 
     int mpi_rank;
 #ifndef CPU_VER 
@@ -193,6 +204,14 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
     return m_plot_flag; 
 
 }
+
+void PlotOverLine::extractPlotLine( const vismodule::StructuredVolumeObject* volume)
+{
+    this->setVolume( volume );
+//    this->extractPlotLine( m_start_point, m_end_point );
+    this->extractPlotLineStructured( m_start_point, m_end_point );
+}
+
 
 void PlotOverLine::extractPlotLine( const vismodule::UnstructuredVolumeObject* volume)
 {
@@ -271,6 +290,16 @@ void PlotOverLine::calculate_x_axis( const vismodule::Vec3 P0, const vismodule::
 
 void PlotOverLine::for_structured_mesh( const vismodule::Vec3 P0, const vismodule::Vec3 P1 )
 {
+
+    vismodule::Vec3 P0d, P1d; 
+    P0d.x() = (P0.x() - m_offset.x())/m_cell_length;
+    P0d.y() = (P0.y() - m_offset.y())/m_cell_length;
+    P0d.z() = (P0.z() - m_offset.z())/m_cell_length;
+    
+    P1d.x() = (P1.x() - m_offset.x())/m_cell_length;
+    P1d.y() = (P1.y() - m_offset.y())/m_cell_length;
+    P1d.z() = (P1.z() - m_offset.z())/m_cell_length;
+
     const size_t res_x = m_structured_volume->resolution().x();
     const size_t res_y = m_structured_volume->resolution().y();
     const size_t res_z = m_structured_volume->resolution().z();
@@ -278,7 +307,6 @@ void PlotOverLine::for_structured_mesh( const vismodule::Vec3 P0, const vismodul
     const size_t ny = res_y-1;
     const size_t nz = res_z-1;
     const size_t ncoord = res_x*res_y*res_z;
-
 
     auto index = [res_x, res_y]( size_t I, size_t J, size_t K ){ return I + J*res_x + K*res_x*res_y; };
 
@@ -375,7 +403,8 @@ void PlotOverLine::for_structured_mesh( const vismodule::Vec3 P0, const vismodul
                         s[2] = scalar[ face_id[ face*4 + i ] ];
                         s[3] = scalar[ face_id[ face*4 + ((i+1) % 4) ] ];
 
-                        this->sampling_in_tetrahedra( P0, P1, vert, s );
+                        //this->sampling_in_tetrahedra( P0, P1, vert, s );
+                        this->sampling_in_tetrahedra( P0d, P1d, vert, s );
                     }
                 }
             }
@@ -479,7 +508,10 @@ void PlotOverLine::for_hexahedral_mesh( const vismodule::Vec3 P0, const vismodul
         vismodule::Real32 scalar[8];
         for( int i=0; i<8; i++ )
         {
-            scalar[i] =  m_volume->values().to<vismodule::Real32>( local_id[i] + ncoord*m_plot_variable);
+            scalar[i] =  m_volume->values().at<vismodule::Real32>( local_id[i] + ncoord*m_plot_variable);
+            //scalar[i] =  m_volume->values().to<vismodule::Real32>( local_id[i] + ncoord*m_plot_variable);
+            //scalar[i] =  m_volume->values().oto<vismodule::Real32>( local_id[i] );
+            //std::cout << "scalar[i] = " << scalar[i] << ", local_id[i] = " << local_id[i] << std::endl;
         }
 
         vismodule::Real32 face_center_scalar[6];
@@ -861,7 +893,7 @@ void PlotOverLine::sampling_in_tetrahedra( const vismodule::Vec3 P0, const vismo
     const vismodule::Vec3 X2 = vertices[2];
     const vismodule::Vec3 X3 = vertices[3];
     const vismodule::Vec4 S( scalars );
-    
+
     // Bounding Box
     vismodule::Vec3 MinCoord( vismodule::Math::Min<float>( X0.x(), X1.x(), X2.x(), X3.x() ),
                         vismodule::Math::Min<float>( X0.y(), X1.y(), X2.y(), X3.y() ),
@@ -1000,8 +1032,8 @@ POL::Range PlotOverLine::t_range_in_tet( const vismodule::Vec4 bc_P0, const vism
 
         float a0 =  (float)bc_P0[i];
         float a1 =  (float)bc_P1[i];
-        if( vismodule::Math::Abs(a0) < 1e-6 ) a0 = 0.f;
-        if( vismodule::Math::Abs(a1) < 1e-6 ) a1 = 0.f;
+        if(vismodule::Math::Abs(a0) < 1e-6) a0 = 0.f;
+        if(vismodule::Math::Abs(a1) < 1e-6) a1 = 0.f;
 
         if( vismodule::Math::Equal( a0, a1 ) )
         {
@@ -1104,8 +1136,8 @@ void PlotOverLine::OutputLine( const int time_step)
     m_POLFilePath += ss.str();
     // 20181226 end
 
-    vismodule::KVSMLObjectPlotOverLine kvsmlobject( values_on_line, m_x_axis, m_mask);
-    kvsmlobject.write(m_POLFilePath.c_str());
+    vismodule::KVSMLObjectPlotOverLine vismodulemlobject( values_on_line, m_x_axis, m_mask);
+    vismodulemlobject.write(m_POLFilePath.c_str());
 
 }
 

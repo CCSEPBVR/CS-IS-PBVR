@@ -116,6 +116,15 @@ const float CalculateSubpixelLength(
     const double projection[16],
     const int    viewport[4] );
 
+inline void CalculateDensityParameters(
+    const vismodule::Camera*     camera,
+    const vismodule::ObjectBase* object,
+    const float            subpixel_level,
+    const float            sampling_step,
+    const float            max_opacity,
+    float* p_sampling_volume_inverse,
+    float* p_max_density );
+
 inline void CalculateDensityConstaint(
     const vismodule::Camera&     camera,
     const vismodule::ObjectBase& object,
@@ -487,6 +496,39 @@ inline const float CalculateSubpixelLength(
     const float subpixel_length = static_cast<float>( ( wx_max - wx_min ) / subpixel_level );
 
     return subpixel_length;
+}
+
+inline void CalculateDensityParameters(
+    const vismodule::Camera*     camera,
+    const vismodule::ObjectBase* object,
+    const float            subpixel_level,
+    const float            sampling_step,
+    const float            max_opacity,
+    float* p_sampling_volume_inverse,
+    float* p_max_density )
+{
+    // Calculate a transform matrix.
+    double modelview[16];
+    ::GetModelviewMatrix( *object, &modelview );
+    double projection[16];
+    ::GetProjectionMatrix( &projection );
+    int    viewport[4];
+    ::GetViewport( camera, &viewport );
+
+    // Calculate a depth of the center of gravity of the object.
+    const float object_depth = CalculateObjectDepth( *object, modelview, projection, viewport );
+
+    // Calculate suitable subpixel length.
+    const float subpixel_length = CalculateSubpixelLength( subpixel_level, object_depth, modelview, projection, viewport );
+
+    // Calculate density map from the subpixel length and the opacity map.
+    //const float max_opacity = 1.0f - std::exp( -sampling_step / subpixel_length );
+
+    const float sampling_volume_inverse = 1.0f / ( subpixel_length * subpixel_length * sampling_step );
+    const float max_density = -std::log( 1.0f - max_opacity ) * sampling_volume_inverse;
+ 
+    *p_sampling_volume_inverse = sampling_volume_inverse;
+    *p_max_density = max_density;
 }
 
 inline void CalculateDensityConstaint(

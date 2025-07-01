@@ -1,1 +1,1 @@
-#include <test/PointObjectCreator.h>
+#include <Visualization/Object/PointObjectCreator.h>

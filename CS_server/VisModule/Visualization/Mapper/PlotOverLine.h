@@ -1,11 +1,11 @@
 #ifndef PLOT_OVER_LINE 
 #define PLOT_OVER_LINE
 #include <vismodule/Matrix>
-
 #include <vismodule/Vector>
 #include <vismodule/Math>
 #include <vismodule/UnstructuredVolumeObject>
 #include <vismodule/StructuredVolumeObject>
+//#include "StructuredVolumeObject.h"
 #ifndef CPU_VER
 #include <mpi.h>
 #endif
@@ -136,8 +136,8 @@ private:
     //vismodule::ValueArray<float> m_allcell_x_axis;
     vismodule::ValueArray<bool>  m_allcell_mask;
     
-//    const vismodule::StructuredVolumeObject* m_structured_volume;
     const vismodule::StructuredVolumeObject* m_structured_volume;
+//    const pbvr::StructuredVolumeObject* m_structured_volume;
     const vismodule::UnstructuredVolumeObject* m_volume;
     const POL::Polyhedron* m_polyhedron;
 
@@ -156,12 +156,17 @@ private:
     //指定変数
     int m_plot_variable ;
 
+    //cell_length
+    float m_cell_length;
+    
+    // offset
+    vismodule::Vec3 m_offset;
 
 public:
     PlotOverLine( void );
 
-    //PlotOverLine( const vismodule::StructuredVolumeObject* volume,
     PlotOverLine( const vismodule::StructuredVolumeObject* volume,
+//    PlotOverLine( const pbvr::StructuredVolumeObject* volume,
                             const size_t resolution,
                             const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
 
@@ -187,13 +192,14 @@ public:
 
     ~PlotOverLine();
 
-//    void setVolume( const vismodule::StructuredVolumeObject* volume );
     void setVolume( const vismodule::StructuredVolumeObject* volume );
+//    void setVolume( const pbvr::StructuredVolumeObject* volume );
     void setVolume( const vismodule::UnstructuredVolumeObject* volume );
     void setVolume( const POL::Polyhedron* volume );
 
     void setResolution( const size_t resolution );
     void extractPlotLineStructured( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
+    void extractPlotLine( const vismodule::StructuredVolumeObject* volume );
     void extractPlotLine( const vismodule::UnstructuredVolumeObject* volume );
     void extractPlotLine( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
     void extractPlotLinePoly( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
@@ -214,6 +220,8 @@ public:
     void setValuesOnLine( const vismodule::ValueArray<float>& values_on_line ) { m_values_on_line = values_on_line; }
     void setXAxis( const vismodule::ValueArray<float>& x_axis ){ m_x_axis = x_axis; }
     void setMask( const vismodule::ValueArray<bool>& mask ){ m_mask = mask; }
+    void SetCellLength(const float cell_length ) { m_cell_length = cell_length ;}
+    void SetOffset(const vismodule::Vector3f offset ) { m_offset.x() = offset.x(); m_offset.y() = offset.y(); m_offset.z() = offset.z();} 
 protected:
     void calculate_x_axis( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
 

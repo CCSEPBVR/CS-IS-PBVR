@@ -22,6 +22,51 @@ GlyphGenerator::GlyphGenerator(Type** values,
         }
     }
 }
+
+GlyphGenerator::GlyphGenerator( const vismodule::StructuredVolumeObject& object )
+{
+    m_g_flag = false; 
+    //m_g_flag = this -> InputParameter(clntMes, number_of_divide);
+    m_g_flag = this -> SetGlyphParameter();
+    
+    if (m_g_flag)
+    {   
+        if( m_distribution_modes == jpv::GlyphMode:: AllPoints || m_distribution_modes == jpv::GlyphMode:: EveryNthPoints )
+        {   
+            int nnodes = object.nnodes();
+            m_ncoords = nnodes;
+            m_nvariable = object.veclen();
+            vismodule::AnyValueArray valueArray = object.values();
+            float ** values;
+            values = new Type * [m_nvariable];
+            
+            for ( int j = 0; j < m_nvariable; j++ )
+            {   
+                values[j] = new float[nnodes];
+                for ( int i = 0; i < nnodes; i++ )
+                {   
+                    int  it = j * nnodes  + i;
+                    values[j][i] = valueArray.at<Type>(it);
+                }
+            }
+            
+            m_values = values;
+            
+            this->PointSampling_struct(& object);
+            
+            for (int i = 0; i < m_nvariable; i++)
+            {   
+                delete[] values[i];
+            }
+            delete[] values;
+        }
+        else if(m_distribution_modes == jpv::GlyphMode:: UniformDistribution)
+        {   
+            this->DistributionSampling_struct(&object);
+        }
+    }
+}
+
 // CS用 constructor unstruct 
 GlyphGenerator::GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, Type** values,
         int nvariables, float* coordinates, int ncoords,

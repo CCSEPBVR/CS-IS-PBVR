@@ -18,6 +18,7 @@
 #include <vismodule/GlyphObject>
 #include <vismodule/KVSMLObjectPoint>
 
+#include <vismodule/StructuredVolumeObject>
 #include <vismodule/KVSMLObjectGlyph>
 #include <vismodule/GlyphProperty>
 #include "../Common/ParticleTransferProtocol.h"
@@ -117,6 +118,7 @@ public:
     GlyphGenerator( Type** values, int nvariables,
            float* coordinates, int ncoords,
            unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltype); //ISPBVR
+    GlyphGenerator(const vismodule::StructuredVolumeObject& object );
 
     GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, Type** values, int nvariables,
            float* coordinates, int ncoords,

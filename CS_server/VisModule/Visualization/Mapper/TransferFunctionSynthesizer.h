@@ -11,7 +11,8 @@
 #include "ReversePolishNotation.h"
 #include "Token.h"
 //add by shimomura  2022/12/20
-#include "../Common/VariableRange.h"
+//#include "../Common/VariableRange.h"
+#include "../../../Common/VariableRange.h"
 #include "ExpressionTokenizer.h"
 #include "ExpressionConverter.h"
 
