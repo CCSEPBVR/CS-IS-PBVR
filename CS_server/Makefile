@@ -5,10 +5,10 @@ include pbvr.conf
 include arch/$(PBVR_MACHINE)
 include VisModule/Makefile.def
 
-SUBDIRS += InsituLib
 SUBDIRS := FunctionParser
 SUBDIRS += Common
 SUBDIRS += VisModule
+SUBDIRS += InsituLib
 
 INCLUDE_PATH := -I. -I./VisModule -I./FunctionParser -I./Common
 LIBRARY_PATH := -L./VisModule/Release -L./FunctionParser -L./Common

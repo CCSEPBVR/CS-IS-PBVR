@@ -38,8 +38,10 @@
 #include <vtkSmartPointerBase.h>
 #include <vtkSmartPointer.h>
 #include <vtkPointData.h>
-#include "FileFormat/VtkUnstructuredFileFormat.h"
-#include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
+//#include "FileFormat/VtkUnstructuredFileFormat.h"
+//#include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
+#include <FileFormat/VtkUnstructuredFileFormat.h>
+#include <FileFormat/VTK/VtkXmlUnstructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 
 //kvsmlImporter
@@ -630,7 +632,9 @@ void generate_particles( int time_step, domain_parameters dom,
     delete m_tfs;
 }
 
-void SetVariables(vismodule::UnstructuredVolumeObject* object, Type** values, vismodule::VolumeObjectBase::CellType* celltype )
+#ifdef VTK
+//void SetVariables(kvs::UnstructuredVolumeObject* object, Type** values, kvs::UnstructuredVolumeObject::CellType* celltype )
+void SetVariables(kvs::UnstructuredVolumeObject* object, Type** values, vismodule::VolumeObjectBase::CellType* celltype )
 {
 
         switch ( object -> cellType() )
@@ -682,7 +686,7 @@ void SetVariables(vismodule::UnstructuredVolumeObject* object, Type** values, vi
             }
         }
 }
-#ifdef VTK
+
 void SetDomain( vtkUnstructuredGrid* ucd, domain_parameters* dom)
 {
     double bounds[6];
@@ -762,13 +766,14 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
     {
         vtkSmartPointer<vtkUnstructuredGrid> volume = vtu.get();
         cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &vtu );
-        vismodule::UnstructuredVolumeObject* object = &importer;
+        kvs::UnstructuredVolumeObject* object = &importer;
 
         int ncoords = object -> nnodes();
         nvariables  = object -> veclen();
         particleBase.m_nvariables = nvariables; 
 
-        pbvr::VolumeObjectBase::CellType celltype;
+        // VTKの変換処理は基本kvs_3.0にて管理するがセルタイプのみvismodule 空間にて管理
+        vismodule::VolumeObjectBase::CellType celltype;
         Type** values;
         values = new Type * [nvariables];
         for ( int j = 0; j < nvariables; j++ )
@@ -799,7 +804,10 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
                     nvariables, (float*)object->coords().pointer(), ncoords,
                     (unsigned int*)object->connections().pointer() , object -> ncells(), celltype);
 
-            GeneratePlotOverLine(time_step, object, &plot_over_line);
+            //GeneratePlotOverLine(time_step, object, &plot_over_line);
+            callPlotOverLine(time_step, dom, values,
+                    nvariables, (float*)object->coords().pointer(), ncoords,
+                    (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, &plot_over_line);
         }
         timer.stop();
         t_generate_particles += timer.sec();
