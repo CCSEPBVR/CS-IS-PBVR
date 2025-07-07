@@ -1,0 +1,441 @@
+#*****************************************************************************
+#  $Id: Makefile.vc.def 1728 2014-04-25 09:11:19Z naohisa.sakamoto@gmail.com $
+#*****************************************************************************
+
+#=============================================================================
+#  KVS_DIR.
+#=============================================================================
+!IFNDEF KVS_DIR
+!ERROR KVS_DIR is not defined.
+!ENDIF
+
+
+#=============================================================================
+#  Suffix rule.
+#=============================================================================
+.SUFFIXES:
+.SUFFIXES: .obj .cpp .h
+
+
+#=============================================================================
+#  Command macro.
+#=============================================================================
+MAKE   = nmake /nologo
+CPP    = cl /nologo
+MPICPP = mpicxx /nologo
+LD     = link /nologo
+AR     = lib /nologo
+QMAKE  = qmake
+
+MKDIR   = mkdir
+RM      = del /s
+RMDIR   = rmdir /q /s
+
+INSTALL     = xcopy /f /y
+INSTALL_EXE = xcopy /f /y
+
+
+#=============================================================================
+#  all command.
+#=============================================================================
+all: build
+
+
+#=============================================================================
+#  rebuild command..
+#=============================================================================
+rebuild: clean build
+
+
+#=============================================================================
+#  Makefile.
+#=============================================================================
+MAKEFILE = Makefile.vc
+
+
+#=============================================================================
+#  KVS library.
+#=============================================================================
+LIB_KVS_CORE = kvsCore.lib
+
+LIB_KVS_SUPPORT_CUDA                 = libkvsSupportCUDA.lib
+LIB_KVS_SUPPORT_GLUT                 = kvsSupportGLUT.lib
+LIB_KVS_SUPPORT_GLFW                 = kvsSupportGLFW.lib
+LIB_KVS_SUPPORT_FFMPEG               = kvsSupportFFmpeg.lib
+LIB_KVS_SUPPORT_QT                   = kvsSupportQt.lib
+LIB_KVS_SUPPORT_OPENXR               = kvsSupportOpenXR.lib
+LIB_KVS_SUPPORT_OPENCV               = kvsSupportOpenCV.lib
+LIB_KVS_SUPPORT_PYTHON               = kvsSupportPython.lib
+LIB_KVS_SUPPORT_MPI                  = kvsSupportMPI.lib
+LIB_KVS_SUPPORT_EGL                  = kvsSupportEGL.lib
+LIB_KVS_SUPPORT_OSMESA               = kvsSupportOSMesa.lib
+LIB_KVS_SUPPORT_EXTENDED_FILE_FORMAT = kvsSupportExtendedFileFormat.lib
+
+
+#=============================================================================
+#  Solution.
+#=============================================================================
+!IFDEF DEBUG
+SOLUTION = Debug
+!ELSE
+SOLUTION = Release
+!ENDIF
+
+
+#=============================================================================
+#  Output directory.
+#=============================================================================
+OUTDIR = $(SOLUTION)
+
+
+#=============================================================================
+#  GL_INCLUDE_PATH, GL_LIBRARY_PATH, GL_LINK_LIBRARY
+#=============================================================================
+GL_INCLUDE_PATH =
+GL_LIBRARY_PATH =
+GL_LINK_LIBRARY =
+!IF "$(KVS_ENABLE_OPENGL)" == "1"
+GL_LINK_LIBRARY = $(GL_LINK_LIBRARY) opengl32.lib
+!IF "$(KVS_ENABLE_GLU)" == "1"
+GL_LINK_LIBRARY = $(GL_LINK_LIBRARY) glu32.lib
+!ENDIF
+!ENDIF
+
+
+#=============================================================================
+#  GLEW_INCLUDE_PATH, GLEW_LIBRARY_PATH, GLEW_LINK_LIBRARY
+#=============================================================================
+GLEW_INCLUDE_PATH =
+GLEW_LIBRARY_PATH =
+GLEW_LINK_LIBRARY =
+!IF "$(KVS_ENABLE_OPENGL)" == "1"
+!IF "$(KVS_ENABLE_GLEW)" == "1"
+GLEW_LINK_LIBRARY = glew32.lib
+!IFDEF KVS_GLEW_DIR
+GLEW_INCLUDE_PATH = $(GLEW_INCLUDE_PATH) /I"$(KVS_GLEW_DIR)\include"
+GLEW_LIBRARY_PATH = $(GLEW_LIBRARY_PATH) /LIBPATH:"$(KVS_GLEW_DIR)\lib"
+!ENDIF
+!ENDIF
+!ENDIF
+
+
+#=============================================================================
+#  GLUT_INCLUDE_PATH, GLUT_LIBRARY_PATH, GLUT_LINK_LIBRARY
+#=============================================================================
+!IF "$(KVS_SUPPORT_GLUT)" == "1"
+GLUT_INCLUDE_PATH =
+GLUT_LIBRARY_PATH =
+GLUT_LINK_LIBRARY = freeglut.lib
+!IFDEF KVS_GLUT_DIR
+GLUT_INCLUDE_PATH = $(GLUT_INCLUDE_PATH) /I"$(KVS_GLUT_DIR)\include"
+GLUT_LIBRARY_PATH = $(GLUT_LIBRARY_PATH) /LIBPATH:"$(KVS_GLUT_DIR)\lib"
+!ENDIF
+!ENDIF
+
+
+#=============================================================================
+#  GLFW_INCLUDE_PATH, GLFW_LIBRARY_PATH, GLFW_LINK_LIBRARY
+#=============================================================================
+!IF "$(KVS_SUPPORT_GLFW)" == "1"
+GLFW_INCLUDE_PATH =
+GLFW_LIBRARY_PATH =
+GLFW_LINK_LIBRARY = glfw3.lib
+!IFDEF KVS_GLFW_DIR
+GLFW_INCLUDE_PATH = $(GLFW_INCLUDE_PATH) /I"$(KVS_GLFW_DIR)\include"
+GLFW_LIBRARY_PATH = $(GLFW_LIBRARY_PATH) /LIBPATH:"$(KVS_GLFW_DIR)\lib"
+!ENDIF
+!ENDIF
+
+
+#=============================================================================
+#  FFMPEG_INCLUDE_PATH, FFMPEG_LIBRARY_PATH, FFMPEG_LINK_LIBRARY
+#=============================================================================
+!IF "$(KVS_SUPPORT_FFMPEG)" == "1"
+FFMPEG_INCLUDE_PATH =
+FFMPEG_LIBRARY_PATH =
+FFMPEG_LINK_LIBRARY = avcodec.lib avformat.lib avutil.lib avdevice.lib avfilter.lib swscale.lib
+!IFDEF KVS_FFMPEG_DIR
+FFMPEG_INCLUDE_PATH = $(FFMPEG_INCLUDE_PATH) /I"$(KVS_FFMPEG_DIR)\include"
+FFMPEG_LIBRARY_PATH = $(FFMPEG_LIBRARY_PATH) /LIBPATH:"$(KVS_FFMPEG_DIR)\lib"
+!ENDIF
+!ENDIF
+
+
+#=============================================================================
+#  CUDA_INCLUDE_PATH, CUDA_LIBRARY_PATH, CUDA_LINK_LIBRARY
+#=============================================================================
+!IF "$(KVS_SUPPORT_CUDA)" == "1"
+CUDA_INCLUDE_PATH =
+CUDA_LIBRARY_PATH =
+CUDA_LINK_LIBRARY = cuda.lib cudart.lib
+!IFDEF KVS_CUDA_DIR
+CUDA_INCLUDE_PATH = $(CUDA_INCLUDE_PATH) /I"$(KVS_CUDA_DIR)\include"
+CUDA_LIBRARY_PATH = $(CUDA_LIBRARY_PATH) /LIBPATH:"$(KVS_CUDA_DIR)\lib\win32"
+!ENDIF
+!IFDEF KVS_CUDA_SDK_DIR
+CUDA_INCLUDE_PATH = $(CUDA_INCLUDE_PATH) /I"$(KVS_CUDA_SDK_DIR)\common\inc"
+CUDA_LIBRARY_PATH = $(CUDA_LIBRARY_PATH) /LIBPATH:"$(KVS_CUDA_SDK_DIR)\lib\win32"
+#CUDA_LINK_LIBRARY = cutil.lib
+CUDA_LINK_LIBRARY = $(CUDA_LINK_LIBRARY)
+!ENDIF
+NVCC = nvcc
+NVCCFLAGS = --host-compilation C++
+!ENDIF
+
+
+#=============================================================================
+#  OPENCV_INCLUDE_PATH, OPENCV_LIBRARY_PATH, OPENCV_LINK_LIBRARY
+#=============================================================================
+!IF "$(KVS_SUPPORT_OPENCV)" == "1"
+OPENCV_INCLUDE_PATH = /I"C:\Program Files\OpenCV\cv\include"
+OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"C:\Program Files\OpenCV\cvaux\include"
+OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"C:\Program Files\OpenCV\cxcore\include"
+OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"C:\Program Files\OpenCV\otherlibs\highgui"
+OPENCV_LIBRARY_PATH = /LIBPATH:"C:\Program Files\OpenCV\lib"
+OPENCV_LINK_LIBRARY = cv.lib cxcore.lib cvaux.lib highgui.lib cvcam.lib
+!IFDEF KVS_OPENCV_DIR
+OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"$(KVS_OPENCV_DIR)\cv\include"
+OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"$(KVS_OPENCV_DIR)\cvaux\include"
+OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"$(KVS_OPENCV_DIR)\cxcore\include"
+OPENCV_INCLUDE_PATH = $(OPENCV_INCLUDE_PATH) /I"$(KVS_OPENCV_DIR)\otherlibs\hightgui"
+OPENCV_LIBRARY_PATH = $(OPENCV_LIBRARY_PATH) /LIBPATH:"$(KVS_OPENCV_DIR)\lib"
+!ENDIF
+!ENDIF
+
+#=============================================================================
+#  OPENXR_INCLUDE_PATH, OPENXR_LIBRARY_PATH, OPENXR_LINK_LIBRARY
+#=============================================================================
+!IF "$(KVS_SUPPORT_OPENXR)" == "1"
+OPENXR_INCLUDE_PATH =
+OPENXR_LIBRARY_PATH =
+IMGUI_INCLUDE_PATH =
+OPENXR_LINK_LIBRARY = openxr_loader.lib
+!IFDEF KVS_OPENXR_DIR
+OPENXR_INCLUDE_PATH = $(OPENXR_INCLUDE_PATH) /I"$(KVS_OPENXR_DIR)\include"
+OPENXR_LIBRARY_PATH = $(OPENXR_LIBRARY_PATH) /LIBPATH:"$(KVS_OPENXR_DIR)\lib"
+!ENDIF
+!IFDEF KVS_IMGUI_DIR
+IMGUI_INCLUDE_PATH = $(IMGUI_INCLUDE_PATH) /I"$(KVS_IMGUI_DIR)\include"
+!ENDIF
+!ENDIF
+
+#=============================================================================
+#  PYTHON_INCLUDE_PATH, PYTHON_LIBRARY_PATH, PYTHON_LINK_LIBRARY
+#  NUMPY_INCLUDE_PATH, NUMPY_LIBRARY_PATH, NUMPY_LINK_LIBRARY
+#=============================================================================
+!IF "$(KVS_SUPPORT_PYTHON)" == "1"
+PYTHON_INCLUDE_PATH = 
+PYTHON_LIBRARY_PATH = 
+PYTHON_LINK_LIBRARY = 
+!IFDEF KVS_PYTHON_DIR
+PYTHON_INCLUDE_PATH = $(PYTHON_INCLUDE_PATH) /I"$(KVS_PYTHON_DIR)\include"
+PYTHON_LIBRARY_PATH = $(PYTHON_LIBRARY_PATH) /LIBPATH:"$(KVS_PYTHON_DIR)\libs"
+!ENDIF
+!IFDEF KVS_PYTHON_LINK_LIBRARY
+PYTHON_LINK_LIBRARY = $(KVS_PYTHON_LINK_LIBRARY)
+!ENDIF
+NUMPY_INCLUDE_PATH = 
+NUMPY_LIBRARY_PATH = 
+NUMPY_LINK_LIBRARY = 
+!IFDEF KVS_NUMPY_DIR
+NUMPY_INCLUDE_PATH = $(NUMPY_INCLUDE_PATH) /I"$(KVS_NUMPY_DIR)\include"
+NUMPY_LIBRARY_PATH = $(NUMPY_LIBRARY_PATH) /LIBPATH:"$(KVS_NUMPY_DIR)\lib"
+!ENDIF
+!IFDEF KVS_NUMPY_LINK_LIBRARY
+NUMPY_LINK_LIBRARY = $(KVS_NUMPY_LINK_LIBRARY)
+!ENDIF
+!ENDIF
+
+
+#=============================================================================
+#  MPI_INCLUDE_PATH, MPI_LIBRARY_PATH, MPI_LINK_LIBRARY
+#=============================================================================
+!IF "$(KVS_SUPPORT_MPI)" == "1"
+MPI_INCLUDE_PATH =
+MPI_LIBRARY_PATH =
+MPI_LINK_LIBRARY =
+!IFDEF KVS_MPI_DIR
+MPI_INCLUDE_PATH = $(MPI_INCLUDE_PATH) /I"$(KVS_MPI_DIR)\include"
+MPI_LIBRARY_PATH = $(MPI_LIBRARY_PATH) /LIBPATH:"$(KVS_MPI_DIR)\lib"
+!ENDIF
+!ENDIF
+
+
+#=============================================================================
+#  EGL_INCLUDE_PATH, EGL_LIBRARY_PATH, EGL_LINK_LIBRARY
+#=============================================================================
+!IF "$(KVS_SUPPORT_EGL)" == "1"
+EGL_INCLUDE_PATH =
+EGL_LIBRARY_PATH =
+EGL_LINK_LIBRARY =
+!IFDEF KVS_EGL_DIR
+EGL_INCLUDE_PATH = $(EGL_INCLUDE_PATH) /I"$(KVS_EGL_DIR)\include"
+EGL_LIBRARY_PATH = $(EGL_LIBRARY_PATH) /LIBPATH:"$(KVS_EGL_DIR)\lib"
+!ENDIF
+!ENDIF
+
+#=============================================================================
+#  VTK_INCLUDE_PATH, VTK_LIBRARY_PATH, VTK_LINK_LIBRARY, VTK_INSTALL_DIR.
+#=============================================================================
+!IF "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" == "1"
+# /I<PATH>
+VTK_INCLUDE_OPTION = /I"$(VTK_INCLUDE_PATH)"
+# /LIBPATH:<PATH>
+VTK_LIBRARY_OPTION = /LIBPATH:"$(VTK_LIB_PATH)"
+
+!IFDEF DEBUG
+VTK_LINK_LIBRARY = \
+vtksys-$(VTK_VERSION)d.lib \
+vtkCommonCore-$(VTK_VERSION)d.lib \
+vtkCommonExecutionModel-$(VTK_VERSION)d.lib \
+vtkCommonDataModel-$(VTK_VERSION)d.lib \
+vtkFiltersCore-$(VTK_VERSION)d.lib \
+vtkFiltersExtraction-$(VTK_VERSION)d.lib \
+vtkFiltersGeneral-$(VTK_VERSION)d.lib \
+vtkFiltersGeometry-$(VTK_VERSION)d.lib \
+vtkFiltersParallel-$(VTK_VERSION)d.lib \
+vtkIOCore-$(VTK_VERSION)d.lib \
+vtkIOGeometry-$(VTK_VERSION)d.lib \
+vtkIOCGNSReader-$(VTK_VERSION)d.lib \
+vtkIOEnSight-$(VTK_VERSION)d.lib \
+vtkIOLegacy-$(VTK_VERSION)d.lib \
+vtkIOParallel-$(VTK_VERSION)d.lib \
+vtkIOXML-$(VTK_VERSION)d.lib \
+vtkIOXMLParser-$(VTK_VERSION)d.lib
+!ELSE
+VTK_LINK_LIBRARY = \
+vtksys-$(VTK_VERSION).lib \
+vtkCommonCore-$(VTK_VERSION).lib \
+vtkCommonExecutionModel-$(VTK_VERSION).lib \
+vtkCommonDataModel-$(VTK_VERSION).lib \
+vtkFiltersCore-$(VTK_VERSION).lib \
+vtkFiltersExtraction-$(VTK_VERSION).lib \
+vtkFiltersGeneral-$(VTK_VERSION).lib \
+vtkFiltersGeometry-$(VTK_VERSION).lib \
+vtkFiltersParallel-$(VTK_VERSION).lib \
+vtkIOCore-$(VTK_VERSION).lib \
+vtkIOGeometry-$(VTK_VERSION).lib \
+vtkIOCGNSReader-$(VTK_VERSION).lib \
+vtkIOEnSight-$(VTK_VERSION).lib \
+vtkIOLegacy-$(VTK_VERSION).lib \
+vtkIOParallel-$(VTK_VERSION).lib \
+vtkIOXML-$(VTK_VERSION).lib \
+vtkIOXMLParser-$(VTK_VERSION).lib
+!ENDIF
+!ENDIF
+
+#=============================================================================
+#  Compiler option.
+#=============================================================================
+CPPFLAGS = /std:c++17 /W3 /EHsc /GR
+
+!IFDEF DEBUG
+CPPFLAGS = $(CPPFLAGS) /Od /MTd
+!ELSE
+CPPFLAGS = $(CPPFLAGS) /Ox /MT
+!ENDIF
+
+# OpenMP
+!IF "$(KVS_ENABLE_OPENMP)" == "1"
+CPPFLAGS = $(CPPFLAGS) /openmp
+!ENDIF
+
+
+#=============================================================================
+#  Definition.
+#=============================================================================
+DEFINITIONS = /DWIN32 /D_MBCS /DNOMINMAX /D_SCL_SECURE_NO_DEPRECATE /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
+
+!IFDEF DEBUG
+DEFINITIONS = $(DEFINITIONS) /D_DEBUG /DKVS_ENABLE_DEBUG
+!ELSE
+DEFINITIONS = $(DEFINITIONS) /DNDEBUG
+!ENDIF
+
+!IFDEF MEM_DEBUG
+DEFINITIONS = $(DEFINITIONS) /DKVS_ENABLE_MEM_DEBUG
+!ENDIF
+
+!IF "$(KVS_ENABLE_OPENGL)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DKVS_ENABLE_OPENGL
+!ENDIF
+
+!IF "$(KVS_ENABLE_GLU)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DKVS_ENABLE_GLU
+!ENDIF
+
+!IF "$(KVS_ENABLE_GLEW)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DKVS_ENABLE_GLEW
+!ENDIF
+
+!IF "$(KVS_ENABLE_OPENMP)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DKVS_ENABLE_OPENMP
+!ENDIF
+
+!IF "$(KVS_ENABLE_DEPRECATED)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DKVS_ENABLE_DEPRECATED
+!ENDIF
+
+# NOTE: The GLEW header files must be included before including the OpenGL
+# header files. Therefore 'GLEW_INCLUDE_PATH' adds to 'DEFINITIONS' here.
+DEFINITIONS = $(DEFINITIONS) $(GLEW_INCLUDE_PATH)
+
+!IF "$(KVS_ENABLE_OPENGL)" == "1"
+!IF "$(KVS_SUPPORT_GLUT)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_GLUT
+!ENDIF
+
+!IF "$(KVS_SUPPORT_GLFW)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_GLFW
+!ENDIF
+!ENDIF
+
+!IF "$(KVS_SUPPORT_FFMPEG)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_FFMPEG
+!ENDIF
+
+!IF "$(KVS_SUPPORT_QT)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_QT
+!ENDIF
+
+!IF "$(KVS_SUPPORT_OPENXR)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_OPENXR
+!ENDIF
+
+!IF "$(KVS_SUPPORT_OPENCV)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_OPENCV
+!ENDIF
+
+!IF "$(KVS_SUPPORT_CUDA)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_CUDA
+!ENDIF
+
+!IF "$(KVS_SUPPORT_PYTHON)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_PYTHON
+!ENDIF
+
+!IF "$(KVS_SUPPORT_MPI)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_MPI
+!ENDIF
+
+!IF "$(KVS_SUPPORT_EGL)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_EGL
+!ENDIF
+
+!IF "$(KVS_SUPPORT_OSMESA)" == "1"
+DEFINITIONS = $(DEFINITIONS) /DKVS_SUPPORT_OSMESA
+!ENDIF
+
+
+#=============================================================================
+#  Linker option.
+#=============================================================================
+LDFLAGS = /MANIFEST
+
+!IFDEF DEBUG
+LDFLAGS = $(LDFLAGS) /DEBUG
+!ENDIF
+
+!IFDEF NOCONSOLE
+LDFLAGS = /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup /MANIFEST
+!ENDIF

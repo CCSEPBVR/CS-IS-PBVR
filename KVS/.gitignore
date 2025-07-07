@@ -1,0 +1,42 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+.DS_Store
+Release
+Debug
+/build
+/BUILD
+/Build
+
+*.stash
+Example/Numeric/EigenDecomposition/EigenDecomposition
+Example/Numeric/EigenDecomposition/Makefile.kvs
+Source/SupportQt/BuildRule.mk
+
+.vscode/

@@ -1,0 +1,169 @@
+#*****************************************************************************
+#  $Id: Makefile.vc 1497 2013-04-04 07:17:54Z naohisa.sakamoto@gmail.com $
+#*****************************************************************************
+
+#=============================================================================
+#  Include.
+#=============================================================================
+!INCLUDE ..\kvs.conf
+!INCLUDE ..\Makefile.vc.def
+
+
+#=============================================================================
+#  INCLUDE_PATH, LIBRARY_PATH, LINK_LIBRARY, INSTALL_DIR.
+#=============================================================================
+INCLUDE_PATH =
+LIBRARY_PATH =
+LINK_LIBRARY =
+INSTALL_DIR  = $(KVS_DIR)
+
+
+#=============================================================================
+#  Sub directory.
+#=============================================================================
+SUBDIRS = Core
+
+!IF "$(KVS_ENABLE_OPENGL)" == "1"
+!IF "$(KVS_SUPPORT_GLUT)" == "1"
+SUBDIRS = $(SUBDIRS) SupportGLUT
+!ENDIF
+
+!IF "$(KVS_SUPPORT_GLFW)" == "1"
+SUBDIRS = $(SUBDIRS) SupportGLFW
+!ENDIF
+!ENDIF
+
+!IF "$(KVS_SUPPORT_FFMPEG)" == "1"
+SUBDIRS = $(SUBDIRS) SupportFFmpeg
+!ENDIF
+
+!IF "$(KVS_SUPPORT_QT)" == "1"
+SUBDIRS = $(SUBDIRS) SupportQt
+!ENDIF
+
+!IF "$(KVS_SUPPORT_OPENXR)" == "1"
+SUBDIRS = $(SUBDIRS) SupportOpenXR
+!ENDIF
+
+!IF "$(KVS_SUPPORT_SAGE)" == "1"
+SUBDIRS = $(SUBDIRS) SupportSAGE
+!ENDIF
+
+!IF "$(KVS_SUPPORT_OPENCV)" == "1"
+SUBDIRS = $(SUBDIRS) SupportOpenCV
+!ENDIF
+
+!IF "$(KVS_SUPPORT_CUDA)" == "1"
+SUBDIRS = $(SUBDIRS) SupportCUDA
+!ENDIF
+
+!IF "$(KVS_SUPPORT_PYTHON)" == "1"
+SUBDIRS = $(SUBDIRS) SupportPython
+!ENDIF
+
+!IF "$(KVS_SUPPORT_MPI)" == "1"
+SUBDIRS = $(SUBDIRS) SupportMPI
+!ENDIF
+
+!IF "$(KVS_SUPPORT_EGL)" == "1"
+SUBDIRS = $(SUBDIRS) SupportEGL
+!ENDIF
+
+!IF "$(KVS_SUPPORT_OSMESA)" == "1"
+SUBDIRS = $(SUBDIRS) SupportOSMesa
+!ENDIF
+
+!IF "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" == "1"
+SUBDIRS = $(SUBDIRS) SupportExtendedFileFormat
+!ENDIF
+
+#=============================================================================
+#  build.
+#=============================================================================
+build:
+	FOR %%i IN ( $(SUBDIRS) ) DO \
+	CD %%i && $(MAKE) /f $(MAKEFILE) /$(MAKEFLAGS) build && CD ..
+
+
+#=============================================================================
+#  clean.
+#=============================================================================
+clean:
+	FOR %%i IN ( $(SUBDIRS) ) DO \
+	CD %%i && $(MAKE) /f $(MAKEFILE) /$(MAKEFLAGS) clean && CD ..
+
+
+#=============================================================================
+#  install.
+#=============================================================================
+install:
+	IF NOT EXIST "$(INSTALL_DIR)\include\kvs" $(MKDIR) "$(INSTALL_DIR)\include\kvs"
+	$(INSTALL) kvsCore "$(INSTALL_DIR)\include"
+	$(INSTALL) kvs\* "$(INSTALL_DIR)\include\kvs"
+!IF "$(KVS_SUPPORT_GLUT)" == "1"
+	IF NOT EXIST "$(INSTALL_DIR)\include\kvs\glut" $(MKDIR) "$(INSTALL_DIR)\include\kvs\glut"
+	$(INSTALL) kvsSupportGLUT "$(INSTALL_DIR)\include"
+	$(INSTALL) kvs\glut\* "$(INSTALL_DIR)\include\kvs\glut"
+!ENDIF
+!IF "$(KVS_SUPPORT_GLFW)" == "1"
+	IF NOT EXIST "$(INSTALL_DIR)\include\kvs\glfw" $(MKDIR) "$(INSTALL_DIR)\include\kvs\glfw"
+	$(INSTALL) kvsSupportGLFW "$(INSTALL_DIR)\include"
+	$(INSTALL) kvs\glfw\* "$(INSTALL_DIR)\include\kvs\glfw"
+!ENDIF
+!IF "$(KVS_SUPPORT_FFMPEG)" == "1"
+	IF NOT EXIST "$(INSTALL_DIR)\include\kvs\ffmpeg" $(MKDIR) "$(INSTALL_DIR)\include\kvs\ffmpeg"
+	$(INSTALL) kvsSupportFFmpeg "$(INSTALL_DIR)\include"
+	$(INSTALL) kvs\ffmpeg\* "$(INSTALL_DIR)\include\kvs\ffmpeg"
+!ENDIF
+!IF "$(KVS_SUPPORT_QT)" == "1"
+	IF NOT EXIST "$(INSTALL_DIR)\include\kvs\qt" $(MKDIR) "$(INSTALL_DIR)\include\kvs\qt"
+	$(INSTALL) kvsSupportQt "$(INSTALL_DIR)\include"
+	$(INSTALL) kvs\qt\* "$(INSTALL_DIR)\include\kvs\qt"
+!ENDIF
+!IF "$(KVS_SUPPORT_OPENXR)" == "1"
+	IF NOT EXIST "$(INSTALL_DIR)\include\kvs\openxr" $(MKDIR) "$(INSTALL_DIR)\include\kvs\openxr"
+	$(INSTALL) kvsSupportOpenXR "$(INSTALL_DIR)\include"
+	$(INSTALL) kvs\openxr\* "$(INSTALL_DIR)\include\kvs\openxr"
+!ENDIF
+!IF "$(KVS_SUPPORT_OPENCV)" == "1"
+	IF NOT EXIST "$(INSTALL_DIR)\include\kvs\opencv" $(MKDIR) "$(INSTALL_DIR)\include\kvs\opencv"
+	$(INSTALL) kvsSupportOpenCV "$(INSTALL_DIR)\include"
+	$(INSTALL) kvs\opencv\* "$(INSTALL_DIR)\include\kvs\opencv"
+!ENDIF
+!IF "$(KVS_SUPPORT_CUDA)" == "1"
+	IF NOT EXIST "$(INSTALL_DIR)\include\kvs\cuda" $(MKDIR) "$(INSTALL_DIR)\include\kvs\cuda"
+	$(INSTALL) kvsSupportCUDA "$(INSTALL_DIR)\include"
+	$(INSTALL) kvs\cuda\* "$(INSTALL_DIR)\include\kvs\cuda"
+!ENDIF
+!IF "$(KVS_SUPPORT_SAGE)" == "1"
+	IF NOT EXIST "$(INSTALL_DIR)\include\kvs\sage" $(MKDIR) "$(INSTALL_DIR)\include\kvs\sage"
+	$(INSTALL) kvsSupportSAGE "$(INSTALL_DIR)\include"
+	$(INSTALL) kvs\sage\* "$(INSTALL_DIR)\include\kvs\sage"
+!ENDIF
+!IF "$(KVS_SUPPORT_PYTHON)" == "1"
+	IF NOT EXIST "$(INSTALL_DIR)\include\kvs\python" $(MKDIR) "$(INSTALL_DIR)\include\kvs\python"
+	$(INSTALL) kvsSupportPython "$(INSTALL_DIR)\include"
+	$(INSTALL) kvs\python\* "$(INSTALL_DIR)\include\kvs\python"
+!ENDIF
+!IF "$(KVS_SUPPORT_MPI)" == "1"
+	IF NOT EXIST "$(INSTALL_DIR)\include\kvs\mpi" $(MKDIR) "$(INSTALL_DIR)\include\kvs\mpi"
+	$(INSTALL) kvsSupportMPI "$(INSTALL_DIR)\include"
+	$(INSTALL) kvs\mpi\* "$(INSTALL_DIR)\include\kvs\mpi"
+!ENDIF
+!IF "$(KVS_SUPPORT_EGL)" == "1"
+	IF NOT EXIST "$(INSTALL_DIR)\include\kvs\egl" $(MKDIR) "$(INSTALL_DIR)\include\kvs\egl"
+	$(INSTALL) kvsSupportEGL "$(INSTALL_DIR)\include"
+	$(INSTALL) kvs\egl\* "$(INSTALL_DIR)\include\kvs\egl"
+!ENDIF
+!IF "$(KVS_SUPPORT_OSMESA)" == "1"
+	IF NOT EXIST "$(INSTALL_DIR)\include\kvs\osmesa" $(MKDIR) "$(INSTALL_DIR)\include\kvs\osmesa"
+	$(INSTALL) kvsSupportOSMesa "$(INSTALL_DIR)\include"
+	$(INSTALL) kvs\osmesa\* "$(INSTALL_DIR)\include\kvs\osmesa"
+!ENDIF
+!IF "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" == "1"
+	IF NOT EXIST "$(INSTALL_DIR)\include\kvs\extendedfileformat" $(MKDIR) "$(INSTALL_DIR)\include\kvs\extendedfileformat"
+	$(INSTALL) kvsSupportExtendedFileFormat "$(INSTALL_DIR)\include"
+	$(INSTALL) kvs\extendedfileformat\* "$(INSTALL_DIR)\include\kvs\extendedfileformat"
+!ENDIF
+	FOR %%i IN ( $(SUBDIRS) ) DO \
+	CD %%i && $(MAKE) /f $(MAKEFILE) /$(MAKEFLAGS) install && CD ..

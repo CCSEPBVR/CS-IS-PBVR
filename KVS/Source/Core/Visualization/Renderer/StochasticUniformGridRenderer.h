@@ -1,0 +1,130 @@
+/*****************************************************************************/
+/**
+ *  @file   StochasticUniformGridRenderer.h
+ *  @author Naoya Maeda, Naohisa Sakamoto
+ */
+/*****************************************************************************/
+#pragma once
+#include <kvs/Module>
+#include <kvs/ProgramObject>
+#include <kvs/VertexBufferObjectManager>
+#include <kvs/FrameBufferObject>
+#include <kvs/Texture2D>
+#include <kvs/Texture3D>
+#include <kvs/TransferFunction>
+#include <kvs/RayCastingRenderer>
+#include "StochasticRenderingEngine.h"
+#include "StochasticRendererBase.h"
+
+
+namespace kvs
+{
+
+class StructuredVolumeObject;
+
+/*===========================================================================*/
+/**
+ *  @brief  Stochastic uniform grid renderer class.
+ */
+/*===========================================================================*/
+class StochasticUniformGridRenderer : public kvs::StochasticRendererBase
+{
+    kvsModule( kvs::StochasticUniformGridRenderer, Renderer );
+    kvsModuleBaseClass( kvs::StochasticRendererBase );
+
+public:
+    class Engine;
+
+public:
+    StochasticUniformGridRenderer();
+    void setEdgeFactor( const float factor );
+    void setSamplingStep( const float step );
+    void setTransferFunction( const kvs::TransferFunction& transfer_function );
+    const kvs::TransferFunction& transferFunction() const;
+    float samplingStep() const;
+    void setVertexShaderFile( const std::string& file );
+    void setFragmentShaderFile( const std::string& file );
+    void setShaderFiles( const std::string& vert_file, const std::string& frag_file );
+};
+
+/*===========================================================================*/
+/**
+ *  @brief  Engine class for stochastic uniform grid renderer.
+ */
+/*===========================================================================*/
+class StochasticUniformGridRenderer::Engine : public kvs::StochasticRenderingEngine
+{
+    using BaseClass = kvs::StochasticRenderingEngine;
+
+public:
+    using BufferObject = kvs::glsl::RayCastingRenderer::BufferObject;
+    using RenderPass = kvs::glsl::RayCastingRenderer::RenderPass;
+    using BoundingBufferObject = kvs::glsl::RayCastingRenderer::BoundingBufferObject;
+    using BoundingRenderPass = kvs::glsl::RayCastingRenderer::BoundingRenderPass;
+
+private:
+    // Variable
+    float m_step = 0.5f; ///< sampling step
+    float m_edge_factor = 0.0f; ///< edge enhancement factor
+
+    // Transfer function
+    bool m_transfer_function_changed = true; ///< flag for changin transfer function
+    kvs::TransferFunction m_transfer_function{}; ///< transfer function
+    kvs::Texture1D m_transfer_function_texture{}; ///< transfer function texture
+
+    // Entry/exit framebuffer
+    kvs::FrameBufferObject m_entry_exit_framebuffer{}; ///< framebuffer object for entry/exit point texture
+    kvs::Texture2D m_entry_texture{}; ///< entry point texture
+    kvs::Texture2D m_exit_texture{}; ///< exit point texture
+
+    // Buffer object
+    BufferObject m_volume_buffer{}; ///< volume buffer object
+    BoundingBufferObject m_bounding_cube_buffer{}; ///< bounding cube buffer
+
+    // Render pass
+    RenderPass m_render_pass{ m_volume_buffer };
+    BoundingRenderPass m_bounding_render_pass{ m_bounding_cube_buffer };
+
+public:
+    Engine();
+    virtual ~Engine() { this->release(); }
+    void release();
+    void create( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
+    void update( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
+    void setup( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
+    void draw( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
+
+    void setEdgeFactor( const float factor ) { m_edge_factor = factor; }
+    void setSamplingStep( const float step ) { m_step = step; }
+    void setTransferFunction( const kvs::TransferFunction& transfer_function )
+    {
+        m_transfer_function = transfer_function;
+        m_transfer_function_changed = true;
+    }
+
+    float samplingStep() const { return m_step; }
+    const kvs::TransferFunction& transferFunction() const { return m_transfer_function; }
+
+    const std::string& vertexShaderFile() const { return m_render_pass.vertexShaderFile(); }
+    const std::string& fragmentShaderFile() const { return m_render_pass.fragmentShaderFile(); }
+    void setVertexShaderFile( const std::string& file ) { m_render_pass.setVertexShaderFile( file ); }
+    void setFragmentShaderFile( const std::string& file ) { m_render_pass.setFragmentShaderFile( file ); }
+    void setShaderFiles( const std::string& vert, const std::string& frag )
+    {
+        m_render_pass.setShaderFiles( vert, frag );
+    }
+
+private:
+    void create_shader_program( const kvs::Shader::ShadingModel& shading_model, const bool shading_enabled );
+    void update_shader_program( const kvs::Shader::ShadingModel& shading_model, const bool shading_enabled );
+    void setup_shader_program( const kvs::Shader::ShadingModel& shading_model, const kvs::ObjectBase* object, const kvs::Camera* camera, const kvs::Light* light );
+
+    void create_framebuffer( const size_t width, const size_t height );
+    void update_framebuffer( const size_t width, const size_t height );
+
+    void create_buffer_object( const kvs::StructuredVolumeObject* volume );
+    void update_buffer_object( const kvs::StructuredVolumeObject* volume );
+    void draw_buffer_object( const kvs::StructuredVolumeObject* volume );
+};
+
+} // end of namespace kvs

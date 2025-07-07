@@ -1,0 +1,55 @@
+/****************************************************************************/
+/**
+ *  @file   XMLElement.cpp
+ *  @author Naohisa Sakamoto
+ */
+/****************************************************************************/
+#include "XMLElement.h"
+#include "XMLNode.h"
+#include <string>
+
+
+namespace kvs
+{
+
+/*==========================================================================*/
+/**
+ *  Constructor.
+ *  @param value [in] element value
+ */
+/*==========================================================================*/
+XMLElement::XMLElement( const std::string& value ):
+    TiXmlElement( value )
+{
+}
+
+/*==========================================================================*/
+/**
+ *  Constructor.
+ */
+/*==========================================================================*/
+XMLElement::~XMLElement()
+{
+}
+
+/*==========================================================================*/
+/**
+ *  Insert node to the element.
+ *  @param node [in] node
+ *  @return pointer to the node
+ */
+/*==========================================================================*/
+TiXmlNode* XMLElement::insert( const TiXmlNode& node )
+{
+    return SuperClass::InsertEndChild( node );
+}
+
+const std::string XMLElement::AttributeValue( const TiXmlElement* element, const std::string& name )
+{
+    const std::string* value = element->Attribute( name );
+    if( !value ) return "";
+
+    return *value;
+}
+
+} // end of namespace kvs
