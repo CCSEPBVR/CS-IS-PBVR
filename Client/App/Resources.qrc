@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Resources/images/first.svg</file>
+        <file>Resources/images/jump.svg</file>
+        <file>Resources/images/last.svg</file>
+        <file>Resources/images/loop.svg</file>
+        <file>Resources/images/next.svg</file>
+        <file>Resources/images/pause.svg</file>
+        <file>Resources/images/play.svg</file>
+        <file>Resources/images/previous.svg</file>
+        <file>Resources/images/reverse.svg</file>
+        <file>Resources/json/DefaultColorMap.json</file>
+        <file>Resources/images/keepLast.svg</file>
+    </qresource>
+</RCC>
