@@ -90,7 +90,7 @@ public:
     void run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, vismodule::KVSMLObjectGlyph* object, const int st, const int vl)
     {
         vismodule::GlyphObjectGenerator generator;
-        generator.setFinlterInfo( m_mvp );
+        generator.setFilterInfo( m_mvp );
         generator.createFromFile( param, camera, clntMes, number_of_divide, st, vl );
         vismodule::KVSMLObjectGlyph* po = generator.getKVSMLObjectGlyph();
         
@@ -107,7 +107,7 @@ public:
 
     vismodule::KVSMLObjectGlyph* run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, const int st, const int vl)
     {
-        m_generator.setFinlterInfo( m_mvp );
+        m_generator.setFilterInfo( m_mvp );
         m_generator.setCoordSynthTS( st );
         m_generator.createFromFile( param, camera, clntMes, number_of_divide, st, vl );
         vismodule::KVSMLObjectGlyph* po = m_generator.getKVSMLObjectGlyph();

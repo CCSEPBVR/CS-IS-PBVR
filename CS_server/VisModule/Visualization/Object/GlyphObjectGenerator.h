@@ -74,7 +74,7 @@ public:
 
     std::string getErrorMessage( const size_t maxMemory ) const;
 
-    void setFinlterInfo( const MultiVolumeProperty *mvp )
+    void setFilterInfo( const MultiVolumeProperty *mvp )
     {
         m_mvp = mvp;
     }
@@ -105,6 +105,62 @@ public:
     {
         return m_coord_synthesizer_tokens;
     }
+
+    void run( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide ,const int timeStep, vismodule::KVSMLObjectGlyph* object, const int st = 1 )
+//    void run( const Argument& param, const vismodule::Camera& camera, jpv::ParticleTransferClientMessage &clntMes , const int number_of_divide ,const int timeStep, vismodule::KVSMLObjectGlyph* object, const int st = 1 )
+    {
+//        //vismodule::GlyphObjectGenerator generator;
+//        //generator.setFilterInfo(m_mvp);
+//
+//        struct stat s;
+//        if ( stat( param.m_input_data.c_str(), &s ) )
+//        {
+//            std::cout << "Error. read failed:" << param.m_input_data << std::endl;
+//            exit( 1 );
+//        }
+//            this->createFromFile( param, camera, clntMes, number_of_divide);
+//
+//        vismodule::KVSMLObjectGlyph* po = this->getKVSMLObjectGlyph();
+//
+//        object -> setCoords(po->coords());
+//        object -> setColors(po->colors());
+//        object -> setDirections(po->directions());
+//        object -> setSizes(po->sizes());
+//        object -> setColorMin(po->colorMin());
+//        object -> setColorMax(po->colorMax());
+//        object -> setSizeMin(po->sizeMin());
+//        object -> setSizeMax(po->sizeMax());
+//        //return po;
+    }
+
+#ifdef EXTEND_FILE_FORMAT
+    void run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, vismodule::KVSMLObjectGlyph* object, const int st, const int vl)
+    {
+////        vismodule::GlyphObjectGenerator generator;
+//        this ->setFilterInfo( m_mvp );
+//        this ->createFromFile( param, camera, clntMes, number_of_divide, st, vl );
+//        vismodule::KVSMLObjectGlyph* po = this->getKVSMLObjectGlyph();
+//        
+//        object -> setCoords(po->coords());
+//        object -> setColors(po->colors());
+//        object -> setDirections(po->directions());
+//        object -> setSizes(po->sizes());
+//        object -> setColorMin(po->colorMin());
+//        object -> setColorMax(po->colorMax());
+//        object -> setSizeMin(po->sizeMin());
+//        object -> setSizeMax(po->sizeMax());
+    }
+#endif
+
+    vismodule::KVSMLObjectGlyph* run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, const int st, const int vl)
+    {
+        this->setFilterInfo( m_mvp );
+        this->setCoordSynthTS( st );
+        this->createFromFile( param, camera, clntMes, number_of_divide, st, vl );
+        vismodule::KVSMLObjectGlyph* po = this->getKVSMLObjectGlyph();
+        return po;
+    }
+
 
 public:
 

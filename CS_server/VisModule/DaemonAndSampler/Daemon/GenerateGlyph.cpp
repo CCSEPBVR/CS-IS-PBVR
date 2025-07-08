@@ -22,7 +22,8 @@ void generate_glyph_master(Argument &param, jpv::ParticleTransferClientMessage& 
 
 #if 1
     timer_count++;
-    std::vector<GlyphObjectCreator> glyph_creator_lst;
+    //std::vector<GlyphObjectCreator> glyph_creator_lst;
+    std::vector<vismodule::GlyphObjectGenerator> glyph_creator_lst;
     if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
     {
         VIS_MODULE_TIMER_STA( 461 );
@@ -205,8 +206,9 @@ void generate_glyph_master(Argument &param, jpv::ParticleTransferClientMessage& 
                 glyph_creator_lst.clear();
                 for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
                 {
-                    GlyphObjectCreator glyph_creator;
-                    glyph_creator.setFilterInfo( mvpl.m_list[idx] );
+                    //GlyphObjectCreator glyph_creator;
+                    vismodule::GlyphObjectGenerator glyph_creator;
+                    glyph_creator.setFilterInfo( &mvpl.m_list[idx] );
                     glyph_creator_lst.push_back( glyph_creator );
                 }
 
@@ -400,7 +402,8 @@ void generate_glyph_worker(Argument &param, jpv::ParticleTransferClientMessage& 
 {
 
     int st, vl, wid = 0;
-                    std::vector<GlyphObjectCreator> glyph_creator_lst;
+                    //std::vector<GlyphObjectCreator> glyph_creator_lst;
+                    std::vector<vismodule::GlyphObjectGenerator> glyph_creator_lst;
 
                 if ( clntMes.m_time_parameter == 0 )
                 {
@@ -440,8 +443,9 @@ void generate_glyph_worker(Argument &param, jpv::ParticleTransferClientMessage& 
                     glyph_creator_lst.clear();
                     for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
                     {
-                        GlyphObjectCreator glyph_creator;
-                        glyph_creator.setFilterInfo( mvpl.m_list[idx] );
+                        //GlyphObjectCreator glyph_creator;
+                        vismodule::GlyphObjectGenerator glyph_creator;
+                        glyph_creator.setFilterInfo( &mvpl.m_list[idx] );
 
 //                        point_creator.setFilterInfo( mvpl.m_list[idx] );
 //                        glyph_creator.setCoordSynthStr( clntMes.m_x_synthesis,
