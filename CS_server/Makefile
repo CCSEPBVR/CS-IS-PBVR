@@ -8,7 +8,6 @@ include VisModule/Makefile.def
 SUBDIRS := FunctionParser
 SUBDIRS += Common
 SUBDIRS += VisModule
-SUBDIRS += InsituLib
 
 INCLUDE_PATH := -I. -I./VisModule -I./FunctionParser -I./Common
 LIBRARY_PATH := -L./VisModule/Release -L./FunctionParser -L./Common
@@ -47,6 +46,8 @@ endif
 ifeq "$(PBVR_MAKE_KVSML_COMVERTER)" "1"
 	SUBDIRS += KVSMLConverter
 endif
+
+SUBDIRS += InSituLib
 
 all:
 	for i in $(SUBDIRS); do \
