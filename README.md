@@ -24,3 +24,21 @@ pbvr_client # クライアントプログラム
 pbvr_filter # フィルタプログラム
 kvsml-converter # KVSMLコンバータ
 ```
+## License
+
+This software is licensed under the terms of the **GNU Lesser General Public License v3.0 (LGPL-3.0)**.  
+See the [LICENSE](./LICENSE) file for details.
+
+## Third-Party Libraries
+
+This software includes the following third-party libraries.  
+Each is licensed under its respective license, provided in the `licenses/` directory.
+
+- **assimp** - BSD-3-Clause License (`licenses/LICENSE-assimp`)
+- **GLUT** - BSD-3-Clause License (`licenses/LICENSE-GLUT`)
+- **imgui** - MIT license (`licenses/LICENSE-imgui`)
+- **KVS** - BSD-3-Clause License (`licenses/LICENSE-KVS`)
+- **OpenXR** – Apache License 2.0 (`licenses/LICENSE-OpenXR`)
+- **Poly2Tri** – BSD-3-Clause License (`licenses/LICENSE-Poly2Tri`)
+- **Qt** - GNU LGPL v3.0 or commercial license (`licenses/LICENSE-Qt`)
+- **VTK** – BSD-3-Clause License (`licenses/LICENSE-VTK`)
