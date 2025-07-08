@@ -1,6 +1,6 @@
 #include <vismodule/GeneratePOL>
 void generate_plot_over_line_master(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
-                         bool &nan_error, std::vector<PointObjectCreator>& point_creator_lst, 
+                         bool &nan_error, 
 #ifndef CPU_VER
                          JobCollector& jc, 
 #endif
@@ -334,7 +334,7 @@ void generate_plot_over_line_master(Argument &param, jpv::ParticleTransferClient
 }
 
 void generate_plot_over_line_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
-                         bool &nan_error, std::vector<PointObjectCreator>& point_creator_lst ,
+                         bool &nan_error, 
 #ifndef CPU_VER
                          JobCollector& jc, 
 #endif

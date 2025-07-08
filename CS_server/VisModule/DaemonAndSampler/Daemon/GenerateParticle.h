@@ -64,6 +64,7 @@
 
 #include <vismodule/Calculate>
 #include <vismodule/PointObjectCreator>
+#include <vismodule/PointObjectGenerator>
 #include <vismodule/SignalHandler>
 #include <vismodule/Math>
 //IS
@@ -76,7 +77,8 @@
 
 
 void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
-                         bool &nan_error, std::vector<PointObjectCreator>& point_creator_lst, 
+//                         bool &nan_error, std::vector<PointObjectCreator>& point_creator_lst, 
+                         bool &nan_error, 
 #ifndef CPU_VER
                          JobCollector& jc,
 #endif
@@ -84,7 +86,8 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
                          bool& useAllNodes, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param );
 
 void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
-                         bool &nan_error, std::vector<PointObjectCreator>& point_creator_lst, 
+//                         bool &nan_error, std::vector<PointObjectCreator>& point_creator_lst, 
+                         bool &nan_error,  
 #ifndef CPU_VER
                          JobCollector& jc,
 #endif

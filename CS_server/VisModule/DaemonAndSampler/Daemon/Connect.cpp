@@ -211,7 +211,7 @@ void  CS_Connect( int argc, char** argv )
                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_particle )
                {
 //                    generate_particle_worker(param, clntMes, mvpl, nan_error, point_creator_lst, jc, jd, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
-                   generate_particle_worker(param, clntMes, mvpl, nan_error, point_creator_lst, 
+                   generate_particle_worker(param, clntMes, mvpl, nan_error, 
 #ifndef CPU_VER
                            jc, 
 #endif
@@ -221,7 +221,7 @@ void  CS_Connect( int argc, char** argv )
                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_glyph )
                {
 //                    generate_glyph_worker(param, clntMes, mvpl, nan_error, point_creator_lst, jc, jd, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
-                   generate_glyph_worker(param, clntMes, mvpl, nan_error, point_creator_lst, 
+                   generate_glyph_worker(param, clntMes, mvpl, nan_error, 
 #ifndef CPU_VER
                            jc, 
 #endif
@@ -231,7 +231,7 @@ void  CS_Connect( int argc, char** argv )
                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
                {
 //                    generate_plot_over_line_worker(param, clntMes, mvpl, nan_error, point_creator_lst, jc, jd, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
-                   generate_plot_over_line_worker(param, clntMes, mvpl, nan_error, point_creator_lst, 
+                   generate_plot_over_line_worker(param, clntMes, mvpl, nan_error, 
 #ifndef CPU_VER
                            jc, 
 #endif
@@ -373,7 +373,7 @@ void  CS_Connect( int argc, char** argv )
                 {
 //                    generate_particle_master(param, clntMes, servMes, mvpl, nan_error, point_creator_lst, jc, jd, pts, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
 
-                    generate_particle_master(param, clntMes, servMes, mvpl, nan_error, point_creator_lst,
+                    generate_particle_master(param, clntMes, servMes, mvpl, nan_error,
 #ifndef CPU_VER
                            jc, 
 #endif                           
@@ -383,7 +383,7 @@ void  CS_Connect( int argc, char** argv )
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_glyph )
                 {
 //                    generate_glyph_master(param, clntMes, servMes, mvpl, nan_error, point_creator_lst, jc, jd, pts, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
-                    generate_glyph_master(param, clntMes, servMes, mvpl, nan_error, point_creator_lst,
+                    generate_glyph_master(param, clntMes, servMes, mvpl, nan_error,
 #ifndef CPU_VER
                            jc, 
 #endif                           
@@ -393,7 +393,7 @@ void  CS_Connect( int argc, char** argv )
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
                 {
 //                   generate_plot_over_line_master(param, clntMes, servMes, mvpl, nan_error, point_creator_lst, jc, jd, pts, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
-                   generate_plot_over_line_master(param, clntMes, servMes, mvpl, nan_error, point_creator_lst,
+                   generate_plot_over_line_master(param, clntMes, servMes, mvpl, nan_error,
 #ifndef CPU_VER
                            jc, 
 #endif                           

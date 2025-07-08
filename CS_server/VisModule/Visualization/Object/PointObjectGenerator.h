@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <sys/stat.h>
 #include <vismodule/UnstructuredVolumeObject>
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/ExtendedTransferFunction>
@@ -53,6 +54,8 @@ private:
     vismodule::PointObject* m_object;
     const MultiVolumeProperty*   m_mvp;
 
+    vismodule::UnstructuredVolumeObject* m_volume;
+    
     vismodule::CoordSynthesizerStrings m_coord_synthesizer_strings;
     vismodule::CoordSynthesizerTokens  m_coord_synthesizer_tokens;
 
@@ -77,9 +80,19 @@ public:
 
     std::string getErrorMessage( const size_t maxMemory ) const;
 
-    void setFinlterInfo( const MultiVolumeProperty *mvp )
+    void setFilterInfo( const MultiVolumeProperty *mvp )
     {
         m_mvp = mvp;
+    }
+
+    void setCoordSynthStr( const std::string& xss, const std::string& yss, const std::string& zss )
+    {
+//        m_xcSynthStr = xss;
+//        m_ycSynthStr = yss;
+//        m_zcSynthStr = zss;
+
+        vismodule::CoordSynthesizerStrings css( 0, xss, yss, zss );
+        this->setCoordSynthStrs( css );
     }
 
     void setCoordSynthStrs( const vismodule::CoordSynthesizerStrings& css )
@@ -108,6 +121,33 @@ public:
     {
         return m_coord_synthesizer_tokens;
     }
+
+    vismodule::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int timeStep,  const int st );
+//    {
+//        this ->setFinlterInfo( m_mvp );
+//        this ->setCoordSynthTS( st );
+//
+//        struct stat s;
+//        if ( stat( param.m_input_data.c_str(), &s ) )
+//        {
+//            std::cout << "Error. read failed:" << param.m_input_data << std::endl;
+//            exit( 1 );
+//        }
+//        this->createFromFile( param, camera, param.m_subpixel_level, param.m_sampling_step );
+//
+//        vismodule::PointObject* po = this->getPointObject();
+//        return po;
+//    }
+
+    vismodule::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int timeStep, const int st, const int vl);
+//    {
+//        this->setFinlterInfo( m_mvp );
+//        this->setCoordSynthTS( st );
+//        this->createFromFile( param, camera, param.m_subpixel_level, param.m_sampling_step, st, vl );
+//        vismodule::PointObject* po = this->getPointObject();
+//        return po;
+//    }
+
 
 
 private:

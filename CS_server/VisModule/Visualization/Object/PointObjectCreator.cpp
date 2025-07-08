@@ -10,7 +10,7 @@ PointObjectCreator::PointObjectCreator() : m_volume(NULL), m_mpi_rank(0), m_mvp(
 
 vismodule::PointObject* PointObjectCreator::run( const Argument& param, const vismodule::Camera& camera, const int timeStep,  const int st )
 {
-    m_generator.setFinlterInfo( m_mvp );
+    m_generator.setFilterInfo( m_mvp );
     m_generator.setCoordSynthTS( st );
 
     struct stat s;
@@ -27,7 +27,7 @@ vismodule::PointObject* PointObjectCreator::run( const Argument& param, const vi
 
 vismodule::PointObject* PointObjectCreator::run( const Argument& param, const vismodule::Camera& camera, const int timeStep, const int st, const int vl)
 {
-    m_generator.setFinlterInfo( m_mvp );
+    m_generator.setFilterInfo( m_mvp );
     m_generator.setCoordSynthTS( st );
     m_generator.createFromFile( param, camera, param.m_subpixel_level, param.m_sampling_step, st, vl );
     vismodule::PointObject* po = m_generator.getPointObject();

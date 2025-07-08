@@ -31,6 +31,34 @@
 
 using namespace vismodule;
 
+
+vismodule::PointObject* PointObjectGenerator::run( const Argument& param, const vismodule::Camera& camera, const int timeStep,  const int st )
+{
+    this ->setFilterInfo( m_mvp );
+    this ->setCoordSynthTS( st );
+
+    struct stat s;
+    if ( stat( param.m_input_data.c_str(), &s ) )
+    {
+        std::cout << "Error. read failed:" << param.m_input_data << std::endl;
+        exit( 1 );
+    }
+    this->createFromFile( param, camera, param.m_subpixel_level, param.m_sampling_step );
+
+    vismodule::PointObject* po = this->getPointObject();
+    return po;
+}
+
+vismodule::PointObject*  PointObjectGenerator::run( const Argument& param, const vismodule::Camera& camera, const int timeStep, const int st, const int vl)
+{
+    this->setFilterInfo( m_mvp );
+    this->setCoordSynthTS( st );
+    this->createFromFile( param, camera, param.m_subpixel_level, param.m_sampling_step, st, vl );
+    vismodule::PointObject* po = this->getPointObject();
+    return po;
+}
+
+
 void PointObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const size_t subpixel_level, const float sampling_step )
 {
 //FJ_TIMER_KAWAMURA

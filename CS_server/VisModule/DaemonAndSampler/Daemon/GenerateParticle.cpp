@@ -2,7 +2,8 @@
 #include <vismodule/GenerateParticle>
 
 void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
-                         bool &nan_error, std::vector<PointObjectCreator>& point_creator_lst, 
+//                         bool &nan_error, std::vector<PointObjectCreator>& point_generator_lst, 
+                         bool &nan_error, 
 #ifndef CPU_VER
                          JobCollector& jc, 
 #endif
@@ -21,6 +22,7 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
     int bsz = 0;
     int st, vl, wid = 0;
     std::vector<GlyphObjectCreator> glyph_creator_lst;
+    std::vector<vismodule::PointObjectGenerator> point_generator_lst;
 
     timer_count++;
     if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
@@ -250,27 +252,27 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
 
                 mvp.setFilePath(param.m_input_data, st, xvl);
                 vismodule::PointObject* tmp_obj = NULL;
-                point_creator_lst[fidx].setFilterInfo( mvp );
+                point_generator_lst[fidx].setFilterInfo( &mvp );
                 param.m_subvolume_id = xvl ;
                 int timeStep = 1;
                 servMes.m_flag_send_bins = 0;
                 try
                 {
-                    point_creator_lst[fidx].setCoordSynthStr( clntMes.m_x_synthesis,
+                    point_generator_lst[fidx].setCoordSynthStr( clntMes.m_x_synthesis,
                             clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-                    //                                point_creator_lst[fidx].setCoordSynthTkn( clntMes.x_synthesis_token,
+                    //                                point_generator_lst[fidx].setCoordSynthTkn( clntMes.x_synthesis_token,
                     //                                                                          clntMes.y_synthesis_token, clntMes.z_synthesis_token );
                     if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                     {
-                        tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
+                        tmp_obj = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
                     }
                     else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                     {
-                        tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
+                        tmp_obj = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
                     }
                     else     // filetype: kvsml
                     {
-                        tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
+                        tmp_obj = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
                     }
 
                     size_t nmemb = tmp_obj->nvertices() * 3;
@@ -683,7 +685,8 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
 
 #if 1
 void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
-                         bool &nan_error, std::vector<PointObjectCreator>& point_creator_lst ,
+//                         bool &nan_error, std::vector<PointObjectCreator>& point_generator_lst ,
+                         bool &nan_error,
 #ifndef CPU_VER
                          JobCollector& jc, 
 #endif
@@ -702,6 +705,7 @@ void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessag
     int bsz = 0;
     int st, vl, wid = 0;
     vismodule::PointObject* object = NULL;
+    std::vector<vismodule::PointObjectGenerator> point_generator_lst;
     std::vector<GlyphObjectCreator> glyph_creator_lst;
 
                 if ( clntMes.m_time_parameter == 0 )
@@ -875,17 +879,25 @@ void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessag
                     }
 #endif
 
-                    point_creator_lst.clear();
+                    point_generator_lst.clear();
                     for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
                     {
-                        PointObjectCreator point_creator;
-                        if ( param.m_gt5d == true ) point_creator.setGT5D();
-                        point_creator.setFilterInfo( mvpl.m_list[idx] );
-                        point_creator.setCoordSynthStr( clntMes.m_x_synthesis,
+//                        PointObjectCreator point_creator;
+//                        if ( param.m_gt5d == true ) point_creator.setGT5D();
+//                        point_creator.setFilterInfo( mvpl.m_list[idx] );
+//                        point_creator.setCoordSynthStr( clntMes.m_x_synthesis,
+//                                                        clntMes.m_y_synthesis, clntMes.m_z_synthesis );
+////                        point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
+////                                                        clntMes.y_synthesis_token, clntMes.z_synthesis_token );
+//                        point_generator_lst.push_back( point_creator );
+                        vismodule::PointObjectGenerator point_generator;
+                        point_generator.setFilterInfo( &mvpl.m_list[idx] );
+                        point_generator.setCoordSynthStr( clntMes.m_x_synthesis,
                                                         clntMes.m_y_synthesis, clntMes.m_z_synthesis );
 //                        point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
 //                                                        clntMes.y_synthesis_token, clntMes.z_synthesis_token );
-                        point_creator_lst.push_back( point_creator );
+                        point_generator_lst.push_back( point_generator );
+
                     }
 
                     transfunc_creator.setFilterInfo( mvpl.m_list[0] );
@@ -1013,18 +1025,18 @@ void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessag
                         {
                             if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                             {
-                                object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
+                                object = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
 
                             }
 #ifdef EXTEND_FILE_FORMAT
                             else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                             {
-                                object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
+                                object = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
                             }                            
 #endif
                             else     // filetype: kvsml
                             {
-                                object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
+                                object = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
                             }
                         }
                         catch ( const std::runtime_error& e )
