@@ -80,6 +80,13 @@ void ColorMapSelectorToolBar::updateColorMapBar( QStandardItemModel* model )
         }
     }
 
+    if( m_model->rowCount() == 0 )
+    {
+        kvs::ColorMap cmap;
+        m_color_map_bar->setColorMap( cmap );
+        m_color_map_bar->setRange( 0, 0 );
+    }
+
     updateUIFromCurrentItem();
 }
 

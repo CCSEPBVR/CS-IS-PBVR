@@ -178,6 +178,14 @@ void TransferFunctionEditor::onNumberOfTransferFunctionValueChanged( int numberO
         ui->colorMinLabel->setText("Min : ");
         ui->colorMaxLabel->setText(" : Max");
 
+        ui->opacityFunctionVariableLineEdit->clear();
+        ui->opacityUserDefinedMinSpinBox->setValue(0.00);
+        ui->opacityUserDefinedMaxSpinBox->setValue(0.00);
+        ui->opacityServerSideMinSpinBox->setValue(0.00);
+        ui->opacityServerSideMaxSpinBox->setValue(0.00);
+        ui->opacityMinLabel->setText("Min : ");
+        ui->opacityMaxLabel->setText(" : Max");
+
         disableUI();
     }
     else
@@ -960,5 +968,13 @@ void TransferFunctionEditor::updateTransferFunctionRangeAndView( const jpv::Part
     }
 
     updateUIFromCurrentItem();
+    emit updateColorMapBar( m_model );
+}
+
+void TransferFunctionEditor::deleteServerObject()
+{
+    ui->numberOfTransferFunctionLabelSpinBox->setValue( 0 );
+    ui->colorSynthesizerLineEdit->clear();
+    ui->opacitySynthesizerLineEdit->clear();
     emit updateColorMapBar( m_model );
 }

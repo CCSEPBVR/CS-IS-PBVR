@@ -631,6 +631,30 @@ void ObjectEditor::onDelete()
 
     m_screen->scene()->removeObject( m_model->item( deleteRow, 0 )->data( ObjectItem::nameItemRole::Ids ).value<QPair<int, int>>().first );
     m_model->removeRow( deleteRow );
+
+    // サーバーオブジェクトの有無
+    bool hasServerObject = false;
+    for( int row = 0; row < m_model->rowCount(); row++ )
+    {
+        QStandardItem* formatItem = m_model->item( row, 1 );
+        if( !formatItem ) continue;
+
+        int formatValue = formatItem->data( ObjectItem::FormatItemRole::FormatValue ).toInt();
+        if( formatValue == ObjectItem::Format::ServerPointObjectCS ||
+            formatValue == ObjectItem::Format::ServerPointObjectIS ||
+            formatValue == ObjectItem::Format::ServerGlyphObjectCS ||
+            formatValue == ObjectItem::Format::ServerGlyphObjectIS )
+        {
+            hasServerObject = true;
+            break;
+        }
+    }
+
+    if( !hasServerObject )
+    {
+        emit noServerObjects();
+    }
+
     calculateTotalMinMaxTimeStep();
     if( m_model->rowCount() == 0 ) // 繧｢繧､繝・Β縺御ｽ輔ｂ縺ｪ縺・ｴ蜷
     {
@@ -649,6 +673,7 @@ void ObjectEditor::onDelete()
         ui->externalCoordsZMaxDisplay->setText( "" );
         emit noItems(); // AFTER
     }
+
     m_screen->update();
 }
 

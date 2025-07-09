@@ -82,6 +82,7 @@ signals:
     void serverPointObjectIS( QString, ServerPointObjectPropertiesIS );
     void serverGlyphObjectIS( QString, ServerGlyphObjectPropertiesIS );
     void updateTransferFunctionRangeAndView( const jpv::ParticleTransferServerMessage* serverMessage, kvs::visclient::ReceivedMessage receivedMessage );
+    void clearTransferFunction();
     void updateInSituTimeStep( int minTimeStep, int maxTimeStep );
     void setPlotData( std::vector<float> xAxis, std::vector<bool> mask, std::vector<float> values );
 

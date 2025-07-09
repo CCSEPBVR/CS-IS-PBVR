@@ -146,6 +146,7 @@ void MainWindow::initialize()
     connect( m_connect                          , &Connect::importTransferFunctionFromServer                    , m_transfer_function_editor        , &TransferFunctionEditor::importTransferFunctionFromServer );
     connect( m_connect                          , &Connect::applyTransferFunction                               , m_transfer_function_editor        , &TransferFunctionEditor::applyTransferFunction );
     connect( m_connect                          , &Connect::updateTransferFunctionRangeAndView                  , m_transfer_function_editor        , &TransferFunctionEditor::updateTransferFunctionRangeAndView   , Qt::QueuedConnection );
+    connect( m_connect                          , &Connect::clearTransferFunction                               , m_transfer_function_editor        , &TransferFunctionEditor::deleteServerObject );
 
     // グリフエディター
     connect( m_glyph_editor                     , &GlyphEditor::updateGlyphParameterClientMessage               , m_connect                         , &Connect::updateGlyphParameterClientMessage );
@@ -163,6 +164,7 @@ void MainWindow::initialize()
     connect( m_object_editor                    , &ObjectEditor::shading                                        , m_shading_control                 , &ShadingControl::shading );
     connect( m_object_editor                    , &ObjectEditor::updateTotalParticles                           , m_total_particle_tool_bar         , &TotalParticlesToolBar::updateTotalParticles );
 
+    connect( m_object_editor                    , &ObjectEditor::noServerObjects                                , m_connect                         , &Connect::deleteServerObject );
     connect( m_object_editor                    , &ObjectEditor::updateRenderParameterClientMessage             , m_connect                         , &Connect::updateRenderParameterClientMessage );
     connect( m_object_editor                    , &ObjectEditor::updateCoordinateParameterClientMessage         , m_connect                         , &Connect::updateCoordinateParameterClientMessage );
 

@@ -813,7 +813,50 @@ void Connect::sendRecvPlotOverLine( int timeStep )
 
 void Connect::deleteServerObject()
 {
-    ui->connectPushButton->setEnabled( true );
+    // コネクトボタンが無効場合のみクライアントメッセージをリセット
+    if ( !ui->connectPushButton->isEnabled() )
+    {
+        // 全メンバをデフォルト初期化
+        m_client_message = jpv::ParticleTransferClientMessage{};
+
+        // 必要な初期値を再設定
+        m_client_message.m_particle_limit = 10000000;
+        m_client_message.m_particle_density = 1;
+        m_client_message.m_particle_data_size_limit = 20;
+        m_client_message.m_distribution_mode = jpv::GlyphMode::UniformDistribution;
+        m_client_message.m_color_data_sampling_method = jpv::DataDefines::Constant;
+        m_client_message.m_size_sampling_method = jpv::DataDefines::Constant;
+        m_client_message.m_stride = 5;
+        m_client_message.m_seed = 5;
+        m_client_message.m_number_of_sampling_point = 100;
+        m_client_message.m_direction_variable[0] = "q1";
+        m_client_message.m_direction_variable[1] = "q2";
+        m_client_message.m_direction_variable[2] = "q3";
+        m_client_message.m_color_data_variables = { "q1" };
+        m_client_message.m_size_variables = { "q1" };
+        m_client_message.m_sampling_size = 256;
+        m_client_message.m_start_point[0] = -1.f;
+        m_client_message.m_start_point[1] = 0.f;
+        m_client_message.m_start_point[2] = 0.f;
+        m_client_message.m_end_point[0] = 1.f;
+        m_client_message.m_end_point[1] = 0.f;
+        m_client_message.m_end_point[2] = 0.f;
+        m_client_message.m_plot_variable = "q1";
+        m_client_message.m_import_flag = true;
+
+        // その他のメンバ
+        m_glyph_scale_factor = 1;
+        m_glyph_type = GlyphItem::GlyphType::Arrow;
+        m_is_plot_over_line = false;
+
+        m_server_message = jpv::ParticleTransferServerMessage{};
+        m_received_message = kvs::visclient::ReceivedMessage{};
+
+        // UIの更新
+        emit clearTransferFunction();
+        ui->transferFunctionFilePathLineEdit->clear();
+        ui->connectPushButton->setEnabled( true );
+    }
 }
 
 void Connect::failedTransferFunctionImport()

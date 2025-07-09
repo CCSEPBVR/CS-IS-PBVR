@@ -50,6 +50,7 @@ public slots:
     void importTransferFunctionFromServer( const jpv::ParticleTransferServerMessage& serverMessage, kvs::visclient::ReceivedMessage receivedMessage, const bool isImportFlag );
     void applyTransferFunction();
     void updateTransferFunctionRangeAndView( const jpv::ParticleTransferServerMessage* serverMessage, kvs::visclient::ReceivedMessage receivedMessage );
+    void deleteServerObject();
 
 private slots:
     void onNumberOfTransferFunctionValueChanged( int numberOfTransferFunction );

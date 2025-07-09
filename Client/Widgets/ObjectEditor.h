@@ -109,6 +109,7 @@ signals:
     void updatePointsTranslation();
     void shading( kvs::RendererBase* );
     void updateTotalParticles( int );
+    void noServerObjects();
     void noItems();
     void updateInSituObjectMinMaxTimeStep( int , int );
     void updateRenderParameterClientMessage( QStandardItemModel* model );
