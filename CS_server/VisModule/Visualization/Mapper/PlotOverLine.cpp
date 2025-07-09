@@ -162,7 +162,6 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
     while( plot_over_line_property.getString( "END_PARAMETER_FILE" ) != "SUCCESS" )
     {
         read_flag =  plot_over_line_property.LoadIN(POLParamPath) ;
-        //read_flag = glyph_property.LoadIN(glyphParamPath) ;
     }
 
 

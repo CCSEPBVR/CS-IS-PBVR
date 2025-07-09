@@ -7,7 +7,8 @@
 #include "function.h"
 #include "function_op.h"
 #include "function_parser.h"
-#include "Types.h"
+//#include "Types.h"
+#include <vismodule/Type>
 
 class ExtendedTransferFunction : public vismodule::TransferFunction
 {

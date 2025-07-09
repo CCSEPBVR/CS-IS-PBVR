@@ -81,7 +81,7 @@ protected:
     jpv::GlyphMode m_distribution_modes;
     int m_stride;
     int m_seed;
-    int m_number_of_sample_points;
+    float m_number_of_sample_points;
     vismodule::ColorMap m_color_map;
     jpv::DataDefines m_color_sampling_method;
     std::vector<int> m_color_data_variables;

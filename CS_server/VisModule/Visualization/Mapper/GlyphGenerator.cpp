@@ -145,8 +145,7 @@ bool GlyphGenerator::InputParameter(const jpv::ParticleTransferClientMessage& cl
     bool glyph_flag;
     int stride                                     = clntMes.m_stride;
     int seed                                       = clntMes.m_seed; 
-    int number_of_sample_points                    = clntMes.m_number_of_sampling_point ;
-    
+    float number_of_sample_points                    = clntMes.m_number_of_sampling_point ;
 
     int mpi_size = 1;
     int mpi_rank = 0;
@@ -166,6 +165,7 @@ bool GlyphGenerator::InputParameter(const jpv::ParticleTransferClientMessage& cl
     number_of_sample_points /= number_of_divide; // ファイル分割数 
 
     m_number_of_sample_points = number_of_sample_points;
+    
     float glyph_min=0; 
     float glyph_max=0;
     m_color_min = clntMes.m_glyph_color_min;
@@ -205,7 +205,7 @@ bool GlyphGenerator::InputParameter(const jpv::ParticleTransferClientMessage& cl
         m_color_data_variables.push_back( std::atoi(clntMes.m_color_data_variable[i].substr(1).c_str()) - 1); 
     }
 
-#if 0
+#if 1
     std::cout << "m_direction_variables        = " << m_direction_variables[0] << ", " << m_direction_variables[1]   << std::endl; 
     std::cout << "m_size_sampling_method       = " << static_cast<int>(m_size_sampling_method)      << std::endl; 
     if(m_size_variables.size() > 0) std::cout << "m_size_variables             = " << m_size_variables[0]    << std::endl; 
@@ -269,7 +269,7 @@ bool GlyphGenerator::SetGlyphParameter( )
     std::string distribution_modes                 = glyph_property.getString("DISTRIBUTION_MODE");
     int stride                                     = glyph_property.getInt("STRIDE");
     int seed                                       = glyph_property.getInt("SEED");
-    int number_of_sample_points                    = glyph_property.getInt("NUMBER_OF_SMAPLING_POINT");
+    float number_of_sample_points                    = glyph_property.getInt("NUMBER_OF_SMAPLING_POINT");
     std::string color_sampling_method              = glyph_property.getString("COLOR_DATA_SAMPLING_METHOD");
     std::vector<std::string> color_data_variables  = glyph_property.getTableString( "COLOR_VARIABLES" );
     

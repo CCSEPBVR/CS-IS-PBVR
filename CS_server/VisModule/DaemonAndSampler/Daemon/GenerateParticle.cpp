@@ -144,6 +144,8 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
             assert( false );
         }
 
+        point_generator_lst.clear();
+        point_generator_lst.resize(mvpl.m_list.size());
         if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
         // IS only
         //mvpl.m_total_number_subvolumes=1;
@@ -249,8 +251,8 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
                 int xvl, fidx;
                 fidx = mvpl.getFileIndex( vl, &xvl );
                 MultiVolumeProperty& mvp = mvpl.m_list[fidx];
-
                 mvp.setFilePath(param.m_input_data, st, xvl);
+
                 vismodule::PointObject* tmp_obj = NULL;
                 point_generator_lst[fidx].setFilterInfo( &mvp );
                 param.m_subvolume_id = xvl ;
@@ -377,9 +379,7 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
             servMes.m_flag_send_bins = 0;
             servMes.m_message_size = servMes.byteSize();
             servMes.show();
-            std::cout << __FUNCTION__ << __LINE__ << std::endl;                            
             pts.sendMessage( servMes );
-            std::cout << __FUNCTION__ << __LINE__ << std::endl;                            
             if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
             {
                 VIS_MODULE_TIMER_END( 472 );
@@ -1327,7 +1327,6 @@ void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& c
                             }
                         }
 
-                        std::cout<< __LINE__ << __FUNCTION__ <<std::endl;
                         tmp_c_bins = new vismodule::UInt64[c_bins_size];
                         tmp_o_bins = new vismodule::UInt64[o_bins_size];
 
@@ -1455,7 +1454,6 @@ void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& c
                                 servMes.m_normals   = NULL;
                                 servMes.m_colors    = NULL;
                             }
-                        std::cout<< __LINE__ << __FUNCTION__ <<std::endl;
                             for ( int i = 0; i < servMes.m_number_particle; ++i )
                             {
                                 servMes.m_positions[3 * i + 0] = originalObject->coords()[3 * i + 0];

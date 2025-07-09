@@ -8,7 +8,7 @@
 #include <vismodule/TransferFunction>
 #include <vismodule/TransferFunctionSynthesizer>
 //#include "TransferFunctionSynthesizer_IS.h"
-#include "ParticleTransferProtocol.h"
+#include "../../../Common/ParticleTransferProtocol.h"
 #include <vismodule/ExtendedTransferFunction>
 #include <vismodule/TransferFunctionProperty>
 #include <vismodule/MultiVolumeProperty>
@@ -17,7 +17,7 @@
 #include "ReversePolishNotation.h"
 #include "Token.h"
 
-#include "VariableRange.h"
+#include "../../../Common/VariableRange.h"
 
 #define TF_COUNT 5 //������ 
 #define VAR_OFFSET_A 112 //Token.h->VarName-A1�������
