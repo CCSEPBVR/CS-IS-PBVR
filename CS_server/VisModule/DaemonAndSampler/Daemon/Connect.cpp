@@ -60,12 +60,9 @@
 #include <vismodule/StructuredVolumeImporter>
 #include <vismodule/CellByCellParticleGenerator>
 
-//#include <vismodule/GlyphObjectGenerator>
 #include <vismodule/GlyphSeedGenerator>
-//#include <vismodule/GlyphObjectCreator>
 
 //plot over line
-//#include <vismodule/POLObjectGenerator>
 #include <vismodule/PlotOverLineGenerator>
 
 #include <vismodule/InitialStep>
@@ -99,12 +96,8 @@ void SignalHandler( const int sig )
  * @param argv
  * @return
  */
-//int main( int argc, char** argv )
 void  CS_Connect( int argc, char** argv )
 {
-//#ifndef CPU_VER
-//    MPI_Init( &argc, &argv );
-//#endif
     VIS_MODULE_TIMER_INIT();
     VIS_MODULE_TIMER_STA( 1 );
     Argument param( argc, argv );
@@ -417,9 +410,6 @@ void  CS_Connect( int argc, char** argv )
 void  IS_Connect( int argc, char** argv )
 {
 
-//#ifndef CPU_VER
-//    MPI::Init( argc, argv );
-//#endif
     VIS_MODULE_TIMER_INIT();
     VIS_MODULE_TIMER_STA( 1 );
 
@@ -438,11 +428,7 @@ void  IS_Connect( int argc, char** argv )
     std::string prfx = "PARTICLE_SERVER_PREFIX";
 
 
-//#ifndef CPU_VER
-//    int rank = MPI::COMM_WORLD.Get_rank();
-//#else
     int rank = 0;
-//#endif
 
     if ( param.m_batch == true )
     {
@@ -455,9 +441,6 @@ void  IS_Connect( int argc, char** argv )
         char* buf;
         int bsz = 0;
         JobDispatcher jd;
-//#ifndef CPU_VER
-//        JobCollector  jc( &jd );
-//#endif
         int st, vl, wid = 0;
 
         int c_bins_size = 0;
@@ -573,9 +556,6 @@ void  IS_Connect( int argc, char** argv )
             if ( ptss == -1 )
             {
                 bsz = -1;
-//#ifndef CPU_VER
-//                MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
-//#endif
             }
             else //start init process 初期化処理開始
             {
@@ -742,11 +722,6 @@ void  IS_Connect( int argc, char** argv )
             delete servMes.m_camera;
             delete clntMes.m_camera;
 
-//            bsz = -1;
-//#ifndef CPU_VER
-//            MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
-//#endif
-
             pts.termServer();
         }
     }
@@ -755,10 +730,5 @@ void  IS_Connect( int argc, char** argv )
         VIS_MODULE_TIMER_END( 1 );
         VIS_MODULE_TIMER_FIN();
     }
-//#ifndef CPU_VER
-//    MPI::Finalize();
-//#endif
-//    return retval;
-//#endif
 return ;
 }

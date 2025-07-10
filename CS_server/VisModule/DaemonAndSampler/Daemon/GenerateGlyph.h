@@ -10,9 +10,7 @@
 #include <vismodule/PointObjectCreator>
 #include "ParticleTransferServer.h"
 #include <vismodule/TransferFunctionSynthesizerCreator>
-//#include <vismodule/GlyphObjectGenerator>
 #include <vismodule/GlyphSeedGenerator>
-//#include <vismodule/GlyphObjectCreator>
 #include <vismodule/Calculate>
 //IS
 #include <vismodule/ParticleMonitor>

@@ -2,7 +2,6 @@
 #include <vismodule/GenerateParticle>
 
 void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
-//                         bool &nan_error, std::vector<PointObjectCreator>& point_generator_lst, 
                          bool &nan_error, 
 #ifndef CPU_VER
                          JobCollector& jc, 
@@ -146,9 +145,6 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
         point_generator_lst.clear();
         point_generator_lst.resize(mvpl.m_list.size());
         if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
-        // IS only
-        //mvpl.m_total_number_subvolumes=1;
-        // IS only end
         if ( param.m_crop.isEnabled() )
         {
             jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
@@ -261,8 +257,6 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
                 {
                     point_generator_lst[fidx].setCoordSynthStr( clntMes.m_x_synthesis,
                             clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-                    //                                point_generator_lst[fidx].setCoordSynthTkn( clntMes.x_synthesis_token,
-                    //                                                                          clntMes.y_synthesis_token, clntMes.z_synthesis_token );
                     if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                     {
                         tmp_obj = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
@@ -457,208 +451,6 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
 
      } // end if init_param
 
-//        if(init_param == jpv::InitializeParameter::generate_glyph )
-//        {
-//
-//            //add by shimomura 2023/06/14
-//            int cnt = 2;
-//            tmp_max = new float[cnt]; 
-//            tmp_min = new float[cnt];
-//
-//            for ( int tf = 0; tf < cnt; tf++ )
-//            {
-//                tmp_max[tf] = FLT_MIN;
-//                tmp_min[tf] = FLT_MAX;
-//            }
-//
-//            while ( jd.dispatchNext( wid, &st, &vl ) )
-//            {
-//                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-//                {
-//                    VIS_MODULE_TIMER_STA( 471 );
-//                }
-//
-//                vismodule::KVSMLObjectGlyph* originalGlyph = new vismodule::KVSMLObjectGlyph;
-//
-//                if (mpi_size == 1) {
-//                    int xvl, fidx;
-//                    fidx = mvpl.getFileIndex( vl, &xvl );
-//                    MultiVolumeProperty& mvp = mvpl.m_list[fidx];
-//
-//                    mvp.setFilePath(param.m_input_data, st, xvl);
-//                    vismodule::KVSMLObjectGlyph* tmp_obj = new vismodule::KVSMLObjectGlyph;
-//                    param.m_subvolume_id = xvl;
-//                    int timeStep = 1;
-//                    servMes.m_flag_send_bins = 2;
-//
-//                    // glyph_creator_lstの初期化
-//                    glyph_creator_lst.clear();
-//                    for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
-//                    {
-//                        GlyphObjectCreator glyph_creator;
-//                        glyph_creator.setFilterInfo( mvpl.m_list[idx] );
-//                        glyph_creator_lst.push_back( glyph_creator );
-//                    }
-//
-//                    try
-//                    {
-//                        if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
-//                        {
-//                            *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, mvpl.m_total_number_subvolumes, timeStep, st, xvl); 
-//                            // run()で得られるKVSMLObjectglyphとtmp_objは異なるメモリ領域を指しているため,ポインタコピーではなくオペレータを呼び出す必要がある
-//                        }
-//#ifdef EXTEND_FILE_FORMAT
-//                        else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
-//                        {
-//                            glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, servMes.m_number_volume_divide, timeStep , tmp_obj, st, xvl );
-//                        }                                
-//#endif
-//                        else     // filetype: kvsml
-//                        {
-//                            glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, servMes.m_number_volume_divide, timeStep , tmp_obj, st );
-//                        }
-//                        //                                size_t nmemb = tmp_obj->sizes().size();
-//                        originalGlyph->clear();
-//                        originalGlyph = tmp_obj;
-//
-//                        for ( int tf = 0; tf < cnt/2; tf++ )
-//                        {
-//                            //changed by shimomura 2023/07/24
-//                            tmp_max[2*tf+1] = vismodule::Math::Max(tmp_max[2*tf+1],tmp_obj->colorMax());
-//                            tmp_min[2*tf+1] = vismodule::Math::Min(tmp_min[2*tf+1],tmp_obj->colorMin());
-//                            tmp_max[2*tf  ] = vismodule::Math::Max(tmp_max[2*tf  ],tmp_obj->sizeMax());
-//                            tmp_min[2*tf  ] = vismodule::Math::Min(tmp_min[2*tf  ],tmp_obj->sizeMin());
-//                        }
-//
-//                    }
-//                    catch ( const std::runtime_error& e )
-//                    {
-//#ifdef _DEBUG		// debug by @hira
-//                        printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
-//#endif
-//                        std::cerr << e.what();
-//                        nan_error = true;
-//                    }
-//
-//                }
-//#if 1
-//#ifndef CPU_VER          // MPI並列については一旦保留, collectorの内容がわかるまで
-//                if (mpi_size > 1) {
-//                    //jc.jobCollect( originalObject, &vr, &nan_error, &wid );
-//                    jc.jobCollect_glyph( originalGlyph, &nan_error, &wid );
-//                }
-//#endif
-//#endif
-//                vismodule::KVSMLObjectGlyph* object = originalGlyph;
-//                printf(" %zu glyphs generated\n", object->coords().size() / 3);
-//
-//                //                           //add by shimomura 2023/06/14
-//                if ( originalGlyph != object ) delete originalGlyph;
-//
-//                servMes.m_number_glyph = originalGlyph->coords().size() / 3;
-//                if ( servMes.m_number_glyph > 0 )
-//                {
-//                    servMes.m_glyph_coords = std::make_unique<float[]>(3 * servMes.m_number_glyph);
-//                    servMes.m_glyph_vectors = std::make_unique<float[]>(3 * servMes.m_number_glyph);
-//                    servMes.m_glyph_colors = std::make_unique<unsigned char[]>(3 * servMes.m_number_glyph);
-//                    servMes.m_glyph_sizes = std::make_unique<float[]>(servMes.m_number_glyph);
-//                }
-//                else
-//                {
-//                    servMes.m_glyph_coords  = NULL;
-//                    servMes.m_glyph_vectors = NULL;
-//                    servMes.m_glyph_colors  = NULL;
-//                    servMes.m_glyph_sizes   = NULL;
-//                }
-//                for ( int i = 0; i < servMes.m_number_glyph; ++i )
-//                {
-//                    servMes.m_glyph_coords[3 * i + 0]  = object->coords()[3 * i + 0];
-//                    servMes.m_glyph_coords[3 * i + 1]  = object->coords()[3 * i + 1];
-//                    servMes.m_glyph_coords[3 * i + 2]  = object->coords()[3 * i + 2];
-//                    servMes.m_glyph_vectors[3 * i + 0] = object->directions()[3 * i + 0];
-//                    servMes.m_glyph_vectors[3 * i + 1] = object->directions()[3 * i + 1];
-//                    servMes.m_glyph_vectors[3 * i + 2] = object->directions()[3 * i + 2];
-//                    servMes.m_glyph_colors[3 * i + 0]  = object->colors()[3 * i + 0];
-//                    servMes.m_glyph_colors[3 * i + 1]  = object->colors()[3 * i + 1];
-//                    servMes.m_glyph_colors[3 * i + 2]  = object->colors()[3 * i + 2];
-//                    servMes.m_glyph_sizes[i ] = object->sizes()[ i ];
-//                }
-//
-//                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-//                {
-//                    VIS_MODULE_TIMER_END( 471 );
-//                }
-//                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-//                {
-//                    VIS_MODULE_TIMER_STA( 472 );
-//                }
-//                servMes.m_flag_send_bins = 2;
-//                servMes.m_message_size = servMes.byteSize();
-//                servMes.show();
-//                pts.sendMessage( servMes );
-//                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-//                {
-//                    VIS_MODULE_TIMER_END( 472 );
-//                }
-//                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-//                {
-//                    VIS_MODULE_TIMER_STA( 473 );
-//                }
-//                delete object;
-//                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-//                {
-//                    VIS_MODULE_TIMER_END( 473 );
-//                }
-//            } // end of while(DispatchNext)
-//#ifndef CPU_VER
-//
-//            if (mpi_size > 1) 
-//            {
-//                MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
-//                MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
-//            }
-//#endif
-//
-//            // TEST START 2015.1.14
-//            if ( nan_error )
-//            {
-//                strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
-//                servMes.m_server_status = 1;
-//                servMes.m_number_particle = 0;
-//                servMes.m_number_glyph = 0 ;
-//                servMes.m_flag_send_bins = 1;
-//                std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
-//                nan_error = false;
-//            }
-//
-//            servMes.m_glyph_color_min = tmp_min[1];
-//            servMes.m_glyph_color_max = tmp_max[1];
-//            servMes.m_glyph_size_min = tmp_min[0];
-//            servMes.m_glyph_size_max = tmp_max[0];
-//            std::cout << "m_glyph_min   = " << servMes.m_glyph_color_min << std::endl;
-//            std::cout << "m_glyph_max   = " << servMes.m_glyph_color_max << std::endl;
-//            servMes.m_flag_send_bins = 1;
-//            servMes.m_subpixel_level = param.m_subpixel_level;
-//            servMes.m_message_size = servMes.byteSize();
-//            pts.sendMessage( servMes );
-//            // TEST START 2015.1.14
-//            servMes.m_server_status = 0;
-//            // TEST END 2015.1.14
-//
-//            for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
-//            {
-//                delete[] servMes.m_color_bins[tf];
-//                delete[] servMes.m_opacity_bins[tf];
-//            }
-//            delete[] servMes.m_color_nbins;
-//            delete[] servMes.m_opacity_nbins;
-//            delete[] tmp_max;
-//            delete[] tmp_min;
-//            servMes.m_transfer_function_count = 0;
-//            servMes.m_flag_send_bins = 1;
-//            //delete param.m_transfunc_synthesizer;
-//        }  // end if generate_glyph
-
         if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
         {
             VIS_MODULE_TIMER_END( 470 );
@@ -682,7 +474,6 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
 
 #if 1
 void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
-//                         bool &nan_error, std::vector<PointObjectCreator>& point_generator_lst ,
                          bool &nan_error,
 #ifndef CPU_VER
                          JobCollector& jc, 
@@ -703,7 +494,6 @@ void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessag
     int st, vl, wid = 0;
     vismodule::PointObject* object = NULL;
     std::vector<vismodule::PointObjectGenerator> point_generator_lst;
-    //std::vector<GlyphObjectCreator> glyph_creator_lst;
 
                 if ( clntMes.m_time_parameter == 0 )
                 {
@@ -879,20 +669,10 @@ void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessag
                     point_generator_lst.clear();
                     for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
                     {
-//                        PointObjectCreator point_creator;
-//                        if ( param.m_gt5d == true ) point_creator.setGT5D();
-//                        point_creator.setFilterInfo( mvpl.m_list[idx] );
-//                        point_creator.setCoordSynthStr( clntMes.m_x_synthesis,
-//                                                        clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-////                        point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
-////                                                        clntMes.y_synthesis_token, clntMes.z_synthesis_token );
-//                        point_generator_lst.push_back( point_creator );
                         vismodule::PointObjectGenerator point_generator;
                         point_generator.setFilterInfo( &mvpl.m_list[idx] );
                         point_generator.setCoordSynthStr( clntMes.m_x_synthesis,
                                                         clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-//                        point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
-//                                                        clntMes.y_synthesis_token, clntMes.z_synthesis_token );
                         point_generator_lst.push_back( point_generator );
 
                     }
@@ -1076,8 +856,6 @@ void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessag
                             //add by shimomura 2023/06/14
                             tmp_max[2*tf] = vismodule::Math::Max( tmp_max[2*tf] ,param.m_transfunc_synthesizer-> m_o_max[tf]);
                             tmp_min[2*tf] = vismodule::Math::Min( tmp_min[2*tf] ,param.m_transfunc_synthesizer-> m_o_min[tf]);
-                            //tmp_max[2*tf] = param.m_transfunc_synthesizer-> m_o_max[tf];
-                            //tmp_min[2*tf] = param.m_transfunc_synthesizer-> m_o_min[tf];
                             for ( int res = 0; res < o_nbins; res++ )
                             {
                                 tmp_o_bins[o_count] += object->getOHistogram()[ o_count ] ;
@@ -1124,19 +902,6 @@ void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& c
                     {
                         VIS_MODULE_TIMER_STA( 461 );
                     }
-
-//                    // send cltMes to all worker process >>
-//                    bsz = clntMes.byteSize();
-//#ifndef CPU_VER
-//                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
-//#endif
-//                    buf = new char[bsz];
-//                    clntMes.pack( buf );
-//#ifndef CPU_VER
-//                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
-//#endif
-//                    delete[] buf;
-//                    // send cltMes to all worker process <<
 
                     std::cout << "initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
                     if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
@@ -1256,7 +1021,6 @@ void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& c
                         }
 
                         param.m_sampling_step = CalculateSamplingStep( mvpl );
-//                      param.subpixel_level = CalculateSubpixelLevel( param, fil, *clntMes.m_camera );
 
                         VariableRange vr;
 
@@ -1265,7 +1029,6 @@ void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& c
                         servMes.m_last_step = pm.particleStatusFile().getLatestTimeStep();
                         if( pm.stepExisted() )
                         {
-                            //if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step && pm.getTimeStep() > -1 )
                             if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step )
                             {
                                 servMes.m_time_step = clntMes.m_step;
@@ -1283,10 +1046,7 @@ void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& c
                         }
 
                         std::cout<<"main.cpp:L614"<<std::endl;
-                        //clntMes.show();
-
                         pts.sendMessage( servMes );
-
 
                         timer.start();
 
@@ -1365,7 +1125,6 @@ void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& c
                             // 20181226 end
 
                             vismodule::PointObject* originalObject = new vismodule::PointObject;
-//                          ParticleMonitor pm( "/Users/admin/Work_noda/2015_PBVR/03_testrun/v1.08_test/pout/case","" );
                             TimerStart( 2 );
                             // 20181226 start　環境変数で指定したパスを使用
                             //std::string filename( jupiter_prefix );
@@ -1401,7 +1160,6 @@ void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& c
                             TimerStop( 2 );
                             if( pm.setTimeStep_particle( clntMes.m_step ) ) servMes.m_flag_send_bins = 0;
                             else                                 servMes.m_flag_send_bins = 1;
-//                            else                                 servMes.m_flag_send_bins = 0;
                             if( servMes.m_flag_send_bins == 0)
                             {
                                 pm.readParticleHistoryFile();
@@ -1413,7 +1171,6 @@ void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& c
                             vr = pm.particleHistoryFile().variableRange();
                            
                             //　粒子生成時に変数の数も取得するよう変更, paerticle_limit,particle_densityを取得するよう変更 2025/05/30
-                            //servMes.m_number_elements = fil.total_numElements;
                             servMes.m_number_ingredients = pm.particleHistoryFile().nVariables();
                             servMes.m_particle_limit = pm.particleHistoryFile().ParticleLimit();
                             servMes.m_particle_density = pm.particleHistoryFile().ParticleDensity();
@@ -1489,9 +1246,6 @@ void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& c
                             {
                                 VIS_MODULE_TIMER_STA( 473 );
                             }
-//                            delete[] servMes.m_positions;
-//                            delete[] servMes.m_normals;
-//                            delete[] servMes.m_colors;
                             delete originalObject;
                             if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
@@ -1502,31 +1256,8 @@ void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& c
 //                          TimerFinish( servMes.m_time_step );
 //jupiter
                         } // end of while(DispatchNext)
-//#ifndef CPU_VER
-//                        MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-//                        MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-//
-//                        int c_count = 0;
-//                        int o_count = 0;
-//                        for ( int tf = 0; tf < servMes.m_transfer_function_count ; tf++ )
-//                        {
-//                            for ( int res = 0; res < servMes.m_color_nbins[tf]; res++ )
-//                            {
-//                                servMes.m_color_bins[tf][res] = tmp_c_bins[c_count];
-//                                c_count++;
-//                            }
-//
-//                            for ( int res = 0; res < servMes.m_opacity_nbins[tf]; res++ )
-//                            {
-//                                servMes.m_opacity_bins[tf][res] = tmp_o_bins[o_count];
-//                                o_count++;
-//                            }
-//                        }
-//#endif
                         servMes.m_flag_send_bins = 1;
-//                      servMes.m_subpixel_level = param.subpixel_level;
                         servMes.m_message_size = servMes.byteSize();
-                        //servMes.m_number_particle = 2;
                         servMes.m_number_particle = 0;
                         servMes.m_number_glyph = 0;
                         TimerStart( 11 );
@@ -1558,7 +1289,6 @@ void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& c
                     else
                     {
                         return;
-                        //break;
                     }
                     if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                     {

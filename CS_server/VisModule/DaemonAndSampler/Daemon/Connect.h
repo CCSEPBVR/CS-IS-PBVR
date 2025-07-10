@@ -20,7 +20,6 @@
 #include <vismodule/AVSField>
 #include <vismodule/Timer>
 #include <vismodule/KVSMLObjectPointWriter>
-//#include "KVSMLObjectPointMPIWriter.h"
 #include <vismodule/JobDispatcher>
 #ifndef CPU_VER
 #include <vismodule/JobCollector>
@@ -56,29 +55,17 @@
 #include <vismodule/StructuredVolumeImporter>
 #include <vismodule/CellByCellParticleGenerator>
 
-//#include <vismodule/GlyphObjectGenerator>
-#include <vismodule/GlyphSeedGenerator>
-//#include <vismodule/GlyphObjectCreator>
+//#include <vismodule/GlyphSeedGenerator>
 
 //plot over line
-//#include <vismodule/POLObjectGenerator>
-#include <vismodule/PlotOverLineGenerator>
+//#include <vismodule/PlotOverLineGenerator>
 
 #include <vismodule/Calculate>
 #include <vismodule/PointObjectCreator>
-//#include <vismodule/SignalHandler>
 #include <vismodule/InitialStep>
 #include <vismodule/GenerateParticle>
 #include <vismodule/GenerateGlyph>
 #include <vismodule/GeneratePOL>
-//#include <vismodule/Connect>
-
-//using FuncParser::Variable;
-//using FuncParser::Variables;
-//using FuncParser::Function;
-//using FuncParser::FunctionParser;
-//
-//bool useAllNodes = true;
 
 void SignalHandler( const int sig );
 void CS_Connect( int argc, char** argv );

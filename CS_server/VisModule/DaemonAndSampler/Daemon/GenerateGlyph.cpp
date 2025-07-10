@@ -111,10 +111,6 @@ void generate_glyph_master(Argument &param, jpv::ParticleTransferClientMessage& 
         param.m_particle_limit = clntMes.m_particle_limit;
         param.m_particle_density = clntMes.m_particle_density;
 
-        //                        transfunc_creator.setProtocol( clntMes );
-        //                        transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
-        //                        param.m_transfunc_synthesizer = transfunc_creator.create();
-
         Calculate_minmax_glyph( param, mvpl, clntMes );
         param.m_transfunc_array.resize( transfunc_creator.transfunc().size() );
         for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
@@ -205,7 +201,6 @@ void generate_glyph_master(Argument &param, jpv::ParticleTransferClientMessage& 
                 glyph_creator_lst.clear();
                 for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
                 {
-                    //GlyphObjectCreator glyph_creator;
                     vismodule::GlyphSeedGenerator glyph_creator;
                     glyph_creator.setFilterInfo( &mvpl.m_list[idx] );
                     glyph_creator_lst.push_back( glyph_creator );
@@ -263,7 +258,6 @@ void generate_glyph_master(Argument &param, jpv::ParticleTransferClientMessage& 
             vismodule::KVSMLObjectGlyph* object = originalGlyph;
             printf(" %zu glyphs generated\n", object->coords().size() / 3);
 
-            //                           //add by shimomura 2023/06/14
             if ( originalGlyph != object ) delete originalGlyph;
 
             servMes.m_number_glyph = originalGlyph->coords().size() / 3;
@@ -390,7 +384,6 @@ void generate_glyph_master(Argument &param, jpv::ParticleTransferClientMessage& 
 #endif
 }
 
-//void generate_glytph_worker() 
 void generate_glyph_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
                          bool &nan_error,
 #ifndef CPU_VER
@@ -401,7 +394,6 @@ void generate_glyph_worker(Argument &param, jpv::ParticleTransferClientMessage& 
 {
 
     int st, vl, wid = 0;
-                    //std::vector<GlyphObjectCreator> glyph_creator_lst;
                     std::vector<vismodule::GlyphSeedGenerator> glyph_creator_lst;
 
                 if ( clntMes.m_time_parameter == 0 )
@@ -413,7 +405,6 @@ void generate_glyph_worker(Argument &param, jpv::ParticleTransferClientMessage& 
                 else
                 {
                     timer_count++;
-//                  param.m_transfer_function = vismodule::TransferFunction(); // *( clntMes.m_transfer_function );
                     param.m_sampling_method = clntMes.m_sampling_method;
                     param.m_component_Id = clntMes.m_rendering_id;
                     param.m_crop.setEnable( clntMes.m_enable_crop_region );
@@ -422,35 +413,13 @@ void generate_glyph_worker(Argument &param, jpv::ParticleTransferClientMessage& 
                     param.m_particle_limit = clntMes.m_particle_limit;
                     param.m_particle_density = clntMes.m_particle_density;
 
-#if 0
-                    std::string pfifile, pflfile;
-                    pfifile = param.m_input_data_base + ".pfi";
-                    vismodule::File pfi( pfifile );
-                    pflfile = param.m_input_data_base + ".pfl";
-                    vismodule::File pfl( pflfile );
-                    if ( pfl.isExisted() )
-                    {
-                        mvpl.loadPFL( pflfile );
-                    }
-                    else if ( pfi.isExisted() )
-                    {
-                        mvpl.loadPFL( pfifile );
-                    }
-#else
                     mvpl.searchFile(param);
-#endif
                     glyph_creator_lst.clear();
                     for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
                     {
-                        //GlyphObjectCreator glyph_creator;
                         vismodule::GlyphSeedGenerator glyph_creator;
                         glyph_creator.setFilterInfo( &mvpl.m_list[idx] );
 
-//                        point_creator.setFilterInfo( mvpl.m_list[idx] );
-//                        glyph_creator.setCoordSynthStr( clntMes.m_x_synthesis,
-//                                                        clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-//                        point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
-//                                                        clntMes.y_synthesis_token, clntMes.z_synthesis_token );
                         glyph_creator_lst.push_back( glyph_creator );
                     }
 
@@ -466,7 +435,6 @@ void generate_glyph_worker(Argument &param, jpv::ParticleTransferClientMessage& 
                         param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
 
-//                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                     if ( param.m_crop.isEnabled() )
                     {
                         jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,

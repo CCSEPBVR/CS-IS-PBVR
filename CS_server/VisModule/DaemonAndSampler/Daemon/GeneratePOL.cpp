@@ -466,7 +466,6 @@ void generate_plot_over_line_worker(Argument &param, jpv::ParticleTransferClient
                             nan_error = true;
                         }
 #ifndef CPU_VER
-                        //jc.jobCollect_pol( tmp_obj, &nan_error, &wid );
                         jc.jobCollect_pol( tmp_axis, tmp_mask, tmp_values, &nan_error, &wid );
 #endif
                         if ( nan_error )
@@ -501,19 +500,6 @@ void generate_plot_over_line_IS(Argument &param, jpv::ParticleTransferClientMess
                     {
                        VIS_MODULE_TIMER_STA( 461 );
                     }
-
-//                    // send cltMes to all worker process >>
-//                    bsz = clntMes.byteSize();
-//#ifndef CPU_VER
-//                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
-//#endif
-//                    buf = new char[bsz];
-//                    clntMes.pack( buf );
-//#ifndef CPU_VER
-//                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
-//#endif
-//                    delete[] buf;
-//                    // send cltMes to all worker process <<
 
                     std::cout << "initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
                     if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )

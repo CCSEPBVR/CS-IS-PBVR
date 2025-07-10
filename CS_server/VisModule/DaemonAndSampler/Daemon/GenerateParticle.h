@@ -20,7 +20,6 @@
 #include <vismodule/AVSField>
 #include <vismodule/Timer>
 #include <vismodule/KVSMLObjectPointWriter>
-//#include "KVSMLObjectPointMPIWriter.h"
 #include <vismodule/JobDispatcher>
 #ifndef CPU_VER
 #include <vismodule/JobCollector>
@@ -57,10 +56,8 @@
 #include <vismodule/CellByCellParticleGenerator>
 
 #include <vismodule/GlyphSeedGenerator>
-//#include <vismodule/GlyphObjectCreator>
 
 //plot over line
-//#include <vismodule/POLObjectGenerator>
 #include <vismodule/PlotOverLineGenerator>
 
 #include <vismodule/Calculate>

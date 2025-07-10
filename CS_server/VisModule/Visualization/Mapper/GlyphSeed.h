@@ -3,7 +3,6 @@
 
 #include <cmath>
 #include "TransferFunctionSynthesizer.h"
-//#include "ParamInfo.h"
 #include "float.h"
 #include <vismodule/UnstructuredVolumeObject>
 #include "CellBase.h"
@@ -29,32 +28,16 @@
 #ifndef CPU_VER
 #include <mpi.h>
 #endif
-/*
-   enum class DataDefines : int32_t {
-       Constant = 0,  // 値の設定
-       SingleVariable = 1,
-       VariablesArray = 2
-   };
-
-   enum class GlyphMode : int32_t {
-       All_points = 0,  // 値の設定
-       Every_points = 1,
-       Uniform_distribution = 2
-   };
-*/
-
 typedef unsigned char Byte;
 
 class GlyphSeed 
 {
-//    visModuleClassName( vismodule::CellBase );
 protected:
    vismodule::TransferFunction m_tf;
    TransferFunctionSynthesizer* m_tfs;
    
    float**           m_values;
    float*       m_coords;
-   //vismodule::UInt32* m_connections;
    unsigned int* m_connections;
    int          m_ncoords;
    int          m_ncells;
