@@ -21,7 +21,6 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
     char* buf;
     int bsz = 0;
     int st, vl, wid = 0;
-    std::vector<GlyphObjectCreator> glyph_creator_lst;
     std::vector<vismodule::PointObjectGenerator> point_generator_lst;
 
     timer_count++;
@@ -293,8 +292,6 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
                     {
                         int c_nbins = tmp_obj->getNbins();
                         //changed by shimomura 2023/07/24
-                        //                                    tmp_max[2*tf+1] = param.m_transfunc_synthesizer-> m_c_max[tf];
-                        //                                    tmp_min[2*tf+1] = param.m_transfunc_synthesizer-> m_c_min[tf];
                         tmp_max[2*tf+1] = vismodule::Math::Max( tmp_max[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
                         tmp_min[2*tf+1] = vismodule::Math::Min( tmp_min[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
                         for ( int res = 0; res < c_nbins; res++ )
@@ -460,207 +457,207 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
 
      } // end if init_param
 
-        if(init_param == jpv::InitializeParameter::generate_glyph )
-        {
-
-            //add by shimomura 2023/06/14
-            int cnt = 2;
-            tmp_max = new float[cnt]; 
-            tmp_min = new float[cnt];
-
-            for ( int tf = 0; tf < cnt; tf++ )
-            {
-                tmp_max[tf] = FLT_MIN;
-                tmp_min[tf] = FLT_MAX;
-            }
-
-            while ( jd.dispatchNext( wid, &st, &vl ) )
-            {
-                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                {
-                    VIS_MODULE_TIMER_STA( 471 );
-                }
-
-                vismodule::KVSMLObjectGlyph* originalGlyph = new vismodule::KVSMLObjectGlyph;
-
-                if (mpi_size == 1) {
-                    int xvl, fidx;
-                    fidx = mvpl.getFileIndex( vl, &xvl );
-                    MultiVolumeProperty& mvp = mvpl.m_list[fidx];
-
-                    mvp.setFilePath(param.m_input_data, st, xvl);
-                    vismodule::KVSMLObjectGlyph* tmp_obj = new vismodule::KVSMLObjectGlyph;
-                    param.m_subvolume_id = xvl;
-                    int timeStep = 1;
-                    servMes.m_flag_send_bins = 2;
-
-                    // glyph_creator_lstの初期化
-                    glyph_creator_lst.clear();
-                    for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
-                    {
-                        GlyphObjectCreator glyph_creator;
-                        glyph_creator.setFilterInfo( mvpl.m_list[idx] );
-                        glyph_creator_lst.push_back( glyph_creator );
-                    }
-
-                    try
-                    {
-                        if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
-                        {
-                            *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, mvpl.m_total_number_subvolumes, timeStep, st, xvl); 
-                            // run()で得られるKVSMLObjectglyphとtmp_objは異なるメモリ領域を指しているため,ポインタコピーではなくオペレータを呼び出す必要がある
-                        }
-#ifdef EXTEND_FILE_FORMAT
-                        else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
-                        {
-                            glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, servMes.m_number_volume_divide, timeStep , tmp_obj, st, xvl );
-                        }                                
-#endif
-                        else     // filetype: kvsml
-                        {
-                            glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, servMes.m_number_volume_divide, timeStep , tmp_obj, st );
-                        }
-                        //                                size_t nmemb = tmp_obj->sizes().size();
-                        originalGlyph->clear();
-                        originalGlyph = tmp_obj;
-
-                        for ( int tf = 0; tf < cnt/2; tf++ )
-                        {
-                            //changed by shimomura 2023/07/24
-                            tmp_max[2*tf+1] = vismodule::Math::Max(tmp_max[2*tf+1],tmp_obj->colorMax());
-                            tmp_min[2*tf+1] = vismodule::Math::Min(tmp_min[2*tf+1],tmp_obj->colorMin());
-                            tmp_max[2*tf  ] = vismodule::Math::Max(tmp_max[2*tf  ],tmp_obj->sizeMax());
-                            tmp_min[2*tf  ] = vismodule::Math::Min(tmp_min[2*tf  ],tmp_obj->sizeMin());
-                        }
-
-                    }
-                    catch ( const std::runtime_error& e )
-                    {
-#ifdef _DEBUG		// debug by @hira
-                        printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
-#endif
-                        std::cerr << e.what();
-                        nan_error = true;
-                    }
-
-                }
-#if 1
-#ifndef CPU_VER          // MPI並列については一旦保留, collectorの内容がわかるまで
-                if (mpi_size > 1) {
-                    //jc.jobCollect( originalObject, &vr, &nan_error, &wid );
-                    jc.jobCollect_glyph( originalGlyph, &nan_error, &wid );
-                }
-#endif
-#endif
-                vismodule::KVSMLObjectGlyph* object = originalGlyph;
-                printf(" %zu glyphs generated\n", object->coords().size() / 3);
-
-                //                           //add by shimomura 2023/06/14
-                if ( originalGlyph != object ) delete originalGlyph;
-
-                servMes.m_number_glyph = originalGlyph->coords().size() / 3;
-                if ( servMes.m_number_glyph > 0 )
-                {
-                    servMes.m_glyph_coords = std::make_unique<float[]>(3 * servMes.m_number_glyph);
-                    servMes.m_glyph_vectors = std::make_unique<float[]>(3 * servMes.m_number_glyph);
-                    servMes.m_glyph_colors = std::make_unique<unsigned char[]>(3 * servMes.m_number_glyph);
-                    servMes.m_glyph_sizes = std::make_unique<float[]>(servMes.m_number_glyph);
-                }
-                else
-                {
-                    servMes.m_glyph_coords  = NULL;
-                    servMes.m_glyph_vectors = NULL;
-                    servMes.m_glyph_colors  = NULL;
-                    servMes.m_glyph_sizes   = NULL;
-                }
-                for ( int i = 0; i < servMes.m_number_glyph; ++i )
-                {
-                    servMes.m_glyph_coords[3 * i + 0]  = object->coords()[3 * i + 0];
-                    servMes.m_glyph_coords[3 * i + 1]  = object->coords()[3 * i + 1];
-                    servMes.m_glyph_coords[3 * i + 2]  = object->coords()[3 * i + 2];
-                    servMes.m_glyph_vectors[3 * i + 0] = object->directions()[3 * i + 0];
-                    servMes.m_glyph_vectors[3 * i + 1] = object->directions()[3 * i + 1];
-                    servMes.m_glyph_vectors[3 * i + 2] = object->directions()[3 * i + 2];
-                    servMes.m_glyph_colors[3 * i + 0]  = object->colors()[3 * i + 0];
-                    servMes.m_glyph_colors[3 * i + 1]  = object->colors()[3 * i + 1];
-                    servMes.m_glyph_colors[3 * i + 2]  = object->colors()[3 * i + 2];
-                    servMes.m_glyph_sizes[i ] = object->sizes()[ i ];
-                }
-
-                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                {
-                    VIS_MODULE_TIMER_END( 471 );
-                }
-                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                {
-                    VIS_MODULE_TIMER_STA( 472 );
-                }
-                servMes.m_flag_send_bins = 2;
-                servMes.m_message_size = servMes.byteSize();
-                servMes.show();
-                pts.sendMessage( servMes );
-                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                {
-                    VIS_MODULE_TIMER_END( 472 );
-                }
-                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                {
-                    VIS_MODULE_TIMER_STA( 473 );
-                }
-                delete object;
-                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                {
-                    VIS_MODULE_TIMER_END( 473 );
-                }
-            } // end of while(DispatchNext)
-#ifndef CPU_VER
-
-            if (mpi_size > 1) 
-            {
-                MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
-                MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
-            }
-#endif
-
-            // TEST START 2015.1.14
-            if ( nan_error )
-            {
-                strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
-                servMes.m_server_status = 1;
-                servMes.m_number_particle = 0;
-                servMes.m_number_glyph = 0 ;
-                servMes.m_flag_send_bins = 1;
-                std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
-                nan_error = false;
-            }
-
-            servMes.m_glyph_color_min = tmp_min[1];
-            servMes.m_glyph_color_max = tmp_max[1];
-            servMes.m_glyph_size_min = tmp_min[0];
-            servMes.m_glyph_size_max = tmp_max[0];
-            std::cout << "m_glyph_min   = " << servMes.m_glyph_color_min << std::endl;
-            std::cout << "m_glyph_max   = " << servMes.m_glyph_color_max << std::endl;
-            servMes.m_flag_send_bins = 1;
-            servMes.m_subpixel_level = param.m_subpixel_level;
-            servMes.m_message_size = servMes.byteSize();
-            pts.sendMessage( servMes );
-            // TEST START 2015.1.14
-            servMes.m_server_status = 0;
-            // TEST END 2015.1.14
-
-            for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
-            {
-                delete[] servMes.m_color_bins[tf];
-                delete[] servMes.m_opacity_bins[tf];
-            }
-            delete[] servMes.m_color_nbins;
-            delete[] servMes.m_opacity_nbins;
-            delete[] tmp_max;
-            delete[] tmp_min;
-            servMes.m_transfer_function_count = 0;
-            servMes.m_flag_send_bins = 1;
-            //delete param.m_transfunc_synthesizer;
-        }  // end if generate_glyph
+//        if(init_param == jpv::InitializeParameter::generate_glyph )
+//        {
+//
+//            //add by shimomura 2023/06/14
+//            int cnt = 2;
+//            tmp_max = new float[cnt]; 
+//            tmp_min = new float[cnt];
+//
+//            for ( int tf = 0; tf < cnt; tf++ )
+//            {
+//                tmp_max[tf] = FLT_MIN;
+//                tmp_min[tf] = FLT_MAX;
+//            }
+//
+//            while ( jd.dispatchNext( wid, &st, &vl ) )
+//            {
+//                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+//                {
+//                    VIS_MODULE_TIMER_STA( 471 );
+//                }
+//
+//                vismodule::KVSMLObjectGlyph* originalGlyph = new vismodule::KVSMLObjectGlyph;
+//
+//                if (mpi_size == 1) {
+//                    int xvl, fidx;
+//                    fidx = mvpl.getFileIndex( vl, &xvl );
+//                    MultiVolumeProperty& mvp = mvpl.m_list[fidx];
+//
+//                    mvp.setFilePath(param.m_input_data, st, xvl);
+//                    vismodule::KVSMLObjectGlyph* tmp_obj = new vismodule::KVSMLObjectGlyph;
+//                    param.m_subvolume_id = xvl;
+//                    int timeStep = 1;
+//                    servMes.m_flag_send_bins = 2;
+//
+//                    // glyph_creator_lstの初期化
+//                    glyph_creator_lst.clear();
+//                    for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
+//                    {
+//                        GlyphObjectCreator glyph_creator;
+//                        glyph_creator.setFilterInfo( mvpl.m_list[idx] );
+//                        glyph_creator_lst.push_back( glyph_creator );
+//                    }
+//
+//                    try
+//                    {
+//                        if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+//                        {
+//                            *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, mvpl.m_total_number_subvolumes, timeStep, st, xvl); 
+//                            // run()で得られるKVSMLObjectglyphとtmp_objは異なるメモリ領域を指しているため,ポインタコピーではなくオペレータを呼び出す必要がある
+//                        }
+//#ifdef EXTEND_FILE_FORMAT
+//                        else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
+//                        {
+//                            glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, servMes.m_number_volume_divide, timeStep , tmp_obj, st, xvl );
+//                        }                                
+//#endif
+//                        else     // filetype: kvsml
+//                        {
+//                            glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, servMes.m_number_volume_divide, timeStep , tmp_obj, st );
+//                        }
+//                        //                                size_t nmemb = tmp_obj->sizes().size();
+//                        originalGlyph->clear();
+//                        originalGlyph = tmp_obj;
+//
+//                        for ( int tf = 0; tf < cnt/2; tf++ )
+//                        {
+//                            //changed by shimomura 2023/07/24
+//                            tmp_max[2*tf+1] = vismodule::Math::Max(tmp_max[2*tf+1],tmp_obj->colorMax());
+//                            tmp_min[2*tf+1] = vismodule::Math::Min(tmp_min[2*tf+1],tmp_obj->colorMin());
+//                            tmp_max[2*tf  ] = vismodule::Math::Max(tmp_max[2*tf  ],tmp_obj->sizeMax());
+//                            tmp_min[2*tf  ] = vismodule::Math::Min(tmp_min[2*tf  ],tmp_obj->sizeMin());
+//                        }
+//
+//                    }
+//                    catch ( const std::runtime_error& e )
+//                    {
+//#ifdef _DEBUG		// debug by @hira
+//                        printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
+//#endif
+//                        std::cerr << e.what();
+//                        nan_error = true;
+//                    }
+//
+//                }
+//#if 1
+//#ifndef CPU_VER          // MPI並列については一旦保留, collectorの内容がわかるまで
+//                if (mpi_size > 1) {
+//                    //jc.jobCollect( originalObject, &vr, &nan_error, &wid );
+//                    jc.jobCollect_glyph( originalGlyph, &nan_error, &wid );
+//                }
+//#endif
+//#endif
+//                vismodule::KVSMLObjectGlyph* object = originalGlyph;
+//                printf(" %zu glyphs generated\n", object->coords().size() / 3);
+//
+//                //                           //add by shimomura 2023/06/14
+//                if ( originalGlyph != object ) delete originalGlyph;
+//
+//                servMes.m_number_glyph = originalGlyph->coords().size() / 3;
+//                if ( servMes.m_number_glyph > 0 )
+//                {
+//                    servMes.m_glyph_coords = std::make_unique<float[]>(3 * servMes.m_number_glyph);
+//                    servMes.m_glyph_vectors = std::make_unique<float[]>(3 * servMes.m_number_glyph);
+//                    servMes.m_glyph_colors = std::make_unique<unsigned char[]>(3 * servMes.m_number_glyph);
+//                    servMes.m_glyph_sizes = std::make_unique<float[]>(servMes.m_number_glyph);
+//                }
+//                else
+//                {
+//                    servMes.m_glyph_coords  = NULL;
+//                    servMes.m_glyph_vectors = NULL;
+//                    servMes.m_glyph_colors  = NULL;
+//                    servMes.m_glyph_sizes   = NULL;
+//                }
+//                for ( int i = 0; i < servMes.m_number_glyph; ++i )
+//                {
+//                    servMes.m_glyph_coords[3 * i + 0]  = object->coords()[3 * i + 0];
+//                    servMes.m_glyph_coords[3 * i + 1]  = object->coords()[3 * i + 1];
+//                    servMes.m_glyph_coords[3 * i + 2]  = object->coords()[3 * i + 2];
+//                    servMes.m_glyph_vectors[3 * i + 0] = object->directions()[3 * i + 0];
+//                    servMes.m_glyph_vectors[3 * i + 1] = object->directions()[3 * i + 1];
+//                    servMes.m_glyph_vectors[3 * i + 2] = object->directions()[3 * i + 2];
+//                    servMes.m_glyph_colors[3 * i + 0]  = object->colors()[3 * i + 0];
+//                    servMes.m_glyph_colors[3 * i + 1]  = object->colors()[3 * i + 1];
+//                    servMes.m_glyph_colors[3 * i + 2]  = object->colors()[3 * i + 2];
+//                    servMes.m_glyph_sizes[i ] = object->sizes()[ i ];
+//                }
+//
+//                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+//                {
+//                    VIS_MODULE_TIMER_END( 471 );
+//                }
+//                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+//                {
+//                    VIS_MODULE_TIMER_STA( 472 );
+//                }
+//                servMes.m_flag_send_bins = 2;
+//                servMes.m_message_size = servMes.byteSize();
+//                servMes.show();
+//                pts.sendMessage( servMes );
+//                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+//                {
+//                    VIS_MODULE_TIMER_END( 472 );
+//                }
+//                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+//                {
+//                    VIS_MODULE_TIMER_STA( 473 );
+//                }
+//                delete object;
+//                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+//                {
+//                    VIS_MODULE_TIMER_END( 473 );
+//                }
+//            } // end of while(DispatchNext)
+//#ifndef CPU_VER
+//
+//            if (mpi_size > 1) 
+//            {
+//                MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
+//                MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
+//            }
+//#endif
+//
+//            // TEST START 2015.1.14
+//            if ( nan_error )
+//            {
+//                strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
+//                servMes.m_server_status = 1;
+//                servMes.m_number_particle = 0;
+//                servMes.m_number_glyph = 0 ;
+//                servMes.m_flag_send_bins = 1;
+//                std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
+//                nan_error = false;
+//            }
+//
+//            servMes.m_glyph_color_min = tmp_min[1];
+//            servMes.m_glyph_color_max = tmp_max[1];
+//            servMes.m_glyph_size_min = tmp_min[0];
+//            servMes.m_glyph_size_max = tmp_max[0];
+//            std::cout << "m_glyph_min   = " << servMes.m_glyph_color_min << std::endl;
+//            std::cout << "m_glyph_max   = " << servMes.m_glyph_color_max << std::endl;
+//            servMes.m_flag_send_bins = 1;
+//            servMes.m_subpixel_level = param.m_subpixel_level;
+//            servMes.m_message_size = servMes.byteSize();
+//            pts.sendMessage( servMes );
+//            // TEST START 2015.1.14
+//            servMes.m_server_status = 0;
+//            // TEST END 2015.1.14
+//
+//            for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
+//            {
+//                delete[] servMes.m_color_bins[tf];
+//                delete[] servMes.m_opacity_bins[tf];
+//            }
+//            delete[] servMes.m_color_nbins;
+//            delete[] servMes.m_opacity_nbins;
+//            delete[] tmp_max;
+//            delete[] tmp_min;
+//            servMes.m_transfer_function_count = 0;
+//            servMes.m_flag_send_bins = 1;
+//            //delete param.m_transfunc_synthesizer;
+//        }  // end if generate_glyph
 
         if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
         {
@@ -706,7 +703,7 @@ void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessag
     int st, vl, wid = 0;
     vismodule::PointObject* object = NULL;
     std::vector<vismodule::PointObjectGenerator> point_generator_lst;
-    std::vector<GlyphObjectCreator> glyph_creator_lst;
+    //std::vector<GlyphObjectCreator> glyph_creator_lst;
 
                 if ( clntMes.m_time_parameter == 0 )
                 {

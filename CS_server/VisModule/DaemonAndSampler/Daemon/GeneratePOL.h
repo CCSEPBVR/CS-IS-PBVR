@@ -60,7 +60,8 @@
 #include <vismodule/PointObjectCreator>
 #include <vismodule/SignalHandler>
 #include <vismodule/Math>
-#include <vismodule/POLObjectGenerator>
+//#include <vismodule/POLObjectGenerator>
+#include <vismodule/PlotOverLineGenerator>
 //IS
 #include <vismodule/ParticleMonitor>
 #include <vismodule/ParameterFileWriter>

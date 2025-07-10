@@ -1,5 +1,5 @@
-#ifndef GLYPH_GENERATOR
-#define GLYPH_GENERATOR
+#ifndef GLYPH_SEED
+#define GLYPH_SEED
 
 #include <cmath>
 #include "TransferFunctionSynthesizer.h"
@@ -45,7 +45,7 @@
 
 typedef unsigned char Byte;
 
-class GlyphGenerator 
+class GlyphSeed 
 {
 //    visModuleClassName( vismodule::CellBase );
 protected:
@@ -114,18 +114,18 @@ public:
    void GlyphSampling( const vismodule::VolumeObjectBase::CellType& celltype);
 
 
-    GlyphGenerator();
-    GlyphGenerator( Type** values, int nvariables,
+    GlyphSeed();
+    GlyphSeed( Type** values, int nvariables,
            float* coordinates, int ncoords,
            unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltype); //ISPBVR
-    GlyphGenerator(const vismodule::StructuredVolumeObject& object );
+    GlyphSeed(const vismodule::StructuredVolumeObject& object );
 
-    GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, Type** values, int nvariables,
+    GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, Type** values, int nvariables,
            float* coordinates, int ncoords,
            unsigned int* connections, int ncells,
            const  vismodule::VolumeObjectBase::CellType& celltype ); // CSPBVR
-    GlyphGenerator(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide,const vismodule::StructuredVolumeObject& object ); 
-    ~GlyphGenerator()
+    GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide,const vismodule::StructuredVolumeObject& object ); 
+    ~GlyphSeed()
     {
     }
 

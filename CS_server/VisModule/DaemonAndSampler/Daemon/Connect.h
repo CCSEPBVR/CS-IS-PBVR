@@ -56,11 +56,13 @@
 #include <vismodule/StructuredVolumeImporter>
 #include <vismodule/CellByCellParticleGenerator>
 
-#include <vismodule/GlyphObjectGenerator>
-#include <vismodule/GlyphObjectCreator>
+//#include <vismodule/GlyphObjectGenerator>
+#include <vismodule/GlyphSeedGenerator>
+//#include <vismodule/GlyphObjectCreator>
 
 //plot over line
-#include <vismodule/POLObjectGenerator>
+//#include <vismodule/POLObjectGenerator>
+#include <vismodule/PlotOverLineGenerator>
 
 #include <vismodule/Calculate>
 #include <vismodule/PointObjectCreator>

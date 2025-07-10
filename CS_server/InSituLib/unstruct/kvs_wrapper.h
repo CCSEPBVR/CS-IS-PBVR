@@ -7,6 +7,8 @@
 #include <vismodule/ParamInfo>
 #include <vismodule/TransferFunction>
 #include "../../Common/ParticleTransferProtocol.h"
+#include <vismodule/CellByCellHistogram>
+#include <vismodule/CellByCellRejectionSampling>
 
 #ifdef VTK
 #include <vtkUnstructuredGrid.h>
@@ -57,16 +59,16 @@ extern "C" {
         int restart;
     } domain_parameters;
 #else
-    typedef struct
-    {
-        float x_global_min;
-        float y_global_min;
-        float z_global_min;
-
-        float x_global_max;
-        float y_global_max;
-        float z_global_max;
-    } domain_parameters;
+//    typedef struct
+//    {
+//        float x_global_min;
+//        float y_global_min;
+//        float z_global_min;
+//
+//        float x_global_max;
+//        float y_global_max;
+//        float z_global_max;
+//    } domain_parameters;
 #endif
 
     typedef struct

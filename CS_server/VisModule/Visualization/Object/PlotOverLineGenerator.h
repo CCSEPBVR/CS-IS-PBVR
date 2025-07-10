@@ -1,6 +1,6 @@
 /****************************************************************************/
 /**
- *  @file POLObjectGenerator.h
+ *  @file PlotOverLineGenerator.h
  */
 /*----------------------------------------------------------------------------
  *
@@ -8,19 +8,18 @@
  *  All rights reserved.
  *  See http://www.viz.media.kyoto-u.ac.jp/kvs/copyright/ for details.
  *
- *  $Id: POLObjectGenerator.h 634 2025-01-31 07:04:05Z naohisa.sakamoto $
+ *  $Id: PlotOverLineGenerator.h 634 2025-01-31 07:04:05Z naohisa.sakamoto $
  */
 /****************************************************************************/
 
-#ifndef VIS_MODULE__POL_OBJECT_GENERATOR_H_INCLUDE
-#define VIS_MODULE__POL_OBJECT_GENERATOR_H_INCLUDE
+#ifndef VIS_MODULE__POL_GENERATOR_H_INCLUDE
+#define VIS_MODULE__POL_GENERATOR_H_INCLUDE
 
 #include <vector>
 #include <string>
 #include "UnstructuredVolumeObject.h"
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/ExtendedTransferFunction>
-#include <vismodule/GlyphObjectGenerator>
 #include <vismodule/KVSMLObjectGlyph>
 #include "../Common/ParticleTransferProtocol.h"
 #include <vismodule/PlotOverLine>
@@ -31,24 +30,23 @@
 #include <vismodule/Argument>
 
 
-class POLObjectGenerator
+class PlotOverLineGenerator
 {
 private:
 
     vismodule::UnstructuredVolumeObject* m_volume;
     vismodule::KVSMLObjectPlotOverLine* m_object;
 
-//    vismodule::KVSMLPlotOverLine m_generator;
 
     int m_mpi_rank;
 
 
 public:
 
-    POLObjectGenerator()
+    PlotOverLineGenerator()
         : m_volume(NULL), m_mpi_rank(0), m_mvp(NULL), m_object(NULL) {}
 
-    ~POLObjectGenerator()
+    ~PlotOverLineGenerator()
     {
     }
 

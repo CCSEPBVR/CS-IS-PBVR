@@ -1,20 +1,16 @@
-#include "GlyphObjectGenerator.h"
-//#include <sys/time.h>
+#include "GlyphSeedGenerator.h"
 #include <vismodule/TransferFunction>
 #include "UnstructuredVolumeObject.h"
 #include <vismodule/UnstructuredVolumeImporter>
 #include <vismodule/CellByCellUniformSampling>
 #include <vismodule/CellByCellRejectionSampling>
 #include <vismodule/CellByCellMetropolisSampling>
-//#include "CellByCellLayeredSampling.h"
 #include <vismodule/Camera>
 #include <vismodule/CellByCellUniformSampling>
 #include <vismodule/CellByCellRejectionSampling>
 #include <vismodule/CellByCellMetropolisSampling>
 #include <vismodule/CellByCellHistogram>
 #if 0 //TEST_DELETE
-#include <vismodule/TestVolume>
-#include <vismodule/FrontSTRFileReader>
 #endif
 #include <vismodule/AVSUcd>
 #include <vismodule/ValueArray>
@@ -30,14 +26,8 @@
 
 using namespace vismodule;
 
-void GlyphObjectGenerator::run( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes , const int number_of_divide ,const int timeStep, vismodule::KVSMLObjectGlyph* object, const int st )
+void GlyphSeedGenerator::run( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes , const int number_of_divide ,const int timeStep, vismodule::KVSMLObjectGlyph* object, const int st )
 {
-//    struct stat s;
-//    if ( stat( param.m_input_data.c_str(), &s ) )
-//    {
-//        std::cout << "Error. read failed:" << param.m_input_data << std::endl;
-//        exit( 1 );
-//    }
     this->createFromFile( param, camera, clntMes, number_of_divide);
 
     vismodule::KVSMLObjectGlyph* po = this->getKVSMLObjectGlyph();
@@ -54,10 +44,8 @@ void GlyphObjectGenerator::run( const Argument& param, const vismodule::Camera& 
 }
 
 #ifdef EXTEND_FILE_FORMAT
-void GlyphObjectGenerator::run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, vismodule::KVSMLObjectGlyph* object, const int st, const int vl)
+void GlyphSeedGenerator::run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, vismodule::KVSMLObjectGlyph* object, const int st, const int vl)
 {
-//    this ->setFilterInfo( m_mvp );
-//    this ->createFromFile( param, camera, clntMes, number_of_divide, st, vl );
     vismodule::KVSMLObjectGlyph* po = this->getKVSMLObjectGlyph();
 
     object -> setCoords(po->coords());
@@ -71,7 +59,7 @@ void GlyphObjectGenerator::run( const Argument& param, const vismodule::Camera& 
 }
 #endif
 
-vismodule::KVSMLObjectGlyph* GlyphObjectGenerator::run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, const int st, const int vl)
+vismodule::KVSMLObjectGlyph* GlyphSeedGenerator::run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, const int st, const int vl)
 {
     this->setFilterInfo( m_mvp );
     this->setCoordSynthTS( st );
@@ -82,8 +70,8 @@ vismodule::KVSMLObjectGlyph* GlyphObjectGenerator::run( const Argument& param, c
 
 
 
-//void GlyphObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera )
-void GlyphObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide )
+//void GlyphSeedGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera )
+void GlyphSeedGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide )
 {
 //FJ_TIMER_KAWAMURA
     VIS_MODULE_TIMER_STA( 260 );
@@ -95,25 +83,13 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const vismodul
     {
         std::cout << "Structured !" <<std::endl;
         volume = new vismodule::StructuredVolumeImporter( param.m_input_data ); 
-//        visModuleMessageError("structured data does not apply." );
-        // change by shimomura 20240730
         int id = param.m_subvolume_id;
-        //volume->updateMinMaxValues();
-        //volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
-//        volume->setMinMaxObjectCoords( m_mvp->m_min_subvolume_coord[id], m_mvp->m_max_subvolume_coord[id] );
-//        volume->setMinMaxExternalCoords( m_mvp->m_min_subvolume_coord[id], m_mvp->m_max_subvolume_coord[id] );
-
     } 
     else if ( vismoduleview::FileChecker::ImportableUnstructuredVolume( param.m_input_data))
     {
         std::cout << "Unstructured !" <<std::endl;
         volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );  
-        
         volume->updateMinMaxValues();
-        //volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
-        //volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
-        //volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
-
     }
     else 
     {
@@ -137,7 +113,6 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const vismodul
 #ifdef _DEBUG		// debug by @hira
         printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
 #endif
-//        m_object = NULL;
         delete volume;
         throw e;
     }
@@ -145,7 +120,7 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const vismodul
     delete volume;
 }
 
-void GlyphObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes,const int number_of_divide, const int st, const int vl )
+void GlyphSeedGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes,const int number_of_divide, const int st, const int vl )
 {
     VIS_MODULE_TIMER_STA( 260 );
 //    delete m_object;
@@ -245,10 +220,9 @@ void GlyphObjectGenerator::createFromFile( const Argument& param, const vismodul
     delete volume;
 }
 
-std::string GlyphObjectGenerator::getErrorMessage( const size_t maxMemory ) const
+std::string GlyphSeedGenerator::getErrorMessage( const size_t maxMemory ) const
 {
     std::string errorMessage( "" );
-//    const size_t totalMemory = sizeof( float ) * m_object->sizes().size() + sizeof( float ) * m_object->sizes().size()*3 + sizeof( char ) * m_object->sizes().size()*3+ sizeof( float ) * m_object->sizes().size()*3 ;
     const size_t totalMemory = sizeof( float ) * m_object.sizes().size() + sizeof( float ) * m_object.sizes().size()*3 + sizeof( char ) * m_object.sizes().size()*3+ sizeof( float ) * m_object.sizes().size()*3 ;
     if ( totalMemory > maxMemory )
     {
@@ -259,8 +233,7 @@ std::string GlyphObjectGenerator::getErrorMessage( const size_t maxMemory ) cons
     return errorMessage;
 }
 
-//void GlyphObjectGenerator::sampling( vismodule::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes )
-void GlyphObjectGenerator::sampling( vismodule::VolumeObjectBase* volume,const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide )
+void GlyphSeedGenerator::sampling( vismodule::VolumeObjectBase* volume,const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide )
 {
 #ifndef CPU_VER
     int rank;
@@ -308,7 +281,7 @@ void GlyphObjectGenerator::sampling( vismodule::VolumeObjectBase* volume,const j
                 values[j][i] = valueArray.at<Type>(it);  
             }
         } 
-        GlyphGenerator glyph_generator( clntMes, number_of_divide, values, nvariables,
+        GlyphSeed glyph_generator( clntMes, number_of_divide, values, nvariables,
                 coordinates.data(), ncoords, connections.data(), ncells, celltype);
         glyph_generator.getGlyphData(&m_object);
         
@@ -323,53 +296,53 @@ void GlyphObjectGenerator::sampling( vismodule::VolumeObjectBase* volume,const j
     else if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Structured)
     {
         const vismodule::StructuredVolumeObject* vo_p = static_cast<const vismodule::StructuredVolumeObject*>( volume );
-            GlyphGenerator glyph_generator( clntMes, number_of_divide, *vo_p);
+            GlyphSeed glyph_generator( clntMes, number_of_divide, *vo_p);
             glyph_generator.getGlyphData(&m_object);
     }
 
 }
 
-const vismodule::ValueArray<vismodule::Real32>& GlyphObjectGenerator::coords( void ) const
+const vismodule::ValueArray<vismodule::Real32>& GlyphSeedGenerator::coords( void ) const
 {
     return( m_coords );
 }
 
-const vismodule::ValueArray<vismodule::UInt8>& GlyphObjectGenerator::colors( void ) const
+const vismodule::ValueArray<vismodule::UInt8>& GlyphSeedGenerator::colors( void ) const
 {
     return( m_colors );
 }
 
-const vismodule::ValueArray<vismodule::Real32>& GlyphObjectGenerator::directions( void ) const
+const vismodule::ValueArray<vismodule::Real32>& GlyphSeedGenerator::directions( void ) const
 {
     return( m_directions );
 }
 
-const vismodule::ValueArray<vismodule::Real32>& GlyphObjectGenerator::sizes( void ) const
+const vismodule::ValueArray<vismodule::Real32>& GlyphSeedGenerator::sizes( void ) const
 {
     return( m_sizes );
 }
 
-void GlyphObjectGenerator::setCoords( const vismodule::ValueArray<vismodule::Real32>& coords )
+void GlyphSeedGenerator::setCoords( const vismodule::ValueArray<vismodule::Real32>& coords )
 {
     m_coords = coords;
 }
 
-void GlyphObjectGenerator::setColors( const vismodule::ValueArray<vismodule::UInt8>& colors )
+void GlyphSeedGenerator::setColors( const vismodule::ValueArray<vismodule::UInt8>& colors )
 {
     m_colors = colors;
 }
 
-void GlyphObjectGenerator::setDirections( const vismodule::ValueArray<vismodule::Real32>& directions )
+void GlyphSeedGenerator::setDirections( const vismodule::ValueArray<vismodule::Real32>& directions )
 {
     m_directions = directions;
 }
 
-void GlyphObjectGenerator::setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes )
+void GlyphSeedGenerator::setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes )
 {
     m_sizes = sizes;
 }
 
-void GlyphObjectGenerator::clear()
+void GlyphSeedGenerator::clear()
 {
     m_sizes.deallocate();
     m_directions.deallocate();

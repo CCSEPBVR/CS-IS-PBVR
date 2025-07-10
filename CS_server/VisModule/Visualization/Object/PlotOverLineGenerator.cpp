@@ -1,4 +1,4 @@
-#include "POLObjectGenerator.h"
+#include "PlotOverLineGenerator.h"
 //#include <sys/time.h>
 #include <vismodule/TransferFunction>
 #include "UnstructuredVolumeObject.h"
@@ -23,8 +23,8 @@
 
 using namespace vismodule;
 
-//void POLObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera )
-void POLObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide )
+//void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera )
+void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide )
 {
 //FJ_TIMER_KAWAMURA
     VIS_MODULE_TIMER_STA( 260 );
@@ -184,7 +184,7 @@ void POLObjectGenerator::createFromFile( const Argument& param, const vismodule:
 }
 
 #ifdef EXTEND_FILE_FORMAT
-void POLObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const int st, const int vl )
+void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const int st, const int vl )
 {
     bool is_structured = false;
     bool is_unstructured = false;
@@ -347,7 +347,7 @@ void POLObjectGenerator::createFromFile( const Argument& param, const vismodule:
 #endif
 
 #if 0
-void POLObjectGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage& clntMes,const int number_of_divide, const int st, const int vl )
+void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage& clntMes,const int number_of_divide, const int st, const int vl )
 {
     VIS_MODULE_TIMER_STA( 260 );
 //    delete m_object;
@@ -388,7 +388,7 @@ void POLObjectGenerator::createFromFile( const Argument& param, const vismodule:
 }
 #endif
 
-std::string POLObjectGenerator::getErrorMessage( const size_t maxMemory ) const
+std::string PlotOverLineGenerator::getErrorMessage( const size_t maxMemory ) const
 {
     std::string errorMessage( "" );
     //const size_t totalMemory = sizeof( float ) * m_object.values_on_line().size() + sizeof( float ) * m_object.values_on_line().size() + sizeof( bool ) * m_object.values_on_line().size();
@@ -402,47 +402,47 @@ std::string POLObjectGenerator::getErrorMessage( const size_t maxMemory ) const
     return errorMessage;
 }
 
-const vismodule::ValueArray<vismodule::Real32>& POLObjectGenerator::coords( void ) const
+const vismodule::ValueArray<vismodule::Real32>& PlotOverLineGenerator::coords( void ) const
 {
     return( m_coords );
 }
 
-const vismodule::ValueArray<vismodule::UInt8>& POLObjectGenerator::colors( void ) const
+const vismodule::ValueArray<vismodule::UInt8>& PlotOverLineGenerator::colors( void ) const
 {
     return( m_colors );
 }
 
-const vismodule::ValueArray<vismodule::Real32>& POLObjectGenerator::directions( void ) const
+const vismodule::ValueArray<vismodule::Real32>& PlotOverLineGenerator::directions( void ) const
 {
     return( m_directions );
 }
 
-const vismodule::ValueArray<vismodule::Real32>& POLObjectGenerator::sizes( void ) const
+const vismodule::ValueArray<vismodule::Real32>& PlotOverLineGenerator::sizes( void ) const
 {
     return( m_sizes );
 }
 
-void POLObjectGenerator::setCoords( const vismodule::ValueArray<vismodule::Real32>& coords )
+void PlotOverLineGenerator::setCoords( const vismodule::ValueArray<vismodule::Real32>& coords )
 {
     m_coords = coords;
 }
 
-void POLObjectGenerator::setColors( const vismodule::ValueArray<vismodule::UInt8>& colors )
+void PlotOverLineGenerator::setColors( const vismodule::ValueArray<vismodule::UInt8>& colors )
 {
     m_colors = colors;
 }
 
-void POLObjectGenerator::setDirections( const vismodule::ValueArray<vismodule::Real32>& directions )
+void PlotOverLineGenerator::setDirections( const vismodule::ValueArray<vismodule::Real32>& directions )
 {
     m_directions = directions;
 }
 
-void POLObjectGenerator::setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes )
+void PlotOverLineGenerator::setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes )
 {
     m_sizes = sizes;
 }
 
-void POLObjectGenerator::clear()
+void PlotOverLineGenerator::clear()
 {
     m_sizes.deallocate();
     m_directions.deallocate();

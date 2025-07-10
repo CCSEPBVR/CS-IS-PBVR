@@ -21,7 +21,6 @@ void generate_plot_over_line_master(Argument &param, jpv::ParticleTransferClient
     int st, vl, wid = 0;
 
                     timer_count++;
-//                    std::vector<POLObjectGenerator> pol_generator_lst;
                     if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                     {
                         VIS_MODULE_TIMER_STA( 461 );
@@ -178,7 +177,7 @@ void generate_plot_over_line_master(Argument &param, jpv::ParticleTransferClient
                         originalGlyph ->mask().fill(false);
                         while ( jd.dispatchNext( wid, &st, &vl ) )
                         {
-                            POLObjectGenerator pol_generator;
+                            PlotOverLineGenerator pol_generator;
                             if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
                                 VIS_MODULE_TIMER_STA( 471 );
@@ -418,7 +417,7 @@ void generate_plot_over_line_worker(Argument &param, jpv::ParticleTransferClient
 
                     while ( jd.dispatchNext( wid, &st, &vl ) )
                     {
-                        POLObjectGenerator pol_generator;
+                        PlotOverLineGenerator pol_generator;
                         int xvl, fidx;
                         fidx = mvpl.getFileIndex( vl, &xvl );
                         MultiVolumeProperty& mvp = mvpl.m_list[fidx];

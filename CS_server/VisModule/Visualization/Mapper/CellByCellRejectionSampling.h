@@ -121,6 +121,9 @@ public:
         const bool                   batch,
         const float                  object_depth = 0.0f );
 
+// for IS 
+//
+
     virtual ~CellByCellRejectionSampling();
 
 public:

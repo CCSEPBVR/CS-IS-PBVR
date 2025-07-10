@@ -29,7 +29,7 @@ LOCAL_OBJS = TransferFunction.o \
 #LOCAL_OBJS +=	   VtkImport.o 
 #endif
 
-LOCAL_OBJS +=GlyphGenerator.o \
+LOCAL_OBJS +=GlyphSeed.o \
 	   GlyphProperty.o \
 	   KVSMLObjectGlyph.o \
 	   KVSMLObjectPlotOverLine.o \

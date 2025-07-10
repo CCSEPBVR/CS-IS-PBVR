@@ -38,8 +38,6 @@
 #include <vtkSmartPointerBase.h>
 #include <vtkSmartPointer.h>
 #include <vtkPointData.h>
-//#include "FileFormat/VtkUnstructuredFileFormat.h"
-//#include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
 #include <FileFormat/VtkUnstructuredFileFormat.h>
 #include <FileFormat/VTK/VtkXmlUnstructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
@@ -50,7 +48,8 @@
 #endif
 
 //Glyph
-#include <vismodule/GlyphGenerator>
+//#include <vismodule/GlyphGenerator>
+#include <vismodule/GlyphSeed>
 #include <vismodule/GlyphProperty>
 
 //PlotOverLine
@@ -1424,6 +1423,9 @@ void GenerateParticles( int time_step,
 #endif
 {
 
+    //vismodule::VolumeObjectBase volume;
+
+#if 0
 #if _OPENMP
     int max_threads = omp_get_max_threads();
 #else
@@ -2208,6 +2210,8 @@ void GenerateParticles( int time_step,
     timer.stop();
     time.writting = timer.sec();
 //    show_timer( time );
+
+#endif
 }
 
 void GenerateGlyphs( int time_step,
@@ -2216,7 +2220,7 @@ void GenerateGlyphs( int time_step,
                          float* coordinates, int ncoords,
                          unsigned int* connections, int ncells, const vismodule::VolumeObjectBase::CellType& celltype) //celltype  enum 型に変更
 {
-        GlyphGenerator glyph_generator( values, nvariables,
+        GlyphSeed glyph_generator( values, nvariables,
                 coordinates, ncoords, connections, ncells, celltype); 
      
         glyph_generator.OutputGlyph( time_step);

@@ -7,24 +7,22 @@
 #include <vismodule/AnyValueArray>
 #include <vismodule/ValueArray>
 #include <vismodule/StructuredVolumeObject>
-//#include <vismodule/TrilinearInterpolator>
 #include <vismodule/PointObject>
 #include <vismodule/PointExporter>
 #include <vismodule/KVSMLObjectPoint>
-//#include <vismodule/CellByCellParticleGenerator>
 #include <vismodule/TransferFunction>
 #include <vismodule/RGBColor>
 #include <vismodule/Timer>
 #include <vismodule/MersenneTwister>
 
-#include <vismodule/GlyphGenerator>
+//#include <vismodule/GlyphGenerator>
+#include <vismodule/GlyphSeed>
 #include <vismodule/PlotOverLine>
 #include "kvs_wrapper.h"
 #include <vismodule/CellByCellParticleGenerator>
 #include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/ParamInfo>
 #include <vismodule/TrilinearInterpolator>
-//#include "TFS/TransferFunctionSynthesizerCreator.h"
 #include "float.h"
 
 #include <mpi.h>
@@ -640,7 +638,7 @@ void GenerateGlyphs_PlotOverLine( int time_step, domain_parameters dom, Type** v
     object.setMinMaxExternalCoords( min_vec, max_vec );
 
     // Generate glyph
-    GlyphGenerator glyph_generator( object ); 
+    GlyphSeed glyph_generator( object ); 
     glyph_generator.OutputGlyph( time_step);
 
     // Generate plot over line

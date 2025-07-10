@@ -195,7 +195,7 @@ $(OUTDIR)/./Visualization/Mapper/ExtractEdges.o \
 $(OUTDIR)/./Visualization/Mapper/ExtractVertices.o \
 $(OUTDIR)/./Visualization/Mapper/ExtendedTransferFunction.o \
 $(OUTDIR)/./Visualization/Mapper/FrequencyTable.o \
-$(OUTDIR)/./Visualization/Mapper/GlyphGenerator.o \
+$(OUTDIR)/./Visualization/Mapper/GlyphSeed.o \
 $(OUTDIR)/./Visualization/Mapper/HexahedralCell.o \
 $(OUTDIR)/./Visualization/Mapper/HitAndMissSampling.o \
 $(OUTDIR)/./Visualization/Mapper/Isosurface.o \
@@ -231,13 +231,13 @@ $(OUTDIR)/./Visualization/Mapper/TriangleCell.o \
 $(OUTDIR)/./Visualization/Object/AxisObject.o \
 $(OUTDIR)/./Visualization/Object/GeometryObjectBase.o \
 $(OUTDIR)/./Visualization/Object/GlyphObject.o \
-$(OUTDIR)/./Visualization/Object/GlyphObjectGenerator.o \
+$(OUTDIR)/./Visualization/Object/GlyphSeedGenerator.o \
 $(OUTDIR)/./Visualization/Object/ImageObject.o \
 $(OUTDIR)/./Visualization/Object/LineObject.o \
 $(OUTDIR)/./Visualization/Object/ObjectBase.o \
 $(OUTDIR)/./Visualization/Object/PointObject.o \
 $(OUTDIR)/./Visualization/Object/PointObjectGenerator.o \
-$(OUTDIR)/./Visualization/Object/POLObjectGenerator.o \
+$(OUTDIR)/./Visualization/Object/PlotOverLineGenerator.o \
 $(OUTDIR)/./Visualization/Object/PolygonObject.o \
 $(OUTDIR)/./Visualization/Object/TableObject.o \
 $(OUTDIR)/./Visualization/Object/VolumeObjectBase.o \

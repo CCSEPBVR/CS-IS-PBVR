@@ -6,7 +6,6 @@
 /*****************************************************************************/
 
 #include <vismodule/Connect>
-//#include "Connect.h"
 #include "ParticleTransferServer.h"
 #include "ParticleTransferProtocol.h"
 
@@ -26,7 +25,6 @@
 #include <vismodule/AVSField>
 #include <vismodule/Timer>
 #include <vismodule/KVSMLObjectPointWriter>
-//#include "KVSMLObjectPointMPIWriter.h"
 #include <vismodule/JobDispatcher>
 #ifndef CPU_VER
 #include <vismodule/JobCollector>
@@ -62,15 +60,14 @@
 #include <vismodule/StructuredVolumeImporter>
 #include <vismodule/CellByCellParticleGenerator>
 
-#include <vismodule/GlyphObjectGenerator>
-#include <vismodule/GlyphObjectCreator>
+//#include <vismodule/GlyphObjectGenerator>
+#include <vismodule/GlyphSeedGenerator>
+//#include <vismodule/GlyphObjectCreator>
 
 //plot over line
-#include <vismodule/POLObjectGenerator>
+//#include <vismodule/POLObjectGenerator>
+#include <vismodule/PlotOverLineGenerator>
 
-//#include <vismodule/Calculate>
-//#include <vismodule/PointObjectCreator>
-//#include <vismodule/SignalHandler>
 #include <vismodule/InitialStep>
 #include <vismodule/GenerateParticle>
 #include <vismodule/GenerateGlyph>
@@ -210,7 +207,6 @@ void  CS_Connect( int argc, char** argv )
                }
                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_particle )
                {
-//                    generate_particle_worker(param, clntMes, mvpl, nan_error, point_creator_lst, jc, jd, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
                    generate_particle_worker(param, clntMes, mvpl, nan_error, 
 #ifndef CPU_VER
                            jc, 
@@ -220,7 +216,6 @@ void  CS_Connect( int argc, char** argv )
                }
                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_glyph )
                {
-//                    generate_glyph_worker(param, clntMes, mvpl, nan_error, point_creator_lst, jc, jd, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
                    generate_glyph_worker(param, clntMes, mvpl, nan_error, 
 #ifndef CPU_VER
                            jc, 
@@ -230,7 +225,6 @@ void  CS_Connect( int argc, char** argv )
                } // end of generate_glyph
                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
                {
-//                    generate_plot_over_line_worker(param, clntMes, mvpl, nan_error, point_creator_lst, jc, jd, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
                    generate_plot_over_line_worker(param, clntMes, mvpl, nan_error, 
 #ifndef CPU_VER
                            jc, 
@@ -278,8 +272,6 @@ void  CS_Connect( int argc, char** argv )
                     std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '/', '\\');
 #endif
 #ifdef __APPLE__
-//                    std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(),"¥"[0], '/');
-//                    std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(),'\\', '/');
                     std::string target = "¥";
                     std::string replacement = "/";
 
@@ -371,7 +363,6 @@ void  CS_Connect( int argc, char** argv )
                 //else
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_particle )
                 {
-//                    generate_particle_master(param, clntMes, servMes, mvpl, nan_error, point_creator_lst, jc, jd, pts, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
 
                     generate_particle_master(param, clntMes, servMes, mvpl, nan_error,
 #ifndef CPU_VER
@@ -382,7 +373,6 @@ void  CS_Connect( int argc, char** argv )
                 } // end of initParam == 1 generate_particle 
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_glyph )
                 {
-//                    generate_glyph_master(param, clntMes, servMes, mvpl, nan_error, point_creator_lst, jc, jd, pts, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
                     generate_glyph_master(param, clntMes, servMes, mvpl, nan_error,
 #ifndef CPU_VER
                            jc, 
@@ -392,7 +382,6 @@ void  CS_Connect( int argc, char** argv )
                 } // end of initParam = 3 // generateglyph
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
                 {
-//                   generate_plot_over_line_master(param, clntMes, servMes, mvpl, nan_error, point_creator_lst, jc, jd, pts, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
                    generate_plot_over_line_master(param, clntMes, servMes, mvpl, nan_error,
 #ifndef CPU_VER
                            jc, 
@@ -440,7 +429,6 @@ void  IS_Connect( int argc, char** argv )
 //    FilterInfoLst mvpl;
     MultiVolumePropertyList mvpl;
     //2018 kawamura comment out
-    //TransferFunctionSynthesizerCreator transfunc_creator;
     vismodule::Camera camera;
     int retval = 0;
     int mpi_rank = 0;
