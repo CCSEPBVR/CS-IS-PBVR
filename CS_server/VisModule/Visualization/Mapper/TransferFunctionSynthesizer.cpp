@@ -2472,6 +2472,11 @@ void TransferFunctionSynthesizer::CalculateColorArray(
     m_rpn.setVariableValueArray( m_var_value_array );
     m_rpn.evalArray( red_array, loop_cnt );
 
+    for( int I=0; I<loop_cnt; I++ )
+    {
+        red_array[I] = red_array[I]<0 ? 0 : red_array[I]>1.0 ? 1 : red_array[I];
+    }
+
     //GREEN
     for( size_t i = 0; i < m_col_var.size(); i++ )
     {
@@ -2483,6 +2488,11 @@ void TransferFunctionSynthesizer::CalculateColorArray(
     m_rpn.setVariableValueArray( m_var_value_array );
     m_rpn.evalArray( green_array, loop_cnt );
 
+    for( int I=0; I<loop_cnt; I++ )
+    {
+        green_array[I] = green_array[I]<0 ? 0 : green_array[I]>1.0 ? 1 : green_array[I];
+    }
+
     //BLUE
     for( size_t i = 0; i < m_col_var.size(); i++ )
     {
@@ -2493,6 +2503,11 @@ void TransferFunctionSynthesizer::CalculateColorArray(
     }
     m_rpn.setVariableValueArray( m_var_value_array );
     m_rpn.evalArray( blue_array, loop_cnt );
+
+    for( int I=0; I<loop_cnt; I++ )
+    {
+        blue_array[I] = blue_array[I]<0 ? 0 : blue_array[I]>1.0 ? 1 : blue_array[I];
+    }
 
     //結果を配列に格納
     for( int jx=0; jx<loop_cnt; jx++ ){
