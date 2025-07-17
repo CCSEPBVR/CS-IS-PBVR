@@ -354,7 +354,14 @@ void ColorMapEditor::onControlPointChanged()
                 }
                 else
                 {
-                    item->setForeground( QBrush( Qt::black ) );
+                    if( qApp->palette().color( QPalette::Window ).lightness() < 128 )
+                    {
+                        item->setForeground( QBrush( Qt::white ) );
+                    }
+                    else
+                    {
+                        item->setForeground( QBrush( Qt::black ) );
+                    }
                 }
             }
             else

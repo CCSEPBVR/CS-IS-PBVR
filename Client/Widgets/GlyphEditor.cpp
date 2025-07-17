@@ -18,7 +18,7 @@ void GlyphEditor::initialize()
 {
     ui->setupUi( this );
     QStringList types;
-    types << "Arrow" << "Diamond" << "Sphere";
+    types << "Arrow" << "Diamond"/* << "Sphere"*/;
     ui->glyphTypeComboBox->addItems( types );
     ui->scaleFactorDoubleSpinBox->setValue( 1.0 );
 
