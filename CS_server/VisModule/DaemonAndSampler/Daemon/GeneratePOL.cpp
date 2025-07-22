@@ -97,8 +97,6 @@ void generate_plot_over_line_master(Argument &param, jpv::ParticleTransferClient
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         param.m_sampling_method = clntMes.m_sampling_method;
                         param.m_component_Id = clntMes.m_rendering_id;
-                        param.m_crop.setEnable( clntMes.m_enable_crop_region );
-                        param.m_crop.set( clntMes.m_crop_region );
                         param.m_particle_limit = clntMes.m_particle_limit;
                         param.m_particle_density = clntMes.m_particle_density;
 
@@ -122,24 +120,12 @@ void generate_plot_over_line_master(Argument &param, jpv::ParticleTransferClient
                         }
                         if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
 
-                        if ( param.m_crop.isEnabled() )
-                        {
-                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
-                                           mvpl.m_total_min_subvolume_coord,
-                                           mvpl.m_total_max_subvolume_coord,
-                                           param.m_latency_threshold, param.m_job_id_pack_size,
-                                           param.m_crop.getMinCoord(),
-                                           param.m_crop.getMaxCoord() );
-                            servMes.m_number_volume_divide = jd.getCountVolumes();
-                        }
-                        else
-                        {
+
                             jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
                                            mvpl.m_total_min_subvolume_coord,
                                            mvpl.m_total_max_subvolume_coord,
                                            param.m_latency_threshold, param.m_job_id_pack_size );
                             servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
-                        }
 
                         if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                         {
@@ -365,8 +351,6 @@ void generate_plot_over_line_worker(Argument &param, jpv::ParticleTransferClient
 //                  param.m_transfer_function = vismodule::TransferFunction(); // *( clntMes.m_transfer_function );
                     param.m_sampling_method = clntMes.m_sampling_method;
                     param.m_component_Id = clntMes.m_rendering_id;
-                    param.m_crop.setEnable( clntMes.m_enable_crop_region );
-                    param.m_crop.set( clntMes.m_crop_region );
                     param.m_input_data_base = clntMes.m_input_directory;
                     param.m_particle_limit = clntMes.m_particle_limit;
                     param.m_particle_density = clntMes.m_particle_density;
@@ -387,22 +371,10 @@ void generate_plot_over_line_worker(Argument &param, jpv::ParticleTransferClient
                     }
 
 //                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
-                    if ( param.m_crop.isEnabled() )
-                    {
-                        jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
-                                       mvpl.m_total_min_subvolume_coord,
-                                       mvpl.m_total_max_subvolume_coord,
-                                       param.m_latency_threshold, param.m_job_id_pack_size,
-                                       param.m_crop.getMinCoord(),
-                                       param.m_crop.getMaxCoord() );
-                    }
-                    else
-                    {
                         jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
                                        mvpl.m_total_min_subvolume_coord,
                                        mvpl.m_total_max_subvolume_coord,
                                        param.m_latency_threshold, param.m_job_id_pack_size );
-                    }
 
                     param.m_sampling_step = CalculateSamplingStep( mvpl );
                     param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
@@ -575,8 +547,6 @@ void generate_plot_over_line_IS(Argument &param, jpv::ParticleTransferClientMess
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         param.m_sampling_method = clntMes.m_sampling_method;
                         param.m_component_Id = clntMes.m_rendering_id;
-                        param.m_crop.setEnable( clntMes.m_enable_crop_region );
-                        param.m_crop.set( clntMes.m_crop_region );
                         param.m_particle_limit = clntMes.m_particle_limit;
                         param.m_particle_density = clntMes.m_particle_density;
 
@@ -596,24 +566,11 @@ void generate_plot_over_line_IS(Argument &param, jpv::ParticleTransferClientMess
                         if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                        
                         mvpl.m_total_number_subvolumes=1;
-                        if ( param.m_crop.isEnabled() )
-                        {
-                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
-                                           mvpl.m_total_min_subvolume_coord,
-                                           mvpl.m_total_max_subvolume_coord,
-                                           param.m_latency_threshold, param.m_job_id_pack_size,
-                                           param.m_crop.getMinCoord(),
-                                           param.m_crop.getMaxCoord() );
-                            servMes.m_number_volume_divide = jd.getCountVolumes();
-                        }
-                        else
-                        {
                             jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
                                            mvpl.m_total_min_subvolume_coord,
                                            mvpl.m_total_max_subvolume_coord,
                                            param.m_latency_threshold, param.m_job_id_pack_size );
                             servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
-                        }
 
                         if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                         {

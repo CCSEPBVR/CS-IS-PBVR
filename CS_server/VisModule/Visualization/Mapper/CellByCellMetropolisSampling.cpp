@@ -99,7 +99,6 @@ CellByCellMetropolisSampling::CellByCellMetropolisSampling(
     m_camera( 0 ),
     m_batch( false )
 {
-    m_crop = crop;
     this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
     this->setObjectDepth( object_depth );
@@ -138,7 +137,6 @@ CellByCellMetropolisSampling::CellByCellMetropolisSampling(
     m_particle_density( particle_density ),
     m_batch( batch )
 {
-    m_crop = crop;
     this->attachCamera( camera );
     this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );

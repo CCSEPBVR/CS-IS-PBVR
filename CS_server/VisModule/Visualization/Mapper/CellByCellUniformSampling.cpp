@@ -107,7 +107,6 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     m_particle_density( 1.0 ),
     m_batch( false )
 {
-    m_crop = crop;
     this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
     this->setObjectDepth( object_depth );
@@ -146,7 +145,6 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     m_particle_density( particle_density ),
     m_batch( batch )
 {
-    m_crop = crop;
     this->attachCamera( camera ),
     this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
@@ -172,7 +170,6 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     m_particle_density( 1.0 ),
     m_batch( false )
 {
-    m_crop = crop;
     m_gt5d_full = gt5d_full;
     this->attachCamera( camera ),
          this->setSubpixelLevel( subpixel_level );
