@@ -1480,6 +1480,8 @@ void ObjectEditor::replaceObject( QStandardItem* nameItem, const QStandardItem* 
     QPair<int,int> ids = nameItem->data( ObjectItem::nameItemRole::Ids ).value<QPair<int, int>>();
     enum ObjectItem::Format format = formatItem->data( ObjectItem::FormatItemRole::FormatValue ).value<enum ObjectItem::Format>();
 
+    std::unique_ptr<kvs::StochasticPolygonRenderer> stochasticPolygonRenderer;
+
     switch( format )
     {
     case ObjectItem::Format::ServerPointObjectCS:
@@ -1489,7 +1491,10 @@ void ObjectEditor::replaceObject( QStandardItem* nameItem, const QStandardItem* 
 
     case ObjectItem::Format::ServerGlyphObjectCS:
     case ObjectItem::Format::ServerGlyphObjectIS:
+        stochasticPolygonRenderer = std::make_unique<kvs::StochasticPolygonRenderer>();
+        emit shading( stochasticPolygonRenderer.get() );
         m_screen->scene()->replaceObject( ids.first, nameItem->data( ObjectItem::nameItemRole::Object ).value<kvs::PolygonObject*>() );
+        m_screen->scene()->replaceRenderer( ids.second, stochasticPolygonRenderer.release() );
         break;
 
     case ObjectItem::Format::PointObjectKVSML:
@@ -1500,7 +1505,10 @@ void ObjectEditor::replaceObject( QStandardItem* nameItem, const QStandardItem* 
 
     case ObjectItem::Format::PolygonObjectKVSML:
     case ObjectItem::Format::PolygonObjectSTL:
+        stochasticPolygonRenderer = std::make_unique<kvs::StochasticPolygonRenderer>();
+        emit shading( stochasticPolygonRenderer.get() );
         m_screen->scene()->replaceObject( ids.first, nameItem->data( ObjectItem::nameItemRole::Object ).value<kvs::PolygonObject*>() );
+        m_screen->scene()->replaceRenderer( ids.second, stochasticPolygonRenderer.release() );
         break;
 
 #if defined(ASSIMP)
