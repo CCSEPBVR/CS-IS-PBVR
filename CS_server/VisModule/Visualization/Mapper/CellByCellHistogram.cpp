@@ -104,8 +104,8 @@ CellByCellHistogram::CellByCellHistogram(
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( normal_ingredient ),
     m_camera( 0 ),
-    m_particle_density( 1.0 ),
-    m_batch( false )
+    m_particle_density( 1.0 )
+//    m_batch( false )
 {
     this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
@@ -142,8 +142,8 @@ CellByCellHistogram::CellByCellHistogram(
     m_transfer_function_array( transfer_function_array ),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( normal_ingredient ),
-    m_particle_density( particle_density ),
-    m_batch( batch )
+    m_particle_density( particle_density )
+//    m_batch( batch )
 {
     this->attachCamera( camera ),
     this->setSubpixelLevel( subpixel_level );
@@ -167,8 +167,8 @@ CellByCellHistogram::CellByCellHistogram(
     vismodule::PointObject(),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( normal_ingredient ),
-    m_particle_density( 1.0 ),
-    m_batch( false )
+    m_particle_density( 1.0 )
+//    m_batch( false )
 {
     m_gt5d_full = gt5d_full;
     this->attachCamera( camera ),

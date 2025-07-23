@@ -23,7 +23,7 @@ JobCollector::JobCollector( JobDispatcher* pjd )
     m_pack_size_div3    = 0;
     m_pack_count = 0;
     m_pack_head  = 0;
-    m_batch      = false;
+//    m_batch      = false;
 }
 
 JobCollector::~JobCollector()
@@ -48,22 +48,22 @@ void JobCollector::jobCollect( vismodule::PointObject* object, VariableRange* vr
         MPI_Status stat;
         double send_time;
 
-        if ( m_batch )
-        {
-            VIS_MODULE_TIMER_STA( 60 );
-            MPI_Recv( &send_time, 1, MPI_DOUBLE_PRECISION, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &stat);
-            VIS_MODULE_TIMER_END( 60 );
-
-            double recv_time = GetTime();
-            if ( ( recv_time - send_time ) > 0.0 ) m_jd->setLatency( recv_time - send_time );
-            else                              m_jd->setLatency( 0.0 );
-
-            const int src = stat.MPI_SOURCE;
-            if ( wid ) *wid = src - 1;
-
-        }
-        else
-        {
+//        if ( m_batch )
+//        {
+//            VIS_MODULE_TIMER_STA( 60 );
+//            MPI_Recv( &send_time, 1, MPI_DOUBLE_PRECISION, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &stat);
+//            VIS_MODULE_TIMER_END( 60 );
+//
+//            double recv_time = GetTime();
+//            if ( ( recv_time - send_time ) > 0.0 ) m_jd->setLatency( recv_time - send_time );
+//            else                              m_jd->setLatency( 0.0 );
+//
+//            const int src = stat.MPI_SOURCE;
+//            if ( wid ) *wid = src - 1;
+//
+//        }
+//        else
+//        {
             if ( m_pack_head >= m_pack_size )
             {
                 VIS_MODULE_TIMER_STA( 60 );
@@ -138,7 +138,7 @@ void JobCollector::jobCollect( vismodule::PointObject* object, VariableRange* vr
             object->setCoords( coords_array );
             object->setColors( colors_array );
             object->setNormals( normals_array );
-      }
+//      }
 
   }
   else
@@ -148,8 +148,8 @@ void JobCollector::jobCollect( vismodule::PointObject* object, VariableRange* vr
 
       std::cerr << "*nvertices: " << nvertices << std::endl;
 
-      if ( !m_batch )
-      {
+//      if ( !m_batch )
+//      {
             const float*         coords     = object->coords().pointer();
             const unsigned char* colors     = object->colors().pointer();
             const float*         normals    = object->normals().pointer();
@@ -168,7 +168,7 @@ void JobCollector::jobCollect( vismodule::PointObject* object, VariableRange* vr
             memcpy( &m_pack_coords[m_pack_size - nmemb], coords, sizeof( float )*nmemb );
             memcpy( &m_pack_colors[m_pack_size - nmemb], colors, sizeof( unsigned char )*nmemb );
             memcpy( &m_pack_normals[m_pack_size - nmemb], normals, sizeof( float )*nmemb );
-      }
+//      }
 
       if ( m_jd->getCollectSendState() )
       {
@@ -177,8 +177,8 @@ void JobCollector::jobCollect( vismodule::PointObject* object, VariableRange* vr
             VIS_MODULE_TIMER_STA( 451 );
             MPI_Send( &send_time, 1, MPI_DOUBLE_PRECISION, 0, 1, MPI_COMM_WORLD );
             VIS_MODULE_TIMER_END( 451 );
-            if ( !m_batch )
-            {
+//            if ( !m_batch )
+//            {
                 VIS_MODULE_TIMER_STA( 452 );
                 MPI_Send( &m_pack_size, sizeof( size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
                 VIS_MODULE_TIMER_END( 452 );
@@ -206,7 +206,7 @@ void JobCollector::jobCollect( vismodule::PointObject* object, VariableRange* vr
 
                 // Send Validation
                 MPI_Send( invalid, sizeof( bool ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
-            }
+//            }
         }
     }
 }
@@ -224,11 +224,11 @@ void JobCollector::jobCollect_glyph( vismodule::KVSMLObjectGlyph* object, bool* 
         MPI_Status stat;
         double send_time;
 
-        if ( m_batch )
-        {
-        }
-        else
-        {
+//        if ( m_batch )
+//        {
+//        }
+//        else
+//        {
             if ( m_pack_head >= m_pack_size )
             {
                 VIS_MODULE_TIMER_STA( 60 );
@@ -299,7 +299,7 @@ void JobCollector::jobCollect_glyph( vismodule::KVSMLObjectGlyph* object, bool* 
             object->setColors( colors_array );
             object->setDirections( directions_array );
             object->setSizes( sizes_array );
-      }
+//      }
 
   }
   else
@@ -308,8 +308,8 @@ void JobCollector::jobCollect_glyph( vismodule::KVSMLObjectGlyph* object, bool* 
       const size_t nmemb = nvertices * 3;
       const size_t nmemb_size = nvertices;
 
-      if ( !m_batch )
-      {
+//      if ( !m_batch )
+//      {
             const float*         coords     = object->coords().pointer();
             const unsigned char* colors     = object->colors().pointer();
             const float*         directions = object->directions().pointer();
@@ -334,7 +334,7 @@ void JobCollector::jobCollect_glyph( vismodule::KVSMLObjectGlyph* object, bool* 
             memcpy( &m_pack_colors[m_pack_size - nmemb], colors, sizeof( unsigned char )*nmemb );
             memcpy( &m_pack_directions[m_pack_size - nmemb], directions, sizeof( float )*nmemb );
             memcpy( &m_pack_sizes[m_pack_size_div3 - nmemb_size], sizes, sizeof( float )*nmemb_size );
-      }
+//      }
 
       if ( m_jd->getCollectSendState() )
       {
@@ -343,8 +343,8 @@ void JobCollector::jobCollect_glyph( vismodule::KVSMLObjectGlyph* object, bool* 
             VIS_MODULE_TIMER_STA( 451 );
             MPI_Send( &send_time, 1, MPI_DOUBLE_PRECISION, 0, 1, MPI_COMM_WORLD );
             VIS_MODULE_TIMER_END( 451 );
-            if ( !m_batch )
-            {
+//            if ( !m_batch )
+//            {
                 VIS_MODULE_TIMER_STA( 452 );
                 MPI_Send( &m_pack_size, sizeof( size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
                 VIS_MODULE_TIMER_END( 452 );
@@ -366,7 +366,7 @@ void JobCollector::jobCollect_glyph( vismodule::KVSMLObjectGlyph* object, bool* 
 
                 // Send Validation
                 MPI_Send( invalid, sizeof( bool ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
-            }
+//            }
         }
     }
 }
@@ -384,9 +384,9 @@ void JobCollector::jobCollect_pol( std::vector<float>& axis, std::vector<int>& m
         MPI_Status stat;
         double send_time;
 
-        if ( m_batch ){}
-        else
-        {
+//        if ( m_batch ){}
+//        else
+//        {
             if ( m_pack_head >= m_pack_size )
             {
                 VIS_MODULE_TIMER_STA( 60 );
@@ -459,7 +459,7 @@ void JobCollector::jobCollect_pol( std::vector<float>& axis, std::vector<int>& m
             m_pack_head += nmemb;
             m_pack_count++;
 
-      }
+//      }
 
   }
   else
@@ -467,8 +467,8 @@ void JobCollector::jobCollect_pol( std::vector<float>& axis, std::vector<int>& m
       const size_t nvertices = axis.size();
       const size_t nmemb = nvertices;
 
-      if ( !m_batch )
-      {
+//      if ( !m_batch )
+//      {
 //            float*         axis     = axis.pointer();
 //            float*         values   = values.pointer();
 //            int*           mask     = mask.pointer();
@@ -488,7 +488,7 @@ void JobCollector::jobCollect_pol( std::vector<float>& axis, std::vector<int>& m
 //            memcpy( &m_pack_coords[m_pack_size - nmemb], coords, sizeof( float )*nmemb );
 //            memcpy( &m_pack_colors[m_pack_size - nmemb], colors, sizeof( unsigned char )*nmemb );
 //            memcpy( &m_pack_directions[m_pack_size - nmemb], directions, sizeof( float )*nmemb );
-      }
+//      }
 
       if ( m_jd->getCollectSendState() )
       {
@@ -497,8 +497,8 @@ void JobCollector::jobCollect_pol( std::vector<float>& axis, std::vector<int>& m
             VIS_MODULE_TIMER_STA( 451 );
             MPI_Send( &send_time, 1, MPI_DOUBLE_PRECISION, 0, 1, MPI_COMM_WORLD );
             VIS_MODULE_TIMER_END( 451 );
-            if ( !m_batch )
-            {
+//            if ( !m_batch )
+//            {
                 VIS_MODULE_TIMER_STA( 452 );
                 MPI_Send( &m_pack_size, sizeof( size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
                 VIS_MODULE_TIMER_END( 452 );
@@ -518,7 +518,7 @@ void JobCollector::jobCollect_pol( std::vector<float>& axis, std::vector<int>& m
 
                 // Send Validation
                 MPI_Send( invalid, sizeof( bool ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
-            }
+//            }
         }
     }
 }
