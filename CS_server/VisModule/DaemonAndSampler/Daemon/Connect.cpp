@@ -130,12 +130,7 @@ void  CS_Connect( int argc, char** argv )
 	int mpi_size = 1;
 #endif
 
-    if ( param.m_batch == true )
-    {
-    } // end of batch mode
-
-    else  //=================== client-server mode ===================
-    {
+    //=================== client-server mode ===================
 
         char* buf;
         int bsz = 0;
@@ -394,12 +389,6 @@ void  CS_Connect( int argc, char** argv )
 
             pts.termServer();
         }		// rank == 0
-    }		// client-server mode
-    if ( param.m_batch == true )
-    {
-        VIS_MODULE_TIMER_END( 1 );
-        VIS_MODULE_TIMER_FIN();
-    }
 //#ifndef CPU_VER
 //    MPI_Finalize();
 //#endif
@@ -430,305 +419,293 @@ void  IS_Connect( int argc, char** argv )
 
     int rank = 0;
 
-    if ( param.m_batch == true )
+     //=================== client-server mode ===================
+
+    char* buf;
+    int bsz = 0;
+    JobDispatcher jd;
+    int st, vl, wid = 0;
+
+    int c_bins_size = 0;
+    int o_bins_size = 0;
+    vismodule::UInt64* tmp_c_bins;
+    vismodule::UInt64* tmp_o_bins;
+
+    if ( rank > 0 )
     {
-        //デーモンツールでは param.m_batch == false
-    } // end of batch mode
-
-    else  //=================== client-server mode ===================
+        //デーモンツールはシングルプロセス rank == 0
+    } // end of if( rank > 0 )
+    else                    // rank == 0
     {
+        //--------------------- MASTER --------------------
+        int ptss;
 
-        char* buf;
-        int bsz = 0;
-        JobDispatcher jd;
-        int st, vl, wid = 0;
+        // 20181226 start
+        // 環境変数からパスを指定する
+        // 粒子データ：$PARTICLE_DIR　粒子データの接頭辞はInSituLib内で固定のため、t_で固定する
+        // 可視化パラメータ：$VIS_PARAM_DIR
+        // tfファイル：$TF_NAME（未設定の場合、default.tf）
+        std::string particlePath;
+        std::string visParamDir;
+        std::string tfFilePath;
+        std::string tfFilePath_old;
+        std::string glyphFilePath;
+        std::string glyphParameterPath;
+        std::string glyphParameterPath_old;
+        std::string plotOverLineFilePath;
+        std::string plotOverLineParameterPath;
+        std::string plotOverLineParameterPath_old;
 
-        int c_bins_size = 0;
-        int o_bins_size = 0;
-        vismodule::UInt64* tmp_c_bins;
-        vismodule::UInt64* tmp_o_bins;
+        const char *envBuf = NULL;
+        envBuf = std::getenv( "PARTICLE_DIR" );
+        if (envBuf == NULL) {
+            particlePath = "./t";
+            glyphFilePath = "./g";
+            plotOverLineFilePath = "./p";
+        }
+        else {
+            particlePath = envBuf;
+            glyphFilePath = envBuf;
+            plotOverLineFilePath = envBuf;
+            if (particlePath[particlePath.size() - 1] != '/') {
+                particlePath += "/t";
+                glyphFilePath += "/g";
+                plotOverLineFilePath += "/p";
+            }
+            else {
+                particlePath += "t";
+                glyphFilePath += "g";
+                plotOverLineFilePath += "p";
+            }
+        }
+        envBuf = std::getenv( "VIS_PARAM_DIR" );
+        if (envBuf == NULL) {
+            visParamDir = "./";
+        }
+        else {
+            visParamDir = envBuf;
+            if (visParamDir[visParamDir.size() - 1] != '/') {
+                visParamDir += "/";
+            }
+        }
 
-        if ( rank > 0 )
+        envBuf = std::getenv( "TF_NAME" );
+        tfFilePath = visParamDir;
+        tfFilePath_old = visParamDir;
+        glyphParameterPath = visParamDir;
+        plotOverLineParameterPath = visParamDir;
+        glyphParameterPath_old = visParamDir;
+        plotOverLineParameterPath_old = visParamDir;
+        if (envBuf == NULL) {
+            tfFilePath += "default.tf";
+            tfFilePath_old += "default_old.tf";
+            glyphParameterPath += "parameter.gly";
+            plotOverLineParameterPath += "parameter.pol";
+            glyphParameterPath_old += "parameter_old.gly";
+            plotOverLineParameterPath_old += "parameter_old.pol";
+        }
+        else {
+            tfFilePath += envBuf;
+            tfFilePath += ".tf";
+            tfFilePath_old += envBuf;
+            tfFilePath_old += "_old.tf";
+            glyphParameterPath += "parameter.gly";
+            plotOverLineParameterPath += "parameter.pol";
+            glyphParameterPath_old += "parameter_old.gly";
+            plotOverLineParameterPath_old += "parameter_old.pol";
+        }
+        // 20181226 end
+        std::string statePath = visParamDir + "state.txt";
+        std::string historyPath = visParamDir + "history";
+
+        assert( jpv::ParticleTransferUtils::isLittleEndian() );
+
+        //ソケット通信手順
+        //(1)ソケット生成 socket()
+        //(2)ソケット登録 bind()
+        //(3)通信準備    listen()
+        //(4)接続待機    accept()
+        //(5)受信/送信   recv()/send()
+        //(6)ソケット切断 close()
+        jpv::ParticleTransferServer pts;
+        //ソケット通信手順(1)~(3)
+        ptss = pts.initializeServer( param.m_port );//デフォルトparam.port:60000
+
+
+        timer.stop();
+        std::cout << "Initialize: " << timer.sec() << " [sec/step]" << std::endl;
+
+
+        if ( ptss == -1 )
         {
-            //デーモンツールはシングルプロセス rank == 0
-        } // end of if( rank > 0 )
-        else                    // rank == 0
+            bsz = -1;
+        }
+        else //start init process 初期化処理開始
         {
-            //--------------------- MASTER --------------------
-            int ptss;
+            //ソケット通信手順(4)
+            pts.acceptServer();
 
-            // 20181226 start
-            // 環境変数からパスを指定する
-            // 粒子データ：$PARTICLE_DIR　粒子データの接頭辞はInSituLib内で固定のため、t_で固定する
-            // 可視化パラメータ：$VIS_PARAM_DIR
-            // tfファイル：$TF_NAME（未設定の場合、default.tf）
-            std::string particlePath;
-            std::string visParamDir;
-            std::string tfFilePath;
-            std::string tfFilePath_old;
-            std::string glyphFilePath;
-            std::string glyphParameterPath;
-            std::string glyphParameterPath_old;
-            std::string plotOverLineFilePath;
-            std::string plotOverLineParameterPath;
-            std::string plotOverLineParameterPath_old;
-
-            const char *envBuf = NULL;
-            envBuf = std::getenv( "PARTICLE_DIR" );
-            if (envBuf == NULL) {
-                particlePath = "./t";
-                glyphFilePath = "./g";
-                plotOverLineFilePath = "./p";
-            }
-            else {
-                particlePath = envBuf;
-                glyphFilePath = envBuf;
-                plotOverLineFilePath = envBuf;
-                if (particlePath[particlePath.size() - 1] != '/') {
-                    particlePath += "/t";
-                    glyphFilePath += "/g";
-                    plotOverLineFilePath += "/p";
-                }
-                else {
-                    particlePath += "t";
-                    glyphFilePath += "g";
-                    plotOverLineFilePath += "p";
-                }
-            }
-            envBuf = std::getenv( "VIS_PARAM_DIR" );
-            if (envBuf == NULL) {
-                visParamDir = "./";
-            }
-            else {
-                visParamDir = envBuf;
-                if (visParamDir[visParamDir.size() - 1] != '/') {
-                    visParamDir += "/";
-                }
-            }
-
-            envBuf = std::getenv( "TF_NAME" );
-            tfFilePath = visParamDir;
-            tfFilePath_old = visParamDir;
-            glyphParameterPath = visParamDir;
-            plotOverLineParameterPath = visParamDir;
-            glyphParameterPath_old = visParamDir;
-            plotOverLineParameterPath_old = visParamDir;
-            if (envBuf == NULL) {
-                tfFilePath += "default.tf";
-                tfFilePath_old += "default_old.tf";
-                glyphParameterPath += "parameter.gly";
-                plotOverLineParameterPath += "parameter.pol";
-                glyphParameterPath_old += "parameter_old.gly";
-                plotOverLineParameterPath_old += "parameter_old.pol";
-            }
-            else {
-                tfFilePath += envBuf;
-                tfFilePath += ".tf";
-                tfFilePath_old += envBuf;
-                tfFilePath_old += "_old.tf";
-                glyphParameterPath += "parameter.gly";
-                plotOverLineParameterPath += "parameter.pol";
-                glyphParameterPath_old += "parameter_old.gly";
-                plotOverLineParameterPath_old += "parameter_old.pol";
-            }
-            // 20181226 end
-            std::string statePath = visParamDir + "state.txt";
-            std::string historyPath = visParamDir + "history";
-
-            assert( jpv::ParticleTransferUtils::isLittleEndian() );
-
-            //ソケット通信手順
-            //(1)ソケット生成 socket()
-            //(2)ソケット登録 bind()
-            //(3)通信準備    listen()
-            //(4)接続待機    accept()
-            //(5)受信/送信   recv()/send()
-            //(6)ソケット切断 close()
-            jpv::ParticleTransferServer pts;
-            //ソケット通信手順(1)~(3)
-            ptss = pts.initializeServer( param.m_port );//デフォルトparam.port:60000
-
-
-            timer.stop();
-            std::cout << "Initialize: " << timer.sec() << " [sec/step]" << std::endl;
-
-
-            if ( ptss == -1 )
-            {
-                bsz = -1;
-            }
-            else //start init process 初期化処理開始
-            {
-                //ソケット通信手順(4)
-                pts.acceptServer();
-
-                pts.good();
-
-                jpv::ParticleTransferServerMessage servMes;
-                pts.good();
-                jpv::ParticleTransferClientMessage clntMes;
-
-                pts.good();
-
-                servMes.m_camera = new vismodule::Camera();
-                clntMes.m_camera = new vismodule::Camera();
-                //ソケット通信手順(5)
-                //受信したデータをclntMesが読み取る
-                int ptss = 0;
-                ptss = pts.recvMessage( &clntMes );
-                if( ptss == -1 ) std::cout<<"main.cpp:L214. pts.recvMessage has ERROR."<<std::endl;
-                //最初の受信(client->daemon)
-                //受信内容clntMesにはデフォルト伝達関数が含まれるが
-                //jupiter_old.tfを反映するため無視する
-                 int timerTmp = 0; 
-                 initial_step_IS(param, clntMes, servMes, mvpl, 
-                         particlePath, glyphFilePath, plotOverLineFilePath, statePath, historyPath, tfFilePath_old,
-                         jd, pts, useAllNodes, timerTmp);
-
-            }// end of init process 初期化終了
+            pts.good();
 
             jpv::ParticleTransferServerMessage servMes;
+            pts.good();
             jpv::ParticleTransferClientMessage clntMes;
-            clntMes.m_camera = new vismodule::Camera();
+
+            pts.good();
+
             servMes.m_camera = new vismodule::Camera();
-            servMes.m_server_status =0;
-            // 20181226 start
-            // stateおよびhistory用に、環境変数から指定されたパスをもとにファイルパスを作成
-            ParticleMonitor pm( particlePath, glyphFilePath, plotOverLineFilePath, statePath.c_str(), historyPath.c_str() );
-            // 20181226 end
+            clntMes.m_camera = new vismodule::Camera();
+            //ソケット通信手順(5)
+            //受信したデータをclntMesが読み取る
+            int ptss = 0;
+            ptss = pts.recvMessage( &clntMes );
+            if( ptss == -1 ) std::cout<<"main.cpp:L214. pts.recvMessage has ERROR."<<std::endl;
+            //最初の受信(client->daemon)
+            //受信内容clntMesにはデフォルト伝達関数が含まれるが
+            //jupiter_old.tfを反映するため無視する
+            int timerTmp = 0; 
+            initial_step_IS(param, clntMes, servMes, mvpl, 
+                    particlePath, glyphFilePath, plotOverLineFilePath, statePath, historyPath, tfFilePath_old,
+                    jd, pts, useAllNodes, timerTmp);
 
-            //ソケットが存在すればgood
-            while ( ( ptss != -1 ) && ( pts.good() ) )
+        }// end of init process 初期化終了
+
+        jpv::ParticleTransferServerMessage servMes;
+        jpv::ParticleTransferClientMessage clntMes;
+        clntMes.m_camera = new vismodule::Camera();
+        servMes.m_camera = new vismodule::Camera();
+        servMes.m_server_status =0;
+        // 20181226 start
+        // stateおよびhistory用に、環境変数から指定されたパスをもとにファイルパスを作成
+        ParticleMonitor pm( particlePath, glyphFilePath, plotOverLineFilePath, statePath.c_str(), historyPath.c_str() );
+        // 20181226 end
+
+        //ソケットが存在すればgood
+        while ( ( ptss != -1 ) && ( pts.good() ) )
+        {
+            static int timer_count = 0;
+
+            //ソケット通信手順(5)
+            //２回めの受信(client->daemon)
+            //受信したデータをclntMesが読み取る
+            ptss = pts.recvMessage( &clntMes );
+            std::cout<<"main.cpp:L388"<<std::endl;
+            clntMes.show();
+            std::cout<<"ptss="<<ptss<<std::endl;
+
+            if ( ptss == -1 ) break;
+            /* 140319 for client stop by Ctrl+c */
+            signal( SIGABRT, SignalHandler );
+            signal( SIGTERM, SignalHandler );
+            signal( SIGINT, SignalHandler ); /* SIGINT is invalid here, because mpiexec uses it. */
+
+            if ( SigServer )
             {
-                static int timer_count = 0;
-
-                //ソケット通信手順(5)
-                //２回めの受信(client->daemon)
-                //受信したデータをclntMesが読み取る
-                ptss = pts.recvMessage( &clntMes );
-                std::cout<<"main.cpp:L388"<<std::endl;
-                clntMes.show();
-                std::cout<<"ptss="<<ptss<<std::endl;
-
-                if ( ptss == -1 ) break;
+                clntMes.m_initialize_parameter = jpv::InitializeParameter::end ;
+                std::cout << "*** SigServer" << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+            }
+            else
+            {
                 /* 140319 for client stop by Ctrl+c */
-                signal( SIGABRT, SignalHandler );
-                signal( SIGTERM, SignalHandler );
-                signal( SIGINT, SignalHandler ); /* SIGINT is invalid here, because mpiexec uses it. */
-
-                if ( SigServer )
+                if ( clntMes.m_initialize_parameter != jpv::InitializeParameter::initial_step )
                 {
-                    clntMes.m_initialize_parameter = jpv::InitializeParameter::end ;
-                    std::cout << "*** SigServer" << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+                    clntMes.m_input_directory = param.m_input_data_base;
                 }
-                else
-                {
-                    /* 140319 for client stop by Ctrl+c */
-                    if ( clntMes.m_initialize_parameter != jpv::InitializeParameter::initial_step )
-                    {
-                        clntMes.m_input_directory = param.m_input_data_base;
-                    }
-                }
+            }
 
-                std::cout << "Receive message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
-                //initParam -1:空ソケットの送信, -2:daemonを終了, それ以外:粒子データの送信
-                if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
-                {
-                    //ほぼ空のソケットを送信する
-                    strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
-                    servMes.m_number_particle = 0;
-                    servMes.m_number_glyph = 0;
-                    servMes.m_flag_send_bins = 1;
-                    servMes.m_transfer_function_count = 0;
+            std::cout << "Receive message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+            //initParam -1:空ソケットの送信, -2:daemonを終了, それ以外:粒子データの送信
+            if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
+            {
+                //ほぼ空のソケットを送信する
+                strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
+                servMes.m_number_particle = 0;
+                servMes.m_number_glyph = 0;
+                servMes.m_flag_send_bins = 1;
+                servMes.m_transfer_function_count = 0;
 
-                    servMes.m_message_size = servMes.byteSize();
+                servMes.m_message_size = servMes.byteSize();
 
-                    //2回目の送信(daemon->client)
-                    //servMesの中身はheaderのみ。
-                    //ほぼ空の情報を送信する。
-                    std::cout<<"main.cpp:L422"<<std::endl;
-                    clntMes.show();
+                //2回目の送信(daemon->client)
+                //servMesの中身はheaderのみ。
+                //ほぼ空の情報を送信する。
+                std::cout<<"main.cpp:L422"<<std::endl;
+                clntMes.show();
 
-                    pts.sendMessage( servMes );
-                    pts.disconnect();
+                pts.sendMessage( servMes );
+                pts.disconnect();
 
-                    //ソケット通信手順(4)
-                    pts.acceptServer();
-                    //whileループの頭に戻る
-                }
-                else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::end )
-                {
-                    //終了する
-                    strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
-                    servMes.m_number_particle = 0;
-                        servMes.m_number_glyph = 0;
-                    servMes.m_flag_send_bins = 1;
-                    servMes.m_transfer_function_count = 0;
+                //ソケット通信手順(4)
+                pts.acceptServer();
+                //whileループの頭に戻る
+            }
+            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::end )
+            {
+                //終了する
+                strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
+                servMes.m_number_particle = 0;
+                servMes.m_number_glyph = 0;
+                servMes.m_flag_send_bins = 1;
+                servMes.m_transfer_function_count = 0;
 
-                    servMes.m_message_size = servMes.byteSize();
+                servMes.m_message_size = servMes.byteSize();
 
-                    std::cout<<"main.cpp:L439"<<std::endl;
+                std::cout<<"main.cpp:L439"<<std::endl;
 
-                    pts.sendMessage( servMes );
-                    break;
-                    //whileループを抜けてpts.terminateを実行
-                }
-                else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step ) // change PFI file.
-                {
-                    initial_step_IS(param, clntMes, servMes, mvpl, 
-                            particlePath, glyphFilePath, plotOverLineFilePath, statePath, historyPath, tfFilePath_old,
-                            jd, pts, useAllNodes, timer_count);
-                } // end of change PFI
-                else if( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle )
-                {
+                pts.sendMessage( servMes );
+                break;
+                //whileループを抜けてpts.terminateを実行
+            }
+            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step ) // change PFI file.
+            {
+                initial_step_IS(param, clntMes, servMes, mvpl, 
+                        particlePath, glyphFilePath, plotOverLineFilePath, statePath, historyPath, tfFilePath_old,
+                        jd, pts, useAllNodes, timer_count);
+            } // end of change PFI
+            else if( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle )
+            {
 
-                    generate_particle_IS(param, clntMes, servMes, mvpl, 
-                           jd, pts, pm, timer,
-                           particlePath, tfFilePath,tfFilePath_old, 
-                           useAllNodes, timer_count, clntMes.m_initialize_parameter );
-                } // end of initParam =1
-                else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::export_TFfile )
-                {
-                        std::ifstream file(tfFilePath.c_str());
-                        ParameterFileWriter ppw;
-                        ppw.inputMessage( clntMes );
-                        ppw.writeParameterFile( tfFilePath.c_str() );
-                        file.close();
-                }
-                else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_glyph )
-                {
-                    generate_glyph_IS(param, clntMes, servMes, mvpl, 
-                           jd, pts, pm, timer,
-                           particlePath, glyphParameterPath, glyphParameterPath_old, 
-                           useAllNodes, timer_count, clntMes.m_initialize_parameter );
+                generate_particle_IS(param, clntMes, servMes, mvpl, 
+                        jd, pts, pm, timer,
+                        particlePath, tfFilePath,tfFilePath_old, 
+                        useAllNodes, timer_count, clntMes.m_initialize_parameter );
+            } // end of initParam =1
+            else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::export_TFfile )
+            {
+                std::ifstream file(tfFilePath.c_str());
+                ParameterFileWriter ppw;
+                ppw.inputMessage( clntMes );
+                ppw.writeParameterFile( tfFilePath.c_str() );
+                file.close();
+            }
+            else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_glyph )
+            {
+                generate_glyph_IS(param, clntMes, servMes, mvpl, 
+                        jd, pts, pm, timer,
+                        particlePath, glyphParameterPath, glyphParameterPath_old, 
+                        useAllNodes, timer_count, clntMes.m_initialize_parameter );
 
-                }  // end loop of generate_glyph
-                else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::send_glyph_flag_false )
-                {
-                        ParameterFileWriter ppw;
-                        ppw.inputGlyphParameterMessage( clntMes );
-                        ppw.writeParameterFile( glyphParameterPath.c_str() );
- 
-                }
-                else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::plot_over_line )
-                {
-                    generate_plot_over_line_IS(param, clntMes, servMes, mvpl, 
-                           jd, pts, pm, timer,
-                           particlePath, plotOverLineParameterPath, plotOverLineParameterPath_old, 
-                           useAllNodes, timer_count, clntMes.m_initialize_parameter );
-                }  // end loop of plot over line
-            } // end of while (pts.good)
+            }  // end loop of generate_glyph
+            else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::send_glyph_flag_false )
+            {
+                ParameterFileWriter ppw;
+                ppw.inputGlyphParameterMessage( clntMes );
+                ppw.writeParameterFile( glyphParameterPath.c_str() );
 
-            delete servMes.m_camera;
-            delete clntMes.m_camera;
+            }
+            else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::plot_over_line )
+            {
+                generate_plot_over_line_IS(param, clntMes, servMes, mvpl, 
+                        jd, pts, pm, timer,
+                        particlePath, plotOverLineParameterPath, plotOverLineParameterPath_old, 
+                        useAllNodes, timer_count, clntMes.m_initialize_parameter );
+            }  // end loop of plot over line
+        } // end of while (pts.good)
 
-            pts.termServer();
-        }
-    }
-    if ( param.m_batch == true )
-    {
-        VIS_MODULE_TIMER_END( 1 );
-        VIS_MODULE_TIMER_FIN();
+        delete servMes.m_camera;
+        delete clntMes.m_camera;
+
+        pts.termServer();
     }
 return ;
 }

@@ -37,7 +37,7 @@
 //#include <vismodule/QuadraticTriangleCell>
 //#include <vismodule/SquareCell>
 #include <vismodule/GlobalCore>
-#include <vismodule/CropRegion>
+//#include <vismodule/CropRegion>
 
 #include <vismodule/timer_simple>
 #include <vismodule/FrequencyTable>
@@ -97,7 +97,7 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     const vismodule::TransferFunction& transfer_function,
     TransferFunctionSynthesizer* transfunc_synthesizer,
     const size_t                 normal_ingredient,
-    const CropRegion&            crop,
+//    const CropRegion&            crop,
     const float                  object_depth ):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
@@ -133,7 +133,7 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     std::vector<vismodule::TransferFunction>& transfer_function_array, 
     TransferFunctionSynthesizer* transfunc_synthesizer,
     const size_t                 normal_ingredient,
-    const CropRegion&            crop,
+//    const CropRegion&            crop,
     const float                  particle_density,
     const bool                   batch,
     const float                  object_depth ):
@@ -160,7 +160,7 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     const vismodule::TransferFunction& transfer_function,
     TransferFunctionSynthesizer* transfunc_synthesizer,
     const size_t                 normal_ingredient,
-    const CropRegion&            crop,
+//    const CropRegion&            crop,
     const bool                   gt5d_full,
     const float                  object_depth ):
     vismodule::MapperBase( transfer_function ),

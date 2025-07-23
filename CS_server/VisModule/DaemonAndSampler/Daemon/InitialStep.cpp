@@ -553,9 +553,6 @@ void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& cl
     param.m_sampling_method = 'h';
     param.m_component_Id = clntMes.m_rendering_id;
     clntMes.m_enable_crop_region = 0;
-    param.m_crop.setEnable( clntMes.m_enable_crop_region );
-    param.m_crop.set( clntMes.m_crop_region );
-
     param.m_input_data_base = clntMes.m_input_directory;
     param.m_particle_limit = clntMes.m_particle_limit;
     param.m_particle_density = clntMes.m_particle_density;
@@ -614,22 +611,10 @@ void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& cl
         param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
     }
     if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
-    if ( param.m_crop.isEnabled() )
-    {
-        jd.initialize( mvpl.m_total_start_steps, mvpl.m_total_start_steps, mvpl.m_total_number_subvolumes,
-                mvpl.m_total_min_subvolume_coord,
-                mvpl.m_total_max_subvolume_coord,
-                param.m_latency_threshold, param.m_job_id_pack_size,
-                param.m_crop.getMinCoord(),
-                param.m_crop.getMaxCoord() );
-    }
-    else
-    {
         jd.initialize( mvpl.m_total_start_steps, mvpl.m_total_start_steps, mvpl.m_total_number_subvolumes,
                 mvpl.m_total_min_subvolume_coord,
                 mvpl.m_total_max_subvolume_coord,
                 param.m_latency_threshold, param.m_job_id_pack_size );
-    }
 
     param.m_sampling_step = CalculateSamplingStep( mvpl );
     //param.m_sampling_step = 1;

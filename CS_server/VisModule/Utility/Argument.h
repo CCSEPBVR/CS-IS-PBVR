@@ -3,7 +3,7 @@
 
 #include <climits>
 #include <vismodule/CommandLine>
-#include <vismodule/CropRegion>
+//#include <vismodule/CropRegion>
 
 #include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/ExtendedTransferFunction>
@@ -38,7 +38,7 @@ public:
     bool m_batch_spec_time_step;
     int  m_batch_time_step[2];
     bool m_batch_join_flag;
-    CropRegion m_crop;
+//    CropRegion m_crop;
     double m_latency_threshold;
     std::string m_parameter_file;
     int m_job_id_pack_size;

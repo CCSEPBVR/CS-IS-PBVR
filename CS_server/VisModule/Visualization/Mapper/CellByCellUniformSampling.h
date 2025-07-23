@@ -24,7 +24,7 @@
 #include <vismodule/Module>
 #include <vismodule/MersenneTwister> 
 #include <vismodule/CellByCellParticleGenerator>
-#include <vismodule/CropRegion>
+//#include <vismodule/CropRegion>
 #include <vismodule/TransferFunctionSynthesizer>
 //#include "TransferFunctionSynthesizer_IS.h"
 #include <vismodule/TransferFunctionSynthesizerCreator>
@@ -61,7 +61,7 @@ private:
     float                  m_object_depth;   ///< object depth
     vismodule::ValueArray<float> m_density_map;    ///< density map
     bool                   m_gt5d_full;
-    CropRegion             m_crop;
+//    CropRegion             m_crop;
     TransferFunctionSynthesizer* m_transfer_function_synthesizer;
     std::vector<vismodule::TransferFunction> m_transfer_function_array; 
 
@@ -81,7 +81,7 @@ public:
         const vismodule::TransferFunction& transfer_function,
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const size_t                 normal_ingredient,
-        const CropRegion&            crop,
+//        const CropRegion&            crop,
         const float                  object_depth = 0.0f );
 
     CellByCellUniformSampling(
@@ -93,7 +93,7 @@ public:
         std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const size_t                 normal_ingredient,
-        const CropRegion&            crop,
+//        const CropRegion&            crop,
         const float                  particle_density,
         const bool                   batch,
         const float                  object_depth = 0.0f );
@@ -106,7 +106,7 @@ public:
         const vismodule::TransferFunction& transfer_function,
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const size_t                 normal_ingredient,
-        const CropRegion&            crop,
+//        const CropRegion&            crop,
         const bool                   gt5d_full,
         const float                  object_depth = 0.0f );
 

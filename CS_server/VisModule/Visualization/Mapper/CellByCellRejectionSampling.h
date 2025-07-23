@@ -24,7 +24,7 @@
 #include <vismodule/Module>
 #include <vismodule/MersenneTwister> 
 #include <vismodule/CellByCellParticleGenerator>
-#include <vismodule/CropRegion>
+//#include <vismodule/CropRegion>
 #include <vismodule/TransferFunctionSynthesizer>
 //#include "TransferFunctionSynthesizer_IS.h"
 #include <vismodule/TransferFunctionSynthesizerCreator>
@@ -70,7 +70,7 @@ private:
     float                  m_sampling_step;  ///< sampling step in the object coordinate
     float                  m_object_depth;   ///< object depth
     vismodule::ValueArray<float> m_density_map;    ///< density map
-    CropRegion             m_crop;
+//    CropRegion             m_crop;
     //add by shimomura 2022/12/19
     TransferFunctionSynthesizer* m_transfer_function_synthesizer;
     std::vector<vismodule::TransferFunction> m_transfer_function_array; 
@@ -91,7 +91,7 @@ public:
         const vismodule::TransferFunction& transfer_function,
         //const NamedTransferFunction& transfer_function,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-        const CropRegion&            crop,
+//        const CropRegion&            crop,
         const float                  object_depth = 0.0f );
 
     CellByCellRejectionSampling(
@@ -102,7 +102,7 @@ public:
         const vismodule::TransferFunction& transfer_function,
         //const NamedTransferFunction& transfer_function,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-        const CropRegion&            crop,
+//        const CropRegion&            crop,
         const float                  density_factor,
         const float                  object_depth = 0.0f );
 
@@ -116,7 +116,7 @@ public:
         //std::vector<NamedTransferFunction>& transfer_function_array,
         std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-        const CropRegion&            crop,
+//        const CropRegion&            crop,
         const float                  density_factor,
         const bool                   batch,
         const float                  object_depth = 0.0f );

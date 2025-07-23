@@ -90,7 +90,7 @@ CellByCellMetropolisSampling::CellByCellMetropolisSampling(
     const vismodule::TransferFunction& transfer_function,
     TransferFunctionSynthesizer* transfunc_synthesizer,
     const size_t                 normal_ingredient,
-    const CropRegion&            crop,
+//    const CropRegion&            crop,
     const float                  object_depth ):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
@@ -125,7 +125,7 @@ CellByCellMetropolisSampling::CellByCellMetropolisSampling(
     std::vector<vismodule::TransferFunction>& transfer_function_array,
     TransferFunctionSynthesizer* transfunc_synthesizer,
     const size_t                 normal_ingredient,
-    const CropRegion&            crop,
+//    const CropRegion&            crop,
     const float                  particle_density,
     const bool                   batch,
     const float                  object_depth ):

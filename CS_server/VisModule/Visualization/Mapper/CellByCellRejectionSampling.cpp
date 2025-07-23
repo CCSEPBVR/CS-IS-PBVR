@@ -85,7 +85,7 @@ CellByCellRejectionSampling::CellByCellRejectionSampling(
     const float                  sampling_step,
     const vismodule::TransferFunction& transfer_function,
     TransferFunctionSynthesizer* transfunc_synthesizer,
-    const CropRegion&            crop,
+//    const CropRegion&            crop,
     const float                  object_depth ):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
@@ -117,7 +117,7 @@ CellByCellRejectionSampling::CellByCellRejectionSampling(
     const float                  sampling_step,
     const vismodule::TransferFunction& transfer_function,
     TransferFunctionSynthesizer* transfunc_synthesizer,
-    const CropRegion&            crop,
+//    const CropRegion&            crop,
     const float                  particle_density,
     const float                  object_depth ):
     vismodule::MapperBase( transfer_function ),
@@ -142,7 +142,7 @@ CellByCellRejectionSampling::CellByCellRejectionSampling(
     std::vector<vismodule::TransferFunction>& transfer_function_array, 
     //std::vector<NamedTransferFunction>& transfer_function_array, 
     TransferFunctionSynthesizer* transfunc_synthesizer,
-    const CropRegion&            crop,
+//    const CropRegion&            crop,
     const float                  particle_density,
     const bool                   batch,
     const float                  object_depth ):
