@@ -1,7 +1,6 @@
 #include "PlotOverLine.h"
 #include "KVSMLObjectPlotOverLine.h"
 #include <fstream>
-#include <filesystem>
 
 PlotOverLine::PlotOverLine( void ){}
 

@@ -1,5 +1,4 @@
 #include "GlyphGenerator.h"
-#include <filesystem>
 #if 0
 // IS用 constructor
 GlyphGenerator::GlyphGenerator(Type** values,
@@ -316,12 +315,6 @@ bool GlyphGenerator::SetGlyphParameter( )
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
 #endif
-//    if(read_flag)
-//    {
-////        if(mpi_rank ==0) std::rename( glyphParamPath.c_str(), glyphParamPath_old.c_str() );
-//        if(mpi_rank ==0) std::filesystem::copy(glyphParamPath.c_str(), glyphParamPath_old.c_str(), std::filesystem::copy_options::overwrite_existing);
-//    }
-
 
 #if _OPENMP
     int max_threads = omp_get_max_threads();

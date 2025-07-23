@@ -1,7 +1,6 @@
 #include "PlotOverLine.h"
 #include "KVSMLObjectPlotOverLine.h"
 #include <fstream>
-#include <filesystem>
 
 PlotOverLine::PlotOverLine( void ){}
 
@@ -118,13 +117,6 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
     if(read_flag)
     {
-//        if(mpi_rank ==0)
-//        {
-////            std::rename( POLParamPath.c_str(), POLParamPath_old.c_str() );
-//            std::filesystem::copy(POLParamPath.c_str(), POLParamPath_old.c_str(), std::filesystem::copy_options::overwrite_existing);
-//        }
-
-
         bool plot_flag;
         std::string              p_flag                    = plot_over_line_property.getString( "PLOT_FLAG" );
         int resolution                                     = plot_over_line_property.getInt("SAMPLING_SIZE");
