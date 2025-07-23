@@ -97,7 +97,6 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     const vismodule::TransferFunction& transfer_function,
     TransferFunctionSynthesizer* transfunc_synthesizer,
     const size_t                 normal_ingredient,
-//    const CropRegion&            crop,
     const float                  object_depth ):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
@@ -105,7 +104,6 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     m_normal_ingredient( normal_ingredient ),
     m_camera( 0 ),
     m_particle_density( 1.0 )
-//    m_batch( false )
 {
     this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
@@ -133,9 +131,7 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     std::vector<vismodule::TransferFunction>& transfer_function_array, 
     TransferFunctionSynthesizer* transfunc_synthesizer,
     const size_t                 normal_ingredient,
-//    const CropRegion&            crop,
     const float                  particle_density,
-    const bool                   batch,
     const float                  object_depth ):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
@@ -143,7 +139,6 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( normal_ingredient ),
     m_particle_density( particle_density )
-//    m_batch( batch )
 {
     this->attachCamera( camera ),
     this->setSubpixelLevel( subpixel_level );
@@ -168,7 +163,6 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( normal_ingredient ),
     m_particle_density( 1.0 )
-//    m_batch( false )
 {
     m_gt5d_full = gt5d_full;
     this->attachCamera( camera ),

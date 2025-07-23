@@ -78,7 +78,7 @@ private:
 
     float                  m_particle_density;
 
-    bool                   m_batch;
+//    bool                   m_batch;
 
 public:
 
@@ -118,7 +118,6 @@ public:
         TransferFunctionSynthesizer* transfunc_synthesizer,
 //        const CropRegion&            crop,
         const float                  density_factor,
-        const bool                   batch,
         const float                  object_depth = 0.0f );
 
 // for IS 

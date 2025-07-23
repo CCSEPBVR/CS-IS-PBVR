@@ -97,7 +97,6 @@ CellByCellMetropolisSampling::CellByCellMetropolisSampling(
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( normal_ingredient ),
     m_camera( 0 )
-//    m_batch( false )
 {
     this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
@@ -125,9 +124,7 @@ CellByCellMetropolisSampling::CellByCellMetropolisSampling(
     std::vector<vismodule::TransferFunction>& transfer_function_array,
     TransferFunctionSynthesizer* transfunc_synthesizer,
     const size_t                 normal_ingredient,
-//    const CropRegion&            crop,
     const float                  particle_density,
-    const bool                   batch,
     const float                  object_depth ):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
@@ -135,7 +132,6 @@ CellByCellMetropolisSampling::CellByCellMetropolisSampling(
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( normal_ingredient ),
     m_particle_density( particle_density )
-//    m_batch( batch )
 {
     this->attachCamera( camera );
     this->setSubpixelLevel( subpixel_level );

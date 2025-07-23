@@ -34,7 +34,6 @@ public:
     bool m_gt5d;
     bool m_gt5d_full;
     bool m_httr;
-    bool m_batch;
     bool m_batch_spec_time_step;
     int  m_batch_time_step[2];
     bool m_batch_join_flag;
@@ -122,7 +121,6 @@ public:
         m_gt5d = false;
         m_gt5d_full = false;
         m_httr = false;
-//        m_batch = false;
         m_batch_spec_time_step = false;
         m_batch_time_step[0] = INT_MIN;
         m_batch_time_step[1] = INT_MAX;
@@ -158,7 +156,6 @@ public:
         if ( this->hasOption( "GT5D" ) ) m_gt5d = true;
         if ( this->hasOption( "m_gt5d_full" ) ) m_gt5d_full = true;
         if ( this->hasOption( "HTTR" ) ) m_httr = true;
-//        if ( this->hasOption( "B" ) ) m_batch = true;
         if ( this->hasOption( "p" ) ) m_port = this->optionValue<size_t>( "p" );
         if ( this->hasOption( "L" ) ) m_latency_threshold = this->optionValue<double>( "L" );
         if ( this->hasOption( "pa" ) ) m_parameter_file = this->optionValue<std::string>( "pa" );

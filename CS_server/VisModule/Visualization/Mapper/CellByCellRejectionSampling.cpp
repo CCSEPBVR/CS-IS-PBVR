@@ -85,13 +85,11 @@ CellByCellRejectionSampling::CellByCellRejectionSampling(
     const float                  sampling_step,
     const vismodule::TransferFunction& transfer_function,
     TransferFunctionSynthesizer* transfunc_synthesizer,
-//    const CropRegion&            crop,
     const float                  object_depth ):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_camera( 0 )
-//    m_batch( false )
 {
     this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
@@ -117,14 +115,12 @@ CellByCellRejectionSampling::CellByCellRejectionSampling(
     const float                  sampling_step,
     const vismodule::TransferFunction& transfer_function,
     TransferFunctionSynthesizer* transfunc_synthesizer,
-//    const CropRegion&            crop,
     const float                  particle_density,
     const float                  object_depth ):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_particle_density( particle_density )
-//    m_batch( false )
 {
     this->attachCamera( camera ),
     this->setSubpixelLevel( subpixel_level );
@@ -140,18 +136,14 @@ CellByCellRejectionSampling::CellByCellRejectionSampling(
     const float                  sampling_step,
     const vismodule::TransferFunction& transfer_function,
     std::vector<vismodule::TransferFunction>& transfer_function_array, 
-    //std::vector<NamedTransferFunction>& transfer_function_array, 
     TransferFunctionSynthesizer* transfunc_synthesizer,
-//    const CropRegion&            crop,
     const float                  particle_density,
-    const bool                   batch,
     const float                  object_depth ):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
     m_transfer_function_array( transfer_function_array ),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_particle_density( particle_density )
-//    m_batch( batch )
 {
     this->attachCamera( camera ),
     this->setSubpixelLevel( subpixel_level );

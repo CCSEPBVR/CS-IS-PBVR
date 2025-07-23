@@ -59,7 +59,9 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
                     if (open_flag == true && pfi_flag == true) servMes.m_file_enable_flag = jpv::FileEnableFlag::Enable_VTK ;
                     if (open_flag == true && ExtendFileFormat_flag == false && pfi_flag == false) servMes.m_file_enable_flag = jpv::FileEnableFlag::NotEnable_VTK;
                     if (open_flag == false) servMes.m_file_enable_flag = jpv::FileEnableFlag::NoFile ;
+                    std::cout << __LINE__ <<  __FUNCTION__  << std::endl;
                     pts.sendMessage( servMes );
+                    std::cout << __LINE__ <<  __FUNCTION__  << std::endl;
  
                     if(servMes.m_file_enable_flag == jpv::FileEnableFlag::NotEnable_VTK || servMes.m_file_enable_flag == jpv::FileEnableFlag::NoFile) 
                     //if( warning_flag == 2) 

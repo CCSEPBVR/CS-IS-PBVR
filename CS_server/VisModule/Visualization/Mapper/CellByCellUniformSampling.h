@@ -69,7 +69,7 @@ private:
 
     float                  m_particle_density;
 
-    bool                   m_batch;
+//    bool                   m_batch;
 
 public:
     CellByCellUniformSampling();
@@ -95,7 +95,6 @@ public:
         const size_t                 normal_ingredient,
 //        const CropRegion&            crop,
         const float                  particle_density,
-        const bool                   batch,
         const float                  object_depth = 0.0f );
 
     CellByCellUniformSampling(

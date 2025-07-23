@@ -68,7 +68,6 @@ private:
 
     float                  m_particle_density;
 
-    bool                   m_batch;
 
 public:
     CellByCellHistogram();
@@ -92,9 +91,7 @@ public:
         std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const size_t                 normal_ingredient,
-//        const CropRegion&            crop,
         const float                  particle_density,
-        const bool                   batch,
         const float                  object_depth = 0.0f );
 
     CellByCellHistogram(
@@ -105,7 +102,6 @@ public:
         const vismodule::TransferFunction& transfer_function,
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const size_t                 normal_ingredient,
-//        const CropRegion&            crop,
         const bool                   gt5d_full,
         const float                  object_depth = 0.0f );
 

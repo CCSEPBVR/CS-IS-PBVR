@@ -12,7 +12,6 @@ class JobCollector
 private:
     JobDispatcher* m_jd;
 
-    bool           m_batch;
     size_t         m_pack_size;
     size_t         m_pack_size_div3;
     float*         m_pack_coords;
@@ -38,10 +37,6 @@ public:
     void jobCollect( vismodule::PointObject* object, VariableRange* vr, bool* invalid, int* wid = NULL );
     void jobCollect_glyph( vismodule::KVSMLObjectGlyph* object, bool* invalid, int* wid = NULL );
     void jobCollect_pol( std::vector<float>& axis, std::vector<int>& mask, std::vector<float>& values, bool* invalid, int* wid = NULL );
-    void setBatch( const bool stat )
-    {
-        m_batch = stat;
-    };
 };
 
 void TestJobCollector();
