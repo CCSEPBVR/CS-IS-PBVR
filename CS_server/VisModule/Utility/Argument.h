@@ -26,7 +26,6 @@ public:
     int m_port;
     float m_sampling_step;
     char m_sampling_method;
-    bool m_httr;
     double m_latency_threshold;
     std::string m_parameter_file;
     int m_job_id_pack_size;
@@ -98,7 +97,6 @@ public:
         m_sampling_step = 80; // 0.5f;
         m_dump = false;
         m_sampling_method = 'u';
-        m_httr = false;
         m_latency_threshold = 0.0;
         m_parameter_file = "";
         m_job_id_pack_size = 1;
@@ -120,10 +118,6 @@ public:
         if ( this->hasOption( "step" ) ) m_sampling_step = this->optionValue<float>( "step" );
         if ( this->hasOption( "d" ) ) m_dump = true;
         if ( this->hasOption( "S" ) ) m_sampling_method = this->optionValue<char>( "S" );
-#ifdef LEGACY_OPTION
-        if ( this->hasOption( "p" ) ) pyramid = true;
-#endif
-        if ( this->hasOption( "HTTR" ) ) m_httr = true;
         if ( this->hasOption( "p" ) ) m_port = this->optionValue<size_t>( "p" );
         if ( this->hasOption( "L" ) ) m_latency_threshold = this->optionValue<double>( "L" );
         if ( this->hasOption( "pa" ) ) m_parameter_file = this->optionValue<std::string>( "pa" );
