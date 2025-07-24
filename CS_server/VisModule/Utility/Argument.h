@@ -12,9 +12,6 @@ class Argument : public vismodule::CommandLine
 {
 private:
     bool m_dump;
-    std::string m_hexahedra_directory;
-    std::string m_quadratic_tetrahedra_directory;
-    bool m_test_volume;
     float m_density_factor;
 
 public:
@@ -29,7 +26,6 @@ public:
     int m_port;
     float m_sampling_step;
     char m_sampling_method;
-    bool m_pyramid;
     size_t m_component_Id;
     bool m_httr;
     double m_latency_threshold;
@@ -104,10 +100,6 @@ public:
         m_component_Id = 0;
         m_dump = false;
         m_sampling_method = 'u';
-        m_hexahedra_directory = "";
-        m_quadratic_tetrahedra_directory = "";
-        m_pyramid = false;
-        m_test_volume = false;
         m_httr = false;
         m_latency_threshold = 0.0;
         m_parameter_file = "";
@@ -131,12 +123,9 @@ public:
         if ( this->hasOption( "c" ) ) m_component_Id = this->optionValue<size_t>( "compomentId" );
         if ( this->hasOption( "d" ) ) m_dump = true;
         if ( this->hasOption( "S" ) ) m_sampling_method = this->optionValue<char>( "S" );
-        if ( this->hasOption( "H" ) ) m_hexahedra_directory = this->optionValue<std::string>( "H" );
-        if ( this->hasOption( "qt" ) ) m_quadratic_tetrahedra_directory = this->optionValue<std::string>( "qt" );
 #ifdef LEGACY_OPTION
         if ( this->hasOption( "p" ) ) pyramid = true;
 #endif
-        if ( this->hasOption( "V" ) ) m_test_volume = true;
         if ( this->hasOption( "HTTR" ) ) m_httr = true;
         if ( this->hasOption( "p" ) ) m_port = this->optionValue<size_t>( "p" );
         if ( this->hasOption( "L" ) ) m_latency_threshold = this->optionValue<double>( "L" );
