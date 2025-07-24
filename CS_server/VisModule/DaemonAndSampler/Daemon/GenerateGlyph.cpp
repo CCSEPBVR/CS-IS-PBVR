@@ -115,18 +115,18 @@ void generate_glyph_master(Argument &param, jpv::ParticleTransferClientMessage& 
         {
             param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
         }
-        if ( clntMes.m_node_type == 'a' )
-        {
-            useAllNodes = true;
-        }
-        else if ( clntMes.m_node_type == 's' )
-        {
-            useAllNodes = false;
-        }
-        else
-        {
-            assert( false );
-        }
+//        if ( clntMes.m_node_type == 'a' )
+//        {
+//            useAllNodes = true;
+//        }
+//        else if ( clntMes.m_node_type == 's' )
+//        {
+//            useAllNodes = false;
+//        }
+//        else
+//        {
+//            assert( false );
+//        }
         if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
 
             jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
@@ -625,18 +625,18 @@ void generate_glyph_IS(Argument &param, jpv::ParticleTransferClientMessage& clnt
                         param.m_particle_limit = clntMes.m_particle_limit;
                         param.m_particle_density = clntMes.m_particle_density;
 
-                        if ( clntMes.m_node_type == 'a' )
-                        {
-                            useAllNodes = true;
-                        }
-                        else if ( clntMes.m_node_type == 's' )
-                        {
-                            useAllNodes = false;
-                        }
-                        else
-                        {
-                            assert( false );
-                        }
+//                        if ( clntMes.m_node_type == 'a' )
+//                        {
+//                            useAllNodes = true;
+//                        }
+//                        else if ( clntMes.m_node_type == 's' )
+//                        {
+//                            useAllNodes = false;
+//                        }
+//                        else
+//                        {
+//                            assert( false );
+//                        }
 
                         if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                        

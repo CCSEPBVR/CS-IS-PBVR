@@ -106,18 +106,18 @@ void generate_plot_over_line_master(Argument &param, jpv::ParticleTransferClient
                         param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
 
-                        if ( clntMes.m_node_type == 'a' )
-                        {
-                            useAllNodes = true;
-                        }
-                        else if ( clntMes.m_node_type == 's' )
-                        {
-                            useAllNodes = false;
-                        }
-                        else
-                        {
-                            assert( false );
-                        }
+//                        if ( clntMes.m_node_type == 'a' )
+//                        {
+//                            useAllNodes = true;
+//                        }
+//                        else if ( clntMes.m_node_type == 's' )
+//                        {
+//                            useAllNodes = false;
+//                        }
+//                        else
+//                        {
+//                            assert( false );
+//                        }
                         if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
 
 
@@ -550,18 +550,18 @@ void generate_plot_over_line_IS(Argument &param, jpv::ParticleTransferClientMess
                         param.m_particle_limit = clntMes.m_particle_limit;
                         param.m_particle_density = clntMes.m_particle_density;
 
-                        if ( clntMes.m_node_type == 'a' )
-                        {
-                            useAllNodes = true;
-                        }
-                        else if ( clntMes.m_node_type == 's' )
-                        {
-                            useAllNodes = false;
-                        }
-                        else
-                        {
-                            assert( false );
-                        }
+//                        if ( clntMes.m_node_type == 'a' )
+//                        {
+//                            useAllNodes = true;
+//                        }
+//                        else if ( clntMes.m_node_type == 's' )
+//                        {
+//                            useAllNodes = false;
+//                        }
+//                        else
+//                        {
+//                            assert( false );
+//                        }
 
                         if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                        

@@ -103,12 +103,9 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
                         for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
                         {
                             vismodule::PointObjectGenerator point_generator;
-                            //if ( param.m_gt5d == true ) point_generator.setGT5D();
                             point_generator.setFilterInfo( &mvpl.m_list[idx] );
                             point_generator.setCoordSynthStr( clntMes.m_x_synthesis,
                                                             clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-//                            point_generator.setCoordSynthTkn( clntMes.x_synthesis_token,
-//                                                            clntMes.y_synthesis_token, clntMes.z_synthesis_token );
                             point_generator_lst.push_back( point_generator );
                         }
 
@@ -159,8 +156,6 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
                         return;
                     }
 
-                    //transfunc_creator.setProtocol( clntMes );
-                    //int nvariable = mvpl.m_total_number_ingredients;
                     int nvariable;
                     VariableRange range = Calculate_minmax( param, mvpl);
                     if( !clntMes.m_import_flag ) 
@@ -195,19 +190,19 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
                     }
                     
                     // 4 calc histgram
-                    clntMes.m_node_type = 'a';  
-                    if ( clntMes.m_node_type == 'a' )
-                    {
-                        useAllNodes = true;
-                    }
-                    else if ( clntMes.m_node_type == 's' )
-                    {
-                        useAllNodes = false;
-                    }
-                    else
-                    {
-                        assert( false );
-                    }
+//                    clntMes.m_node_type = 'a';  
+//                    if ( clntMes.m_node_type == 'a' )
+//                    {
+//                        useAllNodes = true;
+//                    }
+//                    else if ( clntMes.m_node_type == 's' )
+//                    {
+//                        useAllNodes = false;
+//                    }
+//                    else
+//                    {
+//                        assert( false );
+//                    }
                     if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
 
                     jd.initialize( mvpl.m_total_start_steps, mvpl.m_total_start_steps, mvpl.m_total_number_subvolumes,
