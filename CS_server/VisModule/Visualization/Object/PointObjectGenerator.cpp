@@ -76,7 +76,6 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
         int id = param.m_subvolume_id;
         // change by shimomura 20240730
         volume->updateMinMaxValues();
-        //volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
         volume->setMinMaxObjectCoords( m_mvp->m_min_subvolume_coord[id], m_mvp->m_max_subvolume_coord[id] );
         volume->setMinMaxExternalCoords( m_mvp->m_min_subvolume_coord[id], m_mvp->m_max_subvolume_coord[id] );
 
@@ -88,7 +87,6 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
         
         // change by shimomura 20240730
         volume->updateMinMaxValues();
-        //volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
         volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
         volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
     }
@@ -97,8 +95,6 @@ void PointObjectGenerator::createFromFile( const Argument& param, const vismodul
         visModuleMessageError("%s is not volume data.", param.m_input_data.c_str());
     }
 
-    //vismodule::UnstructuredVolumeObject* volume;
-    //volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );
     if ( volume )
     {
         volume->setCoordSynthesizerStrings( m_coord_synthesizer_strings );
