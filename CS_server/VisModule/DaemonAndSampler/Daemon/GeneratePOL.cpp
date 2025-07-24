@@ -5,7 +5,7 @@ void generate_plot_over_line_master(Argument &param, jpv::ParticleTransferClient
                          JobCollector& jc, 
 #endif
                          JobDispatcher& jd,  jpv::ParticleTransferServer pts,
-                         bool& useAllNodes, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param )
+                         TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param )
 {
 #ifndef CPU_VER
     int rank;
@@ -106,18 +106,6 @@ void generate_plot_over_line_master(Argument &param, jpv::ParticleTransferClient
                         param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
 
-//                        if ( clntMes.m_node_type == 'a' )
-//                        {
-//                            useAllNodes = true;
-//                        }
-//                        else if ( clntMes.m_node_type == 's' )
-//                        {
-//                            useAllNodes = false;
-//                        }
-//                        else
-//                        {
-//                            assert( false );
-//                        }
                         if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
 
 
@@ -323,7 +311,7 @@ void generate_plot_over_line_worker(Argument &param, jpv::ParticleTransferClient
 #ifndef CPU_VER
                          JobCollector& jc, 
 #endif
-                         JobDispatcher& jd, bool& useAllNodes, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param)
+                         JobDispatcher& jd, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param)
 {
 #ifndef CPU_VER
     int rank;
@@ -463,7 +451,7 @@ void generate_plot_over_line_worker(Argument &param, jpv::ParticleTransferClient
 void generate_plot_over_line_IS(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
                          JobDispatcher& jd,  jpv::ParticleTransferServer pts, ParticleMonitor& pm, vismodule::Timer& timer,
                          std::string particlePath, std::string plotOverLineParameterPath, std::string plotOverLineParameterPath_old,
-                         bool& useAllNodes, int& timer_count , const jpv::InitializeParameter init_param )
+                         int& timer_count , const jpv::InitializeParameter init_param )
 {
     int bsz = 0;
     int st, vl, wid = 0;
@@ -549,19 +537,6 @@ void generate_plot_over_line_IS(Argument &param, jpv::ParticleTransferClientMess
                         param.m_component_Id = clntMes.m_rendering_id;
                         param.m_particle_limit = clntMes.m_particle_limit;
                         param.m_particle_density = clntMes.m_particle_density;
-
-//                        if ( clntMes.m_node_type == 'a' )
-//                        {
-//                            useAllNodes = true;
-//                        }
-//                        else if ( clntMes.m_node_type == 's' )
-//                        {
-//                            useAllNodes = false;
-//                        }
-//                        else
-//                        {
-//                            assert( false );
-//                        }
 
                         if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                        

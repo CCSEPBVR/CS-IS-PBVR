@@ -81,7 +81,7 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
                          JobCollector& jc,
 #endif
                          JobDispatcher& jd,  jpv::ParticleTransferServer pts,
-                         bool& useAllNodes, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param );
+                         TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param );
 
 void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
 //                         bool &nan_error, std::vector<PointObjectCreator>& point_creator_lst, 
@@ -89,11 +89,11 @@ void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessag
 #ifndef CPU_VER
                          JobCollector& jc,
 #endif
-                         JobDispatcher& jd,  bool& useAllNodes, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param);
+                         JobDispatcher& jd, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param);
 #endif
 
 void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
                          JobDispatcher& jd,  jpv::ParticleTransferServer pts, ParticleMonitor& pm, vismodule::Timer& timer,
                          std::string particlePath, std::string tfFilePath, std::string tfFilePath_old,
-                         bool& useAllNodes, int& timer_count , const jpv::InitializeParameter init_param );
+                         int& timer_count , const jpv::InitializeParameter init_param );
 

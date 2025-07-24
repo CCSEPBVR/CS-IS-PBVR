@@ -84,7 +84,6 @@ using FuncParser::Function;
 using FuncParser::FunctionParser;
 
 bool SigServer = false;
-bool useAllNodes = true;
 void SignalHandler( const int sig )
 {
     SigServer = true;
@@ -191,7 +190,7 @@ void  CS_Connect( int argc, char** argv )
 #ifndef CPU_VER
                            jc, 
 #endif
-                           jd, useAllNodes, transfunc_creator, timer_count );
+                           jd,  transfunc_creator, timer_count );
                }
                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_particle )
                {
@@ -199,7 +198,7 @@ void  CS_Connect( int argc, char** argv )
 #ifndef CPU_VER
                            jc, 
 #endif
-                           jd, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter  );
+                           jd, transfunc_creator, timer_count, clntMes.m_initialize_parameter  );
 
                }
                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_glyph )
@@ -208,7 +207,7 @@ void  CS_Connect( int argc, char** argv )
 #ifndef CPU_VER
                            jc, 
 #endif
-                           jd, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter  );
+                           jd,  transfunc_creator, timer_count, clntMes.m_initialize_parameter  );
 
                } // end of generate_glyph
                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
@@ -217,7 +216,7 @@ void  CS_Connect( int argc, char** argv )
 #ifndef CPU_VER
                            jc, 
 #endif
-                           jd, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter  );
+                           jd,  transfunc_creator, timer_count, clntMes.m_initialize_parameter  );
 
                } // end of plot_over_line
             } // end of while
@@ -345,7 +344,7 @@ void  CS_Connect( int argc, char** argv )
 #ifndef CPU_VER
                            jc, 
 #endif                           
-                           jd, pts, useAllNodes, transfunc_creator, timer_count );
+                           jd, pts,  transfunc_creator, timer_count );
 
                 } // end of change PFI
                 //else
@@ -356,7 +355,7 @@ void  CS_Connect( int argc, char** argv )
 #ifndef CPU_VER
                            jc, 
 #endif                           
-                           jd, pts, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
+                           jd, pts, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
 
                 } // end of initParam == 1 generate_particle 
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_glyph )
@@ -365,7 +364,7 @@ void  CS_Connect( int argc, char** argv )
 #ifndef CPU_VER
                            jc, 
 #endif                           
-                           jd, pts, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
+                           jd, pts, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
 
                 } // end of initParam = 3 // generateglyph
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
@@ -374,7 +373,7 @@ void  CS_Connect( int argc, char** argv )
 #ifndef CPU_VER
                            jc, 
 #endif                           
-                           jd, pts, useAllNodes, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
+                           jd, pts, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
 
                 } // end of initParam = 5 plot_over_line
 
@@ -566,7 +565,7 @@ void  IS_Connect( int argc, char** argv )
             int timerTmp = 0; 
             initial_step_IS(param, clntMes, servMes, mvpl, 
                     particlePath, glyphFilePath, plotOverLineFilePath, statePath, historyPath, tfFilePath_old,
-                    jd, pts, useAllNodes, timerTmp);
+                    jd, pts,  timerTmp);
 
         }// end of init process 初期化終了
 
@@ -660,7 +659,7 @@ void  IS_Connect( int argc, char** argv )
             {
                 initial_step_IS(param, clntMes, servMes, mvpl, 
                         particlePath, glyphFilePath, plotOverLineFilePath, statePath, historyPath, tfFilePath_old,
-                        jd, pts, useAllNodes, timer_count);
+                        jd, pts,  timer_count);
             } // end of change PFI
             else if( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle )
             {
@@ -668,7 +667,7 @@ void  IS_Connect( int argc, char** argv )
                 generate_particle_IS(param, clntMes, servMes, mvpl, 
                         jd, pts, pm, timer,
                         particlePath, tfFilePath,tfFilePath_old, 
-                        useAllNodes, timer_count, clntMes.m_initialize_parameter );
+                        timer_count, clntMes.m_initialize_parameter );
             } // end of initParam =1
             else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::export_TFfile )
             {
@@ -683,7 +682,7 @@ void  IS_Connect( int argc, char** argv )
                 generate_glyph_IS(param, clntMes, servMes, mvpl, 
                         jd, pts, pm, timer,
                         particlePath, glyphParameterPath, glyphParameterPath_old, 
-                        useAllNodes, timer_count, clntMes.m_initialize_parameter );
+                         timer_count, clntMes.m_initialize_parameter );
 
             }  // end loop of generate_glyph
             else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::send_glyph_flag_false )
@@ -698,7 +697,7 @@ void  IS_Connect( int argc, char** argv )
                 generate_plot_over_line_IS(param, clntMes, servMes, mvpl, 
                         jd, pts, pm, timer,
                         particlePath, plotOverLineParameterPath, plotOverLineParameterPath_old, 
-                        useAllNodes, timer_count, clntMes.m_initialize_parameter );
+                         timer_count, clntMes.m_initialize_parameter );
             }  // end loop of plot over line
         } // end of while (pts.good)
 

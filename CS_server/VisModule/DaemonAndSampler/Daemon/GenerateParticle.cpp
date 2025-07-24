@@ -6,7 +6,7 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
 #ifndef CPU_VER
                          JobCollector& jc, 
 #endif
-                         JobDispatcher& jd,  jpv::ParticleTransferServer pts, bool& useAllNodes, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param )
+                         JobDispatcher& jd,  jpv::ParticleTransferServer pts, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param )
 {
 #ifndef CPU_VER
     int rank;
@@ -127,19 +127,6 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
             param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
         }
 // CS only end
-//        if ( clntMes.m_node_type == 'a' )
-//        {
-//            useAllNodes = true;
-//        }
-//        else if ( clntMes.m_node_type == 's' )
-//        {
-//            useAllNodes = false;
-//        }
-//        else
-//        {
-//            assert( false );
-//        }
-
         point_generator_lst.clear();
         point_generator_lst.resize(mvpl.m_list.size());
         if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
@@ -464,7 +451,7 @@ void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessag
                          JobCollector& jc, 
 #endif
                          JobDispatcher& jd,  
-                         bool& useAllNodes, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param)
+                         TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param)
 {
 #ifndef CPU_VER
     int rank;
@@ -861,7 +848,7 @@ void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessag
 void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
                          JobDispatcher& jd,  jpv::ParticleTransferServer pts, ParticleMonitor& pm, vismodule::Timer& timer,
                          std::string particlePath, std::string tfFilePath, std::string tfFilePath_old,
-                         bool& useAllNodes, int& timer_count , const jpv::InitializeParameter init_param )
+                         int& timer_count , const jpv::InitializeParameter init_param )
 {
 
     int bsz = 0;
@@ -948,19 +935,6 @@ void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& c
                         param.m_component_Id = clntMes.m_rendering_id;
                         param.m_particle_limit = clntMes.m_particle_limit;
                         param.m_particle_density = clntMes.m_particle_density;
-
-//                        if ( clntMes.m_node_type == 'a' )
-//                        {
-//                            useAllNodes = true;
-//                        }
-//                        else if ( clntMes.m_node_type == 's' )
-//                        {
-//                            useAllNodes = false;
-//                        }
-//                        else
-//                        {
-//                            assert( false );
-//                        }
 
                         if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
                         

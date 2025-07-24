@@ -25,16 +25,16 @@ void generate_glyph_master(Argument &param, jpv::ParticleTransferClientMessage& 
 #ifndef CPU_VER
                          JobCollector& jc,
 #endif
-                         JobDispatcher& jd, jpv::ParticleTransferServer pts, bool& useAllNodes, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param );
+                         JobDispatcher& jd, jpv::ParticleTransferServer pts, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param );
 void generate_glyph_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
                          bool &nan_error, 
 #ifndef CPU_VER
                          JobCollector& jc,
 #endif
-                         JobDispatcher& jd, bool& useAllNodes, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param);
+                         JobDispatcher& jd, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param);
 
 void generate_glyph_IS(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
                          JobDispatcher& jd,  jpv::ParticleTransferServer pts, ParticleMonitor& pm, vismodule::Timer& timer,
                          std::string particlePath, std::string GlyphFilePath, std::string GlyphFilePath_old,
-                         bool& useAllNodes, int& timer_count , const jpv::InitializeParameter init_param );
+                          int& timer_count , const jpv::InitializeParameter init_param );
 
