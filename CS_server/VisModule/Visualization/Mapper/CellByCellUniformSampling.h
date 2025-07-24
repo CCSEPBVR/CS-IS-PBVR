@@ -60,16 +60,12 @@ private:
     float                  m_sampling_step;  ///< sampling step in the object coordinate
     float                  m_object_depth;   ///< object depth
     vismodule::ValueArray<float> m_density_map;    ///< density map
-    bool                   m_gt5d_full;
-//    CropRegion             m_crop;
     TransferFunctionSynthesizer* m_transfer_function_synthesizer;
     std::vector<vismodule::TransferFunction> m_transfer_function_array; 
 
     const size_t m_normal_ingredient;
 
     float                  m_particle_density;
-
-//    bool                   m_batch;
 
 public:
     CellByCellUniformSampling();
@@ -81,7 +77,6 @@ public:
         const vismodule::TransferFunction& transfer_function,
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const size_t                 normal_ingredient,
-//        const CropRegion&            crop,
         const float                  object_depth = 0.0f );
 
     CellByCellUniformSampling(
@@ -93,7 +88,6 @@ public:
         std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const size_t                 normal_ingredient,
-//        const CropRegion&            crop,
         const float                  particle_density,
         const float                  object_depth = 0.0f );
 
@@ -105,8 +99,6 @@ public:
         const vismodule::TransferFunction& transfer_function,
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const size_t                 normal_ingredient,
-//        const CropRegion&            crop,
-        const bool                   gt5d_full,
         const float                  object_depth = 0.0f );
 
     virtual ~CellByCellUniformSampling();

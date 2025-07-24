@@ -208,17 +208,6 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
                     {
                         assert( false );
                     }
-//                    if ( param.m_gt5d == true || param.m_gt5d_full == true )
-//                    {
-//                        int timeStep = servMes.m_time_step;
-//
-//                        if ( servMes.m_time_step > 1 )
-//                        {
-//                            for ( int nf = 0; nf < point_generator_lst.size(); nf++ )
-//                                point_generator_lst[nf].progressValues();
-//                        }
-//                    }
-
                     if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
 
                     jd.initialize( mvpl.m_total_start_steps, mvpl.m_total_start_steps, mvpl.m_total_number_subvolumes,

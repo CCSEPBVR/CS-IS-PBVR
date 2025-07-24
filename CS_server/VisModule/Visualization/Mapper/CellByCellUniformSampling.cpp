@@ -155,8 +155,6 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     const vismodule::TransferFunction& transfer_function,
     TransferFunctionSynthesizer* transfunc_synthesizer,
     const size_t                 normal_ingredient,
-//    const CropRegion&            crop,
-    const bool                   gt5d_full,
     const float                  object_depth ):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
@@ -164,7 +162,6 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     m_normal_ingredient( normal_ingredient ),
     m_particle_density( 1.0 )
 {
-    m_gt5d_full = gt5d_full;
     this->attachCamera( camera ),
          this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
@@ -467,13 +464,6 @@ void CellByCellUniformSampling::mapping( const vismodule::Camera& camera, const 
                             m_sampling_step,
                             BaseClass::transferFunction().opacityMap() );
     }
-#ifdef ENABLE_MPI
-    if ( m_gt5d_full == true )
-    {
-        this->generate_particles_gt5d( volume );
-        return;
-    }
-#endif
     // Generate the particles.
 //    if ( !volume.hasMinMaxValues() ) volume.updateMinMaxValues();
 //    const float min_value = static_cast<float>( volume.minValue() );
