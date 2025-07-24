@@ -21,7 +21,6 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
     int st, vl, wid = 0;
     std::vector<vismodule::PointObjectGenerator> point_generator_lst;
 
-//                   initial_step_master(param, clntMes, servMes, mlpv);
                     param.m_input_data_base = clntMes.m_input_directory;
 
                     bool open_flag = true; 
@@ -177,7 +176,6 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
 #if 1
                     // generate_histogram
                     param.m_sampling_method = 'h';
-                    param.m_component_Id = clntMes.m_rendering_id;
                     clntMes.m_enable_crop_region = 0;
                     param.m_particle_limit = clntMes.m_particle_limit;
                     param.m_particle_density = clntMes.m_particle_density;
@@ -521,9 +519,7 @@ void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& cl
 
 
     timer_count++;
-//  param.m_transfer_function = vismodule::TransferFunction(); // *( clntMes.m_transfer_function );
     param.m_sampling_method = 'h';
-    param.m_component_Id = clntMes.m_rendering_id;
     clntMes.m_enable_crop_region = 0;
     param.m_input_data_base = clntMes.m_input_directory;
     param.m_particle_limit = clntMes.m_particle_limit;

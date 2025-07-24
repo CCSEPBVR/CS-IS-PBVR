@@ -105,7 +105,6 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
         servMes.m_level_index = clntMes.m_level_index;
         servMes.m_repeat_level = clntMes.m_repeat_level;
         param.m_sampling_method = clntMes.m_sampling_method;
-        param.m_component_Id = clntMes.m_rendering_id;
         param.m_particle_limit = clntMes.m_particle_limit;
         param.m_particle_density = clntMes.m_particle_density;
 
@@ -476,9 +475,7 @@ void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessag
                 else
                 {
                     timer_count++;
-//                  param.m_transfer_function = vismodule::TransferFunction(); // *( clntMes.m_transfer_function );
                     param.m_sampling_method = clntMes.m_sampling_method;
-                    param.m_component_Id = clntMes.m_rendering_id;
                     param.m_input_data_base = clntMes.m_input_directory;
                     param.m_particle_limit = clntMes.m_particle_limit;
                     param.m_particle_density = clntMes.m_particle_density;
@@ -927,12 +924,10 @@ void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& c
                         TimerStart( 10 );
                         strncpy( servMes.m_header, "JPTP /1.0 100 OK\r\n", 18 );
                         servMes.m_message_size = servMes.byteSize();
-                      //servMes.m_time_step = clntMes.m_step;
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         servMes.m_number_glyph = 0;
                         param.m_sampling_method = clntMes.m_sampling_method;
-                        param.m_component_Id = clntMes.m_rendering_id;
                         param.m_particle_limit = clntMes.m_particle_limit;
                         param.m_particle_density = clntMes.m_particle_density;
 

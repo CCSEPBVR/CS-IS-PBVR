@@ -105,7 +105,6 @@ void generate_glyph_master(Argument &param, jpv::ParticleTransferClientMessage& 
         servMes.m_level_index = clntMes.m_level_index;
         servMes.m_repeat_level = clntMes.m_repeat_level;
         param.m_sampling_method = clntMes.m_sampling_method;
-        param.m_component_Id = clntMes.m_rendering_id;
         param.m_particle_limit = clntMes.m_particle_limit;
         param.m_particle_density = clntMes.m_particle_density;
 
@@ -379,7 +378,6 @@ void generate_glyph_worker(Argument &param, jpv::ParticleTransferClientMessage& 
                 {
                     timer_count++;
                     param.m_sampling_method = clntMes.m_sampling_method;
-                    param.m_component_Id = clntMes.m_rendering_id;
                     param.m_input_data_base = clntMes.m_input_directory;
                     param.m_particle_limit = clntMes.m_particle_limit;
                     param.m_particle_density = clntMes.m_particle_density;
@@ -609,7 +607,6 @@ void generate_glyph_IS(Argument &param, jpv::ParticleTransferClientMessage& clnt
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         param.m_sampling_method = clntMes.m_sampling_method;
-                        param.m_component_Id = clntMes.m_rendering_id;
                         param.m_particle_limit = clntMes.m_particle_limit;
                         param.m_particle_density = clntMes.m_particle_density;
 

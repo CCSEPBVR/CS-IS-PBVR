@@ -96,7 +96,6 @@ void generate_plot_over_line_master(Argument &param, jpv::ParticleTransferClient
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         param.m_sampling_method = clntMes.m_sampling_method;
-                        param.m_component_Id = clntMes.m_rendering_id;
                         param.m_particle_limit = clntMes.m_particle_limit;
                         param.m_particle_density = clntMes.m_particle_density;
 
@@ -336,9 +335,7 @@ void generate_plot_over_line_worker(Argument &param, jpv::ParticleTransferClient
                 else
                 {
                     timer_count++;
-//                  param.m_transfer_function = vismodule::TransferFunction(); // *( clntMes.m_transfer_function );
                     param.m_sampling_method = clntMes.m_sampling_method;
-                    param.m_component_Id = clntMes.m_rendering_id;
                     param.m_input_data_base = clntMes.m_input_directory;
                     param.m_particle_limit = clntMes.m_particle_limit;
                     param.m_particle_density = clntMes.m_particle_density;
@@ -534,7 +531,6 @@ void generate_plot_over_line_IS(Argument &param, jpv::ParticleTransferClientMess
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_repeat_level = clntMes.m_repeat_level;
                         param.m_sampling_method = clntMes.m_sampling_method;
-                        param.m_component_Id = clntMes.m_rendering_id;
                         param.m_particle_limit = clntMes.m_particle_limit;
                         param.m_particle_density = clntMes.m_particle_density;
 

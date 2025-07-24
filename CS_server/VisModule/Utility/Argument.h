@@ -26,7 +26,6 @@ public:
     int m_port;
     float m_sampling_step;
     char m_sampling_method;
-    size_t m_component_Id;
     bool m_httr;
     double m_latency_threshold;
     std::string m_parameter_file;
@@ -97,7 +96,6 @@ public:
         m_repeat_level = 1;
         m_port = 60000;
         m_sampling_step = 80; // 0.5f;
-        m_component_Id = 0;
         m_dump = false;
         m_sampling_method = 'u';
         m_httr = false;
@@ -120,7 +118,6 @@ public:
         if ( this->hasOption( "sl" ) ) m_subpixel_level = this->optionValue<size_t>( "sl" );
         if ( this->hasOption( "rl" ) ) m_repeat_level = this->optionValue<size_t>( "rl" );
         if ( this->hasOption( "step" ) ) m_sampling_step = this->optionValue<float>( "step" );
-        if ( this->hasOption( "c" ) ) m_component_Id = this->optionValue<size_t>( "compomentId" );
         if ( this->hasOption( "d" ) ) m_dump = true;
         if ( this->hasOption( "S" ) ) m_sampling_method = this->optionValue<char>( "S" );
 #ifdef LEGACY_OPTION
