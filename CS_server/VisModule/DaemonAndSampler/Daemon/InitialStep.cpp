@@ -176,7 +176,6 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
 #if 1
                     // generate_histogram
                     param.m_sampling_method = 'h';
-                    clntMes.m_enable_crop_region = 0;
                     param.m_particle_limit = clntMes.m_particle_limit;
                     param.m_particle_density = clntMes.m_particle_density;
 
@@ -393,11 +392,9 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
                             DEFAULT_NBINS,
                             tmp_o_bins); // change by shimomura 2022/12/26
 
-                    std::cout << __LINE__ << __FUNCTION__ <<std::endl;
                     // TEST START 2015.1.14
                     if ( nan_error )
                     {
-                    std::cout << __LINE__ << __FUNCTION__ <<std::endl;
                     // TEST START 2015.1.14
                         strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
                         servMes.m_server_status = 1;
@@ -464,8 +461,6 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
                     servMes.m_flag_send_bins = 1;
                     servMes.m_subpixel_level = param.m_subpixel_level;
                     servMes.m_message_size = servMes.byteSize();
-                    std::cout << __LINE__ << __FUNCTION__ <<std::endl;
-                    std::cout << "servMes.m_server_status = " << servMes.m_server_status <<std::endl;
                     // TEST START 2015.1.14
                     pts.sendMessage( servMes );
                     // TEST START 2015.1.14
@@ -520,7 +515,6 @@ void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& cl
 
     timer_count++;
     param.m_sampling_method = 'h';
-    clntMes.m_enable_crop_region = 0;
     param.m_input_data_base = clntMes.m_input_directory;
     param.m_particle_limit = clntMes.m_particle_limit;
     param.m_particle_density = clntMes.m_particle_density;
@@ -547,12 +541,9 @@ void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& cl
     for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
     {
         vismodule::PointObjectGenerator point_generator;
-//        if ( param.m_gt5d == true ) point_generator.setGT5D();
         point_generator.setFilterInfo( &mvpl.m_list[idx] );
         point_generator.setCoordSynthStr( clntMes.m_x_synthesis,
                 clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-        //                        point_generator.setCoordSynthTkn( clntMes.x_synthesis_token,
-        //                                                        clntMes.y_synthesis_token, clntMes.z_synthesis_token );
         point_generator_lst.push_back( point_generator );
     }
 
@@ -579,13 +570,12 @@ void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& cl
         param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
     }
     if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
-        jd.initialize( mvpl.m_total_start_steps, mvpl.m_total_start_steps, mvpl.m_total_number_subvolumes,
-                mvpl.m_total_min_subvolume_coord,
-                mvpl.m_total_max_subvolume_coord,
-                param.m_latency_threshold, param.m_job_id_pack_size );
+    jd.initialize( mvpl.m_total_start_steps, mvpl.m_total_start_steps, mvpl.m_total_number_subvolumes,
+            mvpl.m_total_min_subvolume_coord,
+            mvpl.m_total_max_subvolume_coord,
+            param.m_latency_threshold, param.m_job_id_pack_size );
 
     param.m_sampling_step = CalculateSamplingStep( mvpl );
-    //param.m_sampling_step = 1;
     param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
     param.m_particle_limit_pre = param.m_particle_limit;
 
@@ -904,7 +894,5 @@ void initial_step_IS(Argument &param, jpv::ParticleTransferClientMessage& clntMe
                 pts.sendMessage( servMes );
                 delete servMes.m_camera;
                 delete clntMes.m_camera;
-   
-
 
 }

@@ -108,24 +108,14 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
         param.m_particle_limit = clntMes.m_particle_limit;
         param.m_particle_density = clntMes.m_particle_density;
 
-//  CS only
-        if(init_param == jpv::InitializeParameter::generate_particle )
-        {
-            transfunc_creator.setProtocol( clntMes );
-            transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
-            param.m_transfunc_synthesizer = transfunc_creator.create();
-        }
-        else if (init_param == jpv::InitializeParameter::generate_glyph)
-        {
-            Calculate_minmax_glyph( param, mvpl, clntMes );
-        }
-
+        transfunc_creator.setProtocol( clntMes );
+        transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
+        param.m_transfunc_synthesizer = transfunc_creator.create();
         param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
         for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
         {
             param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
         }
-// CS only end
         point_generator_lst.clear();
         point_generator_lst.resize(mvpl.m_list.size());
         if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
@@ -144,18 +134,10 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
         param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
 
         VariableRange vr;
-        // IS only
-        // pm でステップ数を参照する
-        // IS only end
         pts.sendMessage( servMes );
-// IS only
-// TF,ヒストグラムの配列確保
-// IS only end
 //  CS only
         float*  tmp_max;
         float*  tmp_min;
-        if(init_param == jpv::InitializeParameter::generate_particle )
-        {
         // 関数の領域確保、初期化を行う : by @hira 2016/12/01
         servMes.initializeTransferFunction(clntMes.m_transfer_function.size(), DEFAULT_NBINS);
 
@@ -166,13 +148,10 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
         c_bins_size = 0;
         o_bins_size = 0;
         
-        if(init_param == jpv::InitializeParameter::generate_particle )
+        for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
         {
-            for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
-            {
-                c_bins_size += servMes.m_color_nbins[tf];
-                o_bins_size += servMes.m_opacity_nbins[tf];
-            }
+            c_bins_size += servMes.m_color_nbins[tf];
+            o_bins_size += servMes.m_opacity_nbins[tf];
         }
 
         tmp_c_bins = new vismodule::UInt64[c_bins_size];
@@ -180,11 +159,7 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
 
         //add by shimomura 2023/06/14
         int cnt = 2; 
-        
-        if(init_param == jpv::InitializeParameter::generate_particle )
-        {
-            cnt = 2* servMes.m_transfer_function_count ;
-        }
+        cnt = 2* servMes.m_transfer_function_count ;
         tmp_max = new float[cnt]; 
         tmp_min = new float[cnt];
 
@@ -420,7 +395,6 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
         delete[] tmp_min;
         delete param.m_transfunc_synthesizer;
 
-     } // end if init_param
 
         if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
         {
