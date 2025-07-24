@@ -1,7 +1,7 @@
 #include <vismodule/InitialStep>
 
 void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
-                         bool &nan_error, std::vector<PointObjectCreator>& point_creator_lst,
+                         bool &nan_error, 
 #ifndef CPU_VER
                          JobCollector& jc, 
 #endif
@@ -19,6 +19,7 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
     
     int bsz = 0;
     int st, vl, wid = 0;
+    std::vector<vismodule::PointObjectGenerator> point_generator_lst;
 
 //                   initial_step_master(param, clntMes, servMes, mlpv);
                     param.m_input_data_base = clntMes.m_input_directory;
@@ -59,9 +60,7 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
                     if (open_flag == true && pfi_flag == true) servMes.m_file_enable_flag = jpv::FileEnableFlag::Enable_VTK ;
                     if (open_flag == true && ExtendFileFormat_flag == false && pfi_flag == false) servMes.m_file_enable_flag = jpv::FileEnableFlag::NotEnable_VTK;
                     if (open_flag == false) servMes.m_file_enable_flag = jpv::FileEnableFlag::NoFile ;
-                    std::cout << __LINE__ <<  __FUNCTION__  << std::endl;
                     pts.sendMessage( servMes );
-                    std::cout << __LINE__ <<  __FUNCTION__  << std::endl;
  
                     if(servMes.m_file_enable_flag == jpv::FileEnableFlag::NotEnable_VTK || servMes.m_file_enable_flag == jpv::FileEnableFlag::NoFile) 
                     //if( warning_flag == 2) 
@@ -100,17 +99,17 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
 #endif
                     if ( mvpl.m_list.size() > 0 )
                     {
-                        point_creator_lst.clear();
+                        point_generator_lst.clear();
                         for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
                         {
-                            PointObjectCreator point_creator;
-                            if ( param.m_gt5d == true ) point_creator.setGT5D();
-                            point_creator.setFilterInfo( mvpl.m_list[idx] );
-                            point_creator.setCoordSynthStr( clntMes.m_x_synthesis,
+                            vismodule::PointObjectGenerator point_generator;
+                            //if ( param.m_gt5d == true ) point_generator.setGT5D();
+                            point_generator.setFilterInfo( &mvpl.m_list[idx] );
+                            point_generator.setCoordSynthStr( clntMes.m_x_synthesis,
                                                             clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-//                            point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
+//                            point_generator.setCoordSynthTkn( clntMes.x_synthesis_token,
 //                                                            clntMes.y_synthesis_token, clntMes.z_synthesis_token );
-                            point_creator_lst.push_back( point_creator );
+                            point_generator_lst.push_back( point_generator );
                         }
 
                         transfunc_creator.setFilterInfo( mvpl.m_list[0] );
@@ -209,16 +208,16 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
                     {
                         assert( false );
                     }
-                    if ( param.m_gt5d == true || param.m_gt5d_full == true )
-                    {
-                        int timeStep = servMes.m_time_step;
-
-                        if ( servMes.m_time_step > 1 )
-                        {
-                            for ( int nf = 0; nf < point_creator_lst.size(); nf++ )
-                                point_creator_lst[nf].progressValues();
-                        }
-                    }
+//                    if ( param.m_gt5d == true || param.m_gt5d_full == true )
+//                    {
+//                        int timeStep = servMes.m_time_step;
+//
+//                        if ( servMes.m_time_step > 1 )
+//                        {
+//                            for ( int nf = 0; nf < point_generator_lst.size(); nf++ )
+//                                point_generator_lst[nf].progressValues();
+//                        }
+//                    }
 
                     if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
 
@@ -303,19 +302,19 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
                             int timeStep = 1;
                             try
                             {
-                                point_creator_lst[fidx].setCoordSynthStr( clntMes.m_x_synthesis,
+                                point_generator_lst[fidx].setCoordSynthStr( clntMes.m_x_synthesis,
                                         clntMes.m_y_synthesis, clntMes.m_z_synthesis );
                                 if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                                 {
-                                    tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
+                                    tmp_obj = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
                                 }
                                 else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                                 {
-                                    tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
+                                    tmp_obj = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
                                 }
                                 else     // filetype: kvsml
                                 {
-                                    tmp_obj = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
+                                    tmp_obj = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
                                 }
 
                                 size_t nmemb = tmp_obj->nvertices() * 3;
@@ -529,7 +528,7 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
 
 
 void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
-                         bool &nan_error, std::vector<PointObjectCreator>& point_creator_lst,
+                         bool &nan_error,
 #ifndef CPU_VER
                          JobCollector& jc, 
 #endif
@@ -548,6 +547,7 @@ void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& cl
     
     int bsz = 0;
     int st, vl, wid = 0;
+    std::vector<vismodule::PointObjectGenerator> point_generator_lst;
 
 
     timer_count++;
@@ -577,17 +577,17 @@ void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& cl
     mvpl.searchFile(param);
 #endif
 
-    point_creator_lst.clear();
+    point_generator_lst.clear();
     for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
     {
-        PointObjectCreator point_creator;
-        if ( param.m_gt5d == true ) point_creator.setGT5D();
-        point_creator.setFilterInfo( mvpl.m_list[idx] );
-        point_creator.setCoordSynthStr( clntMes.m_x_synthesis,
+        vismodule::PointObjectGenerator point_generator;
+//        if ( param.m_gt5d == true ) point_generator.setGT5D();
+        point_generator.setFilterInfo( &mvpl.m_list[idx] );
+        point_generator.setCoordSynthStr( clntMes.m_x_synthesis,
                 clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-        //                        point_creator.setCoordSynthTkn( clntMes.x_synthesis_token,
+        //                        point_generator.setCoordSynthTkn( clntMes.x_synthesis_token,
         //                                                        clntMes.y_synthesis_token, clntMes.z_synthesis_token );
-        point_creator_lst.push_back( point_creator );
+        point_generator_lst.push_back( point_generator );
     }
 
     transfunc_creator.setFilterInfo( mvpl.m_list[0] );
@@ -677,15 +677,15 @@ void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& cl
         {
             if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
             {
-                object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
+                object = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
             }
             else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
             {
-                object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
+                object = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
             }
             else     // filetype: kvsml
             {
-                object = point_creator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
+                object = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
             }
         }
         catch ( const std::runtime_error& e )

@@ -187,7 +187,7 @@ void  CS_Connect( int argc, char** argv )
                }
                else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
                {
-                   initial_step_worker(param, clntMes, mvpl, nan_error, point_creator_lst, 
+                   initial_step_worker(param, clntMes, mvpl, nan_error,  
 #ifndef CPU_VER
                            jc, 
 #endif
@@ -341,7 +341,7 @@ void  CS_Connect( int argc, char** argv )
                 }
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::initial_step ) // change PFI file.
                 {
-                   initial_step_master(param, clntMes, servMes, mvpl, nan_error, point_creator_lst,
+                   initial_step_master(param, clntMes, servMes, mvpl, nan_error,
 #ifndef CPU_VER
                            jc, 
 #endif                           

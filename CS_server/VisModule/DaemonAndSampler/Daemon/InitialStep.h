@@ -57,7 +57,8 @@
 #include <vismodule/CellByCellParticleGenerator>
 
 #include <vismodule/Calculate>
-#include <vismodule/PointObjectCreator>
+//#include <vismodule/PointObjectCreator>
+#include <vismodule/PointObjectGenerator>
 #include <vismodule/SignalHandler>
 #include <vismodule/Math>
 //IS
@@ -69,14 +70,16 @@
 
 
 void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
-                         bool &nan_error, std::vector<PointObjectCreator>& point_creator_lst, 
+                         //bool &nan_error, std::vector<PointObjectCreator>& point_creator_lst, 
+                         bool &nan_error,
 #ifndef CPU_VER
                          JobCollector& jc, 
 #endif
                          JobDispatcher& jd,  jpv::ParticleTransferServer pts, bool& useAllNodes, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count );
 
 void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
-                         bool &nan_error, std::vector<PointObjectCreator>& point_creator_lst, 
+                         //bool &nan_error, std::vector<PointObjectGenerator>& point_creator_lst, 
+                         bool &nan_error,
 #ifndef CPU_VER
                          JobCollector& jc, 
 #endif

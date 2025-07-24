@@ -164,7 +164,7 @@ CellByCellHistogram::CellByCellHistogram(
     m_normal_ingredient( normal_ingredient ),
     m_particle_density( 1.0 )
 {
-    m_gt5d_full = gt5d_full;
+    //m_gt5d_full = gt5d_full;
     this->attachCamera( camera ),
          this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
@@ -468,11 +468,11 @@ void CellByCellHistogram::mapping( const vismodule::Camera& camera, const vismod
                             BaseClass::transferFunction().opacityMap() );
     }
 #ifdef ENABLE_MPI
-    if ( m_gt5d_full == true )
-    {
-        this->generate_particles_gt5d( volume );
-        return;
-    }
+//    if ( m_gt5d_full == true )
+//    {
+//        this->generate_particles_gt5d( volume );
+//        return;
+//    }
 #endif
     // Generate the particles.
 //    if ( !volume.hasMinMaxValues() ) volume.updateMinMaxValues();
