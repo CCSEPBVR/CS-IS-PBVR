@@ -3,4 +3,4 @@ CXXFLAGS=-O3 -fopenmp -march=native -std=c++17
 CC=gcc
 CCFLAGS=-O3 -fopenmp -march=native
 LD=g++
-LDFLAGS=-fopenmp -lstdc++
+LDFLAGS=-fopenmp -lstdc++ -static-libgcc -static-libstdc++
