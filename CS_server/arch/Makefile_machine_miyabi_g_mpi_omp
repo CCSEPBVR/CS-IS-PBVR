@@ -2,7 +2,7 @@ CXX=g++
 CXXFLAGS=-O3 -march=native -std=c++17
 
 LD=g++
-LDFLAGS=-lstdc++ -static-libgcc -static-libstdc++
+LDFLAGS=-lstdc++
 
 MPICXX=mpic++
 MPICXXFLAGS=-O3 -fopenmp -march=native -std=c++17
@@ -11,4 +11,4 @@ MPICC=mpicc
 MPICCFLAGS=-O3 -fopenmp -march=native -fcommon
 
 MPILD=mpic++
-MPILDFLAGS=-lstdc++ -fopenmp -static-libgcc -static-libstdc++
+MPILDFLAGS=-lstdc++ -fopenmp
