@@ -1223,6 +1223,7 @@ void GenerateParticles( int time_step,
                     nparticles[I] = cell_id < ncells ? np : 0;
                     th_total_nparticles += nparticles[I];
                 }
+                    //if (I==0) std::cout << "cell_id = " << cell_id << ", nparticles[I] = " << nparticles[I] << std::endl;
 
                 // 乱数生成はSIMD化できない
                 // 粒子位置を逐次計算
@@ -1240,9 +1241,11 @@ void GenerateParticles( int time_step,
                     const int j = (cell_id - k * nxy_1) / nx_1;
                     const int i =  cell_id - k * nxy_1 - j * nx_1;
 
-                    const int nparticles_I  = I<SIMDW ? nparticles[I] : SIMDW - p_id;
+                    //const int nparticles_I  = I<SIMDW ? nparticles[I] : SIMDW - p_id;
+                    const int nparticles_I  = I<SIMDW ? nparticles[I] : 0;
                     const int zero_id = I<SIMDW ? SIMDW : p_id;
-                    for(int p=0; p < nparticles_I; p++)
+                    int nparticles_count =0;
+                    while (nparticles_count < nparticles_I)
                     {
                         const kvs::Vector3f vertex( (float)i, (float)j, (float)k );
                         const kvs::Vector3f coord_l( RandomSamplingInCube( vertex, &MT ) );
@@ -1303,11 +1306,13 @@ void GenerateParticles( int time_step,
                                     th_vertex_normals.push_back( grad_x[pp] );
                                     th_vertex_normals.push_back( grad_y[pp] );
                                     th_vertex_normals.push_back( grad_z[pp] );
+                                    nparticles_count ++;
+                                    if(nparticles_count == nparticles_I) break;
                                     timed_section_end(td_VectorPush,thid);
                                 } // end of if pp
                             } // end of for pp
                         } // end of if p_id
-                    } // end of for p
+                    } // end of for while loop
                 } // end of for I 粒子位置を逐次計算
             } // end of omp for J outer_loop
         } // end of 粒子生成ループ
