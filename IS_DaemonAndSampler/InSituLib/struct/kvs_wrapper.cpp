@@ -1168,6 +1168,8 @@ void GenerateParticles( int time_step,
             const int outer_loop = (ncells % SIMDW == 0) ?
                 ncells / SIMDW : ncells / SIMDW + 1;
 
+                // セル辺長は1固定
+                interp_opacity[thid] -> setCellLength(1);
             #pragma omp for schedule(dynamic)
             for( int J=0; J<outer_loop; J++ )
             {
