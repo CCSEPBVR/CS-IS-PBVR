@@ -453,9 +453,9 @@ inline void TrilinearInterpolator::gradient( float* g_x, float* g_y, float* g_z 
             dsdz += data[ m_index[i][I] ] * m_dNdz[i][I];
         }
 
-        g_x[I] = inv_Jacobi * dsdx;
-        g_y[I] = inv_Jacobi * dsdy;
-        g_z[I] = inv_Jacobi * dsdz;
+        g_x[I] = -inv_Jacobi * dsdx;
+        g_y[I] = -inv_Jacobi * dsdy;
+        g_z[I] = -inv_Jacobi * dsdz;
     }
 }
 

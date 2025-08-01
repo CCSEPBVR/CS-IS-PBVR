@@ -1225,7 +1225,6 @@ void GenerateParticles( int time_step,
                     nparticles[I] = cell_id < ncells ? np : 0;
                     th_total_nparticles += nparticles[I];
                 }
-                    //if (I==0) std::cout << "cell_id = " << cell_id << ", nparticles[I] = " << nparticles[I] << std::endl;
 
                 // 乱数生成はSIMD化できない
                 // 粒子位置を逐次計算
@@ -1243,10 +1242,11 @@ void GenerateParticles( int time_step,
                     const int j = (cell_id - k * nxy_1) / nx_1;
                     const int i =  cell_id - k * nxy_1 - j * nx_1;
 
-                    //const int nparticles_I  = I<SIMDW ? nparticles[I] : SIMDW - p_id;
+//                    const int nparticles_I  = I<SIMDW ? nparticles[I] : SIMDW - p_id;
                     const int nparticles_I  = I<SIMDW ? nparticles[I] : 0;
                     const int zero_id = I<SIMDW ? SIMDW : p_id;
                     int nparticles_count =0;
+
                     while (nparticles_count < nparticles_I)
                     {
                         const kvs::Vector3f vertex( (float)i, (float)j, (float)k );
