@@ -48,7 +48,6 @@
 #endif
 
 //Glyph
-//#include <vismodule/GlyphGenerator>
 #include <vismodule/GlyphSeed>
 #include <vismodule/GlyphProperty>
 
@@ -124,7 +123,6 @@ inline size_t CalculateSubpixelLevel( const int particle_limit,
 {
     namespace Generator = vismodule::CellByCellParticleGenerator;
     double d_nparticles = 0.0;//particle density for subpixel_level=1
-    //d_nparticles = Generator::CalculateGreatDensity( &camera, volume, 1, sampling_step ) * total_volume;
     d_nparticles = Generator::CalculateGreatDensity( camera, *volume, 1, sampling_step ) * total_volume;
 
     //Calculation of optimized subpixel level
@@ -203,7 +201,6 @@ bool LoadParameterFile( ParamInfo*  param_info,
 
 void SetDefalutParameter( TransferFunctionSynthesizer* tfs,
                           pbvr_parameters* particleBase,
-//                          std::vector<pbvr::TransferFunction>* tf,
                           const int nvariables, Type** values, const int ncoords)
 {
     //Read TFS
@@ -214,7 +211,6 @@ void SetDefalutParameter( TransferFunctionSynthesizer* tfs,
     int tf_number;
     // get TF_NUMBER
     tf_number = nvariables;
-    //std::vector<pbvr::TransferFunction> tf = particleBase ->m_tf;
     std::vector<vismodule::TransferFunction> tf;
 
     //Read 1D tf
@@ -243,7 +239,6 @@ void SetDefalutParameter( TransferFunctionSynthesizer* tfs,
         vismodule::ColorMap color_map( 256, min, max );
         vismodule::OpacityMap opacity_map( 256, min, max );
 
-        //pbvr::TransferFunction tfBuf;
         vismodule::TransferFunction tfBuf;
         tfBuf.setColorMap( color_map );
         tfBuf.setOpacityMap( opacity_map );
@@ -255,12 +250,10 @@ void SetDefalutParameter( TransferFunctionSynthesizer* tfs,
     std::string  equation;
 
     equation = "a1";
-    //std::replace(equation.begin(), equation.end(), 'O', 'a');
     eq = tfs->convert_token(equation);
     tfs->setOpacityFunction( eq );
 
     equation = "c1" ;
-    //std::replace(equation.begin(), equation.end(), 'C', 'c');
     eq = tfs->convert_token(equation);
     tfs->setColorFunction( eq );
 
@@ -397,7 +390,6 @@ void readTFfromParamInfo( ParamInfo* param,
 
 bool initializeParameters(
     TransferFunctionSynthesizer* tfs,
-    //std::vector<pbvr::TransferFunction>& tf,
     std::vector<vismodule::TransferFunction>& tf,
     ParamInfo *param_info,
     const vismodule::ObjectBase* object,
@@ -407,7 +399,6 @@ bool initializeParameters(
     const std::string &visParamDir,
     const std::string &tfFilename, 
     const int time_step )
-//    const std::string &tfFilename )
 {
     //std::cout<<"param.LoadIN()\n";
     ParamInfo& param = (*param_info);
@@ -459,9 +450,6 @@ bool initializeParameters(
     const float sampling_step = (max - min) / 1E1;
     *particle_limit = param.getInt( "PARTICLE_LIMIT" );
 #if 0
-    double total_volume = static_cast<double>( cdo->gnx )
-                        * static_cast<double>( cdo->gny )
-                        * static_cast<double>( cdo->gnz );
 #else
     double total_volume = ( object->maxObjectCoord().x() - object->minObjectCoord().x() )
                         * ( object->maxObjectCoord().y() - object->minObjectCoord().y() )
@@ -469,16 +457,6 @@ bool initializeParameters(
 #endif
     *max_opacity = 0.98;
     *subpixel_level = CalculateSubpixelLevel( *particle_limit , camera, sampling_step, total_volume, object );
-
-//    Generator::CalculateDensityConstaint(
-//        &camera,
-//        object,
-//        (float)(*subpixel_level),
-//        sampling_step,
-//        sampling_volume_inverse,
-//        *max_opacity,
-//        max_density );
-
 
     //std::cout<<"Generator::\n";
     Generator::CalculateDensityParameters(
@@ -588,7 +566,7 @@ void show_timer( time_parameters time )
     }
 }
 
-void generate_particles( int time_step, domain_parameters dom,
+void generate_particles( int time_step, domain_parameters_unstruct dom,
                              Type** values, int nvariables,
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltype )
@@ -632,7 +610,6 @@ void generate_particles( int time_step, domain_parameters dom,
 }
 
 #ifdef VTK
-//void SetVariables(kvs::UnstructuredVolumeObject* object, Type** values, kvs::UnstructuredVolumeObject::CellType* celltype )
 void SetVariables(kvs::UnstructuredVolumeObject* object, Type** values, vismodule::VolumeObjectBase::CellType* celltype )
 {
 
@@ -686,7 +663,7 @@ void SetVariables(kvs::UnstructuredVolumeObject* object, Type** values, vismodul
         }
 }
 
-void SetDomain( vtkUnstructuredGrid* ucd, domain_parameters* dom)
+void SetDomain( vtkUnstructuredGrid* ucd, domain_parameters_unstruct* dom)
 {
     double bounds[6];
     ucd -> GetPoints() -> GetBounds(bounds); 
@@ -707,13 +684,6 @@ void SetDomain( vtkUnstructuredGrid* ucd, domain_parameters* dom)
     MPI_Allreduce(&Ymax, &recv_Ymax, 1 , MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD);
     MPI_Allreduce(&Zmax, &recv_Zmax, 1 , MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD);
 
-//    std:: cout << "maxX = "<< recv_Xmax << std::endl;
-//    std:: cout << "minX = "<< recv_Xmin << std::endl;
-//    std:: cout << "maxY = "<< recv_Ymax << std::endl;
-//    std:: cout << "minY = "<< recv_Ymin << std::endl;
-//    std:: cout << "maxZ = "<< recv_Zmax << std::endl;
-//    std:: cout << "minZ = "<< recv_Zmin << std::endl;
-
     dom->x_global_min = recv_Xmin;
     dom->y_global_min = recv_Ymin;
     dom->z_global_min = recv_Zmin;
@@ -729,7 +699,7 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
 {
     vismodule::Timer timer( vismodule::Timer::Start );
  
-    domain_parameters dom; 
+    domain_parameters_unstruct dom; 
     SetDomain(ucd, &dom); 
 
     static ParamInfo param;
@@ -803,7 +773,6 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
                     nvariables, (float*)object->coords().pointer(), ncoords,
                     (unsigned int*)object->connections().pointer() , object -> ncells(), celltype);
 
-            //GeneratePlotOverLine(time_step, object, &plot_over_line);
             callPlotOverLine(time_step, dom, values,
                     nvariables, (float*)object->coords().pointer(), ncoords,
                     (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, &plot_over_line);
@@ -836,7 +805,7 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
 }
 #endif
 
-bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, ParamInfo *m_param ,const int time_step)
+bool SetParameter(const domain_parameters_unstruct dom, pbvr_parameters* particleBase, ParamInfo *m_param ,const int time_step)
 {
     int mpi_rank = 0;
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
@@ -968,7 +937,7 @@ bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, Pa
 }
 
 void GenerateHistogram( int time_step,
-                         domain_parameters dom,
+                         domain_parameters_unstruct dom,
                          Type** values, int nvariables,
                          float* coordinates, int ncoords,
                          unsigned int* connections, int ncells, const vismodule::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase) //celltype  enum 型に変更
@@ -1410,12 +1379,12 @@ void generate_particles( const int time_step,
                          Type** values, int nvariables,
                          float* coords, int ncoords,
                          unsigned int* connections, int ncells,
-                         domain_parameters* cdo,
+                         domain_parameters_unstruct* cdo,
                          mpi_parameters* mpi,
                          time_parameters* time )
 #else
 void GenerateParticles( int time_step,
-                         domain_parameters dom,
+                         domain_parameters_unstruct dom,
                          Type** values, int nvariables,
                          float* coordinates, int ncoords,
                          //unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase) //celltype  enum 型に変更
@@ -2215,7 +2184,7 @@ void GenerateParticles( int time_step,
 }
 
 void GenerateGlyphs( int time_step,
-                         domain_parameters dom,
+                         domain_parameters_unstruct dom,
                          Type** values, int nvariables,
                          float* coordinates, int ncoords,
                          unsigned int* connections, int ncells, const vismodule::VolumeObjectBase::CellType& celltype) //celltype  enum 型に変更
@@ -2239,7 +2208,7 @@ void GeneratePlotOverLine( const int time_step,
 }
 
 void callPlotOverLine( int time_step,
-                             domain_parameters dom, 
+                             domain_parameters_unstruct dom, 
                              Type** values, int nvariables,
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells,
@@ -2322,6 +2291,7 @@ void callPlotOverLine( int time_step,
         object -> setConnections(Connections);
 
         GeneratePlotOverLine(time_step, object, plot_over_line);
+        delete object;
 }
 
 

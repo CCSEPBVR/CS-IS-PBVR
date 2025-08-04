@@ -41,7 +41,33 @@
 #ifndef CPU_VER
 #include "mpi.h"
 #endif
+typedef struct 
+{   
+    float x_global_min;
+    float y_global_min;
+    float z_global_min;
 
+    float x_global_max;
+    float y_global_max;
+    float z_global_max;
+} domain_parameters_unstruct;
+
+typedef struct
+{
+    //　各プロセスのminmax 
+    float x_max;
+    float y_max;
+    float z_max;
+
+    float x_min;
+    float y_min;
+    float z_min;
+
+    int*  resolution;
+    float cell_length;
+} domain_parameters_struct;
+
+ 
 namespace
 {
 

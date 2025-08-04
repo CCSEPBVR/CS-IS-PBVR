@@ -9,6 +9,7 @@
 #include "../../Common/ParticleTransferProtocol.h"
 #include <vismodule/CellByCellHistogram>
 #include <vismodule/CellByCellRejectionSampling>
+#include <vismodule/CellByCellParticleGenerator>
 
 #ifdef VTK
 #include <vtkUnstructuredGrid.h>
@@ -57,7 +58,7 @@ extern "C" {
         int gnx, gny, gnz;
 
         int restart;
-    } domain_parameters;
+    } domain_parameters_unstruct;
 #else
 //    typedef struct
 //    {
@@ -68,7 +69,7 @@ extern "C" {
 //        float x_global_max;
 //        float y_global_max;
 //        float z_global_max;
-//    } domain_parameters;
+//    } domain_parameters_unstruct;
 #endif
 
     typedef struct
@@ -138,13 +139,13 @@ extern "C" {
                              Type** values, int nvariables,
                              float* coords, int ncoords,
                              unsigned int* connections, int ncells,
-                             domain_parameters* cdo,
+                             domain_parameters_unstruct* cdo,
                              mpi_parameters* mpi,
                              time_parameters* time );
 #else
 
-    //void PbvrSampler_single( int time_step, domain_parameters dom,
-    void generate_particles( int time_step, domain_parameters dom,
+    //void PbvrSampler_single( int time_step, domain_parameters_unstruct dom,
+    void generate_particles( int time_step, domain_parameters_unstruct dom,
                              Type** values, int nvariables,
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltypes );
@@ -154,26 +155,26 @@ extern "C" {
 #endif
 
     void GenerateHistogram( int time_step,
-                             domain_parameters dom,
+                             domain_parameters_unstruct dom,
                              Type** values, int nvariables,
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase );
  
     void GenerateParticles( int time_step,
-                             domain_parameters dom,
+                             domain_parameters_unstruct dom,
                              Type** values, int nvariables,
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells,
                              const  vismodule::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase );
 
     void GenerateGlyphs( int time_step,
-                             domain_parameters dom,
+                             domain_parameters_unstruct dom,
                              Type** values, int nvariables,
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells,
                              const  vismodule::VolumeObjectBase::CellType& celltype );
     void callPlotOverLine( int time_step,
-                              domain_parameters dom, 
+                              domain_parameters_unstruct dom, 
                               Type** values, int nvariables,
                               float* coordinates, int ncoords,
                               unsigned int* connections, int ncells,
@@ -181,7 +182,7 @@ extern "C" {
     void GeneratePlotOverLine(int time_step, const vismodule::UnstructuredVolumeObject* volume, PlotOverLine* plot_over_line);
 
     void OutputParticles( int time_step, int nvariables, pbvr_parameters& particleBase,  ParamInfo *param_info, bool skip_flag);
-    bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, ParamInfo *param_info, const int time_step);
+    bool SetParameter(const domain_parameters_unstruct dom, pbvr_parameters* particleBase, ParamInfo *param_info, const int time_step);
 
 #endif
 

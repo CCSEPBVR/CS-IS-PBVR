@@ -18,7 +18,7 @@
 
 #include <vismodule/timer_simple>
 
-#include <vismodule/PointObjectGenerator>
+#include <vismodule/CS_PointObjectGenerator>
 
 #include <vismodule/Argument>
 

@@ -4,7 +4,7 @@
 
 #include "../shared/thread_timer.h"
 #include <vismodule/StructuredVolumeObject>
-
+#include <vismodule/CellByCellParticleGenerator>
 
 #ifndef SIMDW
 #define SIMDW 128
@@ -28,23 +28,23 @@ extern "C" {
 
     float GetRandomNumber();
 
-    typedef struct
-    {
-        float x_global_min;
-        float y_global_min;
-        float z_global_min;
-
-        float x_global_max;
-        float y_global_max;
-        float z_global_max;
-
-        float x_min;
-        float y_min;
-        float z_min;
-
-        int*  resolution;
-        float cell_length;
-    } domain_parameters;
+//    typedef struct
+//    {
+//        float x_global_min;
+//        float y_global_min;
+//        float z_global_min;
+//
+//        float x_global_max;
+//        float y_global_max;
+//        float z_global_max;
+//
+//        float x_min;
+//        float y_min;
+//        float z_min;
+//
+//        int*  resolution;
+//        float cell_length;
+//    } domain_parameters_struct;
 
     typedef struct
     {
@@ -60,21 +60,21 @@ extern "C" {
     void   end_wrapper_async_io();
 
     void generate_particles( int time_step,
-                             domain_parameters dom,
+                             domain_parameters_struct dom,
                              Type** volume_data, 
                              int num_volume_data );
     
     void GenerateParticles( int time_step,
-                             domain_parameters dom,
+                             domain_parameters_struct dom,
                              Type** volume_data, 
                              int num_volume_data );
 
     void GenerateGlyphs_PlotOverLine( int time_step,
-                             domain_parameters dom,
+                             domain_parameters_struct dom,
                              Type** values, int num_volume_data);
 
     void CallPlotOverLine( int time_step,
-                             domain_parameters dom,
+                             domain_parameters_struct dom,
                              Type** values, int num_volume_data);
 
 

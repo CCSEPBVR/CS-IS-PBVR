@@ -15,11 +15,11 @@
 #include <vismodule/Timer>
 #include <vismodule/MersenneTwister>
 
-//#include <vismodule/GlyphGenerator>
 #include <vismodule/GlyphSeed>
 #include <vismodule/PlotOverLine>
 #include "kvs_wrapper.h"
 #include <vismodule/CellByCellParticleGenerator>
+#include <vismodule/CellByCellRejectionSampling>
 #include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/ParamInfo>
 #include <vismodule/TrilinearInterpolator>
@@ -30,7 +30,6 @@
 #ifdef _OPENMP
 #  include <omp.h>
 #endif // _OPENMP
-
 
 
 // Asynchronous io, using worker thread pwt.
@@ -205,79 +204,8 @@ void readTFfromParamInfo( ParamInfo* param,
     std::vector<EquationToken> var;
     int tf_number;
 
-#if 0
-    i_table = param->getTableInt( "OPA_FUNC_EXP_TOKEN" );
-    if (i_table.size() < 128){
-        std::cerr<<"Error retrieving TF from ParamInfo"<<std::endl<<
-        "If you are trying to overwrite an existing job you may need to execute RESET.sh first."<<std::endl;
-        exit(1);
-    }
-    for(size_t i=0; i<128; i++) eq.exp_token[i] = i_table[i];
-
-    i_table = param->getTableInt( "OPA_FUNC_VAR_NAME" );
-    for(size_t i=0; i<128; i++) eq.var_name[i] = i_table[i];
-
-    f_table = param->getTableFloat( "OPA_FUNC_VAL_ARRAY" );
-    for(size_t i=0; i<128; i++) eq.val_array[i] = f_table[i];
-
-    tfs->setOpacityFunction( eq );
-
-    i_table = param->getTableInt( "COL_FUNC_EXP_TOKEN" );
-    for(size_t i=0; i<128; i++) eq.exp_token[i] = i_table[i];
-
-    i_table = param->getTableInt( "COL_FUNC_VAR_NAME" );
-    for(size_t i=0; i<128; i++) eq.var_name[i] = i_table[i];
-
-    f_table = param->getTableFloat( "COL_FUNC_VAL_ARRAY" );
-    for(size_t i=0; i<128; i++) eq.val_array[i] = f_table[i];
-
-    tfs->setColorFunction( eq );
-#endif
-
     // get TF_NUMBER
     tf_number = param->getInt( "TF_NUMBER" );
-#if 0
-    for ( size_t i = 0; i < tf_number; i++ )
-    {
-        std::stringstream tss;
-        tss << "TF_NAME" << i + 1 << "_";
-        const std::string tag_base = tss.str();
-
-        i_table = param->getTableInt( tag_base + "O_EXP_TOKEN" );
-        for(size_t i=0; i<128; i++) eq.exp_token[i] = i_table[i];
-
-        i_table = param->getTableInt( tag_base + "O_VAR_NAME" );
-        for(size_t i=0; i<128; i++) eq.var_name[i] = i_table[i];
-
-        f_table = param->getTableFloat( tag_base + "O_VAL_ARRAY" );
-        for(size_t i=0; i<128; i++) eq.val_array[i] = f_table[i];
-
-        var.push_back( eq );
-    }
-
-    tfs->setOpacityVariable( var );
-
-    var.clear();
-    for ( size_t i = 0; i < tf_number; i++ )
-    {
-        std::stringstream tss;
-        tss << "TF_NAME" << i + 1 << "_";
-        const std::string tag_base = tss.str();
-
-        i_table = param->getTableInt( tag_base + "C_EXP_TOKEN" );
-        for(size_t i=0; i<128; i++) eq.exp_token[i] = i_table[i];
-
-        i_table = param->getTableInt( tag_base + "C_VAR_NAME" );
-        for(size_t i=0; i<128; i++) eq.var_name[i] = i_table[i];
-
-        f_table = param->getTableFloat( tag_base + "C_VAL_ARRAY" );
-        for(size_t i=0; i<128; i++) eq.val_array[i] = f_table[i];
-
-        var.push_back( eq );
-    }
-
-    tfs->setColorVariable( var );
-#endif
     //Read 1D tf
     int resolution = param->getInt( "TF_RESOLUTION" );
     float min, max;
@@ -322,7 +250,6 @@ void readTFfromParamInfo( ParamInfo* param,
     equation = param->getString( "COLOR_SYNTH" );
     std::replace(equation.begin(), equation.end(), 'C', 'c');
     eq = tfs->convert_token(equation);
-//    std::cout << "equation =" <<equation <<std::endl;
     tfs->setColorFunction( eq );
 
     for ( size_t i = 0; i < tf_number; i++ )
@@ -347,7 +274,6 @@ void readTFfromParamInfo( ParamInfo* param,
 
         equation = param->getString( tag_base +"VAR_O" );
         eq = tfs->convert_token(equation);
-        //for (int i = 0;i< 10; i++) std::cout << "str: eq.exp_token[i] =" << eq.exp_token[i] << std::endl;       
 
         var.push_back( eq );
     }
@@ -461,8 +387,6 @@ void calculate_histogram( vismodule::ValueArray<int>&   th_o_histogram,
                           const vismodule::ValueArray<float>& o_max,
                           const vismodule::ValueArray<float>& c_min,
                           const vismodule::ValueArray<float>& c_max,
-                          //const float o_scalars[][SIMDW], // åæå¤
-                          //const float c_scalars[][SIMDW],
                           const float** o_scalars, // åæå¤
                           const float** c_scalars,
                           const int tf_number  )
@@ -557,19 +481,18 @@ void show_timer( time_parameters time )
 
 
 void generate_particles( int time_step,
-        domain_parameters dom,
+        domain_parameters_struct dom,
         Type** volume_data, 
         int num_volume_data )
 {
     
     GenerateGlyphs_PlotOverLine(time_step, dom, volume_data, num_volume_data);
   
-    //CallPlotOverLine(time_step, dom, volume_data, num_volume_data); 
     GenerateParticles( time_step, dom, volume_data, num_volume_data );
 
 }
 
-void GenerateGlyphs_PlotOverLine( int time_step, domain_parameters dom, Type** values, int num_volume_data )
+void GenerateGlyphs_PlotOverLine( int time_step, domain_parameters_struct dom, Type** values, int num_volume_data )
 {
 
 //  SetStructuredVolumeObject(
@@ -628,11 +551,7 @@ void GenerateGlyphs_PlotOverLine( int time_step, domain_parameters dom, Type** v
 
     vismodule::AnyValueArray Values(tmp_Values);
 
-//    vismodule::StructuredVolumeObject object(resolution, num_volume_data, Values ); 
-    
     vismodule::StructuredVolumeObject object(vismodule::VolumeObjectBase::Curvilinear, resolution, num_volume_data, Coord, Values ); 
-    
-    //object.updateMinMaxCoords();
 
     object.setMinMaxObjectCoords( min_vec, max_vec );
     object.setMinMaxExternalCoords( min_vec, max_vec );
@@ -646,7 +565,6 @@ void GenerateGlyphs_PlotOverLine( int time_step, domain_parameters dom, Type** v
 
     plot_over_line.SetPOLParameter(time_step);
     plot_over_line.SetCellLength(dom.cell_length);
-//    std::cout << "min_vec = " << min_vec << std::endl;
     plot_over_line.SetOffset(min_vec);
         
     if(plot_over_line.plot_flag())
@@ -658,53 +576,12 @@ void GenerateGlyphs_PlotOverLine( int time_step, domain_parameters dom, Type** v
 
 }
 
-#if 0
-void CallPlotOverLine( int time_step, domain_parameters dom,
-        Type** values, int num_volume_data)
-{
-
-#if 0
-    const vismodule::Vector3ui resolution( dom.resolution[0], dom.resolution[1], dom.resolution[2]);  
-    int nnodes = resolution.x()*resolution.y()*resolution.z();
-
-    vismodule::ValueArray<float> tmp_Values(nnodes * num_volume_data);
-
-    for(int i = 0; i < num_volume_data; ++i )
-    {
-        for(int k = 0; k < nnodes; ++k)
-        {
-           tmp_Values[k+i*nnodes] = values[i][k] ;
-        } 
-    }
-
-    vismodule::AnyValueArray Values(tmp_Values);
-
-
-    //vismodule::StructuredVolumeObject* object = new vismodule::StructuredVolumeObject(resolution, num_volume_data, Values ); 
-    vismodule::StructuredVolumeObject object(resolution, num_volume_data, Values ); 
-    object.updateMinMaxCoords();
-#endif
-
-        PlotOverLine plot_over_line;
-
-        plot_over_line.SetPOLParameter(time_step);
-        if(plot_over_line->plot_flag())
-        {
-            plot_over_line->extractPlotLine( object );
-            plot_over_line->CellTypeReduceing();
-        } 
-        plot_over_line.OutputLine(time_step);
-
-}
-#endif
-
-//void generate_particles( int time_step,
 void GenerateParticles( int time_step,
-                         domain_parameters dom,
+                         domain_parameters_struct dom,
                          Type** volume_data,
                          int num_volume_data )
 {
-
+#if 0
 #if _OPENMP
     int max_threads = omp_get_max_threads();
 #else
@@ -727,17 +604,7 @@ void GenerateParticles( int time_step,
 
     const vismodule::Vector3ui resolution( dom.resolution[0], dom.resolution[1], dom.resolution[2] );
 
-    //std::vector< vismodule::StructuredVolumeObject* > vol_obj;
     std::vector< std::vector< vismodule::TrilinearInterpolator* > >  interp;
-/*
-    vol_obj.resize( num_volume_data );
-    for ( int i = 0; i < num_volume_data; i++ )
-    {
-         const vismodule::ValueArray<Type> v( volume_data[i], resolution.x()*resolution.y()*resolution.z() );
-         const vismodule::AnyValueArray av( v );
-         vol_obj[i] = new vismodule::StructuredVolumeObject( resolution, 1, av );
-    }
-*/
     interp.resize( max_threads );
     for ( int i = 0; i < max_threads; i++ )
     {
@@ -839,6 +706,12 @@ void GenerateParticles( int time_step,
     object->setMinMaxExternalCoords( min_vec, max_vec );
 
     if(mpi_rank==0)std::cout<<"start initializeTFS()\n";
+        
+        time_parameters time;
+        timer.stop();
+        time.initialize = timer.sec();
+        timer.start();
+
 
     bool tmp_parameter_file_opened = 
         initializeParameters( tfs, tf, &param, object,
@@ -846,17 +719,35 @@ void GenerateParticles( int time_step,
                               &subpixel_level, &particle_density, &particle_data_size_limit,
                               visParamDir, tfFilename );
 
-    int tf_number = tf.size();
+        tfs->setMaxOpacity( max_opacity );
+        tfs->setMaxDensity( max_density );
+        tfs->setSamplingVolumeInverse( sampling_volume_inverse );
+        
 
-/*
-    for ( int j = 0; j < TF_COUNT; j++ )
-    {
-        std::cout<<"tf:min="<< tf[j].opacityMap().minValue() <<",max="<<tf[j].opacityMap().maxValue()<<std::endl;
-        for( int i=0; i<tf[j].opacityMap().table().size();i++){
-            std::cout<< tf[j].opacityMap().table()[i]<<",";
-        }std::cout<<std::endl;
-    }
-*/
+    int tf_number = tf.size();
+    const int ncoords = resolution.x()*resolution.y()*resolution.z();
+    std::vector<float> Values;
+    Values.resize(ncoords * num_volume_data);
+    for (int i =0; i<num_volume_data ; i++) 
+    {    
+        for (int k=0; k< ncoords; k++) 
+        {    
+            Values[k+i*ncoords] = (float)volume_data[i][k];
+        }    
+    }    
+
+    vismodule::AnyValueArray Var(Values);
+//    vismodule::StructuredVolumeObject volume(resolution, num_volume_data, Var);
+//    volume->setVeclen( nvariables );
+//    volume->setCoords( const Coords& values );
+//    volume->setValues( Var );
+
+
+//    vismodule::PointObject* tmp_object = new vismodule::CellByCellRejectionSampling( volume,
+//                                                             tf, tfs,
+//                                                              subpixel_level,
+//                                                              particle_density );
+//
     if( start_flag ) parameter_file_opened = tmp_parameter_file_opened;
 
     delete object;
@@ -919,6 +810,38 @@ void GenerateParticles( int time_step,
         }
     }
 
+//    //最大値、最小値、ヒストグラムの抽出
+//    int c_count = 0;
+//    for ( int tf = 0; tf < tf_number ; tf++ )
+//    {
+//        int c_nbins = tmp_object->getNbins();
+//        //changed by shimomura 2023/07/24
+//        O_min[tf] = tfs->m_o_min[tf];
+//        C_min[tf] = tfs->m_c_min[tf];
+//        O_max[tf] = tfs->m_o_max[tf];
+//        C_max[tf] = tfs->m_c_max[tf];
+//        for ( int res = 0; res < c_nbins; res++ )
+//        {
+//            o_histogram[ c_count ] += tmp_object->getOHistogram()[ c_count ] ;
+//            c_histogram[ c_count ] += tmp_object->getCHistogram()[ c_count ] ;
+//            c_count++;
+//        }
+//    }
+
+    static TimedScope td_gatherf("GatherF",1);
+    static TimedScope td_gather("gather",1);
+    static TimedScope td_kvsml("kvsml",1);
+    static TimedScope td_SynthOpacityScalars("SynthesizedOpacityScalars",max_threads);
+    static TimedScope td_SynthColorScalars("SynthesizedColorScalars",max_threads);
+    static TimedScope td_CalculateHistogram("CalculateHistogram",max_threads);
+    static TimedScope td_CalculateOpacity("CalculateOpacity",max_threads);
+    static TimedScope td_CalculateDensity("CalculateDensity",max_threads);
+    static TimedScope td_CalculateNumPar("Ccalculate_number_of_particles (Random)",max_threads);
+    static TimedScope td_CalculateColor("CalculateColor",max_threads);
+    static  TimedScope td_VectorPush("Vector Push",max_threads);
+    static TimedScope td_VectorIns("Vector Insert",max_threads);
+
+#if 1
     TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
     std::vector< std::vector<vismodule::TransferFunction> > th_tf;
     vismodule::TrilinearInterpolator** interp_opacity  = new vismodule::TrilinearInterpolator*[max_threads] ;
@@ -935,30 +858,9 @@ void GenerateParticles( int time_step,
         for ( int j = 0; j < tf_number; j++ )
         {
             th_tf[i][j] = tf[j];
-/*
-            std::cout<<"tf["<<i<<","<<j<<"]:min="
-                     << th_tf[i][j].opacityMap().minValue()
-                     <<",max="
-                     << th_tf[i][j].opacityMap().maxValue()
-                     <<std::endl;
-*/
         }
     }
-/*
-    int total_nparticles = 0;
-    int particles_process_limit = static_cast<int> (  ( particle_data_size_limit * 10E6 )
-                                                    / ( sizeof( float ) + sizeof( Byte ) + sizeof( float ) ) );
-    bool particle_limit_over = false;
-*/
     float* opacity_volume = new float[ resolution.x()*resolution.y()*resolution.z() ];
-    //vismodule::ValueArray<Type> ov( resolution.x()*resolution.y()*resolution.z() );
-    //const vismodule::AnyValueArray aov( ov );
-    //vismodule::StructuredVolumeObject* volume_opacity = new vismodule::StructuredVolumeObject( resolution, 1, aov );
-
-    time_parameters time;
-    timer.stop();
-    time.initialize = timer.sec();
-    timer.start();
 
     //頂点解像度と格子解像度
     const int nx = resolution.x();
@@ -972,18 +874,6 @@ void GenerateParticles( int time_step,
 
     int total_nparticles = 0;
 
-    static TimedScope td_gatherf("GatherF",1);
-    static TimedScope td_gather("gather",1);
-    static TimedScope td_kvsml("kvsml",1);
-    static TimedScope td_SynthOpacityScalars("SynthesizedOpacityScalars",max_threads);
-    static TimedScope td_SynthColorScalars("SynthesizedColorScalars",max_threads);
-    static TimedScope td_CalculateHistogram("CalculateHistogram",max_threads);
-    static TimedScope td_CalculateOpacity("CalculateOpacity",max_threads);
-    static TimedScope td_CalculateDensity("CalculateDensity",max_threads);
-    static TimedScope td_CalculateNumPar("Ccalculate_number_of_particles (Random)",max_threads);
-    static TimedScope td_CalculateColor("CalculateColor",max_threads);
-    static  TimedScope td_VectorPush("Vector Push",max_threads);
-    static TimedScope td_VectorIns("Vector Insert",max_threads);
     #pragma omp parallel
     {
 #if _OPENMP
@@ -993,10 +883,6 @@ void GenerateParticles( int time_step,
         int nthreads = 1;
         int thid     = 0;
 #endif
-
-
-
-        //th_tfs[thid]->set_debug_thid(thid,max_threads);
 
         int th_total_nparticles = 0;
         //各スレッド番号をシードにした乱数生成器
@@ -1008,8 +894,6 @@ void GenerateParticles( int time_step,
         std::vector<float> th_vertex_normals;
 
 //        //ヒストグラムの配列
-//        float o_scalars[tf_number][SIMDW];//頂点の不透明度
-//        float c_scalars[tf_number][SIMDW];//頂点の色
 
         float** o_scalars = new float* [tf_number];
         float** c_scalars = new float* [tf_number];
@@ -1385,16 +1269,15 @@ void GenerateParticles( int time_step,
         delete th_tfs[i];
     }
     delete[] th_tfs;
-
+#endif
     delete tfs;
 
-    delete[] opacity_volume;
+//    delete[] opacity_volume;
 /*
     for ( int i = 0; i < num_volume_data; i++ )
     {
          delete vol_obj[i];
     }
-*/
     for ( int i = 0; i < max_threads; i++ )
     {
         for ( int j = 0; j < num_volume_data; j++ )
@@ -1402,12 +1285,16 @@ void GenerateParticles( int time_step,
              delete interp[i][j];
         }
     }
-    //delete volume_opacity;
     delete[] interp_opacity;
+
+*/
 
     ///-------------------------------------//
     ///--------粒子配列をファイル出力----------//
     //--------------------------------------//
+    //vismodule::ValueArray<float> coords( tmp_object->coords() );
+    //vismodule::ValueArray<Byte>  colors( tmp_object->colors());
+    //vismodule::ValueArray<float> normals( tmp_object->normals() );
     vismodule::ValueArray<float> coords( vertex_coords );
     vismodule::ValueArray<Byte>  colors( vertex_colors );
     vismodule::ValueArray<float> normals( vertex_normals );
@@ -1675,6 +1562,7 @@ void GenerateParticles( int time_step,
     if(mpi_rank == 0){
         TimedScope::summary(mpi_size);
     }
+#endif
 }
 
 void state_txt_writer( void )

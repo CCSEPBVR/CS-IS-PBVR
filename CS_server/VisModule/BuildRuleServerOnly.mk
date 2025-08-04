@@ -236,7 +236,7 @@ $(OUTDIR)/./Visualization/Object/ImageObject.o \
 $(OUTDIR)/./Visualization/Object/LineObject.o \
 $(OUTDIR)/./Visualization/Object/ObjectBase.o \
 $(OUTDIR)/./Visualization/Object/PointObject.o \
-$(OUTDIR)/./Visualization/Object/PointObjectGenerator.o \
+$(OUTDIR)/./Visualization/Object/CS_PointObjectGenerator.o \
 $(OUTDIR)/./Visualization/Object/PlotOverLineGenerator.o \
 $(OUTDIR)/./Visualization/Object/PolygonObject.o \
 $(OUTDIR)/./Visualization/Object/TableObject.o \

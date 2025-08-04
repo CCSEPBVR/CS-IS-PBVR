@@ -72,10 +72,14 @@ PlotOverLine::~PlotOverLine()
 //    m_values_on_line.deallocate();
 //    m_x_axis.deallocate();
 //    m_mask.deallocate();
+//      if(m_values ==NULL)
+//      {
+//          for(int j = 0; j < m_nvariables; j++) delete m_values[j];
+//          delete[] m_values;
+//      }
 }
 
 void PlotOverLine::setVolume( const vismodule::StructuredVolumeObject* volume )
-//void PlotOverLine::setVolume( const pbvr::StructuredVolumeObject* volume )
 {
     m_structured_volume = volume;
 }
@@ -84,6 +88,37 @@ void PlotOverLine::setVolume( const vismodule::StructuredVolumeObject* volume )
 void PlotOverLine::setVolume( const vismodule::UnstructuredVolumeObject* volume )
 {
     m_volume = volume;
+    
+//    float** values;
+//    vismodule::AnyValueArray valueArray; 
+//    std::vector<float> coordinates; 
+//    int ncoords;
+//    std::vector<unsigned int> connections ;
+//    int ncells; 
+//    int nnodes;
+//    int nvariables;
+//   
+//    valueArray = volume->values(); 
+//    m_ncoords =  volume->nnodes();
+//    coordinates.assign( (float * )volume->coords().begin(),(float * )volume->coords().end()); 
+//    connections.assign((unsigned int*)uvo_p->connections().begin(), (unsigned int*)uvo_p->connections().end());
+//    m_ncells = uvo_p->ncells();
+//    m_nnodes = volume->nnodes();
+//    m_celltype = uvo_p->cellType();
+//
+//    m_nvariables = volume->veclen();
+//    m_values = new float * [m_nvariables];
+//
+//    for ( int j = 0; j < m_nvariables; j++ )
+//    {
+//        m_values[j] = new float[nnodes];
+//        for ( int i = 0; i < nnodes; i++ )
+//        {
+//            int  it = j * nnodes  + i;
+//            m_values[j][i] = valueArray.at<Type>(it);  
+//        }
+//    } 
+
 }
 
 void PlotOverLine::setVolume( const POL::Polyhedron* volume )
@@ -217,6 +252,17 @@ void PlotOverLine::extractPlotLine( const vismodule::UnstructuredVolumeObject* v
     this->setVolume( volume );
     this->extractPlotLine( m_start_point, m_end_point );
 }
+
+
+//void PlotOverLine::extractPlotLine( float** values, int nvariables,
+//            float* coordinates, int ncoords,
+//            unsigned int* connections, int ncells,
+//            const  vismodule::VolumeObjectBase::CellType& celltype )
+//{
+////    this->setVolume( volume );
+////    this->extractPlotLine( m_start_point, m_end_point );
+//}
+
 
 void PlotOverLine::CellTypeReduceing()
 {
@@ -1139,5 +1185,4 @@ void PlotOverLine::OutputLine( const int time_step)
     vismodulemlobject.write(m_POLFilePath.c_str());
 
 }
-
 

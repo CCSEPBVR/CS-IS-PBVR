@@ -13,8 +13,7 @@
 
 #include <vismodule/timer_simple>
 
-#include <vismodule/PointObjectGenerator>
-
+#include <vismodule/CS_PointObjectGenerator>
 #include <vismodule/Argument>
 
 #include <vismodule/AVSField>
@@ -68,7 +67,7 @@ private:
 
     vismodule::UnstructuredVolumeObject* m_volume;
 
-    vismodule::PointObjectGenerator m_generator;
+    vismodule::CS_PointObjectGenerator m_generator;
 
     int m_mpi_rank;
 

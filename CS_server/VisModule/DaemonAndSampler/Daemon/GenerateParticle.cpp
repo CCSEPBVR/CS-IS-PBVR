@@ -20,7 +20,7 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
     char* buf;
     int bsz = 0;
     int st, vl, wid = 0;
-    std::vector<vismodule::PointObjectGenerator> point_generator_lst;
+    std::vector<vismodule::CS_PointObjectGenerator> point_generator_lst;
 
     timer_count++;
     if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
@@ -438,7 +438,7 @@ void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessag
     int bsz = 0;
     int st, vl, wid = 0;
     vismodule::PointObject* object = NULL;
-    std::vector<vismodule::PointObjectGenerator> point_generator_lst;
+    std::vector<vismodule::CS_PointObjectGenerator> point_generator_lst;
 
                 if ( clntMes.m_time_parameter == 0 )
                 {
@@ -610,7 +610,7 @@ void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessag
                     point_generator_lst.clear();
                     for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
                     {
-                        vismodule::PointObjectGenerator point_generator;
+                        vismodule::CS_PointObjectGenerator point_generator;
                         point_generator.setFilterInfo( &mvpl.m_list[idx] );
                         point_generator.setCoordSynthStr( clntMes.m_x_synthesis,
                                                         clntMes.m_y_synthesis, clntMes.m_z_synthesis );

@@ -26,23 +26,11 @@
 #include <vismodule/CellByCellParticleGenerator>
 //#include <vismodule/CropRegion>
 #include <vismodule/TransferFunctionSynthesizer>
-//#include "TransferFunctionSynthesizer_IS.h"
 #include <vismodule/TransferFunctionSynthesizerCreator>
 #include "ExtendedTransferFunction.h"
-//#include "SFMT/SFMT.h" 
 
 #define RANK 1
-   typedef struct 
-    {   
-        float x_global_min;
-        float y_global_min;
-        float z_global_min;
-
-        float x_global_max;
-        float y_global_max;
-        float z_global_max;
-    } domain_parameters;
-    
+   
    typedef unsigned char Byte;
 
 namespace vismodule
@@ -70,15 +58,11 @@ private:
     float                  m_sampling_step;  ///< sampling step in the object coordinate
     float                  m_object_depth;   ///< object depth
     vismodule::ValueArray<float> m_density_map;    ///< density map
-//    CropRegion             m_crop;
     //add by shimomura 2022/12/19
     TransferFunctionSynthesizer* m_transfer_function_synthesizer;
     std::vector<vismodule::TransferFunction> m_transfer_function_array; 
-    //std::vector<NamedTransferFunction> m_transfer_function_array; 
 
     float                  m_particle_density;
-
-//    bool                   m_batch;
 
 public:
 
@@ -89,9 +73,7 @@ public:
         const size_t                 subpixel_level,
         const float                  sampling_step,
         const vismodule::TransferFunction& transfer_function,
-        //const NamedTransferFunction& transfer_function,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-//        const CropRegion&            crop,
         const float                  object_depth = 0.0f );
 
     CellByCellRejectionSampling(
@@ -100,9 +82,7 @@ public:
         const size_t                 subpixel_level,
         const float                  sampling_step,
         const vismodule::TransferFunction& transfer_function,
-        //const NamedTransferFunction& transfer_function,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-//        const CropRegion&            crop,
         const float                  density_factor,
         const float                  object_depth = 0.0f );
 
@@ -112,22 +92,41 @@ public:
         const size_t                 subpixel_level,
         const float                  sampling_step,
         const vismodule::TransferFunction& transfer_function,
-        //const NamedTransferFunction& transfer_function,
-        //std::vector<NamedTransferFunction>& transfer_function_array,
         std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-//        const CropRegion&            crop,
+        const float                  density_factor,
+        const float                  object_depth = 0.0f );
+
+    CellByCellRejectionSampling(
+        const vismodule::Camera&           camera,
+        Type** values, int nvariables,
+        float* coordinates, int ncoords,
+        unsigned int* connections, int ncells,
+        const  vismodule::VolumeObjectBase::CellType& celltype ,
+        const size_t                 subpixel_level,
+        const float                  sampling_step,
+        const vismodule::TransferFunction& transfer_function,
+        std::vector<vismodule::TransferFunction>& transfer_function_array,
+        TransferFunctionSynthesizer* transfunc_synthesizer,
         const float                  density_factor,
         const float                  object_depth = 0.0f );
 
 // for IS 
-//
+    CellByCellRejectionSampling( Type** values, int nvariables,
+            float* coordinates, int ncoords,
+            unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltype, //ISPBVR
+            std::vector<vismodule::TransferFunction>& transfer_function_array,
+            TransferFunctionSynthesizer* transfunc_synthesizer,
+            const size_t                 subpixel_level,
+            const float                  density_factor );
+
 
     virtual ~CellByCellRejectionSampling();
 
 public:
 
     SuperClass* exec( const vismodule::ObjectBase& object );
+    SuperClass* exec_IS( const vismodule::ObjectBase& object );
 
 public:
 
@@ -173,8 +172,6 @@ private:
                           const vismodule::ValueArray<float>& o_max,
                           const vismodule::ValueArray<float>& c_min,
                           const vismodule::ValueArray<float>& c_max,
- //                         const float o_scalars[][SIMDW], // åæå¤
- //                         const float c_scalars[][SIMDW],
                           float** o_scalars, // åæå¤
                           float** c_scalars,
                           const int tf_number,

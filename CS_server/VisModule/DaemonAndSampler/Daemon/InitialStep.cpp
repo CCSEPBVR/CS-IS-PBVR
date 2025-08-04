@@ -19,7 +19,7 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
     
     int bsz = 0;
     int st, vl, wid = 0;
-    std::vector<vismodule::PointObjectGenerator> point_generator_lst;
+    std::vector<vismodule::CS_PointObjectGenerator> point_generator_lst;
 
                     param.m_input_data_base = clntMes.m_input_directory;
 
@@ -101,7 +101,7 @@ void initial_step_master(Argument &param, jpv::ParticleTransferClientMessage& cl
                         point_generator_lst.clear();
                         for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
                         {
-                            vismodule::PointObjectGenerator point_generator;
+                            vismodule::CS_PointObjectGenerator point_generator;
                             point_generator.setFilterInfo( &mvpl.m_list[idx] );
                             point_generator.setCoordSynthStr( clntMes.m_x_synthesis,
                                                             clntMes.m_y_synthesis, clntMes.m_z_synthesis );
@@ -510,7 +510,7 @@ void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& cl
     
     int bsz = 0;
     int st, vl, wid = 0;
-    std::vector<vismodule::PointObjectGenerator> point_generator_lst;
+    std::vector<vismodule::CS_PointObjectGenerator> point_generator_lst;
 
 
     timer_count++;
@@ -540,7 +540,7 @@ void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& cl
     point_generator_lst.clear();
     for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
     {
-        vismodule::PointObjectGenerator point_generator;
+        vismodule::CS_PointObjectGenerator point_generator;
         point_generator.setFilterInfo( &mvpl.m_list[idx] );
         point_generator.setCoordSynthStr( clntMes.m_x_synthesis,
                 clntMes.m_y_synthesis, clntMes.m_z_synthesis );

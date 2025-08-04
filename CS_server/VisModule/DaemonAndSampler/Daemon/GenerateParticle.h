@@ -13,7 +13,7 @@
 
 #include <vismodule/timer_simple>
 
-#include <vismodule/PointObjectGenerator>
+#include <vismodule/CS_PointObjectGenerator>
 
 #include <vismodule/Argument>
 
@@ -61,8 +61,6 @@
 #include <vismodule/PlotOverLineGenerator>
 
 #include <vismodule/Calculate>
-#include <vismodule/PointObjectCreator>
-#include <vismodule/PointObjectGenerator>
 #include <vismodule/SignalHandler>
 #include <vismodule/Math>
 //IS

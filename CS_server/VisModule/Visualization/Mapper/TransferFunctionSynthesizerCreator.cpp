@@ -176,11 +176,14 @@ std::vector<NamedTransferFunction> TransferFunctionSynthesizerCreator::transfunc
 
 void TransferFunctionSynthesizerCreator::setInitialProtocol( const int nvariable, const VariableRange vr)
 {
+    // メンバ変数の初期化
     m_transfunc.clear();
     m_voleqn.clear();
 
+    // 領域確保
     m_synthesizer = new TransferFunctionSynthesizer();
     
+    // 例外処理 
     if (nvariable == 0)
     {
         std::cout << "TF_number is 0 !!" << std::endl;
@@ -195,11 +198,13 @@ void TransferFunctionSynthesizerCreator::setInitialProtocol( const int nvariable
         cc << "t" << i + 1;
         qq << "q" << i + 1;
         tt << "t" << i + 1;  
+        //NamedTransferFunction変数
         tf.m_name          = cc.str();
         tf.m_color_variable       = qq.str();
+        tf.m_opacity_variable     = qq.str();
+        // ExtendTransferFunction変数
         tf.m_color_variable_min   = vr.min( tt.str() + "_var_c" );
         tf.m_color_variable_max   = vr.max( tt.str() + "_var_c" ); 
-        tf.m_opacity_variable     = qq.str();
         tf.m_opacity_variable_min = vr.min( tt.str() + "_var_o" );
         tf.m_opacity_variable_max = vr.max( tt.str() + "_var_o" );
         tf.m_resolution           = TF_resolution;
@@ -207,9 +212,11 @@ void TransferFunctionSynthesizerCreator::setInitialProtocol( const int nvariable
         tf.m_equation_green       = ""; 
         tf.m_equation_blue        = ""; 
         tf.m_equation_opacity     = "";
+
+        // TransferFunction変数
         //vismodule::ColorMap color_map( TF_resolution, tf.m_color_variable_min, tf.m_color_variable_max  );
         vismodule::ColorMap color_map( TF_resolution*3, tf.m_color_variable_min, tf.m_color_variable_max  );
-        vismodule::OpacityMap opacity_map( TF_resolution, tf.m_color_variable_min, tf.m_color_variable_max  );
+        vismodule::OpacityMap opacity_map( TF_resolution, tf.m_opacity_variable_min, tf.m_opacity_variable_max  );
         tf.setColorMap( color_map );
         tf.setOpacityMap( opacity_map );
 
@@ -217,9 +224,19 @@ void TransferFunctionSynthesizerCreator::setInitialProtocol( const int nvariable
         m_transfunc.push_back( tf );
     }
 
+    // overwrite opacitymap add by shimomura  2023/1/24    
+    size_t cnt = nvariable;
+    for ( size_t i = 0; i < cnt; i++ )
+    {
+        m_transfunc[i].setColorRange( m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max );
+        m_transfunc[i].setOpacityRange( m_transfunc[i].m_opacity_variable_min, m_transfunc[i].m_opacity_variable_max );
+    }    
+
+
     std::cout << "nvariables = " << m_transfunc.size() << std::endl;
 
         // add by shimomura at 2022/12/12
+        // TransferFunction Synthesizer用変数の設定
         EquationToken eq;
         std::vector<EquationToken> var; 
         std::vector<EquationToken> var_o; 
@@ -249,15 +266,8 @@ void TransferFunctionSynthesizerCreator::setInitialProtocol( const int nvariable
 
         m_synthesizer -> setOpacityVariable( var_o );
         m_synthesizer -> setColorVariable( var_c );
-        
-    // overwrite opacitymap add by shimomura  2023/1/24    
-    size_t cnt = nvariable;
-    for ( size_t i = 0; i < cnt; i++ )
-    {
-        m_transfunc[i].setColorRange( m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max );
-        m_transfunc[i].setOpacityRange( m_transfunc[i].m_opacity_variable_min, m_transfunc[i].m_opacity_variable_max );
-    }    
 
+        //vol_eqの設定        
     for ( size_t i = 0; i < nvariable; i++ )
     {
         std::stringstream ff, qq;
@@ -292,21 +302,6 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
     for ( size_t i = 0; i < clntMes.m_transfer_function.size(); i++ )
     {
         NamedTransferFunction tf;
-
-        tf.m_name          = clntMes.m_transfer_function[i].m_name;
-        tf.m_color_variable       = clntMes.m_transfer_function[i].m_color_variable;
-        tf.m_color_variable_min   = clntMes.m_transfer_function[i].m_color_variable_min;
-        tf.m_color_variable_max   = clntMes.m_transfer_function[i].m_color_variable_max;
-        tf.m_opacity_variable     = clntMes.m_transfer_function[i].m_opacity_variable;
-        tf.m_opacity_variable_min = clntMes.m_transfer_function[i].m_opacity_variable_min;
-        tf.m_opacity_variable_max = clntMes.m_transfer_function[i].m_opacity_variable_max;
-        tf.m_resolution    = clntMes.m_transfer_function[i].m_resolution;
-        tf.m_equation_red     = clntMes.m_transfer_function[i].m_equation_red;
-        tf.m_equation_green     = clntMes.m_transfer_function[i].m_equation_green;
-        tf.m_equation_blue     = clntMes.m_transfer_function[i].m_equation_blue;
-        tf.m_equation_opacity     = clntMes.m_transfer_function[i].m_equation_opacity;
-        tf.setColorMap( clntMes.m_transfer_function[i].colorMap() );
-        tf.setOpacityMap( clntMes.m_transfer_function[i].opacityMap() );
         if ( clntMes.m_transfer_function[i].m_selection == NamedTransferFunctionParameter::SelectExtendTransferFunction )
         {
             tf.m_selection = NamedTransferFunction::SelectExtendTransferFunction;
@@ -315,7 +310,25 @@ void TransferFunctionSynthesizerCreator::set_protocol( const jpv::ParticleTransf
         {
             tf.m_selection = NamedTransferFunction::SelectTransferFunction;
         }
-           m_transfunc.push_back( tf );
+        //NamedTransferFunction変数
+        tf.m_name          = clntMes.m_transfer_function[i].m_name;
+        tf.m_color_variable       = clntMes.m_transfer_function[i].m_color_variable;
+        tf.m_opacity_variable     = clntMes.m_transfer_function[i].m_opacity_variable;
+        // ExtendTransferFunction変数
+        tf.m_color_variable_min   = clntMes.m_transfer_function[i].m_color_variable_min;
+        tf.m_color_variable_max   = clntMes.m_transfer_function[i].m_color_variable_max;
+        tf.m_opacity_variable_min = clntMes.m_transfer_function[i].m_opacity_variable_min;
+        tf.m_opacity_variable_max = clntMes.m_transfer_function[i].m_opacity_variable_max;
+        tf.m_resolution    = clntMes.m_transfer_function[i].m_resolution;
+        tf.m_equation_red     = clntMes.m_transfer_function[i].m_equation_red;
+        tf.m_equation_green     = clntMes.m_transfer_function[i].m_equation_green;
+        tf.m_equation_blue     = clntMes.m_transfer_function[i].m_equation_blue;
+        tf.m_equation_opacity     = clntMes.m_transfer_function[i].m_equation_opacity;
+        // TransferFunction変数
+        tf.setColorMap( clntMes.m_transfer_function[i].colorMap() );
+        tf.setOpacityMap( clntMes.m_transfer_function[i].opacityMap() );
+           
+        m_transfunc.push_back( tf );
     }
 
         // add by shimomura at 2022/12/12

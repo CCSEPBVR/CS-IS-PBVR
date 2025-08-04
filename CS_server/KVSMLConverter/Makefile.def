@@ -196,23 +196,25 @@ KVS_LINK_LIBRARY := -lkvsCore
 VTK_INCLUDE_OPTION := $(VTK_INCLUDE_PATH)
 VTK_LIBRARY_OPTION := $(VTK_LIB_PATH)
 VTK_LINK_LIBRARY := \
--lvtksys-$(VTK_VERSION) \
--lvtkCommonCore-$(VTK_VERSION) \
--lvtkCommonExecutionModel-$(VTK_VERSION) \
--lvtkCommonDataModel-$(VTK_VERSION) \
--lvtkFiltersCore-$(VTK_VERSION) \
--lvtkFiltersExtraction-$(VTK_VERSION) \
--lvtkFiltersGeneral-$(VTK_VERSION) \
--lvtkFiltersGeometry-$(VTK_VERSION) \
--lvtkFiltersParallel-$(VTK_VERSION) \
--lvtkIOCore-$(VTK_VERSION) \
--lvtkIOGeometry-$(VTK_VERSION) \
--lvtkIOCGNSReader-$(VTK_VERSION) \
--lvtkIOEnSight-$(VTK_VERSION) \
--lvtkIOParallel-$(VTK_VERSION) \
--lvtkIOLegacy-$(VTK_VERSION) \
--lvtkIOXML-$(VTK_VERSION) \
--lvtkIOXMLParser-$(VTK_VERSION)
+-lVTK-$(VTK_VERSION) \
+-lpthread -ldl
+#-lvtksys-$(VTK_VERSION) \
+#-lvtkCommonCore-$(VTK_VERSION) \
+#-lvtkCommonExecutionModel-$(VTK_VERSION) \
+#-lvtkCommonDataModel-$(VTK_VERSION) \
+#-lvtkFiltersCore-$(VTK_VERSION) \
+#-lvtkFiltersExtraction-$(VTK_VERSION) \
+#-lvtkFiltersGeneral-$(VTK_VERSION) \
+#-lvtkFiltersGeometry-$(VTK_VERSION) \
+#-lvtkFiltersParallel-$(VTK_VERSION) \
+#-lvtkIOCore-$(VTK_VERSION) \
+#-lvtkIOGeometry-$(VTK_VERSION) \
+#-lvtkIOCGNSReader-$(VTK_VERSION) \
+#-lvtkIOEnSight-$(VTK_VERSION) \
+#-lvtkIOParallel-$(VTK_VERSION) \
+#-lvtkIOLegacy-$(VTK_VERSION) \
+#-lvtkIOXML-$(VTK_VERSION) \
+#-lvtkIOXMLParser-$(VTK_VERSION) \
 
 ifdef CVT_ENABLE_MPI
 VTK_LINK_LIBRARY += \

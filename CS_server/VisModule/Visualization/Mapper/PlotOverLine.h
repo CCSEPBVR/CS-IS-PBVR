@@ -137,9 +137,20 @@ private:
     vismodule::ValueArray<bool>  m_allcell_mask;
     
     const vismodule::StructuredVolumeObject* m_structured_volume;
-//    const pbvr::StructuredVolumeObject* m_structured_volume;
     const vismodule::UnstructuredVolumeObject* m_volume;
     const POL::Polyhedron* m_polyhedron;
+
+    float **m_values;
+    int m_nvariables;
+    float* m_coordinates;
+    int m_ncoords;
+    unsigned int* m_connections;
+    int m_ncells;
+    vismodule::VolumeObjectBase::CellType m_celltype; 
+
+    size_t m_resolution_x;
+    size_t m_resolution_y;
+    size_t m_resolution_z;
 
     // 生成判定フラグ
     bool m_plot_flag;
@@ -174,6 +185,13 @@ public:
                   const size_t resolution,
                   const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
 
+//    PlotOverLine( float** values, int nvariables,
+//        float* coordinates, int ncoords,
+//        unsigned int* connections, int ncells,
+//        const  vismodule::VolumeObjectBase::CellType& celltype, 
+//        const size_t resolution,
+//        const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
+
     // CS用
     PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
                   const size_t resolution,
@@ -193,14 +211,22 @@ public:
     ~PlotOverLine();
 
     void setVolume( const vismodule::StructuredVolumeObject* volume );
-//    void setVolume( const pbvr::StructuredVolumeObject* volume );
     void setVolume( const vismodule::UnstructuredVolumeObject* volume );
+    void extractPlotLine( float** values, int nvariables,
+            float* coordinates, int ncoords,
+            unsigned int* connections, int ncells,
+            const  vismodule::VolumeObjectBase::CellType& celltype );
+
     void setVolume( const POL::Polyhedron* volume );
 
     void setResolution( const size_t resolution );
     void extractPlotLineStructured( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
     void extractPlotLine( const vismodule::StructuredVolumeObject* volume );
     void extractPlotLine( const vismodule::UnstructuredVolumeObject* volume );
+//    void extractPlotLine( float** values, int nvariables,
+//            float* coordinates, int ncoords,
+//            unsigned int* connections, int ncells,
+//            const  vismodule::VolumeObjectBase::CellType& celltype );
     void extractPlotLine( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
     void extractPlotLinePoly( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
 

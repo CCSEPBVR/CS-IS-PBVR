@@ -81,6 +81,13 @@ public:
 
     const float maxValue() const;
 
+// opacity, color用minmaxを追加 20250730
+    const float opacityMinValue() const;
+    const float opacityMaxValue() const;
+    const float colorMinValue() const;
+    const float colorMaxValue() const;
+
+
 public:
 
     const vismodule::ColorMap& colorMap() const;

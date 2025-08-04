@@ -17,7 +17,7 @@
 
 #include <vismodule/timer_simple>
 
-#include <vismodule/PointObjectGenerator>
+#include <vismodule/CS_PointObjectGenerator>
 
 #include <vismodule/Argument>
 
@@ -168,8 +168,8 @@ else //rank == 0以外の処理
 }
 #endif
 //debug 
-//clntMes.m_server_mode = jpv::ServerMode::CS; 
-clntMes.m_server_mode = jpv::ServerMode::IS; 
+clntMes.m_server_mode = jpv::ServerMode::CS; 
+//clntMes.m_server_mode = jpv::ServerMode::IS; 
 
 if( clntMes.m_server_mode == jpv::ServerMode::IS )
 {

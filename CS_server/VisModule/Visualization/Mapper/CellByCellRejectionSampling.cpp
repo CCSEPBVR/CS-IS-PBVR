@@ -152,6 +152,59 @@ CellByCellRejectionSampling::CellByCellRejectionSampling(
     this->exec( volume );
 }
 
+CellByCellRejectionSampling::CellByCellRejectionSampling( 
+    const vismodule::Camera&           camera,
+        Type** values, int nvariables,
+        float* coordinates, int ncoords,
+        unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltype, //ISPBVR
+    const size_t                 subpixel_level,
+    const float                  sampling_step,
+    const vismodule::TransferFunction& transfer_function,
+    std::vector<vismodule::TransferFunction>& transfer_function_array, 
+    //std::vector<NamedTransferFunction>& transfer_function_array, 
+    TransferFunctionSynthesizer* transfunc_synthesizer,
+    const float                  particle_density,
+    const float                  object_depth ):
+    vismodule::MapperBase( transfer_function ),
+    vismodule::PointObject(),
+    m_transfer_function_array( transfer_function_array ),
+    m_transfer_function_synthesizer( transfunc_synthesizer ),
+    m_particle_density( particle_density )
+{
+    this->attachCamera( camera ),
+    this->setSubpixelLevel( subpixel_level );
+    this->setSamplingStep( sampling_step );
+//    this->setObjectDepth( object_depth );
+//    this->exec( volume );
+
+//    this->setSubpixelLevel( subpixel_level );
+//    this ->exec_IS(volume);
+    for (int i = 0; i < nvariables; i++)
+    {
+        delete[] values[i];
+    }
+    delete[] values;
+    std::cout << "debug delete " << std::endl;
+
+}
+
+
+CellByCellRejectionSampling::CellByCellRejectionSampling( Type** values, int nvariables,
+        float* coordinates, int ncoords,
+        unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltype, //ISPBVR
+        std::vector<vismodule::TransferFunction>& transfer_function_array, 
+        TransferFunctionSynthesizer* transfunc_synthesizer,
+        const size_t                 subpixel_level,
+        const float                  particle_density):
+    m_transfer_function_array( transfer_function_array ),
+    m_transfer_function_synthesizer( transfunc_synthesizer ),
+    m_particle_density( particle_density )
+{
+//    this->setSubpixelLevel( subpixel_level );
+//    this ->exec_IS(volume);
+}
+
+
 /*===========================================================================*/
 /**
  *  @brief  Destroys the CellByCellMetropolisSampling class.
@@ -396,6 +449,31 @@ void CellByCellRejectionSampling::mapping( const vismodule::Camera& camera, cons
 template <>
 void CellByCellRejectionSampling::generate_particles<vismodule::Real32>( const vismodule::UnstructuredVolumeObject& volume );
 
+
+CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::exec_IS( const vismodule::ObjectBase& object )
+{
+    const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
+    if ( !&volume )
+    {
+        BaseClass::m_is_success = false;
+        visModuleMessageError( "Input object is not volume dat." );
+        return NULL;
+    }
+
+    const vismodule::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
+    if ( volume_type == vismodule::VolumeObjectBase::Structured )
+    {
+        const vismodule::StructuredVolumeObject* svo_p = static_cast<const vismodule::StructuredVolumeObject*>( &object );
+        this->generate_particles<vismodule::Real32>( *svo_p );
+    }
+    else // volume_type == vismodule::VolumeObjectBase::Unstructured
+    {
+        const vismodule::UnstructuredVolumeObject* uvo_p = static_cast<const vismodule::UnstructuredVolumeObject*>( &object );
+        this->generate_particles<vismodule::Real32>( *uvo_p );
+    } 
+    return this;
+}
+
 /*===========================================================================*/
 /**
  *  @brief  Mapping for the unstructured volume object.
@@ -412,35 +490,35 @@ void CellByCellRejectionSampling::mapping( const vismodule::Camera& camera, cons
 
     const vismodule::VolumeObjectBase *object = BaseClass::volume();
 
-    // Calculate the density map.
-    if ( m_transfer_function_synthesizer )
-    {
-        float max_opacity;
-        float max_density;
-        float sampling_volume_inverse;
-
-        Generator::CalculateDensityConstaint(
-            camera,
-            *object,
-            static_cast<float>( m_subpixel_level ),
-            m_sampling_step,
-            &sampling_volume_inverse,
-            &max_opacity,
-            &max_density );
-
-        m_transfer_function_synthesizer->setMaxOpacity( max_opacity );
-        m_transfer_function_synthesizer->setMaxDensity( max_density );
-        m_transfer_function_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
-    }
-    else
-    {
-        m_density_map = Generator::CalculateDensityMap(
-                            camera,
-                            *object,
-                            static_cast<float>( m_subpixel_level ),
-                            m_sampling_step,
-                            BaseClass::transferFunction().opacityMap() );
-    }
+//    // Calculate the density map.
+//    if ( m_transfer_function_synthesizer )
+//    {
+//        float max_opacity;
+//        float max_density;
+//        float sampling_volume_inverse;
+//
+//        Generator::CalculateDensityConstaint(
+//            camera,
+//            *object,
+//            static_cast<float>( m_subpixel_level ),
+//            m_sampling_step,
+//            &sampling_volume_inverse,
+//            &max_opacity,
+//            &max_density );
+//
+//        m_transfer_function_synthesizer->setMaxOpacity( max_opacity );
+//        m_transfer_function_synthesizer->setMaxDensity( max_density );
+//        m_transfer_function_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
+//    }
+//    else
+//    {
+//        m_density_map = Generator::CalculateDensityMap(
+//                            camera,
+//                            *object,
+//                            static_cast<float>( m_subpixel_level ),
+//                            m_sampling_step,
+//                            BaseClass::transferFunction().opacityMap() );
+//    }
 
     // Generate the particles.
     const std::type_info& type = volume.values().typeInfo()->type();
