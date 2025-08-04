@@ -15,7 +15,8 @@ CXXFLAGS = ${MPICXXFLAGS}
 CXXFLAGS += -I${INSITU_DIR} \
             -I${FUNC_DIR} \
             -I${KVS_SOURCE_DIR} \
-            -I./
+            -I./ \
+            -DNO_CLIENT
 
 LD = ${MPILD}
 LDFLAGS = ${MPILDFLAGS}
