@@ -106,7 +106,6 @@ inline void TrilinearInterpolator::setCellLength( const float cell_length )
 
 //高速化のためアクセス範囲のクランプ処理を削除
 //補間関数のアクセス範囲は呼び出し側で制御すること
-#pragma ivdep
 inline const int TrilinearInterpolator::id( const int i, const int j, const int k ) const
 {
 
@@ -120,11 +119,11 @@ inline const int TrilinearInterpolator::id( const int i, const int j, const int 
 }
 
 //inline void TrilinearInterpolator::attachPoint( const kvs::Vector3f& point )
-#pragma ivdep
 inline void TrilinearInterpolator::attachPoint( const float* p_x, const float* p_y, const float* p_z )
 {
     const kvs::Vector3ui resolution = m_resolution;
 
+    #pragma ivdep
     for( int I=0; I < SIMDW; I++ )
     {
         // Temporary index.
@@ -209,12 +208,12 @@ inline const kvs::UInt32* TrilinearInterpolator::indices( void ) const
 }
 */
 //template <typename T>
-#pragma ivdep
 inline void TrilinearInterpolator::scalar( float* values ) const
 {
     //const T* const data = reinterpret_cast<const T*>( m_reference_volume->values().pointer() );
     const float* const data = m_reference_volume;
 
+    #pragma ivdep
     for( int I = 0; I < SIMDW; I++ )
     {
         values[I] =
@@ -230,7 +229,6 @@ inline void TrilinearInterpolator::scalar( float* values ) const
     }
 }
 
-#pragma ivdep
 inline void TrilinearInterpolator::gradient( float* g_x, float* g_y, float* g_z ) const
 {
     // Calculate a gradient vector in the local coordinate.
@@ -238,6 +236,7 @@ inline void TrilinearInterpolator::gradient( float* g_x, float* g_y, float* g_z 
     const kvs::UInt32 nnodes = 8;
     const float inv_Jacobi = 1.0 / m_cell_length;
 
+    #pragma ivdep
     for( int I = 0; I < SIMDW; I++ )
     {
         float dsdx = 0.0f;
