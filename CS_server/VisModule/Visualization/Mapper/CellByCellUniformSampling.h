@@ -66,6 +66,7 @@ private:
     const size_t m_normal_ingredient;
 
     float                  m_particle_density;
+    vismodule::CoordSynthesizerStrings* m_coord_synthesizer_strings;
 
 public:
     CellByCellUniformSampling();
@@ -114,7 +115,8 @@ public:
         const vismodule::TransferFunction& transfer_function,
         std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-        const float                  paritcle_density);
+        const float                  paritcle_density,
+        vismodule::CoordSynthesizerStrings* coord_synthesizer_strings);
 
     //constructor for struct 
         CellByCellUniformSampling(
@@ -127,15 +129,10 @@ public:
         const vismodule::TransferFunction& transfer_function,
         std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-        const float                  paritcle_density);
+        const float                  paritcle_density,
+        vismodule::CoordSynthesizerStrings* coord_synthesizer_strings);
 
         virtual ~CellByCellUniformSampling();
-
-
-//    virtual ~CellByCellUniformSampling( Type** values, int nvariables,
-//        float* coordinates, int ncoords,
-//        unsigned int* connections, int ncells,
-//        const  vismodule::VolumeObjectBase::CellType& celltype );
 
 public:
 

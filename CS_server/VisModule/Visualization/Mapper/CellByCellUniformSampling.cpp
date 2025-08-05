@@ -181,33 +181,25 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     const float                  sampling_step,
     const vismodule::TransferFunction& transfer_function,
     std::vector<vismodule::TransferFunction>& transfer_function_array, 
-    //std::vector<NamedTransferFunction>& transfer_function_array, 
     TransferFunctionSynthesizer* transfunc_synthesizer,
-    const float                  particle_density):
+    const float                  particle_density,
+    vismodule::CoordSynthesizerStrings* coord_synthesizer_strings):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
     m_transfer_function_array( transfer_function_array ),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( nvariables ),
-    m_particle_density( particle_density )
+    m_particle_density( particle_density ),
+    m_coord_synthesizer_strings(coord_synthesizer_strings)
 {
     this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
     this->exec( dom, values, nvariables,
                 coordinates, ncoords,
                 connections, ncells, celltype);
-
-//    this->setSubpixelLevel( subpixel_level );
-//    this ->exec_IS(volume);
-//    for (int i = 0; i < nvariables; i++)
-//    {
-//        delete[] values[i];
-//    }
-//    delete[] values;
-//    std::cout << "debug delete " << std::endl;
-
 }
 
+//struct
 CellByCellUniformSampling::CellByCellUniformSampling(
         const vismodule::Camera&  camera,
         domain_parameters_struct dom, 
@@ -218,19 +210,20 @@ CellByCellUniformSampling::CellByCellUniformSampling(
         const vismodule::TransferFunction& transfer_function,
         std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-        const float                  particle_density):
+        const float                  particle_density,
+        vismodule::CoordSynthesizerStrings* coord_synthesizer_strings):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
     m_transfer_function_array( transfer_function_array ),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( nvariables ),
-    m_particle_density( particle_density )
+    m_particle_density( particle_density), 
+    m_coord_synthesizer_strings(coord_synthesizer_strings)
 {
     this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
     this->exec( dom, values, nvariables);
 }
-
 
 
 /*===========================================================================*/
@@ -377,10 +370,8 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::exec( const vi
     else // volume_type == vismodule::VolumeObjectBase::Unstructured
     {
         const vismodule::UnstructuredVolumeObject* uvo_p = static_cast<const vismodule::UnstructuredVolumeObject*>( &object );
-        std::cout << __LINE__ <<__FUNCTION__ << std::endl;
         if ( m_camera )
         {
-                    std::cout << __LINE__ <<__FUNCTION__ << std::endl;
             this->mapping( *m_camera, *uvo_p );
         }
         else
@@ -390,7 +381,6 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::exec( const vi
             {
                 if ( vismodule::GlobalCore::m_camera->windowWidth() != 0 && vismodule::GlobalCore::m_camera->windowHeight() )
                 {
-                    std::cout << __LINE__ <<__FUNCTION__ << std::endl;
                     const vismodule::Camera* camera = vismodule::GlobalCore::m_camera;
                     this->mapping( *camera, *uvo_p );
                 }
@@ -423,13 +413,6 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::exec( domain_p
             Type** values,  
             int nvariables )
 {
-//    if ( !values )
-//    {
-//        BaseClass::m_is_success = false;
-//        visModuleMessageError( "Input object is NULL." );
-//        return NULL;
-//    }
-
     this->generate_particles_struct<vismodule::Real32>(dom,  values, nvariables);
     return this;
 }
@@ -440,13 +423,6 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::exec(domain_pa
         unsigned int* connections, int ncells,
         const  vismodule::VolumeObjectBase::CellType& celltype)
 {
-//    if ( !values )
-//    {
-//        BaseClass::m_is_success = false;
-//        visModuleMessageError( "Input object is NULL." );
-//        return NULL;
-//    }
-
     this->generate_particles_unstruct<vismodule::Real32>(dom, values, nvariables,
             coordinates, ncoords, connections, ncells, celltype);
     return this;
@@ -686,24 +662,25 @@ void CellByCellUniformSampling::generate_particles_struct( domain_parameters_str
 //template <typename T>
 //void CellByCellUniformSampling::generate_particles_struct( const vismodule::StructuredVolumeObject& volume )
 {
-#if 0
-    vismodule::AnyValueArray valueArray = volume.values(); 
-    int nnodes = volume.nnodes();
+#if 1
+//    vismodule::AnyValueArray valueArray = volume.values(); 
+//    int nnodes = volume.nnodes();
+    int nnodes = dom.resolution[0]*dom.resolution[1]*dom.resolution[2];
     
-    const vismodule::Vector3ui resolution( volume.resolution() );
-    const int nvariables = volume.veclen();
-    Type** values;
-    values = new Type * [nvariables];
-
-    for ( int j = 0; j < nvariables; j++ )
-    {
-        values[j] = new float[nnodes];
-        for ( int i = 0; i < nnodes; i++ )
-        {
-            int  it = j * nnodes  + i;
-            values[j][i] = valueArray.at<Type>(it);
-        }
-    } 
+    const vismodule::Vector3ui resolution(dom.resolution[0],dom.resolution[1],dom.resolution[2] );
+//    const int nvariables = volume.veclen();
+//    Type** values;
+//    values = new Type * [nvariables];
+//
+//    for ( int j = 0; j < nvariables; j++ )
+//    {
+//        values[j] = new float[nnodes];
+//        for ( int i = 0; i < nnodes; i++ )
+//        {
+//            int  it = j * nnodes  + i;
+//            values[j][i] = valueArray.at<Type>(it);
+//        }
+//    } 
 
 #if 1
     int tf_number = m_transfer_function_array.size();
@@ -824,13 +801,12 @@ void CellByCellUniformSampling::generate_particles_struct( domain_parameters_str
 
     int total_nparticles = 0;
 
-    const vismodule::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
+//    const vismodule::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
     CoordSynthesizerStrings css;
-    if ( pCrdSynthStr )
-    { 
-        css = *pCrdSynthStr;
+    if ( m_coord_synthesizer_strings ) 
+    {
+        css = *m_coord_synthesizer_strings;
     }
-
 
 //    static TimedScope td_gatherf("GatherF",1);
 //    static TimedScope td_gather("gather",1);
@@ -904,8 +880,16 @@ void CellByCellUniformSampling::generate_particles_struct( domain_parameters_str
             }
         }
 
-        const vismodule::Vector3f min_vec = volume.minObjectCoord(); 
-        const vismodule::Vector3f max_vec = volume.maxObjectCoord(); 
+        // minmax coordの設定
+        const vismodule::Vector3f min_vec( 
+                dom.x_min, 
+                dom.y_min, 
+                dom.z_min); 
+       const  vismodule::Vector3f max_vec( 
+                dom.x_max, 
+                dom.y_max, 
+                dom.z_max ); 
+
         const vismodule::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ nx_1,
                                          (max_vec.y() - min_vec.y() )/ ny_1,
                                          (max_vec.z() - min_vec.z() )/ nz_1) ;
@@ -1304,12 +1288,12 @@ void CellByCellUniformSampling::generate_particles_struct( domain_parameters_str
     }
     delete[] interp_opacity;
 #endif
-    for (int i = 0; i < nvariables; i++)
-    //for (int i = 0; i < nnodes; i++)
-    {
-        delete[] values[i];
-    }
-    delete[] values;
+//    for (int i = 0; i < nvariables; i++)
+//    //for (int i = 0; i < nnodes; i++)
+//    {
+//        delete[] values[i];
+//    }
+//    delete[] values;
 #endif
 }
 
@@ -2353,37 +2337,16 @@ template <>
 void CellByCellUniformSampling::generate_particles_unstruct<vismodule::Real32>( domain_parameters_unstruct dom,Type** values, int nvariables,
         float* coordinates, int ncoords,
         unsigned int* connections, int ncells,
-        const  vismodule::VolumeObjectBase::CellType& celltype )
+        const  vismodule::VolumeObjectBase::CellType& cellType )
 {
-#if 0
+#if 1
     double start = GetTime();
     size_t resolution = DEFAULT_NBINS;
-
-    vismodule::AnyValueArray valueArray = volume.values(); 
-    Type* coordinates =  (float * )volume.coords().pointer(); 
-    int ncoords =  volume.nnodes();
-    unsigned int* connections =  (unsigned int*)volume.connections().pointer();
-    int ncells = volume.ncells();
-    int nnodes = volume.nnodes();
-
-    const int nvariables = volume.veclen();
-    //Type*  values[nvariables];
-    Type** values;
-    values = new Type * [nvariables];
 
     float sampling_volume_inverse = m_transfer_function_synthesizer -> getSamplingVolumeInverse()  ;
     float max_opacity = m_transfer_function_synthesizer -> getMaxOpacity();
     float max_density = m_transfer_function_synthesizer -> getMaxDensity();
 
-    for ( int j = 0; j < nvariables; j++ )
-    {
-        values[j] = new float[nnodes];
-        for ( int i = 0; i < nnodes; i++ )
-        {
-            int  it = j * nnodes  + i;
-            values[j][i] = valueArray.at<Type>(it);  
-        }
-    } 
 #if _OPENMP
     int max_threads = omp_get_max_threads();
 #else
@@ -2407,7 +2370,8 @@ void CellByCellUniformSampling::generate_particles_unstruct<vismodule::Real32>( 
     std::vector< std::vector< vismodule::CellBase<Type>* > >  interp;
 
     interp.resize( max_threads );
-    switch ( volume.cellType() )
+    //switch ( volume.cellType() )
+    switch ( cellType )
     {
         case vismodule::VolumeObjectBase::Tetrahedra:
             {
@@ -2602,6 +2566,7 @@ void CellByCellUniformSampling::generate_particles_unstruct<vismodule::Real32>( 
         }
     }
 
+        std::cout << __LINE__ <<__FUNCTION__ << std::endl;
 
     TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
     std::vector< std::vector<vismodule::TransferFunction> > th_tf;
@@ -2635,12 +2600,11 @@ void CellByCellUniformSampling::generate_particles_unstruct<vismodule::Real32>( 
             / ( sizeof( float ) + sizeof( Byte ) + sizeof( float ) ) );
     bool particle_limit_over = false;
     // coordinate synthesis
-    const vismodule::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
+//    const vismodule::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
     CoordSynthesizerStrings css;
-    if ( pCrdSynthStr ) 
-    //if ( ! pCrdSynthStr.m_x_coord_synthesizer_string.empty() && pCrdSynthStr.m_y_coord_synthesizer_string.empty() && pCrdSynthStr.m_z_coord_synthesizer_string.empty()  ) 
+    if ( m_coord_synthesizer_strings ) 
     {
-        css = *pCrdSynthStr;
+        css = *m_coord_synthesizer_strings;
     }
 
 #pragma omp parallel
@@ -3096,12 +3060,6 @@ void CellByCellUniformSampling::generate_particles_unstruct<vismodule::Real32>( 
              delete interp[i][j];
         }
     }
-
-    for (int i = 0; i < nvariables; i++)
-    {
-        delete[] values[i];
-    }
-    delete[] values;
 
     //TIMER_END( 290 );
 
