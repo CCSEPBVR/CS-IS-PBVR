@@ -28,21 +28,21 @@ namespace
 
 inline size_t Length( const char* str )
 {
-    register const char* p = str;
+    const char* p = str;
     while ( *p ) p++;
 
     return( p - str );
 }
 
-inline char* Copy( char* dst, register const char* src)
+inline char* Copy( char* dst, const char* src)
 {
-    register char* p = dst;
+    char* p = dst;
     while ( ( *p++ = *src++ ) != '\0' ) ;
 
     return( p );
 }
 
-inline int Compare( register const char* str1, register const char* str2 )
+inline int Compare( const char* str1, const char* str2 )
 {
     for ( ; ( *str1 == *str2 ) && ( *str1 != '\0' ); str1++, str2++ ) ;
 
