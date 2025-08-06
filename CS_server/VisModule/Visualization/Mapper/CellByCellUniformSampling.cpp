@@ -194,9 +194,11 @@ CellByCellUniformSampling::CellByCellUniformSampling(
 {
     this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
-    this->exec( dom, values, nvariables,
-                coordinates, ncoords,
-                connections, ncells, celltype);
+//    this->exec( dom, values, nvariables,
+//                coordinates, ncoords,
+//                connections, ncells, celltype);
+    this->generate_particles_unstruct(dom, values, nvariables,
+            coordinates, ncoords, connections, ncells, celltype);
 }
 
 //struct
@@ -403,11 +405,11 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::exec( const vi
 //        unsigned int* connections, int ncells,
 //        const  vismodule::VolumeObjectBase::CellType& celltype) ;
 
-template <>
-void CellByCellUniformSampling::generate_particles_unstruct<vismodule::Real32>( domain_parameters_unstruct dom, Type** values, int nvariables,
-        float* coordinates, int ncoords,
-        unsigned int* connections, int ncells,
-        const  vismodule::VolumeObjectBase::CellType& celltype) ;
+//template <>
+//void CellByCellUniformSampling::generate_particles_unstruct<vismodule::Real32>( domain_parameters_unstruct dom, Type** values, int nvariables,
+//        float* coordinates, int ncoords,
+//        unsigned int* connections, int ncells,
+//        const  vismodule::VolumeObjectBase::CellType& celltype) ;
 
 CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::exec( domain_parameters_struct dom, 
             Type** values,  
@@ -423,7 +425,7 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::exec(domain_pa
         unsigned int* connections, int ncells,
         const  vismodule::VolumeObjectBase::CellType& celltype)
 {
-    this->generate_particles_unstruct<vismodule::Real32>(dom, values, nvariables,
+    this->generate_particles_unstruct(dom, values, nvariables,
             coordinates, ncoords, connections, ncells, celltype);
     return this;
 }
@@ -2333,8 +2335,7 @@ void CellByCellUniformSampling::generate_particles_unstruct<vismodule::Real32>( 
 #endif
 }
 
-template <>
-void CellByCellUniformSampling::generate_particles_unstruct<vismodule::Real32>( domain_parameters_unstruct dom,Type** values, int nvariables,
+CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_particles_unstruct( domain_parameters_unstruct dom,Type** values, int nvariables,
         float* coordinates, int ncoords,
         unsigned int* connections, int ncells,
         const  vismodule::VolumeObjectBase::CellType& cellType )
@@ -3072,6 +3073,7 @@ void CellByCellUniformSampling::generate_particles_unstruct<vismodule::Real32>( 
     double end = GetTime();
     printf( " \n  CPU:generate_particles: %lf ms\n", end - start );
 #endif
+    return this;
 }
 
 const size_t CellByCellUniformSampling::calculate_number_of_particles(

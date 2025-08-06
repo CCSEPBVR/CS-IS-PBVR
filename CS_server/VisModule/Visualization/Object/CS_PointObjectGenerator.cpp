@@ -281,6 +281,7 @@ vismodule::PointObject* CS_PointObjectGenerator::sampling( const Argument& param
 
     if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Unstructured)
     {
+        //詰め替え処理
         vismodule::AnyValueArray valueArray; 
         std::vector<float> coordinates; 
         int ncoords;
@@ -301,6 +302,7 @@ vismodule::PointObject* CS_PointObjectGenerator::sampling( const Argument& param
         celltype = uvo_p->cellType();
         nvariables = volume.veclen();
 
+        // ここで変数の値をfloatでまとめることで粒子生成のテンプレート化を回避
         std::unique_ptr<std::unique_ptr<Type[]>[]> values(new std::unique_ptr<Type[]>[nvariables]);
 
         for (int j = 0; j < nvariables; j++) {
@@ -384,6 +386,7 @@ vismodule::PointObject* CS_PointObjectGenerator::sampling( const Argument& param
     if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Structured)
     {
 # if 1
+        // 詰め替え処理
         const vismodule::StructuredVolumeObject* svo_p = static_cast<const vismodule::StructuredVolumeObject*>( &volume );
         
         vismodule::AnyValueArray valueArray; 
@@ -392,6 +395,7 @@ vismodule::PointObject* CS_PointObjectGenerator::sampling( const Argument& param
         int nvariables = svo_p->veclen();
         int nnodes = svo_p->nnodes();
 
+        // ここで変数の値をfloatでまとめることで粒子生成のテンプレート化を回避
         std::unique_ptr<std::unique_ptr<Type[]>[]> values(new std::unique_ptr<Type[]>[nvariables]);
 
         for (int j = 0; j < nvariables; j++) {

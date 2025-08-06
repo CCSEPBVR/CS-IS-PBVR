@@ -183,8 +183,8 @@ private:
     template <typename T>
     void generate_particles_unstruct( const vismodule::UnstructuredVolumeObject& volume );
     
-    template <typename T>
-    void generate_particles_unstruct(  domain_parameters_unstruct dom,Type** values, int nvariables,
+//    template <typename T>
+    SuperClass* generate_particles_unstruct(  domain_parameters_unstruct dom,Type** values, int nvariables,
         float* coordinates, int ncoords,
         unsigned int* connections, int ncells,
         const  vismodule::VolumeObjectBase::CellType& celltype) ;
