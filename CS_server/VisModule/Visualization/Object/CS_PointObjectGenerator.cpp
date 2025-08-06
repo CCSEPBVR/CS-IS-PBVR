@@ -279,39 +279,79 @@ vismodule::PointObject* CS_PointObjectGenerator::sampling( const Argument& param
     param.m_transfunc_synthesizer->setMaxDensity( max_density );
     param.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
 
-    if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Unstructured)
-    {
         //詰め替え処理
         vismodule::AnyValueArray valueArray; 
-        std::vector<float> coordinates; 
-        int ncoords;
-        std::vector<unsigned int> connections ;
-        int ncells; 
-        int nnodes;
-        int nvariables;
-        vismodule::VolumeObjectBase::CellType celltype;
-
-        const vismodule::UnstructuredVolumeObject* uvo_p = static_cast<const vismodule::UnstructuredVolumeObject*>( &volume );
-       
         valueArray = volume.values(); 
-        coordinates.assign( (float * )volume.coords().begin(),(float * )volume.coords().end()); 
-        ncoords =  volume.nnodes();
-        connections.assign((unsigned int*)uvo_p->connections().begin(), (unsigned int*)uvo_p->connections().end());
-        ncells = uvo_p->ncells();
-        nnodes = volume.nnodes();
-        celltype = uvo_p->cellType();
-        nvariables = volume.veclen();
+        int nnodes = volume.nnodes();
+        int nvariables = volume.veclen();
 
         // ここで変数の値をfloatでまとめることで粒子生成のテンプレート化を回避
         std::unique_ptr<std::unique_ptr<Type[]>[]> values(new std::unique_ptr<Type[]>[nvariables]);
 
-        for (int j = 0; j < nvariables; j++) {
-            values[j] = std::make_unique<Type[]>(nnodes);
-            for (int i = 0; i < nnodes; i++) {
-                int it = j * nnodes + i;
-                values[j][i] = valueArray.at<Type>(it);
-            }
+        // 実行時型分岐で呼び出す
+        const std::type_info& type = volume.values().typeInfo()->type();
+        if (type == typeid(vismodule::Int8))
+        {
+            copy_values<vismodule::Int8>(valueArray, values, nvariables, nnodes);
+        }  
+        else if ( type == typeid( vismodule::Int16  ) )
+        {
+            copy_values<vismodule::Int16>(valueArray, values, nvariables, nnodes);
+        } 
+        else if ( type == typeid( vismodule::Int32  ) )
+        {
+            copy_values<vismodule::Int32>(valueArray, values, nvariables, nnodes);
         }
+        else if ( type == typeid( vismodule::Int64  ) )
+        {
+            copy_values<vismodule::Int64>(valueArray, values, nvariables, nnodes);
+        }
+        else if ( type == typeid( vismodule::UInt8  ) )
+        {
+            copy_values<vismodule::UInt8>(valueArray, values, nvariables, nnodes);
+        }
+        else if ( type == typeid( vismodule::UInt16 ) )
+        {
+            copy_values<vismodule::UInt16>(valueArray, values, nvariables, nnodes);
+        }
+        else if ( type == typeid( vismodule::UInt32 ) )
+        {
+            copy_values<vismodule::UInt32>(valueArray, values, nvariables, nnodes);
+        }
+        else if ( type == typeid( vismodule::UInt64 ) )
+        {
+            copy_values<vismodule::UInt64>(valueArray, values, nvariables, nnodes);
+        }
+        else if ( type == typeid( vismodule::Real32 ) )
+        {
+            copy_values<vismodule::Real32>(valueArray, values, nvariables, nnodes);
+        }
+        else if ( type == typeid( vismodule::Real64 ) )
+        {
+            copy_values<vismodule::Real64>(valueArray, values, nvariables, nnodes);
+        }
+        else 
+        {
+            throw std::runtime_error("Unsupported type");
+        }
+
+
+    if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Unstructured)
+    {
+        //詰め替え処理
+        std::vector<float> coordinates; 
+        int ncoords;
+        std::vector<unsigned int> connections ;
+        int ncells; 
+        vismodule::VolumeObjectBase::CellType celltype;
+
+        const vismodule::UnstructuredVolumeObject* uvo_p = static_cast<const vismodule::UnstructuredVolumeObject*>( &volume );
+       
+        coordinates.assign( (float * )volume.coords().begin(),(float * )volume.coords().end()); 
+        ncoords =  volume.nnodes();
+        connections.assign((unsigned int*)uvo_p->connections().begin(), (unsigned int*)uvo_p->connections().end());
+        ncells = uvo_p->ncells();
+        celltype = uvo_p->cellType();
 
         // 一時的に raw pointer の配列を作る
         std::vector<float*> raw_values(nvariables);
@@ -330,7 +370,6 @@ vismodule::PointObject* CS_PointObjectGenerator::sampling( const Argument& param
         };
 
 
-    // volume calculate test.
 #if 0 //TEST_DELETE
     if ( param.m_test_volume )
     {
@@ -389,23 +428,6 @@ vismodule::PointObject* CS_PointObjectGenerator::sampling( const Argument& param
         // 詰め替え処理
         const vismodule::StructuredVolumeObject* svo_p = static_cast<const vismodule::StructuredVolumeObject*>( &volume );
         
-        vismodule::AnyValueArray valueArray; 
-        std::vector<float> coordinates; 
-        valueArray = svo_p->values(); 
-        int nvariables = svo_p->veclen();
-        int nnodes = svo_p->nnodes();
-
-        // ここで変数の値をfloatでまとめることで粒子生成のテンプレート化を回避
-        std::unique_ptr<std::unique_ptr<Type[]>[]> values(new std::unique_ptr<Type[]>[nvariables]);
-
-        for (int j = 0; j < nvariables; j++) {
-            values[j] = std::make_unique<Type[]>(nnodes);
-            for (int i = 0; i < nnodes; i++) {
-                int it = j * nnodes + i;
-                values[j][i] = valueArray.at<Type>(it);
-            }
-        }
-
         // 一時的に raw pointer の配列を作る
         std::vector<float*> raw_values(nvariables);
         for (int j = 0; j < nvariables; ++j) 
@@ -479,4 +501,18 @@ vismodule::PointObject* CS_PointObjectGenerator::sampling( const Argument& param
 #endif
     }
 
+}
+
+template <typename T>
+void CS_PointObjectGenerator::copy_values(vismodule::AnyValueArray& valueArray, std::unique_ptr<std::unique_ptr<Type[]>[]>& values, int nvariables, int nnodes) 
+{
+    for (int j = 0; j < nvariables; j++) 
+    {
+        values[j] = std::make_unique<Type[]>(nnodes);
+        for (int i = 0; i < nnodes; i++) 
+        {
+            int it = j * nnodes + i;
+            values[j][i] = valueArray.at<T>(it);
+        }
+    }
 }
