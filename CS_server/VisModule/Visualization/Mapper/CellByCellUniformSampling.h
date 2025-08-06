@@ -176,8 +176,8 @@ private:
     
     template <typename T>
     void generate_particles_struct( const vismodule::StructuredVolumeObject& volume );
-    template <typename T>
-    void generate_particles_struct( domain_parameters_struct dom, 
+    //template <typename T>
+    SuperClass* generate_particles_struct( domain_parameters_struct dom, 
             Type** values, int nvariables);
 
     template <typename T>

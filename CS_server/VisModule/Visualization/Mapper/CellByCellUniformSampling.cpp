@@ -194,9 +194,6 @@ CellByCellUniformSampling::CellByCellUniformSampling(
 {
     this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
-//    this->exec( dom, values, nvariables,
-//                coordinates, ncoords,
-//                connections, ncells, celltype);
     this->generate_particles_unstruct(dom, values, nvariables,
             coordinates, ncoords, connections, ncells, celltype);
 }
@@ -224,7 +221,8 @@ CellByCellUniformSampling::CellByCellUniformSampling(
 {
     this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
-    this->exec( dom, values, nvariables);
+    //this->exec( dom, values, nvariables);
+    this->generate_particles_struct(dom, values, nvariables);
 }
 
 
@@ -399,23 +397,11 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::exec( const vi
     return this;
 }
 
-//template <>
-//void CellByCellUniformSampling::generate_particles_struct<vismodule::Real32>( domain_parameters_struct dom, Type** values, int nvariables,
-//        float* coordinates, int ncoords,
-//        unsigned int* connections, int ncells,
-//        const  vismodule::VolumeObjectBase::CellType& celltype) ;
-
-//template <>
-//void CellByCellUniformSampling::generate_particles_unstruct<vismodule::Real32>( domain_parameters_unstruct dom, Type** values, int nvariables,
-//        float* coordinates, int ncoords,
-//        unsigned int* connections, int ncells,
-//        const  vismodule::VolumeObjectBase::CellType& celltype) ;
-
 CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::exec( domain_parameters_struct dom, 
             Type** values,  
             int nvariables )
 {
-    this->generate_particles_struct<vismodule::Real32>(dom,  values, nvariables);
+    this->generate_particles_struct(dom,  values, nvariables);
     return this;
 }
 
@@ -649,7 +635,7 @@ void CellByCellUniformSampling::generate_particles_struct( const vismodule::Stru
 
     domain_parameters_struct dom;
 
-    this->generate_particles_struct<vismodule::Real32>( dom, values, nvariables);
+    this->generate_particles_struct( dom, values, nvariables);
 
     for (int i = 0; i < nvariables; i++)
     {
@@ -659,31 +645,11 @@ void CellByCellUniformSampling::generate_particles_struct( const vismodule::Stru
 
 }
 
-template <typename T>
-void CellByCellUniformSampling::generate_particles_struct( domain_parameters_struct dom, Type** values, int nvariables)
-//template <typename T>
-//void CellByCellUniformSampling::generate_particles_struct( const vismodule::StructuredVolumeObject& volume )
+CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_particles_struct( domain_parameters_struct dom, Type** values, int nvariables)
 {
-#if 1
-//    vismodule::AnyValueArray valueArray = volume.values(); 
-//    int nnodes = volume.nnodes();
     int nnodes = dom.resolution[0]*dom.resolution[1]*dom.resolution[2];
     
     const vismodule::Vector3ui resolution(dom.resolution[0],dom.resolution[1],dom.resolution[2] );
-//    const int nvariables = volume.veclen();
-//    Type** values;
-//    values = new Type * [nvariables];
-//
-//    for ( int j = 0; j < nvariables; j++ )
-//    {
-//        values[j] = new float[nnodes];
-//        for ( int i = 0; i < nnodes; i++ )
-//        {
-//            int  it = j * nnodes  + i;
-//            values[j][i] = valueArray.at<Type>(it);
-//        }
-//    } 
-
 #if 1
     int tf_number = m_transfer_function_array.size();
     float sampling_volume_inverse = m_transfer_function_synthesizer -> getSamplingVolumeInverse()  ;
@@ -1290,13 +1256,7 @@ void CellByCellUniformSampling::generate_particles_struct( domain_parameters_str
     }
     delete[] interp_opacity;
 #endif
-//    for (int i = 0; i < nvariables; i++)
-//    //for (int i = 0; i < nnodes; i++)
-//    {
-//        delete[] values[i];
-//    }
-//    delete[] values;
-#endif
+  return this;
 }
 
 
