@@ -2331,7 +2331,6 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_parti
     std::vector< std::vector< vismodule::CellBase<Type>* > >  interp;
 
     interp.resize( max_threads );
-    //switch ( volume.cellType() )
     switch ( cellType )
     {
         case vismodule::VolumeObjectBase::Tetrahedra:
@@ -2526,8 +2525,6 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_parti
             C_max[ i ] = -FLT_MAX;
         }
     }
-
-        std::cout << __LINE__ <<__FUNCTION__ << std::endl;
 
     TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
     std::vector< std::vector<vismodule::TransferFunction> > th_tf;
