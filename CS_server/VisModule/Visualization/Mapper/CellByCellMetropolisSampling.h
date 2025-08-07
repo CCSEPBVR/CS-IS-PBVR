@@ -76,40 +76,47 @@ private:
     const size_t m_normal_ingredient;
 
     float                  m_particle_density;
-    bool                   m_batch;
+    vismodule::CoordSynthesizerStrings* m_coord_synthesizer_strings;
 
 public:
 
     CellByCellMetropolisSampling();
-
+    //constructor for unstruct 
     CellByCellMetropolisSampling(
-        const vismodule::VolumeObjectBase& volume,
-        const size_t                 subpixel_level,
-        const float                  sampling_step,
-        const vismodule::TransferFunction& transfer_function,
-        TransferFunctionSynthesizer* transfunc_synthesizer,
-        const size_t                 normal_ingredient,
-//        const CropRegion&            crop,
-        const float                  object_depth = 0.0f );
-
-    CellByCellMetropolisSampling(
-        const vismodule::Camera&           camera,
-        const vismodule::VolumeObjectBase& volume,
+        const vismodule::Camera&  camera,
+        domain_parameters_unstruct dom,
+        Type** values, int nvariables,
+        float* coordinates, int ncoords,
+        unsigned int* connections, int ncells,
+        const  vismodule::VolumeObjectBase::CellType& celltype ,
         const size_t                 subpixel_level,
         const float                  sampling_step,
         const vismodule::TransferFunction& transfer_function,
         std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-        const size_t                 normal_ingredient,
-//        const CropRegion&            crop,
-        const float                  particle_density,
-        const float                  object_depth = 0.0f );
+        const float                  paritcle_density,
+        vismodule::CoordSynthesizerStrings* coord_synthesizer_strings);
+
+    //constructor for struct 
+        CellByCellMetropolisSampling(
+        const vismodule::Camera&  camera,
+        domain_parameters_struct dom, 
+        Type** values,  
+        int nvariables, 
+        const size_t                 subpixel_level,
+        const float                  sampling_step,
+        const vismodule::TransferFunction& transfer_function,
+        std::vector<vismodule::TransferFunction>& transfer_function_array,
+        TransferFunctionSynthesizer* transfunc_synthesizer,
+        const float                  paritcle_density,
+        vismodule::CoordSynthesizerStrings* coord_synthesizer_strings);
 
     virtual ~CellByCellMetropolisSampling();
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase& object );
+     // MapperBaseクラスのvirtual 関数をオーバーライドするため空関数を宣言
+    SuperClass* exec( const vismodule::ObjectBase& object ){};
 
 public:
 
@@ -129,15 +136,14 @@ public:
 
 private:
 
-    void mapping( const vismodule::Camera& camera, const vismodule::StructuredVolumeObject& volume );
+    SuperClass* generate_particles_struct( domain_parameters_struct dom, 
+            Type** values, int nvariables);
+   
+    SuperClass* generate_particles_unstruct(  domain_parameters_unstruct dom,Type** values, int nvariables,
+        float* coordinates, int ncoords,
+        unsigned int* connections, int ncells,
+        const  vismodule::VolumeObjectBase::CellType& celltype) ;
 
-    void mapping( const vismodule::Camera& camera, const vismodule::UnstructuredVolumeObject& volume );
-
-    template <typename T>
-    void generate_particles( const vismodule::StructuredVolumeObject& volume );
-
-    template <typename T>
-    void generate_particles( const vismodule::UnstructuredVolumeObject& volume );
 
     const float calculate_density( const float scalar );
 
@@ -161,8 +167,6 @@ private:
                           const vismodule::ValueArray<float>& o_max,
                           const vismodule::ValueArray<float>& c_min,
                           const vismodule::ValueArray<float>& c_max,
- //                         const float o_scalars[][SIMDW], // åæå¤
- //                         const float c_scalars[][SIMDW],
                             float** o_scalars, // åæå¤
                             float** c_scalars,
                           const int tf_number,
@@ -170,16 +174,6 @@ private:
     
     vismodule::Vector3f RandomSamplingInCube( const vismodule::Vector3f vertex, vismodule::MersenneTwister* MT );
 
-    /*** added by MHIR on /12/12/12/ ***/
-    /*
-    const float calculate_density( const float scalar );
-    const float calculate_volume ();
-    const size_t calculate_number_of_particles(
-    				       const float density,
-    				       const float volume_of_cell
-    				       );
-    */
-    /***********************************/
 };
 
 } // end of namespace vismodule

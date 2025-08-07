@@ -361,7 +361,6 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_parti
 
     int total_nparticles = 0;
 
-//    const vismodule::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
     CoordSynthesizerStrings css;
     if ( m_coord_synthesizer_strings ) 
     {
