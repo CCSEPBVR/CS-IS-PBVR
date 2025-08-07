@@ -71,37 +71,6 @@ private:
 public:
     CellByCellUniformSampling();
 
-    CellByCellUniformSampling(
-        const vismodule::VolumeObjectBase& volume,
-        const size_t                 subpixel_level,
-        const float                  sampling_step,
-        const vismodule::TransferFunction& transfer_function,
-        TransferFunctionSynthesizer* transfunc_synthesizer,
-        const size_t                 normal_ingredient,
-        const float                  object_depth = 0.0f );
-
-    CellByCellUniformSampling(
-        const vismodule::Camera&           camera,
-        const vismodule::VolumeObjectBase& volume,
-        const size_t                 subpixel_level,
-        const float                  sampling_step,
-        const vismodule::TransferFunction& transfer_function,
-        std::vector<vismodule::TransferFunction>& transfer_function_array,
-        TransferFunctionSynthesizer* transfunc_synthesizer,
-        const size_t                 normal_ingredient,
-        const float                  particle_density,
-        const float                  object_depth = 0.0f );
-
-    CellByCellUniformSampling(
-        const vismodule::Camera&           camera,
-        const vismodule::VolumeObjectBase& volume,
-        const size_t                 subpixel_level,
-        const float                  sampling_step,
-        const vismodule::TransferFunction& transfer_function,
-        TransferFunctionSynthesizer* transfunc_synthesizer,
-        const size_t                 normal_ingredient,
-        const float                  object_depth = 0.0f );
-
     //constructor for unstruct 
     CellByCellUniformSampling(
         const vismodule::Camera&  camera,
@@ -136,16 +105,8 @@ public:
 
 public:
 
+     // MapperBaseクラスのvirtual 関数をオーバーライドするため空関数を宣言
     SuperClass* exec( const vismodule::ObjectBase& object );
-    SuperClass* exec( domain_parameters_unstruct dom, Type** values, int nvariables,
-        float* coordinates, int ncoords,
-        unsigned int* connections, int ncells,
-        const  vismodule::VolumeObjectBase::CellType& celltype);
-
-    SuperClass* exec( 
-            domain_parameters_struct dom, 
-            Type** values,  
-            int num_values );
 
 public:
 
@@ -165,30 +126,23 @@ public:
 
 private:
 
-    void mapping( const vismodule::Camera& camera, const vismodule::StructuredVolumeObject& volume );
-
-    void mapping( const vismodule::Camera& camera, const vismodule::UnstructuredVolumeObject& volume );
-    
+   
     const size_t calculate_number_of_particles(
     const float density,
     const float volume_of_cell,
     vismodule::MersenneTwister* MT ); 
     
-    template <typename T>
-    void generate_particles_struct( const vismodule::StructuredVolumeObject& volume );
-    //template <typename T>
+
+public:
     SuperClass* generate_particles_struct( domain_parameters_struct dom, 
             Type** values, int nvariables);
-
-    template <typename T>
-    void generate_particles_unstruct( const vismodule::UnstructuredVolumeObject& volume );
-    
-//    template <typename T>
+   
     SuperClass* generate_particles_unstruct(  domain_parameters_unstruct dom,Type** values, int nvariables,
         float* coordinates, int ncoords,
         unsigned int* connections, int ncells,
         const  vismodule::VolumeObjectBase::CellType& celltype) ;
- 
+
+private: 
     const float calculate_density( const float scalar );
 
     const size_t calculate_number_of_particles( const float density, const float volume_of_cell );
