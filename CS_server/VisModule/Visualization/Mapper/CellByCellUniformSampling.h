@@ -125,14 +125,12 @@ public:
     void setObjectDepth( const float object_depth );
 
 private:
-
    
     const size_t calculate_number_of_particles(
     const float density,
     const float volume_of_cell,
     vismodule::MersenneTwister* MT ); 
     
-
 public:
     SuperClass* generate_particles_struct( domain_parameters_struct dom, 
             Type** values, int nvariables);
@@ -143,8 +141,6 @@ public:
         const  vismodule::VolumeObjectBase::CellType& celltype) ;
 
 private: 
-    const float calculate_density( const float scalar );
-
     const size_t calculate_number_of_particles( const float density, const float volume_of_cell );
 
     void calculate_histogram( vismodule::ValueArray<int>&   th_o_histogram,
@@ -168,11 +164,6 @@ private:
     
     vismodule::Vector3f RandomSamplingInCube( const vismodule::Vector3f vertex, vismodule::MersenneTwister* MT );
 
-   
-    const float calculate_maximum_density( const float scalar0, const float scalar1 );
-#ifdef ENABLE_MPI
-    void generate_particles_gt5d( const vismodule::UnstructuredVolumeObject& volume );
-#endif
 };
 
 } // end of namespace vismodule

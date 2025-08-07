@@ -240,7 +240,6 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::exec( const vi
 CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_particles_struct( domain_parameters_struct dom, Type** values, int nvariables)
 {
     int nnodes = dom.resolution[0]*dom.resolution[1]*dom.resolution[2];
-    
     const vismodule::Vector3ui resolution(dom.resolution[0],dom.resolution[1],dom.resolution[2] );
 #if 1
     int tf_number = m_transfer_function_array.size();
@@ -1113,7 +1112,6 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_parti
             / ( sizeof( float ) + sizeof( Byte ) + sizeof( float ) ) );
     bool particle_limit_over = false;
     // coordinate synthesis
-//    const vismodule::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
     CoordSynthesizerStrings css;
     if ( m_coord_synthesizer_strings ) 
     {
@@ -1605,120 +1603,6 @@ const size_t CellByCellUniformSampling::calculate_number_of_particles(
     return ( n ); 
 }
 
-
-#ifdef ENABLE_MPI
-void CellByCellUniformSampling::generate_particles_gt5d(
-    const vismodule::UnstructuredVolumeObject& volume )
-{
-    // Vertex data arrays. (output)
-    std::vector<vismodule::Real32> vertex_coords;
-    std::vector<vismodule::UInt8>  vertex_colors;
-    std::vector<vismodule::Real32> vertex_normals;
-
-    // Set a tetrahedral cell interpolator.
-    vismodule::CellBase<vismodule::Real32>* cell = NULL;
-    switch ( volume.cellType() )
-    {
-    case vismodule::VolumeObjectBase::Tetrahedra:
-    {
-        cell = new vismodule::TetrahedralCell<vismodule::Real32>( volume );
-        break;
-    }
-    case vismodule::VolumeObjectBase::QuadraticTetrahedra:
-    {
-        cell = new vismodule::QuadraticTetrahedralCell<vismodule::Real32>( volume );
-        break;
-    }
-    case vismodule::VolumeObjectBase::Hexahedra:
-    {
-        cell = new vismodule::HexahedralCell<vismodule::Real32>( volume );
-        break;
-    }
-    case vismodule::VolumeObjectBase::QuadraticHexahedra:
-    {
-        cell = new vismodule::QuadraticHexahedralCell<vismodule::Real32>( volume );
-        break;
-    }
-    case vismodule::VolumeObjectBase::Prism:
-    {
-        cell = new vismodule::PrismaticCell<vismodule::Real32>( volume );
-        break;
-    }
-    case vismodule::VolumeObjectBase::Pyramid:
-    {
-        cell = new vismodule::PyramidalCell<vismodule::Real32>( volume );
-        break;
-    }
-    default:
-    {
-        BaseClass::m_is_success = false;
-        visModuleMessageError( "Unsupported cell type." );
-        return;
-    }
-    }
-
-    double start = GetTime();
-
-    const vismodule::ColorMap color_map( BaseClass::transferFunction().colorMap() );
-
-    int m_sampling_method = MPIController::UNIFORM_SAMPLING;
-    MPI_Bcast( &m_sampling_method, 1, MPI_INT, 0, MPI_COMM_WORLD );
-    DistributedUniformSampling::generate_particles_gt5d_master_gpu(
-        volume, m_density_map.pointer(), color_map.table().pointer(),
-        BaseClass::transferFunction().resolution(),
-        BaseClass::transferFunction().colorMap().minValue(),
-        BaseClass::transferFunction().colorMap().maxValue(),
-        SuperClass::m_coords,
-        SuperClass::m_colors,
-        SuperClass::m_normals );
-
-    delete cell;
-}
-#endif
-
-/*===========================================================================*/
-/**
- *  @brief  Calculate density value.
- *  @param  scalar [in] scalar value
- *  @return density value
- */
-/*===========================================================================*/
-const float CellByCellUniformSampling::calculate_density( const float scalar )
-{
-    const float min_value = BaseClass::transferFunction().colorMap().minValue();
-    const float max_value = BaseClass::transferFunction().colorMap().maxValue();
-    const float max_range = static_cast<float>( BaseClass::transferFunction().resolution() - 1 );
-    const float normalize_factor = max_range / ( max_value - min_value );
-    const float normalized_scalar = ( scalar - min_value ) * normalize_factor;
-    size_t index0 = 0;
-    if ( normalized_scalar < 0 )
-    {
-        index0 = 0; // round to 0.
-    }
-    else
-    {
-        index0 = static_cast<size_t>( normalized_scalar );
-    }
-    size_t index1 = index0 + 1;
-    index1 = vismodule::Math::Clamp<size_t>( index1, 0, BaseClass::transferFunction().resolution() - 1 );
-    const float scalar_offset = normalized_scalar - index0;
-
-    const float* const density_map = m_density_map.pointer();
-
-    if ( index0 == ( BaseClass::transferFunction().resolution() - 1 ) )
-    {
-        return density_map[ index0 ];
-    }
-    else
-    {
-        const float rho0 = density_map[ index0 ];
-        const float rho1 = density_map[ index1 ];
-        const float interpolated_density = ( rho1 - rho0 ) * scalar_offset + rho0;
-
-        return interpolated_density;
-    }
-}
-
 /*===========================================================================*/
 /**
  *  @brief  Calculate number of particles.
@@ -1751,58 +1635,6 @@ const size_t CellByCellUniformSampling::calculate_number_of_particles(
  *  @return density value
  */
 /*===========================================================================*/
-const float CellByCellUniformSampling::calculate_maximum_density( const float scalar0, const float scalar1 )
-{
-    if ( scalar0 > scalar1 )
-    {
-        visModuleMessageError( "undefined use of calculate_maximum_density." );
-        return 0.0f;
-    }
-    const float min_value = BaseClass::transferFunction().colorMap().minValue();
-    const float max_value = BaseClass::transferFunction().colorMap().maxValue();
-    const float max_range = static_cast<float>( BaseClass::transferFunction().resolution() - 1 );
-    const float normalize_factor = max_range / ( max_value - min_value );
-    const float index0_float = ( scalar0 - min_value ) * normalize_factor;
-    size_t index0 = 0;
-    if ( index0_float < 0 )
-    {
-        index0 = 0; // round to 0.
-    }
-    else
-    {
-        index0 = static_cast<size_t>( index0_float );
-    }
-    index0 += 1;
-    index0 = vismodule::Math::Clamp<size_t>( index0, 0, BaseClass::transferFunction().resolution() - 1 );
-
-    const float index1_float = ( scalar1 - min_value ) * normalize_factor;
-    size_t index1 = 0;
-    if ( index1_float < 0 )
-    {
-        index1 = 0; // round to 0.
-    }
-    else
-    {
-        index1 = static_cast<size_t>( index1_float );
-    }
-
-    const float* const density_map = m_density_map.pointer();
-
-    float maximum_density = density_map[ index0 ];
-
-    for ( size_t i = index0 + 1; i <= index1; i++ )
-    {
-        maximum_density = density_map[ i ] > maximum_density ? density_map[ i ] : maximum_density;
-    }
-
-    const float density0 = this->calculate_density( scalar0 );
-    maximum_density = density0 > maximum_density ? density0 : maximum_density;
-
-    const float density1 = this->calculate_density( scalar1 );
-    maximum_density = density1 > maximum_density ? density1 : maximum_density;
-
-    return maximum_density;
-}
 
 void CellByCellUniformSampling::calculate_histogram( vismodule::ValueArray<int>&   th_o_histogram,
                           vismodule::ValueArray<int>&   th_c_histogram,

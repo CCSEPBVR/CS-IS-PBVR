@@ -41,7 +41,6 @@
 
 #include <vismodule/timer_simple>
 #include <vismodule/FrequencyTable>
-//#include "SFMT/SFMT.h" 
 
 #ifdef ENABLE_MPI
 #include <mpi.h>
@@ -79,96 +78,62 @@ CellByCellHistogram::CellByCellHistogram():
     m_camera( 0 )
 {
 }
-
-/*===========================================================================*/
-/**
- *  @brief  Constructs a new CellByCellHistogram class.
- *  @param  volume [in] pointer to the volume object
- *  @param  m_subpixel_level [in] sub-pixel level
- *  @param  m_sampling_step [in] sapling step
- *  @param  m_transfer_function [in] transfer function
- *  @param  object_depth [in] depth value of the input volume at the CoG
- */
-/*===========================================================================*/
-CellByCellHistogram::CellByCellHistogram(
-    const vismodule::VolumeObjectBase& volume,
-    const size_t                 subpixel_level,
-    const float                  sampling_step,
-    const vismodule::TransferFunction& transfer_function,
-    TransferFunctionSynthesizer* transfunc_synthesizer,
-    const size_t                 normal_ingredient,
-    const float                  object_depth ):
-    vismodule::MapperBase( transfer_function ),
-    vismodule::PointObject(),
-    m_transfer_function_synthesizer( transfunc_synthesizer ),
-    m_normal_ingredient( normal_ingredient ),
-    m_camera( 0 ),
-    m_particle_density( 1.0 )
-{
-    this->setSubpixelLevel( subpixel_level );
-    this->setSamplingStep( sampling_step );
-    this->setObjectDepth( object_depth );
-    this->exec( volume );
-}
-
-/*===========================================================================*/
-/**
- *  @brief  Constructs a new CellByCellHistogram class.
- *  @param  camera [in] pointer to the camera
- *  @param  volume [in] pointer to the volume object
- *  @param  m_subpixel_level [in] sub-pixel level
- *  @param  m_sampling_step [in] sapling step
- *  @param  m_transfer_function [in] transfer function
- *  @param  object_depth [in] depth value of the input volume at the CoG
- */
-/*===========================================================================*/
-CellByCellHistogram::CellByCellHistogram(
+// unstruct
+CellByCellHistogram::CellByCellHistogram( 
     const vismodule::Camera&           camera,
-    const vismodule::VolumeObjectBase& volume,
+    domain_parameters_unstruct dom,
+    Type** values, int nvariables,
+    float* coordinates, int ncoords,
+    unsigned int* connections, int ncells,
+    const  vismodule::VolumeObjectBase::CellType& celltype, 
     const size_t                 subpixel_level,
     const float                  sampling_step,
     const vismodule::TransferFunction& transfer_function,
     std::vector<vismodule::TransferFunction>& transfer_function_array, 
     TransferFunctionSynthesizer* transfunc_synthesizer,
-    const size_t                 normal_ingredient,
-//    const CropRegion&            crop,
     const float                  particle_density,
-    const float                  object_depth ):
+    vismodule::CoordSynthesizerStrings* coord_synthesizer_strings):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
     m_transfer_function_array( transfer_function_array ),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
-    m_normal_ingredient( normal_ingredient ),
-    m_particle_density( particle_density )
+    m_normal_ingredient( nvariables ),
+    m_particle_density( particle_density ),
+    m_coord_synthesizer_strings(coord_synthesizer_strings)
 {
-    this->attachCamera( camera ),
     this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
-    this->setObjectDepth( object_depth );
-    this->exec( volume ); 
+    this->generate_histogram_unstruct(dom, values, nvariables,
+            coordinates, ncoords, connections, ncells, celltype);
 }
 
+//struct
 CellByCellHistogram::CellByCellHistogram(
-    const vismodule::Camera&           camera,
-    const vismodule::VolumeObjectBase& volume,
-    const size_t                 subpixel_level,
-    const float                  sampling_step,
-    const vismodule::TransferFunction& transfer_function,
-    TransferFunctionSynthesizer* transfunc_synthesizer,
-    const size_t                 normal_ingredient,
-    const float                  object_depth ):
+        const vismodule::Camera&  camera,
+        domain_parameters_struct dom, 
+        Type** values,  
+        int nvariables, 
+        const size_t                 subpixel_level,
+        const float                  sampling_step,
+        const vismodule::TransferFunction& transfer_function,
+        std::vector<vismodule::TransferFunction>& transfer_function_array,
+        TransferFunctionSynthesizer* transfunc_synthesizer,
+        const float                  particle_density,
+        vismodule::CoordSynthesizerStrings* coord_synthesizer_strings):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
+    m_transfer_function_array( transfer_function_array ),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
-    m_normal_ingredient( normal_ingredient ),
-    m_particle_density( 1.0 )
+    m_normal_ingredient( nvariables ),
+    m_particle_density( particle_density), 
+    m_coord_synthesizer_strings(coord_synthesizer_strings)
 {
-    this->attachCamera( camera ),
-         this->setSubpixelLevel( subpixel_level );
+    this->setSubpixelLevel( subpixel_level );
     this->setSamplingStep( sampling_step );
-    this->setObjectDepth( object_depth );
-    this->exec( volume );
+    //this->exec( dom, values, nvariables);
+    this->generate_histogram_struct(dom, values, nvariables);
 }
+
 
 /*===========================================================================*/
 /**
@@ -257,303 +222,11 @@ void CellByCellHistogram::setObjectDepth( const float object_depth )
     m_object_depth = object_depth;
 }
 
-/*===========================================================================*/
-/**
- *  @brief  Executes the mapper process.
- *  @param  object [in] pointer to the volume object
- *  @return pointer to the point object
- */
-/*===========================================================================*/
-CellByCellHistogram::SuperClass* CellByCellHistogram::exec( const vismodule::ObjectBase& object )
-{
-    if ( !&object )
-    {
-        BaseClass::m_is_success = false;
-        visModuleMessageError( "Input object is NULL." );
-        return NULL;
-    }
-
-    const vismodule::VolumeObjectBase* volume = vismodule::VolumeObjectBase::DownCast( object );
-    if ( !volume )
-    {
-        BaseClass::m_is_success = false;
-        visModuleMessageError( "Input object is not volume dat." );
-        return NULL;
-    }
-
-    const vismodule::VolumeObjectBase::VolumeType volume_type = volume->volumeType();
-    if ( volume_type == vismodule::VolumeObjectBase::Structured )
-    {
-//        const vismodule::Camera* camera = ( !m_camera ) ? vismodule::GlobalCore::camera : m_camera;
-//        this->mapping( camera, reinterpret_cast<const vismodule::StructuredVolumeObject*>( object ) );
-        const vismodule::StructuredVolumeObject* svo_p = static_cast<const vismodule::StructuredVolumeObject*>( &object );
-        if ( m_camera )
-        {
-//            this->mapping( m_camera, reinterpret_cast<const vismodule::StructuredVolumeObject*>( object ) );
-            this->mapping( *m_camera, *svo_p);
-        }
-        else
-        {
-            // Generate particles by using default camera parameters.
-            if ( vismodule::GlobalCore::m_camera )
-            {
-                if ( vismodule::GlobalCore::m_camera->windowWidth() != 0 && vismodule::GlobalCore::m_camera->windowHeight() )
-                {
-                    const vismodule::Camera* camera = vismodule::GlobalCore::m_camera;
-//                    this->mapping( camera, reinterpret_cast<const vismodule::StructuredVolumeObject*>( object ) );
-                    this->mapping( *camera, *svo_p);
-                }
-            }
-            else
-            {
-                vismodule::Camera* camera = new vismodule::Camera();
-                //this->mapping( camera, reinterpret_cast<const vismodule::StructuredVolumeObject*>( object ) );
-                this->mapping( *camera, *svo_p);
-                delete camera;
-            }
-        }
-    }
-    else // volume_type == vismodule::VolumeObjectBase::Unstructured
-    {
-        const vismodule::UnstructuredVolumeObject* uvo_p = static_cast<const vismodule::UnstructuredVolumeObject*>( &object );
-        if ( m_camera )
-        {
-            this->mapping( *m_camera, *uvo_p );
-        }
-        else
-        {
-            // Generate particles by using default camera parameters.
-            if ( vismodule::GlobalCore::m_camera )
-            {
-                if ( vismodule::GlobalCore::m_camera->windowWidth() != 0 && vismodule::GlobalCore::m_camera->windowHeight() )
-                {
-                    const vismodule::Camera* camera = vismodule::GlobalCore::m_camera;
-                    this->mapping( *camera, *uvo_p );
-                }
-            }
-            else
-            {
-                vismodule::Camera* camera = new vismodule::Camera();
-                this->mapping( *camera, *uvo_p );
-                delete camera;
-            }
-        }
-    }
-
-    return this;
-}
-
-/*===========================================================================*/
-/**
- *  @brief  Mapping for the structured volume object.
- *  @param  camera [in] pointer to the camera
- *  @param  volume [in] pointer to the input volume object
- */
-/*===========================================================================*/
-void CellByCellHistogram::mapping( const vismodule::Camera& camera, const vismodule::StructuredVolumeObject& volume )
-{
-    // Attach the pointer to the volume object and set the min/max coordinates.
-    BaseClass::attach_volume( volume );
-    BaseClass::set_range( volume );
-    BaseClass::set_min_max_coords( volume, this );
-
-    const vismodule::VolumeObjectBase *object = BaseClass::volume();
-    
-    // Calculate the density map.
-    //if ( m_transfunc_synthesizer )
-    if ( m_transfer_function_synthesizer )
-    {
-        float max_opacity;
-        float max_density;
-        float sampling_volume_inverse;
-
-        Generator::CalculateDensityConstaint(
-            camera,
-            *object,
-            static_cast<float>( m_subpixel_level ),
-            m_sampling_step,
-            &sampling_volume_inverse,
-            &max_opacity,
-            &max_density );
-
-        m_transfer_function_synthesizer->setMaxOpacity( max_opacity );
-        m_transfer_function_synthesizer->setMaxDensity( max_density );
-        m_transfer_function_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
-    }
-    else
-    {
-        m_density_map = Generator::CalculateDensityMap(
-                            camera,
-                            *object,
-                            static_cast<float>( m_subpixel_level ),
-                            m_sampling_step,
-                            BaseClass::transferFunction().opacityMap() );
-    }
-
-//   m_density_map = Generator::CalculateDensityMap(
-//                        camera,
-////                        BaseClass::volume(),
-//                        *object,
-//                        static_cast<float>( m_subpixel_level ),
-//                        m_sampling_step,
-//                        BaseClass::transferFunction().opacityMap() );
-
-    // Generate the particles.
-    const std::type_info& type = volume.values().typeInfo()->type();
-    if (      type == typeid( vismodule::Int8   ) ) this->generate_histogram<vismodule::Int8>( volume );
-    else if ( type == typeid( vismodule::Int16  ) ) this->generate_histogram<vismodule::Int16>( volume );
-    else if ( type == typeid( vismodule::Int32  ) ) this->generate_histogram<vismodule::Int32>( volume );
-    else if ( type == typeid( vismodule::UInt8  ) ) this->generate_histogram<vismodule::UInt8>( volume );
-    else if ( type == typeid( vismodule::UInt16 ) ) this->generate_histogram<vismodule::UInt16>( volume );
-    else if ( type == typeid( vismodule::UInt32 ) ) this->generate_histogram<vismodule::UInt32>( volume );
-    else if ( type == typeid( vismodule::Real32 ) ) this->generate_histogram<vismodule::Real32>( volume );
-    else if ( type == typeid( vismodule::Real64 ) ) this->generate_histogram<vismodule::Real64>( volume );
-    else
-    {
-        BaseClass::m_is_success = false;
-        visModuleMessageError( "Unsupported data type '%s'.", volume.values().typeInfo()->typeName() );
-    }
-}
-
-template <>
-void CellByCellHistogram::generate_histogram<vismodule::Real32>( const vismodule::UnstructuredVolumeObject& volume );
-
-/*===========================================================================*/
-/**
- *  @brief  Mapping for the unstructured volume object.
- *  @param  camera [in] pointer to the camera
- *  @param  volume [in] pointer to the input volume object
- */
-/*===========================================================================*/
-void CellByCellHistogram::mapping( const vismodule::Camera& camera, const vismodule::UnstructuredVolumeObject& volume )
-{
-    // Attach the pointer to the volume object and set the min/max coordinates.
-    BaseClass::attach_volume( volume );
-    BaseClass::set_range( volume );
-    BaseClass::set_min_max_coords( volume, this );
-
-    const vismodule::VolumeObjectBase *object = BaseClass::volume();
-
-    if ( m_transfer_function_synthesizer )
-    {
-        float max_opacity;
-        float max_density;
-        float sampling_volume_inverse;
-
-        Generator::CalculateDensityConstaint(
-            camera,
-            *object,
-            static_cast<float>( m_subpixel_level ),
-            m_sampling_step,
-            &sampling_volume_inverse,
-            &max_opacity,
-            &max_density );
-
-        m_transfer_function_synthesizer->setMaxOpacity( max_opacity );
-        m_transfer_function_synthesizer->setMaxDensity( max_density );
-        m_transfer_function_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
-    }
-    else
-    {
-        BaseClass::m_transfer_function.setRange( volume );
-
-        // Calculate the density map.
-        m_density_map = Generator::CalculateDensityMap(
-                            camera,
-                            *object,
-                            static_cast<float>( m_subpixel_level ),
-                            m_sampling_step,
-                            BaseClass::transferFunction().opacityMap() );
-    }
-    // Generate the particles.
-//    if ( !volume.hasMinMaxValues() ) volume.updateMinMaxValues();
-//    const float min_value = static_cast<float>( volume.minValue() );
-//    const float max_value = static_cast<float>( volume.maxValue() );
-    const std::type_info& type = volume.values().typeInfo()->type();
-    if (      type == typeid( vismodule::Int8   ) )
-    {
-//        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( -128, 127 );
-        this->generate_histogram<vismodule::Int8>( volume );
-    }
-    else if ( type == typeid( vismodule::Int16  ) )
-    {
-//        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_histogram<vismodule::Int16>( volume );
-    }
-    else if ( type == typeid( vismodule::Int32  ) )
-    {
-//        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_histogram<vismodule::Int32>( volume );
-    }
-    else if ( type == typeid( vismodule::Int64  ) )
-    {
-//        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_histogram<vismodule::Int64>( volume );
-    }
-    else if ( type == typeid( vismodule::UInt8  ) )
-    {
-//        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( 0, 255 );
-        this->generate_histogram<vismodule::UInt8>( volume );
-    }
-    else if ( type == typeid( vismodule::UInt16 ) )
-    {
-//        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_histogram<vismodule::UInt16>( volume );
-    }
-    else if ( type == typeid( vismodule::UInt32 ) )
-    {
-//        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_histogram<vismodule::UInt32>( volume );
-    }
-    else if ( type == typeid( vismodule::UInt64 ) )
-    {
-//        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_histogram<vismodule::UInt64>( volume );
-    }
-    else if ( type == typeid( vismodule::Real32 ) )
-    {
-        this->generate_histogram<vismodule::Real32>( volume );
-    }
-    else if ( type == typeid( vismodule::Real64 ) )
-    {
-//        if ( !m_transfer_function.hasRange() ) BaseClass::m_transfer_function.setRange( min_value, max_value );
-        this->generate_histogram<vismodule::Real64>( volume );
-    }
-    else
-    {
-        BaseClass::m_is_success = false;
-        visModuleMessageError( "Unsupported data type '%s'.", volume.values().typeInfo()->typeName() );
-    }
-}
-
-/*===========================================================================*/
-/**
- *  @brief  Generates particles for the structured volume object.
- *  @param  volume [in] pointer to the input volume object
- */
-/*===========================================================================*/
-template <typename T>
-void CellByCellHistogram::generate_histogram( const vismodule::StructuredVolumeObject& volume )
+CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_struct(  domain_parameters_struct dom, Type** values, int nvariables )
 {
 
-    vismodule::AnyValueArray valueArray = volume.values(); 
-    int nnodes = volume.nnodes();
-    
-    const vismodule::Vector3ui resolution( volume.resolution() );
-    const int nvariables = volume.veclen();
-    Type** values;
-    values = new Type * [nvariables];
-
-    for ( int j = 0; j < nvariables; j++ )
-    {
-        values[j] = new float[nnodes];
-        for ( int i = 0; i < nnodes; i++ )
-        {
-            int  it = j * nnodes  + i;
-            values[j][i] = valueArray.at<Type>(it);
-        }
-    } 
-
+    int nnodes = dom.resolution[0]*dom.resolution[1]*dom.resolution[2];
+    const vismodule::Vector3ui resolution(dom.resolution[0],dom.resolution[1],dom.resolution[2] );
 #if 1
     int tf_number = m_transfer_function_array.size();
     float sampling_volume_inverse = m_transfer_function_synthesizer -> getSamplingVolumeInverse()  ;
@@ -670,12 +343,12 @@ void CellByCellHistogram::generate_histogram( const vismodule::StructuredVolumeO
 
     int total_nparticles = 0;
 
-    const vismodule::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
     CoordSynthesizerStrings css;
-    if ( pCrdSynthStr )
-    { 
-        css = *pCrdSynthStr;
+    if ( m_coord_synthesizer_strings ) 
+    {
+        css = *m_coord_synthesizer_strings;
     }
+
 
     #pragma omp parallel
     {
@@ -735,8 +408,18 @@ void CellByCellHistogram::generate_histogram( const vismodule::StructuredVolumeO
             }
         }
 
-        const vismodule::Vector3f min_vec = volume.minObjectCoord(); 
-        const vismodule::Vector3f max_vec = volume.maxObjectCoord(); 
+        // minmax coordの設定
+        const vismodule::Vector3f min_vec( 
+                dom.x_min, 
+                dom.y_min, 
+                dom.z_min); 
+       const  vismodule::Vector3f max_vec( 
+                dom.x_max, 
+                dom.y_max, 
+                dom.z_max ); 
+
+//        const vismodule::Vector3f min_vec = volume.minObjectCoord(); 
+//        const vismodule::Vector3f max_vec = volume.maxObjectCoord(); 
         const vismodule::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ nx_1,
                                          (max_vec.y() - min_vec.y() )/ ny_1,
                                          (max_vec.z() - min_vec.z() )/ nz_1) ;
@@ -921,318 +604,20 @@ void CellByCellHistogram::generate_histogram( const vismodule::StructuredVolumeO
     }
  
 #endif
-    for (int i = 0; i < nvariables; i++)
-    //for (int i = 0; i < nnodes; i++)
-    {
-        delete[] values[i];
-    }
-    delete[] values;
-
 }
 
-
-/*===========================================================================*/
-/**
- *  @brief  Generates particles for the unstructured volume object.
- *  @param  volume [in] pointer to the input volume object
- */
-/*===========================================================================*/
-template <typename T>
-void CellByCellHistogram::generate_histogram( const vismodule::UnstructuredVolumeObject& volume )
-{
-    // Vertex data arrays. (output)
-    std::vector<vismodule::Real32> vertex_coords;
-    std::vector<vismodule::UInt8>  vertex_colors;
-    std::vector<vismodule::Real32> vertex_normals;
-
-    // Set a tetrahedral cell interpolator.
-    vismodule::CellBase<T>* cell = NULL;
-    switch ( volume.cellType() )
-    {
-    case vismodule::VolumeObjectBase::Tetrahedra:
-    {
-        cell = new vismodule::TetrahedralCell<T>( volume );
-        break;
-    }
-    case vismodule::VolumeObjectBase::QuadraticTetrahedra:
-    {
-        cell = new vismodule::QuadraticTetrahedralCell<T>( volume );
-        break;
-    }
-    case vismodule::VolumeObjectBase::Hexahedra:
-    {
-        cell = new vismodule::HexahedralCell<T>( volume );
-        break;
-    }
-    case vismodule::VolumeObjectBase::QuadraticHexahedra:
-    {
-        cell = new vismodule::QuadraticHexahedralCell<T>( volume );
-        break;
-    }
-    case vismodule::VolumeObjectBase::Prism:
-    {
-        cell = new vismodule::PrismaticCell<T>( volume );
-        break;
-    }
-    case vismodule::VolumeObjectBase::Pyramid:
-    {
-        cell = new vismodule::PyramidalCell<T>( volume );
-        break;
-    }
-//    case vismodule::VolumeObjectBase::Triangle:
-//    {
-//        cell = new vismodule::TriangleCell<T>( volume );
-//        break;
-//    }
-//    case vismodule::VolumeObjectBase::QuadraticTriangle:
-//    {
-//        cell = new vismodule::QuadraticTriangleCell<T>( volume );
-//        break;
-//    }
-//    case vismodule::VolumeObjectBase::Square:
-//    {
-//        cell = new vismodule::SquareCell<T>( volume );
-//        break;
-//    }
-//    case vismodule::VolumeObjectBase::QuadraticSquare:
-//    {
-//        cell = new vismodule::QuadraticSquareCell<T>( volume );
-//        break;
-//    }
-    default:
-    {
-        BaseClass::m_is_success = false;
-        visModuleMessageError( "Unsupported cell type." );
-        return;
-    }
-    }
-
-    const float min_value = BaseClass::transferFunction().colorMap().minValue();
-    const float max_value = BaseClass::transferFunction().colorMap().maxValue();
-    const float max_range = static_cast<float>( BaseClass::transferFunction().resolution() - 1 );
-    const float normalize_factor = max_range / ( max_value - min_value );
-
-    const float* const  density_map = m_density_map.pointer();
-    const vismodule::ColorMap color_map( BaseClass::transferFunction().colorMap() );
-
-    // Generate particles for each cell.
-    const size_t ncells = volume.ncells();
-    const size_t veclen = volume.veclen();
-    const vismodule::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
-    CoordSynthesizerStrings css;
-    if ( pCrdSynthStr ) css = *pCrdSynthStr;
-    FuncParser::Variables synth_vars;
-    FuncParser::Variable Tm;
-    Tm.tag( "T" );
-    synth_vars.push_back( Tm );
-    FuncParser::Variable t;
-    t.tag( "t" );
-    synth_vars.push_back( t );
-    Tm = t = ( float )pCrdSynthStr->m_time_step;
-    FuncParser::Variable X;
-    X.tag( "X" );
-    synth_vars.push_back( X );
-    FuncParser::Variable x;
-    x.tag( "x" );
-    synth_vars.push_back( x );
-    FuncParser::Variable Y;
-    Y.tag( "Y" );
-    synth_vars.push_back( Y );
-    FuncParser::Variable y;
-    y.tag( "y" );
-    synth_vars.push_back( y );
-    FuncParser::Variable Z;
-    Z.tag( "Z" );
-    synth_vars.push_back( Z );
-    FuncParser::Variable z;
-    z.tag( "z" );
-    synth_vars.push_back( z );
-    std::vector<FuncParser::Variable> FuncVars(veclen);
-    std::vector<std::string> varnames(veclen);
-    for ( size_t i = 0; i < veclen; i++ )
-    {
-        std::stringstream ss;
-        ss << "q" << i + 1;
-        varnames[i] = ss.str();
-        FuncVars[i] = FuncParser::Variable();
-        FuncVars[i].tag(const_cast<char*>(varnames[i].c_str()));
-        FuncVars[i] = 0.0f;
-        synth_vars.push_back( FuncVars[i] );
-    } // end of for(i)
-    FunctionParser synth_func_parseX( css.m_x_coord_synthesizer_string,
-                                      css.m_x_coord_synthesizer_string.size() + 1 );
-    FuncParser::Function synth_funcX;
-    if ( ! css.m_x_coord_synthesizer_string.empty() )
-    {
-        FunctionParser::Error err = synth_func_parseX.express( synth_funcX, synth_vars );
-        if ( err != FunctionParser::ERR_NONE )
-        {
-            std::stringstream ess;
-            ess << "Function : " << synth_funcX.str() << " error: "
-                << FunctionParser::error_type_to_string[err].c_str() << std::endl;
-            throw TransferFunctionSynthesizer::NumericException( ess.str() );
-        }
-    }
-    FunctionParser synth_func_parseY( css.m_y_coord_synthesizer_string,
-                                      css.m_y_coord_synthesizer_string.size() + 1 );
-    FuncParser::Function synth_funcY;
-    if ( ! css.m_y_coord_synthesizer_string.empty() )
-    {
-        FunctionParser::Error err = synth_func_parseY.express( synth_funcY, synth_vars );
-        if ( err != FunctionParser::ERR_NONE )
-        {
-            std::stringstream ess;
-            ess << "Function : " << synth_funcY.str() << " error: "
-                << FunctionParser::error_type_to_string[err].c_str() << std::endl;
-            throw TransferFunctionSynthesizer::NumericException( ess.str() );
-        }
-    }
-    FunctionParser synth_func_parseZ( css.m_z_coord_synthesizer_string,
-                                      css.m_z_coord_synthesizer_string.size() + 1 );
-    FuncParser::Function synth_funcZ;
-    if ( ! css.m_z_coord_synthesizer_string.empty() )
-    {
-        FunctionParser::Error err = synth_func_parseZ.express( synth_funcZ, synth_vars );
-        if ( err != FunctionParser::ERR_NONE )
-        {
-            std::stringstream ess;
-            ess << "Function : " << synth_funcZ.str() << " error: "
-                << FunctionParser::error_type_to_string[err].c_str() << std::endl;
-            throw TransferFunctionSynthesizer::NumericException( ess.str() );
-        }
-    }
-
-    for ( size_t index = 0; index < ncells; ++index )
-    {
-        // add by @hira at 2016/12/01
-        if (cell == NULL) continue;
-
-        // Bind the cell which is indicated by 'index'.
-        cell->bindCell( index );
-
-        // Calculate a density.
-        const float  average_scalar = cell->averagedScalar();
-        const size_t average_degree = static_cast<size_t>( ( average_scalar - min_value ) * normalize_factor );
-        const float  density = density_map[ average_degree ];
-
-        // Calculate a number of particles in this cell.
-        const float volume_of_cell = cell->volume();
-        const float p = density * volume_of_cell;
-        size_t nparticles_in_cell = static_cast<size_t>( p );
-
-        if ( p - nparticles_in_cell > Generator::GetRandomNumber() )
-        {
-            ++nparticles_in_cell;
-        }
-
-        // Generate a set of particles in this cell represented by v0,...,v3 and s0,...,s3.
-        for ( size_t particle = 0; particle < nparticles_in_cell; ++particle )
-        {
-            // Calculate a coord.
-            const vismodule::Vector3f coord = cell->randomSampling();
-
-            // Calculate a color.
-            const float scalar = cell->scalar();
-            const vismodule::RGBColor color( color_map.at( scalar ) );
-
-            // Calculate a normal.
-            /* NOTE: The gradient vector of the cell is reversed for shading on the rendering process.
-             */
-            const vismodule::Vector3f normal( -cell->gradient() );
-
-            // using coord synthesizer
-            vismodule::Vector3f new_coord = coord;
-            if ( pCrdSynthStr )
-            {
-                X = x = coord.x();
-                Y = y = coord.y();
-                Z = z = coord.z();
-
-                size_t qn = 0;
-                synth_vars[qn + 8] = scalar;
-                for ( qn++; qn < veclen; qn++ )
-                {
-                    cell->bindCell( index, qn );
-                    synth_vars[qn + 8] = cell->scalar();
-                }
-
-                vismodule::Vector3f new_coord;
-                if ( ! css.m_x_coord_synthesizer_string.empty() )
-                {
-                    float d = ( float )synth_funcX.eval();
-                    TransferFunctionSynthesizer::AssertValid( d, __FILE__, __LINE__ );
-                    new_coord[0] = d;
-                }
-                if ( ! css.m_y_coord_synthesizer_string.empty() )
-                {
-                    float d = ( float )synth_funcY.eval();
-                    TransferFunctionSynthesizer::AssertValid( d, __FILE__, __LINE__ );
-                    new_coord[1] = d;
-                }
-                if ( ! css.m_z_coord_synthesizer_string.empty() )
-                {
-                    float d = ( float )synth_funcZ.eval();
-                    TransferFunctionSynthesizer::AssertValid( d, __FILE__, __LINE__ );
-                    new_coord[2] = d;
-                }
-            }
-
-            // set coord, color, and normal to point object( this ).
-            vertex_coords.push_back( new_coord.x() );
-            vertex_coords.push_back( new_coord.y() );
-            vertex_coords.push_back( new_coord.z() );
-
-            vertex_colors.push_back( color.r() );
-            vertex_colors.push_back( color.g() );
-            vertex_colors.push_back( color.b() );
-
-            vertex_normals.push_back( normal.x() );
-            vertex_normals.push_back( normal.y() );
-            vertex_normals.push_back( normal.z() );
-
-            cell->bindCell( index );
-        } // end of 'paricle' for-loop
-    } // end of 'cell' for-loop
-
-    SuperClass::m_coords  = vismodule::ValueArray<vismodule::Real32>( vertex_coords );
-    SuperClass::m_colors  = vismodule::ValueArray<vismodule::UInt8>( vertex_colors );
-    SuperClass::m_normals = vismodule::ValueArray<vismodule::Real32>( vertex_normals );
-    SuperClass::setSize( 1.0f );
-
-    if (cell != NULL) delete cell;
-}
-
-template <>
-void CellByCellHistogram::generate_histogram<vismodule::Real32>( const vismodule::UnstructuredVolumeObject& volume )
+CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_unstruct( domain_parameters_unstruct dom,Type** values, int nvariables,
+        float* coordinates, int ncoords,
+        unsigned int* connections, int ncells,
+        const  vismodule::VolumeObjectBase::CellType& cellType )
 {
     double start = GetTime();
     size_t resolution = DEFAULT_NBINS;
-
-    vismodule::AnyValueArray valueArray = volume.values(); 
-    Type* coordinates =  (float * )volume.coords().pointer(); 
-    int ncoords =  volume.nnodes();
-    unsigned int* connections =  (unsigned int*)volume.connections().pointer();
-    int ncells = volume.ncells();
-    int nnodes = volume.nnodes();
-
-    const int nvariables = volume.veclen();
-    //Type*  values[nvariables];
-    Type** values;
-    values = new Type * [nvariables];
 
     float sampling_volume_inverse = m_transfer_function_synthesizer -> getSamplingVolumeInverse()  ;
     float max_opacity = m_transfer_function_synthesizer -> getMaxOpacity();
     float max_density = m_transfer_function_synthesizer -> getMaxDensity();
 
-    for ( int j = 0; j < nvariables; j++ )
-    {
-        values[j] = new float[nnodes];
-        for ( int i = 0; i < nnodes; i++ )
-        {
-            int  it = j * nnodes  + i;
-            values[j][i] = valueArray.at<Type>(it);  
-        }
-    } 
 #if _OPENMP
     int max_threads = omp_get_max_threads();
 #else
@@ -1256,7 +641,7 @@ void CellByCellHistogram::generate_histogram<vismodule::Real32>( const vismodule
     std::vector< std::vector< vismodule::CellBase<Type>* > >  interp;
 
     interp.resize( max_threads );
-    switch ( volume.cellType() )
+    switch ( cellType )
     {
         case vismodule::VolumeObjectBase::Tetrahedra:
             {
@@ -1484,12 +869,18 @@ void CellByCellHistogram::generate_histogram<vismodule::Real32>( const vismodule
             / ( sizeof( float ) + sizeof( Byte ) + sizeof( float ) ) );
     bool particle_limit_over = false;
     // coordinate synthesis
-    const vismodule::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
+//    const vismodule::CoordSynthesizerStrings* pCrdSynthStr = volume.getCoordSynthesizerStrings();
+//    CoordSynthesizerStrings css;
+//    if ( pCrdSynthStr ) 
+//    //if ( ! pCrdSynthStr.m_x_coord_synthesizer_string.empty() && pCrdSynthStr.m_y_coord_synthesizer_string.empty() && pCrdSynthStr.m_z_coord_synthesizer_string.empty()  ) 
+//    {
+//        css = *pCrdSynthStr;
+//    }
+
     CoordSynthesizerStrings css;
-    if ( pCrdSynthStr ) 
-    //if ( ! pCrdSynthStr.m_x_coord_synthesizer_string.empty() && pCrdSynthStr.m_y_coord_synthesizer_string.empty() && pCrdSynthStr.m_z_coord_synthesizer_string.empty()  ) 
+    if ( m_coord_synthesizer_strings ) 
     {
-        css = *pCrdSynthStr;
+        css = *m_coord_synthesizer_strings;
     }
 
 #pragma omp parallel
@@ -1730,15 +1121,6 @@ void CellByCellHistogram::generate_histogram<vismodule::Real32>( const vismodule
                 m_o_histogram[n] += th_o_histogram[n];
                 m_c_histogram[n] += th_c_histogram[n];
             }
-
-//            std::stringstream debug11;
-//            debug11 << "m_c_histogram[n] = {";
-//            for(int n=0; n < tf_number; n++)
-//            {
-//                for(int i =0; i< nbins; i++) debug11 << m_c_histogram[i + n*nbins ] << "," ;
-//                debug11 << std::endl;
-//            }
-//            std::cout << debug11.str() << std::endl;
         }
 
 
@@ -1771,12 +1153,6 @@ void CellByCellHistogram::generate_histogram<vismodule::Real32>( const vismodule
         }
     }
 
-    for (int i = 0; i < nvariables; i++)
-    {
-        delete[] values[i];
-    }
-    delete[] values;
-
     //TIMER_END( 290 );
 
     SuperClass::setSize( 1.0f );
@@ -1802,119 +1178,6 @@ const size_t CellByCellHistogram::calculate_number_of_particles(
     return ( n ); 
 }
 
-
-#ifdef ENABLE_MPI
-void CellByCellHistogram::generate_particles_gt5d(
-    const vismodule::UnstructuredVolumeObject* volume )
-{
-    // Vertex data arrays. (output)
-    std::vector<vismodule::Real32> vertex_coords;
-    std::vector<vismodule::UInt8>  vertex_colors;
-    std::vector<vismodule::Real32> vertex_normals;
-
-    // Set a tetrahedral cell interpolator.
-    vismodule::CellBase<vismodule::Real32>* cell = NULL;
-    switch ( volume.cellType() )
-    {
-    case vismodule::VolumeObjectBase::Tetrahedra:
-    {
-        cell = new vismodule::TetrahedralCell<vismodule::Real32>( volume );
-        break;
-    }
-    case vismodule::VolumeObjectBase::QuadraticTetrahedra:
-    {
-        cell = new vismodule::QuadraticTetrahedralCell<vismodule::Real32>( volume );
-        break;
-    }
-    case vismodule::VolumeObjectBase::Hexahedra:
-    {
-        cell = new vismodule::HexahedralCell<vismodule::Real32>( volume );
-        break;
-    }
-    case vismodule::VolumeObjectBase::QuadraticHexahedra:
-    {
-        cell = new vismodule::QuadraticHexahedralCell<vismodule::Real32>( volume );
-        break;
-    }
-    case vismodule::VolumeObjectBase::Prism:
-    {
-        cell = new vismodule::PrismaticCell<vismodule::Real32>( volume );
-        break;
-    }
-    case vismodule::VolumeObjectBase::Pyramid:
-    {
-        cell = new vismodule::PyramidalCell<vismodule::Real32>( volume );
-        break;
-    }
-    default:
-    {
-        BaseClass::m_is_success = false;
-        visModuleMessageError( "Unsupported cell type." );
-        return;
-    }
-    }
-
-    double start = GetTime();
-
-    const vismodule::ColorMap color_map( BaseClass::transferFunction().colorMap() );
-
-    int m_sampling_method = MPIController::UNIFORM_SAMPLING;
-    MPI_Bcast( &m_sampling_method, 1, MPI_INT, 0, MPI_COMM_WORLD );
-    DistributedUniformSampling::generate_particles_gt5d_master_gpu(
-        volume, m_density_map.pointer(), color_map.table().pointer(),
-        BaseClass::transferFunction().resolution(),
-        BaseClass::transferFunction().colorMap().minValue(),
-        BaseClass::transferFunction().colorMap().maxValue(),
-        SuperClass::m_coords,
-        SuperClass::m_colors,
-        SuperClass::m_normals );
-
-    delete cell;
-}
-#endif
-
-/*===========================================================================*/
-/**
- *  @brief  Calculate density value.
- *  @param  scalar [in] scalar value
- *  @return density value
- */
-/*===========================================================================*/
-const float CellByCellHistogram::calculate_density( const float scalar )
-{
-    const float min_value = BaseClass::transferFunction().colorMap().minValue();
-    const float max_value = BaseClass::transferFunction().colorMap().maxValue();
-    const float max_range = static_cast<float>( BaseClass::transferFunction().resolution() - 1 );
-    const float normalize_factor = max_range / ( max_value - min_value );
-    const float normalized_scalar = ( scalar - min_value ) * normalize_factor;
-    size_t index0 = 0;
-    if ( normalized_scalar < 0 )
-    {
-        index0 = 0; // round to 0.
-    }
-    else
-    {
-        index0 = static_cast<size_t>( normalized_scalar );
-    }
-    size_t index1 = index0 + 1;
-    index1 = vismodule::Math::Clamp<size_t>( index1, 0, BaseClass::transferFunction().resolution() - 1 );
-    const float scalar_offset = normalized_scalar - index0;
-
-    const float* const density_map = m_density_map.pointer();
-
-    if ( index0 == ( BaseClass::transferFunction().resolution() - 1 ) )
-    {
-        return density_map[ index0 ];
-    }
-    else
-    {
-        const float rho0 = density_map[ index0 ];
-        const float rho1 = density_map[ index1 ];
-        const float interpolated_density = ( rho1 - rho0 ) * scalar_offset + rho0;
-
-        return interpolated_density;
-    }
-}
 
 /*===========================================================================*/
 /**
@@ -1948,59 +1211,6 @@ const size_t CellByCellHistogram::calculate_number_of_particles(
  *  @return density value
  */
 /*===========================================================================*/
-const float CellByCellHistogram::calculate_maximum_density( const float scalar0, const float scalar1 )
-{
-    if ( scalar0 > scalar1 )
-    {
-        visModuleMessageError( "undefined use of calculate_maximum_density." );
-        return 0.0f;
-    }
-    const float min_value = BaseClass::transferFunction().colorMap().minValue();
-    const float max_value = BaseClass::transferFunction().colorMap().maxValue();
-    const float max_range = static_cast<float>( BaseClass::transferFunction().resolution() - 1 );
-    const float normalize_factor = max_range / ( max_value - min_value );
-    const float index0_float = ( scalar0 - min_value ) * normalize_factor;
-    size_t index0 = 0;
-    if ( index0_float < 0 )
-    {
-        index0 = 0; // round to 0.
-    }
-    else
-    {
-        index0 = static_cast<size_t>( index0_float );
-    }
-    index0 += 1;
-    index0 = vismodule::Math::Clamp<size_t>( index0, 0, BaseClass::transferFunction().resolution() - 1 );
-
-    const float index1_float = ( scalar1 - min_value ) * normalize_factor;
-    size_t index1 = 0;
-    if ( index1_float < 0 )
-    {
-        index1 = 0; // round to 0.
-    }
-    else
-    {
-        index1 = static_cast<size_t>( index1_float );
-    }
-
-    const float* const density_map = m_density_map.pointer();
-
-    float maximum_density = density_map[ index0 ];
-
-    for ( size_t i = index0 + 1; i <= index1; i++ )
-    {
-        maximum_density = density_map[ i ] > maximum_density ? density_map[ i ] : maximum_density;
-    }
-
-    const float density0 = this->calculate_density( scalar0 );
-    maximum_density = density0 > maximum_density ? density0 : maximum_density;
-
-    const float density1 = this->calculate_density( scalar1 );
-    maximum_density = density1 > maximum_density ? density1 : maximum_density;
-
-    return maximum_density;
-}
-
 void CellByCellHistogram::calculate_histogram( vismodule::ValueArray<int>&   th_o_histogram,
                           vismodule::ValueArray<int>&   th_c_histogram,
                           vismodule::ValueArray<float>& th_O_min,

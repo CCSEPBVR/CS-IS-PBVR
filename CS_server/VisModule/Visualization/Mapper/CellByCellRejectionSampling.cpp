@@ -1629,49 +1629,6 @@ const size_t CellByCellRejectionSampling::calculate_number_of_particles(
 
 /*===========================================================================*/
 /**
- *  @brief  Calculate density value.
- *  @param  scalar [in] scalar value
- *  @return density value
- */
-/*===========================================================================*/
-const float CellByCellRejectionSampling::calculate_density( const float scalar )
-{
-    const float min_value = BaseClass::transferFunction().colorMap().minValue();
-    const float max_value = BaseClass::transferFunction().colorMap().maxValue();
-    const float max_range = static_cast<float>( BaseClass::transferFunction().resolution() - 1 );
-    const float normalize_factor = max_range / ( max_value - min_value );
-    const float normalized_scalar = ( scalar - min_value ) * normalize_factor;
-    size_t index0 = 0;
-    if ( normalized_scalar < 0 )
-    {
-        index0 = 0; // round to 0.
-    }
-    else
-    {
-        index0 = static_cast<size_t>( normalized_scalar );
-    }
-    size_t index1 = index0 + 1;
-    index1 = vismodule::Math::Clamp<size_t>( index1, 0, BaseClass::transferFunction().resolution() - 1 );
-    const float scalar_offset = normalized_scalar - index0;
-
-    const float* const density_map = m_density_map.pointer();
-
-    if ( index0 == ( BaseClass::transferFunction().resolution() - 1 ) )
-    {
-        return density_map[ index0 ];
-    }
-    else
-    {
-        const float rho0 = density_map[ index0 ];
-        const float rho1 = density_map[ index1 ];
-        const float interpolated_density = ( rho1 - rho0 ) * scalar_offset + rho0;
-
-        return interpolated_density;
-    }
-}
-
-/*===========================================================================*/
-/**
  *  @brief  Calculate number of particles.
  *  @param  density [in] density value
  *  @param  volume_of_cell [in] volume of cell
@@ -1692,67 +1649,6 @@ const size_t CellByCellRejectionSampling::calculate_number_of_particles(
     }
 
     return n;
-}
-
-/*===========================================================================*/
-/**
- *  @brief  Calculate maximum dentiy value.
- *  @param  scalar0 [in] scalar value
- *  @param  scalar1 [in] scalar value
- *  @return density value
- */
-/*===========================================================================*/
-const float CellByCellRejectionSampling::calculate_maximum_density( const float scalar0, const float scalar1 )
-{
-    if ( scalar0 > scalar1 )
-    {
-        visModuleMessageError( "undefined use of calculate_maximum_density." );
-        return 0.0f;
-    }
-    const float min_value = BaseClass::transferFunction().colorMap().minValue();
-    const float max_value = BaseClass::transferFunction().colorMap().maxValue();
-    const float max_range = static_cast<float>( BaseClass::transferFunction().resolution() - 1 );
-    const float normalize_factor = max_range / ( max_value - min_value );
-    const float index0_float = ( scalar0 - min_value ) * normalize_factor;
-    size_t index0 = 0;
-    if ( index0_float < 0 )
-    {
-        index0 = 0; // round to 0.
-    }
-    else
-    {
-        index0 = static_cast<size_t>( index0_float );
-    }
-    index0 += 1;
-    index0 = vismodule::Math::Clamp<size_t>( index0, 0, BaseClass::transferFunction().resolution() - 1 );
-
-    const float index1_float = ( scalar1 - min_value ) * normalize_factor;
-    size_t index1 = 0;
-    if ( index1_float < 0 )
-    {
-        index1 = 0; // round to 0.
-    }
-    else
-    {
-        index1 = static_cast<size_t>( index1_float );
-    }
-
-    const float* const density_map = m_density_map.pointer();
-
-    float maximum_density = density_map[ index0 ];
-
-    for ( size_t i = index0 + 1; i <= index1; i++ )
-    {
-        maximum_density = density_map[ i ] > maximum_density ? density_map[ i ] : maximum_density;
-    }
-
-    const float density0 = this->calculate_density( scalar0 );
-    maximum_density = density0 > maximum_density ? density0 : maximum_density;
-
-    const float density1 = this->calculate_density( scalar1 );
-    maximum_density = density1 > maximum_density ? density1 : maximum_density;
-
-    return maximum_density;
 }
 
 void CellByCellRejectionSampling::calculate_histogram( vismodule::ValueArray<int>&   th_o_histogram,

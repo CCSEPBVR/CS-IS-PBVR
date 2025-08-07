@@ -1815,12 +1815,6 @@ CellByCellMetropolisSampling::SuperClass* CellByCellMetropolisSampling::generate
         }
     }
 
-    for (int i = 0; i < nvariables; i++)
-    {
-        delete[] values[i];
-    }
-    delete[] values;
-
     //TIMER_END( 290 );
 
     SuperClass::m_coords  = vismodule::ValueArray<vismodule::Real32>( vertex_coords );

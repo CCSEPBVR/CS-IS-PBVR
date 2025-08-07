@@ -141,8 +141,6 @@ private:
         unsigned int* connections, int ncells,
         const  vismodule::VolumeObjectBase::CellType& celltype) ;
  
-    const float calculate_density( const float scalar );
-
     const size_t calculate_number_of_particles( const float density, const float volume_of_cell );
 
     void calculate_histogram( vismodule::ValueArray<int>&   th_o_histogram,
@@ -170,8 +168,6 @@ private:
     const float density,
     const float volume_of_cell,
     vismodule::MersenneTwister* MT ); 
-
-    const float calculate_maximum_density( const float scalar0, const float scalar1 );
 };
 
 } // end of namespace vismodule
