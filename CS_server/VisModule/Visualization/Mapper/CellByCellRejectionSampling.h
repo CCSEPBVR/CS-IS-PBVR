@@ -68,51 +68,6 @@ private:
 public:
 
     CellByCellRejectionSampling();
-
-    CellByCellRejectionSampling(
-        const vismodule::VolumeObjectBase& volume,
-        const size_t                 subpixel_level,
-        const float                  sampling_step,
-        const vismodule::TransferFunction& transfer_function,
-        TransferFunctionSynthesizer* transfunc_synthesizer,
-        const float                  object_depth = 0.0f );
-
-    CellByCellRejectionSampling(
-        const vismodule::Camera&           camera,
-        const vismodule::VolumeObjectBase& volume,
-        const size_t                 subpixel_level,
-        const float                  sampling_step,
-        const vismodule::TransferFunction& transfer_function,
-        TransferFunctionSynthesizer* transfunc_synthesizer,
-        const float                  density_factor,
-        const float                  object_depth = 0.0f );
-
-    CellByCellRejectionSampling(
-        const vismodule::Camera&           camera,
-        const vismodule::VolumeObjectBase& volume,
-        const size_t                 subpixel_level,
-        const float                  sampling_step,
-        const vismodule::TransferFunction& transfer_function,
-        std::vector<vismodule::TransferFunction>& transfer_function_array,
-        TransferFunctionSynthesizer* transfunc_synthesizer,
-        const float                  density_factor,
-        const float                  object_depth = 0.0f );
-
-//    //constructor for unstruct 
-//    CellByCellRejectionSampling(
-//        const vismodule::Camera&           camera,
-//        Type** values, int nvariables,
-//        float* coordinates, int ncoords,
-//        unsigned int* connections, int ncells,
-//        const  vismodule::VolumeObjectBase::CellType& celltype ,
-//        const size_t                 subpixel_level,
-//        const float                  sampling_step,
-//        const vismodule::TransferFunction& transfer_function,
-//        std::vector<vismodule::TransferFunction>& transfer_function_array,
-//        TransferFunctionSynthesizer* transfunc_synthesizer,
-//        const float                  density_factor,
-//        const float                  object_depth = 0.0f );
-
     //constructor for unstruct 
     CellByCellRejectionSampling(
         const vismodule::Camera&  camera,
@@ -158,8 +113,7 @@ public:
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase& object );
-    SuperClass* exec_IS( const vismodule::ObjectBase& object );
+    SuperClass* exec( const vismodule::ObjectBase& object ){};
 
 public:
 
@@ -179,18 +133,8 @@ public:
 
 private:
 
-    void mapping( const vismodule::Camera& camera, const vismodule::StructuredVolumeObject& volume );
-
-    void mapping( const vismodule::Camera& camera, const vismodule::UnstructuredVolumeObject& volume );
-
-    template <typename T>
-    void generate_particles( const vismodule::StructuredVolumeObject& volume );
-
     SuperClass* generate_particles_struct( domain_parameters_struct dom, 
             Type** values, int nvariables);
-
-    template <typename T>
-    void generate_particles( const vismodule::UnstructuredVolumeObject& volume );
 
     SuperClass* generate_particles_unstruct(  domain_parameters_unstruct dom,Type** values, int nvariables,
         float* coordinates, int ncoords,
