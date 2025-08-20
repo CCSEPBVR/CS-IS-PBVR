@@ -89,10 +89,6 @@ public:
 
     void setCoordSynthStr( const std::string& xss, const std::string& yss, const std::string& zss )
     {
-//        m_xcSynthStr = xss;
-//        m_ycSynthStr = yss;
-//        m_zcSynthStr = zss;
-
         vismodule::CoordSynthesizerStrings css( 0, xss, yss, zss );
         this->setCoordSynthStrs( css );
     }
@@ -125,32 +121,7 @@ public:
     }
 
     vismodule::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int timeStep,  const int st );
-//    {
-//        this ->setFinlterInfo( m_mvp );
-//        this ->setCoordSynthTS( st );
-//
-//        struct stat s;
-//        if ( stat( param.m_input_data.c_str(), &s ) )
-//        {
-//            std::cout << "Error. read failed:" << param.m_input_data << std::endl;
-//            exit( 1 );
-//        }
-//        this->createFromFile( param, camera, param.m_subpixel_level, param.m_sampling_step );
-//
-//        vismodule::PointObject* po = this->getPointObject();
-//        return po;
-//    }
-
     vismodule::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int timeStep, const int st, const int vl);
-//    {
-//        this->setFinlterInfo( m_mvp );
-//        this->setCoordSynthTS( st );
-//        this->createFromFile( param, camera, param.m_subpixel_level, param.m_sampling_step, st, vl );
-//        vismodule::PointObject* po = this->getPointObject();
-//        return po;
-//    }
-
-
 
 private:
     vismodule::PointObject* sampling( const Argument& param, const vismodule::Camera& camera, vismodule::VolumeObjectBase& volume, const size_t subpixel_level, const float sampling_step );

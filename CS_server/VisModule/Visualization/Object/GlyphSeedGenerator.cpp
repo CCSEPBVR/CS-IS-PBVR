@@ -69,7 +69,6 @@ vismodule::KVSMLObjectGlyph* GlyphSeedGenerator::run( const Argument& param, con
 }
 
 
-
 //void GlyphSeedGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera )
 void GlyphSeedGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide )
 {

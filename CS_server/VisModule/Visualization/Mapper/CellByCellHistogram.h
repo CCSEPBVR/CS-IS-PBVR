@@ -124,14 +124,6 @@ public:
 
     void setObjectDepth( const float object_depth );
 
-private:
-
-    const size_t calculate_number_of_particles(
-    const float density,
-    const float volume_of_cell,
-    vismodule::MersenneTwister* MT ); 
-    
-
     SuperClass* generate_histogram_struct( domain_parameters_struct dom, 
             Type** values, int nvariables);
    
@@ -139,6 +131,14 @@ private:
         float* coordinates, int ncoords,
         unsigned int* connections, int ncells,
         const  vismodule::VolumeObjectBase::CellType& celltype) ;
+
+private:
+
+    const size_t calculate_number_of_particles(
+    const float density,
+    const float volume_of_cell,
+    vismodule::MersenneTwister* MT ); 
+    
 
     const size_t calculate_number_of_particles( const float density, const float volume_of_cell );
 

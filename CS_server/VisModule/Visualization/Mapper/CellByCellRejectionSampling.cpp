@@ -39,6 +39,7 @@
 #include "mpi_controller.h"
 #include <vismodule/DistributedRejectionSampling>
 #endif
+#include "CalculateHistogramMinmax.h"
 
 #ifdef _OPENMP
 #  include <omp.h>
@@ -441,63 +442,27 @@ CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::generate_p
         const vismodule::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ nx_1,
                                          (max_vec.y() - min_vec.y() )/ ny_1,
                                          (max_vec.z() - min_vec.z() )/ nz_1) ;
+
         //-----------------------------------------//
         //----------------Histogram----------------//
         //-----------------------------------------//
         {
-            // Marge x-y-z loop
-            const int nvertices = nx * ny * nz;
-            // "+ 1" means remained loop
-            const int outer_loop = (nvertices % SIMDW == 0) ?
-                nvertices / SIMDW : nvertices / SIMDW + 1;
 
-            #pragma omp for
-            for( int J=0; J<outer_loop; J++ )
-            {
-                int ncells = ((J+1) * SIMDW > nvertices) ? nvertices - J*SIMDW  : SIMDW ;
-                float X_l[SIMDW], Y_l[SIMDW], Z_l[SIMDW];
-                float X_g[SIMDW], Y_g[SIMDW], Z_g[SIMDW];
-                #pragma ivdep
-                for( int I=0; I<SIMDW; I++ )
-                {
-                    const int vertex_id = I + J * SIMDW;
-                    // vertex_id = i + j * nx + k * nx * ny
-                    const int k =  vertex_id / nxy;
-                    const int j = (vertex_id - k * nxy) / nx;
-                    const int i =  vertex_id - k * nxy - j * nx;
+            calculateMinmax_struct( nx, ny, nz, min_vec, cell_length,
+                    nvariables, thid, tf_number,
+                    interp, th_tfs, 
+                    o_scalars, c_scalars,
+                    th_O_min, th_O_max, th_C_min, th_C_max,  
+                    O_min, O_max, C_min, C_max ); 
 
-                    const float x_l = (float)i;
-                    const float y_l = (float)j;
-                    const float z_l = (float)k;
-                    const float x_g = (x_l * cell_length.x())+min_vec.x();
-                    const float y_g = (y_l * cell_length.y())+min_vec.y();
-                    const float z_g = (z_l * cell_length.z())+min_vec.z();
+            calculateHistogram_struct( nx, ny, nz, min_vec, cell_length,
+                    nvariables, thid, tf_number,
+                    interp, th_tfs, 
+                    o_scalars, c_scalars,
+                    o_min, o_max, c_min, c_max, 
+                    th_o_histogram,th_c_histogram );
 
-                    X_l[I] = x_l;
-                    Y_l[I] = y_l;
-                    Z_l[I] = z_l;
-                    X_g[I] = x_g;
-                    Y_g[I] = y_g;
-                    Z_g[I] = z_g;
-                }
-//                timed_section_start(td_SynthOpacityScalars,thid);
-                th_tfs[thid]->SynthesizedOpacityScalars(
-                    interp[thid], X_l, Y_l, Z_l, X_g, Y_g, Z_g, o_scalars );
-//                timed_section_end(td_SynthOpacityScalars,thid);
-//                timed_section_start(td_SynthColorScalars,thid);
-                th_tfs[thid]->SynthesizedColorScalars(
-                    interp[thid], X_l, Y_l, Z_l, X_g, Y_g, Z_g, c_scalars );
-//                timed_section_end(td_SynthColorScalars,thid);
-//                timed_section_start(td_CalculateHistogram,thid);
-                calculate_histogram( th_o_histogram, th_c_histogram,
-                                     th_O_min, th_O_max, th_C_min, th_C_max,
-                                     nbins,
-                                     o_min, o_max, c_min, c_max,
-                                     o_scalars, c_scalars,
-                                     tf_number ,ncells);
-//                timed_section_end(td_CalculateHistogram,thid);
-            }
-        } // end of Histogram
+       } // end of Histogram
 
         //-----------------------------------------//
         //--------------粒子生成ループ開始------------//
@@ -755,26 +720,11 @@ CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::generate_p
 //        timed_section_start(td_VectorIns,thid);
         #pragma omp critical
         {
-            if( parameter_file_opened )
-            {
-                //最大最小値
-                for( int i = 0; i < tf_number; i++ )
-                {
-                    //不透明度
-                    O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
-                    O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
-                    //色
-                    C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
-                    C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
-
-                }
-
                 for( int n = 0; n < tf_number * nbins; n++ )
                 {
                     m_o_histogram[n] += th_o_histogram[n];
                     m_c_histogram[n] += th_c_histogram[n];
                 }
-            }
 
             total_nparticles += th_total_nparticles;
             vertex_coords.insert ( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
@@ -807,11 +757,6 @@ CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::generate_p
     SuperClass::m_coords  = vismodule::ValueArray<vismodule::Real32>( vertex_coords );
     SuperClass::m_colors  = vismodule::ValueArray<vismodule::UInt8>( vertex_colors );
     SuperClass::m_normals = vismodule::ValueArray<vismodule::Real32>( vertex_normals );
-
-//    timer.stop();
-//    time.sampling = timer.sec();
-//    time.nparticles = vertex_coords.size()/3;
-//    timer.start();
 
     for(int i=0; i<max_threads; i++)
     {
@@ -1196,6 +1141,22 @@ CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::generate_p
         vismodule::RGBColor color_array[ SIMDW ];
         // -----------------------------------
 
+        calculateHistogram_unstruct(
+        cell_index, ncells, local_center_array, global_center_array,
+        nvariables, thid, tf_number,
+        interp, th_tfs, 
+        o_scalars_array, c_scalars_array,
+        o_min, o_max, c_min, c_max, 
+        th_o_histogram,th_c_histogram );
+
+        calculateMinmax_unstruct(cell_index, ncells, local_center_array,global_center_array,
+               nvariables, thid, tf_number,
+               interp, th_tfs, 
+               o_scalars_array, c_scalars_array,
+               th_O_min, th_O_max, th_C_min, th_C_max,  
+               O_min, O_max, C_min, C_max ); 
+
+
         //粒子生成ループ開始
 #pragma omp for schedule( dynamic ) nowait  
         //#pragma omp for schedule( static ) nowait
@@ -1223,49 +1184,6 @@ CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::generate_p
             interp[thid][0]->transformLocalToGlobalArray( remain,
                     local_center_array,
                     global_center_array );
-
-            if( parameter_file_opened )
-            {
-
-                th_tfs[thid]->SynthesizedOpacityScalarsArray( interp[thid],
-                        remain,
-                        local_center_array,
-                        global_center_array,
-                        o_scalars_array );
-
-                th_tfs[thid]->SynthesizedColorScalarsArray( interp[thid],
-                        remain,
-                        local_center_array,
-                        global_center_array,
-                        c_scalars_array );
-
-                for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
-                {
-                    for( int i = 0; i < tf_number; i++ )
-                    {
-                        float h = (o_scalars_array[cell_BLK][i] - o_min[i])/( o_max[i] - o_min[i] )*nbins;
-                        int H = (int)h;
-                        if( 0 <= H && H <= nbins )
-                        {
-                            if( H == nbins ) H--;
-                            th_o_histogram[ H + nbins*i]++;
-                        }
-
-                        h = (c_scalars_array[cell_BLK][i] - c_min[i])/( c_max[i] - c_min[i] )*nbins;
-                        H = (int)h;
-                        if( 0 <= H && H <= nbins )
-                        {
-                            if( H == nbins ) H--;
-                            th_c_histogram[ H + nbins*i]++;
-                        }
-                        // 20190128 修正
-                        th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
-                        th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
-                        th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
-                        th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
-                    }
-                }
-            }
 
 //            th_tfs[thid]->CalculateOpacityArray( interp[thid],
                 th_tfs[thid]->CalculateOpacityArrayAverage( interp[thid],
@@ -1535,28 +1453,11 @@ CellByCellRejectionSampling::SuperClass* CellByCellRejectionSampling::generate_p
 //        if (thid == 0 )std::cout << __FILE__ << ":" << __LINE__ <<  ":" << __func__ << std::endl;
 #pragma omp critical
         {
-            if( parameter_file_opened )
-            {
-                //最大最小値
-                for( int i = 0; i < tf_number; i++ )
-                {
-                    //不透明度
-                    O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
-                    O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
-                    //色
-                    C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
-                    C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
-
-                }
-
-            }   
-
             for( int n = 0; n < tf_number * nbins; n++ )
             {
                 m_o_histogram[n] += th_o_histogram[n];
                 m_c_histogram[n] += th_c_histogram[n];
             }
-
 
             vertex_coords.insert ( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
             vertex_colors.insert ( vertex_colors.end(), th_vertex_colors.begin(), th_vertex_colors.end() );
