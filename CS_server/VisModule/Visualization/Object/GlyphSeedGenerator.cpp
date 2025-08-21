@@ -246,21 +246,82 @@ void GlyphSeedGenerator::sampling( vismodule::VolumeObjectBase* volume,const jpv
     vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();
 
 
-    Type** values;
-    vismodule::AnyValueArray valueArray; 
+//    Type** values;
     std::vector<float> coordinates; 
     int ncoords;
     std::vector<unsigned int> connections ;
     int ncells; 
-    int nnodes;
-    int nvariables;
     vismodule::VolumeObjectBase::CellType celltype;
+
+        //詰め替え処理
+        vismodule::AnyValueArray valueArray; 
+        valueArray = volume->values(); 
+        int nnodes = volume->nnodes();
+        int nvariables = volume->veclen();
+
+        // ここで変数の値をfloatでまとめることで粒子生成のテンプレート化を回避
+        std::unique_ptr<std::unique_ptr<Type[]>[]> values(new std::unique_ptr<Type[]>[nvariables]);
+
+        // 実行時型分岐で呼び出す
+        const std::type_info& type = volume->values().typeInfo()->type();
+        if (type == typeid(vismodule::Int8))
+        {
+            copy_values<vismodule::Int8>(valueArray, values, nvariables, nnodes);
+        }  
+        else if ( type == typeid( vismodule::Int16  ) )
+        {
+            copy_values<vismodule::Int16>(valueArray, values, nvariables, nnodes);
+        } 
+        else if ( type == typeid( vismodule::Int32  ) )
+        {
+            copy_values<vismodule::Int32>(valueArray, values, nvariables, nnodes);
+        }
+        else if ( type == typeid( vismodule::Int64  ) )
+        {
+            copy_values<vismodule::Int64>(valueArray, values, nvariables, nnodes);
+        }
+        else if ( type == typeid( vismodule::UInt8  ) )
+        {
+            copy_values<vismodule::UInt8>(valueArray, values, nvariables, nnodes);
+        }
+        else if ( type == typeid( vismodule::UInt16 ) )
+        {
+            copy_values<vismodule::UInt16>(valueArray, values, nvariables, nnodes);
+        }
+        else if ( type == typeid( vismodule::UInt32 ) )
+        {
+            copy_values<vismodule::UInt32>(valueArray, values, nvariables, nnodes);
+        }
+        else if ( type == typeid( vismodule::UInt64 ) )
+        {
+            copy_values<vismodule::UInt64>(valueArray, values, nvariables, nnodes);
+        }
+        else if ( type == typeid( vismodule::Real32 ) )
+        {
+            copy_values<vismodule::Real32>(valueArray, values, nvariables, nnodes);
+        }
+        else if ( type == typeid( vismodule::Real64 ) )
+        {
+            copy_values<vismodule::Real64>(valueArray, values, nvariables, nnodes);
+        }
+        else 
+        {
+            throw std::runtime_error("Unsupported type");
+        }
+
+        // 一時的に raw pointer の配列を作る
+        std::vector<float*> raw_values(nvariables);
+        for (int j = 0; j < nvariables; ++j) 
+        {
+            raw_values[j] = values[j].get();
+        }
+ 
 
     if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Unstructured)
     {
         const vismodule::UnstructuredVolumeObject* uvo_p = static_cast<const vismodule::UnstructuredVolumeObject*>( volume );
        
-        valueArray = volume->values(); 
+//        valueArray = volume->values(); 
         coordinates.assign( (float * )volume->coords().begin(),(float * )volume->coords().end()); 
         ncoords =  volume->nnodes();
         connections.assign((unsigned int*)uvo_p->connections().begin(), (unsigned int*)uvo_p->connections().end());
@@ -269,34 +330,56 @@ void GlyphSeedGenerator::sampling( vismodule::VolumeObjectBase* volume,const jpv
         celltype = uvo_p->cellType();
 
         nvariables = volume->veclen();
-        values = new Type * [nvariables];
+//        values = new Type * [nvariables];
+//
+//        for ( int j = 0; j < nvariables; j++ )
+//        {
+//            values[j] = new float[nnodes];
+//            for ( int i = 0; i < nnodes; i++ )
+//            {
+//                int  it = j * nnodes  + i;
+//                values[j][i] = valueArray.at<Type>(it);  
+//            }
+//        } 
 
-        for ( int j = 0; j < nvariables; j++ )
-        {
-            values[j] = new float[nnodes];
-            for ( int i = 0; i < nnodes; i++ )
-            {
-                int  it = j * nnodes  + i;
-                values[j][i] = valueArray.at<Type>(it);  
-            }
-        } 
-        GlyphSeed glyph_generator( clntMes, number_of_divide, values, nvariables,
+//        // 一時的に raw pointer の配列を作る
+//        std::vector<float*> raw_values(nvariables);
+//        for (int j = 0; j < nvariables; ++j) 
+//        {
+//            raw_values[j] = values[j].get();
+//        }
+ 
+        GlyphSeed glyph_generator( clntMes, number_of_divide, raw_values.data(), nvariables,
                 coordinates.data(), ncoords, connections.data(), ncells, celltype);
         glyph_generator.getGlyphData(&m_object);
         
-        for (int i = 0; i < nvariables; i++)
-        {
-            delete[] values[i];
-        }
-        delete[] values;
-
+//        for (int i = 0; i < nvariables; i++)
+//        {
+//            delete[] values[i];
+//        }
+//        delete[] values;
 
     }
     else if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Structured)
     {
-        const vismodule::StructuredVolumeObject* vo_p = static_cast<const vismodule::StructuredVolumeObject*>( volume );
-            GlyphSeed glyph_generator( clntMes, number_of_divide, *vo_p);
-            glyph_generator.getGlyphData(&m_object);
+        const vismodule::StructuredVolumeObject* svo_p = static_cast<const vismodule::StructuredVolumeObject*>( volume );
+
+        int resol[3] = { svo_p->resolution().x(), svo_p->resolution().y(), svo_p->resolution().z()};
+        domain_parameters_struct dom={
+         volume->minObjectCoord().x()
+        ,volume->minObjectCoord().y()
+        ,volume->minObjectCoord().z()
+        ,volume->maxObjectCoord().x()
+        ,volume->maxObjectCoord().y()
+        ,volume->maxObjectCoord().z()
+        ,resol
+        ,1.f
+        };
+
+        //GlyphSeed glyph_generator( clntMes, number_of_divide, *vo_p);
+        GlyphSeed glyph_generator( clntMes, number_of_divide, dom, raw_values.data(), nvariables);
+
+        glyph_generator.getGlyphData(&m_object);
     }
 
 }
@@ -349,4 +432,16 @@ void GlyphSeedGenerator::clear()
     m_colors.deallocate();
 }
 
-
+template <typename T>
+void GlyphSeedGenerator::copy_values(vismodule::AnyValueArray& valueArray, std::unique_ptr<std::unique_ptr<Type[]>[]>& values, int nvariables, int nnodes) 
+{
+    for (int j = 0; j < nvariables; j++) 
+    {
+        values[j] = std::make_unique<Type[]>(nnodes);
+        for (int i = 0; i < nnodes; i++) 
+        {
+            int it = j * nnodes + i;
+            values[j][i] = valueArray.at<T>(it);
+        }
+    }
+}

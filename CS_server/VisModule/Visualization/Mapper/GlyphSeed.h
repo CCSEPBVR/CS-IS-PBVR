@@ -16,6 +16,7 @@
 #include <vismodule/PointObject>
 #include <vismodule/GlyphObject>
 #include <vismodule/KVSMLObjectPoint>
+#include <vismodule/CellByCellParticleGenerator>
 
 #include <vismodule/StructuredVolumeObject>
 #include <vismodule/KVSMLObjectGlyph>
@@ -81,9 +82,11 @@ private:
    void  PointSampling( );
    void  PointSampling( int stride);
    void  PointSampling_struct(const vismodule::StructuredVolumeObject* object );
+   void  PointSampling_struct(domain_parameters_struct dom);
    void  PointSampling_unstruct( );
    void  DistributionSampling(int number_of_sampling_point ,int seed, const vismodule::VolumeObjectBase::CellType& celltype);
    void  DistributionSampling_struct(const vismodule::StructuredVolumeObject* object);
+   void  DistributionSampling_struct( domain_parameters_struct dom, Type** values, int nvariables);
    void  DistributionSampling_unstruct(const vismodule::VolumeObjectBase::CellType& celltype);
 
    const size_t calculate_number_of_particles(
@@ -107,6 +110,9 @@ public:
            float* coordinates, int ncoords,
            unsigned int* connections, int ncells,
            const  vismodule::VolumeObjectBase::CellType& celltype ); // CSPBVR
+
+    GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide,  domain_parameters_struct dom, Type** values, int nvariables); // CSPBVR
+
     GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide,const vismodule::StructuredVolumeObject& object ); 
     ~GlyphSeed()
     {

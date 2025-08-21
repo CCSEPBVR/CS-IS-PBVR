@@ -15,9 +15,11 @@
 #ifndef VIS_MODULE__GLYPH_SEED_GENERATOR_H_INCLUDE
 #define VIS_MODULE__GLYPH_SEED_GENERATOR_H_INCLUDE
 
+#include <memory>
 #include <vector>
 #include <string>
 
+#include <vismodule/ValueArray>
 #include <vismodule/Camera>
 #include <vismodule/Argument>
 #include "UnstructuredVolumeObject.h"
@@ -125,6 +127,9 @@ public:
     void setSizes( const vismodule::ValueArray<vismodule::Real32>& sizes );
 
     void clear();
+
+    template <typename T>
+        void copy_values(vismodule::AnyValueArray& valueArray, std::unique_ptr<std::unique_ptr<Type[]>[]>& values, int nvariables, int nnodes);
 private:
     void sampling( vismodule::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
 
