@@ -22,7 +22,7 @@ GlyphSeed::GlyphSeed(Type** values,
         }
     }
 }
-
+#if 0
 GlyphSeed::GlyphSeed( const vismodule::StructuredVolumeObject& object )
 {
     m_g_flag = false; 
@@ -65,7 +65,7 @@ GlyphSeed::GlyphSeed( const vismodule::StructuredVolumeObject& object )
         }
     }
 }
-
+#endif
 // CS用 constructor unstruct 
 GlyphSeed::GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, Type** values,
         int nvariables, float* coordinates, int ncoords,
@@ -91,6 +91,7 @@ GlyphSeed::GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const in
     }
 }
 
+#if 0
 // CS用 constructor struct 
 GlyphSeed::GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const vismodule::StructuredVolumeObject& object ) 
 {
@@ -136,7 +137,7 @@ GlyphSeed::GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const in
     }
     
 }
-
+#endif
 // CS用 constructor struct 
 GlyphSeed::GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide,  domain_parameters_struct dom, Type** values, int nvariables) 
 {
@@ -394,8 +395,8 @@ bool GlyphSeed::SetGlyphParameter( )
 
 }
 #endif
-
-void GlyphSeed::PointSampling_unstruct( )
+#if 1
+void GlyphSeed::PointSampling_unstruct()
 {
     const int stride = m_stride;
     int nPoints = m_ncoords/stride ;
@@ -554,7 +555,7 @@ void GlyphSeed::PointSampling_unstruct( )
 
 //    this -> show();
 }
-
+#endif
 void GlyphSeed::PointSampling_struct(domain_parameters_struct dom)
 {
     const int stride = m_stride;
@@ -786,7 +787,7 @@ void GlyphSeed::PointSampling_struct(domain_parameters_struct dom)
 
 //    this -> show();
 }
-
+#if 0
 void GlyphSeed::PointSampling_struct(const vismodule::StructuredVolumeObject* object )
 {
     const int stride = m_stride;
@@ -1008,7 +1009,7 @@ void GlyphSeed::PointSampling_struct(const vismodule::StructuredVolumeObject* ob
 
 //    this -> show();
 }
-
+#endif
 void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase::CellType& celltype)
 {
     const int seed          = m_seed;
@@ -1681,7 +1682,7 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
 
 #endif
 }
-
+#if 0
 void GlyphSeed::DistributionSampling_struct(const vismodule::StructuredVolumeObject* object)
 {
 #if 1
@@ -1961,7 +1962,7 @@ void GlyphSeed::DistributionSampling_struct(const vismodule::StructuredVolumeObj
 
 #endif
 }
-
+#endif
 const size_t GlyphSeed::calculate_number_of_particles(
     const float density,
     const float volume_of_cell,
