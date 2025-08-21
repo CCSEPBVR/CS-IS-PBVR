@@ -190,6 +190,7 @@ bool GlyphSeed::InputParameter(const jpv::ParticleTransferClientMessage& clntMes
     
     float glyph_min=0; 
     float glyph_max=0;
+    // minmaxの値は前ステップで算出したものを参照
     m_color_min = clntMes.m_glyph_color_min;
     m_color_max = clntMes.m_glyph_color_max;
     m_size_min = clntMes.m_glyph_size_min;
@@ -1258,6 +1259,7 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
 
      } //#pragma omp parallel
 
+    //sizeのminmaxを計算する
     if (m_size_sampling_method == jpv::DataDefines::SingleVariable || m_size_sampling_method == jpv::DataDefines::VariableArray )
     { 
         int n_size_data=m_glyph_sizes.size();
@@ -1321,6 +1323,7 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
         int n_color_data=m_glyph_colors_data.size();
         float max=FLT_MIN;
         float min=FLT_MAX;
+        //グリフ間のminmaxを算出 (読み取ったファイル内のみ。全体のminmaxではない)
         for(int k = 0; k< n_color_data; k++)
         {
             max = vismodule::Math::Max(m_glyph_colors_data[k], max ); 
@@ -1369,6 +1372,7 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
             m_glyph_colors.push_back( color.g());
             m_glyph_colors.push_back( color.b());
         }
+        // 各ファイルのminmaxを登録。集約処理はgenerate_glyph.cppで（関数外）
         m_color_min = min;
         m_color_max = max;
     }
@@ -1646,6 +1650,7 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
 
 #if 0 // IS
 #else 
+        // 各ファイルのminmaxを登録。集約処理はgenerate_glyph.cppで（関数外）
         m_color_map.setRange(m_color_min,m_color_max);
         std::cout << "m_color_min = " << m_color_min << std::endl;
         std::cout << "m_color_max = " << m_color_max << std::endl;
@@ -1676,6 +1681,7 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
 
 #endif
 }
+
 void GlyphSeed::DistributionSampling_struct(const vismodule::StructuredVolumeObject* object)
 {
 #if 1
@@ -1924,6 +1930,7 @@ void GlyphSeed::DistributionSampling_struct(const vismodule::StructuredVolumeObj
 
 #if 0 // IS
 #else 
+        // 各ファイルのminmaxを登録。集約処理はgenerate_glyph.cppで（関数外）
         m_color_map.setRange(m_color_min,m_color_max);
         std::cout << "m_color_min = " << m_color_min << std::endl;
         std::cout << "m_color_max = " << m_color_max << std::endl;

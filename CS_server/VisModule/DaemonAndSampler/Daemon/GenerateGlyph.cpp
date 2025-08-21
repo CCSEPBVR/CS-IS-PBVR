@@ -199,6 +199,7 @@ void generate_glyph_master(Argument &param, jpv::ParticleTransferClientMessage& 
                     originalGlyph->clear();
                     originalGlyph = tmp_obj;
 
+                    // ファイル間のminmaxを集約
                     for ( int tf = 0; tf < cnt/2; tf++ )
                     {
                         //changed by shimomura 2023/07/24
