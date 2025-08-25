@@ -6,10 +6,17 @@
 #include <vismodule/UnstructuredVolumeObject>
 #include <vismodule/StructuredVolumeObject>
 //#include "StructuredVolumeObject.h"
+#include <vismodule/CellByCellParticleGenerator>
 #ifndef CPU_VER
 #include <mpi.h>
 #endif
 
+#include "TransferFunctionSynthesizer.h"
+#include "float.h"
+#include <vismodule/UnstructuredVolumeObject>
+#include "CellBase.h"
+#include <vismodule/TrilinearInterpolator>
+#include "TetrahedralCell.h"
 
 #include <iomanip>
 #include <vismodule/PlotOverLineProperty>
@@ -140,17 +147,20 @@ private:
     const vismodule::UnstructuredVolumeObject* m_volume;
     const POL::Polyhedron* m_polyhedron;
 
+    // 変数配列
     float **m_values;
     int m_nvariables;
     float* m_coordinates;
-    int m_ncoords;
+    int m_nnodes;
     unsigned int* m_connections;
     int m_ncells;
-    vismodule::VolumeObjectBase::CellType m_celltype; 
+    vismodule::VolumeObjectBase::CellType m_cellType; 
 
     size_t m_resolution_x;
     size_t m_resolution_y;
     size_t m_resolution_z;
+
+    domain_parameters_struct m_dom;    
 
     // 生成判定フラグ
     bool m_plot_flag;
@@ -180,17 +190,23 @@ public:
 //    PlotOverLine( const pbvr::StructuredVolumeObject* volume,
                             const size_t resolution,
                             const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
-
+                        
     PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
                   const size_t resolution,
                   const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
 
-//    PlotOverLine( float** values, int nvariables,
-//        float* coordinates, int ncoords,
-//        unsigned int* connections, int ncells,
-//        const  vismodule::VolumeObjectBase::CellType& celltype, 
-//        const size_t resolution,
-//        const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
+    //変数配列用コンストラクター
+    PlotOverLine( Type** values, int nvariables,
+        float* coordinates, int ncoords,
+        unsigned int* connections, int ncells,
+        const  vismodule::VolumeObjectBase::CellType& celltype, 
+        const size_t resolution,
+        const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable );
+
+
+    PlotOverLine( domain_parameters_struct dom, float** values, int nvariables, 
+        const size_t resolution,
+        const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable );
 
     // CS用
     PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
@@ -201,7 +217,6 @@ public:
     PlotOverLine( const vismodule::StructuredVolumeObject* volume,
                   const size_t resolution,
                   const vismodule::Vec3 P0, const vismodule::Vec3 P1 , const int plot_variable);
-
 
 
     PlotOverLine( const POL::Polyhedron* volume,

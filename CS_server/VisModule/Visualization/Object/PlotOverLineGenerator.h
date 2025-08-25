@@ -161,6 +161,10 @@ public:
     void clear();
 private:
 //    void sampling( vismodule::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
+    
+    template <typename T>
+        void copy_values(vismodule::AnyValueArray& valueArray, std::unique_ptr<std::unique_ptr<Type[]>[]>& values, int nvariables, int nnodes);
+
 
 };
 

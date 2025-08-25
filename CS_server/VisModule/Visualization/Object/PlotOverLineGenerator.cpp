@@ -58,73 +58,153 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
 //FJ_TIMER_KAWAMURA
 
     volume->updateMinMaxValues();
-    //volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
-//    volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
-//    volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
-
     std::cout << *volume << std::endl;
     std::cout << "min:" << volume->minObjectCoord() << ", max:" << volume->maxObjectCoord() << std::endl;
     std::cout << "min:" << volume->minExternalCoord() << ", max:" << volume->maxExternalCoord() << std::endl;
 
     vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();
 
+    //詰め替え処理
+    vismodule::AnyValueArray valueArray; 
+    valueArray = volume->values(); 
+    int nnodes = volume->nnodes();
+    int nvariables = volume->veclen();
+
+    // ここで変数の値をfloatでまとめることで粒子生成のテンプレート化を回避
+    std::unique_ptr<std::unique_ptr<Type[]>[]> values(new std::unique_ptr<Type[]>[nvariables]);
+
+    // 実行時型分岐で呼び出す
+    const std::type_info& type = volume->values().typeInfo()->type();
+    if (type == typeid(vismodule::Int8))
+    {
+        copy_values<vismodule::Int8>(valueArray, values, nvariables, nnodes);
+    }  
+    else if ( type == typeid( vismodule::Int16  ) )
+    {
+        copy_values<vismodule::Int16>(valueArray, values, nvariables, nnodes);
+    } 
+    else if ( type == typeid( vismodule::Int32  ) )
+    {
+        copy_values<vismodule::Int32>(valueArray, values, nvariables, nnodes);
+    }
+    else if ( type == typeid( vismodule::Int64  ) )
+    {
+        copy_values<vismodule::Int64>(valueArray, values, nvariables, nnodes);
+    }
+    else if ( type == typeid( vismodule::UInt8  ) )
+    {
+        copy_values<vismodule::UInt8>(valueArray, values, nvariables, nnodes);
+    }
+    else if ( type == typeid( vismodule::UInt16 ) )
+    {
+        copy_values<vismodule::UInt16>(valueArray, values, nvariables, nnodes);
+    }
+    else if ( type == typeid( vismodule::UInt32 ) )
+    {
+        copy_values<vismodule::UInt32>(valueArray, values, nvariables, nnodes);
+    }
+    else if ( type == typeid( vismodule::UInt64 ) )
+    {
+        copy_values<vismodule::UInt64>(valueArray, values, nvariables, nnodes);
+    }
+    else if ( type == typeid( vismodule::Real32 ) )
+    {
+        copy_values<vismodule::Real32>(valueArray, values, nvariables, nnodes);
+    }
+    else if ( type == typeid( vismodule::Real64 ) )
+    {
+        copy_values<vismodule::Real64>(valueArray, values, nvariables, nnodes);
+    }
+    else 
+    {
+        throw std::runtime_error("Unsupported type");
+    }
+
     if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Unstructured)
     {
+
+                        std::cout << __LINE__ << __FUNCTION__ <<std::endl;
+//        const vismodule::UnstructuredVolumeObject* uvo_p = static_cast<const vismodule::UnstructuredVolumeObject*>( volume );
+//        vismodule::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
+//        vismodule::Vec3 end_point( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
+//        vismodule::UnstructuredVolumeObject* vo_p = new vismodule::UnstructuredVolumeObject();
+//        switch(volume -> cellType())
+//        {
+//            case vismodule::VolumeObjectBase::Tetrahedra:
+//                {
+//                    vo_p -> setCellType(vismodule::VolumeObjectBase::Tetrahedra); 
+//                    break;
+//                }
+//            case vismodule::VolumeObjectBase::QuadraticTetrahedra:
+//                {
+//                    vo_p -> setCellType(vismodule::VolumeObjectBase::QuadraticTetrahedra); 
+//                    break;
+//                }
+//            case vismodule::VolumeObjectBase::Hexahedra:
+//                {
+//                    vo_p -> setCellType(vismodule::VolumeObjectBase::Hexahedra); 
+//                    break;
+//                }
+//            case vismodule::VolumeObjectBase::QuadraticHexahedra:
+//                {
+//                    vo_p -> setCellType(vismodule::VolumeObjectBase::QuadraticHexahedra); 
+//                    break;
+//                }
+//            case vismodule::VolumeObjectBase::Prism:
+//                {
+//                    vo_p -> setCellType(vismodule::VolumeObjectBase::Prism); 
+//                    break;
+//                }
+//            case vismodule::VolumeObjectBase::Pyramid:
+//                {
+//                    vo_p -> setCellType(vismodule::VolumeObjectBase::Pyramid); 
+//                    break;
+//                }
+//            default:
+//                {
+//                    visModuleMessageError( "Unsupported cell type." );
+//                    return;
+//                }
+//        }
+//
+//        vo_p -> setNNodes( uvo_p->nnodes()); 
+//        vo_p -> setNCells( uvo_p->ncells()); 
+//        vo_p -> setCoords( uvo_p->coords()); 
+//        vo_p -> setVeclen( uvo_p->veclen()); 
+//        vo_p -> setValues( uvo_p->values()); 
+//        vo_p -> setConnections( uvo_p->connections()); 
+
+//詰め替え処理
+        std::vector<float> coordinates; 
+        int ncoords;
+        std::vector<unsigned int> connections ;
+        int ncells; 
+        vismodule::VolumeObjectBase::CellType celltype;
+
         const vismodule::UnstructuredVolumeObject* uvo_p = static_cast<const vismodule::UnstructuredVolumeObject*>( volume );
         vismodule::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
         vismodule::Vec3 end_point( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
-        vismodule::UnstructuredVolumeObject* vo_p = new vismodule::UnstructuredVolumeObject();
-        switch(volume -> cellType())
+       
+        coordinates.assign( (float*)volume->coords().begin(),(float * )volume->coords().end()); 
+        ncoords =  volume->nnodes();
+        connections.assign((unsigned int*)uvo_p->connections().begin(), (unsigned int*)uvo_p->connections().end());
+        ncells = uvo_p->ncells();
+        celltype = uvo_p->cellType();
+
+        // 一時的に raw pointer の配列を作る
+        std::vector<float*> raw_values(nvariables);
+        for (int j = 0; j < nvariables; ++j) 
         {
-            case vismodule::VolumeObjectBase::Tetrahedra:
-                {
-                    vo_p -> setCellType(vismodule::VolumeObjectBase::Tetrahedra); 
-                    break;
-                }
-            case vismodule::VolumeObjectBase::QuadraticTetrahedra:
-                {
-                    vo_p -> setCellType(vismodule::VolumeObjectBase::QuadraticTetrahedra); 
-                    break;
-                }
-            case vismodule::VolumeObjectBase::Hexahedra:
-                {
-                    vo_p -> setCellType(vismodule::VolumeObjectBase::Hexahedra); 
-                    break;
-                }
-            case vismodule::VolumeObjectBase::QuadraticHexahedra:
-                {
-                    vo_p -> setCellType(vismodule::VolumeObjectBase::QuadraticHexahedra); 
-                    break;
-                }
-            case vismodule::VolumeObjectBase::Prism:
-                {
-                    vo_p -> setCellType(vismodule::VolumeObjectBase::Prism); 
-                    break;
-                }
-            case vismodule::VolumeObjectBase::Pyramid:
-                {
-                    vo_p -> setCellType(vismodule::VolumeObjectBase::Pyramid); 
-                    break;
-                }
-            default:
-                {
-                    visModuleMessageError( "Unsupported cell type." );
-                    return;
-                }
+            raw_values[j] = values[j].get();
         }
-
-        vo_p -> setNNodes( uvo_p->nnodes()); 
-        vo_p -> setNCells( uvo_p->ncells()); 
-        vo_p -> setCoords( uvo_p->coords()); 
-        vo_p -> setVeclen( uvo_p->veclen()); 
-        vo_p -> setValues( uvo_p->values()); 
-        vo_p -> setConnections( uvo_p->connections()); 
-
+ 
         int plot_variable =  std::atoi(clntMes.m_plot_variable.substr(1).c_str()) -1;
 
         try
         {
-            PlotOverLine plot_over_line(vo_p, clntMes.m_sampling_size, start_point, end_point, plot_variable);
+            //PlotOverLine plot_over_line(vo_p, clntMes.m_sampling_size, start_point, end_point, plot_variable);
+            PlotOverLine plot_over_line( raw_values.data(), nvariables, coordinates.data(), ncoords,
+            connections.data(), ncells,  celltype, clntMes.m_sampling_size, start_point, end_point, plot_variable);
 
             m_object->setValuesOnLine(plot_over_line.values()); 
             m_object->setXAxis(plot_over_line.xAxis()); 
@@ -139,29 +219,36 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
             delete volume;
             throw e;
         }
-        delete vo_p;
+//        delete vo_p;
     }
     else if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Structured)
     {
+                        std::cout << __LINE__ << __FUNCTION__ <<std::endl;
 #if 1
         const vismodule::StructuredVolumeObject* object = static_cast<const vismodule::StructuredVolumeObject*>( volume );
         vismodule::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
         vismodule::Vec3 end_point( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
-//        vismodule::StructuredVolumeObject* vo_p = new vismodule::StructuredVolumeObject();
-//        vo_p -> setNNodes( vo_p->nnodes()); 
-//        vo_p -> setNCells( vo_p->ncells()); 
-//        vo_p -> setCoords( vo_p->coords()); 
-//        vo_p -> setVeclen( vo_p->veclen()); 
-//        vo_p -> setResolution( vo_p->resolution()); 
-//        vo_p -> setGridType( vo_p->gridType()); 
-//        vo_p -> setValues( vo_p->values()); 
-//        vo_p -> setConnections( uvo_p->connections()); 
 
         int plot_variable =  std::atoi(clntMes.m_plot_variable.substr(1).c_str()) -1;
 
+        const vismodule::StructuredVolumeObject* svo_p = static_cast<const vismodule::StructuredVolumeObject*>( volume );
+        int resol[3] = { svo_p->resolution().x(), svo_p->resolution().y(), svo_p->resolution().z()};
+        domain_parameters_struct dom={
+         volume->minObjectCoord().x()
+        ,volume->minObjectCoord().y()
+        ,volume->minObjectCoord().z()
+        ,volume->maxObjectCoord().x()
+        ,volume->maxObjectCoord().y()
+        ,volume->maxObjectCoord().z()
+        ,resol
+        ,1.f
+        };
+
+
         try
         {
-            PlotOverLine plot_over_line(object, clntMes.m_sampling_size, start_point, end_point, plot_variable);
+            //PlotOverLine plot_over_line(object, clntMes.m_sampling_size, start_point, end_point, plot_variable);
+            PlotOverLine plot_over_line(dom, values, nvariables, clntMes.m_sampling_size, start_point, end_point, plot_variable);
 
             m_object->setValuesOnLine(plot_over_line.values()); 
             m_object->setXAxis(plot_over_line.xAxis()); 
@@ -245,6 +332,9 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
     std::cout << "min:" << volume->minObjectCoord() << ", max:" << volume->maxObjectCoord() << std::endl;
     std::cout << "min:" << volume->minExternalCoord() << ", max:" << volume->maxExternalCoord() << std::endl;
 
+
+
+
     if ( is_structured )
     {
         const vismodule::StructuredVolumeObject* object = static_cast<const vismodule::StructuredVolumeObject*>( volume );
@@ -255,6 +345,7 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
             m_object->setValuesOnLine(plot_over_line.values()); 
             m_object->setXAxis(plot_over_line.xAxis()); 
             m_object->setMask(plot_over_line.mask()); 
+
         }
         catch ( const std::runtime_error& e )
         {
@@ -450,4 +541,16 @@ void PlotOverLineGenerator::clear()
     m_colors.deallocate();
 }
 
-
+template <typename T>
+void PlotOverLineGenerator::copy_values(vismodule::AnyValueArray& valueArray, std::unique_ptr<std::unique_ptr<Type[]>[]>& values, int nvariables, int nnodes) 
+{
+    for (int j = 0; j < nvariables; j++) 
+    {
+        values[j] = std::make_unique<Type[]>(nnodes);
+        for (int i = 0; i < nnodes; i++) 
+        {
+            int it = j * nnodes + i;
+            values[j][i] = valueArray.at<T>(it);
+        }
+    }
+}

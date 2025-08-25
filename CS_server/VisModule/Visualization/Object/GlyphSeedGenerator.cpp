@@ -321,7 +321,7 @@ void GlyphSeedGenerator::sampling( vismodule::VolumeObjectBase* volume,const jpv
     {
         const vismodule::UnstructuredVolumeObject* uvo_p = static_cast<const vismodule::UnstructuredVolumeObject*>( volume );
        
-//        valueArray = volume->values(); 
+//      valueArray = volume->values(); 
         coordinates.assign( (float * )volume->coords().begin(),(float * )volume->coords().end()); 
         ncoords =  volume->nnodes();
         connections.assign((unsigned int*)uvo_p->connections().begin(), (unsigned int*)uvo_p->connections().end());
@@ -330,35 +330,11 @@ void GlyphSeedGenerator::sampling( vismodule::VolumeObjectBase* volume,const jpv
         celltype = uvo_p->cellType();
 
         nvariables = volume->veclen();
-//        values = new Type * [nvariables];
-//
-//        for ( int j = 0; j < nvariables; j++ )
-//        {
-//            values[j] = new float[nnodes];
-//            for ( int i = 0; i < nnodes; i++ )
-//            {
-//                int  it = j * nnodes  + i;
-//                values[j][i] = valueArray.at<Type>(it);  
-//            }
-//        } 
 
-//        // 一時的に raw pointer の配列を作る
-//        std::vector<float*> raw_values(nvariables);
-//        for (int j = 0; j < nvariables; ++j) 
-//        {
-//            raw_values[j] = values[j].get();
-//        }
- 
         GlyphSeed glyph_generator( clntMes, number_of_divide, raw_values.data(), nvariables,
                 coordinates.data(), ncoords, connections.data(), ncells, celltype);
         glyph_generator.getGlyphData(&m_object);
         
-//        for (int i = 0; i < nvariables; i++)
-//        {
-//            delete[] values[i];
-//        }
-//        delete[] values;
-
     }
     else if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Structured)
     {
@@ -376,9 +352,7 @@ void GlyphSeedGenerator::sampling( vismodule::VolumeObjectBase* volume,const jpv
         ,1.f
         };
 
-        //GlyphSeed glyph_generator( clntMes, number_of_divide, *vo_p);
         GlyphSeed glyph_generator( clntMes, number_of_divide, dom, raw_values.data(), nvariables);
-
         glyph_generator.getGlyphData(&m_object);
     }
 
