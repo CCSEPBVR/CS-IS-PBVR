@@ -76,14 +76,11 @@ CellByCellMetropolisSampling::CellByCellMetropolisSampling():
 
 // unstruct
 CellByCellMetropolisSampling::CellByCellMetropolisSampling( 
-    const vismodule::Camera&           camera,
     domain_parameters_unstruct dom,
     Type** values, int nvariables,
     float* coordinates, int ncoords,
     unsigned int* connections, int ncells,
     const  vismodule::VolumeObjectBase::CellType& celltype, 
-    const size_t                 subpixel_level,
-    const float                  sampling_step,
     const vismodule::TransferFunction& transfer_function,
     std::vector<vismodule::TransferFunction>& transfer_function_array, 
     TransferFunctionSynthesizer* transfunc_synthesizer,
@@ -97,20 +94,17 @@ CellByCellMetropolisSampling::CellByCellMetropolisSampling(
     m_particle_density( particle_density ),
     m_coord_synthesizer_strings(coord_synthesizer_strings)
 {
-    this->setSubpixelLevel( subpixel_level );
-    this->setSamplingStep( sampling_step );
+//    this->setSubpixelLevel( subpixel_level );
+//    this->setSamplingStep( sampling_step );
     this->generate_particles_unstruct(dom, values, nvariables,
             coordinates, ncoords, connections, ncells, celltype);
 }
 
 //struct
 CellByCellMetropolisSampling::CellByCellMetropolisSampling(
-        const vismodule::Camera&  camera,
         domain_parameters_struct dom, 
         Type** values,  
         int nvariables, 
-        const size_t                 subpixel_level,
-        const float                  sampling_step,
         const vismodule::TransferFunction& transfer_function,
         std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
@@ -124,8 +118,8 @@ CellByCellMetropolisSampling::CellByCellMetropolisSampling(
     m_particle_density( particle_density), 
     m_coord_synthesizer_strings(coord_synthesizer_strings)
 {
-    this->setSubpixelLevel( subpixel_level );
-    this->setSamplingStep( sampling_step );
+//    this->setSubpixelLevel( subpixel_level );
+//    this->setSamplingStep( sampling_step );
     //this->exec( dom, values, nvariables);
     this->generate_particles_struct(dom, values, nvariables);
 }

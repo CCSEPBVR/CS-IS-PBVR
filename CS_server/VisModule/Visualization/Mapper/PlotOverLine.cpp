@@ -524,7 +524,7 @@ void PlotOverLine::for_hexahedral_mesh( const vismodule::Vec3 P0, const vismodul
             scalar[i] = m_values[m_plot_variable][ local_id[i] ];
             //scalar[i] =  m_volume->values().at<vismodule::Real32>( local_id[i] + ncoord*m_plot_variable);
             //scalar[i] =  m_volume->values().oto<vismodule::Real32>( local_id[i] );
-            std::cout << "scalar[i] = " << scalar[i] << ", local_id[i] = " << local_id[i] << std::endl;
+//            std::cout << "scalar[i] = " << scalar[i] << ", local_id[i] = " << local_id[i] << std::endl;
         }
 
         vismodule::Real32 face_center_scalar[6];

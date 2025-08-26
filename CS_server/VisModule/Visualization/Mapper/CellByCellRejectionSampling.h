@@ -70,14 +70,11 @@ public:
     CellByCellRejectionSampling();
     //constructor for unstruct 
     CellByCellRejectionSampling(
-        const vismodule::Camera&  camera,
         domain_parameters_unstruct dom,
         Type** values, int nvariables,
         float* coordinates, int ncoords,
         unsigned int* connections, int ncells,
         const  vismodule::VolumeObjectBase::CellType& celltype ,
-        const size_t                 subpixel_level,
-        const float                  sampling_step,
         const vismodule::TransferFunction& transfer_function,
         std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
@@ -86,12 +83,9 @@ public:
 
     //constructor for struct 
         CellByCellRejectionSampling(
-        const vismodule::Camera&  camera,
         domain_parameters_struct dom, 
         Type** values,  
         int nvariables, 
-        const size_t                 subpixel_level,
-        const float                  sampling_step,
         const vismodule::TransferFunction& transfer_function,
         std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,

@@ -221,7 +221,6 @@ void CS_PointObjectGenerator::createFromFile( const Argument& param, const vismo
     try
     {
         m_object = sampling( param, camera, *volume, subpixel_level, sampling_step );
-        std::cout << __LINE__ <<__FUNCTION__ << std::endl;
     }
     catch ( const std::runtime_error& e )
     {
@@ -233,7 +232,6 @@ void CS_PointObjectGenerator::createFromFile( const Argument& param, const vismo
         throw e;
     }
 
-        std::cout << __LINE__ <<__FUNCTION__ << std::endl;
     delete volume;
 }
 
@@ -261,7 +259,6 @@ vismodule::PointObject* CS_PointObjectGenerator::sampling( const Argument& param
 
     vismodule::TransferFunction tf = param.m_transfer_function;
     std::vector<vismodule::TransferFunction> tf_array = param.m_transfunc_array;
-    vismodule::VolumeObjectBase::VolumeType voltype = volume.volumeType();
     float max_opacity;
     float max_density;
     float sampling_volume_inverse;
@@ -335,6 +332,8 @@ vismodule::PointObject* CS_PointObjectGenerator::sampling( const Argument& param
             throw std::runtime_error("Unsupported type");
         }
 
+    // ボリュームタイプ取得
+    vismodule::VolumeObjectBase::VolumeType voltype = volume.volumeType();
 
     if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Unstructured)
     {
@@ -387,28 +386,28 @@ vismodule::PointObject* CS_PointObjectGenerator::sampling( const Argument& param
 // CO by shimomura 2022/12/21
     case 'u':
         std::cout << "Uniform sampling" << std::endl;
-        return new vismodule::CellByCellUniformSampling( camera, dom, raw_values.data(), nvariables,
-                   coordinates.data(), ncoords, connections.data(), ncells, celltype, subpixel_level, sampling_step, tf, tf_array,
+        return new vismodule::CellByCellUniformSampling(  dom, raw_values.data(), nvariables,
+                   coordinates.data(), ncoords, connections.data(), ncells, celltype, tf, tf_array,
                                                       param.m_transfunc_synthesizer,
                                                       param.m_particle_density , &m_coord_synthesizer_strings);
 
     case 'r':
         std::cout << "Rejection sampling" << std::endl;
-        return new vismodule::CellByCellRejectionSampling( camera, dom, raw_values.data(), nvariables,
-                coordinates.data(), ncoords, connections.data(), ncells, celltype, subpixel_level, sampling_step, tf, tf_array,
+        return new vismodule::CellByCellRejectionSampling( dom, raw_values.data(), nvariables,
+                coordinates.data(), ncoords, connections.data(), ncells, celltype, tf, tf_array,
                                                       param.m_transfunc_synthesizer,
                                                       param.m_particle_density,&m_coord_synthesizer_strings );
     case 'm':
         std::cout << "Metropolis sampling" << std::endl;
-        return new vismodule::CellByCellMetropolisSampling( camera, dom, raw_values.data(), nvariables,
-                coordinates.data(), ncoords, connections.data(), ncells, celltype, subpixel_level, sampling_step, tf, tf_array,
+        return new vismodule::CellByCellMetropolisSampling( dom, raw_values.data(), nvariables,
+                coordinates.data(), ncoords, connections.data(), ncells, celltype, tf, tf_array,
                                                       param.m_transfunc_synthesizer,
                                                       param.m_particle_density,&m_coord_synthesizer_strings );
 
     case 'h':
         std::cout << "Histogram " << std::endl;
-        return new vismodule::CellByCellHistogram( camera, dom, raw_values.data(), nvariables,
-                coordinates.data(), ncoords, connections.data(), ncells, celltype, subpixel_level, sampling_step, tf, tf_array,
+        return new vismodule::CellByCellHistogram( dom, raw_values.data(), nvariables,
+                coordinates.data(), ncoords, connections.data(), ncells, celltype, tf, tf_array,
                                                       param.m_transfunc_synthesizer,
                                                       param.m_particle_density,&m_coord_synthesizer_strings );
 
@@ -464,27 +463,27 @@ vismodule::PointObject* CS_PointObjectGenerator::sampling( const Argument& param
 // CO by shimomura 2022/12/21
     case 'u':
         std::cout << "Uniform sampling" << std::endl;
-        return new vismodule::CellByCellUniformSampling( camera, dom, raw_values.data(), nvariables, 
-                                                    subpixel_level, sampling_step, tf, tf_array,
+        return new vismodule::CellByCellUniformSampling(  dom, raw_values.data(), nvariables, 
+                                                     tf, tf_array,
                                                     param.m_transfunc_synthesizer, 
                                                     param.m_particle_density , &m_coord_synthesizer_strings);
     case 'r':
         std::cout << "Rejection sampling" << std::endl;
-        return new vismodule::CellByCellRejectionSampling( camera, dom, raw_values.data(), nvariables, 
-                                                    subpixel_level, sampling_step, tf, tf_array,
+        return new vismodule::CellByCellRejectionSampling( dom, raw_values.data(), nvariables, 
+                                                    tf, tf_array,
                                                     param.m_transfunc_synthesizer, 
                                                     param.m_particle_density , &m_coord_synthesizer_strings);
 
     case 'm':
         std::cout << "Metropolis sampling" << std::endl;
-        return new vismodule::CellByCellMetropolisSampling( camera, dom, raw_values.data(), nvariables, 
-                                                    subpixel_level, sampling_step, tf, tf_array,
+        return new vismodule::CellByCellMetropolisSampling( dom, raw_values.data(), nvariables, 
+                                                    tf, tf_array,
                                                     param.m_transfunc_synthesizer, 
                                                     param.m_particle_density , &m_coord_synthesizer_strings);
     case 'h':
         std::cout << "Histogram " << std::endl;
-        return new vismodule::CellByCellHistogram( camera, dom, raw_values.data(), nvariables, 
-                                                    subpixel_level, sampling_step, tf, tf_array,
+        return new vismodule::CellByCellHistogram(  dom, raw_values.data(), nvariables, 
+                                                    tf, tf_array,
                                                     param.m_transfunc_synthesizer, 
                                                     param.m_particle_density , &m_coord_synthesizer_strings);
 
