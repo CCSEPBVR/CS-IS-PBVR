@@ -1481,6 +1481,7 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_parti
     SuperClass::setSize( 1.0f );
     //TIMER_END( 280 );
     double end = GetTime();
+    std::cout << "nparticles = " << vertex_coords.size()/3 << std::endl;
     printf( " \n  CPU:generate_particles: %lf ms\n", end - start );
 #endif
     return this;

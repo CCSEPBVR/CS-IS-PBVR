@@ -9,6 +9,8 @@
 #include "../../Common/ParticleTransferProtocol.h"
 #include <vismodule/CellByCellHistogram>
 #include <vismodule/CellByCellRejectionSampling>
+#include <vismodule/CellByCellUniformSampling>
+#include <vismodule/CellByCellMetropolisSampling>
 #include <vismodule/CellByCellParticleGenerator>
 
 #ifdef VTK
@@ -104,6 +106,9 @@ extern "C" {
     vismodule::ValueArray<int> m_c_histogram;//色ヒストグラムの配列
 
     int con_log[8];
+
+    //サンプリング手法
+    char m_sampling_method;
 
     } pbvr_parameters;
 
