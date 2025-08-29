@@ -18,7 +18,14 @@
 #endif
 
 #include <vismodule/UnstructuredVolumeObject>
+
+//glyph
+#include <vismodule/GlyphProperty>
+
+// plot over line 
 #include <vismodule/PlotOverLine>
+#include <vismodule/PlotOverLineProperty>
+#include <vismodule/KVSMLObjectPlotOverLine>
 
 #ifdef DOUBLE_SCHEME
   typedef double Type;
@@ -112,6 +119,41 @@ extern "C" {
 
     } pbvr_parameters;
 
+
+    // グリフ用パラメータ
+    typedef struct
+    {
+   std::vector<float> m_glyph_coords;
+   std::vector<float> m_glyph_vectors;
+   std::vector<float> m_glyph_sizes;
+   std::vector<unsigned char>   m_glyph_colors;   
+
+   // ファイルパス(デーモン→サーバー)
+    std::string m_glyphParamPath;
+    // ファイルパス(サーバー→デーモン)
+    std::string m_glyphFilePath;
+
+    } glyph_parameters;
+
+    // plot over line用パラメータ
+    typedef struct
+    {
+    // 集約用データ
+    vismodule::ValueArray<float> m_values_on_line;
+    vismodule::ValueArray<float> m_x_axis;
+    vismodule::ValueArray<bool>  m_mask;
+//        std::vector<float> m_values_on_line;
+//        std::vector<float> m_x_axis;
+//        std::vector<bool>  m_mask;
+    bool m_plot_flag;
+
+    // ファイルパス(デーモン→サーバー)
+    std::string m_POLParamPath;
+    // ファイルパス(サーバー→デーモン)
+    std::string m_POLFilePath;
+
+    } plot_over_line_parameters;
+
 #if 0
     typedef struct
     {
@@ -172,12 +214,22 @@ extern "C" {
                              unsigned int* connections, int ncells,
                              const  vismodule::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase );
 
-    void GenerateGlyphs( int time_step,
+    void GlyphObjectGenerator( int time_step,
                              domain_parameters_unstruct dom,
                              Type** values, int nvariables,
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells,
-                             const  vismodule::VolumeObjectBase::CellType& celltype );
+                             const  vismodule::VolumeObjectBase::CellType& celltype,
+                             const jpv::ParticleTransferClientMessage& clntMes, glyph_parameters& glyph_param );
+
+    void PlotOverLineObjectGenerator( int time_step,
+                             domain_parameters_unstruct dom,
+                             Type** values, int nvariables,
+                             float* coordinates, int ncoords,
+                             unsigned int* connections, int ncells,
+                             const  vismodule::VolumeObjectBase::CellType& celltype,
+                             const jpv::ParticleTransferClientMessage& clntMes, plot_over_line_parameters& pol_param );
+
     void callPlotOverLine( int time_step,
                               domain_parameters_unstruct dom, 
                               Type** values, int nvariables,
@@ -185,9 +237,15 @@ extern "C" {
                               unsigned int* connections, int ncells,
                               const  vismodule::VolumeObjectBase::CellType& celltype , PlotOverLine* plot_over_line );
     void GeneratePlotOverLine(int time_step, const vismodule::UnstructuredVolumeObject* volume, PlotOverLine* plot_over_line);
+    void GeneratePlotOverLine(int time_step, const vismodule::UnstructuredVolumeObject* volume, PlotOverLine* plot_over_line);
 
     void OutputParticles( int time_step, int nvariables, pbvr_parameters& particleBase,  ParamInfo *param_info, bool skip_flag);
+    void OutputGlyphs( const int time_step, glyph_parameters& glyph_param);
+    void OutputLine(   const int time_step, plot_over_line_parameters& pol_param);
     bool SetParameter(const domain_parameters_unstruct dom, pbvr_parameters* particleBase, ParamInfo *param_info, const int time_step);
+
+    void SetPOLParameter(jpv::ParticleTransferClientMessage* clntMes  ,const int time_step, plot_over_line_parameters& pol_param);
+    void SetGlyphParameter(jpv::ParticleTransferClientMessage* clntMes  ,const int time_step, glyph_parameters& glyph_param);
 
 #endif
 

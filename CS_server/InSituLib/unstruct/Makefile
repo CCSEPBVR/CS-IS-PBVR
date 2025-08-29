@@ -22,6 +22,7 @@ COMMON_DIR            = ../../Common
 
 EXTERNAL_OBJS = ${VISMODULE_SOURCE_DIR}/../Common/Serializer.o \
 				${VISMODULE_SOURCE_DIR}/../Common/VariableRange.o \
+				${VISMODULE_SOURCE_DIR}/../Common/ParticleTransferProtocol.o 
 
 ifeq ($(ISPBVR_SUPPORT_VTK), 1)
 EXTERNAL_OBJS += ${KVSML_CONVERTER_SOURCE_DIR}/Release/Importer/VtkImport.o 
