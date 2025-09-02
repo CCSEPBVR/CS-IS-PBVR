@@ -593,6 +593,11 @@ void generate_particles( int time_step, domain_parameters_unstruct dom,
     plot_over_line_parameters pol_param;
 
     jpv::ParticleTransferClientMessage clntMes; 
+    //フラグの初期設定
+    clntMes.m_glyph_flag =false;
+    clntMes.m_plot_flag =false;
+
+
     SetGlyphParameter(&clntMes, time_step, glyph_param);
     SetPOLParameter(&clntMes, time_step, pol_param);
 
@@ -656,28 +661,61 @@ void generate_particles( int time_step, domain_parameters_unstruct dom,
 void SetVariables(kvs::UnstructuredVolumeObject* object, Type** values, vismodule::VolumeObjectBase::CellType* celltype )
 {
 
+    std::cout << "object -> cellType() = " << object -> cellType() << std::endl;
         switch ( object -> cellType() )
         {
-            case 4: // vismodule::VolumeObjectBase::Tetrahedra:
+            //pbvrのセルタイプ別の処理
+//            case 4: // vismodule::VolumeObjectBase::Tetrahedra:
+//                {
+//                    *celltype = vismodule::VolumeObjectBase::Tetrahedra;
+//                    break;
+//                }
+//            case 10: //vismodule::VolumeObjectBase::QuadraticTetrahedra:
+//                {
+//                    *celltype = vismodule::VolumeObjectBase::QuadraticTetrahedra;
+//                }
+//            case 8: //  vismodule::VolumeObjectBase::Hexahedra:
+//                {
+//                    *celltype = vismodule::VolumeObjectBase::Hexahedra;
+//                    break;
+//                }
+//            case 20: //vismodule::VolumeObjectBase::QuadraticHexahedra:
+//                {
+//                    *celltype = vismodule::VolumeObjectBase::QuadraticHexahedra;
+//                    break;
+//                }
+//            case 6: // vismodule::VolumeObjectBase::Prism:
+//                {
+//                    *celltype = vismodule::VolumeObjectBase::Prism;
+//                    break;
+//                }
+//            case 5: //vismodule::VolumeObjectBase::Pyramid:
+//                {
+//                    *celltype = vismodule::VolumeObjectBase::Pyramid;
+//                    break;
+//                }
+
+            //kvsのセルタイプ別の処理
+            case 1: // vismodule::VolumeObjectBase::Tetrahedra:
                 {
                     *celltype = vismodule::VolumeObjectBase::Tetrahedra;
                     break;
                 }
-            case 10: //vismodule::VolumeObjectBase::QuadraticTetrahedra:
+            case 3: //vismodule::VolumeObjectBase::QuadraticTetrahedra:
                 {
                     *celltype = vismodule::VolumeObjectBase::QuadraticTetrahedra;
                 }
-            case 8: //  vismodule::VolumeObjectBase::Hexahedra:
+            case 2: //  vismodule::VolumeObjectBase::Hexahedra:
                 {
                     *celltype = vismodule::VolumeObjectBase::Hexahedra;
                     break;
                 }
-            case 20: //vismodule::VolumeObjectBase::QuadraticHexahedra:
+            case 4: //vismodule::VolumeObjectBase::QuadraticHexahedra:
                 {
                     *celltype = vismodule::VolumeObjectBase::QuadraticHexahedra;
                     break;
                 }
-            case 6: // vismodule::VolumeObjectBase::Prism:
+            case 7: // vismodule::VolumeObjectBase::Prism:
                 {
                     *celltype = vismodule::VolumeObjectBase::Prism;
                     break;
@@ -760,15 +798,18 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
 #if 1
     glyph_parameters glyph_param;
     plot_over_line_parameters pol_param;
-
     jpv::ParticleTransferClientMessage clntMes; 
+
+    //フラグの初期設定
+    clntMes.m_glyph_flag =false;
+    clntMes.m_plot_flag =false;
     SetGlyphParameter(&clntMes, time_step, glyph_param);
     SetPOLParameter(&clntMes, time_step, pol_param);
 #endif
 
-    // plot over line
-    PlotOverLine plot_over_line;
-    plot_over_line.SetPOLParameter(time_step);
+//    // plot over line
+//    PlotOverLine plot_over_line;
+//    plot_over_line.SetPOLParameter(time_step);
 
     timer.stop();
     std::cout << mpi_rank << ", set_parameter = " << timer.sec() <<std::endl;
@@ -816,8 +857,8 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
             // ファイルが読めなかった場合、サンプリング法はh固定
             particleBase.m_sampling_method = 'h';
             GenerateParticles(time_step, dom, values,
-                    nvariables, coordinates, ncoords,
-                    connections, ncells, celltype, particleBase);
+                    nvariables, (float*)object->coords().pointer(), ncoords,
+                    (unsigned int*)object->connections().pointer(), object -> ncells(), celltype, particleBase);
 
 //            GenerateHistogram(time_step, dom, values,
 //                    nvariables, (float*)object->coords().pointer(), ncoords,
@@ -836,21 +877,18 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
 
         // 粒子生成
         GenerateParticles(time_step, dom, values,
-            nvariables, coordinates, ncoords,
-            connections, ncells, celltype, particleBase);
+                    nvariables, (float*)object->coords().pointer(), ncoords,
+                    (unsigned int*)object->connections().pointer(), object -> ncells(), celltype, particleBase);
 
         //　グリフ生成、出力
         GlyphObjectGenerator(time_step, dom, values,
-                nvariables, coordinates, ncoords,
-                connections , ncells, celltype, clntMes, glyph_param);
+                    nvariables, (float*)object->coords().pointer(), ncoords,
+                    (unsigned int*)object->connections().pointer(), object -> ncells(), celltype, clntMes, glyph_param);
 
         //　plot over line生成、出力
-        PlotOverLineObjectGenerator( time_step,
-                dom, values, nvariables,
-                coordinates, ncoords,
-                connections, ncells,
-                celltype, clntMes, pol_param );
-
+        PlotOverLineObjectGenerator( time_step, dom, values, 
+                    nvariables, (float*)object->coords().pointer(), ncoords,
+                    (unsigned int*)object->connections().pointer(), object -> ncells(), celltype, clntMes, pol_param);
 
 //            GenerateParticles(time_step, dom, values,
 //                    nvariables, (float*)object->coords().pointer(), ncoords,
@@ -868,6 +906,8 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
         t_generate_particles += timer.sec();
         timer.start();
 
+
+            // values のメモリ領域解放
         for (int i =0; i< nvariables ; i++)
         {
             delete  values[i];
@@ -885,6 +925,10 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
     timer.start();
     std::cout << "all nparitcles = " << particleBase.m_sample_coords.size()/3 <<std::endl;  
     OutputParticles(time_step, nvariables, particleBase, &param, skip_flag);
+    if (clntMes.m_glyph_flag) OutputGlyphs(time_step, glyph_param);
+    if (clntMes.m_plot_flag) OutputLine(time_step, pol_param);
+
+    // SetParameter でnew したm_tfsのメモリ領域を解放
     delete m_tfs;
     
     timer.stop();
@@ -2003,444 +2047,5 @@ void OutputLine( const int time_step, plot_over_line_parameters& pol_param)
 
 }
 
-#if 0
-void GenerateHistogram( int time_step,
-                         domain_parameters_unstruct dom,
-                         Type** values, int nvariables,
-                         float* coordinates, int ncoords,
-                         unsigned int* connections, int ncells, const vismodule::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase) //celltype  enum 型に変更
-{
-
-#if _OPENMP
-    int max_threads = omp_get_max_threads();
-#else
-    int max_threads = 1;
-#endif
-
-    int mpi_rank = 0;
-
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-
-
-    //if(mpi->rank==0)std::cout<<"start generate_particles\n";
-    static bool start_flag = true;
-    static bool parameter_file_opened=false;
-    vismodule::Timer timer( vismodule::Timer::Start );
-
-    std::vector< std::vector< vismodule::CellBase<Type>* > >  interp;
-    interp.resize( max_threads );
-
-    switch ( celltype )
-    {
-        case vismodule::VolumeObjectBase::Tetrahedra:
-            {
-                if (mpi_rank == 0) std::cout << "celltype: tetrahedra " << std::endl; 
-                for ( int i = 0; i < max_threads; i++ )
-                {
-                    interp[ i ].resize( nvariables );
-                    for ( int j = 0; j < nvariables; j++ )
-                    {
-                        interp[i][j]  = new vismodule::TetrahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
-                    }
-                }
-                break;
-            }
-        case vismodule::VolumeObjectBase::QuadraticTetrahedra:
-            {
-                std::cout << "Cell type : Quadratic tetrahedra " << std::endl; 
-                for ( int i = 0; i < max_threads; i++ )
-                {
-                    interp[ i ].resize( nvariables );
-                    for ( int j = 0; j < nvariables; j++ )
-                    {
-                        interp[i][j]  = new vismodule::QuadraticTetrahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
-                    }
-                }
-                break;
-            }
-        case vismodule::VolumeObjectBase::Hexahedra:
-            {
-                for ( int i = 0; i < max_threads; i++ )
-                {
-                    interp[ i ].resize( nvariables  );
-                    for ( int j = 0; j < nvariables; j++ )
-                    {
-                        interp[i][j]  = new vismodule::HexahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
-                    }
-                }
-                break;
-            }
-        case vismodule::VolumeObjectBase::QuadraticHexahedra:
-            {
-                std::cout << "Cell type : Quadratic hexahedra " << std::endl; 
-                for ( int i = 0; i < max_threads; i++ )
-                {
-                    interp[ i ].resize( nvariables );
-                    for ( int j = 0; j < nvariables; j++ )
-                    {
-                        interp[i][j]  = new vismodule::QuadraticHexahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
-                    }
-                }
-                break;
-            }
-        case vismodule::VolumeObjectBase::Prism:
-            {
-                if (mpi_rank == 0) std::cout << "celltype: Prism " << std::endl; 
-                for ( int i = 0; i < max_threads; i++ )
-                {
-                    interp[ i ].resize( nvariables );
-                    for ( int j = 0; j < nvariables; j++ )
-                    {
-                        interp[i][j]  = new vismodule::PrismaticCell<Type>( values[j], coordinates, ncoords, connections, ncells );
-                    }
-                }
-                break;
-            }
-        case vismodule::VolumeObjectBase::Pyramid:
-            {
-                if (mpi_rank == 0) std::cout << "celltype: Pyramid" << std::endl; 
-                for ( int i = 0; i < max_threads; i++ )
-                {
-                    interp[ i ].resize( nvariables );
-                    for ( int j = 0; j < nvariables; j++ )
-                    {
-                        interp[i][j]  = new vismodule::PyramidalCell<Type>( values[j], coordinates, ncoords, connections, ncells );
-                    }
-                }
-                break;
-            }
-//        case vismodule::VolumeObjectBase::Triangle:
-//            {
-//                for ( int i = 0; i < max_threads; i++ )
-//                {
-//                    interp[ i ].resize( nvariables );
-//                    for ( int j = 0; j < nvariables; j++ )
-//                    {
-//                        interp[i][j]  = new vismodule::TriangleCell<Type>( values[j], coordinates, ncoords, connections, ncells );
-//                    }
-//                }
-//                break;
-//            }
-//        case vismodule::VolumeObjectBase::QuadraticTriangle:
-//            {
-//                for ( int i = 0; i < max_threads; i++ )
-//                {
-//                    interp[ i ].resize( nvariables );
-//                    for ( int j = 0; j < nvariables; j++ )
-//                    {
-//                        interp[i][j]  = new vismodule::QuadraticTriangleCell<Type>( values[j], coordinates, ncoords, connections, ncells );
-//                    }
-//                }
-//                break;
-//            }
-//        case vismodule::VolumeObjectBase::Square:
-//            {
-//                for ( int i = 0; i < max_threads; i++ )
-//                {
-//                    interp[ i ].resize( nvariables );
-//                    for ( int j = 0; j < nvariables; j++ )
-//                    {
-//                        interp[i][j]  = new vismodule::SquareCell<Type>( values[j], coordinates, ncoords, connections, ncells );
-//                    }
-//                }
-//                break;
-//            }
-//        case vismodule::VolumeObjectBase::QuadraticSquare:
-//            {
-//                for ( int i = 0; i < max_threads; i++ )
-//                {
-//                    interp[ i ].resize( nvariables );
-//                    for ( int j = 0; j < nvariables; j++ )
-//                    {
-//                        interp[i][j]  = new vismodule::QuadraticSquareCell<Type>( values[j], coordinates, ncoords, connections, ncells );
-//                    }
-//                }
-//                break;
-//            }
-        default:
-            {
-                //BaseClass::m_is_success = false;
-                //kvsMessageError( "Unsupported cell type." );
-                std::cout << "Unsupported cell type." << std::endl; 
-                return;
-            }
-       }
-   
-    int   tf_number                = particleBase.m_tf_number;
-    float sampling_volume_inverse  = particleBase.m_sampling_volume_inverse ;
-    float max_opacity              = particleBase.m_max_opacity             ;
-    float max_density              = particleBase.m_max_density             ;
-    int   subpixel_level           = particleBase.m_subpixel_level          ;
-    float particle_density         = particleBase.m_particle_density        ;
-    float particle_data_size_limit = particleBase.m_particle_data_size_limit;
-    parameter_file_opened = particleBase.m_parameter_file_opened;
-    const int max_nparticles = (int)max_density + 1;
-
-    if(mpi_rank == 0) std::cout<<"******* max_nparticles="<<max_nparticles<<std::endl;
-   
-    //ヒストグラム
-    int nbins = 256;
-    vismodule::ValueArray<float> o_min( tf_number );//TFSから読み込む最大最小値
-    vismodule::ValueArray<float> o_max( tf_number );
-    vismodule::ValueArray<float> c_min( tf_number );
-    vismodule::ValueArray<float> c_max( tf_number );
-
-    vismodule::ValueArray<int> o_histogram( tf_number * nbins );//不透明度ヒストグラムの配列
-    vismodule::ValueArray<int> c_histogram( tf_number * nbins );//色ヒストグラムの配列
-    
-
-    if( parameter_file_opened )
-    {
-        O_min_recv.allocate(tf_number);
-        O_max_recv.allocate(tf_number);
-        C_min_recv.allocate(tf_number);
-        C_max_recv.allocate(tf_number);
-        o_histogram_recv.allocate(tf_number * nbins);
-        c_histogram_recv.allocate(tf_number * nbins);
-
-        o_histogram.fill(0x00);
-        c_histogram.fill(0x00);
-    }
-
-    for( size_t i = 0; i < tf_number; i++ )
-    {
-        o_min[i] = particleBase.m_tf[i].opacityMap().minValue();
-        o_max[i] = particleBase.m_tf[i].opacityMap().maxValue();
-        c_min[i] = particleBase.m_tf[i].colorMap().minValue();
-        c_max[i] = particleBase.m_tf[i].colorMap().maxValue();
-    }
-
-    //最大最小値
-    vismodule::ValueArray<float> O_min( tf_number );//計算して得る最大最小値
-    vismodule::ValueArray<float> O_max( tf_number );
-    vismodule::ValueArray<float> C_min( tf_number );
-    vismodule::ValueArray<float> C_max( tf_number );
-
-    if( parameter_file_opened )
-    {
-        for ( size_t i = 0; i < tf_number; i++ ) //初期化
-        {
-            O_min[ i ] =  FLT_MAX;
-            O_max[ i ] = -FLT_MAX;
-            C_min[ i ] =  FLT_MAX;
-            C_max[ i ] = -FLT_MAX;
-        }
-    }
-
-    TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
-    std::vector< std::vector<vismodule::TransferFunction> > th_tf;
-
-    for ( int n = 0; n < max_threads; n++ )
-    {
-        th_tfs[n] = new TransferFunctionSynthesizer( *m_tfs );
-    }
-
-    th_tf.resize( max_threads );
-    for ( int i = 0; i < max_threads; i++ )
-    {
-        th_tf[ i ].resize( tf_number );
-        for ( int j = 0; j < tf_number; j++ )
-        {
-            th_tf[i][j] = particleBase.m_tf[j];
-        }
-    }
-
-    int particles_process_limit = static_cast<int> (  ( particle_data_size_limit * 10E6 )
-                                                    / ( sizeof( float ) + sizeof( Byte ) + sizeof( float ) ) );
-    bool particle_limit_over = false;
-
-    time_parameters time;
-
-    timer.stop();
-    time.initialize = timer.sec();
-    timer.start();
-
-    #pragma omp parallel
-    {
-#if _OPENMP
-        int nthreads = omp_get_num_threads();
-        int thid     = omp_get_thread_num();
-#else
-        int nthreads = 1;
-        int thid     = 0;
-#endif
-
-        timer.start();
-
-        //ヒストグラムの配列
-        std::vector<float> o_scalars( tf_number );//頂点の不透明度
-        std::vector<float> c_scalars( tf_number );//頂点の色
-        vismodule::ValueArray<int> th_o_histogram( tf_number * nbins );//不透明度
-        vismodule::ValueArray<int> th_c_histogram( tf_number * nbins );//色
-
-        if( parameter_file_opened )
-        {
-            th_o_histogram.fill(0x00);
-            th_c_histogram.fill(0x00);
-        }
-
-        //最大最小値
-        vismodule::ValueArray<float> th_O_min( tf_number );//計算して得る最大最小値
-        vismodule::ValueArray<float> th_O_max( tf_number );
-        vismodule::ValueArray<float> th_C_min( tf_number );
-        vismodule::ValueArray<float> th_C_max( tf_number );
-
-        if( parameter_file_opened )
-        {
-            for ( int i = 0; i < tf_number; i++ ) //初期化
-            {
-                th_O_min[ i ] =  FLT_MAX;
-                th_O_max[ i ] = -FLT_MAX;
-                th_C_min[ i ] =  FLT_MAX;
-                th_C_max[ i ] = -FLT_MAX;
-            }
-        }
-
-        // -----------------------------------
-        //配列の追加
-        vismodule::Vector3f local_center_array[ SIMD_BLK_SIZE ];
-        vismodule::Vector3f global_center_array[ SIMD_BLK_SIZE ];
-        vismodule::UInt32 cell_index[ SIMD_BLK_SIZE ];
-
-        float cell_opacity_array[ SIMD_BLK_SIZE ];
-        std::vector<float> o_scalars_array[ SIMD_BLK_SIZE ];
-        std::vector<float> c_scalars_array[ SIMD_BLK_SIZE ];
-
-        for (int i = 0; i < SIMD_BLK_SIZE; i++ )
-        {
-            o_scalars_array[i].resize( tf_number );
-            c_scalars_array[i].resize( tf_number );
-        }
-
-        //粒子生成ループ開始
-#pragma omp for schedule( dynamic ) nowait
-        for( int cell_base = 0; cell_base < ncells; cell_base += SIMD_BLK_SIZE )
-        {
-           //ブロック内でのループ回数を取得
-            int remain = ( ncells - cell_base > SIMD_BLK_SIZE )? SIMD_BLK_SIZE: ncells - cell_base;
-
-        /////////////////////////////// Synthesized~ (), CalculateOpacity() ///////////////////////////////////
-            //一括でセルをバインドするための配列と、座標の取得
-            for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
-            {
-                cell_index[cell_BLK] = (vismodule::UInt32)(cell_base + cell_BLK);
-                //local_center_array[cell_BLK] = vismodule::Vector3f ( 0.5, 0.5, 0.5 );
-                local_center_array[cell_BLK] = interp[thid][0]->localGravityPoint();
-            }
-
-            //補間器にセルを一括でバインド
-            for(int i = 0; i < nvariables; i++)
-            {
-                interp[thid][i]->bindCellArray(remain, cell_index);
-            }
-
-            interp[thid][0]->setLocalPointArray( remain, local_center_array );
-            interp[thid][0]->transformLocalToGlobalArray( remain,
-                                                          local_center_array,
-                                                          global_center_array );
-
-            if( parameter_file_opened )
-            {
-
-               th_tfs[thid]->SynthesizedOpacityScalarsArray( interp[thid],
-                                                              remain,
-                                                              local_center_array,
-                                                              global_center_array,
-                                                              o_scalars_array );
-
-               th_tfs[thid]->SynthesizedColorScalarsArray( interp[thid],
-                                                           remain,
-                                                           local_center_array,
-                                                           global_center_array,
-                                                           c_scalars_array );
-
-               for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
-               {
-                   for( int i = 0; i < tf_number; i++ )
-                   {
-                        float h = (o_scalars_array[cell_BLK][i] - o_min[i])/( o_max[i] - o_min[i] )*nbins;
-                        int H = (int)h;
-                        if( 0 <= H && H <= nbins )
-                        {
-                            if( H == nbins ) H--;
-                            th_o_histogram[ H + nbins*i]++;
-                        }
-
-                        h = (c_scalars_array[cell_BLK][i] - c_min[i])/( c_max[i] - c_min[i] )*nbins;
-                        H = (int)h;
-                        if( 0 <= H && H <= nbins )
-                        {
-                            if( H == nbins ) H--;
-                            th_c_histogram[ H + nbins*i]++;
-                        }
-
-                        // 20190128 修正
-                        th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
-                        th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
-                        th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
-                        th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
-                    }
-                }
-            }
-        }
-
-#pragma omp critical
-        {
-            if( parameter_file_opened )
-            {
-                //最大最小値
-                for( int i = 0; i < tf_number; i++ )
-                {
-                    //不透明度
-                    O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
-                    O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
-                    //色
-                    C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
-                    C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
-
-                }
-                
-                for( int n = 0; n < tf_number * nbins; n++ )
-                {
-                    o_histogram[n] += th_o_histogram[n];
-                    c_histogram[n] += th_c_histogram[n];
-                }
-            }
-        }
-
-    } // end loop omp parallel
-
-    for(int i=0; i<max_threads; i++)
-    {
-        delete th_tfs[i];
-    }
-    delete[] th_tfs;
-
-    for ( int i = 0; i < max_threads; i++ )
-    {
-        for ( int j = 0; j < nvariables; j++ )
-        {
-             if (interp[i][j] != NULL)delete interp[i][j];
-        }
-    }
-    
-    for( int n = 0; n < tf_number * nbins; n++ )
-    {
-        particleBase.m_o_histogram[n] += o_histogram[n];
-        particleBase.m_c_histogram[n] += c_histogram[n];
-    }
-
-    for( int i = 0; i < tf_number; i++ )
-    {
-        //不透明度
-        particleBase.m_O_min[i] = particleBase.m_O_min[i] < O_min[i] ? particleBase.m_O_min[i] : O_min[i];
-        particleBase.m_O_max[i] = particleBase.m_O_max[i] > O_max[i] ? particleBase.m_O_max[i] : O_max[i];
-        //色
-        particleBase.m_C_min[i] = particleBase.m_C_min[i] < C_min[i] ? particleBase.m_C_min[i] : C_min[i];
-        particleBase.m_C_max[i] = particleBase.m_C_max[i] > C_max[i] ? particleBase.m_C_max[i] : C_max[i];
-    }
-
-}
-#endif
 
 
