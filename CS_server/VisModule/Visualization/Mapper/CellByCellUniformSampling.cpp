@@ -58,10 +58,10 @@
 
 namespace Generator = vismodule::CellByCellParticleGenerator;
 
-using FuncParser::Variable;
-using FuncParser::Variables;
-using FuncParser::Function;
-using FuncParser::FunctionParser;
+//using FuncParser::Variable;
+//using FuncParser::Variables;
+//using FuncParser::Function;
+//using FuncParser::FunctionParser;
 
 
 namespace vismodule
@@ -960,7 +960,7 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_parti
             {
                 BaseClass::m_is_success = false;
                 visModuleMessageError( "Unsupported cell type." );
-                return;
+                return NULL;
             }
     }
     //    VIS_MODULE_TIMER_END( 270 );

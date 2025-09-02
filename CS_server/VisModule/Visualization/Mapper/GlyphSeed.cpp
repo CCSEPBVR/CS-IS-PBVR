@@ -1,27 +1,27 @@
 #include "GlyphSeed.h"
 
-// IS用 constructor
-GlyphSeed::GlyphSeed(Type** values,
-        int nvariables, float* coordinates, int ncoords,
-        unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltype) :
-    m_values( values ), m_nvariable(nvariables),  
-    m_coords( coordinates  ), m_ncoords( ncoords ), 
-    m_connections( connections ), m_ncells( ncells ) 
-{
-    m_g_flag = false; 
-    m_g_flag = this -> SetGlyphParameter();
-    if (m_g_flag)
-    { 
-        if( m_distribution_modes == jpv::GlyphMode:: AllPoints || m_distribution_modes == jpv::GlyphMode:: EveryNthPoints )
-        {
-            this->PointSampling_unstruct();
-        }
-        else if(m_distribution_modes == jpv::GlyphMode:: UniformDistribution)
-        {
-            this->DistributionSampling_unstruct( celltype );
-        }
-    }
-}
+//// IS用 constructor
+//GlyphSeed::GlyphSeed(Type** values,
+//        int nvariables, float* coordinates, int ncoords,
+//        unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltype) :
+//    m_values( values ), m_nvariable(nvariables),  
+//    m_coords( coordinates  ), m_ncoords( ncoords ), 
+//    m_connections( connections ), m_ncells( ncells ) 
+//{
+//    m_g_flag = false; 
+//    m_g_flag = this -> SetGlyphParameter();
+//    if (m_g_flag)
+//    { 
+//        if( m_distribution_modes == jpv::GlyphMode:: AllPoints || m_distribution_modes == jpv::GlyphMode:: EveryNthPoints )
+//        {
+//            this->PointSampling_unstruct();
+//        }
+//        else if(m_distribution_modes == jpv::GlyphMode:: UniformDistribution)
+//        {
+//            this->DistributionSampling_unstruct( celltype );
+//        }
+//    }
+//}
 
 // CS用 constructor unstruct 
 GlyphSeed::GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, Type** values,
@@ -154,157 +154,157 @@ bool GlyphSeed::InputParameter(const jpv::ParticleTransferClientMessage& clntMes
 
 }
 
-#if 1
-bool GlyphSeed::SetGlyphParameter()
-{
-    std::string visParamDir;
-    std::string glyphParamPath;
-    std::string glyphFilePath;
-
-    const char *envBuf = NULL;
-    envBuf = std::getenv( "VIS_PARAM_DIR" );
-    if (envBuf == NULL) {
-        visParamDir = "./";
-    }
-    else {
-        visParamDir = envBuf;
-        if (visParamDir[visParamDir.size() - 1] != '/') {
-            visParamDir += "/";
-        }
-    }
-    envBuf = std::getenv( "PARTICLE_DIR" );
-    if (envBuf == NULL) {
-        glyphFilePath = "./g_";
-    }
-    else {
-        glyphFilePath = envBuf;
-        if (glyphFilePath[glyphFilePath.size() - 1] != '/') {
-             glyphFilePath += "/g_";
-        }
-        else {
-            glyphFilePath += "g_";
-        }
-    }
-
-    glyphParamPath = visParamDir + "parameter.gly";
-   
-    m_glyphParamPath = glyphParamPath;
-    m_glyphFilePath = glyphFilePath;
-
-    GlyphProperty glyph_property;
-
-    bool read_flag = glyph_property.LoadIN(glyphParamPath) ;
-
-    bool glyph_flag;
-    std::string              g_flag                = glyph_property.getString( "GLYPH_FLAG" );
-    std::vector<std::string> direction_variables   = glyph_property.getTableString( "DIRECTION_VARIABLES" );
-    std::string              size_sampling_method  = glyph_property.getString("SIZE_SAMPLING_METHOD");
-    std::vector<std::string> size_variables        = glyph_property.getTableString( "SIZE_VARIABLES" );
-    std::string distribution_modes                 = glyph_property.getString("DISTRIBUTION_MODE");
-    int stride                                     = glyph_property.getInt("STRIDE");
-    int seed                                       = glyph_property.getInt("SEED");
-    float number_of_sample_points                    = glyph_property.getInt("NUMBER_OF_SMAPLING_POINT");
-    std::string color_sampling_method              = glyph_property.getString("COLOR_DATA_SAMPLING_METHOD");
-    std::vector<std::string> color_data_variables  = glyph_property.getTableString( "COLOR_VARIABLES" );
-    
-
-    int mpi_size = 1;
-    int mpi_rank = 0;
-#ifndef CPU_VER
-    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-#endif
-
-
-#if _OPENMP
-    int max_threads = omp_get_max_threads();
-#else
-    int max_threads = 1;
-#endif
-
-    number_of_sample_points /= mpi_size;  
-    number_of_sample_points /= max_threads;  
-
-    float glyph_min=0; 
-    float glyph_max=0;
-    glyph_min = glyph_property.getFloat("GLYPH_COLOR_MIN");
-    glyph_max = glyph_property.getFloat("GLYPH_COLOR_MAX");
-    std::vector<int> i_table;
-    i_table = glyph_property.getTableInt( "GLYPH_COLOR_MAP_TABLE" );
-    vismodule::ValueArray<vismodule::UInt8> u_table( i_table.size() );
-    for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (vismodule::UInt8)i_table[j];
-    vismodule::ColorMap color_map( u_table, glyph_min, glyph_max);
-
-    m_color_map = color_map;
-    if(strcmp(g_flag.c_str(), "TRUE") ==0 ) glyph_flag = true;
-    else glyph_flag = false;
-   
-    if(direction_variables.size() < 3)
-    { 
-        std::cout << "variables number is less 3 numbers !!! Skip glyph generate process !!!" << std::endl;
-        return false;  
-    }
-    for (int i = 0; i< 3 ; i++)
-    {
-        m_direction_variables.push_back ( std::atoi(direction_variables[i].substr(1).c_str()) - 1);
-    }
-
-    if     (size_sampling_method == "Constant"       ) m_size_sampling_method    = jpv::DataDefines::Constant;
-    else if(size_sampling_method == "SingleVariable" ) m_size_sampling_method    = jpv::DataDefines::SingleVariable;
-    else if(size_sampling_method == "VariableArray" )  m_size_sampling_method    = jpv::DataDefines::VariableArray;
-    else 
-    {
-       std::cout << "No selecting Sampling method !!! Skip glyph generate process !!!" << std::endl;
-       return false;  
-    }
-
-    for (int i =0 ; i< size_variables.size(); i++)
-    {
-        m_size_variables.push_back( std::atoi(size_variables[i].substr(1).c_str()) -1); 
-    }
-
-    if     (distribution_modes == "AllPoints"           ) m_distribution_modes  = jpv::GlyphMode::AllPoints;
-    else if(distribution_modes == "EveryNthPoints"         ) m_distribution_modes  = jpv::GlyphMode::EveryNthPoints;
-    else if(distribution_modes == "UniformDistribution" ) m_distribution_modes  = jpv::GlyphMode::UniformDistribution;
-    else 
-    {
-       std::cout << "Not selecting Distribution mode !!! Skip glyph generate process !!!" << std::endl;
-       return false;  
-    }
-
-    m_stride                  = stride;
-    m_seed                    = seed;
-    if (m_distribution_modes  == jpv::GlyphMode::AllPoints )m_stride = 1;
-    m_number_of_sample_points = number_of_sample_points;
-    if     (color_sampling_method == "Constant"       ) m_color_sampling_method    = jpv::DataDefines::Constant;
-    else if(color_sampling_method == "SingleVariable" ) m_color_sampling_method    = jpv::DataDefines::SingleVariable;
-    else if(color_sampling_method == "VariableArray" ) m_color_sampling_method    = jpv::DataDefines::VariableArray;
-    else 
-    {
-       std::cout << "No selecting Sampling method !!! Skip glyph generate process !!!" << std::endl;
-       return false;  
-    }
-    
-    for (int i =0 ; i< color_data_variables.size(); i++)
-    {
-        m_color_data_variables.push_back( std::atoi(color_data_variables[i].substr(1).c_str()) - 1); 
-    }
-
-#if 0
-    std::cout << "m_direction_variables        = " << m_direction_variables[0] << ", " << m_direction_variables[1]   << std::endl; 
-    std::cout << "m_size_sampling_method       = " << static_cast<int>(m_size_sampling_method)      << std::endl; 
-    if(m_size_variables.size() > 0) std::cout << "m_size_variables             = " << m_size_variables[0]    << std::endl; 
-    std::cout << "m_distribution_modes         = " << static_cast<int>(m_distribution_modes )       << std::endl; 
-    std::cout << "m_stride                     = " << m_stride                    << std::endl; 
-    std::cout << "m_seed                       = " << m_seed                      << std::endl; 
-    std::cout << "m_number_of_sample_points    = " << m_number_of_sample_points   << std::endl; 
-    std::cout << "m_color_sampling_method      = " << static_cast<int>(m_color_sampling_method )    << std::endl; 
-    if(m_color_data_variables.size() > 0) std::cout << "m_color_data_variables       = " << m_color_data_variables[0] <<  std::endl; 
-#endif 
-      return glyph_flag; 
-
-}
-#endif
+//#if 1
+//bool GlyphSeed::SetGlyphParameter()
+//{
+//    std::string visParamDir;
+//    std::string glyphParamPath;
+//    std::string glyphFilePath;
+//
+//    const char *envBuf = NULL;
+//    envBuf = std::getenv( "VIS_PARAM_DIR" );
+//    if (envBuf == NULL) {
+//        visParamDir = "./";
+//    }
+//    else {
+//        visParamDir = envBuf;
+//        if (visParamDir[visParamDir.size() - 1] != '/') {
+//            visParamDir += "/";
+//        }
+//    }
+//    envBuf = std::getenv( "PARTICLE_DIR" );
+//    if (envBuf == NULL) {
+//        glyphFilePath = "./g_";
+//    }
+//    else {
+//        glyphFilePath = envBuf;
+//        if (glyphFilePath[glyphFilePath.size() - 1] != '/') {
+//             glyphFilePath += "/g_";
+//        }
+//        else {
+//            glyphFilePath += "g_";
+//        }
+//    }
+//
+//    glyphParamPath = visParamDir + "parameter.gly";
+//   
+//    m_glyphParamPath = glyphParamPath;
+//    m_glyphFilePath = glyphFilePath;
+//
+//    GlyphProperty glyph_property;
+//
+//    bool read_flag = glyph_property.LoadIN(glyphParamPath) ;
+//
+//    bool glyph_flag;
+//    std::string              g_flag                = glyph_property.getString( "GLYPH_FLAG" );
+//    std::vector<std::string> direction_variables   = glyph_property.getTableString( "DIRECTION_VARIABLES" );
+//    std::string              size_sampling_method  = glyph_property.getString("SIZE_SAMPLING_METHOD");
+//    std::vector<std::string> size_variables        = glyph_property.getTableString( "SIZE_VARIABLES" );
+//    std::string distribution_modes                 = glyph_property.getString("DISTRIBUTION_MODE");
+//    int stride                                     = glyph_property.getInt("STRIDE");
+//    int seed                                       = glyph_property.getInt("SEED");
+//    float number_of_sample_points                    = glyph_property.getInt("NUMBER_OF_SMAPLING_POINT");
+//    std::string color_sampling_method              = glyph_property.getString("COLOR_DATA_SAMPLING_METHOD");
+//    std::vector<std::string> color_data_variables  = glyph_property.getTableString( "COLOR_VARIABLES" );
+//    
+//
+//    int mpi_size = 1;
+//    int mpi_rank = 0;
+//#ifndef CPU_VER
+//    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+//    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+//#endif
+//
+//
+//#if _OPENMP
+//    int max_threads = omp_get_max_threads();
+//#else
+//    int max_threads = 1;
+//#endif
+//
+//    number_of_sample_points /= mpi_size;  
+//    number_of_sample_points /= max_threads;  
+//
+//    float glyph_min=0; 
+//    float glyph_max=0;
+//    glyph_min = glyph_property.getFloat("GLYPH_COLOR_MIN");
+//    glyph_max = glyph_property.getFloat("GLYPH_COLOR_MAX");
+//    std::vector<int> i_table;
+//    i_table = glyph_property.getTableInt( "GLYPH_COLOR_MAP_TABLE" );
+//    vismodule::ValueArray<vismodule::UInt8> u_table( i_table.size() );
+//    for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (vismodule::UInt8)i_table[j];
+//    vismodule::ColorMap color_map( u_table, glyph_min, glyph_max);
+//
+//    m_color_map = color_map;
+//    if(strcmp(g_flag.c_str(), "TRUE") ==0 ) glyph_flag = true;
+//    else glyph_flag = false;
+//   
+//    if(direction_variables.size() < 3)
+//    { 
+//        std::cout << "variables number is less 3 numbers !!! Skip glyph generate process !!!" << std::endl;
+//        return false;  
+//    }
+//    for (int i = 0; i< 3 ; i++)
+//    {
+//        m_direction_variables.push_back ( std::atoi(direction_variables[i].substr(1).c_str()) - 1);
+//    }
+//
+//    if     (size_sampling_method == "Constant"       ) m_size_sampling_method    = jpv::DataDefines::Constant;
+//    else if(size_sampling_method == "SingleVariable" ) m_size_sampling_method    = jpv::DataDefines::SingleVariable;
+//    else if(size_sampling_method == "VariableArray" )  m_size_sampling_method    = jpv::DataDefines::VariableArray;
+//    else 
+//    {
+//       std::cout << "No selecting Sampling method !!! Skip glyph generate process !!!" << std::endl;
+//       return false;  
+//    }
+//
+//    for (int i =0 ; i< size_variables.size(); i++)
+//    {
+//        m_size_variables.push_back( std::atoi(size_variables[i].substr(1).c_str()) -1); 
+//    }
+//
+//    if     (distribution_modes == "AllPoints"           ) m_distribution_modes  = jpv::GlyphMode::AllPoints;
+//    else if(distribution_modes == "EveryNthPoints"         ) m_distribution_modes  = jpv::GlyphMode::EveryNthPoints;
+//    else if(distribution_modes == "UniformDistribution" ) m_distribution_modes  = jpv::GlyphMode::UniformDistribution;
+//    else 
+//    {
+//       std::cout << "Not selecting Distribution mode !!! Skip glyph generate process !!!" << std::endl;
+//       return false;  
+//    }
+//
+//    m_stride                  = stride;
+//    m_seed                    = seed;
+//    if (m_distribution_modes  == jpv::GlyphMode::AllPoints )m_stride = 1;
+//    m_number_of_sample_points = number_of_sample_points;
+//    if     (color_sampling_method == "Constant"       ) m_color_sampling_method    = jpv::DataDefines::Constant;
+//    else if(color_sampling_method == "SingleVariable" ) m_color_sampling_method    = jpv::DataDefines::SingleVariable;
+//    else if(color_sampling_method == "VariableArray" ) m_color_sampling_method    = jpv::DataDefines::VariableArray;
+//    else 
+//    {
+//       std::cout << "No selecting Sampling method !!! Skip glyph generate process !!!" << std::endl;
+//       return false;  
+//    }
+//    
+//    for (int i =0 ; i< color_data_variables.size(); i++)
+//    {
+//        m_color_data_variables.push_back( std::atoi(color_data_variables[i].substr(1).c_str()) - 1); 
+//    }
+//
+//#if 0
+//    std::cout << "m_direction_variables        = " << m_direction_variables[0] << ", " << m_direction_variables[1]   << std::endl; 
+//    std::cout << "m_size_sampling_method       = " << static_cast<int>(m_size_sampling_method)      << std::endl; 
+//    if(m_size_variables.size() > 0) std::cout << "m_size_variables             = " << m_size_variables[0]    << std::endl; 
+//    std::cout << "m_distribution_modes         = " << static_cast<int>(m_distribution_modes )       << std::endl; 
+//    std::cout << "m_stride                     = " << m_stride                    << std::endl; 
+//    std::cout << "m_seed                       = " << m_seed                      << std::endl; 
+//    std::cout << "m_number_of_sample_points    = " << m_number_of_sample_points   << std::endl; 
+//    std::cout << "m_color_sampling_method      = " << static_cast<int>(m_color_sampling_method )    << std::endl; 
+//    if(m_color_data_variables.size() > 0) std::cout << "m_color_data_variables       = " << m_color_data_variables[0] <<  std::endl; 
+//#endif 
+//      return glyph_flag; 
+//
+//}
+//#endif
 #if 1
 void GlyphSeed::PointSampling_unstruct()
 {

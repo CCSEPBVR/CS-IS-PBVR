@@ -78,10 +78,10 @@
 #include <vismodule/SetDefaultTransferFunction>
 #include <DaemonAndSampler/Daemon/Timer.h>
 
-using FuncParser::Variable;
-using FuncParser::Variables;
-using FuncParser::Function;
-using FuncParser::FunctionParser;
+//using FuncParser::Variable;
+//using FuncParser::Variables;
+//using FuncParser::Function;
+//using FuncParser::FunctionParser;
 
 bool SigServer = false;
 void SignalHandler( const int sig )
