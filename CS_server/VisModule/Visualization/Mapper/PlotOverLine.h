@@ -17,6 +17,7 @@
 #include "CellBase.h"
 #include <vismodule/TrilinearInterpolator>
 #include "TetrahedralCell.h"
+#include "../../../Common/ParticleTransferProtocol.h"
 
 #include <iomanip>
 #include <vismodule/PlotOverLineProperty>
@@ -173,7 +174,7 @@ private:
     //終点
     vismodule::Vec3 m_end_point; 
     //解像度
-    int m_resolution;
+    int m_sampling_size;
     //指定変数
     int m_plot_variable ;
 
@@ -188,11 +189,11 @@ public:
 
     PlotOverLine( const vismodule::StructuredVolumeObject* volume,
 //    PlotOverLine( const pbvr::StructuredVolumeObject* volume,
-                            const size_t resolution,
+                            const size_t sampling_size,
                             const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
                         
     PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
-                  const size_t resolution,
+                  const size_t sampling_size,
                   const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
 
     //変数配列用コンストラクター
@@ -200,27 +201,38 @@ public:
         float* coordinates, int ncoords,
         unsigned int* connections, int ncells,
         const  vismodule::VolumeObjectBase::CellType& celltype, 
-        const size_t resolution,
+        const size_t sampling_size,
         const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable );
 
 
     PlotOverLine( domain_parameters_struct dom, float** values, int nvariables, 
-        const size_t resolution,
+        const size_t sampling_size,
         const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable );
+
+    PlotOverLine( Type** values, int nvariables,
+        float* coordinates, int ncoords,
+        unsigned int* connections, int ncells,
+        const  vismodule::VolumeObjectBase::CellType& celltype, 
+        const jpv::ParticleTransferClientMessage &clntMes);
+
+
+    PlotOverLine( domain_parameters_struct dom, float** values, int nvariables, 
+        const jpv::ParticleTransferClientMessage &clntMes );
+
 
     // CS用
     PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
-                  const size_t resolution,
+                  const size_t sampling_size,
                   const vismodule::Vec3 P0, const vismodule::Vec3 P1 , const int plot_variable);
 
     // CS用
     PlotOverLine( const vismodule::StructuredVolumeObject* volume,
-                  const size_t resolution,
+                  const size_t sampling_size,
                   const vismodule::Vec3 P0, const vismodule::Vec3 P1 , const int plot_variable);
 
 
     PlotOverLine( const POL::Polyhedron* volume,
-                  const size_t resolution,
+                  const size_t sampling_size,
                   const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
 
     ~PlotOverLine();
@@ -234,7 +246,7 @@ public:
 
     void setVolume( const POL::Polyhedron* volume );
 
-    void setResolution( const size_t resolution );
+    void setSamplingSize( const size_t sampling_size );
     void extractPlotLineStructured( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
     void extractPlotLine( const vismodule::StructuredVolumeObject* volume );
     void extractPlotLine( const vismodule::UnstructuredVolumeObject* volume );
@@ -250,7 +262,7 @@ public:
     void OutputLine(const int time_step);
     
 
-    int resolution() {return m_resolution;}
+    int sampling_size() {return m_sampling_size;}
     bool plot_flag(){return m_plot_flag;}
     vismodule::ValueArray<float> values(){ return m_values_on_line;}
     vismodule::ValueArray<float> xAxis(){ return m_x_axis;}

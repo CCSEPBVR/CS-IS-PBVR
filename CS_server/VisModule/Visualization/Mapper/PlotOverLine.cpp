@@ -7,91 +7,129 @@
 PlotOverLine::PlotOverLine( void ){}
 
 PlotOverLine::PlotOverLine( const vismodule::StructuredVolumeObject* volume,
-                            const size_t resolution,
+                            const size_t sampling_size,
                             const vismodule::Vec3 P0, const vismodule::Vec3 P1 )
 {
     this->setVolume( volume );
 
-    this->setResolution( resolution );
+    this->setSamplingSize( sampling_size );
 
     this->extractPlotLineStructured( P0, P1 );
 }
 
 PlotOverLine::PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
-                            const size_t resolution,
+                            const size_t sampling_size,
                             const vismodule::Vec3 P0, const vismodule::Vec3 P1 )
 {
     
     this->setVolume( volume );
 
-    this->setResolution( resolution );
+    this->setSamplingSize( sampling_size );
 
     this->extractPlotLine( P0, P1 );
 }
-// CS用コンストラクター
-PlotOverLine::PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
-                            const size_t resolution,
-                            const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable ):
-    m_plot_variable(plot_variable)
-{
-    
-    this->setVolume( volume );
-
-    this->setResolution( resolution );
-
-    this->extractPlotLine( P0, P1 );
-}
-
-// CS用コンストラクター
-PlotOverLine::PlotOverLine( const vismodule::StructuredVolumeObject* volume,
-                            const size_t resolution,
-                            const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable ):
-    m_plot_variable(plot_variable)
-{
-    
-    this->setVolume( volume );
-
-    this->setResolution( resolution );
-
-    this->extractPlotLineStructured( P0, P1 );
-}
+//// CS用コンストラクター
+//PlotOverLine::PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
+//                            const size_t sampling_size,
+//                            const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable ):
+//    m_plot_variable(plot_variable)
+//{
+//    
+//    this->setVolume( volume );
+//
+//    this->setSamplingSize( sampling_size );
+//
+//    this->extractPlotLine( P0, P1 );
+//}
+//
+//// CS用コンストラクター
+//PlotOverLine::PlotOverLine( const vismodule::StructuredVolumeObject* volume,
+//                            const size_t sampling_size,
+//                            const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable ):
+//    m_plot_variable(plot_variable)
+//{
+//    
+//    this->setVolume( volume );
+//
+//    this->setSamplingSize( sampling_size );
+//
+//    this->extractPlotLineStructured( P0, P1 );
+//}
 
 //変数配列用コンストラクター
+//PlotOverLine::PlotOverLine( Type** values, int nvariables,
+//        float* coordinates, int ncoords,
+//        unsigned int* connections, int ncells,
+//        const  vismodule::VolumeObjectBase::CellType& celltype, 
+//        const size_t sampling_size,
+//        const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable ):
+//    m_plot_variable(plot_variable),
+//    m_values( values ), m_nvariables(nvariables),  
+//    m_coordinates( coordinates  ), m_nnodes( ncoords ), 
+//    m_connections( connections ), m_ncells( ncells ) 
+//{
+//    m_cellType = celltype;
+//    this->setSamplingSize( sampling_size );
+//    this->extractPlotLine( P0, P1 );
+//}
+//
+//PlotOverLine::PlotOverLine( domain_parameters_struct dom, float** values, int nvariables, 
+//        const size_t sampling_size,
+//        const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable ):
+//    m_plot_variable(plot_variable),
+//    m_values( values ),m_nvariables(nvariables)
+//{
+//    this->setSamplingSize( sampling_size );
+//    m_dom = dom;
+//    this->extractPlotLineStructured( P0, P1 );
+//}
+
 PlotOverLine::PlotOverLine( Type** values, int nvariables,
         float* coordinates, int ncoords,
         unsigned int* connections, int ncells,
         const  vismodule::VolumeObjectBase::CellType& celltype, 
-        const size_t resolution,
-        const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable ):
-    m_plot_variable(plot_variable),
+        const jpv::ParticleTransferClientMessage &clntMes):
     m_values( values ), m_nvariables(nvariables),  
     m_coordinates( coordinates  ), m_nnodes( ncoords ), 
     m_connections( connections ), m_ncells( ncells ) 
 {
+    m_plot_variable =  std::atoi(clntMes.m_plot_variable.substr(1).c_str()) -1;
+    int sampling_size = clntMes.m_sampling_size;
+    vismodule::Vec3 P0( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
+    vismodule::Vec3 P1( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
+    std::cout << "m_plot_variable = " << m_plot_variable  <<std::endl;
+    std::cout << "sampling_size = " << sampling_size <<std::endl;
+    std::cout << "P0 = " << P0.x() << ", " << P0.y() << ", " << P0.z() <<std::endl;
+    std::cout << "P1 = " << P1.x() << ", " << P1.y() << ", " << P1.z() <<std::endl;
     m_cellType = celltype;
-    this->setResolution( resolution );
+    std::cout << __LINE__ <<std::endl;
+    this->setSamplingSize( sampling_size );
+    std::cout << __LINE__ <<std::endl;
     this->extractPlotLine( P0, P1 );
+    std::cout << __LINE__ <<std::endl;
 }
 
 PlotOverLine::PlotOverLine( domain_parameters_struct dom, float** values, int nvariables, 
-        const size_t resolution,
-        const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable ):
-    m_plot_variable(plot_variable),
+        const jpv::ParticleTransferClientMessage &clntMes):
     m_values( values ),m_nvariables(nvariables)
 {
-    this->setResolution( resolution );
+    m_plot_variable =  std::atoi(clntMes.m_plot_variable.substr(1).c_str()) -1;
+    int sampling_size = clntMes.m_sampling_size;
+    vismodule::Vec3 P0( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
+    vismodule::Vec3 P1( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
+    this->setSamplingSize( sampling_size );
     m_dom = dom;
     this->extractPlotLineStructured( P0, P1 );
 }
 
 //ポリへドロン用コンストラクター
 PlotOverLine::PlotOverLine( const POL::Polyhedron* volume,
-                            const size_t resolution,
+                            const size_t sampling_size,
                             const vismodule::Vec3 P0, const vismodule::Vec3 P1 )
 {
     this->setVolume( volume );
 
-    this->setResolution( resolution );
+    this->setSamplingSize( sampling_size );
 
     this->extractPlotLine( P0, P1 );
 }
@@ -116,21 +154,22 @@ void PlotOverLine::setVolume( const POL::Polyhedron* volume )
     m_polyhedron = volume;
 }
 
-void PlotOverLine::setResolution( const size_t resolution )
+void PlotOverLine::setSamplingSize( const size_t sampling_size )
 {
-    m_values_on_line.allocate( resolution );
+    m_sampling_size = sampling_size;
+    m_values_on_line.allocate( sampling_size );
     m_values_on_line.fill( 0x00 );
 
-    m_x_axis.allocate( resolution );
+    m_x_axis.allocate( sampling_size );
     m_x_axis.fill( 0x00 );
 
-    m_mask.allocate( resolution );
+    m_mask.allocate( sampling_size );
     m_mask.fill( false );
 
-    m_allcell_values_on_line.allocate(resolution);
+    m_allcell_values_on_line.allocate(sampling_size);
     m_allcell_values_on_line.fill( 0x00 );
 
-    m_allcell_mask.allocate(resolution);
+    m_allcell_mask.allocate(sampling_size);
     m_allcell_mask.fill( false );
 
 }
@@ -201,7 +240,7 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
 
         bool plot_flag;
         std::string              p_flag                    = plot_over_line_property.getString( "PLOT_FLAG" );
-        int resolution                                     = plot_over_line_property.getInt("SAMPLING_SIZE");
+        int sampling_size                                     = plot_over_line_property.getInt("SAMPLING_SIZE");
         std::string              p_variable                = plot_over_line_property.getString( "PLOT_VARIABLE" );
         m_plot_variable = std::atoi(p_variable.substr(1).c_str()) -1;
         std::vector<float> s_table;
@@ -211,14 +250,14 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
 
         if(strcmp(p_flag.c_str(), "TRUE") ==0 ) plot_flag = true;
         else plot_flag = false;
-        m_resolution = resolution;
+        m_sampling_size = sampling_size;
         m_start_point.x() = s_table[0];
         m_start_point.y() = s_table[1];
         m_start_point.z() = s_table[2];
         m_end_point.x() = e_table[0];
         m_end_point.y() = e_table[1];
         m_end_point.z() = e_table[2];
-        if (plot_flag || m_resolution > 0)this->setResolution( m_resolution );
+        if (plot_flag || m_sampling_size > 0)this->setSamplingSize( m_sampling_size );
         m_plot_flag = plot_flag;
     }
     else
@@ -245,7 +284,7 @@ void PlotOverLine::extractPlotLine( const vismodule::UnstructuredVolumeObject* v
 void PlotOverLine::CellTypeReduceing()
 {
     //reduce data
-    for (int i =0; i<m_resolution; i++)
+    for (int i =0; i<m_sampling_size; i++)
     {
         //polData.m_x_axis       [i]  = plot_over_line->xAxis() [i];
         if (m_mask[i] )
@@ -300,12 +339,12 @@ void PlotOverLine::extractPlotLinePoly( const vismodule::Vec3 P0, const vismodul
 
 void PlotOverLine::calculate_x_axis( const vismodule::Vec3 P0, const vismodule::Vec3 P1 )
 {
-    const size_t resolution = m_x_axis.size();
+    const size_t sampling_size = m_x_axis.size();
     const float line_length = (P1-P0).length();
-    const float offset = line_length / (resolution-1);
+    const float offset = line_length / (sampling_size-1);
     float sampling_length = 0.0;
 
-    for( int i=0; i<resolution; i++ )
+    for( int i=0; i<sampling_size; i++ )
     {
         m_x_axis[i] = sampling_length;
         sampling_length += offset;

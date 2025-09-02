@@ -150,9 +150,9 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
 
         try
         {
-            //PlotOverLine plot_over_line(vo_p, clntMes.m_sampling_size, start_point, end_point, plot_variable);
             PlotOverLine plot_over_line( raw_values.data(), nvariables, coordinates.data(), ncoords,
-            connections.data(), ncells,  celltype, clntMes.m_sampling_size, start_point, end_point, plot_variable);
+            connections.data(), ncells,  celltype, clntMes);
+            //connections.data(), ncells,  celltype, clntMes.m_sampling_size, start_point, end_point, plot_variable);
 
             m_object->setValuesOnLine(plot_over_line.values()); 
             m_object->setXAxis(plot_over_line.xAxis()); 
@@ -171,7 +171,6 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
     }
     else if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Structured)
     {
-                        std::cout << __LINE__ << __FUNCTION__ <<std::endl;
 #if 1
         const vismodule::StructuredVolumeObject* object = static_cast<const vismodule::StructuredVolumeObject*>( volume );
         vismodule::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
@@ -195,7 +194,8 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
 
         try
         {
-            PlotOverLine plot_over_line(dom, raw_values.data(), nvariables, clntMes.m_sampling_size, start_point, end_point, plot_variable);
+            //PlotOverLine plot_over_line(dom, raw_values.data(), nvariables, clntMes.m_sampling_size, start_point, end_point, plot_variable);
+            PlotOverLine plot_over_line(dom, raw_values.data(), nvariables, clntMes);
 
             m_object->setValuesOnLine(plot_over_line.values()); 
             m_object->setXAxis(plot_over_line.xAxis()); 
@@ -491,7 +491,8 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
         try
         {
             PlotOverLine plot_over_line( raw_values.data(), nvariables, coordinates.data(), ncoords,
-            connections.data(), ncells,  celltype, clntMes.m_sampling_size, start_point, end_point, plot_variable);
+            //connections.data(), ncells,  celltype, clntMes.m_sampling_size, start_point, end_point, plot_variable);
+            connections.data(), ncells,  celltype, clntMes);
             m_object->setValuesOnLine(plot_over_line.values()); 
             m_object->setXAxis(plot_over_line.xAxis()); 
             m_object->setMask(plot_over_line.mask()); 
@@ -525,7 +526,8 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
 
         try
         {
-            PlotOverLine plot_over_line(dom, raw_values.data(), nvariables, clntMes.m_sampling_size, start_point, end_point, plot_variable);
+            //PlotOverLine plot_over_line(dom, raw_values.data(), nvariables, clntMes.m_sampling_size, start_point, end_point, plot_variable);
+            PlotOverLine plot_over_line(dom, raw_values.data(), nvariables, clntMes);
             //PlotOverLine plot_over_line(object, clntMes.m_sampling_size, start_point, end_point, plot_variable);
             m_object->setValuesOnLine(plot_over_line.values()); 
             m_object->setXAxis(plot_over_line.xAxis()); 
