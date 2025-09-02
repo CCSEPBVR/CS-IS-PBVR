@@ -55,10 +55,10 @@
 #include <vismodule/StructuredVolumeImporter>
 #include <vismodule/CellByCellParticleGenerator>
 
-using FuncParser::Variable;
-using FuncParser::Variables;
-using FuncParser::Function;
-using FuncParser::FunctionParser;
+//using FuncParser::Variable;
+//using FuncParser::Variables;
+//using FuncParser::Function;
+//using FuncParser::FunctionParser;
 
 
 class PointObjectCreator
@@ -223,7 +223,7 @@ public:
 //    }
 
 protected:
-
+#if 0
     bool apply_coordinate_synthesizer( vismodule::PointObject* po, const int timeStep )
     {
         if ( ! po ) return false;
@@ -334,7 +334,7 @@ protected:
         po->setCoords( new_coords );
         return true;
     }
-
+#endif
     void read_gt5d_connections_and_values()
     {
 #if 0 //TEST_DELETE

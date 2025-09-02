@@ -3,19 +3,30 @@ include ../arch/${PBVR_MACHINE}
 TARGET=libpbvrFunc.a
 CXXFLAGS+=-DCPU_VER -DDUPLICATION -DCPU_SAMPLING_TIME -DJPV_CLIENT -I../include -I./
 
-FUNC_SRCS =    function.cpp \
-			   function_parser.cpp \
-               ExpressionTokenizer.cpp \
+FUNC_SRCS =    ExpressionTokenizer.cpp \
                ExpressionConverter.cpp \
                ReversePolishNotation.cpp
 
-FUNC_HEADERS = function.h \
-			   function_op.h \
-			   function_parser.h \
-			   ExpressionTokenizer.h \
+FUNC_HEADERS = ExpressionTokenizer.h \
                ExpressionConverter.h \
                ReversePolishNotation.h \
                Token.h
+
+
+
+#FUNC_SRCS =    function.cpp \
+#			   function_parser.cpp \
+#               ExpressionTokenizer.cpp \
+#               ExpressionConverter.cpp \
+#               ReversePolishNotation.cpp
+#
+#FUNC_HEADERS = function.h \
+#			   function_op.h \
+#			   function_parser.h \
+#			   ExpressionTokenizer.h \
+#               ExpressionConverter.h \
+#               ReversePolishNotation.h \
+#               Token.h
 
 FUNC_OBJS   = $(FUNC_SRCS:%.cpp=%.o)
 

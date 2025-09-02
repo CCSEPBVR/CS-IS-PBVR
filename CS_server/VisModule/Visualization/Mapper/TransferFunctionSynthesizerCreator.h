@@ -14,8 +14,8 @@
 #include <vismodule/MultiVolumeProperty>
 
 // const static size_t TF_COUNT = 5;
-#include "ReversePolishNotation.h"
-#include "Token.h"
+#include "../../../FunctionParser/ReversePolishNotation.h"
+#include "../../../FunctionParser/Token.h"
 
 #include "../../../Common/VariableRange.h"
 

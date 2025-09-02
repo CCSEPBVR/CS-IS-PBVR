@@ -4,9 +4,9 @@
 #include <vismodule/ColorMap>
 #include <vismodule/OpacityMap>
 #include <vismodule/TransferFunction>
-#include "function.h"
-#include "function_op.h"
-#include "function_parser.h"
+//#include "../../../FunctionParser/function.h"
+//#include "../../../FunctionParser/function_op.h"
+//#include "../../../FunctionParser/function_parser.h"
 //#include "Types.h"
 #include <vismodule/Type>
 

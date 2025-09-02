@@ -29,21 +29,21 @@ ExtendedTransferFunction::ExtendedTransferFunction( const std::string& red_funct
     vismodule::ColorMap*   c = new vismodule::ColorMap( resolution, min_value, max_value );
     vismodule::OpacityMap* a = new vismodule::OpacityMap( resolution, min_value, max_value );
 
-    FuncParser::Variables vars;
-    FuncParser::Variable var_x;
-    FuncParser::Function rf, gf, bf, of;
+//    FuncParser::Variables vars;
+//    FuncParser::Variable var_x;
+//    FuncParser::Function rf, gf, bf, of;
 
-    var_x.tag( "x" );
-    vars.push_back( var_x );
+//    var_x.tag( "x" );
+//    vars.push_back( var_x );
 
-    FuncParser::FunctionParser rf_parse( rfstr, rfstr.size() + 1 );
-    FuncParser::FunctionParser gf_parse( gfstr, gfstr.size() + 1 );
-    FuncParser::FunctionParser bf_parse( bfstr, bfstr.size() + 1 );
-    FuncParser::FunctionParser of_parse( ofstr, ofstr.size() + 1 );
-    FuncParser::FunctionParser::Error err_r = rf_parse.express( rf, vars );
-    FuncParser::FunctionParser::Error err_g = gf_parse.express( gf, vars );
-    FuncParser::FunctionParser::Error err_b = bf_parse.express( bf, vars );
-    FuncParser::FunctionParser::Error err_o = of_parse.express( of, vars );
+//    FuncParser::FunctionParser rf_parse( rfstr, rfstr.size() + 1 );
+//    FuncParser::FunctionParser gf_parse( gfstr, gfstr.size() + 1 );
+//    FuncParser::FunctionParser bf_parse( bfstr, bfstr.size() + 1 );
+//    FuncParser::FunctionParser of_parse( ofstr, ofstr.size() + 1 );
+//    FuncParser::FunctionParser::Error err_r = rf_parse.express( rf, vars );
+//    FuncParser::FunctionParser::Error err_g = gf_parse.express( gf, vars );
+//    FuncParser::FunctionParser::Error err_b = bf_parse.express( bf, vars );
+//    FuncParser::FunctionParser::Error err_o = of_parse.express( of, vars );
 
     const float stride = ( max_value - min_value ) / ( resolution - 1 );
     float x = min_value;
@@ -52,11 +52,11 @@ ExtendedTransferFunction::ExtendedTransferFunction( const std::string& red_funct
         vismodule::UInt8 r, g, b;
         float opacity;
 
-        var_x = x;
-        r = rf.eval();
-        g = gf.eval();
-        b = bf.eval();
-        opacity = of.eval();
+//        var_x = x;
+//        r = rf.eval();
+//        g = gf.eval();
+//        b = bf.eval();
+//        opacity = of.eval();
 
         vismodule::RGBColor color( r, g, b );
         c->addPoint( x, color );

@@ -2,7 +2,8 @@
 #define _REVERSEPOLISHNOTATION
 
 #include <iostream>
-#include <math.h>
+//#include <math.h>
+#include <cmath>
 #ifdef _MSC_VER
 #include <time.h>
 #else
@@ -204,7 +205,8 @@ public:
                 case POW:
                     tmp1 = pop();
                     tmp2 = pop();
-                    tmp3 = pow( tmp2, tmp1 );
+                    //tmp3 = pow( tmp2, tmp1 );
+                    tmp3 = std::pow( tmp2, tmp1 );
                     push( tmp3 );
                     break;
 
@@ -457,6 +459,7 @@ public:
                     for ( int i=0; i<array_size; i++ )
                     {
                         tmp3[i] = pow( tmp2[i], tmp1[i] );
+                        //tmp3[i] = powf( tmp2[i], tmp1[i] );
                     }
                     pushArray( tmp3 );
                     break;

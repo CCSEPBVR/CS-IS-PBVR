@@ -8,13 +8,14 @@
 #include <vismodule/HexahedralCell>
 #include <vismodule/TrilinearInterpolator>
 #include <vismodule/TransferFunction>
-#include "ReversePolishNotation.h"
-#include "Token.h"
+//#include "ReversePolishNotation.h"
+#include "../../../FunctionParser/ReversePolishNotation.h"
+#include "../../../FunctionParser/Token.h"
 //add by shimomura  2022/12/20
 //#include "../Common/VariableRange.h"
 #include "../../../Common/VariableRange.h"
-#include "ExpressionTokenizer.h"
-#include "ExpressionConverter.h"
+#include "../../../FunctionParser/ExpressionTokenizer.h"
+#include "../../../FunctionParser/ExpressionConverter.h"
 
 
 #ifdef DOUBLE_SCHEME  
