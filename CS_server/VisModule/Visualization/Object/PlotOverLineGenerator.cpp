@@ -23,7 +23,7 @@
 
 using namespace vismodule;
 
-//void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera )
+// pfi,pfl ファイルの読み込み処理 (pfi,pflとファイル拡張子判別方法が異なるため、別処理とする) 
 void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide )
 {
 //FJ_TIMER_KAWAMURA
@@ -217,67 +217,11 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
 //    delete uvo_p;
 }
 
+// pfi,pfl以外
 void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const int st, const int vl )
 {
     vismodule::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
     vismodule::Vec3 end_point( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
-
-//    bool is_structured = false;
-//    bool is_unstructured = false;
-//    size_t found_vtm  = param.m_input_data_base.find(".vtm");
-//    size_t found_vtu  = param.m_input_data_base.find(".vtu");
-//    size_t found_vti  = param.m_input_data_base.find(".vti");
-//    size_t found_inp  = param.m_input_data_base.find(".inp");
-//    size_t found_pvtu = param.m_input_data_base.find(".pvtu");
-//    size_t found_case = param.m_input_data_base.find(".case");
-//    vismodule::VolumeObjectBase* volume = nullptr;
-//    int plot_variable =  std::atoi(clntMes.m_plot_variable.substr(1).c_str()) -1;
-//
-//    if ( found_vtm != std::string::npos )
-//    {
-//        // Stuctured
-//        if( m_mvp->m_file_type == 3 )
-//        {
-//            is_structured = true;
-//            volume = new vismodule::StructuredVolumeImporter( m_mvp->m_file_path, st, vl );
-//            volume->updateMinMaxValues();
-//            volume->setMinMaxObjectCoords( m_mvp->m_min_subvolume_coord[vl], m_mvp->m_max_subvolume_coord[vl] );
-//            volume->setMinMaxExternalCoords( m_mvp->m_min_subvolume_coord[vl], m_mvp->m_max_subvolume_coord[vl] );            
-//        }
-//        // Unstructured
-//        if( m_mvp->m_file_type == 4 )
-//        {
-//            is_unstructured = true;
-//            volume = new vismodule::UnstructuredVolumeImporter( m_mvp->m_file_path, m_mvp->m_file_type, m_mvp->m_elem_type, st, vl );
-//            volume->updateMinMaxValues();
-//            volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
-//            volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );            
-//        }
-//    }
-//    else if ( found_vtu  != std::string::npos ||
-//              found_inp  != std::string::npos ||
-//              found_pvtu != std::string::npos ||
-//              found_case != std::string::npos 
-//            )
-//    {
-//        is_unstructured = true;
-//        volume = new vismodule::UnstructuredVolumeImporter( m_mvp->m_file_path, m_mvp->m_file_type, m_mvp->m_elem_type, st, vl );
-//        volume->updateMinMaxValues();
-//        volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
-//        volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );        
-//    }
-//    else if ( found_vti != std::string::npos )
-//    {
-//        is_structured = true;
-//        volume = new vismodule::StructuredVolumeImporter( m_mvp->m_file_path, st, vl );
-//        volume->updateMinMaxValues();
-//        volume->setMinMaxObjectCoords( m_mvp->m_min_subvolume_coord[vl], m_mvp->m_max_subvolume_coord[vl] );
-//        volume->setMinMaxExternalCoords( m_mvp->m_min_subvolume_coord[vl], m_mvp->m_max_subvolume_coord[vl] );        
-//    }
-//
-//    std::cout << *volume << std::endl;
-//    std::cout << "min:" << volume->minObjectCoord() << ", max:" << volume->maxObjectCoord() << std::endl;
-//    std::cout << "min:" << volume->minExternalCoord() << ", max:" << volume->maxExternalCoord() << std::endl;
 
     // ボリュームデータ読み取り
     size_t found_kvsml = param.m_input_data_base.find(".kvsml");
@@ -293,11 +237,9 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
     if ( found_kvsml != std::string::npos )
     {
         volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );
-    
         vismodule::File ifpx( m_mvp->m_file_path );
         std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
 
-        std::cout << "path_base = " << path_base << std::endl;    
         volume = new vismodule::UnstructuredVolumeImporter( path_base, m_mvp->m_file_type, st, vl );
     }
 #ifdef EXTEND_FILE_FORMAT
@@ -526,7 +468,6 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
 
         try
         {
-            //PlotOverLine plot_over_line(dom, raw_values.data(), nvariables, clntMes.m_sampling_size, start_point, end_point, plot_variable);
             PlotOverLine plot_over_line(dom, raw_values.data(), nvariables, clntMes);
             //PlotOverLine plot_over_line(object, clntMes.m_sampling_size, start_point, end_point, plot_variable);
             m_object->setValuesOnLine(plot_over_line.values()); 

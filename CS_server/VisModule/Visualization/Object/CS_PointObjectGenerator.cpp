@@ -74,7 +74,6 @@ void CS_PointObjectGenerator::createFromFile( const Argument& param, const vismo
         int id = param.m_subvolume_id;
         // change by shimomura 20240730
         volume->updateMinMaxValues();
-        //volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
         volume->setMinMaxObjectCoords( m_mvp->m_min_subvolume_coord[id], m_mvp->m_max_subvolume_coord[id] );
         volume->setMinMaxExternalCoords( m_mvp->m_min_subvolume_coord[id], m_mvp->m_max_subvolume_coord[id] );
 
@@ -86,7 +85,6 @@ void CS_PointObjectGenerator::createFromFile( const Argument& param, const vismo
         
         // change by shimomura 20240730
         volume->updateMinMaxValues();
-        //volume->setMinMaxValues( m_mvp->m_min_value, m_mvp->m_max_value );
         volume->setMinMaxObjectCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
         volume->setMinMaxExternalCoords( m_mvp->m_min_object_coord, m_mvp->m_max_object_coord );
     }
