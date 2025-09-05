@@ -228,6 +228,7 @@ void ParameterFileWriter::inputTransferFunctionMessage( const jpv::ParticleTrans
         m_name_list_file.setLine( tag_base + "MIN_O", client_message.m_transfer_function[n].m_opacity_variable_min );
         m_name_list_file.setLine( tag_base + "MAX_O", client_message.m_transfer_function[n].m_opacity_variable_max );
 
+        
         vismodule::ColorMap::Table   color_table   = client_message.m_transfer_function[n].colorMap().table();
         vismodule::OpacityMap::Table opacity_table = client_message.m_transfer_function[n].opacityMap().table();
 

@@ -81,8 +81,8 @@ CXXFLAGS += -std=c++17 -DVTK
 #CXXFLAGS += -I${VTK_INC_PATH} -I${KVSML_CONVERTER_SOURCE_DIR}/FileFormat -I${KVSML_CONVERTER_SOURCE_DIR}/Importer -I./Filter
 #CXXFLAGS += -L${VTK_LIB_PATH} -lvtkFiltersExtraction-9.2 -lvtkIOXML-9.2 -lvtkIOXMLParser-9.2 -lvtkexpat-9.2 -lvtkParallelCore-9.2 -lvtkIOLegacy-9.2 -lvtkIOCore-9.2
 CXXFLAGS += -I${KVS_DIR}/include -I${VTK_INCLUDE_PATH} -I${KVSML_CONVERTER_SOURCE_DIR} -I${KVSML_CONVERTER_SOURCE_DIR}/Importer -I./Filter -I${COMMON_DIR}
-CXXFLAGS += -L${KVS_DIR}/lib -lkvsCore -L${VTK_LIB_PATH} -lvtkFiltersExtraction-9.2 -lvtkIOXML-9.2 -lvtkIOXMLParser-9.2 -lvtkexpat-9.2 -lvtkParallelCore-9.2 -lvtkIOLegacy-9.2 -lvtkIOCore-9.2 \
-    -lvtkdoubleconversion-9.2 -lvtklz4-9.2 -lvtklzma-9.2 -lvtkFiltersStatistics-9.2 -lvtkFiltersCore-9.2 -lvtkCommonExecutionModel-9.2  \
+CXXFLAGS += -L${KVS_DIR}/lib -lVisModule -L${VTK_LIB_PATH} -lvtkFiltersExtraction-9.2 -lvtkIOXML-9.2 -lvtkIOXMLParser-9.2 -lvtkexpat-9.2 -lvtkParallelCore-9.2 -lvtkIOLegacy-9.2 -lvtkIOCore-9.2 \
+	-lvtkdoubleconversion-9.2 -lvtklz4-9.2 -lvtklzma-9.2 -lvtkFiltersStatistics-9.2 -lvtkFiltersCore-9.2 -lvtkCommonExecutionModel-9.2  \
     -lvtkzlib-9.2 -lvtkCommonColor-9.2 -lvtkfmt-9.2 -lvtkCommonDataModel-9.2 -lvtkpugixml-9.2 -lvtkCommonSystem-9.2 -lvtkCommonMisc-9.2 -lvtkCommonTransforms-9.2 \
     -lvtkCommonMath-9.2 -lm -lvtkCommonCore-9.2 -lvtkloguru-9.2 -lvtksys-9.2
 endif

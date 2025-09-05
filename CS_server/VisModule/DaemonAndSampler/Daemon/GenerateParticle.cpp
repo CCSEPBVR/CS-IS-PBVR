@@ -1,5 +1,6 @@
 
 #include <vismodule/GenerateParticle>
+#include <vismodule/timer_simple>
 
 void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
                          bool &nan_error, 
@@ -215,6 +216,7 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
                     {
                         tmp_obj = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
                     }
+
 
                     size_t nmemb = tmp_obj->nvertices() * 3;
                     vismodule::ValueArray<vismodule::Real32> coords_array ( tmp_obj->coords().pointer(), nmemb );

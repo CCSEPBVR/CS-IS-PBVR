@@ -217,7 +217,6 @@ void generate_plot_over_line_master(Argument &param, jpv::ParticleTransferClient
                             }
 #endif
 #endif
-//							printf(" %zu glyphs generated\n", object->coords().size() / 3);
 
                             for (int i =0; i < resolution; ++i)
                             {
@@ -580,7 +579,6 @@ void generate_plot_over_line_IS(Argument &param, jpv::ParticleTransferClientMess
 
 
                         timer.start();
-                        std::cout << __LINE__ << __FUNCTION__ << std::endl;
 
                         while ( jd.dispatchNext( wid, &st, &vl ) )
                         {
