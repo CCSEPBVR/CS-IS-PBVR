@@ -88,7 +88,7 @@ PlotOverLine::PlotOverLine( Type** values, int nvariables,
         float* coordinates, int ncoords,
         unsigned int* connections, int ncells,
         const  vismodule::VolumeObjectBase::CellType& celltype, 
-        const jpv::ParticleTransferClientMessage &clntMes):
+        const jpv::ParticleTransferClientMessage &clntMes) :
     m_values( values ), m_nvariables(nvariables),  
     m_coordinates( coordinates  ), m_nnodes( ncoords ), 
     m_connections( connections ), m_ncells( ncells ) 

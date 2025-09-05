@@ -209,15 +209,16 @@ public:
         const size_t sampling_size,
         const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable );
 
+    // unstruct
     PlotOverLine( Type** values, int nvariables,
         float* coordinates, int ncoords,
         unsigned int* connections, int ncells,
         const  vismodule::VolumeObjectBase::CellType& celltype, 
         const jpv::ParticleTransferClientMessage &clntMes);
 
-
+    //struct 
     PlotOverLine( domain_parameters_struct dom, float** values, int nvariables, 
-        const jpv::ParticleTransferClientMessage &clntMes );
+        const jpv::ParticleTransferClientMessage &clntMes);
 
 
     // CS用

@@ -275,7 +275,8 @@ const bool KVSMLObjectGlyph::read( const std::string& filename )
     std::ifstream file(filename);
     m_filename = filename;
     std::string line_buffer;
-    
+
+    // グリフ数
     std::getline(file, line_buffer);
     int nPoints = std::stoi( line_buffer ); 
 
