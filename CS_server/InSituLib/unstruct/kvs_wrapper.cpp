@@ -1202,13 +1202,14 @@ void GlyphObjectGenerator( int time_step,
                          unsigned int* connections, int ncells, const vismodule::VolumeObjectBase::CellType& celltype,
                          const jpv::ParticleTransferClientMessage& clntMes, glyph_parameters& glyph_param) //celltype  enum 型に変更
 {
+
 auto safe_append = [](auto& dst, auto const& src, char const* what){
     using size_type = typename std::decay_t<decltype(dst)>::size_type;
     const size_type dsz = dst.size();
     const size_type ssz = src.size();
     const size_type mx  = dst.max_size();
 
-    //　受け渡しの際にセグフォエラーが発生する。これの予防および、調査のためのラムダ関数 
+    //　受け渡しの際にセグフォエラーが発生する？これの予防および、調査のためのラムダ関数 
     // オーバーフロー防止（mx - dsz の形で比較）
     if (ssz > mx - dsz) {
         std::ostringstream oss;
@@ -1225,15 +1226,15 @@ auto safe_append = [](auto& dst, auto const& src, char const* what){
     int mpi_size = 1;
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
      //　グリフ生成処理
-     std::cout << __LINE__ <<std::endl;
         GlyphSeed glyph_seed( clntMes, mpi_size, values, nvariables,
-                 coordinates, ncoords, connections, ncells, celltype);
-     std::cout << __LINE__ <<std::endl;
-//        GlyphSeed glyph_generator( values, nvariables,
-//                coordinates, ncoords, connections, ncells, celltype); 
-//        glyph_generator.OutputGlyph( time_step);
-        // 集約処理
-     std::cout << __LINE__ <<std::endl;
+                 coordinates, ncoords, connections, ncells, celltype, true);
+    auto const& v = glyph_seed.glyph_directions();
+    auto const& c = glyph_seed.glyph_coords();
+    auto const& k = glyph_seed.glyph_colors();
+    auto const& s = glyph_seed.glyph_sizes();
+
+#if 0
+// デバッグ用
      std::cout << "glyph_param.m_glyph_sizes = " << glyph_param.m_glyph_sizes.size() << std::endl; 
      std::cout << " glyph_seed.glyph_sizes() = " <<  glyph_seed.glyph_sizes().size() << std::endl; 
      std::cout << "glyph_param.m_glyph_vectors = " << glyph_param.m_glyph_vectors.size() << std::endl; 
@@ -1242,10 +1243,6 @@ auto safe_append = [](auto& dst, auto const& src, char const* what){
      std::cout << "glyph_seed.glyph_coords().size() = " << glyph_seed.glyph_coords().size() << std::endl; 
      std::cout << "m_glyph_coords.size() = " << glyph_param.m_glyph_colors.size()     << std::endl; 
      std::cout << "glyph_seed.glyph_colors() = " << glyph_seed.glyph_colors().size()  << std::endl; 
-         auto const& v = glyph_seed.glyph_directions();
-    auto const& c = glyph_seed.glyph_coords();
-    auto const& k = glyph_seed.glyph_colors();
-    auto const& s = glyph_seed.glyph_sizes();
 
     std::cout << "vectors: cur=" << glyph_param.m_glyph_vectors.size()
               << " add=" << v.size() << " max=" << glyph_param.m_glyph_vectors.max_size() << "\n";
@@ -1256,32 +1253,13 @@ auto safe_append = [](auto& dst, auto const& src, char const* what){
     std::cout << "sizes  : cur=" << glyph_param.m_glyph_sizes.size()
               << " add=" << s.size() << " max=" << glyph_param.m_glyph_sizes.max_size() << "\n";
 
+#endif
+        // 集約処理
     safe_append(glyph_param.m_glyph_vectors, v, "m_glyph_vectors");
     safe_append(glyph_param.m_glyph_coords , c, "m_glyph_coords");
     safe_append(glyph_param.m_glyph_colors , k, "m_glyph_colors");
     safe_append(glyph_param.m_glyph_sizes  , s, "m_glyph_sizes");
-//        glyph_param.m_glyph_vectors.insert(glyph_param.m_glyph_vectors.end(), glyph_seed.glyph_directions().begin(), glyph_seed.glyph_directions().end());  
-//     std::cout << __LINE__ <<std::endl;
-//        glyph_param.m_glyph_coords.insert(glyph_param.m_glyph_coords.end()  , glyph_seed.glyph_coords().begin() , glyph_seed.glyph_coords().end());  
-//     std::cout << __LINE__ <<std::endl;
-//        glyph_param.m_glyph_colors.insert(glyph_param.m_glyph_colors.end()  , glyph_seed.glyph_colors().begin() , glyph_seed.glyph_colors().end());  
-//     std::cout << __LINE__ <<std::endl;
-//        glyph_param.m_glyph_sizes.insert(glyph_param.m_glyph_sizes.end()  , glyph_seed.glyph_sizes().begin() , glyph_seed.glyph_sizes().end());  
-//     std::cout << __LINE__ <<std::endl;
-
 }
-
-//void GlyphObjectGenerator( int time_step,
-//                         domain_parameters_unstruct dom,
-//                         Type** values, int nvariables,
-//                         float* coordinates, int ncoords,
-//                         unsigned int* connections, int ncells, const vismodule::VolumeObjectBase::CellType& celltype) //celltype  enum 型に変更
-//{
-//        GlyphSeed glyph_generator( values, nvariables,
-//                coordinates, ncoords, connections, ncells, celltype); 
-//     
-//        glyph_generator.OutputGlyph( time_step);
-//}
 
 void GeneratePlotOverLine( int time_step,
                              domain_parameters_unstruct dom, 
@@ -1884,6 +1862,7 @@ void SetGlyphParameter(jpv::ParticleTransferClientMessage* clntMes  ,const int t
     i_table = glyph_property.getTableInt( "GLYPH_COLOR_MAP_TABLE" );
     vismodule::ValueArray<vismodule::UInt8> u_table( i_table.size() );
     for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (vismodule::UInt8)i_table[j];
+//    for( size_t j = 0; j<i_table.size(); j++ ) (vismodule::UInt8)clntMes.m_glyph_color_map_table[j] = (vismodule::UInt8)i_table[j];
     vismodule::ColorMap color_map( u_table, glyph_min, glyph_max);
 
     clntMes->m_color_map = color_map;

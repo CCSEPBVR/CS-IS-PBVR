@@ -332,7 +332,7 @@ void GlyphSeedGenerator::sampling( vismodule::VolumeObjectBase* volume,const jpv
         nvariables = volume->veclen();
 
         GlyphSeed glyph_generator( clntMes, number_of_divide, raw_values.data(), nvariables,
-                coordinates.data(), ncoords, connections.data(), ncells, celltype);
+                coordinates.data(), ncoords, connections.data(), ncells, celltype, false);
         glyph_generator.getGlyphData(&m_object);
         
     }
@@ -352,7 +352,7 @@ void GlyphSeedGenerator::sampling( vismodule::VolumeObjectBase* volume,const jpv
         ,1.f
         };
 
-        GlyphSeed glyph_generator( clntMes, number_of_divide, dom, raw_values.data(), nvariables);
+        GlyphSeed glyph_generator( clntMes, number_of_divide, dom, raw_values.data(), nvariables,false);
         glyph_generator.getGlyphData(&m_object);
     }
 

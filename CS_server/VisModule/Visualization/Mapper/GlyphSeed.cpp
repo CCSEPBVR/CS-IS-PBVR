@@ -23,16 +23,16 @@
 //    }
 //}
 
-// CS用 constructor unstruct 
+// unstruct 
 GlyphSeed::GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, Type** values,
         int nvariables, float* coordinates, int ncoords,
-        unsigned int* connections, int ncells, const vismodule::VolumeObjectBase::CellType& celltype) :
-        //unsigned int* connections, int ncells, const vismodule::VolumeObjectBase::CellType& celltype, const  vismodule::VolumeObjectBase::VolumeType& volumetype ) :
+        unsigned int* connections, int ncells, const vismodule::VolumeObjectBase::CellType& celltype, const bool is_flag) :
     m_values( values ), m_nvariable(nvariables),  
     m_coords( coordinates  ), m_ncoords( ncoords ), 
-    m_connections( connections ), m_ncells( ncells ) 
+    m_connections( connections ), m_ncells( ncells ), m_is_flag(is_flag) 
 {
-   
+  
+    std::cout << "m_is_flag = " << m_is_flag << std::endl; 
     m_g_flag = false; 
     m_g_flag = this -> InputParameter(clntMes, number_of_divide);
     if (m_g_flag)
@@ -48,8 +48,9 @@ GlyphSeed::GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const in
     }
 }
 
-// CS用 constructor struct 
-GlyphSeed::GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide,  domain_parameters_struct dom, Type** values, int nvariables) 
+// struct 
+GlyphSeed::GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide,  domain_parameters_struct dom, Type** values, int nvariables, const bool is_flag): 
+   m_values( values ), m_nvariable(nvariables) ,m_is_flag(is_flag)
 {
    
     m_g_flag = false; 
@@ -60,8 +61,8 @@ GlyphSeed::GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const in
         if( m_distribution_modes == jpv::GlyphMode:: AllPoints || m_distribution_modes == jpv::GlyphMode:: EveryNthPoints )
         {
             m_ncoords = dom.resolution[0]*dom.resolution[1]*dom.resolution[2];
-            m_nvariable = nvariables;
-            m_values = (float**)values;
+//            m_nvariable = nvariables;
+//            m_values = (float**)values;
             
             this->PointSampling_struct(dom);
         }
@@ -112,6 +113,8 @@ bool GlyphSeed::InputParameter(const jpv::ParticleTransferClientMessage& clntMes
     for( size_t j = 0; j< table_size ; j++ ) u_table[j] = (vismodule::UInt8)clntMes.m_glyph_color_map_table[j];
     vismodule::ColorMap color_map( u_table, glyph_min, glyph_max);
     m_color_map = color_map;
+
+    if(m_is_flag) m_color_map =clntMes.m_color_map;
 
     glyph_flag = clntMes.m_glyph_flag;
    
@@ -353,30 +356,35 @@ void GlyphSeed::PointSampling_unstruct()
            glyph_count++;
        }
 
-//        int n_size_data=m_glyph_sizes.size();
+        // size計算用
         float max=FLT_MIN;
         float min=FLT_MAX;
-//        float tmp_max=FLT_MIN;
-//        float tmp_min=FLT_MAX;
-//        for(int k = 0; k< n_size_data; k++)
-//        {
-//            max = vismodule::Math::Max(m_glyph_sizes[k], max ); 
-//            min = vismodule::Math::Min(m_glyph_sizes[k], min ); 
-//        }
-//
-//        tmp_max = max;
-//        tmp_min = min;
+        // 一時保存用
+        float tmp_max=FLT_MIN;
+        float tmp_min=FLT_MAX;
+        
+        int n_size_data=m_glyph_sizes.size();
+        for(int k = 0; k< n_size_data; k++)
+        {
+            max = vismodule::Math::Max(m_glyph_sizes[k], max ); 
+            min = vismodule::Math::Min(m_glyph_sizes[k], min ); 
+        }
 
-#if 0 //ISPBVR
-#ifndef CPU_VER
+        tmp_max = max;
+        tmp_min = min;
+
+       if(m_is_flag)//IS の場合、全領域のminmaxをここで集約する
+       {
         MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
         MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
-#endif
-#else
-        max = m_size_max;
-        min = m_size_min;
-#endif
-        float factor =0;
+       }
+       else // CSの場合クライアントから受け取った1ステップ前の集約済minmaxでサイズ計算
+       {
+           max = m_size_max;
+           min = m_size_min;
+       }
+
+       float factor =0;
         if (max - min > 1e-6 ) 
         {
             factor = 1/ (max - min) ;
@@ -386,14 +394,23 @@ void GlyphSeed::PointSampling_unstruct()
             factor = 1;
         }
 
-//        m_size_min = tmp_min;
-//        m_size_max = tmp_max;
        for (int i = 0; i < nPoints; i++)
        {
            m_glyph_sizes[ i] = (m_glyph_sizes[ i ] - min )*factor;
            m_glyph_sizes[ i] = vismodule::Math::Clamp<float>( m_glyph_sizes[ i], 0.0, 1.0 );
        }
 
+       //minmax の登録. IS は集約したもの CSは保存したもの
+       if(m_is_flag)
+       {
+           m_size_min = min;
+           m_size_max = max;
+       }
+       else
+       {
+           m_size_min = tmp_min;
+           m_size_max = tmp_max;
+       }
    }
 
    //color 
@@ -401,11 +418,7 @@ void GlyphSeed::PointSampling_unstruct()
    float glyph_color_data_min = FLT_MAX;
    if (m_color_sampling_method == jpv::DataDefines::Constant)
    {
-//       std::fill(m_glyph_colors.begin(), m_glyph_colors.begin(), 0);
-//       m_color_map.setRange(0, 1);
-//       m_color_min = 0;
-//       m_color_max = 1;
-       // 色が白になるよう設定コーデイング
+       // 色が白になるよう設定
        for (int ii=0;ii < nPoints; ii++)
        {
            m_glyph_colors[3*ii    ] = 255 ;
@@ -431,37 +444,39 @@ void GlyphSeed::PointSampling_unstruct()
            glyph_count++;
        }
 
-//       int n_color_data=m_glyph_colors_data.size();
-//       float max=FLT_MIN;
-//       float min=FLT_MAX;
-//       for(int k = 0; k< n_color_data; k++)
-//       {
-//           max = vismodule::Math::Max(m_glyph_colors_data[k], max ); 
-//           min = vismodule::Math::Min(m_glyph_colors_data[k], min ); 
-//       }
+       int n_color_data=m_glyph_colors_data.size();
+       float max=FLT_MIN;
+       float min=FLT_MAX;
+       for(int k = 0; k< n_color_data; k++)
+       {
+           max = vismodule::Math::Max(m_glyph_colors_data[k], max ); 
+           min = vismodule::Math::Min(m_glyph_colors_data[k], min ); 
+       }
 
-#if 0 // IS
-#ifndef CPU_VER
-       MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
-       MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
-#endif
-       m_color_map.setRange(min, max);
-#else 
-       m_color_map.setRange(m_color_min, m_color_max);
-#endif
+       if(m_is_flag)//IS の場合、全領域のminmaxをここで集約する
+       {
+           MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+           MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+           m_color_map.setRange(min, max);
+       }
+       else // CSの場合クライアントから受け取った1ステップ前の集約済minmaxで色設定
+       {
+           m_color_map.setRange(m_color_min, m_color_max);
+       }
 
-//        m_color_min = min;
-//        m_color_max = max;
-    for (int ii=0;ii < nPoints; ii++)
-    {
-        vismodule::RGBColor colors; 
-        colors = m_color_map.at(m_glyph_colors_data[ ii ]);
-        m_glyph_colors[3*ii    ] = colors.r() ;
-        m_glyph_colors[3*ii +1 ] = colors.g() ;
-        m_glyph_colors[3*ii +2 ] = colors.b() ;
-    }
+       for (int ii=0;ii < nPoints; ii++)
+       {
+           vismodule::RGBColor colors; 
+           colors = m_color_map.at(m_glyph_colors_data[ ii ]);
+           m_glyph_colors[3*ii    ] = colors.r() ;
+           m_glyph_colors[3*ii +1 ] = colors.g() ;
+           m_glyph_colors[3*ii +2 ] = colors.b() ;
+       }
+        // minmax値の更新
+        m_color_min = min;
+        m_color_max = max;
 
-   }
+  }
 
 //    this -> show();
 }
@@ -567,28 +582,32 @@ void GlyphSeed::PointSampling_struct(domain_parameters_struct dom)
            }
        }
 
+        int n_size_data=m_glyph_sizes.size();
+        // size計算用
         float max=FLT_MIN;
         float min=FLT_MAX;
-//        int n_size_data=m_glyph_sizes.size();
-//        float tmp_max=FLT_MIN;
-//        float tmp_min=FLT_MAX;
-//        for(int k = 0; k< n_size_data; k++)
-//        {
-//            max = vismodule::Math::Max(m_glyph_sizes[k], max ); 
-//            min = vismodule::Math::Min(m_glyph_sizes[k], min ); 
-//        }
-//        tmp_max = max;
-//        tmp_min = min;
+        // 一時保存用
+        float tmp_max=FLT_MIN;
+        float tmp_min=FLT_MAX;
+        for(int k = 0; k< n_size_data; k++)
+        {
+            max = vismodule::Math::Max(m_glyph_sizes[k], max ); 
+            min = vismodule::Math::Min(m_glyph_sizes[k], min ); 
+        }
+        tmp_max = max;
+        tmp_min = min;
 
-#if 0 //ISPBVR
-#ifndef CPU_VER
-        MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
-#endif
-#else
-        max = m_size_max;
-        min = m_size_min;
-#endif
+        if(m_is_flag)//IS の場合、全領域のminmaxをここで集約する
+        {
+            MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+            MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        }
+        else // CSの場合クライアントから受け取った1ステップ前の集約済minmaxでサイズ計算
+        {
+            max = m_size_max;
+            min = m_size_min;
+        }
+
         float factor =0;
         if (max - min > 1e-6 ) 
         {
@@ -599,12 +618,21 @@ void GlyphSeed::PointSampling_struct(domain_parameters_struct dom)
             factor = 1;
         }
 
-//        m_size_min = tmp_min;
-//        m_size_max = tmp_max;
        for (int i = 0; i < nPoints; i++)
        {
            m_glyph_sizes[ i] = (m_glyph_sizes[ i ] - min )*factor;
            m_glyph_sizes[ i] = vismodule::Math::Clamp<float>( m_glyph_sizes[ i], 0.0, 1.0 );
+       }
+       //minmax の登録. IS は集約したもの CSは保存したもの
+       if(m_is_flag)
+       {
+           m_size_min = min;
+           m_size_max = max;
+       }
+       else
+       {
+           m_size_min = tmp_min;
+           m_size_max = tmp_max;
        }
 
    }
@@ -614,17 +642,12 @@ void GlyphSeed::PointSampling_struct(domain_parameters_struct dom)
    float glyph_color_data_min = FLT_MAX;
    if (m_color_sampling_method == jpv::DataDefines::Constant)
    {
-//       std::fill(m_glyph_colors.begin(), m_glyph_colors.begin(), 0);
-//       m_color_map.setRange(0, 1);
-//       m_color_min = 0;
-//       m_color_max = 1;
        for (int ii=0;ii < nPoints; ii++)
        {
            m_glyph_colors[3*ii    ] = 255 ;
            m_glyph_colors[3*ii +1 ] = 255 ;
            m_glyph_colors[3*ii +2 ] = 255 ;
        }
-
    }
    else if (m_color_sampling_method == jpv::DataDefines::VariableArray || m_color_sampling_method == jpv::DataDefines::SingleVariable ) 
    {
@@ -653,39 +676,28 @@ void GlyphSeed::PointSampling_struct(domain_parameters_struct dom)
            }
        }
 
-//       int glyph_count =0;
-//       std::vector<float> tmp_size(nPoints);
-//       for (int i = 0; i < m_ncoords; i+= stride)
-//       {
-//           for(int k = 0 ; k< n_color_variables ; k++)
-//           {
-//            tmp_size[ glyph_count ] += vismodule::Math::Square(m_values[color_var[k]][ i ]) ;
-//           }
-//           m_glyph_colors_data[ glyph_count ] = std::sqrt(tmp_size[ glyph_count ]);
-//           glyph_count++;
-//       }
+//   各分割領域内での最大最小値の算出
+       int n_color_data=m_glyph_colors_data.size();
+       float max=FLT_MIN;
+       float min=FLT_MAX;
 
-//       int n_color_data=m_glyph_colors_data.size();
-//       float max=FLT_MIN;
-//       float min=FLT_MAX;
-//       for(int k = 0; k< n_color_data; k++)
-//       {
-//           max = vismodule::Math::Max(m_glyph_colors_data[k], max ); 
-//           min = vismodule::Math::Min(m_glyph_colors_data[k], min ); 
-//       }
+       for(int k = 0; k< n_color_data; k++)
+       {
+           max = vismodule::Math::Max(m_glyph_colors_data[k], max ); 
+           min = vismodule::Math::Min(m_glyph_colors_data[k], min ); 
+       }
 
-#if 0 // IS
-#ifndef CPU_VER
-       MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
-       MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
-#endif
-       m_color_map.setRange(min, max);
-#else 
-       m_color_map.setRange(m_color_min, m_color_max);
-#endif
+       if(m_is_flag)//IS の場合、全領域のminmaxをここで集約する
+       {
+           MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+           MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+           m_color_map.setRange(min, max);
+       }
+       else // CSの場合クライアントから受け取った1ステップ前の集約済minmaxで色設定
+       {
+           m_color_map.setRange(m_color_min, m_color_max);
+       }
 
-//        m_color_min = min;
-//        m_color_max = max;
         for (int ii=0;ii < nPoints; ii++)
         {
             vismodule::RGBColor colors; 
@@ -694,6 +706,10 @@ void GlyphSeed::PointSampling_struct(domain_parameters_struct dom)
             m_glyph_colors[3*ii +1 ] = colors.g() ;
             m_glyph_colors[3*ii +2 ] = colors.b() ;
         }
+
+        //minmaxの更新
+        m_color_min = min;
+        m_color_max = max;
    }
 
 //    this -> show();
@@ -905,15 +921,9 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
                 { 
                     float eval_result =0;
 
-//                    std::vector<float> scalar_array(interp[thid].size());
-//                    for( size_t j= 0; j < m_nvariable; j++ )
-//                    {
-//                        scalar_array[j] = interp[thid][j]->scalar();
-//                    }
-
                     std::vector<int> color_var = m_color_data_variables;
                     int n_color_data=color_var.size();
-                    for( size_t j= 0; j < n_color_data; j++ ) // スタブデータとして　0,1　を選択
+                    for( size_t j= 0; j < n_color_data; j++ )
                     {
                         eval_result += scalar_array[color_var[j]] * scalar_array[color_var[j]] ; 
                     }
@@ -965,17 +975,21 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
 
         tmp_max = max;
         tmp_min = min;
-#if 0 //IS
-#ifndef CPU_VER
-        MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
-#endif
-#else
-        max = m_size_max;
-        min = m_size_min;
-        std::cout << "m_size_max = " << m_size_max << std::endl;
-        std::cout << "m_size_min = " << m_size_min << std::endl;
-#endif
+
+        if(m_is_flag)//IS の場合、全領域のminmaxをここで集約する
+        {
+            MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+            MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        }
+        else // CSの場合クライアントから受け取った1ステップ前の集約済minmaxでサイズ計算
+        {
+            max = m_size_max;
+            min = m_size_min;
+            //デバッグ用
+            std::cout << "m_size_max = " << m_size_max << std::endl;
+            std::cout << "m_size_min = " << m_size_min << std::endl;
+        }
+
         float factor = 0;
         if (max - min > 1e-6)
         {
@@ -993,8 +1007,17 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
                m_glyph_sizes[j] = 1.f;
             }
         }
-        m_size_min = tmp_min;
-        m_size_max = tmp_max;
+       //minmax の登録. IS は集約したもの CSは保存したもの
+       if(m_is_flag)
+       {
+           m_size_min = min;
+           m_size_max = max;
+       }
+       else
+       {
+           m_size_min = tmp_min;
+           m_size_max = tmp_max;
+       }
 
     }
     else
@@ -1020,47 +1043,48 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
             min = vismodule::Math::Min(m_glyph_colors_data[k], min ); 
         }
 
-#if 0 // IS
-#ifndef CPU_VER  // CS用処理
-        float max_recv=FLT_MIN;
-        float min_recv=FLT_MAX;
-        //        MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
-        //        MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
-        if (mpi_size > 2 )
+        if(m_is_flag)//IS の場合、全領域のminmaxをここで集約する
         {
-            if (mpi_rank != 0 )  // masterプロセスは除外
-            {
-                MPI_Reduce( &min , &min_recv, 1, MPI_FLOAT, MPI_MIN, 1, MPI_COMM_WORLD);
-                MPI_Reduce( &max , &max_recv, 1, MPI_FLOAT, MPI_MAX, 1, MPI_COMM_WORLD);
-            }
-
-            if (mpi_rank != 0) 
-            {
-                MPI_Bcast(&min_recv, 1, MPI_FLOAT, 1, MPI_COMM_WORLD);
-                MPI_Bcast(&max_recv, 1, MPI_FLOAT, 1, MPI_COMM_WORLD);
-            } 
+            std::cout << "min = " << min << std::endl;
+            std::cout << "max = " << max << std::endl;
+            MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+            MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+            m_color_map.setRange(min, max);
         }
-            else
-            {
-                min_recv = min;
-                max_recv = max;
-            }
-            m_color_map.setRange(min_recv,max_recv);
-#else
-        m_color_map.setRange(m_color_min,m_color_max);
-#endif
-#else 
-        m_color_map.setRange(m_color_min,m_color_max);
-        std::cout << "m_color_min = " << m_color_min << std::endl;
-        std::cout << "m_color_max = " << m_color_max << std::endl;
-#endif
-        for( int jx=0; jx<n_color_data; jx++)
+        else // CSの場合クライアントから受け取った1ステップ前の集約済minmaxで色設定
         {
-            vismodule::RGBColor color;
-            color = m_color_map.at( m_glyph_colors_data[jx] );
-            m_glyph_colors.push_back( color.r());
-            m_glyph_colors.push_back( color.g());
-            m_glyph_colors.push_back( color.b());
+            std::cout << "m_color_min = " << m_color_min << std::endl;
+            std::cout << "m_color_max = " << m_color_max << std::endl;
+            m_color_map.setRange(m_color_min, m_color_max);
+        }
+
+        float diff = m_color_map.maxValue() - m_color_map.minValue();
+//        std::cout << "m_color_map.maxValue() = " << m_color_map.maxValue() << std::endl;
+//        std::cout << "m_color_map.minValue() = " << m_color_map.minValue() << std::endl;
+//        std::cout << "m_glyph_colors_data.size = " << m_glyph_colors_data.size() << std::endl;
+//        std::cout << "m_color_map.res() = " << m_color_map.resolution() << std::endl;
+
+        if (diff > 1e-6)
+        {
+            for( int jx=0; jx<n_color_data; jx++)
+            {
+//                std::cout << "index = " << jx
+//                    << " value = " << m_glyph_colors_data[jx]
+//                    << std::endl;
+                vismodule::RGBColor color;
+                color = m_color_map.at( m_glyph_colors_data[jx] );
+//                m_color_map.setRange(0, 1);
+//                color = m_color_map.at( 0.5 );
+                m_glyph_colors.push_back( color.r());
+                m_glyph_colors.push_back( color.g());
+                m_glyph_colors.push_back( color.b());
+            }
+        }
+        else
+        {
+            m_glyph_colors.push_back( 255 );
+            m_glyph_colors.push_back( 255 );
+            m_glyph_colors.push_back( 255 ); 
         }
         // 各ファイルのminmaxを登録。集約処理はgenerate_glyph.cppで（関数外）
         m_color_min = min;
@@ -1087,20 +1111,6 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
 #if 1
     m_nvariable = nvariables;
     m_ncoords = dom.resolution[0]*dom.resolution[1]*dom.resolution[2];
-//    float** values;
-//    values = new float * [m_nvariable];
-//    vismodule::AnyValueArray valueArray = object->values(); 
-//
-//    for ( int j = 0; j < m_nvariable; j++ )
-//    {
-//        values[j] = new float[m_ncoords];
-//        for ( int i = 0; i < m_ncoords; i++ )
-//        {
-//            int  it = j * m_ncoords  + i;
-//            values[j][i] = valueArray.at<float>(it);
-//        }
-//    } 
-
 
 #if _OPENMP
     int max_threads = omp_get_max_threads();
@@ -1274,27 +1284,35 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
     if (m_size_sampling_method == jpv::DataDefines::SingleVariable || m_size_sampling_method == jpv::DataDefines::VariableArray )
     { 
         int n_size_data=m_glyph_sizes.size();
+        //size計算用
         float max=FLT_MIN;
         float min=FLT_MAX;
-//        float tmp_max=FLT_MIN;
-//        float tmp_min=FLT_MAX;
+        // 一時保存用
+        float tmp_max=FLT_MIN;
+        float tmp_min=FLT_MAX;
         for(int k = 0; k< n_size_data; k++)
         {
             max = vismodule::Math::Max(m_glyph_sizes[k], max ); 
             min = vismodule::Math::Min(m_glyph_sizes[k], min ); 
         }
 
-//        tmp_max = max;
-//        tmp_min = min;
-#if 0 //IS
-#ifndef CPU_VER
-        MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
-#endif
-#else
-//        max = m_size_max;
-//        min = m_size_min;
-#endif
+        tmp_max = max;
+        tmp_min = min;
+
+        if(m_is_flag)//IS の場合、全領域のminmaxをここで集約する
+        {
+            MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+            MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        }
+        else // CSの場合クライアントから受け取った1ステップ前の集約済minmaxでサイズ計算
+        {
+            max = m_size_max;
+            min = m_size_min;
+            //デバッグ用
+            std::cout << "m_size_max = " << m_size_max << std::endl;
+            std::cout << "m_size_min = " << m_size_min << std::endl;
+        }
+
         float factor = 0;
         if (max - min > 1e-6)
         {
@@ -1312,8 +1330,18 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
                m_glyph_sizes[j] = 1.f;
             }
         }
-        m_size_min = 0;
-        m_size_max = 1;
+       //minmax の登録. IS は集約したもの CSは保存したもの
+        if(m_is_flag)
+        {
+            m_size_min = min;
+            m_size_max = max;
+        }
+        else
+        {
+            m_size_min = tmp_min;
+            m_size_max = tmp_max;
+        }
+
 
     }
     else
@@ -1338,13 +1366,19 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
             min = vismodule::Math::Min(m_glyph_colors_data[k], min ); 
         }
 
-#if 0 // IS
-#else 
-        // 各ファイルのminmaxを登録。集約処理はgenerate_glyph.cppで（関数外）
-        m_color_map.setRange(m_color_min,m_color_max);
+        if(m_is_flag) //IS の場合、全領域のminmaxをここで集約する
+        {
+            MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+            MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+            m_color_map.setRange(min, max);
+        }
+        else // CSの場合クライアントから受け取った1ステップ前の集約済minmaxで色設定
+        {
+            m_color_map.setRange(m_color_min, m_color_max);
         std::cout << "m_color_min = " << m_color_min << std::endl;
         std::cout << "m_color_max = " << m_color_max << std::endl;
-#endif
+        }
+
         for( int jx=0; jx<n_color_data; jx++)
         {
             vismodule::RGBColor color;

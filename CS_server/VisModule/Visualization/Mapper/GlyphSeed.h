@@ -46,6 +46,10 @@ protected:
     // 生成判定フラグ
    bool m_g_flag;
 
+   // CS, IS判別フラグ
+   bool m_is_flag;
+
+
 //  glyph parameter 
    // ファイルパス(デーモン→サーバー)
    std::string m_glyphParamPath;
@@ -103,12 +107,13 @@ public:
            float* coordinates, int ncoords,
            unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltype); //ISPBVR
 
+    // unstruct
     GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, Type** values, int nvariables,
            float* coordinates, int ncoords,
            unsigned int* connections, int ncells,
-           const  vismodule::VolumeObjectBase::CellType& celltype ); // CSPBVR
-
-    GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide,  domain_parameters_struct dom, Type** values, int nvariables); // CSPBVR
+           const  vismodule::VolumeObjectBase::CellType& celltype , const bool is_flag);  
+   // struct
+    GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide,  domain_parameters_struct dom, Type** values, int nvariables, const bool is_flag );  
 
     ~GlyphSeed()
     {
