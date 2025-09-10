@@ -236,6 +236,7 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_parti
 {
     int nnodes = dom.resolution[0]*dom.resolution[1]*dom.resolution[2];
     const vismodule::Vector3ui resolution(dom.resolution[0],dom.resolution[1],dom.resolution[2] );
+    std::cout << "resolution =  " << resolution << std::endl;
 #if 1
     int tf_number = m_transfer_function_array.size();
     float sampling_volume_inverse = m_transfer_function_synthesizer -> getSamplingVolumeInverse()  ;
@@ -466,6 +467,7 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_parti
                     th_o_histogram,th_c_histogram );
 
         } // end of Histogram
+
         //-----------------------------------------//
         //--------------ｿｿｿｿｿｿｿｿｿ------------//
         //------------------------------------------//
@@ -636,11 +638,24 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_parti
                             p_z_g[ p_id ] = coord_g.z();
                             p_id++;
                             }
-
-                            if( p_id == SIMDW || I == SIMDW)
+                            //if( p_id == SIMDW || I == SIMDW)
+                            if( p_id == SIMDW || (I == SIMDW&& p_id > 0))
                             {
-                                //p_id = 0;
-
+                            //　セグフォエラー対策
+                            if (p_id > 0) 
+                            {
+                                // パディング：末尾を最後の有効要素で埋める
+                                for (int jj = p_id; jj < SIMDW; ++jj) {
+                                    p_x_l[jj] = p_x_l[p_id-1];
+                                    p_y_l[jj] = p_y_l[p_id-1];
+                                    p_z_l[jj] = p_z_l[p_id-1];
+                                    p_x_g[jj] = p_x_g[p_id-1];
+                                    p_y_g[jj] = p_y_g[p_id-1];
+                                    p_z_g[jj] = p_z_g[p_id-1];
+                                }
+                            }
+//#pragma omp critical
+//{
                                 //                            timed_section_start(td_CalculateOpacity,thid);
                                 th_tfs[thid]->CalculateOpacity( interp[thid], th_tf[thid],
                                         p_x_l, p_y_l, p_z_l,
@@ -655,6 +670,8 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_parti
                                         p_x_g, p_y_g, p_z_g,
                                         red, green, blue );
                                 //                            timed_section_end(td_CalculateColor,thid); 
+                                
+//}
 #if 1                               
                                 float np_x_g[ SIMDW ];
                                 float np_y_g[ SIMDW ];
@@ -664,6 +681,7 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_parti
                                      !css.m_z_coord_synthesizer_string.empty()  ) 
                                 {
                                     th_tfs[thid]->CalculateCoordArray( interp[thid],
+                                            //SIMDW,
                                             SIMDW,
                                             p_x_l, p_y_l, p_z_l,
                                             p_x_g, p_y_g, p_z_g,
@@ -675,7 +693,8 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_parti
                                 }
                                 else
                                 {
-                                    for( int j = 0; j < SIMDW; j++ )
+                                    //for( int j = 0; j < SIMDW; j++ )
+                                    for( int j = 0; j < p_id; j++ )
                                     {
                                         np_x_g[j] = p_x_g[j];
                                         np_y_g[j] = p_y_g[j];
@@ -684,6 +703,7 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_parti
                                 }
 #endif
 
+#if 1
                                 //SIMDｿｿｿ
                                 //for( int pp=0; pp<SIMDW; pp++)
                                 for( int pp=0; pp<p_id; pp++)
@@ -715,8 +735,8 @@ CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::generate_parti
                                        //                                    timed_section_end(td_VectorPush,thid);
                                 } // end of for pp
                                 p_id = 0;
+#endif 
                             } // end of if p_id
-                            
 
                         } // end of for p
                     } // end of for I ｿｿｿｿｿｿｿｿｿ

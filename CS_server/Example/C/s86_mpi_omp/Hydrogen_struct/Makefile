@@ -1,4 +1,4 @@
-PBVR_DIR = ../../../../
+PBVR_DIR = ../../../..
 
 include ${PBVR_DIR}/pbvr.conf
 include ${PBVR_DIR}/arch/${PBVR_MACHINE}
@@ -6,6 +6,7 @@ include ${PBVR_DIR}/arch/${PBVR_MACHINE}
 KVS_SOURCE_DIR  = ${PBVR_DIR}/KVS/Source
 FUNC_DIR        = ${PBVR_DIR}/FunctionParser
 INSITU_DIR      = ${PBVR_DIR}/InSituLib/struct
+COMMON_DIR      = ${PBVR_DIR}/Common
 VISMODULE_SOURCE_DIR        = ${PBVR_DIR}/VisModule
 
 TARGET  = run
@@ -15,6 +16,7 @@ CXXFLAGS = ${MPICXXFLAGS}
 
 CXXFLAGS += -I${INSITU_DIR} \
             -I${FUNC_DIR} \
+            -I${COMMON_DIR} \
             -I${KVS_SOURCE_DIR} \
             -I${VISMODULE_SOURCE_DIR} \
             -I./
@@ -25,6 +27,7 @@ LDFLAGS = ${MPILDFLAGS}
 #LDFLAGS  += -lmpi -lmpicxx
 LDFLAGS  += -L${INSITU_DIR} -lInSituPBVR \
             -L${FUNC_DIR} -lpbvrFunc \
+            -L${COMMON_DIR} -lpbvrCommon \
             -L${VISMODULE_SOURCE_DIR}/Release -lvisModule
             #-L${KVS_SOURCE_DIR}/Core/Release -lkvsCore
 

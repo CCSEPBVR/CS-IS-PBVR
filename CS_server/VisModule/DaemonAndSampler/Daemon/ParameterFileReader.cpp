@@ -86,6 +86,7 @@ void ParameterFileReader::outputTransferFunctionMessage( jpv::ParticleTransferSe
 
 void ParameterFileReader::readParameterFile( const char* fname )
 {
+    m_name_list_file.setName( "SAMPLING_METHOD"    );
     m_name_list_file.setName( "PARTICLE_LIMIT"    );
     m_name_list_file.setName( "PARTICLE_DENSITY"  );
     m_name_list_file.setName( "PARTICLE_DATA_SIZE_LIMIT"  );

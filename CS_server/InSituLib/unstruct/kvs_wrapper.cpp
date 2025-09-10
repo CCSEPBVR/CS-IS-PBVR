@@ -431,8 +431,8 @@ bool initializeParameters(
 
     *particle_density         = param.getFloat( "PARTICLE_DENSITY" );
     *particle_data_size_limit = param.getFloat( "PARTICLE_DATA_SIZE_LIMIT" );
-    //*sampling_method = param.getString("SAMPLING_METHOD");
-    *sampling_method = "u";
+    *sampling_method = param.getString("SAMPLING_METHOD");
+    //*sampling_method = "u";
 
     //2019 kawamura
     readTFfromParamInfo( param_info, tf, tfs );
@@ -573,6 +573,7 @@ void show_timer( time_parameters time )
     }
 }
 
+// 変数配列用のソルバー関数
 void generate_particles( int time_step, domain_parameters_unstruct dom,
                              Type** values, int nvariables,
                              float* coordinates, int ncoords,
@@ -586,22 +587,19 @@ void generate_particles( int time_step, domain_parameters_unstruct dom,
     static ParamInfo param;
     pbvr_parameters particleBase;
     bool skip_flag;
-    skip_flag = SetParameter(dom, &particleBase, &param, time_step);
 
-#if 1
     glyph_parameters glyph_param;
     plot_over_line_parameters pol_param;
-
     jpv::ParticleTransferClientMessage clntMes; 
     //フラグの初期設定
     clntMes.m_glyph_flag =false;
     clntMes.m_plot_flag =false;
 
-
+    //　パラメータファイル読み込み
+    skip_flag = SetParameter(dom, &particleBase, &param, time_step);
     SetGlyphParameter(&clntMes, time_step, glyph_param);
     SetPOLParameter(&clntMes, time_step, pol_param);
 
-#endif
     particleBase.m_nvariables = nvariables; 
     if (skip_flag == false)
     {
@@ -627,31 +625,31 @@ void generate_particles( int time_step, domain_parameters_unstruct dom,
         pol_param.m_x_axis.fill(0x00); 
         pol_param.m_mask.fill( false );
 
-        // 粒子生成
+        // 粒子生成、object出力
         GenerateParticles(time_step, dom, values,
             nvariables, coordinates, ncoords,
             connections, ncells, celltype, particleBase);
 
-        //　グリフ生成、出力
+        //　グリフ生成、object出力
         GlyphObjectGenerator(time_step, dom, values,
                 nvariables, coordinates, ncoords,
                 connections , ncells, celltype, clntMes, glyph_param);
 
-        //　plot over line生成、出力
+        //　plot over line生成、object出力
         PlotOverLineObjectGenerator( time_step,
                 dom, values, nvariables,
                 coordinates, ncoords,
                 connections, ncells,
                 celltype, clntMes, pol_param );
 
-        // 粒子データ出力
+        // データ出力
         OutputParticles(time_step, nvariables, particleBase, &param, skip_flag);
         if (clntMes.m_glyph_flag)
         {
             std::cout << "debug flag"<<std::endl;
             OutputGlyphs(time_step, glyph_param);
         }
-            if (clntMes.m_plot_flag) OutputLine(time_step, pol_param);
+        if (clntMes.m_plot_flag) OutputLine(time_step, pol_param);
     }
    
     delete m_tfs;
@@ -774,7 +772,7 @@ void SetDomain( vtkUnstructuredGrid* ucd, domain_parameters_unstruct* dom)
 
 }
 
-
+// vtk用のソルバー関数
 //#ifdef VTK
 void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd ) 
 {
@@ -836,6 +834,7 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
         nvariables  = object -> veclen();
         particleBase.m_nvariables = nvariables; 
 
+        // 可視化用変数の宣言
         // VTKの変換処理は基本kvs_3.0にて管理するがセルタイプのみvismodule 空間にて管理
         vismodule::VolumeObjectBase::CellType celltype;
         Type** values;
@@ -860,9 +859,6 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
                     nvariables, (float*)object->coords().pointer(), ncoords,
                     (unsigned int*)object->connections().pointer(), object -> ncells(), celltype, particleBase);
 
-//            GenerateHistogram(time_step, dom, values,
-//                    nvariables, (float*)object->coords().pointer(), ncoords,
-//                    (unsigned int*)object->connections().pointer(), object -> ncells(), celltype, particleBase);
         }    
         else
         {
@@ -889,18 +885,6 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
         PlotOverLineObjectGenerator( time_step, dom, values, 
                     nvariables, (float*)object->coords().pointer(), ncoords,
                     (unsigned int*)object->connections().pointer(), object -> ncells(), celltype, clntMes, pol_param);
-
-//            GenerateParticles(time_step, dom, values,
-//                    nvariables, (float*)object->coords().pointer(), ncoords,
-//                    (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, particleBase);
-
-//            GlyphObjectGenerator(time_step, dom, values,
-//                    nvariables, (float*)object->coords().pointer(), ncoords,
-//                    (unsigned int*)object->connections().pointer() , object -> ncells(), celltype);
-//
-//            callPlotOverLine(time_step, dom, values,
-//                    nvariables, (float*)object->coords().pointer(), ncoords,
-//                    (unsigned int*)object->connections().pointer() , object -> ncells(), celltype, &plot_over_line);
         }
         timer.stop();
         t_generate_particles += timer.sec();
@@ -1086,13 +1070,6 @@ void GenerateParticles( int time_step,
 
     int mpi_rank = 0;
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-//    for(int i = 0; i< 10; i++)
-//    {
-//        std::cout << " values = " <<  values[0][i] << std::endl; 
-//        std::cout << " coordinate = " <<  coordinates[i] << std::endl; 
-//        std::cout << " connections = " <<  connections[i] << std::endl; 
-//    }
-
     // 粒子生成コア関数呼び出し
     vismodule::PointObject* tmp_obj = NULL; 
     switch(particleBase.m_sampling_method)

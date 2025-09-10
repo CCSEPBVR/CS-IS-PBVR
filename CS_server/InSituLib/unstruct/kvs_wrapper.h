@@ -142,9 +142,6 @@ extern "C" {
     vismodule::ValueArray<float> m_values_on_line;
     vismodule::ValueArray<float> m_x_axis;
     vismodule::ValueArray<bool>  m_mask;
-//        std::vector<float> m_values_on_line;
-//        std::vector<float> m_x_axis;
-//        std::vector<bool>  m_mask;
     bool m_plot_flag;
 
     // ファイルパス(デーモン→サーバー)
@@ -154,19 +151,6 @@ extern "C" {
 
     } plot_over_line_parameters;
 
-#if 0
-    typedef struct
-    {
-        Type initialize;
-        Type sampling;
-        Type writting;
-        Type mpi_reduce;
-        Type write_text;
-        Type read_param;
-        int nparticles;
-        int iout;
-    } time_parameters;
-#else
     typedef struct
     {
         double initialize;
@@ -176,7 +160,6 @@ extern "C" {
         double write_text;
         int nparticles;
     } time_parameters;
-#endif
 
     void begin_wrapper_async_io();
     void   end_wrapper_async_io();

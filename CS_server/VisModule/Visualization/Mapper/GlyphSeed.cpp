@@ -1082,9 +1082,13 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
         }
         else
         {
-            m_glyph_colors.push_back( 255 );
-            m_glyph_colors.push_back( 255 );
-            m_glyph_colors.push_back( 255 ); 
+            // minmaxが等しい場合、グリフの色は全て最低値の色とする
+            m_color_map.setRange(0, 1);
+            vismodule::RGBColor color;
+            color = m_color_map.at( 0 );
+            m_glyph_colors.push_back( color.r());
+            m_glyph_colors.push_back( color.g());
+            m_glyph_colors.push_back( color.b());
         }
         // 各ファイルのminmaxを登録。集約処理はgenerate_glyph.cppで（関数外）
         m_color_min = min;
@@ -1371,6 +1375,8 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
             MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
             MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
             m_color_map.setRange(min, max);
+            std::cout << "min = " << min <<std::endl;
+            std::cout << "max = " << max <<std::endl;
         }
         else // CSの場合クライアントから受け取った1ステップ前の集約済minmaxで色設定
         {
@@ -1379,14 +1385,46 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
         std::cout << "m_color_max = " << m_color_max << std::endl;
         }
 
-        for( int jx=0; jx<n_color_data; jx++)
+        float diff = m_color_map.maxValue() - m_color_map.minValue();
+//        std::cout << "m_color_map.maxValue() = " << m_color_map.maxValue() << std::endl;
+//        std::cout << "m_color_map.minValue() = " << m_color_map.minValue() << std::endl;
+//        std::cout << "m_glyph_colors_data.size = " << m_glyph_colors_data.size() << std::endl;
+//        std::cout << "m_color_map.res() = " << m_color_map.resolution() << std::endl;
+
+        if (diff > 1e-6)
         {
+            for( int jx=0; jx<n_color_data; jx++)
+            {
+//                std::cout << "index = " << jx
+//                    << " value = " << m_glyph_colors_data[jx]
+//                    << std::endl;
+                vismodule::RGBColor color;
+                color = m_color_map.at( m_glyph_colors_data[jx] );
+                m_glyph_colors.push_back( color.r());
+                m_glyph_colors.push_back( color.g());
+                m_glyph_colors.push_back( color.b());
+            }
+        }
+        else
+        {
+            // minmaxが等しい場合、グリフの色は全て最低値の色とする
+            m_color_map.setRange(0, 1);
             vismodule::RGBColor color;
-            color = m_color_map.at( m_glyph_colors_data[jx] );
+            color = m_color_map.at( 0 );
             m_glyph_colors.push_back( color.r());
             m_glyph_colors.push_back( color.g());
             m_glyph_colors.push_back( color.b());
         }
+
+//        for( int jx=0; jx<n_color_data; jx++)
+//        {
+//            vismodule::RGBColor color;
+//            color = m_color_map.at( m_glyph_colors_data[jx] );
+//            m_glyph_colors.push_back( color.r());
+//            m_glyph_colors.push_back( color.g());
+//            m_glyph_colors.push_back( color.b());
+//        }
+        // 各ファイルのminmaxを登録。集約処理はgenerate_glyph.cppで（関数外）
         m_color_min = min;
         m_color_max = max;
     }

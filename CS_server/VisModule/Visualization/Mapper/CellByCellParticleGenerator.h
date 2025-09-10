@@ -55,13 +55,13 @@ typedef struct
 typedef struct
 {
     //　各プロセスのminmax 
-    float x_max;
-    float y_max;
-    float z_max;
-
     float x_min;
     float y_min;
     float z_min;
+
+    float x_max;
+    float y_max;
+    float z_max;
 
     int*  resolution;
     float cell_length;

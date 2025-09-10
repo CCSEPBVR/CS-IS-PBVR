@@ -136,7 +136,6 @@ void generate_particle_master(Argument &param, jpv::ParticleTransferClientMessag
 
         VariableRange vr;
         pts.sendMessage( servMes );
-//  CS only
         float*  tmp_max;
         float*  tmp_min;
         // 関数の領域確保、初期化を行う : by @hira 2016/12/01

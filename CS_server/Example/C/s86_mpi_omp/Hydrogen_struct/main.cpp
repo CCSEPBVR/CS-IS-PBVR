@@ -53,17 +53,13 @@ int main( int argc, char** argv )
 
     int resol[3] = { hydro.resolution.x(), hydro.resolution.y(), hydro.resolution.z() };
 
-    domain_parameters dom = {
-        hydro.global_min_coord.x(),
-        hydro.global_min_coord.y(),
-        hydro.global_min_coord.z(),
-        hydro.global_max_coord.x(),
-        hydro.global_max_coord.y(),
-        hydro.global_max_coord.z(),
-
+    domain_parameters_struct dom = {
         hydro.global_region[mpi_rank].x(),
         hydro.global_region[mpi_rank].y(),
         0.0,
+        hydro.global_region[mpi_rank].x()+63,
+        hydro.global_region[mpi_rank].y()+63,
+        127,
 
         resol,
         hydro.cell_length

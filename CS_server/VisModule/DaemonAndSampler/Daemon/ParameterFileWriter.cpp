@@ -9,6 +9,7 @@ void ParameterFileWriter::inputMessage( const jpv::ParticleTransferClientMessage
 void ParameterFileWriter::inputParameterMessage( const jpv::ParticleTransferClientMessage& client_message )
 {
 //  m_name_list_file.setLine( "SUB_PIXEL_LEVEL", client_message.subPixelLevel  );
+    m_name_list_file.setLine( "SAMPLING_METHOD" , client_message.m_sampling_method );
     m_name_list_file.setLine( "PARTICLE_LIMIT" , client_message.m_particle_limit );
     m_name_list_file.setLine( "PARTICLE_DENSITY" ,client_message.m_particle_density );
     m_name_list_file.setLine( "PARTICLE_DATA_SIZE_LIMIT" ,client_message.m_particle_data_size_limit );

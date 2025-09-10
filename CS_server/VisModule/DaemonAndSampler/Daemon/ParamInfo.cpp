@@ -26,6 +26,8 @@ bool ParamInfo::LoadIN( const std::string& filename )
 
     std::string line;
 
+    // パラメータタブの登録
+    name_list.push_back( "SAMPLING_METHOD" );
     name_list.push_back( "SUB_PIXEL_LEVEL" );
     name_list.push_back( "REPEAT_LEVEL" );
     name_list.push_back( "PARTICLE_DENSITY" );
