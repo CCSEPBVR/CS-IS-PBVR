@@ -1,7 +1,7 @@
 CXX=g++
 #CXXFLAGS=-O3 -Xpreprocessor -fopenmp -march=native -std=c++17
 #CXXFLAGS=-O3 -Xpreprocessor -fopenmp -mcpu=apple-m1 -std=c++17
-CXXFLAGS=-O3 -Xpreprocessor -fopenmp -mcpu=apple-m1 -std=c++17 -I/opt/homebrew/opt/libomp/include
+CXXFLAGS=-O3 -Xpreprocessor -fopenmp -mcpu=apple-m1 -std=c++17 -I/opt/homebrew/opt/libomp/include -lomp -L/opt/homebrew/opt/libomp/lib
 CC=gcc
 #CCFLAGS=-O3 -Xpreprocessor -fopenmp -march=native
 #CCFLAGS=-O3 -Xpreprocessor -fopenmp -mcpu=apple-m1

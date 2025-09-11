@@ -430,7 +430,7 @@ vismodule::PointObject* CS_PointObjectGenerator::sampling( const Argument& param
             raw_values[j] = values[j].get();
         }
 
-        int resol[3] = { svo_p->resolution().x(), svo_p->resolution().y(), svo_p->resolution().z()};
+        int resol[3] = { static_cast<int>(svo_p->resolution().x()), static_cast<int>(svo_p->resolution().y()), static_cast<int>(svo_p->resolution().z())};
         domain_parameters_struct dom={
          volume.minObjectCoord().x()
         ,volume.minObjectCoord().y()

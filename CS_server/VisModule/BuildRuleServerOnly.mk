@@ -408,7 +408,7 @@ $(OUTDIR)/./FileFormat/%.o: ./FileFormat/%.cpp ./FileFormat/%.h
 	$(MKDIR) $(OUTDIR)/./FileFormat
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
-$(OUTDIR)/./DaemonAndServer/Daemon/%.o: ./DaemonAndSampler/Daemon/%.cpp ./DaemonAndSampler/Daemon/%.h
+$(OUTDIR)/./DaemonAndSampler/Daemon/%.o: ./DaemonAndSampler/Daemon/%.cpp ./DaemonAndSampler/Daemon/%.h
 	$(MKDIR) $(OUTDIR)/./DaemonAndSampler/Daemon
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 

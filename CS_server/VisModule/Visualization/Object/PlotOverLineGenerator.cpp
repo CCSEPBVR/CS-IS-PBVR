@@ -179,7 +179,7 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
         int plot_variable =  std::atoi(clntMes.m_plot_variable.substr(1).c_str()) -1;
 
         const vismodule::StructuredVolumeObject* svo_p = static_cast<const vismodule::StructuredVolumeObject*>( volume );
-        int resol[3] = { svo_p->resolution().x(), svo_p->resolution().y(), svo_p->resolution().z()};
+        int resol[3] = { static_cast<int>(svo_p->resolution().x()), static_cast<int>(svo_p->resolution().y()), static_cast<int>(svo_p->resolution().z())};
         domain_parameters_struct dom={
          volume->minObjectCoord().x()
         ,volume->minObjectCoord().y()
@@ -454,7 +454,7 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
     {
         const vismodule::StructuredVolumeObject* svo_p = static_cast<const vismodule::StructuredVolumeObject*>( volume );
 
-        int resol[3] = { svo_p->resolution().x(), svo_p->resolution().y(), svo_p->resolution().z()};
+        int resol[3] = { static_cast<int>(svo_p->resolution().x()), static_cast<int>(svo_p->resolution().y()), static_cast<int>(svo_p->resolution().z())};
         domain_parameters_struct dom={
          volume->minObjectCoord().x()
         ,volume->minObjectCoord().y()
