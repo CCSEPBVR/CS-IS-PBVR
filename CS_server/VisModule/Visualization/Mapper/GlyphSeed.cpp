@@ -375,8 +375,10 @@ void GlyphSeed::PointSampling_unstruct()
 
        if(m_is_flag)//IS の場合、全領域のminmaxをここで集約する
        {
+#ifndef CPU_VER
         MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
         MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+#endif
        }
        else // CSの場合クライアントから受け取った1ステップ前の集約済minmaxでサイズ計算
        {
@@ -455,8 +457,10 @@ void GlyphSeed::PointSampling_unstruct()
 
        if(m_is_flag)//IS の場合、全領域のminmaxをここで集約する
        {
+#ifndef CPU_VER
            MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
            MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+#endif
            m_color_map.setRange(min, max);
        }
        else // CSの場合クライアントから受け取った1ステップ前の集約済minmaxで色設定
@@ -599,8 +603,10 @@ void GlyphSeed::PointSampling_struct(domain_parameters_struct dom)
 
         if(m_is_flag)//IS の場合、全領域のminmaxをここで集約する
         {
+#ifndef CPU_VER
             MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
             MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+#endif
         }
         else // CSの場合クライアントから受け取った1ステップ前の集約済minmaxでサイズ計算
         {
@@ -689,8 +695,10 @@ void GlyphSeed::PointSampling_struct(domain_parameters_struct dom)
 
        if(m_is_flag)//IS の場合、全領域のminmaxをここで集約する
        {
+#ifndef CPU_VER
            MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
            MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+#endif
            m_color_map.setRange(min, max);
        }
        else // CSの場合クライアントから受け取った1ステップ前の集約済minmaxで色設定
@@ -978,8 +986,10 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
 
         if(m_is_flag)//IS の場合、全領域のminmaxをここで集約する
         {
+#ifndef CPU_VER
             MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
             MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+#endif
         }
         else // CSの場合クライアントから受け取った1ステップ前の集約済minmaxでサイズ計算
         {
@@ -1047,8 +1057,10 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
         {
             std::cout << "min = " << min << std::endl;
             std::cout << "max = " << max << std::endl;
+#ifndef CPU_VER
             MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
             MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+#endif
             m_color_map.setRange(min, max);
         }
         else // CSの場合クライアントから受け取った1ステップ前の集約済minmaxで色設定
@@ -1305,8 +1317,10 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
 
         if(m_is_flag)//IS の場合、全領域のminmaxをここで集約する
         {
+#ifndef CPU_VER
             MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
             MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+#endif
         }
         else // CSの場合クライアントから受け取った1ステップ前の集約済minmaxでサイズ計算
         {
@@ -1372,8 +1386,10 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
 
         if(m_is_flag) //IS の場合、全領域のminmaxをここで集約する
         {
+#ifndef CPU_VER
             MPI_Allreduce( MPI_IN_PLACE, &min, 1, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
             MPI_Allreduce( MPI_IN_PLACE, &max, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+#endif
             m_color_map.setRange(min, max);
             std::cout << "min = " << min <<std::endl;
             std::cout << "max = " << max <<std::endl;
@@ -1507,148 +1523,6 @@ void GlyphSeed::OutputGlyph( const int time_step)
     static int count;
     static int num_nodes;
 
-#if 0
-    /* 各ノード毎に粒子データを出力する。 */
-    if( first_step )
-    {
-        int numprocs, myrank;
-        int resultlen;
-        char procname[MPI_MAX_PROCESSOR_NAME];
-        char* procname_bak;
-        char* procname_g;
-        char* procname_p;
-
-        MPI_Comm_size( MPI_COMM_WORLD, &numprocs );
-        MPI_Comm_rank( MPI_COMM_WORLD, &myrank );
-
-        /* ノード名を取得し、各ランクで共有する. */
-        MPI_Get_processor_name( procname, &resultlen );
-        procname_g = new char[ MPI_MAX_PROCESSOR_NAME * numprocs ];
-        MPI_Allgather( procname,   MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
-                       procname_g, MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
-                       MPI_COMM_WORLD );
-
-        int color;
-        count = 1;
-        for( color = 0; color < numprocs; color++ )
-        {
-            procname_p = procname_g + MPI_MAX_PROCESSOR_NAME * color;
-
-            /* 要素の隣同士を比較して差異があった場合にカウントし, *
-             * ノード毎に連続した番号を割り当てる.                 */
-            if( color > 0 )
-            {
-                procname_bak = procname_p - MPI_MAX_PROCESSOR_NAME;
-                if( strcmp( procname_p, procname_bak ) != 0 )
-                    count++;
-            }
-
-            /* 自分のノード名が一致した要素番号をコミュニケータ分割のcolorとする */
-            if( strcmp( procname_p, procname ) == 0 )
-                break;
-        }
-
-        delete[] procname_g;
-        
-        MPI_Comm_split( MPI_COMM_WORLD, color, myrank, &new_comm );
-        
-        int split_numprocs;
-        MPI_Comm_size( new_comm, &split_numprocs );
-        
-        /*
-         * 各ノードに均等にランクが割り当てられることを前提とし,
-         * 分割前のプロセス数と分割後のプロセス数の非を粒子ファイル数とする.
-         */
-        num_nodes = numprocs / split_numprocs;
-        if( numprocs % split_numprocs > 0 ) num_nodes++;
-        first_step = false;
-    }   
-    /*
-     * ファイル名の粒子データのファイル名を入力する.
-     * countが各ファイルで連続でない場合,ファイルが不在と見なしてデーモンでスピンロックがかかる.
-     */
-#if 0
-    char filename[256];
-    sprintf(filename, "./jupiter_particle_out/t_%05d_",time_step);
-    sprintf(filename,"%s%07d_%07d.kvsml", filename, count, num_nodes );
-#else
-    // 20181226 start  環境変数で指定したファイルパスを参照する
-    std::stringstream ss;
-    //add by shimomura 20240614
-//    ss << std::setfill('0') << std::setw(2) << static_cast<int>(celltype);
-//    ss << "_";
-    ss << std::setfill('0') << std::setw(5) << time_step;
-    ss << "_";
-    ss << std::setfill('0') << std::setw(7) << count;
-    ss << "_";
-    ss << std::setfill('0') << std::setw(7) << mpi_rank;
-    ss << ".kvsml";
-    glyphParameter.m_glyphFilePath += ss.str();
-    // 20181226 end
-#endif
-
-    int particle_size = coords.size();
-    int *recvcounts;
-    int *displs;
-    int *recvcounts_size;
-    int *displs_size;
-    int  new_number_of_process;
-    int new_rank;
-
-//    MPI_Comm_rank( new_comm, &new_rank );
-//    MPI_Comm_size( new_comm, &new_number_of_process );
-
-    /*
-     *  recvcounts: 各ランク毎の受信バッファサイズ.
-     *  displs:     受信先バッファ上の各ランク毎の受信バッファの位置(オフセット)
-     */
-
-    //displs = new int[ new_number_of_process ];
-    //recvcounts = new int[ new_number_of_process ];
-    //displs_size      = new int[ new_number_of_process ];
-    //recvcounts_size  = new int[ new_number_of_process ];
-    displs              = new int[ mpi_size ];
-    recvcounts          = new int[ mpi_size ];
-    displs_size         = new int[ mpi_size ];
-    recvcounts_size     = new int[ mpi_size ];
-
-    MPI_Allgather( &particle_size, 1, MPI_INT,
-                   recvcounts,     1, MPI_INT,
-                   MPI_COMM_WORLD );
-    displs[0] = 0;
-    recvcounts_size[0] = recvcounts[0]/3;
-    //for( int i =1; i< new_number_of_process; i++ )
-    for( int i =1; i< mpi_size; i++ )
-    {
-        displs[i]       = displs[i-1] + recvcounts[i-1];
-        recvcounts_size[i] = recvcounts[i]/3;
-        displs_size[i]  = displs_size[i-1] + recvcounts_size[i-1];
-
-    }
-
-
-    vismodule::ValueArray<float> new_coords(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
-    vismodule::ValueArray<float> new_vectors( displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
-    vismodule::ValueArray<Byte>  new_colors(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
-    vismodule::ValueArray<float> new_sizes( displs_size[new_number_of_process-1] + recvcounts_size[new_number_of_process-1] );
-
-    MPI_Gatherv( coords.pointer(),   particle_size, MPI_FLOAT,
-                 new_coords.pointer(), recvcounts, displs, MPI_FLOAT,
-                 0, MPI_COMM_WORLD );
-    
-    MPI_Gatherv( vectors.pointer(),   particle_size, MPI_FLOAT,
-                 new_vectors.pointer(), recvcounts, displs, MPI_FLOAT,
-                 0, MPI_COMM_WORLD );
-
-    MPI_Gatherv( colors.pointer(),   particle_size, MPI_BYTE,
-                 new_colors.pointer(), recvcounts, displs, MPI_BYTE,
-                 0, MPI_COMM_WORLD );
-
-    MPI_Gatherv( sizes.pointer(),   particle_size/3, MPI_FLOAT,
-                 new_sizes.pointer(), recvcounts_size, displs_size, MPI_FLOAT,
-                 0, MPI_COMM_WORLD );
-#endif
-
     std::stringstream ss;
     //add by shimomura 20240614
 //    ss << std::setfill('0') << std::setw(2) << static_cast<int>(celltype);
@@ -1693,112 +1567,6 @@ void GlyphSeed::OutputGlyph( const int time_step)
     #else
             vismodule::KVSMLObjectGlyph kvsmlobject( coords, colors, vectors, sizes);
             kvsmlobject.write(m_glyphFilePath.c_str());
-#endif
-
-#if 0
-    //static bool parameter_file_opened= particleBase.m_parameter_file_opened;
-    static bool parameter_file_opened= true;
-    //最大最小値の集計
-    if( parameter_file_opened )
-    {
-        O_min_recv.fill(0x00);
-        O_max_recv.fill(0x00);
-        C_min_recv.fill(0x00);
-        C_max_recv.fill(0x00);
-
-//        if(mpi_rank==0)std::
-        MPI_Reduce( particleBase.m_O_min.pointer(), O_min_recv.pointer(),
-                    tf_number, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
-        MPI_Reduce( particleBase.m_O_max.pointer(), O_max_recv.pointer(),
-                    tf_number, MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
-        MPI_Reduce( particleBase.m_C_min.pointer(), C_min_recv.pointer(),
-                    tf_number, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
-        MPI_Reduce( particleBase.m_C_max.pointer(), C_max_recv.pointer(),
-                    tf_number, MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
-
-//        if(mpi_rank==0) std::cout<<"end MPI_Reduce"<<std::endl;
-
-        //ヒストグラムの集計
-        o_histogram_recv.fill(0x00);
-        MPI_Reduce( particleBase.m_o_histogram.pointer(), o_histogram_recv.pointer(),
-                    tf_number*nbins, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
-
-        c_histogram_recv.fill(0x00);
-        MPI_Reduce( particleBase.m_c_histogram.pointer(), c_histogram_recv.pointer(),
-                    tf_number*nbins, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
-    }
-
-//    timer.stop();
-//    time.mpi_reduce = timer.sec();
-//    timer.start();
-    //状態ファイルの出力
-    if( mpi_rank == 0 )
-    {
-        // 20181226 start 環境変数で指定したファイルパスを使用
-        //std::ofstream ofs( "state.txt", std::ios::out);
-        // If async_io is enabled, state.txt will be written from worker thread.
-        // If async_io is disabled, state.txt will be written here.
-        if (!async_io_enabled){
-            std::ofstream ofs( particleBase.m_stateFilePath.c_str(), std::ios::out);
-            // 20181226 end
-            if( !ofs.is_open() ) std::cout<<"Cannot open state.txt"<<std::endl;
-
-            ofs<<"START_STEP="<< st_time_step <<std::endl;
-            ofs<<"LATEST_STEP="<<time_step<<std::endl;
-
-            ofs.close();
-        }
-        std::stringstream step;
-        step << '_' << std::setw( 5 ) << std::setfill( '0' ) << time_step;
-
-        // 20181226 start 環境変数で指定したファイルパスを使用
-        //std::string history_file_name = "history" + step.str() + ".txt";
-        std::string history_file_name = particleBase.m_visParamDir + "history" + step.str() + ".txt";
-        // 20181226 end
-        std::ofstream ofs2( history_file_name.c_str(), std::ios::out);
-
-
-//        std::cout << "tf_number = " << tf_number <<std::endl;
-//        std::cout << "O_min_recv[0] = " << O_min_recv[0] <<std::endl;
-        ofs2<<"TF_NUMBER="<<tf_number<<std::endl;
-        for( int i = 0; i < tf_number; i++ )
-        {
-            ofs2<<"MIN_O"<<i+1<<"="<<O_min_recv[i]<<std::endl;
-            ofs2<<"MAX_O"<<i+1<<"="<<O_max_recv[i]<<std::endl;
-            ofs2<<"MIN_C"<<i+1<<"="<<C_min_recv[i]<<std::endl;
-            ofs2<<"MAX_C"<<i+1<<"="<<C_max_recv[i]<<std::endl;
-            ofs2<<"RESOLUTION_O"<<i+1<<"="<<nbins<<std::endl;
-            ofs2<<"HISTOGRAM_O"<<i+1<<"=";
-            for(int j=0; j<nbins; j++)
-            {
-                ofs2<<o_histogram_recv[j + i*nbins]<<",";
-            }
-            ofs2<<std::endl;
-            ofs2<<"RESOLUTION_C"<<i+1<<"="<<nbins<<std::endl;
-            ofs2<<"HISTOGRAM_C"<<i+1<<"=";
-            for(int j=0; j<nbins; j++)
-            {
-                ofs2<<c_histogram_recv[j + i*nbins]<<",";
-            }
-            ofs2<<std::endl;
-        }
-        ofs2 << "END_HISTORY_FILE=SUCCESS" << std::endl;
-        ofs2.close();
-
-        if (skip_flag)
-        {
-            // 20181226 start 環境変数で指定したファイルパスを使用
-            //std::string jupiter_file_name = "jupiter" + step.str() + ".tf";
-            std::string jupiter_file_name = particleBase.m_visParamDir + particleBase.m_tfFilename + step.str() + ".tf";
-            // 20181226 end
-            param->write( jupiter_file_name );
-        }
-    }
-//    timer.stop();
-//    time.write_text = timer.sec();
-//
-//    show_timer( time );
-    //if(mpi->rank==0)std::cout<<"end generate_particles\n";
 #endif
 
 
