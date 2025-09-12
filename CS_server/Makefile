@@ -52,7 +52,7 @@ SUBDIRS += InSituLib
 all:
 	for i in $(SUBDIRS); do \
 	$(MAKE) -C $$i; done
-	$(CPP) main.cpp $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) $(LDFLAGS) $(LIBRARY_PATH) $(LINK_LIBRARY) -o pbvr_server
+	$(CPP) main.cpp $(CPPFLAGS) $(LDFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) $(LIBRARY_PATH) $(LINK_LIBRARY) -o pbvr_server
 clean:
 	for i in $(SUBDIRS); do \
 	$(MAKE) -C $$i clean; done
