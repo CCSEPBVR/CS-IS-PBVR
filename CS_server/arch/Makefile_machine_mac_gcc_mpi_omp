@@ -1,0 +1,17 @@
+CXX=g++
+CXXFLAGS=-O3 -Xpreprocessor -fopenmp -mcpu=apple-m1 -std=c++17 -I/opt/homebrew/opt/libomp/include
+
+CC=gcc
+CCFLAGS=-O3 -Xpreprocessor -fopenmp -mcpu=apple-m1 -I/opt/homebrew/opt/libomp/include
+
+LD=g++
+LDFLAGS= -Xpreprocessor -fopenmp -lstdc++ -static-libstdc++ -L/opt/homebrew/opt/libomp/lib -lomp
+
+MPICXX=mpic++
+MPICXXFLAGS=
+
+MPICC=mpicc
+MPICCFLAGS=
+
+MPILD=mpic++
+MPILDFLAGS=
