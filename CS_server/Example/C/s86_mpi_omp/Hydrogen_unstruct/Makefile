@@ -3,7 +3,6 @@ PBVR_DIR = ../../../..
 include ${PBVR_DIR}/pbvr.conf
 include ${PBVR_DIR}/arch/${PBVR_MACHINE}
 
-KVS_SOURCE_DIR  = ${PBVR_DIR}/KVS/Source
 FUNC_DIR        = ${PBVR_DIR}/FunctionParser
 INSITU_DIR      = ${PBVR_DIR}/InSituLib/unstruct
 COMMON_DIR      = ${PBVR_DIR}/Common
@@ -15,24 +14,21 @@ TARGET  = run
 #VPATH=${TRANSFER_FUNCTION_DIR}:${IMPORT_DIR}
 
 CXX = ${MPICXX}
-CXXFLAGS = ${MPICXXFLAGS}
+CXXFLAGS += ${MPICXXFLAGS}
 
 CXXFLAGS += -I${INSITU_DIR} \
             -I${FUNC_DIR} \
             -I${COMMON_DIR} \
-            -I${KVS_SOURCE_DIR} \
             -I${VISMODULE_SOURCE_DIR} \
             -I./
 
 LD = ${MPILD}
-LDFLAGS = ${MPILDFLAGS}
+LDFLAGS += ${MPILDFLAGS}
 
-#LDFLAGS  += -lmpi -lmpicxx
 LDFLAGS  += -L${INSITU_DIR} -lInSituPBVR \
             -L${FUNC_DIR} -lpbvrFunc \
             -L${COMMON_DIR} -lpbvrCommon \
             -L${VISMODULE_SOURCE_DIR}/Release -lvisModule
-            #-L${KVS_SOURCE_DIR}/Core/Release -lkvsCore
 
 #LDFLAGS += -DVTK
 #LDFLAGS += -I/home/center/viztools/VTK-9.2.2/include/vtk-9.2 -I./VTK -I./Importer -I./Filter
