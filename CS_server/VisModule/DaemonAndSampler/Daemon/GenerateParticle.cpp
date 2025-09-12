@@ -888,7 +888,6 @@ void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& c
 
                         servMes.m_message_size = servMes.byteSize();
 
-                        std::cout<<"main.cpp:L526"<<std::endl;
                         clntMes.show();
 
                         pts.sendMessage( servMes );
@@ -946,7 +945,6 @@ void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& c
                             clntMes.m_step = -1;
                         }
 
-                        std::cout<<"main.cpp:L614"<<std::endl;
                         pts.sendMessage( servMes );
 
                         timer.start();
