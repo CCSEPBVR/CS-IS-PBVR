@@ -22,8 +22,10 @@ public:
     //std::vector<NamedTransferFunction> m_transfunc_array;
     std::vector<vismodule::TransferFunction> m_transfunc_array;
     TransferFunctionSynthesizer* m_transfunc_synthesizer;
+    int m_time_step;
     size_t m_subpixel_level;
     size_t m_repeat_level;
+    int m_level_index;
     int m_port;
     float m_sampling_step;
     char m_sampling_method;
@@ -33,6 +35,7 @@ public:
     int m_particle_limit, m_particle_limit_pre;
     float m_particle_density;
     std::string m_output_data_base;
+    vismodule::Camera* m_camera;
     size_t m_window_width;
     size_t m_window_height;
     std::string m_x_synthesis;

@@ -350,13 +350,120 @@ void  CS_Connect( int argc, char** argv )
                 //else
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_particle )
                 {
+                    timer_count++;
+                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+                    {
+                        VIS_MODULE_TIMER_STA( 461 );
+                    }
 
-                    generate_particle_master(param, clntMes, servMes, mvpl, nan_error,
+                    // send cltMes to all worker process >>
+                    bsz = clntMes.byteSize();
 #ifndef CPU_VER
-                           jc, 
-#endif                           
-                           jd, pts, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
+                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+                    buf = new char[bsz];
+                    clntMes.pack( buf );
+#ifndef CPU_VER
+                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+#endif
+                    delete[] buf;
+                    // send cltMes to all worker process <<
 
+                    std::cout << "Recieve message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+                    std::cout << "sampling method = " << clntMes.m_sampling_method << std::endl;
+                    std::cout << "subpixel level = " << clntMes.m_subpixel_level << std::endl;
+                    std::cout << "repeat level = " << clntMes.m_repeat_level << std::endl;
+                    std::cout << "timeParam = " << clntMes.m_time_parameter << std::endl;
+
+                    if ( clntMes.m_time_parameter == 0 )
+                    {
+                        std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                    }
+                    else if ( clntMes.m_time_parameter == 1 )
+                    {
+                        std::cout << "beginTime = " << clntMes.m_begin_time << std::endl;
+                        std::cout << "endTime = " << clntMes.m_last_time << std::endl;
+                        std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                    }
+                    else if ( clntMes.m_time_parameter == 2 )
+                    {
+                        std::cout << "step = " << clntMes.m_step << std::endl;
+                    }
+                    std::cout << "transParam = " << clntMes.m_trans_parameter << std::endl;
+                    if ( clntMes.m_trans_parameter == 1 )
+                    {
+                        std::cout << "levelIndex = " << clntMes.m_level_index << std::endl;
+                    }
+                    if ( clntMes.m_time_parameter == 0 )
+                    {
+                        strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
+                        servMes.m_time_step = clntMes.m_step;
+                        servMes.m_repeat_level = clntMes.m_repeat_level;
+                        servMes.m_level_index = clntMes.m_level_index;
+                        servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0 ;
+                        servMes.m_flag_send_bins = 1;
+
+                        servMes.m_message_size = servMes.byteSize();
+                        pts.sendMessage( servMes );
+                    }
+                    else if ( clntMes.m_time_parameter == 1 )
+                    {
+
+                        strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
+                        servMes.m_time_step = clntMes.m_step;
+                        servMes.m_repeat_level = clntMes.m_repeat_level;
+                        servMes.m_level_index = clntMes.m_level_index;
+                        servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0 ;
+                        servMes.m_flag_send_bins = 1;
+
+                        servMes.m_message_size = servMes.byteSize();
+                        pts.sendMessage( servMes );
+                    }
+                    else if ( clntMes.m_time_parameter == 2 )
+                    {
+                        param.m_time_step = clntMes.m_step;
+                        param.m_level_index = clntMes.m_level_index;
+                        param.m_repeat_level = clntMes.m_repeat_level;
+                        param.m_sampling_method = clntMes.m_sampling_method;
+                        param.m_particle_limit = clntMes.m_particle_limit;
+                        param.m_particle_density = clntMes.m_particle_density;
+                        param.m_camera = clntMes.m_camera;
+                        param.m_x_synthesis = clntMes.m_x_synthesis;
+                        param.m_y_synthesis = clntMes.m_y_synthesis;
+                        param.m_z_synthesis = clntMes.m_z_synthesis;
+
+                        transfunc_creator.setProtocol( clntMes );
+                        transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
+                        param.m_transfunc_synthesizer = transfunc_creator.create();
+                        param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+
+                        for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
+                        {
+                            param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
+                        }
+
+                        generate_particle_master(param, mvpl, nan_error,
+#ifndef CPU_VER
+                            jc,
+#endif                           
+                            jd, pts, transfunc_creator, timer_count, clntMes.m_initialize_parameter
+                        );
+                    } // end of timeParam == 2
+                    else
+                    {
+                        break;
+                    }
+                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+                    {
+                        VIS_MODULE_TIMER_END( 461 );
+                    }
+                    if ( timer_count == VIS_MODULE_TIMER_COUNT_NUM )
+                    {
+                        VIS_MODULE_TIMER_END( 1 );
+                        VIS_MODULE_TIMER_FIN();
+                    }
                 } // end of initParam == 1 generate_particle 
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_glyph )
                 {
