@@ -95,8 +95,10 @@ public:
 
         if ( !this->parse() ) exit( EXIT_FAILURE );
 
+        m_time_step = 0;
         m_subpixel_level = 2;
         m_repeat_level = 1;
+        m_level_index = 0;
         m_port = 60000;
         m_sampling_step = 80; // 0.5f;
         m_dump = false;
