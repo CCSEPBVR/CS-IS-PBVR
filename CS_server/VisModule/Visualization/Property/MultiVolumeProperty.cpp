@@ -258,6 +258,11 @@ int MultiVolumeProperty::loadPFI( const std::string& filename )
     */
 
     m_file_path = filename;
+
+    // .pfiファイルにはmin, maxは記載していない
+    m_min_value = 0;
+    m_max_value = 0;
+
     return 0;
 }
 
