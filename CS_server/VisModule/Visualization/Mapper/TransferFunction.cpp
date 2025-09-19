@@ -239,22 +239,22 @@ const float TransferFunction::maxValue() const
 // opacity, color用minmaxを追加 20250730
 const float TransferFunction::colorMinValue() const
 {
-    return m_opacity_map.minValue();
+    return m_color_map.minValue();
 }
 
 const float TransferFunction::colorMaxValue() const
 {
-    return m_opacity_map.maxValue();
+    return m_color_map.maxValue();
 }
 
 const float TransferFunction::opacityMinValue() const
 {
-    return m_color_map.minValue();
+    return m_opacity_map.minValue();
 }
 
 const float TransferFunction::opacityMaxValue() const
 {
-    return m_color_map.maxValue();
+    return m_opacity_map.maxValue();
 }
 
 
