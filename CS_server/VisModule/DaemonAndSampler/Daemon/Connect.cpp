@@ -340,11 +340,161 @@ void  CS_Connect( int argc, char** argv )
                 }
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::initial_step ) // change PFI file.
                 {
-                   initial_step_master(param, clntMes, servMes, mvpl, nan_error,
+                    bool open_flag = true; // ファイルを開けるかどうか
+                    bool ExtendFileFormat_flag = true; // データ形式拡張に対応しているか
+                    bool pfi_flag = true; // .pfl, .pfiファイルを選択しているか
+                    
+                    param.m_input_data_base = clntMes.m_input_directory;
+                    param.m_is_tf_file_imported = clntMes.m_import_flag;
+
+                    std::ifstream fin( param.m_input_data_base, std::ios::in);
+                    /*
+                    if (!fin.is_open()) 
+                    {
+                        std::cout << "ファイルを開けませんでした: " << param.m_input_data_base << std::endl;
+                        open_flag = false;
+                    }
+                    */
+
+#ifndef EXTEND_FILE_FORMAT
+                        ExtendFileFormat_flag = false;
+                        pfi_flag = false;
+                        size_t found_pfl = param.m_input_data_base.find(".pfl");
+                        size_t found_pfi = param.m_input_data_base.find(".pfi");
+                        if (found_pfl != std::string::npos) pfi_flag = true;
+                        if (found_pfi != std::string::npos) pfi_flag = true;
+#endif
+
+                        std::cout << "open_flag = "             << open_flag             << ", "
+                                  << "ExtendFileFormat_flag = " << ExtendFileFormat_flag << ", "
+                                  << "pfi_flag = "              << pfi_flag              << std::endl;
+
+                        strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
+                        // ADD by FEAST 2015.12.24
+                        //servMes.m_server_status = 0;
+                        // ADD END 2015.12.24
+                        servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0 ;
+                        servMes.m_flag_send_bins = 1;
+                        servMes.m_transfer_function_count = 0;
+                        servMes.m_message_size = servMes.byteSize();
+
+                        if ( open_flag == true && ExtendFileFormat_flag == true )
+                        {
+                            servMes.m_file_enable_flag = jpv::FileEnableFlag::Enable_VTK;
+                        }
+                        if ( open_flag == true && ExtendFileFormat_flag == false && pfi_flag == true )
+                        {
+                            // VTKには対応していないのでもう1つ状態が必要 Enable_pfi 追加予定
+                            servMes.m_file_enable_flag = jpv::FileEnableFlag::Enable_VTK;
+                        }
+                        if ( open_flag == true && ExtendFileFormat_flag == false && pfi_flag == false )
+                        {
+                            servMes.m_file_enable_flag = jpv::FileEnableFlag::NotEnable_VTK;
+                        }
+                        if (open_flag == false)
+                        {
+                            servMes.m_file_enable_flag = jpv::FileEnableFlag::NoFile;
+                        }
+                        pts.sendMessage( servMes );
+
+                        if( servMes.m_file_enable_flag == jpv::FileEnableFlag::NotEnable_VTK ||
+                            servMes.m_file_enable_flag == jpv::FileEnableFlag::NoFile ) 
+                        {
+                            if ( rank == 0 )
+                            {
+                                std::cerr << "Error: pfifile doesn't exist" << std::endl;
+                            }
+
+                            bsz = -1;
 #ifndef CPU_VER
-                           jc, 
-#endif                           
-                           jd, pts,  transfunc_creator, timer_count );
+                            MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
+#endif
+
+// #ifndef CPU_VER
+                            // 開けなくても停止しないよう変更  予定 
+                            // MPI_Finalize();
+// #endif
+                            // return 0;
+                            // continue;
+                            break;
+                        }
+
+                    // send cltMes to all worker process >>
+                    bsz = clntMes.byteSize();
+#ifndef CPU_VER
+                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+                    char* buf;
+                    buf = new char[bsz];
+                    clntMes.pack( buf );
+#ifndef CPU_VER
+                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+#endif
+                    delete[] buf;
+                    // send cltMes to all worker process <<
+
+                    mvpl.searchFile(param);
+
+                    if ( mvpl.m_list.size() <= 0 )
+                    {
+                        if ( rank == 0 )
+                        {
+                            std::cerr << "Error: pfifile doesn't exist" << std::endl;
+                        }
+                        bsz = -1;
+#ifndef CPU_VER
+                        MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
+                        MPI_Finalize(); // 開けなくても停止しないよう変更  予定 
+#endif
+                        strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
+                        // ADD by FEAST 2015.12.24
+                        //servMes.m_server_status = 0;
+                        // ADD END 2015.12.24
+                        servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0 ;
+                        servMes.m_flag_send_bins = 1; // histogram
+                        servMes.m_message_size = servMes.byteSize();
+                        pts.sendMessage( servMes );
+                                
+                        break;
+                    }
+
+                    param.m_sampling_method = clntMes.m_sampling_method;
+                    param.m_particle_limit = clntMes.m_particle_limit;
+                    param.m_particle_density = clntMes.m_particle_density;
+                    param.m_camera = clntMes.m_camera;
+                    param.m_x_synthesis = clntMes.m_x_synthesis;
+                    param.m_y_synthesis = clntMes.m_y_synthesis;
+                    param.m_z_synthesis = clntMes.m_z_synthesis;
+
+                    if( !clntMes.m_import_flag ) 
+                    {
+                        std::cout << "defalt parameter " << std::endl;
+                        VariableRange range = Calculate_minmax( param, mvpl );
+                        transfunc_creator.setInitialProtocol( mvpl.m_total_number_ingredients, range );
+                    }
+                    else
+                    {
+                        std::cout << "user define parameter " << std::endl;
+                        transfunc_creator.setProtocol( clntMes );
+                        // transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
+                    }                    
+
+                    param.m_transfunc_synthesizer = transfunc_creator.create();
+                    param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+
+                    for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
+                    {
+                        param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
+                    }
+
+                    initial_step_master( param, mvpl, nan_error,
+#ifndef CPU_VER
+                        jc,
+#endif
+                        jd, pts, transfunc_creator, timer_count );
 
                 } // end of change PFI
                 //else
@@ -444,12 +594,11 @@ void  CS_Connect( int argc, char** argv )
                             param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                         }
 
-                        generate_particle_master(param, mvpl, nan_error,
+                        generate_particle_master( param, mvpl, nan_error,
 #ifndef CPU_VER
                             jc,
 #endif                           
-                            jd, pts, transfunc_creator, timer_count, clntMes.m_initialize_parameter
-                        );
+                            jd, pts, transfunc_creator, timer_count );
                     } // end of timeParam == 2
                     else
                     {
