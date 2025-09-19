@@ -1,6 +1,4 @@
-
 #include <vismodule/GenerateParticle>
-#include <vismodule/timer_simple>
 
 void generate_particle_master(
     Argument &param,
@@ -12,8 +10,7 @@ void generate_particle_master(
     JobDispatcher& jd,
     jpv::ParticleTransferServer pts,
     TransferFunctionSynthesizerCreator transfunc_creator,
-    int& timer_count,
-    const jpv::InitializeParameter init_param
+    int& timer_count
 )
 {
 #ifndef CPU_VER
@@ -22,6 +19,7 @@ void generate_particle_master(
     MPI_Comm_rank( MPI_COMM_WORLD, &rank );
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
 #else
+    int rank = 0;
 	int mpi_size = 1;
 #endif
     jpv::ParticleTransferServerMessage servMes;
@@ -39,7 +37,6 @@ void generate_particle_master(
     servMes.m_number_glyph = 0;
     servMes.m_flag_send_bins = 0;
     servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
-    servMes.m_time_step = mvpl.m_total_start_steps;
     servMes.m_start_step = mvpl.m_total_start_steps;
     servMes.m_last_step = mvpl.m_total_last_step;
     servMes.m_number_step = mvpl.m_total_number_steps;
@@ -123,12 +120,12 @@ void generate_particle_master(
 
     while ( jd.dispatchNext( wid, &st, &vl ) )
     {
-        vismodule::PointObject* originalObject = new vismodule::PointObject;
-
         if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
         {
             VIS_MODULE_TIMER_STA( 471 );
         }
+
+        vismodule::PointObject* originalObject = new vismodule::PointObject;
 
         if (mpi_size == 1) {
             int xvl, fidx;
@@ -176,7 +173,7 @@ void generate_particle_master(
                     tmp_min[2 * tf + 1] = vismodule::Math::Min( tmp_min[2 * tf + 1], param.m_transfunc_synthesizer->m_c_min[tf] );
                     for ( int res = 0; res < c_nbins; res++ )
                     {
-                        tmp_c_bins[c_count] += tmp_obj->getCHistogram()[c_count] ;
+                        tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ];
                         c_count++;
                     }
                 }
@@ -189,11 +186,10 @@ void generate_particle_master(
                     tmp_min[2 * tf] = vismodule::Math::Min( tmp_min[2 * tf], param.m_transfunc_synthesizer->m_o_min[tf] );
                     for ( int res = 0; res < o_nbins; res++ )
                     {
-                        tmp_o_bins[o_count] += tmp_obj->getOHistogram()[o_count] ;
+                        tmp_o_bins[ o_count ] += tmp_obj->getOHistogram()[ o_count ];
                         o_count++;
                     }
                 }
-
             }
             catch ( const std::runtime_error& e )
             {
@@ -203,7 +199,8 @@ void generate_particle_master(
                 std::cerr << e.what();
                 nan_error = true;
             }
-        }
+        } // if (mpi_size == 1)
+
 #ifndef CPU_VER
         if (mpi_size > 1) {
             jc.jobCollect( originalObject, &vr, &nan_error, &wid );
@@ -240,8 +237,6 @@ void generate_particle_master(
             servMes.m_colors[3 * i + 1] = object->colors()[3 * i + 1];
             servMes.m_colors[3 * i + 2] = object->colors()[3 * i + 2];
         }
-
-        servMes.m_server_side_variable_range = vr;
 
         if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
         {
@@ -313,6 +308,34 @@ void generate_particle_master(
         nan_error = false;
     }
 
+#if 1
+    std::cout << "\n================== client parameter start ==================" << std::endl;
+    std::cout << "servMes.m_number_particle:" << servMes.m_number_particle << std::endl;
+    std::cout << "servMes.m_number_glyph:" << servMes.m_number_glyph << std::endl;
+    std::cout << "servMes.m_number_volume_divide:" << servMes.m_number_volume_divide << std::endl;
+    std::cout << "servMes.m_time_step:" << servMes.m_time_step << std::endl;
+    std::cout << "servMes.m_start_step:" << servMes.m_start_step << std::endl;
+    std::cout << "servMes.m_last_step:" << servMes.m_last_step << std::endl;
+    std::cout << "servMes.m_number_step:" << servMes.m_number_step << std::endl;
+    std::cout << "servMes.m_min_object_coord[0]:" << servMes.m_min_object_coord[0] << std::endl;
+    std::cout << "servMes.m_min_object_coord[1]:" << servMes.m_min_object_coord[1] << std::endl;
+    std::cout << "servMes.m_min_object_coord[2]:" << servMes.m_min_object_coord[2] << std::endl;
+    std::cout << "servMes.m_max_object_coord[0]:" << servMes.m_max_object_coord[0] << std::endl;
+    std::cout << "servMes.m_max_object_coord[1]:" << servMes.m_max_object_coord[1] << std::endl;
+    std::cout << "servMes.m_max_object_coord[2]:" << servMes.m_max_object_coord[2] << std::endl;
+    std::cout << "servMes.m_min_value:" << servMes.m_min_value << std::endl;
+    std::cout << "servMes.m_max_value:" << servMes.m_max_value << std::endl;
+    std::cout << "servMes.m_number_nodes:" << servMes.m_number_nodes << std::endl;
+    std::cout << "servMes.m_number_elements:" << servMes.m_number_elements << std::endl;
+    std::cout << "servMes.m_element_type:" << servMes.m_element_type << std::endl;
+    std::cout << "servMes.m_file_type:" << servMes.m_file_type << std::endl;
+    std::cout << "servMes.m_number_ingredients:" << servMes.m_number_ingredients << std::endl;
+    std::cout << "servMes.m_opacity_transfer_function_synthesis:" << servMes.m_opacity_transfer_function_synthesis << std::endl;
+    std::cout << "servMes.m_color_transfer_function_synthesis:" << servMes.m_color_transfer_function_synthesis << std::endl;
+    std::cout << "servMes.m_transfer_function.size():" << servMes.m_transfer_function.size() << std::endl;
+    std::cout << "================== client parameter end ==================\n" << std::endl;
+#endif
+
     servMes.m_flag_send_bins = 1;
     servMes.m_subpixel_level = param.m_subpixel_level;
     servMes.m_message_size = servMes.byteSize();
@@ -329,7 +352,6 @@ void generate_particle_master(
     delete[] servMes.m_color_nbins;
     delete[] servMes.m_opacity_nbins;
     servMes.m_transfer_function_count = 0;
-    servMes.m_flag_send_bins = 1;
     delete[] tmp_c_bins;
     delete[] tmp_o_bins;
     //add by shimomura 20240603

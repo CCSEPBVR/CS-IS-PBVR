@@ -83,8 +83,7 @@ void generate_particle_master(
     JobDispatcher& jd,
     jpv::ParticleTransferServer pts,
     TransferFunctionSynthesizerCreator transfunc_creator,
-    int& timer_count,
-    const jpv::InitializeParameter init_param
+    int& timer_count
 );  
 
 void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
