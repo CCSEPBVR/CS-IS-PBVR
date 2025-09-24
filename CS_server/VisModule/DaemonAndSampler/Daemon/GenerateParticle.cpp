@@ -60,7 +60,6 @@ void generate_particle_master(
     
     point_generator_lst.clear();
     point_generator_lst.resize(mvpl.m_list.size());
-    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
 
     jd.initialize(
         param.m_time_step,
@@ -82,10 +81,11 @@ void generate_particle_master(
 
     // 関数の領域確保、初期化を行う : by @hira 2016/12/01
     servMes.initializeTransferFunction( transfunc_creator.transfunc().size(), DEFAULT_NBINS );
+    int tf_count = transfunc_creator.transfunc().size();
 
     int c_bins_size = 0;
     int o_bins_size = 0;
-    for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
+    for ( int tf = 0; tf < tf_count; tf++ )
     {
         c_bins_size += servMes.m_color_nbins[tf];
         o_bins_size += servMes.m_opacity_nbins[tf];
@@ -99,10 +99,10 @@ void generate_particle_master(
     //add by shimomura 2023/06/14
     float*  tmp_max;
     float*  tmp_min;
-    tmp_max = new float[servMes.m_transfer_function_count * 2]; 
-    tmp_min = new float[servMes.m_transfer_function_count * 2];
+    tmp_max = new float[tf_count * 2]; 
+    tmp_min = new float[tf_count * 2];
 
-    for ( int tf = 0; tf < (servMes.m_transfer_function_count * 2); tf++ )
+    for ( int tf = 0; tf < (tf_count * 2); tf++ )
     {
         tmp_max[tf] = FLT_MIN;
         tmp_min[tf] = FLT_MAX;
@@ -165,7 +165,7 @@ void generate_particle_master(
 
                 // modify by @hira at 2016/12/01  
                 int c_count = 0;
-                for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
+                for ( int tf = 0; tf < tf_count; tf++ )
                 {
                     int c_nbins = tmp_obj->getNbins();
                     //changed by shimomura 2023/07/24
@@ -178,7 +178,7 @@ void generate_particle_master(
                     }
                 }
                 int o_count = 0;
-                for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
+                for ( int tf = 0; tf < tf_count; tf++ )
                 {
                     int o_nbins = tmp_obj->getNbins();
                     //changed by shimomura 2023/07/24
@@ -275,13 +275,13 @@ void generate_particle_master(
     if (mpi_size > 1) {
         MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
         MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, tmp_max, (servMes.m_transfer_function_count * 2), MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, tmp_min, (servMes.m_transfer_function_count * 2), MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, tmp_max, (tf_count * 2), MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, tmp_min, (tf_count * 2), MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
     }
 #endif
 
     //add by shimomura 2023/06/14
-    vr = setVariablerange2( tmp_max, tmp_min, servMes.m_transfer_function_count );
+    vr = setVariablerange2( tmp_max, tmp_min, tf_count );
     servMes.m_server_side_variable_range = vr;
     // add by shimomura 2022/12/16
     servMes.setColorHistogramBins(
@@ -344,7 +344,7 @@ void generate_particle_master(
     servMes.m_server_status = 0;
     // TEST END 2015.1.14
 
-    for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
+    for ( int tf = 0; tf < tf_count; tf++ )
     {
         delete[] servMes.m_color_bins[tf];
         delete[] servMes.m_opacity_bins[tf];
@@ -365,17 +365,17 @@ void generate_particle_master(
     }
 }
 
-#if 1
 void generate_particle_worker(
     Argument &param,
-    jpv::ParticleTransferClientMessage& clntMes,
     MultiVolumePropertyList& mvpl,
     bool &nan_error,
 #ifndef CPU_VER
-                         JobCollector& jc, 
+    JobCollector& jc, 
 #endif
-                         JobDispatcher& jd,  
-                         TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count)
+    JobDispatcher& jd,
+    TransferFunctionSynthesizerCreator transfunc_creator,
+    int& timer_count
+)
 {
 #ifndef CPU_VER
     int rank;
@@ -383,388 +383,158 @@ void generate_particle_worker(
     MPI_Comm_rank( MPI_COMM_WORLD, &rank );
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
 #else
+    int rank = 0;
 	int mpi_size = 1;
 #endif
- 
-    int bsz = 0;
     int st, vl, wid = 0;
-    vismodule::PointObject* object = NULL;
     std::vector<vismodule::CS_PointObjectGenerator> point_generator_lst;
+    VariableRange vr;
 
-                if ( clntMes.m_time_parameter == 0 )
-                {
-                }
-                else if ( clntMes.m_time_parameter == 1 )
-                {
-                }
-                else
-                {
-                    param.m_sampling_method = clntMes.m_sampling_method;
-                    param.m_input_data_base = clntMes.m_input_directory;
-                    param.m_particle_limit = clntMes.m_particle_limit;
-                    param.m_particle_density = clntMes.m_particle_density;
-
-#if 0
-                    std::string pfifile, pflfile;
-                    pfifile = param.m_input_data_base + ".pfi";
-                    vismodule::File pfi( pfifile );
-                    pflfile = param.m_input_data_base + ".pfl";
-                    vismodule::File pfl( pflfile );
-                    if ( pfl.isExisted() )
-                    {
-                        mvpl.loadPFL( pflfile );
-                    }
-                    else if ( pfi.isExisted() )
-                    {
-                        mvpl.loadPFL( pfifile );
-                    }
-#else
-                    size_t found_pfl  = param.m_input_data_base.find(".pfl");
-                    size_t found_pfi  = param.m_input_data_base.find(".pfi");
-                    size_t found_vtm  = param.m_input_data_base.find(".vtm");
-                    size_t found_vtu  = param.m_input_data_base.find(".vtu");
-                    size_t found_vti  = param.m_input_data_base.find(".vti");
-                    size_t found_inp  = param.m_input_data_base.find(".inp");
-                    size_t found_pvtu = param.m_input_data_base.find(".pvtu");
-                    size_t found_case = param.m_input_data_base.find(".case");
-                    if ( found_pfl != std::string::npos )
-                    {
-                        std::string pflfile = param.m_input_data_base;
-                        std::cout << "pflファイルが選択されました" << std::endl;
-                        vismodule::File pfl( pflfile );
-                        if ( pfl.isExisted() )
-                        {
-                            mvpl.loadPFL( pflfile );
-                        }
-                    }
-                    else if ( found_pfi != std::string::npos )
-                    {
-                        std::string pfifile = param.m_input_data_base;
-                        std::cout << "pfiファイルが選択されました" << std::endl;
-                        vismodule::File pfi( pfifile );
-                        if ( pfi.isExisted() )
-                        {
-                            mvpl.loadPFL( pfifile );
-                        }                        
-                    }
-#ifdef EXTEND_FILE_FORMAT
-                    else if ( found_vtm != std::string::npos )
-                    {
-                        std::string vtmfile = param.m_input_data_base;
-                        std::cout << ".vtmファイルが選択されました" << std::endl;
-                        size_t found_asterisk = vtmfile.find( '*' );
-
-                        // 単一ファイルの場合
-                        if ( found_asterisk == std::string::npos )
-                        {
-                            mvpl.loadVtm( vtmfile );
-                        }
-                        // 連番ファイルの場合
-                        else
-                        {
-                            mvpl.loadSeriesVtm( vtmfile );
-                        }
-                    }
-                    else if ( found_vtu != std::string::npos )
-                    {
-                        std::string vtufile = param.m_input_data_base;
-                        std::cout << ".vtuファイルが選択されました" << std::endl;
-                        size_t found_asterisk = vtufile.find( '*' );
-
-                        // 単一ファイルの場合
-                        if ( found_asterisk == std::string::npos )
-                        {
-                            mvpl.loadVtu( vtufile );
-                        }
-                        // 連番ファイルの場合
-                        else
-                        {
-                            mvpl.loadSeriesVtu( vtufile );
-                        }
-                    }    
-                    else if ( found_vti != std::string::npos )
-                    {
-                        std::string vtifile = param.m_input_data_base;
-                        std::cout << ".vtiファイルが選択されました" << std::endl;
-                        size_t found_asterisk = vtifile.find( '*' );
-
-                        // 単一ファイルの場合
-                        if ( found_asterisk == std::string::npos )
-                        {
-                            mvpl.loadVti( vtifile );
-                        }
-                        // 連番ファイルの場合
-                        else
-                        {
-                            mvpl.loadSeriesVti( vtifile );
-                        }
-                    }
-                    else if ( found_inp != std::string::npos )
-                    {
-                        std::string inpfile = param.m_input_data_base;
-                        std::cout << ".inpファイルが選択されました" << std::endl;
-                        size_t found_asterisk = inpfile.find( '*' );
-
-                        // 単一ファイルの場合
-                        if ( found_asterisk == std::string::npos )
-                        {
-                            mvpl.loadInp( inpfile );
-                        }
-                        // 連番ファイルの場合
-                        else
-                        {
-                            std::cout << ".inpファイルは連番ファイルに対応していません" << std::endl;
-                        }
-                    }   
-                    else if ( found_pvtu != std::string::npos )
-                    {
-                        std::string pvtufile = param.m_input_data_base;
-                        std::cout << ".pvtuファイルが選択されました" << std::endl;
-                        size_t found_asterisk = pvtufile.find( '*' );
-
-                        // 単一ファイルの場合
-                        if ( found_asterisk == std::string::npos )
-                        {
-                            mvpl.loadPvtu( pvtufile );
-                        }
-                        // 連番ファイルの場合
-                        else
-                        {
-                            mvpl.loadSeriesPvtu( pvtufile );
-                        }
-                    }
-                    else if ( found_case != std::string::npos )
-                    {
-                        std::string casefile = param.m_input_data_base;
-                        std::cout << ".caseファイルが選択されました" << std::endl;
-                        size_t found_asterisk = casefile.find( '*' );
-
-                        // 単一ファイルの場合
-                        if ( found_asterisk == std::string::npos )
-                        {
-                            mvpl.loadEnsightGold( casefile );
-                        }
-                        // 連番ファイルの場合
-                        else
-                        {
-                            std::cout << ".caseファイルは連番ファイルに対応していません" << std::endl;
-                        }
-                    }                
-#endif
-                    else
-                    {
-                        std::cout << "このファイルは現在対応していません" << std::endl;
-                    }
-#endif
-
-                    point_generator_lst.clear();
-                    for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
-                    {
-                        vismodule::CS_PointObjectGenerator point_generator;
-                        point_generator.setFilterInfo( &mvpl.m_list[idx] );
-                        point_generator.setCoordSynthStr( clntMes.m_x_synthesis,
-                                                        clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-                        point_generator_lst.push_back( point_generator );
-
-                    }
-
-                    transfunc_creator.setFilterInfo( mvpl.m_list[0] );
-                    transfunc_creator.setProtocol( clntMes );
-                    transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
-                    param.m_transfunc_synthesizer = transfunc_creator.create();
-
-                    param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
-                    for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
-                    {
-                        param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
-                    }
-
-                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
-                        jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
-                                       mvpl.m_total_min_subvolume_coord,
-                                       mvpl.m_total_max_subvolume_coord,
-                                       param.m_latency_threshold, param.m_job_id_pack_size );
-
-                    param.m_sampling_step = CalculateSamplingStep( mvpl );
-                    //param.m_sampling_step = 1;
-                    param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
-                    param.m_particle_limit_pre = param.m_particle_limit;
-
-                    clntMes.show();
-                    int tf_count = clntMes.m_transfer_function.size();
-                    int c_nbins = DEFAULT_NBINS;
-                    int o_nbins = DEFAULT_NBINS;
+    point_generator_lst.clear();
+    point_generator_lst.resize(mvpl.m_list.size());
                     
-                    int c_bins_size = 0;
-                    int o_bins_size = 0;
-                    vismodule::UInt64* tmp_c_bins;
-                    vismodule::UInt64* tmp_o_bins;
-                    float*  tmp_max;
-                    float*  tmp_min;
+    jd.initialize(
+        param.m_time_step,
+        param.m_time_step,
+        mvpl.m_total_number_subvolumes,
+        mvpl.m_total_min_subvolume_coord,
+        mvpl.m_total_max_subvolume_coord,
+        param.m_latency_threshold,
+        param.m_job_id_pack_size
+    );
 
-                    c_bins_size = 0;
-                    o_bins_size = 0;
+    param.m_sampling_step = CalculateSamplingStep( mvpl );
+    param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *param.m_camera );
 
-                    for ( int tf = 0; tf < tf_count; tf++ )
-                    {
-                        c_bins_size += c_nbins;
-                        o_bins_size += o_nbins;
-                    }
+    int tf_count = transfunc_creator.transfunc().size();
 
-                    tmp_c_bins = new vismodule::UInt64[c_bins_size];
-                    tmp_o_bins = new vismodule::UInt64[o_bins_size];
-                    //add by shimomura 2023/06/14
-                    int cnt = 2* tf_count ;
-                    tmp_max = new float[cnt]; 
-                    tmp_min = new float[cnt]; 
+    int c_bins_size = 0;
+    int o_bins_size = 0;
+    int c_nbins = DEFAULT_NBINS;
+    int o_nbins = DEFAULT_NBINS;
+    for ( int tf = 0; tf < tf_count; tf++ )
+    {
+        c_bins_size += c_nbins;
+        o_bins_size += o_nbins;
+    }
 
-                    for ( int tf = 0; tf < cnt; tf++ )
-                    {
-                        tmp_max[tf] = FLT_MIN;
-                        tmp_min[tf] = FLT_MAX;
-                    }
+    vismodule::UInt64* tmp_c_bins;
+    vismodule::UInt64* tmp_o_bins;
+    tmp_c_bins = new vismodule::UInt64[c_bins_size];
+    tmp_o_bins = new vismodule::UInt64[o_bins_size];
+
+    //add by shimomura 2023/06/14
+    float*  tmp_max;
+    float*  tmp_min;
+    tmp_max = new float[tf_count * 2]; 
+    tmp_min = new float[tf_count * 2]; 
+
+    for ( int tf = 0; tf < (tf_count * 2); tf++ )
+    {
+        tmp_max[tf] = FLT_MIN;
+        tmp_min[tf] = FLT_MAX;
+    }
                         
-                    for ( int tf = 0; tf < c_bins_size; tf++ )
-                    {
-                        tmp_c_bins[tf] = 0;
-                    }
+    for ( int tf = 0; tf < c_bins_size; tf++ )
+    {
+        tmp_c_bins[tf] = 0;
+    }
 
-                    for ( int tf = 0; tf < o_bins_size; tf++ )
-                    {
-                        tmp_o_bins[tf] = 0;
-                    }
+    for ( int tf = 0; tf < o_bins_size; tf++ )
+    {
+        tmp_o_bins[tf] = 0;
+    }
 
-                    while ( jd.dispatchNext( wid, &st, &vl ) )
-                    {
-                        int xvl, fidx;
-                        fidx = mvpl.getFileIndex( vl, &xvl );
-                        MultiVolumeProperty& mvp = mvpl.m_list[fidx];
+    while ( jd.dispatchNext( wid, &st, &vl ) )
+    {
+        int xvl, fidx;
+        vismodule::PointObject* tmp_obj = NULL;
+        fidx = mvpl.getFileIndex( vl, &xvl );
+        MultiVolumeProperty& mvp = mvpl.m_list[fidx];
+        mvp.setFilePath( param.m_input_data, st, xvl );
+        point_generator_lst[fidx].setFilterInfo( &mvp );
+        param.m_subvolume_id = xvl;
+        int timeStep = 1;
 
-                        size_t found_pfi  = mvp.m_file_path.find(".pfi");
-                        size_t found_vtm  = mvp.m_file_path.find(".vtm");
-                        size_t found_vtu  = mvp.m_file_path.find(".vtm");
-                        size_t found_vti  = mvp.m_file_path.find(".vti");
-                        size_t found_inp  = mvp.m_file_path.find(".inp");
-                        size_t found_pvtu = mvp.m_file_path.find(".pvtu");
-                        size_t found_case = mvp.m_file_path.find(".case");
+        try
+        {
+            point_generator_lst[fidx].setCoordSynthStr( param.m_x_synthesis, param.m_y_synthesis, param.m_z_synthesis );
+            if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+            {
+                tmp_obj = point_generator_lst[fidx].run( param, *param.m_camera, timeStep, st, xvl );
 
-                        if ( found_pfi != std::string::npos )
-                        {
-                            std::stringstream suffix;
-                            suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << ( st )
-                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( xvl + 1 )
-                                   << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
-                            vismodule::File ifpx( mvp.m_file_path );
-                            param.m_input_data = ifpx.pathName() + ifpx.Separator()
-                                               + ifpx.baseName() + suffix.str() + ".kvsml";
-                        }
+            }
 #ifdef EXTEND_FILE_FORMAT
-                        else if ( found_vtm  != std::string::npos ||
-                                  found_vtu  != std::string::npos ||
-                                  found_vti  != std::string::npos ||
-                                  found_inp  != std::string::npos ||
-                                  found_pvtu != std::string::npos ||
-                                  found_case != std::string::npos 
-                                )
-                        {
-                            param.m_input_data = mvp.m_file_path;
-                        }
+            else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
+            {
+                tmp_obj = point_generator_lst[fidx].run( param, *param.m_camera, timeStep, st, xvl );
+            }                            
 #endif
-                        else
-                        {
-                            std::cout << "このファイルは現在対応していません" << std::endl;
-                        }
-
-                        param.m_subvolume_id = xvl ;
-                        int timeStep = 1;
-                        try
-                        {
-                            if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
-                            {
-                                object = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
-
-                            }
-#ifdef EXTEND_FILE_FORMAT
-                            else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
-                            {
-                                object = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
-                            }                            
-#endif
-                            else     // filetype: kvsml
-                            {
-                                object = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
-                            }
-                        }
-                        catch ( const std::runtime_error& e )
-                        {
+            else // filetype: kvsml
+            {
+                tmp_obj = point_generator_lst[fidx].run( param, *param.m_camera, timeStep, st );
+            }
+        }
+        catch ( const std::runtime_error& e )
+        {
 #ifdef _DEBUG		// debug by @hira
-                            printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
+            printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
 #endif
-                            std::cerr << e.what();
-                            nan_error = true;
-                        }
+            std::cerr << e.what();
+            nan_error = true;
+        }
 #ifndef CPU_VER
-                        VariableRange* p_vr = &param.m_transfunc_synthesizer->variableRange();
-                        jc.jobCollect( object, p_vr, &nan_error, &wid );
+        jc.jobCollect( tmp_obj, &vr, &nan_error, &wid );
 #endif
-                        if ( nan_error )
-                        {
-                            nan_error = false;
-                            continue;
-                        }
+        if ( nan_error )
+        {
+            nan_error = false;
+            continue;
+        }
 
-                        int c_count = 0;
-                        int o_count = 0;
+        int c_count = 0;
+        for ( int tf = 0; tf < tf_count; tf++ )
+        {
+            c_nbins = tmp_obj->getNbins();
+            //add by shimomura 2023/06/14
+            tmp_max[2*tf+1] = vismodule::Math::Max( tmp_max[2*tf+1] ,param.m_transfunc_synthesizer->m_c_max[tf]);
+            tmp_min[2*tf+1] = vismodule::Math::Min( tmp_min[2*tf+1] ,param.m_transfunc_synthesizer->m_c_min[tf]);
+            for ( int res = 0; res < c_nbins; res++ )
+            {
+                tmp_c_bins[c_count] += tmp_obj->getCHistogram()[c_count] ;
+                c_count++;
+            }
+        }
 
-                        for ( int tf = 0; tf < object->getTfnumber(); tf++ )
-                        {
-                            c_nbins = object->getNbins();
-                            //add by shimomura 2023/06/14
-                            tmp_max[2*tf+1] = vismodule::Math::Max( tmp_max[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
-                            tmp_min[2*tf+1] = vismodule::Math::Min( tmp_min[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
-                            for ( int res = 0; res < c_nbins; res++ )
-                            {
-                                tmp_c_bins[c_count] += object->getCHistogram()[ c_count ] ;
-                                c_count++;
-                            }
-                        }
+        int o_count = 0;
+        for ( int tf = 0; tf < tf_count; tf++ )
+        {
+            o_nbins = tmp_obj->getNbins();
+            //add by shimomura 2023/06/14
+            tmp_max[2*tf] = vismodule::Math::Max( tmp_max[2*tf], param.m_transfunc_synthesizer->m_o_max[tf] );
+            tmp_min[2*tf] = vismodule::Math::Min( tmp_min[2*tf], param.m_transfunc_synthesizer->m_o_min[tf] );
+            for ( int res = 0; res < o_nbins; res++ )
+            {
+                tmp_o_bins[o_count] += tmp_obj->getOHistogram()[o_count];
+                o_count++;
+            }
+        }
+    } // end of while(DispatchNext)
 
-                        for ( int tf = 0; tf < object->getTfnumber(); tf++ )
-                        {
-                            o_nbins = object->getNbins();
-                            //add by shimomura 2023/06/14
-                            tmp_max[2*tf] = vismodule::Math::Max( tmp_max[2*tf] ,param.m_transfunc_synthesizer-> m_o_max[tf]);
-                            tmp_min[2*tf] = vismodule::Math::Min( tmp_min[2*tf] ,param.m_transfunc_synthesizer-> m_o_min[tf]);
-                            for ( int res = 0; res < o_nbins; res++ )
-                            {
-                                tmp_o_bins[o_count] += object->getOHistogram()[ o_count ] ;
-                                o_count++;
-                            }
-                        }
-
-                    } // end of while(DispatchNext)
 #ifndef CPU_VER
-
-                    MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-                    MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-                    MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
-                    MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
-                    delete[] tmp_c_bins;
-                    delete[] tmp_o_bins;
-                    //add by shimomura 20240603
-                    delete[] tmp_max;
-                    delete[] tmp_min;
+    MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM, MPI_COMM_WORLD );
+    MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM, MPI_COMM_WORLD );
+    MPI_Allreduce( MPI_IN_PLACE, tmp_max, (tf_count * 2), MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+    MPI_Allreduce( MPI_IN_PLACE, tmp_min, (tf_count * 2), MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
 #endif
-                    if ( timer_count == VIS_MODULE_TIMER_COUNT_NUM )
-                    {
-                        VIS_MODULE_TIMER_END( 1 );
-                        VIS_MODULE_TIMER_FIN();
-                    }
-                    delete param.m_transfunc_synthesizer;
-                }
 
+    delete[] tmp_c_bins;
+    delete[] tmp_o_bins;
+    //add by shimomura 20240603
+    delete[] tmp_max;
+    delete[] tmp_min;
+    delete param.m_transfunc_synthesizer;
 }
-#endif
 
 void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
                          JobDispatcher& jd,  jpv::ParticleTransferServer pts, ParticleMonitor& pm, vismodule::Timer& timer,

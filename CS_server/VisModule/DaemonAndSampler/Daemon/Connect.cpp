@@ -239,12 +239,43 @@ if ( bsz < 0 )
                }
                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_particle )
                {
-                    generate_particle_worker( param, clntMes, mvpl, nan_error,
-#ifndef CPU_VER
-                        jc,
-#endif
-                        jd, transfunc_creator, timer_count );
+                    if ( clntMes.m_time_parameter == 0 )
+                    {
+                    }
+                    else if ( clntMes.m_time_parameter == 1 )
+                    {
+                    }
+                    else
+                    {
+                        param.m_input_data_base = clntMes.m_input_directory;
+                        param.m_time_step = clntMes.m_step;
+                        param.m_level_index = clntMes.m_level_index;
+                        param.m_repeat_level = clntMes.m_repeat_level;
+                        param.m_sampling_method = clntMes.m_sampling_method;
+                        param.m_particle_limit = clntMes.m_particle_limit;
+                        param.m_particle_density = clntMes.m_particle_density;
+                        param.m_camera = clntMes.m_camera;
+                        param.m_x_synthesis = clntMes.m_x_synthesis;
+                        param.m_y_synthesis = clntMes.m_y_synthesis;
+                        param.m_z_synthesis = clntMes.m_z_synthesis;
 
+                        transfunc_creator.setProtocol( clntMes );
+                        transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
+                        param.m_transfunc_synthesizer = transfunc_creator.create();
+                        param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+                        if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+
+                        for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
+                        {
+                            param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>( transfunc_creator.transfunc()[i] );
+                        }
+
+                        generate_particle_worker( param, mvpl, nan_error,
+#ifndef CPU_VER
+                            jc,
+#endif
+                            jd, transfunc_creator, timer_count );
+                    }
                }
                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_glyph )
                {
@@ -478,6 +509,13 @@ if ( bsz < 0 )
                     delete[] buf;
                     // send cltMes to all worker process <<
 
+                    param.m_sampling_method = 'h';
+                    param.m_particle_limit = clntMes.m_particle_limit;
+                    param.m_particle_density = clntMes.m_particle_density;
+                    param.m_camera = clntMes.m_camera;
+                    param.m_x_synthesis = clntMes.m_x_synthesis;
+                    param.m_y_synthesis = clntMes.m_y_synthesis;
+                    param.m_z_synthesis = clntMes.m_z_synthesis;
                     mvpl.searchFile(param);
 
                     if ( mvpl.m_list.size() <= 0 )
@@ -503,14 +541,6 @@ if ( bsz < 0 )
                                 
                         break;
                     }
-
-                    param.m_sampling_method = 'h';
-                    param.m_particle_limit = clntMes.m_particle_limit;
-                    param.m_particle_density = clntMes.m_particle_density;
-                    param.m_camera = clntMes.m_camera;
-                    param.m_x_synthesis = clntMes.m_x_synthesis;
-                    param.m_y_synthesis = clntMes.m_y_synthesis;
-                    param.m_z_synthesis = clntMes.m_z_synthesis;
 
                     if( !clntMes.m_import_flag ) 
                     {
@@ -632,6 +662,7 @@ if ( bsz < 0 )
                         transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
                         param.m_transfunc_synthesizer = transfunc_creator.create();
                         param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+                        if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
 
                         for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
                         {

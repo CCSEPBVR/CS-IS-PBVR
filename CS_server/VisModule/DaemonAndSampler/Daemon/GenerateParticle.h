@@ -88,9 +88,7 @@ void generate_particle_master(
 
 void generate_particle_worker(
     Argument &param,
-    jpv::ParticleTransferClientMessage& clntMes,
     MultiVolumePropertyList& mvpl,
-    // bool &nan_error,
     // std::vector<PointObjectCreator>& point_creator_lst,
     bool &nan_error,
 #ifndef CPU_VER
