@@ -73,7 +73,6 @@
 void initial_step_master(
     Argument &param,
     MultiVolumePropertyList& mvpl, 
-    // bool &nan_error,
     // std::vector<PointObjectCreator>& point_creator_lst, 
     bool &nan_error,
 #ifndef CPU_VER
@@ -85,13 +84,18 @@ void initial_step_master(
     int& timer_count
 );
 
-void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
-                         //bool &nan_error, std::vector<PointObjectGenerator>& point_creator_lst, 
-                         bool &nan_error,
+void initial_step_worker(
+    Argument &param,
+    MultiVolumePropertyList& mvpl,
+    // std::vector<PointObjectGenerator>& point_creator_lst,
+    bool &nan_error,
 #ifndef CPU_VER
-                         JobCollector& jc, 
+    JobCollector& jc,
 #endif
-                         JobDispatcher& jd, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count );
+    JobDispatcher& jd,
+    TransferFunctionSynthesizerCreator transfunc_creator,
+    int& timer_count
+);
 
 
 void initial_step_IS(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 

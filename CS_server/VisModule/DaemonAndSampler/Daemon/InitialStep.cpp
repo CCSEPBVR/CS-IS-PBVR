@@ -84,7 +84,7 @@ void initial_step_master(
 
     int c_bins_size = 0;
     int o_bins_size = 0;
-    for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
+    for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
     {
         c_bins_size += servMes.m_color_nbins[tf];
         o_bins_size += servMes.m_opacity_nbins[tf];
@@ -98,10 +98,10 @@ void initial_step_master(
     //add by shimomura 2023/06/14
     float*  tmp_max;
     float*  tmp_min;
-    tmp_max = new float[servMes.m_transfer_function_count * 2]; 
-    tmp_min = new float[servMes.m_transfer_function_count * 2];
+    tmp_max = new float[transfunc_creator.transfunc().size() * 2]; 
+    tmp_min = new float[transfunc_creator.transfunc().size() * 2];
 
-    for ( int tf = 0; tf < (servMes.m_transfer_function_count * 2); tf++ )
+    for ( int tf = 0; tf < (transfunc_creator.transfunc().size() * 2); tf++ )
     {
         tmp_max[tf] = FLT_MIN;
         tmp_min[tf] = FLT_MAX;
@@ -134,12 +134,12 @@ void initial_step_master(
             MultiVolumeProperty& mvp = mvpl.m_list[fidx];
             mvp.setFilePath(param.m_input_data, st, xvl);
             point_generator_lst[fidx].setFilterInfo( &mvp );
-            param.m_subvolume_id = xvl;
+            point_generator_lst[fidx].setCoordSynthStr( param.m_x_synthesis, param.m_y_synthesis, param.m_z_synthesis );
             int timeStep = 1;
             servMes.m_flag_send_bins = 0;
+
             try
             {
-                point_generator_lst[fidx].setCoordSynthStr( param.m_x_synthesis, param.m_y_synthesis, param.m_z_synthesis );
                 if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                 {
                     tmp_obj = point_generator_lst[fidx].run( param, *servMes.m_camera, timeStep, st, xvl);
@@ -233,8 +233,8 @@ void initial_step_master(
     if (mpi_size > 1) {
         MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
         MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, tmp_max, (servMes.m_transfer_function_count * 2), MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, tmp_min, (servMes.m_transfer_function_count * 2), MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, tmp_max, (transfunc_creator.transfunc().size() * 2), MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, tmp_min, (transfunc_creator.transfunc().size() * 2), MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
     }
 #endif
     //add by shimomura 2023/06/14
@@ -331,122 +331,71 @@ void initial_step_master(
 }
 
 
-void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
-                         bool &nan_error,
+void initial_step_worker(
+    Argument &param,
+    MultiVolumePropertyList& mvpl,
+    bool &nan_error,
 #ifndef CPU_VER
-                         JobCollector& jc, 
+    JobCollector& jc,
 #endif
-                         JobDispatcher& jd, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count )
+    JobDispatcher& jd,
+    TransferFunctionSynthesizerCreator transfunc_creator,
+    int& timer_count
+)
 {
-
-    vismodule::PointObject* object = NULL;
 #ifndef CPU_VER
     int rank;
     int mpi_size;
     MPI_Comm_rank( MPI_COMM_WORLD, &rank );
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
 #else
+    int rank = 0;
 	int mpi_size = 1;
 #endif
-    
-    int bsz = 0;
+    // jpv::ParticleTransferServerMessage servMes;
     int st, vl, wid = 0;
     std::vector<vismodule::CS_PointObjectGenerator> point_generator_lst;
-
-
-    timer_count++;
-    param.m_sampling_method = 'h';
-    param.m_input_data_base = clntMes.m_input_directory;
-    param.m_particle_limit = clntMes.m_particle_limit;
-    param.m_particle_density = clntMes.m_particle_density;
-
-#if 0
-    std::string pfifile, pflfile;
-    pfifile = param.m_input_data_base + ".pfi";
-    vismodule::File pfi( pfifile );
-    pflfile = param.m_input_data_base + ".pfl";
-    vismodule::File pfl( pflfile );
-    if ( pfl.isExisted() )
-    {
-        mvpl.loadPFL( pflfile );
-    }
-    else if ( pfi.isExisted() )
-    {
-        mvpl.loadPFL( pfifile );
-    }
-#else
-    mvpl.searchFile(param);
-#endif
+    VariableRange vr;
 
     point_generator_lst.clear();
-    for ( int idx = 0; idx < mvpl.m_list.size(); idx++ )
-    {
-        vismodule::CS_PointObjectGenerator point_generator;
-        point_generator.setFilterInfo( &mvpl.m_list[idx] );
-        point_generator.setCoordSynthStr( clntMes.m_x_synthesis,
-                clntMes.m_y_synthesis, clntMes.m_z_synthesis );
-        point_generator_lst.push_back( point_generator );
-    }
-
-    transfunc_creator.setFilterInfo( mvpl.m_list[0] );
-    int nvariable;
-    VariableRange range = Calculate_minmax( param, mvpl); 
-    if( !clntMes.m_import_flag ) 
-    {
-        std::cout << "defalt parameter " << std::endl;
-        nvariable = mvpl.m_total_number_ingredients;
-        transfunc_creator.setInitialProtocol( nvariable, range );
-    }
-    else
-    {
-        std::cout << "user define parameter " << std::endl;
-        nvariable = clntMes.m_transfer_function.size();
-        transfunc_creator.setProtocol(clntMes);
-    }
-    param.m_transfunc_synthesizer = transfunc_creator.create();
-    param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
-
-    for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
-    {
-        param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
-    }
+    point_generator_lst.resize(mvpl.m_list.size());
     if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
-    jd.initialize( mvpl.m_total_start_steps, mvpl.m_total_start_steps, mvpl.m_total_number_subvolumes,
-            mvpl.m_total_min_subvolume_coord,
-            mvpl.m_total_max_subvolume_coord,
-            param.m_latency_threshold, param.m_job_id_pack_size );
+
+    jd.initialize(
+        mvpl.m_total_start_steps,
+        mvpl.m_total_start_steps,
+        mvpl.m_total_number_subvolumes,
+        mvpl.m_total_min_subvolume_coord,
+        mvpl.m_total_max_subvolume_coord,
+        param.m_latency_threshold,
+        param.m_job_id_pack_size
+    );
 
     param.m_sampling_step = CalculateSamplingStep( mvpl );
-    param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
-    param.m_particle_limit_pre = param.m_particle_limit;
-
-    clntMes.show();
-    int tf_count = nvariable;
+    param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *param.m_camera );
+    // param.m_particle_limit_pre = param.m_particle_limit; 削除予定
+    
     int c_bins_size = 0;
     int o_bins_size = 0;
     int c_nbins = DEFAULT_NBINS;
     int o_nbins = DEFAULT_NBINS;
-    vismodule::UInt64* tmp_c_bins;
-    vismodule::UInt64* tmp_o_bins;
-    float*  tmp_max;
-    float*  tmp_min;
-    c_bins_size = 0;
-    o_bins_size = 0;
-
-    for ( int tf = 0; tf < tf_count; tf++ )
+    for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
     {
         c_bins_size += c_nbins;
         o_bins_size += o_nbins;
     }
 
+    vismodule::UInt64* tmp_c_bins;
+    vismodule::UInt64* tmp_o_bins;
     tmp_c_bins = new vismodule::UInt64[c_bins_size];
     tmp_o_bins = new vismodule::UInt64[o_bins_size];
-    //add by shimomura 2023/06/14
-    int cnt = 2* tf_count ;
-    tmp_max = new float[cnt]; 
-    tmp_min = new float[cnt]; 
 
-    for ( int tf = 0; tf < cnt; tf++ )
+    float*  tmp_max;
+    float*  tmp_min;
+    tmp_max = new float[transfunc_creator.transfunc().size() * 2]; 
+    tmp_min = new float[transfunc_creator.transfunc().size() * 2]; 
+
+    for ( int tf = 0; tf < (transfunc_creator.transfunc().size() * 2); tf++ )
     {
         tmp_max[tf] = FLT_MIN;
         tmp_min[tf] = FLT_MAX;
@@ -465,24 +414,27 @@ void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& cl
     while ( jd.dispatchNext( wid, &st, &vl ) )
     {
         int xvl, fidx;
+        vismodule::PointObject* tmp_obj = NULL;
         fidx = mvpl.getFileIndex( vl, &xvl );
         MultiVolumeProperty& mvp = mvpl.m_list[fidx];
-
         mvp.setFilePath(param.m_input_data, st, xvl);
+        point_generator_lst[fidx].setFilterInfo( &mvp );
+        point_generator_lst[fidx].setCoordSynthStr( param.m_x_synthesis, param.m_y_synthesis, param.m_z_synthesis );
         int timeStep = 1;
+
         try
         {
             if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
             {
-                object = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl );
+                tmp_obj = point_generator_lst[fidx].run( param, *param.m_camera, timeStep, st, xvl );
             }
             else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
             {
-                object = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st, xvl);
+                tmp_obj = point_generator_lst[fidx].run( param, *param.m_camera, timeStep, st, xvl);
             }
             else     // filetype: kvsml
             {
-                object = point_generator_lst[fidx].run( param, *clntMes.m_camera, timeStep, st );
+                tmp_obj = point_generator_lst[fidx].run( param, *param.m_camera, timeStep, st );
             }
         }
         catch ( const std::runtime_error& e )
@@ -494,64 +446,54 @@ void initial_step_worker(Argument &param, jpv::ParticleTransferClientMessage& cl
             nan_error = true;
         }
 #ifndef CPU_VER
-        VariableRange* p_vr = &range;
-        jc.jobCollect( object, p_vr, &nan_error, &wid );
+        jc.jobCollect( tmp_obj, &vr, &nan_error, &wid );
 #endif
         if ( nan_error )
         {
             nan_error = false;
             continue;
         }
-
+        
         int c_count = 0;
-        int o_count = 0;
-
-        for ( int tf = 0; tf < object->getTfnumber(); tf++ )
+        for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
         {
-            c_nbins = object->getNbins();
+            c_nbins = tmp_obj->getNbins();
             //add by shimomura 2023/06/14
             tmp_max[2*tf+1] = vismodule::Math::Max( tmp_max[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
             tmp_min[2*tf+1] = vismodule::Math::Min( tmp_min[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
             for ( int res = 0; res < c_nbins; res++ )
             {
-                tmp_c_bins[c_count] += object->getCHistogram()[ c_count ] ;
+                tmp_c_bins[c_count] += tmp_obj->getCHistogram()[ c_count ] ;
                 c_count++;
             }
         }
 
-        for ( int tf = 0; tf < object->getTfnumber(); tf++ )
+        int o_count = 0;
+        for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
         {
-            o_nbins = object->getNbins();
+            o_nbins = tmp_obj->getNbins();
             //add by shimomura 2023/06/14
             tmp_max[2*tf] = vismodule::Math::Max( tmp_max[2*tf] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
             tmp_min[2*tf] = vismodule::Math::Min( tmp_min[2*tf] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
             for ( int res = 0; res < o_nbins; res++ )
             {
-                tmp_o_bins[o_count] += object->getOHistogram()[ o_count ] ;
+                tmp_o_bins[o_count] += tmp_obj->getOHistogram()[ o_count ] ;
                 o_count++;
             }
         }
-
     } // end of while(DispatchNext)
 #ifndef CPU_VER
-
     MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
     MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-    MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
-    MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
+    MPI_Allreduce( MPI_IN_PLACE, tmp_max, (transfunc_creator.transfunc().size() * 2), MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
+    MPI_Allreduce( MPI_IN_PLACE, tmp_min, (transfunc_creator.transfunc().size() * 2), MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
+#endif
     delete[] tmp_c_bins;
     delete[] tmp_o_bins;
     //add by shimomura 20240603
     delete[] tmp_max;
     delete[] tmp_min;
-#endif
-    if ( timer_count == VIS_MODULE_TIMER_COUNT_NUM )
-    {
-        VIS_MODULE_TIMER_END( 1 );
-        VIS_MODULE_TIMER_FIN();
-    }
     delete param.m_transfunc_synthesizer;
-
 }
 
 void initial_step_IS(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 

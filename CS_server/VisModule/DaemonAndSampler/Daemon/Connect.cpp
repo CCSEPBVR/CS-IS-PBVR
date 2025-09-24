@@ -175,6 +175,7 @@ void  CS_Connect( int argc, char** argv )
 #endif
                 clntMes.unpack( buf );
                 delete[] buf;
+                clntMes.show();
                 std::cout << "Rank " << rank << ": Recv Client Message" << std::endl;
                 std::cout << "clntMes.m_initialize_parameter = " << (int)clntMes.m_initialize_parameter << std::endl;
                 // recv cltMes from process 0 <<
@@ -186,19 +187,63 @@ void  CS_Connect( int argc, char** argv )
                }
                else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
                {
-                   initial_step_worker(param, clntMes, mvpl, nan_error,  
+/*
 #ifndef CPU_VER
-                           jc, 
+MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
 #endif
-                           jd,  transfunc_creator, timer_count );
+if ( bsz < 0 )
+{
+    loop = false;
+    std::cerr << "Error: pfifile doesn't exist(rank:" << rank << ")" << std::endl;
+    break; // terminate server
+}
+*/
+
+                    param.m_input_data_base = clntMes.m_input_directory;
+                    param.m_sampling_method = 'h';
+                    param.m_particle_limit = clntMes.m_particle_limit;
+                    param.m_particle_density = clntMes.m_particle_density;
+                    param.m_camera = clntMes.m_camera;
+                    param.m_x_synthesis = clntMes.m_x_synthesis;
+                    param.m_y_synthesis = clntMes.m_y_synthesis;
+                    param.m_z_synthesis = clntMes.m_z_synthesis;
+                    mvpl.searchFile(param);
+
+                    if( !clntMes.m_import_flag ) 
+                    {
+                        std::cout << "defalt parameter " << std::endl;
+                        VariableRange range = Calculate_minmax( param, mvpl );
+                        transfunc_creator.setInitialProtocol( mvpl.m_total_number_ingredients, range );
+                    }
+                    else
+                    {
+                        std::cout << "user define parameter " << std::endl;
+                        transfunc_creator.setProtocol( clntMes );
+                        // transfunc_creator.setAsisTransferFunction( param.m_transfer_function ); 削除予定
+                    }
+
+                    param.m_transfunc_synthesizer = transfunc_creator.create();
+                    param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+
+                    for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
+                    {
+                        param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
+                    }
+
+                    initial_step_worker( param, mvpl, nan_error,
+#ifndef CPU_VER
+                        jc,
+#endif
+                        jd, transfunc_creator, timer_count );
                }
                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_particle )
                {
-                   generate_particle_worker(param, clntMes, mvpl, nan_error, 
+                    generate_particle_worker( param, clntMes, mvpl, nan_error,
 #ifndef CPU_VER
-                           jc, 
+                        jc,
 #endif
-                           jd, transfunc_creator, timer_count, clntMes.m_initialize_parameter  );
+                        jd, transfunc_creator, timer_count );
 
                }
                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_glyph )
@@ -345,7 +390,6 @@ void  CS_Connect( int argc, char** argv )
                     bool pfi_flag = true; // .pfl, .pfiファイルを選択しているか
                     
                     param.m_input_data_base = clntMes.m_input_directory;
-                    param.m_is_tf_file_imported = clntMes.m_import_flag;
 
                     std::ifstream fin( param.m_input_data_base, std::ios::in);
                     /*
@@ -440,7 +484,7 @@ void  CS_Connect( int argc, char** argv )
                     {
                         if ( rank == 0 )
                         {
-                            std::cerr << "Error: pfifile doesn't exist" << std::endl;
+                            std::cerr << "Error: pfifile doesn't exist(rank:" << rank << ")" << std::endl;
                         }
                         bsz = -1;
 #ifndef CPU_VER
@@ -460,7 +504,7 @@ void  CS_Connect( int argc, char** argv )
                         break;
                     }
 
-                    param.m_sampling_method = clntMes.m_sampling_method;
+                    param.m_sampling_method = 'h';
                     param.m_particle_limit = clntMes.m_particle_limit;
                     param.m_particle_density = clntMes.m_particle_density;
                     param.m_camera = clntMes.m_camera;
@@ -478,7 +522,7 @@ void  CS_Connect( int argc, char** argv )
                     {
                         std::cout << "user define parameter " << std::endl;
                         transfunc_creator.setProtocol( clntMes );
-                        // transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
+                        // transfunc_creator.setAsisTransferFunction( param.m_transfer_function ); 削除予定
                     }                    
 
                     param.m_transfunc_synthesizer = transfunc_creator.create();

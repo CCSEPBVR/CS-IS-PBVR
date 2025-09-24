@@ -86,17 +86,35 @@ void generate_particle_master(
     int& timer_count
 );  
 
-void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
-//                         bool &nan_error, std::vector<PointObjectCreator>& point_creator_lst, 
-                         bool &nan_error,  
+void generate_particle_worker(
+    Argument &param,
+    jpv::ParticleTransferClientMessage& clntMes,
+    MultiVolumePropertyList& mvpl,
+    // bool &nan_error,
+    // std::vector<PointObjectCreator>& point_creator_lst,
+    bool &nan_error,
 #ifndef CPU_VER
-                         JobCollector& jc,
+    JobCollector& jc,
 #endif
-                         JobDispatcher& jd, TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param);
+    JobDispatcher& jd,
+    TransferFunctionSynthesizerCreator transfunc_creator,
+    int& timer_count
+);
+
+void generate_particle_IS(
+    Argument &param,
+    jpv::ParticleTransferClientMessage& clntMes,
+    jpv::ParticleTransferServerMessage& servMes,
+    MultiVolumePropertyList& mvpl,
+    JobDispatcher& jd,
+    jpv::ParticleTransferServer pts,
+    ParticleMonitor& pm,
+    vismodule::Timer& timer,
+    std::string particlePath,
+    std::string tfFilePath,
+    std::string tfFilePath_old,
+    int& timer_count,
+    const jpv::InitializeParameter init_param
+);
+  
 #endif
-
-void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
-                         JobDispatcher& jd,  jpv::ParticleTransferServer pts, ParticleMonitor& pm, vismodule::Timer& timer,
-                         std::string particlePath, std::string tfFilePath, std::string tfFilePath_old,
-                         int& timer_count , const jpv::InitializeParameter init_param );
-

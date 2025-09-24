@@ -308,7 +308,7 @@ void generate_particle_master(
         nan_error = false;
     }
 
-#if 1
+#if 0
     std::cout << "\n================== client parameter start ==================" << std::endl;
     std::cout << "servMes.m_number_particle:" << servMes.m_number_particle << std::endl;
     std::cout << "servMes.m_number_glyph:" << servMes.m_number_glyph << std::endl;
@@ -366,13 +366,16 @@ void generate_particle_master(
 }
 
 #if 1
-void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
-                         bool &nan_error,
+void generate_particle_worker(
+    Argument &param,
+    jpv::ParticleTransferClientMessage& clntMes,
+    MultiVolumePropertyList& mvpl,
+    bool &nan_error,
 #ifndef CPU_VER
                          JobCollector& jc, 
 #endif
                          JobDispatcher& jd,  
-                         TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param)
+                         TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count)
 {
 #ifndef CPU_VER
     int rank;
@@ -396,7 +399,6 @@ void generate_particle_worker(Argument &param, jpv::ParticleTransferClientMessag
                 }
                 else
                 {
-                    timer_count++;
                     param.m_sampling_method = clntMes.m_sampling_method;
                     param.m_input_data_base = clntMes.m_input_directory;
                     param.m_particle_limit = clntMes.m_particle_limit;
