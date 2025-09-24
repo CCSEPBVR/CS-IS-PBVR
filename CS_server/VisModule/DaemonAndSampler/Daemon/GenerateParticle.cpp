@@ -536,385 +536,276 @@ void generate_particle_worker(
     delete param.m_transfunc_synthesizer;
 }
 
-void generate_particle_IS(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
-                         JobDispatcher& jd,  jpv::ParticleTransferServer pts, ParticleMonitor& pm, vismodule::Timer& timer,
-                         std::string particlePath, std::string tfFilePath, std::string tfFilePath_old,
-                         int& timer_count , const jpv::InitializeParameter init_param )
+void generate_particle_IS(
+    Argument &param,
+    ParticleMonitor& pm,
+    MultiVolumePropertyList& mvpl, 
+    JobDispatcher& jd,
+    jpv::ParticleTransferServer pts,
+    std::string particlePath,
+    std::string tfFilePath,
+    std::string tfFilePath_old,
+    vismodule::Timer& timer,
+    int timer_count
+)
 {
-
-    int bsz = 0;
+    jpv::ParticleTransferServerMessage servMes;
     int st, vl, wid = 0;
+    VariableRange vr;
  
+    strncpy( servMes.m_header, "JPTP /1.0 100 OK\r\n", 18 );
+    servMes.m_camera = param.m_camera;
+    servMes.m_server_status = 0;
+    servMes.m_time_step = param.m_time_step;
+    servMes.m_number_particle = 0;
+    servMes.m_number_glyph = 0;
+    servMes.m_flag_send_bins = 1;
+    servMes.m_number_volume_divide = 1;
+    servMes.m_transfer_function_count = 0;
+    servMes.m_start_step = pm.particleStatusFile().getStartTimeStep();
+    servMes.m_last_step = pm.particleStatusFile().getLatestTimeStep();
+    servMes.m_number_ingredients = pm.particleHistoryFile().nVariables();
+    servMes.m_server_side_variable_range = pm.particleHistoryFile().variableRange();
+    servMes.m_subpixel_level = pm.getSubpixelLevel();
+    servMes.m_particle_limit = pm.particleHistoryFile().ParticleLimit();
+    servMes.m_particle_density = pm.particleHistoryFile().ParticleDensity();
 
-                    timer_count++;
-                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                    {
-                        VIS_MODULE_TIMER_STA( 461 );
-                    }
+    // param.m_sampling_step = CalculateSamplingStep( mvpl );
 
-                    std::cout << "initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
-                    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
-                    {
+    jd.initialize(
+        param.m_time_step,
+        param.m_time_step,
+        mvpl.m_total_number_subvolumes,
+        mvpl.m_total_min_subvolume_coord,
+        mvpl.m_total_max_subvolume_coord,
+        param.m_latency_threshold,
+        param.m_job_id_pack_size
+    );
 
-                        std::cout << "sampling method = " << clntMes.m_sampling_method << std::endl;
-                        std::cout << "subpixel level = " << clntMes.m_subpixel_level << std::endl;
-                        std::cout << "repeat level = " << clntMes.m_repeat_level << std::endl;
-                    }
-                    std::cout << "timeParam = " << clntMes.m_time_parameter << std::endl;
+    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+    {
+        VIS_MODULE_TIMER_STA( 470 );
+    }
 
-                    if ( clntMes.m_time_parameter == 0 )
-                    {
-                        std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
-                    }
-                    else if ( clntMes.m_time_parameter == 1 )
-                    {
-                        std::cout << "beginTime = " << clntMes.m_begin_time << std::endl;
-                        std::cout << "endTime = " << clntMes.m_last_time << std::endl;
-                        std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
-                    }
-                    else if ( clntMes.m_time_parameter == 2 )
-                    {
-                        std::cout << "step = " << clntMes.m_step << std::endl;
-                    }
-                    std::cout << "transParam = " << clntMes.m_trans_parameter << std::endl;
-                    if ( clntMes.m_trans_parameter == 1 )
-                    {
-                        std::cout << "levelIndex = " << clntMes.m_level_index << std::endl;
-                    }
-                    if ( clntMes.m_time_parameter == 0 )
-                    {
-                        strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
-                        servMes.m_time_step = clntMes.m_step;
-                        servMes.m_repeat_level = clntMes.m_repeat_level;
-                        servMes.m_level_index = clntMes.m_level_index;
-                        servMes.m_number_particle = 0;
-                        servMes.m_number_glyph = 0;
-                        servMes.m_flag_send_bins = 1;
+    if( pm.stepExisted() )
+    {
+        if( servMes.m_start_step <= param.m_time_step && param.m_time_step <= servMes.m_last_step )
+        {
+            servMes.m_time_step = param.m_time_step;
+        }
+        else
+        {
+            servMes.m_time_step = pm.particleStatusFile().getLatestTimeStep();
+            param.m_time_step = servMes.m_time_step;
+        }
+    }
+    else
+    {
+        std::cout << " no step !!!!!!!!!!!" << std::endl;
+        param.m_time_step = -1;
+    }
 
-                        servMes.m_message_size = servMes.byteSize();
-                        pts.sendMessage( servMes );
-                    }
-                    else if ( clntMes.m_time_parameter == 1 )
-                    {
+    servMes.m_message_size = servMes.byteSize();
+    pts.sendMessage( servMes );
 
-                        strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
-                        servMes.m_time_step = clntMes.m_step;
-                        servMes.m_repeat_level = clntMes.m_repeat_level;
-                        servMes.m_level_index = clntMes.m_level_index;
-                        servMes.m_number_particle = 0;
-                        servMes.m_number_glyph = 0;
-                        servMes.m_flag_send_bins = 1;
+    timer.start();
 
-                        servMes.m_message_size = servMes.byteSize();
+    const int tf_number = pm.particleHistoryFile().colorHistogramArray().size();
+    servMes.m_transfer_function_count = tf_number; // TF_COUNT
+    servMes.m_color_nbins   = new vismodule::UInt64[tf_number];
+    servMes.m_opacity_nbins = new vismodule::UInt64[tf_number];
+    servMes.m_color_bins.resize( tf_number );
+    servMes.m_opacity_bins.resize( tf_number );
 
-                        clntMes.show();
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
 
-                        pts.sendMessage( servMes );
-                    }
-                    else if ( clntMes.m_time_parameter == 2 )
-                    {
-                        TimerInitialize();
-                        TimerStart( 10 );
-                        strncpy( servMes.m_header, "JPTP /1.0 100 OK\r\n", 18 );
-                        servMes.m_message_size = servMes.byteSize();
-                        servMes.m_level_index = clntMes.m_level_index;
-                        servMes.m_repeat_level = clntMes.m_repeat_level;
-                        servMes.m_number_glyph = 0;
-                        param.m_sampling_method = clntMes.m_sampling_method;
-                        param.m_particle_limit = clntMes.m_particle_limit;
-                        param.m_particle_density = clntMes.m_particle_density;
+    for ( int tf = 0; tf < tf_number; tf++ )
+    {
+        servMes.m_color_nbins[tf] = DEFAULT_NBINS;
+        servMes.m_opacity_nbins[tf] = DEFAULT_NBINS;
+        servMes.m_color_bins[tf] = new vismodule::UInt64[ servMes.m_color_nbins[tf] ];
+        servMes.m_opacity_bins[tf] = new vismodule::UInt64[ servMes.m_opacity_nbins[tf] ];
+        for ( int res = 0; res < servMes.m_color_nbins[tf]; res++ )
+        {
+            servMes.m_color_bins[tf][res] = 0;
+        }
+        for ( int res = 0; res < servMes.m_opacity_nbins[tf]; res++ )
+        {
+            servMes.m_opacity_bins[tf][res] = 0;
+        }
+    }
 
-                        if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
-                        
-                        mvpl.m_total_number_subvolumes=1;
+    TimerStart( 3 );
+    for ( int tf = 0; tf < tf_number; tf++ )
+    {
+        servMes.m_color_nbins[tf] = pm.particleHistoryFile().colorHistogramArray()[ tf ].size();
+        for ( int res = 0; res < servMes.m_color_nbins[tf]; res++ )
+        {
+            servMes.m_color_bins[tf][res] = pm.particleHistoryFile().colorHistogramArray()[ tf ][res];
+        }
+    }
 
-                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
-                                           mvpl.m_total_min_subvolume_coord,
-                                           mvpl.m_total_max_subvolume_coord,
-                                           param.m_latency_threshold, param.m_job_id_pack_size );
-                            servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
+    for ( int tf = 0; tf < tf_number; tf++ )
+    {
+        servMes.m_opacity_nbins[tf] = pm.particleHistoryFile().opacityHistogramArray()[ tf ].size();
+        for ( int res = 0; res < servMes.m_opacity_nbins[tf]; res++ )
+        {
+            servMes.m_opacity_bins[tf][res] = pm.particleHistoryFile().opacityHistogramArray()[ tf ][ res ];
+        }
+    }
+    TimerStop( 3 );
 
-                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                        {
-                            VIS_MODULE_TIMER_STA( 470 );
-                        }
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
 
-                        param.m_sampling_step = CalculateSamplingStep( mvpl );
+    while ( jd.dispatchNext( wid, &st, &vl ) )
+    {
+        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+        {
+            VIS_MODULE_TIMER_STA( 471 );
+        }
 
-                        VariableRange vr;
+        // jupiter start
+        // TimerInitialize();
+        TimerStart( 1 );
 
-                        pm.check();
-                        servMes.m_start_step = pm.particleStatusFile().getStartTimeStep();
-                        servMes.m_last_step = pm.particleStatusFile().getLatestTimeStep();
-                        if( pm.stepExisted() )
-                        {
-                            if( servMes.m_start_step <= clntMes.m_step && clntMes.m_step <= servMes.m_last_step )
-                            {
-                                servMes.m_time_step = clntMes.m_step;
-                            }
-                            else
-                            {
-                                servMes.m_time_step = pm.particleStatusFile().getLatestTimeStep();
-                                clntMes.m_step = servMes.m_time_step;
-                            }
-                        }
-                        else
-                        {
-                            std::cout << " no step !!!!!!!!!!!" << std::endl;
-                            clntMes.m_step = -1;
-                        }
+        vismodule::PointObject* originalObject = new vismodule::PointObject;
+        TimerStart( 2 );
+        // 20181226 start　環境変数で指定したパスを使用
+        //std::string filename( jupiter_prefix );
+        std::string filename( particlePath );
+        // 20181226 end
+        filename.append( "_pfi_coords_minmax.txt" );
+        vismodule::File f( filename.c_str()  );
 
-                        pts.sendMessage( servMes );
+        if ( f.isExisted() )
+        {
+            // ファイルがある
+            FILE* fp = NULL;
+            fp = fopen( filename.c_str(), "r" );
+            fscanf( fp, "%f %f %f %f %f %f",
+                    &servMes.m_min_object_coord[0],
+                    &servMes.m_min_object_coord[1],
+                    &servMes.m_min_object_coord[2],
+                    &servMes.m_max_object_coord[0],
+                    &servMes.m_max_object_coord[1],
+                    &servMes.m_max_object_coord[2]);
+            if ( fp != NULL ) fclose( fp );
+        }
+        else
+        {
+            servMes.m_min_object_coord[0]=0.f;
+            servMes.m_min_object_coord[1]=0.f;
+            servMes.m_min_object_coord[2]=0.f;
+            servMes.m_max_object_coord[0]=0.1;
+            servMes.m_max_object_coord[1]=0.1;
+            servMes.m_max_object_coord[2]=0.1;
+        }
 
-                        timer.start();
+        TimerStop( 2 );
 
-                        servMes.m_transfer_function_count = clntMes.m_transfer_function.size();//TF_COUNT
-                        servMes.m_color_nbins = new vismodule::UInt64[clntMes.m_transfer_function.size()];
-                        servMes.m_opacity_nbins = new vismodule::UInt64[clntMes.m_transfer_function.size()];
+        if( pm.setTimeStep_particle( param.m_time_step ) )
+        {
+            servMes.m_flag_send_bins = 0;
+        }
+        else
+        {
+            servMes.m_flag_send_bins = 1;
+        }
 
-                        servMes.m_color_bins.resize( clntMes.m_transfer_function.size() );
-                        servMes.m_opacity_bins.resize( clntMes.m_transfer_function.size() );
+        if( servMes.m_flag_send_bins == 0)
+        {
+            pm.readParticleHistoryFile();
+            pm.readParticleFile();
+            pm.getParticle( originalObject );
+        }
+        //jupiter end
 
-                        int c_bins_size = 0;
-                        int o_bins_size = 0;
-                        vismodule::UInt64* tmp_c_bins;
-                        vismodule::UInt64* tmp_o_bins;
+        servMes.m_number_particle = originalObject->coords().size() / 3;
+        if ( servMes.m_number_particle > 0 )
+        {
+            servMes.m_positions = std::make_unique<float[]>(3 * servMes.m_number_particle);
+            servMes.m_normals = std::make_unique<float[]>(3 * servMes.m_number_particle);
+            servMes.m_colors = std::make_unique<unsigned char[]>(3 * servMes.m_number_particle);
+        }
+        else
+        {
+            servMes.m_positions = NULL;
+            servMes.m_normals   = NULL;
+            servMes.m_colors    = NULL;
+        }
+        for ( int i = 0; i < servMes.m_number_particle; ++i )
+        {
+            servMes.m_positions[3 * i + 0] = originalObject->coords()[3 * i + 0];
+            servMes.m_positions[3 * i + 1] = originalObject->coords()[3 * i + 1];
+            servMes.m_positions[3 * i + 2] = originalObject->coords()[3 * i + 2];
+            servMes.m_normals[3 * i + 0] = originalObject->normals()[3 * i + 0];
+            servMes.m_normals[3 * i + 1] = originalObject->normals()[3 * i + 1];
+            servMes.m_normals[3 * i + 2] = originalObject->normals()[3 * i + 2];
+            servMes.m_colors[3 * i + 0] = originalObject->colors()[3 * i + 0];
+            servMes.m_colors[3 * i + 1] = originalObject->colors()[3 * i + 1];
+            servMes.m_colors[3 * i + 2] = originalObject->colors()[3 * i + 2];
+        }
+        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+        {
+            VIS_MODULE_TIMER_END( 471 );
+        }
+        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+        {
+            VIS_MODULE_TIMER_STA( 472 );
+        }
 
+        TimerStart( 4 );
+        std::cout<<"main.cpp:L779"<<std::endl;
+        servMes.m_message_size = servMes.byteSize();
+        servMes.show();
+        pts.sendMessage( servMes );
+        TimerStop( 4 );
 
-                        c_bins_size = 0;
-                        o_bins_size = 0;
+        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+        {
+            VIS_MODULE_TIMER_END( 472 );
+        }
+        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+        {
+            VIS_MODULE_TIMER_STA( 473 );
+        }
+        delete originalObject;
+        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+        {
+            VIS_MODULE_TIMER_END( 473 );
+        }
 
-                        for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
-                        {
-                            servMes.m_color_nbins[tf] = DEFAULT_NBINS;
-                            servMes.m_opacity_nbins[tf] = DEFAULT_NBINS;
-                            servMes.m_color_bins[tf] =  new vismodule::UInt64[ servMes.m_color_nbins[tf] ];
-                            servMes.m_opacity_bins[tf] =  new vismodule::UInt64[ servMes.m_opacity_nbins[tf] ];
-                            c_bins_size += servMes.m_color_nbins[tf];
-                            o_bins_size += servMes.m_opacity_nbins[tf];
-                            for ( int res = 0; res < servMes.m_color_nbins[tf]; res++ )
-                            {
-                                servMes.m_color_bins[tf][res] = 0;
-                            }
-                            for ( int res = 0; res < servMes.m_opacity_nbins[tf]; res++ )
-                            {
-                                servMes.m_opacity_bins[tf][res] = 0;
-                            }
-                        }
+        // jupiter
+        TimerStop( 1 );
+        // TimerFinish( servMes.m_time_step );
+        // jupiter
+    } // end of while(DispatchNext)
 
-                        tmp_c_bins = new vismodule::UInt64[c_bins_size];
-                        tmp_o_bins = new vismodule::UInt64[o_bins_size];
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
 
-                        for ( int tf = 0; tf < c_bins_size; tf++ )
-                        {
-                            tmp_c_bins[tf] = 0;
-                        }
+    servMes.m_flag_send_bins = 1;
+    servMes.m_number_particle = 0;
+    servMes.m_number_glyph = 0;
+    servMes.m_message_size = servMes.byteSize();
+    TimerStart( 11 );
+    pts.sendMessage( servMes );
+    TimerStop( 11 );
 
-                        for ( int tf = 0; tf < o_bins_size; tf++ )
-                        {
-                            tmp_o_bins[tf] = 0;
-                        }
+    for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
+    {
+        delete[] servMes.m_color_bins[tf];
+        delete[] servMes.m_opacity_bins[tf];
+    }
+    delete[] servMes.m_color_nbins;
+    delete[] servMes.m_opacity_nbins;
+    servMes.m_transfer_function_count = 0;
+    servMes.m_flag_send_bins = 1;
 
+    timer.stop();
+    std::cout << "Particle File: " << timer.sec() << " [sec/step]" << std::endl;
 
-                        while ( jd.dispatchNext( wid, &st, &vl ) )
-                        {
-                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                            {
-                                VIS_MODULE_TIMER_STA( 471 );
-                            }
-
-//jupiter start
-//                          TimerInitialize();
-                            TimerStart( 1 );
-                            ParameterFileWriter ppw;
-                            ParameterFileReader ppr;
-
-                            //clntMes.show();
-                            // 20181226 start　環境変数で指定したパスおよび名前でファイル参照を行う
-                            ppw.inputMessage( clntMes );
-                            //ppr.readParameterFile("jupiter_old.tf");
-                            ppr.readParameterFile( tfFilePath_old.c_str() );
-                            NameListFile nm1 = ppr.getNameListFile();
-                            NameListFile nm2 = ppw.getNameListFile();
-                            if( nm1 != nm2 )
-                            {
-                                ppw.writeParameterFile( tfFilePath.c_str() );
-                            }
-                            // 20181226 end
-
-                            vismodule::PointObject* originalObject = new vismodule::PointObject;
-                            TimerStart( 2 );
-                            // 20181226 start　環境変数で指定したパスを使用
-                            //std::string filename( jupiter_prefix );
-                            std::string filename( particlePath );
-                            // 20181226 end
-                            filename.append( "_pfi_coords_minmax.txt" );
-                            vismodule::File f( filename.c_str()  );
-
-                            if ( f.isExisted() )
-                            {
-                                // ファイルがある
-                                FILE* fp = NULL;
-                                fp = fopen( filename.c_str(), "r" );
-                                fscanf( fp, "%f %f %f %f %f %f",
-                                        &servMes.m_min_object_coord[0],
-                                        &servMes.m_min_object_coord[1],
-                                        &servMes.m_min_object_coord[2],
-                                        &servMes.m_max_object_coord[0],
-                                        &servMes.m_max_object_coord[1],
-                                        &servMes.m_max_object_coord[2]);
-                                if ( fp != NULL ) fclose( fp );
-                            }
-                            else
-                            {
-                                servMes.m_min_object_coord[0]=0.f;
-                                servMes.m_min_object_coord[1]=0.f;
-                                servMes.m_min_object_coord[2]=0.f;
-                                servMes.m_max_object_coord[0]=0.1;
-                                servMes.m_max_object_coord[1]=0.1;
-                                servMes.m_max_object_coord[2]=0.1;
-                            }
-
-                            TimerStop( 2 );
-                            if( pm.setTimeStep_particle( clntMes.m_step ) ) servMes.m_flag_send_bins = 0;
-                            else                                 servMes.m_flag_send_bins = 1;
-                            if( servMes.m_flag_send_bins == 0)
-                            {
-                                pm.readParticleHistoryFile();
-                                pm.readParticleFile();
-                                pm.getParticle( originalObject );
-                            }
-                            servMes.m_time_step = clntMes.m_step;
-                            servMes.m_subpixel_level = pm.getSubpixelLevel();
-                            vr = pm.particleHistoryFile().variableRange();
-                           
-                            //　粒子生成時に変数の数も取得するよう変更, paerticle_limit,particle_densityを取得するよう変更 2025/05/30
-                            servMes.m_number_ingredients = pm.particleHistoryFile().nVariables();
-                            servMes.m_particle_limit = pm.particleHistoryFile().ParticleLimit();
-                            servMes.m_particle_density = pm.particleHistoryFile().ParticleDensity();
-
-                            TimerStart( 3 );
-                            for ( int tf = 0; tf < pm.particleHistoryFile().colorHistogramArray().size() && tf < servMes.m_transfer_function_count; tf++ )
-                            {
-                                servMes.m_color_nbins[tf] = pm.particleHistoryFile().colorHistogramArray()[ tf ].size();
-                                for ( int res = 0; res < servMes.m_color_nbins[tf]; res++ )
-                                {
-                                    servMes.m_color_bins[tf][res] = pm.particleHistoryFile().colorHistogramArray()[ tf ][res];
-                                }
-                            }
-
-                            for ( int tf = 0; tf < pm.particleHistoryFile().opacityHistogramArray().size() && tf < servMes.m_transfer_function_count; tf++ )
-                            {
-                                servMes.m_opacity_nbins[tf] = pm.particleHistoryFile().opacityHistogramArray()[ tf ].size();
-                                for ( int res = 0; res < servMes.m_opacity_nbins[tf]; res++ )
-                                {
-                                    servMes.m_opacity_bins[tf][res] = pm.particleHistoryFile().opacityHistogramArray()[ tf ][ res ];
-                                }
-                            }
-                            TimerStop( 3 );
-//jupiter end
-                            servMes.m_number_particle = originalObject->coords().size() / 3;
-                            if ( servMes.m_number_particle > 0 )
-                            {
-                                servMes.m_positions = std::make_unique<float[]>(3 * servMes.m_number_particle);
-                                servMes.m_normals = std::make_unique<float[]>(3 * servMes.m_number_particle);
-                                servMes.m_colors = std::make_unique<unsigned char[]>(3 * servMes.m_number_particle);
-                            }
-                            else
-                            {
-                                servMes.m_positions = NULL;
-                                servMes.m_normals   = NULL;
-                                servMes.m_colors    = NULL;
-                            }
-                            for ( int i = 0; i < servMes.m_number_particle; ++i )
-                            {
-                                servMes.m_positions[3 * i + 0] = originalObject->coords()[3 * i + 0];
-                                servMes.m_positions[3 * i + 1] = originalObject->coords()[3 * i + 1];
-                                servMes.m_positions[3 * i + 2] = originalObject->coords()[3 * i + 2];
-                                servMes.m_normals[3 * i + 0] = originalObject->normals()[3 * i + 0];
-                                servMes.m_normals[3 * i + 1] = originalObject->normals()[3 * i + 1];
-                                servMes.m_normals[3 * i + 2] = originalObject->normals()[3 * i + 2];
-                                servMes.m_colors[3 * i + 0] = originalObject->colors()[3 * i + 0];
-                                servMes.m_colors[3 * i + 1] = originalObject->colors()[3 * i + 1];
-                                servMes.m_colors[3 * i + 2] = originalObject->colors()[3 * i + 2];
-                            }
-                            servMes.m_server_side_variable_range = vr;
-                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                            {
-                                VIS_MODULE_TIMER_END( 471 );
-                            }
-                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                            {
-                                VIS_MODULE_TIMER_STA( 472 );
-                            }
-                            servMes.m_message_size = servMes.byteSize();
-                            TimerStart( 4 );
-
-                            std::cout<<"main.cpp:L779"<<std::endl;
-
-                            servMes.show();
-
-                            pts.sendMessage( servMes );
-                            TimerStop( 4 );
-                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                            {
-                                VIS_MODULE_TIMER_END( 472 );
-                            }
-                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                            {
-                                VIS_MODULE_TIMER_STA( 473 );
-                            }
-                            delete originalObject;
-                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                            {
-                                VIS_MODULE_TIMER_END( 473 );
-                            }
-//jupiter
-                            TimerStop( 1 );
-//                          TimerFinish( servMes.m_time_step );
-//jupiter
-                        } // end of while(DispatchNext)
-                        servMes.m_flag_send_bins = 1;
-                        servMes.m_message_size = servMes.byteSize();
-                        servMes.m_number_particle = 0;
-                        servMes.m_number_glyph = 0;
-                        TimerStart( 11 );
-                        pts.sendMessage( servMes );
-                        TimerStop( 11 );
-
-                        for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
-                        {
-                            delete[] servMes.m_color_bins[tf];
-                            delete[] servMes.m_opacity_bins[tf];
-                        }
-                        delete[] servMes.m_color_nbins;
-                        delete[] servMes.m_opacity_nbins;
-                        servMes.m_transfer_function_count = 0;
-                        servMes.m_flag_send_bins = 1;
-                        delete[] tmp_c_bins;
-                        delete[] tmp_o_bins;
-
-                        timer.stop();
-                        std::cout << "Particle File: " << timer.sec() << " [sec/step]" << std::endl;
-
-                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                        {
-                            VIS_MODULE_TIMER_END( 470 );
-                        }
-                        TimerStop( 10 );
-                        TimerFinish( servMes.m_time_step );
-                    } // end of timeParam == 2
-                    else
-                    {
-                        return;
-                    }
-                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                    {
-                        VIS_MODULE_TIMER_END( 461 );
-                    }
-                    if ( timer_count == VIS_MODULE_TIMER_COUNT_NUM )
-                    {
-                        VIS_MODULE_TIMER_END( 1 );
-                        VIS_MODULE_TIMER_FIN();
-                    }
+    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+    {
+        VIS_MODULE_TIMER_END( 470 );
+    }
 }

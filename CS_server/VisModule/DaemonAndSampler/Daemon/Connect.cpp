@@ -393,23 +393,20 @@ if ( bsz < 0 )
                     servMes.m_number_particle = 0;
                     servMes.m_number_glyph = 0 ;
                     servMes.m_flag_send_bins = 1;
+                    servMes.m_transfer_function_count = 0;
                     servMes.m_message_size = servMes.byteSize();
                     pts.sendMessage( servMes );
                     pts.disconnect();
-
                     pts.acceptServer();
                 }
                 else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::end )
                 {
 
                     strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
-                    // ADD by FEAST 2015.12.24
-                    //servMes.m_server_status = 0;
-                    // ADD END 2015.12.24
                     servMes.m_number_particle = 0;
                     servMes.m_number_glyph = 0 ;
                     servMes.m_flag_send_bins = 1;
-
+                    servMes.m_transfer_function_count = 0;
                     servMes.m_message_size = servMes.byteSize();
                     pts.sendMessage( servMes );
                     break;
@@ -735,35 +732,20 @@ void  IS_Connect( int argc, char** argv )
     vismodule::Timer timer( vismodule::Timer::Start );
 
     Argument param( argc, argv );
-//    FilterInfoLst mvpl;
     MultiVolumePropertyList mvpl;
-    //2018 kawamura comment out
-    vismodule::Camera camera;
-    int retval = 0;
-    int mpi_rank = 0;
-    
-    std::string output, outdir;
-    std::string pout = "PARTICLE_OUTDIR";
-    std::string prfx = "PARTICLE_SERVER_PREFIX";
-
 
     int rank = 0;
+	int mpi_size = 1;
 
      //=================== client-server mode ===================
 
     char* buf;
     int bsz = 0;
     JobDispatcher jd;
-    int st, vl, wid = 0;
-
-    int c_bins_size = 0;
-    int o_bins_size = 0;
-    vismodule::UInt64* tmp_c_bins;
-    vismodule::UInt64* tmp_o_bins;
 
     if ( rank > 0 )
     {
-        //デーモンツールはシングルプロセス rank == 0
+        // デーモンツールはシングルプロセス rank == 0
     } // end of if( rank > 0 )
     else                    // rank == 0
     {
@@ -858,56 +840,23 @@ void  IS_Connect( int argc, char** argv )
         //(5)受信/送信   recv()/send()
         //(6)ソケット切断 close()
         jpv::ParticleTransferServer pts;
-        //ソケット通信手順(1)~(3)
-        ptss = pts.initializeServer( param.m_port );//デフォルトparam.port:60000
-
-
-        timer.stop();
-        std::cout << "Initialize: " << timer.sec() << " [sec/step]" << std::endl;
-
-
-        if ( ptss == -1 )
-        {
-            bsz = -1;
-        }
-        else //start init process 初期化処理開始
-        {
-            //ソケット通信手順(4)
-            pts.acceptServer();
-
-            pts.good();
-
-            jpv::ParticleTransferServerMessage servMes;
-            pts.good();
-            jpv::ParticleTransferClientMessage clntMes;
-
-            pts.good();
-
-            servMes.m_camera = new vismodule::Camera();
-            clntMes.m_camera = new vismodule::Camera();
-            //ソケット通信手順(5)
-            //受信したデータをclntMesが読み取る
-            int ptss = 0;
-            ptss = pts.recvMessage( &clntMes );
-            if( ptss == -1 ) std::cout<<"main.cpp:L214. pts.recvMessage has ERROR."<<std::endl;
-            //最初の受信(client->daemon)
-            //受信内容clntMesにはデフォルト伝達関数が含まれるが
-            //jupiter_old.tfを反映するため無視する
-            int timerTmp = 0; 
-            initial_step_IS(param, clntMes, servMes, mvpl, 
-                    particlePath, glyphFilePath, plotOverLineFilePath, statePath, historyPath, tfFilePath_old,
-                    jd, pts,  timerTmp);
-
-        }// end of init process 初期化終了
+        ptss = pts.initializeServer( param.m_port );
 
         jpv::ParticleTransferServerMessage servMes;
         jpv::ParticleTransferClientMessage clntMes;
         clntMes.m_camera = new vismodule::Camera();
         servMes.m_camera = new vismodule::Camera();
-        servMes.m_server_status =0;
+
+        timer.stop();
+        std::cout << "Initialize: " << timer.sec() << " [sec/step]" << std::endl;
+
+        servMes.m_server_status = 0;
+        pts.acceptServer(); // クライアント接続待ち
+
         // 20181226 start
         // stateおよびhistory用に、環境変数から指定されたパスをもとにファイルパスを作成
         ParticleMonitor pm( particlePath, glyphFilePath, plotOverLineFilePath, statePath.c_str(), historyPath.c_str() );
+        pm.check();
         // 20181226 end
 
         //ソケットが存在すればgood
@@ -919,9 +868,7 @@ void  IS_Connect( int argc, char** argv )
             //２回めの受信(client->daemon)
             //受信したデータをclntMesが読み取る
             ptss = pts.recvMessage( &clntMes );
-            std::cout<<"main.cpp:L388"<<std::endl;
             clntMes.show();
-            std::cout<<"ptss="<<ptss<<std::endl;
 
             if ( ptss == -1 ) break;
             /* 140319 for client stop by Ctrl+c */
@@ -953,52 +900,129 @@ void  IS_Connect( int argc, char** argv )
                 servMes.m_number_glyph = 0;
                 servMes.m_flag_send_bins = 1;
                 servMes.m_transfer_function_count = 0;
-
                 servMes.m_message_size = servMes.byteSize();
-
-                //2回目の送信(daemon->client)
-                //servMesの中身はheaderのみ。
-                //ほぼ空の情報を送信する。
-                std::cout<<"main.cpp:L422"<<std::endl;
-                clntMes.show();
-
                 pts.sendMessage( servMes );
                 pts.disconnect();
-
-                //ソケット通信手順(4)
-                pts.acceptServer();
-                //whileループの頭に戻る
+                pts.acceptServer(); // whileループの頭に戻る
             }
             else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::end )
             {
-                //終了する
                 strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
                 servMes.m_number_particle = 0;
                 servMes.m_number_glyph = 0;
                 servMes.m_flag_send_bins = 1;
                 servMes.m_transfer_function_count = 0;
-
                 servMes.m_message_size = servMes.byteSize();
-
-                std::cout<<"main.cpp:L439"<<std::endl;
-
                 pts.sendMessage( servMes );
-                break;
-                //whileループを抜けてpts.terminateを実行
+                break; // whileループを抜けて終了
             }
             else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step ) // change PFI file.
             {
-                initial_step_IS(param, clntMes, servMes, mvpl, 
-                        particlePath, glyphFilePath, plotOverLineFilePath, statePath, historyPath, tfFilePath_old,
-                        jd, pts,  timer_count);
+                param.m_camera = clntMes.m_camera;
+                pm.check();
+                initial_step_IS( param, pm, mvpl, jd, pts, particlePath, tfFilePath_old );
             } // end of change PFI
             else if( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle )
             {
+                timer_count++;
+                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+                {
+                    VIS_MODULE_TIMER_STA( 461 );
+                }
 
-                generate_particle_IS(param, clntMes, servMes, mvpl, 
-                        jd, pts, pm, timer,
-                        particlePath, tfFilePath,tfFilePath_old, 
-                        timer_count, clntMes.m_initialize_parameter );
+                std::cout << "initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+                if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
+                {
+
+                    std::cout << "sampling method = " << clntMes.m_sampling_method << std::endl;
+                    std::cout << "subpixel level = " << clntMes.m_subpixel_level << std::endl;
+                    std::cout << "repeat level = " << clntMes.m_repeat_level << std::endl;
+                }
+                std::cout << "timeParam = " << clntMes.m_time_parameter << std::endl;
+
+                if ( clntMes.m_time_parameter == 0 )
+                {
+                    std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                }
+                else if ( clntMes.m_time_parameter == 1 )
+                {
+                    std::cout << "beginTime = " << clntMes.m_begin_time << std::endl;
+                    std::cout << "endTime = " << clntMes.m_last_time << std::endl;
+                    std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                }
+                else if ( clntMes.m_time_parameter == 2 )
+                {
+                    std::cout << "step = " << clntMes.m_step << std::endl;
+                }
+                std::cout << "transParam = " << clntMes.m_trans_parameter << std::endl;
+                if ( clntMes.m_trans_parameter == 1 )
+                {
+                    std::cout << "levelIndex = " << clntMes.m_level_index << std::endl;
+                }
+                if ( clntMes.m_time_parameter == 0 )
+                {
+                    strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
+                    servMes.m_time_step = clntMes.m_step;
+                    servMes.m_repeat_level = clntMes.m_repeat_level;
+                    servMes.m_level_index = clntMes.m_level_index;
+                    servMes.m_number_particle = 0;
+                    servMes.m_number_glyph = 0;
+                    servMes.m_flag_send_bins = 1;
+                    servMes.m_message_size = servMes.byteSize();
+                    pts.sendMessage( servMes );
+                }
+                else if ( clntMes.m_time_parameter == 1 )
+                {
+
+                    strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
+                    servMes.m_time_step = clntMes.m_step;
+                    servMes.m_repeat_level = clntMes.m_repeat_level;
+                    servMes.m_level_index = clntMes.m_level_index;
+                    servMes.m_number_particle = 0;
+                    servMes.m_number_glyph = 0;
+                    servMes.m_flag_send_bins = 1;
+                    servMes.m_message_size = servMes.byteSize();
+                    pts.sendMessage( servMes );
+                }
+                else if ( clntMes.m_time_parameter == 2 )
+                {
+                    TimerInitialize();
+                    TimerStart( 10 );
+
+                    param.m_time_step = clntMes.m_step;
+                    param.m_level_index = clntMes.m_level_index;
+                    param.m_repeat_level = clntMes.m_repeat_level;
+                    param.m_sampling_method = clntMes.m_sampling_method;
+                    param.m_particle_limit = clntMes.m_particle_limit;
+                    param.m_particle_density = clntMes.m_particle_density;
+                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+
+                    // クライアントメッセージを使ってdefault.tfを更新
+                    ParameterFileWriter ppw;
+                    ParameterFileReader ppr;
+                    ppw.inputMessage( clntMes );
+                    ppr.readParameterFile( tfFilePath_old.c_str() );
+                    NameListFile nm1 = ppr.getNameListFile();
+                    NameListFile nm2 = ppw.getNameListFile();
+                    if( nm1 != nm2 )
+                    {
+                        ppw.writeParameterFile( tfFilePath.c_str() );
+                    }
+
+                    pm.check();
+                    generate_particle_IS(param, pm, mvpl, jd, pts, particlePath, tfFilePath, tfFilePath_old, timer, timer_count );
+
+                    TimerStop( 10 );
+                    TimerFinish( clntMes.m_step );
+                } // end of timeParam == 2
+                else
+                {
+                    return;
+                }
+                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+                {
+                    VIS_MODULE_TIMER_END( 461 );
+                }
             } // end of initParam =1
             else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::export_TFfile )
             {
@@ -1010,6 +1034,7 @@ void  IS_Connect( int argc, char** argv )
             }
             else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_glyph )
             {
+                pm.check();
                 generate_glyph_IS(param, clntMes, servMes, mvpl, 
                         jd, pts, pm, timer,
                         particlePath, glyphParameterPath, glyphParameterPath_old, 
@@ -1025,17 +1050,27 @@ void  IS_Connect( int argc, char** argv )
             }
             else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::plot_over_line )
             {
+                pm.check();
                 generate_plot_over_line_IS(param, clntMes, servMes, mvpl, 
                         jd, pts, pm, timer,
                         particlePath, plotOverLineParameterPath, plotOverLineParameterPath_old, 
                          timer_count, clntMes.m_initialize_parameter );
             }  // end loop of plot over line
+
+            if ( timer_count == VIS_MODULE_TIMER_COUNT_NUM )
+            {
+                VIS_MODULE_TIMER_END( 1 );
+                VIS_MODULE_TIMER_FIN();
+            }
         } // end of while (pts.good)
 
         delete servMes.m_camera;
         delete clntMes.m_camera;
 
         pts.termServer();
+
     }
-return ;
+
+
+    return;
 }

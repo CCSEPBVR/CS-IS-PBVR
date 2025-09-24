@@ -98,9 +98,13 @@ void initial_step_worker(
 );
 
 
-void initial_step_IS(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
-                         std::string particlePath, std::string glyphFilePath, std::string plotOverLineFilePath, std::string statePath, std::string  historyPath, std::string tfFilePath_old,
-                         JobDispatcher& jd,  jpv::ParticleTransferServer pts, int& timer_count );
-
-
+void initial_step_IS(
+    Argument &param,
+    ParticleMonitor& pm,
+    MultiVolumePropertyList& mvpl,
+    JobDispatcher& jd,
+    jpv::ParticleTransferServer pts,
+    std::string particlePath,
+    std::string tfFilePath_old
+);
 #endif

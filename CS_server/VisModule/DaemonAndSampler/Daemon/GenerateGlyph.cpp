@@ -607,6 +607,8 @@ void generate_glyph_IS(Argument &param, jpv::ParticleTransferClientMessage& clnt
                         servMes.m_message_size = servMes.byteSize();
                         servMes.m_level_index = clntMes.m_level_index;
                         servMes.m_repeat_level = clntMes.m_repeat_level;
+                        servMes.m_number_particle = 0;
+                        servMes.m_number_glyph = 0;
                         param.m_sampling_method = clntMes.m_sampling_method;
                         param.m_particle_limit = clntMes.m_particle_limit;
                         param.m_particle_density = clntMes.m_particle_density;
@@ -655,12 +657,14 @@ void generate_glyph_IS(Argument &param, jpv::ParticleTransferClientMessage& clnt
                         std::cout<<"main.cpp:L1319"<<std::endl;
                         //clntMes.show();
 
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
                         pts.sendMessage( servMes );
 
                         timer.start();
                
                         while ( jd.dispatchNext( wid, &st, &vl ) )
                         {
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
                             if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
                             {
                                 VIS_MODULE_TIMER_STA( 471 );
@@ -679,6 +683,8 @@ void generate_glyph_IS(Argument &param, jpv::ParticleTransferClientMessage& clnt
                             NameListFile nm1 = ppr.getNameListFile();
                             NameListFile nm2 = ppw.getNameListFile();
 
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
+
                             if( nm1 != nm2 )
                             {
                                 ppw.writeParameterFile( glyphParameterPath.c_str() );
@@ -693,6 +699,8 @@ void generate_glyph_IS(Argument &param, jpv::ParticleTransferClientMessage& clnt
                             // 20181226 end
                             filename.append( "_pfi_coords_minmax.txt" );
                             vismodule::File f( filename.c_str()  );
+
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
 
                             if ( f.isExisted() )
                             {
@@ -718,8 +726,8 @@ void generate_glyph_IS(Argument &param, jpv::ParticleTransferClientMessage& clnt
                                 servMes.m_max_object_coord[2]=0.1;
                             }
 
-
-
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
+                            std::cout << "clntMes.m_step:" << clntMes.m_step << std::endl;
                             TimerStop( 2 );
                             if( pm.setTimeStep_glyph( clntMes.m_step ) || pm.stepExisted() ) servMes.m_flag_send_bins = 2;
                             else                                 servMes.m_flag_send_bins = 1;
@@ -731,7 +739,7 @@ void generate_glyph_IS(Argument &param, jpv::ParticleTransferClientMessage& clnt
                             servMes.m_time_step = clntMes.m_step;
                             //servMes.m_subpixel_level = pm.getSubpixelLevel();
 //                            servMes.m_subpixel_level = 1;
-                            
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;                            
                             servMes.m_number_glyph = originalGlyph->coords().size() / 3;
                             if ( servMes.m_number_glyph > 0 )
                             {
@@ -771,6 +779,7 @@ void generate_glyph_IS(Argument &param, jpv::ParticleTransferClientMessage& clnt
                             servMes.m_message_size = servMes.byteSize();
                             TimerStart( 4 );
 
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;                            
                             std::cout<<"main.cpp:L1497"<<std::endl;
 
                             servMes.show();
