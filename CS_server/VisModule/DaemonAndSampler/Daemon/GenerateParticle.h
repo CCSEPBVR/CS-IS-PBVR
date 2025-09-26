@@ -100,6 +100,8 @@ void generate_particle_worker(
 );
 
 void generate_particle_IS(
+    jpv::ParticleTransferServerMessage& servMes,
+    jpv::ParticleTransferClientMessage& clntMes,
     Argument &param,
     ParticleMonitor& pm,
     MultiVolumePropertyList& mvpl,

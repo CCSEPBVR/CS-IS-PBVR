@@ -99,6 +99,8 @@ void initial_step_worker(
 
 
 void initial_step_IS(
+    jpv::ParticleTransferServerMessage& servMes,
+    jpv::ParticleTransferClientMessage& clntMes,
     Argument &param,
     ParticleMonitor& pm,
     MultiVolumePropertyList& mvpl,

@@ -272,33 +272,7 @@ void initial_step_master(
         nan_error = false;
     }
 
-#if 0
-    std::cout << "\n================== client parameter start ==================" << std::endl;
-    std::cout << "servMes.m_number_particle:" << servMes.m_number_particle << std::endl;
-    std::cout << "servMes.m_number_glyph:" << servMes.m_number_glyph << std::endl;
-    std::cout << "servMes.m_number_volume_divide:" << servMes.m_number_volume_divide << std::endl;
-    std::cout << "servMes.m_time_step:" << servMes.m_time_step << std::endl;
-    std::cout << "servMes.m_start_step:" << servMes.m_start_step << std::endl;
-    std::cout << "servMes.m_last_step:" << servMes.m_last_step << std::endl;
-    std::cout << "servMes.m_number_step:" << servMes.m_number_step << std::endl;
-    std::cout << "servMes.m_min_object_coord[0]:" << servMes.m_min_object_coord[0] << std::endl;
-    std::cout << "servMes.m_min_object_coord[1]:" << servMes.m_min_object_coord[1] << std::endl;
-    std::cout << "servMes.m_min_object_coord[2]:" << servMes.m_min_object_coord[2] << std::endl;
-    std::cout << "servMes.m_max_object_coord[0]:" << servMes.m_max_object_coord[0] << std::endl;
-    std::cout << "servMes.m_max_object_coord[1]:" << servMes.m_max_object_coord[1] << std::endl;
-    std::cout << "servMes.m_max_object_coord[2]:" << servMes.m_max_object_coord[2] << std::endl;
-    std::cout << "servMes.m_min_value:" << servMes.m_min_value << std::endl;
-    std::cout << "servMes.m_max_value:" << servMes.m_max_value << std::endl;
-    std::cout << "servMes.m_number_nodes:" << servMes.m_number_nodes << std::endl;
-    std::cout << "servMes.m_number_elements:" << servMes.m_number_elements << std::endl;
-    std::cout << "servMes.m_element_type:" << servMes.m_element_type << std::endl;
-    std::cout << "servMes.m_file_type:" << servMes.m_file_type << std::endl;
-    std::cout << "servMes.m_number_ingredients:" << servMes.m_number_ingredients << std::endl;
-    std::cout << "servMes.m_opacity_transfer_function_synthesis:" << servMes.m_opacity_transfer_function_synthesis << std::endl;
-    std::cout << "servMes.m_color_transfer_function_synthesis:" << servMes.m_color_transfer_function_synthesis << std::endl;
-    std::cout << "servMes.m_transfer_function.size():" << servMes.m_transfer_function.size() << std::endl;
-    std::cout << "================== client parameter end ==================\n" << std::endl;
-#endif
+
 
     servMes.m_flag_send_bins = 1; // histogram
     servMes.m_subpixel_level = param.m_subpixel_level;
@@ -352,7 +326,7 @@ void initial_step_worker(
     int rank = 0;
 	int mpi_size = 1;
 #endif
-    // jpv::ParticleTransferServerMessage servMes;
+    jpv::ParticleTransferServerMessage servMes;
     int st, vl, wid = 0;
     std::vector<vismodule::CS_PointObjectGenerator> point_generator_lst;
     VariableRange vr;
@@ -497,6 +471,8 @@ void initial_step_worker(
 }
 
 void initial_step_IS(
+    jpv::ParticleTransferServerMessage& servMes,
+    jpv::ParticleTransferClientMessage& clntMes,
     Argument &param,
     ParticleMonitor& pm,
     MultiVolumePropertyList& mvpl, 
@@ -506,11 +482,9 @@ void initial_step_IS(
     std::string tfFilePath_old
 )
 {
-    jpv::ParticleTransferServerMessage servMes;
-
     // read minmax & histrogram
     strncpy( servMes.m_header, "JPTP /1.0 100 OK\r\n", 18 );
-    servMes.m_camera = param.m_camera;
+    servMes.m_camera = clntMes.m_camera;
     servMes.m_server_status = 0;
     servMes.m_number_particle = 0;
     servMes.m_number_glyph = 0;
