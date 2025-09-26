@@ -1214,57 +1214,124 @@ void jpv::ParticleTransferServerMessage::initializeTransferFunction(
 //2019 kawamura
 void jpv::ParticleTransferServerMessage::show( void ) const
 {
-    std::cout<<"SHOW SERVER MESSAGE"<<std::endl;
-    std::cout<<"header="<<m_header<<std::endl;
-    std::cout<<"messageSize="<<m_message_size<<std::endl;
-    std::cout<<"timeStep="<<m_time_step<<std::endl;
-    std::cout<<"numParticle="<<m_number_particle<<std::endl;
+    std::cout << "============ SHOW SERVER MESSAGE START ============" << std::endl;
+    std::cout << "header = "                << m_header                   << std::endl;
+    std::cout << "messageSize = "           << m_message_size             << std::endl;
+    std::cout << "timeStep = "              << m_time_step                << std::endl;
+    std::cout << "subpixelLevel = "         << m_subpixel_level           << std::endl;
+    std::cout << "repeatLevel = "           << m_repeat_level             << std::endl;
+    std::cout << "levelIntex = "            << m_level_index              << std::endl;
+    std::cout << "numberVolumeDivide = "    << m_number_volume_divide     << std::endl;
+    std::cout << "startStep = "             << m_start_step               << std::endl;
+    std::cout << "lastStep = "              << m_last_step                << std::endl;
+    std::cout << "numberStep = "            << m_number_step              << std::endl;
+    std::cout << "numParticle = "           << m_number_particle          << std::endl;
+    std::cout << "minObjectCoord[0] = "     << m_min_object_coord[0]      << std::endl;
+    std::cout << "minObjectCoord[1] = "     << m_min_object_coord[1]      << std::endl;
+    std::cout << "minObjectCoord[2] = "     << m_min_object_coord[2]      << std::endl;
+    std::cout << "maxObjectCoord[0] = "     << m_max_object_coord[0]      << std::endl;
+    std::cout << "maxObjectCoord[1] = "     << m_max_object_coord[1]      << std::endl;
+    std::cout << "maxObjectCoord[2] = "     << m_max_object_coord[2]      << std::endl;
+    std::cout << "minValue = "              << m_min_value                << std::endl;
+    std::cout << "maxValue = "              << m_max_value                << std::endl;
+    std::cout << "numberNodes = "           << m_number_nodes             << std::endl;
+    std::cout << "numberElements = "        << m_number_elements          << std::endl;
+    std::cout << "elementType = "           << m_element_type             << std::endl;
+    std::cout << "fileType = "              << m_file_type                << std::endl;
+    std::cout << "numberIngredients = "     << m_number_ingredients       << std::endl;
+    std::cout << "flagSendBins = "          << m_flag_send_bins           << std::endl;
+    std::cout << "transferFunctionCount = " << m_number_nodes             << std::endl;
+    std::cout << "particleLimit = "         << m_particle_limit           << std::endl;
+    std::cout << "particleDensity = "       << m_particle_density         << std::endl;
+    std::cout << "particleDataSizeLimit = " << m_particle_data_size_limit << std::endl;
 
-    std::cout<<"transfunc.size="<<m_transfer_function.size()<<std::endl;
-    std::cout<<"transfunc.Name,ColorVar,OpacityVar,ColorVarMin,ColorVarMax"<<std::endl;
-    for(int i=0; i<m_transfer_function.size(); i++)
+    if ( m_number_particle > 0 )
     {
-        std::cout<<m_transfer_function[i].m_name<<","<<m_transfer_function[i].m_color_variable<<","<<m_transfer_function[i].m_opacity_variable<<","<<m_transfer_function[i].m_color_variable_min<<","<<m_transfer_function[i].m_color_variable_max<<std::endl;
+        int number_particle = m_number_particle < 5 ? m_number_particle : 5;
+        for ( int i = 0; i < (number_particle * 3); i++ )
+        {
+            std::cout << "m_positions["  << 3 * i + 0 << "] = " << m_positions[3 * i + 0]   << std::endl;
+            std::cout << "m_positions["  << 3 * i + 1 << "] = " << m_positions[3 * i + 1]   << std::endl;
+            std::cout << "m_positoins["  << 3 * i + 2 << "] = " << m_positions[3 * i + 2]   << std::endl;
+            std::cout << "m_normals["    << 3 * i + 0 << "] = " << m_normals[3 * i + 0]     << std::endl;
+            std::cout << "m_normals["    << 3 * i + 1 << "] = " << m_normals[3 * i + 1]     << std::endl;
+            std::cout << "m_normals["    << 3 * i + 2 << "] = " << m_normals[3 * i + 2]     << std::endl;
+            std::cout << "m_colors["     << 3 * i + 0 << "] = " << (int)m_colors[3 * i + 0] << std::endl;
+            std::cout << "m_colors["     << 3 * i + 1 << "] = " << (int)m_colors[3 * i + 1] << std::endl;
+            std::cout << "m_colors["     << 3 * i + 2 << "] = " << (int)m_colors[3 * i + 2] << std::endl;
+        }
     }
 
-    // std::cout << "c_bin = {" << std::endl;
-    // for (int n = 0; n < m_transfer_function_count; n++)
-    // {
-    //     for(int i=0; i<256; i++) std::cout << m_color_bins[n][i] << " " ;
-    //     std::cout << std::endl;
-    // }
-    std::cout<<"voleqn.size="<<m_volume_equation.size()<<std::endl;
-    std::cout<<"voleqn.Name,Equation"<<std::endl;
-    for(int i=0; i<m_volume_equation.size(); i++)
+    std::cout << "transfunc.size = "     << m_transfer_function.size() << std::endl;
+    std::cout << "transfunc.Name, ColorVar, OpacityVar, ColorVarMin, ColorVarMax" << std::endl;
+    for( int i = 0; i < m_transfer_function.size(); i++ )
     {
-        std::cout<<m_volume_equation[i].m_name<<","<<m_volume_equation[i].m_equation<<std::endl;
+        std::cout << m_transfer_function[i].m_name               << ", "
+                  << m_transfer_function[i].m_color_variable     << ", "
+                  << m_transfer_function[i].m_opacity_variable   << ", "
+                  << m_transfer_function[i].m_color_variable_min << ", "
+                  << m_transfer_function[i].m_color_variable_max << std::endl;
     }
 
-    //std::cout<<"transferFunctionSynthesis="<<transferFunctionSynthesis<<std::endl;
-    std::cout << "color_tf_synthesis=" << m_color_transfer_function_synthesis << std::endl;
-    std::cout << "opacity_tf_synthesis=" << m_opacity_transfer_function_synthesis << std::endl;
+    std::cout << "colorBins = {" << std::endl;
+    for (int n = 0; n < m_transfer_function_count; n++)
+    {
+        // for( int i = 0; i < 256; i++ )
+        for( int i = 0; i < 5; i++ )
+        {
+            std::cout << m_color_bins[n][i] << ", " ;
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "}" << std::endl;
 
-//    for (int i = 0; i < m_resolution; i++  ) 
-//    {
-//        std::cout << "m_axis = " << m_xAxis[i] <<std::endl; 
-//        std::cout << "m_mask = " << m_mask[i] <<std::endl; 
-//        std::cout << "m_line_values = " << m_line_values[i] <<std::endl; 
-//    }
+    std::cout << "opacityBins = {" << std::endl;
+    for (int n = 0; n < m_transfer_function_count; n++)
+    {
+        // for( int i = 0; i < 256; i++ )
+        for( int i = 0; i < 5; i++ )
+        {
+            std::cout << m_color_bins[n][i] << ", " ;
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "}" << std::endl;
 
-//    int num_glyph = m_number_glyph < 10 ? m_number_glyph : 10; 
-//    for ( int i = 0; i < num_glyph ; i++ )
-//    {
-//        std::cout << "servMes.m_glyph_coords[3 * i + 0] = " <<  m_glyph_coords[3 * i + 0] << std::endl;
-//        std::cout << "servMes.m_glyph_coords[3 * i + 1] = " <<  m_glyph_coords[3 * i + 1] << std::endl;
-//        std::cout << "servMes.m_glyph_coords[3 * i + 2] = " <<  m_glyph_coords[3 * i + 2] << std::endl;
-//        std::cout << "servMes.m_glyph_vectors[3 * i + 0] = " <<  m_glyph_vectors[3 * i + 0] << std::endl;
-//        std::cout << "servMes.m_glyph_vectors[3 * i + 1] = " <<  m_glyph_vectors[3 * i + 1] << std::endl;
-//        std::cout << "servMes.m_glyph_vectors[3 * i + 2] = " <<  m_glyph_vectors[3 * i + 2] << std::endl;
-//        std::cout << "servMes.m_glyph_colors[3 * i + 0] = " <<  (int)m_glyph_colors[3 * i + 0] << std::endl;
-//        std::cout << "servMes.m_glyph_colors[3 * i + 1] = " <<  (int)m_glyph_colors[3 * i + 1] << std::endl;
-//        std::cout << "servMes.m_glyph_colors[3 * i + 2] = " <<  (int)m_glyph_colors[3 * i + 2] << std::endl;
-//        std::cout << "servMes.m_glyph_sizes[  i ] = " <<  m_glyph_sizes[ i ] << std::endl;
-//    }
-    std::cout<<std::endl;
+    std::cout << "voleqn.size=" << m_volume_equation.size() << std::endl;
+    std::cout << "voleqn.Name,Equation" << std::endl;
+    for( int i = 0; i < m_volume_equation.size(); i++ )
+    {
+        std::cout << m_volume_equation[i].m_name     << ","
+                  << m_volume_equation[i].m_equation << std::endl;
+    }
+
+    std::cout << "color_tf_synthesis = "   << m_color_transfer_function_synthesis   << std::endl;
+    std::cout << "opacity_tf_synthesis = " << m_opacity_transfer_function_synthesis << std::endl;
+
+    int resolution = m_resolution < 1 ? m_resolution : 1;
+    // for (int i = 0; i < m_resolution; i++  )
+    for ( int i = 0; i < resolution; i++ ) 
+    {
+        std::cout << "m_axis["        << i << "] = " << m_xAxis[i]       << std::endl; 
+        std::cout << "m_mask["        << i << "] = " << m_mask[i]        << std::endl; 
+        std::cout << "m_line_values[" << i << "] = " << m_line_values[i] << std::endl;
+    }
+
+    int number_glyph = m_number_glyph < 5 ? m_number_glyph : 5;
+    // int num_glyph = m_number_glyph < 10 ? m_number_glyph : 10;
+    for ( int i = 0; i < number_glyph; i++ )
+    {
+        std::cout << "m_glyph_coords["  << 3 * i + 0 << "] = " << m_glyph_coords[3 * i + 0]      << std::endl;
+        std::cout << "m_glyph_coords["  << 3 * i + 1 << "] = " << m_glyph_coords[3 * i + 1]      << std::endl;
+        std::cout << "m_glyph_coords["  << 3 * i + 2 << "] = " << m_glyph_coords[3 * i + 2]      << std::endl;
+        std::cout << "m_glyph_vectors[" << 3 * i + 0 << "] = " << m_glyph_vectors[3 * i + 0]     << std::endl;
+        std::cout << "m_glyph_vectors[" << 3 * i + 1 << "] = " << m_glyph_vectors[3 * i + 1]     << std::endl;
+        std::cout << "m_glyph_vectors[" << 3 * i + 2 << "] = " << m_glyph_vectors[3 * i + 2]     << std::endl;
+        std::cout << "m_glyph_colors["  << 3 * i + 0 << "] = " << (int)m_glyph_colors[3 * i + 0] << std::endl;
+        std::cout << "m_glyph_colors["  << 3 * i + 1 << "] = " << (int)m_glyph_colors[3 * i + 1] << std::endl;
+        std::cout << "m_glyph_colors["  << 3 * i + 2 << "] = " << (int)m_glyph_colors[3 * i + 2] << std::endl;
+        std::cout << "m_glyph_sizes["   << i         << "] = " << m_glyph_sizes[i]               << std::endl;
+    }
+    std::cout << "============= SHOW SERVER MESSAGE END =============" << std::endl;
 }
 
