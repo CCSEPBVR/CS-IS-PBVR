@@ -1308,13 +1308,16 @@ void jpv::ParticleTransferServerMessage::show( void ) const
     std::cout << "color_tf_synthesis = "   << m_color_transfer_function_synthesis   << std::endl;
     std::cout << "opacity_tf_synthesis = " << m_opacity_transfer_function_synthesis << std::endl;
 
-    int resolution = m_resolution < 1 ? m_resolution : 1;
-    // for (int i = 0; i < m_resolution; i++  )
-    for ( int i = 0; i < resolution; i++ ) 
+    if ( m_flag_send_bins == 3 )
     {
-        std::cout << "m_axis["        << i << "] = " << m_xAxis[i]       << std::endl; 
-        std::cout << "m_mask["        << i << "] = " << m_mask[i]        << std::endl; 
-        std::cout << "m_line_values[" << i << "] = " << m_line_values[i] << std::endl;
+        int resolution = m_resolution < 1 ? m_resolution : 1;
+        // for (int i = 0; i < m_resolution; i++  )
+        for ( int i = 0; i < resolution; i++ ) 
+        {
+            std::cout << "m_axis["        << i << "] = " << m_xAxis[i]       << std::endl; 
+            std::cout << "m_mask["        << i << "] = " << m_mask[i]        << std::endl; 
+            std::cout << "m_line_values[" << i << "] = " << m_line_values[i] << std::endl;
+        }
     }
 
     int number_glyph = m_number_glyph < 5 ? m_number_glyph : 5;
