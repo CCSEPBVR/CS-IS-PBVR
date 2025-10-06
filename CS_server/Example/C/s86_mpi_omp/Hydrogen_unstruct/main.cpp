@@ -3,7 +3,9 @@
 #include <cstdlib>
 #include "Hydrogen.h"
 #include "kvs_wrapper.h"
+#ifndef CPU_VER
 #include <mpi.h>
+#endif
 
 #define RANK 1
 
@@ -16,9 +18,13 @@
 /*===========================================================================*/
 int main( int argc, char** argv )
 {
-     MPI_Init( &argc, &argv );
     int mpi_rank;
+#ifndef CPU_VER
+    MPI_Init( &argc, &argv );
     MPI_Comm_rank( MPI_COMM_WORLD, &(mpi_rank) );
+#else
+    mpi_rank = 0;
+#endif
 
     // Generate hydrogen volume.
     Hydrogen hydro;
@@ -49,7 +55,9 @@ int main( int argc, char** argv )
     }
     end_wrapper_async_io();
 
+#ifndef CPU_VER
     MPI_Finalize();
+#endif
 
     return 0;
 }

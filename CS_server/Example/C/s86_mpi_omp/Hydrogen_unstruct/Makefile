@@ -13,8 +13,15 @@ TARGET  = run
 
 #VPATH=${TRANSFER_FUNCTION_DIR}:${IMPORT_DIR}
 
-CXX = ${MPICXX}
-CXXFLAGS += ${MPICXXFLAGS}
+ifdef MPICXX
+    CXX      = ${MPICXX}
+endif
+
+ifdef MPICXXFLAGS
+    CXXFLAGS = ${MPICXXFLAGS}
+else
+	CXXFLAGS += -DCPU_VER
+endif
 
 CXXFLAGS += -I${INSITU_DIR} \
             -I${FUNC_DIR} \
@@ -22,8 +29,13 @@ CXXFLAGS += -I${INSITU_DIR} \
             -I${VISMODULE_SOURCE_DIR} \
             -I./
 
-LD = ${MPILD}
-LDFLAGS += ${MPILDFLAGS}
+ifdef MPICXX
+    LD = ${MPILD}
+endif
+
+ifdef MPILDFLAGS
+    LDFLAGS += ${MPILDFLAGS}
+endif
 
 LDFLAGS  += -L${INSITU_DIR} -lInSituPBVR \
             -L${FUNC_DIR} -lpbvrFunc \

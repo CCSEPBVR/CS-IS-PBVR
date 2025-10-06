@@ -151,7 +151,11 @@ Hydrogen::Hydrogen( void )
     global_min_coord = vismodule::Vector3f( 0, 0, 0 );
     global_max_coord = vismodule::Vector3f( 126, 126, 127 );
 
+#ifndef CPU_VER
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+#endif
 
     this->generate_volume();
 }
