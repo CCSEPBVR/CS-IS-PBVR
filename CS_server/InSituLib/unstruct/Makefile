@@ -67,6 +67,8 @@ endif
 
 ifdef MPICXXFLAGS
     CXXFLAGS = ${MPICXXFLAGS}
+else
+	CXXFLAGS += -DCPU_VER
 endif
 
 CXXFLAGS += -I../shared

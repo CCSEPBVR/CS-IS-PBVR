@@ -25,7 +25,9 @@
 #include <vismodule/TrilinearInterpolator>
 #include "float.h"
 
+#ifndef CPU_VER
 #include <mpi.h>
+#endif
 
 #ifdef _OPENMP
 #  include <omp.h>
@@ -141,8 +143,11 @@ bool LoadParameterFile( ParamInfo*  param_info,
     char* buf;
 
     int mpi_rank;
-
+#ifndef CPU_VER
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+#endif
 
     if( mpi_rank == 0 )
     {
@@ -173,11 +178,16 @@ bool LoadParameterFile( ParamInfo*  param_info,
         }
     }
 
+#ifndef CPU_VER
     MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+
     if( size > 0 )
     {
         if( mpi_rank > 0 ) buf = new char [size];
+#ifndef CPU_VER
         MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
+#endif
         param.unpack( buf );
         delete[] buf;
 
@@ -374,7 +384,11 @@ bool initializeParameters(
 
 
     int mpi_rank;
+#ifndef CPU_VER
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+#endif
 
     //if( mpi_rank == RANK )
     if( mpi_rank == 0 )
@@ -477,6 +491,7 @@ void show_timer( time_parameters time )
         time.initialize + time.sampling + time.writting + time.mpi_reduce + time.write_text;
     double total;
 
+#ifndef CPU_VER
     MPI_Reduce( &(time.initialize), &initialize, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
     MPI_Reduce( &(time.sampling),   &sampling,   1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
     MPI_Reduce( &(time.writting),   &writing,   1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
@@ -484,10 +499,22 @@ void show_timer( time_parameters time )
     MPI_Reduce( &(time.write_text), &write_text, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
     MPI_Reduce( &(time_total),      &total,      1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
     MPI_Reduce( &(time.nparticles), &nparticles, 1, MPI_INTEGER,MPI_SUM, 0, MPI_COMM_WORLD );
-
+#else
+    initialize = time.initialize;
+    sampling   = time.sampling;
+    writting   = time.writting;
+    mpi_reduce = time.mpi_reduce;
+    write_text = time.write_text;
+    total      = time_total;
+    nparticles = time.nparticles;
+#endif
 
     int mpi_rank;
+#ifndef CPU_VER
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+#endif
 
     if( mpi_rank == 0 )
     {
@@ -642,13 +669,13 @@ void SetPOLParameter(jpv::ParticleTransferClientMessage* clntMes  ,const int tim
         read_flag =  plot_over_line_property.LoadIN(POLParamPath) ;
     }
 
-
     int mpi_rank;
 #ifndef CPU_VER 
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
 #else
     mpi_rank = 0;
 #endif
+
     if(read_flag)
     {
 
@@ -745,11 +772,14 @@ void SetGlyphParameter(jpv::ParticleTransferClientMessage* clntMes  ,const int t
     std::vector<std::string> color_data_variables  = glyph_property.getTableString( "COLOR_VARIABLES" );
 
 
-    int mpi_size = 1;
-    int mpi_rank = 0;
+    int mpi_rank;
+    int mpi_size;
 #ifndef CPU_VER
-    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+#else
+    mpi_rank = 0;
+    mpi_size = 1;
 #endif
 
 
@@ -854,10 +884,15 @@ void generate_particles( int time_step,
         Type** values, 
         int nvariables )
 {
-    int mpi_rank = 0;
+    int mpi_rank;
+    int mpi_size;
+#ifndef CPU_VER
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-    int mpi_size = 1;
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+#else
+    int mpi_rank = 0;
+    int mpi_size = 1;
+#endif
     static ParamInfo param;
     pbvr_parameters particleBase;
     bool skip_flag;
@@ -1038,8 +1073,13 @@ auto safe_append = [](auto& dst, auto const& src, char const* what){
 
 
 
-    int mpi_size = 1;
+    int mpi_size;
+#ifndef CPU_VER
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+#else
+    mpi_size = 1;
+#endif
+
      //　グリフ生成処理
         GlyphSeed glyph_seed( clntMes, mpi_size, dom, values, nvariables, true);
     auto const& v = glyph_seed.glyph_directions();
@@ -1098,8 +1138,12 @@ void PlotOverLineObjectGenerator( int time_step,
 
 bool SetParameter(const domain_parameters_struct dom, pbvr_parameters* particleBase, ParamInfo *m_param ,const int time_step)
 {
-    int mpi_rank = 0;
+    int mpi_rank;
+#ifndef CPU_VER
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+#endif
     // Set Transfer function synthesizer.
     particleBase->m_tf.resize(0);
     m_tfs = new TransferFunctionSynthesizer();
@@ -1250,9 +1294,13 @@ void GenerateParticles( int time_step,
 
     int mpi_rank;
     int mpi_size;
-
+#ifndef CPU_VER
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+#else
+    mpi_rank = 0;
+    mpi_size = 1;
+#endif
 
     vismodule::PointObject* tmp_obj = NULL; 
     switch(particleBase.m_sampling_method)
@@ -1332,7 +1380,11 @@ void GenerateParticles( int time_step,
 void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBase, ParamInfo *param, bool skip_flag)
 {
     int mpi_rank;
+#ifndef CPU_VER
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+#endif
     int tf_number = particleBase.m_tf_number;
     int nbins = 256;
 
@@ -1346,13 +1398,17 @@ void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBas
     vismodule::ValueArray<float> normals(particleBase.m_sample_normals );
 
     static bool first_step = true;
-    static MPI_Comm new_comm;
     static int count;
     static int num_nodes;
+
+#ifndef CPU_VER
+    static MPI_Comm new_comm;
+#endif
 
     /* 各ノード毎に粒子データを出力する。 */
     if( first_step )
     {
+#ifndef CPU_VER
         int numprocs, myrank;
         int resultlen;
         char procname[MPI_MAX_PROCESSOR_NAME];
@@ -1403,6 +1459,10 @@ void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBas
          */
         num_nodes = numprocs / split_numprocs;
         if( numprocs % split_numprocs > 0 ) num_nodes++;
+#else
+        count = 1;
+        num_nodes = 1;
+#endif
         first_step = false;
     }   
     
@@ -1433,11 +1493,16 @@ void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBas
     int particle_size = coords.size();
     int *recvcounts;
     int *displs;
-    int  new_number_of_process;
-    int new_rank;
 
+    int new_rank;
+    int new_number_of_process;
+#ifndef CPU_VER
     MPI_Comm_rank( new_comm, &new_rank );
     MPI_Comm_size( new_comm, &new_number_of_process );
+#else
+    new_rank = 0;
+    new_number_of_process = 1;
+#endif
 
     /*
      *  recvcounts: 各ランク毎の受信バッファサイズ.
@@ -1447,17 +1512,23 @@ void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBas
     displs = new int[ new_number_of_process ];
     recvcounts = new int[ new_number_of_process ];
 
+#ifndef CPU_VER
     MPI_Allgather( &particle_size, 1, MPI_INT,
                    recvcounts,     1, MPI_INT,
                    new_comm );
+#else
+    recvcounts[0] = particle_size;
+#endif
+
     displs[0] = 0;
-    for( int i =1; i< new_number_of_process; i++ )
+    for( int i = 1; i < new_number_of_process; i++ )
         displs[i] = displs[i-1] + recvcounts[i-1];
 
     vismodule::ValueArray<float> new_coords(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
     vismodule::ValueArray<Byte>  new_colors(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
     vismodule::ValueArray<float> new_normals( displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
 
+#ifndef CPU_VER
     MPI_Gatherv( coords.pointer(),   particle_size, MPI_FLOAT,
                  new_coords.pointer(), recvcounts, displs, MPI_FLOAT,
                  0, new_comm );
@@ -1469,7 +1540,14 @@ void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBas
     MPI_Gatherv( normals.pointer(),   particle_size, MPI_FLOAT,
                  new_normals.pointer(), recvcounts, displs, MPI_FLOAT,
                  0, new_comm );
-
+#else
+    for( int i = 0; i < particle_size; i++ )
+    {
+        new_coords[i]  = coords[i];
+        new_colors[i]  = colors[i];
+        new_normals[i] = normals[i];
+    }
+#endif
 
     /*  分割後コミュニケータのランク0で出力する  */
     if( new_rank == 0 )
@@ -1522,15 +1600,13 @@ void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBas
         O_max_recv.allocate(tf_number);
         C_min_recv.allocate(tf_number);
         C_max_recv.allocate(tf_number);
-        o_histogram_recv.allocate(tf_number * nbins);
-        c_histogram_recv.allocate(tf_number * nbins);
-
         O_min_recv.fill(0x00);
         O_max_recv.fill(0x00);
         C_min_recv.fill(0x00);
         C_max_recv.fill(0x00);
 
-//        if(mpi_rank==0)std::cout<<"MPI_Reduce"<<std::endl;
+#ifndef CPU_VER
+        // if(mpi_rank==0)std::cout<<"MPI_Reduce"<<std::endl;
         MPI_Reduce( particleBase.m_O_min.pointer(), O_min_recv.pointer(),
                     tf_number, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
         MPI_Reduce( particleBase.m_O_max.pointer(), O_max_recv.pointer(),
@@ -1539,18 +1615,36 @@ void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBas
                     tf_number, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
         MPI_Reduce( particleBase.m_C_max.pointer(), C_max_recv.pointer(),
                     tf_number, MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
+        // if(mpi_rank==0) std::cout<<"end MPI_Reduce"<<std::endl;
+#else
+        for( int i = 0; i < tf_number; i++ )
+        {
+            O_min_recv[i] = particleBase.m_O_min[i];
+            O_max_recv[i] = particleBase.m_O_max[i];
+            C_min_recv[i] = particleBase.m_C_min[i];
+            C_max_recv[i] = particleBase.m_C_max[i];
+        }
+#endif
 
-//        if(mpi_rank==0) std::cout<<"end MPI_Reduce"<<std::endl;
-
-
-        //ヒストグラムの集計
+        o_histogram_recv.allocate(tf_number * nbins);
+        c_histogram_recv.allocate(tf_number * nbins);
         o_histogram_recv.fill(0x00);
+        c_histogram_recv.fill(0x00);
+
+#ifndef CPU_VER
+        //ヒストグラムの集計
         MPI_Reduce( particleBase.m_o_histogram.pointer(), o_histogram_recv.pointer(),
                     tf_number*nbins, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
 
-        c_histogram_recv.fill(0x00);
         MPI_Reduce( particleBase.m_c_histogram.pointer(), c_histogram_recv.pointer(),
                     tf_number*nbins, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+#else
+        for( int i = 0; i < (tf_number * nbins); i++ )
+        {
+            o_histogram_recv[i] = particleBase.m_o_histogram[i];
+            c_histogram_recv[i] = particleBase.m_c_histogram[i];
+        }
+#endif
     }
 
 //    timer.stop();
@@ -1630,11 +1724,14 @@ void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBas
 void OutputGlyphs(const int time_step, glyph_parameters& glyph_param)
 {
 
-    int mpi_rank = 0;
-    int mpi_size = 1;
+    int mpi_rank;
+    int mpi_size;
 #ifndef CPU_VER
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+    mpi_size = 1;
 #endif
     int nbins = 256;
 
