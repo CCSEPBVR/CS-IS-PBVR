@@ -91,6 +91,14 @@ public:
         float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
         float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
         kvs::UInt8* Red, kvs::UInt8* Green, kvs::UInt8* Blue );//resulting colors[SIMDW]
+
+    void CalculateColorData(
+        std::vector< TFS::TrilinearInterpolator* > interp ,
+        std::vector<pbvr::TransferFunction>& tf,
+        float* x_l, float* y_l, float* z_l, //local coord[SIMDW]
+        float* x_g, float* y_g, float* z_g, //global coord[SIMDW]
+        float* color_data );//resulting colors[SIMDW]
+
 };
 
 #endif // __TRANSFER_FUNCTION_SYNTHESIZER_H__

@@ -63,6 +63,11 @@ extern "C" {
                              domain_parameters dom,
                              Type** volume_data, 
                              int num_volume_data );
+ 
+    void ensemble_generate_particles( int time_step,
+                             domain_parameters dom,
+                             Type** volume_data, 
+                             int num_volume_data );
     
     void GenerateParticles( int time_step,
                              domain_parameters dom,
