@@ -655,6 +655,8 @@ void generate_particle_IS(
             ppw.writeParameterFile( tfFilePath.c_str() );
         }
 
+        mvpl.m_total_number_subvolumes = 1;
+
         jd.initialize(
             clntMes.m_step,
             clntMes.m_step,
