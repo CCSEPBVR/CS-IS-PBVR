@@ -18,9 +18,12 @@ public:
 
 private:
     Ui::Communication *ui;
-    QWebSocket m_web_socket;
+    QWebSocket* m_web_binary_socket = nullptr;
+    QWebSocket* m_web_text_socket = nullptr;
 
     void initialize();
+
+    bool isSocketsConnected() const;
 
 private slots:
     // UI
