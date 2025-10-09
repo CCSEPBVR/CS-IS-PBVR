@@ -23,6 +23,7 @@ private:
     kvs::qt::Screen* m_screen       = nullptr;
     QWebSocket* m_web_binary_socket = nullptr;
     QWebSocket* m_web_text_socket = nullptr;
+    QString m_uuid;
 
     void initialize();
 
@@ -32,6 +33,12 @@ private slots:
     // UI
     void onConnectClicked();
     void onDisconnectClicked();
+
+    // WebSocket
+    void binaryWebsocketConnected();
+    void binaryWebsocketDisconnected();
+    void textWebsocketConnected();
+    void textWebsocketDisconnected();
 };
 
 #endif // COMMUNICATION_H

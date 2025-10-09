@@ -25,6 +25,12 @@ void Communication::initialize()
 
     connect( ui->connectPushButton, &QPushButton::clicked, this, &Communication::onConnectClicked );
     connect( ui->disconnectPushButton, &QPushButton::clicked, this, &Communication::onDisconnectClicked );
+
+    connect( m_web_binary_socket, &QWebSocket::connected    , this, &Communication::binaryWebsocketConnected );     // 接続成功(バイナリ)
+    connect( m_web_binary_socket, &QWebSocket::disconnected , this, &Communication::binaryWebsocketDisconnected );  // 接続切断(バイナリ)
+
+    connect( m_web_text_socket, &QWebSocket::connected      , this, &Communication::textWebsocketConnected );       // 接続成功(テキスト)
+    connect( m_web_text_socket, &QWebSocket::disconnected   , this, &Communication::textWebsocketDisconnected );    // 接続切断(テキスト)
 }
 
 /**
@@ -49,6 +55,7 @@ void Communication::onConnectClicked()
         return;
     }
 
+    m_uuid = QUuid::createUuid().toString(); // ユーザUUID
     const QString address = "ws://127.0.0.1:60000"; // AFTER_WEBSOCKET
     const QString binaryAddress = address + "/binary";
     const QString textAddress = address + "/text";
@@ -66,7 +73,42 @@ void Communication::onDisconnectClicked()
         return;
     }
 
+    m_uuid.clear();
     qDebug() << "Disconnecting...";
     if( m_web_binary_socket ) m_web_binary_socket->close();
     if( m_web_text_socket ) m_web_text_socket->close();
+}
+
+void Communication::binaryWebsocketConnected()
+{
+    if( !isSocketsConnected() )
+    {
+        return;
+    }
+    m_web_binary_socket->sendTextMessage( QJsonDocument( {
+                                                           {"event", "join"},
+                                                           {"channel", "binary"},
+                                                           {"uuid", m_uuid}
+                                                       } ).toJson( QJsonDocument::Compact) );
+}
+
+void Communication::binaryWebsocketDisconnected()
+{
+}
+
+void Communication::textWebsocketConnected()
+{
+    if( !isSocketsConnected() )
+    {
+        return;
+    }
+    m_web_text_socket->sendTextMessage( QJsonDocument( {
+                                                           {"event", "join"},
+                                                           {"channel", "text"},
+                                                           {"uuid", m_uuid}
+                                                       } ).toJson( QJsonDocument::Compact) );
+}
+
+void Communication::textWebsocketDisconnected()
+{
 }

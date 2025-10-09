@@ -7,8 +7,15 @@
 #include <App.h>
 #endif
 
+#include "../../Shared/json.hpp"
+
 struct PerSocket
 {
+    uWS::WebSocket<false,true,PerSocket>* binary_ws = nullptr;
+    uWS::WebSocket<false,true,PerSocket>* text_ws   = nullptr;
+    int userNumber      = -1;
+    std::string uuid    = "";
+    bool isOperator     = false;
 };
 
 class Server
@@ -19,8 +26,17 @@ public:
 private:
     uWS::App m_u_web_sockets;
     int m_port;
+    std::unordered_map<std::string, PerSocket> m_users;
+    int m_next_user_number = 0;
 
     void initialize();
+    void onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::string_view message, uWS::OpCode );
+    void onClose( uWS::WebSocket<false, true, PerSocket>* ws, int /*code*/, std::string_view /*msg*/ );
+
+    void debugNumberOfUsers()
+    {
+
+    }
 };
 
 #endif // SERVER_H
