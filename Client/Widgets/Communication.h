@@ -33,12 +33,15 @@ private slots:
     // UI
     void onConnectClicked();
     void onDisconnectClicked();
+    void onChatClicked();
 
     // WebSocket
     void binaryWebsocketConnected();
     void binaryWebsocketDisconnected();
+    void binaryWebsocketMessageReceived( const QByteArray& binary );
     void textWebsocketConnected();
     void textWebsocketDisconnected();
+    void textWebsocketMessageReceived( const QString& receivedMessage );
 };
 
 #endif // COMMUNICATION_H

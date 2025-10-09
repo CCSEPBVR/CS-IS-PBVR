@@ -12,6 +12,7 @@ void Server::initialize()
                                                  .open = [](auto *ws)
                                                  {
                                                      std::cout << "[Server-binary] open" << std::endl;
+                                                     ws->subscribe("AFTER");
                                                  },
 
                                                  .message = [this](auto* ws, std::string_view message, uWS::OpCode opCode)
@@ -50,6 +51,7 @@ void Server::initialize()
                                                .open = [](auto *ws)
                                                {
                                                    std::cout << "[Server-text] open" << std::endl;
+                                                   ws->subscribe("Chat");
                                                },
 
                                                .message = [this](auto* ws, std::string_view message, uWS::OpCode opCode)
@@ -142,6 +144,21 @@ void Server::onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::string_
             }
             std::cout << "[Server] User " << it->second.uuid << " (userNumber = " << it->second.userNumber << ") connected (" << channel << ")" << std::endl;
         }
+    }
+
+    if( received.contains("event") && received["event"] == "chat" )
+    {
+        std::cout << "[Server] chat" << std::endl;
+        std::string text = received["text"]; // 受け取ったチャット内容
+
+        // 送信用 JSON を作成
+        nlohmann::json msg;
+        msg["event"] = "chat";  // サーバからのイベント名
+        msg["userNumber"] = ws->getUserData()->userNumber;
+        msg["text"]  = text;    // クライアントから受け取ったテキスト
+
+        // 全クライアントに送信
+        m_u_web_sockets.publish( "Chat", msg.dump(), uWS::OpCode::TEXT );
     }
 
     if( received.contains("event") && received["event"] == "debug" )

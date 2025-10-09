@@ -25,6 +25,7 @@ void Communication::initialize()
 
     connect( ui->connectPushButton, &QPushButton::clicked, this, &Communication::onConnectClicked );
     connect( ui->disconnectPushButton, &QPushButton::clicked, this, &Communication::onDisconnectClicked );
+    connect( ui->chatSendPushButton, &QPushButton::clicked, this, &Communication::onChatClicked );
 
     connect( ui->debugPushButton, &QPushButton::clicked, this, [this]() {
         if( !isSocketsConnected() )
@@ -36,9 +37,11 @@ void Communication::initialize()
 
     connect( m_web_binary_socket, &QWebSocket::connected    , this, &Communication::binaryWebsocketConnected );     // 接続成功(バイナリ)
     connect( m_web_binary_socket, &QWebSocket::disconnected , this, &Communication::binaryWebsocketDisconnected );  // 接続切断(バイナリ)
+    connect( m_web_binary_socket, &QWebSocket::binaryMessageReceived , this, &Communication::binaryWebsocketMessageReceived );  // メッセージ受信(バイナリ)
 
     connect( m_web_text_socket, &QWebSocket::connected      , this, &Communication::textWebsocketConnected );       // 接続成功(テキスト)
     connect( m_web_text_socket, &QWebSocket::disconnected   , this, &Communication::textWebsocketDisconnected );    // 接続切断(テキスト)
+    connect( m_web_text_socket, &QWebSocket::textMessageReceived , this, &Communication::textWebsocketMessageReceived );  // メッセージ受信(バイナリ)
 }
 
 /**
@@ -87,6 +90,24 @@ void Communication::onDisconnectClicked()
     if( m_web_text_socket ) m_web_text_socket->close();
 }
 
+void Communication::onChatClicked()
+{
+    if( !isSocketsConnected() )
+    {
+        qDebug() << "Not connected";
+        return;
+    }
+
+    QString text = ui->chatLineEdit->text().trimmed();
+    if( text.isEmpty() ) return; // 何も入力されていない場合は何もしない
+
+    m_web_binary_socket->sendTextMessage( QJsonDocument( {
+                                                           {"event", "chat"},
+                                                           {"text", text},
+                                                       } ).toJson( QJsonDocument::Compact) );
+    ui->chatLineEdit->clear();
+}
+
 void Communication::binaryWebsocketConnected()
 {
     if( !isSocketsConnected() )
@@ -104,6 +125,11 @@ void Communication::binaryWebsocketDisconnected()
 {
 }
 
+void Communication::binaryWebsocketMessageReceived( const QByteArray& binary )
+{
+
+}
+
 void Communication::textWebsocketConnected()
 {
     if( !isSocketsConnected() )
@@ -119,4 +145,19 @@ void Communication::textWebsocketConnected()
 
 void Communication::textWebsocketDisconnected()
 {
+}
+
+void Communication::textWebsocketMessageReceived( const QString& receivedMessage )
+{
+    QJsonDocument doc = QJsonDocument::fromJson( receivedMessage.toUtf8() );
+    if( !doc.isObject() ) return; // オブジェクトでない場合は無視
+
+    QJsonObject obj = doc.object();
+
+    if( obj.contains("event") && obj["event"].toString() == "chat" )
+    {
+        int userNumber = obj["userNumber"].toInt();    // 受信したチャットの送信者
+        QString text = obj["text"].toString();      // 受信したチャット内容
+        ui->textBrowser->append( "[" + QString::number( userNumber ) + "]: " + text );
+    }
 }
