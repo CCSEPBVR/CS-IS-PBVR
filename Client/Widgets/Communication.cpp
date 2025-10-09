@@ -26,6 +26,14 @@ void Communication::initialize()
     connect( ui->connectPushButton, &QPushButton::clicked, this, &Communication::onConnectClicked );
     connect( ui->disconnectPushButton, &QPushButton::clicked, this, &Communication::onDisconnectClicked );
 
+    connect( ui->debugPushButton, &QPushButton::clicked, this, [this]() {
+        if( !isSocketsConnected() )
+        {
+            return;
+        }
+        m_web_text_socket->sendTextMessage( QJsonDocument( QJsonObject{ {"event", "debug"} } ).toJson( QJsonDocument::Compact ) );
+    });
+
     connect( m_web_binary_socket, &QWebSocket::connected    , this, &Communication::binaryWebsocketConnected );     // 接続成功(バイナリ)
     connect( m_web_binary_socket, &QWebSocket::disconnected , this, &Communication::binaryWebsocketDisconnected );  // 接続切断(バイナリ)
 

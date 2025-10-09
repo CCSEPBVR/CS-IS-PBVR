@@ -33,7 +33,7 @@
       </item>
      </layout>
     </item>
-    <item row="1" column="0">
+    <item row="3" column="0">
      <spacer name="verticalSpacer">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
@@ -45,6 +45,13 @@
        </size>
       </property>
      </spacer>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPushButton" name="debugPushButton">
+      <property name="text">
+       <string>Debug</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

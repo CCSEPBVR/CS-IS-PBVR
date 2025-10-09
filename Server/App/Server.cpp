@@ -143,6 +143,11 @@ void Server::onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::string_
             std::cout << "[Server] User " << it->second.uuid << " (userNumber = " << it->second.userNumber << ") connected (" << channel << ")" << std::endl;
         }
     }
+
+    if( received.contains("event") && received["event"] == "debug" )
+    {
+        debugNumberOfUsers();
+    }
 }
 
 void Server::onClose( uWS::WebSocket<false, true, PerSocket>* ws, int, std::string_view )

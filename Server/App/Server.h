@@ -35,7 +35,11 @@ private:
 
     void debugNumberOfUsers()
     {
-
+        std::cout << "[Server] Current connected users:" << std::endl;
+        for( auto& [uuid, session] : m_users )
+        {
+            std::cout << "[Server] userNumber: " << session.userNumber << ", uuid: " << session.uuid << std::endl;
+        }
     }
 };
 
