@@ -1,9 +1,10 @@
 #include "Communication.h"
 #include "ui_Communication.h"
 
-Communication::Communication(QWidget *parent)
+Communication::Communication( kvs::qt::jaea::Screen* screen, QWidget* parent )
     : QDockWidget(parent)
     , ui(new Ui::Communication)
+    , m_screen( screen )
 {
     initialize();
 }
@@ -48,7 +49,7 @@ void Communication::onConnectClicked()
         return;
     }
 
-    const QString address = "ws://127.0.0.1:60000";
+    const QString address = "ws://127.0.0.1:60000"; // AFTER_WEBSOCKET
     const QString binaryAddress = address + "/binary";
     const QString textAddress = address + "/text";
 

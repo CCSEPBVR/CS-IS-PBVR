@@ -16,7 +16,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_total_particle_tool_bar( new TotalParticlesToolBar( this ) )
     , m_animation_control( new AnimationControl( m_screen, this ) )
     , m_connect( new Connect( m_screen, this ) )
-    , m_communication( new Communication( this ) ) // AFTER_WEBSOCKET
+    , m_communication( new Communication( m_screen, this ) ) // AFTER_WEBSOCKET
     , m_glyph_editor( new GlyphEditor( this ) )
     , m_object_editor( new ObjectEditor( m_screen, m_connect, this ) )
     , m_plot_over_line( new PlotOverLine( m_screen, this ) )
