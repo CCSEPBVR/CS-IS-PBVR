@@ -12,7 +12,9 @@
 struct PerSocket
 {
     uWS::WebSocket<false,true,PerSocket>* binary_ws = nullptr;
+    bool isBinaryReady = false;
     uWS::WebSocket<false,true,PerSocket>* text_ws   = nullptr;
+    bool isTextReady = false;
     int userNumber      = -1;
     std::string uuid    = "";
     bool isOperator     = false;

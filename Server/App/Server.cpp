@@ -51,7 +51,7 @@ void Server::initialize()
                                                .open = [](auto *ws)
                                                {
                                                    std::cout << "[Server-text] open" << std::endl;
-                                                   ws->subscribe("Chat");
+                                                   ws->subscribe("Notice");
                                                },
 
                                                .message = [this](auto* ws, std::string_view message, uWS::OpCode opCode)
@@ -107,42 +107,63 @@ void Server::onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::string_
     if( received.contains("event") && received["event"] == "join" )
     {
         std::string userUUID = received["uuid"];    // クライアントから送られてきたUUID
-        std::string channel = received["channel"];  // "binary" or "text"
+        std::string channel = received["channel"]; // "binary" or "text"
 
-        auto it = m_users.find( userUUID );
+        auto it = m_users.find(userUUID);
         if( it == m_users.end() )
         {
             // 新規ユーザの場合
             PerSocket session;
             session.uuid = userUUID;
             session.userNumber = m_next_user_number++;
-            if( channel == "binary" )
+
+            if(channel == "binary")
             {
                 session.binary_ws = ws;
                 ws->getUserData()->userNumber = session.userNumber;
+                session.isBinaryReady = true;
             }
-            else if( channel == "text" )
+            else if(channel == "text")
             {
                 session.text_ws = ws;
                 ws->getUserData()->userNumber = session.userNumber;
+                session.isTextReady = true;
             }
+
             m_users[userUUID] = session;
-            std::cout << "[Server] User " << session.uuid << " (userNumber = " << session.userNumber << ") connected (" << channel << ")" << std::endl;
+            std::cout << "[Server] User " << session.uuid
+                      << " (userNumber = " << session.userNumber
+                      << ") connected (" << channel << ")" << std::endl;
         }
         else
         {
             // 既存ユーザの場合、接続してきたチャンネルだけセット
-            if( channel == "binary" )
+            if(channel == "binary")
             {
                 it->second.binary_ws = ws;
                 ws->getUserData()->userNumber = it->second.userNumber;
+                it->second.isBinaryReady = true;
             }
-            else if( channel == "text" )
+            else if(channel == "text")
             {
                 it->second.text_ws = ws;
                 ws->getUserData()->userNumber = it->second.userNumber;
+                it->second.isTextReady = true;
             }
-            std::cout << "[Server] User " << it->second.uuid << " (userNumber = " << it->second.userNumber << ") connected (" << channel << ")" << std::endl;
+
+            std::cout << "[Server] User " << it->second.uuid
+                      << " (userNumber = " << it->second.userNumber
+                      << ") connected (" << channel << ")" << std::endl;
+        }
+
+        // 両方のソケットが準備完了したら通知を送信
+        PerSocket& sessionRef = m_users[userUUID];
+        if(sessionRef.isBinaryReady && sessionRef.isTextReady)
+        {
+            nlohmann::json msg;
+            msg["event"] = "join";  // サーバからのイベント名
+            msg["userNumber"] = sessionRef.userNumber;
+            m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
         }
     }
 
@@ -158,7 +179,7 @@ void Server::onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::string_
         msg["text"]  = text;    // クライアントから受け取ったテキスト
 
         // 全クライアントに送信
-        m_u_web_sockets.publish( "Chat", msg.dump(), uWS::OpCode::TEXT );
+        m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
     }
 
     if( received.contains("event") && received["event"] == "debug" )
@@ -167,17 +188,37 @@ void Server::onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::string_
     }
 }
 
-void Server::onClose( uWS::WebSocket<false, true, PerSocket>* ws, int, std::string_view )
+void Server::onClose(uWS::WebSocket<false, true, PerSocket>* ws, int, std::string_view)
 {
     for( auto it = m_users.begin(); it != m_users.end(); )
     {
         auto& session = it->second;
-        if( session.binary_ws == ws ) session.binary_ws = nullptr;
-        if( session.text_ws   == ws ) session.text_ws   = nullptr;
+        bool wasBinary = session.binary_ws != nullptr;
+        bool wasText   = session.text_ws != nullptr;
 
+        if( session.binary_ws == ws )
+        {
+            session.binary_ws = nullptr;
+            session.isBinaryReady = false;
+        }
+
+        if( session.text_ws == ws )
+        {
+            session.text_ws = nullptr;
+            session.isTextReady = false;
+        }
+
+        // 両方のソケットが切断された場合のみ、ユーザ離脱通知を送信して削除
         if( !session.binary_ws && !session.text_ws )
         {
             std::cout << "[Server] User " << it->first << " disconnected" << std::endl;
+
+            // サーバから通知
+            nlohmann::json msg;
+            msg["event"] = "left";  // サーバからのイベント名
+            msg["userNumber"] = session.userNumber;
+            m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
+
             it = m_users.erase( it );
         }
         else
@@ -186,3 +227,4 @@ void Server::onClose( uWS::WebSocket<false, true, PerSocket>* ws, int, std::stri
         }
     }
 }
+

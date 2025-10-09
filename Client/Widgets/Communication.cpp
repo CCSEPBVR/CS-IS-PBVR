@@ -154,10 +154,22 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
 
     QJsonObject obj = doc.object();
 
+    if( obj.contains("event") && obj["event"].toString() == "join" )
+    {
+        int userNumber = obj["userNumber"].toInt();    // 入出者
+        ui->textBrowser->append( "--- User[" + QString::number( userNumber ) + "] Join ---" );
+    }
+
+    if( obj.contains("event") && obj["event"].toString() == "left" )
+    {
+        int userNumber = obj["userNumber"].toInt();    // 退出者
+        ui->textBrowser->append( "--- User[" + QString::number( userNumber ) + "] Left ---" );
+    }
+
     if( obj.contains("event") && obj["event"].toString() == "chat" )
     {
         int userNumber = obj["userNumber"].toInt();    // 受信したチャットの送信者
         QString text = obj["text"].toString();      // 受信したチャット内容
-        ui->textBrowser->append( "[" + QString::number( userNumber ) + "]: " + text );
+        ui->textBrowser->append( "User[" + QString::number( userNumber ) + "]: " + text );
     }
 }
