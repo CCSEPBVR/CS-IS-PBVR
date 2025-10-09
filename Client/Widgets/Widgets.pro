@@ -21,6 +21,7 @@ HEADERS += \
     AnimationControl.h \
     ColorMapEditor.h \
     ColorMapSelectorToolBar.h \
+    Communication.h \
     Connect.h \
     # GlyphItem.h \
     GlyphEditor.h \
@@ -50,6 +51,7 @@ SOURCES += \
     AnimationControl.cpp \
     ColorMapEditor.cpp \
     ColorMapSelectorToolBar.cpp \
+    Communication.cpp \
     Connect.cpp \
     GlyphEditor.cpp \
     ObjectEditor.cpp \
@@ -73,6 +75,7 @@ SOURCES += \
 FORMS += \
     AnimationControl.ui \
     ColorMapEditor.ui \
+    Communication.ui \
     Connect.ui \
     GlyphEditor.ui \
     ObjectEditor.ui \

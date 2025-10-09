@@ -1,8 +1,7 @@
 # ===============================
 # ビルド構成
 # ===============================
-CONFIG += c++17            # C++17 標準でコンパイル
-CONFIG += opengl           # OpenGL を有効化
+CONFIG += c++20            # C++17 標準でコンパイル
 CONFIG += warn_off         # ※警告を抑制（必要ならコメントアウト解除）
 
 # macOSで std::filesystem を有効にする
@@ -53,12 +52,7 @@ else:CONFIG( debug, debug|release ) {
 # Qt6 モジュール
 # ===============================
 QT += core
-QT += gui
-QT += widgets              # QWidgetベースのUIに必要
-QT += opengl               # OpenGL サポート（QOpenGLFunctionsなど）
-QT += openglwidgets        # QOpenGLWidget など
-QT += printsupport         # QPrinter などの印刷機能
-QT += websockets           # QWebSocket
+QT += network
 
 # ===============================
 # 非推奨APIの禁止（必要に応じて有効化）
@@ -74,12 +68,19 @@ unix:!android {
 
 !isEmpty(target.path): INSTALLS += target
 
+win32 { # WindowsはVCPKGでuWebsocketsをインストールことを想定
+    VCPKG_ROOT = $$(VCPKG_ROOT)
+    VCPKG_TRIPLET = x64-windows-static
+    KVS_UWS_DIR = $$VCPKG_ROOT/installed/$$VCPKG_TRIPLET
+}
+
 KVS_DIR         = $$(KVS_DIR)
 KVS_GLEW_DIR    = $$(KVS_GLEW_DIR)
 KVS_GLUT_DIR    = $$(KVS_GLUT_DIR)
 KVS_OPENXR_DIR  = $$(KVS_OPENXR_DIR)
 KVS_IMGUI_DIR   = $$(KVS_IMGUI_DIR)
 KVS_ASSIMP_DIR  = $$(KVS_ASSIMP_DIR)
+isEmpty(KVS_UWS_DIR):KVS_UWS_DIR = $$(KVS_UWS_DIR)
 
 isEmpty( KVS_DIR ) {
     error( "The environment variable KVS_DIR is not defined." )
@@ -146,20 +147,29 @@ else {
         INCLUDEPATH += $$KVS_ASSIMP_DIR/include
         DEFINES += ASSIMP
     }
+
+    isEmpty( KVS_UWS_DIR ){             # サーバ側必須(全プラットフォーム対応)
+        message( "KVS_UWS_DIR is not defined." )
+    }
+    else{
+        win32 {
+            message( "KVS_UWS_DIR is set to: $$KVS_UWS_DIR" )
+            INCLUDEPATH += $$KVS_UWS_DIR/include
+        }
+        else{
+            message( "KVS_UWS_DIR is set to: $$KVS_UWS_DIR" )
+            INCLUDEPATH += $$KVS_UWS_DIR/src
+            INCLUDEPATH += $$KVS_UWS_DIR/uSockets/src
+            DEFINES += UWS
+        }
+    }
 }
 
-INCLUDEPATH += $$PWD/Widgets/
-INCLUDEPATH += $$PWD/FunctionParser/
-INCLUDEPATH += $$PWD/Common/
-INCLUDEPATH += $$PWD/Utils/
-INCLUDEPATH += $$PWD/ExtendedKVS/
-INCLUDEPATH += $$PWD/ExtendedQT/
+# # Git ブランチ名を取得して変数に設定
+# GIT_BRANCH_NAME = $$system(git rev-parse --abbrev-ref HEAD)
 
-# Git ブランチ名を取得して変数に設定
-GIT_BRANCH_NAME = $$system(git rev-parse --abbrev-ref HEAD)
+# # 定数として定義（C++で使う用）
+# DEFINES += GIT_BRANCH_NAME=\\\"$$GIT_BRANCH_NAME\\\"
 
-# 定数として定義（C++で使う用）
-DEFINES += GIT_BRANCH_NAME=\\\"$$GIT_BRANCH_NAME\\\"
-
-# ログ出力（確認用）
-message(Git Branch: $$GIT_BRANCH_NAME)
+# # ログ出力（確認用）
+# message(Git Branch: $$GIT_BRANCH_NAME)

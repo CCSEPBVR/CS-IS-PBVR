@@ -16,6 +16,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_total_particle_tool_bar( new TotalParticlesToolBar( this ) )
     , m_animation_control( new AnimationControl( m_screen, this ) )
     , m_connect( new Connect( m_screen, this ) )
+    , m_communication( new Communication( this ) ) // AFTER_WEBSOCKET
     , m_glyph_editor( new GlyphEditor( this ) )
     , m_object_editor( new ObjectEditor( m_screen, m_connect, this ) )
     , m_plot_over_line( new PlotOverLine( m_screen, this ) )
@@ -64,6 +65,7 @@ void MainWindow::initialize()
 
     setDockOptions( QMainWindow::AnimatedDocks );
     m_animation_control->adjustSize();
+    m_communication->adjustSize(); // AFTER_WEBSOCKET
     m_glyph_editor->adjustSize();
     m_object_editor->adjustSize();
     m_plot_over_line->adjustSize();
@@ -80,6 +82,7 @@ void MainWindow::initialize()
     this->addToolBar( Qt::TopToolBarArea, m_play_back_control_tool_bar );
 
     addDockWidget( Qt::LeftDockWidgetArea   , m_animation_control );
+    addDockWidget( Qt::RightDockWidgetArea  , m_communication ); // AFTER_WEBSOCKET
     addDockWidget( Qt::LeftDockWidgetArea   , m_object_editor );
     addDockWidget( Qt::RightDockWidgetArea  , m_plot_over_line );
     addDockWidget( Qt::RightDockWidgetArea  , m_point_size_control );
@@ -100,6 +103,9 @@ void MainWindow::initialize()
     connect( ui->actionShadingControl           , &QAction::triggered                                           , this                              , &MainWindow::onShadingControl );
     connect( ui->actionTransferFunctionEditor   , &QAction::triggered                                           , this                              , &MainWindow::onTransferFunctionEditor );
     connect( ui->actionVolumeTransform          , &QAction::triggered                                           , this                              , &MainWindow::onVolumeTransform );
+
+    // コミュニケーション
+    connect( ui->actionCommunication            , &QAction::triggered                                           , this                              , &MainWindow::onCommunication ); // AFTER_WEBSOCKET
 
     // カラーマップセレクター(ツールバー)
 

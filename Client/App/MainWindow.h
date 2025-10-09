@@ -17,6 +17,7 @@
 
 #include "AnimationControl.h"
 #include "Connect.h"
+#include "Communication.h" // AFTER_WEBSOCKET
 #include "GlyphEditor.h"
 #include "ObjectEditor.h"
 #include "PlotOverLine.h"
@@ -70,6 +71,7 @@ private: // ツールバー
 private: // ウィジェット
     AnimationControl* m_animation_control                       = nullptr;  // Dock
     Connect* m_connect                                          = nullptr;  // Dialog
+    Communication* m_communication                              = nullptr;  // Dock // AFTER_WEBSOCKET
     GlyphEditor* m_glyph_editor                                 = nullptr;  // Dialog
     ObjectEditor* m_object_editor                               = nullptr;  // Dock
     PlotOverLine* m_plot_over_line                              = nullptr;  // Dock
@@ -83,6 +85,7 @@ private: // ウィジェット
 private slots:
     void onAnimationControl()       { m_animation_control->show(); }
     void onConnect()                { m_connect->show(); }
+    void onCommunication()          { m_communication->show(); } // AFTER_WEBSOCKET
     void onGlyphEditor()            { m_glyph_editor->show(); }
     void onObjectEditor()           { m_object_editor->show(); }
     void onPlotOverLine()           { m_plot_over_line->show(); }

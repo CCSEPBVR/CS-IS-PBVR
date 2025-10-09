@@ -26,7 +26,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>37</height>
+     <height>17</height>
     </rect>
    </property>
    <widget class="QMenu" name="menupbvr_client">
@@ -40,6 +40,7 @@
      <string>Tools</string>
     </property>
     <addaction name="actionConnect"/>
+    <addaction name="actionCommunication"/>
     <addaction name="separator"/>
     <addaction name="actionObjectEditor"/>
     <addaction name="actionTransferFunctionEditor"/>
@@ -139,6 +140,17 @@
   <action name="actionPreference">
    <property name="text">
     <string>Preference</string>
+   </property>
+  </action>
+  <action name="actionCommunication">
+   <property name="text">
+    <string>Communication</string>
+   </property>
+   <property name="toolTip">
+    <string>Communication</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
    </property>
   </action>
  </widget>
