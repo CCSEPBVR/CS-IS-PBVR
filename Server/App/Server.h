@@ -9,15 +9,19 @@
 
 #include "../../Shared/json.hpp"
 
+struct ClientState; // 前方宣言
+
 struct PerSocket
 {
+    std::shared_ptr<ClientState> state; // 共通データへのポインタ
+};
+
+struct ClientState
+{
+    std::string userUUID;
+    int userNumber;
     uWS::WebSocket<false,true,PerSocket>* binary_ws = nullptr;
-    bool isBinaryReady = false;
     uWS::WebSocket<false,true,PerSocket>* text_ws   = nullptr;
-    bool isTextReady = false;
-    int userNumber      = -1;
-    std::string uuid    = "";
-    bool isOperator     = false;
 };
 
 class Server
@@ -28,7 +32,7 @@ public:
 private:
     uWS::App m_u_web_sockets;
     int m_port;
-    std::unordered_map<std::string, PerSocket> m_users;
+    std::unordered_map<std::string, std::shared_ptr<ClientState>> m_clients;
     int m_next_user_number = 0;
 
     void initialize();
@@ -37,10 +41,29 @@ private:
 
     void debugNumberOfUsers()
     {
-        std::cout << "[Server] Current connected users:" << std::endl;
-        for( auto& [uuid, session] : m_users )
+        std::cout << "[Server] Number of current clients: " << m_clients.size() << std::endl;
+        for( const auto& [uuid, clientState] : m_clients )
         {
-            std::cout << "[Server] userNumber: " << session.userNumber << ", uuid: " << session.uuid << std::endl;
+            std::cout << "UUID: " << uuid << std::endl;
+            // バイナリソケット接続状況
+            if( clientState->binary_ws )
+            {
+                std::cout << "Binary connected" << std::endl;
+            }
+            else
+            {
+                std::cout << "Binary not connected" << std::endl;
+            }
+
+            // テキストソケット接続状況
+            if( clientState->text_ws )
+            {
+                std::cout << "Text connected" << std::endl;
+            }
+            else
+            {
+                std::cout << "Text not connected" << std::endl;
+            }
         }
     }
 };

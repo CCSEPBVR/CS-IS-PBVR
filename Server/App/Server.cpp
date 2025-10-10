@@ -1,230 +1,234 @@
 #include "Server.h"
 
-Server::Server( int port )
-    : m_port( port )
+Server::Server(int port)
+    : m_port(port)
 {
     initialize();
 }
 
 void Server::initialize()
 {
-    m_u_web_sockets.ws<PerSocket>("/binary",{ // バイナリ用ソケット(データ:PointObject,PolygonObject等)
-                                                 .open = [](auto *ws)
+    // --- バイナリ用 WebSocket ---
+    m_u_web_sockets.ws<PerSocket>("/binary", {
+                                                 .upgrade = [this](auto* res, auto* req, auto* context)
+                                                 {
+                                                     std::string_view url = req->getUrl();
+                                                     std::string_view query = req->getQuery();
+
+                                                     // UUID抽出
+                                                     std::string uuid;
+                                                     auto pos = query.find("uuid=");
+                                                     if (pos != std::string_view::npos)
+                                                     {
+                                                         uuid = std::string(query.substr(pos + 5));
+                                                     }
+
+                                                     if (uuid.empty())
+                                                     {
+                                                         std::cout << "[upgrade] Missing UUID" << std::endl;
+                                                         res->end("Missing UUID");
+                                                         return;
+                                                     }
+
+                                                     // ClientState 準備
+                                                     if (m_clients.find(uuid) == m_clients.end())
+                                                     {
+                                                         m_clients[uuid] = std::make_shared<ClientState>();
+                                                         m_clients[uuid]->userUUID = uuid;
+                                                         m_clients[uuid]->userNumber = m_next_user_number++;
+                                                     }
+                                                     auto clientState = m_clients[uuid];
+
+                                                     // PerSocket に共通データをセット
+                                                     PerSocket per_socket;
+                                                     per_socket.state = clientState;
+
+                                                     // WebSocket アップグレード
+                                                     res->template upgrade<PerSocket>(
+                                                         std::move(per_socket),
+                                                         req->getHeader("sec-websocket-key"),
+                                                         req->getHeader("sec-websocket-protocol"),
+                                                         req->getHeader("sec-websocket-extensions"),
+                                                         context
+                                                         );
+
+                                                     std::cout << "[Server-binary] upgrade UUID=" << uuid << ", URL=" << url << std::endl;
+                                                 },
+
+                                                 .open = [this](auto* ws)
                                                  {
                                                      std::cout << "[Server-binary] open" << std::endl;
                                                      ws->subscribe("AFTER");
+
+                                                     auto* ps = ws->getUserData();
+                                                     if (!ps || !ps->state) return;
+
+                                                     ps->state->binary_ws = ws;
+                                                     std::cout << ps->state->userUUID << std::endl;
+
+                                                     if (auto client = m_clients[ps->state->userUUID]; client && client->text_ws)
+                                                     {
+                                                         nlohmann::json msg;
+                                                         msg["event"] = "join";
+                                                         msg["userNumber"] = client->userNumber;
+                                                         m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
+                                                     }
                                                  },
 
                                                  .message = [this](auto* ws, std::string_view message, uWS::OpCode opCode)
                                                  {
                                                      std::cout << "[Server-binary] message" << std::endl;
-                                                     this->onMessage( ws, message, opCode );
+                                                     this->onMessage(ws, message, opCode);
                                                  },
 
-                                                 .dropped = [](auto* /*ws*/, std::string_view payload, uWS::OpCode op)
-                                                 {
-                                                     std::cout << "[Server-binary] dropped" << std::endl;
-                                                 },
+                                                 .dropped = [](auto*, std::string_view, uWS::OpCode) { std::cout << "[Server-binary] dropped" << std::endl; },
+                                                 .drain   = [](auto* ws) { std::cout << "[Server-binary] drain" << std::endl; },
+                                                 .ping    = [](auto*, std::string_view) { std::cout << "[Server-binary] ping" << std::endl; },
+                                                 .pong    = [](auto*, std::string_view) { std::cout << "[Server-binary] pong" << std::endl; },
 
-                                                 .drain = [](auto *ws)
-                                                 {
-                                                     std::cout << "[Server-binary] drain" << std::endl;
-                                                 },
-
-                                                 .ping = [](auto */*ws*/, std::string_view data)
-                                                 {
-                                                     std::cout << "[Server-binary] ping" << std::endl;
-                                                 },
-
-                                                 .pong = [](auto */*ws*/, std::string_view data)
-                                                 {
-                                                     std::cout << "[Server-binary] pong" << std::endl;
-                                                 },
-
-                                                 .close = [this](auto *ws, int code, std::string_view message)
+                                                 .close = [this](auto* ws, int code, std::string_view message)
                                                  {
                                                      std::cout << "[Server-binary] close" << std::endl;
-                                                     this->onClose( ws, code, message );
+                                                     this->onClose(ws, code, message);
                                                  }
                                              });
-    m_u_web_sockets.ws<PerSocket>("/text",{ // テキスト用ソケット(制御用:チャット,伝達関数,視点共有,着目点共有,データ要求)
-                                               .open = [](auto *ws)
+
+    // --- テキスト用 WebSocket ---
+    m_u_web_sockets.ws<PerSocket>("/text", {
+                                               .upgrade = [this](auto* res, auto* req, auto* context)
+                                               {
+                                                   std::string_view url = req->getUrl();
+                                                   std::string_view query = req->getQuery();
+
+                                                   // UUID抽出
+                                                   std::string uuid;
+                                                   auto pos = query.find("uuid=");
+                                                   if (pos != std::string_view::npos)
+                                                       uuid = std::string(query.substr(pos + 5));
+
+                                                   if (uuid.empty())
+                                                   {
+                                                       std::cout << "[upgrade] Missing UUID" << std::endl;
+                                                       res->end("Missing UUID");
+                                                       return;
+                                                   }
+
+                                                   if (m_clients.find(uuid) == m_clients.end())
+                                                   {
+                                                       m_clients[uuid] = std::make_shared<ClientState>();
+                                                       m_clients[uuid]->userUUID = uuid;
+                                                       m_clients[uuid]->userNumber = m_next_user_number++;
+                                                   }
+                                                   auto clientState = m_clients[uuid];
+
+                                                   PerSocket per_socket;
+                                                   per_socket.state = clientState;
+
+                                                   res->template upgrade<PerSocket>(
+                                                       std::move(per_socket),
+                                                       req->getHeader("sec-websocket-key"),
+                                                       req->getHeader("sec-websocket-protocol"),
+                                                       req->getHeader("sec-websocket-extensions"),
+                                                       context
+                                                       );
+
+                                                   std::cout << "[Server-text] upgrade UUID=" << uuid << ", URL=" << url << std::endl;
+                                               },
+
+                                               .open = [this](auto* ws)
                                                {
                                                    std::cout << "[Server-text] open" << std::endl;
                                                    ws->subscribe("Notice");
+
+                                                   auto* ps = ws->getUserData();
+                                                   if (!ps || !ps->state) return;
+
+                                                   ps->state->text_ws = ws;
+                                                   std::cout << ps->state->userUUID << std::endl;
+
+                                                   if (auto client = m_clients[ps->state->userUUID]; client && client->binary_ws)
+                                                   {
+                                                       nlohmann::json msg;
+                                                       msg["event"] = "join";
+                                                       msg["userNumber"] = client->userNumber;
+                                                       m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
+                                                   }
                                                },
 
                                                .message = [this](auto* ws, std::string_view message, uWS::OpCode opCode)
                                                {
                                                    std::cout << "[Server-text] message" << std::endl;
-                                                   this->onMessage( ws, message, opCode );
+                                                   this->onMessage(ws, message, opCode);
                                                },
 
-                                               .dropped = [](auto* /*ws*/, std::string_view payload, uWS::OpCode op)
-                                               {
-                                                   std::cout << "[Server-text] dropped" << std::endl;
-                                               },
+                                               .dropped = [](auto*, std::string_view, uWS::OpCode) { std::cout << "[Server-text] dropped" << std::endl; },
+                                               .drain   = [](auto* ws) { std::cout << "[Server-text] drain" << std::endl; },
+                                               .ping    = [](auto*, std::string_view) { std::cout << "[Server-text] ping" << std::endl; },
+                                               .pong    = [](auto*, std::string_view) { std::cout << "[Server-text] pong" << std::endl; },
 
-                                               .drain = [](auto *ws)
-                                               {
-                                                   std::cout << "[Server-text] drain" << std::endl;
-                                               },
-
-                                               .ping = [](auto */*ws*/, std::string_view data)
-                                               {
-                                                   std::cout << "[Server-text] ping" << std::endl;
-                                               },
-
-                                               .pong = [](auto */*ws*/, std::string_view data)
-                                               {
-                                                   std::cout << "[Server-text] pong" << std::endl;
-                                               },
-
-                                               .close = [this](auto *ws, int code, std::string_view message)
+                                               .close = [this](auto* ws, int code, std::string_view message)
                                                {
                                                    std::cout << "[Server-text] close" << std::endl;
-                                                   this->onClose( ws, code, message );
+                                                   this->onClose(ws, code, message);
                                                }
                                            });
-    m_u_web_sockets.listen( m_port, [this]( auto* token )
+
+    // --- サーバ起動 ---
+    m_u_web_sockets.listen(m_port, [this](auto* token)
                            {
-                               if( token )
-                               {
+                               if (token)
                                    std::cout << "[Server] Listening on port " << m_port << std::endl;
-                               }
                                else
-                               {
                                    std::cerr << "[Server] Failed to listen on port " << m_port << std::endl;
-                               }
-                           } ).run();
+                           }).run();
 }
 
-void Server::onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::string_view message, uWS::OpCode )
+void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_view message, uWS::OpCode)
 {
-    nlohmann::json received;
-    received = nlohmann::json::parse( message );
+    auto received = nlohmann::json::parse(message);
 
-    if( received.contains("event") && received["event"] == "join" )
+    if (received.contains("event"))
     {
-        std::string userUUID = received["uuid"];    // クライアントから送られてきたUUID
-        std::string channel = received["channel"]; // "binary" or "text"
-
-        auto it = m_users.find(userUUID);
-        if( it == m_users.end() )
+        const auto& event = received["event"];
+        if (event == "chat")
         {
-            // 新規ユーザの場合
-            PerSocket session;
-            session.uuid = userUUID;
-            session.userNumber = m_next_user_number++;
+            std::cout << "[Server] chat" << std::endl;
+            std::string text = received["text"];
 
-            if(channel == "binary")
-            {
-                session.binary_ws = ws;
-                ws->getUserData()->userNumber = session.userNumber;
-                session.isBinaryReady = true;
-            }
-            else if(channel == "text")
-            {
-                session.text_ws = ws;
-                ws->getUserData()->userNumber = session.userNumber;
-                session.isTextReady = true;
-            }
-
-            m_users[userUUID] = session;
-            std::cout << "[Server] User " << session.uuid
-                      << " (userNumber = " << session.userNumber
-                      << ") connected (" << channel << ")" << std::endl;
-        }
-        else
-        {
-            // 既存ユーザの場合、接続してきたチャンネルだけセット
-            if(channel == "binary")
-            {
-                it->second.binary_ws = ws;
-                ws->getUserData()->userNumber = it->second.userNumber;
-                it->second.isBinaryReady = true;
-            }
-            else if(channel == "text")
-            {
-                it->second.text_ws = ws;
-                ws->getUserData()->userNumber = it->second.userNumber;
-                it->second.isTextReady = true;
-            }
-
-            std::cout << "[Server] User " << it->second.uuid
-                      << " (userNumber = " << it->second.userNumber
-                      << ") connected (" << channel << ")" << std::endl;
-        }
-
-        // 両方のソケットが準備完了したら通知を送信
-        PerSocket& sessionRef = m_users[userUUID];
-        if(sessionRef.isBinaryReady && sessionRef.isTextReady)
-        {
             nlohmann::json msg;
-            msg["event"] = "join";  // サーバからのイベント名
-            msg["userNumber"] = sessionRef.userNumber;
+            msg["event"] = "chat";
+            msg["userNumber"] = ws->getUserData()->state->userNumber;
+            msg["text"] = text;
+
             m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
         }
-    }
-
-    if( received.contains("event") && received["event"] == "chat" )
-    {
-        std::cout << "[Server] chat" << std::endl;
-        std::string text = received["text"]; // 受け取ったチャット内容
-
-        // 送信用 JSON を作成
-        nlohmann::json msg;
-        msg["event"] = "chat";  // サーバからのイベント名
-        msg["userNumber"] = ws->getUserData()->userNumber;
-        msg["text"]  = text;    // クライアントから受け取ったテキスト
-
-        // 全クライアントに送信
-        m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
-    }
-
-    if( received.contains("event") && received["event"] == "debug" )
-    {
-        debugNumberOfUsers();
+        else if (event == "debug")
+        {
+            debugNumberOfUsers();
+        }
     }
 }
 
-void Server::onClose(uWS::WebSocket<false, true, PerSocket>* ws, int, std::string_view)
+void Server::onClose(uWS::WebSocket<false, true, PerSocket>* ws, int /*code*/, std::string_view /*message*/)
 {
-    for( auto it = m_users.begin(); it != m_users.end(); )
+    auto* ps = ws->getUserData();
+    if (!ps || !ps->state) return;
+
+    auto uuid = ps->state->userUUID;
+    auto userNumber = ps->state->userNumber;
+    std::cout << "[Server] close UUID=" << uuid << std::endl;
+
+    if (ps->state->binary_ws == ws) ps->state->binary_ws = nullptr;
+    if (ps->state->text_ws == ws) ps->state->text_ws = nullptr;
+
+    if (!ps->state->binary_ws && !ps->state->text_ws)
     {
-        auto& session = it->second;
-        bool wasBinary = session.binary_ws != nullptr;
-        bool wasText   = session.text_ws != nullptr;
+        std::cout << "[Server] Removing client UUID=" << uuid << std::endl;
+        m_clients.erase(uuid);
 
-        if( session.binary_ws == ws )
-        {
-            session.binary_ws = nullptr;
-            session.isBinaryReady = false;
-        }
-
-        if( session.text_ws == ws )
-        {
-            session.text_ws = nullptr;
-            session.isTextReady = false;
-        }
-
-        // 両方のソケットが切断された場合のみ、ユーザ離脱通知を送信して削除
-        if( !session.binary_ws && !session.text_ws )
-        {
-            std::cout << "[Server] User " << it->first << " disconnected" << std::endl;
-
-            // サーバから通知
-            nlohmann::json msg;
-            msg["event"] = "left";  // サーバからのイベント名
-            msg["userNumber"] = session.userNumber;
-            m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
-
-            it = m_users.erase( it );
-        }
-        else
-        {
-            ++it;
-        }
+        nlohmann::json msg;
+        msg["event"] = "left";
+        msg["userNumber"] = userNumber;
+        m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
     }
 }
-
