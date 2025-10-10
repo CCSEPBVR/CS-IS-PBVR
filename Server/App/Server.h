@@ -45,6 +45,7 @@ private:
         for( const auto& [uuid, clientState] : m_clients )
         {
             std::cout << "UUID: " << uuid << std::endl;
+            std::cout << "userNumber: " << clientState->userNumber << std::endl;
             // バイナリソケット接続状況
             if( clientState->binary_ws )
             {
