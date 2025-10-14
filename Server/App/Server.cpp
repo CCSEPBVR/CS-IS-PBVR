@@ -313,9 +313,14 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
                 offset += sizeof( kvs::Real32 ) * 3;
 
                 delete object;
-
-                m_u_web_sockets.publish( "AFTER", std::string_view(buffer.data(), buffer.size()), uWS::OpCode::BINARY );
                 std::cout << "[Server] generate done" << std::endl;
+
+                m_u_web_sockets.getLoop()->defer( [buffer, this]()
+                                                 {
+                                                     std::cout << "[Server] publishing..." << std::endl;
+                                                     m_u_web_sockets.publish( "AFTER", std::string_view( buffer.data(), buffer.size() ), uWS::OpCode::BINARY );
+                                                 } );
+		
             } ).detach();
         }
 
