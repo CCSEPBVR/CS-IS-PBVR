@@ -203,6 +203,19 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
             m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
         }
 
+        if (event == "shareview")
+        {
+            std::cout << "[Server] shareview" << std::endl;
+            const auto& matrix = received["matrix"];
+
+            nlohmann::json msg;
+            msg["event"] = "shareview";
+            msg["userNumber"] = ws->getUserData()->state->userNumber;
+            msg["matrix"] = matrix;
+
+            m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
+        }
+
 
         if (event == "transferfunction")
         {

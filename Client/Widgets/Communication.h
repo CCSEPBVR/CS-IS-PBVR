@@ -28,6 +28,7 @@ private:
     QWebSocket* m_web_binary_socket = nullptr;
     QWebSocket* m_web_text_socket = nullptr;
     QString m_uuid;
+    QStandardItemModel* m_share_view_list_model = nullptr;
 
     QPair<int,int> m_server_point_object_ids    = QPair<int,int>( -1, -1 ); // AFTER_WEBSOCKET
 
@@ -41,6 +42,8 @@ private slots:
     void onConnectClicked();
     void onDisconnectClicked();
     void onChatClicked();
+    void onShareView();
+    void onItemDoubleClicked( const QModelIndex& index );
 
     // WebSocket
     void binaryWebsocketConnected();

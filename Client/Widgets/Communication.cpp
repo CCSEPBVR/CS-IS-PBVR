@@ -26,6 +26,7 @@ void Communication::initialize()
     connect( ui->connectPushButton, &QPushButton::clicked, this, &Communication::onConnectClicked );
     connect( ui->disconnectPushButton, &QPushButton::clicked, this, &Communication::onDisconnectClicked );
     connect( ui->chatSendPushButton, &QPushButton::clicked, this, &Communication::onChatClicked );
+    connect( ui->shareViewPushButton , &QPushButton::clicked, this, &Communication::onShareView );
 
     connect( ui->debugPushButton, &QPushButton::clicked, this, [this]() {
         if( !isSocketsConnected() )
@@ -208,6 +209,52 @@ void Communication::onChatClicked()
     ui->chatLineEdit->clear();
 }
 
+void Communication::onShareView()
+{
+    if( !isSocketsConnected() )
+    {
+        qDebug() << "Not connected";
+        return;
+    }
+
+    kvs::Xform currentXform = m_screen->scene()->objectManager()->xform();
+    const kvs::Matrix44f matrix = currentXform.toMatrix();
+
+    std::cout << matrix << std::endl;
+
+    QJsonArray matrix_array;
+    for( int row = 0; row < 4; ++row )
+    {
+        QJsonArray row_array;
+        for( int col = 0; col < 4; ++col )
+        {
+            row_array.append( matrix[row][col] );
+        }
+        matrix_array.append( row_array );
+    }
+
+    m_web_text_socket->sendTextMessage( QJsonDocument( {
+                                                      {"event", "shareview"},
+                                                      {"matrix", matrix_array},
+                                                      } ).toJson( QJsonDocument::Compact) );
+}
+
+void Communication::onItemDoubleClicked(const QModelIndex& index)
+{
+    if( !index.isValid() ) return;
+
+    QVariant data = index.data( Qt::UserRole + 1 );
+    if( data.canConvert<kvs::Xform>() )
+    {
+        m_screen->reset();
+        kvs::Xform xform = data.value<kvs::Xform>();
+        m_screen->scene()->objectManager()->rotate( xform.rotation() );
+        m_screen->scene()->objectManager()->translate( xform.translation() );
+        m_screen->scene()->objectManager()->scale( xform.scaling() );
+    }
+    m_screen->update();
+}
+
 void Communication::binaryWebsocketConnected()
 {
 }
@@ -304,5 +351,38 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
         int userNumber = obj["userNumber"].toInt();    // 受信したチャットの送信者
         QString text = obj["text"].toString();      // 受信したチャット内容
         ui->textBrowser->append( "User[" + QString::number( userNumber ) + "]: " + text );
+    }
+
+    if( obj.contains("event") && obj["event"].toString() == "shareview" )
+    {
+        int userNumber = obj["userNumber"].toInt();    // 受信した視点共有の送信者
+        QJsonArray matrixArray = obj["matrix"].toArray();
+        kvs::Matrix44f mat;
+        for( int row = 0; row < 4; ++row )
+        {
+            QJsonArray row_array = matrixArray.at( row ).toArray();
+            for( int col = 0; col < 4; ++col )
+            {
+                mat[row][col] = static_cast<float>( row_array.at( col ).toDouble() );
+            }
+        }
+
+        // kvs::Xform に変換
+        kvs::Xform recieveXform( mat );
+        if( !m_share_view_list_model )
+        {
+            m_share_view_list_model = new QStandardItemModel( this );
+            ui->shareListView->setModel( m_share_view_list_model );
+            connect( ui->shareListView, &QListView::doubleClicked, this, &Communication::onItemDoubleClicked );
+        }
+        // 表示用ラベル作成
+        QString label = "User[" + QString::number( userNumber ) + "] View";
+
+        // QStandardItem 作成し、xform をデータとして格納
+        QStandardItem* item = new QStandardItem( label );
+        item->setData( QVariant::fromValue( recieveXform ), Qt::UserRole + 1 );
+        // 編集不可にする
+        item->setFlags( item->flags() & ~Qt::ItemIsEditable );
+        m_share_view_list_model->appendRow( item );
     }
 }
