@@ -340,14 +340,14 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
         {
             int userID = obj["userID"].toInt();    // 入出者
             QString userIDStr = QString::number( userID );
-            ui->textBrowser->append( "--- User[" + userIDStr + "] Join ---" );
+            ui->textBrowser->append( "--- User[" + userIDStr + "] Join" );
         }
 
         if( obj["event"].toString() == "left" )
         {
             int userID = obj["userID"].toInt();    // 入出者
             QString userIDStr = QString::number( userID );
-            ui->textBrowser->append( "--- User[" + userIDStr + "] Left ---" );
+            ui->textBrowser->append( "--- User[" + userIDStr + "] Left" );
         }
 
         if( obj["event"].toString() == "chat" )
