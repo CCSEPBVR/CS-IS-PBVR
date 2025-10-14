@@ -94,6 +94,7 @@ void MainWindow::initialize()
     // アクションコネクト
     connect( ui->actionAnimationControl         , &QAction::triggered                                           , this                              , &MainWindow::onAnimationControl );
     connect( ui->actionConnect                  , &QAction::triggered                                           , this                              , &MainWindow::onConnect );
+    connect( ui->actionCommunication            , &QAction::triggered                                           , this                              , &MainWindow::onCommunication ); // AFTER_WEBSOCKET
     connect( ui->actionGlyphEditor              , &QAction::triggered                                           , this                              , &MainWindow::onGlyphEditor );
     connect( ui->actionObjectEditor             , &QAction::triggered                                           , this                              , &MainWindow::onObjectEditor );
     connect( ui->actionPlotOverLine             , &QAction::triggered                                           , this                              , &MainWindow::onPlotOverLine );
@@ -104,8 +105,9 @@ void MainWindow::initialize()
     connect( ui->actionTransferFunctionEditor   , &QAction::triggered                                           , this                              , &MainWindow::onTransferFunctionEditor );
     connect( ui->actionVolumeTransform          , &QAction::triggered                                           , this                              , &MainWindow::onVolumeTransform );
 
-    // コミュニケーション
-    connect( ui->actionCommunication            , &QAction::triggered                                           , this                              , &MainWindow::onCommunication ); // AFTER_WEBSOCKET
+    // コミュニケーション    
+    connect( m_communication                    , &Communication::updateFocus                                    , m_plot_over_line                  , &PlotOverLine::updateFocus );
+    connect( m_communication                    , &Communication::updatePointsTranslation                        , m_plot_over_line                  , &PlotOverLine::updatePointsTranslation );
 
     // カラーマップセレクター(ツールバー)
 

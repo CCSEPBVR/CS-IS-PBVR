@@ -9,6 +9,11 @@
 
 #include "../../Shared/json.hpp"
 
+#include <kvs/HydrogenVolumeData>
+#include <kvs/TransferFunction>
+#include <kvs/RGBColor>
+#include <kvs/CellByCellMetropolisSampling>
+
 struct ClientState; // 前方宣言
 
 struct PerSocket
@@ -34,6 +39,10 @@ private:
     int m_port;
     std::unordered_map<std::string, std::shared_ptr<ClientState>> m_clients;
     int m_next_user_number = 0;
+
+    std::list<kvs::RGBColor> m_transfer_function_colors;
+    std::list<float>         m_transfer_function_opacities;
+    std::mutex               m_transfer_function_mutex;
 
     void initialize();
     void onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::string_view message, uWS::OpCode );

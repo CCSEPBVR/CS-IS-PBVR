@@ -35,6 +35,75 @@ void Communication::initialize()
         m_web_text_socket->sendTextMessage( QJsonDocument( QJsonObject{ {"event", "debug"} } ).toJson( QJsonDocument::Compact ) );
     });
 
+    connect( ui->editColorMapPushButton, &QPushButton::clicked, this, [this]()
+            {
+                ColorMapEditor colorMapEditor;
+                colorMapEditor.adjustSize();
+                colorMapEditor.setDefaultColorMap( ui->colorMap->getColors() );
+
+                if( colorMapEditor.exec() == QDialog::Accepted )
+                {
+                    QVector<QColor> qcolors = colorMapEditor.getColorMap();
+                    ui->colorMap->setColors( qcolors );
+                }
+            } );
+
+    connect( ui->editOpacityMapPushButton, &QPushButton::clicked, this, [this]()
+            {
+                OpacityMapEditor OpacityMapEditor;
+                OpacityMapEditor.adjustSize();
+                OpacityMapEditor.setDefaultOpacityMap( ui->opacityMap->getOpacities() );
+
+                if( OpacityMapEditor.exec() == QDialog::Accepted )
+                {
+                    QVector<float> opacities = OpacityMapEditor.getOpacityMap();
+                    ui->opacityMap->setOpacities( opacities );
+                }
+            } );
+
+    connect( ui->sendTransferFunctionPushButton, &QPushButton::clicked, this, [this]()
+            {
+                if( !isSocketsConnected() )
+                {
+                    return;
+                }
+
+                QJsonArray colorArray;
+                for( const QColor& color : ui->colorMap->getColors() )
+                {
+                    QJsonArray rgb;
+                    rgb.append( color.red() );
+                    rgb.append( color.green() );
+                    rgb.append( color.blue() );
+                    colorArray.append( rgb );
+                }
+
+                QJsonArray opacityArray;
+                for( float opacity : ui->opacityMap->getOpacities() )
+                {
+                    opacityArray.append( opacity );
+                }
+
+                m_web_text_socket->sendTextMessage(
+                    QJsonDocument(
+                        QJsonObject{
+                            { "event", "transferfunction" },
+                            { "colorMap", colorArray },
+                            { "opacityMap", opacityArray }
+                        }
+                        ).toJson( QJsonDocument::Compact )
+                    );
+            } );
+
+    connect( ui->generatePushButton, &QPushButton::clicked, this, [this]()
+            {
+                if( !isSocketsConnected() )
+                {
+                    return;
+                }
+                m_web_text_socket->sendTextMessage( QJsonDocument( QJsonObject{ {"event", "generate"} } ).toJson( QJsonDocument::Compact ) );
+            } );
+
     connect( m_web_binary_socket, &QWebSocket::connected    , this, &Communication::binaryWebsocketConnected );     // 接続成功(バイナリ)
     connect( m_web_binary_socket, &QWebSocket::disconnected , this, &Communication::binaryWebsocketDisconnected );  // 接続切断(バイナリ)
     connect( m_web_binary_socket, &QWebSocket::binaryMessageReceived , this, &Communication::binaryWebsocketMessageReceived );  // メッセージ受信(バイナリ)
@@ -56,6 +125,35 @@ bool Communication::isSocketsConnected() const
         return socket && ( socket->state() == QAbstractSocket::ConnectedState || socket->state() == QAbstractSocket::ConnectingState );
     };
     return isConnectedOrConnecting( m_web_binary_socket ) && isConnectedOrConnecting( m_web_text_socket );
+}
+
+void Communication::registerObject( kvs::PointObject* pointObject )
+{
+    kvs::glsl::ParticleBasedRenderer* renderer = new kvs::glsl::ParticleBasedRenderer();
+    renderer->enableShuffle();
+
+    kvs::Xform m_initial_camera_xfom
+        (
+            kvs::Mat4(
+                1, 0, 0, 0 ,
+                0, 1, 0, 0 ,
+                0, 0, 1, 12,
+                0, 0, 0, 1
+                )
+            );
+
+    kvs::Vec3 translationOffset = m_screen->scene()->camera()->xform().translation() - m_initial_camera_xfom.translation();
+    renderer->setTranslationOffset( translationOffset );
+    renderer->setObjectDepth( m_screen->scene()->objectManager()->xform().scaling().z() / m_screen->scene()->camera()->xform().scaling().z() );
+
+    m_server_point_object_ids = m_screen->scene()->registerObject( pointObject, renderer );
+    m_screen->update();
+}
+
+void Communication::replaceObject( kvs::PointObject* pointObject )
+{
+    m_screen->scene()->replaceObject( m_server_point_object_ids.first, pointObject );
+    m_screen->update();
 }
 
 void Communication::onConnectClicked()
@@ -104,9 +202,9 @@ void Communication::onChatClicked()
     if( text.isEmpty() ) return; // 何も入力されていない場合は何もしない
 
     m_web_text_socket->sendTextMessage( QJsonDocument( {
-                                                           {"event", "chat"},
-                                                           {"text", text},
-                                                       } ).toJson( QJsonDocument::Compact) );
+                                                      {"event", "chat"},
+                                                      {"text", text},
+                                                      } ).toJson( QJsonDocument::Compact) );
     ui->chatLineEdit->clear();
 }
 
@@ -120,7 +218,58 @@ void Communication::binaryWebsocketDisconnected()
 
 void Communication::binaryWebsocketMessageReceived( const QByteArray& binary )
 {
+    const char* data_ptr = binary.constData();
+    size_t offset = 0;
 
+    // 頂点数を読み出す
+    size_t numberOfVertices = 0;
+    std::memcpy( &numberOfVertices, data_ptr + offset, sizeof( size_t ) );
+    offset += sizeof( size_t );
+
+    // 座標（float3 * N）
+    kvs::ValueArray<kvs::Real32> coords( numberOfVertices * 3 );
+    std::memcpy( coords.data(), data_ptr + offset, sizeof( kvs::Real32 ) * 3 * numberOfVertices );
+    offset += sizeof( kvs::Real32 ) * 3 * numberOfVertices;
+
+    // 色（uchar3 * N）
+    kvs::ValueArray<kvs::UInt8> colors( numberOfVertices * 3 );
+    std::memcpy( colors.data(), data_ptr + offset, sizeof( kvs::UInt8 ) * 3 * numberOfVertices );
+    offset += sizeof( kvs::UInt8 ) * 3 * numberOfVertices;
+
+    // 法線（float3 * N）
+    kvs::ValueArray<kvs::Real32> normals( numberOfVertices * 3 );
+    std::memcpy( normals.data(), data_ptr + offset, sizeof( kvs::Real32 ) * 3 * numberOfVertices );
+    offset += sizeof( kvs::Real32 ) * 3 * numberOfVertices;
+
+    // minObjectCoords（float3）
+    kvs::Vec3 minObjectCoords;
+    std::memcpy( minObjectCoords.data(), data_ptr + offset, sizeof( kvs::Real32 ) * 3 );
+    offset += sizeof( kvs::Real32 ) * 3;
+
+    // maxObjectCoords（float3）
+    kvs::Vec3 maxObjectCoords;
+    std::memcpy( maxObjectCoords.data(), data_ptr + offset, sizeof( kvs::Real32 ) * 3 );
+    offset += sizeof( kvs::Real32 ) * 3;
+
+    // kvs::PointObject の生成
+    auto* object = new kvs::PointObject();
+    object->setCoords( coords );
+    object->setColors( colors );
+    object->setNormals( normals );
+    object->setMinMaxObjectCoords( minObjectCoords, maxObjectCoords );
+    object->setMinMaxExternalCoords( minObjectCoords, maxObjectCoords );
+
+    emit updateFocus( minObjectCoords, maxObjectCoords ); // AFTER_WEBSOCKET
+    emit updatePointsTranslation(); // AFTER_WEBSOCKET
+
+    if( m_server_point_object_ids == QPair<int,int>(-1, -1) )
+    {
+        registerObject(object);
+    }
+    else
+    {
+        replaceObject(object);
+    }
 }
 
 void Communication::textWebsocketConnected()
