@@ -24,7 +24,8 @@ struct PerSocket
 struct ClientState
 {
     std::string userUUID;
-    int userID;
+    int userID = -1;
+    bool isOperator = false;
     uWS::WebSocket<false,true,PerSocket>* binary_ws = nullptr;
     uWS::WebSocket<false,true,PerSocket>* text_ws   = nullptr;
 };
@@ -47,6 +48,39 @@ private:
     void initialize();
     void onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::string_view message, uWS::OpCode );
     void onClose( uWS::WebSocket<false, true, PerSocket>* ws, int /*code*/, std::string_view /*msg*/ );
+
+    void transferOperatorControl( int oldOperatorID, int newOperatorID )
+    {
+        std::shared_ptr<ClientState> oldClient = nullptr;
+        std::shared_ptr<ClientState> newClient = nullptr;
+
+        for( auto& [uuid, client] : m_clients )
+        {
+            if( client->userID == oldOperatorID )
+            {
+                oldClient = client;
+            }
+            else if( client->userID == newOperatorID )
+            {
+                newClient = client;
+            }
+        }
+
+        if( !oldClient || !newClient )
+        {
+            std::cout << "[Server] Operator transfer failed: " << "oldOperatorID=" << oldOperatorID << ", newOperatorID=" << newOperatorID << " not found." << std::endl;
+            return;
+        }
+
+        newClient->isOperator = true;
+        oldClient->isOperator = false;
+
+        nlohmann::json msg;
+        msg["event"] = "operatortransfer";
+        msg["oldOperatorID"] = oldClient->userID;
+        msg["newOperatorID"] = newClient->userID;
+        m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
+    }
 
     void debugNumberOfUsers()
     {

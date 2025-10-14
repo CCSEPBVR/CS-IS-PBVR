@@ -25,6 +25,7 @@ void Communication::initialize()
 
     connect( ui->connectPushButton, &QPushButton::clicked, this, &Communication::onConnectClicked );
     connect( ui->disconnectPushButton, &QPushButton::clicked, this, &Communication::onDisconnectClicked );
+    connect( ui->transferOperatorPushButton, &QPushButton::clicked, this, &Communication::onTransferOperator );
     connect( ui->chatSendPushButton, &QPushButton::clicked, this, &Communication::onChatClicked );
     connect( ui->shareViewPushButton , &QPushButton::clicked, this, &Communication::onShareView );
 
@@ -191,6 +192,41 @@ void Communication::onDisconnectClicked()
     if( m_web_text_socket ) m_web_text_socket->close();
 }
 
+void Communication::onTransferOperator()
+{
+    if( !isSocketsConnected() )
+    {
+        qDebug() << "Not connected";
+        return;
+    }
+
+    if( !m_is_operator )
+    {
+        qDebug() << "You are not the operator";
+        return;
+    }
+
+    bool isValid = false;
+    int targetID = ui->IDlineEdit->text().toInt( &isValid );
+
+    if( !isValid )
+    {
+        qDebug() << "Invalid ID";
+        return;
+    }
+
+    if( m_user_id == targetID )
+    {
+        qDebug() << "You cannot transfer yourself";
+    }
+
+
+    m_web_text_socket->sendTextMessage( QJsonDocument( {
+                                                      {"event", "transferoperator"},
+                                                      {"target_id", targetID},
+                                                      } ).toJson( QJsonDocument::Compact) );
+}
+
 void Communication::onChatClicked()
 {
     if( !isSocketsConnected() )
@@ -261,6 +297,14 @@ void Communication::binaryWebsocketConnected()
 
 void Communication::binaryWebsocketDisconnected()
 {
+    if( !isSocketsConnected() )
+    {
+        m_user_id = -1;
+        m_is_operator = false;
+        ui->IDLabelDisplay->clear();
+        ui->isOperatorLabelDisplay->clear();
+        ui->textBrowser->clear();
+    }
 }
 
 void Communication::binaryWebsocketMessageReceived( const QByteArray& binary )
@@ -325,6 +369,14 @@ void Communication::textWebsocketConnected()
 
 void Communication::textWebsocketDisconnected()
 {
+    if( !isSocketsConnected() )
+    {
+        m_user_id = -1;
+        m_is_operator = false;
+        ui->IDLabelDisplay->clear();
+        ui->isOperatorLabelDisplay->clear();
+        ui->textBrowser->clear();
+    }
 }
 
 void Communication::textWebsocketMessageReceived( const QString& receivedMessage )
@@ -348,6 +400,47 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             int userID = obj["userID"].toInt();    // 入出者
             QString userIDStr = QString::number( userID );
             ui->textBrowser->append( "--- User[" + userIDStr + "] Left" );
+        }
+
+        if( obj["event"].toString() == "id" )
+        {
+            int userID = obj["userID"].toInt(); // 自分自身のユーザID
+            QString userIDStr = QString::number( userID );
+            m_user_id = userID;
+            ui->IDLabelDisplay->setText( userIDStr );
+            ui->textBrowser->append("--- Your User ID is [" + userIDStr + "]" );
+        }
+
+        if( obj["event"].toString() == "operator" )
+        {
+            bool isOperator = obj["isOperator"].toBool(); // 自分に操作権限があるか
+            m_is_operator = isOperator;
+            ui->isOperatorLabelDisplay->setText( m_is_operator ? "true" : "false" );
+            if( m_is_operator )
+            {
+                ui->textBrowser->append("--- You have operator privilege");
+            }
+            else
+            {
+                ui->textBrowser->append("--- You are not operator");
+            }
+        }
+
+        if( obj["event"].toString() == "operatortransfer" )
+        {
+            int oldOperatorID = obj["oldOperatorID"].toInt();
+            int newOperatorID = obj["newOperatorID"].toInt();
+            ui->textBrowser->append("--- Operator change [" + QString::number( oldOperatorID ) + "] to [" + QString::number( newOperatorID ) + "]" );
+            if( m_user_id == newOperatorID )
+            {
+                m_is_operator = true;
+                ui->isOperatorLabelDisplay->setText( "true" );
+            }
+            else
+            {
+                m_is_operator = false;
+                ui->isOperatorLabelDisplay->setText( "false" );
+            }
         }
 
         if( obj["event"].toString() == "chat" )

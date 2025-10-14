@@ -31,12 +31,18 @@ void Server::initialize()
             }
 
             // ClientState 準備
-            if (m_clients.find(uuid) == m_clients.end())
+            if( m_clients.find(uuid) == m_clients.end() )
             {
-                m_clients[uuid] = std::make_shared<ClientState>();
-                m_clients[uuid]->userUUID = uuid;
-                m_clients[uuid]->userID = m_next_user_id++;
+                const bool isOperator = m_clients.empty(); // 追加前のサイズで判定
+
+                auto client = std::make_shared<ClientState>();
+                client->userUUID   = uuid;
+                client->userID = m_next_user_id++;
+                client->isOperator = isOperator;
+                std::cout << "[Server] User[" << client->userID << "] operator :" << client->isOperator << std::endl;
+                m_clients.emplace( uuid, std::move( client ) );
             }
+
             auto clientState = m_clients[uuid];
 
             // PerSocket に共通データをセット
@@ -72,6 +78,18 @@ void Server::initialize()
                 msg["event"] = "join";
                 msg["userID"] = client->userID;
                 m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
+                {
+                    nlohmann::json msg;
+                    msg["event"] = "id";
+                    msg["userID"] = client->userID;
+                    ws->getUserData()->state->text_ws->send( msg.dump(), uWS::OpCode::TEXT );
+                }
+                {
+                    nlohmann::json msg;
+                    msg["event"] = "operator";
+                    msg["isOperator"] = client->isOperator;
+                    ws->getUserData()->state->text_ws->send( msg.dump(), uWS::OpCode::TEXT );
+                }
             }
         },
 
@@ -113,12 +131,19 @@ void Server::initialize()
                 return;
             }
 
-            if (m_clients.find(uuid) == m_clients.end())
+            // ClientState 準備
+            if( m_clients.find(uuid) == m_clients.end() )
             {
-                m_clients[uuid] = std::make_shared<ClientState>();
-                m_clients[uuid]->userUUID = uuid;
-                m_clients[uuid]->userID = m_next_user_id++;
+                const bool isOperator = m_clients.empty(); // 追加前のサイズで判定
+
+                auto client = std::make_shared<ClientState>();
+                client->userUUID   = uuid;
+                client->userID = m_next_user_id++;
+                client->isOperator = isOperator;
+                std::cout << "[Server] User[" << client->userID << "] operator :" << client->isOperator << std::endl;
+                m_clients.emplace( uuid, std::move( client ) );
             }
+
             auto clientState = m_clients[uuid];
 
             PerSocket per_socket;
@@ -152,6 +177,18 @@ void Server::initialize()
                 msg["event"] = "join";
                 msg["userID"] = client->userID;
                 m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
+                {
+                    nlohmann::json msg;
+                    msg["event"] = "id";
+                    msg["userID"] = client->userID;
+                    ws->getUserData()->state->text_ws->send( msg.dump(), uWS::OpCode::TEXT );
+                }
+                {
+                    nlohmann::json msg;
+                    msg["event"] = "operator";
+                    msg["isOperator"] = client->isOperator;
+                    ws->getUserData()->state->text_ws->send( msg.dump(), uWS::OpCode::TEXT );
+                }
             }
         },
 
@@ -190,6 +227,21 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
     if (received.contains("event"))
     {
         const auto& event = received["event"];
+
+        if (event == "transferoperator")
+        {
+            std::cout << "[Server] transferoperator" << std::endl;
+            int userID = ws->getUserData()->state->userID;
+            bool isOperator = ws->getUserData()->state->isOperator;
+            if( !isOperator )
+            {
+                std::cout << "[Server] User[" << userID << "] is not operator" << std::endl;
+            }
+
+            int targetID = received["target_id"];
+            transferOperatorControl( userID, targetID );
+        }
+
         if (event == "chat")
         {
             std::cout << "[Server] chat" << std::endl;
@@ -320,7 +372,7 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
                                                      std::cout << "[Server] publishing..." << std::endl;
                                                      m_u_web_sockets.publish( "AFTER", std::string_view( buffer.data(), buffer.size() ), uWS::OpCode::BINARY );
                                                  } );
-		
+
             } ).detach();
         }
 
@@ -338,15 +390,34 @@ void Server::onClose(uWS::WebSocket<false, true, PerSocket>* ws, int /*code*/, s
 
     auto uuid = ps->state->userUUID;
     auto userID = ps->state->userID;
-    std::cout << "[Server] close UUID=" << uuid << std::endl;
+    auto isOperator = ps->state->isOperator;
 
-    if (ps->state->binary_ws == ws) ps->state->binary_ws = nullptr;
-    if (ps->state->text_ws == ws) ps->state->text_ws = nullptr;
+    if( ps->state->binary_ws == ws ) ps->state->binary_ws = nullptr;
+    if( ps->state->text_ws == ws ) ps->state->text_ws = nullptr;
 
-    if (!ps->state->binary_ws && !ps->state->text_ws)
+    if( !ps->state->binary_ws && !ps->state->text_ws )
     {
-        std::cout << "[Server] Removing client UUID=" << uuid << std::endl;
-        m_clients.erase(uuid);
+        if( isOperator )
+        {
+            std::shared_ptr<ClientState> newClient = nullptr;
+            int minID = -1;
+            for( auto& [otherUUID, client] : m_clients )
+            {
+                if( client->userID == userID ) continue;
+                if( minID == -1 || client->userID < minID )
+                {
+                    minID = client->userID;
+                    newClient = client;
+                }
+            }
+
+            if( newClient )
+            {
+                transferOperatorControl( userID, newClient->userID );
+            }
+        }
+        m_clients.erase( uuid );
+        std::cout << "[Server] Removed client UUID=" << uuid << std::endl;
 
         nlohmann::json msg;
         msg["event"] = "left";
