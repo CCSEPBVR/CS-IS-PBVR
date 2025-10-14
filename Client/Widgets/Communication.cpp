@@ -334,59 +334,62 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
 
     QJsonObject obj = doc.object();
 
-    if( obj.contains("event") && obj["event"].toString() == "join" )
+    if( obj.contains("event") )
     {
-        int userID = obj["userID"].toInt();    // 入出者
-        QString userIDStr = QString::number( userID );
-        ui->textBrowser->append( "--- User[" + userIDStr + "] Join ---" );
-    }
-
-    if( obj.contains("event") && obj["event"].toString() == "left" )
-    {
-        int userID = obj["userID"].toInt();    // 入出者
-        QString userIDStr = QString::number( userID );
-        ui->textBrowser->append( "--- User[" + userIDStr + "] Left ---" );
-    }
-
-    if( obj.contains("event") && obj["event"].toString() == "chat" )
-    {
-        int userID = obj["userID"].toInt();    // 受信したチャットの送信者
-        QString userIDStr = QString::number( userID );
-        QString text = obj["text"].toString();      // 受信したチャット内容
-        ui->textBrowser->append( "User[" + userIDStr + "]: " + text );
-    }
-
-    if( obj.contains("event") && obj["event"].toString() == "shareview" )
-    {
-        int userID = obj["userID"].toInt();    // 受信した視点共有の送信者
-        QString userIDStr = QString::number( userID );
-        QJsonArray matrixArray = obj["matrix"].toArray();
-        kvs::Matrix44f mat;
-        for( int row = 0; row < 4; ++row )
+        if( obj["event"].toString() == "join" )
         {
-            QJsonArray row_array = matrixArray.at( row ).toArray();
-            for( int col = 0; col < 4; ++col )
+            int userID = obj["userID"].toInt();    // 入出者
+            QString userIDStr = QString::number( userID );
+            ui->textBrowser->append( "--- User[" + userIDStr + "] Join ---" );
+        }
+
+        if( obj["event"].toString() == "left" )
+        {
+            int userID = obj["userID"].toInt();    // 入出者
+            QString userIDStr = QString::number( userID );
+            ui->textBrowser->append( "--- User[" + userIDStr + "] Left ---" );
+        }
+
+        if( obj["event"].toString() == "chat" )
+        {
+            int userID = obj["userID"].toInt();    // 受信したチャットの送信者
+            QString userIDStr = QString::number( userID );
+            QString text = obj["text"].toString();      // 受信したチャット内容
+            ui->textBrowser->append( "User[" + userIDStr + "]: " + text );
+        }
+
+        if( obj["event"].toString() == "shareview" )
+        {
+            int userID = obj["userID"].toInt();    // 受信した視点共有の送信者
+            QString userIDStr = QString::number( userID );
+            QJsonArray matrixArray = obj["matrix"].toArray();
+            kvs::Matrix44f mat;
+            for( int row = 0; row < 4; ++row )
             {
-                mat[row][col] = static_cast<float>( row_array.at( col ).toDouble() );
+                QJsonArray row_array = matrixArray.at( row ).toArray();
+                for( int col = 0; col < 4; ++col )
+                {
+                    mat[row][col] = static_cast<float>( row_array.at( col ).toDouble() );
+                }
             }
-        }
 
-        // kvs::Xform に変換
-        kvs::Xform recieveXform( mat );
-        if( !m_share_view_list_model )
-        {
-            m_share_view_list_model = new QStandardItemModel( this );
-            ui->shareListView->setModel( m_share_view_list_model );
-            connect( ui->shareListView, &QListView::doubleClicked, this, &Communication::onItemDoubleClicked );
-        }
-        // 表示用ラベル作成
-        QString label = "User[" + userIDStr + "] View";
+            // kvs::Xform に変換
+            kvs::Xform recieveXform( mat );
+            if( !m_share_view_list_model )
+            {
+                m_share_view_list_model = new QStandardItemModel( this );
+                ui->shareListView->setModel( m_share_view_list_model );
+                connect( ui->shareListView, &QListView::doubleClicked, this, &Communication::onItemDoubleClicked );
+            }
+            // 表示用ラベル作成
+            QString label = "User[" + userIDStr + "] View";
 
-        // QStandardItem 作成し、xform をデータとして格納
-        QStandardItem* item = new QStandardItem( label );
-        item->setData( QVariant::fromValue( recieveXform ), Qt::UserRole + 1 );
-        // 編集不可にする
-        item->setFlags( item->flags() & ~Qt::ItemIsEditable );
-        m_share_view_list_model->appendRow( item );
+            // QStandardItem 作成し、xform をデータとして格納
+            QStandardItem* item = new QStandardItem( label );
+            item->setData( QVariant::fromValue( recieveXform ), Qt::UserRole + 1 );
+            // 編集不可にする
+            item->setFlags( item->flags() & ~Qt::ItemIsEditable );
+            m_share_view_list_model->appendRow( item );
+        }
     }
 }
