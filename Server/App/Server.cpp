@@ -35,7 +35,7 @@ void Server::initialize()
             {
                 m_clients[uuid] = std::make_shared<ClientState>();
                 m_clients[uuid]->userUUID = uuid;
-                m_clients[uuid]->userNumber = m_next_user_number++;
+                m_clients[uuid]->userID = m_next_user_id++;
             }
             auto clientState = m_clients[uuid];
 
@@ -70,7 +70,7 @@ void Server::initialize()
             {
                 nlohmann::json msg;
                 msg["event"] = "join";
-                msg["userNumber"] = client->userNumber;
+                msg["userID"] = client->userID;
                 m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
             }
         },
@@ -117,7 +117,7 @@ void Server::initialize()
             {
                 m_clients[uuid] = std::make_shared<ClientState>();
                 m_clients[uuid]->userUUID = uuid;
-                m_clients[uuid]->userNumber = m_next_user_number++;
+                m_clients[uuid]->userID = m_next_user_id++;
             }
             auto clientState = m_clients[uuid];
 
@@ -150,7 +150,7 @@ void Server::initialize()
             {
                 nlohmann::json msg;
                 msg["event"] = "join";
-                msg["userNumber"] = client->userNumber;
+                msg["userID"] = client->userID;
                 m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
             }
         },
@@ -197,7 +197,7 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
 
             nlohmann::json msg;
             msg["event"] = "chat";
-            msg["userNumber"] = ws->getUserData()->state->userNumber;
+            msg["userID"] = ws->getUserData()->state->userID;
             msg["text"] = text;
 
             m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
@@ -210,7 +210,7 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
 
             nlohmann::json msg;
             msg["event"] = "shareview";
-            msg["userNumber"] = ws->getUserData()->state->userNumber;
+            msg["userID"] = ws->getUserData()->state->userID;
             msg["matrix"] = matrix;
 
             m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
@@ -337,7 +337,7 @@ void Server::onClose(uWS::WebSocket<false, true, PerSocket>* ws, int /*code*/, s
     if (!ps || !ps->state) return;
 
     auto uuid = ps->state->userUUID;
-    auto userNumber = ps->state->userNumber;
+    auto userID = ps->state->userID;
     std::cout << "[Server] close UUID=" << uuid << std::endl;
 
     if (ps->state->binary_ws == ws) ps->state->binary_ws = nullptr;
@@ -350,7 +350,7 @@ void Server::onClose(uWS::WebSocket<false, true, PerSocket>* ws, int /*code*/, s
 
         nlohmann::json msg;
         msg["event"] = "left";
-        msg["userNumber"] = userNumber;
+        msg["userID"] = userID;
         m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
     }
 }

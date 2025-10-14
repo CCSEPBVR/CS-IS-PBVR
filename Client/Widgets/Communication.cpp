@@ -336,26 +336,26 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
 
     if( obj.contains("event") && obj["event"].toString() == "join" )
     {
-        int userNumber = obj["userNumber"].toInt();    // 入出者
-        ui->textBrowser->append( "--- User[" + QString::number( userNumber ) + "] Join ---" );
+        int userID = obj["userID"].toInt();    // 入出者
+        ui->textBrowser->append( "--- User[" + QString::number( userID ) + "] Join ---" );
     }
 
     if( obj.contains("event") && obj["event"].toString() == "left" )
     {
-        int userNumber = obj["userNumber"].toInt();    // 退出者
-        ui->textBrowser->append( "--- User[" + QString::number( userNumber ) + "] Left ---" );
+        int userID = obj["userID"].toInt();    // 退出者
+        ui->textBrowser->append( "--- User[" + QString::number( userID ) + "] Left ---" );
     }
 
     if( obj.contains("event") && obj["event"].toString() == "chat" )
     {
-        int userNumber = obj["userNumber"].toInt();    // 受信したチャットの送信者
+        int userID = obj["userID"].toInt();    // 受信したチャットの送信者
         QString text = obj["text"].toString();      // 受信したチャット内容
-        ui->textBrowser->append( "User[" + QString::number( userNumber ) + "]: " + text );
+        ui->textBrowser->append( "User[" + QString::number( userID ) + "]: " + text );
     }
 
     if( obj.contains("event") && obj["event"].toString() == "shareview" )
     {
-        int userNumber = obj["userNumber"].toInt();    // 受信した視点共有の送信者
+        int userID = obj["userID"].toInt();    // 受信した視点共有の送信者
         QJsonArray matrixArray = obj["matrix"].toArray();
         kvs::Matrix44f mat;
         for( int row = 0; row < 4; ++row )
@@ -376,7 +376,7 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             connect( ui->shareListView, &QListView::doubleClicked, this, &Communication::onItemDoubleClicked );
         }
         // 表示用ラベル作成
-        QString label = "User[" + QString::number( userNumber ) + "] View";
+        QString label = "User[" + QString::number( userID ) + "] View";
 
         // QStandardItem 作成し、xform をデータとして格納
         QStandardItem* item = new QStandardItem( label );

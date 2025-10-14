@@ -24,7 +24,7 @@ struct PerSocket
 struct ClientState
 {
     std::string userUUID;
-    int userNumber;
+    int userID;
     uWS::WebSocket<false,true,PerSocket>* binary_ws = nullptr;
     uWS::WebSocket<false,true,PerSocket>* text_ws   = nullptr;
 };
@@ -38,7 +38,7 @@ private:
     uWS::App m_u_web_sockets;
     int m_port;
     std::unordered_map<std::string, std::shared_ptr<ClientState>> m_clients;
-    int m_next_user_number = 0;
+    int m_next_user_id = 0;
 
     std::list<kvs::RGBColor> m_transfer_function_colors;
     std::list<float>         m_transfer_function_opacities;
@@ -54,7 +54,7 @@ private:
         for( const auto& [uuid, clientState] : m_clients )
         {
             std::cout << "UUID: " << uuid << std::endl;
-            std::cout << "userNumber: " << clientState->userNumber << std::endl;
+            std::cout << "userID: " << clientState->userID << std::endl;
             // バイナリソケット接続状況
             if( clientState->binary_ws )
             {
