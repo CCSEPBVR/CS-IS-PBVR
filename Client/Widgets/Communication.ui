@@ -18,13 +18,60 @@
     <item row="0" column="0" rowspan="3" colspan="3">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="connectTab">
        <attribute name="title">
         <string>Connect</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_2">
+        <item row="5" column="0" colspan="2">
+         <widget class="QTextBrowser" name="textBrowser"/>
+        </item>
+        <item row="6" column="0">
+         <widget class="QLineEdit" name="chatLineEdit"/>
+        </item>
+        <item row="7" column="0" colspan="2">
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="IDLabel">
+          <property name="text">
+           <string>ID : </string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="1">
+         <widget class="QPushButton" name="chatSendPushButton">
+          <property name="text">
+           <string>Send</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="2">
+         <widget class="QPushButton" name="debugPushButton">
+          <property name="text">
+           <string>Debug</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLabel" name="IDLabelDisplay">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="0" colspan="2">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
@@ -44,37 +91,28 @@
          </layout>
         </item>
         <item row="3" column="0">
-         <widget class="QLineEdit" name="chatLineEdit"/>
+         <widget class="QLabel" name="isOperatorLabel">
+          <property name="text">
+           <string>Operator : </string>
+          </property>
+         </widget>
         </item>
         <item row="3" column="1">
-         <widget class="QPushButton" name="chatSendPushButton">
+         <widget class="QLabel" name="isOperatorLabelDisplay">
           <property name="text">
-           <string>Send</string>
+           <string/>
           </property>
          </widget>
         </item>
-        <item row="2" column="0" colspan="2">
-         <widget class="QTextBrowser" name="textBrowser"/>
-        </item>
-        <item row="1" column="0" colspan="2">
-         <widget class="QPushButton" name="debugPushButton">
+        <item row="4" column="1">
+         <widget class="QPushButton" name="transferOperatorPushButton">
           <property name="text">
-           <string>Debug</string>
+           <string>Transfer Operator</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="0" colspan="2">
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
+        <item row="4" column="0">
+         <widget class="QLineEdit" name="IDlineEdit"/>
         </item>
        </layout>
       </widget>
