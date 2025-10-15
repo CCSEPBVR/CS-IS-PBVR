@@ -28,9 +28,10 @@ PointImporter::PointImporter()
 /**
  *  @brief  Constructs a new PointImporter class.
  *  @param  filename [in] input filename
+ *  @param  offset_activate [in] offset activate flag (for las format)
  */
 /*===========================================================================*/
-PointImporter::PointImporter( const std::string& filename )
+PointImporter::PointImporter( const std::string& filename, const bool offset_activate )
 {
     if ( kvs::KVSMLPointObject::CheckExtension( filename ) )
     {
@@ -38,7 +39,8 @@ PointImporter::PointImporter( const std::string& filename )
     }
     else if ( kvs::LAS::CheckExtension( filename ) )
     {
-        kvs::LAS* file_format = new kvs::LAS( filename );
+        // offset_activateがfalseの時OFFSETを無視する
+        kvs::LAS* file_format = new kvs::LAS( filename, offset_activate );
         if ( !file_format )
         {
             BaseClass::setSuccess( false );

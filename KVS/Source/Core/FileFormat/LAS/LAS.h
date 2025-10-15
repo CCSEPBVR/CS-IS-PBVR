@@ -57,12 +57,14 @@ private:
     kvs::ValueArray<kvs::Real32> m_coords; ///< coordinate array
     kvs::ValueArray<kvs::UInt8> m_colors; ///< color(r,g,b) array
 
+    bool m_offset_activate; // falseにするとOFFSETを無視する
+
 public:
     static bool CheckExtension( const std::string& filename );
 
 public:
-    LAS();
-    LAS( const std::string& filename );
+    LAS( const bool offset_activate = false );
+    LAS( const std::string& filename, const bool offset_activate = false );
 
     const kvs::ValueArray<kvs::Real32>& coords() const { return m_coords; }
     const kvs::ValueArray<kvs::UInt8>& colors() const { return m_colors; }

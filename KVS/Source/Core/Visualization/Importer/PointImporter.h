@@ -29,7 +29,7 @@ class PointImporter : public kvs::ImporterBase, public kvs::PointObject
 
 public:
     PointImporter();
-    PointImporter( const std::string& filename );
+    PointImporter( const std::string& filename, bool offset_activate = false );
     PointImporter( const kvs::FileFormatBase* file_format );
     virtual ~PointImporter();
 

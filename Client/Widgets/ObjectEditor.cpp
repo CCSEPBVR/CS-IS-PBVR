@@ -1247,9 +1247,12 @@ std::unique_ptr<kvs::ObjectBase> ObjectEditor::importObject( const QStandardItem
         return nullptr;
 
     case ObjectItem::Format::PointObjectKVSML:
-    case ObjectItem::Format::PointObjectLAS:
     case ObjectItem::Format::PointObjectPTS:
         object = std::make_unique<kvs::PointImporter>( fileName );
+        break;
+
+    case ObjectItem::Format::PointObjectLAS:
+        object = std::make_unique<kvs::PointImporter>( fileName, false );
         break;
 
     case ObjectItem::Format::PolygonObjectKVSML:

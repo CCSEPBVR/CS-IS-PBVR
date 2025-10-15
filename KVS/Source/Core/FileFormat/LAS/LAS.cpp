@@ -34,21 +34,24 @@ bool LAS::CheckExtension( const std::string& filename )
 /*===========================================================================*/
 /**
  *  @brief  Constructs a new LAS class.
+ *  @param  offset_activate [in] offset activate flag
  */
 /*===========================================================================*/
-LAS::LAS()
+LAS::LAS( const bool offset_activate )
 {
-
+    m_offset_activate = offset_activate;
 }
 
 /*===========================================================================*/
 /**
  *  @brief  Constructs a new LAS class.
  *  @param  filename [in] filename
+ *  @param  offset_activate [in] offset activate flag
  */
 /*===========================================================================*/
-LAS::LAS( const std::string& filename )
+LAS::LAS( const std::string& filename, const bool offset_activate )
 {
+    m_offset_activate = offset_activate;
     this->read( filename );
 }
 
@@ -57,6 +60,7 @@ LAS::LAS( const std::string& filename )
 /**
  *  @brief  Read a LAS point object file.
  *  @param  filename [in] filename
+ *  @param  offset_activate [in] offset activate flag
  *  @return true, if the reading process is successfully
  */
 /*===========================================================================*/
@@ -160,9 +164,20 @@ bool LAS::read( const std::string& filename )
         std::memcpy( &point.G, PDR_buffer + offset + 2, 2 );
         std::memcpy( &point.B, PDR_buffer + offset + 4, 2 );
 
-        coords[3*i  ] = point.X * header.x_scale_factor + header.x_offset;
-        coords[3*i+1] = point.Y * header.y_scale_factor + header.y_offset;
-        coords[3*i+2] = point.Z * header.z_scale_factor + header.z_offset;
+        // オフセットを使用する場合
+        if( m_offset_activate )
+        {
+            coords[3*i  ] = point.X * header.x_scale_factor + header.x_offset;
+            coords[3*i+1] = point.Y * header.y_scale_factor + header.y_offset;
+            coords[3*i+2] = point.Z * header.z_scale_factor + header.z_offset;
+        }
+        // オフセットを使用しない場合(デフォルト)
+        else
+        {
+            coords[3*i  ] = point.X * header.x_scale_factor;
+            coords[3*i+1] = point.Y * header.y_scale_factor;
+            coords[3*i+2] = point.Z * header.z_scale_factor;
+        }
 
         colors[3*i  ] = this->int2byte( point.R );
         colors[3*i+1] = this->int2byte( point.G );
