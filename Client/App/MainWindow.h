@@ -11,6 +11,10 @@
 #include <kvs/OrientationAxis>
 #include <kvs/Label>
 
+// ウィジェット群(A~Z)
+// ABCDEFGHIJKLMNOPQRSTUVWXYZ
+#include "Communication.h"
+
 #ifdef OPENXR_SCREEN
 #include "VRHandControllerListener.h"
 #endif
@@ -44,6 +48,10 @@ private:
     QWebSocket* m_web_binary_socket                             = nullptr;
     QWebSocket* m_web_text_socket                               = nullptr;
 
+    // ウィジェット群(A~Z)
+    // ABCDEFGHIJKLMNOPQRSTUVWXYZ
+    Communication* m_communication = nullptr;
+
     // VR関連
 #ifdef OPENXR_SCREEN
     VRHandControllerListener* m_vr_listener;
@@ -51,5 +59,6 @@ private:
 
     // メソッド群
     void initialize();
+    void communicationInitialize();
 };
 #endif // MAINWINDOW_H

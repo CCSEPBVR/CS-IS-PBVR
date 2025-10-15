@@ -1,10 +1,12 @@
 #include "Communication.h"
 #include "ui_Communication.h"
 
-Communication::Communication( kvs::qt::jaea::Screen* screen, QWidget* parent )
+Communication::Communication( kvs::qt::jaea::Screen* screen, QWebSocket* binarySocket, QWebSocket* textSocket, QWidget* parent )
     : QDockWidget(parent)
     , ui(new Ui::Communication)
     , m_screen( screen )
+    , m_web_binary_socket( binarySocket )
+    , m_web_text_socket( textSocket )
 {
     initialize();
 }
@@ -17,11 +19,6 @@ Communication::~Communication()
 void Communication::initialize()
 {
     ui->setupUi(this);
-
-    m_web_binary_socket = new QWebSocket();
-    m_web_text_socket   = new QWebSocket();
-    m_web_binary_socket->setParent( this );
-    m_web_text_socket->setParent( this );
 
     connect( ui->connectPushButton, &QPushButton::clicked, this, &Communication::onConnectClicked );
     connect( ui->disconnectPushButton, &QPushButton::clicked, this, &Communication::onDisconnectClicked );

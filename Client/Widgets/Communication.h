@@ -21,7 +21,7 @@ class Communication : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit Communication( kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
+    explicit Communication( kvs::qt::jaea::Screen* screen, QWebSocket* binarySocket, QWebSocket* textSocket, QWidget *parent = nullptr );
     ~Communication();
 
 private:

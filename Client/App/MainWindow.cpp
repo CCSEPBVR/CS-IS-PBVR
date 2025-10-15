@@ -12,6 +12,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_time_step_label( nullptr )
     , m_web_binary_socket( new QWebSocket() )
     , m_web_text_socket( new QWebSocket() )
+    , m_communication( new Communication( m_screen, m_web_binary_socket, m_web_text_socket, this ) )
 {
     initialize();
 }
@@ -47,6 +48,8 @@ void MainWindow::initialize()
 
     m_web_binary_socket->setParent( this );
     m_web_text_socket->setParent( this );
+
+    communicationInitialize();
 
 #ifdef OPENXR_SCREEN
     m_vr_listener = new VRHandControllerListener( m_screen );
@@ -85,5 +88,14 @@ void MainWindow::initialize()
     {
         QString fullPath = fontDIR + f.file;
         m_screen->paintDevice()->textEngine()->addFont( f.name, fullPath.toUtf8().constData() );
+    }
+}
+
+void MainWindow::communicationInitialize()
+{
+    if( m_communication != nullptr )
+    {
+        m_communication->adjustSize();
+        addDockWidget( Qt::RightDockWidgetArea, m_communication );
     }
 }
