@@ -24,7 +24,7 @@ public:
 
 private:
     Ui::Communication *ui;
-    kvs::qt::Screen* m_screen       = nullptr;
+    kvs::qt::jaea::Screen* m_screen       = nullptr;
     QWebSocket* m_web_binary_socket = nullptr;
     QWebSocket* m_web_text_socket = nullptr;
     QString m_uuid;
