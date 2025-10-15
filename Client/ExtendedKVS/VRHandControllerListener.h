@@ -14,6 +14,7 @@ public:
     void onEvent( kvs::EventBase* event ) override;
 
 signals:
+    void sendVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 AnotherArray[ 3 ] );
     void drawPlotOverLine( kvs::Real32 CoordArray[ 2 * 3 ] );
     void showHidePlotOverLine();
 private:

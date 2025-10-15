@@ -7,6 +7,8 @@
 #include "Screen.h"
 #include <kvs/PointObject>
 #include <kvs/ParticleBasedRenderer>
+#include <kvs/PolygonObject>
+#include <kvs/StochasticPolygonRenderer>
 #include "ColorMapEditor.h"
 #include "OpacityMapEditor.h"
 
@@ -59,6 +61,12 @@ private slots:
 signals:
     void updateFocus( kvs::Vec3, kvs::Vec3 );
     void updatePointsTranslation();
+
+// 着目点用TMP
+private:
+    kvs::PolygonObject* createArrowGlyph( const kvs::ValueArray<kvs::Real32>& coords, const kvs::ValueArray<kvs::Real32>& directions, const kvs::ValueArray<kvs::Real32>& sizes, const kvs::ValueArray<kvs::UInt8>& colors );
+public slots:
+    void onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 3 ] );
 };
 
 #endif // COMMUNICATION_H

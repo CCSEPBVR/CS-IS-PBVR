@@ -268,6 +268,30 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
             m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
         }
 
+        if (event == "sharepoint")
+        {
+            std::cout << "[Server] sharepoint" << std::endl;
+            const auto& x = received["x"];
+            const auto& y = received["y"];
+            const auto& z = received["z"];
+            const auto& dx = received["dx"];
+            const auto& dy = received["dy"];
+            const auto& dz = received["dz"];
+
+
+            nlohmann::json msg;
+            msg["event"] = "sharepoint";
+            msg["userID"] = ws->getUserData()->state->userID;
+            msg["x"] = x;
+            msg["y"] = y;
+            msg["z"] = z;
+            msg["dx"] = dx;
+            msg["dy"] = dy;
+            msg["dz"] = dz;
+
+            m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
+        }
+
 
         if (event == "transferfunction")
         {

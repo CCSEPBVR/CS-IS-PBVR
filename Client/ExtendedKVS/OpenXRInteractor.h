@@ -50,6 +50,8 @@ public:
     OpenXRInteractor( kvs::openxr::OpenXRScreen* screen );
     virtual ~OpenXRInteractor();
 
+    kvs::openxr::OpenXRScreen* screen() const { return m_openxr_screen; }
+
     void setStartPoint( kvs::PointObject* startPoint ) { m_start_point = startPoint; }
     void setEndPoint( kvs::PointObject* endPoint ) { m_end_point = endPoint; }
     kvs::PointObject* startPoint() const { return m_start_point; }

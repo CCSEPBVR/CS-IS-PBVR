@@ -484,5 +484,253 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             item->setFlags( item->flags() & ~Qt::ItemIsEditable );
             m_share_view_list_model->appendRow( item );
         }
+
+        if( obj["event"].toString() == "sharepoint" )
+        {
+            int userID = obj["userID"].toInt();    // 着目点共有を行った送信者
+            QString userIDStr = QString::number( userID );
+            double x = obj["x"].toDouble();
+            double y = obj["y"].toDouble();
+            double z = obj["z"].toDouble();
+            double dx = obj["dx"].toDouble();
+            double dy = obj["dy"].toDouble();
+            double dz = obj["dz"].toDouble();
+
+            kvs::Real32 CoordArray[ 1 * 3 ] =
+                {
+                    kvs::Real32( x ),
+                    kvs::Real32( y ),
+                    kvs::Real32( z ),
+                };
+
+            kvs::Real32 DirectionArray[ 1 * 3 ] =
+                {
+                    kvs::Real32( dx ),
+                    kvs::Real32( dy ),
+                    kvs::Real32( dz ),
+                };
+
+#ifdef OPENXR_SCREEN
+            // シーン全体のサイズを基準にした base_size
+            kvs::Vec3 min_coord = m_screen->scene()->objectManager()->minObjectCoord();
+            kvs::Vec3 max_coord = m_screen->scene()->objectManager()->maxObjectCoord();
+            kvs::Vec3 diag = max_coord - min_coord;
+            float scene_size = diag.length();
+            float base_size = scene_size * 0.005f; // シーン全体に対する割合
+
+            // 現在のスケーリング値を取得
+            kvs::Xform xform = m_screen->scene()->objectManager()->xform();
+            float scalingFactor = xform.scaling().x(); // (x,y,z が同じなら x でOK)
+
+            // スケーリングに反比例させることで拡大縮小に依存しないサイズにする
+            kvs::Real32 SizeArray[1] = { base_size / scalingFactor };
+#else
+            kvs::Xform currentObjectManagerXform = m_screen->scene()->objectManager()->xform(); // 現在のオブジェクトマネージャーのTranslation, Scaling, Rotationを取得する。
+            float scalingFactor = 1 / ( currentObjectManagerXform.inverse() * m_screen->scene()->object( m_screen->scene()->numberOfObjects() - 1 )->xform() ).scaling().x();
+            kvs::Real32 SizeArray[ 1 ] = {
+                0.5f * scalingFactor,
+            };
+#endif
+
+            kvs::UInt8 ColorArray[ 1 * 3 ] =
+                {
+                    0, 255, 0,
+                };
+
+            kvs::ValueArray<kvs::Real32> coords( CoordArray, 1 * 3 );
+            kvs::ValueArray<kvs::Real32> direction( DirectionArray, 1 * 3 );
+            kvs::ValueArray<kvs::Real32> size( SizeArray, 1 );
+            kvs::ValueArray<kvs::UInt8> colors( ColorArray, 1 * 3 );
+
+            if( m_screen->scene()->object( userID + "_SharedGlyph" ) == nullptr )
+            {
+                kvs::PolygonObject* sharedPolygon = createArrowGlyph( coords, direction, size, colors );
+                sharedPolygon->setName( userID + "_SharedGlyph" );
+                sharedPolygon->setXform( m_screen->scene()->objectManager()->xform() );
+                sharedPolygon->setMinMaxObjectCoords( m_screen->scene()->object( m_server_point_object_ids.first )->minObjectCoord(), m_screen->scene()->object( m_server_point_object_ids.first )->maxObjectCoord() );
+                sharedPolygon->setMinMaxExternalCoords( m_screen->scene()->object( m_server_point_object_ids.first )->minObjectCoord(), m_screen->scene()->object( m_server_point_object_ids.first )->maxObjectCoord() );
+                kvs::StochasticPolygonRenderer* renderer = new kvs::StochasticPolygonRenderer();
+                m_screen->registerObject( sharedPolygon, renderer );
+                m_screen->update();
+            }
+            else
+            {
+                kvs::PolygonObject* sharedPolygon = createArrowGlyph( coords, direction, size, colors );
+                sharedPolygon->setName( userID + "_SharedGlyph" );
+                sharedPolygon->setXform( m_screen->scene()->objectManager()->xform() );
+                sharedPolygon->setMinMaxObjectCoords( m_screen->scene()->object( m_server_point_object_ids.first )->minObjectCoord(), m_screen->scene()->object( m_server_point_object_ids.first )->maxObjectCoord() );
+                sharedPolygon->setMinMaxExternalCoords( m_screen->scene()->object( m_server_point_object_ids.first )->minObjectCoord(), m_screen->scene()->object( m_server_point_object_ids.first )->maxObjectCoord() );
+                m_screen->scene()->replaceObject( userID + "_SharedGlyph", sharedPolygon );
+                m_screen->update();
+            }
+        }
     }
+}
+
+// 着目点グリフ生成用メソッド
+kvs::PolygonObject* Communication::createArrowGlyph(
+    const kvs::ValueArray<kvs::Real32>& coords,
+    const kvs::ValueArray<kvs::Real32>& directions,
+    const kvs::ValueArray<kvs::Real32>& sizes,
+    const kvs::ValueArray<kvs::UInt8>& colors )
+{
+    const size_t npoint = coords.size() / 3;
+    const int slices = 20;
+
+    std::vector<kvs::Vec3> all_vertices;
+    std::vector<kvs::Vec3> all_normals;
+    std::vector<kvs::UInt32> all_indices;
+    std::vector<kvs::UInt8> all_colors;
+
+    for( size_t i = 0, index = 0; i < npoint; i++, index += 3 )
+    {
+        kvs::Vec3 tip_position( coords.data() + index );   // 先端位置
+        kvs::Vec3 direction( directions.data() + index );
+        kvs::Real32 size = sizes[i];
+        kvs::RGBColor color( colors.data() + index );
+
+        if( direction.length() < 1e-6 )
+        {
+            std::cerr << "Error: Invalid direction vector." << std::endl;
+            continue;
+        }
+        direction = direction.normalized();
+
+        // --- 矢印寸法 ---
+        const float cylinder_height = 0.7f * size;
+        const float cylinder_radius = 0.07f * size;
+        const float cone_height = 0.3f * size;
+        const float cone_radius = 0.15f * size;
+        const float arrow_height = cylinder_height + cone_height;
+
+        std::vector<kvs::Vec3> vertices;
+        std::vector<kvs::Vec3> normals;
+        std::vector<kvs::UInt32> indices;
+
+        // --- 円柱の構築 ---
+        for( int s = 0; s < slices; ++s )
+        {
+            float angle = 2.0f * M_PI * s / slices;
+            float x = cylinder_radius * std::cos( angle );
+            float y = cylinder_radius * std::sin( angle );
+
+            vertices.emplace_back( x, y, 0.0f );              // 底面
+            normals.emplace_back( x, y, 0.0f );
+
+            vertices.emplace_back( x, y, cylinder_height );   // 上面
+            normals.emplace_back( x, y, 0.0f );
+        }
+
+        for( int s = 0; s < slices; ++s )
+        {
+            int next = ( s + 1 ) % slices;
+            indices.push_back( s * 2 ); indices.push_back( next * 2 ); indices.push_back( s * 2 +1 );
+            indices.push_back( s * 2 +1 ); indices.push_back( next * 2 ); indices.push_back( next * 2 +1 );
+        }
+
+        // --- 円錐の構築 ---
+        std::vector<kvs::Vec3> base_vertices;
+        for( int s = 0; s < slices; ++s )
+        {
+            float angle = 2.0f * M_PI * s / slices;
+            base_vertices.emplace_back( cone_radius*std::cos( angle ), cone_radius*std::sin( angle ), cylinder_height );
+        }
+
+        for( int s = 0; s < slices; ++s )
+        {
+            int next = ( s + 1 ) % slices;
+            kvs::Vec3 apex( 0, 0, cylinder_height + cone_height );
+            kvs::Vec3 v1 = base_vertices[s];
+            kvs::Vec3 v2 = base_vertices[next];
+
+            vertices.push_back( v1 ); vertices.push_back( v2 ); vertices.push_back( apex );
+            kvs::Vec3 normal = ( v2 - v1 ).cross( apex - v1 ).normalized();
+            normals.push_back( normal ); normals.push_back( normal ); normals.push_back( normal );
+
+            int base_index = vertices.size() - 3;
+            indices.push_back( base_index ); indices.push_back( base_index + 1 ); indices.push_back( base_index + 2 );
+        }
+
+        // --- 先端が tip_position になるように Zを下方向にシフト ---
+        for( auto& v : vertices ) v.z() -= arrow_height;
+
+        // --- 回転・位置調整 ---
+        kvs::Vec3 default_direction( 0, 0, 1 );
+        kvs::Vec3 axis = default_direction.cross( direction );
+        float angle = std::acos( default_direction.dot( direction ) );
+        kvs::Mat3 rotation;
+        if( axis.length() > 1e-6 )
+        {
+
+            rotation = kvs::Mat3::Rotation( axis.normalized(), angle*180.0/M_PI );
+        }
+        else
+        {
+            rotation = kvs::Mat3::Identity();
+        }
+
+        for( auto& v : vertices ) v = rotation * v + tip_position;
+        for( auto& n : normals ) n = rotation * n;
+
+        size_t offset = all_vertices.size();
+        all_vertices.insert( all_vertices.end(), vertices.begin(), vertices.end() );
+        all_normals.insert( all_normals.end(), normals.begin(), normals.end() );
+        for( auto idx : indices ) all_indices.push_back( idx + offset );
+
+        for( size_t c =0; c< vertices.size(); ++c )
+        {
+            all_colors.push_back( color.r() );
+            all_colors.push_back( color.g() );
+            all_colors.push_back( color.b() );
+        }
+    }
+
+    kvs::PolygonObject* polygon = new kvs::PolygonObject();
+    polygon->setCoords( kvs::ValueArray<kvs::Real32>( ( kvs::Real32* )all_vertices.data(), all_vertices.size()*3 ) );
+    polygon->setConnections( kvs::ValueArray<kvs::UInt32>( all_indices.data(), all_indices.size() ) );
+    polygon->setColors( kvs::ValueArray<kvs::UInt8>( all_colors.data(), all_colors.size() ) );
+    polygon->setNormals( kvs::ValueArray<kvs::Real32>( ( kvs::Real32* )all_normals.data(), all_normals.size()*3 ) );
+    polygon->setOpacity( 255 );
+    polygon->setPolygonType(kvs::PolygonObject::Triangle);
+    polygon->setColorType(kvs::PolygonObject::PolygonColor);
+    polygon->setNormalType(kvs::PolygonObject::VertexNormal);
+
+    return polygon;
+}
+
+void Communication::onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 3 ] )
+{
+    if( !isSocketsConnected() )
+    {
+        qDebug() << "Not connected";
+        return;
+    }
+
+    double x = CoordArray[3];
+    double y = CoordArray[4];
+    double z = CoordArray[5];
+
+    double dx = DirectionArray[0];
+    double dy = DirectionArray[1];
+    double dz = DirectionArray[2];
+
+    QJsonObject positionObject;
+    positionObject["x"] = x;
+    positionObject["y"] = y;
+    positionObject["z"] = z;
+    positionObject["dx"] = dx;
+    positionObject["dy"] = dy;
+    positionObject["dz"] = dz;
+
+
+    m_web_text_socket->sendTextMessage( QJsonDocument( {
+                                                         {"event","sharepoint"},
+                                                         {"x",CoordArray[3]},
+                                                         {"y",CoordArray[4]},
+                                                         {"z",CoordArray[5]},
+                                                         {"dx",DirectionArray[0]},
+                                                         {"dy",DirectionArray[1]},
+                                                         {"dz",DirectionArray[2]}
+                                                     }
+                                                     ).toJson( QJsonDocument::Compact ) );
 }
