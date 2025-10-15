@@ -60,5 +60,6 @@ private:
     // メソッド群
     void initialize();
     void communicationInitialize();
+    void initializeAfterShow();
 };
 #endif // MAINWINDOW_H

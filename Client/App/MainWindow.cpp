@@ -61,6 +61,20 @@ void MainWindow::initialize()
 
     this->show();
 
+    initializeAfterShow();
+}
+
+void MainWindow::communicationInitialize()
+{
+    if( m_communication != nullptr )
+    {
+        m_communication->adjustSize();
+        addDockWidget( Qt::RightDockWidgetArea, m_communication );
+    }
+}
+
+void MainWindow::initializeAfterShow()
+{
     QString shaderDIR = QDir( QCoreApplication::applicationDirPath() ).filePath( "Shader" );
     kvs::ShaderSource::AddSearchPath( shaderDIR.toUtf8().constData() );
 
@@ -88,14 +102,5 @@ void MainWindow::initialize()
     {
         QString fullPath = fontDIR + f.file;
         m_screen->paintDevice()->textEngine()->addFont( f.name, fullPath.toUtf8().constData() );
-    }
-}
-
-void MainWindow::communicationInitialize()
-{
-    if( m_communication != nullptr )
-    {
-        m_communication->adjustSize();
-        addDockWidget( Qt::RightDockWidgetArea, m_communication );
     }
 }
