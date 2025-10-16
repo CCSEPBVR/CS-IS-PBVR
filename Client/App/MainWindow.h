@@ -69,8 +69,8 @@ private:
     // メソッド群
     void initialize();
     void communicationInitialize();
-    void transferFunctionEditorInitialize();
     void glyphEditorInitialize();
+    void transferFunctionEditorInitialize();
     void initializeAfterShow();
 
 private slots:
