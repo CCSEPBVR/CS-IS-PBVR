@@ -15,7 +15,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     // ウィジェット群(A~Z)
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ
     , m_communication( new Communication( m_screen, m_web_binary_socket, m_web_text_socket, this ) )
-    , m_glyph_editor( new GlyphEditor( this ) )
+    , m_glyph_editor( new GlyphEditor( m_web_text_socket, this ) )
     , m_transfer_function_editor( new TransferFunctionEditor( m_web_text_socket, this ) )
 {
     initialize();
@@ -90,6 +90,7 @@ void MainWindow::communicationInitialize()
         ui->menuTools->addSeparator();
 
         connect( m_communication, &Communication::updateServerState, this, &MainWindow::onUpdateServerState );
+        connect( m_communication, &Communication::updateOperatorState, m_glyph_editor, &GlyphEditor::updateOperatorState );
         connect( m_communication, &Communication::updateOperatorState, m_transfer_function_editor, &TransferFunctionEditor::updateOperatorState );
 
         m_communication->adjustSize();
@@ -107,6 +108,7 @@ void MainWindow::glyphEditorInitialize()
         m_glyph_editor_action->setEnabled( false ); // サーバ接続前は無効
 
         ui->menuTools->addAction( m_glyph_editor_action );
+        // m_glyph_editor->updateNumberOfVector( 3 ); // DEBUG:成分数に応じてUIが変化するか確認
     }
 }
 
@@ -167,6 +169,7 @@ void MainWindow::onUpdateServerState( bool serverState ) // true:接続中
 
     if( m_glyph_editor && m_glyph_editor_action )
     {
+        // TODO:サーバーと導通時にサーバから成分数を送ってもらう必要がある。 成分数が3未満の場合、GlyphEditorは開けなくする必要がある。
         m_glyph_editor_action->setEnabled( serverState );
         if( !serverState ) m_glyph_editor->close();
     }

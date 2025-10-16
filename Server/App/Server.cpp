@@ -370,6 +370,72 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
             }
         }
 
+        if (event == "glyph")
+        {
+            std::cout << "[Server] glyph received" << std::endl;
+
+            if (!received.contains("params"))
+            {
+                std::cout << "[Server] params not found!" << std::endl;
+                return;
+            }
+
+            const auto& params = received["params"];
+
+            auto glyphType        = params.value("glyphType", -1);
+            auto scaleFactor      = params.value("scaleFactor", 0.0);
+            auto direction        = params.value("direction", nlohmann::json::array());
+            auto sizeDataDefines  = params.value("sizeDataDefines", "");
+            auto sizeVariables    = params.value("sizeVariables", nlohmann::json::array());
+            auto distributionMode = params.value("distributionMode", -1);
+            auto numberOfSamplePoints = params.value("numberOfSamplePoints", 0);
+            auto seed             = params.value("seed", 0);
+            auto stride           = params.value("stride", 0);
+            auto colorDataDefines = params.value("colorDataDefines", "");
+            auto colorVariables   = params.value("colorVariables", nlohmann::json::array());
+            auto colorMap         = params.value("colorMap", nlohmann::json::array());
+
+            std::cout << "GlyphType: " << glyphType << std::endl;
+            std::cout << "ScaleFactor: " << scaleFactor << std::endl;
+
+            std::cout << "Direction: ";
+            for (auto& d : direction) std::cout << d.get<std::string>() << " ";
+            std::cout << std::endl;
+
+            std::cout << "SizeDataDefines: " << sizeDataDefines << std::endl;
+
+            std::cout << "SizeVariables: ";
+            for (auto& v : sizeVariables) std::cout << v.get<std::string>() << " ";
+            std::cout << std::endl;
+
+            std::cout << "DistributionMode: " << distributionMode << std::endl;
+            std::cout << "NumberOfSamplePoints: " << numberOfSamplePoints << std::endl;
+            std::cout << "Seed: " << seed << std::endl;
+            std::cout << "Stride: " << stride << std::endl;
+
+            std::cout << "ColorDataDefines: " << colorDataDefines << std::endl;
+
+            std::cout << "ColorVariables: ";
+            for (auto& v : colorVariables) std::cout << v.get<std::string>() << " ";
+            std::cout << std::endl;
+
+            std::cout << "ColorMap: ";
+            for (auto& c : colorMap)
+            {
+                if (c.is_object())
+                {
+                    int r = c.value("r",0);
+                    int g = c.value("g",0);
+                    int b = c.value("b",0);
+                    std::cout << "(" << r << "," << g << "," << b << ") ";
+                }
+            }
+            std::cout << std::endl;
+
+            std::cout << "-----------------------------" << std::endl;
+        }
+
+
         // if (event == "transferfunction")
         // {
         //     std::cout << "[Server] transferfunction" << std::endl;
