@@ -13,6 +13,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_web_binary_socket( new QWebSocket() )
     , m_web_text_socket( new QWebSocket() )
     , m_communication( new Communication( m_screen, m_web_binary_socket, m_web_text_socket, this ) )
+    , m_transfer_function_editor( new TransferFunctionEditor( m_web_text_socket, this ) )
 {
     initialize();
 }
@@ -33,6 +34,7 @@ MainWindow::~MainWindow()
 void MainWindow::initialize()
 {    
     ui->setupUi( this ); // UIのセットアップ
+
     setWindowTitle( QString("pbvr_client - %1").arg( GIT_BRANCH_NAME ) );
 
     m_compositor->setRepetitionLevel( 4 ); // コンポジターのリピートレベルを設定 初期値:4
@@ -50,6 +52,7 @@ void MainWindow::initialize()
     m_web_text_socket->setParent( this );
 
     communicationInitialize();
+    transferFunctionEditorInitialize();
 
 #ifdef OPENXR_SCREEN
     m_vr_listener = new VRHandControllerListener( m_screen );
@@ -66,11 +69,46 @@ void MainWindow::initialize()
 
 void MainWindow::communicationInitialize()
 {
-    if( m_communication != nullptr )
+    if( m_communication )
     {
+        QAction* communicationAction = new QAction( tr( "Communication" ), this );
+        connect( communicationAction, &QAction::triggered, this, &MainWindow::onCommunication );
+
+        // メニューの先頭に挿入
+        if( !ui->menuTools->actions().isEmpty() )
+        {
+            ui->menuTools->insertAction( ui->menuTools->actions().first(), communicationAction );
+        }
+        else
+        {
+            ui->menuTools->addAction( communicationAction );
+        }
+        ui->menuTools->addSeparator();
+
+        connect( m_communication, &Communication::updateServerState, this, &MainWindow::onUpdateServerState );
+        connect( m_communication, &Communication::updateOperatorState, m_transfer_function_editor, &TransferFunctionEditor::updateOperatorState );
+
         m_communication->adjustSize();
         addDockWidget( Qt::RightDockWidgetArea, m_communication );
     }
+}
+
+void MainWindow::transferFunctionEditorInitialize()
+{
+    if( m_transfer_function_editor )
+    {
+        m_transfer_function_editor_action = new QAction( tr( "Transfer Function"), this );
+        connect( m_transfer_function_editor_action, &QAction::triggered, this, &MainWindow::onTransferFunctionEditor );
+
+        m_transfer_function_editor_action->setEnabled( false ); // サーバ接続前は無効
+
+        ui->menuTools->addAction( m_transfer_function_editor_action );
+    }
+    // connect( m_transfer_function_editor         , &TransferFunctionEditor::updateColorMapBar                    , m_color_map_bar_selector_tool_bar , &ColorMapSelectorToolBar::updateColorMapBar );
+    // connect( m_transfer_function_editor         , &TransferFunctionEditor::failedTransferFunctionImport         , m_connect                         , &Connect::failedTransferFunctionImport );
+    // connect( m_transfer_function_editor         , &TransferFunctionEditor::successTransferFunctionImport        , m_connect                         , &Connect::successTransferFunctionImport );
+    // connect( m_transfer_function_editor         , &TransferFunctionEditor::updateTransferFunctionClientMessage  , m_connect                         , &Connect::updateTransferFunctionClientMessage );
+    // connect( m_transfer_function_editor         , &TransferFunctionEditor::requestReplaceServerPointObject      , m_object_editor                   , &ObjectEditor::requestReplaceServerPointObject );
 }
 
 void MainWindow::initializeAfterShow()
@@ -102,5 +140,14 @@ void MainWindow::initializeAfterShow()
     {
         QString fullPath = fontDIR + f.file;
         m_screen->paintDevice()->textEngine()->addFont( f.name, fullPath.toUtf8().constData() );
+    }
+}
+
+void MainWindow::onUpdateServerState( bool serverState ) // true:接続中
+{
+    if( m_transfer_function_editor && m_transfer_function_editor_action )
+    {
+        m_transfer_function_editor_action->setEnabled( serverState );
+        if( !serverState ) m_transfer_function_editor->close();
     }
 }

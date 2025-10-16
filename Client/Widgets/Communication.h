@@ -59,6 +59,8 @@ private slots:
     void textWebsocketMessageReceived( const QString& receivedMessage );
 
 signals:
+    void updateServerState( bool serverState ); // true:接続中
+    void updateOperatorState( bool operatorState ); // true:権限あり
     void updateFocus( kvs::Vec3, kvs::Vec3 );
     void updatePointsTranslation();
 

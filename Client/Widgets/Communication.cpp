@@ -290,17 +290,23 @@ void Communication::onItemDoubleClicked(const QModelIndex& index)
 
 void Communication::binaryWebsocketConnected()
 {
+    if( isSocketsConnected() )
+    {
+        emit updateServerState( true );
+    }
 }
 
 void Communication::binaryWebsocketDisconnected()
 {
     if( !isSocketsConnected() )
     {
-        m_user_id = -1;
+        emit updateServerState( false );
+        m_user_id = -1;        
         m_is_operator = false;
         ui->IDLabelDisplay->clear();
         ui->isOperatorLabelDisplay->clear();
         ui->textBrowser->clear();
+        emit updateOperatorState( m_is_operator );
     }
 }
 
@@ -362,17 +368,23 @@ void Communication::binaryWebsocketMessageReceived( const QByteArray& binary )
 
 void Communication::textWebsocketConnected()
 {
+    if( isSocketsConnected() )
+    {
+        emit updateServerState( true );
+    }
 }
 
 void Communication::textWebsocketDisconnected()
 {
     if( !isSocketsConnected() )
     {
+        emit updateServerState( false );
         m_user_id = -1;
         m_is_operator = false;
         ui->IDLabelDisplay->clear();
         ui->isOperatorLabelDisplay->clear();
         ui->textBrowser->clear();
+        emit updateOperatorState( m_is_operator );
     }
 }
 
@@ -412,6 +424,7 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
         {
             bool isOperator = obj["isOperator"].toBool(); // 自分に操作権限があるか
             m_is_operator = isOperator;
+            emit updateOperatorState( m_is_operator );
             ui->isOperatorLabelDisplay->setText( m_is_operator ? "true" : "false" );
             if( m_is_operator )
             {

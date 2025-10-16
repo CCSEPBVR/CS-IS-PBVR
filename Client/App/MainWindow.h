@@ -14,6 +14,7 @@
 // ウィジェット群(A~Z)
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ
 #include "Communication.h"
+#include "TransferFunctionEditor.h"
 
 #ifdef OPENXR_SCREEN
 #include "VRHandControllerListener.h"
@@ -33,7 +34,7 @@ public:
     ~MainWindow();
 
 private:
-    // メンバ変数群
+    // QtUI関連
     Ui::MainWindow *ui;
 
     // KVS関連
@@ -50,7 +51,11 @@ private:
 
     // ウィジェット群(A~Z)
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ
+    QAction* m_communication_action = nullptr;
     Communication* m_communication = nullptr;
+
+    QAction* m_transfer_function_editor_action = nullptr;
+    TransferFunctionEditor* m_transfer_function_editor = nullptr;
 
     // VR関連
 #ifdef OPENXR_SCREEN
@@ -60,6 +65,14 @@ private:
     // メソッド群
     void initialize();
     void communicationInitialize();
+    void transferFunctionEditorInitialize();
     void initializeAfterShow();
+
+private slots:
+    void onCommunication() { m_communication->show(); }
+    void onTransferFunctionEditor() { m_transfer_function_editor->show(); }
+
+    void onUpdateServerState( bool serverState ); // true:接続中
+
 };
 #endif // MAINWINDOW_H

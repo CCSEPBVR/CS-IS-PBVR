@@ -292,41 +292,118 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
             m_u_web_sockets.publish("Notice", msg.dump(), uWS::OpCode::TEXT);
         }
 
-
         if (event == "transferfunction")
         {
-            std::cout << "[Server] transferfunction" << std::endl;
-            std::list<kvs::RGBColor> colors;
-            std::list<float> opacities;
+            std::cout << "[Server] transferfunction received" << std::endl;
 
-            if( received.contains("colorMap") )
+            // synthesize 情報
+            if (received.contains("color_synthesizer"))
+                std::cout << "Color Synthesizer: " << received["color_synthesizer"].get<std::string>() << std::endl;
+
+            if (received.contains("opacity_synthesizer"))
+                std::cout << "Opacity Synthesizer: " << received["opacity_synthesizer"].get<std::string>() << std::endl;
+
+            // データ配列
+            if (received.contains("data") && received["data"].is_array())
             {
-                for( const auto& c : received["colorMap"] )
+                const auto& dataArray = received["data"];
+                for (size_t i = 0; i < dataArray.size(); ++i)
                 {
-                    if( c.is_array() && c.size() >= 3 )
+                    const auto& tf = dataArray[i];
+                    std::cout << "----- Transfer Function Row " << i << " -----" << std::endl;
+
+                    // Color
+                    std::cout << "ColorFunction: " << tf.value("ColorFunction", "") << std::endl;
+                    std::cout << "ColorVariable: " << tf.value("ColorVariable", "") << std::endl;
+                    std::cout << "TemporaryColorRangeMode: " << tf.value("TemporaryColorRangeMode", 0) << std::endl;
+                    std::cout << "CurrentColorRangeMode: " << tf.value("CurrentColorRangeMode", 0) << std::endl;
+                    std::cout << "ResultColorRangeMode: " << tf.value("ResultColorRangeMode", 0) << std::endl;
+                    std::cout << "ColorUserRangeMin/Max: " << tf.value("ColorUserRangeMin", 0.0) << " / " << tf.value("ColorUserRangeMax", 0.0) << std::endl;
+                    std::cout << "ColorServerRangeMin/Max: " << tf.value("ColorServerRangeMin", 0.0) << " / " << tf.value("ColorServerRangeMax", 0.0) << std::endl;
+
+                    if (tf.contains("ColorMap") && tf["ColorMap"].is_array())
                     {
-                        int r = c[0].get<int>();
-                        int g = c[1].get<int>();
-                        int b = c[2].get<int>();
-                        colors.push_back(kvs::RGBColor(r, g, b));
+                        std::cout << "ColorMap: ";
+                        for (const auto& rgbArr : tf["ColorMap"])
+                        {
+                            if (rgbArr.is_array() && rgbArr.size() == 3)
+                            {
+                                int r = rgbArr[0].get<int>();
+                                int g = rgbArr[1].get<int>();
+                                int b = rgbArr[2].get<int>();
+                                std::cout << "(" << r << "," << g << "," << b << ") ";
+                            }
+                        }
+                        std::cout << std::endl;
+                    }
+
+                    if (tf.contains("ColorHistogram") && tf["ColorHistogram"].is_array())
+                    {
+                        std::cout << "ColorHistogram: ";
+                        for (auto& v : tf["ColorHistogram"]) std::cout << v.get<int>() << " ";
+                        std::cout << std::endl;
+                    }
+
+                    // Opacity
+                    std::cout << "OpacityFunction: " << tf.value("OpacityFunction", "") << std::endl;
+                    std::cout << "OpacityVariable: " << tf.value("OpacityVariable", "") << std::endl;
+                    std::cout << "TemporaryOpacityRangeMode: " << tf.value("TemporaryOpacityRangeMode", 0) << std::endl;
+                    std::cout << "CurrentOpacityRangeMode: " << tf.value("CurrentOpacityRangeMode", 0) << std::endl;
+                    std::cout << "ResultOpacityRangeMode: " << tf.value("ResultOpacityRangeMode", 0) << std::endl;
+                    std::cout << "OpacityUserRangeMin/Max: " << tf.value("OpacityUserRangeMin", 0.0) << " / " << tf.value("OpacityUserRangeMax", 0.0) << std::endl;
+                    std::cout << "OpacityServerRangeMin/Max: " << tf.value("OpacityServerRangeMin", 0.0) << " / " << tf.value("OpacityServerRangeMax", 0.0) << std::endl;
+
+                    if (tf.contains("OpacityMap") && tf["OpacityMap"].is_array())
+                    {
+                        std::cout << "OpacityMap: ";
+                        for (auto& v : tf["OpacityMap"]) std::cout << v.get<float>() << " ";
+                        std::cout << std::endl;
+                    }
+
+                    if (tf.contains("OpacityHistogram") && tf["OpacityHistogram"].is_array())
+                    {
+                        std::cout << "OpacityHistogram: ";
+                        for (auto& v : tf["OpacityHistogram"]) std::cout << v.get<int>() << " ";
+                        std::cout << std::endl;
                     }
                 }
             }
-
-            if( received.contains("opacityMap") )
-            {
-                for( const auto& o : received["opacityMap"] )
-                {
-                    opacities.push_back(o.get<float>());
-                }
-            }
-
-            {
-                std::lock_guard<std::mutex> lock( m_transfer_function_mutex );
-                m_transfer_function_colors   = std::move( colors );
-                m_transfer_function_opacities = std::move( opacities );
-            }
         }
+
+        // if (event == "transferfunction")
+        // {
+        //     std::cout << "[Server] transferfunction" << std::endl;
+        //     std::list<kvs::RGBColor> colors;
+        //     std::list<float> opacities;
+
+        //     if( received.contains("colorMap") )
+        //     {
+        //         for( const auto& c : received["colorMap"] )
+        //         {
+        //             if( c.is_array() && c.size() >= 3 )
+        //             {
+        //                 int r = c[0].get<int>();
+        //                 int g = c[1].get<int>();
+        //                 int b = c[2].get<int>();
+        //                 colors.push_back(kvs::RGBColor(r, g, b));
+        //             }
+        //         }
+        //     }
+
+        //     if( received.contains("opacityMap") )
+        //     {
+        //         for( const auto& o : received["opacityMap"] )
+        //         {
+        //             opacities.push_back(o.get<float>());
+        //         }
+        //     }
+
+        //     {
+        //         std::lock_guard<std::mutex> lock( m_transfer_function_mutex );
+        //         m_transfer_function_colors   = std::move( colors );
+        //         m_transfer_function_opacities = std::move( opacities );
+        //     }
+        // }
 
         if( event == "generate" )
         {
