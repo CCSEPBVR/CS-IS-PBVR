@@ -16,7 +16,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ
     , m_communication( new Communication( m_screen, m_web_binary_socket, m_web_text_socket, this ) )
     , m_glyph_editor( new GlyphEditor( m_web_text_socket, this ) )
-    , m_plot_over_line_editor( new PlotOverLine( this ) )
+    , m_plot_over_line_editor( new PlotOverLineEditor( this ) )
     , m_transfer_function_editor( new TransferFunctionEditor( m_web_text_socket, this ) )
 {
     initialize();

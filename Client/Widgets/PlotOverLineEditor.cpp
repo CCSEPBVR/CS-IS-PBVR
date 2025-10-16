@@ -1,21 +1,21 @@
-#include "PlotOverLine.h"
-#include "ui_PlotOverLine.h"
+#include "PlotOverLineEditor.h"
+#include "ui_PlotOverLineEditor.h"
 
-PlotOverLine::PlotOverLine( QWidget *parent )
+PlotOverLineEditor::PlotOverLineEditor( QWidget *parent )
     : QDockWidget(parent)
-    , ui(new Ui::PlotOverLine)
+    , ui(new Ui::PlotOverLineEditor)
     , m_q_custom_plot( new QCustomPlot( this ) )
 {
     initialize();
 }
 
-PlotOverLine::~PlotOverLine()
+PlotOverLineEditor::~PlotOverLineEditor()
 {
     if( m_q_custom_plot ) m_q_custom_plot->setParent(nullptr);  // ui 破棄前に親を外す
     delete ui;
 }
 
-void PlotOverLine::initialize()
+void PlotOverLineEditor::initialize()
 {
     ui->setupUi(this);
     ui->customPlotArea->addWidget( m_q_custom_plot );

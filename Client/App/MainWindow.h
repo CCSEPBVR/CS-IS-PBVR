@@ -15,7 +15,7 @@
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ
 #include "Communication.h"
 #include "GlyphEditor.h"
-#include "PlotOverLine.h"
+#include "PlotOverLineEditor.h"
 #include "TransferFunctionEditor.h"
 
 #ifdef OPENXR_SCREEN
@@ -60,7 +60,7 @@ private:
     GlyphEditor* m_glyph_editor = nullptr;                          // NOTE:通信関係有
 
     QAction* m_plot_over_line_editor_action = nullptr;
-    PlotOverLine* m_plot_over_line_editor = nullptr;                // NOTE:通信関係有 // FIXME:クラス名をPlotOverLine->PlotOverLiveEditorにしてください。
+    PlotOverLineEditor* m_plot_over_line_editor = nullptr;                // NOTE:通信関係有 // FIXME:クラス名をPlotOverLine->PlotOverLiveEditorにしてください。
 
     QAction* m_transfer_function_editor_action = nullptr;
     TransferFunctionEditor* m_transfer_function_editor = nullptr;   // NOTE:通信関係有

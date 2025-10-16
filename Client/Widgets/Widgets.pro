@@ -30,8 +30,8 @@ HEADERS += \
     # ObjectItem.h \
     OpacityMapEditor.h \
     PlayBackControlToolBar.h \
-    PlotOverLine.h \
     # PlotOverLineItem.h \
+    PlotOverLineEditor.h \
     PointSizeControl.h \
     Preference.h \
     RepetitionLevelControl.h \
@@ -57,7 +57,7 @@ SOURCES += \
     ObjectEditor.cpp \
     OpacityMapEditor.cpp \
     PlayBackControlToolBar.cpp \
-    PlotOverLine.cpp \
+    PlotOverLineEditor.cpp \
     PointSizeControl.cpp \
     Preference.cpp \
     RepetitionLevelControl.cpp \
@@ -80,7 +80,7 @@ FORMS += \
     GlyphEditor.ui \
     ObjectEditor.ui \
     OpacityMapEditor.ui \
-    PlotOverLine.ui \
+    PlotOverLineEditor.ui \
     PointSizeControl.ui \
     Preference.ui \
     RepetitionLevelControl.ui \
