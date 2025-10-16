@@ -2,13 +2,9 @@
 #define GLYPHEDITOR_H
 
 #include <QDialog>
-#include <QStandardItemModel>
 
-#include "ComboBoxDelegate.h"
-#include "ColorMapEditor.h"
-#include "GlyphItem.h"
-
-namespace Ui {
+namespace Ui
+{
 class GlyphEditor;
 }
 
@@ -21,35 +17,11 @@ public:
     ~GlyphEditor();
 
 private:
+    // メンバ変数群
     Ui::GlyphEditor *ui;
-    QStandardItemModel *m_model = nullptr;
-    QStandardItemModel* m_size_model = nullptr;
-    QStandardItemModel* m_color_data_model = nullptr;
-    QStringList m_vector_list;
 
+    //  メソッド群
     void initialize();
-
-signals:
-    void updateGlyphParameterClientMessage( QStandardItemModel* model );
-    void requestReplaceServerGlyphObject();
-
-public slots:
-    void updateNumberOfVector( const int numberOfVector );
-
-private slots:
-    void onDirectionComboBoxIndexChanged( int index );
-
-    void onSizeConstantRadioButtonClicked();
-    void onSizeVariablesRadioButtonClicked();
-    void onSizeNumberOfVariableValueChanged();
-
-    void onEditColorMap();
-
-    void onColorDataConstantRadioButtonClicked();
-    void onColorDataVariablesRadioButtonClicked();
-    void onColorDataNumberOfVariableValueChanged();
-
-    void onApply();
 };
 
 #endif // GLYPHEDITOR_H

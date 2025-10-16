@@ -12,7 +12,10 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_time_step_label( nullptr )
     , m_web_binary_socket( new QWebSocket() )
     , m_web_text_socket( new QWebSocket() )
+    // ウィジェット群(A~Z)
+    // ABCDEFGHIJKLMNOPQRSTUVWXYZ
     , m_communication( new Communication( m_screen, m_web_binary_socket, m_web_text_socket, this ) )
+    , m_glyph_editor( new GlyphEditor( this ) )
     , m_transfer_function_editor( new TransferFunctionEditor( m_web_text_socket, this ) )
 {
     initialize();
@@ -52,6 +55,7 @@ void MainWindow::initialize()
     m_web_text_socket->setParent( this );
 
     communicationInitialize();
+    glyphEditorInitialize();
     transferFunctionEditorInitialize();
 
 #ifdef OPENXR_SCREEN
@@ -90,6 +94,19 @@ void MainWindow::communicationInitialize()
 
         m_communication->adjustSize();
         addDockWidget( Qt::RightDockWidgetArea, m_communication );
+    }
+}
+
+void MainWindow::glyphEditorInitialize()
+{
+    if( m_glyph_editor )
+    {
+        m_glyph_editor_action = new QAction( tr( "Glyph Function"), this );
+        connect( m_glyph_editor_action, &QAction::triggered, this, &MainWindow::onGlyphEditor );
+
+        m_glyph_editor_action->setEnabled( false ); // サーバ接続前は無効
+
+        ui->menuTools->addAction( m_glyph_editor_action );
     }
 }
 
@@ -145,6 +162,15 @@ void MainWindow::initializeAfterShow()
 
 void MainWindow::onUpdateServerState( bool serverState ) // true:接続中
 {
+    // ウィジェット群(A~Z)
+    // ABCDEFGHIJKLMNOPQRSTUVWXYZ
+
+    if( m_glyph_editor && m_glyph_editor_action )
+    {
+        m_glyph_editor_action->setEnabled( serverState );
+        if( !serverState ) m_glyph_editor->close();
+    }
+
     if( m_transfer_function_editor && m_transfer_function_editor_action )
     {
         m_transfer_function_editor_action->setEnabled( serverState );

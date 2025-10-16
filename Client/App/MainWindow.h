@@ -14,6 +14,7 @@
 // ウィジェット群(A~Z)
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ
 #include "Communication.h"
+#include "GlyphEditor.h"
 #include "TransferFunctionEditor.h"
 
 #ifdef OPENXR_SCREEN
@@ -52,10 +53,13 @@ private:
     // ウィジェット群(A~Z)
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ
     QAction* m_communication_action = nullptr;
-    Communication* m_communication = nullptr;
+    Communication* m_communication = nullptr;                       // NOTE:通信関係有
+
+    QAction* m_glyph_editor_action = nullptr;
+    GlyphEditor* m_glyph_editor = nullptr;                          // NOTE:通信関係有
 
     QAction* m_transfer_function_editor_action = nullptr;
-    TransferFunctionEditor* m_transfer_function_editor = nullptr;
+    TransferFunctionEditor* m_transfer_function_editor = nullptr;   // NOTE:通信関係有
 
     // VR関連
 #ifdef OPENXR_SCREEN
@@ -66,10 +70,12 @@ private:
     void initialize();
     void communicationInitialize();
     void transferFunctionEditorInitialize();
+    void glyphEditorInitialize();
     void initializeAfterShow();
 
 private slots:
     void onCommunication() { m_communication->show(); }
+    void onGlyphEditor() { m_glyph_editor->show(); }
     void onTransferFunctionEditor() { m_transfer_function_editor->show(); }
 
     void onUpdateServerState( bool serverState ); // true:接続中
