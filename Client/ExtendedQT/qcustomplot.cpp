@@ -17596,13 +17596,29 @@ QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot, bool setupDefaultAxes) :
   }
 }
 
-QCPAxisRect::~QCPAxisRect()
-{
-  delete mInsetLayout;
-  mInsetLayout = nullptr;
+// QCPAxisRect::~QCPAxisRect()
+// {
+//   delete mInsetLayout;
+//   mInsetLayout = nullptr;
   
-  foreach (QCPAxis *axis, axes())
-    removeAxis(axis);
+//   foreach (QCPAxis *axis, axes())
+//     removeAxis(axis);
+// }
+
+QCPAxisRect::~QCPAxisRect() // v1
+{
+    delete mInsetLayout;
+    mInsetLayout = nullptr;
+
+    // HACK (TO0603): QPointer が指す軸を明示的にクリアしないと(https://www.qcustomplot.com/index.php/support/forum/629)
+    // デストラクタでの二重解放やクラッシュの可能性がある
+    mRangeDragHorzAxis.clear();
+    mRangeZoomHorzAxis.clear();
+    mRangeDragVertAxis.clear();
+    mRangeZoomVertAxis.clear();
+
+    foreach (QCPAxis *axis, axes())
+        removeAxis(axis);
 }
 
 /*!

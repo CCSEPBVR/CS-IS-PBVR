@@ -2,6 +2,7 @@
 #define PLOTOVERLINE_H
 
 #include <QDockWidget>
+#include "qcustomplot.h"
 
 namespace Ui
 {
@@ -19,6 +20,7 @@ public:
 private:
     // メンバ変数群
     Ui::PlotOverLine *ui;
+    QCustomPlot* m_q_custom_plot = nullptr;
 
     // メソッド群
     void initialize();
