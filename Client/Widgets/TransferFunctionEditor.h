@@ -32,16 +32,13 @@ private:
     QWebSocket* m_web_text_socket = nullptr; // パラメータ送信用
     QStandardItemModel *m_model = nullptr;
 
-    VariableEditor m_variable_editor;
-
     QString m_color_synthesizer;
-    ColorMapEditor m_color_map_editor;
-
     QString m_opacity_synthesizer;
-    OpacityMapEditor m_opacity_map_editor;
 
     // ウィジェット群
-    // VriableEditor // FIXME
+    VariableEditor m_variable_editor;
+    ColorMapEditor m_color_map_editor;
+    OpacityMapEditor m_opacity_map_editor;
 
     // メソッド群
     void initialize();
