@@ -16,6 +16,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ
     , m_communication( new Communication( m_screen, m_web_binary_socket, m_web_text_socket, this ) )
     , m_glyph_editor( new GlyphEditor( m_web_text_socket, this ) )
+    , m_plot_over_line_editor( new PlotOverLine( this ) )
     , m_transfer_function_editor( new TransferFunctionEditor( m_web_text_socket, this ) )
 {
     initialize();
@@ -56,6 +57,7 @@ void MainWindow::initialize()
 
     communicationInitialize();
     glyphEditorInitialize();
+    plotOverLineEditorInitialize();
     transferFunctionEditorInitialize();
 
 #ifdef OPENXR_SCREEN
@@ -109,6 +111,23 @@ void MainWindow::glyphEditorInitialize()
 
         ui->menuTools->addAction( m_glyph_editor_action );
         // m_glyph_editor->updateNumberOfVector( 3 ); // DEBUG:成分数に応じてUIが変化するか確認
+    }
+}
+
+void MainWindow::plotOverLineEditorInitialize()
+{
+    if( m_plot_over_line_editor )
+    {
+        m_plot_over_line_editor_action = new QAction( tr( "Plot Over Line"), this );
+        connect( m_plot_over_line_editor_action, &QAction::triggered, this, &MainWindow::onPloyOverLineEditor );
+
+        m_plot_over_line_editor_action->setEnabled( false ); // サーバ接続前は無効
+
+        ui->menuTools->addAction( m_plot_over_line_editor_action );
+
+        m_plot_over_line_editor->adjustSize();
+        addDockWidget( Qt::LeftDockWidgetArea, m_plot_over_line_editor );
+        m_plot_over_line_editor->close();
     }
 }
 
@@ -172,6 +191,12 @@ void MainWindow::onUpdateServerState( bool serverState ) // true:接続中
         // TODO:サーバーと導通時にサーバから成分数を送ってもらう必要がある。 成分数が3未満の場合、GlyphEditorは開けなくする必要がある。
         m_glyph_editor_action->setEnabled( serverState );
         if( !serverState ) m_glyph_editor->close();
+    }
+
+    if( m_plot_over_line_editor && m_plot_over_line_editor_action )
+    {
+        m_plot_over_line_editor_action->setEnabled( serverState );
+        if( !serverState ) m_plot_over_line_editor->close();
     }
 
     if( m_transfer_function_editor && m_transfer_function_editor_action )
