@@ -435,6 +435,42 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
             std::cout << "-----------------------------" << std::endl;
         }
 
+        if (event == "plotoverlineparameter")
+        {
+            // ここでパラメータを取り出す
+            bool enabled = false;
+            int resolution = 0;
+            std::string variable;
+            std::array<float, 3> start{};
+            std::array<float, 3> end{};
+
+            if (received.contains("enabled"))      enabled = received["enabled"].get<bool>();
+            if (received.contains("resolution"))   resolution = received["resolution"].get<int>();
+            if (received.contains("variable"))     variable = received["variable"].get<std::string>();
+            if (received.contains("start"))
+            {
+                auto arr = received["start"];
+                start[0] = arr[0].get<float>();
+                start[1] = arr[1].get<float>();
+                start[2] = arr[2].get<float>();
+            }
+            if (received.contains("end"))
+            {
+                auto arr = received["end"];
+                end[0] = arr[0].get<float>();
+                end[1] = arr[1].get<float>();
+                end[2] = arr[2].get<float>();
+            }
+
+            // パラメータ表示
+            std::cout << "[PlotOverLineParameter] enabled=" << enabled
+                      << ", resolution=" << resolution
+                      << ", variable=" << variable
+                      << ", start=(" << start[0] << "," << start[1] << "," << start[2] << ")"
+                      << ", end=("   << end[0] << "," << end[1] << "," << end[2] << ")"
+                      << std::endl;
+        }
+
 
         // if (event == "transferfunction")
         // {

@@ -16,7 +16,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ
     , m_communication( new Communication( m_screen, m_web_binary_socket, m_web_text_socket, this ) )
     , m_glyph_editor( new GlyphEditor( m_web_text_socket, this ) )
-    , m_plot_over_line_editor( new PlotOverLineEditor( this ) )
+    , m_plot_over_line_editor( new PlotOverLineEditor( m_web_text_socket, m_screen, this ) )
     , m_transfer_function_editor( new TransferFunctionEditor( m_web_text_socket, this ) )
 {
     initialize();
@@ -93,6 +93,7 @@ void MainWindow::communicationInitialize()
 
         connect( m_communication, &Communication::updateServerState, this, &MainWindow::onUpdateServerState );
         connect( m_communication, &Communication::updateOperatorState, m_glyph_editor, &GlyphEditor::updateOperatorState );
+        connect( m_communication, &Communication::updateOperatorState, m_plot_over_line_editor, &PlotOverLineEditor::updateOperatorState );
         connect( m_communication, &Communication::updateOperatorState, m_transfer_function_editor, &TransferFunctionEditor::updateOperatorState );
 
         m_communication->adjustSize();
@@ -124,6 +125,7 @@ void MainWindow::plotOverLineEditorInitialize()
         m_plot_over_line_editor_action->setEnabled( false ); // サーバ接続前は無効
 
         ui->menuTools->addAction( m_plot_over_line_editor_action );
+        m_plot_over_line_editor->updateNumberOfVector( 3 ); // DEBUG:成分数に応じてUIが変化するか確認
 
         m_plot_over_line_editor->adjustSize();
         addDockWidget( Qt::LeftDockWidgetArea, m_plot_over_line_editor );
@@ -196,12 +198,20 @@ void MainWindow::onUpdateServerState( bool serverState ) // true:接続中
     if( m_plot_over_line_editor && m_plot_over_line_editor_action )
     {
         m_plot_over_line_editor_action->setEnabled( serverState );
-        if( !serverState ) m_plot_over_line_editor->close();
+        if( !serverState )
+        {
+            m_plot_over_line_editor->close();
+            m_plot_over_line_editor->reset();
+        }
     }
 
     if( m_transfer_function_editor && m_transfer_function_editor_action )
     {
         m_transfer_function_editor_action->setEnabled( serverState );
-        if( !serverState ) m_transfer_function_editor->close();
+        if( !serverState )
+        {
+            m_transfer_function_editor->close();
+            m_transfer_function_editor->reset();
+        }
     }
 }
