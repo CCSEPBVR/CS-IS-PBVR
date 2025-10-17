@@ -656,8 +656,8 @@ void PlotOverLineEditor::updateOperatorState( bool operatorState )
 
 void PlotOverLineEditor::reset()
 {
-    ui->resolutionSpinBox->setValue( 256 );
     updateNumberOfVector( 0 );
+    ui->resolutionSpinBox->setValue( 256 );
     ui->plotOverLineGroupBox->setChecked( false );
 
     ui->startTranslationXDoubleSpinBox->setValue( 0 );
