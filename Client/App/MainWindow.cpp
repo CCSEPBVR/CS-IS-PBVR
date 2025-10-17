@@ -105,7 +105,7 @@ void MainWindow::glyphEditorInitialize()
 {
     if( m_glyph_editor )
     {
-        m_glyph_editor_action = new QAction( tr( "Glyph Function"), this );
+        m_glyph_editor_action = new QAction( tr( "Glyph Editor"), this );
         connect( m_glyph_editor_action, &QAction::triggered, this, &MainWindow::onGlyphEditor );
 
         m_glyph_editor_action->setEnabled( false ); // サーバ接続前は無効
@@ -119,7 +119,7 @@ void MainWindow::plotOverLineEditorInitialize()
 {
     if( m_plot_over_line_editor )
     {
-        m_plot_over_line_editor_action = new QAction( tr( "Plot Over Line"), this );
+        m_plot_over_line_editor_action = new QAction( tr( "Plot Over Line Editor"), this );
         connect( m_plot_over_line_editor_action, &QAction::triggered, this, &MainWindow::onPloyOverLineEditor );
 
         m_plot_over_line_editor_action->setEnabled( false ); // サーバ接続前は無効
@@ -137,7 +137,7 @@ void MainWindow::transferFunctionEditorInitialize()
 {
     if( m_transfer_function_editor )
     {
-        m_transfer_function_editor_action = new QAction( tr( "Transfer Function"), this );
+        m_transfer_function_editor_action = new QAction( tr( "Transfer Function Editor"), this );
         connect( m_transfer_function_editor_action, &QAction::triggered, this, &MainWindow::onTransferFunctionEditor );
 
         m_transfer_function_editor_action->setEnabled( false ); // サーバ接続前は無効
