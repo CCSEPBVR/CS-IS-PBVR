@@ -14,6 +14,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_web_text_socket( new QWebSocket() )
     // ウィジェット群(A~Z)
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ
+    , m_animation_control( new AnimationControl( this ) )
     , m_communication( new Communication( m_screen, m_web_binary_socket, m_web_text_socket, this ) )
     , m_glyph_editor( new GlyphEditor( m_web_text_socket, this ) )
     , m_plot_over_line_editor( new PlotOverLineEditor( m_web_text_socket, m_screen, this ) )
@@ -55,6 +56,7 @@ void MainWindow::initialize()
     m_web_binary_socket->setParent( this );
     m_web_text_socket->setParent( this );
 
+    animationControlInitialize();
     communicationInitialize();
     glyphEditorInitialize();
     plotOverLineEditorInitialize();
@@ -67,10 +69,24 @@ void MainWindow::initialize()
     // connect( m_vr_listener, &VRHandControllerListener::showHidePlotOverLine, m_plot_over_line, &PlotOverLine::showHidePlotOverLine );
     connect( m_vr_listener, &VRHandControllerListener::sendVRSharePoint, m_communication, &Communication::onVRSharePoint );
 #endif
-
+    tabifyDockWidget( m_animation_control, m_communication );
     this->show();
 
     initializeAfterShow();
+}
+
+void MainWindow::animationControlInitialize()
+{
+    if( m_animation_control )
+    {
+        m_animation_control_action = new QAction( tr( "Animation Control" ), this );
+        connect( m_animation_control_action, &QAction::triggered, this, &MainWindow::onAnimationControl );
+
+        ui->menuTools->addAction( m_animation_control_action );
+        m_animation_control->adjustSize();
+        addDockWidget( Qt::RightDockWidgetArea, m_animation_control );
+        m_animation_control->close();
+    }
 }
 
 void MainWindow::communicationInitialize()

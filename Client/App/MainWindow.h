@@ -13,6 +13,7 @@
 
 // ウィジェット群(A~Z)
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ
+#include "AnimationControl.h"
 #include "Communication.h"
 #include "GlyphEditor.h"
 #include "PlotOverLineEditor.h"
@@ -53,6 +54,9 @@ private:
 
     // ウィジェット群(A~Z)
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ
+    QAction* m_animation_control_action = nullptr;
+    AnimationControl* m_animation_control = nullptr;
+
     QAction* m_communication_action = nullptr;
     Communication* m_communication = nullptr;                       // NOTE:通信関係有
 
@@ -72,6 +76,7 @@ private:
 
     // メソッド群
     void initialize();
+    void animationControlInitialize();
     void communicationInitialize();
     void glyphEditorInitialize();
     void plotOverLineEditorInitialize();
@@ -79,6 +84,7 @@ private:
     void initializeAfterShow();
 
 private slots:
+    void onAnimationControl() { m_animation_control->show(); }
     void onCommunication() { m_communication->show(); }
     void onGlyphEditor() { m_glyph_editor->show(); }
     void onPloyOverLineEditor() { m_plot_over_line_editor->show(); }
