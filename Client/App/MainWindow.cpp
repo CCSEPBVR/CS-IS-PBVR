@@ -18,6 +18,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_communication( new Communication( m_screen, m_web_binary_socket, m_web_text_socket, this ) )
     , m_glyph_editor( new GlyphEditor( m_web_text_socket, this ) )
     , m_plot_over_line_editor( new PlotOverLineEditor( m_web_text_socket, m_screen, this ) )
+    , m_point_size_control( new PointSizeControl( this ) )
     , m_transfer_function_editor( new TransferFunctionEditor( m_web_text_socket, this ) )
 {
     initialize();
@@ -60,6 +61,7 @@ void MainWindow::initialize()
     communicationInitialize();
     glyphEditorInitialize();
     plotOverLineEditorInitialize();
+    pointSizeControlInitialize();
     transferFunctionEditorInitialize();
 
 #ifdef OPENXR_SCREEN
@@ -151,6 +153,21 @@ void MainWindow::plotOverLineEditorInitialize()
         m_plot_over_line_editor->adjustSize();
         addDockWidget( Qt::LeftDockWidgetArea, m_plot_over_line_editor );
         m_plot_over_line_editor->close();
+    }
+}
+
+void MainWindow::pointSizeControlInitialize()
+{
+    if( m_point_size_control )
+    {
+        m_point_size_control_action = new QAction( tr( "Point Size Control"), this );
+        connect( m_point_size_control_action, &QAction::triggered, this, &MainWindow::onPointSizeControl );
+
+        ui->menuTools->addAction( m_point_size_control_action );
+
+        m_point_size_control->adjustSize();
+        addDockWidget( Qt::LeftDockWidgetArea, m_point_size_control );
+        m_point_size_control->close();
     }
 }
 

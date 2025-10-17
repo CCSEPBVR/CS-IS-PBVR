@@ -3,14 +3,8 @@
 
 #include <QDockWidget>
 
-#include "Screen.h"
-#include <kvs/IDManager>
-#include <kvs/ObjectManager>
-#include <kvs/RendererManager>
-#include <kvs/StochasticRendererBase>
-#include <kvs/ParticleBasedRenderer>
-
-namespace Ui {
+namespace Ui
+{
 class PointSizeControl;
 }
 
@@ -19,18 +13,15 @@ class PointSizeControl : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit PointSizeControl( kvs::qt::jaea::Screen*,
-                              QWidget *parent = nullptr );
+    explicit PointSizeControl( QWidget *parent = nullptr );
     ~PointSizeControl();
 
 private:
+    // メンバ変数群
     Ui::PointSizeControl *ui;
-    kvs::qt::jaea::Screen* m_screen;
 
+    // メソッド群
     void initialize();
-
-private slots:
-    void onPointSizeValueChanged();
 };
 
 #endif // POINTSIZECONTROL_H
