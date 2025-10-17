@@ -80,7 +80,6 @@ void initial_step_master(
 #endif
     JobDispatcher& jd,
     jpv::ParticleTransferServer pts,
-    TransferFunctionSynthesizerCreator transfunc_creator,
     int& timer_count
 );
 
@@ -100,13 +99,10 @@ void initial_step_worker(
 
 void initial_step_IS(
     jpv::ParticleTransferServerMessage& servMes,
-    jpv::ParticleTransferClientMessage& clntMes,
     Argument &param,
-    ParticleMonitor& pm,
     MultiVolumePropertyList& mvpl,
     JobDispatcher& jd,
     jpv::ParticleTransferServer pts,
-    std::string particlePath,
-    std::string tfFilePath_old
+    int32_t server_mode
 );
 #endif

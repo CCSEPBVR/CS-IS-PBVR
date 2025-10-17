@@ -86,112 +86,13 @@ int main( int argc, char** argv )
 #ifndef CPU_VER
     MPI_Init( &argc, &argv );
 #endif
-    VIS_MODULE_TIMER_INIT();
-    VIS_MODULE_TIMER_STA( 1 );
-    Argument param( argc, argv );
-    MultiVolumePropertyList mvpl;
-    TransferFunctionSynthesizerCreator transfunc_creator;
 
-//    vismodule::Timer timer( vismodule::Timer::Start );
-    vismodule::Camera camera;
-    //Timer_CS test;
-
-    //2023/06/01 shimomura 
-    
-    int retval = 0;
-//    std::vector<PointObjectCreator> point_creator_lst;
-    vismodule::PointObject* object = NULL;
-    std::string output, outdir;
-    std::string pout = "PARTICLE_OUTDIR";
-    std::string prfx = "PARTICLE_SERVER_PREFIX";
-
-    bool nan_error = false; // Add for NaN 2016.01.14
-
-#ifndef CPU_VER
-    int rank;
-    int mpi_size;
-    MPI_Comm_rank( MPI_COMM_WORLD, &rank );
-    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
-#else
-    int rank = 0;
-	int mpi_size = 1;
-#endif
-            jpv::ParticleTransferServerMessage servMes;
-            jpv::ParticleTransferClientMessage clntMes;
-            clntMes.m_camera = new vismodule::Camera();
-            servMes.m_camera = new vismodule::Camera();
-#if 0
-if(rank == 0)
-{
-
-            // CSかISかを判別するための通信
-            jpv::ParticleTransferServer pts;
-            ptss = pts.initializeServer( param.m_port );
-
-
-            // クライアント接続待ち
-            pts.acceptServer();
-            static int timer_count = 0;
-
-            ptss = pts.recvMessage( &clntMes );
-            //debug add by shimomura 2023/1/18
-            //clntMes.show();
-
-            //受け取ったメッセージを各MPIプロセスに共有
-            int bsz = 0;
-            bsz = clntMes.byteSize();
-            MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
-            buf = new char[bsz];
-            clntMes.pack( buf );
-            MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
-            delete[] buf;
-            // send cltMes to all worker process <<
-
-}
-else //rank == 0以外の処理
-{
-#ifndef CPU_VER
-                MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-                if ( bsz < 0 )
-                {
-                    loop = false;
-                    std::cerr << "invalid message !!!!! "
-                    return 0; // terminate server
-                }
-                buf = new char[bsz];
-#ifndef CPU_VER
-                MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
-#endif
-                clntMes.unpack( buf );
-                delete[] buf;
-}
-#endif
-//debug 
-clntMes.m_server_mode = jpv::ServerMode::CS; 
-//clntMes.m_server_mode = jpv::ServerMode::IS; 
-
-if( clntMes.m_server_mode == jpv::ServerMode::IS )
-{
-    if (rank ==0) IS_Connect(argc, argv);
-    else std::cout << "warning !!! daemon does not work in MPI !!!  only rank 0 process is working!!!" << std::endl;
-}
-else if( clntMes.m_server_mode == jpv::ServerMode::CS )
-{
-    CS_Connect(argc, argv);
-}
-else
-{
-    std::cerr << "invalid sellect !!" << std::endl;
-    return 0;
-}
-
-
+    Connect( argc, argv );
 
 #ifndef CPU_VER
     MPI_Finalize();
 #endif
-    return retval;
+    return 0;
 }
 
 #if 0

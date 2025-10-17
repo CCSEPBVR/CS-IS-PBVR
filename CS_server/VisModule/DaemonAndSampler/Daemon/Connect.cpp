@@ -95,402 +95,369 @@ void SignalHandler( const int sig )
  * @param argv
  * @return
  */
-void  CS_Connect( int argc, char** argv )
+void  Connect( int argc, char** argv )
 {
-    VIS_MODULE_TIMER_INIT();
-    VIS_MODULE_TIMER_STA( 1 );
+    int32_t server_mode;
+
+    if ( argc < 2 )
+    {
+        std::cout << "Server Mode is CS" << std::endl;
+        server_mode = jpv::ServerMode::CS;
+    }
+    else
+    {
+        if ( strcmp(argv[1], "CS") == 0 )
+        {
+            std::cout << "Server Mode is CS" << std::endl;
+            server_mode = jpv::ServerMode::CS;
+        }
+        else if ( strcmp(argv[1], "IS") == 0 )
+        {
+            std::cout << "Server Mode is IS" << std::endl;
+            server_mode = jpv::ServerMode::IS;
+        }
+    }
+
+    std::string tfFilePath;
+    std::string tfFilePath_old;
+    std::string glyphParameterPath;
+    std::string glyphParameterPath_old;
+    std::string plotOverLineParameterPath;
+    std::string plotOverLineParameterPath_old;
+    
+    // Set paramter file path when in IS mode
+    if ( server_mode == jpv::ServerMode::IS )
+    {
+        SetParameterFilePath(
+            tfFilePath,
+            tfFilePath_old,
+            glyphParameterPath,
+            glyphParameterPath_old,
+            plotOverLineParameterPath,
+            plotOverLineParameterPath_old
+        );
+    }
+
     Argument param( argc, argv );
     MultiVolumePropertyList mvpl;
     TransferFunctionSynthesizerCreator transfunc_creator;
 
-//    vismodule::Timer timer( vismodule::Timer::Start );
-    vismodule::Camera camera;
-    //Timer_CS test;
-
-    //2023/06/01 shimomura 
-    
-    int retval = 0;
-    int mpi_rank = 0;
-    std::vector<PointObjectCreator> point_creator_lst;
-    vismodule::PointObject* object = NULL;
-    std::string output, outdir;
-    std::string pout = "PARTICLE_OUTDIR";
-    std::string prfx = "PARTICLE_SERVER_PREFIX";
-
     bool nan_error = false; // Add for NaN 2016.01.14
 
-#ifndef CPU_VER
     int rank;
     int mpi_size;
+#ifndef CPU_VER
     MPI_Comm_rank( MPI_COMM_WORLD, &rank );
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
 #else
-    int rank = 0;
-	int mpi_size = 1;
+    rank = 0;
+	mpi_size = 1;
 #endif
 
-    //=================== client-server mode ===================
-
-        char* buf;
-        int bsz = 0;
-        JobDispatcher jd;
+    // =================== 新規作成 ここから ===================
+    JobDispatcher jd;
 #ifndef CPU_VER
-        JobCollector  jc( &jd );
+    JobCollector  jc( &jd );
 #endif
-       int st, vl, wid = 0;
 
-        int c_bins_size = 0;
-        int o_bins_size = 0;
-        vismodule::UInt64* tmp_c_bins;
-        vismodule::UInt64* tmp_o_bins;
-                        
-        //add by shimomura 2023/06/14
-        float*  tmp_max;
-        float*  tmp_min;
+    char* buf;
+    int bsz = 0;
 
-        if ( rank > 0 )
+    if ( rank > 0 ) // Worker
+    {
+        if ( server_mode == jpv::ServerMode::IS )
         {
-            //--------------------- WORKER --------------------
-            jpv::ParticleTransferClientMessage clntMes;
-            clntMes.m_camera = new vismodule::Camera();
-
-            bool loop = true;
-
-            while ( loop )
-            {
-                static int timer_count = 0;
-
-                // recv cltMes from process 0 >>
-#ifndef CPU_VER
-                MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-                if ( bsz < 0 )
-                {
-                    loop = false;
-                    break; // terminate server
-                }
-                buf = new char[bsz];
-#ifndef CPU_VER
-                MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
-#endif
-                clntMes.unpack( buf );
-                delete[] buf;
-                clntMes.show();
-                std::cout << "Rank " << rank << ": Recv Client Message" << std::endl;
-                std::cout << "clntMes.m_initialize_parameter = " << (int)clntMes.m_initialize_parameter << std::endl;
-                // recv cltMes from process 0 <<
-               if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
-               {
-               }
-               else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::end )
-               {
-               }
-               else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
-               {
-/*
-#ifndef CPU_VER
-MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-if ( bsz < 0 )
-{
-    loop = false;
-    std::cerr << "Error: pfifile doesn't exist(rank:" << rank << ")" << std::endl;
-    break; // terminate server
-}
-*/
-
-                    param.m_input_data_base = clntMes.m_input_directory;
-                    param.m_sampling_method = 'h';
-                    param.m_particle_limit = clntMes.m_particle_limit;
-                    param.m_particle_density = clntMes.m_particle_density;
-                    param.m_camera = clntMes.m_camera;
-                    param.m_x_synthesis = clntMes.m_x_synthesis;
-                    param.m_y_synthesis = clntMes.m_y_synthesis;
-                    param.m_z_synthesis = clntMes.m_z_synthesis;
-                    mvpl.searchFile(param);
-
-                    if( !clntMes.m_import_flag ) 
-                    {
-                        std::cout << "defalt parameter " << std::endl;
-                        VariableRange range = Calculate_minmax( param, mvpl );
-                        transfunc_creator.setInitialProtocol( mvpl.m_total_number_ingredients, range );
-                    }
-                    else
-                    {
-                        std::cout << "user define parameter " << std::endl;
-                        transfunc_creator.setProtocol( clntMes );
-                        // transfunc_creator.setAsisTransferFunction( param.m_transfer_function ); 削除予定
-                    }
-
-                    param.m_transfunc_synthesizer = transfunc_creator.create();
-                    param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
-                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
-
-                    for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
-                    {
-                        param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
-                    }
-
-                    initial_step_worker( param, mvpl, nan_error,
-#ifndef CPU_VER
-                        jc,
-#endif
-                        jd, transfunc_creator, timer_count );
-               }
-               else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_particle )
-               {
-                    if ( clntMes.m_time_parameter == 0 )
-                    {
-                    }
-                    else if ( clntMes.m_time_parameter == 1 )
-                    {
-                    }
-                    else
-                    {
-                        param.m_input_data_base = clntMes.m_input_directory;
-                        param.m_time_step = clntMes.m_step;
-                        param.m_level_index = clntMes.m_level_index;
-                        param.m_repeat_level = clntMes.m_repeat_level;
-                        param.m_sampling_method = clntMes.m_sampling_method;
-                        param.m_particle_limit = clntMes.m_particle_limit;
-                        param.m_particle_density = clntMes.m_particle_density;
-                        param.m_camera = clntMes.m_camera;
-                        param.m_x_synthesis = clntMes.m_x_synthesis;
-                        param.m_y_synthesis = clntMes.m_y_synthesis;
-                        param.m_z_synthesis = clntMes.m_z_synthesis;
-
-                        transfunc_creator.setProtocol( clntMes );
-                        transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
-                        param.m_transfunc_synthesizer = transfunc_creator.create();
-                        param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
-                        if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
-
-                        for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
-                        {
-                            param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>( transfunc_creator.transfunc()[i] );
-                        }
-
-                        generate_particle_worker( param, mvpl, nan_error,
-#ifndef CPU_VER
-                            jc,
-#endif
-                            jd, transfunc_creator, timer_count );
-                    }
-               }
-               else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_glyph )
-               {
-                   generate_glyph_worker(param, clntMes, mvpl, nan_error, 
-#ifndef CPU_VER
-                           jc, 
-#endif
-                           jd,  transfunc_creator, timer_count, clntMes.m_initialize_parameter  );
-
-               } // end of generate_glyph
-               else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
-               {
-                   generate_plot_over_line_worker(param, clntMes, mvpl, nan_error, 
-#ifndef CPU_VER
-                           jc, 
-#endif
-                           jd,  transfunc_creator, timer_count, clntMes.m_initialize_parameter  );
-
-               } // end of plot_over_line
-            } // end of while
+            // Daemon is single process
+            return;
         }
-        else                    // rank == 0
+
+        jpv::ParticleTransferClientMessage clntMes;
+        clntMes.m_camera = new vismodule::Camera();
+
+        while ( true )
         {
-            //--------------------- MASTER --------------------
-            int ptss;
-
-            assert( jpv::ParticleTransferUtils::isLittleEndian() );
-//            timer.start();
-//            VIS_MODULE_TIMER_STA( 10 );
-//            VIS_MODULE_TIMER_END( 10 );
-//            timer.stop();
-//            std::cout << "first reading time[ms]:" << timer.msec() << std::endl;
-
-            jpv::ParticleTransferServer pts;
-            ptss = pts.initializeServer( param.m_port );
-
-            jpv::ParticleTransferServerMessage servMes;
-            jpv::ParticleTransferClientMessage clntMes;
-            clntMes.m_camera = new vismodule::Camera();
-            servMes.m_camera = new vismodule::Camera();
-
-            servMes.m_server_status = 0;
-            // クライアント接続待ち
-            pts.acceptServer();
-
-            while ( ( ptss != -1 ) && ( pts.good() ) )
+            // recv cltMes from process 0 start
+#ifndef CPU_VER
+            MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+            if ( bsz < 0 )
             {
-                static int timer_count = 0;
-
-                ptss = pts.recvMessage( &clntMes );
-                //debug add by shimomura 2023/1/18
-                clntMes.show();
-
-#ifdef _WIN32 
-                    std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '/', '\\');
-#elif defined(_WIN64)
-                    std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '/', '\\');
+                loop = false;
+                std::cout << "Rank " << rank << ": Worker is terminated" << std::endl;
+                break;
+            }
+            buf = new char[bsz];
+#ifndef CPU_VER
+            MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
 #endif
-#ifdef __APPLE__
-                    std::string target = "¥";
-                    std::string replacement = "/";
+            clntMes.unpack( buf );
+            delete[] buf;
+            // recv cltMes from process 0 end
 
-                    size_t pos = 0;
-                    while ((pos = clntMes.m_input_directory.find(target, pos)) != std::string::npos) {
-                        clntMes.m_input_directory.replace(pos, target.length(), replacement);
-                        pos += replacement.length();
-                    }
-#elif defined(__linux__)
-                    std::string target = "\\";
-                    std::string replacement = "/";
+            std::cout << "Rank " << rank << ": Recv Client Message" << std::endl;
 
-                    size_t pos = 0;
-                    while ((pos = clntMes.m_input_directory.find(target, pos)) != std::string::npos) {
-                        clntMes.m_input_directory.replace(pos, target.length(), replacement);
-                        pos += replacement.length();
-                    }
+            if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
+            {
+            }
+            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::end )
+            {
+            }
+            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
+            {
+                param.m_time_step                = clntMes.m_step; 
+                param.m_level_index              = clntMes.m_level_index;
+                param.m_repeat_level             = clntMes.m_repeat_level;
+                param.m_sampling_method          = 'h';
+                param.m_camera                   = clntMes.m_camera;
+                param.m_x_synthesis              = clntMes.m_x_synthesis;
+                param.m_y_synthesis              = clntMes.m_y_synthesis;
+                param.m_z_synthesis              = clntMes.m_z_synthesis;
+                param.m_particle_data_size_limit = clntMes.m_particle_data_size_limit;
 
-#endif
-                std::cout << "input_directory = " << clntMes.m_input_directory << std::endl;
-                     
-                if ( ptss == -1 ) break;
-                /* 140319 for client stop by Ctrl+c */
-                signal( SIGABRT, SignalHandler );
-                signal( SIGTERM, SignalHandler );
-                signal( SIGINT, SignalHandler ); /* SIGINT is invalid here, because mpiexec uses it. */
-//              signal( SIGSEGV, SignalHandler );
-                if ( clntMes.m_step > mvpl.m_total_last_step )
+                param.m_input_data_base  = clntMes.m_input_directory;
+                param.m_particle_limit   = clntMes.m_particle_limit;
+                param.m_particle_density = clntMes.m_particle_density;
+
+                mvpl.searchFile(param);
+
+                if( !clntMes.m_import_flag ) 
                 {
-                    clntMes.m_step = mvpl.m_total_last_step;
-                }
-                else if ( clntMes.m_step < mvpl.m_total_start_steps )
-                {
-                    clntMes.m_step = mvpl.m_total_start_steps;
-                }
-
-                if ( SigServer )
-                {
-                    clntMes.m_initialize_parameter = jpv::InitializeParameter::end; 
-                    std::cout << "*** SigServer" << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+                    std::cout << "defalt parameter " << std::endl;
+                    VariableRange range = Calculate_minmax( param, mvpl );
+                    transfunc_creator.setInitialProtocol( mvpl.m_total_number_ingredients, range );
                 }
                 else
                 {
-                    /* 140319 for client stop by Ctrl+c */
-                    if ( clntMes.m_initialize_parameter != jpv::InitializeParameter::initial_step )
-                    {
-                        clntMes.m_input_directory = param.m_input_data_base;
-                    }
+                    std::cout << "user define parameter " << std::endl;
+                    transfunc_creator.setProtocol( clntMes );
                 }
 
-                std::cout << "Recieve message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
-                if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
-                {
+                param.m_transfunc_synthesizer = transfunc_creator.create();
+                param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
 
-                    strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
-                    servMes.m_number_particle = 0;
-                    servMes.m_number_glyph = 0 ;
-                    servMes.m_flag_send_bins = 1;
-                    servMes.m_transfer_function_count = 0;
-                    servMes.m_message_size = servMes.byteSize();
-                    pts.sendMessage( servMes );
-                    pts.disconnect();
-                    pts.acceptServer();
+                for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
+                {
+                    param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                 }
-                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::end )
-                {
 
-                    strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
-                    servMes.m_number_particle = 0;
-                    servMes.m_number_glyph = 0 ;
-                    servMes.m_flag_send_bins = 1;
-                    servMes.m_transfer_function_count = 0;
-                    servMes.m_message_size = servMes.byteSize();
-                    pts.sendMessage( servMes );
+                param.m_sampling_step  = CalculateSamplingStep( mvpl );
+                param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *param.m_camera );
+                if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+
+#ifndef CPU_VER
+                initial_step( param, mvpl, nan_error, jc, jd, pts, server_mode );
+#else
+                initial_step( param, mvpl, nan_error, jd, pts, server_mode );
+#endif
+
+                delete param.m_transfunc_synthesizer;
+            }
+            else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_particle )
+            {
+                if ( clntMes.m_time_parameter != 2 )
+                {
+                    std::cout << "ERROR:partilce clntMes.m_time_parameter != 2" << std::endl;
+                    break;                    
+                }
+
+                param.m_time_step                = clntMes.m_step;
+                param.m_level_index              = clntMes.m_level_index;
+                param.m_repeat_level             = clntMes.m_repeat_level;
+                param.m_sampling_method          = clntMes.m_sampling_method;
+                param.m_camera                   = clntMes.m_camera;
+                param.m_x_synthesis              = clntMes.m_x_synthesis;
+                param.m_y_synthesis              = clntMes.m_y_synthesis;
+                param.m_z_synthesis              = clntMes.m_z_synthesis;
+                param.m_particle_data_size_limit = clntMes.m_particle_data_size_limit;
+
+                // CS get from the client message
+                // IS get from default.tf                
+                if ( server_mode == jpv::ServerMode::CS )
+                {
+                    param.m_input_data_base = clntMes.m_input_directory;
+                    param.m_particle_limit = clntMes.m_particle_limit;
+                    param.m_particle_density = clntMes.m_particle_density;
+                }
+
+                transfunc_creator.setProtocol( clntMes );
+                param.m_transfunc_synthesizer = transfunc_creator.create();
+                param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+
+                for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
+                {
+                    param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>( transfunc_creator.transfunc()[i] );
+                }
+
+#ifndef CPU_VER
+                generate_particle( param, mvpl, nan_error, jc, jd, pts, server_mode );
+#else
+                generate_particle( param, mvpl, nan_error, jd, pts, server_mode );
+#endif
+                delete param.m_transfunc_synthesizer;
+            }
+            else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_glyph )
+            {
+                if( clntMes.m_time_parameter != 2 )
+                {
+                    std::cout << "ERROR:glyph clntMes.m_time_parameter != 2" << std::endl;
                     break;
                 }
-                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::initial_step ) // change PFI file.
+
+                Calculate_minmax_glyph( param, mvpl, clntMes );
+
+#ifndef CPU_VER
+                generate_glyph( param, mvpl, nan_error, jc, jd, pts );
+#else
+                generate_glyph( param, mvpl, nan_error, jd, pts );
+#endif
+            } // end of generate_glyph
+            else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
+            {
+                if( clntMes.m_time_parameter != 2 )
+                {
+                    std::cout << "ERROR:plot over line clntMes.m_time_parameter != 2" << std::endl;
+                    break;
+                }
+
+                param.m_sampling_size = clntMes.m_sampling_size;
+
+#ifndef CPU_VER
+                generate_plot_over_line( param, mvpl, nan_error, jc, jd, pts );
+#else
+                generate_plot_over_line( param, mvpl, nan_error, jd, pts );
+#endif
+            } // end of plot_over_line
+        } // while loop
+    } // Worker
+    else // Master
+    {
+        assert( jpv::ParticleTransferUtils::isLittleEndian() );
+
+        int ptss;
+        jpv::ParticleTransferServer pts;
+        ptss = pts.initializeServer( param.m_port );
+
+        jpv::ParticleTransferClientMessage clntMes;
+        clntMes.m_camera = new vismodule::Camera();
+
+        pts.acceptServer(); // wait for client connection
+
+        while ( ( ptss != -1 ) && ( pts.good() ) )
+        {
+            ptss = pts.recvMessage( &clntMes );
+            if ( ptss == -1 ) break;
+            clntMes.show();
+
+#ifdef _WIN32 
+            std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '/', '\\');
+#elif defined(_WIN64)
+            std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '/', '\\');
+#endif
+#ifdef __APPLE__
+            std::string target = "¥";
+            std::string replacement = "/";
+
+            size_t pos = 0;
+            while ((pos = clntMes.m_input_directory.find(target, pos)) != std::string::npos) {
+                clntMes.m_input_directory.replace(pos, target.length(), replacement);
+                pos += replacement.length();
+            }
+#elif defined(__linux__)
+            std::string target = "\\";
+            std::string replacement = "/";
+
+            size_t pos = 0;
+            while ((pos = clntMes.m_input_directory.find(target, pos)) != std::string::npos) {
+                clntMes.m_input_directory.replace(pos, target.length(), replacement);
+                pos += replacement.length();
+            }
+#endif
+
+            std::cout << "Rank " << rank << ": Recv Client Message" << std::endl;
+
+            if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
+            {
+                strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
+                servMes.m_number_particle = 0;
+                servMes.m_number_glyph = 0 ;
+                servMes.m_flag_send_bins = 1;
+                servMes.m_transfer_function_count = 0;
+                servMes.m_message_size = servMes.byteSize();
+                pts.sendMessage( servMes );
+                pts.disconnect();
+                pts.acceptServer();
+            } // connection reset
+            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::end )
+            {
+                std::cout << "ERROR : jpv::InitializeParameter::end" << std::endl;
+                break;
+            } // end
+            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
+            {
+                std::cout << "==================== Initial Step Start ====================" << std::endl;
+
+                if ( server_mode == jpv::ServerMode::CS )
                 {
                     bool open_flag = true; // ファイルを開けるかどうか
                     bool ExtendFileFormat_flag = true; // データ形式拡張に対応しているか
                     bool pfi_flag = true; // .pfl, .pfiファイルを選択しているか
-                    
+
                     param.m_input_data_base = clntMes.m_input_directory;
 
-                    std::ifstream fin( param.m_input_data_base, std::ios::in);
-                    /*
-                    if (!fin.is_open()) 
-                    {
-                        std::cout << "ファイルを開けませんでした: " << param.m_input_data_base << std::endl;
-                        open_flag = false;
-                    }
-                    */
-
 #ifndef EXTEND_FILE_FORMAT
-                        ExtendFileFormat_flag = false;
-                        pfi_flag = false;
-                        size_t found_pfl = param.m_input_data_base.find(".pfl");
-                        size_t found_pfi = param.m_input_data_base.find(".pfi");
-                        if (found_pfl != std::string::npos) pfi_flag = true;
-                        if (found_pfi != std::string::npos) pfi_flag = true;
+                    ExtendFileFormat_flag = false;
+                    pfi_flag = false;
+                    size_t found_pfl = param.m_input_data_base.find(".pfl");
+                    size_t found_pfi = param.m_input_data_base.find(".pfi");
+                    if (found_pfl != std::string::npos) pfi_flag = true;
+                    if (found_pfi != std::string::npos) pfi_flag = true;
 #endif
+                    std::cout << "open_flag =             " << open_flag             << ", "
+                              << "ExtendFileFormat_flag = " << ExtendFileFormat_flag << ", "
+                              << "pfi_flag =              " << pfi_flag              << std::endl;
 
-                        std::cout << "open_flag = "             << open_flag             << ", "
-                                  << "ExtendFileFormat_flag = " << ExtendFileFormat_flag << ", "
-                                  << "pfi_flag = "              << pfi_flag              << std::endl;
+                    strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
+                    servMes.m_server_status = 0;
+                    servMes.m_number_particle = 0;
+                    servMes.m_number_glyph = 0 ;
+                    servMes.m_flag_send_bins = 1;
+                    servMes.m_transfer_function_count = 0;
+                    servMes.m_message_size = servMes.byteSize();
 
-                        strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
-                        // ADD by FEAST 2015.12.24
-                        //servMes.m_server_status = 0;
-                        // ADD END 2015.12.24
-                        servMes.m_number_particle = 0;
-                        servMes.m_number_glyph = 0 ;
-                        servMes.m_flag_send_bins = 1;
-                        servMes.m_transfer_function_count = 0;
-                        servMes.m_message_size = servMes.byteSize();
+                    if ( open_flag == true && ExtendFileFormat_flag == true )
+                    {
+                        servMes.m_file_enable_flag = jpv::FileEnableFlag::Enable_VTK;
+                    }
+                    if ( open_flag == true && ExtendFileFormat_flag == false && pfi_flag == true )
+                    {
+                        // VTKには対応していないのでもう1つ状態が必要 Enable_pfi 追加予定
+                        servMes.m_file_enable_flag = jpv::FileEnableFlag::Enable_VTK;
+                    }
+                    if ( open_flag == true && ExtendFileFormat_flag == false && pfi_flag == false )
+                    {
+                        servMes.m_file_enable_flag = jpv::FileEnableFlag::NotEnable_VTK;
+                    }
+                    if (open_flag == false)
+                    {
+                        servMes.m_file_enable_flag = jpv::FileEnableFlag::NoFile;
+                    }
+                    pts.sendMessage( servMes );
 
-                        if ( open_flag == true && ExtendFileFormat_flag == true )
+                    if( servMes.m_file_enable_flag == jpv::FileEnableFlag::NotEnable_VTK ||
+                        servMes.m_file_enable_flag == jpv::FileEnableFlag::NoFile ) 
+                    {
+                        if ( rank == 0 )
                         {
-                            servMes.m_file_enable_flag = jpv::FileEnableFlag::Enable_VTK;
+                            std::cerr << "Error: pfifile doesn't exist" << std::endl;
                         }
-                        if ( open_flag == true && ExtendFileFormat_flag == false && pfi_flag == true )
-                        {
-                            // VTKには対応していないのでもう1つ状態が必要 Enable_pfi 追加予定
-                            servMes.m_file_enable_flag = jpv::FileEnableFlag::Enable_VTK;
-                        }
-                        if ( open_flag == true && ExtendFileFormat_flag == false && pfi_flag == false )
-                        {
-                            servMes.m_file_enable_flag = jpv::FileEnableFlag::NotEnable_VTK;
-                        }
-                        if (open_flag == false)
-                        {
-                            servMes.m_file_enable_flag = jpv::FileEnableFlag::NoFile;
-                        }
-                        pts.sendMessage( servMes );
 
-                        if( servMes.m_file_enable_flag == jpv::FileEnableFlag::NotEnable_VTK ||
-                            servMes.m_file_enable_flag == jpv::FileEnableFlag::NoFile ) 
-                        {
-                            if ( rank == 0 )
-                            {
-                                std::cerr << "Error: pfifile doesn't exist" << std::endl;
-                            }
+                        bsz = -1;
 
-                            bsz = -1;
 #ifndef CPU_VER
-                            MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
+                        MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
 #endif
-
-// #ifndef CPU_VER
-                            // 開けなくても停止しないよう変更  予定 
-                            // MPI_Finalize();
-// #endif
-                            // return 0;
-                            // continue;
-                            break;
-                        }
+                        break;
+                    }
 
                     // send cltMes to all worker process >>
                     bsz = clntMes.byteSize();
@@ -505,14 +472,29 @@ if ( bsz < 0 )
 #endif
                     delete[] buf;
                     // send cltMes to all worker process <<
+                } // server_mode == jpv::ServerMode::CS
 
-                    param.m_sampling_method = 'h';
-                    param.m_particle_limit = clntMes.m_particle_limit;
+                param.m_time_step = clntMes.m_step; 
+                param.m_level_index = clntMes.m_level_index;
+                param.m_repeat_level = clntMes.m_repeat_level;
+                param.m_sampling_method = 'h';
+                param.m_camera = clntMes.m_camera;
+                param.m_x_synthesis = clntMes.m_x_synthesis;
+                param.m_y_synthesis = clntMes.m_y_synthesis;
+                param.m_z_synthesis = clntMes.m_z_synthesis;
+                param.m_particle_data_size_limit = clntMes.m_particle_data_size_limit;
+
+                if ( server_mode == jpv::ServerMode::CS )
+                {
+                    param.m_input_data_base  = clntMes.m_input_directory;
+                    param.m_particle_limit   = clntMes.m_particle_limit;
                     param.m_particle_density = clntMes.m_particle_density;
-                    param.m_camera = clntMes.m_camera;
-                    param.m_x_synthesis = clntMes.m_x_synthesis;
-                    param.m_y_synthesis = clntMes.m_y_synthesis;
-                    param.m_z_synthesis = clntMes.m_z_synthesis;
+                }
+
+                if ( server_mode == jpv::ServerMode::CS )
+                {
+                    VariableRange vr;
+
                     mvpl.searchFile(param);
 
                     if ( mvpl.m_list.size() <= 0 )
@@ -527,9 +509,7 @@ if ( bsz < 0 )
                         MPI_Finalize(); // 開けなくても停止しないよう変更  予定 
 #endif
                         strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
-                        // ADD by FEAST 2015.12.24
-                        //servMes.m_server_status = 0;
-                        // ADD END 2015.12.24
+                        servMes.m_server_status = 0;
                         servMes.m_number_particle = 0;
                         servMes.m_number_glyph = 0 ;
                         servMes.m_flag_send_bins = 1; // histogram
@@ -549,34 +529,100 @@ if ( bsz < 0 )
                     {
                         std::cout << "user define parameter " << std::endl;
                         transfunc_creator.setProtocol( clntMes );
-                        // transfunc_creator.setAsisTransferFunction( param.m_transfer_function ); 削除予定
-                    }                    
+                    }
 
                     param.m_transfunc_synthesizer = transfunc_creator.create();
-                    param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
-                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+                    param.m_transfunc_array.resize( transfunc_creator.transfunc().size() );
 
                     for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
                     {
                         param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
 
-                    initial_step_master( param, mvpl, nan_error,
-#ifndef CPU_VER
-                        jc,
-#endif
-                        jd, pts, transfunc_creator, timer_count );
-
-                } // end of change PFI
-                //else
-                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_particle )
-                {
-                    timer_count++;
-                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+                    for ( int i = 0; i < transfunc_creator.transfunc().size(); i++ )
                     {
-                        VIS_MODULE_TIMER_STA( 461 );
+                        std::stringstream ss;
+                        ss << (tf + 1);
+                        const std::string idxbuf = ss.str();
+                        vr.setValue("t" + idxbuf + "_var_o", param.m_transfunc_synthesizer->m_c_min[tf])
+                        vr.setValue("t" + idxbuf + "_var_o", param.m_transfunc_synthesizer->m_c_min[tf])
+                        vr.setValue("t" + idxbuf + "_var_c", param.m_transfunc_synthesizer->m_c_min[tf])
+                        vr.setValue("t" + idxbuf + "_var_c", param.m_transfunc_synthesizer->m_c_min[tf])
                     }
 
+                    param.m_server_side_variable_range = vr;
+
+                    param.m_sampling_step  = CalculateSamplingStep( mvpl );
+                    param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *param.m_camera );
+                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+                } // server_mode == jpv::ServerMode::CS
+                else // server_mode == jpv::ServerMode::IS
+                {
+                    // Using environment variables, the constructor of the ParticleMonitor class
+                    // set particle file, glyph file, plot over line file, status file, history file,
+                    // and the min/max coordinates of the object.
+                    ParticleMonitor pm;
+                    pm.check();
+
+                    if( pm.stepExisted() )
+                    {
+                        pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
+                    }
+                    else
+                    {
+                        pm.setTimeStep_particle(0);
+                    }
+                    pm.readParticleHistoryFile();                
+
+                    // store particle monitor in mvpl
+                    mvpl.m_total_start_steps       = pm.particleStatusFile().getStartTimeStep();
+                    mvpl.m_total_last_step         = pm.particleStatusFile().getLatestTimeStep();
+                    mvpl.m_total_number_steps      = mvpl.m_total_last_step - mvpl.m_total_start_steps + 1;
+                    mvp.m_file_type                = 0;
+                    mvp.m_elem_type                = 0;
+                    mvp.m_number_ingredients       = pm.particleHistoryFile().nVariables();
+                    mvpl.m_list.push_back(mvp);
+                    mvpl.m_total_number_elements   = 0;
+                    mvpl.m_total_number_nodes      = 0;
+                    mvpl.m_total_number_subvolumes = 1;
+                    mvpl.m_total_min_object_coord  = pm.getMinObjectCoords();
+                    mvpl.m_total_max_object_coord  = pm.getMaxObjectCoords();
+                    mvpl.m_total_min_value         = 0;
+                    mvpl.m_total_max_value         = 0;
+
+                    // store particle monitor in param
+                    // sampling step is not used in IS mode
+                    param.m_subpixel_level   = pm.getSubpixelLevel();
+                    // particle limit and particle density will be overwritten later
+                    // when transfer function file is readed(ParameterFileReader)
+                    param.m_particle_limit   = pm.particleHistoryFile().ParticleLimit();
+                    param.m_particle_density = pm.particleHistoryFile().ParticleDensity();
+                    param.m_server_side_variable_range = pm.particleHistoryFile().variableRange();
+
+                    const VariableRange vr        = pm.particleHistoryFile().variableRange();
+                    const int tf_number           = pm.particleHistoryFile().colorHistogramArray().size();
+                    setDefalutTransferFunction( &param, vr, tf_number );
+
+                    delete originalObject;
+                } // server_mode == jpv::ServerMode::IS
+                
+#ifndef CPU_VER
+                initial_step( param, mvpl, nan_error, jc, jd, pts, server_mode );
+#else
+                initial_step( param, mvpl, nan_error, jd, pts, server_mode );
+#endif
+
+                if ( server_mode == jpv::ServerMode::CS )
+                {
+                    delete param.m_transfunc_synthesizer;
+                }
+
+                std::cout << "==================== Initial Step end ====================" << std::endl;
+            } // initial_step
+            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle )
+            {
+                if ( server_mode == jpv::ServerMode::CS )
+                {
                     // send cltMes to all worker process >>
                     bsz = clntMes.byteSize();
 #ifndef CPU_VER
@@ -589,137 +635,976 @@ if ( bsz < 0 )
 #endif
                     delete[] buf;
                     // send cltMes to all worker process <<
+                }
 
-                    std::cout << "Recieve message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
-                    std::cout << "sampling method = " << clntMes.m_sampling_method << std::endl;
-                    std::cout << "subpixel level = " << clntMes.m_subpixel_level << std::endl;
-                    std::cout << "repeat level = " << clntMes.m_repeat_level << std::endl;
-                    std::cout << "timeParam = " << clntMes.m_time_parameter << std::endl;
+                if( clntMes.m_time_parameter != 2 )
+                {
+                    std::cout << "ERROR:partilce clntMes.m_time_parameter != 2" << std::endl;
+                    break;
+                }
 
-                    if ( clntMes.m_time_parameter == 0 )
+                param.m_time_step                = clntMes.m_step;
+                param.m_level_index              = clntMes.m_level_index;
+                param.m_repeat_level             = clntMes.m_repeat_level;
+                param.m_sampling_method          = clntMes.m_sampling_method;
+                param.m_camera                   = clntMes.m_camera;
+                param.m_x_synthesis              = clntMes.m_x_synthesis;
+                param.m_y_synthesis              = clntMes.m_y_synthesis;
+                param.m_z_synthesis              = clntMes.m_z_synthesis;
+                param.m_particle_data_size_limit = clntMes.m_particle_data_size_limit;
+
+                if ( server_mode == jpv::ServerMode::CS )
+                {
+                    param.m_input_data_base  = clntMes.m_input_directory;
+                    param.m_particle_limit   = clntMes.m_particle_limit;
+                    param.m_particle_density = clntMes.m_particle_density;
+                }
+
+                if ( server_mode == jpv::ServerMode::CS )
+                {
+                    VariableRange vr;
+
+                    transfunc_creator.setProtocol( clntMes );
+                    param.m_transfunc_synthesizer = transfunc_creator.create();
+                    param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+
+                    for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
                     {
-                        std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                        param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
-                    else if ( clntMes.m_time_parameter == 1 )
+
+                    for ( int i = 0; i < transfunc_creator.transfunc().size(); i++ )
                     {
-                        std::cout << "beginTime = " << clntMes.m_begin_time << std::endl;
-                        std::cout << "endTime = " << clntMes.m_last_time << std::endl;
-                        std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                        std::stringstream ss;
+                        ss << (tf + 1);
+                        const std::string idxbuf = ss.str();
+                        vr.setValue("t" + idxbuf + "_var_o", param.m_transfunc_synthesizer->m_c_min[tf])
+                        vr.setValue("t" + idxbuf + "_var_o", param.m_transfunc_synthesizer->m_c_min[tf])
+                        vr.setValue("t" + idxbuf + "_var_c", param.m_transfunc_synthesizer->m_c_min[tf])
+                        vr.setValue("t" + idxbuf + "_var_c", param.m_transfunc_synthesizer->m_c_min[tf])
                     }
-                    else if ( clntMes.m_time_parameter == 2 )
+
+                    param.m_server_side_variable_range = vr;
+                } // server_mode == jpv::ServerMode::CS
+                else // server_mode == jpv::ServerMode::IS
+                {
+                    // update the transfer function file using the client message
+                    // updated transfer function file is loaded by InSitu
+                    // Daemon loads the particle file generated by InSitu
+                    ParameterFileWriter ppw;
+                    ParameterFileReader ppr;
+                    ppw.inputMessage( clntMes );
+                    ppr.readParameterFile( tfFilePath_old.c_str() );
+                    NameListFile nm1 = ppr.getNameListFile();
+                    NameListFile nm2 = ppw.getNameListFile();
+                    if( nm1 != nm2 )
                     {
-                        std::cout << "step = " << clntMes.m_step << std::endl;
+                        ppw.writeParameterFile( tfFilePath.c_str() );
                     }
-                    std::cout << "transParam = " << clntMes.m_trans_parameter << std::endl;
-                    if ( clntMes.m_trans_parameter == 1 )
+                    
+                    // Using environment variables, the constructor of the ParticleMonitor class
+                    // set particle file, glyph file, plot over line file, status file, history file,
+                    // and the min/max coordinates of the object.
+                    ParticleMonitor pm;
+                    pm.check();
+
+                    if( pm.stepExisted() )
                     {
-                        std::cout << "levelIndex = " << clntMes.m_level_index << std::endl;
+                        pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
                     }
-                    if ( clntMes.m_time_parameter == 0 )
-                    {
-                        strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
-                        servMes.m_time_step = clntMes.m_step;
-                        servMes.m_repeat_level = clntMes.m_repeat_level;
-                        servMes.m_level_index = clntMes.m_level_index;
-                        servMes.m_number_particle = 0;
-                        servMes.m_number_glyph = 0 ;
-                        servMes.m_flag_send_bins = 1;
-
-                        servMes.m_message_size = servMes.byteSize();
-                        pts.sendMessage( servMes );
-                    }
-                    else if ( clntMes.m_time_parameter == 1 )
-                    {
-
-                        strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
-                        servMes.m_time_step = clntMes.m_step;
-                        servMes.m_repeat_level = clntMes.m_repeat_level;
-                        servMes.m_level_index = clntMes.m_level_index;
-                        servMes.m_number_particle = 0;
-                        servMes.m_number_glyph = 0 ;
-                        servMes.m_flag_send_bins = 1;
-
-                        servMes.m_message_size = servMes.byteSize();
-                        pts.sendMessage( servMes );
-                    }
-                    else if ( clntMes.m_time_parameter == 2 )
-                    {
-                        param.m_time_step = clntMes.m_step;
-                        param.m_level_index = clntMes.m_level_index;
-                        param.m_repeat_level = clntMes.m_repeat_level;
-                        param.m_sampling_method = clntMes.m_sampling_method;
-                        param.m_particle_limit = clntMes.m_particle_limit;
-                        param.m_particle_density = clntMes.m_particle_density;
-                        param.m_camera = clntMes.m_camera;
-                        param.m_x_synthesis = clntMes.m_x_synthesis;
-                        param.m_y_synthesis = clntMes.m_y_synthesis;
-                        param.m_z_synthesis = clntMes.m_z_synthesis;
-
-                        transfunc_creator.setProtocol( clntMes );
-                        transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
-                        param.m_transfunc_synthesizer = transfunc_creator.create();
-                        param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
-                        if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
-
-                        for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
-                        {
-                            param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
-                        }
-
-                        generate_particle_master( param, mvpl, nan_error,
-#ifndef CPU_VER
-                            jc,
-#endif                           
-                            jd, pts, transfunc_creator, timer_count );
-                    } // end of timeParam == 2
                     else
                     {
-                        break;
+                        pm.setTimeStep_particle(0);
+                        std::cout << "WARN:particle status file does not exist" << std::endl;
                     }
-                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                    {
-                        VIS_MODULE_TIMER_END( 461 );
-                    }
-                    if ( timer_count == VIS_MODULE_TIMER_COUNT_NUM )
-                    {
-                        VIS_MODULE_TIMER_END( 1 );
-                        VIS_MODULE_TIMER_FIN();
-                    }
-                } // end of initParam == 1 generate_particle 
-                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_glyph )
-                {
-                    generate_glyph_master(param, clntMes, servMes, mvpl, nan_error,
+                    pm.readParticleHistoryFile();
+                    
+                    // store particle monitor in mvpl
+                    mvpl.m_total_start_steps       = pm.particleStatusFile().getStartTimeStep();
+                    mvpl.m_total_last_step         = pm.particleStatusFile().getLatestTimeStep();
+                    mvpl.m_total_number_steps      = mvpl.m_total_last_step - mvpl.m_total_start_steps + 1;
+                    mvp.m_file_type                = 0;
+                    mvp.m_elem_type                = 0;
+                    mvp.m_number_ingredients       = pm.particleHistoryFile().nVariables();
+                    mvpl.m_list.push_back(mvp);
+                    mvpl.m_total_number_elements   = 0;
+                    mvpl.m_total_number_nodes      = 0;
+                    mvpl.m_total_number_subvolumes = 1;
+                    mvpl.m_total_min_object_coord  = pm.getMinObjectCoords();
+                    mvpl.m_total_max_object_coord  = pm.getMaxObjectCoords();
+                    mvpl.m_total_min_value         = 0;
+                    mvpl.m_total_max_value         = 0;
+
+                    // store particle monitor in param
+                    param.m_subpixel_level             = pm.getSubpixelLevel();
+                    // particle limit and particle density will be overwritten later
+                    // when transfer function file is readed(ParameterFileReader)
+                    param.m_particle_limit             = pm.particleHistoryFile().ParticleLimit();
+                    param.m_particle_density           = pm.particleHistoryFile().ParticleDensity();
+                    param.m_server_side_variable_range = pm.particleHistoryFile().variableRange();
+                } // server_mode == jpv::ServerMode::IS
+                
 #ifndef CPU_VER
-                           jc, 
+                generate_particle( param, mvpl, nan_error, jc, jd, pts, server_mode );
+#else
+                generate_particle( param, mvpl, nan_error, jd, pts, server_mode );
 #endif                           
-                           jd, pts, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
 
-                } // end of initParam = 3 // generateglyph
-                else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
+                if ( server_mode == jpv::ServerMode::CS )
                 {
-                   generate_plot_over_line_master(param, clntMes, servMes, mvpl, nan_error,
+                    delete param.m_transfunc_synthesizer;
+                }
+            } // generate particle
+            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_glyph )
+            {
+                if ( server_mode == jpv::ServerMode::CS )
+                {
+                    // send cltMes to all worker process >>
+                    bsz = clntMes.byteSize();
 #ifndef CPU_VER
-                           jc, 
-#endif                           
-                           jd, pts, transfunc_creator, timer_count, clntMes.m_initialize_parameter );
-
-                } // end of initParam = 5 plot_over_line
-
-            } // end of while (pts.good)
-
-            delete clntMes.m_camera;
-            delete servMes.m_camera;
-            bsz = -1;
+                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+                    buf = new char[bsz];
+                    clntMes.pack( buf );
 #ifndef CPU_VER
-            MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
+                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+#endif
+                    delete[] buf;
+                    // send cltMes to all worker process <<
+                }
+
+                if( clntMes.m_time_parameter != 2 )
+                {
+                    std::cout << "ERROR:glyph clntMes.m_time_parameter != 2" << std::endl;
+                    break;
+                }
+
+                if( server_mode == jpv::ServerMode::CS )
+                {
+                    Calculate_minmax_glyph( param, mvpl, clntMes );
+                }
+
+                if ( server_mode == jpv::ServerMode::CS )
+                {
+                } // server_mode == jpv::ServerMode::CS
+                else // server_mode == jpv::ServerMode::IS
+                {
+                    ParameterFileWriter ppw;
+                    ParameterFileReader ppr;
+                    ppw.inputGlyphParameterMessage( clntMes );
+                    ppr.readParameterFile( glyphParameterPath_old.c_str() );
+                    NameListFile nm1 = ppr.getNameListFile();
+                    NameListFile nm2 = ppw.getNameListFile();
+                    if( nm1 != nm2 )
+                    {
+                        ppw.writeParameterFile( glyphParameterPath.c_str() );
+                    }
+                } // server_mode == jpv::ServerMode::IS
+
+#ifndef CPU_VER
+                generate_glyph( param, mvpl, nan_error, jc, jd, pts );
+#else
+                generate_glyph( param, mvpl, nan_error, jd, pts );
+#endif
+            } // generate glyph
+            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::plot_over_line )
+            {
+                if ( server_mode == jpv::ServerMode::CS )
+                {
+                    // send cltMes to all worker process >>
+                    bsz = clntMes.byteSize();
+#ifndef CPU_VER
+                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+                    buf = new char[bsz];
+                    clntMes.pack( buf );
+#ifndef CPU_VER
+                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+#endif
+                    delete[] buf;
+                    // send cltMes to all worker process <<
+                }
+
+                if( clntMes.m_time_parameter != 2 )
+                {
+                    std::cout << "ERROR:plot over line clntMes.m_time_parameter != 2" << std::endl;
+                    break;
+                }
+
+                if ( server_mode == jpv::ServerMode::CS )
+                {
+                } // server_mode == jpv::ServerMode::CS
+                else // server_mode == jpv::ServerMode::IS
+                {
+                    ParameterFileWriter ppw;
+                    ParameterFileReader ppr;
+
+                    // 20181226 start　環境変数で指定したパスおよび名前でファイル参照を行う
+                    ppw.inputPlotOverLineParameterMessage( clntMes );
+                    ppr.readParameterFile( plotOverLineParameterPath_old.c_str() );
+                    NameListFile nm1 = ppr.getNameListFile();
+                    NameListFile nm2 = ppw.getNameListFile();
+
+                    if( nm1 != nm2 )
+                    {
+                        ppw.writeParameterFile( plotOverLineParameterPath.c_str() );
+                    }
+                }
+
+                if ( server_mode == jpv::ServerMode::CS )
+                {
+                    param.m_sampling_size = clntMes.m_sampling_size;
+                }
+
+#ifndef CPU_VER
+                generate_plot_over_line( param, mvpl, nan_error, jc, jd, pts );
+#else
+                generate_plot_over_line( param, mvpl, nan_error, jd, pts );
+#endif
+            } // plot over line
+        } // while ( ( ptss != -1 ) && ( pts.good() ) )
+    } // Master
+
+    bsz = -1;
+#ifndef CPU_VER
+    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
+#endif
+    pts.termServer();
+
+    return;
+    // =================== 新規作成 ここまで ===================
+
+#if 0 // 新規作成以降をコメントアウト
+    //=================== client-server mode ===================
+
+    char* buf;
+    int bsz = 0;
+
+    JobDispatcher jd;
+#ifndef CPU_VER
+    JobCollector  jc( &jd );
+#endif                   
+
+    if ( rank > 0 )
+    {
+        //--------------------- WORKER --------------------
+        jpv::ParticleTransferClientMessage clntMes;
+        clntMes.m_camera = new vismodule::Camera();
+
+        bool loop = true;
+
+        while ( loop )
+        {
+            static int timer_count = 0;
+
+            // recv cltMes from process 0 start
+#ifndef CPU_VER
+            MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+            if ( bsz < 0 )
+            {
+                loop = false;
+                std::cout << "Rank " << rank << ": Failed to Recv Client Message" << std::endl;
+                break; // terminate server
+            }
+            buf = new char[bsz];
+#ifndef CPU_VER
+            MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+#endif
+            clntMes.unpack( buf );
+            delete[] buf;
+            // recv cltMes from process 0 end
+
+            // clntMes.show();
+            std::cout << "Rank " << rank << ": Recv Client Message" << std::endl;
+
+            if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
+            {
+            }
+            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::end )
+            {
+            }
+            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
+            {
+                param.m_input_data_base = clntMes.m_input_directory;
+                param.m_sampling_method = 'h';
+                param.m_particle_limit = clntMes.m_particle_limit;
+                param.m_particle_density = clntMes.m_particle_density;
+                param.m_camera = clntMes.m_camera;
+                param.m_x_synthesis = clntMes.m_x_synthesis;
+                param.m_y_synthesis = clntMes.m_y_synthesis;
+                param.m_z_synthesis = clntMes.m_z_synthesis;
+                mvpl.searchFile(param);
+
+                if( !clntMes.m_import_flag ) 
+                {
+                    std::cout << "defalt parameter " << std::endl;
+                    VariableRange range = Calculate_minmax( param, mvpl );
+                    transfunc_creator.setInitialProtocol( mvpl.m_total_number_ingredients, range );
+                }
+                else
+                {
+                    std::cout << "user define parameter " << std::endl;
+                    transfunc_creator.setProtocol( clntMes );
+                }
+
+                param.m_transfunc_synthesizer = transfunc_creator.create();
+                param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+                if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+
+                for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
+                {
+                    param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
+                }
+
+                initial_step_worker( param, mvpl, nan_error,
+#ifndef CPU_VER
+                    jc,
+#endif
+                    jd, transfunc_creator, timer_count );
+            }
+            else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_particle )
+            {
+                if ( clntMes.m_time_parameter == 0 )
+                {
+                }
+                else if ( clntMes.m_time_parameter == 1 )
+                {
+                }
+                else
+                {
+                    param.m_input_data_base = clntMes.m_input_directory;
+                    param.m_time_step = clntMes.m_step;
+                    param.m_level_index = clntMes.m_level_index;
+                    param.m_repeat_level = clntMes.m_repeat_level;
+                    param.m_sampling_method = clntMes.m_sampling_method;
+                    param.m_particle_limit = clntMes.m_particle_limit;
+                    param.m_particle_density = clntMes.m_particle_density;
+                    param.m_camera = clntMes.m_camera;
+                    param.m_x_synthesis = clntMes.m_x_synthesis;
+                    param.m_y_synthesis = clntMes.m_y_synthesis;
+                    param.m_z_synthesis = clntMes.m_z_synthesis;
+
+                    transfunc_creator.setProtocol( clntMes );
+                    param.m_transfunc_synthesizer = transfunc_creator.create();
+                    param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+
+                    for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
+                    {
+                        param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>( transfunc_creator.transfunc()[i] );
+                    }
+
+                    generate_particle_worker( param, mvpl, nan_error,
+#ifndef CPU_VER
+                        jc,
+#endif
+                        jd, transfunc_creator, timer_count );
+               }
+            }
+            else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_glyph )
+            {
+                generate_glyph_worker(param, clntMes, mvpl, nan_error, 
+#ifndef CPU_VER
+                    jc, 
+#endif
+                    jd,  transfunc_creator, timer_count, clntMes.m_initialize_parameter  );
+
+            } // end of generate_glyph
+            else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
+            {
+                generate_plot_over_line_worker(param, clntMes, mvpl, nan_error, 
+#ifndef CPU_VER
+                    jc, 
+#endif
+                    jd,  transfunc_creator, timer_count, clntMes.m_initialize_parameter  );
+
+            } // end of plot_over_line
+        } // end of while
+    }
+    else                    // rank == 0
+    {
+        //--------------------- MASTER --------------------
+        int ptss;
+
+        assert( jpv::ParticleTransferUtils::isLittleEndian() );
+
+        jpv::ParticleTransferServer pts;
+        ptss = pts.initializeServer( param.m_port );
+
+        jpv::ParticleTransferServerMessage servMes;
+        jpv::ParticleTransferClientMessage clntMes;
+        clntMes.m_camera = new vismodule::Camera();
+        servMes.m_camera = new vismodule::Camera();
+
+        servMes.m_server_status = 0;
+        // クライアント接続待ち
+        pts.acceptServer();
+
+        while ( ( ptss != -1 ) && ( pts.good() ) )
+        {
+            static int timer_count = 0;
+
+            ptss = pts.recvMessage( &clntMes );
+            //debug add by shimomura 2023/1/18
+            clntMes.show();
+
+#ifdef _WIN32 
+            std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '/', '\\');
+#elif defined(_WIN64)
+            std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '/', '\\');
+#endif
+#ifdef __APPLE__
+            std::string target = "¥";
+            std::string replacement = "/";
+
+            size_t pos = 0;
+            while ((pos = clntMes.m_input_directory.find(target, pos)) != std::string::npos) {
+                clntMes.m_input_directory.replace(pos, target.length(), replacement);
+                pos += replacement.length();
+            }
+#elif defined(__linux__)
+            std::string target = "\\";
+            std::string replacement = "/";
+
+            size_t pos = 0;
+            while ((pos = clntMes.m_input_directory.find(target, pos)) != std::string::npos) {
+                clntMes.m_input_directory.replace(pos, target.length(), replacement);
+                pos += replacement.length();
+            }
 #endif
 
-            pts.termServer();
-        }		// rank == 0
+            std::cout << "input_directory = " << clntMes.m_input_directory << std::endl;
+                    
+            if ( ptss == -1 ) break;
+            /* 140319 for client stop by Ctrl+c */
+            signal( SIGABRT, SignalHandler );
+            signal( SIGTERM, SignalHandler );
+            signal( SIGINT, SignalHandler ); /* SIGINT is invalid here, because mpiexec uses it. */
+            // signal( SIGSEGV, SignalHandler );
+            if ( clntMes.m_step > mvpl.m_total_last_step )
+            {
+                clntMes.m_step = mvpl.m_total_last_step;
+            }
+            else if ( clntMes.m_step < mvpl.m_total_start_steps )
+            {
+                clntMes.m_step = mvpl.m_total_start_steps;
+            }
+
+            if ( SigServer )
+            {
+                clntMes.m_initialize_parameter = jpv::InitializeParameter::end; 
+                std::cout << "*** SigServer" << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+            }
+            else
+            {
+                /* 140319 for client stop by Ctrl+c */
+                if ( clntMes.m_initialize_parameter != jpv::InitializeParameter::initial_step )
+                {
+                    clntMes.m_input_directory = param.m_input_data_base;
+                }
+            }
+
+            std::cout << "Recieve message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+            if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
+            {
+
+                strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
+                servMes.m_number_particle = 0;
+                servMes.m_number_glyph = 0 ;
+                servMes.m_flag_send_bins = 1;
+                servMes.m_transfer_function_count = 0;
+                servMes.m_message_size = servMes.byteSize();
+                pts.sendMessage( servMes );
+                pts.disconnect();
+                pts.acceptServer();
+            }
+            else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::end )
+            {
+
+                strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
+                servMes.m_number_particle = 0;
+                servMes.m_number_glyph = 0 ;
+                servMes.m_flag_send_bins = 1;
+                servMes.m_transfer_function_count = 0;
+                servMes.m_message_size = servMes.byteSize();
+                pts.sendMessage( servMes );
+                break;
+            }
+            else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::initial_step ) // change PFI file.
+            {
+                bool open_flag = true; // ファイルを開けるかどうか
+                bool ExtendFileFormat_flag = true; // データ形式拡張に対応しているか
+                bool pfi_flag = true; // .pfl, .pfiファイルを選択しているか
+                
+                param.m_input_data_base = clntMes.m_input_directory;
+
+                std::ifstream fin( param.m_input_data_base, std::ios::in);
+                /*
+                if (!fin.is_open()) 
+                {
+                    std::cout << "ファイルを開けませんでした: " << param.m_input_data_base << std::endl;
+                    open_flag = false;
+                }
+                */
+
+#ifndef EXTEND_FILE_FORMAT
+                ExtendFileFormat_flag = false;
+                pfi_flag = false;
+                size_t found_pfl = param.m_input_data_base.find(".pfl");
+                size_t found_pfi = param.m_input_data_base.find(".pfi");
+                if (found_pfl != std::string::npos) pfi_flag = true;
+                if (found_pfi != std::string::npos) pfi_flag = true;
+#endif
+
+                std::cout << "open_flag = "             << open_flag             << ", "
+                            << "ExtendFileFormat_flag = " << ExtendFileFormat_flag << ", "
+                            << "pfi_flag = "              << pfi_flag              << std::endl;
+
+                strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
+                // ADD by FEAST 2015.12.24
+                //servMes.m_server_status = 0;
+                // ADD END 2015.12.24
+                servMes.m_number_particle = 0;
+                servMes.m_number_glyph = 0 ;
+                servMes.m_flag_send_bins = 1;
+                servMes.m_transfer_function_count = 0;
+                servMes.m_message_size = servMes.byteSize();
+
+                if ( open_flag == true && ExtendFileFormat_flag == true )
+                {
+                    servMes.m_file_enable_flag = jpv::FileEnableFlag::Enable_VTK;
+                }
+                if ( open_flag == true && ExtendFileFormat_flag == false && pfi_flag == true )
+                {
+                    // VTKには対応していないのでもう1つ状態が必要 Enable_pfi 追加予定
+                    servMes.m_file_enable_flag = jpv::FileEnableFlag::Enable_VTK;
+                }
+                if ( open_flag == true && ExtendFileFormat_flag == false && pfi_flag == false )
+                {
+                    servMes.m_file_enable_flag = jpv::FileEnableFlag::NotEnable_VTK;
+                }
+                if (open_flag == false)
+                {
+                    servMes.m_file_enable_flag = jpv::FileEnableFlag::NoFile;
+                }
+                pts.sendMessage( servMes );
+
+                if( servMes.m_file_enable_flag == jpv::FileEnableFlag::NotEnable_VTK ||
+                    servMes.m_file_enable_flag == jpv::FileEnableFlag::NoFile ) 
+                {
+                    if ( rank == 0 )
+                    {
+                        std::cerr << "Error: pfifile doesn't exist" << std::endl;
+                    }
+
+                    bsz = -1;
+#ifndef CPU_VER
+                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
+#endif
+
+// #ifndef CPU_VER
+                    // 開けなくても停止しないよう変更  予定 
+                    // MPI_Finalize();
+// #endif
+                    // return 0;
+                    // continue;
+                    break;
+                }
+
+                // send cltMes to all worker process >>
+                bsz = clntMes.byteSize();
+#ifndef CPU_VER
+                MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+                char* buf;
+                buf = new char[bsz];
+                clntMes.pack( buf );
+#ifndef CPU_VER
+                MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+#endif
+                delete[] buf;
+                // send cltMes to all worker process <<
+
+                param.m_time_step = clntMes.m_step; 
+                param.m_level_index = clntMes.m_level_index;
+                param.m_repeat_level = clntMes.m_repeat_level;
+                param.m_sampling_method = 'h';
+                param.m_particle_limit = clntMes.m_particle_limit;
+                param.m_particle_density = clntMes.m_particle_density;
+                param.m_camera = clntMes.m_camera;
+                param.m_x_synthesis = clntMes.m_x_synthesis;
+                param.m_y_synthesis = clntMes.m_y_synthesis;
+                param.m_z_synthesis = clntMes.m_z_synthesis;
+                param.m_particle_data_size_limit = clntMes.m_particle_data_size_limit;
+
+                mvpl.searchFile(param);
+
+                if ( mvpl.m_list.size() <= 0 )
+                {
+                    if ( rank == 0 )
+                    {
+                        std::cerr << "Error: pfifile doesn't exist(rank:" << rank << ")" << std::endl;
+                    }
+                    bsz = -1;
+#ifndef CPU_VER
+                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
+                    MPI_Finalize(); // 開けなくても停止しないよう変更  予定 
+#endif
+                    strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
+                    // ADD by FEAST 2015.12.24
+                    //servMes.m_server_status = 0;
+                    // ADD END 2015.12.24
+                    servMes.m_number_particle = 0;
+                    servMes.m_number_glyph = 0 ;
+                    servMes.m_flag_send_bins = 1; // histogram
+                    servMes.m_message_size = servMes.byteSize();
+                    pts.sendMessage( servMes );
+                            
+                    break;
+                }
+
+                if( !clntMes.m_import_flag ) 
+                {
+                    std::cout << "defalt parameter " << std::endl;
+                    VariableRange range = Calculate_minmax( param, mvpl );
+                    transfunc_creator.setInitialProtocol( mvpl.m_total_number_ingredients, range );
+                }
+                else
+                {
+                    std::cout << "user define parameter " << std::endl;
+                    transfunc_creator.setProtocol( clntMes );
+                }                    
+
+                param.m_transfunc_synthesizer = transfunc_creator.create();
+                param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+
+                for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
+                {
+                    param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
+                }
+
+                param.m_sampling_step = CalculateSamplingStep( mvpl );
+                param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *param.m_camera );
+                if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+
+                initial_step_master( param, mvpl, nan_error,
+#ifndef CPU_VER
+                    jc,
+#endif
+                    jd, pts, timer_count );
+
+            } // end of change PFI
+            //else
+            else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_particle )
+            {
+                timer_count++;
+                if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+                {
+                    VIS_MODULE_TIMER_STA( 461 );
+                }
+
+                // send cltMes to all worker process >>
+                bsz = clntMes.byteSize();
+#ifndef CPU_VER
+                MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+                buf = new char[bsz];
+                clntMes.pack( buf );
+#ifndef CPU_VER
+                MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+#endif
+                delete[] buf;
+                // send cltMes to all worker process <<
+
+                std::cout << "Recieve message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+                std::cout << "sampling method = " << clntMes.m_sampling_method << std::endl;
+                std::cout << "subpixel level = " << clntMes.m_subpixel_level << std::endl;
+                std::cout << "repeat level = " << clntMes.m_repeat_level << std::endl;
+                std::cout << "timeParam = " << clntMes.m_time_parameter << std::endl;
+
+                if ( clntMes.m_time_parameter == 0 )
+                {
+                    std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                }
+                else if ( clntMes.m_time_parameter == 1 )
+                {
+                    std::cout << "beginTime = " << clntMes.m_begin_time << std::endl;
+                    std::cout << "endTime = " << clntMes.m_last_time << std::endl;
+                    std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                }
+                else if ( clntMes.m_time_parameter == 2 )
+                {
+                    std::cout << "step = " << clntMes.m_step << std::endl;
+                }
+                std::cout << "transParam = " << clntMes.m_trans_parameter << std::endl;
+                if ( clntMes.m_trans_parameter == 1 )
+                {
+                    std::cout << "levelIndex = " << clntMes.m_level_index << std::endl;
+                }
+                if ( clntMes.m_time_parameter == 0 )
+                {
+                    strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
+                    servMes.m_time_step = clntMes.m_step;
+                    servMes.m_repeat_level = clntMes.m_repeat_level;
+                    servMes.m_level_index = clntMes.m_level_index;
+                    servMes.m_number_particle = 0;
+                    servMes.m_number_glyph = 0 ;
+                    servMes.m_flag_send_bins = 1;
+
+                    servMes.m_message_size = servMes.byteSize();
+                    pts.sendMessage( servMes );
+                }
+                else if ( clntMes.m_time_parameter == 1 )
+                {
+
+                    strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
+                    servMes.m_time_step = clntMes.m_step;
+                    servMes.m_repeat_level = clntMes.m_repeat_level;
+                    servMes.m_level_index = clntMes.m_level_index;
+                    servMes.m_number_particle = 0;
+                    servMes.m_number_glyph = 0 ;
+                    servMes.m_flag_send_bins = 1;
+
+                    servMes.m_message_size = servMes.byteSize();
+                    pts.sendMessage( servMes );
+                }
+                else if ( clntMes.m_time_parameter == 2 )
+                {
+                    param.m_time_step = clntMes.m_step;
+                    param.m_level_index = clntMes.m_level_index;
+                    param.m_repeat_level = clntMes.m_repeat_level;
+                    param.m_sampling_method = clntMes.m_sampling_method;
+                    param.m_particle_limit = clntMes.m_particle_limit;
+                    param.m_particle_density = clntMes.m_particle_density;
+                    param.m_camera = clntMes.m_camera;
+                    param.m_x_synthesis = clntMes.m_x_synthesis;
+                    param.m_y_synthesis = clntMes.m_y_synthesis;
+                    param.m_z_synthesis = clntMes.m_z_synthesis;
+
+                    transfunc_creator.setProtocol( clntMes );
+                    param.m_transfunc_synthesizer = transfunc_creator.create();
+                    param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+
+                    for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
+                    {
+                        param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
+                    }
+
+                    generate_particle( param, mvpl, nan_error,
+#ifndef CPU_VER
+                        jc,
+#endif                           
+                        jd, pts );
+                } // end of timeParam == 2
+                else
+                {
+                    break;
+                }
+            } // end of initParam == 1 generate_particle 
+            else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_glyph )
+            {
+                // send cltMes to all worker process >>
+                bsz = clntMes.byteSize();
+#ifndef CPU_VER
+                MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+                buf = new char[bsz];
+                clntMes.pack( buf );
+#ifndef CPU_VER
+                MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+#endif
+                delete[] buf;
+                // send cltMes to all worker process <<
+
+                std::cout << "Recieve message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+                std::cout << "timeParam = " << clntMes.m_time_parameter << std::endl;
+
+                if ( clntMes.m_time_parameter == 0 )
+                {
+                    std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                }
+                else if ( clntMes.m_time_parameter == 1 )
+                {
+                    std::cout << "beginTime = " << clntMes.m_begin_time << std::endl;
+                    std::cout << "endTime = " << clntMes.m_last_time << std::endl;
+                    std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                }
+                else if ( clntMes.m_time_parameter == 2 )
+                {
+                    std::cout << "step = " << clntMes.m_step << std::endl;
+                }
+                std::cout << "transParam = " << clntMes.m_trans_parameter << std::endl;
+                if ( clntMes.m_trans_parameter == 1 )
+                {
+                    std::cout << "levelIndex = " << clntMes.m_level_index << std::endl;
+                }
+                if ( clntMes.m_time_parameter == 0 )
+                {
+                    strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
+                    servMes.m_time_step = clntMes.m_step;
+                    servMes.m_repeat_level = clntMes.m_repeat_level;
+                    servMes.m_level_index = clntMes.m_level_index;
+                    servMes.m_number_particle = 0;
+                    servMes.m_number_glyph = 0 ;
+                    servMes.m_flag_send_bins = 1;
+
+                    servMes.m_message_size = servMes.byteSize();
+                    pts.sendMessage( servMes );
+                }
+                else if ( clntMes.m_time_parameter == 1 )
+                {
+
+                    strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
+                    servMes.m_time_step = clntMes.m_step;
+                    servMes.m_repeat_level = clntMes.m_repeat_level;
+                    servMes.m_level_index = clntMes.m_level_index;
+                    servMes.m_number_particle = 0;
+                    servMes.m_number_glyph = 0;
+                    servMes.m_flag_send_bins = 1;
+
+                    servMes.m_message_size = servMes.byteSize();
+                    pts.sendMessage( servMes );
+                }
+                else if ( clntMes.m_time_parameter == 2 )
+                {
+                    param.m_time_step = clntMes.m_step;
+                    param.m_level_index = clntMes.m_level_index;
+                    param.m_repeat_level = clntMes.m_repeat_level;
+                    param.m_sampling_method = clntMes.m_sampling_method;
+                    param.m_particle_limit = clntMes.m_particle_limit;
+                    param.m_particle_density = clntMes.m_particle_density;
+                    param.m_camera = clntMes.m_camera;
+                    
+                    Calculate_minmax_glyph( param, mvpl, clntMes );
+                    param.m_transfunc_array.resize( transfunc_creator.transfunc().size() );
+                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+
+                    for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
+                    {
+                        param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
+                    }
+
+                    generate_glyph(param, mvpl, nan_error,
+#ifndef CPU_VER
+                        jc,
+#endif                           
+                        jd, pts );
+                } // end of timeParam == 2
+                else
+                {
+                    break;
+                }
+            } // end of initParam = 3 // generateglyph
+            else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
+            {
+                // send cltMes to all worker process >>
+                bsz = clntMes.byteSize();
+#ifndef CPU_VER
+                MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+                buf = new char[bsz];
+                clntMes.pack( buf );
+#ifndef CPU_VER
+                MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+#endif
+                delete[] buf;
+                // send cltMes to all worker process <<
+
+                std::cout << "Recieve message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
+                std::cout << "timeParam = " << clntMes.m_time_parameter << std::endl;
+
+                if ( clntMes.m_time_parameter == 0 )
+                {
+                    std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                }
+                else if ( clntMes.m_time_parameter == 1 )
+                {
+                    std::cout << "beginTime = " << clntMes.m_begin_time << std::endl;
+                    std::cout << "endTime = " << clntMes.m_last_time << std::endl;
+                    std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
+                }
+                else if ( clntMes.m_time_parameter == 2 )
+                {
+                    std::cout << "step = " << clntMes.m_step << std::endl;
+                }
+                std::cout << "transParam = " << clntMes.m_trans_parameter << std::endl;
+                if ( clntMes.m_trans_parameter == 1 )
+                {
+                    std::cout << "levelIndex = " << clntMes.m_level_index << std::endl;
+                }
+                if ( clntMes.m_time_parameter == 0 )
+                {
+                    strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
+                    servMes.m_time_step = clntMes.m_step;
+                    servMes.m_repeat_level = clntMes.m_repeat_level;
+                    servMes.m_level_index = clntMes.m_level_index;
+                    servMes.m_number_particle = 0;
+                    servMes.m_number_glyph = 0 ;
+                    servMes.m_flag_send_bins = 1;
+
+                    servMes.m_message_size = servMes.byteSize();
+                    pts.sendMessage( servMes );
+                }
+                else if ( clntMes.m_time_parameter == 1 )
+                {
+                    strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
+                    servMes.m_time_step = clntMes.m_step;
+                    servMes.m_repeat_level = clntMes.m_repeat_level;
+                    servMes.m_level_index = clntMes.m_level_index;
+                    servMes.m_number_particle = 0;
+                    servMes.m_number_glyph = 0;
+                    servMes.m_flag_send_bins = 1;
+
+                    servMes.m_message_size = servMes.byteSize();
+                    pts.sendMessage( servMes );
+                }
+                else if ( clntMes.m_time_parameter == 2 )
+                {
+                    param.m_time_step = clntMes.m_step;
+                    param.m_level_index = clntMes.m_level_index;
+                    param.m_repeat_level = clntMes.m_repeat_level;
+                    param.m_sampling_method = clntMes.m_sampling_method;
+                    param.m_particle_limit = clntMes.m_particle_limit;
+                    param.m_particle_density = clntMes.m_particle_density;
+                    param.m_camera = clntMes.m_camera;
+                    param.m_sampling_size = clntMes.m_sampling_size;
+
+                    param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
+                    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+
+                    for( int i = 0; i < transfunc_creator.transfunc().size(); i++ )
+                    {
+                        param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
+                    }
+
+                    generate_plot_over_line_master( param, mvpl, nan_error,
+#ifndef CPU_VER
+                        jc, 
+#endif                           
+                        jd, pts );
+                } // end of timeParam == 2
+                else
+                {
+                    break;
+                }
+            } // end of initParam = 5 plot_over_line
+        } // end of while (pts.good)
+
+        delete clntMes.m_camera;
+        delete servMes.m_camera;
+        bsz = -1;
+#ifndef CPU_VER
+        MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
+#endif
+        pts.termServer();
+    } // rank == 0
 //#ifndef CPU_VER
 //    MPI_Finalize();
 //#endif
-    return ;
+    return;
+#endif // 新規作成以降をコメントアウト
 }
 
 
@@ -805,8 +1690,8 @@ void  IS_Connect( int argc, char** argv )
         tfFilePath = visParamDir;
         tfFilePath_old = visParamDir;
         glyphParameterPath = visParamDir;
-        plotOverLineParameterPath = visParamDir;
         glyphParameterPath_old = visParamDir;
+        plotOverLineParameterPath = visParamDir;
         plotOverLineParameterPath_old = visParamDir;
         if (envBuf == NULL) {
             tfFilePath += "default.tf";
@@ -853,11 +1738,10 @@ void  IS_Connect( int argc, char** argv )
         servMes.m_server_status = 0;
         pts.acceptServer(); // クライアント接続待ち
 
-        // 20181226 start
-        // stateおよびhistory用に、環境変数から指定されたパスをもとにファイルパスを作成
-        ParticleMonitor pm( particlePath, glyphFilePath, plotOverLineFilePath, statePath.c_str(), historyPath.c_str() );
-        pm.check();
-        // 20181226 end
+        // Using environment variables, the constructor of the ParticleMonitor class
+        // set particle file, glyph file, plot over line file, status file, history file,
+        // and the min/max coordinates of the object.
+        ParticleMonitor pm;
 
         //ソケットが存在すればgood
         while ( ( ptss != -1 ) && ( pts.good() ) )
@@ -901,8 +1785,8 @@ std::cout << "jpv::InitializeParameter::connection_reset" << std::endl;
                 servMes.m_number_glyph = 0;
                 servMes.m_flag_send_bins = 1;
                 servMes.m_transfer_function_count = 0;
-                // servMes.show();
                 servMes.m_message_size = servMes.byteSize();
+                servMes.show();
                 pts.sendMessage( servMes );
                 pts.disconnect();
                 pts.acceptServer(); // whileループの頭に戻る
@@ -915,22 +1799,112 @@ std::cout << "jpv::InitializeParameter::end" << std::endl;
                 servMes.m_number_glyph = 0;
                 servMes.m_flag_send_bins = 1;
                 servMes.m_transfer_function_count = 0;
-                // servMes.show();
                 servMes.m_message_size = servMes.byteSize();
+                servMes.show();
                 pts.sendMessage( servMes );
                 break; // whileループを抜けて終了
             }
             else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step ) // change PFI file.
             {
-std::cout << "jpv::InitializeParameter::initial_step" << std::endl;
+                std::cout << "==================== Initial Step Start ====================" << std::endl;
                 pm.check();
-                initial_step_IS( servMes, clntMes, param, pm, mvpl, jd, pts, particlePath, tfFilePath_old );
+
+                // store client message in param
+                param.m_time_step = clntMes.m_step; 
+                param.m_level_index = clntMes.m_level_index;
+                param.m_repeat_level = clntMes.m_repeat_level;
+                param.m_sampling_method = 'h';
+                param.m_camera = clntMes.m_camera;
+                param.m_x_synthesis = clntMes.m_x_synthesis;
+                param.m_y_synthesis = clntMes.m_y_synthesis;
+                param.m_z_synthesis = clntMes.m_z_synthesis;
+                param.m_particle_data_size_limit = clntMes.m_particle_data_size_limit;
+                if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+
+                // 20181226 start  環境変数で指定したパスおよび名前でファイル参照を行う
+                std::ifstream file(tfFilePath_old.c_str());
+                if(file)
+                {
+                    ParameterFileReader ppr;
+                    ppr.readParameterFile( tfFilePath_old.c_str() );
+                    ppr.setParameter( &param );
+                    ppr.setTransferFunction( &param );
+                }
+                else
+                {
+                    int tf_number;
+                    VariableRange vr;
+                    ParticleMonitor tmp_pm;
+
+                    tmp_pm.check();
+
+                    if( tmp_pm.stepExisted() )
+                    {
+                        tmp_pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
+                    }
+                    else
+                    {
+                        tmp_pm.setTimeStep_particle(0);
+                    }
+                    tmp_pm.readParticleHistoryFile();
+
+                    tf_number = pm.particleHistoryFile().colorHistogramArray().size();
+                    vr = pm.particleHistoryFile().variableRange();
+                    setDefalutTransferFunction( &param, vr, tf_number );
+                }
+                file.close();
+
+                initial_step_IS( servMes, param, mvpl, jd, pts );
+                std::cout << "==================== Initial Step end ====================" << std::endl;
             } // end of change PFI
             else if( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle )
             {
-std::cout << "jpv::InitializeParameter::generate_particle" << std::endl;
-                pm.check();
-                generate_particle_IS(servMes, clntMes, param, pm, mvpl, jd, pts, particlePath, tfFilePath, tfFilePath_old, timer, timer_count );
+                std::cout << "==================== Generate Particle Start ====================" << std::endl;
+                std::cout << "jpv::InitializeParameter::generate_particle" << std::endl;
+
+                // store client message in param
+                param.m_time_step = clntMes.m_step; 
+                param.m_level_index = clntMes.m_level_index;
+                param.m_repeat_level = clntMes.m_repeat_level;
+                param.m_sampling_method = clntMes.m_sampling_method;
+                param.m_camera = clntMes.m_camera;
+                param.m_x_synthesis = clntMes.m_x_synthesis;
+                param.m_y_synthesis = clntMes.m_y_synthesis;
+                param.m_z_synthesis = clntMes.m_z_synthesis;
+                param.m_particle_data_size_limit = clntMes.m_particle_data_size_limit;
+                if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
+
+                // update the transfer function file using the client message
+                // updated transfer function file is loaded by InSitu
+                // Daemon loads the particle file generated by InSitu
+                ParameterFileWriter ppw;
+                ParameterFileReader ppr;
+                ppw.inputMessage( clntMes );
+                ppr.readParameterFile( tfFilePath_old.c_str() );
+                NameListFile nm1 = ppr.getNameListFile();
+                NameListFile nm2 = ppw.getNameListFile();
+                if( nm1 != nm2 )
+                {
+                    ppw.writeParameterFile( tfFilePath.c_str() );
+                }
+
+                if ( clntMes.m_time_parameter == 0 )
+                {
+                    std::cout << "ERROR:clntMes.m_time_parameter == 0 is an unexpected parameter." << std::endl;
+                }
+                else if ( clntMes.m_time_parameter == 1 )
+                {
+                    std::cout << "ERROR:clntMes.m_time_parameter == 1 is an unexpected parameter." << std::endl;
+                }
+                else if ( clntMes.m_time_parameter == 2 )
+                {
+                    generate_particle_IS(servMes, param, mvpl, jd, pts );
+                } // clntMes.m_time_parameter == 2
+                else
+                {
+                    return;
+                }
+                std::cout << "==================== Generate Particle End ====================" << std::endl;
             } // end of initParam =1
             else if (clntMes.m_initialize_parameter == jpv::InitializeParameter::export_TFfile )
             {
@@ -983,6 +1957,56 @@ std::cout << "jpv::InitializeParameter::plot_over_line" << std::endl;
 
     }
 
-
     return;
+}
+
+void SetParameterFilePath(
+    std::string& tfFilePath,
+    std::string& tfFilePath_old,
+    std::string& glyphParameterPath,
+    std::string& glyphParameterPath_old,
+    std::string& plotOverLineParameterPath,
+    std::string& plotOverLineParameterPath_old
+)
+{
+        const char *envBuf = NULL;
+        std::string visParamDir;
+
+        envBuf = std::getenv( "VIS_PARAM_DIR" );
+
+        if (envBuf == NULL) {
+            visParamDir = "./";
+        }
+        else {
+            visParamDir = envBuf;
+            if (visParamDir[visParamDir.size() - 1] != '/') {
+                visParamDir += "/";
+            }
+        }
+
+        tfFilePath                    = visParamDir;
+        tfFilePath_old                = visParamDir;
+        glyphParameterPath            = visParamDir;
+        glyphParameterPath_old        = visParamDir;
+        plotOverLineParameterPath     = visParamDir;
+        plotOverLineParameterPath_old = visParamDir;
+
+        envBuf = std::getenv( "TF_NAME" );
+
+        if (envBuf == NULL) {
+            tfFilePath                    += "default.tf";
+            tfFilePath_old                += "default_old.tf";
+            glyphParameterPath            += "parameter.gly";
+            plotOverLineParameterPath     += "parameter.pol";
+            glyphParameterPath_old        += "parameter_old.gly";
+            plotOverLineParameterPath_old += "parameter_old.pol";
+        }
+        else {
+            tfFilePath                    += envBuf + ".tf";
+            tfFilePath_old                += envBuf + "_old.tf";
+            glyphParameterPath            += "parameter.gly";
+            plotOverLineParameterPath     += "parameter.pol";
+            glyphParameterPath_old        += "parameter_old.gly";
+            plotOverLineParameterPath_old += "parameter_old.pol";
+        } 
 }

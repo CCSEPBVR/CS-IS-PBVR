@@ -7,6 +7,7 @@
 
 #include <vismodule/TransferFunctionSynthesizer>
 //#include <vismodule/ExtendedTransferFunction>
+#include <vismodule/ExtendedTransferFunctionParameter>
 #include <vismodule/TransferFunction>
 
 class Argument : public vismodule::CommandLine
@@ -18,9 +19,11 @@ private:
 public:
     std::string m_input_data;
     std::string m_input_data_base;
+    std::string m_color_transfer_function_synthesis;
+    std::string m_opacity_transfer_function_synthesis;
     vismodule::TransferFunction m_transfer_function;
-    //std::vector<NamedTransferFunction> m_transfunc_array;
-    std::vector<vismodule::TransferFunction> m_transfunc_array;
+    std::vector<NamedTransferFunctionParameter> m_named_transfunc_array; // use server message
+    std::vector<vismodule::TransferFunction> m_transfunc_array; // use CellByCellxxxSampling
     TransferFunctionSynthesizer* m_transfunc_synthesizer;
     int m_time_step;
     size_t m_subpixel_level;
@@ -34,6 +37,7 @@ public:
     int m_job_id_pack_size;
     int m_particle_limit, m_particle_limit_pre;
     float m_particle_density;
+    float m_particle_data_size_limit;
     std::string m_output_data_base;
     vismodule::Camera* m_camera;
     size_t m_window_width;
@@ -53,6 +57,9 @@ public:
 
     std::vector<VolumeEquation>        m_voleqn;
     size_t m_normal_ingredient;
+
+    VariableRange m_server_side_variable_range;
+    int32_t m_sampling_size; // use plot over line (resolution)
 
 public:
     Argument( const int argc, char** argv ):

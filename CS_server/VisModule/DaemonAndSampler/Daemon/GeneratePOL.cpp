@@ -1,307 +1,228 @@
 #include <vismodule/GeneratePOL>
-void generate_plot_over_line_master(Argument &param, jpv::ParticleTransferClientMessage& clntMes, jpv::ParticleTransferServerMessage& servMes, MultiVolumePropertyList& mvpl, 
-                         bool &nan_error, 
+
+void generate_plot_over_line(
+    Argument &param,
+    MultiVolumePropertyList& mvpl,
+    bool &nan_error,
 #ifndef CPU_VER
-                         JobCollector& jc, 
+    JobCollector& jc,
 #endif
-                         JobDispatcher& jd,  jpv::ParticleTransferServer pts,
-                         TransferFunctionSynthesizerCreator transfunc_creator , int& timer_count , const jpv::InitializeParameter init_param )
+    JobDispatcher& jd,
+    jpv::ParticleTransferServer pts
+)
 {
-#ifndef CPU_VER
     int rank;
     int mpi_size;
+#ifndef CPU_VER
     MPI_Comm_rank( MPI_COMM_WORLD, &rank );
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
 #else
-	int mpi_size = 1;
+    rank = 0;
+	mpi_size = 1;
 #endif
-    
-    char* buf;
-    int bsz = 0;
     int st, vl, wid = 0;
+    jpv::ParticleTransferServerMessage servMes;
+    PlotOverLineGenerator pol_generator;
+    const int tf_number  = mvpl.m_list[0].m_number_ingredients;
+    const int resolution = param.m_sampling_size;
 
-                    timer_count++;
-                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+    jd.initialize( 
+        param.m_time_step,
+        param.m_time_step,
+        mvpl.m_total_number_subvolumes,
+        mvpl.m_total_min_subvolume_coord,
+        mvpl.m_total_max_subvolume_coord,
+        param.m_latency_threshold,
+        param.m_job_id_pack_size
+    );
+
+    if( rank == 0 )
+    {
+        // make sub volume num server message start
+        strncpy( servMes.m_header, "JPTP /1.0 100 OK\r\n", 18 );
+        servMes.m_camera = param.m_camera;
+        servMes.m_server_status = 0;
+        servMes.m_time_step = param.m_time_step;
+        servMes.m_level_index = param.m_level_index;
+        servMes.m_repeat_level = param.m_repeat_level;
+        servMes.m_number_particle = 0;
+        servMes.m_number_glyph = 0;
+        servMes.m_flag_send_bins = 1;
+        servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
+        servMes.m_transfer_function_count = 0;
+        servMes.m_start_step = mvpl.m_total_start_steps;
+        servMes.m_last_step = mvpl.m_total_last_step;
+        servMes.m_number_step = mvpl.m_total_number_steps;
+        servMes.m_min_object_coord[0] = mvpl.m_total_min_object_coord[0];
+        servMes.m_min_object_coord[1] = mvpl.m_total_min_object_coord[1];
+        servMes.m_min_object_coord[2] = mvpl.m_total_min_object_coord[2];
+        servMes.m_max_object_coord[0] = mvpl.m_total_max_object_coord[0];
+        servMes.m_max_object_coord[1] = mvpl.m_total_max_object_coord[1];
+        servMes.m_max_object_coord[2] = mvpl.m_total_max_object_coord[2];
+        servMes.m_min_value = mvpl.m_total_min_value;
+        servMes.m_max_value = mvpl.m_total_max_value;
+        servMes.m_number_nodes = mvpl.m_total_number_nodes;
+        servMes.m_number_elements = mvpl.m_total_number_elements;
+        servMes.m_element_type = mvpl.m_list[0].m_elem_type;
+        servMes.m_file_type = mvpl.m_list[0].m_file_type;
+        servMes.m_number_ingredients = mvpl.m_list[0].m_number_ingredients;
+        servMes.m_opacity_transfer_function_synthesis = "O1";
+        servMes.m_color_transfer_function_synthesis = "C1";
+        servMes.m_particle_limit = param.m_particle_limit;
+        servMes.m_particle_density = param.m_particle_density;
+        servMes.m_subpixel_level = param.m_subpixel_level;
+        servMes.m_server_side_variable_range = param.m_server_side_variable_range;
+        // make sub volume num server message end
+
+        // send sub volume num server message
+        std::cout << "INFO: send sub volume num server message" << std::endl;
+        servMes.m_message_size = servMes.byteSize();
+        servMes.show();
+        pts.sendMessage( servMes );            
+    }
+    
+    std::vector<float> tmp_values( resolution );
+    std::vector<int>   tmp_mask( resolution, 0 );
+    std::vector<float> tmp_axis( resolution ); 
+
+    originalGlyph->setResolution( resolution );
+    originalGlyph->mask().fill( false );
+
+    while ( jd.dispatchNext( wid, &st, &vl ) )
+    {
+        vismodule::KVSMLObjectPlotOverLine* tmp_obj = new vismodule::KVSMLObjectPlotOverLine;
+        
+        if ( server_mode == jpv::ServerMode::CS )
+        {
+            // make plot over line
+            if ( ( rank > 0 ) || ( mpi_size == 1 ) )
+            {
+                int xvl, fidx;
+                fidx = mvpl.getFileIndex( vl, &xvl );
+                MultiVolumeProperty& mvp = mvpl.m_list[fidx];
+                mvp.setFilePath(param.m_input_data, st, xvl);
+                pol_generator.setFinlterInfo( &mvp );
+                param.m_subvolume_id = xvl ;
+            
+                // generate plot over line start
+                try
+                {
+                    if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                     {
-                        VIS_MODULE_TIMER_STA( 461 );
                     }
-
-                    // send cltMes to all worker process >>
-                    bsz = clntMes.byteSize();
-#ifndef CPU_VER
-                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-                    buf = new char[bsz];
-                    clntMes.pack( buf );
-#ifndef CPU_VER
-                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
-#endif
-                    delete[] buf;
-                    // send cltMes to all worker process <<
-
-                    std::cout << "Recieve message initParam = " << static_cast<int>(clntMes.m_initialize_parameter) << std::endl;
-                    std::cout << "timeParam = " << clntMes.m_time_parameter << std::endl;
-
-                    if ( clntMes.m_time_parameter == 0 )
-                    {
-                        std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
-                    }
-                    else if ( clntMes.m_time_parameter == 1 )
-                    {
-                        std::cout << "beginTime = " << clntMes.m_begin_time << std::endl;
-                        std::cout << "endTime = " << clntMes.m_last_time << std::endl;
-                        std::cout << "memorySize = " << clntMes.m_memory_size << std::endl;
-                    }
-                    else if ( clntMes.m_time_parameter == 2 )
-                    {
-                        std::cout << "step = " << clntMes.m_step << std::endl;
-                    }
-                    std::cout << "transParam = " << clntMes.m_trans_parameter << std::endl;
-                    if ( clntMes.m_trans_parameter == 1 )
-                    {
-                        std::cout << "levelIndex = " << clntMes.m_level_index << std::endl;
-                    }
-                    if ( clntMes.m_time_parameter == 0 )
-                    {
-                        strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
-                        servMes.m_time_step = clntMes.m_step;
-                        servMes.m_repeat_level = clntMes.m_repeat_level;
-                        servMes.m_level_index = clntMes.m_level_index;
-                        servMes.m_number_particle = 0;
-                        servMes.m_number_glyph = 0 ;
-                        servMes.m_flag_send_bins = 1;
-
-                        servMes.m_message_size = servMes.byteSize();
-                        pts.sendMessage( servMes );
-                    }
-                    else if ( clntMes.m_time_parameter == 1 )
-                    {
-
-                        strncpy( servMes.m_header, "JPTP /1.0 130 OK\r\n", 18 );
-                        servMes.m_time_step = clntMes.m_step;
-                        servMes.m_repeat_level = clntMes.m_repeat_level;
-                        servMes.m_level_index = clntMes.m_level_index;
-                        servMes.m_number_particle = 0;
-                        servMes.m_number_glyph = 0;
-                        servMes.m_flag_send_bins = 1;
-
-                        servMes.m_message_size = servMes.byteSize();
-                        pts.sendMessage( servMes );
-                    }
-                    else if ( clntMes.m_time_parameter == 2 )
-                    {
-                        strncpy( servMes.m_header, "JPTP /1.0 100 OK\r\n", 18 );
-                        servMes.m_message_size = servMes.byteSize();
-                        servMes.m_time_step = clntMes.m_step;
-                        servMes.m_level_index = clntMes.m_level_index;
-                        servMes.m_repeat_level = clntMes.m_repeat_level;
-                        param.m_sampling_method = clntMes.m_sampling_method;
-                        param.m_particle_limit = clntMes.m_particle_limit;
-                        param.m_particle_density = clntMes.m_particle_density;
-
-                     param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
-                    for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
-                    {
-                        param.m_transfunc_array[i]       = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
-                    }
-
-                        if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
-
-
-                            jd.initialize( clntMes.m_step, clntMes.m_step, mvpl.m_total_number_subvolumes,
-                                           mvpl.m_total_min_subvolume_coord,
-                                           mvpl.m_total_max_subvolume_coord,
-                                           param.m_latency_threshold, param.m_job_id_pack_size );
-                            servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
-
-                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                        {
-                            VIS_MODULE_TIMER_STA( 470 );
-                        }
-
-                        param.m_sampling_step = CalculateSamplingStep( mvpl );
-
-                        param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
-
-                        VariableRange vr;
-                        pts.sendMessage( servMes );
-
-                        //add by shimomura 2023/06/14
-                        int cnt = 2;
-
-                        // 関数の領域確保、初期化を行う : by @hira 2016/12/01
-                        servMes.initializeTransferFunction(clntMes.m_transfer_function.size(), DEFAULT_NBINS);
- 
-                        const int resolution = clntMes.m_sampling_size;
-                        vismodule::KVSMLObjectPlotOverLine* originalGlyph = new vismodule::KVSMLObjectPlotOverLine;
-                        servMes.m_resolution = resolution;
-                        servMes.m_xAxis.resize(resolution);
-                        servMes.m_mask.resize(resolution);
-                        servMes.m_line_values.resize(resolution);
-                        std::vector<float> tmp_values(resolution); 
-                        std::vector<int> tmp_mask(resolution,0); 
-                        std::vector<float> tmp_axis(resolution); 
-                         for (int i =0; i < resolution; ++i)
-                         {
-                             servMes.m_mask[i] = 0;
-                         } 
-
-                        originalGlyph -> setResolution(resolution);
-                        originalGlyph ->mask().fill(false);
-                        while ( jd.dispatchNext( wid, &st, &vl ) )
-                        {
-                            PlotOverLineGenerator pol_generator;
-                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                            {
-                                VIS_MODULE_TIMER_STA( 471 );
-                            }
-
-                            if (mpi_size == 1) 
-                            {
-                            int xvl, fidx;
-                            fidx = mvpl.getFileIndex( vl, &xvl );
-                            MultiVolumeProperty& mvp = mvpl.m_list[fidx];
-                            pol_generator.setFinlterInfo( &mvpl.m_list[fidx] );
-
-                            mvp.setFilePath(param.m_input_data, st, xvl);
-                            vismodule::KVSMLObjectPlotOverLine* tmp_obj = new vismodule::KVSMLObjectPlotOverLine;
-                            param.m_subvolume_id = xvl ;
-                            int timeStep = 1;
-                            servMes.m_flag_send_bins = 2;
-                            try
-                            {
-                                if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
-                                {
-                                    // run()で得られるKVSMLObjectglyphとtmp_objは異なるメモリ領域を指しているため,ポインタコピーではなくオペレータを呼び出す必要がある
-                                }
 #ifdef EXTEND_FILE_FORMAT
-                                else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
-                                {
-                                    pol_generator.run( param, *clntMes.m_camera, clntMes, servMes.m_number_volume_divide, tmp_obj, st, xvl );
-                                }
-#endif
-                                else     // filetype: kvsml
-                                {
-                                    pol_generator.run( param, *clntMes.m_camera, clntMes, timeStep,servMes.m_number_volume_divide , tmp_obj, st );
-                                }
-
-                                //集約処理
-                                
-                                for(int i =0; i < resolution; i++)
-                                { 
-                                    tmp_axis[i] = tmp_obj->x_axis()[i];
-                                    if (tmp_obj->mask()[i]) 
-                                    {
-                                        //tmp_mask[i] = tmp_obj ->mask()[i];
-                                        tmp_mask[i] = 1;
-                                        tmp_values[i] = tmp_obj->values_on_line()[i];
-                                    }
-                                } 
-                                
-                            }
-                            catch ( const std::runtime_error& e )
-                            {
-#ifdef _DEBUG		// debug by @hira
-                                    printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
-#endif
-                                std::cerr << e.what();
-                                nan_error = true;
-                            }
-
-                            } //end if mpi_size == 1
-#if 1
-#ifndef CPU_VER          // MPI並列については一旦保留, collectorの内容がわかるまで
-                            if (mpi_size > 1) {
-                                //jc.jobCollect( originalObject, &vr, &nan_error, &wid );
-                                jc.jobCollect_pol( tmp_axis, tmp_mask, tmp_values, &nan_error, &wid );
-                            }
-#endif
-#endif
-
-                            for (int i =0; i < resolution; ++i)
-                            {
-                                servMes.m_xAxis[i] = tmp_axis[i];   
-                                servMes.m_line_values[i] = tmp_values[i];   
-                                servMes.m_mask[i]  = tmp_mask[i];
-                            }
-
-//                           //add by shimomura 2023/06/14
-                            //if ( originalGlyph != object ) delete originalGlyph;
-
-                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                            {
-                                VIS_MODULE_TIMER_END( 471 );
-                            }
-                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                            {
-                                VIS_MODULE_TIMER_STA( 472 );
-                            }
-                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                            {
-                                VIS_MODULE_TIMER_END( 472 );
-                            }
-                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                            {
-                                VIS_MODULE_TIMER_STA( 473 );
-                            }
-                            //delete object;
-                            if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                            {
-                                VIS_MODULE_TIMER_END( 473 );
-                            }
-                        } // end of while(DispatchNext)
-                           
-                        // TEST START 2015.1.14
-                        if ( nan_error )
-                        {
-                            strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
-                            servMes.m_server_status = 1;
-                            servMes.m_number_particle = 0;
-                            servMes.m_number_glyph = 0 ;
-                            servMes.m_flag_send_bins = 1;
-                            std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
-                            nan_error = false;
-                        }
-
-                        servMes.m_flag_send_bins = 3;
-                        servMes.m_subpixel_level = param.m_subpixel_level;
-                        servMes.m_message_size = servMes.byteSize();
-                        pts.sendMessage( servMes );
-                        // TEST START 2015.1.14
-                        servMes.m_server_status = 0;
-                        // TEST END 2015.1.14
-
-                        for ( int tf = 0; tf < servMes.m_transfer_function_count; tf++ )
-                        {
-                            delete[] servMes.m_color_bins[tf];
-                            delete[] servMes.m_opacity_bins[tf];
-                        }
-                        delete[] servMes.m_color_nbins;
-                        delete[] servMes.m_opacity_nbins;
-                        servMes.m_transfer_function_count = 0;
-                        servMes.m_flag_send_bins = 1;
-
-                        if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
-                        {
-                            VIS_MODULE_TIMER_END( 470 );
-                        }
-                    } // end of timeParam == 2
-                    else
+                    else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                     {
-                        //break;
-                        return;
+                        pol_generator.run( param, *param.m_camera, clntMes, servMes.m_number_volume_divide, tmp_obj, st, xvl );
                     }
-                    if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+#endif
+                    else // filetype: kvsml
                     {
-                        VIS_MODULE_TIMER_END( 461 );
+                        pol_generator.run( param, *param.m_camera, clntMes, timeStep,servMes.m_number_volume_divide , tmp_obj, st );
                     }
-                    if ( timer_count == VIS_MODULE_TIMER_COUNT_NUM )
+                }
+                catch ( const std::runtime_error& e )
+                {
+#ifdef _DEBUG // debug by @hira
+                    printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
+#endif
+                    std::cerr << e.what();
+                    nan_error = true;
+                }
+                // generate plot over line end
+
+                // make parameter
+                for( int i = 0; i < resolution; i++ )
+                { 
+                    tmp_axis[i] = tmp_obj->x_axis()[i];
+                    if (tmp_obj->mask()[i])
                     {
-                        VIS_MODULE_TIMER_END( 1 );
-                        VIS_MODULE_TIMER_FIN();
+                        // tmp_mask[i] = tmp_obj->mask()[i];
+                        tmp_mask[i]   = 1;
+                        tmp_values[i] = tmp_obj->values_on_line()[i];
                     }
+                }
+            } // make plot over line
 
+#ifndef CPU_VER
+            if ( mpi_size > 1 ) {
+                jc.jobCollect_pol( tmp_axis, tmp_mask, tmp_values, &nan_error, &wid );
+            }
+#endif
+        } // server_mode == jpv::ServerMode::CS
+        else // server_mode == jpv::ServerMode::IS
+        {
+            ParticleMonitor pm;
+            pm.check();
 
+            if( pm.stepExisted() )
+            {
+                pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
+            }
+            else
+            {
+                pm.setTimeStep_particle(0);
+            }
+            
+            // get plot over line
+            pm.readPlotOverLineFile();
+            pm.getPlotOverLine( tmp_obj );
+
+            // make parameter
+            for( int i = 0; i < resolution; i++ )
+            { 
+                tmp_axis[i] = tmp_obj->x_axis()[i];
+                if (tmp_obj->mask()[i])
+                {
+                    // tmp_mask[i] = tmp_obj->mask()[i];
+                    tmp_mask[i]   = 1;
+                    tmp_values[i] = tmp_obj->values_on_line()[i];
+                }
+            }
+        } // server_mode == jpv::ServerMode::IS
+
+        // send plot over line
+        if ( rank == 0 )
+        {
+            servMes.m_flag_send_bins = 3;
+            servMes.m_resolution     = resolution;
+            servMes.m_xAxis.resize( resolution );
+            servMes.m_mask.resize( resolution );
+            servMes.m_line_values.resize( resolution );
+
+            for ( int i = 0; i < resolution; ++i )
+            {
+                servMes.m_xAxis[i]       = tmp_axis[i];   
+                servMes.m_line_values[i] = tmp_values[i];   
+                servMes.m_mask[i]        = tmp_mask[i];
+            }
+
+            // TEST START 2015.1.14
+            if ( nan_error )
+            {
+                strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
+                servMes.m_server_status   = 1;
+                servMes.m_number_particle = 0;
+                servMes.m_number_glyph    = 0;
+                servMes.m_flag_send_bins  = 1;
+                std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
+            }
+
+            // send histgram server message
+            std::cout << "INFO: send histgram server message" << std::endl;            
+            servMes.m_message_size = servMes.byteSize();
+            servMes.show();
+            pts.sendMessage( servMes );
+
+            // TEST START 2015.1.14
+            servMes.m_server_status = 0;
+            // TEST END 2015.1.14
+        } // send plot over line
+
+        delete tmp_obj;
+    } // end of while(DispatchNext)
+
+    nan_error = false;
 }
 
 void generate_plot_over_line_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 

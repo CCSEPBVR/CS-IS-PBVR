@@ -6,6 +6,7 @@
 #include <fstream>
 #include <map>
 #include <algorithm>
+#include <vismodule/Argument>
 #include <vismodule/Type>
 #include <vismodule/Vector3>
 #include <vismodule/Camera>
@@ -26,7 +27,9 @@ private:
 public:
     void outputMessage( jpv::ParticleTransferServerMessage* clntMes );
     void outputParameterMessage( jpv::ParticleTransferServerMessage* clntMes );
+    void setParameter( Argument *param );
     void outputTransferFunctionMessage( jpv::ParticleTransferServerMessage* clntMes );
+    void setTransferFunction( Argument *param );
     void readParameterFile( const char* fname );
     const NameListFile& getNameListFile() const;
 };

@@ -20,18 +20,20 @@
 class ParticleMonitor
 {
 private:
-    ParticleFile          m_particle_file; 
-    GlyphFile             m_glyph_file; 
-    PlotOverLineFile      m_plot_over_line_file; 
-    ParticleStatusFile    m_status_file; 
-    ParticleHistoryFile   m_history_file; 
-    std::string           m_history_file_prefix;
-    vismodule::PointObject     m_particle; 
-    vismodule::KVSMLObjectGlyph      m_glyph; 
-    vismodule::KVSMLObjectPlotOverLine    m_plot_over_line; 
-    vismodule::Int32            m_time_step_particle;
-    vismodule::Int32            m_time_step_glyph;
-    vismodule::Int32            m_time_step_pol;
+    ParticleFile                       m_particle_file; 
+    GlyphFile                          m_glyph_file; 
+    PlotOverLineFile                   m_plot_over_line_file; 
+    ParticleStatusFile                 m_status_file; 
+    ParticleHistoryFile                m_history_file; 
+    std::string                        m_history_file_prefix;
+    vismodule::PointObject             m_particle; 
+    vismodule::KVSMLObjectGlyph        m_glyph; 
+    vismodule::KVSMLObjectPlotOverLine m_plot_over_line; 
+    vismodule::Int32                   m_time_step_particle;
+    vismodule::Int32                   m_time_step_glyph;
+    vismodule::Int32                   m_time_step_pol;
+    vismodule::Vector3f                m_min_object_coord;
+    vismodule::Vector3f                m_max_object_coord;
 
 private:
     inline bool checking_status_file();
@@ -78,6 +80,8 @@ public:
     vismodule::Int32 getTimeStep_particle();
     vismodule::Int32 getTimeStep_glyph();
     vismodule::Int32 getTimeStep_pol();
+    vismodule::Vector3f getMinObjectCoords();
+    vismodule::Vector3f getMaxObjectCoords();
 };
 
 inline bool ParticleMonitor::checking_status_file()

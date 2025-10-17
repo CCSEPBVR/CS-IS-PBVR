@@ -3,9 +3,87 @@
 //#include <vismodule/Timer>
 
 ParticleMonitor::ParticleMonitor():
-    m_particle_file(),
-    m_status_file()
+    m_time_step_particle( -1 ),
+    m_time_step_glyph( -1 ),
+    m_time_step_pol( -1 )
 {
+    const char *envBuf = NULL;
+    std::string particlePath;
+    std::string glyphFilePath;
+    std::string plotOverLineFilePath;
+    std::string visParamDir;
+    std::string coordsMinMaxPath;
+
+    envBuf = std::getenv( "PARTICLE_DIR" );
+    if (envBuf == NULL) {
+        particlePath = "./t";
+        glyphFilePath = "./g";
+        plotOverLineFilePath = "./p";
+    }
+    else {
+        particlePath = envBuf;
+        glyphFilePath = envBuf;
+        plotOverLineFilePath = envBuf;
+        if (particlePath[particlePath.size() - 1] != '/') {
+            particlePath += "/t";
+            glyphFilePath += "/g";
+            plotOverLineFilePath += "/p";
+        }
+        else {
+            particlePath += "t";
+            glyphFilePath += "g";
+            plotOverLineFilePath += "p";
+        }
+    }
+
+    this->setParticleFilePrefix( particlePath );
+    this->setGlyphFilePrefix( glyphFilePath );
+    this->setPlotOverLineFilePrefix( plotOverLineFilePath );
+
+    envBuf = std::getenv( "VIS_PARAM_DIR" );
+    if (envBuf == NULL) {
+        visParamDir = "./";
+    }
+    else {
+        visParamDir = envBuf;
+        if (visParamDir[visParamDir.size() - 1] != '/') {
+            visParamDir += "/";
+        }
+    }
+
+    std::string statePath = visParamDir + "state.txt";
+    std::string historyPath = visParamDir + "history";
+
+    this->setParticleStatusFileName( statePath );
+    m_history_file_prefix = historyPath;
+
+    coordsMinMaxPath = particlePath + "_pfi_coords_minmax.txt";
+    vismodule::File f( coordsMinMaxPath.c_str() );
+    if ( f.isExisted() )
+    {
+        FILE* fp = NULL;
+        fp = fopen( coordsMinMaxPath.c_str(), "r" );
+        fscanf(
+            fp,
+            "%f %f %f %f %f %f",
+            &m_min_object_coord[0],
+            &m_min_object_coord[1],
+            &m_min_object_coord[2],
+            &m_max_object_coord[0],
+            &m_max_object_coord[1],
+            &m_max_object_coord[2]
+        );
+        if ( fp != NULL ) fclose( fp );
+    }
+    else
+    {
+        m_min_object_coord[0]=0.f;
+        m_min_object_coord[1]=0.f;
+        m_min_object_coord[2]=0.f;
+        m_max_object_coord[0]=0.1;
+        m_max_object_coord[1]=0.1;
+        m_max_object_coord[2]=0.1;
+    }
 }
 
 ParticleMonitor::ParticleMonitor( const std::string& particle_file_prefix,
@@ -141,8 +219,6 @@ bool ParticleMonitor::setTimeStep_pol( const vismodule::Int32 time_step )
     return changed;
 }
 
-
-
 void ParticleMonitor::getParticle( vismodule::PointObject* object )
 {
     (*object) = m_particle;
@@ -209,6 +285,16 @@ vismodule::Int32 ParticleMonitor::getTimeStep_glyph()
 vismodule::Int32 ParticleMonitor::getTimeStep_pol()
 {
     return m_time_step_pol;
+}
+
+vismodule::Vector3f ParticleMonitor::getMinObjectCoords()
+{
+    return m_min_object_coord;
+}
+
+vismodule::Vector3f ParticleMonitor::getMaxObjectCoords()
+{
+    return m_max_object_coord;
 }
 
 ParticleMonitor::~ParticleMonitor()

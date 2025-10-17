@@ -101,17 +101,10 @@ void generate_particle_worker(
 
 void generate_particle_IS(
     jpv::ParticleTransferServerMessage& servMes,
-    jpv::ParticleTransferClientMessage& clntMes,
     Argument &param,
-    ParticleMonitor& pm,
     MultiVolumePropertyList& mvpl,
     JobDispatcher& jd,
-    jpv::ParticleTransferServer pts,
-    std::string particlePath,
-    std::string tfFilePath,
-    std::string tfFilePath_old,
-    vismodule::Timer& timer,
-    int timer_count
+    jpv::ParticleTransferServer pts
 );
   
 #endif
