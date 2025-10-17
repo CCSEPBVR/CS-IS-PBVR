@@ -143,7 +143,7 @@ void MainWindow::plotOverLineEditorInitialize()
     if( m_plot_over_line_editor )
     {
         m_plot_over_line_editor_action = new QAction( tr( "Plot Over Line Editor"), this );
-        connect( m_plot_over_line_editor_action, &QAction::triggered, this, &MainWindow::onPloyOverLineEditor );
+        connect( m_plot_over_line_editor_action, &QAction::triggered, this, &MainWindow::onPlotOverLineEditor );
 
         m_plot_over_line_editor_action->setEnabled( false ); // サーバ接続前は無効
 

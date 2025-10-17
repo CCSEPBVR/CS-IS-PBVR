@@ -96,7 +96,7 @@ private slots:
     void onAnimationControl() { m_animation_control->show(); }
     void onCommunication() { m_communication->show(); }
     void onGlyphEditor() { m_glyph_editor->show(); }
-    void onPloyOverLineEditor() { m_plot_over_line_editor->show(); }
+    void onPlotOverLineEditor() { m_plot_over_line_editor->show(); }
     void onPointSizeControl() { m_point_size_control->show(); }
     void onTransferFunctionEditor() { m_transfer_function_editor->show(); }
 
