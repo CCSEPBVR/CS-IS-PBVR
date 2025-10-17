@@ -101,6 +101,10 @@ void MainWindow::communicationInitialize()
     {
         m_communication_action = new QAction( tr( "Communication" ), this );
         connect( m_communication_action, &QAction::triggered, this, &MainWindow::onCommunication );
+        connect( m_communication, &Communication::updateServerState, this, &MainWindow::onUpdateServerState );
+        connect( m_communication, &Communication::updateOperatorState, m_glyph_editor, &GlyphEditor::updateOperatorState );
+        connect( m_communication, &Communication::updateOperatorState, m_plot_over_line_editor, &PlotOverLineEditor::updateOperatorState );
+        connect( m_communication, &Communication::updateOperatorState, m_transfer_function_editor, &TransferFunctionEditor::updateOperatorState );
 
         // メニューの先頭に挿入
         if( !ui->menuTools->actions().isEmpty() )
@@ -112,11 +116,6 @@ void MainWindow::communicationInitialize()
             ui->menuTools->addAction( m_communication_action );
         }
         ui->menuTools->addSeparator();
-
-        connect( m_communication, &Communication::updateServerState, this, &MainWindow::onUpdateServerState );
-        connect( m_communication, &Communication::updateOperatorState, m_glyph_editor, &GlyphEditor::updateOperatorState );
-        connect( m_communication, &Communication::updateOperatorState, m_plot_over_line_editor, &PlotOverLineEditor::updateOperatorState );
-        connect( m_communication, &Communication::updateOperatorState, m_transfer_function_editor, &TransferFunctionEditor::updateOperatorState );
 
         m_communication->adjustSize();
         addDockWidget( Qt::RightDockWidgetArea, m_communication );
