@@ -125,7 +125,7 @@ void MainWindow::plotOverLineEditorInitialize()
         m_plot_over_line_editor_action->setEnabled( false ); // サーバ接続前は無効
 
         ui->menuTools->addAction( m_plot_over_line_editor_action );
-        m_plot_over_line_editor->updateNumberOfVector( 3 ); // DEBUG:成分数に応じてUIが変化するか確認
+        // m_plot_over_line_editor->updateNumberOfVector( 3 ); // DEBUG:成分数に応じてUIが変化するか確認
 
         m_plot_over_line_editor->adjustSize();
         addDockWidget( Qt::LeftDockWidgetArea, m_plot_over_line_editor );
@@ -192,7 +192,11 @@ void MainWindow::onUpdateServerState( bool serverState ) // true:接続中
     {
         // TODO:サーバーと導通時にサーバから成分数を送ってもらう必要がある。 成分数が3未満の場合、GlyphEditorは開けなくする必要がある。
         m_glyph_editor_action->setEnabled( serverState );
-        if( !serverState ) m_glyph_editor->close();
+        if( !serverState )
+        {
+            m_glyph_editor->close();
+            m_glyph_editor->reset();
+        }
     }
 
     if( m_plot_over_line_editor && m_plot_over_line_editor_action )

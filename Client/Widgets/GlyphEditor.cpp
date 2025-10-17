@@ -377,14 +377,24 @@ void GlyphEditor::updateOperatorState( bool operatorState )
 
 void GlyphEditor::reset()
 {
-    // ui->numberOfTransferFunctionLabelSpinBox->setValue( 0 );
-    // QVector<QColor> initialColors( 256, QColor( 0, 0, 0 ) );
-    // ui->colorMapBar->setColors( initialColors );
-    // QVector<float> initialOpacity( 256, 0.0f );
-    // ui->opacityMapBar->setOpacities( initialOpacity );
-    // std::vector<int> initialHistogram( 256, 0 );
-    // ui->colorHistogram->setDatas( initialHistogram );
-    // ui->opacityHistogram->setDatas( initialHistogram );
+    updateNumberOfVector( 0 );
+    ui->glyphTypeComboBox->setCurrentIndex( 0 );
+    ui->scaleFactorDoubleSpinBox->setValue( 1.00 );
+
+    ui->direction1ComboBox->clear();
+    ui->direction2ComboBox->clear();
+    ui->direction3ComboBox->clear();
+
+    ui->sizeConstantRadioButton->setChecked( true );
+    ui->sizeNumberOfVariablesSpinBox->setValue( 0 );
+
+    ui->uniformDistributionRadioButton->setChecked( true );
+    ui->numberOfSamplePointsSpinBox->setValue( 1000 );
+    ui->seedSpinBox->setValue( 1 );
+    ui->strideSpinBox->setValue( 3 );
+
+    ui->colorDataConstantRadioButton->setChecked( true );
+    ui->colorDataNumberOfVariablesSpinBox->setValue( 0 );
 }
 
 void GlyphEditor::saveParameter()
