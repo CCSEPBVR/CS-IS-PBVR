@@ -60,7 +60,7 @@ private:
     GlyphEditor* m_glyph_editor = nullptr;                          // NOTE:通信関係有
 
     QAction* m_plot_over_line_editor_action = nullptr;
-    PlotOverLineEditor* m_plot_over_line_editor = nullptr;                // NOTE:通信関係有 // FIXME:クラス名をPlotOverLine->PlotOverLiveEditorにしてください。
+    PlotOverLineEditor* m_plot_over_line_editor = nullptr;          // NOTE:通信関係有
 
     QAction* m_transfer_function_editor_action = nullptr;
     TransferFunctionEditor* m_transfer_function_editor = nullptr;   // NOTE:通信関係有
