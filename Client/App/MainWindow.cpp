@@ -18,7 +18,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_communication( new Communication( m_screen, m_web_binary_socket, m_web_text_socket, this ) )
     , m_glyph_editor( new GlyphEditor( m_web_text_socket, this ) )
     , m_plot_over_line_editor( new PlotOverLineEditor( m_web_text_socket, m_screen, this ) )
-    , m_point_size_control( new PointSizeControl( this ) )
+    , m_point_size_control( new PointSizeControl( m_screen, this ) )
     , m_transfer_function_editor( new TransferFunctionEditor( m_web_text_socket, this ) )
 {
     initialize();
