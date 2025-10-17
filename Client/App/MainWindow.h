@@ -19,6 +19,10 @@
 #include "PlotOverLineEditor.h"
 #include "TransferFunctionEditor.h"
 
+// デバッグ
+#include <kvs/HydrogenVolumeData>
+#include <kvs/CellByCellMetropolisSampling>
+
 #ifdef OPENXR_SCREEN
 #include "VRHandControllerListener.h"
 #endif

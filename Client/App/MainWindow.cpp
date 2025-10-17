@@ -14,7 +14,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_web_text_socket( new QWebSocket() )
     // ウィジェット群(A~Z)
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ
-    , m_animation_control( new AnimationControl( this ) )
+    , m_animation_control( new AnimationControl( m_screen, this ) )
     , m_communication( new Communication( m_screen, m_web_binary_socket, m_web_text_socket, this ) )
     , m_glyph_editor( new GlyphEditor( m_web_text_socket, this ) )
     , m_plot_over_line_editor( new PlotOverLineEditor( m_web_text_socket, m_screen, this ) )
@@ -81,6 +81,12 @@ void MainWindow::animationControlInitialize()
     {
         m_animation_control_action = new QAction( tr( "Animation Control" ), this );
         connect( m_animation_control_action, &QAction::triggered, this, &MainWindow::onAnimationControl );
+        connect( m_screen , &kvs::qt::jaea::Screen::addKeyFrameAdd     , m_animation_control , &AnimationControl::addKeyFrameAdd );
+        connect( m_screen , &kvs::qt::jaea::Screen::removeLastKeyFrame , m_animation_control , &AnimationControl::removeLastKeyFrame );
+        connect( m_screen , &kvs::qt::jaea::Screen::clearKeyFrame      , m_animation_control , &AnimationControl::clearKeyFrame );
+        connect( m_screen , &kvs::qt::jaea::Screen::playKeyFrame       , m_animation_control , &AnimationControl::playKeyFrame );
+        connect( m_screen , &kvs::qt::jaea::Screen::loadKeyFrameFile   , m_animation_control , &AnimationControl::loadKeyFrameFile );
+        connect( m_screen , &kvs::qt::jaea::Screen::saveKeyFrameFile   , m_animation_control , &AnimationControl::saveKeyFrameFile );
 
         ui->menuTools->addAction( m_animation_control_action );
         m_animation_control->adjustSize();
