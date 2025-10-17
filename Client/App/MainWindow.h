@@ -18,6 +18,7 @@
 #include "GlyphEditor.h"
 #include "PlotOverLineEditor.h"
 #include "PointSizeControl.h"
+#include "RepetitionLevelControl.h"
 #include "TransferFunctionEditor.h"
 
 // デバッグ
@@ -74,6 +75,9 @@ private:
     QAction* m_point_size_control_action = nullptr;
     PointSizeControl* m_point_size_control = nullptr;
 
+    QAction* m_repetition_level_control_action = nullptr;
+    RepetitionLevelControl* m_repetition_level_control = nullptr;
+
     QAction* m_transfer_function_editor_action = nullptr;
     TransferFunctionEditor* m_transfer_function_editor = nullptr;   // NOTE:通信関係有
 
@@ -89,6 +93,7 @@ private:
     void glyphEditorInitialize();
     void plotOverLineEditorInitialize();
     void pointSizeControlInitialize();
+    void repetitionLevelControlInitialize();
     void transferFunctionEditorInitialize();
     void initializeAfterShow();
 
@@ -98,6 +103,7 @@ private slots:
     void onGlyphEditor() { m_glyph_editor->show(); }
     void onPlotOverLineEditor() { m_plot_over_line_editor->show(); }
     void onPointSizeControl() { m_point_size_control->show(); }
+    void onRepetitionLevelControl() { m_repetition_level_control->show(); }
     void onTransferFunctionEditor() { m_transfer_function_editor->show(); }
 
     void onUpdateServerState( bool serverState ); // true:接続中

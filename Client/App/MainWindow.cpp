@@ -19,6 +19,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_glyph_editor( new GlyphEditor( m_web_text_socket, this ) )
     , m_plot_over_line_editor( new PlotOverLineEditor( m_web_text_socket, m_screen, this ) )
     , m_point_size_control( new PointSizeControl( m_screen, this ) )
+    , m_repetition_level_control( new RepetitionLevelControl( this ) )
     , m_transfer_function_editor( new TransferFunctionEditor( m_web_text_socket, this ) )
 {
     initialize();
@@ -62,6 +63,7 @@ void MainWindow::initialize()
     glyphEditorInitialize();
     plotOverLineEditorInitialize();
     pointSizeControlInitialize();
+    repetitionLevelControlInitialize();
     transferFunctionEditorInitialize();
 
 #ifdef OPENXR_SCREEN
@@ -168,6 +170,21 @@ void MainWindow::pointSizeControlInitialize()
         m_point_size_control->adjustSize();
         addDockWidget( Qt::LeftDockWidgetArea, m_point_size_control );
         m_point_size_control->close();
+    }
+}
+
+void MainWindow::repetitionLevelControlInitialize()
+{
+    if( m_repetition_level_control )
+    {
+        m_repetition_level_control_action = new QAction( tr( "Repetition Level Control"), this );
+        connect( m_repetition_level_control_action, &QAction::triggered, this, &MainWindow::onRepetitionLevelControl );
+
+        ui->menuTools->addAction( m_repetition_level_control_action );
+
+        m_repetition_level_control->adjustSize();
+        addDockWidget( Qt::LeftDockWidgetArea, m_repetition_level_control );
+        m_repetition_level_control->close();
     }
 }
 
