@@ -204,6 +204,8 @@ void  Connect( int argc, char** argv )
             }
             else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
             {
+                VariableRange vr;
+
                 param.m_time_step                = clntMes.m_step; 
                 param.m_level_index              = clntMes.m_level_index;
                 param.m_repeat_level             = clntMes.m_repeat_level;
@@ -219,6 +221,11 @@ void  Connect( int argc, char** argv )
                 param.m_particle_density = clntMes.m_particle_density;
 
                 mvpl.searchFile(param);
+
+                if ( mvpl.m_list.size() <= 0 )
+                {
+                    break;
+                }
 
                 if( !clntMes.m_import_flag ) 
                 {
@@ -240,6 +247,19 @@ void  Connect( int argc, char** argv )
                     param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                 }
 
+                for ( int i = 0; i < transfunc_creator.transfunc().size(); i++ )
+                {
+                    std::stringstream ss;
+                    ss << (tf + 1);
+                    const std::string idxbuf = ss.str();
+                    vr.setValue("t" + idxbuf + "_var_o", param.m_transfunc_synthesizer->m_c_min[tf])
+                    vr.setValue("t" + idxbuf + "_var_o", param.m_transfunc_synthesizer->m_c_min[tf])
+                    vr.setValue("t" + idxbuf + "_var_c", param.m_transfunc_synthesizer->m_c_min[tf])
+                    vr.setValue("t" + idxbuf + "_var_c", param.m_transfunc_synthesizer->m_c_min[tf])
+                }
+
+                param.m_server_side_variable_range = vr;                
+
                 param.m_sampling_step  = CalculateSamplingStep( mvpl );
                 param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *param.m_camera );
                 if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
@@ -254,6 +274,8 @@ void  Connect( int argc, char** argv )
             }
             else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_particle )
             {
+                VariableRange vr;
+
                 if ( clntMes.m_time_parameter != 2 )
                 {
                     std::cout << "ERROR:partilce clntMes.m_time_parameter != 2" << std::endl;
@@ -270,14 +292,9 @@ void  Connect( int argc, char** argv )
                 param.m_z_synthesis              = clntMes.m_z_synthesis;
                 param.m_particle_data_size_limit = clntMes.m_particle_data_size_limit;
 
-                // CS get from the client message
-                // IS get from default.tf                
-                if ( server_mode == jpv::ServerMode::CS )
-                {
-                    param.m_input_data_base = clntMes.m_input_directory;
-                    param.m_particle_limit = clntMes.m_particle_limit;
-                    param.m_particle_density = clntMes.m_particle_density;
-                }
+                param.m_input_data_base = clntMes.m_input_directory;
+                param.m_particle_limit = clntMes.m_particle_limit;
+                param.m_particle_density = clntMes.m_particle_density;
 
                 transfunc_creator.setProtocol( clntMes );
                 param.m_transfunc_synthesizer = transfunc_creator.create();
@@ -287,6 +304,19 @@ void  Connect( int argc, char** argv )
                 {
                     param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>( transfunc_creator.transfunc()[i] );
                 }
+
+                for ( int i = 0; i < transfunc_creator.transfunc().size(); i++ )
+                {
+                    std::stringstream ss;
+                    ss << (tf + 1);
+                    const std::string idxbuf = ss.str();
+                    vr.setValue("t" + idxbuf + "_var_o", param.m_transfunc_synthesizer->m_c_min[tf])
+                    vr.setValue("t" + idxbuf + "_var_o", param.m_transfunc_synthesizer->m_c_min[tf])
+                    vr.setValue("t" + idxbuf + "_var_c", param.m_transfunc_synthesizer->m_c_min[tf])
+                    vr.setValue("t" + idxbuf + "_var_c", param.m_transfunc_synthesizer->m_c_min[tf])
+                }
+
+                param.m_server_side_variable_range = vr;
 
 #ifndef CPU_VER
                 generate_particle( param, mvpl, nan_error, jc, jd, pts, server_mode );
