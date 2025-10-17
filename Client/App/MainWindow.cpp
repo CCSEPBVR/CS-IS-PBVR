@@ -93,17 +93,17 @@ void MainWindow::communicationInitialize()
 {
     if( m_communication )
     {
-        QAction* communicationAction = new QAction( tr( "Communication" ), this );
-        connect( communicationAction, &QAction::triggered, this, &MainWindow::onCommunication );
+        m_communication_action = new QAction( tr( "Communication" ), this );
+        connect( m_communication_action, &QAction::triggered, this, &MainWindow::onCommunication );
 
         // メニューの先頭に挿入
         if( !ui->menuTools->actions().isEmpty() )
         {
-            ui->menuTools->insertAction( ui->menuTools->actions().first(), communicationAction );
+            ui->menuTools->insertAction( ui->menuTools->actions().first(), m_communication_action );
         }
         else
         {
-            ui->menuTools->addAction( communicationAction );
+            ui->menuTools->addAction( m_communication_action );
         }
         ui->menuTools->addSeparator();
 
