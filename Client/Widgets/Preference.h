@@ -2,8 +2,6 @@
 #define PREFERENCE_H
 
 #include <QDialog>
-#include <QSettings>
-#include <QFile>
 #include <QColorDialog>
 
 #include "Screen.h"
@@ -14,7 +12,8 @@
 
 #include "ClickableLabel.h"
 
-namespace Ui {
+namespace Ui
+{
 class Preference;
 }
 
@@ -43,35 +42,51 @@ public:
         NoneBox
     };
 
-public:
-    explicit Preference( kvs::qt::jaea::Screen*,
-                         kvs::StochasticRenderingCompositor*,
-                         kvs::ColorMapBar*,
-                         kvs::OrientationAxis*,                         
-                         kvs::Label*,
-                         kvs::Label*,
-                         QWidget *parent = nullptr );
+    explicit Preference( QWidget *parent = nullptr );
     ~Preference();
-    void readyScreen() { applySettings(); }
 
-protected:
-    void closeEvent(QCloseEvent *event) override;
+    void setScreen( kvs::qt::jaea::Screen* screen ) { m_screen = screen; }
+    void setCompositor( kvs::StochasticRenderingCompositor* compositor ) { m_compositor = compositor; }
+    void setColorMapBar( kvs::ColorMapBar* color_map_bar )
+    {
+        m_color_map_bar = color_map_bar;
+        m_color_map_bar->anchorToTopLeft();
+    }
+    void setOrientationAxis( kvs::OrientationAxis* orientation_axis )
+    {
+        m_orientation_axis = orientation_axis;
+        m_orientation_axis->anchorToBottomRight();
+    }
+    void setFpsLabel( kvs::Label* fps_label ) { m_fps_label = fps_label; }
+    void setTimeStepLabel( kvs::Label* time_step_label ) { m_time_step_label = time_step_label; }
+
+    kvs::qt::jaea::Screen* screen() const { return m_screen; }
+    kvs::StochasticRenderingCompositor* compositor() const { return m_compositor; }
+    kvs::ColorMapBar* colorMapBar() const { return m_color_map_bar; }
+    kvs::OrientationAxis* orientationAxis() const { return m_orientation_axis; }
+    kvs::Label* fpsLabel() const { return m_fps_label; }
+    kvs::Label* timeStepLabel() const { return m_time_step_label; }
 
 private:
+    // メンバ変数群
     Ui::Preference *ui;
-    kvs::qt::jaea::Screen* m_screen                             = nullptr;
-    kvs::StochasticRenderingCompositor* m_compositor            = nullptr;
-    kvs::ColorMapBar* m_color_map_bar                           = nullptr;
-    kvs::OrientationAxis* m_orientation_axis                    = nullptr;
-    kvs::Label* m_fps_label                                     = nullptr;
-    kvs::Label* m_time_step_label                               = nullptr;
+
+    static const inline QString kConfigFilePath = QCoreApplication::applicationDirPath() + "/config.ini";
+
+    kvs::qt::jaea::Screen* m_screen = nullptr;
+    kvs::StochasticRenderingCompositor* m_compositor = nullptr;
+    kvs::ColorMapBar* m_color_map_bar = nullptr;
+    kvs::OrientationAxis* m_orientation_axis = nullptr;
+    kvs::Label* m_fps_label = nullptr;
+    kvs::Label* m_time_step_label = nullptr;
+
     QSettings m_settings;
-    int m_current_time_step;
 
+    int m_current_time_step = -1;
+
+    // メソッド群
     void initialize();
-    bool checkConfigFileExists() { return QFile::exists( "config.ini" ); }
-
-    void defaultSettings();
+    bool isConfigFileExists() { return QFile::exists( kConfigFilePath ); }
 
     void loadSettings();
     void loadColorMapBarSetting();
@@ -97,18 +112,23 @@ private:
     void applyLabelSetting();
     void applyFontColorSetting();
 
+    void defaultSettings();
     void setColor( ClickableLabel& clickableLabel, const QColor& color );
-
-public slots:
-    void mergingFinish( int );
 
 private slots:
     void onBackGroundColorDoubleClicked();
     void onLabelsColorDoubleClicked();
-    void onApply();
     void onDefault();
+    void onApply();
     void onCancel();
     void onOK();
+
+public slots:
+    void readyScreen();
+    void mergingFinish( int ); // FIXME: メソッド名変更したほうがいいです。
+
+protected:
+    void closeEvent( QCloseEvent *event ) override;
 };
 
 #endif // PREFERENCE_H

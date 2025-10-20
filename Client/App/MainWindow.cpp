@@ -19,6 +19,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_glyph_editor( new GlyphEditor( m_web_text_socket, this ) )
     , m_plot_over_line_editor( new PlotOverLineEditor( m_web_text_socket, m_screen, this ) )
     , m_point_size_control( new PointSizeControl( m_screen, this ) )
+    , m_preference( new Preference( this ) )
     , m_repetition_level_control( new RepetitionLevelControl( m_screen, m_compositor, this ) )
     , m_shading_control( new ShadingControl( m_screen, this ) )
     , m_transfer_function_editor( new TransferFunctionEditor( m_web_text_socket, this ) )
@@ -65,6 +66,7 @@ void MainWindow::initialize()
     glyphEditorInitialize();
     plotOverLineEditorInitialize();
     pointSizeControlInitialize();
+    preferenceInitialize();
     repetitionLevelControlInitialize();
     shadingControlInitialize();
     transferFunctionEditorInitialize();
@@ -77,9 +79,13 @@ void MainWindow::initialize()
     // connect( m_vr_listener, &VRHandControllerListener::showHidePlotOverLine, m_plot_over_line, &PlotOverLine::showHidePlotOverLine );
     connect( m_vr_listener, &VRHandControllerListener::sendVRSharePoint, m_communication, &Communication::onVRSharePoint );
 #endif
-    tabifyDockWidget( m_animation_control, m_communication );
+    if( m_animation_control && m_communication )
+    {
+        tabifyDockWidget( m_animation_control, m_communication );
+    }
     this->show();
 
+    emit readyScreen();
     initializeAfterShow();
 }
 
@@ -174,6 +180,27 @@ void MainWindow::pointSizeControlInitialize()
         m_point_size_control->adjustSize();
         addDockWidget( Qt::LeftDockWidgetArea, m_point_size_control );
         m_point_size_control->close();
+    }
+}
+
+void MainWindow::preferenceInitialize()
+{
+    if( m_preference )
+    {
+        m_preference->setScreen( m_screen );
+        m_preference->setCompositor( m_compositor );
+        m_preference->setColorMapBar( m_color_map_bar );
+        m_preference->setOrientationAxis( m_orientation_axis );
+        m_preference->setFpsLabel( m_fps_label );
+        m_preference->setTimeStepLabel( m_time_step_label );
+        connect( this, &MainWindow::readyScreen, m_preference, &Preference::readyScreen );
+
+        m_preference_action = new QAction( tr( "Preference"), this );
+        connect( m_preference_action, &QAction::triggered, this, &MainWindow::onPreference );
+
+        ui->menupbvr_client->addAction( m_preference_action );
+
+        m_preference->adjustSize();
     }
 }
 

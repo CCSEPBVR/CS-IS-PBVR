@@ -1,25 +1,11 @@
 #include "Preference.h"
 #include "ui_Preference.h"
 
-Preference::Preference( kvs::qt::jaea::Screen* screen,
-                        kvs::StochasticRenderingCompositor* compositor,
-                        kvs::ColorMapBar* colorMapBar,
-                        kvs::OrientationAxis* orientationAxis,
-                        kvs::Label* fpsLabel,
-                        kvs::Label* timeStepLabel,
-                        QWidget *parent )
+Preference::Preference( QWidget *parent )
     : QDialog(parent)
     , ui( new Ui::Preference )
-    , m_screen( screen )
-    , m_compositor( compositor )
-    , m_color_map_bar( colorMapBar )
-    , m_orientation_axis( orientationAxis )
-    , m_fps_label( fpsLabel )
-    , m_time_step_label( timeStepLabel )
-    , m_settings( "config.ini", QSettings::IniFormat )
-    , m_current_time_step( 0 )
+    , m_settings( kConfigFilePath, QSettings::IniFormat )
 {
-    ui->setupUi(this);
     initialize();
 }
 
@@ -28,18 +14,9 @@ Preference::~Preference()
     delete ui;
 }
 
-void Preference::closeEvent( QCloseEvent* event )
-{
-    loadSettings();
-    event->accept();
-}
-
 void Preference::initialize()
 {
-    this->setFixedSize( this->sizeHint() );
-
-    m_color_map_bar->anchorToTopLeft();
-    m_orientation_axis->anchorToBottomRight();
+    ui->setupUi( this );
 
     ui->orientationTypeComboBox->addItem( "Horizontal", Horizontal );
     ui->orientationTypeComboBox->addItem( "Vertical", Vertical );
@@ -50,7 +27,7 @@ void Preference::initialize()
 
     ui->boxTypeComboBox->addItem( "WiredBox", WiredBox );
     ui->boxTypeComboBox->addItem( "SolidBox", SolidBox );
-    // ui->boxTypeComboBox->addItem( "NoneBox", NoneBox );
+    // ui->boxTypeComboBox->addItem( "NoneBox", NoneBox ); // FIXME: Linux環境でNoneBoxに変更後別のボックスタイプを変更すると1ColorMapBarに影響がでる不具合があるため無効にしています。
 
     ui->showFPSComboBox->addItem( "Show", QVariant( true ) );
     ui->showFPSComboBox->addItem( "Hide", QVariant( false ) );
@@ -68,14 +45,13 @@ void Preference::initialize()
     ui->fontColorClickableLabel->setAutoFillBackground( true );
     ui->fontColorClickableLabel->setPalette( fontColor );
 
-    // config.iniが存在する場合は設定の読み込みを行う。
-    if( checkConfigFileExists() )
+    if( isConfigFileExists() )
     {
         loadSettings();
     }
     else
     {
-        defaultSettings();        
+        defaultSettings();
     }
 
     connect( ui->backGroundColorClickableLabel, &ClickableLabel::doubleClicked, this, &Preference::onBackGroundColorDoubleClicked );
@@ -84,25 +60,6 @@ void Preference::initialize()
     connect( ui->defaultPushButton, &QPushButton::clicked, this, &Preference::onDefault );
     connect( ui->cancelPushButton, &QPushButton::clicked, this, &Preference::onCancel );
     connect( ui->okPushButton, &QPushButton::clicked, this, &Preference::onOK );
-}
-
-void Preference::defaultSettings()
-{
-    //ColorMapBar
-    ui->orientationTypeComboBox->setCurrentIndex( Horizontal );
-    //OrientationAxis
-    ui->axisTypeComboBox->setCurrentIndex( CorneredAxis );
-    ui->boxTypeComboBox->setCurrentIndex( SolidBox );
-    //BackGroundColor
-    setColor( *ui->backGroundColorClickableLabel, QColor( 82, 87, 110 ) );
-    //Resolution
-    ui->widthSpinBox->setValue( 620 );
-    ui->heightSpinBox->setValue( 620 );
-    //Labels
-    ui->showFPSComboBox->setCurrentText( "Hide" );
-    ui->showTimeStepComboBox->setCurrentText( "Hide" );
-    //Font
-    setColor( *ui->fontColorClickableLabel, QColor( 0, 0, 0 ) );
 }
 
 void Preference::loadSettings()
@@ -179,7 +136,7 @@ void Preference::loadOrientationAxisSetting()
     {
         ui->boxTypeComboBox->setCurrentIndex( SolidBox );
     }
-    // else if( boxType == "NoneBox" )
+    // else if( boxType == "NoneBox" ) // FIXME: Linux環境でNoneBoxに変更後別のボックスタイプを変更すると1ColorMapBarに影響がでる不具合があるため無効にしています。
     // {
     //     ui->boxTypeComboBox->setCurrentIndex( NoneAxis );
     // }
@@ -329,11 +286,7 @@ void Preference::applyColorMapBarSetting()
     const bool isShowing = ui->colorMapBarGroupBox->isChecked();
     const OrientationType orientationType = static_cast<OrientationType>( ui->orientationTypeComboBox->currentIndex() );
 
-#ifdef Q_OS_WIN
-    m_color_map_bar->setCaption( ui->captionLineEdit->text().toLocal8Bit().constData() );
-#else
-    m_color_map_bar->setCaption( ui->captionLineEdit->text().toStdString() );
-#endif
+    m_color_map_bar->setCaption( ui->captionLineEdit->text().toUtf8().constData() );
 
     if( isShowing )
     {
@@ -431,10 +384,10 @@ void Preference::applyLabelSetting()
     {
         m_fps_label->setPosition( 20, m_screen->height() - 40 );
         m_fps_label->screenUpdated( [&]()
-                                              {
-                                                  const auto fps = kvs::String::From( m_compositor->timer().fps(), 4 );
-                                                  m_fps_label->setText( std::string( "FPS:" + fps).c_str());
-                                              });
+                                   {
+                                       const auto fps = kvs::String::From( m_compositor->timer().fps(), 4 );
+                                       m_fps_label->setText( std::string( "FPS:" + fps).c_str());
+                                   });
         m_fps_label->show();
     }
     else
@@ -468,6 +421,25 @@ void Preference::applyFontColorSetting()
     m_time_step_label->setFont( font );
 }
 
+void Preference::defaultSettings()
+{
+    //ColorMapBar
+    ui->orientationTypeComboBox->setCurrentIndex( Horizontal );
+    //OrientationAxis
+    ui->axisTypeComboBox->setCurrentIndex( CorneredAxis );
+    ui->boxTypeComboBox->setCurrentIndex( SolidBox );
+    //BackGroundColor
+    setColor( *ui->backGroundColorClickableLabel, QColor( 82, 87, 110 ) );
+    //Resolution
+    ui->widthSpinBox->setValue( 620 );
+    ui->heightSpinBox->setValue( 620 );
+    //Labels
+    ui->showFPSComboBox->setCurrentText( "Hide" );
+    ui->showTimeStepComboBox->setCurrentText( "Hide" );
+    //Font
+    setColor( *ui->fontColorClickableLabel, QColor( 0, 0, 0 ) );
+}
+
 void Preference::setColor( ClickableLabel& clickableLabel, const QColor& color )
 {
     QPalette palette = clickableLabel.palette();
@@ -475,12 +447,6 @@ void Preference::setColor( ClickableLabel& clickableLabel, const QColor& color )
     clickableLabel.setAutoFillBackground( true );
     clickableLabel.setPalette( palette );
     clickableLabel.update();
-}
-
-void Preference::mergingFinish( int requestTimeStep )
-{
-    m_current_time_step = requestTimeStep;
-    m_time_step_label->setText( "Time step: " + std::to_string( m_current_time_step ) );
 }
 
 void Preference::onBackGroundColorDoubleClicked()
@@ -528,4 +494,22 @@ void Preference::onOK()
 {
     applySettings();
     close();
+}
+
+// MainWindowクラスのshow()実行後に呼び出すしてKVSのウィジェットを表示する。
+void Preference::readyScreen()
+{
+    applySettings();
+}
+
+void Preference::mergingFinish( int requestTimeStep )
+{
+    m_current_time_step = requestTimeStep;
+    m_time_step_label->setText( "Time step: " + std::to_string( m_current_time_step ) );
+}
+
+void Preference::closeEvent( QCloseEvent* event )
+{
+    loadSettings();
+    event->accept();
 }

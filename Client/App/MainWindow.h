@@ -18,6 +18,7 @@
 #include "GlyphEditor.h"
 #include "PlotOverLineEditor.h"
 #include "PointSizeControl.h"
+#include "Preference.h"
 #include "RepetitionLevelControl.h"
 #include "ShadingControl.h"
 #include "TransferFunctionEditor.h"
@@ -77,6 +78,9 @@ private:
     QAction* m_point_size_control_action = nullptr;
     PointSizeControl* m_point_size_control = nullptr;
 
+    QAction* m_preference_action = nullptr;
+    Preference* m_preference = nullptr;
+
     QAction* m_repetition_level_control_action = nullptr;
     RepetitionLevelControl* m_repetition_level_control = nullptr;
 
@@ -101,6 +105,7 @@ private:
     void glyphEditorInitialize();
     void plotOverLineEditorInitialize();
     void pointSizeControlInitialize();
+    void preferenceInitialize();
     void repetitionLevelControlInitialize();
     void shadingControlInitialize();
     void transferFunctionEditorInitialize();
@@ -113,6 +118,7 @@ private slots:
     void onGlyphEditor() { m_glyph_editor->show(); }
     void onPlotOverLineEditor() { m_plot_over_line_editor->show(); }
     void onPointSizeControl() { m_point_size_control->show(); }
+    void onPreference() { m_preference->show(); }
     void onRepetitionLevelControl() { m_repetition_level_control->show(); }
     void onShadingControl() { m_shading_control->show(); }
     void onTransferFunctionEditor() { m_transfer_function_editor->show(); }
@@ -121,6 +127,7 @@ private slots:
     void onUpdateServerState( bool serverState ); // true:接続中
 
 signals:
+    void readyScreen();
     void updateCurrentRepetitionLevel();
 };
 #endif // MAINWINDOW_H
