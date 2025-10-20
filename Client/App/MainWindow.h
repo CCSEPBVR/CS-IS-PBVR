@@ -108,5 +108,7 @@ private slots:
 
     void onUpdateServerState( bool serverState ); // true:接続中
 
+signals:
+    void updateCurrentRepetitionLevel();
 };
 #endif // MAINWINDOW_H
