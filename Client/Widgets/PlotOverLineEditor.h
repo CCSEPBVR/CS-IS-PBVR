@@ -92,8 +92,8 @@ public slots:
     void togglePlotOverLineFromVRHands();
     void updateOperatorState( bool operatorState ); // true:権限あり
     void reset();
-    void loadParameter();
-    void saveParameter();
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
 };
 
 #endif // PLOTOVERLINEEDITOR_H

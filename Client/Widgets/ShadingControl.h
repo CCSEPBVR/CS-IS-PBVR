@@ -39,8 +39,8 @@ private slots:
 
 public slots:
     void shading( kvs::RendererBase* rendererBase );
-    void loadParameter();
-    void saveParameter();
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
 };
 
 #endif // SHADINGCONTROL_H

@@ -65,8 +65,8 @@ public slots:
     void mergeFinish( int );
     void noItems();
     void updateInSituObjectMinMaxTimeStep( int , int );
-    void loadParameter();
-    void saveParameter();
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
 
 signals:
     void requestMerge( int requestTimeStep );

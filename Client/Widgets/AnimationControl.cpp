@@ -354,14 +354,14 @@ void AnimationControl::screenShot(int loopCounter)
     image.save(full_file_name);
 }
 
-void AnimationControl::loadParameter()
+void AnimationControl::loadParameter( const QString& filePath )
 {
     // TODO KPI
-    qDebug() << __FILE__ << ":" << __func__;
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void AnimationControl::saveParameter()
+void AnimationControl::saveParameter( const QString& filePath )
 {
     // TODO KPI
-    qDebug() << __FILE__ << ":" << __func__;
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

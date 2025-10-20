@@ -39,8 +39,8 @@ private slots:
 
 public slots:
     void updateColorMapBar( QStandardItemModel* model );
-    void loadParameter();
-    void saveParameter();
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
 };
 
 #endif // COLORMAPSELECTORTOOLBAR_H

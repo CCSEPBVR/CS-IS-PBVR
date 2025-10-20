@@ -390,6 +390,18 @@ void MainWindow::initializeAfterShow()
     }
 }
 
+void MainWindow::onLoad()
+{
+    QString fileName = QFileDialog::getOpenFileName( this, tr("Load File"), QString(), tr("JSON Files (*.json);;All Files (*)") );
+    emit load( fileName );
+}
+
+void MainWindow::onSave()
+{
+    QString fileName = QFileDialog::getOpenFileName( this, tr("Load File"), QString(), tr("JSON Files (*.json);;All Files (*)") );
+    emit save( fileName );
+}
+
 void MainWindow::onUpdateServerState( bool serverState ) // true:接続中
 {
     // ウィジェット群(A~Z)

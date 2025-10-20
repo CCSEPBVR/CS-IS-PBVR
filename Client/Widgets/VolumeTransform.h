@@ -32,8 +32,8 @@ private slots:
     void onApply();
 
 public slots:
-    void loadParameter();
-    void saveParameter();
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
 
 signals:
     void updatePointsTranslation(); // FIXME:シグナルスロットの接続が必要

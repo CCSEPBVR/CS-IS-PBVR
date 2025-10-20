@@ -128,8 +128,8 @@ private:
     void initializeAfterShow();
 
 private slots:
-    void onLoad() { emit load(); }
-    void onSave() { emit save(); }
+    void onLoad();
+    void onSave();
     void onAnimationControl() { m_animation_control->show(); }
     void onCommunication() { m_communication->show(); }
     void onGlyphEditor() { m_glyph_editor->show(); }
@@ -146,7 +146,7 @@ private slots:
 signals:
     void readyScreen();
     void updateCurrentRepetitionLevel();
-    void load();
-    void save();
+    void load( const QString& filePath );
+    void save( const QString& filePath );
 };
 #endif // MAINWINDOW_H

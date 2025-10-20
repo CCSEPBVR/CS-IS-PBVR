@@ -234,14 +234,14 @@ void PlayBackControlToolBar::doneMerge()
     enableButtons();
 }
 
-void PlayBackControlToolBar::loadParameter()
+void PlayBackControlToolBar::loadParameter( const QString& filePath )
 {
     // TODO KPI
-    qDebug() << __FILE__ << ":" << __func__;
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void PlayBackControlToolBar::saveParameter()
+void PlayBackControlToolBar::saveParameter( const QString& filePath )
 {
     // TODO KPI
-    qDebug() << __FILE__ << ":" << __func__;
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

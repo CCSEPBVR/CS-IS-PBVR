@@ -61,8 +61,8 @@ public slots:
     void updateNumberOfVector( const int numberOfVector );
     void updateOperatorState( bool operatorState ); // true:権限あり
     void reset();
-    void loadParameter();
-    void saveParameter();
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
 };
 
 #endif // GLYPHEDITOR_H

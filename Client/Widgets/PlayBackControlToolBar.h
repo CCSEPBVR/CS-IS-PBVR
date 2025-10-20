@@ -43,8 +43,8 @@ private slots:
 
 public slots:
     void doneMerge();
-    void loadParameter();
-    void saveParameter();
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
 
 signals:
     void fisrtTimeStep();

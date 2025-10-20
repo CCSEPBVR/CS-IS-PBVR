@@ -45,14 +45,14 @@ void VolumeTransform::onApply()
     m_screen->update();
 }
 
-void VolumeTransform::loadParameter()
+void VolumeTransform::loadParameter( const QString& filePath )
 {
     // TODO KPI
-    qDebug() << __FILE__ << ":" << __func__;
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void VolumeTransform::saveParameter()
+void VolumeTransform::saveParameter( const QString& filePath )
 {
     // TODO KPI
-    qDebug() << __FILE__ << ":" << __func__;
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

@@ -51,14 +51,14 @@ void RepetitionLevelControl::updateCurrentRepetitionLevel()
     ui->dispCurrentRepetitionLevel->setText( QString::number( currentRepetitionLevel ) );
 }
 
-void RepetitionLevelControl::loadParameter()
+void RepetitionLevelControl::loadParameter( const QString& filePath )
 {
     // TODO KPI
-    qDebug() << __FILE__ << ":" << __func__;
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void RepetitionLevelControl::saveParameter()
+void RepetitionLevelControl::saveParameter( const QString& filePath )
 {
     // TODO KPI
-    qDebug() << __FILE__ << ":" << __func__;
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

@@ -138,14 +138,14 @@ void ColorMapSelectorToolBar::updateColorMapBar( QStandardItemModel* model )
     updateUIFromCurrentItem();
 }
 
-void ColorMapSelectorToolBar::loadParameter()
+void ColorMapSelectorToolBar::loadParameter( const QString& filePath )
 {
     // TODO KPI
-    qDebug() << __FILE__ << ":" << __func__;
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void ColorMapSelectorToolBar::saveParameter()
+void ColorMapSelectorToolBar::saveParameter( const QString& filePath )
 {
     // TODO KPI
-    qDebug() << __FILE__ << ":" << __func__;
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

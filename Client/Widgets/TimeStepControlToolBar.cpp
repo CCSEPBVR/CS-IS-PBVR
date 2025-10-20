@@ -318,14 +318,14 @@ void TimeStepControlToolBar::updateInSituObjectMinMaxTimeStep( int min, int max 
     m_max_limit_time_step_spin_box->setValue( max );
 }
 
-void TimeStepControlToolBar::loadParameter()
+void TimeStepControlToolBar::loadParameter( const QString& filePath )
 {
     // TODO KPI
-    qDebug() << __FILE__ << ":" << __func__;
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void TimeStepControlToolBar::saveParameter()
+void TimeStepControlToolBar::saveParameter( const QString& filePath )
 {
     // TODO KPI
-    qDebug() << __FILE__ << ":" << __func__;
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

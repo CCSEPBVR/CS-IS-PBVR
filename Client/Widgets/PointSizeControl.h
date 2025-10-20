@@ -35,8 +35,8 @@ private slots:
     void onPointSizeValueChanged();
 
 public slots:
-    void loadParameter();
-    void saveParameter();
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
 };
 
 #endif // POINTSIZECONTROL_H

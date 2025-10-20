@@ -116,14 +116,14 @@ void ShadingControl::shading( kvs::RendererBase* rendererBase )
     }
 }
 
-void ShadingControl::loadParameter()
+void ShadingControl::loadParameter( const QString& filePath )
 {
     // TODO KPI
-    qDebug() << __FILE__ << ":" << __func__;
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void ShadingControl::saveParameter()
+void ShadingControl::saveParameter( const QString& filePath )
 {
     // TODO KPI
-    qDebug() << __FILE__ << ":" << __func__;
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

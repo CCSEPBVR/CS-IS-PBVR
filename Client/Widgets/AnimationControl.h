@@ -48,7 +48,7 @@ public slots:
     void loadKeyFrameFile();                    // L
     void saveKeyFrameFile();                    // S
     void screenShot( int loopCounter );         // ?
-    void loadParameter();
-    void saveParameter();
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
 };
 #endif // ANIMATIONCONTROL_H

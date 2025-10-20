@@ -397,14 +397,14 @@ void GlyphEditor::reset()
     ui->colorDataNumberOfVariablesSpinBox->setValue( 0 );
 }
 
-void GlyphEditor::loadParameter()
+void GlyphEditor::loadParameter( const QString& filePath )
 {
     // TODO KPI
-    qDebug() << __FILE__ << ":" << __func__;
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void GlyphEditor::saveParameter()
+void GlyphEditor::saveParameter( const QString& filePath )
 {
     // TODO KPI
-    qDebug() << __FILE__ << ":" << __func__;
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

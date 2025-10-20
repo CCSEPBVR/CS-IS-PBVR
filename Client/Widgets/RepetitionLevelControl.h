@@ -35,8 +35,8 @@ private slots:
 
 public slots:
     void updateCurrentRepetitionLevel();
-    void loadParameter();
-    void saveParameter();
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
 
 signals:
     void shading( kvs::RendererBase* rendererBase );
