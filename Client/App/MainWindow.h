@@ -62,6 +62,9 @@ private:
     kvs::Label* m_fps_label                                     = nullptr;
     kvs::Label* m_time_step_label                               = nullptr;
 
+    QAction* m_load_action = nullptr;
+    QAction* m_save_action = nullptr;
+
     // 通信関連
     QWebSocket* m_web_binary_socket                             = nullptr;
     QWebSocket* m_web_text_socket                               = nullptr;
@@ -125,6 +128,8 @@ private:
     void initializeAfterShow();
 
 private slots:
+    void onLoad() { emit load(); }
+    void onSave() { emit save(); }
     void onAnimationControl() { m_animation_control->show(); }
     void onCommunication() { m_communication->show(); }
     void onGlyphEditor() { m_glyph_editor->show(); }
@@ -141,5 +146,7 @@ private slots:
 signals:
     void readyScreen();
     void updateCurrentRepetitionLevel();
+    void load();
+    void save();
 };
 #endif // MAINWINDOW_H

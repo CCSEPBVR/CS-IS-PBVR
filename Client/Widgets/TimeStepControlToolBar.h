@@ -65,6 +65,8 @@ public slots:
     void mergeFinish( int );
     void noItems();
     void updateInSituObjectMinMaxTimeStep( int , int );
+    void loadParameter();
+    void saveParameter();
 
 signals:
     void requestMerge( int requestTimeStep );

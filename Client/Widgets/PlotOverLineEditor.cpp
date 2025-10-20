@@ -675,7 +675,14 @@ void PlotOverLineEditor::reset()
     ui->endCoordZDoubleSpinBox->setValue( 0 );
 }
 
+void PlotOverLineEditor::loadParameter()
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
+}
+
 void PlotOverLineEditor::saveParameter()
 {
-    // TODO KPIセーブ/ロード機能用
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
 }

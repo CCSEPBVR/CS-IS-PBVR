@@ -756,7 +756,14 @@ void TransferFunctionEditor::reset()
     ui->opacityHistogram->setDatas( initialHistogram );
 }
 
+void TransferFunctionEditor::loadParameter()
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
+}
+
 void TransferFunctionEditor::saveParameter()
 {
-    // TODO KPIセーブ/ロード機能用
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
 }

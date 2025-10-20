@@ -31,6 +31,22 @@ void ShadingControl::initialize()
     connect( ui->ShininessDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
 }
 
+void ShadingControl::onChangedShadingParameter()
+{
+    const int size = m_screen->scene()->IDManager()->size();
+    for( int index = 0; index < size; index++ )
+    {
+        auto id = m_screen->scene()->IDManager()->id( index );
+        auto* object = m_screen->scene()->objectManager()->object( id.first );
+        auto* rendererBase = m_screen->scene()->rendererManager()->renderer( id.second );
+        if( rendererBase )
+        {
+            shading( rendererBase );
+        }
+    }
+    m_screen->update();
+}
+
 void ShadingControl::shading( kvs::RendererBase* rendererBase )
 {
     if( auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>( rendererBase ) )
@@ -100,18 +116,14 @@ void ShadingControl::shading( kvs::RendererBase* rendererBase )
     }
 }
 
-void ShadingControl::onChangedShadingParameter()
+void ShadingControl::loadParameter()
 {
-    const int size = m_screen->scene()->IDManager()->size();
-    for( int index = 0; index < size; index++ )
-    {
-        auto id = m_screen->scene()->IDManager()->id( index );
-        auto* object = m_screen->scene()->objectManager()->object( id.first );
-        auto* rendererBase = m_screen->scene()->rendererManager()->renderer( id.second );
-        if( rendererBase )
-        {
-            shading( rendererBase );
-        }
-    }
-    m_screen->update();
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
+}
+
+void ShadingControl::saveParameter()
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
 }

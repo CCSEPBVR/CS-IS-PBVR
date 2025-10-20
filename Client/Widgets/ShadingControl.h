@@ -34,11 +34,13 @@ private:
     // メソッド群
     void initialize();
 
-public slots:
-    void shading( kvs::RendererBase* rendererBase );
-
 private slots:
     void onChangedShadingParameter();
+
+public slots:
+    void shading( kvs::RendererBase* rendererBase );
+    void loadParameter();
+    void saveParameter();
 };
 
 #endif // SHADINGCONTROL_H

@@ -76,6 +76,7 @@ private slots:
 public slots:    
     void updateOperatorState( bool operatorState ); // true:権限あり
     void reset();
+    void loadParameter();
     void saveParameter();
 };
 #endif // TRANSFERFUNCTIONEDITOR_H

@@ -65,6 +65,14 @@ void MainWindow::initialize()
     m_web_binary_socket->setParent( this );
     m_web_text_socket->setParent( this );
 
+    m_load_action = new QAction( tr( "Load"), this );
+    connect( m_load_action, &QAction::triggered, this, &MainWindow::onLoad );
+    ui->menupbvr_client->addAction( m_load_action );
+
+    m_save_action = new QAction( tr( "Save"), this );
+    connect( m_save_action, &QAction::triggered, this, &MainWindow::onSave );
+    ui->menupbvr_client->addAction( m_save_action );
+
     toolBarInitialize();
     animationControlInitialize();
     communicationInitialize();
@@ -99,6 +107,9 @@ void MainWindow::toolBarInitialize()
     // ツールバーの配置
     if( m_time_step_control_tool_bar )
     {
+        connect( this, &MainWindow::load, m_time_step_control_tool_bar , &TimeStepControlToolBar::loadParameter );
+        connect( this, &MainWindow::save, m_time_step_control_tool_bar , &TimeStepControlToolBar::saveParameter );
+
         this->addToolBar( Qt::TopToolBarArea, m_time_step_control_tool_bar );
         this->addToolBarBreak( Qt::TopToolBarArea );
     }
@@ -111,12 +122,19 @@ void MainWindow::toolBarInitialize()
     if( m_color_map_bar_selector_tool_bar )
     {
         m_color_map_bar_selector_tool_bar->setColorMapBar( m_color_map_bar );
+
+        connect( this, &MainWindow::load, m_color_map_bar_selector_tool_bar , &ColorMapSelectorToolBar::loadParameter );
+        connect( this, &MainWindow::save, m_color_map_bar_selector_tool_bar , &ColorMapSelectorToolBar::saveParameter );
+
         this->addToolBar( Qt::TopToolBarArea, m_color_map_bar_selector_tool_bar );
         this->addToolBarBreak( Qt::TopToolBarArea );
     }
 
     if( m_play_back_control_tool_bar )
     {
+        connect( this, &MainWindow::load, m_play_back_control_tool_bar , &PlayBackControlToolBar::loadParameter );
+        connect( this, &MainWindow::save, m_play_back_control_tool_bar , &PlayBackControlToolBar::saveParameter );
+
         this->addToolBar( Qt::TopToolBarArea, m_play_back_control_tool_bar );
     }
 }
@@ -126,7 +144,7 @@ void MainWindow::animationControlInitialize()
     if( m_animation_control )
     {
         m_animation_control_action = new QAction( tr( "Animation Control" ), this );
-        connect( m_animation_control_action, &QAction::triggered, this, &MainWindow::onAnimationControl );
+
         connect( m_screen , &kvs::qt::jaea::Screen::addKeyFrameAdd     , m_animation_control , &AnimationControl::addKeyFrameAdd );
         connect( m_screen , &kvs::qt::jaea::Screen::removeLastKeyFrame , m_animation_control , &AnimationControl::removeLastKeyFrame );
         connect( m_screen , &kvs::qt::jaea::Screen::clearKeyFrame      , m_animation_control , &AnimationControl::clearKeyFrame );
@@ -134,10 +152,15 @@ void MainWindow::animationControlInitialize()
         connect( m_screen , &kvs::qt::jaea::Screen::loadKeyFrameFile   , m_animation_control , &AnimationControl::loadKeyFrameFile );
         connect( m_screen , &kvs::qt::jaea::Screen::saveKeyFrameFile   , m_animation_control , &AnimationControl::saveKeyFrameFile );
 
+        connect( this, &MainWindow::load, m_animation_control , &AnimationControl::loadParameter );
+        connect( this, &MainWindow::save, m_animation_control , &AnimationControl::saveParameter );
+
+        connect( m_animation_control_action, &QAction::triggered, this, &MainWindow::onAnimationControl );
         ui->menuTools->addAction( m_animation_control_action );
-        m_animation_control->adjustSize();
-        addDockWidget( Qt::RightDockWidgetArea, m_animation_control );
+
+        m_animation_control->adjustSize();        
         m_animation_control->close();
+        addDockWidget( Qt::RightDockWidgetArea, m_animation_control );
     }
 }
 
@@ -146,11 +169,16 @@ void MainWindow::communicationInitialize()
     if( m_communication )
     {
         m_communication_action = new QAction( tr( "Communication" ), this );
-        connect( m_communication_action, &QAction::triggered, this, &MainWindow::onCommunication );
+
         connect( m_communication, &Communication::updateServerState, this, &MainWindow::onUpdateServerState );
         connect( m_communication, &Communication::updateOperatorState, m_glyph_editor, &GlyphEditor::updateOperatorState );
         connect( m_communication, &Communication::updateOperatorState, m_plot_over_line_editor, &PlotOverLineEditor::updateOperatorState );
         connect( m_communication, &Communication::updateOperatorState, m_transfer_function_editor, &TransferFunctionEditor::updateOperatorState );
+
+        // connect( this, &MainWindow::load, m_communication , &Communication::loadParameter ); // FIXME: KPI後ほど追加してください。
+        // connect( this, &MainWindow::save, m_communication , &Communication::saveParameter );
+
+        connect( m_communication_action, &QAction::triggered, this, &MainWindow::onCommunication );
 
         // メニューの先頭に挿入
         if( !ui->menuTools->actions().isEmpty() )
@@ -173,6 +201,10 @@ void MainWindow::glyphEditorInitialize()
     if( m_glyph_editor )
     {
         m_glyph_editor_action = new QAction( tr( "Glyph Editor"), this );
+
+        connect( this, &MainWindow::load, m_glyph_editor, &GlyphEditor::loadParameter );
+        connect( this, &MainWindow::save, m_glyph_editor, &GlyphEditor::saveParameter );
+
         connect( m_glyph_editor_action, &QAction::triggered, this, &MainWindow::onGlyphEditor );
 
         m_glyph_editor_action->setEnabled( false ); // サーバ接続前は無効
@@ -187,16 +219,20 @@ void MainWindow::plotOverLineEditorInitialize()
     if( m_plot_over_line_editor )
     {
         m_plot_over_line_editor_action = new QAction( tr( "Plot Over Line Editor"), this );
+
+        connect( this, &MainWindow::load, m_plot_over_line_editor, &PlotOverLineEditor::loadParameter );
+        connect( this, &MainWindow::save, m_plot_over_line_editor, &PlotOverLineEditor::saveParameter );
+
         connect( m_plot_over_line_editor_action, &QAction::triggered, this, &MainWindow::onPlotOverLineEditor );
 
         m_plot_over_line_editor_action->setEnabled( false ); // サーバ接続前は無効
 
         ui->menuTools->addAction( m_plot_over_line_editor_action );
-        // m_plot_over_line_editor->updateNumberOfVector( 3 ); // DEBUG:成分数に応じてUIが変化するか確認
 
         m_plot_over_line_editor->adjustSize();
-        addDockWidget( Qt::LeftDockWidgetArea, m_plot_over_line_editor );
         m_plot_over_line_editor->close();
+        addDockWidget( Qt::LeftDockWidgetArea, m_plot_over_line_editor );
+        // m_plot_over_line_editor->updateNumberOfVector( 3 ); // DEBUG:成分数に応じてUIが変化するか確認
     }
 }
 
@@ -205,13 +241,17 @@ void MainWindow::pointSizeControlInitialize()
     if( m_point_size_control )
     {
         m_point_size_control_action = new QAction( tr( "Point Size Control"), this );
+
+        connect( this, &MainWindow::load, m_point_size_control, &PointSizeControl::loadParameter );
+        connect( this, &MainWindow::save, m_point_size_control, &PointSizeControl::saveParameter );
+
         connect( m_point_size_control_action, &QAction::triggered, this, &MainWindow::onPointSizeControl );
 
         ui->menuTools->addAction( m_point_size_control_action );
 
-        m_point_size_control->adjustSize();
-        addDockWidget( Qt::LeftDockWidgetArea, m_point_size_control );
+        m_point_size_control->adjustSize();        
         m_point_size_control->close();
+        addDockWidget( Qt::LeftDockWidgetArea, m_point_size_control );
     }
 }
 
@@ -219,6 +259,8 @@ void MainWindow::preferenceInitialize()
 {
     if( m_preference )
     {
+        m_preference_action = new QAction( tr( "Preference"), this );
+
         m_preference->setScreen( m_screen );
         m_preference->setCompositor( m_compositor );
         m_preference->setColorMapBar( m_color_map_bar );
@@ -227,11 +269,9 @@ void MainWindow::preferenceInitialize()
         m_preference->setTimeStepLabel( m_time_step_label );
         connect( this, &MainWindow::readyScreen, m_preference, &Preference::readyScreen );
 
-        m_preference_action = new QAction( tr( "Preference"), this );
         connect( m_preference_action, &QAction::triggered, this, &MainWindow::onPreference );
 
         ui->menupbvr_client->addAction( m_preference_action );
-
         m_preference->adjustSize();
     }
 }
@@ -241,16 +281,21 @@ void MainWindow::repetitionLevelControlInitialize()
     if( m_repetition_level_control )
     {
         m_repetition_level_control_action = new QAction( tr( "Repetition Level Control"), this );
-        connect( m_repetition_level_control_action, &QAction::triggered, this, &MainWindow::onRepetitionLevelControl );
+
         connect( this, &MainWindow::updateCurrentRepetitionLevel, m_repetition_level_control, &RepetitionLevelControl::updateCurrentRepetitionLevel );
+        connect( this, &MainWindow::load, m_repetition_level_control, &RepetitionLevelControl::loadParameter );
+        connect( this, &MainWindow::save, m_repetition_level_control, &RepetitionLevelControl::saveParameter );
+
         connect( m_repetition_level_control , &RepetitionLevelControl::shading , m_shading_control , &ShadingControl::shading );
+
+        connect( m_repetition_level_control_action, &QAction::triggered, this, &MainWindow::onRepetitionLevelControl );
         emit updateCurrentRepetitionLevel();
 
         ui->menuTools->addAction( m_repetition_level_control_action );
 
-        m_repetition_level_control->adjustSize();
-        addDockWidget( Qt::LeftDockWidgetArea, m_repetition_level_control );
+        m_repetition_level_control->adjustSize();        
         m_repetition_level_control->close();
+        addDockWidget( Qt::LeftDockWidgetArea, m_repetition_level_control );
     }
 }
 
@@ -259,13 +304,16 @@ void MainWindow::shadingControlInitialize()
     if( m_shading_control )
     {
         m_shading_control_action = new QAction( tr( "Shading Control"), this );
+
+        connect( this, &MainWindow::load, m_shading_control, &ShadingControl::loadParameter );
+        connect( this, &MainWindow::save, m_shading_control, &ShadingControl::saveParameter );
+
         connect( m_shading_control_action, &QAction::triggered, this, &MainWindow::onShadingControl );
 
         ui->menuTools->addAction( m_shading_control_action );
-
-        m_shading_control->adjustSize();
-        addDockWidget( Qt::LeftDockWidgetArea, m_shading_control );
+        m_shading_control->adjustSize();        
         m_shading_control->close();
+        addDockWidget( Qt::LeftDockWidgetArea, m_shading_control );
     }
 }
 
@@ -274,6 +322,10 @@ void MainWindow::transferFunctionEditorInitialize()
     if( m_transfer_function_editor )
     {
         m_transfer_function_editor_action = new QAction( tr( "Transfer Function Editor"), this );
+
+        connect( this, &MainWindow::load, m_transfer_function_editor, &TransferFunctionEditor::loadParameter );
+        connect( this, &MainWindow::save, m_transfer_function_editor, &TransferFunctionEditor::saveParameter );
+
         connect( m_transfer_function_editor_action, &QAction::triggered, this, &MainWindow::onTransferFunctionEditor );
 
         m_transfer_function_editor_action->setEnabled( false ); // サーバ接続前は無効
@@ -292,13 +344,17 @@ void MainWindow::volumeTransformInitialize()
     if( m_volume_transform )
     {
         m_volume_transform_action = new QAction( tr( "Volume Transform"), this );
+
+        connect( this, &MainWindow::load, m_volume_transform, &VolumeTransform::loadParameter );
+        connect( this, &MainWindow::save, m_volume_transform, &VolumeTransform::saveParameter );
+
         connect( m_volume_transform_action, &QAction::triggered, this, &MainWindow::onVolumeTransform );
 
         ui->menuTools->addAction( m_volume_transform_action );
 
-        m_volume_transform->adjustSize();
-        addDockWidget( Qt::LeftDockWidgetArea, m_volume_transform );
+        m_volume_transform->adjustSize();        
         m_volume_transform->close();
+        addDockWidget( Qt::LeftDockWidgetArea, m_volume_transform );
     }
 }
 

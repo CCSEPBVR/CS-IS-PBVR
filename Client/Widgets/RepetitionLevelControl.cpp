@@ -50,3 +50,15 @@ void RepetitionLevelControl::updateCurrentRepetitionLevel()
     const size_t currentRepetitionLevel = m_compositor->repetitionLevel();
     ui->dispCurrentRepetitionLevel->setText( QString::number( currentRepetitionLevel ) );
 }
+
+void RepetitionLevelControl::loadParameter()
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
+}
+
+void RepetitionLevelControl::saveParameter()
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
+}

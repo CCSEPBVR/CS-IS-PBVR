@@ -35,6 +35,8 @@ private slots:
 
 public slots:
     void updateCurrentRepetitionLevel();
+    void loadParameter();
+    void saveParameter();
 
 signals:
     void shading( kvs::RendererBase* rendererBase );

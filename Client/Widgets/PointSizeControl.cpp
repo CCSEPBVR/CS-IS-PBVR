@@ -42,3 +42,15 @@ void PointSizeControl::onPointSizeValueChanged()
     }
     m_screen->update();
 }
+
+void PointSizeControl::loadParameter()
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
+}
+
+void PointSizeControl::saveParameter()
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
+}

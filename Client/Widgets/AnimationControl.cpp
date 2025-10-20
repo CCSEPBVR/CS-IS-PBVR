@@ -353,3 +353,15 @@ void AnimationControl::screenShot(int loopCounter)
     QString full_file_name = file_name + "_" + frame_number + ".bmp";
     image.save(full_file_name);
 }
+
+void AnimationControl::loadParameter()
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
+}
+
+void AnimationControl::saveParameter()
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
+}

@@ -61,6 +61,7 @@ public slots:
     void updateNumberOfVector( const int numberOfVector );
     void updateOperatorState( bool operatorState ); // true:権限あり
     void reset();
+    void loadParameter();
     void saveParameter();
 };
 

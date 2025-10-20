@@ -33,6 +33,10 @@ private:
 
 private slots:
     void onPointSizeValueChanged();
+
+public slots:
+    void loadParameter();
+    void saveParameter();
 };
 
 #endif // POINTSIZECONTROL_H

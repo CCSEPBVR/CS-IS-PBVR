@@ -48,5 +48,7 @@ public slots:
     void loadKeyFrameFile();                    // L
     void saveKeyFrameFile();                    // S
     void screenShot( int loopCounter );         // ?
+    void loadParameter();
+    void saveParameter();
 };
 #endif // ANIMATIONCONTROL_H

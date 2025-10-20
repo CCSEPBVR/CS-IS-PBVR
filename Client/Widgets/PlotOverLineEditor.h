@@ -92,6 +92,7 @@ public slots:
     void togglePlotOverLineFromVRHands();
     void updateOperatorState( bool operatorState ); // true:権限あり
     void reset();
+    void loadParameter();
     void saveParameter();
 };
 

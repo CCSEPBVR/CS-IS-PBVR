@@ -233,3 +233,15 @@ void PlayBackControlToolBar::doneMerge()
 {
     enableButtons();
 }
+
+void PlayBackControlToolBar::loadParameter()
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
+}
+
+void PlayBackControlToolBar::saveParameter()
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
+}

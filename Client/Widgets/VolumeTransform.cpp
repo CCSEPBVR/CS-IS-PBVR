@@ -44,3 +44,15 @@ void VolumeTransform::onApply()
 
     m_screen->update();
 }
+
+void VolumeTransform::loadParameter()
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
+}
+
+void VolumeTransform::saveParameter()
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
+}

@@ -317,3 +317,15 @@ void TimeStepControlToolBar::updateInSituObjectMinMaxTimeStep( int min, int max 
     m_max_limit_time_step_spin_box->setMaximum( max );
     m_max_limit_time_step_spin_box->setValue( max );
 }
+
+void TimeStepControlToolBar::loadParameter()
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
+}
+
+void TimeStepControlToolBar::saveParameter()
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__;
+}

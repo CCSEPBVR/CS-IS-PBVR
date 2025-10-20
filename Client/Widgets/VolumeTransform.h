@@ -31,6 +31,10 @@ private:
 private slots:
     void onApply();
 
+public slots:
+    void loadParameter();
+    void saveParameter();
+
 signals:
     void updatePointsTranslation(); // FIXME:シグナルスロットの接続が必要
 };

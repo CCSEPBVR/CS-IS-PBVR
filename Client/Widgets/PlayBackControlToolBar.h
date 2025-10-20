@@ -43,6 +43,8 @@ private slots:
 
 public slots:
     void doneMerge();
+    void loadParameter();
+    void saveParameter();
 
 signals:
     void fisrtTimeStep();
