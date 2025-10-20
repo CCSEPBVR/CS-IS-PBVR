@@ -37,7 +37,7 @@ public slots:
     void updateCurrentRepetitionLevel();
 
 signals:
-    void shading( kvs::RendererBase* rendererBase ); // FIXME:シグナルスロットの接続が必要
+    void shading( kvs::RendererBase* rendererBase );
 };
 
 #endif // REPETITIONLEVELCONTROL_H

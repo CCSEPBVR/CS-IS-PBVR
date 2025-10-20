@@ -12,7 +12,8 @@
 #include <kvs/IDManager>
 #include <kvs/RendererManager>
 
-namespace Ui {
+namespace Ui
+{
 class ShadingControl;
 }
 
@@ -21,14 +22,16 @@ class ShadingControl : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit ShadingControl( kvs::qt::jaea::Screen*,
-                             QWidget *parent = nullptr );
+    explicit ShadingControl( kvs::qt::jaea::Screen*, QWidget *parent = nullptr );
     ~ShadingControl();
 
 private:
+    // メンバ変数群
     Ui::ShadingControl *ui;
+
     kvs::qt::jaea::Screen* m_screen = nullptr;
 
+    // メソッド群
     void initialize();
 
 public slots:

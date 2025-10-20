@@ -20,6 +20,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_plot_over_line_editor( new PlotOverLineEditor( m_web_text_socket, m_screen, this ) )
     , m_point_size_control( new PointSizeControl( m_screen, this ) )
     , m_repetition_level_control( new RepetitionLevelControl( m_screen, m_compositor, this ) )
+    , m_shading_control( new ShadingControl( m_screen, this ) )
     , m_transfer_function_editor( new TransferFunctionEditor( m_web_text_socket, this ) )
     , m_volume_transform( new VolumeTransform( m_screen, this ) )
 {
@@ -65,6 +66,7 @@ void MainWindow::initialize()
     plotOverLineEditorInitialize();
     pointSizeControlInitialize();
     repetitionLevelControlInitialize();
+    shadingControlInitialize();
     transferFunctionEditorInitialize();
     volumeTransformInitialize();
 
@@ -182,6 +184,7 @@ void MainWindow::repetitionLevelControlInitialize()
         m_repetition_level_control_action = new QAction( tr( "Repetition Level Control"), this );
         connect( m_repetition_level_control_action, &QAction::triggered, this, &MainWindow::onRepetitionLevelControl );
         connect( this, &MainWindow::updateCurrentRepetitionLevel, m_repetition_level_control, &RepetitionLevelControl::updateCurrentRepetitionLevel );
+        connect( m_repetition_level_control , &RepetitionLevelControl::shading , m_shading_control , &ShadingControl::shading );
         emit updateCurrentRepetitionLevel();
 
         ui->menuTools->addAction( m_repetition_level_control_action );
@@ -189,6 +192,21 @@ void MainWindow::repetitionLevelControlInitialize()
         m_repetition_level_control->adjustSize();
         addDockWidget( Qt::LeftDockWidgetArea, m_repetition_level_control );
         m_repetition_level_control->close();
+    }
+}
+
+void MainWindow::shadingControlInitialize()
+{
+    if( m_shading_control )
+    {
+        m_shading_control_action = new QAction( tr( "Shading Control"), this );
+        connect( m_shading_control_action, &QAction::triggered, this, &MainWindow::onShadingControl );
+
+        ui->menuTools->addAction( m_shading_control_action );
+
+        m_shading_control->adjustSize();
+        addDockWidget( Qt::LeftDockWidgetArea, m_shading_control );
+        m_shading_control->close();
     }
 }
 

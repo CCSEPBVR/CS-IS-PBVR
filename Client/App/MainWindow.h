@@ -19,6 +19,7 @@
 #include "PlotOverLineEditor.h"
 #include "PointSizeControl.h"
 #include "RepetitionLevelControl.h"
+#include "ShadingControl.h"
 #include "TransferFunctionEditor.h"
 #include "VolumeTransform.h"
 
@@ -79,6 +80,9 @@ private:
     QAction* m_repetition_level_control_action = nullptr;
     RepetitionLevelControl* m_repetition_level_control = nullptr;
 
+    QAction* m_shading_control_action = nullptr;
+    ShadingControl* m_shading_control = nullptr;
+
     QAction* m_transfer_function_editor_action = nullptr;
     TransferFunctionEditor* m_transfer_function_editor = nullptr;   // NOTE:通信関係有
 
@@ -98,6 +102,7 @@ private:
     void plotOverLineEditorInitialize();
     void pointSizeControlInitialize();
     void repetitionLevelControlInitialize();
+    void shadingControlInitialize();
     void transferFunctionEditorInitialize();
     void volumeTransformInitialize();
     void initializeAfterShow();
@@ -109,6 +114,7 @@ private slots:
     void onPlotOverLineEditor() { m_plot_over_line_editor->show(); }
     void onPointSizeControl() { m_point_size_control->show(); }
     void onRepetitionLevelControl() { m_repetition_level_control->show(); }
+    void onShadingControl() { m_shading_control->show(); }
     void onTransferFunctionEditor() { m_transfer_function_editor->show(); }
     void onVolumeTransform() { m_volume_transform->show(); }
 
