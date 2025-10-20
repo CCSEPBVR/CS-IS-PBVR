@@ -53,6 +53,8 @@ public:
 
     const kvs::Vector3f randomSampling( void ) const;
 
+    const kvs::Vector3f MT_randomSampling( kvs::MersenneTwister* MT ) const;
+
     const kvs::Real32 volume( void ) const;
 
     const kvs::Vector3f transformGlobalToLocal( const kvs::Vector3f& point ) const;
@@ -193,6 +195,60 @@ const kvs::Vector3f TetrahedralCell<T>::randomSampling( void ) const
     BaseClass::m_global_point = this->transformLocalToGlobal( point );
 
     return( BaseClass::m_global_point );
+}
+
+template <typename T>
+const kvs::Vector3f TetrahedralCell<T>::MT_randomSampling( kvs::MersenneTwister* MT ) const
+{
+    // Generate a point in the local coordinate.
+//    const float s = BaseClass::randomNumber();
+//    const float t = BaseClass::randomNumber();
+//    const float u = BaseClass::randomNumber();
+    const float s = (float)MT->rand();
+    const float t = (float)MT->rand();
+    const float u = (float)MT->rand();
+
+    kvs::Vector3f point;
+    if ( s + t + u <= 1.0f )
+    {
+        point[0] = s;
+        point[1] = t;
+        point[2] = u;
+    }
+    else if ( s - t + u >= 1.0f )
+    {
+        // Revise the point.
+        point[0] = -u + 1.0f;
+        point[1] = -s + 1.0f;
+        point[2] =  t;
+    }
+    else if ( s + t - u >= 1.0f )
+    {
+        // Revise the point.
+        point[0] = -s + 1.0f;
+        point[1] = -t + 1.0f;
+        point[2] =  u;
+    }
+    else if ( -s + t + u >= 1.0f )
+    {
+        // Revise the point.
+        point[0] = -u + 1.0f;
+        point[1] =  s;
+        point[2] = -t + 1.0f;
+    }
+    else
+    {
+        // Revise the point.
+        point[0] =   0.5f * s - 0.5f * t - 0.5f * u + 0.5f;
+        point[1] = - 0.5f * s + 0.5f * t - 0.5f * u + 0.5f;
+        point[2] = - 0.5f * s - 0.5f * t + 0.5f * u + 0.5f;
+    }
+
+    this->setLocalPoint( point );
+    BaseClass::m_global_point = this->transformLocalToGlobal( point );
+
+    //return( BaseClass::m_global_point );
+    return( point );
 }
 
 /*===========================================================================*/

@@ -146,6 +146,12 @@ extern "C" {
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltypes );
 
+    void ensemble_generate_particles( int time_step, domain_parameters dom,
+                             Type** values, int nvariables,
+                             float* coordinates, int ncoords,
+                             unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltypes );
+
+
 #ifdef VTK
     void generate_particles_vtk( int time_step,vtkUnstructuredGrid* ucd ); 
 #endif
@@ -162,6 +168,14 @@ extern "C" {
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells,
                              const  pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase );
+
+    void EnsembleGenerateParticles( int time_step,
+                             domain_parameters dom,
+                             Type** values, int nvariables,
+                             float* coordinates, int ncoords,
+                             unsigned int* connections, int ncells,
+                             const  pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase );
+
 
     void GenerateGlyphs( int time_step,
                              domain_parameters dom,

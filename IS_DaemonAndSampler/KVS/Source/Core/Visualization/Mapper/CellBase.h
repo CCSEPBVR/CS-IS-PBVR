@@ -22,6 +22,7 @@
 #include <kvs/UnstructuredVolumeObject>
 #include <kvs/IgnoreUnusedVariable>
 #include <kvs/Message>
+#include <kvs/MersenneTwister>
 
 
 namespace kvs
@@ -74,6 +75,8 @@ public:
 public:
 
     virtual const kvs::Vector3f randomSampling( void ) const;
+    
+    virtual const kvs::Vector3f MT_randomSampling( kvs::MersenneTwister* MT ) const;
 
     virtual const kvs::Real32 volume( void ) const;
 
@@ -282,6 +285,14 @@ inline const kvs::Vector3f CellBase<T>::randomSampling( void ) const
     kvsMessageError("'randomSampling' is not implemented.");
     return( kvs::Vector3f( 0.0f, 0.0f, 0.0f ) );
 }
+
+template <typename T>
+inline const kvs::Vector3f CellBase<T>::MT_randomSampling( kvs::MersenneTwister* MT ) const
+{
+    kvsMessageError("'randomSampling' is not implemented.");
+    return( kvs::Vector3f( 0.0f, 0.0f, 0.0f ) );
+}
+
 
 /*===========================================================================*/
 /**

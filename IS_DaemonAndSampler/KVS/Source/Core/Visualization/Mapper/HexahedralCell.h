@@ -56,6 +56,8 @@ public:
     const kvs::Real32* differentialFunctions( const kvs::Vector3f& point ) const;
 
     const kvs::Vector3f randomSampling( void ) const;
+    
+    const kvs::Vector3f MT_randomSampling( kvs::MersenneTwister* MT ) const;
 
     const kvs::Real32 volume( void ) const;
 };
@@ -187,6 +189,26 @@ const kvs::Vector3f HexahedralCell<T>::randomSampling( void ) const
 
     return( BaseClass::m_global_point );
 }
+
+template <typename T>
+const kvs::Vector3f HexahedralCell<T>::MT_randomSampling( kvs::MersenneTwister* MT ) const
+{
+    // Generate a point in the local coordinate.
+    //const float s = BaseClass::randomNumber();
+    //const float t = BaseClass::randomNumber();
+    //const float u = BaseClass::randomNumber();
+    const float s = (float)MT->rand();
+    const float t = (float)MT->rand();
+    const float u = (float)MT->rand();
+
+    const kvs::Vector3f point( s, t, u );
+    this->setLocalPoint( point );
+    BaseClass::m_global_point = BaseClass::transformLocalToGlobal( point );
+
+    //return( BaseClass::m_global_point );
+    return( point );
+}
+
 
 /*===========================================================================*/
 /**
