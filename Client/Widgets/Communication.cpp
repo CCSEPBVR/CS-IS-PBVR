@@ -744,3 +744,15 @@ void Communication::onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32
                                                      }
                                                      ).toJson( QJsonDocument::Compact ) );
 }
+
+void Communication::loadParameter( const QString& filePath )
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
+void Communication::saveParameter( const QString& filePath )
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}

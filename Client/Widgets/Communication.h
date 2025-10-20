@@ -69,6 +69,8 @@ private:
     kvs::PolygonObject* createArrowGlyph( const kvs::ValueArray<kvs::Real32>& coords, const kvs::ValueArray<kvs::Real32>& directions, const kvs::ValueArray<kvs::Real32>& sizes, const kvs::ValueArray<kvs::UInt8>& colors );
 public slots:
     void onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 3 ] );
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
 };
 
 #endif // COMMUNICATION_H
