@@ -16,9 +16,7 @@ public:
     ~TimeStepControlToolBar();
 
 private:
-    void initialize();
-
-private:
+    // メンバ変数群
     QLabel *m_current_time_step_label;
     QLabel *m_current_time_step_display;
 
@@ -41,13 +39,20 @@ private:
     bool m_is_last_mode = false;
     bool m_is_merging = false;
 
-signals:
-    void requestMerge( int requestTimeStep );
-    void doneMerge();
+    // メソッド群
+    void initialize();
+
+private slots:
+    void updateMinLimit( int );
+    void updateMaxLimit( int );
+    void updateInternal();
+    void updateTimeStep();
+    void decrementTimeStep();
+    void incrementTimeStep();
+    void keepLast();
 
 public slots:
     void updateTotalTimeStepRange( int min, int max, bool isSingleObject );
-
     void fisrtTimeStep();
     void previousTimeStep();
     void reverseTimeStep( bool );
@@ -61,14 +66,9 @@ public slots:
     void noItems();
     void updateInSituObjectMinMaxTimeStep( int , int );
 
-private slots:
-    void updateMinLimit( int );
-    void updateMaxLimit( int );
-    void updateInternal();
-    void updateTimeStep();
-    void decrementTimeStep();
-    void incrementTimeStep();
-    void keepLast();
+signals:
+    void requestMerge( int requestTimeStep );
+    void doneMerge();
 };
 
 #endif // TIMESTEPCONTROLTOOLBAR_H

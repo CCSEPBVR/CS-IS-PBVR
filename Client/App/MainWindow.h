@@ -11,6 +11,11 @@
 #include <kvs/OrientationAxis>
 #include <kvs/Label>
 
+#include "ColorMapSelectorToolBar.h"
+#include "PlayBackControlToolBar.h"
+#include "TimeStepControlToolBar.h";
+#include "TotalParticlesToolBar.h"
+
 // ウィジェット群(A~Z)
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ
 #include "AnimationControl.h"
@@ -61,7 +66,13 @@ private:
     QWebSocket* m_web_binary_socket                             = nullptr;
     QWebSocket* m_web_text_socket                               = nullptr;
 
-    // ウィジェット群(A~Z)
+    // ウィジェット群(ツールバー) A~Z
+    ColorMapSelectorToolBar* m_color_map_bar_selector_tool_bar  = nullptr;
+    PlayBackControlToolBar* m_play_back_control_tool_bar = nullptr;
+    TimeStepControlToolBar* m_time_step_control_tool_bar = nullptr;
+    TotalParticlesToolBar* m_total_particles_tool_bar = nullptr;
+
+    // ウィジェット群(ドック,ダイアログ) A~Z
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ
     QAction* m_animation_control_action = nullptr;
     AnimationControl* m_animation_control = nullptr;
@@ -100,6 +111,11 @@ private:
 
     // メソッド群
     void initialize();
+    // void colorMapSelectorToolBarInitialize();
+    // void playBackControlToolBarInitialize();
+    // void timeStepControlToolBarInitialize();
+    // void totalParticlesToolBarInitialize();
+    void toolBarInitialize();
     void animationControlInitialize();
     void communicationInitialize();
     void glyphEditorInitialize();

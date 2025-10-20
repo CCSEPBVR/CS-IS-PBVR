@@ -49,6 +49,7 @@ void PlayBackControlToolBar::initialize()
     layout->addWidget( m_loop_push_button );
 
     this->addWidget( containerWidget );
+    this->setMovable( false );
 
     connect( m_first_time_step_push_button     , &QPushButton::clicked, this, &PlayBackControlToolBar::onFirst );
     connect( m_previous_time_step_push_button  , &QPushButton::clicked, this, &PlayBackControlToolBar::onPrevious );
@@ -61,18 +62,6 @@ void PlayBackControlToolBar::initialize()
     connect( m_loop_push_button                , &QPushButton::clicked, this, &PlayBackControlToolBar::onLoop );
 }
 
-/**
- * @brief 指定されたパラメータに基づいてQPushButtonを作成するヘルパー関数。
- *
- * この関数は、指定されたアイコンパス、アイコンサイズ、ボタンサイズに基づいて
- * スタイリングされた QPushButton を生成します。ボタンは押下・選択時に半透明の背景色が設定されます。
- *
- * @param iconPath ボタンに設定するアイコンのパス（QString）
- * @param iconSize アイコンのサイズ（QSize）
- * @param buttonSize ボタン自体のサイズ（QSize）
- * @param parent 親ウィジェット（QWidget*、nullptrでも可）
- * @return QPushButton* 作成されたボタンのポインタ（呼び出し元で管理）
- */
 QPushButton* PlayBackControlToolBar::createButton( const QString &iconPath, const QSize &iconSize, const QSize &buttonSize, QWidget *parent )
 {
     QPushButton* button = new QPushButton( parent );
@@ -158,11 +147,6 @@ void PlayBackControlToolBar::enableButtons()
     }
 }
 
-void PlayBackControlToolBar::doneMerge()
-{
-    enableButtons();
-}
-
 void PlayBackControlToolBar::onFirst()
 {
     disableButtons();
@@ -243,4 +227,9 @@ void PlayBackControlToolBar::onJump()
 void PlayBackControlToolBar::onLoop()
 {
     emit loopMode( m_loop_push_button->isChecked() );
+}
+
+void PlayBackControlToolBar::doneMerge()
+{
+    enableButtons();
 }

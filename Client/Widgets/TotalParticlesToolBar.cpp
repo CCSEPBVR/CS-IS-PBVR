@@ -9,7 +9,7 @@ TotalParticlesToolBar::TotalParticlesToolBar( QWidget* parent ) :
 TotalParticlesToolBar::~TotalParticlesToolBar() {}
 
 void TotalParticlesToolBar::initialize()
-{
+{    
     QWidget* containerWidget = new QWidget( this );
     QHBoxLayout* layout = new QHBoxLayout( containerWidget );
 
@@ -17,12 +17,11 @@ void TotalParticlesToolBar::initialize()
     m_total_particles_display = new QLabel( "NO POINT OBJECTS", this );
     m_total_particles_display->setFixedWidth( 130 );
 
-    // Layoutにウィジェットを追加
     layout->addWidget( m_total_particles_label );
     layout->addWidget( m_total_particles_display );
 
-    // ToolBarにウィジェットを追加
     this->addWidget( containerWidget );
+    this->setMovable( false );
 }
 
 void TotalParticlesToolBar::updateTotalParticles( int totalParticles )

@@ -67,6 +67,7 @@ void TimeStepControlToolBar::initialize()
 
     // ToolBarにウィジェットを追加
     this->addWidget( containerWidget );
+    this->setMovable( false );
 
     m_timer.setInterval( 100 );
 
@@ -76,7 +77,96 @@ void TimeStepControlToolBar::initialize()
     connect( &m_timer, &QTimer::timeout, this, &TimeStepControlToolBar::updateTimeStep );
 }
 
-// public slots:
+// private slots:
+void TimeStepControlToolBar::updateMinLimit( int value )
+{
+    m_max_limit_time_step_spin_box->blockSignals( true );
+    m_max_limit_time_step_spin_box->setMinimum( value );
+    m_max_limit_time_step_spin_box->blockSignals( false );
+    m_jump_time_step_spin_box->setMinimum( value );
+}
+
+void TimeStepControlToolBar::updateMaxLimit( int value )
+{
+    QMetaObject::invokeMethod( this, [=]() {
+            m_min_limit_time_step_spin_box->blockSignals( true );
+            m_min_limit_time_step_spin_box->setMaximum( value );
+            m_min_limit_time_step_spin_box->blockSignals( false );
+            m_jump_time_step_spin_box->setMaximum( value );
+        }, Qt::QueuedConnection ); // GUIスレッドで安全に処理
+}
+
+void TimeStepControlToolBar::updateInternal()
+{
+    m_timer.setInterval( m_update_interval_spin_box->value() );
+}
+
+void TimeStepControlToolBar::updateTimeStep()
+{
+    if ( m_is_reverse_mode && !m_is_last_mode )
+    {
+        decrementTimeStep(); // 再生: 値を減らす
+    }
+    else if( !m_is_reverse_mode && !m_is_last_mode )
+    {
+        incrementTimeStep(); // 騾・・逕・ 蛟､繧貞｢励ｄ縺
+    }
+    else
+    {
+        keepLast();
+    }
+}
+
+void TimeStepControlToolBar::decrementTimeStep()
+{
+    if( m_is_merging )
+    {
+        return;
+    }
+
+    if( m_current_time_step_display->text() == "NO DATA" )
+    {
+        m_jump_time_step_spin_box->setValue( m_jump_time_step_spin_box->value() );
+    }
+    else
+    {
+        m_jump_time_step_spin_box->setValue( m_jump_time_step_spin_box->value() - 1 );
+    }
+    m_is_merging = true;
+    emit requestMerge( m_jump_time_step_spin_box->value() );
+}
+
+void TimeStepControlToolBar::incrementTimeStep()
+{
+    if( m_is_merging )
+    {
+        return;
+    }
+
+    if( m_current_time_step_display->text() == "NO DATA" )
+    {
+        m_jump_time_step_spin_box->setValue( m_jump_time_step_spin_box->value() );
+    }
+    else
+    {
+        m_jump_time_step_spin_box->setValue( m_jump_time_step_spin_box->value() + 1 );
+    }
+    m_is_merging = true;
+    emit requestMerge( m_jump_time_step_spin_box->value() );
+}
+
+void TimeStepControlToolBar::keepLast()
+{
+    if( m_is_merging )
+    {
+        return;
+    }
+    m_max_limit_time_step_spin_box->setValue( m_max_limit_time_step_spin_box->maximum() );
+    m_jump_time_step_spin_box->setValue( m_max_limit_time_step_spin_box->maximum() );
+    m_is_merging = true;
+    emit requestMerge( m_jump_time_step_spin_box->value() );
+}
+
 void TimeStepControlToolBar::updateTotalTimeStepRange( int min, int max, bool isSingleObject )
 {
     m_total_time_step_range_label->setText( QString( "(Min : %1 , Max : %2)" ).arg( min ).arg( max ) );
@@ -226,94 +316,4 @@ void TimeStepControlToolBar::updateInSituObjectMinMaxTimeStep( int min, int max 
 {
     m_max_limit_time_step_spin_box->setMaximum( max );
     m_max_limit_time_step_spin_box->setValue( max );
-}
-
-// private slots:
-void TimeStepControlToolBar::updateMinLimit( int value )
-{
-    m_max_limit_time_step_spin_box->blockSignals( true );
-    m_max_limit_time_step_spin_box->setMinimum( value );
-    m_max_limit_time_step_spin_box->blockSignals( false );
-    m_jump_time_step_spin_box->setMinimum( value );
-}
-
-void TimeStepControlToolBar::updateMaxLimit( int value )
-{
-    QMetaObject::invokeMethod( this, [=]() {
-            m_min_limit_time_step_spin_box->blockSignals( true );
-            m_min_limit_time_step_spin_box->setMaximum( value );
-            m_min_limit_time_step_spin_box->blockSignals( false );
-            m_jump_time_step_spin_box->setMaximum( value );
-        }, Qt::QueuedConnection ); // GUIスレッドで安全に処理
-}
-
-void TimeStepControlToolBar::updateInternal()
-{
-    m_timer.setInterval( m_update_interval_spin_box->value() );
-}
-
-void TimeStepControlToolBar::updateTimeStep()
-{
-    if ( m_is_reverse_mode && !m_is_last_mode )
-    {
-        decrementTimeStep(); // 再生: 値を減らす
-    }
-    else if( !m_is_reverse_mode && !m_is_last_mode )
-    {
-        incrementTimeStep(); // 騾・・逕・ 蛟､繧貞｢励ｄ縺
-    }
-    else
-    {
-        keepLast();
-    }
-}
-
-void TimeStepControlToolBar::decrementTimeStep()
-{
-    if( m_is_merging )
-    {
-        return;
-    }
-
-    if( m_current_time_step_display->text() == "NO DATA" )
-    {
-        m_jump_time_step_spin_box->setValue( m_jump_time_step_spin_box->value() );
-    }
-    else
-    {
-        m_jump_time_step_spin_box->setValue( m_jump_time_step_spin_box->value() - 1 );
-    }
-    m_is_merging = true;
-    emit requestMerge( m_jump_time_step_spin_box->value() );
-}
-
-void TimeStepControlToolBar::incrementTimeStep()
-{
-    if( m_is_merging )
-    {
-        return;
-    }
-
-    if( m_current_time_step_display->text() == "NO DATA" )
-    {
-        m_jump_time_step_spin_box->setValue( m_jump_time_step_spin_box->value() );
-    }
-    else
-    {
-        m_jump_time_step_spin_box->setValue( m_jump_time_step_spin_box->value() + 1 );
-    }
-    m_is_merging = true;
-    emit requestMerge( m_jump_time_step_spin_box->value() );
-}
-
-void TimeStepControlToolBar::keepLast()
-{
-    if( m_is_merging )
-    {
-        return;
-    }
-    m_max_limit_time_step_spin_box->setValue( m_max_limit_time_step_spin_box->maximum() );
-    m_jump_time_step_spin_box->setValue( m_max_limit_time_step_spin_box->maximum() );
-    m_is_merging = true;
-    emit requestMerge( m_jump_time_step_spin_box->value() );
 }

@@ -14,6 +14,10 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_web_text_socket( new QWebSocket() )
     // ウィジェット群(A~Z)
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ
+    , m_color_map_bar_selector_tool_bar( new ColorMapSelectorToolBar( m_screen, this ) )
+    , m_play_back_control_tool_bar( new PlayBackControlToolBar( this ) )
+    , m_time_step_control_tool_bar( new TimeStepControlToolBar( this ) )
+    , m_total_particles_tool_bar( new TotalParticlesToolBar( this ) )
     , m_animation_control( new AnimationControl( m_screen, this ) )
     , m_communication( new Communication( m_screen, m_web_binary_socket, m_web_text_socket, this ) )
     , m_glyph_editor( new GlyphEditor( m_web_text_socket, this ) )
@@ -61,6 +65,7 @@ void MainWindow::initialize()
     m_web_binary_socket->setParent( this );
     m_web_text_socket->setParent( this );
 
+    toolBarInitialize();
     animationControlInitialize();
     communicationInitialize();
     glyphEditorInitialize();
@@ -87,6 +92,33 @@ void MainWindow::initialize()
 
     emit readyScreen();
     initializeAfterShow();
+}
+
+void MainWindow::toolBarInitialize()
+{
+    // ツールバーの配置
+    if( m_time_step_control_tool_bar )
+    {
+        this->addToolBar( Qt::TopToolBarArea, m_time_step_control_tool_bar );
+        this->addToolBarBreak( Qt::TopToolBarArea );
+    }
+
+    if( m_total_particles_tool_bar )
+    {
+        this->addToolBar( Qt::TopToolBarArea, m_total_particles_tool_bar );
+    }
+
+    if( m_color_map_bar_selector_tool_bar )
+    {
+        m_color_map_bar_selector_tool_bar->setColorMapBar( m_color_map_bar );
+        this->addToolBar( Qt::TopToolBarArea, m_color_map_bar_selector_tool_bar );
+        this->addToolBarBreak( Qt::TopToolBarArea );
+    }
+
+    if( m_play_back_control_tool_bar )
+    {
+        this->addToolBar( Qt::TopToolBarArea, m_play_back_control_tool_bar );
+    }
 }
 
 void MainWindow::animationControlInitialize()

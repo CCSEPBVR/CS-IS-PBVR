@@ -17,27 +17,28 @@ class ColorMapSelectorToolBar : public QToolBar
     Q_OBJECT
 
 public:
-    explicit ColorMapSelectorToolBar( kvs::qt::jaea::Screen*,
-                                      kvs::ColorMapBar*,
-                                      QWidget *parent = nullptr );
+    explicit ColorMapSelectorToolBar( kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
     ~ColorMapSelectorToolBar();
 
-private:
-    void initialize();
+    void setColorMapBar( kvs::ColorMapBar* color_map_bar ) { m_color_map_bar = color_map_bar; }
+    kvs::ColorMapBar* colorMapBar() const { return m_color_map_bar; }
 
 private:
+    // メンバ変数群
     QLabel* m_color_function_label;
     QComboBox* m_color_function_combo_box;
     kvs::qt::jaea::Screen* m_screen                             = nullptr;
     kvs::ColorMapBar* m_color_map_bar       = nullptr;
     QStandardItemModel *m_model = nullptr;
 
-public slots:
-    void updateColorMapBar(QStandardItemModel* model );
+    // メソッド群
+    void initialize();
 
 private slots:
-    void updateUIFromCurrentItem();
+    void updateUIFromCurrentItem(); // FIXME: メソッド名を変更した方がいいと思います。
 
+public slots:
+    void updateColorMapBar( QStandardItemModel* model );
 };
 
 #endif // COLORMAPSELECTORTOOLBAR_H
