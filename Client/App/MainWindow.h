@@ -111,10 +111,6 @@ private:
 
     // メソッド群
     void initialize();
-    // void colorMapSelectorToolBarInitialize();
-    // void playBackControlToolBarInitialize();
-    // void timeStepControlToolBarInitialize();
-    // void totalParticlesToolBarInitialize();
     void toolBarInitialize();
     void animationControlInitialize();
     void communicationInitialize();
