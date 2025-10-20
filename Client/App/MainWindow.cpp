@@ -21,6 +21,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_point_size_control( new PointSizeControl( m_screen, this ) )
     , m_repetition_level_control( new RepetitionLevelControl( m_screen, m_compositor, this ) )
     , m_transfer_function_editor( new TransferFunctionEditor( m_web_text_socket, this ) )
+    , m_volume_transform( new VolumeTransform( m_screen, this ) )
 {
     initialize();
 }
@@ -65,6 +66,7 @@ void MainWindow::initialize()
     pointSizeControlInitialize();
     repetitionLevelControlInitialize();
     transferFunctionEditorInitialize();
+    volumeTransformInitialize();
 
 #ifdef OPENXR_SCREEN
     m_vr_listener = new VRHandControllerListener( m_screen );
@@ -206,6 +208,21 @@ void MainWindow::transferFunctionEditorInitialize()
     // connect( m_transfer_function_editor         , &TransferFunctionEditor::successTransferFunctionImport        , m_connect                         , &Connect::successTransferFunctionImport );
     // connect( m_transfer_function_editor         , &TransferFunctionEditor::updateTransferFunctionClientMessage  , m_connect                         , &Connect::updateTransferFunctionClientMessage );
     // connect( m_transfer_function_editor         , &TransferFunctionEditor::requestReplaceServerPointObject      , m_object_editor                   , &ObjectEditor::requestReplaceServerPointObject );
+}
+
+void MainWindow::volumeTransformInitialize()
+{
+    if( m_volume_transform )
+    {
+        m_volume_transform_action = new QAction( tr( "Volume Transform"), this );
+        connect( m_volume_transform_action, &QAction::triggered, this, &MainWindow::onVolumeTransform );
+
+        ui->menuTools->addAction( m_volume_transform_action );
+
+        m_volume_transform->adjustSize();
+        addDockWidget( Qt::LeftDockWidgetArea, m_volume_transform );
+        m_volume_transform->close();
+    }
 }
 
 void MainWindow::initializeAfterShow()

@@ -20,6 +20,7 @@
 #include "PointSizeControl.h"
 #include "RepetitionLevelControl.h"
 #include "TransferFunctionEditor.h"
+#include "VolumeTransform.h"
 
 // デバッグ
 #include <kvs/HydrogenVolumeData>
@@ -81,6 +82,9 @@ private:
     QAction* m_transfer_function_editor_action = nullptr;
     TransferFunctionEditor* m_transfer_function_editor = nullptr;   // NOTE:通信関係有
 
+    QAction* m_volume_transform_action = nullptr;
+    VolumeTransform* m_volume_transform = nullptr;
+
     // VR関連
 #ifdef OPENXR_SCREEN
     VRHandControllerListener* m_vr_listener;
@@ -95,6 +99,7 @@ private:
     void pointSizeControlInitialize();
     void repetitionLevelControlInitialize();
     void transferFunctionEditorInitialize();
+    void volumeTransformInitialize();
     void initializeAfterShow();
 
 private slots:
@@ -105,6 +110,7 @@ private slots:
     void onPointSizeControl() { m_point_size_control->show(); }
     void onRepetitionLevelControl() { m_repetition_level_control->show(); }
     void onTransferFunctionEditor() { m_transfer_function_editor->show(); }
+    void onVolumeTransform() { m_volume_transform->show(); }
 
     void onUpdateServerState( bool serverState ); // true:接続中
 

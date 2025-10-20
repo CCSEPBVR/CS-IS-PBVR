@@ -1,13 +1,11 @@
 #include "VolumeTransform.h"
 #include "ui_VolumeTransform.h"
 
-VolumeTransform::VolumeTransform( kvs::qt::jaea::Screen* screen,
-                                  QWidget *parent )
+VolumeTransform::VolumeTransform( kvs::qt::jaea::Screen* screen, QWidget *parent )
     : QDockWidget(parent)
     , ui(new Ui::VolumeTransform)
     , m_screen( screen )
-{
-    ui->setupUi(this);
+{    
     initialize();
 }
 
@@ -18,6 +16,7 @@ VolumeTransform::~VolumeTransform()
 
 void VolumeTransform::initialize()
 {
+    ui->setupUi(this);
     connect( ui->applyPushButton, &QPushButton::clicked, this, &VolumeTransform::onApply );
 }
 
