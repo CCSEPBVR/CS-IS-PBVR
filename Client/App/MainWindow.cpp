@@ -100,6 +100,20 @@ void MainWindow::initialize()
 
     emit readyScreen();
     initializeAfterShow();
+
+    // デバッグボタン作成
+    QPushButton* debugPushButton = new QPushButton("Debug", this);
+    debugPushButton->setGeometry(650, 50, 120, 40);
+    debugPushButton->show();
+
+
+    // ボタン押下でサーバにイベント送信
+    connect(debugPushButton, &QPushButton::clicked, this, [this]() {
+        RemoteFileDialog dlg(m_web_text_socket, this);
+        if (dlg.exec() == QDialog::Accepted) {
+            qDebug() << "選択ファイル:" << dlg.selectedFile();
+        }
+    });
 }
 
 void MainWindow::toolBarInitialize()

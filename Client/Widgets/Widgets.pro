@@ -34,6 +34,7 @@ HEADERS += \
     PlotOverLineEditor.h \
     PointSizeControl.h \
     Preference.h \
+    RemoteFileDialog.h \
     RepetitionLevelControl.h \
     ShadingControl.h \
     TimeStepControlToolBar.h \

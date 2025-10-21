@@ -581,7 +581,48 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
 
         if (event == "debug")
         {
-            debugNumberOfUsers();
+            std::string dir = received.value("path", ".");
+            int page = received.value("page", 1);
+            int per_page = received.value("per_page", 20);
+
+            nlohmann::json resp;
+            resp["files"] = nlohmann::json::array();
+
+            // 親フォルダが存在する場合、先頭に ".." を追加
+            std::filesystem::path current(dir);
+            if (current.has_parent_path() && current != current.root_path())
+            {
+                nlohmann::json parent;
+                parent["name"] = "..";
+                parent["type"] = "dir";
+                parent["is_parent"] = true;
+                resp["files"].push_back(parent);
+            }
+
+            std::vector<std::filesystem::directory_entry> entries;
+            for (auto& entry : std::filesystem::directory_iterator(dir))
+                entries.push_back(entry);
+
+            std::sort(entries.begin(), entries.end(), [](auto& a, auto& b){
+                return a.path().filename().string() < b.path().filename().string();
+            });
+
+            int start = (page - 1) * per_page;
+            int end = std::min((int)entries.size(), start + per_page);
+
+            for (int i = start; i < end; ++i)
+            {
+                auto& e = entries[i];
+                nlohmann::json item;
+                item["name"] = e.path().filename().string();
+                item["type"] = e.is_directory() ? "dir" : "file";
+                resp["files"].push_back(item);
+            }
+
+            resp["has_next"] = (end < (int)entries.size());
+            resp["path"] = dir;
+
+            ws->send(resp.dump(), uWS::OpCode::TEXT);
         }
     }
 }

@@ -32,6 +32,7 @@
 // デバッグ
 #include <kvs/HydrogenVolumeData>
 #include <kvs/CellByCellMetropolisSampling>
+#include "RemoteFileDialog.h"
 
 #ifdef OPENXR_SCREEN
 #include "VRHandControllerListener.h"
