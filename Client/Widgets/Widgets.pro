@@ -28,6 +28,7 @@ HEADERS += \
     MergeWorker.h \
     ObjectEditor.h \
     # ObjectItem.h \
+    ObjectEditorWIP.h \
     OpacityMapEditor.h \
     PlayBackControlToolBar.h \
     # PlotOverLineItem.h \
@@ -56,6 +57,7 @@ SOURCES += \
     Connect.cpp \
     GlyphEditor.cpp \
     ObjectEditor.cpp \
+    ObjectEditorWIP.cpp \
     OpacityMapEditor.cpp \
     PlayBackControlToolBar.cpp \
     PlotOverLineEditor.cpp \
@@ -80,6 +82,7 @@ FORMS += \
     Connect.ui \
     GlyphEditor.ui \
     ObjectEditor.ui \
+    ObjectEditorWIP.ui \
     OpacityMapEditor.ui \
     PlotOverLineEditor.ui \
     PointSizeControl.ui \

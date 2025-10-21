@@ -21,6 +21,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_animation_control( new AnimationControl( m_screen, this ) )
     , m_communication( new Communication( m_screen, m_web_binary_socket, m_web_text_socket, this ) )
     , m_glyph_editor( new GlyphEditor( m_web_text_socket, this ) )
+    , m_object_editor( new ObjectEditorWIP( this ) )
     , m_plot_over_line_editor( new PlotOverLineEditor( m_web_text_socket, m_screen, this ) )
     , m_point_size_control( new PointSizeControl( m_screen, this ) )
     , m_preference( new Preference( this ) )
@@ -77,6 +78,7 @@ void MainWindow::initialize()
     animationControlInitialize();
     communicationInitialize();
     glyphEditorInitialize();
+    objectEditorInitialize();
     plotOverLineEditorInitialize();
     pointSizeControlInitialize();
     preferenceInitialize();
@@ -225,6 +227,26 @@ void MainWindow::glyphEditorInitialize()
 
         ui->menuTools->addAction( m_glyph_editor_action );
         // m_glyph_editor->updateNumberOfVector( 3 ); // DEBUG:成分数に応じてUIが変化するか確認
+    }
+}
+
+void MainWindow::objectEditorInitialize()
+{
+    if( m_object_editor )
+    {
+        m_object_editor_action = new QAction( tr( "Object Editor"), this );
+
+        // connect( this, &MainWindow::load, m_object_editor, &ObjectEditorWIP::loadParameter );
+        // connect( this, &MainWindow::save, m_object_editor, &ObjectEditorWIP::saveParameter );
+
+        connect( m_object_editor_action, &QAction::triggered, this, &MainWindow::onObjectEditor );
+
+        // m_object_editor_action->setEnabled( false ); // サーバ接続前は無効
+
+        ui->menuTools->addAction( m_object_editor_action );
+
+        m_object_editor->adjustSize();
+        addDockWidget( Qt::LeftDockWidgetArea, m_object_editor );
     }
 }
 

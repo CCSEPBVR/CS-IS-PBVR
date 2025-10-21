@@ -1,0 +1,953 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ObjectEditorWIP</class>
+ <widget class="QDockWidget" name="ObjectEditorWIP">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>563</width>
+    <height>760</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Object Editor</string>
+  </property>
+  <widget class="QWidget" name="dockWidgetContents">
+   <layout class="QGridLayout" name="gridLayout_7">
+    <item row="0" column="0">
+     <widget class="QGroupBox" name="groupBox_3">
+      <property name="title">
+       <string>Property</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_5">
+       <item row="2" column="2">
+        <widget class="QPushButton" name="deletePushButton">
+         <property name="text">
+          <string>Delete</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QPushButton" name="browsePushButton">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="0" colspan="4">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QGroupBox" name="objectCoordsGroupBox">
+           <property name="title">
+            <string>Object Coords</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_2">
+            <item row="0" column="0">
+             <layout class="QGridLayout" name="gridLayout">
+              <item row="0" column="1" alignment="Qt::AlignHCenter">
+               <widget class="QLabel" name="objectCoordXLabel">
+                <property name="text">
+                 <string>X</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2" alignment="Qt::AlignHCenter">
+               <widget class="QLabel" name="objectCoordYLabel">
+                <property name="text">
+                 <string>Y</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="objectCoordsMinLabel">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Min:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="objectCoordsMaxLabel">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Max:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="3" alignment="Qt::AlignHCenter">
+               <widget class="QLabel" name="objectCoordZLabel">
+                <property name="text">
+                 <string>Z</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="lineEdit">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLineEdit" name="lineEdit_2">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QLineEdit" name="lineEdit_3">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="2">
+               <widget class="QLineEdit" name="lineEdit_4">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="3">
+               <widget class="QLineEdit" name="lineEdit_5">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="3">
+               <widget class="QLineEdit" name="lineEdit_6">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="externalCoordsGroupBox">
+           <property name="title">
+            <string>External Coords</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_3">
+            <item row="0" column="0">
+             <layout class="QGridLayout" name="gridLayout_4">
+              <item row="0" column="1" alignment="Qt::AlignHCenter">
+               <widget class="QLabel" name="externalCoordXLabel">
+                <property name="text">
+                 <string>X</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2" alignment="Qt::AlignHCenter">
+               <widget class="QLabel" name="externalCoordYLabel">
+                <property name="text">
+                 <string>Y</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="externalCoordsMinLabel">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Min:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="externalCoordsMaxLabel">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Max:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="3" alignment="Qt::AlignHCenter">
+               <widget class="QLabel" name="externalCoordZLabel">
+                <property name="text">
+                 <string>Z</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="lineEdit_7">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLineEdit" name="lineEdit_8">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QLineEdit" name="lineEdit_9">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="3">
+               <widget class="QLineEdit" name="lineEdit_10">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="2">
+               <widget class="QLineEdit" name="lineEdit_11">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="3">
+               <widget class="QLineEdit" name="lineEdit_12">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="3">
+        <widget class="QPushButton" name="applyPushButton">
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="4">
+        <widget class="QScrollArea" name="scrollArea">
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>531</width>
+            <height>567</height>
+           </rect>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="7" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_9">
+             <item>
+              <widget class="QLabel" name="numberOfSubvolumeLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Number of subvolume:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="numberOfSubvolumeLineEdit">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="13" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_15">
+             <item>
+              <widget class="QLabel" name="densityLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Density:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="densityDoubleSpinBox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="5" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_7">
+             <item>
+              <widget class="QLabel" name="numberOfVectorLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>NumberOfVector:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="numberOfVectorLineEdit">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="3" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item>
+              <widget class="QLabel" name="timeStepLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Time Step(Min,Max):</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_20">
+               <item>
+                <widget class="QLineEdit" name="timeStepMinLineEdit">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="timeStepMaxLineEdit">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+           <item row="12" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_14">
+             <item>
+              <widget class="QLabel" name="particleLimitLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Particle Limit:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="particleLimitSpinBox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="8" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_10">
+             <item>
+              <widget class="QLabel" name="numberOfNodesLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Number of nodes:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="numberOfNodesLineEdit">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="6" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_8">
+             <item>
+              <widget class="QLabel" name="numberOfElementsLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Number of element:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="numberOfElementsLineEdit">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="11" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_13">
+             <item>
+              <widget class="QLabel" name="stepNumberLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Step Number:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="stepNumberLineEdit">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="14" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_16">
+             <item>
+              <widget class="QLabel" name="coordinateLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Coordinate:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_21">
+               <item>
+                <widget class="QLineEdit" name="coordinateXLineEdit">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="placeholderText">
+                  <string>X</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="coordinateYLineEdit">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="placeholderText">
+                  <string>Y</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="coordinateZLineEdit">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="placeholderText">
+                  <string>Z</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QLabel" name="formatLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Format:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="formatLineEdit">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="0" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <item>
+              <widget class="QLabel" name="nameLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Name:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="nameLineEdit">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="16" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_18">
+             <item>
+              <widget class="QLabel" name="colorLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Color:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="ClickableLabel" name="colorClickableLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="10" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_12">
+             <item>
+              <widget class="QLabel" name="fileTypeLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>File Type:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="fileTypeLineEdit">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="15" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_17">
+             <item>
+              <widget class="QLabel" name="exportLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Export:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="exportPushButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Export</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="2" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <widget class="QLabel" name="directoryLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Directory:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="directoryLineEdit">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="17" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_19">
+             <item>
+              <widget class="QLabel" name="opacityLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Opacity:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="opacityDoubleSpinBox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="9" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_11">
+             <item>
+              <widget class="QLabel" name="elementTypeLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Element Type:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="elementTypeLineEdit">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="4" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <item>
+              <widget class="QLabel" name="focusLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Focus:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="focusCheckBox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ClickableLabel</class>
+   <extends>QLabel</extends>
+   <header>ClickableLabel.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
