@@ -581,6 +581,8 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
 
         if (event == "debug")
         {
+            // FIXME: ドライブの移動の機能をつけたほうがいいかもしれません。
+
             std::string dir = received.value("path", ".");
             int page = received.value("page", 1);
             int per_page = received.value("per_page", 20);
@@ -600,8 +602,24 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
             }
 
             std::vector<std::filesystem::directory_entry> entries;
-            for (auto& entry : std::filesystem::directory_iterator(dir))
+            std::error_code ec; // エラーコード受け取り用
+
+            for (auto& entry : std::filesystem::directory_iterator(dir, ec))
+            {
+                if (ec)
+                {
+                    // アクセスできない場合はスキップ
+                    // FIXME: クライアント側でPermission Deniedとか出してあげてください。
+                    continue;
+                }
+
+                std::string name = entry.path().filename().string();
+                // 隠しファイルをスキップ
+                if (!name.empty() && name[0] == '.')
+                    continue;
+
                 entries.push_back(entry);
+            }
 
             std::sort(entries.begin(), entries.end(), [](auto& a, auto& b){
                 return a.path().filename().string() < b.path().filename().string();
